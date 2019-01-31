@@ -19,7 +19,6 @@
 #include <cmath>
 
 #include "core/shape.h"
-#include "core/sim_object/backend.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 #include "core/util/math.h"

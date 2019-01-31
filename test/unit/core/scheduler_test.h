@@ -22,7 +22,6 @@
 #include <string>
 
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
 #include "core/util/io.h"
 #include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"

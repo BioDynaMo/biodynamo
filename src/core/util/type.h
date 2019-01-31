@@ -17,7 +17,6 @@
 
 #include <type_traits>
 #include "core/shape.h"
-#include "core/sim_object/backend.h"
 
 namespace bdm {
 

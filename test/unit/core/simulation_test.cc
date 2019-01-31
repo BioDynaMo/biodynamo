@@ -16,7 +16,6 @@
 #include <omp.h>
 #include <fstream>
 #include <type_traits>
-#include "core/simulation_implementation.h"
 
 #include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/io_test.h"

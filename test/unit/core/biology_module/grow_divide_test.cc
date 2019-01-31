@@ -15,7 +15,6 @@
 #include "core/biology_module/grow_divide.h"
 #include <typeinfo>
 #include "core/resource_manager.h"
-#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"

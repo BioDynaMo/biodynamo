@@ -49,8 +49,8 @@ inline int Simulate(int argc, const char** argv) {
   // 3. Define initial model
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(10);
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,

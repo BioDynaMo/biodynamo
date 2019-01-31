@@ -17,7 +17,6 @@
 #include "core/grid.h"
 #include "core/operation/displacement_op.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"

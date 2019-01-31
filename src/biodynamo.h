@@ -31,7 +31,6 @@
 #include "core/shape.h"
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
-#include "core/simulation_implementation.h"
 #include "core/util/vtune.h"
 
 #endif  // BIODYNAMO_H_

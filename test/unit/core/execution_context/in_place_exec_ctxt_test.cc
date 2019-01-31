@@ -17,7 +17,6 @@
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
 #include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
@@ -163,8 +162,8 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
 
   // create cells
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(10);
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
     return cell;
   };
   ModelInitializer::Grid3D(32, 10, construct);

@@ -16,7 +16,6 @@
 #include "core/grid.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
 #include "core/substance_initializers.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/default_ctparam.h"
@@ -41,8 +40,8 @@ TEST(DiffusionInitTest, GaussianBand) {
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(10);
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,

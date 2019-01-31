@@ -13,7 +13,6 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/separate_binary/sim_object_test.h"
-#include "core/simulation_implementation.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {

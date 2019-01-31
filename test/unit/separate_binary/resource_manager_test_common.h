@@ -21,7 +21,6 @@
 #include <vector>
 #include "core/param/compile_time_list.h"
 #include "core/param/compile_time_param.h"
-#include "core/sim_object/backend.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/io.h"
 #include "core/util/type.h"
@@ -163,7 +162,7 @@ void RunApplyOnAllElementsParallelTest() {
   rm.push_back(TBScalar(6.28));
   rm.push_back(TBScalar(9.42));
 
-  rm.ApplyOnAllElementsParallel([](auto&& element, SoHandle handle) {
+  rm.ApplyOnAllElementsParallel([](auto&& element) {
     const double kEpsilon = abs_error<double>::value;
     if (handle == SoHandle(0, 1, 0)) {
       EXPECT_EQ(3.14, element.GetData());

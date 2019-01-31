@@ -13,7 +13,6 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/core/biology_module/biology_module_test.h"
-#include "core/simulation_implementation.h"
 
 namespace bdm {
 
