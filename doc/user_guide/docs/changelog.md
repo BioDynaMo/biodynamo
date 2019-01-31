@@ -1,6 +1,16 @@
 # Changelog
 
-## 17.01.2019 [`1968ec2`](https://github.com/BioDynaMo/biodynamo/commit/1968ec2969b3fa38e6856d96f6e7294c36e71634)
+## 31.01.2019 [`3a51e76`](https://github.com/BioDynaMo/biodynamo/commit/3a51e76fa109cee10e11776a92bd4ce3b299ee93)
+
+Improve file structure in directory src/ and test/unit
+
+**API changes**
+
+| Old                                 | New                                    |
+| ----------------------------------- | -------------------------------------- |
+| `SimulationObject`                  | `SimObject`                            |
+
+## 21.01.2019 [`1968ec2`](https://github.com/BioDynaMo/biodynamo/commit/1968ec2969b3fa38e6856d96f6e7294c36e71634)
 
 This commit introduces a series of changes to encapsulate different discretization
 strategies. Other modifications have been made along the way to facilitate this
