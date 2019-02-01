@@ -12,11 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/core/util/io_test.h"
+#include <gtest/gtest.h>
+#include "core/util/io.h"
+
+#define ROOTFILE "bdmFile.root"
 
 namespace bdm {
-
-TEST(IOUtilTest, InvalidRead) { RunInvalidReadTest(); }
 
 TEST(IOUtilTest, RuntimeVars) {
   RuntimeVariables this_machine;

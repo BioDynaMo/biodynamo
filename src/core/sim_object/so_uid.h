@@ -36,6 +36,8 @@ class SoUidGenerator {
 
   SoUid NewSoUid() { return counter_++; }
 
+  SoUid GetLastId() const { return counter_; }
+
  private:
   SoUidGenerator() : counter_(0) {}
   std::atomic<SoUid> counter_;

@@ -19,6 +19,7 @@
 #include "core/substance_initializers.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
+#include "core/simulation.h"
 
 #include "Math/DistFunc.h"
 

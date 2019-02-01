@@ -26,16 +26,16 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
 
-  Cell cell_0;
-  auto uid_0 = cell_0.GetUid();
+  Cell* cell_0 = new Cell();
+  auto uid_0 = cell_0->GetUid();
   rm->push_back(cell_0);
 
-  Cell cell_1;
-  auto uid_1 = cell_1.GetUid();
+  Cell* cell_1 = new Cell();
+  auto uid_1 = cell_1->GetUid();
   rm->push_back(cell_1);
 
-  Cell cell_2;
-  auto uid_2 = cell_2.GetUid();
+  Cell* cell_2 = new Cell();
+  auto uid_2 = cell_2->GetUid();
   rm->push_back(cell_2);
 
   ctxt->RemoveFromSimulation(uid_0);
@@ -58,14 +58,15 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
 
-  Cell cell_0;
-  auto uid_0 = cell_0.GetUid();
+  Cell* cell_0 = new Cell();
+  auto uid_0 = cell_0->GetUid();
   rm->push_back(cell_0);
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
 
-  auto&& cell_1 = ctxt->New<Cell>();
+  Cell* cell_1 = new Cell();
   auto uid_1 = cell_1->GetUid();
+  ctxt->push_back(cell_1);
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
 
@@ -85,38 +86,39 @@ TEST(InPlaceExecutionContext, NewAndGetSimObject) {
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
 
-  Cell cell_0;
-  cell_0.SetDiameter(123);
-  auto uid_0 = cell_0.GetUid();
+  Cell* cell_0 = new Cell();
+  cell_0->SetDiameter(123);
+  auto uid_0 = cell_0->GetUid();
   rm->push_back(cell_0);
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
-  EXPECT_EQ(123, ctxt->GetSimObject<Cell>(uid_0).GetDiameter());
-  EXPECT_EQ(123, rm->GetSimObject<Cell>(uid_0).GetDiameter());
+  EXPECT_EQ(123, ctxt->GetSimObject(uid_0)->GetDiameter());
+  EXPECT_EQ(123, rm->GetSimObject(uid_0)->GetDiameter());
 
-  auto&& cell_1 = ctxt->New<Cell>();
-  cell_1->SetDiameter(456);
+  Cell* cell_1 = new Cell();
   auto uid_1 = cell_1->GetUid();
+  cell_1->SetDiameter(456);
+  ctxt->push_back(cell_1);
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
   EXPECT_FALSE(rm->Contains(uid_1));
-  EXPECT_EQ(123, ctxt->GetSimObject<Cell>(uid_0).GetDiameter());
-  EXPECT_EQ(123, rm->GetSimObject<Cell>(uid_0).GetDiameter());
-  EXPECT_EQ(456, ctxt->GetSimObject<Cell>(uid_1).GetDiameter());
+  EXPECT_EQ(123, ctxt->GetSimObject(uid_0)->GetDiameter());
+  EXPECT_EQ(123, rm->GetSimObject(uid_0)->GetDiameter());
+  EXPECT_EQ(456, ctxt->GetSimObject(uid_1)->GetDiameter());
 
-  ctxt->GetSimObject<Cell>(uid_1).SetDiameter(789);
+  ctxt->GetSimObject(uid_1)->SetDiameter(789);
 
   ctxt->TearDownIteration();
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
   EXPECT_TRUE(rm->Contains(uid_1));
-  EXPECT_EQ(123, ctxt->GetSimObject<Cell>(uid_0).GetDiameter());
-  EXPECT_EQ(789, ctxt->GetSimObject<Cell>(uid_1).GetDiameter());
-  EXPECT_EQ(123, rm->GetSimObject<Cell>(uid_0).GetDiameter());
-  EXPECT_EQ(789, rm->GetSimObject<Cell>(uid_1).GetDiameter());
+  EXPECT_EQ(123, ctxt->GetSimObject(uid_0)->GetDiameter());
+  EXPECT_EQ(789, ctxt->GetSimObject(uid_1)->GetDiameter());
+  EXPECT_EQ(123, rm->GetSimObject(uid_0)->GetDiameter());
+  EXPECT_EQ(789, rm->GetSimObject(uid_1)->GetDiameter());
 }
 
 TEST(InPlaceExecutionContext, Execute) {
@@ -125,26 +127,26 @@ TEST(InPlaceExecutionContext, Execute) {
 
   ctxt->DisableNeighborGuard();
 
-  Cell cell_0;
-  cell_0.SetDiameter(123);
-  auto uid_0 = cell_0.GetUid();
+  Cell* cell_0 = new Cell();
+  cell_0->SetDiameter(123);
+  auto uid_0 = cell_0->GetUid();
 
   bool op1_called = false;
   bool op2_called = false;
 
-  auto op1 = [&](auto&& so) {
+  auto op1 = [&](SimObject* so) {
     // op1 must be  called first
     EXPECT_FALSE(op1_called);
     EXPECT_FALSE(op2_called);
-    EXPECT_EQ(so.GetUid(), uid_0);
+    EXPECT_EQ(so->GetUid(), uid_0);
     op1_called = true;
   };
 
-  auto op2 = [&](auto&& so) {
+  auto op2 = [&](SimObject* so) {
     // op2 must be  called first
     EXPECT_TRUE(op1_called);
     EXPECT_FALSE(op2_called);
-    EXPECT_EQ(so.GetUid(), uid_0);
+    EXPECT_EQ(so->GetUid(), uid_0);
     op2_called = true;
   };
 
@@ -177,28 +179,28 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
 
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.
-  auto op = [&](auto&& so) {
-    auto d = so.GetDiameter();
-    so.SetDiameter(d + 1);
+  auto op = [&](auto* so) {
+    auto d = so->GetDiameter();
+    so->SetDiameter(d + 1);
 
     uint64_t nb_counter = 0;
     auto nb_lambda = [&](const auto* neighbor) {
-      auto non_const_nb = rm->GetSimObject<Cell>(neighbor->GetUid());
-      auto d1 = non_const_nb.GetDiameter();
-      non_const_nb.SetDiameter(d1 + 1);
+      auto* non_const_nb = rm->GetSimObject(neighbor->GetUid());
+      auto d1 = non_const_nb->GetDiameter();
+      non_const_nb->SetDiameter(d1 + 1);
       nb_counter++;
     };
-    ctxt->ForEachNeighborWithinRadius(nb_lambda, so, 100);
+    ctxt->ForEachNeighborWithinRadius(nb_lambda, *so, 100);
 #pragma omp critical
-    num_neighbors[so.GetUid()] = nb_counter;
+    num_neighbors[so->GetUid()] = nb_counter;
   };
 
   rm->ApplyOnAllElementsParallel(
-      [&](auto&& so, SoHandle) { ctxt->Execute(so, op); });
+      [&](SimObject* so) { ctxt->Execute(so, op); });
 
-  rm->ApplyOnAllElements([&](auto&& so, SoHandle) {
+  rm->ApplyOnAllElements([&](SimObject* so) {
     // expected diameter: initial value + num_neighbors + 1
-    EXPECT_EQ(num_neighbors[so.GetUid()] + 11, so.GetDiameter());
+    EXPECT_EQ(num_neighbors[so->GetUid()] + 11, so->GetDiameter());
   });
 }
 

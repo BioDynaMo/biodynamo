@@ -36,7 +36,7 @@ TEST(GrowDivideTest, Grow) {
   ctxt->TearDownIteration();
 
   EXPECT_NEAR(33513.321638291127, cell.GetVolume(), abs_error<double>::value);
-  EXPECT_EQ(0u, rm->Get<Cell>()->size());
+  EXPECT_EQ(0u, rm->GetNumSimObjects());
 }
 
 TEST(GrowDivideTest, Divide) {
@@ -55,7 +55,7 @@ TEST(GrowDivideTest, Divide) {
   ctxt->TearDownIteration();
 
   EXPECT_GT(41, cell.GetDiameter());
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 }
 
 }  // namespace bdm

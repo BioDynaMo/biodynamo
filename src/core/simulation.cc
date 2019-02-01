@@ -52,15 +52,13 @@ Simulation::Simulation(int argc, const char** argv)
 Simulation::Simulation(const std::string& simulation_name)
     : Simulation(simulation_name, [](auto* param) {}) {}
 
-template <typename TSetParamLambda>
 Simulation::Simulation(int argc, const char** argv,
-                          const TSetParamLambda& set_param) {
+                          const std::function<void(Param*)>& set_param) {
   Initialize(argc, argv, set_param);
 }
 
-template <typename TSetParamLambda>
 Simulation::Simulation(const std::string& simulation_name,
-                          const TSetParamLambda& set_param) {
+                          const std::function<void(Param*)>& set_param) {
   const char* argv[1] = {simulation_name.c_str()};
   Initialize(1, argv, set_param);
 }
@@ -155,9 +153,8 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
   scheduler_ = scheduler;
 }
 
-template <typename TSetParamLambda>
 void Simulation::Initialize(int argc, const char** argv,
-                               const TSetParamLambda& set_param) {
+                               const std::function<void(Param*)>& set_param) {
   id_ = counter_++;
   Activate();
   InitializeUniqueName(ExtractSimulationName(argv[0]));
@@ -180,9 +177,8 @@ void Simulation::InitializeMembers() {
   scheduler_ = new Scheduler();
 }
 
-template <typename TSetParamLambda>
 void Simulation::InitializeRuntimeParams(int argc, const char** argv,
-                                            const TSetParamLambda& set_param) {
+                                            const std::function<void(Param*)>& set_param) {
   param_ = new Param();
 
   // Removing this line causes an unexplainable segfault due to setting the

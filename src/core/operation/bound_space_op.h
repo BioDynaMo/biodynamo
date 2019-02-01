@@ -17,6 +17,7 @@
 
 #include "core/simulation.h"
 #include "core/sim_object/sim_object.h"
+#include "core/param/param.h"
 
 namespace bdm {
 

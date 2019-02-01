@@ -23,70 +23,71 @@
 namespace bdm {
 namespace displacement_op_test_internal {
 
-template <typename TCell = Cell, typename TSimulation = Simulation>
 void RunTest() {
-  TSimulation simulation("displacement_op_test_RunTest");
+  Simulation simulation("displacement_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
 
-  const auto* cells = rm->template Get<Cell>();
+  auto ref_uid = SoUidGenerator::Get()->GetLastId();
 
-  // Cell 1
-  TCell cell1;
-  cell1.SetAdherence(0.3);
-  cell1.SetDiameter(9);
-  cell1.SetMass(1.4);
-  cell1.SetPosition({0, 0, 0});
+  // cell 0
+  Cell* cell0 = new Cell();
+  cell0->SetAdherence(0.3);
+  cell0->SetDiameter(9);
+  cell0->SetMass(1.4);
+  cell0->SetPosition({0, 0, 0});
   // cell.SetTractorForce(tractor_force);
-  rm->push_back(cell1);
+  rm->push_back(cell0);
 
-  // Cell 2
-  TCell cell2;
-  cell2.SetAdherence(0.4);
-  cell2.SetDiameter(11);
-  cell2.SetMass(1.1);
-  cell2.SetPosition({0, 5, 0});
-  rm->push_back(cell2);
+  // cell 1
+  Cell* cell1 = new Cell();
+  cell1->SetAdherence(0.4);
+  cell1->SetDiameter(11);
+  cell1->SetMass(1.1);
+  cell1->SetPosition({0, 5, 0});
+  rm->push_back(cell1);
 
   simulation.GetGrid()->Initialize();
 
   // execute operation
-  DisplacementOp<> op;
-  rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle) { op(sim_object); });
+  DisplacementOp op;
+  rm->ApplyOnAllElements([&](auto* sim_object) { op(sim_object); });
 
   // check results
-  // cell 1
-  auto final_position = (*cells)[0].GetPosition();
+  // cell 0
+  Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 0));
+  Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 1));
+  auto final_position = final_cell0->GetPosition();
   EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
   EXPECT_NEAR(-0.07797206232558615, final_position[1],
               abs_error<double>::value);
   EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
-  // cell 2
-  final_position = (*cells)[1].GetPosition();
+  // cell 1
+  final_position = final_cell1->GetPosition();
   EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
   EXPECT_NEAR(5.0980452768658333, final_position[1], abs_error<double>::value);
   EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
 
   // check if tractor_force has been reset to zero
-  // cell 1
-  auto final_tf = (*cells)[0].GetTractorForce();
+  // cell 0
+  auto final_tf = final_cell0->GetTractorForce();
   EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
   EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
   EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
-  // cell 2
-  final_tf = (*cells)[1].GetTractorForce();
+  // cell 1
+  final_tf = final_cell1->GetTractorForce();
   EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
   EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
   EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
 
   // remaining fields should remain unchanged
+  // cell 0
+  EXPECT_NEAR(0.3, final_cell0->GetAdherence(), abs_error<double>::value);
+  EXPECT_NEAR(9, final_cell0->GetDiameter(), abs_error<double>::value);
+  EXPECT_NEAR(1.4, final_cell0->GetMass(), abs_error<double>::value);
   // cell 1
-  EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<double>::value);
-  EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<double>::value);
-  // cell 2
-  EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<double>::value);
-  EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<double>::value);
+  EXPECT_NEAR(0.4, final_cell1->GetAdherence(), abs_error<double>::value);
+  EXPECT_NEAR(11, final_cell1->GetDiameter(), abs_error<double>::value);
+  EXPECT_NEAR(1.1, final_cell1->GetMass(), abs_error<double>::value);
 }
 
 }  // namespace displacement_op_test_internal

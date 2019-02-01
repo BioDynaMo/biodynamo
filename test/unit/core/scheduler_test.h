@@ -24,6 +24,7 @@
 #include "core/sim_object/cell.h"
 #include "core/util/io.h"
 #include "unit/test_util/test_util.h"
+#include "core/simulation_backup.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -61,13 +62,13 @@ inline void RunRestoreTest() {
     remove(ROOTFILE);
 
     // create backup that will be restored later on
-    Cell cell;
-    cell.SetDiameter(10);  // important for grid to determine box size
+    Cell* cell = new Cell();
+    cell->SetDiameter(10);  // important for grid to determine box size
     rm->push_back(cell);
     SimulationBackup backup(ROOTFILE, "");
     backup.Backup(149);
     rm->Clear();
-    EXPECT_EQ(0u, rm->Get<Cell>()->size());
+    EXPECT_EQ(0u, rm->GetNumSimObjects());
   }
 
   // start restore validation
@@ -79,21 +80,21 @@ inline void RunRestoreTest() {
   // should be ignored
   scheduler.Simulate(100);
   EXPECT_EQ(0u, scheduler.execute_calls);
-  EXPECT_EQ(0u, rm->Get<Cell>()->size());
+  EXPECT_EQ(0u, rm->GetNumSimObjects());
 
   // Restore should happen within this call
   scheduler.Simulate(100);
   //   only 51 steps should be simulated
   EXPECT_EQ(51u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 
   // add element to see if if restore happens again
-  rm->push_back(Cell());
+  rm->push_back(new Cell());
 
   // normal simulation - no restore
   scheduler.Simulate(100);
   EXPECT_EQ(151u, scheduler.execute_calls);
-  EXPECT_EQ(2u, rm->Get<Cell>()->size());
+  EXPECT_EQ(2u, rm->GetNumSimObjects());
 
   remove(ROOTFILE);
 }
@@ -109,8 +110,8 @@ inline void RunBackupTest() {
 
   remove(ROOTFILE);
 
-  Cell cell;
-  cell.SetDiameter(10);  // important for grid to determine box size
+  Cell* cell = new Cell();
+  cell->SetDiameter(10);  // important for grid to determine box size
   rm->push_back(cell);
 
   TestSchedulerBackup scheduler;

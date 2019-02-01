@@ -24,23 +24,23 @@ TEST(SchedulerTest, NoRestoreFile) {
 
   remove(ROOTFILE);
 
-  Cell cell;
-  cell.SetDiameter(10);  // important for grid to determine box size
+  Cell* cell = new Cell();
+  cell->SetDiameter(10);  // important for grid to determine box size
   rm->push_back(cell);
 
   // start restore validation
   TestSchedulerRestore scheduler;
   scheduler.Simulate(100);
   EXPECT_EQ(100u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 
   scheduler.Simulate(100);
   EXPECT_EQ(200u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 
   scheduler.Simulate(100);
   EXPECT_EQ(300u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 }
 
 TEST(SchedulerTest, Restore) { RunRestoreTest(); }
@@ -76,7 +76,7 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   auto* grid = simulation.GetGrid();
   auto* scheduler = simulation.GetScheduler();
 
-  Cell cell(10);
+  Cell* cell = new Cell(10);
   rm->push_back(cell);
   scheduler->Simulate(1);
 

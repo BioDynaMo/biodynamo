@@ -12,14 +12,29 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/core/biology_module/biology_module_test.h"
+#include <gtest/gtest.h>
+#include "core/biology_module/biology_module.h"
 
 namespace bdm {
 
-TEST(BiologyModuleUtilTest, RunVisitor) { RunRunVisitor(); }
+/// Helper class to test run visitor
+struct TestBiologyModule : public BaseBiologyModule {
+  TestBiologyModule() : BaseBiologyModule(0, 0) {}
+  explicit TestBiologyModule(EventId copy_event, EventId remove_event = 0) : BaseBiologyModule(copy_event, remove_event) {}
+
+  TestBiologyModule(std::initializer_list<EventId> copy_events,
+                    std::initializer_list<EventId> remove_events = {})  : BaseBiologyModule(copy_events, remove_events) {}
+  virtual ~TestBiologyModule() {}
+
+  void Run(SimObject* so) override {}
+
+  BaseBiologyModule* GetInstance() const override { return new TestBiologyModule(); };
+
+  BDM_CLASS_DEF_NV(TestBiologyModule, 1);
+};
 
 TEST(BaseBiologyModuleTest, CopyNever) {
-  BaseBiologyModule bbm;
+  TestBiologyModule bbm;
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
@@ -28,7 +43,7 @@ TEST(BaseBiologyModuleTest, CopyNever) {
 }
 
 TEST(BaseBiologyModuleTest, CopyAlways) {
-  BaseBiologyModule bbm(gAllEventIds);
+  TestBiologyModule bbm(gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
@@ -38,7 +53,7 @@ TEST(BaseBiologyModuleTest, CopyAlways) {
 
 TEST(BaseBiologyModuleTest, CopyOnSingleEvent) {
   uint64_t one = 1;
-  BaseBiologyModule bbm(one << 5);
+  TestBiologyModule bbm(one << 5);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
@@ -52,7 +67,7 @@ TEST(BaseBiologyModuleTest, CopyOnSingleEvent) {
 
 TEST(BaseBiologyModuleTest, CopyOnEventList) {
   uint64_t one = 1;
-  BaseBiologyModule bbm({one << 5, one << 19, one << 49});
+  TestBiologyModule bbm({one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
@@ -65,9 +80,9 @@ TEST(BaseBiologyModuleTest, CopyOnEventList) {
 }
 
 TEST(BaseBiologyModuleTest, RemoveNever) {
-  BaseBiologyModule bbm;
+  TestBiologyModule bbm;
   EventId any = 1;
-  BaseBiologyModule bbm1(any, gNullEventId);
+  TestBiologyModule bbm1(any, gNullEventId);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
@@ -78,7 +93,7 @@ TEST(BaseBiologyModuleTest, RemoveNever) {
 
 TEST(BaseBiologyModuleTest, RemoveAlways) {
   EventId any = 1;
-  BaseBiologyModule bbm(any, gAllEventIds);
+  TestBiologyModule bbm(any, gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
@@ -89,7 +104,7 @@ TEST(BaseBiologyModuleTest, RemoveAlways) {
 TEST(BaseBiologyModuleTest, RemoveOnSingleEvent) {
   uint64_t one = 1;
   EventId any = 1;
-  BaseBiologyModule bbm(any, one << 5);
+  TestBiologyModule bbm(any, one << 5);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
@@ -104,7 +119,7 @@ TEST(BaseBiologyModuleTest, RemoveOnSingleEvent) {
 TEST(BaseBiologyModuleTest, RemoveOnEventList) {
   uint64_t one = 1;
   EventId any = 1;
-  BaseBiologyModule bbm({any}, {one << 5, one << 19, one << 49});
+  TestBiologyModule bbm({any}, {one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;

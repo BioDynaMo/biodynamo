@@ -209,7 +209,7 @@ class Cell : public SimObject {
 
   void SetAdherence(double adherence) { adherence_ = adherence; }
 
-  void SetDiameter(double diameter) {
+  void SetDiameter(double diameter) override {
     diameter_ = diameter;
     UpdateVolume();
   }
