@@ -187,6 +187,8 @@ class SimObject {
 
   virtual double GetDiameter() const = 0;
 
+  virtual void SetDiameter(double diameter) = 0;
+
   void RemoveFromSimulation() const;
 
   virtual void EventConstructor(const Event& event, SimObject* other, uint64_t new_oid = 0);

@@ -18,6 +18,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <functional>
 
 #include "core/container/fixed_size_vector.h"
 #include "core/resource_manager.h"
@@ -99,8 +100,7 @@ class InPlaceExecutionContext {
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
   /// Could be used to cache the results.
-  template <typename TLambda>
-  void ForEachNeighborWithinRadius(const TLambda& lambda, const SimObject& query,
+  void ForEachNeighborWithinRadius(const std::function<void(const SimObject*)>& lambda, const SimObject& query,
                                    double squared_radius) {
     auto* grid = Simulation::GetActive()->GetGrid();
     return grid->ForEachNeighborWithinRadius(lambda, query, squared_radius);

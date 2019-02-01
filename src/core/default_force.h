@@ -24,6 +24,7 @@
 #include "core/util/math.h"
 #include "core/util/random.h"
 #include "core/shape.h"
+#include "core/sim_object/sim_object.h"
 
 namespace bdm {
 

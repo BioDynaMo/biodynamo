@@ -17,6 +17,7 @@
 
 #include <cstdint>
 #include "core/simulation.h"
+#include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
 
 namespace bdm {
@@ -25,8 +26,6 @@ class DividingCellOp {
  public:
   DividingCellOp() {}
   ~DividingCellOp() {}
-  DividingCellOp(const DividingCellOp&) = delete;
-  DividingCellOp& operator=(const DividingCellOp&) = delete;
 
   void operator()(SimObject* sim_object) const {
     if(Cell* cell = dynamic_cast<Cell*>(sim_object)) {

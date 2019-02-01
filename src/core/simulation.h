@@ -16,6 +16,7 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 #include "core/util/random.h"
 #include "core/util/root.h"
 
@@ -51,12 +52,10 @@ struct Simulation {
   /// Creation of a new simulation automatically activates it.
   explicit Simulation(const std::string& simulation_name);
 
-  template <typename TSetParamLambda>
-  Simulation(int argc, const char** argv, const TSetParamLambda& set_param);
+  Simulation(int argc, const char** argv, const std::function<void(Param*)>& set_param);
 
-  template <typename TSetParamLambda>
   Simulation(const std::string& simulation_name,
-             const TSetParamLambda& set_param);
+             const std::function<void(Param*)>& set_param);
 
   ~Simulation();
 
@@ -124,9 +123,8 @@ struct Simulation {
   std::string output_dir_;  //!
 
   /// Initialize Simulation
-  template <typename TSetParamLambda>
   void Initialize(int argc, const char** argv,
-                  const TSetParamLambda& set_param);
+                  const std::function<void(Param*)>& set_param);
 
   /// Initialize data members that have a dependency on Simulation
   void InitializeMembers();
@@ -140,9 +138,8 @@ struct Simulation {
   /// This function parses command line parameters and the configuration file.
   /// @param argc argument count from main function
   /// @param argv argument vector from main function
-  template <typename TSetParamLambda>
   void InitializeRuntimeParams(int argc, const char** argv,
-                               const TSetParamLambda& set_param);
+                               const std::function<void(Param*)>& set_param);
 
   /// This function initialzes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);
