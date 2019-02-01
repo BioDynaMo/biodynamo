@@ -180,7 +180,7 @@ class SimObject {
 
   virtual const std::array<double, 3>& GetPosition() const = 0;
 
-  virtual void SetPosition(const std::array<double, 3>& pos) const = 0;
+  virtual void SetPosition(const std::array<double, 3>& pos) = 0;
 
   virtual double GetDiameter() const = 0;
 
@@ -220,7 +220,7 @@ class SimObject {
   void BiologyModuleEventHandler(const Event &event, decltype(biology_modules_) *other1,
                                  decltype(biology_modules_) *other2);
 
-  BDM_ROOT_CLASS_DEF_OVERRIDE(SimObject, 1)
+  BDM_ROOT_CLASS_DEF(SimObject, 1)
 };
 
 }  // namespace bdm

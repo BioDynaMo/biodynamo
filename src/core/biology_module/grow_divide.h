@@ -19,6 +19,7 @@
 #include "core/event/cell_division_event.h"
 #include "core/util/root.h"
 #include "core/util/log.h"
+#include "core/sim_object/cell.h"
 
 namespace bdm {
 

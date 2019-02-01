@@ -16,11 +16,13 @@
 #define CORE_BIOLOGY_MODULE_REGULATE_GENES_H_
 
 #include <vector>
+#include <functional>
 
 #include "core/biology_module/biology_module.h"
 #include "core/param/param.h"
 #include "core/simulation.h"
 #include "core/util/root.h"
+#include "core/scheduler.h"
 
 namespace bdm {
 
