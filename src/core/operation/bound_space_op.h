@@ -21,7 +21,7 @@
 
 namespace bdm {
 
-void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
+inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
   // Need to create a small distance from the positive edge of each dimension;
   // otherwise it will fall out of the boundary of the simulation space
   double eps = 1e-10;
