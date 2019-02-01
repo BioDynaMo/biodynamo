@@ -26,6 +26,7 @@
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/util/log.h"
+#include "core/util/io.h"
 #include "core/util/string.h"
 #include "version.h"
 
@@ -121,7 +122,7 @@ const Param* Simulation::GetParam() const {
   return param_;
 }
 
-Grid<Simulation>* Simulation::GetGrid() {
+Grid* Simulation::GetGrid() {
   return grid_;
 }
 

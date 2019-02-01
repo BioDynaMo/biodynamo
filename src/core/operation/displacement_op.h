@@ -28,30 +28,17 @@
 #include "core/param/param.h"
 #include "core/shape.h"
 #include "core/util/log.h"
-
+#include "core/scheduler.h"
 #include "core/simulation.h"
 
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TSimulation = Simulation>
 class DisplacementOp {
  public:
   DisplacementOp() {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    rm->template ApplyOnAllTypes(
-        [this](auto* container, uint16_t numa_node, uint16_t type_idx) {
-          using Container = std::remove_pointer_t<decltype(container)>;
-          using SimObject = typename Container::value_type;
-          if (SimObject::GetShape() != Shape::kSphere) {
-            Log::Warning(
-                "DisplacementOp",
-                "Currently GPU/FPGA implementation only supports spherical "
-                "shapes. Therefore, the CPU implementation will be used.");
-            this->force_cpu_implementation_ = true;
-          }
-        });
+    // FIXME check if there are non spherical shapes is not possible in the
+    // dynamic solution.
   }
 
   ~DisplacementOp() {}
@@ -102,12 +89,12 @@ class DisplacementOp {
   /// if this condition is detected. In this case `force_cpu_implementation_`
   /// will be set to true.
   bool force_cpu_implementation_ = false;
-  DisplacementOpCpu<> cpu_;
+  DisplacementOpCpu cpu_;
 #ifdef USE_CUDA
-  DisplacementOpCuda<> cuda_;  // NOLINT
+  DisplacementOpCuda cuda_;  // NOLINT
 #endif
 #ifdef USE_OPENCL
-  DisplacementOpOpenCL<> opencl_;
+  DisplacementOpOpenCL opencl_;
 #endif
 };
 

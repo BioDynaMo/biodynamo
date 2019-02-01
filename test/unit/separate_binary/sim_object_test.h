@@ -33,7 +33,7 @@ struct CopyTestBiologyModule {
   CopyTestBiologyModule(const CellDivisionEvent& event,
                         CopyTestBiologyModule* other) {
     gCellDivisionEventCtorCalled = true;
-    expected_event_ = event.kEventId;
+    expected_event_ = event.GetId();
     copy_ = other->copy_;
   }
 

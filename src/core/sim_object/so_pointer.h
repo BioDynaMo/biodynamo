@@ -18,12 +18,13 @@
 #include <cstdint>
 #include <limits>
 #include <ostream>
-#include <type_traits>
 
-#include "core/simulation.h"
-#include "core/simulation_backup.h"
+#include "core/sim_object/so_uid.h"
+#include "core/util/root.h"
 
 namespace bdm {
+
+class SimObject;
 
 /// Simulation object pointer. Required to point into simulation objects with
 /// `Soa` backend. `SoaRef` has the drawback that its size depends on the number
@@ -38,45 +39,29 @@ namespace bdm {
 /// `ResourceManager`. Separate containers will not be serialized correctly!
 class SoPointer {
  public:
-  explicit SoPointer(SoUid uid) : uid_(uid) {}
+  explicit SoPointer(SoUid uid);
 
   /// constructs an SoPointer object representing a nullptr
-  SoPointer() {}
+  SoPointer();
 
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
-  bool operator==(std::nullptr_t) const {
-    return uid_ == std::numeric_limits<uint64_t>::max();
-  }
+  bool operator==(std::nullptr_t) const;
 
   /// Not equal operator that enables the following statement `so_ptr !=
   /// nullptr;`
-  bool operator!=(std::nullptr_t) const { return !this->operator==(nullptr); }
+  bool operator!=(std::nullptr_t) const;
 
-  bool operator==(const SoPointer& other) const { return uid_ == other.uid_; }
+  bool operator==(const SoPointer& other) const;
 
   /// Assignment operator that changes the internal representation to nullptr.
   /// Makes the following statement possible `so_ptr = nullptr;`
-  SoPointer& operator=(std::nullptr_t) {
-    uid_ = std::numeric_limits<uint64_t>::max();
-    return *this;
-  }
+  SoPointer& operator=(std::nullptr_t);
 
-  SimObject* operator->() {
-    assert(*this != nullptr);
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return ctxt->GetSimObject(uid_);
-  }
+  SimObject* operator->();
 
-  const SimObject* operator->() const {
-    assert(*this != nullptr);
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return ctxt->GetConstSimObject(uid_);
-  }
+  const SimObject* operator->() const;
 
-  friend std::ostream& operator<<(std::ostream& str, const SoPointer& so_ptr) {
-    str << "{ uid: " << so_ptr.uid_ << "}";
-    return str;
-  }
+  friend std::ostream& operator<<(std::ostream& str, const SoPointer& so_ptr);
 
  private:
   SoUid uid_ = std::numeric_limits<uint64_t>::max();

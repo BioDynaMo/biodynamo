@@ -25,6 +25,8 @@
 
 namespace bdm {
 
+class Simulation;
+
 struct Param {
   // simulation values ---------------------------------------------------------
 
@@ -292,6 +294,7 @@ struct Param {
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
+  friend class Simulation;
   BDM_CLASS_DEF_NV(Param, 1);
 };
 

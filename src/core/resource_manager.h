@@ -41,6 +41,7 @@
 
 #include "core/diffusion_grid.h"
 #include "core/sim_object/so_uid.h"
+#include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
 #include "core/util/numa.h"
 #include "core/util/root.h"
@@ -63,11 +64,6 @@ namespace bdm {
 /// a specific simulation. ResourceManager extracts Backend and SimObjectTypes.
 class ResourceManager {
  public:
-  /// Returns the number of simulation object types
-  static constexpr size_t NumberOfTypes() {
-    return std::tuple_size<TupleOfSOContainers>::value;
-  }
-
   explicit ResourceManager(TRootIOCtor* r) {}
 
   /// Default constructor. Unfortunately needs to be public although it is
@@ -92,7 +88,7 @@ class ResourceManager {
   }
 
   SimObject* GetSimObject(SoUid uid) {
-    sim_objects_[uid];
+    return sim_objects_[uid];
   }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
@@ -163,9 +159,9 @@ class ResourceManager {
   ///     rm->ApplyOnAllElements([](auto&& element) {
   ///                              std::cout << element << std::endl;
   ///                          });
-  void ApplyOnAllElements(std::function<void(SimObject&)>& function) {
-    for(auto it = sim_objects_.begin(); i != sim_objects_.end(); ++it) {
-      function(*(it->second));
+  void ApplyOnAllElements(const std::function<void(SimObject*)>& function) {
+    for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
+      function(it->second);
     }
   }
 
@@ -173,10 +169,10 @@ class ResourceManager {
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallel(std::function<void(SimObject&)>& function) {
+  void ApplyOnAllElementsParallel(const std::function<void(SimObject*)>& function) {
     #pragma omp parallel
-    for(auto it = sim_objects_.begin(); i != sim_objects_.end(); ++it) {
-      function(*(it->second));
+    for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
+      function(it->second);
     }
   }
 
@@ -187,10 +183,11 @@ class ResourceManager {
   /// \param chunk number of sim objects that are assigned to a thread (batch
   /// size)
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallelDynamic(uint64_t chunk, std::function<void(SimObject&)>& function) {
-    #pragma omp parallel schedule(dynamic, chunk)
-    for(auto it = sim_objects_.begin(); i != sim_objects_.end(); ++it) {
-      function(*(it->second));
+  void ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*)>& function) {
+    // #pragma omp parallel for schedule(dynamic, chunk)
+    // FIXME
+    for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
+      function(it->second);
     }
   }
 
@@ -224,7 +221,7 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void push_back(SimObject* so) {  // NOLINT
-    sim_objects_[so.GetUid()] = so;
+    sim_objects_[so->GetUid()] = so;
   }
 
   /// Removes the simulation object with the given uid.\n

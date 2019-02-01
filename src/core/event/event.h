@@ -21,11 +21,6 @@
 
 namespace bdm {
 
-// TODO documentation
-struct Event {
-  virtual ~Event() {}
-};
-
 /// EventId is used inside biology modules to determine if a biology module
 /// should be copied if a new simulation object is created.
 /// Possible events are cell division, neurite branching, ...\n
@@ -67,6 +62,13 @@ class UniqueEventIdFactory {
   UniqueEventIdFactory() {}
   std::recursive_mutex mutex_;
   uint64_t counter_ = 0;
+};
+
+// TODO documentation
+struct Event {
+  virtual ~Event() {}
+
+  virtual EventId GetId() const = 0;
 };
 
 }  // namespace bdm

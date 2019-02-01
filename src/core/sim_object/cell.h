@@ -190,13 +190,13 @@ class Cell : public SimObject {
 
   double GetAdherence() const { return adherence_; }
 
-  double GetDiameter() const { return diameter_; }
+  double GetDiameter() const override { return diameter_; }
 
   double GetMass() const { return density_ * volume_; }
 
   double GetDensity() const { return density_; }
 
-  const std::array<double, 3>& GetPosition() const { return position_; }
+  const std::array<double, 3>& GetPosition() const override { return position_; }
 
   const std::array<double, 3>& GetTractorForce() const {
     return tractor_force_;
@@ -220,7 +220,7 @@ class Cell : public SimObject {
 
   void SetDensity(double density) { density_ = density; }
 
-  void SetPosition(const std::array<double, 3>& position) {
+  void SetPosition(const std::array<double, 3>& position) override {
     position_ = position;
   }
 
@@ -255,7 +255,7 @@ class Cell : public SimObject {
     position_[2] += delta[2];
   }
 
-  std::array<double, 3> CalculateDisplacement(double squared_radius) {
+  std::array<double, 3> CalculateDisplacement(double squared_radius) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied
@@ -355,7 +355,7 @@ class Cell : public SimObject {
     return movement_at_next_step;
   }
 
-  void ApplyDisplacement(const std::array<double, 3>& displacement);
+  void ApplyDisplacement(const std::array<double, 3>& displacement) override;
 
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
