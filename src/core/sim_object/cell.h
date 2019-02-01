@@ -53,8 +53,6 @@ class Cell : public SimObject {
     return {"position_", "diameter_"};
   }
 
-  static constexpr Shape GetShape() { return Shape::kSphere; }
-
   Cell() : density_(1.0) {}
   explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
@@ -132,6 +130,8 @@ class Cell : public SimObject {
   }
 
   virtual ~Cell() {}
+
+  Shape GetShape() const override { return Shape::kSphere; }
 
   /// \brief Divide this cell.
   ///
