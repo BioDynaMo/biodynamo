@@ -30,6 +30,7 @@
 #include "core/sim_object/so_uid.h"
 #include "core/util/root.h"
 #include "core/util/macros.h"
+#include "core/shape.h"
 
 namespace bdm {
 
@@ -145,6 +146,8 @@ class SimObject {
 
   /// Create a new instance of this object using the default constructor.
   virtual SimObject* GetInstance() const = 0;
+
+  virtual Shape GetShape() const = 0;
 
   virtual void RunDiscretization();
 
