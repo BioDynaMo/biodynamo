@@ -17,6 +17,7 @@
 
 #include "core/event/event.h"
 #include "core/util/type.h"
+#include "core/sim_object/sim_object.h"
 
 namespace bdm {
 
@@ -46,6 +47,8 @@ struct BaseBiologyModule {
 
   BaseBiologyModule(const BaseBiologyModule& other)
       : copy_mask_(other.copy_mask_), remove_mask_(other.remove_mask_) {}
+
+  virtual ~BaseBiologyModule() {}
 
   /// Create a new instance of this object using the default constructor.
   virtual BaseBiologyModule* GetInstance() const = 0;

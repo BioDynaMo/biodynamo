@@ -43,7 +43,7 @@ void RunTest() {
   EXPECT_EQ(2u, rm->GetNumSimObjects());
 
   DividingCellOp op;
-  op();
+  rm->ApplyOnAllElementsParallel(op);
 
   ctxt->TearDownIteration();
 

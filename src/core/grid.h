@@ -39,6 +39,7 @@
 #include "core/container/parallel_resize_vector.h"
 #include "core/param/param.h"
 #include "core/util/log.h"
+#include "core/resource_manager.h"
 
 namespace bdm {
 
@@ -86,7 +87,6 @@ class CircularBuffer {
 };
 
 /// A class that represents Cartesian 3D grid
-template <typename TSimulation = Simulation>
 class Grid {
  public:
   /// A single unit cube of the grid
@@ -145,17 +145,16 @@ class Grid {
         return *this;
       }
 
-      const SimObject*& operator*() const { return current_value_; }
+      SimObject* operator*() const { return current_value_; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
-      Grid<TSimulation>* grid_;
+      Grid* grid_;
       /// The current simulation object to be considered
       SimObject* current_value_;
       /// The remain number of simulation objects to consider
       int countdown_ = 0;
     };
 
-    template <typename TGrid = Grid<TSimulation>>
     Iterator begin() const {  // NOLINT
       return Iterator(Simulation::GetActive()->GetGrid(), this);
     }
@@ -226,8 +225,6 @@ class Grid {
     kMedium, /**< The closest 18  neighboring boxes */
     kHigh    /**< The closest 26  neighboring boxes */
   };
-
-  using ResourceManager_t = typename Simulation::ResourceManager_t;
 
   Grid() {}
 
@@ -320,12 +317,12 @@ class Grid {
       successors_.reserve(rm->GetNumSimObjects());
 
       // Assign simulation objects to boxes
-      rm->ApplyOnAllElementsParallelDynamic(1000, [this](SimObject& sim_object) {
-            const auto& position = sim_object.GetPosition();
+      rm->ApplyOnAllElementsParallelDynamic(1000, [this](SimObject* sim_object) {
+            const auto& position = sim_object->GetPosition();
             auto idx = this->GetBoxIndex(position);
             auto box = this->GetBoxPointer(idx);
             box->AddObject(sim_object, &successors_);
-            sim_object.SetBoxIdx(idx);
+            sim_object->SetBoxIdx(idx);
           });
       auto* param = Simulation::GetActive()->GetParam();
       if (param->bound_space_) {
@@ -736,9 +733,9 @@ class Grid {
 
     std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 
-    rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject& so) {
+    rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject* so) {
       auto tid = omp_get_thread_num();
-      const auto& position = so.GetPosition();
+      const auto& position = so->GetPosition();
       // x
       if (position[0] < xmin[tid][0]) {
         xmin[tid][0] = position[0];
@@ -761,7 +758,7 @@ class Grid {
         zmax[tid][0] = position[2];
       }
       // larget object
-      auto diameter = so.GetDiameter();
+      auto diameter = so->GetDiameter();
       if (diameter > largest[tid][0]) {
         largest[tid][0] = diameter;
       }

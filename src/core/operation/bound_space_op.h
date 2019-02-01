@@ -16,11 +16,11 @@
 #define CORE_OPERATION_BOUND_SPACE_OP_H_
 
 #include "core/simulation.h"
+#include "core/sim_object/sim_object.h"
 
 namespace bdm {
 
-template <typename TSO>
-void ApplyBoundingBox(TSO* sim_object, double lb, double rb) {
+void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
   // Need to create a small distance from the positive edge of each dimension;
   // otherwise it will fall out of the boundary of the simulation space
   double eps = 1e-10;
@@ -42,21 +42,10 @@ class BoundSpace {
   BoundSpace() {}
   ~BoundSpace() {}
 
-  template <typename TContainer, typename TSimulation = Simulation>
-  void operator()(TContainer* sim_objects, uint16_t numa_node,
-                  uint16_t type_idx) const {
-    // set new positions after all updates have been calculated
-    // otherwise some sim_objects would see neighbors with already updated
-    // positions
-    // which would lead to inconsistencies
-    auto* sim = Simulation::GetActive();
-    auto* param = sim->GetParam();
-#pragma omp parallel for
-    for (size_t i = 0; i < sim_objects->size(); i++) {
-      auto&& sim_object = (*sim_objects)[i];
-      if (param->bound_space_) {
-        ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);
-      }
+  void operator()(SimObject* sim_object) const {
+    auto* param = Simulation::GetActive()->GetParam();
+    if (param->bound_space_) {
+      ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
     }
   }
 };

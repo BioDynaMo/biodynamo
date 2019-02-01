@@ -34,7 +34,6 @@ class DiffusionOp {
   DiffusionOp() {}
   virtual ~DiffusionOp() {}
 
-  template <typename TSimulation = Simulation>
   void operator()() {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();

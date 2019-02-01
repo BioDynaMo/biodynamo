@@ -37,6 +37,8 @@ struct CellDivisionEvent : public Event {
 
   virtual ~CellDivisionEvent() {};
 
+  EventId GetId() const override { return kEventId; }
+
   /// volume_ratio_ the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives
   /// equal cells.
   double volume_ratio_;

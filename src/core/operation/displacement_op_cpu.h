@@ -24,17 +24,17 @@
 #include "core/param/param.h"
 #include "core/simulation.h"
 #include "core/util/math.h"
+#include "core/sim_object/sim_object.h"
+#include "core/scheduler.h"
 
 namespace bdm {
 
-template <typename TSimulation = Simulation>
 class DisplacementOpCpu {
  public:
   DisplacementOpCpu() {}
   ~DisplacementOpCpu() {}
 
-  template <typename TSimObject>
-  void operator()(TSimObject&& sim_object) {
+  void operator()(SimObject* sim_object) {
     auto* sim = Simulation::GetActive();
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
@@ -50,10 +50,10 @@ class DisplacementOpCpu {
     }
 
     const auto& displacement =
-        sim_object.CalculateDisplacement(squared_radius_);
-    sim_object.ApplyDisplacement(displacement);
+        sim_object->CalculateDisplacement(squared_radius_);
+    sim_object->ApplyDisplacement(displacement);
     if (param->bound_space_) {
-      ApplyBoundingBox(&sim_object, param->min_bound_, param->max_bound_);
+      ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
     }
   }
 

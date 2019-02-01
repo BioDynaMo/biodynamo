@@ -60,7 +60,7 @@ TEST(SimObjectTest, CopyBiologyModules) {
   TestSimObject src;
   CellDivisionEvent event;
   CopyTestBiologyModule module;
-  module.expected_event_ = event.kEventId;
+  module.expected_event_ = event.GetId();
   src.AddBiologyModule(module);
   gCellDivisionEventCtorCalled = false;
 
@@ -81,7 +81,7 @@ TEST(SimObjectTest, CopyBiologyModulesIsNotCopied) {
   CellDivisionEvent event;
   CopyTestBiologyModule module;
   module.copy_ = false;
-  module.expected_event_ = event.kEventId;
+  module.expected_event_ = event.GetId();
   src.AddBiologyModule(module);
   gCellDivisionEventCtorCalled = false;
 
@@ -99,7 +99,7 @@ TEST(SimObjectTest, Remove) {
   TestSimObject dest;
   CellDivisionEvent event;
   RemoveTestBiologyModule module;
-  module.expected_event_ = event.kEventId;
+  module.expected_event_ = event.GetId();
   src.AddBiologyModule(module);
   dest.AddBiologyModule(module);
 
@@ -117,7 +117,7 @@ TEST(SimObjectTest, EventHandler) {
   TestSimObject dest;
   CellDivisionEvent event;
   EventHandlerBm module;
-  module.expected_event_ = event.kEventId;
+  module.expected_event_ = event.GetId();
   src.AddBiologyModule(module);
   dest.AddBiologyModule(module);
   gCellDivisionEventEventHandlerCalled = false;

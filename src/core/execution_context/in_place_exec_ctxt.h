@@ -21,6 +21,7 @@
 
 #include "core/container/fixed_size_vector.h"
 #include "core/resource_manager.h"
+#include "core/grid.h"
 
 namespace bdm {
 
@@ -65,7 +66,7 @@ class InPlaceExecutionContext {
     // new sim objects
     auto* rm = Simulation::GetActive()->GetResourceManager();
     new_sim_objects_.ApplyOnAllElements(
-        [&](auto&& sim_object) { rm->push_back(&sim_object); });
+        [&](auto* sim_object) { rm->push_back(sim_object); });
     new_sim_objects_.Clear();
 
     // removed sim objects
@@ -80,11 +81,11 @@ class InPlaceExecutionContext {
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
   template <typename TFirstOp, typename... TOps>
-  void Execute(SimObject& so, TFirstOp first_op, TOps... other_ops) {
+  void Execute(SimObject* so, TFirstOp first_op, TOps... other_ops) {
     auto* grid = Simulation::GetActive()->GetGrid();
     auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
     if (nb_mutex_builder != nullptr) {
-      auto mutex = nb_mutex_builder->GetMutex(so.GetBoxIdx());
+      auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
       std::lock_guard<decltype(mutex)> guard(mutex);
       ExecuteInternal(so, first_op, other_ops...);
     } else {
@@ -102,12 +103,12 @@ class InPlaceExecutionContext {
   void ForEachNeighborWithinRadius(const TLambda& lambda, const SimObject& query,
                                    double squared_radius) {
     auto* grid = Simulation::GetActive()->GetGrid();
-    return grid->ForEachNeighborWithinRadius(lambda, query, squared_radius);
+    return grid->ForEachNeighborWithinRadius(lambda, query, squared_radius);
   }
 
   SimObject* GetSimObject(SoUid uid) {
     if (new_sim_objects_.Contains(uid)) {
-      return new_sim_objects_.template GetSimObject<TSo>(uid);
+      return new_sim_objects_.GetSimObject(uid);
     } else {
       auto* rm = Simulation::GetActive()->GetResourceManager();
       return rm->GetSimObject(uid);
@@ -142,14 +143,14 @@ class InPlaceExecutionContext {
 
   /// Execute a single operation on a simulation object
   template <typename TFirstOp>
-  void ExecuteInternal(SimObject& so, TFirstOp first_op) {
+  void ExecuteInternal(SimObject* so, TFirstOp first_op) {
     first_op(so);
   }
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
   template <typename TFirstOp, typename... TOps>
-  void ExecuteInternal(SimObject& so, TFirstOp first_op, TOps... other_ops) {
+  void ExecuteInternal(SimObject* so, TFirstOp first_op, TOps... other_ops) {
     first_op(so);
     ExecuteInternal(so, other_ops...);
   }
