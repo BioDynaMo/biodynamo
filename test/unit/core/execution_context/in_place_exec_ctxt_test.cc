@@ -195,8 +195,7 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
     num_neighbors[so->GetUid()] = nb_counter;
   };
 
-  rm->ApplyOnAllElementsParallel(
-      [&](SimObject* so) { ctxt->Execute(so, op); });
+  rm->ApplyOnAllElementsParallel([&](SimObject* so) { ctxt->Execute(so, op); });
 
   rm->ApplyOnAllElements([&](SimObject* so) {
     // expected diameter: initial value + num_neighbors + 1
