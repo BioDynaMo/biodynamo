@@ -32,8 +32,12 @@ namespace neuroscience {
 /// and the corresponding event handler
 /// NeuronSoma::EventHandler(const NewNeuriteExtensionEvent& event, TNeurite*
 /// neurite)
-struct NewNeuriteExtensionEvent {
+struct NewNeuriteExtensionEvent : public Event {
   static const EventId kEventId;
+
+  virtual ~NewNeuriteExtensionEvent() {};
+
+  EventId GetId() const override { return kEventId; }
 
   /// diameter the diameter of the new neurite
   double diameter_;

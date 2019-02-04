@@ -82,6 +82,7 @@ void Simulation::Restore(Simulation&& restored) {
   // param and rm
   *param_ = *restored.param_;
   *rm_ = std::move(*restored.rm_);
+  restored.rm_ = nullptr;
 
   // name_ and unique_name_
   InitializeUniqueName(restored.name_);

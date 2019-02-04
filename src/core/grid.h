@@ -479,11 +479,7 @@ class Grid {
   /// @param      query   The query object
   /// @param[in]  squared_radius  The search radius squared
   ///
-  /// @tparam     Lambda      The type of the lambda operation
-  /// @tparam     SO          The type of the simulation object
-  ///
-  template <typename Lambda, typename SO>
-  void ForEachNeighborWithinRadius(const Lambda& lambda, const SO& query,
+  void ForEachNeighborWithinRadius(const std::function<void(const SimObject*)>& lambda, const SimObject& query,
                                    double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();

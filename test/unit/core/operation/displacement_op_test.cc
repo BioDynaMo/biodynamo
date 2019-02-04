@@ -45,7 +45,9 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
 
   // execute operation
   DisplacementOp op;
-  rm->ApplyOnAllElements([&](auto* sim_object) { op(sim_object); });
+  for(uint64_t i = 0; i < 27; i++) {
+    op(rm->GetSimObject(ref_uid + i));
+  }
 
   // clang-format off
   EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 0)->GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});

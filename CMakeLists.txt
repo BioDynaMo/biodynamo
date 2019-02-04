@@ -246,18 +246,18 @@ if (test)
                           HEADERS ${TEST_HEADERS})
 
   #   separate test binaries - each source file is compiled into a separate binary
-  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
-  foreach(file ${TEST_SOURCES})
-    get_filename_component(filename ${file} NAME_WE)
-    set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/${filename}.h)
-    if (NOT EXISTS ${TEST_HEADER})
-      set(TEST_HEADER ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h)
-    endif()
-    bdm_add_test_executable("runBiodynamoTests_${filename}"
-                            SOURCES ${file}
-                            HEADERS ${TEST_HEADER})
-  endforeach()
+  # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
+  # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
+  # foreach(file ${TEST_SOURCES})
+  #   get_filename_component(filename ${file} NAME_WE)
+  #   set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/${filename}.h)
+  #   if (NOT EXISTS ${TEST_HEADER})
+  #     set(TEST_HEADER ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h)
+  #   endif()
+  #   bdm_add_test_executable("runBiodynamoTests_${filename}"
+  #                           SOURCES ${file}
+  #                           HEADERS ${TEST_HEADER})
+  # endforeach()
 
   # integration tests
   if (NOT coverage)

@@ -37,8 +37,12 @@ namespace neuroscience {
 /// , and the corresponding event handler
 /// NeuriteElementExt::EventHandler(const NeuriteBranchingEvent& event, TDaughter* left, TDaughter* right)
 // clang-format on
-struct NeuriteBranchingEvent {
+struct NeuriteBranchingEvent : public Event {
   static const EventId kEventId;
+
+  virtual ~NeuriteBranchingEvent() {};
+
+  EventId GetId() const override { return kEventId; }
 
   /// the fraction of the total old length devoted to the
   /// distal half (should be between 0 and 1).

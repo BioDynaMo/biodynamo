@@ -43,15 +43,7 @@ namespace bdm {
 /// Also removal of a sim object happens at the end of each iteration.
 class InPlaceExecutionContext {
  public:
-  InPlaceExecutionContext() {
-    // FIXME this doesn't work: must hold all new elements for all sim_objects
-    // processed by this thread.
-    // reserve enough memory to hold all new objects during one iteration of
-    // one sim object. If more objects would be created (using `New`),
-    // references would become invalid.
-    // Alternative: use container that doesn't migrate objects.
-    new_sim_objects_.Reserve(10);
-  }
+  InPlaceExecutionContext() {}
 
   /// This function is called at the beginning of each iteration.
   /// This function is not thread-safe.
@@ -66,9 +58,9 @@ class InPlaceExecutionContext {
   void TearDownIteration() {
     // new sim objects
     auto* rm = Simulation::GetActive()->GetResourceManager();
-    new_sim_objects_.ApplyOnAllElements(
-        [&](auto* sim_object) { rm->push_back(sim_object); });
-    new_sim_objects_.Clear();
+    for(auto& el : new_sim_objects_) {
+      rm->push_back(el.second);
+    }
 
     // removed sim objects
     // remove them after adding new ones (maybe one has been removed
@@ -95,7 +87,7 @@ class InPlaceExecutionContext {
   }
 
   void push_back(SimObject* new_so) {
-    new_sim_objects_.push_back(new_so);
+    new_sim_objects_[new_so->GetUid()] = new_so;
   }
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
@@ -103,12 +95,13 @@ class InPlaceExecutionContext {
   void ForEachNeighborWithinRadius(const std::function<void(const SimObject*)>& lambda, const SimObject& query,
                                    double squared_radius) {
     auto* grid = Simulation::GetActive()->GetGrid();
-    return grid->ForEachNeighborWithinRadius(lambda, query, squared_radius);
+    grid->ForEachNeighborWithinRadius(lambda, query, squared_radius);
   }
 
   SimObject* GetSimObject(SoUid uid) {
-    if (new_sim_objects_.Contains(uid)) {
-      return new_sim_objects_.GetSimObject(uid);
+    auto search_it = new_sim_objects_.find(uid);
+    if (search_it != new_sim_objects_.end()) {
+      return search_it->second;
     } else {
       auto* rm = Simulation::GetActive()->GetResourceManager();
       return rm->GetSimObject(uid);
@@ -136,10 +129,8 @@ class InPlaceExecutionContext {
   /// iteration.
   std::vector<SoUid> remove_;
 
-  /// Use seperate ResourceManager to store new objects, before they are added
-  /// to the main ResourceManager. Using a ResourceManager adds
-  /// some memory overhead, but avoids code duplication.
-  ResourceManager new_sim_objects_;
+  /// Pointer to new sim objects
+  std::unordered_map<SoUid, SimObject*> new_sim_objects_;
 
   /// Execute a single operation on a simulation object
   template <typename TFirstOp>

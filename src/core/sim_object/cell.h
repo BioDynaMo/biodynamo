@@ -60,6 +60,8 @@ class Cell : public SimObject {
   explicit Cell(const std::array<double, 3>& position)
       : position_(position), density_{1.0} {}
 
+  virtual ~Cell() {}
+
   // FIXME todo
   void EventConstructor(const Event& event, SimObject* mother, uint64_t new_oid = 0) override {
 
@@ -128,8 +130,6 @@ class Cell : public SimObject {
       Log::Fatal("Cell", "EventConstructor called with invalid event or mother");
     }
   }
-
-  virtual ~Cell() {}
 
   Shape GetShape() const override { return Shape::kSphere; }
 
@@ -369,12 +369,12 @@ class Cell : public SimObject {
   std::array<double, 3> TransformCoordinatesGlobalToPolar(
       const std::array<double, 3>& coord) const;
 
-  std::array<double, 3> position_;
-  std::array<double, 3> tractor_force_;
-  double diameter_;
-  double volume_;
-  double adherence_;
-  double density_;
+  std::array<double, 3> position_ = {0, 0, 0};
+  std::array<double, 3> tractor_force_ = {0, 0, 0};
+  double diameter_ = 0;
+  double volume_ = 0;
+  double adherence_ = 0;
+  double density_ = 0;
 
   /// \brief EventHandler to modify the data members of this cell
   /// after a cell division.

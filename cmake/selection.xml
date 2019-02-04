@@ -11,11 +11,8 @@
     <class name="bdm::DivisionAndMovementModule," />
     <class name="bdm::SubstanceSecretion" />
     <class name="bdm::Chemotaxis" />
-    <class pattern="bdm::CompileTimeParam<*>::Param" />
     <class pattern="std::__1::vector<bdm::*<*>>" />
     <class pattern="std::__1::tuple<bdm::*<*>" />
-    <class pattern="bdm::resource_manager_test_internal::*" />
-    <class name="std::unordered_map<unsigned long,bdm::SoHandle>" />
 
   </selection>
   <exclusion>
@@ -25,12 +22,10 @@
     <class name="cl::Program" />
     <class pattern="*_TC2*" />
     <class pattern="std::array<*>" />
-    <class pattern="*bdm::SoaRef*"/>
     <class name="chrono::system_clock"/>
     <class pattern="*_Test" />
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
-    <class name="bdm::SoHandle" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::BaseBiologyModule"/>
     <class name="bdm::GrowDivide"/>

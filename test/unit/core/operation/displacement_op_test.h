@@ -23,7 +23,7 @@
 namespace bdm {
 namespace displacement_op_test_internal {
 
-void RunTest() {
+inline void RunTest() {
   Simulation simulation("displacement_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
 
@@ -40,6 +40,7 @@ void RunTest() {
 
   // cell 1
   Cell* cell1 = new Cell();
+  std::cout << cell1 << std::endl;
   cell1->SetAdherence(0.4);
   cell1->SetDiameter(11);
   cell1->SetMass(1.1);
@@ -50,7 +51,8 @@ void RunTest() {
 
   // execute operation
   DisplacementOp op;
-  rm->ApplyOnAllElements([&](auto* sim_object) { op(sim_object); });
+  op(rm->GetSimObject(ref_uid));
+  op(rm->GetSimObject(ref_uid + 1));
 
   // check results
   // cell 0

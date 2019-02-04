@@ -77,8 +77,7 @@ class DisplacementOp {
     }
   }
 
-  template <typename TSimObject>
-  void operator()(TSimObject&& sim_object) {
+  void operator()(SimObject* sim_object) {
     cpu_(sim_object);
   }
 
