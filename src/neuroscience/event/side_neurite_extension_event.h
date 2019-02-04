@@ -32,8 +32,12 @@ namespace neuroscience {
 /// and the corresponding event handler
 /// NeuriteElementExt::EventHandler(const SideNeuriteExtensionEvent& event, TDaughter* right)
 // clang-format on
-struct SideNeuriteExtensionEvent {
+struct SideNeuriteExtensionEvent : public Event {
   static const EventId kEventId;
+
+  virtual ~SideNeuriteExtensionEvent() {};
+
+  EventId GetId() const override { return kEventId; }
 
   /// length of the new branch
   double length_;

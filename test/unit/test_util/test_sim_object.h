@@ -29,35 +29,31 @@ class TestSimObject : public SimObject {
     return {"diameter_", "position_"};
   }
 
-  static constexpr Shape GetShape() { return Shape::kSphere; }
-
   TestSimObject() {}
 
   explicit TestSimObject(const std::array<double, 3>& pos)
-      : position_{{pos}} {}
+      : position_{pos} {}
 
-  template <typename TEvent, typename TOther>
-  TestSimObject(const TEvent& event, TOther* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
+  virtual ~TestSimObject() {}
 
-  template <typename TEvent, typename TDaughter>
-  void EventHandler(const TEvent& event, TDaughter* daughter) {
-    Base::EventHandler(event, daughter);
-  }
+  Shape GetShape() const override { return Shape::kSphere; };
 
-  const std::array<double, 3>& GetPosition() const { return position_; }
+  void RunDiscretization() override {}
 
-  void SetPosition(const std::array<double, 3>& pos) { position_ = pos; }
+  const std::array<double, 3>& GetPosition() const override { return position_; }
 
-  void ApplyDisplacement(const std::array<double, 3>&) {}
+  void SetPosition(const std::array<double, 3>& pos) override { position_ = pos; }
 
-  std::array<double, 3> CalculateDisplacement(double squared_radius) {
+  void ApplyDisplacement(const std::array<double, 3>&) override {}
+
+  std::array<double, 3> CalculateDisplacement(double squared_radius) override {
     return {0, 0, 0};
   }
 
   void SetBoxIdx(uint64_t) {}
 
-  double GetDiameter() const { return 3.14; }
+  double GetDiameter() const override { return 3.14; }
+  void SetDiameter(const double) override {}
 
  protected:
   std::array<double, 3> position_;

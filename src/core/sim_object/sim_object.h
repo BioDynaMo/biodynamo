@@ -102,7 +102,7 @@ namespace bdm {
   /** Cast `this` to the base class pointer (one level up) */                  \
   const Base *UpCast() const { return static_cast<const Base *>(this); }       \
                                                                                \
-  BDM_ROOT_CLASS_DEF_OVERRIDE(class_name, class_version_id)
+  ClassDefOverride(class_name, class_version_id)
 
 // -----------------------------------------------------------------------------
 
@@ -225,7 +225,7 @@ class SimObject {
   void BiologyModuleEventHandler(const Event &event, decltype(biology_modules_) *other1,
                                  decltype(biology_modules_) *other2);
 
-  BDM_ROOT_CLASS_DEF(SimObject, 1)
+  ClassDef(SimObject, 1)
 };
 
 }  // namespace bdm

@@ -25,7 +25,7 @@
 namespace bdm {
 namespace dividing_cell_op_test_internal {
 
-void RunTest() {
+inline void RunTest() {
   Simulation simulation("dividing_cell_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
