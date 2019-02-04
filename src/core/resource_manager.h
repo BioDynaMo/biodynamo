@@ -170,7 +170,8 @@ class ResourceManager {
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
   void ApplyOnAllElementsParallel(const std::function<void(SimObject*)>& function) {
-    #pragma omp parallel
+    // #pragma omp parallel for
+    // FIXME
     for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
       function(it->second);
     }
