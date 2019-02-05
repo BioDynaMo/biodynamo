@@ -174,7 +174,7 @@ class SimObject {
   void RunBiologyModules();
 
   /// Return all biology modules
-  const auto &GetAllBiologyModules() const;
+  const std::vector<BaseBiologyModule*> &GetAllBiologyModules() const;
   // ---------------------------------------------------------------------------
 
   virtual std::array<double, 3> CalculateDisplacement(double squared_radius) = 0;

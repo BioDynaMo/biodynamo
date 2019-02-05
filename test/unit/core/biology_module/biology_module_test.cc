@@ -29,8 +29,6 @@ struct TestBiologyModule : public BaseBiologyModule {
   void Run(SimObject* so) override {}
 
   BaseBiologyModule* GetInstance() const override { return new TestBiologyModule(); };
-
-  BDM_CLASS_DEF_NV(TestBiologyModule, 1);
 };
 
 TEST(BaseBiologyModuleTest, CopyNever) {

@@ -12,14 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_SEPARATE_BINARY_CELL_TEST_H_
-#define UNIT_SEPARATE_BINARY_CELL_TEST_H_
+#ifndef UNIT_CORE_SIM_OBJECT_CELL_TEST_H_
+#define UNIT_CORE_SIM_OBJECT_CELL_TEST_H_
 
 #include <vector>
 
 #include "core/biology_module/biology_module.h"
 #include "core/event/cell_division_event.h"
-#include "core/param/compile_time_param.h"
 #include "core/sim_object/cell.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"
@@ -34,68 +33,76 @@ struct GrowthModule : public BaseBiologyModule {
   double growth_rate_ = 0.5;
   GrowthModule() : BaseBiologyModule(CellDivisionEvent::kEventId) {}
 
-  // Ctor for any event
-  template <typename TEvent, typename TBm>
-  GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
-    growth_rate_ = other->growth_rate_;
+  virtual ~GrowthModule() {}
+
+  /// Create a new instance of this object using the default constructor.
+  BaseBiologyModule* GetInstance() const { return new GrowthModule(); }
+
+  void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
+    BaseBiologyModule::EventConstructor(event, other, new_oid);
+    if(GrowthModule* gbm = dynamic_cast<GrowthModule*>(other)) {
+      growth_rate_ = gbm->growth_rate_;
+    } else {
+      Log::Fatal("GrowthModule::EventConstructor", "other was not of type GrowthModule");
+    }
   }
 
-  // empty event handler (exising biology module won't be modified on any event)
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  /// Default event handler (exising biology module won't be modified on
+  /// any event)
+  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
+    BaseBiologyModule::EventHandler(event, other1, other2);
+  }
 
-  template <typename T>
-  void Run(T* t) {
+  void Run(SimObject* t) override {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
 
-  BDM_CLASS_DEF_NV(GrowthModule, 1);
+  BDM_CLASS_DEF(GrowthModule, 1);
 };
 
-struct MovementModule {
+struct MovementModule : public BaseBiologyModule {
   std::array<double, 3> velocity_;
 
-  MovementModule() : velocity_({{0, 0, 0}}) {}
+  MovementModule() : BaseBiologyModule(0, CellDivisionEvent::kEventId), velocity_({{0, 0, 0}}) {}
   explicit MovementModule(const std::array<double, 3>& velocity)
-      : velocity_(velocity) {}
+      : BaseBiologyModule(0, CellDivisionEvent::kEventId), velocity_(velocity) {}
 
-  // Ctor for any event
-  template <typename TEvent, typename TBm>
-  MovementModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
-    velocity_ = other->velocity_;
+  /// Create a new instance of this object using the default constructor.
+  BaseBiologyModule* GetInstance() const { return new MovementModule(); }
+
+  void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
+    BaseBiologyModule::EventConstructor(event, other, new_oid);
+    if(MovementModule* mbm = dynamic_cast<MovementModule*>(other)) {
+      velocity_ = mbm->velocity_;
+    } else {
+      Log::Fatal("MovementModule::EventConstructor", "other was not of type MovementModule");
+    }
   }
 
-  // empty event handler (exising biology module won't be modified on any event)
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
-
-  template <typename T>
-  void Run(T* t) {
-    const auto& position = t->GetPosition();
-    t->SetPosition(Math::Add(position, velocity_));
+  /// Default event handler
+  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
+    BaseBiologyModule::EventHandler(event, other1, other2);
   }
 
-  bool Copy(EventId event) const { return false; }
-  bool Remove(EventId event) const {
-    return event == CellDivisionEvent::kEventId;
+  void Run(SimObject* so) override {
+    const auto& position = so->GetPosition();
+    so->SetPosition(Math::Add(position, velocity_));
   }
-  BDM_CLASS_DEF_NV(MovementModule, 1);
+
+  BDM_CLASS_DEF(MovementModule, 1);
 };
 
 /// This biology module removes itself the first time it is executed
 struct RemoveModule : public BaseBiologyModule {
   RemoveModule() {}
 
-  // Ctor for any event
-  template <typename TEvent, typename TBm>
-  RemoveModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+  BaseBiologyModule* GetInstance() const { return new RemoveModule(); }
 
-  template <typename TSimObject>
-  void Run(TSimObject* sim_object) {
+  void Run(SimObject* sim_object) override {
     sim_object->RemoveBiologyModule(this);
   }
 
-  BDM_CLASS_DEF_NV(RemoveModule, 1);
+  BDM_CLASS_DEF(RemoveModule, 1);
 };
 
 /// Class used to get access to protected members
@@ -105,20 +112,18 @@ class TestCell : public Cell {
  public:
   TestCell() {}
 
-  // Ctor for CellDivisionEvent
-  TestCell(CellDivisionEvent event, TestCellExt * mother,
-              uint64_t new_oid = 0)
-      : Base(event, mother, new_oid) {
-    if (mother->capture_input_parameters_) {
-      mother->captured_volume_ratio_ = event.volume_ratio_;
-      mother->captured_phi_ = event.phi_;
-      mother->captured_theta_ = event.theta_;
-    }
-  }
+  virtual ~TestCell() {}
 
-  template <typename TDaughter>
-  void EventHandler(CellDivisionEvent event, TDaughter * daughter) {
-    Base::EventHandler(event, daughter);
+  void EventConstructor(const Event& event, SimObject* mother, uint64_t new_oid = 0) override {
+    Base::EventConstructor(event, mother, new_oid);
+
+    const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event);
+    TestCell* mother_cell = dynamic_cast<TestCell*>(mother);
+    if(cdevent && mother_cell && mother_cell->capture_input_parameters_) {
+      mother_cell->captured_volume_ratio_ = cdevent->volume_ratio_;
+      mother_cell->captured_phi_ = cdevent->phi_;
+      mother_cell->captured_theta_ = cdevent->theta_;
+    }
   }
 
   void TestTransformCoordinatesGlobalToPolar() {
@@ -129,10 +134,6 @@ class TestCell : public Cell {
     EXPECT_NEAR(10.770329614269007, result[0], abs_error<double>::value);
     EXPECT_NEAR(1.9513027039072615, result[1], abs_error<double>::value);
     EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<double>::value);
-  }
-
-  const auto& GetAllBiologyModules() const {
-    return Base::biology_modules_;
   }
 
   bool capture_input_parameters_ = false;
@@ -187,14 +188,14 @@ inline void RunIOTest() {
   EXPECT_NEAR(5, restored_cell->GetMass(), kEpsilon);
 
   EXPECT_EQ(2u, restored_cell->GetAllBiologyModules().size());
-  EXPECT_TRUE(get_if<GrowthModule>(&restored_cell->GetAllBiologyModules()[0]) !=
+  EXPECT_TRUE(dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0]) !=
               nullptr);
   EXPECT_NEAR(0.5,
-              get_if<GrowthModule>(&restored_cell->GetAllBiologyModules()[0])
+              dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0])
                   ->growth_rate_,
               kEpsilon);
-  EXPECT_TRUE(get_if<MovementModule>(
-                  &restored_cell->GetAllBiologyModules()[1]) != nullptr);
+  EXPECT_TRUE(dynamic_cast<MovementModule*>(
+                  restored_cell->GetAllBiologyModules()[1]) != nullptr);
 
   EXPECT_EQ(123u, restored_cell->GetBoxIdx());
 
@@ -206,4 +207,4 @@ inline void RunIOTest() {
 }  // namespace cell_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_SEPARATE_BINARY_CELL_TEST_H_
+#endif  // UNIT_CORE_SIM_OBJECT_CELL_TEST_H_

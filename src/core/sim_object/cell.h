@@ -131,6 +131,17 @@ class Cell : public SimObject {
     }
   }
 
+  /// \brief EventHandler to modify the data members of this cell
+  /// after a cell division.
+  ///
+  /// Performs the transition mother to daughter 1
+  /// \param event contains parameters for cell division
+  /// \param daughter_2 pointer to new cell (=daughter 2)
+  /// \see Event, CellDivisionEvent
+  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override {
+    Base::EventHandler(event, other1, other2);
+  }
+
   Shape GetShape() const override { return Shape::kSphere; }
 
   /// \brief Divide this cell.
@@ -138,7 +149,7 @@ class Cell : public SimObject {
   /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
   /// The axis of division is random.
   /// \see CellDivisionEvent
-  virtual SoPointer Divide() {
+  virtual Cell* Divide() {
     auto* random = Simulation::GetActive()->GetRandom();
     return Divide(random->Uniform(0.9, 1.1));
   }
@@ -147,7 +158,7 @@ class Cell : public SimObject {
   ///
   /// The axis of division is random.
   /// \see CellDivisionEvent
-  virtual SoPointer Divide(double volume_ratio) {
+  virtual Cell* Divide(double volume_ratio) {
     // find random point on sphere (based on :
     // http://mathworld.wolfram.com/SpherePointPicking.html)
     auto* random = Simulation::GetActive()->GetRandom();
@@ -160,7 +171,7 @@ class Cell : public SimObject {
   ///
   /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
   /// \see CellDivisionEvent
-  virtual SoPointer Divide(const std::array<double, 3>& axis) {
+  virtual Cell* Divide(const std::array<double, 3>& axis) {
     auto* random = Simulation::GetActive()->GetRandom();
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
@@ -171,7 +182,7 @@ class Cell : public SimObject {
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  virtual SoPointer Divide(double volume_ratio,
+  virtual Cell* Divide(double volume_ratio,
                           const std::array<double, 3>& axis) {
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
@@ -181,14 +192,14 @@ class Cell : public SimObject {
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  virtual SoPointer Divide(double volume_ratio, double phi, double theta) {
+  virtual Cell* Divide(double volume_ratio, double phi, double theta) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     CellDivisionEvent event(volume_ratio, phi, theta);
-    auto* daughter = GetInstance();
+    auto* daughter = static_cast<Cell*>(GetInstance());
     daughter->EventConstructor(event, this);
     ctxt->push_back(daughter);
     EventHandler(event, daughter);
-    return daughter->GetSoPtr();
+    return daughter;
   }
 
   double GetAdherence() const { return adherence_; }
@@ -375,17 +386,6 @@ class Cell : public SimObject {
   double volume_ = 0;
   double adherence_ = 0;
   double density_ = 0;
-
-  /// \brief EventHandler to modify the data members of this cell
-  /// after a cell division.
-  ///
-  /// Performs the transition mother to daughter 1
-  /// \param event contains parameters for cell division
-  /// \param daughter_2 pointer to new cell (=daughter 2)
-  /// \see Event, CellDivisionEvent
-  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override {
-    Base::EventHandler(event, other1, other2);
-  }
 };
 
 }  // namespace bdm
