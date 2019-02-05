@@ -229,7 +229,7 @@ class SimObject {
   void BiologyModuleEventHandler(const Event &event, decltype(biology_modules_) *other1,
                                  decltype(biology_modules_) *other2);
 
-  ClassDef(SimObject, 1)
+  BDM_CLASS_DEF(SimObject, 1)
 };
 
 }  // namespace bdm
