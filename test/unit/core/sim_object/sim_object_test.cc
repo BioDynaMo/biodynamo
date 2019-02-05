@@ -112,5 +112,107 @@ TEST(SimObjectTest, RemoveBiologyModule) {
   ASSERT_EQ(2u, bms.size());
 }
 
+// FIXME
+// TEST(SimObjectUtilTest, ForEachDataMember) {
+//   std::vector<Neurite> neurites;
+//   Neuron neuron1(neurites, std::array<double, 3>{4, 5, 6});
+//
+//   auto neurons = Neuron::NewEmptySoa();
+//   neurons.push_back(neuron1);
+//
+//   uint16_t counter = 0;
+//   auto verify = [&](auto* data_member, const std::string& dm_name) {
+//     ASSERT_EQ(1u, data_member->size());
+//     counter++;
+//     if (dm_name != "neurites_" && dm_name != "position_" &&
+//         dm_name != "diameter_" && dm_name != "biology_modules_" &&
+//         dm_name != "uid_" && dm_name != "box_idx_" &&
+//         dm_name != "run_bm_loop_idx_" && dm_name != "numa_node_") {
+//       FAIL() << "Data member " << dm_name << "does not exist" << std::endl;
+//     }
+//   };
+//
+//   neurons.ForEachDataMember(verify);
+//   EXPECT_EQ(8u, counter);
+// }
+//
+// TEST(SimObjectUtilTest, ForEachDataMemberIn) {
+//   std::vector<Neurite> neurites;
+//   Neuron neuron1(neurites, std::array<double, 3>{4, 5, 6});
+//
+//   auto neurons = Neuron::NewEmptySoa();
+//   neurons.push_back(neuron1);
+//
+//   uint16_t counter = 0;
+//   auto verify = [&](auto* data_member, const std::string& dm_name) {
+//     ASSERT_EQ(1u, data_member->size());
+//     counter++;
+//     if (dm_name != "neurites_" && dm_name != "position_") {
+//       FAIL() << "Lambda must not be called for data member " << dm_name
+//              << std::endl;
+//     }
+//   };
+//
+//   neurons.ForEachDataMemberIn(std::set<std::string>{"neurites_", "position_"},
+//                               verify);
+//   EXPECT_EQ(2u, counter);
+// }
+//
+// struct VerifyPosition {
+//   void operator()(std::vector<std::array<double, 3>>* data_member,
+//                   const std::string& dm_name) {
+//     ASSERT_EQ(1u, data_member->size());
+//     if (dm_name == "position_") {
+//       EXPECT_EQ(4, (*data_member)[0][0]);
+//       EXPECT_EQ(5, (*data_member)[0][1]);
+//       EXPECT_EQ(6, (*data_member)[0][2]);
+//     } else {
+//       FAIL() << "Functor must not be called for data member " << dm_name
+//              << std::endl;
+//     }
+//   }
+//
+//   void operator()(...) { FAIL() << "Should not be called" << std::endl; }
+// };
+//
+// // for one data member check if the pointer contains the right data
+// TEST(SimObjectUtilTest, ForEachDataMemberInDetailed) {
+//   std::vector<Neurite> neurites;
+//   Neuron neuron1(neurites, std::array<double, 3>{4, 5, 6});
+//
+//   auto neurons = Neuron::NewEmptySoa();
+//   neurons.push_back(neuron1);
+//
+//   neurons.ForEachDataMemberIn(std::set<std::string>{"position_"},
+//                               VerifyPosition());
+// }
+//
+// TEST(SimObjectUtilTestDeathTest, ForEachDataMemberInNonExistantDm) {
+//   auto neurons = Neuron::NewEmptySoa();
+//   auto lambda = [&]() {
+//     std::set<std::string> dm = {"position_", "does_not_exist"};
+//     neurons.ForEachDataMemberIn(dm, [](auto*, const std::string&) {});
+//   };
+//
+//   ASSERT_DEATH(lambda(),
+//                ".*Please check your config file. The following data members do "
+//                "not exist: does_not_exist, .*");
+// }
+//
+// TEST(SimObjectTest, GetSoPtr) {
+//   Simulation simulation(TEST_NAME);
+//   auto* rm = simulation.GetResourceManager();
+//
+//   for (uint64_t i = 0; i < 10; i++) {
+//     rm->push_back(new TestSimObject());
+//   }
+//   EXPECT_EQ(10u, rm->GetNumSimObjects());
+//
+//   for (uint64_t i = 0; i < 10; i++) {
+//     SoPointer<SoaNeuron, Soa> expected((*neurons)[i].GetUid());
+//     EXPECT_EQ(expected, (*neurons)[i].GetSoPtr());
+//   }
+// }
+
 }  // namespace sim_object_test_internal
 }  // namespace bdm
