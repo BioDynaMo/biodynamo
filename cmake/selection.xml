@@ -1,5 +1,8 @@
 <lcgdict>
   <selection>
+    <class name="bdm::A" />
+    <class name="bdm::B" />
+    <class name="bdm::TestSimObject" />
     <class name="bdm::cell_test_internal::TestCell" />
     <class name="bdm::cell_test_internal::GrowthModule" />
     <class name="bdm::cell_test_internal::MovementModule" />
