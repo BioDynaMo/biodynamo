@@ -171,10 +171,29 @@ class ResourceManager {
   void ApplyOnAllElementsParallel(const std::function<void(SimObject*)>& function) {
     // #pragma omp parallel for
     // FIXME
-    for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
-      function(it->second);
+    // for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
+    //   function(it->second);
+    // }
+
+    #pragma omp parallel
+        {
+          auto tid = omp_get_thread_num();
+          auto threads = omp_get_max_threads();
+
+          // use static scheduling for now
+          auto correction = sim_objects_.size() % threads == 0 ? 0 : 1;
+          auto chunk = sim_objects_.size() / threads + correction;
+          auto start = tid * chunk;
+          auto end = std::min(sim_objects_.size(), start + chunk);
+
+          auto it = sim_objects_.begin();
+          std::advance(it, start);
+          for (uint64_t i = start; i < end; ++i) {
+            function(it->second);
+            ++it;
+          }
+        }
     }
-  }
 
   /// Apply a function on all elements.\n
   /// Function invocations are parallelized.\n
@@ -186,9 +205,10 @@ class ResourceManager {
   void ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*)>& function) {
     // #pragma omp parallel for schedule(dynamic, chunk)
     // FIXME
-    for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
-      function(it->second);
-    }
+    // for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
+    //   function(it->second);
+    // }
+    ApplyOnAllElementsParallel(function);
   }
 
   /// Reserves enough memory to hold `capacity` number of simulation objects for
