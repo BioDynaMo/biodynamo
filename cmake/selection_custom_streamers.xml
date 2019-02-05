@@ -1,6 +1,0 @@
-<lcgdict>
-  <selection>
-    <class pattern="bdm::Variant<*>" noStreamer="true" />
-    <class pattern="std::__1::vector<bdm::Variant<*>>" noStreamer="true" />
-  </selection>
-</lcgdict>
