@@ -82,12 +82,14 @@ void SimObject::RemoveBiologyModule(const BaseBiologyModule *remove_module) {
 }
 
 void SimObject::RunBiologyModules() {
-  for (auto* bm : biology_modules_) {
-    bm->Run(this);
-  }
+  for (run_bm_loop_idx_ = 0;run_bm_loop_idx_ < biology_modules_.size();
+         ++run_bm_loop_idx_) {
+      auto* module = biology_modules_[run_bm_loop_idx_];
+      module->Run(this);
+    }
 }
 
-const auto &SimObject::GetAllBiologyModules() const { return biology_modules_; }
+const std::vector<BaseBiologyModule*> &SimObject::GetAllBiologyModules() const { return biology_modules_; }
 // ---------------------------------------------------------------------------
 
 void SimObject::RemoveFromSimulation() const {
@@ -104,17 +106,17 @@ void SimObject::EventConstructor(const Event& event, SimObject* other, uint64_t 
 
 void SimObject::EventHandler(const Event &event, SimObject *other1, SimObject* other2) {
   // call event handler for biology modules
-  auto *left_bms = &(other1->biology_modules_);
-  auto *right_bms = &(other2->biology_modules_);
+  auto *left_bms = other1 == nullptr ? nullptr : &(other1->biology_modules_);
+  auto *right_bms = other2 == nullptr ? nullptr : &(other2->biology_modules_);
   BiologyModuleEventHandler(event, left_bms, right_bms);
 }
 
-void SimObject::CopyBiologyModules(const Event& event, decltype(biology_modules_) *dest) {
-  for (auto* bm : biology_modules_) {
+void SimObject::CopyBiologyModules(const Event& event, decltype(biology_modules_) *other) {
+  for (auto* bm : *other) {
     if(bm->Copy(event.GetId())) {
       auto* new_bm = bm->GetInstance();
       new_bm->EventConstructor(event, bm);
-      dest->push_back(new_bm);
+      biology_modules_.push_back(new_bm);
     }
   }
 }

@@ -1,5 +1,10 @@
 <lcgdict>
   <selection>
+    <class name="bdm::cell_test_internal::TestCell" />
+    <class name="bdm::cell_test_internal::GrowthModule" />
+    <class name="bdm::cell_test_internal::MovementModule" />
+    <class name="bdm::cell_test_internal::RemoveModule" />
+
     <class pattern="bdm::*<*>"/>
     <class pattern="bdm::*BM"/>
     <class pattern="bdm::*Module"/>

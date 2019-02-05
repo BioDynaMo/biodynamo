@@ -73,7 +73,7 @@ struct BaseBiologyModule {
  private:
   EventId copy_mask_;
   EventId remove_mask_;
-  BDM_CLASS_DEF_NV(BaseBiologyModule, 2);
+  BDM_CLASS_DEF(BaseBiologyModule, 2);
 };
 
 }  // namespace bdm
