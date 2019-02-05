@@ -22,7 +22,7 @@
 namespace bdm {
 
 class TestSimObject : public SimObject {
-  BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1, position_);
+  BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1, position_, diameter_);
 
  public:
   static std::set<std::string> GetRequiredVisDataMembers() {
@@ -52,11 +52,12 @@ class TestSimObject : public SimObject {
 
   void SetBoxIdx(uint64_t) {}
 
-  double GetDiameter() const override { return 3.14; }
-  void SetDiameter(const double) override {}
+  double GetDiameter() const override { return diameter_; }
+  void SetDiameter(const double diameter) override { diameter_ = diameter; }
 
  protected:
-  std::array<double, 3> position_;
+  std::array<double, 3> position_ = {0, 0, 0};
+  double diameter_ = 0;
 };
 
 }  // namespace bdm
