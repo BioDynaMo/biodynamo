@@ -44,14 +44,13 @@ TEST(ResourceManagerTest, Clear) {
   RunClearTest();
 }
 
-// FIXME no NUMA solution for dynamic polymorphism atm
-// TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
-//   RunSortAndApplyOnAllElementsParallel();
-// }
-//
-// TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {
-//   RunSortAndApplyOnAllElementsParallelDynamic();
-// }
+TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
+  RunSortAndApplyOnAllElementsParallel();
+}
+
+TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {
+  RunSortAndApplyOnAllElementsParallelDynamic();
+}
 
 TEST(ResourceManagerTest, DiffusionGrid) {
   ResourceManager rm;

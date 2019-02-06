@@ -48,6 +48,65 @@
 
 namespace bdm {
 
+// FIXME documentation
+/// Unique identifier of a simulation object. Acts as a type erased pointer.
+/// Has the same type for every simulation object. \n
+/// Points to the storage location of a sim object inside ResourceManager.\n
+/// The id is split into three parts: Numa node, type index and element index.
+/// The first one is used to obtain the numa storage, the second the correct
+/// container in the ResourceManager, and the third specifies the element within
+/// this vector.
+class SoHandle {
+ public:
+  using NumaNode_t = uint16_t;
+  using ElementIdx_t = uint32_t;
+
+  constexpr SoHandle() noexcept
+      : numa_node_(std::numeric_limits<NumaNode_t>::max()),
+        element_idx_(std::numeric_limits<ElementIdx_t>::max()) {}
+
+  explicit SoHandle(ElementIdx_t element_idx)
+      : numa_node_(0), element_idx_(element_idx) {}
+
+  SoHandle(NumaNode_t numa_node, ElementIdx_t element_idx)
+      : numa_node_(numa_node), element_idx_(element_idx) {}
+
+  NumaNode_t GetNumaNode() const { return numa_node_; }
+  ElementIdx_t GetElementIdx() const { return element_idx_; }
+  void SetElementIdx(ElementIdx_t element_idx) { element_idx_ = element_idx; }
+
+  bool operator==(const SoHandle& other) const {
+    return numa_node_ == other.numa_node_ &&
+           element_idx_ == other.element_idx_;
+  }
+
+  bool operator!=(const SoHandle& other) const { return !(*this == other); }
+
+  bool operator<(const SoHandle& other) const {
+    if (numa_node_ == other.numa_node_) {
+      return element_idx_ < other.element_idx_;
+    } else {
+      return numa_node_ < other.numa_node_;
+    }
+  }
+
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  const SoHandle& handle) {
+    stream << "Numa node: " << handle.numa_node_
+           << " element idx: " << handle.element_idx_;
+    return stream;
+  }
+
+ private:
+  NumaNode_t numa_node_;
+
+  /// changed element index to uint32_t after issues with std::atomic with
+  /// size 16 -> max element_idx: 4.294.967.296
+  ElementIdx_t element_idx_;
+
+  BDM_CLASS_DEF_NV(SoHandle, 1);
+};
+
 /// ResourceManager holds a container for each atomic type in the simulation.
 /// It provides methods to get a certain container, execute a function on a
 /// a certain element, all elements of a certain type or all elements inside
@@ -62,25 +121,36 @@ namespace bdm {
 /// a specific simulation. ResourceManager extracts Backend and SimObjectTypes.
 class ResourceManager {
  public:
-   using SoHandle = uint64_t;
-
   explicit ResourceManager(TRootIOCtor* r) {}
 
   /// Default constructor. Unfortunately needs to be public although it is
   /// a singleton to be able to use ROOT I/O
-  ResourceManager() {}
+  ResourceManager() {
+    // Must be called prior any other function call to libnuma
+    if (auto ret = numa_available() == -1) {
+      Log::Fatal("ResourceManager",
+                 "Call to numa_available failed with return code: ", ret);
+    }
+    sim_objects_.resize(numa_num_configured_nodes());
+  }
 
   /// Free the memory that was reserved for the diffusion grids
   virtual ~ResourceManager() {
     for (auto& el : diffusion_grids_) {
       delete el.second;
     }
-    for (auto* so : sim_objects_) {
-      delete so;
+    for (auto& numa_sos : sim_objects_) {
+      for (auto* so : numa_sos) {
+        delete so;
+      }
     }
   }
 
   ResourceManager& operator=(ResourceManager&& other) {
+    if (sim_objects_.size() != other.sim_objects_.size()) {
+      Log::Fatal(
+          "Restored ResourceManager has different number of NUMA nodes.");
+    }
     uid_soh_map_ = std::move(other.uid_soh_map_);
     sim_objects_ = std::move(other.sim_objects_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
@@ -88,13 +158,16 @@ class ResourceManager {
   }
 
   SimObject* GetSimObject(SoUid uid) {
+    assert(Contains(uid) && "ResourceManager does not contain sim_object with given uid");
     SoHandle soh = uid_soh_map_[uid];
-    return sim_objects_[soh];
+    return sim_objects_[soh.GetNumaNode()][soh.GetElementIdx()];
   }
 
   SimObject* GetSimObjectWithSoHandle(SoHandle soh) {
-    return sim_objects_[soh];
+    return sim_objects_[soh.GetNumaNode()][soh.GetElementIdx()];
   }
+
+  SoHandle GetSoHandle(SoUid uid) { return uid_soh_map_[uid]; }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
     uint64_t substance_id = dgrid->GetSubstanceId();
@@ -153,9 +226,18 @@ class ResourceManager {
     }
   }
 
-  /// Returns the total number of simulation objects
-  size_t GetNumSimObjects() const {
-    return sim_objects_.size();
+  /// Returns the total number of simulation objects if numa_node == -1
+  /// Otherwise the number of sim_objects in the specific numa node
+  size_t GetNumSimObjects(int numa_node=-1) const {
+    if (numa_node == -1) {
+      size_t num_so = 0;
+      for(auto& numa_sos : sim_objects_) {
+        num_so += numa_sos.size();
+      }
+      return num_so;
+    } else {
+      return sim_objects_[numa_node].size();
+    }
   }
 
   /// Apply a function on all elements in every container
@@ -165,8 +247,19 @@ class ResourceManager {
   ///                              std::cout << element << std::endl;
   ///                          });
   void ApplyOnAllElements(const std::function<void(SimObject*)>& function) {
-    for(auto* so : sim_objects_) {
-      function(so);
+    for (auto& numa_sos : sim_objects_) {
+      for (auto* so : numa_sos) {
+        function(so);
+      }
+    }
+  }
+
+  void ApplyOnAllElements(const std::function<void(SimObject*, SoHandle)>& function) {
+    for(uint64_t n = 0; n < sim_objects_.size(); ++n) {
+      auto& numa_sos = sim_objects_[n];
+      for(uint64_t i = 0; i < numa_sos.size(); ++i) {
+        function(numa_sos[i], SoHandle(n, i));
+      }
     }
   }
 
@@ -174,12 +267,15 @@ class ResourceManager {
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallel(const std::function<void(SimObject*)>& function) {
-    #pragma omp parallel for
-    for(uint64_t i = 0; i < sim_objects_.size(); ++i) {
-      function(sim_objects_[i]);
-    }
-  }
+  void ApplyOnAllElementsParallel(const std::function<void(SimObject*)>& function);
+  // {
+  //   for (auto& numa_sos : sim_objects_) {
+  //     #pragma omp parallel for
+  //     for(uint64_t i = 0; i < numa_sos.size(); ++i) {
+  //       function(numa_sos[i]);
+  //     }
+  //   }
+  // }
 
   /// Apply a function on all elements.\n
   /// Function invocations are parallelized.\n
@@ -188,25 +284,24 @@ class ResourceManager {
   /// \param chunk number of sim objects that are assigned to a thread (batch
   /// size)
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*)>& function) {
-    #pragma omp parallel for schedule(dynamic, chunk)
-    for(uint64_t i = 0; i < sim_objects_.size(); ++i) {
-      function(sim_objects_[i]);
-    }
-  }
-
-  void ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*, SoHandle)>& function) {
-    #pragma omp parallel for schedule(dynamic, chunk)
-    for(uint64_t i = 0; i < sim_objects_.size(); ++i) {
-      function(sim_objects_[i], i);
-    }
-  }
+  void ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*, SoHandle)>& function);
+  //  {
+  //   for(uint64_t n = 0; n < sim_objects_.size(); ++n) {
+  //     auto& numa_sos = sim_objects_[n];
+  //     #pragma omp parallel for schedule(dynamic, chunk)
+  //     for(uint64_t i = 0; i < numa_sos.size(); ++i) {
+  //       function(numa_sos[i], SoHandle(n, i));
+  //     }
+  //   }
+  // }
 
   /// Reserves enough memory to hold `capacity` number of simulation objects for
   /// each simulation object type.
   void Reserve(size_t capacity) {
     uid_soh_map_.reserve(capacity);
-    sim_objects_.reserve(capacity);
+    for(auto& numa_sos : sim_objects_) {
+      numa_sos.reserve(capacity);
+    }
   }
 
   /// Returns true if a sim object with the given uid is stored in this
@@ -220,23 +315,23 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void Clear() {
-    for(auto* so : sim_objects_) { delete so; }
     uid_soh_map_.clear();
-    sim_objects_.clear();
+    for(auto& numa_sos : sim_objects_) {
+      for(auto* so : numa_sos) { delete so; }
+      numa_sos.clear();
+    }
   }
 
   /// Reorder simulation objects such that, sim objects are distributed to NUMA
   /// nodes. Nearby sim objects will be moved to the same NUMA node.
-  void SortAndBalanceNumaNodes() {
-    // FIXME implement
-  }
+  void SortAndBalanceNumaNodes();
 
   /// NB: This method is not thread-safe! This function might invalidate
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
-  void push_back(SimObject* so) {  // NOLINT
-    sim_objects_.push_back(so);
-    uid_soh_map_[so->GetUid()] = sim_objects_.size() - 1;
+  void push_back(SimObject* so, typename SoHandle::NumaNode_t numa_node = 0) {  // NOLINT
+    sim_objects_[numa_node].push_back(so);
+    uid_soh_map_[so->GetUid()] = SoHandle(numa_node, sim_objects_[numa_node].size() - 1);
   }
 
   /// Removes the simulation object with the given uid.\n
@@ -250,15 +345,16 @@ class ResourceManager {
       SoHandle soh = it->second;
       uid_soh_map_.erase(it);
       // remove from vector
-      if(soh == sim_objects_.size() - 1) {
-        delete sim_objects_.back();
-        sim_objects_.pop_back();
+      auto& numa_sos = sim_objects_[soh.GetNumaNode()];
+      if(soh.GetElementIdx() == numa_sos.size() - 1) {
+        delete numa_sos.back();
+        numa_sos.pop_back();
       } else {
         // swap
-        delete sim_objects_[soh];
-        auto* reordered = sim_objects_.back();
-        sim_objects_[soh] = reordered;
-        sim_objects_.pop_back();
+        delete numa_sos[soh.GetElementIdx()];
+        auto* reordered = numa_sos.back();
+        numa_sos[soh.GetElementIdx()] = reordered;
+        numa_sos.pop_back();
         uid_soh_map_[reordered->GetUid()] = soh;
       }
     }
@@ -274,9 +370,11 @@ class ResourceManager {
   /// Maps an SoUid to its storage location in `sim_objects_` \n
   std::unordered_map<SoUid, SoHandle> uid_soh_map_;
   ///
-  std::vector<SimObject*> sim_objects_;
+  std::vector<std::vector<SimObject*>> sim_objects_;
 
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
+
+  ThreadInfo thread_info_;  //!
 
 #ifdef USE_OPENCL
   cl::Context opencl_context_;             //!

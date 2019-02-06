@@ -34,7 +34,10 @@ struct GrowDivide : public BaseBiologyModule {
         growth_rate_(growth_rate) {}
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance() const { return new GrowDivide(); }
+  BaseBiologyModule* GetInstance() const override { return new GrowDivide(); }
+
+  /// Create a copy of this biology module.
+  BaseBiologyModule* GetCopy() const override { return new GrowDivide(*this); }
 
   void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
     BaseBiologyModule::EventConstructor(event, other, new_oid);

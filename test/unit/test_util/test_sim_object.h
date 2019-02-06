@@ -50,8 +50,6 @@ class TestSimObject : public SimObject {
     return {0, 0, 0};
   }
 
-  void SetBoxIdx(uint64_t) {}
-
   double GetDiameter() const override { return diameter_; }
   void SetDiameter(const double diameter) override { diameter_ = diameter; }
 

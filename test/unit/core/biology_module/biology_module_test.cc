@@ -29,6 +29,7 @@ struct TestBiologyModule : public BaseBiologyModule {
   void Run(SimObject* so) override {}
 
   BaseBiologyModule* GetInstance() const override { return new TestBiologyModule(); };
+  BaseBiologyModule* GetCopy() const override { return new TestBiologyModule(*this); };
 };
 
 TEST(BaseBiologyModuleTest, CopyNever) {

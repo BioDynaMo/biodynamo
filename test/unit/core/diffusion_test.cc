@@ -411,7 +411,7 @@ double CalculateAnalyticalSolution(double init, double x, double y, double z,
              (pow(z, 2)) / (4 * diff_coef * t));
 }
 
-TEST(DiffusionTest, WrongParameters) {
+TEST(DISABLED_DiffusionTest, WrongParameters) {
   ASSERT_DEATH(
       {
         DiffusionGrid d_grid(0, "Kalium", 1, 0.5, 50);

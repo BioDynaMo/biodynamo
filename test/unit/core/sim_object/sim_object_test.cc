@@ -19,6 +19,22 @@
 namespace bdm {
 namespace sim_object_test_internal {
 
+TEST(SimObjectTest, CopyCtor) {
+  TestSimObject cell;
+  cell.SetBoxIdx(123);
+  GrowthModule* gm = new GrowthModule();
+  gm->growth_rate_ = 321;
+  cell.AddBiologyModule(gm);
+
+  TestSimObject copy(cell);
+  EXPECT_EQ(123, copy.GetBoxIdx());
+  EXPECT_EQ(cell.GetUid(), copy.GetUid());
+  ASSERT_EQ(1u, copy.GetAllBiologyModules().size());
+  GrowthModule* copy_gm = dynamic_cast<GrowthModule*>(copy.GetAllBiologyModules()[0]);
+  EXPECT_TRUE(gm != copy_gm);
+  EXPECT_EQ(321, copy_gm->growth_rate_);
+}
+
 TEST(SimObjectTest, BiologyModule) {
   Simulation simulation(TEST_NAME);
 
