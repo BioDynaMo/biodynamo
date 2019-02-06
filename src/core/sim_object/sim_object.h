@@ -71,10 +71,12 @@ namespace bdm {
   static const std::string GetScalarTypeName() { return #class_name; }         \
                                                                                \
   explicit class_name(TRootIOCtor *io_ctor) {}                            \
-  class_name(const class_name &other) = default;                     \
   \
   /** Create a new instance of this object using the default constructor. */   \
   SimObject* GetInstance() const override { return new class_name(); }\
+  \
+  /** Create a copy of this object. */   \
+  SimObject* GetCopy() const override { return new class_name(*this); }\
                                                                                \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
@@ -111,7 +113,6 @@ class BaseBiologyModule;
 
 /// Contains code required by all simulation objects
 class SimObject {
-
  public:
   SimObject();
 
@@ -146,6 +147,9 @@ class SimObject {
 
   /// Create a new instance of this object using the default constructor.
   virtual SimObject* GetInstance() const = 0;
+
+  /// Create a copy of this object.
+  virtual SimObject* GetCopy() const = 0;
 
   template <typename T> T* As() { return dynamic_cast<T*>(this); }
   template <typename T>

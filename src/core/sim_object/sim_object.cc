@@ -51,7 +51,11 @@ SimObject::~SimObject() {
 
 SimObject::SimObject(TRootIOCtor *io_ctor) {}
 
-SimObject::SimObject(const SimObject &other) = default;
+SimObject::SimObject(const SimObject &other) : uid_(other.uid_), box_idx_(other.box_idx_) {
+  for(auto* module : other.biology_modules_) {
+    biology_modules_.push_back(module->GetCopy());
+  }
+};
 
 void SimObject::RunDiscretization() {}
 

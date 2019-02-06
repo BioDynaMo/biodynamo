@@ -39,7 +39,10 @@ struct RegulateGenes : public BaseBiologyModule {
   explicit RegulateGenes(EventId event) : BaseBiologyModule(event) {}
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance() const { return new RegulateGenes(); }
+  BaseBiologyModule* GetInstance() const override { return new RegulateGenes(); }
+
+  /// Create a copy of this biology module.
+  BaseBiologyModule* GetCopy() const override { return new RegulateGenes(*this); }
 
   void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
     BaseBiologyModule::EventConstructor(event, other, new_oid);

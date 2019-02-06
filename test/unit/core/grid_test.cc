@@ -267,47 +267,34 @@ TEST(GridTest, IterateZOrder) {
   // expecting a 4 * 4 * 4 grid
   grid->Initialize();
 
-  std::vector<SoUid> zorder;
-  zorder.reserve(rm->GetNumSimObjects());
-  auto lambda = [&](SimObject* so) { zorder.push_back(so->GetUid()); };
+  std::vector<std::set<SoUid>> zorder;
+  zorder.resize(8);
+  uint64_t box_cnt = 0;
+  uint64_t cnt = 0;
+  auto lambda = [&](const SoHandle& soh) {
+    if(cnt == 8 || cnt == 12 || cnt == 16 || cnt == 18 || cnt == 22 || cnt == 24 || cnt == 26) {
+      box_cnt++;
+    }
+    auto* so = rm->GetSimObjectWithSoHandle(soh);
+    zorder[box_cnt].insert(so->GetUid() - ref_uid);
+    cnt++;
+  };
   grid->IterateZOrder(lambda);
 
-  ASSERT_EQ(27u, zorder.size());
-  // boxes separated by comments //
-  EXPECT_EQ(ref_uid + 0, zorder[0]);
-  EXPECT_EQ(ref_uid + 1, zorder[1]);
-  EXPECT_EQ(ref_uid + 3, zorder[2]);
-  EXPECT_EQ(ref_uid + 4, zorder[3]);
-  EXPECT_EQ(ref_uid + 9, zorder[4]);
-  EXPECT_EQ(ref_uid + 10, zorder[5]);
-  EXPECT_EQ(ref_uid + 12, zorder[6]);
-  EXPECT_EQ(ref_uid + 13, zorder[7]);
-  //
-  EXPECT_EQ(ref_uid + 2, zorder[8]);
-  EXPECT_EQ(ref_uid + 5, zorder[9]);
-  EXPECT_EQ(ref_uid + 11, zorder[10]);
-  EXPECT_EQ(ref_uid + 14, zorder[11]);
-  //
-  EXPECT_EQ(ref_uid + 6, zorder[12]);
-  EXPECT_EQ(ref_uid + 7, zorder[13]);
-  EXPECT_EQ(ref_uid + 15, zorder[14]);
-  EXPECT_EQ(ref_uid + 16, zorder[15]);
-  //
-  EXPECT_EQ(ref_uid + 8, zorder[16]);
-  EXPECT_EQ(ref_uid + 17, zorder[17]);
-  //
-  EXPECT_EQ(ref_uid + 18, zorder[18]);
-  EXPECT_EQ(ref_uid + 19, zorder[19]);
-  EXPECT_EQ(ref_uid + 21, zorder[20]);
-  EXPECT_EQ(ref_uid + 22, zorder[21]);
-  //
-  EXPECT_EQ(ref_uid + 20, zorder[22]);
-  EXPECT_EQ(ref_uid + 23, zorder[23]);
-  //
-  EXPECT_EQ(ref_uid + 24, zorder[24]);
-  EXPECT_EQ(ref_uid + 25, zorder[25]);
-  //
-  EXPECT_EQ(ref_uid + 26, zorder[26]);
+  ASSERT_EQ(27u, cnt);
+  // check each box; no order within a box
+  std::vector<std::set<SoUid>> expected(8);
+  expected[0] = std::set<SoUid>{0, 1, 3, 4, 9, 10, 12, 13};
+  expected[1] = std::set<SoUid>{2, 5, 11, 14};
+  expected[2] = std::set<SoUid>{6, 7, 15, 16};
+  expected[3] = std::set<SoUid>{8, 17};
+  expected[4] = std::set<SoUid>{18, 19, 21, 22};
+  expected[5] = std::set<SoUid>{20, 23};
+  expected[6] = std::set<SoUid>{24, 25};
+  expected[7] = std::set<SoUid>{26};
+  for (int i = 0; i < 8; i++) {
+    EXPECT_EQ(expected[i], zorder[i]);
+  }
 }
 
 }  // namespace bdm

@@ -37,6 +37,7 @@
 #include "core/container/fixed_size_vector.h"
 #include "core/container/inline_vector.h"
 #include "core/container/parallel_resize_vector.h"
+#include "core/container/sim_object_vector.h"
 #include "core/param/param.h"
 #include "core/util/log.h"
 #include "core/resource_manager.h"
@@ -89,8 +90,6 @@ class CircularBuffer {
 /// A class that represents Cartesian 3D grid
 class Grid {
  public:
-   using SoHandle = typename ResourceManager::SoHandle;
-
   /// A single unit cube of the grid
   struct Box {
     /// start value of the linked list of simulatio objects inside this box.
@@ -100,7 +99,7 @@ class Grid {
     /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
     std::atomic<uint64_t> length_;
 
-    Box() : start_(std::numeric_limits<uint64_t>::max()), length_(0) {}
+    Box() : start_(SoHandle()), length_(0) {}
     /// Copy Constructor required for boxes_.resize()
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
@@ -121,10 +120,10 @@ class Grid {
     ///
     /// @tparam     TSuccessors  Type of successors
     ///
-    void AddObject(SoHandle so, std::vector<SoHandle>* successors) {
+    void AddObject(SoHandle so, SimObjectVector<SoHandle>* successors) {
       length_++;
       auto old_start = std::atomic_exchange(&start_, so);
-      if (old_start != std::numeric_limits<uint64_t>::max()) {
+      if (old_start != SoHandle()) {
         (*successors)[so] = old_start;
       }
     }
@@ -315,7 +314,7 @@ class Grid {
         boxes_.resize(total_num_boxes, Box());
       }
 
-      successors_.reserve(rm->GetNumSimObjects());
+      successors_.reserve();
 
       // Assign simulation objects to boxes
       rm->ApplyOnAllElementsParallelDynamic(1000, [this](SimObject* sim_object, SoHandle soh) {
@@ -435,12 +434,10 @@ class Grid {
   template <typename Lambda>
   void IterateZOrder(const Lambda& lambda) {
     UpdateBoxZOrder();
-    auto* rm = Simulation::GetActive()->GetResourceManager();
     for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
       auto it = zorder_sorted_boxes_[i].second->begin();
       while (!it.IsAtEnd()) {
-        auto* sim_object = rm->GetSimObjectWithSoHandle(*it);
-        lambda(sim_object);
+        lambda(*it);
         ++it;
       }
     }
@@ -674,7 +671,7 @@ class Grid {
   ///     // Usage
   ///     SoHandle current_element = ...;
   ///     SoHandle next_element = successors_[current_element];
-  std::vector<SoHandle> successors_;
+  SimObjectVector<SoHandle> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
@@ -736,7 +733,7 @@ class Grid {
 
     std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 
-    rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject* so) {
+    rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject* so, SoHandle) {
       auto tid = omp_get_thread_num();
       const auto& position = so->GetPosition();
       // x

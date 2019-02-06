@@ -99,7 +99,7 @@ void Scheduler::Execute(bool last_iteration) {
   };
 
   // update all sim objects: run all CPU operations
-  rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject* so) {
+  rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject* so, SoHandle) {
     sim->GetExecutionContext()->Execute(so, *bound_space_, biology_module_op,
                                         displacement_op, discretization_op);
   });

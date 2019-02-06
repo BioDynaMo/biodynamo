@@ -30,8 +30,8 @@ struct GrowthModule : public BaseBiologyModule {
 
   virtual ~GrowthModule() {}
 
-  /// Create a new instance of this object using the default constructor.
   BaseBiologyModule* GetInstance() const { return new GrowthModule(); }
+  BaseBiologyModule* GetCopy() const { return new GrowthModule(*this); }
 
   void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
     BaseBiologyModule::EventConstructor(event, other, new_oid);
@@ -64,6 +64,7 @@ struct MovementModule : public BaseBiologyModule {
 
   /// Create a new instance of this object using the default constructor.
   BaseBiologyModule* GetInstance() const { return new MovementModule(); }
+  BaseBiologyModule* GetCopy() const { return new MovementModule(*this); }
 
   void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
     BaseBiologyModule::EventConstructor(event, other, new_oid);
@@ -92,6 +93,7 @@ struct RemoveModule : public BaseBiologyModule {
   RemoveModule() {}
 
   BaseBiologyModule* GetInstance() const { return new RemoveModule(); }
+  BaseBiologyModule* GetCopy() const { return new RemoveModule(*this); }
 
   void Run(SimObject* sim_object) override {
     sim_object->RemoveBiologyModule(this);
