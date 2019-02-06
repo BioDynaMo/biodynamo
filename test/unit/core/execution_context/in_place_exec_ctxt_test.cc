@@ -79,6 +79,13 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
   EXPECT_EQ(1u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
   EXPECT_FALSE(rm->Contains(uid_1));
+
+  // check that the internal caches are properly cleared.
+  ctxt->TearDownIteration();
+
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_TRUE(rm->Contains(uid_0));
+  EXPECT_FALSE(rm->Contains(uid_1));
 }
 
 TEST(InPlaceExecutionContext, NewAndGetSimObject) {
