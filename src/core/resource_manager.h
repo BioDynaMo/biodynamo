@@ -19,13 +19,11 @@
 #include <sched.h>
 #include <algorithm>
 #include <cmath>
-#include <future>
 #include <limits>
 #include <memory>
 #include <ostream>
 #include <set>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -64,6 +62,8 @@ namespace bdm {
 /// a specific simulation. ResourceManager extracts Backend and SimObjectTypes.
 class ResourceManager {
  public:
+   using SoHandle = uint64_t;
+
   explicit ResourceManager(TRootIOCtor* r) {}
 
   /// Default constructor. Unfortunately needs to be public although it is
@@ -75,19 +75,25 @@ class ResourceManager {
     for (auto& el : diffusion_grids_) {
       delete el.second;
     }
-    for (auto& el : sim_objects_) {
-      delete el.second;
+    for (auto* so : sim_objects_) {
+      delete so;
     }
   }
 
   ResourceManager& operator=(ResourceManager&& other) {
+    uid_soh_map_ = std::move(other.uid_soh_map_);
     sim_objects_ = std::move(other.sim_objects_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
     return *this;
   }
 
   SimObject* GetSimObject(SoUid uid) {
-    return sim_objects_[uid];
+    SoHandle soh = uid_soh_map_[uid];
+    return sim_objects_[soh];
+  }
+
+  SimObject* GetSimObjectWithSoHandle(SoHandle soh) {
+    return sim_objects_[soh];
   }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
@@ -159,8 +165,8 @@ class ResourceManager {
   ///                              std::cout << element << std::endl;
   ///                          });
   void ApplyOnAllElements(const std::function<void(SimObject*)>& function) {
-    for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
-      function(it->second);
+    for(auto* so : sim_objects_) {
+      function(so);
     }
   }
 
@@ -169,31 +175,11 @@ class ResourceManager {
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
   void ApplyOnAllElementsParallel(const std::function<void(SimObject*)>& function) {
-    // #pragma omp parallel for
-    // FIXME
-    // for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
-    //   function(it->second);
-    // }
-
-    #pragma omp parallel
-        {
-          auto tid = omp_get_thread_num();
-          auto threads = omp_get_max_threads();
-
-          // use static scheduling for now
-          auto correction = sim_objects_.size() % threads == 0 ? 0 : 1;
-          auto chunk = sim_objects_.size() / threads + correction;
-          auto start = tid * chunk;
-          auto end = std::min(sim_objects_.size(), start + chunk);
-
-          auto it = sim_objects_.begin();
-          std::advance(it, start);
-          for (uint64_t i = start; i < end; ++i) {
-            function(it->second);
-            ++it;
-          }
-        }
+    #pragma omp parallel for
+    for(uint64_t i = 0; i < sim_objects_.size(); ++i) {
+      function(sim_objects_[i]);
     }
+  }
 
   /// Apply a function on all elements.\n
   /// Function invocations are parallelized.\n
@@ -203,24 +189,30 @@ class ResourceManager {
   /// size)
   /// \see ApplyOnAllElements
   void ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*)>& function) {
-    // #pragma omp parallel for schedule(dynamic, chunk)
-    // FIXME
-    // for(auto it = sim_objects_.begin(); it != sim_objects_.end(); ++it) {
-    //   function(it->second);
-    // }
-    ApplyOnAllElementsParallel(function);
+    #pragma omp parallel for schedule(dynamic, chunk)
+    for(uint64_t i = 0; i < sim_objects_.size(); ++i) {
+      function(sim_objects_[i]);
+    }
+  }
+
+  void ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*, SoHandle)>& function) {
+    #pragma omp parallel for schedule(dynamic, chunk)
+    for(uint64_t i = 0; i < sim_objects_.size(); ++i) {
+      function(sim_objects_[i], i);
+    }
   }
 
   /// Reserves enough memory to hold `capacity` number of simulation objects for
   /// each simulation object type.
   void Reserve(size_t capacity) {
+    uid_soh_map_.reserve(capacity);
     sim_objects_.reserve(capacity);
   }
 
   /// Returns true if a sim object with the given uid is stored in this
   /// ResourceManager.
   bool Contains(SoUid uid) const {
-    return sim_objects_.find(uid) != sim_objects_.end();
+    return uid_soh_map_.find(uid) != uid_soh_map_.end();
   }
 
   /// Remove all simulation objects
@@ -228,7 +220,8 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void Clear() {
-    for(auto el : sim_objects_) { delete el.second; }
+    for(auto* so : sim_objects_) { delete so; }
+    uid_soh_map_.clear();
     sim_objects_.clear();
   }
 
@@ -242,7 +235,8 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void push_back(SimObject* so) {  // NOLINT
-    sim_objects_[so->GetUid()] = so;
+    sim_objects_.push_back(so);
+    uid_soh_map_[so->GetUid()] = sim_objects_.size() - 1;
   }
 
   /// Removes the simulation object with the given uid.\n
@@ -251,11 +245,22 @@ class ResourceManager {
   /// not affected.
   void Remove(SoUid uid) {
     // remove from map
-    auto it = this->sim_objects_.find(uid);
-    if (it != this->sim_objects_.end()) {
-      auto* so = it->second;
-      delete so;
-      sim_objects_.erase(it);
+    auto it = uid_soh_map_.find(uid);
+    if (it != uid_soh_map_.end()) {
+      SoHandle soh = it->second;
+      uid_soh_map_.erase(it);
+      // remove from vector
+      if(soh == sim_objects_.size() - 1) {
+        delete sim_objects_.back();
+        sim_objects_.pop_back();
+      } else {
+        // swap
+        delete sim_objects_[soh];
+        auto* reordered = sim_objects_.back();
+        sim_objects_[soh] = reordered;
+        sim_objects_.pop_back();
+        uid_soh_map_[reordered->GetUid()] = soh;
+      }
     }
   }
 
@@ -266,8 +271,10 @@ class ResourceManager {
   std::vector<cl::Program>* GetOpenCLProgramList() { return &opencl_programs_; }
 #endif
 
-  /// Simulation object storgage. \n
-  std::unordered_map<SoUid, SimObject*> sim_objects_;
+  /// Maps an SoUid to its storage location in `sim_objects_` \n
+  std::unordered_map<SoUid, SoHandle> uid_soh_map_;
+  ///
+  std::vector<SimObject*> sim_objects_;
 
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
