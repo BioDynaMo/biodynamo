@@ -61,6 +61,7 @@ class InPlaceExecutionContext {
     for(auto& el : new_sim_objects_) {
       rm->push_back(el.second);
     }
+    new_sim_objects_.clear();
 
     // removed sim objects
     // remove them after adding new ones (maybe one has been removed
