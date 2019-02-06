@@ -124,6 +124,7 @@ class Grid {
       length_++;
       auto old_start = std::atomic_exchange(&start_, so);
       if (old_start != nullptr) {
+        #pragma omp critical
         (*successors)[so] = old_start;
       }
     }
