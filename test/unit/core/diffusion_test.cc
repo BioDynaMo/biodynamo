@@ -343,6 +343,8 @@ TEST(DiffusionTest, CopyOldData) {
   delete d_grid;
 }
 
+#ifdef USE_DICT
+
 // Test if all the data members of the diffusion grid are correctly serialized
 // and deserialzed with I/O
 TEST(DiffusionTest, IOTest) {
@@ -392,6 +394,8 @@ TEST(DiffusionTest, IOTest) {
   remove(ROOTFILE);
   delete d_grid;
 }
+
+#endif  // USE_DICT
 
 std::array<double, 3> GetRealCoordinates(const std::array<uint32_t, 3>& bc1,
                                          const std::array<uint32_t, 3>& bc2,

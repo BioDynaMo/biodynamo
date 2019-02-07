@@ -104,7 +104,7 @@ namespace bdm {
   /** Cast `this` to the base class pointer (one level up) */                  \
   const Base *UpCast() const { return static_cast<const Base *>(this); }       \
                                                                                \
-  ClassDefOverride(class_name, class_version_id)
+  BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id)
 
 // -----------------------------------------------------------------------------
 

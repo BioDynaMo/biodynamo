@@ -81,6 +81,7 @@ TEST(RandomTest, Gaus) {
   }
 }
 
+#ifdef USE_DICT
 TEST_F(IOTest, Random) {
   Random random;
   TRandom3 reference;
@@ -99,5 +100,6 @@ TEST_F(IOTest, Random) {
     EXPECT_EQ(reference.Uniform(i, i + 2), random.Uniform(i, i + 2));
   }
 }
+#endif  // USE_DICT
 
 }  // namespace bdm

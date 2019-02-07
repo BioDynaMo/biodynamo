@@ -22,6 +22,8 @@
 
 #define ROOTFILE "bdmFile.root"
 
+#ifdef USE_DICT
+
 namespace bdm {
 
 class SimulationBackupTest : public ::testing::Test {};
@@ -141,3 +143,5 @@ TEST(SimulationBackupTest, BackupAndRestore) {
 }
 
 }  // namespace bdm
+
+#endif  // USE_DICT
