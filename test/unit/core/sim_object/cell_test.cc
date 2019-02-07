@@ -165,7 +165,9 @@ TEST(CellTest, DivideVolumeRatioAxis) {
 
 // TODO move all biology module tests to sim_object tests
 
+#ifdef USE_DICT
 TEST(CellTest, IO) { RunIOTest(); }
+#endif  // USE_DICT
 
 }  // namespace cell_test_internal
 }  // namespace bdm

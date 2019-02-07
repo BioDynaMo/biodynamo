@@ -30,7 +30,9 @@ TEST(ResourceManagerTest, ApplyOnAllElementsParallel) {
   RunApplyOnAllElementsParallelTest();
 }
 
+#ifdef USE_DICT
 TEST(ResourceManagerTest, IO) { RunIOTest(); }
+#endif  // USE_DICT
 
 TEST(ResourceManagerTest, PushBackAndGetSimObjectTest) {
   RunPushBackAndGetSimObjectTest();

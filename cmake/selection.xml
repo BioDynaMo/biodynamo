@@ -1,5 +1,10 @@
 <lcgdict>
   <selection>
+    <!-- FIXME find solution for hardcoded user defined classes  -->
+    <class name="bdm::MyCell" />
+    <class name="bdm::Chemotaxis" />
+    <class name="bdm::SubstanceSecretion" />
+
     <class name="bdm::A" />
     <class name="bdm::B" />
     <class name="bdm::TestSimObject" />
@@ -7,6 +12,7 @@
     <class name="bdm::sim_object_test_internal::GrowthModule" />
     <class name="bdm::sim_object_test_internal::MovementModule" />
     <class name="bdm::sim_object_test_internal::RemoveModule" />
+    <class pattern="bdm::InlineVector<*>"/>
 
     <class pattern="bdm::*<*>"/>
     <class pattern="bdm::*BM"/>

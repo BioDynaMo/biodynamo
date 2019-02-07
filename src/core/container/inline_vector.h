@@ -207,7 +207,7 @@ class InlineVector {
   T* heap_data_ = nullptr;  //[heap_size_]  // NOLINT
   std::size_t size_ = 0;
   std::size_t capacity_ = N;
-  BDM_ROOT_CLASS_DEF(InlineVector, 1);  // NOLINT
+  BDM_TEMPLATE_CLASS_DEF(InlineVector, 1);  // NOLINT
 };
 
 }  // namespace bdm

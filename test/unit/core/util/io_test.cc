@@ -19,6 +19,8 @@
 
 namespace bdm {
 
+#ifdef USE_DICT
+
 TEST(IOUtilTest, RuntimeVars) {
   RuntimeVariables this_machine;
 
@@ -46,5 +48,7 @@ TEST(IOUtilTest, RuntimeVars) {
 
   remove(ROOTFILE);
 }
+
+#endif  // USE_DICT
 
 }  // namespace bdm

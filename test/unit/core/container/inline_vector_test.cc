@@ -264,6 +264,8 @@ TEST(InlineVectorTest, EqualsOperatorWithHeap) {
   EXPECT_FALSE(lhs == rhs);
 }
 
+#ifdef USE_DICT
 TEST(InlineVectorTest, IO) { inline_vector_test_internal::RunIOTest(); }
+#endif  // USE_DICT
 
 }  // namespace bdm

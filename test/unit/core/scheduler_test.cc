@@ -17,6 +17,7 @@
 namespace bdm {
 namespace scheduler_test_internal {
 
+#ifdef USE_DICT
 TEST(SchedulerTest, NoRestoreFile) {
   auto set_param = [](auto* param) { param->restore_file_ = ""; };
   Simulation simulation(TEST_NAME, set_param);
@@ -46,6 +47,7 @@ TEST(SchedulerTest, NoRestoreFile) {
 TEST(SchedulerTest, Restore) { RunRestoreTest(); }
 
 TEST(SchedulerTest, Backup) { RunBackupTest(); }
+#endif  // USE_DICT
 
 TEST(SchedulerTest, EmptySimulationFromBeginning) {
   auto set_param = [](auto* param) {

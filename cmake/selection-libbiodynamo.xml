@@ -8,6 +8,7 @@
     <class name="bdm::ResourceManager" />
     <class name="bdm::SimObject" />
     <class name="bdm::SoHandle" />
+    <class name="bdm::SoPointer" />
     <class name="bdm::Cell" />
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
     <class name="std::unordered_map<uint64_t, bdm::SoHandle>" />

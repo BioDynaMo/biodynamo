@@ -139,6 +139,7 @@ class SimulationTest : public ::testing::Test {
   }
 };
 
+#ifdef USE_DICT
 TEST_F(SimulationTest, InitializeRuntimeParams) {
   std::ofstream config_file(kConfigFileName);
   config_file << kConfigContent;
@@ -208,6 +209,8 @@ TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
   EXPECT_EQ("binary_name3", simulation3.GetUniqueName());
 }
 
+#endif  // USE_DICT
+
 TEST_F(SimulationTest, SimulationId_OuputDir) {
   Simulation simulation("my-simulation");
   Simulation simulation1("my-simulation");
@@ -226,6 +229,7 @@ TEST_F(SimulationTest, SimulationId_OuputDir2) {
   EXPECT_EQ("output", simulation.GetOutputDir());
 }
 
+#ifdef USE_DICT
 TEST_F(IOTest, Simulation) {
   // change state of each data member in Simulation
 
@@ -305,5 +309,7 @@ TEST_F(SimulationTest, ParamIOTest) {
   remove(root_file);
   delete restored;
 }
+
+#endif  // USE_DICT
 
 }  // namespace bdm
