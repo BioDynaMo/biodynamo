@@ -10,7 +10,7 @@ option(test      "Build all tests." ON) # Makes boolean 'test' available.
 option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
-option(paraview  "Enable ParaView" ON)
+option(paraview  "Enable ParaView" OFF)
 
 if(APPLE)
    # valgrind currently broken on macOS 10.12
