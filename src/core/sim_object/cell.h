@@ -380,8 +380,8 @@ class Cell : public SimObject {
   std::array<double, 3> TransformCoordinatesGlobalToPolar(
       const std::array<double, 3>& coord) const;
 
-  std::array<double, 3> position_ = {0, 0, 0};
-  std::array<double, 3> tractor_force_ = {0, 0, 0};
+  std::array<double, 3> position_ = {{0, 0, 0}};
+  std::array<double, 3> tractor_force_ = {{0, 0, 0}};
   double diameter_ = 0;
   double volume_ = 0;
   double adherence_ = 0;
