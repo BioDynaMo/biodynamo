@@ -17,6 +17,7 @@
 #include <string>
 #include "core/sim_object/cell.h"
 #include "core/util/io.h"
+#include "core/resource_manager.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 

@@ -22,8 +22,8 @@ namespace bdm {
 
 std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>> Param::registered_modules_;
 
-void Param::RegisterModuleParam(std::unique_ptr<ModuleParam>&& param) {
-  registered_modules_[param->GetUid()] = std::move(param);
+void Param::RegisterModuleParam(ModuleParam* param) {
+  registered_modules_[param->GetUid()] = std::unique_ptr<ModuleParam>(param);
 }
 
 Param::Param() {

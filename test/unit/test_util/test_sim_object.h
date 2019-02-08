@@ -31,6 +31,8 @@ class TestSimObject : public SimObject {
 
   TestSimObject() {}
 
+  TestSimObject(int data) : data_(data) {}
+
   explicit TestSimObject(const std::array<double, 3>& pos)
       : position_{pos} {}
 
@@ -53,9 +55,13 @@ class TestSimObject : public SimObject {
   double GetDiameter() const override { return diameter_; }
   void SetDiameter(const double diameter) override { diameter_ = diameter; }
 
+  int GetData() const { return data_; }
+  void SetData(double data) { data_ = data; }
+
  protected:
-  std::array<double, 3> position_ = {0, 0, 0};
+  std::array<double, 3> position_ = {{0, 0, 0}};
   double diameter_ = 0;
+  int data_ = 0;
 };
 
 }  // namespace bdm

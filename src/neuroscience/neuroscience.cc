@@ -22,7 +22,8 @@ namespace experimental {
 namespace neuroscience {
 
 void InitModule() {
-  bdm::Param::RegisterModuleParam(std::unique_ptr<ModuleParam>(new Param()));
+  // FIXME
+  // bdm::Param::RegisterModuleParam(new Param());
 }
 
 }  // namespace neuroscience

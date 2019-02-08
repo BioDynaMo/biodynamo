@@ -17,6 +17,7 @@
 
 #include <chrono>
 #include <string>
+#include <functional>
 
 #include "core/visualization/catalyst_adaptor.h"
 
@@ -57,6 +58,8 @@ class Scheduler {
   BoundSpace* bound_space_;
   DisplacementOp* displacement_;
   DiffusionOp* diffusion_;
+
+  std::vector<std::function<void(SimObject*)>> operations_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup();

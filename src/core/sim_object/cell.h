@@ -62,7 +62,10 @@ class Cell : public SimObject {
 
   virtual ~Cell() {}
 
-  // FIXME todo
+  /// \brief This EventConstructor is used to initialise the values of daughter
+  /// 2 for a cell division event.
+  ///
+  /// \see CellDivisionEvent
   void EventConstructor(const Event& event, SimObject* mother, uint64_t new_oid = 0) override {
 
     Base::EventConstructor(event, mother, new_oid);
@@ -126,9 +129,7 @@ class Cell : public SimObject {
       daughter->SetAdherence(mother_cell->GetAdherence());
       daughter->SetDensity(mother_cell->GetDensity());
       // G) TODO(lukas) Copy the intracellular and membrane bound Substances
-    } else {
-      Log::Fatal("Cell", "EventConstructor called with invalid event or mother");
-    }
+    } 
   }
 
   /// \brief EventHandler to modify the data members of this cell

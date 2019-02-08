@@ -28,7 +28,6 @@
 #include "core/biology_module/biology_module.h"
 #include "core/event/event.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/so_pointer.h"
 #include "core/sim_object/so_uid.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
@@ -64,8 +63,6 @@ SoUid SimObject::GetUid() const { return uid_; }
 uint32_t SimObject::GetBoxIdx() const { return box_idx_; }
 
 void SimObject::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
-
-SoPointer SimObject::GetSoPtr() const { return SoPointer(uid_); }
 
 // ---------------------------------------------------------------------------
 // Biology modules

@@ -166,7 +166,8 @@ class SimObject {
   void SetBoxIdx(uint32_t idx);
 
   /// Return simulation object pointer
-  SoPointer GetSoPtr() const;
+  template <typename TSimObject = SimObject>
+  SoPointer<TSimObject> GetSoPtr() const { return SoPointer<TSimObject>(uid_); }
 
   // ---------------------------------------------------------------------------
   // Biology modules

@@ -12,8 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/separate_binary/so_pointer_test.h"
-#include "core/simulation_implementation.h"
+#include "unit/core/sim_object/so_pointer_test.h"
 #include "unit/test_util/io_test.h"
 
 namespace bdm {
@@ -21,8 +20,22 @@ namespace so_pointer_test_internal {
 
 TEST(SoPointerTest, Basics) {
   Simulation simulation(TEST_NAME);
-  SoPointerTestClass so(123);
-  SoPointerTest<SoPointerTestClass, Soa>(so);
+
+  SoPointer<TestSimObject> null_so_pointer;
+  EXPECT_TRUE(null_so_pointer == nullptr);
+
+
+  TestSimObject* so = new TestSimObject();
+  so->SetData(123);
+  simulation.GetResourceManager()->push_back(so);
+
+  SoPointer<TestSimObject> so_ptr(so->GetUid());
+
+  EXPECT_TRUE(so_ptr != nullptr);
+  EXPECT_EQ(123, so_ptr->GetData());
+
+  so_ptr = nullptr;
+  EXPECT_TRUE(so_ptr == nullptr);
 }
 
 TEST_F(IOTest, SoPointer) {
@@ -37,8 +50,3 @@ TEST_F(IOTest, SoPointerNullptr) {
 
 }  // namespace so_pointer_test_internal
 }  // namespace bdm
-
-int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

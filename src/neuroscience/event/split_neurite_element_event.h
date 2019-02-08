@@ -36,6 +36,8 @@ namespace neuroscience {
 struct SplitNeuriteElementEvent : public Event {
   static const EventId kEventId;
 
+  SplitNeuriteElementEvent(double distal_portion) : distal_portion_(distal_portion) {}
+
   virtual ~SplitNeuriteElementEvent() {};
 
   EventId GetId() const override { return kEventId; }

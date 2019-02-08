@@ -17,6 +17,7 @@
 
 #include <omp.h>
 #include "core/operation/dividing_cell_op.h"
+#include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"

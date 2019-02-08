@@ -27,7 +27,7 @@ TEST(SimObjectTest, CopyCtor) {
   cell.AddBiologyModule(gm);
 
   TestSimObject copy(cell);
-  EXPECT_EQ(123, copy.GetBoxIdx());
+  EXPECT_EQ(123u, copy.GetBoxIdx());
   EXPECT_EQ(cell.GetUid(), copy.GetUid());
   ASSERT_EQ(1u, copy.GetAllBiologyModules().size());
   GrowthModule* copy_gm = dynamic_cast<GrowthModule*>(copy.GetAllBiologyModules()[0]);
