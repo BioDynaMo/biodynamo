@@ -110,7 +110,7 @@ struct Param : public ModuleParam {
 
  protected:
   /// Assign values from config file to variables
-  void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
+  void AssignFromConfig(const std::shared_ptr<cpptoml::table>&) override;
 
  private:
   BDM_CLASS_DEF_NV(Param, 1);

@@ -59,7 +59,7 @@ class NeuronNeurite {
   // bool IsNeuronSoma() const { return neuron_ptr_ != nullptr; }
   // bool IsNeuriteElement() const { return neurite_ptr_ != nullptr; }
 
-  virtual const std::array<double, 3> GetPosition() const = 0;
+  // virtual const std::array<double, 3>& GetPosition() const = 0;
 
   virtual std::array<double, 3> OriginOf(SoUid daughter_uid) const = 0;
 
@@ -87,12 +87,12 @@ class NeuronNeurite {
   //   return neurite_ptr_->GetRestingLength();
   // }
 
+  virtual void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) = 0;
+
   virtual void UpdateDependentPhysicalVariables() = 0;
 
   virtual void UpdateRelative(const SoPointer<NeuriteElement>& old_rel,
                       const SoPointer<NeuriteElement>& new_rel) = 0;
-
-  virtual void RemoveDaughter(const SoPointer<NeuriteElement>& mother) = 0;
 };
 
 

@@ -39,6 +39,11 @@ Param::~Param() {
 }
 
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
+  // module parameters
+  for (auto& el : modules_) {
+    el.second->AssignFromConfig(config);
+  }
+
   // simulation group
   BDM_ASSIGN_CONFIG_VALUE(output_dir_, "simulation.output_dir");
   BDM_ASSIGN_CONFIG_VALUE(backup_file_, "simulation.backup_file");

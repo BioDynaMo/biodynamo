@@ -20,7 +20,7 @@
 
 namespace bdm {
 
-class Simulation;
+class Param;
 
 using ModuleParamUid = uint64_t;
 
@@ -52,7 +52,7 @@ struct ModuleParam {
   virtual void AssignFromConfig(const std::shared_ptr<cpptoml::table>&) = 0;
 
  private:
-  friend class Simulation;
+  friend class Param;
   BDM_CLASS_DEF(ModuleParam, 1);
 };
 

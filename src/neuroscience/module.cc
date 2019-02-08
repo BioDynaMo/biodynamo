@@ -12,22 +12,18 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef NEUROSCIENCE_NEUROSCIENCE_H_
-#define NEUROSCIENCE_NEUROSCIENCE_H_
-
 #include "core/param/param.h"
+#include "neuroscience/param.h"
 
 namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
 void InitModule() {
-  // FIXME
-  // bdm::Param::RegisterModuleParam(new Param());
+  using NeuroscienceParam = bdm::experimental::neuroscience::Param;
+  bdm::Param::RegisterModuleParam(new NeuroscienceParam());
 }
 
 }  // namespace neuroscience
 }  // namespace experimental
 }  // namespace bdm
-
-#endif  // NEUROSCIENCE_NEUROSCIENCE_H_

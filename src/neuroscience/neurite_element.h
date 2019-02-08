@@ -15,29 +15,29 @@
 #ifndef NEUROSCIENCE_NEURITE_ELEMENT_H_
 #define NEUROSCIENCE_NEURITE_ELEMENT_H_
 
-// #include <set>
-// #include <string>
-// #include <unordered_map>
-// #include <vector>
-//
-// #include "core/default_force.h"
-// #include "core/shape.h"
-// #include "core/sim_object/sim_object.h"
-// #include "core/util/log.h"
-// #include "core/util/math.h"
-// #include "core/util/random.h"
-// #include "neuroscience/event/neurite_bifurcation_event.h"
-// #include "neuroscience/event/neurite_branching_event.h"
-// #include "neuroscience/event/new_neurite_extension_event.h"
-// #include "neuroscience/event/side_neurite_extension_event.h"
-// #include "neuroscience/event/split_neurite_element_event.h"
-// #include "neuroscience/param.h"
-// #include "neuroscience/neuron_or_neurite.h"
-//
-// namespace bdm {
-// namespace experimental {
-// namespace neuroscience {
-//
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "core/default_force.h"
+#include "core/shape.h"
+#include "core/sim_object/sim_object.h"
+#include "core/util/log.h"
+#include "core/util/math.h"
+#include "core/util/random.h"
+#include "neuroscience/event/neurite_bifurcation_event.h"
+#include "neuroscience/event/neurite_branching_event.h"
+#include "neuroscience/event/new_neurite_extension_event.h"
+#include "neuroscience/event/side_neurite_extension_event.h"
+#include "neuroscience/event/split_neurite_element_event.h"
+#include "neuroscience/param.h"
+#include "neuroscience/neuron_or_neurite.h"
+
+namespace bdm {
+namespace experimental {
+namespace neuroscience {
+
 // /// Class defining a neurite element with cylindrical geometry.
 // /// A cylinder can be seen as a normal cylinder, with two end points and a
 // /// diameter. It is oriented; the two points are called proximal and distal.
@@ -1465,9 +1465,9 @@
 //     UpdateDependentPhysicalVariables();
 //   }
 // };
-//
-// }  // namespace neuroscience
-// }  // namespace experimental
-// }  // namespace bdm
+
+}  // namespace neuroscience
+}  // namespace experimental
+}  // namespace bdm
 
 #endif  // NEUROSCIENCE_NEURITE_ELEMENT_H_
