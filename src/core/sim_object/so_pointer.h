@@ -74,7 +74,7 @@ class SoPointer {
   const TSimObject* operator->() const {
     assert(*this != nullptr);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return ctxt->GetConstSimObject(uid_);
+    return dynamic_cast<const TSimObject*>(ctxt->GetConstSimObject(uid_));
   }
 
   friend std::ostream& operator<<(std::ostream& str, const SoPointer& so_ptr) {

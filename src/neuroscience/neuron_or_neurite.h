@@ -43,7 +43,7 @@ class NeuriteElement;
 
 /// The mother of a neurite element can either be a neuron or a neurite.
 /// This class declares this interface.
-class NeuronNeurite {
+class NeuronOrNeurite {
  public:
    // FIXME
   // const TNeuronSomaSoPtr& GetNeuronSomaSoPtr() const { return neuron_ptr_; }
