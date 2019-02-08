@@ -20,6 +20,24 @@
 
 namespace bdm {
 
+std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>> Param::registered_modules_;
+
+void Param::RegisterModuleParam(std::unique_ptr<ModuleParam>&& param) {
+  registered_modules_[param->GetUid()] = std::move(param);
+}
+
+Param::Param() {
+  for(auto& el : registered_modules_) {
+    modules_[el.first] = el.second->GetCopy();
+  }
+}
+
+Param::~Param() {
+  for(auto& el : modules_) {
+    delete el.second;
+  }
+}
+
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // simulation group
   BDM_ASSIGN_CONFIG_VALUE(output_dir_, "simulation.output_dir");
