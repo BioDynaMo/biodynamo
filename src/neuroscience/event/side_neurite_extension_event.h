@@ -35,6 +35,9 @@ namespace neuroscience {
 struct SideNeuriteExtensionEvent : public Event {
   static const EventId kEventId;
 
+  SideNeuriteExtensionEvent(double length, double diameter, const std::array<double, 3> direction)
+    : length_(length), diameter_(diameter), direction_(direction) {}
+    
   virtual ~SideNeuriteExtensionEvent() {};
 
   EventId GetId() const override { return kEventId; }

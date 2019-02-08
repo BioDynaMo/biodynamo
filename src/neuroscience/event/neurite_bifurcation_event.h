@@ -38,6 +38,10 @@ namespace neuroscience {
 struct NeuriteBifurcationEvent : public Event {
   static const EventId kEventId;
 
+  NeuriteBifurcationEvent(double length, double diameter_l, double diameter_r,
+    const std::array<double, 3>& direction_l, const std::array<double, 3>& direction_r)
+    : length_(length), diameter_left_(diameter_l), diameter_right_(diameter_r), direction_left_(direction_l), direction_right_(direction_r) {}
+    
   virtual ~NeuriteBifurcationEvent() {};
 
   EventId GetId() const override { return kEventId; }

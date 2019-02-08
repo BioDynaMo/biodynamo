@@ -40,6 +40,9 @@ namespace neuroscience {
 struct NeuriteBranchingEvent : public Event {
   static const EventId kEventId;
 
+  NeuriteBranchingEvent(double distal_portion, double length, double diameter, const std::array<double, 3> direction)
+    : distal_portion_(distal_portion), length_(length), diameter_(diameter), direction_(direction) {}
+    
   virtual ~NeuriteBranchingEvent() {};
 
   EventId GetId() const override { return kEventId; }

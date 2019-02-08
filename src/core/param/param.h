@@ -30,7 +30,7 @@ namespace bdm {
 class Simulation;
 
 struct Param {
-  static void RegisterModuleParam(std::unique_ptr<ModuleParam>&& param);
+  static void RegisterModuleParam(ModuleParam* param);
 
   Param();
 

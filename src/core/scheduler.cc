@@ -12,6 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/scheduler.h"
+
 #include <chrono>
 #include <string>
 
@@ -22,7 +24,6 @@
 #include "core/operation/op_timer.h"
 #include "core/resource_manager.h"
 #include "core/simulation_backup.h"
-#include "core/scheduler.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/param/param.h"
 #include "core/simulation.h"
@@ -41,6 +42,19 @@ Scheduler::Scheduler() {
   bound_space_ = new BoundSpace();
   displacement_ = new DisplacementOp();
   diffusion_ = new DiffusionOp();
+
+  // initialise operations_
+  auto biology_module_op = [&](SimObject* so) { so->RunBiologyModules(); };
+  auto discretization_op = [&](SimObject* so) { so->RunDiscretization(); };
+
+  auto displacement_op = [&](SimObject* so) {
+    if (param->run_mechanical_interactions_ && displacement_->UseCpu()) {
+      (*displacement_)(so);
+    }
+  };
+
+  operations_ = {*bound_space_, biology_module_op, displacement_op, discretization_op};
+
 }
 
 Scheduler::~Scheduler() {
@@ -88,20 +102,9 @@ void Scheduler::Execute(bool last_iteration) {
   });
   Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
 
-  // create ops
-  auto biology_module_op = [&](SimObject* so) { so->RunBiologyModules(); };
-  auto discretization_op = [&](SimObject* so) { so->RunDiscretization(); };
-
-  auto displacement_op = [&](SimObject* so) {
-    if (param->run_mechanical_interactions_ && displacement_->UseCpu()) {
-      (*displacement_)(so);
-    }
-  };
-
   // update all sim objects: run all CPU operations
   rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject* so, SoHandle) {
-    sim->GetExecutionContext()->Execute(so, *bound_space_, biology_module_op,
-                                        displacement_op, discretization_op);
+    sim->GetExecutionContext()->Execute(so, operations_);
   });
 
   // update all sim objects: hardware accelerated operations

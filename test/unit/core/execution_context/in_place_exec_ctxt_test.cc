@@ -17,6 +17,7 @@
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
+#include "core/grid.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
@@ -156,8 +157,8 @@ TEST(InPlaceExecutionContext, Execute) {
     EXPECT_EQ(so->GetUid(), uid_0);
     op2_called = true;
   };
-
-  ctxt->Execute(cell_0, op1, op2);
+  std::vector<std::function<void(SimObject*)>> operations = {op1, op2};
+  ctxt->Execute(cell_0, operations);
 
   EXPECT_TRUE(op1_called);
   EXPECT_TRUE(op2_called);
@@ -202,7 +203,7 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
     num_neighbors[so->GetUid()] = nb_counter;
   };
 
-  rm->ApplyOnAllElementsParallel([&](SimObject* so) { ctxt->Execute(so, op); });
+  rm->ApplyOnAllElementsParallel([&](SimObject* so) { ctxt->Execute(so, {op}); });
 
   rm->ApplyOnAllElements([&](SimObject* so) {
     // expected diameter: initial value + num_neighbors + 1
