@@ -37,9 +37,9 @@ struct Param {
   ~Param();
 
   template <typename TModuleParam>
-  TModuleParam* GetModuleParam() {
+  const TModuleParam* GetModuleParam() const {
     assert(modules_.find(TModuleParam::kUid) != modules_.end() && "Couldn't find the requested module parameter.");
-    return modules_[TModuleParam::kUid];
+    return dynamic_cast<const TModuleParam*>(modules_.at(TModuleParam::kUid));
   }
 
   // simulation values ---------------------------------------------------------

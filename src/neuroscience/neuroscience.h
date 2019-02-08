@@ -22,16 +22,7 @@
 #include "neuroscience/event/split_neurite_element_event.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
+#include "neuroscience/module.h"
 #include "neuroscience/param.h"
-
-namespace bdm {
-namespace experimental {
-namespace neuroscience {
-
-void InitModule();
-
-}  // namespace neuroscience
-}  // namespace experimental
-}  // namespace bdm
 
 #endif  // NEUROSCIENCE_NEUROSCIENCE_H_

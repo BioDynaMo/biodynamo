@@ -38,6 +38,8 @@ TEST(SoPointerTest, Basics) {
   EXPECT_TRUE(so_ptr == nullptr);
 }
 
+#ifdef USE_DICT
+
 TEST_F(IOTest, SoPointer) {
   Simulation simulation(TEST_NAME);
   RunIOTest(&simulation);
@@ -47,6 +49,8 @@ TEST_F(IOTest, SoPointerNullptr) {
   Simulation simulation(TEST_NAME);
   IOTestSoPointerNullptr();
 }
+
+#endif  // USE_DICT
 
 }  // namespace so_pointer_test_internal
 }  // namespace bdm
