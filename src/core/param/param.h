@@ -20,6 +20,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <memory>
+#include "core/param/module_param.h"
 #include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
 
@@ -28,6 +30,18 @@ namespace bdm {
 class Simulation;
 
 struct Param {
+  static void RegisterModuleParam(std::unique_ptr<ModuleParam>&& param);
+
+  Param();
+
+  ~Param();
+
+  template <typename TModuleParam>
+  TModuleParam* GetModuleParam() {
+    assert(modules_.find(TModuleParam::kUid) != modules_.end() && "Couldn't find the requested module parameter.");
+    return modules_[TModuleParam::kUid];
+  }
+
   // simulation values ---------------------------------------------------------
 
   /// Variable which specifies method using for solving differential equation
@@ -295,6 +309,8 @@ struct Param {
 
  private:
   friend class Simulation;
+  static std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>> registered_modules_;
+  std::unordered_map<ModuleParamUid, ModuleParam*> modules_;
   BDM_CLASS_DEF_NV(Param, 1);
 };
 

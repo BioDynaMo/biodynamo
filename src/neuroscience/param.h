@@ -20,6 +20,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/param/module_param.h"
 #include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
 
@@ -27,7 +28,13 @@ namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
-struct Param {
+struct Param : public ModuleParam {
+  static const ModuleParamUid kUid;
+
+  ModuleParam* GetCopy() const override;
+
+  ModuleParamUid GetUid() const override;
+
   /// Default actual length value of a neurite.\n
   /// Default value: `1.0`\n
   /// TOML config file:
