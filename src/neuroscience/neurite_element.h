@@ -663,6 +663,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
         // account
         if (this->GetDaughterLeft() == *neighbor_neurite ||
             this->GetDaughterRight() == *neighbor_neurite ||
+            this->GetMother() == neighbor_neurite->GetMother() ||
             (this->GetMother()->As<NeuriteElement>() &&
              this->GetMother()->As<NeuriteElement>() == neighbor_neurite)) {
           return;
@@ -677,9 +678,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       }
 
       DefaultForce force;
-      // FIXME
-      // std::array<double, 4> force_from_neighbor = force.GetForce(this, neighbor);
-      std::array<double, 4> force_from_neighbor = {0, 0, 0, 0};
+      std::array<double, 4> force_from_neighbor = force.GetForce(this, neighbor);
 
       // hack: if the neighbour is a neurite, we need to reduce the force from
       // that neighbour in order to avoid kink behaviour
@@ -712,7 +711,6 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
-
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal
     // tension and daughters)
@@ -919,6 +917,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   // FIXME
   // const NeuronOrNeurite& GetMother() const;
   NeuronOrNeurite* GetMother() { return mother_.Get(); }
+  const NeuronOrNeurite* GetMother() const { return mother_.Get(); }
   // FIXME inconsitent API GetMother and SetMother
   void SetMother(const SoPointer<NeuronOrNeurite>& mother) { mother_ = mother; }
 
