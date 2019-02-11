@@ -58,6 +58,14 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
     }                                                                \
   }(__VA_ARGS__);
 
+#define EXPECT_ARR_NEAR4(...)                                         \
+  [](const std::array<double, 4>& actual,                            \
+     const std::array<double, 4>& expected) {                        \
+    for (size_t i = 0; i < actual.size(); i++) {                     \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value); \
+    }                                                                \
+  }(__VA_ARGS__);
+
 /// Mangled test name.\n
 /// Only works within test class, since the implementation relies on `this`.
 #define TEST_NAME typeid(*this).name()

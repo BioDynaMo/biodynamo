@@ -129,7 +129,7 @@ class Cell : public SimObject {
       daughter->SetAdherence(mother_cell->GetAdherence());
       daughter->SetDensity(mother_cell->GetDensity());
       // G) TODO(lukas) Copy the intracellular and membrane bound Substances
-    } 
+    }
   }
 
   /// \brief EventHandler to modify the data members of this cell

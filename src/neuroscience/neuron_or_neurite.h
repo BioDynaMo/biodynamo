@@ -40,11 +40,28 @@ namespace experimental {
 namespace neuroscience {
 
 class NeuriteElement;
+class NeuronSoma;
 
 /// The mother of a neurite element can either be a neuron or a neurite.
 /// This class declares this interface.
 class NeuronOrNeurite {
  public:
+   template <typename T> T* As() { return dynamic_cast<T*>(this); }
+   template <typename T>
+   const T* As() const { return dynamic_cast<const T*>(this); }
+
+   SoPointer<NeuronOrNeurite> GetNeuronOrNeuriteSoPtr() const;
+
+   bool IsNeuronSoma() const;
+
+   bool IsNeuriteElement() const;
+
+  //  template <typename T>
+  //  SoPointer<T> GetSoPtr1() const {
+  //    if(auto* neuron = As<NeuronSoma>()) { return neuron->template GetSoPtr<T>(); }
+  //    else if(auto* neurite = As<NeuriteElement>()) { return neurite->template GetSoPtr<T>(); }
+  //  }
+
    // FIXME
   // const TNeuronSomaSoPtr& GetNeuronSomaSoPtr() const { return neuron_ptr_; }
   //
@@ -91,8 +108,8 @@ class NeuronOrNeurite {
 
   virtual void UpdateDependentPhysicalVariables() = 0;
 
-  virtual void UpdateRelative(const SoPointer<NeuriteElement>& old_rel,
-                      const SoPointer<NeuriteElement>& new_rel) = 0;
+  virtual void UpdateRelative(const NeuronOrNeurite& old_rel,
+                              const NeuronOrNeurite& new_rel) = 0;
 };
 
 
