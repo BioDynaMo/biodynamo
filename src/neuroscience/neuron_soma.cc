@@ -109,15 +109,17 @@ std::array<double, 3> NeuronSoma::OriginOf(SoUid daughter_uid) const {
 
 void NeuronSoma::UpdateDependentPhysicalVariables() {}
 
-void NeuronSoma::UpdateRelative(const SoPointer<NeuriteElement>& old_rel,
-                    const SoPointer<NeuriteElement>& new_rel) {
-  auto coord = daughters_coord_[old_rel->GetUid()];
+void NeuronSoma::UpdateRelative(const NeuronOrNeurite& old_rel,
+                                const NeuronOrNeurite& new_rel) {
+  auto old_rel_soptr = old_rel.As<NeuriteElement>()->GetSoPtr<NeuriteElement>();
+  auto new_rel_soptr = new_rel.As<NeuriteElement>()->GetSoPtr<NeuriteElement>();
+  auto coord = daughters_coord_[old_rel_soptr->GetUid()];
   auto it = std::find(std::begin(daughters_),
-                      std::end(daughters_), old_rel);
+                      std::end(daughters_), old_rel_soptr);
   assert(it != std::end(daughters_) &&
          "old_element_idx could not be found in daughters_ vector");
-  *it = new_rel;
-  daughters_coord_[new_rel->GetUid()] = coord;
+  *it = new_rel_soptr;
+  daughters_coord_[new_rel_soptr->GetUid()] = coord;
 }
 
 const std::vector<SoPointer<NeuriteElement>>& NeuronSoma::GetDaughters() const {

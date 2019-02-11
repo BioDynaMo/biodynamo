@@ -58,6 +58,16 @@ class SoPointer {
 
   bool operator==(const SoPointer& other) const { return uid_ == other.uid_; }
 
+  bool operator==(const TSimObject& other) const {
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    auto* so = dynamic_cast<const TSimObject*>(ctxt->GetConstSimObject(uid_));
+    return so == &other;
+  }
+
+  bool operator!=(const TSimObject& other) const {
+    return !this->operator==(other);
+  }
+
   /// Assignment operator that changes the internal representation to nullptr.
   /// Makes the following statement possible `so_ptr = nullptr;`
   SoPointer& operator=(std::nullptr_t) {
@@ -81,6 +91,18 @@ class SoPointer {
     str << "{ uid: " << so_ptr.uid_ << "}";
     return str;
   }
+
+  // TODO add test
+  TSimObject& operator*() { return *(this->operator->()); }
+
+  // TODO add test
+  const TSimObject& operator*() const { return *(this->operator->()); }
+
+  // TODO add test
+  TSimObject* Get() { return this->operator->(); }
+
+  // TODO add test
+  const TSimObject* Get() const { return this->operator->(); }
 
  private:
   SoUid uid_ = std::numeric_limits<uint64_t>::max();

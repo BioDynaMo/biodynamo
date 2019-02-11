@@ -32,7 +32,13 @@ TEST(SoPointerTest, Basics) {
   SoPointer<TestSimObject> so_ptr(so->GetUid());
 
   EXPECT_TRUE(so_ptr != nullptr);
+  EXPECT_TRUE(so_ptr == *so);
+  EXPECT_FALSE(so_ptr != *so);
   EXPECT_EQ(123, so_ptr->GetData());
+
+  TestSimObject* so1 = new TestSimObject();
+  EXPECT_FALSE(so_ptr == *so1);
+  EXPECT_TRUE(so_ptr != *so1);
 
   so_ptr = nullptr;
   EXPECT_TRUE(so_ptr == nullptr);
