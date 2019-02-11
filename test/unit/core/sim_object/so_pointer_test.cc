@@ -42,6 +42,7 @@ TEST(SoPointerTest, Basics) {
 
   so_ptr = nullptr;
   EXPECT_TRUE(so_ptr == nullptr);
+  EXPECT_FALSE(so_ptr == *so1);
 }
 
 #ifdef USE_DICT

@@ -60,6 +60,7 @@ class SoPointer {
 
   bool operator==(const TSimObject& other) const {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    if (*this == nullptr) { return false; }
     auto* so = dynamic_cast<const TSimObject*>(ctxt->GetConstSimObject(uid_));
     return so == &other;
   }
