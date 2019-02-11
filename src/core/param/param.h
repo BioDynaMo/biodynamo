@@ -42,6 +42,12 @@ struct Param {
     return dynamic_cast<const TModuleParam*>(modules_.at(TModuleParam::kUid));
   }
 
+  template <typename TModuleParam>
+  TModuleParam* GetModuleParam() {
+    assert(modules_.find(TModuleParam::kUid) != modules_.end() && "Couldn't find the requested module parameter.");
+    return dynamic_cast<TModuleParam*>(modules_.at(TModuleParam::kUid));
+  }
+
   // simulation values ---------------------------------------------------------
 
   /// Variable which specifies method using for solving differential equation
