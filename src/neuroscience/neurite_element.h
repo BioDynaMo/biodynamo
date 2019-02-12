@@ -174,11 +174,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetDensity(double density) { density_ = density; }
 
-  const std::array<double, 3>& GetPosition() const override {
-    auto* ret = new std::array<double, 3>(); // FIXME huge memory leak!!
-    *ret = Math::Subtract(mass_location_,
+  const std::array<double, 3> GetPosition() const override {
+    return Math::Subtract(mass_location_,
                           Math::ScalarMult(0.5, spring_axis_));
-    return *ret;
   }
 
   void SetPosition(const std::array<double, 3>& position) override {

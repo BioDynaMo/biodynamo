@@ -42,7 +42,7 @@ class TestSimObject : public SimObject {
 
   void RunDiscretization() override {}
 
-  const std::array<double, 3>& GetPosition() const override { return position_; }
+  const std::array<double, 3> GetPosition() const override { return position_; }
 
   void SetPosition(const std::array<double, 3>& pos) override { position_ = pos; }
 
