@@ -74,6 +74,7 @@ void SimObject::AddBiologyModule(BaseBiologyModule* module) {
 void SimObject::RemoveBiologyModule(const BaseBiologyModule *remove_module) {
   for (unsigned int i = 0; i < biology_modules_.size(); i++) {
     if (biology_modules_[i] == remove_module) {
+      delete remove_module;
       biology_modules_.erase(biology_modules_.begin() + i);
       // if remove_module was before or at the current run_bm_loop_idx_,
       // correct it by subtracting one.

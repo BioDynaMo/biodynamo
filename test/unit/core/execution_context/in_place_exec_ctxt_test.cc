@@ -135,9 +135,9 @@ TEST(InPlaceExecutionContext, Execute) {
 
   ctxt->DisableNeighborGuard();
 
-  Cell* cell_0 = new Cell();
-  cell_0->SetDiameter(123);
-  auto uid_0 = cell_0->GetUid();
+  Cell cell_0;
+  cell_0.SetDiameter(123);
+  auto uid_0 = cell_0.GetUid();
 
   bool op1_called = false;
   bool op2_called = false;
@@ -158,7 +158,7 @@ TEST(InPlaceExecutionContext, Execute) {
     op2_called = true;
   };
   std::vector<std::function<void(SimObject*)>> operations = {op1, op2};
-  ctxt->Execute(cell_0, operations);
+  ctxt->Execute(&cell_0, operations);
 
   EXPECT_TRUE(op1_called);
   EXPECT_TRUE(op2_called);

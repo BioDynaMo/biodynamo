@@ -36,6 +36,8 @@ struct Param {
 
   ~Param();
 
+  void Restore(Param&& other);
+
   template <typename TModuleParam>
   const TModuleParam* GetModuleParam() const {
     assert(modules_.find(TModuleParam::kUid) != modules_.end() && "Couldn't find the requested module parameter.");
