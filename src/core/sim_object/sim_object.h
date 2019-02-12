@@ -28,6 +28,7 @@
 
 #include "core/sim_object/so_pointer.h"
 #include "core/sim_object/so_uid.h"
+#include "core/sim_object/so_visitor.h"
 #include "core/util/root.h"
 #include "core/util/macros.h"
 #include "core/shape.h"
@@ -41,7 +42,7 @@ namespace bdm {
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
 
 #define BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR(data_member) \
-  f(&data_member, #data_member);
+  visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), static_cast<void*>(&data_member));
 
 #define BDM_SIM_OBJECT_FOREACHDMIN_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
@@ -50,8 +51,7 @@ namespace bdm {
   {                                                           \
     auto it = dm_selector.find(#data_member);                 \
     if (it != dm_selector.end()) {                            \
-      f(&data_member, #data_member);                          \
-      dm_selector.erase(it);                                  \
+      visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), static_cast<void*>(&data_member)); \
     }                                                         \
   }
 
@@ -79,22 +79,16 @@ namespace bdm {
   SimObject* GetCopy() const override { return new class_name(*this); }\
                                                                                \
   /** Executes the given function for all data members             */          \
-  /**  Function could be a lambda in the following form:           */          \
-  /**  `[](auto* data_member, const std::string& dm_name) { ... }` */          \
-  template <typename Function>                           \
-  void ForEachDataMember(Function f) {   \
+  void ForEachDataMember(SoVisitor* visitor) {   \
     BDM_SIM_OBJECT_FOREACHDM_BODY(__VA_ARGS__)                                 \
-    Base::ForEachDataMember(f);                                                \
+    Base::ForEachDataMember(visitor);                                                \
   }                                                                            \
                                                                                \
   /** Executes the given function for the specified data members    */         \
-  /** Function could be a lambda in the following form              */         \
-  /** `[](auto* data_member, const std::string& dm_name) { ... }`   */         \
-  template <typename Function>                           \
   void ForEachDataMemberIn(              \
-      std::set<std::string> dm_selector, Function f) {                         \
+      const std::set<std::string>& dm_selector, SoVisitor* visitor) {                         \
     BDM_SIM_OBJECT_FOREACHDMIN_BODY(__VA_ARGS__)                               \
-    Base::ForEachDataMemberIn(dm_selector, f);                                 \
+    Base::ForEachDataMemberIn(dm_selector, visitor);                                 \
   }                                                                            \
                                                                                \
  protected:                                                                    \
@@ -125,20 +119,16 @@ class SimObject {
   SimObject(const SimObject &other);
 
   /// Executes the given function for all data members
-  ///  Function could be a lambda in the following form:
-  ///  `[](auto* data_member, const std::string& dm_name) { ... }`
-  template <typename Function>
-  void ForEachDataMember(Function f) {
+  /// \see `SoVisitor`
+  virtual void ForEachDataMember(SoVisitor* visitor) {
     BDM_SIM_OBJECT_FOREACHDM_BODY(uid_, box_idx_,
                           biology_modules_, run_bm_loop_idx_)
   }
 
-  /// Executes the given function for the specified data members
-  /// Function could be a lambda in the following form
-  /// `[](auto* data_member, const std::string& dm_name) { ... }`
-  template <typename Function>
-  void ForEachDataMemberIn(
-      std::set<std::string> dm_selector, Function f) {
+  /// Executes the given visitor for the specified data members
+  /// \see `SoVisitor`
+  virtual void ForEachDataMemberIn(
+      const std::set<std::string>& dm_selector, SoVisitor* visitor) {
     BDM_SIM_OBJECT_FOREACHDMIN_BODY(uid_, box_idx_,
                           biology_modules_, run_bm_loop_idx_)
   }
