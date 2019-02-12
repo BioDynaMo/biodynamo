@@ -13,7 +13,6 @@
 // -----------------------------------------------------------------------------
 
 #include <vector>
-
 #include "core/param/param.h"
 #include "core/util/cpptoml.h"
 #include "core/util/log.h"
