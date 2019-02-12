@@ -211,7 +211,7 @@ class Cell : public SimObject {
 
   double GetDensity() const { return density_; }
 
-  const std::array<double, 3> GetPosition() const override { return position_; }
+  const std::array<double, 3>& GetPosition() const override { return position_; }
 
   const std::array<double, 3>& GetTractorForce() const {
     return tractor_force_;

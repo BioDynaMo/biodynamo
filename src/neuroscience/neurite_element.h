@@ -174,9 +174,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetDensity(double density) { density_ = density; }
 
-  const std::array<double, 3> GetPosition() const override {
-    return Math::Subtract(mass_location_,
+  const std::array<double, 3>& GetPosition() const override {
+    tmp_position_ =  Math::Subtract(mass_location_,
                           Math::ScalarMult(0.5, spring_axis_));
+    return tmp_position_;
   }
 
   void SetPosition(const std::array<double, 3>& position) override {
@@ -1153,6 +1154,12 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// FIXME initialization here??
   double resting_length_ = spring_constant_ * actual_length_ /
                                  (tension_ + spring_constant_);
+
+  /// Used to store the calculation result of `GetPosition` and to return
+  /// a const reference to it.
+  /// NB: This data memeber is not kept coherent with `mass_location_`.
+  /// Use `GetPosition()` or `mass_location_`.
+  mutable std::array<double, 3> tmp_position_;  //!
 
   /// \brief Split this neurite element into two segments.
   ///
