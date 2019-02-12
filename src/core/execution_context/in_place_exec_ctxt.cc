@@ -22,7 +22,11 @@ namespace bdm {
 
 InPlaceExecutionContext::InPlaceExecutionContext() {}
 
-InPlaceExecutionContext::~InPlaceExecutionContext() {}
+InPlaceExecutionContext::~InPlaceExecutionContext() {
+  for(auto& el : new_sim_objects_) {
+    delete el.second;
+  }
+}
 
 void InPlaceExecutionContext::SetupIteration() {
   // first iteration might have uncommited changes
