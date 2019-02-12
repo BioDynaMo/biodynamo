@@ -151,6 +151,14 @@ class ResourceManager {
       Log::Fatal(
           "Restored ResourceManager has different number of NUMA nodes.");
     }
+    for (auto& el : diffusion_grids_) {
+      delete el.second;
+    }
+    for (auto& numa_sos : sim_objects_) {
+      for (auto* so : numa_sos) {
+        delete so;
+      }
+    }
     uid_soh_map_ = std::move(other.uid_soh_map_);
     sim_objects_ = std::move(other.sim_objects_);
     diffusion_grids_ = std::move(other.diffusion_grids_);

@@ -98,6 +98,7 @@ class SimulationBackup {
     file.Get()->GetObject(kSimulationName.c_str(), restored_simulation);
     Simulation::GetActive()->Restore(std::move(*restored_simulation));
     Log::Info("Scheduler", "Restored simulation from ", restore_file_);
+    delete restored_simulation;
 
     // call all after restore events
     for (auto&& event : after_restore_event_) {

@@ -80,10 +80,8 @@ void Simulation::Restore(Simulation&& restored) {
   }
 
   // param and rm
-  *param_ = *restored.param_;
-  //   the previous statement performs a shallow copy of Param::modules_
-  //   to avoid double frees, clear modules_ in restored
-  restored.param_->modules_.clear();
+  param_->Restore(std::move(*restored.param_));
+  restored.param_ = nullptr;
   *rm_ = std::move(*restored.rm_);
   restored.rm_ = nullptr;
 

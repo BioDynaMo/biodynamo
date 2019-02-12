@@ -37,6 +37,14 @@ Param::~Param() {
   }
 }
 
+void Param::Restore(Param&& other) {
+  for(auto& el : modules_) {
+    delete el.second;
+  }
+  *this = other;
+  other.modules_.clear();
+}
+
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // module parameters
   for (auto& el : modules_) {
