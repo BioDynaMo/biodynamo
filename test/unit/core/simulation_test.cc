@@ -233,7 +233,7 @@ TEST_F(SimulationTest, SimulationId_OuputDir2) {
 TEST_F(IOTest, Simulation) {
   // change state of each data member in Simulation
 
-  auto set_param = [](auto* param) { param->simulation_time_step_ = 3.14; };
+  auto set_param = [](Param* param) { param->simulation_time_step_ = 3.14; };
   Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
   auto* param = sim.GetParam();
