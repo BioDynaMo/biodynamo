@@ -87,8 +87,7 @@ TEST(SimObjectTest, BiologyModuleEventHandler) {
   cell.AddBiologyModule(new GrowthModule());
 
   CellDivisionEvent event(1, 2, 3);
-  TestSimObject copy;
-  copy.EventConstructor(event, &cell, 0);
+  TestSimObject copy(event, &cell, 0);
   cell.EventHandler(event, &copy);
 
   const auto& bms = cell.GetAllBiologyModules();

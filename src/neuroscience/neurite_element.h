@@ -80,10 +80,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   /// TODO
-  void EventConstructor(const Event& event, SimObject* other, uint64_t new_oid = 0) override {
-
-    Base::EventConstructor(event, other, new_oid);
-
+  NeuriteElement(const Event& event, SimObject* other, uint64_t new_oid = 0) : Base(event, other, new_oid) {
     if (event.GetId() == NewNeuriteExtensionEvent::kEventId) {
         const auto& e = dynamic_cast<const NewNeuriteExtensionEvent&>(event);
         auto* soma = dynamic_cast<NeuronSoma*>(other);
@@ -314,11 +311,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // then append a "daughter right" between the two
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     NeuriteBranchingEvent event(0.5, length, new_branch_diameter, direction);
-    auto* proximal = GetInstance();
-    proximal->EventConstructor(event, this, 0);
+    auto* proximal = GetInstance(event, this, 0);
     ctxt->push_back(proximal);
-    auto* branch = GetInstance()->As<NeuriteElement>();
-    branch->EventConstructor(event, proximal, 1);
+    auto* branch = GetInstance(event, proximal, 1)->As<NeuriteElement>();
     ctxt->push_back(branch);
     EventHandler(event, proximal, branch);
     return branch;
@@ -386,11 +381,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     NeuriteBifurcationEvent event(length, diameter_1, diameter_2,
                                      direction_1, direction_2);
-    auto* new_branch_l = GetInstance()->As<NeuriteElement>();
-    new_branch_l->EventConstructor(event, this, 0);
+    auto* new_branch_l = GetInstance(event, this, 0)->As<NeuriteElement>();
     ctxt->push_back(new_branch_l);
-    auto* new_branch_r = GetInstance()->As<NeuriteElement>();
-    new_branch_r->EventConstructor(event, this, 1);
+    auto* new_branch_r = GetInstance(event, this, 1)->As<NeuriteElement>();
     ctxt->push_back(new_branch_r);
     EventHandler(event, new_branch_l, new_branch_r);
     return {new_branch_l, new_branch_r};
@@ -1167,8 +1160,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   NeuriteElement* SplitNeuriteElement(double distal_portion = 0.5) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     SplitNeuriteElementEvent event(distal_portion);
-    auto* new_proximal_element = GetInstance()->As<NeuriteElement>();
-    new_proximal_element->EventConstructor(event, this);
+    auto* new_proximal_element = GetInstance(event, this)->As<NeuriteElement>();
     ctxt->push_back(new_proximal_element);
     EventHandler(event, new_proximal_element);
     return new_proximal_element;
@@ -1223,7 +1215,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     SideNeuriteExtensionEvent event{length, diameter, direction};
-    auto* new_branch = GetInstance()->As<NeuriteElement>();
+    auto* new_branch = GetInstance(event, this)->As<NeuriteElement>();
     new_branch->EventHandler(event, this);
     ctxt->push_back(new_branch);
     EventHandler(event, new_branch);

@@ -45,21 +45,21 @@ struct BaseBiologyModule {
     }
   }
 
+  BaseBiologyModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) {
+    copy_mask_ = other->copy_mask_;
+    remove_mask_ = other->remove_mask_;
+  }
+
   BaseBiologyModule(const BaseBiologyModule& other)
       : copy_mask_(other.copy_mask_), remove_mask_(other.remove_mask_) {}
 
   virtual ~BaseBiologyModule() {}
 
   /// Create a new instance of this object using the default constructor.
-  virtual BaseBiologyModule* GetInstance() const = 0;
+  virtual BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const = 0;
 
   /// Create a copy of this biology module.
   virtual BaseBiologyModule* GetCopy() const = 0;
-
-  virtual void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) {
-    copy_mask_ = other->copy_mask_;
-    remove_mask_ = other->remove_mask_;
-  }
 
   virtual void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) {}
 

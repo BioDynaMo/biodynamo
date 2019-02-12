@@ -73,7 +73,7 @@ namespace bdm {
   explicit class_name(TRootIOCtor *io_ctor) {}                            \
   \
   /** Create a new instance of this object using the default constructor. */   \
-  SimObject* GetInstance() const override { return new class_name(); }\
+  SimObject* GetInstance(const Event& event, SimObject* other, uint64_t new_oid = 0) const override { return new class_name(event, other, new_oid); }\
   \
   /** Create a copy of this object. */   \
   SimObject* GetCopy() const override { return new class_name(*this); }\
@@ -108,15 +108,17 @@ class BaseBiologyModule;
 /// Contains code required by all simulation objects
 class SimObject {
  public:
-  SimObject();
-
-  virtual ~SimObject();
-
-  // ---------------------------------------------------------------------------
   static const std::string GetScalarTypeName();
 
+  SimObject();
+
+  SimObject(const Event& event, SimObject* other, uint64_t new_oid = 0);
+
   explicit SimObject(TRootIOCtor *io_ctor);
+
   SimObject(const SimObject &other);
+
+  virtual ~SimObject();
 
   /// Executes the given function for all data members
   /// \see `SoVisitor`
@@ -136,7 +138,7 @@ class SimObject {
   // ---------------------------------------------------------------------------
 
   /// Create a new instance of this object using the default constructor.
-  virtual SimObject* GetInstance() const = 0;
+  virtual SimObject* GetInstance(const Event& event, SimObject* other, uint64_t new_oid = 0) const = 0;
 
   /// Create a copy of this object.
   virtual SimObject* GetCopy() const = 0;
@@ -189,8 +191,6 @@ class SimObject {
   virtual void SetDiameter(double diameter) = 0;
 
   void RemoveFromSimulation() const;
-
-  virtual void EventConstructor(const Event& event, SimObject* other, uint64_t new_oid = 0);
 
   virtual void EventHandler(const Event &event, SimObject *other1, SimObject* other2 = nullptr);
 

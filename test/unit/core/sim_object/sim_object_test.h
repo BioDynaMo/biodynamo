@@ -26,21 +26,21 @@ namespace sim_object_test_internal {
 
 struct GrowthModule : public BaseBiologyModule {
   double growth_rate_ = 0.5;
+
   GrowthModule() : BaseBiologyModule(CellDivisionEvent::kEventId) {}
 
-  virtual ~GrowthModule() {}
-
-  BaseBiologyModule* GetInstance() const { return new GrowthModule(); }
-  BaseBiologyModule* GetCopy() const { return new GrowthModule(*this); }
-
-  void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
-    BaseBiologyModule::EventConstructor(event, other, new_oid);
+  GrowthModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
     if(GrowthModule* gbm = dynamic_cast<GrowthModule*>(other)) {
       growth_rate_ = gbm->growth_rate_;
     } else {
       Log::Fatal("GrowthModule::EventConstructor", "other was not of type GrowthModule");
     }
   }
+
+  virtual ~GrowthModule() {}
+
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const { return new GrowthModule(event, other, new_oid); }
+  BaseBiologyModule* GetCopy() const { return new GrowthModule(*this); }
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)
@@ -62,18 +62,17 @@ struct MovementModule : public BaseBiologyModule {
   explicit MovementModule(const std::array<double, 3>& velocity)
       : BaseBiologyModule(0, CellDivisionEvent::kEventId), velocity_(velocity) {}
 
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance() const { return new MovementModule(); }
-  BaseBiologyModule* GetCopy() const { return new MovementModule(*this); }
-
-  void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
-    BaseBiologyModule::EventConstructor(event, other, new_oid);
+  MovementModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
     if(MovementModule* mbm = dynamic_cast<MovementModule*>(other)) {
       velocity_ = mbm->velocity_;
     } else {
       Log::Fatal("MovementModule::EventConstructor", "other was not of type MovementModule");
     }
   }
+
+  /// Create a new instance of this object using the default constructor.
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const { return new MovementModule(event, other, new_oid); }
+  BaseBiologyModule* GetCopy() const { return new MovementModule(*this); }
 
   /// Default event handler
   void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
@@ -91,8 +90,9 @@ struct MovementModule : public BaseBiologyModule {
 /// This biology module removes itself the first time it is executed
 struct RemoveModule : public BaseBiologyModule {
   RemoveModule() {}
+  RemoveModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {}
 
-  BaseBiologyModule* GetInstance() const { return new RemoveModule(); }
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const { return new RemoveModule(event, other, new_oid); }
   BaseBiologyModule* GetCopy() const { return new RemoveModule(*this); }
 
   void Run(SimObject* sim_object) override {

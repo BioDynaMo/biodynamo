@@ -38,14 +38,7 @@ struct RegulateGenes : public BaseBiologyModule {
 
   explicit RegulateGenes(EventId event) : BaseBiologyModule(event) {}
 
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance() const override { return new RegulateGenes(); }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override { return new RegulateGenes(*this); }
-
-  void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
-    BaseBiologyModule::EventConstructor(event, other, new_oid);
+  RegulateGenes(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
     if(RegulateGenes* rgbm = dynamic_cast<RegulateGenes*>(other)) {
       concentrations_ = rgbm->concentrations_;
       first_derivatives_ = rgbm->first_derivatives_;
@@ -53,6 +46,14 @@ struct RegulateGenes : public BaseBiologyModule {
       Log::Fatal("RegulateGenes::EventConstructor", "other was not of type RegulateGenes");
     }
   }
+
+  /// Create a new instance of this object using the default constructor.
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override {
+    return new RegulateGenes(event, other, new_oid);
+  }
+
+  /// Create a copy of this biology module.
+  BaseBiologyModule* GetCopy() const override { return new RegulateGenes(*this); }
 
   /// Empty default event handler.
   void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {

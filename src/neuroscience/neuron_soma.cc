@@ -30,10 +30,7 @@ NeuronSoma::~NeuronSoma() {}
 
 NeuronSoma::NeuronSoma(const std::array<double, 3>& position) : Base(position) {}
 
-void NeuronSoma::EventConstructor(const Event& event, SimObject* mother_so, uint64_t new_oid) {
-
-  Base::EventConstructor(event, mother_so, new_oid);
-
+NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so, uint64_t new_oid) : Base(event, mother_so, new_oid) {
   const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event);
   NeuronSoma* mother = dynamic_cast<NeuronSoma*>(mother_so);
   if(cdevent && mother) {
@@ -76,8 +73,7 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(const std::array<double, 3>& direct
 NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi, double theta) {
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
   NewNeuriteExtensionEvent event(diameter, phi, theta);
-  NeuriteElement* neurite = new NeuriteElement();
-  neurite->EventConstructor(event, this);
+  NeuriteElement* neurite = new NeuriteElement(event, this);
   ctxt->push_back(neurite);
   EventHandler(event, neurite);
   return neurite;
