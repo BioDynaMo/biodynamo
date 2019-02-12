@@ -83,7 +83,7 @@ function(bdm_add_test_executable TEST_TARGET)
       AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_resource_manager_aos_test"
       AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_so_pointer_aos_test")
     # filter out SchedulerTest.Backup because of timing issue
-    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND ${CMAKE_SOURCE_DIR}/util/valgrind.sh ./${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*)
+    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND ${CMAKE_SOURCE_DIR}/util/valgrind.sh ./${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*)
   endif()
 
   add_dependencies(check ${TEST_TARGET})
