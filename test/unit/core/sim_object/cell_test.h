@@ -39,9 +39,7 @@ class TestCell : public Cell {
 
   virtual ~TestCell() {}
 
-  void EventConstructor(const Event& event, SimObject* mother, uint64_t new_oid = 0) override {
-    Base::EventConstructor(event, mother, new_oid);
-
+  TestCell(const Event& event, SimObject* mother, uint64_t new_oid = 0) : Base(event, mother, new_oid) {
     const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event);
     TestCell* mother_cell = dynamic_cast<TestCell*>(mother);
     if(cdevent && mother_cell && mother_cell->capture_input_parameters_) {

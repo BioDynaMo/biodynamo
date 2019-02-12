@@ -33,14 +33,7 @@ struct GrowDivide : public BaseBiologyModule {
         threshold_(threshold),
         growth_rate_(growth_rate) {}
 
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance() const override { return new GrowDivide(); }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override { return new GrowDivide(*this); }
-
-  void EventConstructor(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) override {
-    BaseBiologyModule::EventConstructor(event, other, new_oid);
+  GrowDivide(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
     if(GrowDivide* gdbm = dynamic_cast<GrowDivide*>(other)) {
       threshold_ = gdbm->threshold_;
       growth_rate_ = gdbm->growth_rate_;
@@ -48,6 +41,14 @@ struct GrowDivide : public BaseBiologyModule {
       Log::Fatal("GrowDivide::EventConstructor", "other was not of type GrowDivide");
     }
   }
+
+  /// Create a new instance of this object using the default constructor.
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override {
+    return new GrowDivide(event, other, new_oid);
+  }
+
+  /// Create a copy of this biology module.
+  BaseBiologyModule* GetCopy() const override { return new GrowDivide(*this); }
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)

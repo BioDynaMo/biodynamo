@@ -60,16 +60,11 @@ class Cell : public SimObject {
   explicit Cell(const std::array<double, 3>& position)
       : position_(position), density_{1.0} {}
 
-  virtual ~Cell() {}
-
-  /// \brief This EventConstructor is used to initialise the values of daughter
+  /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.
   ///
   /// \see CellDivisionEvent
-  void EventConstructor(const Event& event, SimObject* mother, uint64_t new_oid = 0) override {
-
-    Base::EventConstructor(event, mother, new_oid);
-
+  Cell(const Event& event, SimObject* mother, uint64_t new_oid = 0) : Base(event, mother, new_oid) {
     const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event);
     Cell* mother_cell = dynamic_cast<Cell*>(mother);
     if(cdevent && mother_cell) {
@@ -131,6 +126,8 @@ class Cell : public SimObject {
       // G) TODO(lukas) Copy the intracellular and membrane bound Substances
     }
   }
+
+  virtual ~Cell() {}
 
   /// \brief EventHandler to modify the data members of this cell
   /// after a cell division.
@@ -196,8 +193,7 @@ class Cell : public SimObject {
   virtual Cell* Divide(double volume_ratio, double phi, double theta) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     CellDivisionEvent event(volume_ratio, phi, theta);
-    auto* daughter = static_cast<Cell*>(GetInstance());
-    daughter->EventConstructor(event, this);
+    auto* daughter = static_cast<Cell*>(GetInstance(event, this));
     ctxt->push_back(daughter);
     EventHandler(event, daughter);
     return daughter;

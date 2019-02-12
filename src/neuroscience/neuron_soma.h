@@ -47,14 +47,14 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   // double GetDiameter() const override { return Cell::GetDiameter(); }
   // void SetDiameter(const double diameter) override { Cell::SetDiameter(diameter); }
 
-  /// \brief This EventConstructor is used to initialise the values of daughter
+  /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.
   ///
   /// Please note that  this implementation does not allow division of neuron
   /// somas with already attached neurite elements.
   ///
   /// \see CellDivisionEvent
-  void EventConstructor(const Event& event, SimObject* mother_so, uint64_t new_oid = 0) override;
+  NeuronSoma(const Event& event, SimObject* mother_so, uint64_t new_oid = 0);
 
   /// \brief EventHandler to modify the data members of this cell
   /// after a cell division, or new neurite branching event

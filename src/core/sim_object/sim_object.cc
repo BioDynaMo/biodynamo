@@ -42,10 +42,12 @@ const std::string SimObject::GetScalarTypeName() { return "Cell"; }
 
 SimObject::SimObject() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
 
-SimObject::~SimObject() {
-  for(auto* el : biology_modules_) {
-    delete el;
-  }
+SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid) : SimObject() {
+  box_idx_ = other->GetBoxIdx();
+  // biology modules
+  auto* other_bms = &(other->biology_modules_);
+  // copy biology_modules_ to me
+  CopyBiologyModules(event, other_bms);
 }
 
 SimObject::SimObject(TRootIOCtor *io_ctor) {}
@@ -55,6 +57,12 @@ SimObject::SimObject(const SimObject &other) : uid_(other.uid_), box_idx_(other.
     biology_modules_.push_back(module->GetCopy());
   }
 };
+
+SimObject::~SimObject() {
+  for(auto* el : biology_modules_) {
+    delete el;
+  }
+}
 
 void SimObject::RunDiscretization() {}
 
@@ -98,14 +106,6 @@ void SimObject::RemoveFromSimulation() const {
   Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(uid_);
 }
 
-void SimObject::EventConstructor(const Event& event, SimObject* other, uint64_t new_oid) {
-  box_idx_ = other->GetBoxIdx();
-  // biology modules
-  auto* other_bms = &(other->biology_modules_);
-  // copy biology_modules_ to me
-  CopyBiologyModules(event, other_bms);
-}
-
 void SimObject::EventHandler(const Event &event, SimObject *other1, SimObject* other2) {
   // call event handler for biology modules
   auto *left_bms = other1 == nullptr ? nullptr : &(other1->biology_modules_);
@@ -116,8 +116,7 @@ void SimObject::EventHandler(const Event &event, SimObject *other1, SimObject* o
 void SimObject::CopyBiologyModules(const Event& event, decltype(biology_modules_) *other) {
   for (auto* bm : *other) {
     if(bm->Copy(event.GetId())) {
-      auto* new_bm = bm->GetInstance();
-      new_bm->EventConstructor(event, bm);
+      auto* new_bm = bm->GetInstance(event, bm);
       biology_modules_.push_back(new_bm);
     }
   }

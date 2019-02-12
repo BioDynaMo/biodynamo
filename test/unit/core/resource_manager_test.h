@@ -34,6 +34,7 @@ class A : public TestSimObject {
 
  public:
   A() {}  // for ROOT I/O
+  A(const Event& event, SimObject* other, uint64_t new_oid = 0) : Base(event, other, new_oid) {}
   explicit A(int data) { data_ = data; }
 
   int GetData() const { return data_; }
@@ -47,6 +48,7 @@ class B : public TestSimObject {
 
  public:
   B() {}  // for ROOT I/O
+  B(const Event& event, SimObject* other, uint64_t new_oid = 0) : Base(event, other, new_oid) {} 
   explicit B(double data) { data_ = data; }
 
   double GetData() const { return data_; }

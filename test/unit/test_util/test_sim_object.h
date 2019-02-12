@@ -36,6 +36,8 @@ class TestSimObject : public SimObject {
   explicit TestSimObject(const std::array<double, 3>& pos)
       : position_{pos} {}
 
+  TestSimObject(const Event& event, SimObject* other, uint64_t new_oid = 0) : Base(event, other, new_oid) {} 
+
   virtual ~TestSimObject() {}
 
   Shape GetShape() const override { return Shape::kSphere; };
