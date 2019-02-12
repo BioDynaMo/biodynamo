@@ -38,7 +38,7 @@ Scheduler::Scheduler() {
     restore_point_ = backup_->GetSimulationStepsFromBackup();
   }
   visualization_ =
-      new CatalystAdaptor<>(BDM_SRC_DIR "/visualization/simple_pipeline.py");
+      new CatalystAdaptor(BDM_SRC_DIR "/visualization/simple_pipeline.py");
   bound_space_ = new BoundSpace();
   displacement_ = new DisplacementOp();
   diffusion_ = new DiffusionOp();

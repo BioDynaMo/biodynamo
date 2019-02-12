@@ -52,7 +52,7 @@ class Scheduler {
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  CatalystAdaptor<>* visualization_ = nullptr;  //!
+  CatalystAdaptor* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 
   BoundSpace* bound_space_;

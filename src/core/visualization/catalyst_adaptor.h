@@ -84,7 +84,6 @@ struct VtkDiffusionGrid {
 
 /// The class that bridges the simulation code with ParaView.
 /// Requires that simulation objects use the Soa memory layout.
-template <typename TSimulation = Simulation>
 class CatalystAdaptor {
  public:
   /// Initializes Catalyst with the predefined pipeline and allocates memory
@@ -351,9 +350,6 @@ class CatalystAdaptor {
   ///
   /// @param      data_description  The data description
   ///
-  template <typename TTSimulation = Simulation>
-  typename std::enable_if<std::is_same<
-      typename Simulation::ResourceManager_t::Backend, Soa>::value>::type
   CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     // Add simulation objects to the visualization if requested
     auto* sim = Simulation::GetActive();
@@ -424,15 +420,6 @@ class CatalystAdaptor {
         idx++;
       }
     }
-  }
-
-  template <typename TTSimulation = Simulation>
-  typename std::enable_if<!std::is_same<
-      typename Simulation::ResourceManager_t::Backend, Soa>::value>::type
-  CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
-    Fatal("CatalystAdaptor",
-          "At the moment, CatalystAdaptor supports only simulation objects "
-          "with Soa backend!");
   }
 
   /// Applies the pipeline to the simulation objects during live visualization
@@ -607,19 +594,15 @@ class CatalystAdaptor {
   }
 };
 
-template <typename T>
 vtkCPProcessor* CatalystAdaptor<T>::g_processor_ = nullptr;
 
-template <typename T>
 constexpr const char* CatalystAdaptor<T>::kSimulationInfoJson;
 
-template <typename T>
 std::atomic<uint64_t> CatalystAdaptor<T>::counter_;
 
 #else
 
 /// False front (to ignore Catalyst in gtests)
-template <typename TSimulation = Simulation>
 class CatalystAdaptor {
  public:
   explicit CatalystAdaptor(const std::string& script) {}

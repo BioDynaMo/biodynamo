@@ -36,7 +36,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   shapes["cell"] = kSphere;
   shapes["neurite"] = kCylinder;
 
-  CatalystAdaptor<>::GenerateSimulationInfoJson(shapes);
+  CatalystAdaptor::GenerateSimulationInfoJson(shapes);
 
   ASSERT_TRUE(FileExists(kSimulationInfoJson));
 
@@ -99,7 +99,7 @@ TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
   ofs << empty_json;
   ofs.close();
 
-  CatalystAdaptor<>::GenerateParaviewState();
+  CatalystAdaptor::GenerateParaviewState();
 
   ASSERT_TRUE(FileExists(kParaviewState));
 }
@@ -142,7 +142,7 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
   rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
 
   // Write diffusion visualization to file
-  CatalystAdaptor<> adaptor("");
+  CatalystAdaptor adaptor("");
   adaptor.Visualize(1, true);
   adaptor.WriteToFile(0);
 

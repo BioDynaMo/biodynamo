@@ -537,7 +537,7 @@ TEST(DiffusionTest, ModelInitializer) {
   rm->GetDiffusionGrid(kSubstance_2)->RunInitializers();
 
   // Write diffusion visualization to file
-  CatalystAdaptor<> adaptor("");
+  CatalystAdaptor adaptor("");
   adaptor.Visualize(1, true);
   adaptor.WriteToFile(0);
 
