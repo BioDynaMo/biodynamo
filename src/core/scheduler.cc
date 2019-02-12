@@ -44,10 +44,11 @@ Scheduler::Scheduler() {
   diffusion_ = new DiffusionOp();
 
   // initialise operations_
-  auto biology_module_op = [&](SimObject* so) { so->RunBiologyModules(); };
-  auto discretization_op = [&](SimObject* so) { so->RunDiscretization(); };
+  auto biology_module_op = [](SimObject* so) { so->RunBiologyModules(); };
+  auto discretization_op = [](SimObject* so) { so->RunDiscretization(); };
 
   auto displacement_op = [&](SimObject* so) {
+    auto* param = Simulation::GetActive()->GetParam();
     if (param->run_mechanical_interactions_ && displacement_->UseCpu()) {
       (*displacement_)(so);
     }
