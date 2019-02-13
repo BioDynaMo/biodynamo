@@ -47,6 +47,8 @@ class SoPointer {
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
 
+  virtual ~SoPointer() {}
+
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
   bool operator==(std::nullptr_t) const{
     return uid_ == std::numeric_limits<uint64_t>::max();

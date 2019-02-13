@@ -69,7 +69,7 @@ struct GrowDivide : public BaseBiologyModule {
   }
 
  private:
-  BDM_CLASS_DEF_NV(GrowDivide, 1);
+  BDM_CLASS_DEF_OVERRIDE(GrowDivide, 1);
   double threshold_ = 40;
   double growth_rate_ = 300;
 };

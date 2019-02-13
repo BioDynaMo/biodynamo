@@ -125,7 +125,7 @@ struct RegulateGenes : public BaseBiologyModule {
   /// New functions can be added through method AddGene()
   std::vector<std::function<double(double, double)>> first_derivatives_ = {};
 
-  BDM_CLASS_DEF_NV(RegulateGenes, 1);
+  BDM_CLASS_DEF_OVERRIDE(RegulateGenes, 1);
 };
 
 }  // namespace bdm

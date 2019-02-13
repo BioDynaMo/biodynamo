@@ -79,14 +79,14 @@ namespace bdm {
   SimObject* GetCopy() const override { return new class_name(*this); }\
                                                                                \
   /** Executes the given function for all data members             */          \
-  void ForEachDataMember(SoVisitor* visitor) {   \
+  void ForEachDataMember(SoVisitor* visitor) override {   \
     BDM_SIM_OBJECT_FOREACHDM_BODY(__VA_ARGS__)                                 \
     Base::ForEachDataMember(visitor);                                                \
   }                                                                            \
                                                                                \
   /** Executes the given function for the specified data members    */         \
   void ForEachDataMemberIn(              \
-      const std::set<std::string>& dm_selector, SoVisitor* visitor) {                         \
+      const std::set<std::string>& dm_selector, SoVisitor* visitor) override {                         \
     BDM_SIM_OBJECT_FOREACHDMIN_BODY(__VA_ARGS__)                               \
     Base::ForEachDataMemberIn(dm_selector, visitor);                                 \
   }                                                                            \

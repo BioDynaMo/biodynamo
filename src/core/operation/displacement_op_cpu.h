@@ -58,7 +58,7 @@ class DisplacementOpCpu {
   }
 
  private:
-  double squared_radius_;
+  double squared_radius_ = 0;
   uint64_t last_iteration_ = std::numeric_limits<uint64_t>::max();
 };
 
