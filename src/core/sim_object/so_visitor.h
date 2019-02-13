@@ -21,6 +21,7 @@ namespace bdm {
 
 // TODO documentation
 struct SoVisitor {
+  virtual ~SoVisitor() {}
   virtual void Visit(const std::string& name, size_t type_hash_code, void* data) = 0;
 };
 

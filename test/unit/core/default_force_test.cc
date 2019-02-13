@@ -86,11 +86,11 @@ TEST(DefaultForce, AllAtSamePositionSphere) {
 
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping cylinder
-TEST(DefaultForce, GeneralSphereCylinder) {
-  experimental::neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+TEST(DISABLED_DefaultForce, GeneralSphereCylinder) {
+  // experimental::neuroscience::InitModule();
+  // Simulation simulation(TEST_NAME);
 
-  auto* param = Simulation::GetActive()->GetParam();
+  // auto* param = Simulation::GetActive()->GetParam();
   // std::cout << param->neurite_default_tension_ << std::endl;
   // FIXME
   // NeuriteElement cylinder;
