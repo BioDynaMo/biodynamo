@@ -22,22 +22,18 @@ namespace bdm {
 
 /// BiologyModule that divides the simulation object at each time step
 struct Divide : BaseBiologyModule {
+  BDM_STATELESS_BM_HEADER(Divide, BaseBiologyModule, 1);
+
+public:
   Divide() {}
 
-  /// Empty default event constructor, because Divide does not have state.
-  template <typename TEvent, typename TBm>
-  Divide(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
-
-  /// event handler not needed, because Chemotaxis does not have state.
-
-  template <typename TSo>
-  void Run(TSo* sim_object) {
-    sim_object->Divide();
+  void Run(SimObject* sim_object) override {
+    sim_object->As<Cell>()->Divide();
   }
 };
 
 inline int Simulate(int argc, const char** argv) {
-  auto set_param = [](auto* param) {
+  auto set_param = [](Param* param) {
     // Turn on export visualization
     param->export_visualization_ = true;
     param->visualize_sim_objects_["Cell"] = {};
@@ -56,8 +52,8 @@ inline int Simulate(int argc, const char** argv) {
 
     // Create initial model
     auto* rm = sim->GetResourceManager();
-    Cell cell(30);
-    cell.AddBiologyModule(new Divide());
+    Cell* cell = new Cell(30);
+    cell->AddBiologyModule(new Divide());
     rm->push_back(cell);
   }
 

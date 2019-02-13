@@ -21,26 +21,26 @@
 namespace bdm {
 
 struct TestBehaviour : public BaseBiologyModule {
+  BDM_STATELESS_BM_HEADER(TestBehaviour, BaseBiologyModule, 1);
+
+public:
   TestBehaviour() : BaseBiologyModule(gAllEventIds) {}
 
-  template <typename T>
-  void Run(T* cell) {
+  void Run(SimObject* so) override  {
     usleep(35000);  // 35 ms -> one iteration will take 350 ms
-    cell->SetDiameter(cell->GetDiameter() + 1);
+    so->SetDiameter(so->GetDiameter() + 1);
   }
-
-  BDM_CLASS_DEF_NV(TestBehaviour, 1);
 };
 
 inline int Simulate(int argc, const char** argv) {
-  auto set_param = [](auto* param) { param->backup_interval_ = 1; };
+  auto set_param = [](Param* param) { param->backup_interval_ = 1; };
   Simulation simulation(argc, argv, set_param);
   auto* rm = simulation.GetResourceManager();
 
   for (size_t i = 0; i < 10; i++) {
-    Cell cell({100.0 * i, 100.0 * i, 100.0 * i});  // no colliding cells
-    cell.SetDiameter(i);
-    cell.AddBiologyModule(new TestBehaviour());
+    auto* cell = new Cell({100.0 * i, 100.0 * i, 100.0 * i});  // no colliding cells
+    cell->SetDiameter(i);
+    cell->AddBiologyModule(new TestBehaviour());
     rm->push_back(cell);
   }
 
@@ -56,16 +56,20 @@ inline int Simulate(int argc, const char** argv) {
   scheduler->Simulate(2);
 
   // check result
-  const auto* cells = rm->Get<Cell>();
-  for (size_t i = 0; i < 10; i++) {
-    if ((*cells)[i].GetDiameter() != 16 + i) {
+  int count = 0;
+  bool failed = 0;
+  rm->ApplyOnAllElements([&](SimObject* so) {
+    if (so->GetDiameter() != 16 + count) {
       std::cerr << "Test failure: result incorrect" << std::endl;
-      std::cerr << "   Diameter of cell " << i << " is "
-                << (*cells)[i].GetDiameter() << " but should be 16"
+      std::cerr << "   Diameter of cell " << count << " is "
+                << so->GetDiameter() << " but should be 16"
                 << std::endl;
-      return 1;
+      failed = true;
+      return;
     }
-  }
+    count++;
+  });
+  if (failed) { return 1; }
   std::cout << "Test finished successfully" << std::endl;
   return 0;
 }

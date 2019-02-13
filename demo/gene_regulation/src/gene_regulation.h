@@ -60,7 +60,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
     cell->SetMass(1.0);
-    cell->AddBiologyModule(new regulate_example);
+    cell->AddBiologyModule(regulate_example.GetCopy());
     return cell;
   };
   const std::vector<std::array<double, 3>>& positions = {{0, 0, 0}};
@@ -72,8 +72,9 @@ inline int Simulate(int argc, const char** argv) {
 
   // Output concentration values for each gene
   auto* rm = simulation.GetResourceManager();
-  auto&& cell = rm->GetSimObject<Cell>(SoHandle(0, 0));
-  const auto* regulate_genes = cell.GetBiologyModules<RegulateGenes>()[0];
+  auto* sim_object = rm->GetSimObject(0);
+  const auto* first_bm = sim_object->GetAllBiologyModules()[0];
+  auto* regulate_genes = dynamic_cast<const RegulateGenes*>(first_bm);
   const auto& concentrations = regulate_genes->GetConcentrations();
   std::cout << "Gene concentrations after " << scheduler->GetSimulatedSteps()
             << " time steps" << std::endl;

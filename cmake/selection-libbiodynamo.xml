@@ -23,7 +23,6 @@
     <class name="bdm::Param" />
     <class name="bdm::ModuleParam" />
     <class name="unordered_map<unsigned long,bdm::ModuleParam*>" />
-    <class name="bdm::experimental::neuroscience::Param" />
     <class name="bdm::Random" />
   </selection>
 </lcgdict>
