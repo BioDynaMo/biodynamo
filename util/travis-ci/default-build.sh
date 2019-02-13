@@ -61,7 +61,7 @@ ${CXX} --version || true
 ${CXX} -v || true
 
 cd build
-make check
+travis_wait 30 make check
 
 if [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_OS_NAME = "linux" ] && [ $TRAVIS_PULL_REQUEST = "false" ]; then
   ../util/travis-ci/deploy.sh
