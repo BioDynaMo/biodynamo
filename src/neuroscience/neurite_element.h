@@ -42,12 +42,13 @@ namespace neuroscience {
 /// Only the distal end is moved. All the forces that are applied to the
 /// proximal node are transmitted to the mother element
 class NeuriteElement : public SimObject, public NeuronOrNeurite {
-  BDM_SIM_OBJECT_HEADER(
-      NeuriteElement, SimObject, 1, mass_location_, volume_, diameter_,
-      density_, adherence_, x_axis_, y_axis_, z_axis_, is_axon_, mother_,
-      daughter_left_, daughter_right_, branch_order_,
-      force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
-      tension_, spring_constant_, resting_length_);
+  BDM_SIM_OBJECT_HEADER(NeuriteElement, SimObject, 1, mass_location_, volume_,
+                        diameter_, density_, adherence_, x_axis_, y_axis_,
+                        z_axis_, is_axon_, mother_, daughter_left_,
+                        daughter_right_, branch_order_,
+                        force_to_transmit_to_proximal_mass_, spring_axis_,
+                        actual_length_, tension_, spring_constant_,
+                        resting_length_);
 
  public:
   /// Returns the data members that are required to visualize this simulation
@@ -60,7 +61,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   NeuriteElement(const Event& event, SimObject* other, uint64_t new_oid = 0);
 
   // TODO
-  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override;
+  void EventHandler(const Event& event, SimObject* other1,
+                    SimObject* other2 = nullptr) override;
 
   Shape GetShape() const override;
 
@@ -136,8 +138,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   ///
   /// \see NeuriteBranchingEvent
   NeuriteElement* Branch(double new_branch_diameter,
-                          const std::array<double, 3>& direction,
-                          double length = 1.0);
+                         const std::array<double, 3>& direction,
+                         double length = 1.0);
 
   /// \brief Create a branch for this neurite element.
   ///
@@ -480,8 +482,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// The length of the internal spring where tension would be zero.
   /// T = k*(A-R)/R --> R = k*A/(T+K)
   /// FIXME initialization here??
-  double resting_length_ = spring_constant_ * actual_length_ /
-                                 (tension_ + spring_constant_);
+  double resting_length_ =
+      spring_constant_ * actual_length_ / (tension_ + spring_constant_);
 
   /// Used to store the calculation result of `GetPosition` and to return
   /// a const reference to it.
@@ -505,10 +507,13 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       double length, double diameter, const std::array<double, 3>& direction);
 
   /// TODO
-  void InitializeNewNeuriteExtension(NeuronSoma* soma, double diameter, double phi, double theta);
+  void InitializeNewNeuriteExtension(NeuronSoma* soma, double diameter,
+                                     double phi, double theta);
 
   /// TODO
-  void InitializeNeuriteBifurcation(NeuriteElement* mother, double length, double diameter, const std::array<double, 3>& direction);
+  void InitializeNeuriteBifurcation(NeuriteElement* mother, double length,
+                                    double diameter,
+                                    const std::array<double, 3>& direction);
 
   /// Neurite branching is composed of neurite splitting and side neurite
   /// extension. To avoid code duplication in constructors, logic has been moved
@@ -519,7 +524,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Neurite branching is composed of neurite splitting and side neurite
   /// extension. To avoid code duplication in constructors, logic has been moved
   /// here.
-  void InitializeSideExtensionOrBranching(NeuriteElement* mother, double length, double diameter, const std::array<double, 3>& direction);
+  void InitializeSideExtensionOrBranching(
+      NeuriteElement* mother, double length, double diameter,
+      const std::array<double, 3>& direction);
 };
 
 }  // namespace neuroscience

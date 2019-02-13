@@ -16,10 +16,10 @@
 #define UNIT_CORE_SIM_OBJECT_TEST_H_
 
 #include <gtest/gtest.h>
-#include "core/sim_object/cell.h"
 #include "core/biology_module/biology_module.h"
-#include "core/sim_object/sim_object.h"
 #include "core/event/cell_division_event.h"
+#include "core/sim_object/cell.h"
+#include "core/sim_object/sim_object.h"
 #include "core/util/math.h"
 #include "unit/test_util/test_sim_object.h"
 
@@ -31,22 +31,29 @@ struct GrowthModule : public BaseBiologyModule {
 
   GrowthModule() : BaseBiologyModule(CellDivisionEvent::kEventId) {}
 
-  GrowthModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
-    if(GrowthModule* gbm = dynamic_cast<GrowthModule*>(other)) {
+  GrowthModule(const Event& event, BaseBiologyModule* other,
+               uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {
+    if (GrowthModule* gbm = dynamic_cast<GrowthModule*>(other)) {
       growth_rate_ = gbm->growth_rate_;
     } else {
-      Log::Fatal("GrowthModule::EventConstructor", "other was not of type GrowthModule");
+      Log::Fatal("GrowthModule::EventConstructor",
+                 "other was not of type GrowthModule");
     }
   }
 
   virtual ~GrowthModule() {}
 
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const { return new GrowthModule(event, other, new_oid); }
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const {
+    return new GrowthModule(event, other, new_oid);
+  }
   BaseBiologyModule* GetCopy() const { return new GrowthModule(*this); }
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)
-  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
+  void EventHandler(const Event& event, BaseBiologyModule* other1,
+                    BaseBiologyModule* other2 = nullptr) override {
     BaseBiologyModule::EventHandler(event, other1, other2);
   }
 
@@ -60,24 +67,34 @@ struct GrowthModule : public BaseBiologyModule {
 struct MovementModule : public BaseBiologyModule {
   std::array<double, 3> velocity_;
 
-  MovementModule() : BaseBiologyModule(0, CellDivisionEvent::kEventId), velocity_({{0, 0, 0}}) {}
+  MovementModule()
+      : BaseBiologyModule(0, CellDivisionEvent::kEventId),
+        velocity_({{0, 0, 0}}) {}
   explicit MovementModule(const std::array<double, 3>& velocity)
-      : BaseBiologyModule(0, CellDivisionEvent::kEventId), velocity_(velocity) {}
+      : BaseBiologyModule(0, CellDivisionEvent::kEventId),
+        velocity_(velocity) {}
 
-  MovementModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
-    if(MovementModule* mbm = dynamic_cast<MovementModule*>(other)) {
+  MovementModule(const Event& event, BaseBiologyModule* other,
+                 uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {
+    if (MovementModule* mbm = dynamic_cast<MovementModule*>(other)) {
       velocity_ = mbm->velocity_;
     } else {
-      Log::Fatal("MovementModule::EventConstructor", "other was not of type MovementModule");
+      Log::Fatal("MovementModule::EventConstructor",
+                 "other was not of type MovementModule");
     }
   }
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const { return new MovementModule(event, other, new_oid); }
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const {
+    return new MovementModule(event, other, new_oid);
+  }
   BaseBiologyModule* GetCopy() const { return new MovementModule(*this); }
 
   /// Default event handler
-  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
+  void EventHandler(const Event& event, BaseBiologyModule* other1,
+                    BaseBiologyModule* other2 = nullptr) override {
     BaseBiologyModule::EventHandler(event, other1, other2);
   }
 
@@ -92,9 +109,14 @@ struct MovementModule : public BaseBiologyModule {
 /// This biology module removes itself the first time it is executed
 struct RemoveModule : public BaseBiologyModule {
   RemoveModule() {}
-  RemoveModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {}
+  RemoveModule(const Event& event, BaseBiologyModule* other,
+               uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {}
 
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const { return new RemoveModule(event, other, new_oid); }
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const {
+    return new RemoveModule(event, other, new_oid);
+  }
   BaseBiologyModule* GetCopy() const { return new RemoveModule(*this); }
 
   void Run(SimObject* sim_object) override {

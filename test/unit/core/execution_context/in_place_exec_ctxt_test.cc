@@ -15,9 +15,9 @@
 #include <gtest/gtest.h>
 
 #include "core/execution_context/in_place_exec_ctxt.h"
+#include "core/grid.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
-#include "core/grid.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
@@ -203,7 +203,8 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
     num_neighbors[so->GetUid()] = nb_counter;
   };
 
-  rm->ApplyOnAllElementsParallel([&](SimObject* so) { ctxt->Execute(so, {op}); });
+  rm->ApplyOnAllElementsParallel(
+      [&](SimObject* so) { ctxt->Execute(so, {op}); });
 
   rm->ApplyOnAllElements([&](SimObject* so) {
     // expected diameter: initial value + num_neighbors + 1

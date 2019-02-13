@@ -46,23 +46,30 @@ class NeuronSoma;
 /// This class declares this interface.
 class NeuronOrNeurite {
  public:
-   template <typename T> T* As() { return dynamic_cast<T*>(this); }
-   template <typename T>
-   const T* As() const { return dynamic_cast<const T*>(this); }
+  template <typename T>
+  T* As() {
+    return dynamic_cast<T*>(this);
+  }
+  template <typename T>
+  const T* As() const {
+    return dynamic_cast<const T*>(this);
+  }
 
-   SoPointer<NeuronOrNeurite> GetNeuronOrNeuriteSoPtr() const;
+  SoPointer<NeuronOrNeurite> GetNeuronOrNeuriteSoPtr() const;
 
-   bool IsNeuronSoma() const;
+  bool IsNeuronSoma() const;
 
-   bool IsNeuriteElement() const;
+  bool IsNeuriteElement() const;
 
   //  template <typename T>
   //  SoPointer<T> GetSoPtr1() const {
-  //    if(auto* neuron = As<NeuronSoma>()) { return neuron->template GetSoPtr<T>(); }
-  //    else if(auto* neurite = As<NeuriteElement>()) { return neurite->template GetSoPtr<T>(); }
+  //    if(auto* neuron = As<NeuronSoma>()) { return neuron->template
+  //    GetSoPtr<T>(); }
+  //    else if(auto* neurite = As<NeuriteElement>()) { return neurite->template
+  //    GetSoPtr<T>(); }
   //  }
 
-   // FIXME
+  // FIXME
   // const TNeuronSomaSoPtr& GetNeuronSomaSoPtr() const { return neuron_ptr_; }
   //
   // const TNeuriteElementSoPtr& GetNeuriteElementSoPtr() const {
@@ -111,7 +118,6 @@ class NeuronOrNeurite {
   virtual void UpdateRelative(const NeuronOrNeurite& old_rel,
                               const NeuronOrNeurite& new_rel) = 0;
 };
-
 
 }  // namespace neuroscience
 }  // namespace experimental

@@ -12,12 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "neuroscience/neuron_soma.h"
 #include "gtest/gtest.h"
+#include "neuroscience/neuron_soma.h"
 
 #include "core/resource_manager.h"
-#include "neuroscience/neurite_element.h"
 #include "neuroscience/module.h"
+#include "neuroscience/neurite_element.h"
 #include "neuroscience/param.h"
 #include "unit/test_util/test_util.h"
 
@@ -39,7 +39,8 @@ TEST(NeuriteElementTest, PartialRetraction) {
   rm->push_back(neuron);
 
   auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -90,7 +91,8 @@ TEST(NeuriteElementTest, TotalRetraction) {
   rm->push_back(neuron);
 
   auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -127,7 +129,8 @@ TEST(NeuriteElementTest, Branch) {
   rm->push_back(neuron);
 
   auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -225,7 +228,8 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   rm->push_back(neuron);
 
   auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -298,7 +302,8 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   rm->push_back(neuron);
 
   auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -349,7 +354,8 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   rm->push_back(neuron);
 
   auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -421,7 +427,8 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   rm->push_back(neuron);
 
   auto* neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({1, 0, 0});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {1, 0, 0});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -444,8 +451,8 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 
   // retract all dendrite
   while (rm->GetNumSimObjects() != 1) {
-    rm->ApplyOnAllElements([&](SimObject* so){
-      if(auto* neurite_segment = so->As<NeuriteElement>()) {
+    rm->ApplyOnAllElements([&](SimObject* so) {
+      if (auto* neurite_segment = so->As<NeuriteElement>()) {
         if (neurite_segment->IsTerminal()) {
           neurite_segment->RetractTerminalEnd(10);
           neurite_segment->RunDiscretization();
@@ -474,7 +481,8 @@ TEST(NeuriteElementTest, Bifurcate) {
   rm->push_back(neuron);
 
   auto* neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite_element->SetDiameter(2);
 
   auto bifurcation = neurite_element->Bifurcate({0, 1, 1}, {1, 1, 0});

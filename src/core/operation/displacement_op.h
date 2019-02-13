@@ -26,10 +26,10 @@
 #endif
 #include "core/grid.h"
 #include "core/param/param.h"
-#include "core/shape.h"
-#include "core/util/log.h"
 #include "core/scheduler.h"
+#include "core/shape.h"
 #include "core/simulation.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
@@ -77,9 +77,7 @@ class DisplacementOp {
     }
   }
 
-  void operator()(SimObject* sim_object) {
-    cpu_(sim_object);
-  }
+  void operator()(SimObject* sim_object) { cpu_(sim_object); }
 
  private:
   /// Currently the gpu implementation only supports Spheres.

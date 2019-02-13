@@ -22,7 +22,7 @@ namespace bdm {
 // 0. Define my custom cell MyCell, which extends Cell by adding extra data
 // members: cell_color and can_divide
 class MyCell : public Cell {  // our object extends the Cell object
-                                // create the header with our new data member
+                              // create the header with our new data member
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
 
  public:
@@ -44,7 +44,8 @@ class MyCell : public Cell {  // our object extends the Cell object
   }
 
   /// If a cell divides, daughter keeps the same state from its mother.
-  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override {
+  void EventHandler(const Event& event, SimObject* other1,
+                    SimObject* other2 = nullptr) override {
     Base::EventHandler(event, other1, other2);
   }
 
@@ -66,7 +67,7 @@ class MyCell : public Cell {  // our object extends the Cell object
 struct GrowthModule : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(GrowthModule, BaseBiologyModule, 1);
 
-public:
+ public:
   GrowthModule() : BaseBiologyModule(gAllEventIds) {}
 
   /// Empty default event constructor, because GrowthModule does not have state.

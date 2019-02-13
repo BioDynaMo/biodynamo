@@ -20,9 +20,9 @@
 #include "neuroscience/event/new_neurite_extension_event.h"
 #include "neuroscience/event/side_neurite_extension_event.h"
 #include "neuroscience/event/split_neurite_element_event.h"
+#include "neuroscience/module.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
-#include "neuroscience/module.h"
 #include "neuroscience/param.h"
 
 #endif  // NEUROSCIENCE_NEUROSCIENCE_H_

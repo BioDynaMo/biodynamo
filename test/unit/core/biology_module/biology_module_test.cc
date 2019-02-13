@@ -12,29 +12,36 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
 #include "core/biology_module/biology_module.h"
+#include <gtest/gtest.h>
 
 namespace bdm {
 
 /// Helper class to test run visitor
 struct TestBiologyModule : public BaseBiologyModule {
   TestBiologyModule() : BaseBiologyModule(0, 0) {}
-  explicit TestBiologyModule(EventId copy_event, EventId remove_event = 0) : BaseBiologyModule(copy_event, remove_event) {}
+  explicit TestBiologyModule(EventId copy_event, EventId remove_event = 0)
+      : BaseBiologyModule(copy_event, remove_event) {}
 
   TestBiologyModule(std::initializer_list<EventId> copy_events,
-                    std::initializer_list<EventId> remove_events = {})  : BaseBiologyModule(copy_events, remove_events) {}
+                    std::initializer_list<EventId> remove_events = {})
+      : BaseBiologyModule(copy_events, remove_events) {}
 
-  TestBiologyModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {}
+  TestBiologyModule(const Event& event, BaseBiologyModule* other,
+                    uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {}
 
   virtual ~TestBiologyModule() {}
 
   void Run(SimObject* so) override {}
 
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override {
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const override {
     return new TestBiologyModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const override { return new TestBiologyModule(*this); };
+  BaseBiologyModule* GetCopy() const override {
+    return new TestBiologyModule(*this);
+  };
 };
 
 TEST(BaseBiologyModuleTest, CopyNever) {

@@ -13,18 +13,21 @@
 // -----------------------------------------------------------------------------
 
 #include "neuroscience/neuron_or_neurite.h"
-#include "neuroscience/neuron_soma.h"
 #include "neuroscience/neurite_element.h"
+#include "neuroscience/neuron_soma.h"
 
 namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
 SoPointer<NeuronOrNeurite> NeuronOrNeurite::GetNeuronOrNeuriteSoPtr() const {
- if(auto* neuron = As<NeuronSoma>()) { return neuron->template GetSoPtr<NeuronOrNeurite>(); }
- else if(auto* neurite = As<NeuriteElement>()) { return neurite->template GetSoPtr<NeuronOrNeurite>(); }
- assert(false && "This code should not be reached.");
- return SoPointer<NeuronOrNeurite>();
+  if (auto* neuron = As<NeuronSoma>()) {
+    return neuron->template GetSoPtr<NeuronOrNeurite>();
+  } else if (auto* neurite = As<NeuriteElement>()) {
+    return neurite->template GetSoPtr<NeuronOrNeurite>();
+  }
+  assert(false && "This code should not be reached.");
+  return SoPointer<NeuronOrNeurite>();
 }
 
 bool NeuronOrNeurite::IsNeuronSoma() const {
@@ -34,7 +37,6 @@ bool NeuronOrNeurite::IsNeuronSoma() const {
 bool NeuronOrNeurite::IsNeuriteElement() const {
   return As<NeuriteElement>() != nullptr;
 }
-
 
 }  // namespace neuroscience
 }  // namespace experimental

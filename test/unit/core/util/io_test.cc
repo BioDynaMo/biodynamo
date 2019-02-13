@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
 #include "core/util/io.h"
+#include <gtest/gtest.h>
 
 #define ROOTFILE "bdmFile.root"
 

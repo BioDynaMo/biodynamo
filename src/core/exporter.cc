@@ -21,11 +21,11 @@
 #include <sstream>
 
 #include "core/param/param.h"
-#include "core/simulation.h"
-#include "core/util/log.h"
-#include "core/simulation.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
+#include "core/simulation.h"
+#include "core/simulation.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
@@ -42,7 +42,8 @@ void BasicExporter::ExportIteration(std::string filename, uint64_t iteration) {
   outfile.close();
 }
 
-void BasicExporter::ExportSummary(std::string filename, uint64_t num_iterations) {}
+void BasicExporter::ExportSummary(std::string filename,
+                                  uint64_t num_iterations) {}
 
 // -----------------------------------------------------------------------------
 void MatlabExporter::ExportIteration(std::string filename, uint64_t iteration) {
@@ -63,11 +64,12 @@ void MatlabExporter::ExportIteration(std::string filename, uint64_t iteration) {
   outfile.close();
 }
 
-void MatlabExporter::ExportSummary(std::string filename, uint64_t num_iterations) {}
+void MatlabExporter::ExportSummary(std::string filename,
+                                   uint64_t num_iterations) {}
 
 // -----------------------------------------------------------------------------
-void NeuroMLExporter::ExportIteration(std::string filename, uint64_t iteration) {
-
+void NeuroMLExporter::ExportIteration(std::string filename,
+                                      uint64_t iteration) {
   std::ofstream outfile;
   outfile.open(filename);
 
@@ -97,11 +99,9 @@ void NeuroMLExporter::ExportIteration(std::string filename, uint64_t iteration) 
   /// inserted instead of these prespecified values
   outfile << space2 << "<cell name=\"exz_lif\"> " << std::endl;
   outfile << space3 << "<meta:properties>" << std::endl;
-  outfile << space4
-          << "<meta:property tag=\"PointNeuronModel\" value=\"yes\"/>"
+  outfile << space4 << "<meta:property tag=\"PointNeuronModel\" value=\"yes\"/>"
           << std::endl;
-  outfile << space4
-          << "<meta:property tag=\"Class\"    value=\"CbLifNeuron\"/>"
+  outfile << space4 << "<meta:property tag=\"Class\"    value=\"CbLifNeuron\"/>"
           << std::endl;
   outfile << space4 << "<meta:property tag=\"Cm\"       value=\"5e-10\"/>"
           << std::endl;
@@ -122,11 +122,9 @@ void NeuroMLExporter::ExportIteration(std::string filename, uint64_t iteration) 
 
   outfile << space2 << "<cell name=\"inh_lif\"> " << std::endl;
   outfile << space3 << "<meta:properties>" << std::endl;
-  outfile << space4
-          << "<meta:property tag=\"PointNeuronModel\" value=\"yes\"/>"
+  outfile << space4 << "<meta:property tag=\"PointNeuronModel\" value=\"yes\"/>"
           << std::endl;
-  outfile << space4
-          << "<meta:property tag=\"Class\"    value=\"CbLifNeuron\"/>"
+  outfile << space4 << "<meta:property tag=\"Class\"    value=\"CbLifNeuron\"/>"
           << std::endl;
   outfile << space4 << "<meta:property tag=\"Cm\"       value=\"2e-10\"/>"
           << std::endl;
@@ -160,10 +158,12 @@ void NeuroMLExporter::ExportIteration(std::string filename, uint64_t iteration) 
   Log::Info("Exporter", "Created NeuroML file");
 }
 
-void NeuroMLExporter::ExportSummary(std::string filename, uint64_t num_iterations) {}
+void NeuroMLExporter::ExportSummary(std::string filename,
+                                    uint64_t num_iterations) {}
 
 // -----------------------------------------------------------------------------
-void ParaviewExporter::ExportIteration(std::string filename, uint64_t iteration) {
+void ParaviewExporter::ExportIteration(std::string filename,
+                                       uint64_t iteration) {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   auto num_cells = rm->GetNumSimObjects();
   size_t index = 0;
@@ -173,16 +173,15 @@ void ParaviewExporter::ExportIteration(std::string filename, uint64_t iteration)
          "byte_order=\"LittleEndian\">"
       << std::endl;
   vtu << "   <UnstructuredGrid>" << std::endl;
-  vtu << "      <Piece  NumberOfPoints=\"" << num_cells
-      << "\" NumberOfCells=\"" << num_cells << "\">" << std::endl;
+  vtu << "      <Piece  NumberOfPoints=\"" << num_cells << "\" NumberOfCells=\""
+      << num_cells << "\">" << std::endl;
   vtu << "         <Points>" << std::endl;
   vtu << "            <DataArray type=\"Float64\" NumberOfComponents=\"3\" "
          "format=\"ascii\">"
       << std::endl;
   rm->ApplyOnAllElements([&](SimObject* so) {
-    auto &coord = so->GetPosition();
-    vtu << ' ' << coord[0] << ' ' << coord[1] << ' ' << coord[2]
-        << std::flush;
+    auto& coord = so->GetPosition();
+    vtu << ' ' << coord[0] << ' ' << coord[1] << ' ' << coord[2] << std::flush;
   });
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
@@ -202,7 +201,7 @@ void ParaviewExporter::ExportIteration(std::string filename, uint64_t iteration)
       << std::endl;
 
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if(auto* cell = so->As<Cell>()) {
+    if (auto* cell = so->As<Cell>()) {
       auto adhr = cell->GetAdherence();
       vtu << ' ' << adhr << std::flush;
     }
@@ -225,7 +224,7 @@ void ParaviewExporter::ExportIteration(std::string filename, uint64_t iteration)
       << std::endl;
 
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if(auto* cell = so->As<Cell>()) {
+    if (auto* cell = so->As<Cell>()) {
       auto mass = cell->GetMass();
       vtu << ' ' << mass << std::flush;
     }
@@ -238,7 +237,7 @@ void ParaviewExporter::ExportIteration(std::string filename, uint64_t iteration)
       << std::endl;
 
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if(auto* cell = so->As<Cell>()) {
+    if (auto* cell = so->As<Cell>()) {
       auto v = cell->GetVolume();
       vtu << ' ' << v << std::flush;
     }
@@ -251,8 +250,8 @@ void ParaviewExporter::ExportIteration(std::string filename, uint64_t iteration)
       << std::endl;
 
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if(auto* cell = so->As<Cell>()) {
-      auto &tracf = cell->GetTractorForce();
+    if (auto* cell = so->As<Cell>()) {
+      auto& tracf = cell->GetTractorForce();
       vtu << ' ' << tracf[0] << ' ' << tracf[1] << ' ' << tracf[2]
           << std::flush;
     }
@@ -294,9 +293,10 @@ void ParaviewExporter::ExportIteration(std::string filename, uint64_t iteration)
   vtu << "</VTKFile>" << std::endl;
 }
 
-void ParaviewExporter::ExportSummary(std::string filename, uint64_t num_iterations) {
+void ParaviewExporter::ExportSummary(std::string filename,
+                                     uint64_t num_iterations) {
   std::ofstream pvd(filename + ".pvd");
-  auto *param = Simulation::GetActive()->GetParam();
+  auto* param = Simulation::GetActive()->GetParam();
 
   pvd << "<?xml version=\"1.0\"?>" << std::endl;
   pvd << "<VTKFile type=\"Collection\" version=\"0.1\" "

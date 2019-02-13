@@ -22,8 +22,9 @@ BaseBiologyModule::BaseBiologyModule() : copy_mask_(0), remove_mask_(0) {}
 BaseBiologyModule::BaseBiologyModule(EventId copy_event, EventId remove_event)
     : copy_mask_(copy_event), remove_mask_(remove_event) {}
 
-BaseBiologyModule::BaseBiologyModule(std::initializer_list<EventId> copy_events,
-                  std::initializer_list<EventId> remove_events) {
+BaseBiologyModule::BaseBiologyModule(
+    std::initializer_list<EventId> copy_events,
+    std::initializer_list<EventId> remove_events) {
   // copy mask
   copy_mask_ = 0;
   for (EventId event : copy_events) {
@@ -36,7 +37,9 @@ BaseBiologyModule::BaseBiologyModule(std::initializer_list<EventId> copy_events,
   }
 }
 
-BaseBiologyModule::BaseBiologyModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid) {
+BaseBiologyModule::BaseBiologyModule(const Event& event,
+                                     BaseBiologyModule* other,
+                                     uint64_t new_oid) {
   copy_mask_ = other->copy_mask_;
   remove_mask_ = other->remove_mask_;
 }
@@ -44,12 +47,18 @@ BaseBiologyModule::BaseBiologyModule(const Event& event, BaseBiologyModule* othe
 BaseBiologyModule::BaseBiologyModule(const BaseBiologyModule& other)
     : copy_mask_(other.copy_mask_), remove_mask_(other.remove_mask_) {}
 
- BaseBiologyModule::~BaseBiologyModule() {}
+BaseBiologyModule::~BaseBiologyModule() {}
 
- void BaseBiologyModule::EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2) {}
+void BaseBiologyModule::EventHandler(const Event& event,
+                                     BaseBiologyModule* other1,
+                                     BaseBiologyModule* other2) {}
 
-bool BaseBiologyModule::Copy(EventId event) const { return (event & copy_mask_) != 0; }
+bool BaseBiologyModule::Copy(EventId event) const {
+  return (event & copy_mask_) != 0;
+}
 
-bool BaseBiologyModule::Remove(EventId event) const { return (event & remove_mask_) != 0; }
+bool BaseBiologyModule::Remove(EventId event) const {
+  return (event & remove_mask_) != 0;
+}
 
 }  // namespace bdm

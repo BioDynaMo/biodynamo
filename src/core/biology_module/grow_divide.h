@@ -27,19 +27,22 @@ struct GrowDivide : public BaseBiologyModule {
   GrowDivide(double threshold, double growth_rate,
              std::initializer_list<EventId> event_list);
 
-  GrowDivide(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0);
+  GrowDivide(const Event& event, BaseBiologyModule* other,
+             uint64_t new_oid = 0);
 
   virtual ~GrowDivide();
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override;
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const override;
 
   /// Create a copy of this biology module.
   BaseBiologyModule* GetCopy() const override;
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)
-  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override;
+  void EventHandler(const Event& event, BaseBiologyModule* other1,
+                    BaseBiologyModule* other2 = nullptr) override;
 
   void Run(SimObject* so) override;
 

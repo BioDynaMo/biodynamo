@@ -17,10 +17,10 @@
 #include <fstream>
 #include <type_traits>
 
-#include "unit/test_util/io_test.h"
-#include "core/simulation_backup.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
+#include "core/simulation_backup.h"
+#include "unit/test_util/io_test.h"
 
 namespace bdm {
 

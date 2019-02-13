@@ -741,7 +741,9 @@ NeuronOrNeurite* NeuriteElement::GetMother() { return mother_.Get(); }
 const NeuronOrNeurite* NeuriteElement::GetMother() const {
   return mother_.Get();
 }
-void NeuriteElement::SetMother(const SoPointer<NeuronOrNeurite>& mother) { mother_ = mother; }
+void NeuriteElement::SetMother(const SoPointer<NeuronOrNeurite>& mother) {
+  mother_ = mother;
+}
 
 const SoPointer<NeuriteElement>& NeuriteElement::GetDaughterLeft() const {
   return daughter_left_;
@@ -893,8 +895,7 @@ void NeuriteElement::Copy(const NeuriteElement& rhs) {
   // TODO(neurites) what about actual length, tension and resting_length_ ??
 }
 
-NeuriteElement* NeuriteElement::SplitNeuriteElement(
-    double distal_portion) {
+NeuriteElement* NeuriteElement::SplitNeuriteElement(double distal_portion) {
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
   SplitNeuriteElementEvent event(distal_portion);
   auto* new_proximal_element = GetInstance(event, this)->As<NeuriteElement>();

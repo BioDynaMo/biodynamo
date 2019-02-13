@@ -23,10 +23,10 @@ namespace bdm {
 struct TestBehaviour : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(TestBehaviour, BaseBiologyModule, 1);
 
-public:
+ public:
   TestBehaviour() : BaseBiologyModule(gAllEventIds) {}
 
-  void Run(SimObject* so) override  {
+  void Run(SimObject* so) override {
     usleep(35000);  // 35 ms -> one iteration will take 350 ms
     so->SetDiameter(so->GetDiameter() + 1);
   }
@@ -38,7 +38,8 @@ inline int Simulate(int argc, const char** argv) {
   auto* rm = simulation.GetResourceManager();
 
   for (size_t i = 0; i < 10; i++) {
-    auto* cell = new Cell({100.0 * i, 100.0 * i, 100.0 * i});  // no colliding cells
+    auto* cell =
+        new Cell({100.0 * i, 100.0 * i, 100.0 * i});  // no colliding cells
     cell->SetDiameter(i);
     cell->AddBiologyModule(new TestBehaviour());
     rm->push_back(cell);
@@ -62,14 +63,15 @@ inline int Simulate(int argc, const char** argv) {
     if (so->GetDiameter() != 16 + count) {
       std::cerr << "Test failure: result incorrect" << std::endl;
       std::cerr << "   Diameter of cell " << count << " is "
-                << so->GetDiameter() << " but should be 16"
-                << std::endl;
+                << so->GetDiameter() << " but should be 16" << std::endl;
       failed = true;
       return;
     }
     count++;
   });
-  if (failed) { return 1; }
+  if (failed) {
+    return 1;
+  }
   std::cout << "Test finished successfully" << std::endl;
   return 0;
 }

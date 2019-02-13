@@ -34,19 +34,23 @@ struct BaseBiologyModule {
   BaseBiologyModule(std::initializer_list<EventId> copy_events,
                     std::initializer_list<EventId> remove_events = {});
 
-  BaseBiologyModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0);
+  BaseBiologyModule(const Event& event, BaseBiologyModule* other,
+                    uint64_t new_oid = 0);
 
   BaseBiologyModule(const BaseBiologyModule& other);
 
   virtual ~BaseBiologyModule();
 
   /// Create a new instance of this object using the default constructor.
-  virtual BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const = 0;
+  virtual BaseBiologyModule* GetInstance(const Event& event,
+                                         BaseBiologyModule* other,
+                                         uint64_t new_oid = 0) const = 0;
 
   /// Create a copy of this biology module.
   virtual BaseBiologyModule* GetCopy() const = 0;
 
-  virtual void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr);
+  virtual void EventHandler(const Event& event, BaseBiologyModule* other1,
+                            BaseBiologyModule* other2 = nullptr);
 
   virtual void Run(SimObject* so) = 0;
 
@@ -65,22 +69,28 @@ struct BaseBiologyModule {
 };
 
 /// Inserts boilerplate code for stateless biology modules
-#define BDM_STATELESS_BM_HEADER(class_name, base_class, class_version_id) \
- public: \
-   /** Empty default event constructor, because Chemotaxis does not have state. */ \
-   class_name(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : base_class(event, other, new_oid){} \
-   \
-   /** Event handler not needed, because Chemotaxis does not have state. */ \
-   \
-   /** Create a new instance of this object using the default constructor. */ \
-   BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override { \
-     return new class_name(event, other, new_oid);\
-   }\
-   \
-   /** Create a copy of this biology module. */ \
-   BaseBiologyModule* GetCopy() const override { return new class_name(*this); }\
-\
- private:\
+#define BDM_STATELESS_BM_HEADER(class_name, base_class, class_version_id)      \
+ public:                                                                       \
+  /** Empty default event constructor, because Chemotaxis does not have state. \
+   */                                                                          \
+  class_name(const Event& event, BaseBiologyModule* other,                     \
+             uint64_t new_oid = 0)                                             \
+      : base_class(event, other, new_oid) {}                                   \
+                                                                               \
+  /** Event handler not needed, because Chemotaxis does not have state. */     \
+                                                                               \
+  /** Create a new instance of this object using the default constructor. */   \
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, \
+                                 uint64_t new_oid = 0) const override {        \
+    return new class_name(event, other, new_oid);                              \
+  }                                                                            \
+                                                                               \
+  /** Create a copy of this biology module. */                                 \
+  BaseBiologyModule* GetCopy() const override {                                \
+    return new class_name(*this);                                              \
+  }                                                                            \
+                                                                               \
+ private:                                                                      \
   BDM_CLASS_DEF(class_name, class_version_id);
 
 }  // namespace bdm

@@ -16,8 +16,8 @@
 #include "gtest/gtest.h"
 
 #include "core/resource_manager.h"
-#include "neuroscience/neurite_element.h"
 #include "neuroscience/module.h"
+#include "neuroscience/neurite_element.h"
 #include "neuroscience/param.h"
 #include "unit/test_util/test_util.h"
 
@@ -42,8 +42,9 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   rm->push_back(neuron);
 
   // new neurite
-  auto neurite = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      10, Math::kPi / 8, Math::kPi / 3);
+  auto neurite =
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          10, Math::kPi / 8, Math::kPi / 3);
   neurite->SetDiameter(2);
 
   ctxt->TearDownIteration();
@@ -93,7 +94,9 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   rm->push_back(neuron);
 
   // new neurite
-  auto neurite = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+  auto neurite =
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite->SetDiameter(2);
 
   ctxt->TearDownIteration();
@@ -133,7 +136,8 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   rm->push_back(neuron);
 
   auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite({0, 0, 1});
+      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
+          {0, 0, 1});
   neurite_element->SetDiameter(2);
 
   ctxt->TearDownIteration();

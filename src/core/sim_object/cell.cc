@@ -39,10 +39,12 @@ Cell::Cell(double diameter) : diameter_(diameter), density_(1.0) {
 Cell::Cell(const std::array<double, 3>& position)
     : position_(position), density_{1.0} {}
 
-Cell::Cell(const Event& event, SimObject* mother, uint64_t new_oid) : Base(event, mother, new_oid) {
-  const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event);
+Cell::Cell(const Event& event, SimObject* mother, uint64_t new_oid)
+    : Base(event, mother, new_oid) {
+  const CellDivisionEvent* cdevent =
+      dynamic_cast<const CellDivisionEvent*>(&event);
   Cell* mother_cell = dynamic_cast<Cell*>(mother);
-  if(cdevent && mother_cell) {
+  if (cdevent && mother_cell) {
     auto* daughter = this;  // FIXME
     // A) Defining some values
     // ..................................................................
@@ -104,7 +106,8 @@ Cell::Cell(const Event& event, SimObject* mother, uint64_t new_oid) : Base(event
 
 Cell::~Cell() {}
 
-void Cell::EventHandler(const Event& event, SimObject *other1, SimObject* other2) {
+void Cell::EventHandler(const Event& event, SimObject* other1,
+                        SimObject* other2) {
   Base::EventHandler(event, other1, other2);
 }
 
@@ -128,12 +131,10 @@ Cell* Cell::Divide(const std::array<double, 3>& axis) {
   auto* random = Simulation::GetActive()->GetRandom();
   auto polarcoord =
       TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
-  return Divide(random->Uniform(0.9, 1.1), polarcoord[1],
-                          polarcoord[2]);
+  return Divide(random->Uniform(0.9, 1.1), polarcoord[1], polarcoord[2]);
 }
 
-Cell* Cell::Divide(double volume_ratio,
-                        const std::array<double, 3>& axis) {
+Cell* Cell::Divide(double volume_ratio, const std::array<double, 3>& axis) {
   auto polarcoord =
       TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
   return Divide(volume_ratio, polarcoord[1], polarcoord[2]);
@@ -276,12 +277,10 @@ std::array<double, 3> Cell::CalculateDisplacement(double squared_radius) {
 
   // 4) PhysicalBonds
   // How the physics influences the next displacement
-  double norm_of_force = std::sqrt(translation_force_on_point_mass[0] *
-                                       translation_force_on_point_mass[0] +
-                                   translation_force_on_point_mass[1] *
-                                       translation_force_on_point_mass[1] +
-                                   translation_force_on_point_mass[2] *
-                                       translation_force_on_point_mass[2]);
+  double norm_of_force = std::sqrt(
+      translation_force_on_point_mass[0] * translation_force_on_point_mass[0] +
+      translation_force_on_point_mass[1] * translation_force_on_point_mass[1] +
+      translation_force_on_point_mass[2] * translation_force_on_point_mass[2]);
 
   // is there enough force to :
   //  - make us biologically move (Tractor) :
@@ -304,26 +303,22 @@ std::array<double, 3> Cell::CalculateDisplacement(double squared_radius) {
     auto* param = Simulation::GetActive()->GetParam();
     if (norm_of_force * mh > param->simulation_max_displacement_) {
       const auto& norm = Math::Normalize(movement_at_next_step);
-      movement_at_next_step[0] =
-          norm[0] * param->simulation_max_displacement_;
-      movement_at_next_step[1] =
-          norm[1] * param->simulation_max_displacement_;
-      movement_at_next_step[2] =
-          norm[2] * param->simulation_max_displacement_;
+      movement_at_next_step[0] = norm[0] * param->simulation_max_displacement_;
+      movement_at_next_step[1] = norm[1] * param->simulation_max_displacement_;
+      movement_at_next_step[2] = norm[2] * param->simulation_max_displacement_;
     }
   }
   return movement_at_next_step;
 }
 
-void Cell::ApplyDisplacement(
-    const std::array<double, 3>& displacement) {
+void Cell::ApplyDisplacement(const std::array<double, 3>& displacement) {
   UpdatePosition(displacement);
   // Reset biological movement to 0.
   SetTractorForce({0, 0, 0});
 }
 
-std::array<double, 3> Cell::
-    TransformCoordinatesGlobalToPolar(const std::array<double, 3>& pos) const {
+std::array<double, 3> Cell::TransformCoordinatesGlobalToPolar(
+    const std::array<double, 3>& pos) const {
   auto vector_to_point = Math::Subtract(pos, position_);
   std::array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
                                         Math::Dot(kYAxis, vector_to_point),

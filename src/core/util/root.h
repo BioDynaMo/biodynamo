@@ -27,7 +27,7 @@
 #define BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id) \
   ClassDefOverride(class_name, class_version_id)
 
-#define BDM_TEMPLATE_CLASS_DEF(class_name, class_version_id) \
+#define BDM_TEMPLATE_CLASS_DEF(class_name, class_version_id)               \
  private:                                                                  \
   static atomic_TClass_ptr fgIsA;                                          \
                                                                            \

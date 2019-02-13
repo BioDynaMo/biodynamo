@@ -17,9 +17,9 @@
 
 #include <gtest/gtest.h>
 
-#include "core/simulation.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/so_pointer.h"
+#include "core/simulation.h"
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_sim_object.h"
 

@@ -16,10 +16,10 @@
 #include "core/grid.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
+#include "core/simulation.h"
 #include "core/substance_initializers.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
-#include "core/simulation.h"
 
 #include "Math/DistFunc.h"
 

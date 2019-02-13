@@ -173,7 +173,6 @@ class Grid {
   /// @param[in]  adjacency    The adjacency (see #Adjacency)
   void Initialize(Adjacency adjacency = kHigh);
 
-
   /// Clears the grid
   void ClearGrid();
 
@@ -210,7 +209,8 @@ class Grid {
   /// @tparam     Lambda  The type of the lambda operation
   /// @tparam     SO      The type of the simulation object
   ///
-  void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda, const SimObject& query) const;
+  void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda,
+                       const SimObject& query) const;
 
   /// @brief      Applies the given lambda to each neighbor or the specified
   ///             simulation object.
@@ -222,8 +222,9 @@ class Grid {
   /// @param      query   The query object
   /// @param[in]  squared_radius  The search radius squared
   ///
-  void ForEachNeighborWithinRadius(const std::function<void(const SimObject*)>& lambda, const SimObject& query,
-                                   double squared_radius);
+  void ForEachNeighborWithinRadius(
+      const std::function<void(const SimObject*)>& lambda,
+      const SimObject& query, double squared_radius);
 
   /// @brief      Return the box index in the one dimensional array of the box
   ///             that contains the position

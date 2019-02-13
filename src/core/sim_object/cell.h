@@ -60,7 +60,8 @@ class Cell : public SimObject {
   /// \param event contains parameters for cell division
   /// \param daughter_2 pointer to new cell (=daughter 2)
   /// \see Event, CellDivisionEvent
-  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override;
+  void EventHandler(const Event& event, SimObject* other1,
+                    SimObject* other2 = nullptr) override;
 
   Shape GetShape() const override;
 
@@ -86,8 +87,7 @@ class Cell : public SimObject {
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  virtual Cell* Divide(double volume_ratio,
-                          const std::array<double, 3>& axis);
+  virtual Cell* Divide(double volume_ratio, const std::array<double, 3>& axis);
 
   /// \brief Divide this cell.
   ///

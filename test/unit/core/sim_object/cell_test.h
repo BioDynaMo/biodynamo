@@ -21,9 +21,8 @@
 #include "core/sim_object/cell.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/test_util.h"
 #include "unit/core/sim_object/sim_object_test.h"
-
+#include "unit/test_util/test_util.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -39,10 +38,12 @@ class TestCell : public Cell {
 
   virtual ~TestCell() {}
 
-  TestCell(const Event& event, SimObject* mother, uint64_t new_oid = 0) : Base(event, mother, new_oid) {
-    const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event);
+  TestCell(const Event& event, SimObject* mother, uint64_t new_oid = 0)
+      : Base(event, mother, new_oid) {
+    const CellDivisionEvent* cdevent =
+        dynamic_cast<const CellDivisionEvent*>(&event);
     TestCell* mother_cell = dynamic_cast<TestCell*>(mother);
-    if(cdevent && mother_cell && mother_cell->capture_input_parameters_) {
+    if (cdevent && mother_cell && mother_cell->capture_input_parameters_) {
       mother_cell->captured_volume_ratio_ = cdevent->volume_ratio_;
       mother_cell->captured_phi_ = cdevent->phi_;
       mother_cell->captured_theta_ = cdevent->theta_;
@@ -113,12 +114,12 @@ inline void RunIOTest() {
   EXPECT_NEAR(5, restored_cell->GetMass(), kEpsilon);
 
   EXPECT_EQ(2u, restored_cell->GetAllBiologyModules().size());
-  EXPECT_TRUE(dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0]) !=
-              nullptr);
-  EXPECT_NEAR(0.5,
-              dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0])
-                  ->growth_rate_,
-              kEpsilon);
+  EXPECT_TRUE(dynamic_cast<GrowthModule*>(
+                  restored_cell->GetAllBiologyModules()[0]) != nullptr);
+  EXPECT_NEAR(
+      0.5, dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0])
+               ->growth_rate_,
+      kEpsilon);
   EXPECT_TRUE(dynamic_cast<MovementModule*>(
                   restored_cell->GetAllBiologyModules()[1]) != nullptr);
 

@@ -24,12 +24,10 @@ namespace bdm {
 struct Divide : BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(Divide, BaseBiologyModule, 1);
 
-public:
+ public:
   Divide() {}
 
-  void Run(SimObject* sim_object) override {
-    sim_object->As<Cell>()->Divide();
-  }
+  void Run(SimObject* sim_object) override { sim_object->As<Cell>()->Divide(); }
 };
 
 inline int Simulate(int argc, const char** argv) {

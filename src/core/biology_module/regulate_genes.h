@@ -15,8 +15,8 @@
 #ifndef CORE_BIOLOGY_MODULE_REGULATE_GENES_H_
 #define CORE_BIOLOGY_MODULE_REGULATE_GENES_H_
 
-#include <vector>
 #include <functional>
+#include <vector>
 
 #include "core/biology_module/biology_module.h"
 #include "core/util/root.h"
@@ -35,18 +35,21 @@ struct RegulateGenes : public BaseBiologyModule {
 
   explicit RegulateGenes(EventId event);
 
-  RegulateGenes(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0);
+  RegulateGenes(const Event& event, BaseBiologyModule* other,
+                uint64_t new_oid = 0);
 
   virtual ~RegulateGenes();
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override;
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const override;
 
   /// Create a copy of this biology module.
   BaseBiologyModule* GetCopy() const override;
 
   /// Empty default event handler.
-  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override;
+  void EventHandler(const Event& event, BaseBiologyModule* other1,
+                    BaseBiologyModule* other2 = nullptr) override;
 
   /// AddGene adds a new differential equation.
   /// \param first_derivative differential equation in the form:

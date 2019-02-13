@@ -17,16 +17,16 @@
 #include <chrono>
 #include <string>
 
+#include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/gpu/gpu_helper.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
 #include "core/operation/displacement_op.h"
 #include "core/operation/op_timer.h"
-#include "core/resource_manager.h"
-#include "core/simulation_backup.h"
-#include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/param/param.h"
+#include "core/resource_manager.h"
 #include "core/simulation.h"
+#include "core/simulation_backup.h"
 #include "core/util/log.h"
 
 namespace bdm {
@@ -54,8 +54,8 @@ Scheduler::Scheduler() {
     }
   };
 
-  operations_ = {*bound_space_, biology_module_op, displacement_op, discretization_op};
-
+  operations_ = {*bound_space_, biology_module_op, displacement_op,
+                 discretization_op};
 }
 
 Scheduler::~Scheduler() {

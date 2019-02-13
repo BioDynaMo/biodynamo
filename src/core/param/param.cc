@@ -12,33 +12,34 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <vector>
 #include "core/param/param.h"
+#include <vector>
 #include "core/util/cpptoml.h"
 #include "core/util/log.h"
 
 namespace bdm {
 
-std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>> Param::registered_modules_;
+std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
+    Param::registered_modules_;
 
 void Param::RegisterModuleParam(ModuleParam* param) {
   registered_modules_[param->GetUid()] = std::unique_ptr<ModuleParam>(param);
 }
 
 Param::Param() {
-  for(auto& el : registered_modules_) {
+  for (auto& el : registered_modules_) {
     modules_[el.first] = el.second->GetCopy();
   }
 }
 
 Param::~Param() {
-  for(auto& el : modules_) {
+  for (auto& el : modules_) {
     delete el.second;
   }
 }
 
 void Param::Restore(Param&& other) {
-  for(auto& el : modules_) {
+  for (auto& el : modules_) {
     delete el.second;
   }
   *this = other;
