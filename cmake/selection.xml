@@ -2,6 +2,7 @@
   <selection>
     <class pattern="bdm::*" />
     <class pattern="std::vector<bdm::*<*>>" />
+    <class name="vector<bdm::InlineVector<int,8>>" />
   </selection>
   <exclusion>
     <class pattern="cl::*" />
@@ -11,6 +12,7 @@
     <class pattern="*_TC2*" />
     <class pattern="std::array<*>" />
     <class name="chrono::system_clock"/>
+    <class name="chrono::steady_clock"/>
     <class pattern="*_Test" />
     <class name="__gnu_cxx::__normal_iterator<double*,vector<double> >"/>
     <class name="__gnu_cxx::__normal_iterator<const double*,vector<double> >"/>
