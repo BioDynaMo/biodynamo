@@ -19,6 +19,8 @@
 #include "core/sim_object/cell.h"
 #include "core/biology_module/biology_module.h"
 #include "core/sim_object/sim_object.h"
+#include "core/event/cell_division_event.h"
+#include "core/util/math.h"
 #include "unit/test_util/test_sim_object.h"
 
 namespace bdm {

@@ -12,11 +12,29 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/event/cell_division_event.h"
+#include "core/event/event.h"
 
 namespace bdm {
 
-const EventId CellDivisionEvent::kEventId =
-    UniqueEventIdFactory::Get()->NewUniqueEventId();
+UniqueEventIdFactory* UniqueEventIdFactory::Get() {
+  static UniqueEventIdFactory kInstance;
+  return &kInstance;
+}
+
+EventId UniqueEventIdFactory::NewUniqueEventId() {
+  std::lock_guard<std::recursive_mutex> lock(mutex_);
+  constexpr uint64_t kOne = 1;
+  if (counter_ == 64) {
+    Log::Fatal("UniqueEventIdFactory",
+               "BioDynaMo only supports 64 unique EventIds."
+               " You requested a 65th one.");
+  }
+  return kOne << counter_++;
+}
+
+UniqueEventIdFactory::UniqueEventIdFactory() {}
+
+// -----------------------------------------------------------------------------
+Event::~Event() {}
 
 }  // namespace bdm

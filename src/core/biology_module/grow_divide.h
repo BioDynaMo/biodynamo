@@ -16,57 +16,32 @@
 #define CORE_BIOLOGY_MODULE_GROW_DIVIDE_H_
 
 #include "core/biology_module/biology_module.h"
-#include "core/event/cell_division_event.h"
 #include "core/util/root.h"
-#include "core/util/log.h"
-#include "core/sim_object/cell.h"
 
 namespace bdm {
 
 /// This biology module grows the simulation object until the diameter reaches
 /// the specified threshold and divides the object afterwards.
 struct GrowDivide : public BaseBiologyModule {
-  GrowDivide() : BaseBiologyModule(gAllEventIds) {}
+  GrowDivide();
   GrowDivide(double threshold, double growth_rate,
-             std::initializer_list<EventId> event_list)
-      : BaseBiologyModule(event_list),
-        threshold_(threshold),
-        growth_rate_(growth_rate) {}
+             std::initializer_list<EventId> event_list);
 
-  GrowDivide(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
-    if(GrowDivide* gdbm = dynamic_cast<GrowDivide*>(other)) {
-      threshold_ = gdbm->threshold_;
-      growth_rate_ = gdbm->growth_rate_;
-    } else {
-      Log::Fatal("GrowDivide::EventConstructor", "other was not of type GrowDivide");
-    }
-  }
+  GrowDivide(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0);
+
+  virtual ~GrowDivide();
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override {
-    return new GrowDivide(event, other, new_oid);
-  }
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override;
 
   /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override { return new GrowDivide(*this); }
+  BaseBiologyModule* GetCopy() const override;
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)
-  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
-    BaseBiologyModule::EventHandler(event, other1, other2);
-  }
+  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override;
 
-  void Run(SimObject* so) override {
-    if(Cell* cell = dynamic_cast<Cell*>(so)) {
-      if (cell->GetDiameter() <= threshold_) {
-        cell->ChangeVolume(growth_rate_);
-      } else {
-        cell->Divide();
-      }
-    } else {
-      Log::Fatal("GrowDivide::Run", "SimObject is not a Cell");
-    }
-  }
+  void Run(SimObject* so) override;
 
  private:
   BDM_CLASS_DEF_OVERRIDE(GrowDivide, 1);

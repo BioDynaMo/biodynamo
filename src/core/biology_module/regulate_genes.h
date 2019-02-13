@@ -19,10 +19,7 @@
 #include <functional>
 
 #include "core/biology_module/biology_module.h"
-#include "core/param/param.h"
-#include "core/simulation.h"
 #include "core/util/root.h"
-#include "core/scheduler.h"
 
 namespace bdm {
 
@@ -34,31 +31,22 @@ namespace bdm {
 ///  The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver_`.
 struct RegulateGenes : public BaseBiologyModule {
-  RegulateGenes() : BaseBiologyModule(gAllEventIds) {}
+  RegulateGenes();
 
-  explicit RegulateGenes(EventId event) : BaseBiologyModule(event) {}
+  explicit RegulateGenes(EventId event);
 
-  RegulateGenes(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
-    if(RegulateGenes* rgbm = dynamic_cast<RegulateGenes*>(other)) {
-      concentrations_ = rgbm->concentrations_;
-      first_derivatives_ = rgbm->first_derivatives_;
-    } else {
-      Log::Fatal("RegulateGenes::EventConstructor", "other was not of type RegulateGenes");
-    }
-  }
+  RegulateGenes(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0);
+
+  virtual ~RegulateGenes();
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override {
-    return new RegulateGenes(event, other, new_oid);
-  }
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override;
 
   /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override { return new RegulateGenes(*this); }
+  BaseBiologyModule* GetCopy() const override;
 
   /// Empty default event handler.
-  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
-    BaseBiologyModule::EventHandler(event, other1, other2);
-  }
+  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override;
 
   /// AddGene adds a new differential equation.
   /// \param first_derivative differential equation in the form:
@@ -70,51 +58,13 @@ struct RegulateGenes : public BaseBiologyModule {
   ///
   /// \param initial_concentration
   void AddGene(std::function<double(double, double)> first_derivative,
-               double initial_concentration) {
-    first_derivatives_.push_back(first_derivative);
-    concentrations_.push_back(initial_concentration);
-  }
+               double initial_concentration);
 
-  const std::vector<double>& GetConcentrations() const {
-    return concentrations_;
-  }
+  const std::vector<double>& GetConcentrations() const;
 
   /// Method Run() contains the implementation for Runge-Khutta and Euler
   /// methods for solving ODE.
-  void Run(SimObject* sim_object) override {
-    auto* sim = Simulation::GetActive();
-    auto* param = sim->GetParam();
-    auto* scheduler = sim->GetScheduler();
-
-    const auto& timestep = param->simulation_time_step_;
-    uint64_t simulated_steps = scheduler->GetSimulatedSteps();
-    const auto absolute_time = simulated_steps * timestep;
-
-    if (param->numerical_ode_solver_ == Param::NumericalODESolver::kEuler) {
-      // Euler
-      for (uint64_t i = 0; i < first_derivatives_.size(); i++) {
-        double slope = first_derivatives_[i](absolute_time, concentrations_[i]);
-        concentrations_[i] += slope * timestep;
-      }
-    } else if (param->numerical_ode_solver_ ==
-               Param::NumericalODESolver::kRK4) {
-      // Runge-Kutta 4
-      for (uint64_t i = 0; i < first_derivatives_.size(); i++) {
-        double interval_midpoint = absolute_time + timestep / 2.0;
-        double interval_endpoint = absolute_time + timestep;
-
-        double k1 = first_derivatives_[i](absolute_time, concentrations_[i]);
-        double k2 = first_derivatives_[i](
-            interval_midpoint, concentrations_[i] + timestep * k1 / 2.0);
-        double k3 = first_derivatives_[i](
-            interval_midpoint, concentrations_[i] + timestep * k2 / 2.0);
-        double k4 = first_derivatives_[i](interval_endpoint,
-                                          concentrations_[i] + timestep * k3);
-
-        concentrations_[i] += timestep / 6.0 * (k1 + 2 * k2 + 2 * k3 + k4);
-      }
-    }
-  }
+  void Run(SimObject* sim_object) override;
 
  private:
   /// Store the current concentration for each gene

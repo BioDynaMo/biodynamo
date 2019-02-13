@@ -22,6 +22,7 @@
 
 #include "core/default_force.h"
 #include "core/shape.h"
+#include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/log.h"
 #include "core/util/math.h"

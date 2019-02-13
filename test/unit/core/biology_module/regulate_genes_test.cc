@@ -17,6 +17,9 @@
 
 #include "core/biology_module/regulate_genes.h"
 #include "core/sim_object/cell.h"
+#include "core/param/param.h"
+#include "core/simulation.h"
+#include "core/scheduler.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 

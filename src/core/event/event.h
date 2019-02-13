@@ -40,33 +40,21 @@ const EventId gNullEventId = 0;
 /// EventId invariant. Thread safe.
 class UniqueEventIdFactory {
  public:
+  static UniqueEventIdFactory* Get();
+
   UniqueEventIdFactory(const UniqueEventIdFactory&) = delete;
 
-  static UniqueEventIdFactory* Get() {
-    static UniqueEventIdFactory kInstance;
-    return &kInstance;
-  }
-
-  EventId NewUniqueEventId() {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    constexpr uint64_t kOne = 1;
-    if (counter_ == 64) {
-      Log::Fatal("UniqueEventIdFactory",
-                 "BioDynaMo only supports 64 unique EventIds."
-                 " You requested a 65th one.");
-    }
-    return kOne << counter_++;
-  }
+  EventId NewUniqueEventId();
 
  private:
-  UniqueEventIdFactory() {}
+  UniqueEventIdFactory();
   std::recursive_mutex mutex_;
   uint64_t counter_ = 0;
 };
 
 // TODO documentation
 struct Event {
-  virtual ~Event() {}
+  virtual ~Event();
 
   virtual EventId GetId() const = 0;
 };

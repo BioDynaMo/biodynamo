@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include "core/resource_manager.h"
+#include "core/event/cell_division_event.h"
 #include "neuroscience/event/new_neurite_extension_event.h"
 #include "neuroscience/param.h"
 #include "neuroscience/neurite_element.h"
