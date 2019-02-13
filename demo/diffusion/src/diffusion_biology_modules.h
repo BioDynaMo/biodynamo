@@ -25,58 +25,45 @@ enum Substances { kKalium };
 // Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
 struct Chemotaxis : public BaseBiologyModule {
+  BDM_STATELESS_BM_HEADER(Chemotaxis, BaseBiologyModule, 1);
+
+ public:
   Chemotaxis() : BaseBiologyModule(gAllEventIds) {}
 
-  /// Empty default event constructor, because Chemotaxis does not have state.
-  template <typename TEvent, typename TBm>
-  Chemotaxis(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
-
-  /// event handler not needed, because Chemotaxis does not have state.
-
-  template <typename T, typename TSimulation = Simulation>
-  void Run(T* cell) {
+  void Run(SimObject* so) override {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     static auto* kDg = rm->GetDiffusionGrid(kKalium);
     kDg->SetConcentrationThreshold(1e15);
 
-    auto& position = cell->GetPosition();
-    std::array<double, 3> gradient;
-    kDg->GetGradient(position, &gradient);
-    gradient[0] *= 0.5;
-    gradient[1] *= 0.5;
-    gradient[2] *= 0.5;
+    if (auto* cell = so->As<Cell>()) {
+      const auto& position = so->GetPosition();
+      std::array<double, 3> gradient;
+      kDg->GetGradient(position, &gradient);
+      gradient[0] *= 0.5;
+      gradient[1] *= 0.5;
+      gradient[2] *= 0.5;
 
-    cell->UpdatePosition(gradient);
+      cell->UpdatePosition(gradient);
+    }
   }
-
- private:
-  BDM_CLASS_DEF_NV(Chemotaxis, 1);
 };
 
 // Define secretion behavior:
 // One cell is assigned to secrete Kalium artificially at one location
 struct KaliumSecretion : public BaseBiologyModule {
-  KaliumSecretion() : BaseBiologyModule() {}
+  BDM_STATELESS_BM_HEADER(KaliumSecretion, BaseBiologyModule, 1);
 
-  /// Empty default event constructor, because KaliumSecretion does not have
-  /// state.
-  template <typename TEvent, typename TBm>
-  KaliumSecretion(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
+ public:
+   KaliumSecretion() : BaseBiologyModule() {}
 
-  /// event handler not needed, because Chemotaxis does not have state.
-
-  template <typename T, typename TSimulation = Simulation>
-  void Run(T* cell) {
+  void Run(SimObject* so) override {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     static auto* kDg = rm->GetDiffusionGrid(kKalium);
     double amount = 4;
-    kDg->IncreaseConcentrationBy(cell->GetPosition(), amount);
+    kDg->IncreaseConcentrationBy(so->GetPosition(), amount);
   }
-
- private:
-  BDM_CLASS_DEF_NV(KaliumSecretion, 1);
 };
 
 }  // namespace bdm

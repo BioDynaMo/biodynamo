@@ -29,14 +29,12 @@ class MyCell : public Cell {
   explicit MyCell(const std::array<double, 3>& position) : Base(position) {}
 
   /// Default event constructor
-  template <typename TEvent, typename TOther>
-  MyCell(const TEvent& event, TOther* other, uint64_t new_oid = 0)
+  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
 
   /// Default event handler
-  template <typename TEvent, typename... TOthers>
-  void EventHandler(const TEvent& event, TOthers*... others) {
-    Base::EventHandler(event, others...);
+  void EventHandler(const Event& event, SimObject* other1, SimObject* other2 = nullptr) override {
+    Base::EventHandler(event, other1, other2);
   }
 
   void SetCellType(int t) { cell_type_ = t; }

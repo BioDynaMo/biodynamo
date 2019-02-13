@@ -16,6 +16,7 @@
 #define SOMA_CLUSTERING_BIOLOGY_MODULES_H_
 
 #include "biodynamo.h"
+#include "my_cell.h"
 
 namespace bdm {
 
@@ -24,68 +25,55 @@ enum Substances { kSubstance0, kSubstance1 };
 // Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
 struct Chemotaxis : public BaseBiologyModule {
+  BDM_STATELESS_BM_HEADER(Chemotaxis, BaseBiologyModule, 1);
+
+ public:
   Chemotaxis() : BaseBiologyModule(gAllEventIds) {}
 
-  /// Empty default event constructor, because Chemotaxis does not have state.
-  template <typename TEvent, typename TBm>
-  Chemotaxis(const TEvent& event, TBm* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
+  void Run(SimObject* so) override {
+    if(auto* cell = so->As<MyCell>()) {
+      auto* rm = Simulation::GetActive()->GetResourceManager();
 
-  /// event handler not needed, because Chemotaxis does not have state.
+      DiffusionGrid* dg = nullptr;
+      if (cell->GetCellType() == 1) {
+        dg = rm->GetDiffusionGrid(kSubstance0);
+      } else {
+        dg = rm->GetDiffusionGrid(kSubstance1);
+      }
 
-  template <typename T, typename TSimulation = Simulation>
-  void Run(T* cell) {
-    auto* rm = Simulation::GetActive()->GetResourceManager();
+      auto& position = cell->GetPosition();
+      std::array<double, 3> gradient;
+      std::array<double, 3> diff_gradient;
 
-    DiffusionGrid* dg = nullptr;
-    if (cell->GetCellType() == 1) {
-      dg = rm->GetDiffusionGrid(kSubstance0);
-    } else {
-      dg = rm->GetDiffusionGrid(kSubstance1);
+      dg->GetGradient(position, &gradient);
+      diff_gradient = Math::ScalarMult(5, gradient);
+      cell->UpdatePosition(diff_gradient);
     }
-
-    auto& position = cell->GetPosition();
-    std::array<double, 3> gradient;
-    std::array<double, 3> diff_gradient;
-
-    dg->GetGradient(position, &gradient);
-    diff_gradient = Math::ScalarMult(5, gradient);
-    cell->UpdatePosition(diff_gradient);
   }
-
- private:
-  BDM_CLASS_DEF_NV(Chemotaxis, 1);
 };
 
 // Define secretion behavior:
 struct SubstanceSecretion : public BaseBiologyModule {
+  BDM_STATELESS_BM_HEADER(SubstanceSecretion, BaseBiologyModule, 1);
+
+ public:
   SubstanceSecretion() : BaseBiologyModule(gAllEventIds) {}
 
-  /// Empty default event constructor, because SubstanceSecretion does not have
-  /// state.
-  template <typename TEvent, typename TBm>
-  SubstanceSecretion(const TEvent& event, TBm* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
+  void Run(SimObject* so) override {
+    if(auto* cell = so->As<MyCell>()) {
+      auto* rm = Simulation::GetActive()->GetResourceManager();
 
-  /// event handler not needed, because Chemotaxis does not have state.
+      DiffusionGrid* dg = nullptr;
+      if (cell->GetCellType() == 1) {
+        dg = rm->GetDiffusionGrid(kSubstance0);
+      } else {
+        dg = rm->GetDiffusionGrid(kSubstance1);
+      }
 
-  template <typename T, typename TSimulation = Simulation>
-  void Run(T* cell) {
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
-    DiffusionGrid* dg = nullptr;
-    if (cell->GetCellType() == 1) {
-      dg = rm->GetDiffusionGrid(kSubstance0);
-    } else {
-      dg = rm->GetDiffusionGrid(kSubstance1);
+      auto& secretion_position = cell->GetPosition();
+      dg->IncreaseConcentrationBy(secretion_position, 1);
     }
-
-    auto& secretion_position = cell->GetPosition();
-    dg->IncreaseConcentrationBy(secretion_position, 1);
   }
-
- private:
-  BDM_CLASS_DEF_NV(SubstanceSecretion, 1);
 };
 
 }  // namespace bdm

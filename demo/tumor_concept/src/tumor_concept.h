@@ -30,17 +30,22 @@ class MyCell : public Cell {  // our object extends the Cell object
   explicit MyCell(const std::array<double, 3>& position) : Base(position) {}
 
   /// If MyCell divides, daughter 2 copies the data members from the mother
-  template <typename TMother>
-  MyCell(const CellDivisionEvent& event, TMother* mother)
-      : Base(event, mother) {
-    can_divide_ = mother->can_divide_;
-    cell_color_ = mother->cell_color_;
+  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
+      : Base(event, other, new_oid) {
+    if (auto* mother = other->As<MyCell>()) {
+      cell_color_ = mother->cell_color_;
+      if (event.GetId() == CellDivisionEvent::kEventId) {
+        // the daughter will be able to divide
+        can_divide_ = true;
+      } else {
+        can_divide_ = mother->can_divide_;
+      }
+    }
   }
 
   /// If a cell divides, daughter keeps the same state from its mother.
-  template <typename TDaughter>
-  void EventHandler(const CellDivisionEvent& event, TDaughter* daughter) {
-    Base::EventHandler(event, daughter);
+  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override {
+    Base::EventHandler(event, other1, other2);
   }
 
   // getter and setter for our new data member
@@ -59,6 +64,9 @@ class MyCell : public Cell {  // our object extends the Cell object
 
 // 1. Define growth behaviour
 struct GrowthModule : public BaseBiologyModule {
+  BDM_STATELESS_BM_HEADER(GrowthModule, BaseBiologyModule, 1);
+
+public:
   GrowthModule() : BaseBiologyModule(gAllEventIds) {}
 
   /// Empty default event constructor, because GrowthModule does not have state.
@@ -68,37 +76,32 @@ struct GrowthModule : public BaseBiologyModule {
 
   /// event handler not needed, because Chemotaxis does not have state.
 
-  template <typename T, typename TSimulation = Simulation>
-  void Run(T* cell) {
-    if (cell->GetDiameter() < 8) {
-      auto* random = Simulation::GetActive()->GetRandom();
-      cell->ChangeVolume(400);
+  void Run(SimObject* so) override {
+    if (auto* cell = so->As<MyCell>()) {
+      if (cell->GetDiameter() < 8) {
+        auto* random = Simulation::GetActive()->GetRandom();
+        cell->ChangeVolume(400);
 
-      // create an array of 3 random numbers between -2 and 2
-      std::array<double, 3> cell_movements =
-          random->template UniformArray<3>(-2, 2);
-      // update the cell mass location, ie move the cell
-      cell->UpdatePosition(cell_movements);
-    } else {  //
-      auto* random = Simulation::GetActive()->GetRandom();
+        // create an array of 3 random numbers between -2 and 2
+        std::array<double, 3> cell_movements =
+            random->template UniformArray<3>(-2, 2);
+        // update the cell mass location, ie move the cell
+        cell->UpdatePosition(cell_movements);
+      } else {  //
+        auto* random = Simulation::GetActive()->GetRandom();
 
-      if (cell->GetCanDivide() && random->Uniform(0, 1) < 0.8) {
-        auto&& daughter = cell->Divide();
-        // daughter take the cell_color_ value of her mother
-        daughter->SetCellColor(cell->GetCellColor());
-        daughter->SetCanDivide(true);  // the daughter will be able to divide
-      } else {
-        cell->SetCanDivide(false);  // this cell won't divide anymore
+        if (cell->GetCanDivide() && random->Uniform(0, 1) < 0.8) {
+          cell->Divide();
+        } else {
+          cell->SetCanDivide(false);  // this cell won't divide anymore
+        }
       }
     }
   }
-
- private:
-  BDM_CLASS_DEF_NV(GrowthModule, 1);
 };
 
 inline int Simulate(int argc, const char** argv) {
-  auto set_param = [](auto* param) {
+  auto set_param = [](Param* param) {
     param->bound_space_ = true;
     param->min_bound_ = 0;
     param->max_bound_ = 100;  // cube of 100*100*100
@@ -116,10 +119,6 @@ inline int Simulate(int argc, const char** argv) {
   size_t nb_of_cells = 2400;  // number of cells in the simulation
   double x_coord, y_coord, z_coord;
 
-  // allocate the correct number of cell in our cells structure before
-  // cell creation
-  rm->template Reserve<MyCell>(nb_of_cells);
-
   for (size_t i = 0; i < nb_of_cells; ++i) {
     // our modelling will be a cell cube of 100*100*100
     // random double between 0 and 100
@@ -128,21 +127,21 @@ inline int Simulate(int argc, const char** argv) {
     z_coord = random->Uniform(param->min_bound_, param->max_bound_);
 
     // creating the cell at position x, y, z
-    MyCell cell({x_coord, y_coord, z_coord});
+    MyCell* cell = new MyCell({x_coord, y_coord, z_coord});
     // set cell parameters
-    cell.SetDiameter(7.5);
+    cell->SetDiameter(7.5);
     // will vary from 0 to 5. so 6 different layers depending on y_coord
-    cell.SetCellColor(static_cast<int>((y_coord / param->max_bound_ * 6)));
+    cell->SetCellColor(static_cast<int>((y_coord / param->max_bound_ * 6)));
 
     rm->push_back(cell);  // put the created cell in our cells structure
   }
 
   // create a cancerous cell, containing the BiologyModule GrowthModule
-  MyCell cell({20, 50, 50});
-  cell.SetDiameter(6);
-  cell.SetCellColor(8);
-  cell.SetCanDivide(true);
-  cell.AddBiologyModule(new GrowthModule());
+  MyCell* cell = new MyCell({20, 50, 50});
+  cell->SetDiameter(6);
+  cell->SetCellColor(8);
+  cell->SetCanDivide(true);
+  cell->AddBiologyModule(new GrowthModule());
   rm->push_back(cell);  // put the created cell in our cells structure
 
   // Run simulation

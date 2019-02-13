@@ -32,7 +32,7 @@ namespace bdm {
 enum Substances { kSubstance };
 
 inline int Simulate(int argc, const char** argv) {
-  auto set_param = [](auto* param) {
+  auto set_param = [](Param* param) {
     // Create an artificial bounds for the simulation space
     param->bound_space_ = true;
     param->min_bound_ = -100;

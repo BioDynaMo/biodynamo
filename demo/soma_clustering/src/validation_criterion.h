@@ -54,18 +54,20 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // the locations of all cells within the subvolume are copied
   // to pos_sub_vol
-  rm->ApplyOnAllElements([&](auto&& so, const SoHandle&) {
-    auto& pos = so.GetPosition();
-    auto type = so.GetCellType();
+  rm->ApplyOnAllElements([&](SimObject* so) {
+    if (auto* cell = so->As<MyCell>()) {
+      const auto& pos = cell->GetPosition();
+      auto type = cell->GetCellType();
 
-    if ((fabs(pos[0] - 0.5) < sub_vol_max) &&
-        (fabs(pos[1] - 0.5) < sub_vol_max) &&
-        (fabs(pos[2] - 0.5) < sub_vol_max)) {
-      pos_sub_vol[num_cells_sub_vol][0] = pos[0];
-      pos_sub_vol[num_cells_sub_vol][1] = pos[1];
-      pos_sub_vol[num_cells_sub_vol][2] = pos[2];
-      types_sub_vol[num_cells_sub_vol] = type;
-      num_cells_sub_vol++;
+      if ((fabs(pos[0] - 0.5) < sub_vol_max) &&
+          (fabs(pos[1] - 0.5) < sub_vol_max) &&
+          (fabs(pos[2] - 0.5) < sub_vol_max)) {
+        pos_sub_vol[num_cells_sub_vol][0] = pos[0];
+        pos_sub_vol[num_cells_sub_vol][1] = pos[1];
+        pos_sub_vol[num_cells_sub_vol][2] = pos[2];
+        types_sub_vol[num_cells_sub_vol] = type;
+        num_cells_sub_vol++;
+      }
     }
   });
 
