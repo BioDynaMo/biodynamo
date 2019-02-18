@@ -41,5 +41,7 @@
      <class name="bdm::Random" />
      <!-- list of biodynamo classes that should be ignored  -->
      <class name="bdm::SoVisitor" />
+     <class name="bdm::Grid" />
+     <class name="bdm::Grid::NeighborMutexBuilder::MutexWrapper" />
   </exclusion>
 </lcgdict>
