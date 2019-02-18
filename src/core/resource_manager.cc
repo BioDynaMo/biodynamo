@@ -194,8 +194,9 @@ void ResourceManager::SortAndBalanceNumaNodes() {
     this->uid_soh_map_[so->GetUid()] = soh;
   });
 
-  // TODO(lukas) do we need this? we don't change the scheduling anymore
-  thread_info_.Renew();
+  // FIXME
+  // // TODO(lukas) do we need this? we don't change the scheduling anymore
+  // thread_info_.Renew();
 }
 
 }  // namespace bdm
