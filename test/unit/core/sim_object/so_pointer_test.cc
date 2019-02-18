@@ -24,7 +24,6 @@ TEST(SoPointerTest, Basics) {
   SoPointer<TestSimObject> null_so_pointer;
   EXPECT_TRUE(null_so_pointer == nullptr);
 
-
   TestSimObject* so = new TestSimObject();
   so->SetData(123);
   simulation.GetResourceManager()->push_back(so);

@@ -17,32 +17,36 @@
 #include <cmath>
 
 #include "core/shape.h"
+#include "core/shape.h"
+#include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 #include "core/util/math.h"
 #include "core/util/random.h"
-#include "core/shape.h"
-#include "core/sim_object/sim_object.h"
 #include "neuroscience/neurite_element.h"
 
 namespace bdm {
 
 using experimental::neuroscience::NeuriteElement;
 
-std::array<double, 4> DefaultForce::GetForce(const SimObject* lhs, const SimObject* rhs) {
-  if(lhs->GetShape() == Shape::kSphere && rhs->GetShape() == Shape::kSphere) {
+std::array<double, 4> DefaultForce::GetForce(const SimObject* lhs,
+                                             const SimObject* rhs) {
+  if (lhs->GetShape() == Shape::kSphere && rhs->GetShape() == Shape::kSphere) {
     std::array<double, 3> result;
     ForceBetweenSpheres(lhs, rhs, &result);
     return {result[0], result[1], result[2], 0};
-  } else if (lhs->GetShape() == Shape::kSphere && rhs->GetShape() == Shape::kCylinder){
+  } else if (lhs->GetShape() == Shape::kSphere &&
+             rhs->GetShape() == Shape::kCylinder) {
     std::array<double, 3> result;
     ForceOnASphereFromACylinder(lhs, rhs, &result);
     return {result[0], result[1], result[2], 0};
-  } else if (lhs->GetShape() == Shape::kCylinder && rhs->GetShape() == Shape::kSphere){
+  } else if (lhs->GetShape() == Shape::kCylinder &&
+             rhs->GetShape() == Shape::kSphere) {
     std::array<double, 4> result;
     ForceOnACylinderFromASphere(lhs, rhs, &result);
     return result;
-  } else if (lhs->GetShape() == Shape::kCylinder && rhs->GetShape() == Shape::kCylinder){
+  } else if (lhs->GetShape() == Shape::kCylinder &&
+             rhs->GetShape() == Shape::kCylinder) {
     std::array<double, 4> result;
     ForceBetweenCylinders(lhs, rhs, &result);
     return result;
@@ -54,9 +58,8 @@ std::array<double, 4> DefaultForce::GetForce(const SimObject* lhs, const SimObje
 }
 
 void DefaultForce::ForceBetweenSpheres(const SimObject* sphere_lhs,
-                         const SimObject* sphere_rhs,
-                         std::array<double, 3>* result) const {
-
+                                       const SimObject* sphere_rhs,
+                                       std::array<double, 3>* result) const {
   const std::array<double, 3>& ref_mass_location = sphere_lhs->GetPosition();
   double ref_diameter = sphere_lhs->GetDiameter();
   double ref_iof_coefficient = 0.15;
@@ -107,9 +110,9 @@ void DefaultForce::ForceBetweenSpheres(const SimObject* sphere_lhs,
   *result = force2on1;
 }
 
-void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
-                                 const SimObject* sphere,
-                                 std::array<double, 4>* result) const {
+void DefaultForce::ForceOnACylinderFromASphere(
+    const SimObject* cylinder, const SimObject* sphere,
+    std::array<double, 4>* result) const {
   auto* ne = cylinder->As<NeuriteElement>();
   auto proximal_end = ne->ProximalEnd();
   auto distal_end = ne->DistalEnd();
@@ -132,9 +135,9 @@ void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
     std::array<double, 3> dvec = {
         rc * (axis[0] / actual_length), rc * (axis[1] / actual_length),
         rc * (axis[2] / actual_length)};  // displacement vector
-    std::array<double, 3> npd = {
-        distal_end[0] - dvec[0], distal_end[1] - dvec[1],
-        distal_end[2] - dvec[2]};  // new sphere center
+    std::array<double, 3> npd = {distal_end[0] - dvec[0],
+                                 distal_end[1] - dvec[1],
+                                 distal_end[2] - dvec[2]};  // new sphere center
     *result = ComputeForceOfASphereOnASphere(npd, rc, c, r);
     return;
   }
@@ -205,9 +208,9 @@ void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
   return;
 }
 
-void DefaultForce::ForceOnASphereFromACylinder(const SimObject* sphere,
-                                 const SimObject* cylinder,
-                                 std::array<double, 3>* result) const {
+void DefaultForce::ForceOnASphereFromACylinder(
+    const SimObject* sphere, const SimObject* cylinder,
+    std::array<double, 3>* result) const {
   // it is the opposite of force on a cylinder from sphere:
   std::array<double, 4> temp;
   ForceOnACylinderFromASphere(cylinder, sphere, &temp);
@@ -216,8 +219,8 @@ void DefaultForce::ForceOnASphereFromACylinder(const SimObject* sphere,
 }
 
 void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
-                           const SimObject* cylinder2,
-                           std::array<double, 4>* result) const {
+                                         const SimObject* cylinder2,
+                                         std::array<double, 4>* result) const {
   auto* c1 = cylinder1->As<NeuriteElement>();
   auto* c2 = cylinder2->As<NeuriteElement>();
   auto a = c1->ProximalEnd();
@@ -292,8 +295,8 @@ void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
 }
 
 std::array<double, 4> DefaultForce::ComputeForceOfASphereOnASphere(
-    const std::array<double, 3>& c1, double r1,
-    const std::array<double, 3>& c2, double r2) const {
+    const std::array<double, 3>& c1, double r1, const std::array<double, 3>& c2,
+    double r2) const {
   double comp1 = c1[0] - c2[0];
   double comp2 = c1[1] - c2[1];
   double comp3 = c1[2] - c2[2];
@@ -310,8 +313,7 @@ std::array<double, 4> DefaultForce::ComputeForceOfASphereOnASphere(
       0.00000001) {  // TODO(neurites) hard coded values
     auto* random = Simulation::GetActive()->GetRandom();
     auto force2on1 = random->template UniformArray<3>(-3.0, 3.0);
-    return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2],
-                                 0.0};
+    return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2], 0.0};
   } else {
     // the force is prop to the square of the interpentration distance and to
     // the radii.

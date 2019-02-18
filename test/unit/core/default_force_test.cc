@@ -14,10 +14,10 @@
 
 #include "core/default_force.h"
 #include "core/sim_object/cell.h"
-#include "unit/test_util/test_util.h"
 #include "gtest/gtest.h"
-#include "neuroscience/neurite_element.h"
 #include "neuroscience/module.h"
+#include "neuroscience/neurite_element.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 

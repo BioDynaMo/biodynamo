@@ -22,10 +22,10 @@
 
 #include "core/operation/bound_space_op.h"
 #include "core/param/param.h"
+#include "core/scheduler.h"
+#include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
 #include "core/util/math.h"
-#include "core/sim_object/sim_object.h"
-#include "core/scheduler.h"
 
 namespace bdm {
 

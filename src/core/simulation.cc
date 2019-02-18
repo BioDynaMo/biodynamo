@@ -25,8 +25,8 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/util/log.h"
 #include "core/util/io.h"
+#include "core/util/log.h"
 #include "core/util/string.h"
 #include "version.h"
 
@@ -40,9 +40,7 @@ std::atomic<uint64_t> Simulation::counter_;
 
 Simulation* Simulation::active_ = nullptr;
 
-Simulation* Simulation::GetActive() {
-  return active_;
-}
+Simulation* Simulation::GetActive() { return active_; }
 
 Simulation::Simulation(TRootIOCtor* p) {}
 
@@ -53,12 +51,12 @@ Simulation::Simulation(const std::string& simulation_name)
     : Simulation(simulation_name, [](auto* param) {}) {}
 
 Simulation::Simulation(int argc, const char** argv,
-                          const std::function<void(Param*)>& set_param) {
+                       const std::function<void(Param*)>& set_param) {
   Initialize(argc, argv, set_param);
 }
 
 Simulation::Simulation(const std::string& simulation_name,
-                          const std::function<void(Param*)>& set_param) {
+                       const std::function<void(Param*)>& set_param) {
   const char* argv[1] = {simulation_name.c_str()};
   Initialize(1, argv, set_param);
 }
@@ -110,29 +108,17 @@ Simulation::~Simulation() {
   active_ = tmp;
 }
 
-void Simulation::Activate() {
-  active_ = this;
-}
+void Simulation::Activate() { active_ = this; }
 
-ResourceManager* Simulation::GetResourceManager() {
-  return rm_;
-}
+ResourceManager* Simulation::GetResourceManager() { return rm_; }
 
-const Param* Simulation::GetParam() const {
-  return param_;
-}
+const Param* Simulation::GetParam() const { return param_; }
 
-Grid* Simulation::GetGrid() {
-  return grid_;
-}
+Grid* Simulation::GetGrid() { return grid_; }
 
-Scheduler* Simulation::GetScheduler() {
-  return scheduler_;
-}
+Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
-Random* Simulation::GetRandom() {
-  return random_[omp_get_thread_num()];
-}
+Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
 InPlaceExecutionContext* Simulation::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
@@ -142,13 +128,9 @@ std::vector<InPlaceExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
-const std::string& Simulation::GetUniqueName() const {
-  return unique_name_;
-}
+const std::string& Simulation::GetUniqueName() const { return unique_name_; }
 
-const std::string& Simulation::GetOutputDir() const {
-  return output_dir_;
-}
+const std::string& Simulation::GetOutputDir() const { return output_dir_; }
 
 void Simulation::ReplaceScheduler(Scheduler* scheduler) {
   delete scheduler_;
@@ -156,7 +138,7 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
 }
 
 void Simulation::Initialize(int argc, const char** argv,
-                               const std::function<void(Param*)>& set_param) {
+                            const std::function<void(Param*)>& set_param) {
   id_ = counter_++;
   Activate();
   InitializeUniqueName(ExtractSimulationName(argv[0]));
@@ -179,8 +161,8 @@ void Simulation::InitializeMembers() {
   scheduler_ = new Scheduler();
 }
 
-void Simulation::InitializeRuntimeParams(int argc, const char** argv,
-                                            const std::function<void(Param*)>& set_param) {
+void Simulation::InitializeRuntimeParams(
+    int argc, const char** argv, const std::function<void(Param*)>& set_param) {
   param_ = new Param();
 
   // Removing this line causes an unexplainable segfault due to setting the

@@ -16,8 +16,8 @@
 #define CORE_SCHEDULER_H_
 
 #include <chrono>
-#include <string>
 #include <functional>
+#include <string>
 
 #include "core/visualization/catalyst_adaptor.h"
 

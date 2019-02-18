@@ -16,9 +16,9 @@
 #define CORE_OPERATION_DIVIDING_CELL_OP_H_
 
 #include <cstdint>
-#include "core/simulation.h"
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
+#include "core/simulation.h"
 
 namespace bdm {
 
@@ -28,7 +28,7 @@ class DividingCellOp {
   ~DividingCellOp() {}
 
   void operator()(SimObject* sim_object) const {
-    if(Cell* cell = dynamic_cast<Cell*>(sim_object)) {
+    if (Cell* cell = dynamic_cast<Cell*>(sim_object)) {
       if (cell->GetDiameter() <= 40) {
         cell->ChangeVolume(300);
       } else {

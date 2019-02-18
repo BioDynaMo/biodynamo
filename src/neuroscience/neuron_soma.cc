@@ -17,8 +17,8 @@
 #include <algorithm>
 #include "core/resource_manager.h"
 #include "neuroscience/event/new_neurite_extension_event.h"
-#include "neuroscience/param.h"
 #include "neuroscience/neurite_element.h"
+#include "neuroscience/param.h"
 
 namespace bdm {
 namespace experimental {
@@ -28,12 +28,16 @@ NeuronSoma::NeuronSoma() {}
 
 NeuronSoma::~NeuronSoma() {}
 
-NeuronSoma::NeuronSoma(const std::array<double, 3>& position) : Base(position) {}
+NeuronSoma::NeuronSoma(const std::array<double, 3>& position)
+    : Base(position) {}
 
-NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so, uint64_t new_oid) : Base(event, mother_so, new_oid) {
-  const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event);
+NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so,
+                       uint64_t new_oid)
+    : Base(event, mother_so, new_oid) {
+  const CellDivisionEvent* cdevent =
+      dynamic_cast<const CellDivisionEvent*>(&event);
   NeuronSoma* mother = dynamic_cast<NeuronSoma*>(mother_so);
-  if(cdevent && mother) {
+  if (cdevent && mother) {
     if (mother->daughters_.size() != 0) {
       Fatal("NeuronSoma",
             "Dividing a neuron soma with attached neurites is not supported "
@@ -43,12 +47,14 @@ NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so, uint64_t new_oi
   }
 }
 
-void NeuronSoma::EventHandler(const Event& event, SimObject *other1, SimObject* other2) {
+void NeuronSoma::EventHandler(const Event& event, SimObject* other1,
+                              SimObject* other2) {
   Base::EventHandler(event, other1, other2);
 
-  const NewNeuriteExtensionEvent* ne_event = dynamic_cast<const NewNeuriteExtensionEvent*>(&event);
+  const NewNeuriteExtensionEvent* ne_event =
+      dynamic_cast<const NewNeuriteExtensionEvent*>(&event);
   NeuriteElement* neurite = dynamic_cast<NeuriteElement*>(other1);
-  if(ne_event && neurite) {
+  if (ne_event && neurite) {
     double theta = ne_event->theta_;
     double phi = ne_event->phi_;
     double x_coord = std::sin(theta) * std::cos(phi);
@@ -62,7 +68,8 @@ void NeuronSoma::EventHandler(const Event& event, SimObject *other1, SimObject* 
   // do nothing for CellDivisionEvent or others
 }
 
-NeuriteElement* NeuronSoma::ExtendNewNeurite(const std::array<double, 3>& direction) {
+NeuriteElement* NeuronSoma::ExtendNewNeurite(
+    const std::array<double, 3>& direction) {
   auto dir = Math::Add(direction, Base::position_);
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
   auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
@@ -70,7 +77,8 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(const std::array<double, 3>& direct
                           angles[1]);
 }
 
-NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi, double theta) {
+NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
+                                             double theta) {
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
   NewNeuriteExtensionEvent event(diameter, phi, theta);
   NeuriteElement* neurite = new NeuriteElement(event, this);
@@ -80,8 +88,7 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi, double
 }
 
 void NeuronSoma::RemoveDaughter(const SoPointer<NeuriteElement>& daughter) {
-  auto it = std::find(std::begin(daughters_),
-                      std::end(daughters_), daughter);
+  auto it = std::find(std::begin(daughters_), std::end(daughters_), daughter);
   assert(it != std::end(daughters_) &&
          "The element you wanted to remove is not part of daughters_");
   daughters_.erase(it);
@@ -110,8 +117,8 @@ void NeuronSoma::UpdateRelative(const NeuronOrNeurite& old_rel,
   auto old_rel_soptr = old_rel.As<NeuriteElement>()->GetSoPtr<NeuriteElement>();
   auto new_rel_soptr = new_rel.As<NeuriteElement>()->GetSoPtr<NeuriteElement>();
   auto coord = daughters_coord_[old_rel_soptr->GetUid()];
-  auto it = std::find(std::begin(daughters_),
-                      std::end(daughters_), old_rel_soptr);
+  auto it =
+      std::find(std::begin(daughters_), std::end(daughters_), old_rel_soptr);
   assert(it != std::end(daughters_) &&
          "old_element_idx could not be found in daughters_ vector");
   *it = new_rel_soptr;
@@ -121,7 +128,6 @@ void NeuronSoma::UpdateRelative(const NeuronOrNeurite& old_rel,
 const std::vector<SoPointer<NeuriteElement>>& NeuronSoma::GetDaughters() const {
   return daughters_;
 }
-
 
 }  // namespace neuroscience
 }  // namespace experimental

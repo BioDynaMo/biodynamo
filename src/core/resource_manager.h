@@ -38,8 +38,8 @@
 #endif
 
 #include "core/diffusion_grid.h"
-#include "core/sim_object/so_uid.h"
 #include "core/sim_object/sim_object.h"
+#include "core/sim_object/so_uid.h"
 #include "core/simulation.h"
 #include "core/util/numa.h"
 #include "core/util/root.h"
@@ -76,8 +76,7 @@ class SoHandle {
   void SetElementIdx(ElementIdx_t element_idx) { element_idx_ = element_idx; }
 
   bool operator==(const SoHandle& other) const {
-    return numa_node_ == other.numa_node_ &&
-           element_idx_ == other.element_idx_;
+    return numa_node_ == other.numa_node_ && element_idx_ == other.element_idx_;
   }
 
   bool operator!=(const SoHandle& other) const { return !(*this == other); }
@@ -166,7 +165,8 @@ class ResourceManager {
   }
 
   SimObject* GetSimObject(SoUid uid) {
-    assert(Contains(uid) && "ResourceManager does not contain sim_object with given uid");
+    assert(Contains(uid) &&
+           "ResourceManager does not contain sim_object with given uid");
     SoHandle soh = uid_soh_map_[uid];
     return sim_objects_[soh.GetNumaNode()][soh.GetElementIdx()];
   }
@@ -236,10 +236,10 @@ class ResourceManager {
 
   /// Returns the total number of simulation objects if numa_node == -1
   /// Otherwise the number of sim_objects in the specific numa node
-  size_t GetNumSimObjects(int numa_node=-1) const {
+  size_t GetNumSimObjects(int numa_node = -1) const {
     if (numa_node == -1) {
       size_t num_so = 0;
-      for(auto& numa_sos : sim_objects_) {
+      for (auto& numa_sos : sim_objects_) {
         num_so += numa_sos.size();
       }
       return num_so;
@@ -262,10 +262,11 @@ class ResourceManager {
     }
   }
 
-  void ApplyOnAllElements(const std::function<void(SimObject*, SoHandle)>& function) {
-    for(uint64_t n = 0; n < sim_objects_.size(); ++n) {
+  void ApplyOnAllElements(
+      const std::function<void(SimObject*, SoHandle)>& function) {
+    for (uint64_t n = 0; n < sim_objects_.size(); ++n) {
       auto& numa_sos = sim_objects_[n];
-      for(uint64_t i = 0; i < numa_sos.size(); ++i) {
+      for (uint64_t i = 0; i < numa_sos.size(); ++i) {
         function(numa_sos[i], SoHandle(n, i));
       }
     }
@@ -275,7 +276,8 @@ class ResourceManager {
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallel(const std::function<void(SimObject*)>& function);
+  void ApplyOnAllElementsParallel(
+      const std::function<void(SimObject*)>& function);
   // {
   //   for (auto& numa_sos : sim_objects_) {
   //     #pragma omp parallel for
@@ -292,7 +294,9 @@ class ResourceManager {
   /// \param chunk number of sim objects that are assigned to a thread (batch
   /// size)
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*, SoHandle)>& function);
+  void ApplyOnAllElementsParallelDynamic(
+      uint64_t chunk,
+      const std::function<void(SimObject*, SoHandle)>& function);
   //  {
   //   for(uint64_t n = 0; n < sim_objects_.size(); ++n) {
   //     auto& numa_sos = sim_objects_[n];
@@ -307,7 +311,7 @@ class ResourceManager {
   /// each simulation object type.
   void Reserve(size_t capacity) {
     uid_soh_map_.reserve(capacity);
-    for(auto& numa_sos : sim_objects_) {
+    for (auto& numa_sos : sim_objects_) {
       numa_sos.reserve(capacity);
     }
   }
@@ -324,8 +328,10 @@ class ResourceManager {
   /// not affected.
   void Clear() {
     uid_soh_map_.clear();
-    for(auto& numa_sos : sim_objects_) {
-      for(auto* so : numa_sos) { delete so; }
+    for (auto& numa_sos : sim_objects_) {
+      for (auto* so : numa_sos) {
+        delete so;
+      }
       numa_sos.clear();
     }
   }
@@ -337,9 +343,11 @@ class ResourceManager {
   /// NB: This method is not thread-safe! This function might invalidate
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
-  void push_back(SimObject* so, typename SoHandle::NumaNode_t numa_node = 0) {  // NOLINT
+  void push_back(SimObject* so,
+                 typename SoHandle::NumaNode_t numa_node = 0) {  // NOLINT
     sim_objects_[numa_node].push_back(so);
-    uid_soh_map_[so->GetUid()] = SoHandle(numa_node, sim_objects_[numa_node].size() - 1);
+    uid_soh_map_[so->GetUid()] =
+        SoHandle(numa_node, sim_objects_[numa_node].size() - 1);
   }
 
   /// Removes the simulation object with the given uid.\n
@@ -354,7 +362,7 @@ class ResourceManager {
       uid_soh_map_.erase(it);
       // remove from vector
       auto& numa_sos = sim_objects_[soh.GetNumaNode()];
-      if(soh.GetElementIdx() == numa_sos.size() - 1) {
+      if (soh.GetElementIdx() == numa_sos.size() - 1) {
         delete numa_sos.back();
         numa_sos.pop_back();
       } else {

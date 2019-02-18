@@ -1,4 +1,5 @@
-// // -----------------------------------------------------------------------------
+// //
+// -----------------------------------------------------------------------------
 // //
 // // Copyright (C) The BioDynaMo Project.
 // // All Rights Reserved.
@@ -10,7 +11,8 @@
 // // See the NOTICE file distributed with this work for additional information
 // // regarding copyright ownership.
 // //
-// // -----------------------------------------------------------------------------
+// //
+// -----------------------------------------------------------------------------
 //
 // #ifndef CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
 // #define CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
@@ -52,7 +54,8 @@
 //     double squared_radius =
 //         grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
 //
-//     // We need to create a mass vector, because it is not stored by default in
+//     // We need to create a mass vector, because it is not stored by default
+//     in
 //     // a cell container
 //     cells->FillMassVector(&mass);
 //     grid->GetSuccessors(&successors);
@@ -88,7 +91,8 @@
 //       if (starts.size() >= num_boxes_) {
 //         Log::Info("DisplacementOpCuda",
 //                   "\nThe number of boxes increased signficantly (from ",
-//                   num_boxes_, " to ", "), so we allocate bigger GPU buffers\n");
+//                   num_boxes_, " to ", "), so we allocate bigger GPU
+//                   buffers\n");
 //         uint32_t new_num_boxes = static_cast<uint32_t>(1.25 * starts.size());
 //         num_boxes_ = new_num_boxes;
 //         cdo_->ResizeGridBuffers(new_num_boxes);
@@ -99,7 +103,8 @@
 //         cells->GetPositionPtr(), cells->GetDiameterPtr(),
 //         cells->GetTractorForcePtr(), cells->GetAdherencePtr(),
 //         cells->GetBoxIdPtr(), mass.data(), &(param->simulation_time_step_),
-//         &(param->simulation_max_displacement_), &squared_radius, &num_objects,
+//         &(param->simulation_max_displacement_), &squared_radius,
+//         &num_objects,
 //         starts.data(), lengths.data(), successors.data(), &box_length,
 //         num_boxes_axis.data(), grid_dimensions.data(),
 //         cell_movements.data()->data());
@@ -122,10 +127,12 @@
 //   }
 //
 //   template <typename TContainer>
-//   typename std::enable_if<!is_soa_sphere<TContainer>::value>::type operator()(
+//   typename std::enable_if<!is_soa_sphere<TContainer>::value>::type
+//   operator()(
 //       TContainer* cells, uint16_t numa_node, uint16_t type_idx) {
 //     Fatal("DisplacementOpCuda",
-//           "You tried to compile GPU-specific function calls for a non-SOA data "
+//           "You tried to compile GPU-specific function calls for a non-SOA
+//           data "
 //           "structure or non-spherical simulation object.");
 //   }
 //

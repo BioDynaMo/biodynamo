@@ -13,8 +13,8 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/core/sim_object/cell_test.h"
-#include <typeinfo>
 #include <gtest/gtest.h>
+#include <typeinfo>
 #include "core/sim_object/cell.h"
 #include "unit/core/sim_object/sim_object_test.h"
 #include "unit/test_util/test_util.h"
@@ -85,7 +85,8 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   // biology modules mother
   EXPECT_EQ(1u, mother.GetAllBiologyModules().size());
   EXPECT_EQ(1u, daughter->GetAllBiologyModules().size());
-  if (dynamic_cast<GrowthModule*>(daughter->GetAllBiologyModules()[0]) == nullptr) {
+  if (dynamic_cast<GrowthModule*>(daughter->GetAllBiologyModules()[0]) ==
+      nullptr) {
     FAIL() << "Variant type at position 0 is not a GrowthModule";
   }
 

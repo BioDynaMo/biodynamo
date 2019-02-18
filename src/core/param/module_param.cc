@@ -25,7 +25,6 @@ ModuleParamUidGenerator::ModuleParamUidGenerator() : counter_(0) {}
 
 ModuleParamUid ModuleParamUidGenerator::NewUid() { return counter_++; }
 
-
 ModuleParam::~ModuleParam() {}
 
 }  // namespace bdm
