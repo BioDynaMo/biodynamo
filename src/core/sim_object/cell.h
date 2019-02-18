@@ -64,10 +64,12 @@ class Cell : public SimObject {
   /// 2 for a cell division event.
   ///
   /// \see CellDivisionEvent
-  Cell(const Event& event, SimObject* mother, uint64_t new_oid = 0) : Base(event, mother, new_oid) {
-    const CellDivisionEvent* cdevent = dynamic_cast<const CellDivisionEvent*>(&event);
+  Cell(const Event& event, SimObject* mother, uint64_t new_oid = 0)
+      : Base(event, mother, new_oid) {
+    const CellDivisionEvent* cdevent =
+        dynamic_cast<const CellDivisionEvent*>(&event);
     Cell* mother_cell = dynamic_cast<Cell*>(mother);
-    if(cdevent && mother_cell) {
+    if (cdevent && mother_cell) {
       auto* daughter = this;  // FIXME
       // A) Defining some values
       // ..................................................................
@@ -91,7 +93,8 @@ class Cell : public SimObject {
           total_length_of_displacement *
               (x_coord * x_axis[1] + y_coord * y_axis[1] + z_coord * z_axis[1]),
           total_length_of_displacement *
-              (x_coord * x_axis[2] + y_coord * y_axis[2] + z_coord * z_axis[2])};
+              (x_coord * x_axis[2] + y_coord * y_axis[2] +
+               z_coord * z_axis[2])};
 
       // two equations for the center displacement :
       //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
@@ -136,7 +139,8 @@ class Cell : public SimObject {
   /// \param event contains parameters for cell division
   /// \param daughter_2 pointer to new cell (=daughter 2)
   /// \see Event, CellDivisionEvent
-  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override {
+  void EventHandler(const Event& event, SimObject* other1,
+                    SimObject* other2 = nullptr) override {
     Base::EventHandler(event, other1, other2);
   }
 
@@ -173,15 +177,13 @@ class Cell : public SimObject {
     auto* random = Simulation::GetActive()->GetRandom();
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
-    return Divide(random->Uniform(0.9, 1.1), polarcoord[1],
-                            polarcoord[2]);
+    return Divide(random->Uniform(0.9, 1.1), polarcoord[1], polarcoord[2]);
   }
 
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  virtual Cell* Divide(double volume_ratio,
-                          const std::array<double, 3>& axis) {
+  virtual Cell* Divide(double volume_ratio, const std::array<double, 3>& axis) {
     auto polarcoord =
         TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
     return Divide(volume_ratio, polarcoord[1], polarcoord[2]);
@@ -207,7 +209,9 @@ class Cell : public SimObject {
 
   double GetDensity() const { return density_; }
 
-  const std::array<double, 3>& GetPosition() const override { return position_; }
+  const std::array<double, 3>& GetPosition() const override {
+    return position_;
+  }
 
   const std::array<double, 3>& GetTractorForce() const {
     return tractor_force_;

@@ -15,9 +15,9 @@
 #ifndef CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
-#include <vector>
 #include <functional>
 #include <unordered_map>
+#include <vector>
 #include "core/sim_object/so_uid.h"
 
 namespace bdm {
@@ -56,14 +56,16 @@ class InPlaceExecutionContext {
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
-  void Execute(SimObject* so, const std::vector<std::function<void(SimObject*)>>& operations);
+  void Execute(SimObject* so,
+               const std::vector<std::function<void(SimObject*)>>& operations);
 
   void push_back(SimObject* new_so);
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
   /// Could be used to cache the results.
-  void ForEachNeighborWithinRadius(const std::function<void(const SimObject*)>& lambda, const SimObject& query,
-                                   double squared_radius);
+  void ForEachNeighborWithinRadius(
+      const std::function<void(const SimObject*)>& lambda,
+      const SimObject& query, double squared_radius);
 
   SimObject* GetSimObject(SoUid uid);
 

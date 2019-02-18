@@ -43,24 +43,24 @@ class SimObjectVector {
     clear();
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    for(int n = 0; n < thread_info_.GetNumaNodes(); n++) {
-      auto num_sos  = rm->GetNumSimObjects(n);
+    for (int n = 0; n < thread_info_.GetNumaNodes(); n++) {
+      auto num_sos = rm->GetNumSimObjects(n);
       data_[n].reserve(rm->GetNumSimObjects(n));
       size_[n] = num_sos;
     }
   }
 
   void clear() {  // NOLINT
-    for(auto& el : size_) { el = 0; };
+    for (auto& el : size_) {
+      el = 0;
+    };
     for (auto& vec : data_) {
       vec.clear();
     }
   }
 
   // Returns the number of elements of specified type
-  size_t size(uint16_t numa_node) {
-    return size_[numa_node];
-  }  // NOLINT
+  size_t size(uint16_t numa_node) { return size_[numa_node]; }  // NOLINT
 
   const T& operator[](const SoHandle& handle) const {
     return data_[handle.GetNumaNode()][handle.GetElementIdx()];

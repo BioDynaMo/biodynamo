@@ -27,6 +27,7 @@
 
 #include "core/biology_module/biology_module.h"
 #include "core/event/event.h"
+#include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/so_uid.h"
 #include "core/simulation.h"
@@ -34,7 +35,6 @@
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
-#include "core/execution_context/in_place_exec_ctxt.h"
 
 namespace bdm {
 
@@ -42,7 +42,8 @@ const std::string SimObject::GetScalarTypeName() { return "Cell"; }
 
 SimObject::SimObject() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
 
-SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid) : SimObject() {
+SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid)
+    : SimObject() {
   box_idx_ = other->GetBoxIdx();
   // biology modules
   auto* other_bms = &(other->biology_modules_);
@@ -50,16 +51,17 @@ SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid) : S
   CopyBiologyModules(event, other_bms);
 }
 
-SimObject::SimObject(TRootIOCtor *io_ctor) {}
+SimObject::SimObject(TRootIOCtor* io_ctor) {}
 
-SimObject::SimObject(const SimObject &other) : uid_(other.uid_), box_idx_(other.box_idx_) {
-  for(auto* module : other.biology_modules_) {
+SimObject::SimObject(const SimObject& other)
+    : uid_(other.uid_), box_idx_(other.box_idx_) {
+  for (auto* module : other.biology_modules_) {
     biology_modules_.push_back(module->GetCopy());
   }
 };
 
 SimObject::~SimObject() {
-  for(auto* el : biology_modules_) {
+  for (auto* el : biology_modules_) {
     delete el;
   }
 }
@@ -79,7 +81,7 @@ void SimObject::AddBiologyModule(BaseBiologyModule* module) {
   biology_modules_.emplace_back(module);
 }
 
-void SimObject::RemoveBiologyModule(const BaseBiologyModule *remove_module) {
+void SimObject::RemoveBiologyModule(const BaseBiologyModule* remove_module) {
   for (unsigned int i = 0; i < biology_modules_.size(); i++) {
     if (biology_modules_[i] == remove_module) {
       delete remove_module;
@@ -92,44 +94,49 @@ void SimObject::RemoveBiologyModule(const BaseBiologyModule *remove_module) {
 }
 
 void SimObject::RunBiologyModules() {
-  for (run_bm_loop_idx_ = 0;run_bm_loop_idx_ < biology_modules_.size();
-         ++run_bm_loop_idx_) {
-      auto* module = biology_modules_[run_bm_loop_idx_];
-      module->Run(this);
-    }
+  for (run_bm_loop_idx_ = 0; run_bm_loop_idx_ < biology_modules_.size();
+       ++run_bm_loop_idx_) {
+    auto* module = biology_modules_[run_bm_loop_idx_];
+    module->Run(this);
+  }
 }
 
-const std::vector<BaseBiologyModule*> &SimObject::GetAllBiologyModules() const { return biology_modules_; }
+const std::vector<BaseBiologyModule*>& SimObject::GetAllBiologyModules() const {
+  return biology_modules_;
+}
 // ---------------------------------------------------------------------------
 
 void SimObject::RemoveFromSimulation() const {
   Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(uid_);
 }
 
-void SimObject::EventHandler(const Event &event, SimObject *other1, SimObject* other2) {
+void SimObject::EventHandler(const Event& event, SimObject* other1,
+                             SimObject* other2) {
   // call event handler for biology modules
-  auto *left_bms = other1 == nullptr ? nullptr : &(other1->biology_modules_);
-  auto *right_bms = other2 == nullptr ? nullptr : &(other2->biology_modules_);
+  auto* left_bms = other1 == nullptr ? nullptr : &(other1->biology_modules_);
+  auto* right_bms = other2 == nullptr ? nullptr : &(other2->biology_modules_);
   BiologyModuleEventHandler(event, left_bms, right_bms);
 }
 
-void SimObject::CopyBiologyModules(const Event& event, decltype(biology_modules_) *other) {
+void SimObject::CopyBiologyModules(const Event& event,
+                                   decltype(biology_modules_) * other) {
   for (auto* bm : *other) {
-    if(bm->Copy(event.GetId())) {
+    if (bm->Copy(event.GetId())) {
       auto* new_bm = bm->GetInstance(event, bm);
       biology_modules_.push_back(new_bm);
     }
   }
 }
 
-void SimObject::BiologyModuleEventHandler(const Event &event, decltype(biology_modules_) *other1,
-                               decltype(biology_modules_) *other2) {
+void SimObject::BiologyModuleEventHandler(const Event& event,
+                                          decltype(biology_modules_) * other1,
+                                          decltype(biology_modules_) * other2) {
   // call event handler for biology modules
   uint64_t cnt = 0;
-  for(auto* bm : biology_modules_) {
+  for (auto* bm : biology_modules_) {
     bool copy = bm->Copy(event.GetId());
     if (!bm->Remove(event.GetId())) {
-      if(copy) {
+      if (copy) {
         auto* other1_bm = other1 != nullptr ? (*other1)[cnt] : nullptr;
         auto* other2_bm = other2 != nullptr ? (*other2)[cnt] : nullptr;
         bm->EventHandler(event, other1_bm, other2_bm);

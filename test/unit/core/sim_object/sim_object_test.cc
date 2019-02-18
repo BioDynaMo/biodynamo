@@ -13,9 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/core/sim_object/sim_object_test.h"
-#include "unit/test_util/test_util.h"
-#include "unit/test_util/test_sim_object.h"
 #include "core/resource_manager.h"
+#include "unit/test_util/test_sim_object.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 namespace sim_object_test_internal {
@@ -31,7 +31,8 @@ TEST(SimObjectTest, CopyCtor) {
   EXPECT_EQ(123u, copy.GetBoxIdx());
   EXPECT_EQ(cell.GetUid(), copy.GetUid());
   ASSERT_EQ(1u, copy.GetAllBiologyModules().size());
-  GrowthModule* copy_gm = dynamic_cast<GrowthModule*>(copy.GetAllBiologyModules()[0]);
+  GrowthModule* copy_gm =
+      dynamic_cast<GrowthModule*>(copy.GetAllBiologyModules()[0]);
   EXPECT_TRUE(gm != copy_gm);
   EXPECT_EQ(321, copy_gm->growth_rate_);
 }
@@ -65,7 +66,7 @@ TEST(SimObjectTest, GetBiologyModulesTest) {
 
   uint64_t growth_module_cnt = 0;
   uint64_t movement_module_cnt = 0;
-  for(auto* bm : cell.GetAllBiologyModules()) {
+  for (auto* bm : cell.GetAllBiologyModules()) {
     if (dynamic_cast<GrowthModule*>(bm)) {
       growth_module_cnt++;
     } else if (MovementModule* mm = dynamic_cast<MovementModule*>(bm)) {
@@ -131,7 +132,8 @@ TEST(SimObjectTest, RemoveBiologyModule) {
 struct Visitor1 : public SoVisitor {
   uint16_t counter_ = 0;
 
-  void Visit(const std::string& dm_name, size_t type_hash_code, void* data) override {
+  void Visit(const std::string& dm_name, size_t type_hash_code,
+             void* data) override {
     counter_++;
     if (dm_name != "position_" && dm_name != "run_bm_loop_idx_" &&
         dm_name != "diameter_" && dm_name != "biology_modules_" &&
@@ -151,7 +153,8 @@ TEST(SimObjectUtilTest, ForEachDataMember) {
 struct Visitor2 : public SoVisitor {
   uint16_t counter_ = 0;
 
-  void Visit(const std::string& dm_name, size_t type_hash_code, void* data) override {
+  void Visit(const std::string& dm_name, size_t type_hash_code,
+             void* data) override {
     counter_++;
     if (dm_name != "uid_" && dm_name != "position_") {
       FAIL() << "Lambda must not be called for data member " << dm_name
@@ -168,19 +171,21 @@ TEST(SimObjectUtilTest, ForEachDataMemberIn) {
 }
 
 struct VerifyPosition : public SoVisitor {
-  void Visit(const std::string& dm_name, size_t type_hash_code, void* data) override {
+  void Visit(const std::string& dm_name, size_t type_hash_code,
+             void* data) override {
     if (dm_name != "position_") {
       FAIL() << "Functor must not be called for data member " << dm_name
              << std::endl;
     }
     using PosType = std::array<double, 3>;
-    if(type_hash_code == typeid(PosType).hash_code()) {
+    if (type_hash_code == typeid(PosType).hash_code()) {
       auto* pos = static_cast<PosType*>(data);
       EXPECT_EQ(4, (*pos)[0]);
       EXPECT_EQ(5, (*pos)[1]);
       EXPECT_EQ(6, (*pos)[2]);
     } else {
-      FAIL() << "type_hash_code did not match std::array<double, 3>"  << std::endl;
+      FAIL() << "type_hash_code did not match std::array<double, 3>"
+             << std::endl;
     }
   }
 };

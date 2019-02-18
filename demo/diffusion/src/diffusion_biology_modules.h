@@ -55,7 +55,7 @@ struct KaliumSecretion : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(KaliumSecretion, BaseBiologyModule, 1);
 
  public:
-   KaliumSecretion() : BaseBiologyModule() {}
+  KaliumSecretion() : BaseBiologyModule() {}
 
   void Run(SimObject* so) override {
     auto* sim = Simulation::GetActive();

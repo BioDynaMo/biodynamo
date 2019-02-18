@@ -17,9 +17,9 @@
 
 #include "core/biology_module/biology_module.h"
 #include "core/event/cell_division_event.h"
-#include "core/util/root.h"
-#include "core/util/log.h"
 #include "core/sim_object/cell.h"
+#include "core/util/log.h"
+#include "core/util/root.h"
 
 namespace bdm {
 
@@ -33,17 +33,20 @@ struct GrowDivide : public BaseBiologyModule {
         threshold_(threshold),
         growth_rate_(growth_rate) {}
 
-  GrowDivide(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) : BaseBiologyModule(event, other, new_oid) {
-    if(GrowDivide* gdbm = dynamic_cast<GrowDivide*>(other)) {
+  GrowDivide(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {
+    if (GrowDivide* gdbm = dynamic_cast<GrowDivide*>(other)) {
       threshold_ = gdbm->threshold_;
       growth_rate_ = gdbm->growth_rate_;
     } else {
-      Log::Fatal("GrowDivide::EventConstructor", "other was not of type GrowDivide");
+      Log::Fatal("GrowDivide::EventConstructor",
+                 "other was not of type GrowDivide");
     }
   }
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0) const override {
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const override {
     return new GrowDivide(event, other, new_oid);
   }
 
@@ -52,12 +55,13 @@ struct GrowDivide : public BaseBiologyModule {
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)
-  void EventHandler(const Event &event, BaseBiologyModule *other1, BaseBiologyModule* other2 = nullptr) override {
+  void EventHandler(const Event& event, BaseBiologyModule* other1,
+                    BaseBiologyModule* other2 = nullptr) override {
     BaseBiologyModule::EventHandler(event, other1, other2);
   }
 
   void Run(SimObject* so) override {
-    if(Cell* cell = dynamic_cast<Cell*>(so)) {
+    if (Cell* cell = dynamic_cast<Cell*>(so)) {
       if (cell->GetDiameter() <= threshold_) {
         cell->ChangeVolume(growth_rate_);
       } else {

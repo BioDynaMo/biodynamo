@@ -17,15 +17,15 @@
 
 namespace bdm {
 
-void ResourceManager::ApplyOnAllElementsParallel(const std::function<void(SimObject*)>& function) {
+void ResourceManager::ApplyOnAllElementsParallel(
+    const std::function<void(SimObject*)>& function) {
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
     auto nid = thread_info_.GetNumaNode(tid);
     auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
     auto& numa_sos = sim_objects_[nid];
-    assert(thread_info_.GetNumaNode(tid) ==
-           numa_node_of_cpu(sched_getcpu()));
+    assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
     // use static scheduling for now
     auto correction = numa_sos.size() % threads_in_numa == 0 ? 0 : 1;
@@ -39,62 +39,61 @@ void ResourceManager::ApplyOnAllElementsParallel(const std::function<void(SimObj
   }
 }
 
-void ResourceManager::ApplyOnAllElementsParallelDynamic(uint64_t chunk, const std::function<void(SimObject*, SoHandle)>& function){
-    // use dynamic scheduling
-    // Unfortunately openmp's built in functionality can't be used, since
-    // threads belong to different numa domains and thus operate on
-    // different containers
-    auto numa_nodes = thread_info_.GetNumaNodes();
-    std::vector<std::atomic<uint64_t>*> counters(numa_nodes, nullptr);
-    std::vector<uint64_t> max_counters(numa_nodes);
-    for (int n = 0; n < numa_nodes; n++) {
-      counters[n] = new std::atomic<uint64_t>(0);
-      // calculate value max_counters for each numa domain
-      auto correction = sim_objects_[n].size() % chunk == 0 ? 0 : 1;
-      max_counters[n] = sim_objects_[n].size() / chunk + correction;
-    }
+void ResourceManager::ApplyOnAllElementsParallelDynamic(
+    uint64_t chunk, const std::function<void(SimObject*, SoHandle)>& function) {
+  // use dynamic scheduling
+  // Unfortunately openmp's built in functionality can't be used, since
+  // threads belong to different numa domains and thus operate on
+  // different containers
+  auto numa_nodes = thread_info_.GetNumaNodes();
+  std::vector<std::atomic<uint64_t>*> counters(numa_nodes, nullptr);
+  std::vector<uint64_t> max_counters(numa_nodes);
+  for (int n = 0; n < numa_nodes; n++) {
+    counters[n] = new std::atomic<uint64_t>(0);
+    // calculate value max_counters for each numa domain
+    auto correction = sim_objects_[n].size() % chunk == 0 ? 0 : 1;
+    max_counters[n] = sim_objects_[n].size() / chunk + correction;
+  }
 
 #pragma omp parallel
-    {
-      auto tid = omp_get_thread_num();
-      auto nid = thread_info_.GetNumaNode(tid);
+  {
+    auto tid = omp_get_thread_num();
+    auto nid = thread_info_.GetNumaNode(tid);
 
-      // thread private variables (compilation error with
-      // firstprivate(chunk, numa_node_) with some openmp versions clause)
-      auto p_numa_nodes = thread_info_.GetNumaNodes();
-      auto p_chunk = chunk;
-      assert(thread_info_.GetNumaNode(tid) ==
-             numa_node_of_cpu(sched_getcpu()));
+    // thread private variables (compilation error with
+    // firstprivate(chunk, numa_node_) with some openmp versions clause)
+    auto p_numa_nodes = thread_info_.GetNumaNodes();
+    auto p_chunk = chunk;
+    assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
-      // dynamic scheduling
-      uint64_t start = 0;
-      uint64_t end = 0;
+    // dynamic scheduling
+    uint64_t start = 0;
+    uint64_t end = 0;
 
-      // this loop implements work stealing from other NUMA nodes if there
-      // are imbalances. Each thread starts with its NUMA domain. Once, it
-      // is finished the thread looks for tasks on other domains
-      for (int n = 0; n < p_numa_nodes; n++) {
-        uint64_t current_nid = (nid + n) % p_numa_nodes;
+    // this loop implements work stealing from other NUMA nodes if there
+    // are imbalances. Each thread starts with its NUMA domain. Once, it
+    // is finished the thread looks for tasks on other domains
+    for (int n = 0; n < p_numa_nodes; n++) {
+      uint64_t current_nid = (nid + n) % p_numa_nodes;
 
-        auto& numa_sos = sim_objects_[current_nid];
-        uint64_t old_count = (*(counters[current_nid]))++;
-        while (old_count <= max_counters[current_nid]) {
-          start = old_count * p_chunk;
-          end = std::min(static_cast<uint64_t>(numa_sos.size()),
-                         start + p_chunk);
+      auto& numa_sos = sim_objects_[current_nid];
+      uint64_t old_count = (*(counters[current_nid]))++;
+      while (old_count <= max_counters[current_nid]) {
+        start = old_count * p_chunk;
+        end = std::min(static_cast<uint64_t>(numa_sos.size()), start + p_chunk);
 
-          for (uint64_t i = start; i < end; ++i) {
-            function(numa_sos[i], SoHandle(current_nid, i));
-          }
-
-          old_count = (*(counters[current_nid]))++;
+        for (uint64_t i = start; i < end; ++i) {
+          function(numa_sos[i], SoHandle(current_nid, i));
         }
+
+        old_count = (*(counters[current_nid]))++;
       }
     }
+  }
 
-    for (int n = 0; n < numa_nodes; n++) {
-      delete counters[n];
-    }
+  for (int n = 0; n < numa_nodes; n++) {
+    delete counters[n];
+  }
 }
 
 void ResourceManager::SortAndBalanceNumaNodes() {
@@ -146,49 +145,48 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   grid->IterateZOrder(rearrange);
 
   for (int n = 0; n < numa_nodes; n++) {
-      auto& dest = so_rearranged[n];
-        std::atomic<bool> resized(false);
+    auto& dest = so_rearranged[n];
+    std::atomic<bool> resized(false);
 #pragma omp parallel
-        {
-          auto tid = omp_get_thread_num();
-          auto nid = thread_info_.GetNumaNode(tid);
-          if (nid == n) {
-            auto old = std::atomic_exchange(&resized, true);
-            if (!old) {
-              dest.resize(sorted_so_handles[n].size());
-            }
-          }
+    {
+      auto tid = omp_get_thread_num();
+      auto nid = thread_info_.GetNumaNode(tid);
+      if (nid == n) {
+        auto old = std::atomic_exchange(&resized, true);
+        if (!old) {
+          dest.resize(sorted_so_handles[n].size());
         }
+      }
+    }
 #pragma omp parallel
-        {
+    {
+      auto tid = omp_get_thread_num();
+      auto nid = thread_info_.GetNumaNode(tid);
 
-          auto tid = omp_get_thread_num();
-          auto nid = thread_info_.GetNumaNode(tid);
+      if (nid == n) {
+        auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
+        auto& sohandles = sorted_so_handles[n];
+        assert(thread_info_.GetNumaNode(tid) ==
+               numa_node_of_cpu(sched_getcpu()));
 
-          if (nid == n) {
-            auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
-            auto& sohandles = sorted_so_handles[n];
-            assert(thread_info_.GetNumaNode(tid) ==
-                   numa_node_of_cpu(sched_getcpu()));
+        // use static scheduling
+        auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
+        auto chunk = sohandles.size() / threads_in_numa + correction;
+        auto start = thread_info_.GetNumaThreadId(tid) * chunk;
+        auto end = std::min(sohandles.size(), start + chunk);
 
-            // use static scheduling
-            auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
-            auto chunk = sohandles.size() / threads_in_numa + correction;
-            auto start = thread_info_.GetNumaThreadId(tid) * chunk;
-            auto end = std::min(sohandles.size(), start + chunk);
-
-            for (uint64_t e = start; e < end; e++) {
-              auto& handle = sohandles[e];
-              auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
-              dest[e] = so->GetCopy();
-              delete so;
-            }
-          }
+        for (uint64_t e = start; e < end; e++) {
+          auto& handle = sohandles[e];
+          auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
+          dest[e] = so->GetCopy();
+          delete so;
         }
+      }
+    }
   }
 
-  for(int n = 0; n < numa_nodes; n++) {
-      sim_objects_[n].swap(so_rearranged[n]);
+  for (int n = 0; n < numa_nodes; n++) {
+    sim_objects_[n].swap(so_rearranged[n]);
   }
 
   // update uid_soh_map_

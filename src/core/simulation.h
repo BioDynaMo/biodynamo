@@ -14,9 +14,9 @@
 #ifndef CORE_SIMULATION_H_
 #define CORE_SIMULATION_H_
 
+#include <functional>
 #include <string>
 #include <vector>
-#include <functional>
 #include "core/util/random.h"
 #include "core/util/root.h"
 
@@ -52,7 +52,8 @@ struct Simulation {
   /// Creation of a new simulation automatically activates it.
   explicit Simulation(const std::string& simulation_name);
 
-  Simulation(int argc, const char** argv, const std::function<void(Param*)>& set_param);
+  Simulation(int argc, const char** argv,
+             const std::function<void(Param*)>& set_param);
 
   Simulation(const std::string& simulation_name,
              const std::function<void(Param*)>& set_param);

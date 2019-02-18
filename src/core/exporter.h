@@ -15,8 +15,8 @@
 #ifndef CORE_EXPORTER_H_
 #define CORE_EXPORTER_H_
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace bdm {
 

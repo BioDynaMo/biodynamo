@@ -45,7 +45,7 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
 
   // execute operation
   DisplacementOp op;
-  for(uint64_t i = 0; i < 27; i++) {
+  for (uint64_t i = 0; i < 27; i++) {
     op(rm->GetSimObject(ref_uid + i));
   }
 

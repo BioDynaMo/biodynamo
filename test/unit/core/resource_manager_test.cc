@@ -18,13 +18,9 @@
 
 namespace bdm {
 
-TEST(ResourceManagerTest, ApplyOnAllElements) {
-  RunApplyOnAllElementsTest();
-}
+TEST(ResourceManagerTest, ApplyOnAllElements) { RunApplyOnAllElementsTest(); }
 
-TEST(ResourceManagerTest, GetNumSimObjects) {
-  RunGetNumSimObjects();
-}
+TEST(ResourceManagerTest, GetNumSimObjects) { RunGetNumSimObjects(); }
 
 TEST(ResourceManagerTest, ApplyOnAllElementsParallel) {
   RunApplyOnAllElementsParallelTest();
@@ -38,13 +34,9 @@ TEST(ResourceManagerTest, PushBackAndGetSimObjectTest) {
   RunPushBackAndGetSimObjectTest();
 }
 
-TEST(ResourceManagerTest, RemoveAndContains) {
-  RunRemoveAndContainsTest();
-}
+TEST(ResourceManagerTest, RemoveAndContains) { RunRemoveAndContainsTest(); }
 
-TEST(ResourceManagerTest, Clear) {
-  RunClearTest();
-}
+TEST(ResourceManagerTest, Clear) { RunClearTest(); }
 
 TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
   RunSortAndApplyOnAllElementsParallel();

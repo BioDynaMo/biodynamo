@@ -33,7 +33,8 @@ class MyCell : public Cell {
       : Base(event, other, new_oid) {}
 
   /// Default event handler
-  void EventHandler(const Event& event, SimObject* other1, SimObject* other2 = nullptr) override {
+  void EventHandler(const Event& event, SimObject* other1,
+                    SimObject* other2 = nullptr) override {
     Base::EventHandler(event, other1, other2);
   }
 

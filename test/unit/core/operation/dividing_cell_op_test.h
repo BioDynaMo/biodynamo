@@ -22,7 +22,6 @@
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
-
 namespace bdm {
 namespace dividing_cell_op_test_internal {
 
@@ -52,18 +51,19 @@ inline void RunTest() {
   Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 0));
   Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 1));
   Cell* final_cell2 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 2));
-  EXPECT_NEAR(19.005288996600001,final_cell1->GetDiameter(),
+  EXPECT_NEAR(19.005288996600001, final_cell1->GetDiameter(),
               abs_error<double>::value);
-  EXPECT_NEAR(3594.3640018287319,final_cell1->GetVolume(),
+  EXPECT_NEAR(3594.3640018287319, final_cell1->GetVolume(),
               abs_error<double>::value);
 
   // cell got divided so it must be smaller than before
   // more detailed division test can be found in `cell_test.h`
-  EXPECT_GT(41,final_cell0->GetDiameter());
-  EXPECT_GT(41,final_cell2->GetDiameter());
+  EXPECT_GT(41, final_cell0->GetDiameter());
+  EXPECT_GT(41, final_cell2->GetDiameter());
 
   // volume of two daughter cells must be equal to volume of the mother
-  EXPECT_NEAR(volume_mother,final_cell0->GetVolume() +final_cell2->GetVolume(),
+  EXPECT_NEAR(volume_mother,
+              final_cell0->GetVolume() + final_cell2->GetVolume(),
               abs_error<double>::value);
 }
 

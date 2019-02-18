@@ -60,15 +60,25 @@ TEST(GridTest, SetupGrid) {
     grid->ForEachNeighborWithinRadius(fill_neighbor_list, *so, 1201);
   });
 
-  std::vector<SoUid> expected_0 = { 1, 4, 5, 16, 17, 20, 21 };
-  std::vector<SoUid> expected_4 = { 0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25 };
-  std::vector<SoUid> expected_42 = { 21, 22, 23, 25, 26, 27, 29, 30, 31, 37, 38, 39, 41, 43, 45, 46, 47, 53, 54, 55, 57, 58, 59, 61, 62, 63 };
-  std::vector<SoUid> expected_63 = { 42, 43, 46, 47, 58, 59, 62 };
+  std::vector<SoUid> expected_0 = {1, 4, 5, 16, 17, 20, 21};
+  std::vector<SoUid> expected_4 = {0, 1, 5, 8, 9, 16, 17, 20, 21, 24, 25};
+  std::vector<SoUid> expected_42 = {21, 22, 23, 25, 26, 27, 29, 30, 31,
+                                    37, 38, 39, 41, 43, 45, 46, 47, 53,
+                                    54, 55, 57, 58, 59, 61, 62, 63};
+  std::vector<SoUid> expected_63 = {42, 43, 46, 47, 58, 59, 62};
 
-  for(auto& el : expected_0) { el += ref_uid; }
-  for(auto& el : expected_4) { el += ref_uid; }
-  for(auto& el : expected_42) { el += ref_uid; }
-  for(auto& el : expected_63) { el += ref_uid; }
+  for (auto& el : expected_0) {
+    el += ref_uid;
+  }
+  for (auto& el : expected_4) {
+    el += ref_uid;
+  }
+  for (auto& el : expected_42) {
+    el += ref_uid;
+  }
+  for (auto& el : expected_63) {
+    el += ref_uid;
+  }
 
   std::sort(neighbors[ref_uid].begin(), neighbors[ref_uid].end());
   std::sort(neighbors[ref_uid + 4].begin(), neighbors[ref_uid + 4].end());
@@ -104,16 +114,26 @@ void RunUpdateGridTest(Simulation* simulation, SoUid ref_uid) {
     grid->ForEachNeighborWithinRadius(fill_neighbor_list, *so, 1201);
   });
 
-  std::vector<SoUid> expected_0 = { 4, 5, 16, 17, 20, 21 };
-  std::vector<SoUid> expected_5 = { 0, 2, 4, 6, 8, 9, 10, 16, 17, 18, 20, 21, 22, 24, 25, 26 };
-  std::vector<SoUid> expected_41 = { 20, 21, 22, 24, 25, 26, 28, 29, 30, 36, 37,
-    38, 40, 44, 45, 46, 52, 53, 54, 56, 57, 58, 60, 61, 62 };
-  std::vector<SoUid> expected_61 = { 40, 41, 44, 45, 46 ,56, 57, 58, 60, 62};
+  std::vector<SoUid> expected_0 = {4, 5, 16, 17, 20, 21};
+  std::vector<SoUid> expected_5 = {0,  2,  4,  6,  8,  9,  10, 16,
+                                   17, 18, 20, 21, 22, 24, 25, 26};
+  std::vector<SoUid> expected_41 = {20, 21, 22, 24, 25, 26, 28, 29, 30,
+                                    36, 37, 38, 40, 44, 45, 46, 52, 53,
+                                    54, 56, 57, 58, 60, 61, 62};
+  std::vector<SoUid> expected_61 = {40, 41, 44, 45, 46, 56, 57, 58, 60, 62};
 
-  for(auto& el : expected_0) { el += ref_uid; }
-  for(auto& el : expected_5) { el += ref_uid; }
-  for(auto& el : expected_41) { el += ref_uid; }
-  for(auto& el : expected_61) { el += ref_uid; }
+  for (auto& el : expected_0) {
+    el += ref_uid;
+  }
+  for (auto& el : expected_5) {
+    el += ref_uid;
+  }
+  for (auto& el : expected_41) {
+    el += ref_uid;
+  }
+  for (auto& el : expected_61) {
+    el += ref_uid;
+  }
 
   std::sort(neighbors[ref_uid].begin(), neighbors[ref_uid].end());
   std::sort(neighbors[ref_uid + 5].begin(), neighbors[ref_uid + 5].end());
@@ -272,7 +292,8 @@ TEST(GridTest, IterateZOrder) {
   uint64_t box_cnt = 0;
   uint64_t cnt = 0;
   auto lambda = [&](const SoHandle& soh) {
-    if(cnt == 8 || cnt == 12 || cnt == 16 || cnt == 18 || cnt == 22 || cnt == 24 || cnt == 26) {
+    if (cnt == 8 || cnt == 12 || cnt == 16 || cnt == 18 || cnt == 22 ||
+        cnt == 24 || cnt == 26) {
       box_cnt++;
     }
     auto* so = rm->GetSimObjectWithSoHandle(soh);

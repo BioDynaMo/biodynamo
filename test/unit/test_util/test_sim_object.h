@@ -33,10 +33,10 @@ class TestSimObject : public SimObject {
 
   TestSimObject(int data) : data_(data) {}
 
-  explicit TestSimObject(const std::array<double, 3>& pos)
-      : position_{pos} {}
+  explicit TestSimObject(const std::array<double, 3>& pos) : position_{pos} {}
 
-  TestSimObject(const Event& event, SimObject* other, uint64_t new_oid = 0) : Base(event, other, new_oid) {} 
+  TestSimObject(const Event& event, SimObject* other, uint64_t new_oid = 0)
+      : Base(event, other, new_oid) {}
 
   virtual ~TestSimObject() {}
 
@@ -44,9 +44,13 @@ class TestSimObject : public SimObject {
 
   void RunDiscretization() override {}
 
-  const std::array<double, 3>& GetPosition() const override { return position_; }
+  const std::array<double, 3>& GetPosition() const override {
+    return position_;
+  }
 
-  void SetPosition(const std::array<double, 3>& pos) override { position_ = pos; }
+  void SetPosition(const std::array<double, 3>& pos) override {
+    position_ = pos;
+  }
 
   void ApplyDisplacement(const std::array<double, 3>&) override {}
 

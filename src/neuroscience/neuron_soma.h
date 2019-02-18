@@ -38,14 +38,19 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   // FIXME
   // Shape GetShape() const override { return Cell::GetShape(); };
   // void RunDiscretization() override { Cell::RunDiscretization(); }
-  // const std::array<double, 3>& GetPosition() const override { return Cell::GetPosition(); }
-  // void SetPosition(const std::array<double, 3>& pos) override { Cell::SetPosition(pos); }
-  // void ApplyDisplacement(const std::array<double, 3>& disp) override { Cell::ApplyDisplacement(disp); }
-  // std::array<double, 3> CalculateDisplacement(double squared_radius) override {
+  // const std::array<double, 3>& GetPosition() const override { return
+  // Cell::GetPosition(); }
+  // void SetPosition(const std::array<double, 3>& pos) override {
+  // Cell::SetPosition(pos); }
+  // void ApplyDisplacement(const std::array<double, 3>& disp) override {
+  // Cell::ApplyDisplacement(disp); }
+  // std::array<double, 3> CalculateDisplacement(double squared_radius) override
+  // {
   //   return Cell::CalculateDisplacement(squared_radius);
   // }
   // double GetDiameter() const override { return Cell::GetDiameter(); }
-  // void SetDiameter(const double diameter) override { Cell::SetDiameter(diameter); }
+  // void SetDiameter(const double diameter) override {
+  // Cell::SetDiameter(diameter); }
 
   /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.
@@ -63,7 +68,8 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// \param event contains parameters for cell division
   /// \param daughter_2 pointer to new cell (=daughter 2)
   /// \see Event, CellDivisionEvent
-  void EventHandler(const Event& event, SimObject *other1, SimObject* other2 = nullptr) override;
+  void EventHandler(const Event& event, SimObject* other1,
+                    SimObject* other2 = nullptr) override;
 
   // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *
@@ -102,7 +108,6 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// Key: neurite segment uid
   /// Value: position
   std::unordered_map<SoUid, std::array<double, 3>> daughters_coord_;
-
 };
 
 }  // namespace neuroscience

@@ -21,11 +21,11 @@
 #include <unistd.h>
 #include <string>
 
-#include "core/sim_object/cell.h"
 #include "core/grid.h"
+#include "core/sim_object/cell.h"
+#include "core/simulation_backup.h"
 #include "core/util/io.h"
 #include "unit/test_util/test_util.h"
-#include "core/simulation_backup.h"
 
 #define ROOTFILE "bdmFile.root"
 

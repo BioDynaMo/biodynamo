@@ -39,8 +39,8 @@
 #include "core/container/parallel_resize_vector.h"
 #include "core/container/sim_object_vector.h"
 #include "core/param/param.h"
-#include "core/util/log.h"
 #include "core/resource_manager.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
@@ -317,7 +317,8 @@ class Grid {
       successors_.reserve();
 
       // Assign simulation objects to boxes
-      rm->ApplyOnAllElementsParallelDynamic(1000, [this](SimObject* sim_object, SoHandle soh) {
+      rm->ApplyOnAllElementsParallelDynamic(
+          1000, [this](SimObject* sim_object, SoHandle soh) {
             const auto& position = sim_object->GetPosition();
             auto idx = this->GetBoxIndex(position);
             auto box = this->GetBoxPointer(idx);
@@ -481,8 +482,9 @@ class Grid {
   /// @param      query   The query object
   /// @param[in]  squared_radius  The search radius squared
   ///
-  void ForEachNeighborWithinRadius(const std::function<void(const SimObject*)>& lambda, const SimObject& query,
-                                   double squared_radius) {
+  void ForEachNeighborWithinRadius(
+      const std::function<void(const SimObject*)>& lambda,
+      const SimObject& query, double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 

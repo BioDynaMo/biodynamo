@@ -17,11 +17,11 @@
 
 #include <algorithm>
 #include <vector>
+#include "core/grid.h"
+#include "core/resource_manager.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/io.h"
 #include "core/util/type.h"
-#include "core/resource_manager.h"
-#include "core/grid.h"
 #include "unit/test_util/test_sim_object.h"
 #include "unit/test_util/test_util.h"
 
@@ -34,7 +34,8 @@ class A : public TestSimObject {
 
  public:
   A() {}  // for ROOT I/O
-  A(const Event& event, SimObject* other, uint64_t new_oid = 0) : Base(event, other, new_oid) {}
+  A(const Event& event, SimObject* other, uint64_t new_oid = 0)
+      : Base(event, other, new_oid) {}
   explicit A(int data) { data_ = data; }
 
   int GetData() const { return data_; }
@@ -48,7 +49,8 @@ class B : public TestSimObject {
 
  public:
   B() {}  // for ROOT I/O
-  B(const Event& event, SimObject* other, uint64_t new_oid = 0) : Base(event, other, new_oid) {} 
+  B(const Event& event, SimObject* other, uint64_t new_oid = 0)
+      : Base(event, other, new_oid) {}
   explicit B(double data) { data_ = data; }
 
   double GetData() const { return data_; }
@@ -267,7 +269,8 @@ inline std::vector<uint64_t> GetSoPerNuma(uint64_t num_sim_objects) {
 }
 
 // -----------------------------------------------------------------------------
-inline void CheckApplyOnAllElements(ResourceManager* rm, uint64_t num_so_per_type,
+inline void CheckApplyOnAllElements(ResourceManager* rm,
+                                    uint64_t num_so_per_type,
                                     bool numa_checks = false) {
   std::vector<bool> found(2 * num_so_per_type);
   ASSERT_EQ(2 * num_so_per_type, found.size());
@@ -285,7 +288,7 @@ inline void CheckApplyOnAllElements(ResourceManager* rm, uint64_t num_so_per_typ
 
   rm->ApplyOnAllElementsParallel([&](SimObject* so) {
     size_t index = 0;
-    if(A* a = so->As<A>()) {
+    if (A* a = so->As<A>()) {
       index = a->GetData();
     } else if (B* b = so->As<B>()) {
       index = std::round(b->GetData());
@@ -382,8 +385,10 @@ inline void RunSortAndApplyOnAllElementsParallel() {
   RunSortAndApplyOnAllElementsParallel(1000);
 }
 
-// // -----------------------------------------------------------------------------
-inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm, uint64_t num_so_per_type,
+// //
+// -----------------------------------------------------------------------------
+inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
+                                           uint64_t num_so_per_type,
                                            uint64_t batch_size,
                                            bool numa_checks = false) {
   std::vector<bool> found(2 * num_so_per_type);
@@ -409,7 +414,7 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm, uint64_t num_so_
 #pragma omp critical
         {
           size_t index = 0;
-          if(A* a = so->As<A>()) {
+          if (A* a = so->As<A>()) {
             index = a->GetData();
           } else if (B* b = so->As<B>()) {
             index = std::round(b->GetData());
@@ -417,8 +422,7 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm, uint64_t num_so_
           found[index] = true;
 
           // verify that a thread processes sim objects on the same NUMA node.
-          if (numa_checks &&
-              handle.GetNumaNode() != GetNumaNodeForMemory(so)) {
+          if (numa_checks && handle.GetNumaNode() != GetNumaNodeForMemory(so)) {
             numa_memory_errors++;
           }
 
@@ -563,8 +567,10 @@ inline void RunIOTest() {
   EXPECT_EQ(34, restored_rm->GetSimObject(ref_uid + 1)->As<A>()->GetData());
   EXPECT_EQ(42, restored_rm->GetSimObject(ref_uid + 2)->As<A>()->GetData());
 
-  EXPECT_NEAR(3.14, restored_rm->GetSimObject(ref_uid + 3)->As<B>()->GetData(), kEpsilon);
-  EXPECT_NEAR(6.28, restored_rm->GetSimObject(ref_uid + 4)->As<B>()->GetData(), kEpsilon);
+  EXPECT_NEAR(3.14, restored_rm->GetSimObject(ref_uid + 3)->As<B>()->GetData(),
+              kEpsilon);
+  EXPECT_NEAR(6.28, restored_rm->GetSimObject(ref_uid + 4)->As<B>()->GetData(),
+              kEpsilon);
 
   EXPECT_EQ(0, restored_rm->GetDiffusionGrid(0)->GetSubstanceId());
   EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetSubstanceId());

@@ -35,9 +35,10 @@ namespace bdm {
 struct CellDivisionEvent : public Event {
   static const EventId kEventId;
 
-  CellDivisionEvent(double volume_ratio, double phi, double theta) : volume_ratio_(volume_ratio), phi_(phi), theta_(theta) {}
+  CellDivisionEvent(double volume_ratio, double phi, double theta)
+      : volume_ratio_(volume_ratio), phi_(phi), theta_(theta) {}
 
-  virtual ~CellDivisionEvent() {};
+  virtual ~CellDivisionEvent(){};
 
   EventId GetId() const override { return kEventId; }
 

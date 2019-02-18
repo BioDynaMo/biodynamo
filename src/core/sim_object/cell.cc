@@ -20,15 +20,14 @@ constexpr std::array<double, 3> Cell::kXAxis;
 constexpr std::array<double, 3> Cell::kYAxis;
 constexpr std::array<double, 3> Cell::kZAxis;
 
-void Cell::ApplyDisplacement(
-    const std::array<double, 3>& displacement) {
+void Cell::ApplyDisplacement(const std::array<double, 3>& displacement) {
   UpdatePosition(displacement);
   // Reset biological movement to 0.
   SetTractorForce({0, 0, 0});
 }
 
-std::array<double, 3> Cell::
-    TransformCoordinatesGlobalToPolar(const std::array<double, 3>& pos) const {
+std::array<double, 3> Cell::TransformCoordinatesGlobalToPolar(
+    const std::array<double, 3>& pos) const {
   auto vector_to_point = Math::Subtract(pos, position_);
   std::array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
                                         Math::Dot(kYAxis, vector_to_point),

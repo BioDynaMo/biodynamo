@@ -16,11 +16,11 @@
 #define CORE_PARAM_PARAM_H_
 
 #include <cinttypes>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <memory>
 #include "core/param/module_param.h"
 #include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
@@ -40,13 +40,15 @@ struct Param {
 
   template <typename TModuleParam>
   const TModuleParam* GetModuleParam() const {
-    assert(modules_.find(TModuleParam::kUid) != modules_.end() && "Couldn't find the requested module parameter.");
+    assert(modules_.find(TModuleParam::kUid) != modules_.end() &&
+           "Couldn't find the requested module parameter.");
     return dynamic_cast<const TModuleParam*>(modules_.at(TModuleParam::kUid));
   }
 
   template <typename TModuleParam>
   TModuleParam* GetModuleParam() {
-    assert(modules_.find(TModuleParam::kUid) != modules_.end() && "Couldn't find the requested module parameter.");
+    assert(modules_.find(TModuleParam::kUid) != modules_.end() &&
+           "Couldn't find the requested module parameter.");
     return dynamic_cast<TModuleParam*>(modules_.at(TModuleParam::kUid));
   }
 
@@ -317,7 +319,8 @@ struct Param {
 
  private:
   friend class Simulation;
-  static std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>> registered_modules_;
+  static std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
+      registered_modules_;
   std::unordered_map<ModuleParamUid, ModuleParam*> modules_;
   BDM_CLASS_DEF_NV(Param, 1);
 };

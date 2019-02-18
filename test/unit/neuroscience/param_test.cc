@@ -14,8 +14,8 @@
 
 #include <gtest/gtest.h>
 
-#include "core/simulation.h"
 #include "core/param/param.h"
+#include "core/simulation.h"
 #include "neuroscience/module.h"
 #include "neuroscience/param.h"
 

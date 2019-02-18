@@ -19,9 +19,9 @@
 #include <limits>
 #include <ostream>
 
-#include "core/simulation.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/sim_object/so_uid.h"
+#include "core/simulation.h"
 #include "core/util/root.h"
 
 namespace bdm {
@@ -50,7 +50,7 @@ class SoPointer {
   virtual ~SoPointer() {}
 
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
-  bool operator==(std::nullptr_t) const{
+  bool operator==(std::nullptr_t) const {
     return uid_ == std::numeric_limits<uint64_t>::max();
   }
 
@@ -62,7 +62,9 @@ class SoPointer {
 
   bool operator==(const TSimObject& other) const {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    if (*this == nullptr) { return false; }
+    if (*this == nullptr) {
+      return false;
+    }
     auto* so = dynamic_cast<const TSimObject*>(ctxt->GetConstSimObject(uid_));
     return so == &other;
   }

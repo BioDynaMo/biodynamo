@@ -14,16 +14,16 @@
 
 #include "core/execution_context/in_place_exec_ctxt.h"
 
-#include "core/sim_object/sim_object.h"
-#include "core/resource_manager.h"
 #include "core/grid.h"
+#include "core/resource_manager.h"
+#include "core/sim_object/sim_object.h"
 
 namespace bdm {
 
 InPlaceExecutionContext::InPlaceExecutionContext() {}
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
-  for(auto& el : new_sim_objects_) {
+  for (auto& el : new_sim_objects_) {
     delete el.second;
   }
 }
@@ -36,7 +36,7 @@ void InPlaceExecutionContext::SetupIteration() {
 void InPlaceExecutionContext::TearDownIteration() {
   // new sim objects
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  for(auto& el : new_sim_objects_) {
+  for (auto& el : new_sim_objects_) {
     rm->push_back(el.second);
   }
   new_sim_objects_.clear();
@@ -50,7 +50,9 @@ void InPlaceExecutionContext::TearDownIteration() {
   remove_.clear();
 }
 
-void InPlaceExecutionContext::Execute(SimObject* so, const std::vector<std::function<void(SimObject*)>>& operations) {
+void InPlaceExecutionContext::Execute(
+    SimObject* so,
+    const std::vector<std::function<void(SimObject*)>>& operations) {
   auto* grid = Simulation::GetActive()->GetGrid();
   auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
   if (nb_mutex_builder != nullptr) {
@@ -70,8 +72,9 @@ void InPlaceExecutionContext::push_back(SimObject* new_so) {
   new_sim_objects_[new_so->GetUid()] = new_so;
 }
 
-void InPlaceExecutionContext::ForEachNeighborWithinRadius(const std::function<void(const SimObject*)>& lambda, const SimObject& query,
-                                 double squared_radius) {
+void InPlaceExecutionContext::ForEachNeighborWithinRadius(
+    const std::function<void(const SimObject*)>& lambda, const SimObject& query,
+    double squared_radius) {
   auto* grid = Simulation::GetActive()->GetGrid();
   grid->ForEachNeighborWithinRadius(lambda, query, squared_radius);
 }
