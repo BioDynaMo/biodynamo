@@ -69,22 +69,28 @@ void NeuronSoma::EventHandler(const Event& event, SimObject* other1,
 }
 
 NeuriteElement* NeuronSoma::ExtendNewNeurite(
-    const std::array<double, 3>& direction) {
+    const std::array<double, 3>& direction, NeuriteElement* prototype) {
   auto dir = Math::Add(direction, Base::position_);
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
   auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
   return ExtendNewNeurite(param->neurite_default_diameter_, angles[2],
-                          angles[1]);
+                          angles[1], prototype);
 }
 
 NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
-                                             double theta) {
+                                             double theta, NeuriteElement* prototype) {
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
   NewNeuriteExtensionEvent event(diameter, phi, theta);
-  NeuriteElement* neurite = new NeuriteElement(event, this);
+  SimObject* neurite = nullptr;
+  if (!prototype) {
+    NeuriteElement ne_tmp;
+    neurite = ne_tmp.GetInstance(event, this);
+  } else {
+    neurite = prototype->GetInstance(event, this);
+  }
   ctxt->push_back(neurite);
   EventHandler(event, neurite);
-  return neurite;
+  return neurite->As<NeuriteElement>();
 }
 
 void NeuronSoma::RemoveDaughter(const SoPointer<NeuriteElement>& daughter) {

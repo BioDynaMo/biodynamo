@@ -79,12 +79,12 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   ///
   /// Uses default diameter for new neurite
   /// \see NewNeuriteExtensionEvent
-  NeuriteElement* ExtendNewNeurite(const std::array<double, 3>& direction);
+  NeuriteElement* ExtendNewNeurite(const std::array<double, 3>& direction, NeuriteElement* prototype = nullptr);
 
   /// \brief Extend a new neurite from this soma.
   ///
   /// \see NewNeuriteExtensionEvent
-  NeuriteElement* ExtendNewNeurite(double diameter, double phi, double theta);
+  NeuriteElement* ExtendNewNeurite(double diameter, double phi, double theta, NeuriteElement* prototype = nullptr);
 
   void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) override;
 

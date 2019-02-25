@@ -165,9 +165,9 @@ class ResourceManager {
   }
 
   SimObject* GetSimObject(SoUid uid) {
-    assert(Contains(uid) &&
-           "ResourceManager does not contain sim_object with given uid");
-    SoHandle soh = uid_soh_map_[uid];
+    auto search_it = uid_soh_map_.find(uid);
+    if (search_it == uid_soh_map_.end()) { return nullptr; }
+    SoHandle soh = search_it->second;
     return sim_objects_[soh.GetNumaNode()][soh.GetElementIdx()];
   }
 

@@ -69,7 +69,10 @@ void InPlaceExecutionContext::Execute(
 }
 
 void InPlaceExecutionContext::push_back(SimObject* new_so) {
+  while (mutex_.test_and_set(std::memory_order_acquire)) {
+  }
   new_sim_objects_[new_so->GetUid()] = new_so;
+  mutex_.clear(std::memory_order_release);
 }
 
 void InPlaceExecutionContext::ForEachNeighborWithinRadius(
@@ -80,13 +83,20 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
 }
 
 SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
-  auto search_it = new_sim_objects_.find(uid);
-  if (search_it != new_sim_objects_.end()) {
-    return search_it->second;
-  } else {
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-    return rm->GetSimObject(uid);
+  auto* so = GetCachedSimObject(uid, false);
+  if (so != nullptr) { return so; }
+
+  auto* sim = Simulation::GetActive();
+  auto* rm = sim->GetResourceManager();
+  so = rm->GetSimObject(uid);
+  if (so != nullptr) { return so; }
+
+  // sim object must be cached in another InPlaceExecutionContext
+  for(auto* ctxt : sim->GetAllExecCtxts()) {
+    so = ctxt->GetCachedSimObject(uid);
+    if (so != nullptr) { return so; }
   }
+  return nullptr;
 }
 
 const SimObject* InPlaceExecutionContext::GetConstSimObject(SoUid uid) {
@@ -99,6 +109,25 @@ void InPlaceExecutionContext::RemoveFromSimulation(SoUid uid) {
 
 void InPlaceExecutionContext::DisableNeighborGuard() {
   Simulation::GetActive()->GetGrid()->DisableNeighborMutexes();
+}
+
+SimObject* InPlaceExecutionContext::GetCachedSimObject(SoUid uid, bool protect) {
+  // returning a non const SimObject is not a problem for race conditions.
+  // it has to be inside the central or surrounding boxes which are protected
+  // if `DisableNeighborGuard` has not been called.
+  // while (!protect && mutex_.test_and_set(std::memory_order_acquire)) {
+  if(protect) {
+    while (mutex_.test_and_set(std::memory_order_acquire)) {}
+  }
+  SimObject* ret_val = nullptr;
+  auto search_it = new_sim_objects_.find(uid);
+  if (search_it != new_sim_objects_.end()) {
+    ret_val = search_it->second;
+  }
+  if (protect) {
+    mutex_.clear(std::memory_order_release);
+  }
+  return ret_val;
 }
 
 }  // namespace bdm

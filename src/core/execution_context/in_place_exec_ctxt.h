@@ -86,6 +86,11 @@ class InPlaceExecutionContext {
 
   /// Pointer to new sim objects
   std::unordered_map<SoUid, SimObject*> new_sim_objects_;
+
+  /// prevent race conditions for cached SimObjects
+  std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
+
+  SimObject* GetCachedSimObject(SoUid uid, bool protect = true);
 };
 
 }  // namespace bdm
