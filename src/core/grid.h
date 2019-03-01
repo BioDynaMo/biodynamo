@@ -452,10 +452,8 @@ class Grid {
   /// @tparam     Lambda  The type of the lambda operation
   /// @tparam     SO      The type of the simulation object
   ///
-  template <typename Lambda, typename SO>
-  void ForEachNeighbor(const Lambda& lambda, const SO& query) const {
-    const auto& position = query.GetPosition();
-    auto idx = GetBoxIndex(position);
+  void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda, const SimObject& query) const {
+    auto idx = query.GetBoxIdx();
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
     GetMooreBoxes(&neighbor_boxes, idx);

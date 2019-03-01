@@ -46,6 +46,8 @@ Scheduler::Scheduler() {
   diffusion_ = new DiffusionOp();
 
   // initialise operations_
+  auto first_op = [](SimObject* so) { so->UpdateRunDisplacement(); };
+  auto last_op = [](SimObject* so) { so->ApplyRunDisplacementForAllNextTs(); };
   auto biology_module_op = [](SimObject* so) { so->RunBiologyModules(); };
   auto discretization_op = [](SimObject* so) { so->RunDiscretization(); };
 
@@ -56,8 +58,8 @@ Scheduler::Scheduler() {
     }
   };
 
-  operations_ = {*bound_space_, biology_module_op, displacement_op,
-                 discretization_op};
+  operations_ = {first_op, *bound_space_, biology_module_op, displacement_op,
+                 discretization_op, last_op};
 }
 
 Scheduler::~Scheduler() {

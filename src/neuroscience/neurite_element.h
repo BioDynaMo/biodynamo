@@ -170,6 +170,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   void SetDiameter(double diameter) override {
+    if(diameter  > diameter_) {
+      SetRunDisplacementForAllNextTs();
+    }
     diameter_ = diameter;
     UpdateVolume();
   }
@@ -183,7 +186,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   void SetPosition(const std::array<double, 3>& position) override {
-    mass_location_ = Math::Add(position, Math::ScalarMult(0.5, spring_axis_));
+    SetMassLocation(Math::Add(position, Math::ScalarMult(0.5, spring_axis_)));
   }
 
   /// return end of neurite element position
@@ -193,6 +196,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetMassLocation(const std::array<double, 3>& mass_location) {
     mass_location_ = mass_location;
+    SetRunDisplacementForAllNextTs();
   }
 
   double GetAdherence() const { return adherence_; }
@@ -254,14 +258,14 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
       double new_actual_length = actual_length_ - speed;
       double factor = new_actual_length / actual_length_;
-      actual_length_ = new_actual_length;
+      SetActualLength(new_actual_length);
       // cf removeproximalCylinder()
       resting_length_ =
           spring_constant_ * actual_length_ / (tension_ + spring_constant_);
-      spring_axis_ = Math::ScalarMult(factor, spring_axis_);
+      SetSpringAxis(Math::ScalarMult(factor, spring_axis_));
 
-      mass_location_ =
-          Math::Add(mother_->OriginOf(Base::GetUid()), spring_axis_);
+      SetMassLocation(
+          Math::Add(mother_->OriginOf(Base::GetUid()), spring_axis_));
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_soma) {
       mother_->RemoveDaughter(Base::GetSoPtr<NeuriteElement>());
@@ -559,9 +563,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto new_mass_location = Math::Add(displacement, mass_location_);
     // here I have to define the actual length ..........
     auto relative_ml = mother_->OriginOf(Base::GetUid());  //  change to auto&&
-    spring_axis_ = Math::Subtract(new_mass_location, relative_ml);
-    mass_location_ = new_mass_location;
-    actual_length_ = std::sqrt(Math::Dot(spring_axis_, spring_axis_));
+    SetSpringAxis(Math::Subtract(new_mass_location, relative_ml));
+    SetMassLocation( new_mass_location);
+    SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
     // process of elongation : setting tension to 0 increases the resting length
     SetRestingLengthForDesiredTension(0.0);
 
@@ -738,12 +742,16 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
           core_param->simulation_max_displacement_ / displacement_norm,
           displacement);
     }
-
     return displacement;
   }
 
   // TODO(neurites) documentation
   void ApplyDisplacement(const std::array<double, 3>& displacement) override {
+    // FIXME comparing doubles
+    if (displacement == std::array<double, 3>{0, 0, 0}) {
+      return;
+    }
+
     // move of our mass
     SetMassLocation(Math::Add(GetMassLocation(), displacement));
     // Recompute length, tension and re-center the computation node, and
@@ -794,7 +802,11 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// Recomputes diameter after volume has changed.
   void UpdateDiameter() {
-    diameter_ = std::sqrt(4 / Math::kPi * volume_ / actual_length_);
+    double new_diameter = std::sqrt(4 / Math::kPi * volume_ / actual_length_);
+    if(new_diameter > diameter_) {
+      SetRunDisplacementForAllNextTs();
+    }
+    diameter_ = new_diameter;
   }
 
   /// Recomputes volume, after diameter has been changed.
@@ -942,7 +954,12 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   double GetActualLength() const { return actual_length_; }
 
   /// Should not be used, since the actual length depends on the geometry.
-  void SetActualLength(double actual_length) { actual_length_ = actual_length; }
+  void SetActualLength(double actual_length) {
+    if(actual_length > actual_length_) {
+      SetRunDisplacementForAllNextTs();
+    }
+    actual_length_ = actual_length;
+  }
 
   double GetRestingLength() const { return resting_length_; }
 
@@ -952,7 +969,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   const std::array<double, 3>& GetSpringAxis() const { return spring_axis_; }
 
-  void SetSpringAxis(const std::array<double, 3>& axis) { spring_axis_ = axis; }
+  void SetSpringAxis(const std::array<double, 3>& axis) {
+    SetRunDisplacementForAllNextTs();
+    spring_axis_ = axis;
+  }
 
   double GetSpringConstant() const { return spring_constant_; }
 
@@ -1016,8 +1036,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Otherwise we could have cylinders with big aL and rL = 0).\n
   void UpdateDependentPhysicalVariables() override {
     auto relative_ml = mother_->OriginOf(Base::GetUid());
-    spring_axis_ = Math::Subtract(mass_location_, relative_ml);
-    actual_length_ = std::sqrt(Math::Dot(spring_axis_, spring_axis_));
+    SetSpringAxis(Math::Subtract(mass_location_, relative_ml));
+    SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
     if (std::abs(actual_length_ - resting_length_) > 1e-13) {
       tension_ = spring_constant_ * (actual_length_ - resting_length_) /
                  resting_length_;
@@ -1072,7 +1092,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     y_axis_ = rhs.GetYAxis();
     z_axis_ = rhs.GetZAxis();
 
-    spring_axis_ = rhs.GetSpringAxis();
+    SetSpringAxis(rhs.GetSpringAxis());
     branch_order_ = rhs.GetBranchOrder();
     spring_constant_ = rhs.GetSpringConstant();
     // TODO(neurites) what about actual length, tension and resting_length_ ??
@@ -1083,8 +1103,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   // resolved
   /// position_ is middle point of cylinder_
   /// mass_location_ is distal end of the cylinder
+  /// NB: Use setter and don't assign values directly
   std::array<double, 3> mass_location_ = {{0.0, 0.0, 0.0}};
   double volume_;
+  /// NB: Use setter and don't assign values directly
   double diameter_;
   double density_;
   double adherence_;
@@ -1117,9 +1139,11 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// from the attachment point to the mass location
   /// (proximal -> distal).
+  /// NB: Use setter and don't assign values directly
   std::array<double, 3> spring_axis_ = {{0, 0, 0}};
 
   /// Real length of the PhysicalCylinder (norm of the springAxis).
+  /// NB: Use setter and don't assign values directly
   double actual_length_;
 
   /// Tension in the cylinder spring.
@@ -1178,7 +1202,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // T = k*(A-R)/R --> R = k*A/(T+K)
     spring_axis_ =
         Math::Subtract(mass_location_, mother_->OriginOf(Base::GetUid()));
-    actual_length_ = Math::Norm(spring_axis_);
+    SetActualLength(Math::Norm(spring_axis_));
     resting_length_ =
         spring_constant_ * actual_length_ / (tension_ + spring_constant_);
     // .... and volume_
@@ -1244,7 +1268,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // set attributes of new neurite segment
     diameter_ = diameter;
     UpdateVolume();
-    spring_axis_ = new_spring_axis;
+    SetSpringAxis(new_spring_axis);
 
     SetMassLocation(new_mass_location);
     actual_length_ = new_length;

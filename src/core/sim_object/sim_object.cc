@@ -35,6 +35,7 @@
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
+#include "core/grid.h"
 
 namespace bdm {
 
@@ -62,6 +63,19 @@ SimObject::~SimObject() {
   for (auto* el : biology_modules_) {
     delete el;
   }
+}
+
+void SimObject::ApplyRunDisplacementForAllNextTs() {
+  if (!run_displacement_for_all_next_ts_) {
+    return;
+  }
+  run_displacement_for_all_next_ts_ = false;
+  run_displacement_next_ts_ = true;
+  // FIXME don't use grid, but exec ctxt
+  auto* grid = Simulation::GetActive()->GetGrid();
+  grid->ForEachNeighbor([](const SimObject* neighbor){
+    neighbor->SetRunDisplacementNextTimestep(true);
+  }, *this);
 }
 
 void SimObject::RunDiscretization() {}
@@ -110,6 +124,8 @@ void SimObject::RemoveFromSimulation() const {
 
 void SimObject::EventHandler(const Event& event, SimObject* other1,
                              SimObject* other2) {
+  // Run displacement if a new sim object has been created with an event.
+  SetRunDisplacementForAllNextTs();
   // call event handler for biology modules
   auto* left_bms = other1 == nullptr ? nullptr : &(other1->biology_modules_);
   auto* right_bms = other2 == nullptr ? nullptr : &(other2->biology_modules_);
