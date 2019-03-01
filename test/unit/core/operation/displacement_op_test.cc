@@ -45,8 +45,9 @@ TEST(DisplacementOpTest, ComputeSoaNew) {
 
   // execute operation
   DisplacementOp op;
+  auto* ctxt = simulation.GetExecutionContext();
   for (uint64_t i = 0; i < 27; i++) {
-    op(rm->GetSimObject(ref_uid + i));
+    ctxt->Execute(rm->GetSimObject(ref_uid + i), {op});
   }
 
   // clang-format off

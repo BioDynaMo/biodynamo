@@ -40,7 +40,6 @@ inline void RunTest() {
 
   // cell 1
   Cell* cell1 = new Cell();
-  std::cout << cell1 << std::endl;
   cell1->SetAdherence(0.4);
   cell1->SetDiameter(11);
   cell1->SetMass(1.1);
@@ -51,8 +50,9 @@ inline void RunTest() {
 
   // execute operation
   DisplacementOp op;
-  op(rm->GetSimObject(ref_uid));
-  op(rm->GetSimObject(ref_uid + 1));
+  auto* ctxt = simulation.GetExecutionContext();
+  ctxt->Execute(rm->GetSimObject(ref_uid), {op});
+  ctxt->Execute(rm->GetSimObject(ref_uid + 1), {op});
 
   // check results
   // cell 0

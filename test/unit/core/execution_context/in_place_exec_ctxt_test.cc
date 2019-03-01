@@ -198,6 +198,7 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
       non_const_nb->SetDiameter(d1 + 1);
       nb_counter++;
     };
+    auto* ctxt = sim.GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(nb_lambda, *so, 100);
 #pragma omp critical
     num_neighbors[so->GetUid()] = nb_counter;

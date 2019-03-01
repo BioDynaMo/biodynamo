@@ -58,10 +58,12 @@ void InPlaceExecutionContext::Execute(
   if (nb_mutex_builder != nullptr) {
     auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
     std::lock_guard<decltype(mutex)> guard(mutex);
+    neighbor_cache_.clear();
     for (auto& op : operations) {
       op(so);
     }
   } else {
+    neighbor_cache_.clear();
     for (auto& op : operations) {
       op(so);
     }
@@ -75,11 +77,64 @@ void InPlaceExecutionContext::push_back(SimObject* new_so) {
   mutex_.clear(std::memory_order_release);
 }
 
+void InPlaceExecutionContext::ForEachNeighbor(
+    const std::function<void(const SimObject*)>& lambda, const SimObject& query) {
+
+  // use values in cache
+  if(neighbor_cache_.size() != 0) {
+    for (auto& pair : neighbor_cache_) {
+      lambda(pair.first);
+    }
+    return;
+  }
+
+  auto* grid = Simulation::GetActive()->GetGrid();
+  grid->ForEachNeighbor(lambda, query);
+}
+
+void InPlaceExecutionContext::ForEachNeighbor(
+    const std::function<void(const SimObject*,double)>& lambda, const SimObject& query) {
+
+  // use values in cache
+  if(neighbor_cache_.size() != 0) {
+    for (auto& pair : neighbor_cache_) {
+      lambda(pair.first, pair.second);
+    }
+    return;
+  }
+
+  // forward call to grid and populate cache
+  auto* grid = Simulation::GetActive()->GetGrid();
+  auto for_each = [&,this](const SimObject* so, double squared_distance) {
+    this->neighbor_cache_.push_back(make_pair(so, squared_distance));
+    lambda(so, squared_distance);
+  };
+  grid->ForEachNeighbor(for_each, query);
+}
+
 void InPlaceExecutionContext::ForEachNeighborWithinRadius(
     const std::function<void(const SimObject*)>& lambda, const SimObject& query,
     double squared_radius) {
+
+  // use values in cache
+  if(neighbor_cache_.size() != 0) {
+    for (auto& pair : neighbor_cache_) {
+      if (pair.second < squared_radius) {
+        lambda(pair.first);
+      }
+    }
+    return;
+  }
+
+  // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
-  grid->ForEachNeighborWithinRadius(lambda, query, squared_radius);
+  auto for_each = [&,this](const SimObject* so, double squared_distance) {
+    this->neighbor_cache_.push_back(make_pair(so, squared_distance));
+    if (squared_distance < squared_radius) {
+      lambda(so);
+    }
+  };
+  grid->ForEachNeighbor(for_each, query);
 }
 
 SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
@@ -129,5 +184,7 @@ SimObject* InPlaceExecutionContext::GetCachedSimObject(SoUid uid, bool protect) 
   }
   return ret_val;
 }
+
+// TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*
 
 }  // namespace bdm
