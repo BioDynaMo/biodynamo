@@ -39,6 +39,13 @@ class DisplacementOpCpu {
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
 
+    if(!sim_object->RunDisplacement()) {
+      // FIXME
+      // static int cnt = 0;
+      // std::cout << "skipped " << cnt++ << std::endl;
+      return;
+    }
+
     // update search radius at beginning of each iteration
     auto current_iteration = scheduler->GetSimulatedSteps();
     if (last_iteration_ != current_iteration) {

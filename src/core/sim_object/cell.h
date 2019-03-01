@@ -217,6 +217,7 @@ class Cell : public SimObject {
 
   void SetDiameter(double diameter) override {
     diameter_ = diameter;
+    SetRunDisplacementForAllNextTs();
     UpdateVolume();
   }
 
@@ -231,6 +232,7 @@ class Cell : public SimObject {
 
   void SetPosition(const std::array<double, 3>& position) override {
     position_ = position;
+    SetRunDisplacementForAllNextTs();
   }
 
   void SetTractorForce(const std::array<double, 3>& tractor_force) {
@@ -251,6 +253,7 @@ class Cell : public SimObject {
   void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
     diameter_ = std::cbrt(volume_ * 6 / Math::kPi);
+    SetRunDisplacementForAllNextTs();
   }
 
   void UpdateVolume() {
@@ -262,6 +265,7 @@ class Cell : public SimObject {
     position_[0] += delta[0];
     position_[1] += delta[1];
     position_[2] += delta[2];
+    SetRunDisplacementForAllNextTs();
   }
 
   std::array<double, 3> CalculateDisplacement(double squared_radius) override {
@@ -273,9 +277,6 @@ class Cell : public SimObject {
     // TODO(roman) : There might be a problem, in the sense that the biology
     // is not applied if the total Force is smaller than adherence.
     // Once, I should look at this more carefully.
-
-    // If we detect enough forces to make us  move, we will re-schedule us
-    // setOnTheSchedulerListForPhysicalObjects(false);
 
     // fixme why? copying
     const auto& tf = GetTractorForce();
@@ -375,8 +376,10 @@ class Cell : public SimObject {
   std::array<double, 3> TransformCoordinatesGlobalToPolar(
       const std::array<double, 3>& coord) const;
 
+  /// NB: Use setter and don't assign values directly
   std::array<double, 3> position_ = {{0, 0, 0}};
   std::array<double, 3> tractor_force_ = {{0, 0, 0}};
+  /// NB: Use setter and don't assign values directly
   double diameter_ = 0;
   double volume_ = 0;
   double adherence_ = 0;

@@ -21,6 +21,10 @@ constexpr std::array<double, 3> Cell::kYAxis;
 constexpr std::array<double, 3> Cell::kZAxis;
 
 void Cell::ApplyDisplacement(const std::array<double, 3>& displacement) {
+  if (displacement[0] == 0 && displacement[1] == 0 && displacement[2] == 0) {
+    return;
+  }
+  
   UpdatePosition(displacement);
   // Reset biological movement to 0.
   SetTractorForce({0, 0, 0});

@@ -176,6 +176,24 @@ class SimObject {
 
   void SetBoxIdx(uint32_t idx);
 
+  void SetRunDisplacementNextTimestep(bool run) const {
+    run_displacement_next_ts_ = run;
+  }
+
+  void SetRunDisplacementForAllNextTs() {
+    run_displacement_for_all_next_ts_ = true;
+  }
+
+  void ApplyRunDisplacementForAllNextTs();
+
+  void UpdateRunDisplacement() {
+    run_displacement_ = run_displacement_next_ts_;
+    run_displacement_next_ts_ = false;
+  }
+
+  bool RunDisplacement() const { return run_displacement_; }
+  // bool RunDisplacement() const { return false; } // FIXME remove
+
   /// Return simulation object pointer
   template <typename TSimObject = SimObject>
   SoPointer<TSimObject> GetSoPtr() const {
@@ -231,6 +249,10 @@ class SimObject {
   /// Due to problems with restoring this member for the SOA data layout, it is
   /// not ignored for ROOT I/O.
   uint32_t run_bm_loop_idx_ = 0;
+
+  bool run_displacement_ = true;  //!
+  bool run_displacement_for_all_next_ts_= false;  //!
+  mutable bool run_displacement_next_ts_ = true;  //!
 
   /// @brief Function to copy biology modules from one structure to another
   /// @param event event will be passed on to biology module to determine
