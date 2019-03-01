@@ -61,8 +61,15 @@ class InPlaceExecutionContext {
 
   void push_back(SimObject* new_so);
 
+  void ForEachNeighbor(
+      const std::function<void(const SimObject*)>& lambda,
+      const SimObject& query);
+
+  void ForEachNeighbor(
+      const std::function<void(const SimObject*, double)>& lambda,
+      const SimObject& query);
+
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
-  /// Could be used to cache the results.
   void ForEachNeighborWithinRadius(
       const std::function<void(const SimObject*)>& lambda,
       const SimObject& query, double squared_radius);
@@ -89,6 +96,8 @@ class InPlaceExecutionContext {
 
   /// prevent race conditions for cached SimObjects
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
+
+  std::vector<std::pair<const SimObject*,double>> neighbor_cache_;
 
   SimObject* GetCachedSimObject(SoUid uid, bool protect = true);
 };

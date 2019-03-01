@@ -71,10 +71,12 @@ void SimObject::ApplyRunDisplacementForAllNextTs() {
   }
   run_displacement_for_all_next_ts_ = false;
   run_displacement_next_ts_ = true;
-  // FIXME don't use grid, but exec ctxt
-  auto* grid = Simulation::GetActive()->GetGrid();
-  grid->ForEachNeighbor([](const SimObject* neighbor){
-    neighbor->SetRunDisplacementNextTimestep(true);
+  auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+  ctxt->ForEachNeighbor([this](const SimObject* neighbor, double squared_distance){
+    double distance = this->GetDiameter() + neighbor->GetDiameter();
+    if(squared_distance < distance * distance) {
+      neighbor->SetRunDisplacementNextTimestep(true);
+    }
   }, *this);
 }
 

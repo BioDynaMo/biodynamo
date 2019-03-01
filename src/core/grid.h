@@ -478,6 +478,39 @@ class Grid {
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
+  ///
+  void ForEachNeighbor(
+      const std::function<void(const SimObject*,double)>& lambda,
+      const SimObject& query) {
+    const auto& position = query.GetPosition();
+    auto idx = query.GetBoxIdx();
+
+    FixedSizeVector<const Box*, 27> neighbor_boxes;
+    GetMooreBoxes(&neighbor_boxes, idx);
+
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+
+    NeighborIterator ni(neighbor_boxes);
+    while (!ni.IsAtEnd()) {
+      // Do something with neighbor object
+      auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
+      if (sim_object != &query) {
+        const auto& neighbor_position = sim_object->GetPosition();
+        double squared_distance = SquaredEuclideanDistance(position, neighbor_position);
+        lambda(sim_object, squared_distance);
+      }
+      ++ni;
+    }
+  }
+
+  /// @brief      Applies the given lambda to each neighbor or the specified
+  ///             simulation object.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
+  ///
+  /// @param[in]  lambda  The operation as a lambda
+  /// @param      query   The query object
   /// @param[in]  squared_radius  The search radius squared
   ///
   void ForEachNeighborWithinRadius(
