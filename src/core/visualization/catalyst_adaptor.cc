@@ -12,20 +12,18 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_SIM_OBJECT_SO_VISITOR_H_
-#define CORE_SIM_OBJECT_SO_VISITOR_H_
+#include "core/visualization/catalyst_adaptor.h"
 
-#include <atomic>
+#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
 namespace bdm {
 
-// TODO documentation
-struct SoVisitor {
-  virtual ~SoVisitor() {}
-  virtual void Visit(const std::string& name, size_t type_hash_code,
-                     const void* data) = 0;
-};
+vtkCPProcessor* CatalystAdaptor::g_processor_ = nullptr;
+
+constexpr const char* CatalystAdaptor::kSimulationInfoJson;
+
+std::atomic<uint64_t> CatalystAdaptor::counter_;
 
 }  // namespace bdm
 
-#endif  // CORE_SIM_OBJECT_SO_VISITOR_H_
+#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)

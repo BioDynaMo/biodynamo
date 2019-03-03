@@ -28,6 +28,8 @@
 #include "core/simulation.h"
 #include "core/simulation_backup.h"
 #include "core/util/log.h"
+#include "core/scheduler.h"
+#include "core/visualization/catalyst_adaptor.h"
 
 namespace bdm {
 

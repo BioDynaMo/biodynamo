@@ -63,12 +63,6 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
                         resting_length_);
 
  public:
-  /// Returns the data members that are required to visualize this simulation
-  /// object.
-  static std::set<std::string> GetRequiredVisDataMembers() {
-    return {"mass_location_", "diameter_", "actual_length_", "spring_axis_"};
-  }
-
   NeuriteElement() {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
@@ -168,6 +162,12 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   Shape GetShape() const override { return Shape::kCylinder; }
+
+  /// Returns the data members that are required to visualize this simulation
+  /// object.
+  std::set<std::string> GetRequiredVisDataMembers() const override {
+    return {"mass_location_", "diameter_", "actual_length_", "spring_axis_"};
+  }
 
   void SetDiameter(double diameter) override {
     diameter_ = diameter;

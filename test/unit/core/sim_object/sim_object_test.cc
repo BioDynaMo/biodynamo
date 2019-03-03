@@ -133,7 +133,7 @@ struct Visitor1 : public SoVisitor {
   uint16_t counter_ = 0;
 
   void Visit(const std::string& dm_name, size_t type_hash_code,
-             void* data) override {
+             const void* data) override {
     counter_++;
     if (dm_name != "position_" && dm_name != "run_bm_loop_idx_" &&
         dm_name != "diameter_" && dm_name != "biology_modules_" &&
@@ -154,7 +154,7 @@ struct Visitor2 : public SoVisitor {
   uint16_t counter_ = 0;
 
   void Visit(const std::string& dm_name, size_t type_hash_code,
-             void* data) override {
+             const void* data) override {
     counter_++;
     if (dm_name != "uid_" && dm_name != "position_") {
       FAIL() << "Lambda must not be called for data member " << dm_name
@@ -172,14 +172,14 @@ TEST(SimObjectUtilTest, ForEachDataMemberIn) {
 
 struct VerifyPosition : public SoVisitor {
   void Visit(const std::string& dm_name, size_t type_hash_code,
-             void* data) override {
+             const void* data) override {
     if (dm_name != "position_") {
       FAIL() << "Functor must not be called for data member " << dm_name
              << std::endl;
     }
     using PosType = std::array<double, 3>;
     if (type_hash_code == typeid(PosType).hash_code()) {
-      auto* pos = static_cast<PosType*>(data);
+      auto* pos = static_cast<const PosType*>(data);
       EXPECT_EQ(4, (*pos)[0]);
       EXPECT_EQ(5, (*pos)[1]);
       EXPECT_EQ(6, (*pos)[2]);

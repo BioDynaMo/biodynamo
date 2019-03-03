@@ -25,10 +25,6 @@ class TestSimObject : public SimObject {
   BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1, position_, diameter_);
 
  public:
-  static std::set<std::string> GetRequiredVisDataMembers() {
-    return {"diameter_", "position_"};
-  }
-
   TestSimObject() {}
 
   TestSimObject(int data) : data_(data) {}
@@ -41,6 +37,10 @@ class TestSimObject : public SimObject {
   virtual ~TestSimObject() {}
 
   Shape GetShape() const override { return Shape::kSphere; };
+
+  std::set<std::string> GetRequiredVisDataMembers() const override {
+    return {"diameter_", "position_"};
+  }
 
   void RunDiscretization() override {}
 

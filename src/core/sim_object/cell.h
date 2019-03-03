@@ -47,12 +47,6 @@ class Cell : public SimObject {
   /// Third axis of the local coordinate system.
   static constexpr std::array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
 
-  /// Returns the data members that are required to visualize this simulation
-  /// object.
-  static std::set<std::string> GetRequiredVisDataMembers() {
-    return {"position_", "diameter_"};
-  }
-
   Cell() : density_(1.0) {}
   explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();

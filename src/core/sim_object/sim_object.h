@@ -43,7 +43,7 @@ namespace bdm {
 
 #define BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR(data_member)               \
   visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
-                 static_cast<void*>(&data_member));
+                 static_cast<const void*>(&data_member));
 
 #define BDM_SIM_OBJECT_FOREACHDMIN_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
@@ -53,7 +53,7 @@ namespace bdm {
     auto it = dm_selector.find(#data_member);                                 \
     if (it != dm_selector.end()) {                                            \
       visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
-                     static_cast<void*>(&data_member));                       \
+                     static_cast<const void*>(&data_member));                 \
     }                                                                         \
   }
 
@@ -70,8 +70,6 @@ namespace bdm {
  public:                                                                     \
   using Base = base_class;                                                   \
                                                                              \
-  static const std::string GetScalarTypeName() { return #class_name; }       \
-                                                                             \
   explicit class_name(TRootIOCtor* io_ctor) {}                               \
                                                                              \
   /** Create a new instance of this object using the default constructor. */ \
@@ -83,15 +81,17 @@ namespace bdm {
   /** Create a copy of this object. */                                       \
   SimObject* GetCopy() const override { return new class_name(*this); }      \
                                                                              \
+  const char* GetTypeName() const override {  return #class_name; }          \
+                                                                             \
   /** Executes the given function for all data members             */        \
-  void ForEachDataMember(SoVisitor* visitor) override {                      \
+  void ForEachDataMember(SoVisitor* visitor) const override {                \
     BDM_SIM_OBJECT_FOREACHDM_BODY(__VA_ARGS__)                               \
     Base::ForEachDataMember(visitor);                                        \
   }                                                                          \
                                                                              \
   /** Executes the given function for the specified data members    */       \
   void ForEachDataMemberIn(const std::set<std::string>& dm_selector,         \
-                           SoVisitor* visitor) override {                    \
+                           SoVisitor* visitor) const override {              \
     BDM_SIM_OBJECT_FOREACHDMIN_BODY(__VA_ARGS__)                             \
     Base::ForEachDataMemberIn(dm_selector, visitor);                         \
   }                                                                          \
@@ -113,7 +113,6 @@ class BaseBiologyModule;
 /// Contains code required by all simulation objects
 class SimObject {
  public:
-  static const std::string GetScalarTypeName();
 
   SimObject();
 
@@ -127,7 +126,7 @@ class SimObject {
 
   /// Executes the given function for all data members
   /// \see `SoVisitor`
-  virtual void ForEachDataMember(SoVisitor* visitor) {
+  virtual void ForEachDataMember(SoVisitor* visitor) const {
     BDM_SIM_OBJECT_FOREACHDM_BODY(uid_, box_idx_, biology_modules_,
                                   run_bm_loop_idx_)
   }
@@ -135,7 +134,7 @@ class SimObject {
   /// Executes the given visitor for the specified data members
   /// \see `SoVisitor`
   virtual void ForEachDataMemberIn(const std::set<std::string>& dm_selector,
-                                   SoVisitor* visitor) {
+                                   SoVisitor* visitor) const {
     BDM_SIM_OBJECT_FOREACHDMIN_BODY(uid_, box_idx_, biology_modules_,
                                     run_bm_loop_idx_)
   }
@@ -149,6 +148,16 @@ class SimObject {
   /// Create a copy of this object.
   virtual SimObject* GetCopy() const = 0;
 
+  virtual const char* GetTypeName() const {  return "SimObject"; }
+
+  virtual Shape GetShape() const = 0;
+
+  /// Returns the data members that are required to visualize this simulation
+  /// object.
+  virtual std::set<std::string> GetRequiredVisDataMembers() const {
+    return {"position_", "diameter_"};
+  }
+
   template <typename T>
   T* As() {
     return dynamic_cast<T*>(this);
@@ -158,7 +167,6 @@ class SimObject {
     return dynamic_cast<const T*>(this);
   }
 
-  virtual Shape GetShape() const = 0;
 
   virtual void RunDiscretization();
 

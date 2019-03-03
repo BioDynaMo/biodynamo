@@ -15,6 +15,10 @@
 #ifndef CORE_VISUALIZATION_CATALYST_ADAPTOR_H_
 #define CORE_VISUALIZATION_CATALYST_ADAPTOR_H_
 
+// check for ROOTCLING was necessary, due to ambigous reference to namespace
+// detail when using ROOT I/O
+#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -27,11 +31,11 @@
 #include "core/resource_manager.h"
 #include "core/shape.h"
 #include "core/simulation.h"
+#include "core/scheduler.h"
 #include "core/util/log.h"
-
-// check for ROOTCLING was necessary, due to ambigous reference to namespace
-// detail when using ROOT I/O
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#include "core/visualization/insitu_pipeline.h"
+#include "core/visualization/catalyst_helper_structs.h"
+#include "core/visualization/catalyst_so_visitor.h"
 
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
@@ -50,37 +54,7 @@
 #include <vtkXMLPImageDataWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
 
-#include "core/visualization/insitu_pipeline.h"
-
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
-
 namespace bdm {
-
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
-
-struct VtkSOGrid {
-  void Reset() {
-    data = nullptr;
-    is_initialized = false;
-    name = "";
-  }
-
-  vtkUnstructuredGrid* data = nullptr;
-  bool is_initialized = false;
-  std::string name;
-};
-
-struct VtkDiffusionGrid {
-  void Reset() {
-    data = nullptr;
-    is_initialized = false;
-    name = "";
-  }
-
-  vtkImageData* data = nullptr;
-  bool is_initialized = false;
-  std::string name;
-};
 
 /// The class that bridges the simulation code with ParaView.
 /// Requires that simulation objects use the Soa memory layout.
@@ -104,13 +78,13 @@ class CatalystAdaptor {
       pipeline_->Delete();
       pipeline_ = nullptr;
     }
-    for (auto sog : vtk_so_grids_) {
-      sog.data->Delete();
-      sog.Reset();
+    for (auto& sog : vtk_so_grids_) {
+      sog.second.data_->Delete();
+      sog.second.Reset();
     }
     for (auto dg : vtk_dgrids_) {
-      dg.data->Delete();
-      dg.Reset();
+      dg.second.data_->Delete();
+      dg.second.Reset();
     }
 
     if (counter_ == 0 && g_processor_) {
@@ -151,8 +125,8 @@ class CatalystAdaptor {
   std::string python_script_;
   bool initialized_ = false;
   bool exclusive_export_viz_ = false;
-  std::vector<VtkSOGrid> vtk_so_grids_;
-  std::vector<VtkDiffusionGrid> vtk_dgrids_;
+  std::unordered_map<std::string, VtkSoGrid> vtk_so_grids_;
+  std::unordered_map<std::string, VtkDiffusionGrid> vtk_dgrids_;
   std::unordered_map<std::string, Shape> shapes_;
 
   /// This variable is used to generate the simulation info json during the
@@ -193,231 +167,6 @@ class CatalystAdaptor {
       } else if (!exclusive_export_viz_) {
         pipeline_ = new InSituPipeline();
         g_processor_->AddPipeline(pipeline_);
-      }
-    }
-  }
-
-  /// Sets the properties of the diffusion VTK grid structures
-  ///
-  /// @param      dg    The diffusion grid
-  /// @param[in]  idx   Its index within the vector of diffusion VTK structures
-  ///
-  void ConstructDiffusionGrid(DiffusionGrid* dg, uint16_t idx) {
-    auto num_boxes = dg->GetNumBoxesArray();
-    auto grid_dimensions = dg->GetDimensions();
-    auto box_length = dg->GetBoxLength();
-
-    double origin_x = grid_dimensions[0];
-    double origin_y = grid_dimensions[2];
-    double origin_z = grid_dimensions[4];
-    vtk_dgrids_[idx].data->SetOrigin(origin_x, origin_y, origin_z);
-    vtk_dgrids_[idx].data->SetDimensions(num_boxes[0], num_boxes[1],
-                                         num_boxes[2]);
-    vtk_dgrids_[idx].data->SetSpacing(box_length, box_length, box_length);
-  }
-
-  struct AddCellAttributeData {
-    AddCellAttributeData(size_t nc, vtkUnstructuredGrid* vd)
-        : num_cells(nc), vtk_data(vd) {}
-
-    void operator()(std::vector<double>* dm, const std::string& name) {
-      vtkNew<vtkDoubleArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data();
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(num_cells), 1);
-      vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
-    }
-
-    void operator()(std::vector<int>* dm, const std::string& name) {
-      vtkNew<vtkIntArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data();
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(num_cells), 1);
-      vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
-    }
-
-    void operator()(std::vector<std::array<double, 3>>* dm,
-                    const std::string& name) {
-      vtkNew<vtkDoubleArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data()->data();
-      vtk_array->SetNumberOfComponents(3);
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
-
-      if (name == "position_") {  // TODO(lukas) performance
-        vtkNew<vtkPoints> points;
-        points->SetData(vtk_array.GetPointer());
-        vtk_data->SetPoints(points.GetPointer());
-      } else if (name == "mass_location_") {
-        // create points with position {0, 0, 0}
-        // BDMGlyph will rotate and translate based on the attribute data
-        vtkNew<vtkPoints> points;
-        points->SetData(vtk_array.GetPointer());
-        vtk_data->SetPoints(points.GetPointer());
-        vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
-      } else {
-        vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
-      }
-    }
-
-    void operator()(std::vector<std::array<int, 3>>* dm,
-                    const std::string& name) {
-      vtkNew<vtkIntArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data()->data();
-      vtk_array->SetNumberOfComponents(3);
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
-      vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
-    }
-
-    void operator()(...) {
-      Log::Fatal("CatalystAdaptor::AddCellAttributeData",
-                 "This data member is not supported for visualization");
-    }
-
-    size_t num_cells;
-    vtkUnstructuredGrid* vtk_data;
-  };
-
-  /// Builds the VTK grid structure for given simulation object container
-  ///
-  /// @param      sim_objects  The simulation objects
-  ///
-  /// @tparam     TContainer   { Container that holds the simulation objects }
-  ///
-  template <typename TContainer>
-  void BuildCellsVTKStructures(TContainer* sim_objects, int idx) {
-    auto& scalar_name = TContainer::GetScalarTypeName();
-    auto& vsg = vtk_so_grids_[idx];
-    if (!vsg.is_initialized) {
-      vsg.data = vtkUnstructuredGrid::New();
-      vsg.is_initialized = true;
-      vsg.name = scalar_name;
-      shapes_[scalar_name] = sim_objects->GetShape();
-    }
-
-    auto num_cells = sim_objects->size();
-
-    auto required_dm = TContainer::GetRequiredVisDataMembers();
-    sim_objects->ForEachDataMemberIn(required_dm,
-                                     AddCellAttributeData(num_cells, vsg.data));
-
-    auto* param = Simulation::GetActive()->GetParam();
-    auto& additional_dm = param->visualize_sim_objects_.at(scalar_name);
-    if (!additional_dm.empty()) {
-      sim_objects->ForEachDataMemberIn(
-          additional_dm, AddCellAttributeData(num_cells, vsg.data));
-    }
-  }
-
-  /// Builds the VTK grid structure for given diffusion grid
-  ///
-  /// @param      dg    The diffusion grid
-  /// @param[in]  idx   The index
-  ///
-  void BuildDiffusionGridVTKStructures(DiffusionGrid* dg, uint16_t idx,
-                                       const Param::VisualizeDiffusion& vd) {
-    auto& vtk_dg = vtk_dgrids_[idx];
-    if (!vtk_dgrids_[idx].is_initialized) {
-      vtk_dg.data = vtkImageData::New();
-      vtk_dg.is_initialized = true;
-      vtk_dg.name = dg->GetSubstanceName();
-    }
-
-    // Create the diffusion grid
-    ConstructDiffusionGrid(dg, idx);
-    auto total_boxes = dg->GetNumBoxes();
-
-    // Add attribute data
-    if (vd.concentration_) {
-      vtkNew<vtkDoubleArray> concentration;
-      concentration->SetName("Substance Concentration");
-      auto co_ptr = dg->GetAllConcentrations();
-      concentration->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes), 1);
-      vtk_dg.data->GetPointData()->AddArray(concentration.GetPointer());
-    }
-    if (vd.gradient_) {
-      vtkNew<vtkDoubleArray> gradient;
-      gradient->SetName("Diffusion Gradient");
-      gradient->SetNumberOfComponents(3);
-      auto gr_ptr = dg->GetAllGradients();
-      gradient->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3), 1);
-      vtk_dg.data->GetPointData()->AddArray(gradient.GetPointer());
-    }
-  }
-
-  /// Creates the VTK objects that represent the simulation objects in ParaView.
-  ///
-  /// @param      data_description  The data description
-  ///
-  CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
-    // Add simulation objects to the visualization if requested
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    auto* param = sim->GetParam();
-
-    // Create as many visualization objects as registered in configuration
-    vtk_so_grids_.resize(param->visualize_sim_objects_.size());
-    unsigned so_idx = 0;
-
-    rm->ApplyOnAllTypes(
-        [&, this](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
-          auto so_name = sim_objects->GetScalarTypeName();
-
-          if (param->visualize_sim_objects_.find(so_name) !=
-              param->visualize_sim_objects_.end()) {
-            data_description->AddInput(so_name.c_str());
-
-            // If we segfault at here it probably means that there is a problem
-            // with
-            // the pipeline (either the C++ pipeline or Python pipeline)
-            // We do not need to RequestDataDescription in Export Mode, because
-            // we
-            // do not make use of Catalyst CoProcessing capabilities
-            if (exclusive_export_viz_ ||
-                (g_processor_->RequestDataDescription(
-                    data_description.GetPointer())) != 0) {
-              this->BuildCellsVTKStructures(sim_objects, so_idx);
-              data_description->GetInputDescriptionByName(so_name.c_str())
-                  ->SetGrid(vtk_so_grids_[so_idx].data);
-            }
-            so_idx++;
-          }
-        });
-
-    if (so_idx != param->visualize_sim_objects_.size()) {
-      Log::Fatal("Visualize Simulation Objects",
-                 "One or more simulation objects were not selected for "
-                 "visualization, even though you registered them for "
-                 "visualization. Please make sure the names in the "
-                 "configuration file match the ones in the simulation.");
-    }
-
-    // Create as many visualization objects as registered in configuration
-    vtk_dgrids_.resize(param->visualize_diffusion_.size());
-
-    // Add all diffusion grids to the visualization if requested
-    if (!param->visualize_diffusion_.empty()) {
-      uint16_t idx = 0;
-      for (auto& vd : param->visualize_diffusion_) {
-        auto dg = rm->GetDiffusionGrid(vd.name_);
-        if (dg == nullptr) {
-          Log::Fatal("Visualize Diffusion", "The substance with the name ",
-                     vd.name_,
-                     " was not found in the list of defined substances. "
-                     "Did you spell the name correctly during "
-                     "configuration?");
-        }
-        data_description->AddInput(dg->GetSubstanceName().c_str());
-        if (exclusive_export_viz_ ||
-            g_processor_->RequestDataDescription(
-                data_description.GetPointer()) != 0) {
-          this->BuildDiffusionGridVTKStructures(dg, idx, vd);
-          data_description
-              ->GetInputDescriptionByName(dg->GetSubstanceName().c_str())
-              ->SetGrid(vtk_dgrids_[idx].data);
-        }
-        idx++;
       }
     }
   }
@@ -475,6 +224,216 @@ class CatalystAdaptor {
     }
   }
 
+  /// Creates the VTK objects that represent the simulation objects in ParaView.
+  ///
+  /// @param      data_description  The data description
+  ///
+  void CreateVtkObjects(vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
+    BuildSimObjectsVTKStructures(data_description);
+    BuildDiffusionGridVTKStructures(data_description);
+  }
+
+  // ---------------------------------------------------------------------------
+  // simulation objects
+
+  /// Create and initialize a new instance of `VtkSoGrid` for a specific
+  /// simulation object type.
+  VtkSoGrid* NewVtkSoGrid(const SimObject* so, vtkNew<vtkCPDataDescription>& data_description) {
+    auto type_name = so->GetTypeName();
+    auto* vsg = &(vtk_so_grids_[type_name]);
+    // initialize new vsg
+    vsg->data_ = vtkUnstructuredGrid::New();
+    vsg->name_ = type_name;
+    vsg->vis_data_members_ = so->GetRequiredVisDataMembers();
+    auto* param = Simulation::GetActive()->GetParam();
+    for (auto& dm : param->visualize_sim_objects_.at(type_name)) {
+      vsg->vis_data_members_.insert(dm);
+    }
+    shapes_[type_name] = so->GetShape();
+
+    data_description->AddInput(type_name);
+    data_description->GetInputDescriptionByName(type_name)
+        ->SetGrid(vsg->data_);
+
+    return vsg;
+  }
+
+  /// Get the right `VtkSoGrid` data structure based on the simulation object
+  /// type. Creates a new one if no instance was found.
+  VtkSoGrid* GetVtkSoGrid(const SimObject* so, vtkNew<vtkCPDataDescription>& data_description) {
+    // get vtk_so_grids_
+    auto search = vtk_so_grids_.find(so->GetTypeName());
+    if (search != vtk_so_grids_.end()) {
+      return &(search->second);
+    } else {
+      return NewVtkSoGrid(so, data_description);
+    }
+  }
+
+  // Process a single simulation object
+  void ProcessSimObject(const SimObject* so, vtkNew<vtkCPDataDescription>& data_description) {
+    auto* param = Simulation::GetActive()->GetParam();
+    auto so_name = so->GetTypeName();
+
+    if (param->visualize_sim_objects_.find(so_name) !=
+        param->visualize_sim_objects_.end()) {
+
+      auto* vsg = GetVtkSoGrid(so, data_description);
+
+      // If we segfault at here it probably means that there is a problem
+      // with the pipeline (either the C++ pipeline or Python pipeline)
+      // We do not need to RequestDataDescription in Export Mode, because
+      // we do not make use of Catalyst CoProcessing capabilities
+      if (exclusive_export_viz_ ||
+          (g_processor_->RequestDataDescription(
+              data_description.GetPointer())) != 0) {
+         CatalystSoVisitor visitor(vsg);
+         so->ForEachDataMemberIn(vsg->vis_data_members_, &visitor);
+      }
+    }
+  }
+
+  /// Create the required vtk objects to visualize simulation objects.
+  void BuildSimObjectsVTKStructures(vtkNew<vtkCPDataDescription>& data_description) {
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    auto* param = Simulation::GetActive()->GetParam();
+
+    rm->ApplyOnAllElements([&](SimObject* so ){
+      ProcessSimObject(so, data_description);
+    });
+
+    if (vtk_so_grids_.size() != param->visualize_sim_objects_.size()) {
+      Log::Fatal("Visualize Simulation Objects",
+                 "One or more simulation objects were not selected for "
+                 "visualization, even though you registered them for "
+                 "visualization. Please make sure the names in the "
+                 "configuration file match the ones in the simulation.");
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // diffusion grids
+
+  /// Create and initialize a new instance of `VtkDiffusionGrid`.
+  VtkDiffusionGrid* NewVtkDiffusionGrid(const DiffusionGrid* dg, vtkNew<vtkCPDataDescription>& data_description) {
+    auto name = dg->GetSubstanceName();
+    auto* vdg = &(vtk_dgrids_[name]);
+    // initialize new vdg
+    vdg->data_ = vtkImageData::New();
+    vdg->name_ = name;
+
+    // get visualization config
+    auto* param = Simulation::GetActive()->GetParam();
+    const Param::VisualizeDiffusion* vd = nullptr;
+    for(auto& entry : param->visualize_diffusion_) {
+      if (entry.name_ == name) {
+        vd = &entry;
+        break;
+      }
+    }
+
+    // Add attribute data
+    if (vd->concentration_) {
+      vtkNew<vtkDoubleArray> concentration;
+      concentration->SetName("Substance Concentration");
+      vdg->concentration_ = concentration.GetPointer();
+      vdg->data_->GetPointData()->AddArray(concentration.GetPointer());
+    }
+    if (vd->gradient_) {
+      vtkNew<vtkDoubleArray> gradient;
+      gradient->SetName("Diffusion Gradient");
+      gradient->SetNumberOfComponents(3);
+      vdg->gradient_ = gradient.GetPointer();
+      vdg->data_->GetPointData()->AddArray(gradient.GetPointer());
+    }
+
+    data_description->AddInput(name.c_str());
+    data_description->GetInputDescriptionByName(name.c_str())->SetGrid(vdg->data_);
+
+    return vdg;
+  }
+
+  /// Get the right `VtkDiffusionGrid` data structure based on the diffusion
+  /// grid name. Creates a new one if no instance was found.
+  VtkDiffusionGrid* GetVtkDiffusionGrid(const DiffusionGrid* grid, vtkNew<vtkCPDataDescription>& data_description) {
+    // get vtk_so_grids_
+    auto search = vtk_dgrids_.find(grid->GetSubstanceName());
+    if (search != vtk_dgrids_.end()) {
+      return &(search->second);
+    } else {
+      return NewVtkDiffusionGrid(grid, data_description);
+    }
+  }
+
+  /// Sets the properties of the diffusion VTK grid structures
+  void ProcessDiffusionGrid(const DiffusionGrid* grid, vtkNew<vtkCPDataDescription>& data_description) {
+    auto* param = Simulation::GetActive()->GetParam();
+    auto name = grid->GetSubstanceName();
+
+    // get visualization config
+    const Param::VisualizeDiffusion* vd = nullptr;
+    for(auto& entry : param->visualize_diffusion_) {
+      if (entry.name_ == name) {
+        vd = &entry;
+      }
+    }
+
+    if (vd != nullptr) {
+      auto* vdg = GetVtkDiffusionGrid(grid, data_description);
+
+      // If we segfault at here it probably means that there is a problem
+      // with  the pipeline (either the C++ pipeline or Python pipeline)
+      // We do not need to RequestDataDescription in Export Mode, because
+      // we do not make use of Catalyst CoProcessing capabilities
+      if (exclusive_export_viz_ ||
+          (g_processor_->RequestDataDescription(
+              data_description.GetPointer())) != 0) {
+
+        auto num_boxes = grid->GetNumBoxesArray();
+        auto grid_dimensions = grid->GetDimensions();
+        auto box_length = grid->GetBoxLength();
+        auto total_boxes = grid->GetNumBoxes();
+
+        double origin_x = grid_dimensions[0];
+        double origin_y = grid_dimensions[2];
+        double origin_z = grid_dimensions[4];
+        vdg->data_->SetOrigin(origin_x, origin_y, origin_z);
+        vdg->data_->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
+        vdg->data_->SetSpacing(box_length, box_length, box_length);
+
+        if(vdg->concentration_) {
+          auto* co_ptr = const_cast<double*>(grid->GetAllConcentrations());
+          vdg->concentration_->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes), 1);
+        }
+        if(vdg->gradient_) {
+          auto gr_ptr = const_cast<double*>(grid->GetAllGradients());
+          vdg->gradient_->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3), 1);
+        }
+      }
+    }
+  }
+
+  /// Create the required vtk objects to visualize diffusion grids.
+  void BuildDiffusionGridVTKStructures(vtkNew<vtkCPDataDescription>& data_description) {
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    auto* param = Simulation::GetActive()->GetParam();
+
+    rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* grid ){
+      ProcessDiffusionGrid(grid, data_description);
+    });
+
+    if (vtk_dgrids_.size() != param->visualize_diffusion_.size()) {
+      Log::Fatal("Visualize diffusion grids",
+                 "One or more diffusion grids were not selected for "
+                 "visualization, even though you registered them for "
+                 "visualization. Please make sure the names in the "
+                 "configuration file match the ones in the simulation.");
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // generate files
+
   /// Helper function to write simulation objects to file. It loops through the
   /// vectors of VTK grid structures and calls the internal VTK writer methods
   ///
@@ -482,23 +441,23 @@ class CatalystAdaptor {
   ///
   void WriteToFile(size_t step) {
     auto* sim = Simulation::GetActive();
-    for (auto vtk_so : vtk_so_grids_) {
+    for (auto el : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
       auto filename =
-          Concat(sim->GetOutputDir(), "/", vtk_so.name, "-", step, ".pvtu");
+          Concat(sim->GetOutputDir(), "/", el.second.name_, "-", step, ".pvtu");
       cells_writer->SetFileName(filename.c_str());
-      cells_writer->SetInputData(vtk_so.data);
+      cells_writer->SetInputData(el.second.data_);
       cells_writer->Update();
     }
 
-    for (auto vtk_dg : vtk_dgrids_) {
+    for (auto& entry : vtk_dgrids_) {
       vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
 
-      const auto& substance_name = vtk_dg.name;
+      const auto& substance_name = entry.second.name_;
       auto filename =
           Concat(sim->GetOutputDir(), "/", substance_name, "-", step, ".pvti");
       dgrid_writer->SetFileName(filename.c_str());
-      dgrid_writer->SetInputData(vtk_dg.data);
+      dgrid_writer->SetInputData(entry.second.data_);
       dgrid_writer->Update();
     }
   }
@@ -594,13 +553,15 @@ class CatalystAdaptor {
   }
 };
 
-vtkCPProcessor* CatalystAdaptor<T>::g_processor_ = nullptr;
-
-constexpr const char* CatalystAdaptor<T>::kSimulationInfoJson;
-
-std::atomic<uint64_t> CatalystAdaptor<T>::counter_;
+}  // namespace bdm
 
 #else
+
+#include <string>
+#include <unordered_map>
+#include "core/shape.h"
+
+namespace bdm {
 
 /// False front (to ignore Catalyst in gtests)
 class CatalystAdaptor {
@@ -628,8 +589,8 @@ class CatalystAdaptor {
   static void GenerateParaviewState() {}
 };
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
-
 }  // namespace bdm
+
+#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
 #endif  // CORE_VISUALIZATION_CATALYST_ADAPTOR_H_
