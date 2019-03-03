@@ -18,12 +18,13 @@
 #include <chrono>
 #include <functional>
 #include <string>
-
-#include "core/visualization/catalyst_adaptor.h"
+#include <vector>
 
 namespace bdm {
 
+class SimObject;
 class SimulationBackup;
+class CatalystAdaptor;
 class BoundSpace;
 class DisplacementOp;
 class DiffusionOp;

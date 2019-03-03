@@ -16,7 +16,7 @@
 option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
-option(paraview  "Enable ParaView" OFF)
+option(paraview  "Enable ParaView" ON)
 
 # This file contains the build setup for simulation projects outside the
 # biodynamo repository

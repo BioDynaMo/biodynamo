@@ -38,8 +38,6 @@
 
 namespace bdm {
 
-const std::string SimObject::GetScalarTypeName() { return "Cell"; }
-
 SimObject::SimObject() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
 
 SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid)
