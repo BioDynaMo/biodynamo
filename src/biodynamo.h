@@ -25,6 +25,7 @@
 #include "core/grid.h"
 #include "core/model_initializer.h"
 #include "core/param/param.h"
+#include "core/param/custom_clo_parser.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/shape.h"

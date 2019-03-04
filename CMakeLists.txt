@@ -230,6 +230,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.cc)
@@ -240,6 +241,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
