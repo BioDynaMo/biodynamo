@@ -20,6 +20,8 @@ namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
+NeuronOrNeurite::~NeuronOrNeurite() {}
+
 SoPointer<NeuronOrNeurite> NeuronOrNeurite::GetNeuronOrNeuriteSoPtr() const {
   if (auto* neuron = As<NeuronSoma>()) {
     return neuron->template GetSoPtr<NeuronOrNeurite>();

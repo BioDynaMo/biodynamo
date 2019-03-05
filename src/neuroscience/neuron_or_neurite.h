@@ -55,6 +55,8 @@ class NeuronOrNeurite {
     return dynamic_cast<const T*>(this);
   }
 
+  virtual ~NeuronOrNeurite();
+
   SoPointer<NeuronOrNeurite> GetNeuronOrNeuriteSoPtr() const;
 
   bool IsNeuronSoma() const;
