@@ -161,6 +161,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     }
   }
 
+  SoUid GetUid() const override { return Base::GetUid(); }
+
   Shape GetShape() const override { return Shape::kCylinder; }
 
   /// Returns the data members that are required to visualize this simulation
@@ -656,21 +658,20 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
                                       &h_over_m, &has_neurite_neighbor](
         const SimObject* neighbor) {
       // if neighbor is a NeuriteElement
-      if (auto* neighbor_neurite = neighbor->As<NeuriteElement>()) {
+      auto* neighbor_neurite = neighbor->As<NeuriteElement>();
+      if (neighbor_neurite != nullptr) {
         // if it is a direct relative, or sister branch, we don't take it into
         // account
         if (this->GetDaughterLeft() == *neighbor_neurite ||
             this->GetDaughterRight() == *neighbor_neurite ||
             this->GetMother() == neighbor_neurite->GetMother() ||
-            (this->GetMother()->As<NeuriteElement>() &&
-             this->GetMother()->As<NeuriteElement>() == neighbor_neurite)) {
+            (this->GetMother() == *neighbor_neurite)) {
           return;
         }
       } else if (auto* neighbor_soma = neighbor->As<NeuronSoma>()) {
         // if neighbor is NeuronSoma
         // if it is a direct relative, we don't take it into account
-        if (this->GetMother()->As<NeuronSoma>() &&
-            this->GetMother()->As<NeuronSoma>() == neighbor_soma) {
+        if (this->GetMother() == *neighbor_soma) {
           return;
         }
       }
@@ -681,7 +682,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
       // hack: if the neighbour is a neurite, we need to reduce the force from
       // that neighbour in order to avoid kink behaviour
-      if (neighbor->As<NeuriteElement>() != nullptr) {
+      if (neighbor_neurite != nullptr) {
         force_from_neighbor = Math::ScalarMult(h_over_m, force_from_neighbor);
         has_neurite_neighbor = true;
       }
@@ -921,8 +922,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   // FIXME
   // const NeuronOrNeurite& GetMother() const;
-  NeuronOrNeurite* GetMother() { return mother_.Get(); }
-  const NeuronOrNeurite* GetMother() const { return mother_.Get(); }
+  SoPointer<NeuronOrNeurite> GetMother() { return mother_; }
+  const SoPointer<NeuronOrNeurite> GetMother() const { return mother_; }
   // FIXME inconsitent API GetMother and SetMother
   void SetMother(const SoPointer<NeuronOrNeurite>& mother) { mother_ = mother; }
 

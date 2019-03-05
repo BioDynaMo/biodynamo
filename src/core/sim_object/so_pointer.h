@@ -60,13 +60,9 @@ class SoPointer {
 
   bool operator==(const SoPointer& other) const { return uid_ == other.uid_; }
 
-  bool operator==(const TSimObject& other) const {
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    if (*this == nullptr) {
-      return false;
-    }
-    auto* so = dynamic_cast<const TSimObject*>(ctxt->GetConstSimObject(uid_));
-    return so == &other;
+  template <typename TSo>
+  bool operator==(const TSo& other) const {
+    return uid_ == other.GetUid();
   }
 
   bool operator!=(const TSimObject& other) const {

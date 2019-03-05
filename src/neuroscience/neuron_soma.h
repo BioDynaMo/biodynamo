@@ -71,6 +71,8 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   void EventHandler(const Event& event, SimObject* other1,
                     SimObject* other2 = nullptr) override;
 
+  SoUid GetUid() const override { return Base::GetUid(); }
+
   // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *
   // ***************************************************************************

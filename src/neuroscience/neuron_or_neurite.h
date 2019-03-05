@@ -57,6 +57,8 @@ class NeuronOrNeurite {
 
   virtual ~NeuronOrNeurite();
 
+  virtual SoUid GetUid() const = 0;
+
   SoPointer<NeuronOrNeurite> GetNeuronOrNeuriteSoPtr() const;
 
   bool IsNeuronSoma() const;
