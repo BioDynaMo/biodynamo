@@ -23,6 +23,7 @@
 #include "core/util/log.h"
 #include "core/util/math.h"
 #include "core/util/random.h"
+#include "core/util/type.h"
 #include "neuroscience/neurite_element.h"
 
 namespace bdm {
@@ -113,7 +114,7 @@ void DefaultForce::ForceBetweenSpheres(const SimObject* sphere_lhs,
 void DefaultForce::ForceOnACylinderFromASphere(
     const SimObject* cylinder, const SimObject* sphere,
     std::array<double, 4>* result) const {
-  auto* ne = cylinder->As<NeuriteElement>();
+  auto* ne = bdm_static_cast<const NeuriteElement*>(cylinder);
   auto proximal_end = ne->ProximalEnd();
   auto distal_end = ne->DistalEnd();
   auto axis = ne->GetSpringAxis();
@@ -221,8 +222,8 @@ void DefaultForce::ForceOnASphereFromACylinder(
 void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
                                          const SimObject* cylinder2,
                                          std::array<double, 4>* result) const {
-  auto* c1 = cylinder1->As<NeuriteElement>();
-  auto* c2 = cylinder2->As<NeuriteElement>();
+  auto* c1 = bdm_static_cast<const NeuriteElement*>(cylinder1);
+  auto* c2 = bdm_static_cast<const NeuriteElement*>(cylinder2);
   auto a = c1->ProximalEnd();
   auto b = c1->GetMassLocation();
   double d1 = c1->GetDiameter();

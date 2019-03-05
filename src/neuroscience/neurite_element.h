@@ -658,14 +658,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
                                       &h_over_m, &has_neurite_neighbor](
         const SimObject* neighbor) {
       // if neighbor is a NeuriteElement
-      auto* neighbor_neurite = neighbor->As<NeuriteElement>();
-      if (neighbor_neurite != nullptr) {
+      // use shape to determine if neighbor is a NeuriteElement
+      // this is much faster than using a dynamic_cast
+      if (neighbor->GetShape() == Shape::kCylinder) {
         // if it is a direct relative, or sister branch, we don't take it into
         // account
-        if (this->GetDaughterLeft() == *neighbor_neurite ||
-            this->GetDaughterRight() == *neighbor_neurite ||
-            this->GetMother() == neighbor_neurite->GetMother() ||
-            (this->GetMother() == *neighbor_neurite)) {
+        if (this->GetDaughterLeft() == *neighbor ||
+            this->GetDaughterRight() == *neighbor ||
+            this->GetMother() == bdm_static_cast<const NeuriteElement*>(neighbor)->GetMother() ||
+            (this->GetMother() == *neighbor)) {
           return;
         }
       } else if (auto* neighbor_soma = neighbor->As<NeuronSoma>()) {
@@ -682,7 +683,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
       // hack: if the neighbour is a neurite, we need to reduce the force from
       // that neighbour in order to avoid kink behaviour
-      if (neighbor_neurite != nullptr) {
+      if (neighbor->GetShape() == Shape::kCylinder) {
         force_from_neighbor = Math::ScalarMult(h_over_m, force_from_neighbor);
         has_neurite_neighbor = true;
       }
