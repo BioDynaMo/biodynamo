@@ -181,8 +181,12 @@ class SimObject {
     run_displacement_next_ts_ = run;
   }
 
-  void SetRunDisplacementForAllNextTs() {
-    run_displacement_for_all_next_ts_ = true;
+  bool GetRunDisplacementForAllNextTs() const {
+    return run_displacement_for_all_next_ts_;
+  }
+
+  void SetRunDisplacementForAllNextTs(bool value = true) {
+    run_displacement_for_all_next_ts_ = value;
   }
 
   void ApplyRunDisplacementForAllNextTs();
