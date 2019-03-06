@@ -35,6 +35,7 @@ class SimulationTest : public ::testing::Test {
       "backup_interval = 3600\n"
       "time_step = 0.0125\n"
       "max_displacement = 2.0\n"
+      "scheduling_batch_size = 123\n"
       "run_mechanical_interactions = false\n"
       "bound_space = true\n"
       "min_bound = -100\n"
@@ -93,6 +94,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(3600u, param->backup_interval_);
     EXPECT_EQ(0.0125, param->simulation_time_step_);
     EXPECT_EQ(2.0, param->simulation_max_displacement_);
+    EXPECT_EQ(123, param->scheduling_batch_size_);
     EXPECT_FALSE(param->run_mechanical_interactions_);
     EXPECT_TRUE(param->bound_space_);
     EXPECT_EQ(-100, param->min_bound_);

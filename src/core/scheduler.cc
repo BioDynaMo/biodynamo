@@ -108,7 +108,7 @@ void Scheduler::Execute(bool last_iteration) {
   Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
 
   // update all sim objects: run all CPU operations
-  rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject* so, SoHandle) {
+  rm->ApplyOnAllElementsParallelDynamic(param->scheduling_batch_size_, [&](SimObject* so, SoHandle) {
     sim->GetExecutionContext()->Execute(so, operations_);
   });
 
