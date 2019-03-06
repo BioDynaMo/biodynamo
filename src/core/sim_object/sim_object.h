@@ -167,8 +167,9 @@ class SimObject {
     return dynamic_cast<const T*>(this);
   }
 
-
   virtual void RunDiscretization();
+
+  void AssignNewUid();
 
   SoUid GetUid() const;
 
