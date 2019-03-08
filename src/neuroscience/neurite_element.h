@@ -486,7 +486,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   std::array<double, 3> ForceTransmittedFromDaugtherToMother(
       const NeuronOrNeurite& mother) {
     if (mother_ != mother) {
-      Fatal("NeuriteElement", "Given object is not the mother!");
+      // FIXME
+      // Fatal("NeuriteElement", "Given object is not the mother!");
+      std::cout << "Fatal(\"NeuriteElement\", \"Given object is not the mother!\")" << std::endl;
+      return {0, 0, 0};
     }
 
     // The inner tension is added to the external force that was computed
