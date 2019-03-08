@@ -460,17 +460,20 @@ class Grid {
   ///
   template <typename Lambda, typename SO>
   void ForEachNeighbor(const Lambda& lambda, const SO& query) const {
-    const auto& position = query.GetPosition();
-    auto idx = GetBoxIndex(position);
+    auto so_handle = query.GetSoHandle();
+    auto idx = query.GetBoxIdx();
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
     GetMooreBoxes(&neighbor_boxes, idx);
 
     NeighborIterator ni(neighbor_boxes);
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      if (*ni != query.GetSoHandle()) {
-        lambda(*ni);
+      SoHandle neighbor_handle = *ni;
+      if (neighbor_handle != so_handle) {
+        rm->ApplyOnElement(neighbor_handle,
+                           [&](auto&& sim_object) { lambda(&sim_object); });
       }
       ++ni;
     }

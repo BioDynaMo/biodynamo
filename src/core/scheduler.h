@@ -103,6 +103,8 @@ class Scheduler {
       }
     };
 
+    auto first_op = [](auto&& so) { so.UpdateRunDisplacement(); };
+    auto last_op = [](auto&& so) { so.ApplyRunDisplacementForAllNextTs(); };
     auto biology_module_op = [&](auto&& so) { so.RunBiologyModules(); };
     auto discretization_op = [&](auto&& so) { so.RunDiscretization(); };
 
@@ -113,11 +115,12 @@ class Scheduler {
     };
 
     // update all sim objects: run all CPU operations
-    rm->ApplyOnAllElementsParallelDynamic(1000, [&](auto&& so,
-                                                    const SoHandle&) {
-      sim->GetExecutionContext()->Execute(so, bound_space_op, biology_module_op,
-                                          displacement_op, discretization_op);
-    });
+    rm->ApplyOnAllElementsParallelDynamic(
+        1000, [&](auto&& so, const SoHandle&) {
+          sim->GetExecutionContext()->Execute(
+              so, first_op, bound_space_op, biology_module_op, displacement_op,
+              discretization_op, last_op);
+        });
 
     // update all sim objects: hardware accelerated operations
     if (param->run_mechanical_interactions_ && !displacement_.UseCpu()) {

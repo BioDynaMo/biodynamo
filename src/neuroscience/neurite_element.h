@@ -237,8 +237,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   NeuriteElementExt() {
     auto* param = Simulation_t::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
-    diameter_[kIdx] = param->neurite_default_diameter_;
-    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_[kIdx] = param->neurite_default_density_;
     spring_constant_[kIdx] = param->neurite_default_spring_constant_;
     adherence_[kIdx] = param->neurite_default_adherence_;
@@ -255,8 +255,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
       : Base(event, soma, new_oid) {
     auto* param = Simulation_t::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
-    diameter_[kIdx] = param->neurite_default_diameter_;
-    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_[kIdx] = param->neurite_default_density_;
     spring_constant_[kIdx] = param->neurite_default_spring_constant_;
     adherence_[kIdx] = param->neurite_default_adherence_;
@@ -287,12 +287,12 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     auto new_mass_location = Math::Add(new_begin_location, new_spring_axis);
 
     // set attributes of new neurite segment
-    diameter_[kIdx] = diameter;
+    SetDiameter(diameter);
     UpdateVolume();
-    spring_axis_[kIdx] = new_spring_axis;
+    SetSpringAxis(new_spring_axis);
 
     SetMassLocation(new_mass_location);
-    actual_length_[kIdx] = new_length;
+    SetActualLength(new_length);
     SetRestingLengthForDesiredTension(param->neurite_default_tension_);
     UpdateLocalCoordinateAxis();
 
@@ -315,8 +315,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
       : Base(event, mother, new_oid) {
     auto* param = Simulation_t::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
-    diameter_[kIdx] = param->neurite_default_diameter_;
-    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_[kIdx] = param->neurite_default_density_;
     spring_constant_[kIdx] = param->neurite_default_spring_constant_;
     adherence_[kIdx] = param->neurite_default_adherence_;
@@ -355,7 +355,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     UpdateLocalCoordinateAxis();  // (important so that x_axis_ is correct)
 
     // physics of tension :
-    actual_length_[kIdx] = length;
+    SetActualLength(length);
     SetRestingLengthForDesiredTension(param->neurite_default_tension_);
 
     // set local coordinate axis in the new branches
@@ -363,7 +363,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     UpdateLocalCoordinateAxis();
 
     // 2) creating the first daughter branch
-    diameter_[kIdx] = diameter;
+    SetDiameter(diameter);
     branch_order_[kIdx] = mother->GetBranchOrder() + 1;
 
     UpdateDependentPhysicalVariables();
@@ -411,6 +411,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   }
 
   void SetDiameter(double diameter) {
+    if (diameter > diameter_[kIdx]) {
+      Base::SetRunDisplacementForAllNextTs();
+    }
     diameter_[kIdx] = diameter;
     UpdateVolume();
   }
@@ -423,8 +426,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   }
 
   void SetPosition(const std::array<double, 3>& position) {
-    mass_location_[kIdx] =
-        Math::Add(position, Math::ScalarMult(0.5, spring_axis_[kIdx]));
+    SetMassLocation(
+        Math::Add(position, Math::ScalarMult(0.5, spring_axis_[kIdx])));
   }
 
   /// return end of neurite element position
@@ -434,6 +437,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
   void SetMassLocation(const std::array<double, 3>& mass_location) {
     mass_location_[kIdx] = mass_location;
+    Base::SetRunDisplacementForAllNextTs();
   }
 
   double GetAdherence() const { return adherence_[kIdx]; }
@@ -497,14 +501,14 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
       double new_actual_length = actual_length_[kIdx] - speed;
       double factor = new_actual_length / actual_length_[kIdx];
-      actual_length_[kIdx] = new_actual_length;
+      SetActualLength(new_actual_length);
       // cf removeproximalCylinder()
       resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] /
                               (tension_[kIdx] + spring_constant_[kIdx]);
-      spring_axis_[kIdx] = Math::ScalarMult(factor, spring_axis_[kIdx]);
+      SetSpringAxis(Math::ScalarMult(factor, spring_axis_[kIdx]));
 
-      mass_location_[kIdx] =
-          Math::Add(mother_[kIdx].OriginOf(Base::GetUid()), spring_axis_[kIdx]);
+      SetMassLocation(Math::Add(mother_[kIdx].OriginOf(Base::GetUid()),
+                                spring_axis_[kIdx]));
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeuronSoma()) {
       mother_[kIdx].RemoveDaughter(Base::GetSoPtr());
@@ -800,10 +804,10 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     // auto& relative_pos = mother_[kIdx].GetPosition();
     auto relative_ml =
         mother_[kIdx].OriginOf(Base::GetUid());  //  change to auto&&
-    spring_axis_[kIdx] = Math::Subtract(new_mass_location, relative_ml);
-    mass_location_[kIdx] = new_mass_location;
-    actual_length_[kIdx] =
-        std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
+    SetSpringAxis(Math::Subtract(new_mass_location, relative_ml));
+    SetMassLocation(new_mass_location);
+    SetActualLength(
+        std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx])));
     // process of elongation : setting tension to 0 increases the resting length
     SetRestingLengthForDesiredTension(0.0);
 
@@ -999,6 +1003,11 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
   // TODO(neurites) documentation
   void ApplyDisplacement(const std::array<double, 3>& displacement) {
+    // FIXME comparing doubles
+    if (displacement == std::array<double, 3>{0, 0, 0}) {
+      return;
+    }
+
     // move of our mass
     SetMassLocation(Math::Add(GetMassLocation(), displacement));
     // Recompute length, tension and re-center the computation node, and
@@ -1049,8 +1058,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
   /// Recomputes diameter after volume has changed.
   void UpdateDiameter() {
-    diameter_[kIdx] =
-        std::sqrt(4 / Math::kPi * volume_[kIdx] / actual_length_[kIdx]);
+    SetDiameter(
+        std::sqrt(4 / Math::kPi * volume_[kIdx] / actual_length_[kIdx]));
   }
 
   /// Recomputes volume, after diameter has been change.
@@ -1199,6 +1208,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
   /// Should not be used, since the actual length depends on the geometry.
   void SetActualLength(double actual_length) {
+    if (actual_length > actual_length_[kIdx]) {
+      Base::SetRunDisplacementForAllNextTs();
+    }
     actual_length_[kIdx] = actual_length;
   }
 
@@ -1214,6 +1226,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
   void SetSpringAxis(const std::array<double, 3>& axis) {
     spring_axis_[kIdx] = axis;
+    Base::SetRunDisplacementForAllNextTs();
   }
 
   double GetSpringConstant() const { return spring_constant_[kIdx]; }
@@ -1280,9 +1293,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// Otherwise we could have cylinders with big aL and rL = 0).\n
   void UpdateDependentPhysicalVariables() {
     auto relative_ml = mother_[kIdx].OriginOf(Base::GetUid());
-    spring_axis_[kIdx] = Math::Subtract(mass_location_[kIdx], relative_ml);
-    actual_length_[kIdx] =
-        std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx]));
+    SetSpringAxis(Math::Subtract(mass_location_[kIdx], relative_ml));
+    SetActualLength(
+        std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx])));
     if (std::abs(actual_length_[kIdx] - resting_length_[kIdx]) > 1e-13) {
       tension_[kIdx] = spring_constant_[kIdx] *
                        (actual_length_[kIdx] - resting_length_[kIdx]) /
@@ -1340,7 +1353,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     y_axis_[kIdx] = rhs.GetYAxis();
     z_axis_[kIdx] = rhs.GetZAxis();
 
-    spring_axis_[kIdx] = rhs.GetSpringAxis();
+    SetSpringAxis(rhs.GetSpringAxis());
     branch_order_[kIdx] = rhs.GetBranchOrder();
     spring_constant_[kIdx] = rhs.GetSpringConstant();
     // TODO(neurites) what about actual length, tension and resting_length_ ??
@@ -1430,8 +1443,10 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   // resolved
   /// position_ is middle point of cylinder_
   /// mass_location_ is distal end of the cylinder
+  /// NB: Use setter and don't assign values directly
   vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
   vec<double> volume_ = {{}};
+  /// NB: Use setter and don't assign values directly
   vec<double> diameter_ = {{}};
   vec<double> density_ = {{}};
   vec<double> adherence_ = {{}};
@@ -1464,9 +1479,11 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
   /// from the attachment point to the mass location
   /// (proximal -> distal).
+  /// NB: Use setter and don't assign values directly
   vec<std::array<double, 3>> spring_axis_ = {{0, 0, 0}};
 
   /// Real length of the PhysicalCylinder (norm of the springAxis).
+  /// NB: Use setter and don't assign values directly
   vec<double> actual_length_ = {{}};
 
   /// Tension in the cylinder spring.
@@ -1516,9 +1533,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     // and want to
     // compute restingLength, and not the opposite...)
     // T = k*(A-R)/R --> R = k*A/(T+K)
-    spring_axis_[kIdx] = Math::Subtract(mass_location_[kIdx],
-                                        mother_[kIdx].OriginOf(Base::GetUid()));
-    actual_length_[kIdx] = Math::Norm(spring_axis_[kIdx]);
+    SetSpringAxis(Math::Subtract(mass_location_[kIdx],
+                                 mother_[kIdx].OriginOf(Base::GetUid())));
+    SetActualLength(Math::Norm(spring_axis_[kIdx]));
     resting_length_[kIdx] = spring_constant_[kIdx] * actual_length_[kIdx] /
                             (tension_[kIdx] + spring_constant_[kIdx]);
     // .... and volume_
@@ -1555,8 +1572,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   void InitializeSplitOrBranching(const TEvent& event, TNeuriteElement* other) {
     auto* param = Simulation_t::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
-    diameter_[kIdx] = param->neurite_default_diameter_;
-    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_[kIdx] = param->neurite_default_density_;
     spring_constant_[kIdx] = param->neurite_default_spring_constant_;
     adherence_[kIdx] = param->neurite_default_adherence_;
@@ -1591,8 +1608,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
                                           TNeuriteElement* mother) {
     auto* param = Simulation_t::GetActive()->GetParam();
     tension_[kIdx] = param->neurite_default_tension_;
-    diameter_[kIdx] = param->neurite_default_diameter_;
-    actual_length_[kIdx] = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_[kIdx] = param->neurite_default_density_;
     spring_constant_[kIdx] = param->neurite_default_spring_constant_;
     adherence_[kIdx] = param->neurite_default_adherence_;
@@ -1629,7 +1646,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
     branch_order_[kIdx] = mother->GetBranchOrder() + 1;
 
-    diameter_[kIdx] = diameter;
+    SetDiameter(diameter);
 
     // correct physical values (has to be after family relations
     UpdateDependentPhysicalVariables();

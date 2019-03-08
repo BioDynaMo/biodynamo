@@ -251,13 +251,16 @@ TEST(SimObjectUtilTest, ForEachDataMember) {
     if (dm_name != "neurites_" && dm_name != "position_" &&
         dm_name != "diameter_" && dm_name != "biology_modules_" &&
         dm_name != "uid_" && dm_name != "box_idx_" &&
+        dm_name != "run_displacement_" &&
+        dm_name != "run_displacement_for_all_next_ts_" &&
+        dm_name != "run_displacement_next_ts_" &&
         dm_name != "run_bm_loop_idx_" && dm_name != "numa_node_") {
       FAIL() << "Data member " << dm_name << "does not exist" << std::endl;
     }
   };
 
   neurons.ForEachDataMember(verify);
-  EXPECT_EQ(8u, counter);
+  EXPECT_EQ(11u, counter);
 }
 
 TEST(SimObjectUtilTest, ForEachDataMemberIn) {

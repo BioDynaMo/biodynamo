@@ -636,7 +636,9 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   using SimObjectBaseExt = typename SimObjectImpl<T, U>::type;
 
   BDM_SIM_OBJECT_HEADER(SimObject, SimObjectBase, 1, uid_, box_idx_,
-                        biology_modules_, run_bm_loop_idx_, numa_node_);
+                        biology_modules_, run_bm_loop_idx_, run_displacement_,
+                        run_displacement_for_all_next_ts_,
+                        run_displacement_next_ts_, numa_node_);
 
  public:
   SimObjectExt() : Base() { uid_[kIdx] = SoUidGenerator::Get()->NewSoUid(); }
@@ -717,6 +719,34 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
 
   void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
+
+  void SetRunDisplacementNextTimestep(bool run) const {
+    const_cast<SimObjectExt *>(this)->run_displacement_next_ts_[kIdx] = run;
+  }
+
+  void SetRunDisplacementForAllNextTs() {
+    run_displacement_for_all_next_ts_[kIdx] = true;
+  }
+
+  void ApplyRunDisplacementForAllNextTs() {
+    if (!run_displacement_for_all_next_ts_[kIdx]) {
+      return;
+    }
+    run_displacement_for_all_next_ts_[kIdx] = false;
+    run_displacement_next_ts_[kIdx] = true;
+    // FIXME don't use grid, but exec ctxt
+    auto *grid = Simulation_t::GetActive()->GetGrid();
+    grid->ForEachNeighbor(
+        [](auto *neighbor) { neighbor->SetRunDisplacementNextTimestep(true); },
+        *this);
+  }
+
+  void UpdateRunDisplacement() {
+    run_displacement_[kIdx] = run_displacement_next_ts_[kIdx];
+    run_displacement_next_ts_[kIdx] = false;
+  }
+
+  bool RunDisplacement() const { return run_displacement_[kIdx]; }
 
   // TODO(ahmad) this only works for SOA backend add check for SOA
   // used only for cuda and opencl code
@@ -803,6 +833,8 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
 
   template <typename TEvent, typename TOther>
   void EventHandler(const TEvent &event, TOther *other) {
+    // Run displacement if a new sim object has been created with an event.
+    SetRunDisplacementForAllNextTs();
     // call event handler for biology modules
     auto *other_bms = &(other->biology_modules_[other->kIdx]);
     BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), other_bms);
@@ -810,6 +842,8 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
 
   template <typename TEvent, typename TLeft, typename TRight>
   void EventHandler(const TEvent &event, TLeft *left, TRight *right) {
+    // Run displacement if a new sim object has been created with an event.
+    SetRunDisplacementForAllNextTs();
     // call event handler for biology modules
     auto *left_bms = &(left->biology_modules_[left->kIdx]);
     auto *right_bms = &(right->biology_modules_[right->kIdx]);
@@ -831,6 +865,10 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   /// Due to problems with restoring this member for the SOA data layout, it is
   /// not ignored for ROOT I/O.
   vec<uint32_t> run_bm_loop_idx_ = {{0}};
+
+  vec<bool> run_displacement_ = {{true}};                   //!
+  vec<bool> run_displacement_for_all_next_ts_ = {{false}};  //!
+  vec<bool> run_displacement_next_ts_ = {{true}};           //!
 
   /// This data member holds information on which NUMA node this sim object is
   /// stored.
