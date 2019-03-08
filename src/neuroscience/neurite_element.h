@@ -66,8 +66,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   NeuriteElement() {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
-    diameter_ = param->neurite_default_diameter_;
-    actual_length_ = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_ = param->neurite_default_density_;
     spring_constant_ = param->neurite_default_spring_constant_;
     adherence_ = param->neurite_default_adherence_;
@@ -807,11 +807,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// Recomputes diameter after volume has changed.
   void UpdateDiameter() {
-    double new_diameter = std::sqrt(4 / Math::kPi * volume_ / actual_length_);
-    if(new_diameter > diameter_) {
-      SetRunDisplacementForAllNextTs();
-    }
-    diameter_ = new_diameter;
+    SetDiameter(std::sqrt(4 / Math::kPi * volume_ / actual_length_));
   }
 
   /// Recomputes volume, after diameter has been changed.
@@ -1112,7 +1108,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   std::array<double, 3> mass_location_ = {{0.0, 0.0, 0.0}};
   double volume_;
   /// NB: Use setter and don't assign values directly
-  double diameter_;
+  double diameter_ = 1;
   double density_;
   double adherence_;
   /// First axis of the local coordinate system equal to cylinder axis
@@ -1149,7 +1145,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// Real length of the PhysicalCylinder (norm of the springAxis).
   /// NB: Use setter and don't assign values directly
-  double actual_length_;
+  double actual_length_ = 1;
 
   /// Tension in the cylinder spring.
   double tension_;
@@ -1243,8 +1239,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
                                      double phi, double theta) {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
-    diameter_ = param->neurite_default_diameter_;
-    actual_length_ = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_ = param->neurite_default_density_;
     spring_constant_ = param->neurite_default_spring_constant_;
     adherence_ = param->neurite_default_adherence_;
@@ -1271,12 +1267,12 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto new_mass_location = Math::Add(new_begin_location, new_spring_axis);
 
     // set attributes of new neurite segment
-    diameter_ = diameter;
+    SetDiameter(diameter);
     UpdateVolume();
     SetSpringAxis(new_spring_axis);
 
     SetMassLocation(new_mass_location);
-    actual_length_ = new_length;
+    SetActualLength(new_length);
     SetRestingLengthForDesiredTension(param->neurite_default_tension_);
     UpdateLocalCoordinateAxis();
 
@@ -1290,8 +1286,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
                                     const std::array<double, 3>& direction) {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
-    diameter_ = param->neurite_default_diameter_;
-    actual_length_ = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_ = param->neurite_default_density_;
     spring_constant_ = param->neurite_default_spring_constant_;
     adherence_ = param->neurite_default_adherence_;
@@ -1315,7 +1311,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     UpdateLocalCoordinateAxis();  // (important so that x_axis_ is correct)
 
     // physics of tension :
-    actual_length_ = length;
+    SetActualLength(length);
     SetRestingLengthForDesiredTension(param->neurite_default_tension_);
 
     // set local coordinate axis in the new branches
@@ -1323,7 +1319,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     UpdateLocalCoordinateAxis();
 
     // 2) creating the first daughter branch
-    diameter_ = diameter;
+    SetDiameter(diameter);
     branch_order_ = mother->GetBranchOrder() + 1;
 
     UpdateDependentPhysicalVariables();
@@ -1337,8 +1333,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
                                   double distal_portion) {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
-    diameter_ = param->neurite_default_diameter_;
-    actual_length_ = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_ = param->neurite_default_density_;
     spring_constant_ = param->neurite_default_spring_constant_;
     adherence_ = param->neurite_default_adherence_;
@@ -1370,8 +1366,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       const std::array<double, 3>& direction) {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
-    diameter_ = param->neurite_default_diameter_;
-    actual_length_ = param->neurite_default_actual_length_;
+    SetDiameter(param->neurite_default_diameter_);
+    SetActualLength(param->neurite_default_actual_length_);
     density_ = param->neurite_default_density_;
     spring_constant_ = param->neurite_default_spring_constant_;
     adherence_ = param->neurite_default_adherence_;
@@ -1404,7 +1400,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
     branch_order_ = mother->GetBranchOrder() + 1;
 
-    diameter_ = diameter;
+    SetDiameter(diameter);
 
     // correct physical values (has to be after family relations
     UpdateDependentPhysicalVariables();

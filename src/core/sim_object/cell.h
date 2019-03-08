@@ -216,8 +216,10 @@ class Cell : public SimObject {
   void SetAdherence(double adherence) { adherence_ = adherence; }
 
   void SetDiameter(double diameter) override {
+    if (diameter > diameter_) {
+      SetRunDisplacementForAllNextTs();
+    }
     diameter_ = diameter;
-    SetRunDisplacementForAllNextTs();
     UpdateVolume();
   }
 
@@ -252,8 +254,7 @@ class Cell : public SimObject {
 
   void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    diameter_ = std::cbrt(volume_ * 6 / Math::kPi);
-    SetRunDisplacementForAllNextTs();
+    SetDiameter(std::cbrt(volume_ * 6 / Math::kPi));
   }
 
   void UpdateVolume() {
