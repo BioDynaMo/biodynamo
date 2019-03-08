@@ -15,6 +15,7 @@
 #ifndef CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -90,8 +91,8 @@ class InPlaceExecutionContext {
     auto* grid = Simulation<TCTParam>::GetActive()->GetGrid();
     auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
     if (nb_mutex_builder != nullptr) {
-      auto mutex = nb_mutex_builder->GetMutex(so.GetBoxIdx());
-      std::lock_guard<decltype(mutex)> guard(mutex);
+      auto nb_mutex = nb_mutex_builder->GetMutex(so.GetBoxIdx());
+      std::lock_guard<decltype(nb_mutex)> guard(nb_mutex);
       ExecuteInternal(so, first_op, other_ops...);
     } else {
       ExecuteInternal(so, first_op, other_ops...);
@@ -107,6 +108,7 @@ class InPlaceExecutionContext {
   typename std::enable_if<std::is_same<TBackend, Soa>::value,
                           typename TScalarSo::template Self<SoaRef>>::type
   New(Args... args) {
+    std::lock_guard<AtomicMutex> guard(mutex_);
     TScalarSo so(std::forward<Args>(args)...);
     auto uid = so.GetUid();
     new_sim_objects_.push_back(so);
@@ -117,6 +119,7 @@ class InPlaceExecutionContext {
   typename std::enable_if<std::is_same<TBackend, Scalar>::value,
                           TScalarSo&>::type
   New(Args... args) {
+    std::lock_guard<AtomicMutex> guard(mutex_);
     TScalarSo so(std::forward<Args>(args)...);
     auto uid = so.GetUid();
     new_sim_objects_.push_back(so);
@@ -139,13 +142,24 @@ class InPlaceExecutionContext {
       SoUid uid,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
-    // check if the uid corresponds to a new object not yet in the Rm
     if (new_sim_objects_.Contains(uid)) {
       return new_sim_objects_.template GetSimObject<TSo>(uid);
-    } else {
-      auto* rm = TSimulation::GetActive()->GetResourceManager();
-      return rm->template GetSimObject<TSo>(uid);
     }
+
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    if (rm->Contains(uid)) {
+      return rm->template GetSimObject<TSo>(uid);
+    } else {
+      // sim object must be cached in another InPlaceExecutionContext
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
+        std::lock_guard<AtomicMutex> guard(mutex_);
+        if (ctxt->new_sim_objects_.Contains(uid)) {
+          return ctxt->new_sim_objects_.template GetSimObject<TSo>(uid);
+        }
+      }
+    }
+    Log::Fatal("GetSimObject", Concat("Could not find object with uid: ", uid));
   }
 
   template <typename TSo, typename TSimBackend = Backend,
@@ -155,10 +169,22 @@ class InPlaceExecutionContext {
                         std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
     if (new_sim_objects_.Contains(uid)) {
       return new_sim_objects_.template GetSimObject<TSo>(uid);
-    } else {
-      auto* rm = TSimulation::GetActive()->GetResourceManager();
-      return rm->template GetSimObject<TSo>(uid);
     }
+
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    if (rm->Contains(uid)) {
+      return rm->template GetSimObject<TSo>(uid);
+    } else {
+      // sim object must be cached in another InPlaceExecutionContext
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
+        std::lock_guard<AtomicMutex> guard(mutex_);
+        if (ctxt->new_sim_objects_.Contains(uid)) {
+          return ctxt->new_sim_objects_.template GetSimObject<TSo>(uid);
+        }
+      }
+    }
+    Log::Fatal("GetSimObject", Concat("Could not find object with uid: ", uid));
   }
 
   template <typename TSo, typename TSimBackend = Backend,
@@ -193,6 +219,23 @@ class InPlaceExecutionContext {
   }
 
  private:
+  class AtomicMutex {
+   public:
+    AtomicMutex() {}
+
+    void lock() {  // NOLINT
+      while (mutex_.test_and_set(std::memory_order_acquire)) {
+      }
+    }
+
+    void unlock() {  // NOLINT
+      mutex_.clear(std::memory_order_release);
+    }
+
+   private:
+    std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
+  };
+
   /// Contains unique ids of sim objects that will be removed at the end of each
   /// iteration.
   std::vector<SoUid> remove_;
@@ -201,6 +244,9 @@ class InPlaceExecutionContext {
   /// to the main ResourceManager. Using a ResourceManager adds
   /// some memory overhead, but avoids code duplication.
   ResourceManager<TCTParam> new_sim_objects_;
+
+  /// prevent race conditions for cached SimObjects
+  AtomicMutex mutex_;
 
   /// Execute a single operation on a simulation object
   template <typename TSo, typename TFirstOp>
