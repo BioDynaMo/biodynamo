@@ -833,8 +833,9 @@ class ResourceManager {
       this->so_storage_location_[so.GetUid()] = so.GetSoHandle();
     });
 
-    // TODO(lukas) do we need this? we don't change the scheduling anymore
-    thread_info_.Renew();
+    // FIXME
+    // // TODO(lukas) do we need this? we don't change the scheduling anymore
+    // thread_info_.Renew();
   }
 
   /// NB: This method is not thread-safe! This function might invalidate
