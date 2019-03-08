@@ -734,11 +734,16 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
     }
     run_displacement_for_all_next_ts_[kIdx] = false;
     run_displacement_next_ts_[kIdx] = true;
-    // FIXME don't use grid, but exec ctxt
-    auto *grid = Simulation_t::GetActive()->GetGrid();
-    grid->ForEachNeighbor(
-        [](auto *neighbor) { neighbor->SetRunDisplacementNextTimestep(true); },
-        *this);
+    auto *ctxt = Simulation_t::GetActive()->GetExecutionContext();
+    ctxt->ForEachNeighbor(
+        [this](auto *neighbor, double squared_distance) {
+          double distance =
+              this->ThisMD()->GetDiameter() + neighbor->GetDiameter();
+          if (squared_distance < distance * distance) {
+            neighbor->SetRunDisplacementNextTimestep(true);
+          }
+        },
+        *ThisMD());
   }
 
   void UpdateRunDisplacement() {

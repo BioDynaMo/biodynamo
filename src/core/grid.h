@@ -472,8 +472,13 @@ class Grid {
       // Do something with neighbor object
       SoHandle neighbor_handle = *ni;
       if (neighbor_handle != so_handle) {
-        rm->ApplyOnElement(neighbor_handle,
-                           [&](auto&& sim_object) { lambda(&sim_object); });
+        const auto& position = query.GetPosition();
+        rm->ApplyOnElement(neighbor_handle, [&, this](auto&& sim_object) {
+          const auto& neighbor_position = sim_object.GetPosition();
+          double squared_distance =
+              this->SquaredEuclideanDistance(position, neighbor_position);
+          lambda(&sim_object, squared_distance);
+        });
       }
       ++ni;
     }

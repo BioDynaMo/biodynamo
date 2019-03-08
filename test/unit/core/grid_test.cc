@@ -144,6 +144,8 @@ void RunUpdateGridTest(Simulation<>* simulation) {
   EXPECT_EQ(expected_61, neighbors[61]);
 }
 
+// TODO(lukas) Add tests for Grid::ForEachNeighbor
+
 TEST(GridTest, UpdateGrid) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();

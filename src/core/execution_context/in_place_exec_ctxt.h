@@ -18,6 +18,7 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <utility>
 #include <vector>
 
 #include "core/container/fixed_size_vector.h"
@@ -93,8 +94,10 @@ class InPlaceExecutionContext {
     if (nb_mutex_builder != nullptr) {
       auto nb_mutex = nb_mutex_builder->GetMutex(so.GetBoxIdx());
       std::lock_guard<decltype(nb_mutex)> guard(nb_mutex);
+      neighbor_cache_.clear();
       ExecuteInternal(so, first_op, other_ops...);
     } else {
+      neighbor_cache_.clear();
       ExecuteInternal(so, first_op, other_ops...);
     }
   }
@@ -127,13 +130,55 @@ class InPlaceExecutionContext {
   }
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
-  /// Could be used to cache the results.
+  template <typename TLambda, typename TSo, typename TSimulation = Simulation<>>
+  void ForEachNeighbor(const TLambda& lambda, const TSo& query) {
+    // use values in cache
+    if (neighbor_cache_.size() != 0) {
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      for (auto& pair : neighbor_cache_) {
+        rm->ApplyOnElement(pair.first, [&](auto&& sim_object) {
+          lambda(&sim_object, pair.second);
+        });
+      }
+      return;
+    }
+
+    auto* grid = TSimulation::GetActive()->GetGrid();
+    auto for_each = [&, this](auto* so, double squared_distance) {
+      this->neighbor_cache_.push_back(
+          std::make_pair(so->GetSoHandle(), squared_distance));
+      lambda(so, squared_distance);
+    };
+
+    grid->template ForEachNeighbor(for_each, query);
+  }
+
+  /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
   template <typename TLambda, typename TSo, typename TSimulation = Simulation<>>
   void ForEachNeighborWithinRadius(const TLambda& lambda, const TSo& query,
                                    double squared_radius) {
+    // use values in cache
+    if (neighbor_cache_.size() != 0) {
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      for (auto& pair : neighbor_cache_) {
+        if (pair.second < squared_radius) {
+          rm->ApplyOnElement(pair.first,
+                             [&](auto&& sim_object) { lambda(&sim_object); });
+        }
+      }
+      return;
+    }
+
     auto* grid = TSimulation::GetActive()->GetGrid();
-    return grid->template ForEachNeighborWithinRadius(lambda, query,
-                                                      squared_radius);
+    auto for_each = [&, this](auto* so, double squared_distance) {
+      this->neighbor_cache_.push_back(
+          std::make_pair(so->GetSoHandle(), squared_distance));
+      if (squared_distance < squared_radius) {
+        lambda(so);
+      }
+    };
+
+    grid->template ForEachNeighbor(for_each, query);
   }
 
   template <typename TSo, typename TSimBackend = Backend,
@@ -248,6 +293,8 @@ class InPlaceExecutionContext {
   /// prevent race conditions for cached SimObjects
   AtomicMutex mutex_;
 
+  std::vector<std::pair<SoHandle, double>> neighbor_cache_;
+
   /// Execute a single operation on a simulation object
   template <typename TSo, typename TFirstOp>
   void ExecuteInternal(TSo&& so, TFirstOp first_op) {
@@ -262,6 +309,8 @@ class InPlaceExecutionContext {
     ExecuteInternal(so, other_ops...);
   }
 };
+
+// TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*
 
 }  // namespace bdm
 
