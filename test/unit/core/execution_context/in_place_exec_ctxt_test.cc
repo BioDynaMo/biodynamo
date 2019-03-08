@@ -167,7 +167,6 @@ TEST(InPlaceExecutionContext, Execute) {
 TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
   Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
-  auto* ctxt = sim.GetExecutionContext();
 
   // create cells
   auto construct = [](const std::array<double, 3>& position) {
@@ -198,14 +197,20 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
       non_const_nb->SetDiameter(d1 + 1);
       nb_counter++;
     };
+    // ctxt must be obtained inside the lambda, otherwise we always get the
+    // one corresponding to the master thread
     auto* ctxt = sim.GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(nb_lambda, *so, 100);
 #pragma omp critical
     num_neighbors[so->GetUid()] = nb_counter;
   };
 
-  rm->ApplyOnAllElementsParallel(
-      [&](SimObject* so) { ctxt->Execute(so, {op}); });
+  rm->ApplyOnAllElementsParallel([&](SimObject* so) {
+    // ctxt must be obtained inside the lambda, otherwise we always get the
+    // one corresponding to the master thread
+    auto* ctxt = sim.GetExecutionContext();
+    ctxt->Execute(so, {op});
+  });
 
   rm->ApplyOnAllElements([&](SimObject* so) {
     // expected diameter: initial value + num_neighbors + 1
