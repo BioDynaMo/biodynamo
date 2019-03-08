@@ -161,7 +161,6 @@ struct ModelInitializer {
   /// @param[in]  decay_constant   The decay constant
   /// @param[in]  resolution       The resolution of the diffusion grid
   ///
-  template <typename TSimulation = Simulation>
   static void DefineSubstance(size_t substance_id, std::string substance_name,
                               double diffusion_coeff, double decay_constant,
                               int resolution = 10) {
@@ -174,7 +173,7 @@ struct ModelInitializer {
     rm->AddDiffusionGrid(d_grid);
   }
 
-  template <typename TSimulation = Simulation, typename F>
+  template <typename F>
   static void InitializeSubstance(size_t substance_id,
                                   std::string substance_name, F function) {
     auto* sim = Simulation::GetActive();

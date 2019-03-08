@@ -291,7 +291,7 @@ This is of course just an example of what you can do with the threshold filters.
 We now have all we want to visualise our modelling in the best conditions, but this modelling itself is a bit limited. We should add some movements to it as well as a new mechanism to complexify cell division.
 To add cell movement, we will modify the `Run()` method of our biology module `GrowthModule`, and use the function `UpdatePosition()`. To generate the direction's random numbers we will again use the `Uniform()` function which allow us to generate a random number between two specified numbers. First, we need to add `TSimulation` to the template and to define the random engine.  
 ``` C++
-template <typename T, typename TSimulation = Simulation>
+template <typename T>  // FIXME Update
 void Run(T* cell) {
   auto* random = Simulation::GetActive()->GetRandom();
 ```
