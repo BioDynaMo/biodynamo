@@ -174,7 +174,7 @@ void Scheduler::Initialize() {
   }
 
   if (!is_gpu_environment_initialized_ && param->use_gpu_) {
-    InitializeGPUEnvironment<>();
+    InitializeGPUEnvironment();
     is_gpu_environment_initialized_ = true;
   }
 

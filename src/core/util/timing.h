@@ -40,7 +40,7 @@ class Timing {
     return millis.count();
   }
 
-  template <typename TFunctor, typename TSimulation = Simulation>
+  template <typename TFunctor>
   static void Time(const std::string& description, TFunctor&& f) {
     static bool use_timer_ = Simulation::GetActive()->GetParam()->statistics_;
     if (use_timer_) {

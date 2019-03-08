@@ -23,7 +23,6 @@ namespace bdm {
 // Returns 0 if the cell locations within a subvolume of the total system,
 // comprising approximately target_n cells, are arranged as clusters, and 1
 // otherwise.
-template <typename TSimulation = Simulation>
 static bool GetCriterion(double spatial_range, int target_n) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
