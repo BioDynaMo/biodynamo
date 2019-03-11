@@ -16,6 +16,7 @@ FROM centos:7
 
 # lsb-release and lsb-core required to determine operating system
 # man required by ROOT
+# mesa-dri-drivers: OpenGl driver (software renderer)
 RUN yum update -y && yum install -y \
   git \
   sudo \
@@ -23,7 +24,8 @@ RUN yum update -y && yum install -y \
   redhat-lsb-core \
   man \
   wget \
-  xorg-x11-server-Xvfb
+  xorg-x11-server-Xvfb \
+  mesa-dri-drivers
 
 RUN git config --system user.name "Test User" && \
     git config --system user.email user@test.com
@@ -44,3 +46,7 @@ USER testuser
 # preserve the environment variable BDM_LOCAL_LFS when calling scripts with
 # sudo
 RUN echo "Defaults env_keep += \"BDM_LOCAL_LFS\"" | sudo tee -a /etc/sudoers
+
+# the OpenGL capabilities can be incorrectly detected -> override version
+# https://python.develop-bugs.com/article/10118323/paraview+needs+higher+OpenGL+in+Mesa
+ENV MESA_GL_VERSION_OVERRIDE=3.3

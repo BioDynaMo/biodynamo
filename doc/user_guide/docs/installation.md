@@ -43,8 +43,5 @@ This will list all files you have that are not present within the master branch,
 ## Supported platforms
 
 *  **Ubuntu 16.04 (recommended)**, 18.04
+*  CentOS 7.6.1810
 *  Mac OSX
-
-### Experimental
-
-*  CentOS 7.5.1804 (no ParaView support at the moment)
