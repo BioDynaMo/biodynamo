@@ -725,7 +725,12 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   std::array<double, 3> ForceTransmittedFromDaugtherToMother(
       const NeuriteOrNeuron& mother) {
     if (mother_[kIdx] != mother) {
-      Fatal("NeuriteElement", "Given object is not the mother!");
+      // FIXME
+      // Fatal("NeuriteElement", "Given object is not the mother!");
+      std::cout
+          << "Fatal(\"NeuriteElement\", \"Given object is not the mother!\")"
+          << std::endl;
+      return {0, 0, 0};
     }
 
     // The inner tension is added to the external force that was computed
