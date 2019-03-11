@@ -724,8 +724,12 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
     const_cast<SimObjectExt *>(this)->run_displacement_next_ts_[kIdx] = run;
   }
 
-  void SetRunDisplacementForAllNextTs() {
-    run_displacement_for_all_next_ts_[kIdx] = true;
+  bool GetRunDisplacementForAllNextTs() const {
+    return run_displacement_for_all_next_ts_[kIdx];
+  }
+
+  void SetRunDisplacementForAllNextTs(bool value = true) {
+    run_displacement_for_all_next_ts_[kIdx] = value;
   }
 
   void ApplyRunDisplacementForAllNextTs() {
