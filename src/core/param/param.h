@@ -87,6 +87,14 @@ struct Param {
   ///     max_displacement = 3.0
   double simulation_max_displacement_ = 3.0;
 
+  /// Batch size used by the `Scheduler` to iterate over simulation objects\n
+  /// Default value: `1000`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     scheduling_batch_size = 1000
+  uint64_t scheduling_batch_size_ = 1000;
+
   /// Calculate mechanical interactions between simulation objects.\n
   /// Default value: `true`\n
   /// TOML config file:

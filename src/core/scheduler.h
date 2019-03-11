@@ -116,7 +116,7 @@ class Scheduler {
 
     // update all sim objects: run all CPU operations
     rm->ApplyOnAllElementsParallelDynamic(
-        1000, [&](auto&& so, const SoHandle&) {
+        param->scheduling_batch_size_, [&](auto&& so, const SoHandle&) {
           sim->GetExecutionContext()->Execute(
               so, first_op, bound_space_op, biology_module_op, displacement_op,
               discretization_op, last_op);

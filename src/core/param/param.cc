@@ -29,6 +29,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(simulation_time_step_, "simulation.time_step");
   BDM_ASSIGN_CONFIG_VALUE(simulation_max_displacement_,
                           "simulation.max_displacement");
+  BDM_ASSIGN_CONFIG_VALUE(scheduling_batch_size_,
+                          "simulation.scheduling_batch_size");
   BDM_ASSIGN_CONFIG_VALUE(run_mechanical_interactions_,
                           "simulation.run_mechanical_interactions");
   BDM_ASSIGN_CONFIG_VALUE(bound_space_, "simulation.bound_space");
