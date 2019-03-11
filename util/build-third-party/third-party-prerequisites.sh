@@ -17,7 +17,7 @@
 
 if [ `uname` = "Linux" ]; then
   BDM_OS=$(DetectOs)
-  if [ $BDM_OS = "centos-7.5.1804" ]; then
+  if [ $BDM_OS = "centos-7.6.1810" ]; then
     #  root required packages
     sudo yum install -y git cmake binutils \
       libX11-devel libXpm-devel libXft-devel libXext-devel
@@ -29,12 +29,12 @@ if [ `uname` = "Linux" ]; then
       libxml2-devel gsl-static || true
 
     sudo yum install -y libXt-devel freeglut3-devel
-   
-    sudo yum install -y centos-release-scl 
+
+    sudo yum install -y centos-release-scl
     sudo yum install -y devtoolset-7-gcc*
     export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:$LD_LIBRARY_PATH
     export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
-    
+
     CC=gcc
     CXX=g++
   else

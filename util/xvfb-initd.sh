@@ -8,15 +8,19 @@ case "$1" in
   start)
     echo -n "Starting virtual X frame buffer: Xvfb"
     if [ `lsb_release -si` != "CentOS" ]; then
-	/sbin/start-stop-daemon --start --quiet --pidfile $PIDFILE --make-pidfile --background --exec $XVFB -- $XVFBARGS
-    else 
+	     /sbin/start-stop-daemon --start --quiet --pidfile $PIDFILE --make-pidfile --background --exec $XVFB -- $XVFBARGS
+    elif [ "$(ps -ef | grep "$XVFB" | wc -l)" != "2" ]; then
       $XVFB $XVFBARGS &
     fi
     echo "."
     ;;
   stop)
     echo -n "Stopping virtual X frame buffer: Xvfb"
-    /sbin/start-stop-daemon --stop --quiet --pidfile $PIDFILE
+    if [ `lsb_release -si` != "CentOS" ]; then
+      /sbin/start-stop-daemon --stop --quiet --pidfile $PIDFILE
+    elif [ "$(ps -ef | grep "$XVFB" | wc -l)" == "2" ]; then
+      pkill -f "$XVFB"
+    fi
     rm -f $PIDFILE
     echo "."
     ;;
