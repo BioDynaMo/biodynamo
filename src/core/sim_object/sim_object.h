@@ -714,6 +714,8 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
 
   void RunDiscretization() {}
 
+  void AssignNewUid() { uid_[kIdx] = SoUidGenerator::Get()->NewSoUid(); }
+
   SoUid GetUid() const { return uid_[kIdx]; }
 
   uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
