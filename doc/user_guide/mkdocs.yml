@@ -61,5 +61,7 @@ pages:
       - Event: event.md
       - Substance Initialization: substance_initializers.md
       - GPU Acceleration: gpu_acceleration.md
+    - Troubleshooting:
+      - OpenGL: opengl_issues.md
     - Changelog: changelog.md
     - Contact: contact.md
