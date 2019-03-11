@@ -65,6 +65,8 @@ class SoPointer {
     return *this;
   }
 
+  // operator->
+
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
   typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
                           TSoSimBackend&>::type
@@ -95,6 +97,43 @@ class SoPointer {
   typename std::enable_if<std::is_same<TTBackend, Soa>::value,
                           const SoSoaRef>::type
   operator->() const {
+    assert(*this != nullptr);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+  }
+
+  // operator*
+
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
+                          TSoSimBackend&>::type
+  operator*() {
+    assert(*this != nullptr);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    return ctxt->template GetSimObject<TSoSimBackend>(uid_);
+  }
+
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
+                          const TSoSimBackend&>::type
+  operator*() const {
+    assert(*this != nullptr);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+  }
+
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<TTBackend, Soa>::value, SoSoaRef>::type
+  operator*() {
+    assert(*this != nullptr);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    return ctxt->template GetSimObject<SoSoaRef>(uid_);
+  }
+
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<TTBackend, Soa>::value,
+                          const SoSoaRef>::type
+  operator*() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
     return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
