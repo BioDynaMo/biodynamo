@@ -183,6 +183,12 @@ struct Capsule;
 #define BDM_SIM_OBJECT_CPY_CTOR_INIT_ITERATOR(data_member) \
   data_member(other->data_member),
 
+#define BDM_SIM_OBJECT_DUPLICATE_CTOR_BODY(...) \
+  EVAL(LOOP(BDM_SIM_OBJECT_DUPLICATE_CTOR_BODY_ITERATOR, __VA_ARGS__))
+
+#define BDM_SIM_OBJECT_DUPLICATE_CTOR_BODY_ITERATOR(data_member) \
+  data_member[kIdx] = other->data_member[other->kIdx];
+
 #define BDM_SIM_OBJECT_CLEAR_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_CLEAR_BODY_ITERATOR, __VA_ARGS__))
 
@@ -318,6 +324,12 @@ struct Capsule;
   class_name##Ext(T *other, size_t idx)                                        \
       : Base(other, idx),                                                      \
         REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
+                                                                               \
+  /** Constructor to duplicate this sim object */                              \
+  template <typename T>                                                        \
+  class_name##Ext(const T *other) : Base(other) {                              \
+    BDM_SIM_OBJECT_DUPLICATE_CTOR_BODY(__VA_ARGS__)                            \
+  }                                                                            \
                                                                                \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
@@ -582,6 +594,9 @@ class ScalarSimObject {
   ScalarSimObject() : element_idx_(0) {}
   ScalarSimObject(const ScalarSimObject &other)
       : element_idx_(other.element_idx_) {}
+
+  template <typename TSo>
+  ScalarSimObject(const TSo *other) {}
 
   virtual ~ScalarSimObject() {}
 
