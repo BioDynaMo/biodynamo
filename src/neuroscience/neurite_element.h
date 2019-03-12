@@ -116,22 +116,19 @@ class NeuronNeuriteAdapter {
     return neurite_ptr_->GetMother();
   }
 
-  auto GetDaughterLeft() -> decltype(
-      std::declval<TNeuriteElementSoPtr>()->GetDaughterLeft()) const {
+  auto GetDaughterLeft() const {
     assert(IsNeuriteElement() &&
            "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->GetDaughterLeft();
   }
 
-  auto GetDaughterRight() -> decltype(
-      std::declval<TNeuriteElementSoPtr>()->GetDaughterRight()) const {
+  auto GetDaughterRight() const {
     assert(IsNeuriteElement() &&
            "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->GetDaughterRight();
   }
 
-  auto GetRestingLength() -> decltype(
-      std::declval<TNeuriteElementSoPtr>()->GetRestingLength()) const {
+  auto GetRestingLength() const {
     assert(IsNeuriteElement() &&
            "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->GetRestingLength();
@@ -162,8 +159,7 @@ class NeuronNeuriteAdapter {
     neuron_ptr_->UpdateRelative(old_neurite_soptr, new_neurite_soptr);
   }
 
-  auto RemoveFromSimulation() -> decltype(
-      std::declval<TNeuriteElementSoPtr>()->RemoveFromSimulation()) const {
+  auto RemoveFromSimulation() const {
     assert(IsNeuriteElement() &&
            "This function call is only allowed for a NeuriteElement");
     return neurite_ptr_->RemoveFromSimulation();

@@ -835,7 +835,7 @@ class ResourceManager {
 
     // FIXME
     // // TODO(lukas) do we need this? we don't change the scheduling anymore
-    // thread_info_.Renew();
+    thread_info_.Renew();
   }
 
   /// NB: This method is not thread-safe! This function might invalidate

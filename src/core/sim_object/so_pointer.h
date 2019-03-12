@@ -39,7 +39,8 @@ namespace bdm {
 /// `ResourceManager`. Separate containers will not be serialized correctly!
 template <typename TSoSimBackend, typename TBackend>
 class SoPointer {
-  using SoSoaRef = typename TSoSimBackend::template Self<SoaRef>;
+  using SoSoaRef = decltype(
+      ADLHelper(std::declval<TSoSimBackend*>(), std::declval<SoaRef>()));
 
  public:
   explicit SoPointer(SoUid uid) : uid_(uid) {}

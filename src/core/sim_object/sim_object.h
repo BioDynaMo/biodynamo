@@ -122,6 +122,8 @@ struct Capsule;
       sim_object##Ext<CompileTimeParam<Scalar>, Capsule<sim_object##Ext>>;    \
   using Soa##sim_object =                                                     \
       sim_object##Ext<CompileTimeParam<Soa>, Capsule<sim_object##Ext>>;       \
+  using SoaRef##sim_object =                                                  \
+      sim_object##Ext<CompileTimeParam<SoaRef>, Capsule<sim_object##Ext>>;    \
                                                                               \
   /** Functions used to associate a return type with a number of parameter */ \
   /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/                           \
@@ -130,8 +132,10 @@ struct Capsule;
   /** find this association in different namespaces */                        \
   sim_object ADLHelper(sim_object *, Scalar);                                 \
   Soa##sim_object ADLHelper(sim_object *, Soa);                               \
+  SoaRef##sim_object ADLHelper(sim_object *, SoaRef);                         \
   sim_object ADLHelper(Soa##sim_object *, Scalar);                            \
   Soa##sim_object ADLHelper(Soa##sim_object *, Soa);                          \
+  SoaRef##sim_object ADLHelper(Soa##sim_object *, SoaRef);                    \
                                                                               \
   template <typename TCompileTimeParam>                                       \
   using sim_object##Test =                                                    \

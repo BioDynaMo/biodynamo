@@ -183,7 +183,7 @@ class InPlaceExecutionContext {
 
   template <typename TSo, typename TSimBackend = Backend,
             typename TSimulation = Simulation<>>
-  auto&& GetSimObject(
+  auto& GetSimObject(
       SoUid uid,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
@@ -232,17 +232,15 @@ class InPlaceExecutionContext {
     Log::Fatal("GetSimObject", Concat("Could not find object with uid: ", uid));
   }
 
-  template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation<>>
-  const auto&& GetConstSimObject(
+  template <typename TSo, typename TSimBackend = Backend>
+  const auto& GetConstSimObject(
       SoUid uid,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
     return GetSimObject<TSo>(uid);
   }
 
-  template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation<>>
+  template <typename TSo, typename TSimBackend = Backend>
   const auto GetConstSimObject(
       SoUid uid,
       typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type*
@@ -250,10 +248,7 @@ class InPlaceExecutionContext {
     return GetSimObject<TSo>(uid);
   }
 
-  template <typename TSimulation = Simulation<>>
-  void RemoveFromSimulation(SoUid uid) {
-    remove_.push_back(uid);
-  }
+  void RemoveFromSimulation(SoUid uid) { remove_.push_back(uid); }
 
   /// If a sim objects modifies other simulation objects while it is updated,
   /// race conditions can occur using this execution context. This function
