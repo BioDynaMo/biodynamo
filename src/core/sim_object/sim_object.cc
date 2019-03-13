@@ -69,6 +69,11 @@ SimObject::~SimObject() {
 }
 
 void SimObject::ApplyRunDisplacementForAllNextTs() {
+  if (!Simulation::GetActive()->GetParam()->detect_static_sim_objects_) {
+    run_displacement_next_ts_ = true;
+    return;
+  }
+
   if (!run_displacement_for_all_next_ts_) {
     return;
   }

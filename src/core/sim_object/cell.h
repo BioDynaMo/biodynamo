@@ -254,7 +254,11 @@ class Cell : public SimObject {
 
   void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    SetDiameter(std::cbrt(volume_ * 6 / Math::kPi));
+    double diameter = std::cbrt(volume_ * 6 / Math::kPi);
+    if (diameter > diameter_) {
+      Base::SetRunDisplacementForAllNextTs();
+    }
+    diameter_ = diameter;
   }
 
   void UpdateVolume() {

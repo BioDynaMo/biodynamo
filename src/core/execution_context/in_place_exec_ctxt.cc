@@ -105,8 +105,11 @@ void InPlaceExecutionContext::ForEachNeighbor(
 
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
+  auto* param = Simulation::GetActive()->GetParam();
   auto for_each = [&,this](const SimObject* so, double squared_distance) {
-    this->neighbor_cache_.push_back(make_pair(so, squared_distance));
+    if (param->cache_neighbors_) {
+      this->neighbor_cache_.push_back(make_pair(so, squared_distance));
+    }
     lambda(so, squared_distance);
   };
   grid->ForEachNeighbor(for_each, query);
@@ -128,8 +131,11 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
 
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
+  auto* param = Simulation::GetActive()->GetParam();
   auto for_each = [&,this](const SimObject* so, double squared_distance) {
-    this->neighbor_cache_.push_back(make_pair(so, squared_distance));
+    if (param->cache_neighbors_) {
+      this->neighbor_cache_.push_back(make_pair(so, squared_distance));
+    }
     if (squared_distance < squared_radius) {
       lambda(so);
     }

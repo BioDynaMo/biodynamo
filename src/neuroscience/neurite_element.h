@@ -807,7 +807,11 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// Recomputes diameter after volume has changed.
   void UpdateDiameter() {
-    SetDiameter(std::sqrt(4 / Math::kPi * volume_ / actual_length_));
+    double diameter = std::sqrt(4 / Math::kPi * volume_ / actual_length_);
+    if (diameter > diameter_) {
+      Base::SetRunDisplacementForAllNextTs();
+    }
+    diameter_ = diameter;;
   }
 
   /// Recomputes volume, after diameter has been changed.
