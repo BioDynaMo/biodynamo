@@ -754,6 +754,11 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   }
 
   void ApplyRunDisplacementForAllNextTs() {
+    if (!Simulation_t::GetActive()->GetParam()->detect_static_sim_objects_) {
+      run_displacement_next_ts_[kIdx] = true;
+      return;
+    }
+
     if (!run_displacement_for_all_next_ts_[kIdx]) {
       return;
     }

@@ -253,7 +253,11 @@ BDM_SIM_OBJECT(Cell, SimObject) {
 
   void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    SetDiameter(std::cbrt(volume_[kIdx] * 6 / Math::kPi));
+    double diameter = std::cbrt(volume_[kIdx] * 6 / Math::kPi);
+    if (diameter > diameter_[kIdx]) {
+      Base::SetRunDisplacementForAllNextTs();
+    }
+    diameter_[kIdx] = diameter;
   }
 
   void UpdateVolume() {

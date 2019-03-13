@@ -144,9 +144,12 @@ class InPlaceExecutionContext {
     }
 
     auto* grid = TSimulation::GetActive()->GetGrid();
+    auto* param = TSimulation::GetActive()->GetParam();
     auto for_each = [&, this](auto* so, double squared_distance) {
-      this->neighbor_cache_.push_back(
-          std::make_pair(so->GetSoHandle(), squared_distance));
+      if (param->cache_neighbors_) {
+        this->neighbor_cache_.push_back(
+            std::make_pair(so->GetSoHandle(), squared_distance));
+      }
       lambda(so, squared_distance);
     };
 
@@ -170,9 +173,12 @@ class InPlaceExecutionContext {
     }
 
     auto* grid = TSimulation::GetActive()->GetGrid();
+    auto* param = TSimulation::GetActive()->GetParam();
     auto for_each = [&, this](auto* so, double squared_distance) {
-      this->neighbor_cache_.push_back(
-          std::make_pair(so->GetSoHandle(), squared_distance));
+      if (param->cache_neighbors_) {
+        this->neighbor_cache_.push_back(
+            std::make_pair(so->GetSoHandle(), squared_distance));
+      }
       if (squared_distance < squared_radius) {
         lambda(so);
       }

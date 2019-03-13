@@ -1059,8 +1059,12 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
   /// Recomputes diameter after volume has changed.
   void UpdateDiameter() {
-    SetDiameter(
-        std::sqrt(4 / Math::kPi * volume_[kIdx] / actual_length_[kIdx]));
+    double diameter =
+        std::sqrt(4 / Math::kPi * volume_[kIdx] / actual_length_[kIdx]);
+    if (diameter > diameter_[kIdx]) {
+      Base::SetRunDisplacementForAllNextTs();
+    }
+    diameter_[kIdx] = diameter;
   }
 
   /// Recomputes volume, after diameter has been change.
