@@ -462,6 +462,7 @@ class Grid {
   void ForEachNeighbor(const Lambda& lambda, const SO& query) const {
     auto so_handle = query.GetSoHandle();
     auto idx = query.GetBoxIdx();
+    const auto& position = query.GetPosition();
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
     GetMooreBoxes(&neighbor_boxes, idx);
@@ -472,7 +473,6 @@ class Grid {
       // Do something with neighbor object
       SoHandle neighbor_handle = *ni;
       if (neighbor_handle != so_handle) {
-        const auto& position = query.GetPosition();
         rm->ApplyOnElement(neighbor_handle, [&, this](auto&& sim_object) {
           const auto& neighbor_position = sim_object.GetPosition();
           double squared_distance =
