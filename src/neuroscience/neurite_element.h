@@ -209,9 +209,9 @@ class NeuronNeuriteAdapter {
 /// proximal node are transmitted to the mother element
 BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   BDM_SIM_OBJECT_HEADER(
-      NeuriteElement, SimObject, 1, mass_location_, volume_, diameter_,
-      density_, adherence_, x_axis_, y_axis_, z_axis_, is_axon_, mother_,
-      daughter_left_, daughter_right_, branch_order_,
+      NeuriteElement, SimObject, 1, mass_location_, position_, volume_,
+      diameter_, density_, adherence_, x_axis_, y_axis_, z_axis_, is_axon_,
+      mother_, daughter_left_, daughter_right_, branch_order_,
       force_to_transmit_to_proximal_mass_, spring_axis_, actual_length_,
       tension_, spring_constant_, resting_length_);
 
@@ -286,8 +286,8 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     SetDiameter(diameter);
     UpdateVolume();
     SetSpringAxis(new_spring_axis);
-
     SetMassLocation(new_mass_location);
+    UpdatePosition();
     SetActualLength(new_length);
     SetRestingLengthForDesiredTension(param->neurite_default_tension_);
     UpdateLocalCoordinateAxis();
@@ -416,14 +416,17 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
   void SetDensity(double density) { density_[kIdx] = density; }
 
-  const std::array<double, 3> GetPosition() const {
-    return Math::Subtract(mass_location_[kIdx],
-                          Math::ScalarMult(0.5, spring_axis_[kIdx]));
-  }
+  const std::array<double, 3> GetPosition() const { return position_[kIdx]; }
 
   void SetPosition(const std::array<double, 3>& position) {
+    position_[kIdx] = position;
     SetMassLocation(
         Math::Add(position, Math::ScalarMult(0.5, spring_axis_[kIdx])));
+  }
+
+  void UpdatePosition() {
+    position_[kIdx] = Math::Subtract(mass_location_[kIdx],
+                                     Math::ScalarMult(0.5, spring_axis_[kIdx]));
   }
 
   /// return end of neurite element position
@@ -505,6 +508,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
       SetMassLocation(Math::Add(mother_[kIdx].OriginOf(Base::GetUid()),
                                 spring_axis_[kIdx]));
+      UpdatePosition();
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_[kIdx].IsNeuronSoma()) {
       mother_[kIdx].RemoveDaughter(Base::GetSoPtr());
@@ -807,6 +811,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
         mother_[kIdx].OriginOf(Base::GetUid());  //  change to auto&&
     SetSpringAxis(Math::Subtract(new_mass_location, relative_ml));
     SetMassLocation(new_mass_location);
+    UpdatePosition();
     SetActualLength(
         std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx])));
     // process of elongation : setting tension to 0 increases the resting length
@@ -1301,6 +1306,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     SetSpringAxis(Math::Subtract(mass_location_[kIdx], relative_ml));
     SetActualLength(
         std::sqrt(Math::Dot(spring_axis_[kIdx], spring_axis_[kIdx])));
+    UpdatePosition();
     if (std::abs(actual_length_[kIdx] - resting_length_[kIdx]) > 1e-13) {
       tension_[kIdx] = spring_constant_[kIdx] *
                        (actual_length_[kIdx] - resting_length_[kIdx]) /
@@ -1450,6 +1456,10 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
   /// mass_location_ is distal end of the cylinder
   /// NB: Use setter and don't assign values directly
   vec<std::array<double, 3>> mass_location_ = {{0.0, 0.0, 0.0}};
+
+  /// position_ is the middle point of cylinder
+  vec<std::array<double, 3>> position_ = {{0.0, 0.0, 0.0}};
+
   vec<double> volume_ = {{}};
   /// NB: Use setter and don't assign values directly
   vec<double> diameter_ = {{}};
@@ -1595,6 +1605,7 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
 
     SetPosition(new_position);
     Copy(*other);
+    UpdatePosition();
 
     // family relations
     SetMother(other->GetMother());
@@ -1639,8 +1650,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     auto new_spring_axis = Math::ScalarMult(length, Math::Normalize(direction));
     const auto& mother_ml = mother->GetMassLocation();
 
-    SetMassLocation(Math::Add(mother_ml, new_spring_axis));
     SetSpringAxis(new_spring_axis);
+    SetMassLocation(Math::Add(mother_ml, new_spring_axis));
+    UpdatePosition();
     // physics
     SetActualLength(length);
     SetRestingLengthForDesiredTension(param->neurite_default_tension_);
