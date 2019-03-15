@@ -44,7 +44,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
 
   EXPECT_EQ(3u, rm->GetNumSimObjects());
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_1));
@@ -75,14 +75,14 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
   EXPECT_FALSE(rm->Contains(uid_1));
 
   // check that the internal caches are properly cleared.
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
@@ -118,7 +118,7 @@ TEST(InPlaceExecutionContext, NewAndGetSimObject) {
 
   ctxt->GetSimObject(uid_1)->SetDiameter(789);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
@@ -177,9 +177,8 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
   ModelInitializer::Grid3D(32, 10, construct);
 
   // initialize
-  for (auto* context : sim.GetAllExecCtxts()) {
-    context->SetupIteration();
-  }
+  const auto& all_exec_ctxts = sim.GetAllExecCtxts();
+  all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
   sim.GetGrid()->Initialize();
 
   std::unordered_map<SoUid, uint64_t> num_neighbors;

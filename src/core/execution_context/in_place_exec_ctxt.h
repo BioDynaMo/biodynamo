@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <vector>
 #include "core/sim_object/so_uid.h"
+#include "core/util/thread_info.h"
 
 namespace bdm {
 
@@ -45,14 +46,17 @@ class InPlaceExecutionContext {
 
   virtual ~InPlaceExecutionContext();
 
-  /// This function is called at the beginning of each iteration.
+  /// This function is called at the beginning of each iteration to setup all
+  /// execution contexts.
   /// This function is not thread-safe.
-  void SetupIteration();
+  /// NB: Invalidates references and pointers to simulation objects.
+  void SetupIterationAll(const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
 
-  /// This function is called at the end of each iteration. \n
+  /// This function is called at the end of each iteration to tear down all
+  /// execution contexts.
   /// This function is not thread-safe. \n
   /// NB: Invalidates references and pointers to simulation objects.
-  void TearDownIteration();
+  void TearDownIterationAll(const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
@@ -87,6 +91,8 @@ class InPlaceExecutionContext {
   void DisableNeighborGuard();
 
  private:
+  static ThreadInfo tinfo_;
+
   /// Contains unique ids of sim objects that will be removed at the end of each
   /// iteration.
   std::vector<SoUid> remove_;

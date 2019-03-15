@@ -82,6 +82,12 @@ if (NUMA_FOUND)
    add_definitions("-DUSE_NUMA")
 endif()
 
+find_package(TBB REQUIRED)
+if (TBB_FOUND)
+  include_directories(${TBB_INCLUDE_DIRS})
+  link_directories(${TBB_LIBRARIES})
+endif()
+
 if(paraview)
   find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
     vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
@@ -148,7 +154,7 @@ file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 build_libbiodynamo(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
-                   LIBRARIES ${ROOT_LIBRARIES} ${NUMA_LIBRARIES})
+                   LIBRARIES ${ROOT_LIBRARIES} ${NUMA_LIBRARIES} ${TBB_LIBRARIES})
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 endif()

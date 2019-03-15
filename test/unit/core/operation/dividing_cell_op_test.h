@@ -29,7 +29,7 @@ inline void RunTest() {
   Simulation simulation("dividing_cell_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
-  ctxt->SetupIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   auto ref_uid = SoUidGenerator::Get()->GetLastId();
 
@@ -45,7 +45,7 @@ inline void RunTest() {
   DividingCellOp op;
   rm->ApplyOnAllElementsParallel(op);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   ASSERT_EQ(3u, rm->GetNumSimObjects());
   Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 0));

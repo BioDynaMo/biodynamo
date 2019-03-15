@@ -24,9 +24,9 @@
 #include <ostream>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
+#include <tbb/concurrent_unordered_map.h>
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -158,10 +158,22 @@ class ResourceManager {
         delete so;
       }
     }
-    uid_soh_map_ = std::move(other.uid_soh_map_);
     sim_objects_ = std::move(other.sim_objects_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
+
+    RestoreUidSoMap();
     return *this;
+  }
+
+  void RestoreUidSoMap() {
+    // rebuild uid_soh_map_
+    uid_soh_map_.clear();
+    for(unsigned n = 0; n < sim_objects_.size(); ++n) {
+      for(unsigned i = 0; i < sim_objects_[n].size(); ++i) {
+        auto* so = sim_objects_[n][i];
+        this->uid_soh_map_[so->GetUid()] = SoHandle(n, i);
+      }
+    }
   }
 
   SimObject* GetSimObject(SoUid uid) {
@@ -308,12 +320,23 @@ class ResourceManager {
   // }
 
   /// Reserves enough memory to hold `capacity` number of simulation objects for
-  /// each simulation object type.
+  /// each numa domain.
   void Reserve(size_t capacity) {
-    uid_soh_map_.reserve(capacity);
     for (auto& numa_sos : sim_objects_) {
       numa_sos.reserve(capacity);
     }
+  }
+
+  /// Resize `sim_objects_[numa_node]` such that it holds `current + additional`
+  /// elements after this call.
+  /// Returns the size after
+  uint64_t GrowSoContainer(size_t additional, size_t numa_node) {
+    if (additional == 0 ) {
+      return sim_objects_[numa_node].size();
+    }
+    auto current = sim_objects_[numa_node].size();
+    sim_objects_[numa_node].resize(current + additional);
+    return current;
   }
 
   /// Returns true if a sim object with the given uid is stored in this
@@ -350,6 +373,20 @@ class ResourceManager {
         SoHandle(numa_node, sim_objects_[numa_node].size() - 1);
   }
 
+  /// Adds `new_sim_objects` to `sim_objects_[numa_node]`. `offset` specifies
+  /// the index at which the first element is inserted. Sim objects are inserted
+  /// consecutively. This methos is thread safe only if insertion intervals do
+  /// not overlap!
+  void AddNewSimObjects(typename SoHandle::NumaNode_t numa_node, uint64_t offset, const std::unordered_map<SoUid, SimObject*> new_sim_objects) {
+    uint64_t i = 0;
+    for(auto& pair : new_sim_objects) {
+      auto uid = pair.first;
+      uid_soh_map_[uid] = SoHandle(numa_node, offset + i);
+      sim_objects_[numa_node][offset + i] = pair.second;
+      i++;
+    }
+  }
+
   /// Removes the simulation object with the given uid.\n
   /// NB: This method is not thread-safe! This function invalidates
   /// sim_object references pointing into the ResourceManager. SoPointer are
@@ -359,7 +396,7 @@ class ResourceManager {
     auto it = uid_soh_map_.find(uid);
     if (it != uid_soh_map_.end()) {
       SoHandle soh = it->second;
-      uid_soh_map_.erase(it);
+      uid_soh_map_.unsafe_erase(it);
       // remove from vector
       auto& numa_sos = sim_objects_[soh.GetNumaNode()];
       if (soh.GetElementIdx() == numa_sos.size() - 1) {
@@ -384,7 +421,7 @@ class ResourceManager {
 #endif
 
   /// Maps an SoUid to its storage location in `sim_objects_` \n
-  std::unordered_map<SoUid, SoHandle> uid_soh_map_;
+  tbb::concurrent_unordered_map<SoUid, SoHandle> uid_soh_map_;  //!
   ///
   std::vector<std::vector<SimObject*>> sim_objects_;
 

@@ -76,6 +76,13 @@ if (NUMA_FOUND)
    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
 endif()
 
+find_package(TBB REQUIRED)
+if (TBB_FOUND)
+  include_directories(${TBB_INCLUDE_DIRS})
+  link_directories(${TBB_LIBRARIES})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
+endif()
+
 if(paraview)
   find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst)
   if(${ParaView_FOUND})

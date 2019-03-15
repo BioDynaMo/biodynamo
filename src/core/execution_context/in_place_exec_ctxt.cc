@@ -20,6 +20,8 @@
 
 namespace bdm {
 
+ThreadInfo InPlaceExecutionContext::tinfo_;
+
 InPlaceExecutionContext::InPlaceExecutionContext() {}
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
@@ -28,26 +30,52 @@ InPlaceExecutionContext::~InPlaceExecutionContext() {
   }
 }
 
-void InPlaceExecutionContext::SetupIteration() {
+void InPlaceExecutionContext::SetupIterationAll(const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
   // first iteration might have uncommited changes
-  TearDownIteration();
+  TearDownIterationAll(all_exec_ctxts);
 }
 
-void InPlaceExecutionContext::TearDownIteration() {
-  // new sim objects
-  auto* rm = Simulation::GetActive()->GetResourceManager();
-  for (auto& el : new_sim_objects_) {
-    rm->push_back(el.second);
-  }
-  new_sim_objects_.clear();
+void InPlaceExecutionContext::TearDownIterationAll(const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+  // group execution contexts by numa domain
+  std::vector<uint64_t> new_so_per_numa(tinfo_.GetNumaNodes());
+  std::vector<uint64_t> thread_offsets(tinfo_.GetMaxThreads());
 
-  // removed sim objects
-  // remove them after adding new ones (maybe one has been removed
-  // that was in new_sim_objects_)
-  for (auto& uid : remove_) {
-    rm->Remove(uid);
+  int tid = 0;
+  for (auto* ctxt : all_exec_ctxts) {
+    int nid = tinfo_.GetNumaNode(tid);
+    thread_offsets[tid] = new_so_per_numa[nid];
+    new_so_per_numa[nid] += ctxt->new_sim_objects_.size();
+    tid++;
   }
-  remove_.clear();
+
+  // reserve enough memory in ResourceManager
+  std::vector<uint64_t> numa_offsets(tinfo_.GetNumaNodes());
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+  for(unsigned n = 0; n < new_so_per_numa.size(); n++) {
+    numa_offsets[n] = rm->GrowSoContainer(new_so_per_numa[n], n);
+  }
+
+  // add new_sim_objects_ to the ResourceManager in parallel
+#pragma omp parallel for schedule(static, 1)
+  for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+    auto* ctxt = all_exec_ctxts[i];
+    int nid = tinfo_.GetNumaNode(i);
+    uint64_t offset = thread_offsets[i] + numa_offsets[nid];
+    rm->AddNewSimObjects(nid, offset, ctxt->new_sim_objects_);
+    ctxt->new_sim_objects_.clear();
+  }
+
+  // remove
+  for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+    auto* ctxt = all_exec_ctxts[i];
+    // removed sim objects
+    // remove them after adding new ones (maybe one has been removed
+    // that was in new_sim_objects_)
+    for (auto& uid : ctxt->remove_) {
+      rm->Remove(uid);
+    }
+    ctxt->remove_.clear();
+  }
 }
 
 void InPlaceExecutionContext::Execute(
