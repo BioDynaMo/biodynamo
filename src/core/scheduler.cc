@@ -97,9 +97,8 @@ void Scheduler::Execute(bool last_iteration) {
   auto* param = sim->GetParam();
 
   Timing::Time("Set up exec context", [&]() {
-    for (auto* ctxt : sim->GetAllExecCtxts()) {
-      ctxt->SetupIteration();
-    }
+    const auto& all_exec_ctxts = sim->GetAllExecCtxts();
+    all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
   });
 
   Timing::Time("visualize", [&]() {
@@ -119,9 +118,8 @@ void Scheduler::Execute(bool last_iteration) {
 
   // finish updating sim objects
   Timing::Time("Tear down exec context", [&]() {
-    for (auto* ctxt : sim->GetAllExecCtxts()) {
-      ctxt->TearDownIteration();
-    }
+    const auto& all_exec_ctxts = sim->GetAllExecCtxts();
+    all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
   });
 
   // update all substances (DiffusionGrids)
@@ -169,9 +167,8 @@ void Scheduler::Initialize() {
   auto* param = sim->GetParam();
 
   // commit all changes
-  for (auto* ctxt : sim->GetAllExecCtxts()) {
-    ctxt->TearDownIteration();
-  }
+  const auto& all_exec_ctxts = sim->GetAllExecCtxts();
+  all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
   if (!is_gpu_environment_initialized_ && param->use_gpu_) {
     InitializeGPUEnvironment();

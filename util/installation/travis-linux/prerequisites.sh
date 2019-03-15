@@ -40,7 +40,8 @@ function InstallCmake {
 
 function InstallPackages {
   INSTALL_PACKAGES="freeglut3-dev gcc-5 g++-5 valgrind doxygen graphviz cloc  \
-  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9 python2.7 libnuma-dev"
+  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9 python2.7 libnuma-dev \
+  libtbb-dev"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
 

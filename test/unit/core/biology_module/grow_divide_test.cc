@@ -25,7 +25,7 @@ TEST(GrowDivideTest, Grow) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  ctxt->SetupIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   Cell cell;
   cell.SetDiameter(40);
@@ -33,7 +33,7 @@ TEST(GrowDivideTest, Grow) {
   GrowDivide gd(40, 300, {gAllEventIds});
   gd.Run(&cell);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   EXPECT_NEAR(33513.321638291127, cell.GetVolume(), abs_error<double>::value);
   EXPECT_EQ(0u, rm->GetNumSimObjects());
@@ -44,7 +44,7 @@ TEST(GrowDivideTest, Divide) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  ctxt->SetupIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   Cell cell;
   cell.SetDiameter(41);
@@ -52,7 +52,7 @@ TEST(GrowDivideTest, Divide) {
   GrowDivide gd(40, 300, {gAllEventIds});
   gd.Run(&cell);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   EXPECT_GT(41, cell.GetDiameter());
   EXPECT_EQ(1u, rm->GetNumSimObjects());
