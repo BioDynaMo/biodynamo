@@ -222,7 +222,8 @@ TEST(SimObjectUtilTest, Soa_DivideWithResourceManager) {
   EXPECT_EQ(4, new_neuron->GetPosition()[1]);
   EXPECT_EQ(3, new_neuron->GetPosition()[2]);
 
-  simulation.GetExecutionContext()->TearDownIteration();
+  simulation.GetExecutionContext()->TearDownIterationAll(
+      simulation.GetAllExecCtxts());
 
   const auto* neurons = rm->Get<Neuron>();
   ASSERT_EQ(2u, neurons->size());

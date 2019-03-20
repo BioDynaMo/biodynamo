@@ -26,9 +26,10 @@
 #include <set>
 #include <string>
 #include <tuple>
-#include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include <tbb/concurrent_unordered_map.h>
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -231,9 +232,18 @@ class ResourceManager {
     sim_objects_ = other.sim_objects_;
     other.sim_objects_ = nullptr;
     numa_nodes_ = other.numa_nodes_;
-    so_storage_location_ = std::move(other.so_storage_location_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
+
+    RestoreUidSoMap();
     return *this;
+  }
+
+  void RestoreUidSoMap() {
+    // rebuild so_storage_location_
+    so_storage_location_.clear();
+    ApplyOnAllElements([this](auto&& so, SoHandle handle) {
+      this->so_storage_location_[so.GetUid()] = handle;
+    });
   }
 
   SoHandle GetSoHandle(SoUid so_uid) const {
@@ -341,6 +351,13 @@ class ResourceManager {
                      [&](auto* container) { num_so += container->size(); });
       }
     }
+    return num_so;
+  }
+
+  size_t GetNumSimObjects(uint16_t numa_node, uint16_t type_id) {
+    size_t num_so = 0;
+    ::bdm::Apply(&sim_objects_[numa_node], type_id,
+                 [&](auto* container) { num_so = container->size(); });
     return num_so;
   }
 
@@ -682,6 +699,22 @@ class ResourceManager {
     });
   }
 
+  /// Resize `sim_objects_[numa_node]` such that it holds `current + additional`
+  /// elements after this call.
+  /// Returns the size after
+  uint64_t GrowSoContainer(size_t additional, size_t numa_node,
+                           size_t type_id) {
+    uint64_t current = 0;
+    ::bdm::Apply(&sim_objects_[numa_node], type_id, [&](auto* container) {
+      current = container->size();
+      if (additional == 0) {
+        return;
+      }
+      container->resize(current + additional);
+    });
+    return current;
+  }
+
   /// Reserves enough memory to hold `capacity` number of simulation objects for
   /// the given simulation object type.
   template <typename TSo>
@@ -854,6 +887,28 @@ class ResourceManager {
         SoHandle(numa_node, GetTypeIndex<TSo>(), el_idx);
   }
 
+  // FIXME
+  /// Adds `new_sim_objects` to `sim_objects_[numa_node]`. `offset` specifies
+  /// the index at which the first element is inserted. Sim objects are inserted
+  /// consecutively. This methos is thread safe only if insertion intervals do
+  /// not overlap!
+  void AddNewSimObjects(typename SoHandle::NumaNode_t numa_node,
+                        typename SoHandle::TypeIdx_t type_id, uint64_t offset,
+                        ResourceManager& other_rm) {
+    // ::bdm::Apply(&other_rm.sim_objects_[numa_node], type_id, [&,this](auto*
+    // new_sim_objects) {
+    ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto* container) {
+      using SoType = typename raw_type<decltype(container)>::value_type;
+      auto* new_sim_objects = other_rm.template Get<SoType>(numa_node);
+      for (uint64_t i = 0; i < new_sim_objects->size(); i++) {
+        auto&& so = (*new_sim_objects)[i];
+        auto uid = so.GetUid();
+        so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
+        (*container)[offset + i] = so;
+      }
+    });
+  }
+
   /// Removes the simulation object with the given uid.\n
   /// NB: This method is not thread-safe! This function invalidates
   /// sim_object references pointing into the ResourceManager. SoPointer are
@@ -880,7 +935,7 @@ class ResourceManager {
                            SoHandle(type_idx, element_idx);
                      }
                    });
-      so_storage_location_.erase(it);
+      so_storage_location_.unsafe_erase(it);
     }
   }
 
@@ -915,7 +970,7 @@ class ResourceManager {
   }
 
   /// Mapping between SoUid and SoHandle (stored location)
-  std::unordered_map<SoUid, SoHandle> so_storage_location_;
+  tbb::concurrent_unordered_map<SoUid, SoHandle> so_storage_location_;  //!
 
   ThreadInfo thread_info_;  //!
 

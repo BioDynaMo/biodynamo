@@ -56,6 +56,7 @@ inline void RunIOTest() {
   // restore
   ResourceManager<>* restored_rm = nullptr;
   GetPersistentObject(ROOTFILE, "rm", restored_rm);
+  restored_rm->RestoreUidSoMap();
 
   // validate
   EXPECT_EQ(5u, restored_rm->GetNumSimObjects());

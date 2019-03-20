@@ -360,8 +360,8 @@ void RunGetSimObjectTest() {
 // -----------------------------------------------------------------------------
 // https://github.com/osmhpi/pgasus/blob/775a5f90d8f6fa89cfb93eac6de16dcfe27167ce/src/util/mmaphelper.cpp
 inline static void* AlignPage(const void* ptr) {
-  static constexpr uintptr_t PAGE_MASK = ~(uintptr_t(0xFFF));
-  return (void*)(((uintptr_t)ptr) & PAGE_MASK);
+  static constexpr uintptr_t kPageMask = ~(uintptr_t(0xFFF));
+  return (void*)(((uintptr_t)ptr) & kPageMask);
 }
 
 inline int GetNumaNodeForMemory(const void* ptr) {

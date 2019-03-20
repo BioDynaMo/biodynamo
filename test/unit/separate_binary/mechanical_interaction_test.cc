@@ -248,7 +248,8 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
 
-  simulation.GetExecutionContext()->SetupIteration();
+  simulation.GetExecutionContext()->SetupIterationAll(
+      simulation.GetAllExecCtxts());
 
   std::array<double, 3> direction = {0, 0, 1};
   for (int i = 0; i < 100; i++) {
