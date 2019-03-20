@@ -1,0 +1,30 @@
+[simulation]
+bound_space = true
+min_bound = -200
+max_bound = 200
+
+[neuroscience]
+neurite_max_length = 2.0
+
+[performance]
+detect_static_sim_objects = true
+
+[visualization]
+export = true
+export_interval = 10
+
+    [[visualize_sim_object]]
+    name = "NeuronSoma"
+    additional_data_members = []
+
+    [[visualize_sim_object]]
+    name = "MyNeurite"
+    additional_data_members = []
+
+    [[visualize_diffusion]]
+    name = "substance_apical"
+    gradient = true
+
+    [[visualize_diffusion]]
+    name = "substance_basal"
+    gradient = true
