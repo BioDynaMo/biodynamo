@@ -68,11 +68,9 @@ inline void DefineSubstances(const Param* param) {
                                     param->max_bound_ / 2);
   // create substance with gaussian distribution for neurite attraction
   ModelInitializer::InitializeSubstance(
-      kSubstanceApical, "substance_apical",
-      GaussianBand(param->max_bound_, 200, Axis::kZAxis));
+      kSubstanceApical, GaussianBand(param->max_bound_, 200, Axis::kZAxis));
   ModelInitializer::InitializeSubstance(
-      kSubstanceBasal, "substance_basal",
-      GaussianBand(param->min_bound_, 200, Axis::kZAxis));
+      kSubstanceBasal, GaussianBand(param->min_bound_, 200, Axis::kZAxis));
 }
 
 inline int Simulate(int argc, const char** argv) {

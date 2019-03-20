@@ -523,7 +523,7 @@ TEST(DiffusionTest, ModelInitializer) {
   // Initialize one of the substances
   double mean = 0;
   double sigma = 5;
-  ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1",
+  ModelInitializer::InitializeSubstance(kSubstance_1,
                                         GaussianBand(mean, sigma, kXAxis));
 
   int l = -100;
