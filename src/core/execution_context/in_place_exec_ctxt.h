@@ -103,6 +103,13 @@ class InPlaceExecutionContext {
         uint64_t offset = thread_offsets[i] + numa_offsets[nid];
         rm->AddNewSimObjects(nid, t, offset, ctxt->new_sim_objects_);
       }
+
+      for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+        auto* ctxt = all_exec_ctxts[i];
+        int nid = tinfo_.GetNumaNode(i);
+        uint64_t offset = thread_offsets[i] + numa_offsets[nid];
+        rm->AddNewSimObjects1(nid, t, offset, ctxt->new_sim_objects_);
+      }
     }
 
     // clear
@@ -163,9 +170,9 @@ class InPlaceExecutionContext {
   typename std::enable_if<std::is_same<TBackend, Soa>::value,
                           typename TScalarSo::template Self<SoaRef>>::type
   New(Args... args) {
-    std::lock_guard<AtomicMutex> guard(mutex_);
     TScalarSo so(std::forward<Args>(args)...);
     auto uid = so.GetUid();
+    std::lock_guard<AtomicMutex> guard(mutex_);
     new_sim_objects_.push_back(so);
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
   }
@@ -174,9 +181,9 @@ class InPlaceExecutionContext {
   typename std::enable_if<std::is_same<TBackend, Scalar>::value,
                           TScalarSo&>::type
   New(Args... args) {
-    std::lock_guard<AtomicMutex> guard(mutex_);
     TScalarSo so(std::forward<Args>(args)...);
     auto uid = so.GetUid();
+    std::lock_guard<AtomicMutex> guard(mutex_);
     new_sim_objects_.push_back(so);
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
   }
@@ -256,7 +263,7 @@ class InPlaceExecutionContext {
     } else {
       // sim object must be cached in another InPlaceExecutionContext
       for (auto* ctxt : sim->GetAllExecCtxts()) {
-        std::lock_guard<AtomicMutex> guard(mutex_);
+        std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
         if (ctxt->new_sim_objects_.Contains(uid)) {
           return ctxt->new_sim_objects_.template GetSimObject<TSo>(uid);
         }
@@ -281,7 +288,7 @@ class InPlaceExecutionContext {
     } else {
       // sim object must be cached in another InPlaceExecutionContext
       for (auto* ctxt : sim->GetAllExecCtxts()) {
-        std::lock_guard<AtomicMutex> guard(mutex_);
+        std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
         if (ctxt->new_sim_objects_.Contains(uid)) {
           return ctxt->new_sim_objects_.template GetSimObject<TSo>(uid);
         }

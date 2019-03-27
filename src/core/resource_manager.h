@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-#include <tbb/concurrent_unordered_map.h>
+// #include <tbb/concurrent_unordered_map.h>
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -459,6 +459,7 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   template <typename TFunction>
   void ApplyOnAllElementsParallel(TFunction&& function) {
+    // std::cout  << "NEW CALL TO ---------------------------------" << std::endl;
     for (uint16_t t = 0; t < NumberOfTypes(); ++t) {
       // only needed to get the type of the container
       ::bdm::Apply(&sim_objects_[0], t, [&](auto* container) {
@@ -493,12 +494,32 @@ class ResourceManager {
           auto start = thread_info_.GetNumaThreadId(tid) * chunk;
           auto end = std::min(so_container->size(), start + chunk);
 
+          // #pragma omp critical
+          // {
+          //   std::cout
+          //     << "\nt        " << t
+          //     << "\nnid      " << nid
+          //     << "\ntid      " << tid
+          //     << "\ntinnuma  " << threads_in_numa
+          //     << "\ncont siz " << so_container->size()
+          //     << "\nstart    " << start
+          //     << "\nend      " << end
+          //     << std::endl;
+          // }
+
           for (uint64_t i = start; i < end; ++i) {
             function((*so_container)[i], SoHandle(nid, t, i));
           }
         }
       });
     }
+    // std::cout  << "FINISHED ---------------------------------" << std::endl;
+    //  ApplyOnAllTypes([&](auto* container, uint16_t numa_id, uint16_t type_id) {
+    //   #pragma omp parallel for
+    //   for(uint64_t i = 0; i < container->size(); i++) {
+    //     function((*container)[i], SoHandle(numa_id, type_id, i));
+    //   }
+    //  });
   }
 
   /// Apply a function on all elements.\n
@@ -903,8 +924,24 @@ class ResourceManager {
       for (uint64_t i = 0; i < new_sim_objects->size(); i++) {
         auto&& so = (*new_sim_objects)[i];
         auto uid = so.GetUid();
-        so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
+        // so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
         (*container)[offset + i] = so;
+      }
+    });
+  }
+
+  void AddNewSimObjects1(typename SoHandle::NumaNode_t numa_node,
+                        typename SoHandle::TypeIdx_t type_id, uint64_t offset,
+                        ResourceManager& other_rm) {
+    // ::bdm::Apply(&other_rm.sim_objects_[numa_node], type_id, [&,this](auto*
+    // new_sim_objects) {
+    ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto* container) {
+      using SoType = typename raw_type<decltype(container)>::value_type;
+      auto* new_sim_objects = other_rm.template Get<SoType>(numa_node);
+      for (uint64_t i = 0; i < new_sim_objects->size(); i++) {
+        auto&& so = (*new_sim_objects)[i];
+        auto uid = so.GetUid();
+        so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
       }
     });
   }
@@ -935,7 +972,7 @@ class ResourceManager {
                            SoHandle(type_idx, element_idx);
                      }
                    });
-      so_storage_location_.unsafe_erase(it);
+      so_storage_location_.erase(it);
     }
   }
 
@@ -970,7 +1007,7 @@ class ResourceManager {
   }
 
   /// Mapping between SoUid and SoHandle (stored location)
-  tbb::concurrent_unordered_map<SoUid, SoHandle> so_storage_location_;  //!
+  std::unordered_map<SoUid, SoHandle> so_storage_location_;  //!
 
   ThreadInfo thread_info_;  //!
 
