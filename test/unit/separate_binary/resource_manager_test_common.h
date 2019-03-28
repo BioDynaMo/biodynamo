@@ -295,8 +295,8 @@ void RunApplyOnAllTypesTest() {
         }
       });
 
-  ThreadInfo ti;
-  EXPECT_EQ(ti.GetNumaNodes() * 2u, counter);
+  auto* ti = ThreadInfo::GetInstance();
+  EXPECT_EQ(ti->GetNumaNodes() * 2u, counter);
 }
 
 template <typename TRm, typename TA, typename TB>
@@ -374,14 +374,14 @@ inline int GetNumaNodeForMemory(const void* ptr) {
 inline std::vector<uint64_t> GetSoPerNuma(uint64_t num_sim_objects) {
   // balance simulation objects per numa node according to the number of
   // threads associated with each numa domain
-  ThreadInfo ti;
-  int numa_nodes = ti.GetNumaNodes();
+  auto* ti = ThreadInfo::GetInstance();
+  int numa_nodes = ti->GetNumaNodes();
 
   std::vector<uint64_t> so_per_numa(numa_nodes);
   uint64_t cummulative = 0;
-  auto max_threads = ti.GetMaxThreads();
+  auto max_threads = ti->GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
-    auto threads_in_numa = ti.GetThreadsInNumaNode(n);
+    auto threads_in_numa = ti->GetThreadsInNumaNode(n);
     uint64_t num_so = num_sim_objects * threads_in_numa / max_threads;
     so_per_numa[n] = num_so;
     cummulative += num_so;
@@ -401,10 +401,10 @@ inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_so_per_type,
   }
 
   std::atomic<uint64_t> cnt(0);
-  ThreadInfo ti;
+  auto* ti = ThreadInfo::GetInstance();
   // counts the number of sim objects in each numa domain
   std::vector<uint64_t> numa_so_cnts;
-  numa_so_cnts.resize(ti.GetNumaNodes());
+  numa_so_cnts.resize(ti->GetNumaNodes());
   std::atomic<uint64_t> numa_memory_errors(0);
   std::atomic<uint64_t> numa_thread_errors(0);
 
@@ -446,7 +446,7 @@ inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_so_per_type,
     }
     EXPECT_EQ(0u, numa_thread_errors.load());
     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
-    for (int n = 0; n < ti.GetNumaNodes(); ++n) {
+    for (int n = 0; n < ti->GetNumaNodes(); ++n) {
       EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
     }
   }
@@ -516,10 +516,10 @@ inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_so_per_type,
   }
 
   std::atomic<uint64_t> cnt(0);
-  ThreadInfo ti;
+  auto* ti = ThreadInfo::GetInstance();
   // counts the number of sim objects in each numa domain
   std::vector<uint64_t> numa_so_cnts;
-  numa_so_cnts.resize(ti.GetNumaNodes());
+  numa_so_cnts.resize(ti->GetNumaNodes());
   // If a simulation object is not stored on the NUMA indicated, it is a memory
   // error.
   std::atomic<uint64_t> numa_memory_errors(0);
@@ -554,7 +554,7 @@ inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_so_per_type,
         for (int i = 0; i < 10000; i++) {
           d += std::sin(i);
         }
-        if (handle.GetNumaNode() != ti.GetNumaNode(omp_get_thread_num())) {
+        if (handle.GetNumaNode() != ti->GetNumaNode(omp_get_thread_num())) {
           numa_thread_errors++;
         }
       });
@@ -584,7 +584,7 @@ inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_so_per_type,
       EXPECT_GT(num_so_per_type / 4, numa_thread_errors.load());
     }
     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
-    for (int n = 0; n < ti.GetNumaNodes(); ++n) {
+    for (int n = 0; n < ti->GetNumaNodes(); ++n) {
       EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
     }
   }

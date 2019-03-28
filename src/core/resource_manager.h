@@ -482,16 +482,16 @@ class ResourceManager {
 #pragma omp parallel
         {
           auto tid = omp_get_thread_num();
-          auto nid = thread_info_.GetNumaNode(tid);
-          auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
+          auto nid = thread_info_->GetNumaNode(tid);
+          auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
           auto* so_container = so_containers[nid];
-          assert(thread_info_.GetNumaNode(tid) ==
+          assert(thread_info_->GetNumaNode(tid) ==
                  numa_node_of_cpu(sched_getcpu()));
 
           // use static scheduling for now
           auto correction = so_container->size() % threads_in_numa == 0 ? 0 : 1;
           auto chunk = so_container->size() / threads_in_numa + correction;
-          auto start = thread_info_.GetNumaThreadId(tid) * chunk;
+          auto start = thread_info_->GetNumaThreadId(tid) * chunk;
           auto end = std::min(so_container->size(), start + chunk);
 
           // #pragma omp critical
@@ -552,8 +552,8 @@ class ResourceManager {
             }
           });
         }
-        // std::cout << "chunk " <<  chunk << " num_so " << num_so << " maxthreads " << thread_info_.GetMaxThreads() << std::endl;
-        chunk = std::min(chunk_param, num_so / thread_info_.GetMaxThreads());
+        // std::cout << "chunk " <<  chunk << " num_so " << num_so << " maxthreads " << thread_info_->GetMaxThreads() << std::endl;
+        chunk = std::min(chunk_param, num_so / thread_info_->GetMaxThreads());
         chunk = chunk >= 1 ? chunk : 1;
         // std::cout << "new chunk " << chunk << std::endl << std::endl;
 
@@ -573,11 +573,11 @@ class ResourceManager {
         std::vector<std::atomic<uint64_t>*> counters(max_threads, nullptr);
         std::vector<uint64_t> max_counters(max_threads);
         for (int thread_cnt = 0; thread_cnt < max_threads; thread_cnt++) {
-          uint64_t current_nid = thread_info_.GetNumaNode(thread_cnt);
+          uint64_t current_nid = thread_info_->GetNumaNode(thread_cnt);
 
-          auto correction = num_chunks_per_numa[current_nid] % thread_info_.GetThreadsInNumaNode(current_nid) == 0 ? 0 : 1;
-          uint64_t num_chunks_per_thread = num_chunks_per_numa[current_nid] / thread_info_.GetThreadsInNumaNode(current_nid) + correction;
-          auto start = num_chunks_per_thread * thread_info_.GetNumaThreadId(thread_cnt);
+          auto correction = num_chunks_per_numa[current_nid] % thread_info_->GetThreadsInNumaNode(current_nid) == 0 ? 0 : 1;
+          uint64_t num_chunks_per_thread = num_chunks_per_numa[current_nid] / thread_info_->GetThreadsInNumaNode(current_nid) + correction;
+          auto start = num_chunks_per_thread * thread_info_->GetNumaThreadId(thread_cnt);
           auto end = std::min(num_chunks_per_numa[current_nid], start + num_chunks_per_thread);
 
           counters[thread_cnt] = new std::atomic<uint64_t>(start);
@@ -595,13 +595,13 @@ class ResourceManager {
 #pragma omp parallel
         {
           auto tid = omp_get_thread_num();
-          auto nid = thread_info_.GetNumaNode(tid);
+          auto nid = thread_info_->GetNumaNode(tid);
           // thread private variables (compilation error with
           // firstprivate(chunk, numa_node_) with some openmp versions clause)
           auto p_numa_nodes = numa_nodes_;
           auto p_max_threads = omp_get_max_threads();
           auto p_chunk = chunk;
-          assert(thread_info_.GetNumaNode(tid) ==
+          assert(thread_info_->GetNumaNode(tid) ==
                  numa_node_of_cpu(sched_getcpu()));
 
           // dynamic scheduling
@@ -613,7 +613,7 @@ class ResourceManager {
           for (int thread_cnt = 0; thread_cnt < p_max_threads; thread_cnt++) {
             // uint64_t thread_cnt = 0;
             uint64_t current_tid = (tid + thread_cnt) % p_max_threads;
-            uint64_t current_nid = thread_info_.GetNumaNode(current_tid);
+            uint64_t current_nid = thread_info_->GetNumaNode(current_tid);
 
             auto* so_container = so_containers[current_nid];
             uint64_t old_count = (*(counters[current_tid]))++;
@@ -690,12 +690,12 @@ class ResourceManager {
 #pragma omp parallel
         {
           auto tid = omp_get_thread_num();
-          auto nid = thread_info_.GetNumaNode(tid);
+          auto nid = thread_info_->GetNumaNode(tid);
           // thread private variables (compilation error with
           // firstprivate(chunk, numa_node_) with some openmp versions clause)
           auto p_numa_nodes = numa_nodes_;
           auto p_chunk = chunk;
-          assert(thread_info_.GetNumaNode(tid) ==
+          assert(thread_info_->GetNumaNode(tid) ==
                  numa_node_of_cpu(sched_getcpu()));
 
           // dynamic scheduling
@@ -814,9 +814,9 @@ class ResourceManager {
     // threads associated with each numa domain
     std::vector<uint64_t> so_per_numa(numa_nodes_);
     uint64_t cummulative = 0;
-    auto max_threads = thread_info_.GetMaxThreads();
+    auto max_threads = thread_info_->GetMaxThreads();
     for (int n = 1; n < numa_nodes_; ++n) {
-      auto threads_in_numa = thread_info_.GetThreadsInNumaNode(n);
+      auto threads_in_numa = thread_info_->GetThreadsInNumaNode(n);
       uint64_t num_so = GetNumSimObjects() * threads_in_numa / max_threads;
       so_per_numa[n] = num_so;
       cummulative += num_so;
@@ -868,7 +868,7 @@ class ResourceManager {
 #pragma omp parallel
           {
             auto tid = omp_get_thread_num();
-            auto nid = thread_info_.GetNumaNode(tid);
+            auto nid = thread_info_->GetNumaNode(tid);
             if (nid == n) {
               auto old = std::atomic_exchange(&resized, true);
               if (!old) {
@@ -879,17 +879,17 @@ class ResourceManager {
 #pragma omp parallel
           {
             auto tid = omp_get_thread_num();
-            auto nid = thread_info_.GetNumaNode(tid);
+            auto nid = thread_info_->GetNumaNode(tid);
             if (nid == n) {
-              auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
+              auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
               auto& sohandles = sorted_so_handles[n][t];
-              assert(thread_info_.GetNumaNode(tid) ==
+              assert(thread_info_->GetNumaNode(tid) ==
                      numa_node_of_cpu(sched_getcpu()));
 
               // use static scheduling
               auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
               auto chunk = sohandles.size() / threads_in_numa + correction;
-              auto start = thread_info_.GetNumaThreadId(tid) * chunk;
+              auto start = thread_info_->GetNumaThreadId(tid) * chunk;
               auto end = std::min(sohandles.size(), start + chunk);
 
               for (uint64_t e = start; e < end; e++) {
@@ -934,7 +934,7 @@ class ResourceManager {
 
     // FIXME
     // // TODO(lukas) do we need this? we don't change the scheduling anymore
-    thread_info_.Renew();
+    thread_info_->Renew();
   }
 
   /// NB: This method is not thread-safe! This function might invalidate
@@ -1054,7 +1054,7 @@ class ResourceManager {
   /// Mapping between SoUid and SoHandle (stored location)
   std::unordered_map<SoUid, SoHandle> so_storage_location_;  //!
 
-  ThreadInfo thread_info_;  //!
+  ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
   /// Conversion of simulation object types from the compile time params
   /// (`SimObjectTypes`) to a tuple of containers:

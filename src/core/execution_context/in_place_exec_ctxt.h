@@ -78,19 +78,18 @@ class InPlaceExecutionContext {
     auto* rm = TSimulation::GetActive()->GetResourceManager();
     for (uint64_t t = 0; t < rm->NumberOfTypes(); ++t) {
       // group execution contexts by numa domain
-      std::vector<uint64_t> new_so_per_numa(tinfo_.GetNumaNodes());
-      std::vector<uint64_t> thread_offsets(tinfo_.GetMaxThreads());
+      std::vector<uint64_t> new_so_per_numa(tinfo_->GetNumaNodes());
+      std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
 
-      int tid = 0;
-      for (auto* ctxt : all_exec_ctxts) {
-        int nid = tinfo_.GetNumaNode(tid);
+      for (uint64_t tid = 0; tid < tinfo_->GetMaxThreads(); ++tid) {
+        auto* ctxt = all_exec_ctxts[tid];
+        int nid = tinfo_->GetNumaNode(tid);
         thread_offsets[tid] = new_so_per_numa[nid];
         new_so_per_numa[nid] += ctxt->new_sim_objects_.GetNumSimObjects(nid, t);
-        tid++;
       }
 
       // reserve enough memory in ResourceManager
-      std::vector<uint64_t> numa_offsets(tinfo_.GetNumaNodes());
+      std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
       for (unsigned n = 0; n < new_so_per_numa.size(); n++) {
         numa_offsets[n] = rm->GrowSoContainer(new_so_per_numa[n], n, t);
       }
@@ -99,14 +98,14 @@ class InPlaceExecutionContext {
 #pragma omp parallel for schedule(static, 1)
       for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
         auto* ctxt = all_exec_ctxts[i];
-        int nid = tinfo_.GetNumaNode(i);
+        int nid = tinfo_->GetNumaNode(i);
         uint64_t offset = thread_offsets[i] + numa_offsets[nid];
         rm->AddNewSimObjects(nid, t, offset, ctxt->new_sim_objects_);
       }
 
       for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
         auto* ctxt = all_exec_ctxts[i];
-        int nid = tinfo_.GetNumaNode(i);
+        int nid = tinfo_->GetNumaNode(i);
         uint64_t offset = thread_offsets[i] + numa_offsets[nid];
         rm->AddNewSimObjects1(nid, t, offset, ctxt->new_sim_objects_);
       }
@@ -128,20 +127,6 @@ class InPlaceExecutionContext {
       }
       ctxt->remove_.clear();
     }
-
-    // // new sim objects
-    // auto* rm = TSimulation::GetActive()->GetResourceManager();
-    // new_sim_objects_.ApplyOnAllElements(
-    //     [&](auto&& sim_object, SoHandle) { rm->push_back(sim_object); });
-    // new_sim_objects_.Clear();
-    //
-    // // removed sim objects
-    // // remove them after adding new ones (maybe one has been removed
-    // // that was in new_sim_objects_)
-    // for (auto& uid : remove_) {
-    //   rm->Remove(uid);
-    // }
-    // remove_.clear();
   }
 
   /// Execute a series of operations on a simulation object in the order given
@@ -341,7 +326,7 @@ class InPlaceExecutionContext {
     std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
   };
 
-  ThreadInfo tinfo_;
+  ThreadInfo* tinfo_ = ThreadInfo::GetInstance();
 
   /// Contains unique ids of sim objects that will be removed at the end of each
   /// iteration.
