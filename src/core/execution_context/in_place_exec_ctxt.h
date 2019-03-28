@@ -103,11 +103,13 @@ class InPlaceExecutionContext {
         rm->AddNewSimObjects(nid, t, offset, ctxt->new_sim_objects_);
       }
 
+      // part 2 is not thread safe!
       for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
         auto* ctxt = all_exec_ctxts[i];
         int nid = tinfo_->GetNumaNode(i);
         uint64_t offset = thread_offsets[i] + numa_offsets[nid];
-        rm->AddNewSimObjects1(nid, t, offset, ctxt->new_sim_objects_);
+        rm->AddNewSimObjectsToSoStorageMap(nid, t, offset,
+                                           ctxt->new_sim_objects_);
       }
     }
 

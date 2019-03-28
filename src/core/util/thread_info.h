@@ -29,10 +29,10 @@ namespace bdm {
 /// NB: Threads **must** be bound to CPUs using `OMP_PROC_BIND=true`.
 class ThreadInfo {
  public:
-   static ThreadInfo* GetInstance() {
-     static ThreadInfo kInstance;
-     return &kInstance;
-   }
+  static ThreadInfo* GetInstance() {
+    static ThreadInfo kInstance;
+    return &kInstance;
+  }
 
   /// Returns the number of NUMA nodes on this machine
   int GetNumaNodes() const { return numa_nodes_; }

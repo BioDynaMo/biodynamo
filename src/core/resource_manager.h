@@ -29,8 +29,6 @@
 #include <utility>
 #include <vector>
 
-// #include <tbb/concurrent_unordered_map.h>
-
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
 #ifdef __APPLE__
@@ -459,7 +457,6 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   template <typename TFunction>
   void ApplyOnAllElementsParallel(TFunction&& function) {
-    // std::cout  << "NEW CALL TO ---------------------------------" << std::endl;
     for (uint16_t t = 0; t < NumberOfTypes(); ++t) {
       // only needed to get the type of the container
       ::bdm::Apply(&sim_objects_[0], t, [&](auto* container) {
@@ -494,32 +491,12 @@ class ResourceManager {
           auto start = thread_info_->GetNumaThreadId(tid) * chunk;
           auto end = std::min(so_container->size(), start + chunk);
 
-          // #pragma omp critical
-          // {
-          //   std::cout
-          //     << "\nt        " << t
-          //     << "\nnid      " << nid
-          //     << "\ntid      " << tid
-          //     << "\ntinnuma  " << threads_in_numa
-          //     << "\ncont siz " << so_container->size()
-          //     << "\nstart    " << start
-          //     << "\nend      " << end
-          //     << std::endl;
-          // }
-
           for (uint64_t i = start; i < end; ++i) {
             function((*so_container)[i], SoHandle(nid, t, i));
           }
         }
       });
     }
-    // std::cout  << "FINISHED ---------------------------------" << std::endl;
-    //  ApplyOnAllTypes([&](auto* container, uint16_t numa_id, uint16_t type_id) {
-    //   #pragma omp parallel for
-    //   for(uint64_t i = 0; i < container->size(); i++) {
-    //     function((*container)[i], SoHandle(numa_id, type_id, i));
-    //   }
-    //  });
   }
 
   /// Apply a function on all elements.\n
@@ -554,7 +531,8 @@ class ResourceManager {
         }
 
         // adapt chunk size
-        uint64_t factor = (num_so / thread_info_->GetMaxThreads()) / chunk_param;
+        uint64_t factor =
+            (num_so / thread_info_->GetMaxThreads()) / chunk_param;
         chunk = (num_so / thread_info_->GetMaxThreads()) / (factor + 1);
         chunk = chunk >= 1 ? chunk : 1;
 
@@ -566,9 +544,8 @@ class ResourceManager {
         std::vector<uint64_t> num_chunks_per_numa(numa_nodes_);
         for (int n = 0; n < numa_nodes_; n++) {
           auto correction = so_containers[n]->size() % chunk == 0 ? 0 : 1;
-          num_chunks_per_numa[n] = so_containers[n]->size() / chunk + correction;
-
-          // std::cout << n << " num chunks per numa " << num_chunks_per_numa[n] << " cont size " << so_containers[n]->size() << std::endl;
+          num_chunks_per_numa[n] =
+              so_containers[n]->size() / chunk + correction;
         }
 
         std::vector<std::atomic<uint64_t>*> counters(max_threads, nullptr);
@@ -576,21 +553,23 @@ class ResourceManager {
         for (int thread_cnt = 0; thread_cnt < max_threads; thread_cnt++) {
           uint64_t current_nid = thread_info_->GetNumaNode(thread_cnt);
 
-          auto correction = num_chunks_per_numa[current_nid] % thread_info_->GetThreadsInNumaNode(current_nid) == 0 ? 0 : 1;
-          uint64_t num_chunks_per_thread = num_chunks_per_numa[current_nid] / thread_info_->GetThreadsInNumaNode(current_nid) + correction;
-          auto start = num_chunks_per_thread * thread_info_->GetNumaThreadId(thread_cnt);
-          auto end = std::min(num_chunks_per_numa[current_nid], start + num_chunks_per_thread);
+          auto correction =
+              num_chunks_per_numa[current_nid] %
+                          thread_info_->GetThreadsInNumaNode(current_nid) ==
+                      0
+                  ? 0
+                  : 1;
+          uint64_t num_chunks_per_thread =
+              num_chunks_per_numa[current_nid] /
+                  thread_info_->GetThreadsInNumaNode(current_nid) +
+              correction;
+          auto start =
+              num_chunks_per_thread * thread_info_->GetNumaThreadId(thread_cnt);
+          auto end = std::min(num_chunks_per_numa[current_nid],
+                              start + num_chunks_per_thread);
 
           counters[thread_cnt] = new std::atomic<uint64_t>(start);
           max_counters[thread_cnt] = end;
-
-          // std::cout
-          //     << "\nthread_cnt "  << thread_cnt
-          //     << "\ncnid       "  << current_nid
-          //     << "\nstart      "  << start
-          //     << "\nend        "  << end
-          //     << "\nncpt       "  << num_chunks_per_thread
-          //   << std::endl;
         }
 
 #pragma omp parallel
@@ -613,42 +592,28 @@ class ResourceManager {
           // are imbalances.
           for (int n = 0; n < p_numa_nodes; n++) {
             uint64_t current_nid = (nid + n) % p_numa_nodes;
-          for (int thread_cnt = 0; thread_cnt < p_max_threads; thread_cnt++) {
-            // uint64_t thread_cnt = 0;
-            uint64_t current_tid = (tid + thread_cnt) % p_max_threads;
-            if(current_nid != thread_info_->GetNumaNode(current_tid)) {
-              continue;
-            }
-
-            auto* so_container = so_containers[current_nid];
-            uint64_t old_count = (*(counters[current_tid]))++;
-            while (old_count < max_counters[current_tid]) {
-              start = old_count * p_chunk;
-              end = std::min(static_cast<uint64_t>(so_container->size()),
-                             start + p_chunk);
-
-              //  #pragma omp critical
-              //  {
-              //    std::cout
-              //      << "\ntid     " << tid
-              //      << "\ntCnt     " << thread_cnt
-              //      << "\ncurr tid " << current_tid
-              //      << "\nstart    " << start
-              //      << "\nend      " << end
-              //      << "\nt        " << t
-              //      << "\nnid      " << current_nid
-              //      << "\ncont siz " << so_container->size()
-              //      << std::endl << std::endl;
-              //  }
-
-              for (uint64_t i = start; i < end; ++i) {
-                function((*so_container)[i], SoHandle(current_nid, t, i));
+            for (int thread_cnt = 0; thread_cnt < p_max_threads; thread_cnt++) {
+              // uint64_t thread_cnt = 0;
+              uint64_t current_tid = (tid + thread_cnt) % p_max_threads;
+              if (current_nid != thread_info_->GetNumaNode(current_tid)) {
+                continue;
               }
 
-              old_count = (*(counters[current_tid]))++;
-            }
-          }  // work stealing loop numa_nodes_
-        }  // work stealing loop  threads
+              auto* so_container = so_containers[current_nid];
+              uint64_t old_count = (*(counters[current_tid]))++;
+              while (old_count < max_counters[current_tid]) {
+                start = old_count * p_chunk;
+                end = std::min(static_cast<uint64_t>(so_container->size()),
+                               start + p_chunk);
+
+                for (uint64_t i = start; i < end; ++i) {
+                  function((*so_container)[i], SoHandle(current_nid, t, i));
+                }
+
+                old_count = (*(counters[current_tid]))++;
+              }
+            }  // work stealing loop numa_nodes_
+          }    // work stealing loop  threads
         }
 
         for (auto* counter : counters) {
@@ -959,11 +924,12 @@ class ResourceManager {
         SoHandle(numa_node, GetTypeIndex<TSo>(), el_idx);
   }
 
-  // FIXME
   /// Adds `new_sim_objects` to `sim_objects_[numa_node]`. `offset` specifies
   /// the index at which the first element is inserted. Sim objects are inserted
   /// consecutively. This methos is thread safe only if insertion intervals do
-  /// not overlap!
+  /// not overlap! \n
+  /// This method does not update `so_storage_location_`.
+  /// \see `AddNewSimObjectsToSoStorageMap`
   void AddNewSimObjects(typename SoHandle::NumaNode_t numa_node,
                         typename SoHandle::TypeIdx_t type_id, uint64_t offset,
                         ResourceManager& other_rm) {
@@ -981,9 +947,13 @@ class ResourceManager {
     });
   }
 
-  void AddNewSimObjects1(typename SoHandle::NumaNode_t numa_node,
-                        typename SoHandle::TypeIdx_t type_id, uint64_t offset,
-                        ResourceManager& other_rm) {
+  /// Second part of adding simulation objects to this ResourceManager.
+  /// NB: This method is not thread-safe!
+  /// Part 1 \see AddNewSimObjects
+  void AddNewSimObjectsToSoStorageMap(typename SoHandle::NumaNode_t numa_node,
+                                      typename SoHandle::TypeIdx_t type_id,
+                                      uint64_t offset,
+                                      ResourceManager& other_rm) {
     // ::bdm::Apply(&other_rm.sim_objects_[numa_node], type_id, [&,this](auto*
     // new_sim_objects) {
     ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto* container) {
