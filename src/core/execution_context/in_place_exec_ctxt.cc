@@ -99,10 +99,7 @@ void InPlaceExecutionContext::Execute(
 }
 
 void InPlaceExecutionContext::push_back(SimObject* new_so) {
-  while (mutex_.test_and_set(std::memory_order_acquire)) {
-  }
   new_sim_objects_[new_so->GetUid()] = new_so;
-  mutex_.clear(std::memory_order_release);
 }
 
 void InPlaceExecutionContext::ForEachNeighbor(
@@ -172,7 +169,7 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
 }
 
 SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
-  auto* so = GetCachedSimObject(uid, false);
+  auto* so = GetCachedSimObject(uid);
   if (so != nullptr) { return so; }
 
   auto* sim = Simulation::GetActive();
@@ -200,21 +197,11 @@ void InPlaceExecutionContext::DisableNeighborGuard() {
   Simulation::GetActive()->GetGrid()->DisableNeighborMutexes();
 }
 
-SimObject* InPlaceExecutionContext::GetCachedSimObject(SoUid uid, bool protect) {
-  // returning a non const SimObject is not a problem for race conditions.
-  // it has to be inside the central or surrounding boxes which are protected
-  // if `DisableNeighborGuard` has not been called.
-  // while (!protect && mutex_.test_and_set(std::memory_order_acquire)) {
-  if(protect) {
-    while (mutex_.test_and_set(std::memory_order_acquire)) {}
-  }
+SimObject* InPlaceExecutionContext::GetCachedSimObject(SoUid uid) {
   SimObject* ret_val = nullptr;
   auto search_it = new_sim_objects_.find(uid);
   if (search_it != new_sim_objects_.end()) {
     ret_val = search_it->second;
-  }
-  if (protect) {
-    mutex_.clear(std::memory_order_release);
   }
   return ret_val;
 }
