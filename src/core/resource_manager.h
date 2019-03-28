@@ -552,10 +552,11 @@ class ResourceManager {
             }
           });
         }
-        // std::cout << "chunk " <<  chunk << " num_so " << num_so << " maxthreads " << thread_info_->GetMaxThreads() << std::endl;
-        chunk = std::min(chunk_param, num_so / thread_info_->GetMaxThreads());
+
+        // adapt chunk size
+        uint64_t factor = (num_so / thread_info_->GetMaxThreads()) / chunk_param;
+        chunk = (num_so / thread_info_->GetMaxThreads()) / (factor + 1);
         chunk = chunk >= 1 ? chunk : 1;
-        // std::cout << "new chunk " << chunk << std::endl << std::endl;
 
         // use dynamic scheduling
         // Unfortunately openmp's built in functionality can't be used, since
