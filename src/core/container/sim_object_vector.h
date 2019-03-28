@@ -28,8 +28,8 @@ class SimObjectVector {
  public:
   /// NB: Elements will not be initilized.
   SimObjectVector() {
-    data_.resize(thread_info_.GetNumaNodes());
-    size_.resize(thread_info_.GetNumaNodes());
+    data_.resize(thread_info_->GetNumaNodes());
+    size_.resize(thread_info_->GetNumaNodes());
     reserve();
   }
 
@@ -43,7 +43,7 @@ class SimObjectVector {
     clear();
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    for (int n = 0; n < thread_info_.GetNumaNodes(); n++) {
+    for (int n = 0; n < thread_info_->GetNumaNodes(); n++) {
       auto num_sos = rm->GetNumSimObjects(n);
       data_[n].reserve(rm->GetNumSimObjects(n));
       size_[n] = num_sos;
@@ -74,7 +74,7 @@ class SimObjectVector {
   /// one std::vector<T> for each numa node
   std::vector<std::vector<T>> data_;
   std::vector<size_t> size_;
-  ThreadInfo thread_info_;
+  ThreadInfo* thread_info_ = ThreadInfo::GetInstance();
 };
 
 }  // namespace bdm
