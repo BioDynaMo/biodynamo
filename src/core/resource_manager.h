@@ -377,7 +377,7 @@ class ResourceManager {
   /// the index at which the first element is inserted. Sim objects are inserted
   /// consecutively. This methos is thread safe only if insertion intervals do
   /// not overlap!
-  void AddNewSimObjects(typename SoHandle::NumaNode_t numa_node, uint64_t offset, const std::unordered_map<SoUid, SimObject*>& new_sim_objects) {
+  void AddNewSimObjects(typename SoHandle::NumaNode_t numa_node, uint64_t offset, const tbb::concurrent_unordered_map<SoUid, SimObject*>& new_sim_objects) {
     uint64_t i = 0;
     for(auto& pair : new_sim_objects) {
       auto uid = pair.first;

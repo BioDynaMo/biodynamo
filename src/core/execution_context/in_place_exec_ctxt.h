@@ -16,7 +16,7 @@
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
 #include <functional>
-#include <unordered_map>
+#include <tbb/concurrent_unordered_map.h>
 #include <vector>
 #include "core/sim_object/so_uid.h"
 #include "core/util/thread_info.h"
@@ -98,14 +98,14 @@ class InPlaceExecutionContext {
   std::vector<SoUid> remove_;
 
   /// Pointer to new sim objects
-  std::unordered_map<SoUid, SimObject*> new_sim_objects_;
+  tbb::concurrent_unordered_map<SoUid, SimObject*> new_sim_objects_;
 
   /// prevent race conditions for cached SimObjects
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
   std::vector<std::pair<const SimObject*,double>> neighbor_cache_;
 
-  SimObject* GetCachedSimObject(SoUid uid, bool protect = true);
+  SimObject* GetCachedSimObject(SoUid uid);
 };
 
 }  // namespace bdm
