@@ -22,15 +22,15 @@ void ResourceManager::ApplyOnAllElementsParallel(
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
-    auto nid = thread_info_.GetNumaNode(tid);
-    auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
+    auto nid = thread_info_->GetNumaNode(tid);
+    auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
     auto& numa_sos = sim_objects_[nid];
-    assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
+    assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
     // use static scheduling for now
     auto correction = numa_sos.size() % threads_in_numa == 0 ? 0 : 1;
     auto chunk = numa_sos.size() / threads_in_numa + correction;
-    auto start = thread_info_.GetNumaThreadId(tid) * chunk;
+    auto start = thread_info_->GetNumaThreadId(tid) * chunk;
     auto end = std::min(numa_sos.size(), start + chunk);
 
     for (uint64_t i = start; i < end; ++i) {
@@ -45,7 +45,7 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
   // Unfortunately openmp's built in functionality can't be used, since
   // threads belong to different numa domains and thus operate on
   // different containers
-  auto numa_nodes = thread_info_.GetNumaNodes();
+  auto numa_nodes = thread_info_->GetNumaNodes();
   std::vector<std::atomic<uint64_t>*> counters(numa_nodes, nullptr);
   std::vector<uint64_t> max_counters(numa_nodes);
   for (int n = 0; n < numa_nodes; n++) {
@@ -58,13 +58,13 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
-    auto nid = thread_info_.GetNumaNode(tid);
+    auto nid = thread_info_->GetNumaNode(tid);
 
     // thread private variables (compilation error with
     // firstprivate(chunk, numa_node_) with some openmp versions clause)
-    auto p_numa_nodes = thread_info_.GetNumaNodes();
+    auto p_numa_nodes = thread_info_->GetNumaNodes();
     auto p_chunk = chunk;
-    assert(thread_info_.GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
+    assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
     // dynamic scheduling
     uint64_t start = 0;
@@ -99,12 +99,12 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
 void ResourceManager::SortAndBalanceNumaNodes() {
   // balance simulation objects per numa node according to the number of
   // threads associated with each numa domain
-  auto numa_nodes = thread_info_.GetNumaNodes();
+  auto numa_nodes = thread_info_->GetNumaNodes();
   std::vector<uint64_t> so_per_numa(numa_nodes);
   uint64_t cummulative = 0;
-  auto max_threads = thread_info_.GetMaxThreads();
+  auto max_threads = thread_info_->GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
-    auto threads_in_numa = thread_info_.GetThreadsInNumaNode(n);
+    auto threads_in_numa = thread_info_->GetThreadsInNumaNode(n);
     uint64_t num_so = GetNumSimObjects() * threads_in_numa / max_threads;
     so_per_numa[n] = num_so;
     cummulative += num_so;
@@ -150,7 +150,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 #pragma omp parallel
     {
       auto tid = omp_get_thread_num();
-      auto nid = thread_info_.GetNumaNode(tid);
+      auto nid = thread_info_->GetNumaNode(tid);
       if (nid == n) {
         auto old = std::atomic_exchange(&resized, true);
         if (!old) {
@@ -161,18 +161,18 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 #pragma omp parallel
     {
       auto tid = omp_get_thread_num();
-      auto nid = thread_info_.GetNumaNode(tid);
+      auto nid = thread_info_->GetNumaNode(tid);
 
       if (nid == n) {
-        auto threads_in_numa = thread_info_.GetThreadsInNumaNode(nid);
+        auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
         auto& sohandles = sorted_so_handles[n];
-        assert(thread_info_.GetNumaNode(tid) ==
+        assert(thread_info_->GetNumaNode(tid) ==
                numa_node_of_cpu(sched_getcpu()));
 
         // use static scheduling
         auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
         auto chunk = sohandles.size() / threads_in_numa + correction;
-        auto start = thread_info_.GetNumaThreadId(tid) * chunk;
+        auto start = thread_info_->GetNumaThreadId(tid) * chunk;
         auto end = std::min(sohandles.size(), start + chunk);
 
         for (uint64_t e = start; e < end; e++) {
@@ -196,7 +196,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 
   // FIXME
   // // TODO(lukas) do we need this? we don't change the scheduling anymore
-  // thread_info_.Renew();
+  // thread_info_->Renew();
 }
 
 }  // namespace bdm

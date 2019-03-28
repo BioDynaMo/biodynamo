@@ -91,7 +91,7 @@ class InPlaceExecutionContext {
   void DisableNeighborGuard();
 
  private:
-  static ThreadInfo tinfo_;
+  static ThreadInfo* tinfo_;
 
   /// Contains unique ids of sim objects that will be removed at the end of each
   /// iteration.

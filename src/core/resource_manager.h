@@ -427,7 +427,7 @@ class ResourceManager {
 
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
-  ThreadInfo thread_info_;  //!
+  ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
 #ifdef USE_OPENCL
   cl::Context opencl_context_;             //!
