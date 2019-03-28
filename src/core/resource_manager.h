@@ -611,10 +611,14 @@ class ResourceManager {
 
           // this loop implements work stealing from other threads if there
           // are imbalances.
+          for (int n = 0; n < p_numa_nodes; n++) {
+            uint64_t current_nid = (nid + n) % p_numa_nodes;
           for (int thread_cnt = 0; thread_cnt < p_max_threads; thread_cnt++) {
             // uint64_t thread_cnt = 0;
             uint64_t current_tid = (tid + thread_cnt) % p_max_threads;
-            uint64_t current_nid = thread_info_->GetNumaNode(current_tid);
+            if(current_nid != thread_info_->GetNumaNode(current_tid)) {
+              continue;
+            }
 
             auto* so_container = so_containers[current_nid];
             uint64_t old_count = (*(counters[current_tid]))++;
@@ -643,7 +647,8 @@ class ResourceManager {
 
               old_count = (*(counters[current_tid]))++;
             }
-          }  // work stealing loop
+          }  // work stealing loop numa_nodes_
+        }  // work stealing loop  threads
         }
 
         for (auto* counter : counters) {
