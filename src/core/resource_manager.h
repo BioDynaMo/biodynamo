@@ -756,6 +756,7 @@ class ResourceManager {
   /// the given simulation object type.
   template <typename TSo>
   void Reserve(size_t capacity) {
+    so_storage_location_.reserve(capacity);
     for (uint16_t n = 0; n < numa_nodes_; n++) {
       GetContainer<TSo>(n)->reserve(capacity);
     }
