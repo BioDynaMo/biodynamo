@@ -41,18 +41,46 @@ void ResourceManager::ApplyOnAllElementsParallel(
 
 void ResourceManager::ApplyOnAllElementsParallelDynamic(
     uint64_t chunk, const std::function<void(SimObject*, SoHandle)>& function) {
+  // adapt chunk size
+  auto num_so = GetNumSimObjects();
+  uint64_t factor = (num_so / thread_info_->GetMaxThreads()) / chunk;
+  chunk = (num_so / thread_info_->GetMaxThreads()) / (factor + 1);
+  chunk = chunk >= 1 ? chunk : 1;
+
   // use dynamic scheduling
   // Unfortunately openmp's built in functionality can't be used, since
   // threads belong to different numa domains and thus operate on
   // different containers
   auto numa_nodes = thread_info_->GetNumaNodes();
-  std::vector<std::atomic<uint64_t>*> counters(numa_nodes, nullptr);
-  std::vector<uint64_t> max_counters(numa_nodes);
+  auto max_threads = omp_get_max_threads();
+  std::vector<uint64_t> num_chunks_per_numa(numa_nodes);
   for (int n = 0; n < numa_nodes; n++) {
-    counters[n] = new std::atomic<uint64_t>(0);
-    // calculate value max_counters for each numa domain
     auto correction = sim_objects_[n].size() % chunk == 0 ? 0 : 1;
-    max_counters[n] = sim_objects_[n].size() / chunk + correction;
+    num_chunks_per_numa[n] = sim_objects_[n].size() / chunk + correction;
+  }
+
+  std::vector<std::atomic<uint64_t>*> counters(max_threads, nullptr);
+  std::vector<uint64_t> max_counters(max_threads);
+  for (int thread_cnt = 0; thread_cnt < max_threads; thread_cnt++) {
+    uint64_t current_nid = thread_info_->GetNumaNode(thread_cnt);
+
+    auto correction =
+        num_chunks_per_numa[current_nid] %
+                    thread_info_->GetThreadsInNumaNode(current_nid) ==
+                0
+            ? 0
+            : 1;
+    uint64_t num_chunks_per_thread =
+        num_chunks_per_numa[current_nid] /
+            thread_info_->GetThreadsInNumaNode(current_nid) +
+        correction;
+    auto start =
+        num_chunks_per_thread * thread_info_->GetNumaThreadId(thread_cnt);
+    auto end = std::min(num_chunks_per_numa[current_nid],
+                        start + num_chunks_per_thread);
+
+    counters[thread_cnt] = new std::atomic<uint64_t>(start);
+    max_counters[thread_cnt] = end;
   }
 
 #pragma omp parallel
@@ -63,6 +91,7 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
     // thread private variables (compilation error with
     // firstprivate(chunk, numa_node_) with some openmp versions clause)
     auto p_numa_nodes = thread_info_->GetNumaNodes();
+    auto p_max_threads = omp_get_max_threads();
     auto p_chunk = chunk;
     assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
@@ -75,24 +104,31 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
     // is finished the thread looks for tasks on other domains
     for (int n = 0; n < p_numa_nodes; n++) {
       uint64_t current_nid = (nid + n) % p_numa_nodes;
-
-      auto& numa_sos = sim_objects_[current_nid];
-      uint64_t old_count = (*(counters[current_nid]))++;
-      while (old_count <= max_counters[current_nid]) {
-        start = old_count * p_chunk;
-        end = std::min(static_cast<uint64_t>(numa_sos.size()), start + p_chunk);
-
-        for (uint64_t i = start; i < end; ++i) {
-          function(numa_sos[i], SoHandle(current_nid, i));
+      for (int thread_cnt = 0; thread_cnt < p_max_threads; thread_cnt++) {
+        uint64_t current_tid = (tid + thread_cnt) % p_max_threads;
+        if (current_nid != thread_info_->GetNumaNode(current_tid)) {
+          continue;
         }
 
-        old_count = (*(counters[current_nid]))++;
-      }
-    }
+        auto& numa_sos = sim_objects_[current_nid];
+        uint64_t old_count = (*(counters[current_tid]))++;
+        while (old_count < max_counters[current_tid]) {
+          start = old_count * p_chunk;
+          end =
+              std::min(static_cast<uint64_t>(numa_sos.size()), start + p_chunk);
+
+          for (uint64_t i = start; i < end; ++i) {
+            function(numa_sos[i], SoHandle(current_nid, i));
+          }
+
+          old_count = (*(counters[current_tid]))++;
+        }
+      }  // work stealing loop numa_nodes_
+    }    // work stealing loop  threads
   }
 
-  for (int n = 0; n < numa_nodes; n++) {
-    delete counters[n];
+  for (auto* counter : counters) {
+    delete counter;
   }
 }
 
