@@ -998,13 +998,6 @@ class ResourceManager {
     }
   }
 
-#ifdef USE_OPENCL
-  cl::Context* GetOpenCLContext() { return &opencl_context_; }
-  cl::CommandQueue* GetOpenCLCommandQueue() { return &opencl_command_queue_; }
-  std::vector<cl::Device>* GetOpenCLDeviceList() { return &opencl_devices_; }
-  std::vector<cl::Program>* GetOpenCLProgramList() { return &opencl_programs_; }
-#endif
-
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
   ///         invariant to the Backend. This means that even if ResourceManager
@@ -1046,14 +1039,6 @@ class ResourceManager {
   TupleOfSOContainers* sim_objects_ = nullptr;  //[numa_nodes_]
 
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
-
-#ifdef USE_OPENCL
-  cl::Context opencl_context_;             //!
-  cl::CommandQueue opencl_command_queue_;  //!
-  // Currently only support for one GPU device
-  std::vector<cl::Device> opencl_devices_;    //!
-  std::vector<cl::Program> opencl_programs_;  //!
-#endif
 
   friend class SimulationBackup;
   BDM_CLASS_DEF_NV(ResourceManager, 1);
