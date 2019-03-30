@@ -15,3 +15,25 @@
 
 # This script is to prevent the test from being run by test/system-test.sh.
 # This particular test is hooked up in $BDM_PROJECT_DIR/CMakeLists.txt.
+
+set -e -x
+
+SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+tmp_dir=$(mktemp -d)
+trap "rm -rf \"${tmp_dir}\"" EXIT
+
+cd "${tmp_dir}"
+cp -r "${SOURCE}/cell_division_gpu" .
+cd cell_division_gpu
+
+# Add -Dcuda and/or -Dopencl cmake flags if available on test system
+cmake .
+make -j4
+
+# start simulation
+./cell_division_gpu
+
+RETURN_CODE=$?
+
+exit $RETURN_CODE

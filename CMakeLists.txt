@@ -271,8 +271,8 @@ if (test)
   if (NOT coverage)
     if(OPENCL_FOUND OR CUDA_FOUND)
       bdm_add_executable(cell_division_gpu
-                         SOURCES test/system/cell_division_gpu.cc
-                         HEADERS test/system/cell_division_gpu.h
+                         SOURCES test/system/cell_division_gpu/src/cell_division_gpu.cc
+                         HEADERS test/system/cell_division_gpu/src/cell_division_gpu.h
                          LIBRARIES biodynamo)
       add_dependencies(check cell_division_gpu)
       add_test(NAME "system-cell-division-gpu"
