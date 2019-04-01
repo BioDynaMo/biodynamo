@@ -32,7 +32,7 @@ git pull origin master
 ```
 ## Checking your files compared to the master branch
 
-Once you are already on the master branch you can also check which files you have changed or that are new compared to the master branch. This can be done by executing the following in the terminal :
+Once you are already on the master branch you can also check which files of yours are different to those present within the master branch. This can be done by executing the following in the terminal :
 
 ```
 git status
