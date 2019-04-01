@@ -55,6 +55,15 @@ In the next window keep the default (_Use File Names From State_) and click OK.
 
 ![ParaView Load State Data](images/pv_load_state_3.png)
 
+One can also directlly access paraview via utilising a pipeline from the terminal :
+
+```
+make - j8 && ./project && paraview output/project/*.pvsm
+
+```
+
+This tells biodynamo to make the project utilising how many cores are specified,in this case 8, and if that is succesfull it will then run the simulation from the outputed executeable, if the previous also succeeds paraview will open the project from the outputted .pvsm file.
+
 <!-- ## Live visualization
 
 Another way to enable visualization is through ParaView's live visualization.
