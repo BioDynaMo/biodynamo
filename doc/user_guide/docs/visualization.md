@@ -55,7 +55,7 @@ In the next window keep the default (_Use File Names From State_) and click OK.
 
 ![ParaView Load State Data](images/pv_load_state_3.png)
 
-One can also directlly access paraview via utilising a pipeline from the terminal :
+One can also directlly access paraview via utilising a pipeline from the terminal, first navigate to the build file of the biodynamo simulation project/build then execute the following command line from the terminal:
 
 ```
 make - j8 && ./project && paraview output/project/*.pvsm
