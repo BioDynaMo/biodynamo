@@ -30,6 +30,15 @@ git checkout master
 git pull origin master
 ./install.sh
 ```
+## Checking your files compared to the master branch
+
+Once you are already on the master branch you can also check which files you have changed or that are new compared to the master branch. This can be done by executing the following in the terminal :
+
+```
+git status
+
+```
+This will list all files you have that are not present within the master branch, it is always a good idea to check this before doing any form of updating so that you can back up your own modules e.t.c
 
 ## Supported platforms
 
