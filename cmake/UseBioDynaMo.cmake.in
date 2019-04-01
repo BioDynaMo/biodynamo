@@ -98,6 +98,16 @@ if(paraview)
   endif()
 endif()
 
+find_package(VTune)
+if(${VTune_FOUND})
+  include_directories(${VTUNE_INCLUDE_DIR})
+  add_definitions("-DUSE_VTUNE")
+  link_directories($ENV{ParaView_LIB_DIR})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
+else()
+  message(WARNING "VTune not found")
+endif()
+
 # Link to OpenCL
 if (OPENCL_FOUND)
   if (OPENCL_HAS_CXX)
