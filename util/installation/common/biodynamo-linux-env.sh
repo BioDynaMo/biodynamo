@@ -13,7 +13,7 @@
 # -----------------------------------------------------------------------------
 
 # BioDynaMo
-export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@
+export BDM_INSTALL_DIR=$(readlink -e $(dirname "${BASH_SOURCE[0]}"))
 #   required environment variables for out of source simulations
 #   used by cmake to find BioDynaMoConfig.cmake
 export CMAKE_PREFIX_PATH=${BDM_INSTALL_DIR}/biodynamo/cmake:$CMAKE_PREFIX_PATH
@@ -65,7 +65,7 @@ if [ `lsb_release -si` == "CentOS" ]; then
   export PATH=/opt/rh/rh-python36/root/bin:/opt/rh/llvm-toolset-7/root/usr/bin/:$PATH
   # gcc g++
   export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
-  export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:$LD_LIBRARY_PATH
 fi
 
 echo "You have successfully sourced BioDynaMo's environment."
