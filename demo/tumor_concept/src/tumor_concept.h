@@ -72,7 +72,7 @@ struct GrowthModule : public BaseBiologyModule {
   void Run(T* cell) {
     if (cell->GetDiameter() < 8) {
       auto* random = TSimulation::GetActive()->GetRandom();
-      cell->ChangeVolume(400);
+      cell->ChangeVolume(400); // Here 400 is the speed and the change to the volume is based on the simulation time step which by default is 0.01Hrs not 1s.
 
       // create an array of 3 random numbers between -2 and 2
       std::array<double, 3> cell_movements =
