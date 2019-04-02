@@ -18,6 +18,8 @@ One way to enable visualization is to export a visualization file every time ste
 (or every N time steps). In the `bmd.toml` file add the following lines:
 
 ```
+[simulation]
+# For other simulations certain parameters would also need to be defined within this section of the toml file.
 [visualization]
 export = true
 export_interval = 1
