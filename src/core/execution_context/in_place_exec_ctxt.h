@@ -24,6 +24,7 @@
 #include "core/container/fixed_size_vector.h"
 #include "core/resource_manager.h"
 #include "core/util/thread_info.h"
+#include "core/util/timing.h"
 
 namespace bdm {
 
@@ -95,6 +96,7 @@ class InPlaceExecutionContext {
       }
 
 // add new_sim_objects_ to the ResourceManager in parallel
+    Timing timing("AddNewSimObjects");
 #pragma omp parallel for schedule(static, 1)
       for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
         auto* ctxt = all_exec_ctxts[i];
@@ -103,19 +105,27 @@ class InPlaceExecutionContext {
         rm->AddNewSimObjects(nid, t, offset, ctxt->new_sim_objects_);
       }
 
-      // part 2 is not thread safe!
-      for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
-        auto* ctxt = all_exec_ctxts[i];
-        int nid = tinfo_->GetNumaNode(i);
-        uint64_t offset = thread_offsets[i] + numa_offsets[nid];
-        rm->AddNewSimObjectsToSoStorageMap(nid, t, offset,
-                                           ctxt->new_sim_objects_);
-      }
+      // // part 2 is not thread safe!
+      // Timing timing("AddNewSimObjectsToSoStorageMap");
+      // uint64_t tnso = 0;
+      // for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+      //   auto* ctxt = all_exec_ctxts[i];
+      //   int nid = tinfo_->GetNumaNode(i);
+      //   uint64_t offset = thread_offsets[i] + numa_offsets[nid];
+      //   tnso += ctxt->new_sim_objects_.GetNumSimObjects();
+      //   rm->AddNewSimObjectsToSoStorageMap(nid, t, offset,
+      //                                      ctxt->new_sim_objects_);
+      // }
+      // std::cout << "  nso " << tnso << std::endl;
     }
 
     // clear
+    Timing timing("AddNewSimObjectsToSoStorageMap");
+#pragma omp parallel for schedule(static, 1)
     for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
-      all_exec_ctxts[i]->new_sim_objects_.Clear();
+      auto* ctxt = all_exec_ctxts[i];
+      rm->AddNewSimObjectsToSoStorageMap(ctxt->new_sim_objects_);
+      ctxt->new_sim_objects_.Clear();
     }
 
     // remove

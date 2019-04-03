@@ -29,6 +29,8 @@
 #include <utility>
 #include <vector>
 
+// #include <tbb/concurrent_unordered_map.h>
+
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
 #ifdef __APPLE__
@@ -77,6 +79,7 @@ class SoHandle {
 
   NumaNode_t GetNumaNode() const { return numa_node_; }
   TypeIdx_t GetTypeIdx() const { return type_idx_; }
+  void SetNumaNode(NumaNode_t numa_node) { numa_node_ = numa_node; }
   ElementIdx_t GetElementIdx() const { return element_idx_; }
   void SetElementIdx(ElementIdx_t element_idx) { element_idx_ = element_idx; }
 
@@ -731,6 +734,7 @@ class ResourceManager {
   /// Reserves enough memory to hold `capacity` number of simulation objects for
   /// each simulation object type.
   void Reserve(size_t capacity) {
+    so_storage_location_.reserve(capacity);
     ApplyOnAllTypes([&](auto* container, uint16_t numa_idx, uint16_t type_idx) {
       container->reserve(capacity);
     });
@@ -943,6 +947,7 @@ class ResourceManager {
         auto&& so = (*new_sim_objects)[i];
         auto uid = so.GetUid();
         // so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
+        other_rm.so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
         (*container)[offset + i] = so;
       }
     });
@@ -951,21 +956,27 @@ class ResourceManager {
   /// Second part of adding simulation objects to this ResourceManager.
   /// NB: This method is not thread-safe!
   /// Part 1 \see AddNewSimObjects
-  void AddNewSimObjectsToSoStorageMap(typename SoHandle::NumaNode_t numa_node,
-                                      typename SoHandle::TypeIdx_t type_id,
-                                      uint64_t offset,
-                                      ResourceManager& other_rm) {
+  void AddNewSimObjectsToSoStorageMap(ResourceManager& other_rm) {
+    auto& other_map = other_rm.so_storage_location_;
+    // so_storage_location_.merge(std::move(other_map));
+    so_storage_location_.insert(other_map.begin(), other_map.end());
     // ::bdm::Apply(&other_rm.sim_objects_[numa_node], type_id, [&,this](auto*
     // new_sim_objects) {
-    ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto* container) {
-      using SoType = typename raw_type<decltype(container)>::value_type;
-      auto* new_sim_objects = other_rm.template Get<SoType>(numa_node);
-      for (uint64_t i = 0; i < new_sim_objects->size(); i++) {
-        auto&& so = (*new_sim_objects)[i];
-        auto uid = so.GetUid();
-        so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
-      }
-    });
+    // ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto* container) {
+    //   using SoType = typename raw_type<decltype(container)>::value_type;
+    //   auto* new_sim_objects = other_rm.template Get<SoType>(numa_node);
+    //   for (uint64_t i = 0; i < new_sim_objects->size(); i++) {
+    //     auto&& so = (*new_sim_objects)[i];
+    //     auto uid = so.GetUid();
+    //     so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
+    //   }
+    // });
+    // for (auto& entry : other_rm.so_storage_location_) {
+    //   SoHandle& handle = entry.second;
+    //   handle.SetNumaNode(numa_node);
+    //   handle.SetElementIdx(offset + )
+    //   so_storage_location_.insert(entry);
+    // }
   }
 
   /// Removes the simulation object with the given uid.\n
@@ -1020,10 +1031,10 @@ class ResourceManager {
       typename SoHandle::NumaNode_t numa = 0) {
     return &std::get<TypeContainer<ToBackend<Type>>>(sim_objects_[numa]);
   }
-
+public:
   /// Mapping between SoUid and SoHandle (stored location)
   std::unordered_map<SoUid, SoHandle> so_storage_location_;  //!
-
+private:
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
   /// Conversion of simulation object types from the compile time params
