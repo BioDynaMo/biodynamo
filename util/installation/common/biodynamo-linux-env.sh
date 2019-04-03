@@ -12,6 +12,20 @@
 #
 # -----------------------------------------------------------------------------
 
+# This function has a zero exit code if the version is below the required
+# version. This function can be used inside an if statement:
+#    if $(versionLessThan "$(gcc -dumpversion)" "5.4.0"); then
+#       echo "gcc version less than 5.4.0"
+#    fi
+# Arguments:
+#   $1 actual version
+#   $2 required version
+function versionLessThan {
+  local VERSION=$1
+  local REQUIRED=$2
+  [ "$(printf '%s\n' "$REQUIRED" "$VERSION" | sort -V | head -n1)" != "$REQUIRED" ]
+}
+
 # BioDynaMo
 export BDM_INSTALL_DIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 #   required environment variables for out of source simulations
@@ -62,7 +76,9 @@ export OMP_PROC_BIND=true
 # CentOs specifics
 if [ `lsb_release -si` == "CentOS" ]; then
   # python
-  export PATH=/opt/rh/rh-python36/root/bin:/opt/rh/llvm-toolset-7/root/usr/bin/:$PATH
+  if versionLessThan "$(python3 --version)" 'Python 3.2.0'; then
+    export PATH=/opt/rh/rh-python36/root/bin:/opt/rh/llvm-toolset-7/root/usr/bin/:$PATH
+  fi
   # gcc g++
   export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
   export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:$LD_LIBRARY_PATH
