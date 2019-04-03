@@ -73,6 +73,7 @@ find_package(Numa REQUIRED)
 if (NUMA_FOUND)
    include_directories(${NUMA_INCLUDE_DIR})
    link_directories(${NUMA_LIBRARY_DIR})
+   add_definitions("-DUSE_NUMA")
    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
 endif()
 
