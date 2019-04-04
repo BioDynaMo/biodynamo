@@ -96,7 +96,7 @@ class InPlaceExecutionContext {
       }
 
 // add new_sim_objects_ to the ResourceManager in parallel
-    Timing timing("AddNewSimObjects");
+    // Timing timing("AddNewSimObjects");
 #pragma omp parallel for schedule(static, 1)
       for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
         auto* ctxt = all_exec_ctxts[i];
@@ -120,7 +120,7 @@ class InPlaceExecutionContext {
     }
 
     // clear
-    Timing timing("AddNewSimObjectsToSoStorageMap");
+    // Timing timing("AddNewSimObjectsToSoStorageMap");
 #pragma omp parallel for schedule(static, 1)
     for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
       auto* ctxt = all_exec_ctxts[i];

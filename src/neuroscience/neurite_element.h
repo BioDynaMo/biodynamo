@@ -727,9 +727,9 @@ BDM_SIM_OBJECT(NeuriteElement, SimObject) {
     if (mother_[kIdx] != mother) {
       // FIXME
       // Fatal("NeuriteElement", "Given object is not the mother!");
-      std::cout
-          << "Fatal(\"NeuriteElement\", \"Given object is not the mother!\")"
-          << std::endl;
+      // std::cout
+      //     << "Fatal(\"NeuriteElement\", \"Given object is not the mother!\")"
+      //     << std::endl;
       return {0, 0, 0};
     }
 

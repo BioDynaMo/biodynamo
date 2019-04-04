@@ -911,6 +911,15 @@ class ResourceManager {
     // FIXME
     // // TODO(lukas) do we need this? we don't change the scheduling anymore
     thread_info_->Renew();
+
+    ApplyOnAllTypes([](auto*container, uint16_t numa_node, uint16_t type_id) {
+      std::cout << "nid" << numa_node << " tid " << type_id << " size " << container->size() << std::endl;
+    });
+    std::cout << numa_nodes_ << std::endl;
+    std::cout << thread_info_->GetNumaNodes() << std::endl;
+    std::cout << numa_num_configured_nodes() << std::endl;
+    std::cout << numa_max_node() << std::endl;
+    std::cout << std::endl;
   }
 
   /// NB: This method is not thread-safe! This function might invalidate
