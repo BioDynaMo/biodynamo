@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-// #include <tbb/concurrent_unordered_map.h>
+#include <tbb/concurrent_unordered_map.h>
 
 #ifdef USE_OPENCL
 #define __CL_ENABLE_EXCEPTIONS
@@ -742,7 +742,7 @@ class ResourceManager {
   /// Reserves enough memory to hold `capacity` number of simulation objects for
   /// each simulation object type.
   void Reserve(size_t capacity) {
-    so_storage_location_.reserve(capacity);
+    // so_storage_location_.reserve(capacity);
     ApplyOnAllTypes([&](auto* container, uint16_t numa_idx, uint16_t type_idx) {
       container->reserve(capacity);
     });
@@ -768,7 +768,7 @@ class ResourceManager {
   /// the given simulation object type.
   template <typename TSo>
   void Reserve(size_t capacity) {
-    so_storage_location_.reserve(capacity);
+    // so_storage_location_.reserve(capacity);
     for (uint16_t n = 0; n < numa_nodes_; n++) {
       GetContainer<TSo>(n)->reserve(capacity);
     }
@@ -959,12 +959,14 @@ class ResourceManager {
     // new_sim_objects) {
     ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto* container) {
       using SoType = typename raw_type<decltype(container)>::value_type;
-      auto* new_sim_objects = other_rm.template Get<SoType>(numa_node);
+      auto* new_sim_objects = other_rm.template Get<SoType>(0);
       for (uint64_t i = 0; i < new_sim_objects->size(); i++) {
         auto&& so = (*new_sim_objects)[i];
         auto uid = so.GetUid();
-        // so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
-        other_rm.so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
+        // #pragma omp critical
+        // std::cout << "merge " << uid << " from " << omp_get_thread_num() << std::endl;
+        so_storage_location_.insert({uid, SoHandle(numa_node, type_id, offset + i)});
+        // other_rm.so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
         (*container)[offset + i] = so;
       }
     });
@@ -1025,7 +1027,7 @@ class ResourceManager {
                            SoHandle(type_idx, element_idx);
                      }
                    });
-      so_storage_location_.erase(it);
+      so_storage_location_.unsafe_erase(it);
     }
   }
 
@@ -1053,7 +1055,8 @@ class ResourceManager {
   }
 public:
   /// Mapping between SoUid and SoHandle (stored location)
-  std::unordered_map<SoUid, SoHandle> so_storage_location_;  //!
+  // std::unordered_map<SoUid, SoHandle> so_storage_location_;  //!
+  tbb::concurrent_unordered_map<SoUid, SoHandle> so_storage_location_;  //!
 private:
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 

@@ -89,7 +89,7 @@ class InPlaceExecutionContext {
         auto* ctxt = all_exec_ctxts[tid];
         int nid = tinfo_->GetNumaNode(tid);
         thread_offsets[tid] = new_so_per_numa[nid];
-        new_so_per_numa[nid] += ctxt->new_sim_objects_.GetNumSimObjects(nid, t);
+        new_so_per_numa[nid] += ctxt->new_sim_objects_.GetNumSimObjects(0, t);
       }
 
       // reserve enough memory in ResourceManager
@@ -100,7 +100,7 @@ class InPlaceExecutionContext {
 
 // add new_sim_objects_ to the ResourceManager in parallel
     // Timing timing("AddNewSimObjects");
-#pragma omp parallel for schedule(static, 1)
+      #pragma omp parallel for schedule(static, 1)
       for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
         auto* ctxt = all_exec_ctxts[i];
         int nid = tinfo_->GetNumaNode(i);
@@ -124,10 +124,10 @@ class InPlaceExecutionContext {
 
     // clear
     // Timing timing("AddNewSimObjectsToSoStorageMap");
-// #pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(static, 1)
     for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
       auto* ctxt = all_exec_ctxts[i];
-      rm->AddNewSimObjectsToSoStorageMap(ctxt->new_sim_objects_);
+      // rm->AddNewSimObjectsToSoStorageMap(ctxt->new_sim_objects_);
       ctxt->new_sim_objects_.Clear();
     }
 
@@ -174,7 +174,7 @@ class InPlaceExecutionContext {
     auto uid = so.GetUid();
     // #pragma omp critical
     // std::cout << "new so " << uid << " in tid" << omp_get_thread_num() << std::endl;
-    std::lock_guard<AtomicMutex> guard(mutex_);
+    // std::lock_guard<AtomicMutex> guard(mutex_);
     new_sim_objects_.push_back(so);
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
   }
@@ -187,7 +187,7 @@ class InPlaceExecutionContext {
     auto uid = so.GetUid();
     // #pragma omp critical
     // std::cout << "new so " << uid << " in tid" << omp_get_thread_num() << std::endl;
-    std::lock_guard<AtomicMutex> guard(mutex_);
+    // std::lock_guard<AtomicMutex> guard(mutex_);
     new_sim_objects_.push_back(so);
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
   }
@@ -272,7 +272,7 @@ class InPlaceExecutionContext {
         if (ctxt == this) {
           continue;
         }
-        std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
+        // std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
         auto soh = ctxt->new_sim_objects_.GetSoHandle1(uid);
         if (soh != SoHandle()) {
           return ctxt->new_sim_objects_.template GetSimObject<TSo>(soh);
@@ -303,7 +303,7 @@ class InPlaceExecutionContext {
         if (ctxt == this) {
           continue;
         }
-        std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
+        // std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
         auto soh = ctxt->new_sim_objects_.GetSoHandle1(uid);
         if (soh != SoHandle()) {
           return ctxt->new_sim_objects_.template GetSimObject<TSo>(soh);
