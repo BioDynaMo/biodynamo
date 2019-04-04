@@ -76,6 +76,9 @@ class InPlaceExecutionContext {
   template <typename TSimulation = Simulation<>>
   void TearDownIterationAll(
       const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+
+    // std::cout << "\n\nTearDownIterationAll -----------------------------------" << std::endl;
+
     auto* rm = TSimulation::GetActive()->GetResourceManager();
     for (uint64_t t = 0; t < rm->NumberOfTypes(); ++t) {
       // group execution contexts by numa domain
@@ -121,7 +124,7 @@ class InPlaceExecutionContext {
 
     // clear
     // Timing timing("AddNewSimObjectsToSoStorageMap");
-#pragma omp parallel for schedule(static, 1)
+// #pragma omp parallel for schedule(static, 1)
     for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
       auto* ctxt = all_exec_ctxts[i];
       rm->AddNewSimObjectsToSoStorageMap(ctxt->new_sim_objects_);
@@ -169,6 +172,8 @@ class InPlaceExecutionContext {
   New(Args... args) {
     TScalarSo so(std::forward<Args>(args)...);
     auto uid = so.GetUid();
+    // #pragma omp critical
+    // std::cout << "new so " << uid << " in tid" << omp_get_thread_num() << std::endl;
     std::lock_guard<AtomicMutex> guard(mutex_);
     new_sim_objects_.push_back(so);
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
@@ -180,6 +185,8 @@ class InPlaceExecutionContext {
   New(Args... args) {
     TScalarSo so(std::forward<Args>(args)...);
     auto uid = so.GetUid();
+    // #pragma omp critical
+    // std::cout << "new so " << uid << " in tid" << omp_get_thread_num() << std::endl;
     std::lock_guard<AtomicMutex> guard(mutex_);
     new_sim_objects_.push_back(so);
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
@@ -249,20 +256,26 @@ class InPlaceExecutionContext {
       SoUid uid,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
-    if (new_sim_objects_.Contains(uid)) {
-      return new_sim_objects_.template GetSimObject<TSo>(uid);
+    auto soh = new_sim_objects_.GetSoHandle1(uid);
+    if (soh != SoHandle()) {
+      return new_sim_objects_.template GetSimObject<TSo>(soh);
     }
 
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    if (rm->Contains(uid)) {
-      return rm->template GetSimObject<TSo>(uid);
+    soh = rm->GetSoHandle1(uid);
+    if (soh != SoHandle()) {
+      return rm->template GetSimObject<TSo>(soh);
     } else {
       // sim object must be cached in another InPlaceExecutionContext
       for (auto* ctxt : sim->GetAllExecCtxts()) {
+        if (ctxt == this) {
+          continue;
+        }
         std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
-        if (ctxt->new_sim_objects_.Contains(uid)) {
-          return ctxt->new_sim_objects_.template GetSimObject<TSo>(uid);
+        auto soh = ctxt->new_sim_objects_.GetSoHandle1(uid);
+        if (soh != SoHandle()) {
+          return ctxt->new_sim_objects_.template GetSimObject<TSo>(soh);
         }
       }
     }
@@ -274,20 +287,26 @@ class InPlaceExecutionContext {
   auto GetSimObject(SoUid uid,
                     typename std::enable_if<
                         std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
-    if (new_sim_objects_.Contains(uid)) {
-      return new_sim_objects_.template GetSimObject<TSo>(uid);
+    auto soh = new_sim_objects_.GetSoHandle1(uid);
+    if (soh != SoHandle()) {
+      return new_sim_objects_.template GetSimObject<TSo>(soh);
     }
 
     auto* sim = TSimulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    if (rm->Contains(uid)) {
-      return rm->template GetSimObject<TSo>(uid);
+    soh = rm->GetSoHandle1(uid);
+    if (soh != SoHandle()) {
+      return rm->template GetSimObject<TSo>(soh);
     } else {
       // sim object must be cached in another InPlaceExecutionContext
       for (auto* ctxt : sim->GetAllExecCtxts()) {
+        if (ctxt == this) {
+          continue;
+        }
         std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
-        if (ctxt->new_sim_objects_.Contains(uid)) {
-          return ctxt->new_sim_objects_.template GetSimObject<TSo>(uid);
+        auto soh = ctxt->new_sim_objects_.GetSoHandle1(uid);
+        if (soh != SoHandle()) {
+          return ctxt->new_sim_objects_.template GetSimObject<TSo>(soh);
         }
       }
     }

@@ -251,6 +251,14 @@ class ResourceManager {
     return so_storage_location_.at(so_uid);
   }
 
+  SoHandle GetSoHandle1(SoUid so_uid) const {
+    auto search =  so_storage_location_.find(so_uid);
+    if(search != so_storage_location_.end()) {
+      return search->second;
+    }
+    return SoHandle();
+  }
+
   template <typename TSo, typename TSimBackend = Backend>
   auto&& GetSimObject(
       SoHandle handle,
@@ -968,6 +976,9 @@ class ResourceManager {
   void AddNewSimObjectsToSoStorageMap(ResourceManager& other_rm) {
     auto& other_map = other_rm.so_storage_location_;
     // so_storage_location_.merge(std::move(other_map));
+    // for (auto& el : other_map) {
+    //   std::cout << "merged " << el.first << std::endl;
+    // }
     so_storage_location_.insert(other_map.begin(), other_map.end());
     // ::bdm::Apply(&other_rm.sim_objects_[numa_node], type_id, [&,this](auto*
     // new_sim_objects) {
