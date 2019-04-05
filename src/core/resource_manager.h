@@ -363,6 +363,8 @@ class ResourceManager {
   /// nodes. Nearby sim objects will be moved to the same NUMA node.
   void SortAndBalanceNumaNodes();
 
+  void DebugNuma() const;
+
   /// NB: This method is not thread-safe! This function might invalidate
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.

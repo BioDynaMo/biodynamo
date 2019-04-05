@@ -93,6 +93,28 @@ class ThreadInfo {
     }
   }
 
+  friend std::ostream& operator<<(std::ostream& str, const ThreadInfo& ti) {
+    str << "max_threads            " << ti.max_threads_
+        << "\nnum_numa nodes         " << ti.numa_nodes_;
+
+    str << "\nthread to numa mapping ";
+    for(auto& el : ti.thread_numa_mapping_) {
+      str << " " << el;
+    }
+
+    str << "\nthread id in numa node ";
+    for(auto& el : ti.numa_thread_id_) {
+      str << " " << el;
+    }
+
+    str << "\nnum threads per numa   ";
+    for(auto& el : ti.threads_in_numa_) {
+      str << " " << el;
+    }
+    str << "\n";
+    return str;
+  }
+
  private:
   /// Maximum number of threads for this simulation.
   uint64_t max_threads_;

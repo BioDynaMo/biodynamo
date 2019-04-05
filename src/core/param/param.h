@@ -280,7 +280,7 @@ struct Param {
   ///     [performance]
   ///     cache_neighbors = false
   bool cache_neighbors_ = false;
-    
+
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n
@@ -290,6 +290,15 @@ struct Param {
   ///     [development]
   ///     statistics = false
   bool statistics_ = false;
+
+  /// Output debugging info related to running on NUMA architecture.\n
+  /// \see `ThreadInfo`, `ResourceManager::DebugNuma`
+  /// Default Value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [development]
+  ///     debug_numa = false
+  bool debug_numa_ = false;
 
   /// Use the python script (simple_pipeline.py) to do Live Visualization with
   /// ParaView. If false, we use the C++ pipeline

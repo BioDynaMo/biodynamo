@@ -28,6 +28,7 @@
 #include "core/util/io.h"
 #include "core/util/log.h"
 #include "core/util/string.h"
+#include "core/util/thread_info.h"
 #include "version.h"
 
 namespace bdm {
@@ -89,6 +90,10 @@ void Simulation::Restore(Simulation&& restored) {
 }
 
 Simulation::~Simulation() {
+  if (param_ != nullptr && rm_ != nullptr && param_->debug_numa_) {
+    std::cout << "ThreadInfo:\n" << ThreadInfo::GetInstance() << std::endl;
+    rm_->DebugNuma();
+  }
   Simulation* tmp = nullptr;
   if (active_ != this) {
     tmp = active_;
@@ -148,6 +153,10 @@ void Simulation::Initialize(int argc, const char** argv,
 }
 
 void Simulation::InitializeMembers() {
+  if(param_->debug_numa_) {
+    std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
+  }
+
   random_.resize(omp_get_max_threads());
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < random_.size(); i++) {
