@@ -26,6 +26,14 @@
 
 namespace bdm {
 
+// TODO
+template <typename TCTParam = CompileTimeParam<>>
+struct SoPointerCache {
+  SoHandle handle_ = SoHandle();
+  ResourceManager<TCTParam>* rm_ = nullptr;
+  uint64_t ts_updated_ = 0;
+};
+
 /// Simulation object pointer. Required to point into simulation objects with
 /// `Soa` backend. `SoaRef` has the drawback that its size depends on the number
 /// of data members. Benefit compared to SoHandle is, that the compiler knows
@@ -43,7 +51,8 @@ class SoPointer {
       ADLHelper(std::declval<TSoSimBackend*>(), std::declval<SoaRef>()));
 
  public:
-  explicit SoPointer(SoUid uid) : uid_(uid) {}
+   explicit SoPointer(SoUid uid) : uid_(uid) {}
+   SoPointer(SoUid uid, const SoPointerCache<> cache) : uid_(uid), cache_(cache) {}
 
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
@@ -74,7 +83,7 @@ class SoPointer {
   operator->() {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetSimObject<TSoSimBackend>(uid_);
+    return ctxt->template GetSimObject<TSoSimBackend>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -83,7 +92,7 @@ class SoPointer {
   operator->() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -91,7 +100,7 @@ class SoPointer {
   operator->() {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -100,7 +109,7 @@ class SoPointer {
   operator->() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   // operator*
@@ -111,7 +120,7 @@ class SoPointer {
   operator*() {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetSimObject<TSoSimBackend>(uid_);
+    return ctxt->template GetSimObject<TSoSimBackend>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -120,7 +129,7 @@ class SoPointer {
   operator*() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -128,7 +137,7 @@ class SoPointer {
   operator*() {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -137,7 +146,7 @@ class SoPointer {
   operator*() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   friend std::ostream& operator<<(
@@ -148,6 +157,7 @@ class SoPointer {
 
  private:
   SoUid uid_ = std::numeric_limits<uint64_t>::max();
+  mutable SoPointerCache<> cache_;  //!
 
   BDM_TEMPLATE_CLASS_DEF_CUSTOM_STREAMER(SoPointer, 2);
 };

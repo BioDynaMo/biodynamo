@@ -657,7 +657,7 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   BDM_SIM_OBJECT_HEADER(SimObject, SimObjectBase, 1, uid_, box_idx_,
                         biology_modules_, run_bm_loop_idx_, run_displacement_,
                         run_displacement_for_all_next_ts_,
-                        run_displacement_next_ts_, numa_node_);
+                        run_displacement_next_ts_, numa_node_, so_ptr_cache_);
 
  public:
   SimObjectExt() : Base() { uid_[kIdx] = SoUidGenerator::Get()->NewSoUid(); }
@@ -788,7 +788,7 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   uint32_t *GetBoxIdPtr() { return box_idx_.data(); }
 
   /// Return simulation object pointer
-  MostDerivedSoPtr GetSoPtr() const { return MostDerivedSoPtr(uid_[kIdx]); }
+  MostDerivedSoPtr GetSoPtr() const { return MostDerivedSoPtr(uid_[kIdx], so_ptr_cache_[kIdx]); }
 
   void SetNumaNode(typename SoHandle::NumaNode_t numa_node) {
     numa_node_[kIdx] = numa_node;
@@ -886,6 +886,10 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
                               right_bms);
   }
 
+  void SetSoPtrCache(const SoPointerCache<>& cache) {
+    so_ptr_cache_[kIdx] = cache;
+  }
+
  protected:
   /// unique id
   vec<SoUid> uid_ = {{}};
@@ -908,6 +912,9 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   /// This data member holds information on which NUMA node this sim object is
   /// stored.
   vec<typename SoHandle::NumaNode_t> numa_node_ = {{}};
+
+  // TODO
+  vec<SoPointerCache<>> so_ptr_cache_ = {{}};
 
   /// @brief Function to copy biology modules from one structure to another
   /// @param event event will be passed on to biology module to determine

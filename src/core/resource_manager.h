@@ -84,8 +84,7 @@ class SoHandle {
   void SetElementIdx(ElementIdx_t element_idx) { element_idx_ = element_idx; }
 
   bool operator==(const SoHandle& other) const {
-    return type_idx_ == other.type_idx_ && numa_node_ == other.numa_node_ &&
-           element_idx_ == other.element_idx_;
+    return element_idx_ == other.element_idx_ && type_idx_ == other.type_idx_ && numa_node_ == other.numa_node_;
   }
 
   bool operator!=(const SoHandle& other) const { return !(*this == other); }
@@ -798,6 +797,7 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void Clear() {
+    InvalidateSoHandles();
     so_storage_location_.clear();
     ApplyOnAllTypes([](auto* container, uint16_t numa_node, uint16_t type_idx) {
       container->clear();
@@ -807,6 +807,8 @@ class ResourceManager {
   /// Reorder simulation objects such that, sim objects are distributed to NUMA
   /// nodes. Nearby sim objects will be moved to the same NUMA node.
   void SortAndBalanceNumaNodes() {
+    InvalidateSoHandles();
+
     // balance simulation objects per numa node according to the number of
     // threads associated with each numa domain
     std::vector<uint64_t> so_per_numa(numa_nodes_);
@@ -959,8 +961,10 @@ class ResourceManager {
     auto&& inserted = (*container)[el_idx];
     inserted.SetNumaNode(numa_node);
     inserted.SetElementIdx(el_idx);
-    so_storage_location_[inserted.GetUid()] =
-        SoHandle(numa_node, GetTypeIndex<TSo>(), el_idx);
+    SoHandle handle = SoHandle(numa_node, GetTypeIndex<TSo>(), el_idx);
+    auto* scheduler = Simulation<TCompileTimeParam>::GetActive()->GetScheduler();
+    inserted.SetSoPtrCache({handle, this, scheduler->GetSimulatedSteps()});
+    so_storage_location_[inserted.GetUid()] = handle;
   }
 
   /// Adds `new_sim_objects` to `sim_objects_[numa_node]`. `offset` specifies
@@ -1027,6 +1031,7 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void Remove(SoUid uid) {
+    InvalidateSoHandles();
     // remove from map
     auto it = this->so_storage_location_.find(uid);
     if (it != this->so_storage_location_.end()) {
@@ -1063,6 +1068,11 @@ class ResourceManager {
     return &std::get<TypeContainer<ToBackend<Type>>>(sim_objects_[numa_node]);
   }
 
+  // TODO SoHandlesValidSince
+  uint64_t GetInvalidatedTimestep() const {
+    invalidated_ts_;
+  }
+
  private:
   /// Return the container of this Type
   /// @tparam Type atomic type whose container should be returned
@@ -1095,6 +1105,17 @@ class ResourceManager {
   TupleOfSOContainers* sim_objects_ = nullptr;  //[numa_nodes_]
 
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
+
+  // TODO
+  uint64_t invalidated_ts_ = 0;
+
+  // TODO
+  void InvalidateSoHandles() {
+    auto* scheduler = Simulation<TCompileTimeParam>::GetActive()->GetScheduler();
+    if (scheduler) {
+      invalidated_ts_ = scheduler->GetSimulatedSteps();
+    }
+  }
 
   friend class SimulationBackup;
   BDM_CLASS_DEF_NV(ResourceManager, 1);

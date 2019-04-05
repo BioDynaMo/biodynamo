@@ -25,6 +25,7 @@
 #include "core/resource_manager.h"
 #include "core/util/thread_info.h"
 #include "core/util/timing.h"
+#include "core/sim_object/so_pointer.h"
 
 namespace bdm {
 
@@ -57,6 +58,15 @@ class InPlaceExecutionContext {
     // references would become invalid.
     // Alternative: use container that doesn't migrate objects.
     new_sim_objects_.Reserve(10);
+  }
+
+  ~InPlaceExecutionContext() {
+    std::cout << cnt_cached_ << "\n"
+              << cnt_else_ << "\n"
+              << cnt_rm_invalid_ts_ << "\n"
+              << cnt_this_invalid_ts_ << "\n"
+              << cnt_total_ << "\n"
+              << std::endl;
   }
 
   /// This function is called at the beginning of each iteration to setup all
@@ -254,10 +264,18 @@ class InPlaceExecutionContext {
             typename TSimulation = Simulation<>>
   auto& GetSimObject(
       SoUid uid,
+      SoPointerCache<TCTParam>* cache = nullptr,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
+    cnt_total_++;
+    if (IsCacheValid(cache)) {
+      cnt_cached_++;
+      return cache->rm_->template GetSimObject<TSo>(cache->handle_);
+    }
+
     auto soh = new_sim_objects_.GetSoHandle1(uid);
     if (soh != SoHandle()) {
+      UpdateCache(cache, soh, &new_sim_objects_);
       return new_sim_objects_.template GetSimObject<TSo>(soh);
     }
 
@@ -265,6 +283,7 @@ class InPlaceExecutionContext {
     auto* rm = sim->GetResourceManager();
     soh = rm->GetSoHandle1(uid);
     if (soh != SoHandle()) {
+      UpdateCache(cache, soh, rm);
       return rm->template GetSimObject<TSo>(soh);
     } else {
       // sim object must be cached in another InPlaceExecutionContext
@@ -275,6 +294,7 @@ class InPlaceExecutionContext {
         // std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
         auto soh = ctxt->new_sim_objects_.GetSoHandle1(uid);
         if (soh != SoHandle()) {
+          UpdateCache(cache, soh, &ctxt->new_sim_objects_);
           return ctxt->new_sim_objects_.template GetSimObject<TSo>(soh);
         }
       }
@@ -285,10 +305,18 @@ class InPlaceExecutionContext {
   template <typename TSo, typename TSimBackend = Backend,
             typename TSimulation = Simulation<>>
   auto GetSimObject(SoUid uid,
+                    SoPointerCache<TCTParam>* cache = nullptr,
                     typename std::enable_if<
                         std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
+    cnt_total_++;
+    if (IsCacheValid(cache)) {
+      cnt_cached_++;
+      return cache->rm_->template GetSimObject<TSo>(cache->handle_);
+    }
+
     auto soh = new_sim_objects_.GetSoHandle1(uid);
     if (soh != SoHandle()) {
+      UpdateCache(cache, soh, &new_sim_objects_);
       return new_sim_objects_.template GetSimObject<TSo>(soh);
     }
 
@@ -296,6 +324,7 @@ class InPlaceExecutionContext {
     auto* rm = sim->GetResourceManager();
     soh = rm->GetSoHandle1(uid);
     if (soh != SoHandle()) {
+      UpdateCache(cache, soh, rm);
       return rm->template GetSimObject<TSo>(soh);
     } else {
       // sim object must be cached in another InPlaceExecutionContext
@@ -306,6 +335,7 @@ class InPlaceExecutionContext {
         // std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
         auto soh = ctxt->new_sim_objects_.GetSoHandle1(uid);
         if (soh != SoHandle()) {
+          UpdateCache(cache, soh, &ctxt->new_sim_objects_);
           return ctxt->new_sim_objects_.template GetSimObject<TSo>(soh);
         }
       }
@@ -316,17 +346,19 @@ class InPlaceExecutionContext {
   template <typename TSo, typename TSimBackend = Backend>
   const auto& GetConstSimObject(
       SoUid uid,
+      SoPointerCache<TCTParam>* cache = nullptr,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
-    return GetSimObject<TSo>(uid);
+    return GetSimObject<TSo>(uid, cache);
   }
 
   template <typename TSo, typename TSimBackend = Backend>
   const auto GetConstSimObject(
       SoUid uid,
+      SoPointerCache<TCTParam>* cache = nullptr,
       typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type*
           ptr = 0) {
-    return GetSimObject<TSo>(uid);
+    return GetSimObject<TSo>(uid, cache);
   }
 
   void RemoveFromSimulation(SoUid uid) { remove_.push_back(uid); }
@@ -357,6 +389,13 @@ class InPlaceExecutionContext {
     std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
   };
 
+  uint64_t cnt_cached_ = 0;
+  uint64_t cnt_total_ = 0;
+  mutable uint64_t cnt_first_ = 0;
+  mutable uint64_t cnt_else_ = 0;
+  mutable uint64_t cnt_rm_invalid_ts_ = 0;
+  mutable uint64_t cnt_this_invalid_ts_ = 0;
+
   ThreadInfo* tinfo_ = ThreadInfo::GetInstance();
 
   /// Contains unique ids of sim objects that will be removed at the end of each
@@ -385,6 +424,39 @@ class InPlaceExecutionContext {
   void ExecuteInternal(TSo&& so, TFirstOp first_op, TOps... other_ops) {
     first_op(so);
     ExecuteInternal(so, other_ops...);
+  }
+
+  // TODO
+  bool IsCacheValid(SoPointerCache<TCTParam>* cache) const {
+    if(cache->handle_ == SoHandle()) {
+      cnt_first_++;
+    }
+    if (cache == nullptr) {
+      return false;
+    }
+    auto* rm = Simulation<TCTParam>::GetActive()->GetResourceManager();
+    if(cache->rm_ == rm) {
+      // if (rm->GetInvalidatedTimestep() < cache->ts_updated_)
+      //   std::cout << "use cached version " << std::endl;
+      cnt_rm_invalid_ts_ += rm->GetInvalidatedTimestep() > cache->ts_updated_;
+      return rm->GetInvalidatedTimestep() <= cache->ts_updated_;
+    } else if(cache->rm_ == &new_sim_objects_) {
+      cnt_this_invalid_ts_ += cache->ts_updated_ != Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
+      return cache->ts_updated_ == Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
+    }
+    cnt_else_++;
+    return false;
+  }
+
+  // TODO
+  void UpdateCache(SoPointerCache<TCTParam>* cache, const SoHandle& handle, ResourceManager<TCTParam>* rm) const {
+    if (cache == nullptr) {
+      std::cout << "cache nullptr" << std::endl;  // FIXME
+      return;
+    }
+    cache->handle_ = handle;
+    cache->rm_ = rm;
+    cache->ts_updated_ = Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
   }
 };
 
