@@ -149,10 +149,12 @@ void Simulation::Initialize(int argc, const char** argv,
 
 void Simulation::InitializeMembers() {
   random_.resize(omp_get_max_threads());
+#pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
   }
   exec_ctxt_.resize(omp_get_max_threads());
+#pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
     exec_ctxt_[i] = new InPlaceExecutionContext();
   }
