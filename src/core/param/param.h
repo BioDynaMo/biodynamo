@@ -264,6 +264,15 @@ struct Param {
   ///     statistics = false
   bool statistics_ = false;
 
+  /// Output debugging info related to running on a NUMA architecutre.\n
+  /// \see `ThreadInfo`, `ResourceManager::DebugNuma`
+  /// Default Value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [development]
+  ///     debug_numa = false
+  bool debug_numa_ = false;
+
   /// Use the python script (simple_pipeline.py) to do Live Visualization with
   /// ParaView. If false, we use the C++ pipeline
   /// Default value: `false`\n

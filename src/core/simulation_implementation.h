@@ -102,6 +102,10 @@ void Simulation<T>::Restore(Simulation<T>&& restored) {
 
 template <typename T>
 Simulation<T>::~Simulation() {
+  if (param_->debug_numa_) {
+    std::cout << "ThreadInfo:\n" << ThreadInfo::GetInstance() << std::endl;
+    rm_->DebugNuma();
+  }
   Simulation<>* tmp = nullptr;
   if (active_ != this) {
     tmp = active_;
@@ -192,14 +196,23 @@ void Simulation<T>::Initialize(int argc, const char** argv,
 template <typename T>
 template <typename TResourceManager, typename TGrid, typename TScheduler>
 void Simulation<T>::InitializeMembers() {
+  // TODO(lukas) NB: Very strange behavior: ThreadInfo must be initialized
+  // before the first openmp region, otherwise it yields wrong results!
+  auto* tinfo = ThreadInfo::GetInstance();
+  if(param_->debug_numa_) {
+    std::cout << "ThreadInfo:\n" << *tinfo << std::endl;
+  }
+
   random_.resize(omp_get_max_threads());
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
   }
+
   exec_ctxt_.resize(omp_get_max_threads());
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
+    // #pragma omp critical
     exec_ctxt_[i] = new InPlaceExecutionContext<T>();
   }
   rm_ = new TResourceManager();

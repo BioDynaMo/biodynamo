@@ -67,7 +67,8 @@ class SimulationTest : public ::testing::Test {
       "\n"
       "[development]\n"
       "# this is a comment\n"
-      "statistics = true\n";
+      "statistics = true\n"
+      "debug_numa = true\n";
 
  protected:
   virtual void SetUp() {
@@ -146,6 +147,7 @@ class SimulationTest : public ::testing::Test {
 
     // development group
     EXPECT_TRUE(param->statistics_);
+    EXPECT_TRUE(param->debug_numa_);
   }
 };
 

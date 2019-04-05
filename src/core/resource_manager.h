@@ -252,8 +252,8 @@ class ResourceManager {
   }
 
   SoHandle GetSoHandle1(SoUid so_uid) const {
-    auto search =  so_storage_location_.find(so_uid);
-    if(search != so_storage_location_.end()) {
+    auto search = so_storage_location_.find(so_uid);
+    if (search != so_storage_location_.end()) {
       return search->second;
     }
     return SoHandle();
@@ -405,6 +405,19 @@ class ResourceManager {
            i++) {
         ::bdm::Apply(&sim_objects_[n], i,
                      [&](auto* container) { function(container, n, i); });
+      }
+    }
+  }
+
+  /// const version of ApplyOnAllTypes
+  template <typename TFunction>
+  void ApplyOnAllTypes(TFunction&& function) const {
+    for (uint16_t n = 0; n < numa_nodes_; n++) {
+      // runtime dispatch - TODO(lukas) replace with c++17 std::apply
+      for (uint16_t i = 0; i < std::tuple_size<TupleOfSOContainers>::value;
+           i++) {
+        ::bdm::Apply(&sim_objects_[n], i,
+                     [&](const auto* container) { function(container, n, i); });
       }
     }
   }
@@ -920,14 +933,18 @@ class ResourceManager {
     // // TODO(lukas) do we need this? we don't change the scheduling anymore
     thread_info_->Renew();
 
-    ApplyOnAllTypes([](auto*container, uint16_t numa_node, uint16_t type_id) {
-      std::cout << "nid" << numa_node << " tid " << type_id << " size " << container->size() << std::endl;
-    });
-    std::cout << numa_nodes_ << std::endl;
-    std::cout << thread_info_->GetNumaNodes() << std::endl;
-    std::cout << numa_num_configured_nodes() << std::endl;
-    std::cout << numa_max_node() << std::endl;
-    std::cout << std::endl;
+    if (Simulation<TCompileTimeParam>::GetActive()->GetParam()->debug_numa_) {
+      DebugNuma();
+    }
+  }
+
+  void DebugNuma() const {
+    std::cout << "ResourceManager size of sim object containers\n" << std::endl;
+    ApplyOnAllTypes(
+        [](const auto* container, uint16_t numa_node, uint16_t type_id) {
+          std::cout << "  numa node " << numa_node << " type id " << type_id
+                    << " size " << container->size() << std::endl;
+        });
   }
 
   /// NB: This method is not thread-safe! This function might invalidate
@@ -964,9 +981,12 @@ class ResourceManager {
         auto&& so = (*new_sim_objects)[i];
         auto uid = so.GetUid();
         // #pragma omp critical
-        // std::cout << "merge " << uid << " from " << omp_get_thread_num() << std::endl;
-        so_storage_location_.insert({uid, SoHandle(numa_node, type_id, offset + i)});
-        // other_rm.so_storage_location_[uid] = SoHandle(numa_node, type_id, offset + i);
+        // std::cout << "merge " << uid << " from " << omp_get_thread_num() <<
+        // std::endl;
+        so_storage_location_.insert(
+            {uid, SoHandle(numa_node, type_id, offset + i)});
+        // other_rm.so_storage_location_[uid] = SoHandle(numa_node, type_id,
+        // offset + i);
         (*container)[offset + i] = so;
       }
     });
@@ -984,7 +1004,8 @@ class ResourceManager {
     so_storage_location_.insert(other_map.begin(), other_map.end());
     // ::bdm::Apply(&other_rm.sim_objects_[numa_node], type_id, [&,this](auto*
     // new_sim_objects) {
-    // ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto* container) {
+    // ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto*
+    // container) {
     //   using SoType = typename raw_type<decltype(container)>::value_type;
     //   auto* new_sim_objects = other_rm.template Get<SoType>(numa_node);
     //   for (uint64_t i = 0; i < new_sim_objects->size(); i++) {
@@ -1053,11 +1074,12 @@ class ResourceManager {
       typename SoHandle::NumaNode_t numa = 0) {
     return &std::get<TypeContainer<ToBackend<Type>>>(sim_objects_[numa]);
   }
-public:
+
+ public:
   /// Mapping between SoUid and SoHandle (stored location)
   // std::unordered_map<SoUid, SoHandle> so_storage_location_;  //!
   tbb::concurrent_unordered_map<SoUid, SoHandle> so_storage_location_;  //!
-private:
+ private:
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
   /// Conversion of simulation object types from the compile time params
