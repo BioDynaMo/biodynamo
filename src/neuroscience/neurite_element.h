@@ -493,7 +493,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     if (mother_ != mother) {
       // FIXME
       // Fatal("NeuriteElement", "Given object is not the mother!");
-      std::cout << "Fatal(\"NeuriteElement\", \"Given object is not the mother!\")" << std::endl;
+      // std::cout << "Fatal(\"NeuriteElement\", \"Given object is not the mother!\")" << std::endl;
       return {0, 0, 0};
     }
 
