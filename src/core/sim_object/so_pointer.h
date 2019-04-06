@@ -26,7 +26,10 @@
 
 namespace bdm {
 
-// TODO
+/// The SoPointerCache contains information to quickly retrieve a simulation
+/// object from a SoPointer without searching for it in the ResourceManager or
+/// execution contexts. The field `ts_updated_` is used to determine whether the
+/// cache is still valid.
 template <typename TCTParam = CompileTimeParam<>>
 struct SoPointerCache {
   SoHandle handle_ = SoHandle();

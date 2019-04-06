@@ -58,19 +58,14 @@ class InPlaceExecutionContext {
     // references would become invalid.
     // Alternative: use container that doesn't migrate objects.
     new_sim_objects_.Reserve(10);
-  }
-
-  void DebugPrint() const {
-    std::cout << cnt_cached_ << "\n"
-              << cnt_else_ << "\n"
-              << cnt_rm_invalid_ts_ << "\n"
-              << cnt_this_invalid_ts_ << "\n"
-              << cnt_total_ << "\n"
-              << std::endl;
+    soptr_cache_perfc_.enabled_ = true;
   }
 
   ~InPlaceExecutionContext() {
-     DebugPrint();
+    if(soptr_cache_perfc_.enabled_) {
+       std::cout << "InPlaceExecutionContext " << this << " "
+                 << soptr_cache_perfc_ << std::endl;
+    }
   }
 
   /// This function is called at the beginning of each iteration to setup all
@@ -92,7 +87,6 @@ class InPlaceExecutionContext {
       const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
 
     // std::cout << "\n\nTearDownIterationAll -----------------------------------" << std::endl;
-    // Simulation<TCTParam>::GetActive()->GetScheduler()->total_steps_++;
 
     auto* rm = TSimulation::GetActive()->GetResourceManager();
     for (uint64_t t = 0; t < rm->NumberOfTypes(); ++t) {
@@ -149,11 +143,6 @@ class InPlaceExecutionContext {
     // remove
     for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
       auto* ctxt = all_exec_ctxts[i];
-      // if (Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() > 260) {
-      //   std::cout << "\nTinfo " << i << " " << ctxt << "\n";
-      //   DebugPrint();
-      // }
-      // removed sim objects
       // remove them after adding new ones (maybe one has been removed
       // that was in new_sim_objects_)
       for (auto& uid : ctxt->remove_) {
@@ -276,9 +265,8 @@ class InPlaceExecutionContext {
       SoPointerCache<TCTParam>* cache = nullptr,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
-    cnt_total_++;
     if (IsCacheValid(cache)) {
-      cnt_cached_++;
+      soptr_cache_perfc_.IncCached();
       return cache->rm_->template GetSimObject<TSo>(cache->handle_);
     }
 
@@ -317,9 +305,8 @@ class InPlaceExecutionContext {
                     SoPointerCache<TCTParam>* cache = nullptr,
                     typename std::enable_if<
                         std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
-    cnt_total_++;
     if (IsCacheValid(cache)) {
-      cnt_cached_++;
+      soptr_cache_perfc_.IncCached();
       return cache->rm_->template GetSimObject<TSo>(cache->handle_);
     }
 
@@ -398,12 +385,43 @@ class InPlaceExecutionContext {
     std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
   };
 
-  uint64_t cnt_cached_ = 0;
-  uint64_t cnt_total_ = 0;
-  mutable uint64_t cnt_first_ = 0;
-  mutable uint64_t cnt_else_ = 0;
-  mutable uint64_t cnt_rm_invalid_ts_ = 0;
-  mutable uint64_t cnt_this_invalid_ts_ = 0;
+  class SoPtrCachePerfCounters {
+   public:
+    bool enabled_ = false;
+
+    void IncCached() { if (enabled_) { cached_++; } }
+    void IncTotal() { if (enabled_) { total_++; } }
+    void IncSimRmInvalidTs() { if (enabled_) { sim_rm_invalid_ts_++; } }
+    void IncThisInvalidTs() { if (enabled_) { this_invalid_ts_++; } }
+    void IncElse() { if (enabled_) { else_++; } }
+
+    friend std::ostream& operator<<(std::ostream& str, SoPtrCachePerfCounters& cnts) {
+      str << "{ SoPtrCachePerfCounters: "
+          << "cache hits                  " << static_cast<double>(cnts.cached_) / cnts.total_ << ", "
+          << "cached                      " << cnts.cached_ << ", "
+          << "total                       " << cnts.total_ << ", "
+          << "missed sim rm invalid ts    " << cnts.sim_rm_invalid_ts_ << ", "
+          << "missed exec ctxt invalid ts " << cnts.this_invalid_ts_ << ", "
+          << "missed all other reasons    " << cnts.else_ << "}";
+      return str;
+    }
+
+   private:
+     /// Number of requests serviced by the cache.
+     uint64_t cached_ = 0;
+     /// Total number of requests.
+     uint64_t total_ = 0;
+     /// Number of requests not serviced by the cache, because the cache was
+     /// invalidated by the simulation ResourceManager.
+     uint64_t sim_rm_invalid_ts_ = 0;
+     /// Number of requests not serviced by the cache, because the cache was
+     /// invalidated by this execution context
+     uint64_t this_invalid_ts_ = 0;
+     ///  Number of requests not serviced by the cache - All other reasons.
+     uint64_t else_ = 0;
+  };
+
+  mutable SoPtrCachePerfCounters soptr_cache_perfc_;
 
   ThreadInfo* tinfo_ = ThreadInfo::GetInstance();
 
@@ -435,36 +453,32 @@ class InPlaceExecutionContext {
     ExecuteInternal(so, other_ops...);
   }
 
-  // TODO
+  /// This method checks if the given SoPointerCache is valid
   bool IsCacheValid(SoPointerCache<TCTParam>* cache) const {
-    if (Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() <= 260) {
-      return false;
-    }
+    soptr_cache_perfc_.IncTotal();
     if (cache == nullptr) {
+      soptr_cache_perfc_.IncElse();
       return false;
-    }
-    if(cache->handle_ == SoHandle()) {
-      cnt_first_++;
     }
     auto* rm = Simulation<TCTParam>::GetActive()->GetResourceManager();
     if(cache->rm_ == rm) {
-      // if (rm->GetInvalidatedTimestep() < cache->ts_updated_)
-      //   std::cout << "use cached version " << std::endl;
-      cnt_rm_invalid_ts_ += rm->GetInvalidatedTimestep() > cache->ts_updated_;
-      // if (Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() > 260) {
-      //   #pragma omp critical
-      //   std::cout << cache->ts_updated_ << " , " << rm->GetInvalidatedTimestep() << std::endl;
-      // }
-      return rm->GetInvalidatedTimestep() <= cache->ts_updated_;
+      bool ret_val = rm->GetInvalidatedTimestep() <= cache->ts_updated_;
+      if (!ret_val) {
+        soptr_cache_perfc_.IncSimRmInvalidTs();
+      }
+      return ret_val;
     } else if(cache->rm_ == &new_sim_objects_) {
-      cnt_this_invalid_ts_ += cache->ts_updated_ != Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
-      return cache->ts_updated_ == Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
+      auto ret_val = cache->ts_updated_ == Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
+      if (!ret_val) {
+        soptr_cache_perfc_.IncThisInvalidTs();
+      }
+      return ret_val;
     }
-    cnt_else_++;
+    soptr_cache_perfc_.IncElse();
     return false;
   }
 
-  // TODO
+  /// Update the cache
   void UpdateCache(SoPointerCache<TCTParam>* cache, const SoHandle& handle, ResourceManager<TCTParam>* rm) const {
     if (cache == nullptr) {
       return;
@@ -475,7 +489,7 @@ class InPlaceExecutionContext {
   }
 };
 
-// TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*
+// TODO(lukas) Add tests for caching mechanism in ForEachNeighbor* and SoPointerCache
 
 }  // namespace bdm
 

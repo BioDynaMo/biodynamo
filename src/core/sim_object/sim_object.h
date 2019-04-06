@@ -913,7 +913,8 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   /// stored.
   vec<typename SoHandle::NumaNode_t> numa_node_ = {{}};
 
-  // TODO
+  /// This member is used to speed-up SoPointer operations
+  /// \see SoPointerCache
   vec<SoPointerCache<>> so_ptr_cache_ = {{}};
 
   /// @brief Function to copy biology modules from one structure to another

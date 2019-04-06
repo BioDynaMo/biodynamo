@@ -84,7 +84,8 @@ class SoHandle {
   void SetElementIdx(ElementIdx_t element_idx) { element_idx_ = element_idx; }
 
   bool operator==(const SoHandle& other) const {
-    return element_idx_ == other.element_idx_ && type_idx_ == other.type_idx_ && numa_node_ == other.numa_node_;
+    return type_idx_ == other.type_idx_ && numa_node_ == other.numa_node_ &&
+           element_idx_ == other.element_idx_;
   }
 
   bool operator!=(const SoHandle& other) const { return !(*this == other); }
@@ -798,7 +799,7 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void Clear() {
-    // InvalidateSoHandles();
+    // UpdateInvalidatedTs();
     so_storage_location_.clear();
     ApplyOnAllTypes([](auto* container, uint16_t numa_node, uint16_t type_idx) {
       container->clear();
@@ -808,7 +809,7 @@ class ResourceManager {
   /// Reorder simulation objects such that, sim objects are distributed to NUMA
   /// nodes. Nearby sim objects will be moved to the same NUMA node.
   void SortAndBalanceNumaNodes() {
-    InvalidateSoHandles();
+    UpdateInvalidatedTs();
 
     // balance simulation objects per numa node according to the number of
     // threads associated with each numa domain
@@ -913,7 +914,8 @@ class ResourceManager {
                     so.SetElementIdx(e);
                     SoHandle handle = SoHandle(n, t, e);
                     auto* scheduler = Simulation<TCompileTimeParam>::GetActive()->GetScheduler();
-                    so.SetSoPtrCache({handle, this, scheduler->GetSimulatedSteps()});
+                    // + 1 because we know it is valid
+                    so.SetSoPtrCache({handle, this, scheduler->GetSimulatedSteps() + 1});
                   }
                 });
               }
@@ -1042,7 +1044,7 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void Remove(SoUid uid) {
-    InvalidateSoHandles();
+    UpdateInvalidatedTs();
     // remove from map
     auto it = this->so_storage_location_.find(uid);
     if (it != this->so_storage_location_.end()) {
@@ -1079,7 +1081,7 @@ class ResourceManager {
     return &std::get<TypeContainer<ToBackend<Type>>>(sim_objects_[numa_node]);
   }
 
-  // TODO SoHandlesValidSince
+  /// Returns last time stamp when SoHandle and SoPointer have been invalidated.
   uint64_t GetInvalidatedTimestep() const {
     return invalidated_ts_;
   }
@@ -1117,17 +1119,13 @@ class ResourceManager {
 
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
-  // TODO
+  /// Timestamp in which SoHandle and SoPointer have been invalidated.
   uint64_t invalidated_ts_ = 0;
 
-  // TODO
-  void InvalidateSoHandles() {
+  void UpdateInvalidatedTs() {
     auto* scheduler = Simulation<TCompileTimeParam>::GetActive()->GetScheduler();
     if (scheduler) {
-      invalidated_ts_ = scheduler->GetSimulatedSteps();
-      // if (this == Simulation<TCompileTimeParam>::GetActive()->GetResourceManager()) {
-        std::cout << "invalidated ts " << invalidated_ts_ << std::endl;
-      // }
+      invalidated_ts_ = scheduler->GetSimulatedSteps() + 1;
     }
   }
 
