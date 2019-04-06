@@ -64,8 +64,10 @@ class Scheduler {
 
     Initialize();
     for (unsigned step = 0; step < steps; step++) {
+      std::cout << "start iteration " << total_steps_ << std::endl;
       Execute(step == steps - 1);
 
+      std::cout << "end iteration " << total_steps_ << std::endl;
       total_steps_++;
       Backup();
     }
@@ -74,8 +76,8 @@ class Scheduler {
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const { return total_steps_; }
 
- protected:
   uint64_t total_steps_ = 0;
+protected:
 
   /// Executes one step.
   /// This design makes testing more convenient

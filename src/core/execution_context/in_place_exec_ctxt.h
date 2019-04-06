@@ -60,13 +60,17 @@ class InPlaceExecutionContext {
     new_sim_objects_.Reserve(10);
   }
 
-  ~InPlaceExecutionContext() {
+  void DebugPrint() const {
     std::cout << cnt_cached_ << "\n"
               << cnt_else_ << "\n"
               << cnt_rm_invalid_ts_ << "\n"
               << cnt_this_invalid_ts_ << "\n"
               << cnt_total_ << "\n"
               << std::endl;
+  }
+
+  ~InPlaceExecutionContext() {
+     DebugPrint();
   }
 
   /// This function is called at the beginning of each iteration to setup all
@@ -88,6 +92,7 @@ class InPlaceExecutionContext {
       const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
 
     // std::cout << "\n\nTearDownIterationAll -----------------------------------" << std::endl;
+    // Simulation<TCTParam>::GetActive()->GetScheduler()->total_steps_++;
 
     auto* rm = TSimulation::GetActive()->GetResourceManager();
     for (uint64_t t = 0; t < rm->NumberOfTypes(); ++t) {
@@ -111,7 +116,7 @@ class InPlaceExecutionContext {
 // add new_sim_objects_ to the ResourceManager in parallel
     // Timing timing("AddNewSimObjects");
       #pragma omp parallel for schedule(static, 1)
-      for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+      for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
         auto* ctxt = all_exec_ctxts[i];
         int nid = tinfo_->GetNumaNode(i);
         uint64_t offset = thread_offsets[i] + numa_offsets[nid];
@@ -121,7 +126,7 @@ class InPlaceExecutionContext {
       // // part 2 is not thread safe!
       // Timing timing("AddNewSimObjectsToSoStorageMap");
       // uint64_t tnso = 0;
-      // for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+      // for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
       //   auto* ctxt = all_exec_ctxts[i];
       //   int nid = tinfo_->GetNumaNode(i);
       //   uint64_t offset = thread_offsets[i] + numa_offsets[nid];
@@ -135,15 +140,19 @@ class InPlaceExecutionContext {
     // clear
     // Timing timing("AddNewSimObjectsToSoStorageMap");
 #pragma omp parallel for schedule(static, 1)
-    for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+    for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
       auto* ctxt = all_exec_ctxts[i];
       // rm->AddNewSimObjectsToSoStorageMap(ctxt->new_sim_objects_);
       ctxt->new_sim_objects_.Clear();
     }
 
     // remove
-    for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+    for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
       auto* ctxt = all_exec_ctxts[i];
+      // if (Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() > 260) {
+      //   std::cout << "\nTinfo " << i << " " << ctxt << "\n";
+      //   DebugPrint();
+      // }
       // removed sim objects
       // remove them after adding new ones (maybe one has been removed
       // that was in new_sim_objects_)
@@ -428,17 +437,24 @@ class InPlaceExecutionContext {
 
   // TODO
   bool IsCacheValid(SoPointerCache<TCTParam>* cache) const {
-    if(cache->handle_ == SoHandle()) {
-      cnt_first_++;
+    if (Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() <= 260) {
+      return false;
     }
     if (cache == nullptr) {
       return false;
+    }
+    if(cache->handle_ == SoHandle()) {
+      cnt_first_++;
     }
     auto* rm = Simulation<TCTParam>::GetActive()->GetResourceManager();
     if(cache->rm_ == rm) {
       // if (rm->GetInvalidatedTimestep() < cache->ts_updated_)
       //   std::cout << "use cached version " << std::endl;
       cnt_rm_invalid_ts_ += rm->GetInvalidatedTimestep() > cache->ts_updated_;
+      // if (Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() > 260) {
+      //   #pragma omp critical
+      //   std::cout << cache->ts_updated_ << " , " << rm->GetInvalidatedTimestep() << std::endl;
+      // }
       return rm->GetInvalidatedTimestep() <= cache->ts_updated_;
     } else if(cache->rm_ == &new_sim_objects_) {
       cnt_this_invalid_ts_ += cache->ts_updated_ != Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
@@ -451,7 +467,6 @@ class InPlaceExecutionContext {
   // TODO
   void UpdateCache(SoPointerCache<TCTParam>* cache, const SoHandle& handle, ResourceManager<TCTParam>* rm) const {
     if (cache == nullptr) {
-      std::cout << "cache nullptr" << std::endl;  // FIXME
       return;
     }
     cache->handle_ = handle;

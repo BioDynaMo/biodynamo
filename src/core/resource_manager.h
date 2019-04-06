@@ -213,6 +213,7 @@ class ResourceManager {
     sim_objects_ = new TupleOfSOContainers[numa_nodes_];
     // Soa container contain one element upon construction
     Clear();
+    invalidated_ts_ = 0;
   }
 
   /// Free the memory that was reserved for the diffusion grids
@@ -797,7 +798,7 @@ class ResourceManager {
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
   void Clear() {
-    InvalidateSoHandles();
+    // InvalidateSoHandles();
     so_storage_location_.clear();
     ApplyOnAllTypes([](auto* container, uint16_t numa_node, uint16_t type_idx) {
       container->clear();
@@ -910,6 +911,9 @@ class ResourceManager {
                     auto&& so = (*dest)[e];
                     so.SetNumaNode(n);
                     so.SetElementIdx(e);
+                    SoHandle handle = SoHandle(n, t, e);
+                    auto* scheduler = Simulation<TCompileTimeParam>::GetActive()->GetScheduler();
+                    so.SetSoPtrCache({handle, this, scheduler->GetSimulatedSteps()});
                   }
                 });
               }
@@ -976,8 +980,9 @@ class ResourceManager {
   void AddNewSimObjects(typename SoHandle::NumaNode_t numa_node,
                         typename SoHandle::TypeIdx_t type_id, uint64_t offset,
                         ResourceManager& other_rm) {
-    // ::bdm::Apply(&other_rm.sim_objects_[numa_node], type_id, [&,this](auto*
-    // new_sim_objects) {
+    auto* scheduler = Simulation<TCompileTimeParam>::GetActive()->GetScheduler();
+    auto simulated_steps = scheduler->GetSimulatedSteps();
+
     ::bdm::Apply(&sim_objects_[numa_node], type_id, [&, this](auto* container) {
       using SoType = typename raw_type<decltype(container)>::value_type;
       auto* new_sim_objects = other_rm.template Get<SoType>(0);
@@ -987,14 +992,20 @@ class ResourceManager {
         // #pragma omp critical
         // std::cout << "merge " << uid << " from " << omp_get_thread_num() <<
         // std::endl;
-        so_storage_location_.insert(
-            {uid, SoHandle(numa_node, type_id, offset + i)});
+        auto el_idx = offset + i;
+        SoHandle handle = SoHandle(numa_node, type_id, el_idx);
+        so_storage_location_.insert({uid, handle});
         // other_rm.so_storage_location_[uid] = SoHandle(numa_node, type_id,
         // offset + i);
-        (*container)[offset + i] = so;
+        (*container)[el_idx] = so;
+
+        auto&& inserted = (*container)[el_idx];
+        inserted.SetNumaNode(numa_node);
+        inserted.SetElementIdx(el_idx);
+        inserted.SetSoPtrCache({handle, this, simulated_steps});
       }
     });
-  }
+}
 
   /// Second part of adding simulation objects to this ResourceManager.
   /// NB: This method is not thread-safe!
@@ -1070,7 +1081,7 @@ class ResourceManager {
 
   // TODO SoHandlesValidSince
   uint64_t GetInvalidatedTimestep() const {
-    invalidated_ts_;
+    return invalidated_ts_;
   }
 
  private:
@@ -1114,6 +1125,9 @@ class ResourceManager {
     auto* scheduler = Simulation<TCompileTimeParam>::GetActive()->GetScheduler();
     if (scheduler) {
       invalidated_ts_ = scheduler->GetSimulatedSteps();
+      // if (this == Simulation<TCompileTimeParam>::GetActive()->GetResourceManager()) {
+        std::cout << "invalidated ts " << invalidated_ts_ << std::endl;
+      // }
     }
   }
 
