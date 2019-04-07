@@ -161,6 +161,11 @@ InPlaceExecutionContext<T>* Simulation<T>::GetExecutionContext() {
 }
 
 template <typename T>
+InPlaceExecutionContext<T>* Simulation<T>::GetMainExecCtxt() {
+  return exec_ctxt_[0];
+}
+
+template <typename T>
 std::vector<InPlaceExecutionContext<T>*>& Simulation<T>::GetAllExecCtxts() {
   return exec_ctxt_;
 }

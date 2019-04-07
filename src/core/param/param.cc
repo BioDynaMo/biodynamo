@@ -120,6 +120,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");
   BDM_ASSIGN_CONFIG_VALUE(debug_numa_, "development.debug_numa");
+  BDM_ASSIGN_CONFIG_VALUE(debug_exec_ctxt_caches_,
+                          "development.debug_exec_ctxt_caches");
   BDM_ASSIGN_CONFIG_VALUE(python_catalyst_pipeline_,
                           "development.python_catalyst_pipeline");
   BDM_ASSIGN_CONFIG_VALUE(show_simulation_step_,

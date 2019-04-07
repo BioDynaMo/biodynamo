@@ -58,7 +58,9 @@ class InPlaceExecutionContext {
     // references would become invalid.
     // Alternative: use container that doesn't migrate objects.
     new_sim_objects_.Reserve(10);
-    soptr_cache_perfc_.enabled_ = true;
+
+    auto* param = Simulation<TCTParam>::GetActive()->GetParam();
+    soptr_cache_perfc_.enabled_ = param->debug_exec_ctxt_caches_;
   }
 
   ~InPlaceExecutionContext() {
@@ -396,13 +398,13 @@ class InPlaceExecutionContext {
     void IncElse() { if (enabled_) { else_++; } }
 
     friend std::ostream& operator<<(std::ostream& str, SoPtrCachePerfCounters& cnts) {
-      str << "{ SoPtrCachePerfCounters: "
-          << "cache hits                  " << static_cast<double>(cnts.cached_) / cnts.total_ << ", "
-          << "cached                      " << cnts.cached_ << ", "
-          << "total                       " << cnts.total_ << ", "
-          << "missed sim rm invalid ts    " << cnts.sim_rm_invalid_ts_ << ", "
-          << "missed exec ctxt invalid ts " << cnts.this_invalid_ts_ << ", "
-          << "missed all other reasons    " << cnts.else_ << "}";
+      str << "SoPtrCachePerfCounters: \n{\n"
+          << "  cache hits                  " << static_cast<double>(cnts.cached_) / cnts.total_ << "\n"
+          << "  cached                      " << cnts.cached_ << "\n"
+          << "  total                       " << cnts.total_ << "\n"
+          << "  missed sim rm invalid ts    " << cnts.sim_rm_invalid_ts_ << "\n"
+          << "  missed exec ctxt invalid ts " << cnts.this_invalid_ts_ << "\n"
+          << "  missed all other reasons    " << cnts.else_ << "\n}\n";
       return str;
     }
 

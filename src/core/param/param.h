@@ -273,6 +273,14 @@ struct Param {
   ///     debug_numa = false
   bool debug_numa_ = false;
 
+  /// Output debugging info related to execution context caches.\n
+  /// Default Value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [development]
+  ///     debug_exec_ctxt_caches_ = false
+  bool debug_exec_ctxt_caches_ = false;
+
   /// Use the python script (simple_pipeline.py) to do Live Visualization with
   /// ParaView. If false, we use the C++ pipeline
   /// Default value: `false`\n

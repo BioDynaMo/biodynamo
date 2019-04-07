@@ -95,6 +95,9 @@ struct Simulation {
   /// Returns a thread local execution context.
   InPlaceExecutionContext<TCTParam>* GetExecutionContext();
 
+  /// Returns the main execution context.
+  InPlaceExecutionContext<TCTParam>* GetMainExecCtxt();
+
   /// Returns all thread local execution contexts.
   std::vector<InPlaceExecutionContext<TCTParam>*>& GetAllExecCtxts();
 

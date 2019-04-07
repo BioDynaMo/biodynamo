@@ -68,6 +68,7 @@ class SimulationTest : public ::testing::Test {
       "[development]\n"
       "# this is a comment\n"
       "statistics = true\n"
+      "debug_exec_ctxt_caches = true\n"
       "debug_numa = true\n";
 
  protected:
@@ -148,6 +149,7 @@ class SimulationTest : public ::testing::Test {
     // development group
     EXPECT_TRUE(param->statistics_);
     EXPECT_TRUE(param->debug_numa_);
+    EXPECT_TRUE(param->debug_exec_ctxt_caches_);
   }
 };
 
