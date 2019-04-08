@@ -15,8 +15,6 @@
 #ifndef UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_TEST_COMMON_H_
 #define UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_TEST_COMMON_H_
 
-#include "core/resource_manager.h"
-
 #include <algorithm>
 #include <vector>
 #include "core/param/compile_time_list.h"
