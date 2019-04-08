@@ -75,8 +75,14 @@ class InPlaceExecutionContext {
   /// This function is not thread-safe.
   /// NB: Invalidates references and pointers to simulation objects.
   void SetupIterationAll(
-      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) {
     // first iteration might have uncommited changes
+
+#pragma omp parallel for schedule(static, 1)
+    for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      auto* ctxt = all_exec_ctxts[i];
+      ectxt_cache_valid_ = ctxt->new_sim_objects_.GetNumSimObjects() == 0;
+    }
     TearDownIterationAll(all_exec_ctxts);
   }
 
@@ -441,6 +447,8 @@ class InPlaceExecutionContext {
 
   std::vector<std::pair<SoHandle, double>> neighbor_cache_;
 
+  bool ectxt_cache_valid_ = true;
+
   /// Execute a single operation on a simulation object
   template <typename TSo, typename TFirstOp>
   void ExecuteInternal(TSo&& so, TFirstOp first_op) {
@@ -469,7 +477,7 @@ class InPlaceExecutionContext {
         soptr_cache_perfc_.IncSimRmInvalidTs();
       }
       return ret_val;
-    } else if(cache->rm_ == &new_sim_objects_) {
+    } else if(ectxt_cache_valid_ && cache->rm_ == &new_sim_objects_) {
       auto ret_val = cache->ts_updated_ == Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
       if (!ret_val) {
         soptr_cache_perfc_.IncThisInvalidTs();
