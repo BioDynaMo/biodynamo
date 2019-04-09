@@ -54,7 +54,7 @@ void InPlaceExecutionContext::TearDownIterationAll(const std::vector<InPlaceExec
 
   // add new_sim_objects_ to the ResourceManager in parallel
 #pragma omp parallel for schedule(static, 1)
-  for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+  for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
     int nid = tinfo_->GetNumaNode(i);
     uint64_t offset = thread_offsets[i] + numa_offsets[nid];
@@ -63,7 +63,7 @@ void InPlaceExecutionContext::TearDownIterationAll(const std::vector<InPlaceExec
   }
 
   // remove
-  for (unsigned i = 0; i < all_exec_ctxts.size(); i++) {
+  for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
     // removed sim objects
     // remove them after adding new ones (maybe one has been removed
