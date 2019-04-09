@@ -20,9 +20,7 @@
 
 namespace bdm {
 
-ThreadInfo* InPlaceExecutionContext::tinfo_ = ThreadInfo::GetInstance();
-
-InPlaceExecutionContext::InPlaceExecutionContext() {}
+InPlaceExecutionContext::InPlaceExecutionContext() : tinfo_(ThreadInfo::GetInstance()) {}
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
   for (auto& el : new_sim_objects_) {
