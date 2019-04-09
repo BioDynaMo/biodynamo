@@ -174,6 +174,10 @@ void Simulation::InitializeMembers() {
 
 void Simulation::InitializeRuntimeParams(
     int argc, const char** argv, const std::function<void(Param*)>& set_param) {
+  // Renew thread info just in case it has been initialised as static and a
+  // simulation calls e.g. `omp_set_num_threads()` within main.
+  ThreadInfo::GetInstance()->Renew();
+  
   param_ = new Param();
 
   // Removing this line causes an unexplainable segfault due to setting the
