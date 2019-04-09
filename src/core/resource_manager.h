@@ -827,11 +827,6 @@ class ResourceManager {
     // using first touch policy - page will be allocated to the numa domain of
     // the thread that accesses it first.
     // alternative, use numa_alloc_onnode.
-    int ret = numa_run_on_node(0);
-    if (ret != 0) {
-      Log::Fatal("ResourceManager", "Run on numa node failed. Return code: ",
-                 ret);
-    }
 
     TupleOfSOContainers* so_rearranged = new TupleOfSOContainers[numa_nodes_];
     TupleOfSOContainers* tmp = sim_objects_;
@@ -936,10 +931,6 @@ class ResourceManager {
     ApplyOnAllElements([this](auto&& so, SoHandle) {
       this->so_storage_location_[so.GetUid()] = so.GetSoHandle();
     });
-
-    // FIXME
-    // // TODO(lukas) do we need this? we don't change the scheduling anymore
-    thread_info_->Renew();
 
     if (Simulation<TCompileTimeParam>::GetActive()->GetParam()->debug_numa_) {
       DebugNuma();
