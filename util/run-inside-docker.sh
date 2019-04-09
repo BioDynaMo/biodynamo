@@ -78,7 +78,7 @@ echo ""
 EchoNewStep "Start docker container..."
 BDM_PROJECT_DIR_ABS=$(GetAbsolutePath $BDM_PROJECT_DIR)
 # check if working directory is inside BDM_PROJECT_DIR
-if [[ "$PWD" != $(realpath $BDM_PROJECT_DIR_ABS)* ]]; then
+if [[ "$PWD" != $(readlink -e $BDM_PROJECT_DIR_ABS)* ]]; then
   EchoError "ERROR: working directory must be inside ${BDM_PROJECT_DIR_ABS}"
   echo "Current working directory: $PWD"
   echo "Change your working directory and run the script again."
