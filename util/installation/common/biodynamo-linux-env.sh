@@ -27,7 +27,7 @@ function versionLessThan {
 }
 
 # BioDynaMo
-export BDM_INSTALL_DIR=$(realpath $(dirname "${BASH_SOURCE[0]}"))
+export BDM_INSTALL_DIR=$(readlink -e $(dirname "${BASH_SOURCE[0]}"))
 #   required environment variables for out of source simulations
 #   used by cmake to find BioDynaMoConfig.cmake
 export CMAKE_PREFIX_PATH=${BDM_INSTALL_DIR}/biodynamo/cmake:$CMAKE_PREFIX_PATH
