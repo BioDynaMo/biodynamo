@@ -156,6 +156,11 @@ Random* Simulation<T>::GetRandom() {
 }
 
 template <typename T>
+std::vector<Random*>& Simulation<T>::GetAllRandom() {
+  return random_;
+}
+
+template <typename T>
 InPlaceExecutionContext<T>* Simulation<T>::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
 }
