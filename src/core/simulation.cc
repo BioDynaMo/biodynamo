@@ -125,6 +125,10 @@ Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
 Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
+std::vector<Random*>& Simulation::GetAllRandom() {
+  return random_;
+}
+
 InPlaceExecutionContext* Simulation::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
 }
@@ -177,7 +181,7 @@ void Simulation::InitializeRuntimeParams(
   // Renew thread info just in case it has been initialised as static and a
   // simulation calls e.g. `omp_set_num_threads()` within main.
   ThreadInfo::GetInstance()->Renew();
-  
+
   param_ = new Param();
 
   // Removing this line causes an unexplainable segfault due to setting the
