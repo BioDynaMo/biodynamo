@@ -42,12 +42,16 @@ export LD_LIBRARY_PATH=${BDM_INSTALL_DIR}/biodynamo/lib:$LD_LIBRARY_PATH
 export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDM_INSTALL_DIR}/biodynamo/include"
 
 # ParaView
-export ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.5
+export ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.6
 export ParaView_LIB_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib
 export PYTHONPATH=${ParaView_LIB_DIR}/python2.7/site-packages
 export PV_PLUGIN_PATH=${BDM_INSTALL_DIR}/biodynamo/lib/pv_plugin
 export PATH=${BDM_INSTALL_DIR}/third_party/paraview/bin:${PATH}
 export LD_LIBRARY_PATH=${ParaView_LIB_DIR}:${LD_LIBRARY_PATH}
+#   OSPRAY
+export OSPRAY_DIR=${BDM_INSTALL_DIR}/third_party/paraview/ospray
+export LD_LIBRARY_PATH=${OSPRAY_DIR}/lib:${LD_LIBRARY_PATH}
+export CMAKE_PREFIX_PATH=${OSPRAY_DIR}:$CMAKE_PREFIX_PATH
 
 # QT
 export Qt5_DIR=${BDM_INSTALL_DIR}/third_party/qt/lib/cmake/Qt5

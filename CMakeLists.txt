@@ -20,17 +20,31 @@ else()
 endif()
 option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
 
-# detect if the biodynamo environment has been sourced
-if(NOT DEFINED ENV{BDM_CMAKE_DIR})
-  execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
-  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
-endif()
-
 set(BDM_CMAKE_DIR cmake)
 
 if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
   add_definitions("-DLINUX")
+endif()
+
+# detect if the biodynamo environment has been sourced
+if(NOT DEFINED ENV{BDM_CMAKE_DIR})
+  execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
+  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
+endif()
+# check if biodynamo environment has been changed. if yes update it and emmit error
+## TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
+## APPLE might not be enough in the future)
+if(LINUX)
+  configure_file(util/installation/common/biodynamo-linux-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
+elseif(APPLE)
+  configure_file(util/installation/common/biodynamo-macos-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" "$ENV{BDM_INSTALL_DIR}/biodynamo-env.sh" RESULT_VARIABLE ret)
+if(ret EQUAL "1")
+    file(COPY "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" DESTINATION "$ENV{BDM_INSTALL_DIR}")
+    message(FATAL_ERROR "The installed BioDynaMo environment file ($ENV{BDM_INSTALL_DIR}/biodynamo-env.sh) was outdated. \
+We have updated the file, but you have to call 'source $ENV{BDM_INSTALL_DIR}/biodynamo-env.sh' and retry this command.")
 endif()
 
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
@@ -95,6 +109,11 @@ if(paraview)
     message(STATUS "Found ParaView")
     include("${PARAVIEW_USE_FILE}")
     add_definitions("-DUSE_CATALYST")
+    link_directories(${ParaView_DIR}/../..)
+    find_package(ospray 1.8.0 REQUIRED)
+    if(NOT ${OSPRAY_FOUND})
+      message(ERROR "OSPRAY not found")
+    endif()
   else()
     message(WARNING "ParaView not found")
   endif()
