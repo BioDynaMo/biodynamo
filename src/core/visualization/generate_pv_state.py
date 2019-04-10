@@ -43,12 +43,9 @@ def ProcessSphere(so_info, so_data, render_view):
     # create a new 'Glyph'
     glyph_type = str(so_info['shape'])
     glyph1 = Glyph(Input=so_data, GlyphType=glyph_type)
-    glyph1.Scalars = ['POINTS', 'None']
-    glyph1.Vectors = ['POINTS', 'None']
     glyph1.GlyphTransform = 'Transform2'
 
     glyph1.GlyphType = glyph_type
-    glyph1.ScaleMode = 'scalar'
     glyph1.ScaleFactor = 1.0
     glyph1.GlyphMode = 'All Points'
     #
@@ -82,7 +79,7 @@ def ProcessSphere(so_info, so_data, render_view):
 
     # Properties modified on glyph1
     # ignored if set earlier
-    glyph1.Scalars = ['POINTS', so_info['scaling_attribute']]
+    glyph1.ScaleArray = ['POINTS', so_info['scaling_attribute']]
     RenameSource('{0}s'.format(so_info['name']), glyph1)
 
     # update the view to ensure updated data information
@@ -92,7 +89,6 @@ def ProcessSphere(so_info, so_data, render_view):
 def ProcessCylinder(so_info, so_data, render_view):
     glyph_type = str(so_info['shape'])
     bDMGlyph1 = BDMGlyph(Input=so_data, GlyphType=glyph_type)
-    bDMGlyph1.Scalars = ['POINTS', 'None']
     bDMGlyph1.Vectors = ['POINTS', 'None']
     bDMGlyph1.XScaling = ['POINTS', 'None']
     bDMGlyph1.YScaling = ['POINTS', 'None']
@@ -223,8 +219,6 @@ def ProcessSimulationObject(result_dir, so_info):
 # ------------------------------------------------------------------------------
 def AddDiffusionGradientGlyph(substance_name, substance_data, render_view):
     glyph1 = Glyph(Input=substance_data, GlyphType='Arrow')
-    glyph1.Scalars = ['POINTS', 'None']
-    glyph1.Vectors = ['POINTS', 'Diffusion Gradient']
     glyph1.ScaleFactor = 10
     glyph1.GlyphTransform = 'Transform2'
 
@@ -243,7 +237,7 @@ def AddDiffusionGradientGlyph(substance_name, substance_data, render_view):
     glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
     glyph1Display.PolarAxes = 'PolarAxesRepresentation'
     glyph1Display.GaussianRadius = 9.73499984741211
-    glyph1Display.SetScaleArray = ['POINTS', 'Substance Concentration']
+    glyph1Display.SetScaleArray = ['POINTS', 'No scale array']
     glyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
     glyph1Display.OpacityArray = ['POINTS', 'Substance Concentration']
     glyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
