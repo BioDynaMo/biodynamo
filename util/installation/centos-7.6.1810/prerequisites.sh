@@ -48,7 +48,7 @@ function InstallPackages {
     freeglut-devel libXt-devel libXext-devel \
     python python-pip rh-python36 python-devel  \
     devtoolset-7-gcc* make cmake llvm-toolset-7 llvm-toolset-7-clang-tools-extra  \
-    doxygen graphviz lcov numactl-devel tbb-devel"
+    doxygen graphviz lcov numactl-devel tbb-devel mpich-3.2 mpich-3.2-devel"
 
   EchoInfo "This script uses yum to install centos-release-scl, epel-release, and:"
   for p in $INSTALL_PACKAGES; do
@@ -116,7 +116,7 @@ function Install {
   fi
 
   DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
-  DownloadTarFromCBAndExtract $BDM_OS paraview.tar.gz $THIRD_PARTY_DIR/paraview
+  DownloadTarFromCBAndExtract $BDM_OS paraview-v5.6.0.tar.gz $THIRD_PARTY_DIR/paraview
   DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
 
   # temporal workaround to avoid libprotobuf error for paraview
