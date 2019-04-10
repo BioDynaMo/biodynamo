@@ -75,8 +75,11 @@ struct Simulation {
 
   Scheduler* GetScheduler();
 
-  /// Returns a thread local random number generator
+  /// Returns a thread local random number generator.
   Random* GetRandom();
+
+  /// Returns all thread local random number generator.
+  std::vector<Random*>& GetAllRandom();
 
   /// Returns a thread local execution context.
   InPlaceExecutionContext* GetExecutionContext();
