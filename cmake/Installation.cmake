@@ -70,7 +70,7 @@ install(FILES util/makefile-build/bdm-code-generation DESTINATION ${CMAKE_INSTAL
 # libbiodynamo.so
 install(TARGETS biodynamo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 if(dict)
-  install(FILES build/libbiodynamo_dict_rdict.pcm DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libbiodynamo_dict_rdict.pcm" DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 # libbdmcuda.a
 if(CUDA_FOUND)
