@@ -69,6 +69,8 @@ struct Simulation {
 
   ResourceManager* GetResourceManager();
 
+  void SetResourceManager(ResourceManager* rm);
+
   const Param* GetParam() const;
 
   Grid* GetGrid();
