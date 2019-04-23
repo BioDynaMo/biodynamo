@@ -117,6 +117,11 @@ void Simulation::Activate() { active_ = this; }
 
 ResourceManager* Simulation::GetResourceManager() { return rm_; }
 
+void Simulation::SetResourceManager(ResourceManager* rm) {
+  delete rm_;
+  rm_ = rm;
+}
+
 const Param* Simulation::GetParam() const { return param_; }
 
 Grid* Simulation::GetGrid() { return grid_; }
