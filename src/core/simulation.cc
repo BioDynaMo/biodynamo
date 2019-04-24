@@ -91,7 +91,7 @@ void Simulation::Restore(Simulation&& restored) {
 
 Simulation::~Simulation() {
   if (param_ != nullptr && rm_ != nullptr && param_->debug_numa_) {
-    std::cout << "ThreadInfo:\n" << ThreadInfo::GetInstance() << std::endl;
+    std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
     rm_->DebugNuma();
   }
   Simulation* tmp = nullptr;
