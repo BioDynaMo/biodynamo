@@ -21,6 +21,7 @@ from build_command import BuildCommand
 from demo_command import DemoCommand
 from new_command import NewCommand
 from run_command import RunCommand
+from gui_command import GuiCommand
 from version import Version
 
 if __name__ == '__main__':
@@ -62,6 +63,8 @@ if __name__ == '__main__':
 
     run_sp = sp.add_parser('run', help='Executes the simulation')
 
+    gui_sp = sp.add_parser('gui', help='Starts the GUI (Graphical User Interface)')
+
     args, unknown = parser.parse_known_args()
 
     if args.cmd == 'new':
@@ -94,6 +97,8 @@ if __name__ == '__main__':
             assist_sp.print_help()
             sys.exit()
         AssistCommand()
+    elif args.cmd == 'gui':
+        GuiCommand(args=unknown)
     elif args.version:
         print(Version.string())
         sys.exit()
