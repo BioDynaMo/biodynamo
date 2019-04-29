@@ -63,7 +63,7 @@ if(opencl)
   find_package(OpenCL)
 endif()
 find_package(Git)
-find_package(ROOT REQUIRED COMPONENTS Geom Gui)
+find_package(ROOT REQUIRED COMPONENTS Geom Gui Eve)
 if (dict)
   add_definitions("-DUSE_DICT")
 endif()
@@ -272,6 +272,9 @@ if (test)
     endif()
   endif()
 endif()
+
+# -------------------- Install GUI -----------------------------------
+include(BioDynaMoGui)
 
 # -------------------- Install configuration -----------------------------------
 include(Installation)

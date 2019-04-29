@@ -47,7 +47,7 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(ROOT_LIBRARY_DIRS ${ROOT_LIBRARY_DIR})
 
-set(rootlibs Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread MultiProc)
+set(rootlibs Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread MultiProc Gui Geom Eve)
 set(ROOT_LIBRARIES)
 foreach(_cpt ${rootlibs} ${ROOT_FIND_COMPONENTS})
   find_library(ROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${ROOT_LIBRARY_DIR})

@@ -24,6 +24,9 @@ def GuiCommand(args):
     try:
         Print.new_step("Starting GUI with args: " + args_str)
         # TODO: Start GUI
+        cmd = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'bin', 'gui')
+        print("Running cmd: {}".format(cmd))
+        sp.check_output([cmd, "&>", "debug/runtime_output.log"])
         Print.success("Started successfully")
     except Exception as e:
         Print.error(traceback.format_exc())
