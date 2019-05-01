@@ -31,6 +31,7 @@
 #include "core/util/log.h"
 #include "core/util/math.h"
 
+
 namespace bdm {
 
 /// A class that computes the diffusion of extracellular substances
@@ -59,9 +60,9 @@ class DiffusionGrid {
     grid_dimensions_ = grid_dimensions;
     assert(resolution_ > 0 && "The resolution cannot be zero!");
 
-    num_boxes_axis_[0] = resolution_;
-    num_boxes_axis_[1] = resolution_;
-    num_boxes_axis_[2] = resolution_;
+    num_boxes_axis_[0] = (resolution_);
+    num_boxes_axis_[1] = (resolution_);
+    num_boxes_axis_[2] = (resolution_);
 
     box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
                   static_cast<double>(resolution_);
@@ -77,7 +78,7 @@ class DiffusionGrid {
     parity_ = num_boxes_axis_[0] % 2;
 
     total_num_boxes_ =
-        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
+        (num_boxes_axis_[0]) * (num_boxes_axis_[1]) * (num_boxes_axis_[2]);
 
     // Allocate memory for the concentration and gradient arrays
     c1_.resize(total_num_boxes_);
@@ -335,8 +336,8 @@ class DiffusionGrid {
                     dc_2_[3] * c1_[s] + dc_2_[4] * c1_[n] + dc_2_[5] * c1_[b] +
                     dc_2_[6] * c1_[t]) *
                    (1 - mu_);
-        }  // tile ny
-      }    // tile nz
+      }  // tile ny
+     }    // tile nz
     }      // block ny
     c1_.swap(c2_);
   }
@@ -453,7 +454,7 @@ class DiffusionGrid {
           ++t;
         }  // tile ny
       }    // tile nz
-    }      // block ny
+} // block ny
     c1_.swap(c2_);
   }
 
@@ -472,6 +473,28 @@ class DiffusionGrid {
     const double d = 1 - dc_[0];
     std::array<int, 4> l;
 
+//TODO
+
+
+ int BC = 0;
+ double bc = 0;
+    switch (BC)
+    {
+    case 0:			/* This would be a box with leaking edges */
+      bc = 0;
+      break;
+    case 1:			/* An insulated box */
+      bc = 1;
+      break;
+    case 2:			/* A morphing Box */
+      bc = 3;
+      break;
+    default:			/* Our default here is simply Leaking Edge */
+      bc = 0;
+    }
+
+
+// TODO
 #define YBF 16
 #pragma omp parallel for collapse(2)
     for (size_t yy = 0; yy < ny; yy += YBF) {
@@ -487,28 +510,28 @@ class DiffusionGrid {
 
           l.fill(1);
 
-          if (y == 0) {
+          if (y == 0 && bc == 0) {
             n = c;
             l[0] = 0;
           } else {
             n = c - nx;
           }
 
-          if (y == ny - 1) {
+          if (y == ny - 1 && bc == 0) {
             s = c;
             l[1] = 0;
           } else {
             s = c + nx;
           }
 
-          if (z == 0) {
+          if (z == 0 && bc == 0) {
             b = c;
             l[2] = 0;
           } else {
             b = c - nx * ny;
           }
 
-          if (z == nz - 1) {
+          if (z == nz - 1 && bc == 0) {
             t = c;
             l[3] = 0;
           } else {
@@ -548,6 +571,10 @@ class DiffusionGrid {
     }      // block ny
     c1_.swap(c2_);
   }
+
+
+
+
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -773,7 +800,6 @@ class DiffusionGrid {
 
   BDM_CLASS_DEF_NV(DiffusionGrid, 1);
 };
-
 }  // namespace bdm
 
 #endif  // CORE_DIFFUSION_GRID_H_
