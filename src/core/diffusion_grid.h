@@ -16,6 +16,10 @@
 #define CORE_DIFFUSION_GRID_H_
 
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
 
 #include <algorithm>
 #include <array>
@@ -30,6 +34,7 @@
 #include "core/param/param.h"
 #include "core/util/log.h"
 #include "core/util/math.h"
+
 
 namespace bdm {
 
@@ -56,12 +61,18 @@ class DiffusionGrid {
   ///
   void Initialize(const std::array<int32_t, 6>& grid_dimensions) {
     // Get grid properties from neighbor grid
+
+//     std::array<int32_t, 6> grid_dimensions_ = {grid_dimensions[0],grid_dimensions[1] + (grid_dimensions[1]/resolution_),grid_dimensions[2],grid_dimensions[3] + (grid_dimensions[3]/resolution_),grid_dimensions[4],grid_dimensions[5] + (grid_dimensions[5]/resolution_)}
+
+//     for( ii = 0, ii < 6, ii++){
+//      grid_dimensions_[ii] = grid_dimensions[ii] + (grid_dimensions[ii]/resolution_);
+//     }
     grid_dimensions_ = grid_dimensions;
     assert(resolution_ > 0 && "The resolution cannot be zero!");
 
-    num_boxes_axis_[0] = resolution_;
-    num_boxes_axis_[1] = resolution_;
-    num_boxes_axis_[2] = resolution_;
+    num_boxes_axis_[0] = (resolution_);
+    num_boxes_axis_[1] = (resolution_);
+    num_boxes_axis_[2] = (resolution_);
 
     box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
                   static_cast<double>(resolution_);
@@ -77,7 +88,7 @@ class DiffusionGrid {
     parity_ = num_boxes_axis_[0] % 2;
 
     total_num_boxes_ =
-        num_boxes_axis_[0] * num_boxes_axis_[1] * num_boxes_axis_[2];
+        (num_boxes_axis_[0] + 1) * (num_boxes_axis_[1] + 1) * (num_boxes_axis_[2] + 1);
 
     // Allocate memory for the concentration and gradient arrays
     c1_.resize(total_num_boxes_);
@@ -89,7 +100,7 @@ class DiffusionGrid {
 
   void ParametersCheck() {
     // The 1.0 is to impose floating point operations
-    if ((1.0 * (1 - dc_[0]) * dt_) / (1.0 * box_length_ * box_length_) >=
+    if ((1.0 * (1 -dc_[0]) * dt_) / (1.0 * box_length_ * box_length_) >=
         (1.0 / 6)) {
       Log::Fatal(
           "DiffusionGrid",
@@ -335,8 +346,8 @@ class DiffusionGrid {
                     dc_2_[3] * c1_[s] + dc_2_[4] * c1_[n] + dc_2_[5] * c1_[b] +
                     dc_2_[6] * c1_[t]) *
                    (1 - mu_);
-        }  // tile ny
-      }    // tile nz
+      }  // tile ny
+     }    // tile nz
     }      // block ny
     c1_.swap(c2_);
   }
@@ -453,7 +464,7 @@ class DiffusionGrid {
           ++t;
         }  // tile ny
       }    // tile nz
-    }      // block ny
+} // block ny
     c1_.swap(c2_);
   }
 
@@ -472,6 +483,36 @@ class DiffusionGrid {
     const double d = 1 - dc_[0];
     std::array<int, 4> l;
 
+/*TODO(Jack) This is the initial structure for boundry condition being proposed and will be updated shortlly to 
+parameter driven */
+
+//  auto* sim = TSimulation::GetActive();
+//  auto* param = sim->GetParam();
+
+ int BC = 0;
+ //double bc = (param->boundry_condition_);
+ double bc = 0;
+    switch (BC)
+    {
+    case 0:			/* This would be a box with leaking edges */
+      bc = 0;
+      break;
+    case 1:			/* An insulated box */
+      bc = 1;
+      break;
+    case 2:			/* A morphing Box */
+      bc = 3;
+      break;
+    default:			/* Our default here is simply Leaking Edge */
+      Log::Info("DiffusionGrid",
+                  "Either no variable or an improper variable has been assigned to"
+                  "the boundry condition, therefore the default '0' for leaking edges"
+                  "will be used!");
+      bc = 0;
+    }
+
+
+// TODO
 #define YBF 16
 #pragma omp parallel for collapse(2)
     for (size_t yy = 0; yy < ny; yy += YBF) {
@@ -487,28 +528,28 @@ class DiffusionGrid {
 
           l.fill(1);
 
-          if (y == 0) {
+          if (y == 0 && bc == 0) {
             n = c;
             l[0] = 0;
           } else {
             n = c - nx;
           }
 
-          if (y == ny - 1) {
+          if (y == ny - 1 && bc == 0) {
             s = c;
             l[1] = 0;
           } else {
             s = c + nx;
           }
 
-          if (z == 0) {
+          if (z == 0 && bc == 0) {
             b = c;
             l[2] = 0;
           } else {
             b = c - nx * ny;
           }
 
-          if (z == nz - 1) {
+          if (z == nz - 1 && bc == 0) {
             t = c;
             l[3] = 0;
           } else {
@@ -548,6 +589,10 @@ class DiffusionGrid {
     }      // block ny
     c1_.swap(c2_);
   }
+
+
+
+
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -751,7 +796,7 @@ class DiffusionGrid {
   std::array<double, 7> dc_ = {{0}};
   /// The timestep resolution fhe diffusion grid
   // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
-  double dt_ = 1;
+  double dt_ = (1.0);
   /// The decay constant
   double mu_ = 0;
   /// The grid dimensions of the diffusion grid
@@ -770,9 +815,14 @@ class DiffusionGrid {
   std::vector<std::function<double(double, double, double)>> initializers_ = {};
   // turn to true after gradient initialization
   bool init_gradient_ = false;
+  // Boundry conditions
 
   BDM_CLASS_DEF_NV(DiffusionGrid, 1);
 };
+
+
+
+
 
 }  // namespace bdm
 
