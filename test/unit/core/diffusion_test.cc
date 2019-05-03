@@ -503,7 +503,10 @@ TEST(DiffusionTest, Convergence) {
 
 #ifdef USE_CATALYST
 
-TEST(DiffusionTest, ModelInitializer) {
+// Travis does not support OpenGL 3.3
+// Therefore, pvpython crashes.
+// Renable this test after this issue has been resolved
+TEST(DISABLED_DiffusionTest, ModelInitializer) {
   auto set_param = [](auto* param) {
     Param::VisualizeDiffusion vd;
     vd.name_ = "Substance_1";
