@@ -137,7 +137,7 @@ class CatalystAdaptor {
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class CatalystAdaptorTest_GenerateParaviewState_Test;
   friend class CatalystAdaptorTest_CheckVisualizationSelection_Test;
-  friend class DiffusionTest_ModelInitializer_Test;
+  friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
   /// Parameters might be set after the constructor has been called.
   /// Therefore, we defer initialization to the first invocation of
@@ -574,7 +574,7 @@ class CatalystAdaptor {
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class CatalystAdaptorTest_GenerateParaviewState_Test;
   friend class CatalystAdaptorTest_CheckVisualizationSelection_Test;
-  friend class DiffusionTest_ModelInitializer_Test;
+  friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
   void LiveVisualization(double time, size_t time_step, bool last_time_step) {}
 
