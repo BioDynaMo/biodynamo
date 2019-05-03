@@ -103,7 +103,7 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
     // are imbalances. Each thread starts with its NUMA domain. Once, it
     // is finished the thread looks for tasks on other domains
     for (int n = 0; n < p_numa_nodes; n++) {
-      uint64_t current_nid = (nid + n) % p_numa_nodes;
+      int current_nid = (nid + n) % p_numa_nodes;
       for (int thread_cnt = 0; thread_cnt < p_max_threads; thread_cnt++) {
         uint64_t current_tid = (tid + thread_cnt) % p_max_threads;
         if (current_nid != thread_info_->GetNumaNode(current_tid)) {
