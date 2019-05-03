@@ -20,9 +20,11 @@ FIND_PACKAGE(ParaView REQUIRED)
 INCLUDE(${PARAVIEW_USE_FILE})
 link_directories(${ParaView_DIR}/../..)
 
-find_package(ospray 1.8.0 REQUIRED)
-if(NOT ${OSPRAY_FOUND})
-  message(ERROR "OSPRAY not found")
+if(UNIX AND NOT APPLE) # macos still uses ParaView without ospray
+  find_package(ospray 1.8.0 REQUIRED)
+  if(NOT ${OSPRAY_FOUND})
+    message(ERROR "OSPRAY not found")
+  endif()
 endif()
 
 # Use the ADD_PARAVIEW_PLUGIN macro to build a plugin
