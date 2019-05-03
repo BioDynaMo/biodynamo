@@ -13,7 +13,7 @@
 # -----------------------------------------------------------------------------
 
 # BioDynaMo
-export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@
+export BDM_INSTALL_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 #   required environment variables for out of source simulations
 #   used by cmake to find BioDynaMoConfig.cmake
 export CMAKE_PREFIX_PATH=${BDM_INSTALL_DIR}/biodynamo/cmake:$CMAKE_PREFIX_PATH
