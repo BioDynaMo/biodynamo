@@ -21,7 +21,7 @@ if(NOT PYTHON_EXECUTABLE)
 endif()
 
 set(GUI_DICT)
-execute_process(COMMAND ${PYTHON_EXECUTABLE} ${BioDynaMo_SOURCE_DIR}/src/gui/generateDict.py
+execute_process(COMMAND ${PYTHON_EXECUTABLE} ${BioDynaMo_SOURCE_DIR}/src/gui/generate_dict.py
                 OUTPUT_VARIABLE GUI_DICT)
 
 include_directories(${BioDynaMo_SOURCE_DIR}/src/gui/*)

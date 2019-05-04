@@ -6,7 +6,7 @@ demo/makefile_project/*rdict.pcm
 demo/makefile_project/my-simulation
 
 # Generated GUI files
-src/gui/gui_*
+src/gui/gui_GEN*
 
 **/.DS_Store
 

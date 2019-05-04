@@ -16,9 +16,17 @@
 #include <TSystemDirectory.h>
 #include <TEnv.h>
 #include <TFile.h>
+#include <TFrame.h>
 #include <TGFileDialog.h>
 #include <TRootEmbeddedCanvas.h>
 #include <TColor.h>
+#include <TGSplitter.h>
+#include <TGSplitFrame.h>
+#include <TGLabel.h>
+#include <TGTextEdit.h>
+#include <TGTextEntry.h>
+#include "gui/gui_constants.h"
+#include "gui/gui_log.h"
 
 enum ETestCommandIdentifiers {
    M_FILE_NEW,
@@ -50,19 +58,24 @@ private:
    TGMainFrame        *fMain;
    TGCanvas           *fCanvasWindow;
    TileFrame          *fContainer;
+   TGVerticalFrame    *fVf;
+   TGHorizontalFrame  *fH1, *fH2;
+   TGCompositeFrame   *fFtop, *fFbottom;
+   TGLabel            *fLtop, *fLbottom;
    TGMenuBar          *fMenuBar;
    TGPopupMenu        *fMenuFile, *fMenuSamples, *fMenuSimulation, *fMenuHelp;
    TGLayoutHints      *fMenuBarLayout, *fMenuBarItemLayout;
+   TGTextEdit         *fEdit;
 public:
    TestMainFrame(const TGWindow *p, UInt_t w, UInt_t h);
    virtual ~TestMainFrame();
    // slots
    void CloseWindow();
    void HandleMenu(Int_t id);
-   void HandlePopup() { printf("menu popped up\n"); }
-   void HandlePopdown() { printf("menu popped down\n"); }
+   void HandlePopup() { GUILog::Info("menu popped up"); }
+   void HandlePopdown() { GUILog::Info("menu popped down"); }
    void Created() { Emit("Created()"); } //*SIGNAL*
-   void Welcome() { printf("TestMainFrame has been created. Welcome!\n"); }
+   void Welcome() { GUILog::Info("TestMainFrame has been created. Welcome!"); }
 };
 
 class TileFrame {

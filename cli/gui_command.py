@@ -22,9 +22,12 @@ def GuiCommand(args):
     args_str = ' '.join(args)
     try:
         Print.new_step("Starting GUI with args: " + args_str)
-        cmd = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'bin', 'gui')
-        print("Running cmd: {}".format(cmd))
-        sp.call(cmd)
+        gui_bin = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'bin', 'gui')
+        gui_args = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'log')
+        if not os.path.exists(gui_args):
+            os.makedirs(gui_args)
+        gui_args = os.path.join(gui_args, "gui.log") 
+        sp.run([gui_bin, gui_args])
         Print.success("Exited GUI successfully")
     except Exception as e:
         Print.error(traceback.format_exc())

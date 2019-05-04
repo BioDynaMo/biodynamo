@@ -18,10 +18,14 @@ import sys
 import subprocess as sp
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
-LINK_DEF_FILE = '{}/gui_LinkDef.h'.format(DIR_PATH)
-DICT_FILE = '{}/gui_Dict.cc'.format(DIR_PATH)
 HEADER_FILE = '{}/gui.h'.format(DIR_PATH)
-PCM_FILE = '{}/gui_Dict_rdict.pcm'.format(DIR_PATH)
+
+# Generated files
+LINK_DEF_FILE = '{}/gui_GEN_LinkDef.h'.format(DIR_PATH)
+DICT_FILE = '{}/gui_GEN_Dict.cc'.format(DIR_PATH)
+PCM_FILE = '{}/gui_GEN_Dict_rdict.pcm'.format(DIR_PATH)
+TMP_FILE = '{}/tmp.txt'.format(DIR_PATH)
+INCLUDE_DIR = '{}/..'.format(DIR_PATH)
 
 def generateLinkDef():
     cmd = '''awk '/^class .* {/{print "#pragma link C++ class " $2 ";"}' '''
@@ -52,8 +56,17 @@ if __name__ == '__main__':
     cleanFiles()
     generateLinkDef()
 
-    cmd = "rootcling -f {} {} {}  > /dev/null 2>&1".format(DICT_FILE, HEADER_FILE, LINK_DEF_FILE)
+    cmd = "rootcling -f {} -I{} {} {}  > {} 2>&1".format(DICT_FILE, INCLUDE_DIR, HEADER_FILE, LINK_DEF_FILE, TMP_FILE)
     os.system(cmd)
+
+    fp = open(TMP_FILE, "r")
+    data = fp.read()
+    fp.close()
+    os.remove(TMP_FILE)
+
+    if 'error' in data:
+        errMsg = 'cmd {} \nErrored! Output: {}'.format(cmd, data)
+        raise Exception(errMsg)
 
     final_path = "{}".format(PCM_FILE)
     sys.stdout.write(final_path)
