@@ -79,7 +79,10 @@ def ProcessSphere(so_info, so_data, render_view):
 
     # Properties modified on glyph1
     # ignored if set earlier
-    glyph1.ScaleArray = ['POINTS', so_info['scaling_attribute']]
+    if paraview.servermanager.vtkSMProxyManager.GetVersionMinor() == 5:
+        glyph1.Scalars = ['POINTS', so_info['scaling_attribute']]
+    else:
+        glyph1.ScaleArray = ['POINTS', so_info['scaling_attribute']]
     RenameSource('{0}s'.format(so_info['name']), glyph1)
 
     # update the view to ensure updated data information
