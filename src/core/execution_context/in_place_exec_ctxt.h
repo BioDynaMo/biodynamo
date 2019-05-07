@@ -53,11 +53,11 @@ class InPlaceExecutionContext {
   InPlaceExecutionContext() {
     // FIXME this doesn't work: must hold all new elements for all sim_objects
     // processed by this thread.
-    // reserve enough memory to hold all new objects during one iteration of
-    // one sim object. If more objects would be created (using `New`),
+    // reserve enough memory to hold all new objects during one iteration.
+    // If more objects would be created (using `New`),
     // references would become invalid.
     // Alternative: use container that doesn't migrate objects.
-    new_sim_objects_.Reserve(10);
+    new_sim_objects_.Reserve(1e4);
 
     auto* param = Simulation<TCTParam>::GetActive()->GetParam();
     soptr_cache_perfc_.enabled_ = param->debug_exec_ctxt_caches_;
