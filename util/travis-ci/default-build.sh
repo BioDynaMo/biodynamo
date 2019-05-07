@@ -38,8 +38,8 @@ util/xvfb-initd.sh start
 git fetch --unshallow || true
 git fetch --tags
 
-python --version
-python3 --version
+python --version || true
+python3 --version || true
 
 # add master branch
 # https://github.com/travis-ci/travis-ci/issues/6069

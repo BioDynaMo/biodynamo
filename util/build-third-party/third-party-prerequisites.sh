@@ -28,19 +28,21 @@ if [ `uname` = "Linux" ]; then
       avahi-compat-libdns_sd-devel libldap-dev python-devel \
       libxml2-devel gsl-static || true
     # paraview
-    sudo yum install -y mpich-3.2 mpich-3.2-devel || true
+    ## issues with mpich and valgrind:
+    ## https://github.com/flow123d/flow123d/issues/806
+    sudo yum install -y openmpi3-devel || true
+    . /etc/profile.d/modules.sh
+    module load mpi
 
     sudo yum install -y libXt-devel freeglut3-devel
 
     sudo yum install -y centos-release-scl
     sudo yum install -y devtoolset-7-gcc*
-    export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:$LD_LIBRARY_PATH
     export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
 
     CC=gcc
     CXX=g++
-    export MPI_LIBRARY=/usr/lib64/mpich-3.2/lib/libmpi.so
-    export MPI_INCLUDES=/usr/include/mpich-3.2-x86_64
   else
     if [ $BDM_OS = "travis-linux" ]; then
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -67,18 +69,10 @@ if [ `uname` = "Linux" ]; then
       libldap2-dev python-dev libxml2-dev libkrb5-dev \
       libgsl0-dev libqt4-dev || true
     # paraview
-    sudo apt-get -y install mpich libmpich-dev || true
+    sudo apt-get -y install libopenmpi-dev || true
 
     sudo apt install -y libxt-dev freeglut3-dev
-
-    export MPI_LIBRARY=/usr/lib/libmpi.so
-    export MPI_INCLUDES=/usr/include/mpich
   fi
-
-  # install ospray
-  sudo mkdir /opt/ospray
-  sudo chown `whoami` /opt/ospray
-  DownloadTarAndExtract https://github.com/ospray/OSPRay/releases/download/v1.8.4/ospray-1.8.4.x86_64.linux.tar.gz /opt/ospray 1
 
   # update cmake
   URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
