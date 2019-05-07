@@ -48,7 +48,7 @@ function InstallPackages {
     freeglut-devel libXt-devel libXext-devel \
     python python-pip rh-python36 python-devel  \
     devtoolset-7-gcc* make cmake llvm-toolset-7 llvm-toolset-7-clang-tools-extra  \
-    doxygen graphviz lcov numactl-devel tbb-devel mpich-3.2 mpich-3.2-devel"
+    doxygen graphviz lcov numactl-devel tbb-devel openmpi3-devel"
 
   EchoInfo "This script uses yum to install centos-release-scl, epel-release, and:"
   for p in $INSTALL_PACKAGES; do
@@ -83,6 +83,10 @@ function InstallPackages {
     # install packages
     sudo yum -y install centos-release-scl epel-release
     sudo yum -y install $INSTALL_PACKAGES
+
+    # activate mpi
+    . /etc/profile.d/modules.sh
+    module load mpi
 
     pip install --user mkdocs
     pip install --user mkdocs-material
