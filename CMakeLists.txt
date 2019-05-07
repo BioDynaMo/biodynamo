@@ -112,7 +112,8 @@ if(paraview)
   endif()
 endif()
 
-if (NOT paraview OR NOT ${ParaView_FOUND})
+# paraview version 5.5 (MacOS) does not contain TBB
+if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
   find_package(TBB REQUIRED)
   if (TBB_FOUND)
     include_directories(${TBB_INCLUDE_DIRS})

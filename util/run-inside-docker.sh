@@ -85,6 +85,17 @@ if [[ "$PWD" != $(readlink -e $BDM_PROJECT_DIR_ABS)* ]]; then
   exit 1
 fi
 
+# Flatten container to avoid openMPI bug inside a docker container (ubuntu 16.04)
+# https://stackoverflow.com/questions/46138549/docker-openmpi-and-unexpected-end-of-proc-mounts-line
+sudo docker run --name $BDM_CONTAINER $BDM_IMAGE /bin/bash
+TMP_CONTAINER_TAR=$(mktemp)
+sudo docker export $BDM_CONTAINER > $TMP_CONTAINER_TAR
+cat $TMP_CONTAINER_TAR | sudo docker import - ${BDM_IMAGE}:flattened
+rm $TMP_CONTAINER_TAR
+sudo docker stop $BDM_CONTAINER || true
+sudo docker rm $BDM_CONTAINER || true
+
+
 # BDM_LOCAL_LFS is defined add the environment variable and volume
 if [ $BDM_LOCAL_LFS ]; then
   BDM_LOCAL_LFS_ENV="--env BDM_LOCAL_LFS=$BDM_LOCAL_LFS"
@@ -100,7 +111,7 @@ sudo docker run \
   $BDM_LOCAL_LFS_VOLUME \
   --workdir $PWD \
   -dit \
-  $BDM_IMAGE \
+  ${BDM_IMAGE}:flattened \
   /bin/bash
 
 # execute script

@@ -52,22 +52,19 @@ cd $WORKING_DIR
 cd $WORKING_DIR
 
 if [ `uname` = "Linux" ]; then
-  QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/gcc_64/lib/cmake
+  export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/gcc_64/lib/cmake
+  export LD_LIBRARY_PATH=$WORKING_DIR/qt/5.11.0/gcc_64/lib:$LD_LIBRARY_PATH
 else
-  QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/clang_64/lib/cmake
+  export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/clang_64/lib/cmake
 fi
 
 ## Clone paraview github repository
-git clone https://gitlab.kitware.com/paraview/paraview.git
-cd paraview
+git clone https://gitlab.kitware.com/paraview/paraview-superbuild.git
+cd paraview-superbuild
+git fetch origin
 git submodule update --init --recursive
 git checkout $PV_VERSION
 git submodule update --init --recursive
-if [ $PV_VERSION = "v5.5.2" ]; then
-  # fix qt 5.11 compilation issue:
-  # https://gitlab.kitware.com/paraview/paraview/merge_requests/2474
-  git cherry-pick 931c779d
-fi
 
 ## Generate the cmake files for paraview
 #
@@ -96,31 +93,22 @@ if [ `uname` = "Darwin" ]; then
                      -DCMAKE_INSTALL_RPATH:STRING=@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib'
 fi
 
-export CMAKE_PREFIX_PATH=/opt/ospray:$CMAKE_PREFIX_PATH
-export OSPRAY_DIR=/opt/ospray
-export LD_LIBRARY_PATH=/opt/ospray/lib:$LD_LIBRARY_PATH
-
-# for release build options have a look at:
-# https://gitlab.kitware.com/paraview/paraview-superbuild/blob/master/projects/paraview.cmake
-Qt5_DIR=$QT_CMAKE_DIR cmake \
-  -DCMAKE_INSTALL_PREFIX="../paraview-install" \
+export Qt5_DIR=$QT_CMAKE_DIR
+cmake \
+  -DCMAKE_INSTALL_PREFIX="../pv-install" \
   -DCMAKE_BUILD_TYPE:STRING="Release" \
-  -DPARAVIEW_ENABLE_PYTHON:BOOL=ON \
-  -DPARAVIEW_INSTALL_DEVELOPMENT_FILES:BOOL=ON \
-  -DPARAVIEW_USE_MPI:BOOL=:BOOL=ON \
-  -DMPI_C_LIBRARIES=$MPI_LIBRARY \
-  -DMPI_CXX_LIBRARIES=$MPI_LIBRARY \
-  -DMPI_C_INCLUDE_PATH=$MPI_INCLUDES \
-  -DMPI_CXX_INCLUDE_PATH=$MPI_INCLUDES \
-  -DPARAVIEW_USE_OSPRAY:BOOL=ON \
-  -DOSPRAY_INSTALL_DIR=$OSPRAY_DIR \
-  $OSX_CMAKE_OPTIONS \
-   ../paraview
+  -DENABLE_ospray:BOOL=ON \
+  -DENABLE_ospraymaterials:BOOL=ON \
+  -DENABLE_paraviewsdk:BOOL=ON \
+  -DENABLE_python:BOOL=ON \
+  -DENABLE_qt5:BOOL=ON \
+  -DUSE_SYSTEM_qt5:BOOL=ON \
+  -DENABLE_mpi:BOOL=ON \
+  -DUSE_SYSTEM_mpi:BOOL=ON \
+  ../paraview-superbuild
 
 ## Step 4: compile and install
 make -j$(CPUCount) install
-
-cd ../paraview-install
 
 # patch and bundle
 if [ `uname` = "Darwin" ]; then
@@ -131,30 +119,7 @@ if [ `uname` = "Darwin" ]; then
   install_name_tool -add_rpath "@loader_path/../lib" bin/vtkkwProcessXML-pv5.5
 fi
 
-# Replace a string in a file
-# Arguments:
-#  $1 file name
-#  $2 string that should be replaced
-#  $3 new string
-function replaceInline {
-  local FILE=$1
-  shift
-  local SEARCH=$1
-  shift
-  local REPLACE=$1
-
-  local TEMP_FILE=$(mktemp)
-  sed "s|$SEARCH|$REPLACE|g" $FILE > $TEMP_FILE
-  mv $TEMP_FILE $FILE
-}
-
-## patch paths in cmake files
-for f in $(grep -l -R --include=*.cmake /opt/ospray .); do
-  replaceInline $f "/opt/ospray" "\$ENV{OSPRAY_DIR}";
-done
-
-## bundle
-cp -R /opt/ospray ospray
+cd install
 
 ## tar the install directory
 tar -zcf paraview-$PV_VERSION.tar.gz *

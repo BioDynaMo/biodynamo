@@ -20,8 +20,19 @@ if [[ $# -ne 0 ]]; then
   exit 1
 fi
 
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
+cd $BDM_PROJECT_DIR
+
+# import util functions
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
+
 # start x virtual framebuffer for headless environments.
 export DISPLAY=:99.0
-util/xvfb-initd.sh start
+$BDM_PROJECT_DIR/util/xvfb-initd.sh start
+
+# workaround for Faulty OpenGL version detection with software renderer
+if [ "$(DetectOs)" = "centos-7.6.1810" ]; then
+  export MESA_GL_VERSION_OVERRIDE=3.3
+fi
 
 test/installation-test.sh
