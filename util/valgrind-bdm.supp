@@ -150,6 +150,38 @@
    obj:/usr/lib/system/*.dylib
 }
 
+{
+   ignore_root_zipLZ4
+   Memcheck:Value8
+   ...
+   fun:R__zipLZ4
+   fun:R__zipMultipleAlgorithm
+}
+
+{
+   ignore_root_write_invalid_param
+   Memcheck:Param
+   write(buf)
+   obj:/lib/x86_64-linux-gnu/libpthread-2.23.so
+   fun:_ZN5TFile11WriteBufferEPKci.part.58.constprop.203
+}
+
+{
+   ignore_root_write_invalid_param1
+   Memcheck:Param
+   write(count)
+   obj:/lib/x86_64-linux-gnu/libpthread-2.23.so
+   fun:_ZN5TFile11WriteBufferEPKci.part.58.constprop.203
+}
+
+{
+   ignore_root_lseek_invalid_param
+   Memcheck:Param
+   lseek(offset)
+   fun:lseek
+   fun:_ZN5TFile4SeekExNS_11ERelativeToE
+}
+
 ######### Suppress uninitialized value complaints for IO of InlineVector
 {
    ignore_uninitialized_heap_io
@@ -271,4 +303,16 @@
    ...
    obj:*/libigdrcl.so
    ...
+}
+
+######### Suppress TBB issues
+
+{
+  ignore_tbb_clear
+  Memcheck:Cond
+  fun:isLargeObject
+  fun:internalPoolFree
+  fun:internalFree
+  fun:scalable_free
+  ...
 }
