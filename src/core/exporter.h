@@ -22,6 +22,8 @@ namespace bdm {
 
 class Exporter {
  public:
+  virtual ~Exporter();
+
   /// Export the simulation state of one iteration
   /// \param filename
   /// \param iteration - current iteration number (=time step)

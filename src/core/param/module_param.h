@@ -20,7 +20,7 @@
 
 namespace bdm {
 
-class Param;
+struct Param;
 
 using ModuleParamUid = uint64_t;
 

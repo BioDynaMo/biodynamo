@@ -107,8 +107,8 @@ namespace bdm {
 
 // -----------------------------------------------------------------------------
 
-class Event;
-class BaseBiologyModule;
+struct Event;
+struct BaseBiologyModule;
 
 /// Contains code required by all simulation objects
 class SimObject {

@@ -43,10 +43,10 @@ struct GrowthModule : public BaseBiologyModule {
   virtual ~GrowthModule() {}
 
   BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const {
+                                 uint64_t new_oid = 0) const override {
     return new GrowthModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const { return new GrowthModule(*this); }
+  BaseBiologyModule* GetCopy() const override { return new GrowthModule(*this); }
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)
@@ -59,7 +59,7 @@ struct GrowthModule : public BaseBiologyModule {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
 
-  BDM_CLASS_DEF(GrowthModule, 1);
+  BDM_CLASS_DEF_OVERRIDE(GrowthModule, 1);
 };
 
 struct MovementModule : public BaseBiologyModule {
@@ -85,10 +85,10 @@ struct MovementModule : public BaseBiologyModule {
 
   /// Create a new instance of this object using the default constructor.
   BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const {
+                                 uint64_t new_oid = 0) const override {
     return new MovementModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const { return new MovementModule(*this); }
+  BaseBiologyModule* GetCopy() const override { return new MovementModule(*this); }
 
   /// Default event handler
   void EventHandler(const Event& event, BaseBiologyModule* other1,
@@ -101,7 +101,7 @@ struct MovementModule : public BaseBiologyModule {
     so->SetPosition(Math::Add(position, velocity_));
   }
 
-  BDM_CLASS_DEF(MovementModule, 1);
+  BDM_CLASS_DEF_OVERRIDE(MovementModule, 1);
 };
 
 /// This biology module removes itself the first time it is executed
@@ -112,16 +112,16 @@ struct RemoveModule : public BaseBiologyModule {
       : BaseBiologyModule(event, other, new_oid) {}
 
   BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const {
+                                 uint64_t new_oid = 0) const override {
     return new RemoveModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const { return new RemoveModule(*this); }
+  BaseBiologyModule* GetCopy() const override { return new RemoveModule(*this); }
 
   void Run(SimObject* sim_object) override {
     sim_object->RemoveBiologyModule(this);
   }
 
-  BDM_CLASS_DEF(RemoveModule, 1);
+  BDM_CLASS_DEF_OVERRIDE(RemoveModule, 1);
 };
 
 }  // namespace sim_object_test_internal

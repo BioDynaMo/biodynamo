@@ -36,7 +36,8 @@ class CatalystAdaptorTest;
 /// ResourceManager, the scheduler, parameters, ... \n
 /// It is possible to create multiple simulations, but only one can be active at
 /// the same time. Creating a new simulation object automatically activates it.
-struct Simulation {
+class Simulation {
+ public:
   /// This function returns the currently active Simulation simulation.
   static Simulation* GetActive();
 

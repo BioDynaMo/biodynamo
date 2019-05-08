@@ -64,6 +64,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
  public:
   NeuriteElement() {
+    resting_length_ =
+        spring_constant_ * actual_length_ / (tension_ + spring_constant_);
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
@@ -77,6 +79,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// TODO
   NeuriteElement(const Event& event, SimObject* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {
+    resting_length_ =
+        spring_constant_ * actual_length_ / (tension_ + spring_constant_);
+
     if (event.GetId() == NewNeuriteExtensionEvent::kEventId) {
       const auto& e = dynamic_cast<const NewNeuriteExtensionEvent&>(event);
       auto* soma = dynamic_cast<NeuronSoma*>(other);
@@ -518,7 +523,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   ///   * too short fuse it with the proximal element or even delete it
   ///
   /// Only executed for terminal neurite elements.
-  void RunDiscretization() {
+  void RunDiscretization() override {
     if (daughter_left_ != nullptr) {
       return;
     }
@@ -1170,9 +1175,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// The length of the internal spring where tension would be zero.
   /// T = k*(A-R)/R --> R = k*A/(T+K)
-  /// FIXME initialization here??
-  double resting_length_ =
-      spring_constant_ * actual_length_ / (tension_ + spring_constant_);
+  double resting_length_;
 
   /// \brief Split this neurite element into two segments.
   ///
