@@ -616,11 +616,9 @@ class Grid {
     /// multiple threads.
     class NeighborMutex {
      public:
-      NeighborMutex(uint64_t box_idx,
-                    const FixedSizeVector<uint64_t, 27>& mutex_indices,
+      NeighborMutex(const FixedSizeVector<uint64_t, 27>& mutex_indices,
                     NeighborMutexBuilder* mutex_builder)
-          : box_idx_(box_idx),
-            mutex_indices_(mutex_indices),
+          : mutex_indices_(mutex_indices),
             mutex_builder_(mutex_builder) {
         // Deadlocks occur if mutliple threads try to acquire the same locks,
         // but in different order.
@@ -645,7 +643,6 @@ class Grid {
       }
 
      private:
-      uint64_t box_idx_;
       FixedSizeVector<uint64_t, 27> mutex_indices_;
       NeighborMutexBuilder* mutex_builder_;
     };
@@ -669,7 +666,7 @@ class Grid {
       auto* grid = Simulation::GetActive()->GetGrid();
       FixedSizeVector<uint64_t, 27> box_indices;
       grid->GetMooreBoxIndices(&box_indices, box_idx);
-      return NeighborMutex(box_idx, box_indices, this);
+      return NeighborMutex(box_indices, this);
     }
 
    private:

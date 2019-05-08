@@ -113,7 +113,7 @@ struct Param : public ModuleParam {
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&) override;
 
  private:
-  BDM_CLASS_DEF_NV(Param, 1);
+  BDM_CLASS_DEF_OVERRIDE(Param, 1);
 };
 
 }  // namespace neuroscience
