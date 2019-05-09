@@ -52,7 +52,7 @@ struct ModuleParam {
   virtual void AssignFromConfig(const std::shared_ptr<cpptoml::table>&) = 0;
 
  private:
-  friend class Param;
+  friend struct Param;
   BDM_CLASS_DEF(ModuleParam, 1);
 };
 
