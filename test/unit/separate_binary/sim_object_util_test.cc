@@ -255,13 +255,14 @@ TEST(SimObjectUtilTest, ForEachDataMember) {
         dm_name != "run_displacement_" &&
         dm_name != "run_displacement_for_all_next_ts_" &&
         dm_name != "run_displacement_next_ts_" &&
-        dm_name != "run_bm_loop_idx_" && dm_name != "numa_node_") {
-      FAIL() << "Data member " << dm_name << "does not exist" << std::endl;
+        dm_name != "run_bm_loop_idx_" && dm_name != "numa_node_" &&
+        dm_name != "so_ptr_cache_") {
+      FAIL() << "Data member " << dm_name << " does not exist" << std::endl;
     }
   };
 
   neurons.ForEachDataMember(verify);
-  EXPECT_EQ(11u, counter);
+  EXPECT_EQ(12u, counter);
 }
 
 TEST(SimObjectUtilTest, ForEachDataMemberIn) {
