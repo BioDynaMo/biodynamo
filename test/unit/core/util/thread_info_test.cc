@@ -76,11 +76,17 @@ TEST(ThreadInfoTest, Renew) {
   auto* ti = ThreadInfo::GetInstance();
   RunAllChecks(*ti);
 
-  // schedule this thread on a different NUMA node
-  numa_run_on_node(ti->GetNumaNodes() - 1);
-  ti->Renew();
+  // reduce number of threads to one
+  auto omp_max_threads = omp_get_max_threads();
+  omp_set_num_threads(1);
+  ThreadInfo::GetInstance()->Renew();
 
   RunAllChecks(*ti);
+
+  // Reset to previous condition
+  omp_set_num_threads(omp_max_threads);
+  ThreadInfo::GetInstance()->Renew();
+
 }
 
 }  // namespace bdm
