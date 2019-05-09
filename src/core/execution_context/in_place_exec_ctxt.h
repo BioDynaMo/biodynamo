@@ -79,7 +79,7 @@ class InPlaceExecutionContext {
     // first iteration might have uncommited changes
 
 #pragma omp parallel for schedule(static, 1)
-    for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
       auto* ctxt = all_exec_ctxts[i];
       ectxt_cache_valid_ = ctxt->new_sim_objects_.GetNumSimObjects() == 0;
     }
@@ -102,7 +102,7 @@ class InPlaceExecutionContext {
       std::vector<uint64_t> new_so_per_numa(tinfo_->GetNumaNodes());
       std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
 
-      for (uint64_t tid = 0; tid < tinfo_->GetMaxThreads(); ++tid) {
+      for (int tid = 0; tid < tinfo_->GetMaxThreads(); ++tid) {
         auto* ctxt = all_exec_ctxts[tid];
         int nid = tinfo_->GetNumaNode(tid);
         thread_offsets[tid] = new_so_per_numa[nid];
@@ -118,7 +118,7 @@ class InPlaceExecutionContext {
 // add new_sim_objects_ to the ResourceManager in parallel
     // Timing timing("AddNewSimObjects");
       #pragma omp parallel for schedule(static, 1)
-      for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
         auto* ctxt = all_exec_ctxts[i];
         int nid = tinfo_->GetNumaNode(i);
         uint64_t offset = thread_offsets[i] + numa_offsets[nid];
@@ -142,14 +142,14 @@ class InPlaceExecutionContext {
     // clear
     // Timing timing("AddNewSimObjectsToSoStorageMap");
 #pragma omp parallel for schedule(static, 1)
-    for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
       auto* ctxt = all_exec_ctxts[i];
       // rm->AddNewSimObjectsToSoStorageMap(ctxt->new_sim_objects_);
       ctxt->new_sim_objects_.Clear();
     }
 
     // remove
-    for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
       auto* ctxt = all_exec_ctxts[i];
       // remove them after adding new ones (maybe one has been removed
       // that was in new_sim_objects_)
@@ -305,6 +305,10 @@ class InPlaceExecutionContext {
       }
     }
     Log::Fatal("GetSimObject", Concat("Could not find object with uid: ", uid));
+    // The following return statement should never be called.
+    // Its only purpose is to silence the following compiler warning:
+    //   warning: control reaches end of non-void function [-Wreturn-type]
+    return new_sim_objects_.template GetSimObject<TSo>(SoHandle());
   }
 
   template <typename TSo, typename TSimBackend = Backend,
@@ -345,6 +349,10 @@ class InPlaceExecutionContext {
       }
     }
     Log::Fatal("GetSimObject", Concat("Could not find object with uid: ", uid));
+    // The following return statement should never be called.
+    // Its only purpose is to silence the following compiler warning:
+    //   warning: control reaches end of non-void function [-Wreturn-type]
+    return new_sim_objects_.template GetSimObject<TSo>(SoHandle());
   }
 
   template <typename TSo, typename TSimBackend = Backend>

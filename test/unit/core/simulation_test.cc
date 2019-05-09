@@ -142,7 +142,7 @@ class SimulationTest : public ::testing::Test {
     }
 
     // performance group
-    EXPECT_EQ(123, param->scheduling_batch_size_);
+    EXPECT_EQ(123u, param->scheduling_batch_size_);
     EXPECT_TRUE(param->detect_static_sim_objects_);
     EXPECT_TRUE(param->cache_neighbors_);
 
