@@ -199,7 +199,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
       rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
-  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
@@ -645,7 +645,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 TEST(NeuriteElementTest, RetractAllDendrites) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecutionContext();
+  auto* ctxt = simulation.GetMainExecCtxt();
 
   std::array<double, 3> origin = {0, 0, 0};
 
@@ -661,8 +661,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
     neurite_element->ElongateTerminalEnd(10, {1, 1, 0});
-    neurite_element->RunDiscretization();
-    ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
+    simulation.GetScheduler()->Simulate(1);
   }
 
   auto branch = neurite_element->Branch();
@@ -672,8 +671,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
     neurite_element->ElongateTerminalEnd(10, {0, 0, 1});
     neurite_element->RunDiscretization();
     branch->ElongateTerminalEnd(10, {0, 1, 0});
-    branch->RunDiscretization();
-    ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
+    simulation.GetScheduler()->Simulate(1);
   }
 
   // retract all dendrite
@@ -682,9 +680,9 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
       auto&& neurite_segment = rm->GetSimObject<NeuriteElement>(SoHandle(1, j));
       if (neurite_segment.IsTerminal()) {
         neurite_segment.RetractTerminalEnd(10);
-        neurite_segment.RunDiscretization();
         break;
       }
+      simulation.GetScheduler()->Simulate(1);
     }
     ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   }

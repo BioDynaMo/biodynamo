@@ -455,6 +455,8 @@ class InPlaceExecutionContext {
 
   std::vector<std::pair<SoHandle, double>> neighbor_cache_;
 
+  /// This execution context is only valid if at the beginning of the iteration
+  /// no simulation objects have been commited to the ResourceManager.
   bool ectxt_cache_valid_ = true;
 
   /// Execute a single operation on a simulation object
@@ -486,7 +488,10 @@ class InPlaceExecutionContext {
       }
       return ret_val;
     } else if(ectxt_cache_valid_ && cache->rm_ == &new_sim_objects_) {
-      auto ret_val = cache->ts_updated_ == Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
+      // exclude iteration 0 - could lead to issue for objects that have been
+      // created during simulation setup
+      auto ret_val = cache->ts_updated_ == Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() &&
+        Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() != 0;
       if (!ret_val) {
         soptr_cache_perfc_.IncThisInvalidTs();
       }
