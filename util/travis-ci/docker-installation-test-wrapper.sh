@@ -36,3 +36,14 @@ if [ "$(DetectOs)" = "centos-7.6.1810" ]; then
 fi
 
 test/installation-test.sh
+RET_VAL=$?
+
+$BDM_PROJECT_DIR/util/xvfb-initd.sh stop
+
+# debug output for centos docker issue
+# sometimes script inside docker container does not terminate
+if [ "$(DetectOs)" = "centos-7.6.1810" ]; then
+  ps -ef
+fi
+
+exit $RET_VAL
