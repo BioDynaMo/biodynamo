@@ -2,8 +2,11 @@
 #define CORE_GUI_H_
 
 #include <stdlib.h>
+#include <future>
+
 #include <TROOT.h>
 #include <TClass.h>
+#include <TGButton.h>
 #include <TApplication.h>
 #include <TVirtualX.h>
 #include <RQ_OBJECT.h>
@@ -22,15 +25,18 @@
 #include <TColor.h>
 #include <TGSplitter.h>
 #include <TGSplitFrame.h>
+#include <TSystem.h>
 #include <TGLabel.h>
 #include <TGTextEdit.h>
 #include <TGTextEntry.h>
+
 #include "gui/gui_constants.h"
 #include "gui/gui_log.h"
+#include "gui/project.h"
 
 enum ETestCommandIdentifiers {
-   M_FILE_NEW,
-   M_FILE_OPEN,
+   M_FILE_NEWPROJECT,
+   M_FILE_OPENPROJECT,
    M_FILE_SAVE,
    M_FILE_SAVEAS,
    M_FILE_IMPORT,
@@ -51,13 +57,13 @@ enum ETestCommandIdentifiers {
    M_HELP_ABOUT
 };
 
-class TileFrame;
+//class GUILog {};
+
 class TestMainFrame {
 RQ_OBJECT("TestMainFrame")
 private:
    TGMainFrame        *fMain;
    TGCanvas           *fCanvasWindow;
-   TileFrame          *fContainer;
    TGVerticalFrame    *fVf;
    TGHorizontalFrame  *fH1, *fH2;
    TGCompositeFrame   *fFtop, *fFbottom;
@@ -66,29 +72,53 @@ private:
    TGPopupMenu        *fMenuFile, *fMenuSamples, *fMenuSimulation, *fMenuHelp;
    TGLayoutHints      *fMenuBarLayout, *fMenuBarItemLayout;
    TGTextEdit         *fEdit;
+   std::future<void>   fut;
+   std::unique_ptr<Project> project;
+   bool                isBuilding;
+   bool                isRunning;
 public:
    TestMainFrame(const TGWindow *p, UInt_t w, UInt_t h);
    virtual ~TestMainFrame();
    // slots
    void CloseWindow();
    void HandleMenu(Int_t id);
-   void HandlePopup() { GUILog::Info("menu popped up"); }
-   void HandlePopdown() { GUILog::Info("menu popped down"); }
    void Created() { Emit("Created()"); } //*SIGNAL*
    void Welcome() { GUILog::Info("TestMainFrame has been created. Welcome!"); }
+   void OpenProject();
+   void SaveAsProject();
+   void SaveProject();
+   void BuildProject();
+   void RunProject();
+   void EnableSaveAndSimulation();
 };
 
-class TileFrame {
-RQ_OBJECT("TileFrame")
+
+class NewProjectDialog {
+RQ_OBJECT("NewProjectDialog")
 private:
-   TGCompositeFrame *fFrame;
-   TGCanvas         *fCanvas;
+   TGTransientFrame    *fMain;
+   TGVerticalFrame     *fVf;
+   TGHorizontalFrame   *fH1, *fH2, *fH3;
+   TGGroupFrame        *fF6, *fF7;
+   TGButton            *fCreateButton, *fCancelButton;
+   TGButton            *fBtn1, *fBtn2, *fChk1, *fChk2, *fRad1, *fRad2;
+   TGTextEntry         *fTxt1, *fTxt2;
+   TGLayoutHints       *fL1, *fL2, *fL3, *fL4;
+   TGTextBuffer        *tBuf1, *tBuf2;
+   TGLabel             *fLtop, *fLname, *fLlocation, *fLerror;
+   TGPictureButton     *fPictButton;
+   const TestMainFrame *mFrame;
+
 public:
-   TileFrame(const TGWindow *p);
-   virtual ~TileFrame() { delete fFrame; }
-   TGFrame *GetFrame() const { return fFrame; }
-   void SetCanvas(TGCanvas *canvas) { fCanvas = canvas; }
-   void HandleMouseWheel(Event_t *event);
+   NewProjectDialog(const TGWindow *p, const TGWindow *main, const TestMainFrame *mainFrame, UInt_t w, UInt_t h,
+               UInt_t options = kVerticalFrame);
+   virtual ~NewProjectDialog();
+   // slots
+   void DoClose();
+   void CloseWindow();
+   void DoCreate();
+   void DoCancel();
+   void DoOpen();
 };
 
 #endif  // CORE_GUI_H_

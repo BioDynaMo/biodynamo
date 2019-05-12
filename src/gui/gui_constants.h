@@ -6,8 +6,8 @@
 
 class Constants {
  public:
-  static std::string logFile; 
-  static TGTextEdit *tEdit;
+  //static std::string logFile; 
+  //static TGTextEdit *tEdit;
 };
 
 #endif  // CORE_GUI_CONSTANTS_H_

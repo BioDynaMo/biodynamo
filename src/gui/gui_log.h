@@ -2,12 +2,10 @@
 #define CORE_GUI_LOG_H_
 
 #include <TGTextEdit.h>
-#include <TError.h>
 #include <fstream>
 #include <string>
 #include <iostream>
 #include <stdio.h>
-#include <time.h>
 #include "core/util/log.h"
 #include "core/util/string.h"
 #include "gui/gui_constants.h"
@@ -17,52 +15,40 @@ class GUILog {
  public:
   template <typename... Args>
   static void Info(const Args&... parts) {
-    LogMessage(Constants::logFile, Constants::tEdit, "INFO:", CurrentDateTime(), parts...);
+    std::string message = bdm::Concat("INFO:", CurrentDateTime(), parts...);
+    bdm::Log::Info(LogFile, message, "\n");
+    LogMessage(message);
   }
+
   template <typename... Args>
-  static void Debug(const Args&... parts) {
-    LogMessage(Constants::logFile, Constants::tEdit, "DEBUG:", CurrentDateTime(), parts...);
+  static void Debug(const Args&... parts){
+    std::string message = bdm::Concat("DEBUG:", CurrentDateTime(), parts...);
+    bdm::Log::Debug(LogFile, message, "\n");
+    LogMessage(message);
   }
   template <typename... Args>
   static void Warning(const Args&... parts) {
-    LogMessage(Constants::logFile, Constants::tEdit, "WARNING:", CurrentDateTime(), parts...);
+    std::string message = bdm::Concat("WARNING:", CurrentDateTime(), parts...);
+    bdm::Log::Warning(LogFile, message, "\n");
+    LogMessage(message);
   }
   template <typename... Args>
   static void Error(const Args&... parts) {
-    LogMessage(Constants::logFile, Constants::tEdit, "ERROR:", CurrentDateTime(), parts...);
+    std::string message = bdm::Concat("Error:", CurrentDateTime(), parts...);
+    bdm::Log::Error(LogFile, message, "\n");
+    LogMessage(message);
   }
+
+  static void SetTextEdit(TGTextEdit* tEdit);
+  static void SetLogFile(std::string location);
 
  private:
-  // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
-  static const std::string CurrentDateTime() {
-      time_t     now = time(0);
-      struct tm  tstruct;
-      char       buf[80];
-      tstruct = *localtime(&now);
-      strftime(buf, sizeof(buf), "%Y-%m-%d.%X: ", &tstruct);
-      return buf;
-  }
-
-  template <typename... Args>
-  static void LogMessage(const std::string logFile, TGTextEdit* tEdit, const Args&... parts) {
-    std::string message = bdm::Concat(parts...);
-
-    bdm::Log::Info(logFile, message, "\n");
-
-    if (!logFile.empty()) {
-      std::ofstream ofs(logFile, std::ofstream::out | std::ofstream::app);
-      ofs << message << "\n";
-      ofs.close();
-    }
-    
-    if(tEdit != nullptr) {
-      uint msgSize = message.size();
-      for(uint i = 0; i < msgSize; i++) {
-          tEdit->InsChar(message.at(i));
-      }
-      tEdit->BreakLine();
-    }
-  }
+  static TGTextEdit* TEdit;
+  static std::string LogFile;
+  
+  static const std::string CurrentDateTime();
+  static void LogMessage(const std::string message);
 };
+
 
 #endif  // CORE_GUI_LOG_H_

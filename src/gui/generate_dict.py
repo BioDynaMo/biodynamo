@@ -19,13 +19,13 @@ import subprocess as sp
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 HEADER_FILE = '{}/gui.h'.format(DIR_PATH)
+INCLUDE_DIR = '{}/..'.format(DIR_PATH)
 
 # Generated files
 LINK_DEF_FILE = '{}/gui_GEN_LinkDef.h'.format(DIR_PATH)
 DICT_FILE = '{}/gui_GEN_Dict.cc'.format(DIR_PATH)
 PCM_FILE = '{}/gui_GEN_Dict_rdict.pcm'.format(DIR_PATH)
 TMP_FILE = '{}/tmp.txt'.format(DIR_PATH)
-INCLUDE_DIR = '{}/..'.format(DIR_PATH)
 
 def generateLinkDef():
     cmd = '''awk '/^class .* {/{print "#pragma link C++ class " $2 ";"}' '''
