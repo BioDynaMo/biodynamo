@@ -78,7 +78,6 @@ inline int Simulate(int argc, const char** argv) {
 
 #pragma omp parallel
   simulation.GetRandom()->SetSeed(8794);
-  simulation.GetExecutionContext()->DisableNeighborGuard();
 
   NeuronBuilder builder;
   builder({0, 0, 0});
