@@ -634,6 +634,23 @@
    fun:_ZN14vtkCPCxxHelper3NewEv
 }
 
+{
+   paraview-21
+   Memcheck:Cond
+   fun:vfprintf
+   fun:__vasprintf_chk
+   fun:__asprintf_chk
+   fun:pml_v_output_open
+   obj:/usr/lib/openmpi/lib/libmpi.so.12.0.2
+   fun:mca_base_framework_components_open
+   obj:/usr/lib/openmpi/lib/libmpi.so.12.0.2
+   fun:mca_base_framework_open
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+   fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+}
+
 ######### Suppress TBB issues
 {
    TBB-1
