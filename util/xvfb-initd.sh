@@ -2,7 +2,7 @@
 # Script taken from docker image: travisci/ci-garnet:packer-1496954857
 
 XVFB=/usr/bin/Xvfb
-XVFBARGS=":99 -ac -screen 0 1024x768x24"
+XVFBARGS=":99 -ac -screen 0 2560x1440x24"
 PIDFILE=/tmp/cucumber_xvfb_99.pid
 case "$1" in
   start)
