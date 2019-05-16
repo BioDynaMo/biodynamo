@@ -57,7 +57,7 @@ class InPlaceExecutionContext {
     // If more objects would be created (using `New`),
     // references would become invalid.
     // Alternative: use container that doesn't migrate objects.
-    new_sim_objects_.Reserve(1e4);
+    new_sim_objects_.Reserve(1e6 / ThreadInfo::GetInstance()->GetMaxThreads());
 
     auto* param = Simulation<TCTParam>::GetActive()->GetParam();
     soptr_cache_perfc_.enabled_ = param->debug_exec_ctxt_caches_;
