@@ -151,7 +151,7 @@ struct PoissonBand {
       case Axis::kYAxis:
         return ROOT::Math::poisson_pdf(y, lambda_);
       case Axis::kZAxis:
-        return ROOT::Math::poisson_pdf(y, lambda_);
+        return ROOT::Math::poisson_pdf(z, lambda_);
       default:
         throw std::logic_error("You have chosen an non-existing axis!");
     }
