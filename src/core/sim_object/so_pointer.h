@@ -49,6 +49,9 @@ class SoPointer {
 
   virtual ~SoPointer() {}
 
+  uint64_t GetUid() const { return uid_; }
+  const uint64_t* GetUidPtr() const { return &uid_; }
+
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
   bool operator==(std::nullptr_t) const {
     return uid_ == std::numeric_limits<uint64_t>::max();
@@ -110,6 +113,34 @@ class SoPointer {
 
   BDM_TEMPLATE_CLASS_DEF(SoPointer, 2);
 };
+
+template <typename T>
+struct is_so_ptr {
+  static constexpr bool value = false;
+};
+
+template <typename T>
+struct is_so_ptr<SoPointer<T>> {
+  static constexpr bool value = true;
+};
+
+namespace detail {
+
+struct ExtractUidPtr {
+  template <typename T>
+  static typename std::enable_if<is_so_ptr<T>::value, const uint64_t*>::type
+  GetUidPtr(const T& t) {
+    return t.GetUidPtr();
+  }
+
+  template <typename T>
+  static typename std::enable_if<!is_so_ptr<T>::value, const uint64_t*>::type
+  GetUidPtr(const T& t) {
+    return nullptr;
+  }
+};
+
+}  // namespace detail
 
 }  // namespace bdm
 

@@ -38,6 +38,8 @@ class CatalystSoVisitor : public SoVisitor {
       Double(dm_name, data);
     } else if (type_hash_code == typeid(int).hash_code()) {
       Int(dm_name, data);
+    } else if (type_hash_code == typeid(uint64_t).hash_code()) {
+      Uint64_t(dm_name, data);
     } else if (type_hash_code == typeid(std::array<double, 3>).hash_code()) {
       Double3(dm_name, data);
     } else if (type_hash_code == typeid(std::array<int, 3>).hash_code()) {
@@ -62,6 +64,12 @@ class CatalystSoVisitor : public SoVisitor {
 
   void Int(const std::string& dm_name, const void* d) {
     auto& data = *reinterpret_cast<const int*>(d);
+    auto* vtk_array = GetDataArray<vtkIntArray>(dm_name);
+    vtk_array->InsertNextTuple1(data);
+  }
+
+  void Uint64_t(const std::string& dm_name, const void* d) {
+    auto& data = *reinterpret_cast<const uint64_t*>(d);
     auto* vtk_array = GetDataArray<vtkIntArray>(dm_name);
     vtk_array->InsertNextTuple1(data);
   }
