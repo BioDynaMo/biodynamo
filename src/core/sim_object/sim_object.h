@@ -42,8 +42,13 @@ namespace bdm {
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
 
 #define BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR(data_member)               \
+  if (is_so_ptr<decltype(data_member)>::value) {             \
+    visitor->Visit(#data_member, typeid(uint64_t).hash_code(),            \
+                   static_cast<const void*>(detail::ExtractUidPtr::GetUidPtr(data_member)));      \
+  } else {                                                                \
   visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
-                 static_cast<const void*>(&data_member));
+                 static_cast<const void*>(&data_member));                 \
+  }
 
 #define BDM_SIM_OBJECT_FOREACHDMIN_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
@@ -52,8 +57,13 @@ namespace bdm {
   {                                                                           \
     auto it = dm_selector.find(#data_member);                                 \
     if (it != dm_selector.end()) {                                            \
+      if (is_so_ptr<decltype(data_member)>::value) {             \
+        visitor->Visit(#data_member, typeid(uint64_t).hash_code(),            \
+                       static_cast<const void*>(detail::ExtractUidPtr::GetUidPtr(data_member)));      \
+      } else {                                                                \
       visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
                      static_cast<const void*>(&data_member));                 \
+      }                                                                       \
     }                                                                         \
   }
 
