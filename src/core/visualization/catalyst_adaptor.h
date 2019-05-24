@@ -106,6 +106,10 @@ class CatalystAdaptor {
     }
 
     auto* param = Simulation::GetActive()->GetParam();
+    if (total_steps % param->visualization_export_interval_ != 0) {
+      return;
+    }
+
     if (param->live_visualization_) {
       double time = param->simulation_time_step_ * total_steps;
       LiveVisualization(time, total_steps, last_iteration);
