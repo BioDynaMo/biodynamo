@@ -85,7 +85,7 @@ In the previous chapter, we created a great number of cells. However, those cell
     BDM_CLASS_DEF_NV(GrowthModule, 1);
   };
 ```
-
+The names of user-defined Biology modules have to be postfixed by `BM`, `Module` or `Behaviour`.
 We are now able to add any code in the Run() method, that will be executed at each simulation step for each cell containing this GrowthModule. In our case, it will be a cellular growth, until a certain diameter is reached and then a cell division:
 ``` C++
       if (cell->GetDiameter() < 8) {
