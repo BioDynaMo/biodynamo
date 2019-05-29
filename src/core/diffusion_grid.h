@@ -431,15 +431,28 @@ class DiffusionGrid {
             ++s;
             ++b;
             ++t;
-
-            if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
-              continue;
-            }
-
+            
+            cm = c - 1;
+            cp = c + 1;
             n = c - nx;
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
+
+            if ( x == 0){
+            cm = cp;
+            } else if ( x == nx-1 ){
+            cp = cm;
+            }else if (y == 0 ){
+            s = n;
+            } else if (y == (ny - 1)){
+            n = s;
+            } else if (z == 0){
+            b = t;
+            } else if ( z == (nz - 1)) {
+            t = b;
+            }
+            
             c2_[c] = (c1_[c] +
                       d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
                       d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
