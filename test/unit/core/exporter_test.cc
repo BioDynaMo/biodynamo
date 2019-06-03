@@ -29,9 +29,11 @@ TEST(ExportTest, ExportToFile) {
   Cell* cell1 = new Cell();
   cell1->SetPosition({0.5, 1, 0});
   cell1->SetDiameter(10);
+  cell1->SetDensity(1);
   Cell* cell2 = new Cell();
   cell2->SetPosition({-5, 5, 0.9});
   cell2->SetDiameter(10);
+  cell2->SetDensity(1);
 
   rm->push_back(cell1);
   rm->push_back(cell2);

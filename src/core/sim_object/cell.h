@@ -47,12 +47,12 @@ class Cell : public SimObject {
   /// Third axis of the local coordinate system.
   static constexpr std::array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
 
-  Cell() : density_(1.0) {}
+  Cell() : diameter_(10), density_{0.002} {}
   explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
   explicit Cell(const std::array<double, 3>& position)
-      : position_(position), density_{1.0} {}
+      : position_(position), diameter_(10), density_{0.002} {}
 
   /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.
@@ -386,6 +386,7 @@ class Cell : public SimObject {
   std::array<double, 3> tractor_force_ = {{0, 0, 0}};
   /// NB: Use setter and don't assign values directly
   double diameter_ = 0;
+  /// NB: Use setter and don't assign values directly
   double volume_ = 0;
   double adherence_ = 0;
   double density_ = 0;

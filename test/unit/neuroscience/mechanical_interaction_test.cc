@@ -426,6 +426,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
+  neuron->SetDensity(1);
   rm->push_back(neuron);
 
   auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
@@ -556,12 +557,14 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   NeuronSoma* neuron1 = new NeuronSoma();
   neuron1->SetPosition({0, 0, 0});
   neuron1->SetDiameter(6);
+  neuron1->SetDensity(1);
   auto neuron1_id = neuron1->GetUid();
   rm->push_back(neuron1);
 
   NeuronSoma* neuron2 = new NeuronSoma();
   neuron2->SetPosition({5.5, 0, 0});
   neuron2->SetDiameter(5);
+  neuron2->SetDensity(1);
   auto neuron2_id = neuron2->GetUid();
   rm->push_back(neuron2);
 
