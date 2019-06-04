@@ -43,7 +43,7 @@
 #include <vtkSMSourceProxy.h>
 #include <vtkUnstructuredGrid.h>
 
-#include "core/shape.h"
+#include "core/visualization/catalyst_helper_structs.h"
 
 #endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
@@ -84,8 +84,8 @@ class InSituPipeline : public vtkCPPipeline {
     controller_->Delete();
   }
 
-  void Initialize(const std::unordered_map<std::string, Shape>& shapes) {
-    shapes_ = shapes;
+  void Initialize(const std::unordered_map<std::string, VtkSoGrid*>& vtk_so_grids) {
+    vtk_so_grids_ = vtk_so_grids;
     initialized_ = true;
   }
 
@@ -148,15 +148,17 @@ class InSituPipeline : public vtkCPPipeline {
       if (vtk_object->IsA("vtkUnstructuredGrid")) {
         real_producer->SetOutput(vtk_object);
 
-        if (shapes_[object_name] == Shape::kCylinder) {
+        auto& shape = vtk_so_grids_[object_name]->shape_;
+
+        if (shape == Shape::kCylinder) {
           source_name = "CylinderSource";
           glyph_type = "BDMGlyph";
           scale_mode = 4;
-        } else if (shapes_[object_name] != Shape::kSphere) {
+        } else if (shape != Shape::kSphere) {
           Log::Warning("CreatePipeline",
                        "We currently support only spherical and cylindrical "
                        "shaped objects for visualization. Received value %d",
-                       shapes_[object_name]);
+                       shape);
         }
 
         // Create a Glyph filter
@@ -318,7 +320,7 @@ class InSituPipeline : public vtkCPPipeline {
   std::map<std::string, vtkSmartPointer<vtkSMSourceProxy>> filter_map_;
   vtkSmartPointer<vtkLiveInsituLink> insitu_link_;
   vtkSMParaViewPipelineControllerWithRendering* controller_;
-  std::unordered_map<std::string, Shape> shapes_;
+  std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids_;
   bool initialized_ = false;
 };
 

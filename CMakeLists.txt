@@ -259,6 +259,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.cc)
   file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.h
@@ -270,6 +271,8 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
   bdm_add_test_executable(runBiodynamoTestsMain
                           SOURCES ${TEST_SOURCES}
