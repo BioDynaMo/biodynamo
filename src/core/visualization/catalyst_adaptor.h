@@ -78,14 +78,6 @@ class CatalystAdaptor {
       pipeline_->Delete();
       pipeline_ = nullptr;
     }
-    for (auto& sog : vtk_so_grids_) {
-      sog.second.data_->Delete();
-      sog.second.Reset();
-    }
-    for (auto dg : vtk_dgrids_) {
-      dg.second.data_->Delete();
-      dg.second.Reset();
-    }
 
     if (counter_ == 0 && g_processor_) {
       g_processor_->RemoveAllPipelines();
@@ -93,8 +85,16 @@ class CatalystAdaptor {
       g_processor_->Delete();
       g_processor_ = nullptr;
     }
-    if (param->export_visualization_ && sim_info_json_generated_) {
+    if (param->export_visualization_) {
+      GenerateSimulationInfoJson(vtk_so_grids_, vtk_dgrids_);
       GenerateParaviewState();
+    }
+
+    for(auto& el : vtk_so_grids_) {
+      delete el.second;
+    }
+    for(auto& el : vtk_dgrids_) {
+      delete el.second;
     }
   }
 
@@ -129,13 +129,9 @@ class CatalystAdaptor {
   std::string python_script_;
   bool initialized_ = false;
   bool exclusive_export_viz_ = false;
-  std::unordered_map<std::string, VtkSoGrid> vtk_so_grids_;
-  std::unordered_map<std::string, VtkDiffusionGrid> vtk_dgrids_;
-  std::unordered_map<std::string, Shape> shapes_;
+  std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids_;
+  std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids_;
 
-  /// This variable is used to generate the simulation info json during the
-  /// first invocation of `ExportVisualization`
-  bool sim_info_json_generated_ = false;
   static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
@@ -172,6 +168,17 @@ class CatalystAdaptor {
         pipeline_ = new InSituPipeline();
         g_processor_->AddPipeline(pipeline_);
       }
+
+      vtkNew<vtkCPDataDescription> data_description;
+      data_description->SetTimeData(0, 0);
+
+      auto* param = Simulation::GetActive()->GetParam();
+      for(auto& pair : param->visualize_sim_objects_) {
+        vtk_so_grids_[pair.first.c_str()] = new VtkSoGrid(pair.first.c_str(), data_description);
+      }
+      for(auto& entry : param->visualize_diffusion_) {
+        vtk_dgrids_[entry.name_] = new VtkDiffusionGrid(entry.name_, data_description);
+      }
     }
   }
 
@@ -193,7 +200,7 @@ class CatalystAdaptor {
 
     if (pipeline_ != nullptr) {
       if (!(pipeline_->IsInitialized())) {
-        pipeline_->Initialize(shapes_);
+        pipeline_->Initialize(vtk_so_grids_);
       }
     }
 
@@ -213,19 +220,12 @@ class CatalystAdaptor {
     data_description->SetTimeData(time, step);
 
     CreateVtkObjects(data_description);
-    if (!sim_info_json_generated_) {
-      GenerateSimulationInfoJson(shapes_);
-      sim_info_json_generated_ = true;
-    }
 
     if (last_time_step == true) {
       data_description->ForceOutputOn();
     }
 
-    auto* param = Simulation::GetActive()->GetParam();
-    if (step % param->visualization_export_interval_ == 0) {
-      WriteToFile(step);
-    }
+    WriteToFile(step);
   }
 
   /// Creates the VTK objects that represent the simulation objects in ParaView.
@@ -240,40 +240,6 @@ class CatalystAdaptor {
   // ---------------------------------------------------------------------------
   // simulation objects
 
-  /// Create and initialize a new instance of `VtkSoGrid` for a specific
-  /// simulation object type.
-  VtkSoGrid* NewVtkSoGrid(const SimObject* so, vtkNew<vtkCPDataDescription>& data_description) {
-    auto type_name = so->GetTypeName();
-    auto* vsg = &(vtk_so_grids_[type_name]);
-    // initialize new vsg
-    vsg->data_ = vtkUnstructuredGrid::New();
-    vsg->name_ = type_name;
-    vsg->vis_data_members_ = so->GetRequiredVisDataMembers();
-    auto* param = Simulation::GetActive()->GetParam();
-    for (auto& dm : param->visualize_sim_objects_.at(type_name)) {
-      vsg->vis_data_members_.insert(dm);
-    }
-    shapes_[type_name] = so->GetShape();
-
-    data_description->AddInput(type_name);
-    data_description->GetInputDescriptionByName(type_name)
-        ->SetGrid(vsg->data_);
-
-    return vsg;
-  }
-
-  /// Get the right `VtkSoGrid` data structure based on the simulation object
-  /// type. Creates a new one if no instance was found.
-  VtkSoGrid* GetVtkSoGrid(const SimObject* so, vtkNew<vtkCPDataDescription>& data_description) {
-    // get vtk_so_grids_
-    auto search = vtk_so_grids_.find(so->GetTypeName());
-    if (search != vtk_so_grids_.end()) {
-      return &(search->second);
-    } else {
-      return NewVtkSoGrid(so, data_description);
-    }
-  }
-
   // Process a single simulation object
   void ProcessSimObject(const SimObject* so, vtkNew<vtkCPDataDescription>& data_description) {
     auto* param = Simulation::GetActive()->GetParam();
@@ -282,7 +248,11 @@ class CatalystAdaptor {
     if (param->visualize_sim_objects_.find(so_name) !=
         param->visualize_sim_objects_.end()) {
 
-      auto* vsg = GetVtkSoGrid(so, data_description);
+      // assert(vtk_so_grids_.find(so->GetTypeName()) != vtk_so_grids_.end() && Concat("VtkSoGrid for ", so->GetTypeName(), " not found!");
+      auto* vsg = vtk_so_grids_[so->GetTypeName()];
+      if (!vsg->initialized_) {
+        vsg->Init(so);
+      }
 
       // If we segfault at here it probably means that there is a problem
       // with the pipeline (either the C++ pipeline or Python pipeline)
@@ -300,74 +270,14 @@ class CatalystAdaptor {
   /// Create the required vtk objects to visualize simulation objects.
   void BuildSimObjectsVTKStructures(vtkNew<vtkCPDataDescription>& data_description) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
-    auto* param = Simulation::GetActive()->GetParam();
 
     rm->ApplyOnAllElements([&](SimObject* so ){
       ProcessSimObject(so, data_description);
     });
-
-    if (vtk_so_grids_.size() != param->visualize_sim_objects_.size()) {
-      Log::Fatal("Visualize Simulation Objects",
-                 "One or more simulation objects were not selected for "
-                 "visualization, even though you registered them for "
-                 "visualization. Please make sure the names in the "
-                 "configuration file match the ones in the simulation.");
-    }
   }
 
   // ---------------------------------------------------------------------------
   // diffusion grids
-
-  /// Create and initialize a new instance of `VtkDiffusionGrid`.
-  VtkDiffusionGrid* NewVtkDiffusionGrid(const DiffusionGrid* dg, vtkNew<vtkCPDataDescription>& data_description) {
-    auto name = dg->GetSubstanceName();
-    auto* vdg = &(vtk_dgrids_[name]);
-    // initialize new vdg
-    vdg->data_ = vtkImageData::New();
-    vdg->name_ = name;
-
-    // get visualization config
-    auto* param = Simulation::GetActive()->GetParam();
-    const Param::VisualizeDiffusion* vd = nullptr;
-    for(auto& entry : param->visualize_diffusion_) {
-      if (entry.name_ == name) {
-        vd = &entry;
-        break;
-      }
-    }
-
-    // Add attribute data
-    if (vd->concentration_) {
-      vtkNew<vtkDoubleArray> concentration;
-      concentration->SetName("Substance Concentration");
-      vdg->concentration_ = concentration.GetPointer();
-      vdg->data_->GetPointData()->AddArray(concentration.GetPointer());
-    }
-    if (vd->gradient_) {
-      vtkNew<vtkDoubleArray> gradient;
-      gradient->SetName("Diffusion Gradient");
-      gradient->SetNumberOfComponents(3);
-      vdg->gradient_ = gradient.GetPointer();
-      vdg->data_->GetPointData()->AddArray(gradient.GetPointer());
-    }
-
-    data_description->AddInput(name.c_str());
-    data_description->GetInputDescriptionByName(name.c_str())->SetGrid(vdg->data_);
-
-    return vdg;
-  }
-
-  /// Get the right `VtkDiffusionGrid` data structure based on the diffusion
-  /// grid name. Creates a new one if no instance was found.
-  VtkDiffusionGrid* GetVtkDiffusionGrid(const DiffusionGrid* grid, vtkNew<vtkCPDataDescription>& data_description) {
-    // get vtk_so_grids_
-    auto search = vtk_dgrids_.find(grid->GetSubstanceName());
-    if (search != vtk_dgrids_.end()) {
-      return &(search->second);
-    } else {
-      return NewVtkDiffusionGrid(grid, data_description);
-    }
-  }
 
   /// Sets the properties of the diffusion VTK grid structures
   void ProcessDiffusionGrid(const DiffusionGrid* grid, vtkNew<vtkCPDataDescription>& data_description) {
@@ -383,7 +293,10 @@ class CatalystAdaptor {
     }
 
     if (vd != nullptr) {
-      auto* vdg = GetVtkDiffusionGrid(grid, data_description);
+      auto* vdg = vtk_dgrids_[grid->GetSubstanceName()];
+      if (!vdg->used_) {
+        vdg->Init();
+      }
 
       // If we segfault at here it probably means that there is a problem
       // with  the pipeline (either the C++ pipeline or Python pipeline)
@@ -420,19 +333,10 @@ class CatalystAdaptor {
   /// Create the required vtk objects to visualize diffusion grids.
   void BuildDiffusionGridVTKStructures(vtkNew<vtkCPDataDescription>& data_description) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
-    auto* param = Simulation::GetActive()->GetParam();
 
     rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* grid ){
       ProcessDiffusionGrid(grid, data_description);
     });
-
-    if (vtk_dgrids_.size() != param->visualize_diffusion_.size()) {
-      Log::Fatal("Visualize diffusion grids",
-                 "One or more diffusion grids were not selected for "
-                 "visualization, even though you registered them for "
-                 "visualization. Please make sure the names in the "
-                 "configuration file match the ones in the simulation.");
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -445,23 +349,23 @@ class CatalystAdaptor {
   ///
   void WriteToFile(size_t step) {
     auto* sim = Simulation::GetActive();
-    for (auto el : vtk_so_grids_) {
+    for (auto& el : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
       auto filename =
-          Concat(sim->GetOutputDir(), "/", el.second.name_, "-", step, ".pvtu");
+          Concat(sim->GetOutputDir(), "/", el.second->name_, "-", step, ".pvtu");
       cells_writer->SetFileName(filename.c_str());
-      cells_writer->SetInputData(el.second.data_);
+      cells_writer->SetInputData(el.second->data_);
       cells_writer->Update();
     }
 
     for (auto& entry : vtk_dgrids_) {
       vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
 
-      const auto& substance_name = entry.second.name_;
+      const auto& substance_name = entry.second->name_;
       auto filename =
           Concat(sim->GetOutputDir(), "/", substance_name, "-", step, ".pvti");
       dgrid_writer->SetFileName(filename.c_str());
-      dgrid_writer->SetInputData(entry.second.data_);
+      dgrid_writer->SetInputData(entry.second->data_);
       dgrid_writer->Update();
     }
   }
@@ -471,7 +375,8 @@ class CatalystAdaptor {
   /// ParaView state file. The Json file is generated inside this function
   /// \see GenerateParaviewState
   static void GenerateSimulationInfoJson(
-      const std::unordered_map<std::string, Shape>& shapes) {
+      const std::unordered_map<std::string, VtkSoGrid*>& vtk_so_grids,
+      const std::unordered_map<std::string, VtkDiffusionGrid*>& vtk_dgrids) {
     auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
     // simulation objects
@@ -481,13 +386,30 @@ class CatalystAdaptor {
     for (const auto& entry : param->visualize_sim_objects_) {
       std::string so_name = entry.first;
 
+      auto search = vtk_so_grids.find(so_name);
+      if (search == vtk_so_grids.end()) {
+        continue;
+      }
+      auto* so_grid = search->second;
+      // user wanted to export this simulation object type, but not a single
+      // instance has been created during the entire simulation
+      if (!so_grid->initialized_) {
+        Log::Warning("Visualize Simulation Objects",
+                 "You are trying to visualize simulation object type ", so_name,
+                 ", but not a single instance has been created during the "
+                 "entire simulation. Please make sure the names in the "
+                 "configuration file match the ones in the simulation.");
+        num_sim_objects--;
+        continue;
+      }
+
       sim_objects << "    {" << std::endl
                   << "      \"name\":\"" << so_name << "\"," << std::endl;
-      if (shapes.at(so_name) == Shape::kSphere) {
+      if (so_grid->shape_ == Shape::kSphere) {
         sim_objects << "      \"glyph\":\"Glyph\"," << std::endl
                     << "      \"shape\":\"Sphere\"," << std::endl
                     << "      \"scaling_attribute\":\"diameter_\"" << std::endl;
-      } else if (shapes.at(so_name) == kCylinder) {
+      } else if (so_grid->shape_ == kCylinder) {
         sim_objects << "      \"glyph\":\"BDMGlyph\"," << std::endl
                     << "      \"shape\":\"Cylinder\"," << std::endl
                     << "      \"x_scaling_attribute\":\"diameter_\","
@@ -511,8 +433,25 @@ class CatalystAdaptor {
     std::stringstream substances;
     uint64_t num_substances = param->visualize_diffusion_.size();
     for (uint64_t i = 0; i < num_substances; i++) {
-      substances << "    { \"name\":\"" << param->visualize_diffusion_[i].name_
-                 << "\", ";
+      auto& name = param->visualize_diffusion_[i].name_;
+
+      auto search = vtk_dgrids.find(name);
+      if (search == vtk_dgrids.end()) {
+        continue;
+      }
+      auto* dgrid = search->second;
+      // user wanted to export this substance, but it did not exist during
+      // the entire simulation
+      if(!dgrid->used_) {
+        Log::Warning("Visualize Diffusion Grids",
+                 "You are trying to visualize diffusion grid ", name,
+                 ", but it has not been created during the entire simulation. "
+                 "Please make sure the names in the "
+                 "configuration file match the ones in the simulation.");
+        num_substances--;
+        continue;
+      }
+      substances << "    { \"name\":\"" << name << "\", ";
       std::string has_gradient =
           param->visualize_diffusion_[i].gradient_ ? "true" : "false";
       substances << "\"has_gradient\":\"" << has_gradient << "\" }";
@@ -567,6 +506,9 @@ class CatalystAdaptor {
 
 namespace bdm {
 
+struct VtkSoGrid;
+struct VtkDiffusionGrid;
+
 /// False front (to ignore Catalyst in gtests)
 class CatalystAdaptor {
  public:
@@ -588,7 +530,8 @@ class CatalystAdaptor {
   void WriteToFile(size_t step) {}
 
   static void GenerateSimulationInfoJson(
-      const std::unordered_map<std::string, Shape>& shapes) {}
+      const std::unordered_map<std::string, VtkSoGrid*>& vtk_so_grids,
+      const std::unordered_map<std::string, VtkDiffusionGrid*>& vtk_dgrids) {}
 
   static void GenerateParaviewState() {}
 };

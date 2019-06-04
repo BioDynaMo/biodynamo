@@ -11,12 +11,42 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-
-#include "unit/separate_binary/catalyst_adaptor_test.h"
-
 #ifdef USE_CATALYST
 
+#include <dirent.h>
+#include <gtest/gtest.h>
+
+#include "core/util/io.h"
+#include "core/visualization/catalyst_adaptor.h"
+#include "biodynamo.h"
+#include "unit/core/visualization/catalyst_adaptor_test.h"
+#include "unit/test_util/test_util.h"
+
 namespace bdm {
+
+using MyCell = catalyst_adaptor_test_internal::MyCell;
+using MyNeuron = catalyst_adaptor_test_internal::MyNeuron;
+
+/// Test fixture for catalyst adaptor test to eliminate side effects
+class CatalystAdaptorTest : public ::testing::Test {
+ protected:
+  static constexpr char const* kSimulationName = "MySimulation";
+  static constexpr char const* kSimulationInfoJson =
+      "output/MySimulation/simulation_info.json";
+  static constexpr char const* kParaviewState =
+      "output/MySimulation/MySimulation.pvsm";
+
+  virtual void SetUp() {
+    Simulation::counter_ = 0;
+    remove(kSimulationInfoJson);
+    remove(kParaviewState);
+  }
+
+  virtual void TearDown() {
+    remove(kSimulationInfoJson);
+    remove(kParaviewState);
+  }
+};
 
 /// Tests if simulation_info.json is generated correctly during initialization.
 TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
@@ -32,11 +62,29 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
 
   Simulation simulation(kSimulationName, set_param);
 
-  std::unordered_map<std::string, Shape> shapes;
-  shapes["cell"] = kSphere;
-  shapes["neurite"] = kCylinder;
+  // create internal objects
+  vtkNew<vtkCPDataDescription> data_description;
+  std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids;
+  vtk_so_grids["cell"] = new VtkSoGrid("cell", data_description);
+  vtk_so_grids["cell"]->initialized_ = true;
+  vtk_so_grids["cell"]->shape_ = kSphere;
+  vtk_so_grids["neurite"] = new VtkSoGrid("neurite", data_description);
+  vtk_so_grids["neurite"]->initialized_ = true;
+  vtk_so_grids["neurite"]->shape_ = kCylinder;
 
-  CatalystAdaptor::GenerateSimulationInfoJson(shapes);
+  std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids;
+  vtk_dgrids["sodium"] = new VtkDiffusionGrid("sodium", data_description);
+  vtk_dgrids["sodium"]->used_ = true;
+
+  CatalystAdaptor::GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
+
+  // free memory
+  for(auto& el : vtk_so_grids) {
+    delete el.second;
+  }
+  for(auto& el : vtk_dgrids) {
+    delete el.second;
+  }
 
   ASSERT_TRUE(FileExists(kSimulationInfoJson));
 
@@ -119,16 +167,27 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
     param->visualize_sim_objects_["MyCell"] = {};
     param->visualize_sim_objects_["Cell"] = {};
   };
+  auto status = std::system(Concat("rm output/", TEST_NAME, "/*").c_str());
+  if (status != 0) {
+    Log::Warning(TEST_NAME, "Error during removal of Paraview files -- status code: ", status);
+  }
 
   Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
 
+  // Visualize one step before any sim objects or diffusion grids are created
+  // This must not crash the system. Object might be created at a later stage
+  // during simulation.
+  CatalystAdaptor adaptor("");
+  adaptor.Visualize(1, true);
+  adaptor.WriteToFile(0);
+
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
   // Create two types of cells
-  rm->push_back(MyCell());
-  rm->push_back(MyCell());
-  rm->push_back(MyNeuron());
+  rm->push_back(new MyCell());
+  rm->push_back(new MyCell());
+  rm->push_back(new MyNeuron());
 
   // Define the substances
   ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0);
@@ -142,49 +201,42 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
   rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
 
   // Write diffusion visualization to file
-  CatalystAdaptor adaptor("");
-  adaptor.Visualize(1, true);
-  adaptor.WriteToFile(0);
+  adaptor.Visualize(2, true);
+  adaptor.WriteToFile(1);
 
   // Read back from file
-  std::vector<std::string> needed_files;
-  auto filename1 = Concat(sim.GetOutputDir(), "/Substance_1-0_0.vti");
-  auto filename2 = Concat(sim.GetOutputDir(), "/Substance_1-0.pvti");
-  auto filename3 = Concat(sim.GetOutputDir(), "/MyCell-0.pvtu");
-  auto filename4 = Concat(sim.GetOutputDir(), "/Cell-0.pvtu");
-  needed_files.push_back(filename1);
-  needed_files.push_back(filename2);
-  needed_files.push_back(filename3);
-  needed_files.push_back(filename4);
+  std::set<std::string> required_files = {
+    ".",
+    "..",
+    "Cell-0.pvtu",
+    "Cell-1.pvtu",
+    "Cell-2.pvtu",
+    "MyCell-0.pvtu",
+    "MyCell-1_0.vtu",
+    "MyCell-1.pvtu",
+    "MyCell-2_0.vtu",
+    "MyCell-2.pvtu",
+    "Substance_1-0.pvti",
+    "Substance_1-1_0.vti",
+    "Substance_1-1.pvti",
+    "Substance_1-2_0.vti",
+    "Substance_1-2.pvti"
+  };
 
-  for (auto& file : needed_files) {
-    if (!FileExists(file.c_str())) {
-      std::cout << file << " was not generated!" << std::endl;
-      FAIL();
+  auto* dirp = opendir(sim.GetOutputDir().c_str());
+  struct dirent * dp;
+  unsigned counter = 0;
+  while ((dp = readdir(dirp)) != NULL) {
+    EXPECT_TRUE(required_files.find(dp->d_name) != required_files.end());
+    if (required_files.find(dp->d_name) == required_files.end()) {
+      std::cout << dp->d_name << std::endl;
     }
+    counter++;
   }
-
-  std::vector<std::string> not_needed_files;
-  filename1 = Concat(sim.GetOutputDir(), "/Substance_0-0_0.vti");
-  filename2 = Concat(sim.GetOutputDir(), "/Substance_2-0_0.vti");
-  filename3 = Concat(sim.GetOutputDir(), "/MyNeuron-0.pvtu");
-  not_needed_files.push_back(filename1);
-  not_needed_files.push_back(filename2);
-  not_needed_files.push_back(filename3);
-
-  for (auto& file : not_needed_files) {
-    if (FileExists(file.c_str())) {
-      std::cout << file << " was generated, but shouldn't have!" << std::endl;
-      FAIL();
-    }
-  }
+  closedir(dirp);
+  EXPECT_EQ(required_files.size(), counter);
 }
 
 }  // namespace bdm
 
 #endif  // USE_CATALYST
-
-int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

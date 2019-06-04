@@ -22,7 +22,11 @@
 #include <string>
 #include <set>
 #include <unordered_map>
+#include "core/shape.h"
+#include "core/sim_object/sim_object.h"
 
+#include <vtkCPDataDescription.h>
+#include <vtkCPInputDataDescription.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
@@ -46,15 +50,36 @@ struct VtkDataArrayWrapper {
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
 /// `CatalystAdaptor` to visualize simulation objects.
 struct VtkSoGrid {
-  void Reset() {
+  VtkSoGrid(const char* type_name, vtkNew<vtkCPDataDescription>& data_description) {
+    data_ = vtkUnstructuredGrid::New();
+    name_ = type_name;
+    data_description->AddInput(type_name);
+    data_description->GetInputDescriptionByName(type_name)->SetGrid(data_);
+  }
+
+  ~VtkSoGrid() {
     name_ = "";
+    data_->Delete();
     data_ = nullptr;
     vis_data_members_.clear();
     data_arrays_.clear();
   }
 
+  void Init(const SimObject* so) {
+    auto type_name = so->GetTypeName();
+    vis_data_members_ = so->GetRequiredVisDataMembers();
+    auto* param = Simulation::GetActive()->GetParam();
+    for (auto& dm : param->visualize_sim_objects_.at(type_name)) {
+      vis_data_members_.insert(dm);
+    }
+    shape_ = so->GetShape();
+    initialized_ = true;
+  }
+
+  bool initialized_ = false;
   std::string name_;
   vtkUnstructuredGrid* data_ = nullptr;
+  Shape shape_;
 
   std::set<std::string> vis_data_members_;
   std::unordered_map<std::string, VtkDataArrayWrapper> data_arrays_;
@@ -63,13 +88,52 @@ struct VtkSoGrid {
 /// Adds additional data members to the `vtkImageData` required by
 /// `CatalystAdaptor` to visualize diffusion grid.
 struct VtkDiffusionGrid {
-  void Reset() {
+  VtkDiffusionGrid(const std::string& name, vtkNew<vtkCPDataDescription>& data_description) {
+    data_ = vtkImageData::New();
+    name_ = name;
+
+    // get visualization config
+    auto* param = Simulation::GetActive()->GetParam();
+    const Param::VisualizeDiffusion* vd = nullptr;
+    for(auto& entry : param->visualize_diffusion_) {
+      if (entry.name_ == name) {
+        vd = &entry;
+        break;
+      }
+    }
+
+    // Add attribute data
+    if (vd->concentration_) {
+      vtkNew<vtkDoubleArray> concentration;
+      concentration->SetName("Substance Concentration");
+      concentration_ = concentration.GetPointer();
+      data_->GetPointData()->AddArray(concentration.GetPointer());
+    }
+    if (vd->gradient_) {
+      vtkNew<vtkDoubleArray> gradient;
+      gradient->SetName("Diffusion Gradient");
+      gradient->SetNumberOfComponents(3);
+      gradient_ = gradient.GetPointer();
+      data_->GetPointData()->AddArray(gradient.GetPointer());
+    }
+
+    data_description->AddInput(name.c_str());
+    data_description->GetInputDescriptionByName(name.c_str())->SetGrid(data_);
+  }
+
+  ~VtkDiffusionGrid() {
     name_ = "";
+    data_->Delete();
     data_ = nullptr;
     concentration_ = nullptr;
     gradient_ = nullptr;
   }
 
+  void Init() {
+    used_ = true;
+  }
+
+  bool used_ = false;
   std::string name_;
   vtkImageData* data_ = nullptr;
   vtkDoubleArray* concentration_ = nullptr;
