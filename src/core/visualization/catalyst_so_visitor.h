@@ -21,6 +21,8 @@
 
 #include "core/visualization/catalyst_helper_structs.h"
 #include "core/sim_object/so_visitor.h"
+#include "core/simulation.h"
+#include "core/scheduler.h"
 
 namespace bdm {
 
