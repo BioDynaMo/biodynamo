@@ -443,19 +443,23 @@ class DiffusionGrid {
             b = c - nx * ny;
             t = c + nx * ny;
 
+            /* X axis */
             if ( x == 0){
-            cm = cp;
-            } else if ( x == nx-1 ){
-            cp = cm;
-            }else if (y == 0 ){
-            s = n;
-            } else if (y == (ny - 1)){
+            cm = c + 1;}
+            else if ( x == nx - 2){
+            cp = c - 1;}
+
+            /* Y axis */
+            if (y == 0){
             n = s;
-            } else if (z == 0){
+            } else if (y == ny - 2){
+            s = n;}
+
+            /* Z axis */
+            if (z == 0){
             b = t;
-            } else if ( z == (nz - 1)) {
-            t = b;
-            }
+            } else if ( z == nz  - 2) {
+            t = b;}
 
             c2_[c] = (c1_[c] +
                       d * dt_ * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
