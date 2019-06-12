@@ -19,8 +19,8 @@
 #include <iostream>
 #include <string>
 
-#include "core/simulation.h"
 #include "core/param/param.h"
+#include "core/simulation.h"
 #include "core/util/timing_aggregator.h"
 
 namespace bdm {

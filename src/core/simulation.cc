@@ -130,9 +130,7 @@ Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
 Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
-std::vector<Random*>& Simulation::GetAllRandom() {
-  return random_;
-}
+std::vector<Random*>& Simulation::GetAllRandom() { return random_; }
 
 InPlaceExecutionContext* Simulation::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
@@ -162,7 +160,7 @@ void Simulation::Initialize(int argc, const char** argv,
 }
 
 void Simulation::InitializeMembers() {
-  if(param_->debug_numa_) {
+  if (param_->debug_numa_) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
   }
 

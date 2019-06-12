@@ -16,9 +16,9 @@
 #include <dirent.h>
 #include <gtest/gtest.h>
 
+#include "biodynamo.h"
 #include "core/util/io.h"
 #include "core/visualization/catalyst_adaptor.h"
-#include "biodynamo.h"
 #include "unit/core/visualization/catalyst_adaptor_test.h"
 #include "unit/test_util/test_util.h"
 
@@ -79,10 +79,10 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   CatalystAdaptor::GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
 
   // free memory
-  for(auto& el : vtk_so_grids) {
+  for (auto& el : vtk_so_grids) {
     delete el.second;
   }
-  for(auto& el : vtk_dgrids) {
+  for (auto& el : vtk_dgrids) {
     delete el.second;
   }
 
@@ -169,7 +169,9 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
   };
   auto status = std::system(Concat("rm output/", TEST_NAME, "/*").c_str());
   if (status != 0) {
-    Log::Warning(TEST_NAME, "Error during removal of Paraview files -- status code: ", status);
+    Log::Warning(TEST_NAME,
+                 "Error during removal of Paraview files -- status code: ",
+                 status);
   }
 
   Simulation sim(TEST_NAME, set_param);
@@ -205,26 +207,24 @@ TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
   adaptor.WriteToFile(1);
 
   // Read back from file
-  std::set<std::string> required_files = {
-    ".",
-    "..",
-    "Cell-0.pvtu",
-    "Cell-1.pvtu",
-    "Cell-2.pvtu",
-    "MyCell-0.pvtu",
-    "MyCell-1_0.vtu",
-    "MyCell-1.pvtu",
-    "MyCell-2_0.vtu",
-    "MyCell-2.pvtu",
-    "Substance_1-0.pvti",
-    "Substance_1-1_0.vti",
-    "Substance_1-1.pvti",
-    "Substance_1-2_0.vti",
-    "Substance_1-2.pvti"
-  };
+  std::set<std::string> required_files = {".",
+                                          "..",
+                                          "Cell-0.pvtu",
+                                          "Cell-1.pvtu",
+                                          "Cell-2.pvtu",
+                                          "MyCell-0.pvtu",
+                                          "MyCell-1_0.vtu",
+                                          "MyCell-1.pvtu",
+                                          "MyCell-2_0.vtu",
+                                          "MyCell-2.pvtu",
+                                          "Substance_1-0.pvti",
+                                          "Substance_1-1_0.vti",
+                                          "Substance_1-1.pvti",
+                                          "Substance_1-2_0.vti",
+                                          "Substance_1-2.pvti"};
 
   auto* dirp = opendir(sim.GetOutputDir().c_str());
-  struct dirent * dp;
+  struct dirent* dp;
   unsigned counter = 0;
   while ((dp = readdir(dirp)) != NULL) {
     EXPECT_TRUE(required_files.find(dp->d_name) != required_files.end());

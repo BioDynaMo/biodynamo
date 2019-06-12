@@ -177,7 +177,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   void SetDiameter(double diameter) override {
-    if(diameter  > diameter_) {
+    if (diameter > diameter_) {
       SetRunDisplacementForAllNextTs();
     }
     diameter_ = diameter;
@@ -498,7 +498,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     if (mother_ != mother) {
       // FIXME
       // Fatal("NeuriteElement", "Given object is not the mother!");
-      // std::cout << "Fatal(\"NeuriteElement\", \"Given object is not the mother!\")" << std::endl;
+      // std::cout << "Fatal(\"NeuriteElement\", \"Given object is not the
+      // mother!\")" << std::endl;
       return {0, 0, 0};
     }
 
@@ -579,7 +580,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // here I have to define the actual length ..........
     auto relative_ml = mother_->OriginOf(Base::GetUid());  //  change to auto&&
     SetSpringAxis(Math::Subtract(new_mass_location, relative_ml));
-    SetMassLocation( new_mass_location);
+    SetMassLocation(new_mass_location);
     UpdatePosition();
     SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
     // process of elongation : setting tension to 0 increases the resting length
@@ -679,7 +680,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
         // account
         if (this->GetDaughterLeft() == *neighbor ||
             this->GetDaughterRight() == *neighbor ||
-            this->GetMother() == bdm_static_cast<const NeuriteElement*>(neighbor)->GetMother() ||
+            this->GetMother() ==
+                bdm_static_cast<const NeuriteElement*>(neighbor)->GetMother() ||
             (this->GetMother() == *neighbor)) {
           return;
         }
@@ -822,7 +824,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     if (diameter > diameter_) {
       Base::SetRunDisplacementForAllNextTs();
     }
-    diameter_ = diameter;;
+    diameter_ = diameter;
+    ;
   }
 
   /// Recomputes volume, after diameter has been changed.
@@ -971,7 +974,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// Should not be used, since the actual length depends on the geometry.
   void SetActualLength(double actual_length) {
-    if(actual_length > actual_length_) {
+    if (actual_length > actual_length_) {
       SetRunDisplacementForAllNextTs();
     }
     actual_length_ = actual_length;

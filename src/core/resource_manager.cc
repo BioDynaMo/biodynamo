@@ -230,7 +230,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
     this->uid_soh_map_[so->GetUid()] = soh;
   });
 
-  if(Simulation::GetActive()->GetParam()->debug_numa_) {
+  if (Simulation::GetActive()->GetParam()->debug_numa_) {
     DebugNuma();
   }
 }
@@ -238,8 +238,9 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 void ResourceManager::DebugNuma() const {
   std::cout << "ResourceManager size of sim object containers\n" << std::endl;
   uint64_t cnt = 0;
-  for(auto& numa_sos : sim_objects_) {
-    std::cout << "  numa node " << cnt++ << " size " << numa_sos.size() << std::endl;
+  for (auto& numa_sos : sim_objects_) {
+    std::cout << "  numa node " << cnt++ << " size " << numa_sos.size()
+              << std::endl;
   }
 }
 

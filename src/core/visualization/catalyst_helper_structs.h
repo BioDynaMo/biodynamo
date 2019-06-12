@@ -19,8 +19,8 @@
 // detail when using ROOT I/O
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
-#include <string>
 #include <set>
+#include <string>
 #include <unordered_map>
 #include "core/shape.h"
 #include "core/sim_object/sim_object.h"
@@ -28,9 +28,9 @@
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkDoubleArray.h>
+#include <vtkImageData.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
-#include <vtkImageData.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkStringArray.h>
@@ -50,7 +50,8 @@ struct VtkDataArrayWrapper {
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
 /// `CatalystAdaptor` to visualize simulation objects.
 struct VtkSoGrid {
-  VtkSoGrid(const char* type_name, vtkNew<vtkCPDataDescription>& data_description) {
+  VtkSoGrid(const char* type_name,
+            vtkNew<vtkCPDataDescription>& data_description) {
     data_ = vtkUnstructuredGrid::New();
     name_ = type_name;
     data_description->AddInput(type_name);
@@ -88,14 +89,15 @@ struct VtkSoGrid {
 /// Adds additional data members to the `vtkImageData` required by
 /// `CatalystAdaptor` to visualize diffusion grid.
 struct VtkDiffusionGrid {
-  VtkDiffusionGrid(const std::string& name, vtkNew<vtkCPDataDescription>& data_description) {
+  VtkDiffusionGrid(const std::string& name,
+                   vtkNew<vtkCPDataDescription>& data_description) {
     data_ = vtkImageData::New();
     name_ = name;
 
     // get visualization config
     auto* param = Simulation::GetActive()->GetParam();
     const Param::VisualizeDiffusion* vd = nullptr;
-    for(auto& entry : param->visualize_diffusion_) {
+    for (auto& entry : param->visualize_diffusion_) {
       if (entry.name_ == name) {
         vd = &entry;
         break;
@@ -129,9 +131,7 @@ struct VtkDiffusionGrid {
     gradient_ = nullptr;
   }
 
-  void Init() {
-    used_ = true;
-  }
+  void Init() { used_ = true; }
 
   bool used_ = false;
   std::string name_;

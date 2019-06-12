@@ -20,7 +20,8 @@
 
 namespace bdm {
 
-InPlaceExecutionContext::InPlaceExecutionContext() : tinfo_(ThreadInfo::GetInstance()) {}
+InPlaceExecutionContext::InPlaceExecutionContext()
+    : tinfo_(ThreadInfo::GetInstance()) {}
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
   for (auto& el : new_sim_objects_) {
@@ -28,12 +29,14 @@ InPlaceExecutionContext::~InPlaceExecutionContext() {
   }
 }
 
-void InPlaceExecutionContext::SetupIterationAll(const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+void InPlaceExecutionContext::SetupIterationAll(
+    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
   // first iteration might have uncommited changes
   TearDownIterationAll(all_exec_ctxts);
 }
 
-void InPlaceExecutionContext::TearDownIterationAll(const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+void InPlaceExecutionContext::TearDownIterationAll(
+    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
   // group execution contexts by numa domain
   std::vector<uint64_t> new_so_per_numa(tinfo_->GetNumaNodes());
   std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
@@ -48,11 +51,11 @@ void InPlaceExecutionContext::TearDownIterationAll(const std::vector<InPlaceExec
   // reserve enough memory in ResourceManager
   std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  for(unsigned n = 0; n < new_so_per_numa.size(); n++) {
+  for (unsigned n = 0; n < new_so_per_numa.size(); n++) {
     numa_offsets[n] = rm->GrowSoContainer(new_so_per_numa[n], n);
   }
 
-  // add new_sim_objects_ to the ResourceManager in parallel
+// add new_sim_objects_ to the ResourceManager in parallel
 #pragma omp parallel for schedule(static, 1)
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
@@ -100,10 +103,10 @@ void InPlaceExecutionContext::push_back(SimObject* new_so) {
 }
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    const std::function<void(const SimObject*)>& lambda, const SimObject& query) {
-
+    const std::function<void(const SimObject*)>& lambda,
+    const SimObject& query) {
   // use values in cache
-  if(neighbor_cache_.size() != 0) {
+  if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
       lambda(pair.first);
     }
@@ -115,10 +118,10 @@ void InPlaceExecutionContext::ForEachNeighbor(
 }
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    const std::function<void(const SimObject*,double)>& lambda, const SimObject& query) {
-
+    const std::function<void(const SimObject*, double)>& lambda,
+    const SimObject& query) {
   // use values in cache
-  if(neighbor_cache_.size() != 0) {
+  if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
       lambda(pair.first, pair.second);
     }
@@ -128,7 +131,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
   auto* param = Simulation::GetActive()->GetParam();
-  auto for_each = [&,this](const SimObject* so, double squared_distance) {
+  auto for_each = [&, this](const SimObject* so, double squared_distance) {
     if (param->cache_neighbors_) {
       this->neighbor_cache_.push_back(make_pair(so, squared_distance));
     }
@@ -140,9 +143,8 @@ void InPlaceExecutionContext::ForEachNeighbor(
 void InPlaceExecutionContext::ForEachNeighborWithinRadius(
     const std::function<void(const SimObject*)>& lambda, const SimObject& query,
     double squared_radius) {
-
   // use values in cache
-  if(neighbor_cache_.size() != 0) {
+  if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
       if (pair.second < squared_radius) {
         lambda(pair.first);
@@ -154,7 +156,7 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
   auto* param = Simulation::GetActive()->GetParam();
-  auto for_each = [&,this](const SimObject* so, double squared_distance) {
+  auto for_each = [&, this](const SimObject* so, double squared_distance) {
     if (param->cache_neighbors_) {
       this->neighbor_cache_.push_back(make_pair(so, squared_distance));
     }
@@ -167,17 +169,23 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
 
 SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
   auto* so = GetCachedSimObject(uid);
-  if (so != nullptr) { return so; }
+  if (so != nullptr) {
+    return so;
+  }
 
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   so = rm->GetSimObject(uid);
-  if (so != nullptr) { return so; }
+  if (so != nullptr) {
+    return so;
+  }
 
   // sim object must be cached in another InPlaceExecutionContext
-  for(auto* ctxt : sim->GetAllExecCtxts()) {
+  for (auto* ctxt : sim->GetAllExecCtxts()) {
     so = ctxt->GetCachedSimObject(uid);
-    if (so != nullptr) { return so; }
+    if (so != nullptr) {
+      return so;
+    }
   }
   return nullptr;
 }

@@ -15,8 +15,8 @@
 #ifndef CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
-#include <functional>
 #include <tbb/concurrent_unordered_map.h>
+#include <functional>
 #include <vector>
 #include "core/sim_object/so_uid.h"
 #include "core/util/thread_info.h"
@@ -50,13 +50,15 @@ class InPlaceExecutionContext {
   /// execution contexts.
   /// This function is not thread-safe.
   /// NB: Invalidates references and pointers to simulation objects.
-  void SetupIterationAll(const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
+  void SetupIterationAll(
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
 
   /// This function is called at the end of each iteration to tear down all
   /// execution contexts.
   /// This function is not thread-safe. \n
   /// NB: Invalidates references and pointers to simulation objects.
-  void TearDownIterationAll(const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
+  void TearDownIterationAll(
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
@@ -65,9 +67,8 @@ class InPlaceExecutionContext {
 
   void push_back(SimObject* new_so);
 
-  void ForEachNeighbor(
-      const std::function<void(const SimObject*)>& lambda,
-      const SimObject& query);
+  void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda,
+                       const SimObject& query);
 
   void ForEachNeighbor(
       const std::function<void(const SimObject*, double)>& lambda,
@@ -103,7 +104,7 @@ class InPlaceExecutionContext {
   /// prevent race conditions for cached SimObjects
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
-  std::vector<std::pair<const SimObject*,double>> neighbor_cache_;
+  std::vector<std::pair<const SimObject*, double>> neighbor_cache_;
 
   SimObject* GetCachedSimObject(SoUid uid);
 };

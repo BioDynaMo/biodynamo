@@ -78,7 +78,8 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(
 }
 
 NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
-                                             double theta, NeuriteElement* prototype) {
+                                             double theta,
+                                             NeuriteElement* prototype) {
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
   NewNeuriteExtensionEvent event(diameter, phi, theta);
   SimObject* neurite = nullptr;

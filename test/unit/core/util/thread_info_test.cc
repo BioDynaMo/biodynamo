@@ -86,7 +86,6 @@ TEST(ThreadInfoTest, Renew) {
   // Reset to previous condition
   omp_set_num_threads(omp_max_threads);
   ThreadInfo::GetInstance()->Renew();
-
 }
 
 }  // namespace bdm

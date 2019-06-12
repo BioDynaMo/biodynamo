@@ -25,10 +25,10 @@
 #include "core/operation/op_timer.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
+#include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/simulation_backup.h"
 #include "core/util/log.h"
-#include "core/scheduler.h"
 #include "core/visualization/catalyst_adaptor.h"
 
 namespace bdm {
@@ -58,8 +58,8 @@ Scheduler::Scheduler() {
     }
   };
 
-  operations_ = {first_op, *bound_space_, biology_module_op, displacement_op,
-                 discretization_op, last_op};
+  operations_ = {first_op,        *bound_space_,     biology_module_op,
+                 displacement_op, discretization_op, last_op};
 }
 
 Scheduler::~Scheduler() {
@@ -107,9 +107,10 @@ void Scheduler::Execute(bool last_iteration) {
   Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
 
   // update all sim objects: run all CPU operations
-  rm->ApplyOnAllElementsParallelDynamic(param->scheduling_batch_size_, [&](SimObject* so, SoHandle) {
-    sim->GetExecutionContext()->Execute(so, operations_);
-  });
+  rm->ApplyOnAllElementsParallelDynamic(
+      param->scheduling_batch_size_, [&](SimObject* so, SoHandle) {
+        sim->GetExecutionContext()->Execute(so, operations_);
+      });
 
   // update all sim objects: hardware accelerated operations
   if (param->run_mechanical_interactions_ && !displacement_->UseCpu()) {

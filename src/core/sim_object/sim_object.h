@@ -41,30 +41,33 @@ namespace bdm {
 #define BDM_SIM_OBJECT_FOREACHDM_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR(data_member)               \
-  if (is_so_ptr<decltype(data_member)>::value) {             \
-    visitor->Visit(#data_member, typeid(uint64_t).hash_code(),            \
-                   static_cast<const void*>(detail::ExtractUidPtr::GetUidPtr(data_member)));      \
-  } else {                                                                \
-  visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
-                 static_cast<const void*>(&data_member));                 \
+#define BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR(data_member)                 \
+  if (is_so_ptr<decltype(data_member)>::value) {                            \
+    visitor->Visit(#data_member, typeid(uint64_t).hash_code(),              \
+                   static_cast<const void*>(                                \
+                       detail::ExtractUidPtr::GetUidPtr(data_member)));     \
+  } else {                                                                  \
+    visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
+                   static_cast<const void*>(&data_member));                 \
   }
 
 #define BDM_SIM_OBJECT_FOREACHDMIN_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR(data_member)                 \
-  {                                                                           \
-    auto it = dm_selector.find(#data_member);                                 \
-    if (it != dm_selector.end()) {                                            \
-      if (is_so_ptr<decltype(data_member)>::value) {             \
-        visitor->Visit(#data_member, typeid(uint64_t).hash_code(),            \
-                       static_cast<const void*>(detail::ExtractUidPtr::GetUidPtr(data_member)));      \
-      } else {                                                                \
-      visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
-                     static_cast<const void*>(&data_member));                 \
-      }                                                                       \
-    }                                                                         \
+#define BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR(data_member)               \
+  {                                                                         \
+    auto it = dm_selector.find(#data_member);                               \
+    if (it != dm_selector.end()) {                                          \
+      if (is_so_ptr<decltype(data_member)>::value) {                        \
+        visitor->Visit(#data_member, typeid(uint64_t).hash_code(),          \
+                       static_cast<const void*>(                            \
+                           detail::ExtractUidPtr::GetUidPtr(data_member))); \
+      } else {                                                              \
+        visitor->Visit(#data_member,                                        \
+                       typeid(decltype(data_member)).hash_code(),           \
+                       static_cast<const void*>(&data_member));             \
+      }                                                                     \
+    }                                                                       \
   }
 
 /// Macro to insert required boilerplate code into simulation object
@@ -91,7 +94,7 @@ namespace bdm {
   /** Create a copy of this object. */                                       \
   SimObject* GetCopy() const override { return new class_name(*this); }      \
                                                                              \
-  const char* GetTypeName() const override {  return #class_name; }          \
+  const char* GetTypeName() const override { return #class_name; }           \
                                                                              \
   /** Executes the given function for all data members             */        \
   void ForEachDataMember(SoVisitor* visitor) const override {                \
@@ -123,7 +126,6 @@ struct BaseBiologyModule;
 /// Contains code required by all simulation objects
 class SimObject {
  public:
-
   SimObject();
 
   SimObject(const Event& event, SimObject* other, uint64_t new_oid = 0);
@@ -158,7 +160,7 @@ class SimObject {
   /// Create a copy of this object.
   virtual SimObject* GetCopy() const = 0;
 
-  virtual const char* GetTypeName() const {  return "SimObject"; }
+  virtual const char* GetTypeName() const { return "SimObject"; }
 
   virtual Shape GetShape() const = 0;
 
@@ -260,9 +262,9 @@ class SimObject {
   /// `RunBiologyModules` iterates over them.
   uint32_t run_bm_loop_idx_ = 0;
 
-  bool run_displacement_ = true;  //!
-  bool run_displacement_for_all_next_ts_= false;  //!
-  mutable bool run_displacement_next_ts_ = true;  //!
+  bool run_displacement_ = true;                   //!
+  bool run_displacement_for_all_next_ts_ = false;  //!
+  mutable bool run_displacement_next_ts_ = true;   //!
 
   /// @brief Function to copy biology modules from one structure to another
   /// @param event event will be passed on to biology module to determine

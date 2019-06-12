@@ -39,7 +39,7 @@ class DisplacementOpCpu {
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
 
-    if(!sim_object->RunDisplacement()) {
+    if (!sim_object->RunDisplacement()) {
       return;
     }
 

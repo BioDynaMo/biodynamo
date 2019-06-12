@@ -44,7 +44,10 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// \see CellDivisionEvent
   NeuronSoma(const Event& event, SimObject* mother_so, uint64_t new_oid = 0);
 
-  NeuronSoma(const NeuronSoma& other) : Base(other), daughters_(other.daughters_), daughters_coord_(other.daughters_coord_) {}
+  NeuronSoma(const NeuronSoma& other)
+      : Base(other),
+        daughters_(other.daughters_),
+        daughters_coord_(other.daughters_coord_) {}
 
   /// \brief EventHandler to modify the data members of this cell
   /// after a cell division, or new neurite branching event
@@ -66,12 +69,14 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   ///
   /// Uses default diameter for new neurite
   /// \see NewNeuriteExtensionEvent
-  NeuriteElement* ExtendNewNeurite(const std::array<double, 3>& direction, NeuriteElement* prototype = nullptr);
+  NeuriteElement* ExtendNewNeurite(const std::array<double, 3>& direction,
+                                   NeuriteElement* prototype = nullptr);
 
   /// \brief Extend a new neurite from this soma.
   ///
   /// \see NewNeuriteExtensionEvent
-  NeuriteElement* ExtendNewNeurite(double diameter, double phi, double theta, NeuriteElement* prototype = nullptr);
+  NeuriteElement* ExtendNewNeurite(double diameter, double phi, double theta,
+                                   NeuriteElement* prototype = nullptr);
 
   void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) override;
 
