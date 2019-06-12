@@ -446,19 +446,19 @@ class DiffusionGrid {
             /* X axis */
             if ( x == 0){
             cm = c + 1;}
-            else if ( x == nx - 2){
+            else if ( x == nx - 1){
             cp = c - 1;}
 
             /* Y axis */
             if (y == 0){
             n = s;
-            } else if (y == ny - 2){
+            } else if (y == ny - 1){
             s = n;}
 
             /* Z axis */
             if (z == 0){
             b = t;
-            } else if ( z == nz  - 2) {
+            } else if ( z == nz  - 1) {
             t = b;}
 
             c2_[c] = (c1_[c] +
