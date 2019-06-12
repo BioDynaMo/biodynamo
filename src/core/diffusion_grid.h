@@ -434,7 +434,7 @@ class DiffusionGrid {
           int c, cp, cm, n, s, b, t;
           c = x + y * nx + z * nx * ny;
 #pragma omp simd
-          for (x = 1; x < nx - 1; x++) {
+          for (x = 0; x < nx - 1; x++) {
             ++c;
             ++n;
             ++s;
@@ -442,8 +442,7 @@ class DiffusionGrid {
             ++t;
 /* if ( y==0 || y== ny-1 || z==0 || z=nz-1 ){
           continue;
-          }*/
-            //TODO (Jack) This is to be used in the case of an insulated box for Thermo and is a WIP.
+          } THIS IS THE OLD WAY THE BOUNDRIES WHERE BEING HANDLED*/
 
             cm = c - 1;
             cp = c + 1;
