@@ -42,18 +42,8 @@ matrix:
     - os: osx
       env: SCRIPT="util/travis-ci/installation-test.sh osx"
 
-before_install:
- - |
-  # workaround for https://github.com/travis-ci/travis-ci/issues/6307
-  # taken from https://github.com/libproxy/libproxy/commit/e6591b251ad42a207bcc752a53fdf2e2981c7bad#diff-354f30a63fb0907d4ad57269548329e3R16
-  # remove once fixed
-  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    command curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-    command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
-    rvm get stable
-  fi
-
 script:
+  - shell_session_update() { :; };
   - $SCRIPT
 
 services:
