@@ -28,6 +28,7 @@
 #include "core/biology_module/biology_module.h"
 #include "core/event/event.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
+#include "core/grid.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/so_uid.h"
 #include "core/simulation.h"
@@ -35,7 +36,6 @@
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
-#include "core/grid.h"
 
 namespace bdm {
 
@@ -53,9 +53,11 @@ SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid)
 SimObject::SimObject(TRootIOCtor* io_ctor) {}
 
 SimObject::SimObject(const SimObject& other)
-    : uid_(other.uid_), box_idx_(other.box_idx_),
+    : uid_(other.uid_),
+      box_idx_(other.box_idx_),
       run_bm_loop_idx_(other.run_bm_loop_idx_),
-      run_displacement_for_all_next_ts_(other.run_displacement_for_all_next_ts_),
+      run_displacement_for_all_next_ts_(
+          other.run_displacement_for_all_next_ts_),
       run_displacement_next_ts_(other.run_displacement_next_ts_) {
   for (auto* module : other.biology_modules_) {
     biology_modules_.push_back(module->GetCopy());
@@ -80,19 +82,19 @@ void SimObject::ApplyRunDisplacementForAllNextTs() {
   run_displacement_for_all_next_ts_ = false;
   run_displacement_next_ts_ = true;
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-  ctxt->ForEachNeighbor([this](const SimObject* neighbor, double squared_distance){
-    double distance = this->GetDiameter() + neighbor->GetDiameter();
-    if(squared_distance < distance * distance) {
-      neighbor->SetRunDisplacementNextTimestep(true);
-    }
-  }, *this);
+  ctxt->ForEachNeighbor(
+      [this](const SimObject* neighbor, double squared_distance) {
+        double distance = this->GetDiameter() + neighbor->GetDiameter();
+        if (squared_distance < distance * distance) {
+          neighbor->SetRunDisplacementNextTimestep(true);
+        }
+      },
+      *this);
 }
 
 void SimObject::RunDiscretization() {}
 
-void SimObject::AssignNewUid() {
-  uid_ = SoUidGenerator::Get()->NewSoUid();
-}
+void SimObject::AssignNewUid() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
 
 SoUid SimObject::GetUid() const { return uid_; }
 

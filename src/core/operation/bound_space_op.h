@@ -36,7 +36,7 @@ inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
       updated = true;
     }
   }
-  if(updated) {
+  if (updated) {
     sim_object->SetPosition(pos);
   }
 }

@@ -15,8 +15,8 @@
 #ifndef CORE_UTIL_TYPE_H_
 #define CORE_UTIL_TYPE_H_
 
-#include <typeinfo>
 #include <type_traits>
+#include <typeinfo>
 #include "core/shape.h"
 #include "core/util/string.h"
 
@@ -45,7 +45,9 @@ using raw_type = std::remove_pointer_t<std::decay_t<T>>;  // NOLINT
 /// safety. The extra safety check will only be performed in Debug mode.
 template <typename TTo, typename TFrom>
 TTo bdm_static_cast(TFrom from) {  // NOLINT
-  assert(dynamic_cast<TTo>(from) && Concat("Could not cast object ", from, " to type ", typeid(TTo).name()).c_str());
+  assert(dynamic_cast<TTo>(from) &&
+         Concat("Could not cast object ", from, " to type ", typeid(TTo).name())
+             .c_str());
   return static_cast<TTo>(from);
 }
 

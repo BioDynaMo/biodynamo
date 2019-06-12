@@ -704,7 +704,9 @@ class DiffusionGrid {
 
   const double* GetAllGradients() const { return gradients_.data(); }
 
-  const std::array<size_t, 3>& GetNumBoxesArray() const { return num_boxes_axis_; }
+  const std::array<size_t, 3>& GetNumBoxesArray() const {
+    return num_boxes_axis_;
+  }
 
   size_t GetNumBoxes() const { return total_num_boxes_; }
 
@@ -718,7 +720,9 @@ class DiffusionGrid {
 
   const int32_t* GetDimensionsPtr() const { return grid_dimensions_.data(); }
 
-  const std::array<int32_t, 6>& GetDimensions() const { return grid_dimensions_; }
+  const std::array<int32_t, 6>& GetDimensions() const {
+    return grid_dimensions_;
+  }
 
   const std::array<double, 7>& GetDiffusionCoefficients() const { return dc_; }
 

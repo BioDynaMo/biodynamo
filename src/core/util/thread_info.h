@@ -98,17 +98,17 @@ class ThreadInfo {
         << "\nnum_numa nodes         " << ti.numa_nodes_;
 
     str << "\nthread to numa mapping ";
-    for(auto& el : ti.thread_numa_mapping_) {
+    for (auto& el : ti.thread_numa_mapping_) {
       str << " " << el;
     }
 
     str << "\nthread id in numa node ";
-    for(auto& el : ti.numa_thread_id_) {
+    for (auto& el : ti.numa_thread_id_) {
       str << " " << el;
     }
 
     str << "\nnum threads per numa   ";
-    for(auto& el : ti.threads_in_numa_) {
+    for (auto& el : ti.threads_in_numa_) {
       str << " " << el;
     }
     str << "\n";

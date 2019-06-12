@@ -143,9 +143,9 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
 
   // performance group
   BDM_ASSIGN_CONFIG_VALUE(scheduling_batch_size_,
-                         "performance.scheduling_batch_size");
+                          "performance.scheduling_batch_size");
   BDM_ASSIGN_CONFIG_VALUE(detect_static_sim_objects_,
-                         "performance.detect_static_sim_objects");
+                          "performance.detect_static_sim_objects");
   BDM_ASSIGN_CONFIG_VALUE(cache_neighbors_, "performance.cache_neighbors");
 
   // development group

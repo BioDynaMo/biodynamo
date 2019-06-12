@@ -84,7 +84,8 @@ class InSituPipeline : public vtkCPPipeline {
     controller_->Delete();
   }
 
-  void Initialize(const std::unordered_map<std::string, VtkSoGrid*>& vtk_so_grids) {
+  void Initialize(
+      const std::unordered_map<std::string, VtkSoGrid*>& vtk_so_grids) {
     vtk_so_grids_ = vtk_so_grids;
     initialized_ = true;
   }

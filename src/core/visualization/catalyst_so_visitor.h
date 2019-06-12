@@ -19,10 +19,10 @@
 // detail when using ROOT I/O
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
-#include "core/visualization/catalyst_helper_structs.h"
+#include "core/scheduler.h"
 #include "core/sim_object/so_visitor.h"
 #include "core/simulation.h"
-#include "core/scheduler.h"
+#include "core/visualization/catalyst_helper_structs.h"
 
 namespace bdm {
 
@@ -88,7 +88,8 @@ class CatalystSoVisitor : public SoVisitor {
   VtkSoGrid* so_grid_;
 
   template <typename TDataArray>
-  TDataArray* GetDataArray(const std::string& dm_name, int components = 1) const {
+  TDataArray* GetDataArray(const std::string& dm_name,
+                           int components = 1) const {
     TDataArray* vtk_array = nullptr;
     auto& data_arrays = so_grid_->data_arrays_;
     auto search = data_arrays.find(dm_name);

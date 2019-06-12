@@ -46,8 +46,10 @@ TEST(SoPointerTest, Basics) {
 }
 
 TEST(IsSoPtrTest, All) {
-  static_assert(!is_so_ptr<TestSimObject>::value, "TestSimObject is not a SoPointer");
-  static_assert(is_so_ptr<SoPointer<TestSimObject>>::value, "SoPointer<TestSimObject> is a SoPointer");
+  static_assert(!is_so_ptr<TestSimObject>::value,
+                "TestSimObject is not a SoPointer");
+  static_assert(is_so_ptr<SoPointer<TestSimObject>>::value,
+                "SoPointer<TestSimObject> is a SoPointer");
 }
 
 #ifdef USE_DICT

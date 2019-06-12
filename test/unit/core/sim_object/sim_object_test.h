@@ -46,7 +46,9 @@ struct GrowthModule : public BaseBiologyModule {
                                  uint64_t new_oid = 0) const override {
     return new GrowthModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const override { return new GrowthModule(*this); }
+  BaseBiologyModule* GetCopy() const override {
+    return new GrowthModule(*this);
+  }
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)
@@ -88,7 +90,9 @@ struct MovementModule : public BaseBiologyModule {
                                  uint64_t new_oid = 0) const override {
     return new MovementModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const override { return new MovementModule(*this); }
+  BaseBiologyModule* GetCopy() const override {
+    return new MovementModule(*this);
+  }
 
   /// Default event handler
   void EventHandler(const Event& event, BaseBiologyModule* other1,
@@ -115,7 +119,9 @@ struct RemoveModule : public BaseBiologyModule {
                                  uint64_t new_oid = 0) const override {
     return new RemoveModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const override { return new RemoveModule(*this); }
+  BaseBiologyModule* GetCopy() const override {
+    return new RemoveModule(*this);
+  }
 
   void Run(SimObject* sim_object) override {
     sim_object->RemoveBiologyModule(this);
