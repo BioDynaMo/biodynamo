@@ -17,10 +17,7 @@
 namespace bdm {
 namespace dividing_cell_op_test_internal {
 
-// ComputeAos test is in different binary, because it requires different compile
-// time parameter (separate_binary/dividing_cell_op_aos_test.cc)
-
-TEST(DividingCellOpTest, ComputeSoa) { RunTest(); }
+TEST(DividingCellOpTest, Compute) { RunTest(); }
 
 }  // namespace dividing_cell_op_test_internal
 }  // namespace bdm

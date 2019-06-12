@@ -22,8 +22,6 @@
 
 namespace bdm {
 
-using std::is_same;  // FIXME remove
-
 /// Type trait which defines a ternary operator for types which can be evaluated
 /// at compile time
 template <bool Condition, typename T, typename U>

@@ -57,7 +57,6 @@
 namespace bdm {
 
 /// The class that bridges the simulation code with ParaView.
-/// Requires that simulation objects use the Soa memory layout.
 class CatalystAdaptor {
  public:
   /// Initializes Catalyst with the predefined pipeline and allocates memory

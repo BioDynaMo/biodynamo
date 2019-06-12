@@ -22,7 +22,6 @@ namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
-// clang-format off
 /// \brief This event splits the current neurite element into two elements
 /// and adds a new side branch as daughter right at the proximal half.
 ///
@@ -30,13 +29,6 @@ namespace neuroscience {
 /// SideNeuriteExtensionEvent. The parameter names must be compatible to the
 /// two mentioned events to enable code reuse.
 /// (This event creates **two** new neurite elements.)
-///
-/// Here is the constructor to create a new proximal neurite, or side branch
-/// for this event
-/// NeuriteElementExt::NeuriteElementExt(const NeuriteBranchingEvent& event, TNeuriteElement* mother, uint64_t new_oid)
-/// , and the corresponding event handler
-/// NeuriteElementExt::EventHandler(const NeuriteBranchingEvent& event, TDaughter* left, TDaughter* right)
-// clang-format on
 struct NeuriteBranchingEvent : public Event {
   static const EventId kEventId;
 

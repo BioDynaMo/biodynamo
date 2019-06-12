@@ -92,7 +92,7 @@ struct BaseBiologyModule {
              uint64_t new_oid = 0)                                             \
       : base_class(event, other, new_oid) {}                                   \
                                                                                \
-  /** Event handler not needed, because Chemotaxis does not have state. */     \
+  /** Event handler not needed, because this module does not have state. */    \
                                                                                \
   /** Create a new instance of this object using the default constructor. */   \
   BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, \

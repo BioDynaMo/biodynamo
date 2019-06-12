@@ -40,9 +40,6 @@ class DisplacementOpCpu {
     auto* param = sim->GetParam();
 
     if(!sim_object->RunDisplacement()) {
-      // FIXME
-      // static int cnt = 0;
-      // std::cout << "skipped " << cnt++ << std::endl;
       return;
     }
 

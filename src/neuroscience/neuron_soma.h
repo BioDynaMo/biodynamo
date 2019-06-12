@@ -35,23 +35,6 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 
   explicit NeuronSoma(const std::array<double, 3>& position);
 
-  // FIXME
-  // Shape GetShape() const override { return Cell::GetShape(); };
-  // void RunDiscretization() override { Cell::RunDiscretization(); }
-  // const std::array<double, 3>& GetPosition() const override { return
-  // Cell::GetPosition(); }
-  // void SetPosition(const std::array<double, 3>& pos) override {
-  // Cell::SetPosition(pos); }
-  // void ApplyDisplacement(const std::array<double, 3>& disp) override {
-  // Cell::ApplyDisplacement(disp); }
-  // std::array<double, 3> CalculateDisplacement(double squared_radius) override
-  // {
-  //   return Cell::CalculateDisplacement(squared_radius);
-  // }
-  // double GetDiameter() const override { return Cell::GetDiameter(); }
-  // void SetDiameter(const double diameter) override {
-  // Cell::SetDiameter(diameter); }
-
   /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.
   ///
