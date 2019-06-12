@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_MODULE_PARAM_PARAM_H_
-#define CORE_MODULE_PARAM_PARAM_H_
+#ifndef CORE_PARAM_MODULE_PARAM_H_
+#define CORE_PARAM_MODULE_PARAM_H_
 
 #include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
@@ -58,4 +58,4 @@ struct ModuleParam {
 
 }  // namespace bdm
 
-#endif  // CORE_MODULE_PARAM_PARAM_H_
+#endif  // CORE_PARAM_MODULE_PARAM_H_

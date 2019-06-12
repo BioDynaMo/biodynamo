@@ -86,8 +86,7 @@ struct BaseBiologyModule {
 /// Inserts boilerplate code for stateless biology modules
 #define BDM_STATELESS_BM_HEADER(class_name, base_class, class_version_id)      \
  public:                                                                       \
-  /** Empty default event constructor, because Chemotaxis does not have state. \
-   */                                                                          \
+  /** Empty default event constructor, because module does not have state. */  \
   class_name(const Event& event, BaseBiologyModule* other,                     \
              uint64_t new_oid = 0)                                             \
       : base_class(event, other, new_oid) {}                                   \

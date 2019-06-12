@@ -24,7 +24,6 @@
 #include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
 #include "core/simulation.h"
-#include "core/simulation.h"
 #include "core/util/log.h"
 
 namespace bdm {
@@ -74,8 +73,6 @@ void NeuroMLExporter::ExportIteration(std::string filename,
                                       uint64_t iteration) {
   std::ofstream outfile;
   outfile.open(filename);
-
-  auto* rm = Simulation::GetActive()->GetResourceManager();
 
   std::string space1 = "   ";
   std::string space2 = "      ";
@@ -148,9 +145,8 @@ void NeuroMLExporter::ExportIteration(std::string filename,
 
   /// TODO(roman): here, the cell populations and connectivity will be
   /// specified and exported, once these are included in the model
-  rm->ApplyOnAllElements([&](SimObject* so) {
-
-  });
+  // auto* rm = Simulation::GetActive()->GetResourceManager();
+  // rm->ApplyOnAllElements([&](SimObject* so) { });
 
   outfile << std::endl;
   outfile << "</neuroml>" << std::endl;

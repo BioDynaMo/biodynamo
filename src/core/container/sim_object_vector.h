@@ -53,7 +53,7 @@ class SimObjectVector {
   void clear() {  // NOLINT
     for (auto& el : size_) {
       el = 0;
-    };
+    }
     for (auto& vec : data_) {
       vec.clear();
     }

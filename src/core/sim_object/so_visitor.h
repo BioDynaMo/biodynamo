@@ -16,6 +16,7 @@
 #define CORE_SIM_OBJECT_SO_VISITOR_H_
 
 #include <atomic>
+#include <string>
 
 namespace bdm {
 

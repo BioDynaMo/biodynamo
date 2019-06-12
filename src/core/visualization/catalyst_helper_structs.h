@@ -42,7 +42,7 @@ namespace bdm {
 /// It is required to determine when the data array should be reset. (At the
 /// beginning of each iteration)
 struct VtkDataArrayWrapper {
-  VtkDataArrayWrapper(vtkDataArray* data) : data_(data) {}
+  explicit VtkDataArrayWrapper(vtkDataArray* data) : data_(data) {}
   vtkDataArray* data_;
   uint64_t time_step_ = 0;
 };
@@ -51,7 +51,7 @@ struct VtkDataArrayWrapper {
 /// `CatalystAdaptor` to visualize simulation objects.
 struct VtkSoGrid {
   VtkSoGrid(const char* type_name,
-            vtkNew<vtkCPDataDescription>& data_description) {
+            const vtkNew<vtkCPDataDescription>& data_description) {
     data_ = vtkUnstructuredGrid::New();
     name_ = type_name;
     data_description->AddInput(type_name);
@@ -90,7 +90,7 @@ struct VtkSoGrid {
 /// `CatalystAdaptor` to visualize diffusion grid.
 struct VtkDiffusionGrid {
   VtkDiffusionGrid(const std::string& name,
-                   vtkNew<vtkCPDataDescription>& data_description) {
+                   const vtkNew<vtkCPDataDescription>& data_description) {
     data_ = vtkImageData::New();
     name_ = name;
 

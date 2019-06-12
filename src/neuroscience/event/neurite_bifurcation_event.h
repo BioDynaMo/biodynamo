@@ -40,7 +40,7 @@ struct NeuriteBifurcationEvent : public Event {
         direction_left_(direction_l),
         direction_right_(direction_r) {}
 
-  virtual ~NeuriteBifurcationEvent(){};
+  virtual ~NeuriteBifurcationEvent() {}
 
   EventId GetId() const override { return kEventId; }
 

@@ -62,7 +62,7 @@ SimObject::SimObject(const SimObject& other)
   for (auto* module : other.biology_modules_) {
     biology_modules_.push_back(module->GetCopy());
   }
-};
+}
 
 SimObject::~SimObject() {
   for (auto* el : biology_modules_) {

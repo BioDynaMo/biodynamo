@@ -234,7 +234,7 @@ class CatalystAdaptor {
   /// @param      data_description  The data description
   ///
   void CreateVtkObjects(
-      vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
+      const vtkNew<vtkCPDataDescription>& data_description) {  // NOLINT
     BuildSimObjectsVTKStructures(data_description);
     BuildDiffusionGridVTKStructures(data_description);
   }
@@ -244,7 +244,7 @@ class CatalystAdaptor {
 
   // Process a single simulation object
   void ProcessSimObject(const SimObject* so,
-                        vtkNew<vtkCPDataDescription>& data_description) {
+                        const vtkNew<vtkCPDataDescription>& data_description) {
     auto* param = Simulation::GetActive()->GetParam();
     auto so_name = so->GetTypeName();
 
@@ -272,7 +272,7 @@ class CatalystAdaptor {
 
   /// Create the required vtk objects to visualize simulation objects.
   void BuildSimObjectsVTKStructures(
-      vtkNew<vtkCPDataDescription>& data_description) {
+      const vtkNew<vtkCPDataDescription>& data_description) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     rm->ApplyOnAllElements(
@@ -283,8 +283,9 @@ class CatalystAdaptor {
   // diffusion grids
 
   /// Sets the properties of the diffusion VTK grid structures
-  void ProcessDiffusionGrid(const DiffusionGrid* grid,
-                            vtkNew<vtkCPDataDescription>& data_description) {
+  void ProcessDiffusionGrid(
+      const DiffusionGrid* grid,
+      const vtkNew<vtkCPDataDescription>& data_description) {
     auto* param = Simulation::GetActive()->GetParam();
     auto name = grid->GetSubstanceName();
 
@@ -337,7 +338,7 @@ class CatalystAdaptor {
 
   /// Create the required vtk objects to visualize diffusion grids.
   void BuildDiffusionGridVTKStructures(
-      vtkNew<vtkCPDataDescription>& data_description) {
+      const vtkNew<vtkCPDataDescription>& data_description) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* grid) {

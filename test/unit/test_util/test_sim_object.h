@@ -27,7 +27,7 @@ class TestSimObject : public SimObject {
  public:
   TestSimObject() {}
 
-  TestSimObject(int data) : data_(data) {}
+  explicit TestSimObject(int data) : data_(data) {}
 
   explicit TestSimObject(const std::array<double, 3>& pos) : position_{pos} {}
 

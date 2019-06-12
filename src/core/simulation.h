@@ -100,7 +100,7 @@ class Simulation {
   /// Existing scheduler will be deleted! Therefore, pointers to the old
   /// scheduler (obtained with `GetScheduler()`) will be invalidated. \n
   /// Simulation will take ownership of the passed pointer
-  void ReplaceScheduler(Scheduler*);
+  void ReplaceScheduler(Scheduler* scheduler);
 
  private:
   /// Currently active simulation

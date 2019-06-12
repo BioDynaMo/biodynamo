@@ -64,7 +64,6 @@ class UniqueEventIdFactory {
   uint64_t counter_ = 0;
 };
 
-// TODO documentation
 struct Event {
   virtual ~Event() {}
 

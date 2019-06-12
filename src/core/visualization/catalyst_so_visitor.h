@@ -19,6 +19,8 @@
 // detail when using ROOT I/O
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
+#include <string>
+
 #include "core/scheduler.h"
 #include "core/sim_object/so_visitor.h"
 #include "core/simulation.h"
@@ -31,7 +33,7 @@ namespace bdm {
 /// at the beginning of each iteration.
 class CatalystSoVisitor : public SoVisitor {
  public:
-  CatalystSoVisitor(VtkSoGrid* so_grid) : so_grid_(so_grid) {}
+  explicit CatalystSoVisitor(VtkSoGrid* so_grid) : so_grid_(so_grid) {}
   virtual ~CatalystSoVisitor() {}
 
   void Visit(const std::string& dm_name, size_t type_hash_code,

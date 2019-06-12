@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "neuroscience/module.h"
 #include "core/param/param.h"
 #include "neuroscience/param.h"
 
