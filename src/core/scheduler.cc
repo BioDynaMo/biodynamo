@@ -25,7 +25,6 @@
 #include "core/operation/op_timer.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
-#include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/simulation_backup.h"
 #include "core/util/log.h"

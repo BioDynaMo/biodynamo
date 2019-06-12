@@ -93,16 +93,16 @@ class SoPointer {
     return str;
   }
 
-  // TODO add test
+  // TODO(lukas) add test
   TSimObject& operator*() { return *(this->operator->()); }
 
-  // TODO add test
+  // TODO(lukas) add test
   const TSimObject& operator*() const { return *(this->operator->()); }
 
-  // TODO add test
+  // TODO(lukas) add test
   TSimObject* Get() { return this->operator->(); }
 
-  // TODO add test
+  // TODO(lukas) add test
   const TSimObject* Get() const { return this->operator->(); }
 
  private:

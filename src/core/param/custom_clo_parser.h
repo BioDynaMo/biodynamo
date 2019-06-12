@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_MODULE_PARAM_CUSTOM_CLO_PARSER_H_
-#define CORE_MODULE_PARAM_CUSTOM_CLO_PARSER_H_
+#ifndef CORE_PARAM_CUSTOM_CLO_PARSER_H_
+#define CORE_PARAM_CUSTOM_CLO_PARSER_H_
 
 #include <sstream>
 #include <stdexcept>
@@ -57,4 +57,4 @@ struct CustomCLOParser {
 
 }  // namespace bdm
 
-#endif  // CORE_MODULE_PARAM_CUSTOM_CLO_PARSER_H_
+#endif  // CORE_PARAM_CUSTOM_CLO_PARSER_H_

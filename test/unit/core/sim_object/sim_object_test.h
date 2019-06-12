@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_CORE_SIM_OBJECT_TEST_H_
-#define UNIT_CORE_SIM_OBJECT_TEST_H_
+#ifndef UNIT_CORE_SIM_OBJECT_SIM_OBJECT_TEST_H_
+#define UNIT_CORE_SIM_OBJECT_SIM_OBJECT_TEST_H_
 
 #include <gtest/gtest.h>
 #include "core/biology_module/biology_module.h"
@@ -133,4 +133,4 @@ struct RemoveModule : public BaseBiologyModule {
 }  // namespace sim_object_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_CORE_SIM_OBJECT_TEST_H_
+#endif  // UNIT_CORE_SIM_OBJECT_SIM_OBJECT_TEST_H_

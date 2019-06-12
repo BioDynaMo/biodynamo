@@ -13,10 +13,10 @@
 // //
 // //
 // -----------------------------------------------------------------------------
-//
-// #ifndef CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
-// #define CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
-//
+
+#ifndef CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
+#define CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
+
 // #include <vector>
 //
 // #ifdef USE_OPENCL
@@ -202,5 +202,5 @@
 // };
 //
 // }  // namespace bdm
-//
-// #endif  // CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
+
+#endif  // CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_

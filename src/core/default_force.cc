@@ -14,9 +14,9 @@
 
 #include "core/default_force.h"
 
+#include <algorithm>
 #include <cmath>
 
-#include "core/shape.h"
 #include "core/shape.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"

@@ -12,6 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/simulation.h"
+
 #include <cpptoml/cpptoml.h>
 #include <omp.h>
 #include <algorithm>

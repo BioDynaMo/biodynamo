@@ -13,10 +13,10 @@
 // //
 // //
 // -----------------------------------------------------------------------------
-//
-// #ifndef CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
-// #define CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
-//
+
+#ifndef CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
+#define CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
+
 // #include <vector>
 //
 // #include "core/gpu/displacement_op_cuda_kernel.h"
@@ -143,5 +143,5 @@
 // };
 //
 // }  // namespace bdm
-//
-// #endif  // CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
+
+#endif  // CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_

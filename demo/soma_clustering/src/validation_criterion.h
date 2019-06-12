@@ -15,6 +15,7 @@
 #ifndef VALIDATION_CRITERION_H_
 #define VALIDATION_CRITERION_H_
 
+#include <vector>
 #include "biodynamo.h"
 #include "my_cell.h"
 

@@ -23,7 +23,7 @@ const ModuleParamUid Param::kUid = ModuleParamUidGenerator::Get()->NewUid();
 
 ModuleParam* Param::GetCopy() const { return new Param(*this); }
 
-ModuleParamUid Param::GetUid() const { return kUid; };
+ModuleParamUid Param::GetUid() const { return kUid; }
 
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(neurite_default_actual_length_,

@@ -164,8 +164,6 @@ TEST(CellTest, DivideVolumeRatioAxis) {
   EXPECT_NEAR(cell.captured_theta_, 0.72664234068172562, kEpsilon);
 }
 
-// TODO move all biology module tests to sim_object tests
-
 #ifdef USE_DICT
 TEST(CellTest, IO) { RunIOTest(); }
 #endif  // USE_DICT

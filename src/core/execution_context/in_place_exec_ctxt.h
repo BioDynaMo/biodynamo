@@ -17,6 +17,7 @@
 
 #include <tbb/concurrent_unordered_map.h>
 #include <functional>
+#include <utility>
 #include <vector>
 #include "core/sim_object/so_uid.h"
 #include "core/util/thread_info.h"

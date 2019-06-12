@@ -122,7 +122,6 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     }
   }
 
-  // TODO
   void EventHandler(const Event& event, SimObject* other1,
                     SimObject* other2 = nullptr) override {
     Base::EventHandler(event, other1, other2);
@@ -825,7 +824,6 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       Base::SetRunDisplacementForAllNextTs();
     }
     diameter_ = diameter;
-    ;
   }
 
   /// Recomputes volume, after diameter has been changed.

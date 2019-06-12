@@ -39,7 +39,7 @@ struct NeuriteBranchingEvent : public Event {
         diameter_(diameter),
         direction_(direction) {}
 
-  virtual ~NeuriteBranchingEvent(){};
+  virtual ~NeuriteBranchingEvent() {}
 
   EventId GetId() const override { return kEventId; }
 

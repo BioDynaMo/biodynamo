@@ -31,7 +31,7 @@ struct NewNeuriteExtensionEvent : public Event {
   NewNeuriteExtensionEvent(double diameter, double phi, double theta)
       : diameter_(diameter), phi_(phi), theta_(theta) {}
 
-  virtual ~NewNeuriteExtensionEvent(){};
+  virtual ~NewNeuriteExtensionEvent() {}
 
   EventId GetId() const override { return kEventId; }
 
