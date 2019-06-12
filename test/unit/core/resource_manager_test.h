@@ -104,7 +104,7 @@ inline void RunGetNumSimObjects() {
   EXPECT_EQ(5u, rm.GetNumSimObjects());
 }
 
-// This test uses Cells since SoaA, SoaB are strippted down simulatio objects
+// This test uses Cells since A, and B are strippted down simulation objects
 // and are themselves not thread safe.
 inline void RunApplyOnAllElementsParallelTest() {
   ResourceManager rm;

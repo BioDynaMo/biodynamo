@@ -37,7 +37,7 @@ namespace bdm {
 class DisplacementOp {
  public:
   DisplacementOp() {
-    // FIXME check if there are non spherical shapes is not possible in the
+    // NB: check if there are non spherical shapes is not easily possible in the
     // dynamic solution.
   }
 

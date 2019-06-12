@@ -106,18 +106,9 @@ class SoHandle {
   BDM_CLASS_DEF_NV(SoHandle, 1);
 };
 
-/// ResourceManager holds a container for each atomic type in the simulation.
-/// It provides methods to get a certain container, execute a function on a
-/// a certain element, all elements of a certain type or all elements inside
-/// the ResourceManager. Elements are uniquely identified with its SoHandle.
-/// Furthermore, the types specified in SimObjectTypes are backend invariant
-/// Hence it doesn't matter which version of the Backend is specified.
-/// ResourceManager internally uses the TBackendWrapper parameter to convert
-/// all SimObjectTypes to the desired backend.
-/// This makes user code easier since SimObjectTypes can be specified as
-/// scalars.
-/// @tparam TCompileTimeParam type that containes the compile time parameter for
-/// a specific simulation. ResourceManager extracts Backend and SimObjectTypes.
+/// ResourceManager stores simulation objects and diffusion grids and provides
+/// methods to add, remove, and access them. Sim objects are uniquely identified
+/// by their SoUid, and SoHandle. A SoHandle might change during the simulation.
 class ResourceManager {
  public:
   explicit ResourceManager(TRootIOCtor* r) {}
@@ -133,7 +124,6 @@ class ResourceManager {
     sim_objects_.resize(numa_num_configured_nodes());
   }
 
-  /// Free the memory that was reserved for the diffusion grids
   virtual ~ResourceManager() {
     for (auto& el : diffusion_grids_) {
       delete el.second;
@@ -263,8 +253,8 @@ class ResourceManager {
   /// Apply a function on all elements in every container
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllElements([](auto&& element) {
-  ///                              std::cout << element << std::endl;
+  ///     rm->ApplyOnAllElements([](SimObject* element) {
+  ///                              std::cout << *element << std::endl;
   ///                          });
   void ApplyOnAllElements(const std::function<void(SimObject*)>& function) {
     for (auto& numa_sos : sim_objects_) {
@@ -290,14 +280,6 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   void ApplyOnAllElementsParallel(
       const std::function<void(SimObject*)>& function);
-  // {
-  //   for (auto& numa_sos : sim_objects_) {
-  //     #pragma omp parallel for
-  //     for(uint64_t i = 0; i < numa_sos.size(); ++i) {
-  //       function(numa_sos[i]);
-  //     }
-  //   }
-  // }
 
   /// Apply a function on all elements.\n
   /// Function invocations are parallelized.\n
@@ -309,15 +291,6 @@ class ResourceManager {
   void ApplyOnAllElementsParallelDynamic(
       uint64_t chunk,
       const std::function<void(SimObject*, SoHandle)>& function);
-  //  {
-  //   for(uint64_t n = 0; n < sim_objects_.size(); ++n) {
-  //     auto& numa_sos = sim_objects_[n];
-  //     #pragma omp parallel for schedule(dynamic, chunk)
-  //     for(uint64_t i = 0; i < numa_sos.size(); ++i) {
-  //       function(numa_sos[i], SoHandle(n, i));
-  //     }
-  //   }
-  // }
 
   /// Reserves enough memory to hold `capacity` number of simulation objects for
   /// each numa domain.
@@ -414,6 +387,8 @@ class ResourceManager {
       }
     }
   }
+
+ private:
 
 #ifdef USE_OPENCL
   cl::Context* GetOpenCLContext() { return &opencl_context_; }

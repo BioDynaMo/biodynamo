@@ -19,7 +19,7 @@
 
 namespace bdm {
 
-// TODO documentation
+// Interface for simulation object visitors.
 struct SoVisitor {
   virtual ~SoVisitor() {}
   virtual void Visit(const std::string& name, size_t type_hash_code,

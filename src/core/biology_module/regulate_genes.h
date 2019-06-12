@@ -28,10 +28,10 @@ namespace bdm {
 
 /// This module simulates expression of genes and contains all required
 /// additional variables for tracking of the concentration of proteins.
-/// Thus, can work with any type of simulation object.
+/// Thus, it can work with any type of simulation object.
 /// It has the implementation of Euler and Runge-Kutta numerical methods
 /// for solving ODE. Both methods implemented inside the body of method Run().
-///  The user determines which method is picked in particular simulation
+/// The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver_`.
 struct RegulateGenes : public BaseBiologyModule {
   RegulateGenes() : BaseBiologyModule(gAllEventIds) {}

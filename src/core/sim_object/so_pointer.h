@@ -28,17 +28,14 @@ namespace bdm {
 
 class SimObject;
 
-/// Simulation object pointer. Required to point into simulation objects with
-/// `Soa` backend. `SoaRef` has the drawback that its size depends on the number
-/// of data members. Benefit compared to SoHandle is, that the compiler knows
+/// Simulation object pointer. Required to point to a simulation object with
+/// throughout the whole simulation. Raw pointers cannot be used, because
+/// a sim object might be copied to a different NUMA domain, or if it resides
+/// on a different address space in case of a distributed runtime.
+/// Benefit compared to SoHandle is, that the compiler knows
 /// the type returned by `Get` and can therefore inline the code from the callee
-/// and perform optimizations
-/// @tparam TSoSimBackend simulation object type with simulation backend
-/// @tparam TBackend backend - required to avoid extracting it from
-///         TSoSimBackend which would result in "incomplete type errors" in
-///         certain cases.
-/// NB: ROOT IO only supports `so_container_` that point into the
-/// `ResourceManager`. Separate containers will not be serialized correctly!
+/// and perform optimizations.
+/// @tparam TSimObject simulation object type
 template <typename TSimObject>
 class SoPointer {
  public:

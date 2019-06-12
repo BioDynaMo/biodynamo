@@ -65,55 +65,7 @@ class NeuronOrNeurite {
 
   bool IsNeuriteElement() const;
 
-  //  template <typename T>
-  //  SoPointer<T> GetSoPtr1() const {
-  //    if(auto* neuron = As<NeuronSoma>()) { return neuron->template
-  //    GetSoPtr<T>(); }
-  //    else if(auto* neurite = As<NeuriteElement>()) { return neurite->template
-  //    GetSoPtr<T>(); }
-  //  }
-
-  // FIXME
-  // const TNeuronSomaSoPtr& GetNeuronSomaSoPtr() const { return neuron_ptr_; }
-  //
-  // const TNeuriteElementSoPtr& GetNeuriteElementSoPtr() const {
-  //   return neurite_ptr_;
-  // }
-  //
-  // TNeuronSomaSoPtr& GetNeuronSomaSoPtr() { return neuron_ptr_; }
-  //
-  // TNeuriteElementSoPtr& GetNeuriteElementSoPtr() { return neurite_ptr_; }
-
-  // bool IsNeuronSoma() const { return neuron_ptr_ != nullptr; }
-  // bool IsNeuriteElement() const { return neurite_ptr_ != nullptr; }
-
-  // virtual const std::array<double, 3>& GetPosition() const = 0;
-
   virtual std::array<double, 3> OriginOf(SoUid daughter_uid) const = 0;
-
-  // virtual NeuronOrNeurite* GetMother() = 0;
-
-  // FIXME
-  // auto GetDaughterLeft() -> decltype(
-  //     std::declval<TNeuriteElementSoPtr>()->GetDaughterLeft()) const {
-  //   assert(IsNeuriteElement() &&
-  //          "This function call is only allowed for a NeuriteElement");
-  //   return neurite_ptr_->GetDaughterLeft();
-  // }
-  //
-  // auto GetDaughterRight() -> decltype(
-  //     std::declval<TNeuriteElementSoPtr>()->GetDaughterRight()) const {
-  //   assert(IsNeuriteElement() &&
-  //          "This function call is only allowed for a NeuriteElement");
-  //   return neurite_ptr_->GetDaughterRight();
-  // }
-  //
-  // auto GetRestingLength() -> decltype(
-  //     std::declval<TNeuriteElementSoPtr>()->GetRestingLength()) const {
-  //   assert(IsNeuriteElement() &&
-  //          "This function call is only allowed for a NeuriteElement");
-  //   return neurite_ptr_->GetRestingLength();
-  // }
 
   virtual void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) = 0;
 

@@ -61,7 +61,8 @@ class CatalystSoVisitor : public SoVisitor {
   void Double3(const std::string& dm_name, const void* d) {
     auto& data = *reinterpret_cast<const std::array<double, 3>*>(d);
     auto* vtk_array = GetDouble3Array(dm_name);
-    vtk_array->InsertNextTuple3(data[0], data[1], data[2]);  // TODO ia there a better way?
+    // TODO(lukas, ahmad) is there a better way?
+    vtk_array->InsertNextTuple3(data[0], data[1], data[2]);
   }
 
   void Int(const std::string& dm_name, const void* d) {
@@ -79,7 +80,8 @@ class CatalystSoVisitor : public SoVisitor {
   void Int3(const std::string& dm_name, const void* d) {
     auto& data = *reinterpret_cast<const std::array<int, 3>*>(d);
     auto* vtk_array = GetDataArray<vtkIntArray>(dm_name, 3);
-    vtk_array->InsertNextTuple3(data[0], data[1], data[2]);  // TODO ia there a better way?
+    // TODO(lukas, ahmad) is there a better way?
+    vtk_array->InsertNextTuple3(data[0], data[1], data[2]);
   }
 
  private:

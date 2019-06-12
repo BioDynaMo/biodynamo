@@ -117,9 +117,6 @@ class Grid {
     ///
     /// @param[in]  so       The object's identifier
     /// @param      successors   The successors
-    ///
-    /// @tparam     TSuccessors  Type of successors
-    ///
     void AddObject(SoHandle so, SimObjectVector<SoHandle>* successors) {
       length_++;
       auto old_start = std::atomic_exchange(&start_, so);
@@ -448,10 +445,6 @@ class Grid {
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
-  ///
-  /// @tparam     Lambda  The type of the lambda operation
-  /// @tparam     SO      The type of the simulation object
-  ///
   void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda, const SimObject& query) const {
     auto idx = query.GetBoxIdx();
 
@@ -655,13 +648,11 @@ class Grid {
       std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
     };
 
-    template <typename TTSimulation = Simulation>
     void Update() {
       auto* grid = Simulation::GetActive()->GetGrid();
       mutexes_.resize(grid->GetNumBoxes());
     }
 
-    template <typename TTSimulation = Simulation>
     NeighborMutex GetMutex(uint64_t box_idx) {
       auto* grid = Simulation::GetActive()->GetGrid();
       FixedSizeVector<uint64_t, 27> box_indices;

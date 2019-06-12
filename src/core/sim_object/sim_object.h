@@ -68,7 +68,7 @@ namespace bdm {
   }
 
 /// Macro to insert required boilerplate code into simulation object
-/// @param  class_name scalar class name of the simulation object
+/// @param   class_name scalar class name of the simulation object
 /// @param   base_class scalar class name of the base simulation object
 /// @param   class_version_id required for ROOT I/O (see ROOT BDM_CLASS_DEF
 ///          Macro).
@@ -207,7 +207,6 @@ class SimObject {
   }
 
   bool RunDisplacement() const { return run_displacement_; }
-  // bool RunDisplacement() const { return false; } // FIXME remove
 
   /// Return simulation object pointer
   template <typename TSimObject = SimObject>
@@ -218,8 +217,6 @@ class SimObject {
   // ---------------------------------------------------------------------------
   // Biology modules
   /// Add a biology module to this sim object
-  /// @tparam TBiologyModule type of the biology module. Must be in the set of
-  ///         types specified in `BiologyModules`
   void AddBiologyModule(BaseBiologyModule* module);
 
   /// Remove a biology module from this sim object
@@ -261,8 +258,6 @@ class SimObject {
  private:
   /// Helper variable used to support removal of biology modules while
   /// `RunBiologyModules` iterates over them.
-  /// Due to problems with restoring this member for the SOA data layout, it is
-  /// not ignored for ROOT I/O.
   uint32_t run_bm_loop_idx_ = 0;
 
   bool run_displacement_ = true;  //!
@@ -274,7 +269,6 @@ class SimObject {
   ///        whether it should be copied to destination
   /// @param src  source vector of biology modules
   /// @param dest destination vector of biology modules
-  /// @tparam TBiologyModules std::vector<Variant<[list of biology modules]>>
   void CopyBiologyModules(const Event& event,
                           decltype(biology_modules_) * dest);
 

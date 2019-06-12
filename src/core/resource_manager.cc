@@ -230,10 +230,6 @@ void ResourceManager::SortAndBalanceNumaNodes() {
     this->uid_soh_map_[so->GetUid()] = soh;
   });
 
-  // FIXME
-  // // TODO(lukas) do we need this? we don't change the scheduling anymore
-  // thread_info_->Renew();
-
   if(Simulation::GetActive()->GetParam()->debug_numa_) {
     DebugNuma();
   }

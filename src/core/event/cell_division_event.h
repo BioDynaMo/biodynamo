@@ -27,11 +27,6 @@ namespace bdm {
 /// 2) the new cell becomes the 2nd daughter cell
 ///
 /// The cell that triggers the event is the mother.
-///
-/// Here is the constructor to create a new Cell for this event
-/// CellExt::CellExt(const CellDivisionEvent& event, TMother* mother)
-/// and the corresponding event handler
-/// CellExt::EventHandler(const CellDivisionEvent& event, TDaughter* daughter)
 struct CellDivisionEvent : public Event {
   static const EventId kEventId;
 
