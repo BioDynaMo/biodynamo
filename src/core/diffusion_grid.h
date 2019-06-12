@@ -46,7 +46,7 @@ class DiffusionGrid {
         mu_(mu),
         resolution_(resolution) {}
 
-  virtual ~DiffusionGrid() {}
+  virtual ~DiffusionGrid() {} 
 
   /// @brief      Initializes the grid by calculating the grid dimensions
   ///             and number of boxes along the axis from the input arguments
