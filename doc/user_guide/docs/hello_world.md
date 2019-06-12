@@ -38,23 +38,12 @@ You should see "Simulation completed succesfully" as the output.
 ### Extra: Cell division
 
 Let's make the simulation more interesting by adding a biological behavior to the
-cell: cell division. Open the `src/hello_world.h`
-
-Replace the line starting with `BDM_CTPARAM()` with the following one:
-
-``` C++
-FIXME
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
-};
-```
-Now one needs to add this behaviour to the cell, this can be done by adding the following line to the simulate function after the cell is created.
+cell: cell division. Open the `src/hello_world.h` and add the following line to
+the simulate function after the cell is created.
 
 ``` C++
-cell.AddBiologyModule(new GrowDivide(32, 3000, {gAllEventIds})); // Addidng the biological behaviour to the cell.
+// Add the biological behavior to the cell.
+cell.AddBiologyModule(new GrowDivide(32, 3000, {gAllEventIds}));
 ```
 
 Rebuild and rerun the simulation to have the cell division take effect. visit the

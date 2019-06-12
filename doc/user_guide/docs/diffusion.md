@@ -17,7 +17,7 @@ biodynamo demo diffusion .
 Go into the `diffusion` directory and open the source file `src/diffusion_biology_modules.h` in your favorite editor.
 We can note the following things from its content:
 
-#### 1. List the substances
+#### 1. Substance list
 
 ``` C++
 enum Substances { kKalium };
@@ -27,33 +27,24 @@ The extracellular substances that will be used in the simulation are listed in
 an `enum` data structure. In this case it is just a single substance. According to our C++
 coding style we will prepend the substance's name with the letter "k".
 
-#### 2. Set up the biology modules
+#### 2. Biology modules
+
+In the same file you can find the definition of the biology modules `Chemotaxis`
+and `KaliumSecretion`. These are the modules that will govern the
+behavior of the simulation objects (i.e. cells).
+
+#### 3. Initial model
 
 Open the `src/diffusion.h` source file.
 
-We need to tell BioDynaMo that we want to use the BiologyModules `Chemotaxis`
-and `KaliumSecretion` for our cells. We can do that by defining it in the compile
-time parameters. FIXME
-
+First, create a BioDynaMo simulation:
 ``` C++
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, Cell) {
-    using BiologyModules = CTList<Chemotaxis, KaliumSecretion>;
-  };
-};
+Simulation simulation(argc, argv);
 ```
 
-The important part here is the `Chemotaxis` and
-`KaliumSecretion` biology modules. These are the modules that will govern the
-behavior of the simulation objects (i.e. cells). We import them at the top of the
-source code with `#include diffusion_biology_modules`.
-
-#### 3. Set up the simulation objects
-
-Next up is creating simulation objects:
+Next up is creating the initial model of our simulation.
+Therefore, we have to create an initial set of simulation objects and set their
+attributes:
 
 ``` C++
   auto construct = [](const std::array<double, 3>& position) {
@@ -95,7 +86,7 @@ Furthermore, we define the initial positions of the cells. In this example it is
 done explicitly, but one could also generate a grid of cells, or a random distribution
 of cells.
 
-### Configure the simulation
+### Simulation Parameters
 
 Create a `bdm.toml` file in the `diffusion` directory, and copy the following lines
 into it:

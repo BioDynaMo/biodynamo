@@ -106,7 +106,6 @@ inline int Simulate(int argc, const char** argv) {
     param->bound_space_ = true;
     param->min_bound_ = 0;
     param->max_bound_ = 100;  // cube of 100*100*100
-    param->run_mechanical_interactions_ = true;
   };
 
   Simulation simulation(argc, argv, set_param);
@@ -137,7 +136,7 @@ inline int Simulate(int argc, const char** argv) {
     rm->push_back(cell);  // put the created cell in our cells structure
   }
 
-  // create a cancerous cell, containing the BiologyModule GrowthModule
+  // create a cancerous cell, containing the biology module GrowthModule
   MyCell* cell = new MyCell({20, 50, 50});
   cell->SetDiameter(6);
   cell->SetCellColor(8);
