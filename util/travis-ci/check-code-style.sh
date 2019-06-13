@@ -59,6 +59,7 @@ mkdir build || true
 cd build
 cmake ..
 cmake --build . --target fetch-master
+cmake --build . --target gtest || true
 cmake --build . --target show-format || true
 cmake --build . --target show-tidy || true
 cmake --build . --target check-cpplint || true
