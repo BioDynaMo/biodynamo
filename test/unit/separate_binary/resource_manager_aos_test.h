@@ -16,6 +16,7 @@
 #define UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_AOS_TEST_H_
 
 #include "unit/separate_binary/resource_manager_test_common.h"
+#include "core/simulation_implementation.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -57,6 +58,7 @@ inline void RunIOTest() {
   // restore
   ResourceManager<>* restored_rm = nullptr;
   GetPersistentObject(ROOTFILE, "rm", restored_rm);
+  restored_rm->RestoreUidSoMap();
 
   // validate
   EXPECT_EQ(5u, restored_rm->GetNumSimObjects());

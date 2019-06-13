@@ -93,7 +93,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  ctxt->SetupIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
@@ -107,7 +107,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
       10, Math::kPi / 8, Math::kPi / 3);
   neurite->SetDiameter(2);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   // verify
   EXPECT_ARR_NEAR(neurite->GetPosition(),
@@ -144,7 +144,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  ctxt->SetupIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   // create neuron
   std::array<double, 3> origin = {0, 0, 0};
@@ -158,7 +158,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
       rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite->SetDiameter(2);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   // verify
   EXPECT_ARR_NEAR(neurite->GetPosition(), {0, 0, 10.5});
@@ -199,7 +199,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
       rm->GetSimObject<NeuronSoma>(neuron_id).ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
-  ctxt->TearDownIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
@@ -207,7 +207,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
     neurite_element->RunDiscretization();
   }
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   // verify
   //   distal segment
@@ -276,10 +276,10 @@ TEST(NeuriteElementTest, PartialRetraction) {
 
   // will remove the proximal segment
   for (int i = 0; i < 140; ++i) {
-    ctxt->SetupIteration();
+    ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
     neurite_element->RetractTerminalEnd(10);
     neurite_element->RunDiscretization();
-    ctxt->TearDownIteration();
+    ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   }
 
   // verify
@@ -329,10 +329,10 @@ TEST(NeuriteElementTest, TotalRetraction) {
   // will remove the entire neurite
   // neurite_segment will be removed in iteration 209
   for (int i = 0; i < 210; ++i) {
-    ctxt->SetupIteration();
+    ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
     neurite_element->RetractTerminalEnd(10);
     neurite_element->RunDiscretization();
-    ctxt->TearDownIteration();
+    ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   }
 
   // verify
@@ -437,7 +437,7 @@ TEST(NeuriteElementTest, Branch) {
   EXPECT_TRUE(branch->GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch->GetMother().IsNeuriteElement());
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
   EXPECT_EQ(4u, rm->Get<NeuriteElement>()->size());
 }
@@ -511,7 +511,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   EXPECT_TRUE(branch->GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch->GetMother().IsNeuriteElement());
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
   EXPECT_EQ(4u, rm->Get<NeuriteElement>()->size());
 }
@@ -563,7 +563,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   EXPECT_NEAR(11.6792669065954, neurite_element->GetLength(), kEpsilon);
   EXPECT_NEAR(0.103602332256979, branch->GetLength(), kEpsilon);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
   EXPECT_EQ(3u, rm->Get<NeuriteElement>()->size());
 }
@@ -637,7 +637,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   EXPECT_TRUE(branch->GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch->GetMother().IsNeuriteElement());
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
   EXPECT_EQ(4u, rm->Get<NeuriteElement>()->size());
 }
@@ -645,7 +645,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 TEST(NeuriteElementTest, RetractAllDendrites) {
   Simulation<> simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* ctxt = simulation.GetExecutionContext();
+  auto* ctxt = simulation.GetMainExecCtxt();
 
   std::array<double, 3> origin = {0, 0, 0};
 
@@ -661,19 +661,17 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
     neurite_element->ElongateTerminalEnd(10, {1, 1, 0});
-    neurite_element->RunDiscretization();
-    ctxt->TearDownIteration();
+    simulation.GetScheduler()->Simulate(1);
   }
 
   auto branch = neurite_element->Branch();
 
   for (int i = 0; i < 100; ++i) {
-    ctxt->SetupIteration();
+    ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
     neurite_element->ElongateTerminalEnd(10, {0, 0, 1});
     neurite_element->RunDiscretization();
     branch->ElongateTerminalEnd(10, {0, 1, 0});
-    branch->RunDiscretization();
-    ctxt->TearDownIteration();
+    simulation.GetScheduler()->Simulate(1);
   }
 
   // retract all dendrite
@@ -682,15 +680,15 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
       auto&& neurite_segment = rm->GetSimObject<NeuriteElement>(SoHandle(1, j));
       if (neurite_segment.IsTerminal()) {
         neurite_segment.RetractTerminalEnd(10);
-        neurite_segment.RunDiscretization();
         break;
       }
+      simulation.GetScheduler()->Simulate(1);
     }
-    ctxt->TearDownIteration();
+    ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   }
 
   // verify
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
   EXPECT_EQ(0u, rm->Get<NeuriteElement>()->size());
 }
@@ -781,7 +779,7 @@ TEST(NeuriteElementTest, Bifurcate) {
   EXPECT_TRUE(branch_r->GetDaughterRight() == nullptr);
   EXPECT_TRUE(branch_r->GetMother().IsNeuriteElement());
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->Get<NeuronSoma>()->size());
   EXPECT_EQ(3u, rm->Get<NeuriteElement>()->size());

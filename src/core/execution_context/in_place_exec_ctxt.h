@@ -15,12 +15,17 @@
 #ifndef CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
+#include <atomic>
 #include <memory>
 #include <mutex>
+#include <utility>
 #include <vector>
 
 #include "core/container/fixed_size_vector.h"
 #include "core/resource_manager.h"
+#include "core/util/thread_info.h"
+#include "core/util/timing.h"
+#include "core/sim_object/so_pointer.h"
 
 namespace bdm {
 
@@ -48,39 +53,111 @@ class InPlaceExecutionContext {
   InPlaceExecutionContext() {
     // FIXME this doesn't work: must hold all new elements for all sim_objects
     // processed by this thread.
-    // reserve enough memory to hold all new objects during one iteration of
-    // one sim object. If more objects would be created (using `New`),
+    // reserve enough memory to hold all new objects during one iteration.
+    // If more objects would be created (using `New`),
     // references would become invalid.
     // Alternative: use container that doesn't migrate objects.
-    new_sim_objects_.Reserve(10);
+    new_sim_objects_.Reserve(1e6 / ThreadInfo::GetInstance()->GetMaxThreads());
+
+    auto* param = Simulation<TCTParam>::GetActive()->GetParam();
+    soptr_cache_perfc_.enabled_ = param->debug_exec_ctxt_caches_;
   }
 
-  /// This function is called at the beginning of each iteration.
+  ~InPlaceExecutionContext() {
+    if(soptr_cache_perfc_.enabled_) {
+       std::cout << "InPlaceExecutionContext " << this << " "
+                 << soptr_cache_perfc_ << std::endl;
+    }
+  }
+
+  /// This function is called at the beginning of each iteration to setup all
+  /// execution contexts.
   /// This function is not thread-safe.
-  template <typename TSimulation = Simulation<>>
-  void SetupIteration() {
+  /// NB: Invalidates references and pointers to simulation objects.
+  void SetupIterationAll(
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) {
     // first iteration might have uncommited changes
-    TearDownIteration();
+
+#pragma omp parallel for schedule(static, 1)
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      auto* ctxt = all_exec_ctxts[i];
+      ectxt_cache_valid_ = ctxt->new_sim_objects_.GetNumSimObjects() == 0;
+    }
+    TearDownIterationAll(all_exec_ctxts);
   }
 
-  /// This function is called at the end of each iteration. \n
+  /// This function is called at the end of each iteration to tear down all
+  /// execution contexts.
   /// This function is not thread-safe. \n
   /// NB: Invalidates references and pointers to simulation objects.
   template <typename TSimulation = Simulation<>>
-  void TearDownIteration() {
-    // new sim objects
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    new_sim_objects_.ApplyOnAllElements(
-        [&](auto&& sim_object, SoHandle) { rm->push_back(sim_object); });
-    new_sim_objects_.Clear();
+  void TearDownIterationAll(
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
 
-    // removed sim objects
-    // remove them after adding new ones (maybe one has been removed
-    // that was in new_sim_objects_)
-    for (auto& uid : remove_) {
-      rm->Remove(uid);
+    // std::cout << "\n\nTearDownIterationAll -----------------------------------" << std::endl;
+
+    auto* rm = TSimulation::GetActive()->GetResourceManager();
+    for (uint64_t t = 0; t < rm->NumberOfTypes(); ++t) {
+      // group execution contexts by numa domain
+      std::vector<uint64_t> new_so_per_numa(tinfo_->GetNumaNodes());
+      std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
+
+      for (int tid = 0; tid < tinfo_->GetMaxThreads(); ++tid) {
+        auto* ctxt = all_exec_ctxts[tid];
+        int nid = tinfo_->GetNumaNode(tid);
+        thread_offsets[tid] = new_so_per_numa[nid];
+        new_so_per_numa[nid] += ctxt->new_sim_objects_.GetNumSimObjects(0, t);
+      }
+
+      // reserve enough memory in ResourceManager
+      std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
+      for (unsigned n = 0; n < new_so_per_numa.size(); n++) {
+        numa_offsets[n] = rm->GrowSoContainer(new_so_per_numa[n], n, t);
+      }
+
+// add new_sim_objects_ to the ResourceManager in parallel
+    // Timing timing("AddNewSimObjects");
+      #pragma omp parallel for schedule(static, 1)
+      for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+        auto* ctxt = all_exec_ctxts[i];
+        int nid = tinfo_->GetNumaNode(i);
+        uint64_t offset = thread_offsets[i] + numa_offsets[nid];
+        rm->AddNewSimObjects(nid, t, offset, ctxt->new_sim_objects_);
+      }
+
+      // // part 2 is not thread safe!
+      // Timing timing("AddNewSimObjectsToSoStorageMap");
+      // uint64_t tnso = 0;
+      // for (unsigned i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      //   auto* ctxt = all_exec_ctxts[i];
+      //   int nid = tinfo_->GetNumaNode(i);
+      //   uint64_t offset = thread_offsets[i] + numa_offsets[nid];
+      //   tnso += ctxt->new_sim_objects_.GetNumSimObjects();
+      //   rm->AddNewSimObjectsToSoStorageMap(nid, t, offset,
+      //                                      ctxt->new_sim_objects_);
+      // }
+      // std::cout << "  nso " << tnso << std::endl;
     }
-    remove_.clear();
+
+    // clear
+    // Timing timing("AddNewSimObjectsToSoStorageMap");
+#pragma omp parallel for schedule(static, 1)
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      auto* ctxt = all_exec_ctxts[i];
+      // rm->AddNewSimObjectsToSoStorageMap(ctxt->new_sim_objects_);
+      ctxt->new_sim_objects_.Clear();
+    }
+
+    // remove
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      auto* ctxt = all_exec_ctxts[i];
+      // remove them after adding new ones (maybe one has been removed
+      // that was in new_sim_objects_)
+      for (auto& uid : ctxt->remove_) {
+        rm->Remove(uid);
+      }
+      ctxt->remove_.clear();
+    }
   }
 
   /// Execute a series of operations on a simulation object in the order given
@@ -90,10 +167,12 @@ class InPlaceExecutionContext {
     auto* grid = Simulation<TCTParam>::GetActive()->GetGrid();
     auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
     if (nb_mutex_builder != nullptr) {
-      auto mutex = nb_mutex_builder->GetMutex(so.GetBoxIdx());
-      std::lock_guard<decltype(mutex)> guard(mutex);
+      auto nb_mutex = nb_mutex_builder->GetMutex(so.GetBoxIdx());
+      std::lock_guard<decltype(nb_mutex)> guard(nb_mutex);
+      neighbor_cache_.clear();
       ExecuteInternal(so, first_op, other_ops...);
     } else {
+      neighbor_cache_.clear();
       ExecuteInternal(so, first_op, other_ops...);
     }
   }
@@ -109,6 +188,9 @@ class InPlaceExecutionContext {
   New(Args... args) {
     TScalarSo so(std::forward<Args>(args)...);
     auto uid = so.GetUid();
+    // #pragma omp critical
+    // std::cout << "new so " << uid << " in tid" << omp_get_thread_num() << std::endl;
+    // std::lock_guard<AtomicMutex> guard(mutex_);
     new_sim_objects_.push_back(so);
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
   }
@@ -119,70 +201,179 @@ class InPlaceExecutionContext {
   New(Args... args) {
     TScalarSo so(std::forward<Args>(args)...);
     auto uid = so.GetUid();
+    // #pragma omp critical
+    // std::cout << "new so " << uid << " in tid" << omp_get_thread_num() << std::endl;
+    // std::lock_guard<AtomicMutex> guard(mutex_);
     new_sim_objects_.push_back(so);
     return new_sim_objects_.template GetSimObject<TScalarSo>(uid);
   }
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
-  /// Could be used to cache the results.
+  template <typename TLambda, typename TSo, typename TSimulation = Simulation<>>
+  void ForEachNeighbor(const TLambda& lambda, const TSo& query) {
+    // use values in cache
+    if (neighbor_cache_.size() != 0) {
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      for (auto& pair : neighbor_cache_) {
+        rm->ApplyOnElement(pair.first, [&](auto&& sim_object) {
+          lambda(&sim_object, pair.second);
+        });
+      }
+      return;
+    }
+
+    auto* grid = TSimulation::GetActive()->GetGrid();
+    auto* param = TSimulation::GetActive()->GetParam();
+    auto for_each = [&, this](auto* so, double squared_distance) {
+      if (param->cache_neighbors_) {
+        this->neighbor_cache_.push_back(
+            std::make_pair(so->GetSoHandle(), squared_distance));
+      }
+      lambda(so, squared_distance);
+    };
+
+    grid->template ForEachNeighbor(for_each, query);
+  }
+
+  /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
   template <typename TLambda, typename TSo, typename TSimulation = Simulation<>>
   void ForEachNeighborWithinRadius(const TLambda& lambda, const TSo& query,
                                    double squared_radius) {
+    // use values in cache
+    if (neighbor_cache_.size() != 0) {
+      auto* rm = TSimulation::GetActive()->GetResourceManager();
+      for (auto& pair : neighbor_cache_) {
+        if (pair.second < squared_radius) {
+          rm->ApplyOnElement(pair.first,
+                             [&](auto&& sim_object) { lambda(&sim_object); });
+        }
+      }
+      return;
+    }
+
     auto* grid = TSimulation::GetActive()->GetGrid();
-    return grid->template ForEachNeighborWithinRadius(lambda, query,
-                                                      squared_radius);
+    auto* param = TSimulation::GetActive()->GetParam();
+    auto for_each = [&, this](auto* so, double squared_distance) {
+      if (param->cache_neighbors_) {
+        this->neighbor_cache_.push_back(
+            std::make_pair(so->GetSoHandle(), squared_distance));
+      }
+      if (squared_distance < squared_radius) {
+        lambda(so);
+      }
+    };
+
+    grid->template ForEachNeighbor(for_each, query);
   }
 
   template <typename TSo, typename TSimBackend = Backend,
             typename TSimulation = Simulation<>>
-  auto&& GetSimObject(
+  auto& GetSimObject(
       SoUid uid,
+      SoPointerCache<TCTParam>* cache = nullptr,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
-    // check if the uid corresponds to a new object not yet in the Rm
-    if (new_sim_objects_.Contains(uid)) {
-      return new_sim_objects_.template GetSimObject<TSo>(uid);
-    } else {
-      auto* rm = TSimulation::GetActive()->GetResourceManager();
-      return rm->template GetSimObject<TSo>(uid);
+    if (IsCacheValid(cache)) {
+      soptr_cache_perfc_.IncCached();
+      return cache->rm_->template GetSimObject<TSo>(cache->handle_);
     }
+
+    auto soh = new_sim_objects_.GetSoHandle1(uid);
+    if (soh != SoHandle()) {
+      UpdateCache(cache, soh, &new_sim_objects_);
+      return new_sim_objects_.template GetSimObject<TSo>(soh);
+    }
+
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    soh = rm->GetSoHandle1(uid);
+    if (soh != SoHandle()) {
+      UpdateCache(cache, soh, rm);
+      return rm->template GetSimObject<TSo>(soh);
+    } else {
+      // sim object must be cached in another InPlaceExecutionContext
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
+        if (ctxt == this) {
+          continue;
+        }
+        // std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
+        auto soh = ctxt->new_sim_objects_.GetSoHandle1(uid);
+        if (soh != SoHandle()) {
+          UpdateCache(cache, soh, &ctxt->new_sim_objects_);
+          return ctxt->new_sim_objects_.template GetSimObject<TSo>(soh);
+        }
+      }
+    }
+    Log::Fatal("GetSimObject", Concat("Could not find object with uid: ", uid));
+    // The following return statement should never be called.
+    // Its only purpose is to silence the following compiler warning:
+    //   warning: control reaches end of non-void function [-Wreturn-type]
+    return new_sim_objects_.template GetSimObject<TSo>(SoHandle());
   }
 
   template <typename TSo, typename TSimBackend = Backend,
             typename TSimulation = Simulation<>>
   auto GetSimObject(SoUid uid,
+                    SoPointerCache<TCTParam>* cache = nullptr,
                     typename std::enable_if<
                         std::is_same<TSimBackend, Soa>::value>::type* ptr = 0) {
-    if (new_sim_objects_.Contains(uid)) {
-      return new_sim_objects_.template GetSimObject<TSo>(uid);
-    } else {
-      auto* rm = TSimulation::GetActive()->GetResourceManager();
-      return rm->template GetSimObject<TSo>(uid);
+    if (IsCacheValid(cache)) {
+      soptr_cache_perfc_.IncCached();
+      return cache->rm_->template GetSimObject<TSo>(cache->handle_);
     }
+
+    auto soh = new_sim_objects_.GetSoHandle1(uid);
+    if (soh != SoHandle()) {
+      UpdateCache(cache, soh, &new_sim_objects_);
+      return new_sim_objects_.template GetSimObject<TSo>(soh);
+    }
+
+    auto* sim = TSimulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    soh = rm->GetSoHandle1(uid);
+    if (soh != SoHandle()) {
+      UpdateCache(cache, soh, rm);
+      return rm->template GetSimObject<TSo>(soh);
+    } else {
+      // sim object must be cached in another InPlaceExecutionContext
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
+        if (ctxt == this) {
+          continue;
+        }
+        // std::lock_guard<AtomicMutex> guard(ctxt->mutex_);
+        auto soh = ctxt->new_sim_objects_.GetSoHandle1(uid);
+        if (soh != SoHandle()) {
+          UpdateCache(cache, soh, &ctxt->new_sim_objects_);
+          return ctxt->new_sim_objects_.template GetSimObject<TSo>(soh);
+        }
+      }
+    }
+    Log::Fatal("GetSimObject", Concat("Could not find object with uid: ", uid));
+    // The following return statement should never be called.
+    // Its only purpose is to silence the following compiler warning:
+    //   warning: control reaches end of non-void function [-Wreturn-type]
+    return new_sim_objects_.template GetSimObject<TSo>(SoHandle());
   }
 
-  template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation<>>
-  const auto&& GetConstSimObject(
+  template <typename TSo, typename TSimBackend = Backend>
+  const auto& GetConstSimObject(
       SoUid uid,
+      SoPointerCache<TCTParam>* cache = nullptr,
       typename std::enable_if<std::is_same<TSimBackend, Scalar>::value>::type*
           ptr = 0) {
-    return GetSimObject<TSo>(uid);
+    return GetSimObject<TSo>(uid, cache);
   }
 
-  template <typename TSo, typename TSimBackend = Backend,
-            typename TSimulation = Simulation<>>
+  template <typename TSo, typename TSimBackend = Backend>
   const auto GetConstSimObject(
       SoUid uid,
+      SoPointerCache<TCTParam>* cache = nullptr,
       typename std::enable_if<std::is_same<TSimBackend, Soa>::value>::type*
           ptr = 0) {
-    return GetSimObject<TSo>(uid);
+    return GetSimObject<TSo>(uid, cache);
   }
 
-  template <typename TSimulation = Simulation<>>
-  void RemoveFromSimulation(SoUid uid) {
-    remove_.push_back(uid);
-  }
+  void RemoveFromSimulation(SoUid uid) { remove_.push_back(uid); }
 
   /// If a sim objects modifies other simulation objects while it is updated,
   /// race conditions can occur using this execution context. This function
@@ -193,6 +384,63 @@ class InPlaceExecutionContext {
   }
 
  private:
+  class AtomicMutex {
+   public:
+    AtomicMutex() {}
+
+    void lock() {  // NOLINT
+      while (mutex_.test_and_set(std::memory_order_acquire)) {
+      }
+    }
+
+    void unlock() {  // NOLINT
+      mutex_.clear(std::memory_order_release);
+    }
+
+   private:
+    std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
+  };
+
+  class SoPtrCachePerfCounters {
+   public:
+    bool enabled_ = false;
+
+    void IncCached() { if (enabled_) { cached_++; } }
+    void IncTotal() { if (enabled_) { total_++; } }
+    void IncSimRmInvalidTs() { if (enabled_) { sim_rm_invalid_ts_++; } }
+    void IncThisInvalidTs() { if (enabled_) { this_invalid_ts_++; } }
+    void IncElse() { if (enabled_) { else_++; } }
+
+    friend std::ostream& operator<<(std::ostream& str, SoPtrCachePerfCounters& cnts) {
+      str << "SoPtrCachePerfCounters: \n{\n"
+          << "  cache hits                  " << static_cast<double>(cnts.cached_) / cnts.total_ << "\n"
+          << "  cached                      " << cnts.cached_ << "\n"
+          << "  total                       " << cnts.total_ << "\n"
+          << "  missed sim rm invalid ts    " << cnts.sim_rm_invalid_ts_ << "\n"
+          << "  missed exec ctxt invalid ts " << cnts.this_invalid_ts_ << "\n"
+          << "  missed all other reasons    " << cnts.else_ << "\n}\n";
+      return str;
+    }
+
+   private:
+     /// Number of requests serviced by the cache.
+     uint64_t cached_ = 0;
+     /// Total number of requests.
+     uint64_t total_ = 0;
+     /// Number of requests not serviced by the cache, because the cache was
+     /// invalidated by the simulation ResourceManager.
+     uint64_t sim_rm_invalid_ts_ = 0;
+     /// Number of requests not serviced by the cache, because the cache was
+     /// invalidated by this execution context
+     uint64_t this_invalid_ts_ = 0;
+     ///  Number of requests not serviced by the cache - All other reasons.
+     uint64_t else_ = 0;
+  };
+
+  mutable SoPtrCachePerfCounters soptr_cache_perfc_;
+
+  ThreadInfo* tinfo_ = ThreadInfo::GetInstance();
+
   /// Contains unique ids of sim objects that will be removed at the end of each
   /// iteration.
   std::vector<SoUid> remove_;
@@ -201,6 +449,15 @@ class InPlaceExecutionContext {
   /// to the main ResourceManager. Using a ResourceManager adds
   /// some memory overhead, but avoids code duplication.
   ResourceManager<TCTParam> new_sim_objects_;
+
+  /// prevent race conditions for cached SimObjects
+  AtomicMutex mutex_;
+
+  std::vector<std::pair<SoHandle, double>> neighbor_cache_;
+
+  /// This execution context is only valid if at the beginning of the iteration
+  /// no simulation objects have been commited to the ResourceManager.
+  bool ectxt_cache_valid_ = true;
 
   /// Execute a single operation on a simulation object
   template <typename TSo, typename TFirstOp>
@@ -215,7 +472,47 @@ class InPlaceExecutionContext {
     first_op(so);
     ExecuteInternal(so, other_ops...);
   }
+
+  /// This method checks if the given SoPointerCache is valid
+  bool IsCacheValid(SoPointerCache<TCTParam>* cache) const {
+    soptr_cache_perfc_.IncTotal();
+    if (cache == nullptr) {
+      soptr_cache_perfc_.IncElse();
+      return false;
+    }
+    auto* rm = Simulation<TCTParam>::GetActive()->GetResourceManager();
+    if(cache->rm_ == rm) {
+      bool ret_val = rm->GetInvalidatedTimestep() <= cache->ts_updated_;
+      if (!ret_val) {
+        soptr_cache_perfc_.IncSimRmInvalidTs();
+      }
+      return ret_val;
+    } else if(ectxt_cache_valid_ && cache->rm_ == &new_sim_objects_) {
+      // exclude iteration 0 - could lead to issue for objects that have been
+      // created during simulation setup
+      auto ret_val = cache->ts_updated_ == Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() &&
+        Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps() != 0;
+      if (!ret_val) {
+        soptr_cache_perfc_.IncThisInvalidTs();
+      }
+      return ret_val;
+    }
+    soptr_cache_perfc_.IncElse();
+    return false;
+  }
+
+  /// Update the cache
+  void UpdateCache(SoPointerCache<TCTParam>* cache, const SoHandle& handle, ResourceManager<TCTParam>* rm) const {
+    if (cache == nullptr) {
+      return;
+    }
+    cache->handle_ = handle;
+    cache->rm_ = rm;
+    cache->ts_updated_ = Simulation<TCTParam>::GetActive()->GetScheduler()->GetSimulatedSteps();
+  }
 };
+
+// TODO(lukas) Add tests for caching mechanism in ForEachNeighbor* and SoPointerCache
 
 }  // namespace bdm
 

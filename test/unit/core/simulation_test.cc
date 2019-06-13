@@ -60,9 +60,16 @@ class SimulationTest : public ::testing::Test {
       "  [[visualize_diffusion]]\n"
       "  name = \"K\"\n"
       "\n"
+      "[performance]\n"
+      "scheduling_batch_size = 123\n"
+      "detect_static_sim_objects = true\n"
+      "cache_neighbors = true\n"
+      "\n"
       "[development]\n"
       "# this is a comment\n"
-      "statistics = true\n";
+      "statistics = true\n"
+      "debug_exec_ctxt_caches = true\n"
+      "debug_numa = true\n";
 
  protected:
   virtual void SetUp() {
@@ -134,7 +141,15 @@ class SimulationTest : public ::testing::Test {
       }
     }
 
+    // performance group
+    EXPECT_EQ(123u, param->scheduling_batch_size_);
+    EXPECT_TRUE(param->detect_static_sim_objects_);
+    EXPECT_TRUE(param->cache_neighbors_);
+
+    // development group
     EXPECT_TRUE(param->statistics_);
+    EXPECT_TRUE(param->debug_numa_);
+    EXPECT_TRUE(param->debug_exec_ctxt_caches_);
   }
 };
 

@@ -69,8 +69,8 @@ class DisplacementOp {
       if (param->use_opencl_) {
         auto* rm = TSimulation::GetActive()->GetResourceManager();
         rm->ApplyOnAllTypes(
-            [](auto* cells, uint16_t numa_node, uint16_t type_idx) {
-              opencl_(cells, numa_node_, type_idx);
+            [&](auto* cells, uint16_t numa_node, uint16_t type_idx) {
+              opencl_(cells, numa_node, type_idx);
             });
       }
 #endif
@@ -78,7 +78,7 @@ class DisplacementOp {
       if (!param->use_opencl_) {
         auto* rm = TSimulation::GetActive()->GetResourceManager();
         rm->ApplyOnAllTypes(
-            [](auto* cells, uint16_t numa_node, uint16_t type_idx) {
+            [&](auto* cells, uint16_t numa_node, uint16_t type_idx) {
               cuda_(cells, numa_node, type_idx);
             });
       }

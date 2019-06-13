@@ -58,16 +58,31 @@ namespace bdm {
 
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
-struct VtkSOGrid {
+/// Add data member `time_step_` to a vtkDataArray.
+/// It is required to determine when the data array should be reset. (At the
+/// beginning of each iteration)
+struct VtkDataArrayWrapper {
+  VtkDataArrayWrapper(vtkDataArray* data) : data_(data) {}
+  vtkDataArray* data_;
+  uint64_t time_step_ = 0;
+};
+
+/// Adds additional data members to the `vtkUnstructuredGrid` required by
+/// `CatalystAdaptor` to visualize simulation objects.
+struct VtkSoGrid {
   void Reset() {
-    data = nullptr;
-    is_initialized = false;
-    name = "";
+    name_ = "";
+    data_ = nullptr;
+    vis_data_members_.clear();
+    data_arrays_.clear();
+    is_initialized_ = false;
   }
 
-  vtkUnstructuredGrid* data = nullptr;
-  bool is_initialized = false;
-  std::string name;
+  std::string name_;
+  vtkUnstructuredGrid* data_ = nullptr;
+  std::set<std::string> vis_data_members_;
+  std::unordered_map<std::string, VtkDataArrayWrapper> data_arrays_;
+  bool is_initialized_ = false;
 };
 
 struct VtkDiffusionGrid {
@@ -106,7 +121,7 @@ class CatalystAdaptor {
       pipeline_ = nullptr;
     }
     for (auto sog : vtk_so_grids_) {
-      sog.data->Delete();
+      sog.data_->Delete();
       sog.Reset();
     }
     for (auto dg : vtk_dgrids_) {
@@ -152,7 +167,7 @@ class CatalystAdaptor {
   std::string python_script_;
   bool initialized_ = false;
   bool exclusive_export_viz_ = false;
-  std::vector<VtkSOGrid> vtk_so_grids_;
+  std::vector<VtkSoGrid> vtk_so_grids_;
   std::vector<VtkDiffusionGrid> vtk_dgrids_;
   std::unordered_map<std::string, Shape> shapes_;
 
@@ -218,57 +233,24 @@ class CatalystAdaptor {
   }
 
   struct AddCellAttributeData {
-    AddCellAttributeData(size_t nc, vtkUnstructuredGrid* vd)
-        : num_cells(nc), vtk_data(vd) {}
+    AddCellAttributeData(VtkSoGrid* so_grid) : so_grid_(so_grid) {}
 
     void operator()(std::vector<double>* dm, const std::string& name) {
-      vtkNew<vtkDoubleArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data();
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(num_cells), 1);
-      vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
+      ProcessDataArray<vtkDoubleArray>(name, dm->data(), dm->size());
     }
 
     void operator()(std::vector<int>* dm, const std::string& name) {
-      vtkNew<vtkIntArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data();
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(num_cells), 1);
-      vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
+      ProcessDataArray<vtkIntArray>(name, dm->data(), dm->size());
     }
 
     void operator()(std::vector<std::array<double, 3>>* dm,
                     const std::string& name) {
-      vtkNew<vtkDoubleArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data()->data();
-      vtk_array->SetNumberOfComponents(3);
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
-
-      if (name == "position_") {  // TODO(lukas) performance
-        vtkNew<vtkPoints> points;
-        points->SetData(vtk_array.GetPointer());
-        vtk_data->SetPoints(points.GetPointer());
-      } else if (name == "mass_location_") {
-        // create points with position {0, 0, 0}
-        // BDMGlyph will rotate and translate based on the attribute data
-        vtkNew<vtkPoints> points;
-        points->SetData(vtk_array.GetPointer());
-        vtk_data->SetPoints(points.GetPointer());
-        vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
-      } else {
-        vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
-      }
+      ProcessDouble3Array(name, dm->data()->data(), dm->size());
     }
 
     void operator()(std::vector<std::array<int, 3>>* dm,
                     const std::string& name) {
-      vtkNew<vtkIntArray> vtk_array;
-      vtk_array->SetName(name.c_str());
-      auto ptr = dm->data()->data();
-      vtk_array->SetNumberOfComponents(3);
-      vtk_array->SetArray(ptr, static_cast<vtkIdType>(3 * num_cells), 1);
-      vtk_data->GetPointData()->AddArray(vtk_array.GetPointer());
+      ProcessDataArray<vtkIntArray>(name, dm->data()->data(), dm->size(), 3);
     }
 
     void operator()(...) {
@@ -276,8 +258,92 @@ class CatalystAdaptor {
                  "This data member is not supported for visualization");
     }
 
-    size_t num_cells;
-    vtkUnstructuredGrid* vtk_data;
+    private:
+      VtkSoGrid* so_grid_;
+
+    template <typename TDataArray, typename TData>
+    void ProcessDataArray(const std::string& dm_name, TData* data, uint64_t elements, int components = 1) const {
+      TDataArray* vtk_array = nullptr;
+      auto& data_arrays = so_grid_->data_arrays_;
+      auto search = data_arrays.find(dm_name);
+      if (search != data_arrays.end()) {
+        auto& da_wrapper = search->second;
+        vtk_array = static_cast<TDataArray*>(da_wrapper.data_);
+
+        // reset
+        auto* scheduler = TSimulation::GetActive()->GetScheduler();
+        if (da_wrapper.time_step_ != scheduler->GetSimulatedSteps()) {
+          vtk_array->Reset();
+          da_wrapper.time_step_ = scheduler->GetSimulatedSteps();
+        }
+
+      } else {
+        // create
+        vtkNew<TDataArray> new_vtk_array;
+        new_vtk_array->SetName(dm_name.c_str());
+        vtk_array = new_vtk_array.GetPointer();
+        vtk_array->SetNumberOfComponents(components);
+        auto* point_data = so_grid_->data_->GetPointData();
+        point_data->AddArray(vtk_array);
+        data_arrays.insert({dm_name, VtkDataArrayWrapper(vtk_array)});
+      }
+
+      if (ThreadInfo::GetInstance()->GetNumaNodes() == 1) {
+        vtk_array->SetArray(data, static_cast<vtkIdType>(elements), 1);
+      } else {
+        for (unsigned i = 0; i < elements; ++i) {
+          vtk_array->InsertNextTuple1(data[i]);
+        }
+      }
+    }
+
+    template <typename TData>
+    void ProcessDouble3Array(const std::string& dm_name, TData* data, uint64_t elements) const {
+      vtkDoubleArray* vtk_array = nullptr;
+      auto& data_arrays = so_grid_->data_arrays_;
+      auto search = data_arrays.find(dm_name);
+      if (search != data_arrays.end()) {
+        auto& da_wrapper = search->second;
+        vtk_array = static_cast<vtkDoubleArray*>(da_wrapper.data_);
+
+        // reset
+        auto* scheduler = TSimulation::GetActive()->GetScheduler();
+        if (da_wrapper.time_step_ != scheduler->GetSimulatedSteps()) {
+          vtk_array->Reset();
+          da_wrapper.time_step_ = scheduler->GetSimulatedSteps();
+        }
+
+      } else {
+        // create
+        vtkNew<vtkDoubleArray> new_vtk_array;
+        new_vtk_array->SetName(dm_name.c_str());
+        vtk_array = new_vtk_array.GetPointer();
+        vtk_array->SetNumberOfComponents(3);
+        data_arrays.insert({dm_name, VtkDataArrayWrapper(vtk_array)});
+        if (dm_name == "position_") {  // TODO(lukas) performance
+          vtkNew<vtkPoints> points;
+          points->SetData(vtk_array);
+          so_grid_->data_->SetPoints(points.GetPointer());
+        } else if (dm_name == "mass_location_") {
+          // create points with position {0, 0, 0}
+          // BDMGlyph will rotate and translate based on the attribute data
+          vtkNew<vtkPoints> points;
+          points->SetData(vtk_array);
+          so_grid_->data_->SetPoints(points.GetPointer());
+          so_grid_->data_->GetPointData()->AddArray(vtk_array);
+        } else {
+          so_grid_->data_->GetPointData()->AddArray(vtk_array);
+        }
+      }
+
+      if (ThreadInfo::GetInstance()->GetNumaNodes() == 1) {
+        vtk_array->SetArray(data, static_cast<vtkIdType>(3 * elements), 1);
+      } else {
+        for (unsigned i = 0; i < elements * 3; i+=3) {
+          vtk_array->InsertNextTuple3(data[i], data[i + 1], data[i + 2]);
+        }
+      }
+    }
   };
 
   /// Builds the VTK grid structure for given simulation object container
@@ -290,24 +356,26 @@ class CatalystAdaptor {
   void BuildCellsVTKStructures(TContainer* sim_objects, int idx) {
     auto& scalar_name = TContainer::GetScalarTypeName();
     auto& vsg = vtk_so_grids_[idx];
-    if (!vsg.is_initialized) {
-      vsg.data = vtkUnstructuredGrid::New();
-      vsg.is_initialized = true;
-      vsg.name = scalar_name;
+    if (!vsg.is_initialized_) {
+      vsg.name_ = scalar_name;
+      vsg.data_ = vtkUnstructuredGrid::New();
+      vsg.vis_data_members_ = sim_objects->GetRequiredVisDataMembers();
+      auto* param = TSimulation::GetActive()->GetParam();
+      for (auto& dm : param->visualize_sim_objects_.at(scalar_name)) {
+        vsg.vis_data_members_.insert(dm);
+      }
+      vsg.is_initialized_ = true;
       shapes_[scalar_name] = sim_objects->GetShape();
     }
 
-    auto num_cells = sim_objects->size();
-
     auto required_dm = TContainer::GetRequiredVisDataMembers();
-    sim_objects->ForEachDataMemberIn(required_dm,
-                                     AddCellAttributeData(num_cells, vsg.data));
+    sim_objects->ForEachDataMemberIn(required_dm, AddCellAttributeData(&vsg));
 
     auto* param = TSimulation::GetActive()->GetParam();
     auto& additional_dm = param->visualize_sim_objects_.at(scalar_name);
     if (!additional_dm.empty()) {
-      sim_objects->ForEachDataMemberIn(
-          additional_dm, AddCellAttributeData(num_cells, vsg.data));
+      sim_objects->ForEachDataMemberIn(additional_dm,
+                                       AddCellAttributeData(&vsg));
     }
   }
 
@@ -362,34 +430,37 @@ class CatalystAdaptor {
 
     // Create as many visualization objects as registered in configuration
     vtk_so_grids_.resize(param->visualize_sim_objects_.size());
-    unsigned so_idx = 0;
+    unsigned processed_so = 0;
 
     rm->ApplyOnAllTypes(
         [&, this](auto* sim_objects, uint16_t numa_node, uint16_t type_idx) {
           auto so_name = sim_objects->GetScalarTypeName();
 
-          if (param->visualize_sim_objects_.find(so_name) !=
-              param->visualize_sim_objects_.end()) {
-            data_description->AddInput(so_name.c_str());
+          unsigned so_idx = 0;
+          for (auto& entry : param->visualize_sim_objects_) {
+            if (entry.first == so_name) {
+              data_description->AddInput(so_name.c_str());
 
-            // If we segfault at here it probably means that there is a problem
-            // with
-            // the pipeline (either the C++ pipeline or Python pipeline)
-            // We do not need to RequestDataDescription in Export Mode, because
-            // we
-            // do not make use of Catalyst CoProcessing capabilities
-            if (exclusive_export_viz_ ||
-                (g_processor_->RequestDataDescription(
-                    data_description.GetPointer())) != 0) {
-              this->BuildCellsVTKStructures(sim_objects, so_idx);
-              data_description->GetInputDescriptionByName(so_name.c_str())
-                  ->SetGrid(vtk_so_grids_[so_idx].data);
+              // If we segfault at here it probably means that there is a problem
+              // with
+              // the pipeline (either the C++ pipeline or Python pipeline)
+              // We do not need to RequestDataDescription in Export Mode, because
+              // we
+              // do not make use of Catalyst CoProcessing capabilities
+              if (exclusive_export_viz_ ||
+                  (g_processor_->RequestDataDescription(
+                      data_description.GetPointer())) != 0) {
+                this->BuildCellsVTKStructures(sim_objects, so_idx);
+                data_description->GetInputDescriptionByName(so_name.c_str())
+                    ->SetGrid(vtk_so_grids_[so_idx].data_);
+              }
+              processed_so += (numa_node == 0 ? 1 : 0);
             }
             so_idx++;
           }
         });
 
-    if (so_idx != param->visualize_sim_objects_.size()) {
+    if (processed_so != param->visualize_sim_objects_.size()) {
       Log::Fatal("Visualize Simulation Objects",
                  "One or more simulation objects were not selected for "
                  "visualization, even though you registered them for "
@@ -498,9 +569,9 @@ class CatalystAdaptor {
     for (auto vtk_so : vtk_so_grids_) {
       vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
       auto filename =
-          Concat(sim->GetOutputDir(), "/", vtk_so.name, "-", step, ".pvtu");
+          Concat(sim->GetOutputDir(), "/", vtk_so.name_, "-", step, ".pvtu");
       cells_writer->SetFileName(filename.c_str());
-      cells_writer->SetInputData(vtk_so.data);
+      cells_writer->SetInputData(vtk_so.data_);
       cells_writer->Update();
     }
 

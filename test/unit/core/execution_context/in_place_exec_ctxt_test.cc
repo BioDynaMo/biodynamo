@@ -45,7 +45,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
 
   EXPECT_EQ(3u, rm->GetNumSimObjects());
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_1));
@@ -75,7 +75,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
@@ -110,7 +110,7 @@ TEST(InPlaceExecutionContext, NewAndGetSimObject) {
 
   ctxt->GetSimObject<Cell>(uid_1).SetDiameter(789);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
   EXPECT_TRUE(rm->Contains(uid_0));
@@ -159,7 +159,6 @@ TEST(InPlaceExecutionContext, Execute) {
 TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
   Simulation<> sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
-  auto* ctxt = sim.GetExecutionContext();
 
   // create cells
   auto construct = [](const std::array<double, 3>& position) {
@@ -171,7 +170,7 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
 
   // initialize
   for (auto* context : sim.GetAllExecCtxts()) {
-    context->SetupIteration();
+    context->SetupIterationAll(sim.GetAllExecCtxts());
   }
   sim.GetGrid()->Initialize();
 
@@ -190,13 +189,16 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
       non_const_nb.SetDiameter(d1 + 1);
       nb_counter++;
     };
+    auto* ctxt = sim.GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(nb_lambda, so, 100);
 #pragma omp critical
     num_neighbors[so.GetUid()] = nb_counter;
   };
 
-  rm->ApplyOnAllElementsParallel(
-      [&](auto&& so, SoHandle) { ctxt->Execute(so, op); });
+  rm->ApplyOnAllElementsParallel([&](auto&& so, SoHandle) {
+    auto* ctxt = sim.GetExecutionContext();
+    ctxt->Execute(so, op);
+  });
 
   rm->ApplyOnAllElements([&](auto&& so, SoHandle) {
     // expected diameter: initial value + num_neighbors + 1

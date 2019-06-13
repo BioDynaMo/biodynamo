@@ -221,6 +221,39 @@ struct Param {
   ///       # default values: concentration = true and gradient = false
   std::vector<VisualizeDiffusion> visualize_diffusion_;
 
+  // performance values --------------------------------------------------------
+
+  /// Batch size used by the `Scheduler` to iterate over simulation objects\n
+  /// Default value: `1000`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     scheduling_batch_size = 1000
+  uint64_t scheduling_batch_size_ = 1000;
+
+  /// Calculation of the displacement (mechanical interaction) is an
+  /// expensive operation. If simulation objects do not move or grow,
+  /// displacement calculation is ommited if detect_static_sim_objects is turned
+  /// on. However, the detection mechanism introduces an overhead. For dynamic
+  /// simulations where sim objects move and grow, the overhead outweighs the
+  /// benefits.\n
+  /// Default value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     detect_static_sim_objects = false
+  bool detect_static_sim_objects_ = false;
+
+  /// Neighbors of a simulation object can be cached so to avoid consecutive
+  /// searches. This of course only makes sense if there is more than one
+  /// `ForEachNeighbor*` operation.\n
+  /// Default value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     cache_neighbors = false
+  bool cache_neighbors_ = false;
+
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n
@@ -230,6 +263,23 @@ struct Param {
   ///     [development]
   ///     statistics = false
   bool statistics_ = false;
+
+  /// Output debugging info related to running on a NUMA architecutre.\n
+  /// \see `ThreadInfo`, `ResourceManager::DebugNuma`
+  /// Default Value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [development]
+  ///     debug_numa = false
+  bool debug_numa_ = false;
+
+  /// Output debugging info related to execution context caches.\n
+  /// Default Value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [development]
+  ///     debug_exec_ctxt_caches_ = false
+  bool debug_exec_ctxt_caches_ = false;
 
   /// Use the python script (simple_pipeline.py) to do Live Visualization with
   /// ParaView. If false, we use the C++ pipeline

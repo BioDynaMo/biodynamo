@@ -52,7 +52,10 @@ void RunTest() {
 
   // execute operation
   DisplacementOp<> op;
-  rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle) { op(sim_object); });
+  rm->ApplyOnAllElements([&](auto&& sim_object, SoHandle) {
+    auto* ctxt = simulation.GetExecutionContext();
+    ctxt->Execute(sim_object, op);
+  });
 
   // check results
   // cell 1

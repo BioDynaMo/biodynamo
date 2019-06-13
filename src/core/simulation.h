@@ -92,8 +92,14 @@ struct Simulation {
   /// Returns a thread local random number generator
   Random* GetRandom();
 
+  /// Returns all thread local  random number generators.
+  std::vector<Random*>& GetAllRandom();
+
   /// Returns a thread local execution context.
   InPlaceExecutionContext<TCTParam>* GetExecutionContext();
+
+  /// Returns the main execution context.
+  InPlaceExecutionContext<TCTParam>* GetMainExecCtxt();
 
   /// Returns all thread local execution contexts.
   std::vector<InPlaceExecutionContext<TCTParam>*>& GetAllExecCtxts();

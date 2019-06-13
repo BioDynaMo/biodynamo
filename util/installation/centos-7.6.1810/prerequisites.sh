@@ -42,10 +42,13 @@ function InstallCmake {
 }
 
 function InstallPackages {
-  INSTALL_PACKAGES="freeglut-devel  git valgrind  \
+  # libXt-devel libXext-devel are required to build the paraview plugin
+  # on ubuntu those packages are installed together with freeglut3-dev
+  INSTALL_PACKAGES="git valgrind  \
+    freeglut-devel libXt-devel libXext-devel \
     python python-pip rh-python36 python-devel  \
     devtoolset-7-gcc* make cmake llvm-toolset-7 llvm-toolset-7-clang-tools-extra  \
-    doxygen graphviz lcov numactl-devel"
+    doxygen graphviz lcov numactl-devel tbb-devel openmpi3-devel"
 
   EchoInfo "This script uses yum to install centos-release-scl, epel-release, and:"
   for p in $INSTALL_PACKAGES; do
@@ -54,13 +57,7 @@ function InstallPackages {
   EchoInfo ""
   EchoInfo "It uses pip to install mkdocs and mkdocs-material."
   EchoInfo ""
-  EchoInfo "Creates the following symlinks:"
-  EchoInfo "  * /usr/lib64/libICE.so => /usr/lib64/libICE.so.6"
-  EchoInfo "  * /usr/lib64/libSM.so => /usr/lib64/libSM.so.6"
-  EchoInfo "  * /usr/lib64/libXt.so => /usr/lib64/libXt.so.6"
-  EchoInfo "  * /usr/lib64/libXpm.so => /usr/lib64/libXpm.so.4"
-  EchoInfo ""
-  EchoInfo "Open \"util/installation/centos-7.5.1804/prerequisites.sh\" for more information."
+  EchoInfo "Open \"util/installation/centos-7.6.1810/prerequisites.sh\" for more information."
   EchoInfo ""
   EchoInfo "These commands require sudo rights. If you are sure that these packages have already been installed, you can skip this step."
   EchoInfo ""
@@ -87,13 +84,10 @@ function InstallPackages {
     sudo yum -y install centos-release-scl epel-release
     sudo yum -y install $INSTALL_PACKAGES
 
-    # libSM, libXt and libXpm do not have a symlink to the major version *.so.6
-    # Due to a paraview bug the build fails because make doesn't find /usr/lib64/lib*.so
-    # Workaround, create symlinks
-    sudo ln -s /usr/lib64/libICE.so.6 /usr/lib64/libICE.so
-    sudo ln -s /usr/lib64/libSM.so.6 /usr/lib64/libSM.so
-    sudo ln -s /usr/lib64/libXt.so.6 /usr/lib64/libXt.so
-    sudo ln -s /usr/lib64/libXpm.so.4 /usr/lib64/libXpm.so
+    # activate mpi
+    . /etc/profile.d/modules.sh
+    module load mpi
+
     pip install --user mkdocs
     pip install --user mkdocs-material
   fi
@@ -102,8 +96,6 @@ function InstallPackages {
 
 function Install {
   echo "Start installation of prerequisites..."
-  EchoWarning "Warning Support for CentOS 7.5.1804 is experimental!"
-  EchoWarning "No support for Paraview at the moment."
 
   export BDM_INSTALL_DIR=$(SelectInstallDir)
   PrepareInstallDir $BDM_INSTALL_DIR
@@ -128,7 +120,7 @@ function Install {
   fi
 
   DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
-  DownloadTarFromCBAndExtract $BDM_OS paraview.tar.gz $THIRD_PARTY_DIR/paraview
+  DownloadTarFromCBAndExtract $BDM_OS paraview-v5.6.0.tar.gz $THIRD_PARTY_DIR/paraview
   DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
 
   # temporal workaround to avoid libprotobuf error for paraview

@@ -110,8 +110,18 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
     }
   }
 
+  // performance group
+  BDM_ASSIGN_CONFIG_VALUE(scheduling_batch_size_,
+                          "performance.scheduling_batch_size");
+  BDM_ASSIGN_CONFIG_VALUE(detect_static_sim_objects_,
+                          "performance.detect_static_sim_objects");
+  BDM_ASSIGN_CONFIG_VALUE(cache_neighbors_, "performance.cache_neighbors");
+
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");
+  BDM_ASSIGN_CONFIG_VALUE(debug_numa_, "development.debug_numa");
+  BDM_ASSIGN_CONFIG_VALUE(debug_exec_ctxt_caches_,
+                          "development.debug_exec_ctxt_caches");
   BDM_ASSIGN_CONFIG_VALUE(python_catalyst_pipeline_,
                           "development.python_catalyst_pipeline");
   BDM_ASSIGN_CONFIG_VALUE(show_simulation_step_,

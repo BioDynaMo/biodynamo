@@ -13,27 +13,16 @@
 #
 # -----------------------------------------------------------------------------
 
-# This script is to prevent the test from being run by test/system-test.sh.
-# This particular test is hooked up in $BDM_PROJECT_DIR/CMakeLists.txt.
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
 
-set -e -x
-
-SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-tmp_dir=$(mktemp -d)
-trap "rm -rf \"${tmp_dir}\"" EXIT
-
-cd "${tmp_dir}"
-cp -r "${SOURCE}/cell_division_gpu" .
-cd cell_division_gpu
-
-# Add -Dcuda and/or -Dopencl cmake flags if available on test system
-cmake .
-make -j4
-
-# start simulation
-./cell_division_gpu
-
-RETURN_CODE=$?
-
-exit $RETURN_CODE
+valgrind \
+  --track-origins=yes \
+  --leak-resolution=high \
+  --tool=memcheck \
+  --leak-check=full \
+  --show-leak-kinds=all \
+  --gen-suppressions=all \
+  --show-reachable=no \
+  --suppressions=${BDM_PROJECT_DIR}/util/valgrind-bdm.supp \
+  --error-exitcode=1 \
+  $@

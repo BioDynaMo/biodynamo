@@ -26,6 +26,17 @@
 
 namespace bdm {
 
+/// The SoPointerCache contains information to quickly retrieve a simulation
+/// object from a SoPointer without searching for it in the ResourceManager or
+/// execution contexts. The field `ts_updated_` is used to determine whether the
+/// cache is still valid.
+template <typename TCTParam = CompileTimeParam<>>
+struct SoPointerCache {
+  SoHandle handle_ = SoHandle();
+  ResourceManager<TCTParam>* rm_ = nullptr;
+  uint64_t ts_updated_ = 0;
+};
+
 /// Simulation object pointer. Required to point into simulation objects with
 /// `Soa` backend. `SoaRef` has the drawback that its size depends on the number
 /// of data members. Benefit compared to SoHandle is, that the compiler knows
@@ -39,10 +50,12 @@ namespace bdm {
 /// `ResourceManager`. Separate containers will not be serialized correctly!
 template <typename TSoSimBackend, typename TBackend>
 class SoPointer {
-  using SoSoaRef = typename TSoSimBackend::template Self<SoaRef>;
+  using SoSoaRef = decltype(
+      ADLHelper(std::declval<TSoSimBackend*>(), std::declval<SoaRef>()));
 
  public:
-  explicit SoPointer(SoUid uid) : uid_(uid) {}
+   explicit SoPointer(SoUid uid) : uid_(uid) {}
+   SoPointer(SoUid uid, const SoPointerCache<> cache) : uid_(uid), cache_(cache) {}
 
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
@@ -65,13 +78,15 @@ class SoPointer {
     return *this;
   }
 
+  // operator->
+
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
   typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
                           TSoSimBackend&>::type
   operator->() {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetSimObject<TSoSimBackend>(uid_);
+    return ctxt->template GetSimObject<TSoSimBackend>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -80,7 +95,7 @@ class SoPointer {
   operator->() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -88,7 +103,7 @@ class SoPointer {
   operator->() {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
@@ -97,7 +112,44 @@ class SoPointer {
   operator->() const {
     assert(*this != nullptr);
     auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
-    return ctxt->template GetConstSimObject<SoSoaRef>(uid_);
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_, &cache_);
+  }
+
+  // operator*
+
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
+                          TSoSimBackend&>::type
+  operator*() {
+    assert(*this != nullptr);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    return ctxt->template GetSimObject<TSoSimBackend>(uid_, &cache_);
+  }
+
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<TTBackend, Scalar>::value,
+                          const TSoSimBackend&>::type
+  operator*() const {
+    assert(*this != nullptr);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_, &cache_);
+  }
+
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<TTBackend, Soa>::value, SoSoaRef>::type
+  operator*() {
+    assert(*this != nullptr);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    return ctxt->template GetSimObject<SoSoaRef>(uid_, &cache_);
+  }
+
+  template <typename TTBackend = TBackend, typename TSimulation = Simulation<>>
+  typename std::enable_if<std::is_same<TTBackend, Soa>::value,
+                          const SoSoaRef>::type
+  operator*() const {
+    assert(*this != nullptr);
+    auto* ctxt = TSimulation::GetActive()->GetExecutionContext();
+    return ctxt->template GetConstSimObject<SoSoaRef>(uid_, &cache_);
   }
 
   friend std::ostream& operator<<(
@@ -108,6 +160,7 @@ class SoPointer {
 
  private:
   SoUid uid_ = std::numeric_limits<uint64_t>::max();
+  mutable SoPointerCache<> cache_;  //!
 
   BDM_TEMPLATE_CLASS_DEF_CUSTOM_STREAMER(SoPointer, 2);
 };

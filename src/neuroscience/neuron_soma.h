@@ -111,7 +111,7 @@ BDM_SIM_OBJECT(NeuronSoma, Cell) {
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
   std::array<double, 3> OriginOf(SoUid daughter_uid) const {
-    std::array<double, 3> xyz = daughters_coord_[kIdx][daughter_uid];
+    std::array<double, 3> xyz = daughters_coord_[kIdx].at(daughter_uid);
 
     double radius = Base::diameter_[kIdx] * .5;
     xyz = Math::ScalarMult(radius, xyz);

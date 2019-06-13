@@ -33,6 +33,7 @@
 #include "cuda_runtime_api.h"
 #endif
 
+#include "core/gpu/opencl_state.h"
 #include "core/param/param.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
@@ -55,11 +56,8 @@ static void FindGpuDevicesCuda() {
 
   cudaGetDeviceCount(&n_devices);
   if (n_devices == 0) {
-    Log::Error("FindGpuDevicesCuda",
-               "No CUDA-compatible GPU found on this machine! Switching to the "
-               "CPU version...");
-    param->use_gpu_ = false;
-    return;
+    Log::Fatal("FindGpuDevicesCuda",
+               "No CUDA-compatible GPU found on this machine!");
   }
 
   Log::Info("", "Found ", n_devices, " CUDA-compatible GPU device(s): ");
@@ -82,12 +80,12 @@ static void FindGpuDevicesCuda() {
 template <typename TSimulation = Simulation<>>
 static void CompileOpenCLKernels() {
   auto* sim = TSimulation::GetActive();
-  auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
 
-  std::vector<cl::Program>* all_programs = rm->GetOpenCLProgramList();
-  cl::Context* context = rm->GetOpenCLContext();
-  std::vector<cl::Device>* devices = rm->GetOpenCLDeviceList();
+  auto ocl_state = OpenCLState().GetInstance();
+  std::vector<cl::Program>* all_programs = ocl_state.GetOpenCLProgramList();
+  cl::Context* context = ocl_state.GetOpenCLContext();
+  std::vector<cl::Device>* devices = ocl_state.GetOpenCLDeviceList();
   // Compile OpenCL program for found device
   // TODO(ahmad): create more convenient way to compile all OpenCL kernels, by
   // going through a list of header files. Also, create a stringifier that goes
@@ -132,12 +130,12 @@ static void FindGpuDevicesOpenCL() {
     // We keep the context and device list in the resource manager to be
     // accessible elsewhere to create command queues and buffers from
     auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
 
-    cl::Context* context = rm->GetOpenCLContext();
-    cl::CommandQueue* queue = rm->GetOpenCLCommandQueue();
-    std::vector<cl::Device>* devices = rm->GetOpenCLDeviceList();
+    auto ocl_state = OpenCLState().GetInstance();
+    cl::Context* context = ocl_state.GetOpenCLContext();
+    cl::CommandQueue* queue = ocl_state.GetOpenCLCommandQueue();
+    std::vector<cl::Device>* devices = ocl_state.GetOpenCLDeviceList();
 
     // Get list of OpenCL platforms.
     std::vector<cl::Platform> platform;
@@ -174,11 +172,8 @@ static void FindGpuDevicesOpenCL() {
     }
 
     if (devices->empty()) {
-      Log::Warning("FindGpuDevicesOpenCL",
-                   "No OpenCL-compatible GPU found on this machine! Switching "
-                   "to the CPU version...");
-      param->use_gpu_ = false;
-      return;
+      Log::Fatal("FindGpuDevicesCuda",
+               "No CUDA-compatible GPU found on this machine!");
     }
 
     *context = cl::Context(*devices);

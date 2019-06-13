@@ -29,7 +29,7 @@ void RunTest() {
   TSimulation simulation("dividing_cell_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
-  ctxt->SetupIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   auto* cells = rm->template Get<TCell>();
 
@@ -45,7 +45,7 @@ void RunTest() {
   DividingCellOp op;
   op();
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   ASSERT_EQ(3u, rm->GetNumSimObjects());
   EXPECT_NEAR(19.005288996600001, (*cells)[1].GetDiameter(),

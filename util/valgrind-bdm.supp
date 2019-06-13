@@ -272,3 +272,408 @@
    obj:*/libigdrcl.so
    ...
 }
+
+######### Suppress Paraview issues
+{
+    paraview-1
+    Memcheck:Leak
+    match-leak-kinds: definite
+    fun:malloc
+    obj:*
+    fun:opal_db_base_store
+    fun:ompi_modex_send_string
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE10InitializeEv
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE9VisualizeEmb
+ }
+
+ {
+    paraview-2
+    Memcheck:Leak
+    match-leak-kinds: definite
+    fun:malloc
+    fun:strdup
+    obj:*
+    fun:opal_db_base_store
+    obj:*
+    fun:orte_init
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+ }
+
+ {
+    paraview-3
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:malloc
+    fun:strdup
+    obj:*
+    obj:*
+    obj:*
+    fun:hwloc_topology_load
+    fun:opal_hwloc_base_get_topology
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+ }
+
+ {
+    paraview-4
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:calloc
+    obj:*
+    obj:*
+    obj:*
+    fun:hwloc_topology_load
+    fun:opal_hwloc_base_get_topology
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+ }
+
+ {
+    paraview-5
+    Memcheck:Leak
+    match-leak-kinds: definite
+    fun:malloc
+    fun:lt__malloc
+    fun:lt__zalloc
+    obj:/usr/lib/x86_64-linux-gnu/libltdl.so.7.3.1
+    fun:lt_dlopenadvise
+    obj:*
+    obj:/usr/lib/x86_64-linux-gnu/libhwloc.so.5.6.8
+    fun:hwloc_topology_init
+    fun:opal_hwloc_base_get_topology
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+ }
+
+ {
+    paraview-6
+    Memcheck:Leak
+    match-leak-kinds: definite
+    fun:malloc
+    fun:__vasprintf_chk
+    fun:__asprintf_chk
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE10InitializeEv
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE9VisualizeEmb
+    fun:_ZN3bdm52CatalystAdaptorTest_CheckVisualizationSelection_Test8TestBodyEv
+ }
+
+ {
+    paraview-7
+    Memcheck:Leak
+    match-leak-kinds: definite
+    fun:malloc
+    obj:*
+    fun:opal_db_base_store
+    fun:ompi_modex_send
+    obj:*
+    fun:mca_btl_base_select
+    obj:*
+    fun:mca_bml_base_init
+    obj:*
+    fun:mca_pml_base_select
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+ }
+
+ {
+    paraview-8
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:malloc
+    fun:realloc
+    fun:mca_bml_base_btl_array_reserve
+    obj:*
+    obj:*
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE10InitializeEv
+ }
+
+ {
+    paraview-9
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:malloc
+    fun:realloc
+    fun:mca_bml_base_btl_array_reserve
+    obj:*
+    obj:*
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE10InitializeEv
+ }
+
+ {
+    paraview-10
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:malloc
+    fun:realloc
+    fun:mca_bml_base_btl_array_reserve
+    obj:*
+    obj:*
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE10InitializeEv
+ }
+
+ {
+    paraview-11
+    Memcheck:Leak
+    match-leak-kinds: definite
+    fun:malloc
+    obj:*
+    obj:*
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE10InitializeEv
+    fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE9VisualizeEmb
+    fun:_ZN3bdm52CatalystAdaptorTest_CheckVisualizationSelection_Test8TestBodyEv
+ }
+
+ {
+    paraview-12
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:calloc
+    obj:*
+    obj:*
+    obj:*
+    fun:hwloc_topology_load
+    fun:opal_hwloc_base_get_topology
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+ }
+
+ {
+    paraview-13
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:malloc
+    fun:strdup
+    obj:*
+    obj:*
+    obj:*
+    obj:*
+    fun:hwloc_topology_load
+    fun:opal_hwloc_base_get_topology
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+ }
+
+ {
+    paraview-14
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:malloc
+    fun:strdup
+    obj:*
+    obj:*
+    obj:*
+    obj:*
+    fun:hwloc_topology_load
+    fun:opal_hwloc_base_get_topology
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+ }
+
+ {
+    paraview-15
+    Memcheck:Leak
+    match-leak-kinds: indirect
+    fun:realloc
+    obj:*
+    obj:*
+    obj:*
+    obj:*
+    fun:hwloc_topology_load
+    fun:opal_hwloc_base_get_topology
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+ }
+
+ {
+    paraview-16
+    Memcheck:Leak
+    match-leak-kinds: definite
+    fun:calloc
+    obj:*
+    obj:*
+    obj:*
+    fun:hwloc_topology_load
+    fun:opal_hwloc_base_get_topology
+    fun:ompi_mpi_init
+    fun:PMPI_Init
+    fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+    fun:_ZN14vtkCPCxxHelper3NewEv
+    fun:_ZN14vtkCPProcessor10InitializeEPKc
+ }
+
+{
+   paraview-17
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__vasprintf_chk
+   fun:__asprintf_chk
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+   fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+   fun:_ZN14vtkCPCxxHelper3NewEv
+   fun:_ZN14vtkCPProcessor10InitializeEPKc
+   fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE10InitializeEv
+   fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE9VisualizeEmb
+   fun:_ZN3bdm35DiffusionTest_ModelInitializer_Test8TestBodyEv
+}
+
+{
+   paraview-18
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*
+   obj:*
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+   fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+   fun:_ZN14vtkCPCxxHelper3NewEv
+   fun:_ZN14vtkCPProcessor10InitializeEPKc
+   fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE10InitializeEv
+   fun:_ZN3bdm15CatalystAdaptorINS_10SimulationINS_16CompileTimeParamINS_3SoaEEEEEE9VisualizeEmb
+   fun:_ZN3bdm35DiffusionTest_ModelInitializer_Test8TestBodyEv
+}
+
+{
+   paraview-19
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:strdup
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:hwloc_topology_load
+   fun:opal_hwloc_base_get_topology
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+   fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+}
+
+{
+   paraview-20
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:realloc
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   fun:hwloc_topology_load
+   fun:opal_hwloc_base_get_topology
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+   fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+   fun:_ZN14vtkCPCxxHelper3NewEv
+}
+
+{
+   paraview-21
+   Memcheck:Cond
+   fun:vfprintf
+   fun:__vasprintf_chk
+   fun:__asprintf_chk
+   fun:pml_v_output_open
+   obj:/usr/lib/openmpi/lib/libmpi.so.12.0.2
+   fun:mca_base_framework_components_open
+   obj:/usr/lib/openmpi/lib/libmpi.so.12.0.2
+   fun:mca_base_framework_open
+   fun:ompi_mpi_init
+   fun:PMPI_Init
+   fun:_ZN16vtkProcessModule10InitializeENS_12ProcessTypesERiRPPc
+   fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
+}
+
+######### Suppress TBB issues
+{
+   TBB-1
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:global_symbols_link
+   fun:_ZN3tbb8internal12dynamic_linkEPKcPKNS0_23dynamic_link_descriptorEmPPvi
+   fun:_ZN3tbb8internal27initialize_handler_pointersEv
+   fun:run_initializer
+   fun:atomic_do_once
+   fun:_ZN3tbb8internal34initialize_cache_aligned_allocatorEv
+   fun:_ZN63_INTERNAL_41_______src_tbb_cache_aligned_allocator_cpp_714a77693tbb8internal11DummyMallocEm
+   fun:_ZN3tbb8internal23allocate_via_handler_v3Em
+   fun:allocate
+   fun:create_node
+   fun:split_ordered_list
+   fun:concurrent_unordered_base
+   fun:concurrent_unordered_map
+   fun:_ZN3bdm15ResourceManagerINS_16CompileTimeParamINS_3SoaEEEEC1Ev
+   fun:_ZN3bdm10SimulationINS_16CompileTimeParamINS_3SoaEEEE17InitializeMembersINS_15ResourceManagerIS3_EENS_4GridIS4_EENS_9SchedulerIS4_EEEEvv._omp_fn.1
+   obj:/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0
+   fun:start_thread
+}
