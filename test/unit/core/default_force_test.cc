@@ -255,11 +255,9 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 TEST(DefaultForce, SphereSmallCylinderVertical) {
   experimental::neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
-  // auto* rm = simulation.GetResourceManager();
 
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
-  // rm->push_back(sphere); // FIXME remove
 
   NeuriteElement cylinder;
   cylinder.SetMassLocation({0, 24, 0});

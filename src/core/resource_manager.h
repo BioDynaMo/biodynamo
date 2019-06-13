@@ -48,14 +48,12 @@
 
 namespace bdm {
 
-// FIXME documentation
 /// Unique identifier of a simulation object. Acts as a type erased pointer.
 /// Has the same type for every simulation object. \n
 /// Points to the storage location of a sim object inside ResourceManager.\n
-/// The id is split into three parts: Numa node, type index and element index.
-/// The first one is used to obtain the numa storage, the second the correct
-/// container in the ResourceManager, and the third specifies the element within
-/// this vector.
+/// The id is split into two parts: Numa node, element index.
+/// The first one is used to obtain the numa storage, and the second specifies
+/// the element within this vector.
 class SoHandle {
  public:
   using NumaNode_t = uint16_t;
