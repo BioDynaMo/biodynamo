@@ -103,35 +103,35 @@ inline void RunTest(bool* result, ExecutionMode mode) {
 
   ExpectArrayNear(
       (*cells)[0].GetPosition(),
-      {-9.0797829452623730617, -0.79113441727480182664, -4.9688206724986825336},
+      {4.1399071506916413909, -5.9871942139195297727, 2.8344890446256703065},
       result);
   ExpectArrayNear(
       (*cells)[1].GetPosition(),
-      {-6.8337437084335794779, -1.9204593423306242084, 27.826456463201008518},
+      {-2.4263219149482031511, -1.4202336557809887019, 29.769029317615839147},
       result);
   ExpectArrayNear(
       (*cells)[2].GetPosition(),
-      {-7.4131468903093011846, 20.911807812004578722, 3.9335861673545626793},
+      {-4.9118212650644856865, 23.156656083480623209, -9.1231684411316447125},
       result);
   ExpectArrayNear(
       (*cells)[3].GetPosition(),
-      {-8.033329329758023718, 17.243615257269006236, 23.532725100678181462},
+      {4.3076765979041251597, 15.615300607043293368, 25.657658447555828474},
       result);
   ExpectArrayNear(
       (*cells)[4].GetPosition(),
-      {27.712113581281290209, -7.0863749219630483012, -0.078076864912935250995},
+      {28.139314619772036963, -0.20987998233654170388, 4.6381417441282613012},
       result);
   ExpectArrayNear(
       (*cells)[5].GetPosition(),
-      {25.484933246104343851, -4.0134835408100482113, 15.268471646405878062},
+      {24.417550786690171094, 3.347525366344008102, 28.067824703341415216},
       result);
   ExpectArrayNear(
       (*cells)[6].GetPosition(),
-      {16.920893247175463614, 28.834297997409986891, 0.49327324196877342377},
+      {16.614520566718258721, 15.828015607618416638, -4.8357284569095106974},
       result);
   ExpectArrayNear(
       (*cells)[7].GetPosition(),
-      {25.408565278573540525, 28.704363681593566326, 20.869688211659408239},
+      {14.446017269290647889, 22.250832446808978204, 20.180438615017894932},
       result);
 }
 
@@ -144,22 +144,13 @@ inline int Simulate(int argc, const char** argv) {
   omp_set_num_threads(1);
 
   // Run CPU version
-  // Disabled because CPU is running a different type of execution context than
-  // the GPU versions (update in place, instead of synchronously)
-  // Can be reenabled once such a execution context is in place for CPU too
-  // RunTest(&result, kCpu);
+  RunTest(&result, kCpu);
 
-  // Run GPU (CUDA) version. We check the macro here because we don't want to
-  // fatal in case CUDA is not installed
-#ifdef USE_CUDA
+  // Run GPU (CUDA) version
   RunTest(&result, kCuda);
-#endif
 
-  // Run GPU (OpenCL) version. We check the macro here because we don't want to
-  // fatal in case OpenCL is not installed
-#ifdef USE_OPENCL
+  // Run GPU (OpenCL) version
   RunTest(&result, kOpenCl);
-#endif
 
   return !result;
 }

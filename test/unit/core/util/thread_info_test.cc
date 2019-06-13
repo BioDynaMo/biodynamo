@@ -52,13 +52,13 @@ void RunAllChecks(const ThreadInfo& ti) {
 }
 
 TEST(ThreadInfoTest, All) {
-  auto* ti = ThreadInfo::GetInstance();
-  RunAllChecks(*ti);
+  ThreadInfo ti;
+  RunAllChecks(ti);
 }
 
 TEST(ThreadInfoTest, ThreadCPUBinding) {
-  auto* ti = ThreadInfo::GetInstance();
-  RunAllChecks(*ti);
+  ThreadInfo ti;
+  RunAllChecks(ti);
 
   // do some work
   std::vector<int> v;
@@ -69,18 +69,18 @@ TEST(ThreadInfoTest, ThreadCPUBinding) {
   }
 
   // check if thread info is still correct
-  RunAllChecks(*ti);
+  RunAllChecks(ti);
 }
 
 TEST(ThreadInfoTest, Renew) {
-  auto* ti = ThreadInfo::GetInstance();
-  RunAllChecks(*ti);
+  ThreadInfo ti;
+  RunAllChecks(ti);
 
   // schedule this thread on a different NUMA node
-  numa_run_on_node(ti->GetNumaNodes() - 1);
-  ti->Renew();
+  numa_run_on_node(ti.GetNumaNodes() - 1);
+  ti.Renew();
 
-  RunAllChecks(*ti);
+  RunAllChecks(ti);
 }
 
 }  // namespace bdm

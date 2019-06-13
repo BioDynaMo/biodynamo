@@ -51,8 +51,5 @@ test/system-test.sh
 cd ~
 biodynamo new test-sim
 run_cmake_simulation test-sim
-RET_VAL=$?
 
-$BDM_PROJECT_DIR/util/xvfb-initd.sh stop
-
-exit $RET_VAL
+exit $?

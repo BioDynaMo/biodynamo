@@ -25,19 +25,14 @@ void ApplyBoundingBox(TSO* sim_object, double lb, double rb) {
   // otherwise it will fall out of the boundary of the simulation space
   double eps = 1e-10;
   auto pos = sim_object->GetPosition();
-  bool updated = false;
   for (int i = 0; i < 3; i++) {
     if (pos[i] < lb) {
       pos[i] = lb;
-      updated = true;
     } else if (pos[i] >= rb) {
       pos[i] = rb - eps;
-      updated = true;
     }
   }
-  if (updated) {
-    sim_object->SetPosition(pos);
-  }
+  sim_object->SetPosition(pos);
 }
 
 /// Keeps the simulation objects contained within the bounds as defined in

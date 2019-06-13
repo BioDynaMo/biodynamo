@@ -26,4 +26,4 @@ set -e
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
 # no OS specifics -> use common install script
-$BDM_PROJECT_DIR/util/installation/common/install.sh centos-7.6.1810
+$BDM_PROJECT_DIR/util/installation/common/install.sh centos-7.5.1804

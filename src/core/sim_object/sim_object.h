@@ -122,8 +122,6 @@ struct Capsule;
       sim_object##Ext<CompileTimeParam<Scalar>, Capsule<sim_object##Ext>>;    \
   using Soa##sim_object =                                                     \
       sim_object##Ext<CompileTimeParam<Soa>, Capsule<sim_object##Ext>>;       \
-  using SoaRef##sim_object =                                                  \
-      sim_object##Ext<CompileTimeParam<SoaRef>, Capsule<sim_object##Ext>>;    \
                                                                               \
   /** Functions used to associate a return type with a number of parameter */ \
   /** types: e.g. `SoaCell ADLHelper(Cell, Soa);`*/                           \
@@ -132,10 +130,8 @@ struct Capsule;
   /** find this association in different namespaces */                        \
   sim_object ADLHelper(sim_object *, Scalar);                                 \
   Soa##sim_object ADLHelper(sim_object *, Soa);                               \
-  SoaRef##sim_object ADLHelper(sim_object *, SoaRef);                         \
   sim_object ADLHelper(Soa##sim_object *, Scalar);                            \
   Soa##sim_object ADLHelper(Soa##sim_object *, Soa);                          \
-  SoaRef##sim_object ADLHelper(Soa##sim_object *, SoaRef);                    \
                                                                               \
   template <typename TCompileTimeParam>                                       \
   using sim_object##Test =                                                    \
@@ -186,12 +182,6 @@ struct Capsule;
 
 #define BDM_SIM_OBJECT_CPY_CTOR_INIT_ITERATOR(data_member) \
   data_member(other->data_member),
-
-#define BDM_SIM_OBJECT_DUPLICATE_CTOR_BODY(...) \
-  EVAL(LOOP(BDM_SIM_OBJECT_DUPLICATE_CTOR_BODY_ITERATOR, __VA_ARGS__))
-
-#define BDM_SIM_OBJECT_DUPLICATE_CTOR_BODY_ITERATOR(data_member) \
-  data_member[kIdx] = other->data_member[other->kIdx];
 
 #define BDM_SIM_OBJECT_CLEAR_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_CLEAR_BODY_ITERATOR, __VA_ARGS__))
@@ -328,12 +318,6 @@ struct Capsule;
   class_name##Ext(T *other, size_t idx)                                        \
       : Base(other, idx),                                                      \
         REMOVE_TRAILING_COMMAS(BDM_SIM_OBJECT_CPY_CTOR_INIT(__VA_ARGS__)) {}   \
-                                                                               \
-  /** Constructor to duplicate this sim object */                              \
-  template <typename T>                                                        \
-  class_name##Ext(const T *other) : Base(other) {                              \
-    BDM_SIM_OBJECT_DUPLICATE_CTOR_BODY(__VA_ARGS__)                            \
-  }                                                                            \
                                                                                \
   /** Executes the given function for all data members             */          \
   /**  Function could be a lambda in the following form:           */          \
@@ -599,9 +583,6 @@ class ScalarSimObject {
   ScalarSimObject(const ScalarSimObject &other)
       : element_idx_(other.element_idx_) {}
 
-  template <typename TSo>
-  ScalarSimObject(const TSo *other) {}
-
   virtual ~ScalarSimObject() {}
 
   ScalarSimObject &operator=(ScalarSimObject &&other) {
@@ -655,9 +636,7 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   using SimObjectBaseExt = typename SimObjectImpl<T, U>::type;
 
   BDM_SIM_OBJECT_HEADER(SimObject, SimObjectBase, 1, uid_, box_idx_,
-                        biology_modules_, run_bm_loop_idx_, run_displacement_,
-                        run_displacement_for_all_next_ts_,
-                        run_displacement_next_ts_, numa_node_, so_ptr_cache_);
+                        biology_modules_, run_bm_loop_idx_, numa_node_);
 
  public:
   SimObjectExt() : Base() { uid_[kIdx] = SoUidGenerator::Get()->NewSoUid(); }
@@ -733,62 +712,18 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
 
   void RunDiscretization() {}
 
-  void AssignNewUid() { uid_[kIdx] = SoUidGenerator::Get()->NewSoUid(); }
-
   SoUid GetUid() const { return uid_[kIdx]; }
 
   uint32_t GetBoxIdx() const { return box_idx_[kIdx]; }
 
   void SetBoxIdx(uint32_t idx) { box_idx_[kIdx] = idx; }
 
-  void SetRunDisplacementNextTimestep(bool run) const {
-    const_cast<SimObjectExt *>(this)->run_displacement_next_ts_[kIdx] = run;
-  }
-
-  bool GetRunDisplacementForAllNextTs() const {
-    return run_displacement_for_all_next_ts_[kIdx];
-  }
-
-  void SetRunDisplacementForAllNextTs(bool value = true) {
-    run_displacement_for_all_next_ts_[kIdx] = value;
-  }
-
-  void ApplyRunDisplacementForAllNextTs() {
-    if (!Simulation_t::GetActive()->GetParam()->detect_static_sim_objects_) {
-      run_displacement_next_ts_[kIdx] = true;
-      return;
-    }
-
-    if (!run_displacement_for_all_next_ts_[kIdx]) {
-      return;
-    }
-    run_displacement_for_all_next_ts_[kIdx] = false;
-    run_displacement_next_ts_[kIdx] = true;
-    auto *ctxt = Simulation_t::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighbor(
-        [this](auto *neighbor, double squared_distance) {
-          double distance =
-              this->ThisMD()->GetDiameter() + neighbor->GetDiameter();
-          if (squared_distance < distance * distance) {
-            neighbor->SetRunDisplacementNextTimestep(true);
-          }
-        },
-        *ThisMD());
-  }
-
-  void UpdateRunDisplacement() {
-    run_displacement_[kIdx] = run_displacement_next_ts_[kIdx];
-    run_displacement_next_ts_[kIdx] = false;
-  }
-
-  bool RunDisplacement() const { return run_displacement_[kIdx]; }
-
   // TODO(ahmad) this only works for SOA backend add check for SOA
   // used only for cuda and opencl code
   uint32_t *GetBoxIdPtr() { return box_idx_.data(); }
 
   /// Return simulation object pointer
-  MostDerivedSoPtr GetSoPtr() const { return MostDerivedSoPtr(uid_[kIdx], so_ptr_cache_[kIdx]); }
+  MostDerivedSoPtr GetSoPtr() const { return MostDerivedSoPtr(uid_[kIdx]); }
 
   void SetNumaNode(typename SoHandle::NumaNode_t numa_node) {
     numa_node_[kIdx] = numa_node;
@@ -868,8 +803,6 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
 
   template <typename TEvent, typename TOther>
   void EventHandler(const TEvent &event, TOther *other) {
-    // Run displacement if a new sim object has been created with an event.
-    SetRunDisplacementForAllNextTs();
     // call event handler for biology modules
     auto *other_bms = &(other->biology_modules_[other->kIdx]);
     BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), other_bms);
@@ -877,17 +810,11 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
 
   template <typename TEvent, typename TLeft, typename TRight>
   void EventHandler(const TEvent &event, TLeft *left, TRight *right) {
-    // Run displacement if a new sim object has been created with an event.
-    SetRunDisplacementForAllNextTs();
     // call event handler for biology modules
     auto *left_bms = &(left->biology_modules_[left->kIdx]);
     auto *right_bms = &(right->biology_modules_[right->kIdx]);
     BiologyModuleEventHandler(event, &(biology_modules_[kIdx]), left_bms,
                               right_bms);
-  }
-
-  void SetSoPtrCache(const SoPointerCache<>& cache) {
-    so_ptr_cache_[kIdx] = cache;
   }
 
  protected:
@@ -905,17 +832,9 @@ class SimObjectExt : public SimObjectImpl<TCompileTimeParam, TDerived>::type {
   /// not ignored for ROOT I/O.
   vec<uint32_t> run_bm_loop_idx_ = {{0}};
 
-  vec<bool> run_displacement_ = {{true}};                   //!
-  vec<bool> run_displacement_for_all_next_ts_ = {{false}};  //!
-  vec<bool> run_displacement_next_ts_ = {{true}};           //!
-
   /// This data member holds information on which NUMA node this sim object is
   /// stored.
   vec<typename SoHandle::NumaNode_t> numa_node_ = {{}};
-
-  /// This member is used to speed-up SoPointer operations
-  /// \see SoPointerCache
-  vec<SoPointerCache<>> so_ptr_cache_ = {{}};
 
   /// @brief Function to copy biology modules from one structure to another
   /// @param event event will be passed on to biology module to determine

@@ -4,7 +4,7 @@ in your simulation. In this tutorial we shal take a look on how to do so.
 ### Tutorial by example
 
 Go into the `test/integration` directory and open the source file
-`substance_initialization.h` in your favorite editor.
+`substance_initialization.h` in your favorite editor. 
 
 #### 1. List the substance(s)
 
@@ -53,7 +53,7 @@ concentration values throught the space. We will use the function
 `ModelInitializer::InitializeSubstance` for this purpose.
 
 ```C++
-ModelInitializer::InitializeSubstance(kSubstance, GaussianBand(120, 5, Axis::kXAxis));
+ModelInitializer::InitializeSubstance(kSubstance, "Substance", GaussianBand(120, 5, Axis::kXAxis));
 ```
 
 Let's break this down. We first pass the substance enum id and name in the
@@ -92,7 +92,7 @@ struct GaussianBand {
       case Axis::kXAxis: return ROOT::Math::normal_pdf(x, sigma_, mean_);
       case Axis::kYAxis: return ROOT::Math::normal_pdf(y, sigma_, mean_);
       case Axis::kZAxis: return ROOT::Math::normal_pdf(z, sigma_, mean_);
-      default: throw std::logic_error("You have chosen an non-existing axis!");
+      default: throw std::logic_error("You have chosen an non-existing axis!"); 
     }
   }
 };

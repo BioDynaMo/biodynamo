@@ -40,8 +40,7 @@ function InstallCmake {
 
 function InstallPackages {
   INSTALL_PACKAGES="freeglut3-dev gcc-5 g++-5 valgrind doxygen graphviz cloc  \
-  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9 python2.7 libnuma-dev \
-  libtbb-dev libopenmpi-dev"
+  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9 python2.7 libnuma-dev"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
 
@@ -108,7 +107,7 @@ function Install {
 
   # install third_party dependencies
   DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
-  DownloadTarFromCBAndExtract $BDM_OS paraview-v5.6.0.tar.gz $THIRD_PARTY_DIR/paraview
+  DownloadTarFromCBAndExtract $BDM_OS paraview.tar.gz $THIRD_PARTY_DIR/paraview
   DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
 
   EchoSuccess "Installation of prerequisites finished successfully!"

@@ -215,9 +215,6 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   void SetAdherence(double adherence) { adherence_[kIdx] = adherence; }
 
   void SetDiameter(double diameter) {
-    if (diameter > diameter_[kIdx]) {
-      Base::SetRunDisplacementForAllNextTs();
-    }
     diameter_[kIdx] = diameter;
     UpdateVolume();
   }
@@ -233,7 +230,6 @@ BDM_SIM_OBJECT(Cell, SimObject) {
 
   void SetPosition(const std::array<double, 3>& position) {
     position_[kIdx] = position;
-    Base::SetRunDisplacementForAllNextTs();
   }
 
   void SetTractorForce(const std::array<double, 3>& tractor_force) {
@@ -253,11 +249,7 @@ BDM_SIM_OBJECT(Cell, SimObject) {
 
   void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    double diameter = std::cbrt(volume_[kIdx] * 6 / Math::kPi);
-    if (diameter > diameter_[kIdx]) {
-      Base::SetRunDisplacementForAllNextTs();
-    }
-    diameter_[kIdx] = diameter;
+    diameter_[kIdx] = std::cbrt(volume_[kIdx] * 6 / Math::kPi);
   }
 
   void UpdateVolume() {
@@ -269,7 +261,6 @@ BDM_SIM_OBJECT(Cell, SimObject) {
     position_[kIdx][0] += delta[0];
     position_[kIdx][1] += delta[1];
     position_[kIdx][2] += delta[2];
-    Base::SetRunDisplacementForAllNextTs();
   }
 
   template <typename TSimulation = Simulation<>>
@@ -384,10 +375,8 @@ BDM_SIM_OBJECT(Cell, SimObject) {
   std::array<double, 3> TransformCoordinatesGlobalToPolar(
       const std::array<double, 3>& coord) const;
 
-  /// NB: Use setter and don't assign values directly
   vec<std::array<double, 3>> position_;
   vec<std::array<double, 3>> tractor_force_;
-  /// NB: Use setter and don't assign values directly
   vec<double> diameter_;
   vec<double> volume_;
   vec<double> adherence_;
@@ -414,10 +403,6 @@ BDM_SO_DEFINE(constexpr std::array<double, 3> CellExt)::kZAxis;
 
 BDM_SO_DEFINE(inline void CellExt)::ApplyDisplacement(
     const std::array<double, 3>& displacement) {
-  if (displacement[0] == 0 && displacement[1] == 0 && displacement[2] == 0) {
-    return;
-  }
-
   UpdatePosition(displacement);
   // Reset biological movement to 0.
   SetTractorForce({0, 0, 0});

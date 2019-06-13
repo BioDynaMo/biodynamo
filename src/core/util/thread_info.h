@@ -29,9 +29,19 @@ namespace bdm {
 /// NB: Threads **must** be bound to CPUs using `OMP_PROC_BIND=true`.
 class ThreadInfo {
  public:
-  static ThreadInfo* GetInstance() {
-    static ThreadInfo kInstance;
-    return &kInstance;
+  ThreadInfo() {
+    if (omp_get_proc_bind() != 1) {
+      Log::Fatal("ThreadInfo",
+                 "The environmental variable OMP_PROC_BIND must be set to "
+                 "true. On Linux run 'export OMP_PROC_BIND=true' prior to "
+                 "running BioDynaMo");
+    }
+    max_threads_ = omp_get_max_threads();
+    numa_nodes_ = numa_num_configured_nodes();
+    thread_numa_mapping_.resize(max_threads_);
+    numa_thread_id_.resize(max_threads_);
+    threads_in_numa_.resize(numa_nodes_);
+    Renew();
   }
 
   /// Returns the number of NUMA nodes on this machine
@@ -60,17 +70,6 @@ class ThreadInfo {
   /// `numa_run_on_node`, `Renew()` must be called to update the thread
   /// metadata.
   void Renew() {
-    max_threads_ = omp_get_max_threads();
-    numa_nodes_ = numa_num_configured_nodes();
-
-    thread_numa_mapping_.clear();
-    numa_thread_id_.clear();
-    threads_in_numa_.clear();
-
-    thread_numa_mapping_.resize(max_threads_, 0);
-    numa_thread_id_.resize(max_threads_, 0);
-    threads_in_numa_.resize(numa_nodes_, 0);
-
 // (openmp thread id -> numa node)
 #pragma omp parallel
     {
@@ -82,7 +81,7 @@ class ThreadInfo {
     // (omp_thread_id -> thread id in numa)
     for (uint16_t n = 0; n < numa_nodes_; n++) {
       uint64_t cnt = 0;
-      for (uint64_t t = 0; t < max_threads_; t++) {
+      for (uint64_t t = 0; t < thread_numa_mapping_.size(); t++) {
         int numa = thread_numa_mapping_[t];
         if (n == numa) {
           numa_thread_id_[t] = cnt;
@@ -91,28 +90,6 @@ class ThreadInfo {
       }
       threads_in_numa_[n] = cnt;
     }
-  }
-
-  friend std::ostream& operator<<(std::ostream& str, const ThreadInfo& ti) {
-    str << "max_threads            " << ti.max_threads_
-        << "\nnum_numa nodes         " << ti.numa_nodes_;
-
-    str << "\nthread to numa mapping ";
-    for(auto& el : ti.thread_numa_mapping_) {
-      str << " " << el;
-    }
-
-    str << "\nthread id in numa node ";
-    for(auto& el : ti.numa_thread_id_) {
-      str << " " << el;
-    }
-
-    str << "\nnum threads per numa   ";
-    for(auto& el : ti.threads_in_numa_) {
-      str << " " << el;
-    }
-    str << "\n";
-    return str;
   }
 
  private:
@@ -136,16 +113,6 @@ class ThreadInfo {
   /// vector position: numa node \n
   /// vector value number of threads
   std::vector<int> threads_in_numa_;
-
-  ThreadInfo() {
-    if (omp_get_proc_bind() != 1) {
-      Log::Fatal("ThreadInfo",
-                 "The environmental variable OMP_PROC_BIND must be set to "
-                 "true. On Linux run 'export OMP_PROC_BIND=true' prior to "
-                 "running BioDynaMo");
-    }
-    Renew();
-  }
 };
 
 }  // namespace bdm

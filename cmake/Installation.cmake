@@ -95,7 +95,6 @@ file(GLOB SELECTION_FILES cmake/*.xml)
 install(FILES ${SELECTION_FILES} DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/BioDynaMo.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/SetCompilerFlags.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
-install(FILES cmake/FindVTune.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/FindROOT.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/FindOpenCL.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/RootUseFile.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
@@ -103,7 +102,6 @@ install(FILES ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake DESTINATION ${CMAKE_INSTALL
 # CMake files required from external projects
 install(FILES cmake/BioDynaMoConfig.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 install(FILES cmake/FindNuma.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
-install(FILES cmake/FindTBB.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 #simulation template
 install(DIRECTORY util/simulation-template DESTINATION "biodynamo/" FILES_MATCHING PATTERN "*")
 # Demos.

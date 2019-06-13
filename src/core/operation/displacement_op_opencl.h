@@ -27,7 +27,6 @@
 #endif
 
 #include "core/gpu/gpu_helper.h"
-#include "core/gpu/opencl_state.h"
 #include "core/grid.h"
 #include "core/operation/bound_space_op.h"
 #include "core/resource_manager.h"
@@ -52,10 +51,9 @@ class DisplacementOpOpenCL {
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
 
-    auto ocl_state = OpenCLState().GetInstance();
-    auto context = ocl_state.GetOpenCLContext();
-    auto queue = ocl_state.GetOpenCLCommandQueue();
-    auto programs = ocl_state.GetOpenCLProgramList();
+    auto context = rm->GetOpenCLContext();
+    auto queue = rm->GetOpenCLCommandQueue();
+    auto programs = rm->GetOpenCLProgramList();
 
     std::vector<cl_double> mass(cells->size());
     std::vector<std::array<cl_double, 3>> cell_movements(cells->size());

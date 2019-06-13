@@ -39,7 +39,7 @@ class DiffusionGrid {
  public:
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 11)
+                double mu, int resolution = 10)
       : substance_(substance_id),
         substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
@@ -63,17 +63,8 @@ class DiffusionGrid {
     num_boxes_axis_[1] = resolution_;
     num_boxes_axis_[2] = resolution_;
 
-    // Example: diffusion grid dimensions from 0-40 and resolution
-    // of 4. Resolution must be adjusted otherwise one data pointer will be
-    // missing.
-    // Without adjustment:
-    //   box_length_: 10
-    //   data points {0, 10, 20, 30} - 40 will be misssing!
-    // With adjustment
-    //   box_length_: 13.3
-    //   data points: {0, 13.3, 26.6, 39.9}
     box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
-                  static_cast<double>(resolution_ - 1);
+                  static_cast<double>(resolution_);
     ParametersCheck();
 
     box_volume_ = box_length_ * box_length_ * box_length_;

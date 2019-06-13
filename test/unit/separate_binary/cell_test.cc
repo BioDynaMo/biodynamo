@@ -207,7 +207,7 @@ TEST(CellTest, BiologyModuleEventHandler) {
 
   std::vector<Variant<GrowthModule, MovementModule>> destination;
 
-  CellDivisionEvent event{0.5, 0, 0};
+  CellDivisionEvent event;
   TestCell copy(event, &cell, 0);
   cell.EventHandler(event, &copy);
 

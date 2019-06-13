@@ -64,11 +64,11 @@ inline int Simulate(int argc, const char** argv) {
   // Order: substance id, substance name, initialization model, along which axis
   // (0 = x, 1 = y, 2 = z). See the documentation of `GaussianBand` for
   // information about its arguments
-  ModelInitializer::InitializeSubstance(kSubstance,
+  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
                                         GaussianBand(0, 5, Axis::kXAxis));
-  ModelInitializer::InitializeSubstance(kSubstance,
+  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
                                         GaussianBand(0, 5, Axis::kYAxis));
-  ModelInitializer::InitializeSubstance(kSubstance,
+  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
                                         GaussianBand(0, 5, Axis::kZAxis));
 
   // 4. Run simulation for N timesteps

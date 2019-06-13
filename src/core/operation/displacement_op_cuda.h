@@ -96,17 +96,14 @@ class DisplacementOpCuda {
       }
     }
 
-    // Pass non-const parameter to kernel
-    auto max_displacement = param->simulation_max_displacement_;
-    auto time_step = param->simulation_time_step_;
-
     cdo_->LaunchDisplacementKernel(
         cells->GetPositionPtr(), cells->GetDiameterPtr(),
         cells->GetTractorForcePtr(), cells->GetAdherencePtr(),
-        cells->GetBoxIdPtr(), mass.data(), &time_step, &max_displacement,
-        &squared_radius, &num_objects, starts.data(), lengths.data(),
-        successors.data(), &box_length, num_boxes_axis.data(),
-        grid_dimensions.data(), cell_movements.data()->data());
+        cells->GetBoxIdPtr(), mass.data(), &(param->simulation_time_step_),
+        &(param->simulation_max_displacement_), &squared_radius, &num_objects,
+        starts.data(), lengths.data(), successors.data(), &box_length,
+        num_boxes_axis.data(), grid_dimensions.data(),
+        cell_movements.data()->data());
 
 // set new positions after all updates have been calculated
 // otherwise some cells would see neighbors with already updated positions

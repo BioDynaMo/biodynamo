@@ -1,5 +1,6 @@
 # from VecGeom
-if (DEFINED ENV{VTUNE_DIR})
+
+if ($ENV{VTUNE_DIR})
   set(VTUNE_DIR $ENV{VTUNE_DIR})
 endif()
 
@@ -21,4 +22,4 @@ if (VTUNE_LIBRARIES)
   message(STATUS "Found Vtune library ${VTUNE_LIBRARIES}")
 else()
   message(STATUS "Vtune library not found; try to set a VTUNE_DIR environment variable to the base installation path or add -DVTUNE_DIR to the cmake command")
-endif() 
+endif()

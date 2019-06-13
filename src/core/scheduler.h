@@ -86,8 +86,9 @@ class Scheduler {
     auto* param = sim->GetParam();
 
     Timing::Time("Set up exec context", [&]() {
-      const auto& all_exec_ctxts = sim->GetAllExecCtxts();
-      sim->GetMainExecCtxt()->SetupIterationAll(all_exec_ctxts);
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
+        ctxt->SetupIteration();
+      }
     });
 
     Timing::Time("visualize", [&]() {
@@ -102,8 +103,6 @@ class Scheduler {
       }
     };
 
-    auto first_op = [](auto&& so) { so.UpdateRunDisplacement(); };
-    auto last_op = [](auto&& so) { so.ApplyRunDisplacementForAllNextTs(); };
     auto biology_module_op = [&](auto&& so) { so.RunBiologyModules(); };
     auto discretization_op = [&](auto&& so) { so.RunDiscretization(); };
 
@@ -114,12 +113,11 @@ class Scheduler {
     };
 
     // update all sim objects: run all CPU operations
-    rm->ApplyOnAllElementsParallelDynamic(
-        param->scheduling_batch_size_, [&](auto&& so, const SoHandle&) {
-          sim->GetExecutionContext()->Execute(
-              so, first_op, bound_space_op, biology_module_op, displacement_op,
-              discretization_op, last_op);
-        });
+    rm->ApplyOnAllElementsParallelDynamic(1000, [&](auto&& so,
+                                                    const SoHandle&) {
+      sim->GetExecutionContext()->Execute(so, bound_space_op, biology_module_op,
+                                          displacement_op, discretization_op);
+    });
 
     // update all sim objects: hardware accelerated operations
     if (param->run_mechanical_interactions_ && !displacement_.UseCpu()) {
@@ -128,8 +126,9 @@ class Scheduler {
 
     // finish updating sim objects
     Timing::Time("Tear down exec context", [&]() {
-      const auto& all_exec_ctxts = sim->GetAllExecCtxts();
-      sim->GetMainExecCtxt()->TearDownIterationAll(all_exec_ctxts);
+      for (auto* ctxt : sim->GetAllExecCtxts()) {
+        ctxt->TearDownIteration();
+      }
     });
 
     // update all substances (DiffusionGrids)
@@ -189,8 +188,9 @@ class Scheduler {
     auto* param = sim->GetParam();
 
     // commit all changes
-    const auto& all_exec_ctxts = sim->GetAllExecCtxts();
-    sim->GetMainExecCtxt()->TearDownIterationAll(all_exec_ctxts);
+    for (auto* ctxt : sim->GetAllExecCtxts()) {
+      ctxt->TearDownIteration();
+    }
 
     if (!is_gpu_environment_initialized_ && param->use_gpu_) {
       InitializeGPUEnvironment<>();

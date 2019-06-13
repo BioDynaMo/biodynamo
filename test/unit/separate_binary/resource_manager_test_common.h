@@ -15,6 +15,8 @@
 #ifndef UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_TEST_COMMON_H_
 #define UNIT_SEPARATE_BINARY_RESOURCE_MANAGER_TEST_COMMON_H_
 
+#include "core/resource_manager.h"
+
 #include <algorithm>
 #include <vector>
 #include "core/param/compile_time_list.h"
@@ -293,8 +295,8 @@ void RunApplyOnAllTypesTest() {
         }
       });
 
-  auto* ti = ThreadInfo::GetInstance();
-  EXPECT_EQ(ti->GetNumaNodes() * 2u, counter);
+  ThreadInfo ti;
+  EXPECT_EQ(ti.GetNumaNodes() * 2u, counter);
 }
 
 template <typename TRm, typename TA, typename TB>
@@ -358,8 +360,8 @@ void RunGetSimObjectTest() {
 // -----------------------------------------------------------------------------
 // https://github.com/osmhpi/pgasus/blob/775a5f90d8f6fa89cfb93eac6de16dcfe27167ce/src/util/mmaphelper.cpp
 inline static void* AlignPage(const void* ptr) {
-  static constexpr uintptr_t kPageMask = ~(uintptr_t(0xFFF));
-  return (void*)(((uintptr_t)ptr) & kPageMask);
+  static constexpr uintptr_t PAGE_MASK = ~(uintptr_t(0xFFF));
+  return (void*)(((uintptr_t)ptr) & PAGE_MASK);
 }
 
 inline int GetNumaNodeForMemory(const void* ptr) {
@@ -372,14 +374,14 @@ inline int GetNumaNodeForMemory(const void* ptr) {
 inline std::vector<uint64_t> GetSoPerNuma(uint64_t num_sim_objects) {
   // balance simulation objects per numa node according to the number of
   // threads associated with each numa domain
-  auto* ti = ThreadInfo::GetInstance();
-  int numa_nodes = ti->GetNumaNodes();
+  ThreadInfo ti;
+  int numa_nodes = ti.GetNumaNodes();
 
   std::vector<uint64_t> so_per_numa(numa_nodes);
   uint64_t cummulative = 0;
-  auto max_threads = ti->GetMaxThreads();
+  auto max_threads = ti.GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
-    auto threads_in_numa = ti->GetThreadsInNumaNode(n);
+    auto threads_in_numa = ti.GetThreadsInNumaNode(n);
     uint64_t num_so = num_sim_objects * threads_in_numa / max_threads;
     so_per_numa[n] = num_so;
     cummulative += num_so;
@@ -399,10 +401,10 @@ inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_so_per_type,
   }
 
   std::atomic<uint64_t> cnt(0);
-  auto* ti = ThreadInfo::GetInstance();
+  ThreadInfo ti;
   // counts the number of sim objects in each numa domain
   std::vector<uint64_t> numa_so_cnts;
-  numa_so_cnts.resize(ti->GetNumaNodes());
+  numa_so_cnts.resize(ti.GetNumaNodes());
   std::atomic<uint64_t> numa_memory_errors(0);
   std::atomic<uint64_t> numa_thread_errors(0);
 
@@ -444,7 +446,7 @@ inline void CheckApplyOnAllElements(TRm* rm, uint64_t num_so_per_type,
     }
     EXPECT_EQ(0u, numa_thread_errors.load());
     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
-    for (int n = 0; n < ti->GetNumaNodes(); ++n) {
+    for (int n = 0; n < ti.GetNumaNodes(); ++n) {
       EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
     }
   }
@@ -514,10 +516,10 @@ inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_so_per_type,
   }
 
   std::atomic<uint64_t> cnt(0);
-  auto* ti = ThreadInfo::GetInstance();
+  ThreadInfo ti;
   // counts the number of sim objects in each numa domain
   std::vector<uint64_t> numa_so_cnts;
-  numa_so_cnts.resize(ti->GetNumaNodes());
+  numa_so_cnts.resize(ti.GetNumaNodes());
   // If a simulation object is not stored on the NUMA indicated, it is a memory
   // error.
   std::atomic<uint64_t> numa_memory_errors(0);
@@ -552,7 +554,7 @@ inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_so_per_type,
         for (int i = 0; i < 10000; i++) {
           d += std::sin(i);
         }
-        if (handle.GetNumaNode() != ti->GetNumaNode(omp_get_thread_num())) {
+        if (handle.GetNumaNode() != ti.GetNumaNode(omp_get_thread_num())) {
           numa_thread_errors++;
         }
       });
@@ -582,7 +584,7 @@ inline void CheckApplyOnAllElementsDynamic(TRm* rm, uint64_t num_so_per_type,
       EXPECT_GT(num_so_per_type / 4, numa_thread_errors.load());
     }
     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
-    for (int n = 0; n < ti->GetNumaNodes(); ++n) {
+    for (int n = 0; n < ti.GetNumaNodes(); ++n) {
       EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
     }
   }

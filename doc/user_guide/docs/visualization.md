@@ -18,8 +18,6 @@ One way to enable visualization is to export a visualization file every time ste
 (or every N time steps). In the `bmd.toml` file add the following lines:
 
 ```
-[simulation]
-# For other simulations certain parameters would also need to be defined within this section of the toml file.
 [visualization]
 export = true
 export_interval = 1
@@ -56,15 +54,6 @@ Navigate to your simulation output directory and select the `pvsm` file.
 In the next window keep the default (_Use File Names From State_) and click OK.
 
 ![ParaView Load State Data](images/pv_load_state_3.png)
-
-One can also directlly access paraview via utilising a pipeline from the terminal, first navigate to the build file of the biodynamo simulation project/build then execute the following command line from the terminal:
-
-```
-make - j8 && ./project && paraview output/project/*.pvsm
-
-```
-
-This tells biodynamo to make the project utilising how many cores are specified,in this case 8, and if that is succesfull it will then run the simulation from the outputed executeable, if the previous also succeeds paraview will open the project from the outputted .pvsm file.
 
 <!-- ## Live visualization
 

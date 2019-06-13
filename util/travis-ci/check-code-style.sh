@@ -34,8 +34,8 @@ echo ${TRAVIS_OS_NAME}
 git fetch --unshallow || true
 git fetch --tags
 
-python --version || true
-python3 --version || true
+python --version
+python3 --version
 
 # add master branch
 # https://github.com/travis-ci/travis-ci/issues/6069
@@ -52,11 +52,9 @@ source ~/.bdm/biodynamo-env.sh
 set -e -x
 
 # print lines-of-code statistic
-sudo apt install -y cloc
 cloc --exclude-dir=build .
 
-mkdir build || true
-cd build
+mkdir build && cd build
 cmake ..
 cmake --build . --target fetch-master
 cmake --build . --target show-format || true
