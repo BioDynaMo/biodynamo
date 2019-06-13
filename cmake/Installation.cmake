@@ -70,7 +70,7 @@ install(FILES util/makefile-build/bdm-code-generation DESTINATION ${CMAKE_INSTAL
 # libbiodynamo.so
 install(TARGETS biodynamo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 if(dict)
-  install(FILES build/libbiodynamo_dict_rdict.pcm DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libbiodynamo_dict_rdict.pcm" DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 # libbdmcuda.a
 if(CUDA_FOUND)
@@ -96,12 +96,14 @@ install(FILES ${SELECTION_FILES} DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/BioDynaMo.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/SetCompilerFlags.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/FindROOT.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
+install(FILES cmake/FindVTune.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/FindOpenCL.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/RootUseFile.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 # CMake files required from external projects
 install(FILES cmake/BioDynaMoConfig.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 install(FILES cmake/FindNuma.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
+install(FILES cmake/FindTBB.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 #simulation template
 install(DIRECTORY util/simulation-template DESTINATION "biodynamo/" FILES_MATCHING PATTERN "*")
 # Demos.

@@ -99,7 +99,7 @@ This change requires a different signature of `BDM_SIM_OBJECT_HEADER`.
 
 In other words, copy the parameters from `BDM_SIM_OBJECT` to the beginning of `BDM_SIM_OBJECT_HEADER`
 ``` c++
-BDM_SIM_OBJECT(Cell, SimulationObject) {
+class Cell : public SimulationObject {
   BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, ...)
 ```
 
@@ -132,7 +132,7 @@ Refactor [parameters](parameter).
    object. This was necessary due to compile time errors of neurite biology modules.
    (Although they were not used for neurons, the compiler tried to compile them)
    This replaces the reinterpret cast workaround.
-*  `Simulation<>::GetActive()->GetParam()` returns const pointer
+*  `Simulation::GetActive()->GetParam()` returns const pointer
    Runtime parameter should not be changed during the simulation. This simplifies
    the distributed runtime.
 *  Add macros to simplify definition of compile time parameter.
@@ -195,7 +195,7 @@ inconsistencies with the biodynamo version.
 
 | Old                                 | New                                    |
 | ----------------------------------- | -------------------------------------- |
-| `InitializeBioDynaMo(...)`          | `Simulation<> simulation(...)` |
+| `InitializeBioDynaMo(...)`          | `Simulation simulation(...)` |
 | `Rm()` <br> `TRm::Get()` <br>  `TResourceManager::Get()` | `auto* rm = simulation.GetResourceManager();` |
 | `GetDiffusionGrid(...)`             | `rm->GetDiffusionGrid(...)` |
 | `Grid::GetInstance()`               | `auto* grid = simulation.GetGrid();` |

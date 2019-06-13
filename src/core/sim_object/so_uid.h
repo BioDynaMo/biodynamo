@@ -19,8 +19,8 @@
 
 namespace bdm {
 
-/// SoUid is a unique id for simulation objects that stay constant throughout
-/// the whole simulation.
+/// SoUid is a unique id for simulation objects that remains unchanged
+/// throughout the whole simulation.
 using SoUid = uint64_t;
 
 /// This class generates unique ids for simulation objects events satisfying the
@@ -35,6 +35,8 @@ class SoUidGenerator {
   }
 
   SoUid NewSoUid() { return counter_++; }
+
+  SoUid GetLastId() const { return counter_; }
 
  private:
   SoUidGenerator() : counter_(0) {}

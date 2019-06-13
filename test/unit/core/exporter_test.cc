@@ -13,32 +13,32 @@
 // -----------------------------------------------------------------------------
 
 #include "core/exporter.h"
+#include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
+#include "core/simulation.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
 
 TEST(ExportTest, ExportToFile) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
 
   // set up cells and their positions
-  Cell cell1;
-  cell1.SetPosition({0.5, 1, 0});
-  cell1.SetDiameter(10);
-  Cell cell2;
-  cell2.SetPosition({-5, 5, 0.9});
-  cell2.SetDiameter(10);
+  Cell* cell1 = new Cell();
+  cell1->SetPosition({0.5, 1, 0});
+  cell1->SetDiameter(10);
+  Cell* cell2 = new Cell();
+  cell2->SetPosition({-5, 5, 0.9});
+  cell2->SetDiameter(10);
 
-  auto cells = Cell::NewEmptySoa();
-  cells.push_back(cell1);
-  cells.push_back(cell2);
+  rm->push_back(cell1);
+  rm->push_back(cell2);
 
   /// Test the standard file exporter
-  auto exp_basic = ExporterFactory::GenerateExporter<SoaCell>(kBasic);
-  exp_basic->ExportIteration(cells, "TestBasicExporter.dat", 0);
+  auto exp_basic = ExporterFactory::GenerateExporter(kBasic);
+  exp_basic->ExportIteration("TestBasicExporter.dat", 0);
   std::ifstream ifs;
   ifs.open("TestBasicExporter.dat");
   std::string line;
@@ -52,8 +52,8 @@ TEST(ExportTest, ExportToFile) {
   remove("TestBasicExporter.dat");
 
   /// Test the Matlab file exporter
-  auto exp_matlab = ExporterFactory::GenerateExporter<SoaCell>(kMatlab);
-  exp_matlab->ExportIteration(cells, "TestMatlabExporter.m", 0);
+  auto exp_matlab = ExporterFactory::GenerateExporter(kMatlab);
+  exp_matlab->ExportIteration("TestMatlabExporter.m", 0);
   ifs.open("TestMatlabExporter.m");
   std::getline(ifs, line);
   EXPECT_EQ("CellPos = zeros(2,3);", line);
@@ -67,8 +67,8 @@ TEST(ExportTest, ExportToFile) {
   remove("TestMatlabExporter.m");
 
   /// Test the NeuroML file exporter
-  auto exp_neuroml = ExporterFactory::GenerateExporter<SoaCell>(kNeuroML);
-  exp_neuroml->ExportIteration(cells, "TestNeuroMLExporter.xml", 0);
+  auto exp_neuroml = ExporterFactory::GenerateExporter(kNeuroML);
+  exp_neuroml->ExportIteration("TestNeuroMLExporter.xml", 0);
   ifs.open("TestNeuroMLExporter.xml");
   std::getline(ifs, line);
   EXPECT_EQ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", line);
@@ -86,8 +86,8 @@ TEST(ExportTest, ExportToFile) {
   remove("TestNeuroMLExporter.xml");
 
   /// Test the Paraview exporter
-  auto exp_paraview = ExporterFactory::GenerateExporter<SoaCell>(kParaview);
-  exp_paraview->ExportIteration(cells, "TestResultsParaview", 0);
+  auto exp_paraview = ExporterFactory::GenerateExporter(kParaview);
+  exp_paraview->ExportIteration("TestResultsParaview", 0);
   exp_paraview->ExportSummary("TestResultsParaview", 1);
   ifs.open("TestResultsParaview.pvd");
   std::getline(ifs, line);

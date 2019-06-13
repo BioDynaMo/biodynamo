@@ -26,48 +26,35 @@
 #endif
 #include "core/grid.h"
 #include "core/param/param.h"
+#include "core/scheduler.h"
 #include "core/shape.h"
-#include "core/util/log.h"
-
 #include "core/simulation.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-template <typename TSimulation = Simulation<>>
 class DisplacementOp {
  public:
   DisplacementOp() {
-    auto* sim = TSimulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    rm->template ApplyOnAllTypes(
-        [this](auto* container, uint16_t numa_node, uint16_t type_idx) {
-          using Container = std::remove_pointer_t<decltype(container)>;
-          using SimObject = typename Container::value_type;
-          if (SimObject::GetShape() != Shape::kSphere) {
-            Log::Warning(
-                "DisplacementOp",
-                "Currently GPU/FPGA implementation only supports spherical "
-                "shapes. Therefore, the CPU implementation will be used.");
-            this->force_cpu_implementation_ = true;
-          }
-        });
+    // NB: check if there are non spherical shapes is not easily possible in the
+    // dynamic solution.
   }
 
   ~DisplacementOp() {}
 
   bool UseCpu() const {
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     return force_cpu_implementation_ ||
            (!param->use_gpu_ && !param->use_opencl_);
   }
 
   void operator()() {
-    auto* param = TSimulation::GetActive()->GetParam();
+    auto* param = Simulation::GetActive()->GetParam();
     if (param->use_gpu_ && !force_cpu_implementation_) {
 #ifdef USE_OPENCL
       if (param->use_opencl_) {
-        auto* rm = TSimulation::GetActive()->GetResourceManager();
+        auto* rm = Simulation::GetActive()->GetResourceManager();
         rm->ApplyOnAllTypes(
             [](auto* cells, uint16_t numa_node, uint16_t type_idx) {
               opencl_(cells, numa_node_, type_idx);
@@ -76,7 +63,7 @@ class DisplacementOp {
 #endif
 #ifdef USE_CUDA
       if (!param->use_opencl_) {
-        auto* rm = TSimulation::GetActive()->GetResourceManager();
+        auto* rm = Simulation::GetActive()->GetResourceManager();
         rm->ApplyOnAllTypes(
             [](auto* cells, uint16_t numa_node, uint16_t type_idx) {
               cuda_(cells, numa_node, type_idx);
@@ -90,10 +77,7 @@ class DisplacementOp {
     }
   }
 
-  template <typename TSimObject>
-  void operator()(TSimObject&& sim_object) {
-    cpu_(sim_object);
-  }
+  void operator()(SimObject* sim_object) { cpu_(sim_object); }
 
  private:
   /// Currently the gpu implementation only supports Spheres.
@@ -102,12 +86,12 @@ class DisplacementOp {
   /// if this condition is detected. In this case `force_cpu_implementation_`
   /// will be set to true.
   bool force_cpu_implementation_ = false;
-  DisplacementOpCpu<> cpu_;
+  DisplacementOpCpu cpu_;
 #ifdef USE_CUDA
-  DisplacementOpCuda<> cuda_;  // NOLINT
+  DisplacementOpCuda cuda_;  // NOLINT
 #endif
 #ifdef USE_OPENCL
-  DisplacementOpOpenCL<> opencl_;
+  DisplacementOpOpenCL opencl_;
 #endif
 };
 

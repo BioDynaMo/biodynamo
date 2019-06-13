@@ -16,6 +16,8 @@
 #define CORE_OPERATION_DIVIDING_CELL_OP_H_
 
 #include <cstdint>
+#include "core/sim_object/cell.h"
+#include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
 
 namespace bdm {
@@ -24,23 +26,15 @@ class DividingCellOp {
  public:
   DividingCellOp() {}
   ~DividingCellOp() {}
-  DividingCellOp(const DividingCellOp&) = delete;
-  DividingCellOp& operator=(const DividingCellOp&) = delete;
 
-  template <typename TSimulation = Simulation<>>
-  void operator()() const {
-    auto* rm = TSimulation::GetActive()->GetResourceManager();
-    rm->ApplyOnAllTypes([](auto* cells, uint16_t numa_node, uint16_t type_idx) {
-#pragma omp parallel for
-      for (uint64_t i = 0; i < cells->size(); i++) {
-        auto&& cell = (*cells)[i];
-        if (cell.GetDiameter() <= 40) {
-          cell.ChangeVolume(300);
-        } else {
-          cell.Divide();
-        }
+  void operator()(SimObject* sim_object) const {
+    if (Cell* cell = dynamic_cast<Cell*>(sim_object)) {
+      if (cell->GetDiameter() <= 40) {
+        cell->ChangeVolume(300);
+      } else {
+        cell->Divide();
       }
-    });
+    }
   }
 };
 

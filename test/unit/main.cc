@@ -14,7 +14,6 @@
 
 #include <iostream>
 #include "core/param/param.h"
-#include "core/sim_object/backend.h"
 #include "gtest/gtest.h"
 
 int main(int argc, char **argv) {

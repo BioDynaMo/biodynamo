@@ -39,7 +39,7 @@ class DiffusionGrid {
  public:
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 10)
+                double mu, int resolution = 11)
       : substance_(substance_id),
         substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
@@ -63,8 +63,17 @@ class DiffusionGrid {
     num_boxes_axis_[1] = resolution_;
     num_boxes_axis_[2] = resolution_;
 
+    // Example: diffusion grid dimensions from 0-40 and resolution
+    // of 4. Resolution must be adjusted otherwise one data pointer will be
+    // missing.
+    // Without adjustment:
+    //   box_length_: 10
+    //   data points {0, 10, 20, 30} - 40 will be misssing!
+    // With adjustment
+    //   box_length_: 13.3
+    //   data points: {0, 13.3, 26.6, 39.9}
     box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
-                  static_cast<double>(resolution_);
+                  static_cast<double>(resolution_ - 1);
     ParametersCheck();
 
     box_volume_ = box_length_ * box_length_ * box_length_;
@@ -641,13 +650,13 @@ class DiffusionGrid {
   }
 
   /// Get the concentration at specified position
-  double GetConcentration(const std::array<double, 3>& position) {
+  double GetConcentration(const std::array<double, 3>& position) const {
     return c1_[GetBoxIndex(position)];
   }
 
   /// Get the (normalized) gradient at specified position
   void GetGradient(const std::array<double, 3>& position,
-                   std::array<double, 3>* gradient) {
+                   std::array<double, 3>* gradient) const {
     auto idx = GetBoxIndex(position);
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
@@ -689,35 +698,39 @@ class DiffusionGrid {
 
   void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
 
-  double GetConcentrationThreshold() { return concentration_threshold_; }
+  double GetConcentrationThreshold() const { return concentration_threshold_; }
 
-  double* GetAllConcentrations() { return c1_.data(); }
+  const double* GetAllConcentrations() const { return c1_.data(); }
 
-  double* GetAllGradients() { return gradients_.data(); }
+  const double* GetAllGradients() const { return gradients_.data(); }
 
-  const std::array<size_t, 3>& GetNumBoxesArray() { return num_boxes_axis_; }
+  const std::array<size_t, 3>& GetNumBoxesArray() const {
+    return num_boxes_axis_;
+  }
 
-  size_t GetNumBoxes() { return total_num_boxes_; }
+  size_t GetNumBoxes() const { return total_num_boxes_; }
 
-  double GetBoxLength() { return box_length_; }
+  double GetBoxLength() const { return box_length_; }
 
-  int GetSubstanceId() { return substance_; }
+  int GetSubstanceId() const { return substance_; }
 
-  std::string GetSubstanceName() { return substance_name_; }
+  const std::string& GetSubstanceName() const { return substance_name_; }
 
-  double GetDecayConstant() { return mu_; }
+  double GetDecayConstant() const { return mu_; }
 
-  int32_t* GetDimensionsPtr() { return grid_dimensions_.data(); }
+  const int32_t* GetDimensionsPtr() const { return grid_dimensions_.data(); }
 
-  std::array<int32_t, 6>& GetDimensions() { return grid_dimensions_; }
+  const std::array<int32_t, 6>& GetDimensions() const {
+    return grid_dimensions_;
+  }
 
-  std::array<double, 7>& GetDiffusionCoefficients() { return dc_; }
+  const std::array<double, 7>& GetDiffusionCoefficients() const { return dc_; }
 
-  bool IsInitialized() { return initialized_; }
+  bool IsInitialized() const { return initialized_; }
 
-  int GetResolution() { return resolution_; }
+  int GetResolution() const { return resolution_; }
 
-  double GetBoxVolume() { return box_volume_; }
+  double GetBoxVolume() const { return box_volume_; }
 
   template <typename F>
   void AddInitializer(F function) {

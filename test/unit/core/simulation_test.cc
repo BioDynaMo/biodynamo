@@ -16,9 +16,10 @@
 #include <omp.h>
 #include <fstream>
 #include <type_traits>
-#include "core/simulation_implementation.h"
 
-#include "unit/test_util/default_ctparam.h"
+#include "core/resource_manager.h"
+#include "core/sim_object/cell.h"
+#include "core/simulation_backup.h"
 #include "unit/test_util/io_test.h"
 
 namespace bdm {
@@ -60,16 +61,22 @@ class SimulationTest : public ::testing::Test {
       "  [[visualize_diffusion]]\n"
       "  name = \"K\"\n"
       "\n"
+      "[performance]\n"
+      "scheduling_batch_size = 123\n"
+      "detect_static_sim_objects = true\n"
+      "cache_neighbors = true\n"
+      "\n"
       "[development]\n"
       "# this is a comment\n"
-      "statistics = true\n";
+      "statistics = true\n"
+      "debug_numa = true\n";
 
  protected:
   virtual void SetUp() {
     remove(kConfigFileName);
     remove("restore.root");
     CreateEmptyRestoreFile("restore.root");
-    Simulation<>::counter_ = 0;
+    Simulation::counter_ = 0;
   }
 
   virtual void TearDown() {
@@ -81,10 +88,10 @@ class SimulationTest : public ::testing::Test {
   /// It is needed, because BioDynaMo throws a fatal exception if it is
   /// initialized with a restore file that does not exist.
   void CreateEmptyRestoreFile(const std::string& filename) {
-    Simulation<> sim("CreateEmptyRestoreFile");
+    Simulation sim("CreateEmptyRestoreFile");
     SimulationBackup b(filename, "");
     b.Backup(0);
-    Simulation<>::counter_ = 0;
+    Simulation::counter_ = 0;
   }
 
   void ValidateNonCLIParameter(const Param* param) {
@@ -134,17 +141,25 @@ class SimulationTest : public ::testing::Test {
       }
     }
 
+    // performance group
+    EXPECT_EQ(123u, param->scheduling_batch_size_);
+    EXPECT_TRUE(param->detect_static_sim_objects_);
+    EXPECT_TRUE(param->cache_neighbors_);
+
+    // development group
     EXPECT_TRUE(param->statistics_);
+    EXPECT_TRUE(param->debug_numa_);
   }
 };
 
+#ifdef USE_DICT
 TEST_F(SimulationTest, InitializeRuntimeParams) {
   std::ofstream config_file(kConfigFileName);
   config_file << kConfigContent;
   config_file.close();
 
   const char* argv[1] = {"./binary_name"};
-  Simulation<> simulation(1, argv);
+  Simulation simulation(1, argv);
   auto* param = simulation.GetParam();
 
   EXPECT_EQ("backup.root", param->backup_file_);
@@ -158,7 +173,7 @@ TEST_F(SimulationTest, InitializeRuntimeParams2) {
   config_file << kConfigContent;
   config_file.close();
 
-  Simulation<> simulation("my-simulation");
+  Simulation simulation("my-simulation");
   auto* param = simulation.GetParam();
 
   EXPECT_EQ("backup.root", param->backup_file_);
@@ -175,7 +190,7 @@ TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
   CreateEmptyRestoreFile("myrestore.root");
   const char* argv[5] = {"./binary_name", "-b", "mybackup.root", "-r",
                          "myrestore.root"};
-  Simulation<> simulation(5, argv);
+  Simulation simulation(5, argv);
   auto* param = simulation.GetParam();
 
   // the following two parameters should contain the values from the command
@@ -190,26 +205,28 @@ TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
 TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
   // same working dir
   const char* argv0[1] = {"./binary_name"};
-  Simulation<> simulation0(1, argv0);
+  Simulation simulation0(1, argv0);
   EXPECT_EQ("binary_name", simulation0.GetUniqueName());
 
   // in PATH
   const char* argv1[1] = {"binary_name"};
-  Simulation<> simulation1(1, argv1);
+  Simulation simulation1(1, argv1);
   EXPECT_EQ("binary_name1", simulation1.GetUniqueName());
 
   // binary dir != working dir
   const char* argv2[1] = {"./build/binary_name"};
-  Simulation<> simulation2(1, argv2);
+  Simulation simulation2(1, argv2);
   EXPECT_EQ("binary_name2", simulation2.GetUniqueName());
 
-  Simulation<> simulation3("binary_name");
+  Simulation simulation3("binary_name");
   EXPECT_EQ("binary_name3", simulation3.GetUniqueName());
 }
 
+#endif  // USE_DICT
+
 TEST_F(SimulationTest, SimulationId_OuputDir) {
-  Simulation<> simulation("my-simulation");
-  Simulation<> simulation1("my-simulation");
+  Simulation simulation("my-simulation");
+  Simulation simulation1("my-simulation");
 
   EXPECT_EQ("my-simulation", simulation.GetUniqueName());
   EXPECT_EQ("output/my-simulation", simulation.GetOutputDir());
@@ -219,21 +236,22 @@ TEST_F(SimulationTest, SimulationId_OuputDir) {
 }
 
 TEST_F(SimulationTest, SimulationId_OuputDir2) {
-  Simulation<> simulation("");
+  Simulation simulation("");
 
   EXPECT_EQ("", simulation.GetUniqueName());
   EXPECT_EQ("output", simulation.GetOutputDir());
 }
 
+#ifdef USE_DICT
 TEST_F(IOTest, Simulation) {
   // change state of each data member in Simulation
 
-  auto set_param = [](auto* param) { param->simulation_time_step_ = 3.14; };
-  Simulation<> sim(TEST_NAME, set_param);
+  auto set_param = [](Param* param) { param->simulation_time_step_ = 3.14; };
+  Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
   auto* param = sim.GetParam();
-  rm->push_back(Cell());
-  rm->push_back(Cell());
+  rm->push_back(new Cell());
+  rm->push_back(new Cell());
 #pragma omp parallel
   {
     auto* r = sim.GetRandom();
@@ -241,7 +259,7 @@ TEST_F(IOTest, Simulation) {
     r->Uniform(12, 34);
   }
 
-  Simulation<>* restored;
+  Simulation* restored;
   BackupAndRestore(sim, &restored);
   EXPECT_EQ(2u, restored->GetResourceManager()->GetNumSimObjects());
 
@@ -256,7 +274,7 @@ TEST_F(IOTest, Simulation) {
 
   // change state to see if call to Simulation::Restore was successful
   rm->Clear();
-  const_cast<CompileTimeParam<>::Param*>(param)->simulation_time_step_ = 6.28;
+  const_cast<Param*>(param)->simulation_time_step_ = 6.28;
   // check if rm is really empty to avoid false positive test results
   EXPECT_EQ(0u, rm->GetNumSimObjects());
 
@@ -285,10 +303,10 @@ TEST_F(SimulationTest, ParamIOTest) {
   config_file << kConfigContent;
   config_file.close();
 
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* param = simulation.GetParam();
 
-  CompileTimeParam<>::Param* restored;
+  Param* restored;
   BackupAndRestore(*param, &restored);
   const char* root_file = "param.root";
   remove(root_file);
@@ -304,5 +322,7 @@ TEST_F(SimulationTest, ParamIOTest) {
   remove(root_file);
   delete restored;
 }
+
+#endif  // USE_DICT
 
 }  // namespace bdm

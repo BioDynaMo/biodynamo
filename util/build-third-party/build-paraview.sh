@@ -30,6 +30,7 @@ fi
 set -e -x
 
 PV_VERSION=$1
+shift
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 cd $BDM_PROJECT_DIR
 
@@ -45,29 +46,25 @@ WORKING_DIR=~/bdm-build-third-party
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 
-# Install prerequisites
-. $BDM_PROJECT_DIR/util/build-third-party/third-party-prerequisites.sh
-
+# Install prerequisites will be called inside build-qt.sh
 ## Install Qt using the silent JavaScript installer
-$BDM_PROJECT_DIR/util/build-third-party/build-qt.sh
+. $BDM_PROJECT_DIR/util/build-third-party/build-qt.sh
+cd $WORKING_DIR
 
 if [ `uname` = "Linux" ]; then
-  QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/gcc_64/lib/cmake
+  export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/gcc_64/lib/cmake
+  export LD_LIBRARY_PATH=$WORKING_DIR/qt/5.11.0/gcc_64/lib:$LD_LIBRARY_PATH
 else
-  QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/clang_64/lib/cmake
+  export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/clang_64/lib/cmake
 fi
 
 ## Clone paraview github repository
-git clone https://gitlab.kitware.com/paraview/paraview.git
-cd paraview
+git clone https://gitlab.kitware.com/paraview/paraview-superbuild.git
+cd paraview-superbuild
+git fetch origin
 git submodule update --init --recursive
 git checkout $PV_VERSION
 git submodule update --init --recursive
-if [ $PV_VERSION = "v5.5.2" ]; then
-  # fix qt 5.11 compilation issue:
-  # https://gitlab.kitware.com/paraview/paraview/merge_requests/2474
-  git cherry-pick 931c779d
-fi
 
 ## Generate the cmake files for paraview
 #
@@ -96,22 +93,24 @@ if [ `uname` = "Darwin" ]; then
                      -DCMAKE_INSTALL_RPATH:STRING=@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib'
 fi
 
-
-Qt5_DIR=$QT_CMAKE_DIR cmake \
-  -DCMAKE_INSTALL_PREFIX="../paraview-install" \
+export Qt5_DIR=$QT_CMAKE_DIR
+cmake \
+  -DCMAKE_INSTALL_PREFIX="../pv-install" \
   -DCMAKE_BUILD_TYPE:STRING="Release" \
-  -DPARAVIEW_ENABLE_PYTHON:BOOL=ON \
-  -DPARAVIEW_ENABLE_MPI:BOOL=OFF \
-  -DPARAVIEW_INSTALL_DEVELOPMENT_FILES:BOOL=ON \
-  $OSX_CMAKE_OPTIONS \
-   ../paraview
+  -DENABLE_ospray:BOOL=ON \
+  -DENABLE_ospraymaterials:BOOL=ON \
+  -DENABLE_paraviewsdk:BOOL=ON \
+  -DENABLE_python:BOOL=ON \
+  -DENABLE_qt5:BOOL=ON \
+  -DUSE_SYSTEM_qt5:BOOL=ON \
+  -DENABLE_mpi:BOOL=ON \
+  -DUSE_SYSTEM_mpi:BOOL=ON \
+  ../paraview-superbuild
 
 ## Step 4: compile and install
-make -j$(CPUCount)
-make install -j$(CPUCount)
+make -j$(CPUCount) install
 
-cd ../paraview-install
-
+# patch and bundle
 if [ `uname` = "Darwin" ]; then
   ## Patch vtkkwProcessXML-pv5.5
   # make install does not set the rpath correctly on OSX
@@ -120,8 +119,10 @@ if [ `uname` = "Darwin" ]; then
   install_name_tool -add_rpath "@loader_path/../lib" bin/vtkkwProcessXML-pv5.5
 fi
 
+cd install
+
 ## tar the install directory
-tar -zcf paraview.tar.gz *
+tar -zcf paraview-$PV_VERSION.tar.gz *
 
 # After untarring the directory tree should like like this:
 # paraview
@@ -131,4 +132,4 @@ tar -zcf paraview.tar.gz *
 #   |-- share
 
 # Step 5: cp to destination directory
-cp paraview.tar.gz $DEST_DIR
+cp paraview-$PV_VERSION.tar.gz $DEST_DIR

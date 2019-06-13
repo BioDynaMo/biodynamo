@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 
 #include "core/container/inline_vector.h"
-#include "core/sim_object/backend.h"
 #include "core/util/io.h"
 
 #define ROOTFILE "bdmFile.root"
@@ -36,31 +35,23 @@ inline void RunIOTest() {
     neighbor.push_back(i);
   }
 
-  OneElementArray<InlineVector<int, 8>> aoi_scalar(neighbor);
   std::vector<InlineVector<int, 8>> aoi_vector;
   for (int i = 0; i < 4; i++) {
     aoi_vector.push_back(neighbor);
   }
 
   WritePersistentObject(ROOTFILE, "InlineVector", neighbor, "new");
-  WritePersistentObject(ROOTFILE, "S_InlineVector", aoi_scalar, "update");
   WritePersistentObject(ROOTFILE, "V_InlineVector", aoi_vector, "update");
 
   InlineVector<int, 8>* neighbor_r = nullptr;
-  OneElementArray<InlineVector<int, 8>>* aoi_scalar_r = nullptr;
   std::vector<InlineVector<int, 8>>* aoi_vector_r = nullptr;
 
   GetPersistentObject(ROOTFILE, "InlineVector", neighbor_r);
-  GetPersistentObject(ROOTFILE, "S_InlineVector", aoi_scalar_r);
   GetPersistentObject(ROOTFILE, "V_InlineVector", aoi_vector_r);
 
   EXPECT_EQ(neighbor.size(), neighbor_r->size());
 
   if (!(neighbor == (*neighbor_r))) {
-    FAIL();
-  }
-
-  if (!(aoi_scalar[0] == (*aoi_scalar_r)[0])) {
     FAIL();
   }
 
@@ -71,7 +62,6 @@ inline void RunIOTest() {
   }
 
   delete neighbor_r;
-  delete aoi_scalar_r;
   delete aoi_vector_r;
 
   remove(ROOTFILE);

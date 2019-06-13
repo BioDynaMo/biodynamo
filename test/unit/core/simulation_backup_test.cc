@@ -15,14 +15,15 @@
 #include "core/simulation_backup.h"
 
 #include <string>
+#include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 #define ROOTFILE "bdmFile.root"
+
+#ifdef USE_DICT
 
 namespace bdm {
 
@@ -56,7 +57,6 @@ TEST(SimulationBackupTest, GetSimulationStepsFromBackup) {
 TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
   ASSERT_DEATH(
       {
-        auto cells = Cell::NewEmptySoa();
         size_t iterations = 1;
         SimulationBackup backup("", "");
         backup.Backup(iterations);
@@ -66,10 +66,10 @@ TEST(SimulationBackupDeathTest, BackupNoBackupFileSpecified) {
 
 TEST(SimulationBackupTest, Backup) {
   remove(ROOTFILE);
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(Cell());
+  rm->push_back(new Cell());
   size_t iterations = 26;
 
   SimulationBackup backup(ROOTFILE, "");
@@ -92,10 +92,10 @@ TEST(SimulationBackupTest, Backup) {
   EXPECT_EQ(26u, wrapper->Get());
 
   // Simulation
-  Simulation<>* restored_simulation = nullptr;
+  Simulation* restored_simulation = nullptr;
   file.Get()->GetObject(SimulationBackup::kSimulationName.c_str(),
                         restored_simulation);
-  EXPECT_EQ(1u, restored_simulation->GetResourceManager()->Get<Cell>()->size());
+  EXPECT_EQ(1u, restored_simulation->GetResourceManager()->GetNumSimObjects());
   // Writing and reading Simulation is tested in simulation_test.cc
 
   remove(ROOTFILE);
@@ -117,10 +117,10 @@ TEST(SimulationBackupDeathTest, RestoreFileDoesNotExist) {
 
 TEST(SimulationBackupTest, BackupAndRestore) {
   remove(ROOTFILE);
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(Cell());
+  rm->push_back(new Cell());
   size_t iterations = 26;
 
   SimulationBackup backup(ROOTFILE, "");
@@ -138,9 +138,11 @@ TEST(SimulationBackupTest, BackupAndRestore) {
 
   //   get new ResourceManager
   rm = simulation.GetResourceManager();
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 
   remove(ROOTFILE);
 }
 
 }  // namespace bdm
+
+#endif  // USE_DICT

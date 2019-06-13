@@ -13,7 +13,6 @@
 // -----------------------------------------------------------------------------
 
 #include "core/container/fixed_size_vector.h"
-#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
 
 namespace bdm {

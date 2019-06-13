@@ -42,13 +42,6 @@ inline void ExpectArrayNear(const std::array<double, 3>& actual,
   }
 }
 
-// 2. Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
-};
-
 enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
 inline void RunTest(bool* result, ExecutionMode mode) {
@@ -63,7 +56,7 @@ inline void RunTest(bool* result, ExecutionMode mode) {
     }
   };
 
-  Simulation<> simulation("cell_division_gpu", set_param);
+  Simulation simulation("cell_division_gpu", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   rm->Clear();
@@ -76,11 +69,11 @@ inline void RunTest(bool* result, ExecutionMode mode) {
 
   size_t cells_per_dim = 2;
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(30);
-    cell.SetAdherence(0.4);
-    cell.SetMass(1.0);
-    cell.AddBiologyModule(GrowDivide(30.05, 5000, {gAllEventIds}));
+    auto* cell = new Cell(position);
+    cell->SetDiameter(30);
+    cell->SetAdherence(0.4);
+    cell->SetMass(1.0);
+    cell->AddBiologyModule(new GrowDivide(30.05, 5000, {gAllEventIds}));
     return cell;
   };
 
@@ -99,38 +92,36 @@ inline void RunTest(bool* result, ExecutionMode mode) {
   // these new cells are instantiated
   simulation.GetScheduler()->Simulate(10);
 
-  const auto* cells = rm->template Get<Cell>();
-
   ExpectArrayNear(
-      (*cells)[0].GetPosition(),
+      rm->GetSimObject(0)->GetPosition(),
       {4.1399071506916413909, -5.9871942139195297727, 2.8344890446256703065},
       result);
   ExpectArrayNear(
-      (*cells)[1].GetPosition(),
+      rm->GetSimObject(1)->GetPosition(),
       {-2.4263219149482031511, -1.4202336557809887019, 29.769029317615839147},
       result);
   ExpectArrayNear(
-      (*cells)[2].GetPosition(),
+      rm->GetSimObject(2)->GetPosition(),
       {-4.9118212650644856865, 23.156656083480623209, -9.1231684411316447125},
       result);
   ExpectArrayNear(
-      (*cells)[3].GetPosition(),
+      rm->GetSimObject(3)->GetPosition(),
       {4.3076765979041251597, 15.615300607043293368, 25.657658447555828474},
       result);
   ExpectArrayNear(
-      (*cells)[4].GetPosition(),
+      rm->GetSimObject(4)->GetPosition(),
       {28.139314619772036963, -0.20987998233654170388, 4.6381417441282613012},
       result);
   ExpectArrayNear(
-      (*cells)[5].GetPosition(),
+      rm->GetSimObject(5)->GetPosition(),
       {24.417550786690171094, 3.347525366344008102, 28.067824703341415216},
       result);
   ExpectArrayNear(
-      (*cells)[6].GetPosition(),
+      rm->GetSimObject(6)->GetPosition(),
       {16.614520566718258721, 15.828015607618416638, -4.8357284569095106974},
       result);
   ExpectArrayNear(
-      (*cells)[7].GetPosition(),
+      rm->GetSimObject(7)->GetPosition(),
       {14.446017269290647889, 22.250832446808978204, 20.180438615017894932},
       result);
 }

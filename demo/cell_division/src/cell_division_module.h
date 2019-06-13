@@ -24,17 +24,9 @@ namespace bdm {
 // specific volume, after which it proliferates (i.e. divides).
 // -----------------------------------------------------------------------------
 
-// Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<GrowDivide>; };
-};
-
 inline int Simulate(int argc, const char** argv) {
   // Create new simulation
-  Simulation<> simulation(argc, argv);
+  Simulation simulation(argc, argv);
   // Since sim_objects in this simulation won't modify neighbors, we can
   // safely disable neighbor guards to improve performance.
   simulation.GetExecutionContext()->DisableNeighborGuard();
@@ -42,11 +34,11 @@ inline int Simulate(int argc, const char** argv) {
   // Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(30);
-    cell.SetAdherence(0.4);
-    cell.SetMass(1.0);
-    cell.AddBiologyModule(GrowDivide());
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(30);
+    cell->SetAdherence(0.4);
+    cell->SetMass(1.0);
+    cell->AddBiologyModule(new GrowDivide());
     return cell;
   };
   ModelInitializer::Grid3D(cells_per_dim, 20, construct);

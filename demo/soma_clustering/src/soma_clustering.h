@@ -36,19 +36,8 @@ namespace bdm {
 // same type.
 // -----------------------------------------------------------------------------
 
-// Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-  using SimObjectTypes = CTList<MyCell>;
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, MyCell) {
-    using BiologyModules = CTList<Chemotaxis, SubstanceSecretion>;
-  };
-};
-
 inline int Simulate(int argc, const char** argv) {
-  auto set_param = [](auto* param) {
+  auto set_param = [](Param* param) {
     // Create an artificial bounds for the simulation space
     param->bound_space_ = true;
     param->min_bound_ = 0;
@@ -56,7 +45,7 @@ inline int Simulate(int argc, const char** argv) {
     param->run_mechanical_interactions_ = false;
   };
 
-  Simulation<> simulation(argc, argv, set_param);
+  Simulation simulation(argc, argv, set_param);
   // Since sim_objects in this simulation won't modify neighbors, we can
   // safely disable neighbor guards to improve performance.
   simulation.GetExecutionContext()->DisableNeighborGuard();
@@ -70,11 +59,11 @@ inline int Simulate(int argc, const char** argv) {
 
   // Construct num_cells/2 cells of type 1
   auto construct_0 = [](const std::array<double, 3>& position) {
-    MyCell cell(position);
-    cell.SetDiameter(10);
-    cell.SetCellType(1);
-    cell.AddBiologyModule(SubstanceSecretion());
-    cell.AddBiologyModule(Chemotaxis());
+    MyCell* cell = new MyCell(position);
+    cell->SetDiameter(10);
+    cell->SetCellType(1);
+    cell->AddBiologyModule(new SubstanceSecretion());
+    cell->AddBiologyModule(new Chemotaxis());
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
@@ -82,11 +71,11 @@ inline int Simulate(int argc, const char** argv) {
 
   // Construct num_cells/2 cells of type -1
   auto construct_1 = [](const std::array<double, 3>& position) {
-    MyCell cell(position);
-    cell.SetDiameter(10);
-    cell.SetCellType(-1);
-    cell.AddBiologyModule(SubstanceSecretion());
-    cell.AddBiologyModule(Chemotaxis());
+    MyCell* cell = new MyCell(position);
+    cell->SetDiameter(10);
+    cell->SetCellType(-1);
+    cell->AddBiologyModule(new SubstanceSecretion());
+    cell->AddBiologyModule(new Chemotaxis());
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,

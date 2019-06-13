@@ -28,35 +28,31 @@ namespace bdm {
 // substance. We create a gaussian distribution along each axis.
 // -----------------------------------------------------------------------------
 
-// 1. Create list of substances
+// Create list of substances
 enum Substances { kSubstance };
 
-// 2. Use default compile-time parameters to let the compiler know we are not
-// using any new biology modules or cell types
-BDM_CTPARAM() { BDM_CTPARAM_HEADER(); };
-
 inline int Simulate(int argc, const char** argv) {
-  auto set_param = [](auto* param) {
+  auto set_param = [](Param* param) {
     // Create an artificial bounds for the simulation space
     param->bound_space_ = true;
     param->min_bound_ = -100;
     param->max_bound_ = 100;
   };
 
-  Simulation<> simulation(argc, argv, set_param);
+  Simulation simulation(argc, argv, set_param);
   auto* param = simulation.GetParam();
 
-  // 3. Define initial model
+  // Define initial model
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(10);
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
                                       construct);
 
-  // 3. Define the substances in our simulation
+  // Define the substances in our simulation
   // Order: substance id, substance_name, diffusion_coefficient, decay_constant,
   // resolution
   ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0, 20);
@@ -71,7 +67,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::InitializeSubstance(kSubstance, "Substance",
                                         GaussianBand(0, 5, Axis::kZAxis));
 
-  // 4. Run simulation for N timesteps
+  // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(20);
 
   std::cout << "Simulation completed successfully!\n";

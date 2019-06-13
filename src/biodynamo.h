@@ -22,16 +22,15 @@
 #include "core/biology_module/regulate_genes.h"
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
+#include "core/grid.h"
 #include "core/model_initializer.h"
-#include "core/param/compile_time_list.h"
-#include "core/param/compile_time_param.h"
+#include "core/param/custom_clo_parser.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
-#include "core/simulation_implementation.h"
 #include "core/util/vtune.h"
 
 #endif  // BIODYNAMO_H_

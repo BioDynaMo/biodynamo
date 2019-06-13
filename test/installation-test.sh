@@ -51,5 +51,3 @@ test/system-test.sh
 cd ~
 biodynamo new test-sim
 run_cmake_simulation test-sim
-
-exit $?

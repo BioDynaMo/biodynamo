@@ -143,25 +143,17 @@ function(bdm_add_executable TARGET)
   if(dict)
     add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
 
-    # generate dictionaries using genreflex
+    # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict.cc")
     bdm_generate_dictionary(${TARGET}-dict
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
       SELECTION ${BDM_CMAKE_DIR}/selection.xml
       DEPENDS ${TARGET}-objectlib)
-    # dictionary with custom streamers
-    set(DICT_FILE_CS "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_custom_streamers_dict.cc")
-    bdm_generate_dictionary(${TARGET}-custom-streamer-dict
-      DICT "${DICT_FILE_CS}"
-      HEADERS ${ARG_HEADERS}
-      SELECTION ${BDM_CMAKE_DIR}/selection_custom_streamers.xml
-      DEPENDS ${TARGET}-objectlib)
-    set(DICT_SRCS ${DICT_FILE} ${DICT_FILE_CS})
 
     # generate executable
-    add_executable(${TARGET} $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_SRCS})
-    add_dependencies(${TARGET} ${TARGET}-dict ${TARGET}-custom-streamer-dict)
+    add_executable(${TARGET} $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
+    add_dependencies(${TARGET} ${TARGET}-dict)
     if (OPENCL_FOUND)
       # Do this here; we don't want libbiodynamo.so to contain any OpenCL symbols
       set(ARG_LIBRARIES ${ARG_LIBRARIES} ${OPENCL_LIBRARIES})
@@ -246,5 +238,3 @@ function(fix_rootcling_omp_issue)
   include_directories("${CMAKE_SOURCE_DIR}/build/omp")
 
 endfunction(fix_rootcling_omp_issue)
-
-

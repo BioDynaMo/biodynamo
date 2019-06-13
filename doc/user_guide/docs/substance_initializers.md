@@ -4,7 +4,7 @@ in your simulation. In this tutorial we shal take a look on how to do so.
 ### Tutorial by example
 
 Go into the `test/integration` directory and open the source file
-`substance_initialization.h` in your favorite editor. 
+`substance_initialization.h` in your favorite editor.
 
 #### 1. List the substance(s)
 
@@ -30,8 +30,8 @@ We create one cell with diameter 10, at a random location
 
 ``` C++
 auto construct = [](const std::array<double, 3>& position) {
-  Cell cell(position);
-  cell.SetDiameter(10);
+  Cell* cell = new Cell(position);
+  cell->SetDiameter(10);
   return cell;
 };
 ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
@@ -92,7 +92,7 @@ struct GaussianBand {
       case Axis::kXAxis: return ROOT::Math::normal_pdf(x, sigma_, mean_);
       case Axis::kYAxis: return ROOT::Math::normal_pdf(y, sigma_, mean_);
       case Axis::kZAxis: return ROOT::Math::normal_pdf(z, sigma_, mean_);
-      default: throw std::logic_error("You have chosen an non-existing axis!"); 
+      default: throw std::logic_error("You have chosen an non-existing axis!");
     }
   }
 };

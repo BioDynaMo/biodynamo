@@ -18,6 +18,7 @@ project(BDMGlyph)
 # macros etc. from it.
 FIND_PACKAGE(ParaView REQUIRED)
 INCLUDE(${PARAVIEW_USE_FILE})
+link_directories(${ParaView_DIR}/../..)
 
 # Use the ADD_PARAVIEW_PLUGIN macro to build a plugin
 ADD_PARAVIEW_PLUGIN(

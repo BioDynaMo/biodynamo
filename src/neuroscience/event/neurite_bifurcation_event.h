@@ -22,21 +22,27 @@ namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
-// clang-format off
 /// \brief Contains the parameters to bifurcate a growth cone.
 ///
 /// This event is only possible for terminal neurite segments.
 /// It creates **two** new neurite elements and assigns it to daughter left
 /// and daughter right of the neurite element that triggered the event
 /// (=mother).
-///
-/// Here is the constructor to create a new neurite element for this event
-/// NeuriteElementExt::NeuriteElementExt(const NeuriteBifurcationEvent& event, TNeuriteElement* mother, uint64_t new_oid)
-/// and the corresponding event handler
-/// NeuriteElementExt::EventHandler(const NeuriteBifurcationEvent& event, TDaughter* left, TDaughter* right)
-// clang-format on
-struct NeuriteBifurcationEvent {
+struct NeuriteBifurcationEvent : public Event {
   static const EventId kEventId;
+
+  NeuriteBifurcationEvent(double length, double diameter_l, double diameter_r,
+                          const std::array<double, 3>& direction_l,
+                          const std::array<double, 3>& direction_r)
+      : length_(length),
+        diameter_left_(diameter_l),
+        diameter_right_(diameter_r),
+        direction_left_(direction_l),
+        direction_right_(direction_r) {}
+
+  virtual ~NeuriteBifurcationEvent() {}
+
+  EventId GetId() const override { return kEventId; }
 
   /// length of new branches
   double length_;

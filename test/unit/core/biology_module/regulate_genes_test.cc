@@ -16,16 +16,14 @@
 #define UNIT_BIOLOGY_MODULE_REGULATE_GENES_TEST
 
 #include "core/biology_module/regulate_genes.h"
-#include "core/simulation_implementation.h"
+#include "core/sim_object/cell.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
 namespace regulate_genes_test_internal {
 
-struct TestCell {};
-struct TestScheduler : public Scheduler<> {
+struct TestScheduler : public Scheduler {
   void SetSimulationSteps(uint64_t total_steps) { total_steps_ = total_steps; }
 };
 
@@ -33,7 +31,7 @@ TEST(RegulateGenesTest, EulerTest) {
   auto set_param = [](auto* param) {
     param->numerical_ode_solver_ = Param::NumericalODESolver::kEuler;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
   auto* scheduler = new TestScheduler();
   simulation.ReplaceScheduler(scheduler);
 
@@ -53,7 +51,7 @@ TEST(RegulateGenesTest, EulerTest) {
   regulate_genes.AddGene(func1, 3);
   regulate_genes.AddGene(func2, 3);
   regulate_genes.AddGene(func3, 3);
-  TestCell cell;
+  Cell cell;
   regulate_genes.Run(&cell);
 
   const auto& concentrations = regulate_genes.GetConcentrations();
@@ -69,7 +67,7 @@ TEST(RegulateGenesTest, RK4Test) {
     param->numerical_ode_solver_ = Param::NumericalODESolver::kRK4;
     param->simulation_time_step_ = 1;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
 
   RegulateGenes regulate_genes;
   regulate_genes.AddGene(
@@ -77,7 +75,7 @@ TEST(RegulateGenesTest, RK4Test) {
         return 1 - curr_time * last_concentration;
       },
       1);
-  TestCell cell;
+  Cell cell;
   regulate_genes.Run(&cell);
 
   const auto& concentrations = regulate_genes.GetConcentrations();
