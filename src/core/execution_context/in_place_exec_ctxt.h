@@ -66,7 +66,7 @@ class InPlaceExecutionContext {
   void Execute(SimObject* so,
                const std::vector<std::function<void(SimObject*)>>& operations);
 
-  void push_back(SimObject* new_so);
+  void push_back(SimObject* new_so);  // NOLINT
 
   void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda,
                        const SimObject& query);

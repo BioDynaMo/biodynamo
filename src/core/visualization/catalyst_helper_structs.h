@@ -22,8 +22,10 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include "core/param/param.h"
 #include "core/shape.h"
 #include "core/sim_object/sim_object.h"
+#include "core/simulation.h"
 
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>

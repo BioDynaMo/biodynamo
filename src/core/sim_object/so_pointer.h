@@ -113,12 +113,12 @@ class SoPointer {
 
 template <typename T>
 struct is_so_ptr {
-  static constexpr bool value = false;
+  static constexpr bool value = false;  // NOLINT
 };
 
 template <typename T>
 struct is_so_ptr<SoPointer<T>> {
-  static constexpr bool value = true;
+  static constexpr bool value = true;  // NOLINT
 };
 
 namespace detail {

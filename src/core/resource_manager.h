@@ -343,8 +343,8 @@ class ResourceManager {
   /// NB: This method is not thread-safe! This function might invalidate
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
-  void push_back(SimObject* so,
-                 typename SoHandle::NumaNode_t numa_node = 0) {  // NOLINT
+  void push_back(SimObject* so,  // NOLINT
+                 typename SoHandle::NumaNode_t numa_node = 0) {
     sim_objects_[numa_node].push_back(so);
     uid_soh_map_[so->GetUid()] =
         SoHandle(numa_node, sim_objects_[numa_node].size() - 1);

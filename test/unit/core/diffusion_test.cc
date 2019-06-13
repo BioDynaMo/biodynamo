@@ -517,27 +517,27 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
 
-  enum Substances { kSubstance_0, kSubstance_1, kSubstance_2 };
+  enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
   // Define the substances in a different order than the enum
-  ModelInitializer::DefineSubstance(kSubstance_0, "Substance_0", 0.5, 0);
-  ModelInitializer::DefineSubstance(kSubstance_2, "Substance_2", 0.5, 0);
-  ModelInitializer::DefineSubstance(kSubstance_1, "Substance_1", 0.5, 0);
+  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0);
+  ModelInitializer::DefineSubstance(kSubstance2, "Substance_2", 0.5, 0);
+  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0);
 
   // Initialize one of the substances
   double mean = 0;
   double sigma = 5;
-  ModelInitializer::InitializeSubstance(kSubstance_1, "Substance_1",
+  ModelInitializer::InitializeSubstance(kSubstance1, "Substance_1",
                                         GaussianBand(mean, sigma, kXAxis));
 
   int l = -100;
   int r = 100;
-  rm->GetDiffusionGrid(kSubstance_0)->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrid(kSubstance_1)->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrid(kSubstance_2)->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrid(kSubstance_0)->RunInitializers();
-  rm->GetDiffusionGrid(kSubstance_1)->RunInitializers();
-  rm->GetDiffusionGrid(kSubstance_2)->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance0)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance1)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance0)->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance1)->RunInitializers();
+  rm->GetDiffusionGrid(kSubstance2)->RunInitializers();
 
   // Write diffusion visualization to file
   CatalystAdaptor adaptor("");
@@ -561,7 +561,7 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
 
   double expected = ROOT::Math::normal_pdf(0, sigma, mean);
   std::array<double, 3> marker = {0, 0, 0};
-  size_t idx = rm->GetDiffusionGrid(kSubstance_1)->GetBoxIndex(marker);
+  size_t idx = rm->GetDiffusionGrid(kSubstance1)->GetBoxIndex(marker);
   EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);
   remove(filename.c_str());
 }

@@ -2,7 +2,7 @@
 
 # Due to issues with 'clang-analyzer-core.UndefinedBinaryOperatorResult'
 # disable all clang-analyzer* checks for now
-Checks:            -*,google-*,readability-identifier-naming,-google-runtime-references
+Checks:            -*,google-*,-google-default-arguments,readability-identifier-naming,-google-runtime-references
 HeaderFilterRegex: 'src/.*'
 AnalyzeTemporaryDtors: true
 CheckOptions:
