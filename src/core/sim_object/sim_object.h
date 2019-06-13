@@ -170,15 +170,6 @@ class SimObject {
     return {"position_", "diameter_"};
   }
 
-  template <typename T>
-  T* As() {
-    return dynamic_cast<T*>(this);
-  }
-  template <typename T>
-  const T* As() const {
-    return dynamic_cast<const T*>(this);
-  }
-
   virtual void RunDiscretization();
 
   void AssignNewUid();

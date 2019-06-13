@@ -36,7 +36,7 @@ struct Chemotaxis : public BaseBiologyModule {
     static auto* kDg = rm->GetDiffusionGrid(kKalium);
     kDg->SetConcentrationThreshold(1e15);
 
-    if (auto* cell = so->As<Cell>()) {
+    if (auto* cell = dynamic_cast<Cell*>(so)) {
       const auto& position = so->GetPosition();
       std::array<double, 3> gradient;
       kDg->GetGradient(position, &gradient);

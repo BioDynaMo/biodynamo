@@ -27,7 +27,9 @@ struct Divide : BaseBiologyModule {
  public:
   Divide() {}
 
-  void Run(SimObject* sim_object) override { sim_object->As<Cell>()->Divide(); }
+  void Run(SimObject* sim_object) override {
+    dynamic_cast<Cell*>(sim_object)->Divide();
+  }
 };
 
 inline int Simulate(int argc, const char** argv) {

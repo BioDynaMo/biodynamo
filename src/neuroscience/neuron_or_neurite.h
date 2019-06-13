@@ -30,15 +30,6 @@ class NeuronSoma;
 /// This class declares this interface.
 class NeuronOrNeurite {
  public:
-  template <typename T>
-  T* As() {
-    return dynamic_cast<T*>(this);
-  }
-  template <typename T>
-  const T* As() const {
-    return dynamic_cast<const T*>(this);
-  }
-
   virtual ~NeuronOrNeurite();
 
   virtual SoUid GetUid() const = 0;

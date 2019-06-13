@@ -39,8 +39,8 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto* ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {1, 0, 0});
+  auto* ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                 ->ExtendNewNeurite({1, 0, 0});
 
   std::array<double, 3> neAxis = ne->GetSpringAxis();
 
@@ -85,8 +85,8 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto* ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {0, 0, 1});
+  auto* ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                 ->ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(1);
 
   std::array<double, 3> previous_direction;
@@ -94,7 +94,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
 
   for (int i = 0; i < 200; i++) {
     rm->ApplyOnAllElements([&](SimObject* so) {
-      if (auto* ne = so->As<NeuriteElement>()) {
+      if (auto* ne = dynamic_cast<NeuriteElement*>(so)) {
         EXPECT_GT(ne->GetAxis()[2], 0);
 
         if (ne->IsTerminal() && ne->GetDiameter() > 0.5) {
@@ -120,7 +120,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   // while there are still neurite elements left
   while (rm->GetNumSimObjects() != 1) {
     rm->ApplyOnAllElements([&](SimObject* so) {
-      if (auto* ne = so->As<NeuriteElement>()) {
+      if (auto* ne = dynamic_cast<NeuriteElement*>(so)) {
         ne->RetractTerminalEnd(50);
       }
     });

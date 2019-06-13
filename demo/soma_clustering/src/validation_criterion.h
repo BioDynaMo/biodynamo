@@ -55,7 +55,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   // the locations of all cells within the subvolume are copied
   // to pos_sub_vol
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = so->As<MyCell>()) {
+    if (auto* cell = dynamic_cast<MyCell*>(so)) {
       const auto& pos = cell->GetPosition();
       auto type = cell->GetCellType();
 

@@ -78,7 +78,7 @@ class MyCell : public Cell {
 
   void EventHandler((const Event& event, SimObject* other_1,
                     SimObject* other_2 = nullptr) override {
-    if (auto* daughter_2 = other_2->As<MyCell>()) {
+    if (auto* daughter_2 = dynamic_cast<MyCell*>(other_2)) {
       new_data_member_ -= daughter_2->new_data_member_;
     }
     Base::EventHandler(event, daughter_2);

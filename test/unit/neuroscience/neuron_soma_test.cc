@@ -42,9 +42,8 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   rm->push_back(neuron);
 
   // new neurite
-  auto neurite =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          10, Math::kPi / 8, Math::kPi / 3);
+  auto neurite = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                     ->ExtendNewNeurite(10, Math::kPi / 8, Math::kPi / 3);
   neurite->SetDiameter(2);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
@@ -72,7 +71,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   EXPECT_NEAR(1, neurite->GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite->GetMother()->As<NeuronSoma>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuronSoma*>(neurite->GetMother().Get()) != nullptr);
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
 }
@@ -94,9 +93,8 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   rm->push_back(neuron);
 
   // new neurite
-  auto neurite =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto neurite = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                     ->ExtendNewNeurite({0, 0, 1});
   neurite->SetDiameter(2);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
@@ -117,7 +115,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   EXPECT_NEAR(1, neurite->GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite->GetMother()->As<NeuronSoma>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuronSoma*>(neurite->GetMother().Get()) != nullptr);
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
 }
@@ -135,9 +133,8 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                             ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
@@ -167,10 +164,12 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   EXPECT_NEAR(7.5, neurite_element->GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite_element->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite_element->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite_element->GetMother()->As<NeuriteElement>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuriteElement*>(
+                  neurite_element->GetMother().Get()) != nullptr);
 
   //   proximal segment
-  auto proximal_element = neurite_element->GetMother()->As<NeuriteElement>();
+  auto proximal_element =
+      dynamic_cast<NeuriteElement*>(neurite_element->GetMother().Get());
   EXPECT_ARR_NEAR(proximal_element->GetMassLocation(), {0, 0, 23.5});
   EXPECT_ARR_NEAR(proximal_element->GetPosition(), {0, 0, 16.75});
   EXPECT_ARR_NEAR(proximal_element->GetXAxis(), {0, 0, 1});
@@ -186,7 +185,8 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   EXPECT_NEAR(13.5, proximal_element->GetRestingLength(), kEpsilon);
   EXPECT_TRUE(proximal_element->GetDaughterLeft() != nullptr);
   EXPECT_TRUE(proximal_element->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(proximal_element->GetMother()->As<NeuronSoma>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuronSoma*>(proximal_element->GetMother().Get()) !=
+              nullptr);
 
   EXPECT_EQ(3u, rm->GetNumSimObjects());
 }
@@ -204,9 +204,8 @@ TEST(NeuriteElementTest, PartialRetraction) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                             ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -239,7 +238,8 @@ TEST(NeuriteElementTest, PartialRetraction) {
   EXPECT_NEAR(7, neurite_element->GetRestingLength(), kEpsilon);
   EXPECT_TRUE(neurite_element->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite_element->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite_element->GetMother()->As<NeuronSoma>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuronSoma*>(neurite_element->GetMother().Get()) !=
+              nullptr);
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
 }
@@ -256,9 +256,8 @@ TEST(NeuriteElementTest, TotalRetraction) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                             ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -294,9 +293,8 @@ TEST(NeuriteElementTest, Branch) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                             ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -330,10 +328,12 @@ TEST(NeuriteElementTest, Branch) {
               kEpsilon);
   EXPECT_TRUE(neurite_element->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(neurite_element->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(neurite_element->GetMother()->As<NeuriteElement>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuriteElement*>(
+                  neurite_element->GetMother().Get()) != nullptr);
 
   //  proximal segment
-  auto proximal_element = neurite_element->GetMother()->As<NeuriteElement>();
+  auto proximal_element =
+      dynamic_cast<NeuriteElement*>(neurite_element->GetMother().Get());
   EXPECT_ARR_NEAR(proximal_element->GetMassLocation(),
                   {0, 11.621299948800891, 22.571299948800885});
   EXPECT_ARR_NEAR(proximal_element->GetPosition(),
@@ -356,7 +356,8 @@ TEST(NeuriteElementTest, Branch) {
               kEpsilon);
   EXPECT_TRUE(proximal_element->GetDaughterLeft() != nullptr);
   EXPECT_TRUE(proximal_element->GetDaughterRight() != nullptr);
-  EXPECT_TRUE(proximal_element->GetMother()->As<NeuriteElement>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuriteElement*>(
+                  proximal_element->GetMother().Get()) != nullptr);
 
   //  new branch
   EXPECT_ARR_NEAR(branch->GetPosition(),
@@ -374,7 +375,8 @@ TEST(NeuriteElementTest, Branch) {
   EXPECT_NEAR(1, branch->GetRestingLength(), kEpsilon);
   EXPECT_TRUE(branch->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(branch->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(branch->GetMother()->As<NeuriteElement>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuriteElement*>(branch->GetMother().Get()) !=
+              nullptr);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(5u, rm->GetNumSimObjects());
@@ -393,9 +395,8 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                             ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -416,7 +417,8 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   EXPECT_NEAR(11.6792669065954, neurite_element->GetLength(), kEpsilon);
   EXPECT_NEAR(10.9036023322569, branch->GetLength(), kEpsilon);
 
-  auto* proximal_element = neurite_element->GetMother()->As<NeuriteElement>();
+  auto* proximal_element =
+      dynamic_cast<NeuriteElement*>(neurite_element->GetMother().Get());
   auto right_daughter_pe = proximal_element->GetDaughterRight();
   for (int i = 0; i < 40; ++i) {
     right_daughter_pe->RetractTerminalEnd(10);
@@ -448,7 +450,8 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   EXPECT_NEAR(6.90360233225697, branch->GetRestingLength(), kEpsilon);
   EXPECT_TRUE(branch->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(branch->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(branch->GetMother()->As<NeuriteElement>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuriteElement*>(branch->GetMother().Get()) !=
+              nullptr);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(5u, rm->GetNumSimObjects());
@@ -467,9 +470,8 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                             ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -490,7 +492,8 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   EXPECT_NEAR(11.6792669065954, neurite_element->GetLength(), kEpsilon);
   EXPECT_NEAR(10.9036023322569, branch->GetLength(), kEpsilon);
 
-  auto* proximal_element = neurite_element->GetMother()->As<NeuriteElement>();
+  auto* proximal_element =
+      dynamic_cast<NeuriteElement*>(neurite_element->GetMother().Get());
   auto right_daughter_pe = proximal_element->GetDaughterRight();
   // right_daughter_ps == branch
   while (proximal_element->GetDaughterRight() != nullptr) {
@@ -519,9 +522,8 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                             ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -542,7 +544,8 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   EXPECT_NEAR(13.2486948956586, neurite_element->GetLength(), kEpsilon);
   EXPECT_NEAR(10.903602332257, branch->GetLength(), kEpsilon);
 
-  auto* proximal_element = neurite_element->GetMother()->As<NeuriteElement>();
+  auto* proximal_element =
+      dynamic_cast<NeuriteElement*>(neurite_element->GetMother().Get());
   auto left_daughter_pe = proximal_element->GetDaughterLeft();
   for (int i = 0; i < 10; ++i) {
     left_daughter_pe->RetractTerminalEnd(10);
@@ -574,7 +577,8 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   EXPECT_NEAR(10.903602332257, branch->GetRestingLength(), kEpsilon);
   EXPECT_TRUE(branch->GetDaughterLeft() == nullptr);
   EXPECT_TRUE(branch->GetDaughterRight() == nullptr);
-  EXPECT_TRUE(branch->GetMother()->As<NeuriteElement>() != nullptr);
+  EXPECT_TRUE(dynamic_cast<NeuriteElement*>(branch->GetMother().Get()) !=
+              nullptr);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(5u, rm->GetNumSimObjects());
@@ -592,9 +596,8 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto* neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {1, 0, 0});
+  auto* neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                              ->ExtendNewNeurite({1, 0, 0});
   neurite_element->SetDiameter(2);
 
   // will create a new neurite segment at iteration 139
@@ -618,7 +621,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   // retract all dendrite
   while (rm->GetNumSimObjects() != 1) {
     rm->ApplyOnAllElements([&](SimObject* so) {
-      if (auto* neurite_segment = so->As<NeuriteElement>()) {
+      if (auto* neurite_segment = dynamic_cast<NeuriteElement*>(so)) {
         if (neurite_segment->IsTerminal()) {
           neurite_segment->RetractTerminalEnd(10);
           neurite_segment->RunDiscretization();
@@ -646,9 +649,8 @@ TEST(NeuriteElementTest, Bifurcate) {
   auto neuron_id = neuron->GetUid();
   rm->push_back(neuron);
 
-  auto* neurite_element =
-      rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-          {0, 0, 1});
+  auto* neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                              ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
   auto bifurcation = neurite_element->Bifurcate({0, 1, 1}, {1, 1, 0});

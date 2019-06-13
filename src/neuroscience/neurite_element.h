@@ -258,8 +258,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto* core_param = Simulation::GetActive()->GetParam();
     speed *= core_param->simulation_time_step_;
 
-    auto* mother_soma = mother_->As<NeuronSoma>();
-    auto* mother_neurite = mother_->As<NeuriteElement>();
+    auto* mother_soma = dynamic_cast<NeuronSoma*>(mother_.Get());
+    auto* mother_neurite = dynamic_cast<NeuriteElement*>(mother_.Get());
 
     if (actual_length_ > speed + 0.1) {
       // if actual_length_ > length : retraction keeping the same tension
@@ -332,7 +332,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     NeuriteBranchingEvent event(0.5, length, new_branch_diameter, direction);
     auto* proximal = GetInstance(event, this, 0);
     ctxt->push_back(proximal);
-    auto* branch = GetInstance(event, proximal, 1)->As<NeuriteElement>();
+    auto* branch =
+        bdm_static_cast<NeuriteElement*>(GetInstance(event, proximal, 1));
     ctxt->push_back(branch);
     EventHandler(event, proximal, branch);
     return branch;
@@ -400,9 +401,11 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     NeuriteBifurcationEvent event(length, diameter_1, diameter_2, direction_1,
                                   direction_2);
-    auto* new_branch_l = GetInstance(event, this, 0)->As<NeuriteElement>();
+    auto* new_branch_l =
+        bdm_static_cast<NeuriteElement*>(GetInstance(event, this, 0));
     ctxt->push_back(new_branch_l);
-    auto* new_branch_r = GetInstance(event, this, 1)->As<NeuriteElement>();
+    auto* new_branch_r =
+        bdm_static_cast<NeuriteElement*>(GetInstance(event, this, 1));
     ctxt->push_back(new_branch_r);
     EventHandler(event, new_branch_l, new_branch_r);
     return {new_branch_l, new_branch_r};
@@ -480,10 +483,13 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       mother_ = new_relative.GetNeuronOrNeuriteSoPtr();
     } else {
       auto new_neurite_soptr =
-          new_relative.As<NeuriteElement>()->GetSoPtr<NeuriteElement>();
-      if (&*daughter_left_ == old_relative.As<NeuriteElement>()) {
+          bdm_static_cast<const NeuriteElement*>(&new_relative)
+              ->GetSoPtr<NeuriteElement>();
+      if (&*daughter_left_ ==
+          dynamic_cast<const NeuriteElement*>(&old_relative)) {
         daughter_left_ = new_neurite_soptr;
-      } else if (&*daughter_right_ == old_relative.As<NeuriteElement>()) {
+      } else if (&*daughter_right_ ==
+                 dynamic_cast<const NeuriteElement*>(&old_relative)) {
         daughter_right_ = new_neurite_soptr;
       }
     }
@@ -529,8 +535,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     }
 
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
-    auto* mother_soma = mother_->As<NeuronSoma>();
-    auto* mother_neurite = mother_->As<NeuriteElement>();
+    auto* mother_soma = dynamic_cast<NeuronSoma*>(mother_.Get());
+    auto* mother_neurite = dynamic_cast<NeuriteElement*>(mother_.Get());
     if (actual_length_ > param->neurite_max_length_) {
       if (daughter_left_ == nullptr) {  // if terminal branch :
         SplitNeuriteElement(0.1);
@@ -684,7 +690,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
             (this->GetMother() == *neighbor)) {
           return;
         }
-      } else if (auto* neighbor_soma = neighbor->As<NeuronSoma>()) {
+      } else if (auto* neighbor_soma =
+                     dynamic_cast<const NeuronSoma*>(neighbor)) {
         // if neighbor is NeuronSoma
         // if it is a direct relative, we don't take it into account
         if (this->GetMother() == *neighbor_soma) {
@@ -1030,7 +1037,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// independently of the discretization.
   double LengthToProximalBranchingPoint() const {
     double length = actual_length_;
-    if (auto* mother_neurite = mother_->As<NeuriteElement>()) {
+    if (auto* mother_neurite =
+            dynamic_cast<const NeuriteElement*>(mother_.Get())) {
       if (mother_neurite->GetDaughterRight() == nullptr) {
         length += mother_neurite->LengthToProximalBranchingPoint();
       }
@@ -1092,8 +1100,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     str << "resting_length_:  " << n.resting_length_ << std::endl;
     str << "d left         :  " << n.daughter_left_ << std::endl;
     str << "d right         :  " << n.daughter_right_ << std::endl;
-    auto* mother_soma = n.mother_->As<NeuronSoma>();
-    auto* mother_neurite = n.mother_->As<NeuriteElement>();
+    auto* mother_soma = dynamic_cast<const NeuronSoma*>(n.mother_.Get());
+    auto* mother_neurite = dynamic_cast<const NeuriteElement*>(n.mother_.Get());
     auto mother =
         mother_soma ? "neuron" : (mother_neurite ? "neurite" : "nullptr");
     str << "mother_           " << mother << std::endl;
@@ -1184,7 +1192,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   NeuriteElement* SplitNeuriteElement(double distal_portion = 0.5) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     SplitNeuriteElementEvent event(distal_portion);
-    auto* new_proximal_element = GetInstance(event, this)->As<NeuriteElement>();
+    auto* new_proximal_element =
+        bdm_static_cast<NeuriteElement*>(GetInstance(event, this));
     ctxt->push_back(new_proximal_element);
     EventHandler(event, new_proximal_element);
     return new_proximal_element;
@@ -1195,7 +1204,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   void RemoveProximalNeuriteElement() {
     // The mother is removed if (a) it is a neurite element and (b) it has no
     // other daughter than
-    auto* mother_neurite = mother_->As<NeuriteElement>();
+    auto* mother_neurite = dynamic_cast<NeuriteElement*>(mother_.Get());
     if (mother_neurite == nullptr ||
         mother_neurite->GetDaughterRight() != nullptr) {
       return;
@@ -1239,7 +1248,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     SideNeuriteExtensionEvent event{length, diameter, direction};
-    auto* new_branch = GetInstance(event, this)->As<NeuriteElement>();
+    auto* new_branch =
+        bdm_static_cast<NeuriteElement*>(GetInstance(event, this));
     new_branch->EventHandler(event, this);
     ctxt->push_back(new_branch);
     EventHandler(event, new_branch);

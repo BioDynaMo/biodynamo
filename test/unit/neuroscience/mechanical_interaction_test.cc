@@ -38,8 +38,8 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {1, 0, 0});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({1, 0, 0});
   ne->SetDiameter(2);
 
   Scheduler scheduler;
@@ -80,8 +80,8 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {1, 0, 0});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({1, 0, 0});
   ne->SetDiameter(2);
 
   Scheduler scheduler;
@@ -119,8 +119,8 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {1, 1, 0});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({1, 1, 0});
   ne->SetDiameter(2);
 
   Scheduler scheduler;
@@ -155,8 +155,8 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {1, 1, 1});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({1, 1, 1});
   ne->SetDiameter(1);
 
   Scheduler scheduler;
@@ -192,8 +192,8 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {1, 1, 1});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({1, 1, 1});
   ne->SetDiameter(2);
 
   Scheduler scheduler;
@@ -237,8 +237,8 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   neuron2->SetDiameter(10);
   rm->push_back(neuron2);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {0, 0, 1});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler scheduler;
@@ -284,8 +284,8 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   neuron2->SetMass(1);
   rm->push_back(neuron2);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {0, 0, 1});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({0, 0, 1});
 
   Scheduler scheduler;
 
@@ -325,8 +325,8 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {0, 0, 1});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler scheduler;
@@ -376,8 +376,8 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {0, 0, 1});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler scheduler;
@@ -429,8 +429,8 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = rm->GetSimObject(neuron_id)->As<NeuronSoma>()->ExtendNewNeurite(
-      {0, 0, 1});
+  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+                ->ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(2);
 
   Scheduler scheduler;
@@ -503,12 +503,10 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   neuron2->SetDiameter(10);
   rm->push_back(neuron2);
 
-  auto ne1 = rm->GetSimObject(neuron1_id)
-                 ->As<NeuronSoma>()
+  auto ne1 = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron1_id))
                  ->ExtendNewNeurite({0, 0, 1});
   ne1->SetDiameter(2);
-  auto ne2 = rm->GetSimObject(neuron2_id)
-                 ->As<NeuronSoma>()
+  auto ne2 = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron2_id))
                  ->ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(2);
 
@@ -571,12 +569,10 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   neuron3->SetDiameter(10);
   rm->push_back(neuron3);
 
-  auto ne1 = rm->GetSimObject(neuron1_id)
-                 ->As<NeuronSoma>()
+  auto ne1 = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron1_id))
                  ->ExtendNewNeurite({0, 0, 1});
   ne1->SetDiameter(1);
-  auto ne2 = rm->GetSimObject(neuron2_id)
-                 ->As<NeuronSoma>()
+  auto ne2 = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron2_id))
                  ->ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(1);
 
