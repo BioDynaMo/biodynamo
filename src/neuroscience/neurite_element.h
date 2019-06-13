@@ -501,10 +501,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   std::array<double, 3> ForceTransmittedFromDaugtherToMother(
       const NeuronOrNeurite& mother) {
     if (mother_ != mother) {
-      // FIXME
-      // Fatal("NeuriteElement", "Given object is not the mother!");
-      // std::cout << "Fatal(\"NeuriteElement\", \"Given object is not the
-      // mother!\")" << std::endl;
+      Fatal("NeuriteElement", "Given object is not the mother!");
       return {0, 0, 0};
     }
 
@@ -787,14 +784,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // For the relatives: recompute the lenght, tension etc. (why for mother?
     // have to think about that)
     if (daughter_left_ != nullptr) {
-      // FIXME this is problematic for the distributed version. it modifies a
-      // "neightbor"
       daughter_left_->UpdateDependentPhysicalVariables();
       daughter_left_->UpdateLocalCoordinateAxis();
     }
     if (daughter_right_ != nullptr) {
-      // FIXME this is problematic for the distributed version. it modifies a
-      // "neightbor"
       daughter_right_->UpdateDependentPhysicalVariables();
       daughter_right_->UpdateLocalCoordinateAxis();
     }
@@ -943,11 +936,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetAxon(bool is_axon) { is_axon_ = is_axon; }
 
-  // FIXME
-  // const NeuronOrNeurite& GetMother() const;
   SoPointer<NeuronOrNeurite> GetMother() { return mother_; }
+
   const SoPointer<NeuronOrNeurite> GetMother() const { return mother_; }
-  // FIXME inconsitent API GetMother and SetMother
+
   void SetMother(const SoPointer<NeuronOrNeurite>& mother) { mother_ = mother; }
 
   /// @return the (first) distal neurite element, if it exists,
