@@ -199,7 +199,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
       << std::endl;
 
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = so->As<Cell>()) {
+    if (auto* cell = dynamic_cast<Cell*>(so)) {
       auto adhr = cell->GetAdherence();
       vtu << ' ' << adhr << std::flush;
     }
@@ -222,7 +222,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
       << std::endl;
 
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = so->As<Cell>()) {
+    if (auto* cell = dynamic_cast<Cell*>(so)) {
       auto mass = cell->GetMass();
       vtu << ' ' << mass << std::flush;
     }
@@ -235,7 +235,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
       << std::endl;
 
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = so->As<Cell>()) {
+    if (auto* cell = dynamic_cast<Cell*>(so)) {
       auto v = cell->GetVolume();
       vtu << ' ' << v << std::flush;
     }
@@ -248,7 +248,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
       << std::endl;
 
   rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = so->As<Cell>()) {
+    if (auto* cell = dynamic_cast<Cell*>(so)) {
       auto& tracf = cell->GetTractorForce();
       vtu << ' ' << tracf[0] << ' ' << tracf[1] << ' ' << tracf[2]
           << std::flush;

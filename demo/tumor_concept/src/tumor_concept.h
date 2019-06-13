@@ -32,7 +32,7 @@ class MyCell : public Cell {  // our object extends the Cell object
   /// If MyCell divides, daughter 2 copies the data members from the mother
   MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {
-    if (auto* mother = other->As<MyCell>()) {
+    if (auto* mother = dynamic_cast<MyCell*>(other)) {
       cell_color_ = mother->cell_color_;
       if (event.GetId() == CellDivisionEvent::kEventId) {
         // the daughter will be able to divide
@@ -78,7 +78,7 @@ struct GrowthModule : public BaseBiologyModule {
   /// event handler not needed, because Chemotaxis does not have state.
 
   void Run(SimObject* so) override {
-    if (auto* cell = so->As<MyCell>()) {
+    if (auto* cell = dynamic_cast<MyCell*>(so)) {
       if (cell->GetDiameter() < 8) {
         auto* random = Simulation::GetActive()->GetRandom();
         cell->ChangeVolume(400);

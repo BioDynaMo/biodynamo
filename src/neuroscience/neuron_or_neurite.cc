@@ -23,9 +23,9 @@ namespace neuroscience {
 NeuronOrNeurite::~NeuronOrNeurite() {}
 
 SoPointer<NeuronOrNeurite> NeuronOrNeurite::GetNeuronOrNeuriteSoPtr() const {
-  if (auto* neuron = As<NeuronSoma>()) {
+  if (auto* neuron = dynamic_cast<const NeuronSoma*>(this)) {
     return neuron->template GetSoPtr<NeuronOrNeurite>();
-  } else if (auto* neurite = As<NeuriteElement>()) {
+  } else if (auto* neurite = dynamic_cast<const NeuriteElement*>(this)) {
     return neurite->template GetSoPtr<NeuronOrNeurite>();
   }
   assert(false && "This code should not be reached.");
@@ -33,11 +33,11 @@ SoPointer<NeuronOrNeurite> NeuronOrNeurite::GetNeuronOrNeuriteSoPtr() const {
 }
 
 bool NeuronOrNeurite::IsNeuronSoma() const {
-  return As<NeuronSoma>() != nullptr;
+  return dynamic_cast<const NeuronSoma*>(this) != nullptr;
 }
 
 bool NeuronOrNeurite::IsNeuriteElement() const {
-  return As<NeuriteElement>() != nullptr;
+  return dynamic_cast<const NeuriteElement*>(this) != nullptr;
 }
 
 }  // namespace neuroscience

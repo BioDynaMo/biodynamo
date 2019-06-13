@@ -91,7 +91,7 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
   }
   ctxt->push_back(neurite);
   EventHandler(event, neurite);
-  return neurite->As<NeuriteElement>();
+  return bdm_static_cast<NeuriteElement*>(neurite);
 }
 
 void NeuronSoma::RemoveDaughter(const SoPointer<NeuriteElement>& daughter) {
@@ -121,8 +121,10 @@ void NeuronSoma::UpdateDependentPhysicalVariables() {}
 
 void NeuronSoma::UpdateRelative(const NeuronOrNeurite& old_rel,
                                 const NeuronOrNeurite& new_rel) {
-  auto old_rel_soptr = old_rel.As<NeuriteElement>()->GetSoPtr<NeuriteElement>();
-  auto new_rel_soptr = new_rel.As<NeuriteElement>()->GetSoPtr<NeuriteElement>();
+  auto old_rel_soptr = bdm_static_cast<const NeuriteElement*>(&old_rel)
+                           ->GetSoPtr<NeuriteElement>();
+  auto new_rel_soptr = bdm_static_cast<const NeuriteElement*>(&new_rel)
+                           ->GetSoPtr<NeuriteElement>();
   auto coord = daughters_coord_[old_rel_soptr->GetUid()];
   auto it =
       std::find(std::begin(daughters_), std::end(daughters_), old_rel_soptr);

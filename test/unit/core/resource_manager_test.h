@@ -74,16 +74,16 @@ inline void RunApplyOnAllElementsTest() {
     counter++;
     switch (element->GetUid() - ref_uid) {
       case 0:
-        EXPECT_EQ(12, element->As<A>()->GetData());
+        EXPECT_EQ(12, dynamic_cast<A*>(element)->GetData());
         break;
       case 1:
-        EXPECT_EQ(34, element->As<A>()->GetData());
+        EXPECT_EQ(34, dynamic_cast<A*>(element)->GetData());
         break;
       case 2:
-        EXPECT_NEAR(3.14, element->As<B>()->GetData(), kEpsilon);
+        EXPECT_NEAR(3.14, dynamic_cast<B*>(element)->GetData(), kEpsilon);
         break;
       case 3:
-        EXPECT_NEAR(6.28, element->As<B>()->GetData(), kEpsilon);
+        EXPECT_NEAR(6.28, dynamic_cast<B*>(element)->GetData(), kEpsilon);
         break;
     }
   });
@@ -116,7 +116,7 @@ inline void RunApplyOnAllElementsParallelTest() {
 
   rm.ApplyOnAllElementsParallel([&](SimObject* sim_object) {
     const double kEpsilon = abs_error<double>::value;
-    B* b = sim_object->As<B>();
+    B* b = dynamic_cast<B*>(sim_object);
     SoUid uid = sim_object->GetUid();
     if (uid == ref_uid) {
       EXPECT_EQ(3.14, b->GetData());
@@ -227,12 +227,14 @@ inline void RunPushBackAndGetSimObjectTest() {
 
   rm.push_back(new A(87));
 
-  EXPECT_EQ(rm.GetSimObject(ref_uid)->As<A>()->GetData(), 12);
-  EXPECT_EQ(rm.GetSimObject(ref_uid + 1)->As<A>()->GetData(), 34);
-  EXPECT_EQ(rm.GetSimObject(ref_uid + 4)->As<A>()->GetData(), 87);
+  EXPECT_EQ(dynamic_cast<A*>(rm.GetSimObject(ref_uid))->GetData(), 12);
+  EXPECT_EQ(dynamic_cast<A*>(rm.GetSimObject(ref_uid + 1))->GetData(), 34);
+  EXPECT_EQ(dynamic_cast<A*>(rm.GetSimObject(ref_uid + 4))->GetData(), 87);
 
-  EXPECT_NEAR(rm.GetSimObject(ref_uid + 2)->As<B>()->GetData(), 3.14, kEpsilon);
-  EXPECT_NEAR(rm.GetSimObject(ref_uid + 3)->As<B>()->GetData(), 6.28, kEpsilon);
+  EXPECT_NEAR(dynamic_cast<B*>(rm.GetSimObject(ref_uid + 2))->GetData(), 3.14,
+              kEpsilon);
+  EXPECT_NEAR(dynamic_cast<B*>(rm.GetSimObject(ref_uid + 3))->GetData(), 6.28,
+              kEpsilon);
 }
 
 // -----------------------------------------------------------------------------
@@ -288,9 +290,9 @@ inline void CheckApplyOnAllElements(ResourceManager* rm,
 
   rm->ApplyOnAllElementsParallel([&](SimObject* so) {
     size_t index = 0;
-    if (A* a = so->As<A>()) {
+    if (A* a = dynamic_cast<A*>(so)) {
       index = a->GetData();
-    } else if (B* b = so->As<B>()) {
+    } else if (B* b = dynamic_cast<B*>(so)) {
       index = std::round(b->GetData());
     }
     auto handle = rm->GetSoHandle(so->GetUid());
@@ -414,9 +416,9 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
 #pragma omp critical
         {
           size_t index = 0;
-          if (A* a = so->As<A>()) {
+          if (A* a = dynamic_cast<A*>(so)) {
             index = a->GetData();
-          } else if (B* b = so->As<B>()) {
+          } else if (B* b = dynamic_cast<B*>(so)) {
             index = std::round(b->GetData());
           }
           found[index] = true;
@@ -564,14 +566,19 @@ inline void RunIOTest() {
   // validate
   EXPECT_EQ(5u, restored_rm->GetNumSimObjects());
 
-  EXPECT_EQ(12, restored_rm->GetSimObject(ref_uid)->As<A>()->GetData());
-  EXPECT_EQ(34, restored_rm->GetSimObject(ref_uid + 1)->As<A>()->GetData());
-  EXPECT_EQ(42, restored_rm->GetSimObject(ref_uid + 2)->As<A>()->GetData());
+  EXPECT_EQ(12,
+            dynamic_cast<A*>(restored_rm->GetSimObject(ref_uid))->GetData());
+  EXPECT_EQ(
+      34, dynamic_cast<A*>(restored_rm->GetSimObject(ref_uid + 1))->GetData());
+  EXPECT_EQ(
+      42, dynamic_cast<A*>(restored_rm->GetSimObject(ref_uid + 2))->GetData());
 
-  EXPECT_NEAR(3.14, restored_rm->GetSimObject(ref_uid + 3)->As<B>()->GetData(),
-              kEpsilon);
-  EXPECT_NEAR(6.28, restored_rm->GetSimObject(ref_uid + 4)->As<B>()->GetData(),
-              kEpsilon);
+  EXPECT_NEAR(
+      3.14, dynamic_cast<B*>(restored_rm->GetSimObject(ref_uid + 3))->GetData(),
+      kEpsilon);
+  EXPECT_NEAR(
+      6.28, dynamic_cast<B*>(restored_rm->GetSimObject(ref_uid + 4))->GetData(),
+      kEpsilon);
 
   EXPECT_EQ(0, restored_rm->GetDiffusionGrid(0)->GetSubstanceId());
   EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetSubstanceId());

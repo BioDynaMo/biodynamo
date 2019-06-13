@@ -31,7 +31,7 @@ struct Chemotaxis : public BaseBiologyModule {
   Chemotaxis() : BaseBiologyModule(gAllEventIds) {}
 
   void Run(SimObject* so) override {
-    if (auto* cell = so->As<MyCell>()) {
+    if (auto* cell = dynamic_cast<MyCell*>(so)) {
       auto* rm = Simulation::GetActive()->GetResourceManager();
 
       DiffusionGrid* dg = nullptr;
@@ -60,7 +60,7 @@ struct SubstanceSecretion : public BaseBiologyModule {
   SubstanceSecretion() : BaseBiologyModule(gAllEventIds) {}
 
   void Run(SimObject* so) override {
-    if (auto* cell = so->As<MyCell>()) {
+    if (auto* cell = dynamic_cast<MyCell*>(so)) {
       auto* rm = Simulation::GetActive()->GetResourceManager();
 
       DiffusionGrid* dg = nullptr;

@@ -105,7 +105,7 @@ struct GrowthModule : public BaseBiologyModule {
 
 We are now able to add any code in the Run() method, that will be executed at each simulation step for each cell containing this GrowthModule. In our case, it will be a cellular growth, until a certain diameter is reached and then a cell division:
 ``` C++
-if (auto* cell = so->As<Cell>()) {
+if (auto* cell = dynamic_cast<Cell*>(so)) {
   if (cell->GetDiameter() < 8) {
     cell->ChangeVolume(400);
   }
@@ -223,7 +223,7 @@ class MyCell : public Cell {  // our object extends the Cell object
   /// If MyCell divides, daughter 2 copies the data members from the mother
   MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {
-    if (auto* mother = other->As<MyCell>()) {
+    if (auto* mother = dynamic_cast<MyCell*>(other)) {
       cell_color_ = mother->cell_color_;
     }
   }
