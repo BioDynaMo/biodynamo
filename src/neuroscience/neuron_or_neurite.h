@@ -18,23 +18,7 @@
 #include <array>
 #include "core/sim_object/sim_object.h"
 #include "core/sim_object/so_pointer.h"
-// #include <set>
-// #include <string>
-// #include <unordered_map>
-// #include <vector>
-//
-// #include "core/default_force.h"
-// #include "core/shape.h"
-// #include "core/util/log.h"
-// #include "core/util/math.h"
-// #include "core/util/random.h"
-// #include "neuroscience/event/neurite_bifurcation_event.h"
-// #include "neuroscience/event/neurite_branching_event.h"
-// #include "neuroscience/event/new_neurite_extension_event.h"
-// #include "neuroscience/event/side_neurite_extension_event.h"
-// #include "neuroscience/event/split_neurite_element_event.h"
-// #include "neuroscience/param.h"
-//
+
 namespace bdm {
 namespace experimental {
 namespace neuroscience {
