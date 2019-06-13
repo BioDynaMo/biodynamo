@@ -98,7 +98,7 @@ void InPlaceExecutionContext::Execute(
   }
 }
 
-void InPlaceExecutionContext::push_back(SimObject* new_so) {
+void InPlaceExecutionContext::push_back(SimObject* new_so) {  // NOLINT
   new_sim_objects_[new_so->GetUid()] = new_so;
 }
 

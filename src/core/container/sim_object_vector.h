@@ -39,7 +39,7 @@ class SimObjectVector {
   /// and `B` 20. `data_[0]` corresponds to `A` and reserves 10 elements,
   /// while `data_[1]` corresponds to `B` and reserves 20 elements.
   /// NB: Elements will not be initilized.
-  void reserve() {
+  void reserve() {  // NOLINT
     clear();
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();

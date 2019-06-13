@@ -20,6 +20,7 @@
 #include <limits>
 #include <vector>
 
+#include "core/grid.h"
 #include "core/operation/bound_space_op.h"
 #include "core/param/param.h"
 #include "core/scheduler.h"
