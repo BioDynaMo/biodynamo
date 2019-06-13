@@ -392,7 +392,7 @@ class ResourceManager {
     }
   }
 
- private:
+ protected:
 #ifdef USE_OPENCL
   cl::Context* GetOpenCLContext() { return &opencl_context_; }
   cl::CommandQueue* GetOpenCLCommandQueue() { return &opencl_command_queue_; }
