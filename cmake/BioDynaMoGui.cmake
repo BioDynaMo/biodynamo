@@ -26,15 +26,21 @@ execute_process(COMMAND ${PYTHON_EXECUTABLE} ${BioDynaMo_SOURCE_DIR}/src/gui/gen
 
 include_directories(${BioDynaMo_SOURCE_DIR}/src/gui/*)
 
-ADD_LIBRARY(Libs 
-    ${BioDynaMo_SOURCE_DIR}/src/gui/gui_log.cc
-    ${BioDynaMo_SOURCE_DIR}/src/gui/gui.cc
+file(GLOB_RECURSE CC_FILES
+  "${BioDynaMo_SOURCE_DIR}/src/gui/*.cc",
+  "${BioDynaMo_SOURCE_DIR}/src/core/util/io.cc"
 )
 
-target_link_libraries(Libs ${ROOT_LIBRARIES})
+ADD_LIBRARY(LIBS 
+    ${CC_FILES}
+)
+
+target_link_libraries(LIBS ${ROOT_LIBRARIES})
 
 file(GLOB sourcefiles ${BioDynaMo_SOURCE_DIR}/src/gui/*)
 
 add_executable(gui ${sourcefiles})
 
-target_link_libraries(gui Libs)
+target_link_libraries(gui LIBS)
+
+set(GUI_ICONS ${BioDynaMo_SOURCE_DIR}/src/gui/icons)

@@ -1,17 +1,35 @@
-#ifndef CORE_GUI_LOG_H_
-#define CORE_GUI_LOG_H_
+// Author: Lukasz Stempniewicz 25/05/19
+
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+
+#ifndef GUI_LOG_H_
+#define GUI_LOG_H_
 
 #include <TGTextEdit.h>
-#include <fstream>
-#include <string>
-#include <iostream>
 #include <stdio.h>
+#include <fstream>
+#include <iostream>
+#include <mutex>
+#include <string>
 #include "core/util/log.h"
 #include "core/util/string.h"
-#include "gui/gui_constants.h"
+#include "gui/constants.h"
 
-class GUILog {
+namespace gui {
 
+class Log {
  public:
   template <typename... Args>
   static void Info(const Args&... parts) {
@@ -21,7 +39,7 @@ class GUILog {
   }
 
   template <typename... Args>
-  static void Debug(const Args&... parts){
+  static void Debug(const Args&... parts) {
     std::string message = bdm::Concat("DEBUG:", CurrentDateTime(), parts...);
     bdm::Log::Debug(LogFile, message, "\n");
     LogMessage(message);
@@ -45,10 +63,12 @@ class GUILog {
  private:
   static TGTextEdit* TEdit;
   static std::string LogFile;
-  
+  static std::mutex Mtx;
+
   static const std::string CurrentDateTime();
   static void LogMessage(const std::string message);
 };
 
+}  // namespace gui
 
-#endif  // CORE_GUI_LOG_H_
+#endif  // GUI_LOG_H_
