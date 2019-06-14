@@ -1,5 +1,21 @@
 # Changelog
 
+## 14.06.2019 [`cb15679`](https://github.com/BioDynaMo/biodynamo/commit/cb1567947595090e3b43a3a44bf74477699d83b0)
+
+Release BioDynaMo dynamic.
+
+This is a more user-friendly version of BioDynaMo.
+It removes most template template code, and does not need compile time parameters.
+However, this comes at the cost of performance. BioDynaMo dynamic is slower than
+the previous BioDynaMo static.
+
+There are too many small API changes to present an exhaustive list here.
+We recommend to have a look at the
+[demo folder](https://github.com/BioDynaMo/biodynamo/tree/cb1567947595090e3b43a3a44bf74477699d83b0/demo)
+folder or directly inspect the
+[changes](https://github.com/BioDynaMo/biodynamo/commit/cb1567947595090e3b43a3a44bf74477699d83b0#diff-d61c94874975bac07d55c551632c6e1c)
+of the demo folder.
+
 ## 31.01.2019 [`3a51e76`](https://github.com/BioDynaMo/biodynamo/commit/3a51e76fa109cee10e11776a92bd4ce3b299ee93)
 
 Improve file structure in directory src/ and test/unit
