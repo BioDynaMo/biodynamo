@@ -26,11 +26,12 @@ HEADER_FILE3 = '{}/model/model.h'.format(DIR_PATH)
 INCLUDE_DIR = '{}/..'.format(DIR_PATH)
 
 # Generated files
-LINK_DEF_FILE = '{}/gui_GEN_LinkDef.h'.format(DIR_PATH)
+LINK_DEF_FILE = '{}/gui_LinkDef.h'.format(DIR_PATH)
 DICT_FILE = '{}/gui_GEN_Dict.cc'.format(DIR_PATH)
 PCM_FILE = '{}/gui_GEN_Dict_rdict.pcm'.format(DIR_PATH)
 TMP_FILE = '{}/tmp.txt'.format(DIR_PATH)
 
+# Not in use
 def generateLinkDef():
     cmd = '''awk '/^class .* {/{print "#pragma link C++ class " $2 ";"}' '''
     cmd = cmd + HEADER_FILE
@@ -50,7 +51,7 @@ def generateLinkDef():
 
 def cleanFiles():
     try:
-        #os.remove(LINK_DEF_FILE)
+        # os.remove(LINK_DEF_FILE)
         os.remove(DICT_FILE)
         os.remove(PCM_FILE)
     except:
@@ -58,7 +59,7 @@ def cleanFiles():
     
 if __name__ == '__main__':
     cleanFiles()
-    #generateLinkDef()
+    # generateLinkDef()  Current not called
 
     cmd = "rootcling -f {} -I{} {} {} {} {}  > {} 2>&1".format(DICT_FILE, INCLUDE_DIR, HEADER_FILE, HEADER_FILE2, HEADER_FILE3, LINK_DEF_FILE, TMP_FILE)
     os.system(cmd)
