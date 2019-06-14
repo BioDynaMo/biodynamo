@@ -5,7 +5,7 @@
 Release BioDynaMo dynamic.
 
 This is a more user-friendly version of BioDynaMo.
-It removes most template template code, and does not need compile time parameters.
+It removes most template code, and does not require compile time parameters.
 However, this comes at the cost of performance. BioDynaMo dynamic is slower than
 the previous BioDynaMo static.
 
