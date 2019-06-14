@@ -95,17 +95,23 @@ rm $TMP_CONTAINER_TAR
 sudo docker stop $BDM_CONTAINER || true
 sudo docker rm $BDM_CONTAINER || true
 
-
+BDM_FORWARD_ENV=""
 # BDM_LOCAL_LFS is defined add the environment variable and volume
 if [ $BDM_LOCAL_LFS ]; then
-  BDM_LOCAL_LFS_ENV="--env BDM_LOCAL_LFS=$BDM_LOCAL_LFS"
+  BDM_FORWARD_ENV="$BDM_FORWARD_ENV --env BDM_LOCAL_LFS=$BDM_LOCAL_LFS"
   BDM_LOCAL_LFS_VOLUME="--volume $BDM_LOCAL_LFS:$BDM_LOCAL_LFS"
+fi
+# forward travis environment variables
+if [ $TRAVIS ]; then
+  for e in $(printenv | grep '\(^TRAVIS\)\|\(^GH\)'); do
+    BDM_FORWARD_ENV="$BDM_FORWARD_ENV --env=$e"
+  done
 fi
 sudo docker run \
   --name $BDM_CONTAINER \
   --net=host \
   --env="DISPLAY" \
-  $BDM_LOCAL_LFS_ENV \
+  $BDM_FORWARD_ENV \
   --volume $BDM_PROJECT_DIR_ABS:$BDM_PROJECT_DIR_ABS \
   --volume /var/run/docker.sock:/var/run/docker.sock \
   $BDM_LOCAL_LFS_VOLUME \

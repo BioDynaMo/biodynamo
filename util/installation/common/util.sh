@@ -50,8 +50,9 @@ function DetectLinuxFlavour {
 # This function prints an error and exits if is not linux or macos.
 function DetectOs {
   # detect operating system
-  if [ $TRAVIS ]; then
-    echo "travis-${TRAVIS_OS_NAME}"
+  if [ $TRAVIS ] && [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    echo "travis-osx"
+    # Travis linux always runs inside a container -> use DetectLinuxFlavour
   elif [ `uname` = "Linux" ]; then
     # linux
     DetectLinuxFlavour
