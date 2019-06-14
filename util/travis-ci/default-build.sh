@@ -63,6 +63,6 @@ ${CXX} -v || true
 cd build
 ctest -V
 
-if [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_OS_NAME = "linux" ] && [ $TRAVIS_PULL_REQUEST = "false" ]; then
+if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
   ../util/travis-ci/deploy.sh
 fi
