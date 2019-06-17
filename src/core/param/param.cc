@@ -73,6 +73,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
   BDM_ASSIGN_CONFIG_VALUE(visualization_export_interval_,
                           "visualization.export_interval");
+  BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm_,
+                          "visualization.export_generate_pvsm");
 
   //   visualize_sim_objects_
   auto visualize_sim_objects_tarr =

@@ -125,6 +125,25 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   EXPECT_EQ(expected, buffer.str());
 }
 
+TEST_F(CatalystAdaptorTest, OmitPvsmAndJsonGeneration) {
+  auto set_param = [](Param* param) {
+    param->export_visualization_ = true;
+    param->visualization_export_generate_pvsm_ = false;
+  };
+
+  auto* sim = new Simulation(TEST_NAME, set_param);
+
+  auto json_filename =
+      Concat("output/", sim->GetOutputDir(), "/simulation_info.json");
+  auto pvsm_filename = Concat("output/", sim->GetOutputDir(), "/",
+                              sim->GetUniqueName(), ".pvsm");
+
+  delete sim;
+
+  EXPECT_FALSE(FileExists(json_filename));
+  EXPECT_FALSE(FileExists(pvsm_filename));
+}
+
 /// Tests if the catalyst state is generated.
 TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
   Simulation simulation("MySimulation");

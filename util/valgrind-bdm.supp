@@ -412,7 +412,6 @@
    fun:_ZN14vtkCPProcessor10InitializeEPKc
    fun:_ZN3bdm15CatalystAdaptor10InitializeEv
    fun:_ZN3bdm15CatalystAdaptor9VisualizeEmb
-   fun:_ZN3bdm52CatalystAdaptorTest_CheckVisualizationSelection_Test8TestBodyEv
 }
 
 {
@@ -520,7 +519,6 @@
    fun:_ZN14vtkCPProcessor10InitializeEPKc
    fun:_ZN3bdm15CatalystAdaptor10InitializeEv
    fun:_ZN3bdm15CatalystAdaptor9VisualizeEmb
-   fun:_ZN3bdm52CatalystAdaptorTest_CheckVisualizationSelection_Test8TestBodyEv
 }
 
 {

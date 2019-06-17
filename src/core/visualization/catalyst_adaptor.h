@@ -84,7 +84,8 @@ class CatalystAdaptor {
       g_processor_->Delete();
       g_processor_ = nullptr;
     }
-    if (param->export_visualization_) {
+    if (param->export_visualization_ &&
+        param->visualization_export_generate_pvsm_) {
       GenerateSimulationInfoJson(vtk_so_grids_, vtk_dgrids_);
       GenerateParaviewState();
     }

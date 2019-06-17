@@ -195,6 +195,15 @@ struct Param {
   ///     export_interval = 1
   uint32_t visualization_export_interval_ = 1;
 
+  /// If `export_visualization_` is set to true, this parameter specifies
+  /// if the ParaView pvsm file will be generated!\n
+  /// Defaut value: `true`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     export_generate_pvsm = true
+  bool visualization_export_generate_pvsm_ = true;
+
   /// Specifies which simulation objects should be visualized. \n
   /// Every simulation object defines the minimum set of data members which
   /// are required to visualize it. (e.g. Cell: `position_` and `diameter_`).\n
