@@ -398,8 +398,7 @@ TEST(DiffusionTest, IOTest) {
 #endif  // USE_DICT
 
 Double3 GetRealCoordinates(const std::array<uint32_t, 3>& bc1,
-                                         const std::array<uint32_t, 3>& bc2,
-                                         double bl) {
+                           const std::array<uint32_t, 3>& bc2, double bl) {
   Double3 ret;
   ret[0] = bl * (bc2[0] - bc1[0]);
   ret[1] = bl * (bc2[1] - bc1[1]);

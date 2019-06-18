@@ -185,9 +185,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetDensity(double density) { density_ = density; }
 
-  const Double3& GetPosition() const override {
-    return position_;
-  }
+  const Double3& GetPosition() const override { return position_; }
 
   void SetPosition(const Double3& position) override {
     position_ = position;
@@ -200,9 +198,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   /// return end of neurite element position
-  const Double3& GetMassLocation() const {
-    return mass_location_;
-  }
+  const Double3& GetMassLocation() const { return mass_location_; }
 
   void SetMassLocation(const Double3& mass_location) {
     mass_location_ = mass_location;
@@ -229,9 +225,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  Double3 OriginOf(SoUid daughter_uid) const override {
-    return mass_location_;
-  }
+  Double3 OriginOf(SoUid daughter_uid) const override { return mass_location_; }
 
   // TODO(neurites) arrange in order end
 
@@ -305,8 +299,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// possible).
   /// @param speed
   /// @param direction
-  void ElongateTerminalEnd(double speed,
-                           const Double3& direction) {
+  void ElongateTerminalEnd(double speed, const Double3& direction) {
     double temp = Math::Dot(direction, spring_axis_);
     if (temp > 0) {
       MovePointMass(speed, direction);
@@ -322,8 +315,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// \brief Create a branch for this neurite element.
   ///
   /// \see NeuriteBranchingEvent
-  NeuriteElement* Branch(double new_branch_diameter,
-                         const Double3& direction,
+  NeuriteElement* Branch(double new_branch_diameter, const Double3& direction,
                          double length = 1.0) {
     // create a new neurite element for side branch
     // we first split this neurite element into two pieces
@@ -388,10 +380,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// \brief Growth cone bifurcation.
   ///
   /// \see NeuriteBifurcationEvent
-  std::array<NeuriteElement*, 2> Bifurcate(
-      double length, double diameter_1, double diameter_2,
-      const Double3& direction_1,
-      const Double3& direction_2) {
+  std::array<NeuriteElement*, 2> Bifurcate(double length, double diameter_1,
+                                           double diameter_2,
+                                           const Double3& direction_1,
+                                           const Double3& direction_2) {
     // 1) physical bifurcation
     // check it is a terminal branch
     if (daughter_left_ != nullptr) {
@@ -414,17 +406,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// \brief Growth cone bifurcation.
   ///
   /// \see NeuriteBifurcationEvent
-  std::array<NeuriteElement*, 2> Bifurcate(
-      double diameter_1, double diameter_2,
-      const Double3& direction_1,
-      const Double3& direction_2);
+  std::array<NeuriteElement*, 2> Bifurcate(double diameter_1, double diameter_2,
+                                           const Double3& direction_1,
+                                           const Double3& direction_2);
 
   /// \brief Growth cone bifurcation.
   ///
   /// \see NeuriteBifurcationEvent
-  std::array<NeuriteElement*, 2> Bifurcate(
-      const Double3& direction_1,
-      const Double3& direction_2) {
+  std::array<NeuriteElement*, 2> Bifurcate(const Double3& direction_1,
+                                           const Double3& direction_2) {
     // initial default length :
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     double l = param->neurite_default_actual_length_;
@@ -498,8 +488,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Returns the total force that this `NeuriteElement` exerts on it's mother.
   /// It is the sum of the spring force and the part of the inter-object force
   /// computed earlier in `CalculateDisplacement`
-  Double3 ForceTransmittedFromDaugtherToMother(
-      const NeuronOrNeurite& mother) {
+  Double3 ForceTransmittedFromDaugtherToMother(const NeuronOrNeurite& mother) {
     if (mother_ != mother) {
       Fatal("NeuriteElement", "Given object is not the mother!");
       return {0, 0, 0};
@@ -697,8 +686,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       }
 
       DefaultForce force;
-      Double4 force_from_neighbor =
-          force.GetForce(this, neighbor);
+      Double4 force_from_neighbor = force.GetForce(this, neighbor);
 
       // hack: if the neighbour is a neurite, we need to reduce the force from
       // that neighbour in order to avoid kink behaviour
@@ -865,8 +853,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// of a point expressed in global cartesian coordinates
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param position in global coordinates
-  Double3 TransformCoordinatesGlobalToLocal(
-      const Double3& position) const {
+  Double3 TransformCoordinatesGlobalToLocal(const Double3& position) const {
     auto pos = Math::Subtract(position, ProximalEnd());
     return {Math::Dot(pos, x_axis_), Math::Dot(pos, y_axis_),
             Math::Dot(pos, z_axis_)};
@@ -877,15 +864,13 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// ([1,0,0],[0,1,0],[0,0,1])
   /// of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
   /// @param position in local coordinates
-  Double3 TransformCoordinatesLocalToGlobal(
-      const Double3& position) const {
-    Double3 glob{
-        position[0] * x_axis_[0] + position[1] * y_axis_[0] +
-            position[2] * z_axis_[0],
-        position[0] * x_axis_[1] + position[1] * y_axis_[1] +
-            position[2] * z_axis_[1],
-        position[0] * x_axis_[2] + position[1] * y_axis_[2] +
-            position[2] * z_axis_[2]};
+  Double3 TransformCoordinatesLocalToGlobal(const Double3& position) const {
+    Double3 glob{position[0] * x_axis_[0] + position[1] * y_axis_[0] +
+                     position[2] * z_axis_[0],
+                 position[0] * x_axis_[1] + position[1] * y_axis_[1] +
+                     position[2] * z_axis_[1],
+                 position[0] * x_axis_[2] + position[1] * y_axis_[2] +
+                     position[2] * z_axis_[2]};
     return Math::Add(glob, ProximalEnd());
   }
 
@@ -893,8 +878,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Returns the position in cylindrical coordinates (h,theta,r)
   /// of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
   /// @param position in local coordinates
-  Double3 TransformCoordinatesLocalToPolar(
-      const Double3& position) const {
+  Double3 TransformCoordinatesLocalToPolar(const Double3& position) const {
     return {position[0], std::atan2(position[2], position[1]),
             std::sqrt(position[1] * position[1] + position[2] * position[2])};
   }
@@ -903,8 +887,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Returns the position in the local coordinate system (xAxis, yXis, zAxis)
   /// of a point expressed in cylindrical coordinates (h,theta,r).
   /// @param position in local coordinates
-  Double3 TransformCoordinatesPolarToLocal(
-      const Double3& position) const {
+  Double3 TransformCoordinatesPolarToLocal(const Double3& position) const {
     return {position[0], position[2] * std::cos(position[1]),
             position[2] * std::sin(position[1])};
   }
@@ -922,8 +905,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   /// G -> L :    G -> L, then L -> P
-  Double3 TransformCoordinatesGlobalToPolar(
-      const Double3& position) const {
+  Double3 TransformCoordinatesGlobalToPolar(const Double3& position) const {
     auto local = TransformCoordinatesGlobalToLocal(position);
     return TransformCoordinatesLocalToPolar(local);
   }
@@ -1230,8 +1212,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// \brief Extend a side neurite element and assign it to daughter right.
   ///
   /// \see SideNeuriteExtensionEvent
-  NeuriteElement* ExtendSideNeuriteElement(
-      double length, double diameter, const Double3& direction) {
+  NeuriteElement* ExtendSideNeuriteElement(double length, double diameter,
+                                           const Double3& direction) {
     if (daughter_right_ != nullptr) {
       Fatal(
           "NeuriteElement",
@@ -1297,8 +1279,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// TODO
   void InitializeNeuriteBifurcation(NeuriteElement* mother, double length,
-                                    double diameter,
-                                    const Double3& direction) {
+                                    double diameter, const Double3& direction) {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
@@ -1378,9 +1359,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Neurite branching is composed of neurite splitting and side neurite
   /// extension. To avoid code duplication in constructors, logic has been moved
   /// here.
-  void InitializeSideExtensionOrBranching(
-      NeuriteElement* mother, double length, double diameter,
-      const Double3& direction) {
+  void InitializeSideExtensionOrBranching(NeuriteElement* mother, double length,
+                                          double diameter,
+                                          const Double3& direction) {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);

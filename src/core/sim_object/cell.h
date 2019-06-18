@@ -23,8 +23,8 @@
 #include <type_traits>
 #include <vector>
 
-#include "core/container/math_array.h"
 #include "core/container/inline_vector.h"
+#include "core/container/math_array.h"
 #include "core/default_force.h"
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
@@ -52,8 +52,7 @@ class Cell : public SimObject {
   explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
-  explicit Cell(const Double3& position)
-      : position_(position), density_{1.0} {}
+  explicit Cell(const Double3& position) : position_(position), density_{1.0} {}
 
   /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.
@@ -104,10 +103,9 @@ class Cell : public SimObject {
 
       // position
       auto mother_pos = mother_cell->GetPosition();
-      Double3 new_position{
-          mother_pos[0] + d_2 * axis_of_division[0],
-          mother_pos[1] + d_2 * axis_of_division[1],
-          mother_pos[2] + d_2 * axis_of_division[2]};
+      Double3 new_position{mother_pos[0] + d_2 * axis_of_division[0],
+                           mother_pos[1] + d_2 * axis_of_division[1],
+                           mother_pos[2] + d_2 * axis_of_division[2]};
       daughter->SetPosition(new_position);
 
       // E) This sphere becomes the 1st daughter
@@ -204,13 +202,9 @@ class Cell : public SimObject {
 
   double GetDensity() const { return density_; }
 
-  const Double3& GetPosition() const override {
-    return position_;
-  }
+  const Double3& GetPosition() const override { return position_; }
 
-  const Double3& GetTractorForce() const {
-    return tractor_force_;
-  }
+  const Double3& GetTractorForce() const { return tractor_force_; }
 
   double GetVolume() const { return volume_; }
 
@@ -379,8 +373,7 @@ class Cell : public SimObject {
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param coord: position in absolute coordinates - [x,y,z] cartesian values
   /// @return the position in local coordinates
-  Double3 TransformCoordinatesGlobalToPolar(
-      const Double3& coord) const;
+  Double3 TransformCoordinatesGlobalToPolar(const Double3& coord) const;
 
   /// NB: Use setter and don't assign values directly
   Double3 position_ = {{0, 0, 0}};

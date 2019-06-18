@@ -34,9 +34,9 @@
 
 #include <morton/morton.h>
 
-#include "core/container/math_array.h"
 #include "core/container/fixed_size_vector.h"
 #include "core/container/inline_vector.h"
+#include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/container/sim_object_vector.h"
 #include "core/param/param.h"
@@ -372,18 +372,17 @@ class Grid {
   ///
   /// @return     The distance between the two points
   ///
-  inline double SquaredEuclideanDistance(
-      const Double3& pos1,
-      const Double3& pos2) const {
+  inline double SquaredEuclideanDistance(const Double3& pos1,
+                                         const Double3& pos2) const {
     const double dx = pos2[0] - pos1[0];
     const double dy = pos2[1] - pos1[1];
     const double dz = pos2[2] - pos1[2];
     return (dx * dx + dy * dy + dz * dz);
   }
 
-  inline bool WithinSquaredEuclideanDistance(
-      double squared_radius, const Double3& pos1,
-      const Double3& pos2) const {
+  inline bool WithinSquaredEuclideanDistance(double squared_radius,
+                                             const Double3& pos1,
+                                             const Double3& pos2) const {
     const double dx = pos2[0] - pos1[0];
     const double dx2 = dx * dx;
     if (dx2 > squared_radius) {

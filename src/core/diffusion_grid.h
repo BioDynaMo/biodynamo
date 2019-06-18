@@ -634,8 +634,7 @@ class DiffusionGrid {
   }
 
   /// Increase the concentration at specified position with specified amount
-  void IncreaseConcentrationBy(const Double3& position,
-                               double amount) {
+  void IncreaseConcentrationBy(const Double3& position, double amount) {
     auto idx = GetBoxIndex(position);
     IncreaseConcentrationBy(idx, amount);
   }
@@ -656,8 +655,7 @@ class DiffusionGrid {
   }
 
   /// Get the (normalized) gradient at specified position
-  void GetGradient(const Double3& position,
-                   Double3* gradient) const {
+  void GetGradient(const Double3& position, Double3* gradient) const {
     auto idx = GetBoxIndex(position);
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
@@ -674,8 +672,7 @@ class DiffusionGrid {
     }
   }
 
-  std::array<uint32_t, 3> GetBoxCoordinates(
-      const Double3& position) const {
+  std::array<uint32_t, 3> GetBoxCoordinates(const Double3& position) const {
     std::array<uint32_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;

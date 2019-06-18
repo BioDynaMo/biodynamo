@@ -26,8 +26,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/shape.h"
 #include "core/container/math_array.h"
+#include "core/shape.h"
 #include "core/sim_object/so_pointer.h"
 #include "core/sim_object/so_uid.h"
 #include "core/sim_object/so_visitor.h"
@@ -223,8 +223,7 @@ class SimObject {
   const std::vector<BaseBiologyModule*>& GetAllBiologyModules() const;
   // ---------------------------------------------------------------------------
 
-  virtual Double3 CalculateDisplacement(
-      double squared_radius) = 0;
+  virtual Double3 CalculateDisplacement(double squared_radius) = 0;
 
   virtual void ApplyDisplacement(const Double3& displacement) = 0;
 

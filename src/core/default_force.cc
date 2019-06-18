@@ -30,8 +30,7 @@ namespace bdm {
 
 using experimental::neuroscience::NeuriteElement;
 
-Double4 DefaultForce::GetForce(const SimObject* lhs,
-                                             const SimObject* rhs) {
+Double4 DefaultForce::GetForce(const SimObject* lhs, const SimObject* rhs) {
   if (lhs->GetShape() == Shape::kSphere && rhs->GetShape() == Shape::kSphere) {
     Double3 result;
     ForceBetweenSpheres(lhs, rhs, &result);
@@ -106,14 +105,13 @@ void DefaultForce::ForceBetweenSpheres(const SimObject* sphere_lhs,
   double f = k * delta - gamma * std::sqrt(r * delta);
 
   double module = f / center_distance;
-  Double3 force2on1(
-      {module * comp1, module * comp2, module * comp3});
+  Double3 force2on1({module * comp1, module * comp2, module * comp3});
   *result = force2on1;
 }
 
-void DefaultForce::ForceOnACylinderFromASphere(
-    const SimObject* cylinder, const SimObject* sphere,
-    Double4* result) const {
+void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
+                                               const SimObject* sphere,
+                                               Double4* result) const {
   auto* ne = bdm_static_cast<const NeuriteElement*>(cylinder);
   auto proximal_end = ne->ProximalEnd();
   auto distal_end = ne->DistalEnd();
@@ -133,12 +131,11 @@ void DefaultForce::ForceOnACylinderFromASphere(
     // vector_y = rc * (axis[1]/actual_length)
     // vector_z = rc * (axis[2]/actual_length)
     double rc = 0.5 * d;
-    Double3 dvec = {
-        rc * (axis[0] / actual_length), rc * (axis[1] / actual_length),
-        rc * (axis[2] / actual_length)};  // displacement vector
-    Double3 npd = {distal_end[0] - dvec[0],
-                                 distal_end[1] - dvec[1],
-                                 distal_end[2] - dvec[2]};  // new sphere center
+    Double3 dvec = {rc * (axis[0] / actual_length),
+                    rc * (axis[1] / actual_length),
+                    rc * (axis[2] / actual_length)};  // displacement vector
+    Double3 npd = {distal_end[0] - dvec[0], distal_end[1] - dvec[1],
+                   distal_end[2] - dvec[2]};  // new sphere center
     *result = ComputeForceOfASphereOnASphere(npd, rc, c, r);
     return;
   }
@@ -167,9 +164,8 @@ void DefaultForce::ForceOnACylinderFromASphere(
                                      proximal_end_closest[2] * axis[2];
   double k = proximal_end_closest_axis / (actual_length * actual_length);
   //    cc = proximal_end + k* axis
-  Double3 cc{proximal_end[0] + k * axis[0],
-                           proximal_end[1] + k * axis[1],
-                           proximal_end[2] + k * axis[2]};
+  Double3 cc{proximal_end[0] + k * axis[0], proximal_end[1] + k * axis[1],
+             proximal_end[2] + k * axis[2]};
 
   // 2) Look if c -and hence cc- is (a) between proximal_end and distal_end,
   // (b) before proximal_end or
@@ -209,9 +205,9 @@ void DefaultForce::ForceOnACylinderFromASphere(
   return;
 }
 
-void DefaultForce::ForceOnASphereFromACylinder(
-    const SimObject* sphere, const SimObject* cylinder,
-    Double3* result) const {
+void DefaultForce::ForceOnASphereFromACylinder(const SimObject* sphere,
+                                               const SimObject* cylinder,
+                                               Double3* result) const {
   // it is the opposite of force on a cylinder from sphere:
   Double4 temp;
   ForceOnACylinderFromASphere(cylinder, sphere, &temp);
@@ -269,8 +265,7 @@ void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
       p1 = b;
       k = 0;
     } else {
-      p1 = Double3{a[0] + mua * p21x, a[1] + mua * p21y,
-                                 a[2] + mua * p21z};
+      p1 = Double3{a[0] + mua * p21x, a[1] + mua * p21y, a[2] + mua * p21z};
       k = 1 - mua;
     }
 
@@ -279,8 +274,7 @@ void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
     } else if (mub > 1) {
       p2 = d;
     } else {
-      p2 = Double3{c[0] + mub * p43x, c[1] + mub * p43y,
-                                 c[2] + mub * p43z};
+      p2 = Double3{c[0] + mub * p43x, c[1] + mub * p43y, c[2] + mub * p43z};
     }
 
   } else {
@@ -295,9 +289,10 @@ void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
   *result = {force[0], force[1], force[2], k};
 }
 
-Double4 DefaultForce::ComputeForceOfASphereOnASphere(
-    const Double3& c1, double r1, const Double3& c2,
-    double r2) const {
+Double4 DefaultForce::ComputeForceOfASphereOnASphere(const Double3& c1,
+                                                     double r1,
+                                                     const Double3& c2,
+                                                     double r2) const {
   double comp1 = c1[0] - c2[0];
   double comp2 = c1[1] - c2[1];
   double comp3 = c1[2] - c2[2];
@@ -319,8 +314,7 @@ Double4 DefaultForce::ComputeForceOfASphereOnASphere(
     // the force is prop to the square of the interpentration distance and to
     // the radii.
     double module = a / distance_between_centers;
-    Double4 force2on1(
-        {module * comp1, module * comp2, module * comp3, 0.0});
+    Double4 force2on1({module * comp1, module * comp2, module * comp3, 0.0});
     return force2on1;
   }
 }

@@ -37,7 +37,7 @@ struct Math {
   /// @return a + b
   template <typename T, std::size_t N>
   static MathArray<T, N> Add(const MathArray<T, N>& a,
-                              const MathArray<T, N>& b) {
+                             const MathArray<T, N>& b) {
     MathArray<T, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] + b[i];
@@ -51,7 +51,7 @@ struct Math {
   /// @return a-b
   template <typename T, std::size_t N>
   static MathArray<T, N> Subtract(const MathArray<T, N>& a,
-                                   const MathArray<T, N>& b) {
+                                  const MathArray<T, N>& b) {
     MathArray<T, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] - b[i];
@@ -79,7 +79,7 @@ struct Math {
   /// @return k * a
   template <std::size_t N>
   static MathArray<double, N> ScalarMult(double k,
-                                          const MathArray<double, N>& a) {
+                                         const MathArray<double, N>& a) {
     MathArray<double, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] * k;
@@ -116,8 +116,7 @@ struct Math {
   }
 
   // Helper function that returns distance (L2 norm) between two positions in 3D
-  static double GetL2Distance(const Double3& pos1,
-                              const Double3& pos2) {
+  static double GetL2Distance(const Double3& pos1, const Double3& pos2) {
     Double3 dist_array;
     dist_array[0] = pos2[0] - pos1[0];
     dist_array[1] = pos2[1] - pos1[1];
@@ -131,7 +130,7 @@ struct Math {
   /// @return result the cross product of a and b (a x b)
   template <std::size_t N>
   static MathArray<double, N> CrossProduct(const MathArray<double, N>& a,
-                                            const MathArray<double, N>& b) {
+                                           const MathArray<double, N>& b) {
     MathArray<double, N> result;
     result[0] = a[1] * b[2] - a[2] * b[1];
     result[1] = a[2] * b[0] - a[0] * b[2];
@@ -144,8 +143,7 @@ struct Math {
   /// @param a vector
   /// @param random
   /// @return a perpendicular vector
-  static Double3 Perp3(const Double3& a,
-                                     double random) {
+  static Double3 Perp3(const Double3& a, double random) {
     Double3 vect_perp;
     if (a[0] == 0.0) {
       vect_perp[0] = 1.0;
@@ -169,9 +167,8 @@ struct Math {
   /// @param[in] theta  the amplitude of rotation (in radian)
   /// @param[in] axis   (also a vector)
   /// @return the vector after rotation
-  static Double3 RotAroundAxis(
-      const Double3& vector, double theta,
-      const Double3& axis) {
+  static Double3 RotAroundAxis(const Double3& vector, double theta,
+                               const Double3& axis) {
     auto naxis = Normalize(axis);
 
     auto temp_1 = Math::ScalarMult(Math::Dot(vector, naxis), naxis);
@@ -190,8 +187,7 @@ struct Math {
   /// @param a the first vector
   /// @param b the second vector
   /// @return the angle between them.
-  static double AngleRadian(const Double3& a,
-                            const Double3& b) {
+  static double AngleRadian(const Double3& a, const Double3& b) {
     return std::acos(Math::Dot(a, b) / (Math::Norm(a) * Math::Norm(b)));
   }
 
@@ -199,8 +195,7 @@ struct Math {
   /// @param a
   /// @param b
   /// @return the projection of a onto b
-  static Double3 ProjectionOnto(const Double3& a,
-                                              const Double3& b) {
+  static Double3 ProjectionOnto(const Double3& a, const Double3& b) {
     double k = Math::Dot(a, b) / Math::Dot(b, b);
     return Math::ScalarMult(k, b);
   }

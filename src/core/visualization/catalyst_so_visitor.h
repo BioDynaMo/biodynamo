@@ -21,10 +21,10 @@
 
 #include <string>
 
+#include "core/container/math_array.h"
 #include "core/scheduler.h"
 #include "core/sim_object/so_visitor.h"
 #include "core/simulation.h"
-#include "core/container/math_array.h"
 #include "core/visualization/catalyst_helper_structs.h"
 
 namespace bdm {

@@ -44,13 +44,9 @@ class TestSimObject : public SimObject {
 
   void RunDiscretization() override {}
 
-  const Double3& GetPosition() const override {
-    return position_;
-  }
+  const Double3& GetPosition() const override { return position_; }
 
-  void SetPosition(const Double3& pos) override {
-    position_ = pos;
-  }
+  void SetPosition(const Double3& pos) override { position_ = pos; }
 
   void ApplyDisplacement(const Double3&) override {}
 

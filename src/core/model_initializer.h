@@ -19,10 +19,10 @@
 #include <string>
 #include <vector>
 
+#include "core/container/math_array.h"
 #include "core/diffusion_grid.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
-#include "core/container/math_array.h"
 #include "core/util/random.h"
 
 namespace bdm {

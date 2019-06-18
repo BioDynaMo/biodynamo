@@ -84,8 +84,7 @@ struct GrowthModule : public BaseBiologyModule {
         cell->ChangeVolume(400);
 
         // create an array of 3 random numbers between -2 and 2
-        Double3 cell_movements =
-            random->template UniformArray<3>(-2, 2);
+        Double3 cell_movements = random->template UniformArray<3>(-2, 2);
         // update the cell mass location, ie move the cell
         cell->UpdatePosition(cell_movements);
       } else {  //

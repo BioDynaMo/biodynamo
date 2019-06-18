@@ -29,8 +29,7 @@ NeuronSoma::NeuronSoma() {}
 
 NeuronSoma::~NeuronSoma() {}
 
-NeuronSoma::NeuronSoma(const Double3& position)
-    : Base(position) {}
+NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 
 NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so,
                        uint64_t new_oid)
@@ -69,8 +68,8 @@ void NeuronSoma::EventHandler(const Event& event, SimObject* other1,
   // do nothing for CellDivisionEvent or others
 }
 
-NeuriteElement* NeuronSoma::ExtendNewNeurite(
-    const Double3& direction, NeuriteElement* prototype) {
+NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
+                                             NeuriteElement* prototype) {
   auto dir = Math::Add(direction, Base::position_);
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
   auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();

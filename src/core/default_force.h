@@ -34,8 +34,7 @@ class DefaultForce {
 
  private:
   void ForceBetweenSpheres(const SimObject* sphere_lhs,
-                           const SimObject* sphere_rhs,
-                           Double3* result) const;
+                           const SimObject* sphere_rhs, Double3* result) const;
 
   void ForceOnACylinderFromASphere(const SimObject* cylinder,
                                    const SimObject* sphere,
@@ -46,12 +45,10 @@ class DefaultForce {
                                    Double3* result) const;
 
   void ForceBetweenCylinders(const SimObject* cylinder1,
-                             const SimObject* cylinder2,
-                             Double4* result) const;
+                             const SimObject* cylinder2, Double4* result) const;
 
-  Double4 ComputeForceOfASphereOnASphere(
-      const Double3& c1, double r1,
-      const Double3& c2, double r2) const;
+  Double4 ComputeForceOfASphereOnASphere(const Double3& c1, double r1,
+                                         const Double3& c2, double r2) const;
 };
 
 }  // namespace bdm

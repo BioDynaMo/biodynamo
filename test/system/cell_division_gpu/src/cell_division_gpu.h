@@ -28,8 +28,8 @@ namespace bdm {
 // interactions properly handle the creation of new cells.
 // -----------------------------------------------------------------------------
 
-inline void ExpectArrayNear(const Double3& actual,
-                            const Double3& expected, bool* ret) {
+inline void ExpectArrayNear(const Double3& actual, const Double3& expected,
+                            bool* ret) {
   for (size_t i = 0; i < actual.size(); i++) {
     if (std::fabs(expected[i] - actual[i]) > 1e-9) {
       *ret = false;

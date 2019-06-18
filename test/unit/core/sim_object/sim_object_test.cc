@@ -184,8 +184,7 @@ struct VerifyPosition : public SoVisitor {
       EXPECT_EQ(5, (*pos)[1]);
       EXPECT_EQ(6, (*pos)[2]);
     } else {
-      FAIL() << "type_hash_code did not match Double3"
-             << std::endl;
+      FAIL() << "type_hash_code did not match Double3" << std::endl;
     }
   }
 };
