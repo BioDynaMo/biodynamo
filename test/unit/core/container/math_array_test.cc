@@ -85,7 +85,7 @@ TEST(MathArray, complex_operations) {
   MathArray<double, 4> fill_result{1, 1, 1, 1};
   MathArray<double, 4> normalize_result{0.5, 0.5, 0.5, 0.5};
 
-  a.Fill(1);
+  a.fill(1);
   ASSERT_EQ(a, fill_result);
 
   ASSERT_EQ(a.Sum(), 4);

@@ -24,16 +24,27 @@
 namespace bdm {
 
 /// Array with a fixed number of elements. It implements the same behaviour
-/// of the standard `std::array<T, N>` container. However, it provides also
+/// of the standard `MathArray<T, N>` container. However, it provides also
 /// several custom mathematical operations (e.g. Sum(), Norm() etc.).
 template <class T, std::size_t N>
 class MathArray {  // NOLINT
  public:
-  MathArray() {}
-  MathArray(std::initializer_list<T> l) : MathArray<T, N>() {
-    assert(l.size() == N);
-    std::copy(l.begin(), l.end(), &data_[0]);
+  constexpr MathArray() : data_() {
+	  /// std::fill will become constexpr with C++20
+	  for (size_t i=0; i<N; i++)
+	  {
+		  data_[i] = 0;
+	  }
   }
+  constexpr MathArray(std::initializer_list<T> l) : MathArray<T, N>() {
+    assert(l.size() == N);
+	for (size_t i=0; i<N; i++)
+	{
+	  data_[i] = *(l.begin()+i);
+	}
+  }
+
+  inline const T* data() const { return &data_[0]; }  // NOLINT
 
   inline const size_t size() const { return N; }  // NOLINT
 
@@ -69,7 +80,7 @@ class MathArray {  // NOLINT
   MathArray& operator=(const MathArray& other) {
     if (this != &other) {
       assert(other.size() == N);
-      std::copy(other.data_, other.data_ + other.N, data_);
+      std::copy(other.data_, other.data_ + other.size(), data_);
     }
     return *this;
   }
@@ -219,11 +230,8 @@ class MathArray {  // NOLINT
     return tmp;
   }
 
-  MathArray& Fill(const T& k) {
-#pragma omp simd
-    for (size_t i = 0; i < N; i++) {
-      data_[i] = k;
-    }
+  MathArray& fill(const T& k) {  // NOLINT
+	std::fill(std::begin(data_), std::end(data_), k);
     return *this;
   }
 
