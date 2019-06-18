@@ -1,3 +1,0 @@
-repository='external project URL'
-module='/home/uriel/Github/biodynamo/third_party/gtest-1.7.0.zip'
-tag=''
