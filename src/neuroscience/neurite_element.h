@@ -697,7 +697,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       }
 
       DefaultForce force;
-      std::array<double, 4> force_from_neighbor =
+      Double4 force_from_neighbor =
           force.GetForce(this, neighbor);
 
       // hack: if the neighbour is a neurite, we need to reduce the force from

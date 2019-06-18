@@ -16,6 +16,8 @@
 #define NEUROSCIENCE_EVENT_NEURITE_BIFURCATION_EVENT_H_
 
 #include <array>
+
+#include "core/container/math_array.h"
 #include "core/event/event.h"
 
 namespace bdm {

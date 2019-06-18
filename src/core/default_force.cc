@@ -30,7 +30,7 @@ namespace bdm {
 
 using experimental::neuroscience::NeuriteElement;
 
-std::array<double, 4> DefaultForce::GetForce(const SimObject* lhs,
+Double4 DefaultForce::GetForce(const SimObject* lhs,
                                              const SimObject* rhs) {
   if (lhs->GetShape() == Shape::kSphere && rhs->GetShape() == Shape::kSphere) {
     Double3 result;
@@ -43,12 +43,12 @@ std::array<double, 4> DefaultForce::GetForce(const SimObject* lhs,
     return {result[0], result[1], result[2], 0};
   } else if (lhs->GetShape() == Shape::kCylinder &&
              rhs->GetShape() == Shape::kSphere) {
-    std::array<double, 4> result;
+    Double4 result;
     ForceOnACylinderFromASphere(lhs, rhs, &result);
     return result;
   } else if (lhs->GetShape() == Shape::kCylinder &&
              rhs->GetShape() == Shape::kCylinder) {
-    std::array<double, 4> result;
+    Double4 result;
     ForceBetweenCylinders(lhs, rhs, &result);
     return result;
   } else {
@@ -113,7 +113,7 @@ void DefaultForce::ForceBetweenSpheres(const SimObject* sphere_lhs,
 
 void DefaultForce::ForceOnACylinderFromASphere(
     const SimObject* cylinder, const SimObject* sphere,
-    std::array<double, 4>* result) const {
+    Double4* result) const {
   auto* ne = bdm_static_cast<const NeuriteElement*>(cylinder);
   auto proximal_end = ne->ProximalEnd();
   auto distal_end = ne->DistalEnd();
@@ -201,7 +201,7 @@ void DefaultForce::ForceOnACylinderFromASphere(
   //    interaction:
   double penetration = d / 2 + r - Math::GetL2Distance(c, cc);
   if (penetration <= 0) {
-    *result = std::array<double, 4>{0.0, 0.0, 0.0, 0.0};
+    *result = Double4{0.0, 0.0, 0.0, 0.0};
     return;
   }
   auto force = ComputeForceOfASphereOnASphere(cc, d * 0.5, c, r);
@@ -213,7 +213,7 @@ void DefaultForce::ForceOnASphereFromACylinder(
     const SimObject* sphere, const SimObject* cylinder,
     Double3* result) const {
   // it is the opposite of force on a cylinder from sphere:
-  std::array<double, 4> temp;
+  Double4 temp;
   ForceOnACylinderFromASphere(cylinder, sphere, &temp);
 
   *result = {-temp[0], -temp[1], -temp[2]};
@@ -221,7 +221,7 @@ void DefaultForce::ForceOnASphereFromACylinder(
 
 void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
                                          const SimObject* cylinder2,
-                                         std::array<double, 4>* result) const {
+                                         Double4* result) const {
   auto* c1 = bdm_static_cast<const NeuriteElement*>(cylinder1);
   auto* c2 = bdm_static_cast<const NeuriteElement*>(cylinder2);
   auto a = c1->ProximalEnd();
@@ -295,7 +295,7 @@ void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
   *result = {force[0], force[1], force[2], k};
 }
 
-std::array<double, 4> DefaultForce::ComputeForceOfASphereOnASphere(
+Double4 DefaultForce::ComputeForceOfASphereOnASphere(
     const Double3& c1, double r1, const Double3& c2,
     double r2) const {
   double comp1 = c1[0] - c2[0];
@@ -307,19 +307,19 @@ std::array<double, 4> DefaultForce::ComputeForceOfASphereOnASphere(
   double a = r1 + r2 - distance_between_centers;
   // if no overlap: no force
   if (a < 0) {
-    return std::array<double, 4>{0.0, 0.0, 0.0, 0.0};
+    return Double4{0.0, 0.0, 0.0, 0.0};
   }
   // to avoid a division by 0 if the centers are (almost) at the same location
   if (distance_between_centers <
       0.00000001) {  // TODO(neurites) hard coded values
     auto* random = Simulation::GetActive()->GetRandom();
     auto force2on1 = random->template UniformArray<3>(-3.0, 3.0);
-    return std::array<double, 4>{force2on1[0], force2on1[1], force2on1[2], 0.0};
+    return Double4{force2on1[0], force2on1[1], force2on1[2], 0.0};
   } else {
     // the force is prop to the square of the interpentration distance and to
     // the radii.
     double module = a / distance_between_centers;
-    std::array<double, 4> force2on1(
+    Double4 force2on1(
         {module * comp1, module * comp2, module * comp3, 0.0});
     return force2on1;
   }

@@ -20,9 +20,9 @@
 #include <iomanip>
 #include <iostream>
 
-#include "core/containers/math_array.h"
+#include "core/container/math_array.h"
 
-inline void Print(const Double3& a, int precision = 10) {
+inline void Print(const bdm::Double3& a, int precision = 10) {
   std::cout << std::setprecision(precision) << a[0] << ", " << a[1] << ", "
             << a[2] << std::endl;
 }

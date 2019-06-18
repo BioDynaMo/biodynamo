@@ -18,6 +18,8 @@
 #include <type_traits>
 #include "gtest/gtest.h"
 
+#include "core/container/math_array.h"
+
 namespace bdm {
 
 template <typename T>
@@ -38,11 +40,20 @@ struct abs_error<double> {
 };
 
 template <typename T, size_t N>
-void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
-                   const std::array<T, N>& actual) {
+void EXPECT_ARR_EQ(const MathArray<T, N>& expected,  // NOLINT
+                   const MathArray<T, N>& actual) {
   for (size_t i = 0; i < N; i++) {
     EXPECT_EQ(expected[i], actual[i]);
   }
+}
+
+// TODO: this will be removed once the transition to MathArray is completed.
+template <typename T, size_t N>
+void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
+				   const std::array<T, N>& actual) {
+	for (size_t i = 0; i < N; i++) {
+		EXPECT_EQ(expected[i], actual[i]);
+	}
 }
 
 /// Helper macro to compare two double arrays of size three
@@ -59,8 +70,8 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
   }(__VA_ARGS__);
 
 #define EXPECT_ARR_NEAR4(...)                                        \
-  [](const std::array<double, 4>& actual,                            \
-     const std::array<double, 4>& expected) {                        \
+  [](const Double4& actual,                            \
+     const Double4& expected) {                        \
     for (size_t i = 0; i < actual.size(); i++) {                     \
       EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value); \
     }                                                                \

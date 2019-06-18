@@ -30,7 +30,7 @@ class DefaultForce {
   DefaultForce(const DefaultForce&) = delete;
   DefaultForce& operator=(const DefaultForce&) = delete;
 
-  std::array<double, 4> GetForce(const SimObject* lhs, const SimObject* rhs);
+  Double4 GetForce(const SimObject* lhs, const SimObject* rhs);
 
  private:
   void ForceBetweenSpheres(const SimObject* sphere_lhs,
@@ -39,7 +39,7 @@ class DefaultForce {
 
   void ForceOnACylinderFromASphere(const SimObject* cylinder,
                                    const SimObject* sphere,
-                                   std::array<double, 4>* result) const;
+                                   Double4* result) const;
 
   void ForceOnASphereFromACylinder(const SimObject* sphere,
                                    const SimObject* cylinder,
@@ -47,9 +47,9 @@ class DefaultForce {
 
   void ForceBetweenCylinders(const SimObject* cylinder1,
                              const SimObject* cylinder2,
-                             std::array<double, 4>* result) const;
+                             Double4* result) const;
 
-  std::array<double, 4> ComputeForceOfASphereOnASphere(
+  Double4 ComputeForceOfASphereOnASphere(
       const Double3& c1, double r1,
       const Double3& c2, double r2) const;
 };

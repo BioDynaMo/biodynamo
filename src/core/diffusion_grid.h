@@ -26,7 +26,7 @@
 #include <vector>
 #include "core/util/root.h"
 
-#include "core/containter/math_array.h"
+#include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/param/param.h"
 #include "core/util/log.h"

@@ -24,6 +24,7 @@
 #include "core/scheduler.h"
 #include "core/sim_object/so_visitor.h"
 #include "core/simulation.h"
+#include "core/container/math_array.h"
 #include "core/visualization/catalyst_helper_structs.h"
 
 namespace bdm {
@@ -45,7 +46,7 @@ class CatalystSoVisitor : public SoVisitor {
     } else if (type_hash_code == typeid(uint64_t).hash_code()) {
       Uint64T(dm_name, data);
     } else if (type_hash_code == typeid(Double3).hash_code()) {
-      Double3(dm_name, data);
+      MathArray3(dm_name, data);
     } else if (type_hash_code == typeid(std::array<int, 3>).hash_code()) {
       Int3(dm_name, data);
     } else {
@@ -60,7 +61,7 @@ class CatalystSoVisitor : public SoVisitor {
     vtk_array->InsertNextTuple1(data);
   }
 
-  void Double3(const std::string& dm_name, const void* d) {
+  void MathArray3(const std::string& dm_name, const void* d) {
     auto& data = *reinterpret_cast<const Double3*>(d);
     auto* vtk_array = GetDouble3Array(dm_name);
     // TODO(lukas, ahmad) is there a better way?
