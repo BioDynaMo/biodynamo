@@ -406,8 +406,7 @@ class DiffusionGrid {
     }      // block ny
     c1_.swap(c2_);
   }
-
-    void DiffuseEuler() {
+  void DiffuseEuler() {
     // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
@@ -442,7 +441,8 @@ class DiffusionGrid {
             ++t;
 /* if ( y==0 || y== ny-1 || z==0 || z=nz-1 ){
           continue;
-          } THIS IS THE OLD WAY THE BOUNDRIES WHERE BEING HANDLED*/
+          }*/
+            //TODO (Jack) Above is how boundries where handled.
 
             cm = c - 1;
             cp = c + 1;
