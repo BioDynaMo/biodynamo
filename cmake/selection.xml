@@ -1,22 +1,8 @@
 <lcgdict>
   <selection>
-    <class pattern="bdm::*<*>"/>
-    <class pattern="bdm::*BM"/>
-    <class pattern="bdm::*Module"/>
-    <class pattern="bdm::*Behaviour"/>
-    <class name="bdm::Neurite" />
-    <class pattern="std::vector<bdm::*<*>>"/>
-    <class pattern="std::tuple<bdm::*<*>"/>
-    <class name="bdm::KaliumSecretion" />
-    <class name="bdm::DivisionAndMovementModule," />
-    <class name="bdm::SubstanceSecretion" />
-    <class name="bdm::Chemotaxis" />
-    <class pattern="bdm::CompileTimeParam<*>::Param" />
-    <class pattern="std::__1::vector<bdm::*<*>>" />
-    <class pattern="std::__1::tuple<bdm::*<*>" />
-    <class pattern="bdm::resource_manager_test_internal::*" />
-    <class name="std::unordered_map<unsigned long,bdm::SoHandle>" />
-
+    <class pattern="bdm::*" />
+    <class pattern="std::vector<bdm::*<*>>" />
+    <class name="vector<bdm::InlineVector<int,8>>" />
   </selection>
   <exclusion>
     <class pattern="cl::*" />
@@ -25,24 +11,37 @@
     <class name="cl::Program" />
     <class pattern="*_TC2*" />
     <class pattern="std::array<*>" />
-    <class pattern="*bdm::SoaRef*"/>
     <class name="chrono::system_clock"/>
+    <class name="chrono::steady_clock"/>
     <class pattern="*_Test" />
-    <!-- genreflex generates wrong code:
-         SimObjectVector<ResourceManager...> -->
-    <class pattern="bdm::SimObjectVector*" />
-    <class pattern="*::Simulation_t" />
+    <class name="__gnu_cxx::__normal_iterator<double*,vector<double> >"/>
+    <class name="__gnu_cxx::__normal_iterator<const double*,vector<double> >"/>
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
-    <class name="bdm::SoHandle" />
-    <class name="bdm::RuntimeVariables"/>
-    <class name="bdm::NullBiologyModule"/>
-    <class name="bdm::BaseBiologyModule"/>
-    <class name="bdm::GrowDivide"/>
-    <class name="bdm::IntegralTypeWrapper<size_t> "/>
-    <!-- list of template classes with custom streamers -->
-    <class pattern="bdm::Variant*" />
-    <class pattern="std::__1::vector<bdm::Variant<*>>" />
-    <class pattern="std::__1::tuple<*>::_*" />
+     <class name="bdm::experimental::neuroscience::NeuronSoma" />
+     <class name="bdm::experimental::neuroscience::NeuriteElement" />
+     <class name="bdm::experimental::neuroscience::Param" />
+     <class name="bdm::DiffusionGrid" />
+     <class name="bdm::Simulation" />
+     <class name="bdm::ResourceManager" />
+     <class name="bdm::SimObject" />
+     <class name="bdm::SoHandle" />
+     <class name="bdm::SoPointer" />
+     <class name="bdm::Cell" />
+     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
+     <class name="std::unordered_map<uint64_t, bdm::SoHandle>" />
+     <class name="bdm::RuntimeVariables"/>
+     <class name="bdm::BaseBiologyModule"/>
+     <class name="bdm::GrowDivide"/>
+     <class name="bdm::IntegralTypeWrapper<size_t> "/>
+     <class name="bdm::RegulateGenes" />
+     <class name="bdm::Param" />
+     <class name="bdm::ModuleParam" />
+     <class name="unordered_map<unsigned long,bdm::ModuleParam*>" />
+     <class name="bdm::Random" />
+     <!-- list of biodynamo classes that should be ignored  -->
+     <class name="bdm::SoVisitor" />
+     <class name="bdm::Grid" />
+     <class name="bdm::Grid::NeighborMutexBuilder::MutexWrapper" />
   </exclusion>
 </lcgdict>

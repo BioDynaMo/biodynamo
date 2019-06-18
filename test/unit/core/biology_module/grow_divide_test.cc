@@ -15,19 +15,17 @@
 #include "core/biology_module/grow_divide.h"
 #include <typeinfo>
 #include "core/resource_manager.h"
-#include "core/simulation_implementation.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
 
 TEST(GrowDivideTest, Grow) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  ctxt->SetupIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   Cell cell;
   cell.SetDiameter(40);
@@ -35,18 +33,18 @@ TEST(GrowDivideTest, Grow) {
   GrowDivide gd(40, 300, {gAllEventIds});
   gd.Run(&cell);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   EXPECT_NEAR(33513.321638291127, cell.GetVolume(), abs_error<double>::value);
-  EXPECT_EQ(0u, rm->Get<Cell>()->size());
+  EXPECT_EQ(0u, rm->GetNumSimObjects());
 }
 
 TEST(GrowDivideTest, Divide) {
-  Simulation<> simulation(TEST_NAME);
+  Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  ctxt->SetupIteration();
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   Cell cell;
   cell.SetDiameter(41);
@@ -54,10 +52,10 @@ TEST(GrowDivideTest, Divide) {
   GrowDivide gd(40, 300, {gAllEventIds});
   gd.Run(&cell);
 
-  ctxt->TearDownIteration();
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
   EXPECT_GT(41, cell.GetDiameter());
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 }
 
 }  // namespace bdm

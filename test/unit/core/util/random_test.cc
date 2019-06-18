@@ -14,8 +14,6 @@
 
 #include "core/util/random.h"
 #include <gtest/gtest.h>
-#include "core/simulation_implementation.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/io_test.h"
 
 namespace bdm {
@@ -83,6 +81,7 @@ TEST(RandomTest, Gaus) {
   }
 }
 
+#ifdef USE_DICT
 TEST_F(IOTest, Random) {
   Random random;
   TRandom3 reference;
@@ -101,5 +100,6 @@ TEST_F(IOTest, Random) {
     EXPECT_EQ(reference.Uniform(i, i + 2), random.Uniform(i, i + 2));
   }
 }
+#endif  // USE_DICT
 
 }  // namespace bdm

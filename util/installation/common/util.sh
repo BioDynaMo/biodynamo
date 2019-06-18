@@ -50,8 +50,9 @@ function DetectLinuxFlavour {
 # This function prints an error and exits if is not linux or macos.
 function DetectOs {
   # detect operating system
-  if [ $TRAVIS ]; then
-    echo "travis-${TRAVIS_OS_NAME}"
+  if [ $TRAVIS ] && [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    echo "travis-osx"
+    # Travis linux always runs inside a container -> use DetectLinuxFlavour
   elif [ `uname` = "Linux" ]; then
     # linux
     DetectLinuxFlavour
@@ -360,4 +361,18 @@ function CopyEnvironmentScript {
 
   cat $ENV_SRC | sed "s|export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@|export BDM_INSTALL_DIR=${BDM_INSTALL_DIR}|g" >$TMP_ENV
   mv $TMP_ENV $ENV_DEST
+}
+
+# This function has a zero exit code if the version is below the required
+# version. This function can be used inside an if statement:
+#    if $(versionLessThan "$(gcc -dumpversion)" "5.4.0"); then
+#       echo "gcc version less than 5.4.0"
+#    fi
+# Arguments:
+#   $1 actual version
+#   $2 required version
+function versionLessThan {
+  local VERSION=$1
+  local REQUIRED=$2
+  [ "$(printf '%s\n' "$REQUIRED" "$VERSION" | sort -V | head -n1)" != "$REQUIRED" ]
 }

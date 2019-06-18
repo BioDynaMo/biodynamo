@@ -28,28 +28,18 @@ namespace bdm {
 // move according to the extracellular gradient; in this case to the middle.
 // -----------------------------------------------------------------------------
 
-// Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, Cell) {
-    using BiologyModules = CTList<Chemotaxis, KaliumSecretion>;
-  };
-};
-
 inline int Simulate(int argc, const char** argv) {
   // Initialize BioDynaMo
-  Simulation<> simulation(argc, argv);
+  Simulation simulation(argc, argv);
 
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(30);
-    cell.SetMass(1.0);
-    cell.AddBiologyModule(Chemotaxis());
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(30);
+    cell->SetMass(1.0);
+    cell->AddBiologyModule(new Chemotaxis());
     std::array<double, 3> secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell.AddBiologyModule(KaliumSecretion());
+      cell->AddBiologyModule(new KaliumSecretion());
     }
     return cell;
   };

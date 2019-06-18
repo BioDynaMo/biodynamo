@@ -17,35 +17,37 @@
 namespace bdm {
 namespace scheduler_test_internal {
 
+#ifdef USE_DICT
 TEST(SchedulerTest, NoRestoreFile) {
   auto set_param = [](auto* param) { param->restore_file_ = ""; };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
   remove(ROOTFILE);
 
-  Cell cell;
-  cell.SetDiameter(10);  // important for grid to determine box size
+  Cell* cell = new Cell();
+  cell->SetDiameter(10);  // important for grid to determine box size
   rm->push_back(cell);
 
   // start restore validation
   TestSchedulerRestore scheduler;
   scheduler.Simulate(100);
   EXPECT_EQ(100u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 
   scheduler.Simulate(100);
   EXPECT_EQ(200u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 
   scheduler.Simulate(100);
   EXPECT_EQ(300u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->Get<Cell>()->size());
+  EXPECT_EQ(1u, rm->GetNumSimObjects());
 }
 
 TEST(SchedulerTest, Restore) { RunRestoreTest(); }
 
 TEST(SchedulerTest, Backup) { RunBackupTest(); }
+#endif  // USE_DICT
 
 TEST(SchedulerTest, EmptySimulationFromBeginning) {
   auto set_param = [](auto* param) {
@@ -53,7 +55,7 @@ TEST(SchedulerTest, EmptySimulationFromBeginning) {
     param->min_bound_ = -10;
     param->max_bound_ = 10;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
 
   simulation.GetScheduler()->Simulate(1);
 
@@ -70,13 +72,13 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
     param->min_bound_ = -10;
     param->max_bound_ = 10;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
 
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
   auto* scheduler = simulation.GetScheduler();
 
-  Cell cell(10);
+  Cell* cell = new Cell(10);
   rm->push_back(cell);
   scheduler->Simulate(1);
 

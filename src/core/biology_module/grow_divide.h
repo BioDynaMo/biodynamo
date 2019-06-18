@@ -17,6 +17,8 @@
 
 #include "core/biology_module/biology_module.h"
 #include "core/event/cell_division_event.h"
+#include "core/sim_object/cell.h"
+#include "core/util/log.h"
 #include "core/util/root.h"
 
 namespace bdm {
@@ -31,29 +33,47 @@ struct GrowDivide : public BaseBiologyModule {
         threshold_(threshold),
         growth_rate_(growth_rate) {}
 
-  /// Default event constructor
-  template <typename TEvent, typename TBm>
-  GrowDivide(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
-    threshold_ = other->threshold_;
-    growth_rate_ = other->growth_rate_;
+  GrowDivide(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {
+    if (GrowDivide* gdbm = dynamic_cast<GrowDivide*>(other)) {
+      threshold_ = gdbm->threshold_;
+      growth_rate_ = gdbm->growth_rate_;
+    } else {
+      Log::Fatal("GrowDivide::EventConstructor",
+                 "other was not of type GrowDivide");
+    }
   }
+
+  /// Create a new instance of this object using the default constructor.
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const override {
+    return new GrowDivide(event, other, new_oid);
+  }
+
+  /// Create a copy of this biology module.
+  BaseBiologyModule* GetCopy() const override { return new GrowDivide(*this); }
 
   /// Default event handler (exising biology module won't be modified on
   /// any event)
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  void EventHandler(const Event& event, BaseBiologyModule* other1,
+                    BaseBiologyModule* other2 = nullptr) override {
+    BaseBiologyModule::EventHandler(event, other1, other2);
+  }
 
-  template <typename T>
-  void Run(T* cell) {
-    if (cell->GetDiameter() <= threshold_) {
-      cell->ChangeVolume(growth_rate_);
+  void Run(SimObject* so) override {
+    if (Cell* cell = dynamic_cast<Cell*>(so)) {
+      if (cell->GetDiameter() <= threshold_) {
+        cell->ChangeVolume(growth_rate_);
+      } else {
+        cell->Divide();
+      }
     } else {
-      cell->Divide();
+      Log::Fatal("GrowDivide::Run", "SimObject is not a Cell");
     }
   }
 
  private:
-  BDM_CLASS_DEF_NV(GrowDivide, 1);
+  BDM_CLASS_DEF_OVERRIDE(GrowDivide, 1);
   double threshold_ = 40;
   double growth_rate_ = 300;
 };

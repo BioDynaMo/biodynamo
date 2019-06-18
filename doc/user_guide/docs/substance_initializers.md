@@ -30,8 +30,8 @@ We create one cell with diameter 10, at a random location
 
 ``` C++
 auto construct = [](const std::array<double, 3>& position) {
-  Cell cell(position);
-  cell.SetDiameter(10);
+  Cell* cell = new Cell(position);
+  cell->SetDiameter(10);
   return cell;
 };
 ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
@@ -53,7 +53,7 @@ concentration values throught the space. We will use the function
 `ModelInitializer::InitializeSubstance` for this purpose.
 
 ```C++
-ModelInitializer::InitializeSubstance(kSubstance, GaussianBand(120, 5, Axis::kXAxis));
+ModelInitializer::InitializeSubstance(kSubstance, "Substance", GaussianBand(120, 5, Axis::kXAxis));
 ```
 
 Let's break this down. We first pass the substance enum id and name in the

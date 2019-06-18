@@ -15,8 +15,8 @@
 #ifndef CORE_BIOLOGY_MODULE_BIOLOGY_MODULE_H_
 #define CORE_BIOLOGY_MODULE_BIOLOGY_MODULE_H_
 
-#include "core/container/variant.h"
 #include "core/event/event.h"
+#include "core/sim_object/sim_object.h"
 #include "core/util/type.h"
 
 namespace bdm {
@@ -27,12 +27,6 @@ struct BaseBiologyModule {
   /// Default ctor sets `copy_mask_` and remove_mask_` to 0; meaning that
   /// `Copy` and `Remove` will always return false
   BaseBiologyModule() : copy_mask_(0), remove_mask_(0) {}
-
-  template <typename TEvent, typename TBm>
-  BaseBiologyModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
-    copy_mask_ = other->copy_mask_;
-    remove_mask_ = other->remove_mask_;
-  }
 
   explicit BaseBiologyModule(EventId copy_event, EventId remove_event = 0)
       : copy_mask_(copy_event), remove_mask_(remove_event) {}
@@ -51,11 +45,29 @@ struct BaseBiologyModule {
     }
   }
 
+  BaseBiologyModule(const Event& event, BaseBiologyModule* other,
+                    uint64_t new_oid = 0) {
+    copy_mask_ = other->copy_mask_;
+    remove_mask_ = other->remove_mask_;
+  }
+
   BaseBiologyModule(const BaseBiologyModule& other)
       : copy_mask_(other.copy_mask_), remove_mask_(other.remove_mask_) {}
 
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  virtual ~BaseBiologyModule() {}
+
+  /// Create a new instance of this object using the default constructor.
+  virtual BaseBiologyModule* GetInstance(const Event& event,
+                                         BaseBiologyModule* other,
+                                         uint64_t new_oid = 0) const = 0;
+
+  /// Create a copy of this biology module.
+  virtual BaseBiologyModule* GetCopy() const = 0;
+
+  virtual void EventHandler(const Event& event, BaseBiologyModule* other1,
+                            BaseBiologyModule* other2 = nullptr) {}
+
+  virtual void Run(SimObject* so) = 0;
 
   /// Function returns whether the biology module should be copied for the
   /// given event.
@@ -68,46 +80,32 @@ struct BaseBiologyModule {
  private:
   EventId copy_mask_;
   EventId remove_mask_;
-  BDM_CLASS_DEF_NV(BaseBiologyModule, 2);
+  BDM_CLASS_DEF(BaseBiologyModule, 2);
 };
 
-/// \brief Used for simulation objects where biology modules are not used.
-/// Variant implementation does not allow `Variant<>`
-/// -> `Variant<NullBiologyModule>`
-struct NullBiologyModule : public BaseBiologyModule {
-  NullBiologyModule() {}
-
-  // Ctor for any event
-  template <typename TEvent, typename TBm>
-  NullBiologyModule(const TEvent& event, TBm* other, uint64_t new_oid = 0) {}
-
-  // empty event handler (exising biology module won't be modified on any event)
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
-
-  template <typename T>
-  void Run(T* t) {}
-
-  BDM_CLASS_DEF_NV(NullBiologyModule, 1);
-};
-
-/// \brief Visitor to execute the `Run` method of a biology module
-/// @tparam TSimObject type of simulation object that owns the biology
-///         module
-template <typename TSimObject>
-struct RunVisitor {
-  /// @param so pointer to the simulation object on which the biology module
-  ///        should be executed
-  explicit RunVisitor(TSimObject* const so) : kSimObject(so) {}
-
-  template <typename T>
-  void operator()(T& t) const {
-    t.Run(kSimObject);
-  }
-
- private:
-  TSimObject* const kSimObject;
-};
+/// Inserts boilerplate code for stateless biology modules
+#define BDM_STATELESS_BM_HEADER(class_name, base_class, class_version_id)      \
+ public:                                                                       \
+  /** Empty default event constructor, because module does not have state. */  \
+  class_name(const Event& event, BaseBiologyModule* other,                     \
+             uint64_t new_oid = 0)                                             \
+      : base_class(event, other, new_oid) {}                                   \
+                                                                               \
+  /** Event handler not needed, because this module does not have state. */    \
+                                                                               \
+  /** Create a new instance of this object using the default constructor. */   \
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, \
+                                 uint64_t new_oid = 0) const override {        \
+    return new class_name(event, other, new_oid);                              \
+  }                                                                            \
+                                                                               \
+  /** Create a copy of this biology module. */                                 \
+  BaseBiologyModule* GetCopy() const override {                                \
+    return new class_name(*this);                                              \
+  }                                                                            \
+                                                                               \
+ private:                                                                      \
+  BDM_CLASS_DEF(class_name, class_version_id);
 
 }  // namespace bdm
 

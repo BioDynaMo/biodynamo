@@ -27,13 +27,15 @@ namespace bdm {
 /// 2) the new cell becomes the 2nd daughter cell
 ///
 /// The cell that triggers the event is the mother.
-///
-/// Here is the constructor to create a new Cell for this event
-/// CellExt::CellExt(const CellDivisionEvent& event, TMother* mother)
-/// and the corresponding event handler
-/// CellExt::EventHandler(const CellDivisionEvent& event, TDaughter* daughter)
-struct CellDivisionEvent {
+struct CellDivisionEvent : public Event {
   static const EventId kEventId;
+
+  CellDivisionEvent(double volume_ratio, double phi, double theta)
+      : volume_ratio_(volume_ratio), phi_(phi), theta_(theta) {}
+
+  virtual ~CellDivisionEvent() {}
+
+  EventId GetId() const override { return kEventId; }
 
   /// volume_ratio_ the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives
   /// equal cells.

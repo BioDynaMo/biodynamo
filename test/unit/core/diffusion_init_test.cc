@@ -16,10 +16,9 @@
 #include "core/grid.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
-#include "core/simulation_implementation.h"
+#include "core/simulation.h"
 #include "core/substance_initializers.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/default_ctparam.h"
 #include "unit/test_util/test_util.h"
 
 #include "Math/DistFunc.h"
@@ -34,25 +33,25 @@ TEST(DiffusionInitTest, GaussianBand) {
     param->min_bound_ = 0;
     param->max_bound_ = 250;
   };
-  Simulation<> simulation(TEST_NAME, set_param);
+  Simulation simulation(TEST_NAME, set_param);
 
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 
   // Create one cell at a random position
   auto construct = [](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(10);
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
     return cell;
   };
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
                                       construct);
 
   // Define the substances in our simulation
-  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 25);
+  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 26);
 
   // Initialize the substance according to a GaussianBand along the x-axis
-  ModelInitializer::InitializeSubstance(kSubstance,
+  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
                                         GaussianBand(125, 50, Axis::kXAxis));
 
   simulation.GetGrid()->Initialize();

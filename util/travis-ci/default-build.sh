@@ -38,8 +38,8 @@ util/xvfb-initd.sh start
 git fetch --unshallow || true
 git fetch --tags
 
-python --version
-python3 --version
+python --version || true
+python3 --version || true
 
 # add master branch
 # https://github.com/travis-ci/travis-ci/issues/6069
@@ -61,8 +61,8 @@ ${CXX} --version || true
 ${CXX} -v || true
 
 cd build
-make check
+ctest -V
 
-if [ $TRAVIS_BRANCH = "master" ] && [ $TRAVIS_OS_NAME = "linux" ] && [ $TRAVIS_PULL_REQUEST = "false" ]; then
+if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
   ../util/travis-ci/deploy.sh
 fi

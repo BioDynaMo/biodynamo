@@ -31,7 +31,7 @@ A call to `cell.Divide()` triggers the event.
 ### Step 1: Create daughter 2
 
 A new cell will be created using the following constructor
-`CellExt(const CellDivisionEvent& event, TMother* mother)`.
+`Cell(const CellDivisionEvent& event, TMother* mother)`.
 
 The class `CellDivisionEvent` contains the parameters to perform a cell division.
 The second parameter is a pointer to the event trigger `cell` (aka mother) and
@@ -55,9 +55,9 @@ Let's assume that you extend the Cell class to add a new data member
 `my_new_data_member_`.
 
 ```c++
-BDM_SIM_OBJECT(MyCell, Cell) {
+class MyCell : public Cell {
   ...
-  vec<double> my_new_data_member_ = {3.14};
+  double my_new_data_member_ = {3.14};
   ...
 }
 ```
@@ -69,20 +69,23 @@ of the mother cell is divided between the daughters according to the volume
 ratio defined in `CellDivisionEvent`.
 
 ```c++
-BDM_SIM_OBJECT(MyCell, Cell) {
+class MyCell : public Cell {
  public:
-  MyCellExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
+  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
        : Base(event, other, new_oid) {
-    new_data_member_[kIdx] = mother->new_data_member_[mother->kIdx] * event.volume_ratio;
+    new_data_member_ = mother->new_data_member_ * event.volume_ratio;
   }
 
-  void EventHandler(const CellDivisionEvent& event, MyCellExt* daughter_2) {
-    new_data_member_[kIdx] -= daughter_2->new_data_member_[daughter_2->kIdx];
+  void EventHandler((const Event& event, SimObject* other_1,
+                    SimObject* other_2 = nullptr) override {
+    if (auto* daughter_2 = dynamic_cast<MyCell*>(other_2)) {
+      new_data_member_ -= daughter_2->new_data_member_;
+    }
     Base::EventHandler(event, daughter_2);
   }
   ...
  private:  
-  vec<double> my_new_data_member_ = {3.14};
+  double my_new_data_member_ = {3.14};
   ...
 };
 ```

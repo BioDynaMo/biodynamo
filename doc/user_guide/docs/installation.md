@@ -30,21 +30,9 @@ git checkout master
 git pull origin master
 ./install.sh
 ```
-## Checking your files compared to the master branch
-
-Once you are already on the master branch you can also check which files of yours are different to those present within the master branch. This can be done by executing the following in the terminal :
-
-```
-git status
-
-```
-This will list all files you have that are not present within the master branch, it is always a good idea to check this before doing any form of updating so that you can back up your own modules e.t.c
 
 ## Supported platforms
 
 *  **Ubuntu 16.04 (recommended)**, 18.04
+*  CentOS 7.6.1810
 *  Mac OSX
-
-### Experimental
-
-*  CentOS 7.5.1804 (no ParaView support at the moment)

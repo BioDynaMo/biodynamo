@@ -15,10 +15,12 @@
 #ifndef CORE_BIOLOGY_MODULE_REGULATE_GENES_H_
 #define CORE_BIOLOGY_MODULE_REGULATE_GENES_H_
 
+#include <functional>
 #include <vector>
 
 #include "core/biology_module/biology_module.h"
 #include "core/param/param.h"
+#include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/util/root.h"
 
@@ -26,26 +28,44 @@ namespace bdm {
 
 /// This module simulates expression of genes and contains all required
 /// additional variables for tracking of the concentration of proteins.
-/// Thus, can work with any type of simulation object.
+/// Thus, it can work with any type of simulation object.
 /// It has the implementation of Euler and Runge-Kutta numerical methods
 /// for solving ODE. Both methods implemented inside the body of method Run().
-///  The user determines which method is picked in particular simulation
+/// The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver_`.
 struct RegulateGenes : public BaseBiologyModule {
   RegulateGenes() : BaseBiologyModule(gAllEventIds) {}
 
   explicit RegulateGenes(EventId event) : BaseBiologyModule(event) {}
 
-  /// Default event constructor
-  template <typename TEvent, typename TBm>
-  RegulateGenes(const TEvent& event, TBm* other, uint64_t new_oid = 0) {
-    concentrations_ = other->concentrations_;
-    first_derivatives_ = other->first_derivatives_;
+  RegulateGenes(const Event& event, BaseBiologyModule* other,
+                uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {
+    if (RegulateGenes* rgbm = dynamic_cast<RegulateGenes*>(other)) {
+      concentrations_ = rgbm->concentrations_;
+      first_derivatives_ = rgbm->first_derivatives_;
+    } else {
+      Log::Fatal("RegulateGenes::EventConstructor",
+                 "other was not of type RegulateGenes");
+    }
+  }
+
+  /// Create a new instance of this object using the default constructor.
+  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+                                 uint64_t new_oid = 0) const override {
+    return new RegulateGenes(event, other, new_oid);
+  }
+
+  /// Create a copy of this biology module.
+  BaseBiologyModule* GetCopy() const override {
+    return new RegulateGenes(*this);
   }
 
   /// Empty default event handler.
-  template <typename TEvent, typename... TBms>
-  void EventHandler(const TEvent&, TBms*...) {}
+  void EventHandler(const Event& event, BaseBiologyModule* other1,
+                    BaseBiologyModule* other2 = nullptr) override {
+    BaseBiologyModule::EventHandler(event, other1, other2);
+  }
 
   /// AddGene adds a new differential equation.
   /// \param first_derivative differential equation in the form:
@@ -68,9 +88,8 @@ struct RegulateGenes : public BaseBiologyModule {
 
   /// Method Run() contains the implementation for Runge-Khutta and Euler
   /// methods for solving ODE.
-  template <typename T, typename TSimulation = Simulation<>>
-  void Run(T* cell) {
-    auto* sim = TSimulation::GetActive();
+  void Run(SimObject* sim_object) override {
+    auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
     auto* scheduler = sim->GetScheduler();
 
@@ -113,7 +132,7 @@ struct RegulateGenes : public BaseBiologyModule {
   /// New functions can be added through method AddGene()
   std::vector<std::function<double(double, double)>> first_derivatives_ = {};
 
-  BDM_CLASS_DEF_NV(RegulateGenes, 1);
+  BDM_CLASS_DEF_OVERRIDE(RegulateGenes, 1);
 };
 
 }  // namespace bdm

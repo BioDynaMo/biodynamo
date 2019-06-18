@@ -15,12 +15,12 @@
 #ifndef NEUROSCIENCE_NEUROSCIENCE_H_
 #define NEUROSCIENCE_NEUROSCIENCE_H_
 
-#include "neuroscience/compile_time_param.h"
 #include "neuroscience/event/neurite_bifurcation_event.h"
 #include "neuroscience/event/neurite_branching_event.h"
 #include "neuroscience/event/new_neurite_extension_event.h"
 #include "neuroscience/event/side_neurite_extension_event.h"
 #include "neuroscience/event/split_neurite_element_event.h"
+#include "neuroscience/module.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuron_soma.h"
 #include "neuroscience/param.h"

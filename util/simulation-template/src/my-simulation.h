@@ -18,15 +18,12 @@
 
 namespace bdm {
 
-// Define compile time parameter
-BDM_CTPARAM() { BDM_CTPARAM_HEADER(); };
-
 inline int Simulate(int argc, const char** argv) {
-  Simulation<> simulation(argc, argv);
+  Simulation simulation(argc, argv);
 
   // Define initial model - in this example: single cell at origin
   auto* rm = simulation.GetResourceManager();
-  rm->push_back(Cell(30));
+  rm->push_back(new Cell(30));
 
   // Run simulation for one timestep
   simulation.GetScheduler()->Simulate(1);

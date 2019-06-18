@@ -20,17 +20,31 @@ else()
 endif()
 option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
 
-# detect if the biodynamo environment has been sourced
-if(NOT DEFINED ENV{BDM_CMAKE_DIR})
-  execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
-  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
-endif()
-
 set(BDM_CMAKE_DIR cmake)
 
 if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
   add_definitions("-DLINUX")
+endif()
+
+# detect if the biodynamo environment has been sourced
+if(NOT DEFINED ENV{BDM_CMAKE_DIR})
+  execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
+  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
+endif()
+# check if biodynamo environment has been changed. if yes update it and emmit error
+## TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
+## APPLE might not be enough in the future)
+if(LINUX)
+  configure_file(util/installation/common/biodynamo-linux-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
+elseif(APPLE)
+  configure_file(util/installation/common/biodynamo-macos-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" "$ENV{BDM_INSTALL_DIR}/biodynamo-env.sh" RESULT_VARIABLE ret)
+if(ret EQUAL "1")
+    file(COPY "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" DESTINATION "$ENV{BDM_INSTALL_DIR}")
+    message(FATAL_ERROR "The installed BioDynaMo environment file ($ENV{BDM_INSTALL_DIR}/biodynamo-env.sh) was outdated. \
+We have updated the file, but you have to call 'source $ENV{BDM_INSTALL_DIR}/biodynamo-env.sh' and retry this command.")
 endif()
 
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
@@ -80,6 +94,7 @@ if (NUMA_FOUND)
    include_directories(${NUMA_INCLUDE_DIR})
    link_directories(${NUMA_LIBRARY_DIR})
    add_definitions("-DUSE_NUMA")
+   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
 endif()
 
 if(paraview)
@@ -89,8 +104,21 @@ if(paraview)
     message(STATUS "Found ParaView")
     include("${PARAVIEW_USE_FILE}")
     add_definitions("-DUSE_CATALYST")
+    link_directories($ENV{ParaView_LIB_DIR})
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
+        vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
   else()
     message(WARNING "ParaView not found")
+  endif()
+endif()
+
+# paraview version 5.5 (MacOS) does not contain TBB
+if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
+  find_package(TBB REQUIRED)
+  if (TBB_FOUND)
+    include_directories(${TBB_INCLUDE_DIRS})
+    link_directories(${TBB_LIBRARIES})
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
   endif()
 endif()
 
@@ -98,6 +126,7 @@ find_package(VTune)
 if(${VTune_FOUND})
   include_directories(${VTUNE_INCLUDE_DIR})
   add_definitions("-DUSE_VTUNE")
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
 else()
   message(WARNING "VTune not found")
 endif()
@@ -148,7 +177,7 @@ file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 build_libbiodynamo(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
-                   LIBRARIES ${ROOT_LIBRARIES} ${NUMA_LIBRARIES})
+                   LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 endif()
@@ -206,9 +235,6 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 if (${ParaView_FOUND})
-  link_directories($ENV{ParaView_LIB_DIR})
-  target_link_libraries(biodynamo vtkPVPythonCatalyst vtkIOParallelXML
-    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
   build_paraview_plugin()
 endif()
 
@@ -230,7 +256,10 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.cc)
   file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.h
@@ -239,25 +268,29 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
   bdm_add_test_executable(runBiodynamoTestsMain
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS})
 
   #   separate test binaries - each source file is compiled into a separate binary
-  file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
-  foreach(file ${TEST_SOURCES})
-    get_filename_component(filename ${file} NAME_WE)
-    set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/${filename}.h)
-    if (NOT EXISTS ${TEST_HEADER})
-      set(TEST_HEADER ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h)
-    endif()
-    bdm_add_test_executable("runBiodynamoTests_${filename}"
-                            SOURCES ${file}
-                            HEADERS ${TEST_HEADER})
-  endforeach()
+  # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
+  # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
+  # foreach(file ${TEST_SOURCES})
+  #   get_filename_component(filename ${file} NAME_WE)
+  #   set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/${filename}.h)
+  #   if (NOT EXISTS ${TEST_HEADER})
+  #     set(TEST_HEADER ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h)
+  #   endif()
+  #   bdm_add_test_executable("runBiodynamoTests_${filename}"
+  #                           SOURCES ${file}
+  #                           HEADERS ${TEST_HEADER})
+  # endforeach()
 
   # integration tests
   if (NOT coverage)

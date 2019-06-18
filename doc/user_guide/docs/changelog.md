@@ -1,5 +1,21 @@
 # Changelog
 
+## 14.06.2019 [`cb15679`](https://github.com/BioDynaMo/biodynamo/commit/cb1567947595090e3b43a3a44bf74477699d83b0)
+
+Release BioDynaMo dynamic.
+
+This is a more user-friendly version of BioDynaMo.
+It removes most template code, and does not require compile time parameters.
+However, this comes at the cost of performance. BioDynaMo dynamic is slower than
+the previous BioDynaMo static.
+
+There are too many small API changes to present an exhaustive list here.
+We recommend to have a look at the
+[demo folder](https://github.com/BioDynaMo/biodynamo/tree/cb1567947595090e3b43a3a44bf74477699d83b0/demo)
+folder or directly inspect the
+[changes](https://github.com/BioDynaMo/biodynamo/commit/cb1567947595090e3b43a3a44bf74477699d83b0#diff-d61c94874975bac07d55c551632c6e1c)
+of the demo folder.
+
 ## 31.01.2019 [`3a51e76`](https://github.com/BioDynaMo/biodynamo/commit/3a51e76fa109cee10e11776a92bd4ce3b299ee93)
 
 Improve file structure in directory src/ and test/unit
@@ -99,7 +115,7 @@ This change requires a different signature of `BDM_SIM_OBJECT_HEADER`.
 
 In other words, copy the parameters from `BDM_SIM_OBJECT` to the beginning of `BDM_SIM_OBJECT_HEADER`
 ``` c++
-BDM_SIM_OBJECT(Cell, SimulationObject) {
+class Cell : public SimulationObject {
   BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, ...)
 ```
 
@@ -132,7 +148,7 @@ Refactor [parameters](parameter).
    object. This was necessary due to compile time errors of neurite biology modules.
    (Although they were not used for neurons, the compiler tried to compile them)
    This replaces the reinterpret cast workaround.
-*  `Simulation<>::GetActive()->GetParam()` returns const pointer
+*  `Simulation::GetActive()->GetParam()` returns const pointer
    Runtime parameter should not be changed during the simulation. This simplifies
    the distributed runtime.
 *  Add macros to simplify definition of compile time parameter.
@@ -195,7 +211,7 @@ inconsistencies with the biodynamo version.
 
 | Old                                 | New                                    |
 | ----------------------------------- | -------------------------------------- |
-| `InitializeBioDynaMo(...)`          | `Simulation<> simulation(...)` |
+| `InitializeBioDynaMo(...)`          | `Simulation simulation(...)` |
 | `Rm()` <br> `TRm::Get()` <br>  `TResourceManager::Get()` | `auto* rm = simulation.GetResourceManager();` |
 | `GetDiffusionGrid(...)`             | `rm->GetDiffusionGrid(...)` |
 | `Grid::GetInstance()`               | `auto* grid = simulation.GetGrid();` |

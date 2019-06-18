@@ -8,7 +8,7 @@ matrix:
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/default-build.sh"
+      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/default-build.sh"
     # Default build on osx
     - os: osx
       compiler: clang
@@ -19,7 +19,7 @@ matrix:
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/check-code-style.sh"
+      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/check-code-style.sh"
     # Test development installation on ubuntu-16.04
     - os: linux
       dist: trusty
@@ -32,28 +32,18 @@ matrix:
       sudo: required
       group: edge
       env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-18.04"
-    # Test development installation on centos-7.5.1804
-    # - os: linux
-    #   dist: trusty
-    #   sudo: required
-    #   group: edge
-    #   env: SCRIPT="util/travis-ci/installation-test.sh centos-7.5.1804"
+    # Test development installation on centos-7.6.1810
+    - os: linux
+      dist: trusty
+      sudo: required
+      group: edge
+      env: SCRIPT="util/travis-ci/installation-test.sh centos-7.6.1810"
     # Test development installation on osx
     - os: osx
       env: SCRIPT="util/travis-ci/installation-test.sh osx"
 
-before_install:
- - |
-  # workaround for https://github.com/travis-ci/travis-ci/issues/6307
-  # taken from https://github.com/libproxy/libproxy/commit/e6591b251ad42a207bcc752a53fdf2e2981c7bad#diff-354f30a63fb0907d4ad57269548329e3R16
-  # remove once fixed
-  if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    command curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-    command curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
-    rvm get stable
-  fi
-
 script:
+  - shell_session_update() { :; };
   - $SCRIPT
 
 services:

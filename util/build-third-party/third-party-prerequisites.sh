@@ -17,7 +17,7 @@
 
 if [ `uname` = "Linux" ]; then
   BDM_OS=$(DetectOs)
-  if [ $BDM_OS = "centos-7.5.1804" ]; then
+  if [ $BDM_OS = "centos-7.6.1810" ]; then
     #  root required packages
     sudo yum install -y git cmake binutils \
       libX11-devel libXpm-devel libXft-devel libXext-devel
@@ -27,14 +27,20 @@ if [ `uname` = "Linux" ]; then
       fftw-devel cfitsio-devel graphviz-devel \
       avahi-compat-libdns_sd-devel libldap-dev python-devel \
       libxml2-devel gsl-static || true
+    # paraview
+    ## issues with mpich and valgrind:
+    ## https://github.com/flow123d/flow123d/issues/806
+    sudo yum install -y openmpi3-devel || true
+    . /etc/profile.d/modules.sh
+    module load mpi
 
     sudo yum install -y libXt-devel freeglut3-devel
-   
-    sudo yum install -y centos-release-scl 
+
+    sudo yum install -y centos-release-scl
     sudo yum install -y devtoolset-7-gcc*
-    export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:$LD_LIBRARY_PATH
     export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
-    
+
     CC=gcc
     CXX=g++
   else
@@ -62,6 +68,8 @@ if [ `uname` = "Linux" ]; then
       graphviz-dev libavahi-compat-libdnssd-dev \
       libldap2-dev python-dev libxml2-dev libkrb5-dev \
       libgsl0-dev libqt4-dev || true
+    # paraview
+    sudo apt-get -y install libopenmpi-dev || true
 
     sudo apt install -y libxt-dev freeglut3-dev
   fi

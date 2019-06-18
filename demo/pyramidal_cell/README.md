@@ -1,1 +1,0 @@
-# Pyramidal cell example

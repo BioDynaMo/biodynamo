@@ -25,15 +25,15 @@ namespace neuroscience {
 ///
 /// The cell that triggers the event is the neuron soma.
 /// The event creates a new neurite element.
-///
-/// Here is the constructor to create a new neurite for this event
-/// NeuriteElementExt::NeuriteElementExt(const NewNeuriteExtensionEvent& event,
-/// TNeuronSoma* soma)
-/// and the corresponding event handler
-/// NeuronSoma::EventHandler(const NewNeuriteExtensionEvent& event, TNeurite*
-/// neurite)
-struct NewNeuriteExtensionEvent {
+struct NewNeuriteExtensionEvent : public Event {
   static const EventId kEventId;
+
+  NewNeuriteExtensionEvent(double diameter, double phi, double theta)
+      : diameter_(diameter), phi_(phi), theta_(theta) {}
+
+  virtual ~NewNeuriteExtensionEvent() {}
+
+  EventId GetId() const override { return kEventId; }
 
   /// diameter the diameter of the new neurite
   double diameter_;

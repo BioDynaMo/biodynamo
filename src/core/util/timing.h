@@ -20,6 +20,7 @@
 #include <string>
 
 #include "core/param/param.h"
+#include "core/simulation.h"
 #include "core/util/timing_aggregator.h"
 
 namespace bdm {
@@ -39,10 +40,10 @@ class Timing {
     return millis.count();
   }
 
-  template <typename TFunctor, typename TSimulation = Simulation<>>
+  template <typename TFunctor>
   static void Time(const std::string& description, TFunctor&& f) {
-    static bool use_timer_ = TSimulation::GetActive()->GetParam()->statistics_;
-    if (use_timer_) {
+    static bool kUseTimer = Simulation::GetActive()->GetParam()->statistics_;
+    if (kUseTimer) {
       Timing timing(description, &gStatistics);
       f();
     } else {

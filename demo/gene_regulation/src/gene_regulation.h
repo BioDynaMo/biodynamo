@@ -26,19 +26,11 @@ using std::array;
 using std::vector;
 using std::string;
 
-// 1. Define compile time parameter
-BDM_CTPARAM() {
-  BDM_CTPARAM_HEADER();
-
-  // Override default BiologyModules for Cell
-  BDM_CTPARAM_FOR(bdm, Cell) { using BiologyModules = CTList<RegulateGenes>; };
-};
-
 inline int Simulate(int argc, const char** argv) {
-  // 2. Initialize BioDynaMo
-  Simulation<> simulation(argc, argv);
+  // Initialize BioDynaMo
+  Simulation simulation(argc, argv);
 
-  // 3. Initialize RegulateGenes module.
+  // Initialize RegulateGenes module.
   // To add functions to the module use RegulateGenes::AddGene() function.
   // You should pass to the function two variables.
   // The first is of type  std::function<double(double, double)>.
@@ -62,26 +54,27 @@ inline int Simulate(int argc, const char** argv) {
       },
       7);
 
-  // 4. Define initial model -- in this example just one cell.
+  // Define initial model -- in this example just one cell.
   auto construct = [&](const std::array<double, 3>& position) {
-    Cell cell(position);
-    cell.SetDiameter(30);
-    cell.SetAdherence(0.4);
-    cell.SetMass(1.0);
-    cell.AddBiologyModule(regulate_example);
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(30);
+    cell->SetAdherence(0.4);
+    cell->SetMass(1.0);
+    cell->AddBiologyModule(regulate_example.GetCopy());
     return cell;
   };
   const std::vector<std::array<double, 3>>& positions = {{0, 0, 0}};
   ModelInitializer::CreateCells(positions, construct);
 
-  // 5. Run simulation
+  // Run simulation
   auto* scheduler = simulation.GetScheduler();
   scheduler->Simulate(10);
 
-  // 6. Output concentration values for each gene
+  // Output concentration values for each gene
   auto* rm = simulation.GetResourceManager();
-  auto&& cell = rm->GetSimObject<Cell>(SoHandle(0, 0));
-  const auto* regulate_genes = cell.GetBiologyModules<RegulateGenes>()[0];
+  auto* sim_object = rm->GetSimObject(0);
+  const auto* first_bm = sim_object->GetAllBiologyModules()[0];
+  auto* regulate_genes = dynamic_cast<const RegulateGenes*>(first_bm);
   const auto& concentrations = regulate_genes->GetConcentrations();
   std::cout << "Gene concentrations after " << scheduler->GetSimulatedSteps()
             << " time steps" << std::endl;

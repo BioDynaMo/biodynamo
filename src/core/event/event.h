@@ -64,6 +64,12 @@ class UniqueEventIdFactory {
   uint64_t counter_ = 0;
 };
 
+struct Event {
+  virtual ~Event() {}
+
+  virtual EventId GetId() const = 0;
+};
+
 }  // namespace bdm
 
 #endif  // CORE_EVENT_EVENT_H_

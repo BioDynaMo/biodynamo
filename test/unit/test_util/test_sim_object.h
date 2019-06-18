@@ -21,46 +21,53 @@
 
 namespace bdm {
 
-BDM_SIM_OBJECT(TestSimObject, SimObject) {
-  BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1, position_);
+class TestSimObject : public SimObject {
+  BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1, position_, diameter_);
 
  public:
-  static std::set<std::string> GetRequiredVisDataMembers() {
+  TestSimObject() {}
+
+  explicit TestSimObject(int data) : data_(data) {}
+
+  explicit TestSimObject(const std::array<double, 3>& pos) : position_{pos} {}
+
+  TestSimObject(const Event& event, SimObject* other, uint64_t new_oid = 0)
+      : Base(event, other, new_oid) {}
+
+  virtual ~TestSimObject() {}
+
+  Shape GetShape() const override { return Shape::kSphere; };
+
+  std::set<std::string> GetRequiredVisDataMembers() const override {
     return {"diameter_", "position_"};
   }
 
-  static constexpr Shape GetShape() { return Shape::kSphere; }
+  void RunDiscretization() override {}
 
-  TestSimObjectExt() {}
-
-  explicit TestSimObjectExt(const std::array<double, 3>& pos)
-      : position_{{pos}} {}
-
-  template <typename TEvent, typename TOther>
-  TestSimObjectExt(const TEvent& event, TOther* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
-
-  template <typename TEvent, typename TDaughter>
-  void EventHandler(const TEvent& event, TDaughter* daughter) {
-    Base::EventHandler(event, daughter);
+  const std::array<double, 3>& GetPosition() const override {
+    return position_;
   }
 
-  const std::array<double, 3>& GetPosition() const { return position_[kIdx]; }
+  void SetPosition(const std::array<double, 3>& pos) override {
+    position_ = pos;
+  }
 
-  void SetPosition(const std::array<double, 3>& pos) { position_[kIdx] = pos; }
+  void ApplyDisplacement(const std::array<double, 3>&) override {}
 
-  void ApplyDisplacement(const std::array<double, 3>&) {}
-
-  std::array<double, 3> CalculateDisplacement(double squared_radius) {
+  std::array<double, 3> CalculateDisplacement(double squared_radius) override {
     return {0, 0, 0};
   }
 
-  void SetBoxIdx(uint64_t) {}
+  double GetDiameter() const override { return diameter_; }
+  void SetDiameter(const double diameter) override { diameter_ = diameter; }
 
-  double GetDiameter() const { return 3.14; }
+  int GetData() const { return data_; }
+  void SetData(double data) { data_ = data; }
 
  protected:
-  vec<std::array<double, 3>> position_;
+  std::array<double, 3> position_ = {{0, 0, 0}};
+  double diameter_ = 0;
+  int data_ = 0;
 };
 
 }  // namespace bdm

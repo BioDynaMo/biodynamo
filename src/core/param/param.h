@@ -16,16 +16,44 @@
 #define CORE_PARAM_PARAM_H_
 
 #include <cinttypes>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/param/module_param.h"
 #include "core/util/root.h"
+#include "core/util/type.h"
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {
 
+class Simulation;
+
 struct Param {
+  static void RegisterModuleParam(ModuleParam* param);
+
+  Param();
+
+  ~Param();
+
+  void Restore(Param&& other);
+
+  template <typename TModuleParam>
+  const TModuleParam* GetModuleParam() const {
+    assert(modules_.find(TModuleParam::kUid) != modules_.end() &&
+           "Couldn't find the requested module parameter.");
+    return bdm_static_cast<const TModuleParam*>(
+        modules_.at(TModuleParam::kUid));
+  }
+
+  template <typename TModuleParam>
+  TModuleParam* GetModuleParam() {
+    assert(modules_.find(TModuleParam::kUid) != modules_.end() &&
+           "Couldn't find the requested module parameter.");
+    return bdm_static_cast<TModuleParam*>(modules_.at(TModuleParam::kUid));
+  }
+
   // simulation values ---------------------------------------------------------
 
   /// Variable which specifies method using for solving differential equation
@@ -167,6 +195,15 @@ struct Param {
   ///     export_interval = 1
   uint32_t visualization_export_interval_ = 1;
 
+  /// If `export_visualization_` is set to true, this parameter specifies
+  /// if the ParaView pvsm file will be generated!\n
+  /// Defaut value: `true`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     export_generate_pvsm = true
+  bool visualization_export_generate_pvsm_ = true;
+
   /// Specifies which simulation objects should be visualized. \n
   /// Every simulation object defines the minimum set of data members which
   /// are required to visualize it. (e.g. Cell: `position_` and `diameter_`).\n
@@ -221,6 +258,39 @@ struct Param {
   ///       # default values: concentration = true and gradient = false
   std::vector<VisualizeDiffusion> visualize_diffusion_;
 
+  // performance values --------------------------------------------------------
+
+  /// Batch size used by the `Scheduler` to iterate over simulation objects\n
+  /// Default value: `1000`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     scheduling_batch_size = 1000
+  uint64_t scheduling_batch_size_ = 1000;
+
+  /// Calculation of the displacement (mechanical interaction) is an
+  /// expensive operation. If simulation objects do not move or grow,
+  /// displacement calculation is ommited if detect_static_sim_objects is turned
+  /// on. However, the detection mechanism introduces an overhead. For dynamic
+  /// simulations where sim objects move and grow, the overhead outweighs the
+  /// benefits.\n
+  /// Default value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     detect_static_sim_objects = false
+  bool detect_static_sim_objects_ = false;
+
+  /// Neighbors of a simulation object can be cached so to avoid consecutive
+  /// searches. This of course only makes sense if there is more than one
+  /// `ForEachNeighbor*` operation.\n
+  /// Default value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     cache_neighbors = false
+  bool cache_neighbors_ = false;
+
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n
@@ -230,6 +300,15 @@ struct Param {
   ///     [development]
   ///     statistics = false
   bool statistics_ = false;
+
+  /// Output debugging info related to running on NUMA architecture.\n
+  /// \see `ThreadInfo`, `ResourceManager::DebugNuma`
+  /// Default Value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [development]
+  ///     debug_numa = false
+  bool debug_numa_ = false;
 
   /// Use the python script (simple_pipeline.py) to do Live Visualization with
   /// ParaView. If false, we use the C++ pipeline
@@ -292,6 +371,10 @@ struct Param {
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
+  friend class Simulation;
+  static std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
+      registered_modules_;
+  std::unordered_map<ModuleParamUid, ModuleParam*> modules_;
   BDM_CLASS_DEF_NV(Param, 1);
 };
 

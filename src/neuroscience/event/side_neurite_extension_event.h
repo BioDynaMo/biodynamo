@@ -21,19 +21,20 @@ namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
-// clang-format off
 /// \brief Contains the parameters to add a side neurite element.
 ///
 /// This event adds a side neurite (daughter right) to the neurite element
 /// that triggered the event.
-///
-/// Here is the constructor to create a new neurite element for this event
-/// NeuriteElementExt::NeuriteElementExt(const SideNeuriteExtensionEvent& event, TNeuriteElement* mother)
-/// and the corresponding event handler
-/// NeuriteElementExt::EventHandler(const SideNeuriteExtensionEvent& event, TDaughter* right)
-// clang-format on
-struct SideNeuriteExtensionEvent {
+struct SideNeuriteExtensionEvent : public Event {
   static const EventId kEventId;
+
+  SideNeuriteExtensionEvent(double length, double diameter,
+                            const std::array<double, 3> direction)
+      : length_(length), diameter_(diameter), direction_(direction) {}
+
+  virtual ~SideNeuriteExtensionEvent() {}
+
+  EventId GetId() const override { return kEventId; }
 
   /// length of the new branch
   double length_;

@@ -21,20 +21,20 @@ namespace bdm {
 namespace experimental {
 namespace neuroscience {
 
-// clang-format off
 /// \brief Contains the parameters to split a neurite element into two segments.
 ///
 /// This event splits a neurite element into two segments.
 /// The neurite element that triggers the event becomes the distal one.
 /// The new neurite element will be the proximal one.
-///
-/// Here is the constructor to create a new neurite element for this event
-/// NeuriteElementExt::NeuriteElementExt(const SplitNeuriteElementEvent& event, TNeuriteElement* other)
-/// and the corresponding event handler
-/// NeuriteElementExt::EventHandler(const SplitNeuriteElementEvent& event, TNeurite* proximal)
-// clang-format on
-struct SplitNeuriteElementEvent {
+struct SplitNeuriteElementEvent : public Event {
   static const EventId kEventId;
+
+  explicit SplitNeuriteElementEvent(double distal_portion)
+      : distal_portion_(distal_portion) {}
+
+  virtual ~SplitNeuriteElementEvent() {}
+
+  EventId GetId() const override { return kEventId; }
 
   /// The fraction of the total old length devoted to the distal half
   /// (should be between 0 and 1).

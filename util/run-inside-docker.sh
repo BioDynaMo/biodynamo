@@ -78,29 +78,46 @@ echo ""
 EchoNewStep "Start docker container..."
 BDM_PROJECT_DIR_ABS=$(GetAbsolutePath $BDM_PROJECT_DIR)
 # check if working directory is inside BDM_PROJECT_DIR
-if [[ "$PWD" != $(realpath $BDM_PROJECT_DIR_ABS)* ]]; then
+if [[ "$PWD" != $(readlink -e $BDM_PROJECT_DIR_ABS)* ]]; then
   EchoError "ERROR: working directory must be inside ${BDM_PROJECT_DIR_ABS}"
   echo "Current working directory: $PWD"
   echo "Change your working directory and run the script again."
   exit 1
 fi
 
+# Flatten container to avoid openMPI bug inside a docker container (ubuntu 16.04)
+# https://stackoverflow.com/questions/46138549/docker-openmpi-and-unexpected-end-of-proc-mounts-line
+sudo docker run --name $BDM_CONTAINER $BDM_IMAGE /bin/bash
+TMP_CONTAINER_TAR=$(mktemp)
+sudo docker export $BDM_CONTAINER > $TMP_CONTAINER_TAR
+cat $TMP_CONTAINER_TAR | sudo docker import - ${BDM_IMAGE}:flattened
+rm $TMP_CONTAINER_TAR
+sudo docker stop $BDM_CONTAINER || true
+sudo docker rm $BDM_CONTAINER || true
+
+BDM_FORWARD_ENV=""
 # BDM_LOCAL_LFS is defined add the environment variable and volume
 if [ $BDM_LOCAL_LFS ]; then
-  BDM_LOCAL_LFS_ENV="--env BDM_LOCAL_LFS=$BDM_LOCAL_LFS"
+  BDM_FORWARD_ENV="$BDM_FORWARD_ENV --env BDM_LOCAL_LFS=$BDM_LOCAL_LFS"
   BDM_LOCAL_LFS_VOLUME="--volume $BDM_LOCAL_LFS:$BDM_LOCAL_LFS"
+fi
+# forward travis environment variables
+if [ $TRAVIS ]; then
+  for e in $(printenv | grep '\(^TRAVIS\)\|\(^GH\)'); do
+    BDM_FORWARD_ENV="$BDM_FORWARD_ENV --env=$e"
+  done
 fi
 sudo docker run \
   --name $BDM_CONTAINER \
   --net=host \
   --env="DISPLAY" \
-  $BDM_LOCAL_LFS_ENV \
+  $BDM_FORWARD_ENV \
   --volume $BDM_PROJECT_DIR_ABS:$BDM_PROJECT_DIR_ABS \
   --volume /var/run/docker.sock:/var/run/docker.sock \
   $BDM_LOCAL_LFS_VOLUME \
   --workdir $PWD \
   -dit \
-  $BDM_IMAGE \
+  ${BDM_IMAGE}:flattened \
   /bin/bash
 
 # execute script

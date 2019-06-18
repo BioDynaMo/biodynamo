@@ -12,12 +12,14 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/core/util/io_test.h"
-#include "core/simulation_implementation.h"
+#include "core/util/io.h"
+#include <gtest/gtest.h>
+
+#define ROOTFILE "bdmFile.root"
 
 namespace bdm {
 
-TEST(IOUtilTest, InvalidRead) { RunInvalidReadTest(); }
+#ifdef USE_DICT
 
 TEST(IOUtilTest, RuntimeVars) {
   RuntimeVariables this_machine;
@@ -46,5 +48,7 @@ TEST(IOUtilTest, RuntimeVars) {
 
   remove(ROOTFILE);
 }
+
+#endif  // USE_DICT
 
 }  // namespace bdm

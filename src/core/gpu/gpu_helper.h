@@ -47,9 +47,8 @@ static const char* GetErrorString(cl_int error);
 #endif
 
 #ifdef USE_CUDA
-template <typename TSimulation = Simulation<>>
 static void FindGpuDevicesCuda() {
-  auto* param = TSimulation::GetActive()->GetParam();
+  auto* param = Simulation::GetActive()->GetParam();
 
   int n_devices = 0;
 
@@ -79,9 +78,8 @@ static void FindGpuDevicesCuda() {
 #endif
 
 #ifdef USE_OPENCL
-template <typename TSimulation = Simulation<>>
 static void CompileOpenCLKernels() {
-  auto* sim = TSimulation::GetActive();
+  auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
 
@@ -126,12 +124,11 @@ static void CompileOpenCLKernels() {
   }
 }
 
-template <typename TSimulation = Simulation<>>
 static void FindGpuDevicesOpenCL() {
   try {
     // We keep the context and device list in the resource manager to be
     // accessible elsewhere to create command queues and buffers from
-    auto* sim = TSimulation::GetActive();
+    auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto* param = sim->GetParam();
 
@@ -209,9 +206,8 @@ static void FindGpuDevicesOpenCL() {
 }
 #endif
 
-template <typename TSimulation = Simulation<>>
 static void InitializeGPUEnvironment() {
-  auto* param = TSimulation::GetActive()->GetParam();
+  auto* param = Simulation::GetActive()->GetParam();
   if (param->use_opencl_) {
 #ifdef USE_OPENCL
     FindGpuDevicesOpenCL<>();
