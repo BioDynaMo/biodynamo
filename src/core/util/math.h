@@ -36,9 +36,9 @@ struct Math {
   /// @param b the second vector
   /// @return a + b
   template <typename T, std::size_t N>
-  static std::array<T, N> Add(const std::array<T, N>& a,
-                              const std::array<T, N>& b) {
-    std::array<T, N> result;
+  static MathArray<T, N> Add(const MathArray<T, N>& a,
+                              const MathArray<T, N>& b) {
+    MathArray<T, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] + b[i];
     }
@@ -50,9 +50,9 @@ struct Math {
   /// @param b
   /// @return a-b
   template <typename T, std::size_t N>
-  static std::array<T, N> Subtract(const std::array<T, N>& a,
-                                   const std::array<T, N>& b) {
-    std::array<T, N> result;
+  static MathArray<T, N> Subtract(const MathArray<T, N>& a,
+                                   const MathArray<T, N>& b) {
+    MathArray<T, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] - b[i];
     }
@@ -64,7 +64,7 @@ struct Math {
   /// @param b
   /// @return a.b
   template <typename T, std::size_t N>
-  static T Dot(const std::array<T, N>& a, const std::array<T, N>& b) {
+  static T Dot(const MathArray<T, N>& a, const MathArray<T, N>& b) {
     T product = 0;
     for (size_t i = 0; i < N; i++) {
       product += a[i] * b[i];
@@ -78,9 +78,9 @@ struct Math {
   /// @param  a the vector we want to multiply
   /// @return k * a
   template <std::size_t N>
-  static std::array<double, N> ScalarMult(double k,
-                                          const std::array<double, N>& a) {
-    std::array<double, N> result;
+  static MathArray<double, N> ScalarMult(double k,
+                                          const MathArray<double, N>& a) {
+    MathArray<double, N> result;
     for (size_t i = 0; i < N; i++) {
       result[i] = a[i] * k;
     }
@@ -130,9 +130,9 @@ struct Math {
   /// @param b
   /// @return result the cross product of a and b (a x b)
   template <std::size_t N>
-  static std::array<double, N> CrossProduct(const std::array<double, N>& a,
-                                            const std::array<double, N>& b) {
-    std::array<double, N> result;
+  static MathArray<double, N> CrossProduct(const MathArray<double, N>& a,
+                                            const MathArray<double, N>& b) {
+    MathArray<double, N> result;
     result[0] = a[1] * b[2] - a[2] * b[1];
     result[1] = a[2] * b[0] - a[0] * b[2];
     result[2] = a[0] * b[1] - a[1] * b[0];
