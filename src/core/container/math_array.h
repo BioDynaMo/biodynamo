@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <stdexcept>
 #include <utility>
 
@@ -28,7 +29,7 @@ namespace bdm {
 template <class T, std::size_t N>
 class MathArray {  // NOLINT
  public:
-  MathArray(){}
+  MathArray() {}
   MathArray(std::initializer_list<T> l) : MathArray<T, N>() {
     assert(l.size() == N);
     std::copy(l.begin(), l.end(), &data_[0]);
@@ -45,7 +46,7 @@ class MathArray {  // NOLINT
   T& at(size_t idx) {  // NOLINT
     if (idx > size() || idx < 0) {
       throw std::out_of_range("The index is out of range");
-}
+    }
     return data_[idx];
   }
 
@@ -76,11 +77,11 @@ class MathArray {  // NOLINT
   bool operator==(const MathArray& other) const {
     if (other.size() != N) {
       return false;
-}
+    }
     for (size_t i = 0; i < N; i++) {
       if (other[i] != data_[i]) {
         return false;
-}
+      }
     }
     return true;
   }
