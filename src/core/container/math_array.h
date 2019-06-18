@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_CONTAINER_MATH_ARRAY_
-#define CORE_CONTAINER_MATH_ARRAY_
+#ifndef CORE_CONTAINER_MATH_ARRAY_H_
+#define CORE_CONTAINER_MATH_ARRAY_H_
 
 #include <algorithm>
 #include <cassert>
@@ -31,18 +31,16 @@ template <class T, std::size_t N>
 class MathArray {  // NOLINT
  public:
   constexpr MathArray() : data_() {
-	  /// std::fill will become constexpr with C++20
-	  for (size_t i=0; i<N; i++)
-	  {
-		  data_[i] = 0;
-	  }
+    /// std::fill will become constexpr with C++20
+    for (size_t i = 0; i < N; i++) {
+      data_[i] = 0;
+    }
   }
   constexpr MathArray(std::initializer_list<T> l) : MathArray<T, N>() {
     assert(l.size() == N);
-	for (size_t i=0; i<N; i++)
-	{
-	  data_[i] = *(l.begin()+i);
-	}
+    for (size_t i = 0; i < N; i++) {
+      data_[i] = *(l.begin() + i);
+    }
   }
 
   inline const T* data() const { return &data_[0]; }  // NOLINT
@@ -232,7 +230,7 @@ class MathArray {  // NOLINT
   }
 
   MathArray& fill(const T& k) {  // NOLINT
-	std::fill(std::begin(data_), std::end(data_), k);
+    std::fill(std::begin(data_), std::end(data_), k);
     return *this;
   }
 
