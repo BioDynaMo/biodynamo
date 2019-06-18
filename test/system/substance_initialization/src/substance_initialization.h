@@ -44,7 +44,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // Define initial model
   // Create one cell at a random position
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(10);
     return cell;

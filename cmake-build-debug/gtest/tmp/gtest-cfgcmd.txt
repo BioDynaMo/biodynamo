@@ -1,0 +1,1 @@
+cmd='/home/uriel/Applications/clion-2017.1.2/bin/cmake/bin/cmake;-C/home/uriel/Github/biodynamo/cmake-build-debug/gtest/tmp/gtest-cache-$<CONFIG>.cmake;-GCodeBlocks - Unix Makefiles;/home/uriel/Github/biodynamo/cmake-build-debug/gtest/src/gtest'

@@ -42,7 +42,7 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   auto* ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
                  ->ExtendNewNeurite({1, 0, 0});
 
-  std::array<double, 3> neAxis = ne->GetSpringAxis();
+  Double3 neAxis = ne->GetSpringAxis();
 
   EXPECT_NEAR(neAxis[0], 1, abs_error<double>::value);
   EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
@@ -89,8 +89,8 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
                  ->ExtendNewNeurite({0, 0, 1});
   ne->SetDiameter(1);
 
-  std::array<double, 3> previous_direction;
-  std::array<double, 3> direction;
+  Double3 previous_direction;
+  Double3 direction;
 
   for (int i = 0; i < 200; i++) {
     rm->ApplyOnAllElements([&](SimObject* so) {
@@ -102,7 +102,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
           direction = {random->Uniform(-10, 10), random->Uniform(-10, 10),
                        random->Uniform(0, 5)};
 
-          std::array<double, 3> step_direction =
+          Double3 step_direction =
               Math::Add(previous_direction, direction);
 
           ne->ElongateTerminalEnd(10, step_direction);

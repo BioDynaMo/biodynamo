@@ -16,6 +16,7 @@
 #define NEUROSCIENCE_NEURON_OR_NEURITE_H_
 
 #include <array>
+#include "core/container/math_array.h"
 #include "core/sim_object/sim_object.h"
 #include "core/sim_object/so_pointer.h"
 
@@ -40,7 +41,7 @@ class NeuronOrNeurite {
 
   bool IsNeuriteElement() const;
 
-  virtual std::array<double, 3> OriginOf(SoUid daughter_uid) const = 0;
+  virtual Double3 OriginOf(SoUid daughter_uid) const = 0;
 
   virtual void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) = 0;
 

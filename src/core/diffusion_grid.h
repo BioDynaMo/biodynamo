@@ -26,6 +26,7 @@
 #include <vector>
 #include "core/util/root.h"
 
+#include "core/containter/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/param/param.h"
 #include "core/util/log.h"
@@ -633,7 +634,7 @@ class DiffusionGrid {
   }
 
   /// Increase the concentration at specified position with specified amount
-  void IncreaseConcentrationBy(const std::array<double, 3>& position,
+  void IncreaseConcentrationBy(const Double3& position,
                                double amount) {
     auto idx = GetBoxIndex(position);
     IncreaseConcentrationBy(idx, amount);
@@ -650,13 +651,13 @@ class DiffusionGrid {
   }
 
   /// Get the concentration at specified position
-  double GetConcentration(const std::array<double, 3>& position) const {
+  double GetConcentration(const Double3& position) const {
     return c1_[GetBoxIndex(position)];
   }
 
   /// Get the (normalized) gradient at specified position
-  void GetGradient(const std::array<double, 3>& position,
-                   std::array<double, 3>* gradient) const {
+  void GetGradient(const Double3& position,
+                   Double3* gradient) const {
     auto idx = GetBoxIndex(position);
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
@@ -674,7 +675,7 @@ class DiffusionGrid {
   }
 
   std::array<uint32_t, 3> GetBoxCoordinates(
-      const std::array<double, 3>& position) const {
+      const Double3& position) const {
     std::array<uint32_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
@@ -689,7 +690,7 @@ class DiffusionGrid {
   }
 
   /// Calculates the box index of the substance at specified position
-  size_t GetBoxIndex(const std::array<double, 3>& position) const {
+  size_t GetBoxIndex(const Double3& position) const {
     auto box_coord = GetBoxCoordinates(position);
     return GetBoxIndex(box_coord);
   }

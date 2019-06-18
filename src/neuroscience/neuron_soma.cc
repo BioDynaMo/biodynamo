@@ -15,6 +15,7 @@
 #include "neuroscience/neuron_soma.h"
 
 #include <algorithm>
+
 #include "core/resource_manager.h"
 #include "neuroscience/event/new_neurite_extension_event.h"
 #include "neuroscience/neurite_element.h"
@@ -28,7 +29,7 @@ NeuronSoma::NeuronSoma() {}
 
 NeuronSoma::~NeuronSoma() {}
 
-NeuronSoma::NeuronSoma(const std::array<double, 3>& position)
+NeuronSoma::NeuronSoma(const Double3& position)
     : Base(position) {}
 
 NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so,
@@ -69,7 +70,7 @@ void NeuronSoma::EventHandler(const Event& event, SimObject* other1,
 }
 
 NeuriteElement* NeuronSoma::ExtendNewNeurite(
-    const std::array<double, 3>& direction, NeuriteElement* prototype) {
+    const Double3& direction, NeuriteElement* prototype) {
   auto dir = Math::Add(direction, Base::position_);
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
   auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
@@ -101,8 +102,8 @@ void NeuronSoma::RemoveDaughter(const SoPointer<NeuriteElement>& daughter) {
   daughters_.erase(it);
 }
 
-std::array<double, 3> NeuronSoma::OriginOf(SoUid daughter_uid) const {
-  std::array<double, 3> xyz = daughters_coord_.at(daughter_uid);
+Double3 NeuronSoma::OriginOf(SoUid daughter_uid) const {
+  Double3 xyz = daughters_coord_.at(daughter_uid);
 
   double radius = Base::diameter_ * .5;
   xyz = Math::ScalarMult(radius, xyz);

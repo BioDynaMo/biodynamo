@@ -26,7 +26,7 @@ class MyCell : public Cell {
 
  public:
   MyCell() {}
-  MyCell(const std::array<double, 3>& position) : Base(position) {}
+  MyCell(const Double3& position) : Base(position) {}
 
   void SetCellType(int t) { cell_type_ = t; }
   int GetCellType() const { return cell_type_; }

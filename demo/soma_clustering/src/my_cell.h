@@ -26,7 +26,7 @@ class MyCell : public Cell {
 
  public:
   MyCell() {}
-  explicit MyCell(const std::array<double, 3>& position) : Base(position) {}
+  explicit MyCell(const Double3& position) : Base(position) {}
 
   /// Default event constructor
   MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)

@@ -33,7 +33,7 @@
 
 namespace bdm {
 
-void CellFactory(const std::vector<std::array<double, 3>>& positions) {
+void CellFactory(const std::vector<Double3>& positions) {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   rm->Reserve(positions.size());
   for (size_t i = 0; i < positions.size(); i++) {
@@ -49,7 +49,7 @@ TEST(DiffusionTest, GridDimensions) {
   Simulation simulation(TEST_NAME);
   auto* grid = simulation.GetGrid();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<Double3> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
   CellFactory(positions);
@@ -77,7 +77,7 @@ TEST(DiffusionTest, UpdateGrid) {
   Simulation simulation(TEST_NAME);
   auto* grid = simulation.GetGrid();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<Double3> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
   CellFactory(positions);
@@ -87,7 +87,7 @@ TEST(DiffusionTest, UpdateGrid) {
   grid->Initialize();
   d_grid->Initialize(grid->GetDimensions());
 
-  std::vector<std::array<double, 3>> positions_2;
+  std::vector<Double3> positions_2;
   positions_2.push_back({-30, -10, -10});
   positions_2.push_back({90, 150, 90});
   CellFactory(positions_2);
@@ -114,7 +114,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   Simulation simulation(TEST_NAME);
   auto* grid = simulation.GetGrid();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<Double3> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
   CellFactory(positions);
@@ -397,10 +397,10 @@ TEST(DiffusionTest, IOTest) {
 
 #endif  // USE_DICT
 
-std::array<double, 3> GetRealCoordinates(const std::array<uint32_t, 3>& bc1,
+Double3 GetRealCoordinates(const std::array<uint32_t, 3>& bc1,
                                          const std::array<uint32_t, 3>& bc2,
                                          double bl) {
-  std::array<double, 3> ret;
+  Double3 ret;
   ret[0] = bl * (bc2[0] - bc1[0]);
   ret[1] = bl * (bc2[1] - bc1[1]);
   ret[2] = bl * (bc2[2] - bc1[2]);
@@ -447,7 +447,7 @@ TEST(DiffusionTest, Convergence) {
 
   // instantaneous point source
   int init = 1e5;
-  std::array<double, 3> source = {{0, 0, 0}};
+  Double3 source = {{0, 0, 0}};
   d_grid2->IncreaseConcentrationBy(source,
                                    init / pow(d_grid2->GetBoxLength(), 3));
   d_grid4->IncreaseConcentrationBy(source,
@@ -459,7 +459,7 @@ TEST(DiffusionTest, Convergence) {
   auto conc4 = d_grid4->GetAllConcentrations();
   auto conc8 = d_grid8->GetAllConcentrations();
 
-  std::array<double, 3> marker = {10.0, 10.0, 10.0};
+  Double3 marker = {10.0, 10.0, 10.0};
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
@@ -560,7 +560,7 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   vtkDoubleArray* conc = vtkArrayDownCast<vtkDoubleArray>(abstract_array);
 
   double expected = ROOT::Math::normal_pdf(0, sigma, mean);
-  std::array<double, 3> marker = {0, 0, 0};
+  Double3 marker = {0, 0, 0};
   size_t idx = rm->GetDiffusionGrid(kSubstance1)->GetBoxIndex(marker);
   EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);
   remove(filename.c_str());

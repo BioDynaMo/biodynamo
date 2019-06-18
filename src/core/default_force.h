@@ -17,6 +17,8 @@
 
 #include <array>
 
+#include "core/container/math_array.h"
+
 namespace bdm {
 
 class SimObject;
@@ -33,7 +35,7 @@ class DefaultForce {
  private:
   void ForceBetweenSpheres(const SimObject* sphere_lhs,
                            const SimObject* sphere_rhs,
-                           std::array<double, 3>* result) const;
+                           Double3* result) const;
 
   void ForceOnACylinderFromASphere(const SimObject* cylinder,
                                    const SimObject* sphere,
@@ -41,15 +43,15 @@ class DefaultForce {
 
   void ForceOnASphereFromACylinder(const SimObject* sphere,
                                    const SimObject* cylinder,
-                                   std::array<double, 3>* result) const;
+                                   Double3* result) const;
 
   void ForceBetweenCylinders(const SimObject* cylinder1,
                              const SimObject* cylinder2,
                              std::array<double, 4>* result) const;
 
   std::array<double, 4> ComputeForceOfASphereOnASphere(
-      const std::array<double, 3>& c1, double r1,
-      const std::array<double, 3>& c2, double r2) const;
+      const Double3& c1, double r1,
+      const Double3& c2, double r2) const;
 };
 
 }  // namespace bdm

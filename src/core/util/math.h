@@ -20,6 +20,7 @@
 #include <numeric>
 #include <vector>
 
+#include "core/container/math_array.h"
 #include "core/util/random.h"
 
 namespace bdm {
@@ -94,7 +95,7 @@ struct Math {
   /// Returns the euclidean norm of a vector.
   /// @param a vector
   /// @return it's norm
-  static double Norm(const std::array<double, 3>& a) {
+  static double Norm(const Double3& a) {
     double norm = std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
     if (norm == 0.0) {
       norm = 1.0;
@@ -105,9 +106,9 @@ struct Math {
   /// Normalizes a vector.
   /// @param a a vector
   /// @return the vector divided by its norm
-  static std::array<double, 3> Normalize(const std::array<double, 3>& a) {
+  static Double3 Normalize(const Double3& a) {
     const auto&& norm = Norm(a);
-    std::array<double, 3> ret;
+    Double3 ret;
     ret[0] = a[0] / norm;
     ret[1] = a[1] / norm;
     ret[2] = a[2] / norm;
@@ -115,9 +116,9 @@ struct Math {
   }
 
   // Helper function that returns distance (L2 norm) between two positions in 3D
-  static double GetL2Distance(const std::array<double, 3>& pos1,
-                              const std::array<double, 3>& pos2) {
-    std::array<double, 3> dist_array;
+  static double GetL2Distance(const Double3& pos1,
+                              const Double3& pos2) {
+    Double3 dist_array;
     dist_array[0] = pos2[0] - pos1[0];
     dist_array[1] = pos2[1] - pos1[1];
     dist_array[2] = pos2[2] - pos1[2];
@@ -143,9 +144,9 @@ struct Math {
   /// @param a vector
   /// @param random
   /// @return a perpendicular vector
-  static std::array<double, 3> Perp3(const std::array<double, 3>& a,
+  static Double3 Perp3(const Double3& a,
                                      double random) {
-    std::array<double, 3> vect_perp;
+    Double3 vect_perp;
     if (a[0] == 0.0) {
       vect_perp[0] = 1.0;
       vect_perp[1] = 0.0;
@@ -168,9 +169,9 @@ struct Math {
   /// @param[in] theta  the amplitude of rotation (in radian)
   /// @param[in] axis   (also a vector)
   /// @return the vector after rotation
-  static std::array<double, 3> RotAroundAxis(
-      const std::array<double, 3>& vector, double theta,
-      const std::array<double, 3>& axis) {
+  static Double3 RotAroundAxis(
+      const Double3& vector, double theta,
+      const Double3& axis) {
     auto naxis = Normalize(axis);
 
     auto temp_1 = Math::ScalarMult(Math::Dot(vector, naxis), naxis);
@@ -189,8 +190,8 @@ struct Math {
   /// @param a the first vector
   /// @param b the second vector
   /// @return the angle between them.
-  static double AngleRadian(const std::array<double, 3>& a,
-                            const std::array<double, 3>& b) {
+  static double AngleRadian(const Double3& a,
+                            const Double3& b) {
     return std::acos(Math::Dot(a, b) / (Math::Norm(a) * Math::Norm(b)));
   }
 
@@ -198,8 +199,8 @@ struct Math {
   /// @param a
   /// @param b
   /// @return the projection of a onto b
-  static std::array<double, 3> ProjectionOnto(const std::array<double, 3>& a,
-                                              const std::array<double, 3>& b) {
+  static Double3 ProjectionOnto(const Double3& a,
+                                              const Double3& b) {
     double k = Math::Dot(a, b) / Math::Dot(b, b);
     return Math::ScalarMult(k, b);
   }

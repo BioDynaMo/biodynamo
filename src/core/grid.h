@@ -34,6 +34,7 @@
 
 #include <morton/morton.h>
 
+#include "core/container/math_array.h"
 #include "core/container/fixed_size_vector.h"
 #include "core/container/inline_vector.h"
 #include "core/container/parallel_resize_vector.h"
@@ -372,8 +373,8 @@ class Grid {
   /// @return     The distance between the two points
   ///
   inline double SquaredEuclideanDistance(
-      const std::array<double, 3>& pos1,
-      const std::array<double, 3>& pos2) const {
+      const Double3& pos1,
+      const Double3& pos2) const {
     const double dx = pos2[0] - pos1[0];
     const double dy = pos2[1] - pos1[1];
     const double dz = pos2[2] - pos1[2];
@@ -381,8 +382,8 @@ class Grid {
   }
 
   inline bool WithinSquaredEuclideanDistance(
-      double squared_radius, const std::array<double, 3>& pos1,
-      const std::array<double, 3>& pos2) const {
+      double squared_radius, const Double3& pos1,
+      const Double3& pos2) const {
     const double dx = pos2[0] - pos1[0];
     const double dx2 = dx * dx;
     if (dx2 > squared_radius) {
@@ -541,7 +542,7 @@ class Grid {
   ///
   /// @return     The box index.
   ///
-  size_t GetBoxIndex(const std::array<double, 3>& position) const {
+  size_t GetBoxIndex(const Double3& position) const {
     std::array<uint32_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;

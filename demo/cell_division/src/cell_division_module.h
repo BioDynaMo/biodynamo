@@ -33,7 +33,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // Define initial model - in this example: 3D grid of cells
   size_t cells_per_dim = 128;
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);

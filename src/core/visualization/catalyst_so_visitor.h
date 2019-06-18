@@ -44,7 +44,7 @@ class CatalystSoVisitor : public SoVisitor {
       Int(dm_name, data);
     } else if (type_hash_code == typeid(uint64_t).hash_code()) {
       Uint64T(dm_name, data);
-    } else if (type_hash_code == typeid(std::array<double, 3>).hash_code()) {
+    } else if (type_hash_code == typeid(Double3).hash_code()) {
       Double3(dm_name, data);
     } else if (type_hash_code == typeid(std::array<int, 3>).hash_code()) {
       Int3(dm_name, data);
@@ -61,7 +61,7 @@ class CatalystSoVisitor : public SoVisitor {
   }
 
   void Double3(const std::string& dm_name, const void* d) {
-    auto& data = *reinterpret_cast<const std::array<double, 3>*>(d);
+    auto& data = *reinterpret_cast<const Double3*>(d);
     auto* vtk_array = GetDouble3Array(dm_name);
     // TODO(lukas, ahmad) is there a better way?
     vtk_array->InsertNextTuple3(data[0], data[1], data[2]);

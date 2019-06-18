@@ -38,7 +38,7 @@ struct Chemotaxis : public BaseBiologyModule {
 
     if (auto* cell = dynamic_cast<Cell*>(so)) {
       const auto& position = so->GetPosition();
-      std::array<double, 3> gradient;
+      Double3 gradient;
       kDg->GetGradient(position, &gradient);
       gradient[0] *= 0.5;
       gradient[1] *= 0.5;

@@ -42,8 +42,8 @@ struct Chemotaxis : public BaseBiologyModule {
       }
 
       auto& position = cell->GetPosition();
-      std::array<double, 3> gradient;
-      std::array<double, 3> diff_gradient;
+      Double3 gradient;
+      Double3 diff_gradient;
 
       dg->GetGradient(position, &gradient);
       diff_gradient = Math::ScalarMult(5, gradient);

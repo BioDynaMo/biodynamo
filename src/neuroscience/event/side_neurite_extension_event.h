@@ -29,7 +29,7 @@ struct SideNeuriteExtensionEvent : public Event {
   static const EventId kEventId;
 
   SideNeuriteExtensionEvent(double length, double diameter,
-                            const std::array<double, 3> direction)
+                            const Double3 direction)
       : length_(length), diameter_(diameter), direction_(direction) {}
 
   virtual ~SideNeuriteExtensionEvent() {}
@@ -41,7 +41,7 @@ struct SideNeuriteExtensionEvent : public Event {
   /// diameter of the new branch
   double diameter_;
   /// direction of the new branch
-  std::array<double, 3> direction_;
+  Double3 direction_;
 };
 
 }  // namespace neuroscience

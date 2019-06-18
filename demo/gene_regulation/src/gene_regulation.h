@@ -55,7 +55,7 @@ inline int Simulate(int argc, const char** argv) {
       7);
 
   // Define initial model -- in this example just one cell.
-  auto construct = [&](const std::array<double, 3>& position) {
+  auto construct = [&](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
@@ -63,7 +63,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->AddBiologyModule(regulate_example.GetCopy());
     return cell;
   };
-  const std::vector<std::array<double, 3>>& positions = {{0, 0, 0}};
+  const std::vector<Double3>& positions = {{0, 0, 0}};
   ModelInitializer::CreateCells(positions, construct);
 
   // Run simulation

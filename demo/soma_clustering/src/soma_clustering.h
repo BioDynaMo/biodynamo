@@ -58,7 +58,7 @@ inline int Simulate(int argc, const char** argv) {
   simulation.GetRandom()->SetSeed(4357);
 
   // Construct num_cells/2 cells of type 1
-  auto construct_0 = [](const std::array<double, 3>& position) {
+  auto construct_0 = [](const Double3& position) {
     MyCell* cell = new MyCell(position);
     cell->SetDiameter(10);
     cell->SetCellType(1);
@@ -70,7 +70,7 @@ inline int Simulate(int argc, const char** argv) {
                                       num_cells / 2, construct_0);
 
   // Construct num_cells/2 cells of type -1
-  auto construct_1 = [](const std::array<double, 3>& position) {
+  auto construct_1 = [](const Double3& position) {
     MyCell* cell = new MyCell(position);
     cell->SetDiameter(10);
     cell->SetCellType(-1);

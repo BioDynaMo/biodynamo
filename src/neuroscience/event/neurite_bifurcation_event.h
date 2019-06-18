@@ -32,8 +32,8 @@ struct NeuriteBifurcationEvent : public Event {
   static const EventId kEventId;
 
   NeuriteBifurcationEvent(double length, double diameter_l, double diameter_r,
-                          const std::array<double, 3>& direction_l,
-                          const std::array<double, 3>& direction_r)
+                          const Double3& direction_l,
+                          const Double3& direction_r)
       : length_(length),
         diameter_left_(diameter_l),
         diameter_right_(diameter_r),
@@ -52,10 +52,10 @@ struct NeuriteBifurcationEvent : public Event {
   double diameter_right_;
   /// direction branch right
   /// NB: direction will be corrected if it is pointing backward.
-  std::array<double, 3> direction_left_;
+  Double3 direction_left_;
   /// direction branch left
   /// NB: direction will be corrected if it is pointing backward.
-  std::array<double, 3> direction_right_;
+  Double3 direction_right_;
 };
 
 }  // namespace neuroscience
