@@ -588,7 +588,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               break;
 
             case M_FILE_SAVEAS:
-              Log::Info("Clicked save as!");
+              Log::Debug("Clicked save as!");
               break;
 
             case M_FILE_EXIT:
@@ -600,15 +600,37 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               break;
 
             case M_ENTITY_CELL:
+              Log::Debug("Clicked cell!");
               CreateNewCell();
               break;
 
             case M_MODULE_GROWTH:
+              Log::Debug("Clicked growth module!");
               CreateNewGrowthModule();
               break;
 
+            case M_MODULE_CHEMOTAXIS:
+              Log::Debug("Clicked chemotaxis module!");
+              break;
+
+            case M_MODULE_SUBSTANCE:
+              Log::Debug("Clicked substance secretion module!");
+              break;
+
+            case M_GENERAL_VARIABLE:
+              Log::Debug("Clicked general variable!");
+              break;
+
+            case M_GENERAL_FUNCTION:
+              Log::Debug("Clicked general function!");
+              break;
+
+            case M_GENERAL_FORMULA:
+              Log::Debug("Clicked general formula!");
+              break;
+            
             case M_FILE_SAVE:
-              Log::Info("Clicked save!");
+              Log::Debug("Clicked save!");
               break;
 
             case M_TOOLS_STARTBROWSER:

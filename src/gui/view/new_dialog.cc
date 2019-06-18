@@ -130,22 +130,22 @@ NewProjectDialog::NewProjectDialog(const TGWindow *p, const TGWindow *main,
 /// Delete new project dialog widgets.
 
 NewProjectDialog::~NewProjectDialog() {
-  delete fCreateButton;
-  delete fCancelButton;
-  delete fHelpButton;
-  delete fPictButton;
-  delete fLerror;
-  delete fTxt1;
-  delete fTxt2;
-  delete fFrame1;
-  delete fFrame2;
-  delete fFrame3;
-  delete fV1;
-  delete fTab;
-  delete fL4;
-  delete fL3;
-  delete fL2;
-  delete fL1;
+  delete fCreateButton; Log::Debug("Deleting 1");
+  delete fCancelButton; Log::Debug("Deleting 2");
+  delete fHelpButton;   Log::Debug("Deleting 3");
+  delete fPictButton;   Log::Debug("Deleting 4");
+  delete fLerror;       Log::Debug("Deleting 5");
+  delete fTxt1;         Log::Debug("Deleting 6");
+  delete fTxt2;         Log::Debug("Deleting 7");
+  delete fFrame1;       Log::Debug("Deleting 8");
+  delete fFrame2;       Log::Debug("Deleting 9");
+  delete fFrame3;       Log::Debug("Deleting 10");
+  delete fV1;           Log::Debug("Deleting 11");
+  delete fTab;          Log::Debug("Deleting 12");
+  delete fL4;           Log::Debug("Deleting 13");
+  delete fL3;           Log::Debug("Deleting 14");
+  delete fL2;           Log::Debug("Deleting 15");
+  delete fL1;           Log::Debug("Deleting 16");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -175,9 +175,7 @@ void NewProjectDialog::OnOpen() {
   fInfo.fIniDir = StrDup(dir);
   const char *projectName = fTxt1->GetText();
   if (projectName) {
-    fInfo.fFilename = new char[1000];
-    // Will deallocate when fInfo goes out of scope
-    strcpy(fInfo.fFilename, projectName);
+    fInfo.fFilename = StrDup(projectName);
   } else {
     // TODO: ERROR
   }
@@ -198,14 +196,11 @@ void NewProjectDialog::OnOpen() {
     fTxt2->Clear();
     fTxt2->AppendText(fInfo.fFilename);
 
-    printf("1");
-
     char *ptr = strrchr(fInfo.fFilename, '/') + 1;
-    printf("2");
     ptr[strlen(ptr) - strlen(".root")] = '\0';
+
     fTxt1->Clear();
     fTxt1->AppendText(ptr);
-    printf("3");
   }
 }
 

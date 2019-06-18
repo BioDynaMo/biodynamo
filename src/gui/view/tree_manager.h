@@ -71,7 +71,6 @@ class TreeManager {
     }
   }
   ~TreeManager() = default;
-  // ModelCreator    *gModelCreator;
 
   const TGPicture* GetIcon(std::string iconName) {
     std::unordered_map<std::string, const TGPicture*>::const_iterator got =
@@ -79,7 +78,7 @@ class TreeManager {
     if (got != fIconMap.end()) {
       return got->second;
     }
-    return 0;  // Intentionally a zero
+    return 0;  // Intentionally zero
   }
 
   const char* CreateTopLevelElement(int type) {
@@ -94,6 +93,7 @@ class TreeManager {
     }
     elementName.append("_0");
     Bool_t isNameValid = kFALSE;
+    Int_t i;
     while (!isNameValid) {
       std::size_t found = elementName.find_last_of("_");
       if (found == std::string::npos) {
@@ -107,7 +107,6 @@ class TreeManager {
       Log::Debug("to:", elementName);
       isNameValid = IsElementNameAvailable(elementName.c_str());
     }
-    Int_t i;
     if((i = GetModelIndex(fCurModelName.c_str())) > -1) {
       fCurListItem = fModelTrees[i].fElementsBaseItem;
       TGListTreeItem* LTItem = fProjectListTree->AddItem(fCurListItem, elementName.c_str(), pic, pic);

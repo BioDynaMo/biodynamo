@@ -96,9 +96,16 @@ class Project {
   /// saving a single model. Default "" will save all models
   /// @return None
   void SaveProject() {
-    bdm::WritePersistentObject(fProjectPath.c_str(), "ProjectObject",
+    Log::Info("Attempting to save project");
+    try {
+      Log::Info("Saving project ...");
+      bdm::WritePersistentObject(fProjectPath.c_str(), "ProjectObject",
                                fProjectObject, "recreate");
-    Log::Info("Saving project ...");
+      Log::Info("Successfully saved!");
+    } catch (...) {
+      Log::Error("Couldn't save project!");
+    }
+    
   }
 
   /// Saves Project under a different name. Copies over models from original
