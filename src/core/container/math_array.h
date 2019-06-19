@@ -22,6 +22,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include "core/util/root.h"
+
 namespace bdm {
 
 /// Array with a fixed number of elements. It implements the same behaviour
@@ -270,6 +272,7 @@ class MathArray {  // NOLINT
 
  private:
   T data_[N];
+  BDM_TEMPLATE_CLASS_DEF(MathArray, 1);  // NOLINT
 };
 
 using Double3 = MathArray<double, 3>;
