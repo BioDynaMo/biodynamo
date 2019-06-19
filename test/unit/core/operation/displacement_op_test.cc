@@ -44,7 +44,7 @@ TEST(DisplacementOpTest, ComputeNew) {
   grid->Initialize();
 
   // execute operation
-  DisplacementOp op;
+  Operation op("displacement", DisplacementOp());
   auto* ctxt = simulation.GetExecutionContext();
   for (uint64_t i = 0; i < 27; i++) {
     ctxt->Execute(rm->GetSimObject(ref_uid + i), {op});

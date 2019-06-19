@@ -17,8 +17,10 @@
 
 #include <chrono>
 #include <functional>
+#include <set>
 #include <string>
 #include <vector>
+#include "core/operation/operation.h"
 
 namespace bdm {
 
@@ -42,6 +44,19 @@ class Scheduler {
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
+  void AddOperation(const Operation& operation);
+
+  /// Remove an operation. However, some operations are protected and cannot
+  /// be removed. \see protected_operations_
+  /// A request to remove a proteced operation is ignored.
+  void RemoveOperation(const std::string& op_name);
+
+  /// Returns a reference to an operation. However, some operations are
+  /// protected and will not be returned. \see protected_operations_
+  /// If the operation does not exist or is protected, a nullptr will be
+  /// returned.
+  Operation* GetOperation(const std::string& op_name);
+
  protected:
   uint64_t total_steps_ = 0;
 
@@ -60,7 +75,8 @@ class Scheduler {
   DisplacementOp* displacement_;
   DiffusionOp* diffusion_;
 
-  std::vector<std::function<void(SimObject*)>> operations_;
+  std::vector<Operation> operations_;  //!
+  std::set<std::string> protected_operations_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup();

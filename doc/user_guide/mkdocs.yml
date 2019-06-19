@@ -60,6 +60,7 @@ pages:
       - Parameter: parameter.md
       - Event: event.md
       - MathArray: math_array.md
+      - Operation: operation.md
       - Substance Initialization: substance_initializers.md
       - GPU Acceleration: gpu_acceleration.md
     - Troubleshooting:

@@ -16,6 +16,7 @@
     <class pattern="*_Test" />
     <class name="__gnu_cxx::__normal_iterator<double*,vector<double> >"/>
     <class name="__gnu_cxx::__normal_iterator<const double*,vector<double> >"/>
+    <class name="std::function<void(bdm::SimObject*)>"/>
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
      <class name="bdm::experimental::neuroscience::NeuronSoma" />
@@ -42,6 +43,7 @@
       <class name="bdm::MathArray<double, 3>" />
       <class name="bdm::MathArray<double, 4>" />
      <!-- list of biodynamo classes that should be ignored  -->
+     <class name="bdm::Operation" />
      <class name="bdm::SoVisitor" />
      <class name="bdm::Grid" />
      <class name="bdm::Grid::NeighborMutexBuilder::MutexWrapper" />
