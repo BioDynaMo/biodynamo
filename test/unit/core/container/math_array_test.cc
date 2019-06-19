@@ -12,8 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/container/math_array.h"
 #include "gtest/gtest.h"
+
+#include "core/container/math_array.h"
+#include "unit/test_util/io_test.h"
 
 namespace bdm {
 
@@ -101,4 +103,21 @@ TEST(MathArray, complex_operations) {
   ASSERT_EQ(c.EntryWiseProduct(c), entrywise_result);
 
 }
+
+#ifdef USE_DICT
+TEST_F(IOTest, MathArray) {
+
+    MathArray<double, 4> test {0.5, -1, 10, 500};
+    MathArray<double, 4> * restored = nullptr;
+
+    BackupAndRestore(test, &restored);
+    for (size_t i = 0; i < 4; ++i) {
+      ASSERT_EQ(test[i], (*restored)[i]);
+    }
+
+    delete restored;
+
+  }
+#endif  // USE_DICT
+
 }  // namespace bdm
