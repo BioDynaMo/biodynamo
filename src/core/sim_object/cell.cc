@@ -16,9 +16,9 @@
 
 namespace bdm {
 
-constexpr Double3 Cell::kXAxis;
-constexpr Double3 Cell::kYAxis;
-constexpr Double3 Cell::kZAxis;
+const Double3 Cell::kXAxis = {1.0, 0.0, 0.0};
+const Double3 Cell::kYAxis = {0.0, 1.0, 0.0};
+const Double3 Cell::kZAxis = {0.0, 0.0, 1.0};
 
 void Cell::ApplyDisplacement(const Double3& displacement) {
   if (displacement[0] == 0 && displacement[1] == 0 && displacement[2] == 0) {

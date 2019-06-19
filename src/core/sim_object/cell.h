@@ -42,11 +42,11 @@ class Cell : public SimObject {
 
  public:
   /// First axis of the local coordinate system.
-  static constexpr Double3 kXAxis = {1.0, 0.0, 0.0};
+  static const Double3 kXAxis;
   /// Second axis of the local coordinate system.
-  static constexpr Double3 kYAxis = {0.0, 1.0, 0.0};
+  static const Double3 kYAxis;
   /// Third axis of the local coordinate system.
-  static constexpr Double3 kZAxis = {0.0, 0.0, 1.0};
+  static const Double3 kZAxis;
 
   Cell() : density_(1.0) {}
   explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
