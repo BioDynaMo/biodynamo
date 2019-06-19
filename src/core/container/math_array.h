@@ -306,7 +306,7 @@ class MathArray {  // NOLINT
 
  private:
   T data_[N];
-  BDM_TEMPLATE_CLASS_DEF(MathArray, 1);  // NOLINT
+BDM_CLASS_DEF_NV(MathArray, 1);  // NOLINT
 };
 
 using Double3 = MathArray<double, 3>;
