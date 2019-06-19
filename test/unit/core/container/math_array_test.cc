@@ -81,9 +81,11 @@ TEST(MathArray, math_operators) {
 TEST(MathArray, complex_operations) {
   MathArray<double, 4> a;
   MathArray<double, 4> b{0, 0, 0, 0};
+  MathArray<double, 4> c{1,2,3,4};
 
   MathArray<double, 4> fill_result{1, 1, 1, 1};
   MathArray<double, 4> normalize_result{0.5, 0.5, 0.5, 0.5};
+  MathArray<double, 4> entrywise_result{1,4,9,16};
 
   a.fill(1);
   ASSERT_EQ(a, fill_result);
@@ -95,5 +97,8 @@ TEST(MathArray, complex_operations) {
   ASSERT_EQ(a.Normalize(), normalize_result);
 
   ASSERT_EQ(b.Norm(), 1);
+
+  ASSERT_EQ(c.EntryWiseProduct(c), entrywise_result);
+
 }
 }  // namespace bdm

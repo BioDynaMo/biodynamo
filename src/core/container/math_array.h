@@ -44,7 +44,6 @@ class MathArray {  // NOLINT
       data_[i] = *(l.begin() + i);
     }
   }
-
   inline const T* data() const { return &data_[0]; }  // NOLINT
 
   inline const size_t size() const { return N; }  // NOLINT
@@ -268,6 +267,17 @@ class MathArray {  // NOLINT
       data_[i] /= norm;
     }
     return *this;
+  }
+
+  MathArray EntryWiseProduct(const MathArray& rhs)
+  {
+    assert(rhs.size() == N);
+    MathArray tmp(*this);
+#pragma omp simd
+    for (size_t i = 0; i < N; ++i) {
+      tmp[i] *= rhs[i];
+    }
+    return tmp;
   }
 
  private:
