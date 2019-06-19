@@ -81,6 +81,8 @@ struct GrowthModule : public BaseBiologyModule {
     if (auto* cell = dynamic_cast<MyCell*>(so)) {
       if (cell->GetDiameter() < 8) {
         auto* random = Simulation::GetActive()->GetRandom();
+       // Here 400 is the speed and the change to the volume is based on the simulation time step.
+      // The default here is 0.01Hrs for timestep, not 1s. 
         cell->ChangeVolume(400);
 
         // create an array of 3 random numbers between -2 and 2
