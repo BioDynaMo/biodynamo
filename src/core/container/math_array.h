@@ -293,8 +293,7 @@ class MathArray {  // NOLINT
     return *this;
   }
 
-  MathArray EntryWiseProduct(const MathArray& rhs)
-  {
+  MathArray EntryWiseProduct(const MathArray& rhs) {
     assert(rhs.size() == N);
     MathArray tmp(*this);
 #pragma omp simd
@@ -306,7 +305,7 @@ class MathArray {  // NOLINT
 
  private:
   T data_[N];
-BDM_CLASS_DEF_NV(MathArray, 1);  // NOLINT
+  BDM_CLASS_DEF_NV(MathArray, 1);  // NOLINT
 };
 
 using Double3 = MathArray<double, 3>;

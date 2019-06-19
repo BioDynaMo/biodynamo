@@ -83,11 +83,11 @@ TEST(MathArray, math_operators) {
 TEST(MathArray, complex_operations) {
   MathArray<double, 4> a;
   MathArray<double, 4> b{0, 0, 0, 0};
-  MathArray<double, 4> c{1,2,3,4};
+  MathArray<double, 4> c{1, 2, 3, 4};
 
   MathArray<double, 4> fill_result{1, 1, 1, 1};
   MathArray<double, 4> normalize_result{0.5, 0.5, 0.5, 0.5};
-  MathArray<double, 4> entrywise_result{1,4,9,16};
+  MathArray<double, 4> entrywise_result{1, 4, 9, 16};
 
   a.fill(1);
   ASSERT_EQ(a, fill_result);
@@ -101,23 +101,20 @@ TEST(MathArray, complex_operations) {
   ASSERT_EQ(b.Norm(), 1);
 
   ASSERT_EQ(c.EntryWiseProduct(c), entrywise_result);
-
 }
 
 #ifdef USE_DICT
 TEST_F(IOTest, MathArray) {
+  MathArray<double, 4> test{0.5, -1, 10, 500};
+  MathArray<double, 4>* restored = nullptr;
 
-    MathArray<double, 4> test {0.5, -1, 10, 500};
-    MathArray<double, 4> * restored = nullptr;
-
-    BackupAndRestore(test, &restored);
-    for (size_t i = 0; i < 4; ++i) {
-      ASSERT_EQ(test[i], (*restored)[i]);
-    }
-
-    delete restored;
-
+  BackupAndRestore(test, &restored);
+  for (size_t i = 0; i < 4; ++i) {
+    ASSERT_EQ(test[i], (*restored)[i]);
   }
+
+  delete restored;
+}
 #endif  // USE_DICT
 
 }  // namespace bdm

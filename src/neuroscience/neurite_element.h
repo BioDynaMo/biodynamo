@@ -708,11 +708,11 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
         force_from_neighbors[1] += force_from_neighbor[1] * part_for_point_mass;
         force_from_neighbors[2] += force_from_neighbor[2] * part_for_point_mass;
         force_on_my_mothers_point_mass[0] +=
-        force_from_neighbor[0] * force_from_neighbor[3];
+            force_from_neighbor[0] * force_from_neighbor[3];
         force_on_my_mothers_point_mass[1] +=
-        force_from_neighbor[1] * force_from_neighbor[3];
+            force_from_neighbor[1] * force_from_neighbor[3];
         force_on_my_mothers_point_mass[2] +=
-        force_from_neighbor[2] * force_from_neighbor[3];
+            force_from_neighbor[2] * force_from_neighbor[3];
       }
     };
 
@@ -854,8 +854,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param position in global coordinates
   Double3 TransformCoordinatesGlobalToLocal(const Double3& position) const {
-    auto pos = position-ProximalEnd();
-    return {pos*x_axis_, pos*y_axis_, pos*z_axis_};
+    auto pos = position - ProximalEnd();
+    return {pos * x_axis_, pos * y_axis_, pos * z_axis_};
   }
 
   /// L -> G
@@ -864,14 +864,14 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
   /// @param position in local coordinates
   Double3 TransformCoordinatesLocalToGlobal(const Double3& position) const {
-    Double3 axis_0 {x_axis_[0], y_axis_[0], z_axis_[0]};
-    Double3 axis_1 {x_axis_[1], y_axis_[1], z_axis_[1]};
-    Double3 axis_2 {x_axis_[2], y_axis_[2], z_axis_[2]};
-    auto x = position*axis_0;
-    auto y = position*axis_1;
-    auto z = position*axis_2;
-    Double3 glob {x,y,z};
-    return glob+ProximalEnd();
+    Double3 axis_0{x_axis_[0], y_axis_[0], z_axis_[0]};
+    Double3 axis_1{x_axis_[1], y_axis_[1], z_axis_[1]};
+    Double3 axis_2{x_axis_[2], y_axis_[2], z_axis_[2]};
+    auto x = position * axis_0;
+    auto y = position * axis_1;
+    auto z = position * axis_2;
+    Double3 glob{x, y, z};
+    return glob + ProximalEnd();
   }
 
   ///  L -> P
