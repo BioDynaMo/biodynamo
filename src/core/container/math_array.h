@@ -27,7 +27,7 @@
 namespace bdm {
 
 /// Array with a fixed number of elements. It implements the same behaviour
-/// of the standard `MathArray<T, N>` container. However, it provides also
+/// of the standard `std::array<T, N>` container. However, it provides also
 /// several custom mathematical operations (e.g. Sum(), Norm() etc.).
 template <class T, std::size_t N>
 class MathArray {  // NOLINT
@@ -186,6 +186,13 @@ class MathArray {  // NOLINT
     return tmp;
   }
 
+  const MathArray operator-(const MathArray& rhs) const {
+    assert(size() == rhs.size());
+    MathArray tmp(*this);
+    tmp -= rhs;
+    return tmp;
+  }
+
   MathArray& operator-=(const T& rhs) {
 <<<<<<< 6837a39e5c87804b07387cdfc9428d16b9c05242
     assert(size() == rhs.size());
@@ -211,6 +218,16 @@ class MathArray {  // NOLINT
   T& operator*=(const MathArray& rhs) = delete;
 
   T operator*(const MathArray& rhs) {
+    assert(size() == rhs.size());
+    T result = 0;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      result += data_[i] * rhs[i];
+    }
+    return result;
+  }
+
+  const T operator*(const MathArray& rhs) const {
     assert(size() == rhs.size());
     T result = 0;
 #pragma omp simd

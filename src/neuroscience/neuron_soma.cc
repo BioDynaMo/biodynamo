@@ -107,8 +107,12 @@ Double3 NeuronSoma::OriginOf(SoUid daughter_uid) const {
   double radius = Base::diameter_ * .5;
   xyz = xyz*radius;
 
-  Double3 tmp = {(xyz*Base::kXAxis[0]).Sum(), (xyz*Base::kXAxis[1]).Sum(),(xyz*Base::kXAxis[2]).Sum()};
-  return Base::position_+tmp;
+  Double3 axis_0 = {Base::kXAxis[0], Base::kYAxis[0], Base::kZAxis[0]};
+  Double3 axis_1 = {Base::kXAxis[1], Base::kYAxis[1], Base::kZAxis[1]};
+  Double3 axis_2 = {Base::kXAxis[2], Base::kYAxis[2], Base::kZAxis[2]};
+
+  Double3 result = {xyz*axis_0, xyz*axis_1, xyz*axis_2};
+  return Base::position_+result;
 }
 
 void NeuronSoma::UpdateDependentPhysicalVariables() {}
