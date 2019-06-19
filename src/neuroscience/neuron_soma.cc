@@ -70,7 +70,7 @@ void NeuronSoma::EventHandler(const Event& event, SimObject* other1,
 
 NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
                                              NeuriteElement* prototype) {
-  auto dir = Math::Add(direction, Base::position_);
+  auto dir = direction+Base::position_;
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
   auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
   return ExtendNewNeurite(param->neurite_default_diameter_, angles[2],
@@ -105,16 +105,10 @@ Double3 NeuronSoma::OriginOf(SoUid daughter_uid) const {
   Double3 xyz = daughters_coord_.at(daughter_uid);
 
   double radius = Base::diameter_ * .5;
-  xyz = Math::ScalarMult(radius, xyz);
+  xyz = xyz*radius;
 
-  const auto& pos = Base::position_;
-
-  return {pos[0] + xyz[0] * Base::kXAxis[0] + xyz[1] * Base::kYAxis[0] +
-              xyz[2] * Base::kZAxis[0],
-          pos[1] + xyz[0] * Base::kXAxis[1] + xyz[1] * Base::kYAxis[1] +
-              xyz[2] * Base::kZAxis[1],
-          pos[2] + xyz[0] * Base::kXAxis[2] + xyz[1] * Base::kYAxis[2] +
-              xyz[2] * Base::kZAxis[2]};
+  Double3 tmp = {(xyz*Base::kXAxis[0]).Sum(), (xyz*Base::kXAxis[1]).Sum(),(xyz*Base::kXAxis[2]).Sum()};
+  return Base::position_+tmp;
 }
 
 void NeuronSoma::UpdateDependentPhysicalVariables() {}

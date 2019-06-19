@@ -141,6 +141,13 @@ class MathArray {  // NOLINT
     return tmp;
   }
 
+  const MathArray operator+(const MathArray& rhs) const {
+    assert(size() == rhs.size());
+    MathArray tmp(*this);
+    tmp += rhs;
+    return tmp;
+  }
+
   MathArray& operator+=(const T& rhs) {
 <<<<<<< 6837a39e5c87804b07387cdfc9428d16b9c05242
     assert(N == rhs.size());
