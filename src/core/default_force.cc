@@ -131,11 +131,8 @@ void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
     // vector_y = rc * (axis[1]/actual_length)
     // vector_z = rc * (axis[2]/actual_length)
     double rc = 0.5 * d;
-    Double3 dvec = {rc * (axis[0] / actual_length),
-                    rc * (axis[1] / actual_length),
-                    rc * (axis[2] / actual_length)};  // displacement vector
-    Double3 npd = {distal_end[0] - dvec[0], distal_end[1] - dvec[1],
-                   distal_end[2] - dvec[2]};  // new sphere center
+    Double3 dvec = (axis/actual_length)*rc; // displacement vector
+    Double3 npd = distal_end-dvec; // new sphere center
     *result = ComputeForceOfASphereOnASphere(npd, rc, c, r);
     return;
   }
@@ -158,14 +155,10 @@ void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
   //    projection of proximal_end_closest onto axis =
   //    (proximal_end_closest.axis)/norm(axis)^2  * axis
   //    length of the projection = (proximal_end_closest.axis)/norm(axis)
-
-  double proximal_end_closest_axis = proximal_end_closest[0] * axis[0] +
-                                     proximal_end_closest[1] * axis[1] +
-                                     proximal_end_closest[2] * axis[2];
+  double proximal_end_closest_axis = proximal_end_closest.EntryWiseProduct(axis).Sum();
   double k = proximal_end_closest_axis / (actual_length * actual_length);
   //    cc = proximal_end + k* axis
-  Double3 cc{proximal_end[0] + k * axis[0], proximal_end[1] + k * axis[1],
-             proximal_end[2] + k * axis[2]};
+  Double3 cc = proximal_end + (axis*k);
 
   // 2) Look if c -and hence cc- is (a) between proximal_end and distal_end,
   // (b) before proximal_end or
