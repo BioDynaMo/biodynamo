@@ -27,7 +27,7 @@
 #include <unordered_map>
 
 #include "gui/controller/project.h"
-#include "log.h"
+#include "gui/view/log.h"
 
 namespace gui {
 
@@ -40,7 +40,7 @@ struct ModelTree {
   std::vector<std::string> fModelElementNames;
 };
 
-TGListTreeItem* gProjectListTreeItem;  // base TGListTree item
+
 
 class TreeManager {
  public:
@@ -193,6 +193,7 @@ class TreeManager {
   }
 
   std::string GetCurrentSelectedModelName() { return fCurModelName; }
+  TGListTreeItem* gProjectListTreeItem;  // base TGListTree item
 
  private:
   Bool_t IsElementNameAvailable(const char* elementName) {

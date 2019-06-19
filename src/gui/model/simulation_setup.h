@@ -19,11 +19,15 @@
 #ifndef GUI_SIMULATION_SETUP_H_
 #define GUI_SIMULATION_SETUP_H_
 
-class SimulationSetup : public TObject {
+namespace gui {
+
+class SimulationSetup {
  public:
   // list of elements
   // list of actions
 };
+
+}  // namespace gui
 
 
 #endif // GUI_SIMULATION_SETUP_H_

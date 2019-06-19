@@ -17,11 +17,15 @@
 #ifndef GUI_GLOBAL_VARIABLE_H_
 #define GUI_GLOBAL_VARIABLE_H
 
-#include "model_element.h"
+#include "gui/model/model_element.h"
+
+namespace gui {
 
 class GlobalVariable : public ModelElement {
 
 };
+
+} // namespace gui
 
 
 #endif // GUI_GLOBAL_VARIABLE_H_

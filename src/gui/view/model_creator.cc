@@ -66,18 +66,18 @@
 #include <TPluginManager.h>
 #include <TVirtualGL.h>
 
-#include "about.h"
-#include "button_model.h"
-#include "button_project.h"
+#include "gui/view/about.h"
+#include "gui/view/button_model.h"
+#include "gui/view/button_project.h"
 #include "gui/constants.h"
 #include "gui/controller/project.h"
-#include "help_text.h"
-#include "log.h"
-#include "model_creator.h"
-#include "model_frame.h"
-#include "new_dialog.h"
-#include "title.h"
-#include "tree_manager.h"
+#include "gui/view/help_text.h"
+#include "gui/view/log.h"
+#include "gui/view/model_creator.h"
+#include "gui/view/model_frame.h"
+#include "gui/view/new_dialog.h"
+#include "gui/view/title.h"
+#include "gui/view/tree_manager.h"
 
 namespace gui {
 

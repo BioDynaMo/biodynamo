@@ -1,6 +1,7 @@
 <lcgdict>
   <selection>
     <class pattern="bdm::*" />
+    <class pattern="gui::*" />
     <class pattern="std::vector<bdm::*<*>>" />
     <class name="vector<bdm::InlineVector<int,8>>" />
   </selection>

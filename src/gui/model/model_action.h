@@ -17,12 +17,16 @@
 #ifndef GUI_MODEL_ACTION_H_
 #define GUI_MODEL_ACTION_H_
 
-#include "model_element.h"
+#include "gui/model/model_element.h"
+
+namespace gui {
 
 class ModelAction : public ModelElement {
     // will need to be abstract
      // input
      // outputs
 };
+
+} // namespace gui
 
 #endif // GUI_MODEL_ACTION_H_

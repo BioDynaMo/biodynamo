@@ -23,11 +23,13 @@
 #include "gui/constants.h"
 #include "gui/view/log.h"
 
+namespace gui {
+
 /// This is the one and only object written into the main project file.
 /// (See `Project.h`)
-class ProjectObject : public TObject {
+class ProjectObject{
  public:
-  ProjectObject() {}
+  ProjectObject() {};
   ~ProjectObject() = default;
   void PrintSettings();
 
@@ -56,5 +58,7 @@ class ProjectObject : public TObject {
   std::string fTestSetting;
   std::string fVersion;
 };
+
+} // namespace gui
 
 #endif  // GUI_PROJECT_OBJECT_H_

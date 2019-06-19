@@ -21,10 +21,69 @@
 #include <TGMsgBox.h>
 #include <TRootHelpDialog.h>
 
+#include <KeySymbols.h>
+#include <TEnv.h>
+#include <TROOT.h>
+#include <TRint.h>
+#include <TStyle.h>
+#include <TVirtualX.h>
+
+#include <RQ_OBJECT.h>
+#include <TApplication.h>
+#include <TClass.h>
+#include <TEnv.h>
+#include <TFile.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TSystemDirectory.h>
+#include <TVirtualX.h>
+#include "TObject.h"
+
+#include <TBrowser.h>
+#include <TCanvas.h>
+#include <TColor.h>
+#include <TContextMenu.h>
+#include <TG3DLine.h>
+#include <TGButton.h>
+#include <TGFileDialog.h>
+#include <TGListTree.h>
+#include <TGMenu.h>
+#include <TGSplitter.h>
+#include <TGStatusBar.h>
+#include <TGTab.h>
+#include <TGTextEdit.h>
+#include <TGToolBar.h>
+#include <TGToolTip.h>
+#include <TGeoManager.h>
+#include <THtml.h>
+#include <TParticle.h>
+#include <TRandom.h>
+#include <TRootEmbeddedCanvas.h>
+#include <TRootHelpDialog.h>
+#include <TSystem.h>
+#include <TView.h>
+
+#include <TPluginManager.h>
+#include <TVirtualGL.h>
+
 #include "core/util/io.h"
+#include "core/util/root.h"
 #include "log.h"
 #include "model_creator.h"
 #include "new_dialog.h"
+#include "biodynamo.h"
+
+namespace bdm {
+
+/// testing
+inline void* GetCell() {
+  const std::array<double, 3> position = {1, 2, 3};
+  Cell *c1 = new Cell(position);
+  return nullptr;
+}
+
+}
+  
 
 namespace gui {
 
@@ -37,6 +96,16 @@ enum ProjectSettingsTypes { Id1, Id2 };
 NewProjectDialog::NewProjectDialog(const TGWindow *p, const TGWindow *main,
                                    UInt_t w, UInt_t h, UInt_t options)
     : TGTransientFrame(p, main, w, h, options) {
+
+  Log::Info("Testing getting cell members");
+
+
+
+  //void *ptr = bdm::GetCell();
+
+  
+  Log::Info("First cell member is: ");
+
   UInt_t wh = (UInt_t)(h - (0.6 * h));
 
   fFrame1 = new TGHorizontalFrame(this, w, wh, 0);

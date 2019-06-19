@@ -45,7 +45,7 @@
 #include "core/util/io.h"
 #include "gui/model/model.h"
 #include "gui/view/log.h"
-#include "project_object.h"
+#include "gui/controller/project_object.h"
 
 namespace gui {
 
@@ -126,7 +126,7 @@ class Project {
       Log::Warning("Cannot create model with the same name!");
     } else {
       Model* tmp = new Model(name);
-      fModels->Add(tmp);
+      //fModels->Add(tmp);
     }
   }
 

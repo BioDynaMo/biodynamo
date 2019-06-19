@@ -14,11 +14,11 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "project_object.h"
+#include "gui/controller/project_object.h"
 
-ClassImp(ProjectObject);
+namespace gui {
 
-using namespace gui;
+//ClassImp(ProjectObject);
 
 void ProjectObject::PrintSettings() {
   Log::Info("Project Settings:");
@@ -55,3 +55,4 @@ void ProjectObject::SetProjectName(const char* name) {
   fProjectName.assign(name);
 }
 
+} // namespace gui

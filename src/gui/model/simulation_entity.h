@@ -17,11 +17,14 @@
 #ifndef GUI_SIMULATION_ENTITY_H_
 #define GUI_SIMULATION_ENTITY_H_
 
-#include "model_element.h"
+#include "gui/model/model_element.h"
+
+namespace gui {
 
 class SimulationEntity : public ModelElement {
     // will represent `simulation objects`
 };
 
+}  // namespace gui
 
 #endif 

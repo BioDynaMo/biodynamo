@@ -32,9 +32,11 @@
 #include <TVirtualX.h>
 #include "TObject.h"
 #include "TString.h"
-#include "model.h"
+#include "gui/model/model.h"
 
-class ModelElement : public TObject {
+namespace gui {
+
+class ModelElement {
  public:
   ModelElement(ModelElement* parent, std::string& name, Model modelRef) {}
 
@@ -60,5 +62,7 @@ class ModelElement : public TObject {
   Model              *gModel;
   TList              *fChildren;  
 };
+
+} // namespace gui
 
 #endif  // GUI_MODEL_ELEMENT_H_

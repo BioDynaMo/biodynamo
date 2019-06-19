@@ -66,9 +66,7 @@ function(bdm_generate_dictionary TARGET)
     file(GLOB files ${fp})
     if(files)
       foreach(f ${files})
-        if (NOT ${f} MATCHES ".+(biodynamo[/\\]src[/\\]gui[/\\]).")
-          set(headerfiles ${headerfiles} ${f})
-        endif()
+        set(headerfiles ${headerfiles} ${f})
       endforeach()
     else()
       set(headerfiles ${headerfiles} ${fp})
@@ -141,10 +139,8 @@ endfunction(bdm_generate_dictionary)
 #        can also be a target name of a library
 function(bdm_add_executable TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
-
   if(dict)
     add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
-
     # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict.cc")
     bdm_generate_dictionary(${TARGET}-dict
@@ -152,7 +148,6 @@ function(bdm_add_executable TARGET)
       HEADERS ${ARG_HEADERS}
       SELECTION ${BDM_CMAKE_DIR}/selection.xml
       DEPENDS ${TARGET}-objectlib)
-
     # generate executable
     add_executable(${TARGET} $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
     add_dependencies(${TARGET} ${TARGET}-dict)

@@ -17,11 +17,15 @@
 #ifndef GUI_FORMULA_H_
 #define GUI_FORMULA_H_
 
-#include "model_action.h"
+#include "gui/model/model_action.h"
+
+namespace gui {
 
 class Formula : public ModelAction {
   // dimensions
   // which type of function
 };
+
+} // namespace gui
 
 #endif // GUI_FORMULA_H_

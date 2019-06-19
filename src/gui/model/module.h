@@ -17,9 +17,15 @@
 #ifndef GUI_MODULE_H_
 #define GUI_MODULE_H_
 
+#include "gui/model/model_element.h"
+
+namespace gui {
+
 class Module : public ModelElement {
  // base class
  // model actions (list of ModelAction)
 };
+
+} // namespace gui
 
 #endif // GUI_MODULE_H_

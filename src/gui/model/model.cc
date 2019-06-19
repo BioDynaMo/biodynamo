@@ -14,13 +14,15 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "model.h"
+#include "gui/model/model.h"
+#include <TROOT.h>
 #include "gui/constants.h"
 #include "gui/view/log.h"
-#include "model_element.h"
-#include "simulation_entity.h"
+#include "TList.h"
+#include "gui/model/model_element.h"
+#include "gui/model/simulation_entity.h"
 
-ClassImp(Model);
+namespace gui {
 
 void Model::CreateModel() {}
 
@@ -38,7 +40,7 @@ void Model::InitializeElement(ModelElement* parent, const char* name,
   }
 
   if (parent == nullptr) {
-    fModelElements->Add(elem);
+    //fModelElements->Add(elem);
   }
 }
 
@@ -77,3 +79,5 @@ std::string Model::GenerateCode() {
   std::string code("");
   return code;
 }
+
+} // namespace gui

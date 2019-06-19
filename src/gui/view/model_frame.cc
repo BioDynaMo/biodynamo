@@ -16,7 +16,7 @@
 
 #include "model_frame.h"
 #include <TGButton.h>
-#include "log.h"
+#include "gui/view/log.h"
 
 namespace gui {
 

@@ -17,10 +17,14 @@
 #ifndef GUI_BEHAVIOR_H_
 #define GUI_BEHAVIOR_H_
 
-#include "model_action.h"
+#include "gui/model/model_action.h"
+
+namespace gui {
 
 class Behaviour : public ModelAction {
   // behaviour logic TODO: possible create behaviour logic class?
 };
+
+} // namespace gui
 
 #endif // GUI_BEHAVIOR_H_

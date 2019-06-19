@@ -36,7 +36,7 @@
 #include <unordered_map> 
 
 #include "gui/constants.h"
-#include "model_tab.h"
+#include "gui/view/model_tab.h"
 
 namespace gui {
 

@@ -55,7 +55,6 @@ class TreeManager;
 class ModelFrame;
 
 extern TGListTree       *gProjectListTree;  // Project  TGListTree
-extern TGListTreeItem   *gProjectListTreeItem;          // First ListTree item
 extern TGListTreeItem   *gTmpLTI;           // Temporary ListTree item
 extern TGListTreeItem   *gLTI[];            // Array of ListTree items (Model elements)
 

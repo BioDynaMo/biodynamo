@@ -34,12 +34,14 @@
 
 enum SimulationState { kIDLE ,kSIMULATING, kDONE };
 
+namespace gui {
+
 class ModelElement;
 
-class Model : public TObject {
+class Model {
  public:
 
-  Model(const char* name) : TObject() { fModelName = name; }
+  Model(const char* name) {};
  ~Model() = default;
 
   const char*   fModelName;
@@ -61,5 +63,7 @@ class Model : public TObject {
 
   ClassDef(Model,1)
 };
+
+}  // namespace gui
 
 #endif // GUI_MODEL_H_
