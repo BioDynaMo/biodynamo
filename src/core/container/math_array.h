@@ -32,29 +32,53 @@ namespace bdm {
 template <class T, std::size_t N>
 class MathArray {  // NOLINT
  public:
+
+  /// Default constructor
   constexpr MathArray() : data_() {
-    /// std::fill will become constexpr with C++20
     for (size_t i = 0; i < N; i++) {
       data_[i] = 0;
     }
   }
+
+  /// Constructor which accepts an std::initiliazer_list to set
+  /// the array's content.
+  /// \param l an initializer list
   constexpr MathArray(std::initializer_list<T> l) : MathArray<T, N>() {
     assert(l.size() == N);
     for (size_t i = 0; i < N; i++) {
       data_[i] = *(l.begin() + i);
     }
   }
+
+  /// Return a pointer to the underlying data.
+  /// \return cont T pointer to the first entry of the array.
   inline const T* data() const { return &data_[0]; }  // NOLINT
 
+  /// Return the size of the array.
+  /// \return integer denoting the array's size.
   inline const size_t size() const { return N; }  // NOLINT
 
+  /// Check if the array is empty.
+  /// \return true if size() == 0, false otherwise.
   inline const bool empty() const { return N == 0; }  // NOLINT
 
+  /// Overloaded array subscript operator. It does not perform
+  /// any boundary checks.
+  /// \param idx element's index.
+  /// \return the requested element.
   T& operator[](size_t idx) { return data_[idx]; }
 
+  /// Const overloaded array subscript operator.
+  /// \param idx element's index.
+  /// \return the requested element.
   const T& operator[](size_t idx) const { return data_[idx]; }
 
-  T& at(size_t idx) {  // NOLINT
+  /// Returns the element at the given position. It will throw
+  /// an std::out_of_range exception if the given index is out
+  /// of the array's boundaries.
+  /// \param idx the index of the element.
+  /// \return the requested element.
+  T& at(size_t idx) noexcept(false) {  // NOLINT
     if (idx > size() || idx < 0) {
       throw std::out_of_range("The index is out of range");
     }
@@ -69,14 +93,21 @@ class MathArray {  // NOLINT
 
   T* end() { return &(data_[N]); }  // NOLINT
 
+  /// Returns the element at the beginning of the array.
+  /// \return first element.
   T& front() { return *(this->begin()); }  // NOLINT
 
+  /// Return the element at the end of the array.
+  /// \return last element.
   T& back() {  // NOLINT
     auto tmp = this->end();
     tmp--;
     return *tmp;
   }
 
+  /// Assignment operator.
+  /// \param other the other MathArray instance.
+  /// \return the current MathArray.
   MathArray& operator=(const MathArray& other) {
     if (this != &other) {
       assert(other.size() == N);
@@ -85,6 +116,9 @@ class MathArray {  // NOLINT
     return *this;
   }
 
+  /// Equality operator.
+  /// \param other a MathArray instance.
+  /// \return true if they have the same content, false otherwise.
   bool operator==(const MathArray& other) const {
     if (other.size() != N) {
       return false;
@@ -266,13 +300,20 @@ class MathArray {  // NOLINT
     return tmp;
   }
 
+  /// Fill the MathArray with a constant value.
+  /// \param k the constant value
+  /// \return the array
   MathArray& fill(const T& k) {  // NOLINT
     std::fill(std::begin(data_), std::end(data_), k);
     return *this;
   }
 
+  /// Return the sum of all the array's elements.
+  /// \return sum of the array's content.
   T Sum() const { return std::accumulate(begin(), end(), 0); }
 
+  /// Compute the norm of the array's content.
+  /// \return array's norm.
   T Norm() const {
     T result = 0;
 #pragma omp simd
@@ -284,6 +325,8 @@ class MathArray {  // NOLINT
     return result == 0 ? 1.0 : result;
   }
 
+  /// Normalize the array. It will be done in-place.
+  /// \return the normalized array.
   MathArray& Normalize() {
     T norm = Norm();
 #pragma omp simd
@@ -293,7 +336,12 @@ class MathArray {  // NOLINT
     return *this;
   }
 
-  MathArray EntryWiseProduct(const MathArray& rhs) {
+  /// Compute the entry wise product given another array
+  /// of the same size.
+  /// \param rhs the other array
+  /// \return a new array with the result
+  MathArray EntryWiseProduct(const MathArray& rhs)
+  {
     assert(rhs.size() == N);
     MathArray tmp(*this);
 #pragma omp simd
