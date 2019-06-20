@@ -298,7 +298,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// @param speed
   /// @param direction
   void ElongateTerminalEnd(double speed, const Double3& direction) {
-    double temp = Math::Dot(direction, spring_axis_);
+    double temp = direction*spring_axis_;
     if (temp > 0) {
       MovePointMass(speed, direction);
     }
@@ -570,7 +570,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     SetSpringAxis(new_mass_location-relative_ml);
     SetMassLocation(new_mass_location);
     UpdatePosition();
-    SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
+    SetActualLength(std::sqrt(spring_axis_*spring_axis_));
     // process of elongation : setting tension to 0 increases the resting length
     SetRestingLengthForDesiredTension(0.0);
 
@@ -1029,7 +1029,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   void UpdateDependentPhysicalVariables() override {
     auto relative_ml = mother_->OriginOf(Base::GetUid());
     SetSpringAxis(mass_location_ - relative_ml);
-    SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
+    SetActualLength(std::sqrt(spring_axis_*spring_axis_));
     UpdatePosition();
     if (std::abs(actual_length_ - resting_length_) > 1e-13) {
       tension_ = spring_constant_ * (actual_length_ - resting_length_) /

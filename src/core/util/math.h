@@ -30,19 +30,6 @@ struct Math {
   static constexpr double kPi = 3.141592653589793238462643383279502884;
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
-  
-  /// Compute the inner product (also called dot product) of two vectors.
-  /// @param a
-  /// @param b
-  /// @return a.b
-  template <typename T, std::size_t N>
-  static T Dot(const MathArray<T, N>& a, const MathArray<T, N>& b) {
-    T product = 0;
-    for (size_t i = 0; i < N; i++) {
-      product += a[i] * b[i];
-    }
-    return product;
-  }
 
   /// Multiplication of (all the elements of) a vector by a scalar value.
   ///
@@ -143,7 +130,7 @@ struct Math {
                                const Double3& axis) {
     auto naxis = Normalize(axis);
 
-    auto temp_1 = Math::ScalarMult(Math::Dot(vector, naxis), naxis);
+    auto temp_1 = Math::ScalarMult(vector*naxis, naxis);
     auto temp_2 = (vector-temp_1)*std::cos(-theta);
     auto temp_3 =
         Math::ScalarMult(std::sin(-theta), CrossProduct(vector, naxis));
@@ -159,7 +146,7 @@ struct Math {
   /// @param b the second vector
   /// @return the angle between them.
   static double AngleRadian(const Double3& a, const Double3& b) {
-    return std::acos(Math::Dot(a, b) / (Math::Norm(a) * Math::Norm(b)));
+    return std::acos(a*b / (Math::Norm(a) * Math::Norm(b)));
   }
 
   /// Returns the projection of the first vector onto the second one.
@@ -167,7 +154,7 @@ struct Math {
   /// @param b
   /// @return the projection of a onto b
   static Double3 ProjectionOnto(const Double3& a, const Double3& b) {
-    double k = Math::Dot(a, b) / Math::Dot(b, b);
+    double k = (a*b) / (b*b);
     return Math::ScalarMult(k, b);
   }
 };

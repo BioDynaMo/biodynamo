@@ -18,14 +18,6 @@
 
 namespace bdm {
 
-TEST(MathUtilTest, Dot) {
-  Double3 a = {0.5, 0.7, 0.8};
-  Double3 b = {0.6, 1.5, 2.1};
-  double result = Math::Dot(a, b);
-
-  EXPECT_NEAR(3.03, result, abs_error<double>::value);
-}
-
 TEST(MathUtilTest, ScalarMult) {
   Double3 a = {0.5, 0.7, 0.8};
   double k = 3.2;
