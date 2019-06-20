@@ -31,11 +31,6 @@ struct Math {
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
 
-  template <typename T>
-  static T Sum(const std::vector<T>& v) {
-    return std::accumulate(v.begin(), v.end(), 0);
-  }
-
   /// Normalizes a vector.
   /// @param a a vector
   /// @return the vector divided by its norm

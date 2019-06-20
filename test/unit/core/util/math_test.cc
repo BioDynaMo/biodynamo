@@ -28,13 +28,6 @@ TEST(MathUtilTest, L2Distance) {
   EXPECT_NEAR(3.7416573867739413855, result2, abs_error<double>::value);
 }
 
-TEST(MathUtilTest, Sum) {
-  std::vector<int> v = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  auto result = Math::Sum(v);
-
-  EXPECT_EQ(55, result);
-}
-
 TEST(MathUtilTest, CrossProduct) {
   Double3 a = {1.1, 2.2, 3.3};
   Double3 b = {5.8, 7.3, 11.87};
