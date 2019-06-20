@@ -193,8 +193,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   void UpdatePosition() {
-    position_ =
-        Math::Subtract(mass_location_, Math::ScalarMult(0.5, spring_axis_));
+    position_ = mass_location_ -Math::ScalarMult(0.5, spring_axis_);
   }
 
   /// return end of neurite element position
@@ -568,7 +567,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto new_mass_location = displacement+mass_location_;
     // here I have to define the actual length ..........
     auto relative_ml = mother_->OriginOf(Base::GetUid());  //  change to auto&&
-    SetSpringAxis(Math::Subtract(new_mass_location, relative_ml));
+    SetSpringAxis(new_mass_location-relative_ml);
     SetMassLocation(new_mass_location);
     UpdatePosition();
     SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
@@ -992,7 +991,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// axis.
   /// Is mainly used for paint
   Double3 ProximalEnd() const {
-    return Math::Subtract(mass_location_, spring_axis_);
+    return mass_location_-spring_axis_;
   }
 
   /// Returns the position of the distal end == position_
@@ -1029,7 +1028,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Otherwise we could have cylinders with big aL and rL = 0).\n
   void UpdateDependentPhysicalVariables() override {
     auto relative_ml = mother_->OriginOf(Base::GetUid());
-    SetSpringAxis(Math::Subtract(mass_location_, relative_ml));
+    SetSpringAxis(mass_location_ - relative_ml);
     SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
     UpdatePosition();
     if (std::abs(actual_length_ - resting_length_) > 1e-13) {
@@ -1190,8 +1189,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // and want to
     // compute restingLength, and not the opposite...)
     // T = k*(A-R)/R --> R = k*A/(T+K)
-    spring_axis_ =
-        Math::Subtract(mass_location_, mother_->OriginOf(Base::GetUid()));
+    spring_axis_ = mass_location_-mother_->OriginOf(Base::GetUid());
     SetActualLength(Math::Norm(spring_axis_));
     resting_length_ =
         spring_constant_ * actual_length_ / (tension_ + spring_constant_);
@@ -1334,8 +1332,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     const auto& other_rl = other->GetRestingLength();
 
     // TODO(neurites) reformulate to mass_location_
-    auto new_position =
-        Math::Subtract(other_ml, Math::ScalarMult(distal_portion, other_sa));
+    auto new_position = other_ml - Math::ScalarMult(distal_portion, other_sa);
 
     SetPosition(new_position);
     Copy(*other);

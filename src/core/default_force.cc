@@ -150,7 +150,7 @@ void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
   //    It is the projection of the vector proximal_end->c onto the vector
   //    proximal_end->distal_end
   //    (=axis)
-  auto proximal_end_closest = Math::Subtract(c, proximal_end);
+  auto proximal_end_closest = c-proximal_end;
 
   //    projection of proximal_end_closest onto axis =
   //    (proximal_end_closest.axis)/norm(axis)^2  * axis

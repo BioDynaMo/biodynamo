@@ -286,6 +286,12 @@ class MathArray {  // NOLINT
     return tmp;
   }
 
+  const MathArray operator*(const T& k) const {
+    MathArray tmp(*this);
+    tmp *= k;
+    return tmp;
+  }
+
   MathArray& operator/=(const T& k) {
 #pragma omp simd
     for (size_t i = 0; i < N; i++) {

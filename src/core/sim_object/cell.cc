@@ -31,7 +31,7 @@ void Cell::ApplyDisplacement(const Double3& displacement) {
 }
 
 Double3 Cell::TransformCoordinatesGlobalToPolar(const Double3& pos) const {
-  auto vector_to_point = Math::Subtract(pos, position_);
+  auto vector_to_point = pos-position_;
   Double3 local_cartesian{Math::Dot(kXAxis, vector_to_point),
                           Math::Dot(kYAxis, vector_to_point),
                           Math::Dot(kZAxis, vector_to_point)};

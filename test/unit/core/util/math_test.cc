@@ -18,16 +18,6 @@
 
 namespace bdm {
 
-TEST(MathUtilTest, Subtract) {
-  Double3 a = {0.6, 1.5, 2.1};
-  Double3 b = {0.5, 0.7, 0.8};
-  auto result = Math::Subtract(a, b);
-
-  EXPECT_NEAR(0.1, result[0], abs_error<double>::value);
-  EXPECT_NEAR(0.8, result[1], abs_error<double>::value);
-  EXPECT_NEAR(1.3, result[2], abs_error<double>::value);
-}
-
 TEST(MathUtilTest, Dot) {
   Double3 a = {0.5, 0.7, 0.8};
   Double3 b = {0.6, 1.5, 2.1};

@@ -30,21 +30,7 @@ struct Math {
   static constexpr double kPi = 3.141592653589793238462643383279502884;
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
-
-  /// Subtract two vectors
-  /// @param a
-  /// @param b
-  /// @return a-b
-  template <typename T, std::size_t N>
-  static MathArray<T, N> Subtract(const MathArray<T, N>& a,
-                                  const MathArray<T, N>& b) {
-    MathArray<T, N> result;
-    for (size_t i = 0; i < N; i++) {
-      result[i] = a[i] - b[i];
-    }
-    return result;
-  }
-
+  
   /// Compute the inner product (also called dot product) of two vectors.
   /// @param a
   /// @param b
@@ -158,8 +144,7 @@ struct Math {
     auto naxis = Normalize(axis);
 
     auto temp_1 = Math::ScalarMult(Math::Dot(vector, naxis), naxis);
-    auto temp_2 =
-        Math::ScalarMult(std::cos(-theta), Math::Subtract(vector, temp_1));
+    auto temp_2 = (vector-temp_1)*std::cos(-theta);
     auto temp_3 =
         Math::ScalarMult(std::sin(-theta), CrossProduct(vector, naxis));
 
