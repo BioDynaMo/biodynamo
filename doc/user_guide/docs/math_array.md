@@ -65,3 +65,6 @@ auto norm = a.Norm()
 a.Normalize()
 
 ```
+
+Two alias are also available, `Double3` and `Double4`, which correspond to the
+following instantiations: `MathArray<double, 3>` and `MathArray<double, 4>`.

@@ -183,10 +183,6 @@ class MathArray {  // NOLINT
   }
 
   MathArray& operator+=(const T& rhs) {
-<<<<<<< 6837a39e5c87804b07387cdfc9428d16b9c05242
-    assert(N == rhs.size());
-=======
->>>>>>> Add Double4 type alias and remove all std::array<double, 4> entries.
 #pragma omp simd
     for (size_t i = 0; i < N; i++) {
       data_[i] += rhs;
@@ -195,10 +191,6 @@ class MathArray {  // NOLINT
   }
 
   MathArray operator+(const T& rhs) {
-<<<<<<< 6837a39e5c87804b07387cdfc9428d16b9c05242
-    assert(size() == rhs.size());
-=======
->>>>>>> Add Double4 type alias and remove all std::array<double, 4> entries.
     MathArray tmp(*this);
     tmp += rhs;
     return tmp;
@@ -228,10 +220,6 @@ class MathArray {  // NOLINT
   }
 
   MathArray& operator-=(const T& rhs) {
-<<<<<<< 6837a39e5c87804b07387cdfc9428d16b9c05242
-    assert(size() == rhs.size());
-=======
->>>>>>> Add Double4 type alias and remove all std::array<double, 4> entries.
 #pragma omp simd
     for (size_t i = 0; i < N; i++) {
       data_[i] -= rhs;
@@ -240,10 +228,6 @@ class MathArray {  // NOLINT
   }
 
   MathArray operator-(const T& rhs) {
-<<<<<<< 6837a39e5c87804b07387cdfc9428d16b9c05242
-    assert(size() == rhs.size());
-=======
->>>>>>> Add Double4 type alias and remove all std::array<double, 4> entries.
     MathArray tmp(*this);
     tmp -= rhs;
     return tmp;
@@ -362,11 +346,11 @@ class MathArray {  // NOLINT
   BDM_CLASS_DEF_NV(MathArray, 1);  // NOLINT
 };
 
+/// Alias for a size 3 MathArray
 using Double3 = MathArray<double, 3>;
-<<<<<<< 6837a39e5c87804b07387cdfc9428d16b9c05242
-=======
+
+/// Alias for a size 4 MathArray
 using Double4 = MathArray<double, 4>;
->>>>>>> Add Double4 type alias and remove all std::array<double, 4> entries.
 
 }  // namespace bdm
 
