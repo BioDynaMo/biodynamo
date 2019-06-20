@@ -36,22 +36,11 @@ struct Math {
     return std::accumulate(v.begin(), v.end(), 0);
   }
 
-  /// Returns the euclidean norm of a vector.
-  /// @param a vector
-  /// @return it's norm
-  static double Norm(const Double3& a) {
-    double norm = std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
-    if (norm == 0.0) {
-      norm = 1.0;
-    }
-    return norm;
-  }
-
   /// Normalizes a vector.
   /// @param a a vector
   /// @return the vector divided by its norm
   static Double3 Normalize(const Double3& a) {
-    const auto&& norm = Norm(a);
+    const auto&& norm = a.Norm();
     Double3 ret;
     ret[0] = a[0] / norm;
     ret[1] = a[1] / norm;
@@ -65,7 +54,7 @@ struct Math {
     dist_array[0] = pos2[0] - pos1[0];
     dist_array[1] = pos2[1] - pos1[1];
     dist_array[2] = pos2[2] - pos1[2];
-    return Norm(dist_array);
+    return dist_array.Norm();
   }
 
   /// Returns the cross product of two vectors.
@@ -130,7 +119,7 @@ struct Math {
   /// @param b the second vector
   /// @return the angle between them.
   static double AngleRadian(const Double3& a, const Double3& b) {
-    return std::acos(a*b / (Math::Norm(a) * Math::Norm(b)));
+    return std::acos(a*b / (a.Norm() * b.Norm()));
   }
 
   /// Returns the projection of the first vector onto the second one.

@@ -117,7 +117,7 @@ void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
   auto distal_end = ne->DistalEnd();
   auto axis = ne->GetSpringAxis();
   // TODO(neurites) use cylinder.GetActualLength() ??
-  double actual_length = Math::Norm(axis);
+  double actual_length = axis.Norm();
   double d = ne->GetDiameter();
   auto c = sphere->GetPosition();
   double r = 0.5 * sphere->GetDiameter();

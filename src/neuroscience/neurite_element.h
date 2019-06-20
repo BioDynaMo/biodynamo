@@ -725,7 +725,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // 5) define the force that will be transmitted to the mother
     force_to_transmit_to_proximal_mass_ = force_on_my_mothers_point_mass;
     //  6.1) Define movement scale
-    double force_norm = Math::Norm(force_on_my_point_mass);
+    double force_norm = force_on_my_point_mass.Norm();
     //  6.2) If is F not strong enough -> no movements
     if (force_norm < adherence_) {
       return {0, 0, 0};
@@ -782,7 +782,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // y (new) = z(new) cross x(new)
     x_axis_ = Math::Normalize(spring_axis_);
     z_axis_ = Math::CrossProduct(x_axis_, y_axis_);
-    double norm_of_z = Math::Norm(z_axis_);
+    double norm_of_z = z_axis_.Norm();
     if (norm_of_z < 1E-10) {  // TODO(neurites) use parameter
       // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
       // we start by re-defining new perp vectors. Ok, we loose the previous
@@ -1187,7 +1187,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // compute restingLength, and not the opposite...)
     // T = k*(A-R)/R --> R = k*A/(T+K)
     spring_axis_ = mass_location_-mother_->OriginOf(Base::GetUid());
-    SetActualLength(Math::Norm(spring_axis_));
+    SetActualLength(spring_axis_.Norm());
     resting_length_ =
         spring_constant_ * actual_length_ / (tension_ + spring_constant_);
     // .... and volume_
