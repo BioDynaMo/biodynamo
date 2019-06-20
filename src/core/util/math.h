@@ -31,20 +31,6 @@ struct Math {
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
 
-  /// Add two vectors
-  /// @param a the first vector
-  /// @param b the second vector
-  /// @return a + b
-  template <typename T, std::size_t N>
-  static MathArray<T, N> Add(const MathArray<T, N>& a,
-                             const MathArray<T, N>& b) {
-    MathArray<T, N> result;
-    for (size_t i = 0; i < N; i++) {
-      result[i] = a[i] + b[i];
-    }
-    return result;
-  }
-
   /// Subtract two vectors
   /// @param a
   /// @param b
