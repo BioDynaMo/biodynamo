@@ -90,6 +90,9 @@ class Scheduler {
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
   void Initialize();
+
+  // Decide which operations should be executed
+  std::vector<Operation> GetScheduleOps();
 };
 
 }  // namespace bdm

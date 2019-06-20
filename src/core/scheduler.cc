@@ -54,12 +54,7 @@ Scheduler::Scheduler() {
   auto discretization_op = Operation(
       "discretization", [](SimObject* so) { so->RunDiscretization(); });
 
-  auto displacement_op = Operation("displacement", [&](SimObject* so) {
-    auto* param = Simulation::GetActive()->GetParam();
-    if (param->run_mechanical_interactions_ && displacement_->UseCpu()) {
-      (*displacement_)(so);
-    }
-  });
+  auto displacement_op = Operation("displacement", *displacement_);
 
   operations_ = {first_op,          Operation("bound space", *bound_space_),
                  biology_module_op, displacement_op,
@@ -148,14 +143,7 @@ void Scheduler::Execute(bool last_iteration) {
   Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
 
   // update all sim objects: run all CPU operations
-  //   determine which operation should be run in this time step
-  decltype(operations_) scheduled_ops;
-  scheduled_ops.reserve(operations_.size());
-  for (auto& op : operations_) {
-    if (total_steps_ % op.frequency_ == 0) {
-      scheduled_ops.push_back(op);
-    }
-  }
+  const auto& scheduled_ops = GetScheduleOps();
   rm->ApplyOnAllElementsParallelDynamic(
       param->scheduling_batch_size_, [&](SimObject* so, SoHandle) {
         sim->GetExecutionContext()->Execute(so, scheduled_ops);
@@ -237,6 +225,23 @@ void Scheduler::Initialize() {
     // Initialize data structures with user-defined values
     dgrid->RunInitializers();
   });
+}
+
+std::vector<Operation> Scheduler::GetScheduleOps() {
+  std::vector<Operation> scheduled_ops;
+  scheduled_ops.reserve(operations_.size());
+  auto* param = Simulation::GetActive()->GetParam();
+  for (auto& op : operations_) {
+    // special condition for displacement
+    if (!param->run_mechanical_interactions_ && op.name_ == "displacement" &&
+        !displacement_->UseCpu()) {
+      continue;
+    }
+    if (total_steps_ % op.frequency_ == 0) {
+      scheduled_ops.push_back(op);
+    }
+  }
+  return scheduled_ops;
 }
 
 }  // namespace bdm
