@@ -168,8 +168,7 @@ class Cell : public SimObject {
   /// \see CellDivisionEvent
   virtual Cell* Divide(const Double3& axis) {
     auto* random = Simulation::GetActive()->GetRandom();
-    auto polarcoord =
-        TransformCoordinatesGlobalToPolar(axis+position_);
+    auto polarcoord = TransformCoordinatesGlobalToPolar(axis + position_);
     return Divide(random->Uniform(0.9, 1.1), polarcoord[1], polarcoord[2]);
   }
 
@@ -177,8 +176,7 @@ class Cell : public SimObject {
   ///
   /// \see CellDivisionEvent
   virtual Cell* Divide(double volume_ratio, const Double3& axis) {
-    auto polarcoord =
-        TransformCoordinatesGlobalToPolar(axis+position_);
+    auto polarcoord = TransformCoordinatesGlobalToPolar(axis + position_);
     return Divide(volume_ratio, polarcoord[1], polarcoord[2]);
   }
 

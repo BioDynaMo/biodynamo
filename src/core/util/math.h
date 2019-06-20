@@ -88,9 +88,9 @@ struct Math {
     auto naxis = axis;
     naxis.Normalize();
 
-    auto temp_1 = naxis*(vector*naxis);
-    auto temp_2 = (vector-temp_1)*std::cos(-theta);
-    auto temp_3 = vector.CrossProduct(naxis)*std::sin(-theta);
+    auto temp_1 = naxis * (vector * naxis);
+    auto temp_2 = (vector - temp_1) * std::cos(-theta);
+    auto temp_3 = vector.CrossProduct(naxis) * std::sin(-theta);
 
     return {
         temp_1[0] + temp_2[0] + temp_3[0], temp_1[1] + temp_2[1] + temp_3[1],
@@ -103,7 +103,7 @@ struct Math {
   /// @param b the second vector
   /// @return the angle between them.
   static double AngleRadian(const Double3& a, const Double3& b) {
-    return std::acos(a*b / (a.Norm() * b.Norm()));
+    return std::acos(a * b / (a.Norm() * b.Norm()));
   }
 
   /// Returns the projection of the first vector onto the second one.
@@ -111,8 +111,8 @@ struct Math {
   /// @param b
   /// @return the projection of a onto b
   static Double3 ProjectionOnto(const Double3& a, const Double3& b) {
-    double k = (a*b) / (b*b);
-    return b*k;
+    double k = (a * b) / (b * b);
+    return b * k;
   }
 };
 

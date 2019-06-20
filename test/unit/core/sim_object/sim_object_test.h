@@ -102,7 +102,7 @@ struct MovementModule : public BaseBiologyModule {
 
   void Run(SimObject* so) override {
     const auto& position = so->GetPosition();
-    so->SetPosition(position+velocity_);
+    so->SetPosition(position + velocity_);
   }
 
   BDM_CLASS_DEF_OVERRIDE(MovementModule, 1);

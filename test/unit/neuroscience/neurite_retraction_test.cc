@@ -102,7 +102,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
           direction = {random->Uniform(-10, 10), random->Uniform(-10, 10),
                        random->Uniform(0, 5)};
 
-          Double3 step_direction = previous_direction+direction;
+          Double3 step_direction = previous_direction + direction;
 
           ne->ElongateTerminalEnd(10, step_direction);
           ne->SetDiameter(1);

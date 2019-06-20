@@ -32,7 +32,6 @@ namespace bdm {
 template <class T, std::size_t N>
 class MathArray {  // NOLINT
  public:
-
   /// Default constructor
   constexpr MathArray() : data_() {
     for (size_t i = 0; i < N; i++) {
@@ -330,8 +329,7 @@ class MathArray {  // NOLINT
   /// of the same size.
   /// \param rhs the other array
   /// \return a new array with the result
-  MathArray EntryWiseProduct(const MathArray& rhs)
-  {
+  MathArray EntryWiseProduct(const MathArray& rhs) {
     assert(rhs.size() == N);
     MathArray tmp(*this);
 #pragma omp simd

@@ -54,7 +54,9 @@ inline std::ostream& operator<<(std::ostream& os, const TimingAggregator& ta) {
   if (ta.timings_.size() != 0) {
     os << "\033[1mTotal execution time per operation:\033[0m" << std::endl;
     for (auto& timing : ta.timings_) {
-      os << timing.first << ": " << std::accumulate(timing.second.begin(), timing.second.end(), 0) << std::endl;
+      os << timing.first << ": "
+         << std::accumulate(timing.second.begin(), timing.second.end(), 0)
+         << std::endl;
     }
   } else {
     os << "No statistics were gathered!" << std::endl;

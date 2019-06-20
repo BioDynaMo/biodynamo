@@ -150,7 +150,7 @@ void DefaultForce::ForceOnACylinderFromASphere(const SimObject* cylinder,
   //    It is the projection of the vector proximal_end->c onto the vector
   //    proximal_end->distal_end
   //    (=axis)
-  auto proximal_end_closest = c-proximal_end;
+  auto proximal_end_closest = c - proximal_end;
 
   //    projection of proximal_end_closest onto axis =
   //    (proximal_end_closest.axis)/norm(axis)^2  * axis
@@ -272,12 +272,12 @@ void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
     }
 
   } else {
-    p1 = a + (b-a)*0.5;
-    p2 = c + (d-c)*0.5;
+    p1 = a + (b - a) * 0.5;
+    p2 = c + (d - c) * 0.5;
   }
 
   // W put a virtual sphere on the two cylinders
-  auto force = ComputeForceOfASphereOnASphere(p1, d1 / 2.0, p2, d2 / 2.0)*10;
+  auto force = ComputeForceOfASphereOnASphere(p1, d1 / 2.0, p2, d2 / 2.0) * 10;
 
   *result = {force[0], force[1], force[2], k};
 }
