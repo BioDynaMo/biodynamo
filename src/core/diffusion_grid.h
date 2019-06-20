@@ -451,13 +451,14 @@ class DiffusionGrid {
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
-
-            /* X axis */
+        
+            /* X axis 
             if ( x == 0){
             cm = c + 1;}
             else if ( x == nx - 1){
-            cp = c - 1;}
-
+            cp = c - 1;} */
+           
+            
             /* Y axis */
             if (y == 0){
             n = s;
