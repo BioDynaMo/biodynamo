@@ -103,16 +103,12 @@ class Cell : public SimObject {
 
       // position
       auto mother_pos = mother_cell->GetPosition();
-      Double3 new_position{mother_pos[0] + d_2 * axis_of_division[0],
-                           mother_pos[1] + d_2 * axis_of_division[1],
-                           mother_pos[2] + d_2 * axis_of_division[2]};
+      auto new_position = mother_pos + (axis_of_division * d_2);
       daughter->SetPosition(new_position);
 
       // E) This sphere becomes the 1st daughter
       // move these cells on opposite direction
-      mother_pos[0] -= d_1 * axis_of_division[0];
-      mother_pos[1] -= d_1 * axis_of_division[1];
-      mother_pos[2] -= d_1 * axis_of_division[2];
+      mother_pos -= axis_of_division * d_1;
       // update mother here and not in EventHandler to avoid recomputation
       mother_cell->SetPosition(mother_pos);
       mother_cell->SetVolume(new_volume);
@@ -260,9 +256,7 @@ class Cell : public SimObject {
   }
 
   void UpdatePosition(const Double3& delta) {
-    position_[0] += delta[0];
-    position_[1] += delta[1];
-    position_[2] += delta[2];
+    position_ += delta;
     SetRunDisplacementForAllNextTs();
   }
 
@@ -341,20 +335,15 @@ class Cell : public SimObject {
     // adding the physics translation (scale by weight) if important enough
     if (physical_translation) {
       // We scale the move with mass and time step
-      movement_at_next_step[0] += translation_force_on_point_mass[0] * mh;
-      movement_at_next_step[1] += translation_force_on_point_mass[1] * mh;
-      movement_at_next_step[2] += translation_force_on_point_mass[2] * mh;
+      movement_at_next_step += translation_force_on_point_mass * mh;
 
       // Performing the translation itself :
-
       // but we want to avoid huge jumps in the simulation, so there are
       // maximum distances possible
       auto* param = Simulation::GetActive()->GetParam();
       if (norm_of_force * mh > param->simulation_max_displacement_) {
         movement_at_next_step.Normalize();
-        movement_at_next_step[0] *= param->simulation_max_displacement_;
-        movement_at_next_step[1] *= param->simulation_max_displacement_;
-        movement_at_next_step[2] *= param->simulation_max_displacement_;
+        movement_at_next_step *= param->simulation_max_displacement_;
       }
     }
     return movement_at_next_step;

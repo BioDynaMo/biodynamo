@@ -1367,7 +1367,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
         angle_with_side_branch > 2.35) {  // 45-135 degrees
       auto p = Math::CrossProduct(mother_spring_axis, direction);
       p = Math::CrossProduct(p, mother_spring_axis);
-      dir = direction_normalized+p.Normalize();
+      dir = direction_normalized + p.Normalize();
     }
     // location of mass and computation center
     auto new_spring_axis = direction_normalized * length;
