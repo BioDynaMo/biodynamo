@@ -18,14 +18,6 @@
 
 namespace bdm {
 
-TEST(MathUtilTest, ScalarMult) {
-  Double3 a = {0.5, 0.7, 0.8};
-  double k = 3.2;
-  auto result = Math::ScalarMult(k, a);
-
-  EXPECT_ARR_NEAR(result, {1.6, 2.24, 2.56});
-}
-
 TEST(MathUtilTest, Norm) {
   Double3 vector = {1.1, 2.2, 3.3};
   auto result = Math::Norm(vector);

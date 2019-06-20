@@ -277,8 +277,7 @@ void DefaultForce::ForceBetweenCylinders(const SimObject* cylinder1,
   }
 
   // W put a virtual sphere on the two cylinders
-  auto force = Math::ScalarMult(
-      10, ComputeForceOfASphereOnASphere(p1, d1 / 2.0, p2, d2 / 2.0));
+  auto force = ComputeForceOfASphereOnASphere(p1, d1 / 2.0, p2, d2 / 2.0)*10;
 
   *result = {force[0], force[1], force[2], k};
 }

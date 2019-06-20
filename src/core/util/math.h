@@ -31,21 +31,6 @@ struct Math {
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
 
-  /// Multiplication of (all the elements of) a vector by a scalar value.
-  ///
-  /// @param  k a scalar
-  /// @param  a the vector we want to multiply
-  /// @return k * a
-  template <std::size_t N>
-  static MathArray<double, N> ScalarMult(double k,
-                                         const MathArray<double, N>& a) {
-    MathArray<double, N> result;
-    for (size_t i = 0; i < N; i++) {
-      result[i] = a[i] * k;
-    }
-    return result;
-  }
-
   template <typename T>
   static T Sum(const std::vector<T>& v) {
     return std::accumulate(v.begin(), v.end(), 0);
@@ -130,10 +115,9 @@ struct Math {
                                const Double3& axis) {
     auto naxis = Normalize(axis);
 
-    auto temp_1 = Math::ScalarMult(vector*naxis, naxis);
+    auto temp_1 = naxis*(vector*naxis);
     auto temp_2 = (vector-temp_1)*std::cos(-theta);
-    auto temp_3 =
-        Math::ScalarMult(std::sin(-theta), CrossProduct(vector, naxis));
+    auto temp_3 = CrossProduct(vector, naxis)*std::sin(-theta);
 
     return {
         temp_1[0] + temp_2[0] + temp_3[0], temp_1[1] + temp_2[1] + temp_3[1],
@@ -155,7 +139,7 @@ struct Math {
   /// @return the projection of a onto b
   static Double3 ProjectionOnto(const Double3& a, const Double3& b) {
     double k = (a*b) / (b*b);
-    return Math::ScalarMult(k, b);
+    return b*k;
   }
 };
 
