@@ -76,19 +76,17 @@ class Cell : public SimObject {
       double x_coord = std::cos(cdevent->theta_) * std::sin(cdevent->phi_);
       double y_coord = std::sin(cdevent->theta_) * std::sin(cdevent->phi_);
       double z_coord = std::cos(cdevent->phi_);
+      Double3 coords = {x_coord, y_coord, z_coord};
       double total_length_of_displacement = radius / 4.0;
 
       const auto x_axis = mother_cell->kXAxis;
       const auto y_axis = mother_cell->kYAxis;
       const auto z_axis = mother_cell->kZAxis;
-      Double3 axis_of_division{
-          total_length_of_displacement *
-              (x_coord * x_axis[0] + y_coord * y_axis[0] + z_coord * z_axis[0]),
-          total_length_of_displacement *
-              (x_coord * x_axis[1] + y_coord * y_axis[1] + z_coord * z_axis[1]),
-          total_length_of_displacement *
-              (x_coord * x_axis[2] + y_coord * y_axis[2] +
-               z_coord * z_axis[2])};
+
+      Double3 axis_of_division =
+          (coords.EntryWiseProduct(x_axis) + coords.EntryWiseProduct(y_axis) +
+           coords.EntryWiseProduct(z_axis)) *
+          total_length_of_displacement;
 
       // two equations for the center displacement :
       //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
@@ -285,9 +283,7 @@ class Cell : public SimObject {
     // BIOLOGY :
     // 0) Start with tractor force : What the biology defined as active
     // movement------------
-    movement_at_next_step[0] += h * tf[0];
-    movement_at_next_step[1] += h * tf[1];
-    movement_at_next_step[2] += h * tf[2];
+    movement_at_next_step += tf * h;
 
     // PHYSICS
     // the physics force to move the point mass
@@ -318,12 +314,8 @@ class Cell : public SimObject {
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
-    double norm_of_force = std::sqrt(translation_force_on_point_mass[0] *
-                                         translation_force_on_point_mass[0] +
-                                     translation_force_on_point_mass[1] *
-                                         translation_force_on_point_mass[1] +
-                                     translation_force_on_point_mass[2] *
-                                         translation_force_on_point_mass[2]);
+    double norm_of_force = std::sqrt(translation_force_on_point_mass *
+                                     translation_force_on_point_mass);
 
     // is there enough force to :
     //  - make us biologically move (Tractor) :
