@@ -404,7 +404,7 @@ class DiffusionGrid {
         }  // tile ny
       }    // tile nz
     }      // block ny
-    c1_.swap(c2_);
+    c1_.swap(c2_); 
   }
 
   void DiffuseEuler() {
