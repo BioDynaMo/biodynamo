@@ -82,7 +82,7 @@ TEST(MathArray, math_operators) {
 
 TEST(MathArray, complex_operations) {
   MathArray<double, 3> a;
-  MathArray<double, 3> b{0, 0, 0};
+  MathArray<double, 4> b{0, 0, 0, 0};
   MathArray<double, 4> c{1, 2, 3, 4};
 
   MathArray<double, 3> fill_result{1, 1, 1};
@@ -104,11 +104,6 @@ TEST(MathArray, complex_operations) {
   ASSERT_EQ(b.Norm(), 1);
 
   ASSERT_EQ(c.EntryWiseProduct(c), entrywise_result);
-
-  a = {1.1, 2.2, 3.3};
-  b = {5.8, 7.3, 11.87};
-  auto&& result = a.CrossProduct(b);
-  EXPECT_ARR_NEAR(result, {2.024, 6.083, -4.73});
 }
 
 #ifdef USE_DICT

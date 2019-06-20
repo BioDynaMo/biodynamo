@@ -780,7 +780,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // y (new) = z(new) cross x(new)
     auto spring_axis_normalized = spring_axis_;
     x_axis_ = spring_axis_normalized.Normalize();
-    z_axis_ = x_axis_.CrossProduct(y_axis_);
+    z_axis_ = Math::CrossProduct(x_axis_, y_axis_);
     double norm_of_z = z_axis_.Norm();
     if (norm_of_z < 1E-10) {  // TODO(neurites) use parameter
       // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
@@ -791,7 +791,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     } else {
       z_axis_ = z_axis_ * (1 / norm_of_z);
     }
-    y_axis_ = z_axis_.CrossProduct(x_axis_);
+    y_axis_ = Math::CrossProduct(z_axis_, x_axis_);
   }
 
   /// Recomputes diameter after volume has changed.
@@ -1365,9 +1365,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
         Math::AngleRadian(mother_spring_axis, direction);
     if (angle_with_side_branch < 0.78 ||
         angle_with_side_branch > 2.35) {  // 45-135 degrees
-      auto p = mother_spring_axis.CrossProduct(direction);
-      p = p.CrossProduct(mother_spring_axis);
-      dir = direction_normalized + p.Normalize();
+      auto p = Math::CrossProduct(mother_spring_axis, direction);
+      p = Math::CrossProduct(p, mother_spring_axis);
+      dir = direction_normalized+p.Normalize();
     }
     // location of mass and computation center
     auto new_spring_axis = direction_normalized * length;

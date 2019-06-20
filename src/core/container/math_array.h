@@ -339,18 +339,6 @@ class MathArray {  // NOLINT
     return tmp;
   }
 
-  /// Compute the cross product given another array (this is available
-  /// only in the 3-dimensional case.
-  /// \param the other array
-  /// \return a new array with the result
-  const MathArray<T, 3> CrossProduct(const MathArray<T, 3>& b) const {
-    MathArray<T, 3> result;
-    result[0] = data_[1] * b[2] - data_[2] * b[1];
-    result[1] = data_[2] * b[0] - data_[0] * b[2];
-    result[2] = data_[0] * b[1] - data_[1] * b[0];
-    return result;
-  }
-
  private:
   T data_[N];
   BDM_CLASS_DEF_NV(MathArray, 1);  // NOLINT

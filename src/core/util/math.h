@@ -88,9 +88,9 @@ struct Math {
     auto naxis = axis;
     naxis.Normalize();
 
-    auto temp_1 = naxis * (vector * naxis);
-    auto temp_2 = (vector - temp_1) * std::cos(-theta);
-    auto temp_3 = vector.CrossProduct(naxis) * std::sin(-theta);
+    auto temp_1 = naxis*(vector*naxis);
+    auto temp_2 = (vector-temp_1)*std::cos(-theta);
+    auto temp_3 = CrossProduct(vector, naxis)*std::sin(-theta);
 
     return {
         temp_1[0] + temp_2[0] + temp_3[0], temp_1[1] + temp_2[1] + temp_3[1],
