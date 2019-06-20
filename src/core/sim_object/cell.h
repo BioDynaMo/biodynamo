@@ -258,7 +258,7 @@ class Cell : public SimObject {
     SetRunDisplacementForAllNextTs();
   }
 
-  Double3 CalculateDisplacement(double squared_radius) override {
+  Double3 CalculateDisplacement(double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied
@@ -276,8 +276,7 @@ class Cell : public SimObject {
     bool physical_translation = false;
     // bool physical_rotation = false;
 
-    auto* param = Simulation::GetActive()->GetParam();
-    double h = param->simulation_time_step_;
+    double h = dt;
     Double3 movement_at_next_step{0, 0, 0};
 
     // BIOLOGY :

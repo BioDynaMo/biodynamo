@@ -79,8 +79,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
 }
 
 void InPlaceExecutionContext::Execute(
-    SimObject* so,
-    const std::vector<std::function<void(SimObject*)>>& operations) {
+    SimObject* so, const std::vector<Operation>& operations) {
   auto* grid = Simulation::GetActive()->GetGrid();
   auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
   if (nb_mutex_builder != nullptr) {

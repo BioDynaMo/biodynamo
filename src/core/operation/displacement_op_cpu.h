@@ -44,7 +44,7 @@ class DisplacementOpCpu {
       return;
     }
 
-    // update search radius at beginning of each iteration
+    // update search radius and delta_time_ at beginning of each iteration
     auto current_iteration = scheduler->GetSimulatedSteps();
     if (last_iteration_ != current_iteration) {
       last_iteration_ = current_iteration;
@@ -52,10 +52,14 @@ class DisplacementOpCpu {
       auto* grid = sim->GetGrid();
       auto search_radius = grid->GetLargestObjectSize();
       squared_radius_ = search_radius * search_radius;
+      auto current_time =
+          (current_iteration + 1) * param->simulation_time_step_;
+      delta_time_ = current_time - last_time_run_;
+      last_time_run_ = current_time;
     }
 
     const auto& displacement =
-        sim_object->CalculateDisplacement(squared_radius_);
+        sim_object->CalculateDisplacement(squared_radius_, delta_time_);
     sim_object->ApplyDisplacement(displacement);
     if (param->bound_space_) {
       ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
@@ -64,6 +68,8 @@ class DisplacementOpCpu {
 
  private:
   double squared_radius_ = 0;
+  double last_time_run_ = 0;
+  double delta_time_ = 0;
   uint64_t last_iteration_ = std::numeric_limits<uint64_t>::max();
 };
 

@@ -616,8 +616,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   //   Physics
   // ***************************************************************************
 
-  // TODO(neurites) documentation
-  Double3 CalculateDisplacement(double squared_radius) override {
+  Double3 CalculateDisplacement(double squared_radius, double dt) override {
     Double3 force_on_my_point_mass{0, 0, 0};
     Double3 force_on_my_mothers_point_mass{0, 0, 0};
 

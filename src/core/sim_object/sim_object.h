@@ -223,7 +223,7 @@ class SimObject {
   const std::vector<BaseBiologyModule*>& GetAllBiologyModules() const;
   // ---------------------------------------------------------------------------
 
-  virtual Double3 CalculateDisplacement(double squared_radius) = 0;
+  virtual Double3 CalculateDisplacement(double squared_radius, double dt) = 0;
 
   virtual void ApplyDisplacement(const Double3& displacement) = 0;
 
