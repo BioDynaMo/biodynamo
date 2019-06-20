@@ -100,14 +100,15 @@ install(FILES cmake/FindVTune.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/FindOpenCL.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES cmake/RootUseFile.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 install(FILES ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
+install(FILES cmake/utils.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})
 # CMake files required from external projects
 install(FILES cmake/BioDynaMoConfig.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 install(FILES cmake/FindNuma.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 install(FILES cmake/FindTBB.cmake DESTINATION ${CMAKE_INSTALL_CMAKEDIR})
 #simulation template
-install(DIRECTORY util/simulation-template DESTINATION "biodynamo/" FILES_MATCHING PATTERN "*")
+install(DIRECTORY util/simulation-template DESTINATION "biodynamo" FILES_MATCHING PATTERN "*")
 # Demos.
-install(DIRECTORY demo DESTINATION "biodynamo/" PATTERN "build" EXCLUDE)
+install(DIRECTORY demo DESTINATION "biodynamo" PATTERN "build" EXCLUDE)
 
 if (${ParaView_FOUND})
   if(LINUX)

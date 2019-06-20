@@ -43,7 +43,6 @@ function(get_implicit_dependencies RET_VAR)
   set(${RET_VAR} ${CMD_RESULT} PARENT_SCOPE)
 endfunction(get_implicit_dependencies)
 
-
 find_program(GENREFLEX_EXECUTABLE genreflex HINTS $ENV{ROOTSYS}/bin)
 
 # function bdm_generate_dictionary (TARGET
@@ -108,12 +107,12 @@ function(bdm_generate_dictionary TARGET)
   # invoke genreflex only if rebuild_${TARGET} file does not contain a 0.
   # Had issues with if [[ ]] statement; used grep instead
   # if grep does not find the pattern it has a non zero exit code
-  # --> grep 0 file || command
+  # --> grep 0 file || commandz`
   #   command is executed if pattern 0 is not found in file
   add_custom_target(${TARGET}
-    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null ||
-            ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
-            ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
+    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null || (${CUSTOM_ROOT_SOURCE_ENV_COMMAND} &&
+    ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
+    ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1)
     COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
@@ -190,10 +189,14 @@ function(build_libbiodynamo TARGET)
     add_library(${TARGET} SHARED $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
     add_dependencies(${TARGET} ${TARGET}-dict update-version-info)
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
+
+    SET(BIODYNAMO_TARGET_NAME "${TARGET}-objectlib" PARENT_SCOPE)
   else()
     add_library(${TARGET} SHARED ${ARG_SOURCES})
     add_dependencies(${TARGET} update-version-info)
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
+
+    SET(BIODYNAMO_TARGET_NAME "${TARGET}" PARENT_SCOPE)
   endif()
 endfunction(build_libbiodynamo)
 

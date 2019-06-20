@@ -66,11 +66,13 @@ function(bdm_add_test_executable TEST_TARGET)
   bdm_add_executable(${TEST_TARGET}
                      SOURCES ${ARG_SOURCES}
                      HEADERS ${ARG_HEADERS}
-                     LIBRARIES libgtest biodynamo)
+                     LIBRARIES biodynamo libgtest)
   if(dict)
     add_dependencies(${TEST_TARGET}-objectlib gtest)
+    SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}-objectlib" PARENT_SCOPE)
   else()
     add_dependencies(${TEST_TARGET} gtest)
+    SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}" PARENT_SCOPE)
   endif()
 
   # execute all tests with command: make test

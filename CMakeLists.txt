@@ -11,6 +11,8 @@ option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
 option(paraview  "Enable ParaView" ON)
+option(vtune     "Enable VTune performance analysis" OFF)
+option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
 
 if(APPLE)
    # valgrind currently broken on macOS 10.12
@@ -18,21 +20,32 @@ if(APPLE)
 else()
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
 endif()
-option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
-
-set(BDM_CMAKE_DIR cmake)
 
 if(UNIX AND NOT APPLE)
-  set(LINUX TRUE)
-  add_definitions("-DLINUX")
+    set(LINUX TRUE)
+    add_definitions("-DLINUX")
 endif()
 
-# detect if the biodynamo environment has been sourced
-if(NOT DEFINED ENV{BDM_CMAKE_DIR})
-  execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
-  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
+# Directory in which BioDynaMo will be installed. It can be provided
+# by the user itself.
+if (NOT DEFINED ${BDM_INSTALL_DIR})
+    set(BDM_INSTALL_DIR $ENV{HOME}/.bdm)
 endif()
-# check if biodynamo environment has been changed. if yes update it and emmit error
+
+# Directory in which all the third party code will be stored
+# Directory in which we saved all the cmake informations.
+set(THIRD_PARTY_DIR ${BDM_INSTALL_DIR}/third_party)
+set(BDM_CMAKE_DIR ${CMAKE_SOURCE_DIR}/cmake)
+
+# Add an additional path to make include() look in the right places.
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+# Include some utils functions (print_line, print_warning, verify_root, etc.)
+include(utils)
+
+# Detect os type and version
+detect_os()
+
 ## TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
 ## APPLE might not be enough in the future)
 if(LINUX)
@@ -40,17 +53,22 @@ if(LINUX)
 elseif(APPLE)
   configure_file(util/installation/common/biodynamo-macos-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
 endif()
-execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" "$ENV{BDM_INSTALL_DIR}/biodynamo-env.sh" RESULT_VARIABLE ret)
+
+# Check if there was a previously installed version of BioDynaMo. If that's the case, then update the biodynamo-env
+# file and just tell the user.
+execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" "${BDM_INSTALL_DIR}/biodynamo-env.sh" RESULT_VARIABLE ret)
 if(ret EQUAL "1")
-    file(COPY "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" DESTINATION "$ENV{BDM_INSTALL_DIR}")
-    message(FATAL_ERROR "The installed BioDynaMo environment file ($ENV{BDM_INSTALL_DIR}/biodynamo-env.sh) was outdated. \
-We have updated the file, but you have to call 'source $ENV{BDM_INSTALL_DIR}/biodynamo-env.sh' and retry this command.")
+    file(COPY "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" DESTINATION "${BDM_INSTALL_DIR}")
+    print_warning()
+    message( "We found another BioDynaMo environment file ($ENV{BDM_INSTALL_DIR}/biodynamo-env.sh). However, it is outdated. \
+We have updated the file automatically.")
+    print_line()
+
 endif()
 
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
 # -------------------- find packages ------------------------------------------
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 # CMake cannot find LLVM's Clang OpenMP library by default (this makes
 # find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
 # Furthermore, rootcling cannot find omp.h by default, so we copy this (with a
@@ -77,7 +95,11 @@ if(opencl)
   find_package(OpenCL)
 endif()
 find_package(Git)
-find_package(ROOT REQUIRED COMPONENTS Geom Gui)
+
+# Find ROOT and check its installation
+find_package(ROOT COMPONENTS Geom Gui)
+verify_ROOT()
+
 if (dict)
   add_definitions("-DUSE_DICT")
 endif()
@@ -122,13 +144,15 @@ if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
   endif()
 endif()
 
-find_package(VTune)
-if(${VTune_FOUND})
-  include_directories(${VTUNE_INCLUDE_DIR})
-  add_definitions("-DUSE_VTUNE")
-  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
-else()
-  message(WARNING "VTune not found")
+if (vtune)
+    find_package(VTune)
+    if(${VTune_FOUND})
+        include_directories(${VTUNE_INCLUDE_DIR})
+        add_definitions("-DUSE_VTUNE")
+        set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
+    else()
+        message(WARNING "VTune not found")
+    endif()
 endif()
 
 # -------------------- includes -----------------------------------------------
@@ -180,6 +204,10 @@ build_libbiodynamo(biodynamo
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
+endif()
+
+if (NOT ROOT_FOUND)
+    add_dependencies(${BIODYNAMO_TARGET_NAME} ROOT)
 endif()
 
 # Check if OpenCL C++ bindings are installed
@@ -277,7 +305,6 @@ if (test)
   bdm_add_test_executable(runBiodynamoTestsMain
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS})
-
   #   separate test binaries - each source file is compiled into a separate binary
   # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
   # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
@@ -291,6 +318,10 @@ if (test)
   #                           SOURCES ${file}
   #                           HEADERS ${TEST_HEADER})
   # endforeach()
+
+  if (NOT ROOT_FOUND)
+      add_dependencies(${BIODYNAMO_TEST_TARGET_NAME} ROOT)
+  endif()
 
   # integration tests
   if (NOT coverage)
@@ -311,3 +342,11 @@ include(Installation)
 
 # -------------------- add targets for code style and submission checks --------
 include(CppStyleGuideChecks)
+
+# --------------------- Final Message to the user ------------------------------
+
+PRINT_LINE()
+MESSAGE("You have just finished to configure BioDynaMo. Now you can run \"make .\" to compile it.\n\
+Remember to source ${BDM_INSTALL_DIR}/biodynamo-env.sh before actually running the tests or using\n\
+the library.")
+PRINT_LINE()
