@@ -87,7 +87,7 @@ struct Math {
       vect_perp[0] = a[1];
       vect_perp[1] = -a[0];
       vect_perp[2] = 0.0;
-      vect_perp = Normalize(vect_perp);
+      vect_perp.Normalize();
       vect_perp = RotAroundAxis(vect_perp, 6.35 * random, a);
     }
     return vect_perp;
@@ -102,7 +102,8 @@ struct Math {
   /// @return the vector after rotation
   static Double3 RotAroundAxis(const Double3& vector, double theta,
                                const Double3& axis) {
-    auto naxis = Normalize(axis);
+    auto naxis = axis;
+    naxis.Normalize();
 
     auto temp_1 = naxis*(vector*naxis);
     auto temp_2 = (vector-temp_1)*std::cos(-theta);

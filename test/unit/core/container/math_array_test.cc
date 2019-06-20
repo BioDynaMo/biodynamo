@@ -81,22 +81,25 @@ TEST(MathArray, math_operators) {
 }
 
 TEST(MathArray, complex_operations) {
-  MathArray<double, 4> a;
+  MathArray<double, 3> a;
   MathArray<double, 4> b{0, 0, 0, 0};
   MathArray<double, 4> c{1, 2, 3, 4};
 
-  MathArray<double, 4> fill_result{1, 1, 1, 1};
-  MathArray<double, 4> normalize_result{0.5, 0.5, 0.5, 0.5};
+  MathArray<double, 3> fill_result{1, 1, 1};
   MathArray<double, 4> entrywise_result{1, 4, 9, 16};
 
   a.fill(1);
   ASSERT_EQ(a, fill_result);
 
-  ASSERT_EQ(a.Sum(), 4);
+  ASSERT_EQ(a.Sum(), 3);
 
-  ASSERT_EQ(a.Norm(), 2);
+  EXPECT_NEAR(a.Norm(), 1.7320508075688772935, abs_error<double>::value);
 
-  ASSERT_EQ(a.Normalize(), normalize_result);
+  a = {1.1, 2.2, 3.3};
+  a.Normalize();
+  EXPECT_NEAR(0.2672612419124244187, a[0], abs_error<double>::value);
+  EXPECT_NEAR(0.5345224838248488374, a[1], abs_error<double>::value);
+  EXPECT_NEAR(0.8017837257372732561, a[2], abs_error<double>::value);
 
   ASSERT_EQ(b.Norm(), 1);
 

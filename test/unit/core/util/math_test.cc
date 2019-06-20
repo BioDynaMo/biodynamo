@@ -18,24 +18,6 @@
 
 namespace bdm {
 
-TEST(MathUtilTest, NormalizeZero) {
-  Double3 vector = {0, 0, 0};
-  auto result = Math::Normalize(vector);
-
-  EXPECT_NEAR(0, result[0], abs_error<double>::value);
-  EXPECT_NEAR(0, result[1], abs_error<double>::value);
-  EXPECT_NEAR(0, result[2], abs_error<double>::value);
-}
-
-TEST(MathUtilTest, Normalize) {
-  Double3 vector = {1.1, 2.2, 3.3};
-  auto result = Math::Normalize(vector);
-
-  EXPECT_NEAR(0.2672612419124244187, result[0], abs_error<double>::value);
-  EXPECT_NEAR(0.5345224838248488374, result[1], abs_error<double>::value);
-  EXPECT_NEAR(0.8017837257372732561, result[2], abs_error<double>::value);
-}
-
 TEST(MathUtilTest, L2Distance) {
   Double3 vector1 = {0, 0, 0};
   Double3 vector2 = {1, 2, 3};

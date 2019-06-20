@@ -347,7 +347,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto growth_direction =
         Math::Perp3(GetUnitaryAxisDirectionVector()+rand_noise,
                     random->Uniform(0, 1));
-    growth_direction = Math::Normalize(growth_direction);
+    growth_direction.Normalize();
     return Branch(diameter, growth_direction);
   }
 
@@ -563,7 +563,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // scaling for integration step
     auto* core_param = Simulation::GetActive()->GetParam();
     double length = speed * core_param->simulation_time_step_;
-    auto displacement = Math::Normalize(direction)*length;
+    auto dir = direction;
+    auto displacement = dir.Normalize()*length;
     auto new_mass_location = displacement+mass_location_;
     // here I have to define the actual length ..........
     auto relative_ml = mother_->OriginOf(Base::GetUid());  //  change to auto&&
@@ -780,7 +781,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // x (new) = something new
     // z (new) = x (new) cross y(old)
     // y (new) = z(new) cross x(new)
-    x_axis_ = Math::Normalize(spring_axis_);
+    auto spring_axis_normalized = spring_axis_;
+    x_axis_ = spring_axis_normalized.Normalize();
     z_axis_ = Math::CrossProduct(x_axis_, y_axis_);
     double norm_of_z = z_axis_.Norm();
     if (norm_of_z < 1E-10) {  // TODO(neurites) use parameter
@@ -1290,7 +1292,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
     // mass location and spring axis
     const auto& mother_ml = mother->GetMassLocation();
-    SetSpringAxis(Math::Normalize(dir_1)*length);
+    dir_1.Normalize();
+    SetSpringAxis(dir_1*length);
     SetMassLocation(mother_ml+spring_axis_);
     UpdatePosition();
     UpdateLocalCoordinateAxis();  // (important so that x_axis_ is correct)
@@ -1360,6 +1363,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     Copy(*mother);
 
     auto dir = direction;
+    auto direction_normalized = direction;
+    direction_normalized.Normalize();
     const auto& mother_spring_axis = mother->GetSpringAxis();
     double angle_with_side_branch =
         Math::AngleRadian(mother_spring_axis, direction);
@@ -1367,11 +1372,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
         angle_with_side_branch > 2.35) {  // 45-135 degrees
       auto p = Math::CrossProduct(mother_spring_axis, direction);
       p = Math::CrossProduct(p, mother_spring_axis);
-      Double3 direction_tmp (direction);
-      dir = direction_tmp.Normalize()+p.Normalize();
+      dir = direction_normalized+p.Normalize();
     }
     // location of mass and computation center
-    auto new_spring_axis = Math::Normalize(direction)*length;
+    auto new_spring_axis = direction_normalized*length;
     const auto& mother_ml = mother->GetMassLocation();
 
     SetSpringAxis(new_spring_axis);

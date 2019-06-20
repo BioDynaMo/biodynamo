@@ -353,13 +353,10 @@ class Cell : public SimObject {
       // maximum distances possible
       auto* param = Simulation::GetActive()->GetParam();
       if (norm_of_force * mh > param->simulation_max_displacement_) {
-        const auto& norm = Math::Normalize(movement_at_next_step);
-        movement_at_next_step[0] =
-            norm[0] * param->simulation_max_displacement_;
-        movement_at_next_step[1] =
-            norm[1] * param->simulation_max_displacement_;
-        movement_at_next_step[2] =
-            norm[2] * param->simulation_max_displacement_;
+        movement_at_next_step.Normalize();
+        movement_at_next_step[0] *= param->simulation_max_displacement_;
+        movement_at_next_step[1] *= param->simulation_max_displacement_;
+        movement_at_next_step[2] *= param->simulation_max_displacement_;
       }
     }
     return movement_at_next_step;
