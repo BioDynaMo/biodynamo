@@ -31,18 +31,6 @@ struct Math {
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
 
-  /// Normalizes a vector.
-  /// @param a a vector
-  /// @return the vector divided by its norm
-  static Double3 Normalize(const Double3& a) {
-    const auto&& norm = a.Norm();
-    Double3 ret;
-    ret[0] = a[0] / norm;
-    ret[1] = a[1] / norm;
-    ret[2] = a[2] / norm;
-    return ret;
-  }
-
   // Helper function that returns distance (L2 norm) between two positions in 3D
   static double GetL2Distance(const Double3& pos1, const Double3& pos2) {
     Double3 dist_array;
@@ -102,7 +90,7 @@ struct Math {
 
     auto temp_1 = naxis*(vector*naxis);
     auto temp_2 = (vector-temp_1)*std::cos(-theta);
-    auto temp_3 = CrossProduct(vector, naxis)*std::sin(-theta);
+    auto temp_3 = vector.CrossProduct(naxis)*std::sin(-theta);
 
     return {
         temp_1[0] + temp_2[0] + temp_3[0], temp_1[1] + temp_2[1] + temp_3[1],

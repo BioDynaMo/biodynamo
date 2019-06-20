@@ -46,7 +46,7 @@ struct Chemotaxis : public BaseBiologyModule {
       Double3 diff_gradient;
 
       dg->GetGradient(position, &gradient);
-      diff_gradient = Math::ScalarMult(5, gradient);
+      diff_gradient = gradient*5;
       cell->UpdatePosition(diff_gradient);
     }
   }

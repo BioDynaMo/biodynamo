@@ -28,14 +28,6 @@ TEST(MathUtilTest, L2Distance) {
   EXPECT_NEAR(3.7416573867739413855, result2, abs_error<double>::value);
 }
 
-TEST(MathUtilTest, CrossProduct) {
-  Double3 a = {1.1, 2.2, 3.3};
-  Double3 b = {5.8, 7.3, 11.87};
-
-  auto&& result = Math::CrossProduct(a, b);
-  EXPECT_ARR_NEAR(result, {2.024, 6.083, -4.73});
-}
-
 TEST(MathUtilTest, RotAroundAxis) {
   Double3 axis = {1.0, 1.0, 0.0};
   Double3 vector = {4, 5, 6};
