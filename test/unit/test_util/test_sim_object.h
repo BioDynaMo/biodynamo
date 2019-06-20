@@ -50,7 +50,7 @@ class TestSimObject : public SimObject {
 
   void ApplyDisplacement(const Double3&) override {}
 
-  Double3 CalculateDisplacement(double squared_radius) override {
+  Double3 CalculateDisplacement(double squared_radius, double dt) override {
     return {0, 0, 0};
   }
 
