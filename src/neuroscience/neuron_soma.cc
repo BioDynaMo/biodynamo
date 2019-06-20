@@ -15,6 +15,7 @@
 #include "neuroscience/neuron_soma.h"
 
 #include <algorithm>
+
 #include "core/resource_manager.h"
 #include "neuroscience/event/new_neurite_extension_event.h"
 #include "neuroscience/neurite_element.h"
@@ -28,8 +29,7 @@ NeuronSoma::NeuronSoma() {}
 
 NeuronSoma::~NeuronSoma() {}
 
-NeuronSoma::NeuronSoma(const std::array<double, 3>& position)
-    : Base(position) {}
+NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 
 NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so,
                        uint64_t new_oid)
@@ -68,9 +68,9 @@ void NeuronSoma::EventHandler(const Event& event, SimObject* other1,
   // do nothing for CellDivisionEvent or others
 }
 
-NeuriteElement* NeuronSoma::ExtendNewNeurite(
-    const std::array<double, 3>& direction, NeuriteElement* prototype) {
-  auto dir = Math::Add(direction, Base::position_);
+NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
+                                             NeuriteElement* prototype) {
+  auto dir = direction + Base::position_;
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
   auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
   return ExtendNewNeurite(param->neurite_default_diameter_, angles[2],
@@ -101,20 +101,18 @@ void NeuronSoma::RemoveDaughter(const SoPointer<NeuriteElement>& daughter) {
   daughters_.erase(it);
 }
 
-std::array<double, 3> NeuronSoma::OriginOf(SoUid daughter_uid) const {
-  std::array<double, 3> xyz = daughters_coord_.at(daughter_uid);
+Double3 NeuronSoma::OriginOf(SoUid daughter_uid) const {
+  Double3 xyz = daughters_coord_.at(daughter_uid);
 
   double radius = Base::diameter_ * .5;
-  xyz = Math::ScalarMult(radius, xyz);
+  xyz = xyz * radius;
 
-  const auto& pos = Base::position_;
+  Double3 axis_0 = {Base::kXAxis[0], Base::kYAxis[0], Base::kZAxis[0]};
+  Double3 axis_1 = {Base::kXAxis[1], Base::kYAxis[1], Base::kZAxis[1]};
+  Double3 axis_2 = {Base::kXAxis[2], Base::kYAxis[2], Base::kZAxis[2]};
 
-  return {pos[0] + xyz[0] * Base::kXAxis[0] + xyz[1] * Base::kYAxis[0] +
-              xyz[2] * Base::kZAxis[0],
-          pos[1] + xyz[0] * Base::kXAxis[1] + xyz[1] * Base::kYAxis[1] +
-              xyz[2] * Base::kZAxis[1],
-          pos[2] + xyz[0] * Base::kXAxis[2] + xyz[1] * Base::kYAxis[2] +
-              xyz[2] * Base::kZAxis[2]};
+  Double3 result = {xyz * axis_0, xyz * axis_1, xyz * axis_2};
+  return Base::position_ + result;
 }
 
 void NeuronSoma::UpdateDependentPhysicalVariables() {}

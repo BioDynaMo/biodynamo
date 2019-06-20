@@ -29,7 +29,7 @@ class TestSimObject : public SimObject {
 
   explicit TestSimObject(int data) : data_(data) {}
 
-  explicit TestSimObject(const std::array<double, 3>& pos) : position_{pos} {}
+  explicit TestSimObject(const Double3& pos) : position_{pos} {}
 
   TestSimObject(const Event& event, SimObject* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
@@ -44,17 +44,13 @@ class TestSimObject : public SimObject {
 
   void RunDiscretization() override {}
 
-  const std::array<double, 3>& GetPosition() const override {
-    return position_;
-  }
+  const Double3& GetPosition() const override { return position_; }
 
-  void SetPosition(const std::array<double, 3>& pos) override {
-    position_ = pos;
-  }
+  void SetPosition(const Double3& pos) override { position_ = pos; }
 
-  void ApplyDisplacement(const std::array<double, 3>&) override {}
+  void ApplyDisplacement(const Double3&) override {}
 
-  std::array<double, 3> CalculateDisplacement(double squared_radius) override {
+  Double3 CalculateDisplacement(double squared_radius) override {
     return {0, 0, 0};
   }
 
@@ -65,7 +61,7 @@ class TestSimObject : public SimObject {
   void SetData(double data) { data_ = data; }
 
  protected:
-  std::array<double, 3> position_ = {{0, 0, 0}};
+  Double3 position_ = {{0, 0, 0}};
   double diameter_ = 0;
   int data_ = 0;
 };

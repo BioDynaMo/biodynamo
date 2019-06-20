@@ -16,11 +16,11 @@
 
 namespace bdm {
 
-constexpr std::array<double, 3> Cell::kXAxis;
-constexpr std::array<double, 3> Cell::kYAxis;
-constexpr std::array<double, 3> Cell::kZAxis;
+const Double3 Cell::kXAxis = {1.0, 0.0, 0.0};
+const Double3 Cell::kYAxis = {0.0, 1.0, 0.0};
+const Double3 Cell::kZAxis = {0.0, 0.0, 1.0};
 
-void Cell::ApplyDisplacement(const std::array<double, 3>& displacement) {
+void Cell::ApplyDisplacement(const Double3& displacement) {
   if (displacement[0] == 0 && displacement[1] == 0 && displacement[2] == 0) {
     return;
   }
@@ -30,12 +30,10 @@ void Cell::ApplyDisplacement(const std::array<double, 3>& displacement) {
   SetTractorForce({0, 0, 0});
 }
 
-std::array<double, 3> Cell::TransformCoordinatesGlobalToPolar(
-    const std::array<double, 3>& pos) const {
-  auto vector_to_point = Math::Subtract(pos, position_);
-  std::array<double, 3> local_cartesian{Math::Dot(kXAxis, vector_to_point),
-                                        Math::Dot(kYAxis, vector_to_point),
-                                        Math::Dot(kZAxis, vector_to_point)};
+Double3 Cell::TransformCoordinatesGlobalToPolar(const Double3& pos) const {
+  auto vector_to_point = pos - position_;
+  Double3 local_cartesian{kXAxis * vector_to_point, kYAxis * vector_to_point,
+                          kZAxis * vector_to_point};
   double radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
                             local_cartesian[1] * local_cartesian[1] +
                             local_cartesian[2] * local_cartesian[2]);

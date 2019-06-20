@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "core/container/inline_vector.h"
+#include "core/container/math_array.h"
 #include "core/default_force.h"
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
@@ -41,18 +42,17 @@ class Cell : public SimObject {
 
  public:
   /// First axis of the local coordinate system.
-  static constexpr std::array<double, 3> kXAxis = {{1.0, 0.0, 0.0}};
+  static const Double3 kXAxis;
   /// Second axis of the local coordinate system.
-  static constexpr std::array<double, 3> kYAxis = {{0.0, 1.0, 0.0}};
+  static const Double3 kYAxis;
   /// Third axis of the local coordinate system.
-  static constexpr std::array<double, 3> kZAxis = {{0.0, 0.0, 1.0}};
+  static const Double3 kZAxis;
 
   Cell() : density_(1.0) {}
   explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
-  explicit Cell(const std::array<double, 3>& position)
-      : position_(position), density_{1.0} {}
+  explicit Cell(const Double3& position) : position_(position), density_{1.0} {}
 
   /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.
@@ -76,19 +76,17 @@ class Cell : public SimObject {
       double x_coord = std::cos(cdevent->theta_) * std::sin(cdevent->phi_);
       double y_coord = std::sin(cdevent->theta_) * std::sin(cdevent->phi_);
       double z_coord = std::cos(cdevent->phi_);
+      Double3 coords = {x_coord, y_coord, z_coord};
       double total_length_of_displacement = radius / 4.0;
 
       const auto x_axis = mother_cell->kXAxis;
       const auto y_axis = mother_cell->kYAxis;
       const auto z_axis = mother_cell->kZAxis;
-      std::array<double, 3> axis_of_division{
-          total_length_of_displacement *
-              (x_coord * x_axis[0] + y_coord * y_axis[0] + z_coord * z_axis[0]),
-          total_length_of_displacement *
-              (x_coord * x_axis[1] + y_coord * y_axis[1] + z_coord * z_axis[1]),
-          total_length_of_displacement *
-              (x_coord * x_axis[2] + y_coord * y_axis[2] +
-               z_coord * z_axis[2])};
+
+      Double3 axis_of_division =
+          (coords.EntryWiseProduct(x_axis) + coords.EntryWiseProduct(y_axis) +
+           coords.EntryWiseProduct(z_axis)) *
+          total_length_of_displacement;
 
       // two equations for the center displacement :
       //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
@@ -103,17 +101,12 @@ class Cell : public SimObject {
 
       // position
       auto mother_pos = mother_cell->GetPosition();
-      std::array<double, 3> new_position{
-          mother_pos[0] + d_2 * axis_of_division[0],
-          mother_pos[1] + d_2 * axis_of_division[1],
-          mother_pos[2] + d_2 * axis_of_division[2]};
+      auto new_position = mother_pos + (axis_of_division * d_2);
       daughter->SetPosition(new_position);
 
       // E) This sphere becomes the 1st daughter
       // move these cells on opposite direction
-      mother_pos[0] -= d_1 * axis_of_division[0];
-      mother_pos[1] -= d_1 * axis_of_division[1];
-      mother_pos[2] -= d_1 * axis_of_division[2];
+      mother_pos -= axis_of_division * d_1;
       // update mother here and not in EventHandler to avoid recomputation
       mother_cell->SetPosition(mother_pos);
       mother_cell->SetVolume(new_volume);
@@ -167,19 +160,17 @@ class Cell : public SimObject {
   ///
   /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
   /// \see CellDivisionEvent
-  virtual Cell* Divide(const std::array<double, 3>& axis) {
+  virtual Cell* Divide(const Double3& axis) {
     auto* random = Simulation::GetActive()->GetRandom();
-    auto polarcoord =
-        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
+    auto polarcoord = TransformCoordinatesGlobalToPolar(axis + position_);
     return Divide(random->Uniform(0.9, 1.1), polarcoord[1], polarcoord[2]);
   }
 
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  virtual Cell* Divide(double volume_ratio, const std::array<double, 3>& axis) {
-    auto polarcoord =
-        TransformCoordinatesGlobalToPolar(Math::Add(axis, position_));
+  virtual Cell* Divide(double volume_ratio, const Double3& axis) {
+    auto polarcoord = TransformCoordinatesGlobalToPolar(axis + position_);
     return Divide(volume_ratio, polarcoord[1], polarcoord[2]);
   }
 
@@ -203,13 +194,9 @@ class Cell : public SimObject {
 
   double GetDensity() const { return density_; }
 
-  const std::array<double, 3>& GetPosition() const override {
-    return position_;
-  }
+  const Double3& GetPosition() const override { return position_; }
 
-  const std::array<double, 3>& GetTractorForce() const {
-    return tractor_force_;
-  }
+  const Double3& GetTractorForce() const { return tractor_force_; }
 
   double GetVolume() const { return volume_; }
 
@@ -232,12 +219,12 @@ class Cell : public SimObject {
 
   void SetDensity(double density) { density_ = density; }
 
-  void SetPosition(const std::array<double, 3>& position) override {
+  void SetPosition(const Double3& position) override {
     position_ = position;
     SetRunDisplacementForAllNextTs();
   }
 
-  void SetTractorForce(const std::array<double, 3>& tractor_force) {
+  void SetTractorForce(const Double3& tractor_force) {
     tractor_force_ = tractor_force;
   }
 
@@ -266,14 +253,12 @@ class Cell : public SimObject {
     volume_ = Math::kPi / 6 * std::pow(diameter_, 3);
   }
 
-  void UpdatePosition(const std::array<double, 3>& delta) {
-    position_[0] += delta[0];
-    position_[1] += delta[1];
-    position_[2] += delta[2];
+  void UpdatePosition(const Double3& delta) {
+    position_ += delta;
     SetRunDisplacementForAllNextTs();
   }
 
-  std::array<double, 3> CalculateDisplacement(double squared_radius) override {
+  Double3 CalculateDisplacement(double squared_radius) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied
@@ -293,20 +278,18 @@ class Cell : public SimObject {
 
     auto* param = Simulation::GetActive()->GetParam();
     double h = param->simulation_time_step_;
-    std::array<double, 3> movement_at_next_step{0, 0, 0};
+    Double3 movement_at_next_step{0, 0, 0};
 
     // BIOLOGY :
     // 0) Start with tractor force : What the biology defined as active
     // movement------------
-    movement_at_next_step[0] += h * tf[0];
-    movement_at_next_step[1] += h * tf[1];
-    movement_at_next_step[2] += h * tf[2];
+    movement_at_next_step += tf * h;
 
     // PHYSICS
     // the physics force to move the point mass
-    std::array<double, 3> translation_force_on_point_mass{0, 0, 0};
+    Double3 translation_force_on_point_mass{0, 0, 0};
     // the physics force to rotate the cell
-    // std::array<double, 3> rotation_force { 0, 0, 0 };
+    // Double3 rotation_force { 0, 0, 0 };
 
     // 1) "artificial force" to maintain the sphere in the ecm simulation
     // boundaries--------
@@ -331,12 +314,8 @@ class Cell : public SimObject {
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
-    double norm_of_force = std::sqrt(translation_force_on_point_mass[0] *
-                                         translation_force_on_point_mass[0] +
-                                     translation_force_on_point_mass[1] *
-                                         translation_force_on_point_mass[1] +
-                                     translation_force_on_point_mass[2] *
-                                         translation_force_on_point_mass[2]);
+    double norm_of_force = std::sqrt(translation_force_on_point_mass *
+                                     translation_force_on_point_mass);
 
     // is there enough force to :
     //  - make us biologically move (Tractor) :
@@ -348,29 +327,21 @@ class Cell : public SimObject {
     // adding the physics translation (scale by weight) if important enough
     if (physical_translation) {
       // We scale the move with mass and time step
-      movement_at_next_step[0] += translation_force_on_point_mass[0] * mh;
-      movement_at_next_step[1] += translation_force_on_point_mass[1] * mh;
-      movement_at_next_step[2] += translation_force_on_point_mass[2] * mh;
+      movement_at_next_step += translation_force_on_point_mass * mh;
 
       // Performing the translation itself :
-
       // but we want to avoid huge jumps in the simulation, so there are
       // maximum distances possible
       auto* param = Simulation::GetActive()->GetParam();
       if (norm_of_force * mh > param->simulation_max_displacement_) {
-        const auto& norm = Math::Normalize(movement_at_next_step);
-        movement_at_next_step[0] =
-            norm[0] * param->simulation_max_displacement_;
-        movement_at_next_step[1] =
-            norm[1] * param->simulation_max_displacement_;
-        movement_at_next_step[2] =
-            norm[2] * param->simulation_max_displacement_;
+        movement_at_next_step.Normalize();
+        movement_at_next_step *= param->simulation_max_displacement_;
       }
     }
     return movement_at_next_step;
   }
 
-  void ApplyDisplacement(const std::array<double, 3>& displacement) override;
+  void ApplyDisplacement(const Double3& displacement) override;
 
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
@@ -378,12 +349,11 @@ class Cell : public SimObject {
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param coord: position in absolute coordinates - [x,y,z] cartesian values
   /// @return the position in local coordinates
-  std::array<double, 3> TransformCoordinatesGlobalToPolar(
-      const std::array<double, 3>& coord) const;
+  Double3 TransformCoordinatesGlobalToPolar(const Double3& coord) const;
 
   /// NB: Use setter and don't assign values directly
-  std::array<double, 3> position_ = {{0, 0, 0}};
-  std::array<double, 3> tractor_force_ = {{0, 0, 0}};
+  Double3 position_ = {{0, 0, 0}};
+  Double3 tractor_force_ = {{0, 0, 0}};
   /// NB: Use setter and don't assign values directly
   double diameter_ = 0;
   double volume_ = 0;

@@ -24,5 +24,7 @@
     <class name="bdm::ModuleParam" />
     <class name="unordered_map<unsigned long,bdm::ModuleParam*>" />
     <class name="bdm::Random" />
+    <class name="bdm::MathArray<double, 3>" />
+    <class name="bdm::MathArray<double, 4>" />
   </selection>
 </lcgdict>

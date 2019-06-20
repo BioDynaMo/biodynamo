@@ -90,7 +90,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       const auto& e = dynamic_cast<const NeuriteBifurcationEvent&>(event);
       auto* ne = dynamic_cast<NeuriteElement*>(other);
       double diameter;
-      std::array<double, 3> direction;
+      Double3 direction;
       if (new_oid == 0) {
         // left branch
         diameter = e.diameter_left_;
@@ -185,26 +185,19 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetDensity(double density) { density_ = density; }
 
-  const std::array<double, 3>& GetPosition() const override {
-    return position_;
-  }
+  const Double3& GetPosition() const override { return position_; }
 
-  void SetPosition(const std::array<double, 3>& position) override {
+  void SetPosition(const Double3& position) override {
     position_ = position;
-    SetMassLocation(Math::Add(position, Math::ScalarMult(0.5, spring_axis_)));
+    SetMassLocation(position + spring_axis_ * 0.5);
   }
 
-  void UpdatePosition() {
-    position_ =
-        Math::Subtract(mass_location_, Math::ScalarMult(0.5, spring_axis_));
-  }
+  void UpdatePosition() { position_ = mass_location_ - (spring_axis_ * 0.5); }
 
   /// return end of neurite element position
-  const std::array<double, 3>& GetMassLocation() const {
-    return mass_location_;
-  }
+  const Double3& GetMassLocation() const { return mass_location_; }
 
-  void SetMassLocation(const std::array<double, 3>& mass_location) {
+  void SetMassLocation(const Double3& mass_location) {
     mass_location_ = mass_location;
     SetRunDisplacementForAllNextTs();
   }
@@ -213,9 +206,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetAdherence(double adherence) { adherence_ = adherence; }
 
-  const std::array<double, 3>& GetXAxis() const { return x_axis_; }
-  const std::array<double, 3>& GetYAxis() const { return y_axis_; }
-  const std::array<double, 3>& GetZAxis() const { return z_axis_; }
+  const Double3& GetXAxis() const { return x_axis_; }
+  const Double3& GetYAxis() const { return y_axis_; }
+  const Double3& GetZAxis() const { return z_axis_; }
 
   double GetVolume() const { return volume_; }
 
@@ -229,9 +222,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  std::array<double, 3> OriginOf(SoUid daughter_uid) const override {
-    return mass_location_;
-  }
+  Double3 OriginOf(SoUid daughter_uid) const override { return mass_location_; }
 
   // TODO(neurites) arrange in order end
 
@@ -272,10 +263,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       // cf removeproximalCylinder()
       resting_length_ =
           spring_constant_ * actual_length_ / (tension_ + spring_constant_);
-      SetSpringAxis(Math::ScalarMult(factor, spring_axis_));
+      SetSpringAxis(spring_axis_ * factor);
 
-      SetMassLocation(
-          Math::Add(mother_->OriginOf(Base::GetUid()), spring_axis_));
+      SetMassLocation(mother_->OriginOf(Base::GetUid()) + spring_axis_);
       UpdatePosition();
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_soma) {
@@ -305,9 +295,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// possible).
   /// @param speed
   /// @param direction
-  void ElongateTerminalEnd(double speed,
-                           const std::array<double, 3>& direction) {
-    double temp = Math::Dot(direction, spring_axis_);
+  void ElongateTerminalEnd(double speed, const Double3& direction) {
+    double temp = direction * spring_axis_;
     if (temp > 0) {
       MovePointMass(speed, direction);
     }
@@ -322,8 +311,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// \brief Create a branch for this neurite element.
   ///
   /// \see NeuriteBranchingEvent
-  NeuriteElement* Branch(double new_branch_diameter,
-                         const std::array<double, 3>& direction,
+  NeuriteElement* Branch(double new_branch_diameter, const Double3& direction,
                          double length = 1.0) {
     // create a new neurite element for side branch
     // we first split this neurite element into two pieces
@@ -343,7 +331,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   ///
   /// Diameter of new side branch will be equal to this neurites diameter.
   /// \see NeuriteBranchingEvent
-  NeuriteElement* Branch(const std::array<double, 3>& direction) {
+  NeuriteElement* Branch(const Double3& direction) {
     return Branch(diameter_, direction);
   }
 
@@ -354,10 +342,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   NeuriteElement* Branch(double diameter) {
     auto* random = Simulation::GetActive()->GetRandom();
     auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
-    auto growth_direction =
-        Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
-                    random->Uniform(0, 1));
-    growth_direction = Math::Normalize(growth_direction);
+    auto growth_direction = Math::Perp3(
+        GetUnitaryAxisDirectionVector() + rand_noise, random->Uniform(0, 1));
+    growth_direction.Normalize();
     return Branch(diameter, growth_direction);
   }
 
@@ -370,9 +357,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     auto* random = Simulation::GetActive()->GetRandom();
     double branch_diameter = diameter_;
     auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
-    auto growth_direction =
-        Math::Perp3(Math::Add(GetUnitaryAxisDirectionVector(), rand_noise),
-                    random->Uniform(0, 1));
+    auto growth_direction = Math::Perp3(
+        GetUnitaryAxisDirectionVector() + rand_noise, random->Uniform(0, 1));
     return Branch(branch_diameter, growth_direction);
   }
 
@@ -388,10 +374,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// \brief Growth cone bifurcation.
   ///
   /// \see NeuriteBifurcationEvent
-  std::array<NeuriteElement*, 2> Bifurcate(
-      double length, double diameter_1, double diameter_2,
-      const std::array<double, 3>& direction_1,
-      const std::array<double, 3>& direction_2) {
+  std::array<NeuriteElement*, 2> Bifurcate(double length, double diameter_1,
+                                           double diameter_2,
+                                           const Double3& direction_1,
+                                           const Double3& direction_2) {
     // 1) physical bifurcation
     // check it is a terminal branch
     if (daughter_left_ != nullptr) {
@@ -414,17 +400,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// \brief Growth cone bifurcation.
   ///
   /// \see NeuriteBifurcationEvent
-  std::array<NeuriteElement*, 2> Bifurcate(
-      double diameter_1, double diameter_2,
-      const std::array<double, 3>& direction_1,
-      const std::array<double, 3>& direction_2);
+  std::array<NeuriteElement*, 2> Bifurcate(double diameter_1, double diameter_2,
+                                           const Double3& direction_1,
+                                           const Double3& direction_2);
 
   /// \brief Growth cone bifurcation.
   ///
   /// \see NeuriteBifurcationEvent
-  std::array<NeuriteElement*, 2> Bifurcate(
-      const std::array<double, 3>& direction_1,
-      const std::array<double, 3>& direction_2) {
+  std::array<NeuriteElement*, 2> Bifurcate(const Double3& direction_1,
+                                           const Double3& direction_2) {
     // initial default length :
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     double l = param->neurite_default_actual_length_;
@@ -498,8 +482,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Returns the total force that this `NeuriteElement` exerts on it's mother.
   /// It is the sum of the spring force and the part of the inter-object force
   /// computed earlier in `CalculateDisplacement`
-  std::array<double, 3> ForceTransmittedFromDaugtherToMother(
-      const NeuronOrNeurite& mother) {
+  Double3 ForceTransmittedFromDaugtherToMother(const NeuronOrNeurite& mother) {
     if (mother_ != mother) {
       Fatal("NeuriteElement", "Given object is not the mother!");
       return {0, 0, 0};
@@ -513,8 +496,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     if (factor < 0) {
       factor = 0;
     }
-    return Math::Add(Math::ScalarMult(factor, spring_axis_),
-                     force_to_transmit_to_proximal_mass_);
+    return (spring_axis_ * factor) + force_to_transmit_to_proximal_mass_;
   }
 
   // ***************************************************************************
@@ -568,7 +550,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   ///
   /// @param speed      of the growth rate (microns/hours).
   /// @param direction  the 3D direction of movement.
-  void MovePointMass(double speed, const std::array<double, 3>& direction) {
+  void MovePointMass(double speed, const Double3& direction) {
     // check if is a terminal branch
     if (daughter_left_ != nullptr) {
       return;
@@ -577,14 +559,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // scaling for integration step
     auto* core_param = Simulation::GetActive()->GetParam();
     double length = speed * core_param->simulation_time_step_;
-    auto displacement = Math::ScalarMult(length, Math::Normalize(direction));
-    auto new_mass_location = Math::Add(displacement, mass_location_);
+    auto dir = direction;
+    auto displacement = dir.Normalize() * length;
+    auto new_mass_location = displacement + mass_location_;
     // here I have to define the actual length ..........
     auto relative_ml = mother_->OriginOf(Base::GetUid());  //  change to auto&&
-    SetSpringAxis(Math::Subtract(new_mass_location, relative_ml));
+    SetSpringAxis(new_mass_location - relative_ml);
     SetMassLocation(new_mass_location);
     UpdatePosition();
-    SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
+    SetActualLength(std::sqrt(spring_axis_ * spring_axis_));
     // process of elongation : setting tension to 0 increases the resting length
     SetRestingLengthForDesiredTension(0.0);
 
@@ -634,9 +617,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   // ***************************************************************************
 
   // TODO(neurites) documentation
-  std::array<double, 3> CalculateDisplacement(double squared_radius) override {
-    std::array<double, 3> force_on_my_point_mass{0, 0, 0};
-    std::array<double, 3> force_on_my_mothers_point_mass{0, 0, 0};
+  Double3 CalculateDisplacement(double squared_radius) override {
+    Double3 force_on_my_point_mass{0, 0, 0};
+    Double3 force_on_my_mothers_point_mass{0, 0, 0};
 
     // 1) Spring force
     //   Only the spring of this cylinder. The daughters spring also act on this
@@ -644,24 +627,21 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     double factor = -tension_ / actual_length_;  // the minus sign is important
                                                  // because the spring axis goes
                                                  // in the opposite direction
-    force_on_my_point_mass = Math::Add(force_on_my_point_mass,
-                                       Math::ScalarMult(factor, spring_axis_));
+    force_on_my_point_mass = force_on_my_point_mass + (spring_axis_ * factor);
 
     // 2) Force transmitted by daugthers (if they exist)
     if (daughter_left_ != nullptr) {
       auto force_from_daughter =
           daughter_left_->ForceTransmittedFromDaugtherToMother(*this);
-      force_on_my_point_mass =
-          Math::Add(force_on_my_point_mass, force_from_daughter);
+      force_on_my_point_mass = force_on_my_point_mass + force_from_daughter;
     }
     if (daughter_right_ != nullptr) {
       auto force_from_daughter =
           daughter_right_->ForceTransmittedFromDaugtherToMother(*this);
-      force_on_my_point_mass =
-          Math::Add(force_on_my_point_mass, force_from_daughter);
+      force_on_my_point_mass = force_on_my_point_mass + force_from_daughter;
     }
 
-    std::array<double, 3> force_from_neighbors = {0, 0, 0};
+    Double3 force_from_neighbors = {0, 0, 0};
 
     auto* core_param = Simulation::GetActive()->GetParam();
     // this value will be used to reduce force for neurite/neurite interactions
@@ -697,13 +677,12 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       }
 
       DefaultForce force;
-      std::array<double, 4> force_from_neighbor =
-          force.GetForce(this, neighbor);
+      Double4 force_from_neighbor = force.GetForce(this, neighbor);
 
       // hack: if the neighbour is a neurite, we need to reduce the force from
       // that neighbour in order to avoid kink behaviour
       if (neighbor->GetShape() == Shape::kCylinder) {
-        force_from_neighbor = Math::ScalarMult(h_over_m, force_from_neighbor);
+        force_from_neighbor = force_from_neighbor * h_over_m;
         has_neurite_neighbor = true;
       }
 
@@ -735,17 +714,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // that neighbour, we also need to reduce my internal force (from internal
     // tension and daughters)
     if (has_neurite_neighbor) {
-      force_on_my_point_mass =
-          Math::ScalarMult(h_over_m, force_on_my_point_mass);
+      force_on_my_point_mass = force_on_my_point_mass * h_over_m;
     }
 
-    force_on_my_point_mass =
-        Math::Add(force_on_my_point_mass, force_from_neighbors);
+    force_on_my_point_mass = force_on_my_point_mass + force_from_neighbors;
 
     // 5) define the force that will be transmitted to the mother
     force_to_transmit_to_proximal_mass_ = force_on_my_mothers_point_mass;
     //  6.1) Define movement scale
-    double force_norm = Math::Norm(force_on_my_point_mass);
+    double force_norm = force_on_my_point_mass.Norm();
     //  6.2) If is F not strong enough -> no movements
     if (force_norm < adherence_) {
       return {0, 0, 0};
@@ -759,22 +736,21 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
     //  6.4) There is an upper bound for the movement.
     if (displacement_norm > core_param->simulation_max_displacement_) {
-      displacement = Math::ScalarMult(
-          core_param->simulation_max_displacement_ / displacement_norm,
-          displacement);
+      displacement = displacement * (core_param->simulation_max_displacement_ /
+                                     displacement_norm);
     }
     return displacement;
   }
 
   // TODO(neurites) documentation
-  void ApplyDisplacement(const std::array<double, 3>& displacement) override {
+  void ApplyDisplacement(const Double3& displacement) override {
     // FIXME comparing doubles
-    if (displacement == std::array<double, 3>{0, 0, 0}) {
+    if (displacement == Double3{0, 0, 0}) {
       return;
     }
 
     // move of our mass
-    SetMassLocation(Math::Add(GetMassLocation(), displacement));
+    SetMassLocation(GetMassLocation() + displacement);
     // Recompute length, tension and re-center the computation node, and
     // redefine axis
     UpdateDependentPhysicalVariables();
@@ -802,9 +778,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // x (new) = something new
     // z (new) = x (new) cross y(old)
     // y (new) = z(new) cross x(new)
-    x_axis_ = Math::Normalize(spring_axis_);
+    auto spring_axis_normalized = spring_axis_;
+    x_axis_ = spring_axis_normalized.Normalize();
     z_axis_ = Math::CrossProduct(x_axis_, y_axis_);
-    double norm_of_z = Math::Norm(z_axis_);
+    double norm_of_z = z_axis_.Norm();
     if (norm_of_z < 1E-10) {  // TODO(neurites) use parameter
       // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
       // we start by re-defining new perp vectors. Ok, we loose the previous
@@ -812,7 +789,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       auto* random = Simulation::GetActive()->GetRandom();
       z_axis_ = Math::Perp3(x_axis_, random->Uniform(0, 1));
     } else {
-      z_axis_ = Math::ScalarMult((1 / norm_of_z), z_axis_);
+      z_axis_ = z_axis_ * (1 / norm_of_z);
     }
     y_axis_ = Math::CrossProduct(z_axis_, x_axis_);
   }
@@ -865,11 +842,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// of a point expressed in global cartesian coordinates
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param position in global coordinates
-  std::array<double, 3> TransformCoordinatesGlobalToLocal(
-      const std::array<double, 3>& position) const {
-    auto pos = Math::Subtract(position, ProximalEnd());
-    return {Math::Dot(pos, x_axis_), Math::Dot(pos, y_axis_),
-            Math::Dot(pos, z_axis_)};
+  Double3 TransformCoordinatesGlobalToLocal(const Double3& position) const {
+    auto pos = position - ProximalEnd();
+    return {pos * x_axis_, pos * y_axis_, pos * z_axis_};
   }
 
   /// L -> G
@@ -877,24 +852,22 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// ([1,0,0],[0,1,0],[0,0,1])
   /// of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
   /// @param position in local coordinates
-  std::array<double, 3> TransformCoordinatesLocalToGlobal(
-      const std::array<double, 3>& position) const {
-    std::array<double, 3> glob{
-        position[0] * x_axis_[0] + position[1] * y_axis_[0] +
-            position[2] * z_axis_[0],
-        position[0] * x_axis_[1] + position[1] * y_axis_[1] +
-            position[2] * z_axis_[1],
-        position[0] * x_axis_[2] + position[1] * y_axis_[2] +
-            position[2] * z_axis_[2]};
-    return Math::Add(glob, ProximalEnd());
+  Double3 TransformCoordinatesLocalToGlobal(const Double3& position) const {
+    Double3 axis_0{x_axis_[0], y_axis_[0], z_axis_[0]};
+    Double3 axis_1{x_axis_[1], y_axis_[1], z_axis_[1]};
+    Double3 axis_2{x_axis_[2], y_axis_[2], z_axis_[2]};
+    auto x = position * axis_0;
+    auto y = position * axis_1;
+    auto z = position * axis_2;
+    Double3 glob{x, y, z};
+    return glob + ProximalEnd();
   }
 
   ///  L -> P
   /// Returns the position in cylindrical coordinates (h,theta,r)
   /// of a point expressed in the local coordinate system (xAxis, yXis, zAxis).
   /// @param position in local coordinates
-  std::array<double, 3> TransformCoordinatesLocalToPolar(
-      const std::array<double, 3>& position) const {
+  Double3 TransformCoordinatesLocalToPolar(const Double3& position) const {
     return {position[0], std::atan2(position[2], position[1]),
             std::sqrt(position[1] * position[1] + position[2] * position[2])};
   }
@@ -903,27 +876,25 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Returns the position in the local coordinate system (xAxis, yXis, zAxis)
   /// of a point expressed in cylindrical coordinates (h,theta,r).
   /// @param position in local coordinates
-  std::array<double, 3> TransformCoordinatesPolarToLocal(
-      const std::array<double, 3>& position) const {
+  Double3 TransformCoordinatesPolarToLocal(const Double3& position) const {
     return {position[0], position[2] * std::cos(position[1]),
             position[2] * std::sin(position[1])};
   }
 
   /// P -> G :    P -> L, then L -> G
-  std::array<double, 3> TransformCoordinatesPolarToGlobal(
+  Double3 TransformCoordinatesPolarToGlobal(
       const std::array<double, 2>& position) const {
     // the position is in cylindrical coord (h,theta,r)
     // with r being implicit (half the diameter_)
     // We thus have h (along x_axis_) and theta (the angle from the y_axis_).
     double r = 0.5 * diameter_;
-    std::array<double, 3> polar_position{position[0], position[1], r};
+    Double3 polar_position{position[0], position[1], r};
     auto local = TransformCoordinatesPolarToLocal(polar_position);
     return TransformCoordinatesLocalToGlobal(local);
   }
 
   /// G -> L :    G -> L, then L -> P
-  std::array<double, 3> TransformCoordinatesGlobalToPolar(
-      const std::array<double, 3>& position) const {
+  Double3 TransformCoordinatesGlobalToPolar(const Double3& position) const {
     auto local = TransformCoordinatesGlobalToLocal(position);
     return TransformCoordinatesLocalToPolar(local);
   }
@@ -983,9 +954,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     resting_length_ = resting_length;
   }
 
-  const std::array<double, 3>& GetSpringAxis() const { return spring_axis_; }
+  const Double3& GetSpringAxis() const { return spring_axis_; }
 
-  void SetSpringAxis(const std::array<double, 3>& axis) {
+  void SetSpringAxis(const Double3& axis) {
     SetRunDisplacementForAllNextTs();
     spring_axis_ = axis;
   }
@@ -1003,9 +974,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// NOT A "REAL" GETTER
   /// Gets a vector of length 1, with the same direction as the SpringAxis.
   /// @return a normalized spring axis
-  std::array<double, 3> GetUnitaryAxisDirectionVector() const {
+  Double3 GetUnitaryAxisDirectionVector() const {
     double factor = 1.0 / actual_length_;
-    return Math::ScalarMult(factor, spring_axis_);
+    return spring_axis_ * factor;
   }
 
   /// Should return yes if the PhysicalCylinder is considered a terminal branch.
@@ -1015,12 +986,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// retuns the position of the proximal end, ie the position minus the spring
   /// axis.
   /// Is mainly used for paint
-  std::array<double, 3> ProximalEnd() const {
-    return Math::Subtract(mass_location_, spring_axis_);
-  }
+  Double3 ProximalEnd() const { return mass_location_ - spring_axis_; }
 
   /// Returns the position of the distal end == position_
-  const std::array<double, 3>& DistalEnd() const { return mass_location_; }
+  const Double3& DistalEnd() const { return mass_location_; }
 
   /// Returns the total (actual) length of all the neurite elements (including
   /// the one in which this method is
@@ -1041,7 +1010,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   double GetLength() const { return actual_length_; }
 
   /// Returns the axis direction of a neurite element
-  const std::array<double, 3>& GetAxis() const {
+  const Double3& GetAxis() const {
     // local coordinate x_axis_ is equal to cylinder axis
     return x_axis_;
   }
@@ -1053,8 +1022,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Otherwise we could have cylinders with big aL and rL = 0).\n
   void UpdateDependentPhysicalVariables() override {
     auto relative_ml = mother_->OriginOf(Base::GetUid());
-    SetSpringAxis(Math::Subtract(mass_location_, relative_ml));
-    SetActualLength(std::sqrt(Math::Dot(spring_axis_, spring_axis_)));
+    SetSpringAxis(mass_location_ - relative_ml);
+    SetActualLength(std::sqrt(spring_axis_ * spring_axis_));
     UpdatePosition();
     if (std::abs(actual_length_ - resting_length_) > 1e-13) {
       tension_ = spring_constant_ * (actual_length_ - resting_length_) /
@@ -1121,10 +1090,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   // resolved
   /// mass_location_ is distal end of the cylinder
   /// NB: Use setter and don't assign values directly
-  std::array<double, 3> mass_location_ = {{0.0, 0.0, 0.0}};
+  Double3 mass_location_ = {{0.0, 0.0, 0.0}};
 
   /// position_ is the middle point of cylinder
-  std::array<double, 3> position_ = {{0.0, 0.0, 0.0}};
+  Double3 position_ = {{0.0, 0.0, 0.0}};
 
   double volume_;
   /// NB: Use setter and don't assign values directly
@@ -1132,11 +1101,11 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   double density_;
   double adherence_;
   /// First axis of the local coordinate system equal to cylinder axis
-  std::array<double, 3> x_axis_ = {{1.0, 0.0, 0.0}};
+  Double3 x_axis_ = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
-  std::array<double, 3> y_axis_ = {{0.0, 1.0, 0.0}};
+  Double3 y_axis_ = {{0.0, 1.0, 0.0}};
   /// Third axis of the local coordinate system.
-  std::array<double, 3> z_axis_ = {{0.0, 0.0, 1.0}};
+  Double3 z_axis_ = {{0.0, 0.0, 1.0}};
 
   bool is_axon_ = false;
 
@@ -1156,12 +1125,12 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   int branch_order_ = 0;
 
   /// The part of the inter-object force transmitted to the mother (parent node)
-  std::array<double, 3> force_to_transmit_to_proximal_mass_ = {{0, 0, 0}};
+  Double3 force_to_transmit_to_proximal_mass_ = {{0, 0, 0}};
 
   /// from the attachment point to the mass location
   /// (proximal -> distal).
   /// NB: Use setter and don't assign values directly
-  std::array<double, 3> spring_axis_ = {{0, 0, 0}};
+  Double3 spring_axis_ = {{0, 0, 0}};
 
   /// Real length of the PhysicalCylinder (norm of the springAxis).
   /// NB: Use setter and don't assign values directly
@@ -1214,9 +1183,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // and want to
     // compute restingLength, and not the opposite...)
     // T = k*(A-R)/R --> R = k*A/(T+K)
-    spring_axis_ =
-        Math::Subtract(mass_location_, mother_->OriginOf(Base::GetUid()));
-    SetActualLength(Math::Norm(spring_axis_));
+    spring_axis_ = mass_location_ - mother_->OriginOf(Base::GetUid());
+    SetActualLength(spring_axis_.Norm());
     resting_length_ =
         spring_constant_ * actual_length_ / (tension_ + spring_constant_);
     // .... and volume_
@@ -1230,8 +1198,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// \brief Extend a side neurite element and assign it to daughter right.
   ///
   /// \see SideNeuriteExtensionEvent
-  NeuriteElement* ExtendSideNeuriteElement(
-      double length, double diameter, const std::array<double, 3>& direction) {
+  NeuriteElement* ExtendSideNeuriteElement(double length, double diameter,
+                                           const Double3& direction) {
     if (daughter_right_ != nullptr) {
       Fatal(
           "NeuriteElement",
@@ -1265,7 +1233,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     double x_coord = std::sin(theta) * std::cos(phi);
     double y_coord = std::sin(theta) * std::sin(phi);
     double z_coord = std::cos(theta);
-    std::array<double, 3> axis_direction{
+    Double3 axis_direction{
         x_coord * soma->kXAxis[0] + y_coord * soma->kYAxis[0] +
             z_coord * soma->kZAxis[0],
         x_coord * soma->kXAxis[1] + y_coord * soma->kYAxis[1] +
@@ -1274,11 +1242,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
             z_coord * soma->kZAxis[2]};
 
     // positions & axis in cartesian coord
-    auto new_begin_location = Math::Add(
-        soma->GetPosition(), Math::ScalarMult(radius, axis_direction));
-    auto new_spring_axis = Math::ScalarMult(new_length, axis_direction);
+    auto new_begin_location = soma->GetPosition() + (axis_direction * radius);
+    auto new_spring_axis = axis_direction * new_length;
 
-    auto new_mass_location = Math::Add(new_begin_location, new_spring_axis);
+    auto new_mass_location = new_begin_location + new_spring_axis;
 
     // set attributes of new neurite segment
     SetDiameter(diameter);
@@ -1297,8 +1264,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// TODO
   void InitializeNeuriteBifurcation(NeuriteElement* mother, double length,
-                                    double diameter,
-                                    const std::array<double, 3>& direction) {
+                                    double diameter, const Double3& direction) {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
@@ -1315,14 +1281,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     const auto& mother_spring_axis = mother->GetSpringAxis();
     if (Math::AngleRadian(mother_spring_axis, direction) > Math::kPi / 2.0) {
       auto proj = Math::ProjectionOnto(direction, mother_spring_axis);
-      proj = Math::ScalarMult(-1, proj);
-      dir_1 = Math::Add(direction, proj);
+      proj = proj * -1;
+      dir_1 = direction + proj;
     }
 
     // mass location and spring axis
     const auto& mother_ml = mother->GetMassLocation();
-    SetSpringAxis(Math::ScalarMult(length, Math::Normalize(dir_1)));
-    SetMassLocation(Math::Add(mother_ml, spring_axis_));
+    dir_1.Normalize();
+    SetSpringAxis(dir_1 * length);
+    SetMassLocation(mother_ml + spring_axis_);
     UpdatePosition();
     UpdateLocalCoordinateAxis();  // (important so that x_axis_ is correct)
 
@@ -1360,8 +1327,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     const auto& other_rl = other->GetRestingLength();
 
     // TODO(neurites) reformulate to mass_location_
-    auto new_position =
-        Math::Subtract(other_ml, Math::ScalarMult(distal_portion, other_sa));
+    auto new_position = other_ml - (other_sa * distal_portion);
 
     SetPosition(new_position);
     Copy(*other);
@@ -1378,9 +1344,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Neurite branching is composed of neurite splitting and side neurite
   /// extension. To avoid code duplication in constructors, logic has been moved
   /// here.
-  void InitializeSideExtensionOrBranching(
-      NeuriteElement* mother, double length, double diameter,
-      const std::array<double, 3>& direction) {
+  void InitializeSideExtensionOrBranching(NeuriteElement* mother, double length,
+                                          double diameter,
+                                          const Double3& direction) {
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
@@ -1392,6 +1358,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     Copy(*mother);
 
     auto dir = direction;
+    auto direction_normalized = direction;
+    direction_normalized.Normalize();
     const auto& mother_spring_axis = mother->GetSpringAxis();
     double angle_with_side_branch =
         Math::AngleRadian(mother_spring_axis, direction);
@@ -1399,14 +1367,14 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
         angle_with_side_branch > 2.35) {  // 45-135 degrees
       auto p = Math::CrossProduct(mother_spring_axis, direction);
       p = Math::CrossProduct(p, mother_spring_axis);
-      dir = Math::Add(Math::Normalize(direction), Math::Normalize(p));
+      dir = direction_normalized + p.Normalize();
     }
     // location of mass and computation center
-    auto new_spring_axis = Math::ScalarMult(length, Math::Normalize(direction));
+    auto new_spring_axis = direction_normalized * length;
     const auto& mother_ml = mother->GetMassLocation();
 
     SetSpringAxis(new_spring_axis);
-    SetMassLocation(Math::Add(mother_ml, new_spring_axis));
+    SetMassLocation(mother_ml + new_spring_axis);
     UpdatePosition();
     // physics
     SetActualLength(length);

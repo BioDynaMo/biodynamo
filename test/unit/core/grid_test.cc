@@ -202,9 +202,9 @@ TEST(GridTest, GetBoxIndex) {
 
   grid->Initialize();
 
-  std::array<double, 3> position_0 = {{0, 0, 0}};
-  std::array<double, 3> position_1 = {{1e-15, 1e-15, 1e-15}};
-  std::array<double, 3> position_2 = {{-1e-15, 1e-15, 1e-15}};
+  Double3 position_0 = {{0, 0, 0}};
+  Double3 position_1 = {{1e-15, 1e-15, 1e-15}};
+  Double3 position_2 = {{-1e-15, 1e-15, 1e-15}};
 
   size_t expected_idx_0 = 21;
   size_t expected_idx_1 = 21;

@@ -177,15 +177,14 @@ struct VerifyPosition : public SoVisitor {
       FAIL() << "Functor must not be called for data member " << dm_name
              << std::endl;
     }
-    using PosType = std::array<double, 3>;
+    using PosType = Double3;
     if (type_hash_code == typeid(PosType).hash_code()) {
       auto* pos = static_cast<const PosType*>(data);
       EXPECT_EQ(4, (*pos)[0]);
       EXPECT_EQ(5, (*pos)[1]);
       EXPECT_EQ(6, (*pos)[2]);
     } else {
-      FAIL() << "type_hash_code did not match std::array<double, 3>"
-             << std::endl;
+      FAIL() << "type_hash_code did not match Double3" << std::endl;
     }
   }
 };

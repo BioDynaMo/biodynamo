@@ -19,6 +19,7 @@
 #include <cstdio>
 
 #include <TRandom3.h>
+#include "core/container/math_array.h"
 #include "core/util/root.h"
 
 namespace bdm {
@@ -36,8 +37,8 @@ class Random {
 
   /// Returns an array of uniform random numbers in the interval (0, max)
   template <uint64_t N>
-  std::array<double, N> UniformArray(double max = 1.0) {
-    std::array<double, N> ret;
+  MathArray<double, N> UniformArray(double max = 1.0) {
+    MathArray<double, N> ret;
     for (uint64_t i = 0; i < N; i++) {
       ret[i] = Uniform(max);
     }
@@ -46,8 +47,8 @@ class Random {
 
   /// Returns an array of uniform random numbers in the interval (min, max)
   template <uint64_t N>
-  std::array<double, N> UniformArray(double min, double max) {
-    std::array<double, N> ret;
+  MathArray<double, N> UniformArray(double min, double max) {
+    MathArray<double, N> ret;
     for (uint64_t i = 0; i < N; i++) {
       ret[i] = Uniform(min, max);
     }

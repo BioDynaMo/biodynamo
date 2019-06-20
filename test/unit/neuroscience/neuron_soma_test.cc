@@ -35,7 +35,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   // create neuron
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -86,7 +86,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   // create neuron
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -127,7 +127,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -198,7 +198,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -250,7 +250,7 @@ TEST(NeuriteElementTest, TotalRetraction) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -287,7 +287,7 @@ TEST(NeuriteElementTest, Branch) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -389,7 +389,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -464,7 +464,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -516,7 +516,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -590,7 +590,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
@@ -643,7 +643,7 @@ TEST(NeuriteElementTest, Bifurcate) {
   auto* ctxt = simulation.GetExecutionContext();
 
   const double kEpsilon = abs_error<double>::value;
-  std::array<double, 3> origin = {0, 0, 0};
+  Double3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();

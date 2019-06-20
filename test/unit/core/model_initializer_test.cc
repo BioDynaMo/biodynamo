@@ -28,7 +28,7 @@ TEST(ModelInitializerTest, Grid3DCube) {
   auto* rm = simulation.GetResourceManager();
   auto ref_uid = SoUidGenerator::Get()->GetLastId();
 
-  ModelInitializer::Grid3D(2, 12, [](const std::array<double, 3>& pos) {
+  ModelInitializer::Grid3D(2, 12, [](const Double3& pos) {
     Cell* cell = new Cell(pos);
     return cell;
   });
@@ -52,11 +52,10 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
 
   std::array<size_t, 3> grid_dimensions = {2, 3, 4};
 
-  ModelInitializer::Grid3D(grid_dimensions, 12,
-                           [](const std::array<double, 3>& pos) {
-                             Cell* cell = new Cell(pos);
-                             return cell;
-                           });
+  ModelInitializer::Grid3D(grid_dimensions, 12, [](const Double3& pos) {
+    Cell* cell = new Cell(pos);
+    return cell;
+  });
 
   EXPECT_EQ(24u, rm->GetNumSimObjects());
   EXPECT_ARR_EQ({0, 0, 0}, rm->GetSimObject(ref_uid + 0)->GetPosition());
@@ -74,16 +73,15 @@ TEST(ModelInitializerTest, CreateCells) {
   auto* rm = simulation.GetResourceManager();
   auto ref_uid = SoUidGenerator::Get()->GetLastId();
 
-  std::vector<std::array<double, 3>> positions;
+  std::vector<Double3> positions;
   positions.push_back({1, 2, 3});
   positions.push_back({101, 202, 303});
   positions.push_back({-12, -32, 4});
 
-  ModelInitializer::CreateCells(positions,
-                                [](const std::array<double, 3>& pos) {
-                                  Cell* cell = new Cell(pos);
-                                  return cell;
-                                });
+  ModelInitializer::CreateCells(positions, [](const Double3& pos) {
+    Cell* cell = new Cell(pos);
+    return cell;
+  });
 
   EXPECT_EQ(3u, rm->GetNumSimObjects());
   EXPECT_ARR_EQ({1, 2, 3}, rm->GetSimObject(ref_uid + 0)->GetPosition());
@@ -96,11 +94,10 @@ TEST(ModelInitializerTest, CreateCellsRandom) {
   auto* rm = simulation.GetResourceManager();
   auto ref_uid = SoUidGenerator::Get()->GetLastId();
 
-  ModelInitializer::CreateCellsRandom(-100, 100, 10,
-                                      [](const std::array<double, 3>& pos) {
-                                        Cell* cell = new Cell(pos);
-                                        return cell;
-                                      });
+  ModelInitializer::CreateCellsRandom(-100, 100, 10, [](const Double3& pos) {
+    Cell* cell = new Cell(pos);
+    return cell;
+  });
   EXPECT_EQ(10u, rm->GetNumSimObjects());
   auto& pos_0 = rm->GetSimObject(ref_uid + 0)->GetPosition();
   auto& pos_1 = rm->GetSimObject(ref_uid + 1)->GetPosition();
