@@ -4,7 +4,7 @@ Operations are functions that are executed for each simulation object.
 To execute a function for *specific* simulation objects have a look at
 biology modules.
 
-To support multi-scale simulations, operations have a data member frequency.
+To support multiscale simulations, operations have a data member frequency.
 If it is set to one it means that this function will be executed for every
 time step. If this member is set to two it will be executed every second time
 step, and so on.
@@ -23,7 +23,7 @@ auto* scheduler = simulation.GetScheduler();
 Operation op("print uid op", [](SimObject* so){
     std::cout << "SimObject " << so->GetUid() << std::endl;
 });
-scheduler.AddOperation(op);
+scheduler->AddOperation(op);
 ```
 
 ### Change the execution frequency of an operation
@@ -33,5 +33,5 @@ of every.
 
 ``` C++
 auto* scheduler = simulation.GetScheduler();
-scheduler.GetOperation("print uid op")->frequency_ = 100;
+scheduler->GetOperation("print uid op")->frequency_ = 100;
 ```
