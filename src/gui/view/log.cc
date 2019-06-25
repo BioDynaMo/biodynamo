@@ -21,9 +21,10 @@
 
 namespace gui {
 
-TGTextEdit* Log::TEdit = nullptr;
-std::string Log::LogFile = "";
-std::mutex Log::Mtx;
+std::mutex   Log::Mtx;
+std::string  Log::LogFile   = "";
+TGTextEdit*  Log::TEdit     = nullptr;
+TGStatusBar* Log::StatusBar = nullptr;
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
 const std::string Log::CurrentDateTime() {
@@ -54,14 +55,25 @@ void Log::LogMessage(const std::string message) {
     //TEdit->ScrollCanvas(100, 1);
     //Emit("DoubleClicked()");
   }
+
+  if(StatusBar != nullptr) {
+    /// Only display non-debug messages
+    if(message.rfind("DEBUG") != 0) {
+      StatusBar->SetText(message.c_str(), 0);
+    }
+  }
   Mtx.unlock();
 }
 void Log::SetTextEdit(TGTextEdit* tEdit) {
   TEdit = tEdit;
 }
-void Log::SetLogFile(std::string location) {
+void Log::SetLogFile(const std::string location) {
   std::cout << "Setting log file location: " << location << '\n';
   LogFile = location;
+}
+
+void Log::SetStatusBar(TGStatusBar* statusBar) {
+  StatusBar = statusBar;
 }
 
 } // namespace gui

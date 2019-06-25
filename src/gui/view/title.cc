@@ -45,38 +45,35 @@ TitleFrame::TitleFrame(const TGWindow *p, const char *mainText,
   // add pictures
   TString theLeftLogoFilename = StrDup(gProgPath);
   theLeftLogoFilename.Append("/icons/logo_bdm.xpm");
-  fLeftIconPicture = (TGPicture *)gClient->GetPicture(theLeftLogoFilename);
-  fLeftIcon = new TGIcon(this, fLeftIconPicture, fLeftIconPicture->GetWidth(),
+  fLeftIconPicture = gClient->GetPicture(theLeftLogoFilename);
+  fLeftIcon = std::make_unique<TGIcon>(this, fLeftIconPicture, fLeftIconPicture->GetWidth(),
                          fLeftIconPicture->GetHeight());
-  fLeftLogoLayout = new TGLayoutHints(kLHintsLeft, 0, 0, 0, 0);
-  AddFrame(fLeftIcon, fLeftLogoLayout);
+  fLeftLogoLayout = std::make_unique<TGLayoutHints>(kLHintsLeft, 0, 0, 0, 0);
+  AddFrame(fLeftIcon.get(), fLeftLogoLayout.get());
 
   TString theRightLogoFilename = StrDup(gProgPath);
   theRightLogoFilename.Append("/icons/logo_bdm.xpm");
-  fRightIconPicture = (TGPicture *)gClient->GetPicture(theRightLogoFilename);
-  fRightIcon =
-      new TGIcon(this, fRightIconPicture, fRightIconPicture->GetWidth(),
+  fRightIconPicture = gClient->GetPicture(theRightLogoFilename);
+  fRightIcon = std::make_unique<TGIcon>(this, fRightIconPicture, fRightIconPicture->GetWidth(),
                  fRightIconPicture->GetHeight());
-  fRightLogoLayout = new TGLayoutHints(kLHintsRight, 0, 0, 0, 0);
-  AddFrame(fRightIcon, fRightLogoLayout);
+  fRightLogoLayout = std::make_unique<TGLayoutHints>(kLHintsRight, 0, 0, 0, 0);
+  AddFrame(fRightIcon.get(), fRightLogoLayout.get());
 
   // add text
-  fTextFrameLayout =
-      new TGLayoutHints(kLHintsCenterX | kLHintsCenterY, 0, 0, 0, 0);
-  fTextLabelLayout =
-      new TGLayoutHints(kLHintsTop | kLHintsExpandX, 10, 10, 10, 10);
-  fTextFrame = new TGCompositeFrame(this, 0, 0, kVerticalFrame);
-  fTextLabel1 = new TGLabel(fTextFrame, mainText);
+  fTextFrameLayout = std::make_unique<TGLayoutHints>(kLHintsCenterX | kLHintsCenterY, 0, 0, 0, 0);
+  fTextLabelLayout = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsExpandX, 10, 10, 10, 10);
+  fTextFrame = std::make_unique<TGCompositeFrame>(this, 0, 0, kVerticalFrame);
+  fTextLabel1 = std::make_unique<TGLabel>(fTextFrame.get(), mainText);
   fTextLabel1->SetTextFont(fontname.Data());
   fTextLabel1->SetTextColor(col);
 
-  fTextLabel2 = new TGLabel(fTextFrame, subText);
+  fTextLabel2 = std::make_unique<TGLabel>(fTextFrame.get(), subText);
   fTextLabel2->SetTextFont(fontname.Data());
   fTextLabel2->SetTextColor(col);
-  fTextFrame->AddFrame(fTextLabel1, fTextLabelLayout);
-  fTextFrame->AddFrame(fTextLabel2, fTextLabelLayout);
+  fTextFrame->AddFrame(fTextLabel1.get(), fTextLabelLayout.get());
+  fTextFrame->AddFrame(fTextLabel2.get(), fTextLabelLayout.get());
 
-  AddFrame(fTextFrame, fTextFrameLayout);
+  AddFrame(fTextFrame.get(), fTextFrameLayout.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,13 +82,6 @@ TitleFrame::TitleFrame(const TGWindow *p, const char *mainText,
 TitleFrame::~TitleFrame() {
   gClient->FreePicture(fLeftIconPicture);
   gClient->FreePicture(fRightIconPicture);
-  delete fTextLabel1;
-  delete fTextLabel2;
-  delete fTextFrame;
-  delete fTextLabelLayout;
-  delete fTextFrameLayout;
-  delete fLeftLogoLayout;
-  delete fRightLogoLayout;
 }
 
 }  // namespace gui

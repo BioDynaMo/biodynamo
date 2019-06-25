@@ -43,21 +43,21 @@ ButtonModelFrame::ButtonModelFrame(const TGWindow* p, TGWindow* buttonHandler,
                            TGCompositeFrame(p, 100, 100, kVerticalFrame)
 {
    // Create Layout hints
-   fButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
+   fButtonLayout = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
 
    // Create Model Buttons
-   fNewModelButton = new TGTextButton(this, "Create &New Model", newModelId);
+   fNewModelButton = std::make_unique<TGTextButton>(this, "Create &New Model", newModelId);
    fNewModelButton->Associate(buttonHandler);
    fNewModelButton->SetToolTipText("Creates new BioDynaMo model");
-   AddFrame(fNewModelButton, fButtonLayout);
-   fStopSimButton = new TGTextButton(this, "&Interrupt Simulation", interruptSimId);
+   AddFrame(fNewModelButton.get(), fButtonLayout.get());
+   fStopSimButton = std::make_unique<TGTextButton>(this, "&Interrupt Simulation", interruptSimId);
    fStopSimButton->Associate(buttonHandler);
    fStopSimButton->SetToolTipText("Interrupts the current simulation");
-   AddFrame(fStopSimButton, fButtonLayout);
-   fSimulateModelButton = new TGTextButton(this, "&Simulate Model", simulateModelId);
+   AddFrame(fStopSimButton.get(), fButtonLayout.get());
+   fSimulateModelButton = std::make_unique<TGTextButton>(this, "&Simulate Model", simulateModelId);
    fSimulateModelButton->Associate(buttonHandler);
    fSimulateModelButton->SetToolTipText("Simulates the selected model");
-   AddFrame(fSimulateModelButton, fButtonLayout);
+   AddFrame(fSimulateModelButton.get(), fButtonLayout.get());
 
    fNewModelButton->Resize(150,GetDefaultHeight());
    fStopSimButton->Resize(150,GetDefaultHeight());
@@ -71,13 +71,7 @@ ButtonModelFrame::ButtonModelFrame(const TGWindow* p, TGWindow* buttonHandler,
 ////////////////////////////////////////////////////////////////////////////////
 /// Destroy ButtonModelFrame object. Delete all created widgets
 
-ButtonModelFrame::~ButtonModelFrame()
-{
-   delete fNewModelButton;
-   delete fSimulateModelButton;
-   delete fStopSimButton;
-   delete fButtonLayout;
-}
+ButtonModelFrame::~ButtonModelFrame() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Set the state of the ButtonModelFrame. This sets the state of

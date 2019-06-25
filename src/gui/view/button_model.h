@@ -36,10 +36,10 @@ namespace gui {
 class ButtonModelFrame: public TGCompositeFrame {
 
 private:
-   TGLayoutHints  *fButtonLayout;      // Buttons layout
-   TGButton       *fNewModelButton;   // "Create New Model" button
-   TGButton       *fSimulateModelButton;   // "Simulate Model" button
-   TGButton       *fStopSimButton;     // "Interrupt Simulation" button
+   std::unique_ptr<TGLayoutHints>  fButtonLayout;      // Buttons layout
+   std::unique_ptr<TGButton>       fNewModelButton;   // "Create New Model" button
+   std::unique_ptr<TGButton>       fSimulateModelButton;   // "Simulate Model" button
+   std::unique_ptr<TGButton>       fStopSimButton;     // "Interrupt Simulation" button
 
 public:
    // Constructor & destructor

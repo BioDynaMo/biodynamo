@@ -30,6 +30,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include <RQ_OBJECT.h>
 #include <TApplication.h>
@@ -110,7 +111,7 @@ class Project {
 
   /// Saves Project under a different name. Copies over models from original
   /// project.
-  /// @param path and filename of the project root file
+  /// @param path path and filename of the project root file
   /// @return None
   void SaveAsProject(const char* path) {
     Log::Info("Saving project as: ", path);
@@ -119,33 +120,45 @@ class Project {
 
   void CreateModel(const char* name) {
     Log::Info("Creating model within `Project`");
-    if (fModels == nullptr) {
-      fModels = new TList;
-    }
     if (GetModel(name) != 0) {
       Log::Warning("Cannot create model with the same name!");
     } else {
       Model* tmp = new Model(name);
-      //fModels->Add(tmp);
+      fModels.push_back(tmp);
     }
   }
 
+  /// Creates model element for the specified model.
+  /// @param modelName name of model to update
+  /// @param parent parent model element that the new model element will belong to
+  /// @param elementName name of the new element
+  /// @param type type of element (e.g. M_ENTITY_CELL, M_MODULE_GROWTH, M_GENERAL_VARIABLE, etc.) 
+  /// please see constants.h
+  /// @return Bool_t kTRUE if successfully created model element, else kFALSE
   Bool_t CreateModelElement(const char* modelName, const char* parent,
                             const char* elementName, int type) {
-    Model* tmp = GetModel(modelName);
-    if (tmp == 0) {
+    Model* modelPtr = GetModel(modelName);
+    if (modelPtr == nullptr) {
       Log::Warning("Cannot create element `", elementName,
                    "` within non-existent model `", modelName, "`");
     }
-    return tmp->CreateElement(parent, elementName, type);
+    return modelPtr->CreateElement(parent, elementName, type);
   }
 
+  /// Gets model by name
+  /// @param name name of the model to retrieve
+  /// @return Model* pointer to the model of the specified name if found, else nullptr
   Model* GetModel(const char* name) {
-    Model* tmp = (Model*)(fModels->FindObject(name));
-    return tmp;
+    for(Model* model : fModels) {
+      if(strcmp(model->fModelName, name) == 0) {
+        return model;
+      }
+    }
+    return nullptr;
   }
 
-  TList* GetAllModels() { return fModels; }
+  /// Returns vector of all models
+  std::vector<Model*> GetAllModels() { return fModels; }
 
   void SaveAllModels() {}
 
@@ -165,8 +178,7 @@ class Project {
   /// @return None
   void GenerateCode(const char* modelName = "") {}
 
-  Bool_t fIsLoaded;  // kTRUE upon successful loading or new project creation
-  TList* fModels = nullptr;
+  Bool_t IsLoaded() { return fIsLoaded; }
 
  private:
   /// Constructor
@@ -202,6 +214,9 @@ class Project {
   /// To be contained within fProjectFile
   ProjectObject fProjectObject;
   std::string fProjectPath;
+
+  Bool_t fIsLoaded = kFALSE;  // kTRUE upon successful loading or new project creation
+  std::vector<Model*> fModels;
 };
 
 }  // namespace gui

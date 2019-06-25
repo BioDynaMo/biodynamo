@@ -51,22 +51,22 @@ class NewProjectDialog : public TGTransientFrame {
   Bool_t            ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 
  private:
-  TGCompositeFrame *fFrame1;
-  TGCompositeFrame *fFrame2;
-  TGCompositeFrame *fFrame3;
-  TGVerticalFrame  *fV1;
-  TGButton         *fCreateButton;
-  TGButton         *fCancelButton;
-  TGButton         *fHelpButton;
-  TGPictureButton  *fPictButton;
-  TGTab            *fTab;
-  TGTextEntry      *fTxt1;
-  TGTextEntry      *fTxt2;
-  TGLabel          *fLerror;
-  TGLayoutHints    *fL1;
-  TGLayoutHints    *fL2;
-  TGLayoutHints    *fL3;
-  TGLayoutHints    *fL4;
+  std::unique_ptr<TGCompositeFrame>  fFrame1;
+  std::unique_ptr<TGCompositeFrame>  fFrame2;
+  std::unique_ptr<TGCompositeFrame>  fFrame3;
+  std::unique_ptr<TGVerticalFrame>   fV1;
+  std::unique_ptr<TGButton>          fCreateButton;
+  std::unique_ptr<TGButton>          fCancelButton;
+  std::unique_ptr<TGButton>          fHelpButton;
+  std::unique_ptr<TGPictureButton>   fPictButton;
+  std::unique_ptr<TGTab>             fTab;
+  std::unique_ptr<TGTextEntry>       fTxt1;
+  std::unique_ptr<TGTextEntry>       fTxt2;
+  std::unique_ptr<TGLabel>           fLerror;
+  std::unique_ptr<TGLayoutHints>     fL1;
+  std::unique_ptr<TGLayoutHints>     fL2;
+  std::unique_ptr<TGLayoutHints>     fL3;
+  std::unique_ptr<TGLayoutHints>     fL4;
 };
 
 
@@ -89,14 +89,14 @@ class NewModelDialog : public TGTransientFrame {
   Bool_t           ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 
  private:
-  TGCompositeFrame *fFrame1;
-  TGCompositeFrame *fFrame2;
-  TGVerticalFrame  *fV1;
-  TGButton         *fCreateButton, *fCancelButton, *fHelpButton;
-  TGTab            *fTab;
-  TGTextEntry      *fTxt1;
-  TGLabel          *fLerror;
-  TGLayoutHints    *fL1, *fL2, *fL3, *fL4;
+  std::unique_ptr<TGCompositeFrame> fFrame1;
+  std::unique_ptr<TGCompositeFrame> fFrame2;
+  std::unique_ptr<TGVerticalFrame>  fV1;
+  std::unique_ptr<TGButton>         fCreateButton, fCancelButton, fHelpButton;
+  std::unique_ptr<TGTab>            fTab;
+  std::unique_ptr<TGTextEntry>      fTxt1;
+  std::unique_ptr<TGLabel>          fLerror;
+  std::unique_ptr<TGLayoutHints>    fL1, fL2, fL3, fL4;
 };
 
 }  // namespace gui

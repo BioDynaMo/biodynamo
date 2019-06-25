@@ -18,6 +18,7 @@
 #define GUI_LOG_H_
 
 #include <TGTextEdit.h>
+#include <TGStatusBar.h>
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
@@ -58,11 +59,13 @@ class Log {
   }
 
   static void SetTextEdit(TGTextEdit* tEdit);
-  static void SetLogFile(std::string location);
+  static void SetLogFile(const std::string location);
+  static void SetStatusBar(TGStatusBar* statusBar);
 
  private:
   static TGTextEdit* TEdit;
   static std::string LogFile;
+  static TGStatusBar* StatusBar;
   static std::mutex Mtx;
 
   static const std::string CurrentDateTime();

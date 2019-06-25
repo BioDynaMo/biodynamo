@@ -55,37 +55,37 @@ class ModelFrame : public TGCompositeFrame {
   Bool_t SwitchModelTab(const char* modelName, const char* modelElement=0);
 
  private:
-  TGVerticalFrame        *fV1;
-  TGLabel                *fLtitle; 
+  std::unique_ptr<TGVerticalFrame>        fV1;
+  std::unique_ptr<TGLabel>                fLtitle; 
 
   ///-----Simulation-Entities-----///
-  TGLabel                *fLentities;
-  TGButton               *fBcell;       // Cell
+  std::unique_ptr<TGLabel>                fLentities;
+  std::unique_ptr<TGButton>               fBcell;       // Cell
 
   ///----------Modules------------///
-  TGLabel                *fLmodules;
-  TGButton               *fBgrowth;     // Growth Module
-  TGButton               *fBchemotaxis; // Chemotaxis
-  TGButton               *fBsubstance;  // Substance Secretion
+  std::unique_ptr<TGLabel>                fLmodules;
+  std::unique_ptr<TGButton>               fBgrowth;     // Growth Module
+  std::unique_ptr<TGButton>               fBchemotaxis; // Chemotaxis
+  std::unique_ptr<TGButton>               fBsubstance;  // Substance Secretion
 
   ///----------General------------///
-  TGLabel                *fLgeneral; 
-  TGButton               *fBvariable;   // Variable
-  TGButton               *fBfunction;   // Function
-  TGButton               *fBformula;    // Formula
+  std::unique_ptr<TGLabel>                fLgeneral; 
+  std::unique_ptr<TGButton>               fBvariable;   // Variable
+  std::unique_ptr<TGButton>               fBfunction;   // Function
+  std::unique_ptr<TGButton>               fBformula;    // Formula
 
   /// Layout hints
-  TGLayoutHints          *fL1;
-  TGLayoutHints          *fL2;
-  TGLayoutHints          *fL3;
-  TGLayoutHints          *fL4;
-  TGLayoutHints          *fL5;
-  TGLayoutHints          *fL6;
-  TGLayoutHints          *fL7;
-  TGLayoutHints          *fL8;
+  std::unique_ptr<TGLayoutHints>        fL1;
+  std::unique_ptr<TGLayoutHints>        fL2;
+  std::unique_ptr<TGLayoutHints>        fL3;
+  std::unique_ptr<TGLayoutHints>        fL4;
+  std::unique_ptr<TGLayoutHints>        fL5;
+  std::unique_ptr<TGLayoutHints>        fL6;
+  std::unique_ptr<TGLayoutHints>        fL7;
+  std::unique_ptr<TGLayoutHints>        fL8;
 
   std::vector<ModelTab*> fModelTabs;
-  ModelTab              *fCurTab;
+  ModelTab               *fCurTab;
 
   TGWindow*             fButtonHandler;
 };

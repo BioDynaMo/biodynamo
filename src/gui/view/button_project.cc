@@ -39,17 +39,17 @@ namespace gui {
 ButtonProjectFrame::ButtonProjectFrame(const TGWindow* p, TGWindow* buttonHandler, Int_t newProjectId, Int_t loadProjectId) : TGCompositeFrame(p, 100, 100, kVerticalFrame)
 {
    // Create Layout hints
-   fButtonLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
+   fButtonLayout = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
 
    // Create Model Buttons
-   fCreateProjectButton = new TGTextButton(this, "&New Project", newProjectId);
+   fCreateProjectButton = std::make_unique<TGTextButton>(this, "&New Project", newProjectId);
    fCreateProjectButton->Associate(buttonHandler);
    fCreateProjectButton->SetToolTipText("Creates new GUI Project");
-   AddFrame(fCreateProjectButton, fButtonLayout);
-   fLoadProjectButton = new TGTextButton(this, "&Load Project", loadProjectId);
+   AddFrame(fCreateProjectButton.get(), fButtonLayout.get());
+   fLoadProjectButton = std::make_unique<TGTextButton>(this, "&Load Project", loadProjectId);
    fLoadProjectButton->Associate(buttonHandler);
    fLoadProjectButton->SetToolTipText("Loads in an already created project");
-   AddFrame(fLoadProjectButton, fButtonLayout);
+   AddFrame(fLoadProjectButton.get(), fButtonLayout.get());
 
    fCreateProjectButton->Resize(150,GetDefaultHeight());
    fLoadProjectButton->Resize(150,GetDefaultHeight());
@@ -62,9 +62,9 @@ ButtonProjectFrame::ButtonProjectFrame(const TGWindow* p, TGWindow* buttonHandle
 
 ButtonProjectFrame::~ButtonProjectFrame()
 {
-   delete fCreateProjectButton;
-   delete fLoadProjectButton;
-   delete fButtonLayout;
+   //delete fButtonLayout;
+   //delete fCreateProjectButton;
+   //delete fLoadProjectButton;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

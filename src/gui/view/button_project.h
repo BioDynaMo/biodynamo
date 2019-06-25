@@ -37,9 +37,9 @@ namespace gui {
 class ButtonProjectFrame: public TGCompositeFrame {
 
 private:
-   TGLayoutHints  *fButtonLayout;        // Buttons layout
-   TGButton       *fCreateProjectButton; // "Create New Project" button
-   TGButton       *fLoadProjectButton;   // "Load Project" button
+   std::unique_ptr<TGLayoutHints>  fButtonLayout;        // Buttons layout
+   std::unique_ptr<TGButton>       fCreateProjectButton; // "Create New Project" button
+   std::unique_ptr<TGButton>       fLoadProjectButton;   // "Load Project" button
 
 public:
    // Constructor & destructor

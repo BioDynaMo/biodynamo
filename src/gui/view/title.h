@@ -38,19 +38,19 @@ namespace gui {
 
 class TitleFrame : public TGCompositeFrame {
  private:
-  TGLayoutHints    *fRightLogoLayout;      // Right logo layout
-  TGLayoutHints    *fLeftLogoLayout;       // Left logo layout
+  std::unique_ptr<TGLayoutHints>    fRightLogoLayout;      // Right logo layout
+  std::unique_ptr<TGLayoutHints>    fLeftLogoLayout;       // Left logo layout
 
-  TGPicture        *fRightIconPicture;     // Right icon's picture
-  TGIcon           *fRightIcon;            // Right icon (logo)
-  TGPicture        *fLeftIconPicture;      // Left icon's picture
-  TGIcon           *fLeftIcon;             // Right icon (logo)
+  const TGPicture                   *fRightIconPicture;    // Right icon's picture
+  const TGPicture                   *fLeftIconPicture;     // Left icon's picture
+  std::unique_ptr<TGIcon>           fRightIcon;            // Right icon (logo)
+  std::unique_ptr<TGIcon>           fLeftIcon;             // Right icon (logo)
 
-  TGLayoutHints    *fTextFrameLayout;
-  TGCompositeFrame *fTextFrame;
-  TGLayoutHints    *fTextLabelLayout;
-  TGLabel          *fTextLabel1;           // First line title's label
-  TGLabel          *fTextLabel2;           // Second line title's label
+  std::unique_ptr<TGLayoutHints>    fTextFrameLayout;
+  std::unique_ptr<TGCompositeFrame> fTextFrame;
+  std::unique_ptr<TGLayoutHints>    fTextLabelLayout;
+  std::unique_ptr<TGLabel>          fTextLabel1;           // First line title's label
+  std::unique_ptr<TGLabel>          fTextLabel2;           // Second line title's label
 
  public:
   // Constructor & destructor

@@ -71,19 +71,6 @@
 #include "log.h"
 #include "model_creator.h"
 #include "new_dialog.h"
-#include "biodynamo.h"
-
-namespace bdm {
-
-/// testing
-inline void* GetCell() {
-  const std::array<double, 3> position = {1, 2, 3};
-  Cell *c1 = new Cell(position);
-  return nullptr;
-}
-
-}
-  
 
 namespace gui {
 
@@ -97,73 +84,63 @@ NewProjectDialog::NewProjectDialog(const TGWindow *p, const TGWindow *main,
                                    UInt_t w, UInt_t h, UInt_t options)
     : TGTransientFrame(p, main, w, h, options) {
 
-  Log::Info("Testing getting cell members");
 
-
-
-  //void *ptr = bdm::GetCell();
-
-  
-  Log::Info("First cell member is: ");
 
   UInt_t wh = (UInt_t)(h - (0.6 * h));
 
-  fFrame1 = new TGHorizontalFrame(this, w, wh, 0);
+  fFrame1 = std::make_unique<TGHorizontalFrame>(this, w, wh, 0);
 
-  fCreateButton = new TGTextButton(fFrame1, "     &Create     ", 1);
+  fCreateButton = std::make_unique<TGTextButton>(fFrame1.get(), "     &Create     ", 1);
   fCreateButton->Associate(this);
-  fCancelButton = new TGTextButton(fFrame1, "   &Cancel   ", 2);
+  fCancelButton = std::make_unique<TGTextButton>(fFrame1.get(), "   &Cancel   ", 2);
   fCancelButton->Associate(this);
-  fHelpButton = new TGTextButton(fFrame1, "    &Help    ", 3);
+  fHelpButton = std::make_unique<TGTextButton>(fFrame1.get(), "    &Help    ", 3);
   fHelpButton->Associate(this);
 
-  fL1 =
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2);
-  fL2 = new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX, 2, 2,
+  fL1 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2);
+  fL2 = std::make_unique<TGLayoutHints>(kLHintsBottom | kLHintsRight | kLHintsExpandX, 2, 2,
                           5, 1);
 
-  fFrame1->AddFrame(fCreateButton, fL1);
-  fFrame1->AddFrame(fHelpButton, fL1);
-  fFrame1->AddFrame(fCancelButton, fL1);
+  fFrame1->AddFrame(fCreateButton.get(), fL1.get());
+  fFrame1->AddFrame(fHelpButton.get(), fL1.get());
+  fFrame1->AddFrame(fCancelButton.get(), fL1.get());
 
   fFrame1->Resize(150, fCreateButton->GetDefaultHeight());
-  AddFrame(fFrame1, fL2);
+  AddFrame(fFrame1.get(), fL2.get());
 
   /// Create tab widget
-  fTab = new TGTab(this, 300, 300);
-  fL3 = new TGLayoutHints(kLHintsTop | kLHintsLeft, 10, 10, 10, 10);
+  fTab = std::make_unique<TGTab>(this, 300, 300);
+  fL3 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft, 10, 10, 10, 10);
 
   TGCompositeFrame *tf = fTab->AddTab("Project settings");
 
   /// Create vertical frame to contain two horizontal frames
-  fV1 = new TGVerticalFrame(tf, w, wh, 0);
+  fV1 = std::make_unique<TGVerticalFrame>(tf, w, wh, 0);
 
-  fFrame2 = new TGHorizontalFrame(fV1, 100, wh, 0);
-  fFrame2->AddFrame(new TGLabel(fFrame2, "Name:"),
+  fFrame2 = std::make_unique<TGHorizontalFrame>(fV1.get(), 100, wh, 0);
+  fFrame2->AddFrame(new TGLabel(fFrame2.get(), "Name:"),
                     new TGLayoutHints(0, 2, 26, 2, 2));
-  fFrame2->AddFrame(fTxt1 =
-                        new TGTextEntry(fFrame2, new TGTextBuffer(200), Id1));
-  fFrame2->AddFrame(fLerror = new TGLabel(fFrame2, "Error"),
-                    new TGLayoutHints(kLHintsLeft, 2, 2, 2, 2));
+  fTxt1 = std::make_unique<TGTextEntry>(fFrame2.get(), new TGTextBuffer(200), Id1);
+  fLerror = std::make_unique<TGLabel>(fFrame2.get(), "Error");
+  fFrame2->AddFrame(fTxt1.get());
+  fFrame2->AddFrame(fLerror.get(), new TGLayoutHints(kLHintsLeft, 2, 2, 2, 2));
   fLerror->SetTextColor(TColor::RGB2Pixel(255, 0, 0));
   fLerror->SetText("          ");
-  fV1->AddFrame(fFrame2, fL1);
+  fV1->AddFrame(fFrame2.get(), fL1.get());
 
-  fFrame3 = new TGHorizontalFrame(fV1, 100, wh, 0);
-  fL4 = new TGLayoutHints(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 2, 2, 2,
+  fFrame3 = std::make_unique<TGHorizontalFrame>(fV1.get(), 100, wh, 0);
+  fL4 = std::make_unique<TGLayoutHints>(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 2, 2, 2,
                           2);
-  fFrame3->AddFrame(new TGLabel(fFrame3, "Location:"),
+  fFrame3->AddFrame(new TGLabel(fFrame3.get(), "Location:"),
                     new TGLayoutHints(0, 2, 10, 2, 2));
-  fFrame3->AddFrame(
-      fTxt2 = new TGTextEntry(fFrame3, new TGTextBuffer(200), Id2),
-      new TGLayoutHints(kLHintsExpandX, 2, 2, 2, 2));
-  fPictButton =
-      new TGPictureButton(fFrame3, gClient->GetPicture("fileopen.xpm"), 4);
-  fFrame3->AddFrame(fPictButton, new TGLayoutHints(kLHintsRight, 2, 2, 2, 2));
+  fTxt2 = std::make_unique<TGTextEntry>(fFrame3.get(), new TGTextBuffer(200), Id2);
+  fFrame3->AddFrame(fTxt2.get(), new TGLayoutHints(kLHintsExpandX, 2, 2, 2, 2));
+  fPictButton = std::make_unique<TGPictureButton>(fFrame3.get(), gClient->GetPicture("fileopen.xpm"), 4);
+  fFrame3->AddFrame(fPictButton.get(), new TGLayoutHints(kLHintsRight, 2, 2, 2, 2));
 
-  fV1->AddFrame(fFrame3, fL4);
+  fV1->AddFrame(fFrame3.get(), fL4.get());
 
-  tf->AddFrame(fV1, fL4);
+  tf->AddFrame(fV1.get(), fL4.get());
 
   /// Register with `ProcessMessage`
   fTxt1->Associate(this);
@@ -173,9 +150,7 @@ NewProjectDialog::NewProjectDialog(const TGWindow *p, const TGWindow *main,
   fTxt2->Resize(200, fTxt2->GetDefaultHeight());
 
   /// Finalize
-  TGLayoutHints *fL5 = new TGLayoutHints(
-      kLHintsBottom | kLHintsExpandX | kLHintsExpandY, 2, 2, 5, 1);
-  AddFrame(fTab, fL5);
+  AddFrame(fTab.get(), new TGLayoutHints(kLHintsBottom | kLHintsExpandX | kLHintsExpandY, 2, 2, 5, 1));
   MapSubwindows();
   Resize(GetDefaultSize());
 
@@ -198,24 +173,7 @@ NewProjectDialog::NewProjectDialog(const TGWindow *p, const TGWindow *main,
 ////////////////////////////////////////////////////////////////////////////////
 /// Delete new project dialog widgets.
 
-NewProjectDialog::~NewProjectDialog() {
-  delete fCreateButton; Log::Debug("Deleting 1");
-  delete fCancelButton; Log::Debug("Deleting 2");
-  delete fHelpButton;   Log::Debug("Deleting 3");
-  delete fPictButton;   Log::Debug("Deleting 4");
-  delete fLerror;       Log::Debug("Deleting 5");
-  delete fTxt1;         Log::Debug("Deleting 6");
-  delete fTxt2;         Log::Debug("Deleting 7");
-  delete fFrame1;       Log::Debug("Deleting 8");
-  delete fFrame2;       Log::Debug("Deleting 9");
-  delete fFrame3;       Log::Debug("Deleting 10");
-  delete fV1;           Log::Debug("Deleting 11");
-  delete fTab;          Log::Debug("Deleting 12");
-  delete fL4;           Log::Debug("Deleting 13");
-  delete fL3;           Log::Debug("Deleting 14");
-  delete fL2;           Log::Debug("Deleting 15");
-  delete fL1;           Log::Debug("Deleting 16");
-}
+NewProjectDialog::~NewProjectDialog() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Called when Cancel button is clicked.
@@ -339,9 +297,8 @@ Bool_t NewProjectDialog::ProcessMessage(Long_t msg, Long_t param1, Long_t param2
         case kCM_BUTTON:
           switch (param1) {
             case 1:
-              printf("Clicked create!\n");
+              Log::Info("Clicked create!\n");
               if (!OnCreate())
-
                 break;
             case 2:
               OnCancel();
@@ -355,8 +312,10 @@ Bool_t NewProjectDialog::ProcessMessage(Long_t msg, Long_t param1, Long_t param2
               fClient->WaitFor(hd);
               break;
             case 4:
-              printf("Clicked open button!\n");
+              Log::Debug("Clicked open button!");
               OnOpen();
+              fLerror->ChangeText("");
+              fLerror->Resize();
             default:
               break;
           }
@@ -408,60 +367,57 @@ NewModelDialog::NewModelDialog(const TGWindow *p, const TGWindow *main,
     : TGTransientFrame(p, main, w, h, options) {
   UInt_t wh = (UInt_t)(h - (0.6 * h));
 
-  fFrame1 = new TGHorizontalFrame(this, w, wh, 0);
+  fFrame1 = std::make_unique<TGHorizontalFrame>(this, w, wh, 0);
 
-  fCreateButton = new TGTextButton(fFrame1, "     &Create     ", 1);
+  fCreateButton = std::make_unique<TGTextButton>(fFrame1.get(), "     &Create     ", 1);
   fCreateButton->Associate(this);
-  fCancelButton = new TGTextButton(fFrame1, "   &Cancel   ", 2);
+  fCancelButton = std::make_unique<TGTextButton>(fFrame1.get(), "   &Cancel   ", 2);
   fCancelButton->Associate(this);
-  fHelpButton = new TGTextButton(fFrame1, "    &Help    ", 3);
+  fHelpButton = std::make_unique<TGTextButton>(fFrame1.get(), "    &Help    ", 3);
   fHelpButton->Associate(this);
 
-  fL1 =
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2);
-  fL2 = new TGLayoutHints(kLHintsBottom | kLHintsRight | kLHintsExpandX, 2, 2,
+  fL1 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 2, 2, 2, 2);
+  fL2 = std::make_unique<TGLayoutHints>(kLHintsBottom | kLHintsRight | kLHintsExpandX, 2, 2,
                           5, 1);
 
-  fFrame1->AddFrame(fCreateButton, fL1);
-  fFrame1->AddFrame(fHelpButton, fL1);
-  fFrame1->AddFrame(fCancelButton, fL1);
+  fFrame1->AddFrame(fCreateButton.get(), fL1.get());
+  fFrame1->AddFrame(fHelpButton.get(), fL1.get());
+  fFrame1->AddFrame(fCancelButton.get(), fL1.get());
 
   fFrame1->Resize(150, fCreateButton->GetDefaultHeight());
-  AddFrame(fFrame1, fL2);
+  AddFrame(fFrame1.get(), fL2.get());
 
   /// Create tab widget
-  fTab = new TGTab(this, 300, 300);
-  fL3 = new TGLayoutHints(kLHintsTop | kLHintsLeft, 10, 10, 10, 10);
+  fTab = std::make_unique<TGTab>(this, 300, 300);
+  fL3 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft, 10, 10, 10, 10);
 
   TGCompositeFrame *tf = fTab->AddTab("Model settings");
 
   /// Create vertical frame to contain two horizontal frames
-  fV1 = new TGVerticalFrame(tf, w, wh, 0);
+  fV1 = std::make_unique<TGVerticalFrame>(tf, w, wh, 0);
 
-  fFrame2 = new TGHorizontalFrame(fV1, 100, wh, 0);
-  fFrame2->AddFrame(new TGLabel(fFrame2, "Name:"),
+  fFrame2 = std::make_unique<TGHorizontalFrame>(fV1.get(), 100, wh, 0);
+  fFrame2->AddFrame(new TGLabel(fFrame2.get(), "Name:"),
                     new TGLayoutHints(0, 2, 26, 2, 2));
-  fFrame2->AddFrame(fTxt1 =
-                        new TGTextEntry(fFrame2, new TGTextBuffer(200), Id1));
-  fFrame2->AddFrame(fLerror = new TGLabel(fFrame2, "Error"),
-                    new TGLayoutHints(kLHintsLeft, 2, 2, 2, 2));
+  fTxt1 = std::make_unique<TGTextEntry>(fFrame2.get(), new TGTextBuffer(200), Id1);
+  fLerror = std::make_unique<TGLabel>(fFrame2.get(), "Error");
+  fFrame2->AddFrame(fTxt1.get());
+  fFrame2->AddFrame(fLerror.get(), new TGLayoutHints(kLHintsLeft, 2, 2, 2, 2));
   fLerror->SetTextColor(TColor::RGB2Pixel(255, 0, 0));
   fLerror->SetText("          ");
-  fV1->AddFrame(fFrame2, fL1);
+  fV1->AddFrame(fFrame2.get(), fL1.get());
 
-  fL4 = new TGLayoutHints(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 2, 2, 2,
+  fL4 = std::make_unique<TGLayoutHints>(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 2, 2, 2,
                           2);
 
-  tf->AddFrame(fV1, fL4);
+  tf->AddFrame(fV1.get(), fL4.get());
 
   /// Register with `ProcessMessage`
   fTxt1->Associate(this);
   fTxt1->Resize(100, fTxt1->GetDefaultHeight());
 
   /// Finalize
-  TGLayoutHints *fL5 = new TGLayoutHints(
-      kLHintsBottom | kLHintsExpandX | kLHintsExpandY, 2, 2, 5, 1);
-  AddFrame(fTab, fL5);
+  AddFrame(fTab.get(), new TGLayoutHints(kLHintsBottom | kLHintsExpandX | kLHintsExpandY, 2, 2, 5, 1));
   MapSubwindows();
   Resize(GetDefaultSize());
 
@@ -484,21 +440,7 @@ NewModelDialog::NewModelDialog(const TGWindow *p, const TGWindow *main,
 ////////////////////////////////////////////////////////////////////////////////
 /// Delete new project dialog widgets.
 
-NewModelDialog::~NewModelDialog() {
-  delete fCreateButton;
-  delete fCancelButton;
-  delete fHelpButton;
-  delete fLerror;
-  delete fTxt1;
-  delete fFrame1;
-  delete fFrame2;
-  delete fV1;
-  delete fTab;
-  delete fL4;
-  delete fL3;
-  delete fL2;
-  delete fL1;
-}
+NewModelDialog::~NewModelDialog() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Called when Cancel button is clicked.

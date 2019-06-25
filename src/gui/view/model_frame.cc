@@ -22,81 +22,77 @@ namespace gui {
 
 ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
     : TGCompositeFrame(p, 200, 200, kHorizontalFrame) {
-  fL1 =
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
-  fL2 = 
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 5, 2, 2, 2);
-  fL3 =
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 2, 2, 2);
+  fL1 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
+  fL2 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 5, 2, 2, 2);
+  fL3 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 2, 2, 2);
 
-  fV1 = new TGVerticalFrame(this, 50, 100, 0);
+  fV1 = std::make_unique<TGVerticalFrame>(this, 50, 100, 0);
 
   ///------Title-------///
   // Pixel_t col;
   // gClient->GetColorByName("green", col);
   TString fontname("-*-times-bold-r-*-*-16-*-*-*-*-*-*-*");
-  fLtitle = new TGLabel(fV1, "Model Elements");
+  fLtitle = std::make_unique<TGLabel>(fV1.get(), "Model Elements");
   fLtitle->SetTextFont(fontname.Data());
   // fLtitle->SetBackgroundColor(col);
-  fV1->AddFrame(fLtitle, fL1);
+  fV1->AddFrame(fLtitle.get(), fL1.get());
 
   ///-----Simulation-Entities-----///
-  fLentities = new TGLabel(fV1, "Simulation Entities");
-  fV1->AddFrame(fLentities, fL1);
+  fLentities = std::make_unique<TGLabel>(fV1.get(), "Simulation Entities");
+  fV1->AddFrame(fLentities.get(), fL1.get());
 
-  fBcell = new TGTextButton(fV1, "Cell", M_ENTITY_CELL);
+  fBcell = std::make_unique<TGTextButton>(fV1.get(), "Cell", M_ENTITY_CELL);
   fBcell->Associate(buttonHandler);
   fBcell->SetToolTipText("Create new custom Cell object");
-  fV1->AddFrame(fBcell, fL1);
+  fV1->AddFrame(fBcell.get(), fL1.get());
 
   ///----------Modules------------///
-  fLmodules = new TGLabel(fV1, "Modules");
-  fV1->AddFrame(fLmodules, fL1);
+  fLmodules = std::make_unique<TGLabel>(fV1.get(), "Modules");
+  fV1->AddFrame(fLmodules.get(), fL1.get());
 
-  fBgrowth = new TGTextButton(fV1, "Growth", M_MODULE_GROWTH);
+  fBgrowth = std::make_unique<TGTextButton>(fV1.get(), "Growth", M_MODULE_GROWTH);
   fBgrowth->Associate(buttonHandler);
   fBgrowth->SetToolTipText("Create new Growth Module");
-  fV1->AddFrame(fBgrowth, fL1);
+  fV1->AddFrame(fBgrowth.get(), fL1.get());
 
-  fBchemotaxis = new TGTextButton(fV1, "Chemotaxis", M_MODULE_CHEMOTAXIS);
+  fBchemotaxis = std::make_unique<TGTextButton>(fV1.get(), "Chemotaxis", M_MODULE_CHEMOTAXIS);
   fBchemotaxis->Associate(buttonHandler);
   fBchemotaxis->SetToolTipText("Create new Chemotaxis Module");
-  fV1->AddFrame(fBchemotaxis, fL1);
+  fV1->AddFrame(fBchemotaxis.get(), fL1.get());
 
-  fBsubstance =
-      new TGTextButton(fV1, "Substance Secretion", M_MODULE_SUBSTANCE);
+  fBsubstance = std::make_unique<TGTextButton>(fV1.get(), "Substance Secretion", M_MODULE_SUBSTANCE);
   fBsubstance->Associate(buttonHandler);
   fBsubstance->SetToolTipText("Create new Substance Secretion Module");
-  fV1->AddFrame(fBsubstance, fL1);
+  fV1->AddFrame(fBsubstance.get(), fL1.get());
 
   ///----------General------------///
-  fLgeneral = new TGLabel(fV1, "General");
-  fV1->AddFrame(fLgeneral, fL1);
+  fLgeneral = std::make_unique<TGLabel>(fV1.get(), "General");
+  fV1->AddFrame(fLgeneral.get(), fL1.get());
 
-  fBvariable = new TGTextButton(fV1, "Variable", M_GENERAL_VARIABLE);
+  fBvariable = std::make_unique<TGTextButton>(fV1.get(), "Variable", M_GENERAL_VARIABLE);
   fBvariable->Associate(buttonHandler);
   fBvariable->SetToolTipText("Create new general variable");
 
-  fV1->AddFrame(fBvariable, fL1);
+  fV1->AddFrame(fBvariable.get(), fL1.get());
 
-  fBfunction = new TGTextButton(fV1, "Function", M_GENERAL_FUNCTION);
+  fBfunction = std::make_unique<TGTextButton>(fV1.get(), "Function", M_GENERAL_FUNCTION);
   fBfunction->Associate(buttonHandler);
   fBfunction->SetToolTipText("Create new general function");
 
-  fV1->AddFrame(fBfunction, fL1);
+  fV1->AddFrame(fBfunction.get(), fL1.get());
 
-  fBformula = new TGTextButton(fV1, "Formula", M_GENERAL_FORMULA);
+  fBformula = std::make_unique<TGTextButton>(fV1.get(), "Formula", M_GENERAL_FORMULA);
   fBformula->Associate(buttonHandler);
   fBformula->SetToolTipText("Create new general formula");
-  fV1->AddFrame(fBformula, fL1);
+  fV1->AddFrame(fBformula.get(), fL1.get());
 
-  AddFrame(fV1, fL3);
+  AddFrame(fV1.get(), fL3.get());
 
   fCurTab = new ModelTab(this, buttonHandler);
 
   fModelTabs.emplace_back(fCurTab);
 
-  AddFrame(fCurTab, fL2);
+  AddFrame(fCurTab, fL2.get());
 
   fButtonHandler = buttonHandler;
 }
@@ -112,7 +108,7 @@ void ModelFrame::EnableButtons(Int_t state) {
     gClient->GetColorByName("gray", col);
   }
   fLtitle->SetBackgroundColor(col);
-  fClient->NeedRedraw(fLtitle);
+  fClient->NeedRedraw(fLtitle.get());
 
   fBcell->SetState(buttonState);
   fBgrowth->SetState(buttonState);
@@ -124,18 +120,18 @@ void ModelFrame::EnableButtons(Int_t state) {
 }
 
 ModelFrame::~ModelFrame() {
-  delete fLentities;
-  delete fBcell;
-  delete fLmodules;
-  delete fBgrowth;
-  delete fBchemotaxis;
-  delete fBsubstance;
-  delete fLgeneral;
-  delete fBvariable;
-  delete fBfunction;
-  delete fBformula;
-  delete fLtitle;
-  delete fV1;
+  //delete fLentities;
+  //delete fBcell;
+  //delete fLmodules;
+  //delete fBgrowth;
+  //delete fBchemotaxis;
+  //delete fBsubstance;
+  //delete fLgeneral;
+  //delete fBvariable;
+  //delete fBfunction;
+  //delete fBformula;
+  //delete fLtitle;
+  //delete fV1;
 }
 
 void ModelFrame::SwitchModelTab(ModelTab* t) {
@@ -174,7 +170,7 @@ void ModelFrame::ShowModelElement(const char* modelName,
       return;
     /// ModelTab doesn't exist, need to create new one
     ModelTab* t = new ModelTab(this, fButtonHandler, modelName);
-    AddFrame(t, fL2);
+    AddFrame(t, fL2.get());
 
     fModelTabs.emplace_back(t);
     SwitchModelTab(t);

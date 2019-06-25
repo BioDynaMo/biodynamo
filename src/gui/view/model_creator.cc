@@ -62,6 +62,7 @@
 #include <TRootHelpDialog.h>
 #include <TSystem.h>
 #include <TView.h>
+#include <TMethod.h>
 
 #include <TPluginManager.h>
 #include <TVirtualGL.h>
@@ -78,6 +79,28 @@
 #include "gui/view/new_dialog.h"
 #include "gui/view/title.h"
 #include "gui/view/tree_manager.h"
+
+#include "biodynamo.h"
+
+namespace bdm {
+
+/// testing
+inline Cell* GetCell() {
+  const std::array<double, 3> position = {1, 2, 3};
+  Cell *c1 = new Cell(position);
+  return c1;
+}
+
+/// testing
+inline Cell* GetGrowthModule() {
+  const std::array<double, 3> position = {1, 2, 3};
+  Cell *c1 = new Cell(position);
+  return c1;
+}
+
+}
+  
+
 
 namespace gui {
 
@@ -124,8 +147,6 @@ ToolBarData_t tb_data[] = {
 
 const char *filetypes[] = {"ROOT files", "*.root", "All files", "*", 0, 0};
 
-TGListTree *gProjectListTree;  // base TGListTree
-
 ModelCreator *gModelCreator;
 
 //_________________________________________________
@@ -152,10 +173,9 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
   fInterrupted = kFALSE;
   fIsNewProject = kFALSE;
 
-  fModelCreatorEnv =
-      new TEnv(".modelcreatorrc");  // fModelCreatorEnv not yet used
+  fModelCreatorEnv = std::make_unique<TEnv>(".modelcreatorrc");  //  not yet used
 
-  fTreeManager = new TreeManager();
+  fTreeManager = std::make_unique<TreeManager>();
 
   fProjectName.clear();
   fProjectPath.clear();
@@ -165,66 +185,56 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
 
   ///---- toolbar
   int spacing = 8;
-  fToolBar = new TGToolBar(this, 60, 20, kHorizontalFrame | kRaisedFrame);
+  fToolBar = std::make_unique<TGToolBar>(this, 60, 20, kHorizontalFrame | kRaisedFrame);
   for (int i = 0; icon_names[i]; i++) {
     TString iconname(gProgPath);
-#ifdef R__WIN32
-    iconname += "\\icons\\";
-#else
-    iconname += "/icons/";
-#endif
+    #ifdef R__WIN32
+      iconname += "\\icons\\";
+    #else
+      iconname += "/icons/";
+    #endif
     iconname += icon_names[i];
     tb_data[i].fPixmap = iconname.Data();
     if (strlen(icon_names[i]) == 0) {
-      fToolBar->AddFrame(new TGVertical3DLine(fToolBar),
+      fToolBar->AddFrame(new TGVertical3DLine(fToolBar.get()),
                          new TGLayoutHints(kLHintsExpandY, 4, 4));
       continue;
     }
     const TGPicture *pic = fClient->GetPicture(tb_data[i].fPixmap);
-    TGPictureButton *pb = new TGPictureButton(fToolBar, pic, tb_data[i].fId);
+    TGPictureButton *pb = new TGPictureButton(fToolBar.get(), pic, tb_data[i].fId);
     pb->SetToolTipText(tb_data[i].fTipText);
     tb_data[i].fButton = pb;
 
     fToolBar->AddButton(this, pb, spacing);
     spacing = 0;
   }
-  AddFrame(fToolBar,
+  AddFrame(fToolBar.get(),
            new TGLayoutHints(kLHintsTop | kLHintsExpandX, 0, 0, 0, 0));
   fToolBar->GetButton(M_FILE_SAVE)->SetState(kButtonDisabled);
 
   /// Layout hints
-  fL1 = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, 0, 0);
-  fL2 = new TGLayoutHints(kLHintsCenterX | kLHintsExpandX, 0, 0, 0, 0);
-  fL3 = new TGLayoutHints(
-      kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 0, 0, 0, 0);
-  fL4 =
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 5, 2, 2);
-  fL5 = new TGLayoutHints(
+  fL1 = std::make_unique<TGLayoutHints>(kLHintsCenterX | kLHintsExpandX, 0, 0, 0, 0);
+  fL2 = std::make_unique<TGLayoutHints>(
       kLHintsBottom | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 2, 2, 2,
       2);
-  fL6 = new TGLayoutHints(kLHintsBottom | kLHintsExpandX, 0, 0, 0, 0);
-  fL7 = new TGLayoutHints(
-      kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 5, 5, 2, 2);
-  fL8 =
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 0, 0);
+  fL3 = std::make_unique<TGLayoutHints>(kLHintsBottom | kLHintsExpandX, 0, 0, 0, 0);
 
   // CREATE TITLE FRAME
-  fTitleFrame = new TitleFrame(this, "BioDyanMo", "Model Creator", 100, 100);
-  AddFrame(fTitleFrame, fL2);
+  fTitleFrame = std::make_unique<TitleFrame>(this, "BioDyanMo", "Model Creator", 100, 100);
+  AddFrame(fTitleFrame.get(), fL1.get());
 
   // CREATE MAIN FRAME
-  fMainFrame =
-      new TGCompositeFrame(this, 100, 100, kHorizontalFrame | kRaisedFrame);
+  fMainFrame = std::make_unique<TGCompositeFrame>(this, 100, 100, kHorizontalFrame | kRaisedFrame);
 
   TGVerticalFrame *fV1 =
-      new TGVerticalFrame(fMainFrame, 150, 10, kSunkenFrame | kFixedWidth);
+      new TGVerticalFrame(fMainFrame.get(), 150, 10, kSunkenFrame | kFixedWidth);
 
   TGLayoutHints *lo;
 
   lo = new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 2, 2);
   fMainFrame->AddFrame(fV1, lo);
 
-  TGVSplitter *splitter = new TGVSplitter(fMainFrame, 5);
+  TGVSplitter *splitter = new TGVSplitter(fMainFrame.get(), 5);
   splitter->SetFrame(fV1, kTRUE);
   lo = new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0);
   fMainFrame->AddFrame(splitter, lo);
@@ -233,53 +243,51 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
                          2, 2);
 
   // Create Selection frame (i.e. with buttons and selection widgets)
-  fSelectionFrame = new TGCompositeFrame(fV1, 100, 100, kVerticalFrame);
+  fSelectionFrame = std::make_unique<TGCompositeFrame>(fV1, 100, 100, kVerticalFrame);
 
-  fButtonModelFrame = new ButtonModelFrame(fSelectionFrame, this, M_MODEL_NEW,
+  fButtonModelFrame = std::make_unique<ButtonModelFrame>(fSelectionFrame.get(), this, M_MODEL_NEW,
                                            M_MODEL_SIMULATE, M_INTERRUPT_SIMUL);
 
   // create project button frame
-  fButtonProjectFrame = new ButtonProjectFrame(
-      fSelectionFrame, this, M_FILE_NEWPROJECT, M_FILE_OPENPROJECT);
+  fButtonProjectFrame = std::make_unique<ButtonProjectFrame>(
+      fSelectionFrame.get(), this, M_FILE_NEWPROJECT, M_FILE_OPENPROJECT);
   lo = new TGLayoutHints(kLHintsTop | kLHintsCenterX | kLHintsExpandX, 2, 5, 1,
                          2);
 
-  fSelectionFrame->AddFrame(fButtonProjectFrame, lo);
-  fSelectionFrame->AddFrame(fButtonModelFrame, lo);
+  fSelectionFrame->AddFrame(fButtonProjectFrame.get(), lo);
+  fSelectionFrame->AddFrame(fButtonModelFrame.get(), lo);
 
   fTreeView =
-      new TGCanvas(fSelectionFrame, 150, 10, kSunkenFrame | kDoubleBorder);
+      std::make_unique<TGCanvas>(fSelectionFrame.get(), 150, 10, kSunkenFrame | kDoubleBorder);
   fProjectListTree =
-      new TGListTree(fTreeView->GetViewPort(), 10, 10, kHorizontalFrame);
-  gProjectListTree = fProjectListTree;
-  fProjectListTree->SetCanvas(fTreeView);
+      std::make_unique<TGListTree>(fTreeView->GetViewPort(), 10, 10, kHorizontalFrame);
+  fProjectListTree->SetCanvas(fTreeView.get());
   fProjectListTree->Associate(this);
-  fTreeView->SetContainer(fProjectListTree);
-  fSelectionFrame->AddFrame(fTreeView, fL5);
+  fTreeView->SetContainer(fProjectListTree.get());
+  fSelectionFrame->AddFrame(fTreeView.get(), fL2.get());
 
   lo = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
-  fV1->AddFrame(fSelectionFrame, lo);
-
-  fContextMenu = new TContextMenu("RSContextMenu");
+  fV1->AddFrame(fSelectionFrame.get(), lo);
 
   // Create Display frame
-  fModelFrame = new ModelFrame(fMainFrame, this);
+  fModelFrame = std::make_unique<ModelFrame>(fMainFrame.get(), this);
   fModelFrame->EnableButtons(M_NONE_ACTIVE);
-  fMainFrame->AddFrame(fModelFrame, lo);
+  fMainFrame->AddFrame(fModelFrame.get(), lo);
 
   // Create Display Canvas Tab (where the actual models are displayed)
   // TGCompositeFrame *tFrame = fDisplayFrame->AddTab("Untitled Model");
 
   // TODO: add more to frames/tabs/etc
 
-  AddFrame(fMainFrame, lo);
+  AddFrame(fMainFrame.get(), lo);
 
   // Create status bar
   Int_t parts[] = {45, 45, 10};
-  fStatusBar = new TGStatusBar(this, 50, 10, kHorizontalFrame);
+  fStatusBar = std::make_unique<TGStatusBar>(this, 50, 10, kHorizontalFrame);
   fStatusBar->SetParts(parts, 3);
-  AddFrame(fStatusBar, fL6);
-  fStatusBar->SetText("Waiting to start simulation...", 0);
+  AddFrame(fStatusBar.get(), fL3.get());
+  Log::SetStatusBar(fStatusBar.get());
+  fStatusBar->SetText("Please create or load a project", 0);
 
   // Finish ModelCreator for display...
   SetWindowName("BioDynaMo Model Creator");
@@ -307,14 +315,13 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
 
 void ModelCreator::MakeMenuBarFrame() {
   /// layout hint items
-  fMenuBarLayout =
-      new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 0, 0);
-  fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
-  fMenuBarHelpLayout = new TGLayoutHints(kLHintsTop | kLHintsRight);
-  fMenuBar = new TGMenuBar(this, 1, 1, kHorizontalFrame | kRaisedFrame);
+  fMenuBarLayout = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 0, 0);
+  fMenuBarItemLayout = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
+  fMenuBarHelpLayout = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsRight);
+  fMenuBar = std::make_unique<TGMenuBar>(this, 1, 1, kHorizontalFrame | kRaisedFrame);
 
   /// Menu - File
-  fMenuFile = new TGPopupMenu(gClient->GetRoot());
+  fMenuFile = std::make_unique<TGPopupMenu>(gClient->GetRoot());
   fMenuFile->AddEntry("&New Project", M_FILE_NEWPROJECT);
   fMenuFile->AddEntry("&Open Project...", M_FILE_OPENPROJECT);
   fMenuFile->AddEntry("&Save", M_FILE_SAVE);
@@ -331,7 +338,7 @@ void ModelCreator::MakeMenuBarFrame() {
   fMenuFile->DisableEntry(M_FILE_SAVEAS);
 
   /// Menu - Simulation
-  fMenuSimulation = new TGPopupMenu(gClient->GetRoot());
+  fMenuSimulation = std::make_unique<TGPopupMenu>(gClient->GetRoot());
   fMenuSimulation->AddEntry("Generate BioDynaMo code", M_SIMULATION_GENERATE);
   fMenuSimulation->AddSeparator();
   fMenuSimulation->AddEntry("Build", M_SIMULATION_BUILD);
@@ -345,18 +352,18 @@ void ModelCreator::MakeMenuBarFrame() {
   fMenuSimulation->DisableEntry(M_SIMULATION_OPENPARAVIEW);
 
   /// Menu - Tools
-  fMenuTools = new TGPopupMenu(gClient->GetRoot());
+  fMenuTools = std::make_unique<TGPopupMenu>(gClient->GetRoot());
   fMenuTools->AddLabel("Tools...");
   fMenuTools->AddSeparator();
   fMenuTools->AddEntry("Start &Browser\tCtrl+B", M_TOOLS_STARTBROWSER);
 
   /// Menu - View
-  fMenuView = new TGPopupMenu(gClient->GetRoot());
+  fMenuView = std::make_unique<TGPopupMenu>(gClient->GetRoot());
   fMenuView->AddEntry("&Toolbar", M_VIEW_TOOLBAR);
   fMenuView->CheckEntry(M_VIEW_TOOLBAR);
 
   /// Menu - Samples
-  fMenuSamples = new TGPopupMenu(gClient->GetRoot());
+  fMenuSamples = std::make_unique<TGPopupMenu>(gClient->GetRoot());
   fMenuSamples->AddLabel("Try out demo projects...");
   fMenuSamples->AddSeparator();
   fMenuSamples->AddEntry("Cell Division", M_SAMPLES_CELLDIVISION);
@@ -372,7 +379,7 @@ void ModelCreator::MakeMenuBarFrame() {
   fMenuSamples->DisableEntry(M_SAMPLES_TUMORCONCEPT);
 
   /// Menu - Help
-  fMenuHelp = new TGPopupMenu(gClient->GetRoot());
+  fMenuHelp = std::make_unique<TGPopupMenu>(gClient->GetRoot());
   fMenuHelp->AddEntry("User Guide", M_HELP_USERGUIDE);
   fMenuHelp->AddEntry("Dev Guide", M_HELP_DEVGUIDE);
   fMenuHelp->AddSeparator();
@@ -390,31 +397,31 @@ void ModelCreator::MakeMenuBarFrame() {
   fMenuHelp->Associate(this);
   fMenuFile->Associate(this);
 
-  fMenuBar->AddPopup("&File", fMenuFile, fMenuBarItemLayout);
-  fMenuBar->AddPopup("S&imulation", fMenuSimulation, fMenuBarItemLayout);
-  fMenuBar->AddPopup("&Tools", fMenuTools, fMenuBarItemLayout);
-  fMenuBar->AddPopup("&View", fMenuView, fMenuBarItemLayout);
-  fMenuBar->AddPopup("&Samples", fMenuSamples, fMenuBarItemLayout);
-  fMenuBar->AddPopup("&Help", fMenuHelp, fMenuBarHelpLayout);
+  fMenuBar->AddPopup("&File", fMenuFile.get(), fMenuBarItemLayout.get());
+  fMenuBar->AddPopup("S&imulation", fMenuSimulation.get(), fMenuBarItemLayout.get());
+  fMenuBar->AddPopup("&Tools", fMenuTools.get(), fMenuBarItemLayout.get());
+  fMenuBar->AddPopup("&View", fMenuView.get(), fMenuBarItemLayout.get());
+  fMenuBar->AddPopup("&Samples", fMenuSamples.get(), fMenuBarItemLayout.get());
+  fMenuBar->AddPopup("&Help", fMenuHelp.get(), fMenuBarHelpLayout.get());
 
-  AddFrame(fMenuBar, fMenuBarLayout);
+  AddFrame(fMenuBar.get(), fMenuBarLayout.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Destroy menubar and popup menus.
 
 void ModelCreator::CloseMenuBarFrame() {
-  delete fMenuHelp;
-  delete fMenuSamples;
-  delete fMenuView;
-  delete fMenuTools;
-  delete fMenuSimulation;
-  delete fMenuFile;
+  //delete fMenuHelp;
+  //delete fMenuSamples;
+  //delete fMenuView;
+  //delete fMenuTools;
+  //delete fMenuSimulation;
+  //delete fMenuFile;
 
-  delete fMenuBarItemLayout;
-  delete fMenuBarHelpLayout;
-  delete fMenuBar;
-  delete fMenuBarLayout;
+  //delete fMenuBarItemLayout;
+  //delete fMenuBarHelpLayout;
+  //delete fMenuBar;
+  //delete fMenuBarLayout;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -422,10 +429,10 @@ void ModelCreator::CloseMenuBarFrame() {
 
 void ModelCreator::ShowToolBar(Bool_t show) {
   if (show) {
-    ShowFrame(fToolBar);
+    ShowFrame(fToolBar.get());
     fMenuView->CheckEntry(M_VIEW_TOOLBAR);
   } else {
-    HideFrame(fToolBar);
+    HideFrame(fToolBar.get());
     fMenuView->UnCheckEntry(M_VIEW_TOOLBAR);
   }
 }
@@ -435,25 +442,15 @@ void ModelCreator::ShowToolBar(Bool_t show) {
 /// GUI MEMBERS
 ModelCreator::~ModelCreator() {
   CloseMenuBarFrame();
-  delete fContextMenu;
-  delete fButtonModelFrame;
-  delete fButtonProjectFrame;
-  delete fSelectionFrame;
-  delete fMainFrame;
-  delete fTitleFrame;
+  //delete fButtonModelFrame;
+  //delete fButtonProjectFrame;
+  //delete fSelectionFrame;
+  //delete fMainFrame;
+  //delete fTitleFrame;
 
-  delete fL8;
-  delete fL7;
-  delete fL6;
-  delete fL5;
-  delete fL4;
-  delete fL3;
-  delete fL2;
-  //delete fL1;
-
-  delete fProjectListTree;
-  delete fTreeView;
-  delete fTreeManager;
+  //delete fProjectListTree;
+  //delete fTreeView;
+  //delete fTreeManager;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -474,7 +471,7 @@ void ModelCreator::CreateNewProject() {
   }
 
   Project::GetInstance().NewProject(fProjectPath.c_str(), fProjectName.c_str());
-  fTreeManager->CreateProjectTree(fProjectListTree, fProjectName);
+  fTreeManager->CreateProjectTree(fProjectListTree.get(), fProjectName);
   Initialize();
   ChangeSelectionFrame();
 }
@@ -486,7 +483,7 @@ void ModelCreator::CreateNewModel() {
   Initialize();
   std::string tmp = fModelName + " Overview";
   fModelFrame->ShowModelElement(fModelName.c_str(), tmp.c_str());
-  fClient->NeedRedraw(fModelFrame);
+  fClient->NeedRedraw(fModelFrame.get());
   Project::GetInstance().CreateModel(fModelName.c_str());
 }
 
@@ -496,7 +493,7 @@ void ModelCreator::CreateNewModel() {
 void ModelCreator::Initialize() {
   Interrupt(kFALSE);
   fProjectListTree->ClearViewPort();
-  fClient->NeedRedraw(fProjectListTree);
+  fClient->NeedRedraw(fProjectListTree.get());
 
   fStatusBar->SetText("", 1);
 }
@@ -504,11 +501,11 @@ void ModelCreator::Initialize() {
 void ModelCreator::ChangeSelectionFrame(Bool_t createdProject) {
   fSelectionFrame->MapSubwindows();
   if (createdProject) {
-    fSelectionFrame->ShowFrame(fButtonModelFrame);
-    fSelectionFrame->HideFrame(fButtonProjectFrame);
+    fSelectionFrame->ShowFrame(fButtonModelFrame.get());
+    fSelectionFrame->HideFrame(fButtonProjectFrame.get());
   } else {
-    fSelectionFrame->HideFrame(fButtonModelFrame);
-    fSelectionFrame->ShowFrame(fButtonProjectFrame);
+    fSelectionFrame->HideFrame(fButtonModelFrame.get());
+    fSelectionFrame->ShowFrame(fButtonProjectFrame.get());
   }
   fSelectionFrame->MapWindow();
 }
@@ -524,7 +521,7 @@ void ModelCreator::CreateNewCell() {
   //  /// Call tree manager for update
   fTreeManager->CreateTopLevelElement(M_ENTITY_CELL);
   fProjectListTree->ClearViewPort();
-  fClient->NeedRedraw(fProjectListTree);
+  fClient->NeedRedraw(fProjectListTree.get());
   //} else {
   //   Log::Error("Unable to create new cell!");
   //}
@@ -537,35 +534,101 @@ void ModelCreator::CreateNewGrowthModule() {
   Log::Info("Creating Growth Module!");
   fTreeManager->CreateTopLevelElement(M_MODULE_GROWTH);
   fProjectListTree->ClearViewPort();
-  fClient->NeedRedraw(fProjectListTree);
+  fClient->NeedRedraw(fProjectListTree.get());
+}
+
+
+void ExtractMethod(TObject* obj) {
+  //std::cout << "Trying to extract setter\n";
+  std::string clName(obj->ClassName());
+  if(clName.compare("TMethod") == 0) {
+    //std::cout << "Detected a method!\n";
+    TMethod* method = (TMethod*)obj;
+    std::string methodName(method->GetName());
+    if(methodName.find("Set") != std::string::npos) {
+      std::string methodSignature(method->GetSignature());
+      std::cout << "Setter found:" << methodName << methodSignature << '\n';
+    }
+      
+  }
+
+}
+
+void PrintList(auto&& t, Bool_t useIterator=kFALSE) {
+
+  std::cout << "ClassName:" << t->ClassName() << '\n';
+  if(!useIterator) {
+    TObjLink* lnk = t->FirstLink();
+    while (lnk) {
+      TObject* obj = lnk->GetObject();
+      ExtractMethod(obj);
+      //obj->Print();
+      lnk = lnk->Next();
+    }
+  } else {
+    TIterator* it = t->MakeIterator();
+    TObject* obj = it->Next();
+    while(obj) {
+      //obj->Print();
+      ExtractMethod(obj);
+      obj = it->Next();
+    }
+  }
+
+}
+
+void ViewMembers() {
+
+  //TBrowser *b = ;
+  std::cout << "Testing getting cell members\n";
+  bdm::Cell *ptr = bdm::GetCell();
+  TClass *cl = ptr->IsA();
+
+  std::cout << "\nData Members:\n";
+  PrintList(cl->GetListOfDataMembers());
+
+  std::cout << "\nMethods:\n";
+  PrintList(cl->GetListOfMethods());
+
+  std::cout << "\nReal Data:\n";
+  PrintList(cl->GetListOfRealData());
+ 
+  std::cout << "\nPublic Methods:\n";
+  PrintList(cl->GetListOfAllPublicMethods(), kTRUE);
+
+  std::cout << "\nPublic Data Members:\n";
+  PrintList(cl->GetListOfAllPublicDataMembers(), kTRUE);
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Handle messages send to the ModelCreator object.
 
 Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
-  Char_t strtmp[250];
+  
 
   switch (GET_MSG(msg)) {
     case kC_COMMAND:
-
       switch (GET_SUBMSG(msg)) {
         case kCM_BUTTON:
         case kCM_MENU:
           switch (param1) {
             case M_FILE_NEWPROJECT:
-              sprintf(strtmp, "Creating New Project");
-              fStatusBar->SetText(strtmp, 0);
-              new NewProjectDialog(fClient->GetRoot(), this, 800, 400);
-              if (fIsNewProject) {
-                fIsNewProject = kFALSE;
-                CreateNewProject();
+              if(Project::GetInstance().IsLoaded()) {
+                Log::Warning("Can only have 1 project open!");
+                // TODO: Show dialog to save/close & create new
+              } else {
+                new NewProjectDialog(fClient->GetRoot(), this, 800, 400);
+                if (fIsNewProject) {
+                  fIsNewProject = kFALSE;
+                  CreateNewProject();
+                } 
               }
               break;
 
             case M_FILE_OPENPROJECT:
-              sprintf(strtmp, "Opening Project");
-              fStatusBar->SetText(strtmp, 0);
+              Log::Debug("Clicked open project!");
               break;
 
             case M_MODEL_NEW:
@@ -574,13 +637,10 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
                 fIsNewModel = kFALSE;
                 CreateNewModel();
               }
-              sprintf(strtmp, "Creating New Model");
-              fStatusBar->SetText(strtmp, 0);
               break;
 
             case M_MODEL_SIMULATE:
-              sprintf(strtmp, "Simulating Model");
-              fStatusBar->SetText(strtmp, 0);
+              Log::Debug("Clicked simulate!");
               break;
 
             case M_INTERRUPT_SIMUL:
@@ -634,7 +694,10 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               break;
 
             case M_TOOLS_STARTBROWSER:
-              new TBrowser;
+            {
+              ViewMembers();
+              //new TBrowser;
+            }
               break;
 
             case M_VIEW_TOOLBAR:
@@ -648,6 +711,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               int ax, ay;
               TRootHelpDialog *hd;
               Window_t wdummy;
+              Char_t strtmp[250];
               sprintf(strtmp, "Model Creator License");
               hd = new TRootHelpDialog(this, strtmp, 640, 380);
               hd->SetText(gHelpLicense);
@@ -674,7 +738,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
           if (param1 == kButton1) {
             if (fProjectListTree->GetSelected()) {
               fProjectListTree->ClearViewPort();
-              fClient->NeedRedraw(fProjectListTree);
+              fClient->NeedRedraw(fProjectListTree.get());
             }
           }
           break;
@@ -708,7 +772,7 @@ void ModelCreator::HandleTreeInput() {
       itemName.find("Growth") != std::string::npos) {
     fModelFrame->ShowModelElement(selectedModelName.c_str(),
                                   itemName.c_str());
-    fClient->NeedRedraw(fModelFrame);
+    fClient->NeedRedraw(fModelFrame.get());
     fModelFrame->Resize(10000, 10000);
     fModelFrame->Resize(10001, 10001);
   }
@@ -720,8 +784,8 @@ void ModelCreator::HandleTreeInput() {
 
 void ModelCreator::CloseWindow() {
   std::cout << "Terminating Model Creator" << std::endl;
-  DeleteWindow();
-  gApplication->Terminate(0);
+  //this->DeleteWindow();
+  gApplication->Terminate();
 }
 
 }  // namespace gui

@@ -76,63 +76,53 @@ class ModelCreator : public TGMainFrame {
   std::string         fProjectPath;      // Set by NewProjectDialog
   std::string         fModelName;        // Set by NewModelDialog
 
-  TGMenuBar           *fMenuBar;            // Main menu bar
-  TEnv                *fModelCreatorEnv;    // ModelCreator environment variables  
+  std::unique_ptr<TGMenuBar>          fMenuBar;            // Main menu bar
+  std::unique_ptr<TEnv>               fModelCreatorEnv;    // ModelCreator environment variables  
 
   /// MenuBar Frame
-  TGPopupMenu         *fMenuFile;           // "File" popup menu
-  TGPopupMenu         *fMenuSimulation;     // "Simulation" popup menu
-  TGPopupMenu         *fMenuTools;          // "Tools" popup menu
-  TGPopupMenu         *fMenuView;           // "View" popup menu
-  TGPopupMenu         *fMenuSamples;        // "Samples" popup menu
-  TGPopupMenu         *fMenuHelp;           // "Help" popup menu
-  TGLayoutHints       *fMenuBarLayout;
-  TGLayoutHints       *fMenuBarItemLayout;
-  TGLayoutHints       *fMenuBarHelpLayout;
+  std::unique_ptr<TGPopupMenu>         fMenuFile;           // "File" popup menu
+  std::unique_ptr<TGPopupMenu>         fMenuSimulation;     // "Simulation" popup menu
+  std::unique_ptr<TGPopupMenu>         fMenuTools;          // "Tools" popup menu
+  std::unique_ptr<TGPopupMenu>         fMenuView;           // "View" popup menu
+  std::unique_ptr<TGPopupMenu>         fMenuSamples;        // "Samples" popup menu
+  std::unique_ptr<TGPopupMenu>         fMenuHelp;           // "Help" popup menu
+  std::unique_ptr<TGLayoutHints>       fMenuBarLayout;
+  std::unique_ptr<TGLayoutHints>       fMenuBarItemLayout;
+  std::unique_ptr<TGLayoutHints>       fMenuBarHelpLayout;
   void                MakeMenuBarFrame();
   void                CloseMenuBarFrame();
 
   /// ToolBar Frame
-  TGToolBar           *fToolBar;
+  std::unique_ptr<TGToolBar>           fToolBar;
   void                ShowToolBar(Bool_t show = kTRUE);
 
   /// Layout hints
-  TGLayoutHints       *fL1;
-  TGLayoutHints       *fL2;
-  TGLayoutHints       *fL3;
-  TGLayoutHints       *fL4;
-  TGLayoutHints       *fL5;
-  TGLayoutHints       *fL6;
-  TGLayoutHints       *fL7;
-  TGLayoutHints       *fL8;
+  std::unique_ptr<TGLayoutHints>       fL1;
+  std::unique_ptr<TGLayoutHints>       fL2;
+  std::unique_ptr<TGLayoutHints>       fL3;
 
   /// Title Frame
-  TitleFrame         *fTitleFrame;
+  std::unique_ptr<TitleFrame>        fTitleFrame;
 
   /// Main Frame
-  TGCompositeFrame    *fMainFrame;
+  std::unique_ptr<TGCompositeFrame>    fMainFrame;
 
   /// Selection Frame
-  TGCompositeFrame    *fSelectionFrame;     // Frame containing list tree and button frame
-  ButtonModelFrame    *fButtonModelFrame;   // Frame containing control buttons
-  ButtonProjectFrame  *fButtonProjectFrame; // Frame containing control buttons
+  std::unique_ptr<TGCompositeFrame>    fSelectionFrame;     // Frame containing list tree and button frame
+  std::unique_ptr<ButtonModelFrame>    fButtonModelFrame;   // Frame containing control buttons
+  std::unique_ptr<ButtonProjectFrame>  fButtonProjectFrame; // Frame containing control buttons
   void                 ChangeSelectionFrame(Bool_t createdProject=kTRUE);
 
-  TGCanvas            *fTreeView;           // Canvas containing model selection list
-  TGListTree          *fProjectListTree;      // Project selection TGListTree
-  TGListTreeItem      *AddToTree(const char *name = nullptr);
+  std::unique_ptr<TGCanvas>            fTreeView;           // Canvas containing model selection list
+  std::unique_ptr<TGListTree>          fProjectListTree;      // Project selection TGListTree
+  TGListTreeItem*      AddToTree(const char *name = nullptr);
 
-  TreeManager         *fTreeManager;
+  std::unique_ptr<TreeManager>         fTreeManager;
 
-  ModelFrame          *fModelFrame;
- 
-  TContextMenu        *fContextMenu;        // pointer to context menu
-
-  // Display frame
-  TList               *fModelCanvas;        // TList containing TGCompositeFrame
+  std::unique_ptr<ModelFrame>          fModelFrame;
 
   // Statusbar
-  TGStatusBar         *fStatusBar;          // Status bar reporting model info
+  std::unique_ptr<TGStatusBar>         fStatusBar;          // Status bar reporting model info
 
  public:
   /// Statics
