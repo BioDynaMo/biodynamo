@@ -43,6 +43,9 @@ set(BDM_CMAKE_DIR ${CMAKE_SOURCE_DIR}/cmake)
 # Add an additional path to make include() look in the right places.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
+# Set the directory where we should find Qt
+SET(Qt5_DIR ${THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+
 # Include some utils functions (print_line, print_warning, verify_root, etc.)
 include(utils)
 
@@ -129,16 +132,36 @@ if (NUMA_FOUND)
 endif()
 
 if(paraview)
-  find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
-  if(${ParaView_FOUND})
-    message(STATUS "Found ParaView")
+
+    # Check the first time if ParaView exists in the system.
+    find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${BDM_INSTALL_DIR}/third_party/paraview)
+
+    if(NOT ${ParaView_FOUND})
+
+      PRINT_WARNING()
+      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now.")
+      PRINT_LINE()
+
+      # If we did not found paraview then we will install it automatically
+      # with the Qt package.
+      include(external/Qt)
+      include(external/ParaView)
+
+      # We need to set this to specify where Qt5 is
+      SET(Qt5_DIR ${THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+
+      # We call again find_package and this time it will work
+      find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${BDM_INSTALL_DIR}/third_party/paraview)
+    endif()
+
+    # Add several ParaView related options
     include("${PARAVIEW_USE_FILE}")
     add_definitions("-DUSE_CATALYST")
     link_directories($ENV{ParaView_LIB_DIR})
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
-        vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
-  endif()
+          vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
 
 # paraview version 5.5 (MacOS) does not contain TBB
@@ -213,6 +236,9 @@ endif()
 
 if (NOT ROOT_FOUND)
     add_dependencies(${BIODYNAMO_TARGET_NAME} ROOT)
+endif()
+if (NOT ParaView_FOUND)
+    add_dependencies(${BIODYNAMO_TARGET_NAME} PARAVIEW)
 endif()
 
 # Check if OpenCL C++ bindings are installed
@@ -327,6 +353,9 @@ if (test)
   if (NOT ROOT_FOUND)
       add_dependencies(${BIODYNAMO_TEST_TARGET_NAME} ROOT)
   endif()
+  if (NOT ParaView_FOUND)
+      add_dependencies(${BIODYNAMO_TEST_TARGET_NAME} PARAVIEW)
+  endif()
 
   # integration tests
   if (NOT coverage)
@@ -349,7 +378,6 @@ include(Installation)
 include(CppStyleGuideChecks)
 
 # --------------------- Final Message to the user ------------------------------
-PRINT_LINE()
 feature_summary(INCLUDE_QUIET_PACKAGES WHAT ALL)
 
 get_cmake_property(BDM_MISSING_PACKAGES PACKAGES_NOT_FOUND)
