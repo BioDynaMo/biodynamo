@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 3.2.0)
 project(BioDynaMo)
 set(BDM_VERSION 0.1.0)
 
+# Used for printing found packages
+include(FeatureSummary)
+
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test      "Build all tests." ON) # Makes boolean 'test' available.
 option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
@@ -12,7 +15,7 @@ option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
 option(paraview  "Enable ParaView" ON)
 option(vtune     "Enable VTune performance analysis" OFF)
-option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
+option(coverage  "Enable test coverage report generation. Sets build type to coverage" OFF)
 
 if(APPLE)
    # valgrind currently broken on macOS 10.12
@@ -44,7 +47,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include(utils)
 
 # Detect os type and version
+if (NOT DEFINED DETECTED_OS)
+    SET(DETECTED_OS "none")
+endif()
 detect_os()
+
+# Define required packages
+SET(BDM_REQUIRED_PACKAGES OpenMP Threads Numa TBB)
 
 ## TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
 ## APPLE might not be enough in the future)
@@ -129,8 +138,6 @@ if(paraview)
     link_directories($ENV{ParaView_LIB_DIR})
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
         vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
-  else()
-    message(WARNING "ParaView not found")
   endif()
 endif()
 
@@ -150,8 +157,6 @@ if (vtune)
         include_directories(${VTUNE_INCLUDE_DIR})
         add_definitions("-DUSE_VTUNE")
         set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
-    else()
-        message(WARNING "VTune not found")
     endif()
 endif()
 
@@ -344,9 +349,8 @@ include(Installation)
 include(CppStyleGuideChecks)
 
 # --------------------- Final Message to the user ------------------------------
+PRINT_LINE()
+feature_summary(INCLUDE_QUIET_PACKAGES WHAT ALL)
 
-PRINT_LINE()
-MESSAGE("You have just finished to configure BioDynaMo. Now you can run \"make .\" to compile it.\n\
-Remember to source ${BDM_INSTALL_DIR}/biodynamo-env.sh before actually running the tests or using\n\
-the library.")
-PRINT_LINE()
+get_cmake_property(BDM_MISSING_PACKAGES PACKAGES_NOT_FOUND)
+generate_download_prerequisites("${DETECTED_OS}" "${BDM_MISSING_PACKAGES}" "${BDM_REQUIRED_PACKAGES}")

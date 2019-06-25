@@ -53,8 +53,8 @@ endfunction()
 # detect if we are building BioDynaMo for the CI (Travis).
 function(detect_os)
     find_program(LSB_RELEASE_EXEC lsb_release)
-    if (NOT DEFINED BDM_OS)
-        if (DEFINED lsb_release-NOTFOUND AND NOT APPLE AND NOT DEFINED BDM_OS)
+    if (DETECTED_OS STREQUAL "none")
+        if (DEFINED lsb_release-NOTFOUND AND NOT APPLE AND NOT DEFINED ${BDM_OS})
             MESSAGE(FATAL_ERROR "We were unable to detect your OS version. This usually happens because we were unable to find\
  lsb_release command. In order to fix this error you can: install lsb_release for your distribution or specify which \
  system you are using. To specify the OS you have to call again cmake by passing -DBDM_OS=<your_os> as argument. The current\
@@ -76,14 +76,67 @@ function(detect_os)
                     OUTPUT_STRIP_TRAILING_WHITESPACE
                     )
             SET(BDM_OS "${LSB_RELEASE_ID_SHORT}-${LSB_RELEASE_ID_VERSION}")
-            string(TOLOWER ${BDM_OS} BDM_OS)
-            SET(BDM_OS ${BDM_OS} PARENT_SCOPE)
+            string(TOLOWER "${BDM_OS}" BDM_OS)
+            SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
         endif()
     endif()
 endfunction()
 
 function(source_root_file INSTALL_DIR)
     configure_file(cmake/env/source_root_auto.sh ${INSTALL_DIR}/source_root_auto.sh @ONLY)
+endfunction()
+
+function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
+
+    # We first get the required packages we are missing
+    SET(OPTIONAL_PACKAGES "${MISSING_PACKAGES}")
+    list(REMOVE_ITEM OPTIONAL_PACKAGES ${REQUIRED_PACKAGES})
+    list(REMOVE_ITEM MISSING_PACKAGES ${OPTIONAL_PACKAGES})
+
+    # Compute how many required and optional packages we are missing
+    list(LENGTH MISSING_PACKAGES MISSING_PACKAGES_SIZE)
+    list(LENGTH OPTIONAL_PACKAGES OPTIONAL_PACKAGES_SIZE)
+
+    # Include the prerequisites for the given OS and initialize the setup files
+    include(prerequisites/${OS}-install)
+    file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${OS_SHEBANG}\n")
+    file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${OS_SHEBANG}\n")
+
+
+    # Populate the script with the required packages
+    if (${MISSING_PACKAGES_SIZE} GREATER "0")
+        FOREACH(ITEM IN LISTS MISSING_PACKAGES)
+            file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${${ITEM}_install_command}")
+            file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-required.sh "\n")
+        ENDFOREACH()
+    endif()
+
+    # Populate the script with the optional packages (if the user wants so)
+    if (${OPTIONAL_PACKAGES_SIZE} GREATER "0")
+        FOREACH(ITEM IN LISTS OPTIONAL_PACKAGES)
+            file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${${ITEM}_install_command}")
+            file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "\n")
+        ENDFOREACH()
+    endif()
+
+    # Print some information to the final user
+    if (${OPTIONAL_PACKAGES_SIZE} GREATER "0" OR ${MISSING_PACKAGES_SIZE} GREATER "0")
+        PRINT_WARNING()
+        MESSAGE("Some prerequisites are missing. Some scripts were created inside ${CMAKE_BINARY_DIR} to solve \n\
+this issue. The scripts are:\n
+\t * ${CMAKE_BINARY_DIR}/prerequisites-required.sh (for the required packages);\n\
+\t * ${CMAKE_BINARY_DIR}/prerequisites-optional.sh (for the optional packages).\n\n\
+You can run them and they will install automatically all the requirements for buidling BioDynaMo. You will need\n\
+sudo rights to do so. Once the scripts are completed, you will need to run again cmake to detect the newly installed packages.\n\
+Remember that you are only required to run prerequisites-required.sh in order to be able to build BioDynaMo.")
+        PRINT_LINE()
+    else()
+        PRINT_LINE()
+        MESSAGE("You have just finished to configure BioDynaMo. Now you can run \"make .\" to compile it.\n\
+Remember to source ${BDM_INSTALL_DIR}/biodynamo-env.sh before actually running the tests or using\n\
+the library.")
+        PRINT_LINE()
+    endif()
 endfunction()
 
 function(print_line)

@@ -9,7 +9,7 @@ ExternalProject_Add(
         PREFIX ${CMAKE_BINARY_DIR}/third_party
         DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/third_party
         SOURCE_DIR ${ROOT_SOURCE_DIR}/
-        URL http://cern.ch/biodynamo-lfs/third-party/${BDM_OS}/root.tar.gz
+        URL http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz
         URL_MD5
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
