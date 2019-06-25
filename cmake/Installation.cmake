@@ -36,6 +36,7 @@ set(CMAKE_INSTALL_PVPLUGINDIR   "${CMAKE_INSTALL_ROOT}/lib/pv_plugin" CACHE PATH
 set(CMAKE_INSTALL_CMAKEDIR      "${CMAKE_INSTALL_ROOT}/cmake"    CACHE PATH "CMake files required from external projects")
 set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share"    CACHE PATH "Read-only architecture-independent data (share)")
 set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake" CACHE PATH "Build related files (DATADIR/cmake)")
+set(CMAKE_INSTALL_THIRDPARTY    "${CMAKE_INSTALL_ROOT}"          CACHE PATH "Third-party libraries.")
 
 # hide them from configuration tools
 mark_as_advanced(${CMAKE_INSTALL_ROOT}
@@ -44,7 +45,8 @@ mark_as_advanced(${CMAKE_INSTALL_ROOT}
                  ${CMAKE_INSTALL_LIBDIR}
                  ${CMAKE_INSTALL_CMAKEDIR}
                  ${CMAKE_INSTALL_DATADIR}
-                 ${CMAKE_INSTALL_CMAKEDATADIR})
+                 ${CMAKE_INSTALL_CMAKEDATADIR}
+                 ${CMAKE_INSTALL_THIRDPARTY})
 
 # TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
 # APPLE might not be enough in the future)
@@ -53,7 +55,7 @@ if(LINUX)
 elseif(APPLE)
   configure_file(util/installation/common/biodynamo-macos-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
 endif()
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh DESTINATION .)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh DESTINATION ${BDM_INSTALL_DIR})
 # biodynamo cli
 install(FILES cli/biodynamo.py DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME biodynamo
         PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
@@ -90,6 +92,7 @@ install(DIRECTORY ${EXTRACTED_THIRD_PARTY_LIBS}/mpark DESTINATION ${CMAKE_INSTAL
 install(FILES third_party/cpp_magic.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES third_party/OptionParser.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(FILES third_party/cpptoml/cpptoml.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpptoml)
+install(DIRECTORY third_party DESTINATION ${CMAKE_INSTALL_THIRDPARTY})
 # build files
 file(GLOB SELECTION_FILES cmake/*.xml)
 install(FILES ${SELECTION_FILES} DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR})

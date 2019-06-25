@@ -17,9 +17,7 @@ project(BDMGlyph)
 
 # Directory in which BioDynaMo will be installed. It can be provided
 # by the user itself. It will also contain paraview, root and qt.
-if (NOT DEFINED ${BDM_INSTALL_DIR})
-    set(BDM_INSTALL_DIR $ENV{HOME}/.bdm)
-endif()
+set(BDM_INSTALL_DIR ${CMAKE_BINARY_DIR}/..)
 
 # Set Qt5 directory and find ParaView
 SET(Qt5_DIR ${BDM_INSTALL_DIR}/third_party/qt/lib/cmake/Qt5)

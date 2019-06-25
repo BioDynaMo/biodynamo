@@ -45,7 +45,7 @@ set(THIRD_PARTY_DIR ${BDM_INSTALL_DIR}/third_party)
 set(BDM_CMAKE_DIR ${CMAKE_SOURCE_DIR}/cmake)
 
 # Set the directory where we should find Qt
-SET(Qt5_DIR ${THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+SET(Qt5_DIR ${CMAKE_BINARY_DIR}/third_party/qt/lib/cmake/Qt5)
 
 # Detect os type and version
 if (NOT DEFINED DETECTED_OS)
@@ -133,7 +133,7 @@ if(paraview)
 
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${BDM_INSTALL_DIR}/third_party/paraview)
+    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${CMAKE_BINARY_DIR}/third_party/paraview)
 
     if(NOT ${ParaView_FOUND})
 
@@ -151,11 +151,11 @@ together with Qt5.")
       include(external/ParaView)
 
       # We need to set this to specify where Qt5 is
-      SET(Qt5_DIR ${THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+      SET(Qt5_DIR ${CMAKE_BINARY_DIR}/third_party/qt/lib/cmake/Qt5)
 
       # We call again find_package and this time it will work
       find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${BDM_INSTALL_DIR}/third_party/paraview)
+              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${CMAKE_BINARY_DIR}/third_party/paraview)
     endif()
 
     # Add several ParaView related options

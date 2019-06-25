@@ -9,13 +9,13 @@ file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.g
 file(MAKE_DIRECTORY ${ROOT_SOURCE_DIR}/root)
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/root.tar.gz
         WORKING_DIRECTORY ${ROOT_SOURCE_DIR}/root)
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ROOT_SOURCE_DIR}/root ${THIRD_PARTY_DIR}/root)
+#execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ROOT_SOURCE_DIR}/root ${THIRD_PARTY_DIR}/root)
 
 # Run again find_package in order to find ROOT
 find_package(ROOT COMPONENTS Geom Gui)
 
 # Set ROOTSYS variable
-SET(ENV{ROOTSYS} "${THIRD_PARTY_DIR}/root" PARENT_SCOPE)
+SET(ENV{ROOTSYS} "${CMAKE_BINARY_DIR}/third_party/root" PARENT_SCOPE)
 
 # Set LD_LIBRARY_PATH variable
 set(ENV{LD_LIBRARY_PATH} "$ENV{ROOTSYS}/lib:$ENV{LD_LIBRARY_PATH}" PARENT_SCOPE)
