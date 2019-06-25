@@ -22,8 +22,8 @@ if (NOT DEFINED ${BDM_INSTALL_DIR})
 endif()
 
 # Set Qt5 directory and find ParaView
-SET(Qt5_DIR ${BDM_INSTALL_DIR}third_party/qt/lib/cmake/Qt5)
-FIND_PACKAGE(ParaView REQUIRED PATHS ${BDM_INSTALL_DIR}paraview/lib/cmake/paraview-5.6)
+SET(Qt5_DIR ${BDM_INSTALL_DIR}/third_party/qt/lib/cmake/Qt5)
+FIND_PACKAGE(ParaView REQUIRED PATHS ${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.6)
 
 # Locate ParaView build and then import CMake configuration,
 # macros etc. from it.

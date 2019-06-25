@@ -138,12 +138,16 @@ if(paraview)
     if(NOT ${ParaView_FOUND})
 
       PRINT_WARNING()
-      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now.")
+      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now\n\
+together with Qt5.")
       PRINT_LINE()
 
       # If we did not found paraview then we will install it automatically
       # with the Qt package.
       include(external/Qt)
+      PRINT_LINE()
+      MESSAGE("Qt5 was successfully donwloaded and installed. We will proceed now with ParaView.")
+      PRINT_LINE()
       include(external/ParaView)
 
       # We need to set this to specify where Qt5 is
