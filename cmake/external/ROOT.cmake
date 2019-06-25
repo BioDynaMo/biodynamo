@@ -2,40 +2,17 @@ include(ExternalProject)
 
 # Directory in which root will be donwloaded first (the path
 # should be something like <build_dir>/third_party/...).
-SET(ROOT_SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party/root")
+SET(ROOT_SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party")
 
-ExternalProject_Add(
-        ROOT
-        PREFIX ${CMAKE_BINARY_DIR}/third_party
-        DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/third_party
-        SOURCE_DIR ${ROOT_SOURCE_DIR}/
-        URL http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz
-        URL_MD5
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory ${ROOT_SOURCE_DIR} ${THIRD_PARTY_DIR}/root
-)
+file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz ${ROOT_SOURCE_DIR}/root.tar.gz
+        SHOW_PROGRESS)
+file(MAKE_DIRECTORY ${ROOT_SOURCE_DIR}/root)
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/root.tar.gz
+        WORKING_DIRECTORY ${ROOT_SOURCE_DIR}/root)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ROOT_SOURCE_DIR}/root ${THIRD_PARTY_DIR}/root)
 
-# Set the include dir
-SET(ROOT_INCLUDE_DIR ${THIRD_PARTY_DIR}/root/include PARENT_SCOPE)
-SET(ROOT_INCLUDE_DIRS ${THIRD_PARTY_DIR}/root/include PARENT_SCOPE)
-
-# Build a set with all the ROOT libraries needed
-set(rootlibs Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread MultiProc)
-set(ROOT_LIBRARIES PARENT_SCOPE)
-foreach(_cpt ${rootlibs} ${ROOT_FIND_COMPONENTS})
-    find_library(ROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${ROOT_LIBRARY_DIR})
-    if(ROOT_${_cpt}_LIBRARY)
-        mark_as_advanced(ROOT_${_cpt}_LIBRARY)
-        list(APPEND ROOT_LIBRARIES ${ROOT_${_cpt}_LIBRARY})
-        if(ROOT_FIND_COMPONENTS)
-            list(REMOVE_ITEM ROOT_FIND_COMPONENTS ${_cpt})
-        endif()
-    endif()
-endforeach()
-if(ROOT_LIBRARIES)
-    list(REMOVE_DUPLICATES ROOT_LIBRARIES)
-endif()
+# Run again find_package in order to find ROOT
+find_package(ROOT COMPONENTS Geom Gui)
 
 # Set ROOTSYS variable
 SET(ENV{ROOTSYS} "${THIRD_PARTY_DIR}/root" PARENT_SCOPE)

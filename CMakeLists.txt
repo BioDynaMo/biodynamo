@@ -5,8 +5,12 @@ cmake_minimum_required(VERSION 3.2.0)
 project(BioDynaMo)
 set(BDM_VERSION 0.1.0)
 
-# Used for printing found packages
+# Add an additional path to make include() look in the right places.
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+# Some includes
 include(FeatureSummary)
+include(utils)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test      "Build all tests." ON) # Makes boolean 'test' available.
@@ -40,14 +44,8 @@ endif()
 set(THIRD_PARTY_DIR ${BDM_INSTALL_DIR}/third_party)
 set(BDM_CMAKE_DIR ${CMAKE_SOURCE_DIR}/cmake)
 
-# Add an additional path to make include() look in the right places.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-
 # Set the directory where we should find Qt
 SET(Qt5_DIR ${THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
-
-# Include some utils functions (print_line, print_warning, verify_root, etc.)
-include(utils)
 
 # Detect os type and version
 if (NOT DEFINED DETECTED_OS)
@@ -234,13 +232,6 @@ if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 endif()
 
-if (NOT ROOT_FOUND)
-    add_dependencies(${BIODYNAMO_TARGET_NAME} ROOT)
-endif()
-if (NOT ParaView_FOUND)
-    add_dependencies(${BIODYNAMO_TARGET_NAME} PARAVIEW)
-endif()
-
 # Check if OpenCL C++ bindings are installed
 if (OPENCL_FOUND)
   if (NOT OPENCL_HAS_CXX)
@@ -349,13 +340,6 @@ if (test)
   #                           SOURCES ${file}
   #                           HEADERS ${TEST_HEADER})
   # endforeach()
-
-  if (NOT ROOT_FOUND)
-      add_dependencies(${BIODYNAMO_TEST_TARGET_NAME} ROOT)
-  endif()
-  if (NOT ParaView_FOUND)
-      add_dependencies(${BIODYNAMO_TEST_TARGET_NAME} PARAVIEW)
-  endif()
 
   # integration tests
   if (NOT coverage)
