@@ -20,11 +20,11 @@
 # simulations. (The path to the development install is known and can be
 # hardcoded )
 if (NOT CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX $ENV{BDM_INSTALL_DIR} CACHE PATH "BioDynaMo install prefix" FORCE)
+  set(CMAKE_INSTALL_PREFIX ${BDM_INSTALL_DIR} CACHE PATH "BioDynaMo install prefix" FORCE)
 elseif(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
-  set(CMAKE_INSTALL_PREFIX $ENV{BDM_INSTALL_DIR} CACHE PATH "BioDynaMo install prefix" FORCE)
-elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "$ENV{BDM_INSTALL_DIR}" )
-  message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be $ENV{BDM_INSTALL_DIR}")
+  set(CMAKE_INSTALL_PREFIX ${BDM_INSTALL_DIR} CACHE PATH "BioDynaMo install prefix" FORCE)
+elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "${BDM_INSTALL_DIR}" )
+  message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be ${BDM_INSTALL_DIR}")
 endif()
 
 # set install directories

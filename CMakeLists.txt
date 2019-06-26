@@ -12,6 +12,37 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include(FeatureSummary)
 include(utils)
 
+set(BDMSYS ${CMAKE_BINARY_DIR})
+
+# set install directories
+set(CMAKE_BIODYNAMO_ROOT        "${CMAKE_BINARY_DIR}/install")
+set(CMAKE_THIRD_PARTY_DIR       "${CMAKE_BIODYNAMO_ROOT}/third_party")
+set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_ROOT}/biodynamo")
+set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin")
+set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include")
+set(CMAKE_INSTALL_LIBDIR        "${CMAKE_INSTALL_ROOT}/lib")
+set(CMAKE_INSTALL_PVPLUGINDIR   "${CMAKE_INSTALL_ROOT}/lib/pv_plugin") # Must be in separate dir!
+set(CMAKE_INSTALL_CMAKEDIR      "${CMAKE_INSTALL_ROOT}/cmake")
+set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share")
+set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake")
+set(CMAKE_INSTALL_THIRDPARTY    "${CMAKE_INSTALL_ROOT}")
+
+#---Set paths where to put the libraries, executables and headers------------------------------
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/bin)
+
+# hide them from configuration tools
+mark_as_advanced(${CMAKE_BIODYNAMO_ROOT}
+        ${CMAKE_INSTALL_ROOT}
+        ${CMAKE_INSTALL_BINDIR}
+        ${CMAKE_INSTALL_INCLUDEDIR}
+        ${CMAKE_INSTALL_LIBDIR}
+        ${CMAKE_INSTALL_CMAKEDIR}
+        ${CMAKE_INSTALL_DATADIR}
+        ${CMAKE_INSTALL_CMAKEDATADIR}
+        ${CMAKE_INSTALL_THIRDPARTY})
+
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test      "Build all tests." ON) # Makes boolean 'test' available.
 option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
@@ -45,7 +76,7 @@ set(THIRD_PARTY_DIR ${BDM_INSTALL_DIR}/third_party)
 set(BDM_CMAKE_DIR ${CMAKE_SOURCE_DIR}/cmake)
 
 # Set the directory where we should find Qt
-SET(Qt5_DIR ${CMAKE_BINARY_DIR}/third_party/qt/lib/cmake/Qt5)
+SET(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
 
 # Detect os type and version
 if (NOT DEFINED DETECTED_OS)
@@ -133,7 +164,7 @@ if(paraview)
 
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${CMAKE_BINARY_DIR}/third_party/paraview)
+    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
 
     if(NOT ${ParaView_FOUND})
 
@@ -151,11 +182,11 @@ together with Qt5.")
       include(external/ParaView)
 
       # We need to set this to specify where Qt5 is
-      SET(Qt5_DIR ${CMAKE_BINARY_DIR}/third_party/qt/lib/cmake/Qt5)
+      SET(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
 
       # We call again find_package and this time it will work
       find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${CMAKE_BINARY_DIR}/third_party/paraview)
+              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
     endif()
 
     # Add several ParaView related options
@@ -370,3 +401,12 @@ feature_summary(INCLUDE_QUIET_PACKAGES WHAT ALL)
 
 get_cmake_property(BDM_MISSING_PACKAGES PACKAGES_NOT_FOUND)
 generate_download_prerequisites("${DETECTED_OS}" "${BDM_MISSING_PACKAGES}" "${BDM_REQUIRED_PACKAGES}")
+
+# Install all the files inside the build dir for the moment
+install_inside_build()
+#add_custom_command(TARGET biodynamo
+#        POST_BUILD
+#        COMMAND cp libbiodynamo_dict_rdict.pcm ${CMAKE_INSTALL_LIBDIR}
+#        )
+
+#export(TARGETS biodynamo FILE UseBioDynaMoCorrectly.cmake)

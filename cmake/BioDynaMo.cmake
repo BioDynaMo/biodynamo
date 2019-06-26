@@ -104,6 +104,11 @@ function(bdm_generate_dictionary TARGET)
     COMMAND echo 1 >rebuild_${TARGET}
     DEPENDS ${headerfiles}
     COMMENT "Build dictionary ${TARGET}")
+
+  SET(DICT_PCM_NAME ${ARG_DICT})
+  STRING(REPLACE ${CMAKE_BINARY_DIR} "" DICT_PCM_NAME ${DICT_PCM_NAME})
+  STRING(REPLACE ".cc" "" DICT_PCM_NAME ${DICT_PCM_NAME})
+  STRING(REPLACE "/" "" DICT_PCM_NAME ${DICT_PCM_NAME})
   # invoke genreflex only if rebuild_${TARGET} file does not contain a 0.
   # Had issues with if [[ ]] statement; used grep instead
   # if grep does not find the pattern it has a non zero exit code
@@ -116,6 +121,13 @@ function(bdm_generate_dictionary TARGET)
     COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
+
+  if (DEFINED CMAKE_INSTALL_LIBDIR)
+    add_custom_command(TARGET ${TARGET}
+            POST_BUILD
+            COMMAND cp ${CMAKE_BINARY_DIR}/${DICT_PCM_NAME}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
+  endif()
+
 endfunction(bdm_generate_dictionary)
 
 
@@ -219,11 +231,20 @@ function(build_paraview_plugin)
   set(PV_PLUGIN_BINDIR ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin)
   file(MAKE_DIRECTORY ${PV_PLUGIN_BINDIR})
 
+  if(LINUX)
+      SET(OUTPUT_PLUGIN_NAME libBDMGlyphFilter.so)
+  elseif(APPLE)
+      SET(OUTPUT_PLUGIN_NAME libBDMGlyphFilter.dylib)
+  endif()
+
   add_custom_target(paraview-plugin
     ALL
     COMMAND cmake ../../paraview_plugin/bdm_glyph && cmake --build . --target all
+    COMMAND cmake -E make_directory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/pv_plugin
+    COMMAND cp ${OUTPUT_PLUGIN_NAME} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/pv_plugin
     WORKING_DIRECTORY ${PV_PLUGIN_BINDIR}
     COMMENT "Build bdm paraview plugin")
+
 
 endfunction(build_paraview_plugin)
 

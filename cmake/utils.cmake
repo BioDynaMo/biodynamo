@@ -22,7 +22,7 @@ compatible with BioDynaMo. We will proceed to download the correct version of RO
             include(external/ROOT)
         endif()
 
-        # Manually set the ROOT enviromental variables if it ROOTSYS not previously found.
+        # Manually set the ROOT enviromental variables if it ROOTSYS was not previously found.
         # This will avoid the user to run thisroot.sh in order to build BioDynaMo. However,
         # we will warn him anyway, such to let him/her know that this is not exactly the
         # standard way to do things.
@@ -140,6 +140,135 @@ Remember to source ${BDM_INSTALL_DIR}/biodynamo-env.sh before actually running t
 the library.")
         PRINT_LINE()
     endif()
+endfunction()
+
+function(install_inside_build)
+
+    include(TargetCopyFiles)
+
+    add_custom_target(copy_files_bdm ALL DEPENDS biodynamo)
+
+    # Install the enviroment source script
+    if(LINUX)
+        configure_file(${CMAKE_SOURCE_DIR}/util/installation/common/biodynamo-linux-env.sh ${CMAKE_BINARY_DIR}/biodynamo-env.sh @ONLY)
+    elseif(APPLE)
+        configure_file(${CMAKE_SOURCE_DIR}/util/installation/common/biodynamo-macos-env.sh ${CMAKE_BINARY_DIR}/biodynamo-env.sh @ONLY)
+    endif()
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_BIODYNAMO_ROOT}
+            ${CMAKE_BINARY_DIR}/biodynamo-env.sh
+            )
+
+    # Copy biodynamo.py and make it executable.
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            ${CMAKE_SOURCE_DIR}/cli/biodynamo.py)
+    add_custom_command(
+            TARGET copy_files_bdm
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_INSTALL_BINDIR}/biodynamo.py ${CMAKE_INSTALL_BINDIR}/biodynamo
+            VERBATIM
+            DEPENDS ${CMAKE_SOURCE_DIR}/cli/biodynamo.py
+    )
+
+    # Copy header files
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/src/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            GLOB "*.h" "*.cl" "*.py"
+            )
+
+    # Copy cli files
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/cli/
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            GLOB "*.py"
+            EXCLUDE "biodynamo.py"
+            )
+
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
+            ${CMAKE_SOURCE_DIR}/util/version/version.py
+            ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-config
+            ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
+            )
+
+    # Copy some cmake files
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}
+            ${CMAKE_SOURCE_DIR}/cmake/BioDynaMo.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/SetCompilerFlags.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindROOT.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindVTune.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindOpenCL.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/RootUseFile.cmake
+            ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/utils.cmake
+            )
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}
+            GLOB ${CMAKE_SOURCE_DIR}/cmake/*.xml
+            )
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
+            ${CMAKE_SOURCE_DIR}/cmake/BioDynaMoConfig.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindNuma.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindTBB.cmake
+            )
+
+    # Other headers
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            ${CMAKE_SOURCE_DIR}/util/version/version.h
+            )
+
+
+    # libbdmcuda.a
+    if(CUDA_FOUND)
+        install(TARGETS bdmcuda ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} OPTIONAL)
+    endif()
+
+    #third party headers
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_CURRENT_BINARY_DIR}/extracted-third-party-libs/morton
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/morton
+            GLOB "*"
+            )
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_CURRENT_BINARY_DIR}/extracted-third-party-libs/mpark
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mpark
+            GLOB "*"
+            )
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            ${CMAKE_SOURCE_DIR}/third_party/cpp_magic.h
+            ${CMAKE_SOURCE_DIR}/third_party/OptionParser.h
+            )
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpptoml
+            ${CMAKE_SOURCE_DIR}/third_party/cpptoml/cpptoml.h
+            )
+
+    # Simulation and demos
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/util/simulation-template
+            DESTINATION ${CMAKE_INSTALL_ROOT}/simulation-template
+            GLOB "*"
+            )
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/demo
+            DESTINATION ${CMAKE_INSTALL_ROOT}/demo
+            GLOB "*"
+            EXCLUDE "build*"
+            )
+
+    # Copy legal stuff
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_ROOT}
+            ${CMAKE_SOURCE_DIR}/LICENSE
+            ${CMAKE_SOURCE_DIR}/NOTICE
+            )
+
 endfunction()
 
 function(print_line)

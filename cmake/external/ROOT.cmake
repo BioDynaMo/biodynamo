@@ -2,7 +2,7 @@ include(ExternalProject)
 
 # Directory in which root will be donwloaded first (the path
 # should be something like <build_dir>/third_party/...).
-SET(ROOT_SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party")
+SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
 file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz ${ROOT_SOURCE_DIR}/root.tar.gz
         SHOW_PROGRESS)
@@ -15,7 +15,8 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/root.tar.
 find_package(ROOT COMPONENTS Geom Gui)
 
 # Set ROOTSYS variable
-SET(ENV{ROOTSYS} "${CMAKE_BINARY_DIR}/third_party/root" PARENT_SCOPE)
+string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
+set(ENV{ROOTSYS} ${TMP_ROOT_PATH} PARENT_SCOPE)
 
 # Set LD_LIBRARY_PATH variable
 set(ENV{LD_LIBRARY_PATH} "$ENV{ROOTSYS}/lib:$ENV{LD_LIBRARY_PATH}" PARENT_SCOPE)

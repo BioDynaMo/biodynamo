@@ -1,6 +1,6 @@
 include(ExternalProject)
 
-SET(QT_SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party/")
+SET(QT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/")
 
 file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/qt.tar.gz ${QT_SOURCE_DIR}/qt.tar.gz
         SHOW_PROGRESS)

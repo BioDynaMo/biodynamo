@@ -1,6 +1,6 @@
 include(ExternalProject)
 
-SET(PARAVIEW_SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party/")
+SET(PARAVIEW_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/")
 
 file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/paraview-v5.6.0.tar.gz ${PARAVIEW_SOURCE_DIR}/paraview-v5.6.0.tar.gz
         SHOW_PROGRESS)
