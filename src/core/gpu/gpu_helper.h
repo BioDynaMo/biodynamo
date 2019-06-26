@@ -54,10 +54,8 @@ static void FindGpuDevicesCuda() {
 
   cudaGetDeviceCount(&n_devices);
   if (n_devices == 0) {
-    Log::Error("FindGpuDevicesCuda",
-               "No CUDA-compatible GPU found on this machine! Switching to the "
-               "CPU version...");
-    param->use_gpu_ = false;
+    Log::Fatal("FindGpuDevicesCuda",
+               "No CUDA-compatible GPU found on this machine!");
     return;
   }
 
@@ -171,10 +169,8 @@ static void FindGpuDevicesOpenCL() {
     }
 
     if (devices->empty()) {
-      Log::Warning("FindGpuDevicesOpenCL",
-                   "No OpenCL-compatible GPU found on this machine! Switching "
-                   "to the CPU version...");
-      param->use_gpu_ = false;
+      Log::Fatal("FindGpuDevicesCuda",
+               "No CUDA-compatible GPU found on this machine!");
       return;
     }
 

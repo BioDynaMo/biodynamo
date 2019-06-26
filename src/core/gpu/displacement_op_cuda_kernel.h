@@ -27,9 +27,9 @@ class DisplacementOpCudaKernel {
   virtual ~DisplacementOpCudaKernel();
 
   void LaunchDisplacementKernel(
-      double* positions, double* diameter, double* tractor_force,
-      double* adherence, uint32_t* box_id, double* mass, double* timestep,
-      double* max_displacement, double* squared_radius, uint32_t* num_objects,
+      const double* positions, const double* diameter, const double* tractor_force,
+      const double* adherence, uint32_t* box_id, const double* mass, const double* timestep,
+      const double* max_displacement, const double* squared_radius, uint32_t* num_objects,
       uint32_t* starts, uint16_t* lengths, uint32_t* successors,
       uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
       double* cell_movements);

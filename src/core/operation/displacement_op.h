@@ -63,17 +63,9 @@ class DisplacementOp {
 #endif
 #ifdef USE_CUDA
       if (!param->use_opencl_) {
-        auto* rm = Simulation::GetActive()->GetResourceManager();
-        rm->ApplyOnAllTypes(
-            [](auto* cells, uint16_t numa_node, uint16_t type_idx) {
-              cuda_(cells, numa_node, type_idx);
-            });
+        cuda_();
       }
 #endif
-    } else {
-      Log::Fatal("DisplacementOp",
-                 "Currently GPU/FPGA implementation only supports spherical "
-                 "shapes.");
     }
   }
 
