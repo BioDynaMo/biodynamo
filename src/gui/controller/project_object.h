@@ -22,6 +22,7 @@
 #include "TObject.h"
 #include "gui/constants.h"
 #include "gui/view/log.h"
+#include "gui/model/model.h"
 
 namespace gui {
 
@@ -31,7 +32,17 @@ class ProjectObject{
  public:
   ProjectObject() {};
   ~ProjectObject() = default;
-  void PrintSettings();
+
+  void PrintData() {
+    std::cout << "\nPrinting data for Project: " << fProjectName << '\n';
+    std::cout << "TestSetting: " << fTestSetting << '\n';
+    std::cout << "Version: " << fVersion << '\n';
+    Size_t modelCount = fModels.size();
+    std::cout << "Number of models: " << modelCount << '\n';
+    for(Int_t i = 0; i < modelCount; i++) {
+      fModels[i].PrintData();
+    }
+  }
 
   /// Getter for project name
   /// @param None
@@ -48,6 +59,52 @@ class ProjectObject{
   /// @return const char* private data member fVersion
   const char* GetVersion();
 
+  void CreateModel(const char* name) {
+    Model newModel;
+    newModel.SetName(name);
+    fModels.push_back(newModel);
+    PrintData();
+  }
+
+  std::vector<Model>* GetModels() {
+    return &fModels;
+  }
+
+  Model* GetModel(const char* modelName) {
+    Int_t modelCount = fModels.size();
+    for(Int_t i = 0; i < modelCount; i++) {
+      if(strcmp(fModels[i].GetName(), modelName) == 0) {
+        Log::Info("ProjectObject::GetModel found model:", modelName);
+        return &fModels[i];
+      }
+    }
+    //for(Model model : fModels) {
+    //  if(strcmp(model.GetName(), modelName) == 0) {
+    //    Log::Info("ProjectObject::GetModel found model:", modelName);
+    //    return &model;
+    //  }
+    //}
+    return nullptr;
+  }
+
+  void Clear(){
+    fProjectName.clear();
+    fTestSetting.clear();
+    fVersion.clear();
+    fModels.clear();
+  }
+
+  void TestInit() {
+    fVersion.assign("1.0");
+    fTestSetting.assign("SomeTestSetting");
+    //Model testModel;
+    //testModel.SetName("TestModel");
+    //fModels.push_back(testModel);
+    //Model testModel2;
+    //testModel2.SetName("TestModel123123123123");
+    //fModels.push_back(testModel2);
+  }
+
   void SetProjectName(const char* name);
 
   ClassDef(ProjectObject, 1)
@@ -57,6 +114,7 @@ class ProjectObject{
   std::string fProjectName;
   std::string fTestSetting;
   std::string fVersion;
+  std::vector<Model> fModels; // Purposefully not a vector of pointers
 };
 
 } // namespace gui

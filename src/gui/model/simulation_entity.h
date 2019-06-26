@@ -23,6 +23,14 @@ namespace gui {
 
 class SimulationEntity : public ModelElement {
     // will represent `simulation objects`
+
+    //void Save() {
+    //    std::cout << "Saving simulation Entity!\n";
+    //}
+//
+    //std::string GenerateCode() {
+    //    return "Sample Simulation Entity Code\n";
+    //} 
 };
 
 }  // namespace gui

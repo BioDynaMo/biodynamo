@@ -40,8 +40,6 @@ struct ModelTree {
   std::vector<std::string> fModelElementNames;
 };
 
-
-
 class TreeManager {
  public:
   TreeManager() {
@@ -70,7 +68,12 @@ class TreeManager {
       fIconMap[it->first] = pic;
     }
   }
-  ~TreeManager() = default;
+  ~TreeManager() {
+    if(isProjectCreated) {
+      fProjectListTree->DeleteItem(gProjectListTreeItem);
+      fProjectListTree->Cleanup();
+    }
+  };
 
   const TGPicture* GetIcon(std::string iconName) {
     std::unordered_map<std::string, const TGPicture*>::const_iterator got =

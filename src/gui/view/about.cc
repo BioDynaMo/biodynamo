@@ -125,13 +125,15 @@ ModelCreatorAbout::ModelCreatorAbout(const TGWindow *p, const TGWindow *main,
 
 ModelCreatorAbout::~ModelCreatorAbout()
 {
-   delete fOkButton;
-   delete fVFrame;
-   delete fHFrame;
+   delete fBly;
+   delete fBfly;
    delete fLabel1;
    delete fLabel2;
    delete fLabel4;
-   delete fBly;
+   delete fLogoLayout;
+   delete fOkButton;
+   delete fVFrame;
+   delete fHFrame;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

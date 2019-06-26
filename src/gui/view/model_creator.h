@@ -147,6 +147,7 @@ class ModelCreator : public TGMainFrame {
   void                CreateNewCell();
   void                CreateNewGrowthModule();
   void                HandleTreeInput();
+  void                EnableSaving(Bool_t enable=kTRUE);
 
   /// TODO:
   //  virtual void    OnOpenProject(const Char_t *filename);

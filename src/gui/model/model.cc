@@ -30,18 +30,39 @@ void Model::SaveModel() {}
 
 void Model::SimulateModel() {}
 
+void Model::SetName(const char* name) {
+  fModelName.assign(name);
+}
+
+const char* Model::GetName() {
+  return fModelName.c_str();
+}
+
+void Model::PrintData() {
+  std::cout << "\tName: " << GetName() << '\n';
+  Size_t elemCount = fModelElements.size();
+  std::cout << "\tNumber of elements: " << elemCount << '\n';
+  for(Int_t j = 0; j < elemCount; j++) {
+    std::cout << "\tElement #" << j + 1 << '\n';
+    fModelElements[j].PrintData();
+  }
+}
+
 void Model::UpdateModel(std::string elementName, ModelElement& element) {}
 
 void Model::InitializeElement(ModelElement* parent, const char* name,
                               int type) {
-  ModelElement* elem = nullptr;
+  //ModelElement elem = nullptr;
   if (type == gui::M_ENTITY_CELL) {
-    // elem = (ModelElement*)(new SimulationEntity());
+    ModelElement elem;
+    elem.SetName(name);
+    if (parent == nullptr) { // top-level element
+      Log::Info("Initializing cell...");
+      fModelElements.push_back(elem);
+    }
   }
 
-  if (parent == nullptr) {
-    //fModelElements->Add(elem);
-  }
+  
 }
 
 Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
@@ -52,6 +73,8 @@ Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
       gui::Log::Error("Cannot create element! Already exists: ",
                       tmp->fPathName);
       return kFALSE;
+    } else {
+      InitializeElement(nullptr, name, type);
     }
   } else {
     ModelElement* tmp = FindElement(parent);
@@ -64,14 +87,14 @@ Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
 }
 
 ModelElement* Model::FindElement(const char* elementName) {
-  TObjLink* lnk = fModelElements->FirstLink();
-  while (lnk) {
-    ModelElement* tmp = (ModelElement*)lnk->GetObject();
-    tmp = tmp->SearchChildren(elementName);
-    if (tmp != nullptr)
-      return tmp;
-    lnk = lnk->Next();
-  }
+  //TObjLink* lnk = fModelElements->FirstLink();
+  //while (lnk) {
+  //  ModelElement* tmp = (ModelElement*)lnk->GetObject();
+  //  tmp = tmp->SearchChildren(elementName);
+  //  if (tmp != nullptr)
+  //    return tmp;
+  //  lnk = lnk->Next();
+  //}
   return nullptr;
 }
 

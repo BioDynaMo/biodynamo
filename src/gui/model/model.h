@@ -17,6 +17,7 @@
 #ifndef GUI_MODEL_H_
 #define GUI_MODEL_H_
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -31,23 +32,23 @@
 #include <RQ_OBJECT.h>
 #include "TObject.h"
 #include "TString.h"
+#include "gui/model/model_element.h"
 
 enum SimulationState { kIDLE ,kSIMULATING, kDONE };
 
 namespace gui {
 
-class ModelElement;
-
 class Model {
  public:
-
-  Model(const char* name) {};
+  Model() {};
  ~Model() = default;
 
-  const char*   fModelName;
   Bool_t        fModified;
 
+  void          SetName(const char* name);
+  const char*   GetName();
   void          CreateModel();
+  void          PrintData();
   void          SaveModel();
   void          SimulateModel();
   void          UpdateModel(std::string elementName, ModelElement& element);
@@ -55,7 +56,8 @@ class Model {
   Bool_t        CreateElement(const char* parent, const char* name, int type);
  
  private:
-  TList         *fModelElements;
+  std::string   fModelName;
+  std::vector<ModelElement>         fModelElements;
   
   std::string   GenerateCode();
   void          InitializeElement(ModelElement* parent, const char* name, int type);

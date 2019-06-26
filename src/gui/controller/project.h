@@ -79,9 +79,15 @@ class Project {
 
     fProjectObject.SetProjectName(name);
     fProjectPath.assign(path);
+    fProjectObject.TestInit();
     fIsLoaded = kTRUE;
 
     SaveProject();
+  }
+
+  void CloseProject() {
+    fProjectObject.Clear();
+    fProjectPath.clear();
   }
 
   /// Loads project
@@ -89,7 +95,7 @@ class Project {
   /// @return None
   void LoadProject(const char* path) {
     Log::Info("Loading project file: ", path);
-    ReadProject();
+    ReadProject(path);
   }
 
   /// Saves Project and all of its models.
@@ -106,7 +112,7 @@ class Project {
     } catch (...) {
       Log::Error("Couldn't save project!");
     }
-    
+    //SaveAllModels();
   }
 
   /// Saves Project under a different name. Copies over models from original
@@ -118,13 +124,15 @@ class Project {
     WriteProject();
   }
 
-  void CreateModel(const char* name) {
+  Bool_t CreateModel(const char* name) {
     Log::Info("Creating model within `Project`");
-    if (GetModel(name) != 0) {
+    Model* tmpModel = GetModel(name);
+    if (tmpModel != nullptr) {
       Log::Warning("Cannot create model with the same name!");
+      return kFALSE;
     } else {
-      Model* tmp = new Model(name);
-      fModels.push_back(tmp);
+      fProjectObject.CreateModel(name);
+      return kTRUE;
     }
   }
 
@@ -141,6 +149,7 @@ class Project {
     if (modelPtr == nullptr) {
       Log::Warning("Cannot create element `", elementName,
                    "` within non-existent model `", modelName, "`");
+      return kFALSE;
     }
     return modelPtr->CreateElement(parent, elementName, type);
   }
@@ -149,18 +158,19 @@ class Project {
   /// @param name name of the model to retrieve
   /// @return Model* pointer to the model of the specified name if found, else nullptr
   Model* GetModel(const char* name) {
-    for(Model* model : fModels) {
-      if(strcmp(model->fModelName, name) == 0) {
-        return model;
-      }
-    }
-    return nullptr;
+    return fProjectObject.GetModel(name);
   }
 
   /// Returns vector of all models
-  std::vector<Model*> GetAllModels() { return fModels; }
+  std::vector<Model>* GetAllModels() { return fProjectObject.GetModels(); }
 
-  void SaveAllModels() {}
+  void SaveAllModels() {
+    /// TODO:
+    //for(Model* model : fModels) { 
+    //  bdm::WritePersistentObject(fProjectPath.c_str(), "ProjectObject",
+    //                           fProjectObject, "recreate");
+    //}
+  }
 
   /// Starts BioDynaMo simulation on user-defined models.
   /// Initially it calls GenerateCode, the runs the command
@@ -186,9 +196,22 @@ class Project {
   Project(Project const&) = delete;
   Project& operator=(Project const&) = delete;
 
-  void ReadProject() {}
+  void ReadProject(const char* path) {
+    Log::Info("Attempting to load project");
+    try {
+      Log::Info("Reading project ...");
+      ProjectObject *obj;
+      bdm::GetPersistentObject(path, "ProjectObject", obj);
+      Log::Info("Successfully Loaded!");
+      obj->PrintData();
+    } catch (...) {
+      Log::Error("Couldn't load project!");
+    }
+  }
 
-  void WriteProject() {}
+  void WriteProject() {
+
+  }
 
   std::string GetProjectDir() { return std::string(""); }
 
@@ -216,7 +239,6 @@ class Project {
   std::string fProjectPath;
 
   Bool_t fIsLoaded = kFALSE;  // kTRUE upon successful loading or new project creation
-  std::vector<Model*> fModels;
 };
 
 }  // namespace gui

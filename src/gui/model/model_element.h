@@ -17,6 +17,7 @@
 #ifndef GUI_MODEL_ELEMENT_H_
 #define GUI_MODEL_ELEMENT_H_
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,13 +33,21 @@
 #include <TVirtualX.h>
 #include "TObject.h"
 #include "TString.h"
-#include "gui/model/model.h"
+//#include "gui/model/model.h"
 
 namespace gui {
 
 class ModelElement {
  public:
-  ModelElement(ModelElement* parent, std::string& name, Model modelRef) {}
+  ModelElement() {}
+
+  void PrintData() {
+    std::cout << "\t\tName:" << fName << '\n';
+  }
+
+  void SetName(const char* name) {
+    fName.assign(name);
+  }
 
   // have template type?
   ModelElement* SearchChildren(const char* elementName) {
@@ -51,16 +60,17 @@ class ModelElement {
     }
     return nullptr;
   }
-  virtual std::string GenerateCode() = 0;
-  virtual void        Save() = 0;
+  std::string GenerateCode() {return "";};
+  void        Save() {};
   
   std::string        fName;
   std::string        fPathName;
 
  private:
   ModelElement*      fParent;
-  Model              *gModel;
+  //Model              *gModel;
   TList              *fChildren;  
+  ClassDef(ModelElement,1)
 };
 
 } // namespace gui

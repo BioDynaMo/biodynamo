@@ -20,18 +20,6 @@ namespace gui {
 
 //ClassImp(ProjectObject);
 
-void ProjectObject::PrintSettings() {
-  Log::Info("Project Settings:");
-  Log::Info("----------------");
-  Log::Info("Project Name:");
-  Log::Info("\t", fProjectName);
-  Log::Info("Test Setting:");
-  Log::Info("\t", fTestSetting);
-  Log::Info("Version:");
-  Log::Info("\t", fVersion);
-  Log::Info("----------------");
-}
-
 /// Getter for project name
 /// @param None
 /// @return const char* private data member fProjectName
