@@ -432,10 +432,10 @@ class DiffusionGrid {
         }
         for (size_t y = yy; y < ymax; y++) {
           size_t x = 0;
-          int c, n, s, b, t;
+          int c, cp, cm, n, s, b, t;
           c = x + y * nx + z * nx * ny;
 #pragma omp simd
-          for (x = 1; x < nx - 1; x++) {
+          for (x = 0; x < nx - 1; x++) {
             ++c;
             ++n;
             ++s;
@@ -445,15 +445,18 @@ class DiffusionGrid {
             if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
               continue;
             }
-
+            
+            cm = c - 1;
+            cp = c + 1;
             n = c - nx;
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
+            
             c2_[c] = (c1_[c] +
-                      d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                      d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                      d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+                      d * dt_ * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
+                      d * dt_ * (c1_[n] - 2 * c1_[c] + c1_[s]) * ibl2 +
+                      d * dt_ * (c1_[t] - 2 * c1_[b] + c1_[t]) * ibl2) *
                      (1 - mu_);
           }
           ++c;
