@@ -435,7 +435,7 @@ class DiffusionGrid {
           int c, cp, cm, n, s, b, t;
           c = x + y * nx + z * nx * ny;
 #pragma omp simd
-          for (x = 0; x < nx - 1; x++) {
+          for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
             ++s;
