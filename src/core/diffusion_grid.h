@@ -456,7 +456,7 @@ class DiffusionGrid {
             c2_[c] = (c1_[c] +
                       d * dt_ * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
                       d * dt_ * (c1_[n] - 2 * c1_[c] + c1_[s]) * ibl2 +
-                      d * dt_ * (c1_[t] - 2 * c1_[b] + c1_[t]) * ibl2) *
+                      d * dt_ * (c1_[t] - 2 * c1_[c] + c1_[b]) * ibl2) *
                      (1 - mu_);
           }
           ++c;
