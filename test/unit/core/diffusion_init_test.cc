@@ -51,7 +51,7 @@ TEST(DiffusionInitTest, GaussianBand) {
   ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 26);
 
   // Initialize the substance according to a GaussianBand along the x-axis
-  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
+  ModelInitializer::InitializeSubstance(kSubstance,
                                         GaussianBand(125, 50, Axis::kXAxis));
 
   simulation.GetGrid()->Initialize();
