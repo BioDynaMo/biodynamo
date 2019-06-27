@@ -12,6 +12,12 @@ function(verify_ROOT)
 once the build process has started. ROOT will be then installed to the location ${THIRD_PARTY_DIR}/root.")
         print_line()
         include(external/ROOT)
+
+        # Propagate the needed variables to the parent
+        SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
+        SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
+        SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
+        SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
     else()
         # Check if ROOT was compiled with the correct C++ standard (which has to be greater or equal
         # than C++14). If that's not the case, then we will download the correct version and we will
@@ -20,6 +26,12 @@ once the build process has started. ROOT will be then installed to the location 
             MESSAGE(WARNING "The ROOT version currently installed was compiled with an older c++ standard that is not\
 compatible with BioDynaMo. We will proceed to download the correct version of ROOT now.")
             include(external/ROOT)
+
+            # Propagate the needed variables to the parent
+            SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
+            SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
+            SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
+            SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
         endif()
 
         # Manually set the ROOT enviromental variables if it ROOTSYS was not previously found.

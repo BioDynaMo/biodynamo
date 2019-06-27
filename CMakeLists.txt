@@ -5,14 +5,31 @@ cmake_minimum_required(VERSION 3.2.0)
 project(BioDynaMo)
 set(BDM_VERSION 0.1.0)
 
+set(BDMSYS ${CMAKE_BINARY_DIR})
+
+# Before setting BDMSYS, make sure that the environment isn't polluted by a different
+# BDM build. This is significant e,g. for test, which will otherwise have libraries
+# of a different BDM build available / visible / reachable.
+if(NOT $ENV{BDMSYS} STREQUAL "")
+    string(REPLACE "$ENV{BDMSYS}/bin" "" ENV_PATH "$ENV{PATH}")
+    string(REPLACE "$ENV{BDMSYS}/lib" "" ENV_LD_LIBRARY_PATH "$ENV{LD_LIBRARY_PATH}")
+    string(REPLACE "$ENV{BDMSYS}/lib" "" ENV_PYTHONPATH "$ENV{PYTHONPATH}")
+    string(REPLACE "$ENV{BDMSYS}"     "" ENV_CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
+    set(ENV{PATH} "${ENV_PATH}")
+    set(ENV{LD_LIBRARY_PATH} "${ENV_LD_LIBRARY_PATH}")
+    set(ENV{PYTHONPATH} "${ENV_PYTHONPATH}")
+    set(ENV{CMAKE_PREFIX_PATH} "${ENV_CMAKE_PREFIX_PATH}")
+    set(ENV{"BDMSYS"} ${CMAKE_BINARY_DIR})
+endif()
+
 # Add an additional path to make include() look in the right places.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_INSTALL_DIR}/third_party/qt")
 
 # Some includes
 include(FeatureSummary)
 include(utils)
-
-set(BDMSYS ${CMAKE_BINARY_DIR})
 
 # set install directories
 set(CMAKE_BIODYNAMO_ROOT        "${CMAKE_BINARY_DIR}/install")
@@ -76,7 +93,6 @@ set(THIRD_PARTY_DIR ${BDM_INSTALL_DIR}/third_party)
 set(BDM_CMAKE_DIR ${CMAKE_SOURCE_DIR}/cmake)
 
 # Set the directory where we should find Qt
-SET(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
 
 # Detect os type and version
 if (NOT DEFINED DETECTED_OS)
@@ -86,26 +102,6 @@ detect_os()
 
 # Define required packages
 SET(BDM_REQUIRED_PACKAGES OpenMP Threads Numa TBB)
-
-## TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
-## APPLE might not be enough in the future)
-if(LINUX)
-  configure_file(util/installation/common/biodynamo-linux-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
-elseif(APPLE)
-  configure_file(util/installation/common/biodynamo-macos-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
-endif()
-
-# Check if there was a previously installed version of BioDynaMo. If that's the case, then update the biodynamo-env
-# file and just tell the user.
-execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" "${BDM_INSTALL_DIR}/biodynamo-env.sh" RESULT_VARIABLE ret)
-if(ret EQUAL "1")
-    file(COPY "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" DESTINATION "${BDM_INSTALL_DIR}")
-    print_warning()
-    message( "We found another BioDynaMo environment file ($ENV{BDM_INSTALL_DIR}/biodynamo-env.sh). However, it is outdated. \
-We have updated the file automatically.")
-    print_line()
-
-endif()
 
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
@@ -162,9 +158,13 @@ endif()
 
 if(paraview)
 
+    # Check if there is Qt5 installed
+    find_package(Qt5 QUIET COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
+
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
 
     if(NOT ${ParaView_FOUND})
 
@@ -181,12 +181,14 @@ together with Qt5.")
       PRINT_LINE()
       include(external/ParaView)
 
-      # We need to set this to specify where Qt5 is
-      SET(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+      # Check if there is Qt5 installed
+      find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
 
       # We call again find_package and this time it will work
       find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
+
     endif()
 
     # Add several ParaView related options
@@ -404,9 +406,5 @@ generate_download_prerequisites("${DETECTED_OS}" "${BDM_MISSING_PACKAGES}" "${BD
 
 # Install all the files inside the build dir for the moment
 install_inside_build()
-#add_custom_command(TARGET biodynamo
-#        POST_BUILD
-#        COMMAND cp libbiodynamo_dict_rdict.pcm ${CMAKE_INSTALL_LIBDIR}
-#        )
 
 #export(TARGETS biodynamo FILE UseBioDynaMoCorrectly.cmake)

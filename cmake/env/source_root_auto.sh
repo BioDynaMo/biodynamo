@@ -1,3 +1,3 @@
 #!/bin/sh
-export LD_LIBRARY_PATH=@CMAKE_BIODYNAMO_ROOT@/third_party/root/lib;
-export ROOTSYS=@CMAKE_BIODYNAMO_ROOT@/third_party;
+export LD_LIBRARY_PATH=@ROOT_LIBRARY_DIR@;
+export ROOTSYS=@ROOT_LIBRARY_DIR@/../../;

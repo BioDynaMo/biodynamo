@@ -15,13 +15,18 @@
 cmake_minimum_required(VERSION 3.3)
 project(BDMGlyph)
 
-# Directory in which BioDynaMo will be installed. It can be provided
-# by the user itself. It will also contain paraview, root and qt.
-set(BDM_INSTALL_DIR ${CMAKE_BINARY_DIR}/../install)
+# Check if we have set the install dir of BioDynaMo
+if (NOT DEFINED ENV{BDM_INSTALL_DIR})
+    SET(ENV{BDM_INSTALL_DIR} "$ENV{HOME}/.bdm")
+endif()
 
-# Set Qt5 directory and find ParaView
-SET(Qt5_DIR ${BDM_INSTALL_DIR}/third_party/qt/lib/cmake/Qt5)
-FIND_PACKAGE(ParaView REQUIRED PATHS ${BDM_INSTALL_DIR}/third_party/paraview/lib/cmake/paraview-5.6)
+# Find ParaViews and Qt
+FIND_PACKAGE(Qt5 COMPONENTS Widgets
+        PATHS ${CMAKE_BINARY_DIR}/../install/third_party/qt
+        $ENV{BDM_INSTALL_DIR}/third_party/qt)
+FIND_PACKAGE(ParaView REQUIRED
+        PATHS $ENV{BDM_INSTALL_DIR}/third_party/paraview
+        ${CMAKE_BINARY_DIR}/../install/third_party/paraview)
 
 # Locate ParaView build and then import CMake configuration,
 # macros etc. from it.
