@@ -16,9 +16,9 @@
 #define CORE_THERMAL_GRID_H_
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -30,49 +30,59 @@
 
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
+#include "core/diffusion_grid.h"
 #include "core/param/param.h"
 #include "core/util/log.h"
 #include "core/util/math.h"
-#include "core/diffusion_grid.h"
-
 
 namespace bdm {
 
-  class ThermalGrid : public DiffusionGrid {
-
-  public :
-      /* Has a substance id of 2^20 as this is the max value of an int that can be assigned to uin64_t and will prevent conflict with the diffusion grid */
-  ThermalGrid( double thermal_diffusivity, int resolution,size_t substance_id):DiffusionGrid( substance_id, "Temperature" , thermal_diffusivity, 0 ,resolution)
-  {}
+class ThermalGrid : public DiffusionGrid {
+ public:
+  /* Has a substance id of 2^20 as this is the max value of an int that can be
+   * assigned to uin64_t and will prevent conflict with the diffusion grid */
+  ThermalGrid(double thermal_diffusivity, int resolution, size_t substance_id)
+      : DiffusionGrid(substance_id, "Temperature", thermal_diffusivity, 0,
+                      resolution) {}
 
   /* Call Temperature simply calls to GetConcentration */
-  double GetTemperature(const Double3& position){ return DiffusionGrid::GetConcentration(position);}
+  double GetTemperature(const Double3& position) {
+    return DiffusionGrid::GetConcentration(position);
+  }
 
   /* Call for increasing temperature through diffusion grid */
-  void IncreaseTemperatureBy(const Double3& position,double amount)
-  { DiffusionGrid::IncreaseConcentrationBy(position, amount);}
+  void IncreaseTemperatureBy(const Double3& position, double amount) {
+    DiffusionGrid::IncreaseConcentrationBy(position, amount);
+  }
 
   /* Get all Temperature data in our grid */
-  const double* GetAllTemperatures(){return DiffusionGrid::GetAllConcentrations();}
+  const double* GetAllTemperatures() {
+    return DiffusionGrid::GetAllConcentrations();
+  }
 
-  void SetTemperatureThreshold(double t){DiffusionGrid::SetConcentrationThreshold(t);}
+  void SetTemperatureThreshold(double t) {
+    DiffusionGrid::SetConcentrationThreshold(t);
+  }
 
-  /* Simillar to above, as thermal diffusivity is being used as our dc we just need to call dc from the diffusion grid. */
-  const std::array<double, 7>& GetThermalCoefficients() { return DiffusionGrid :: GetDiffusionCoefficients(); }
+  /* Simillar to above, as thermal diffusivity is being used as our dc we just
+   * need to call dc from the diffusion grid. */
+  const std::array<double, 7>& GetThermalCoefficients() {
+    return DiffusionGrid::GetDiffusionCoefficients();
+  }
 
-  void SetThermalDiffusivity(double thermal_diffusivity) { thermal_diffusivity_ = thermal_diffusivity; }
+  void SetThermalDiffusivity(double thermal_diffusivity) {
+    thermal_diffusivity_ = thermal_diffusivity;
+  }
 
-  const std::array<double, 7>& GetDiffusionCoefficients(){return DiffusionGrid::GetDiffusionCoefficients();}
+  const std::array<double, 7>& GetDiffusionCoefficients() {
+    return DiffusionGrid::GetDiffusionCoefficients();
+  }
 
-
-
-  private :
+ private:
   /* Our thermal diffusivity to be used instead of diffusion coefficient */
   double thermal_diffusivity_ = 0.1;
+};
+}  // namespace bdm
 
-
-  };
-} // namespace bdm
-
-#endif // CORE_THERMAL_GRID_H_
+#endif  // CORE_THERMAL_GRID_H_
 
