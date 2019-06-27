@@ -34,18 +34,10 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
-# # install prerequisites
-BDM_INSTALL_OS_SRC=$BDM_PROJECT_DIR/util/installation/$BDM_OS
-# source script so BDM_INSTALL_DIR will be available in this script
-. $BDM_INSTALL_OS_SRC/prerequisites.sh
-
-# source biodynamo environment
-source $BDM_INSTALL_DIR/biodynamo-env.sh
-
 # perform a clean release build
 BUILD_DIR=$BDM_PROJECT_DIR/build
 CleanBuild $BUILD_DIR
 
 # print final steps
 EchoSuccess "Installation of BioDynaMo finished successfully!"
-EchoFinishThisStep $BDM_INSTALL_DIR
+EchoFinishThisStep $HOME/.bdm
