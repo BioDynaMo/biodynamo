@@ -53,7 +53,7 @@ concentration values throught the space. We will use the function
 `ModelInitializer::InitializeSubstance` for this purpose.
 
 ```C++
-ModelInitializer::InitializeSubstance(kSubstance, "Substance", GaussianBand(120, 5, Axis::kXAxis));
+ModelInitializer::InitializeSubstance(kSubstance, GaussianBand(120, 5, Axis::kXAxis));
 ```
 
 Let's break this down. We first pass the substance enum id and name in the
