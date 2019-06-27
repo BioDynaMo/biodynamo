@@ -100,8 +100,8 @@ endfunction()
 
 function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
 
-    # We remove both ParaView and ROOT since they are installed automatically
-    list(REMOVE_ITEM MISSING_PACKAGES "ParaView" "ROOT")
+    # We remove some packages they are installed automatically
+    list(REMOVE_ITEM MISSING_PACKAGES "ParaView" "ROOT" "GCCXML")
 
     # We first get the required packages we are missing
     SET(OPTIONAL_PACKAGES "${MISSING_PACKAGES}")
