@@ -159,7 +159,7 @@ function(bdm_add_executable TARGET)
     bdm_generate_dictionary(${TARGET}-dict
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
-      SELECTION ${BDM_CMAKE_DIR}/selection.xml
+      SELECTION $ENV{BDM_CMAKE_DIR}/selection.xml
       DEPENDS ${TARGET}-objectlib)
 
     # generate executable
@@ -194,7 +194,7 @@ function(build_libbiodynamo TARGET)
     bdm_generate_dictionary(${TARGET}-dict
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
-      SELECTION ${BDM_CMAKE_DIR}/selection-libbiodynamo.xml
+      SELECTION $ENV{BDM_CMAKE_DIR}/selection-libbiodynamo.xml
       DEPENDS ${TARGET}-objectlib)
 
     # generate shared library

@@ -98,6 +98,15 @@ function(source_root_file INSTALL_DIR)
     configure_file(cmake/env/source_root_auto.sh ${INSTALL_DIR}/source_root_auto.sh @ONLY)
 endfunction()
 
+
+# This function will generated bash scripts to download the missing requirements
+# (both optional and mandatory) needed to build correctly BioDynaMo. It will also
+# print some information to the user to instruct him/her about how to use them.
+#
+# * OS: it represents the current OS version. It can be detected using the
+#       previous function called detect_os();
+# * MISSING_PACKAGES: a list of the missing packages;
+# * REQUIRED_PACKAGES; a list of required packages;
 function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
 
     # We remove some packages they are installed automatically
@@ -117,7 +126,6 @@ function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
     file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${OS_SHEBANG}\n")
     file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${OS_SHEBANG}\n")
 
-
     # Populate the script with the required packages
     if (${MISSING_PACKAGES_SIZE} GREATER "0")
         FOREACH(ITEM IN LISTS MISSING_PACKAGES)
@@ -135,7 +143,7 @@ function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
     endif()
 
     # Print some information to the final user
-    if (${OPTIONAL_PACKAGES_SIZE} GREATER "0" OR ${MISSING_PACKAGES_SIZE} GREATER "0")
+    if (${MISSING_PACKAGES_SIZE} GREATER "0")
         PRINT_WARNING()
         MESSAGE("Some prerequisites are missing. Some scripts were created inside ${CMAKE_BINARY_DIR} to solve \n\
 this issue. The scripts are:\n
@@ -150,10 +158,22 @@ Remember that you are only required to run prerequisites-required.sh in order to
         MESSAGE("You have just finished to configure BioDynaMo. Now you can run \"make .\" to compile it.\n\
 Remember to source ${BDM_INSTALL_DIR}/biodynamo-env.sh before actually running the tests or using\n\
 the library.")
+
+        if (${OPTIONAL_PACKAGES_SIZE} GREATER "0")
+            MESSAGE("\nWe detected that also some optional packages are missing. In order to install them you just
+need to run the following script:\n
+\t * ${CMAKE_BINARY_DIR}/prerequisites-optional.sh.\n
+It will required sudo rights to work correcly. After running the scripts,
+you will need to run again cmake to detect the newly installed packages.")
+        ENDIF()
+
         PRINT_LINE()
     endif()
 endfunction()
 
+# This function will create a pre-install directory which will contain all the files
+# needed to use BioDynaMo as an external project. Moreover, it will create custom
+# targets such to run this procedure after the build process has completed.
 function(install_inside_build)
 
     include(GreatCMakeCookOff/TargetCopyFiles)
@@ -283,10 +303,12 @@ function(install_inside_build)
 
 endfunction()
 
+# Helper function to print a simple line
 function(print_line)
     MESSAGE("\n################################################################\n")
 endfunction()
 
+# Helper function to print a warning message
 function(print_warning)
     MESSAGE("\n########################### WARNING ############################\n")
 endfunction()

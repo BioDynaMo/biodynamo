@@ -5,34 +5,24 @@ cmake_minimum_required(VERSION 3.2.0)
 project(BioDynaMo)
 set(BDM_VERSION 0.1.0)
 
-set(BDMSYS ${CMAKE_BINARY_DIR})
-
-# Before setting BDMSYS, make sure that the environment isn't polluted by a different
-# BDM build. This is significant e,g. for test, which will otherwise have libraries
-# of a different BDM build available / visible / reachable.
-if(NOT $ENV{BDMSYS} STREQUAL "")
-    string(REPLACE "$ENV{BDMSYS}/bin" "" ENV_PATH "$ENV{PATH}")
-    string(REPLACE "$ENV{BDMSYS}/lib" "" ENV_LD_LIBRARY_PATH "$ENV{LD_LIBRARY_PATH}")
-    string(REPLACE "$ENV{BDMSYS}/lib" "" ENV_PYTHONPATH "$ENV{PYTHONPATH}")
-    string(REPLACE "$ENV{BDMSYS}"     "" ENV_CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
-    set(ENV{PATH} "${ENV_PATH}")
-    set(ENV{LD_LIBRARY_PATH} "${ENV_LD_LIBRARY_PATH}")
-    set(ENV{PYTHONPATH} "${ENV_PYTHONPATH}")
-    set(ENV{CMAKE_PREFIX_PATH} "${ENV_CMAKE_PREFIX_PATH}")
-    set(ENV{"BDMSYS"} ${CMAKE_BINARY_DIR})
+# Directory in which BioDynaMo will be installed. It can be provided
+# by the user itself.
+if (NOT DEFINED ${BDM_INSTALL_DIR})
+    set(BDM_INSTALL_DIR $ENV{HOME}/.bdm)
 endif()
 
-# Add an additional path to make include() look in the right places.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_INSTALL_DIR}/third_party/qt")
+# Directory in which we saved all the cmake informations.
+set(ENV{BDM_CMAKE_DIR} ${CMAKE_SOURCE_DIR}/cmake)
 
-# Some includes
+# Add an additional path to make include() look in the right places.
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_CMAKE_DIR}")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/")
+
+# Include some cmake files with utilities
 include(FeatureSummary)
 include(utils)
 
-# set install directories
+# Specify some directories which will be used to structure BioDynaMo build.
 set(CMAKE_BIODYNAMO_ROOT        "${CMAKE_BINARY_DIR}/install")
 set(CMAKE_THIRD_PARTY_DIR       "${CMAKE_BIODYNAMO_ROOT}/third_party")
 set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_ROOT}/biodynamo")
@@ -45,12 +35,12 @@ set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share")
 set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake")
 set(CMAKE_INSTALL_THIRDPARTY    "${CMAKE_INSTALL_ROOT}")
 
-#---Set paths where to put the libraries, executables and headers------------------------------
+#Set paths where to put the libraries, executables and headers
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/bin)
 
-# hide them from configuration tools
+# Hide them from configuration tools
 mark_as_advanced(${CMAKE_BIODYNAMO_ROOT}
         ${CMAKE_INSTALL_ROOT}
         ${CMAKE_INSTALL_BINDIR}
@@ -81,19 +71,6 @@ if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
     add_definitions("-DLINUX")
 endif()
-
-# Directory in which BioDynaMo will be installed. It can be provided
-# by the user itself.
-if (NOT DEFINED ${BDM_INSTALL_DIR})
-    set(BDM_INSTALL_DIR $ENV{HOME}/.bdm)
-endif()
-
-# Directory in which all the third party code will be stored
-# Directory in which we saved all the cmake informations.
-set(THIRD_PARTY_DIR ${BDM_INSTALL_DIR}/third_party)
-set(BDM_CMAKE_DIR ${CMAKE_SOURCE_DIR}/cmake)
-
-# Set the directory where we should find Qt
 
 # Detect os type and version
 if (NOT DEFINED DETECTED_OS)
@@ -160,13 +137,16 @@ endif()
 if(paraview)
 
     # Check if there is Qt5 installed
-    find_package(Qt5 QUIET COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
+    find_package(Qt5 QUIET COMPONENTS Widgets
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
 
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+            vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
             PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
 
+    # Check if ParaView was found in the system. If that's not the case then we will proceed
+    # to download it.
     if(NOT ${ParaView_FOUND})
 
       PRINT_WARNING()
@@ -182,10 +162,8 @@ together with Qt5.")
       PRINT_LINE()
       include(external/ParaView)
 
-      # Check if there is Qt5 installed
+      # We run again the find_package command such to find correctly the location of Qt and ParaView
       find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
-
-      # We call again find_package and this time it will work
       find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
               vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
@@ -402,10 +380,9 @@ include(CppStyleGuideChecks)
 # --------------------- Final Message to the user ------------------------------
 feature_summary(INCLUDE_QUIET_PACKAGES WHAT ALL)
 
+# Generate the script to install required/optional packages
 get_cmake_property(BDM_MISSING_PACKAGES PACKAGES_NOT_FOUND)
 generate_download_prerequisites("${DETECTED_OS}" "${BDM_MISSING_PACKAGES}" "${BDM_REQUIRED_PACKAGES}")
 
-# Install all the files inside the build dir for the moment
+# Install all the files inside the build dir
 install_inside_build()
-
-#export(TARGETS biodynamo FILE UseBioDynaMoCorrectly.cmake)
