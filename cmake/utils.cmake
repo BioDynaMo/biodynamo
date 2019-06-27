@@ -74,9 +74,9 @@ function(detect_os)
         elseif(APPLE)
             # We check if we are using Travis (therefore the BDM_OS has a slightly different name).
             if ($ENV{TRAVIS})
-                SET(BDM_OS "travis-osx" PARENT_SCOPE)
+                SET(DETECTED_OS "travis-osx" PARENT_SCOPE)
             else()
-                SET(BDM_OS "osx" PARENT_SCOPE)
+                SET(DETECTED_OS "osx" PARENT_SCOPE)
             endif()
         else()
             execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
