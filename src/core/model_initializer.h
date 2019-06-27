@@ -23,6 +23,7 @@
 #include "core/diffusion_grid.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
+#include "core/thermal.h"
 #include "core/util/random.h"
 
 namespace bdm {
@@ -177,6 +178,32 @@ struct ModelInitializer {
   template <typename F>
   static void InitializeSubstance(size_t substance_id,
                                   std::string substance_name, F function) {
+    auto* sim = Simulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
+    diffusion_grid->AddInitializer(function);
+  }
+
+  /// Allows cells to secrete the specified substance. Diffusion throughout the
+  /// simulation space is automatically taken care of by the DiffusionGrid class
+  ///
+  /// @param[in]  substance_id     The substance identifier
+  /// @param[in]  thermal_diffusivity  The thermal diffusion coefficient
+  /// @param[in]  resolution       The resolution of the diffusion grid
+  ///
+  static void DefineThermalSubstance(size_t substance_id,
+                                     double thermal_diffusivity,
+                                     int resolution) {
+    assert(resolution > 0 && "Resolution needs to be a positive integer value");
+    auto* sim = Simulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    DiffusionGrid* d_grid =
+        new ThermalGrid(thermal_diffusivity, resolution, substance_id);
+    rm->AddDiffusionGrid(d_grid);
+  }
+
+  template <typename F>
+  static void InitializeThermalSubstance(size_t substance_id, F function) {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
