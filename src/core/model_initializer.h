@@ -176,8 +176,7 @@ struct ModelInitializer {
   }
 
   template <typename F>
-  static void InitializeSubstance(size_t substance_id,
-                                  std::string substance_name, F function) {
+  static void InitializeSubstance(size_t substance_id, F function) {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
@@ -201,13 +200,6 @@ struct ModelInitializer {
     rm->AddDiffusionGrid(d_grid);
   }
 
-  template <typename F>
-  static void InitializeThermalSubstance(size_t substance_id, F function) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
-    diffusion_grid->AddInitializer(function);
-  }
 };
 
 }  // namespace bdm
