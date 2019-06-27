@@ -156,7 +156,7 @@ endfunction()
 
 function(install_inside_build)
 
-    include(TargetCopyFiles)
+    include(GreatCMakeCookOff/TargetCopyFiles)
 
     add_custom_target(copy_files_bdm ALL DEPENDS biodynamo)
 

@@ -24,6 +24,7 @@ endif()
 
 # Add an additional path to make include() look in the right places.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_INSTALL_DIR}/third_party/qt")
 
