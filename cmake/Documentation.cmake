@@ -71,9 +71,9 @@ endfunction(GenerateLiveMkDocsTarget)
 
 # ------------------------------------------------------------------------------
 find_package(Doxygen)
-find_program(MKDOCS mkdocs ENV PATH)
+find_package(MKDocs)
 
-if(DOXYGEN_FOUND AND MKDOCS)
+if(DOXYGEN_FOUND AND MKDocs_FOUND)
   GenerateAPIDocTarget()
   GenerateMkDocsTarget(user)
   GenerateMkDocsTarget(dev)
