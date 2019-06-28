@@ -118,7 +118,7 @@ verify_ROOT()
 if (dict)
   add_definitions("-DUSE_DICT")
 endif()
-find_package(ClangTools)
+find_package(ClangTools QUIET)
 if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   # Generate a Clang compile_commands.json "compilation database" file for use
   # with various development tools, such as Vim's YouCompleteMe plugin.
@@ -199,7 +199,7 @@ endif()
 
 # Check if we can find the valgrind executable
 if (valgrind)
-    find_package(Valgrind)
+    find_package(Valgrind QUIET)
 endif()
 
 # -------------------- includes -----------------------------------------------
