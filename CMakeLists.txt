@@ -197,6 +197,11 @@ if (vtune)
     endif()
 endif()
 
+# Check if we can find the valgrind executable
+if (valgrind)
+    find_package(Valgrind)
+endif()
+
 # -------------------- includes -----------------------------------------------
 include(BioDynaMo)
 include(ExternalProject)

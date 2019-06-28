@@ -111,35 +111,41 @@ function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
 
     # We remove some packages they are installed automatically
     list(REMOVE_ITEM MISSING_PACKAGES "ParaView" "ROOT" "GCCXML")
-
-    # We first get the required packages we are missing
-    SET(OPTIONAL_PACKAGES "${MISSING_PACKAGES}")
-    list(REMOVE_ITEM OPTIONAL_PACKAGES ${REQUIRED_PACKAGES})
-    list(REMOVE_ITEM MISSING_PACKAGES ${OPTIONAL_PACKAGES})
-
-    # Compute how many required and optional packages we are missing
     list(LENGTH MISSING_PACKAGES MISSING_PACKAGES_SIZE)
+
+    # Default optional package variable
+    SET(OPTIONAL_PACKAGES "${MISSING_PACKAGES}")
     list(LENGTH OPTIONAL_PACKAGES OPTIONAL_PACKAGES_SIZE)
 
-    # Include the prerequisites for the given OS and initialize the setup files
-    include(prerequisites/${OS}-install)
-    file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${OS_SHEBANG}\n")
-    file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${OS_SHEBANG}\n")
+    IF(NOT ${MISSING_PACKAGES_SIZE} EQUAL "0")
+        # We first get the required packages we are missing
+        list(REMOVE_ITEM OPTIONAL_PACKAGES ${REQUIRED_PACKAGES})
+        list(REMOVE_ITEM MISSING_PACKAGES ${OPTIONAL_PACKAGES})
 
-    # Populate the script with the required packages
-    if (${MISSING_PACKAGES_SIZE} GREATER "0")
-        FOREACH(ITEM IN LISTS MISSING_PACKAGES)
-            file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${${ITEM}_install_command}")
-            file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-required.sh "\n")
-        ENDFOREACH()
-    endif()
+        # Compute how many required and optional packages we are missing
+        list(LENGTH MISSING_PACKAGES MISSING_PACKAGES_SIZE)
+        list(LENGTH OPTIONAL_PACKAGES OPTIONAL_PACKAGES_SIZE)
 
-    # Populate the script with the optional packages (if the user wants so)
-    if (${OPTIONAL_PACKAGES_SIZE} GREATER "0")
-        FOREACH(ITEM IN LISTS OPTIONAL_PACKAGES)
-            file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${${ITEM}_install_command}")
-            file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "\n")
-        ENDFOREACH()
+        # Include the prerequisites for the given OS and initialize the setup files
+        include(prerequisites/${OS}-install)
+        file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${OS_SHEBANG}\n")
+        file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${OS_SHEBANG}\n")
+
+        # Populate the script with the required packages
+        if (${MISSING_PACKAGES_SIZE} GREATER "0")
+            FOREACH(ITEM IN LISTS MISSING_PACKAGES)
+                file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${${ITEM}_install_command}")
+                file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-required.sh "\n")
+            ENDFOREACH()
+        endif()
+
+        # Populate the script with the optional packages (if the user wants so)
+        if (${OPTIONAL_PACKAGES_SIZE} GREATER "0")
+            FOREACH(ITEM IN LISTS OPTIONAL_PACKAGES)
+                file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${${ITEM}_install_command}")
+                file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "\n")
+            ENDFOREACH()
+        endif()
     endif()
 
     # Print some information to the final user

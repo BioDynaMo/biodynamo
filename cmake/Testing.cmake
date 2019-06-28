@@ -79,7 +79,7 @@ function(bdm_add_test_executable TEST_TARGET)
   add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
 
   # add valgrind test
-  if (valgrind AND NOT coverage
+  if (valgrind AND VALGRIND_FOUND AND NOT coverage
       AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_mechanical_interaction_test"
       AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_neurite_retraction_test"
       AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_resource_manager_aos_test"
