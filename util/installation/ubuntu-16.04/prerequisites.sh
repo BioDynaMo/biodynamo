@@ -42,8 +42,7 @@ function InstallCmake {
 }
 
 function InstallPackages {
-  INSTALL_PACKAGES="freeglut3-dev graphviz git valgrind python python3 python2.7-dev lcov \
-  gcc g++ make cmake python-pip"
+  INSTALL_PACKAGES="gcc g++ make cmake"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'
 

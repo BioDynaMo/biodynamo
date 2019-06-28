@@ -84,6 +84,17 @@ SET(BDM_REQUIRED_PACKAGES OpenMP Threads Numa TBB)
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
 # -------------------- find packages ------------------------------------------
+
+# Check if Python is present
+find_package(PythonInterp)
+find_package(PythonLibs)
+
+# Check if OpenMPI is present
+find_package(MPI)
+
+# Check if GLUT is present
+find_package(GLUT)
+
 # CMake cannot find LLVM's Clang OpenMP library by default (this makes
 # find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
 # Furthermore, rootcling cannot find omp.h by default, so we copy this (with a
@@ -96,11 +107,11 @@ if(APPLE)
   set(OpenMP_CXX_FLAGS -fopenmp=libomp)
   include_directories(/usr/local/Cellar/biodynamo)
 else()
-  find_package(OpenMP REQUIRED)
+  find_package(OpenMP)
 endif()
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
-  find_package(Threads REQUIRED)
+  find_package(Threads)
 endif()
 
 if(cuda)
@@ -118,7 +129,7 @@ verify_ROOT()
 if (dict)
   add_definitions("-DUSE_DICT")
 endif()
-find_package(ClangTools QUIET)
+find_package(ClangTools)
 if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   # Generate a Clang compile_commands.json "compilation database" file for use
   # with various development tools, such as Vim's YouCompleteMe plugin.
@@ -126,7 +137,7 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
-find_package(Numa REQUIRED)
+find_package(Numa)
 if (NUMA_FOUND)
    include_directories(${NUMA_INCLUDE_DIR})
    link_directories(${NUMA_LIBRARY_DIR})

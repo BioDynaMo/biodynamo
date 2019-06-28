@@ -40,7 +40,7 @@ function InstallCmake {
 }
 
 function InstallPackages {
-  INSTALL_PACKAGES="freeglut3-dev gcc-5 g++-5 valgrind doxygen graphviz cloc python python3 python2.7-dev"
+  INSTALL_PACKAGES="gcc-5 g++-5"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
 
