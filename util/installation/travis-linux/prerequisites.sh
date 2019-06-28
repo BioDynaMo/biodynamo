@@ -35,13 +35,12 @@ BDM_OS=travis-linux
 function InstallCmake {
   local URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
   DownloadTarAndExtract $URL $1/cmake-3.6.3 1
+  export PATH=$1/cmake-3.6.3/bin:${PATH}
   # cmake/bin is added to PATH in the biodynamo environment script
 }
 
 function InstallPackages {
-  INSTALL_PACKAGES="freeglut3-dev gcc-5 g++-5 valgrind doxygen graphviz cloc  \
-  libiomp-dev clang-3.9 clang-format-3.9 clang-tidy-3.9 python2.7 libnuma-dev \
-  libtbb-dev libopenmpi-dev"
+  INSTALL_PACKAGES="freeglut3-dev gcc-5 g++-5 valgrind doxygen graphviz cloc python python3 python2.7-dev"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
 
@@ -100,9 +99,6 @@ function Install {
   THIRD_PARTY_DIR=$BDM_INSTALL_DIR/third_party
 
   InstallPackages
-
-  # copy environment script
-  CopyEnvironmentScript $BDM_PROJECT_DIR/util/installation/common/biodynamo-linux-env.sh $BDM_INSTALL_DIR
 
   InstallCmake $THIRD_PARTY_DIR
 
