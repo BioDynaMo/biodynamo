@@ -391,29 +391,15 @@ class ResourceManager {
   }
 
  protected:
-#ifdef USE_OPENCL
-  cl::Context* GetOpenCLContext() { return &opencl_context_; }
-  cl::CommandQueue* GetOpenCLCommandQueue() { return &opencl_command_queue_; }
-  std::vector<cl::Device>* GetOpenCLDeviceList() { return &opencl_devices_; }
-  std::vector<cl::Program>* GetOpenCLProgramList() { return &opencl_programs_; }
-#endif
 
   /// Maps an SoUid to its storage location in `sim_objects_` \n
   tbb::concurrent_unordered_map<SoUid, SoHandle> uid_soh_map_;  //!
-  ///
+  /// Pointer container for all simulation objects
   std::vector<std::vector<SimObject*>> sim_objects_;
-
+  /// Maps a diffusion grid ID to the pointer to the diffusion grid
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
-
-#ifdef USE_OPENCL
-  cl::Context opencl_context_;             //!
-  cl::CommandQueue opencl_command_queue_;  //!
-  // Currently only support for one GPU device
-  std::vector<cl::Device> opencl_devices_;    //!
-  std::vector<cl::Program> opencl_programs_;  //!
-#endif
 
   friend class SimulationBackup;
   BDM_CLASS_DEF_NV(ResourceManager, 1);

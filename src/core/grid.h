@@ -91,8 +91,9 @@ class CircularBuffer {
 /// A class that represents Cartesian 3D grid
 class Grid {
 // DisplacementOpCuda needs access to some Grid private members to reconstruct
-// the grid on GPU
+// the grid on GPU (same for DisplacementOpOpenCL)
 friend class DisplacementOpCuda;
+friend class DisplacementOpOpenCL;
 
  public:
   /// A single unit cube of the grid

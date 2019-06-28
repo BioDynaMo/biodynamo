@@ -114,8 +114,6 @@ class DisplacementOpCuda {
       lengths[i] = box.length_;	
       i++;
     }
-    // grid->GetSuccessors(&successors);
-    // grid->GetBoxInfo(&starts, &lengths);
     grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
 
     // If this is the first time we perform physics on GPU using CUDA
