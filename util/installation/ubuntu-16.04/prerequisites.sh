@@ -42,7 +42,7 @@ function InstallCmake {
 }
 
 function InstallPackages {
-  INSTALL_PACKAGES="gcc g++ make cmake"
+  INSTALL_PACKAGES="gcc g++ python python3 python-pip make cmake freeglut3-dev"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'
 
@@ -53,8 +53,6 @@ function InstallPackages {
   EchoInfo ""
   EchoInfo "It adds the repository:"
   EchoInfo "  $ADD_REPOSITORY"
-  EchoInfo ""
-  EchoInfo "It uses pip to install mkdocs and mkdocs-material."
   EchoInfo ""
   EchoInfo "Open \"util/installation/ubuntu-16.04/prerequisites.sh\" for more information."
   EchoInfo ""
@@ -83,8 +81,6 @@ function InstallPackages {
 
     # install packages
     sudo apt-get -y install $INSTALL_PACKAGES
-    pip install --user mkdocs
-    pip install --user mkdocs-material
   fi
 
 }

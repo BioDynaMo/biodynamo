@@ -174,7 +174,7 @@ together with Qt5.")
       include(external/ParaView)
 
       # We run again the find_package command such to find correctly the location of Qt and ParaView
-      find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
+      find_package(Qt5 QUIET COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
       find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
               vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
