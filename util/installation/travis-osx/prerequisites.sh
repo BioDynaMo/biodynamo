@@ -88,20 +88,6 @@ function Install {
 
   InstallPackages
 
-  # copy environment script
-  CopyEnvironmentScript $BDM_PROJECT_DIR/util/installation/common/biodynamo-macos-env.sh $BDM_INSTALL_DIR
-
-  # install third_party dependencies
-  DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
-  DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
-  DownloadTarFromCBAndExtract $BDM_OS paraview.tar.gz $THIRD_PARTY_DIR/paraview
-
-  # misc
-  # copy the omp.h file to our CMAKE_PREFIX_PATH
-  OMP_V=`/usr/local/opt/llvm/bin/llvm-config --version`
-  mkdir -p $BDM_INSTALL_DIR/biodynamo/include
-  cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h $BDM_INSTALL_DIR/biodynamo/include
-
   EchoSuccess "Installation of prerequisites finished successfully!"
   EchoFinishThisStep $BDM_INSTALL_DIR
   echo ""

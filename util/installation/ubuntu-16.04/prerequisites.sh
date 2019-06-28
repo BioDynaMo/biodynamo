@@ -38,6 +38,7 @@ BDM_OS=$(DetectOs)
 function InstallCmake {
   local URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
   DownloadTarAndExtract $URL $1/cmake-3.6.3 1
+  export PATH=$1/cmake-3.6.3/bin:${PATH}
   # cmake/bin is added to PATH in the biodynamo environment script
 }
 
@@ -94,9 +95,6 @@ function Install {
 
   InstallPackages
 
-  # copy environment script
-  CopyEnvironmentScript $BDM_PROJECT_DIR/util/installation/common/biodynamo-linux-env.sh $BDM_INSTALL_DIR
-
   # install CMake higher than the required version
   CMAKE_VERSION_R=3.3
   CMAKE_VERSION_I=`cmake --version | grep -m1 "" | sed -e 's/\<cmake version\>//g' -e "s/ //g"`
@@ -109,16 +107,6 @@ function Install {
   else
     InstallCmake $THIRD_PARTY_DIR
   fi
-
-  DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
-  DownloadTarFromCBAndExtract $BDM_OS paraview-v5.6.0.tar.gz $THIRD_PARTY_DIR/paraview
-  DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
-
-  # temporal workaround to avoid libprotobuf error for paraview
-  # use only until patched archive has been uploaded
-  rm $THIRD_PARTY_DIR/qt/plugins/platformthemes/libqgtk3.so
-  rm $THIRD_PARTY_DIR/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
-  touch $THIRD_PARTY_DIR/qt/lib/cmake/Qt5Gui/Qt5Gui_QGtk3ThemePlugin.cmake
 
   EchoSuccess "Installation of prerequisites finished successfully!"
   EchoFinishThisStep $BDM_INSTALL_DIR

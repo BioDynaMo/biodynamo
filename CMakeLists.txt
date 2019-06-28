@@ -79,7 +79,7 @@ endif()
 detect_os()
 
 # Define required packages
-SET(BDM_REQUIRED_PACKAGES OpenMP Threads Numa TBB)
+SET(BDM_REQUIRED_PACKAGES OpenMP Threads Numa TBB MPI GLUT PythonInterp PythonLibs)
 
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
@@ -101,14 +101,14 @@ find_package(GLUT)
 # shell script to /usr/local/Cellar/biodynamo, which is brew's default install
 # directory), and include this directory. We cannot directly include the
 # original directory, because of header conflicts (such as stdint.h)
+find_package(OpenMP QUIET)
 if(APPLE)
   link_directories(/usr/local/opt/llvm/lib)
   set(OpenMP_C_FLAGS -fopenmp=libomp)
   set(OpenMP_CXX_FLAGS -fopenmp=libomp)
   include_directories(/usr/local/Cellar/biodynamo)
-else()
-  find_package(OpenMP)
 endif()
+
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
   find_package(Threads)

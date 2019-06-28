@@ -40,7 +40,7 @@ function InstallCmake {
 }
 
 function InstallPackages {
-  INSTALL_PACKAGES="gcc-5 g++-5"
+  INSTALL_PACKAGES="gcc-5 g++-5 python python3 python-pip make freeglut3-dev"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
 
@@ -85,8 +85,6 @@ function InstallPackages {
 
     # install packages
     sudo apt-get -y install $INSTALL_PACKAGES
-    pip install --user mkdocs
-    pip install --user mkdocs-material
   fi
 
 }
@@ -101,11 +99,6 @@ function Install {
   InstallPackages
 
   InstallCmake $THIRD_PARTY_DIR
-
-  # install third_party dependencies
-  DownloadTarFromCBAndExtract $BDM_OS root.tar.gz $THIRD_PARTY_DIR/root
-  DownloadTarFromCBAndExtract $BDM_OS paraview-v5.6.0.tar.gz $THIRD_PARTY_DIR/paraview
-  DownloadTarFromCBAndExtract $BDM_OS qt.tar.gz $THIRD_PARTY_DIR/qt
 
   EchoSuccess "Installation of prerequisites finished successfully!"
   EchoFinishThisStep $BDM_INSTALL_DIR
