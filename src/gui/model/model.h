@@ -33,6 +33,8 @@
 #include "TObject.h"
 #include "TString.h"
 #include "gui/model/model_element.h"
+#include "gui/model/simulation_entity.h"
+#include "gui/model/module.h"
 
 enum SimulationState { kIDLE ,kSIMULATING, kDONE };
 
@@ -54,14 +56,20 @@ class Model {
   void          UpdateModel(std::string elementName, ModelElement& element);
   void          IsElementNameAvailable();
   Bool_t        CreateElement(const char* parent, const char* name, int type);
+
+  std::vector<std::string> GetSimulationEntities();
+  std::vector<std::string> GetModules();
  
  private:
   std::string   fModelName;
-  std::vector<ModelElement>         fModelElements;
+
+  std::vector<SimulationEntity> fEntities;
+  std::vector<Module>           fModules;
   
   std::string   GenerateCode();
   void          InitializeElement(ModelElement* parent, const char* name, int type);
   ModelElement* FindElement(const char* elementName);
+  Int_t         GetElementCount();
 
   ClassDef(Model,1)
 };

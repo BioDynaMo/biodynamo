@@ -38,13 +38,23 @@ const char* Model::GetName() {
   return fModelName.c_str();
 }
 
+Int_t Model::GetElementCount() {
+  return fEntities.size() + fModules.size();
+}
+
 void Model::PrintData() {
   std::cout << "\tName: " << GetName() << '\n';
-  Size_t elemCount = fModelElements.size();
-  std::cout << "\tNumber of elements: " << elemCount << '\n';
+  Size_t elemCount = fEntities.size();
+  std::cout << "\tNumber of elements (simulation entities): " << elemCount << '\n';
   for(Int_t j = 0; j < elemCount; j++) {
-    std::cout << "\tElement #" << j + 1 << '\n';
-    fModelElements[j].PrintData();
+    std::cout << "\tSimulation Entity #" << j + 1 << '\n';
+    fEntities[j].PrintData();
+  }
+  elemCount = fModules.size();
+  std::cout << "\tNumber of elements (modules): " << elemCount << '\n';
+  for(Int_t j = 0; j < elemCount; j++) {
+    std::cout << "\tModule #" << j + 1 << '\n';
+    fModules[j].PrintData();
   }
 }
 
@@ -52,17 +62,21 @@ void Model::UpdateModel(std::string elementName, ModelElement& element) {}
 
 void Model::InitializeElement(ModelElement* parent, const char* name,
                               int type) {
-  //ModelElement elem = nullptr;
   if (type == gui::M_ENTITY_CELL) {
-    ModelElement elem;
+    SimulationEntity elem;
     elem.SetName(name);
     if (parent == nullptr) { // top-level element
       Log::Info("Initializing cell...");
-      fModelElements.push_back(elem);
+      fEntities.push_back(elem);
+    }
+  } else if(type == gui::M_MODULE_GROWTH) {
+    Module module;
+    module.SetName(name);
+    if (parent == nullptr) { // top-level element
+      Log::Info("Initializing module...");
+      fModules.push_back(module);
     }
   }
-
-  
 }
 
 Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
@@ -70,8 +84,7 @@ Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
     // Signifies top level element
     ModelElement* tmp = FindElement(name);
     if (tmp != nullptr) {
-      gui::Log::Error("Cannot create element! Already exists: ",
-                      tmp->fPathName);
+      gui::Log::Error("Cannot create element! Already exists: ");
       return kFALSE;
     } else {
       InitializeElement(nullptr, name, type);
@@ -79,11 +92,27 @@ Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
   } else {
     ModelElement* tmp = FindElement(parent);
     if (tmp != nullptr) {
-      gui::Log::Error("Cannot create element! Parent doesn: ", tmp->fPathName);
+      gui::Log::Error("Cannot create element! Parent does not exist");
       return kFALSE;
     }
   }
   return kTRUE;
+}
+
+std::vector<std::string> Model::GetSimulationEntities() {
+  std::vector<std::string> names;
+  for(auto i : fEntities) {
+    names.push_back(std::string(i.GetName()));
+  }
+  return names;
+}
+
+std::vector<std::string> Model::GetModules() {
+  std::vector<std::string> names;
+  for(auto i : fModules) {
+    names.push_back(std::string(i.GetName()));
+  }
+  return names;
 }
 
 ModelElement* Model::FindElement(const char* elementName) {

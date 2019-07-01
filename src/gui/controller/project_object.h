@@ -74,16 +74,10 @@ class ProjectObject{
     Int_t modelCount = fModels.size();
     for(Int_t i = 0; i < modelCount; i++) {
       if(strcmp(fModels[i].GetName(), modelName) == 0) {
-        Log::Info("ProjectObject::GetModel found model:", modelName);
+        Log::Debug("ProjectObject::GetModel found model:", modelName);
         return &fModels[i];
       }
     }
-    //for(Model model : fModels) {
-    //  if(strcmp(model.GetName(), modelName) == 0) {
-    //    Log::Info("ProjectObject::GetModel found model:", modelName);
-    //    return &model;
-    //  }
-    //}
     return nullptr;
   }
 
@@ -97,12 +91,6 @@ class ProjectObject{
   void TestInit() {
     fVersion.assign("1.0");
     fTestSetting.assign("SomeTestSetting");
-    //Model testModel;
-    //testModel.SetName("TestModel");
-    //fModels.push_back(testModel);
-    //Model testModel2;
-    //testModel2.SetName("TestModel123123123123");
-    //fModels.push_back(testModel2);
   }
 
   void SetProjectName(const char* name);

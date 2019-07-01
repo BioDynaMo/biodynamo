@@ -40,33 +40,12 @@ namespace gui {
 class ModelElement {
  public:
   ModelElement() {}
-
-  void PrintData() {
-    std::cout << "\t\tName:" << fName << '\n';
-  }
-
-  void SetName(const char* name) {
-    fName.assign(name);
-  }
-
-  // have template type?
-  ModelElement* SearchChildren(const char* elementName) {
-    TObjLink* lnk = fChildren->FirstLink();
-    while (lnk) {
-      ModelElement* tmp = (ModelElement*)lnk->GetObject();
-      if (tmp->fName.compare(elementName) == 0)
-        return tmp;
-      lnk = lnk->Next();
-    }
-    return nullptr;
-  }
+  ~ModelElement() = default;
   std::string GenerateCode() {return "";};
   void        Save() {};
-  
-  std::string        fName;
-  std::string        fPathName;
 
  private:
+  std::string        fPathName;
   ModelElement*      fParent;
   //Model              *gModel;
   TList              *fChildren;  

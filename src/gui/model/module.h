@@ -18,12 +18,34 @@
 #define GUI_MODULE_H_
 
 #include "gui/model/model_element.h"
+#include "biodynamo.h"
 
 namespace gui {
 
-class Module : public ModelElement {
- // base class
- // model actions (list of ModelAction)
+/// Model actions (list of ModelAction)
+class Module {
+
+ public:
+  Module() {};
+  ~Module() = default;
+
+  void PrintData() {
+    std::cout << "\t\tType:" << "Module" << '\n';
+  }
+
+  void SetName(const char* name) {
+    fName.assign(name);
+  }
+
+  const char* GetName() {
+    return fName.c_str();
+  }
+
+ private:
+  std::string            fName;
+  bdm::GrowDivide        fElement;
+  
+  ClassDef(Module,1)
 };
 
 } // namespace gui

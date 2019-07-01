@@ -33,41 +33,6 @@
 #include <TStyle.h>
 #include <TVirtualX.h>
 
-#include <TF1.h>
-#include <TFile.h>
-#include <TFrame.h>
-#include <TH1.h>
-#include <TTree.h>
-
-#include <TBrowser.h>
-#include <TCanvas.h>
-#include <TColor.h>
-#include <TContextMenu.h>
-#include <TG3DLine.h>
-#include <TGButton.h>
-#include <TGFileDialog.h>
-#include <TGListTree.h>
-#include <TGMenu.h>
-#include <TGSplitter.h>
-#include <TGStatusBar.h>
-#include <TGTab.h>
-#include <TGTextEdit.h>
-#include <TGToolBar.h>
-#include <TGToolTip.h>
-#include <TGeoManager.h>
-#include <THtml.h>
-#include <TParticle.h>
-#include <TRandom.h>
-#include <TRootEmbeddedCanvas.h>
-#include <TRootHelpDialog.h>
-#include <TSystem.h>
-#include <TView.h>
-#include <TMethod.h>
-#include <TGMsgBox.h>
-
-#include <TPluginManager.h>
-#include <TVirtualGL.h>
-
 #include "gui/view/about.h"
 #include "gui/view/button_model.h"
 #include "gui/view/button_project.h"
@@ -100,8 +65,6 @@ inline Cell* GetGrowthModule() {
 }
 
 }
-  
-
 
 namespace gui {
 
@@ -408,22 +371,6 @@ void ModelCreator::MakeMenuBarFrame() {
   AddFrame(fMenuBar.get(), fMenuBarLayout.get());
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Destroy menubar and popup menus.
-
-void ModelCreator::CloseMenuBarFrame() {
-  //delete fMenuHelp;
-  //delete fMenuSamples;
-  //delete fMenuView;
-  //delete fMenuTools;
-  //delete fMenuSimulation;
-  //delete fMenuFile;
-
-  //delete fMenuBarItemLayout;
-  //delete fMenuBarHelpLayout;
-  //delete fMenuBar;
-  //delete fMenuBarLayout;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Show or hide toolbar.
@@ -452,22 +399,6 @@ void ModelCreator::EnableSaving(Bool_t enable) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Destroy ModelCreator object. Delete all created widgets
-/// GUI MEMBERS
-ModelCreator::~ModelCreator() {
-  CloseMenuBarFrame();
-  //delete fButtonModelFrame;
-  //delete fButtonProjectFrame;
-  //delete fSelectionFrame;
-  //delete fMainFrame;
-  //delete fTitleFrame;
-
-  //delete fProjectListTree;
-  //delete fTreeView;
-  //delete fTreeManager;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Set the default position on the screen of new Model Creator instances.
 
 void ModelCreator::SetDefaultPosition(Int_t x, Int_t y) {
@@ -483,13 +414,54 @@ void ModelCreator::CreateNewProject() {
     Log::Error("Project name or path is empty! Cannot create Project!");
     return;
   }
-
+  ClearProject();
   Project::GetInstance().NewProject(fProjectPath.c_str(), fProjectName.c_str());
-  fTreeManager = std::make_unique<TreeManager>();
-  fProjectListTree->Cleanup();
+  /// Previous tree manager will be destroyed
   fTreeManager->CreateProjectTree(fProjectListTree.get(), fProjectName);
   Initialize();
   ChangeSelectionFrame();
+}
+
+void ModelCreator::LoadProject(std::string fileName) {
+  const char* projectName = Project::GetInstance().LoadProject(fileName.c_str());
+  const char* projectLocation = fileName.c_str();
+  NewProjectSet(projectName, projectLocation);
+  fTreeManager->CreateProjectTree(fProjectListTree.get(), fProjectName);
+  std::vector<Model>* models = Project::GetInstance().GetAllModels();
+  Size_t modelCount = models->size();
+  Log::Info("Number of models:", modelCount);
+  for(Int_t i = 0; i < modelCount; i++) {
+    Model curModel = models->at(i);
+    fTreeManager->CreateModelTree(curModel);
+  }
+}
+
+Bool_t ModelCreator::AskForProject(Bool_t loading) {
+  Log::Warning("Can only have 1 project open!");
+  Int_t retval;
+  std::string msg("Press OK to save the current project");
+  if(loading) {
+    msg.append(", then load an existing one.");
+  } else {
+    msg.append(", then create a new one.");
+  }
+  new TGMsgBox(gClient->GetRoot(), this,
+              "Warning", msg.c_str(),
+              kMBIconExclamation, kMBOk | kMBCancel, &retval);
+  if(retval == kMBOk) {
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+void ModelCreator::ClearProject() {
+  if(Project::GetInstance().IsLoaded()) {
+    Project::GetInstance().SaveProject();
+    Project::GetInstance().CloseProject();
+  }
+  fTreeManager = std::make_unique<TreeManager>();
+  fProjectListTree->Cleanup();
+  ChangeSelectionFrame(kFALSE);
 }
 
 void ModelCreator::CreateNewModel() {
@@ -526,39 +498,16 @@ void ModelCreator::ChangeSelectionFrame(Bool_t createdProject) {
   fSelectionFrame->MapWindow();
 }
 
-void ModelCreator::CreateNewCell() {
-  std::string currentModel = fTreeManager->GetCurrentSelectedModelName();
-  // std::string currentElement = TODO: GetCurrentSleectedModelElement
-  // Will assume the top-level element folder for now
-  Log::Info("Creating cell!");
-  // Bool_t created =
-  Project::GetInstance().CreateModelElement(fModelName.c_str(), "", "Cell1", M_ENTITY_CELL);
-  // M_ENTITY_CELL); if(created) {
-  //  /// Call tree manager for update
-  fTreeManager->CreateTopLevelElement(M_ENTITY_CELL);
-  fProjectListTree->ClearViewPort();
-  fClient->NeedRedraw(fProjectListTree.get());
-  //} else {
-  //   Log::Error("Unable to create new cell!");
-  //}
-}
-
-void ModelCreator::CreateNewGrowthModule() {
-  std::string currentModel = fTreeManager->GetCurrentSelectedModelName();
-  // std::string currentElement = TODO: GetCurrentSleectedModelElement
-  // Will assume the top-level element folder for now
-  Log::Info("Creating Growth Module!");
-  fTreeManager->CreateTopLevelElement(M_MODULE_GROWTH);
+void ModelCreator::CreateNewElement(int type) {
+  std::string elemName = fTreeManager->CreateTopLevelElement(type);
+  Project::GetInstance().CreateModelElement(fModelName.c_str(), "", elemName.c_str(), type);
   fProjectListTree->ClearViewPort();
   fClient->NeedRedraw(fProjectListTree.get());
 }
-
 
 void ExtractMethod(TObject* obj) {
-  //std::cout << "Trying to extract setter\n";
   std::string clName(obj->ClassName());
   if(clName.compare("TMethod") == 0) {
-    //std::cout << "Detected a method!\n";
     TMethod* method = (TMethod*)obj;
     std::string methodName(method->GetName());
     if(methodName.find("Set") != std::string::npos) {
@@ -622,7 +571,6 @@ void ViewMembers() {
 /// Handle messages send to the ModelCreator object.
 
 Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
-  
 
   switch (GET_MSG(msg)) {
     case kC_COMMAND:
@@ -632,45 +580,43 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
           switch (param1) {
             case M_FILE_NEWPROJECT: {
               if(Project::GetInstance().IsLoaded()) {
-                Log::Warning("Can only have 1 project open!");
-                Int_t retval;
-                new TGMsgBox(gClient->GetRoot(), this,
-                "Warning", "Press OK to save the current project, then create a new one.",
-                kMBIconExclamation, kMBOk | kMBCancel, &retval);
-                if(retval == kMBOk) {
-                  Project::GetInstance().SaveProject();
-                  Project::GetInstance().CloseProject();
-                  ChangeSelectionFrame(kFALSE);
-                  fIsNewProject = kTRUE;
-                  // clear TreeManager
+                if(AskForProject()) {
+                  ClearProject();
                   goto NewProject;
                 }
               } else {
                 NewProject:
                 new NewProjectDialog(fClient->GetRoot(), this, 800, 400);
-                if (fIsNewProject) {
-                  fIsNewProject = kFALSE;
-                  CreateNewProject();
-                  EnableSaving();
-                } 
+                CreateNewProject();
+                EnableSaving();
+                fModified = kTRUE;
               }
               break;
             }
 
             case M_FILE_OPENPROJECT:
             {
-              Log::Debug("Clicked open project!");
-              TGFileInfo fi;
-              fi.fFileTypes = filetypes;
-              new TGFileDialog(fClient->GetRoot(), this, kFDOpen, &fi);
-              if (!fi.fFilename) return kTRUE;
-              Project::GetInstance().LoadProject(fi.fFilename);
+              if(Project::GetInstance().IsLoaded()) {
+                if(AskForProject(kTRUE)) {
+                  ClearProject();
+                  goto LoadingProject;
+                }
+              } else {
+                LoadingProject:
+                Log::Debug("Clicked open project!");
+                TGFileInfo fi;
+                fi.fFileTypes = filetypes;
+                new TGFileDialog(fClient->GetRoot(), this, kFDOpen, &fi);
+                if (!fi.fFilename) return kTRUE;
+                LoadProject(fi.fFilename);
+              }
             }
               break;
 
             case M_MODEL_NEW:
               new NewModelDialog(fClient->GetRoot(), this, 800, 400);
               if (fIsNewModel) {
+                fModified = kTRUE;
                 fIsNewModel = kFALSE;
                 CreateNewModel();
               }
@@ -687,10 +633,19 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
             case M_FILE_SAVE:
               Log::Debug("Clicked save!");
               Project::GetInstance().SaveProject();
+              fModified = kFALSE;
               break;
 
-            case M_FILE_SAVEAS:
+            case M_FILE_SAVEAS: 
+            {
+              /// TODO: SaveAs not yet fully functional
               Log::Debug("Clicked save as!");
+              TGFileInfo fi;
+              fi.fFileTypes = filetypes;
+              new TGFileDialog(fClient->GetRoot(), this, kFDOpen, &fi);
+              if (!fi.fFilename) return kTRUE;
+              Project::GetInstance().SaveAsProject(fi.fFilename);
+            }
               break;
 
             case M_FILE_EXIT:
@@ -703,32 +658,39 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
 
             case M_ENTITY_CELL:
               Log::Debug("Clicked cell!");
-              CreateNewCell();
+              CreateNewElement(M_ENTITY_CELL);
+              fModified = kTRUE;
               break;
 
             case M_MODULE_GROWTH:
               Log::Debug("Clicked growth module!");
-              CreateNewGrowthModule();
+              CreateNewElement(M_MODULE_GROWTH);
+              fModified = kTRUE;
               break;
 
             case M_MODULE_CHEMOTAXIS:
               Log::Debug("Clicked chemotaxis module!");
+              fModified = kTRUE;
               break;
 
             case M_MODULE_SUBSTANCE:
               Log::Debug("Clicked substance secretion module!");
+              fModified = kTRUE;
               break;
 
             case M_GENERAL_VARIABLE:
               Log::Debug("Clicked general variable!");
+              fModified = kTRUE;
               break;
 
             case M_GENERAL_FUNCTION:
               Log::Debug("Clicked general function!");
+              fModified = kTRUE;
               break;
 
             case M_GENERAL_FORMULA:
               Log::Debug("Clicked general formula!");
+              fModified = kTRUE;
               break;
 
             case M_TOOLS_STARTBROWSER:
@@ -821,7 +783,18 @@ void ModelCreator::HandleTreeInput() {
 /// application will be terminated.
 
 void ModelCreator::CloseWindow() {
+  if(fModified) {
+    Int_t retval;
+    new TGMsgBox(gClient->GetRoot(), this,
+                "Info", "Any unsaved changes will be lost! Press OK to continue.",
+                kMBIconExclamation, kMBOk | kMBCancel, &retval);
+    if(retval != kMBOk) {
+      return;
+    }
+  }
+
   std::cout << "Terminating Model Creator" << std::endl;
+
   //this->DeleteWindow();
   gApplication->Terminate();
 }

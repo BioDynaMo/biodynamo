@@ -18,21 +18,36 @@
 #define GUI_SIMULATION_ENTITY_H_
 
 #include "gui/model/model_element.h"
+#include "biodynamo.h"
 
 namespace gui {
 
-class SimulationEntity : public ModelElement {
-    // will represent `simulation objects`
+/// Represent `simulation objects`
+class SimulationEntity {
 
-    //void Save() {
-    //    std::cout << "Saving simulation Entity!\n";
-    //}
-//
-    //std::string GenerateCode() {
-    //    return "Sample Simulation Entity Code\n";
-    //} 
+ public:
+  SimulationEntity() {};
+  ~SimulationEntity() = default;
+
+  void PrintData() {
+    std::cout << "\t\tType:" << "Simulation Entity" << '\n';
+  } 
+
+  void SetName(const char* name) {
+    fName.assign(name);
+  }
+
+  const char* GetName() {
+    return fName.c_str();
+  }
+
+ private:
+  std::string        fName;
+  bdm::Cell          fElement;
+
+  ClassDef(SimulationEntity,1)
 };
 
 }  // namespace gui
 
-#endif 
+#endif // GUI_SIMULATION_ENTITY_H_

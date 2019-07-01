@@ -27,24 +27,40 @@
 #include "TDatime.h"
 #include "TCanvas.h"
 
-class TGMenuBar;
-class TGPopupMenu;
-class TGButton;
-class TGListTree;
-class TGListTreeItem;
-class TRootEmbeddedCanvas;
-class TGCanvas;
-class TGStatusBar;
-class TGTextEdit;
-class TGTab;
-class TCanvas;
-class TPad;
-class MyEvent;
-class TEnv;
-class TTimer;
-class TH1F;
-class TGToolBar;
-class TContextMenu;
+#include <TF1.h>
+#include <TFile.h>
+#include <TFrame.h>
+#include <TH1.h>
+#include <TTree.h>
+
+#include <TBrowser.h>
+#include <TCanvas.h>
+#include <TColor.h>
+#include <TContextMenu.h>
+#include <TG3DLine.h>
+#include <TGButton.h>
+#include <TGFileDialog.h>
+#include <TGListTree.h>
+#include <TGMenu.h>
+#include <TGSplitter.h>
+#include <TGStatusBar.h>
+#include <TGTab.h>
+#include <TGTextEdit.h>
+#include <TGToolBar.h>
+#include <TGToolTip.h>
+#include <TGeoManager.h>
+#include <THtml.h>
+#include <TParticle.h>
+#include <TRandom.h>
+#include <TRootEmbeddedCanvas.h>
+#include <TRootHelpDialog.h>
+#include <TSystem.h>
+#include <TView.h>
+#include <TMethod.h>
+#include <TGMsgBox.h>
+
+#include <TPluginManager.h>
+#include <TVirtualGL.h>
 
 namespace gui {
 
@@ -130,7 +146,7 @@ class ModelCreator : public TGMainFrame {
 
   /// Constructors & destructor
   ModelCreator(const TGWindow *p, UInt_t w, UInt_t h);
-  virtual ~ModelCreator();
+  virtual ~ModelCreator() = default;
 
   void                SetOk(Bool_t ok=kTRUE) { fOk = ok; }
   void                Modified(Bool_t modified=kTRUE) { fModified = modified; }
@@ -143,16 +159,13 @@ class ModelCreator : public TGMainFrame {
   virtual Bool_t      ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
   void                CreateNewProject();
   void                CreateNewModel();
+  void                LoadProject(std::string fileName);
+  void                ClearProject();
+  Bool_t              AskForProject(Bool_t loading=kFALSE);
   void                DisplayProjectTree();
-  void                CreateNewCell();
-  void                CreateNewGrowthModule();
+  void                CreateNewElement(int type);
   void                HandleTreeInput();
   void                EnableSaving(Bool_t enable=kTRUE);
-
-  /// TODO:
-  //  virtual void    OnOpenProject(const Char_t *filename);
-  //  virtual void    OnSaveProject();
-  //  virtual void    OnSaveAsProject(const Char_t *filename);
 
   template <typename T>
   void NewProjectSet(T& name, T& path) { 

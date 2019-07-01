@@ -93,9 +93,10 @@ class Project {
   /// Loads project
   /// @param path path and filename of the project root file
   /// @return None
-  void LoadProject(const char* path) {
+  const char* LoadProject(const char* path) {
     Log::Info("Loading project file: ", path);
     ReadProject(path);
+    return fProjectObject.GetProjectName();
   }
 
   /// Saves Project and all of its models.
@@ -105,7 +106,7 @@ class Project {
   void SaveProject() {
     Log::Info("Attempting to save project");
     try {
-      Log::Info("Saving project ...");
+      Log::Info("Saving project to file: ", fProjectPath);
       bdm::WritePersistentObject(fProjectPath.c_str(), "ProjectObject",
                                fProjectObject, "recreate");
       Log::Info("Successfully saved!");
@@ -119,9 +120,10 @@ class Project {
   /// project.
   /// @param path path and filename of the project root file
   /// @return None
-  void SaveAsProject(const char* path) {
+  void SaveAsProject(std::string path) {
     Log::Info("Saving project as: ", path);
-    WriteProject();
+    fProjectPath.assign(path);
+    SaveProject();
   }
 
   Bool_t CreateModel(const char* name) {
@@ -203,7 +205,11 @@ class Project {
       ProjectObject *obj;
       bdm::GetPersistentObject(path, "ProjectObject", obj);
       Log::Info("Successfully Loaded!");
-      obj->PrintData();
+      /// TODO: a more elegant copy
+      fProjectObject = (*obj);
+      fProjectObject.PrintData();
+      fIsLoaded = kTRUE;
+      fProjectPath.assign(path);
     } catch (...) {
       Log::Error("Couldn't load project!");
     }

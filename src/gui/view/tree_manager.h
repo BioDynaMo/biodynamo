@@ -84,18 +84,26 @@ class TreeManager {
     return 0;  // Intentionally zero
   }
 
-  const char* CreateTopLevelElement(int type) {
+  const char* CreateTopLevelElement(int type, std::string name = "") {
     std::string elementName("Other");
     const TGPicture* pic = 0;
+    Bool_t isNameValid;
     if (type == M_ENTITY_CELL) {
-      elementName.assign("Cell");
-      pic = GetIcon("Cell");
+        elementName.assign("Cell");
+        pic = GetIcon("Cell");
     } else if (type == M_MODULE_GROWTH) {
       elementName.assign("Growth");
       pic = GetIcon("GrowthModule");
     }
-    elementName.append("_0");
-    Bool_t isNameValid = kFALSE;
+  
+    if(name.empty()) {
+      elementName.append("_0");
+      isNameValid = kFALSE;
+    } else {
+      elementName.assign(name);
+      isNameValid = kTRUE;
+    }
+    
     Int_t i;
     while (!isNameValid) {
       std::size_t found = elementName.find_last_of("_");
@@ -131,6 +139,19 @@ class TreeManager {
       fCurListItem = projectLTItem;
       gProjectListTreeItem = projectLTItem;
       fCurModelName = "";
+    }
+  }
+
+  void CreateModelTree(Model &model) {
+    Log::Info("Will create model tree from pre-existing model!");
+    std::string modelName(model.GetName());
+    CreateModelTree(modelName);
+
+    for(auto i : model.GetSimulationEntities()) {
+      CreateTopLevelElement(M_ENTITY_CELL, i);
+    }
+    for(auto i : model.GetModules()) {
+      CreateTopLevelElement(M_MODULE_GROWTH, i);
     }
   }
 
