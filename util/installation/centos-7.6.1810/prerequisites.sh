@@ -35,6 +35,20 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 # e.g. centos-...
 BDM_OS=$(DetectOs)
 
+# CentOs specifics. This is done manually instead of using
+# the standard commands:
+# scl enable devtoolset-7 bash
+# scl enable rh-python36 bash
+if [ `lsb_release -si` == "CentOS" ]; then
+  # python
+  if versionLessThan "$(python3 --version)" 'Python 3.2.0'; then
+    export PATH=/opt/rh/rh-python36/root/bin:/opt/rh/llvm-toolset-7/root/usr/bin/:$PATH
+  fi
+  # gcc g++
+  export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
+  export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:$LD_LIBRARY_PATH
+fi
+
 function InstallCmake {
   local URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
   DownloadTarAndExtract $URL $1/cmake-3.6.3 1
@@ -44,10 +58,9 @@ function InstallCmake {
 function InstallPackages {
   # libXt-devel libXext-devel are required to build the paraview plugin
   # on ubuntu those packages are installed together with freeglut3-dev
-  INSTALL_PACKAGES="git valgrind  \
-    freeglut-devel libXt-devel libXext-devel \
+  INSTALL_PACKAGES=" freeglut-devel libXt-devel libXext-devel \
     python python-pip rh-python36 python-devel  \
-    devtoolset-7-gcc* make cmake openmpi3-devel gcc-c++"
+    devtoolset-7-gcc* make cmake openmpi3-devel"
 
   EchoInfo "This script uses yum to install centos-release-scl, epel-release, and:"
   for p in $INSTALL_PACKAGES; do
@@ -83,10 +96,6 @@ function InstallPackages {
     sudo yum -y install centos-release-scl epel-release
     sudo yum -y install $INSTALL_PACKAGES
 
-    # activate mpi
-    . /etc/profile.d/modules.sh
-    module load mpi
-
   fi
 
 }
@@ -119,3 +128,8 @@ function Install {
 }
 
 Install
+
+# activate mpi
+. /etc/profile.d/modules.sh
+module load mpi
+
