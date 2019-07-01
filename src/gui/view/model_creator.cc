@@ -48,24 +48,6 @@
 
 #include "biodynamo.h"
 
-namespace bdm {
-
-/// testing
-inline Cell* GetCell() {
-  const std::array<double, 3> position = {1, 2, 3};
-  Cell *c1 = new Cell(position);
-  return c1;
-}
-
-/// testing
-inline Cell* GetGrowthModule() {
-  const std::array<double, 3> position = {1, 2, 3};
-  Cell *c1 = new Cell(position);
-  return c1;
-}
-
-}
-
 namespace gui {
 
 const char *icon_names[] = {"new_project.xpm",
@@ -543,11 +525,9 @@ void PrintList(auto&& t, Bool_t useIterator=kFALSE) {
 }
 
 void ViewMembers() {
-
-  //TBrowser *b = ;
   std::cout << "Testing getting cell members\n";
-  bdm::Cell *ptr = bdm::GetCell();
-  TClass *cl = ptr->IsA();
+  std::unique_ptr<bdm::Cell> cellPtr = std::make_unique<bdm::Cell>(1.0);
+  TClass *cl = cellPtr->IsA();
 
   std::cout << "\nData Members:\n";
   PrintList(cl->GetListOfDataMembers());
