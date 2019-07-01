@@ -38,6 +38,16 @@ install(DIRECTORY ${CMAKE_BIODYNAMO_ROOT}/biodynamo
         DESTINATION .
         USE_SOURCE_PERMISSIONS)
 
+install(TARGETS biodynamo
+        LIBRARY
+        DESTINATION ./biodynamo/lib)
+
+if(test)
+    install(TARGETS runBiodynamoTestsMain
+            RUNTIME
+            DESTINATION ./biodynamo/bin)
+endif()
+
 # Install third party directories
 install(DIRECTORY ${CMAKE_BIODYNAMO_ROOT}/third_party
         DESTINATION .

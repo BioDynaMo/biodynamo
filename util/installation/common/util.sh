@@ -190,9 +190,9 @@ function CleanBuild {
   echo "CMAKEFLAGS $BDM_CMAKE_FLAGS"
   cmake $BDM_CMAKE_FLAGS .. \
   && bash ./prerequisites-optional.sh \
-  && bash ./prerequisites-required.sh \
-  && cmake $BDM_CMAKE_FLAGS .. \
-  && make -j$(CPUCount) && make install
+  && bash ./prerequisites-required.sh
+  cmake $BDM_CMAKE_FLAGS ..
+  make -j$(CPUCount) && make install
 }
 
 # Return absolute path.
