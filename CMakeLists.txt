@@ -59,6 +59,7 @@ option(dict      "Build with ROOT dictionaries" ON)
 option(paraview  "Enable ParaView" ON)
 option(vtune     "Enable VTune performance analysis" OFF)
 option(coverage  "Enable test coverage report generation. Sets build type to coverage" OFF)
+option(verbose   "Enable verbosity when installing." OFF)
 
 if(APPLE)
    # valgrind currently broken on macOS 10.12
