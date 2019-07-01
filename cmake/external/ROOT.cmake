@@ -4,12 +4,13 @@ include(ExternalProject)
 # should be something like <build_dir>/third_party/...).
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
-file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz ${ROOT_SOURCE_DIR}/root.tar.gz
+file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz
+        ${ROOT_SOURCE_DIR}/root.tar.gz
+        EXPECTED_MD5 7cf4d711c3bbd297e2694f9755f44cb2
         SHOW_PROGRESS)
 file(MAKE_DIRECTORY ${ROOT_SOURCE_DIR}/root)
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/root.tar.gz
         WORKING_DIRECTORY ${ROOT_SOURCE_DIR}/root)
-#execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ROOT_SOURCE_DIR}/root ${THIRD_PARTY_DIR}/root)
 
 # Run again find_package in order to find ROOT
 find_package(ROOT COMPONENTS Geom Gui)
