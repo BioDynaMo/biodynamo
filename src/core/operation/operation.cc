@@ -12,19 +12,20 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_UTIL_DEBUG_H_
-#define CORE_UTIL_DEBUG_H_
+#include "core/operation/operation.h"
+#include "core/sim_object/sim_object.h"
 
-#include <algorithm>
-#include <array>
-#include <iomanip>
-#include <iostream>
+namespace bdm {
 
-#include "core/container/math_array.h"
+Operation::Operation() : name_("null") {}
 
-inline void Print(const bdm::Double3& a, int precision = 10) {
-  std::cout << std::setprecision(precision) << a[0] << ", " << a[1] << ", "
-            << a[2] << std::endl;
-}
+Operation::Operation(const std::string& name, const FunctionType& f)
+    : name_(name), function_(f) {}
 
-#endif  // CORE_UTIL_DEBUG_H_
+Operation::Operation(const std::string& name, uint32_t frequency,
+                     const FunctionType& f)
+    : frequency_(frequency), name_(name), function_(f) {}
+
+void Operation::operator()(SimObject* so) const { function_(so); }
+
+}  // namespace bdm

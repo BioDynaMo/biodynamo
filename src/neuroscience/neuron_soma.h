@@ -17,6 +17,8 @@
 
 #include <unordered_map>
 #include <vector>
+
+#include "core/container/math_array.h"
 #include "core/sim_object/cell.h"
 #include "neuroscience/neuron_or_neurite.h"
 
@@ -33,7 +35,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   NeuronSoma();
   virtual ~NeuronSoma();
 
-  explicit NeuronSoma(const std::array<double, 3>& position);
+  explicit NeuronSoma(const Double3& position);
 
   /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.
@@ -69,7 +71,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   ///
   /// Uses default diameter for new neurite
   /// \see NewNeuriteExtensionEvent
-  NeuriteElement* ExtendNewNeurite(const std::array<double, 3>& direction,
+  NeuriteElement* ExtendNewNeurite(const Double3& direction,
                                    NeuriteElement* prototype = nullptr);
 
   /// \brief Extend a new neurite from this soma.
@@ -84,7 +86,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  std::array<double, 3> OriginOf(SoUid daughter_uid) const override;
+  Double3 OriginOf(SoUid daughter_uid) const override;
 
   void UpdateDependentPhysicalVariables() override;
 
@@ -99,7 +101,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// Daughter attachment points in local coordinates
   /// Key: neurite segment uid
   /// Value: position
-  std::unordered_map<SoUid, std::array<double, 3>> daughters_coord_;
+  std::unordered_map<SoUid, Double3> daughters_coord_;
 };
 
 }  // namespace neuroscience

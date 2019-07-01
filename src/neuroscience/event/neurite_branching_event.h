@@ -33,7 +33,7 @@ struct NeuriteBranchingEvent : public Event {
   static const EventId kEventId;
 
   NeuriteBranchingEvent(double distal_portion, double length, double diameter,
-                        const std::array<double, 3> direction)
+                        const Double3 direction)
       : distal_portion_(distal_portion),
         length_(length),
         diameter_(diameter),
@@ -53,7 +53,7 @@ struct NeuriteBranchingEvent : public Event {
   /// direction of the new side branch.
   /// will be automatically corrected if not at least 45 degrees from the
   /// cylinder's axis.
-  std::array<double, 3> direction_;
+  Double3 direction_;
 };
 
 }  // namespace neuroscience

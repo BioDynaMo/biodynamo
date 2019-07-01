@@ -142,22 +142,22 @@ TEST(InPlaceExecutionContext, Execute) {
   bool op1_called = false;
   bool op2_called = false;
 
-  auto op1 = [&](SimObject* so) {
+  auto op1 = Operation("op1", [&](SimObject* so) {
     // op1 must be  called first
     EXPECT_FALSE(op1_called);
     EXPECT_FALSE(op2_called);
     EXPECT_EQ(so->GetUid(), uid_0);
     op1_called = true;
-  };
+  });
 
-  auto op2 = [&](SimObject* so) {
+  auto op2 = Operation("op2", [&](SimObject* so) {
     // op2 must be  called first
     EXPECT_TRUE(op1_called);
     EXPECT_FALSE(op2_called);
     EXPECT_EQ(so->GetUid(), uid_0);
     op2_called = true;
-  };
-  std::vector<std::function<void(SimObject*)>> operations = {op1, op2};
+  });
+  std::vector<Operation> operations = {op1, op2};
   ctxt->Execute(&cell_0, operations);
 
   EXPECT_TRUE(op1_called);
@@ -169,7 +169,7 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
   auto* rm = sim.GetResourceManager();
 
   // create cells
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(10);
     return cell;
@@ -185,7 +185,7 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
 
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.
-  auto op = [&](auto* so) {
+  Operation op("op", [&](auto* so) {
     auto d = so->GetDiameter();
     so->SetDiameter(d + 1);
 
@@ -202,7 +202,7 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
     ctxt->ForEachNeighborWithinRadius(nb_lambda, *so, 100);
 #pragma omp critical
     num_neighbors[so->GetUid()] = nb_counter;
-  };
+  });
 
   rm->ApplyOnAllElementsParallel([&](SimObject* so) {
     // ctxt must be obtained inside the lambda, otherwise we always get the

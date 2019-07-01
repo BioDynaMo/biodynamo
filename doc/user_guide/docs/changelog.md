@@ -1,13 +1,14 @@
 # Changelog
 
+## 20.06.2019 [`257f1a3`](https://github.com/BioDynaMo/biodynamo/commit/257f1a39ba501da9915c5a50c93d517ac2673919)
+
+Add support for multiscale simulations.
+
 ## 14.06.2019 [`cb15679`](https://github.com/BioDynaMo/biodynamo/commit/cb1567947595090e3b43a3a44bf74477699d83b0)
 
 Release BioDynaMo dynamic.
 
-This is a more user-friendly version of BioDynaMo.
-It removes most template code, and does not require compile time parameters.
-However, this comes at the cost of performance. BioDynaMo dynamic is slower than
-the previous BioDynaMo static.
+This is a more user-friendly version of BioDynaMo. It removes most template code, and does not require compile time parameters, resulting in a simpler API. However, this comes at a small cost in performance. In due time we hope to regain the lost performance.
 
 There are too many small API changes to present an exhaustive list here.
 We recommend to have a look at the

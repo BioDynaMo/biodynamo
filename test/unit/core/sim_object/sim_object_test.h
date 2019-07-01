@@ -65,12 +65,12 @@ struct GrowthModule : public BaseBiologyModule {
 };
 
 struct MovementModule : public BaseBiologyModule {
-  std::array<double, 3> velocity_;
+  Double3 velocity_;
 
   MovementModule()
       : BaseBiologyModule(0, CellDivisionEvent::kEventId),
         velocity_({{0, 0, 0}}) {}
-  explicit MovementModule(const std::array<double, 3>& velocity)
+  explicit MovementModule(const Double3& velocity)
       : BaseBiologyModule(0, CellDivisionEvent::kEventId),
         velocity_(velocity) {}
 
@@ -102,7 +102,7 @@ struct MovementModule : public BaseBiologyModule {
 
   void Run(SimObject* so) override {
     const auto& position = so->GetPosition();
-    so->SetPosition(Math::Add(position, velocity_));
+    so->SetPosition(position + velocity_);
   }
 
   BDM_CLASS_DEF_OVERRIDE(MovementModule, 1);

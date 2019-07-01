@@ -42,7 +42,7 @@
 //     auto* grid = sim->GetGrid();
 //     auto* param = sim->GetParam();
 //
-//     std::vector<std::array<double, 3>> cell_movements(cells->size());
+//     std::vector<Double3> cell_movements(cells->size());
 //     std::vector<double> mass(cells->size());
 //     std::vector<uint32_t> starts;
 //     std::vector<uint16_t> lengths;

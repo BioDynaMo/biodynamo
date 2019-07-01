@@ -29,7 +29,7 @@ Param::max_bound_ = 250;
 We create one cell with diameter 10, at a random location
 
 ``` C++
-auto construct = [](const std::array<double, 3>& position) {
+auto construct = [](const Double3& position) {
   Cell* cell = new Cell(position);
   cell->SetDiameter(10);
   return cell;

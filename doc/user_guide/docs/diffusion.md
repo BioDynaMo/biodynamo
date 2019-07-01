@@ -47,18 +47,18 @@ Therefore, we have to create an initial set of simulation objects and set their
 attributes:
 
 ``` C++
-  auto construct = [](const std::array<double, 3>& position) {
+  auto construct = [](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetMass(1.0);
     cell->AddBiologyModule(new Chemotaxis());
-    std::array<double, 3> secretion_position = {{50, 50, 50}};
+    Double3 secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
       cell->AddBiologyModule(new KaliumSecretion());
     }
     return cell;
   };
-  std::vector<std::array<double, 3>> positions;
+  std::vector<Double3> positions;
   positions.push_back({0, 0, 0});
   positions.push_back({100, 0, 0});
   positions.push_back({0, 100, 0});

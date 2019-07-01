@@ -27,7 +27,7 @@ class MyCell : public Cell {  // our object extends the Cell object
 
  public:
   MyCell() {}
-  explicit MyCell(const std::array<double, 3>& position) : Base(position) {}
+  explicit MyCell(const Double3& position) : Base(position) {}
 
   /// If MyCell divides, daughter 2 copies the data members from the mother
   MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
@@ -81,11 +81,13 @@ struct GrowthModule : public BaseBiologyModule {
     if (auto* cell = dynamic_cast<MyCell*>(so)) {
       if (cell->GetDiameter() < 8) {
         auto* random = Simulation::GetActive()->GetRandom();
+        // Here 400 is the speed and the change to the volume is based on the
+        // simulation time step.
+        // The default here is 0.01 for timestep, not 1.
         cell->ChangeVolume(400);
 
         // create an array of 3 random numbers between -2 and 2
-        std::array<double, 3> cell_movements =
-            random->template UniformArray<3>(-2, 2);
+        Double3 cell_movements = random->template UniformArray<3>(-2, 2);
         // update the cell mass location, ie move the cell
         cell->UpdatePosition(cell_movements);
       } else {  //

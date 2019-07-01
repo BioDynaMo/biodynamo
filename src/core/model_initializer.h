@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "core/container/math_array.h"
 #include "core/diffusion_grid.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
@@ -31,7 +32,7 @@ struct ModelInitializer {
   /// ResourceManager. Type of the simulation object is determined by the return
   /// type of parameter cell_builder.
   ///
-  ///     ModelInitializer::Grid3D(8, 10, [](const std::array<double, 3>& pos){
+  ///     ModelInitializer::Grid3D(8, 10, [](const Double3& pos){
   ///     return Cell(pos); });
   /// @param      cells_per_dim  number of simulation objects on each axis.
   ///                            Number of generated simulation objects =
@@ -41,7 +42,7 @@ struct ModelInitializer {
   ///                            20), ... }`
   /// @param      cell_builder   function containing the logic to instantiate a
   ///                            new simulation object. Takes `const
-  ///                            std::array<double, 3>&` as input parameter
+  ///                            Double3&` as input parameter
   ///
   template <typename Function>
   static void Grid3D(size_t cells_per_dim, double space,
@@ -66,7 +67,7 @@ struct ModelInitializer {
   /// ResourceManager. Type of the simulation object is determined by the return
   /// type of parameter cell_builder.
   ///
-  ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const std::array<double, 3>&
+  ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const Double3&
   ///     pos){ return Cell(pos); });
   /// @param      cells_per_dim  number of simulation objects on each axis.
   ///                            Number of generated simulation objects =
@@ -77,7 +78,7 @@ struct ModelInitializer {
   ///                            20), ... }`
   /// @param      cell_builder   function containing the logic to instantiate a
   ///                            new simulation object. Takes `const
-  ///                            std::array<double, 3>&` as input parameter
+  ///                            Double3&` as input parameter
   ///
   template <typename Function>
   static void Grid3D(const std::array<size_t, 3>& cells_per_dim, double space,
@@ -104,10 +105,10 @@ struct ModelInitializer {
   /// @param      positions     positions of the simulation objects to be
   /// @param      cell_builder  function containing the logic to instantiate a
   ///                           new simulation object. Takes `const
-  ///                           std::array<double, 3>&` as input parameter
+  ///                           Double3&` as input parameter
   ///
   template <typename Function>
-  static void CreateCells(const std::vector<std::array<double, 3>>& positions,
+  static void CreateCells(const std::vector<Double3>& positions,
                           Function cell_builder) {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
@@ -129,7 +130,7 @@ struct ModelInitializer {
   /// @param[in]  num_cells     The number cells
   /// @param[in]  cell_builder  function containing the logic to instantiate a
   ///                           new simulation object. Takes `const
-  ///                           std::array<double, 3>&` as input parameter
+  ///                           Double3&` as input parameter
   ///
   template <typename Function>
   static void CreateCellsRandom(double min, double max, int num_cells,

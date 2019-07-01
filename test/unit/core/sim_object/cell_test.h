@@ -51,7 +51,7 @@ class TestCell : public Cell {
   }
 
   void TestTransformCoordinatesGlobalToPolar() {
-    std::array<double, 3> coord = {1, 2, 3};
+    Double3 coord = {1, 2, 3};
     Base::SetPosition({9, 8, 7});
     auto result = Base::TransformCoordinatesGlobalToPolar(coord);
 
