@@ -257,8 +257,8 @@ function(fix_rootcling_omp_issue)
                   OUTPUT_VARIABLE OMP_HEADER_PATH)
   # above command returns path with "\n" appended
   string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
-  execute_process(COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/build/omp)
-  execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_SOURCE_DIR}/build/omp)
-  include_directories("${CMAKE_SOURCE_DIR}/build/omp")
+  execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/omp)
+  execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_BINARY_DIR}/omp)
+  include_directories("${CMAKE_BINARY_DIR}/omp")
 
 endfunction(fix_rootcling_omp_issue)
