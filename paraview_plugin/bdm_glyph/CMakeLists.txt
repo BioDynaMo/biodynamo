@@ -12,31 +12,15 @@
 #
 # -----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.3)
-project(BDMGlyph)
+SET(BDMGLYPH_SOURCES ${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/BDMGlyphFilter.cc
+        ${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/BDMGlyph.cc)
 
-# Check if we have set the install dir of BioDynaMo
-if (NOT DEFINED ENV{BDM_INSTALL_DIR})
-    SET(ENV{BDM_INSTALL_DIR} "$ENV{HOME}/.bdm")
-endif()
-
-# Find ParaViews and Qt
-FIND_PACKAGE(Qt5 COMPONENTS Widgets
-        PATHS ${CMAKE_BINARY_DIR}/../install/third_party/qt
-        $ENV{BDM_INSTALL_DIR}/third_party/qt)
-FIND_PACKAGE(ParaView REQUIRED
-        PATHS $ENV{BDM_INSTALL_DIR}/third_party/paraview
-        ${CMAKE_BINARY_DIR}/../install/third_party/paraview)
-
-# Locate ParaView build and then import CMake configuration,
-# macros etc. from it.
-INCLUDE(${PARAVIEW_USE_FILE})
-link_directories(${ParaView_DIR}/../..)
+include_directories(${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/)
 
 # Use the ADD_PARAVIEW_PLUGIN macro to build a plugin
 ADD_PARAVIEW_PLUGIN(
   BDMGlyphFilter              #<--Name for the plugin
-  "1.0"                       #<--Version string
-  SERVER_MANAGER_XML bdm_glyph_filter.xml  #<-- server manager xml
-  SERVER_MANAGER_SOURCES BDMGlyphFilter.cc BDMGlyph.cc #<-- source files for the new classes
+ "1.0"                       #<--Version string
+  SERVER_MANAGER_XML ${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/bdm_glyph_filter.xml  #<-- server manager xml
+  SERVER_MANAGER_SOURCES ${BDMGLYPH_SOURCES} #<-- source files for the new classes
 )

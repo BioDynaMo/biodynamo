@@ -320,7 +320,7 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 if (${ParaView_FOUND})
-  build_paraview_plugin()
+    include("${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/CMakeLists.txt")
 endif()
 
 # create cmake files used by external builds

@@ -48,6 +48,12 @@ if(test)
             DESTINATION ./biodynamo/bin)
 endif()
 
+if(${ParaView_FOUND})
+    install(TARGETS BDMGlyphFilter
+            LIBRARY
+            DESTINATION ./biodynamo/lib/pv_plugin)
+endif()
+
 # Install third party directories
 install(DIRECTORY ${CMAKE_BIODYNAMO_ROOT}/third_party
         DESTINATION .
