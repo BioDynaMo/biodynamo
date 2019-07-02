@@ -23,6 +23,8 @@ namespace gui {
 
 class SimulationSetup {
  public:
+  SimulationSetup() {};
+  ~SimulationSetup() = default;
   // list of elements
   // list of actions
 };

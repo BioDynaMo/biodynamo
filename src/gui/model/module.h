@@ -17,7 +17,6 @@
 #ifndef GUI_MODULE_H_
 #define GUI_MODULE_H_
 
-#include "gui/model/model_element.h"
 #include "biodynamo.h"
 
 namespace gui {
@@ -45,7 +44,7 @@ class Module {
   std::string            fName;
   bdm::GrowDivide        fElement;
   
-  ClassDef(Module,1)
+  ClassDefNV(Module,1)
 };
 
 } // namespace gui

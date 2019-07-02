@@ -32,6 +32,7 @@
 #include <TRint.h>
 #include <TStyle.h>
 #include <TVirtualX.h>
+#include <TMethodArg.h>
 
 #include "gui/view/about.h"
 #include "gui/view/button_model.h"
@@ -487,6 +488,18 @@ void ModelCreator::CreateNewElement(int type) {
   fClient->NeedRedraw(fProjectListTree.get());
 }
 
+void ExtractArgs(TMethod* method) {
+  TList* args = method->GetListOfMethodArgs();
+  TObjLink* lnk = args->FirstLink();
+    while (lnk) {
+      TMethodArg* obj = (TMethodArg*)lnk->GetObject();
+      std::cout << "\tMethod arg full type: " << obj->GetFullTypeName() << '\n';
+      std::cout << "\tMethod arg type: " << obj->GetTypeName() << '\n';
+      std::cout << "\tMethod arg name: " << obj->GetName() << '\n';
+      lnk = lnk->Next();
+    }
+}
+
 void ExtractMethod(TObject* obj) {
   std::string clName(obj->ClassName());
   if(clName.compare("TMethod") == 0) {
@@ -495,14 +508,14 @@ void ExtractMethod(TObject* obj) {
     if(methodName.find("Set") != std::string::npos) {
       std::string methodSignature(method->GetSignature());
       std::cout << "Setter found:" << methodName << methodSignature << '\n';
+      ExtractArgs(method);
+      methodName.replace(0, 3, "Get");
+      std::cout << "Getter should be:" << methodName << '\n';
     }
-      
   }
-
 }
 
 void PrintList(auto&& t, Bool_t useIterator=kFALSE) {
-
   std::cout << "ClassName:" << t->ClassName() << '\n';
   if(!useIterator) {
     TObjLink* lnk = t->FirstLink();
@@ -521,7 +534,6 @@ void PrintList(auto&& t, Bool_t useIterator=kFALSE) {
       obj = it->Next();
     }
   }
-
 }
 
 void ViewMembers() {
@@ -544,7 +556,7 @@ void ViewMembers() {
   std::cout << "\nPublic Data Members:\n";
   PrintList(cl->GetListOfAllPublicDataMembers(), kTRUE);
 
-
+  //std::cout << "Cell Adherence: " << cellPtr->GetAdherence() << '\n';
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -147,11 +147,11 @@ class TreeManager {
     std::string modelName(model.GetName());
     CreateModelTree(modelName);
 
-    for(auto i : model.GetSimulationEntities()) {
-      CreateTopLevelElement(M_ENTITY_CELL, i);
-    }
-    for(auto i : model.GetModules()) {
-      CreateTopLevelElement(M_MODULE_GROWTH, i);
+    std::map<std::string, int> elementsMap = model.GetModelElements();
+    std::map<std::string, int>::iterator it;
+
+    for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
+      CreateTopLevelElement(it->second, it->first);
     }
   }
 

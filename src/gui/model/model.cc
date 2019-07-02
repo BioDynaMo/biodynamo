@@ -38,23 +38,13 @@ const char* Model::GetName() {
   return fModelName.c_str();
 }
 
-Int_t Model::GetElementCount() {
-  return fEntities.size() + fModules.size();
-}
-
 void Model::PrintData() {
   std::cout << "\tName: " << GetName() << '\n';
-  Size_t elemCount = fEntities.size();
-  std::cout << "\tNumber of elements (simulation entities): " << elemCount << '\n';
+  Size_t elemCount = fModelElements.size();
+  std::cout << "\tNumber of elements : " << elemCount << '\n';
   for(Int_t j = 0; j < elemCount; j++) {
-    std::cout << "\tSimulation Entity #" << j + 1 << '\n';
-    fEntities[j].PrintData();
-  }
-  elemCount = fModules.size();
-  std::cout << "\tNumber of elements (modules): " << elemCount << '\n';
-  for(Int_t j = 0; j < elemCount; j++) {
-    std::cout << "\tModule #" << j + 1 << '\n';
-    fModules[j].PrintData();
+    std::cout << "\tElement #" << j + 1 << '\n';
+    fModelElements[j].PrintData();
   }
 }
 
@@ -62,21 +52,22 @@ void Model::UpdateModel(std::string elementName, ModelElement& element) {}
 
 void Model::InitializeElement(ModelElement* parent, const char* name,
                               int type) {
+  ModelElement elem;
   if (type == gui::M_ENTITY_CELL) {
-    SimulationEntity elem;
-    elem.SetName(name);
     if (parent == nullptr) { // top-level element
-      Log::Info("Initializing cell...");
-      fEntities.push_back(elem);
+      Log::Info("Initializing top-level cell...");
     }
   } else if(type == gui::M_MODULE_GROWTH) {
-    Module module;
-    module.SetName(name);
     if (parent == nullptr) { // top-level element
-      Log::Info("Initializing module...");
-      fModules.push_back(module);
+      Log::Info("Initializing top-level module...");
     }
+  } else {
+    Log::Warning("Creating element of type `", type, "` not yet supported");
+    return;
   }
+  elem.SetElementType(type);
+  elem.SetName(name);
+  fModelElements.push_back(elem);
 }
 
 Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
@@ -99,20 +90,13 @@ Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
   return kTRUE;
 }
 
-std::vector<std::string> Model::GetSimulationEntities() {
-  std::vector<std::string> names;
-  for(auto i : fEntities) {
-    names.push_back(std::string(i.GetName()));
+std::map<std::string, int> Model::GetModelElements() {
+  std::map<std::string, int> elementsMap;
+  for(auto i : fModelElements) {
+    std::pair<std::string,int>(i.GetName(), i.GetType());
+    elementsMap.insert(std::pair<std::string,int>(i.GetName(), i.GetType()));
   }
-  return names;
-}
-
-std::vector<std::string> Model::GetModules() {
-  std::vector<std::string> names;
-  for(auto i : fModules) {
-    names.push_back(std::string(i.GetName()));
-  }
-  return names;
+  return elementsMap;
 }
 
 ModelElement* Model::FindElement(const char* elementName) {

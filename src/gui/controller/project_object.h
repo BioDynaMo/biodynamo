@@ -95,7 +95,7 @@ class ProjectObject{
 
   void SetProjectName(const char* name);
 
-  ClassDef(ProjectObject, 1)
+  ClassDefNV(ProjectObject, 1)
 
  private:
   /// Project Setting variables to be saved and loaded

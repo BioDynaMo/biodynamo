@@ -17,7 +17,6 @@
 #ifndef GUI_SIMULATION_ENTITY_H_
 #define GUI_SIMULATION_ENTITY_H_
 
-#include "gui/model/model_element.h"
 #include "biodynamo.h"
 
 namespace gui {
@@ -45,7 +44,7 @@ class SimulationEntity {
   std::string        fName;
   bdm::Cell          fElement;
 
-  ClassDef(SimulationEntity,1)
+  ClassDefNV(SimulationEntity,1)
 };
 
 }  // namespace gui

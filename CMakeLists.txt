@@ -171,8 +171,8 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 fix_rootcling_omp_issue()
 
 # build libbiodynamo
-file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
-file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
+file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/core/*.h" "${CMAKE_SOURCE_DIR}/src/neuroscience/*.h" )
+file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/core/*.cc" "${CMAKE_SOURCE_DIR}/src/neuroscience/*.cc")
 file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 build_libbiodynamo(biodynamo
                    SOURCES ${LIB_SOURCES}

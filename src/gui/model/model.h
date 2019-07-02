@@ -57,21 +57,18 @@ class Model {
   void          IsElementNameAvailable();
   Bool_t        CreateElement(const char* parent, const char* name, int type);
 
-  std::vector<std::string> GetSimulationEntities();
-  std::vector<std::string> GetModules();
+  std::map<std::string, int> GetModelElements();
  
  private:
   std::string   fModelName;
 
-  std::vector<SimulationEntity> fEntities;
-  std::vector<Module>           fModules;
+  std::vector<ModelElement>     fModelElements;
   
   std::string   GenerateCode();
   void          InitializeElement(ModelElement* parent, const char* name, int type);
   ModelElement* FindElement(const char* elementName);
-  Int_t         GetElementCount();
 
-  ClassDef(Model,1)
+  ClassDefNV(Model,1)
 };
 
 }  // namespace gui

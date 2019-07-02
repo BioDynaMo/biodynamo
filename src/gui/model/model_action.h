@@ -21,7 +21,10 @@
 
 namespace gui {
 
-class ModelAction : public ModelElement {
+class ModelAction {
+ public:
+  ModelAction() {};
+  ~ModelAction() = default;
     // will need to be abstract
      // input
      // outputs

@@ -21,7 +21,10 @@
 
 namespace gui {
 
-class Formula : public ModelAction {
+class Formula {
+ public:
+  Formula() {};
+   ~Formula() = default;
   // dimensions
   // which type of function
 };

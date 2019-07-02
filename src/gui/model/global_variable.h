@@ -21,7 +21,10 @@
 
 namespace gui {
 
-class GlobalVariable : public ModelElement {
+class GlobalVariable {
+ public:
+  GlobalVariable() {};
+  ~GlobalVariable() = default;
 
 };
 
