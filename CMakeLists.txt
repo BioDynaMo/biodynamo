@@ -19,6 +19,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_CMAKE_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/")
 
 # Include some cmake files with utilities
+include(external/SHA256Digests)
 include(FeatureSummary)
 include(utils)
 

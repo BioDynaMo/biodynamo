@@ -44,7 +44,7 @@ else
   git config --system user.name "Test User"
   git config --system user.email user@test.com
   # hide the fact that this is running on travis so DetectOs detects "osx"
-  unset TRAVIS
+  #unset TRAVIS
   # don't unset TRAVIS_OS_NAME, because it is needed by the ReuqireSudo workaround
   test/installation-test.sh
 fi

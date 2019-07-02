@@ -6,7 +6,7 @@ SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
 file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz
         ${ROOT_SOURCE_DIR}/root.tar.gz
-        EXPECTED_MD5 7cf4d711c3bbd297e2694f9755f44cb2
+        EXPECTED_HASH SHA256=${${DETECTED_OS}-ROOT}
         SHOW_PROGRESS)
 file(MAKE_DIRECTORY ${ROOT_SOURCE_DIR}/root)
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/root.tar.gz
