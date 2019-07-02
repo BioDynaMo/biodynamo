@@ -24,6 +24,9 @@
 
 namespace gui {
 
+std::map<std::string, std::string> ModelElement::fEntityAttributeMap;
+std::map<std::string, std::string> ModelElement::fModuleAttributeMap;
+
 void Model::CreateModel() {}
 
 void Model::SaveModel() {}

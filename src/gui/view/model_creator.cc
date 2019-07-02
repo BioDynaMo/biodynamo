@@ -417,6 +417,7 @@ void ModelCreator::LoadProject(std::string fileName) {
     Model curModel = models->at(i);
     fTreeManager->CreateModelTree(curModel);
   }
+  ChangeSelectionFrame();
 }
 
 Bool_t ModelCreator::AskForProject(Bool_t loading) {
@@ -488,77 +489,6 @@ void ModelCreator::CreateNewElement(int type) {
   fClient->NeedRedraw(fProjectListTree.get());
 }
 
-void ExtractArgs(TMethod* method) {
-  TList* args = method->GetListOfMethodArgs();
-  TObjLink* lnk = args->FirstLink();
-    while (lnk) {
-      TMethodArg* obj = (TMethodArg*)lnk->GetObject();
-      std::cout << "\tMethod arg full type: " << obj->GetFullTypeName() << '\n';
-      std::cout << "\tMethod arg type: " << obj->GetTypeName() << '\n';
-      std::cout << "\tMethod arg name: " << obj->GetName() << '\n';
-      lnk = lnk->Next();
-    }
-}
-
-void ExtractMethod(TObject* obj) {
-  std::string clName(obj->ClassName());
-  if(clName.compare("TMethod") == 0) {
-    TMethod* method = (TMethod*)obj;
-    std::string methodName(method->GetName());
-    if(methodName.find("Set") != std::string::npos) {
-      std::string methodSignature(method->GetSignature());
-      std::cout << "Setter found:" << methodName << methodSignature << '\n';
-      ExtractArgs(method);
-      methodName.replace(0, 3, "Get");
-      std::cout << "Getter should be:" << methodName << '\n';
-    }
-  }
-}
-
-void PrintList(auto&& t, Bool_t useIterator=kFALSE) {
-  std::cout << "ClassName:" << t->ClassName() << '\n';
-  if(!useIterator) {
-    TObjLink* lnk = t->FirstLink();
-    while (lnk) {
-      TObject* obj = lnk->GetObject();
-      ExtractMethod(obj);
-      //obj->Print();
-      lnk = lnk->Next();
-    }
-  } else {
-    TIterator* it = t->MakeIterator();
-    TObject* obj = it->Next();
-    while(obj) {
-      //obj->Print();
-      ExtractMethod(obj);
-      obj = it->Next();
-    }
-  }
-}
-
-void ViewMembers() {
-  std::cout << "Testing getting cell members\n";
-  std::unique_ptr<bdm::Cell> cellPtr = std::make_unique<bdm::Cell>(1.0);
-  TClass *cl = cellPtr->IsA();
-
-  std::cout << "\nData Members:\n";
-  PrintList(cl->GetListOfDataMembers());
-
-  std::cout << "\nMethods:\n";
-  PrintList(cl->GetListOfMethods());
-
-  std::cout << "\nReal Data:\n";
-  PrintList(cl->GetListOfRealData());
- 
-  std::cout << "\nPublic Methods:\n";
-  PrintList(cl->GetListOfAllPublicMethods(), kTRUE);
-
-  std::cout << "\nPublic Data Members:\n";
-  PrintList(cl->GetListOfAllPublicDataMembers(), kTRUE);
-
-  //std::cout << "Cell Adherence: " << cellPtr->GetAdherence() << '\n';
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Handle messages send to the ModelCreator object.
 
@@ -601,6 +531,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
                 new TGFileDialog(fClient->GetRoot(), this, kFDOpen, &fi);
                 if (!fi.fFilename) return kTRUE;
                 LoadProject(fi.fFilename);
+                EnableSaving();
               }
             }
               break;
@@ -687,8 +618,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
 
             case M_TOOLS_STARTBROWSER:
             {
-              ViewMembers();
-              //new TBrowser;
+              new TBrowser;
             }
               break;
 

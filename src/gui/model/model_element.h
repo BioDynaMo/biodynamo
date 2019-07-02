@@ -32,6 +32,10 @@
 #include <TSystem.h>
 #include <TSystemDirectory.h>
 #include <TVirtualX.h>
+#include <TMethod.h>
+#include <TMethodArg.h>
+#include <TMethodCall.h>
+
 #include "TObject.h"
 #include "TString.h"
 #include "gui/view/log.h"
@@ -45,10 +49,10 @@ class ModelElement {
  public:
   ModelElement() {
     if(fEntityAttributeMap.empty()) {
-      /// Populate map
+      PopulateCellMembers();
     }
     if(fModuleAttributeMap.empty()) {
-      /// Populate map
+      //PopulateModuleMembers();
     }
   }
   ~ModelElement() = default;
@@ -72,18 +76,17 @@ class ModelElement {
   }
 
   void PrintData() {
-    std::cout << "\t\tType:";
+    Log::Debug("Type:");
     switch(fType) {
       case M_ENTITY_CELL:
-        std::cout << "Cell";
+        Log::Debug("Cell");
         break;
       case M_MODULE_GROWTH:
-        std::cout << "Module";
+        Log::Debug("Module");
         break;
       default:
-        std::cout << "UNKNOWN";
+        Log::Debug("UNKNOWN");
     }
-    std::cout << '\n';
   }
 
   std::string GetName() {
@@ -95,6 +98,60 @@ class ModelElement {
   }
 
  private:
+
+  void PopulateCellMembers() {
+    Log::Info("Populating Cell attribute map");
+    std::unique_ptr<bdm::Cell> cellPtr = std::make_unique<bdm::Cell>(1.0);
+    TClass *cl = cellPtr->IsA();
+  
+    Log::Debug("Public Methods:");
+    auto t = cl->GetListOfAllPublicMethods();
+  
+    TIterator* it = t->MakeIterator();
+    TObject* obj = it->Next();
+    while(obj) {
+      std::string clName(obj->ClassName());
+      if(clName.compare("TMethod") == 0) {
+        TMethod* method = (TMethod*)obj;
+        std::string methodName(method->GetName());
+        if(methodName.find("Set") != std::string::npos) {
+          std::string methodSignature(method->GetSignature());
+          Log::Debug("Setter found:", methodName, methodSignature);
+          std::string memberName = methodName.substr(3);
+          std::string fullType = "";
+          TList* args = method->GetListOfMethodArgs();
+          if(args->GetEntries() > 1) {
+            Log::Error("Currently only supports 1 argument!!!");
+            return;
+          }
+          TObjLink* lnk = args->FirstLink();
+            while (lnk) {
+              TMethodArg* obj = (TMethodArg*)lnk->GetObject();
+              Log::Debug("Method arg full type: ", obj->GetFullTypeName());
+              fullType.assign(obj->GetFullTypeName());
+              Log::Debug("Method arg type: ", obj->GetTypeName());
+              Log::Debug("Method arg name: ", obj->GetName());
+              lnk = lnk->Next();
+            }
+          
+          methodName.replace(0, 3, "Get");
+          Log::Debug("Getter should be:", methodName);
+          Log::Debug("Inserting attribute into map -> member:`", memberName, "`, type:`", fullType, "`");
+          fEntityAttributeMap.insert(std::pair<std::string, std::string>(memberName, fullType));
+        }
+      }
+      obj = it->Next();
+    }
+  
+    /// Testing
+    Double_t retVal = -1.0;
+    TMethodCall call(cl, "GetDiameter", "");
+    call.Execute((void*)cellPtr.get(), retVal);
+    Log::Debug("Called GetDiameter returns: ", retVal);
+  }
+
+  void PopulateModuleMembers() {}
+
   std::string        fPathName;
   //ModelElement*      fParent;
 
