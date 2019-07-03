@@ -50,11 +50,6 @@ y
 Y
 EOF
 
-# reload shell and source biodynamo
-set +e +x
-source ~/.bdm/biodynamo-env.sh
-set -e -x
-
 # output compiler information
 echo ${CXX}
 ${CXX} --version || true
