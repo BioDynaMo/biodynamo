@@ -11,7 +11,7 @@ operations (e.g. `Norm()`, `Normalize()`, etc.).
 
 It is possible to perform several mathematical operations with `MathArray` instances. For instance:
 
-```c++
+```cpp
 MathArray<double, 4> a {1,2,3,4};
 MathArray<double, 3> b {1,1,1,1};
 
@@ -30,7 +30,7 @@ auto div = a/b;
 ```
 Increment and decrement operations are also defined (plus other in-place operations):
 
-```c++
+```cpp
 MathArray<double, 4> a {1,2,3,4};
 MathArray<double, 3> b {1,1,1,1};
 
@@ -47,7 +47,7 @@ a /= b;
 `MathArray` objects offer also a series of custom operations which make them
 easier to use and to manipulate.
 
-```c++
+```cpp
 MathArray<double, 4> a {1,2,3,4};
 MathArray<double, 3> b {2,2,2,2};
 

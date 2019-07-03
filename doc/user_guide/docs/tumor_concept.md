@@ -32,7 +32,7 @@ To do so, we will work only on the `Simulate` function of the `tutorial.h` file.
 First, we create a lambda function to set the simulation [parameters](parameter.md) programmatically.
 Second, we create a BioDynaMo simulation.
 
-``` C++
+```cpp
 auto set_param = [](Param* param) {
   param->bound_space_ = true;
   param->min_bound_ = 0;
@@ -47,20 +47,20 @@ Afterwards, we obtain a reference to a few important objects.
   * `Random` is a random number generator.
   * `Param` holds our simulation parameters.
 
-``` C++
+```cpp
 auto* rm = simulation.GetResourceManager();
 auto* random = simulation.GetRandom();
 auto* param = simulation.GetParam();
 ```
 
 Let's define the number of cells we want to create and allocate three variables to hold the position (x_coord, y_coord and z_coord).
-``` C++
+```cpp
 size_t nb_of_cells=2400; // number of cells in the simulation
 double x_coord, y_coord, z_coord;
 ```
 
 Then, with a simple loop from 0 to the number of cells, generate uniform distributed values for x, y and z and create a new cell object.
-``` C++
+```cpp
 for (size_t i = 0; i < nb_of_cells; ++i) {
   // our modelling will be a cell cube of 100*100*100
   // random double between 0 and 100
@@ -78,14 +78,14 @@ for (size_t i = 0; i < nb_of_cells; ++i) {
 ```
 
 We now have our structure containing all the 2400 cells! The code in charge of running our modelling is already written and will simulate it for only one step. Lets change this to simulate for 200 steps.
-``` C++
+```cpp
 simulation.GetScheduler()->Simulate(200);
 ```
 
 ### Biology module
 
 In the previous chapter, we created a great number of cells. However, those cells don’t do anything! We will here create a cancerous cell that will grow and divide when it reaches a certain diameter. For this, we will define a new biology module structure GrowthModule that will be applied to cell elements, and we will make this GrowthModule copied into the cell daughter (so the daughter will also contain an instance of the biology module GrowthModule)
-``` C++
+```cpp
 struct GrowthModule : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(GrowthModule, BaseBiologyModule, 1);
 
@@ -104,7 +104,7 @@ struct GrowthModule : public BaseBiologyModule {
 ```
 
 We are now able to add any code in the Run() method, that will be executed at each simulation step for each cell containing this GrowthModule. In our case, it will be a cellular growth, until a certain diameter is reached and then a cell division:
-``` C++
+```cpp
 if (auto* cell = dynamic_cast<Cell*>(so)) {
   if (cell->GetDiameter() < 8) {
     cell->ChangeVolume(400);
@@ -116,7 +116,7 @@ if (auto* cell = dynamic_cast<Cell*>(so)) {
 ```
 
 Of course, we need to create at least one new cell that contains our `GrowthModule` in our `Simulate` method
-``` C++
+```cpp
 Cell* cell = new Cell({20, 50, 50});
 cell->SetDiameter(6);
 cell->AddBiologyModule(new GrowthModule());
@@ -132,7 +132,7 @@ In the previous chapter we created a simulation of a great number of cell, also 
 ### Paraview
 
 [Paraview](https://www.paraview.org/) is an open source application for interactive and scientific visualisation. First of all, we need to tell BioDynaMo that we will use Paraview and so that we want the visualisation to be enable. To do that, we need to create a configuration file `bdm.toml` in the tutorial folder. Visualisation is of course not the only configuration we can do using this file. You can allow live visualisation and/or export visualisation (here every 2 simulation step) by adding in `bdm.toml`
-``` C++
+```cpp
 [visualization]
 live = false
 export = false
@@ -140,14 +140,14 @@ export_interval = 2
 ```
 
 Afterwards, we have to define which simulation objects will be considered for visualization:
-``` C++
+```cpp
 [[visualize_sim_object]]
 name = "Cell"
 ```
 
 Because those visualization parameters are not in the source code, you don’t need to compile your code again.
 We can note that instead of creating a configuration file, you can do the same by creating this lambda function and passing it to the constructor of `Simulation`
-``` C++
+```cpp
 auto set_param = [](auto* param) {
   param->live_visualization_ = true; // allows live visualisation
   param->export_visualization_ = true; // allows export of visualisation files
@@ -209,7 +209,7 @@ A good idea would be to create a coloring depending on the layer of the cell. By
 To do that, we can extend the existing `Cell` class in order to add a new data member `cell_color`.
 We will do that directly in our `tutorial.h` file by writing:
 
-``` C++
+```cpp
 // 0. Define my custom cell MyCell, which extends Cell by adding extra data
 // members: cell_color and can_divide
 class MyCell : public Cell {  // our object extends the Cell object
@@ -247,23 +247,23 @@ class MyCell : public Cell {  // our object extends the Cell object
 
 Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value `cell_color_` that we will choose and use to display different colors!  
 In order to create cells with this attribute, we need to replace all `Cell` object by `MyCell` during cells creation (inside the `Simulate()` method). For example
-``` C++
+```cpp
 // Cell* cell = new Cell({x_coord, y_coord, z_coord});
 MyCell* cell = new MyCell({x_coord, y_coord, z_coord});
 ```
 
 Now that we are creating cells of type `MyCell`, we can set the cancerous cell `cell_color_` value to 8 (so it will have a really distinct color from non cancerous cells). To do so, simply use the method SetCellColor() we created
-``` C++
+```cpp
 cell->SetCellColour(8);
 ```
 
 Do the same for the regular cells, setting the value depending on the y axis value. One possibility is to write
-``` C++
+```cpp
 cell->SetCellColour((int)(y_coord / param->max_bound_ * 6)); // will vary from 0 to 5. so 6 different layers depending on y_coord
 ```
 
 This new simulation is now functional, however before running it, we need to tell BioDynaMo to communicate all `cell_color_` values. Do do that, we will modify the configuration file `bdm.toml` by modifying the `visualize_sim_object`
-``` C++
+```cpp
 [[visualize_sim_object]]
 name = "MyCell"
 additional_data_members = [ "cell_color_" ]
@@ -305,7 +305,7 @@ We now have all we want to visualize our modeling in the best conditions, but th
 To add cell movement, we will modify the `Run()` method of our biology module `GrowthModule`, and use the function `UpdatePosition()`. To generate the direction we will again use a random a random number generator.
 We choose here to give stochastic movement only to growing cells, so we will write the movement just after the volume change
 
-``` C++
+```cpp
 auto* random = Simulation::GetActive()->GetRandom();
 // create an array of 3 random numbers between -2 and 2
 Double3 cell_movements =
@@ -318,7 +318,7 @@ Using the previous chapters, you should now be able to visualize cell movement d
 This is great, but every cancerous cell grows and divides indefinitely, and that is a bit too much.
 We will now add a mechanism to reduce the probability to divide, and assuring that a cancerous cell that didn't divide, will never divide any more.  
 To add a 0.8 probability to divide, simply write
-``` C++
+```cpp
 if (random->Uniform(0, 1) < 0.8) {
   cell->Divide();
 }
@@ -326,24 +326,24 @@ if (random->Uniform(0, 1) < 0.8) {
 
 Cells will now have only 80% chance to divide. However, it will have 80% chance to divide at every simulation step! We want that if a cell doesn't divide, it will not be able to divide any more.
 To do that, we will create a new `MyCell` boolean attribute called `can_divide_`, like we did for `cell_colour_` attribute (see chapter 3.2).
-``` C++
+```cpp
 BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
 ```
 
 and create two methods, `SetCanDivide()` and `GetCanDivide()`.
-``` C++
+```cpp
 void SetCanDivide(bool d) { can_divide_ = d; }
 bool GetCanDivide() { return can_divide_; }
 ```
 
 Then, like we did for `cell_colour_`, declare this data member as private
-``` C++
+```cpp
 bool can_divide_;
 ```
 
 In the event constructor add the following lines to set `can_divide_` to true
 in case of a `CellDivisionEvent`
-``` C++
+```cpp
 if (event.GetId() == CellDivisionEvent::kEventId) {
   // the daughter will be able to divide
   can_divide_ = true;
@@ -353,7 +353,7 @@ if (event.GetId() == CellDivisionEvent::kEventId) {
 ```
 
 Now that we got a new attribute `can_divide_`, we need to change the `Run()` method to prevent cells that failed the 80% test to divide again.
-``` C++
+```cpp
 if (cell->GetCanDivide() && random->Uniform(0, 1) < 0.8) {
   cell->Divide();
 } else {

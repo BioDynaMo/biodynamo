@@ -1,6 +1,6 @@
-# Welcome to BioDynaMo
+# Welcome to BioDynaMo 
 
-## What is BioDynaMo?
+## What is BioDynaMo? 
 
 BioDynaMo is a platform through which life scientists
 can easily create, run, and visualise three-dimensional
@@ -11,9 +11,9 @@ complexity, making it possible to tackle challenging scientific
 research questions.
 
 
-## Important Notes
+## Important Notes 
 
-### Version
+### Version 
 
 This guide corresponds to the latest version of BioDynaMo. Please make sure that
 your installation has the exact same version string as indicated at the top of the
@@ -25,7 +25,7 @@ Execute `biodynamo -v` to check which version is installed on your system.
 The version string will look like: `v0.1.0-84-g4ed0045`. This is how you can interpret
 it: `vMAJOR.MINOR.PATCH-ADDITIONAL_COMMITS-gCOMMIT_ID`
 
-### Unstable API
+### Unstable API 
 
 BioDynaMo is in an early development stage. Therefore, our API changes quite
 rapidly as we learn new requirements from our users. In case your simulation

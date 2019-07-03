@@ -11,9 +11,15 @@ There are three ways to set the value of a parameter:
 2.  Command line argument
 3.  Assignment in the source code.
 
-!!! Note
-    Higher index takes precedence.  E.g. If you define the `backup_file` in the TOML file and the
-    command line arguments, the command line version will be used.
+<br>
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+      <h4><b>Note<b><h4>
+      <p>Higher index takes precedence.  E.g. If you define the <code>backup_file</code> in the TOML file and the
+    command line parameter, the command line version will be used.
+    </p>
+    </div>
+</a>
 
 The documentation of each parameter contains a description of the
 parameter, its default value and how to set it in the TOML file ([example](https://biodynamo.github.io/api/structbdm_1_1Param.html#a3cc70d57ed2965f5551e03b36a4a7219))

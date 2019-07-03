@@ -1,3 +1,5 @@
+#Substance Initialization
+
 You might want to initialize the concentration of one or more of the substances
 in your simulation. In this tutorial we shal take a look on how to do so.
 
@@ -11,14 +13,14 @@ Go into the `test/integration` directory and open the source file
 We start the code of by listing the s we will use in our simulation in an enum
 data structure. In this example we just create one substance.
 
-``` C++
+```cpp
 enum Substances { kSubstance };
 ```
 
 #### 2. Specify the space dimensions
 We bound our space to keep things simple.
 
-```C++
+```cpp
 Param::bound_space_ = true;
 Param::min_bound_ = 0;
 Param::max_bound_ = 250;
@@ -28,7 +30,7 @@ Param::max_bound_ = 250;
 
 We create one cell with diameter 10, at a random location
 
-``` C++
+```cpp
 auto construct = [](const Double3& position) {
   Cell* cell = new Cell(position);
   cell->SetDiameter(10);
@@ -43,7 +45,7 @@ We define the diffusion parameters of the substance(s) in our simulation. We
 choose a diffusion coefficient of 0.5, a decay constant 0f 0.1 and a resolution
 of 1.
 
-```C++
+```cpp
 ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 1);
 ```
 
@@ -52,7 +54,7 @@ Now comes the most important part of the tutorial: initializing our substance(s)
 concentration values throught the space. We will use the function
 `ModelInitializer::InitializeSubstance` for this purpose.
 
-```C++
+```cpp
 ModelInitializer::InitializeSubstance(kSubstance, "Substance", GaussianBand(120, 5, Axis::kXAxis));
 ```
 
@@ -75,7 +77,7 @@ available in BioDynaMo, and you can create your own.
 Let's take a look at an existing substance initializer.
 
 #### Option 1: Functors
-```C++
+```cpp
 struct GaussianBand {
   double mean_;
   double sigma_;
@@ -113,7 +115,7 @@ But you might want to just keep it short and simple; in which case lambdas are
 nice to use. We can accomplish exactly the same result as the above example with
 the following lambda:
 
-```C+++
+```cpp
 auto gaussian_band = [](double x, double y, double z) {
   return ROOT::Math::normal_pdf(x, 5, 120);
 };

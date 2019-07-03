@@ -71,7 +71,7 @@ OpenGL ES profile extensions:
 
 https://stackoverflow.com/questions/42438619/run-chromium-inside-container-libgl-error
 
-```
+```bash
 # for intel cards
 docker run --device=/dev/dri:/dev/dri ...
 ```

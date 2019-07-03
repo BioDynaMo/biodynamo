@@ -1,3 +1,4 @@
+#Soma CLustering Example
 Let's take a look at a more realistic example called soma clustering. In this
 example, we create two types of cells. Each type of cell secretes a specific substance,
 and moves along the gradient of its corresponding substance. This will form clusters
@@ -7,7 +8,7 @@ of cells that are of the same type.
 
 Soma clustering is one of many installed demos. It can be copied to a target directory:
 
-``` sh
+```bash
 biodynamo demo soma_clustering .
 ```
 
@@ -20,7 +21,7 @@ We can note the following things from its content:
 
 In `src/my_cell.h` we can find the following code:
 
-``` C++
+```cpp
 class MyCell : public Cell {
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
 
@@ -44,7 +45,7 @@ a type to a cell.
 In `src/soma_clustering_biology_modules.h` we can find the listing of the two substances
 that are used in this simulation:
 
-``` C++
+```cpp
 enum Substances { kSubstance_0, kSubstance_1 };
 ```
 
@@ -82,7 +83,7 @@ that are secreted.
 Run the following commands to build and run the simulation (do not forget to
 `biodynamo source` if you haven't already in your terminal):
 
-``` sh
+```bash
 biodynamo build
 biodynamo run
 ```
@@ -96,7 +97,7 @@ Click on the `cells_data_` entry in the Pipeline Browser. From "Filters", select
 "Search" (or do Ctrl + Space). Search for the "Glyph" filter, Apply it, and set
 the following properties:
 
-``` Python
+```Python
 Glyph Type 		= 'Sphere'
 Scalars 		  = 'Diameters'
 Scale Mode 		= 'Scalar'

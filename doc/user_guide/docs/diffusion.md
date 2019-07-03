@@ -1,3 +1,5 @@
+#Diffusion
+
 One of BioDynaMo's built-in biological processes is extracellular diffusion.
 It is the process of extracellular substances diffusing through space. The constants
 that govern the diffusion process can be set by the user. Let's go through an
@@ -8,7 +10,7 @@ example where diffusion plays a role.
 `diffusion` is one of many installed demos in BioDynaMo. It can be copied out
 with `biodynamo demo`.
 
-```sh
+```bash
 biodynamo demo diffusion .
 ```
 
@@ -19,7 +21,7 @@ We can note the following things from its content:
 
 #### 1. Substance list
 
-``` C++
+```cpp
 enum Substances { kKalium };
 ```
 
@@ -38,7 +40,7 @@ behavior of the simulation objects (i.e. cells).
 Open the `src/diffusion.h` source file.
 
 First, create a BioDynaMo simulation:
-``` C++
+```cpp
 Simulation simulation(argc, argv);
 ```
 
@@ -46,7 +48,7 @@ Next up is creating the initial model of our simulation.
 Therefore, we have to create an initial set of simulation objects and set their
 attributes:
 
-``` C++
+```cpp
   auto construct = [](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
@@ -115,7 +117,7 @@ extracellular diffusion
 
 Run the following commands to build and run the simulation.
 
-``` sh
+``` bash
 biodynamo run
 ```
 

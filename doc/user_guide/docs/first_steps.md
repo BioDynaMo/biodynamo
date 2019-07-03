@@ -3,7 +3,7 @@
 Setting up a simulation and running it is done with the BioDynaMo command line
 interface (CLI). Open a new terminal and execute:
 
-``` sh
+```bash
 source <path-to-bdm-installation>/biodynamo-env.sh
 ```
 
@@ -19,7 +19,7 @@ A basic BioDynaMo workflow looks as follows:
 
 To create a new project run the following command:
 
-``` sh
+```bash
 biodynamo new <enter_name>
 ```
 
@@ -27,9 +27,14 @@ This command creates a new Git repository for you with the name specified
 in the `<enter_name>` placeholder. You will see a folder appear with the same
 name, containing some template files to get you started.
 
-!!! tip
-	If you wish to have your Github account linked to your project you can
-	append the `--github` option to the command. `biodynamo assist` command requires `--github`
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Tip<b><h4>
+    	<p>If you wish to have your Github account linked to your project you can
+	append the <code>--github</code> option to the command. <code>biodynamo assist</code> command requires <code>--github</code>
+		</p>
+    </div>
+</a>
 
 #### 2. Implement your model
 
@@ -42,7 +47,7 @@ describes your model in this folder.
 
 Building the simulation and running it can be done with the command:
 
-``` sh
+```bash
 biodynamo run
 ```
 
@@ -54,13 +59,13 @@ You will need to fix them before the simulation can actually run.
 
 There are some demos in the installation. They can be listed with the command:
 
-```sh
+```bash
 biodynamo demo
 ```
 
 Each of these demos can be copied out to a directory and executed with two `biodynamo` commands:
 
-```sh
+```bash
 biodynamo demo <name> [target]
 cd <destination>  # as printed out by the previous command
 biodynamo run
@@ -68,7 +73,7 @@ biodynamo run
 
 For example, to run the demo `cell_division`, we can do:
 
-```sh
+```bash
 biodynamo demo cell_division /tmp
 cd /tmp/cell_division
 biodynamo run
@@ -80,7 +85,7 @@ It can happen that you encounter an error or issue that you cannot solve on your
 Or you might be convinced that there is a bug in BioDynaMo.
 For such occasions we have provided you with BioDynaMo assistance:
 
-``` sh
+```bash
 biodynamo assist
 ```
 

@@ -27,6 +27,11 @@ By default we assume that your GPU is only CUDA-compatible. If you want to let B
 ```Python
 use_opencl = true
 ```
-
-!!!note
-	If you have multiple GPUs on your system you can select which BioDynaMo uses by setting the following flag: `preferred_gpu = <value>`, where `<value>` is the index of the GPU in the list of all GPUs.
+<br>
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Note<b><h4>
+    	<p>If you have multiple GPUs on your system you can select which BioDynaMo uses by setting the following flag: <code>preferred_gpu = &#60;value&#62;</code>, where <code>&#60;value&#62;</code> is the index of the GPU in the list of all GPUs.
+		</p>
+    </div>
+</a>
