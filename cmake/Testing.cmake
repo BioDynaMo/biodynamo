@@ -76,7 +76,7 @@ function(bdm_add_test_executable TEST_TARGET)
   endif()
 
   # execute all tests with command: make test
-  add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
+  add_test(NAME ${TEST_TARGET} COMMAND ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET})
 
   # add valgrind test
   if (valgrind AND VALGRIND_FOUND AND NOT coverage
