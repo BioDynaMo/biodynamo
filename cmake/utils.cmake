@@ -120,11 +120,14 @@ function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
     IF(NOT ${MISSING_PACKAGES_SIZE} EQUAL "0")
         # We first get the required packages we are missing
         list(REMOVE_ITEM OPTIONAL_PACKAGES ${REQUIRED_PACKAGES})
-        list(REMOVE_ITEM MISSING_PACKAGES ${OPTIONAL_PACKAGES})
-
-        # Compute how many required and optional packages we are missing
-        list(LENGTH MISSING_PACKAGES MISSING_PACKAGES_SIZE)
         list(LENGTH OPTIONAL_PACKAGES OPTIONAL_PACKAGES_SIZE)
+
+        # This accounts for the fact that there may be only required
+        # packages to be installed while the optional ones are all there.
+        IF (NOT ${OPTIONAL_PACKAGES_SIZE} EQUAL "0")
+            list(REMOVE_ITEM MISSING_PACKAGES ${OPTIONAL_PACKAGES})
+        ENDIF()
+        list(LENGTH MISSING_PACKAGES MISSING_PACKAGES_SIZE)
 
         # Include the prerequisites for the given OS and initialize the setup files
         include(prerequisites/${OS}-install)

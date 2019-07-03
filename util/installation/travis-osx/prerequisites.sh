@@ -94,6 +94,14 @@ function Install {
   mkdir -p $BDM_INSTALL_DIR/biodynamo/include
   cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h $BDM_INSTALL_DIR/biodynamo/include
 
+  # Export path to make cmake find LLVM's clang (otherwise OpenMP won't work)
+  export LLVMDIR="/usr/local/opt/llvm"
+  export CC=$LLVMDIR/bin/clang
+  export CXX=$LLVMDIR/bin/clang++
+  export CXXFLAGS=-I$LLVMDIR/include
+  export LDFLAGS=-L$LLVMDIR/lib
+  export PATH=$LLVMDIR/bin:$PATH
+
   EchoSuccess "Installation of prerequisites finished successfully!"
   EchoFinishThisStep $BDM_INSTALL_DIR
   echo ""
