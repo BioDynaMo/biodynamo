@@ -88,6 +88,12 @@ function Install {
 
   InstallPackages
 
+  # misc
+  # copy the omp.h file to our CMAKE_PREFIX_PATH
+  OMP_V=`/usr/local/opt/llvm/bin/llvm-config --version`
+  mkdir -p $BDM_INSTALL_DIR/biodynamo/include
+  cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h $BDM_INSTALL_DIR/biodynamo/include
+
   EchoSuccess "Installation of prerequisites finished successfully!"
   EchoFinishThisStep $BDM_INSTALL_DIR
   echo ""
