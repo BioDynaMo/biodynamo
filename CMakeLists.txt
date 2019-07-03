@@ -103,7 +103,7 @@ find_package(GLUT)
 # shell script to /usr/local/Cellar/biodynamo, which is brew's default install
 # directory), and include this directory. We cannot directly include the
 # original directory, because of header conflicts (such as stdint.h)
-find_package(OpenMP QUIET)
+find_package(OpenMP)
 if(APPLE)
   link_directories(/usr/local/opt/llvm/lib)
   set(OpenMP_C_FLAGS -fopenmp=libomp)
@@ -150,11 +150,11 @@ endif()
 if(paraview)
 
     # Check if there is Qt5 installed
-    find_package(Qt5 QUIET COMPONENTS Widgets
+    find_package(Qt5 COMPONENTS Widgets
             PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
 
     # Check the first time if ParaView exists in the system.
-    find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+    find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
             vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
             PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
 
@@ -176,8 +176,8 @@ together with Qt5.")
       include(external/ParaView)
 
       # We run again the find_package command such to find correctly the location of Qt and ParaView
-      find_package(Qt5 QUIET COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
-      find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+      find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
+      find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
               vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
 
@@ -405,7 +405,13 @@ include(Installation)
 include(CppStyleGuideChecks)
 
 # --------------------- Final Message to the user ------------------------------
-feature_summary(INCLUDE_QUIET_PACKAGES WHAT ALL)
+add_bdm_packages_properties()
+feature_summary(INCLUDE_QUIET_PACKAGES
+        DESCRIPTION "The following packages were found:"
+        WHAT PACKAGES_FOUND)
+feature_summary(INCLUDE_QUIET_PACKAGES
+        DESCRIPTION "The following packages were not found:"
+        WHAT PACKAGES_NOT_FOUND)
 
 # Generate the script to install required/optional packages
 get_cmake_property(BDM_MISSING_PACKAGES PACKAGES_NOT_FOUND)

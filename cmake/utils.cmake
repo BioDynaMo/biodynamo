@@ -309,6 +309,57 @@ function(install_inside_build)
 
 endfunction()
 
+function(add_bdm_packages_properties)
+    SET_PACKAGE_PROPERTIES(MPI PROPERTIES
+            DESCRIPTION "OpenMPI, an Open Source Message Passing Interface."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(GLUT PROPERTIES
+            DESCRIPTION "Open Source alternative to the OpenGL Utility Toolkit (GLUT) library."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(OpenMP PROPERTIES
+            DESCRIPTION "API that enables multi-platform shared memory multiprocessing programming."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(Threads PROPERTIES
+            DESCRIPTION "GNU C library POSIX threads implementation."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(Git PROPERTIES
+            DESCRIPTION "Open Source Distributed Version Control System."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(ROOT PROPERTIES
+            DESCRIPTION "CERN's Modular Scientific Software Toolkit."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(ClangTools PROPERTIES
+            DESCRIPTION "Standalone command line tools that provide developer-oriented functionalities."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(Numa PROPERTIES
+            DESCRIPTION "Simple API to the NUMA (Non Uniform Memory Access) policy supported by the Linux kernel."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(ParaView PROPERTIES
+            DESCRIPTION "Open Source, multi-platform data analysis and visualization application."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(Valgrind PROPERTIES
+            DESCRIPTION "A suite of tools for debugging and profiling."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(Doxygen PROPERTIES
+            DESCRIPTION "Tool for generating documentation from annotated C++ sources."
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(MKDocs PROPERTIES
+            DESCRIPTION "Fast, simple and downright gorgeous static site generator that's geared towards building project documentation."
+            TYPE REQUIRED
+            )
+endfunction()
+
 # Helper function to print a simple line
 function(print_line)
     MESSAGE("\n################################################################\n")
