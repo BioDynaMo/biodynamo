@@ -1,4 +1,10 @@
-# Documentation
+---
+title: "Documentation"
+meta_title: "doc"
+keywords:
+  -documentation
+sidebar: "userguide"
+---
 
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">

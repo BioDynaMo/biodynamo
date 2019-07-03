@@ -1,10 +1,18 @@
-#Soma CLustering Example
+---
+title: "Soma Clustering"
+meta_title: "soma_cluster"
+keywords:
+  -soma
+  -clustering
+sidebar: "userguide"
+---
+
 Let's take a look at a more realistic example called soma clustering. In this
 example, we create two types of cells. Each type of cell secretes a specific substance,
 and moves along the gradient of its corresponding substance. This will form clusters
 of cells that are of the same type.
 
-### Copy out the demo code
+## Copy out the demo code
 
 Soma clustering is one of many installed demos. It can be copied to a target directory:
 
@@ -12,12 +20,12 @@ Soma clustering is one of many installed demos. It can be copied to a target dir
 biodynamo demo soma_clustering .
 ```
 
-### Inspect the code
+## Inspect the code
 
 Go into the `soma_clustering` directory and open the source file `src/soma_clustering.h` in your favorite editor.
 We can note the following things from its content:
 
-#### 1. Creating a custom simulation object
+### 1. Creating a custom simulation object
 
 In `src/my_cell.h` we can find the following code:
 
@@ -40,7 +48,7 @@ We create a new type of cell called "MyCell" that extends the default Cell.
 It contains a new data member called `cell_type_` that makes it possible to assign
 a type to a cell.
 
-#### 2. Define substances and biology modules
+### 2. Define substances and biology modules
 
 In `src/soma_clustering_biology_modules.h` we can find the listing of the two substances
 that are used in this simulation:
@@ -51,7 +59,7 @@ enum Substances { kSubstance_0, kSubstance_1 };
 
 We can also find the biology modules that were used in the Diffusion exercise.
 
-### Configure the simulation
+## Configure the simulation
 
 Create a `bdm.toml` file in the `diffusion` directory, and create the following
 configuration file:
@@ -78,7 +86,7 @@ simulation after it has finished. Furthermore, we enable the output of the diame
 and the cell type of our simulation objects (named "MyCell"), and the two substances
 that are secreted.
 
-### Build and run the simulation
+## Build and run the simulation
 
 Run the following commands to build and run the simulation (do not forget to
 `biodynamo source` if you haven't already in your terminal):
@@ -88,7 +96,7 @@ biodynamo build
 biodynamo run
 ```
 
-### Visualize the simulation
+## Visualize the simulation
 
 Open ParaView and navigate to the `diffusion` directory. Open the `cells_data_*`
 and `Kalium_*` files as Group (see the Visualization exercise as a reference).

@@ -1,4 +1,10 @@
-# Welcome to BioDynaMo 
+---
+title: "Introduction"
+meta_title: "intro"
+keywords:
+  -introduction
+sidebar: "userguide"
+---
 
 ## What is BioDynaMo? 
 

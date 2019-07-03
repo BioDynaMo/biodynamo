@@ -1,5 +1,12 @@
-# MathArray
- 
+---
+title: "Math Array"
+meta_title: "math_array"
+keywords:
+  -math
+  -array
+sidebar: "userguide"
+---
+
 ## Description
  
 `MathArray<T,N>` is an array-like structure which provides a similar interface to the

@@ -1,4 +1,11 @@
-# Tumor concept
+---
+title: "Tumor Concept"
+meta_title: "tumor_concept"
+keywords:
+  -tumor
+  -concept
+sidebar: "userguide"
+---
 
 Written by Jean de Montigny  
 

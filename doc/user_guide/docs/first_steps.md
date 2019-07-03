@@ -1,4 +1,10 @@
-# First Steps
+---
+title: "First Steps"
+meta_title: "first_steps"
+keywords:
+  -tutorial
+sidebar: "userguide"
+---
 
 Setting up a simulation and running it is done with the BioDynaMo command line
 interface (CLI). Open a new terminal and execute:
@@ -15,7 +21,7 @@ terminal!
 
 A basic BioDynaMo workflow looks as follows:
 
-#### 1. Create a new project
+### 1. Create a new project
 
 To create a new project run the following command:
 
@@ -36,14 +42,14 @@ name, containing some template files to get you started.
     </div>
 </a>
 
-#### 2. Implement your model
+### 2. Implement your model
 
 The provided template files in your newly created folder can be used as a
 starting point for your simulation. The `src` directory contains the files with
 the source code that defines the simulation. You can edit and add the code that
 describes your model in this folder.
 
-#### 3. Run the simulation
+### 3. Run the simulation
 
 Building the simulation and running it can be done with the command:
 

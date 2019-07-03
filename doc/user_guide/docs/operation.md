@@ -1,4 +1,10 @@
-# Operation
+---
+title: "Operation"
+meta_title: "operate"
+keywords:
+  -operation
+sidebar: "userguide"
+---
 
 Operations are functions that are executed for each simulation object.
 To execute a function for *specific* simulation objects have a look at

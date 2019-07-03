@@ -1,4 +1,10 @@
-#Visualization
+---
+title: "Visualization"
+meta_title: "viz"
+keywords:
+  -visualization
+sidebar: "userguide"
+---
 
 Enabling visualization is very easy. BioDynaMo can be configured through its own
 configuration file: `bdm.toml`. Visualization is just one of the many configuration

@@ -1,4 +1,10 @@
-# Changelog
+---
+title: "Changelog"
+meta_title: "change_log"
+keywords:
+  -changelog
+sidebar: "userguide"
+---
 
 ## 11.09.2019 [`0719cd6`](https://github.com/BioDynaMo/biodynamo/commit/0719cd6bafd100439336de71bee55ee2c506e9cf)
 

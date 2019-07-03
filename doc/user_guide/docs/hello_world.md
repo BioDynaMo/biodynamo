@@ -1,11 +1,18 @@
-#Hello World
+---
+title: "Hello World"
+meta_title: "hello_world"
+keywords:
+  -hello world
+sidebar: "userguide"
+---
+
 The most basic BioDynaMo simulation (i.e. our Hello World program) is a
 static single cell. It is the default model that comes with the installation of
 BioDynaMo. In this section we shall go over the three simple steps of running
 this simple simulation.
 
 
-### Step 1: Create your simulation
+## Step 1: Create your simulation
 
 Run the following command to create a new project called "hello_world":
 
@@ -13,7 +20,7 @@ Run the following command to create a new project called "hello_world":
 biodynamo new hello_world
 ```
 
-### Step 2: Build your simulation
+## Step 2: Build your simulation
 
 Go into the newly created directory `hello_world` with:
 
@@ -27,7 +34,7 @@ And build the project files with:
 biodynamo build
 ```
 
-### Step 3: Run your simulation
+## Step 3: Run your simulation
 
 ```bash
 biodynamo run
@@ -36,7 +43,7 @@ biodynamo run
 You should see "Simulation completed succesfully" as the output.
 
 
-### Extra: Cell division
+## Extra: Cell division
 
 Let's make the simulation more interesting by adding a biological behavior to the
 cell: cell division. Open the `src/hello_world.h` and add the following line to

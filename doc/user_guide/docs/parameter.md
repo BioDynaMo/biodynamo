@@ -1,4 +1,10 @@
-# Parameter
+---
+title: "Parameter"
+meta_title: "param"
+keywords:
+  -parameter
+sidebar: "userguide"
+---
 
 Parameters are used to tailor BioDynaMo to your specific simulation.
 

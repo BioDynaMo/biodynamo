@@ -1,4 +1,10 @@
-# Event
+---
+title: "Event"
+meta_title: "eve"
+keywords:
+  -event
+sidebar: "userguide"
+---
 
 If a new simulation object (e.g. Cell) is created during a simulation we denote
 it as an Event.

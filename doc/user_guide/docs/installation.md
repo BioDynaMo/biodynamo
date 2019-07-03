@@ -1,4 +1,11 @@
-# Installation
+---
+title: "Installation"
+meta_title: "install"
+toc
+sidebar: "userguide"
+---
+
+<!--# Installation-->
 
 To install BioDynaMo for the first time execute the following commands.
 The installation will also install all required packages including ParaView, ROOT and Qt5.

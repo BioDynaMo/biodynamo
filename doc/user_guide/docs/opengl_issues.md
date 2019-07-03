@@ -1,4 +1,11 @@
-# OpenGL issues
+---
+title: "OpenGL Issues"
+meta_title: "opengl_issues"
+keywords:
+  -opengl
+  -issues
+sidebar: "userguide"
+---
 
 Turn on debugging output and run simulation again
 

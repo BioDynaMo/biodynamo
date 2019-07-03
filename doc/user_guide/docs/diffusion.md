@@ -1,4 +1,10 @@
-#Diffusion
+---
+title: "Diffusion"
+meta_title: "diff"
+keywords:
+  -diffusion
+sidebar: "userguide"
+---
 
 One of BioDynaMo's built-in biological processes is extracellular diffusion.
 It is the process of extracellular substances diffusing through space. The constants
