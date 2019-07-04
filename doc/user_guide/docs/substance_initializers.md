@@ -1,5 +1,5 @@
 ---
-title: "Initialization"
+title: "Substance Initialization"
 meta_title: "init"
 keywords:
   -initialization
