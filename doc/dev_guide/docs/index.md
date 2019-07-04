@@ -24,4 +24,4 @@ The target audience for this document is anyone who wants to build, contribute o
 
 ## Feedback
 
-This guide is an evolving resource. If you have difficulties in some steps and feel that parts could be described better or any other kind of comment please reach out to `lukas.johannes.breitwieser _at_ cern.ch`.  Thank you for your feedback!
+This guide is an evolving resource. If you have difficulties in some steps and feel that parts could be described better or any other kind of comment please reach out to `lukas.johannes.breitwieser@cern.ch`.  Thank you for your feedback!

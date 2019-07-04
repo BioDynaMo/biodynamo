@@ -9,7 +9,7 @@ sidebar: "userguide"
 
 Turn on debugging output and run simulation again
 
-```
+```bash
 export LIBGL_DEBUG=verbose
 ./simulation
 ```

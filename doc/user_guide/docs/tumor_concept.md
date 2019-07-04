@@ -22,7 +22,7 @@ This Tutorial in designed for user with limited knowledge of C++ language and wi
 
 ### Installation
 
-You can access the installation page by clicking [here](https://biodynamo.github.io/user/installation/).
+You can access the installation page by clicking [here](/biodynamo/doc/user_guide/docs/installation/).
 
 ### Structure creation
 
@@ -36,7 +36,7 @@ The structure built in the previous chapter only creates a single cell. In this 
 ### Creating cells
 
 To do so, we will work only on the `Simulate` function of the `tutorial.h` file.
-First, we create a lambda function to set the simulation [parameters](parameter.md) programmatically.
+First, we create a lambda function to set the simulation [parameters](/biodynamo/doc/user_guide/docs/parameter/) programmatically.
 Second, we create a BioDynaMo simulation.
 
 ```cpp
@@ -134,7 +134,7 @@ Run running it using `biodynamo run`. This code is now able to create and simula
 
 ## Visualisation using Paraview
 
-In the previous chapter we created a simulation of a great number of cell, also containing dividing cancerous cells, but we were not able to visualize anything, yet! In this chapter, we will set up visualization using Paraview (included in the BioDynaMo package). Dedicated page about visualization can be accessed [here](visualization.md)
+In the previous chapter we created a simulation of a great number of cell, also containing dividing cancerous cells, but we were not able to visualize anything, yet! In this chapter, we will set up visualization using Paraview (included in the BioDynaMo package). Dedicated page about visualization can be accessed [here](/biodynamo/doc/user_guide/docs/visualization/)
 
 ### Paraview
 
@@ -172,7 +172,7 @@ We will first have a look at export visualization then the live visualization. I
 
 #### Export Visualisation (recommended)
 
-In the configuration file (bdm.toml), turn the export parameter to true then run your modelling. You’ll notice the creation of several new files with the following file extensions `*.pvsm, *.pvtu, *.vtu, *pvti, *.vti` in the folder output/tutorial. Open ParaView and load the generated state file as described in [Section Visualization](visualization.md#export-visualization-files) (file -> load state)
+In the configuration file (bdm.toml), turn the export parameter to true then run your modelling. You’ll notice the creation of several new files with the following file extensions `*.pvsm, *.pvtu, *.vtu, *pvti, *.vti` in the folder output/tutorial. Open ParaView and load the generated state file as described in [Section Visualization](/biodynamo/doc/user_guide/docs/visualization/#export-visualization-files) (file -> load state)
 
 A major advantage of export visualisation, in addition of not impacting the simulation time, is that you can visualise your modelling freely in time. using the arrows in the top menu, you can choose respectively to go back to the beginning of the simulation, go one step back, run normally, go one step further or go to the end of the simulation. You also can see witch step you are currently visualising (remember that this step number is the number of your modelling step divided by the export\_interval you choose in your configuration file).
 

@@ -17,36 +17,36 @@ The shown commands assume that `biodynamo/build` is the current directory.
 If you follow these steps it will make life of the code reviewer a lot easier!
 Consequently, it will ensure that your code is accepted sooner :)
 
-### 1. Get familiar with our coding convention
+#### 1. Get familiar with our coding convention
 
 Carefully read the [C++ style guide](https://google.github.io/styleguide/cppguide.html)
 and our page about [Code Quality](code_quality)
 
-### 2. Clone the repository
+#### 2. Clone the repository
 
 ``` bash
 git clone https://github.com/BioDynaMo/biodynamo.git
 ```
 
-### 3. Checkout the `master` branch
+#### 3. Checkout the `master` branch
 
 ``` bash
 git checkout master
 ```
 
-### 4. Get latest version of `master`
+#### 4. Get latest version of `master`
 
 ``` bash
 git pull origin master
 ```
 
-### 5. Create the feature branch
+#### 5. Create the feature branch
 
 ``` bash
 git checkout -b my-feature-branch
 ```
 
-### 6. Make your changes and write tests
+#### 6. Make your changes and write tests
 
 You can make intermediate commits without performing all subsequent steps.
 However, for your final submission these steps are essential.
@@ -54,14 +54,14 @@ However, for your final submission these steps are essential.
 Also for intermediate commit messages: have a look at
 [how to write good commit messages](code_quality/#git-commit-message)!
 
-### 7. Compile and run tests
+#### 7. Compile and run tests
 
 ``` bash
 make && make check
 ```
 Please make sure that there are no compiler warnings
 
-### 8. Code coverage
+#### 8. Code coverage
 
 Check if code is sufficiently covered by tests.
 ``` bash
@@ -70,11 +70,11 @@ make coverage-build
 chromium-browser coverage/coverage/index.html
 ```
 
-### 9. Performance
+#### 9. Performance
 
 Check if code changes affected performance
 
-### 10. Documentation
+#### 10. Documentation
 
 Write documentation and check result in browser
 ``` bash
@@ -105,7 +105,7 @@ which needs to be fixed.
 Point GetSAHSplitPoint();
 ```
 
-### 11. Perform final checks on your machine
+#### 11. Perform final checks on your machine
 
 ``` bash
 make check-submission
@@ -132,7 +132,7 @@ Please verify that:
 * [ ] code is sufficiently covered by test cases
 * [ ] performance did not degrade due to the code changes
 
-### 12. Commit
+#### 12. Commit
 
 Once `make check-submission` does not report any issues, the final commit can be done.
 Have a look at [how to write good commit messages](https://github.com/BioDynaMo/biodynamo/wiki/BioDynaMo-Developers-Guide)!
@@ -141,22 +141,22 @@ git add -i
 git commit
 ```
 
-### 13. Create pull request
+#### 13. Create pull request
 
 Please create a [pull request](https://help.github.com/articles/creating-a-pull-request/)
 
-### 14. Verify if Travis-CI builds are OK
+#### 14. Verify if Travis-CI builds are OK
 
 Open the Travis-CI build for Linux and OSX and go through the checklist from point 11 for each of them.
 Unlike compilation and test suite execution, problems caused by formatting, code style and documentation will not fail the build. However, they need to be fixed!
 
-### 15. If everything is OK contact one of the code reviewers on Slack
+#### 15. If everything is OK contact one of the code reviewers on Slack
 
-### 16. Discuss suggested changes with the code reviewer
+#### 16. Discuss suggested changes with the code reviewer
 
 If code changes are necessary, go back to step 6
 
-### 17. Congratulations, your code has been merged into the `master` branch
+#### 17. Congratulations, your code has been merged into the `master` branch
 
 Many thanks for your contribution, rigor and patience!
 
