@@ -5,10 +5,10 @@ matrix:
     # Default build on linux
     - os: linux
       compiler: gcc
-      dist: trusty
+      dist: xenial
       sudo: required
       group: edge
-      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/default-build.sh"
+      env: SCRIPT="util/travis-ci/default-build.sh"
     # Default build on osx
     - os: osx
       compiler: clang
@@ -48,6 +48,7 @@ script:
 
 services:
   - docker
+  - xvfb
 
 notifications:
   slack: cernopenlab:2MzX9lwS6W9nU47MuY1qSmk9
