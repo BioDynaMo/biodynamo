@@ -14,20 +14,6 @@ git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
 ./install.sh
 ```
-<<<<<<< f519d7fb9d2af4997af4e99811bed30a0ec5dc5a
-
-!!! important
-
-    1. After the installation you need to restart your terminal.
-      In every new terminal execute `source <path-to-bdm-installation>/bin/thisbdm.sh`
-      to use BioDynaMo!
-
-    2. It is also possible to use the library without running `make install`. You will just need to source `thisbdm.sh` from the build
-       directory: `source <path-to-bdm-build-dir>/bin/thisbdm.sh`
-
-    3. BioDynaMo uses a customized version of ParaView.
-	     Therefore, you should not install ParaView separately.
-=======
 <br>
 
 <a class="sbox" target="_blank" rel="noopener">
@@ -44,7 +30,6 @@ cd biodynamo
 		</p>
     </div>
 </a>
->>>>>>> Updated .md for Gatsby format
 
 ## Update Installation
 

@@ -1,4 +1,8 @@
-# Contributing Code
+---
+title: "Contribute"
+meta_title: "contribute"
+sidebar: "devguide"
+---
 
 ## From Cloning BioDynaMo to Your First Contribution
 
@@ -17,25 +21,25 @@ and our page about [Code Quality](code_quality)
 
 ### 2. Clone the repository
 
-``` sh
+``` bash
 git clone https://github.com/BioDynaMo/biodynamo.git
 ```
 
 ### 3. Checkout the `master` branch
 
-``` sh
+``` bash
 git checkout master
 ```
 
 ### 4. Get latest version of `master`
 
-``` sh
+``` bash
 git pull origin master
 ```
 
 ### 5. Create the feature branch
 
-``` sh
+``` bash
 git checkout -b my-feature-branch
 ```
 
@@ -49,7 +53,7 @@ Also for intermediate commit messages: have a look at
 
 ### 7. Compile and run tests
 
-``` sh
+``` bash
 make && make check
 ```
 Please make sure that there are no compiler warnings
@@ -57,7 +61,7 @@ Please make sure that there are no compiler warnings
 ### 8. Code coverage
 
 Check if code is sufficiently covered by tests.
-``` sh
+``` bash
 make coverage-build
 # open it in browser - e.g.
 chromium-browser coverage/coverage/index.html
@@ -70,7 +74,7 @@ Check if code changes affected performance
 ### 10. Documentation
 
 Write documentation and check result in browser
-``` sh
+``` bash
 make doc
 chromium-browser doc/html/index.html
 ```
@@ -100,7 +104,7 @@ Point GetSAHSplitPoint();
 
 ### 11. Perform final checks on your machine
 
-``` sh
+``` bash
 make check-submission
 ```
 This command will execute all tests, check code formatting, styleguide rules, build the documentation and coverage report ([more info](contribute/#make-check-submission-explained)).
@@ -129,7 +133,7 @@ Please verify that:
 
 Once `make check-submission` does not report any issues, the final commit can be done.
 Have a look at [how to write good commit messages](https://github.com/BioDynaMo/biodynamo/wiki/BioDynaMo-Developers-Guide)!
-``` sh
+``` bash
 git add -i
 git commit
 ```

@@ -1,4 +1,9 @@
-# Code Quality
+---
+title: "Code Quality"
+meta_title: "code_quality"
+sidebar: "devguide"
+---
+
 At BioDynaMo we are aiming to develop a high quality software product. The following practices help us to achieve this goal:
 
 * C++ Style Guide

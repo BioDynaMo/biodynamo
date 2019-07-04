@@ -1,11 +1,28 @@
-# Building BioDynaMo
+---
+title: "Building Biodynamo"
+meta_title: "build_biodynamo"
+keywords:
+  -build
+sidebar: "devguide"
+---
 
 To build BioDynaMo from source execute the following commands:
 
+<<<<<<< f1d2a5b5bf1414791859359dcf674c300cdcae12
 !!! info
     If you are a user please follow the installation instructions in our [user guide](https://biodynamo.github.io/user/)
 
 ## Ubuntu 16.04, 18.04
+=======
+<a class="sbox" href= "/biodynamo/doc/user_guide/docs/" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Info<b><h4>
+    	<p>If you are a user please follow the installation instructions in our <font color="blue"><u>user guide</u></font>.
+		</p>
+    </div>
+</a>
+<br>
+>>>>>>> Added front matter to .md files for proper formatting of gatsby based website.
 
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
@@ -84,10 +101,13 @@ make install
 
 
 ## CMake Build Options
+
 Our CMake build script uses a few options to influence the build process. They can be set as follows:
+
 ``` bash
 cmake -Doption=value ..
 ```
+
 The value for binary options is `on` or `off`.
 If you change the value of these switches, you might have to delete `CMakeCache.txt` beforehand.
 
@@ -110,6 +130,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `CMAKE_BUILD_TYPE`  | specify the build type. Possible values are `Debug, Release, RelWithDebInfo, MinSizeRel` |
 
 ## Build Targets
+
 | Target          | Description  |
 | --------------- | ------------ |
 | `test`  | executes all tests |
@@ -122,6 +143,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `coverage-build` | same as `make coverage`, but builds it in a separate directory (`build/coverage`). Since building the coverage report requires different compiler flags, building it in a separate directory keeps the current build directory in good order. |
 
 ### C++ Code Style Related Build Targets
+
 The following targets are only available if `clang-format`, `clang-tidy` and `git` are installed.
 
 Build targets indicated with `*` always come in three different flavors.
@@ -208,6 +230,18 @@ If you want to download the files from remote LFS again execute:
 unset BDM_LOCAL_LFS
 ```
 
+<<<<<<< f1d2a5b5bf1414791859359dcf674c300cdcae12
 !!! warning
     At the moment there is no check if the local copy is in sync with
+=======
+<br>
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Warning<b><h4>
+    	<p>At the moment there is no check if the local copy is in synch with
+>>>>>>> Added front matter to .md files for proper formatting of gatsby based website.
     remote. You have to ensure that yourself!
+		</p>
+    </div>
+</a>
+
