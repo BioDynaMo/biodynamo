@@ -1,6 +1,8 @@
 ---
 title: "Installation"
 meta_title: "install"
+keywords:
+  -install
 sidebar: "userguide"
 ---
 

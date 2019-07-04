@@ -1,6 +1,9 @@
 ---
 title: "Contribute"
 meta_title: "contribute"
+keywords:
+  -contribute
+  -give back
 sidebar: "devguide"
 ---
 

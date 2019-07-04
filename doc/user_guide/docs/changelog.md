@@ -136,7 +136,7 @@ This change requires a different signature of `BDM_SIM_OBJECT_HEADER`.
   2. Add the base class name as a second parameter.
 
 In other words, copy the parameters from `BDM_SIM_OBJECT` to the beginning of `BDM_SIM_OBJECT_HEADER`
-``` c++
+```cpp
 class Cell : public SimulationObject {
   BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, ...)
 ```

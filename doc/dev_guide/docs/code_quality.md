@@ -1,6 +1,9 @@
 ---
 title: "Code Quality"
 meta_title: "code_quality"
+keywords:
+  -quality
+  -code
 sidebar: "devguide"
 ---
 

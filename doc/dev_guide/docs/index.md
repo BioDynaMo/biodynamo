@@ -3,6 +3,8 @@ title: "Welcome to BioDynaMo!"
 meta_title: "intro_dev"
 keywords:
   -introduction
+  -intro
+  -start
 sidebar: "devguide"
 ---
 
