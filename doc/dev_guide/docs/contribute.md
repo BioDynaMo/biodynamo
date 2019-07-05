@@ -63,7 +63,7 @@ You can make intermediate commits without performing all subsequent steps.
 However, for your final submission these steps are essential.
 
 Also for intermediate commit messages: have a look at
-[how to write good commit messages](code_quality/#git-commit-message)!
+[how to write good commit messages](/biodynamo/doc/dev_guide/docs/code_quality/#git-commit-message)!
 
 #### 7. Compile and run tests
 
@@ -121,7 +121,7 @@ Point GetSAHSplitPoint();
 ``` bash
 make check-submission
 ```
-This command will execute all tests, check code formatting, styleguide rules, build the documentation and coverage report ([more info](contribute/#make-check-submission-explained)).
+This command will execute all tests, check code formatting, styleguide rules, build the documentation and coverage report ([more info](/biodynamo/doc/dev_guide/docs/contribute/#make-check-submission-explained)).
 
 False positives from `clang-tidy` can be silenced by adding `// NOLINT` at the end of the line.
 Disabling `clang-format` for a certain part can be done by encapsulating it with the following comments:
@@ -146,7 +146,7 @@ Please verify that:
 #### 12. Commit
 
 Once `make check-submission` does not report any issues, the final commit can be done.
-Have a look at [how to write good commit messages](https://github.com/BioDynaMo/biodynamo/wiki/BioDynaMo-Developers-Guide)!
+Have a look at [how to write good commit messages](/biodynamo/doc/dev_guide/docs/code_quality/#git-commit-message)!
 ``` bash
 git add -i
 git commit

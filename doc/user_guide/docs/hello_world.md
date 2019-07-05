@@ -63,7 +63,7 @@ Let's make the simulation more interesting by adding a biological behavior to th
 cell: cell division. Open the `src/hello_world.h` and add the following line to
 the simulate function after the cell is created.
 
-```C++
+```cpp
 // Add the biological behavior to the cell.
 cell.AddBiologyModule(new GrowDivide(32, 3000, {gAllEventIds}));
 ```
