@@ -1,9 +1,20 @@
 ---
 title: "Diffusion"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/diffusion/"
 meta_title: "diff"
+meta_description: "This is the diffusion page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/diffusion/"
+    title: "Diffusion"
+    description: "This is the diffusion page."
+sidebar: "userguide"
 keywords:
   -diffusion
-sidebar: "userguide"
+  -process
+  -condition
 ---
 
 One of BioDynaMo's built-in biological processes is extracellular diffusion.

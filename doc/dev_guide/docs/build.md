@@ -1,9 +1,20 @@
 ---
 title: "Building Biodynamo"
+date: "2019-01-01"
+path: "/biodynamo/doc/dev_guide/docs/build/"
 meta_title: "build_biodynamo"
+meta_description: "This is the how to build page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/dev_guide/docs/build/"
+    title: "Building Biodynamo"
+    description: "This is the how to build page."
+sidebar: "devguide"
 keywords:
   -build
-sidebar: "devguide"
+  -start
+  -create
 ---
 
 To build BioDynaMo from source execute the following commands:

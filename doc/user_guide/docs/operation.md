@@ -1,9 +1,20 @@
 ---
 title: "Operation"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/operation/"
 meta_title: "operate"
+meta_description: "This is the operation page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/operation/"
+    title: "Operation"
+    description: "This is the operation page."
+sidebar: "userguide"
 keywords:
   -operation
-sidebar: "userguide"
+  -code
+  -example
 ---
 
 Operations are functions that are executed for each simulation object.

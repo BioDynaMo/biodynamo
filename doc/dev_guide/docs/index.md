@@ -1,11 +1,21 @@
 ---
 title: "Welcome to BioDynaMo!"
+date: "2019-01-01"
+path: "/biodynamo/doc/dev_guide/docs/"
 meta_title: "intro_dev"
+meta_description: "This is the introduction page for the dev guide."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/dev_guide/docs/"
+    title: "Welcome to BioDynaMo!"
+    description: "This is the introduction page for the dev guide."
+sidebar: "devguide"
 keywords:
   -introduction
   -intro
   -start
-sidebar: "devguide"
+  -info
 ---
 
 A very warm welcome to BioDynaMo and thank you for your interest! This guide will help you get started. It introduces you to the project and our software development approach. It was inspired by the [OpenMRS Developers Guide](https://flossmanuals.net/openmrs-developers-guide/) as well as  conventions and best practices used in the software industry.

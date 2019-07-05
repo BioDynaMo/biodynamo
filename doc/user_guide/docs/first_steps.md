@@ -1,9 +1,18 @@
 ---
 title: "First Steps"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/first_steps/"
 meta_title: "first_steps"
+meta_description: "This is the first steps page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/first_steps/"
+    title: "First Steps"
+    description: "This is the first steps page."
+sidebar: "userguide"
 keywords:
   -tutorial
-sidebar: "userguide"
 ---
 
 Setting up a simulation and running it is done with the BioDynaMo command line

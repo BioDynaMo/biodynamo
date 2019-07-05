@@ -1,10 +1,25 @@
 ---
 title: "Tumor Concept"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/tumor_concept/"
 meta_title: "tumor_concept"
+meta_description: "This is the tumor concept page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/tumor_concept/"
+    title: "Tumor Concept"
+    description: "This is the tumor concept page."
+sidebar: "userguide"
 keywords:
   -tumor
   -concept
-sidebar: "userguide"
+  -example
+  -demo
+  -code
+  -biology
+  -case
+  -module
 ---
 
 Written by Jean de Montigny  

@@ -1,9 +1,18 @@
 ---
 title: "Documentation"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/documentation/"
 meta_title: "doc"
+meta_description: "This is the documentation page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/documentation/"
+    title: "Documentation"
+    description: "This is the documentation page."
+sidebar: "userguide"
 keywords:
   -documentation
-sidebar: "userguide"
 ---
 
 <a class="sbox" target="_blank" rel="noopener">

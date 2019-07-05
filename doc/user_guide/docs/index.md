@@ -1,9 +1,22 @@
 ---
 title: "Introduction"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/"
 meta_title: "intro"
+meta_description: "This is the introduction page for the user guide."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/"
+    title: "Introduction"
+    description: "This is the introduction page for the user guide."
+sidebar: "userguide"
 keywords:
   -introduction
-sidebar: "userguide"
+  -intro 
+  -start
+  -begin
+  -beginning
 ---
 
 ## What is BioDynaMo? 

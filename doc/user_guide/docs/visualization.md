@@ -1,9 +1,25 @@
 ---
 title: "Visualization"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/visualization/"
 meta_title: "viz"
+meta_description: "This is the visualization page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/visualization/"
+    title: "Visualization"
+    description: "This is the visualization page."
+sidebar: "userguide"
 keywords:
   -visualization
-sidebar: "userguide"
+  -view
+  -look
+  -code
+  -paraview
+  -file
+  -simulation
+  -help
 ---
 
 Enabling visualization is very easy. BioDynaMo can be configured through its own

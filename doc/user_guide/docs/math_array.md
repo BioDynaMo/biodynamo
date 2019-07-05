@@ -1,10 +1,22 @@
 ---
 title: "Math Array"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/math_array/"
 meta_title: "math_array"
+meta_description: "This is the math array page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/math_array/"
+    title: "Math Array"
+    description: "This is the math array page."
+sidebar: "userguide"
 keywords:
   -math
   -array
-sidebar: "userguide"
+  -complex
+  -operations
+  -description
 ---
 
 ## Description

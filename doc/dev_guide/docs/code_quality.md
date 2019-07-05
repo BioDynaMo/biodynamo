@@ -1,10 +1,19 @@
 ---
 title: "Code Quality"
+date: "2019-01-01"
+path: "/biodynamo/doc/dev_guide/docs/code_quality/"
 meta_title: "code_quality"
+meta_description: "This is the code quality page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/dev_guide/docs/code_quality/"
+    title: "Code Quality"
+    description: "This is the code quality page."
+sidebar: "devguide"
 keywords:
   -quality
   -code
-sidebar: "devguide"
 ---
 
 At BioDynaMo we are aiming to develop a high quality software product. The following practices help us to achieve this goal:

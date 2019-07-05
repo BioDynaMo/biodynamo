@@ -1,12 +1,20 @@
 ---
 title: "Installation"
-meta_title: "install"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/installation/"
+meta_title: "install_guide"
+meta_description: "This is the installation page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/installation/"
+    title: "Installation"
+    description: "This is the installation page."
+sidebar: "userguide"
 keywords:
   -install
-sidebar: "userguide"
+  -start
 ---
-
-<!--# Installation-->
 
 To install BioDynaMo for the first time execute the following commands.
 The installation will also install all required packages including ParaView, ROOT and Qt5.

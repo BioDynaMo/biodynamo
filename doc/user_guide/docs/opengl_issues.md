@@ -1,10 +1,21 @@
 ---
 title: "OpenGL Issues"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/opengl_issues/"
 meta_title: "opengl_issues"
+meta_description: "This is the openGL issues page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/opengl_issues/"
+    title: "OpenGL Issues"
+    description: "This is the openGL issues page."
+sidebar: "userguide"
 keywords:
   -opengl
   -issues
-sidebar: "userguide"
+  -problem
+  -code
 ---
 
 Turn on debugging output and run simulation again

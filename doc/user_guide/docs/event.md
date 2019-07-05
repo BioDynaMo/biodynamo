@@ -1,9 +1,18 @@
 ---
 title: "Event"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/event/"
 meta_title: "eve"
+meta_description: "This is the event page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/event/"
+    title: "Event"
+    description: "This is the event page."
+sidebar: "userguide"
 keywords:
   -event
-sidebar: "userguide"
 ---
 
 If a new simulation object (e.g. Cell) is created during a simulation we denote

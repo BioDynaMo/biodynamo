@@ -1,9 +1,21 @@
 ---
 title: "Parameter"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/parameter/"
 meta_title: "param"
+meta_description: "This is the parameter page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/parameter/"
+    title: "Parameter"
+    description: "This is the parameter page."
+sidebar: "userguide"
 keywords:
   -parameter
-sidebar: "userguide"
+  -configuration
+  -code
+  -setup
 ---
 
 Parameters are used to tailor BioDynaMo to your specific simulation.

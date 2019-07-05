@@ -1,10 +1,23 @@
 ---
 title: "Soma Clustering"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/soma_clustering/"
 meta_title: "soma_cluster"
+meta_description: "This is the soma clustering page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/soma_clustering/"
+    title: "Soma Clustering"
+    description: "This is the soma clustering page."
+sidebar: "userguide"
 keywords:
   -soma
   -clustering
-sidebar: "userguide"
+  -biology
+  -code
+  -example
+  -demo
 ---
 
 Let's take a look at a more realistic example called soma clustering. In this

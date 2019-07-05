@@ -1,10 +1,21 @@
 ---
 title: "Contribute"
+date: "2019-01-01"
+path: "/biodynamo/doc/dev_guide/docs/contribute/"
 meta_title: "contribute"
+meta_description: "This is the contribution page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/dev_guide/docs/contribution/"
+    title: "Contribute"
+    description: "This is the contribution page."
+sidebar: "devguide"
 keywords:
   -contribute
   -give back
-sidebar: "devguide"
+  -add
+  -supplement
 ---
 
 ## From Cloning BioDynaMo to Your First Contribution

@@ -1,9 +1,24 @@
 ---
 title: "Substance Initialization"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/substance_initializers/"
 meta_title: "init"
+meta_description: "This is the substance initialization page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/substance_initializers/"
+    title: "Substance Initialization"
+    description: "This is the substance initialization page."
+sidebar: "userguide"
 keywords:
   -initialization
-sidebar: "userguide"
+  -substance
+  -biology
+  -demo
+  -tutorial
+  -example
+  -code
 ---
 
 You might want to initialize the concentration of one or more of the substances

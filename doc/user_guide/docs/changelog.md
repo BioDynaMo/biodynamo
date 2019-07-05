@@ -1,9 +1,22 @@
 ---
 title: "Changelog"
+date: "2019-01-01"
+path: "/biodynamo/doc/user_guide/docs/changelog/"
 meta_title: "change_log"
+meta_description: "This is the changelog page."
+toc: true
+image: ""
+next:
+    url:  "/biodynamo/doc/user_guide/docs/changelog/"
+    title: "Changelog"
+    description: "This is the changelog page."
+sidebar: "userguide"
 keywords:
   -changelog
-sidebar: "userguide"
+  -change
+  -log
+  -track
+  -tracking
 ---
 
 ## 11.09.2019 [`0719cd6`](https://github.com/BioDynaMo/biodynamo/commit/0719cd6bafd100439336de71bee55ee2c506e9cf)
