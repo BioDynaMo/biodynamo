@@ -45,10 +45,16 @@ python3 --version || true
 # https://github.com/travis-ci/travis-ci/issues/6069
 git remote set-branches --add origin master
 
-$BDM_PROJECT_DIR/install.sh << EOF
+# Install all the dependencies
+$BDM_PROJECT_DIR/prerequisites.sh ${TRAVIS_OS_NAME} all << EOF
 y
-Y
 EOF
+
+# Build BioDynaMo
+mkdir build
+cd build
+cmake ../
+make -j 4
 
 # output compiler information
 echo ${CXX}
