@@ -36,35 +36,6 @@ function RequireSudo {
   fi
 }
 
-# Detects the linux flavour using `lsb_release`.
-# Returns a lower case version of `distributor-release`.
-function DetectLinuxFlavour {
-  DISTRIBUTOR=$(lsb_release -si)
-  RELEASE=$(lsb_release -sr)
-  OS="${DISTRIBUTOR}-${RELEASE}"
-  echo $OS | awk '{print tolower($0)}'
-}
-
-# Function that detects the OS
-# Returns linux flavour or osx.
-# This function prints an error and exits if is not linux or macos.
-function DetectOs {
-  # detect operating system
-  if [ $TRAVIS ] && [ "$TRAVIS_OS_NAME" = "osx" ]; then
-    echo "travis-osx"
-    # Travis linux always runs inside a container -> use DetectLinuxFlavour
-  elif [ `uname` = "Linux" ]; then
-    # linux
-    DetectLinuxFlavour
-  elif [ `uname` = "Darwin" ]; then
-    # macOS
-    echo osx
-  else
-    echo "ERROR: Operating system `uname` is not supported."
-    exit 1
-  fi
-}
-
 # This function checks if the given operating system is supported. If not, it
 # prints an error message, a list of supported systems; and exits the script.
 # Arguments:
@@ -88,6 +59,21 @@ function CheckOsSupported {
     ls -d */ | grep -v common | sed 's|/||g'
     popd > /dev/null
     exit 1;
+  fi
+}
+
+# Check if the type of install procedure is known
+function CheckTypeInstallSupported {
+  if [[ $# -ne 1 ]]; then
+    echo "ERROR in CheckTypeInstallSupported: Wrong number of arguments"
+    exit 1
+  fi
+
+  if [ ! $1 == "all" ] && [ ! $1 == "required" ]; then
+    echo "ERROR: This type of install operation (${1}) is not supported"
+    echo "Supported install types are are: "
+    echo "- all: install required and optional packages;"
+    echo "- required: install only the required packages."
   fi
 }
 
@@ -117,45 +103,6 @@ function DownloadTarAndExtract {
     tar -xzf $TMP_DEST --strip=$STRIP_COMP -C $DEST
     rm $TMP_DEST
   fi
-}
-
-# Returns a biodynamo lfs download link.
-# If the environment variable BDM_LOCAL_LFS is set to a local copy of LFS,
-# this function returns a local path to the requested file.
-# Arguments:
-#   $1 directory
-#   $2 file
-function BdmLfsLink {
-  if [[ $# -ne 2 ]]; then
-    echo "ERROR in BdmLfsLink: Wrong number of arguments"
-    exit 1
-  fi
-  if [ ! $BDM_LOCAL_LFS ]; then
-    echo "http://cern.ch/biodynamo-lfs/third-party/${1}/${2}"
-  else
-    echo "${BDM_LOCAL_LFS}/${1}/${2}"
-  fi
-}
-
-# Download a tar file from CERNBox and extracts the contents into the
-# destination folder.
-# Arguments:
-#   $1 CERNBox directory e.g. ubuntu-16.04
-#   $2 File e.g. root.tar.gz
-#   $3 destination directory in which the archive will be extracted
-function DownloadTarFromCBAndExtract {
-  if [[ $# -ne 3 ]]; then
-    echo "ERROR in DownloadTarFromCBAndExtract: Wrong number of arguments"
-    exit 1
-  fi
-
-  local DIR=$1
-  local FILE=$2
-  local DEST=$3
-
-  URL=$(BdmLfsLink $DIR $FILE)
-
-  DownloadTarAndExtract $URL $DEST
 }
 
 # Returns the number of CPU cores including hyperthreads
@@ -218,24 +165,22 @@ function GetAbsolutePath {
 #   $2 filename of the script that should be executed
 #   $@ arguments that should be passed to the script
 function CallOSSpecificScript {
-  if [[ $# -lt 2 ]]; then
+  if [[ $# -lt 4 ]]; then
     echo "ERROR in CallOSSpecificScript: Wrong number of arguments"
     exit 1
   fi
 
-  local BDM_PROJECT_DIR=$1
-  shift
-  local BDM_SCRIPT_FILE=$1
-  shift
-
+  local BDM_PROJECT_DIR="$1"
+  local BDM_SCRIPT_FILE="$2"
+  local BDM_LOCAL_OS="$3"
+  local BDM_INSTALL_TYPE="$4"
   local BDM_INSTALL_SRC=$BDM_PROJECT_DIR/util/installation
 
   # detect os
-  local BDM_OS=$(DetectOs)
-  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS
+  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_LOCAL_OS
 
   # check if this system is supported
-  CheckOsSupported $BDM_INSTALL_SRC $BDM_OS
+  CheckOsSupported $BDM_INSTALL_SRC $BDM_LOCAL_OS
 
   # check if script exists for the detected OS
   local BDM_SCRIPTPATH=$BDM_INSTALL_OS_SRC/$BDM_SCRIPT_FILE
@@ -244,7 +189,7 @@ function CallOSSpecificScript {
     exit 1
   fi
 
-  $BDM_SCRIPTPATH $@
+  $BDM_SCRIPTPATH $BDM_INSTALL_TYPE
 }
 
 # Return the bashrc file based on the current operating system
