@@ -58,7 +58,8 @@ function InstallCmake {
 function InstallPackages {
   # libXt-devel libXext-devel are required to build the paraview plugin
   # on ubuntu those packages are installed together with freeglut3-dev
-  INSTALL_PACKAGES="devtoolset-7-gcc* make cmake openmpi3-devel"
+  INSTALL_PACKAGES="python python-pip rh-python36 python-devel  \
+    devtoolset-7-gcc* make cmake openmpi3-devel"
 
   EchoInfo "This script uses yum to install centos-release-scl, epel-release, and:"
   for p in $INSTALL_PACKAGES; do

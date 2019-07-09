@@ -98,8 +98,8 @@ add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are
 # -------------------- find packages ------------------------------------------
 
 # Check if Python is present
-find_package(PythonInterp)
-find_package(PythonLibs)
+find_package(PythonInterp 3.5)
+find_package(PythonLibs 3.5)
 find_package(pip)
 
 # Check if OpenMPI is present

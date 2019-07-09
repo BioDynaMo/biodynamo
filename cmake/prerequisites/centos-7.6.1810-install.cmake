@@ -10,8 +10,8 @@ SET(MPI_install_command "sudo yum -y install openmpi3-devel && . /etc/profile.d/
 SET(MKDocs_install_command "pip install --user mkdocs mkdocs-material")
 SET(Valgrind_install_command "sudo yum -y install devtoolset-7-gcc* && source scl enable devtoolset-7 bash")
 SET(GLUT_install_command "sudo yum -y install freeglut-devel")
-SET(PythonInterp_install_command "sudo yum -y install python python-pip rh-python36 && source scl enable rh-python36 bash")
+SET(PythonInterp_install_command "yum -y install https://centos7.iuscommunity.org/ius-release.rpm && yum -y install python35u python35u-devel")
 SET(PythonLibs_install_command "sudo yum -y install python-devel")
 SET(Coverage_install_command "sudo yum -y install lcov gcov gcovr")
-SET(pip_install_command "sudo yum -y install python-pip")
+SET(pip_install_command "yum -y install https://centos7.iuscommunity.org/ius-release.rpm && yum -y install python35u-pip")
 
