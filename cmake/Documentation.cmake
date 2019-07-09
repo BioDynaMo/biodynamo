@@ -24,7 +24,7 @@ function(GenerateAPIDocTarget)
   # create output directory
   file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc")
 
-  set(doxyfile_in "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Doxyfile.in")
+  set(doxyfile_in "${CMAKE_CURRENT_SOURCE_DIR}/doc/api/Doxyfile.in")
   set(doxyfile "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile")
 
   configure_file(${doxyfile_in} ${doxyfile} @ONLY)
