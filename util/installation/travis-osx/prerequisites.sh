@@ -32,7 +32,7 @@ BDM_OS=travis-osx
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 function InstallPackages {
-  BREW_INSTALL_PACKAGES="llvm python@2"
+  BREW_INSTALL_PACKAGES="llvm"
   BREW_UPGRADE_PACKAGES="cmake python"
 
   EchoInfo "This script uses brew to install:"
@@ -73,8 +73,6 @@ function InstallPackages {
     brew install $BREW_INSTALL_PACKAGES || true
     #  for mkdocs
     export PATH=$PATH:~/Library/Python/2.7/bin
-    pip2 install --user mkdocs
-    pip2 install --user mkdocs-material
   fi
 }
 
