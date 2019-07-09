@@ -237,8 +237,8 @@ function(install_inside_build)
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_BINDIR}
             ${CMAKE_BINARY_DIR}/version/version.py
-            #${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-config
-            #${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
+            ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-config
+            ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
             )
 
     # Copy some cmake files

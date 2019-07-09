@@ -48,9 +48,6 @@ export PYTHONPATH=${ParaView_LIB_DIR}/python2.7/site-packages
 export PV_PLUGIN_PATH=${BDM_INSTALL_DIR}/biodynamo/lib/pv_plugin
 export PATH=${BDM_INSTALL_DIR}/third_party/paraview/bin:${PATH}
 export LD_LIBRARY_PATH=${ParaView_LIB_DIR}:${LD_LIBRARY_PATH}
-#   OSPRAY
-export OSPRAY_DIR=${BDM_INSTALL_DIR}/third_party/paraview/lib
-export CMAKE_PREFIX_PATH=${OSPRAY_DIR}/cmake/ospray-1.6.1:$CMAKE_PREFIX_PATH
 
 # QT
 export Qt5_DIR=${BDM_INSTALL_DIR}/third_party/qt/lib/cmake/Qt5
@@ -60,9 +57,6 @@ export LD_LIBRARY_PATH=${BDM_INSTALL_DIR}/third_party/qt/lib:${LD_LIBRARY_PATH}
 # user install mkdocs
 export PATH=$PATH:~/.local/bin
 export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH
-
-# CMake
-export PATH=${BDM_INSTALL_DIR}/third_party/cmake-3.6.3/bin:${PATH}
 
 # Compiler
 if command -v g++-5 &>/dev/null; then

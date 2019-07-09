@@ -40,7 +40,7 @@ function InstallCmake {
 }
 
 function InstallPackages {
-  INSTALL_PACKAGES="gcc-5 g++-5 python python3 python-pip make freeglut3-dev"
+  INSTALL_PACKAGES="make cmake"
 
   ADD_REPOSITORY='deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
 
