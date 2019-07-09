@@ -13,4 +13,5 @@ SET(GLUT_install_command "sudo yum -y install freeglut-devel")
 SET(PythonInterp_install_command "sudo yum -y install python python-pip rh-python36 && source scl enable rh-python36 bash")
 SET(PythonLibs_install_command "sudo yum -y install python-devel")
 SET(Coverage_install_command "sudo yum -y install lcov gcov gcovr")
+SET(pip_install_command "sudo yum -y install python-pip")
 

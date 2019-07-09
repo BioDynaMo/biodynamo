@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.2.0)
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
+
+
 #---Set the locale to default C to prevent issued due to localization of commands---------------
 # This is necessary as we for example call `clang -v` and parse its output. But on a localized
 # program, the output parsing is much more error prone as certrain strings we're looking for
@@ -98,12 +100,21 @@ add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are
 # Check if Python is present
 find_package(PythonInterp)
 find_package(PythonLibs)
+find_package(pip)
 
 # Check if OpenMPI is present
 find_package(MPI)
 
-# Check if GLUT is present
+# Check if GLUT is present. If we do not have it, then we
+# disable directly paraview.
 find_package(GLUT)
+if(NOT GLUT_FOUND)
+    PRINT_WARNING()
+    MESSAGE("GLUT libraries were not found in the system. In order to use ParaView they need to be installed.
+If you want to do that automatically, please run the ./prerequisites-required.sh script.")
+    PRINT_LINE()
+    SET(paraview OFF)
+endif()
 
 # CMake cannot find LLVM's Clang OpenMP library by default (this makes
 # find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
@@ -201,7 +212,7 @@ endif()
 
 # paraview version 5.5 (MacOS) does not contain TBB
 if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
-  find_package(TBB REQUIRED)
+  find_package(TBB)
   if (TBB_FOUND)
     include_directories(${TBB_INCLUDE_DIRS})
     link_directories(${TBB_LIBRARIES})
@@ -434,7 +445,7 @@ configure_file(${CMAKE_SOURCE_DIR}/config/thisbdm.csh ${CMAKE_CURRENT_BINARY_DIR
 configure_file(${CMAKE_SOURCE_DIR}/config/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
 configure_file(${CMAKE_SOURCE_DIR}/config/bdm-config.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config @ONLY NEWLINE_STYLE UNIX)
 if(WIN32)
-    set(thisbdmbat $${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.bat)
+    set(thisbdmbat ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.bat)
     configure_file(${CMAKE_SOURCE_DIR}/config/thisbdm.bat ${thisbdmbat} @ONLY)
     add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.bat" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 endif()

@@ -133,24 +133,29 @@ function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
 
         # Include the prerequisites for the given OS and initialize the setup files
         include(prerequisites/${OS}-install)
-        file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${OS_SHEBANG}\n")
-        file(WRITE ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${OS_SHEBANG}\n")
+        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-required.sh "${OS_SHEBANG}\n")
+        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-optional.sh "${OS_SHEBANG}\n")
 
         # Populate the script with the required packages
         if (${MISSING_PACKAGES_SIZE} GREATER "0")
             FOREACH(ITEM IN LISTS MISSING_PACKAGES)
-                file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-required.sh "${${ITEM}_install_command}")
-                file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-required.sh "\n")
+                file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-required.sh "${${ITEM}_install_command}")
+                file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-required.sh "\n")
             ENDFOREACH()
         endif()
 
         # Populate the script with the optional packages (if the user wants so)
         if (${OPTIONAL_PACKAGES_SIZE} GREATER "0")
             FOREACH(ITEM IN LISTS OPTIONAL_PACKAGES)
-                file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "${${ITEM}_install_command}")
-                file(APPEND ${CMAKE_BINARY_DIR}/prerequisites-optional.sh "\n")
+                file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-optional.sh "${${ITEM}_install_command}")
+                file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-optional.sh "\n")
             ENDFOREACH()
         endif()
+
+        # Add exec permissions
+        add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-optional.sh" ${CMAKE_BINARY_DIR})
+        add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-required.sh" ${CMAKE_BINARY_DIR})
+
     endif()
 
     # Print some information to the final user
