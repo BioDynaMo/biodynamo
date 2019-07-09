@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.2.0)
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
+#---Set the locale to default C to prevent issued due to localization of commands---------------
+# This is necessary as we for example call `clang -v` and parse its output. But on a localized
+# program, the output parsing is much more error prone as certrain strings we're looking for
+# could be missing or be in a different order. To prevent those errors, let's just force all
+# output to use the default C locale which is more or less identical on all systems.
+set(ENV{LANG} C)
+
+# Project name and current version
 project(BioDynaMo)
 set(BDM_VERSION 0.1.0)
 
@@ -419,3 +427,20 @@ generate_download_prerequisites("${DETECTED_OS}" "${BDM_MISSING_PACKAGES}" "${BD
 
 # Install all the files inside the build dir
 install_inside_build()
+
+# Copy the environmental files to their correct directory
+configure_file(${CMAKE_SOURCE_DIR}/config/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
+configure_file(${CMAKE_SOURCE_DIR}/config/thisbdm.csh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh @ONLY NEWLINE_STYLE UNIX)
+configure_file(${CMAKE_SOURCE_DIR}/config/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
+configure_file(${CMAKE_SOURCE_DIR}/config/bdm-config.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config @ONLY NEWLINE_STYLE UNIX)
+if(WIN32)
+    set(thisbdmbat $${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.bat)
+    configure_file(${CMAKE_SOURCE_DIR}/config/thisbdm.bat ${thisbdmbat} @ONLY)
+    add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.bat" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+endif()
+
+# Set run permission on the environmental files
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

@@ -66,11 +66,11 @@ endfunction()
 function(detect_os)
     find_program(LSB_RELEASE_EXEC lsb_release)
     if (DETECTED_OS STREQUAL "none")
-        if (DEFINED lsb_release-NOTFOUND AND NOT APPLE AND NOT DEFINED ${BDM_OS})
+        if (DEFINED lsb_release-NOTFOUND AND NOT APPLE AND NOT DEFINED ${DETECTED_OS})
             MESSAGE(FATAL_ERROR "We were unable to detect your OS version. This usually happens because we were unable to find\
  lsb_release command. In order to fix this error you can: install lsb_release for your distribution or specify which \
- system you are using. To specify the OS you have to call again cmake by passing -DBDM_OS=<your_os> as argument. The current\
- supported OS are: ubutu-16.04, ubuntu-18.04, centos, osx.")
+ system you are using. To specify the OS you have to call again cmake by passing -DDETECTED_OS=<your_os> as argument. The current\
+ supported OS are: ubuntu-16.04, ubuntu-18.04, centos-7.6.1810, osx.")
         elseif(APPLE)
             # We check if we are using Travis (therefore the BDM_OS has a slightly different name).
             if ($ENV{TRAVIS})
@@ -90,6 +90,8 @@ function(detect_os)
             SET(BDM_OS "${LSB_RELEASE_ID_SHORT}-${LSB_RELEASE_ID_VERSION}")
             string(TOLOWER "${BDM_OS}" BDM_OS)
             SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
+            SET(DETECTED_OS_VERSION ${LSB_RELEASE_ID_VERSION} PARENT_SCOPE)
+            SET(DETECTED_OS_TYPE ${LSB_RELEASE_ID_SHORT} PARENT_SCOPE)
         endif()
     endif()
 endfunction()
@@ -229,9 +231,9 @@ function(install_inside_build)
 
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ${CMAKE_SOURCE_DIR}/util/version/version.py
-            ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-config
-            ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
+            ${CMAKE_BINARY_DIR}/version/version.py
+            #${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-config
+            #${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
             )
 
     # Copy some cmake files
@@ -260,7 +262,7 @@ function(install_inside_build)
     # Other headers
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            ${CMAKE_SOURCE_DIR}/util/version/version.h
+            ${CMAKE_BINARY_DIR}/version/version.h
             )
 
 
@@ -361,6 +363,13 @@ function(add_bdm_packages_properties)
             DESCRIPTION "Fast, simple and downright gorgeous static site generator that's geared towards building project documentation."
             TYPE REQUIRED
             )
+endfunction()
+
+function(add_permissions FILE_PATH DESTINATION)
+    file(COPY ${FILE_PATH}
+            DESTINATION ${DESTINATION}
+            FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+            GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endfunction()
 
 # Helper function to print a simple line
