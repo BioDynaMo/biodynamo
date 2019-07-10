@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 0 ]]; then
+if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
     This script installs the prerequisites of BioDynaMo, but not BioDynaMo
@@ -22,87 +22,29 @@ No Arguments"
   exit 1
 fi
 
-set -e
 
-# set parameter
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
-BDM_OS=travis-osx
+brew install libomp tbb open-mpi git \
+python python@2 llvm cmake
 
-# include util functions
-. $BDM_PROJECT_DIR/util/installation/common/util.sh
+if [ $1 == "all" ]; then
+    pip install --user mkdocs mkdocs-material
+    brew install doxygen lcov gcov gcovr
+fi
 
-function InstallPackages {
-  BREW_INSTALL_PACKAGES="llvm"
-  BREW_UPGRADE_PACKAGES="cmake python"
+# misc
+# copy the omp.h file to our CMAKE_PREFIX_PATH
+OMP_V=`/usr/local/opt/llvm/bin/llvm-config --version`
+mkdir -p $BDM_INSTALL_DIR/biodynamo/include
+cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h $BDM_INSTALL_DIR/biodynamo/include
 
-  EchoInfo "This script uses brew to install:"
-  for p in $BREW_INSTALL_PACKAGES; do
-    EchoInfo "  $p"
-  done | column
-  EchoInfo ""
-  EchoInfo "It will upgrade:"
-  for p in $BREW_UPGRADE_PACKAGES; do
-    EchoInfo "  $p"
-  done | column
-  EchoInfo ""
+# Export path to make cmake find LLVM's clang (otherwise OpenMP won't work)
+export LLVMDIR="/usr/local/opt/llvm"
+export CC=$LLVMDIR/bin/clang
+export CXX=$LLVMDIR/bin/clang++
+export CXXFLAGS=-I$LLVMDIR/include
+export LDFLAGS=-L$LLVMDIR/lib
+export PATH=$LLVMDIR/bin:$PATH
 
-  EchoInfo "It uses pip2 to install mkdocs and mkdocs-material."
-  EchoInfo ""
-  EchoInfo "Open \"util/installation/travis-osx/prerequisites.sh\" for more information."
-  EchoInfo ""
-  EchoInfo "These commands do NOT require sudo rights. If you are sure that these packages have already been installed, you can skip this step."
-  EchoInfo ""
-  EchoInfo "Do you want to perform these changes? (yes/no/skip)?"
+# for mkdocs
+export PATH=$PATH:~/Library/Python/2.7/bin
 
-  # ask user if she really wants to perform this changes
-  unset INSTALL
-  while true; do
-    read -p "" yn
-    case $yn in
-      [Yy]* ) echo "Installing packages..." ; INSTALL=true; break;;
-      [Ss]* ) echo "Skipping package installation"; break;;
-      [Nn]* ) echo "Aborting"; exit 1;;
-          * ) echo "Please answer yes, no or skip.";;
-    esac
-  done
-
-  if [ $INSTALL ]; then
-    brew update >& /dev/null
-    brew install python || true # if python is not already installed we need to install it before upgrading it
-    brew upgrade $BREW_UPGRADE_PACKAGES || true
-    brew install $BREW_INSTALL_PACKAGES || true
-    #  for mkdocs
-    export PATH=$PATH:~/Library/Python/2.7/bin
-  fi
-}
-
-function Install {
-  echo "Start installation of prerequisites..."
-
-  # determine install dir
-  export BDM_INSTALL_DIR=$(SelectInstallDir)
-  PrepareInstallDir $BDM_INSTALL_DIR
-  THIRD_PARTY_DIR=$BDM_INSTALL_DIR/third_party
-
-  InstallPackages
-
-  # misc
-  # copy the omp.h file to our CMAKE_PREFIX_PATH
-  OMP_V=`/usr/local/opt/llvm/bin/llvm-config --version`
-  mkdir -p $BDM_INSTALL_DIR/biodynamo/include
-  cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h $BDM_INSTALL_DIR/biodynamo/include
-
-  # Export path to make cmake find LLVM's clang (otherwise OpenMP won't work)
-  export LLVMDIR="/usr/local/opt/llvm"
-  export CC=$LLVMDIR/bin/clang
-  export CXX=$LLVMDIR/bin/clang++
-  export CXXFLAGS=-I$LLVMDIR/include
-  export LDFLAGS=-L$LLVMDIR/lib
-  export PATH=$LLVMDIR/bin:$PATH
-
-  EchoSuccess "Installation of prerequisites finished successfully!"
-  EchoFinishThisStep $BDM_INSTALL_DIR
-  echo ""
-}
-
-Install
