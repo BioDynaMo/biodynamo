@@ -5,7 +5,7 @@ matrix:
     # Default build on linux
     - os: linux
       compiler: gcc
-      dist: xenial
+      dist: trusty
       sudo: required
       group: edge
       env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/default-build.sh ubuntu-16.04"
@@ -19,7 +19,7 @@ matrix:
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/check-code-style.sh"
+      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/check-code-style.sh ubuntu-16.04"
     # Test development installation on ubuntu-16.04
     - os: linux
       dist: trusty

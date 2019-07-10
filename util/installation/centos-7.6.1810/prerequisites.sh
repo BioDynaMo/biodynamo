@@ -23,18 +23,6 @@ No Arguments"
   exit 1
 fi
 
-# CentOs specifics. This is done manually instead of using
-# the standard commands:
-# scl enable devtoolset-7 bash
-# scl enable rh-python36 bash
-#if versionLessThan "$(python3 --version)" 'Python 3.2.0'; then
-#  export PATH=/opt/rh/rh-python36/root/bin:/opt/rh/llvm-toolset-7/root/usr/bin/:$PATH
-#fi
-
-# Export path needed for detecting correctly g++ and gcc
-#export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
-#export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:$LD_LIBRARY_PATH
-
 sudo -v
 # add repository for clang-3.9
 sudo yum update -y
@@ -43,7 +31,8 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 
-sudo yum -y install cmake devtoolset-7-gcc* numactl-devel \
+sudo yum -y install cmake3 libXt-devel libXext-devel \
+devtoolset-7-gcc* numactl-devel \
 tbb-devel openmpi3-devel freeglut-devel \
 python35u python35u-devel python35u-pip \
 git
@@ -51,11 +40,25 @@ git
 # Install optional packages
 if [ $1 == "all" ]; then
     pip install --user mkdocs mkdocs-material
-    sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz
+    sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind
 fi
 
+# Set up cmake alias such to be able to use it
+sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
+--slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
+--slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
+--slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
+--family cmake
+
+# CentOs specifics. This is done manually instead of using
+# the standard commands:
+# scl enable devtoolset-7 bash
+# scl enable rh-python36 bash
+# Export path needed for detecting correctly g++ and gcc
+export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
+export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:$LD_LIBRARY_PATH
 
 # activate mpi
-#. /etc/profile.d/modules.sh
-#module load mpi
+. /etc/profile.d/modules.sh
+module load mpi
 

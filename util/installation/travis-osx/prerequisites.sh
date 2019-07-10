@@ -22,20 +22,23 @@ No Arguments"
   exit 1
 fi
 
-
+# Install and upgrade required packages
 brew install libomp tbb open-mpi git \
-python python@2 llvm cmake
+python python@2 llvm cmake || true
 
+brew upgrade python cmake
+
+# Install the optional packages
 if [ $1 == "all" ]; then
     pip install --user mkdocs mkdocs-material
-    brew install doxygen lcov gcov gcovr
+    brew install doxygen lcov gcov gcovr || true
 fi
 
 # misc
 # copy the omp.h file to our CMAKE_PREFIX_PATH
-OMP_V=`/usr/local/opt/llvm/bin/llvm-config --version`
-mkdir -p $BDM_INSTALL_DIR/biodynamo/include
-cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h $BDM_INSTALL_DIR/biodynamo/include
+#OMP_V=`/usr/local/opt/llvm/bin/llvm-config --version`
+#mkdir -p $BDM_INSTALL_DIR/biodynamo/include
+#cp -f /usr/local/opt/llvm/lib/clang/$OMP_V/include/omp.h $BDM_INSTALL_DIR/biodynamo/include
 
 # Export path to make cmake find LLVM's clang (otherwise OpenMP won't work)
 export LLVMDIR="/usr/local/opt/llvm"

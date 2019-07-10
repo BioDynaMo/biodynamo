@@ -54,6 +54,8 @@ $BDM_PROJECT_DIR/prerequisites.sh $1 all << EOF
 y
 EOF
 
+. $BDM_PROJECT_DIR/prerequisites.sh $1 all
+
 # Build BioDynaMo
 mkdir build
 cd build

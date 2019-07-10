@@ -13,7 +13,6 @@ set(ENV{LANG} C)
 
 # Project name and current version
 project(BioDynaMo)
-set(BDM_VERSION 0.1.0)
 
 # Directory in which BioDynaMo will be installed. It can be provided
 # by the user itself.

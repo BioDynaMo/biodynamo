@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-if [ $# -ne $1 ]; then
+if [ $# -ne 1 ]; then
   echo "Wrong number of arguments.
 Description:
   Run installation tests
@@ -31,6 +31,9 @@ source $(dirname "$BASH_SOURCE[0]")/util.inc
 cd $BDM_PROJECT_DIR
 # Currently we are inside the biodynamo project directory, mapped as volume
 # from the host
+
+# import util functions
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 # speed-up build by disabling tests and demos
 export BDM_CMAKE_FLAGS="-Dtest=off"
