@@ -8,7 +8,7 @@ matrix:
       dist: xenial
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/default-build.sh ubuntu-16.04"
+      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/default-build.sh ubuntu-16.04"
     # Default build on osx
     - os: osx
       compiler: clang

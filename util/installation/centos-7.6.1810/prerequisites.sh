@@ -41,7 +41,7 @@ sudo yum update -y
 
 # install packages
 sudo yum -y install centos-release-scl epel-release
-yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 
 sudo yum -y install cmake devtoolset-7-gcc* numactl-devel \
 tbb-devel openmpi3-devel freeglut-devel \

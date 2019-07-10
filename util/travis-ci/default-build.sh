@@ -31,9 +31,12 @@ set -e -x
 
 echo ${TRAVIS_OS_NAME}
 
+# Source some utils functions
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
+
 # start x virtual framebuffer for headless environments.
-#export DISPLAY=:99.0
-#util/xvfb-initd.sh start
+export DISPLAY=:99.0
+util/xvfb-initd.sh start
 
 # git describe does not work if last commit tag is not checked out
 git fetch --unshallow || true
@@ -54,8 +57,8 @@ EOF
 # Build BioDynaMo
 mkdir build
 cd build
-cmake ../
-make -j 4
+cmake ..
+make -j$(CPUCount)
 
 # output compiler information
 echo ${CXX}
