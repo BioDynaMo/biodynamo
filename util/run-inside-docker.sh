@@ -107,8 +107,11 @@ if [ $TRAVIS ]; then
     BDM_FORWARD_ENV="$BDM_FORWARD_ENV --env=$e"
   done
 fi
+# flattening the image somehow resets the default user specified in the
+# Dockerfile to root. Therefore, we have to add the --user option here
 sudo docker run \
   --name $BDM_CONTAINER \
+  --user testuser \
   --net=host \
   --env="DISPLAY" \
   $BDM_FORWARD_ENV \
