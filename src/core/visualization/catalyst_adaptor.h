@@ -494,7 +494,7 @@ class CatalystAdaptor {
   static void GenerateParaviewState() {
     auto* sim = Simulation::GetActive();
     std::stringstream python_cmd;
-    python_cmd << "pvpython "
+    python_cmd << "python "
                << BDM_SRC_DIR "/core/visualization/generate_pv_state.py "
                << sim->GetOutputDir() << "/" << kSimulationInfoJson;
     int ret_code = system(python_cmd.str().c_str());
