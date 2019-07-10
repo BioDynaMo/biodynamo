@@ -35,7 +35,7 @@ git fetch --unshallow || true
 git fetch --tags
 
 if [ $BDM_OS != "osx" ]; then
-  util/run-inside-docker.sh $BDM_OS util/travis-ci/docker-installation-test-wrapper.sh
+  util/run-inside-docker.sh $BDM_OS util/travis-ci/docker-installation-test-wrapper.sh $BDM_OS
 else
   if [ `uname` != "Darwin" ]; then
     echo "ERROR: Installation tests for OSX can only be done on an OSX operating system"

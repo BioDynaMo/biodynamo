@@ -65,7 +65,6 @@ echo ${CXX}
 ${CXX} --version || true
 ${CXX} -v || true
 
-cd build
 ctest -V
 
 if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then

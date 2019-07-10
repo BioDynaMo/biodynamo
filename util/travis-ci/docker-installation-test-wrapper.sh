@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 0 ]]; then
+if [[ $# -ne 1 ]]; then
   echo "ERROR: No arguments expected
   Description:
     Run installation test inside a headless docker container."
@@ -35,14 +35,14 @@ if [ "$(DetectOs)" = "centos-7.6.1810" ]; then
   export MESA_GL_VERSION_OVERRIDE=3.3
 fi
 
-test/installation-test.sh
+test/installation-test.sh $1
 RET_VAL=$?
 
 $BDM_PROJECT_DIR/util/xvfb-initd.sh stop
 
 # debug output for centos docker issue
 # sometimes script inside docker container does not terminate
-if [ "$(DetectOs)" = "centos-7.6.1810" ]; then
+if [ $1 = "centos-7.6.1810" ]; then
   ps -ef
 fi
 

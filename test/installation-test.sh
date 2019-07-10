@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-if [ $# -ne 0 ]; then
+if [ $# -ne $1 ]; then
   echo "Wrong number of arguments.
 Description:
   Run installation tests
@@ -34,10 +34,17 @@ cd $BDM_PROJECT_DIR
 
 # speed-up build by disabling tests and demos
 export BDM_CMAKE_FLAGS="-Dtest=off"
-./install.sh << EOF
-y
+./prerequisites.sh $1 all << EOF
 y
 EOF
+
+# Build BioDynaMo
+mkdir build
+cd build
+cmake ..
+make -j$(CPUCount)
+make install
+cd ..
 
 # reload shell and source biodynamo
 set +e +x
