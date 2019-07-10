@@ -13,13 +13,14 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 0 ]]; then
+if [[ $# -ne 1 ]]; then
   echo "Wrong number of arguments.
 Description:
   Run a travis default_build
 Usage:
-  default-build.sh
-No Arguments
+  default-build.sh <os-name>
+Arguments:
+  <os-name> Name of the current operative system
 "
   exit 1
 fi
@@ -46,7 +47,7 @@ python3 --version || true
 git remote set-branches --add origin master
 
 # Install all the dependencies
-$BDM_PROJECT_DIR/prerequisites.sh ${TRAVIS_OS_NAME} all << EOF
+$BDM_PROJECT_DIR/prerequisites.sh $1 all << EOF
 y
 EOF
 
