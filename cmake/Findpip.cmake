@@ -16,7 +16,7 @@
 # - pip_FOUND: if we were able to find pip's executable;
 # - pip_PROGRAM: it will keep the location of pip's executable.
 
-find_program(pip_PROGRAM NAMES pip pip3 PATH
+find_program(pip_PROGRAM NAMES pip pip3 pip3.5 PATH
         /usr/bin /usr/local/bin)
 find_package_handle_standard_args(pip DEFAULT_MSG
         pip_PROGRAM)

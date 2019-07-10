@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.2.0)
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
-
-
 #---Set the locale to default C to prevent issued due to localization of commands---------------
 # This is necessary as we for example call `clang -v` and parse its output. But on a localized
 # program, the output parsing is much more error prone as certrain strings we're looking for
@@ -12,13 +10,7 @@ cmake_minimum_required(VERSION 3.2.0)
 set(ENV{LANG} C)
 
 # Project name and current version
-project(BioDynaMo)
-
-# Directory in which BioDynaMo will be installed. It can be provided
-# by the user itself.
-if (NOT DEFINED ${BDM_INSTALL_DIR})
-    set(BDM_INSTALL_DIR $ENV{HOME}/.bdm)
-endif()
+project(BioDynaMo LANGUAGES)
 
 # Directory in which we saved all the cmake informations.
 set(ENV{BDM_CMAKE_DIR} ${CMAKE_SOURCE_DIR}/cmake)
@@ -31,6 +23,53 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmak
 include(external/SHA256Digests)
 include(FeatureSummary)
 include(utils)
+
+# Detect os type and version
+if (NOT DEFINED DETECTED_OS)
+    SET(DETECTED_OS "none")
+endif()
+detect_os()
+
+# Check the compiler and provide it automatically if it not found
+include(CheckLanguage)
+check_language(CXX)
+check_language(C)
+if(CMAKE_CXX_COMPILER)
+    # If we are on a MacOS system, we then force the compiler to
+    # be LLVM's clang. This is done because standard MacOS's g++ do not
+    # has OpenMP enabled.
+    if (APPLE)
+        UNSET(CMAKE_CXX_COMPILER CACHE)
+        UNSET(CMAKE_C_COMPILER CACHE)
+        SET(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
+        SET(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
+        include_directories(/usr/local/opt/llvm/include)
+        link_directories(/usr/local/opt/llvm/lib)
+    endif()
+    enable_language(CXX)
+else()
+    # Manually set the g++ compiler that we need for CentOS.
+    # We also set the various link directories needed
+    IF(${DETECTED_OS} MATCHES "centos.*")
+        UNSET(CMAKE_CXX_COMPILER CACHE)
+        UNSET(CMAKE_C_COMPILER CACHE)
+        SET(CMAKE_CXX_COMPILER "/opt/rh/devtoolset-7/root/usr/bin/g++")
+        SET(CMAKE_C_COMPILER "/opt/rh/devtoolset-7/root/usr/bin/gcc")
+        link_directories(/opt/rh/devtoolset-7/root/usr/lib)
+        link_directories(/opt/rh/devtoolset-7/root/usr/lib/dyninst)
+        link_directories(/opt/rh/devtoolset-7/root/usr/lib64)
+        link_directories(/opt/rh/devtoolset-7/root/usr/lib64/dyninst)
+        enable_language(CXX)
+    endif()
+endif()
+if(CMAKE_C_COMPILER)
+    enable_language(C)
+endif()
+# Directory in which BioDynaMo will be installed. It can be provided
+# by the user itself.
+if (NOT DEFINED ${BDM_INSTALL_DIR})
+    set(BDM_INSTALL_DIR $ENV{HOME}/.bdm)
+endif()
 
 # Specify some directories which will be used to structure BioDynaMo build.
 set(CMAKE_BIODYNAMO_ROOT        "${CMAKE_BINARY_DIR}/install")
@@ -82,12 +121,6 @@ if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
     add_definitions("-DLINUX")
 endif()
-
-# Detect os type and version
-if (NOT DEFINED DETECTED_OS)
-    SET(DETECTED_OS "none")
-endif()
-detect_os()
 
 # Define required packages
 SET(BDM_REQUIRED_PACKAGES OpenMP Threads Numa TBB MPI GLUT PythonInterp PythonLibs)
