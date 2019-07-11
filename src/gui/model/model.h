@@ -32,9 +32,12 @@
 #include <RQ_OBJECT.h>
 #include "TObject.h"
 #include "TString.h"
+
+#include "gui/constants.h"
 #include "gui/model/model_element.h"
 #include "gui/model/simulation_entity.h"
 #include "gui/model/module.h"
+#include "gui/view/log.h"
 
 enum SimulationState { kIDLE ,kSIMULATING, kDONE };
 
@@ -58,10 +61,10 @@ class Model {
   Bool_t        CreateElement(const char* parent, const char* name, int type);
 
   std::map<std::string, int> GetModelElements();
+  ModelElement*              GetModelElement(const char* name);
  
  private:
-  std::string   fModelName;
-
+  std::string                   fModelName;
   std::vector<ModelElement>     fModelElements;
   
   std::string   GenerateCode();

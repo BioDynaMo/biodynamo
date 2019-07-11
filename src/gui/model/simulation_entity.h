@@ -40,6 +40,10 @@ class SimulationEntity {
     return fName.c_str();
   }
 
+  bdm::Cell* GetElement() {
+    return &fElement;
+  }
+
  private:
   std::string        fName;
   bdm::Cell          fElement;

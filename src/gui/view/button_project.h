@@ -27,10 +27,8 @@
 #ifndef GUI_BUTTON_PROJECT_H
 #define GUI_BUTTON_PROJECT_H
 
-#include "TGFrame.h"
-
-
-class TGButton;
+#include <TGFrame.h>
+#include <TGButton.h>
 
 namespace gui {
 

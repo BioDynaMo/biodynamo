@@ -15,15 +15,13 @@
 // -----------------------------------------------------------------------------
 
 #include "model_frame.h"
-#include <TGButton.h>
-#include "gui/view/log.h"
 
 namespace gui {
 
 ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
     : TGCompositeFrame(p, 200, 200, kHorizontalFrame) {
   fL1 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
-  fL2 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 5, 2, 2, 2);
+  fL2 = std::make_unique<TGLayoutHints>(kLHintsExpandX | kLHintsExpandY, 5, 2, 2, 2);
   fL3 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 2, 2, 2);
 
   fV1 = std::make_unique<TGVerticalFrame>(this, 50, 100, 0);
@@ -88,11 +86,10 @@ ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
 
   AddFrame(fV1.get(), fL3.get());
 
-  fCurTab = new ModelTab(this, buttonHandler);
-
-  fModelTabs.emplace_back(fCurTab);
-
-  AddFrame(fCurTab, fL2.get());
+  ModelTabs* tabManager = new ModelTabs(this);
+  tabManager->Resize(1000, 1000);
+  AddFrame(tabManager, fL2.get());
+  fTabManagers.push_back(tabManager);
 
   fButtonHandler = buttonHandler;
 }
@@ -119,67 +116,27 @@ void ModelFrame::EnableButtons(Int_t state) {
   fBformula->SetState(buttonState);
 }
 
-ModelFrame::~ModelFrame() {
-  //delete fLentities;
-  //delete fBcell;
-  //delete fLmodules;
-  //delete fBgrowth;
-  //delete fBchemotaxis;
-  //delete fBsubstance;
-  //delete fLgeneral;
-  //delete fBvariable;
-  //delete fBfunction;
-  //delete fBformula;
-  //delete fLtitle;
-  //delete fV1;
-}
+ModelFrame::~ModelFrame() {}
 
-void ModelFrame::SwitchModelTab(ModelTab* t) {
-  HideFrame(fCurTab);
-  ShowFrame(t);
-  fCurTab = t;
-  Log::Info("Switching current tab!");
-}
-
+/// TODO: Manage multiple ModelTabs groups
+/* 
 Bool_t ModelFrame::SwitchModelTab(const char* modelName,
                                   const char* modelElement) {
-  for (ModelTab* t : fModelTabs) {
-    if (t->GetModelName().compare(modelName) == 0) {
-      if (t != fCurTab) {
-        SwitchModelTab(t);
-      }
-      if (modelElement != 0)
-        fCurTab->ShowTab(modelElement);
-      return kTRUE;
-    }
-  }
-  Log::Warning("No such modeltab: ", modelName);
   return kFALSE;
 }
+*/
 
 void ModelFrame::ShowModelElement(const char* modelName,
                                   const char* modelElement) {
-  // First Tab
-  if (fCurTab->GetModelName().empty()) {
-    Log::Info("Current Tab is empty! Setting up to first model tab.");
-    fCurTab->ShowTab(modelElement);
-    fCurTab->SetModelName(modelName);
-  } else {
-    Log::Info("Setting up subsequent tabs.");
-    if (SwitchModelTab(modelName, modelElement))
-      return;
-    /// ModelTab doesn't exist, need to create new one
-    ModelTab* t = new ModelTab(this, fButtonHandler, modelName);
-    AddFrame(t, fL2.get());
-
-    fModelTabs.emplace_back(t);
-    SwitchModelTab(t);
-    fCurTab->ShowTab(modelElement);
-  }
+  // Currently showing only for first model
+  fTabManagers[0]->SetModelName(modelName);
+  fTabManagers[0]->ShowElementTab(modelElement);
+  
   MapWindow();
   MapSubwindows();
-
-  fCurTab->Resize(10000, 10000);
+  Resize();
+  fTabManagers[0]->Resize();
+  Resize();
 }
 
 }  // namespace gui

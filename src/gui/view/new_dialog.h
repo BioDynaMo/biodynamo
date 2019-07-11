@@ -28,10 +28,16 @@
 #include <TGFileDialog.h>
 #include <TGListBox.h>
 #include <TGTab.h>
+#include <TGLabel.h>
 
 #include <TGButton.h>
 #include <TGFrame.h>
 #include <TGTextEntry.h>
+
+#include "core/util/io.h"
+#include "core/util/root.h"
+#include "gui/view/log.h"
+#include "gui/view/model_creator.h"
 
 namespace gui {
 

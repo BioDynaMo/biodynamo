@@ -75,6 +75,10 @@ class ModelElement {
     fName.assign(name);
   }
 
+  bdm::Cell* GetElement() {
+    return fEntity.GetElement();
+  }
+
   void PrintData() {
     Log::Debug("Type:");
     switch(fType) {
@@ -97,6 +101,21 @@ class ModelElement {
     return fType;
   }
 
+  std::map<std::string, std::string> GetAttributeMap() {
+    std::map<std::string, std::string> tmpMap;
+    switch(fType) {
+      case M_ENTITY_CELL:
+        tmpMap.insert(fEntityAttributeMap.begin(), fEntityAttributeMap.end());
+        break;
+      case M_MODULE_GROWTH:
+        tmpMap.insert(fModuleAttributeMap.begin(), fModuleAttributeMap.end());
+        break;
+      default:
+        Log::Warning("UNKNOWN TYPE");
+    }
+    return tmpMap;
+  }
+
  private:
 
   void PopulateCellMembers() {
@@ -106,31 +125,37 @@ class ModelElement {
   
     Log::Debug("Public Methods:");
     auto t = cl->GetListOfAllPublicMethods();
-  
+
+    /// Declaring loop variables    
+    TMethod* method = nullptr;
+    TObjLink* lnk = nullptr;
+    TMethodArg* arg = nullptr;
+    std::string clName, methodName, methodSignature, memberName, fullType;
+
     TIterator* it = t->MakeIterator();
     TObject* obj = it->Next();
     while(obj) {
-      std::string clName(obj->ClassName());
+      clName.assign(obj->ClassName());
       if(clName.compare("TMethod") == 0) {
-        TMethod* method = (TMethod*)obj;
-        std::string methodName(method->GetName());
+        method = (TMethod*)obj;
+        methodName.assign(method->GetName());
         if(methodName.find("Set") != std::string::npos) {
-          std::string methodSignature(method->GetSignature());
+          methodSignature.assign(method->GetSignature());
           Log::Debug("Setter found:", methodName, methodSignature);
-          std::string memberName = methodName.substr(3);
-          std::string fullType = "";
+          memberName.assign(methodName.substr(3));
+          fullType.assign("");
           TList* args = method->GetListOfMethodArgs();
           if(args->GetEntries() > 1) {
             Log::Error("Currently only supports 1 argument!!!");
             return;
           }
-          TObjLink* lnk = args->FirstLink();
+          lnk = args->FirstLink();
             while (lnk) {
-              TMethodArg* obj = (TMethodArg*)lnk->GetObject();
-              Log::Debug("Method arg full type: ", obj->GetFullTypeName());
-              fullType.assign(obj->GetFullTypeName());
-              Log::Debug("Method arg type: ", obj->GetTypeName());
-              Log::Debug("Method arg name: ", obj->GetName());
+              arg = (TMethodArg*)lnk->GetObject();
+              Log::Debug("Method arg full type: ", arg->GetFullTypeName());
+              fullType.assign(arg->GetFullTypeName());
+              Log::Debug("Method arg type: ", arg->GetTypeName());
+              Log::Debug("Method arg name: ", arg->GetName());
               lnk = lnk->Next();
             }
           

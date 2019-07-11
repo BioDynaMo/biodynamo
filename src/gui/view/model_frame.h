@@ -17,26 +17,9 @@
 #ifndef GUI_MODEL_FRAME_H_
 #define GUI_MODEL_FRAME_H_
 
-#include <TROOT.h>
-#include <TStyle.h>
-#include <TRint.h>
-#include <TVirtualX.h>
-#include <TEnv.h>
-#include <KeySymbols.h>
-
-#include <TFile.h>
-#include <TTree.h>
-#include <TFrame.h>
-#include <TGButton.h>
-#include <TGLabel.h>
-#include <TList.h>
-#include <TH1.h>
-#include <TF1.h>
-
-#include <unordered_map> 
-
 #include "gui/constants.h"
-#include "gui/view/model_tab.h"
+#include "gui/view/log.h"
+#include "gui/view/model_tabs.h"
 
 namespace gui {
 
@@ -50,9 +33,6 @@ class ModelFrame : public TGCompositeFrame {
   void ShowModelElement(const char* modelName, const char* modelElement);
   void ShowEmptyTab();
   void EnableButtons(Int_t state);
-  void SwitchModelTab(ModelTab *t);
-
-  Bool_t SwitchModelTab(const char* modelName, const char* modelElement=0);
 
  private:
   std::unique_ptr<TGVerticalFrame>        fV1;
@@ -84,13 +64,14 @@ class ModelFrame : public TGCompositeFrame {
   std::unique_ptr<TGLayoutHints>        fL7;
   std::unique_ptr<TGLayoutHints>        fL8;
 
-  std::vector<ModelTab*> fModelTabs;
-  ModelTab               *fCurTab;
+  std::vector<ModelTabs*>           fTabManagers;
+  
+  /// Needed to support multiple models
+  // ModelTabs               *fCurTabs;
 
   TGWindow*             fButtonHandler;
 };
 
-
 } // namespace gui
 
-#endif
+#endif  // GUI_MODEL_FRAME_H_

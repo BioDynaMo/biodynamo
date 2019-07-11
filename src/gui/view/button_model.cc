@@ -15,10 +15,8 @@
 //
 // -----------------------------------------------------------------------------
 
-
-#include <TGButton.h>
-#include "button_model.h"
 #include "gui/constants.h"
+#include "gui/view/button_model.h"
 
 namespace gui {
 
@@ -98,4 +96,3 @@ void ButtonModelFrame::SetState(int state)
 }
 
 } // namespace gui
-

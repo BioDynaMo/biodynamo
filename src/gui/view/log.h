@@ -17,13 +17,15 @@
 #ifndef GUI_LOG_H_
 #define GUI_LOG_H_
 
-#include <TGTextEdit.h>
-#include <TGStatusBar.h>
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
 #include <mutex>
 #include <string>
+
+#include <TGTextEdit.h>
+#include <TGStatusBar.h>
+
 #include "core/util/log.h"
 #include "core/util/string.h"
 #include "gui/constants.h"

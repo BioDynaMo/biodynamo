@@ -14,8 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "TObject.h"
-
 #ifndef GUI_SIMULATION_SETUP_H_
 #define GUI_SIMULATION_SETUP_H_
 

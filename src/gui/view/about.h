@@ -23,11 +23,14 @@
 #ifndef GUI_ABOUT_H
 #define GUI_ABOUT_H
 
-#include "TGButton.h"
-#include "TGFrame.h"
-#include "TGIcon.h"
-#include "TGLabel.h"
-#include "TGPicture.h"
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TRootHelpDialog.h>
+#include <TGButton.h>
+#include <TGFrame.h>
+#include <TGIcon.h>
+#include <TGLabel.h>
+#include <TGPicture.h>
 
 namespace gui {
 

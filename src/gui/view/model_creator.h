@@ -23,21 +23,21 @@
 #ifndef GUI_MODEL_CREATOR_H_
 #define GUI_MODEL_CREATOR_H_
 
-#include "TGFrame.h"
-#include "TDatime.h"
-#include "TCanvas.h"
+#include <KeySymbols.h>
+#include <TEnv.h>
+#include <TROOT.h>
+#include <TVirtualX.h>
+#include <TMethodArg.h>
 
 #include <TF1.h>
 #include <TFile.h>
 #include <TFrame.h>
 #include <TH1.h>
 #include <TTree.h>
-
+#include <TGFrame.h>
 #include <TBrowser.h>
-#include <TCanvas.h>
 #include <TColor.h>
 #include <TContextMenu.h>
-#include <TG3DLine.h>
 #include <TGButton.h>
 #include <TGFileDialog.h>
 #include <TGListTree.h>
@@ -48,16 +48,13 @@
 #include <TGTextEdit.h>
 #include <TGToolBar.h>
 #include <TGToolTip.h>
-#include <TGeoManager.h>
-#include <THtml.h>
-#include <TParticle.h>
-#include <TRandom.h>
 #include <TRootEmbeddedCanvas.h>
 #include <TRootHelpDialog.h>
 #include <TSystem.h>
 #include <TView.h>
 #include <TMethod.h>
 #include <TGMsgBox.h>
+#include <TG3DLine.h>
 
 #include <TPluginManager.h>
 #include <TVirtualGL.h>
@@ -96,21 +93,21 @@ class ModelCreator : public TGMainFrame {
   std::unique_ptr<TEnv>               fModelCreatorEnv;    // ModelCreator environment variables  
 
   /// MenuBar Frame
-  std::unique_ptr<TGPopupMenu>         fMenuFile;           // "File" popup menu
-  std::unique_ptr<TGPopupMenu>         fMenuSimulation;     // "Simulation" popup menu
-  std::unique_ptr<TGPopupMenu>         fMenuTools;          // "Tools" popup menu
-  std::unique_ptr<TGPopupMenu>         fMenuView;           // "View" popup menu
-  std::unique_ptr<TGPopupMenu>         fMenuSamples;        // "Samples" popup menu
-  std::unique_ptr<TGPopupMenu>         fMenuHelp;           // "Help" popup menu
-  std::unique_ptr<TGLayoutHints>       fMenuBarLayout;
-  std::unique_ptr<TGLayoutHints>       fMenuBarItemLayout;
-  std::unique_ptr<TGLayoutHints>       fMenuBarHelpLayout;
-  void                MakeMenuBarFrame();
-  void                CloseMenuBarFrame();
+  std::unique_ptr<TGPopupMenu>        fMenuFile;           // "File" popup menu
+  std::unique_ptr<TGPopupMenu>        fMenuSimulation;     // "Simulation" popup menu
+  std::unique_ptr<TGPopupMenu>        fMenuTools;          // "Tools" popup menu
+  std::unique_ptr<TGPopupMenu>        fMenuView;           // "View" popup menu
+  std::unique_ptr<TGPopupMenu>        fMenuSamples;        // "Samples" popup menu
+  std::unique_ptr<TGPopupMenu>        fMenuHelp;           // "Help" popup menu
+  std::unique_ptr<TGLayoutHints>      fMenuBarLayout;
+  std::unique_ptr<TGLayoutHints>      fMenuBarItemLayout;
+  std::unique_ptr<TGLayoutHints>      fMenuBarHelpLayout;
+  void  MakeMenuBarFrame();
+  void  CloseMenuBarFrame();
 
   /// ToolBar Frame
   std::unique_ptr<TGToolBar>           fToolBar;
-  void                ShowToolBar(Bool_t show = kTRUE);
+  void  ShowToolBar(Bool_t show = kTRUE);
 
   /// Layout hints
   std::unique_ptr<TGLayoutHints>       fL1;
@@ -118,7 +115,7 @@ class ModelCreator : public TGMainFrame {
   std::unique_ptr<TGLayoutHints>       fL3;
 
   /// Title Frame
-  std::unique_ptr<TitleFrame>        fTitleFrame;
+  std::unique_ptr<TitleFrame>          fTitleFrame;
 
   /// Main Frame
   std::unique_ptr<TGCompositeFrame>    fMainFrame;
@@ -127,11 +124,11 @@ class ModelCreator : public TGMainFrame {
   std::unique_ptr<TGCompositeFrame>    fSelectionFrame;     // Frame containing list tree and button frame
   std::unique_ptr<ButtonModelFrame>    fButtonModelFrame;   // Frame containing control buttons
   std::unique_ptr<ButtonProjectFrame>  fButtonProjectFrame; // Frame containing control buttons
-  void                 ChangeSelectionFrame(Bool_t createdProject=kTRUE);
+  void  ChangeSelectionFrame(Bool_t createdProject=kTRUE);
 
   std::unique_ptr<TGCanvas>            fTreeView;           // Canvas containing model selection list
   std::unique_ptr<TGListTree>          fProjectListTree;      // Project selection TGListTree
-  TGListTreeItem*      AddToTree(const char *name = nullptr);
+  TGListTreeItem*  AddToTree(const char *name = nullptr);
 
   std::unique_ptr<TreeManager>         fTreeManager;
 
@@ -141,12 +138,12 @@ class ModelCreator : public TGMainFrame {
   std::unique_ptr<TGStatusBar>         fStatusBar;          // Status bar reporting model info
 
  public:
-  /// Statics
-  static void         SetDefaultPosition(Int_t x, Int_t y);
-
   /// Constructors & destructor
   ModelCreator(const TGWindow *p, UInt_t w, UInt_t h);
   virtual ~ModelCreator() = default;
+
+  /// Statics
+  static void         SetDefaultPosition(Int_t x, Int_t y);
 
   void                SetOk(Bool_t ok=kTRUE) { fOk = ok; }
   void                Modified(Bool_t modified=kTRUE) { fModified = modified; }

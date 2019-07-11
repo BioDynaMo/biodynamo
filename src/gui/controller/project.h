@@ -163,6 +163,11 @@ class Project {
     return fProjectObject.GetModel(name);
   }
 
+  ModelElement* GetModelElement(const char* modelName, const char* elementName) {
+    Model* tmpModel = GetModel(modelName);
+    return tmpModel->GetModelElement(elementName);
+  }
+
   /// Returns vector of all models
   std::vector<Model>* GetAllModels() { return fProjectObject.GetModels(); }
 

@@ -14,13 +14,8 @@
 //
 // -----------------------------------------------------------------------------
 
-
-#include <TSystem.h>
-#include <TROOT.h>
-#include <TRootHelpDialog.h>
-
-#include "about.h"
 #include "gui/constants.h"
+#include "gui/view/about.h"
 
 namespace gui {
 

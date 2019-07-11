@@ -15,12 +15,6 @@
 // -----------------------------------------------------------------------------
 
 #include "gui/model/model.h"
-#include <TROOT.h>
-#include "gui/constants.h"
-#include "gui/view/log.h"
-#include "TList.h"
-#include "gui/model/model_element.h"
-#include "gui/model/simulation_entity.h"
 
 namespace gui {
 
@@ -111,6 +105,19 @@ ModelElement* Model::FindElement(const char* elementName) {
   //    return tmp;
   //  lnk = lnk->Next();
   //}
+  return nullptr;
+}
+
+ModelElement* Model::GetModelElement(const char* name) {
+  std::string tmpName;
+  Size_t elemCount = fModelElements.size();
+  for(Int_t i = 0; i < elemCount; i++) {
+    tmpName.assign(fModelElements[i].GetName());
+    if(tmpName.compare(name) == 0) {
+      Log::Debug("Found element:", name);
+      return &(fModelElements[i]);
+    }
+  }
   return nullptr;
 }
 

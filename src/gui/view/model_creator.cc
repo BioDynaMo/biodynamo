@@ -26,14 +26,6 @@
 #include <stdexcept>
 #include <string>
 
-#include <KeySymbols.h>
-#include <TEnv.h>
-#include <TROOT.h>
-#include <TRint.h>
-#include <TStyle.h>
-#include <TVirtualX.h>
-#include <TMethodArg.h>
-
 #include "gui/view/about.h"
 #include "gui/view/button_model.h"
 #include "gui/view/button_project.h"
@@ -453,8 +445,8 @@ void ModelCreator::CreateNewModel() {
     Log::Info("Creating Model on tree:", fModelName);
     fTreeManager->CreateModelTree(fModelName);
     Initialize();
-    std::string tmp = fModelName + " Overview";
-    fModelFrame->ShowModelElement(fModelName.c_str(), tmp.c_str());
+    //std::string tmp = fModelName + " Overview";
+    //fModelFrame->ShowModelElement(fModelName.c_str(), tmp.c_str());
     fClient->NeedRedraw(fModelFrame.get());
   }
 }
@@ -685,7 +677,7 @@ void ModelCreator::HandleTreeInput() {
   if (!selectedModelName.empty()) {
     Log::Info("Selected part of ", selectedModelName);
     fModelFrame->EnableButtons(M_ALL_ACTIVE);
-    fModelFrame->SwitchModelTab(selectedModelName.c_str());
+    //fModelFrame->SwitchModelTab(selectedModelName.c_str());
   } else {
     fModelFrame->EnableButtons(M_NONE_ACTIVE);
   }

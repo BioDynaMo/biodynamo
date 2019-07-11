@@ -14,10 +14,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include "core/util/log.h"
-#include "core/util/string.h"
-#include "log.h"
+#include "gui/view/log.h"
 
 namespace gui {
 

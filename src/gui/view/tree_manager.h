@@ -17,28 +17,20 @@
 #ifndef GUI_TREE_MANAGER_H_
 #define GUI_TREE_MANAGER_H_
 
-#include <TGListTree.h>
-#include <TROOT.h>
-#include <TString.h>
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 
+#include <TROOT.h>
+#include <TGListTree.h>
+#include <TString.h>
+
 #include "gui/controller/project.h"
 #include "gui/view/log.h"
 
 namespace gui {
-
-struct ModelTree {
-  std::string fName;
-  TGListTreeItem* fBaseItem;
-  TGListTreeItem* fElementsBaseItem;
-  std::vector<TGListTreeItem*> fElementsListTreeItems;
-  TGListTreeItem* fSimulationSettingsListTreeItem;
-  std::vector<std::string> fModelElementNames;
-};
 
 class TreeManager {
  public:
@@ -48,11 +40,11 @@ class TreeManager {
     std::unordered_map<std::string, TString> fileMapping;
 
     TString iconname(gProgPath);
-#ifdef R__WIN32
+    #ifdef R__WIN32
     iconname += "\\icons\\";
-#else
+    #else
     iconname += "/icons/";
-#endif
+    #endif
 
     fileMapping["Project"] = iconname + "tree_project.xpm";
     fileMapping["Model"] = iconname + "tree_model.xpm";
@@ -68,6 +60,7 @@ class TreeManager {
       fIconMap[it->first] = pic;
     }
   }
+
   ~TreeManager() {
     if(isProjectCreated) {
       fProjectListTree->DeleteItem(gProjectListTreeItem);
@@ -220,6 +213,15 @@ class TreeManager {
   TGListTreeItem* gProjectListTreeItem;  // base TGListTree item
 
  private:
+  struct ModelTree {
+    std::string     fName;
+    TGListTreeItem* fBaseItem;
+    TGListTreeItem* fElementsBaseItem;
+    TGListTreeItem* fSimulationSettingsListTreeItem;
+    std::vector<TGListTreeItem*> fElementsListTreeItems;
+    std::vector<std::string>     fModelElementNames;
+  };
+
   Bool_t IsElementNameAvailable(const char* elementName) {
     for (ModelTree tree : fModelTrees)
       for (std::string str : tree.fModelElementNames)
@@ -228,11 +230,12 @@ class TreeManager {
     return kTRUE;
   }
   Bool_t isProjectCreated = kFALSE;
-  TGListTreeItem* fCurListItem;  // current TGListTreeItem (level) in TGListTree
 
   std::vector<ModelTree> fModelTrees;
   std::string fCurModelName;
+  
   TGListTree* fProjectListTree;  // base TGListTree
+  TGListTreeItem* fCurListItem;  // current TGListTreeItem (level) in TGListTree
 
   std::unordered_map<std::string, const TGPicture*> fIconMap;
 };

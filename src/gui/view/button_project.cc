@@ -16,8 +16,7 @@
 // -----------------------------------------------------------------------------
 
 
-#include <TGButton.h>
-#include "button_project.h"
+#include "gui/view/button_project.h"
 #include "gui/constants.h"
 
 namespace gui {
