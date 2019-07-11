@@ -34,16 +34,12 @@ struct Chemotaxis : public BaseBiologyModule {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     static auto* kDg = rm->GetDiffusionGrid(kKalium);
-    kDg->SetConcentrationThreshold(1e15);
 
     if (auto* cell = dynamic_cast<Cell*>(so)) {
       const auto& position = so->GetPosition();
       Double3 gradient;
       kDg->GetGradient(position, &gradient);
-      gradient[0] *= 0.5;
-      gradient[1] *= 0.5;
-      gradient[2] *= 0.5;
-
+      gradient *= 0.5;
       cell->UpdatePosition(gradient);
     }
   }

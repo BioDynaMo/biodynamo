@@ -32,12 +32,6 @@ class MyCell : public Cell {
   MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
 
-  /// Default event handler
-  void EventHandler(const Event& event, SimObject* other1,
-                    SimObject* other2 = nullptr) override {
-    Base::EventHandler(event, other1, other2);
-  }
-
   void SetCellType(int t) { cell_type_ = t; }
   int GetCellType() const { return cell_type_; }
 

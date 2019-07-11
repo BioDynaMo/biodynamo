@@ -233,8 +233,8 @@ std::vector<Operation> Scheduler::GetScheduleOps() {
   auto* param = Simulation::GetActive()->GetParam();
   for (auto& op : operations_) {
     // special condition for displacement
-    if (!param->run_mechanical_interactions_ && op.name_ == "displacement" &&
-        !displacement_->UseCpu()) {
+    if (op.name_ == "displacement" &&
+        (!param->run_mechanical_interactions_ || !displacement_->UseCpu())) {
       continue;
     }
     if (total_steps_ % op.frequency_ == 0) {

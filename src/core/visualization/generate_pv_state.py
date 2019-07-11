@@ -286,7 +286,7 @@ def ProcessExtracellularSubstance(result_dir, substance_info):
     # get color transfer function/color map for 'DiffusionGradient'
     diffusionGradientLUT = GetColorTransferFunction('DiffusionGradient')
 
-    if substance_info['has_gradient']:
+    if substance_info['has_gradient'] == "true":
         AddDiffusionGradientGlyph(substance_name, substance_data, renderView1)
 
     # reset view to fit data
