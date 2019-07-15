@@ -1,0 +1,14 @@
+- groups:
+  - group: Welcome
+    items: 
+      - title: Introduction
+        link: /biodynamo/doc/dev_guide/docs/
+      - title: Build BioDynaMo
+        link: /biodynamo/doc/dev_guide/docs/build/ 
+  - group: Code
+    items:
+      - title: Code Quality
+        link: /biodynamo/doc/dev_guide/docs/code_quality/
+      - title: Contribute
+        link: /biodynamo/doc/dev_guide/docs/contribute/
+      
