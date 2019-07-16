@@ -34,7 +34,7 @@ sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install cmake3 libXt-devel libXext-devel \
 devtoolset-7-gcc* numactl-devel \
 tbb-devel openmpi3-devel freeglut-devel \
-python35u python35u-devel python35u-pip \
+rh-python36 \
 git
 
 # Install optional packages

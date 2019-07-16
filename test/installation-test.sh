@@ -41,6 +41,26 @@ export BDM_CMAKE_FLAGS="-Dtest=off"
 y
 EOF
 
+# Operation needed in order to have a fully functional CentOS install procedure
+# * Workaround for Faulty OpenGL version detection with software renderer
+# * Enable python 3.6
+# * Enable gcc and g++ compilers
+# * Load mpi module
+# The set +e is needed because scl_source relies on exit signal to detect if the
+# corresponding packages was enabled. However, if we set -e, then the script
+# will just exit without any error message.
+set +e
+if [ $1 = "centos-7.6.1810" ]; then
+  export MESA_GL_VERSION_OVERRIDE=3.3
+  . scl_source enable rh-python36
+  . scl_source enable devtoolset-7
+
+  . /etc/profile.d/modules.sh
+  module load mpi
+fi
+set -e
+
+
 # Build BioDynaMo
 mkdir build
 cd build

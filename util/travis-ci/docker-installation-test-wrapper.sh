@@ -30,11 +30,6 @@ cd $BDM_PROJECT_DIR
 export DISPLAY=:99.0
 $BDM_PROJECT_DIR/util/xvfb-initd.sh start
 
-# workaround for Faulty OpenGL version detection with software renderer
-if [ "$(DetectOs)" = "centos-7.6.1810" ]; then
-  export MESA_GL_VERSION_OVERRIDE=3.3
-fi
-
 test/installation-test.sh $1
 RET_VAL=$?
 
