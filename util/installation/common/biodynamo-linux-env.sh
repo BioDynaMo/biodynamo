@@ -72,13 +72,19 @@ export OMP_PROC_BIND=true
 
 # CentOs specifics
 if [ `lsb_release -si` == "CentOS" ]; then
+  export MESA_GL_VERSION_OVERRIDE=3.3
+  . scl_source enable rh-python36
+  . scl_source enable devtoolset-7
+
+  . /etc/profile.d/modules.sh
+  module load mpi
   # python
-  if versionLessThan "$(python3 --version)" 'Python 3.2.0'; then
-    export PATH=/opt/rh/rh-python36/root/bin:/opt/rh/llvm-toolset-7/root/usr/bin/:$PATH
-  fi
+  #if versionLessThan "$(python3 --version)" 'Python 3.2.0'; then
+  #  export PATH=/opt/rh/rh-python36/root/bin:/opt/rh/llvm-toolset-7/root/usr/bin/:$PATH
+  #fi
   # gcc g++
-  export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
-  export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:$LD_LIBRARY_PATH
+  #export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
+ #export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib/dyninst:/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:$LD_LIBRARY_PATH
 fi
 
 echo "You have successfully sourced BioDynaMo's environment."
