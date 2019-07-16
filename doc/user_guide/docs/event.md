@@ -5,7 +5,6 @@ path: "/biodynamo/doc/user_guide/docs/event/"
 meta_title: "eve"
 meta_description: "This is the event page."
 toc: true
-image: ""
 next:
     url:  "/biodynamo/doc/user_guide/docs/event/"
     title: "Event"
