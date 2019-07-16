@@ -14,7 +14,14 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <iostream>
+#include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "gui/model/model.h"
+#include "gui/controller/project.h"
+#include "gui/controller/generate_template.h"
 
 namespace gui {
 
@@ -121,9 +128,77 @@ ModelElement* Model::GetModelElement(const char* name) {
   return nullptr;
 }
 
-std::string Model::GenerateCode() {
-  std::string code("");
-  return code;
+
+Bool_t Model::CreateDirectory(const char* dirPath) {
+  int check; 
+  check = mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
+  if(!check) {
+    return kTRUE;
+  }
+  return kFALSE;
 }
+
+std::string Model::GetModelFolder(Bool_t createFolder) {
+  std::string modelFolderPath(Project::GetInstance().GetProjectPath());
+  modelFolderPath.append(fModelName);
+  struct stat info;
+
+  if( stat( modelFolderPath.c_str(), &info ) != 0 ) {
+    Log::Debug("Cannot access ", modelFolderPath );
+    Log::Debug("Attempting to create directory...");
+    if(createFolder) {
+      if(CreateDirectory(modelFolderPath.c_str())) {
+        Log::Debug("Directory created!");
+      } else {
+        Log::Error("Could not create directory!");
+      }
+    } 
+  }
+  else if( info.st_mode & S_IFDIR ) {
+    Log::Debug(modelFolderPath, " is a directory");
+    std::string cmd = "rm -rf " + modelFolderPath;
+    if(system(cmd.c_str())) {
+      return GetModelFolder(createFolder);
+    } else {
+      Log::Error("Could not delete:`", modelFolderPath, "`");
+    }
+  }
+  else
+      Log::Debug(modelFolderPath, " is not a directory!");
+  
+  return modelFolderPath;
+}
+
+void Model::GenerateCode() {
+  std::string folderPath = GetModelFolder(kTRUE) + "/";
+  std::string srcPath = folderPath + "src/";
+  std::string srcFileH = srcPath + fModelName + ".h";
+  std::string srcFileCC = srcPath + fModelName + ".cc";
+  std::string cMakeFile = folderPath + "CMakeLists.txt";
+
+  std::string cMakeOutput = 
+    GenerateTemplate::GetInstance().GenerateCMakeLists(fModelName.c_str());
+  ofstream myfile;
+  myfile.open(cMakeFile.c_str());
+  myfile << cMakeOutput;
+  myfile.close();
+
+  if(CreateDirectory(srcPath.c_str())) {
+    std::string srcCC = 
+      GenerateTemplate::GetInstance().GenerateSrcCC(fModelName.c_str());
+    myfile.open(srcFileCC.c_str());
+    myfile << srcCC;
+    myfile.close();
+  
+    std::string srcH = 
+      GenerateTemplate::GetInstance().GenerateSrcH(fModelName.c_str());
+    myfile.open(srcFileH.c_str());
+    myfile << srcH;
+    myfile.close();
+  } else {
+    Log::Error("Could not create folder:`", srcPath, "`");
+  }
+}
+
 
 } // namespace gui

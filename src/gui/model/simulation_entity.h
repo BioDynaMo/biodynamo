@@ -17,7 +17,19 @@
 #ifndef GUI_SIMULATION_ENTITY_H_
 #define GUI_SIMULATION_ENTITY_H_
 
+#include <TClass.h>
+#include <TEnv.h>
+#include <TFile.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include <TSystemDirectory.h>
+#include <TVirtualX.h>
+#include <TMethod.h>
+#include <TMethodArg.h>
+#include <TMethodCall.h>
+
 #include "biodynamo.h"
+#include "core/container/math_array.h"
 
 namespace gui {
 
@@ -44,9 +56,54 @@ class SimulationEntity {
     return &fElement;
   }
 
+  void SetPosition(bdm::Double3 pos) {
+    fPosition = pos;
+  }
+
+  bdm::Double3 GetPosition() {
+    return fPosition;
+  }
+
+  void SetTractorForce(bdm::Double3 force) {
+    fTractorForce = force;
+  }
+
+  bdm::Double3 GetTractorForce() {
+    return fTractorForce;
+  }
+
+  double GetAttributeValDouble(const char* attributeName) {
+    bdm::Cell* cellPtr = &fElement;
+    TClass *cl = cellPtr->IsA();
+    std::string methodName(attributeName);
+    methodName.insert(0, "Get");
+    TMethodCall call(cl, methodName.c_str(), "");
+
+    Double_t retValDouble = -1;
+    call.Execute((void*)cellPtr, nullptr, 0, &retValDouble);
+    return retValDouble;
+  }
+
+  uint32_t GetAttributeValUInt(const char* attributeName) {
+    bdm::Cell* cellPtr = &fElement;
+    TClass *cl = cellPtr->IsA();
+    std::string methodName(attributeName);
+    methodName.insert(0, "Get");
+    TMethodCall call(cl, methodName.c_str(), "");
+
+    uint32_t retValUInt = 0;
+    call.Execute((void*)cellPtr, nullptr, 0, &retValUInt);
+    return retValUInt;
+  }
+
  private:
   std::string        fName;
   bdm::Cell          fElement;
+
+  // Setting within element does not work, 
+  //   so we use these vars
+  bdm::Double3            fPosition;
+  bdm::Double3            fTractorForce;
 
   ClassDefNV(SimulationEntity,1)
 };

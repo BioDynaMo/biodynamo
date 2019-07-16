@@ -79,6 +79,10 @@ class ModelElement {
     return fEntity.GetElement();
   }
 
+  SimulationEntity* GetEntity() {
+    return &fEntity;
+  }
+
   void PrintData() {
     Log::Debug("Type:");
     switch(fType) {
@@ -162,7 +166,11 @@ class ModelElement {
           methodName.replace(0, 3, "Get");
           Log::Debug("Getter should be:", methodName);
           Log::Debug("Inserting attribute into map -> member:`", memberName, "`, type:`", fullType, "`");
-          fEntityAttributeMap.insert(std::pair<std::string, std::string>(memberName, fullType));
+          if(memberName.find("RunDisplacement") == std::string::npos) {
+            fEntityAttributeMap.insert(std::pair<std::string, std::string>(memberName, fullType));
+          } else {
+            Log::Debug("Excluding attribute: ",  memberName, " !!!");
+          }
         }
       }
       obj = it->Next();

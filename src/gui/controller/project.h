@@ -188,12 +188,33 @@ class Project {
   /// @return None
   void SimulateModel(SimulationType simType, const char* modelName = "") {}
 
+  std::string GetCodeGenerateFolder(const char* modelName) {
+    Model* model = GetModel(modelName);
+    std::string folder(model->GetModelFolder());
+    return folder;
+  }
+
   /// Starts BioDynaMo code generation on user-defined models.
   /// The `Project` class description explains where code will reside.
   /// @param modelName optional input to specify generate code for
   /// a single model. Default "" generates for all models.
   /// @return None
-  void GenerateCode(const char* modelName = "") {}
+  std::string GenerateCode(const char* modelName) {
+    if(strcmp(modelName, "") != 0) {
+      Model* model = GetModel(modelName);
+      model->GenerateCode();
+    } else {
+      Log::Error("Cannot generate code for model:`", modelName, "`");
+    }
+    return "";
+  }
+
+  std::string GetProjectPath() { 
+    std::string pathWithoutFilename(fProjectPath);
+    pathWithoutFilename = pathWithoutFilename.erase(pathWithoutFilename.find_last_of("/") + 1);
+    Log::Debug("Path without filename: ", pathWithoutFilename);
+    return pathWithoutFilename;
+  }
 
   Bool_t IsLoaded() { return fIsLoaded; }
 
@@ -223,8 +244,6 @@ class Project {
   void WriteProject() {
 
   }
-
-  std::string GetProjectDir() { return std::string(""); }
 
   std::string RunCmd(const char* cmd) {
     Log::Info("Running cmd:", cmd);

@@ -81,12 +81,14 @@ void Entry::UpdateValue() {
       break;
     }
     case EntryType::M_DOUBLE3: {
-      bdm::Double3 retValDouble3;
-      call.Execute((void*)cellPtr, nullptr, 0, &retValDouble3);
-      std::string xyz("xyz");
-      for(int i = 0; i < 3; i++) {
-        fCurrentValues[i] = retValDouble3[i];
-        fNumberEntries[i]->SetNumber(retValDouble3[i]);
+      if(fEntryName.compare("Position") == 0) {
+        bdm::Double3 curPosition({fCurrentValues[0], fCurrentValues[1], fCurrentValues[2]});
+        SimulationEntity* entity = fModelElement->GetEntity();
+        entity->SetPosition(curPosition);
+      } else if (fEntryName.compare("TractorForce") == 0) {
+        bdm::Double3 curForce({fCurrentValues[0], fCurrentValues[1], fCurrentValues[2]});
+        SimulationEntity* entity = fModelElement->GetEntity();
+        entity->SetTractorForce(curForce);
       }
       break;
     }
@@ -144,12 +146,22 @@ void Entry::Init(ModelElement* modelElement) {
     } 
     case EntryType::M_DOUBLE3: {
       std::string xyz("xyz");
+      bdm::Double3 vals;
+      SimulationEntity* entity = fModelElement->GetEntity();
+      if(fEntryName.compare("Position") == 0) {
+        vals = entity->GetPosition();
+      } else if (fEntryName.compare("TractorForce") == 0) {
+        vals = entity->GetTractorForce();
+      } else {
+        Log::Error("Could not discern entryName:", fEntryName);
+        return;
+      }
       for(int i = 0; i < 3; i++) {
         TGNumberEntry* fNumberEntry = new TGNumberEntry(this, 1.0);
         AddFrame(fNumberEntry, fL2);
-        fNumberEntry->SetNumber(i);
+        fNumberEntry->SetNumber(vals[i]);
         fNumberEntries.push_back(fNumberEntry);
-        fCurrentValues.push_back(i);
+        fCurrentValues.push_back(vals[i]);
         fNumberEntry->Associate(this);
         std::string tmpLabelName = std::string() + xyz.at(i);
         Log::Debug("tmpLabelName on iteration #", i, "=", tmpLabelName);
@@ -186,9 +198,13 @@ Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
         if(method == 0) {
           Log::Warning("Could not find method:`", methodName, "`, defaulting to direct calls..");
           if(fEntryName.compare("Position") == 0) {
+            Log::Debug("First val:",  fCurrentValues[0]);
+            Log::Debug("Second val:", fCurrentValues[1]);
+            Log::Debug("Third val:",  fCurrentValues[2]);
+
             cellPtr->SetPosition(setVal);
           } else if (fEntryName.compare("TractorForce") == 0) {
-            cellPtr->SetTractorForce(setVal);
+            cellPtr->SetPosition(setVal);
           } else {
             Log::Error("Could not set `", fEntryName, "`");
           }
@@ -244,6 +260,7 @@ Bool_t Entry::CheckIfValueChanged() {
       case EntryType::M_UINT:
         for(i = 0; i < valuesCount; i++) {
           entryValue = fNumberEntries[i]->GetNumber();
+          Log::Debug("entryValue when i =", i, " :", entryValue);
           if(fCurrentValues[i] != entryValue) {
             isModified = kTRUE;
             fCurrentValues[i] = entryValue;

@@ -614,6 +614,25 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
             }
               break;
 
+            case M_SIMULATION_GENERATE:
+            {
+              if (!fModelName.empty()) {
+                std::string genFolder = Project::GetInstance().GetCodeGenerateFolder(fModelName.c_str());
+                Int_t retval;
+                std::string msg = "This will overwrite all files in `" + genFolder + "` Press OK to continue.";
+                new TGMsgBox(gClient->GetRoot(), this,
+                            "Info", msg.c_str(),
+                            kMBIconExclamation, kMBOk | kMBCancel, &retval);
+                if(retval != kMBOk) {
+                  break;
+                }
+                Project::GetInstance().GenerateCode(fModelName.c_str());
+              } else {
+                Log::Info("Please create a model first!");
+              }
+            }
+              break;
+
             case M_VIEW_TOOLBAR:
               if (fMenuView->IsEntryChecked(M_VIEW_TOOLBAR))
                 ShowToolBar(kFALSE);

@@ -5,9 +5,6 @@ demo/makefile_project/bdm_generated_code.cc
 demo/makefile_project/*rdict.pcm
 demo/makefile_project/my-simulation
 
-# Generated GUI files
-src/gui/gui_GEN*
-
 **/.DS_Store
 
 #----------------- intellij -----------------

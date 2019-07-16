@@ -31,10 +31,6 @@ Inspector::Inspector(TGCompositeFrame* fMain, const char* modelName, const char*
   for(it = attributeMap.begin(); it!=attributeMap.end(); ++it) {
     Log::Debug("Inspector: Will create attribute frame for");
     Log::Debug("  Attribute:", it->first, ", type:", it->second);
-    if(it->first.find("RunDisplacement") != std::string::npos) {
-      Log::Debug("Excluding attribute: ",  it->first, " !!!");
-      continue;
-    }
     Entry* entry = new Entry(fV, this, it->first.c_str(), it->second.c_str());
     entry->Init(fModelElement);
     fEntries.push_back(entry);

@@ -59,6 +59,9 @@ class Model {
   void          UpdateModel(std::string elementName, ModelElement& element);
   void          IsElementNameAvailable();
   Bool_t        CreateElement(const char* parent, const char* name, int type);
+  void          GenerateCode();
+  std::string   GetModelFolder(Bool_t createFolder=kFALSE);
+
 
   std::map<std::string, int> GetModelElements();
   ModelElement*              GetModelElement(const char* name);
@@ -66,8 +69,7 @@ class Model {
  private:
   std::string                   fModelName;
   std::vector<ModelElement>     fModelElements;
-  
-  std::string   GenerateCode();
+  Bool_t        CreateDirectory(const char* dirPath);
   void          InitializeElement(ModelElement* parent, const char* name, int type);
   ModelElement* FindElement(const char* elementName);
 
