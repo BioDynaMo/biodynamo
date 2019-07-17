@@ -78,7 +78,7 @@ if (NOT DEFINED ${BDM_INSTALL_DIR})
 endif()
 
 # Specify some directories which will be used to structure BioDynaMo build.
-set(CMAKE_BIODYNAMO_ROOT        "${CMAKE_BINARY_DIR}/install")
+set(CMAKE_BIODYNAMO_ROOT        "${CMAKE_BINARY_DIR}")
 set(CMAKE_THIRD_PARTY_DIR       "${CMAKE_BIODYNAMO_ROOT}/third_party")
 set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_ROOT}/biodynamo")
 set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin")
