@@ -78,14 +78,14 @@ fi
 # Build BioDynaMo
 mkdir build
 cd build
-cmake ..
+cmake ${BDM_CMAKE_FLAGS} ..
 make -j$(CPUCount)
 make install
 cd ..
 
 # reload shell and source biodynamo
 set +e +x
-source ~/.bdm/biodynamo-env.sh
+source ~/.bdm/biodynamo/bin/thisbdm.sh
 set -e -x
 
 # run system test.
