@@ -47,7 +47,7 @@ EOF
 
 # reload shell and source biodynamo
 set +e +x
-source ~/.bdm/biodynamo-env.sh
+source ~/.bdm/biodynamo/bin/thisbdm.sh
 set -e -x
 
 # print lines-of-code statistic

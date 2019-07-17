@@ -197,15 +197,6 @@ function(install_inside_build)
     add_custom_target(copy_files_bdm ALL DEPENDS biodynamo)
 
     # Install the enviroment source script
-    if(LINUX)
-        configure_file(${CMAKE_SOURCE_DIR}/util/installation/common/biodynamo-linux-env.sh ${CMAKE_BINARY_DIR}/biodynamo-env.sh @ONLY)
-    elseif(APPLE)
-        configure_file(${CMAKE_SOURCE_DIR}/util/installation/common/biodynamo-macos-env.sh ${CMAKE_BINARY_DIR}/biodynamo-env.sh @ONLY)
-    endif()
-    add_copy_files(copy_files_bdm
-            DESTINATION ${CMAKE_BIODYNAMO_ROOT}
-            ${CMAKE_BINARY_DIR}/biodynamo-env.sh
-            )
 
     # Copy biodynamo.py and make it executable.
     add_copy_files(copy_files_bdm
