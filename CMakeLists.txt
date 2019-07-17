@@ -9,7 +9,9 @@ cmake_minimum_required(VERSION 3.2.0)
 # output to use the default C locale which is more or less identical on all systems.
 set(ENV{LANG} C)
 
-# Project name and current version
+# Project name and current version. We do not specify any language for
+# this project. Therefore, we will be able to check manually which compiler
+# we detected on the system.
 project(BioDynaMo LANGUAGES)
 
 # Directory in which we saved all the cmake informations.
@@ -37,7 +39,8 @@ check_language(C)
 if(CMAKE_CXX_COMPILER)
     # If we are on a MacOS system, we then force the compiler to
     # be LLVM's clang. This is done because standard MacOS's g++ do not
-    # has OpenMP enabled.
+    # has OpenMP enabled. Moreover, here we will force the user to
+    # use brew instead of port.
     if (APPLE)
         UNSET(CMAKE_CXX_COMPILER CACHE)
         UNSET(CMAKE_C_COMPILER CACHE)
@@ -62,9 +65,12 @@ else()
         enable_language(CXX)
     endif()
 endif()
+
+# Check if we found a C compiler.
 if(CMAKE_C_COMPILER)
     enable_language(C)
 endif()
+
 # Directory in which BioDynaMo will be installed. It can be provided
 # by the user itself.
 if (NOT DEFINED ${BDM_INSTALL_DIR})
@@ -131,7 +137,6 @@ add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are
 
 # Check if Python is present
 find_package(PythonInterp 3.5)
-find_package(PythonLibs 3.5)
 find_package(pip)
 
 # Check if OpenMPI is present
@@ -143,23 +148,19 @@ find_package(GLUT)
 if(NOT GLUT_FOUND)
     PRINT_WARNING()
     MESSAGE("GLUT libraries were not found in the system. In order to use ParaView they need to be installed.
-If you want to do that automatically, please run the ./prerequisites-required.sh script.")
+If you want to do that automatically, please run the ./prerequisites.sh script.")
     PRINT_LINE()
     SET(paraview OFF)
 endif()
 
-# CMake cannot find LLVM's Clang OpenMP library by default (this makes
-# find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
-# Furthermore, rootcling cannot find omp.h by default, so we copy this (with a
-# shell script to /usr/local/Cellar/biodynamo, which is brew's default install
-# directory), and include this directory. We cannot directly include the
-# original directory, because of header conflicts (such as stdint.h)
+# Check if we have a compatible openmp compiler
 find_package(OpenMP)
-if(APPLE)
-  link_directories(/usr/local/opt/llvm/lib)
-  set(OpenMP_C_FLAGS -fopenmp=libomp)
-  set(OpenMP_CXX_FLAGS -fopenmp=libomp)
-  include_directories(/usr/local/Cellar/biodynamo)
+if (OpenMP_FOUND)
+    link_directories(${OpenMP_CXX_LIBRARIES})
+else()
+    MESSAGE(FATAL_ERROR "We did not found any support for OpenMP. Please run ./prerequisites.sh again before
+calling cmake. If this does not work, then you current compiler might not support OpenMP (this happens for instance
+with Apple's standard compiler). Please update it to a more recent version and then run cmake again.")
 endif()
 
 if (test)

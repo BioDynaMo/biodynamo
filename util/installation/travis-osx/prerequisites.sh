@@ -31,7 +31,7 @@ brew upgrade python cmake
 # Install the optional packages
 if [ $1 == "all" ]; then
     pip install --user mkdocs mkdocs-material
-    brew install doxygen lcov gcov gcovr || true
+    brew install doxygen lcov gcovr || true
 fi
 
 # misc
