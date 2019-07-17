@@ -18,7 +18,9 @@ if [[ $# -ne 1 ]]; then
 Description:
     This script installs the prerequisites of BioDynaMo, but not BioDynaMo
     itself. Script install.sh installs both prerequisites and BioDynaMo.
-No Arguments"
+Arguments:
+    <install_type>  all/required. If all is specified, then this script
+                    will install all the prerequisites."
   exit 1
 fi
 

@@ -17,9 +17,11 @@
 if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script installs the prerequisites of BioDynaMo, but not BioDynaMo
-  itself. Script install.sh installs both prerequisites and BioDynaMo.
-No Arguments"
+    This script installs the prerequisites of BioDynaMo, but not BioDynaMo
+    itself. Script install.sh installs both prerequisites and BioDynaMo.
+Arguments:
+    <install_type>  all/required. If all is specified, then this script
+                    will install all the prerequisites."
   exit 1
 fi
 
@@ -44,6 +46,7 @@ if [ $1 == "all" ]; then
 fi
 
 # Set up cmake alias such to be able to use it
+# FIXME: this is will basically change permanently the system of the user
 sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
 --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
 --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
