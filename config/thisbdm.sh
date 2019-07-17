@@ -32,7 +32,7 @@ if [ -n "${BDMSYS}" ] ; then
    old_bdmsys=${BDMSYS}
 fi
 
-BDM_INSTALL_DIR=$(readlink -e $(dirname "${BASH_SOURCE[0]}"));
+BDM_INSTALL_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
 BDM_INSTALL_DIR=$(cd ${BDM_INSTALL_DIR}; cd ../../ > /dev/null; pwd); export BDM_INSTALL_DIR;
 BDMSYS="${BDM_INSTALL_DIR}/biodynamo"; export BDMSYS;
 
@@ -276,24 +276,37 @@ export OMP_PROC_BIND=true
 #  BDMSYS="`cygpath -w $BDM_INSTALL_DIR`"
 #fi
 
-# CentOs specifics
-if [ `lsb_release -si` == "CentOS" ]; then
-  export MESA_GL_VERSION_OVERRIDE=3.3
-  . scl_source enable devtoolset-7
-  . scl_source enable rh-python36
-
-  . /etc/profile.d/modules.sh
-  module load mpi
-fi
-
 # Apple specific
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ $(uname -s) == "Darwin"* ]]; then
+
+    # Remove previous LLVM path
+    if [ -n "${LLVMDIR}" ] ; then
+        old_llvmdir=${LLVMDIR}
+    fi
+    if [ -n "${old_llvmdir}" ]; then
+      if [ -n "${PATH}" ]; then
+        drop_from_path "$PATH" "${old_llvmdir}/bin"
+        PATH=$newpath
+      fi
+    fi
+    unset old_llvmdir
+    
     export LLVMDIR="/usr/local/opt/llvm"
     export CC=$LLVMDIR/bin/clang
     export CXX=$LLVMDIR/bin/clang++
     export CXXFLAGS=-I$LLVMDIR/include
     export LDFLAGS=-L$LLVMDIR/lib
     export PATH=$LLVMDIR/bin:$PATH
+else
+    # CentOs specifics
+    if [ `lsb_release -si` == "CentOS" ]; then
+        export MESA_GL_VERSION_OVERRIDE=3.3
+        . scl_source enable devtoolset-7
+        . scl_source enable rh-python36
+
+        . /etc/profile.d/modules.sh
+        module load mpi
+    fi
 fi
 
 unset old_bdmsys
