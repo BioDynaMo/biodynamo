@@ -486,12 +486,20 @@ include(CppStyleGuideChecks)
 
 # --------------------- Final Message to the user ------------------------------
 add_bdm_packages_properties()
+add_bdm_feature_properties()
+print_summary()
 feature_summary(INCLUDE_QUIET_PACKAGES
         DESCRIPTION "The following packages were found:"
         WHAT PACKAGES_FOUND)
 feature_summary(INCLUDE_QUIET_PACKAGES
         DESCRIPTION "The following packages were not found:"
         WHAT PACKAGES_NOT_FOUND)
+feature_summary(WHAT ENABLED_FEATURES
+        INCLUDE_QUIET_PACKAGES
+        DESCRIPTION "Enabled Features:")
+feature_summary(WHAT DISABLED_FEATURES
+        INCLUDE_QUIET_PACKAGES
+        DESCRIPTION "Disabled Features:")
 
 # Generate the script to install required/optional packages
 get_cmake_property(BDM_MISSING_PACKAGES PACKAGES_NOT_FOUND)

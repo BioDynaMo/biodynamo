@@ -418,6 +418,17 @@ function(add_bdm_packages_properties)
 
 endfunction()
 
+function(add_bdm_feature_properties)
+    ADD_FEATURE_INFO(test test "Build BioDynaMo's test suite.")
+    ADD_FEATURE_INFO(cuda cuda "Enable CUDA code generation for GPU acceleration.")
+    ADD_FEATURE_INFO(opencl opencl "Enable OpenCL code generation for GPU acceleration.")
+    ADD_FEATURE_INFO(dict dict "Build with ROOT dictionaries.")
+    ADD_FEATURE_INFO(paraview paraview "Enable ParaView.")
+    ADD_FEATURE_INFO(vtune vtune "Enable VTune performance analysis.")
+    ADD_FEATURE_INFO(coverage coverage "Enable test coverage report generation. Sets build type to coverage.")
+    ADD_FEATURE_INFO(verbose verbose "Enable verbosity when running make install.")
+endfunction()
+
 function(add_permissions FILE_PATH DESTINATION)
     file(COPY ${FILE_PATH}
             DESTINATION ${DESTINATION}
@@ -433,4 +444,8 @@ endfunction()
 # Helper function to print a warning message
 function(print_warning)
     MESSAGE("\n########################### WARNING ############################\n")
+endfunction()
+
+function(print_summary)
+    MESSAGE("\n########################### SUMMARY ############################\n")
 endfunction()
