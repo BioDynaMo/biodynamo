@@ -69,7 +69,7 @@ function(detect_os)
         if (DEFINED lsb_release-NOTFOUND AND NOT APPLE AND NOT DEFINED ${DETECTED_OS})
             MESSAGE(FATAL_ERROR "We were unable to detect your OS version. This usually happens because we were unable to find\
  lsb_release command. In order to fix this error you can: install lsb_release for your distribution or specify which \
- system you are using. To specify the OS you have to call again cmake by passing -DDETECTED_OS=<your_os> as argument. The current\
+ system you are using. To specify the OS you have to call again cmake by passing -DOS=<your_os> as argument. The current\
  supported OS are: ubuntu-16.04, ubuntu-18.04, centos-7.6.1810, osx.")
         elseif(APPLE)
             # We check if we are using Travis (therefore the BDM_OS has a slightly different name).
@@ -93,6 +93,50 @@ function(detect_os)
             SET(DETECTED_OS_VERSION ${LSB_RELEASE_ID_VERSION} PARENT_SCOPE)
             SET(DETECTED_OS_TYPE ${LSB_RELEASE_ID_SHORT} PARENT_SCOPE)
         endif()
+    endif()
+endfunction()
+
+# Convert a list to a better representation
+# https://stackoverflow.com/questions/17666003/cmake-output-a-list-with-delimiters
+function (ListToString result delim)
+    list(GET ARGV 2 temp)
+    math(EXPR N "${ARGC}-1")
+    foreach(IDX RANGE 3 ${N})
+        list(GET ARGV ${IDX} STR)
+        set(temp "${temp}${delim}${STR}")
+    endforeach()
+    set(${result} "${temp}" PARENT_SCOPE)
+endfunction(ListToString)
+
+# Check if the OS given by the user is supported by the current BioDynaMo release.
+#
+# * OS: the OS specified by the user.
+function(check_detected_os OS)
+    # First of all we get a list of all the OS we are currently supporting
+    FILE(GLOB SUPPORTED_OS_LIST LIST_DIRECTORIES TRUE ${CMAKE_SOURCE_DIR}/util/installation/*)
+
+    # Retain only the name of the directory
+    SET(SUPPORTED_OS "")
+    foreach(VAR ${SUPPORTED_OS_LIST})
+        get_filename_component(DIR ${VAR} NAME)
+        LIST(APPEND SUPPORTED_OS ${DIR})
+    endforeach()
+
+    # Remove configuration names
+    list(REMOVE_ITEM SUPPORTED_OS "travis-osx")
+    list(REMOVE_ITEM SUPPORTED_OS "travis-linux")
+    list(REMOVE_ITEM SUPPORTED_OS "common")
+
+    # Pretty print the list
+    ListToString(ALL_OS ", " ${SUPPORTED_OS})
+
+    # Then we check if the given OS is in that list
+    # If it is not then we issue a fatal error
+    if (NOT "${OS}" IN_LIST SUPPORTED_OS)
+        MESSAGE(FATAL_ERROR "The operative system you specified with the -DOS flag (${OS}) is not\
+        supported by the current BioDynaMo. The operative systems we support at the moment are:
+${ALL_OS}
+")
     endif()
 endfunction()
 

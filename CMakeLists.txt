@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.2.0)
+cmake_policy(VERSION 3.3.0)
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
@@ -27,10 +28,13 @@ include(FeatureSummary)
 include(utils)
 
 # Detect os type and version
-if (NOT DEFINED DETECTED_OS)
+if (NOT DEFINED OS)
     SET(DETECTED_OS "none")
+    detect_os()
+else()
+    SET(DETECTED_OS ${OS})
+    check_detected_os(${DETECTED_OS})
 endif()
-detect_os()
 
 # Check the compiler and provide it automatically if it not found
 include(CheckLanguage)
