@@ -170,10 +170,25 @@ endif()
 
 if(cuda)
   find_package(CUDA)
+  if (NOT CUDA_FOUND)
+    MESSAGE("CUDA was not found in your system, therefore it was disabled to let you compile BioDynaMo. In order to
+enable this functionality please install CUDA for your system. This can be done automatically with the prerequistes.sh
+script offered by the library. Then run again cmake (with the -Dcuda=ON flag).")
+    SET(cuda OFF)
+  endif()
 endif()
+
 if(opencl)
   find_package(OpenCL)
+  if (NOT OpenCL_FOUND)
+      MESSAGE("OpenCL was not found in your system, therefore it was disabled to let you compile BioDynaMo. In order to
+enable this functionality please install OpenCL for your system. This can be done automatically with the prerequistes.sh
+script offered by the library. Then run again cmake (with the -Dopencl=ON flag).")
+      SET(opencl OFF)
+  endif()
 endif()
+
+# Check if we have git installed
 find_package(Git)
 
 # Find ROOT and check its installation
@@ -232,7 +247,6 @@ together with Qt5.")
       find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
               vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
-
     endif()
 
     # Add several ParaView related options
@@ -259,12 +273,22 @@ if (vtune)
         include_directories(${VTUNE_INCLUDE_DIR})
         add_definitions("-DUSE_VTUNE")
         set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
+    else()
+        MESSAGE("VTune was not found in your system, therefore it was disabled. You will not be able to run the perfomance
+checks. In order to enable this functionality please install VTune for your system. This can be done automatically with
+the prerequistes.sh script offered by the library. Then run again cmake (with the -Dvtune=ON flag).")
     endif()
 endif()
 
 # Check if we can find the valgrind executable
 if (valgrind)
     find_package(Valgrind QUIET)
+    if (NOT VALGRIND_FOUND)
+        MESSAGE("valgrind was not found in your system, therefore it was disabled. You will not be able to run the memory
+checks. In order to enable this functionality please install valgrind for your system. This can be done automatically with
+the prerequistes.sh script offered by the library. Then run again cmake (with the -Dvalgrind=ON flag).")
+        SET(valgrind OFF)
+    endif()
 endif()
 
 # -------------------- includes -----------------------------------------------
