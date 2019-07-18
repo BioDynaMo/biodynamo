@@ -28,7 +28,6 @@ fi
 # Install required packages
 sudo apt-get install -y cmake make gcc g++ \
 libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev libpthread-stubs0-dev \
-git \
 python3 python3-dev python3-pip
 
 # Install optional packages

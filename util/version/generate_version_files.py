@@ -23,22 +23,22 @@ import subprocess
 import sys
 
 def VerifyCmdLineArguments():
-    if not len(sys.argv) == 3:
+    if not len(sys.argv) == 4:
         print("ERROR: generate_version_files.py expects two arguments")
         print("""
-USAGE: generate_version_files.py git_executable build_dir
+USAGE: generate_version_files.py git_executable build_dir default_version
   git_executable e.g. git
   build_dir biodynamo cmake build directory""")
         sys.exit(1)
 
-def GetGitDescribeString():
+def GetGitDescribeString(default_version_code):
     try:
         version = subprocess.check_output('{0} describe --tags'.format(sys.argv[1]), stderr=subprocess.DEVNULL, shell=True).decode('utf-8')
         return version.strip()
     except subprocess.CalledProcessError as e:
-        print("Call to git describe failed")
-        print("Error code", e.returncode, e.output)
-        sys.exit(1)
+        print("Call to git describe failed (Error code {})".format(e.returncode))
+        print("Falling back to default version value ({})".format("v"+default_version_code+"-0-00000000"))
+        return "v"+default_version_code+"-0-00000000"
 
 def GenerateFile(template_file, dest_file, version, major, minor, patch, additional_commits):
     if not os.path.exists(template_file):
@@ -74,7 +74,7 @@ def UpdateVersionInfo(last_version_file, version_string):
 if __name__ == '__main__':
     VerifyCmdLineArguments()
 
-    version = GetGitDescribeString()
+    version = GetGitDescribeString(sys.argv[3])
 
     # extract information
     search = re.search('v([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*)', version)

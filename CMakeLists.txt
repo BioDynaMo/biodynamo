@@ -13,7 +13,7 @@ set(ENV{LANG} C)
 # Project name and current version. We do not specify any language for
 # this project. Therefore, we will be able to check manually which compiler
 # we detected on the system.
-project(BioDynaMo LANGUAGES)
+project(BioDynaMo LANGUAGES VERSION "0.1.0")
 
 # Directory in which we saved all the cmake informations.
 set(ENV{BDM_CMAKE_DIR} ${CMAKE_SOURCE_DIR}/cmake)

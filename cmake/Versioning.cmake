@@ -13,13 +13,14 @@
 # -----------------------------------------------------------------------------
 
 if(NOT GIT_FOUND)
-  message(FATAL_ERROR "Git not found.")
+  message("Git was not found on your system. Therefore the detection of the current version of BioDynaMo will
+be done statically. In order to enable the automatic detection, please run prerequisites.sh script and then cmake again.")
 endif()
 
 execute_process(
-     COMMAND "util/version/generate_version_files.py" ${GIT_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}
+     COMMAND "util/version/generate_version_files.py" ${GIT_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_VERSION}
      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 add_custom_target(update-version-info
-     COMMAND "util/version/generate_version_files.py" ${GIT_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}
+     COMMAND "util/version/generate_version_files.py" ${GIT_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR} ${PROJECT_VERSION}
      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
