@@ -83,13 +83,26 @@ else()
 endif()
 
 # -------------------- find packages ------------------------------------------
+find_package(MPI)
+
 find_package(OpenMP REQUIRED)
+
+if (OpenMP_FOUND)
+    link_directories(${OpenMP_CXX_LIBRARIES})
+endif()
+
 find_package(Git)
+
 if(cuda)
   find_package(CUDA)
 endif()
+
 if(opencl)
   find_package(OpenCL)
+endif()
+
+if (paraview)
+    find_package(GLUT)
 endif()
 
 find_package(Numa REQUIRED)
@@ -139,6 +152,7 @@ if (vtune)
         set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
     else()
         message(WARNING "VTune not found")
+        SET(vtune OFF)
     endif()
 endif()
 
