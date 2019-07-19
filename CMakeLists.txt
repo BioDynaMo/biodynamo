@@ -36,44 +36,8 @@ else()
     check_detected_os(${DETECTED_OS})
 endif()
 
-# Check the compiler and provide it automatically if it not found
-include(CheckLanguage)
-check_language(CXX)
-check_language(C)
-if(CMAKE_CXX_COMPILER)
-    # If we are on a MacOS system, we then force the compiler to
-    # be LLVM's clang. This is done because standard MacOS's g++ do not
-    # has OpenMP enabled. Moreover, here we will force the user to
-    # use brew instead of port.
-    if (APPLE)
-        UNSET(CMAKE_CXX_COMPILER CACHE)
-        UNSET(CMAKE_C_COMPILER CACHE)
-        SET(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
-        SET(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
-        include_directories(/usr/local/opt/llvm/include)
-        link_directories(/usr/local/opt/llvm/lib)
-    endif()
-    enable_language(CXX)
-else()
-    # Manually set the g++ compiler that we need for CentOS.
-    # We also set the various link directories needed
-    IF(${DETECTED_OS} MATCHES "centos.*")
-        UNSET(CMAKE_CXX_COMPILER CACHE)
-        UNSET(CMAKE_C_COMPILER CACHE)
-        SET(CMAKE_CXX_COMPILER "/opt/rh/devtoolset-7/root/usr/bin/g++")
-        SET(CMAKE_C_COMPILER "/opt/rh/devtoolset-7/root/usr/bin/gcc")
-        link_directories(/opt/rh/devtoolset-7/root/usr/lib)
-        link_directories(/opt/rh/devtoolset-7/root/usr/lib/dyninst)
-        link_directories(/opt/rh/devtoolset-7/root/usr/lib64)
-        link_directories(/opt/rh/devtoolset-7/root/usr/lib64/dyninst)
-        enable_language(CXX)
-    endif()
-endif()
-
-# Check if we found a C compiler.
-if(CMAKE_C_COMPILER)
-    enable_language(C)
-endif()
+# Find a suitable compiler
+include(CheckCompiler)
 
 # Directory in which BioDynaMo will be installed. It can be provided
 # by the user itself.
