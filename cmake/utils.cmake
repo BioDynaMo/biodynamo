@@ -303,6 +303,12 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/.clang-tidy
             ${CMAKE_SOURCE_DIR}/.clang-tidy-ignore
             )
+
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/third_party/cpplint
+            DESTINATION ${CMAKE_INSTALL_ROOT}/third_party/cpplint
+            GLOB "*")
+
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}
             GLOB ${CMAKE_SOURCE_DIR}/cmake/*.xml
