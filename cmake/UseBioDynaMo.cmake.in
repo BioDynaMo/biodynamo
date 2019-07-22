@@ -165,6 +165,18 @@ if (CUDA_FOUND)
   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} bdmcuda)
 endif()
 
+find_package(ClangTools)
+if (NOT ClangTools_FOUND)
+    message("clang-tidy and clang-format were not found. Style checks will not be available for this simulation.")
+else()
+    if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
+      # Generate a Clang compile_commands.json "compilation database" file for use
+      # with various development tools, such as Vim's YouCompleteMe plugin.
+      # See http://clang.llvm.org/docs/JSONCompilationDatabase.html
+      set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+    endif()
+endif()
+
 # -------------------- set default build type and compiler flags ---------------
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -182,6 +194,12 @@ set(CMAKE_INSTALL_RPATH "")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
 include("${BDM_CMAKE_DIR}/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
+
+
+# It is used by format/style checks. It needs to be defined here such
+# to enable relocation of the scripts.
+set(BUILD_SUPPORT_DIR "${BDM_CMAKE_DIR}/../util")
+include(CppStyleGuideChecks)
 
 fix_rootcling_omp_issue()
 

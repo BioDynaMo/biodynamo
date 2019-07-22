@@ -12,8 +12,6 @@
 #
 # -----------------------------------------------------------------------------
 
-set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/util/housekeeping")
-
 # define commands to obtain source file lists
 set(ALL_SRC_FILES "${BUILD_SUPPORT_DIR}/get-all-src-files.sh")
 set(STAGED_SRC_FILES "${BUILD_SUPPORT_DIR}/get-staged-src-files.sh")

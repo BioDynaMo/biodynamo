@@ -279,24 +279,33 @@ function(install_inside_build)
     # Copy some cmake files
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}
+            ${CMAKE_SOURCE_DIR}/cmake/BioDynaMoConfig.cmake
             ${CMAKE_SOURCE_DIR}/cmake/BioDynaMo.cmake
             ${CMAKE_SOURCE_DIR}/cmake/SetCompilerFlags.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindROOT.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindVTune.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindOpenCL.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindNuma.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindTBB.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindClangTools.cmake
             ${CMAKE_SOURCE_DIR}/cmake/RootUseFile.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/CppStyleGuideChecks.cmake
             ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake
             ${CMAKE_SOURCE_DIR}/cmake/utils.cmake
             )
     add_copy_files(copy_files_bdm
-            DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}
-            GLOB ${CMAKE_SOURCE_DIR}/cmake/*.xml
+            DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}/../util
+            GLOB ${CMAKE_SOURCE_DIR}/util/housekeeping/*.sh
             )
     add_copy_files(copy_files_bdm
-            DESTINATION ${CMAKE_INSTALL_CMAKEDIR}
-            ${CMAKE_SOURCE_DIR}/cmake/BioDynaMoConfig.cmake
-            ${CMAKE_SOURCE_DIR}/cmake/FindNuma.cmake
-            ${CMAKE_SOURCE_DIR}/cmake/FindTBB.cmake
+            DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}/../util/style_checks
+            ${CMAKE_SOURCE_DIR}/.clang-format
+            ${CMAKE_SOURCE_DIR}/.clang-tidy
+            ${CMAKE_SOURCE_DIR}/.clang-tidy-ignore
+            )
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}
+            GLOB ${CMAKE_SOURCE_DIR}/cmake/*.xml
             )
 
     # Other headers

@@ -26,8 +26,15 @@ PROJECT_ROOT_DIR=$1
 if [ "$TRAVIS_BRANCH" == "master" ]; then
   FILES=$(git diff --name-only $TRAVIS_COMMIT_RANGE | grep ".*\.\(cc\|h\)$")
 else
-  # get changed files compared to origin/master
-  FILES=$(git diff --name-only origin/master | grep ".*\.\(cc\|h\)$")
+
+  # Check if we have a master branch before comparing
+  HAVE_ORIGIN=$(git remote | grep -c "master")
+  if [ "${HAVE_ORIGIN}" -gt "0" ]; then
+    # get changed files compared to origin/master
+    FILES=$(git diff --name-only origin/master | grep ".*\.\(cc\|h\)$")
+  else
+    exit 0
+  fi
 fi
 
 # filter files that have been deleted or are in directory third_party

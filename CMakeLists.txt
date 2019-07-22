@@ -58,6 +58,10 @@ set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share")
 set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake")
 set(CMAKE_INSTALL_THIRDPARTY    "${CMAKE_INSTALL_ROOT}")
 
+# It is used by format/style checks. It needs to be defined here such
+# to enable relocation of the scripts.
+set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/util/housekeeping")
+
 #Set paths where to put the libraries, executables and headers
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
