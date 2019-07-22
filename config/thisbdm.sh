@@ -169,9 +169,9 @@ fi
 
 ##### CMake Specific Configurations #####
 if [ -z "${CMAKE_PREFIX_PATH}" ]; then
-   CMAKE_PREFIX_PATH="${BDMSYS}/cmake"; export CMAKE_PREFIX_PATH       # Linux, ELF HP-UX
+   CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake"; export CMAKE_PREFIX_PATH       # Linux, ELF HP-UX
 else
-   CMAKE_PREFIX_PATH="${BDMSYS}/cmake":$CMAKE_PREFIX_PATH; export CMAKE_PREFIX_PATH
+   CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake":$CMAKE_PREFIX_PATH; export CMAKE_PREFIX_PATH
 fi
 
 BDM_CMAKE_DIR="${BDMSYS}/share/cmake"; export BDM_CMAKE_DIR
@@ -290,7 +290,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
       fi
     fi
     unset old_llvmdir
-    
+
     export LLVMDIR="/usr/local/opt/llvm"
     export CC=$LLVMDIR/bin/clang
     export CXX=$LLVMDIR/bin/clang++
