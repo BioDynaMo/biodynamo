@@ -208,21 +208,21 @@ if [ -z ${THIS_PARAVIEW} ]; then
 fi
 
 if [ -z "${ParaView_DIR}" ]; then
-   ParaView_DIR="${THIS_PARAVIEW}lib/cmake/paraview-5.6"; export ParaView_DIR
+   ParaView_DIR="${THIS_PARAVIEW}/lib/cmake/paraview-5.6"; export ParaView_DIR
 else
-   ParaView_DIR="${THIS_PARAVIEW}lib/cmake/paraview-5.6":$ParaView_DIR; export ParaView_DIR
+   ParaView_DIR="${THIS_PARAVIEW}/lib/cmake/paraview-5.6":$ParaView_DIR; export ParaView_DIR
 fi
 
 if [ -z "${ParaView_LIB_DIR}" ]; then
-   ParaView_LIB_DIR="${THIS_PARAVIEW}lib"; export ParaView_LIB_DIR
+   ParaView_LIB_DIR="${THIS_PARAVIEW}/lib"; export ParaView_LIB_DIR
 else
-   ParaView_LIB_DIR="${THIS_PARAVIEW}lib":$ParaView_LIB_DIR; export ParaView_LIB_DIR
+   ParaView_LIB_DIR="${THIS_PARAVIEW}/lib":$ParaView_LIB_DIR; export ParaView_LIB_DIR
 fi
 
 if [ -z "${PYTHONPATH}" ]; then
    PYTHONPATH="${THIS_PARAVIEW}/lib/python2.7/site-packages"; export PYTHONPATH
 else
-   PYTHONPATH="${THIS_PARAVIEW}lib/python2.7/site-packages":$PYTHONPATH; export PYTHONPATH
+   PYTHONPATH="${THIS_PARAVIEW}/lib/python2.7/site-packages":$PYTHONPATH; export PYTHONPATH
 fi
 
 if [ -z "${PV_PLUGIN_PATH}" ]; then
@@ -262,9 +262,9 @@ if [ -z ${THIS_QT} ]; then
 fi
 
 if [ -z "${Qt5_DIR}" ]; then
-   Qt5_DIR="${THIS_QT}lib/cmake/Qt5"; export Qt5_DIR
+   Qt5_DIR="${THIS_QT}/lib/cmake/Qt5"; export Qt5_DIR
 else
-   Qt5_DIR="${THIS_QT}lib/cmake/Qt5":$Qt5_DIR; export Qt5_DIR
+   Qt5_DIR="${THIS_QT}/lib/cmake/Qt5":$Qt5_DIR; export Qt5_DIR
 fi
 
 if [ -z "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
