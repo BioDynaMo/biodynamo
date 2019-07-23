@@ -108,11 +108,19 @@ add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are
 # -------------------- find packages ------------------------------------------
 
 # Check if Python is present
-find_package(PythonInterp 3.5)
+find_package(PythonInterp 3.5 REQUIRED)
+if (PythonInterp_NOT_FOUND)
+    MESSAGE(FATAL_ERROR "We did not found any Python interpreter. Please run ./prerequisites.sh again before
+calling cmake. The Python interpreter is required in order to successfully use BioDynaMo." )
+endif()
 find_package(pip)
 
 # Check if OpenMPI is present
-find_package(MPI)
+find_package(MPI REQUIRED)
+if (MPI_NOT_FOUND)
+    MESSAGE(FATAL_ERROR "We did not found any OpenMPI installation. Please run ./prerequisites.sh again before
+calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
+endif()
 
 # Check if GLUT is present. If we do not have it, then we
 # disable directly paraview.
