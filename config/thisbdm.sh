@@ -291,17 +291,32 @@ if [[ $(uname -s) == "Darwin"* ]]; then
     fi
     unset old_llvmdir
 
-    export LLVMDIR="/usr/local/opt/llvm"
-    export CC=$LLVMDIR/bin/clang
-    export CXX=$LLVMDIR/bin/clang++
-    export CXXFLAGS=-I$LLVMDIR/include
-    export LDFLAGS=-L$LLVMDIR/lib
-    export PATH=$LLVMDIR/bin:$PATH
+    # Automatically set the MacOS compiler
+    if [ -z ${CXX} ] || [ -z ${C} ] ; then
+        if [ -x "/usr/local/opt/llvm/bin/clang++" ]; then
+            export LLVMDIR="/usr/local/opt/llvm"
+            export CC=$LLVMDIR/bin/clang
+            export CXX=$LLVMDIR/bin/clang++
+            export CXXFLAGS=-I$LLVMDIR/include
+            export LDFLAGS=-L$LLVMDIR/lib
+            export PATH=$LLVMDIR/bin:$PATH
+        elif [ -x "/opt/local/bin/clang++-mp-8.0" ]; then
+            export CC=/opt/local/bin/clang++-mp-8.0
+            export CXX=/opt/local/bin/clang-mp-8.0
+        elif [ -x "/sw/opt/llvm-5.0/bin/clang++" ]; then
+            export CC=/sw/opt/llvm-5.0/bin/clang++
+            export CXX=/sw/opt/llvm-5.0/bin/clang
+        fi
+    fi
+
+
 else
     # CentOs specifics
     if [ `lsb_release -si` == "CentOS" ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
-        . scl_source enable devtoolset-7
+        if [ -z ${CXX} ] || [ -z ${C} ] ; then
+            . scl_source enable devtoolset-7
+        fi
         . scl_source enable rh-python36
 
         . /etc/profile.d/modules.sh
