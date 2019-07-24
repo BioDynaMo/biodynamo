@@ -17,7 +17,8 @@ import shutil
 import sys
 
 from print_command import Print
-from new_command import InitializeNewGitRepo
+from git_utils import InitializeNewGitRepo
+from common import CopyStyleFiles
 
 
 DEMO_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'demo')
@@ -45,10 +46,8 @@ def DemoCommand(demo_name, destination=None):
     src_dir = os.path.join(DEMO_DIR, demo_name)
     print('Copying files from "{}" to "{}"...'.format(src_dir, destination))
     shutil.copytree(src_dir, destination)
-    for filename in os.listdir(STYLE_DIR):
-        full_file_name = os.path.join(STYLE_DIR, filename)
-        if os.path.isfile(full_file_name):
-            shutil.copy(full_file_name, destination)
+    
+    CopyStyleFiles(destination)
 
     InitializeNewGitRepo(destination)
 
