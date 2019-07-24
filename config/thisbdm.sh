@@ -325,7 +325,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
     unset old_llvmdir
 
     # Automatically set the MacOS compiler
-    if [ -z ${CXX} ] || [ -z ${C} ] ; then
+    if [ -z ${CXX} ] && [ -z ${CC} ] ; then
         if [ -x "/usr/local/opt/llvm/bin/clang++" ]; then
             export LLVMDIR="/usr/local/opt/llvm"
             export CC=$LLVMDIR/bin/clang
@@ -347,7 +347,7 @@ else
     # CentOs specifics
     if [ `lsb_release -si` == "CentOS" ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
-        if [ -z ${CXX} ] || [ -z ${C} ] ; then
+        if [ -z ${CXX} ] && [ -z ${CC} ] ; then
             . scl_source enable devtoolset-7
         fi
         . scl_source enable rh-python36

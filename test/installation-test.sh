@@ -53,7 +53,9 @@ set +e
 if [ $1 = "centos-7.6.1810" ]; then
   export MESA_GL_VERSION_OVERRIDE=3.3
   . scl_source enable rh-python36
-  . scl_source enable devtoolset-7
+  if [ -z ${CXX} ] || [ -z ${CC} ] ; then
+    . scl_source enable devtoolset-7
+  fi
 
   . /etc/profile.d/modules.sh
   module load mpi
