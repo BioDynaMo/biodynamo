@@ -196,14 +196,22 @@ endif()
 
 if(paraview)
 
+    # If we specify a custom location for ParaView then we need to specify also a custom location
+    # for Qt.
+    if ((DEFINED ENV{ParaView_DIR} AND NOT DEFINED ENV{Qt5_DIR}) OR (NOT DEFINED ENV{ParaView_DIR} AND DEFINED ENV{Qt5_DIR}))
+        MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build\
+ BioDynaMo with those library. This is needed only if you want to use your own versions of ParaView and Qt.\
+ Normally, BioDynaMo will automatically downloads those libraries.")
+    endif()
+
     # Check if there is Qt5 installed
     find_package(Qt5 COMPONENTS Widgets
-            PATHS $ENV{THIS_QT} ${CMAKE_THIRD_PARTY_DIR}/qt)
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/qt)
 
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
             vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
-            PATHS $ENV{THIS_PARAVIEW} ${CMAKE_THIRD_PARTY_DIR}/paraview)
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
     # to download it.
@@ -223,10 +231,10 @@ together with Qt5.")
       include(external/ParaView)
 
       # We run again the find_package command such to find correctly the location of Qt and ParaView
-      find_package(Qt5 COMPONENTS Widgets PATHS $ENV{THIS_QT} ${CMAKE_THIRD_PARTY_DIR}/qt)
+      find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt)
       find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
               vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
-              PATHS $ENV{THIS_PARAVIEW} ${CMAKE_THIRD_PARTY_DIR}/paraview)
+              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
     endif()
 
     # Add several ParaView related options

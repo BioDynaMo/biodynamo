@@ -179,55 +179,49 @@ BDM_SRC_DIR="${BDMSYS}/include"; export BDM_SRC_DIR
 ########
 
 #### ROOT Specific Configurations ####
-if [ -z ${THIS_ROOT} ]; then
-    THIS_ROOT=$(find ${BDM_INSTALL_DIR}/third_party/root -type d -name "root" 2>/dev/null | head -n 1)
-    if [ -z ${THIS_ROOT} ]; then
-        THIS_ROOT=$(find ~/.bdm/third_party/root -type d -name "root" 2>/dev/null | head -n 1)
-    fi
-fi
-if [ -z ${THIS_ROOT} ]; then
-   echo "We were unable to source ROOT! Please make sure it is installed in your system!"
-   echo "You can specify manually its location by executing 'export THIS_ROOT=path/to/root'"
-   echo "before running cmake."
-   echo "Sourcing BioDynaMo env failed!"
+if [ -z ${ROOT_DIR} ]; then
+    ROOT_DIR=${BDM_INSTALL_DIR}/third_party/root
+    if ! [ -d $ROOT_DIR ]; then
+        echo "We were unable to source ROOT! Please make sure it is installed in your system!"
+        echo "You can specify manually its location by executing 'export ROOT_DIR=path/to/root'"
+        echo "before running cmake."
+        echo "Sourcing BioDynaMo env failed!"
    exit 1
 fi
-. ${THIS_ROOT}/bin/thisroot.sh
+
+. ${ROOT_DIR}/bin/thisroot.sh
 export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDMSYS}/include"
 ########
 
 
 #### ParaView Specific Configurations ####
-if [ -z ${THIS_PARAVIEW} ]; then
-    THIS_PARAVIEW=$(find ${BDM_INSTALL_DIR}/third_party/paraview -type d -name "paraview" 2>/dev/null | head -n 1)
-    if [ -z ${THIS_PARAVIEW} ]; then
-        THIS_PARAVIEW=$(find ~/.bdm/third_party/paraview -name "paraview" 2>/dev/null | head -n 1)
+if [ -z ${ParaView_DIR} ]; then
+    ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview
+    if ! [ -d $ParaView_DIR ]; then
+        echo "We were unable to find ParaView! Please make sure it is installed in your system!"
+        echo "You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
+        echo "together with 'export Qt5_DIR=path/to/qt' before running cmake."
+        echo "Sourcing BioDynaMo env failed!"
+        exit 1
     fi
-fi
-if [ -z ${THIS_PARAVIEW} ]; then
-   echo "We were unable to find ParaView! Please make sure it is installed in your system!"
-   echo "You can specify manually its location by executing 'export THIS_PARAVIEW=path/to/paraview'"
-   echo "before running cmake."
-   echo "Sourcing BioDynaMo env failed!"
-   exit 1
 fi
 
 if [ -z "${ParaView_DIR}" ]; then
-   ParaView_DIR="${THIS_PARAVIEW}/lib/cmake/paraview-5.6"; export ParaView_DIR
+   ParaView_DIR="${ParaView_DIR}/lib/cmake/paraview-5.6"; export ParaView_DIR
 else
-   ParaView_DIR="${THIS_PARAVIEW}/lib/cmake/paraview-5.6":$ParaView_DIR; export ParaView_DIR
+   ParaView_DIR="${ParaView_DIR}/lib/cmake/paraview-5.6":$ParaView_DIR; export ParaView_DIR
 fi
 
 if [ -z "${ParaView_LIB_DIR}" ]; then
-   ParaView_LIB_DIR="${THIS_PARAVIEW}/lib"; export ParaView_LIB_DIR
+   ParaView_LIB_DIR="${ParaView_DIR}/lib"; export ParaView_LIB_DIR
 else
-   ParaView_LIB_DIR="${THIS_PARAVIEW}/lib":$ParaView_LIB_DIR; export ParaView_LIB_DIR
+   ParaView_LIB_DIR="${ParaView_DIR}/lib":$ParaView_LIB_DIR; export ParaView_LIB_DIR
 fi
 
 if [ -z "${PYTHONPATH}" ]; then
-   PYTHONPATH="${THIS_PARAVIEW}/lib/python2.7/site-packages"; export PYTHONPATH
+   PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages"; export PYTHONPATH
 else
-   PYTHONPATH="${THIS_PARAVIEW}/lib/python2.7/site-packages":$PYTHONPATH; export PYTHONPATH
+   PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH; export PYTHONPATH
 fi
 
 if [ -z "${PV_PLUGIN_PATH}" ]; then
@@ -237,9 +231,9 @@ else
 fi
 
 if [ -z "${PATH}" ]; then
-   PATH="${THIS_PARAVIEW}/bin"; export PATH
+   PATH="${ParaView_DIR}/bin"; export PATH
 else
-   PATH="${THIS_PARAVIEW}/bin":$PATH; export PATH
+   PATH="${ParaView_DIR}/bin":$PATH; export PATH
 fi
 
 if [ -z "${LD_LIBRARY_PATH}" ]; then
@@ -256,42 +250,39 @@ fi
 ########
 
 #### Qt5 Specific Configurations ####
-if [ -z ${THIS_QT} ]; then
-    THIS_QT=$(find ${BDM_INSTALL_DIR}/third_party/qt -type d -name "qt" 2>/dev/null | head -n 1)
-    if [ -z ${THIS_QT} ]; then
-        THIS_QT=$(find ~/.bdm/third_party/qt -name "qt" 2>/dev/null | head -n 1)
+if [ -z ${Qt5_DIR} ]; then
+    Qt5_DIR=${BDM_INSTALL_DIR}/third_party/qt
+    if ! [ -d $Qt5_DIR ]; then
+        echo "We were unable to find Qt! Please make sure it is installed in your system!"
+        echo "You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
+        echo "together with 'export ParaView_DIR=path/to/paraview' before running cmake."
+        echo "Sourcing BioDynaMo env failed!"
+        exit 1
     fi
-fi
-if [ -z ${THIS_QT} ]; then
-   echo "We were unable to find Qt5! Please make sure it is installed in your system!"
-   echo "You can specify manually its location by executing 'export THIS_QT=path/to/qt'"
-   echo "before running cmake."
-   echo "Sourcing BioDynaMo env failed!"
-   exit 1
 fi
 
 if [ -z "${Qt5_DIR}" ]; then
-   Qt5_DIR="${THIS_QT}/lib/cmake/Qt5"; export Qt5_DIR
+   Qt5_DIR="${Qt5_DIR}/lib/cmake/Qt5"; export Qt5_DIR
 else
-   Qt5_DIR="${THIS_QT}/lib/cmake/Qt5":$Qt5_DIR; export Qt5_DIR
+   Qt5_DIR="${Qt5_DIR}/lib/cmake/Qt5":$Qt5_DIR; export Qt5_DIR
 fi
 
 if [ -z "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
-   QT_QPA_PLATFORM_PLUGIN_PATH="${THIS_QT}/plugins"; export QT_QPA_PLATFORM_PLUGIN_PATH
+   QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins"; export QT_QPA_PLATFORM_PLUGIN_PATH
 else
-   QT_QPA_PLATFORM_PLUGIN_PATH="${THIS_QT}/plugins":$QT_QPA_PLATFORM_PLUGIN_PATH; export QT_QPA_PLATFORM_PLUGIN_PATH
+   QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins":$QT_QPA_PLATFORM_PLUGIN_PATH; export QT_QPA_PLATFORM_PLUGIN_PATH
 fi
 
 if [ -z "${LD_LIBRARY_PATH}" ]; then
-   LD_LIBRARY_PATH="${THIS_QT}/lib"; export LD_LIBRARY_PATH
+   LD_LIBRARY_PATH="${Qt5_DIR}/lib"; export LD_LIBRARY_PATH
 else
-   LD_LIBRARY_PATH="${THIS_QT}/lib":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+   LD_LIBRARY_PATH="${Qt5_DIR}/lib":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
 fi
 
 if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-   DYLD_LIBRARY_PATH="${THIS_QT}/lib"; export DYLD_LIBRARY_PATH
+   DYLD_LIBRARY_PATH="${Qt5_DIR}/lib"; export DYLD_LIBRARY_PATH
 else
-   DYLD_LIBRARY_PATH="${THIS_QT}/lib":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
+   DYLD_LIBRARY_PATH="${Qt5_DIR}/lib":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
 fi
 
 #######
