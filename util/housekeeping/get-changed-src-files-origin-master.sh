@@ -28,7 +28,7 @@ if [ "$TRAVIS_BRANCH" == "master" ]; then
 else
 
   # Check if we have a master branch before comparing
-  HAVE_ORIGIN=$(git remote | grep -c "master")
+  HAVE_ORIGIN=$(git branch -a | grep -c "origin/master")
   if [ "${HAVE_ORIGIN}" -gt "0" ]; then
     # get changed files compared to origin/master
     FILES=$(git diff --name-only origin/master | grep ".*\.\(cc\|h\)$")
