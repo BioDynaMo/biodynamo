@@ -186,7 +186,8 @@ if [ -z ${ROOT_DIR} ]; then
         echo "You can specify manually its location by executing 'export ROOT_DIR=path/to/root'"
         echo "before running cmake."
         echo "Sourcing BioDynaMo env failed!"
-   exit 1
+        exit 1
+    fi
 fi
 
 . ${ROOT_DIR}/bin/thisroot.sh
