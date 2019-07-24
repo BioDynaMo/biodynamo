@@ -20,7 +20,7 @@ import sys
 
 from print_command import Print
 from git_utils import *
-from common import CopyStyleFiles
+from common import CopySupportFiles
 
 def ValidateSimName(sim_name):
     pattern = re.compile("^[a-zA-Z]+[a-zA-Z0-9\-_]+$")
@@ -88,7 +88,7 @@ def NewCommand(sim_name, github):
 
     ValidateSimName(sim_name)
     CopyTemplate(sim_name)
-    CopyStyleFiles(sim_name)
+    CopySupportFiles(sim_name)
     CustomizeFiles(sim_name)
     InitializeNewGitRepo(sim_name)
     if github:

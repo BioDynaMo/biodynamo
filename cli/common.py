@@ -17,10 +17,10 @@ import shutil
 
 from print_command import Print
 
-def CopyStyleFiles(sim_name):
-    STYLE_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'share', 'util', 'style_checks')
-    Print.new_step("Copy clang-format code style files")
-    for filename in os.listdir(STYLE_DIR):
-        full_file_name = os.path.join(STYLE_DIR, filename)
+def CopySupportFiles(sim_name):
+    SUPPORT_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'share', 'util', 'support_files')
+    Print.new_step("Copy additional support files")
+    for filename in os.listdir(SUPPORT_DIR):
+        full_file_name = os.path.join(SUPPORT_DIR, filename)
         if os.path.isfile(full_file_name):
             shutil.copy(full_file_name, sim_name)

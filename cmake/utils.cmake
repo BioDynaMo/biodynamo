@@ -298,10 +298,11 @@ function(install_inside_build)
             GLOB ${CMAKE_SOURCE_DIR}/util/housekeeping/*.sh
             )
     add_copy_files(copy_files_bdm
-            DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}/../util/style_checks
+            DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}/../util/support_files
             ${CMAKE_SOURCE_DIR}/.clang-format
             ${CMAKE_SOURCE_DIR}/.clang-tidy
             ${CMAKE_SOURCE_DIR}/.clang-tidy-ignore
+            ${CMAKE_SOURCE_DIR}/.gitignore
             )
 
     add_copy_directory(copy_files_bdm
