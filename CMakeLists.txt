@@ -198,12 +198,12 @@ if(paraview)
 
     # Check if there is Qt5 installed
     find_package(Qt5 COMPONENTS Widgets
-            PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
+            PATHS $ENV{THIS_QT} ${CMAKE_THIRD_PARTY_DIR}/qt)
 
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
             vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
-            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
+            PATHS $ENV{THIS_PARAVIEW} ${CMAKE_THIRD_PARTY_DIR}/paraview)
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
     # to download it.
@@ -223,10 +223,10 @@ together with Qt5.")
       include(external/ParaView)
 
       # We run again the find_package command such to find correctly the location of Qt and ParaView
-      find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt ${BDM_INSTALL_DIR}/third_party/qt)
+      find_package(Qt5 COMPONENTS Widgets PATHS $ENV{THIS_QT} ${CMAKE_THIRD_PARTY_DIR}/qt)
       find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
               vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
-              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ${BDM_INSTALL_DIR}/third_party/paraview)
+              PATHS $ENV{THIS_PARAVIEW} ${CMAKE_THIRD_PARTY_DIR}/paraview)
     endif()
 
     # Add several ParaView related options

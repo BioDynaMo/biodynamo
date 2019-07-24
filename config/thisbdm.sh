@@ -179,30 +179,35 @@ BDM_SRC_DIR="${BDMSYS}/include"; export BDM_SRC_DIR
 ########
 
 #### ROOT Specific Configurations ####
-THIS_ROOT=$(find ${BDM_INSTALL_DIR}/third_party/root -name "thisroot.sh" 2>/dev/null | head -n 1)
 if [ -z ${THIS_ROOT} ]; then
-    THIS_ROOT=$(find ~/.bdm/third_party/root -name "thisroot.sh" 2>/dev/null | head -n 1)
+    THIS_ROOT=$(find ${BDM_INSTALL_DIR}/third_party/root -type d -name "root" 2>/dev/null | head -n 1)
     if [ -z ${THIS_ROOT} ]; then
-        THIS_ROOT=$(find /opt -name "thisroot.sh" 2>/dev/null | head -n 1)
+        THIS_ROOT=$(find ~/.bdm/third_party/root -type d -name "root" 2>/dev/null | head -n 1)
     fi
 fi
 if [ -z ${THIS_ROOT} ]; then
    echo "We were unable to source ROOT! Please make sure it is installed in your system!"
+   echo "You can specify manually its location by executing 'export THIS_ROOT=path/to/root'"
+   echo "before running cmake."
    echo "Sourcing BioDynaMo env failed!"
    exit 1
 fi
-. ${THIS_ROOT}
+. ${THIS_ROOT}/bin/thisroot.sh
 export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDMSYS}/include"
 ########
 
 
 #### ParaView Specific Configurations ####
-THIS_PARAVIEW=$(find ${BDM_INSTALL_DIR}/third_party/paraview -type d -name "paraview" 2>/dev/null | head -n 1)
 if [ -z ${THIS_PARAVIEW} ]; then
-    THIS_PARAVIEW=$(find ~/.bdm/third_party/paraview -name "paraview" 2>/dev/null | head -n 1)
+    THIS_PARAVIEW=$(find ${BDM_INSTALL_DIR}/third_party/paraview -type d -name "paraview" 2>/dev/null | head -n 1)
+    if [ -z ${THIS_PARAVIEW} ]; then
+        THIS_PARAVIEW=$(find ~/.bdm/third_party/paraview -name "paraview" 2>/dev/null | head -n 1)
+    fi
 fi
 if [ -z ${THIS_PARAVIEW} ]; then
    echo "We were unable to find ParaView! Please make sure it is installed in your system!"
+   echo "You can specify manually its location by executing 'export THIS_PARAVIEW=path/to/paraview'"
+   echo "before running cmake."
    echo "Sourcing BioDynaMo env failed!"
    exit 1
 fi
@@ -251,12 +256,16 @@ fi
 ########
 
 #### Qt5 Specific Configurations ####
-THIS_QT=$(find ${BDM_INSTALL_DIR}/third_party/qt -type d -name "qt" 2>/dev/null | head -n 1)
 if [ -z ${THIS_QT} ]; then
-    THIS_QT=$(find ~/.bdm/third_party/qt -name "qt" 2>/dev/null | head -n 1)
+    THIS_QT=$(find ${BDM_INSTALL_DIR}/third_party/qt -type d -name "qt" 2>/dev/null | head -n 1)
+    if [ -z ${THIS_QT} ]; then
+        THIS_QT=$(find ~/.bdm/third_party/qt -name "qt" 2>/dev/null | head -n 1)
+    fi
 fi
 if [ -z ${THIS_QT} ]; then
    echo "We were unable to find Qt5! Please make sure it is installed in your system!"
+   echo "You can specify manually its location by executing 'export THIS_QT=path/to/qt'"
+   echo "before running cmake."
    echo "Sourcing BioDynaMo env failed!"
    exit 1
 fi
