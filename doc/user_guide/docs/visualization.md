@@ -1,13 +1,13 @@
 ---
 title: "Visualization"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/visualization/"
+path: "/docs/userguide/visualization/"
 meta_title: "viz"
 meta_description: "This is the visualization page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/visualization/"
+    url:  "/docs/userguide/visualization/"
     title: "Visualization"
     description: "This is the visualization page."
 sidebar: "userguide"

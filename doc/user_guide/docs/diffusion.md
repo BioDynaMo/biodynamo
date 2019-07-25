@@ -1,13 +1,13 @@
 ---
 title: "Diffusion"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/diffusion/"
+path: "/docs/userguide/diffusion/"
 meta_title: "diff"
 meta_description: "This is the diffusion page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/diffusion/"
+    url:  "/docs/userguide/diffusion/"
     title: "Diffusion"
     description: "This is the diffusion page."
 sidebar: "userguide"
@@ -140,7 +140,7 @@ biodynamo run
 
 ### Visualize the simulation
 
-Load the generated ParaView state file as described in [Section Visualization](visualization.md#export-visualization-files).
+Load the generated ParaView state file as described in [Section Visualization](/docs/userguide/visualization/#export-visualization-files).
 
 From "View", select "Animation Panel". This will display some animation settings
 at the bottom of the screen. From the "Mode" select "Real Time".

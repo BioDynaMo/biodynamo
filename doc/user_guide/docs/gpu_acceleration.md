@@ -1,13 +1,13 @@
 ---
 title: "GPU Acceleration"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/gpu_acceleration/"
+path: "/docs/userguide/gpu_acceleration/"
 meta_title: "gpu_accel"
 meta_description: "This is the gpu acceleration page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/gpu_acceleration/"
+    url:  "/docs/userguide/gpu_acceleration/"
     title: "GPU Acceleration"
     description: "This is the gpu acceleration page page."
 sidebar: "userguide"
@@ -15,7 +15,7 @@ keywords:
   -gpu
   -acceleration
   -faster
-  -speed 
+  -speed
   -up
 ---
 

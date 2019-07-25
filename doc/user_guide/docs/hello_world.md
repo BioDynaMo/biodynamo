@@ -1,13 +1,13 @@
 ---
 title: "Hello World"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/hello_world/"
+path: "/docs/userguide/hello_world/"
 meta_title: "hello_world"
 meta_description: "This is the hello world page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/hello_world/"
+    url:  "/docs/userguide/hello_world/"
     title: "Hello World"
     description: "This is the hello world page."
 sidebar: "userguide"

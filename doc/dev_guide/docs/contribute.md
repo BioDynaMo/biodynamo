@@ -1,13 +1,13 @@
 ---
 title: "Contribute"
 date: "2019-01-01"
-path: "/biodynamo/doc/dev_guide/docs/contribute/"
+path: "/docs/devguide/contribute/"
 meta_title: "contribute"
 meta_description: "This is the contribution page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/dev_guide/docs/contribution/"
+    url:  "/docs/devguide/contribution/"
     title: "Contribute"
     description: "This is the contribution page."
 sidebar: "devguide"
@@ -31,7 +31,7 @@ Consequently, it will ensure that your code is accepted sooner :)
 #### 1. Get familiar with our coding convention
 
 Carefully read the [C++ style guide](https://google.github.io/styleguide/cppguide.html)
-and our page about [Code Quality](code_quality)
+and our page about [Code Quality](/docs/devguide/code_quality)
 
 #### 2. Clone the repository
 
@@ -63,7 +63,7 @@ You can make intermediate commits without performing all subsequent steps.
 However, for your final submission these steps are essential.
 
 Also for intermediate commit messages: have a look at
-[how to write good commit messages](/biodynamo/doc/dev_guide/docs/code_quality/#git-commit-message)!
+[how to write good commit messages](/docs/devguide/code_quality/#git-commit-message)!
 
 #### 7. Compile and run tests
 
@@ -121,7 +121,7 @@ Point GetSAHSplitPoint();
 ``` bash
 make check-submission
 ```
-This command will execute all tests, check code formatting, styleguide rules, build the documentation and coverage report ([more info](/biodynamo/doc/dev_guide/docs/contribute/#make-check-submission-explained)).
+This command will execute all tests, check code formatting, styleguide rules, build the documentation and coverage report ([more info](/docs/devguide/contribute/#make-check-submission-explained)).
 
 False positives from `clang-tidy` can be silenced by adding `// NOLINT` at the end of the line.
 Disabling `clang-format` for a certain part can be done by encapsulating it with the following comments:
@@ -146,7 +146,7 @@ Please verify that:
 #### 12. Commit
 
 Once `make check-submission` does not report any issues, the final commit can be done.
-Have a look at [how to write good commit messages](/biodynamo/doc/dev_guide/docs/code_quality/#git-commit-message)!
+Have a look at [how to write good commit messages](/docs/devguide/code_quality/#git-commit-message)!
 ``` bash
 git add -i
 git commit

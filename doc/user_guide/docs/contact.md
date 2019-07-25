@@ -1,13 +1,13 @@
 ---
 title: "Contact"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/contact/"
+path: "/docs/userguide/contact/"
 meta_title: "contact"
 meta_description: "This is the contacts page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/contact/"
+    url:  "/docs/userguide/contact/"
     title: "Contact"
     description: "This is the contacts page."
 sidebar: "userguide"

@@ -1,13 +1,13 @@
 ---
 title: "Operation"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/operation/"
+path: "/docs/userguide/operation/"
 meta_title: "operate"
 meta_description: "This is the operation page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/operation/"
+    url:  "/docs/userguide/operation/"
     title: "Operation"
     description: "This is the operation page."
 sidebar: "userguide"

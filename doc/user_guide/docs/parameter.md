@@ -1,13 +1,13 @@
 ---
 title: "Parameter"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/parameter/"
+path: "/docs/userguide/parameter/"
 meta_title: "param"
 meta_description: "This is the parameter page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/parameter/"
+    url:  "/docs/userguide/parameter/"
     title: "Parameter"
     description: "This is the parameter page."
 sidebar: "userguide"

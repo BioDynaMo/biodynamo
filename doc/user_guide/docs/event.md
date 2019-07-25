@@ -1,12 +1,12 @@
 ---
 title: "Event"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/event/"
+path: "/docs/userguide/event/"
 meta_title: "eve"
 meta_description: "This is the event page."
 toc: true
 next:
-    url:  "/biodynamo/doc/user_guide/docs/event/"
+    url:  "/docs/userguide/event/"
     title: "Event"
     description: "This is the event page."
 sidebar: "userguide"

@@ -1,13 +1,13 @@
 ---
 title: "Substance Initialization"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/substance_initializers/"
+path: "/docs/userguide/substance_initializers/"
 meta_title: "init"
 meta_description: "This is the substance initialization page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/substance_initializers/"
+    url:  "/docs/userguide/substance_initializers/"
     title: "Substance Initialization"
     description: "This is the substance initialization page."
 sidebar: "userguide"

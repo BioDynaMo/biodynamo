@@ -1,13 +1,13 @@
 ---
 title: "Building Biodynamo"
 date: "2019-01-01"
-path: "/biodynamo/doc/dev_guide/docs/build/"
+path: "/docs/devguide/build/"
 meta_title: "build_biodynamo"
 meta_description: "This is the how to build page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/dev_guide/docs/build/"
+    url:  "/docs/devguide/build/"
     title: "Building Biodynamo"
     description: "This is the how to build page."
 sidebar: "devguide"
@@ -19,13 +19,7 @@ keywords:
 
 To build BioDynaMo from source execute the following commands:
 
-<<<<<<< f1d2a5b5bf1414791859359dcf674c300cdcae12
-!!! info
-    If you are a user please follow the installation instructions in our [user guide](https://biodynamo.github.io/user/)
-
-## Ubuntu 16.04, 18.04
-=======
-<a class="sbox" href= "/biodynamo/doc/user_guide/docs/" target="_blank" rel="noopener">
+<a class="sbox" href= "/docs/userguide/" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Info<b><h4>
     	<p>If you are a user please follow the installation instructions in our <font color="blue"><u>user guide</u></font>.
@@ -33,7 +27,6 @@ To build BioDynaMo from source execute the following commands:
     </div>
 </a>
 <br>
->>>>>>> Added front matter to .md files for proper formatting of gatsby based website.
 
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
@@ -241,18 +234,12 @@ If you want to download the files from remote LFS again execute:
 unset BDM_LOCAL_LFS
 ```
 
-<<<<<<< f1d2a5b5bf1414791859359dcf674c300cdcae12
-!!! warning
-    At the moment there is no check if the local copy is in sync with
-=======
 <br>
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Warning<b><h4>
     	<p>At the moment there is no check if the local copy is in synch with
->>>>>>> Added front matter to .md files for proper formatting of gatsby based website.
     remote. You have to ensure that yourself!
 		</p>
     </div>
 </a>
-

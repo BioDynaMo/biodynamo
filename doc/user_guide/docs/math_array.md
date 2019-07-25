@@ -1,13 +1,13 @@
 ---
 title: "Math Array"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/math_array/"
+path: "/docs/userguide/math_array/"
 meta_title: "math_array"
 meta_description: "This is the math array page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/math_array/"
+    url:  "/docs/userguide/math_array/"
     title: "Math Array"
     description: "This is the math array page."
 sidebar: "userguide"
@@ -20,9 +20,9 @@ keywords:
 ---
 
 ## Description
- 
+
 `MathArray<T,N>` is an array-like structure which provides a similar interface to the
-standard `std::array<T,N>` class, but it overloads many standard mathematical 
+standard `std::array<T,N>` class, but it overloads many standard mathematical
 operations (e.g. `+`, `-`, `+=`, etc.). Moreover, it implements several custom
 operations (e.g. `Norm()`, `Normalize()`, etc.).
 
@@ -42,7 +42,7 @@ auto sub = a-b;
 
 // Performs the dot product between the two MathArray
 // elements and it returns a single value. dot == 10
-auto dot = a*b; 
+auto dot = a*b;
 
 // div = {1,2,3,4};
 auto div = a/b;

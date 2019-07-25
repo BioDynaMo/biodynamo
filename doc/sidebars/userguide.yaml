@@ -1,45 +1,45 @@
 - groups:
   - group: Welcome
-    items: 
+    items:
       - title: Introduction
-        link: /biodynamo/doc/user_guide/docs/
+        link: /docs/userguide/
       - title: Installation
-        link: /biodynamo/doc/user_guide/docs/installation/ 
+        link: /docs/userguide/installation/
       - title: First Steps
-        link: /biodynamo/doc/user_guide/docs/first_steps/
+        link: /docs/userguide/first_steps/
   - group: Tutorials
     items:
       - title: Hello World
-        link: /biodynamo/doc/user_guide/docs/hello_world/
+        link: /docs/userguide/hello_world/
       - title: Visualization
-        link: /biodynamo/doc/user_guide/docs/visualization/
+        link: /docs/userguide/visualization/
       - title: Diffusion
-        link: /biodynamo/doc/user_guide/docs/diffusion/
-      - title: Tumor Concept 
-        link: /biodynamo/doc/user_guide/docs/tumor_concept/
+        link: /docs/userguide/diffusion/
+      - title: Tumor Concept
+        link: /docs/userguide/tumor_concept/
   - group: Documentation
     items:
       - title: Parameter
-        link: /biodynamo/doc/user_guide/docs/parameter/
+        link: /docs/userguide/parameter/
       - title: Event
-        link: /biodynamo/doc/user_guide/docs/event/
+        link: /docs/userguide/event/
       - title: Math Array
-        link: /biodynamo/doc/user_guide/docs/math_array/
+        link: /docs/userguide/math_array/
       - title: Operation
-        link: /biodynamo/doc/user_guide/docs/operation/
+        link: /docs/userguide/operation/
       - title: Substance Initialization
-        link: /biodynamo/doc/user_guide/docs/substance_initializers/
+        link: /docs/userguide/substance_initializers/
       - title: GPU Acceleration
-        link: /biodynamo/doc/user_guide/docs/gpu_acceleration/
+        link: /docs/userguide/gpu_acceleration/
   - group: Troubleshooting
     items:
       - title: OpenGL
-        link: /biodynamo/doc/user_guide/docs/opengl_issues/
-  - group: Changelog 
-    items: 
+        link: /docs/userguide/opengl_issues/
+  - group: Changelog
+    items:
       - title: Log
-        link: /biodynamo/doc/user_guide/docs/changelog/
+        link: /docs/userguide/changelog/
   - group: Contact
     items:
       - title: Info
-        link: /biodynamo/doc/user_guide/docs/contact/
+        link: /docs/userguide/contact/

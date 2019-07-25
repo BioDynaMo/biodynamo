@@ -1,13 +1,13 @@
 ---
 title: "Installation"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/installation/"
+path: "/docs/userguide/installation/"
 meta_title: "install_guide"
 meta_description: "This is the installation page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/installation/"
+    url:  "/docs/userguide/installation/"
     title: "Installation"
     description: "This is the installation page."
 sidebar: "userguide"

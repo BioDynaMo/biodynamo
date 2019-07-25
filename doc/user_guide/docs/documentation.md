@@ -1,13 +1,13 @@
 ---
 title: "Documentation"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/documentation/"
+path: "/docs/userguide/documentation/"
 meta_title: "doc"
 meta_description: "This is the documentation page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/documentation/"
+    url:  "/docs/userguide/documentation/"
     title: "Documentation"
     description: "This is the documentation page."
 sidebar: "userguide"
@@ -21,4 +21,3 @@ keywords:
     	<p>We are currently under construction!</p>
     </div>
 </a>
-	

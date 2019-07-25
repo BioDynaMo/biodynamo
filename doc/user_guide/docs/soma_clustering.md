@@ -1,13 +1,13 @@
 ---
 title: "Soma Clustering"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/soma_clustering/"
+path: "/docs/userguide/soma_clustering/"
 meta_title: "soma_cluster"
 meta_description: "This is the soma clustering page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/soma_clustering/"
+    url:  "/docs/userguide/soma_clustering/"
     title: "Soma Clustering"
     description: "This is the soma clustering page."
 sidebar: "userguide"

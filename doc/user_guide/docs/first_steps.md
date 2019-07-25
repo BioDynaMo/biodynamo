@@ -1,13 +1,13 @@
 ---
 title: "First Steps"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/first_steps/"
+path: "/docs/userguide/first_steps/"
 meta_title: "first_steps"
 meta_description: "This is the first steps page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/first_steps/"
+    url:  "/docs/userguide/first_steps/"
     title: "First Steps"
     description: "This is the first steps page."
 sidebar: "userguide"
@@ -106,4 +106,4 @@ biodynamo assist
 
 This command will create a folder called `debug` in which debug information will be collected.
 A git branch will be created and uploaded to Github. Send the link to this branch to us,
-so we can take a look at the issue. Check out [Contact](contact.md) on how to contact us.
+so we can take a look at the issue. Check out [Contact](/docs/userguide/contact) on how to contact us.

@@ -1,13 +1,13 @@
 ---
 title: "Changelog"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/changelog/"
+path: "/docs/userguide/changelog/"
 meta_title: "change_log"
 meta_description: "This is the changelog page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/changelog/"
+    url:  "/docs/userguide/changelog/"
     title: "Changelog"
     description: "This is the changelog page."
 sidebar: "userguide"
@@ -177,7 +177,7 @@ cmake -Ddict=off ..
 
 ## 18.09.2018 [`3a380e4`](https://github.com/BioDynaMo/biodynamo/commit/3a380e451ed1d691a6b8dce4c46d82e7faaf5ddc)
 
-Refactor [parameters](parameter).
+Refactor [parameters](/docs/userguide/parameter).
 
 *  Add functionality to define compile time parameters for a specific simulation
    object. This was necessary due to compile time errors of neurite biology modules.
@@ -199,7 +199,7 @@ see which lines need to be changed in your simulation after [this commit](https:
 
 ## 29.08.2018 [`a373fca`](https://github.com/BioDynaMo/biodynamo/commit/a373fcaad5b50d2ec8ad5a9d8a218adf7850fcc6)
 
-Add the concept of [Events](event).
+Add the concept of [Events](/docs/userguide/event).
 This is an important change to support extensibility. Now, there is a clear
 way to tell BioDynaMo what should happen with a new data member for a specific
 event.

@@ -1,13 +1,13 @@
 ---
 title: "OpenGL Issues"
 date: "2019-01-01"
-path: "/biodynamo/doc/user_guide/docs/opengl_issues/"
+path: "/docs/userguide/opengl_issues/"
 meta_title: "opengl_issues"
 meta_description: "This is the openGL issues page."
 toc: true
 image: ""
 next:
-    url:  "/biodynamo/doc/user_guide/docs/opengl_issues/"
+    url:  "/docs/userguide/opengl_issues/"
     title: "OpenGL Issues"
     description: "This is the openGL issues page."
 sidebar: "userguide"
