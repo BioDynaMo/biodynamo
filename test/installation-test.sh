@@ -53,7 +53,7 @@ set +e
 if [ $1 = "centos-7.6.1810" ]; then
   export MESA_GL_VERSION_OVERRIDE=3.3
   . scl_source enable rh-python36
-  if [ -z ${CXX} ] || [ -z ${CC} ] ; then
+  if [ -z ${CXX} ] && [ -z ${CC} ] ; then
     . scl_source enable devtoolset-7
   fi
 
@@ -65,12 +65,22 @@ set -e
 # Custom instruction for MacOS (just in case)
 # Export path to make cmake find LLVM's clang (otherwise OpenMP won't work)
 if [ $1 = "osx" ]; then
-    export LLVMDIR="/usr/local/opt/llvm"
-    export CC=$LLVMDIR/bin/clang
-    export CXX=$LLVMDIR/bin/clang++
-    export CXXFLAGS=-I$LLVMDIR/include
-    export LDFLAGS=-L$LLVMDIR/lib
-    export PATH=$LLVMDIR/bin:$PATH
+   if [ -z ${CXX} ] && [ -z ${CC} ] ; then
+        if [ -x "/usr/local/opt/llvm/bin/clang++" ]; then
+            export LLVMDIR="/usr/local/opt/llvm"
+            export CC=$LLVMDIR/bin/clang
+            export CXX=$LLVMDIR/bin/clang++
+            export CXXFLAGS=-I$LLVMDIR/include
+            export LDFLAGS=-L$LLVMDIR/lib
+            export PATH=$LLVMDIR/bin:$PATH
+        elif [ -x "/opt/local/bin/clang++-mp-8.0" ]; then
+            export CC=/opt/local/bin/clang++-mp-8.0
+            export CXX=/opt/local/bin/clang-mp-8.0
+        elif [ -x "/sw/opt/llvm-5.0/bin/clang++" ]; then
+            export CC=/sw/opt/llvm-5.0/bin/clang++
+            export CXX=/sw/opt/llvm-5.0/bin/clang
+        fi
+    fi
 
     # for mkdocs
     export PATH=$PATH:~/Library/Python/2.7/bin
