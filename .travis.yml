@@ -41,6 +41,19 @@ matrix:
     # Test development installation on osx
     - os: osx
       env: SCRIPT="util/travis-ci/installation-test.sh osx"
+    # Test the install script
+    - os: linux
+      dist: trusty
+      sudo: required
+      group: edge
+      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 install.sh"
+    - os: linux
+      dist: trusty
+      sudo: required
+      group: edge
+      env: SCRIPT="util/travis-ci/installation-test.sh centos-7.6.1810"
+    - os: osx
+      env: SCRIPT="install.sh"
 
 script:
   - shell_session_update() { :; };

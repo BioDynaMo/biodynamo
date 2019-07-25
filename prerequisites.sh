@@ -78,4 +78,4 @@ done
 
 
 # Call install script for the detected OS
-CallOSSpecificScript $BDM_PROJECT_DIR prerequisites.sh $1 $2
+CallOSSpecificScript $BDM_PROJECT_DIR prerequisites.sh $2

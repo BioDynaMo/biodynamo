@@ -36,6 +36,29 @@ function RequireSudo {
   fi
 }
 
+# Function that detects the OS
+# Returns linux flavour or osx.
+# This function prints an error and exits if is not linux or macos.
+function DetectOs {
+  # detect operating system
+  if [ ${TRAVIS-""} ] && [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    echo "travis-osx"
+    # Travis linux always runs inside a container -> use DetectLinuxFlavour
+  elif [ `uname` = "Linux" ]; then
+    # linux
+    DISTRIBUTOR=$(lsb_release -si)
+    RELEASE=$(lsb_release -sr)
+    OS="${DISTRIBUTOR}-${RELEASE}"
+    echo $OS | awk '{print tolower($0)}'
+  elif [ `uname` = "Darwin" ]; then
+    # macOS
+    echo osx
+  else
+    echo "ERROR: Operating system `uname` is not supported."
+    exit 1
+  fi
+}
+
 # This function checks if the given operating system is supported. If not, it
 # prints an error message, a list of supported systems; and exits the script.
 # Arguments:
@@ -136,9 +159,6 @@ function CleanBuild {
   cd $BUILD_DIR
   echo "CMAKEFLAGS $BDM_CMAKE_FLAGS"
   cmake $BDM_CMAKE_FLAGS .. \
-  && bash ./prerequisites-optional.sh \
-  && bash ./prerequisites-required.sh
-  cmake $BDM_CMAKE_FLAGS ..
   make -j$(CPUCount) && make install
 }
 
@@ -165,15 +185,17 @@ function GetAbsolutePath {
 #   $2 filename of the script that should be executed
 #   $@ arguments that should be passed to the script
 function CallOSSpecificScript {
-  if [[ $# -lt 4 ]]; then
+  if [[ $# -lt 2 ]]; then
     echo "ERROR in CallOSSpecificScript: Wrong number of arguments"
     exit 1
   fi
 
   local BDM_PROJECT_DIR="$1"
-  local BDM_SCRIPT_FILE="$2"
-  local BDM_LOCAL_OS="$3"
-  local BDM_INSTALL_TYPE="$4"
+  shift
+  local BDM_SCRIPT_FILE="$1"
+  shift
+  local BDM_LOCAL_OS=$(DetectOs)
+  local BDM_SCRIPT_ARGUMENTS=$@
   local BDM_INSTALL_SRC=$BDM_PROJECT_DIR/util/installation
 
   # detect os
@@ -189,7 +211,7 @@ function CallOSSpecificScript {
     exit 1
   fi
 
-  $BDM_SCRIPTPATH $BDM_INSTALL_TYPE
+  $BDM_SCRIPTPATH $BDM_SCRIPT_ARGUMENTS
 }
 
 # Return the bashrc file based on the current operating system
@@ -214,10 +236,10 @@ function EchoFinishThisStep {
   fi
 
   EchoInfo "To complete this step execute:"
-  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/biodynamo-env.sh"
+  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/biodynamo/bin/thisbdm.sh"
   EchoInfo "This command must be executed in every terminal before you build or use BioDynaMo."
   EchoInfo "To avoid this additional step add it to your $(BashrcFile) file:"
-  EchoInfo "    echo \"source $1/biodynamo-env.sh\" >> $(BashrcFile)"
+  EchoInfo "    echo \"source $1/biodynamo/bin/thisbdm.sh\" >> $(BashrcFile)"
 }
 
 # This function prompts the user for the biodynamo installation direcotory
