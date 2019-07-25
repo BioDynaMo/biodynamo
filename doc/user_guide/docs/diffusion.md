@@ -2,7 +2,7 @@
 title: "Diffusion"
 date: "2019-01-01"
 path: "/docs/userguide/diffusion/"
-meta_title: "diff"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the diffusion page."
 toc: true
 image: ""

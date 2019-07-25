@@ -2,7 +2,7 @@
 title: "Changelog"
 date: "2019-01-01"
 path: "/docs/userguide/changelog/"
-meta_title: "change_log"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the changelog page."
 toc: true
 image: ""

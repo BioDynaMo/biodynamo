@@ -2,7 +2,7 @@
 title: "Installation"
 date: "2019-01-01"
 path: "/docs/userguide/installation/"
-meta_title: "install_guide"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the installation page."
 toc: true
 image: ""
@@ -24,11 +24,11 @@ git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
 ./install.sh
 ```
-<br>
+<br/>
 
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Important<b><h4>
+    	<h4><b>Important</b></h4>
     	<p>1. After the installation you need to restart your terminal.
 	      In every new terminal execute <code>source <path-to-bdm-installation>/biodynamo-env.sh</code>
 	      to use BioDynaMo!<br>

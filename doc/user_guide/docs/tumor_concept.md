@@ -2,7 +2,7 @@
 title: "Tumor Concept"
 date: "2019-01-01"
 path: "/docs/userguide/tumor_concept/"
-meta_title: "tumor_concept"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the tumor concept page."
 toc: true
 image: ""

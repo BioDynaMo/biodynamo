@@ -2,7 +2,7 @@
 title: "Soma Clustering"
 date: "2019-01-01"
 path: "/docs/userguide/soma_clustering/"
-meta_title: "soma_cluster"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the soma clustering page."
 toc: true
 image: ""

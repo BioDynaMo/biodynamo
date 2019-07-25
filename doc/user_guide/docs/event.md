@@ -2,7 +2,7 @@
 title: "Event"
 date: "2019-01-01"
 path: "/docs/userguide/event/"
-meta_title: "eve"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the event page."
 toc: true
 next:
@@ -109,7 +109,7 @@ The event handler performs the transition from mother to daughter 1.
 
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-      <h4><b>CAUTION<b><h4>
+      <h4><b>CAUTION</b></h4>
       <p>Do not forget to forward the call to the constructor and event handler of the base class.
     </p>
     </div>

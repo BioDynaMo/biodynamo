@@ -2,7 +2,7 @@
 title: "Contact"
 date: "2019-01-01"
 path: "/docs/userguide/contact/"
-meta_title: "contact"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the contacts page."
 toc: true
 image: ""

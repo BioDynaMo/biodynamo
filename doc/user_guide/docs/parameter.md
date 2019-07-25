@@ -2,7 +2,7 @@
 title: "Parameter"
 date: "2019-01-01"
 path: "/docs/userguide/parameter/"
-meta_title: "param"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the parameter page."
 toc: true
 image: ""
@@ -29,10 +29,10 @@ There are three ways to set the value of a parameter:
 2.  Command line argument
 3.  Assignment in the source code.
 
-<br>
+<br/>
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-      <h4><b>Note<b><h4>
+      <h4><b>Note</b></h4>
       <p>Higher index takes precedence.  E.g. If you define the <code>backup_file</code> in the TOML file and the
     command line parameter, the command line version will be used.
     </p>

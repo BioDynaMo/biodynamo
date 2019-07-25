@@ -2,7 +2,7 @@
 title: "OpenGL Issues"
 date: "2019-01-01"
 path: "/docs/userguide/opengl_issues/"
-meta_title: "opengl_issues"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the openGL issues page."
 toc: true
 image: ""

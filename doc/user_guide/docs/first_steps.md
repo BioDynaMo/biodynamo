@@ -2,7 +2,7 @@
 title: "First Steps"
 date: "2019-01-01"
 path: "/docs/userguide/first_steps/"
-meta_title: "first_steps"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the first steps page."
 toc: true
 image: ""
@@ -44,7 +44,7 @@ name, containing some template files to get you started.
 
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Tip<b><h4>
+    	<h4><b>Tip</b></h4>
     	<p>If you wish to have your Github account linked to your project you can
 	append the <code>--github</code> option to the command. <code>biodynamo assist</code> command requires <code>--github</code>
 		</p>

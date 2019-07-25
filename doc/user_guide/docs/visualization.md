@@ -2,7 +2,7 @@
 title: "Visualization"
 date: "2019-01-01"
 path: "/docs/userguide/visualization/"
-meta_title: "viz"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the visualization page."
 toc: true
 image: ""
@@ -62,12 +62,12 @@ Now we need to open ParaView:
 
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Warning<b><h4>
+    	<h4><b>Warning</b><h/4>
     	<p>Make sure you start ParaView from the project directory. Otherwise, ParaView might not find the exported files.
 		</p>
     </div>
 </a>
-<br>
+<br/>
 
 ```bash
 paraview

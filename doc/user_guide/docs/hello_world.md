@@ -2,7 +2,7 @@
 title: "Hello World"
 date: "2019-01-01"
 path: "/docs/userguide/hello_world/"
-meta_title: "hello_world"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the hello world page."
 toc: true
 image: ""
@@ -73,7 +73,7 @@ next exercise to learn about the visualization features of BioDynaMo.
 
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Info<b><h4>
+    	<h4><b>Info</b></h4>
     	<p>You might want to run for a few more simulation steps to witness cells dividing
 		</p>
     </div>

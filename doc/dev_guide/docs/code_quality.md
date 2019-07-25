@@ -2,7 +2,7 @@
 title: "Code Quality"
 date: "2019-01-01"
 path: "/docs/devguide/code_quality/"
-meta_title: "code_quality"
+meta_title: "BioDynaMo Dev Guide"
 meta_description: "This is the code quality page."
 toc: true
 image: ""

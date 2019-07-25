@@ -2,7 +2,7 @@
 title: "GPU Acceleration"
 date: "2019-01-01"
 path: "/docs/userguide/gpu_acceleration/"
-meta_title: "gpu_accel"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the gpu acceleration page."
 toc: true
 image: ""
@@ -48,10 +48,10 @@ By default we assume that your GPU is only CUDA-compatible. If you want to let B
 ```Python
 use_opencl = true
 ```
-<br>
+<br/>
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Note<b><h4>
+    	<h4><b>Note</b></h4>
     	<p>If you have multiple GPUs on your system you can select which BioDynaMo uses by setting the following flag: <code>preferred_gpu = &#60;value&#62;</code>, where <code>&#60;value&#62;</code> is the index of the GPU in the list of all GPUs.
 		</p>
     </div>

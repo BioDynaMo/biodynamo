@@ -2,7 +2,7 @@
 title: "Math Array"
 date: "2019-01-01"
 path: "/docs/userguide/math_array/"
-meta_title: "math_array"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the math array page."
 toc: true
 image: ""

@@ -2,7 +2,7 @@
 title: "Contribute"
 date: "2019-01-01"
 path: "/docs/devguide/contribute/"
-meta_title: "contribute"
+meta_title: "BioDynaMo Dev Guide"
 meta_description: "This is the contribution page."
 toc: true
 image: ""

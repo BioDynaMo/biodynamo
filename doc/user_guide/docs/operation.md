@@ -2,7 +2,7 @@
 title: "Operation"
 date: "2019-01-01"
 path: "/docs/userguide/operation/"
-meta_title: "operate"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the operation page."
 toc: true
 image: ""

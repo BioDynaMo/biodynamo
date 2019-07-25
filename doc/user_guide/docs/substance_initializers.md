@@ -2,7 +2,7 @@
 title: "Substance Initialization"
 date: "2019-01-01"
 path: "/docs/userguide/substance_initializers/"
-meta_title: "init"
+meta_title: "BioDynaMo User Guide"
 meta_description: "This is the substance initialization page."
 toc: true
 image: ""
