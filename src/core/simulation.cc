@@ -217,10 +217,14 @@ void Simulation::InitializeRuntimeParams(
                  "Config file %s not found in `.` or `../` directory.",
                  kConfigFile);
   }
+
   if (options.backup_file_ != "") {
     param_->backup_file_ = options.backup_file_;
+  }
+  if (options.restore_file_ != "") {
     param_->restore_file_ = options.restore_file_;
   }
+
   set_param(param_);
 }
 
