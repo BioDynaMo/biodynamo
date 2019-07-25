@@ -57,9 +57,9 @@ Improve file structure in directory src/ and test/unit
 
 **API changes**
 
-| Old                                 | New                                    |
-| ----------------------------------- | -------------------------------------- |
-| `SimulationObject`                  | `SimObject`                            |
+| Old                | New         |
+| ------------------ | ----------- |
+| `SimulationObject` | `SimObject` |
 
 ## 21.01.2019 [`1968ec2`](https://github.com/BioDynaMo/biodynamo/commit/1968ec2969b3fa38e6856d96f6e7294c36e71634)
 
@@ -69,10 +69,10 @@ change and solve known issues.
 
 Discretization governs three main questions:
 
-  * When should new simulation objects be visible?
-  * When should simulation objects be removed from the simulation?
-  * If a simulation object is updated, when should the change be visible?
-  * Should operations observe the values from the last iteration or from the
+-   When should new simulation objects be visible?
+-   When should simulation objects be removed from the simulation?
+-   If a simulation object is updated, when should the change be visible?
+-   Should operations observe the values from the last iteration or from the
     previous operation?
 
 Since simulations might have different requirements, this commit introduces
@@ -88,20 +88,19 @@ becomes obsolete. This is now managed by the `ResourceManager`.
 
 **Third**, this commit adds an in-place execution context.
 
-  * Simulation objects that are added or removed are visible to the whole simulation
+-   Simulation objects that are added or removed are visible to the whole simulation
     after the next timestep.
-  * Operations directly modify simulation objects inside the `ResourceManager`.
+-   Operations directly modify simulation objects inside the `ResourceManager`.
     Thus, the result depends on the order in which sim objects are updated.
     Operations (biology modules or mechanical interactions) see the updated
     values from the previous operation.
 
-
 **Forth**, this commit solves two race condition issues:
 
-  * Adding new simulation objects to the `ResourceManager` caused issues if it
+-   Adding new simulation objects to the `ResourceManager` caused issues if it
     triggered a growth. References and pointers to simulation objects were
     invalidated during this operation.
-  * Modifications of neighbors. Two threads could potentially update the same
+-   Modifications of neighbors. Two threads could potentially update the same
     neighbor.
 
 **Fifth**, result from mechanical interactions will change. Up to now the implementation
@@ -121,10 +120,10 @@ can be obtained from the simulation object (e.g. calling `sim->GetExecutionConte
 
 Exemplary API changes:
 
-  * Method `ResourceManager::New` was removed. During a simulation only use
+-   Method `ResourceManager::New` was removed. During a simulation only use
     e.g. `InPlaceExecutionContext::New`. During setup of the initial model using
     `ResourceManager::push_back` is also fine.
-  * Method `ResourceManager::Get` has been changed to return a const pointer.
+-   Method `ResourceManager::Get` has been changed to return a const pointer.
     Thus `rm->Get<Cell>()->push_back(new_cell)` won't work anymore. However, calling
     `rm->Get<Cell>()->size()` is still fine.
 
@@ -137,62 +136,62 @@ Resolve ROOT-9321 by removing TBase template parameter of simulation objects
 
 Motivation:
 
-  * Workaround for ROOT-9321
-  * Shortens full name of simulation objects
+-   Workaround for ROOT-9321
+-   Shortens full name of simulation objects
 
 Move duplicated biology module code from `Cell` and `NeuriteELement`
 to `SimulationObject`
 
 This change requires a different signature of `BDM_SIM_OBJECT_HEADER`.
 
-  1. Remove the suffix `Ext` from the first parameter
-  2. Add the base class name as a second parameter.
+1.  Remove the suffix `Ext` from the first parameter
+2.  Add the base class name as a second parameter.
 
 In other words, copy the parameters from `BDM_SIM_OBJECT` to the beginning of `BDM_SIM_OBJECT_HEADER`
+
 ```cpp
 class Cell : public SimulationObject {
   BDM_SIM_OBJECT_HEADER(Cell, SimulationObject, 1, ...)
 ```
 
-
-| Old                                 | New                                    |
-| ----------------------------------- | -------------------------------------- |
-| `BDM_SIM_OBJECT_HEADER(CellExt, 1, ...)` | `BDM_SIM_OBJECT_HEADER(Cell, `**`SimulationObject`**`, 1, ...)` |
+| Old                                      | New                                                            |
+| ---------------------------------------- | -------------------------------------------------------------- |
+| `BDM_SIM_OBJECT_HEADER(CellExt, 1, ...)` | `BDM_SIM_OBJECT_HEADER(Cell,`**`SimulationObject`**`, 1, ...)` |
 
 ## 08.10.2018 [`8a97cf2`](https://github.com/BioDynaMo/biodynamo/commit/8a97cf21ad3e07be19f764d116eb10cae5c6ab05)
 
 Allow builds without dictionaries to speed up compile time                                 
 
-Early development of a simulation requires fast iteration cycles.                  
-During this stage serialization features are not needed. Thus,                                  
+Early development of a simulation requires fast iteration cycles.  
+During this stage serialization features are not needed. Thus,  
 we support builds without dictionaries.                                     
 
-By default dictionaries will be built. To turn them off, run:                                   
+By default dictionaries will be built. To turn them off, run:  
 cmake -Ddict=off ..
 
-| Old                                 | New                                    |
-| ----------------------------------- | -------------------------------------- |
-| ClassDef(...)                       | BDM_CLASS_DEF(...)                     |
-| ClassDefNV(...)                     | BDM_CLASS_DEF_NV(...)                  |
+| Old             | New                   |
+| --------------- | --------------------- |
+| ClassDef(...)   | BDM_CLASS_DEF(...)    |
+| ClassDefNV(...) | BDM_CLASS_DEF_NV(...) |
 
 ## 18.09.2018 [`3a380e4`](https://github.com/BioDynaMo/biodynamo/commit/3a380e451ed1d691a6b8dce4c46d82e7faaf5ddc)
 
 Refactor [parameters](/docs/userguide/parameter).
 
-*  Add functionality to define compile time parameters for a specific simulation
-   object. This was necessary due to compile time errors of neurite biology modules.
-   (Although they were not used for neurons, the compiler tried to compile them)
-   This replaces the reinterpret cast workaround.
-*  `Simulation::GetActive()->GetParam()` returns const pointer
-   Runtime parameter should not be changed during the simulation. This simplifies
-   the distributed runtime.
-*  Add macros to simplify definition of compile time parameter.
-*  All compile time parameter that take more than one type will be defined using
-   `CTList`. No more distinction between `Variant` and `VariadicTypedef`.
-*  Improve modularity. Each module can have its own parameter class.
-   All parameter classes will be combined into `CompileTimeParam::Param`.
-*  Make all runtime parameters non static.
-*  Rename `AtomicTypes` to `SimObjectTypes`
+-   Add functionality to define compile time parameters for a specific simulation
+    object. This was necessary due to compile time errors of neurite biology modules.
+    (Although they were not used for neurons, the compiler tried to compile them)
+    This replaces the reinterpret cast workaround.
+-   `Simulation::GetActive()->GetParam()` returns const pointer
+    Runtime parameter should not be changed during the simulation. This simplifies
+    the distributed runtime.
+-   Add macros to simplify definition of compile time parameter.
+-   All compile time parameter that take more than one type will be defined using
+    `CTList`. No more distinction between `Variant` and `VariadicTypedef`.
+-   Improve modularity. Each module can have its own parameter class.
+    All parameter classes will be combined into `CompileTimeParam::Param`.
+-   Make all runtime parameters non static.
+-   Rename `AtomicTypes` to `SimObjectTypes`
 
 Please have a look at the changes of the demos to
 see which lines need to be changed in your simulation after [this commit](https://github.com/BioDynaMo/biodynamo/commit/3a380e451ed1d691a6b8dce4c46d82e7faaf5ddc).
@@ -204,50 +203,49 @@ This is an important change to support extensibility. Now, there is a clear
 way to tell BioDynaMo what should happen with a new data member for a specific
 event.
 
-| Old                                 | New                                    |
-| ----------------------------------- | -------------------------------------- |
-| `gAllBmEvents`                      | `gAllEventIds` |
-| `gNullEvent`                        | `gNullEventId` |
-| `gCellDivision`                     | `CellDivisionEvent::kEventId` |
-| `gNeuriteElongation`                | `SplitNeuriteElementEvent::kEventId` |
-| `gNeuriteBranching`                 | `NeuriteBranchingEvent::kEventId` |
-| `gNeuriteBifurcation`               | `NeuriteBifurcationEvent::kEventId` |
-| `gNeuriteSideCylinderExtension`     | `SideNeuriteExtensionEvent::kEventId` |
-|                                     | Simulation objects and biology modules must have an event constructor and event handler function in order to support an event. |
+| Old                             | New                                                                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `gAllBmEvents`                  | `gAllEventIds`                                                                                                                 |
+| `gNullEvent`                    | `gNullEventId`                                                                                                                 |
+| `gCellDivision`                 | `CellDivisionEvent::kEventId`                                                                                                  |
+| `gNeuriteElongation`            | `SplitNeuriteElementEvent::kEventId`                                                                                           |
+| `gNeuriteBranching`             | `NeuriteBranchingEvent::kEventId`                                                                                              |
+| `gNeuriteBifurcation`           | `NeuriteBifurcationEvent::kEventId`                                                                                            |
+| `gNeuriteSideCylinderExtension` | `SideNeuriteExtensionEvent::kEventId`                                                                                          |
+|                                 | Simulation objects and biology modules must have an event constructor and event handler function in order to support an event. |
 
-
-## 16.07.2018 `3bac827`
+## 16.07.2018 [`3bac827`](https://github.com/BioDynaMo/biodynamo/commit/3bac827b53b5f9f1066867f89bb47e9f69f90b0a)
 
 Change github option for `biodynamo new`. Previously it was opt-out (`--no-github`).
 This commit changes it to opt-in (`--github`).
 
-| Old                                 | New                                    |
-| ----------------------------------- | -------------------------------------- |
-| `biodynamo new --no-github`         | `biodynamo new` |
-| `biodynamo new`                     | `biodynamo new --github` |
+| Old                         | New                      |
+| --------------------------- | ------------------------ |
+| `biodynamo new --no-github` | `biodynamo new`          |
+| `biodynamo new`             | `biodynamo new --github` |
 
-## 11.07.2018 `82e7e15`
+## 11.07.2018 [`82e7e15`](https://github.com/BioDynaMo/biodynamo/commit/82e7e15463e2e7dfdb488073a01fd563305fc26c)
 
-* Add `biodynamo demo` command to try out the demos
-`biodynamo demo` lists all the available demos
-`biodynamo demo <demo-name> <dir>` sets up the demo `<demo-name>` in directory `<dir>`.
-If `<dir>` is not specified, it defaults to the current working directory.
+-   Add `biodynamo demo` command to try out the demos
+    `biodynamo demo` lists all the available demos
+    `biodynamo demo <demo-name> <dir>` sets up the demo `<demo-name>` in directory `<dir>`.
+    If `<dir>` is not specified, it defaults to the current working directory.
 
-## 26.06.2018 `ba4fe1f`
+## 26.06.2018 [`ba4fe1f`](https://github.com/BioDynaMo/biodynamo/commit/ba4fe1f9f911e007bd61237d53a8399aa1b2268d#comments)
 
-* Add support for multiple simulations per process. Only one simulation
-can be active at the same time. Introduces new class `Simulation` (see [API](https://biodynamo.github.io/api/structbdm_1_1Simulation.html)).
-This change causes many API changes -- see subsection below.
+-   Add support for multiple simulations per process. Only one simulation
+    can be active at the same time. Introduces new class `Simulation` (see [API](https://biodynamo.github.io/api/structbdm_1_1Simulation.html)).
+    This change causes many API changes -- see subsection below.
 
-* Write simulation files to separate directory: `output/simulation-id/`
+-   Write simulation files to separate directory: `output/simulation-id/`
 
-* Integrate simulation template for `biodynamo new` into the biodynamo repository to avoid
-inconsistencies with the biodynamo version.
+-   Integrate simulation template for `biodynamo new` into the biodynamo repository to avoid
+    inconsistencies with the biodynamo version.
 
-| Old                                 | New                                    |
-| ----------------------------------- | -------------------------------------- |
-| `InitializeBioDynaMo(...)`          | `Simulation simulation(...)` |
-| `Rm()` <br> `TRm::Get()` <br>  `TResourceManager::Get()` | `auto* rm = simulation.GetResourceManager();` |
-| `GetDiffusionGrid(...)`             | `rm->GetDiffusionGrid(...)` |
-| `Grid::GetInstance()`               | `auto* grid = simulation.GetGrid();` |
-| `Param::some_parameter_;`           | `auto* param = simulation.GetParam();` <br> `param->some_parameter_;` |
+| Old                                                      | New                                                                   |
+| -------------------------------------------------------- | --------------------------------------------------------------------- |
+| `InitializeBioDynaMo(...)`                               | `Simulation simulation(...)`                                          |
+| `Rm()` <br> `TRm::Get()` <br>  `TResourceManager::Get()` | `auto* rm = simulation.GetResourceManager();`                         |
+| `GetDiffusionGrid(...)`                                  | `rm->GetDiffusionGrid(...)`                                           |
+| `Grid::GetInstance()`                                    | `auto* grid = simulation.GetGrid();`                                  |
+| `Param::some_parameter_;`                                | `auto* param = simulation.GetParam();` <br> `param->some_parameter_;` |
