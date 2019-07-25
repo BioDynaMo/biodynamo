@@ -155,7 +155,7 @@ Then click the Play button at the top of the screen to run the simulation visual
 The differential equations that describe the diffusion are solved in an
 analytical way using the central difference method as shown in the figure below:
 
-![Central Difference Method](images/diffusion_central_difference_method.png)
+[![Central Difference Method](images/diffusion_central_difference_method.png)](/docs/userguide/diffusion/#diffusion-parameter-constraints)
 
 The diffusion coefficient dictates the speed of diffusing a substance through
 space, while with the decay constant one controls the speed at which a substance
@@ -163,7 +163,7 @@ decays. Mathematically, the method would allow for unphysical behavior to occur,
 negative concentration values. In order to avoid such behavior from happening,
 we impose the following constraint on the parameters:
 
-![Parameter Constraint](images/diffusion_parameters_constraint.png)
+[![Parameter Constraint](images/diffusion_parameters_constraint.png)](/docs/userguide/diffusion/#diffusion-parameter-constraints)
 
 Since as a user, you are giving the resolution of the diffusion grid and not the
 distance between the grid points, you can determine this value by dividing the

@@ -183,7 +183,7 @@ Once again, it is important to note that if you want to change any visualization
 
 We will first have a look at export visualization then the live visualization. In both cases, simply run Paraview using the console line command `paraview &`. This window should appears
 
-![Open ParaView](images/jean_tutorial/paraview1.png)
+[![Open ParaView](images/jean_tutorial/paraview1.png)](/docs/userguide/tumor_concept/#paraview)
 
 #### Export Visualisation (recommended)
 
@@ -191,34 +191,34 @@ In the configuration file (bdm.toml), turn the export parameter to true then run
 
 A major advantage of export visualisation, in addition of not impacting the simulation time, is that you can visualise your modelling freely in time. using the arrows in the top menu, you can choose respectively to go back to the beginning of the simulation, go one step back, run normally, go one step further or go to the end of the simulation. You also can see witch step you are currently visualising (remember that this step number is the number of your modelling step divided by the export\_interval you choose in your configuration file).
 
-![Paraview time](images/jean_tutorial/paraview17.png)
+[![Paraview time](images/jean_tutorial/paraview17.png)](/docs/userguide/tumor_concept/#paraview)
 
 #### Live visualisation
 
 To use live visualisation, turn the live option of your configuration file to true, then click on the _Catalyst_ top menu, and select _Connect_ . This windows should appears
 
-![Connect ParaView](images/jean_tutorial/paraview2.png)
+[![Connect ParaView](images/jean_tutorial/paraview2.png)](/docs/userguide/tumor_concept/#paraview)
 
 Click OK, then this windows should appears
 
-![Connect ready](images/jean_tutorial/paraview3.png)
+[![Connect ready](images/jean_tutorial/paraview3.png)](/docs/userguide/tumor_concept/#paraview)
 
 Your Paraview is now accepting connections! Click OK, go back to the _Catalyst_ menu, and select _Pause Simulation_. Using the same console, launch your tutorial simulation. You now notice that the programme stop right before running the simulation, because we used the Paraview _Pause Simulation_.
 
-![terminal accepted connection](images/jean_tutorial/paraview4.png)
+[![terminal accepted connection](images/jean_tutorial/paraview4.png)](/docs/userguide/tumor_concept/#paraview)
 
 Go back to Paraview. You notice that new objects have appeared in the _Pipeline Browser_ section. Click on the round shape in front of _Cells Glyph_.
 
-![select Cells_glyph](images/jean_tutorial/paraview5.png)
+[![select Cells_glyph](images/jean_tutorial/paraview5.png)](/docs/userguide/tumor_concept/#paraview)
 
 A new Builtin object have appeared: _Extract: Cells Glyph_. Click on the eye in front of it.
 
-![select Extract Cells_glyph](images/jean_tutorial/paraview6.png)
+[![select Extract Cells_glyph](images/jean_tutorial/paraview6.png)](/docs/userguide/tumor_concept/#paraview)
 
 All cells appear on the screen!
 You can now go to the _Catalyst_ menu, and select _Continue_. The simulation will run the number of steps you specified in your code.
 
-![Cell display correct diam](images/jean_tutorial/paraview7-4.png)
+[![Cell display correct diam](images/jean_tutorial/paraview7-4.png)](/docs/userguide/tumor_concept/#paraview)
 
 Even if live visualization is particularly useful to set or tune a simulation, it is capital to note that it also drastically slows down the simulation! One way to avoid this major problem is to export visualization files and read then after the modeling is done.
 
@@ -293,11 +293,11 @@ additional_data_members = [ "cell_color_" ]
 
 With those changes, we are now able to colorize our different layers. All you have to do, after displaying cells and creating the _Glyph_ filter (chapter 3.1) is to select your _Glyph_ filter and to select `cell_color_` in the _Coloring_ section.
 
-![Paraview select colour](images/jean_tutorial/paraview8.png)
+[![Paraview select colour](images/jean_tutorial/paraview8.png)](/docs/userguide/tumor_concept/#adding-layers-color)
 
 Well done, we can now visualize the different layers and the cancerous cell in red!
 
-![Paraview colour layers](images/jean_tutorial/paraview9.png)
+[![Paraview colour layers](images/jean_tutorial/paraview9.png)](/docs/userguide/tumor_concept/#adding-layers-color)
 
 However, there is still a little problem. The attribute `cell_color_` is not transmitted to the daughter cell after a division. You can also notice that it is not really easy to see the cancerous cells. We will solve those issues in the next chapter.
 
@@ -305,19 +305,19 @@ However, there is still a little problem. The attribute `cell_color_` is not tra
 
 Even if our cancerous cells transmit their color to their daughter, it still is not really easy to spot them in the middle of thousands of other cells. This problem can be solve using the threshold filter function of ParaView. To do that, after displaying cells color as at the end of 3.2, click on the threshold filter button. This filter will be applied to the currently selected _Pipeline Browser_, so pay attention to select the correct one (_Glyph1_) before creating the threshold filter.
 
-![Paraview threshold filter](images/jean_tutorial/paraview10.png)
+[![Paraview threshold filter](images/jean_tutorial/paraview10.png)](/docs/userguide/tumor_concept/#playing-with-filters)
 
 On the _Properties_ menu, select the _Scalar_ _cell\_colour\__, put the minimum value at 7 and the maximum at 8 (so only the value of cancerous cell is selected) then click _Apply_
 
-![Paraview threshold filter scalar](images/jean_tutorial/paraview11.png)
+[![Paraview threshold filter scalar](images/jean_tutorial/paraview11.png)](/docs/userguide/tumor_concept/#playing-with-filters)
 
 Finally, choose the _Coloring_ mode _cell\_colour\__.
 
-![Paraview threshold filter colouring](images/jean_tutorial/paraview12.png)
+[![Paraview threshold filter colouring](images/jean_tutorial/paraview12.png)](/docs/userguide/tumor_concept/#playing-with-filters)
 
 Great, we can now choose to display either all the cells, or just the cancerous cells by selecting either the _Glyph1_ or the _Threshold1_ in the _Pipeline Browser_!
 
-![Paraview threshold display](images/jean_tutorial/paraview13.png)
+[![Paraview threshold display](images/jean_tutorial/paraview13.png)](/docs/userguide/tumor_concept/#playing-with-filters)
 
 This is of course just an example of what you can do with the threshold filters.
 

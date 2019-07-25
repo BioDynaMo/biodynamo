@@ -87,7 +87,7 @@ x-axis, and a variance of 5.
 
 The result (visualized with ParaView) is the following:
 
-![GaussianBand](images/gaussian_band.png)
+[![GaussianBand](images/gaussian_band.png)](/docs/userguide/substance_initializers/#5-initialize-the-substances)
 
 ## Creating a custom substance initializer
 In this tutorial you have seen how to initialize a substance's concentration
