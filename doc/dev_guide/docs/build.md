@@ -6,18 +6,35 @@ To build BioDynaMo from source execute the following commands:
     If you are a user please follow the installation instructions in our [user guide](https://biodynamo.github.io/user/)
 
 
-``` bash
-git clone https://github.com/BioDynaMo/biodynamo
+```bash
+git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
 
-./prerequesites.sh
-# follow the instructions of the script:
-source <path-to-bdm-installation>/biodynamo-env.sh
+# Install the prerequisites for the project
+./prerequisites.sh <your-os> all
 
-mkdir build && cd build
-cmake .. && make -j4
+# Create the build directory
+mkdir build
+cd build
+
+# Build the project
+cmake ../
+make
+
+# (Optional) Installs the library 
 make install
 ```
+
+The script `prerequisites.sh` is used to install all the dependencies needed by BioDynaMo. You will need
+to run it before actually calling `cmake` and `make`. It will also choose the specific dependencies given the operative systems.
+Run `./prerequisites.sh --help` to see how to use it.
+
+!!! attention
+    
+    When trying to install the prerequisites on MacOS the script will user `brew` as a default install method.
+    If you do not have `brew` on your system, or you are using a different package manager, you will need to 
+    manually install all the required packages. Please have a look to the [Prerequisites](user/prerequisites) page.
+
 
 ## CMake Build Options
 Our CMake build script uses a few options to influence the build process. They can be set as follows:
@@ -37,7 +54,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `valgrind`      | `on` | enable memory leak checks |
 | `coverage`      | `off` | creates a make target to generate a html report indicating which parts of the code are tested by automatic tests |
 
-### Further CMake command line parameters:
+### Further CMake command line parameters
 
 | Option          | Description  |
 | --------------- | ------------ |
@@ -84,7 +101,46 @@ Build targets indicated with `*` always come in three different flavors.
 | `doc` | will generate the API, user and developer documentation in directory `build/doc` |
 | `live-dev-guide` and `live-user-guide` | starts a local web server so you can immediately view the documentation in the browser. The website is automatically reloaded if you change a source file.  |
 
-## Speed Up Installation Tests with a Local BioDynaMo-LFS Copy
+## Advanced Build Options
+
+#### Use a Custom Compiler
+If you need to user a custom compilers (instead of the one automatically detected by BioDynaMo) you will need
+to set first two variables: `CXX` for the C++ compiler and `CC` for the C compiler. Please not that your custom compiler
+must support C++14 standard and also it must be compatible with OpenMP. The complete procedure will become:
+```bash
+git clone https://github.com/BioDynaMo/biodynamo.git
+cd biodynamo
+
+# Let's say I want to use a custom version of clang
+export CXX=/opt/local/bin/clang++-mp-8.0
+export C=/opt/local/bin/clang++-mp-8.0
+
+./install.sh
+```
+
+#### Use a Custom ParaView/ROOT installation
+
+BioDynaMo will download automatically the required ParaView, ROOT and Qt5 libraries to build the project. However,
+it is also possible to specify custom version of them. You will need to set some environmental variables such to
+enable this behaviour. Check out the example below.
+
+```bash
+git clone https://github.com/BioDynaMo/biodynamo.git
+cd biodynamo
+
+export ROOT_DIR=/opt/local/root
+export ParaView_DIR=/opt/local/paraview
+export Qt5_DIR=/usr/local/qt
+
+./install.sh
+```
+
+!!! attention
+
+    If you specify ParaView_DIR, then you will need to provide also the Qt5_DIR variable.
+    This happens because ParaView needs to explicitly know where Qt is located.
+
+#### Speed Up Installation Tests with a Local BioDynaMo-LFS Copy
 
 The installation scripts fetch large precompiled dependencies like paraview
 or root from biodynamo's large file storage (LFS). To enable faster builds you can download the whole
