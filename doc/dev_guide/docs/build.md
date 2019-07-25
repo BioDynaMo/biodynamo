@@ -5,6 +5,7 @@ To build BioDynaMo from source execute the following commands:
 !!! info
     If you are a user please follow the installation instructions in our [user guide](https://biodynamo.github.io/user/)
 
+## Ubuntu 16.04, 18.04
 
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
@@ -34,6 +35,50 @@ Run `./prerequisites.sh --help` to see how to use it.
     When trying to install the prerequisites on MacOS the script will user `brew` as a default install method.
     If you do not have `brew` on your system, or you are using a different package manager, you will need to 
     manually install all the required packages. Please have a look to the [Prerequisites](user/prerequisites) page.
+
+## CentOS 7.6.1810
+
+In case of CentOS, you will need to run some additional commands before actually calling `cmake` and `make`. This is because
+CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to 
+load the OpenMPI module. You will need to run these instructions only before building BioDynaMo. You will not need them in
+order to run the library.
+
+```bash
+git clone https://github.com/BioDynaMo/biodynamo.git
+cd biodynamo
+./prerequisites.sh centos-7.6.1810 all
+
+export MESA_GL_VERSION_OVERRIDE=3.3
+. scl_source enable rh-python36
+. scl_source enable devtoolset-7
+
+. /etc/profile.d/modules.sh
+module load mpi
+
+mkdir build && cd build && cmake ../ && make
+```
+
+## MacOS
+
+Before building BioDynaMo on MacOS you will need to provide to `cmake` a C++14 and OpenMP compatible compiler. This can
+be done by setting the environmental variables `CXX` and `C` for the C++ and C compilers. 
+Here as example we show the procedure using `clang` compiler installed using `brew`.
+
+```bash
+git clone https://github.com/BioDynaMo/biodynamo.git
+cd biodynamo
+./prerequisites.sh centos-7.6.1810 all
+
+export LLVMDIR="/usr/local/opt/llvm"
+export CC=$LLVMDIR/bin/clang
+export CXX=$LLVMDIR/bin/clang++
+export CXXFLAGS=-I$LLVMDIR/include
+export LDFLAGS=-L$LLVMDIR/lib
+export PATH=$LLVMDIR/bin:$PATH
+
+mkdir build && cd build && cmake ../ && make
+```
+
 
 
 ## CMake Build Options
