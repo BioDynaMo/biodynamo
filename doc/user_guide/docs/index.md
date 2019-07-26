@@ -36,7 +36,7 @@ research questions.
 
 This guide corresponds to the latest version of BioDynaMo. Please make sure that
 your installation has the exact same version string as indicated at the top of the
-[API documentation](https://biodynamo.github.io/api/).
+[API documentation](/bioapi/).
 Please head over to our [installation/update instructions](/docs/userguide/installation) if you haven't installed
 BioDynaMo yet, or the installation is outdated.
 
