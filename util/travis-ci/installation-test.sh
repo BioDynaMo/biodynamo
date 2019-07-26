@@ -13,14 +13,15 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 2 ]]; then
   echo "Wrong number of arguments.
 Description:
   Run a travis installation test
 Usage:
-  installation-test.sh OS
+  installation-test.sh OS <type-of-install>
 Arguments:
-  OS OS id of the container
+  OS                id of the container
+  type-of-install   type of install procedure (manual/automatic)
   "
   exit 1
 fi
@@ -35,7 +36,7 @@ git fetch --unshallow || true
 git fetch --tags
 
 if [ $BDM_OS != "osx" ]; then
-  util/run-inside-docker.sh $BDM_OS util/travis-ci/docker-installation-test-wrapper.sh $BDM_OS
+  util/run-inside-docker.sh $BDM_OS util/travis-ci/docker-installation-test-wrapper.sh $BDM_OS $2
 else
   if [ `uname` != "Darwin" ]; then
     echo "ERROR: Installation tests for OSX can only be done on an OSX operating system"
@@ -46,5 +47,9 @@ else
   # hide the fact that this is running on travis so DetectOs detects "osx"
   #unset TRAVIS
   # don't unset TRAVIS_OS_NAME, because it is needed by the ReuqireSudo workaround
-  test/manual-installation-test.sh $BDM_OS
+  if [ $2 = "manual" ]; then
+    test/manual-installation-test.sh $BDM_OS
+  else
+    test/installation-test.sh
+  fi
 fi

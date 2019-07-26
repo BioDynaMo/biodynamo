@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 2 ]]; then
   echo "ERROR: No arguments expected
   Description:
     Run installation test inside a headless docker container."
@@ -30,8 +30,13 @@ cd $BDM_PROJECT_DIR
 export DISPLAY=:99.0
 $BDM_PROJECT_DIR/util/xvfb-initd.sh start
 
-test/manual-installation-test.sh $1
-RET_VAL=$?
+if [ $2 = "manual" ]; then
+    test/manual-installation-test.sh $1
+    RET_VAL=$?
+else
+    test/installation-test.sh
+    RET_VAL=$?
+fi
 
 $BDM_PROJECT_DIR/util/xvfb-initd.sh stop
 
