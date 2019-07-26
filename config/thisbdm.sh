@@ -197,7 +197,7 @@ export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDMSYS}/i
 
 #### ParaView Specific Configurations ####
 if [ -z ${ParaView_DIR} ]; then
-    ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview
+    ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview; export ParaView_DIR;
     if ! [ -d $ParaView_DIR ]; then
         echo "We were unable to find ParaView! Please make sure it is installed in your system!"
         echo "You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
@@ -205,12 +205,6 @@ if [ -z ${ParaView_DIR} ]; then
         echo "Sourcing BioDynaMo env failed!"
         exit 1
     fi
-fi
-
-if [ -z "${ParaView_DIR}" ]; then
-   ParaView_DIR="${ParaView_DIR}/lib/cmake/paraview-5.6"; export ParaView_DIR
-else
-   ParaView_DIR="${ParaView_DIR}/lib/cmake/paraview-5.6":$ParaView_DIR; export ParaView_DIR
 fi
 
 if [ -z "${ParaView_LIB_DIR}" ]; then
