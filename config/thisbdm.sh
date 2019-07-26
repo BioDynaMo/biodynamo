@@ -282,14 +282,6 @@ export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH
 export PATH=$PATH:~/Library/Python/2.7/bin
 ########
 
-if command -v g++-5 &>/dev/null; then
-  export CC=gcc-5
-  export CXX=g++-5
-else
-  export CC=gcc
-  export CXX=g++
-fi
-
 # OpenMP
 export OMP_PROC_BIND=true
 
