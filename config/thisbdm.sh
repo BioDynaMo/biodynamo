@@ -252,7 +252,7 @@ fi
 
 #### Qt5 Specific Configurations ####
 if [ -z ${Qt5_DIR} ]; then
-    Qt5_DIR=${BDM_INSTALL_DIR}/third_party/qt
+    Qt5_DIR=${BDM_INSTALL_DIR}/third_party/qt; export Qt5_DIR
     if ! [ -d $Qt5_DIR ]; then
         echo "We were unable to find Qt! Please make sure it is installed in your system!"
         echo "You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
@@ -260,12 +260,6 @@ if [ -z ${Qt5_DIR} ]; then
         echo "Sourcing BioDynaMo env failed!"
         exit 1
     fi
-fi
-
-if [ -z "${Qt5_DIR}" ]; then
-   Qt5_DIR="${Qt5_DIR}/lib/cmake/Qt5"; export Qt5_DIR
-else
-   Qt5_DIR="${Qt5_DIR}/lib/cmake/Qt5":$Qt5_DIR; export Qt5_DIR
 fi
 
 if [ -z "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
