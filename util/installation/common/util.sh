@@ -158,7 +158,7 @@ function CleanBuild {
   fi
   cd $BUILD_DIR
   echo "CMAKEFLAGS $BDM_CMAKE_FLAGS"
-  cmake $BDM_CMAKE_FLAGS .. \
+  cmake $BDM_CMAKE_FLAGS ..
   make -j$(CPUCount) && make install
 }
 

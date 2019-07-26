@@ -46,14 +46,14 @@ matrix:
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 install.sh"
+      env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 test/installation-test.sh"
     - os: linux
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/installation-test.sh centos-7.6.1810"
+      env: SCRIPT="util/run-inside-docker.sh centos-7.6.1810 test/installation-test.sh"
     - os: osx
-      env: SCRIPT="install.sh"
+      env: SCRIPT="test/installation-test.sh"
 
 script:
   - shell_session_update() { :; };

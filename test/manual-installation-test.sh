@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-if [ $# -ne 0 ]; then
+if [ $# -ne 1 ]; then
   echo "Wrong number of arguments.
 Description:
   Run installation tests
@@ -37,11 +37,51 @@ cd $BDM_PROJECT_DIR
 
 # speed-up build by disabling tests and demos
 export BDM_CMAKE_FLAGS="-Dtest=off"
-
-# Build BioDynaMo
-$BDM_PROJECT_DIR/install.sh << EOF
+./prerequisites.sh $1 all << EOF
 y
 EOF
+
+# Operation needed in order to have a fully functional CentOS install procedure
+# * Workaround for Faulty OpenGL version detection with software renderer
+# * Enable python 3.6
+# * Enable gcc and g++ compilers
+# * Load mpi module
+# The set +e is needed because scl_source relies on exit signal to detect if the
+# corresponding packages was enabled. However, if we set -e, then the script
+# will just exit without any error message.
+set +e
+if [ $1 = "centos-7.6.1810" ]; then
+  export MESA_GL_VERSION_OVERRIDE=3.3
+  . scl_source enable rh-python36
+  . scl_source enable devtoolset-7
+
+  . /etc/profile.d/modules.sh
+  module load mpi
+fi
+set -e
+
+# Custom instruction for MacOS (just in case)
+# Export path to make cmake find LLVM's clang (otherwise OpenMP won't work)
+if [ $1 = "osx" ]; then
+    export LLVMDIR="/usr/local/opt/llvm"
+    export CC=$LLVMDIR/bin/clang
+    export CXX=$LLVMDIR/bin/clang++
+    export CXXFLAGS=-I$LLVMDIR/include
+    export LDFLAGS=-L$LLVMDIR/lib
+    export PATH=$LLVMDIR/bin:$PATH
+
+    # for mkdocs
+    export PATH=$PATH:~/Library/Python/2.7/bin
+fi
+
+
+# Build BioDynaMo
+mkdir build
+cd build
+cmake ${BDM_CMAKE_FLAGS} ..
+make -j$(CPUCount)
+make install
+cd ..
 
 # reload shell and source biodynamo
 set +e +x

@@ -30,7 +30,7 @@ cd $BDM_PROJECT_DIR
 export DISPLAY=:99.0
 $BDM_PROJECT_DIR/util/xvfb-initd.sh start
 
-test/installation-test.sh $1
+test/manual-installation-test.sh $1
 RET_VAL=$?
 
 $BDM_PROJECT_DIR/util/xvfb-initd.sh stop

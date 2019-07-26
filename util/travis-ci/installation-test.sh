@@ -46,5 +46,5 @@ else
   # hide the fact that this is running on travis so DetectOs detects "osx"
   #unset TRAVIS
   # don't unset TRAVIS_OS_NAME, because it is needed by the ReuqireSudo workaround
-  test/installation-test.sh $BDM_OS
+  test/manual-installation-test.sh $BDM_OS
 fi
