@@ -60,7 +60,7 @@ lcov gcovr
  * **tbb-devel**: Development files for TBB (C++ template library developed by Intel for parallel programming);
  * **openmpi3-devel**: Development files for OpenMP (API for multiprocessor programming);
  * **freeglut-devel**: Development files for GLUT (OpenGL Utility Toolkit);
- * **rh-python36**: Python 3 Interpreter.
+ * **rh-python36**, **python** and **python-pip**: Python 3 Interpreter and Package Manager.
  
 
 ### Optional Packages
@@ -82,7 +82,7 @@ sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install cmake3 libXt-devel libXext-devel \
 devtoolset-7-gcc* numactl-devel \
 tbb-devel openmpi3-devel freeglut-devel \
-rh-python36
+rh-python36 python python-pip
 ```
 ```bash
 pip install --user mkdocs mkdocs-material
