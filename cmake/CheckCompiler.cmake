@@ -22,7 +22,7 @@ if(CMAKE_CXX_COMPILER)
     # be LLVM's clang. This is done because standard
     # MacOS's g++ do not has OpenMP enabled.
     if (APPLE)
-        if (NOT $ENV{CXX})
+        if (NOT DEFINED ENV{CXX})
             UNSET(CMAKE_CXX_COMPILER CACHE)
             if (EXISTS /usr/local/opt/llvm/bin/clang++) # Brew
                 SET(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++")
@@ -49,7 +49,7 @@ else()
     # Manually set the g++ compiler that we need for CentOS.
     # We also set the various link directories needed.
     IF(${DETECTED_OS} MATCHES "centos.*")
-        if (NOT $ENV{CXX})
+        if (NOT DEFINED ENV{CXX})
             UNSET(CMAKE_CXX_COMPILER CACHE)
             SET(CMAKE_CXX_COMPILER "/opt/rh/devtoolset-7/root/usr/bin/g++")
             link_directories(/opt/rh/devtoolset-7/root/usr/lib)
@@ -57,7 +57,7 @@ else()
             link_directories(/opt/rh/devtoolset-7/root/usr/lib64)
             link_directories(/opt/rh/devtoolset-7/root/usr/lib64/dyninst)
         endif()
-        if (NOT $ENV{C})
+        if (NOT DEFINED ENV{CC})
             UNSET(CMAKE_C_COMPILER CACHE)
             SET(CMAKE_C_COMPILER "/opt/rh/devtoolset-7/root/usr/bin/gcc")
         endif()
@@ -68,18 +68,18 @@ endif()
 # Check if we found a C compiler.
 if(CMAKE_C_COMPILER)
     if (APPLE)
-        if (NOT $ENV{C})
+        if (NOT DEFINED ENV{CC})
             UNSET(CMAKE_C_COMPILER CACHE)
             if (EXISTS /usr/local/opt/llvm/bin/clang) # Brew
                 SET(CMAKE_C_COMPILER "/usr/local/opt/llvm/bin/clang")
                 include_directories(/usr/local/opt/llvm/include)
                 link_directories(/usr/local/opt/llvm/lib)
             elseif(EXISTS /opt/local/bin/clang-mp-8.0) # MacPort
-                SET(CMAKE_CXX_COMPILER "/opt/local/bin/clang-mp-8.0")
+                SET(CMAKE_C_COMPILER "/opt/local/bin/clang-mp-8.0")
                 include_directories(/opt/local/include/)
                 link_directories(/opt/local/lib/)
-            elseif(EXISTS /sw/opt/llvm-5.0/bin/clang++) # Fink
-                SET(CMAKE_CXX_COMPILER "/sw/opt/llvm-5.0/bin/clang")
+            elseif(EXISTS /sw/opt/llvm-5.0/bin/clang) # Fink
+                SET(CMAKE_C_COMPILER "/sw/opt/llvm-5.0/bin/clang")
                 include_directories(/sw/include)
                 link_directories(/sw/opt/llvm-5.0/lib/)
                 link_directories(/sw/lib)
@@ -95,7 +95,7 @@ if(CMAKE_C_COMPILER)
 else()
     # Force the
     IF(${DETECTED_OS} MATCHES "centos.*")
-        if (NOT $ENV{C})
+        if (NOT DEFINED ENV{CC})
             UNSET(CMAKE_C_COMPILER CACHE)
             SET(CMAKE_C_COMPILER "/opt/rh/devtoolset-7/root/usr/bin/gcc")
         endif()
