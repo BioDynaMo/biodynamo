@@ -32,10 +32,11 @@ namespace gui {
 class ModelTabs : public TGCompositeFrame {
  public:
   ModelTabs(const TGWindow* p);
-  ~ModelTabs() {}
+  virtual ~ModelTabs() {}
 
   void   ShowElementTab(const char* name);
   void   SetModelName(const char* name) { fModelName.assign(name); }
+  void   ClearAllTabs();
 
  private:
   Int_t  GetElementTabIdx(const char* name);

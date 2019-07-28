@@ -15,6 +15,7 @@
 // -----------------------------------------------------------------------------
 
 #include "gui/view/model_tabs.h"
+#include "gui/controller/visualization_manager.h"
 
 namespace gui {
 
@@ -105,7 +106,7 @@ void ModelTabs::OverwriteLowestPriorityTab(const char* name) {
   lowestTab->RemoveTab();
   lowestTab->AddTab(name);
   UpdateTabContents(lowestTab, name);
-  lowestTab->Print();
+  //lowestTab->Print();
   
   lowestTab->SetTab(name);
   lowestTab->MapSubwindows();
@@ -137,5 +138,16 @@ void ModelTabs::ShowElementTab(const char* name) {
   ShowElement(name);
 }
 
+void ModelTabs::ClearAllTabs() {
+  //IsFrameInit = kFALSE;
+  RemoveFrame(fTabTL.get());
+  RemoveFrame(fTabTR.get());
+  RemoveFrame(fTabBL.get());
+  RemoveFrame(fTabBR.get());
+  fTabs.clear();
+  MapSubwindows();
+  Resize();  
+  MapWindow();
+}
 
 }

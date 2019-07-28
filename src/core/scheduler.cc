@@ -29,6 +29,7 @@
 #include "core/simulation_backup.h"
 #include "core/util/log.h"
 #include "core/visualization/catalyst_adaptor.h"
+#include "gui/controller/visualization_manager.h"
 
 namespace bdm {
 
@@ -43,6 +44,8 @@ Scheduler::Scheduler() {
   bound_space_ = new BoundSpace();
   displacement_ = new DisplacementOp();
   diffusion_ = new DiffusionOp();
+
+  is_gui_enabled = gui::VisManager::GetInstance().IsEnabled();
 
   // initialise operations_
   auto first_op =
@@ -140,6 +143,10 @@ void Scheduler::Execute(bool last_iteration) {
   Timing::Time("visualize", [&]() {
     visualization_->Visualize(total_steps_, last_iteration);
   });
+
+  if(is_gui_enabled) {
+    gui::VisManager::GetInstance().Update();
+  }
   Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
 
   // update all sim objects: run all CPU operations

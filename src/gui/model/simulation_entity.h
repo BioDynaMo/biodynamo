@@ -37,11 +37,14 @@ namespace gui {
 class SimulationEntity {
 
  public:
-  SimulationEntity() {};
+  SimulationEntity() {
+    fElement = new bdm::Cell(10.0);
+  };
   ~SimulationEntity() = default;
 
   void PrintData() {
     std::cout << "\t\tType:" << "Simulation Entity" << '\n';
+    std::cout << "\t\tName:" << fName << '\n';
   } 
 
   void SetName(const char* name) {
@@ -53,14 +56,17 @@ class SimulationEntity {
   }
 
   bdm::Cell* GetElement() {
-    return &fElement;
+    return fElement;
   }
 
   void SetPosition(bdm::Double3 pos) {
     fPosition = pos;
+    Log::Debug("In simulation_entity: Setting position to:", pos[0], ", ", pos[1], ", ", pos[2]);
+    Log::Debug("Sanity check position to:", fPosition[0], ", ", fPosition[1], ", ", fPosition[2]);
   }
 
   bdm::Double3 GetPosition() {
+    Log::Debug("In simulation_entity: Getting position:", fPosition[0], ", ", fPosition[1], ", ", fPosition[2]);
     return fPosition;
   }
 
@@ -73,7 +79,7 @@ class SimulationEntity {
   }
 
   double GetAttributeValDouble(const char* attributeName) {
-    bdm::Cell* cellPtr = &fElement;
+    bdm::Cell* cellPtr = fElement;
     TClass *cl = cellPtr->IsA();
     std::string methodName(attributeName);
     methodName.insert(0, "Get");
@@ -85,7 +91,7 @@ class SimulationEntity {
   }
 
   uint32_t GetAttributeValUInt(const char* attributeName) {
-    bdm::Cell* cellPtr = &fElement;
+    bdm::Cell* cellPtr = fElement;
     TClass *cl = cellPtr->IsA();
     std::string methodName(attributeName);
     methodName.insert(0, "Get");
@@ -98,7 +104,7 @@ class SimulationEntity {
 
  private:
   std::string        fName;
-  bdm::Cell          fElement;
+  bdm::Cell*         fElement;
 
   // Setting within element does not work, 
   //   so we use these vars

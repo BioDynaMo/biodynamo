@@ -64,7 +64,11 @@ enum View {
   M_MODULE_SUBSTANCE        = 1003,
   M_GENERAL_VARIABLE        = 1101,
   M_GENERAL_FUNCTION        = 1102,
-  M_GENERAL_FORMULA         = 1103
+  M_GENERAL_FORMULA         = 1103,
+
+  ///-----VIS-FRAME---------///
+  M_ZOOM_PLUS               = 1201,
+  M_ZOOM_MINUS              = 1202
 };
 
 }

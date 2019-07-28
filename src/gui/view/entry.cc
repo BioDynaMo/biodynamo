@@ -16,6 +16,7 @@
 
 #include "gui/view/entry.h"
 #include "gui/view/inspector.h"
+#include "gui/controller/project.h"
 
 namespace gui {
 
@@ -45,6 +46,7 @@ Entry::Entry(TGCompositeFrame* fMain, Inspector* parentInspector, const char* en
   else {
     fEntryType = EntryType::M_OTHER;
   }
+  fCellPtr = nullptr;
 }
 
 Bool_t Entry::CheckIfValid() {
@@ -56,8 +58,7 @@ std::string Entry::GetEntryName() {
 }
 
 void Entry::UpdateValue() {
-  bdm::Cell* cellPtr = fModelElement->GetElement();
-  TClass *cl = cellPtr->IsA();
+  TClass *cl = fCellPtr->IsA();
   std::string methodName(fEntryName);
   methodName.insert(0, "Get");
   TMethodCall call(cl, methodName.c_str(), "");
@@ -65,7 +66,7 @@ void Entry::UpdateValue() {
   switch(fEntryType) {
     case EntryType::M_DOUBLE: {
       Double_t retValDouble = -1;
-      call.Execute((void*)cellPtr, nullptr, 0, &retValDouble);
+      call.Execute((void*)fCellPtr, nullptr, 0, &retValDouble);
       fNumberEntries[0]->SetNumber(retValDouble);
       fCurrentValues[0] = retValDouble;
       break;
@@ -75,7 +76,7 @@ void Entry::UpdateValue() {
     }
     case EntryType::M_UINT: {
       uint32_t retValUInt = 0;
-      call.Execute((void*)cellPtr, nullptr, 0, &retValUInt);
+      call.Execute((void*)fCellPtr, nullptr, 0, &retValUInt);
       fNumberEntries[0]->SetNumber(retValUInt);
       fCurrentValues[0] = retValUInt;
       break;
@@ -101,6 +102,7 @@ void Entry::UpdateValue() {
 // Creates the necessary gui elements to match attribute types
 void Entry::Init(ModelElement* modelElement) {
   fModelElement = modelElement;
+  fCellPtr = fModelElement->GetElement();
 
   TGLayoutHints *fL2 = new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2);
 
@@ -117,7 +119,7 @@ void Entry::Init(ModelElement* modelElement) {
     case EntryType::M_BOOLEAN: {
       /* Currently not supported
       bool retValBool = false;
-      call.Execute((void*)cellPtr, nullptr, 0, &retValBool);
+      call.Execute((void*)fCellPtr, nullptr, 0, &retValBool);
       fButtonGroup = new TGButtonGroup(this, "Boolean Values", kHorizontalFrame);
       fRadioButtonTrue = new TGRadioButton(fButtonGroup, new TGHotString("True"));
       fRadioButtonFalse = new TGRadioButton(fButtonGroup, new TGHotString("False"));
@@ -159,10 +161,11 @@ void Entry::Init(ModelElement* modelElement) {
       for(int i = 0; i < 3; i++) {
         TGNumberEntry* fNumberEntry = new TGNumberEntry(this, 1.0);
         AddFrame(fNumberEntry, fL2);
-        fNumberEntry->SetNumber(vals[i]);
         fNumberEntries.push_back(fNumberEntry);
         fCurrentValues.push_back(vals[i]);
         fNumberEntry->Associate(this);
+        Log::Debug("Setting val to:", vals[i]);
+        fNumberEntry->SetNumber(vals[i]);
         std::string tmpLabelName = std::string() + xyz.at(i);
         Log::Debug("tmpLabelName on iteration #", i, "=", tmpLabelName);
         TGLabel *tmpLabel = new TGLabel(this, tmpLabelName.c_str());
@@ -182,12 +185,17 @@ void Entry::Init(ModelElement* modelElement) {
 
 Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
   Log::Debug("(From ", fEntryName, ") - Processing msg:", msg, ", parm1:", param1, ", parm2:", param2);
+  if(fCellPtr == nullptr) {
+    Log::Error("fCellPtr is NULL!!! CANNOT PROCESS INPUT!!!");
+    return kFALSE;
+  }
 
   if(CheckIfValueChanged()) {
     Log::Debug("Value has changed!");
-    /// Will now call setter for the current attribute
-    bdm::Cell* cellPtr = fModelElement->GetElement();
-    TClass *cl = cellPtr->IsA();
+    Log::Debug("Sanity check:");
+    printf("\t\tfCellPtr = %p\n", fCellPtr);
+    Project::GetInstance().PrintProjectDetails();
+    TClass *cl = fCellPtr->IsA();
     std::string methodName(fEntryName);
     methodName.insert(0, "Set");
     
@@ -202,40 +210,40 @@ Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
             Log::Debug("Second val:", fCurrentValues[1]);
             Log::Debug("Third val:",  fCurrentValues[2]);
 
-            cellPtr->SetPosition(setVal);
+            fCellPtr->SetPosition(setVal);
           } else if (fEntryName.compare("TractorForce") == 0) {
-            cellPtr->SetPosition(setVal);
+            fCellPtr->SetPosition(setVal);
           } else {
             Log::Error("Could not set `", fEntryName, "`");
           }
         } else {
           TMethodCall call(method);
           call.SetParamPtrs((void*)&setVal, 1);
-          call.Execute(cellPtr);
+          call.Execute(fCellPtr);
         }
         break;
       }
       case EntryType::M_UINT: {
         TMethod* method = cl->GetClassMethodWithPrototype(methodName.c_str(), "uint32_t");
-        if(method != 0) {
-          std::cout << "Found method!!!\n";
+        if(method == 0) {
+          Log::Error("Cannot find method:", methodName);
         }
         TMethodCall call(method);
         std::string setVal(std::to_string(fCurrentValues[0]));
-        call.Execute((void*)cellPtr, setVal.c_str());
+        call.Execute((void*)fCellPtr, setVal.c_str());
         break;
       } 
       case EntryType::M_DOUBLE: {
         std::string setVal(std::to_string(fCurrentValues[0]));
         Log::Debug("Method Name:", methodName);
         TMethod* method = cl->GetClassMethodWithPrototype(methodName.c_str(), "double");
-        if(method != 0) {
-          std::cout << "Found method!!!\n";
+        if(method == 0) {
+          Log::Error("Cannot find method:", methodName);
         }
         TMethodCall call(method);
         const char* signature = method->GetSignature();
         std::cout << "Signature recieved: " << signature << "\n";
-        call.Execute((void*)cellPtr, setVal.c_str());
+        call.Execute((void*)fCellPtr, setVal.c_str());
         break;
       }
       case EntryType::M_BOOLEAN:

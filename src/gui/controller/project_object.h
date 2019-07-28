@@ -61,8 +61,8 @@ class ProjectObject{
 
   void CreateModel(const char* name) {
     Model newModel;
-    newModel.SetName(name);
     fModels.push_back(newModel);
+    fModels[fModels.size()-1].SetName(name);
     PrintData();
   }
 

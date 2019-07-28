@@ -65,6 +65,7 @@ class Entry : public TGHorizontalFrame {
     std::vector<TGNumberEntry*>   fNumberEntries;
     std::vector<Double_t>         fCurrentValues;
     Inspector*                    fParentInspector;
+    bdm::Cell*                    fCellPtr;
 };
 
 }  // namespace gui

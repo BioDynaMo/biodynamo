@@ -40,6 +40,7 @@
 #include "gui/view/tree_manager.h"
 
 #include "biodynamo.h"
+#include "core/simulation_backup.h"
 
 namespace gui {
 
@@ -213,9 +214,6 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
   fModelFrame->EnableButtons(M_NONE_ACTIVE);
   fMainFrame->AddFrame(fModelFrame.get(), lo);
 
-  // Create Display Canvas Tab (where the actual models are displayed)
-  // TGCompositeFrame *tFrame = fDisplayFrame->AddTab("Untitled Model");
-
   // TODO: add more to frames/tabs/etc
 
   AddFrame(fMainFrame.get(), lo);
@@ -238,11 +236,6 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
 
   ChangeSelectionFrame(kFALSE);
 
-  // fEvent = new MyEvent();
-  // fEvent->GetDetector()->Init();
-  // fEvent->Init(0, fFirstParticle, fE0, fB);
-  // Initialize();
-  // gROOT->GetListOfBrowsables()->Add(fEvent,"RootShower Event");
   gSystem->Load("libTreeViewer");
   AddInput(kKeyPressMask | kKeyReleaseMask);
   gVirtualX->SetInputFocus(GetId());
@@ -434,10 +427,12 @@ void ModelCreator::ClearProject() {
   if(Project::GetInstance().IsLoaded()) {
     Project::GetInstance().SaveProject();
     Project::GetInstance().CloseProject();
+    fModelFrame->ClearTabs();
   }
   fTreeManager = std::make_unique<TreeManager>();
   fProjectListTree->Cleanup();
   ChangeSelectionFrame(kFALSE);
+
 }
 
 void ModelCreator::CreateNewModel() {
@@ -475,11 +470,100 @@ void ModelCreator::ChangeSelectionFrame(Bool_t createdProject) {
 }
 
 void ModelCreator::CreateNewElement(int type) {
+  fButtonModelFrame->SetState(M_ALL_ACTIVE);
   std::string elemName = fTreeManager->CreateTopLevelElement(type);
   Project::GetInstance().CreateModelElement(fModelName.c_str(), "", elemName.c_str(), type);
   fProjectListTree->ClearViewPort();
   fClient->NeedRedraw(fProjectListTree.get());
 }
+
+Bool_t ModelCreator::GenerateModelCode() {
+  std::string genFolder = Project::GetInstance().GetCodeGenerateFolder(fModelName.c_str());
+  Int_t retval;
+  std::string msg = "This will overwrite all files in `" + genFolder + "` Press OK to continue.";
+  new TGMsgBox(gClient->GetRoot(), this,
+              "Info", msg.c_str(),
+              kMBIconExclamation, kMBOk | kMBCancel, &retval);
+  if(retval != kMBOk) {
+    return kFALSE;
+  }
+  Project::GetInstance().GenerateCode(fModelName.c_str());
+  return kTRUE;
+}
+
+void ModelCreator::SimulateModel() {
+
+  /// First: Generate code
+  if(!GenerateModelCode()) {
+    Log::Info("Cannot simulate model without generating code!");
+    return;
+  }
+  
+  std::string modelFolder = Project::GetInstance().GetCodeGenerateFolder(fModelName.c_str()); 
+
+  /// Second: Run the simulation with expected backup
+  std::string currentDir = RunCmd("pwd");
+  //std::string backupFilepath = Project::GetInstance().GetBackupFile(fModelName.c_str()); 
+  std::string backupFilepath("backupfile.root"); 
+
+  Log::Debug("BackupFile: ", backupFilepath);
+  std::string firstCmd = bdm::Concat("cd ", modelFolder, " && biodynamo build && cd build && ./", 
+                                     fModelName.c_str(), " -b ", backupFilepath.c_str());
+  std::string secondCmd = bdm::Concat("cd ", currentDir);
+  //RunCmd(backupfileCmd.c_str());
+  std::string firstResult = RunCmd(firstCmd.c_str());
+  //std::string secondResult = RunCmd(secondCmd.c_str());
+
+  Log::Info(firstResult);
+
+  ifstream f(backupFilepath.c_str());
+  Bool_t backupExists = f.good();
+  f.close();
+  
+  /// Third: Restore the backup into this environment
+  if(backupExists) {
+    Log::Debug("Restoring simulation...");
+    const char* argv[] = { fModelName.c_str(), "-r", backupFilepath.c_str(), NULL };
+    Int_t argc = sizeof(argv)/sizeof(argv[0]) - 1;
+
+    /// Currently not in use
+    //auto set_param = [](bdm::Param* param) {
+    //  param->bound_space_ = true;
+    //  param->min_bound_ = 0;
+    //  param->max_bound_ = 100;  // cube of 100*100*100
+    //};
+    
+    bdm::Simulation *currentSim = new bdm::Simulation(argc, argv);
+    std::string secondResult = RunCmd(secondCmd.c_str());
+
+    /// Fourth: Set and start the simulation
+    Project::GetInstance().SetSimulation(currentSim);
+    currentSim->GetScheduler()->Simulate(500);
+    
+    /// Earlier version of restoring the backup 
+    //currentSim->Restore();
+  } else {
+    Log::Debug("backupfile does not exist! Simulation did not run properly!");
+    Log::Error("Error occured during backupfile generation.");
+    std::string secondResult = RunCmd(secondCmd.c_str());
+  }
+  
+}
+
+std::string ModelCreator::RunCmd(const char* cmd) {
+    Log::Info("Running cmd:", cmd);
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+        std::string tmp = buffer.data();
+        result += tmp;
+    }
+    return result;
+  }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Handle messages send to the ModelCreator object.
@@ -539,10 +623,24 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
 
             case M_MODEL_SIMULATE:
               Log::Debug("Clicked simulate!");
+              SimulateModel();
               break;
 
             case M_INTERRUPT_SIMUL:
               Interrupt();
+              break;
+
+            case M_SIMULATION_GENERATE:
+            {
+              if (!fModelName.empty()) {
+                Bool_t isGenerated = GenerateModelCode();
+                if(isGenerated) {
+                  Log::Info("Successfully generated biodynamo code!");
+                }
+              } else {
+                Log::Info("Please create a model first!");
+              }
+            }
               break;
 
             case M_FILE_SAVE:
@@ -553,7 +651,6 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
 
             case M_FILE_SAVEAS: 
             {
-              /// TODO: SaveAs not yet fully functional
               Log::Debug("Clicked save as!");
               TGFileInfo fi;
               fi.fFileTypes = filetypes;
@@ -564,7 +661,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               break;
 
             case M_FILE_EXIT:
-              CloseWindow();  // this also terminates theApp
+              CloseWindow();
               break;
 
             case M_FILE_PREFERENCES:
@@ -611,25 +708,6 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
             case M_TOOLS_STARTBROWSER:
             {
               new TBrowser;
-            }
-              break;
-
-            case M_SIMULATION_GENERATE:
-            {
-              if (!fModelName.empty()) {
-                std::string genFolder = Project::GetInstance().GetCodeGenerateFolder(fModelName.c_str());
-                Int_t retval;
-                std::string msg = "This will overwrite all files in `" + genFolder + "` Press OK to continue.";
-                new TGMsgBox(gClient->GetRoot(), this,
-                            "Info", msg.c_str(),
-                            kMBIconExclamation, kMBOk | kMBCancel, &retval);
-                if(retval != kMBOk) {
-                  break;
-                }
-                Project::GetInstance().GenerateCode(fModelName.c_str());
-              } else {
-                Log::Info("Please create a model first!");
-              }
             }
               break;
 
@@ -706,8 +784,6 @@ void ModelCreator::HandleTreeInput() {
     fModelFrame->ShowModelElement(selectedModelName.c_str(),
                                   itemName.c_str());
     fClient->NeedRedraw(fModelFrame.get());
-    fModelFrame->Resize(10000, 10000);
-    fModelFrame->Resize(10001, 10001);
   }
 }
 

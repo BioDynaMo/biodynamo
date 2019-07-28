@@ -163,6 +163,9 @@ class ModelCreator : public TGMainFrame {
   void                CreateNewElement(int type);
   void                HandleTreeInput();
   void                EnableSaving(Bool_t enable=kTRUE);
+  Bool_t              GenerateModelCode();
+  void                SimulateModel();
+  std::string         RunCmd(const char* cmd);
 
   template <typename T>
   void NewProjectSet(T& name, T& path) { 

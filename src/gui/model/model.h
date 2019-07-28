@@ -61,6 +61,7 @@ class Model {
   Bool_t        CreateElement(const char* parent, const char* name, int type);
   void          GenerateCode();
   std::string   GetModelFolder(Bool_t createFolder=kFALSE);
+  std::string   GetBackupFile();
 
 
   std::map<std::string, int> GetModelElements();
@@ -69,9 +70,11 @@ class Model {
  private:
   std::string                   fModelName;
   std::vector<ModelElement>     fModelElements;
+  std::string                   fSimulationBackupFilename = "backup.root";
   Bool_t        CreateDirectory(const char* dirPath);
   void          InitializeElement(ModelElement* parent, const char* name, int type);
   ModelElement* FindElement(const char* elementName);
+  void          UpdateLastCellPosition(ModelElement* elem);
 
   ClassDefNV(Model,1)
 };

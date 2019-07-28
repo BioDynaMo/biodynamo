@@ -17,7 +17,11 @@
 #ifndef GUI_MODEL_FRAME_H_
 #define GUI_MODEL_FRAME_H_
 
+#include <TCanvas.h>
+#include <TRootEmbeddedCanvas.h>
+
 #include "gui/constants.h"
+#include "gui/controller/visualization_manager.h"
 #include "gui/view/log.h"
 #include "gui/view/model_tabs.h"
 
@@ -32,6 +36,7 @@ class ModelFrame : public TGCompositeFrame {
   
   void ShowModelElement(const char* modelName, const char* modelElement);
   void ShowEmptyTab();
+  void ClearTabs();
   void EnableButtons(Int_t state);
 
  private:
@@ -65,6 +70,7 @@ class ModelFrame : public TGCompositeFrame {
   std::unique_ptr<TGLayoutHints>        fL8;
 
   std::vector<ModelTabs*>           fTabManagers;
+
   
   /// Needed to support multiple models
   // ModelTabs               *fCurTabs;

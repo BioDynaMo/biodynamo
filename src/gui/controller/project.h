@@ -81,6 +81,7 @@ class Project {
     fProjectPath.assign(path);
     fProjectObject.TestInit();
     fIsLoaded = kTRUE;
+    currentSimulation = nullptr;
 
     SaveProject();
   }
@@ -194,6 +195,12 @@ class Project {
     return folder;
   }
 
+  std::string GetBackupFile(const char* modelName) {
+    Model* model = GetModel(modelName);
+    std::string filename(model->GetBackupFile());
+    return filename;
+  }
+
   /// Starts BioDynaMo code generation on user-defined models.
   /// The `Project` class description explains where code will reside.
   /// @param modelName optional input to specify generate code for
@@ -218,6 +225,18 @@ class Project {
 
   Bool_t IsLoaded() { return fIsLoaded; }
 
+  void SetSimulation(bdm::Simulation* sim) {
+    currentSimulation = sim;
+  }
+
+  bdm::Simulation* GetSimulation() {
+    return currentSimulation;
+  }
+
+  void PrintProjectDetails() {
+    fProjectObject.PrintData();
+  }
+
  private:
   /// Constructor
   Project() : fIsLoaded(kFALSE) {}
@@ -233,7 +252,7 @@ class Project {
       Log::Info("Successfully Loaded!");
       /// TODO: a more elegant copy
       fProjectObject = (*obj);
-      fProjectObject.PrintData();
+      PrintProjectDetails();
       fIsLoaded = kTRUE;
       fProjectPath.assign(path);
     } catch (...) {
@@ -269,6 +288,8 @@ class Project {
   std::string fProjectPath;
 
   Bool_t fIsLoaded = kFALSE;  // kTRUE upon successful loading or new project creation
+
+  bdm::Simulation* currentSimulation;
 };
 
 }  // namespace gui

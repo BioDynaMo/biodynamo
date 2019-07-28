@@ -73,6 +73,9 @@ class ModelElement {
 
   void SetName(const char* name) {
     fName.assign(name);
+    if(fType == M_ENTITY_CELL) {
+      fEntity.SetName(name);
+    }
   }
 
   bdm::Cell* GetElement() {
@@ -84,10 +87,9 @@ class ModelElement {
   }
 
   void PrintData() {
-    Log::Debug("Type:");
     switch(fType) {
       case M_ENTITY_CELL:
-        Log::Debug("Cell");
+        fEntity.PrintData();
         break;
       case M_MODULE_GROWTH:
         Log::Debug("Module");
@@ -154,14 +156,14 @@ class ModelElement {
             return;
           }
           lnk = args->FirstLink();
-            while (lnk) {
-              arg = (TMethodArg*)lnk->GetObject();
-              Log::Debug("Method arg full type: ", arg->GetFullTypeName());
-              fullType.assign(arg->GetFullTypeName());
-              Log::Debug("Method arg type: ", arg->GetTypeName());
-              Log::Debug("Method arg name: ", arg->GetName());
-              lnk = lnk->Next();
-            }
+          while (lnk) {
+            arg = (TMethodArg*)lnk->GetObject();
+            Log::Debug("Method arg full type: ", arg->GetFullTypeName());
+            fullType.assign(arg->GetFullTypeName());
+            Log::Debug("Method arg type: ", arg->GetTypeName());
+            Log::Debug("Method arg name: ", arg->GetName());
+            lnk = lnk->Next();
+          }
           
           methodName.replace(0, 3, "Get");
           Log::Debug("Getter should be:", methodName);

@@ -69,9 +69,41 @@ void Model::InitializeElement(ModelElement* parent, const char* name,
     Log::Warning("Creating element of type `", type, "` not yet supported");
     return;
   }
-  elem.SetElementType(type);
-  elem.SetName(name);
   fModelElements.push_back(elem);
+  size_t elemIdx = fModelElements.size() - 1;
+  fModelElements[elemIdx].SetElementType(type);
+  fModelElements[elemIdx].SetName(name);
+  ModelElement* elemPtr = &(fModelElements[elemIdx]);
+  if (type == gui::M_ENTITY_CELL) {
+    UpdateLastCellPosition(elemPtr);
+  }
+}
+
+void Model::UpdateLastCellPosition(ModelElement* elem){
+  std::map<std::string, int> elementsMap = GetModelElements();
+  std::map<std::string, int>::iterator it;
+
+  uint32_t cellCount = 0;
+
+  for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
+    if(it->second == M_ENTITY_CELL) {
+      cellCount++;
+    }
+  }
+  Log::Debug("cellCount in `UpdateLastCellPosition`:", cellCount);
+  SimulationEntity* entity = elem->GetEntity();
+  Int_t spacing = 50;
+  double zPos = ((cellCount - 1) / 4) * spacing;
+  double yPos, xPos;
+  if     (cellCount % 4 == 0) { xPos = 50; yPos = 50; }
+  else if(cellCount % 4 == 1) { xPos = 0;  yPos = 0;  } 
+  else if(cellCount % 4 == 2) { xPos = 0;  yPos = 50; } 
+  else if(cellCount % 4 == 3) { xPos = 50; yPos = 0;  }
+  else {
+    Log::Error("Should never reach this point!! (in `UpdateLastCellPosition`)");
+  }
+  bdm::Double3 pos({xPos, yPos, zPos});
+  entity->SetPosition(pos);
 }
 
 Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
@@ -141,40 +173,61 @@ Bool_t Model::CreateDirectory(const char* dirPath) {
 std::string Model::GetModelFolder(Bool_t createFolder) {
   std::string modelFolderPath(Project::GetInstance().GetProjectPath());
   modelFolderPath.append(fModelName);
-  struct stat info;
 
-  if( stat( modelFolderPath.c_str(), &info ) != 0 ) {
-    Log::Debug("Cannot access ", modelFolderPath );
-    Log::Debug("Attempting to create directory...");
-    if(createFolder) {
+  if(createFolder) {
+    struct stat info;
+  
+    if( stat( modelFolderPath.c_str(), &info ) != 0 ) {
+      Log::Debug("Cannot access ", modelFolderPath );
+      Log::Debug("Attempting to create directory...");
       if(CreateDirectory(modelFolderPath.c_str())) {
         Log::Debug("Directory created!");
       } else {
         Log::Error("Could not create directory!");
       }
-    } 
-  }
-  else if( info.st_mode & S_IFDIR ) {
-    Log::Debug(modelFolderPath, " is a directory");
-    std::string cmd = "rm -rf " + modelFolderPath;
-    if(system(cmd.c_str())) {
-      return GetModelFolder(createFolder);
-    } else {
-      Log::Error("Could not delete:`", modelFolderPath, "`");
     }
+    else if( info.st_mode & S_IFDIR ) {
+      Log::Debug(modelFolderPath, " is a directory");
+      std::string cmd = "rm -rf " + modelFolderPath;
+      Int_t retVal = system(cmd.c_str());
+      Log::Debug("`", cmd, "` returned:", retVal);
+      if(retVal == 0) {
+        return GetModelFolder(createFolder);
+      } else {
+        Log::Error("Could not delete:`", modelFolderPath, "`");
+      }
+    }
+    else
+        Log::Debug(modelFolderPath, " is not a directory!");
   }
-  else
-      Log::Debug(modelFolderPath, " is not a directory!");
   
   return modelFolderPath;
 }
 
+/// Will retreive the backup file relative to the model folder
+std::string Model::GetBackupFile() {
+  std::string backupFile = GetModelFolder() + "/backup.root";
+  return backupFile;
+}
+
+/// Generates source code for this model
 void Model::GenerateCode() {
   std::string folderPath = GetModelFolder(kTRUE) + "/";
   std::string srcPath = folderPath + "src/";
   std::string srcFileH = srcPath + fModelName + ".h";
   std::string srcFileCC = srcPath + fModelName + ".cc";
   std::string cMakeFile = folderPath + "CMakeLists.txt";
+
+  /// TODO: Use user-input switch
+  Bool_t diffusionEnabled = kTRUE;
+  std::string BioModulesName("");
+  std::string srcFileBioModuleH("");
+
+  if (diffusionEnabled) {
+    GenerateTemplate::GetInstance().EnableDiffusion();
+    BioModulesName.assign("diffusion_modules.h");
+    srcFileBioModuleH = srcPath + BioModulesName;
+  }
 
   std::string cMakeOutput = 
     GenerateTemplate::GetInstance().GenerateCMakeLists(fModelName.c_str());
@@ -191,10 +244,18 @@ void Model::GenerateCode() {
     myfile.close();
   
     std::string srcH = 
-      GenerateTemplate::GetInstance().GenerateSrcH(fModelName.c_str());
+      GenerateTemplate::GetInstance().GenerateSrcH(fModelName.c_str(), fSimulationBackupFilename.c_str(), BioModulesName.c_str());
     myfile.open(srcFileH.c_str());
     myfile << srcH;
     myfile.close();
+
+    if(diffusionEnabled) {
+      std::string srcBioModule = 
+        GenerateTemplate::GetInstance().GenerateDiffusionModuleSrcH();
+      myfile.open(srcFileBioModuleH.c_str());
+      myfile << srcBioModule;
+      myfile.close();
+    }
   } else {
     Log::Error("Could not create folder:`", srcPath, "`");
   }

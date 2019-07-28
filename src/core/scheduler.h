@@ -70,6 +70,7 @@ class Scheduler {
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   CatalystAdaptor* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
+  bool is_gui_enabled = false;
 
   BoundSpace* bound_space_;
   DisplacementOp* displacement_;

@@ -23,6 +23,7 @@ ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
   fL1 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
   fL2 = std::make_unique<TGLayoutHints>(kLHintsExpandX | kLHintsExpandY, 5, 2, 2, 2);
   fL3 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 2, 2, 2);
+  fL4 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsRight | kLHintsExpandY, 5, 2, 2, 2);
 
   fV1 = std::make_unique<TGVerticalFrame>(this, 50, 100, 0);
 
@@ -87,11 +88,17 @@ ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
   AddFrame(fV1.get(), fL3.get());
 
   ModelTabs* tabManager = new ModelTabs(this);
-  tabManager->Resize(1000, 1000);
+  tabManager->Resize(100, 100);
   AddFrame(tabManager, fL2.get());
   fTabManagers.push_back(tabManager);
 
   fButtonHandler = buttonHandler;
+
+  AddFrame(VisManager::GetInstance().Init(this), fL4.get());
+
+  MapSubwindows();
+  Resize();
+  MapWindow();
 }
 
 void ModelFrame::EnableButtons(Int_t state) {
@@ -128,6 +135,12 @@ Bool_t ModelFrame::SwitchModelTab(const char* modelName,
 
 void ModelFrame::ShowModelElement(const char* modelName,
                                   const char* modelElement) {
+  if(fTabManagers.size() == 0) {
+    ModelTabs* tabManager = new ModelTabs(this);
+    tabManager->Resize(100, 100);
+    AddFrame(tabManager, fL2.get());
+    fTabManagers.push_back(tabManager);
+  }
   // Currently showing only for first model
   fTabManagers[0]->SetModelName(modelName);
   fTabManagers[0]->ShowElementTab(modelElement);
@@ -137,6 +150,13 @@ void ModelFrame::ShowModelElement(const char* modelName,
   Resize();
   fTabManagers[0]->Resize();
   Resize();
+  VisManager::GetInstance().RedrawVisFrame();
+}
+
+void ModelFrame::ClearTabs() {
+  fTabManagers[0]->ClearAllTabs();
+  RemoveFrame(fTabManagers[0]);
+  fTabManagers.clear();
 }
 
 }  // namespace gui
