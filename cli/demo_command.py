@@ -21,8 +21,8 @@ from git_utils import InitializeNewGitRepo
 from common import CopySupportFiles
 
 
-DEMO_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'demo')
-STYLE_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'share', 'util', 'style_checks')
+DEMO_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'demo')
+STYLE_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'share', 'util', 'style_checks')
 KNOWN_DEMOS = os.listdir(DEMO_DIR)
 
 

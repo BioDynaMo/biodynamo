@@ -33,8 +33,8 @@ if [ -n "${BDMSYS}" ] ; then
 fi
 
 BDM_INSTALL_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-BDM_INSTALL_DIR=$(cd ${BDM_INSTALL_DIR}; cd ../../ > /dev/null; pwd); export BDM_INSTALL_DIR;
-BDMSYS="${BDM_INSTALL_DIR}/biodynamo"; export BDMSYS;
+BDM_INSTALL_DIR=$(cd ${BDM_INSTALL_DIR}; cd ../ > /dev/null; pwd); export BDM_INSTALL_DIR;
+BDMSYS="${BDM_INSTALL_DIR}/"; export BDMSYS;
 
 # Clear the env from previously set BioDynaMo paths.
 if [ -n "${old_bdmsys}" ] ; then
@@ -180,7 +180,7 @@ BDM_SRC_DIR="${BDMSYS}/include"; export BDM_SRC_DIR
 
 #### ROOT Specific Configurations ####
 if [ -z ${ROOT_DIR} ]; then
-    ROOT_DIR=${BDM_INSTALL_DIR}/third_party/root
+    ROOT_DIR=${BDMSYS}/third_party/root
     if ! [ -d $ROOT_DIR ]; then
         echo "We were unable to source ROOT! Please make sure it is installed in your system!"
         echo "You can specify manually its location by executing 'export ROOT_DIR=path/to/root'"
@@ -197,7 +197,7 @@ export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDMSYS}/i
 
 #### ParaView Specific Configurations ####
 if [ -z ${ParaView_DIR} ]; then
-    ParaView_DIR=${BDM_INSTALL_DIR}/third_party/paraview; export ParaView_DIR;
+    ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR;
     if ! [ -d $ParaView_DIR ]; then
         echo "We were unable to find ParaView! Please make sure it is installed in your system!"
         echo "You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
@@ -220,9 +220,9 @@ else
 fi
 
 if [ -z "${PV_PLUGIN_PATH}" ]; then
-   PV_PLUGIN_PATH="${BDM_INSTALL_DIR}/biodynamo/lib/pv_plugin"; export PV_PLUGIN_PATH
+   PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin"; export PV_PLUGIN_PATH
 else
-   PV_PLUGIN_PATH="${BDM_INSTALL_DIR}/biodynamo/lib/pv_plugin":$PV_PLUGIN_PATH; export PV_PLUGIN_PATH
+   PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH; export PV_PLUGIN_PATH
 fi
 
 if [ -z "${PATH}" ]; then
@@ -246,7 +246,7 @@ fi
 
 #### Qt5 Specific Configurations ####
 if [ -z ${Qt5_DIR} ]; then
-    Qt5_DIR=${BDM_INSTALL_DIR}/third_party/qt; export Qt5_DIR
+    Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
     if ! [ -d $Qt5_DIR ]; then
         echo "We were unable to find Qt! Please make sure it is installed in your system!"
         echo "You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"

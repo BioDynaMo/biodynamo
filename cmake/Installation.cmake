@@ -34,29 +34,24 @@ elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "${BDM_INSTAL
 endif()
 
 # Install biodynamo in its final directory
-install(DIRECTORY ${CMAKE_BIODYNAMO_ROOT}/biodynamo
+install(DIRECTORY ${CMAKE_BIODYNAMO_ROOT}/install/
         DESTINATION .
-        USE_SOURCE_PERMISSIONS)
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
 
 install(TARGETS biodynamo
         LIBRARY
-        DESTINATION ./biodynamo/lib)
+        DESTINATION ./lib)
 
 if(test)
     install(TARGETS runBiodynamoTestsMain
             RUNTIME
-            DESTINATION ./biodynamo/bin)
+            DESTINATION ./bin)
 endif()
 
 if(${ParaView_FOUND})
     install(TARGETS BDMGlyphFilter
             LIBRARY
-            DESTINATION ./biodynamo/lib/pv_plugin)
+            DESTINATION ./lib/pv_plugin)
 endif()
-
-# Install third party directories
-install(DIRECTORY ${CMAKE_BIODYNAMO_ROOT}/third_party
-        DESTINATION .
-        USE_SOURCE_PERMISSIONS
-        OPTIONAL
-        PATTERN "*.tar.gz" EXCLUDE)

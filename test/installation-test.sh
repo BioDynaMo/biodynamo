@@ -45,7 +45,7 @@ EOF
 
 # reload shell and source biodynamo
 set +e +x
-source ~/.bdm/biodynamo/bin/thisbdm.sh
+source ~/.bdm/bin/thisbdm.sh
 set -e -x
 
 # run system test.
