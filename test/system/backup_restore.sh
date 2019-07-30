@@ -47,7 +47,7 @@ kill -9 $SIMULATION_PID
 sleep 1
 
 # restart after artificial crash
-./backup_restore -b $BACKUP_RESTORE_FILE -r $BACKUP_RESTORE_FILE
+./backup_restore -r $BACKUP_RESTORE_FILE
 RETURN_CODE=$?
 
 exit $RETURN_CODE
