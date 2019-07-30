@@ -198,7 +198,7 @@ std::string Model::GetModelFolder(Bool_t createFolder) {
       }
     }
     else
-        Log::Debug(modelFolderPath, " is not a directory!");
+      Log::Debug(modelFolderPath, " is not a directory!");
   }
   
   return modelFolderPath;
@@ -206,7 +206,7 @@ std::string Model::GetModelFolder(Bool_t createFolder) {
 
 /// Will retreive the backup file relative to the model folder
 std::string Model::GetBackupFile() {
-  std::string backupFile = GetModelFolder() + "/backup.root";
+  std::string backupFile = GetModelFolder() + "/build/guibackup.root";
   return backupFile;
 }
 

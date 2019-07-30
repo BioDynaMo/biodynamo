@@ -104,12 +104,14 @@ namespace gui {
       }
       
       ss << tab << "/// Needed for connecting to gui\n"
-         << tab << "simulation.GetScheduler()->Simulate(1);\n"
-         //<< tab << "SimulationBackup* simBackup = new SimulationBackup(\"" << backupFileName << "\", \"\");\n"
-         //<< tab << "simBackup->Backup(1);\n"
-         //<< tab << "delete simBackup;\n\n"
-         //<< tab << "simulation.GetScheduler()->Simulate(500);\n"
-         << tab << "std::cout << \"Simulation completed successfully!\" << std::endl;\n"
+         << tab << "simulation.GetScheduler()->Simulate(1);\n";
+      //if(!fEnableDiffusion) {
+      //  ss << tab << "SimulationBackup* simBackup = new SimulationBackup(\"" << backupFileName << "\", \"\");\n"
+      //     << tab << "simBackup->Backup(1);\n"
+      //     << tab << "delete simBackup;\n\n"
+      //     << tab << "simulation.GetScheduler()->Simulate(500);\n";
+      //}
+      ss << tab << "std::cout << \"Simulation completed successfully!\" << std::endl;\n"
          << tab << "return 0;\n}\n\n}\n\n"
          << "#endif";
 

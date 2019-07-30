@@ -32,7 +32,6 @@ class VisManager {
       gClient->GetColorByName("black", col);
       fVisFrame->SetBackgroundColor(col);
       fVisFrame->Init();
-      enabled = kTRUE;
       return fVisFrame.get();
   }
 
@@ -55,6 +54,10 @@ class VisManager {
 
   void Update() {
       fVisFrame->Update();
+  }
+
+  void Enable(Bool_t flag = kTRUE) {
+      enabled = flag;
   }
 
   /// To be called from Execute() in bdm scheduler

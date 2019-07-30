@@ -51,7 +51,7 @@ class VisFrame : public TGCompositeFrame {
 
     // Set number of segments for approximating circles in drawing.
     // Keep it low for better performance.
-    gGeoManager->SetNsegments(4);
+    gGeoManager->SetNsegments(80);
 
     mat_empty_space_ = new TGeoMaterial("EmptySpace", 0, 0, 0);
     mat_solid_ = new TGeoMaterial("Solid", .938, 1., 10000.);
@@ -79,14 +79,16 @@ class VisFrame : public TGCompositeFrame {
     //    "Biodynamo Visualization");
     is_geometry_closed_ = false;
     init_ = true;
-    cell_count = 1111;
+    cell_count = 1;
+    updateCount = 0;
+    axisShown = kFALSE;
   }
 
   /**
    * Updates GLViewer of TEveManager according to current state of ECM.
    */
   void Update() {
-    std::cout << "In VisFrame Update()!\n";
+    std::cout << "In VisFrame Update()! #" << updateCount++ << "\n";
     if (!init_)
       throw std::runtime_error("Call GUI::getInstance().Init() first!");
 
@@ -94,8 +96,9 @@ class VisFrame : public TGCompositeFrame {
       throw std::runtime_error(
           "Geometry is already closed! Don't call GUI::Update() after "
           "GUI::CloseGeometry()!");
-    std::cout << "\tClearing nodes!\n";
+    //std::cout << "\tClearing nodes!\n";
     top_->ClearNodes();
+    cell_count = 1;
 
     auto* sim = Project::GetInstance().GetSimulation();
     auto* rm = sim->GetResourceManager();
@@ -114,10 +117,15 @@ class VisFrame : public TGCompositeFrame {
       auto container = new TGeoVolumeAssembly("A");
       this->AddBranch((*cells), container, so_name);
       top_->AddNode(container, top_->GetNdaughters());
-      std::cout << "\tUpdating cell!\n";
+      //std::cout << "\tUpdating cell!\n";
     });
 
-    fCanvas->cd();
+    //TVirtualPad *viewPad = fCanvas->cd();
+    if(!axisShown) {
+      //TView* view = viewPad->GetView();
+      //view->ShowAxis();
+      axisShown = !axisShown;
+    }
     fCanvas->SetFillColor(1);
     fCanvas->Clear();
     gGeoManager->CloseGeometry();
@@ -170,7 +178,7 @@ class VisFrame : public TGCompositeFrame {
    */
   template <typename SO>
   void AddCellToVolume(SO&& cell, TGeoVolume *container, std::string so_name) {
-    std::string name = so_name + std::to_string(cell_count++);
+    std::string name = so_name + std::to_string(cell_count);
     auto radius = cell.GetDiameter() / 2;
     auto massLocation = cell.GetPosition();
     auto x = massLocation[0];
@@ -179,7 +187,12 @@ class VisFrame : public TGCompositeFrame {
     auto position = new TGeoTranslation(x, y, z);
 
     auto volume = gGeoManager->MakeSphere(name.c_str(), med_solid_, 0., radius);
-    volume->SetLineColor(kBlue);
+    if(cell_count > 1) {
+      volume->SetLineColor(kBlue);
+    } else {
+      volume->SetLineColor(kRed);
+    }
+    cell_count++;
 
     container->AddNode(volume, container->GetNdaughters(), position);
   }
@@ -212,6 +225,10 @@ class VisFrame : public TGCompositeFrame {
   int max_viz_nodes_;
 
   int cell_count;
+
+  u_int32_t updateCount;
+
+  Bool_t axisShown;
 
 };
 

@@ -41,6 +41,7 @@
 
 #include "biodynamo.h"
 #include "core/simulation_backup.h"
+#include "gui/diffusion_modules.h"
 
 namespace gui {
 
@@ -504,17 +505,20 @@ void ModelCreator::SimulateModel() {
   /// Second: Run the simulation with expected backup
   std::string currentDir = RunCmd("pwd");
   //std::string backupFilepath = Project::GetInstance().GetBackupFile(fModelName.c_str()); 
-  std::string backupFilepath("backupfile.root"); 
+  std::string backupFilepath("guibackup.root"); 
 
   Log::Debug("BackupFile: ", backupFilepath);
   std::string firstCmd = bdm::Concat("cd ", modelFolder, " && biodynamo build && cd build && ./", 
                                      fModelName.c_str(), " -b ", backupFilepath.c_str());
   std::string secondCmd = bdm::Concat("cd ", currentDir);
-  //RunCmd(backupfileCmd.c_str());
+
+  gui::VisManager::GetInstance().Enable(kFALSE);
+
   std::string firstResult = RunCmd(firstCmd.c_str());
-  //std::string secondResult = RunCmd(secondCmd.c_str());
 
   Log::Info(firstResult);
+
+  backupFilepath = Project::GetInstance().GetBackupFile(fModelName.c_str()); 
 
   ifstream f(backupFilepath.c_str());
   Bool_t backupExists = f.good();
@@ -522,26 +526,27 @@ void ModelCreator::SimulateModel() {
   
   /// Third: Restore the backup into this environment
   if(backupExists) {
+    gui::VisManager::GetInstance().Enable();
     Log::Debug("Restoring simulation...");
+    //std::string backupPathFull = Project::GetInstance().GetBackupFile(fModelName.c_str());
     const char* argv[] = { fModelName.c_str(), "-r", backupFilepath.c_str(), NULL };
     Int_t argc = sizeof(argv)/sizeof(argv[0]) - 1;
 
-    /// Currently not in use
     //auto set_param = [](bdm::Param* param) {
     //  param->bound_space_ = true;
     //  param->min_bound_ = 0;
-    //  param->max_bound_ = 100;  // cube of 100*100*100
+    //  param->max_bound_ = 1000;  // cube of 100*100*100
     //};
     
-    bdm::Simulation *currentSim = new bdm::Simulation(argc, argv);
     std::string secondResult = RunCmd(secondCmd.c_str());
 
     /// Fourth: Set and start the simulation
-    Project::GetInstance().SetSimulation(currentSim);
+    Project::GetInstance().SetSimulation(argc, argv);
+    bdm::Simulation *currentSim = Project::GetInstance().GetSimulation();
     currentSim->GetScheduler()->Simulate(500);
     
     /// Earlier version of restoring the backup 
-    //currentSim->Restore();
+    // currentSim->Restore();
   } else {
     Log::Debug("backupfile does not exist! Simulation did not run properly!");
     Log::Error("Error occured during backupfile generation.");

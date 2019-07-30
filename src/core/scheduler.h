@@ -71,6 +71,7 @@ class Scheduler {
   CatalystAdaptor* visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
   bool is_gui_enabled = false;
+  bool is_gui_backup_enabled = false;
 
   BoundSpace* bound_space_;
   DisplacementOp* displacement_;

@@ -46,6 +46,12 @@ Scheduler::Scheduler() {
   diffusion_ = new DiffusionOp();
 
   is_gui_enabled = gui::VisManager::GetInstance().IsEnabled();
+  if(backup_->BackupEnabled()) {
+    size_t found = param->backup_file_.find("gui");
+    if (found != string::npos) { 
+      is_gui_backup_enabled = kTRUE;
+    }
+  }
 
   // initialise operations_
   auto first_op =
@@ -175,9 +181,15 @@ void Scheduler::Backup() {
   using std::chrono::seconds;
   using std::chrono::duration_cast;
   auto* param = Simulation::GetActive()->GetParam();
+
   if (backup_->BackupEnabled() &&
       duration_cast<seconds>(Clock::now() - last_backup_).count() >=
           param->backup_interval_) {
+    last_backup_ = Clock::now();
+    backup_->Backup(total_steps_);
+  }
+  // Force a backup for GUI
+  else if(is_gui_backup_enabled && backup_->BackupEnabled()) {
     last_backup_ = Clock::now();
     backup_->Backup(total_steps_);
   }

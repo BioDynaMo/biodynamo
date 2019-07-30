@@ -81,7 +81,6 @@ class Project {
     fProjectPath.assign(path);
     fProjectObject.TestInit();
     fIsLoaded = kTRUE;
-    currentSimulation = nullptr;
 
     SaveProject();
   }
@@ -225,12 +224,12 @@ class Project {
 
   Bool_t IsLoaded() { return fIsLoaded; }
 
-  void SetSimulation(bdm::Simulation* sim) {
-    currentSimulation = sim;
+  void SetSimulation(int argc, const char** argv) {
+    currentSimulation = std::make_unique<bdm::Simulation>(argc, argv);
   }
 
   bdm::Simulation* GetSimulation() {
-    return currentSimulation;
+    return currentSimulation.get();
   }
 
   void PrintProjectDetails() {
@@ -289,7 +288,7 @@ class Project {
 
   Bool_t fIsLoaded = kFALSE;  // kTRUE upon successful loading or new project creation
 
-  bdm::Simulation* currentSimulation;
+  std::unique_ptr<bdm::Simulation> currentSimulation;
 };
 
 }  // namespace gui
