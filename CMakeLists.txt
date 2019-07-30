@@ -485,10 +485,6 @@ feature_summary(WHAT DISABLED_FEATURES
         INCLUDE_QUIET_PACKAGES
         DESCRIPTION "Disabled Features:")
 
-# Generate the script to install required/optional packages
-get_cmake_property(BDM_MISSING_PACKAGES PACKAGES_NOT_FOUND)
-generate_download_prerequisites("${DETECTED_OS}" "${BDM_MISSING_PACKAGES}" "${BDM_REQUIRED_PACKAGES}")
-
 # Install all the files inside the build dir
 install_inside_build()
 
@@ -508,3 +504,9 @@ add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh"
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+PRINT_LINE()
+MESSAGE("You have just finished to configure BioDynaMo. Now you can run \"make .\" to compile it.\n\
+You can then call \"make install\" to install in your system.
+Remember to source ${BDM_INSTALL_DIR}/bin/thisbdm.sh before using the library.")
+PRINT_LINE()

@@ -79,7 +79,7 @@ if(DEFINED ENV{BDM_CMAKE_DIR})
     add_definitions(-DBDM_SRC_DIR=\"$ENV{BDM_SRC_DIR}\")
 else()
   execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
-  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
+  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this command.")
 endif()
 
 # -------------------- find packages ------------------------------------------

@@ -51,8 +51,9 @@ compatible with BioDynaMo. We will proceed to download the correct version of RO
             set(CUSTOM_ROOT_SOURCE_ENV_COMMAND . ${PROJECT_BINARY_DIR}/source_root_auto.sh PARENT_SCOPE)
 
             PRINT_WARNING()
-            MESSAGE("It appears that ROOT environment was not loaded (by sourcing ${ROOTSYS}/bin/thisroot.sh).\n\
-You will be able to build BioDynaMo anyway. However, make sure to source it later\n on in order to use the library.")
+            MESSAGE("It appears that ROOT environment was not loaded
+(by sourcing ${ROOTSYS}/bin/thisroot.sh).
+You will be able to build BioDynaMo anyway. However, make sure to source it later on in order to use the library.")
             PRINT_LINE()
         endif()
     endif()
@@ -142,93 +143,6 @@ endfunction()
 
 function(source_root_file INSTALL_DIR)
     configure_file(cmake/env/source_root_auto.sh ${INSTALL_DIR}/source_root_auto.sh @ONLY)
-endfunction()
-
-
-# This function will generated bash scripts to download the missing requirements
-# (both optional and mandatory) needed to build correctly BioDynaMo. It will also
-# print some information to the user to instruct him/her about how to use them.
-#
-# * OS: it represents the current OS version. It can be detected using the
-#       previous function called detect_os();
-# * MISSING_PACKAGES: a list of the missing packages;
-# * REQUIRED_PACKAGES; a list of required packages;
-function(generate_download_prerequisites OS MISSING_PACKAGES REQUIRED_PACKAGES)
-
-    # We remove some packages they are installed automatically
-    list(REMOVE_ITEM MISSING_PACKAGES "ParaView" "ROOT" "GCCXML")
-    list(LENGTH MISSING_PACKAGES MISSING_PACKAGES_SIZE)
-
-    # Default optional package variable
-    SET(OPTIONAL_PACKAGES "${MISSING_PACKAGES}")
-    list(LENGTH OPTIONAL_PACKAGES OPTIONAL_PACKAGES_SIZE)
-
-    IF(NOT ${MISSING_PACKAGES_SIZE} EQUAL "0")
-        # We first get the required packages we are missing
-        list(REMOVE_ITEM OPTIONAL_PACKAGES ${REQUIRED_PACKAGES})
-        list(LENGTH OPTIONAL_PACKAGES OPTIONAL_PACKAGES_SIZE)
-
-        # This accounts for the fact that there may be only required
-        # packages to be installed while the optional ones are all there.
-        IF (NOT ${OPTIONAL_PACKAGES_SIZE} EQUAL "0")
-            list(REMOVE_ITEM MISSING_PACKAGES ${OPTIONAL_PACKAGES})
-        ENDIF()
-        list(LENGTH MISSING_PACKAGES MISSING_PACKAGES_SIZE)
-
-        # Include the prerequisites for the given OS and initialize the setup files
-        include(prerequisites/${OS}-install)
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-required.sh "${OS_SHEBANG}\n")
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-optional.sh "${OS_SHEBANG}\n")
-
-        # Populate the script with the required packages
-        if (${MISSING_PACKAGES_SIZE} GREATER "0")
-            FOREACH(ITEM IN LISTS MISSING_PACKAGES)
-                file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-required.sh "${${ITEM}_install_command}")
-                file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-required.sh "\n")
-            ENDFOREACH()
-        endif()
-
-        # Populate the script with the optional packages (if the user wants so)
-        if (${OPTIONAL_PACKAGES_SIZE} GREATER "0")
-            FOREACH(ITEM IN LISTS OPTIONAL_PACKAGES)
-                file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-optional.sh "${${ITEM}_install_command}")
-                file(APPEND ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-optional.sh "\n")
-            ENDFOREACH()
-        endif()
-
-        # Add exec permissions
-        add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-optional.sh" ${CMAKE_BINARY_DIR})
-        add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/prerequisites-required.sh" ${CMAKE_BINARY_DIR})
-
-    endif()
-
-    # Print some information to the final user
-    if (${MISSING_PACKAGES_SIZE} GREATER "0")
-        PRINT_WARNING()
-        MESSAGE("Some prerequisites are missing. Some scripts were created inside ${CMAKE_BINARY_DIR} to solve \n\
-this issue. The scripts are:\n
-\t * ${CMAKE_BINARY_DIR}/prerequisites-required.sh (for the required packages);\n\
-\t * ${CMAKE_BINARY_DIR}/prerequisites-optional.sh (for the optional packages).\n\n\
-You can run them and they will install automatically all the requirements for buidling BioDynaMo. You will need\n\
-sudo rights to do so. Once the scripts are completed, you will need to run again cmake to detect the newly installed packages.\n\
-Remember that you are only required to run prerequisites-required.sh in order to be able to build BioDynaMo.")
-        PRINT_LINE()
-    else()
-        PRINT_LINE()
-        MESSAGE("You have just finished to configure BioDynaMo. Now you can run \"make .\" to compile it.\n\
-Remember to source ${BDM_INSTALL_DIR}/biodynamo-env.sh before actually running the tests or using\n\
-the library.")
-
-        if (${OPTIONAL_PACKAGES_SIZE} GREATER "0")
-            MESSAGE("\nWe detected that also some optional packages are missing. In order to install them you just
-need to run the following script:\n
-\t * ${CMAKE_BINARY_DIR}/prerequisites-optional.sh.\n
-It will required sudo rights to work correcly. After running the scripts,
-you will need to run again cmake to detect the newly installed packages.")
-        ENDIF()
-
-        PRINT_LINE()
-    endif()
 endfunction()
 
 # This function will create a pre-install directory which will contain all the files

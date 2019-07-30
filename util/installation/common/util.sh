@@ -326,7 +326,7 @@ function CopyEnvironmentScript {
   local ENV_SRC=$1
   local BDM_INSTALL_DIR=$2
 
-  local ENV_DEST=$BDM_INSTALL_DIR/biodynamo-env.sh
+  local ENV_DEST=$BDM_INSTALL_DIR/bin/thisbdm.sh
 
   local TMP_ENV=${ENV_DEST}_$RANDOM
 
