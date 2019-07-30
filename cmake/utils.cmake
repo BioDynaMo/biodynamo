@@ -1,3 +1,17 @@
+# -----------------------------------------------------------------------------
+#
+# Copyright (C) The BioDynaMo Project.
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+#
+# See the LICENSE file distributed with this work for details.
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# -----------------------------------------------------------------------------
+
 # Try to find the ROOT package. It is an hard requirement
 # for the project. If ROOT is not found in the system, it
 # will be downloaded during the make step. Moreover, this
@@ -110,8 +124,7 @@ function (ListToString result delim)
 endfunction(ListToString)
 
 # Check if the OS given by the user is supported by the current BioDynaMo release.
-#
-# * OS: the OS specified by the user.
+#   OS: the OS specified by the user.
 function(check_detected_os OS)
     # First of all we get a list of all the OS we are currently supporting
     FILE(GLOB SUPPORTED_OS_LIST LIST_DIRECTORIES TRUE ${CMAKE_SOURCE_DIR}/util/installation/*)
@@ -141,6 +154,7 @@ ${ALL_OS}
     endif()
 endfunction()
 
+# Copy the source_root_auto.sh file by supplying the right information
 function(source_root_file INSTALL_DIR)
     configure_file(cmake/env/source_root_auto.sh ${INSTALL_DIR}/source_root_auto.sh @ONLY)
 endfunction()
@@ -284,6 +298,8 @@ function(install_inside_build)
 
 endfunction()
 
+# This function add a description to the packages which will be displayed
+# at the end of the cmake run.
 function(add_bdm_packages_properties)
     SET_PACKAGE_PROPERTIES(MPI PROPERTIES
             DESCRIPTION "OpenMPI, an Open Source Message Passing Interface. (REQUIRED)"
@@ -348,6 +364,9 @@ function(add_bdm_packages_properties)
 
 endfunction()
 
+# Add a small description to the -D flags which we can use
+# when running cmake. It is used to show the final user more
+# information about the build system.
 function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(test test "Build BioDynaMo's test suite.")
     ADD_FEATURE_INFO(cuda cuda "Enable CUDA code generation for GPU acceleration.")
@@ -359,6 +378,9 @@ function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(verbose verbose "Enable verbosity when running make install.")
 endfunction()
 
+# Method used to give execution permissions to a file
+#   FILE_PATH: the path to the file we want to update;
+#   DESTINATION: location where we want to copy the file.
 function(add_permissions FILE_PATH DESTINATION)
     file(COPY ${FILE_PATH}
             DESTINATION ${DESTINATION}
@@ -376,6 +398,7 @@ function(print_warning)
     MESSAGE("\n########################### WARNING ############################\n")
 endfunction()
 
+# Helper function to print a summary indication
 function(print_summary)
     MESSAGE("\n########################### SUMMARY ############################\n")
 endfunction()

@@ -18,8 +18,9 @@ if [ $# -ne 1 ]; then
 Description:
   Run installation tests
 Usage:
-  installation-test.sh
-No Arguments
+  installation-test.sh <os>
+Arguments:
+  <os> OS we want to test
   "
   exit 1
 fi
