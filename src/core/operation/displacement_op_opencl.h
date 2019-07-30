@@ -1,22 +1,21 @@
-// //
 // -----------------------------------------------------------------------------
-// //
-// // Copyright (C) The BioDynaMo Project.
-// // All Rights Reserved.
-// //
-// // Licensed under the Apache License, Version 2.0 (the "License");
-// // you may not use this file except in compliance with the License.
-// //
-// // See the LICENSE file distributed with this work for details.
-// // See the NOTICE file distributed with this work for additional information
-// // regarding copyright ownership.
-// //
-// //
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
 // -----------------------------------------------------------------------------
 
 #ifndef CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
 #define CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
 
+#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #include <vector>
 
 #include "core/gpu/gpu_helper.h"
@@ -232,5 +231,7 @@ class DisplacementOpOpenCL {
 };
 
 }  // namespace bdm
+
+#endif  // defined(USE_OPENCL) && !defined(__ROOTCLING__)
 
 #endif  // CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
