@@ -54,4 +54,4 @@ class Inspector {
 
 }  // namespace gui
 
-#endif
+#endif // GUI_INSPECTOR_H_

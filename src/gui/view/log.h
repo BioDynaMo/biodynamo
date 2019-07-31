@@ -76,4 +76,4 @@ class Log {
 
 }  // namespace gui
 
-#endif  // GUI_LOG_H_
+#endif // GUI_LOG_H_

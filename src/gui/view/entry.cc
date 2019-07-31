@@ -192,9 +192,6 @@ Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
 
   if(CheckIfValueChanged()) {
     Log::Debug("Value has changed!");
-    Log::Debug("Sanity check:");
-    printf("\t\tfCellPtr = %p\n", fCellPtr);
-    Project::GetInstance().PrintProjectDetails();
     TClass *cl = fCellPtr->IsA();
     std::string methodName(fEntryName);
     methodName.insert(0, "Set");
@@ -284,4 +281,4 @@ Bool_t Entry::CheckIfValueChanged() {
   return isModified;
 }
 
-} // namespace gui
+}  // namespace gui

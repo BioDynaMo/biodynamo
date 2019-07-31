@@ -25,9 +25,6 @@ class ModelAction {
  public:
   ModelAction() {};
   ~ModelAction() = default;
-    // will need to be abstract
-     // input
-     // outputs
 };
 
 } // namespace gui

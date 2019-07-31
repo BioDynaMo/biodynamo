@@ -59,4 +59,4 @@ class ModelCreatorAbout : public TGTransientFrame {
 
 }  // namespace gui
 
-#endif  // GUI_ABOUT_H
+#endif // GUI_ABOUT_H

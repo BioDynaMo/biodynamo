@@ -55,4 +55,4 @@ Inspector::Inspector(TGCompositeFrame* fMain, const char* modelName, const char*
   }
 }
 
-} // namespace gui
+}  // namespace gui

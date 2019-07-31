@@ -22,7 +22,6 @@
 #include "gui/constants.h"
 #include "gui/view/log.h"
 
-
 void Gui()
 {
   new gui::ModelCreator(gClient->GetRoot(), MAIN_WIDTH, MAIN_HEIGHT);
@@ -41,4 +40,3 @@ int main(int argc, char **argv)
   theApp.Run();
   return 0;
 }
-

@@ -18,7 +18,7 @@
 #define GUI_CONSTANTS_H
 
 // width and height of main window frame in pixels
-#define MAIN_WIDTH   1280 
+#define MAIN_WIDTH   1600 
 #define MAIN_HEIGHT  720
 #define GUI_VERSION  "0.1"
 
@@ -71,7 +71,7 @@ enum View {
   M_ZOOM_MINUS              = 1202
 };
 
-}
+}  // namespace gui
 
 
 #endif // GUI_CONSTANTS_H

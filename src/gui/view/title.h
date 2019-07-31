@@ -59,6 +59,6 @@ class TitleFrame : public TGCompositeFrame {
   virtual ~TitleFrame();
 };
 
-} // namespace gui
+}  // namespace gui
 
-#endif  // GUI_TITLE_H
+#endif // GUI_TITLE_H

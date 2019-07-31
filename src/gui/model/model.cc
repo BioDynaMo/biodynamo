@@ -261,5 +261,4 @@ void Model::GenerateCode() {
   }
 }
 
-
-} // namespace gui
+}  // namespace gui

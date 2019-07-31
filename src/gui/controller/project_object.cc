@@ -18,8 +18,6 @@
 
 namespace gui {
 
-//ClassImp(ProjectObject);
-
 /// Getter for project name
 /// @param None
 /// @return const char* private data member fProjectName
@@ -43,4 +41,4 @@ void ProjectObject::SetProjectName(const char* name) {
   fProjectName.assign(name);
 }
 
-} // namespace gui
+}  // namespace gui

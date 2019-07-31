@@ -150,4 +150,4 @@ void ModelTabs::ClearAllTabs() {
   MapWindow();
 }
 
-}
+}  // namespace gui

@@ -47,6 +47,6 @@ class Module {
   ClassDefNV(Module,1)
 };
 
-} // namespace gui
+}  // namespace gui
 
 #endif // GUI_MODULE_H_

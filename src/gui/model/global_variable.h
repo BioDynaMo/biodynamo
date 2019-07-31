@@ -25,7 +25,6 @@ class GlobalVariable {
  public:
   GlobalVariable() {};
   ~GlobalVariable() = default;
-
 };
 
 } // namespace gui

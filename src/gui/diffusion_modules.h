@@ -39,5 +39,6 @@ struct KaliumSecretion : public BaseBiologyModule {
   }
 };
 
-}
-#endif
+}  // namespace bdm
+
+#endif // DIFFUSION_MODULES_H_

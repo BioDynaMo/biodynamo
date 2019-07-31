@@ -45,17 +45,13 @@ class VisFrame : public TGCompositeFrame {
    * Creates TEveManager window, initializes members
    */
   void Init() {
-    //TEveManager::Create();
-
     new TGeoManager("Visualization", "BioDynaMo");
 
     // Set number of segments for approximating circles in drawing.
     // Keep it low for better performance.
     gGeoManager->SetNsegments(80);
 
-    mat_empty_space_ = new TGeoMaterial("EmptySpace", 0, 0, 0);
     mat_solid_ = new TGeoMaterial("Solid", .938, 1., 10000.);
-    med_empty_space_ = new TGeoMedium("Empty", 1, mat_empty_space_);
     med_solid_ = new TGeoMedium("Solid", 1, mat_solid_);
 
     // Another way to make top volume for world. In this way it will be
@@ -63,22 +59,13 @@ class VisFrame : public TGCompositeFrame {
     top_ = new TGeoVolumeAssembly("WORLD");
 
     gGeoManager->SetTopVolume(top_);
-    // geom_->SetMultiThread(true);
-
-    // connect geom_ to eve
-    //TGeoNode *node = gGeoManager->GetTopNode();
-    //eve_top_ = new TEveGeoTopNode(geom_, node);
-    //gEve->AddGlobalElement(eve_top_);
-    //gEve->AddElement(eve_top_);
 
     // number of visualized nodes inside one volume. If you exceed this number,
     // ROOT will draw nothing.
     gGeoManager->SetMaxVisNodes(max_viz_nodes_);
 
-    //gEve->GetBrowser()->GetMainFrame()->SetWindowName(
-    //    "Biodynamo Visualization");
-    is_geometry_closed_ = false;
-    init_ = true;
+    is_geometry_closed_ = kFALSE;
+    init_ = kTRUE;
     cell_count = 1;
     updateCount = 0;
     axisShown = kFALSE;
@@ -103,15 +90,6 @@ class VisFrame : public TGCompositeFrame {
     auto* sim = Project::GetInstance().GetSimulation();
     auto* rm = sim->GetResourceManager();
 
-    //rm->ApplyOnAllElements([&](auto* cells, uint16_t type_idx) {
-    //  auto so_name = cells->GetTypeName();
-    //  for (size_t i = 0; i < cells->size(); i++) {
-    //    auto container = new TGeoVolumeAssembly("A");
-    //    this->AddBranch((*cells)[i], container, so_name);
-    //    top_->AddNode(container, top_->GetNdaughters());
-    //  }
-    //});
-
     rm->ApplyOnAllElements([&](bdm::SimObject* cells) {
       auto so_name = cells->GetTypeName();
       auto container = new TGeoVolumeAssembly("A");
@@ -119,22 +97,26 @@ class VisFrame : public TGCompositeFrame {
       top_->AddNode(container, top_->GetNdaughters());
       //std::cout << "\tUpdating cell!\n";
     });
-
-    //TVirtualPad *viewPad = fCanvas->cd();
+    
+    // TODO: Show axis in the view
     if(!axisShown) {
       //TView* view = viewPad->GetView();
       //view->ShowAxis();
       axisShown = !axisShown;
     }
+
     fCanvas->SetFillColor(1);
     fCanvas->Clear();
     gGeoManager->CloseGeometry();
     gGeoManager->GetTopVolume()->Draw();
-
-    //gEve->FullRedraw3D();
-    //gSystem->ProcessEvents();
   
-    update_ = true;
+    update_ = kTRUE;
+  }
+
+  void Reset() {
+    updateCount = 0;
+    top_->ClearNodes();
+    gGeoManager->GetTopVolume()->Draw();
   }
 
   /**
@@ -152,12 +134,11 @@ class VisFrame : public TGCompositeFrame {
    * the manager class to the browser.
    */
   void CloseGeometry() {
-    if (!update_)
+    if (!update_) {
       throw std::runtime_error("Call GUI::getInstance().Update() first!");
-
+    }
     gGeoManager->CloseGeometry();
-
-    is_geometry_closed_ = true;
+    is_geometry_closed_ = kTRUE;
   }
 
   virtual Bool_t      ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
@@ -185,8 +166,9 @@ class VisFrame : public TGCompositeFrame {
     auto y = massLocation[1];
     auto z = massLocation[2];
     auto position = new TGeoTranslation(x, y, z);
-
     auto volume = gGeoManager->MakeSphere(name.c_str(), med_solid_, 0., radius);
+
+    /// Only the first rendered cell will be red, the rest blue
     if(cell_count > 1) {
       volume->SetLineColor(kBlue);
     } else {
@@ -217,21 +199,17 @@ class VisFrame : public TGCompositeFrame {
   TGeoMedium *med_solid_;
 
   // just to ensure that methods were called in correct order
-  bool init_;                // true if init_ was called
-  bool update_;              // true if update was called
-  bool is_geometry_closed_;  // true if geometry is already closed
+  Bool_t init_;                // true if init_ was called
+  Bool_t update_;              // true if update was called
+  Bool_t is_geometry_closed_;  // true if geometry is already closed
 
   /// Max visualized shapes per volume.
-  int max_viz_nodes_;
-
-  int cell_count;
-
+  u_int32_t max_viz_nodes_;
+  u_int32_t cell_count;
   u_int32_t updateCount;
-
   Bool_t axisShown;
-
 };
 
-}
+}  // namespace gui
 
 #endif // GUI_VISUALIZATION_FRAME_H_

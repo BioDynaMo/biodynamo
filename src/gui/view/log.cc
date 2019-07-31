@@ -73,4 +73,4 @@ void Log::SetStatusBar(TGStatusBar* statusBar) {
   StatusBar = statusBar;
 }
 
-} // namespace gui
+}  // namespace gui

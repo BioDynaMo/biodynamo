@@ -109,9 +109,7 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
   // Project::GetInstance();
   fOk = kFALSE;
   fModified = kFALSE;
-  fSettingsModified = kFALSE;
   fIsRunning = kFALSE;
-  fInterrupted = kFALSE;
   fIsNewProject = kFALSE;
 
   fModelCreatorEnv = std::make_unique<TEnv>(".modelcreatorrc");  //  not yet used
@@ -429,20 +427,20 @@ void ModelCreator::ClearProject() {
     Project::GetInstance().SaveProject();
     Project::GetInstance().CloseProject();
     fModelFrame->ClearTabs();
+    VisManager::GetInstance().Reset();
   }
   fTreeManager = std::make_unique<TreeManager>();
   fProjectListTree->Cleanup();
   ChangeSelectionFrame(kFALSE);
-
 }
 
+/// Will create new model if a model with
+/// the same name does not already exist
 void ModelCreator::CreateNewModel() {
   if(Project::GetInstance().CreateModel(fModelName.c_str())) {
     Log::Info("Creating Model on tree:", fModelName);
     fTreeManager->CreateModelTree(fModelName);
     Initialize();
-    //std::string tmp = fModelName + " Overview";
-    //fModelFrame->ShowModelElement(fModelName.c_str(), tmp.c_str());
     fClient->NeedRedraw(fModelFrame.get());
   }
 }
@@ -451,10 +449,8 @@ void ModelCreator::CreateNewModel() {
 /// Initialize ModelCreator display.
 
 void ModelCreator::Initialize() {
-  Interrupt(kFALSE);
   fProjectListTree->ClearViewPort();
   fClient->NeedRedraw(fProjectListTree.get());
-
   fStatusBar->SetText("", 1);
 }
 
@@ -470,7 +466,7 @@ void ModelCreator::ChangeSelectionFrame(Bool_t createdProject) {
   fSelectionFrame->MapWindow();
 }
 
-void ModelCreator::CreateNewElement(int type) {
+void ModelCreator::CreateNewElement(Int_t type) {
   fButtonModelFrame->SetState(M_ALL_ACTIVE);
   std::string elemName = fTreeManager->CreateTopLevelElement(type);
   Project::GetInstance().CreateModelElement(fModelName.c_str(), "", elemName.c_str(), type);
@@ -512,7 +508,7 @@ void ModelCreator::SimulateModel() {
                                      fModelName.c_str(), " -b ", backupFilepath.c_str());
   std::string secondCmd = bdm::Concat("cd ", currentDir);
 
-  gui::VisManager::GetInstance().Enable(kFALSE);
+  VisManager::GetInstance().Enable(kFALSE);
 
   std::string firstResult = RunCmd(firstCmd.c_str());
 
@@ -526,7 +522,7 @@ void ModelCreator::SimulateModel() {
   
   /// Third: Restore the backup into this environment
   if(backupExists) {
-    gui::VisManager::GetInstance().Enable();
+    VisManager::GetInstance().Enable();
     Log::Debug("Restoring simulation...");
     //std::string backupPathFull = Project::GetInstance().GetBackupFile(fModelName.c_str());
     const char* argv[] = { fModelName.c_str(), "-r", backupFilepath.c_str(), NULL };
@@ -537,7 +533,7 @@ void ModelCreator::SimulateModel() {
     //  param->min_bound_ = 0;
     //  param->max_bound_ = 1000;  // cube of 100*100*100
     //};
-    
+    VisManager::GetInstance().Reset();
     std::string secondResult = RunCmd(secondCmd.c_str());
 
     /// Fourth: Set and start the simulation
@@ -632,7 +628,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               break;
 
             case M_INTERRUPT_SIMUL:
-              Interrupt();
+              Log::Debug("Clicked interrupt!");
               break;
 
             case M_SIMULATION_GENERATE:

@@ -107,4 +107,4 @@ class NewModelDialog : public TGTransientFrame {
 
 }  // namespace gui
 
-#endif
+#endif // GUI_NEW_DIALOG_H

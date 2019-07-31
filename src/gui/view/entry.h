@@ -70,4 +70,4 @@ class Entry : public TGHorizontalFrame {
 
 }  // namespace gui
 
-#endif
+#endif // GUI_ENTRY_H_

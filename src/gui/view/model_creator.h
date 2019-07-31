@@ -78,9 +78,8 @@ class ModelCreator : public TGMainFrame {
   static Int_t        fgDefaultYPosition;   // default Y position of top left corner
 
   Bool_t              fOk;                  // Return code from settings dialog
-  Bool_t              fModified;            // kTRUE if setting mods not saved
-  Bool_t              fSettingsModified;    // kTRUE if settings have been modified
   Bool_t              fIsRunning;           // Simulation running flag
+  Bool_t              fModified;            // kTRUE if setting mods not saved
   Bool_t              fInterrupted;         // Interrupts current simulation
   Bool_t              fIsNewProject;        // kTRUE if new project is set
   Bool_t              fIsNewModel;          // kTRUE if new model is set
@@ -147,11 +146,7 @@ class ModelCreator : public TGMainFrame {
 
   void                SetOk(Bool_t ok=kTRUE) { fOk = ok; }
   void                Modified(Bool_t modified=kTRUE) { fModified = modified; }
-  void                SettingsModified(Bool_t modified=kTRUE) { fSettingsModified = modified; }
-  void                Interrupt(Bool_t inter=kTRUE) { fInterrupted = inter; }
-  Bool_t              IsInterrupted() { return fInterrupted; }
   virtual void        Initialize();
-
   virtual void        CloseWindow();
   virtual Bool_t      ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
   void                CreateNewProject();
@@ -160,7 +155,7 @@ class ModelCreator : public TGMainFrame {
   void                ClearProject();
   Bool_t              AskForProject(Bool_t loading=kFALSE);
   void                DisplayProjectTree();
-  void                CreateNewElement(int type);
+  void                CreateNewElement(Int_t type);
   void                HandleTreeInput();
   void                EnableSaving(Bool_t enable=kTRUE);
   Bool_t              GenerateModelCode();
@@ -183,6 +178,6 @@ class ModelCreator : public TGMainFrame {
 
 extern ModelCreator  *gModelCreator;
 
-} // namespace gui
+}  // namespace gui
 
 #endif // GUI_MODEL_CREATOR_H_

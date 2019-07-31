@@ -48,4 +48,4 @@ const char gHelpLicense[] =
 "OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR\n"
 "MODIFICATIONS.";
 
-} // namespace gui
+}  // namespace gui

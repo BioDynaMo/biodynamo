@@ -88,5 +88,5 @@ void ButtonProjectFrame::SetState(int state)
    gClient->HandleInput();
 }
 
-} // namespace gui
+}  // namespace gui
 

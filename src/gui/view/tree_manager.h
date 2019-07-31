@@ -242,4 +242,4 @@ class TreeManager {
 
 }  // namespace gui
 
-#endif  // GUI_TREE_MANAGER_H_
+#endif // GUI_TREE_MANAGER_H_

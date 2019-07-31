@@ -64,4 +64,4 @@ class ModelTabs : public TGCompositeFrame {
 
 }  // namespace gui
 
-#endif  // GUI_MODEL_TABS_H_
+#endif // GUI_MODEL_TABS_H_

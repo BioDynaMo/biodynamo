@@ -25,7 +25,6 @@ class Behaviour {
  public:
   Behaviour() {};
    ~Behaviour() = default;
-  // behaviour logic TODO: possible create behaviour logic class?
 };
 
 } // namespace gui

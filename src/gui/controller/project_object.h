@@ -105,6 +105,6 @@ class ProjectObject{
   std::vector<Model> fModels; // Purposefully not a vector of pointers
 };
 
-} // namespace gui
+}  // namespace gui
 
 #endif  // GUI_PROJECT_OBJECT_H_

@@ -35,25 +35,12 @@ class VisManager {
       return fVisFrame.get();
   }
 
-  TEveBrowser* GetVisFrame() {
-      //TEveViewer* viewer = fVisFrame->GetDefaultViewer();
-      //if(viewer == 0) {
-      //    std::cout << "Viewer is 0!!!!!\n";
-      //}
-      //TGLViewer* glViewer = fVisFrame->GetDefaultGLViewer();
-      //if(glViewer == 0) {
-      //    std::cout << "GL Viewer is 0!!!!!\n";
-      //}
-      //TEveBrowser* browser = fVisFrame->GetBrowser();
-      //if(browser == 0) {
-      //    std::cout << "Editor is 0!!!!\n";
-      //}
-
-      return nullptr;
-  }
-
   void Update() {
       fVisFrame->Update();
+  }
+
+  void Reset() {
+      fVisFrame->Reset();
   }
 
   void Enable(Bool_t flag = kTRUE) {
@@ -61,7 +48,7 @@ class VisManager {
   }
 
   /// To be called from Execute() in bdm scheduler
-  bool IsEnabled() {
+  Bool_t IsEnabled() {
       return enabled;
   }
 
@@ -78,10 +65,9 @@ class VisManager {
   VisManager& operator=(VisManager const&) = delete;
 
   std::unique_ptr<VisFrame> fVisFrame;
-
   Bool_t enabled = kFALSE;
 };
 
-}
+}  // namespace gui
 
 #endif  // GUI_VISUALIZATION_MANAGER_H_

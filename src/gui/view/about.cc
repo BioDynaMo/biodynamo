@@ -161,4 +161,4 @@ Bool_t ModelCreatorAbout::ProcessMessage(Long_t msg, Long_t /*parm1*/,
    return kTRUE;
 }
 
-} // namespace gui
+}  // namespace gui

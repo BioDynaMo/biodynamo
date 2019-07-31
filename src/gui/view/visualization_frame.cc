@@ -44,32 +44,25 @@ VisFrame::~VisFrame() {}
 Bool_t VisFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
 {
    switch (GET_MSG(msg)) {
-
       case kC_COMMAND:
-
          switch (GET_SUBMSG(msg)) {
-
             case kCM_BUTTON:
             case kCM_MENU:
                switch (parm1) {
-
                   case M_ZOOM_PLUS:
                      fCanvas->cd();
                      fCanvas->GetView()->ZoomView(0, 1.25);
                      fCanvas->Modified();
                      fCanvas->Update();
                      break;
-
                   case M_ZOOM_MINUS:
                      fCanvas->cd();
                      fCanvas->GetView()->UnzoomView(0, 1.25);
                      fCanvas->Modified();
                      fCanvas->Update();
                      break;
-
                } // switch parm1
                break; // M_MENU
-
             } // switch submsg
             break; // case kC_COMMAND
    } // switch msg
@@ -77,4 +70,4 @@ Bool_t VisFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2)
    return kTRUE;
 }
 
-} // namespace gui
+}  // namespace gui

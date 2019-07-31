@@ -23,7 +23,7 @@ ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
   fL1 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
   fL2 = std::make_unique<TGLayoutHints>(kLHintsExpandX | kLHintsExpandY, 5, 2, 2, 2);
   fL3 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 2, 2, 2);
-  fL4 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsRight | kLHintsExpandY, 5, 2, 2, 2);
+  fL4 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsRight | kLHintsExpandY | kLHintsExpandX, 5, 2, 2, 2);
 
   fV1 = std::make_unique<TGVerticalFrame>(this, 50, 100, 0);
 

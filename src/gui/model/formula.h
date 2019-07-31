@@ -25,8 +25,6 @@ class Formula {
  public:
   Formula() {};
    ~Formula() = default;
-  // dimensions
-  // which type of function
 };
 
 } // namespace gui

@@ -47,6 +47,6 @@ public:
    virtual void SetState(int state);
 };
 
-} // namespace gui
+}  // namespace gui
 
 #endif // GUI_BUTTON_PROJECT_H
