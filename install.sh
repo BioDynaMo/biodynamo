@@ -24,10 +24,12 @@ fi
 set -e
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BDM_DETECTED_OS=$(DetectOs)
 
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
+
+# Detect the OS
+BDM_DETECTED_OS=$(DetectOs)
 
 # Install all prerequisites
 $BDM_PROJECT_DIR/prerequisites.sh all
