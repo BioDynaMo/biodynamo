@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+# -----------------------------------------------------------------------------
+#
+# Copyright (C) The BioDynaMo Project.
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+#
+# See the LICENSE file distributed with this work for details.
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# -----------------------------------------------------------------------------
 # Source this script to set up the BioDynaMo build that this script is part of.
 #
 # Conveniently an alias like this can be defined in .bashrc:
@@ -275,12 +288,6 @@ else
 fi
 
 #######
-
-#### MKDocs Specific Configurations ####
-export PATH=$PATH:~/.local/bin
-export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH
-export PATH=$PATH:~/Library/Python/2.7/bin
-########
 
 # OpenMP
 export OMP_PROC_BIND=true
