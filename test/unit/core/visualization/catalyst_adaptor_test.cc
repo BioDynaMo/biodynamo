@@ -173,7 +173,10 @@ TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
 
 /// Test if the objects that we want to output for visualization are indeed
 /// the only ones (no more, no less).
-TEST_F(CatalystAdaptorTest, CheckVisualizationSelection) {
+/// FIXME: THIS TEST WAS DISABLED BECAUSE IT HANGS ON TRAVIS. THIS IS CAUSED
+/// BY PARAVIEW WHICH PROBABLY DEADLOCK WHILE EXECUTING THIS TEST. THIS TEST
+/// WILL BE ENABLED AGAIN WHEN PARAVIEW 5.7 WILL BE USED.
+TEST_F(CatalystAdaptorTest, DISABLED_CheckVisualizationSelection) {
   auto set_param = [](auto* param) {
     param->export_visualization_ = true;
 
