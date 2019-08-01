@@ -25,40 +25,27 @@ matrix:
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-16.04 manual"
+      env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-16.04"
     # Test development installation on ubuntu-18.04
     - os: linux
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-18.04 manual"
+      env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-18.04"
     # Test development installation on centos-7.6.1810
     - os: linux
+      before_install:
+        - test -n $CC  && unset CC
+        - test -n $CXX && unset CXX
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/installation-test.sh centos-7.6.1810 manual"
+      env: SCRIPT="util/travis-ci/installation-test.sh centos-7.6.1810"
     # Test development installation on osx
     - os: osx
-      env: SCRIPT="util/travis-ci/installation-test.sh osx manual"
-    # Test the install script
-    - os: linux
-      dist: trusty
-      sudo: required
-      group: edge
-      env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-16.04 automatic"
-    - os: linux
       before_install:
-        - test -n $CC  && unset CC
-        - test -n $CXX && unset CXX
-      dist: trusty
-      sudo: required
-      group: edge
-      env: SCRIPT="util/travis-ci/installation-test.sh centos-7.6.1810 automatic"
-    - os: osx
-      before_install:
-        - test -n $CC  && unset CC
-        - test -n $CXX && unset CXX
+       - test -n $CC  && unset CC
+       - test -n $CXX && unset CXX
       env: SCRIPT="util/travis-ci/installation-test.sh osx automatic"
 
 script:
