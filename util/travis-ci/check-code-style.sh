@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 0 ]]; then
   echo "Wrong number of arguments.
 Description:
   Check code style
@@ -41,7 +41,7 @@ python3 --version || true
 # https://github.com/travis-ci/travis-ci/issues/6069
 git remote set-branches --add origin master
 
-$BDM_PROJECT_DIR/prerequisites.sh $1 all << EOF
+$BDM_PROJECT_DIR/prerequisites.sh all << EOF
 y
 EOF
 

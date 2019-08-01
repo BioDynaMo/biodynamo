@@ -30,7 +30,7 @@ BDM_DETECTED_OS=$(DetectOs)
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 # Install all prerequisites
-$BDM_PROJECT_DIR/prerequisites.sh ${BDM_DETECTED_OS} all
+$BDM_PROJECT_DIR/prerequisites.sh all
 
 # call install script for the detected OS
 util/installation/common/install.sh ${BDM_DETECTED_OS}

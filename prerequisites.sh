@@ -24,20 +24,14 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-if [[ $# -ne 2 ]]; then
+if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
   This script installs the prerequisites of BioDynaMo, but not BioDynaMo
   itself.
 Usage:
-  prerequisites.sh <os_name> <type_of_prerequisites>
+  prerequisites.sh <type_of_prerequisites>
 
-  <os_name>                 It is the name of your current operating system. The ones
-                            supported by BioDynaMo are:
-                            - ubuntu-16.04;
-                            - ubuntu-18.04;
-                            - centos-7.6.1810;
-                            - osx;
   <type_of_prerequistes>    It refers to the type of prerequistes that it is possible to
                             install. You can specify two options:
                             - required: install only the packages needed to build/run
@@ -54,10 +48,10 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Check if the OS the user provided is supported by the current
 # version of BioDynaMo.
-CheckOsSupported $BDM_PROJECT_DIR/util/installation $1
+CheckOsSupported $BDM_PROJECT_DIR/util/installation $(DetectOs)
 
 # Check if the required install procedure is available
-CheckTypeInstallSupported $2
+CheckTypeInstallSupported $1
 
 EchoInfo "This script install the prerequisites of BioDynaMo. For more details, please have a look at the official website:"
 EchoInfo "https://biodynamo.github.io/user/installation/"
@@ -78,4 +72,4 @@ done
 
 
 # Call install script for the detected OS
-CallOSSpecificScript $BDM_PROJECT_DIR prerequisites.sh $2
+CallOSSpecificScript $BDM_PROJECT_DIR prerequisites.sh $1
