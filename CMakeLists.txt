@@ -114,9 +114,6 @@ if(UNIX AND NOT APPLE)
     add_definitions("-DLINUX")
 endif()
 
-# Define required packages
-SET(BDM_REQUIRED_PACKAGES OpenMP Threads Numa TBB MPI GLUT PythonInterp PythonLibs)
-
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
 # -------------------- find packages ------------------------------------------

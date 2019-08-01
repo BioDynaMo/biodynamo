@@ -305,7 +305,7 @@ function(add_bdm_packages_properties)
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(GLUT PROPERTIES
-            DESCRIPTION "Open Source alternative to the OpenGL Utility Toolkit (GLUT) library. (REQUIRED)"
+            DESCRIPTION "Open Source alternative to the OpenGL Utility Toolkit (GLUT) library. (OPTIONAL)"
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(OpenMP PROPERTIES
@@ -333,7 +333,7 @@ function(add_bdm_packages_properties)
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(ParaView PROPERTIES
-            DESCRIPTION "Open Source, multi-platform data analysis and visualization application. (REQUIRED)"
+            DESCRIPTION "Open Source, multi-platform data analysis and visualization application. (OPTIONAL)"
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(Valgrind PROPERTIES
@@ -357,7 +357,7 @@ function(add_bdm_packages_properties)
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(Qt5 PROPERTIES
-            DESCRIPTION "Open Source widget toolkit for creating user interfaces. It is needed by Paraview. (REQUIRED)"
+            DESCRIPTION "Open Source widget toolkit for creating user interfaces. It is needed by Paraview. (OPTIONAL)"
             TYPE REQUIRED
             )
 
