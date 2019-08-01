@@ -46,7 +46,7 @@ matrix:
       before_install:
        - test -n $CC  && unset CC
        - test -n $CXX && unset CXX
-      env: SCRIPT="util/travis-ci/installation-test.sh osx automatic"
+      env: SCRIPT="util/travis-ci/installation-test.sh osx"
 
 script:
   - shell_session_update() { :; };
