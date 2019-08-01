@@ -13,11 +13,14 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 0 ]]; then
+if [ $# -ge 2 ]; then
   echo "ERROR: Wrong number of arguments.
+Usage:
+  install.sh [<os>]
 Description:
   This script installs/updates the currently checked out version of biodynamo
-No Arguments"
+Arguments:
+  <os>  Specify manually which operative system is being used."
   exit 1
 fi
 
@@ -28,11 +31,18 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
-# Detect the OS
-BDM_DETECTED_OS=$(DetectOs)
+# Detect the OS (or get the one the user specified)
+if [ -z $1 ]; then
+    BDM_DETECTED_OS=$(DetectOs)
+else
+    BDM_DETECTED_OS=$1
+fi
 
 # Install all prerequisites
-$BDM_PROJECT_DIR/prerequisites.sh all
+$BDM_PROJECT_DIR/prerequisites.sh all ${BDM_DETECTED_OS}
+
+# This will propagate the detected OS to cmake
+export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DBDM_OS=${BDM_DETECTED_OS}"
 
 # call install script for the detected OS
 util/installation/common/install.sh ${BDM_DETECTED_OS}

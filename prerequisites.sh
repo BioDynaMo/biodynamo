@@ -19,24 +19,22 @@
 #  $1 operative systems
 #  $2 type of install (all or just required)
 
-# Unofficial strict bash mode (useful to reduce debugging time)
-# http://redsymbol.net/articles/unofficial-bash-strict-mode/
-set -euo pipefail
-IFS=$'\n\t'
+set -e
 
-if [[ $# -ne 1 ]]; then
+if [ $# -ge 3 ] || [ $# -le 0 ]; then
   echo "ERROR: Wrong number of arguments.
 Description:
   This script installs the prerequisites of BioDynaMo, but not BioDynaMo
   itself.
 Usage:
-  prerequisites.sh <type_of_prerequisites>
+  prerequisites.sh <type_of_prerequisites> [<os>]
 
   <type_of_prerequistes>    It refers to the type of prerequistes that it is possible to
                             install. You can specify two options:
                             - required: install only the packages needed to build/run
                               BioDynaMo;
                             - all: install all the packages (required and optional).
+  <os>                      Specify which OS we are targeting (optional).
 "
   exit 1
 fi
@@ -46,9 +44,16 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
+# Detect the OS
+if [ -z $2 ]; then
+    BDM_DETECTED_OS=$(DetectOs)
+else
+    BDM_DETECTED_OS=$2
+fi
+
 # Check if the OS the user provided is supported by the current
 # version of BioDynaMo.
-CheckOsSupported $BDM_PROJECT_DIR/util/installation $(DetectOs)
+CheckOsSupported $BDM_PROJECT_DIR/util/installation ${BDM_DETECTED_OS}
 
 # Check if the required install procedure is available
 CheckTypeInstallSupported $1
