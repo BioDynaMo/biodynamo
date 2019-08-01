@@ -34,11 +34,6 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
-# # install prerequisites
-BDM_INSTALL_OS_SRC=$BDM_PROJECT_DIR/util/installation/$BDM_OS
-# source script so BDM_INSTALL_DIR will be available in this script
-. $BDM_INSTALL_OS_SRC/prerequisites.sh $BDM_OS all
-
 # Custom instruction for MacOS (just in case)
 # Export path to make cmake find LLVM's clang (otherwise OpenMP won't work)
 if [ $BDM_OS = "osx" ]; then
