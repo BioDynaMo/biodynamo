@@ -442,7 +442,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
-  bdm_add_test_executable(runBiodynamoTestsMain
+  bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS})
   #   separate test binaries - each source file is compiled into a separate binary

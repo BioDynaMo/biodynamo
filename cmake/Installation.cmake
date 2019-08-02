@@ -49,7 +49,7 @@ install(TARGETS biodynamo
         DESTINATION ./lib)
 
 if(test)
-    install(TARGETS runBiodynamoTestsMain
+    install(TARGETS biodynamo-unit-tests
             RUNTIME
             DESTINATION ./bin)
 endif()

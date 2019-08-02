@@ -38,7 +38,7 @@ def GetGitDescribeString(default_version_code):
     except subprocess.CalledProcessError as e:
         print("Call to git describe failed (Error code {})".format(e.returncode))
         print("Falling back to default version value ({})".format("v"+default_version_code+"-0-00000000"))
-        return "v"+default_version_code+"-0-00000000"
+        return "v"+default_version_code+"-0-99999999"
 
 def GenerateFile(template_file, dest_file, version, major, minor, patch, additional_commits):
     if not os.path.exists(template_file):
