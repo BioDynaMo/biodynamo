@@ -500,7 +500,7 @@ feature_summary(WHAT DISABLED_FEATURES
 install_inside_build()
 
 # Copy the environmental files to their correct directory
-configure_file(${CMAKE_SOURCE_DIR}/config/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
+configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
 
 # Set run permission on the environmental files
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

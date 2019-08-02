@@ -12,12 +12,12 @@ cd biodynamo
 !!! important
 
     1. After the installation you need to restart your terminal.
-      In every new terminal execute `source <path-to-bdm-installation>/biodynamo/bin/thisbdm.sh`
+      In every new terminal execute `source <path-to-bdm-installation>/bin/thisbdm.sh`
       to use BioDynaMo!
-      
+
     2. It is also possible to use the library without running `make install`. You will just need to source `thisbdm.sh` from the build
-       directory: `source <path-to-bdm-build-dir>/biodynamo/bin/thisbdm.sh`
-  
+       directory: `source <path-to-bdm-build-dir>/install/bin/thisbdm.sh`
+
     3. BioDynaMo uses a customized version of ParaView.
 	     Therefore, you should not install ParaView separately.
 
@@ -39,4 +39,3 @@ git pull origin master
 *  **Ubuntu 16.04 (recommended)**, 18.04
 *  CentOS 7.6.1810
 *  Mac OSX
-

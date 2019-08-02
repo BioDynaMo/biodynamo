@@ -20,7 +20,7 @@ Usage:
 Description:
   This script installs/updates the currently checked out version of biodynamo
 Arguments:
-  <os>  Specify manually which operative system is being used."
+  <os>  Specify manually which operating system is being used."
   exit 1
 fi
 

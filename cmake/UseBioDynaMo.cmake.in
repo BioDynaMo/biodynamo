@@ -43,24 +43,24 @@ option(paraview  "Enable ParaView" @paraview@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
 
 if (NOT "${cuda}" STREQUAL "${cuda_default}")
-    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with the current \
-BioDynaMo's build.  BioDynaMo was build by setting -Dcuda to ${cuda_default}. Please change -Dcuda to -Dcuda=${cuda_default}.")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dcuda to ${cuda_default}. Please change -Dcuda to -Dcuda=${cuda_default}.")
 endif()
 if (NOT "${opencl}" STREQUAL "${opencl_default}")
-    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dopencl=${opencl}) is not compatible with the current \
-BioDynaMo's build.  BioDynaMo was build by setting -Dopencl to ${opencl_default}. Please change -Dopencl to -Dopencl=${opencl_default}.")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dopencl=${opencl}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dopencl to ${opencl_default}. Please change -Dopencl to -Dopencl=${opencl_default}.")
 endif()
 if (NOT "${dict}" STREQUAL "${dict_default}")
-    MESSAGE(FATAL_ERROR "One of the option which you provided (-Ddict=${dict}) is not compatible with the current \
-BioDynaMo's build.  BioDynaMo was build by setting -Ddict to ${dict_default}. Please change -Ddict to -Ddict=${dict_default}.")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Ddict=${dict}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Ddict to ${dict_default}. Please change -Ddict to -Ddict=${dict_default}.")
 endif()
 if (NOT "${paraview}" STREQUAL "${paraview_default}")
-    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dparaview=${paraview}) is not compatible with the current \
-BioDynaMo's build.  BioDynaMo was build by setting -Dparaview to ${paraview_default}. Please change -Dparaview to -Dcuda=${paraview_default}.")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dparaview=${paraview}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dparaview to ${paraview_default}. Please change -Dparaview to -Dcuda=${paraview_default}.")
 endif()
 if (NOT "${vtune}" STREQUAL "${vtune_default}")
-    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dvtune=${vtune}) is not compatible with the current \
-BioDynaMo's build.  BioDynaMo was build by setting -Dvtune to ${vtune_default}. Please change -Dvtune to -Dvtune=${vtune_default}.")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dvtune=${vtune}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dvtune to ${vtune_default}. Please change -Dvtune to -Dvtune=${vtune_default}.")
 endif()
 
 # This file contains the build setup for simulation projects outside the
@@ -181,7 +181,7 @@ endif()
 
 find_package(ClangTools)
 if (NOT ClangTools_FOUND)
-    message("clang-tidy and clang-format were not found. Style checks will not be available for this simulation.")
+    message(WARNING "clang-tidy and clang-format were not found. Style checks will not be available for this simulation.")
 else()
     if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
       # Generate a Clang compile_commands.json "compilation database" file for use
@@ -189,6 +189,10 @@ else()
       # See http://clang.llvm.org/docs/JSONCompilationDatabase.html
       set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
     endif()
+    # It is used by format/style checks. It needs to be defined here such
+    # to enable relocation of the scripts.
+    set(BUILD_SUPPORT_DIR "${BDM_CMAKE_DIR}/../util")
+    include(CppStyleGuideChecks)
 endif()
 
 # -------------------- set default build type and compiler flags ---------------
@@ -208,12 +212,6 @@ set(CMAKE_INSTALL_RPATH "")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
 include("${BDM_CMAKE_DIR}/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
-
-
-# It is used by format/style checks. It needs to be defined here such
-# to enable relocation of the scripts.
-set(BUILD_SUPPORT_DIR "${BDM_CMAKE_DIR}/../util")
-include(CppStyleGuideChecks)
 
 fix_rootcling_omp_issue()
 

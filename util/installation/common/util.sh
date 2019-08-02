@@ -236,10 +236,10 @@ function EchoFinishThisStep {
   fi
 
   EchoInfo "To complete this step execute:"
-  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/biodynamo/bin/thisbdm.sh"
+  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
   EchoInfo "This command must be executed in every terminal before you build or use BioDynaMo."
   EchoInfo "To avoid this additional step add it to your $(BashrcFile) file:"
-  EchoInfo "    echo \"source $1/biodynamo/bin/thisbdm.sh\" >> $(BashrcFile)"
+  EchoInfo "    echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
 }
 
 # This function prompts the user for the biodynamo installation direcotory

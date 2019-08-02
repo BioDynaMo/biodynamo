@@ -31,6 +31,8 @@ BioDynaMo provides also an automated procedure to install all the needed library
   * **gcovr**: Tool to test code coverage in programs.
 
 ### Installation
+
+#### Required Packages
 ```bash
 sudo apt-get install -y cmake make gcc g++ \
 libopenmpi-dev libomp-dev libnuma-dev libtbb-dev \
@@ -38,6 +40,7 @@ libpthread-stubs0-dev \
 python3 python3-pip
 ```
 
+#### Optional Packages
 ```bash
 pip3 install --user mkdocs mkdocs-material
 sudo apt-get install -y freeglut3-dev valgrind \
@@ -75,6 +78,7 @@ lcov gcovr
 
 ### Installation
 
+#### Required Packages
 ```bash
 sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
@@ -84,6 +88,7 @@ devtoolset-7-gcc* numactl-devel \
 tbb-devel openmpi3-devel \
 rh-python36 python python-pip
 ```
+#### Optional Packages
 ```bash
 pip install --user mkdocs mkdocs-material
 sudo yum -y install lcov gcovr llvm-toolset-7\
@@ -114,12 +119,17 @@ llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 
 ### Installation
 
+#### Required Packages
+
 ```bash
 brew install libomp tbb open-mpi \
 python python@2 llvm cmake || true
 
 brew upgrade python cmake
 ```
+
+#### Optional Packages
+
 ```bash
 pip install --user mkdocs mkdocs-material
 brew install doxygen lcov gcovr || true

@@ -40,6 +40,10 @@ install(DIRECTORY ${CMAKE_BIODYNAMO_ROOT}/install/
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 
+# We need to install manually these targets in order to clear their RPATH.
+# They have been already copied inside the final install directory by the
+# previous instruction, but their RPATH still points to files in the build
+# directory. Therefore we need to "install" them again to fix this problem.
 install(TARGETS biodynamo
         LIBRARY
         DESTINATION ./lib)
