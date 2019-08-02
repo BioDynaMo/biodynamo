@@ -83,14 +83,14 @@ if (GIT_FOUND)
   # Check if we have an origin/master branch
   execute_process(
   COMMAND bash -c "HAVE_ORIGIN=$(git branch -a | grep -c 'origin/master'); if [ $HAVE_ORIGIN -gt 0 ]; then echo 1; else echo 0; fi;"
-    RESULT_VARIABLE HAVE_ORIGIN_REPOSITORY
+    OUTPUT_VARIABLE HAVE_ORIGIN_REPOSITORY
   )
 
   # If origin/master is not set, then we disable some targets, more specifically:
   # - make format
   # - make tidy
   # - make check-cpplint-all
-  if ("${HAVE_ORIGIN}" STREQUAL 1)
+  if ("${HAVE_ORIGIN_REPOSITORY}" EQUAL "1")
     add_clang_format_target(format "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
     add_clang_tidy_target(tidy "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
     add_cpplint_target(check-cpplint "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )

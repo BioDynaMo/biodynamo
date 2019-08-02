@@ -12,7 +12,7 @@ git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
 
 # Install the prerequisites for the project
-./prerequisites.sh <your-os> all
+./prerequisites.sh all
 
 # Create the build directory
 mkdir build
@@ -46,7 +46,7 @@ order to run the library.
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
-./prerequisites.sh centos-7.6.1810 all
+./prerequisites.sh all centos-7.6.1810
 
 export MESA_GL_VERSION_OVERRIDE=3.3
 . scl_source enable rh-python36
@@ -56,6 +56,7 @@ export MESA_GL_VERSION_OVERRIDE=3.3
 module load mpi
 
 mkdir build && cd build && cmake ../ && make
+make install
 ```
 
 ## MacOS
@@ -67,7 +68,7 @@ Here as example we show the procedure using `clang` compiler installed using `br
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
-./prerequisites.sh centos-7.6.1810 all
+./prerequisites.sh all osx
 
 export LLVMDIR="/usr/local/opt/llvm"
 export CC=$LLVMDIR/bin/clang
@@ -77,6 +78,7 @@ export LDFLAGS=-L$LLVMDIR/lib
 export PATH=$LLVMDIR/bin:$PATH
 
 mkdir build && cd build && cmake ../ && make
+make install
 ```
 
 
