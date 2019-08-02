@@ -149,8 +149,8 @@ find_package(OpenMP)
 if (OpenMP_FOUND)
     link_directories(${OpenMP_CXX_LIBRARIES})
 else()
-    MESSAGE(FATAL_ERROR "We did not found any support for OpenMP. Please run ./prerequisites.sh again before
-calling cmake. If this does not work, then you current compiler might not support OpenMP (this happens for instance
+    MESSAGE(FATAL_ERROR "OpenMP was not found in your system. Please run ./prerequisites.sh again before
+calling cmake. If this does not work, then your current compiler might not support OpenMP (this happens for instance
 with Apple's standard compiler). Please update it to a more recent version and then run cmake again.")
 endif()
 
@@ -163,8 +163,8 @@ if(cuda)
   find_package(CUDA)
   if (NOT CUDA_FOUND)
     MESSAGE("CUDA was not found in your system, therefore it was disabled to let you compile BioDynaMo. In order to
-enable this functionality please install CUDA for your system. This can be done automatically with the prerequistes.sh
-script offered by the library. Then run again cmake (with the -Dcuda=ON flag).")
+enable this functionality please install CUDA for your system. Please have a look at https://docs.nvidia.com/cuda/index.html.
+Then run again cmake (with the -Dcuda=ON flag).")
     SET(cuda OFF)
   endif()
 endif()
@@ -173,8 +173,8 @@ if(opencl)
   find_package(OpenCL)
   if (NOT OpenCL_FOUND)
       MESSAGE("OpenCL was not found in your system, therefore it was disabled to let you compile BioDynaMo. In order to
-enable this functionality please install OpenCL for your system. This can be done automatically with the prerequistes.sh
-script offered by the library. Then run again cmake (with the -Dopencl=ON flag).")
+enable this functionality please install OpenCL for your system. Please have a look at https://developer.nvidia.com/opencl.
+Then run again cmake (with the -Dopencl=ON flag).")
       SET(opencl OFF)
   endif()
 endif()
@@ -211,7 +211,7 @@ if(paraview)
     # for Qt.
     if ((DEFINED ENV{ParaView_DIR} AND NOT DEFINED ENV{Qt5_DIR}) OR (NOT DEFINED ENV{ParaView_DIR} AND DEFINED ENV{Qt5_DIR}))
         MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build\
- BioDynaMo with those library. This is needed only if you want to use your own versions of ParaView and Qt.\
+ BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.\
  Normally, BioDynaMo will automatically downloads those libraries.")
     endif()
 
@@ -274,8 +274,8 @@ if (vtune)
         set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
     else()
         MESSAGE("VTune was not found in your system, therefore it was disabled. You will not be able to run the perfomance
-checks. In order to enable this functionality please install VTune for your system. This can be done automatically with
-the prerequistes.sh script offered by the library. Then run again cmake (with the -Dvtune=ON flag).")
+checks. In order to enable this functionality please install VTune for your system. Please have a look at https://software.intel.com/en-us/vtune.
+Then run again cmake (with the -Dvtune=ON flag).")
     endif()
 endif()
 

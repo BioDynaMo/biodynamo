@@ -22,24 +22,24 @@ cd build
 cmake ../
 make
 
-# (Optional) Installs the library 
+# (Optional) Installs the library
 make install
 ```
 
 The script `prerequisites.sh` is used to install all the dependencies needed by BioDynaMo. You will need
-to run it before actually calling `cmake` and `make`. It will also choose the specific dependencies given the operative systems.
+to run it before actually calling `cmake` and `make`. It will also choose the specific dependencies given the operating systems.
 Run `./prerequisites.sh --help` to see how to use it.
 
 !!! attention
-    
+
     When trying to install the prerequisites on MacOS the script will user `brew` as a default install method.
-    If you do not have `brew` on your system, or you are using a different package manager, you will need to 
+    If you do not have `brew` on your system, or you are using a different package manager, you will need to
     manually install all the required packages. Please have a look to the [Prerequisites](user/prerequisites) page.
 
 ## CentOS 7.6.1810
 
 In case of CentOS, you will need to run some additional commands before actually calling `cmake` and `make`. This is because
-CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to 
+CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to
 load the OpenMPI module. You will need to run these instructions only before building BioDynaMo. You will not need them in
 order to run the library.
 
@@ -61,7 +61,7 @@ mkdir build && cd build && cmake ../ && make
 ## MacOS
 
 Before building BioDynaMo on MacOS you will need to provide to `cmake` a C++14 and OpenMP compatible compiler. This can
-be done by setting the environmental variables `CXX` and `C` for the C++ and C compilers. 
+be done by setting the environmental variables `CXX` and `C` for the C++ and C compilers.
 Here as example we show the procedure using `clang` compiler installed using `brew`.
 
 ```bash
