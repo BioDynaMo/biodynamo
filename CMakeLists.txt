@@ -60,8 +60,8 @@ if (NOT DEFINED ${BDM_INSTALL_DIR})
 endif()
 
 # Specify some directories which will be used to structure BioDynaMo build.
-set(CMAKE_BIODYNAMO_ROOT        "${CMAKE_BINARY_DIR}")
-set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_ROOT}/install")
+set(CMAKE_BIODYNAMO_BUILD_ROOT  "${CMAKE_BINARY_DIR}")
+set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_BUILD_ROOT}/install")
 set(CMAKE_THIRD_PARTY_DIR       "${CMAKE_INSTALL_ROOT}/third_party")
 set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin")
 set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include")
@@ -82,7 +82,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/bin)
 
 # Hide them from configuration tools
-mark_as_advanced(${CMAKE_BIODYNAMO_ROOT}
+mark_as_advanced(${CMAKE_BIODYNAMO_BUILD_ROOT}
         ${CMAKE_INSTALL_ROOT}
         ${CMAKE_INSTALL_BINDIR}
         ${CMAKE_INSTALL_INCLUDEDIR}

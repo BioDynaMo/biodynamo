@@ -34,7 +34,7 @@ elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "${BDM_INSTAL
 endif()
 
 # Install biodynamo in its final directory
-install(DIRECTORY ${CMAKE_BIODYNAMO_ROOT}/install/
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/install/
         DESTINATION .
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
