@@ -43,13 +43,6 @@ shift
 MODE=$1
 shift
 
-if [ "$#" == "0" ]; then
-  echo "Warning: No files to process."
-  echo -e "This may happen because the repository has no origin/master branch set."
-  echo "Try to add it using 'git remote add' or run 'make format-all' instead."
-  exit 0;
-fi
-
 echo "Process files: "
 for f in $@; do
     echo $f

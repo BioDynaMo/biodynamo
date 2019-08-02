@@ -80,9 +80,25 @@ if (GIT_FOUND)
     COMMENT "Fetch latest changes from origin master. If you forked the project,
        make sure that it is synchronized with the biodynamo repository!")
 
-  add_clang_format_target(format "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
-  add_clang_tidy_target(tidy "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
-  add_cpplint_target(check-cpplint "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
+  # Check if we have an origin/master branch
+  execute_process(
+  COMMAND bash -c "HAVE_ORIGIN=$(git branch -a | grep -c 'origin/master'); if [ $HAVE_ORIGIN -gt 0 ]; then echo 1; else echo 0; fi;"
+    RESULT_VARIABLE HAVE_ORIGIN_REPOSITORY
+  )
+
+  # If origin/master is not set, then we disable some targets, more specifically:
+  # - make format
+  # - make tidy
+  # - make check-cpplint-all
+  if ("${HAVE_ORIGIN}" STREQUAL 1)
+    add_clang_format_target(format "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
+    add_clang_tidy_target(tidy "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
+    add_cpplint_target(check-cpplint "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
+  else()
+    MESSAGE(WARNING "\nWe did not detected any remote origin/master branch. Therefore targets \
+like 'make format', 'make tidy' and 'make check-cpplint-all' will not be available. Use 'make format-all', 'make tidy-all' and 'make check-cpplint-staged' instead. \
+If you wish to use 'make format'/'make tidy'/'make check-cpplint-all' try to add an origin/master branch using 'git remote add'.\n")
+  endif()
 
   add_clang_format_target(format-staged "${STAGED_SRC_FILES}" )
   add_clang_tidy_target(tidy-staged "${STAGED_SRC_FILES}" )
