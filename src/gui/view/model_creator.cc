@@ -185,7 +185,7 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
   fSelectionFrame = std::make_unique<TGCompositeFrame>(fV1, 100, 100, kVerticalFrame);
 
   fButtonModelFrame = std::make_unique<ButtonModelFrame>(fSelectionFrame.get(), this, M_MODEL_NEW,
-                                           M_MODEL_SIMULATE, M_INTERRUPT_SIMUL);
+                                           M_MODEL_SIMULATE, M_CREATE_GRID);
 
   // create project button frame
   fButtonProjectFrame = std::make_unique<ButtonProjectFrame>(
@@ -627,7 +627,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               SimulateModel();
               break;
 
-            case M_INTERRUPT_SIMUL:
+            case M_CREATE_GRID:
               Log::Debug("Clicked interrupt!");
               break;
 

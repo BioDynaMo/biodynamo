@@ -18,7 +18,7 @@
 #define GUI_CONSTANTS_H
 
 // width and height of main window frame in pixels
-#define MAIN_WIDTH   1600 
+#define MAIN_WIDTH   1280 
 #define MAIN_HEIGHT  720
 #define GUI_VERSION  "0.1"
 
@@ -53,7 +53,7 @@ enum View {
   ///----SELECTION-FRAME-----///
   M_MODEL_NEW               = 701,
   M_MODEL_SIMULATE          = 801,
-  M_INTERRUPT_SIMUL         = 802,
+  M_CREATE_GRID             = 802,
   M_ALL_ACTIVE              = 803,
   M_NONE_ACTIVE             = 804,
   

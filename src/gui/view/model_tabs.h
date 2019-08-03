@@ -24,12 +24,14 @@
 #include <unordered_map>
 #include <vector>
 
+#include <TGCanvas.h>
+
 #include "gui/view/inspector.h"
 #include "gui/view/log.h"
 
 namespace gui {
 
-class ModelTabs : public TGCompositeFrame {
+class ModelTabs {
  public:
   ModelTabs(const TGWindow* p);
   virtual ~ModelTabs() {}
@@ -37,29 +39,38 @@ class ModelTabs : public TGCompositeFrame {
   void   ShowElementTab(const char* name);
   void   SetModelName(const char* name) { fModelName.assign(name); }
   void   ClearAllTabs();
+  void   SetCanvas(TGCanvas *canvas) { fCanvas = canvas; }
+  TGFrame *GetFrame() const { return fFrame.get(); }
+  void HandleMouseWheel(Event_t *event);
 
  private:
   Int_t  GetElementTabIdx(const char* name);
   TGTab* GetElementTab(const char* name);
-  void   UpdateTabPriority(const char* name);
-  void   OverwriteLowestPriorityTab(const char* name);
+  //void   UpdateTabPriority(const char* name);
+  void   AddATab(const char* name);
   void   ShowElement(const char* name);
+  void   SetTabColor(const char* name);
   void   PrintTabNames();
   void   UpdateTabContents(TGTab* tab, const char* elementName);
 
-  std::unique_ptr<TGTab>  fTabTL;  // top-left tab
-  std::unique_ptr<TGTab>  fTabTR;  // top-right tab
-  std::unique_ptr<TGTab>  fTabBL;  // bottom-left tab
-  std::unique_ptr<TGTab>  fTabBR;  // bottom-right tab
+  //std::unique_ptr<TGTab>  fTabTL;  // top-left tab
+  //std::unique_ptr<TGTab>  fTabTR;  // top-right tab
+  //std::unique_ptr<TGTab>  fTabBL;  // bottom-left tab
+  //std::unique_ptr<TGTab>  fTabBR;  // bottom-right tab
 
   /// Above 4 tabs will be in this vector
-  std::vector<TGTab*>     fTabs;
+  std::vector<TGTab*>       fTabs;
+  std::vector<TGFrame*>     fTabFrames;
 
-  std::vector<Inspector*> fInspectors;
-  std::string             fModelName;
-  Bool_t                  IsFrameInit;
+  std::vector<Inspector*>    fInspectors;
+  std::string                fModelName;
+  TGCanvas*                  fCanvas;
+  std::unique_ptr<TGCompositeFrame> fFrame;
+  Bool_t                     IsFrameInit;
 
   std::unique_ptr<TGLayoutHints> fL1, fL2, fL3, fL4;
+
+  ClassDefNV(ModelTabs,1)
 };
 
 }  // namespace gui

@@ -37,6 +37,8 @@ VisFrame::VisFrame(const TGWindow* p)
   fZoomMinusButton->SetToolTipText("Zoom backward");
   fHFrame->AddFrame(fZoomMinusButton.get(), new TGLayoutHints(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2));
   AddFrame(fHFrame.get(), new TGLayoutHints(kLHintsBottom | kLHintsLeft | kLHintsExpandX, 5, 5, 5, 5));
+
+  EnableButtons(kFALSE);
 }
 
 VisFrame::~VisFrame() {}

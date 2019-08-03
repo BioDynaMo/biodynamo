@@ -101,14 +101,13 @@ void Entry::UpdateValue() {
 
 // Creates the necessary gui elements to match attribute types
 void Entry::Init(ModelElement* modelElement) {
-  fModelElement = modelElement;
-  fCellPtr = fModelElement->GetElement();
-
   TGLayoutHints *fL2 = new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2);
 
+  fModelElement = modelElement;
+  fCellPtr = fModelElement->GetElement();
   switch(fEntryType) {
     case EntryType::M_DOUBLE: {
-      TGNumberEntry* fNumberEntry = new TGNumberEntry(this, 1.0);
+      auto* fNumberEntry = new TGNumberEntry(this, 1.0);
       AddFrame(fNumberEntry, fL2);
       fNumberEntries.push_back(fNumberEntry);
       fCurrentValues.push_back(0);
@@ -136,7 +135,7 @@ void Entry::Init(ModelElement* modelElement) {
       break;
     }
     case EntryType::M_UINT: {
-      TGNumberEntry* fNumberEntry = new TGNumberEntry(this, 1.0);
+      auto* fNumberEntry = new TGNumberEntry(this, 1.0);
       AddFrame(fNumberEntry, fL2);
       fNumberEntries.push_back(fNumberEntry);
       fNumberEntry->SetNumStyle(TGNumberFormat::kNESInteger);
@@ -159,7 +158,7 @@ void Entry::Init(ModelElement* modelElement) {
         return;
       }
       for(int i = 0; i < 3; i++) {
-        TGNumberEntry* fNumberEntry = new TGNumberEntry(this, 1.0);
+        auto* fNumberEntry = new TGNumberEntry(this, 1.0);
         AddFrame(fNumberEntry, fL2);
         fNumberEntries.push_back(fNumberEntry);
         fCurrentValues.push_back(vals[i]);
@@ -179,7 +178,7 @@ void Entry::Init(ModelElement* modelElement) {
       Log::Info("Arg Type is not yet supported");
   }
 
-  TGLabel *label = new TGLabel(this, fEntryName.c_str());
+  auto* label = new TGLabel(this, fEntryName.c_str());
   AddFrame(label, fL2);
 }
 
@@ -192,7 +191,7 @@ Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
 
   if(CheckIfValueChanged()) {
     Log::Debug("Value has changed!");
-    TClass *cl = fCellPtr->IsA();
+    TClass* cl = fCellPtr->IsA();
     std::string methodName(fEntryName);
     methodName.insert(0, "Set");
     

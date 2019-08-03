@@ -33,11 +33,11 @@ namespace gui {
 /// buttonHandler = pointer to button handler TGWindow
 /// newModelId = id of M_MODEL_NEW
 /// simulateModelId = id of M_MODEL_SIMULATE
-/// interruptSimId = id of M_INTERRUPT_SIMUL
+/// createGridId = id of M_CREATE_GRID
 
 ButtonModelFrame::ButtonModelFrame(const TGWindow* p, TGWindow* buttonHandler,
                            Int_t newModelId, Int_t simulateModelId,
-                           Int_t interruptSimId) :
+                           Int_t createGridId) :
                            TGCompositeFrame(p, 100, 100, kVerticalFrame)
 {
    // Create Layout hints
@@ -48,9 +48,9 @@ ButtonModelFrame::ButtonModelFrame(const TGWindow* p, TGWindow* buttonHandler,
    fNewModelButton->Associate(buttonHandler);
    fNewModelButton->SetToolTipText("Creates new BioDynaMo model");
    AddFrame(fNewModelButton.get(), fButtonLayout.get());
-   fStopSimButton = std::make_unique<TGTextButton>(this, "&Interrupt Simulation", interruptSimId);
+   fStopSimButton = std::make_unique<TGTextButton>(this, "&Create Cell Grid", createGridId);
    fStopSimButton->Associate(buttonHandler);
-   fStopSimButton->SetToolTipText("Interrupts the current simulation");
+   fStopSimButton->SetToolTipText("Initialize a grid of cells for the current model");
    AddFrame(fStopSimButton.get(), fButtonLayout.get());
    fSimulateModelButton = std::make_unique<TGTextButton>(this, "&Simulate Model", simulateModelId);
    fSimulateModelButton->Associate(buttonHandler);

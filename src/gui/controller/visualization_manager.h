@@ -22,41 +22,42 @@ namespace gui {
 class VisManager {
  public:
   static VisManager& GetInstance() {
-      static VisManager instance;
-      return instance;
+    static VisManager instance;
+    return instance;
   }
 
   VisFrame* Init(const TGWindow* p) {
-      fVisFrame = std::make_unique<VisFrame>(p);
-      Pixel_t col;
-      gClient->GetColorByName("black", col);
-      fVisFrame->SetBackgroundColor(col);
-      fVisFrame->Init();
-      return fVisFrame.get();
+    fVisFrame = std::make_unique<VisFrame>(p);
+    Pixel_t col;
+    gClient->GetColorByName("black", col);
+    fVisFrame->SetBackgroundColor(col);
+    fVisFrame->Init();
+    return fVisFrame.get();
   }
 
   void Update() {
-      fVisFrame->Update();
+    fVisFrame->Update();
   }
 
   void Reset() {
-      fVisFrame->Reset();
+    fVisFrame->Reset();
   }
 
   void Enable(Bool_t flag = kTRUE) {
-      enabled = flag;
+    enabled = flag;
+    fVisFrame->EnableButtons(flag);
   }
 
   /// To be called from Execute() in bdm scheduler
   Bool_t IsEnabled() {
-      return enabled;
+    return enabled;
   }
 
   void RedrawVisFrame() {
-      fVisFrame->MapWindow();
-      fVisFrame->Resize();
-      fVisFrame->MapSubwindows();
-      gClient->NeedRedraw(fVisFrame.get());
+    fVisFrame->MapWindow();
+    fVisFrame->Resize();
+    fVisFrame->MapSubwindows();
+    gClient->NeedRedraw(fVisFrame.get());
   }
 
  private:

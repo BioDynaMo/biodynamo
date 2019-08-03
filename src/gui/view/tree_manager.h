@@ -97,7 +97,7 @@ class TreeManager {
       isNameValid = kTRUE;
     }
     
-    Int_t i;
+    Int_t i = -1;
     while (!isNameValid) {
       std::size_t found = elementName.find_last_of("_");
       if (found == std::string::npos) {
@@ -209,7 +209,10 @@ class TreeManager {
     return tmpName;
   }
 
-  std::string GetCurrentSelectedModelName() { return fCurModelName; }
+  std::string GetCurrentSelectedModelName() { 
+    return fCurModelName;
+  }
+
   TGListTreeItem* gProjectListTreeItem;  // base TGListTree item
 
  private:

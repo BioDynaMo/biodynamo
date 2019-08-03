@@ -82,7 +82,7 @@ class Project {
     fProjectObject.TestInit();
     fIsLoaded = kTRUE;
 
-    SaveProject();
+    WriteProject();
   }
 
   void CloseProject() {
@@ -100,20 +100,9 @@ class Project {
   }
 
   /// Saves Project and all of its models.
-  /// @param modelName optional input to specify
-  /// saving a single model. Default "" will save all models
   /// @return None
   void SaveProject() {
-    Log::Info("Attempting to save project");
-    try {
-      Log::Info("Saving project to file: ", fProjectPath);
-      bdm::WritePersistentObject(fProjectPath.c_str(), "ProjectObject",
-                               fProjectObject, "recreate");
-      Log::Info("Successfully saved!");
-    } catch (...) {
-      Log::Error("Couldn't save project!");
-    }
-    //SaveAllModels();
+    WriteProject();
   }
 
   /// Saves Project under a different name. Copies over models from original
@@ -123,12 +112,12 @@ class Project {
   void SaveAsProject(std::string path) {
     Log::Info("Saving project as: ", path);
     fProjectPath.assign(path);
-    SaveProject();
+    WriteProject();
   }
 
   Bool_t CreateModel(const char* name) {
     Log::Info("Creating model within `Project`");
-    Model* tmpModel = GetModel(name);
+    auto* tmpModel = GetModel(name);
     if (tmpModel != nullptr) {
       Log::Warning("Cannot create model with the same name!");
       return kFALSE;
@@ -147,7 +136,7 @@ class Project {
   /// @return Bool_t kTRUE if successfully created model element, else kFALSE
   Bool_t CreateModelElement(const char* modelName, const char* parent,
                             const char* elementName, int type) {
-    Model* modelPtr = GetModel(modelName);
+    auto* modelPtr = GetModel(modelName);
     if (modelPtr == nullptr) {
       Log::Warning("Cannot create element `", elementName,
                    "` within non-existent model `", modelName, "`");
@@ -164,19 +153,13 @@ class Project {
   }
 
   ModelElement* GetModelElement(const char* modelName, const char* elementName) {
-    Model* tmpModel = GetModel(modelName);
+    auto* tmpModel = GetModel(modelName);
     return tmpModel->GetModelElement(elementName);
   }
 
   /// Returns vector of all models
-  std::vector<Model>* GetAllModels() { return fProjectObject.GetModels(); }
-
-  void SaveAllModels() {
-    /// TODO:
-    //for(Model* model : fModels) { 
-    //  bdm::WritePersistentObject(fProjectPath.c_str(), "ProjectObject",
-    //                           fProjectObject, "recreate");
-    //}
+  std::vector<Model>* GetAllModels() { 
+    return fProjectObject.GetModels(); 
   }
 
   /// Starts BioDynaMo simulation on user-defined models.
@@ -189,13 +172,13 @@ class Project {
   void SimulateModel(SimulationType simType, const char* modelName = "") {}
 
   std::string GetCodeGenerateFolder(const char* modelName) {
-    Model* model = GetModel(modelName);
+    auto* model = GetModel(modelName);
     std::string folder(model->GetModelFolder());
     return folder;
   }
 
   std::string GetBackupFile(const char* modelName) {
-    Model* model = GetModel(modelName);
+    auto* model = GetModel(modelName);
     std::string filename(model->GetBackupFile());
     return filename;
   }
@@ -222,14 +205,16 @@ class Project {
     return pathWithoutFilename;
   }
 
-  Bool_t IsLoaded() { return fIsLoaded; }
-
   void SetSimulation(int argc, const char** argv) {
     currentSimulation = std::make_unique<bdm::Simulation>(argc, argv);
   }
 
   bdm::Simulation* GetSimulation() {
     return currentSimulation.get();
+  }
+
+  Bool_t IsLoaded() { 
+    return fIsLoaded; 
   }
 
   void PrintProjectDetails() {
@@ -260,7 +245,15 @@ class Project {
   }
 
   void WriteProject() {
-
+    Log::Info("Attempting to save project");
+    try {
+      Log::Info("Writing project to file: ", fProjectPath);
+      bdm::WritePersistentObject(fProjectPath.c_str(), "ProjectObject",
+                               fProjectObject, "recreate");
+      Log::Info("Successfully saved!");
+    } catch (...) {
+      Log::Error("Couldn't save project!");
+    }
   }
 
   std::string RunCmd(const char* cmd) {
@@ -279,18 +272,19 @@ class Project {
     return result;
   }
 
-  /// Contains all files and subfolders relevant to the project
-  TDirectory fProjectDirectory;
-
-  /// To be contained within fProjectFile
+  /// To be contained within the file located at `fProjectPath`
   ProjectObject fProjectObject;
+  
+  /// File path for the project .root file that contains all models and objects
   std::string fProjectPath;
 
-  Bool_t fIsLoaded = kFALSE;  // kTRUE upon successful loading or new project creation
+  /// kTRUE upon successful loading or new project creation
+  Bool_t fIsLoaded = kFALSE;  
 
+  /// Simulation to be used for the visualization
   std::unique_ptr<bdm::Simulation> currentSimulation;
 };
 
 }  // namespace gui
 
-#endif  // GUI_PROJECT_H_
+#endif // GUI_PROJECT_H_

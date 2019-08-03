@@ -71,6 +71,12 @@ class VisFrame : public TGCompositeFrame {
     axisShown = kFALSE;
   }
 
+  void EnableButtons(Bool_t flag = kTRUE) {
+    EButtonState buttonState = (flag == kTRUE) ? kButtonUp : kButtonDisabled;
+    fZoomPlusButton->SetState(buttonState);
+    fZoomMinusButton->SetState(buttonState);
+  }
+
   /**
    * Updates GLViewer of TEveManager according to current state of ECM.
    */

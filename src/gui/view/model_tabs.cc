@@ -19,25 +19,12 @@
 
 namespace gui {
 
-ModelTabs::ModelTabs(const TGWindow* p) 
-       : TGCompositeFrame(p, 1000, 1000) {
-  SetLayoutManager(new TGMatrixLayout(this, 2, 2));
-  fTabTL = std::make_unique<TGTab>(this, 100, 100);
-  fTabTR = std::make_unique<TGTab>(this, 100, 100);
-  fTabBL = std::make_unique<TGTab>(this, 100, 100);
-  fTabBR = std::make_unique<TGTab>(this, 100, 100);
-
-  fL1 = std::make_unique<TGLayoutHints>(kLHintsLeft | kLHintsTop | kLHintsExpandX | kLHintsExpandY , 2, 2, 2, 2);
-  fL2 = std::make_unique<TGLayoutHints>(kLHintsRight | kLHintsTop | kLHintsExpandX | kLHintsExpandY , 2, 2, 2, 2);
-  fL3 = std::make_unique<TGLayoutHints>(kLHintsLeft | kLHintsBottom | kLHintsExpandX | kLHintsExpandY , 2, 2, 2, 2);
-  fL4 = std::make_unique<TGLayoutHints>(kLHintsRight | kLHintsBottom | kLHintsExpandX | kLHintsExpandY , 2, 2, 2, 2);
-
+ModelTabs::ModelTabs(const TGWindow* p) {
+  fFrame = std::make_unique<TGCompositeFrame>(p, 1000, 1000);
+  fFrame->SetLayoutManager(new TGTileLayout(fFrame.get()));
+  //fFrame->Connect("ProcessedEvent(Event_t*)", "ModelTabs", this,
+  //                 "HandleMouseWheel(Event_t*)");
   IsFrameInit = kFALSE;
-
-  fTabs.push_back(fTabTL.get());
-  fTabs.push_back(fTabTR.get());
-  fTabs.push_back(fTabBL.get());
-  fTabs.push_back(fTabBR.get());
 }
 
 /// Used for debugging
@@ -68,86 +55,108 @@ TGTab* ModelTabs::GetElementTab(const char* name) {
   return nullptr;
 }
 
-void ModelTabs::UpdateTabPriority(const char* name) {
-  Log::Debug("Updating tab priority for:", name);
-  PrintTabNames();
-  Int_t idx = GetElementTabIdx(name);
-  if(idx > -1) {
-    Int_t lastIdx = fTabs.size() - 1;
-    if(idx < lastIdx) {
-      fTabs.push_back(fTabs[idx]);
-      fTabs.erase(fTabs.begin() + idx);
-    }
-  } else {
-    Log::Error("Could not find element `", name, "` when updating tab priority!");
+void ModelTabs::SetTabColor(const char* name) {
+  Size_t tabSize = fTabs.size();
+  Pixel_t grey, darkgrey;
+  gClient->GetColorByName("#e8e8e8", grey);
+  gClient->GetColorByName("#c0c0c0", darkgrey);
+
+  for(Int_t i = 0; i < tabSize; i++) {
+     if(fTabs[i]->SetTab(name)) {
+       fTabs[i]->GetCurrentContainer()->ChangeSubframesBackground(darkgrey);
+     } else {
+       fTabs[i]->GetCurrentContainer()->ChangeSubframesBackground(grey);
+     }
   }
-  Log::Debug("DONE Updating tab priority for:", name);
-  PrintTabNames();
 }
 
 void ModelTabs::UpdateTabContents(TGTab* tab, const char* elementName) {
   Inspector* inspector = 
     new Inspector(tab->GetCurrentContainer(), fModelName.c_str(), elementName);
   fInspectors.push_back(inspector);
-
-  std::string name(elementName);
-  Pixel_t pxl;
-  if(name.find("Cell") != std::string::npos) {
-    gClient->GetColorByName("#ffa3a3", pxl);
-  } else {
-    gClient->GetColorByName("#00ff00", pxl);
-  }
-
-  tab->GetCurrentContainer()->ChangeSubframesBackground(pxl);
 }
 
-void ModelTabs::OverwriteLowestPriorityTab(const char* name) {
-  TGTab* lowestTab = fTabs[0];
-  lowestTab->RemoveTab();
-  lowestTab->AddTab(name);
-  UpdateTabContents(lowestTab, name);
-  //lowestTab->Print();
-  
-  lowestTab->SetTab(name);
-  lowestTab->MapSubwindows();
-  lowestTab->Resize();  
-  lowestTab->MapWindow();
-  MapSubwindows();
-  Resize();  
-  MapWindow();
+void ModelTabs::AddATab(const char* name) {
+  TGFrame* newFrame = new TGFrame(fFrame.get(), 300, 270);
+  TGTab* newTab = new TGTab(newFrame, 290, 290);
+  newTab->AddTab(name);
+  newTab->SetTab(name);
+  UpdateTabContents(newTab, name);
+  fTabs.push_back(newTab);
+  fTabFrames.push_back(newFrame);
+  //newFrame->Move(newFrame->GetX() + 5, newFrame->GetY() + 5);
+  fCanvas->AddFrame(newFrame, new TGLayoutHints(kLHintsRight, 5, 5, 5, 5));
+  newFrame->DrawBorder();
+
+  newTab->MapSubwindows();
+  newTab->Resize();  
+  newTab->MapWindow();
+  fFrame->MapSubwindows();
+  fFrame->Resize();  
+  fFrame->MapWindow();
+}
+
+
+void ModelTabs::HandleMouseWheel(Event_t *event)
+{
+   // Handle mouse wheel to scroll.
+
+   if (event->fType != kButtonPress && event->fType != kButtonRelease)
+      return;
+
+   Int_t page = 0;
+   if (event->fCode == kButton4 || event->fCode == kButton5) {
+      if (!fCanvas) return;
+      if (fCanvas->GetContainer()->GetHeight())
+         page = Int_t(Float_t(fCanvas->GetViewPort()->GetHeight() *
+                              fCanvas->GetViewPort()->GetHeight()) /
+                              fCanvas->GetContainer()->GetHeight());
+   }
+
+   if (event->fCode == kButton4) {
+      //scroll up
+      Int_t newpos = fCanvas->GetVsbPosition() - page;
+      if (newpos < 0) newpos = 0;
+      fCanvas->SetVsbPosition(newpos);
+   }
+   if (event->fCode == kButton5) {
+      // scroll down
+      Int_t newpos = fCanvas->GetVsbPosition() + page;
+      fCanvas->SetVsbPosition(newpos);
+   }
 }
 
 void ModelTabs::ShowElement(const char* name) {
   TGTab* elementTab = GetElementTab(name);
   if(elementTab == nullptr) {
     Log::Debug("Element tab is nullptr, overwriting lowest priority");
-    OverwriteLowestPriorityTab(name);
+    AddATab(name);
   }
-  UpdateTabPriority(name);
+  SetTabColor(name);
 }
 
 void ModelTabs::ShowElementTab(const char* name) {
   Log::Debug("Showing element tab:", name);
   if(!IsFrameInit) {
     IsFrameInit = kTRUE;
-    AddFrame(fTabTL.get(), fL1.get());
-    AddFrame(fTabTR.get(), fL2.get());
-    AddFrame(fTabBL.get(), fL3.get());
-    AddFrame(fTabBR.get(), fL4.get());
   }
   ShowElement(name);
 }
 
 void ModelTabs::ClearAllTabs() {
-  //IsFrameInit = kFALSE;
-  RemoveFrame(fTabTL.get());
-  RemoveFrame(fTabTR.get());
-  RemoveFrame(fTabBL.get());
-  RemoveFrame(fTabBR.get());
+  //Size_t tabFramesSize = fTabFrames.size();
+  //for(Int_t i = 0; i < tabFramesSize; i++) {
+  //  fFrame->RemoveFrame(fTabFrames[i]);
+  //}
   fTabs.clear();
-  MapSubwindows();
-  Resize();  
-  MapWindow();
+  fTabFrames.clear();
+  fFrame->SetCleanup(kDeepCleanup);
+  fFrame->Cleanup();
+  fFrame->MapSubwindows();
+  fFrame->Resize();  
+  fFrame->MapWindow();
+  //fCanvas->DestroySubwindows(); // causes insane crash
+  fCanvas->ClearViewPort();
 }
 
 }  // namespace gui

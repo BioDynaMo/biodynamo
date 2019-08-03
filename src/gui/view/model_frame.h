@@ -19,6 +19,7 @@
 
 #include <TCanvas.h>
 #include <TRootEmbeddedCanvas.h>
+#include <TGSplitter.h>
 
 #include "gui/constants.h"
 #include "gui/controller/visualization_manager.h"
@@ -69,7 +70,10 @@ class ModelFrame : public TGCompositeFrame {
   std::unique_ptr<TGLayoutHints>        fL7;
   std::unique_ptr<TGLayoutHints>        fL8;
 
-  std::vector<ModelTabs*>           fTabManagers;
+  std::unique_ptr<TGCanvas>         fCanvasWindow;
+  std::unique_ptr<ModelTabs>        fTabManager;
+
+  Bool_t                            fTabsEnabled;
 
   
   /// Needed to support multiple models

@@ -43,9 +43,9 @@ class Log {
 
   template <typename... Args>
   static void Debug(const Args&... parts) {
-    std::string message = bdm::Concat("DEBUG:", CurrentDateTime(), parts...);
-    bdm::Log::Debug(LogFile, message, "\n");
-    LogMessage(message);
+    //std::string message = bdm::Concat("DEBUG:", CurrentDateTime(), parts...);
+    //bdm::Log::Debug(LogFile, message, "\n");
+    //LogMessage(message);
   }
   template <typename... Args>
   static void Warning(const Args&... parts) {

@@ -20,10 +20,10 @@ namespace gui {
 
 ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
     : TGCompositeFrame(p, 200, 200, kHorizontalFrame) {
-  fL1 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 2, 2, 2);
-  fL2 = std::make_unique<TGLayoutHints>(kLHintsExpandX | kLHintsExpandY, 5, 2, 2, 2);
-  fL3 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 2, 2, 2);
-  fL4 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsRight | kLHintsExpandY | kLHintsExpandX, 5, 2, 2, 2);
+  fL1 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 5, 5, 2, 2);
+  fL2 = std::make_unique<TGLayoutHints>(kLHintsExpandX | kLHintsExpandY, 5, 5, 2, 2);
+  fL3 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandY, 5, 5, 2, 2);
+  fL4 = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsRight | kLHintsExpandY | kLHintsExpandX, 5, 5, 2, 2);
 
   fV1 = std::make_unique<TGVerticalFrame>(this, 50, 100, 0);
 
@@ -87,14 +87,24 @@ ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
 
   AddFrame(fV1.get(), fL3.get());
 
-  ModelTabs* tabManager = new ModelTabs(this);
-  tabManager->Resize(100, 100);
-  AddFrame(tabManager, fL2.get());
-  fTabManagers.push_back(tabManager);
+  fCanvasWindow = std::make_unique<TGCanvas>(this, 310, 300);
+  fTabManager = std::make_unique<ModelTabs>(fCanvasWindow->GetViewPort());
+  fTabManager->SetCanvas(fCanvasWindow.get());
+  fCanvasWindow->SetContainer(fTabManager->GetFrame());
+
+  fTabManager->GetFrame()->SetCleanup(kDeepCleanup);
+  AddFrame(fCanvasWindow.get(), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,
+                                                    2, 2, 2, 2));
+
+  VisFrame* visFrame = VisManager::GetInstance().Init(this);
+  //TGVSplitter *splitter = new TGVSplitter(this, 5);
+  //splitter->SetFrame(fCanvasWindow.get(), kTRUE);
+  //TGLayoutHints* lo = new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0);
+  //AddFrame(splitter, lo);
+
+  AddFrame(visFrame, fL4.get());
 
   fButtonHandler = buttonHandler;
-
-  AddFrame(VisManager::GetInstance().Init(this), fL4.get());
 
   MapSubwindows();
   Resize();
@@ -135,28 +145,19 @@ Bool_t ModelFrame::SwitchModelTab(const char* modelName,
 
 void ModelFrame::ShowModelElement(const char* modelName,
                                   const char* modelElement) {
-  if(fTabManagers.size() == 0) {
-    ModelTabs* tabManager = new ModelTabs(this);
-    tabManager->Resize(100, 100);
-    AddFrame(tabManager, fL2.get());
-    fTabManagers.push_back(tabManager);
-  }
-  // Currently showing only for first model
-  fTabManagers[0]->SetModelName(modelName);
-  fTabManagers[0]->ShowElementTab(modelElement);
+  fTabManager->SetModelName(modelName);
+  fTabManager->ShowElementTab(modelElement);
   
   MapWindow();
   MapSubwindows();
   Resize();
-  fTabManagers[0]->Resize();
+  fTabManager->GetFrame()->MapSubwindows();
   Resize();
   VisManager::GetInstance().RedrawVisFrame();
 }
 
 void ModelFrame::ClearTabs() {
-  fTabManagers[0]->ClearAllTabs();
-  RemoveFrame(fTabManagers[0]);
-  fTabManagers.clear();
+  fTabManager->ClearAllTabs();
 }
 
 }  // namespace gui
