@@ -137,7 +137,6 @@ function(check_detected_os OS)
     endforeach()
 
     # Remove configuration names
-    list(REMOVE_ITEM SUPPORTED_OS "travis-osx")
     list(REMOVE_ITEM SUPPORTED_OS "common")
 
     # Pretty print the list
