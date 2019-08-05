@@ -72,6 +72,9 @@ if [ $BDM_OS = "centos-7.6.1810" ]; then
 fi
 set -e
 
+# This will propagate the detected OS to cmake
+export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
+
 # perform a clean release build
 BUILD_DIR=$BDM_PROJECT_DIR/build
 CleanBuild $BUILD_DIR

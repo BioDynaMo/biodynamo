@@ -41,8 +41,5 @@ fi
 # Install all prerequisites
 $BDM_PROJECT_DIR/prerequisites.sh all ${BDM_DETECTED_OS}
 
-# This will propagate the detected OS to cmake
-export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DBDM_OS=${BDM_DETECTED_OS}"
-
 # call install script for the detected OS
 util/installation/common/install.sh ${BDM_DETECTED_OS}
