@@ -1,9 +1,96 @@
+# -----------------------------------------------------------------------------
+#
+# Copyright (C) The BioDynaMo Project.
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+#
+# See the LICENSE file distributed with this work for details.
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# -----------------------------------------------------------------------------
+
 cmake_minimum_required(VERSION 3.2.0)
+cmake_policy(VERSION 3.3.0)
 # With CMAKE >= 3.2 external projects support byproducts, this is needed
 # to support Ninja as generator
 
-project(BioDynaMo)
-set(BDM_VERSION 0.1.0)
+#---Set the locale to default C to prevent issued due to localization of commands---------------
+# This is necessary as we for example call `clang -v` and parse its output. But on a localized
+# program, the output parsing is much more error prone as certrain strings we're looking for
+# could be missing or be in a different order. To prevent those errors, let's just force all
+# output to use the default C locale which is more or less identical on all systems.
+set(ENV{LANG} C)
+
+# Project name and current version. We do not specify any language for
+# this project. Therefore, we will be able to check manually which compiler
+# we detected on the system.
+project(BioDynaMo LANGUAGES VERSION "0.1.0")
+
+# Directory in which we saved all the cmake informations.
+set(ENV{BDM_CMAKE_DIR} ${CMAKE_SOURCE_DIR}/cmake)
+
+# Add an additional path to make include() look in the right places.
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_CMAKE_DIR}")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/")
+
+# Include some cmake files with utilities
+include(external/SHA256Digests)
+include(FeatureSummary)
+include(utils)
+
+# Detect os type and version
+if (NOT DEFINED OS)
+    SET(DETECTED_OS "none")
+    detect_os()
+else()
+    SET(DETECTED_OS ${OS})
+    check_detected_os(${DETECTED_OS})
+endif()
+
+# Find a suitable compiler
+include(CheckCompiler)
+
+# Directory in which BioDynaMo will be installed. It can be provided
+# by the user itself.
+if (NOT DEFINED ${BDM_INSTALL_DIR})
+    set(BDM_INSTALL_DIR $ENV{HOME}/.bdm)
+endif()
+
+# Specify some directories which will be used to structure BioDynaMo build.
+set(CMAKE_BIODYNAMO_BUILD_ROOT  "${CMAKE_BINARY_DIR}")
+set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_BUILD_ROOT}/install")
+set(CMAKE_THIRD_PARTY_DIR       "${CMAKE_INSTALL_ROOT}/third_party")
+set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin")
+set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include")
+set(CMAKE_INSTALL_LIBDIR        "${CMAKE_INSTALL_ROOT}/lib")
+set(CMAKE_INSTALL_PVPLUGINDIR   "${CMAKE_INSTALL_ROOT}/lib/pv_plugin") # Must be in separate dir!
+set(CMAKE_INSTALL_CMAKEDIR      "${CMAKE_INSTALL_ROOT}/cmake")
+set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share")
+set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake")
+set(CMAKE_INSTALL_THIRDPARTY    "${CMAKE_INSTALL_ROOT}")
+
+# It is used by format/style checks. It needs to be defined here such
+# to enable relocation of the scripts.
+set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/util/housekeeping")
+
+#Set paths where to put the libraries, executables and headers
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_INSTALL_ROOT}/bin)
+
+# Hide them from configuration tools
+mark_as_advanced(${CMAKE_BIODYNAMO_BUILD_ROOT}
+        ${CMAKE_INSTALL_ROOT}
+        ${CMAKE_INSTALL_BINDIR}
+        ${CMAKE_INSTALL_INCLUDEDIR}
+        ${CMAKE_INSTALL_LIBDIR}
+        ${CMAKE_INSTALL_CMAKEDIR}
+        ${CMAKE_INSTALL_DATADIR}
+        ${CMAKE_INSTALL_CMAKEDATADIR}
+        ${CMAKE_INSTALL_THIRDPARTY})
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test      "Build all tests." ON) # Makes boolean 'test' available.
@@ -11,6 +98,9 @@ option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
 option(paraview  "Enable ParaView" ON)
+option(vtune     "Enable VTune performance analysis" OFF)
+option(coverage  "Enable test coverage report generation. Sets build type to coverage" OFF)
+option(verbose   "Enable verbosity when installing." OFF)
 
 if(APPLE)
    # valgrind currently broken on macOS 10.12
@@ -18,66 +108,84 @@ if(APPLE)
 else()
    option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
 endif()
-option(coverage "Enable test coverage report generation. Sets build type to coverage" OFF)
-
-set(BDM_CMAKE_DIR cmake)
 
 if(UNIX AND NOT APPLE)
-  set(LINUX TRUE)
-  add_definitions("-DLINUX")
-endif()
-
-# detect if the biodynamo environment has been sourced
-if(NOT DEFINED ENV{BDM_CMAKE_DIR})
-  execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
-  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
-endif()
-# check if biodynamo environment has been changed. if yes update it and emmit error
-## TODO(lukas) add logic to detect correct env script (distinguishing LINUX and
-## APPLE might not be enough in the future)
-if(LINUX)
-  configure_file(util/installation/common/biodynamo-linux-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
-elseif(APPLE)
-  configure_file(util/installation/common/biodynamo-macos-env.sh ${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh @ONLY)
-endif()
-execute_process(COMMAND ${CMAKE_COMMAND} -E compare_files "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" "$ENV{BDM_INSTALL_DIR}/biodynamo-env.sh" RESULT_VARIABLE ret)
-if(ret EQUAL "1")
-    file(COPY "${CMAKE_CURRENT_BINARY_DIR}/biodynamo-env.sh" DESTINATION "$ENV{BDM_INSTALL_DIR}")
-    message(FATAL_ERROR "The installed BioDynaMo environment file ($ENV{BDM_INSTALL_DIR}/biodynamo-env.sh) was outdated. \
-We have updated the file, but you have to call 'source $ENV{BDM_INSTALL_DIR}/biodynamo-env.sh' and retry this command.")
+    set(LINUX TRUE)
+    add_definitions("-DLINUX")
 endif()
 
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
 # -------------------- find packages ------------------------------------------
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-# CMake cannot find LLVM's Clang OpenMP library by default (this makes
-# find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
-# Furthermore, rootcling cannot find omp.h by default, so we copy this (with a
-# shell script to /usr/local/Cellar/biodynamo, which is brew's default install
-# directory), and include this directory. We cannot directly include the
-# original directory, because of header conflicts (such as stdint.h)
-if(APPLE)
-  link_directories(/usr/local/opt/llvm/lib)
-  set(OpenMP_C_FLAGS -fopenmp=libomp)
-  set(OpenMP_CXX_FLAGS -fopenmp=libomp)
-  include_directories(/usr/local/Cellar/biodynamo)
-else()
-  find_package(OpenMP REQUIRED)
+
+# Check if Python is present
+find_package(PythonInterp 3.5 REQUIRED)
+if (PythonInterp_NOT_FOUND)
+    MESSAGE(FATAL_ERROR "We did not found any Python interpreter. Please run ./prerequisites.sh again before
+calling cmake. The Python interpreter is required in order to successfully use BioDynaMo." )
 endif()
+find_package(pip)
+
+# Check if OpenMPI is present
+find_package(MPI REQUIRED)
+if (MPI_NOT_FOUND)
+    MESSAGE(FATAL_ERROR "We did not found any OpenMPI installation. Please run ./prerequisites.sh again before
+calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
+endif()
+
+# Check if GLUT is present. If we do not have it, then we
+# disable directly paraview.
+find_package(GLUT)
+if(NOT GLUT_FOUND)
+    PRINT_WARNING()
+    MESSAGE("GLUT libraries were not found in the system. In order to use ParaView they need to be installed.
+If you want to do that automatically, please run the ./prerequisites.sh script.")
+    PRINT_LINE()
+    SET(paraview OFF)
+endif()
+
+# Check if we have a compatible openmp compiler
+find_package(OpenMP)
+if (OpenMP_FOUND)
+    link_directories(${OpenMP_CXX_LIBRARIES})
+else()
+    MESSAGE(FATAL_ERROR "OpenMP was not found in your system. Please run ./prerequisites.sh again before
+calling cmake. If this does not work, then your current compiler might not support OpenMP (this happens for instance
+with Apple's standard compiler). Please update it to a more recent version and then run cmake again.")
+endif()
+
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
-  find_package(Threads REQUIRED)
+  find_package(Threads)
 endif()
 
 if(cuda)
   find_package(CUDA)
+  if (NOT CUDA_FOUND)
+    MESSAGE("CUDA was not found in your system, therefore it was disabled to let you compile BioDynaMo. In order to
+enable this functionality please install CUDA for your system. Please have a look at https://docs.nvidia.com/cuda/index.html.
+Then run again cmake (with the -Dcuda=ON flag).")
+    SET(cuda OFF)
+  endif()
 endif()
+
 if(opencl)
   find_package(OpenCL)
+  if (NOT OpenCL_FOUND)
+      MESSAGE("OpenCL was not found in your system, therefore it was disabled to let you compile BioDynaMo. In order to
+enable this functionality please install OpenCL for your system. Please have a look at the website of your graphic card vendor on how to install OpenCL.
+Then run again cmake (with the -Dopencl=ON flag).")
+      SET(opencl OFF)
+  endif()
 endif()
+
+# Check if we have git installed
 find_package(Git)
-find_package(ROOT REQUIRED COMPONENTS Geom Gui)
+
+# Find ROOT and check its installation
+find_package(ROOT COMPONENTS Geom Gui)
+verify_ROOT()
+
 if (dict)
   add_definitions("-DUSE_DICT")
 endif()
@@ -89,7 +197,7 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
-find_package(Numa REQUIRED)
+find_package(Numa)
 if (NUMA_FOUND)
    include_directories(${NUMA_INCLUDE_DIR})
    link_directories(${NUMA_LIBRARY_DIR})
@@ -98,23 +206,59 @@ if (NUMA_FOUND)
 endif()
 
 if(paraview)
-  find_package(ParaView 5.3 QUIET OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-    vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
-  if(${ParaView_FOUND})
-    message(STATUS "Found ParaView")
+
+    # If we specify a custom location for ParaView then we need to specify also a custom location
+    # for Qt.
+    if ((DEFINED ENV{ParaView_DIR} AND NOT DEFINED ENV{Qt5_DIR}) OR (NOT DEFINED ENV{ParaView_DIR} AND DEFINED ENV{Qt5_DIR}))
+        MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build\
+ BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.\
+ Normally, BioDynaMo will automatically downloads those libraries.")
+    endif()
+
+    # Check if there is Qt5 installed
+    find_package(Qt5 COMPONENTS Widgets
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/qt)
+
+    # Check the first time if ParaView exists in the system.
+    find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+            vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+
+    # Check if ParaView was found in the system. If that's not the case then we will proceed
+    # to download it.
+    if(NOT ${ParaView_FOUND})
+
+      PRINT_WARNING()
+      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now\n\
+together with Qt5.")
+      PRINT_LINE()
+
+      # If we did not found paraview then we will install it automatically
+      # with the Qt package.
+      include(external/Qt)
+      PRINT_LINE()
+      MESSAGE("Qt5 was successfully donwloaded and installed. We will proceed now with ParaView.")
+      PRINT_LINE()
+      include(external/ParaView)
+
+      # We run again the find_package command such to find correctly the location of Qt and ParaView
+      find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt)
+      find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
+              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+    endif()
+
+    # Add several ParaView related options
     include("${PARAVIEW_USE_FILE}")
     add_definitions("-DUSE_CATALYST")
     link_directories($ENV{ParaView_LIB_DIR})
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
-        vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
-  else()
-    message(WARNING "ParaView not found")
-  endif()
+          vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
 
 # paraview version 5.5 (MacOS) does not contain TBB
 if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
-  find_package(TBB REQUIRED)
+  find_package(TBB)
   if (TBB_FOUND)
     include_directories(${TBB_INCLUDE_DIRS})
     link_directories(${TBB_LIBRARIES})
@@ -122,13 +266,28 @@ if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
   endif()
 endif()
 
-find_package(VTune)
-if(${VTune_FOUND})
-  include_directories(${VTUNE_INCLUDE_DIR})
-  add_definitions("-DUSE_VTUNE")
-  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
-else()
-  message(WARNING "VTune not found")
+if (vtune)
+    find_package(VTune)
+    if(${VTune_FOUND})
+        include_directories(${VTUNE_INCLUDE_DIR})
+        add_definitions("-DUSE_VTUNE")
+        set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
+    else()
+        MESSAGE("VTune was not found in your system, therefore it was disabled. You will not be able to run the perfomance
+checks. In order to enable this functionality please install VTune for your system. Please have a look at https://software.intel.com/en-us/vtune.
+Then run again cmake (with the -Dvtune=ON flag).")
+    endif()
+endif()
+
+# Check if we can find the valgrind executable
+if (valgrind)
+    find_package(Valgrind QUIET)
+    if (NOT VALGRIND_FOUND)
+        MESSAGE("valgrind was not found in your system, therefore it was disabled. You will not be able to run the memory
+checks. In order to enable this functionality please install valgrind for your system. This can be done automatically with
+the prerequistes.sh script offered by the library. Then run again cmake (with the -Dvalgrind=ON flag).")
+        SET(valgrind OFF)
+    endif()
 endif()
 
 # -------------------- includes -----------------------------------------------
@@ -147,9 +306,11 @@ include(SetCompilerFlags)
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
+set(CMAKE_INSTALL_RPATH "")
+set(CMAKE_BUILD_RPATH "")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_SKIP_BUILD_RPATH FALSE) # don't skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 # -------------------- extract third party libraries ---------------------------
 set(EXTRACTED_THIRD_PARTY_LIBS "${CMAKE_CURRENT_BINARY_DIR}/extracted-third-party-libs")
@@ -235,7 +396,7 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 if (${ParaView_FOUND})
-  build_paraview_plugin()
+    include("${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/CMakeLists.txt")
 endif()
 
 # create cmake files used by external builds
@@ -244,6 +405,13 @@ configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
 # -------------------- build test project  ------------------------------------
 if (test)
   enable_testing()
+
+  # Copy the launcher script
+  configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
+  file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
+          DESTINATION ${CMAKE_BINARY_DIR}
+          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+          GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
   include(Testing)
 
@@ -274,10 +442,9 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
-  bdm_add_test_executable(runBiodynamoTestsMain
+  bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS})
-
   #   separate test binaries - each source file is compiled into a separate binary
   # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
   # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
@@ -311,3 +478,35 @@ include(Installation)
 
 # -------------------- add targets for code style and submission checks --------
 include(CppStyleGuideChecks)
+
+# --------------------- Final Message to the user ------------------------------
+add_bdm_packages_properties()
+add_bdm_feature_properties()
+print_summary()
+feature_summary(INCLUDE_QUIET_PACKAGES
+        DESCRIPTION "The following packages were found:"
+        WHAT PACKAGES_FOUND)
+feature_summary(INCLUDE_QUIET_PACKAGES
+        DESCRIPTION "The following packages were not found:"
+        WHAT PACKAGES_NOT_FOUND)
+feature_summary(WHAT ENABLED_FEATURES
+        INCLUDE_QUIET_PACKAGES
+        DESCRIPTION "Enabled Features:")
+feature_summary(WHAT DISABLED_FEATURES
+        INCLUDE_QUIET_PACKAGES
+        DESCRIPTION "Disabled Features:")
+
+# Install all the files inside the build dir
+install_inside_build()
+
+# Copy the environmental files to their correct directory
+configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
+
+# Set run permission on the environmental files
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+PRINT_LINE()
+MESSAGE("You have just finished to configure BioDynaMo. Now you can run \"make .\" to compile it.\n\
+You can then call \"make install\" to install in your system.
+Remember to source ${BDM_INSTALL_DIR}/bin/thisbdm.sh before using the library.")
+PRINT_LINE()

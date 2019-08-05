@@ -11,7 +11,7 @@ matrix:
       env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/default-build.sh"
     # Default build on osx
     - os: osx
-      compiler: clang
+      language: generic
       env: SCRIPT="util/travis-ci/default-build.sh"
     # Code style checks on linux
     - os: linux
@@ -34,12 +34,18 @@ matrix:
       env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-18.04"
     # Test development installation on centos-7.6.1810
     - os: linux
+      before_install:
+        - test -n $CC  && unset CC
+        - test -n $CXX && unset CXX
       dist: trusty
       sudo: required
       group: edge
       env: SCRIPT="util/travis-ci/installation-test.sh centos-7.6.1810"
     # Test development installation on osx
     - os: osx
+      before_install:
+       - test -n $CC  && unset CC
+       - test -n $CXX && unset CXX
       env: SCRIPT="util/travis-ci/installation-test.sh osx"
 
 script:
@@ -48,6 +54,7 @@ script:
 
 services:
   - docker
+  - xvfb
 
 notifications:
   slack: cernopenlab:2MzX9lwS6W9nU47MuY1qSmk9

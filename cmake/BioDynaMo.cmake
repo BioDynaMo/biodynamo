@@ -43,7 +43,6 @@ function(get_implicit_dependencies RET_VAR)
   set(${RET_VAR} ${CMD_RESULT} PARENT_SCOPE)
 endfunction(get_implicit_dependencies)
 
-
 find_program(GENREFLEX_EXECUTABLE genreflex HINTS $ENV{ROOTSYS}/bin)
 
 # function bdm_generate_dictionary (TARGET
@@ -105,18 +104,30 @@ function(bdm_generate_dictionary TARGET)
     COMMAND echo 1 >rebuild_${TARGET}
     DEPENDS ${headerfiles}
     COMMENT "Build dictionary ${TARGET}")
+
+  SET(DICT_PCM_NAME ${ARG_DICT})
+  STRING(REPLACE ${CMAKE_BINARY_DIR} "" DICT_PCM_NAME ${DICT_PCM_NAME})
+  STRING(REPLACE ".cc" "" DICT_PCM_NAME ${DICT_PCM_NAME})
+  STRING(REPLACE "/" "" DICT_PCM_NAME ${DICT_PCM_NAME})
   # invoke genreflex only if rebuild_${TARGET} file does not contain a 0.
   # Had issues with if [[ ]] statement; used grep instead
   # if grep does not find the pattern it has a non zero exit code
-  # --> grep 0 file || command
+  # --> grep 0 file || commandz`
   #   command is executed if pattern 0 is not found in file
   add_custom_target(${TARGET}
-    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null ||
-            ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
-            ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
+    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null || (${CUSTOM_ROOT_SOURCE_ENV_COMMAND} &&
+    ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
+    ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1)
     COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
+
+  if (DEFINED CMAKE_INSTALL_LIBDIR)
+    add_custom_command(TARGET ${TARGET}
+            POST_BUILD
+            COMMAND cp ${CMAKE_BINARY_DIR}/${DICT_PCM_NAME}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
+  endif()
+
 endfunction(bdm_generate_dictionary)
 
 
@@ -148,7 +159,7 @@ function(bdm_add_executable TARGET)
     bdm_generate_dictionary(${TARGET}-dict
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
-      SELECTION ${BDM_CMAKE_DIR}/selection.xml
+      SELECTION $ENV{BDM_CMAKE_DIR}/selection.xml
       DEPENDS ${TARGET}-objectlib)
 
     # generate executable
@@ -183,17 +194,21 @@ function(build_libbiodynamo TARGET)
     bdm_generate_dictionary(${TARGET}-dict
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
-      SELECTION ${BDM_CMAKE_DIR}/selection-libbiodynamo.xml
+      SELECTION $ENV{BDM_CMAKE_DIR}/selection-libbiodynamo.xml
       DEPENDS ${TARGET}-objectlib)
 
     # generate shared library
     add_library(${TARGET} SHARED $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
     add_dependencies(${TARGET} ${TARGET}-dict update-version-info)
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
+
+    SET(BIODYNAMO_TARGET_NAME "${TARGET}-objectlib" PARENT_SCOPE)
   else()
     add_library(${TARGET} SHARED ${ARG_SOURCES})
     add_dependencies(${TARGET} update-version-info)
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
+
+    SET(BIODYNAMO_TARGET_NAME "${TARGET}" PARENT_SCOPE)
   endif()
 endfunction(build_libbiodynamo)
 
@@ -216,11 +231,20 @@ function(build_paraview_plugin)
   set(PV_PLUGIN_BINDIR ${CMAKE_CURRENT_BINARY_DIR}/paraview-plugin)
   file(MAKE_DIRECTORY ${PV_PLUGIN_BINDIR})
 
+  if(LINUX)
+      SET(OUTPUT_PLUGIN_NAME libBDMGlyphFilter.so)
+  elseif(APPLE)
+      SET(OUTPUT_PLUGIN_NAME libBDMGlyphFilter.dylib)
+  endif()
+
   add_custom_target(paraview-plugin
     ALL
     COMMAND cmake ../../paraview_plugin/bdm_glyph && cmake --build . --target all
+    COMMAND cmake -E make_directory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/pv_plugin
+    COMMAND cp ${OUTPUT_PLUGIN_NAME} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/pv_plugin
     WORKING_DIRECTORY ${PV_PLUGIN_BINDIR}
     COMMENT "Build bdm paraview plugin")
+
 
 endfunction(build_paraview_plugin)
 
@@ -233,8 +257,8 @@ function(fix_rootcling_omp_issue)
                   OUTPUT_VARIABLE OMP_HEADER_PATH)
   # above command returns path with "\n" appended
   string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
-  execute_process(COMMAND mkdir -p ${CMAKE_SOURCE_DIR}/build/omp)
-  execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_SOURCE_DIR}/build/omp)
-  include_directories("${CMAKE_SOURCE_DIR}/build/omp")
+  execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/omp)
+  execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_BINARY_DIR}/omp)
+  include_directories("${CMAKE_BINARY_DIR}/omp")
 
 endfunction(fix_rootcling_omp_issue)

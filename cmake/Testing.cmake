@@ -66,24 +66,23 @@ function(bdm_add_test_executable TEST_TARGET)
   bdm_add_executable(${TEST_TARGET}
                      SOURCES ${ARG_SOURCES}
                      HEADERS ${ARG_HEADERS}
-                     LIBRARIES libgtest biodynamo)
+                     LIBRARIES biodynamo libgtest)
   if(dict)
     add_dependencies(${TEST_TARGET}-objectlib gtest)
+    SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}-objectlib" PARENT_SCOPE)
   else()
     add_dependencies(${TEST_TARGET} gtest)
+    SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}" PARENT_SCOPE)
   endif()
 
   # execute all tests with command: make test
-  add_test(NAME ${TEST_TARGET} COMMAND ${TEST_TARGET})
+  add_test(NAME ${TEST_TARGET} COMMAND ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET})
 
   # add valgrind test
-  if (valgrind AND NOT coverage
-      AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_mechanical_interaction_test"
-      AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_neurite_retraction_test"
-      AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_resource_manager_aos_test"
-      AND NOT ${TEST_TARGET} STREQUAL "runBiodynamoTests_so_pointer_aos_test")
+  if (valgrind AND VALGRIND_FOUND AND NOT coverage)
     # filter out SchedulerTest.Backup because of timing issue
-    add_test(NAME "valgrind_${TEST_TARGET}" COMMAND ${CMAKE_SOURCE_DIR}/util/valgrind.sh ./${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*)
+    add_test(NAME "valgrind_${TEST_TARGET}"
+            COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*)
   endif()
 
   add_dependencies(check ${TEST_TARGET})

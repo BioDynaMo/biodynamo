@@ -1,4 +1,3 @@
-#!/bin/bash
 # -----------------------------------------------------------------------------
 #
 # Copyright (C) The BioDynaMo Project.
@@ -12,18 +11,14 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
+include(FindPackageHandleStandardArgs)
 
-if [[ $# -ne 0 ]]; then
-  echo "ERROR: Wrong number of arguments.
-Description:
-  This script installs/updates the currently checked out version of biodynamo
-No Arguments"
-  exit 1
-fi
+find_program(GCOV_PATH gcov)
+find_program(LCOV_PATH lcov)
+find_program(GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
 
-set -e
-
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
-
-# no OS specifics -> use common install script
-$BDM_PROJECT_DIR/util/installation/common/install.sh travis-osx
+find_program(GENINFO_PATH geninfo)
+find_program(GENHTML_PATH genhtml)
+find_package_handle_standard_args(Coverage DEFAULT_MSG
+        GCOV_PATH LCOV_PATH GENINFO_PATH GENHTML_PATH
+)

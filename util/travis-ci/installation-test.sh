@@ -18,10 +18,10 @@ if [[ $# -ne 1 ]]; then
 Description:
   Run a travis installation test
 Usage:
-  installation-test.sh OS
+  installation-test.sh OS <type-of-install>
 Arguments:
-  OS OS id of the container
-  "
+  OS                id of the container
+"
   exit 1
 fi
 
@@ -35,7 +35,7 @@ git fetch --unshallow || true
 git fetch --tags
 
 if [ $BDM_OS != "osx" ]; then
-  util/run-inside-docker.sh $BDM_OS util/travis-ci/docker-installation-test-wrapper.sh
+  util/run-inside-docker.sh $BDM_OS util/travis-ci/docker-installation-test-wrapper.sh $BDM_OS
 else
   if [ `uname` != "Darwin" ]; then
     echo "ERROR: Installation tests for OSX can only be done on an OSX operating system"
@@ -44,7 +44,7 @@ else
   git config --system user.name "Test User"
   git config --system user.email user@test.com
   # hide the fact that this is running on travis so DetectOs detects "osx"
-  unset TRAVIS
+  #unset TRAVIS
   # don't unset TRAVIS_OS_NAME, because it is needed by the ReuqireSudo workaround
   test/installation-test.sh
 fi

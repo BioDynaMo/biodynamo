@@ -11,12 +11,57 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
+# This file contains the build setup for simulation projects outside the
+# biodynamo repository
+# Usage:
+#   find_package(BioDynaMo REQUIRED)
+#   include(${BDM_USE_FILE})
+#   bdm_add_executable(...)
+# -----------------------------------------------------------------------------
+
+# Add our CMake files (e.g. FindXXX.cmake files) to the module path, so that out
+# of source build can find them
+get_filename_component(CMAKE_DIR ${BDM_USE_FILE} DIRECTORY)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_DIR})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_INSTALL_DIR}/biodynamo/cmake/")
+
+# Add utils and other methods needed
+include(utils)
+
+# Option set when biodynamo was built
+SET(cuda_default @cuda@)
+SET(opencl_default @opencl@)
+SET(dict_default @dict@)
+SET(paraview_default @paraview@)
+SET(vtune_default @vtune@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
-option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
-option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
-option(dict      "Build with ROOT dictionaries" ON)
-option(paraview  "Enable ParaView" ON)
+option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
+option(opencl    "Enable OpenCL code generation for GPU acceleration" @opencl@)
+option(dict      "Build with ROOT dictionaries" @dict@)
+option(paraview  "Enable ParaView" @paraview@)
+option(vtune     "Enable VTune performance analysis" @vtune@)
+
+if (NOT "${cuda}" STREQUAL "${cuda_default}")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dcuda to ${cuda_default}. Please change -Dcuda to -Dcuda=${cuda_default}.")
+endif()
+if (NOT "${opencl}" STREQUAL "${opencl_default}")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dopencl=${opencl}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dopencl to ${opencl_default}. Please change -Dopencl to -Dopencl=${opencl_default}.")
+endif()
+if (NOT "${dict}" STREQUAL "${dict_default}")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Ddict=${dict}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Ddict to ${dict_default}. Please change -Ddict to -Ddict=${dict_default}.")
+endif()
+if (NOT "${paraview}" STREQUAL "${paraview_default}")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dparaview=${paraview}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dparaview to ${paraview_default}. Please change -Dparaview to -Dcuda=${paraview_default}.")
+endif()
+if (NOT "${vtune}" STREQUAL "${vtune_default}")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dvtune=${vtune}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dvtune to ${vtune_default}. Please change -Dvtune to -Dvtune=${vtune_default}.")
+endif()
 
 # This file contains the build setup for simulation projects outside the
 # biodynamo repository
@@ -24,11 +69,6 @@ option(paraview  "Enable ParaView" ON)
 #   find_package(BioDynaMo REQUIRED)
 #   include(${BDM_USE_FILE})
 #   bdm_add_executable(...)
-
-# Add our CMake files (e.g. FindXXX.cmake files) to the module path, so that out
-# of source build can find them
-get_filename_component(CMAKE_DIR ${BDM_USE_FILE} DIRECTORY)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_DIR})
 
 if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
@@ -39,30 +79,30 @@ if(DEFINED ENV{BDM_CMAKE_DIR})
     add_definitions(-DBDM_SRC_DIR=\"$ENV{BDM_SRC_DIR}\")
 else()
   execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
-  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/biodynamo-env.sh' and retry this command.")
+  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this command.")
 endif()
 
 # -------------------- find packages ------------------------------------------
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_INSTALL_DIR}/biodynamo/cmake/")
-# CMake cannot find LLVM's Clang OpenMP library by default (this makes
-# find_package(OpenMP) fail). Therefore we manually specify the OpenMP flags.
-# Furthermore, rootcling cannot find omp.h by default, so we copy this (with a
-# shell script to /usr/local/Cellar/biodynamo, which is brew's default install
-# directory), and include this directory. We cannot directly include the
-# original directory, because of header conflicts (such as stdint.h)
-if(APPLE)
-  link_directories(/usr/local/opt/llvm/lib)
-  set(OpenMP_C_FLAGS -fopenmp=libomp)
-  set(OpenMP_CXX_FLAGS -fopenmp=libomp)
-else()
-  find_package(OpenMP REQUIRED)
+find_package(MPI)
+
+find_package(OpenMP REQUIRED)
+
+if (OpenMP_FOUND)
+    link_directories(${OpenMP_CXX_LIBRARIES})
 endif()
+
 find_package(Git)
+
 if(cuda)
   find_package(CUDA)
 endif()
+
 if(opencl)
   find_package(OpenCL)
+endif()
+
+if (paraview)
+    find_package(GLUT)
 endif()
 
 find_package(Numa REQUIRED)
@@ -84,7 +124,7 @@ if(paraview)
         vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
   else()
     message(WARNING "ParaView not found")
-    set(paraview OFF CACHE BOOL)
+    set(paraview OFF CACHE "Build with ParaView support." BOOL)
   endif()
 endif()
 
@@ -99,17 +139,21 @@ if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
 endif()
 
 find_package(ROOT REQUIRED COMPONENTS Geom Gui)
+verify_root()
 if (dict)
   add_definitions("-DUSE_DICT")
 endif()
 
-find_package(VTune)
-if(${VTune_FOUND})
-  include_directories(${VTUNE_INCLUDE_DIR})
-  add_definitions("-DUSE_VTUNE")
-  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
-else()
-  message(WARNING "VTune not found")
+if (vtune)
+    find_package(VTune)
+    if(${VTune_FOUND})
+        include_directories(${VTUNE_INCLUDE_DIR})
+        add_definitions("-DUSE_VTUNE")
+        set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${VTUNE_LIBRARIES})
+    else()
+        message(WARNING "VTune not found")
+        SET(vtune OFF)
+    endif()
 endif()
 
 # Link to OpenCL
@@ -133,6 +177,22 @@ if (CUDA_FOUND)
   include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})
   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${CUDA_LIBRARIES})
   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} bdmcuda)
+endif()
+
+find_package(ClangTools)
+if (NOT ClangTools_FOUND)
+    message(WARNING "clang-tidy and clang-format were not found. Style checks will not be available for this simulation.")
+else()
+    if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
+      # Generate a Clang compile_commands.json "compilation database" file for use
+      # with various development tools, such as Vim's YouCompleteMe plugin.
+      # See http://clang.llvm.org/docs/JSONCompilationDatabase.html
+      set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+    endif()
+    # It is used by format/style checks. It needs to be defined here such
+    # to enable relocation of the scripts.
+    set(BUILD_SUPPORT_DIR "${BDM_CMAKE_DIR}/../util")
+    include(CppStyleGuideChecks)
 endif()
 
 # -------------------- set default build type and compiler flags ---------------
