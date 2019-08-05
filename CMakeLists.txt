@@ -173,7 +173,7 @@ if(opencl)
   find_package(OpenCL)
   if (NOT OpenCL_FOUND)
       MESSAGE("OpenCL was not found in your system, therefore it was disabled to let you compile BioDynaMo. In order to
-enable this functionality please install OpenCL for your system. Please have a look at https://developer.nvidia.com/opencl.
+enable this functionality please install OpenCL for your system. Please have a look at the website of your graphic card vendor on how to install OpenCL.
 Then run again cmake (with the -Dopencl=ON flag).")
       SET(opencl OFF)
   endif()

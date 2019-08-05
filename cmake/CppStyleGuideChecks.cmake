@@ -96,8 +96,8 @@ if (GIT_FOUND)
     add_cpplint_target(check-cpplint "${CHANGED_SRC_FILES_ORIGIN_MASTER}" )
   else()
     MESSAGE(WARNING "\nWe did not detected any remote origin/master branch. Therefore targets \
-like 'make format', 'make tidy' and 'make check-cpplint-all' will not be available. Use 'make format-all', 'make tidy-all' and 'make check-cpplint-staged' instead. \
-If you wish to use 'make format'/'make tidy'/'make check-cpplint-all' try to add an origin/master branch using 'git remote add'.\n")
+like 'make format', 'make tidy' and 'make check-cpplint' will not be available. Use 'make format-all', 'make tidy-all' and 'make check-cpplint-all' instead. \
+If you wish to use 'make format'/'make tidy'/'make check-cpplint' try to add an origin/master branch using 'git remote add'.\n")
   endif()
 
   add_clang_format_target(format-staged "${STAGED_SRC_FILES}" )
