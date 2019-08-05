@@ -77,8 +77,8 @@ void ModelTabs::UpdateTabContents(TGTab* tab, const char* elementName) {
 }
 
 void ModelTabs::AddATab(const char* name) {
-  TGFrame* newFrame = new TGFrame(fFrame.get(), 300, 270);
-  TGTab* newTab = new TGTab(newFrame, 290, 290);
+  TGFrame* newFrame = new TGFrame(fFrame.get(), 300, 300);
+  TGTab* newTab = new TGTab(newFrame, 290, 300);
   newTab->AddTab(name);
   newTab->SetTab(name);
   UpdateTabContents(newTab, name);
@@ -94,6 +94,16 @@ void ModelTabs::AddATab(const char* name) {
   fFrame->MapSubwindows();
   fFrame->Resize();  
   fFrame->MapWindow();
+}
+
+Bool_t ModelTabs::CheckAllSecretionBoxes() {
+  Bool_t OneSecretion = kFALSE;
+  for(auto* inspect : fInspectors) {
+    if(inspect->CheckSecretionBox()) {
+      OneSecretion = kTRUE;
+    }
+  }
+  return OneSecretion;
 }
 
 
@@ -129,8 +139,9 @@ void ModelTabs::HandleMouseWheel(Event_t *event)
 void ModelTabs::ShowElement(const char* name) {
   TGTab* elementTab = GetElementTab(name);
   if(elementTab == nullptr) {
-    Log::Debug("Element tab is nullptr, overwriting lowest priority");
+    Log::Debug("Element tab is nullptr, creating new tab for `", name, "`");
     AddATab(name);
+    fCanvas->SetVsbPosition(100000);
   }
   SetTabColor(name);
 }

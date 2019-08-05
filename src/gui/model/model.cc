@@ -55,7 +55,7 @@ void Model::PrintData() {
 void Model::UpdateModel(std::string elementName, ModelElement& element) {}
 
 void Model::InitializeElement(ModelElement* parent, const char* name,
-                              int type) {
+                              int type, bdm::Double3 pos) {
   ModelElement elem;
   if (type == gui::M_ENTITY_CELL) {
     if (parent == nullptr) { // top-level element
@@ -75,38 +75,45 @@ void Model::InitializeElement(ModelElement* parent, const char* name,
   fModelElements[elemIdx].SetName(name);
   ModelElement* elemPtr = &(fModelElements[elemIdx]);
   if (type == gui::M_ENTITY_CELL) {
-    UpdateLastCellPosition(elemPtr);
+    UpdateLastCellPosition(elemPtr, pos);
   }
 }
 
-void Model::UpdateLastCellPosition(ModelElement* elem){
-  std::map<std::string, int> elementsMap = GetModelElements();
-  std::map<std::string, int>::iterator it;
-
-  uint32_t cellCount = 0;
-
-  for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
-    if(it->second == M_ENTITY_CELL) {
-      cellCount++;
+void Model::UpdateLastCellPosition(ModelElement* elem, bdm::Double3 presetPos){
+  if(!fUseGridPos) {
+    std::map<std::string, int> elementsMap = GetModelElements();
+    std::map<std::string, int>::iterator it;
+  
+    uint32_t cellCount = 0;
+  
+    for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
+      if(it->second == M_ENTITY_CELL) {
+        cellCount++;
+      }
     }
+    Log::Debug("cellCount in `UpdateLastCellPosition`:", cellCount);
+    SimulationEntity* entity = elem->GetEntity();
+    Int_t spacing = 50;
+    double zPos = ((cellCount - 1) / 4) * spacing;
+    double yPos, xPos;
+    if     (cellCount % 4 == 0) { xPos = 50; yPos = 50; }
+    else if(cellCount % 4 == 1) { xPos = 0;  yPos = 0;  } 
+    else if(cellCount % 4 == 2) { xPos = 0;  yPos = 50; } 
+    else if(cellCount % 4 == 3) { xPos = 50; yPos = 0;  }
+    else {
+      Log::Error("Should never reach this point!! (in `UpdateLastCellPosition`)");
+    }
+    bdm::Double3 pos({xPos, yPos, zPos});
+    entity->SetPosition(pos);
   }
-  Log::Debug("cellCount in `UpdateLastCellPosition`:", cellCount);
-  SimulationEntity* entity = elem->GetEntity();
-  Int_t spacing = 50;
-  double zPos = ((cellCount - 1) / 4) * spacing;
-  double yPos, xPos;
-  if     (cellCount % 4 == 0) { xPos = 50; yPos = 50; }
-  else if(cellCount % 4 == 1) { xPos = 0;  yPos = 0;  } 
-  else if(cellCount % 4 == 2) { xPos = 0;  yPos = 50; } 
-  else if(cellCount % 4 == 3) { xPos = 50; yPos = 0;  }
   else {
-    Log::Error("Should never reach this point!! (in `UpdateLastCellPosition`)");
+    fUseGridPos = kFALSE;
+    SimulationEntity* entity = elem->GetEntity();
+    entity->SetPosition(presetPos);
   }
-  bdm::Double3 pos({xPos, yPos, zPos});
-  entity->SetPosition(pos);
 }
 
-Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
+Bool_t Model::CreateElement(const char* parent, const char* name, int type, bdm::Double3 pos) {
   if (strcmp(parent, "") == 0) {
     // Signifies top level element
     ModelElement* tmp = FindElement(name);
@@ -114,7 +121,7 @@ Bool_t Model::CreateElement(const char* parent, const char* name, int type) {
       gui::Log::Error("Cannot create element! Already exists: ");
       return kFALSE;
     } else {
-      InitializeElement(nullptr, name, type);
+      InitializeElement(nullptr, name, type, pos);
     }
   } else {
     ModelElement* tmp = FindElement(parent);
@@ -130,7 +137,7 @@ std::map<std::string, int> Model::GetModelElements() {
   std::map<std::string, int> elementsMap;
   for(auto i : fModelElements) {
     std::pair<std::string,int>(i.GetName(), i.GetType());
-    elementsMap.insert(std::pair<std::string,int>(i.GetName(), i.GetType()));
+    elementsMap.insert(elementsMap.end(), std::pair<std::string,int>(i.GetName(), i.GetType()));
   }
   return elementsMap;
 }
@@ -211,7 +218,7 @@ std::string Model::GetBackupFile() {
 }
 
 /// Generates source code for this model
-void Model::GenerateCode() {
+void Model::GenerateCode(Bool_t diffusion) {
   std::string folderPath = GetModelFolder(kTRUE) + "/";
   std::string srcPath = folderPath + "src/";
   std::string srcFileH = srcPath + fModelName + ".h";
@@ -219,12 +226,12 @@ void Model::GenerateCode() {
   std::string cMakeFile = folderPath + "CMakeLists.txt";
 
   /// TODO: Use user-input switch
-  Bool_t diffusionEnabled = kTRUE;
+  Bool_t diffusionEnabled = diffusion;
   std::string BioModulesName("");
   std::string srcFileBioModuleH("");
 
   if (diffusionEnabled) {
-    GenerateTemplate::GetInstance().EnableDiffusion();
+    GenerateTemplate::GetInstance().EnableDiffusion(diffusionEnabled);
     BioModulesName.assign("diffusion_modules.h");
     srcFileBioModuleH = srcPath + BioModulesName;
   }

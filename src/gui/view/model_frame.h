@@ -39,6 +39,7 @@ class ModelFrame : public TGCompositeFrame {
   void ShowEmptyTab();
   void ClearTabs();
   void EnableButtons(Int_t state);
+  Bool_t CheckAllSecretionBoxes();
 
  private:
   std::unique_ptr<TGVerticalFrame>        fV1;

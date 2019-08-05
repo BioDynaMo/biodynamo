@@ -39,6 +39,7 @@ class SimulationEntity {
  public:
   SimulationEntity() {
     fElement = new bdm::Cell(10.0);
+    fSecretion = kFALSE;
   };
   ~SimulationEntity() = default;
 
@@ -78,6 +79,14 @@ class SimulationEntity {
     return fTractorForce;
   }
 
+  void SetSecretion(Bool_t flag) {
+    fSecretion = flag;
+  }
+
+  Bool_t GetSecretion() {
+    return fSecretion;
+  }
+
   double GetAttributeValDouble(const char* attributeName) {
     bdm::Cell* cellPtr = fElement;
     TClass *cl = cellPtr->IsA();
@@ -105,6 +114,7 @@ class SimulationEntity {
  private:
   std::string        fName;
   bdm::Cell*         fElement;
+  Bool_t             fSecretion;
 
   // Setting within element does not work, 
   //   so we use these vars

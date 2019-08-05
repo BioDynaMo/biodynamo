@@ -58,11 +58,12 @@ class Model {
   void          SimulateModel();
   void          UpdateModel(std::string elementName, ModelElement& element);
   void          IsElementNameAvailable();
-  Bool_t        CreateElement(const char* parent, const char* name, int type);
-  void          GenerateCode();
+  Bool_t        CreateElement(const char* parent, const char* name, int type, bdm::Double3 pos = {0, 0, 0});
+  void          GenerateCode(Bool_t diffusion);
   std::string   GetModelFolder(Bool_t createFolder=kFALSE);
   std::string   GetBackupFile();
 
+  void          EnableGridPos() {fUseGridPos = kTRUE;}
 
   std::map<std::string, int> GetModelElements();
   ModelElement*              GetModelElement(const char* name);
@@ -71,10 +72,11 @@ class Model {
   std::string                   fModelName;
   std::vector<ModelElement>     fModelElements;
   std::string                   fSimulationBackupFilename = "backup.root";
+  Bool_t                        fUseGridPos = kFALSE;
   Bool_t        CreateDirectory(const char* dirPath);
-  void          InitializeElement(ModelElement* parent, const char* name, int type);
+  void          InitializeElement(ModelElement* parent, const char* name, int type, bdm::Double3 pos = {0, 0, 0});
   ModelElement* FindElement(const char* elementName);
-  void          UpdateLastCellPosition(ModelElement* elem);
+  void          UpdateLastCellPosition(ModelElement* elem, bdm::Double3 presetPos = {0, 0, 0});
 
   ClassDefNV(Model,1)
 };

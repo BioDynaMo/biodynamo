@@ -56,6 +56,7 @@ enum View {
   M_CREATE_GRID             = 802,
   M_ALL_ACTIVE              = 803,
   M_NONE_ACTIVE             = 804,
+  M_GRID_ACTIVE             = 805,
   
   ///-----MODEL-FRAME-------///
   M_ENTITY_CELL             = 901,

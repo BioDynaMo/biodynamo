@@ -49,7 +49,7 @@ class VisFrame : public TGCompositeFrame {
 
     // Set number of segments for approximating circles in drawing.
     // Keep it low for better performance.
-    gGeoManager->SetNsegments(80);
+    gGeoManager->SetNsegments(8);
 
     mat_solid_ = new TGeoMaterial("Solid", .938, 1., 10000.);
     med_solid_ = new TGeoMedium("Solid", 1, mat_solid_);
@@ -62,6 +62,7 @@ class VisFrame : public TGCompositeFrame {
 
     // number of visualized nodes inside one volume. If you exceed this number,
     // ROOT will draw nothing.
+    SetMaxVizNodes(100000);
     gGeoManager->SetMaxVisNodes(max_viz_nodes_);
 
     is_geometry_closed_ = kFALSE;
@@ -147,6 +148,18 @@ class VisFrame : public TGCompositeFrame {
     is_geometry_closed_ = kTRUE;
   }
 
+  void SetRedCell(Long_t cellNumber, Bool_t flag) {
+    fIt = std::find(fRedCells.begin(), fRedCells.end(), cellNumber);
+
+    if (fIt != fRedCells.end()) {
+      if(!flag) {
+        fRedCells.erase(fIt);
+      }
+    } else if(flag) {
+      fRedCells.push_back(cellNumber);
+    }
+  }
+
   virtual Bool_t      ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 
  private:
@@ -175,7 +188,8 @@ class VisFrame : public TGCompositeFrame {
     auto volume = gGeoManager->MakeSphere(name.c_str(), med_solid_, 0., radius);
 
     /// Only the first rendered cell will be red, the rest blue
-    if(cell_count > 1) {
+    fIt = std::find(fRedCells.begin(), fRedCells.end(), cell_count);
+    if(fIt == fRedCells.end()) {
       volume->SetLineColor(kBlue);
     } else {
       volume->SetLineColor(kRed);
@@ -193,6 +207,8 @@ class VisFrame : public TGCompositeFrame {
   std::unique_ptr<TGTextButton>           fZoomPlusButton;
   std::unique_ptr<TGTextButton>           fZoomMinusButton;
   std::unique_ptr<TGLayoutHints>          fL1;
+  std::vector<Long_t>                     fRedCells;
+  std::vector<Long_t>::iterator           fIt;
 
   /// Top volumes for TGeo and TEve (world)
   TGeoVolume *top_;

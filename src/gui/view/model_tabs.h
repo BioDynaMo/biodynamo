@@ -42,6 +42,7 @@ class ModelTabs {
   void   SetCanvas(TGCanvas *canvas) { fCanvas = canvas; }
   TGFrame *GetFrame() const { return fFrame.get(); }
   void HandleMouseWheel(Event_t *event);
+  Bool_t CheckAllSecretionBoxes();
 
  private:
   Int_t  GetElementTabIdx(const char* name);

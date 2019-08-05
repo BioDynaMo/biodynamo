@@ -31,6 +31,7 @@
 #include "gui/view/button_project.h"
 #include "gui/constants.h"
 #include "gui/controller/project.h"
+#include "gui/view/grid_dialog.h"
 #include "gui/view/help_text.h"
 #include "gui/view/log.h"
 #include "gui/view/model_creator.h"
@@ -111,6 +112,7 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
   fModified = kFALSE;
   fIsRunning = kFALSE;
   fIsNewProject = kFALSE;
+  fIsGridSet = kFALSE;
 
   fModelCreatorEnv = std::make_unique<TEnv>(".modelcreatorrc");  //  not yet used
 
@@ -474,6 +476,34 @@ void ModelCreator::CreateNewElement(Int_t type) {
   fClient->NeedRedraw(fProjectListTree.get());
 }
 
+void ModelCreator::CreateGrid() {
+  Log::Info("About to create grid!");
+  fButtonModelFrame->SetState(M_ALL_ACTIVE);
+
+  // Starting position
+  double xPos = 0, yPos = 0, zPos = 0;
+  
+  Long_t x, y, z;
+
+  for(z = 0; z < gridNumberZ; z++) {
+    for(y = 0; y < gridNumberY; y++) {
+      for(x = 0; x < gridNumberX; x++) {
+        bdm::Double3 pos = {xPos, yPos, zPos};
+        std::string elemName = fTreeManager->CreateTopLevelElement(M_ENTITY_CELL);
+        Project::GetInstance().CreateGridCell(fModelName.c_str(), elemName.c_str(), pos);
+        xPos += gridDistanceX;
+      }
+      xPos = 0;
+      yPos += gridDistanceY;
+    }
+    yPos = 0;
+    zPos += gridDistanceZ;
+  }
+  
+  fProjectListTree->ClearViewPort();
+  fClient->NeedRedraw(fProjectListTree.get());
+}
+
 Bool_t ModelCreator::GenerateModelCode() {
   std::string genFolder = Project::GetInstance().GetCodeGenerateFolder(fModelName.c_str());
   Int_t retval;
@@ -484,12 +514,12 @@ Bool_t ModelCreator::GenerateModelCode() {
   if(retval != kMBOk) {
     return kFALSE;
   }
-  Project::GetInstance().GenerateCode(fModelName.c_str());
+  Bool_t diffusionEnabled = fModelFrame->CheckAllSecretionBoxes();
+  Project::GetInstance().GenerateCode(fModelName.c_str(), diffusionEnabled);
   return kTRUE;
 }
 
 void ModelCreator::SimulateModel() {
-
   /// First: Generate code
   if(!GenerateModelCode()) {
     Log::Info("Cannot simulate model without generating code!");
@@ -528,18 +558,25 @@ void ModelCreator::SimulateModel() {
     const char* argv[] = { fModelName.c_str(), "-r", backupFilepath.c_str(), NULL };
     Int_t argc = sizeof(argv)/sizeof(argv[0]) - 1;
 
-    //auto set_param = [](bdm::Param* param) {
-    //  param->bound_space_ = true;
-    //  param->min_bound_ = 0;
-    //  param->max_bound_ = 1000;  // cube of 100*100*100
-    //};
+    auto set_param = [](bdm::Param* param) {
+      param->bound_space_ = true;
+      param->min_bound_ = 0;
+      param->max_bound_ = 10000;  // cube of 100*100*100
+    };
     VisManager::GetInstance().Reset();
     std::string secondResult = RunCmd(secondCmd.c_str());
 
     /// Fourth: Set and start the simulation
-    Project::GetInstance().SetSimulation(argc, argv);
+    Project::GetInstance().SetSimulation(argc, argv, set_param);
     bdm::Simulation *currentSim = Project::GetInstance().GetSimulation();
-    currentSim->GetScheduler()->Simulate(500);
+
+    // If diffusion is enabled, simulate for 500 timestep
+    if(fModelFrame->CheckAllSecretionBoxes()) {
+      currentSim->GetScheduler()->Simulate(500);
+    }
+    else {
+      currentSim->GetScheduler()->Simulate(2);
+    }
     
     /// Earlier version of restoring the backup 
     // currentSim->Restore();
@@ -552,19 +589,31 @@ void ModelCreator::SimulateModel() {
 }
 
 std::string ModelCreator::RunCmd(const char* cmd) {
-    Log::Info("Running cmd:", cmd);
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        std::string tmp = buffer.data();
-        result += tmp;
-    }
-    return result;
+  Log::Info("Running cmd:", cmd);
+  std::array<char, 128> buffer;
+  std::string result;
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+  if (!pipe) {
+      throw std::runtime_error("popen() failed!");
   }
+  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+      std::string tmp = buffer.data();
+      result += tmp;
+  }
+  return result;
+}
+
+void ModelCreator::SetGrid(Long_t numberX, Long_t numberY, Long_t numberZ, 
+                           Long_t distanceX, Long_t distanceY, Long_t distanceZ) {
+  Log::Debug("Setting grid variables in ModelCreator!");
+  fIsGridSet = kTRUE;
+  gridNumberX = numberX;
+  gridNumberY = numberY;
+  gridNumberZ = numberZ;
+  gridDistanceX = distanceX;
+  gridDistanceY = distanceY;
+  gridDistanceZ = distanceZ;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Handle messages send to the ModelCreator object.
@@ -628,7 +677,12 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               break;
 
             case M_CREATE_GRID:
-              Log::Debug("Clicked interrupt!");
+              Log::Debug("Clicked create grid!");
+              new GridDialog(gClient->GetRoot(), this, 800, 400);
+              if(fIsGridSet) {
+                fIsGridSet = kFALSE;
+                CreateGrid();
+              }
               break;
 
             case M_SIMULATION_GENERATE:
@@ -775,7 +829,7 @@ void ModelCreator::HandleTreeInput() {
   if (!selectedModelName.empty()) {
     Log::Info("Selected part of ", selectedModelName);
     fModelFrame->EnableButtons(M_ALL_ACTIVE);
-    //fModelFrame->SwitchModelTab(selectedModelName.c_str());
+    fButtonModelFrame->SetState(M_GRID_ACTIVE);
   } else {
     fModelFrame->EnableButtons(M_NONE_ACTIVE);
   }

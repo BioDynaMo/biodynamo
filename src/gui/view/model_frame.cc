@@ -135,6 +135,10 @@ void ModelFrame::EnableButtons(Int_t state) {
 
 ModelFrame::~ModelFrame() {}
 
+Bool_t ModelFrame::CheckAllSecretionBoxes() {
+  return fTabManager->CheckAllSecretionBoxes();
+}
+
 /// TODO: Manage multiple ModelTabs groups
 /* 
 Bool_t ModelFrame::SwitchModelTab(const char* modelName,

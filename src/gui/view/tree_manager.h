@@ -82,15 +82,15 @@ class TreeManager {
     const TGPicture* pic = 0;
     Bool_t isNameValid;
     if (type == M_ENTITY_CELL) {
-        elementName.assign("Cell");
+        elementName.assign("Cell_");
         pic = GetIcon("Cell");
     } else if (type == M_MODULE_GROWTH) {
       elementName.assign("Growth");
       pic = GetIcon("GrowthModule");
     }
-  
+
     if(name.empty()) {
-      elementName.append("_0");
+      elementName.append(std::to_string(currentCellNumber));
       isNameValid = kFALSE;
     } else {
       elementName.assign(name);
@@ -106,9 +106,9 @@ class TreeManager {
       }
       int n = std::stoi(elementName.substr(found + 1));
       std::string str = std::to_string(n + 1);
-      Log::Debug("Changing elementName from:", elementName);
+      //Log::Debug("Changing elementName from:", elementName);
       elementName.replace(found + 1, std::string::npos, str);
-      Log::Debug("to:", elementName);
+      //Log::Debug("to:", elementName);
       isNameValid = IsElementNameAvailable(elementName.c_str());
     }
     if((i = GetModelIndex(fCurModelName.c_str())) > -1) {
@@ -118,6 +118,7 @@ class TreeManager {
       fModelTrees[i].fModelElementNames.emplace_back(elementName);
       fProjectListTree->OpenItem(fCurListItem);
     }
+    currentCellNumber++;
     return elementName.c_str();
   }
 
@@ -241,6 +242,7 @@ class TreeManager {
   TGListTreeItem* fCurListItem;  // current TGListTreeItem (level) in TGListTree
 
   std::unordered_map<std::string, const TGPicture*> fIconMap;
+  uint32_t currentCellNumber = 0;
 };
 
 }  // namespace gui

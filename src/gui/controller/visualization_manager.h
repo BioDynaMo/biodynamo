@@ -48,6 +48,11 @@ class VisManager {
     fVisFrame->EnableButtons(flag);
   }
 
+  void SetRedCell(Long_t cellNumber, Bool_t flag) {
+    Log::Info("Setting secretion cell:", cellNumber, ", flag:", flag);
+    fVisFrame->SetRedCell(cellNumber, flag);
+  }
+
   /// To be called from Execute() in bdm scheduler
   Bool_t IsEnabled() {
     return enabled;

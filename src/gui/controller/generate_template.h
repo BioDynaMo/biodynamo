@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <string>
 #include <sstream>
+#include <queue>
 #include "gui/controller/project.h"
 #include "core/container/math_array.h"
 
@@ -82,25 +83,31 @@ namespace gui {
       }
 
       Bool_t firstCell = kTRUE;
+      std::queue<std::string> cellNames;
+      int cellCount = 1;
       for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
-        switch(it->second) {
-          case M_ENTITY_CELL: {
-            ModelElement* elem = curModel->GetModelElement(it->first.c_str());
-            std::string cellSrc;
-            // First cell will secrete
-            if(fEnableDiffusion && firstCell) {
-              cellSrc = GenerateCellSrc(elem, kTRUE);
-              firstCell = kFALSE;
-            } else {
-              cellSrc = GenerateCellSrc(elem, kFALSE);
-            }
-            ss << cellSrc
-               << tab << "rm->push_back(" << elem->GetName() << ");\n\n";
-          }
-          break;
-          default:
-           ; // currently only supports cells
+        if(it->second == M_ENTITY_CELL) {
+          std::string cellName = "Cell_" + std::to_string(cellCount);
+          cellNames.push(cellName);
+          cellCount++;
         }
+      }
+
+      while (!cellNames.empty())
+      {
+         std::string cellName(cellNames.front());
+         cellNames.pop();
+         ModelElement* elem = curModel->GetModelElement(cellName.c_str());
+         std::string cellSrc;
+         // First cell will secrete
+         if(fEnableDiffusion && firstCell) {
+           cellSrc = GenerateCellSrc(elem, kTRUE);
+           firstCell = kFALSE;
+         } else {
+           cellSrc = GenerateCellSrc(elem, kFALSE);
+         }
+         ss << cellSrc
+            << tab << "rm->push_back(" << elem->GetName() << ");\n\n";
       }
       
       ss << tab << "/// Needed for connecting to gui\n"
@@ -174,8 +181,8 @@ namespace gui {
        return output;
      }
 
-    void EnableDiffusion() {
-      fEnableDiffusion = kTRUE;
+    void EnableDiffusion(Bool_t enabled = kTRUE) {
+      fEnableDiffusion = enabled;
     }
 
    private:
@@ -217,7 +224,7 @@ namespace gui {
        }
        if(fEnableDiffusion) {
         cellSrc << tab << elemName << "->AddBiologyModule(new Chemotaxis());\n";
-        if(secretion) {
+        if(entity->GetSecretion()) {
           cellSrc << tab << elemName << "->AddBiologyModule(new KaliumSecretion());\n";
         }
        }

@@ -18,6 +18,7 @@
 #define GUI_INSPECTOR_H_
 
 #include "gui/controller/project.h"
+#include "gui/controller/visualization_manager.h"
 #include "gui/model/model_element.h"
 #include "gui/view/entry.h"
 
@@ -36,7 +37,29 @@ class Inspector {
     for (Entry* entry : fEntries) {
       entry->UpdateValue();
     }
+    CheckSecretionBox();
   }
+  Bool_t CheckSecretionBox() {
+    Log::Debug("Checking secretion box!");
+    Bool_t secretionChecked = (fSecretionCheckBox->GetState() == kButtonDown);
+    if(secretionChecked) {
+      Log::Debug("Secretion is checked!");
+    } else {
+      Log::Debug("Secretion is unchecked!");
+    }
+    SimulationEntity* entity = fModelElement->GetEntity();
+    entity->SetSecretion(secretionChecked);
+    std::size_t found = fElementName.find_last_of("_");
+    if (found == std::string::npos) {
+      Log::Error("Issue while checking secretion box! ElementName:", fElementName);
+      return kFALSE;
+    }
+    int n = std::stoi(fElementName.substr(found + 1));
+    Log::Debug("Setting red cell:", n);
+    VisManager::GetInstance().SetRedCell(n, secretionChecked);
+    return secretionChecked;
+  }
+
  private:
   ModelElement*                      fModelElement;
   TGVerticalFrame*                   fV;
@@ -46,6 +69,7 @@ class Inspector {
   std::vector<TGNumberEntry*>        fNumericEntries;
   std::vector<TGLabel*>              fLabels;
   std::vector<Entry*>                fEntries; 
+  TGCheckButton*                     fSecretionCheckBox;
   Bool_t                             fIsInspectorValid;
 
   ClassDefNV(Inspector, 1);

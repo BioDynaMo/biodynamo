@@ -20,7 +20,7 @@ namespace gui {
 
 Inspector::Inspector(TGCompositeFrame* fMain, const char* modelName, const char* elementName) {
   fModelName.assign(modelName);
-  fElementName.assign(fElementName);
+  fElementName.assign(elementName);
   /// Get attributes for specific element
   fModelElement = Project::GetInstance().GetModelElement(modelName, elementName);
   
@@ -38,6 +38,7 @@ Inspector::Inspector(TGCompositeFrame* fMain, const char* modelName, const char*
       fV->AddFrame(entry, fL1);
     }
   }
+
   /// Ensure that Position and TractorForce are added first
   for(Entry *entry : fEntries) {
     std::string entryName(entry->GetEntryName());
@@ -47,6 +48,8 @@ Inspector::Inspector(TGCompositeFrame* fMain, const char* modelName, const char*
       fV->AddFrame(entry, fL1);
     }
   }
+  fSecretionCheckBox = new TGCheckButton(fV, "Enable Secretion", 1234);
+  fV->AddFrame(fSecretionCheckBox, fL1);
   
   fMain->AddFrame(fV, fL1);
 

@@ -81,7 +81,11 @@ void ButtonModelFrame::SetState(int state)
       case M_ALL_ACTIVE:
          fNewModelButton->SetState(kButtonUp);
          fSimulateModelButton->SetState(kButtonUp);
-         fStopSimButton->SetState(kButtonDisabled);
+         fStopSimButton->SetState(kButtonUp);
+         break;
+      
+      case M_GRID_ACTIVE:
+         fStopSimButton->SetState(kButtonUp);
          break;
 
       case M_NONE_ACTIVE:

@@ -46,6 +46,7 @@
 #include "core/util/io.h"
 #include "gui/model/model.h"
 #include "gui/view/log.h"
+#include "gui/constants.h"
 #include "gui/controller/project_object.h"
 
 namespace gui {
@@ -145,6 +146,18 @@ class Project {
     return modelPtr->CreateElement(parent, elementName, type);
   }
 
+  Bool_t CreateGridCell(const char* modelName, const char* elementName, bdm::Double3 pos) {
+    auto* modelPtr = GetModel(modelName);
+    if (modelPtr == nullptr) {
+      Log::Warning("Cannot create element `", elementName,
+                   "` within non-existent model `", modelName, "`");
+      return kFALSE;
+    }
+    modelPtr->EnableGridPos();
+    return modelPtr->CreateElement("", elementName, M_ENTITY_CELL, pos);
+    
+  }
+
   /// Gets model by name
   /// @param name name of the model to retrieve
   /// @return Model* pointer to the model of the specified name if found, else nullptr
@@ -188,10 +201,10 @@ class Project {
   /// @param modelName optional input to specify generate code for
   /// a single model. Default "" generates for all models.
   /// @return None
-  std::string GenerateCode(const char* modelName) {
+  std::string GenerateCode(const char* modelName, Bool_t diffusion) {
     if(strcmp(modelName, "") != 0) {
       Model* model = GetModel(modelName);
-      model->GenerateCode();
+      model->GenerateCode(diffusion);
     } else {
       Log::Error("Cannot generate code for model:`", modelName, "`");
     }
@@ -205,8 +218,8 @@ class Project {
     return pathWithoutFilename;
   }
 
-  void SetSimulation(int argc, const char** argv) {
-    currentSimulation = std::make_unique<bdm::Simulation>(argc, argv);
+  void SetSimulation(int argc, const char** argv, const std::function<void(bdm::Param*)>& set_param) {
+    currentSimulation = std::make_unique<bdm::Simulation>(argc, argv, set_param);
   }
 
   bdm::Simulation* GetSimulation() {

@@ -98,16 +98,6 @@ NewProjectDialog::NewProjectDialog(const TGWindow *p, const TGWindow *main,
 
   SetWindowName("New Project");
 
-  // make the message box non-resizable
-  UInt_t width = GetDefaultWidth();
-  UInt_t height = GetDefaultHeight();
-  SetWMSize(width, height);
-  SetWMSizeHints(width, height, width, height, 0, 0);
-  SetMWMHints(
-      kMWMDecorAll | kMWMDecorResizeH | kMWMDecorMaximize | kMWMDecorMinimize |
-          kMWMDecorMenu,
-      kMWMFuncAll | kMWMFuncResize | kMWMFuncMaximize | kMWMFuncMinimize,
-      kMWMInputModeless);
   MapWindow();
   fClient->WaitFor(this);
 }

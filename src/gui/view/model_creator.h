@@ -83,6 +83,7 @@ class ModelCreator : public TGMainFrame {
   Bool_t              fInterrupted;         // Interrupts current simulation
   Bool_t              fIsNewProject;        // kTRUE if new project is set
   Bool_t              fIsNewModel;          // kTRUE if new model is set
+  Bool_t              fIsGridSet;
 
   std::string         fProjectName;      // Set by NewProjectDialog
   std::string         fProjectPath;      // Set by NewProjectDialog
@@ -136,6 +137,9 @@ class ModelCreator : public TGMainFrame {
   // Statusbar
   std::unique_ptr<TGStatusBar>         fStatusBar;          // Status bar reporting model info
 
+  Long_t gridNumberX, gridNumberY, gridNumberZ, gridDistanceX, gridDistanceY, gridDistanceZ;
+  void  CreateGrid();
+
  public:
   /// Constructors & destructor
   ModelCreator(const TGWindow *p, UInt_t w, UInt_t h);
@@ -161,6 +165,9 @@ class ModelCreator : public TGMainFrame {
   Bool_t              GenerateModelCode();
   void                SimulateModel();
   std::string         RunCmd(const char* cmd);
+
+  void                SetGrid(Long_t numberX, Long_t numberY, Long_t numberZ, 
+                              Long_t distanceX, Long_t distanceY, Long_t distanceZ);
 
   template <typename T>
   void NewProjectSet(T& name, T& path) { 
