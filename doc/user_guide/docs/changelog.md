@@ -1,5 +1,15 @@
 # Changelog
 
+## 05.08.2019 [`commit-id`]()
+
+Major improvements of the BioDynaMo's build system.
+
+  * Refactor build procedure.
+  * Improve dependency detection and diagnostic messages for the user.  
+  * Rename `biodynamo-env.sh` to `thisbdm.sh`.
+  * BioDynaMo can be used directly from the build directory. The install step has become optional.
+  * Improve user and developer guide.  
+
 ## 20.06.2019 [`257f1a3`](https://github.com/BioDynaMo/biodynamo/commit/257f1a39ba501da9915c5a50c93d517ac2673919)
 
 Add support for multiscale simulations.
