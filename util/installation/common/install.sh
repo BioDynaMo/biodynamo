@@ -53,9 +53,6 @@ if [ $BDM_OS = "osx" ]; then
             export CXX=/sw/opt/llvm-5.0/bin/clang
         fi
     fi
-
-    # for mkdocs
-    export PATH=$PATH:~/Library/Python/2.7/bin
 fi
 
 # Custom instructions for CentOS

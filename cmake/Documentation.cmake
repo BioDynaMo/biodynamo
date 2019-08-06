@@ -52,7 +52,7 @@ function(GenerateMkDocsTarget DOC_TYPE)
   add_custom_target(doc-${DOC_TYPE}
       COMMAND rm -rf ${DEST_DIR}
       COMMAND mkdir -p ${DEST_DIR}
-      COMMAND bash -c "export PATH=$PATH:~/.local/bin && export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH && export PATH=$PATH:~/Library/Python/2.7/bin && mkdocs build"
+      COMMAND bash -c "${MKDOCS_PROGRAM} build"
       COMMAND bash -c "mv site/* ${DEST_DIR}"
       WORKING_DIRECTORY "${DOC_DIR}"
       COMMENT "Generating ${DOC_TYPE} documentation with mkdocs.
@@ -64,7 +64,7 @@ endfunction(GenerateMkDocsTarget)
 function(GenerateLiveMkDocsTarget DOC_TYPE)
   set(DOC_DIR ${PROJECT_SOURCE_DIR}/doc/${DOC_TYPE}_guide)
   add_custom_target(live-${DOC_TYPE}-guide
-      COMMAND bash -c "export PATH=$PATH:~/.local/bin && export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH && export PATH=$PATH:~/Library/Python/2.7/bin && mkdocs serve"
+      COMMAND bash -c "${MKDOCS_PROGRAM} serve"
       WORKING_DIRECTORY "${DOC_DIR}"
       VERBATIM)
 endfunction(GenerateLiveMkDocsTarget)

@@ -32,6 +32,11 @@ git config --global user.name "BioDynaMo Travis-CI Bot"
 BDM_BUILD_DIR=`pwd`
 
 make doc
+if [ ! $? -eq 0 ]; then
+    echo "# MAKE DOC ERROR #"
+    echo "The make doc command failed. The deployment was interrupted and the website was not updated."
+    exit 1
+fi
 
 # checkout github pages dir, clean it and recreate folder structure
 cd
