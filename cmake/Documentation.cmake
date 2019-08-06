@@ -84,5 +84,6 @@ if(DOXYGEN_FOUND AND MKDocs_FOUND)
   add_custom_target(doc COMMENT "Generate documentation")
   add_dependencies(doc doc-api doc-user doc-dev)
 else()
-  message(WARNING "Could not find Doxygen or mkdocs. Target doc won't be available.")
+  message(WARNING "Could not find Doxygen or mkdocs. Target doc won't be available. Therefore you will not \
+be able to build BioDynaMo's documentation.")
 endif()
