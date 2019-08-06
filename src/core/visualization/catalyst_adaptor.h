@@ -136,7 +136,7 @@ class CatalystAdaptor {
 
   friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class CatalystAdaptorTest_GenerateParaviewState_Test;
-  friend class CatalystAdaptorTest_CheckVisualizationSelection_Test;
+  friend class CatalystAdaptorTest_DISABLED_CheckVisualizationSelection_Test;
   friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
   /// Parameters might be set after the constructor has been called.

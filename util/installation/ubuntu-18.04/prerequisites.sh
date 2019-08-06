@@ -14,12 +14,14 @@
 # -----------------------------------------------------------------------------
 
 # This script installs the required packages for ubuntu 18.04
-if [[ $# -ne 0 ]]; then
+if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script installs the prerequisites of BioDynaMo, but not BioDynaMo
-  itself. Script install.sh installs both prerequisites and BioDynaMo.
-No Arguments"
+    This script installs the prerequisites of BioDynaMo, but not BioDynaMo
+    itself. Script install.sh installs both prerequisites and BioDynaMo.
+Arguments:
+    <install_type>  all/required. If all is specified, then this script
+                    will install all the prerequisites."
   exit 1
 fi
 
@@ -28,4 +30,4 @@ set -e
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
 # use ubuntu-16.04 prerequisites script
-. $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/prerequisites.sh
+. $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/prerequisites.sh $1

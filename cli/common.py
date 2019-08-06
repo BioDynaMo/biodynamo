@@ -1,4 +1,3 @@
-#!/bin/bash
 # -----------------------------------------------------------------------------
 #
 # Copyright (C) The BioDynaMo Project.
@@ -13,17 +12,15 @@
 #
 # -----------------------------------------------------------------------------
 
-if [[ $# -ne 0 ]]; then
-  echo "ERROR: Wrong number of arguments.
-Description:
-  This script installs/updates the currently checked out version of biodynamo
-No Arguments"
-  exit 1
-fi
+import os
+import shutil
 
-set -e
+from print_command import Print
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
-
-# no OS specifics -> use common install script
-$BDM_PROJECT_DIR/util/installation/common/install.sh ubuntu-16.04
+def CopySupportFiles(sim_name):
+    SUPPORT_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'share', 'util', 'support_files')
+    Print.new_step("Copy additional support files")
+    for filename in os.listdir(SUPPORT_DIR):
+        full_file_name = os.path.join(SUPPORT_DIR, filename)
+        if os.path.isfile(full_file_name):
+            shutil.copy(full_file_name, sim_name)

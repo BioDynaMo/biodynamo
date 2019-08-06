@@ -36,26 +36,20 @@ function RequireSudo {
   fi
 }
 
-# Detects the linux flavour using `lsb_release`.
-# Returns a lower case version of `distributor-release`.
-function DetectLinuxFlavour {
-  DISTRIBUTOR=$(lsb_release -si)
-  RELEASE=$(lsb_release -sr)
-  OS="${DISTRIBUTOR}-${RELEASE}"
-  echo $OS | awk '{print tolower($0)}'
-}
-
 # Function that detects the OS
 # Returns linux flavour or osx.
 # This function prints an error and exits if is not linux or macos.
 function DetectOs {
   # detect operating system
-  if [ $TRAVIS ] && [ "$TRAVIS_OS_NAME" = "osx" ]; then
+  if [ ${TRAVIS-""} ] && [ "$TRAVIS_OS_NAME" = "osx" ]; then
     echo "travis-osx"
     # Travis linux always runs inside a container -> use DetectLinuxFlavour
   elif [ `uname` = "Linux" ]; then
     # linux
-    DetectLinuxFlavour
+    DISTRIBUTOR=$(lsb_release -si)
+    RELEASE=$(lsb_release -sr)
+    OS="${DISTRIBUTOR}-${RELEASE}"
+    echo $OS | awk '{print tolower($0)}'
   elif [ `uname` = "Darwin" ]; then
     # macOS
     echo osx
@@ -91,6 +85,21 @@ function CheckOsSupported {
   fi
 }
 
+# Check if the type of install procedure is known
+function CheckTypeInstallSupported {
+  if [[ $# -ne 1 ]]; then
+    echo "ERROR in CheckTypeInstallSupported: Wrong number of arguments"
+    exit 1
+  fi
+
+  if [ ! $1 == "all" ] && [ ! $1 == "required" ]; then
+    echo "ERROR: This type of install operation (${1}) is not supported"
+    echo "Supported install types are are: "
+    echo "- all: install required and optional packages;"
+    echo "- required: install only the required packages."
+  fi
+}
+
 # Download a tar file extracts the contents into the destination folder.
 # Arguments:
 #   $1 url
@@ -117,45 +126,6 @@ function DownloadTarAndExtract {
     tar -xzf $TMP_DEST --strip=$STRIP_COMP -C $DEST
     rm $TMP_DEST
   fi
-}
-
-# Returns a biodynamo lfs download link.
-# If the environment variable BDM_LOCAL_LFS is set to a local copy of LFS,
-# this function returns a local path to the requested file.
-# Arguments:
-#   $1 directory
-#   $2 file
-function BdmLfsLink {
-  if [[ $# -ne 2 ]]; then
-    echo "ERROR in BdmLfsLink: Wrong number of arguments"
-    exit 1
-  fi
-  if [ ! $BDM_LOCAL_LFS ]; then
-    echo "http://cern.ch/biodynamo-lfs/third-party/${1}/${2}"
-  else
-    echo "${BDM_LOCAL_LFS}/${1}/${2}"
-  fi
-}
-
-# Download a tar file from CERNBox and extracts the contents into the
-# destination folder.
-# Arguments:
-#   $1 CERNBox directory e.g. ubuntu-16.04
-#   $2 File e.g. root.tar.gz
-#   $3 destination directory in which the archive will be extracted
-function DownloadTarFromCBAndExtract {
-  if [[ $# -ne 3 ]]; then
-    echo "ERROR in DownloadTarFromCBAndExtract: Wrong number of arguments"
-    exit 1
-  fi
-
-  local DIR=$1
-  local FILE=$2
-  local DEST=$3
-
-  URL=$(BdmLfsLink $DIR $FILE)
-
-  DownloadTarAndExtract $URL $DEST
 }
 
 # Returns the number of CPU cores including hyperthreads
@@ -188,7 +158,8 @@ function CleanBuild {
   fi
   cd $BUILD_DIR
   echo "CMAKEFLAGS $BDM_CMAKE_FLAGS"
-  cmake $BDM_CMAKE_FLAGS .. && make -j$(CPUCount) && make install
+  cmake $BDM_CMAKE_FLAGS ..
+  make -j$(CPUCount) && make install
 }
 
 # Return absolute path.
@@ -219,19 +190,19 @@ function CallOSSpecificScript {
     exit 1
   fi
 
-  local BDM_PROJECT_DIR=$1
+  local BDM_PROJECT_DIR="$1"
   shift
-  local BDM_SCRIPT_FILE=$1
+  local BDM_SCRIPT_FILE="$1"
   shift
-
+  local BDM_LOCAL_OS=$(DetectOs)
+  local BDM_SCRIPT_ARGUMENTS=$@
   local BDM_INSTALL_SRC=$BDM_PROJECT_DIR/util/installation
 
   # detect os
-  local BDM_OS=$(DetectOs)
-  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS
+  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_LOCAL_OS
 
   # check if this system is supported
-  CheckOsSupported $BDM_INSTALL_SRC $BDM_OS
+  CheckOsSupported $BDM_INSTALL_SRC $BDM_LOCAL_OS
 
   # check if script exists for the detected OS
   local BDM_SCRIPTPATH=$BDM_INSTALL_OS_SRC/$BDM_SCRIPT_FILE
@@ -240,7 +211,7 @@ function CallOSSpecificScript {
     exit 1
   fi
 
-  $BDM_SCRIPTPATH $@
+  $BDM_SCRIPTPATH $BDM_SCRIPT_ARGUMENTS
 }
 
 # Return the bashrc file based on the current operating system
@@ -265,10 +236,10 @@ function EchoFinishThisStep {
   fi
 
   EchoInfo "To complete this step execute:"
-  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/biodynamo-env.sh"
+  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
   EchoInfo "This command must be executed in every terminal before you build or use BioDynaMo."
   EchoInfo "To avoid this additional step add it to your $(BashrcFile) file:"
-  EchoInfo "    echo \"source $1/biodynamo-env.sh\" >> $(BashrcFile)"
+  EchoInfo "    echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
 }
 
 # This function prompts the user for the biodynamo installation direcotory
@@ -355,7 +326,7 @@ function CopyEnvironmentScript {
   local ENV_SRC=$1
   local BDM_INSTALL_DIR=$2
 
-  local ENV_DEST=$BDM_INSTALL_DIR/biodynamo-env.sh
+  local ENV_DEST=$BDM_INSTALL_DIR/bin/thisbdm.sh
 
   local TMP_ENV=${ENV_DEST}_$RANDOM
 

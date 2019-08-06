@@ -32,16 +32,20 @@ cd $BDM_PROJECT_DIR
 # Currently we are inside the biodynamo project directory, mapped as volume
 # from the host
 
+# import util functions
+. $BDM_PROJECT_DIR/util/installation/common/util.sh
+
 # speed-up build by disabling tests and demos
 export BDM_CMAKE_FLAGS="-Dtest=off"
-./install.sh << EOF
-y
+
+# Build BioDynaMo
+$BDM_PROJECT_DIR/install.sh << EOF
 y
 EOF
 
 # reload shell and source biodynamo
 set +e +x
-source ~/.bdm/biodynamo-env.sh
+source ~/.bdm/bin/thisbdm.sh
 set -e -x
 
 # run system test.

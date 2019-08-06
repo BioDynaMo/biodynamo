@@ -1,7 +1,7 @@
 # Installation
 
 To install BioDynaMo for the first time execute the following commands.
-The installation will also install all required packages including Paraview.
+The installation will also install all required packages including ParaView, ROOT and Qt5.
 
 ``` sh
 git clone https://github.com/BioDynaMo/biodynamo.git
@@ -12,10 +12,13 @@ cd biodynamo
 !!! important
 
     1. After the installation you need to restart your terminal.
-      In every new terminal execute `source <path-to-bdm-installation>/biodynamo-env.sh`
+      In every new terminal execute `source <path-to-bdm-installation>/bin/thisbdm.sh`
       to use BioDynaMo!
 
-    2. BioDynaMo uses a customized version of ParaView.
+    2. It is also possible to use the library without running `make install`. You will just need to source `thisbdm.sh` from the build
+       directory: `source <path-to-bdm-build-dir>/install/bin/thisbdm.sh`
+
+    3. BioDynaMo uses a customized version of ParaView.
 	     Therefore, you should not install ParaView separately.
 
 ## Update Installation

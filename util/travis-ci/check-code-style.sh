@@ -41,14 +41,13 @@ python3 --version || true
 # https://github.com/travis-ci/travis-ci/issues/6069
 git remote set-branches --add origin master
 
-$BDM_PROJECT_DIR/prerequisites.sh << EOF
+$BDM_PROJECT_DIR/prerequisites.sh all << EOF
 y
-Y
 EOF
 
 # reload shell and source biodynamo
 set +e +x
-source ~/.bdm/biodynamo-env.sh
+source ~/.bdm/bin/thisbdm.sh
 set -e -x
 
 # print lines-of-code statistic

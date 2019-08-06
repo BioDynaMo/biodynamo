@@ -53,11 +53,6 @@ shift
 MODE=$1
 shift
 
-if [ "$#" == "0" ]; then
-  echo "Warning: No files to process"
-  exit 0;
-fi
-
 echo "Process files: "
 for f in $@; do
     echo $f

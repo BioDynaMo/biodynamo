@@ -26,7 +26,6 @@ PROJECT_ROOT_DIR=$1
 if [ "$TRAVIS_BRANCH" == "master" ]; then
   FILES=$(git diff --name-only $TRAVIS_COMMIT_RANGE | grep ".*\.\(cc\|h\)$")
 else
-  # get changed files compared to origin/master
   FILES=$(git diff --name-only origin/master | grep ".*\.\(cc\|h\)$")
 fi
 

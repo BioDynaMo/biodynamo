@@ -17,10 +17,12 @@ import shutil
 import sys
 
 from print_command import Print
-from new_command import InitializeNewGitRepo
+from git_utils import InitializeNewGitRepo
+from common import CopySupportFiles
 
 
-DEMO_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'demo')
+DEMO_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'demo')
+STYLE_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'share', 'util', 'style_checks')
 KNOWN_DEMOS = os.listdir(DEMO_DIR)
 
 
@@ -44,6 +46,8 @@ def DemoCommand(demo_name, destination=None):
     src_dir = os.path.join(DEMO_DIR, demo_name)
     print('Copying files from "{}" to "{}"...'.format(src_dir, destination))
     shutil.copytree(src_dir, destination)
+
+    CopySupportFiles(destination)
 
     InitializeNewGitRepo(destination)
 

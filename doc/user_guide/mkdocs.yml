@@ -48,6 +48,7 @@ extra:
 
 pages:
     - Welcome: index.md
+    - Prerequisites: prerequisites.md
     - Installation: installation.md
     - First Steps: first_steps.md
     - Tutorials:

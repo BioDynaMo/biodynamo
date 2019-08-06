@@ -1,4 +1,3 @@
-#!/bin/bash
 # -----------------------------------------------------------------------------
 #
 # Copyright (C) The BioDynaMo Project.
@@ -12,18 +11,12 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
+#
+# This CMake script will define these two variables:
+# - VALGRIND_FOUND: if we were able to find valgrind's executable;
+# - VALGRIND_PROGRAM: it will keep the location of valgrind's executable.
 
-if [[ $# -ne 0 ]]; then
-  echo "ERROR: Wrong number of arguments.
-Description:
-  This script installs/updates the currently checked out version of biodynamo
-No Arguments"
-  exit 1
-fi
-
-set -e
-
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
-
-# no OS specifics -> use common install script
-$BDM_PROJECT_DIR/util/installation/common/install.sh centos-7.6.1810
+find_program(VALGRIND_PROGRAM NAMES valgrind PATH
+    /usr/bin /usr/local/bin)
+find_package_handle_standard_args(VALGRIND DEFAULT_MSG
+    VALGRIND_PROGRAM)

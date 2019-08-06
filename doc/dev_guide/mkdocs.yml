@@ -50,4 +50,5 @@ pages:
     - Welcome: index.md
     - Build BioDynaMo: build.md
     - Code Quality: code_quality.md
+    - Add a new OS: new_os.md
     - Contribute: contribute.md

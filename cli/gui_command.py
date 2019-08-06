@@ -22,8 +22,8 @@ def GuiCommand(args):
     args_str = ' '.join(args)
     try:
         Print.new_step("Starting GUI with args: " + args_str)
-        gui_bin = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'bin', 'gui')
-        gui_args = os.path.join(os.environ['BDM_INSTALL_DIR'], 'biodynamo', 'log')
+        gui_bin = os.path.join(os.environ['BDM_INSTALL_DIR'], 'bin', 'gui')
+        gui_args = os.path.join(os.environ['BDM_INSTALL_DIR'], 'log')
         if not os.path.exists(gui_args):
             os.makedirs(gui_args)
         gui_args = os.path.join(gui_args, "gui.log") 
