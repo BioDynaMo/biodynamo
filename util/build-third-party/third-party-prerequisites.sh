@@ -15,11 +15,36 @@
 # Installs the required packages to build the third_party dependencies
 # NB: This script must be sourced!
 
+# Check if we already sourced this script before
+if [ -z ${third_party_prerequisites_sourced} ]; then
+  export third_party_prerequisites_sourced=1
+else
+  return 0
+fi
+
+# Script path
+SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# source the utils so to get DetectOS in place
+. ${SCRIPTPATH}/../installation/common/util.sh
+
 if [ `uname` = "Linux" ]; then
   BDM_OS=$(DetectOs)
   if [ $BDM_OS = "centos-7.6.1810" ]; then
+
+    # Add custom repository for llvm-toolset-6.0
+    sudo cat << 'EOF'  > /etc/yum.repos.d/springdale-7-SCL.repo
+[SCL-core]
+name=Springdale SCL Base $releasever - $basearch
+mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/$releasever/$basearch/mirrorlist
+#baseurl=http://springdale.princeton.edu/data/springdale/SCL/$releasever/$basearch
+gpgcheck=1
+gpgkey=http://springdale.math.ias.edu/data/puias/7/x86_64/os/RPM-GPG-KEY-puias
+EOF
+    sudo yum update -y
+
     #  root required packages
-    sudo yum install -y git cmake binutils \
+    sudo yum install -y git cmake cmake3 binutils \
       libX11-devel libXpm-devel libXft-devel libXext-devel
     #  root optional packages
     sudo yum install -y gcc-gfortran openssl-devel pcre-devel \
@@ -36,13 +61,29 @@ if [ `uname` = "Linux" ]; then
 
     sudo yum install -y libXt-devel freeglut3-devel
 
-    sudo yum install -y centos-release-scl
+    sudo yum install -y centos-release-scl epel-release
+    sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
     sudo yum install -y devtoolset-7-gcc*
     export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:$LD_LIBRARY_PATH
     export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
 
-    CC=gcc
-    CXX=g++
+    # libroadrunner
+    sudo yum install -y llvm-toolset-6.0-llvm llvm-toolset-6.0-libs llvm-toolset-6.0-devel llvm-toolset-6.0-static
+    sudo yum install -y ncurses-devel
+    sudo yum install -y libxml2-devel
+    sudo yum install -y bzip2 bzip2-devel
+    sudo yum install -y zlib zlib-devel
+
+    export LLVM_CONFIG="/opt/rh/llvm-toolset-6.0/root/usr/bin/llvm-config"
+    . scl_source enable llvm-toolset-6.0
+
+    # Set cmake3 as the default cmake
+    sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
+    --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
+    --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
+    --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
+    --family cmake
+
   else
     if [ $BDM_OS = "travis-linux" ]; then
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -72,16 +113,26 @@ if [ `uname` = "Linux" ]; then
     sudo apt-get -y install libopenmpi-dev || true
 
     sudo apt install -y libxt-dev freeglut3-dev
+
+    # libroadrunner
+    sudo apt-get install -y llvm-6.0 llvm-6.0-dev llvm-6.0-runtime
+    sudo apt-get install -y libbz2-1.0 libbz2-dev zlibc libxml2-dev libz-dev
+    sudo apt-get install -y libncurses5-dev
+
+    export LLVM_CONFIG="/usr/bin/llvm-config-6.0"
+
   fi
 
-  # update cmake
-  URL="https://cmake.org/files/v3.6/cmake-3.6.3-Linux-x86_64.tar.gz"
-  DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.6.3 1
-  export PATH=$WORKING_DIR/cmake-3.6.3/bin:$PATH
 else
-  brew install llvm
-  CC=/usr/local/opt/llvm/bin/clang
-  CXX=/usr/local/opt/llvm/bin/clang++
+  brew install llvm@6
+  brew install swig
+  brew install git
+
+  export CXX=/usr/local/opt/llvm@6/bin/clang++
+  export CC=/usr/local/opt/llvm@6/bin/clang
+
+  export LLVM_CONFIG="/usr/bin/llvm-config-6"
+
   xcode-select --install || true
   brew install cmake
 fi
