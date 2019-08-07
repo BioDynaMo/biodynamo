@@ -45,3 +45,7 @@ USER testuser
 # preserve the environment variable BDM_LOCAL_LFS when calling scripts with
 # sudo
 RUN echo "Defaults env_keep += \"BDM_LOCAL_LFS\"" | sudo tee -a /etc/sudoers
+
+# Export locales
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
