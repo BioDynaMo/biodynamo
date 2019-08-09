@@ -328,8 +328,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
             export CXX=/sw/opt/llvm-5.0/bin/clang
         fi
     fi
-
-
+    
 else
     # CentOs specifics
     if [ `lsb_release -si` == "CentOS" ]; then

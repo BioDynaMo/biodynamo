@@ -70,8 +70,8 @@ while true; do
   read -p "" yn
   case $yn in
     [Yy]* ) echo "Installing packages..." ; break;;
-    [Nn]* ) echo "Aborting. No package was installed."; exit 1;;
-        * ) echo "Please answer yes, no or skip.";;
+    [Nn]* ) echo "Skipping package installation."; exit 0;;
+        * ) echo "Please answer yes or no.";;
   esac
 done
 

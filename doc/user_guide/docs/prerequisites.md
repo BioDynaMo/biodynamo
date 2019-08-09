@@ -35,9 +35,9 @@ BioDynaMo provides also an automated procedure to install all the needed library
 #### Required Packages
 ```bash
 sudo apt-get install -y cmake make gcc g++ \
-libopenmpi-dev libomp-dev libnuma-dev libtbb-dev \
-libpthread-stubs0-dev \
-python3 python3-pip
+   libopenmpi-dev libomp-dev libnuma-dev libtbb-dev \
+   libpthread-stubs0-dev \
+   python3 python3-pip
 ```
 
 #### Optional Packages
@@ -84,23 +84,24 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install cmake3 libXt-devel libXext-devel \
-devtoolset-7-gcc* numactl-devel \
-tbb-devel openmpi3-devel \
-rh-python36 python python-pip
+   devtoolset-7-gcc* numactl-devel \
+   tbb-devel openmpi3-devel \
+   rh-python36 python python-pip
 ```
 #### Optional Packages
 ```bash
 pip install --user mkdocs mkdocs-material
-sudo yum -y install lcov gcovr llvm-toolset-7\
-llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
+sudo yum -y install lcov gcovr llvm-toolset-7 \
+   llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 ```
 
 ## MacOS
 
 !!! attention
 
-    Currently we support only installation of BioDynaMo using Homebrew. If you are using
-    another package manager you will need to install all the corresponding packages.
+    Currently we support only installation of BioDynaMo using Homebrew and Fink.
+    If you are using another package manager you will need to install all
+    the corresponding packages.
 
 ### Required Packages
 
@@ -121,16 +122,34 @@ llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 
 #### Required Packages
 
+Using HomeBrew:
+
 ```bash
-brew install libomp tbb open-mpi \
-python python@2 llvm cmake || true
+sudo brew install llvm cmake libomp tbb open-mpi \
+   python python@2
 
 brew upgrade python cmake
 ```
 
+Using Fink:
+
+```bash
+sudo fink install llvm-clang cmake libomp-dev libtbb4 openmpi \
+   python3 pip-py37
+```
+
 #### Optional Packages
+
+Using HomeBrew:
 
 ```bash
 pip install --user mkdocs mkdocs-material
-brew install doxygen lcov gcovr || true
+sudo brew install doxygen lcov gcovr
+```
+
+Using Fink:
+
+```bash
+pip install --user mkdocs mkdocs-material
+sudo fink install doxygen
 ```
