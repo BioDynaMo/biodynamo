@@ -30,6 +30,7 @@ namespace gui {
 /// (See `Project.h`)
 class ProjectObject{
  public:
+  /// Constructor and destructor
   ProjectObject() {};
   ~ProjectObject() = default;
 

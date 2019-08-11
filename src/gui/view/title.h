@@ -27,7 +27,7 @@
 #ifndef GUI_TITLE_H
 #define GUI_TITLE_H
 
-#include "TGFrame.h"
+#include <TGFrame.h>
 
 class TGLabel;
 class TGButton;
@@ -37,6 +37,11 @@ class TGIcon;
 namespace gui {
 
 class TitleFrame : public TGCompositeFrame {
+ public:
+  // Constructor & destructor
+  TitleFrame(const TGWindow *p, const char *mainText, const char *subText,
+             UInt_t w, UInt_t h, UInt_t options = kHorizontalFrame | kRaisedFrame);
+  virtual ~TitleFrame();
  private:
   std::unique_ptr<TGLayoutHints>    fRightLogoLayout;      // Right logo layout
   std::unique_ptr<TGLayoutHints>    fLeftLogoLayout;       // Left logo layout
@@ -51,12 +56,6 @@ class TitleFrame : public TGCompositeFrame {
   std::unique_ptr<TGLayoutHints>    fTextLabelLayout;
   std::unique_ptr<TGLabel>          fTextLabel1;           // First line title's label
   std::unique_ptr<TGLabel>          fTextLabel2;           // Second line title's label
-
- public:
-  // Constructor & destructor
-  TitleFrame(const TGWindow *p, const char *mainText, const char *subText,
-             UInt_t w, UInt_t h, UInt_t options = kHorizontalFrame | kRaisedFrame);
-  virtual ~TitleFrame();
 };
 
 }  // namespace gui

@@ -45,6 +45,7 @@ namespace gui {
 
 class Model {
  public:
+  /// Constructor and destructor
   Model() {};
  ~Model() = default;
 

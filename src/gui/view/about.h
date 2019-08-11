@@ -35,6 +35,15 @@
 namespace gui {
 
 class ModelCreatorAbout : public TGTransientFrame {
+ public:
+  /// Constructor and destructor
+  ModelCreatorAbout(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
+                    UInt_t options = kMainFrame | kVerticalFrame);
+  virtual ~ModelCreatorAbout();
+
+  virtual void       CloseWindow();
+  virtual Bool_t     ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
+
  private:
   TGVerticalFrame    *fVFrame;
   TGHorizontalFrame  *fHFrame;
@@ -48,13 +57,6 @@ class ModelCreatorAbout : public TGTransientFrame {
   TGLayoutHints      *fBly;
   TGLayoutHints      *fBfly;
 
- public:
-  ModelCreatorAbout(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
-                    UInt_t options = kMainFrame | kVerticalFrame);
-  virtual ~ModelCreatorAbout();
-
-  virtual void       CloseWindow();
-  virtual Bool_t     ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
 };
 
 }  // namespace gui

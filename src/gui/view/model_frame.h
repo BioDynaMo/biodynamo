@@ -29,7 +29,6 @@
 namespace gui {
 
 class ModelFrame : public TGCompositeFrame {
-
  public:
   // Constructor & destructor
   ModelFrame(const TGWindow* p, TGWindow* buttonHandler);
@@ -42,45 +41,41 @@ class ModelFrame : public TGCompositeFrame {
   Bool_t CheckAllSecretionBoxes();
 
  private:
-  std::unique_ptr<TGVerticalFrame>        fV1;
-  std::unique_ptr<TGLabel>                fLtitle; 
+  std::unique_ptr<TGVerticalFrame>  fV1;
+  std::unique_ptr<TGLabel>          fLtitle; 
 
   ///-----Simulation-Entities-----///
-  std::unique_ptr<TGLabel>                fLentities;
-  std::unique_ptr<TGButton>               fBcell;       // Cell
+  std::unique_ptr<TGLabel>          fLentities;
+  std::unique_ptr<TGButton>         fBcell;       // Cell
 
   ///----------Modules------------///
-  std::unique_ptr<TGLabel>                fLmodules;
-  std::unique_ptr<TGButton>               fBgrowth;     // Growth Module
-  std::unique_ptr<TGButton>               fBchemotaxis; // Chemotaxis
-  std::unique_ptr<TGButton>               fBsubstance;  // Substance Secretion
+  std::unique_ptr<TGLabel>          fLmodules;
+  std::unique_ptr<TGButton>         fBgrowth;     // Growth Module
+  std::unique_ptr<TGButton>         fBchemotaxis; // Chemotaxis
+  std::unique_ptr<TGButton>         fBsubstance;  // Substance Secretion
 
   ///----------General------------///
-  std::unique_ptr<TGLabel>                fLgeneral; 
-  std::unique_ptr<TGButton>               fBvariable;   // Variable
-  std::unique_ptr<TGButton>               fBfunction;   // Function
-  std::unique_ptr<TGButton>               fBformula;    // Formula
+  std::unique_ptr<TGLabel>          fLgeneral; 
+  std::unique_ptr<TGButton>         fBvariable;   // Variable
+  std::unique_ptr<TGButton>         fBfunction;   // Function
+  std::unique_ptr<TGButton>         fBformula;    // Formula
 
   /// Layout hints
-  std::unique_ptr<TGLayoutHints>        fL1;
-  std::unique_ptr<TGLayoutHints>        fL2;
-  std::unique_ptr<TGLayoutHints>        fL3;
-  std::unique_ptr<TGLayoutHints>        fL4;
-  std::unique_ptr<TGLayoutHints>        fL5;
-  std::unique_ptr<TGLayoutHints>        fL6;
-  std::unique_ptr<TGLayoutHints>        fL7;
-  std::unique_ptr<TGLayoutHints>        fL8;
+  std::unique_ptr<TGLayoutHints>    fL1;
+  std::unique_ptr<TGLayoutHints>    fL2;
+  std::unique_ptr<TGLayoutHints>    fL3;
+  std::unique_ptr<TGLayoutHints>    fL4;
+  std::unique_ptr<TGLayoutHints>    fL5;
+  std::unique_ptr<TGLayoutHints>    fL6;
+  std::unique_ptr<TGLayoutHints>    fL7;
+  std::unique_ptr<TGLayoutHints>    fL8;
 
   std::unique_ptr<TGCanvas>         fCanvasWindow;
   std::unique_ptr<ModelTabs>        fTabManager;
 
   Bool_t                            fTabsEnabled;
 
-  
-  /// Needed to support multiple models
-  // ModelTabs               *fCurTabs;
-
-  TGWindow*             fButtonHandler;
+  TGWindow*                         fButtonHandler;
 };
 
 } // namespace gui

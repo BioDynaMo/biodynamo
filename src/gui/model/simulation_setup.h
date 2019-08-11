@@ -21,6 +21,7 @@ namespace gui {
 
 class SimulationSetup {
  public:
+  /// Constructor and destructor
   SimulationSetup() {};
   ~SimulationSetup() = default;
   // list of elements
@@ -28,6 +29,5 @@ class SimulationSetup {
 };
 
 }  // namespace gui
-
 
 #endif // GUI_SIMULATION_SETUP_H_

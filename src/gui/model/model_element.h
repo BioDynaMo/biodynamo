@@ -47,6 +47,7 @@ namespace gui {
 
 class ModelElement {
  public:
+  /// Constructor and destructor
   ModelElement() {
     if(fEntityAttributeMap.empty()) {
       PopulateCellMembers();
@@ -56,6 +57,7 @@ class ModelElement {
     }
   }
   ~ModelElement() = default;
+
   std::string GenerateCode() {return "";};
   void        Save() {};
   Bool_t      SetElementType(int type) {

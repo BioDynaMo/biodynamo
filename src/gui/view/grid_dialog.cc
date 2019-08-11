@@ -1,3 +1,19 @@
+// Author: Lukasz Stempniewicz 25/05/19
+
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+
 #include "gui/view/grid_dialog.h"
 #include "gui/view/log.h"
 
@@ -210,22 +226,27 @@ void GridDialog::OnCreate() {
   CloseWindow();
 }
 
+/// Checks entry values updates corresponding 
+///   cell total and distance labels
 void GridDialog::VerifyNumberEntries() {
-
+  /// Represents number of cells in X, Y, Z
   Long_t numberX = fEntryNumberX->GetIntNumber();
   Long_t numberY = fEntryNumberY->GetIntNumber();
   Long_t numberZ = fEntryNumberZ->GetIntNumber();
 
+  /// Represents distances between cells in X, Y, Z
   Long_t distanceX = fEntryDistanceX->GetIntNumber();
   Long_t distanceY = fEntryDistanceY->GetIntNumber();
   Long_t distanceZ = fEntryDistanceZ->GetIntNumber();
 
+  /// Check to ensure all entries are > 0
   if((numberX && numberY && numberZ && 
       distanceX && distanceY && distanceZ) == 0) {
-        Log::Warning("Cannot have any value at 0!");
-        return;
-      }
+    Log::Warning("Cannot have any value at 0!");
+    return;
+  }
 
+  /// Build strings for labels
   std::string cellCountStr = "Total Cell Count:" + std::to_string(numberX * numberY * numberZ);
   fNumberCellsBottom->SetText(cellCountStr.c_str());
 
@@ -266,7 +287,6 @@ Bool_t GridDialog::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
       }
       break;
     default:
-      //Log::Debug("Hit default case!");
       VerifyNumberEntries();
       break;
   }

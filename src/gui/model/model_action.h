@@ -23,6 +23,7 @@ namespace gui {
 
 class ModelAction {
  public:
+  /// Constructor and destructor
   ModelAction() {};
   ~ModelAction() = default;
 };

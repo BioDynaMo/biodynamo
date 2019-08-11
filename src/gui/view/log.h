@@ -66,8 +66,8 @@ class Log {
 
  private:
   static TGTextEdit* TEdit;
-  static std::string LogFile;
   static TGStatusBar* StatusBar;
+  static std::string LogFile;
   static std::mutex Mtx;
 
   static const std::string CurrentDateTime();

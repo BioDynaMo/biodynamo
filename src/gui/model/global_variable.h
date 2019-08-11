@@ -23,6 +23,7 @@ namespace gui {
 
 class GlobalVariable {
  public:
+  /// Constructor and destructor
   GlobalVariable() {};
   ~GlobalVariable() = default;
 };

@@ -44,7 +44,7 @@ TitleFrame::TitleFrame(const TGWindow *p, const char *mainText,
 
   // add pictures
   TString theLeftLogoFilename = StrDup(gProgPath);
-  theLeftLogoFilename.Append("/icons/logo_bdm.xpm");
+  theLeftLogoFilename.Append("/icons/logo_bdm.png");
   fLeftIconPicture = gClient->GetPicture(theLeftLogoFilename);
   fLeftIcon = std::make_unique<TGIcon>(this, fLeftIconPicture, fLeftIconPicture->GetWidth(),
                          fLeftIconPicture->GetHeight());
@@ -52,7 +52,7 @@ TitleFrame::TitleFrame(const TGWindow *p, const char *mainText,
   AddFrame(fLeftIcon.get(), fLeftLogoLayout.get());
 
   TString theRightLogoFilename = StrDup(gProgPath);
-  theRightLogoFilename.Append("/icons/logo_bdm.xpm");
+  theRightLogoFilename.Append("/icons/logo_bdm.png");
   fRightIconPicture = gClient->GetPicture(theRightLogoFilename);
   fRightIcon = std::make_unique<TGIcon>(this, fRightIconPicture, fRightIconPicture->GetWidth(),
                  fRightIconPicture->GetHeight());

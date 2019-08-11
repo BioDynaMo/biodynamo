@@ -34,6 +34,7 @@ namespace gui {
 
 class TreeManager {
  public:
+  // Constructor and destructor
   TreeManager() {
     isProjectCreated = kFALSE;
 
@@ -46,9 +47,9 @@ class TreeManager {
     iconname += "/icons/";
     #endif
 
-    fileMapping["Project"] = iconname + "tree_project.xpm";
-    fileMapping["Model"] = iconname + "tree_model.xpm";
-    fileMapping["SimulationSetup"] = iconname + "settings.xpm";
+    fileMapping["Project"] = iconname + "tree_project.png";
+    fileMapping["Model"] = iconname + "tree_model.png";
+    fileMapping["SimulationSetup"] = iconname + "settings.png";
     fileMapping["Cell"] = iconname + "cell.png";
     fileMapping["GrowthModule"] = iconname + "growth.png";
 
@@ -226,15 +227,6 @@ class TreeManager {
     std::vector<std::string>     fModelElementNames;
   };
 
-  Bool_t IsElementNameAvailable(const char* elementName) {
-    for (ModelTree tree : fModelTrees)
-      for (std::string str : tree.fModelElementNames)
-        if (str.compare(elementName) == 0)
-          return kFALSE;
-    return kTRUE;
-  }
-  Bool_t isProjectCreated = kFALSE;
-
   std::vector<ModelTree> fModelTrees;
   std::string fCurModelName;
   
@@ -243,6 +235,14 @@ class TreeManager {
 
   std::unordered_map<std::string, const TGPicture*> fIconMap;
   uint32_t currentCellNumber = 0;
+  Bool_t IsElementNameAvailable(const char* elementName) {
+    for (ModelTree tree : fModelTrees)
+      for (std::string str : tree.fModelElementNames)
+        if (str.compare(elementName) == 0)
+          return kFALSE;
+    return kTRUE;
+  }
+  Bool_t isProjectCreated = kFALSE;
 };
 
 }  // namespace gui

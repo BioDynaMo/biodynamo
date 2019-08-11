@@ -23,6 +23,7 @@ namespace gui {
 
 class Behaviour {
  public:
+  /// Constructor and destructor
   Behaviour() {};
    ~Behaviour() = default;
 };

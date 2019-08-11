@@ -32,7 +32,7 @@ class Inspector {
   // Constructor & destructor
   Inspector(TGCompositeFrame* fMain, const char* modelName, const char* elementName);
   ~Inspector() = default;
-  void TestPrint() { std::cout << "Testing from inspector.\n"; }
+
   void UpdateAllEntries() {
     for (Entry* entry : fEntries) {
       entry->UpdateValue();
@@ -63,13 +63,13 @@ class Inspector {
  private:
   ModelElement*                      fModelElement;
   TGVerticalFrame*                   fV;
+  TGCheckButton*                     fSecretionCheckBox;
   std::string                        fModelName;
   std::string                        fElementName;
   std::vector<TGHorizontalFrame*>    fHorizontalFrames;
   std::vector<TGNumberEntry*>        fNumericEntries;
   std::vector<TGLabel*>              fLabels;
   std::vector<Entry*>                fEntries; 
-  TGCheckButton*                     fSecretionCheckBox;
   Bool_t                             fIsInspectorValid;
 
   ClassDefNV(Inspector, 1);

@@ -28,12 +28,9 @@ ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
   fV1 = std::make_unique<TGVerticalFrame>(this, 50, 100, 0);
 
   ///------Title-------///
-  // Pixel_t col;
-  // gClient->GetColorByName("green", col);
   TString fontname("-*-times-bold-r-*-*-16-*-*-*-*-*-*-*");
   fLtitle = std::make_unique<TGLabel>(fV1.get(), "Model Elements");
   fLtitle->SetTextFont(fontname.Data());
-  // fLtitle->SetBackgroundColor(col);
   fV1->AddFrame(fLtitle.get(), fL1.get());
 
   ///-----Simulation-Entities-----///
@@ -97,10 +94,6 @@ ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
                                                     2, 2, 2, 2));
 
   VisFrame* visFrame = VisManager::GetInstance().Init(this);
-  //TGVSplitter *splitter = new TGVSplitter(this, 5);
-  //splitter->SetFrame(fCanvasWindow.get(), kTRUE);
-  //TGLayoutHints* lo = new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0);
-  //AddFrame(splitter, lo);
 
   AddFrame(visFrame, fL4.get());
 
@@ -138,14 +131,6 @@ ModelFrame::~ModelFrame() {}
 Bool_t ModelFrame::CheckAllSecretionBoxes() {
   return fTabManager->CheckAllSecretionBoxes();
 }
-
-/// TODO: Manage multiple ModelTabs groups
-/* 
-Bool_t ModelFrame::SwitchModelTab(const char* modelName,
-                                  const char* modelElement) {
-  return kFALSE;
-}
-*/
 
 void ModelFrame::ShowModelElement(const char* modelName,
                                   const char* modelElement) {

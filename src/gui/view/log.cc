@@ -42,15 +42,11 @@ void Log::LogMessage(const std::string message) {
   }
   
   if(TEdit != nullptr) {
-    //tEdit->Goto(LONG_MAX, LONG_MAX);
-    //tEdit->End();
     uint msgSize = message.size();
     for(uint i = 0; i < msgSize; i++) {
         TEdit->InsChar(message.at(i));
     }
     TEdit->BreakLine();
-    //TEdit->ScrollCanvas(100, 1);
-    //Emit("DoubleClicked()");
   }
 
   if(StatusBar != nullptr) {
@@ -61,9 +57,11 @@ void Log::LogMessage(const std::string message) {
   }
   Mtx.unlock();
 }
+
 void Log::SetTextEdit(TGTextEdit* tEdit) {
   TEdit = tEdit;
 }
+
 void Log::SetLogFile(const std::string location) {
   std::cout << "Setting log file location: " << location << '\n';
   LogFile = location;

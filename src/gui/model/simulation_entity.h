@@ -35,8 +35,8 @@ namespace gui {
 
 /// Represent `simulation objects`
 class SimulationEntity {
-
  public:
+  /// Constructor and destructor
   SimulationEntity() {
     fElement = new bdm::Cell(10.0);
     fSecretion = kFALSE;

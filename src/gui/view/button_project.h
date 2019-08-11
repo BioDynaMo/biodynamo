@@ -33,18 +33,17 @@
 namespace gui {
 
 class ButtonProjectFrame: public TGCompositeFrame {
-
-private:
-   std::unique_ptr<TGLayoutHints>  fButtonLayout;        // Buttons layout
-   std::unique_ptr<TGButton>       fCreateProjectButton; // "Create New Project" button
-   std::unique_ptr<TGButton>       fLoadProjectButton;   // "Load Project" button
-
 public:
    // Constructor & destructor
    ButtonProjectFrame(const TGWindow* p, TGWindow* buttonHandler, Int_t newProjectId, Int_t loadProjectId);
    virtual ~ButtonProjectFrame();
 
    virtual void SetState(int state);
+
+private:
+   std::unique_ptr<TGLayoutHints>  fButtonLayout;        // Buttons layout
+   std::unique_ptr<TGButton>       fCreateProjectButton; // "Create New Project" button
+   std::unique_ptr<TGButton>       fLoadProjectButton;   // "Load Project" button
 };
 
 }  // namespace gui

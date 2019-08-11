@@ -152,22 +152,21 @@ void ModelTabs::ShowElementTab(const char* name) {
     IsFrameInit = kTRUE;
   }
   ShowElement(name);
+  fCanvas->Print();
 }
 
 void ModelTabs::ClearAllTabs() {
-  //Size_t tabFramesSize = fTabFrames.size();
-  //for(Int_t i = 0; i < tabFramesSize; i++) {
-  //  fFrame->RemoveFrame(fTabFrames[i]);
-  //}
+  std::cout << "About to clear viewport!\n";
+  fCanvas->GetContainer()->DestroySubwindows();
+  fCanvas->GetContainer()->SetCleanup(kDeepCleanup);
+  fCanvas->GetContainer()->MapSubwindows();
+  fCanvas->GetContainer()->Resize(); 
+  fCanvas->GetContainer()->MapWindow();
+  fCanvas->Layout();
   fTabs.clear();
   fTabFrames.clear();
-  fFrame->SetCleanup(kDeepCleanup);
-  fFrame->Cleanup();
-  fFrame->MapSubwindows();
-  fFrame->Resize();  
-  fFrame->MapWindow();
-  //fCanvas->DestroySubwindows(); // causes insane crash
-  fCanvas->ClearViewPort();
+  fCanvas->SetVsbPosition(0);
+  fCanvas->Print();
 }
 
 }  // namespace gui

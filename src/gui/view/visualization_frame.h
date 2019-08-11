@@ -38,6 +38,7 @@ namespace gui {
 
 class VisFrame : public TGCompositeFrame {
  public:
+  // Constructor and destructor
   VisFrame(const TGWindow* p);
   ~VisFrame();
 

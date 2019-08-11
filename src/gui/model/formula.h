@@ -23,6 +23,7 @@ namespace gui {
 
 class Formula {
  public:
+  /// Constructor and destructor
   Formula() {};
    ~Formula() = default;
 };

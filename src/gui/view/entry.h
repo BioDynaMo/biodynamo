@@ -45,8 +45,10 @@ class Inspector;
 
 class Entry : public TGHorizontalFrame {
    public:
+    // Constructor & destructor
     Entry(TGCompositeFrame* fMain, Inspector* parentInspector, const char* entryName, const char* entryType);
     ~Entry() = default;
+
     std::string     GetEntryName();
     Bool_t          CheckIfValid();
     void            Init(ModelElement* modelElement);
@@ -54,18 +56,18 @@ class Entry : public TGHorizontalFrame {
     void            UpdateValue();
     virtual Bool_t  ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
    private:
-    Bool_t          CheckIfValueChanged();
-    Bool_t                        fIsInitialized = kFALSE;
-    std::string                   fEntryName;
-    EntryType                     fEntryType;
     TGButtonGroup*                fButtonGroup;
     TGRadioButton*                fRadioButtonTrue;
     TGRadioButton*                fRadioButtonFalse;
+    EntryType                     fEntryType;
     ModelElement*                 fModelElement;
+    Inspector*                    fParentInspector;
+    std::string                   fEntryName;
     std::vector<TGNumberEntry*>   fNumberEntries;
     std::vector<Double_t>         fCurrentValues;
-    Inspector*                    fParentInspector;
     bdm::Cell*                    fCellPtr;
+    Bool_t                        fIsInitialized = kFALSE;
+    Bool_t          CheckIfValueChanged();
 };
 
 }  // namespace gui

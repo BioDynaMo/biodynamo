@@ -23,8 +23,8 @@ namespace gui {
 
 /// Model actions (list of ModelAction)
 class Module {
-
  public:
+  /// Constructor and destructor
   Module() {};
   ~Module() = default;
 

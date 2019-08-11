@@ -46,24 +46,24 @@
 
 namespace gui {
 
-const char *icon_names[] = {"new_project.xpm",
+const char *icon_names[] = {"new_project.png",
                             "",
-                            "open.xpm",
-                            "save.xpm",
-                            "settings.xpm",
+                            "open.png",
+                            "save.png",
+                            "settings.png",
                             "",
                             "build.png",
                             "run.png",
-                            "generate_code.xpm",
+                            "generate_code.png",
                             "",
-                            "browser.xpm",
+                            "browser.png",
                             "",
-                            "user_guide.xpm",
-                            "dev_guide.xpm",
-                            "license.xpm",
-                            "about.xpm",
+                            "user_guide.png",
+                            "dev_guide.png",
+                            "license.png",
+                            "about.png",
                             "",
-                            "quit.xpm",
+                            "quit.png",
                             0};
 
 ToolBarData_t tb_data[] = {
@@ -434,6 +434,7 @@ void ModelCreator::ClearProject() {
   fTreeManager = std::make_unique<TreeManager>();
   fProjectListTree->Cleanup();
   ChangeSelectionFrame(kFALSE);
+  fModelFrame->EnableButtons(M_NONE_ACTIVE);
 }
 
 /// Will create new model if a model with

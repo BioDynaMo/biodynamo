@@ -33,6 +33,7 @@ namespace gui {
 
 class ModelTabs {
  public:
+  // Constructor & destructor
   ModelTabs(const TGWindow* p);
   virtual ~ModelTabs() {}
 
@@ -47,19 +48,12 @@ class ModelTabs {
  private:
   Int_t  GetElementTabIdx(const char* name);
   TGTab* GetElementTab(const char* name);
-  //void   UpdateTabPriority(const char* name);
   void   AddATab(const char* name);
   void   ShowElement(const char* name);
   void   SetTabColor(const char* name);
   void   PrintTabNames();
   void   UpdateTabContents(TGTab* tab, const char* elementName);
 
-  //std::unique_ptr<TGTab>  fTabTL;  // top-left tab
-  //std::unique_ptr<TGTab>  fTabTR;  // top-right tab
-  //std::unique_ptr<TGTab>  fTabBL;  // bottom-left tab
-  //std::unique_ptr<TGTab>  fTabBR;  // bottom-right tab
-
-  /// Above 4 tabs will be in this vector
   std::vector<TGTab*>       fTabs;
   std::vector<TGFrame*>     fTabFrames;
 
@@ -67,10 +61,14 @@ class ModelTabs {
   std::string                fModelName;
   TGCanvas*                  fCanvas;
   std::unique_ptr<TGCompositeFrame> fFrame;
+
+  std::unique_ptr<TGLayoutHints> fL1;
+  std::unique_ptr<TGLayoutHints> fL2;
+  std::unique_ptr<TGLayoutHints> fL3;
+  std::unique_ptr<TGLayoutHints> fL4;
+
   Bool_t                     IsFrameInit;
-
-  std::unique_ptr<TGLayoutHints> fL1, fL2, fL3, fL4;
-
+  
   ClassDefNV(ModelTabs,1)
 };
 

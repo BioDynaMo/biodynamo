@@ -45,6 +45,7 @@ extern const char *filetypes[];
 
 class NewProjectDialog : public TGTransientFrame {
  public:
+  // Constructor & destructor
   NewProjectDialog(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
                    UInt_t options = kVerticalFrame);
   virtual ~NewProjectDialog();
@@ -84,6 +85,7 @@ class NewProjectDialog : public TGTransientFrame {
 
 class NewModelDialog : public TGTransientFrame {
  public:
+  // Constructor & destructor
   NewModelDialog(const TGWindow *p, const TGWindow *main, UInt_t w, UInt_t h,
                  UInt_t options = kVerticalFrame);
   virtual ~NewModelDialog();
@@ -98,11 +100,16 @@ class NewModelDialog : public TGTransientFrame {
   std::unique_ptr<TGCompositeFrame> fFrame1;
   std::unique_ptr<TGCompositeFrame> fFrame2;
   std::unique_ptr<TGVerticalFrame>  fV1;
-  std::unique_ptr<TGButton>         fCreateButton, fCancelButton, fHelpButton;
+  std::unique_ptr<TGButton>         fCreateButton;
+  std::unique_ptr<TGButton>         fCancelButton;
+  std::unique_ptr<TGButton>         fHelpButton;
   std::unique_ptr<TGTab>            fTab;
   std::unique_ptr<TGTextEntry>      fTxt1;
   std::unique_ptr<TGLabel>          fLerror;
-  std::unique_ptr<TGLayoutHints>    fL1, fL2, fL3, fL4;
+  std::unique_ptr<TGLayoutHints>    fL1;
+  std::unique_ptr<TGLayoutHints>    fL2;
+  std::unique_ptr<TGLayoutHints>    fL3;
+  std::unique_ptr<TGLayoutHints>    fL4;
 };
 
 }  // namespace gui
