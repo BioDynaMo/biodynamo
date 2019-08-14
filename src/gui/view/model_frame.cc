@@ -39,7 +39,7 @@ ModelFrame::ModelFrame(const TGWindow* p, TGWindow* buttonHandler)
 
   fBcell = std::make_unique<TGTextButton>(fV1.get(), "Cell", M_ENTITY_CELL);
   fBcell->Associate(buttonHandler);
-  fBcell->SetToolTipText("Create new custom Cell object");
+  fBcell->SetToolTipText("Create new Cell Body");
   fV1->AddFrame(fBcell.get(), fL1.get());
 
   ///----------Modules------------///
