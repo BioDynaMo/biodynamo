@@ -67,7 +67,7 @@ compatible with BioDynaMo. We will proceed to download the correct version of RO
             PRINT_WARNING()
             MESSAGE("It appears that ROOT environment was not loaded
 (by sourcing ${ROOTSYS}/bin/thisroot.sh).
-You will be able to build BioDynaMo anyway. However, make sure to source it later on in order to use the library.")
+You will be able to build BioDynaMo anyway.")
             PRINT_LINE()
         endif()
     endif()

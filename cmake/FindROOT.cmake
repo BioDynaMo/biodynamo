@@ -17,7 +17,7 @@
 #  dependencies in ROOT_GENERATE_DICTIONARY
 
 find_program(ROOT_CONFIG_EXECUTABLE root-config
-  HINTS $ENV{ROOTSYS}/bin $ENV{ROOT_DIR}/bin ${CMAKE_THIRD_PARTY_DIR}/root/bin)
+HINTS $ENV{ROOTSYS}/bin $ENV{BDM_ROOT_DIR}/bin ${CMAKE_THIRD_PARTY_DIR}/root/bin)
 
 execute_process(
     COMMAND ${ROOT_CONFIG_EXECUTABLE} --prefix

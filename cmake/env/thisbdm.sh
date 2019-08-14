@@ -192,18 +192,26 @@ BDM_SRC_DIR="${BDMSYS}/include"; export BDM_SRC_DIR
 ########
 
 #### ROOT Specific Configurations ####
-if [ -z ${ROOT_DIR} ]; then
-    ROOT_DIR=${BDMSYS}/third_party/root
-    if ! [ -d $ROOT_DIR ]; then
+if [ -z ${BDM_ROOT_DIR} ] && [ -z ${ROOTSYS} ]; then
+    BDM_ROOT_DIR=${BDMSYS}/third_party/root
+    if ! [ -d $BDM_ROOT_DIR ]; then
         echo "We were unable to source ROOT! Please make sure it is installed in your system!"
-        echo "You can specify manually its location by executing 'export ROOT_DIR=path/to/root'"
+        echo "You can specify manually its location by executing 'export BDM_ROOT_DIR=path/to/root'"
         echo "before running cmake."
         echo "Sourcing BioDynaMo env failed!"
         exit 1
     fi
+else
+  # ROOTSYS has precedence over the BDM_ROOT_DIR custom configuration
+  if [ ! -z ${ROOTSYS} ]; then
+    BDM_ROOT_DIR=${ROOTSYS}
+    echo "Warning! We have detected that both BDM_ROOT_DIR and ROOTSYS are already set!"
+    echo "We will use the configuration from ROOTSYS which points to ${ROOTSYS}."
+    echo "Please check that it points to the corret ROOT installation you want to use."
+  fi
 fi
 
-. ${ROOT_DIR}/bin/thisroot.sh
+. ${BDM_ROOT_DIR}/bin/thisroot.sh
 export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDMSYS}/include"
 ########
 
@@ -328,7 +336,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
             export CXX=/sw/opt/llvm-5.0/bin/clang
         fi
     fi
-    
+
 else
     # CentOs specifics
     if [ `lsb_release -si` == "CentOS" ]; then
