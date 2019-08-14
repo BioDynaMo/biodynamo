@@ -336,7 +336,7 @@ include(SetCompilerFlags)
 set(CMAKE_INSTALL_RPATH "")
 set(CMAKE_BUILD_RPATH "")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_SKIP_BUILD_RPATH FALSE) # don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH TRUE) # skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
 # -------------------- extract third party libraries ---------------------------
