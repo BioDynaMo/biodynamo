@@ -61,7 +61,7 @@ endif()
 
 # Specify some directories which will be used to structure BioDynaMo build.
 set(CMAKE_BIODYNAMO_BUILD_ROOT  "${CMAKE_BINARY_DIR}")
-set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_BUILD_ROOT}/install")
+set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_BUILD_ROOT}")
 set(CMAKE_THIRD_PARTY_DIR       "${CMAKE_INSTALL_ROOT}/third_party")
 set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin")
 set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include")

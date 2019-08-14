@@ -34,11 +34,49 @@ elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "${BDM_INSTAL
 endif()
 
 # Install biodynamo in its final directory
-install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/install/
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/bin
         DESTINATION .
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/demo
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/doc
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/include
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/lib
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/share
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/simulation-template
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/third_party
+        DESTINATION .
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
+              ${CMAKE_BIODYNAMO_BUILD_ROOT}/NOTICE
+        DESTINATION .)
 
 # We need to install manually these targets in order to clear their RPATH.
 # They have been already copied inside the final install directory by the
