@@ -175,7 +175,7 @@ enable this behaviour. Check out the example below.
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
 
-export ROOT_DIR=/opt/local/root
+export BDM_ROOT_DIR=/opt/local/root
 export ParaView_DIR=/opt/local/paraview
 export Qt5_DIR=/usr/local/qt
 
@@ -208,4 +208,3 @@ unset BDM_LOCAL_LFS
 !!! warning
     At the moment there is no check if the local copy is in synch with
     remote. You have to ensure that yourself!
-    
