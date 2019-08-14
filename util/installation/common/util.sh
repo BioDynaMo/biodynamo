@@ -250,7 +250,7 @@ function SelectInstallDir {
     exit 1
   fi
 
-  local DEFAULT=~/.bdm
+  local DEFAULT=~/biodynamo
   local MSG="Do you want to use the default installation directory ($DEFAULT) ?"
   while true; do
     read -p "$MSG (y/n) " yn
