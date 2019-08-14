@@ -328,7 +328,7 @@ function(add_bdm_packages_properties)
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(Numa PROPERTIES
-            DESCRIPTION "Simple API to the NUMA (Non Uniform Memory Access) policy supported by the Linux kernel. (REQUIRED)"
+            DESCRIPTION "Simple API to the NUMA (Non Uniform Memory Access) policy supported by the Linux kernel. (REQUIRED only on Linux system)"
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(ParaView PROPERTIES
@@ -357,6 +357,10 @@ function(add_bdm_packages_properties)
             )
     SET_PACKAGE_PROPERTIES(Qt5 PROPERTIES
             DESCRIPTION "Open Source widget toolkit for creating user interfaces. It is needed by Paraview. (OPTIONAL)"
+            TYPE REQUIRED
+            )
+    SET_PACKAGE_PROPERTIES(TBB PROPERTIES
+            DESCRIPTION "Threading Building Blocks (TBB) C++ library used to easily write parallel C++ programs. (REQUIRED)"
             TYPE REQUIRED
             )
 
