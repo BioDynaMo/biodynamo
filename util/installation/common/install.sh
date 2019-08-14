@@ -78,4 +78,4 @@ CleanBuild $BUILD_DIR
 
 # print final steps
 EchoSuccess "Installation of BioDynaMo finished successfully!"
-EchoFinishThisStep $HOME/.bdm
+EchoFinishThisStep $HOME/biodynamo
