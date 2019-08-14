@@ -159,6 +159,7 @@ class ModelCreator : public TGMainFrame {
   Bool_t              GenerateModelCode();
   void                SimulateModel();
   std::string         RunCmd(const char* cmd);
+  void                OpenWebpage(const char* url);
 
   void                SetGrid(Long_t numberX, Long_t numberY, Long_t numberZ, 
                               Long_t distanceX, Long_t distanceY, Long_t distanceZ);

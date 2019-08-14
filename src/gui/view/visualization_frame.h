@@ -233,7 +233,7 @@ class VisFrame : public TGCompositeFrame {
    */
   template <typename SO>
   void AddCellToVolume(SO&& cell, TGeoVolume* container, std::string so_name) {
-    std::string name = so_name + std::to_string(cell_count);
+    std::string name = bdm::Concat(so_name, std::to_string(cell_count));
     auto radius = cell.GetDiameter() / 2;
     auto massLocation = cell.GetPosition();
     auto x = massLocation[0];

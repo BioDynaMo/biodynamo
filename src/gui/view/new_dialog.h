@@ -14,12 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-//////////////////////////////////////////////
-//                                          //
-// Definition of a new project dialog box   //
-//                                          //
-//////////////////////////////////////////////
-
 #ifndef GUI_NEW_DIALOG_H
 #define GUI_NEW_DIALOG_H
 
@@ -75,13 +69,6 @@ class NewProjectDialog : public TGTransientFrame {
   std::unique_ptr<TGLayoutHints>     fL3;
   std::unique_ptr<TGLayoutHints>     fL4;
 };
-
-
-//////////////////////////////////////////////
-//                                          //
-// Definition of a new model dialog box     //
-//                                          //
-//////////////////////////////////////////////
 
 class NewModelDialog : public TGTransientFrame {
  public:

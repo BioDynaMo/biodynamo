@@ -25,7 +25,6 @@
 
 #include <TROOT.h>
 #include <TGListTree.h>
-#include <TString.h>
 
 #include "gui/controller/project.h"
 #include "gui/view/log.h"
@@ -38,26 +37,20 @@ class TreeManager {
   TreeManager() {
     isProjectCreated = kFALSE;
 
-    std::unordered_map<std::string, TString> fileMapping;
+    std::unordered_map<std::string, std::string> fileMapping;
 
-    TString iconname(gProgPath);
-    #ifdef R__WIN32
-    iconname += "\\icons\\";
-    #else
-    iconname += "/icons/";
-    #endif
+    std::string iconName = bdm::Concat(gProgPath, "/icons/");
 
-    fileMapping["Project"] = iconname + "tree_project.png";
-    fileMapping["Model"] = iconname + "tree_model.png";
-    fileMapping["SimulationSetup"] = iconname + "settings.png";
-    fileMapping["Cell"] = iconname + "cell.png";
-    fileMapping["GrowthModule"] = iconname + "growth.png";
+    fileMapping["Project"] = bdm::Concat(iconName, "tree_project.png");
+    fileMapping["Model"] = bdm::Concat(iconName, "tree_model.png");
+    fileMapping["SimulationSetup"] = bdm::Concat(iconName, "settings.png");
+    fileMapping["Cell"] = bdm::Concat(iconName, "cell.png");
+    fileMapping["GrowthModule"] = bdm::Concat(iconName, "growth.png");
 
     const TGPicture* pic = 0;
 
     for (auto it = fileMapping.begin(); it != fileMapping.end(); ++it) {
-      TString fileName(it->second);
-      pic = gClient->GetPicture(fileName);
+      pic = gClient->GetPicture(it->second.c_str());
       fIconMap[it->first] = pic;
     }
   }

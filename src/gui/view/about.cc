@@ -19,8 +19,6 @@
 
 namespace gui {
 
-////////////////////////////////////////////////////////////////////////////////
-
 ModelCreatorAbout::ModelCreatorAbout(const TGWindow *p, const TGWindow *main,
                        UInt_t w, UInt_t h, UInt_t options) :
      TGTransientFrame(p, main, w, h, options) {

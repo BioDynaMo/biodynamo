@@ -37,7 +37,6 @@
 #include <TMethodCall.h>
 
 #include "TObject.h"
-#include "TString.h"
 #include "gui/view/log.h"
 #include "gui/model/simulation_entity.h"
 #include "gui/model/module.h"

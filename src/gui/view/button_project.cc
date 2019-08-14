@@ -21,13 +21,6 @@
 
 namespace gui {
 
-//______________________________________________________________________________
-// ButtonProjectFrame
-//
-// A ButtonProjectFrame is a frame containing the ModelCreator buttons.
-//______________________________________________________________________________
-
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Create ButtonProjectFrame object, with TGWindow parent *p.
 ///

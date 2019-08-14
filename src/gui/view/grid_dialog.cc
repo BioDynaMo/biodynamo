@@ -247,7 +247,7 @@ void GridDialog::VerifyNumberEntries() {
   }
 
   /// Build strings for labels
-  std::string cellCountStr = "Total Cell Count:" + std::to_string(numberX * numberY * numberZ);
+  std::string cellCountStr = bdm::Concat("Total Cell Count:", std::to_string(numberX * numberY * numberZ));
   fNumberCellsBottom->SetText(cellCountStr.c_str());
 
   std::string cellDistanceStr("Grid size:");

@@ -165,7 +165,7 @@ void Entry::Init(ModelElement* modelElement) {
         fNumberEntry->Associate(this);
         Log::Debug("Setting val to:", vals[i]);
         fNumberEntry->SetNumber(vals[i]);
-        std::string tmpLabelName = std::string() + xyz.at(i);
+        std::string tmpLabelName = bdm::Concat(xyz.at(i));
         Log::Debug("tmpLabelName on iteration #", i, "=", tmpLabelName);
         TGLabel *tmpLabel = new TGLabel(this, tmpLabelName.c_str());
         AddFrame(tmpLabel, fL2);

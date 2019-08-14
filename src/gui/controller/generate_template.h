@@ -87,7 +87,7 @@ namespace gui {
       int cellCount = 1;
       for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
         if (it->second == M_ENTITY_CELL) {
-          std::string cellName = "Cell_" + std::to_string(cellCount);
+          std::string cellName = bdm::Concat("Cell_", std::to_string(cellCount));
           cellNames.push(cellName);
           cellCount++;
         }

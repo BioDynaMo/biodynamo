@@ -77,9 +77,9 @@ NewProjectDialog::NewProjectDialog(const TGWindow *p, const TGWindow *main,
                     new TGLayoutHints(0, 2, 10, 2, 2));
   fTxt2 = std::make_unique<TGTextEntry>(fFrame3.get(), new TGTextBuffer(200), Id2);
   fFrame3->AddFrame(fTxt2.get(), new TGLayoutHints(kLHintsExpandX, 2, 2, 2, 2));
-  TString openFicFilename = StrDup(gProgPath);
-  openFicFilename.Append("/icons/file_open.png");
-  fPictButton = std::make_unique<TGPictureButton>(fFrame3.get(), gClient->GetPicture(openFicFilename), 4);
+  TString openPicFilename = StrDup(gProgPath);
+  openPicFilename.Append("/icons/file_open.png");
+  fPictButton = std::make_unique<TGPictureButton>(fFrame3.get(), gClient->GetPicture(openPicFilename), 4);
   fFrame3->AddFrame(fPictButton.get(), new TGLayoutHints(kLHintsRight, 2, 2, 2, 2));
 
   fV1->AddFrame(fFrame3.get(), fL4.get());

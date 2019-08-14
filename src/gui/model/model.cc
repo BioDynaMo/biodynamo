@@ -142,7 +142,6 @@ std::map<std::string, int> Model::GetModelElements() {
   return elementsMap;
 }
 
-
 ModelElement* Model::FindElement(const char* elementName) {
   //TObjLink* lnk = fModelElements->FirstLink();
   //while (lnk) {
@@ -167,7 +166,6 @@ ModelElement* Model::GetModelElement(const char* name) {
   }
   return nullptr;
 }
-
 
 Bool_t Model::CreateDirectory(const char* dirPath) {
   int check; 
@@ -196,7 +194,7 @@ std::string Model::GetModelFolder(Bool_t createFolder) {
     }
     else if (info.st_mode & S_IFDIR) {
       Log::Debug(modelFolderPath, " is a directory");
-      std::string cmd = "rm -rf " + modelFolderPath;
+      std::string cmd = bdm::Concat("rm -rf ", modelFolderPath);
       Int_t retVal = system(cmd.c_str());
       Log::Debug("`", cmd, "` returned:", retVal);
       if (retVal == 0) {
@@ -208,23 +206,22 @@ std::string Model::GetModelFolder(Bool_t createFolder) {
     else
       Log::Debug(modelFolderPath, " is not a directory!");
   }
-  
   return modelFolderPath;
 }
 
 /// Will retreive the backup file relative to the model folder
 std::string Model::GetBackupFile() {
-  std::string backupFile = GetModelFolder() + "/build/guibackup.root";
+  std::string backupFile = bdm::Concat(GetModelFolder(), "/build/guibackup.root");
   return backupFile;
 }
 
 /// Generates source code for this model
 void Model::GenerateCode(Bool_t diffusion) {
-  std::string folderPath = GetModelFolder(kTRUE) + "/";
-  std::string srcPath = folderPath + "src/";
-  std::string srcFileH = srcPath + fModelName + ".h";
-  std::string srcFileCC = srcPath + fModelName + ".cc";
-  std::string cMakeFile = folderPath + "CMakeLists.txt";
+  std::string folderPath = bdm::Concat(GetModelFolder(kTRUE), "/");
+  std::string srcPath = bdm::Concat(folderPath, "src/");
+  std::string srcFileH = bdm::Concat(srcPath, fModelName, ".h");
+  std::string srcFileCC = bdm::Concat(srcPath, fModelName, ".cc");
+  std::string cMakeFile = bdm::Concat(folderPath, "CMakeLists.txt");
 
   Bool_t diffusionEnabled = diffusion;
   std::string BioModulesName("");

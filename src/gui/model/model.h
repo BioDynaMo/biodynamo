@@ -31,7 +31,6 @@
 #include <TVirtualX.h>
 #include <RQ_OBJECT.h>
 #include "TObject.h"
-#include "TString.h"
 
 #include "gui/constants.h"
 #include "gui/model/model_element.h"

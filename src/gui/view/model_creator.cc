@@ -114,15 +114,9 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
   ///---- toolbar
   int spacing = 8;
   fToolBar = std::make_unique<TGToolBar>(this, 60, 20, kHorizontalFrame | kRaisedFrame);
-  for (int i = 0; icon_names[i]; i++) {
-    TString iconname(gProgPath);
-    #ifdef R__WIN32
-      iconname += "\\icons\\";
-    #else
-      iconname += "/icons/";
-    #endif
-    iconname += icon_names[i];
-    tb_data[i].fPixmap = iconname.Data();
+  for (uint32_t i = 0; icon_names[i]; i++) {
+    std::string iconName = bdm::Concat(gProgPath, "/icons/", icon_names[i]);
+    tb_data[i].fPixmap = iconName.c_str();
     if (strlen(icon_names[i]) == 0) {
       fToolBar->AddFrame(new TGVertical3DLine(fToolBar.get()),
                          new TGLayoutHints(kLHintsExpandY, 4, 4));
@@ -142,9 +136,7 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
 
   /// Layout hints
   fL1 = std::make_unique<TGLayoutHints>(kLHintsCenterX | kLHintsExpandX, 0, 0, 0, 0);
-  fL2 = std::make_unique<TGLayoutHints>(
-      kLHintsBottom | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 2, 2, 2,
-      2);
+  fL2 = std::make_unique<TGLayoutHints>(kLHintsBottom | kLHintsLeft | kLHintsExpandX | kLHintsExpandY, 2, 2, 2, 2);
   fL3 = std::make_unique<TGLayoutHints>(kLHintsBottom | kLHintsExpandX, 0, 0, 0, 0);
 
   // CREATE TITLE FRAME
@@ -154,8 +146,7 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
   // CREATE MAIN FRAME
   fMainFrame = std::make_unique<TGCompositeFrame>(this, 100, 100, kHorizontalFrame | kRaisedFrame);
 
-  TGVerticalFrame *fV1 =
-      new TGVerticalFrame(fMainFrame.get(), 150, 10, kSunkenFrame | kFixedWidth);
+  TGVerticalFrame *fV1 = new TGVerticalFrame(fMainFrame.get(), 150, 10, kSunkenFrame | kFixedWidth);
 
   TGLayoutHints *lo;
 
@@ -484,7 +475,7 @@ void ModelCreator::CreateGrid() {
 Bool_t ModelCreator::GenerateModelCode() {
   std::string genFolder = Project::GetInstance().GetCodeGenerateFolder(fModelName.c_str());
   Int_t retval;
-  std::string msg = "This will overwrite all files in `" + genFolder + "` Press OK to continue.";
+  std::string msg = bdm::Concat("This will overwrite all files in `", genFolder, "` Press OK to continue.");
   new TGMsgBox(gClient->GetRoot(), this,
               "Info", msg.c_str(),
               kMBIconExclamation, kMBOk | kMBCancel, &retval);
@@ -561,7 +552,6 @@ void ModelCreator::SimulateModel() {
     Log::Error("Error occured during backupfile generation.");
     std::string secondResult = RunCmd(secondCmd.c_str());
   }
-  
 }
 
 std::string ModelCreator::RunCmd(const char* cmd) {
@@ -577,6 +567,15 @@ std::string ModelCreator::RunCmd(const char* cmd) {
       result += tmp;
   }
   return result;
+}
+
+void ModelCreator::OpenWebpage(const char* url) {
+  std::string cmd = bdm::Concat("firefox ", url, " &");
+  Log::Info("Running`", cmd, "`");
+  int retVal = system(cmd.c_str());
+  if(retVal != 0) {
+    Log::Error("Could not open firefox!");
+  }
 }
 
 void ModelCreator::SetGrid(Long_t numberX, Long_t numberY, Long_t numberZ, 
@@ -766,13 +765,11 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               break;
 
             case M_HELP_USERGUIDE:
-              /// TODO: Check if firefox is installed
-              RunCmd("firefox https://biodynamo.github.io/user/");
+              OpenWebpage("https://biodynamo.github.io/user/");
               break;
 
             case M_HELP_DEVGUIDE:
-              /// TODO: Check if firefox is installed
-              RunCmd("firefox https://biodynamo.github.io/dev/");
+              OpenWebpage("https://biodynamo.github.io/dev/");
               break;
 
             case M_HELP_ABOUT:
