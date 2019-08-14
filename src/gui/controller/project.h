@@ -14,12 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// This File contains the declaration of the Project-class              //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
 #ifndef GUI_PROJECT_H_
 #define GUI_PROJECT_H_
 
@@ -155,7 +149,6 @@ class Project {
     }
     modelPtr->EnableGridPos();
     return modelPtr->CreateElement("", elementName, M_ENTITY_CELL, pos);
-    
   }
 
   /// Gets model by name
@@ -202,7 +195,7 @@ class Project {
   /// a single model. Default "" generates for all models.
   /// @return None
   std::string GenerateCode(const char* modelName, Bool_t diffusion) {
-    if(strcmp(modelName, "") != 0) {
+    if (strcmp(modelName, "") != 0) {
       Model* model = GetModel(modelName);
       model->GenerateCode(diffusion);
     } else {

@@ -15,15 +15,6 @@
 //
 // -----------------------------------------------------------------------------
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// ButtonModelFrame                                                     //
-//                                                                      //
-// This File contains the declaration of the ButtonModelFrame-class for //
-// the ModelCreator application                                         //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
 #ifndef GUI_BUTTON_PROJECT_H
 #define GUI_BUTTON_PROJECT_H
 

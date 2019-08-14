@@ -23,26 +23,25 @@ Inspector::Inspector(TGCompositeFrame* fMain, const char* modelName, const char*
   fElementName.assign(elementName);
   /// Get attributes for specific element
   fModelElement = Project::GetInstance().GetModelElement(modelName, elementName);
+  auto attributeMap = fModelElement->GetAttributeMap();
   
-  std::map<std::string, std::string> attributeMap = fModelElement->GetAttributeMap();
-  std::map<std::string, std::string>::iterator it;
   fV = new TGVerticalFrame(fMain, 200, 300);
   TGLayoutHints *fL1 = new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 2, 2, 2);
-  for(it = attributeMap.begin(); it!=attributeMap.end(); ++it) {
+  for (auto it = attributeMap.begin(); it!=attributeMap.end(); ++it) {
     Log::Debug("Inspector: Will create attribute frame for");
     Log::Debug("  Attribute:", it->first, ", type:", it->second);
     Entry* entry = new Entry(fV, this, it->first.c_str(), it->second.c_str());
     entry->Init(fModelElement);
     fEntries.push_back(entry);
-    if(it->first.find("Position") != std::string::npos || it->first.find("TractorForce") != std::string::npos) {
+    if (it->first.find("Position") != std::string::npos || it->first.find("TractorForce") != std::string::npos) {
       fV->AddFrame(entry, fL1);
     }
   }
 
   /// Ensure that Position and TractorForce are added first
-  for(Entry *entry : fEntries) {
+  for (Entry *entry : fEntries) {
     std::string entryName(entry->GetEntryName());
-    if(entryName.find("Position") == std::string::npos && 
+    if (entryName.find("Position") == std::string::npos && 
        entryName.find("TractorForce") == std::string::npos) 
     {
       fV->AddFrame(entry, fL1);
@@ -53,7 +52,7 @@ Inspector::Inspector(TGCompositeFrame* fMain, const char* modelName, const char*
   
   fMain->AddFrame(fV, fL1);
 
-  for(Entry* entry : fEntries) {
+  for (Entry* entry : fEntries) {
     entry->EnableEventHandling();
   }
 }

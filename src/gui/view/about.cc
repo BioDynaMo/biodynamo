@@ -23,14 +23,13 @@ namespace gui {
 
 ModelCreatorAbout::ModelCreatorAbout(const TGWindow *p, const TGWindow *main,
                        UInt_t w, UInt_t h, UInt_t options) :
-     TGTransientFrame(p, main, w, h, options)
-{
-   Int_t iday,imonth,iyear;
-   Char_t message1[80];
+     TGTransientFrame(p, main, w, h, options) {
+   Int_t iday, imonth, iyear;
+   Char_t message[80];
    static const Char_t *months[] = {"January","February", "March","April","May","June","July",
                                     "August", "September","October","November","December"};
    TGPicture *fIconPicture;
-   TGIcon *fIcon;
+   std::unique_ptr<TGIcon> fIcon;
    UInt_t wh1 = (UInt_t)(0.6 * h);
    UInt_t wh2 = h - wh1;
 
@@ -40,52 +39,50 @@ ModelCreatorAbout::ModelCreatorAbout(const TGWindow *p, const TGWindow *main,
    imonth = (idatqq/100)%100;
    iyear  = (idatqq/10000);
    Char_t *root_date = Form("%s %d %4d",months[imonth-1],iday,iyear);
-   fVFrame  = new TGVerticalFrame(this, w, wh1, 0);
+   fVFrame = std::make_unique<TGVerticalFrame>(this, w, wh1, 0);
 
    TString theLogoFilename = StrDup(gProgPath);
    theLogoFilename.Append("/icons/model_creator_logo.png");
 
    fIconPicture = (TGPicture *)gClient->GetPicture(theLogoFilename);
-   fIcon = new TGIcon(this, fIconPicture,
+   fIcon = std::make_unique<TGIcon>(this, fIconPicture,
                       fIconPicture->GetWidth(),
                       fIconPicture->GetHeight());
-   fLogoLayout = new TGLayoutHints(kLHintsCenterX, 0, 0, 0, 0);
-   AddFrame(fIcon, fLogoLayout);
+   fLogoLayout = std::make_unique<TGLayoutHints>(kLHintsCenterX, 0, 0, 0, 0);
+   AddFrame(fIcon.get(), fLogoLayout.get());
 
-   sprintf(message1,"   BioDynaMo Model Creator v %s   ",
-           GUI_VERSION);
-   fLabel1 = new TGLabel(fVFrame, message1);
-   sprintf(message1,"   Compiled with Root version %s, release date : %s   ",
-           root_version, root_date);
-   fLabel2 = new TGLabel(fVFrame, message1);
-   fLabel4 = new TGLabel(fVFrame, "   (c) Lukasz Stempniewicz  ");
+   sprintf(message, "   BioDynaMo Model Creator v %s   ", GUI_VERSION);
+   fLabel1 = std::make_unique<TGLabel>(fVFrame.get(), message);
+   sprintf(message, "   Compiled with Root version %s, release date : %s   ", root_version, root_date);
+   fLabel2 = std::make_unique<TGLabel>(fVFrame.get(), message);
+   fLabel4 = std::make_unique<TGLabel>(fVFrame.get(), "   (c) Lukasz Stempniewicz  ");
 
-   fBly  = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 5, 5);
-   fBfly = new TGLayoutHints(kLHintsTop | kLHintsRight| kLHintsExpandX, 0, 0, 5, 5);
+   fBly  = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 5, 5);
+   fBfly = std::make_unique<TGLayoutHints>(kLHintsTop | kLHintsRight| kLHintsExpandX, 0, 0, 5, 5);
 
-   fVFrame->AddFrame(fLabel1,fBly);
-   fVFrame->AddFrame(fLabel2,fBly);
-   fVFrame->AddFrame(fLabel4,fBly);
+   fVFrame->AddFrame(fLabel1.get(),fBly.get());
+   fVFrame->AddFrame(fLabel2.get(),fBly.get());
+   fVFrame->AddFrame(fLabel4.get(),fBly.get());
 
    //------------------------------------------------------------------------------
    // OK Cancel Buttons in Horizontal frame
    //------------------------------------------------------------------------------
 
-   fHFrame  = new TGHorizontalFrame(this, w, wh2, 0);
+   fHFrame  = std::make_unique<TGHorizontalFrame>(this, w, wh2, 0);
 
-   fOkButton = new TGTextButton(fHFrame, "&Ok", 1);
+   fOkButton = std::make_unique<TGTextButton>(fHFrame.get(), "&Ok", 1);
    fOkButton->Resize(100, fOkButton->GetDefaultHeight());
    fOkButton->Associate(this);
 
-   fL1 = new TGLayoutHints(kLHintsCenterX | kLHintsExpandX, 2, 2, 2, 2);
-   fL2 = new TGLayoutHints(kLHintsBottom | kLHintsCenterX | kLHintsExpandX, 150, 150, 2, 10);
+   fL1 = std::make_unique<TGLayoutHints>(kLHintsCenterX | kLHintsExpandX, 2, 2, 2, 2);
+   fL2 = std::make_unique<TGLayoutHints>(kLHintsBottom | kLHintsCenterX | kLHintsExpandX, 150, 150, 2, 10);
 
-   fHFrame->AddFrame(fOkButton,     fL1);
+   fHFrame->AddFrame(fOkButton.get(), fL1.get());
 
    fHFrame->Resize(100, fOkButton->GetDefaultHeight());
 
-   AddFrame(fVFrame, fBfly);
-   AddFrame(fHFrame, fL2);
+   AddFrame(fVFrame.get(), fBfly.get());
+   AddFrame(fHFrame.get(), fL2.get());
 
    SetWindowName("About Model Creator...");
    TGDimension size = GetDefaultSize();
@@ -99,7 +96,7 @@ ModelCreatorAbout::ModelCreatorAbout(const TGWindow *p, const TGWindow *main,
                kMWMInputModeless);
 
    // position relative to the parent's window
-   Int_t      ax, ay;
+   Int_t ax, ay;
    Window_t wdummy;
    gVirtualX->TranslateCoordinates(main->GetId(), GetParent()->GetId(),
                                  (Int_t)(((TGFrame *) main)->GetWidth() - fWidth) >> 1,
@@ -117,34 +114,15 @@ ModelCreatorAbout::ModelCreatorAbout(const TGWindow *p, const TGWindow *main,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-ModelCreatorAbout::~ModelCreatorAbout()
-{
-   delete fBly;
-   delete fBfly;
-   delete fLabel1;
-   delete fLabel2;
-   delete fLabel4;
-   delete fLogoLayout;
-   delete fOkButton;
-   delete fVFrame;
-   delete fHFrame;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Close dialog in response to window manager close.
-
-void ModelCreatorAbout::CloseWindow()
-{
+void ModelCreatorAbout::CloseWindow() {
    DeleteWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Process messages sent to this dialog.
-
 Bool_t ModelCreatorAbout::ProcessMessage(Long_t msg, Long_t /*parm1*/,
-                                       Long_t /*parm2*/)
-{
+                                       Long_t /*parm2*/) {
    switch (GET_MSG(msg)) {
       case kC_COMMAND:
          switch (GET_SUBMSG(msg)) {

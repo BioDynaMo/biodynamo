@@ -240,7 +240,7 @@ void GridDialog::VerifyNumberEntries() {
   Long_t distanceZ = fEntryDistanceZ->GetIntNumber();
 
   /// Check to ensure all entries are > 0
-  if((numberX && numberY && numberZ && 
+  if ((numberX && numberY && numberZ && 
       distanceX && distanceY && distanceZ) == 0) {
     Log::Warning("Cannot have any value at 0!");
     return;

@@ -63,7 +63,7 @@ class TreeManager {
   }
 
   ~TreeManager() {
-    if(isProjectCreated) {
+    if (isProjectCreated) {
       fProjectListTree->DeleteItem(gProjectListTreeItem);
       fProjectListTree->Cleanup();
     }
@@ -90,7 +90,7 @@ class TreeManager {
       pic = GetIcon("GrowthModule");
     }
 
-    if(name.empty()) {
+    if (name.empty()) {
       elementName.append(std::to_string(currentCellNumber));
       isNameValid = kFALSE;
     } else {
@@ -112,7 +112,7 @@ class TreeManager {
       //Log::Debug("to:", elementName);
       isNameValid = IsElementNameAvailable(elementName.c_str());
     }
-    if((i = GetModelIndex(fCurModelName.c_str())) > -1) {
+    if ((i = GetModelIndex(fCurModelName.c_str())) > -1) {
       fCurListItem = fModelTrees[i].fElementsBaseItem;
       TGListTreeItem* LTItem = fProjectListTree->AddItem(fCurListItem, elementName.c_str(), pic, pic);
       fModelTrees[i].fElementsListTreeItems.emplace_back(LTItem);
@@ -142,17 +142,16 @@ class TreeManager {
     std::string modelName(model.GetName());
     CreateModelTree(modelName);
 
-    std::map<std::string, int> elementsMap = model.GetModelElements();
-    std::map<std::string, int>::iterator it;
+    auto elementsMap = model.GetModelElements();
 
-    for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
+    for (auto it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
       CreateTopLevelElement(it->second, it->first);
     }
   }
 
   void CreateModelTree(std::string& modelName) {
     if (isProjectCreated) {
-      if(GetModelIndex(modelName.c_str()) > -1) {
+      if (GetModelIndex(modelName.c_str()) > -1) {
         Log::Warning("Model '", modelName, "' already exists! Cannot create!");
         return;
       }
@@ -177,9 +176,9 @@ class TreeManager {
   }
 
   Int_t GetModelIndex(const char* modelName) {
-    Int_t modelCount = fModelTrees.size();
-    for(Int_t i = 0; i < modelCount; i++) {
-      if(fModelTrees[i].fName.compare(modelName) == 0) {
+    size_t modelCount = fModelTrees.size();
+    for (uint32_t i = 0; i < modelCount; i++) {
+      if (fModelTrees[i].fName.compare(modelName) == 0) {
         return i;
       }
     }

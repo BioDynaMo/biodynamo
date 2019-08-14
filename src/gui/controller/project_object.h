@@ -28,7 +28,7 @@ namespace gui {
 
 /// This is the one and only object written into the main project file.
 /// (See `Project.h`)
-class ProjectObject{
+class ProjectObject {
  public:
   /// Constructor and destructor
   ProjectObject() {};
@@ -38,9 +38,9 @@ class ProjectObject{
     std::cout << "\nPrinting data for Project: " << fProjectName << '\n';
     std::cout << "TestSetting: " << fTestSetting << '\n';
     std::cout << "Version: " << fVersion << '\n';
-    Size_t modelCount = fModels.size();
+    size_t modelCount = fModels.size();
     std::cout << "Number of models: " << modelCount << '\n';
-    for(Int_t i = 0; i < modelCount; i++) {
+    for (uint32_t i = 0; i < modelCount; i++) {
       fModels[i].PrintData();
     }
   }
@@ -72,9 +72,9 @@ class ProjectObject{
   }
 
   Model* GetModel(const char* modelName) {
-    Int_t modelCount = fModels.size();
-    for(Int_t i = 0; i < modelCount; i++) {
-      if(strcmp(fModels[i].GetName(), modelName) == 0) {
+    size_t modelCount = fModels.size();
+    for (uint32_t i = 0; i < modelCount; i++) {
+      if (strcmp(fModels[i].GetName(), modelName) == 0) {
         Log::Debug("ProjectObject::GetModel found model:", modelName);
         return &fModels[i];
       }
@@ -82,7 +82,7 @@ class ProjectObject{
     return nullptr;
   }
 
-  void Clear(){
+  void Clear() {
     fProjectName.clear();
     fTestSetting.clear();
     fVersion.clear();

@@ -14,12 +14,6 @@
 //
 // -----------------------------------------------------------------------------
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-// This File contains the implementation of the ModelCreator-class      //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
 #include <Riostream.h>
 #include <stdlib.h>
 #include <time.h>
@@ -52,8 +46,6 @@ const char *icon_names[] = {"new_project.png",
                             "save.png",
                             "settings.png",
                             "",
-                            "build.png",
-                            "run.png",
                             "generate_code.png",
                             "",
                             "browser.png",
@@ -73,8 +65,6 @@ ToolBarData_t tb_data[] = {
     {"", "Save project in Root file", kFALSE, M_FILE_SAVE, NULL},
     {"", "Project Preferences", kFALSE, M_FILE_PREFERENCES, NULL},
     {"", 0, 0, -1, NULL},
-    {"", "Build current model", kFALSE, M_SIMULATION_BUILD, NULL},
-    {"", "Run current model", kFALSE, M_SIMULATION_RUN, NULL},
     {"", "Generate BioDynaMo code", kFALSE, M_SIMULATION_GENERATE, NULL},
     {"", 0, 0, -1, NULL},
     {"", "Start Root browser", kFALSE, M_TOOLS_STARTBROWSER, NULL},
@@ -90,10 +80,6 @@ ToolBarData_t tb_data[] = {
 const char *filetypes[] = {"ROOT files", "*.root", "All files", "*", 0, 0};
 
 ModelCreator *gModelCreator;
-
-//_________________________________________________
-// ModelCreator
-//
 
 Int_t ModelCreator::fgDefaultXPosition = 20;
 Int_t ModelCreator::fgDefaultYPosition = 20;
@@ -120,6 +106,7 @@ ModelCreator::ModelCreator(const TGWindow *p, UInt_t w, UInt_t h)
 
   fProjectName.clear();
   fProjectPath.clear();
+  fModelName.clear();
 
   /// Create menubar and popup menus.
   MakeMenuBarFrame();
@@ -273,16 +260,6 @@ void ModelCreator::MakeMenuBarFrame() {
   /// Menu - Simulation
   fMenuSimulation = std::make_unique<TGPopupMenu>(gClient->GetRoot());
   fMenuSimulation->AddEntry("Generate BioDynaMo code", M_SIMULATION_GENERATE);
-  fMenuSimulation->AddSeparator();
-  fMenuSimulation->AddEntry("Build", M_SIMULATION_BUILD);
-  fMenuSimulation->AddEntry("Run", M_SIMULATION_RUN);
-  fMenuSimulation->AddSeparator();
-  fMenuSimulation->AddEntry("Open Paraview", M_SIMULATION_OPENPARAVIEW);
-
-  fMenuSimulation->DisableEntry(M_SIMULATION_GENERATE);
-  fMenuSimulation->DisableEntry(M_SIMULATION_BUILD);
-  fMenuSimulation->DisableEntry(M_SIMULATION_RUN);
-  fMenuSimulation->DisableEntry(M_SIMULATION_OPENPARAVIEW);
 
   /// Menu - Tools
   fMenuTools = std::make_unique<TGPopupMenu>(gClient->GetRoot());
@@ -318,9 +295,6 @@ void ModelCreator::MakeMenuBarFrame() {
   fMenuHelp->AddSeparator();
   fMenuHelp->AddEntry("About", M_HELP_ABOUT);
 
-  fMenuHelp->DisableEntry(M_HELP_USERGUIDE);
-  fMenuHelp->DisableEntry(M_HELP_DEVGUIDE);
-
   /// Associate signals
   fMenuFile->Associate(this);
   fMenuSamples->Associate(this);
@@ -355,7 +329,7 @@ void ModelCreator::ShowToolBar(Bool_t show) {
 }
 
 void ModelCreator::EnableSaving(Bool_t enable) {
-  if(enable) {
+  if (enable) {
     fMenuFile->EnableEntry(M_FILE_SAVE);
     fMenuFile->EnableEntry(M_FILE_SAVEAS);
     fToolBar->GetButton(M_FILE_SAVE)->SetState(kButtonUp);
@@ -383,7 +357,6 @@ void ModelCreator::CreateNewProject() {
     Log::Error("Project name or path is empty! Cannot create Project!");
     return;
   }
-  ClearProject();
   Project::GetInstance().NewProject(fProjectPath.c_str(), fProjectName.c_str());
   /// Previous tree manager will be destroyed
   fTreeManager->CreateProjectTree(fProjectListTree.get(), fProjectName);
@@ -397,9 +370,9 @@ void ModelCreator::LoadProject(std::string fileName) {
   NewProjectSet(projectName, projectLocation);
   fTreeManager->CreateProjectTree(fProjectListTree.get(), fProjectName);
   std::vector<Model>* models = Project::GetInstance().GetAllModels();
-  Size_t modelCount = models->size();
+  size_t modelCount = models->size();
   Log::Info("Number of models:", modelCount);
-  for(Int_t i = 0; i < modelCount; i++) {
+  for (uint32_t i = 0; i < modelCount; i++) {
     Model curModel = models->at(i);
     fTreeManager->CreateModelTree(curModel);
   }
@@ -410,7 +383,7 @@ Bool_t ModelCreator::AskForProject(Bool_t loading) {
   Log::Warning("Can only have 1 project open!");
   Int_t retval;
   std::string msg("Press OK to save the current project");
-  if(loading) {
+  if (loading) {
     msg.append(", then load an existing one.");
   } else {
     msg.append(", then create a new one.");
@@ -418,14 +391,14 @@ Bool_t ModelCreator::AskForProject(Bool_t loading) {
   new TGMsgBox(gClient->GetRoot(), this,
               "Warning", msg.c_str(),
               kMBIconExclamation, kMBOk | kMBCancel, &retval);
-  if(retval == kMBOk) {
+  if (retval == kMBOk) {
     return kTRUE;
   }
   return kFALSE;
 }
 
 void ModelCreator::ClearProject() {
-  if(Project::GetInstance().IsLoaded()) {
+  if (Project::GetInstance().IsLoaded()) {
     Project::GetInstance().SaveProject();
     Project::GetInstance().CloseProject();
     fModelFrame->ClearTabs();
@@ -435,12 +408,15 @@ void ModelCreator::ClearProject() {
   fProjectListTree->Cleanup();
   ChangeSelectionFrame(kFALSE);
   fModelFrame->EnableButtons(M_NONE_ACTIVE);
+  fModelName.clear();
+  fProjectName.clear();
+  fProjectPath.clear();
 }
 
 /// Will create new model if a model with
 /// the same name does not already exist
 void ModelCreator::CreateNewModel() {
-  if(Project::GetInstance().CreateModel(fModelName.c_str())) {
+  if (Project::GetInstance().CreateModel(fModelName.c_str())) {
     Log::Info("Creating Model on tree:", fModelName);
     fTreeManager->CreateModelTree(fModelName);
     Initialize();
@@ -486,9 +462,9 @@ void ModelCreator::CreateGrid() {
   
   Long_t x, y, z;
 
-  for(z = 0; z < gridNumberZ; z++) {
-    for(y = 0; y < gridNumberY; y++) {
-      for(x = 0; x < gridNumberX; x++) {
+  for (z = 0; z < gridNumberZ; z++) {
+    for (y = 0; y < gridNumberY; y++) {
+      for (x = 0; x < gridNumberX; x++) {
         bdm::Double3 pos = {xPos, yPos, zPos};
         std::string elemName = fTreeManager->CreateTopLevelElement(M_ENTITY_CELL);
         Project::GetInstance().CreateGridCell(fModelName.c_str(), elemName.c_str(), pos);
@@ -512,7 +488,7 @@ Bool_t ModelCreator::GenerateModelCode() {
   new TGMsgBox(gClient->GetRoot(), this,
               "Info", msg.c_str(),
               kMBIconExclamation, kMBOk | kMBCancel, &retval);
-  if(retval != kMBOk) {
+  if (retval != kMBOk) {
     return kFALSE;
   }
   Bool_t diffusionEnabled = fModelFrame->CheckAllSecretionBoxes();
@@ -522,7 +498,7 @@ Bool_t ModelCreator::GenerateModelCode() {
 
 void ModelCreator::SimulateModel() {
   /// First: Generate code
-  if(!GenerateModelCode()) {
+  if (!GenerateModelCode()) {
     Log::Info("Cannot simulate model without generating code!");
     return;
   }
@@ -552,18 +528,20 @@ void ModelCreator::SimulateModel() {
   f.close();
   
   /// Third: Restore the backup into this environment
-  if(backupExists) {
+  if (backupExists) {
     VisManager::GetInstance().Enable();
     Log::Debug("Restoring simulation...");
     //std::string backupPathFull = Project::GetInstance().GetBackupFile(fModelName.c_str());
     const char* argv[] = { fModelName.c_str(), "-r", backupFilepath.c_str(), NULL };
     Int_t argc = sizeof(argv)/sizeof(argv[0]) - 1;
 
+    /// TODO: max_bound is dynamically dependant on pre-existing cells
     auto set_param = [](bdm::Param* param) {
       param->bound_space_ = true;
       param->min_bound_ = 0;
-      param->max_bound_ = 10000;  // cube of 100*100*100
+      param->max_bound_ = 10000;  // cube of 10000*10000*10000
     };
+
     VisManager::GetInstance().Reset();
     std::string secondResult = RunCmd(secondCmd.c_str());
 
@@ -571,16 +549,13 @@ void ModelCreator::SimulateModel() {
     Project::GetInstance().SetSimulation(argc, argv, set_param);
     bdm::Simulation *currentSim = Project::GetInstance().GetSimulation();
 
-    // If diffusion is enabled, simulate for 500 timestep
-    if(fModelFrame->CheckAllSecretionBoxes()) {
+    // If diffusion is enabled, simulate for 500 timesteps
+    if (fModelFrame->CheckAllSecretionBoxes()) {
       currentSim->GetScheduler()->Simulate(500);
     }
     else {
       currentSim->GetScheduler()->Simulate(2);
     }
-    
-    /// Earlier version of restoring the backup 
-    // currentSim->Restore();
   } else {
     Log::Debug("backupfile does not exist! Simulation did not run properly!");
     Log::Error("Error occured during backupfile generation.");
@@ -628,13 +603,13 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
         case kCM_MENU:
           switch (param1) {
             case M_FILE_NEWPROJECT: {
-              if(Project::GetInstance().IsLoaded()) {
-                if(AskForProject()) {
-                  ClearProject();
+              if (Project::GetInstance().IsLoaded()) {
+                if (AskForProject()) {
                   goto NewProject;
                 }
               } else {
                 NewProject:
+                ClearProject();
                 new NewProjectDialog(fClient->GetRoot(), this, 800, 400);
                 CreateNewProject();
                 EnableSaving();
@@ -645,8 +620,8 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
 
             case M_FILE_OPENPROJECT:
             {
-              if(Project::GetInstance().IsLoaded()) {
-                if(AskForProject(kTRUE)) {
+              if (Project::GetInstance().IsLoaded()) {
+                if (AskForProject(kTRUE)) {
                   ClearProject();
                   goto LoadingProject;
                 }
@@ -680,7 +655,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
             case M_CREATE_GRID:
               Log::Debug("Clicked create grid!");
               new GridDialog(gClient->GetRoot(), this, 800, 400);
-              if(fIsGridSet) {
+              if (fIsGridSet) {
                 fIsGridSet = kFALSE;
                 CreateGrid();
               }
@@ -690,7 +665,7 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
             {
               if (!fModelName.empty()) {
                 Bool_t isGenerated = GenerateModelCode();
-                if(isGenerated) {
+                if (isGenerated) {
                   Log::Info("Successfully generated biodynamo code!");
                 }
               } else {
@@ -790,6 +765,16 @@ Bool_t ModelCreator::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
               fClient->WaitFor(hd);
               break;
 
+            case M_HELP_USERGUIDE:
+              /// TODO: Check if firefox is installed
+              RunCmd("firefox https://biodynamo.github.io/user/");
+              break;
+
+            case M_HELP_DEVGUIDE:
+              /// TODO: Check if firefox is installed
+              RunCmd("firefox https://biodynamo.github.io/dev/");
+              break;
+
             case M_HELP_ABOUT:
               new ModelCreatorAbout(gClient->GetRoot(), this, 400, 200);
               break;
@@ -829,6 +814,7 @@ void ModelCreator::HandleTreeInput() {
   std::string selectedModelName = fTreeManager->IsModelSelected();
   if (!selectedModelName.empty()) {
     Log::Info("Selected part of ", selectedModelName);
+    fModelName.assign(selectedModelName);
     fModelFrame->EnableButtons(M_ALL_ACTIVE);
     fButtonModelFrame->SetState(M_GRID_ACTIVE);
   } else {
@@ -839,6 +825,7 @@ void ModelCreator::HandleTreeInput() {
       itemName.find("Growth") != std::string::npos) {
     fModelFrame->ShowModelElement(selectedModelName.c_str(),
                                   itemName.c_str());
+    fButtonModelFrame->SetState(M_ALL_ACTIVE);
     fClient->NeedRedraw(fModelFrame.get());
   }
 }
@@ -848,12 +835,12 @@ void ModelCreator::HandleTreeInput() {
 /// application will be terminated.
 
 void ModelCreator::CloseWindow() {
-  if(fModified) {
+  if (fModified) {
     Int_t retval;
     new TGMsgBox(gClient->GetRoot(), this,
                 "Info", "Any unsaved changes will be lost! Press OK to continue.",
                 kMBIconExclamation, kMBOk | kMBCancel, &retval);
-    if(retval != kMBOk) {
+    if (retval != kMBOk) {
       return;
     }
   }

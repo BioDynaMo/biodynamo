@@ -49,10 +49,10 @@ class ModelElement {
  public:
   /// Constructor and destructor
   ModelElement() {
-    if(fEntityAttributeMap.empty()) {
+    if (fEntityAttributeMap.empty()) {
       PopulateCellMembers();
     }
-    if(fModuleAttributeMap.empty()) {
+    if (fModuleAttributeMap.empty()) {
       //PopulateModuleMembers();
     }
   }
@@ -61,11 +61,11 @@ class ModelElement {
   std::string GenerateCode() {return "";};
   void        Save() {};
   Bool_t      SetElementType(int type) {
-    if(fType > 0) {
+    if (fType > 0) {
       Log::Error("Element is already set for this model element!");
       return kTRUE;
     }
-    if(type != M_ENTITY_CELL && type != M_MODULE_GROWTH) {
+    if (type != M_ENTITY_CELL && type != M_MODULE_GROWTH) {
       Log::Warning("Type:", type, " not yet supported!");
       return kFALSE;
     }
@@ -75,7 +75,7 @@ class ModelElement {
 
   void SetName(const char* name) {
     fName.assign(name);
-    if(fType == M_ENTITY_CELL) {
+    if (fType == M_ENTITY_CELL) {
       fEntity.SetName(name);
     }
   }
@@ -144,16 +144,16 @@ class ModelElement {
     TObject* obj = it->Next();
     while(obj) {
       clName.assign(obj->ClassName());
-      if(clName.compare("TMethod") == 0) {
+      if (clName.compare("TMethod") == 0) {
         method = (TMethod*)obj;
         methodName.assign(method->GetName());
-        if(methodName.find("Set") != std::string::npos) {
+        if (methodName.find("Set") != std::string::npos) {
           methodSignature.assign(method->GetSignature());
           Log::Debug("Setter found:", methodName, methodSignature);
           memberName.assign(methodName.substr(3));
           fullType.assign("");
           TList* args = method->GetListOfMethodArgs();
-          if(args->GetEntries() > 1) {
+          if (args->GetEntries() > 1) {
             Log::Error("Currently only supports 1 argument!!!");
             return;
           }
@@ -170,7 +170,7 @@ class ModelElement {
           methodName.replace(0, 3, "Get");
           Log::Debug("Getter should be:", methodName);
           Log::Debug("Inserting attribute into map -> member:`", memberName, "`, type:`", fullType, "`");
-          if(memberName.find("RunDisplacement") == std::string::npos) {
+          if (memberName.find("RunDisplacement") == std::string::npos) {
             fEntityAttributeMap.insert(std::pair<std::string, std::string>(memberName, fullType));
           } else {
             Log::Debug("Excluding attribute: ",  memberName, " !!!");

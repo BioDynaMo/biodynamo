@@ -44,9 +44,9 @@ const char* Model::GetName() {
 
 void Model::PrintData() {
   std::cout << "\tName: " << GetName() << '\n';
-  Size_t elemCount = fModelElements.size();
+  size_t elemCount = fModelElements.size();
   std::cout << "\tNumber of elements : " << elemCount << '\n';
-  for(Int_t j = 0; j < elemCount; j++) {
+  for (uint32_t j = 0; j < elemCount; j++) {
     std::cout << "\tElement #" << j + 1 << '\n';
     fModelElements[j].PrintData();
   }
@@ -61,7 +61,7 @@ void Model::InitializeElement(ModelElement* parent, const char* name,
     if (parent == nullptr) { // top-level element
       Log::Info("Initializing top-level cell...");
     }
-  } else if(type == gui::M_MODULE_GROWTH) {
+  } else if (type == gui::M_MODULE_GROWTH) {
     if (parent == nullptr) { // top-level element
       Log::Info("Initializing top-level module...");
     }
@@ -79,15 +79,15 @@ void Model::InitializeElement(ModelElement* parent, const char* name,
   }
 }
 
-void Model::UpdateLastCellPosition(ModelElement* elem, bdm::Double3 presetPos){
-  if(!fUseGridPos) {
+void Model::UpdateLastCellPosition(ModelElement* elem, bdm::Double3 presetPos) {
+  if (!fUseGridPos) {
     std::map<std::string, int> elementsMap = GetModelElements();
     std::map<std::string, int>::iterator it;
   
     uint32_t cellCount = 0;
   
     for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
-      if(it->second == M_ENTITY_CELL) {
+      if (it->second == M_ENTITY_CELL) {
         cellCount++;
       }
     }
@@ -96,10 +96,10 @@ void Model::UpdateLastCellPosition(ModelElement* elem, bdm::Double3 presetPos){
     Int_t spacing = 50;
     double zPos = ((cellCount - 1) / 4) * spacing;
     double yPos, xPos;
-    if     (cellCount % 4 == 0) { xPos = 50; yPos = 50; }
-    else if(cellCount % 4 == 1) { xPos = 0;  yPos = 0;  } 
-    else if(cellCount % 4 == 2) { xPos = 0;  yPos = 50; } 
-    else if(cellCount % 4 == 3) { xPos = 50; yPos = 0;  }
+    if      (cellCount % 4 == 0) { xPos = 50; yPos = 50; }
+    else if (cellCount % 4 == 1) { xPos = 0;  yPos = 0;  } 
+    else if (cellCount % 4 == 2) { xPos = 0;  yPos = 50; } 
+    else if (cellCount % 4 == 3) { xPos = 50; yPos = 0;  }
     else {
       Log::Error("Should never reach this point!! (in `UpdateLastCellPosition`)");
     }
@@ -135,12 +135,13 @@ Bool_t Model::CreateElement(const char* parent, const char* name, int type, bdm:
 
 std::map<std::string, int> Model::GetModelElements() {
   std::map<std::string, int> elementsMap;
-  for(auto i : fModelElements) {
+  for (auto i : fModelElements) {
     std::pair<std::string,int>(i.GetName(), i.GetType());
     elementsMap.insert(elementsMap.end(), std::pair<std::string,int>(i.GetName(), i.GetType()));
   }
   return elementsMap;
 }
+
 
 ModelElement* Model::FindElement(const char* elementName) {
   //TObjLink* lnk = fModelElements->FirstLink();
@@ -156,10 +157,10 @@ ModelElement* Model::FindElement(const char* elementName) {
 
 ModelElement* Model::GetModelElement(const char* name) {
   std::string tmpName;
-  Size_t elemCount = fModelElements.size();
-  for(Int_t i = 0; i < elemCount; i++) {
+  size_t elemCount = fModelElements.size();
+  for (uint32_t i = 0; i < elemCount; i++) {
     tmpName.assign(fModelElements[i].GetName());
-    if(tmpName.compare(name) == 0) {
+    if (tmpName.compare(name) == 0) {
       Log::Debug("Found element:", name);
       return &(fModelElements[i]);
     }
@@ -171,7 +172,7 @@ ModelElement* Model::GetModelElement(const char* name) {
 Bool_t Model::CreateDirectory(const char* dirPath) {
   int check; 
   check = mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH); 
-  if(!check) {
+  if (!check) {
     return kTRUE;
   }
   return kFALSE;
@@ -181,24 +182,24 @@ std::string Model::GetModelFolder(Bool_t createFolder) {
   std::string modelFolderPath(Project::GetInstance().GetProjectPath());
   modelFolderPath.append(fModelName);
 
-  if(createFolder) {
+  if (createFolder) {
     struct stat info;
   
-    if( stat( modelFolderPath.c_str(), &info ) != 0 ) {
+    if (stat(modelFolderPath.c_str(), &info) != 0) {
       Log::Debug("Cannot access ", modelFolderPath );
       Log::Debug("Attempting to create directory...");
-      if(CreateDirectory(modelFolderPath.c_str())) {
+      if (CreateDirectory(modelFolderPath.c_str())) {
         Log::Debug("Directory created!");
       } else {
         Log::Error("Could not create directory!");
       }
     }
-    else if( info.st_mode & S_IFDIR ) {
+    else if (info.st_mode & S_IFDIR) {
       Log::Debug(modelFolderPath, " is a directory");
       std::string cmd = "rm -rf " + modelFolderPath;
       Int_t retVal = system(cmd.c_str());
       Log::Debug("`", cmd, "` returned:", retVal);
-      if(retVal == 0) {
+      if (retVal == 0) {
         return GetModelFolder(createFolder);
       } else {
         Log::Error("Could not delete:`", modelFolderPath, "`");
@@ -225,13 +226,12 @@ void Model::GenerateCode(Bool_t diffusion) {
   std::string srcFileCC = srcPath + fModelName + ".cc";
   std::string cMakeFile = folderPath + "CMakeLists.txt";
 
-  /// TODO: Use user-input switch
   Bool_t diffusionEnabled = diffusion;
   std::string BioModulesName("");
   std::string srcFileBioModuleH("");
+  GenerateTemplate::GetInstance().EnableDiffusion(diffusionEnabled);
 
   if (diffusionEnabled) {
-    GenerateTemplate::GetInstance().EnableDiffusion(diffusionEnabled);
     BioModulesName.assign("diffusion_modules.h");
     srcFileBioModuleH = srcPath + BioModulesName;
   }
@@ -243,7 +243,7 @@ void Model::GenerateCode(Bool_t diffusion) {
   myfile << cMakeOutput;
   myfile.close();
 
-  if(CreateDirectory(srcPath.c_str())) {
+  if (CreateDirectory(srcPath.c_str())) {
     std::string srcCC = 
       GenerateTemplate::GetInstance().GenerateSrcCC(fModelName.c_str());
     myfile.open(srcFileCC.c_str());
@@ -256,7 +256,7 @@ void Model::GenerateCode(Bool_t diffusion) {
     myfile << srcH;
     myfile.close();
 
-    if(diffusionEnabled) {
+    if (diffusionEnabled) {
       std::string srcBioModule = 
         GenerateTemplate::GetInstance().GenerateDiffusionModuleSrcH();
       myfile.open(srcFileBioModuleH.c_str());

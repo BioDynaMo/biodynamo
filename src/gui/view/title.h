@@ -15,24 +15,14 @@
 //
 // -----------------------------------------------------------------------------
 
-//////////////////////////////////////////////////////////////////////////
-//                                                                      //
-//  TitleFrame                                                          //
-//                                                                      //
-// This File contains the declaration of the  TitleFrame-class for      //
-// the ModelCreator application                                         //
-//                                                                      //
-//////////////////////////////////////////////////////////////////////////
-
 #ifndef GUI_TITLE_H
 #define GUI_TITLE_H
 
 #include <TGFrame.h>
-
-class TGLabel;
-class TGButton;
-class TGPicture;
-class TGIcon;
+#include <TGLabel.h>
+#include <TGButton.h>
+#include <TGPicture.h>
+#include <TGIcon.h>
 
 namespace gui {
 

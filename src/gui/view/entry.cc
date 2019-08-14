@@ -20,26 +20,26 @@
 
 namespace gui {
 
-Entry::Entry(TGCompositeFrame* fMain, Inspector* parentInspector, const char* entryName, const char* entryType) :  TGHorizontalFrame(fMain, 200, 30){
+Entry::Entry(TGCompositeFrame* fMain, Inspector* parentInspector, const char* entryName, const char* entryType) :  TGHorizontalFrame(fMain, 200, 30) {
   Log::Debug("Created Entry:`", entryName, "` with type:`", entryType, "`");
   fEntryName.assign(entryName);
   fParentInspector = parentInspector;
   std::string fEntryTypeStr(entryType);
 
   /// Type: double
-  if(fEntryTypeStr.find("double") != std::string::npos) { 
+  if (fEntryTypeStr.find("double") != std::string::npos) { 
     fEntryType = EntryType::M_DOUBLE;
   } 
   /// Type: bool
-  else if(fEntryTypeStr.find("bool") != std::string::npos) {
+  else if (fEntryTypeStr.find("bool") != std::string::npos) {
     fEntryType = EntryType::M_BOOLEAN;
   } 
   /// Type: unint32_t
-  else if(fEntryTypeStr.find("uint32_t") != std::string::npos) {
+  else if (fEntryTypeStr.find("uint32_t") != std::string::npos) {
     fEntryType = EntryType::M_UINT;
   } 
   /// Type: Double3
-  else if(fEntryTypeStr.find("Double3") != std::string::npos) {
+  else if (fEntryTypeStr.find("Double3") != std::string::npos) {
     fEntryType = EntryType::M_DOUBLE3;
   } 
   /// other types
@@ -82,7 +82,7 @@ void Entry::UpdateValue() {
       break;
     }
     case EntryType::M_DOUBLE3: {
-      if(fEntryName.compare("Position") == 0) {
+      if (fEntryName.compare("Position") == 0) {
         bdm::Double3 curPosition({fCurrentValues[0], fCurrentValues[1], fCurrentValues[2]});
         SimulationEntity* entity = fModelElement->GetEntity();
         entity->SetPosition(curPosition);
@@ -122,7 +122,7 @@ void Entry::Init(ModelElement* modelElement) {
       fButtonGroup = new TGButtonGroup(this, "Boolean Values", kHorizontalFrame);
       fRadioButtonTrue = new TGRadioButton(fButtonGroup, new TGHotString("True"));
       fRadioButtonFalse = new TGRadioButton(fButtonGroup, new TGHotString("False"));
-      if(retValBool) {
+      if (retValBool) {
         fRadioButtonTrue->SetState(kButtonDown);
         Log::Debug("\t\tbool: TRUE");
       } else {
@@ -149,7 +149,7 @@ void Entry::Init(ModelElement* modelElement) {
       std::string xyz("xyz");
       bdm::Double3 vals;
       SimulationEntity* entity = fModelElement->GetEntity();
-      if(fEntryName.compare("Position") == 0) {
+      if (fEntryName.compare("Position") == 0) {
         vals = entity->GetPosition();
       } else if (fEntryName.compare("TractorForce") == 0) {
         vals = entity->GetTractorForce();
@@ -157,7 +157,7 @@ void Entry::Init(ModelElement* modelElement) {
         Log::Error("Could not discern entryName:", fEntryName);
         return;
       }
-      for(int i = 0; i < 3; i++) {
+      for (int i = 0; i < 3; i++) {
         auto* fNumberEntry = new TGNumberEntry(this, 1.0);
         AddFrame(fNumberEntry, fL2);
         fNumberEntries.push_back(fNumberEntry);
@@ -184,12 +184,12 @@ void Entry::Init(ModelElement* modelElement) {
 
 Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
   Log::Debug("(From ", fEntryName, ") - Processing msg:", msg, ", parm1:", param1, ", parm2:", param2);
-  if(fCellPtr == nullptr) {
+  if (fCellPtr == nullptr) {
     Log::Error("fCellPtr is NULL!!! CANNOT PROCESS INPUT!!!");
     return kFALSE;
   }
 
-  if(CheckIfValueChanged()) {
+  if (CheckIfValueChanged()) {
     Log::Debug("Value has changed!");
     TClass* cl = fCellPtr->IsA();
     std::string methodName(fEntryName);
@@ -199,9 +199,9 @@ Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
       case EntryType::M_DOUBLE3: {
         bdm::Double3 setVal({fCurrentValues[0], fCurrentValues[1], fCurrentValues[2]});
         TMethod* method = cl->GetClassMethodWithPrototype(methodName.c_str(), "const Double3&");
-        if(method == 0) {
+        if (method == 0) {
           Log::Warning("Could not find method:`", methodName, "`, defaulting to direct calls..");
-          if(fEntryName.compare("Position") == 0) {
+          if (fEntryName.compare("Position") == 0) {
             Log::Debug("First val:",  fCurrentValues[0]);
             Log::Debug("Second val:", fCurrentValues[1]);
             Log::Debug("Third val:",  fCurrentValues[2]);
@@ -221,7 +221,7 @@ Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
       }
       case EntryType::M_UINT: {
         TMethod* method = cl->GetClassMethodWithPrototype(methodName.c_str(), "uint32_t");
-        if(method == 0) {
+        if (method == 0) {
           Log::Error("Cannot find method:", methodName);
         }
         TMethodCall call(method);
@@ -233,7 +233,7 @@ Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
         std::string setVal(std::to_string(fCurrentValues[0]));
         Log::Debug("Method Name:", methodName);
         TMethod* method = cl->GetClassMethodWithPrototype(methodName.c_str(), "double");
-        if(method == 0) {
+        if (method == 0) {
           Log::Error("Cannot find method:", methodName);
         }
         TMethodCall call(method);
@@ -254,18 +254,18 @@ Bool_t Entry::ProcessMessage(Long_t msg, Long_t param1, Long_t param2) {
 
 Bool_t Entry::CheckIfValueChanged() {
   Bool_t isModified = kFALSE;
-  if(fCurrentValues.size() != 0) {
-    Size_t valuesCount = fNumberEntries.size();
+  if (fCurrentValues.size() != 0) {
+    size_t valuesCount = fNumberEntries.size();
     Double_t entryValue;
     uint32_t i; 
     switch(fEntryType) {
       case EntryType::M_DOUBLE:
       case EntryType::M_DOUBLE3:
       case EntryType::M_UINT:
-        for(i = 0; i < valuesCount; i++) {
+        for (i = 0; i < valuesCount; i++) {
           entryValue = fNumberEntries[i]->GetNumber();
           Log::Debug("entryValue when i =", i, " :", entryValue);
-          if(fCurrentValues[i] != entryValue) {
+          if (fCurrentValues[i] != entryValue) {
             isModified = kTRUE;
             fCurrentValues[i] = entryValue;
           }

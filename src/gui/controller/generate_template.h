@@ -69,7 +69,7 @@ namespace gui {
       ss << "#include \"biodynamo.h\"\n"
          << "#include \"core/simulation_backup.h\"\n";
 
-      if(fEnableDiffusion && strcmp(diffusionFileName, "") != 0) {
+      if (fEnableDiffusion && strcmp(diffusionFileName, "") != 0) {
         ss << "#include \"" << diffusionFileName << "\"\n";
       }
 
@@ -78,7 +78,7 @@ namespace gui {
          << tab << "Simulation simulation(argc, argv);\n"
          << tab << "auto* rm = simulation.GetResourceManager();\n\n";
 
-      if(fEnableDiffusion) {
+      if (fEnableDiffusion) {
         ss << tab << "ModelInitializer::DefineSubstance(kKalium, \"Kalium\", 0.4, 0, 25);\n";
       }
 
@@ -86,7 +86,7 @@ namespace gui {
       std::queue<std::string> cellNames;
       int cellCount = 1;
       for (it = elementsMap.begin(); it!=elementsMap.end(); ++it) {
-        if(it->second == M_ENTITY_CELL) {
+        if (it->second == M_ENTITY_CELL) {
           std::string cellName = "Cell_" + std::to_string(cellCount);
           cellNames.push(cellName);
           cellCount++;
@@ -100,7 +100,7 @@ namespace gui {
          ModelElement* elem = curModel->GetModelElement(cellName.c_str());
          std::string cellSrc;
          // First cell will secrete
-         if(fEnableDiffusion && firstCell) {
+         if (fEnableDiffusion && firstCell) {
            cellSrc = GenerateCellSrc(elem, kTRUE);
            firstCell = kFALSE;
          } else {
@@ -112,7 +112,7 @@ namespace gui {
       
       ss << tab << "/// Needed for connecting to gui\n"
          << tab << "simulation.GetScheduler()->Simulate(1);\n";
-      //if(!fEnableDiffusion) {
+      //if (!fEnableDiffusion) {
       //  ss << tab << "SimulationBackup* simBackup = new SimulationBackup(\"" << backupFileName << "\", \"\");\n"
       //     << tab << "simBackup->Backup(1);\n"
       //     << tab << "delete simBackup;\n\n"
@@ -206,14 +206,14 @@ namespace gui {
 
        std::map<std::string, std::string> attributeMap = elem->GetAttributeMap();
        std::map<std::string, std::string>::iterator it;
-       for(it = attributeMap.begin(); it!=attributeMap.end(); ++it) {
+       for (it = attributeMap.begin(); it!=attributeMap.end(); ++it) {
          /// Type: double
-         if(it->second.find("double") != std::string::npos) { 
+         if (it->second.find("double") != std::string::npos) { 
            double val = entity->GetAttributeValDouble(it->first.c_str());
            cellSrc << tab << elemName << "->Set" << it->first << "(" << val << ");\n";
          }
          /// Type: unint32_t
-         else if(it->second.find("uint32_t") != std::string::npos) {
+         else if (it->second.find("uint32_t") != std::string::npos) {
            uint32_t val = entity->GetAttributeValUInt(it->first.c_str());
            cellSrc << tab << elemName << "->Set" << it->first << "(" << val << ");\n";
          }
@@ -222,9 +222,9 @@ namespace gui {
            // Not yet supported
          }
        }
-       if(fEnableDiffusion) {
+       if (fEnableDiffusion) {
         cellSrc << tab << elemName << "->AddBiologyModule(new Chemotaxis());\n";
-        if(entity->GetSecretion()) {
+        if (entity->GetSecretion()) {
           cellSrc << tab << elemName << "->AddBiologyModule(new KaliumSecretion());\n";
         }
        }

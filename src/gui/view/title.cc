@@ -15,21 +15,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <TGButton.h>
-#include <TGIcon.h>
-#include <TGLabel.h>
-#include <TGPicture.h>
 #include <TGResourcePool.h>
 #include <TSystem.h>
 
 #include "title.h"
 
 namespace gui {
-
-//______________________________________________________________________________
-//
-// TitleFrame
-//______________________________________________________________________________
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Create TitleFrame object, with TGWindow parent 'p', text 'mainText'

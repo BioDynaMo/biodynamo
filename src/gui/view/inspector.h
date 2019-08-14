@@ -39,10 +39,11 @@ class Inspector {
     }
     CheckSecretionBox();
   }
+
   Bool_t CheckSecretionBox() {
     Log::Debug("Checking secretion box!");
     Bool_t secretionChecked = (fSecretionCheckBox->GetState() == kButtonDown);
-    if(secretionChecked) {
+    if (secretionChecked) {
       Log::Debug("Secretion is checked!");
     } else {
       Log::Debug("Secretion is unchecked!");

@@ -41,17 +41,17 @@ void Log::LogMessage(const std::string message) {
     ofs.close();
   }
   
-  if(TEdit != nullptr) {
+  if (TEdit != nullptr) {
     uint msgSize = message.size();
-    for(uint i = 0; i < msgSize; i++) {
+    for (uint i = 0; i < msgSize; i++) {
         TEdit->InsChar(message.at(i));
     }
     TEdit->BreakLine();
   }
 
-  if(StatusBar != nullptr) {
+  if (StatusBar != nullptr) {
     /// Only display non-debug messages
-    if(message.rfind("DEBUG") != 0) {
+    if (message.rfind("DEBUG") != 0) {
       StatusBar->SetText(message.c_str(), 0);
     }
   }

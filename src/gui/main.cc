@@ -30,7 +30,7 @@ void Gui()
 //---- Main program ------------------------------------------------------------
 int main(int argc, char **argv)
 {
-  if(argc != 2) {
+  if (argc != 2) {
    throw std::invalid_argument("Invalid number of args, please supply log file location");
   }
   gui::Log::SetLogFile(argv[1]);
