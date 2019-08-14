@@ -16,7 +16,7 @@ cd biodynamo
       to use BioDynaMo!
 
     2. It is also possible to use the library without running `make install`. You will just need to source `thisbdm.sh` from the build
-       directory: `source <path-to-bdm-build-dir>/install/bin/thisbdm.sh`
+       directory: `source <path-to-bdm-build-dir>/bin/thisbdm.sh`
 
     3. BioDynaMo uses a customized version of ParaView.
 	     Therefore, you should not install ParaView separately.
