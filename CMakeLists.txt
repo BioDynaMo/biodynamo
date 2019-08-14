@@ -415,7 +415,7 @@ if (${ParaView_FOUND})
 endif()
 
 # create cmake files used by external builds
-configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
+configure_file("cmake/UseBioDynaMo.cmake.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake" @ONLY)
 
 # -------------------- build test project  ------------------------------------
 if (test)
@@ -493,6 +493,9 @@ include(Installation)
 
 # -------------------- add targets for code style and submission checks --------
 include(CppStyleGuideChecks)
+
+# ------ dist_clean command ------ #
+include(DistClean)
 
 # --------------------- Final Message to the user ------------------------------
 add_bdm_packages_properties()
