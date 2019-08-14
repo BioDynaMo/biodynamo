@@ -98,10 +98,10 @@ function(bdm_generate_dictionary TARGET)
   # solves problem that add_custom_command does not have a target name that
   # can be used in add_dependencies and add_custom_target is always executed
   # if CMake configuration changes always rebuild dictionary -> remove file
-  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
+  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt)
   add_custom_command(
-    OUTPUT rebuild_${TARGET}
-    COMMAND echo 1 >rebuild_${TARGET}
+    OUTPUT rebuild_${TARGET}.txt
+    COMMAND echo 1 >rebuild_${TARGET}.txt
     DEPENDS ${headerfiles}
     COMMENT "Build dictionary ${TARGET}")
 
@@ -109,18 +109,18 @@ function(bdm_generate_dictionary TARGET)
   STRING(REPLACE ${CMAKE_BINARY_DIR} "" DICT_PCM_NAME ${DICT_PCM_NAME})
   STRING(REPLACE ".cc" "" DICT_PCM_NAME ${DICT_PCM_NAME})
   STRING(REPLACE "/" "" DICT_PCM_NAME ${DICT_PCM_NAME})
-  # invoke genreflex only if rebuild_${TARGET} file does not contain a 0.
+  # invoke genreflex only if rebuild_${TARGET}.txt file does not contain a 0.
   # Had issues with if [[ ]] statement; used grep instead
   # if grep does not find the pattern it has a non zero exit code
   # --> grep 0 file || commandz`
   #   command is executed if pattern 0 is not found in file
   add_custom_target(${TARGET}
-    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET} >/dev/null || (${CUSTOM_ROOT_SOURCE_ENV_COMMAND} &&
+    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt >/dev/null || (${CUSTOM_ROOT_SOURCE_ENV_COMMAND} &&
     ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
     ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1)
-    COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}
+    COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET})
+  DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt)
 
   if (DEFINED CMAKE_INSTALL_LIBDIR)
     add_custom_command(TARGET ${TARGET}
