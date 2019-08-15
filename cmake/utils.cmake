@@ -390,6 +390,53 @@ function(add_permissions FILE_PATH DESTINATION)
             GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endfunction()
 
+# Method used to donwload a file from a given URL. This method will also retry
+# to download the file if the download did not work.
+#   URL: URL from which we will download the file
+#   DEST: destination where to save the file
+#   HASH: hash of the download file to check consistency
+#   PACKAGE_NAME: name of the file we are downloading (just for logging reasons)
+function(download_retry URL DEST HASH PACKAGE_NAME)
+
+  # Download the file
+  file(DOWNLOAD ${URL}
+          ${DEST}
+          SHOW_PROGRESS
+          INACTIVITY_TIMEOUT 10
+          STATUS DOWNLOAD_STATUS)
+
+  # Check if the download worked properly. If not, retry once to download
+  # the package again.
+  LIST(GET DOWNLOAD_STATUS 0 DOWNLOAD_STATUS_CODE)
+  LIST(GET DOWNLOAD_STATUS 1 DOWNLOAD_STATUS_MESSAGE)
+  IF (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E sleep 10)
+    MESSAGE(WARNING "\n Retrying download of ${PACKAGE_NAME} from ${URL} (${DOWNLOAD_STATUS_MESSAGE}, status ${DOWNLOAD_STATUS_CODE})\n")
+    file(DOWNLOAD ${URL}
+            ${DEST}
+            SHOW_PROGRESS
+            INACTIVITY_TIMEOUT 10
+            STATUS DOWNLOAD_STATUS)
+    # Check again if the download worked properly.
+    LIST(GET DOWNLOAD_STATUS 0 DOWNLOAD_STATUS_CODE)
+    LIST(GET DOWNLOAD_STATUS 1 DOWNLOAD_STATUS_MESSAGE)
+    IF (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
+      MESSAGE( FATAL_ERROR "\nWe were unable to download ${PACKAGE_NAME}. This may be caused by several reason, like \
+      network error connections or just temporary network failure. Please retry again in a \
+      few minutes by deleting all the contents of the build directory and by issuing again \
+      the 'cmake' command.\n")
+    ENDIF()
+  ELSE()
+    # If we download was okay, then we check the hash
+    file(SHA256 ${DEST} ACTUAL_SHA256)
+    IF(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
+      MESSAGE(FATAL_ERROR "Failed to download ${URL}. Hash mismatch. Expected a SHA256 of "
+    "${EXPECTED_SHA256} but got ${HASH} instead.")
+    ENDIF()
+  ENDIF()
+
+endfunction()
+
 # Helper function to print a simple line
 function(print_line)
     MESSAGE("\n################################################################\n")
