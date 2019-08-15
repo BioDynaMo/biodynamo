@@ -1,24 +1,16 @@
-include(ExternalProject)
+include(utils)
 
 # Directory in which root will be donwloaded first (the path
 # should be something like <build_dir>/third_party/...).
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
-file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz
-        ${ROOT_SOURCE_DIR}/root.tar.gz
-        EXPECTED_HASH SHA256=${${DETECTED_OS}-ROOT}
-        SHOW_PROGRESS
-        INACTIVITY_TIMEOUT 20
-        STATUS ROOT_DOWNLOAD_STATUS)
-
-# Check if the download worked properly.
-LIST(GET ROOT_DOWNLOAD_STATUS 0 DOWNLOAD_STATUS)
-IF (NOT ${DOWNLOAD_STATUS} EQUAL 0)
-  MESSAGE( FATAL_ERROR "\nWe were unable to download ROOT. This may be caused by several reason, like \
-network error connections or just temporary network failure. Please retry again in a \
-few minutes by deleting all the contents of the build directory and by issuing again \
-the 'cmake' command.\n")
-ENDIF()
+# Download the package and retry if something went wrong
+download_retry(
+  http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz
+  ${ROOT_SOURCE_DIR}/root.tar.gz
+  ${${DETECTED_OS}-ROOT}
+  "ROOT"
+)
 
 file(MAKE_DIRECTORY ${ROOT_SOURCE_DIR}/root)
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/root.tar.gz
