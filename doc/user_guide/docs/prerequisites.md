@@ -36,8 +36,7 @@ BioDynaMo provides also an automated procedure to install all the needed library
 ```bash
 sudo apt-get install -y cmake make gcc g++ \
    libopenmpi-dev libomp-dev libnuma-dev libtbb-dev \
-   libpthread-stubs0-dev \
-   python3 python3-pip
+   libpthread-stubs0-dev python3 python3-pip
 ```
 
 #### Optional Packages
@@ -45,8 +44,7 @@ sudo apt-get install -y cmake make gcc g++ \
 pip3 install --user mkdocs mkdocs-material
 sudo apt-get install -y freeglut3-dev valgrind \
 clang-3.9 clang-format-3.9 clang-tidy-3.9 \
-doxygen graphviz \
-lcov gcovr
+doxygen graphviz lcov gcovr
 ```
 
 ## CentOS 7.6.1810
@@ -84,8 +82,7 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install cmake3 libXt-devel libXext-devel \
-   devtoolset-7-gcc* numactl-devel \
-   tbb-devel openmpi3-devel \
+   devtoolset-7-gcc* numactl-devel tbb-devel openmpi3-devel \
    rh-python36 python python-pip
 ```
 #### Optional Packages
