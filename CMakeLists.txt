@@ -329,7 +329,9 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${EXTRACTED_THIRD_PARTY_LIBS}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
-fix_rootcling_omp_issue()
+if (NOT APPLE)
+  fix_rootcling_omp_issue()
+endif()
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
