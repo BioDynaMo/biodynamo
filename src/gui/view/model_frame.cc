@@ -118,12 +118,14 @@ void ModelFrame::EnableButtons(Int_t state) {
   fClient->NeedRedraw(fLtitle.get());
 
   fBcell->SetState(buttonState);
-  fBgrowth->SetState(buttonState);
-  fBchemotaxis->SetState(buttonState);
-  fBsubstance->SetState(buttonState);
-  fBvariable->SetState(buttonState);
-  fBfunction->SetState(buttonState);
-  fBformula->SetState(buttonState);
+
+  //TODO: Change to `buttonState` once features are implemented
+  fBgrowth->SetState(kButtonDisabled);
+  fBchemotaxis->SetState(kButtonDisabled);
+  fBsubstance->SetState(kButtonDisabled);
+  fBvariable->SetState(kButtonDisabled);
+  fBfunction->SetState(kButtonDisabled);
+  fBformula->SetState(kButtonDisabled);
 }
 
 ModelFrame::~ModelFrame() {}
