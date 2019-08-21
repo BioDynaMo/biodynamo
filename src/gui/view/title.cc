@@ -1,5 +1,5 @@
 // Author: Bertrand Bellenot   22/08/02
-// Modified by: Lukasz Stempniewicz 25/05/19
+// Modified by: Lukasz Stempniewicz 21/08/19
 
 // -----------------------------------------------------------------------------
 //
