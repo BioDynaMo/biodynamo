@@ -158,12 +158,12 @@ function CleanBuild {
   fi
   cd $BUILD_DIR
   echo "CMAKEFLAGS $BDM_CMAKE_FLAGS"
-  cmake $BDM_CMAKE_FLAGS ..
+  $CMAKE_BINARY $BDM_CMAKE_FLAGS ..
   make -j$(CPUCount) && make install
 }
 
 # Return absolute path.
-# If absolute path is given as paramter it is returned as is. Otherwise it gets converted.
+# If absolute path is given as parameter it is returned as is. Otherwise it gets converted.
 # Arguments:
 #  $1 path (absolute or relative)
 function GetAbsolutePath {
@@ -342,8 +342,33 @@ function CopyEnvironmentScript {
 # Arguments:
 #   $1 actual version
 #   $2 required version
-function versionLessThan {
+function VersionLessThan {
   local VERSION=$1
   local REQUIRED=$2
   [ "$(printf '%s\n' "$REQUIRED" "$VERSION" | sort -V | head -n1)" != "$REQUIRED" ]
+}
+
+function GetVersionFromString() {
+  echo $($1 --version | perl -pe 'if(($v)=/([0-9]+([.][0-9]+)+)/){print"$v\n";exit}$_=""')
+}
+
+# This function checks if CMake is installed on the system and if the version
+# meets the minimum required version ($1). On some systems the alias `cmake3`
+# is used to point to CMake v3.X.X, so we set that as the binary for building 
+# BioDynaMo during installation.
+function CheckCMakeVersion {
+  if [ -x "$(command -v cmake3)" ]; then
+    CMAKE_BINARY=cmake3
+  elif [ -x "$(command -v $cmake)" ]; then
+    CMAKE_BINARY=cmake
+  else
+    echo "CMake not found on this system"
+    exit 1
+  fi
+  VER=`GetVersionFromString $CMAKE_BINARY`
+  if $(VersionLessThan $VER $1); then
+    echo "CMake version must be at least v$1"
+    exit 1
+  fi
+  export CMAKE_BINARY=$CMAKE_BINARY
 }
