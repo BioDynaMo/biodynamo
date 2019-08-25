@@ -13,7 +13,8 @@
 # -----------------------------------------------------------------------------
 
 # All the files we want to remove. We keep Makefile and CMakeFiles.
-SET(ALL_FILES *.txt *.sh *.cxx *.h *.data *.args *.log *.cc *.xml *.pcm *.xsl *.json *.C *.cmake *.root Doxyfile)
+SET(ALL_FILES *.txt *.sh *.cxx *.h *.data *.args *.log *.cc *.xml *.pcm *.xsl *.json *.C *.cmake *.root Doxyfile
+    CMakeDoxyfile.in)
 SET(ALL_DIRECTORIES extracted-third-party-libs gtest omp version output result-dir Testing)
 
 # Remove all the files

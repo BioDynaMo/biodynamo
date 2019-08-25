@@ -359,15 +359,15 @@ function GetVersionFromString() {
 function CheckCMakeVersion {
   if [ -x "$(command -v cmake3)" ]; then
     CMAKE_BINARY=cmake3
-  elif [ -x "$(command -v $cmake)" ]; then
+  elif [ -x "$(command -v cmake)" ]; then
     CMAKE_BINARY=cmake
   else
-    echo "CMake not found on this system"
+    echo "Error: CMake not found on this system. Please install CMake with version $1 or higher."
     exit 1
   fi
   VER=`GetVersionFromString $CMAKE_BINARY`
   if $(VersionLessThan $VER $1); then
-    echo "CMake version must be at least v$1"
+    echo "Error: CMake version must be at least v$1"
     exit 1
   fi
   export CMAKE_BINARY=$CMAKE_BINARY

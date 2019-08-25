@@ -1,6 +1,6 @@
 include(utils)
 
-# Directory in which root will be donwloaded first (the path
+# Directory in which root will be downloaded first (the path
 # should be something like <build_dir>/third_party/...).
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
@@ -17,7 +17,7 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/root.tar.
         WORKING_DIRECTORY ${ROOT_SOURCE_DIR}/root)
 
 # Run again find_package in order to find ROOT
-find_package(ROOT COMPONENTS Geom Gui)
+find_package(ROOT COMPONENTS Geom Gui PATHS ${ROOT_SOURCE_DIR}/root/cmake)
 
 # Set ROOTSYS variable
 string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})

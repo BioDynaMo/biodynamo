@@ -12,67 +12,6 @@
 #
 # -----------------------------------------------------------------------------
 
-# Try to find the ROOT package. It is an hard requirement
-# for the project. If ROOT is not found in the system, it
-# will be downloaded during the make step. Moreover, this
-# will also check if ROOT was compiled using c++14 and if
-# its environment was sourced.
-function(verify_ROOT)
-    set(CUSTOM_ROOT_SOURCE_ENV FALSE PARENT_SCOPE)
-    set(CUSTOM_ROOT_SOURCE_ENV_COMMAND ":" PARENT_SCOPE)
-    IF(NOT ROOT_FOUND)
-        print_warning()
-        MESSAGE("We did not find any ROOT installed in the system. We will proceed to download it\n\
-once the build process has started. ROOT will be then installed to the location ${THIRD_PARTY_DIR}/root.")
-        print_line()
-        include(external/ROOT)
-
-        # Propagate the needed variables to the parent
-        SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
-        SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
-        SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
-        SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
-    else()
-        # Check if ROOT was compiled with the correct C++ standard (which has to be equal
-        # to C++14). If that's not the case, then we will download the correct version and we will
-        # use that instead of the system one.
-        if (NOT ROOT_cxx14_FOUND)
-            MESSAGE(WARNING "The ROOT version currently installed was compiled with a c++ standard that is not\
-compatible with BioDynaMo. We will proceed to download the correct version of ROOT now.")
-            include(external/ROOT)
-
-            # Propagate the needed variables to the parent
-            SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
-            SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
-            SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
-            SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
-        endif()
-
-        # Manually set the ROOT enviromental variables if it ROOTSYS was not previously found.
-        # This will avoid the user to run thisroot.sh in order to build BioDynaMo. However,
-        # we will warn him anyway, such to let him/her know that this is not exactly the
-        # standard way to do things.
-        if (NOT DEFINED ENV{ROOTSYS})
-            string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
-            set(ENV{ROOTSYS} ${TMP_ROOT_PATH} PARENT_SCOPE)
-            set(ENV{LD_LIBRARY_PATH} $ENV{ROOTSYS}/lib:$ENV{LD_LIBRARY_PATH} PARENT_SCOPE)
-
-            # Since the user did not set the $ROOTSYS variable, then we need to source
-            # the ROOT environment everytime we need it. Ideally, when ROOT env is needed
-            # one should use the command outlined before in its custom targets.
-            source_root_file(${PROJECT_BINARY_DIR})
-            set(CUSTOM_ROOT_SOURCE_ENV TRUE PARENT_SCOPE)
-            set(CUSTOM_ROOT_SOURCE_ENV_COMMAND . ${PROJECT_BINARY_DIR}/source_root_auto.sh PARENT_SCOPE)
-
-            PRINT_WARNING()
-            MESSAGE("It appears that ROOT environment was not loaded
-(by sourcing ${ROOTSYS}/bin/thisroot.sh).
-You will be able to build BioDynaMo anyway.")
-            PRINT_LINE()
-        endif()
-    endif()
-endfunction()
-
 # Detect the system flavour and version. Generate a variable
 # called BDM_OS which will have as content <OS>-<version>.
 # If lsb_release is not found we ask the user to specify manually
@@ -107,6 +46,39 @@ function(detect_os)
             SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
             SET(DETECTED_OS_VERSION ${LSB_RELEASE_ID_VERSION} PARENT_SCOPE)
             SET(DETECTED_OS_TYPE ${LSB_RELEASE_ID_SHORT} PARENT_SCOPE)
+        endif()
+    endif()
+endfunction()
+
+# Try to find the ROOT package. It is an hard requirement
+# for the project. If ROOT is not found in the system, it
+# will be downloaded during the make step. Moreover, this
+# will also check if ROOT was compiled using c++14 and if
+# its environment was sourced.
+function(verify_ROOT)
+    set(CUSTOM_ROOT_SOURCE_ENV FALSE PARENT_SCOPE)
+    set(CUSTOM_ROOT_SOURCE_ENV_COMMAND ":" PARENT_SCOPE)
+    if(NOT ROOT_FOUND)
+        print_warning()
+        message("We did not found any ROOT installed in the system. We will proceed to download it\n\
+        once the build process has started. ROOT will be then installed to the location ${THIRD_PARTY_DIR}/root.")
+        print_line()
+        include(external/ROOT)
+
+        # Propagate the needed variables to the parent
+        SET(ROOT_VERSION ${ROOT_VERSION} PARENT_SCOPE)
+        SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
+        SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
+        SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
+        SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
+    else()
+        # When ROOT is found, but it's not C++14 compliant, we exit the installation, because ROOT needs
+        # to be properly sourced prior to invoking CMake (CMake cannot do this for us, because it requires
+        # reverting the previous find_package() call, which is not possible.)
+        if(NOT ROOT_cxx14_FOUND)
+            message(FATAL_ERROR "The ROOT installation found in ${ROOTSYS} is not C++14 compliant. "
+            "Please download a compatible ROOT version from http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz, "
+            "and source bin/thisroot.sh prior to installing BioDynaMo. For more information: https://biodynamo.github.io/dev/build/#use-a-custom-paraviewroot-installation")
         endif()
     endif()
 endfunction()
@@ -403,7 +375,6 @@ function(download_retry URL DEST HASH PACKAGE_NAME)
   # Download the file
   file(DOWNLOAD ${URL}
           ${DEST}
-          SHOW_PROGRESS
           INACTIVITY_TIMEOUT 10
           STATUS DOWNLOAD_STATUS)
 

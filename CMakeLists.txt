@@ -184,7 +184,9 @@ endif()
 find_package(Git)
 
 # Find ROOT and check its installation
+# variable_watch(ROOT_RIO_LIBRARY)
 find_package(ROOT COMPONENTS Geom Gui)
+message("-- ROOT_VERSION = ${ROOT_VERSION}")
 verify_ROOT()
 
 if (dict)
@@ -207,13 +209,11 @@ if (NUMA_FOUND)
 endif()
 
 if(paraview)
-
     # If we specify a custom location for ParaView then we need to specify also a custom location
     # for Qt.
     if ((DEFINED ENV{ParaView_DIR} AND NOT DEFINED ENV{Qt5_DIR}) OR (NOT DEFINED ENV{ParaView_DIR} AND DEFINED ENV{Qt5_DIR}))
-        MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build\
- BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.\
- Normally, BioDynaMo will automatically downloads those libraries.")
+        MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build "
+                "BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.")
     endif()
 
     # Check if there is Qt5 installed
@@ -230,8 +230,8 @@ if(paraview)
     if(NOT ${ParaView_FOUND})
 
       PRINT_WARNING()
-      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now\n\
-together with Qt5.")
+      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now "
+              "together with Qt5.")
       PRINT_LINE()
 
       # If we did not found paraview then we will install it automatically

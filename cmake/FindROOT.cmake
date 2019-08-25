@@ -16,8 +16,8 @@
 # Updated by K. Smith (ksmith37@nd.edu) to properly handle
 #  dependencies in ROOT_GENERATE_DICTIONARY
 
-find_program(ROOT_CONFIG_EXECUTABLE root-config
-HINTS $ENV{ROOTSYS}/bin $ENV{BDM_ROOT_DIR}/bin ${CMAKE_THIRD_PARTY_DIR}/root/bin)
+find_program(ROOT_CONFIG_EXECUTABLE NAMES root-config
+HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
 
 execute_process(
     COMMAND ${ROOT_CONFIG_EXECUTABLE} --prefix
@@ -50,7 +50,7 @@ set(ROOT_LIBRARY_DIRS ${ROOT_LIBRARY_DIR})
 set(rootlibs Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread MultiProc Imt)
 set(ROOT_LIBRARIES)
 foreach(_cpt ${rootlibs} ${ROOT_FIND_COMPONENTS})
-  find_library(ROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${ROOT_LIBRARY_DIR})
+    find_library(ROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${ROOT_LIBRARY_DIR})
   if(ROOT_${_cpt}_LIBRARY)
     mark_as_advanced(ROOT_${_cpt}_LIBRARY)
     list(APPEND ROOT_LIBRARIES ${ROOT_${_cpt}_LIBRARY})

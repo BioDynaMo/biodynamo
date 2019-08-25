@@ -152,8 +152,8 @@ Build targets indicated with `*` always come in three different flavors.
 
 #### Use a Custom Compiler
 If you need to user a custom compilers (instead of the one automatically detected by BioDynaMo) you will need
-to set first two variables: `CXX` for the C++ compiler and `CC` for the C compiler. Please not that your custom compiler
-must support C++14 standard and also it must be compatible with OpenMP. The complete procedure will become:
+to set the variables: `CXX` for the C++ compiler and `CC` for the C compiler. Please not that your custom compiler
+must support the C++14 standard and must be compatible with OpenMP. The complete procedure will become:
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
@@ -165,19 +165,21 @@ export C=/opt/local/bin/clang++-mp-8.0
 ./install.sh
 ```
 
-#### Use a Custom ParaView/ROOT installation
+#### Use a Specific ROOT / ParaView Installation
 
-BioDynaMo will download automatically the required ParaView, ROOT and Qt5 libraries to build the project. However,
-it is also possible to specify custom version of them. You will need to set some environmental variables such to
-enable this behaviour. Check out the example below.
+When you want to inform BioDynaMo of a specific installation of ROOT and /or ParaView on your system,
+you will need to perform the following instructions prior to installation.
 
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
 
-export BDM_ROOT_DIR=/opt/local/root
-export ParaView_DIR=/opt/local/paraview
-export Qt5_DIR=/usr/local/qt
+# For ROOT
+source <root_installation_dir>/bin/thisroot.sh
+
+# For ParaView
+export ParaView_DIR=<paraview_installation_dir>/lib/cmake/paraview-5.6
+export Qt5_DIR=<qt5_installation_dir>/lib/cmake/Qt5
 
 ./install.sh
 ```
@@ -185,7 +187,7 @@ export Qt5_DIR=/usr/local/qt
 !!! attention
 
     If you specify ParaView_DIR, then you will need to provide also the Qt5_DIR variable.
-    This happens because ParaView needs to explicitly know where Qt is located.
+    This is because ParaView implicitly relies on the Qt5 installation.
 
 #### Speed Up Installation Tests with a Local BioDynaMo-LFS Copy
 
@@ -206,5 +208,5 @@ unset BDM_LOCAL_LFS
 ```
 
 !!! warning
-    At the moment there is no check if the local copy is in synch with
+    At the moment there is no check if the local copy is in sync with
     remote. You have to ensure that yourself!
