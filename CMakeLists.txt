@@ -186,7 +186,9 @@ find_package(Git)
 # Find ROOT and check its installation
 # variable_watch(ROOT_RIO_LIBRARY)
 find_package(ROOT COMPONENTS Geom Gui)
+if(ROOT_FOUND)
 message("-- ROOT_VERSION = ${ROOT_VERSION}")
+endif()
 verify_ROOT()
 
 if (dict)
@@ -216,10 +218,6 @@ if(paraview)
                 "BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.")
     endif()
 
-    # Check if there is Qt5 installed
-    find_package(Qt5 COMPONENTS Widgets
-            PATHS ${CMAKE_THIRD_PARTY_DIR}/qt)
-
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
             vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
@@ -238,12 +236,15 @@ if(paraview)
       # with the Qt package.
       include(external/Qt)
       PRINT_LINE()
-      MESSAGE("Qt5 was successfully donwloaded and installed. We will proceed now with ParaView.")
+      MESSAGE("Qt5 was successfully downloaded and installed. We will proceed now with ParaView.")
       PRINT_LINE()
       include(external/ParaView)
 
       # We run again the find_package command such to find correctly the location of Qt and ParaView
-      find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt)
+      find_package(Qt5 COMPONENTS Widgets HINTS ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5 NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH)
+      if(Qt5_FOUND)
+        message("-- Found Qt5 (version ${Qt5_VERSION})")
+      endif()
       find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
               vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)

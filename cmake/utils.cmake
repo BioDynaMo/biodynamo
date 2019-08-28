@@ -60,8 +60,8 @@ function(verify_ROOT)
     set(CUSTOM_ROOT_SOURCE_ENV_COMMAND ":" PARENT_SCOPE)
     if(NOT ROOT_FOUND)
         print_warning()
-        message("We did not found any ROOT installed in the system. We will proceed to download it\n\
-        once the build process has started. ROOT will be then installed to the location ${THIRD_PARTY_DIR}/root.")
+        message("We did not found any ROOT installed in the system. We will proceed to download it "
+        "once the build process has started. ROOT will be then installed to the location ${THIRD_PARTY_DIR}/root.")
         print_line()
         include(external/ROOT)
 
@@ -364,7 +364,7 @@ function(add_permissions FILE_PATH DESTINATION)
             GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endfunction()
 
-# Method used to donwload a file from a given URL. This method will also retry
+# Method used to download a file from a given URL. This method will also retry
 # to download the file if the download did not work.
 #   URL: URL from which we will download the file
 #   DEST: destination where to save the file
