@@ -45,11 +45,13 @@ inline void ExpectArrayNear(const Double3& actual, const Double3& expected,
 enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
 inline void RunTest(bool* result, ExecutionMode mode) {
+  std::cout << "Running test case " << mode << std::endl;
   auto set_param = [&](auto* param) {
     switch (mode) {
       case kCpu:
         break;
       case kOpenCl:
+        param->use_gpu_ = true;
         param->use_opencl_ = true;
       case kCuda:
         param->use_gpu_ = true;
@@ -58,7 +60,6 @@ inline void RunTest(bool* result, ExecutionMode mode) {
 
   Simulation simulation("cell_division_gpu", set_param);
   auto* rm = simulation.GetResourceManager();
-  auto* param = simulation.GetParam();
   rm->Clear();
 
 // We need to give every test the same seed for the RNG, because in the cell

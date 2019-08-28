@@ -290,6 +290,22 @@ the prerequistes.sh script offered by the library. Then run again cmake (with th
     endif()
 endif()
 
+# Link to OpenCL
+if (OPENCL_FOUND)
+  if (OPENCL_HAS_CXX)
+    add_definitions("-DUSE_OPENCL")
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${OPENCL_LIBRARIES})
+  else()
+    message(WARNING "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
+      "If you think you have installed the C++ bindings correctly, please check if one "
+      "of the following environmentals is set correctly (vendor specific):
+      - AMD: \t\tAMDAPPSDKROOT
+      - NVIDIA: \tCUDA_PATH
+      - INTEL: \tINTELOPENCLSDK")
+    set(OPENCL_FOUND FALSE)
+  endif()
+endif()
+
 # -------------------- includes -----------------------------------------------
 include(BioDynaMo)
 include(ExternalProject)
@@ -341,18 +357,6 @@ build_libbiodynamo(biodynamo
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
-endif()
-
-# Check if OpenCL C++ bindings are installed
-if (OPENCL_FOUND)
-  if (NOT OPENCL_HAS_CXX)
-    message(FATAL_ERROR "OpenCL C++ bindings not found. Please install to make use of OpenCL. "
-      "If you think you have installed the C++ bindings correctly, please check if one "
-      "of the following environmentals is set correctly (vendor specific):
-      - AMD: \t\tAMDAPPSDKROOT
-      - NVIDIA: \tCUDA_PATH
-      - INTEL: \tINTELOPENCLSDK")
-  endif()
 endif()
 
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "Suppress cmake development warnings")
@@ -463,8 +467,8 @@ if (test)
   if (NOT coverage)
     if(OPENCL_FOUND OR CUDA_FOUND)
       bdm_add_executable(cell_division_gpu
-                         SOURCES test/system/cell_division_gpu.cc
-                         HEADERS test/system/cell_division_gpu.h
+                         SOURCES test/system/cell_division_gpu/src/cell_division_gpu.cc
+                         HEADERS test/system/cell_division_gpu/src/cell_division_gpu.h
                          LIBRARIES biodynamo)
       add_dependencies(check cell_division_gpu)
       add_test(NAME "system-cell-division-gpu"

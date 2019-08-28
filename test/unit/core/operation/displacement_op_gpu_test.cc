@@ -23,12 +23,17 @@
 namespace bdm {
 namespace displacement_op_gpu_test_internal {
 
+// NB: The GPU execution 'context' for the displacement operation differes,
+// from the CPU version. Once the CPU version supports the same execution
+// context, we can include it for direct comparison of results.
+
 enum ExecutionMode { kCuda, kOpenCl };
 
 void RunTest(ExecutionMode mode) {
   auto set_param = [&](Param* param) {
     switch (mode) {
       case kOpenCl:
+        param->use_gpu_ = true;
         param->use_opencl_ = true;
       case kCuda:
         param->use_gpu_ = true;
@@ -118,6 +123,7 @@ void RunTest2(ExecutionMode mode) {
   auto set_param = [&](auto* param) {
     switch (mode) {
       case kOpenCl:
+        param->use_gpu_ = true;
         param->use_opencl_ = true;
       case kCuda:
         param->use_gpu_ = true;
@@ -149,7 +155,7 @@ void RunTest2(ExecutionMode mode) {
   grid->ClearGrid();
   grid->Initialize();
 
-  // execute operation
+  // execute operation on all cells
   DisplacementOp op;
   op();
 

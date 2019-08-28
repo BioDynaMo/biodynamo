@@ -210,10 +210,10 @@ bdm::DisplacementOpCudaKernel::DisplacementOpCudaKernel(uint32_t num_objects, ui
   GpuErrchk(cudaMalloc(&d_cell_movements_, 3 * num_objects * sizeof(double)));
 }
 
-void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(double* positions,
-    double* diameters, double* tractor_force, double* adherence,
-    uint32_t* box_id, double* mass, double* timestep, double* max_displacement,
-    double* squared_radius, uint32_t* num_objects, uint32_t* starts,
+void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* positions,
+    const double* diameters, const double* tractor_force, const double* adherence,
+    uint32_t* box_id, const double* mass, const double* timestep, const double* max_displacement,
+    const double* squared_radius, uint32_t* num_objects, uint32_t* starts,
     uint16_t* lengths, uint32_t* successors, uint32_t* box_length,
     uint32_t* num_boxes_axis, int32_t* grid_dimensions,
     double* cell_movements) {
