@@ -41,9 +41,5 @@ fi
 # Install all prerequisites
 $BDM_PROJECT_DIR/prerequisites.sh all ${BDM_DETECTED_OS}
 
-# Check if CMake version meets required version (possible if prerequisites were skipped)
-# Also sets the right CMake binary (i.e. checks if cmake3 alias exists)
-CheckCMakeVersion 3.2.0
-
 # call install script for the detected OS
 util/installation/common/install.sh ${BDM_DETECTED_OS}

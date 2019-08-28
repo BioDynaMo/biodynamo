@@ -158,7 +158,7 @@ function CleanBuild {
   fi
   cd $BUILD_DIR
   echo "CMAKEFLAGS $BDM_CMAKE_FLAGS"
-  $CMAKE_BINARY $BDM_CMAKE_FLAGS ..
+  cmake $BDM_CMAKE_FLAGS ..
   make -j$(CPUCount) && make install
 }
 
@@ -342,6 +342,7 @@ function CopyEnvironmentScript {
 # Arguments:
 #   $1 actual version
 #   $2 required version
+# TODO(ahmad): Fails on OSX because `sort` not installed by default
 function VersionLessThan {
   local VERSION=$1
   local REQUIRED=$2
