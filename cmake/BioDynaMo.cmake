@@ -115,9 +115,9 @@ function(bdm_generate_dictionary TARGET)
   # --> grep 0 file || commandz`
   #   command is executed if pattern 0 is not found in file
   add_custom_target(${TARGET}
-    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt >/dev/null || (${CUSTOM_ROOT_SOURCE_ENV_COMMAND} &&
+    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt >/dev/null || ${CMAKE_BINARY_DIR}/launcher.sh
     ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
-    ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1)
+    ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
     COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt)

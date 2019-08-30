@@ -185,10 +185,9 @@ endif()
 find_package(Git)
 
 # Find ROOT and check its installation
-# variable_watch(ROOT_RIO_LIBRARY)
 find_package(ROOT COMPONENTS Geom Gui)
 if(ROOT_FOUND)
-message("-- ROOT_VERSION = ${ROOT_VERSION}")
+  message("-- ROOT_VERSION = ${ROOT_VERSION}")
 endif()
 verify_ROOT()
 

@@ -35,48 +35,48 @@ endif()
 
 # Install biodynamo in its final directory
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/bin
-        DESTINATION .
+        DESTINATION biodynamo
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/demo
-        DESTINATION .
+        DESTINATION biodynamo
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/doc
-        DESTINATION .
+        DESTINATION biodynamo
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/include
-        DESTINATION .
+        DESTINATION biodynamo
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/lib
-        DESTINATION .
+        DESTINATION biodynamo
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/share
-        DESTINATION .
+        DESTINATION biodynamo
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/simulation-template
-        DESTINATION .
+        DESTINATION biodynamo
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/third_party
-        DESTINATION .
+        DESTINATION biodynamo
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
 install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
               ${CMAKE_BIODYNAMO_BUILD_ROOT}/NOTICE
-        DESTINATION .)
+        DESTINATION biodynamo)
 
 # We need to install manually these targets in order to clear their RPATH.
 # They have been already copied inside the final install directory by the
@@ -84,16 +84,16 @@ install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
 # directory. Therefore we need to "install" them again to fix this problem.
 install(TARGETS biodynamo
         LIBRARY
-        DESTINATION ./lib)
+        DESTINATION biodynamo/lib)
 
 if(test)
     install(TARGETS biodynamo-unit-tests
             RUNTIME
-            DESTINATION ./bin)
+            DESTINATION biodynamo/bin)
 endif()
 
 if(${ParaView_FOUND})
     install(TARGETS BDMGlyphFilter
             LIBRARY
-            DESTINATION ./lib/pv_plugin)
+            DESTINATION biodynamo/lib/pv_plugin)
 endif()
