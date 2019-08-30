@@ -14,45 +14,52 @@
 # -----------------------------------------------------------------------------
 
 # Base path
-SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
+
+# archive destination dir
+DEST_DIR=$BDM_PROJECT_DIR/build
+mkdir -p $DEST_DIR
 
 # Install the prerequisites
-. ${SCRIPTPATH}/util/build-third-party/third-party-prerequisites.sh
+. ${BDM_PROJECT_DIR}/util/build-third-party/third-party-prerequisites.sh
 
-install_roadrunner()
-{
-  mkdir ${SCRIPTPATH}/build_roadrunner
-  cd ${SCRIPTPATH}/build_roadrunner
+EchoNewStep "Start building libroadrunner. Result will be stored in $DEST_DIR"
 
-  git clone https://github.com/sys-bio/roadrunner.git
-  git clone https://github.com/sys-bio/libroadrunner-deps
+ROADRUNNER_BUILD_DIR=${BDM_PROJECT_DIR}/build/build-roadrunner
+rm -rf $ROADRUNNER_BUILD_DIR
+mkdir -p $ROADRUNNER_BUILD_DIR
+cd $ROADRUNNER_BUILD_DIR
 
-  mkdir -p install/roadrunner
+git clone https://github.com/sys-bio/roadrunner.git
+git clone https://github.com/sys-bio/libroadrunner-deps
 
-  cd libroadrunner-deps/
-  mkdir build && cd build
-  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/roadrunner ..
-  make -j4 && make install
+mkdir -p install/roadrunner
 
-  cd ../../roadrunner/
+cd libroadrunner-deps/
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/roadrunner ..
+make -j`CPUCount` install
 
-  # Checkout to the branch compatible with llvm-6
-  git checkout llvm-6
+cd ../../roadrunner/
 
-  mkdir build && cd build
-  cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/roadrunner \
-    -DLLVM_CONFIG_EXECUTABLE=$1 \
-    -DTHIRD_PARTY_INSTALL_FOLDER=../../install/roadrunner \
-    -DRR_USE_CXX11=OFF -DUSE_TR1_CXX_NS=ON \
-    LIBSBML_LIBRARY=${SCRIPTPATH}/build_roadrunner/install/roadrunner/lib/libsbml.so \
-    LIBSBML_STATIC_LIBRARY=${SCRIPTPATH}/build_roadrunner/roadrunner/install/roadrunner/lib/libsbml-static.a ..
+# Checkout to the branch compatible with llvm-6
+git checkout llvm-6
 
-  make -j4 && make install
-}
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/roadrunner \
+  -DLLVM_CONFIG_EXECUTABLE=${LLVM_CONFIG} \
+  -DTHIRD_PARTY_INSTALL_FOLDER=../../install/roadrunner \
+  -DRR_USE_CXX11=OFF -DUSE_TR1_CXX_NS=ON \
+  LIBSBML_LIBRARY=$ROADRUNNER_BUILD_DIR/install/roadrunner/lib/libsbml.so \
+  LIBSBML_STATIC_LIBRARY=$ROADRUNNER_BUILD_DIR/roadrunner/install/roadrunner/lib/libsbml-static.a ..
 
-# Compile the library
-install_roadrunner ${LLVM_CONFIG}
+make -j`CPUCount` install
 
 # Create a tar file
-timestamp=$(date +%Y-%m-%d_%H-%M-%S)
-tar -cvf ${SCRIPTPATH}/roadrunner-master-${timestamp}.tar.gz ${SCRIPTPATH}/build_roadrunner/install/roadrunner
+GIT_COMMIT_HASH=`git rev-parse --short HEAD`
+ROADRUNNER_TAR_FILE=libroadrunner-${GIT_COMMIT_HASH}.tar.gz
+cd $ROADRUNNER_BUILD_DIR/install/roadrunner
+tar -czf ${ROADRUNNER_TAR_FILE} *
+mv ${ROADRUNNER_TAR_FILE} $DEST_DIR
+EchoSuccess "The Libroadrunner tar file was successfully created at:"
+EchoSuccess "$DEST_DIR/${ROADRUNNER_TAR_FILE}"
