@@ -56,7 +56,7 @@ include(CheckCompiler)
 # Directory in which BioDynaMo will be installed. It can be provided
 # by the user itself.
 if (NOT DEFINED ${BDM_INSTALL_DIR})
-    set(BDM_INSTALL_DIR $ENV{HOME}/biodynamo)
+    set(BDM_INSTALL_DIR /opt/biodynamo)
 endif()
 
 # Specify some directories which will be used to structure BioDynaMo build.
