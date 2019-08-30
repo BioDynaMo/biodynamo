@@ -148,7 +148,8 @@ endif()
 # Check if we have a compatible openmp compiler
 find_package(OpenMP)
 if (OpenMP_FOUND)
-    link_directories(${OpenMP_CXX_LIBRARIES})
+  get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
+  link_directories(${OpenMP_CXX_LIB_DIR})
 else()
     MESSAGE(FATAL_ERROR "OpenMP was not found in your system. Please run ./prerequisites.sh again before
 calling cmake. If this does not work, then your current compiler might not support OpenMP (this happens for instance
@@ -263,7 +264,6 @@ if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
   find_package(TBB)
   if (TBB_FOUND)
     include_directories(${TBB_INCLUDE_DIRS})
-    link_directories(${TBB_LIBRARIES})
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
   endif()
 endif()
@@ -358,9 +358,10 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${EXTRACTED_THIRD_PARTY_LIBS}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
-if (NOT APPLE)
-  fix_rootcling_omp_issue()
-endif()
+# Since including the directory where omp.h resides can cause rootcling to
+# search for system / C++ standard headers in that same directory, we instead
+# copy omp.h to our local build directory and include that
+fix_rootcling_omp_issue()
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
