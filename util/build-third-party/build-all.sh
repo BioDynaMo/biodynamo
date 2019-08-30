@@ -32,6 +32,7 @@ SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Software versions
 PARAVIEW_VERSION=v5.5.2
 ROOT_VERSION=263508429d
+ROADRUNNER_VERSION=11259a0854204a2b6fda613f6307713abfa70e44
 
 # root
 $SCRIPTPATH/build-root.sh $ROOT_VERSION
@@ -40,4 +41,4 @@ $SCRIPTPATH/build-root.sh $ROOT_VERSION
 $SCRIPTPATH/build-paraview.sh $PARAVIEW_VERSION
 
 # roadrunner
-$SCRIPTPATH/build-roadrunner.sh
+$SCRIPTPATH/build-roadrunner.sh $ROADRUNNER_VERSION

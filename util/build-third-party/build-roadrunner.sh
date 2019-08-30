@@ -13,6 +13,17 @@
 #
 # -----------------------------------------------------------------------------
 
+if [[ $# -ne 1 ]]; then
+  echo "ERROR: Wrong number of arguments.
+Description:
+  This script builds roadrunner.
+Arguments:
+  \$1 Roadrunner version that should be build. Use a commit from branch llvm-6"
+  exit 1
+fi
+
+set -e -x
+
 # Base path
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 
@@ -43,7 +54,7 @@ make -j`CPUCount` install
 cd ../../roadrunner/
 
 # Checkout to the branch compatible with llvm-6
-git checkout llvm-6
+git checkout $1
 
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/roadrunner \
