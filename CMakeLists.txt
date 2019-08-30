@@ -339,6 +339,10 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_SKIP_BUILD_RPATH TRUE) # skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_MACOSX_RPATH TRUE) # use @rpath keyword for the MacOS rpath
+# Sets @rpath for libbiodynamo.dylib on Mac OS in the build directory
+if (APPLE)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+endif()
 
 # -------------------- extract third party libraries ---------------------------
 set(EXTRACTED_THIRD_PARTY_LIBS "${CMAKE_CURRENT_BINARY_DIR}/extracted-third-party-libs")
