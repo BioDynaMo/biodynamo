@@ -56,7 +56,7 @@ include(CheckCompiler)
 # Directory in which BioDynaMo will be installed. It can be provided
 # by the user itself.
 if (NOT DEFINED ${BDM_INSTALL_DIR})
-    set(BDM_INSTALL_DIR /opt/biodynamo)
+    set(BDM_INSTALL_DIR /opt)
 endif()
 
 # Specify some directories which will be used to structure BioDynaMo build.
@@ -218,6 +218,14 @@ if(paraview)
                 "BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.")
     endif()
 
+    # If Qt5_DIR is not set by the user, we will set it to the default directory
+    # where it's downloaded to. This is done in case the user runs CMake again,
+    # after which the find_package(ParaView) might complain that it can't find
+    # a compatible Qt5 installation
+    if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
+      set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+    endif()
+
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
             vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
@@ -226,7 +234,6 @@ if(paraview)
     # Check if ParaView was found in the system. If that's not the case then we will proceed
     # to download it.
     if(NOT ${ParaView_FOUND})
-
       PRINT_WARNING()
       MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now "
               "together with Qt5.")

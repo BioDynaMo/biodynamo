@@ -56,8 +56,6 @@ endfunction()
 # will also check if ROOT was compiled using c++14 and if
 # its environment was sourced.
 function(verify_ROOT)
-    set(CUSTOM_ROOT_SOURCE_ENV FALSE PARENT_SCOPE)
-    set(CUSTOM_ROOT_SOURCE_ENV_COMMAND ":" PARENT_SCOPE)
     if(NOT ROOT_FOUND)
         print_warning()
         message("We did not found any ROOT installed in the system. We will proceed to download it "
@@ -79,6 +77,12 @@ function(verify_ROOT)
             message(FATAL_ERROR "The ROOT installation found in ${ROOTSYS} is not C++14 compliant. "
             "Please download a compatible ROOT version from http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz, "
             "and source bin/thisroot.sh prior to installing BioDynaMo. For more information: https://biodynamo.github.io/dev/build/#use-a-custom-paraviewroot-installation")
+        endif()
+        
+        if (NOT DEFINED ROOTSYS OR NOT DEFINED ${ROOTSYS})
+          # Set ROOTSYS variable
+          string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
+          set(ENV{ROOTSYS} ${TMP_ROOT_PATH})
         endif()
     endif()
 endfunction()
