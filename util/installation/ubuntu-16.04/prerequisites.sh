@@ -37,7 +37,8 @@ python3 python3-dev python3-pip
 if [ $1 == "all" ]; then
     pip3 install --user mkdocs mkdocs-material
     sudo apt-get install -y valgrind \
-    clang-3.9 clang-format-3.9 clang-tidy-3.9 \
-    doxygen graphviz \
-    lcov gcovr
+      clang-3.9 clang-format-3.9 clang-tidy-3.9 \
+      doxygen graphviz \
+      lcov gcovr \
+      llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
 fi

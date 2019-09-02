@@ -35,8 +35,14 @@ cd $BDM_PROJECT_DIR
 # import util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
+BDM_OS=$(DetectOs)
+
 # speed-up build by disabling tests and demos
-export BDM_CMAKE_FLAGS="-Dtest=off"
+# Currently SBML is not supported on osx
+if [ "$BDM_OS" != "osx" ] && [ "$BDM_OS" != "travis-osx" ]; then
+  SBML_FLAG="-Dsbml=on"
+fi
+export BDM_CMAKE_FLAGS="-Dtest=off ${SBML_FLAG}"
 
 # Build BioDynaMo
 $BDM_PROJECT_DIR/install.sh << EOF
