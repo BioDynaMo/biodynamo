@@ -157,9 +157,7 @@ inline void PlotSbmlModules(const char* filename) {
   c.SetGrid();
 
   TMultiGraph* mg = new TMultiGraph();
-  mg->SetTitle("Gillespie");
-  mg->GetXaxis()->SetTitle("Timestep");
-  mg->GetYaxis()->SetTitle("Concentration");
+  mg->SetTitle("Gillespie;Timestep;Concentration");
 
   Simulation::GetActive()->GetResourceManager()->ApplyOnAllElements([&](SimObject* so) {
     auto* cell = static_cast<MyCell*>(so);
