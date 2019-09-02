@@ -22,7 +22,7 @@ function(verify_ROOT)
     set(CUSTOM_ROOT_SOURCE_ENV_COMMAND ":" PARENT_SCOPE)
     IF(NOT ROOT_FOUND)
         print_warning()
-        MESSAGE("We did not found any ROOT installed in the system. We will proceed to download it\n\
+        MESSAGE("We did not find any ROOT installed in the system. We will proceed to download it\n\
 once the build process has started. ROOT will be then installed to the location ${THIRD_PARTY_DIR}/root.")
         print_line()
         include(external/ROOT)
@@ -208,6 +208,7 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/cmake/BioDynaMoConfig.cmake
             ${CMAKE_SOURCE_DIR}/cmake/BioDynaMo.cmake
             ${CMAKE_SOURCE_DIR}/cmake/SetCompilerFlags.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/FindLibroadrunner.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindROOT.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindVTune.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindOpenCL.cmake
@@ -371,6 +372,7 @@ function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(opencl opencl "Enable OpenCL code generation for GPU acceleration.")
     ADD_FEATURE_INFO(dict dict "Build with ROOT dictionaries.")
     ADD_FEATURE_INFO(paraview paraview "Enable ParaView.")
+    ADD_FEATURE_INFO(sbml sbml "Enable SBML integration.")
     ADD_FEATURE_INFO(vtune vtune "Enable VTune performance analysis.")
     ADD_FEATURE_INFO(coverage coverage "Enable test coverage report generation. Sets build type to coverage.")
     ADD_FEATURE_INFO(verbose verbose "Enable verbosity when running make install.")

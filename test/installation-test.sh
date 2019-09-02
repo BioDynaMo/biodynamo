@@ -36,7 +36,7 @@ cd $BDM_PROJECT_DIR
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 # speed-up build by disabling tests and demos
-export BDM_CMAKE_FLAGS="-Dtest=off"
+export BDM_CMAKE_FLAGS="-Dtest=off -Dsbml=on"
 
 # Build BioDynaMo
 $BDM_PROJECT_DIR/install.sh << EOF

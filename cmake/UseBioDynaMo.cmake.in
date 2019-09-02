@@ -33,6 +33,7 @@ SET(cuda_default @cuda@)
 SET(opencl_default @opencl@)
 SET(dict_default @dict@)
 SET(paraview_default @paraview@)
+SET(sbml_default @sbml@)
 SET(vtune_default @vtune@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
@@ -40,6 +41,7 @@ option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" @opencl@)
 option(dict      "Build with ROOT dictionaries" @dict@)
 option(paraview  "Enable ParaView" @paraview@)
+option(sbml      "Enable SBML support" @sbml@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
 
 if (NOT "${cuda}" STREQUAL "${cuda_default}")
@@ -56,7 +58,11 @@ BioDynaMo. BioDynaMo was built by setting -Ddict to ${dict_default}. Please chan
 endif()
 if (NOT "${paraview}" STREQUAL "${paraview_default}")
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dparaview=${paraview}) is not compatible with \
-BioDynaMo. BioDynaMo was built by setting -Dparaview to ${paraview_default}. Please change -Dparaview to -Dcuda=${paraview_default}.")
+BioDynaMo. BioDynaMo was built by setting -Dparaview to ${paraview_default}. Please change -Dparaview to -Dparaview=${paraview_default}.")
+endif()
+if (sbml AND NOT sbml_default)
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dsbml=${sbml}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dsbml to ${sbml_default}. Please use -Dsbml=${sbml_default}.")
 endif()
 if (NOT "${vtune}" STREQUAL "${vtune_default}")
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dvtune=${vtune}) is not compatible with \
@@ -154,6 +160,14 @@ if (vtune)
         message(WARNING "VTune not found")
         SET(vtune OFF)
     endif()
+endif()
+
+if(sbml)
+  find_package(Libroadrunner REQUIRED)
+  add_definitions(${Libroadrunner_DEFINITIONS})
+  include_directories(${Libroadrunner_INCLUDE_DIRS})
+  link_directories(${Libroadrunner_LINK_DIRS})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${Libroadrunner_LINK_LIBRARIES})
 endif()
 
 # Link to OpenCL
