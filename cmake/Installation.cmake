@@ -36,6 +36,8 @@ endif()
 execute_process(COMMAND ${CMAKE_BIODYNAMO_BUILD_ROOT}/launcher.sh ${CMAKE_BIODYNAMO_BUILD_ROOT}/bin/biodynamo --version
 OUTPUT_VARIABLE VERSION)
 
+# This regex extracts whatever is before the first "-" character, which should be
+# the version number in the form vMAJOR.MINOR.PATCH
 STRING(REGEX MATCH "[^-]*" SHORT_VERSION ${VERSION})
 
 set(DIRNAME "biodynamo-${SHORT_VERSION}")
