@@ -56,7 +56,7 @@ include(CheckCompiler)
 # Directory in which BioDynaMo will be installed. It can be provided
 # by the user itself.
 if (NOT DEFINED ${BDM_INSTALL_DIR})
-    set(BDM_INSTALL_DIR /opt)
+    set(BDM_INSTALL_DIR $ENV{HOME})
 endif()
 
 # Specify some directories which will be used to structure BioDynaMo build.
@@ -324,6 +324,13 @@ if (OPENCL_FOUND)
   endif()
 endif()
 
+# --------------------Copy the launcher script ---------------------------------
+configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
+        DESTINATION ${CMAKE_BINARY_DIR}
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
 # -------------------- includes -----------------------------------------------
 include(BioDynaMo)
 include(ExternalProject)
@@ -435,13 +442,6 @@ configure_file("cmake/UseBioDynaMo.cmake.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_D
 # -------------------- build test project  ------------------------------------
 if (test)
   enable_testing()
-
-  # Copy the launcher script
-  configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
-  file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
-          DESTINATION ${CMAKE_BINARY_DIR}
-          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-          GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
   include(Testing)
 

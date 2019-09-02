@@ -95,7 +95,7 @@ bool BDMGlyph::Execute(vtkDataSet *input, vtkInformationVector *sourceVector,
   vtkDataArray *newVectors = NULL;
   vtkDataArray *newNormals = NULL;
   vtkDataArray *newTCoords = NULL;
-  double x[3], v[3], vNew[3], ep[3], s = 0.0, vMag = 0.0, value, tc[3],
+  double x[3], v[3], ep[3], s = 0.0, vMag = 0.0, value, tc[3],
                                      xs = 0.0, ys = 0.0, zs = 0.0;
   vtkTransform *trans = vtkTransform::New();
   vtkTransform *trans2 = vtkTransform::New();

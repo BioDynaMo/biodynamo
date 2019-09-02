@@ -6,5 +6,8 @@
 
 SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-source @CMAKE_INSTALL_ROOT@/bin/thisbdm.sh
+# We redirect to /dev/null to ignore the success message when we want to
+# extract output in CMake (e.g. in Installation.cmake we want to obtain the
+# version number).
+source @CMAKE_INSTALL_ROOT@/bin/thisbdm.sh &> /dev/null
 $@
