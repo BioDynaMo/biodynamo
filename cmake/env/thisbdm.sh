@@ -328,7 +328,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
             export CXX=/sw/opt/llvm-5.0/bin/clang
         fi
     fi
-    
+
 else
     # CentOs specifics
     if [ `lsb_release -si` == "CentOS" ]; then
@@ -340,6 +340,11 @@ else
 
         . /etc/profile.d/modules.sh
         module load mpi
+
+        # load llvm 6 required for libroadrunner
+        if ! [ -z ${BDMSYS}/third_party/libroadrunner ]; then
+          . scl_source enable llvm-toolset-6.0
+        fi
     fi
 fi
 

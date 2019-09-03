@@ -1,6 +1,7 @@
 
 # llvm-6
-find_package(LLVM 6 REQUIRED CONFIG)
+find_package(LLVM 6 REQUIRED CONFIG
+             HINTS "/opt/rh/llvm-toolset-6.0/root/usr/lib64/cmake/llvm")
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 # Find the libraries that correspond to the LLVM components
@@ -27,7 +28,8 @@ if (Libroadrunner_LIBRARY)
                               ${LIBRR_INSTALL_DIR}/include/rr
                               ${LIBRR_INSTALL_DIR}/include/sbml
                               ${LIBRR_INSTALL_DIR}/include/cvode)
-  set(Libroadrunner_LINK_DIRS ${LIBRR_INSTALL_DIR}/lib)
+  set(Libroadrunner_LINK_DIRS ${LIBRR_INSTALL_DIR}/lib
+                              ${LIBRR_INSTALL_DIR}/lib64)
 
   set(Libroadrunner_LINK_LIBRARIES
     roadrunner-static

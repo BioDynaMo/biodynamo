@@ -33,14 +33,14 @@ if [ `uname` = "Linux" ]; then
   if [ $BDM_OS = "centos-7.6.1810" ]; then
 
     # Add custom repository for llvm-toolset-6.0
-    sudo cat << 'EOF'  > /etc/yum.repos.d/springdale-7-SCL.repo
+    sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
-name=Springdale SCL Base $releasever - $basearch
-mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/$releasever/$basearch/mirrorlist
-#baseurl=http://springdale.princeton.edu/data/springdale/SCL/$releasever/$basearch
+name=Springdale SCL Base 7.6 - x86_64
+mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
+#baseurl=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64
 gpgcheck=1
-gpgkey=http://springdale.math.ias.edu/data/puias/7/x86_64/os/RPM-GPG-KEY-puias
-EOF
+gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
+EOF'
     sudo yum update -y
 
     #  root required packages
@@ -62,20 +62,22 @@ EOF
     sudo yum install -y libXt-devel freeglut3-devel
 
     sudo yum install -y centos-release-scl epel-release
-    sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+    sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm || true
     sudo yum install -y devtoolset-7-gcc*
     export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:$LD_LIBRARY_PATH
     export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
 
     # libroadrunner
-    sudo yum install -y llvm-toolset-6.0-llvm llvm-toolset-6.0-libs llvm-toolset-6.0-devel llvm-toolset-6.0-static
+    sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
     sudo yum install -y ncurses-devel
     sudo yum install -y libxml2-devel
     sudo yum install -y bzip2 bzip2-devel
     sudo yum install -y zlib zlib-devel
 
     export LLVM_CONFIG="/opt/rh/llvm-toolset-6.0/root/usr/bin/llvm-config"
+    set +e
     . scl_source enable llvm-toolset-6.0
+    set -e
 
     # Set cmake3 as the default cmake
     sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \

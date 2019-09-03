@@ -43,6 +43,18 @@ git
 if [ $1 == "all" ]; then
     pip install --user mkdocs mkdocs-material
     sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind
+    # SBML integration
+    sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
+[SCL-core]
+name=Springdale SCL Base 7.6 - x86_64
+mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
+#baseurl=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64
+gpgcheck=1
+gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
+EOF'
+    sudo yum update -y
+    sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
+    sudo yum install -y libxml2-devel
 fi
 
 # Set up cmake alias such to be able to use it
