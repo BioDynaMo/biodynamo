@@ -109,13 +109,22 @@ function(bdm_generate_dictionary TARGET)
   STRING(REPLACE ${CMAKE_BINARY_DIR} "" DICT_PCM_NAME ${DICT_PCM_NAME})
   STRING(REPLACE ".cc" "" DICT_PCM_NAME ${DICT_PCM_NAME})
   STRING(REPLACE "/" "" DICT_PCM_NAME ${DICT_PCM_NAME})
+
+  # During installation we need launcher.sh to build dictionaries (since we
+  # do not source environmentals). AFter the installation we do not need the
+  # wrapper script, since we expect environmentals to be set.
+  set(LAUNCHER)
+  if(NOT DEFINED $ENV{BDM_INSTALL_DIR} AND NOT DEFINED ENV{BDM_INSTALL_DIR})
+    set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
+  endif()
+
   # invoke genreflex only if rebuild_${TARGET}.txt file does not contain a 0.
   # Had issues with if [[ ]] statement; used grep instead
   # if grep does not find the pattern it has a non zero exit code
   # --> grep 0 file || commandz`
   #   command is executed if pattern 0 is not found in file
   add_custom_target(${TARGET}
-    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt >/dev/null || ${CMAKE_BINARY_DIR}/launcher.sh
+    COMMAND grep 0 ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt >/dev/null || ${LAUNCHER}
     ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${ARG_DICT} ${rootmapopts} --select=${selectionfile}
     ${ARG_OPTIONS} ${includedirs} ${definitions} -v >${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.log 2>&1
     COMMAND echo 0 > ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt

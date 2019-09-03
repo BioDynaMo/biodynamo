@@ -33,7 +33,7 @@ elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "${BDM_INSTAL
   message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be ${BDM_INSTALL_DIR}")
 endif()
 
-execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION)
+execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # This regex extracts whatever is before the first "-" character, which should be
 # the version number in the form vMAJOR.MINOR.PATCH
