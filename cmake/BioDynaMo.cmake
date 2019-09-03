@@ -114,7 +114,7 @@ function(bdm_generate_dictionary TARGET)
   # do not source environmentals). AFter the installation we do not need the
   # wrapper script, since we expect environmentals to be set.
   set(LAUNCHER)
-  if(NOT DEFINED $ENV{BDM_INSTALL_DIR} AND NOT DEFINED ENV{BDM_INSTALL_DIR})
+  if(NOT DEFINED "$ENV{BDM_INSTALL_DIR}" AND NOT DEFINED ENV{BDM_INSTALL_DIR})
     set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
   endif()
 
