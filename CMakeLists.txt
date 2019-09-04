@@ -271,6 +271,9 @@ if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
   if (TBB_FOUND)
     include_directories(${TBB_INCLUDE_DIRS})
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
+  else()
+    MESSAGE(FATAL_ERROR "TBB was not found on your system."
+    " Please run ./prerequisites.sh again before calling cmake.")
   endif()
 endif()
 
