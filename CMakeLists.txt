@@ -12,10 +12,21 @@
 #
 # -----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.2.0)
-cmake_policy(VERSION 3.3.0)
-# With CMAKE >= 3.2 external projects support byproducts, this is needed
-# to support Ninja as generator
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+
+set(policy_new CMP0072 CMP0077)
+foreach(policy ${policy_new})
+  if(POLICY ${policy})
+    cmake_policy(SET ${policy} NEW)
+  endif()
+endforeach()
+
+include(cmake/modules/CaptureCommandLine.cmake)
+
+# Project name and current version. We do not specify any language for
+# this project. Therefore, we will be able to check manually which compiler
+# is detected on the system.
+project(BioDynaMo LANGUAGES VERSION "0.1.0")
 
 #---Set the locale to default C to prevent issued due to localization of commands---------------
 # This is necessary as we for example call `clang -v` and parse its output. But on a localized
@@ -23,11 +34,6 @@ cmake_policy(VERSION 3.3.0)
 # could be missing or be in a different order. To prevent those errors, let's just force all
 # output to use the default C locale which is more or less identical on all systems.
 set(ENV{LANG} C)
-
-# Project name and current version. We do not specify any language for
-# this project. Therefore, we will be able to check manually which compiler
-# we detected on the system.
-project(BioDynaMo LANGUAGES VERSION "0.1.0")
 
 # Directory in which we saved all the cmake informations.
 set(ENV{BDM_CMAKE_DIR} ${CMAKE_SOURCE_DIR}/cmake)
