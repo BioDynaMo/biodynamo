@@ -21,7 +21,7 @@ foreach(policy ${policy_new})
   endif()
 endforeach()
 
-include(cmake/modules/CaptureCommandLine.cmake)
+include(cmake/CaptureCommandLine.cmake)
 
 # Project name and current version. We do not specify any language for
 # this project. Therefore, we will be able to check manually which compiler
