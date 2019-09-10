@@ -128,7 +128,7 @@ add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are
 # Check if Python is present
 find_package(PythonInterp 3.5)
 if (PythonInterp_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not found any Python interpreter. Please run ./prerequisites.sh again before
+    MESSAGE(FATAL_ERROR "We did not find any Python interpreter. Please run ./prerequisites.sh again before
 calling cmake. The Python interpreter is required in order to successfully use BioDynaMo." )
 endif()
 find_package(pip)
@@ -136,7 +136,7 @@ find_package(pip)
 # Check if OpenMPI is present
 find_package(MPI)
 if (MPI_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not found any OpenMPI installation. Please run ./prerequisites.sh again before
+    MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 

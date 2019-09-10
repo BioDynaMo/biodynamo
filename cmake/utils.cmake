@@ -58,7 +58,7 @@ endfunction()
 function(verify_ROOT)
     if(NOT ROOT_FOUND)
         print_warning()
-        message("We did not found any ROOT installed in the system. We will proceed to download it "
+        message("We did not find any ROOT installed in the system. We will proceed to download it "
         "once the build process has started. ROOT will be then installed to the location ${CMAKE_THIRD_PARTY_DIR}/root.")
         print_line()
         include(external/ROOT)
