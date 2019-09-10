@@ -33,19 +33,16 @@ template <class T, std::size_t N>
 class MathArray {  // NOLINT
  public:
   /// Default constructor
-  constexpr MathArray() : data_() {
-    for (size_t i = 0; i < N; i++) {
-      data_[i] = 0;
-    }
-  }
+  constexpr MathArray() {}
 
   /// Constructor which accepts an std::initiliazer_list to set
   /// the array's content.
   /// \param l an initializer list
-  constexpr MathArray(std::initializer_list<T> l) : MathArray<T, N>() {
+  constexpr MathArray(std::initializer_list<T> l) {
     assert(l.size() == N);
-    for (size_t i = 0; i < N; i++) {
-      data_[i] = *(l.begin() + i);
+    auto it = l.begin();
+    for (uint64_t i = 0; i < N; i++) {
+      data_[i] = *(it++);
     }
   }
 
@@ -139,7 +136,7 @@ class MathArray {  // NOLINT
   }
 
   MathArray operator++(int) {
-    MathArray<T, N> tmp(*this);
+    MathArray tmp(*this);
     operator++();
     return tmp;
   }
@@ -153,7 +150,7 @@ class MathArray {  // NOLINT
   }
 
   MathArray operator--(int) {
-    MathArray<T, N> tmp(*this);
+    MathArray tmp(*this);
     operator--();
     return tmp;
   }
@@ -169,15 +166,21 @@ class MathArray {  // NOLINT
 
   MathArray operator+(const MathArray& rhs) {
     assert(size() == rhs.size());
-    MathArray tmp(*this);
-    tmp += rhs;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] + rhs[i];
+    }
     return tmp;
   }
 
   const MathArray operator+(const MathArray& rhs) const {
     assert(size() == rhs.size());
-    MathArray tmp(*this);
-    tmp += rhs;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] + rhs[i];
+    }
     return tmp;
   }
 
@@ -190,8 +193,11 @@ class MathArray {  // NOLINT
   }
 
   MathArray operator+(const T& rhs) {
-    MathArray tmp(*this);
-    tmp += rhs;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] + rhs;
+    }
     return tmp;
   }
 
@@ -206,15 +212,21 @@ class MathArray {  // NOLINT
 
   MathArray operator-(const MathArray& rhs) {
     assert(size() == rhs.size());
-    MathArray tmp(*this);
-    tmp -= rhs;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] - rhs[i];
+    }
     return tmp;
   }
 
   const MathArray operator-(const MathArray& rhs) const {
     assert(size() == rhs.size());
-    MathArray tmp(*this);
-    tmp -= rhs;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] - rhs[i];
+    }
     return tmp;
   }
 
@@ -227,8 +239,11 @@ class MathArray {  // NOLINT
   }
 
   MathArray operator-(const T& rhs) {
-    MathArray tmp(*this);
-    tmp -= rhs;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] - rhs;
+    }
     return tmp;
   }
 
@@ -256,7 +271,6 @@ class MathArray {  // NOLINT
 
   MathArray& operator*=(const T& k) {
 #pragma omp simd
-
     for (size_t i = 0; i < N; i++) {
       data_[i] *= k;
     }
@@ -264,14 +278,20 @@ class MathArray {  // NOLINT
   }
 
   MathArray operator*(const T& k) {
-    MathArray tmp(*this);
-    tmp *= k;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] * k;
+    }
     return tmp;
   }
 
   const MathArray operator*(const T& k) const {
-    MathArray tmp(*this);
-    tmp *= k;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] * k;
+    }
     return tmp;
   }
 
@@ -284,8 +304,11 @@ class MathArray {  // NOLINT
   }
 
   MathArray operator/(const T& k) {
-    MathArray tmp(*this);
-    tmp /= k;
+    MathArray tmp;
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      tmp[i] = data_[i] / k;
+    }
     return tmp;
   }
 
@@ -331,10 +354,10 @@ class MathArray {  // NOLINT
   /// \return a new array with the result
   MathArray EntryWiseProduct(const MathArray& rhs) {
     assert(rhs.size() == N);
-    MathArray tmp(*this);
+    MathArray tmp;
 #pragma omp simd
     for (size_t i = 0; i < N; ++i) {
-      tmp[i] *= rhs[i];
+      tmp[i] = data_[i] * rhs[i];
     }
     return tmp;
   }
