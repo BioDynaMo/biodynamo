@@ -44,19 +44,19 @@ option(paraview  "Enable ParaView" @paraview@)
 option(sbml      "Enable SBML support" @sbml@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
 
-if (NOT "${cuda}" STREQUAL "${cuda_default}")
+if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Dcuda to ${cuda_default}. Please change -Dcuda to -Dcuda=${cuda_default}.")
 endif()
-if (NOT "${opencl}" STREQUAL "${opencl_default}")
+if (opencl AND NOT opencl_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dopencl=${opencl}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Dopencl to ${opencl_default}. Please change -Dopencl to -Dopencl=${opencl_default}.")
 endif()
-if (NOT "${dict}" STREQUAL "${dict_default}")
+if (dict AND NOT dict_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Ddict=${dict}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Ddict to ${dict_default}. Please change -Ddict to -Ddict=${dict_default}.")
 endif()
-if (NOT "${paraview}" STREQUAL "${paraview_default}")
+if (paraview AND NOT paraview_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dparaview=${paraview}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Dparaview to ${paraview_default}. Please change -Dparaview to -Dparaview=${paraview_default}.")
 endif()
@@ -64,7 +64,7 @@ if (sbml AND NOT sbml_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dsbml=${sbml}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Dsbml to ${sbml_default}. Please use -Dsbml=${sbml_default}.")
 endif()
-if (NOT "${vtune}" STREQUAL "${vtune_default}")
+if (vtune AND NOT vtune_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dvtune=${vtune}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Dvtune to ${vtune_default}. Please change -Dvtune to -Dvtune=${vtune_default}.")
 endif()
