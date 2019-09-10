@@ -78,7 +78,7 @@ function(verify_ROOT)
             "Please download a compatible ROOT version from http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz, "
             "and source bin/thisroot.sh prior to installing BioDynaMo. For more information: https://biodynamo.github.io/dev/build/#use-a-custom-paraviewroot-installation")
         endif()
-        
+
         if (NOT DEFINED ROOTSYS OR NOT DEFINED ${ROOTSYS})
           # Set ROOTSYS variable
           string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
@@ -380,7 +380,8 @@ function(download_retry URL DEST HASH PACKAGE_NAME)
   file(DOWNLOAD ${URL}
           ${DEST}
           INACTIVITY_TIMEOUT 10
-          STATUS DOWNLOAD_STATUS)
+          STATUS DOWNLOAD_STATUS
+          SHOW_PROGRESS)
 
   # Check if the download worked properly. If not, retry once to download
   # the package again.
