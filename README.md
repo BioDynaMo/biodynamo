@@ -29,8 +29,7 @@
 
 ## What is BioDynaMo?
 
-BioDynaMo is a software platform to easily create, run,
-and visualise 3D agent-based biological simulations.
+BioDynaMo is a software platform to easily create, run, and visualise 3D agent-based biological simulations.
 * **Blazing fast:** The core of the platform is writen in C++ and is highly optimized to harness the computational power of modern hardware.
 * **Modular:** Reuse, adapt, or create modules that represents a specific biological behavior or entity. With BioDynaMo you don't need to start from scratch anymore!
 * **Visual:** Effortlessly create astonishing images and animations of your simulations. Your publications and presentations will stand out even more!
@@ -54,11 +53,7 @@ For more information, check out our [user's guide](https://biodynamo.github.io/u
 
 The main purpose of this repository is to evolve BioDynaMo, making it faster and
 easier to use. Development of BioDynaMo happens in the open on Github, and we are
-grateful to the community for contributing bugfixes and improvments. Read below
-to learn how you can take part in improving BioDynaMo.
-
-### Contribution Guide
-Read our [contribution guide](https://biodynamo.github.io/dev/contribute/) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
+grateful to the community for contributing bugfixes and improvements. Please read our [contribution guide](https://biodynamo.github.io/dev/contribute/) and learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
 
 ### License
 
