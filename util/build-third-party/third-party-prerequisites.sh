@@ -126,15 +126,15 @@ EOF'
   fi
 
 else
-  brew install llvm@6
-  brew install swig
-  brew install git
+  brew install llvm@6 || true
+  brew install swig || true
+  brew install git || true
 
   export CXX=/usr/local/opt/llvm@6/bin/clang++
   export CC=/usr/local/opt/llvm@6/bin/clang
 
-  export LLVM_CONFIG="/usr/bin/llvm-config-6"
+  export LLVM_CONFIG="/usr/local/Cellar/llvm@6/6.0.1_1/bin/llvm-config"
 
   xcode-select --install || true
-  brew install cmake
+  brew install cmake || true
 fi

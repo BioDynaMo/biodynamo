@@ -1,0 +1,12 @@
+diff --git a/third_party/CMakeLists.txt b/third_party/CMakeLists.txt
+index 2dd60c03..2e08d2a8 100755
+--- a/third_party/CMakeLists.txt
++++ b/third_party/CMakeLists.txt
+@@ -69,6 +69,7 @@ set(ENABLE_QUAL ON CACHE BOOL "Enable/disable libSBML options")
+ set(ENABLE_RENDER ON CACHE BOOL "Enable/disable libSBML options")
+ set(ENABLE_REQUIREDELEMENTS ON CACHE BOOL "Enable/disable libSBML options")
+ set(ENABLE_SPATIAL OFF CACHE BOOL "Enable/disable libSBML options")
++set(CLANG_USE_STDLIB ON CACHE BOOL "Enable/disable libSBML options")
+ 
+ if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+   set(LIBSBML_DEPENDENCY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libsbml CACHE PATH "Path to libsbml dependencies")

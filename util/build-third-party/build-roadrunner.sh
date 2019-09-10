@@ -47,6 +47,11 @@ git clone https://github.com/sys-bio/libroadrunner-deps
 mkdir -p install/roadrunner
 
 cd libroadrunner-deps/
+# On Mac OS we need to apply a patch to use libstd instead of libc++
+# See for a similar case: https://github.com/nest/nest-simulator/pull/993
+if [ `uname` = "Darwin" ]; then
+    patch -p1 <${BDM_PROJECT_DIR}/util/build-third-party/libroadrunner-osx-libstd.patch
+fi
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../install/roadrunner ..
 make -j`CPUCount` install
