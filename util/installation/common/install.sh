@@ -78,4 +78,5 @@ CleanBuild $BUILD_DIR
 
 # print final steps
 EchoSuccess "Installation of BioDynaMo finished successfully!"
-EchoFinishThisStep $HOME/biodynamo
+# TODO(ahmad): stay consistent with the configured install directory in CMake
+EchoFinishThisStep $HOME/bdm
