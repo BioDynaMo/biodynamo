@@ -1,6 +1,11 @@
 # Changelog
 
-## 05.08.2019 [`commit-id`]()
+## 11.09.2019 [`0719cd6`](https://github.com/BioDynaMo/biodynamo/commit/0719cd6bafd100439336de71bee55ee2c506e9cf)
+
+Add SBML integration.
+Currently SBML is not supported on MacOS (see https://trello.com/c/vKPbh4iG).
+
+## 05.08.2019 [`/d7bab00`](https://github.com/BioDynaMo/biodynamo/commit/d7bab00d9307b29794490de0519c4c5c77bac435)
 
 Major improvements of the BioDynaMo's build system.
 
