@@ -54,7 +54,9 @@ EOF
 VERSION=`git describe --tags`
 REGEX='[^-]*'
 [[ $VERSION =~ $REGEX ]]
-INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
+# TODO(ahmad): see https://trello.com/c/ZT8iHKky
+# INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
+INSTALL_DIR=${HOME}/bdm
 
 # reload shell and source biodynamo
 set +e +x
