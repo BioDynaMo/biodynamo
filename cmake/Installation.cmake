@@ -39,9 +39,9 @@ execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION WORKING_DIRE
 # the version number in the form vMAJOR.MINOR.PATCH
 STRING(REGEX MATCH "[^-]*" SHORT_VERSION ${VERSION})
 
-set(DIRNAME "biodynamo-${SHORT_VERSION}")
-
-# install(DIRECTORY DESTINATION "${CMAKE_INSTALL_PREFIX}/${DIRNAME}")
+# TODO(ahmad): see https://trello.com/c/ZT8iHKky
+# set(DIRNAME "biodynamo-${SHORT_VERSION}")
+set(DIRNAME "bdm")
 
 # Install biodynamo in its final directory
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/bin

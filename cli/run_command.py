@@ -35,9 +35,9 @@ def RunCommand(args, debug=False):
         BuildCommand()
         Print.new_step("Run " + sim_name + ' ' + args_str)
         if debug:
-            sp.check_output([launcher, cmd, "&>", "debug/runtime_output.log"])
+            sp.check_output([launcher + cmd, "&>", "debug/runtime_output.log"])
         else:
-            print(sp.check_output([launcher, cmd, args_str],
+            print(sp.check_output([launcher + cmd, args_str],
                                 stderr=sp.STDOUT, shell=True).decode('utf-8'))
             Print.success("Finished successfully")
     except sp.CalledProcessError as err:
