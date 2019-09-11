@@ -167,7 +167,7 @@ function(install_inside_build)
     add_copy_directory(copy_files_bdm
             ${CMAKE_SOURCE_DIR}/cli/
             DESTINATION ${CMAKE_INSTALL_BINDIR}
-            GLOB "*.py"
+            GLOB "*.py" "*.sh"
             EXCLUDE "biodynamo.py"
             )
 
