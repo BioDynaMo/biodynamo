@@ -38,7 +38,7 @@ def RunCommand(args, debug=False):
             sp.check_output([launcher, cmd, "&>", "debug/runtime_output.log"])
         else:
             print(sp.check_output([launcher, cmd, args_str],
-                                stderr=sp.STDOUT).decode('utf-8'))
+                                stderr=sp.STDOUT, shell=True).decode('utf-8'))
             Print.success("Finished successfully")
     except sp.CalledProcessError as err:
         print(err.output.decode("utf-8"))
