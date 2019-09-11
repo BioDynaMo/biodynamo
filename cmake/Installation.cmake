@@ -40,6 +40,7 @@ execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION WORKING_DIRE
 STRING(REGEX MATCH "[^-]*" SHORT_VERSION ${VERSION})
 
 # TODO(ahmad): see https://trello.com/c/ZT8iHKky
+# Remember to also update the install directory in the installation tests
 # set(DIRNAME "biodynamo-${SHORT_VERSION}")
 set(DIRNAME "bdm")
 
