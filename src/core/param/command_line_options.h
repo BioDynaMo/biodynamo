@@ -21,6 +21,7 @@ namespace bdm {
 
 /// struct holding the parsed command line option values
 struct CommandLineOptions {
+  std::string config_file_ = "";
   std::string backup_file_ = "";
   std::string restore_file_ = "";
 };

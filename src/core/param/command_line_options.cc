@@ -34,6 +34,7 @@ CommandLineOptions DefaultSimulationOptionParser(
   enum OptionIndex {
     kUnknown,
     kVerbose,
+    kConfigFilename,
     kRestoreFilename,
     kBackupFilename,
     kHelp
@@ -51,6 +52,10 @@ CommandLineOptions DefaultSimulationOptionParser(
       "-v, --verbose\n"
       "    Verbose mode. Causes BioDynaMo to print debugging messages.\n"
       "    Multiple -v options increases the verbosity. The maximum is 3.\n";
+
+  const char* config_file_usage =
+      "-c, --config filename\n"
+      "    Specify the TOML configuration that should be used.\n";
 
   const char* restore_file_usage =
       "-r, --restore filename\n"
@@ -78,6 +83,14 @@ CommandLineOptions DefaultSimulationOptionParser(
         "v", "",
         ROOT::option::Arg::None,
         verbose_usage
+      },
+
+      {
+        kConfigFilename,
+        kString,
+        "c", "config",
+        ROOT::option::FullArg::Required,
+        config_file_usage
       },
 
       {
@@ -148,6 +161,10 @@ CommandLineOptions DefaultSimulationOptionParser(
 
   // Global variable of ROOT that determines verbosity of logging functions
   gErrorIgnoreLevel = ll;
+
+  if (options[kConfigFilename]) {
+    cl_options.config_file_ = options[kConfigFilename].arg;
+  }
 
   if (options[kRestoreFilename]) {
     cl_options.restore_file_ = options[kRestoreFilename].arg;

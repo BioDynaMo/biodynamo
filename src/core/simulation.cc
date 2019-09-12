@@ -206,7 +206,17 @@ void Simulation::InitializeRuntimeParams(
   auto options = bdm::DefaultSimulationOptionParser(argc, argv);
   constexpr auto kConfigFile = "bdm.toml";
   constexpr auto kConfigFileParentDir = "../bdm.toml";
-  if (FileExists(kConfigFile)) {
+  if (options.config_file_ != "") {
+    if (FileExists(options.config_file_)) {
+      auto config = cpptoml::parse_file(options.config_file_);
+      param_->AssignFromConfig(config);
+    } else {
+      Log::Fatal("Simulation::InitializeRuntimeParams", "The config file ",
+                 options.config_file_,
+                 "specified as command line argument "
+                 "could not be found.");
+    }
+  } else if (FileExists(kConfigFile)) {
     auto config = cpptoml::parse_file(kConfigFile);
     param_->AssignFromConfig(config);
   } else if (FileExists(kConfigFileParentDir)) {

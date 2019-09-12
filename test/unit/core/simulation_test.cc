@@ -204,6 +204,24 @@ TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
   remove("myrestore.root");
 }
 
+TEST_F(SimulationTest, InitializeRuntimeParamsCLIDifferentConfigFileName) {
+  std::string config_filename = "my-config-file.toml";
+  remove(kConfigFileName);
+  remove(config_filename.c_str());
+  std::ofstream config_file(config_filename);
+  config_file << kConfigContent;
+  config_file.close();
+
+  CreateEmptyRestoreFile("myrestore.root");
+  const char* argv[3] = {"./binary_name", "-c", config_filename.c_str()};
+  Simulation simulation(3, argv);
+  auto* param = simulation.GetParam();
+
+  ValidateNonCLIParameter(param);
+  remove("myrestore.root");
+  remove(config_filename.c_str());
+}
+
 TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
   // same working dir
   const char* argv0[1] = {"./binary_name"};
