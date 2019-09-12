@@ -1,4 +1,4 @@
-include(ExternalProject)
+include(utils)
 
 SET(PARAVIEW_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/")
 
@@ -9,11 +9,14 @@ ELSE()
     SET(PARAVIEW_DOWNLOAD_NAME paraview-v5.6.0.tar.gz)
 ENDIF()
 
-file(DOWNLOAD http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/${PARAVIEW_DOWNLOAD_NAME}
-        ${PARAVIEW_SOURCE_DIR}/paraview-v5.6.0.tar.gz
-        EXPECTED_HASH SHA256=${${DETECTED_OS}-ParaView}
-        SHOW_PROGRESS)
-file(MAKE_DIRECTORY ${PARAVIEW_SOURCE_DIR}/paraview)
-execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${PARAVIEW_SOURCE_DIR}/paraview-v5.6.0.tar.gz
-        WORKING_DIRECTORY ${PARAVIEW_SOURCE_DIR}/paraview)
+# Download the package and retry if something went wrong
+download_retry(
+  http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/${PARAVIEW_DOWNLOAD_NAME}
+  ${PARAVIEW_SOURCE_DIR}/${PARAVIEW_DOWNLOAD_NAME}
+  ${${DETECTED_OS}-ParaView}
+  "ParaView"
+)
 
+file(MAKE_DIRECTORY ${PARAVIEW_SOURCE_DIR}/paraview)
+execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${PARAVIEW_SOURCE_DIR}/${PARAVIEW_DOWNLOAD_NAME}
+        WORKING_DIRECTORY ${PARAVIEW_SOURCE_DIR}/paraview)

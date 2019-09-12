@@ -112,6 +112,7 @@ sudo yum -y install lcov gcovr llvm-toolset-7 \
 ### Optional Packages
 
  * **doxygen**: Tool for generating documentation from annotated C++ sources;
+ * **graphviz**: Graph Visualization Software used optionally by Doxygen;
  * **lcov**: Graphical front-end for GCC's coverage testing tool gcov;
  * **gcovr**: Tool to test code coverage in programs.
 
@@ -141,12 +142,12 @@ Using HomeBrew:
 
 ```bash
 pip install --user mkdocs mkdocs-material
-sudo brew install doxygen lcov gcovr
+sudo brew install doxygen graphviz lcov gcovr
 ```
 
 Using Fink:
 
 ```bash
 pip install --user mkdocs mkdocs-material
-sudo fink install doxygen
+sudo fink install doxygen graphviz
 ```

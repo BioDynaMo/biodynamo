@@ -13,6 +13,11 @@
 #
 # -----------------------------------------------------------------------------
 
+# Pass DYLD_LIBRARY_PATH again due to OS X System Integrity Policy
+if [ `uname` = "Darwin" ]; then
+  source $BDM_INSTALL_DIR/bin/thisbdm.sh &> /dev/null
+fi
+
 set -x
 
 temp_dir=$(mktemp -d)

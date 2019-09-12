@@ -12,10 +12,19 @@
 #
 # -----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.2.0)
-cmake_policy(VERSION 3.3.0)
-# With CMAKE >= 3.2 external projects support byproducts, this is needed
-# to support Ninja as generator
+cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
+
+set(policy_new CMP0072 CMP0077)
+foreach(policy ${policy_new})
+  if(POLICY ${policy})
+    cmake_policy(SET ${policy} NEW)
+  endif()
+endforeach()
+
+# Project name and current version. We do not specify any language for
+# this project. Therefore, we will be able to check manually which compiler
+# is detected on the system.
+project(BioDynaMo LANGUAGES VERSION "0.1.0")
 
 #---Set the locale to default C to prevent issued due to localization of commands---------------
 # This is necessary as we for example call `clang -v` and parse its output. But on a localized
@@ -23,11 +32,6 @@ cmake_policy(VERSION 3.3.0)
 # could be missing or be in a different order. To prevent those errors, let's just force all
 # output to use the default C locale which is more or less identical on all systems.
 set(ENV{LANG} C)
-
-# Project name and current version. We do not specify any language for
-# this project. Therefore, we will be able to check manually which compiler
-# we detected on the system.
-project(BioDynaMo LANGUAGES VERSION "0.1.0")
 
 # Directory in which we saved all the cmake informations.
 set(ENV{BDM_CMAKE_DIR} ${CMAKE_SOURCE_DIR}/cmake)
@@ -39,6 +43,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmak
 # Include some cmake files with utilities
 include(external/SHA256Digests)
 include(FeatureSummary)
+include(CaptureCommandLine)
 include(utils)
 
 # Detect os type and version
@@ -56,12 +61,12 @@ include(CheckCompiler)
 # Directory in which BioDynaMo will be installed. It can be provided
 # by the user itself.
 if (NOT DEFINED ${BDM_INSTALL_DIR})
-    set(BDM_INSTALL_DIR $ENV{HOME}/.bdm)
+    set(BDM_INSTALL_DIR $ENV{HOME})
 endif()
 
 # Specify some directories which will be used to structure BioDynaMo build.
 set(CMAKE_BIODYNAMO_BUILD_ROOT  "${CMAKE_BINARY_DIR}")
-set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_BUILD_ROOT}/install")
+set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_BUILD_ROOT}")
 set(CMAKE_THIRD_PARTY_DIR       "${CMAKE_INSTALL_ROOT}/third_party")
 set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin")
 set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include")
@@ -122,7 +127,7 @@ add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are
 # Check if Python is present
 find_package(PythonInterp 3.5)
 if (PythonInterp_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not found any Python interpreter. Please run ./prerequisites.sh again before
+    MESSAGE(FATAL_ERROR "We did not find any Python interpreter. Please run ./prerequisites.sh again before
 calling cmake. The Python interpreter is required in order to successfully use BioDynaMo." )
 endif()
 find_package(pip)
@@ -130,7 +135,7 @@ find_package(pip)
 # Check if OpenMPI is present
 find_package(MPI)
 if (MPI_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not found any OpenMPI installation. Please run ./prerequisites.sh again before
+    MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
@@ -148,7 +153,8 @@ endif()
 # Check if we have a compatible openmp compiler
 find_package(OpenMP)
 if (OpenMP_FOUND)
-    link_directories(${OpenMP_CXX_LIBRARIES})
+  get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
+  link_directories(${OpenMP_CXX_LIB_DIR})
 else()
     MESSAGE(FATAL_ERROR "OpenMP was not found in your system. Please run ./prerequisites.sh again before
 calling cmake. If this does not work, then your current compiler might not support OpenMP (this happens for instance
@@ -185,6 +191,9 @@ find_package(Git)
 
 # Find ROOT and check its installation
 find_package(ROOT COMPONENTS Geom Gui)
+if(ROOT_FOUND)
+  message("-- ROOT_VERSION = ${ROOT_VERSION}")
+endif()
 verify_ROOT()
 
 if (dict)
@@ -207,18 +216,20 @@ if (NUMA_FOUND)
 endif()
 
 if(paraview)
-
     # If we specify a custom location for ParaView then we need to specify also a custom location
     # for Qt.
     if ((DEFINED ENV{ParaView_DIR} AND NOT DEFINED ENV{Qt5_DIR}) OR (NOT DEFINED ENV{ParaView_DIR} AND DEFINED ENV{Qt5_DIR}))
-        MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build\
- BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.\
- Normally, BioDynaMo will automatically downloads those libraries.")
+        MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build "
+                "BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.")
     endif()
 
-    # Check if there is Qt5 installed
-    find_package(Qt5 COMPONENTS Widgets
-            PATHS ${CMAKE_THIRD_PARTY_DIR}/qt)
+    # If Qt5_DIR is not set by the user, we will set it to the default directory
+    # where it's downloaded to. This is done in case the user runs CMake again,
+    # after which the find_package(ParaView) might complain that it can't find
+    # a compatible Qt5 installation
+    if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
+      set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+    endif()
 
     # Check the first time if ParaView exists in the system.
     find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
@@ -228,22 +239,24 @@ if(paraview)
     # Check if ParaView was found in the system. If that's not the case then we will proceed
     # to download it.
     if(NOT ${ParaView_FOUND})
-
       PRINT_WARNING()
-      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now\n\
-together with Qt5.")
+      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now "
+              "together with Qt5.")
       PRINT_LINE()
 
       # If we did not found paraview then we will install it automatically
       # with the Qt package.
       include(external/Qt)
       PRINT_LINE()
-      MESSAGE("Qt5 was successfully donwloaded and installed. We will proceed now with ParaView.")
+      MESSAGE("Qt5 was successfully downloaded and installed. We will proceed now with ParaView.")
       PRINT_LINE()
       include(external/ParaView)
 
       # We run again the find_package command such to find correctly the location of Qt and ParaView
-      find_package(Qt5 COMPONENTS Widgets PATHS ${CMAKE_THIRD_PARTY_DIR}/qt)
+      find_package(Qt5 COMPONENTS Widgets HINTS ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5 NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH)
+      if(Qt5_FOUND)
+        message("-- Found Qt5 (version ${Qt5_VERSION})")
+      endif()
       find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
               vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
@@ -262,8 +275,10 @@ if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
   find_package(TBB)
   if (TBB_FOUND)
     include_directories(${TBB_INCLUDE_DIRS})
-    link_directories(${TBB_LIBRARIES})
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
+  else()
+    MESSAGE(FATAL_ERROR "TBB was not found on your system."
+    " Please run ./prerequisites.sh again before calling cmake.")
   endif()
 endif()
 
@@ -317,6 +332,13 @@ if (OPENCL_FOUND)
   endif()
 endif()
 
+# --------------------Copy the launcher script ---------------------------------
+configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
+file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
+        DESTINATION ${CMAKE_BINARY_DIR}
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
 # -------------------- includes -----------------------------------------------
 include(BioDynaMo)
 include(ExternalProject)
@@ -336,8 +358,13 @@ include(SetCompilerFlags)
 set(CMAKE_INSTALL_RPATH "")
 set(CMAKE_BUILD_RPATH "")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_SKIP_BUILD_RPATH FALSE) # don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH TRUE) # skip the full RPATH for the build tree
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_MACOSX_RPATH TRUE) # use @rpath keyword for the MacOS rpath
+# Sets @rpath for libbiodynamo.dylib on Mac OS in the build directory
+if (APPLE)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+endif()
 
 # -------------------- extract third party libraries ---------------------------
 set(EXTRACTED_THIRD_PARTY_LIBS "${CMAKE_CURRENT_BINARY_DIR}/extracted-third-party-libs")
@@ -356,6 +383,9 @@ include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${EXTRACTED_THIRD_PARTY_LIBS}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
+# Since including the directory where omp.h resides can cause rootcling to
+# search for system / C++ standard headers in that same directory, we instead
+# copy omp.h to our local build directory and include that
 fix_rootcling_omp_issue()
 
 # build libbiodynamo
@@ -415,18 +445,11 @@ if (${ParaView_FOUND})
 endif()
 
 # create cmake files used by external builds
-configure_file("cmake/UseBioDynaMo.cmake.in" "UseBioDynaMo.cmake" @ONLY)
+configure_file("cmake/UseBioDynaMo.cmake.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake" @ONLY)
 
 # -------------------- build test project  ------------------------------------
 if (test)
   enable_testing()
-
-  # Copy the launcher script
-  configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
-  file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
-          DESTINATION ${CMAKE_BINARY_DIR}
-          FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-          GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
   include(Testing)
 
@@ -493,6 +516,9 @@ include(Installation)
 
 # -------------------- add targets for code style and submission checks --------
 include(CppStyleGuideChecks)
+
+# ------ dist_clean command ------ #
+include(DistClean)
 
 # --------------------- Final Message to the user ------------------------------
 add_bdm_packages_properties()

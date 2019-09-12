@@ -111,6 +111,8 @@ cmake \
 make -j$(CPUCount) install
 
 # patch and bundle
+# TODO(ahmad): Patch is probably not necessary anymore after relying on rpath
+# on OS X. To be investigated.
 if [ `uname` = "Darwin" ]; then
   ## Patch vtkkwProcessXML-pv5.5
   # make install does not set the rpath correctly on OSX

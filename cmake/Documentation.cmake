@@ -74,6 +74,14 @@ find_package(Doxygen)
 find_package(MKDocs)
 
 if(DOXYGEN_FOUND AND MKDocs_FOUND)
+
+  # Check if the dot component was found
+  IF (NOT DOXYGEN_DOT_FOUND)
+    MESSAGE(WARNING "The dot (graphviz) component form Doxygen was not found. This will reduce \
+the functionalities of Doxygen and it will prevent it from generating some graphs and \
+visualizations in the documentation. Please install dot (graphviz) by issuing './prerequisites.sh all'.")
+  ENDIF()
+
   GenerateAPIDocTarget()
   GenerateMkDocsTarget(user)
   GenerateMkDocsTarget(dev)

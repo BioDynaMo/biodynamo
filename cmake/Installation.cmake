@@ -33,12 +33,61 @@ elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "${BDM_INSTAL
   message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be ${BDM_INSTALL_DIR}")
 endif()
 
+execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+
+# This regex extracts whatever is before the first "-" character, which should be
+# the version number in the form vMAJOR.MINOR.PATCH
+STRING(REGEX MATCH "[^-]*" SHORT_VERSION ${VERSION})
+
+# TODO(ahmad): see https://trello.com/c/ZT8iHKky
+# Remember to also update the install directory in the installation tests
+# set(DIRNAME "biodynamo-${SHORT_VERSION}")
+set(DIRNAME "bdm")
+
 # Install biodynamo in its final directory
-install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/install/
-        DESTINATION .
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/bin
+        DESTINATION ${DIRNAME}
         USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*"
         PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/demo
+        DESTINATION ${DIRNAME}
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/doc
+        DESTINATION ${DIRNAME}
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/include
+        DESTINATION ${DIRNAME}
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/lib
+        DESTINATION ${DIRNAME}
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/share
+        DESTINATION ${DIRNAME}
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/simulation-template
+        DESTINATION ${DIRNAME}
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/third_party
+        DESTINATION ${DIRNAME}
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.tar.gz" EXCLUDE)
+install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
+              ${CMAKE_BIODYNAMO_BUILD_ROOT}/NOTICE
+        DESTINATION ${DIRNAME})
 
 # We need to install manually these targets in order to clear their RPATH.
 # They have been already copied inside the final install directory by the
@@ -46,16 +95,16 @@ install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/install/
 # directory. Therefore we need to "install" them again to fix this problem.
 install(TARGETS biodynamo
         LIBRARY
-        DESTINATION ./lib)
+        DESTINATION ${DIRNAME}/lib)
 
 if(test)
     install(TARGETS biodynamo-unit-tests
             RUNTIME
-            DESTINATION ./bin)
+            DESTINATION ${DIRNAME}/bin)
 endif()
 
 if(${ParaView_FOUND})
     install(TARGETS BDMGlyphFilter
             LIBRARY
-            DESTINATION ./lib/pv_plugin)
+            DESTINATION ${DIRNAME}/lib/pv_plugin)
 endif()

@@ -49,9 +49,18 @@ $BDM_PROJECT_DIR/install.sh << EOF
 y
 EOF
 
+# Get version name with same regex as in Installation.cmake
+# TOOD(ahmad): needs more portable solution
+VERSION=`git describe --tags`
+REGEX='[^-]*'
+[[ $VERSION =~ $REGEX ]]
+# TODO(ahmad): see https://trello.com/c/ZT8iHKky
+# INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
+INSTALL_DIR=${HOME}/bdm
+
 # reload shell and source biodynamo
 set +e +x
-source ~/.bdm/bin/thisbdm.sh
+source ${INSTALL_DIR}/bin/thisbdm.sh
 set -e -x
 
 # run system test.

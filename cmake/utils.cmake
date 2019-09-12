@@ -12,67 +12,6 @@
 #
 # -----------------------------------------------------------------------------
 
-# Try to find the ROOT package. It is an hard requirement
-# for the project. If ROOT is not found in the system, it
-# will be downloaded during the make step. Moreover, this
-# will also check if ROOT was compiled using c++14 and if
-# its environment was sourced.
-function(verify_ROOT)
-    set(CUSTOM_ROOT_SOURCE_ENV FALSE PARENT_SCOPE)
-    set(CUSTOM_ROOT_SOURCE_ENV_COMMAND ":" PARENT_SCOPE)
-    IF(NOT ROOT_FOUND)
-        print_warning()
-        MESSAGE("We did not find any ROOT installed in the system. We will proceed to download it\n\
-once the build process has started. ROOT will be then installed to the location ${THIRD_PARTY_DIR}/root.")
-        print_line()
-        include(external/ROOT)
-
-        # Propagate the needed variables to the parent
-        SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
-        SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
-        SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
-        SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
-    else()
-        # Check if ROOT was compiled with the correct C++ standard (which has to be greater or equal
-        # than C++14). If that's not the case, then we will download the correct version and we will
-        # use that instead of the system one.
-        if (NOT ROOT_CXX_FLAGS MATCHES ["-std=c++14"|"-std=c++1y"])
-            MESSAGE(WARNING "The ROOT version currently installed was compiled with an older c++ standard that is not\
-compatible with BioDynaMo. We will proceed to download the correct version of ROOT now.")
-            include(external/ROOT)
-
-            # Propagate the needed variables to the parent
-            SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
-            SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
-            SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
-            SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
-        endif()
-
-        # Manually set the ROOT enviromental variables if it ROOTSYS was not previously found.
-        # This will avoid the user to run thisroot.sh in order to build BioDynaMo. However,
-        # we will warn him anyway, such to let him/her know that this is not exactly the
-        # standard way to do things.
-        if (NOT DEFINED ENV{ROOTSYS})
-            string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
-            set(ENV{ROOTSYS} ${TMP_ROOT_PATH} PARENT_SCOPE)
-            set(ENV{LD_LIBRARY_PATH} $ENV{ROOTSYS}/lib:$ENV{LD_LIBRARY_PATH} PARENT_SCOPE)
-
-            # Since the user did not set the $ROOTSYS variable, then we need to source
-            # the ROOT environment everytime we need it. Ideally, when ROOT env is needed
-            # one should use the command outlined before in its custom targets.
-            source_root_file(${PROJECT_BINARY_DIR})
-            set(CUSTOM_ROOT_SOURCE_ENV TRUE PARENT_SCOPE)
-            set(CUSTOM_ROOT_SOURCE_ENV_COMMAND . ${PROJECT_BINARY_DIR}/source_root_auto.sh PARENT_SCOPE)
-
-            PRINT_WARNING()
-            MESSAGE("It appears that ROOT environment was not loaded
-(by sourcing ${ROOTSYS}/bin/thisroot.sh).
-You will be able to build BioDynaMo anyway. However, make sure to source it later on in order to use the library.")
-            PRINT_LINE()
-        endif()
-    endif()
-endfunction()
-
 # Detect the system flavour and version. Generate a variable
 # called BDM_OS which will have as content <OS>-<version>.
 # If lsb_release is not found we ask the user to specify manually
@@ -107,6 +46,43 @@ function(detect_os)
             SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
             SET(DETECTED_OS_VERSION ${LSB_RELEASE_ID_VERSION} PARENT_SCOPE)
             SET(DETECTED_OS_TYPE ${LSB_RELEASE_ID_SHORT} PARENT_SCOPE)
+        endif()
+    endif()
+endfunction()
+
+# Try to find the ROOT package. It is an hard requirement
+# for the project. If ROOT is not found in the system, it
+# will be downloaded during the make step. Moreover, this
+# will also check if ROOT was compiled using c++14 and if
+# its environment was sourced.
+function(verify_ROOT)
+    if(NOT ROOT_FOUND)
+        print_warning()
+        message("We did not find any ROOT installed in the system. We will proceed to download it "
+        "once the build process has started. ROOT will be then installed to the location ${CMAKE_THIRD_PARTY_DIR}/root.")
+        print_line()
+        include(external/ROOT)
+
+        # Propagate the needed variables to the parent
+        SET(ROOT_VERSION ${ROOT_VERSION} PARENT_SCOPE)
+        SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
+        SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
+        SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
+        SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
+    else()
+        # When ROOT is found, but it's not C++14 compliant, we exit the installation, because ROOT needs
+        # to be properly sourced prior to invoking CMake (CMake cannot do this for us, because it requires
+        # reverting the previous find_package() call, which is not possible.)
+        if(NOT ROOT_cxx14_FOUND)
+            message(FATAL_ERROR "The ROOT installation found in ${ROOTSYS} is not C++14 compliant. "
+            "Please download a compatible ROOT version from http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz, "
+            "and source bin/thisroot.sh prior to installing BioDynaMo. For more information: https://biodynamo.github.io/dev/build/#use-a-custom-paraviewroot-installation")
+        endif()
+
+        if (NOT DEFINED ROOTSYS OR NOT DEFINED ${ROOTSYS})
+          # Set ROOTSYS variable
+          string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
+          set(ENV{ROOTSYS} ${TMP_ROOT_PATH})
         endif()
     endif()
 endfunction()
@@ -191,7 +167,7 @@ function(install_inside_build)
     add_copy_directory(copy_files_bdm
             ${CMAKE_SOURCE_DIR}/cli/
             DESTINATION ${CMAKE_INSTALL_BINDIR}
-            GLOB "*.py"
+            GLOB "*.py" "*.sh"
             EXCLUDE "biodynamo.py"
             )
 
@@ -217,7 +193,7 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/cmake/FindClangTools.cmake
             ${CMAKE_SOURCE_DIR}/cmake/RootUseFile.cmake
             ${CMAKE_SOURCE_DIR}/cmake/CppStyleGuideChecks.cmake
-            ${CMAKE_BINARY_DIR}/UseBioDynaMo.cmake
+            ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake
             ${CMAKE_SOURCE_DIR}/cmake/utils.cmake
             )
     add_copy_files(copy_files_bdm
@@ -329,7 +305,7 @@ function(add_bdm_packages_properties)
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(Numa PROPERTIES
-            DESCRIPTION "Simple API to the NUMA (Non Uniform Memory Access) policy supported by the Linux kernel. (REQUIRED)"
+            DESCRIPTION "Simple API to the NUMA (Non Uniform Memory Access) policy supported by the Linux kernel. (REQUIRED only on Linux system)"
             TYPE REQUIRED
             )
     SET_PACKAGE_PROPERTIES(ParaView PROPERTIES
@@ -360,6 +336,10 @@ function(add_bdm_packages_properties)
             DESCRIPTION "Open Source widget toolkit for creating user interfaces. It is needed by Paraview. (OPTIONAL)"
             TYPE REQUIRED
             )
+    SET_PACKAGE_PROPERTIES(TBB PROPERTIES
+            DESCRIPTION "Threading Building Blocks (TBB) C++ library used to easily write parallel C++ programs. (REQUIRED)"
+            TYPE REQUIRED
+            )
 
 endfunction()
 
@@ -386,6 +366,53 @@ function(add_permissions FILE_PATH DESTINATION)
             DESTINATION ${DESTINATION}
             FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
             GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+endfunction()
+
+# Method used to download a file from a given URL. This method will also retry
+# to download the file if the download did not work.
+#   URL: URL from which we will download the file
+#   DEST: destination where to save the file
+#   HASH: hash of the download file to check consistency
+#   PACKAGE_NAME: name of the file we are downloading (just for logging reasons)
+function(download_retry URL DEST HASH PACKAGE_NAME)
+
+  # Download the file
+  file(DOWNLOAD ${URL}
+          ${DEST}
+          INACTIVITY_TIMEOUT 10
+          STATUS DOWNLOAD_STATUS
+          SHOW_PROGRESS)
+
+  # Check if the download worked properly. If not, retry once to download
+  # the package again.
+  LIST(GET DOWNLOAD_STATUS 0 DOWNLOAD_STATUS_CODE)
+  LIST(GET DOWNLOAD_STATUS 1 DOWNLOAD_STATUS_MESSAGE)
+  IF (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E sleep 10)
+    MESSAGE(WARNING "\n Retrying download of ${PACKAGE_NAME} from ${URL} (${DOWNLOAD_STATUS_MESSAGE}, status ${DOWNLOAD_STATUS_CODE})\n")
+    file(DOWNLOAD ${URL}
+            ${DEST}
+            SHOW_PROGRESS
+            INACTIVITY_TIMEOUT 10
+            STATUS DOWNLOAD_STATUS)
+    # Check again if the download worked properly.
+    LIST(GET DOWNLOAD_STATUS 0 DOWNLOAD_STATUS_CODE)
+    LIST(GET DOWNLOAD_STATUS 1 DOWNLOAD_STATUS_MESSAGE)
+    IF (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
+      MESSAGE( FATAL_ERROR "\nWe were unable to download ${PACKAGE_NAME}. This may be caused by several reason, like \
+      network error connections or just temporary network failure. Please retry again in a \
+      few minutes by deleting all the contents of the build directory and by issuing again \
+      the 'cmake' command.\n")
+    ENDIF()
+  ELSE()
+    # If we download was okay, then we check the hash
+    file(SHA256 ${DEST} ACTUAL_SHA256)
+    IF(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
+      MESSAGE(FATAL_ERROR "Failed to download ${URL}. Hash mismatch. Expected a SHA256 of "
+    "${EXPECTED_SHA256} but got ${HASH} instead.")
+    ENDIF()
+  ENDIF()
+
 endfunction()
 
 # Helper function to print a simple line
