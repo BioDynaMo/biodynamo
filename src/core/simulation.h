@@ -45,19 +45,23 @@ class Simulation {
   /// Constructor that takes the arguments from `main` to parse command line
   /// arguments. The simulation name is extracted from the executable name.
   /// Creation of a new simulation automatically activates it.
-  Simulation(int argc, const char** argv);
+  Simulation(int argc, const char** argv, const std::string& config_file = "");
 
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
   /// Command line arguments are not parsed!\n
   /// Creation of a new simulation automatically activates it.
-  explicit Simulation(const std::string& simulation_name);
+  /// \param config_file Use a different config file than the default bdm.toml
+  explicit Simulation(const std::string& simulation_name,
+                      const std::string& config_file = "");
 
   Simulation(int argc, const char** argv,
-             const std::function<void(Param*)>& set_param);
+             const std::function<void(Param*)>& set_param,
+             const std::string& config_file = "");
 
   Simulation(const std::string& simulation_name,
-             const std::function<void(Param*)>& set_param);
+             const std::function<void(Param*)>& set_param,
+             const std::string& config_file = "");
 
   ~Simulation();
 
@@ -131,7 +135,8 @@ class Simulation {
 
   /// Initialize Simulation
   void Initialize(int argc, const char** argv,
-                  const std::function<void(Param*)>& set_param);
+                  const std::function<void(Param*)>& set_param,
+                  const std::string& ctor_config);
 
   /// Initialize data members that have a dependency on Simulation
   void InitializeMembers();
@@ -146,7 +151,11 @@ class Simulation {
   /// @param argc argument count from main function
   /// @param argv argument vector from main function
   void InitializeRuntimeParams(int argc, const char** argv,
-                               const std::function<void(Param*)>& set_param);
+                               const std::function<void(Param*)>& set_param,
+                               const std::string& ctor_config);
+
+  void LoadConfigFile(const std::string& ctor_config,
+                      const std::string& cli_config);
 
   /// This function initialzes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);

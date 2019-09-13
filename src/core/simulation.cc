@@ -47,21 +47,25 @@ Simulation* Simulation::GetActive() { return active_; }
 
 Simulation::Simulation(TRootIOCtor* p) {}
 
-Simulation::Simulation(int argc, const char** argv)
-    : Simulation(argc, argv, [](auto* param) {}) {}
+Simulation::Simulation(int argc, const char** argv,
+                       const std::string& config_file)
+    : Simulation(argc, argv, [](auto* param) {}, config_file) {}
 
-Simulation::Simulation(const std::string& simulation_name)
-    : Simulation(simulation_name, [](auto* param) {}) {}
+Simulation::Simulation(const std::string& simulation_name,
+                       const std::string& config_file)
+    : Simulation(simulation_name, [](auto* param) {}, config_file) {}
 
 Simulation::Simulation(int argc, const char** argv,
-                       const std::function<void(Param*)>& set_param) {
-  Initialize(argc, argv, set_param);
+                       const std::function<void(Param*)>& set_param,
+                       const std::string& config_file) {
+  Initialize(argc, argv, set_param, config_file);
 }
 
 Simulation::Simulation(const std::string& simulation_name,
-                       const std::function<void(Param*)>& set_param) {
+                       const std::function<void(Param*)>& set_param,
+                       const std::string& config_file) {
   const char* argv[1] = {simulation_name.c_str()};
-  Initialize(1, argv, set_param);
+  Initialize(1, argv, set_param, config_file);
 }
 
 void Simulation::Restore(Simulation&& restored) {
@@ -152,11 +156,12 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
 }
 
 void Simulation::Initialize(int argc, const char** argv,
-                            const std::function<void(Param*)>& set_param) {
+                            const std::function<void(Param*)>& set_param,
+                            const std::string& config_file) {
   id_ = counter_++;
   Activate();
   InitializeUniqueName(ExtractSimulationName(argv[0]));
-  InitializeRuntimeParams(argc, argv, set_param);
+  InitializeRuntimeParams(argc, argv, set_param, config_file);
   InitializeOutputDir();
   InitializeMembers();
 }
@@ -182,7 +187,8 @@ void Simulation::InitializeMembers() {
 }
 
 void Simulation::InitializeRuntimeParams(
-    int argc, const char** argv, const std::function<void(Param*)>& set_param) {
+    int argc, const char** argv, const std::function<void(Param*)>& set_param,
+    const std::string& ctor_config) {
   // Renew thread info just in case it has been initialised as static and a
   // simulation calls e.g. `omp_set_num_threads()` within main.
   ThreadInfo::GetInstance()->Renew();
@@ -204,16 +210,40 @@ void Simulation::InitializeRuntimeParams(
   }
 
   auto options = bdm::DefaultSimulationOptionParser(argc, argv);
+  LoadConfigFile(ctor_config, options.config_file_);
+
+  if (options.backup_file_ != "") {
+    param_->backup_file_ = options.backup_file_;
+  }
+  if (options.restore_file_ != "") {
+    param_->restore_file_ = options.restore_file_;
+  }
+
+  set_param(param_);
+}
+
+void Simulation::LoadConfigFile(const std::string& ctor_config,
+                                const std::string& cli_config) {
   constexpr auto kConfigFile = "bdm.toml";
   constexpr auto kConfigFileParentDir = "../bdm.toml";
-  if (options.config_file_ != "") {
-    if (FileExists(options.config_file_)) {
-      auto config = cpptoml::parse_file(options.config_file_);
+  if (ctor_config != "") {
+    if (FileExists(ctor_config)) {
+      auto config = cpptoml::parse_file(ctor_config);
       param_->AssignFromConfig(config);
     } else {
       Log::Fatal("Simulation::InitializeRuntimeParams", "The config file ",
-                 options.config_file_,
-                 "specified as command line argument "
+                 ctor_config,
+                 " specified in the constructor of bdm::Simulation "
+                 "could not be found.");
+    }
+  } else if (cli_config != "") {
+    if (FileExists(cli_config)) {
+      auto config = cpptoml::parse_file(cli_config);
+      param_->AssignFromConfig(config);
+    } else {
+      Log::Fatal("Simulation::InitializeRuntimeParams", "The config file ",
+                 cli_config,
+                 " specified as command line argument "
                  "could not be found.");
     }
   } else if (FileExists(kConfigFile)) {
@@ -227,15 +257,6 @@ void Simulation::InitializeRuntimeParams(
                  "Config file %s not found in `.` or `../` directory.",
                  kConfigFile);
   }
-
-  if (options.backup_file_ != "") {
-    param_->backup_file_ = options.backup_file_;
-  }
-  if (options.restore_file_ != "") {
-    param_->restore_file_ = options.restore_file_;
-  }
-
-  set_param(param_);
 }
 
 void Simulation::InitializeUniqueName(const std::string& simulation_name) {
