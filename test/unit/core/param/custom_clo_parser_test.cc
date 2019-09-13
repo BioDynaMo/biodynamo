@@ -25,10 +25,10 @@ TEST(CustomCLOParserTest, All) {
   EXPECT_NEAR(3.14, parser.GetValue<double>("default-diameter"), 1e-5);
   EXPECT_EQ("MySimulation", parser.GetValue<std::string>("sim-name"));
 
-  EXPECT_EQ(321, parser.GetValue<int>("missing-param", true, 321));
+  EXPECT_EQ(321, parser.GetValue<int>("missing-param", 321));
 
   try {
-    parser.GetValue<int>("missing-param", false);
+    parser.GetValue<int>("missing-param");
     FAIL() << "Exception expected" << std::endl;
   } catch (const std::logic_error& e) {
   }

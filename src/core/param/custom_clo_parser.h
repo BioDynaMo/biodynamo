@@ -28,11 +28,9 @@ struct CustomCLOParser {
   CustomCLOParser(int argc, const char** argv) : argc_(argc), argv_(argv) {}
 
   /// Function returns the value for the given command line argument.
-  /// A default value is returned if the argument was not specified. In this
-  /// case `allow_default` must be true.
+  /// Throws an exception if the parameter was not specified
   template <typename T>
-  T GetValue(const std::string& parameter, bool allow_default = false,
-             T default_value = T()) {
+  T GetValue(const std::string& parameter) {
     for (int i = 0; i < argc_; i++) {
       std::string arg(argv_[i]);
       std::string prefix = Concat("--", parameter, "=");
@@ -43,14 +41,28 @@ struct CustomCLOParser {
         return t;
       }
     }
-    if (allow_default) {
-      return default_value;
-    }
-
     throw std::logic_error(Concat("Could not find parameter '", parameter,
                                   "' and default value has been disabled"));
   }
 
+  /// Function returns the value for the given command line argument.
+  /// A default value is returned if the argument was not specified.
+  template <typename T>
+  T GetValue(const std::string& parameter, T default_value) {
+    for (int i = 0; i < argc_; i++) {
+      std::string arg(argv_[i]);
+      std::string prefix = Concat("--", parameter, "=");
+      if (!arg.compare(0, prefix.size(), prefix)) {
+        T t;
+        std::istringstream str(arg.substr(prefix.size()).c_str());
+        str >> t;
+        return t;
+      }
+    }
+    return default_value;
+  }
+
+ private:
   int argc_;
   const char** argv_;
 };
