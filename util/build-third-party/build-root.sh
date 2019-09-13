@@ -33,7 +33,8 @@ cd $BDM_PROJECT_DIR
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
 # archive destination dir
-DEST_DIR=$BDM_PROJECT_DIR/build
+BDM_OS=$(DetectOs)
+DEST_DIR=$BDM_PROJECT_DIR/build/build-third-party
 mkdir -p $DEST_DIR
 EchoNewStep "Start building ROOT $ROOT_VERSION. Result will be stored in $DEST_DIR"
 # working dir
@@ -70,7 +71,10 @@ cmake \
 make -j$(CPUCount) install
 
 cd $ROOT_INSTALL_DIR
-tar -zcf root.tar.gz *
+RESULT_FILE=root_${ROOT_VERSION}_${BDM_OS}.tar.gz
+tar -zcf ${RESULT_FILE} *
 
 # mv to destination directory
-mv root.tar.gz $DEST_DIR
+mv ${RESULT_FILE} $DEST_DIR
+cd $DEST_DIR
+sha256sum ${RESULT_FILE} > ${RESULT_FILE}.sha256

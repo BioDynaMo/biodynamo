@@ -44,7 +44,7 @@ EOF'
     sudo yum update -y
 
     #  root required packages
-    sudo yum install -y git cmake cmake3 binutils \
+    sudo yum install -y git binutils \
       libX11-devel libXpm-devel libXft-devel libXext-devel
     #  root optional packages
     sudo yum install -y gcc-gfortran openssl-devel pcre-devel \
@@ -64,8 +64,6 @@ EOF'
     sudo yum install -y centos-release-scl epel-release
     sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm || true
     sudo yum install -y devtoolset-7-gcc*
-    export LD_LIBRARY_PATH=/opt/rh/devtoolset-7/root/usr/lib64:/opt/rh/devtoolset-7/root/usr/lib:/opt/rh/devtoolset-7/root/usr/lib64/dyninst:/opt/rh/devtoolset-7/root/usr/lib/dyninst:$LD_LIBRARY_PATH
-    export PATH=/opt/rh/devtoolset-7/root/usr/bin:$PATH
 
     # libroadrunner
     sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
@@ -76,16 +74,11 @@ EOF'
 
     export LLVM_CONFIG="/opt/rh/llvm-toolset-6.0/root/usr/bin/llvm-config"
     set +e
+    . scl_source enable devtoolset-7
     . scl_source enable llvm-toolset-6.0
     set -e
-
-    # Set cmake3 as the default cmake
-    sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
-    --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
-    --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
-    --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
-    --family cmake
-
+    CC=gcc
+    CXX=g++
   else
     if [ $BDM_OS = "travis-linux" ]; then
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
@@ -102,7 +95,7 @@ EOF'
     # only for ubuntu image
     sudo apt-get -y install wget git make
     #  root required packages
-    sudo apt-get -y install git dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev \
+    sudo apt-get -y install git dpkg-dev g++ gcc binutils libx11-dev libxpm-dev \
       libxft-dev libxext-dev
     #  root optional packages
     sudo apt-get -y install gfortran libssl-dev libpcre3-dev \
@@ -122,8 +115,11 @@ EOF'
     sudo apt-get install -y libncurses5-dev
 
     export LLVM_CONFIG="/usr/bin/llvm-config-6.0"
-
   fi
+  # update cmake to build ROOT
+  URL="https://cmake.org/files/v3.15/cmake-3.15.3-Linux-x86_64.tar.gz"
+  DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.15.3 1
+  export PATH=$WORKING_DIR/cmake-3.15.3/bin:$PATH
 
 else
   brew install llvm@6

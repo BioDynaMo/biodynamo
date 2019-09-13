@@ -194,6 +194,26 @@
    ...
 }
 
+{
+   ignore_uninitialized_heap_io_root-v6-18-04
+   Memcheck:Param
+   write(buf)
+   obj:/lib/x86_64-linux-gnu/libpthread-2.23.so
+   fun:_ZN5TFile11WriteBufferEPKci.part.56.constprop.201
+   fun:_ZN4TKey9WriteFileEiP5TFile
+   fun:_ZN14TDirectoryFile14WriteObjectAnyEPKvPK6TClassPKcS6_i
+   fun:WriteObject<bdm::Simulation>
+   fun:Backup
+   fun:_ZN3bdm23scheduler_test_internal14RunRestoreTestEv
+   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+   fun:_ZN7testing8internal35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS4_FS3_vEPKc
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8TestInfo3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8internal38HandleSehExceptionsInMethodIfSupportedINS0_12UnitTestImplEbEET0_PT_MS4_FS3_vEPKc
+}
+
 ######### Suppress rootcling false positives
 {
    false_positive_root_1
@@ -251,6 +271,26 @@
    fun:__nss_lookup_function
    fun:__nss_lookup
    fun:getpwuid_r@@GLIBC_2.2.5
+}
+
+{
+  glibc_issue_root-v6-18-04
+  Memcheck:Leak
+  match-leak-kinds: definite
+  fun:malloc
+  fun:_dl_map_object_deps
+  fun:dl_open_worker
+  fun:_dl_catch_error
+  fun:_dl_open
+  fun:do_dlopen
+  fun:_dl_catch_error
+  fun:dlerror_run
+  fun:__libc_dlopen_mode
+  fun:nss_load_library
+  fun:__nss_lookup_function
+  fun:init_nss_interface
+  fun:_nss_compat_getpwuid_r
+  fun:getpwuid_r@@GLIBC_2.2.5
 }
 
 ######### Suppress OpenCL issues

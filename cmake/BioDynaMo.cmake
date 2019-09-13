@@ -45,7 +45,8 @@ endfunction(get_implicit_dependencies)
 
 find_program(GENREFLEX_EXECUTABLE genreflex HINTS $ENV{ROOTSYS}/bin)
 
-# function bdm_generate_dictionary (TARGET
+# function bdm_generate_dictionary (TARGET BINARY
+#                                   EXECUTABLE
 #                                   DICT dictionary
 #                                   DEPENDS
 #                                   SELECTION selectionfile ...
@@ -57,7 +58,7 @@ find_program(GENREFLEX_EXECUTABLE genreflex HINTS $ENV{ROOTSYS}/bin)
 # object library dictionary generation and creation of the final shared lib/
 # executable.
 # Ouput of genreflex is piped into a log file ${TARGET}.log
-function(bdm_generate_dictionary TARGET)
+function(bdm_generate_dictionary TARGET EXECUTABLE)
   CMAKE_PARSE_ARGUMENTS(ARG "" "DICT" "SELECTION;HEADERS;DEPENDS;OPTIONS" "" ${ARGN})
   #---Get the list of header files-------------------------
   set(headerfiles)
@@ -131,6 +132,13 @@ function(bdm_generate_dictionary TARGET)
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   DEPENDS ${ARG_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/rebuild_${TARGET}.txt)
 
+  if (${EXECUTABLE} AND DEFINED CMAKE_INSTALL_BINDIR)
+    add_custom_command(TARGET ${TARGET}
+            POST_BUILD
+            COMMAND cp ${CMAKE_BINARY_DIR}/${DICT_PCM_NAME}_rdict.pcm ${CMAKE_INSTALL_BINDIR})
+  endif()
+  # TODO after ROOT has been updated to new ROOT only copy to lib dir
+  # if EXECUTABLE is false
   if (DEFINED CMAKE_INSTALL_LIBDIR)
     add_custom_command(TARGET ${TARGET}
             POST_BUILD
@@ -165,7 +173,7 @@ function(bdm_add_executable TARGET)
 
     # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict.cc")
-    bdm_generate_dictionary(${TARGET}-dict
+    bdm_generate_dictionary(${TARGET}-dict ON
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
       SELECTION $ENV{BDM_CMAKE_DIR}/selection.xml
@@ -200,7 +208,7 @@ function(build_libbiodynamo TARGET)
 
     # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/libbiodynamo_dict.cc")
-    bdm_generate_dictionary(${TARGET}-dict
+    bdm_generate_dictionary(${TARGET}-dict OFF
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
       SELECTION $ENV{BDM_CMAKE_DIR}/selection-libbiodynamo.xml
