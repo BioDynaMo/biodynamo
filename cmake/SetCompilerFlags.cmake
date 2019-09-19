@@ -18,7 +18,7 @@
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
 if(NOT COMPILER_SUPPORTS_CXX14)
-  message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
+  message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
 endif()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
