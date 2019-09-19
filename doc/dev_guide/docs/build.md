@@ -36,7 +36,7 @@ Run `./prerequisites.sh --help` to see how to use it.
     If you do not have `brew` on your system, or you are using a different package manager, you will need to
     manually install all the required packages. Please have a look to the [Prerequisites](user/prerequisites) page.
 
-## CentOS 7.6.1810
+## CentOS 7
 
 In case of CentOS, you will need to run some additional commands before actually calling `cmake` and `make`. This is because
 CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to
@@ -46,7 +46,7 @@ order to run the library.
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
-./prerequisites.sh all centos-7.6.1810
+./prerequisites.sh all centos-7
 
 export MESA_GL_VERSION_OVERRIDE=3.3
 . scl_source enable rh-python36

@@ -37,7 +37,7 @@ $BDM_PROJECT_DIR/util/xvfb-initd.sh stop
 
 # debug output for centos docker issue
 # sometimes script inside docker container does not terminate
-if [ $1 = "centos-7.6.1810" ]; then
+if [ $1 = "centos-7" ]; then
   ps -ef
 fi
 

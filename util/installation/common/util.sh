@@ -48,7 +48,11 @@ function DetectOs {
     # linux
     DISTRIBUTOR=$(lsb_release -si)
     RELEASE=$(lsb_release -sr)
-    OS="${DISTRIBUTOR}-${RELEASE}"
+    if [ "${DISTRIBUTOR}" = "CentOS" ]; then
+      OS="${DISTRIBUTOR}-${RELEASE:0:1}"
+    else
+      OS="${DISTRIBUTOR}-${RELEASE}"
+    fi
     echo $OS | awk '{print tolower($0)}'
   elif [ `uname` = "Darwin" ]; then
     # macOS
@@ -355,7 +359,7 @@ function GetVersionFromString() {
 
 # This function checks if CMake is installed on the system and if the version
 # meets the minimum required version ($1). On some systems the alias `cmake3`
-# is used to point to CMake v3.X.X, so we set that as the binary for building 
+# is used to point to CMake v3.X.X, so we set that as the binary for building
 # BioDynaMo during installation.
 function CheckCMakeVersion {
   if [ -x "$(command -v cmake3)" ]; then

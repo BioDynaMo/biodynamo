@@ -30,7 +30,7 @@ SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ `uname` = "Linux" ]; then
   BDM_OS=$(DetectOs)
-  if [ $BDM_OS = "centos-7.6.1810" ]; then
+  if [ $BDM_OS = "centos-7" ]; then
 
     # Add custom repository for llvm-toolset-6.0
     sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo

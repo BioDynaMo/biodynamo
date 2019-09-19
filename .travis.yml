@@ -33,7 +33,7 @@ matrix:
       sudo: required
       group: edge
       env: SCRIPT="util/travis-ci/installation-test.sh ubuntu-18.04"
-    # Test development installation on centos-7.6.1810
+    # Test development installation on centos-7
     - os: linux
       before_install:
         - test -n $CC  && unset CC
@@ -41,7 +41,7 @@ matrix:
       dist: trusty
       sudo: required
       group: edge
-      env: SCRIPT="util/travis-ci/installation-test.sh centos-7.6.1810"
+      env: SCRIPT="util/travis-ci/installation-test.sh centos-7"
     # Test development installation on osx
     - os: osx
       osx_image: xcode10.1

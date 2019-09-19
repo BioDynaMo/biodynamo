@@ -24,7 +24,7 @@ function(detect_os)
             MESSAGE(FATAL_ERROR "We were unable to detect your OS version. This usually happens because we were unable to find\
  lsb_release command. In order to fix this error you can: install lsb_release for your distribution or specify which \
  system you are using. To specify the OS you have to call again cmake by passing -DOS=<your_os> as argument. The current\
- supported OS are: ubuntu-16.04, ubuntu-18.04, centos-7.6.1810, osx.")
+ supported OS are: ubuntu-16.04, ubuntu-18.04, centos-7, osx.")
         elseif(APPLE)
             # We check if we are using Travis (therefore the BDM_OS has a slightly different name).
             if ($ENV{TRAVIS})
@@ -34,18 +34,23 @@ function(detect_os)
             endif()
         else()
             execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
-                    OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
+                    OUTPUT_VARIABLE LSB_RELEASE_DISTRIBUTOR
                     OUTPUT_STRIP_TRAILING_WHITESPACE
                     )
             execute_process(COMMAND ${LSB_RELEASE_EXEC} -sr
-                    OUTPUT_VARIABLE LSB_RELEASE_ID_VERSION
+                    OUTPUT_VARIABLE LSB_RELEASE_RELEASE
                     OUTPUT_STRIP_TRAILING_WHITESPACE
                     )
-            SET(BDM_OS "${LSB_RELEASE_ID_SHORT}-${LSB_RELEASE_ID_VERSION}")
+            if (${LSB_RELEASE_DISTRIBUTOR} STREQUAL "CentOS")
+              string(SUBSTRING ${LSB_RELEASE_RELEASE} 0 1 CENTOS_MAJOR)
+              SET(BDM_OS "${LSB_RELEASE_DISTRIBUTOR}-${CENTOS_MAJOR}")
+            else()
+              SET(BDM_OS "${LSB_RELEASE_DISTRIBUTOR}-${LSB_RELEASE_RELEASE}")
+            endif()
             string(TOLOWER "${BDM_OS}" BDM_OS)
             SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
-            SET(DETECTED_OS_VERSION ${LSB_RELEASE_ID_VERSION} PARENT_SCOPE)
-            SET(DETECTED_OS_TYPE ${LSB_RELEASE_ID_SHORT} PARENT_SCOPE)
+            SET(DETECTED_OS_VERSION ${LSB_RELEASE_RELEASE} PARENT_SCOPE)
+            SET(DETECTED_OS_TYPE ${LSB_RELEASE_DISTRIBUTOR} PARENT_SCOPE)
         endif()
     endif()
 endfunction()

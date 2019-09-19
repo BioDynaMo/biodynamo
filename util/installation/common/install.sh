@@ -57,7 +57,7 @@ fi
 
 # Custom instructions for CentOS
 set +e
-if [ $BDM_OS = "centos-7.6.1810" ]; then
+if [ $BDM_OS = "centos-7" ]; then
   export MESA_GL_VERSION_OVERRIDE=3.3
   . scl_source enable rh-python36
   if [ -z ${CXX} ] && [ -z ${CC} ] ; then

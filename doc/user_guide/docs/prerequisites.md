@@ -51,7 +51,7 @@ sudo apt-get install -y freeglut3-dev valgrind \
   llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
 ```
 
-## CentOS 7.6.1810
+## CentOS 7
 
 ### Required Packages
 

@@ -22,16 +22,16 @@ function run_cmake_simulation() {
 
   pushd "$1"
   biodynamo run | tee "${log}"
+  SIM_RET_VAL=$?
   popd
 
-  expected="Simulation completed successfully!"
-  actual=$(tail -n3 "${log}" | head -n1)
-
-  if [ "${actual}" != "${expected}" ]; then
-    return 1
+  if [ "${SIM_RET_VAL}" != "0" ]; then
+    returm $SIM_RET_VAL
   fi
 
-  return 0
+  expected="Simulation completed successfully!"
+  grep --quiet "${expected}" "${log}"
+  return $?
 }
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

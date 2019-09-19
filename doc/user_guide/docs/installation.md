@@ -37,5 +37,5 @@ git pull origin master
 ## Supported platforms
 
 *  **Ubuntu 16.04 (recommended)**, 18.04
-*  CentOS 7.6.1810
+*  CentOS 7 (latest)
 *  Mac OSX
