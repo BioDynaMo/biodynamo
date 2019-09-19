@@ -69,8 +69,10 @@ if [ $BDM_OS = "centos-7" ]; then
 fi
 set -e
 
-# This will propagate the detected OS to cmake
-export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
+# Test overriding the OS detection for one OS
+if [ "${BDM_OS}" = "ubuntu-16.04" ]; then
+  export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
+fi
 
 # perform a clean release build
 BUILD_DIR=$BDM_PROJECT_DIR/build
