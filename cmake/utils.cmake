@@ -371,48 +371,43 @@ endfunction()
 # Method used to download a file from a given URL. This method will also retry
 # to download the file if the download did not work.
 #   URL: URL from which we will download the file
-#   DEST: destination where to save the file
+#   DEST: destination where the contents of the tar file will be extracted to
 #   HASH: hash of the download file to check consistency
-#   PACKAGE_NAME: name of the file we are downloading (just for logging reasons)
-function(download_retry URL DEST HASH PACKAGE_NAME)
+function(download_verify_extract URL DEST HASH)
+  file(MAKE_DIRECTORY ${DEST})
+  get_filename_component(TAR_FILENAME ${URL} NAME)
+  get_filename_component(DEST_PARENT "${DEST}/.." ABSOLUTE)
+  set(FULL_TAR_PATH "${DEST_PARENT}/${TAR_FILENAME}")
 
   # Download the file
-  file(DOWNLOAD ${URL}
-          ${DEST}
-          INACTIVITY_TIMEOUT 10
-          STATUS DOWNLOAD_STATUS
-          SHOW_PROGRESS)
+  execute_process(COMMAND ${WGET_BIN} --progress=dot:giga -O ${FULL_TAR_PATH} ${URL}
+                  RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
+  if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
+    message( FATAL_ERROR "\nERROR: We were unable to download:\
+  ${URL}\n\
+This may be caused by several reason, like network error connections or just \
+temporary network failure. Please retry again in a few minutes by deleting all \
+the contents of the build directory and by issuing again the 'cmake' command.\n")
+  endif()
 
-  # Check if the download worked properly. If not, retry once to download
-  # the package again.
-  LIST(GET DOWNLOAD_STATUS 0 DOWNLOAD_STATUS_CODE)
-  LIST(GET DOWNLOAD_STATUS 1 DOWNLOAD_STATUS_MESSAGE)
-  IF (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E sleep 10)
-    MESSAGE(WARNING "\n Retrying download of ${PACKAGE_NAME} from ${URL} (${DOWNLOAD_STATUS_MESSAGE}, status ${DOWNLOAD_STATUS_CODE})\n")
-    file(DOWNLOAD ${URL}
-            ${DEST}
-            SHOW_PROGRESS
-            INACTIVITY_TIMEOUT 10
-            STATUS DOWNLOAD_STATUS)
-    # Check again if the download worked properly.
-    LIST(GET DOWNLOAD_STATUS 0 DOWNLOAD_STATUS_CODE)
-    LIST(GET DOWNLOAD_STATUS 1 DOWNLOAD_STATUS_MESSAGE)
-    IF (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
-      MESSAGE( FATAL_ERROR "\nWe were unable to download ${PACKAGE_NAME}. This may be caused by several reason, like \
-      network error connections or just temporary network failure. Please retry again in a \
-      few minutes by deleting all the contents of the build directory and by issuing again \
-      the 'cmake' command.\n")
-    ENDIF()
-  ELSE()
-    # If we download was okay, then we check the hash
-    file(SHA256 ${DEST} ACTUAL_SHA256)
-    IF(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
-      MESSAGE(FATAL_ERROR "Failed to download ${URL}. Hash mismatch. Expected a SHA256 of "
-    "${EXPECTED_SHA256} but got ${HASH} instead.")
-    ENDIF()
-  ENDIF()
+  # Verify download
+  file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
+  if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
+    message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
+  Expected: ${HASH}\n\
+  Actual:   ${ACTUAL_SHA256}\n")
+  endif()
 
+  # Extract
+  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${FULL_TAR_PATH}
+                  WORKING_DIRECTORY ${DEST}
+                RESULT_VARIABLE EXTRACT_STATUS_CODE)
+  if (NOT ${EXTRACT_STATUS_CODE} EQUAL 0)
+    message(FATAL_ERROR "ERROR: Extraction of file ${FULL_TAR_PATH} to ${DEST} failed.")
+  endif()
+
+  # remove tar file
+  file(REMOVE ${FULL_TAR_PATH})
 endfunction()
 
 # Helper function to print a simple line

@@ -4,30 +4,21 @@ include(utils)
 # should be something like <build_dir>/third_party/...).
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
-# Download the package and retry if something went wrong
 # FIXME remove this if statement (else branch) after ROOT has been updated for MacOS too
 if (LINUX)
   set(ROOT_TAR_FILE root_v6-18-04_${DETECTED_OS}.tar.gz)
-  download_retry(
+  download_verify_extract(
     http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}
-    ${ROOT_SOURCE_DIR}/${ROOT_TAR_FILE}
+    ${ROOT_SOURCE_DIR}/root
     ${${DETECTED_OS}-ROOT}
-    "ROOT"
   )
-  file(MAKE_DIRECTORY ${ROOT_SOURCE_DIR}/root)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/${ROOT_TAR_FILE}
-          WORKING_DIRECTORY ${ROOT_SOURCE_DIR}/root)
 else()
   # Still using the old structure
-  download_retry(
+  download_verify_extract(
     http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/root.tar.gz
-    ${ROOT_SOURCE_DIR}/root.tar.gz
+    ${ROOT_SOURCE_DIR}/root
     ${${DETECTED_OS}-ROOT}
-    "ROOT"
   )
-  file(MAKE_DIRECTORY ${ROOT_SOURCE_DIR}/root)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${ROOT_SOURCE_DIR}/root.tar.gz
-          WORKING_DIRECTORY ${ROOT_SOURCE_DIR}/root)
 endif()
 
 # Run again find_package in order to find ROOT

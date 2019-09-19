@@ -89,6 +89,11 @@ else()
 endif()
 
 # -------------------- find packages ------------------------------------------
+find_program(WGET_BIN wget)
+if (NOT WGET_BIN)
+  message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
+endif()
+
 find_package(MPI)
 
 find_package(OpenMP REQUIRED)

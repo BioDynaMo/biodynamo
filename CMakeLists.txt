@@ -123,7 +123,10 @@ endif()
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
 # -------------------- find packages ------------------------------------------
-
+find_program(WGET_BIN wget)
+if (NOT WGET_BIN)
+  message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
+endif()
 # Check if Python is present
 find_package(PythonInterp 3.5)
 if (PythonInterp_NOT_FOUND)
