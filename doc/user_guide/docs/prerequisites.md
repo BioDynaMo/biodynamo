@@ -29,6 +29,9 @@ BioDynaMo provides also an automated procedure to install all the needed library
   * **graphviz**: Graph Visualization Software used optionally by Doxygen;
   * **lcov**: Graphical front-end for GCC's coverage testing tool gcov;
   * **gcovr**: Tool to test code coverage in programs.
+  * **llvm-6.0 llvm-6.0-dev llvm-6.0-runtime**: Modular compiler and toolchain
+  * **libxml2-dev**: Development files for the GNOME XML library
+
 
 ### Installation
 
@@ -43,8 +46,9 @@ sudo apt-get install -y cmake make gcc g++ \
 ```bash
 pip3 install --user mkdocs mkdocs-material
 sudo apt-get install -y freeglut3-dev valgrind \
-clang-3.9 clang-format-3.9 clang-tidy-3.9 \
-doxygen graphviz lcov gcovr
+  clang-3.9 clang-format-3.9 clang-tidy-3.9 \
+  doxygen graphviz lcov gcovr \
+  llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
 ```
 
 ## CentOS 7.6.1810
@@ -73,6 +77,8 @@ doxygen graphviz lcov gcovr
  * **valgrind**: A suite of tools for debugging and profiling;
  * **doxygen**: Tool for generating documentation from annotated C++ sources;
  * **graphviz**: Graph Visualization Software used optionally by Doxygen.
+ * **llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static**: Modular compiler and toolchain
+ * **libxml2-devel**: Development files for the GNOME XML library
 
 ### Installation
 
@@ -90,6 +96,18 @@ sudo yum -y install cmake3 libXt-devel libXext-devel \
 pip install --user mkdocs mkdocs-material
 sudo yum -y install lcov gcovr llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
+   # SBML integration
+sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
+[SCL-core]
+name=Springdale SCL Base 7.6 - x86_64
+mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
+#baseurl=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64
+gpgcheck=1
+gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
+EOF'
+sudo yum update -y
+sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
+sudo yum install -y libxml2-devel
 ```
 
 ## MacOS
