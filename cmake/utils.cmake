@@ -276,6 +276,14 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/NOTICE
             )
 
+    # BioDynaMo paraview plugin
+    if(paraview)
+      add_copy_files(copy_files_bdm
+              DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR}
+              ${CMAKE_INSTALL_LIBDIR}/libBDMGlyphFilter${CMAKE_SHARED_LIBRARY_SUFFIX}
+              )
+    endif()
+
 endfunction()
 
 # This function add a description to the packages which will be displayed
