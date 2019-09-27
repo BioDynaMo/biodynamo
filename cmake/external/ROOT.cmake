@@ -4,7 +4,7 @@ include(utils)
 # should be something like <build_dir>/third_party/...).
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
-set(ROOT_TAR_FILE root_v6-18-04_${DETECTED_OS}.tar.gz PARENT_SCOPE)
+set(ROOT_TAR_FILE root_v6-18-04_${DETECTED_OS}.tar.gz)
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}
   ${ROOT_SOURCE_DIR}/root
