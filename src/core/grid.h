@@ -119,7 +119,7 @@ friend class DisplacementOpOpenCL;
       return *this;
     }
 
-    bool IsEmpty() const { return length_ == 0; }
+    bool IsEmpty(uint64_t grid_alternator) const { return grid_alternator != alternator_ || length_ == 0; }
 
     /// @brief      Adds a simulation object to this box
     ///
@@ -189,13 +189,14 @@ friend class DisplacementOpOpenCL;
   /// An iterator that iterates over the boxes in this grid
   struct NeighborIterator {
     explicit NeighborIterator(
-        const FixedSizeVector<const Box*, 27>& neighbor_boxes)
+        const FixedSizeVector<const Box*, 27>& neighbor_boxes, uint64_t grid_alternator)
         : neighbor_boxes_(neighbor_boxes),
           // start iterator from box 0
-          box_iterator_(neighbor_boxes_[0]->begin()) {
+          box_iterator_(neighbor_boxes_[0]->begin()),
+          grid_alternator_(grid_alternator) {
       // if first box is empty
-      if (neighbor_boxes_[0]->begin().IsAtEnd()) {
-        ForwardToNonEmptyBox();
+      if (neighbor_boxes_[0]->IsEmpty(grid_alternator)) {
+        ForwardToNonEmptyBox(grid_alternator);
       }
     }
 
@@ -208,7 +209,7 @@ friend class DisplacementOpOpenCL;
       ++box_iterator_;
       // if iterator of current box has come to an end, continue with next box
       if (box_iterator_.IsAtEnd()) {
-        return ForwardToNonEmptyBox();
+        return ForwardToNonEmptyBox(grid_alternator_);
       }
       return *this;
     }
@@ -219,6 +220,7 @@ friend class DisplacementOpOpenCL;
     /// The box that shall be considered to iterate over for finding simulation
     /// objects
     typename Box::Iterator box_iterator_;
+    uint64_t grid_alternator_;
     /// The id of the box to be considered (i.e. value between 0 - 26)
     uint16_t box_idx_ = 0;
     /// Flag to indicate that all the neighbor boxes have been searched through
@@ -226,11 +228,11 @@ friend class DisplacementOpOpenCL;
 
     /// Forwards the iterator to the next non empty box and returns itself
     /// If there are no non empty boxes is_end_ is set to true
-    NeighborIterator& ForwardToNonEmptyBox() {
+    NeighborIterator& ForwardToNonEmptyBox(uint64_t grid_alternator) {
       // increment box id until non empty box has been found
       while (++box_idx_ < neighbor_boxes_.size()) {
         // box is empty or uninitialized (padding box) -> continue
-        if (neighbor_boxes_[box_idx_]->begin().IsAtEnd()) {
+        if (neighbor_boxes_[box_idx_]->IsEmpty(grid_alternator)) {
           continue;
         }
         // a non-empty box has been found
@@ -338,6 +340,7 @@ friend class DisplacementOpOpenCL;
       CheckGridGrowth();
 
       // std::cout << "alternator " << alternator_ << std::endl;
+      // std::cout << "tnb " << total_num_boxes << std::endl;
       if (boxes_.size() != total_num_boxes) {
         // std::cout << "resize boxes" << total_num_boxes << std::endl;
         auto old_capacity = boxes_.capacity();
@@ -493,7 +496,7 @@ friend class DisplacementOpOpenCL;
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes);
+    NeighborIterator ni(neighbor_boxes, alternator_);
     while (!ni.IsAtEnd()) {
       auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
       if (sim_object != &query) {
@@ -523,7 +526,7 @@ friend class DisplacementOpOpenCL;
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes);
+    NeighborIterator ni(neighbor_boxes, alternator_);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
@@ -558,7 +561,7 @@ friend class DisplacementOpOpenCL;
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes);
+    NeighborIterator ni(neighbor_boxes, alternator_);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);

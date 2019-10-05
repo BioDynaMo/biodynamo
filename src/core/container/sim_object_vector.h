@@ -45,7 +45,9 @@ class SimObjectVector {
     auto* rm = sim->GetResourceManager();
     for (int n = 0; n < thread_info_->GetNumaNodes(); n++) {
       auto num_sos = rm->GetNumSimObjects(n);
-      data_[n].reserve(rm->GetNumSimObjects(n));
+      if(data_[n].capacity() < num_sos){
+        data_[n].reserve(num_sos*1.5);
+      }
       size_[n] = num_sos;
     }
   }
