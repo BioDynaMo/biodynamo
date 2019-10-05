@@ -98,14 +98,15 @@ friend class DisplacementOpOpenCL;
  public:
   /// A single unit cube of the grid
   struct Box {
+    std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
     // std::atomic<bool> alternator_;
     uint32_t alternator_;
     /// start value of the linked list of simulatio objects inside this box.
     /// Next element can be found at `successors_[start_]`
-    std::atomic<SoHandle> start_;
+    SoHandle start_;
     /// length of the linked list (i.e. number of simulation objects)
     /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
-    std::atomic<uint64_t> length_;
+    uint64_t length_;
 
     Box() : alternator_(0), start_(SoHandle()), length_(0) {}
     /// Copy Constructor required for boxes_.resize()
@@ -114,12 +115,14 @@ friend class DisplacementOpOpenCL;
     Box(const Box& other) : Box() {}
 
     Box& operator=(const Box& other) {
-      start_ = other.start_.load(std::memory_order_relaxed);
-      length_ = other.length_.load(std::memory_order_relaxed);
+      // start_ = other.start_.load(std::memory_order_relaxed);
+      // length_ = other.length_.load(std::memory_order_relaxed);
+      start_ = other.start_;
+      length_ = other.length_;
       return *this;
     }
 
-    bool IsEmpty(uint64_t grid_alternator) const { return grid_alternator != alternator_ || length_ == 0; }
+    bool IsEmpty(uint64_t grid_alternator) const { return grid_alternator != alternator_; }
 
     /// @brief      Adds a simulation object to this box
     ///
@@ -130,6 +133,10 @@ friend class DisplacementOpOpenCL;
       // while(alternator_ != 2) {;}
       // bool expected = grid->alternator_;
       // if (alternator_.compare_exchange_strong(grid->alternator_, grid->alternator_)) {
+      // acquire lock (and spin if another thread is holding it)
+      while (mutex_.test_and_set(std::memory_order_acquire)) {
+      }
+
       if(alternator_ != grid->alternator_) {
         // std::cout << "    i   " << this << std::endl;
         alternator_ = grid->alternator_;
@@ -138,16 +145,19 @@ friend class DisplacementOpOpenCL;
         length_ = 1;
         start_ = so;
         // std::atomic_exchange(&alternator_, static_cast<char>(grid->alternator_));
-        return;
-      }
+        // return;
+      } else {
 
       // normal operation
       // std::cout << "  nor   "  << this << std::endl;
       length_++;
-      auto old_start = std::atomic_exchange(&start_, so);
+      // auto old_start = std::atomic_exchange(&start_, so);
       // if (old_start != SoHandle()) { // FIXME this if is not needed anymore
-        (*successors)[so] = old_start;
+        (*successors)[so] = start_;
+        start_ = so;
       // }
+      }
+      mutex_.clear(std::memory_order_release);
     }
 
     /// An iterator that iterates over the cells in this box
