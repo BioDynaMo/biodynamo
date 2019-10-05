@@ -98,6 +98,8 @@ friend class DisplacementOpOpenCL;
  public:
   /// A single unit cube of the grid
   struct Box {
+    // std::atomic<bool> alternator_;
+    uint32_t alternator_;
     /// start value of the linked list of simulatio objects inside this box.
     /// Next element can be found at `successors_[start_]`
     std::atomic<SoHandle> start_;
@@ -105,7 +107,7 @@ friend class DisplacementOpOpenCL;
     /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
     std::atomic<uint64_t> length_;
 
-    Box() : start_(SoHandle()), length_(0) {}
+    Box() : alternator_(0), start_(SoHandle()), length_(0) {}
     /// Copy Constructor required for boxes_.resize()
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
@@ -122,13 +124,30 @@ friend class DisplacementOpOpenCL;
     /// @brief      Adds a simulation object to this box
     ///
     /// @param[in]  so       The object's identifier
-    /// @param      successors   The successors
-    void AddObject(SoHandle so, SimObjectVector<SoHandle>* successors) {
+    /// @param   AddObject   successors   The successors
+    void AddObject(SoHandle so, SimObjectVector<SoHandle>* successors, Grid* grid) {
+      // barrier for threads that came in during initialization
+      // while(alternator_ != 2) {;}
+      // bool expected = grid->alternator_;
+      // if (alternator_.compare_exchange_strong(grid->alternator_, grid->alternator_)) {
+      if(alternator_ != grid->alternator_) {
+        // std::cout << "    i   " << this << std::endl;
+        alternator_ = grid->alternator_;
+        // if ()
+        // first element
+        length_ = 1;
+        start_ = so;
+        // std::atomic_exchange(&alternator_, static_cast<char>(grid->alternator_));
+        return;
+      }
+
+      // normal operation
+      // std::cout << "  nor   "  << this << std::endl;
       length_++;
       auto old_start = std::atomic_exchange(&start_, so);
-      if (old_start != SoHandle()) {
+      // if (old_start != SoHandle()) { // FIXME this if is not needed anymore
         (*successors)[so] = old_start;
-      }
+      // }
     }
 
     /// An iterator that iterates over the cells in this box
@@ -136,7 +155,11 @@ friend class DisplacementOpOpenCL;
       Iterator(Grid* grid, const Box* box)
           : grid_(grid),
             current_value_(box->start_),
-            countdown_(box->length_) {}
+            countdown_(box->length_) {
+              if (grid->alternator_ != box->alternator_) {
+                countdown_ = 0;
+              }
+            }
 
       bool IsAtEnd() { return countdown_ <= 0; }
 
@@ -171,7 +194,7 @@ friend class DisplacementOpOpenCL;
           // start iterator from box 0
           box_iterator_(neighbor_boxes_[0]->begin()) {
       // if first box is empty
-      if (neighbor_boxes_[0]->IsEmpty()) {
+      if (neighbor_boxes_[0]->begin().IsAtEnd()) {
         ForwardToNonEmptyBox();
       }
     }
@@ -207,7 +230,7 @@ friend class DisplacementOpOpenCL;
       // increment box id until non empty box has been found
       while (++box_idx_ < neighbor_boxes_.size()) {
         // box is empty or uninitialized (padding box) -> continue
-        if (neighbor_boxes_[box_idx_]->IsEmpty()) {
+        if (neighbor_boxes_[box_idx_]->begin().IsAtEnd()) {
           continue;
         }
         // a non-empty box has been found
@@ -247,7 +270,7 @@ friend class DisplacementOpOpenCL;
 
   /// Clears the grid
   void ClearGrid() {
-    boxes_.clear();
+    // boxes_.clear();
     box_length_ = 1;
     largest_object_size_ = 0;
     num_boxes_axis_ = {{0}};
@@ -265,6 +288,7 @@ friend class DisplacementOpOpenCL;
 
     if (rm->GetNumSimObjects() != 0) {
       ClearGrid();
+      alternator_++;
 
       auto inf = Math::kInfinity;
       std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
@@ -313,8 +337,18 @@ friend class DisplacementOpOpenCL;
 
       CheckGridGrowth();
 
+      // std::cout << "alternator " << alternator_ << std::endl;
       if (boxes_.size() != total_num_boxes) {
-        boxes_.resize(total_num_boxes, Box());
+        // std::cout << "resize boxes" << total_num_boxes << std::endl;
+        auto old_capacity = boxes_.capacity();
+        if (old_capacity < total_num_boxes) {
+          boxes_.reserve(total_num_boxes * 2);
+          for(uint64_t i = 0; i < boxes_.capacity(); i++) {
+            boxes_[i] = Box();
+          }
+        }
+        boxes_.size_ = total_num_boxes;
+        // boxes_.resize(total_num_boxes * 2, Box());
       }
 
       successors_.reserve();
@@ -325,7 +359,7 @@ friend class DisplacementOpOpenCL;
             const auto& position = sim_object->GetPosition();
             auto idx = this->GetBoxIndex(position);
             auto box = this->GetBoxPointer(idx);
-            box->AddObject(soh, &successors_);
+            box->AddObject(soh, &successors_, this);
             sim_object->SetBoxIdx(idx);
           });
       auto* param = Simulation::GetActive()->GetParam();
@@ -687,6 +721,9 @@ friend class DisplacementOpOpenCL;
   /// Using parallel resize vector to enable parallel initialization and thus
   /// better scalability.
   ParallelResizeVector<Box> boxes_;
+  /// changes value at each call to UpdateGrid
+  /// This is used to decide if boxes should be reinitialized
+  uint32_t alternator_ = 0;
   /// Length of a Box
   uint32_t box_length_ = 1;
   /// Stores the number of boxes for each axis

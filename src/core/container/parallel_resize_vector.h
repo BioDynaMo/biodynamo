@@ -101,7 +101,7 @@ class ParallelResizeVector {
 
   const_iterator cend() { return data_.cbegin() += size_; }  // NOLINT
 
- private:
+ // private:
   std::vector<T> data_;
   std::size_t size_ = 0;
 };
