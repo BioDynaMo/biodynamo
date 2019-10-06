@@ -88,6 +88,25 @@ class CircularBuffer {
   uint64_t position_ = 0;
 };
 
+class Spinlock {
+public:
+  Spinlock() : flag_(ATOMIC_FLAG_INIT) {}
+
+  void lock() {  // NOLINT
+    while(flag_.test_and_set()) {
+      // spin
+      ;
+    }
+  }
+
+  void unlock() {  // NOLINT
+    flag_.clear();
+  }
+
+private:
+  std::atomic_flag flag_;
+};
+
 /// A class that represents Cartesian 3D grid
 class Grid {
 // DisplacementOpCuda needs access to some Grid private members to reconstruct
@@ -98,7 +117,8 @@ friend class DisplacementOpOpenCL;
  public:
   /// A single unit cube of the grid
   struct Box {
-    std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
+    Spinlock lock_;
+    // std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
     // std::atomic<bool> alternator_;
     uint32_t alternator_;
     /// start value of the linked list of simulatio objects inside this box.
@@ -134,8 +154,7 @@ friend class DisplacementOpOpenCL;
       // bool expected = grid->alternator_;
       // if (alternator_.compare_exchange_strong(grid->alternator_, grid->alternator_)) {
       // acquire lock (and spin if another thread is holding it)
-      while (mutex_.test_and_set(std::memory_order_acquire)) {
-      }
+      std::lock_guard<Spinlock> lock_guard(lock_);
 
       if(alternator_ != grid->alternator_) {
         // std::cout << "    i   " << this << std::endl;
@@ -157,7 +176,7 @@ friend class DisplacementOpOpenCL;
         start_ = so;
       // }
       }
-      mutex_.clear(std::memory_order_release);
+      // mutex_.clear();
     }
 
     /// An iterator that iterates over the cells in this box
