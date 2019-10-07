@@ -15,6 +15,7 @@
 #ifndef CORE_CONTAINER_PARALLEL_RESIZE_VECTOR_H_
 #define CORE_CONTAINER_PARALLEL_RESIZE_VECTOR_H_
 
+#include <cstdlib>
 #include <vector>
 
 namespace bdm {
@@ -35,15 +36,17 @@ class ParallelResizeVector {
     }
   }
 
-  ParallelResizeVector(const ParallelResizeVector& other) : size_(other.size_), capacity_(other.capacity_) {
-    if (other.data_ != nullptr) {
-      reserve(capacity_);
+  ParallelResizeVector(const ParallelResizeVector& other) {
+    if (other.data_ != nullptr && other.capacity_ != 0) {
+      reserve(other.capacity_);
       // initialize using copy ctor
       #pragma omp parallel for
-      for (std::size_t i = 0; i < size_; i++) {
+      for (std::size_t i = 0; i < other.size_; i++) {
         new (&(data_[i])) T(other.data_[i]);
       }
     }
+    size_ = other.size_;
+    capacity_ = other.capacity_;
   }
 
   ~ParallelResizeVector() {
@@ -54,6 +57,7 @@ class ParallelResizeVector {
       }
       capacity_ = 0;
       free(data_);
+      data_ = nullptr;
     }
   }
 
@@ -107,7 +111,7 @@ class ParallelResizeVector {
     }
   }
 
-  void resize(std::size_t new_size) {  // NOLINT
+  void resize(std::size_t new_size, const T& t = T()) {  // NOLINT
     if (capacity_ < new_size) {
       reserve(new_size);
     }
@@ -115,7 +119,7 @@ class ParallelResizeVector {
     // grow
 #pragma omp parallel for
     for (std::size_t i = size_; i < new_size; i++) {
-      new (&(data_[i])) T();
+      new (&(data_[i])) T(t);
     }
     // shrink
 #pragma omp parallel for

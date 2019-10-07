@@ -105,17 +105,17 @@ class DisplacementOpOpenCL {
     });
 
     uint16_t numa_node = 0; // GPU code only supports 1 NUMA domain currently
-    for (size_t i = 0; i < grid->successors_.size(numa_node); i++) {	
-      auto sh = SoHandle(numa_node, i);	
-      successors[i] = grid->successors_[sh].GetElementIdx();	
+    for (size_t i = 0; i < grid->successors_.size(numa_node); i++) {
+      auto sh = SoHandle(numa_node, i);
+      successors[i] = grid->successors_[sh].GetElementIdx();
     }
 
     starts.resize(grid->boxes_.size());
     lengths.resize(grid->boxes_.size());
     size_t i = 0;
     for (auto& box : grid->boxes_) {
-      starts[i] = box.start_.load().GetElementIdx();	
-      lengths[i] = box.length_;	
+      starts[i] = box.start_.GetElementIdx();	
+      lengths[i] = box.length_;
       i++;
     }
     grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);

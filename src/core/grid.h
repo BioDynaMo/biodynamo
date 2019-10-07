@@ -90,7 +90,7 @@ class CircularBuffer {
 
 class Spinlock {
 public:
-  Spinlock() : flag_(ATOMIC_FLAG_INIT) {}
+  Spinlock() {}
 
   void lock() {  // NOLINT
     while(flag_.test_and_set()) {
@@ -104,7 +104,7 @@ public:
   }
 
 private:
-  std::atomic_flag flag_;
+  std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
 };
 
 /// A class that represents Cartesian 3D grid
