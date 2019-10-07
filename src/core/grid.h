@@ -372,15 +372,15 @@ friend class DisplacementOpOpenCL;
       // std::cout << "tnb " << total_num_boxes << std::endl;
       if (boxes_.size() != total_num_boxes) {
         // std::cout << "resize boxes" << total_num_boxes << std::endl;
-        auto old_capacity = boxes_.capacity();
-        if (old_capacity < total_num_boxes) {
+        // auto old_capacity = boxes_.capacity();
+        if (boxes_.capacity() < total_num_boxes) {
           boxes_.reserve(total_num_boxes * 2);
-          for(uint64_t i = 0; i < boxes_.capacity(); i++) {
-            boxes_[i] = Box();
-          }
+          // for(uint64_t i = 0; i < boxes_.capacity(); i++) {
+          //   boxes_[i] = Box();
+          // }
         }
-        boxes_.size_ = total_num_boxes;
-        // boxes_.resize(total_num_boxes * 2, Box());
+        // boxes_.size_ = total_num_boxes;
+        boxes_.resize(total_num_boxes);
       }
 
       successors_.reserve();
