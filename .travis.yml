@@ -53,6 +53,7 @@ matrix:
 script:
   - shell_session_update() { :; };
   - $SCRIPT
+  - exit 1;
 
 services:
   - docker
