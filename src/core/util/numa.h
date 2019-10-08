@@ -30,6 +30,7 @@ inline int numa_run_on_node(int) { return 0; }
 inline int numa_node_of_cpu(int) { return 0; }
 inline int numa_move_pages(int pid, unsigned long count, void **pages,
                            const int *nodes, int *status, int flags) {
+  *status = 0;
   return 0;
 }
 
