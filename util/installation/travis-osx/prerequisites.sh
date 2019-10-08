@@ -26,9 +26,9 @@ fi
 
 # Install and upgrade required packages
 brew install libomp tbb open-mpi git \
-python python@2 llvm cmake || true
+python python@2 llvm wget cmake || true
 
-brew upgrade python cmake
+brew upgrade python cmake || true
 
 # Install the optional packages
 if [ $1 == "all" ]; then

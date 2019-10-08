@@ -29,9 +29,9 @@ fi
 sudo apt-get update
 
 # Install required packages
-sudo apt-get install -y cmake make gcc g++ \
-libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev libpthread-stubs0-dev \
-python3 python3-dev python3-pip
+sudo apt-get install -y wget cmake make gcc g++ \
+libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev \
+libpthread-stubs0-dev python3 python3-dev python3-pip
 
 # Install optional packages
 if [ $1 == "all" ]; then

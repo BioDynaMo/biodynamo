@@ -33,11 +33,10 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 
-sudo yum -y install cmake3 libXt-devel libXext-devel \
+sudo yum -y install wget cmake3 libXt-devel libXext-devel \
 devtoolset-7-gcc* numactl-devel \
 tbb-devel openmpi3-devel freeglut-devel \
-rh-python36 python python-pip \
-git
+rh-python36 python python-pip git
 
 # Install optional packages
 if [ $1 == "all" ]; then
