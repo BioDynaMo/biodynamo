@@ -62,7 +62,8 @@ notifications:
   slack: cernopenlab:2MzX9lwS6W9nU47MuY1qSmk9
 
 after_failure:
-  - "cat /Users/travis/build/BioDynaMo/biodynamo/build/*.log"
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cat /Users/travis/build/BioDynaMo/biodynamo/build/*.log; fi
+  - if [ ! "$TRAVIS_OS_NAME" = "osx" ]; then sudo docker exec -it $(docker ps --latest --quiet) cat /home/travis/build/BioDynaMo/biodynamo/build/*.log; fi
 
 env:
   global:
