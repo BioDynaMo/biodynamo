@@ -21,11 +21,11 @@
 #
 # Author: Fons Rademakers, 16/5/2019
 
-drop_from_path()
+drop_bdm_from_path()
 {
    # Assert that we got enough arguments
    if test $# -ne 2 ; then
-      echo "drop_from_path: needs 2 arguments"
+      echo "drop_bdm_from_path: needs 2 arguments"
       return 1
    fi
 
@@ -52,82 +52,82 @@ BDMSYS="${BDM_INSTALL_DIR}/"; export BDMSYS;
 # Clear the env from previously set BioDynaMo paths.
 if [ -n "${old_bdmsys}" ] ; then
    if [ -n "${PATH}" ]; then
-      drop_from_path "$PATH" "${old_bdmsys}/bin"
+      drop_bdm_from_path "$PATH" "${old_bdmsys}/bin"
       PATH=$newpath
    fi
    if [ -n "${LD_LIBRARY_PATH}" ]; then
-      drop_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/lib"
+      drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/lib"
       LD_LIBRARY_PATH=$newpath
    fi
    if [ -n "${DYLD_LIBRARY_PATH}" ]; then
-      drop_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/lib"
+      drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/lib"
       DYLD_LIBRARY_PATH=$newpath
    fi
    if [ -n "${SHLIB_PATH}" ]; then
-      drop_from_path "$SHLIB_PATH" "${old_bdmsys}/lib"
+      drop_bdm_from_path "$SHLIB_PATH" "${old_bdmsys}/lib"
       SHLIB_PATH=$newpath
    fi
    if [ -n "${LIBPATH}" ]; then
-      drop_from_path "$LIBPATH" "${old_bdmsys}/lib"
+      drop_bdm_from_path "$LIBPATH" "${old_bdmsys}/lib"
       LIBPATH=$newpath
    fi
    if [ -n "${MANPATH}" ]; then
-      drop_from_path "$MANPATH" "${old_bdmsys}/man"
+      drop_bdm_from_path "$MANPATH" "${old_bdmsys}/man"
       MANPATH=$newpath
    fi
    if [ -n "${CMAKE_PREFIX_PATH}" ]; then
-      drop_from_path "$CMAKE_PREFIX_PATH" "${old_bdmsys}"
+      drop_bdm_from_path "$CMAKE_PREFIX_PATH" "${old_bdmsys}"
       CMAKE_PREFIX_PATH=$newpath
    fi
    if [ -n "${BDM_CMAKE_DIR}" ]; then
-      drop_from_path "$BDM_CMAKE_DIR" "${old_bdmsys}/share/cmake"
+      drop_bdm_from_path "$BDM_CMAKE_DIR" "${old_bdmsys}/share/cmake"
       BDM_CMAKE_DIR=$newpath
    fi
    if [ -n "${BDM_SRC_DIR}" ]; then
-      drop_from_path "$BDM_SRC_DIR" "${old_bdmsys}/include"
+      drop_bdm_from_path "$BDM_SRC_DIR" "${old_bdmsys}/include"
       BDM_SRC_DIR=$newpath
    fi
 fi
 
 if [ -n "${old_bdmsys_base}" ] ; then
    if [ -n "${ParaView_DIR}" ]; then
-      drop_from_path "$ParaView_DIR" "${old_bdmsys_base}/third_party/paraview/lib/cmake/paraview-5.6"
+      drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys_base}/third_party/paraview/lib/cmake/paraview-5.6"
       ParaView_DIR=$newpath
    fi
    if [ -n "${ParaView_LIB_DIR}" ]; then
-      drop_from_path "$ParaView_LIB_DIR" "${old_bdmsys_base}/third_party/paraview/lib"
+      drop_bdm_from_path "$ParaView_LIB_DIR" "${old_bdmsys_base}/third_party/paraview/lib"
       ParaView_LIB_DIR=$newpath
    fi
    if [ -n "${PYTHONPATH}" ]; then
-      drop_from_path "$PYTHONPATH" "${old_bdmsys_base}/third_party/paraview/lib/python2.7/site-packages"
+      drop_bdm_from_path "$PYTHONPATH" "${old_bdmsys_base}/third_party/paraview/lib/python2.7/site-packages"
       PYTHONPATH=$newpath
    fi
    if [ -n "${PV_PLUGIN_PATH}" ]; then
-      drop_from_path "$PV_PLUGIN_PATH" "${old_bdmsys_base}/biodynamo/lib/pv_plugin"
+      drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys_base}/biodynamo/lib/pv_plugin"
       PV_PLUGIN_PATH=$newpath
    fi
    if [ -n "${PATH}" ]; then
-      drop_from_path "$PATH" "${old_bdmsys_base}/third_party/paraview/bin"
+      drop_bdm_from_path "$PATH" "${old_bdmsys_base}/third_party/paraview/bin"
       PATH=$newpath
    fi
    if [ -n "${Qt5_DIR}" ]; then
-      drop_from_path "$Qt5_DIR" "${old_bdmsys_base}/third_party/qt/lib/cmake/Qt5"
+      drop_bdm_from_path "$Qt5_DIR" "${old_bdmsys_base}/third_party/qt/lib/cmake/Qt5"
       Qt5_DIR=$newpath
    fi
    if [ -n "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
-      drop_from_path "$QT_QPA_PLATFORM_PLUGIN_PATH" "${old_bdmsys_base}/third_party/qt/plugins"
+      drop_bdm_from_path "$QT_QPA_PLATFORM_PLUGIN_PATH" "${old_bdmsys_base}/third_party/qt/plugins"
       QT_QPA_PLATFORM_PLUGIN_PATH=$newpath
    fi
    if [ -n "${DYLD_LIBRARY_PATH}" ]; then
-      drop_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
+      drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
       DYLD_LIBRARY_PATH=$newpath
-      drop_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
+      drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
       DYLD_LIBRARY_PATH=$newpath
    fi
    if [ -n "${LD_LIBRARY_PATH}" ]; then
-      drop_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
+      drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
       LD_LIBRARY_PATH=$newpath
-      drop_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
+      drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
       LD_LIBRARY_PATH=$newpath
    fi
 
@@ -313,7 +313,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
     fi
     if [ -n "${old_llvmdir}" ]; then
       if [ -n "${PATH}" ]; then
-        drop_from_path "$PATH" "${old_llvmdir}/bin"
+        drop_bdm_from_path "$PATH" "${old_llvmdir}/bin"
         PATH=$newpath
       fi
     fi
@@ -359,6 +359,6 @@ fi
 unset old_bdmsys
 unset old_bdmsym_base
 unset thisbdm
-unset -f drop_from_path
+unset -f drop_bdm_from_path
 
 echo "You have successfully sourced BioDynaMo's environment."
