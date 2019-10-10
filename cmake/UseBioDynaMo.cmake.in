@@ -35,6 +35,7 @@ SET(dict_default @dict@)
 SET(paraview_default @paraview@)
 SET(sbml_default @sbml@)
 SET(vtune_default @vtune@)
+SET(tcmalloc_default @tcmalloc@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
@@ -43,6 +44,7 @@ option(dict      "Build with ROOT dictionaries" @dict@)
 option(paraview  "Enable ParaView" @paraview@)
 option(sbml      "Enable SBML support" @sbml@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
+option(tcmalloc  "Use tcmalloc." @tcmalloc@)
 
 if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
@@ -68,6 +70,12 @@ if (vtune AND NOT vtune_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dvtune=${vtune}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Dvtune to ${vtune_default}. Please change -Dvtune to -Dvtune=${vtune_default}.")
 endif()
+string(TOLOWER "${tcmalloc}" tcmalloc_lower )
+string(TOLOWER "${tcmalloc_default}" tcmalloc_default_lower )
+if (NOT "${tcmalloc_lower}" STREQUAL "${tcmalloc_default_lower}")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dtcmalloc=${tcmalloc}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dtcmalloc to ${tcmalloc_default}. Please change -Dtcmalloc to -Dtcmalloc=${tcmalloc_default}.")
+endif()
 
 # This file contains the build setup for simulation projects outside the
 # biodynamo repository
@@ -89,6 +97,16 @@ else()
 endif()
 
 # -------------------- find packages ------------------------------------------
+if (tcmalloc)
+  find_package(tcmalloc)
+  if(NOT TCMALLOC_FOUND)
+    message(FATAL_ERROR "TCMalloc not found.")
+  endif()
+  message("Tcmalloc libarary found: ${TCMALLOC_LIBRARY_PATH}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ltcmalloc -L ${TCMALLOC_LIBRARY_PATH}")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ltcmalloc -L ${TCMALLOC_LIBRARY_PATH}")
+endif()
+
 find_program(WGET_BIN wget)
 if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")

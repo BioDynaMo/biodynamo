@@ -370,6 +370,7 @@ function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(vtune vtune "Enable VTune performance analysis.")
     ADD_FEATURE_INFO(coverage coverage "Enable test coverage report generation. Sets build type to coverage.")
     ADD_FEATURE_INFO(verbose verbose "Enable verbosity when running make install.")
+    ADD_FEATURE_INFO(tcmalloc tcmalloc "Use tcmalloc for memory allocations.")
 endfunction()
 
 # Method used to give execution permissions to a file

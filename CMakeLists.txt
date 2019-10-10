@@ -107,6 +107,7 @@ option(sbml      "Enable SBML" OFF)
 option(vtune     "Enable VTune performance analysis" OFF)
 option(coverage  "Enable test coverage report generation. Sets build type to coverage" OFF)
 option(verbose   "Enable verbosity when installing." OFF)
+option(tcmalloc  "Use tcmalloc for memory allocations." OFF)
 
 if(APPLE)
    # valgrind currently broken on macOS 10.12
@@ -123,6 +124,16 @@ endif()
 add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
 # -------------------- find packages ------------------------------------------
+if (tcmalloc)
+  find_package(tcmalloc)
+  if(NOT TCMALLOC_FOUND)
+    message(FATAL_ERROR "TCMalloc not found.")
+  endif()
+  message("Tcmalloc libarary found: ${TCMALLOC_LIBRARY_PATH}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ltcmalloc -L ${TCMALLOC_LIBRARY_PATH}")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ltcmalloc -L ${TCMALLOC_LIBRARY_PATH}")
+endif()
+
 find_program(WGET_BIN wget)
 if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
