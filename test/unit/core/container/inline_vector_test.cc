@@ -264,6 +264,171 @@ TEST(InlineVectorTest, EqualsOperatorWithHeap) {
   EXPECT_FALSE(lhs == rhs);
 }
 
+TEST(InlineVectorTest, ForEachNoHeap) {
+  InlineVector<int, 4> iv;
+  iv.push_back(0);
+  iv.push_back(1);
+  iv.push_back(2);
+
+  std::vector<int> expected = {0, 1, 2};
+  uint16_t cnt = 0;
+  for (auto el : iv) {
+    EXPECT_EQ(expected[cnt++], el);
+  }
+  EXPECT_EQ(3u, cnt);
+}
+
+TEST(InlineVectorTest, ForEachWithHeap) {
+  InlineVector<int, 2> iv;
+  iv.push_back(0);
+  iv.push_back(1);
+  iv.push_back(2);
+  iv.push_back(3);
+  iv.push_back(4);
+
+  std::vector<int> expected = {0, 1, 2, 3, 4};
+  uint16_t cnt = 0;
+  for (auto el : iv) {
+    EXPECT_EQ(expected[cnt++], el);
+  }
+  EXPECT_EQ(5u, cnt);
+}
+
+TEST(InlineVectorTest, Iterator) {
+  InlineVector<int, 2> iv;
+  iv.push_back(0);
+  iv.push_back(1);
+  iv.push_back(2);
+  iv.push_back(3);
+  iv.push_back(4);
+
+  auto it = iv.begin();
+  EXPECT_TRUE(it == iv.begin());
+  it++;
+  EXPECT_TRUE(it != iv.begin());
+  EXPECT_EQ(1, *it);
+  ++it;
+  EXPECT_EQ(2, *it);
+  it += 2;
+  EXPECT_EQ(4, *it);
+  it -= 2;
+  EXPECT_EQ(2, *it);
+  --it;
+  EXPECT_EQ(1, *it);
+  it--;
+  EXPECT_EQ(0, *it);
+
+  it = iv.begin() + 3;
+  EXPECT_EQ(3, *it);
+  it = iv.end() - 3;
+  EXPECT_EQ(2, *it);
+  auto it1 = iv.begin() + 1;
+  it = it1 + it1;
+  EXPECT_EQ(2, *it);
+  it = it1 + it1 - it1;
+  EXPECT_EQ(1, *it);
+  it += it1;
+  EXPECT_EQ(2, *it);
+  it -= it1;
+  EXPECT_EQ(1, *it);
+}
+
+TEST(InlineVectorTest, erase1) {
+  InlineVector<int, 3> iv;
+  iv.push_back(0);
+  iv.push_back(1);
+  iv.push_back(2);
+  iv.push_back(3);
+  iv.push_back(4);
+
+  auto it = iv.erase(iv.begin() + 1);
+  EXPECT_EQ(2, *it);
+
+  std::vector<int> expected = {0, 2, 3, 4};
+  uint16_t cnt = 0;
+  for (auto el : iv) {
+    EXPECT_EQ(expected[cnt++], el);
+  }
+  EXPECT_EQ(4u, cnt);
+  EXPECT_EQ(4u, iv.size());
+}
+
+TEST(InlineVectorTest, erase2) {
+  InlineVector<int, 3> iv;
+  iv.push_back(0);
+  iv.push_back(1);
+  iv.push_back(2);
+  iv.push_back(3);
+  iv.push_back(4);
+
+  auto it = iv.erase(iv.begin() + 3);
+  EXPECT_EQ(4, *it);
+
+  std::vector<int> expected = {0, 1, 2, 4};
+  uint16_t cnt = 0;
+  for (auto el : iv) {
+    EXPECT_EQ(expected[cnt++], el);
+  }
+  EXPECT_EQ(4u, cnt);
+  EXPECT_EQ(4u, iv.size());
+}
+
+TEST(InlineVectorTest, erase_last) {
+  InlineVector<int, 3> iv;
+  iv.push_back(0);
+  iv.push_back(1);
+  iv.push_back(2);
+  iv.push_back(3);
+  iv.push_back(4);
+
+  auto it = iv.erase(iv.begin() + 4);
+  EXPECT_EQ(iv.end(), it);
+
+  std::vector<int> expected = {0, 1, 2, 3};
+  uint16_t cnt = 0;
+  for (auto el : iv) {
+    EXPECT_EQ(expected[cnt++], el);
+  }
+  EXPECT_EQ(4u, cnt);
+  EXPECT_EQ(4u, iv.size());
+}
+
+TEST(InlineVectorTest, erase_no_heap) {
+  InlineVector<int, 3> iv;
+  iv.push_back(0);
+  iv.push_back(1);
+  iv.push_back(2);
+
+  auto it = iv.erase(iv.begin() + 1);
+  EXPECT_EQ(2, *it);
+
+  std::vector<int> expected = {0, 2};
+  uint16_t cnt = 0;
+  for (auto el : iv) {
+    EXPECT_EQ(expected[cnt++], el);
+  }
+  EXPECT_EQ(2u, cnt);
+  EXPECT_EQ(2u, iv.size());
+}
+
+TEST(InlineVectorTest, erase_no_heap_last) {
+  InlineVector<int, 3> iv;
+  iv.push_back(0);
+  iv.push_back(1);
+  iv.push_back(2);
+
+  auto it = iv.erase(iv.begin() + 2);
+  EXPECT_EQ(iv.end(), it);
+
+  std::vector<int> expected = {0, 1};
+  uint16_t cnt = 0;
+  for (auto el : iv) {
+    EXPECT_EQ(expected[cnt++], el);
+  }
+  EXPECT_EQ(2u, cnt);
+  EXPECT_EQ(2u, iv.size());
+}
+
 #ifdef USE_DICT
 TEST(InlineVectorTest, IO) { inline_vector_test_internal::RunIOTest(); }
 #endif  // USE_DICT
