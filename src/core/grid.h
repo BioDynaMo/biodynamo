@@ -514,16 +514,32 @@ class Grid {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     NeighborIterator ni(neighbor_boxes, timestamp_);
+    std::vector<Double3> positions;
+    positions.reserve(27);
+    std::vector<SimObject*> sim_objects;
+    sim_objects.reserve(27);
+
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
-      if (sim_object != &query) {
-        const auto& neighbor_position = sim_object->GetPosition();
-        double squared_distance =
-            SquaredEuclideanDistance(position, neighbor_position);
-        lambda(sim_object, squared_distance);
-      }
+      auto soh = *ni;
       ++ni;
+      auto* sim_object = rm->GetSimObjectWithSoHandle(soh);
+      if (sim_object != &query) {
+        sim_objects.push_back(sim_object);
+        positions.push_back(sim_object->GetPosition());
+        // const auto& neighbor_position = sim_object->GetPosition();
+        // double squared_distance =
+        //     SquaredEuclideanDistance(position, neighbor_position);
+        // lambda(sim_object, squared_distance);
+        // lambda(sim_object, neighbor_position[0]);
+      // lambda(sim_object, 100);
+      }
+
+    }
+    for(uint64_t i = 0; i < positions.size(); i++) {
+      double squared_distance =
+          SquaredEuclideanDistance(position, positions[i]);
+      lambda(sim_objects[i], squared_distance);
     }
   }
 
