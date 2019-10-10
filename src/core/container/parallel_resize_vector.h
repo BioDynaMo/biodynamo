@@ -31,7 +31,7 @@ class ParallelResizeVector {
   ParallelResizeVector() {}
   ParallelResizeVector(std::initializer_list<T> init) {
     reserve(init.size());
-    for(auto& el : init) {
+    for (auto& el : init) {
       push_back(el);
     }
   }
@@ -39,8 +39,8 @@ class ParallelResizeVector {
   ParallelResizeVector(const ParallelResizeVector& other) {
     if (other.data_ != nullptr && other.capacity_ != 0) {
       reserve(other.capacity_);
-      // initialize using copy ctor
-      #pragma omp parallel for
+// initialize using copy ctor
+#pragma omp parallel for
       for (std::size_t i = 0; i < other.size_; i++) {
         new (&(data_[i])) T(other.data_[i]);
       }
@@ -51,7 +51,7 @@ class ParallelResizeVector {
 
   ~ParallelResizeVector() {
     if (data_ != nullptr) {
-      #pragma omp parallel for
+#pragma omp parallel for
       for (std::size_t i = 0; i < size_; i++) {
         data_[i].~T();
       }
@@ -84,7 +84,7 @@ class ParallelResizeVector {
   std::size_t capacity() const { return capacity_; }  // NOLINT
 
   void push_back(const T& element) {  // NOLINT
-    if (capacity_ == size_ ) {
+    if (capacity_ == size_) {
       reserve(capacity_ * kGrowFactor);
     }
     new (&(data_[size_++])) T(element);
@@ -94,13 +94,13 @@ class ParallelResizeVector {
     if (new_capacity > capacity_) {
       T* new_data = static_cast<T*>(malloc(new_capacity * sizeof(T)));
       if (data_ != nullptr) {
-        // initialize using copy ctor
-        #pragma omp parallel for
+// initialize using copy ctor
+#pragma omp parallel for
         for (std::size_t i = 0; i < size_; i++) {
           new (&(new_data[i])) T(data_[i]);
         }
-        // destruct old elements
-        #pragma omp parallel for
+// destruct old elements
+#pragma omp parallel for
         for (std::size_t i = 0; i < size_; i++) {
           data_[i].~T();
         }
@@ -116,12 +116,12 @@ class ParallelResizeVector {
       reserve(new_size);
     }
 
-    // grow
+// grow
 #pragma omp parallel for
     for (std::size_t i = size_; i < new_size; i++) {
       new (&(data_[i])) T(t);
     }
-    // shrink
+// shrink
 #pragma omp parallel for
     for (std::size_t i = new_size; i < size_; i++) {
       data_[i].~T();
@@ -163,10 +163,10 @@ class ParallelResizeVector {
   const_iterator cend() { return &(data_[size_]); }  // NOLINT
 
  private:
-   static constexpr float kGrowFactor = 1.5;
-   std::size_t size_ = 0;
-   std::size_t capacity_ = 0;
-   T* data_ = nullptr;
+  static constexpr float kGrowFactor = 1.5;
+  std::size_t size_ = 0;
+  std::size_t capacity_ = 0;
+  T* data_ = nullptr;
 };
 
 }  // namespace bdm
