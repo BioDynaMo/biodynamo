@@ -531,8 +531,10 @@ include(Installation)
 # -------------------- add targets for code style and submission checks --------
 include(CppStyleGuideChecks)
 
-# ------ dist_clean command ------ #
-include(DistClean)
+# ------ cleanbuild command ------ #
+add_custom_target(cleanbuild
+                  COMMAND ${PROJECT_SOURCE_DIR}/util/clean-build-dir.sh "${CMAKE_BINARY_DIR}"
+)
 
 # --------------------- Final Message to the user ------------------------------
 add_bdm_packages_properties()
