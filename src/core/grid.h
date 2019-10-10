@@ -514,7 +514,7 @@ class Grid {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     NeighborIterator ni(neighbor_boxes, timestamp_);
-    const unsigned batch_size = 16;
+    const unsigned batch_size = 64;
     uint64_t size = 0;
     SimObject* sim_objects[batch_size] __attribute__((aligned(64)));
     double x[batch_size] __attribute__((aligned(64)));
