@@ -48,8 +48,9 @@ class DisplacementOpOpenCL {
     // Check the number of NUMA domains on the system. Currently only 1 is
     // supported for GPU execution.
     if (ThreadInfo::GetInstance()->GetNumaNodes() > 1) {
-      Log::Fatal("DisplacementOpOpenCL",
-                "\nThe GPU execution only supports systems with 1 NUMA domain.");
+      Log::Fatal(
+          "DisplacementOpOpenCL",
+          "\nThe GPU execution only supports systems with 1 NUMA domain.");
       return;
     }
 
@@ -62,7 +63,8 @@ class DisplacementOpOpenCL {
 
     // Cannot use Double3 here, because the `data()` function returns a const
     // pointer to the underlying array, whereas the CUDA kernal will cast it to
-    // a void pointer. The conversion of `const double *` to `void *` is illegal.
+    // a void pointer. The conversion of `const double *` to `void *` is
+    // illegal.
     std::vector<std::array<cl_double, 3>> cell_movements(num_objects);
     std::vector<std::array<cl_double, 3>> cell_positions(num_objects);
     std::vector<cl_double> cell_diameters(num_objects);
@@ -87,7 +89,8 @@ class DisplacementOpOpenCL {
       IsNonSphericalObjectPresent(so, &is_non_spherical_object);
       if (is_non_spherical_object) {
         Log::Fatal("DisplacementOpOpenCL",
-                 "\nWe detected a non-spherical object during the GPU execution. This is currently not supported.");
+                   "\nWe detected a non-spherical object during the GPU "
+                   "execution. This is currently not supported.");
         return;
       }
       auto* cell = bdm_static_cast<Cell*>(so);
@@ -104,36 +107,33 @@ class DisplacementOpOpenCL {
       cell_positions[idx][2] = cell->GetPosition()[2];
     });
 
-    uint16_t numa_node = 0; // GPU code only supports 1 NUMA domain currently
-    for (size_t i = 0; i < grid->successors_.size(numa_node); i++) {	
-      auto sh = SoHandle(numa_node, i);	
-      successors[i] = grid->successors_[sh].GetElementIdx();	
+    uint16_t numa_node = 0;  // GPU code only supports 1 NUMA domain currently
+    for (size_t i = 0; i < grid->successors_.size(numa_node); i++) {
+      auto sh = SoHandle(numa_node, i);
+      successors[i] = grid->successors_[sh].GetElementIdx();
     }
 
     starts.resize(grid->boxes_.size());
     lengths.resize(grid->boxes_.size());
     size_t i = 0;
     for (auto& box : grid->boxes_) {
-      starts[i] = box.start_.load().GetElementIdx();	
-      lengths[i] = box.length_;	
+      starts[i] = box.start_.GetElementIdx();
+      lengths[i] = box.length_;
       i++;
     }
     grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
 
     // Allocate GPU buffers
-    cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY |
-    CL_MEM_USE_HOST_PTR,
+    cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                              num_objects * 3 * sizeof(cl_double),
                              cell_positions.data()->data());
-    cl::Buffer diameters_arg(*context, CL_MEM_READ_ONLY |
-    CL_MEM_USE_HOST_PTR,
+    cl::Buffer diameters_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                              num_objects * sizeof(cl_double),
                              cell_diameters.data());
     cl::Buffer tractor_force_arg(
         *context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
         num_objects * 3 * sizeof(cl_double), cell_tractor_force.data()->data());
-    cl::Buffer adherence_arg(*context, CL_MEM_READ_ONLY |
-    CL_MEM_USE_HOST_PTR,
+    cl::Buffer adherence_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                              num_objects * sizeof(cl_double),
                              cell_adherence.data());
     cl::Buffer box_id_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
@@ -142,16 +142,12 @@ class DisplacementOpOpenCL {
                         num_objects * sizeof(cl_double), mass.data());
     cl::Buffer cell_movements_arg(
         *context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
-        num_objects * 3 * sizeof(cl_double),
-        cell_movements.data()->data());
+        num_objects * 3 * sizeof(cl_double), cell_movements.data()->data());
     cl::Buffer starts_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                          starts.size() * sizeof(cl_uint),
-                          starts.data());
+                          starts.size() * sizeof(cl_uint), starts.data());
     cl::Buffer lengths_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                           lengths.size() * sizeof(cl_short),
-                           lengths.data());
-    cl::Buffer successors_arg(*context, CL_MEM_READ_ONLY |
-    CL_MEM_USE_HOST_PTR,
+                           lengths.size() * sizeof(cl_short), lengths.data());
+    cl::Buffer successors_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                               successors.size() * sizeof(cl_uint),
                               successors.data());
     cl::Buffer nba_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
@@ -191,8 +187,7 @@ class DisplacementOpOpenCL {
       // The global size determines the total number of threads that will be
       // spawned on the GPU, in groups of local_size
       cl::NDRange global_size =
-          cl::NDRange(num_objects + (block_size - (num_objects %
-          block_size)));
+          cl::NDRange(num_objects + (block_size - (num_objects % block_size)));
       cl::NDRange local_size = cl::NDRange(block_size);
       queue->enqueueNDRangeKernel(collide, cl::NullRange, global_size,
                                   local_size);
@@ -212,9 +207,9 @@ class DisplacementOpOpenCL {
       throw;
     }
 
-// set new positions after all updates have been calculated
-// otherwise some cells would see neighbors with already updated positions
-// which would lead to inconsistencies
+    // set new positions after all updates have been calculated
+    // otherwise some cells would see neighbors with already updated positions
+    // which would lead to inconsistencies
     rm->ApplyOnAllElements([&](SimObject* so, SoHandle soh) {
       auto* cell = dynamic_cast<Cell*>(so);
       auto idx = soh.GetElementIdx();

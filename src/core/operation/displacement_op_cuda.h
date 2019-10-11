@@ -31,7 +31,6 @@
 
 namespace bdm {
 
-
 /// Defines the 3D physical interactions between physical objects
 class DisplacementOpCuda {
  public:
@@ -53,8 +52,9 @@ class DisplacementOpCuda {
     // Check the number of NUMA domains on the system. Currently only 1 is
     // supported for GPU execution.
     if (ThreadInfo::GetInstance()->GetNumaNodes() > 1) {
-      Log::Fatal("DisplacementOpCuda",
-                "\nThe GPU execution only supports systems with 1 NUMA domain.");
+      Log::Fatal(
+          "DisplacementOpCuda",
+          "\nThe GPU execution only supports systems with 1 NUMA domain.");
       return;
     }
 
@@ -62,7 +62,8 @@ class DisplacementOpCuda {
 
     // Cannot use Double3 here, because the `data()` function returns a const
     // pointer to the underlying array, whereas the CUDA kernal will cast it to
-    // a void pointer. The conversion of `const double *` to `void *` is illegal.
+    // a void pointer. The conversion of `const double *` to `void *` is
+    // illegal.
     std::vector<std::array<double, 3>> cell_movements(num_objects);
     std::vector<Double3> cell_positions(num_objects);
     std::vector<double> cell_diameters(num_objects);
@@ -87,7 +88,8 @@ class DisplacementOpCuda {
       IsNonSphericalObjectPresent(so, &is_non_spherical_object);
       if (is_non_spherical_object) {
         Log::Fatal("DisplacementOpCuda",
-                 "\nWe detected a non-spherical object during the GPU execution. This is currently not supported.");
+                   "\nWe detected a non-spherical object during the GPU "
+                   "execution. This is currently not supported.");
         return;
       }
       auto* cell = bdm_static_cast<Cell*>(so);
@@ -100,18 +102,18 @@ class DisplacementOpCuda {
       cell_boxid[idx] = cell->GetBoxIdx();
     });
 
-    uint16_t numa_node = 0; // GPU code only supports 1 NUMA domain currently
-    for (size_t i = 0; i < grid->successors_.size(numa_node); i++) {	
-      auto sh = SoHandle(numa_node, i);	
-      successors[i] = grid->successors_[sh].GetElementIdx();	
+    uint16_t numa_node = 0;  // GPU code only supports 1 NUMA domain currently
+    for (size_t i = 0; i < grid->successors_.size(numa_node); i++) {
+      auto sh = SoHandle(numa_node, i);
+      successors[i] = grid->successors_[sh].GetElementIdx();
     }
 
     starts.resize(grid->boxes_.size());
     lengths.resize(grid->boxes_.size());
     size_t i = 0;
     for (auto& box : grid->boxes_) {
-      starts[i] = box.start_.load().GetElementIdx();	
-      lengths[i] = box.length_;	
+      starts[i] = box.start_.GetElementIdx();
+      lengths[i] = box.length_;
       i++;
     }
     grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
@@ -156,15 +158,14 @@ class DisplacementOpCuda {
         cell_positions.data()->data(), cell_diameters.data(),
         cell_tractor_force.data()->data(), cell_adherence.data(),
         cell_boxid.data(), mass.data(), &(param->simulation_time_step_),
-        &(param->simulation_max_displacement_), &squared_radius,
-        &num_objects,
+        &(param->simulation_max_displacement_), &squared_radius, &num_objects,
         starts.data(), lengths.data(), successors.data(), &box_length,
         num_boxes_axis.data(), grid_dimensions.data(),
         cell_movements.data()->data());
 
-// set new positions after all updates have been calculated
-// otherwise some cells would see neighbors with already updated positions
-// which would lead to inconsistencies
+    // set new positions after all updates have been calculated
+    // otherwise some cells would see neighbors with already updated positions
+    // which would lead to inconsistencies
     rm->ApplyOnAllElements([&](SimObject* so, SoHandle soh) {
       auto* cell = dynamic_cast<Cell*>(so);
       auto idx = soh.GetElementIdx();
