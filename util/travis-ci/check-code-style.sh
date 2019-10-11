@@ -40,6 +40,7 @@ python3 --version || true
 # add master branch
 # https://github.com/travis-ci/travis-ci/issues/6069
 git remote set-branches --add origin master
+git fetch
 
 $BDM_PROJECT_DIR/prerequisites.sh all << EOF
 y
