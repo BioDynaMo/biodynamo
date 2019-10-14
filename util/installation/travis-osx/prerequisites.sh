@@ -24,6 +24,10 @@ Arguments:
   exit 1
 fi
 
+brew update
+brew style
+brew update-reset
+
 # Install and upgrade required packages
 brew install libomp tbb open-mpi git \
 python python@2 llvm wget cmake || true
