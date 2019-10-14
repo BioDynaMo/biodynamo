@@ -522,28 +522,25 @@ class Grid {
     double z[batch_size] __attribute__((aligned(64)));
     double squared_distance[batch_size] __attribute__((aligned(64)));
 
-
     auto process_batch = [&]() {
-
-      #pragma omp simd
-      for(uint64_t i = 0; i < size; ++i) {
+#pragma omp simd
+      for (uint64_t i = 0; i < size; ++i) {
         const double dx = x[i] - position[0];
         const double dy = y[i] - position[1];
         const double dz = z[i] - position[2];
 
-        squared_distance[i] =  dx * dx + dy * dy + dz * dz;
+        squared_distance[i] = dx * dx + dy * dy + dz * dz;
       }
 
-      for(uint64_t i = 0; i < size; ++i) {
+      for (uint64_t i = 0; i < size; ++i) {
         lambda(sim_objects[i], squared_distance[i]);
       }
       size = 0;
     };
 
-
     while (!ni.IsAtEnd()) {
-      // Do something with neighbor object
       auto soh = *ni;
+      // increment iterator already here to hide memory latency
       ++ni;
       auto* sim_object = rm->GetSimObjectWithSoHandle(soh);
       if (sim_object != &query) {
@@ -553,24 +550,12 @@ class Grid {
         y[size] = pos[1];
         z[size] = pos[2];
         size++;
-        if(size == batch_size) {
+        if (size == batch_size) {
           process_batch();
         }
-        // const auto& neighbor_position = sim_object->GetPosition();
-        // double squared_distance =
-        //     SquaredEuclideanDistance(position, neighbor_position);
-        // lambda(sim_object, squared_distance);
-        // lambda(sim_object, neighbor_position[0]);
-      // lambda(sim_object, 100);
       }
-
     }
     process_batch();
-    // for(uint64_t i = 0; i < positions.size(); i++) {
-    //   double squared_distance =
-    //       SquaredEuclideanDistance(position, positions[i]);
-    //   lambda(sim_objects[i], squared_distance);
-    // }
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
