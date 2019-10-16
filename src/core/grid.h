@@ -460,9 +460,17 @@ class Grid {
   /// Z-order of boxes. There is no particular order for elements inside a box.
   template <typename Lambda>
   void IterateZOrder(const Lambda& lambda) {
-    UpdateBoxZOrder();
-    for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
-      auto it = zorder_sorted_boxes_[i].second->begin();
+    // UpdateBoxZOrder();
+
+    for (int x = 0; x < 5; x++) {
+    for (int y = 0; y < 5; y++) {
+    for (int z = 0; z < 5; z++) {
+      auto idx =  libmorton::morton3D_64_encode(x, y, z);
+      std::cout << x << " " << y << " " << z << " " << idx << std::endl;
+    }}}
+
+    for (uint64_t i = 0; i < boxes_.size(); i++) {
+      auto it = boxes_[i].begin();
       while (!it.IsAtEnd()) {
         lambda(*it);
         ++it;
@@ -627,13 +635,19 @@ class Grid {
 
   bool HasGrown() { return has_grown_; }
 
-  std::array<uint32_t, 3> GetBoxCoordinates(size_t box_idx) const {
-    std::array<uint32_t, 3> box_coord;
-    box_coord[2] = box_idx / num_boxes_xy_;
-    auto remainder = box_idx % num_boxes_xy_;
-    box_coord[1] = remainder / num_boxes_axis_[0];
-    box_coord[0] = remainder % num_boxes_axis_[0];
-    return box_coord;
+  std::array<uint32_t, 3> GetBoxCoordinates(size_t morton_idx) const {
+    // std::array<uint32_t, 3> box_coord;
+    uint_fast32_t x;
+    uint_fast32_t y;
+    uint_fast32_t z;
+
+    // box_coord[2] = box_idx / num_boxes_xy_;
+    // auto remainder = box_idx % num_boxes_xy_;
+    // box_coord[1] = remainder / num_boxes_axis_[0];
+    // box_coord[0] = remainder % num_boxes_axis_[0];
+    libmorton::morton3D_64_decode(morton_idx, x, y, z);
+
+    return {x, y, z};
   }
 
   bool IsInitialized() { return initialized_; }
@@ -908,61 +922,93 @@ class Grid {
   /// @param[in]  box_idx         The query box
   ///
   void GetMooreBoxes(FixedSizeVector<const Box*, 27>* neighbor_boxes,
-                     size_t box_idx) const {
-    neighbor_boxes->push_back(GetBoxPointer(box_idx));
+                     size_t morton_box_idx) const {
+    const auto& box_coord = GetBoxCoordinates(morton_box_idx);
+
+    neighbor_boxes->push_back(GetBoxPointer(morton_box_idx));
 
     // Adjacent 6 (top, down, left, right, front and back)
     if (adjacency_ >= kLow) {
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - 1));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + 1));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[0]));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[0]));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx - 1));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx + 1));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {0, 0, 1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {0, 0, -1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {0, 1, 0}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {0, -1, 0}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, 0, 0}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, 0, 0}));
     }
 
     // Adjacent 12
     if (adjacency_ >= kMedium) {
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_axis_[0] + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_axis_[0] + 1));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, 0, 1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, 0, 1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {0, 1, 1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {0, -1, 1}));
+
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, 0, -1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, 0, -1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {0, 1, -1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {0, -1, -1}));
+
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, 1, 0}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, -1, 0}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, 1, 0}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, -1, 0}));
+
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0]));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx - num_boxes_axis_[0] - 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0]));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx + num_boxes_axis_[0] - 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0]));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx - num_boxes_axis_[0] + 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0]));
+      // neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx + num_boxes_axis_[0] + 1));
     }
 
     // Adjacent 8
     if (adjacency_ >= kHigh) {
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, 1, 1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, -1, 1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, 1, 1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, -1, 1}));
+
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, 1, -1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {1, -1, -1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, 1, -1}));
+      neighbor_boxes->push_back(GetBoxPointer(box_coord, {-1, -1, -1}));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1));
+      // neighbor_boxes->push_back(
+      //     GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1));
     }
   }
 
@@ -973,45 +1019,90 @@ class Grid {
   /// @param[in]  box_idx         The query box
   ///
   void GetMooreBoxIndices(FixedSizeVector<uint64_t, 27>* box_indices,
-                          size_t box_idx) const {
-    box_indices->push_back(box_idx);
+                          size_t morton_box_idx) const {
+    // box_indices->push_back(box_idx);
+    //
+    // // Adjacent 6 (top, down, left, right, front and back)
+    // if (adjacency_ >= kLow) {
+    //   box_indices->push_back(box_idx - num_boxes_xy_);
+    //   box_indices->push_back(box_idx + num_boxes_xy_);
+    //   box_indices->push_back(box_idx - num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx + num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx - 1);
+    //   box_indices->push_back(box_idx + 1);
+    // }
+    //
+    // // Adjacent 12
+    // if (adjacency_ >= kMedium) {
+    //   box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ - 1);
+    //   box_indices->push_back(box_idx - num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ - 1);
+    //   box_indices->push_back(box_idx + num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ + 1);
+    //   box_indices->push_back(box_idx - num_boxes_axis_[0] + 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ + 1);
+    //   box_indices->push_back(box_idx + num_boxes_axis_[0] + 1);
+    // }
+    //
+    // // Adjacent 8
+    // if (adjacency_ >= kHigh) {
+    //   box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1);
+    // }
+
+    const auto& box_coord = GetBoxCoordinates(morton_box_idx);
+
+    box_indices->push_back(morton_box_idx);
 
     // Adjacent 6 (top, down, left, right, front and back)
     if (adjacency_ >= kLow) {
-      box_indices->push_back(box_idx - num_boxes_xy_);
-      box_indices->push_back(box_idx + num_boxes_xy_);
-      box_indices->push_back(box_idx - num_boxes_axis_[0]);
-      box_indices->push_back(box_idx + num_boxes_axis_[0]);
-      box_indices->push_back(box_idx - 1);
-      box_indices->push_back(box_idx + 1);
+      box_indices->push_back(GetBoxIndex(box_coord, {0, 0, 1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {0, 0, -1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {0, 1, 0}));
+      box_indices->push_back(GetBoxIndex(box_coord, {0, -1, 0}));
+      box_indices->push_back(GetBoxIndex(box_coord, {1, 0, 0}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, 0, 0}));
     }
 
     // Adjacent 12
     if (adjacency_ >= kMedium) {
-      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0]);
-      box_indices->push_back(box_idx - num_boxes_xy_ - 1);
-      box_indices->push_back(box_idx - num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0]);
-      box_indices->push_back(box_idx + num_boxes_xy_ - 1);
-      box_indices->push_back(box_idx + num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0]);
-      box_indices->push_back(box_idx - num_boxes_xy_ + 1);
-      box_indices->push_back(box_idx - num_boxes_axis_[0] + 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0]);
-      box_indices->push_back(box_idx + num_boxes_xy_ + 1);
-      box_indices->push_back(box_idx + num_boxes_axis_[0] + 1);
+      box_indices->push_back(GetBoxIndex(box_coord, {1, 0, 1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, 0, 1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {0, 1, 1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {0, -1, 1}));
+
+      box_indices->push_back(GetBoxIndex(box_coord, {1, 0, -1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, 0, -1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {0, 1, -1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {0, -1, -1}));
+
+      box_indices->push_back(GetBoxIndex(box_coord, {1, 1, 0}));
+      box_indices->push_back(GetBoxIndex(box_coord, {1, -1, 0}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, 1, 0}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, -1, 0}));
     }
 
     // Adjacent 8
     if (adjacency_ >= kHigh) {
-      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1);
-      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1);
+      box_indices->push_back(GetBoxIndex(box_coord, {1, 1, 1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {1, -1, 1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, 1, 1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, -1, 1}));
+
+      box_indices->push_back(GetBoxIndex(box_coord, {1, 1, -1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {1, -1, -1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, 1, -1}));
+      box_indices->push_back(GetBoxIndex(box_coord, {-1, -1, -1}));
     }
   }
 
@@ -1091,6 +1182,8 @@ class Grid {
   /// @return     The pointer to the box
   ///
   const Box* GetBoxPointer(size_t index) const { return &(boxes_[index]); }
+  const Box* GetBoxPointer(const std::array<uint32_t, 3>& box_coord, const std::array<int32_t, 3>& delta) const {
+    return &(boxes_[GetBoxIndex(box_coord, delta)]); }
 
   /// @brief      Gets the pointer to the box with the given index
   ///
@@ -1107,9 +1200,29 @@ class Grid {
   ///
   /// @return     The box index.
   ///
+  // FIXME rename to GetMortonBoxIdx
   size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const {
-    return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
-           box_coord[0];
+
+    auto idx = libmorton::morton3D_64_encode(box_coord[0], box_coord[1], box_coord[2]);
+    int* ptr = nullptr;
+    if (idx >= boxes_.size()) {
+      std::cout << idx << " - " << boxes_.size() << std::endl;
+      std::cout << *ptr << std::endl;
+    }
+    return idx;
+    // return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
+    //        box_coord[0];
+  }
+  size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord, const std::array<int32_t, 3>& delta) const {
+    auto idx =  libmorton::morton3D_64_encode(box_coord[0] + delta[0], box_coord[1]+delta[1], box_coord[2] + delta[2]);
+    int* ptr = nullptr;
+    if (idx >= boxes_.size()) {
+      std::cout << idx << " - " << boxes_.size() << std::endl;
+      std::cout << *ptr << std::endl;
+    }
+    return idx;
+    // return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
+    //        box_coord[0];
   }
 };
 
