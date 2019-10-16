@@ -167,7 +167,8 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   uint64_t cnt = 0;
   uint64_t current_numa = 0;
 
-  auto rearrange = [&](const SoHandle& handle) {
+  auto rearrange = [&,this](const SimObject* sim_object) {
+    auto handle = this->GetSoHandle(sim_object->GetUid());
     if (cnt == so_per_numa[current_numa]) {
       cnt = 0;
       current_numa++;

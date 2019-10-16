@@ -102,24 +102,16 @@ class Grid {
     Spinlock lock_;
     // std::atomic<bool> timestamp_;
     uint32_t timestamp_;
-    /// start value of the linked list of simulation objects inside this box.
-    /// Next element can be found at `successors_[start_]`
-    SoHandle start_;
-    /// length of the linked list (i.e. number of simulation objects)
-    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
-    uint16_t length_;
+    InlineVector<SimObject*, 5> sim_objects_;
 
-    Box() : timestamp_(0), start_(SoHandle()), length_(0) {}
+    Box() : timestamp_(0) {}
     /// Copy Constructor required for boxes_.resize()
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
     Box(const Box& other) : Box() {}
 
     Box& operator=(const Box& other) {
-      // start_ = other.start_.load(std::memory_order_relaxed);
-      // length_ = other.length_.load(std::memory_order_relaxed);
-      start_ = other.start_;
-      length_ = other.length_;
+      sim_objects_ = other.sim_objects_;
       return *this;
     }
 
@@ -131,48 +123,45 @@ class Grid {
     ///
     /// @param[in]  so       The object's identifier
     /// @param   AddObject   successors   The successors
-    void AddObject(SoHandle so, SimObjectVector<SoHandle>* successors,
-                   Grid* grid) {
+    void AddObject(SimObject* so, Grid* grid) {
       std::lock_guard<Spinlock> lock_guard(lock_);
 
       if (timestamp_ != grid->timestamp_) {
         timestamp_ = grid->timestamp_;
-        length_ = 1;
-        start_ = so;
-      } else {
-        length_++;
-        (*successors)[so] = start_;
-        start_ = so;
+        sim_objects_.clear();
       }
+      sim_objects_.push_back(so);
     }
 
     /// An iterator that iterates over the cells in this box
     struct Iterator {
-      Iterator(Grid* grid, const Box* box)
-          : grid_(grid), current_value_(box->start_), countdown_(box->length_) {
+      Iterator(Grid* grid, const Box* box) : box_(box) {
         if (grid->timestamp_ != box->timestamp_) {
-          countdown_ = 0;
+          idx_ = box->sim_objects_.size();
         }
       }
 
-      bool IsAtEnd() { return countdown_ <= 0; }
+      bool IsAtEnd() { return idx_ >= box_->sim_objects_.size(); }
 
       Iterator& operator++() {
-        countdown_--;
-        if (countdown_ > 0) {
-          current_value_ = grid_->successors_[current_value_];
-        }
+        idx_++;
+        // countdown_--;
+        // if (countdown_ > 0) {
+        //   current_value_ = grid_->successors_[current_value_];
+        // }
         return *this;
       }
 
-      SoHandle operator*() const { return current_value_; }
+      SimObject* operator*() const { return box_->sim_objects_[idx_]; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
-      Grid* grid_;
-      /// The current simulation object to be considered
-      SoHandle current_value_;
-      /// The remain number of simulation objects to consider
-      int countdown_ = 0;
+      // Grid* grid_;
+      // /// The current simulation object to be considered
+      // SoHandle current_value_;
+      // /// The remain number of simulation objects to consider
+      // int countdown_ = 0;
+      uint16_t idx_ = 0;
+      const Box* box_;
     };
 
     Iterator begin() const {  // NOLINT
@@ -197,7 +186,7 @@ class Grid {
 
     bool IsAtEnd() const { return is_end_; }
 
-    SoHandle operator*() const { return *box_iterator_; }
+    SimObject* operator*() const { return *box_iterator_; }
 
     /// Version where empty neighbor boxes are allowed
     NeighborIterator& operator++() {
@@ -274,7 +263,7 @@ class Grid {
     int32_t inf = std::numeric_limits<int32_t>::max();
     grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
     threshold_dimensions_ = {inf, -inf};
-    successors_.clear();
+    // successors_.clear();
     has_grown_ = false;
   }
 
@@ -341,7 +330,7 @@ class Grid {
         boxes_.resize(total_num_boxes);
       }
 
-      successors_.reserve();
+      // successors_.reserve();
 
       // Assign simulation objects to boxes
       rm->ApplyOnAllElementsParallelDynamic(
@@ -349,7 +338,7 @@ class Grid {
             const auto& position = sim_object->GetPosition();
             auto idx = this->GetBoxIndex(position);
             auto box = this->GetBoxPointer(idx);
-            box->AddObject(soh, &successors_, this);
+            box->AddObject(sim_object, this);
             sim_object->SetBoxIdx(idx);
           });
       auto* param = Simulation::GetActive()->GetParam();
@@ -476,21 +465,25 @@ class Grid {
   /// @param      query   The query object
   void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda,
                        const SimObject& query) const {
-    auto idx = query.GetBoxIdx();
+    // auto idx = query.GetBoxIdx();
+    //
+    // FixedSizeVector<const Box*, 27> neighbor_boxes;
+    // GetMooreBoxes(&neighbor_boxes, idx);
+    //
+    // auto* rm = Simulation::GetActive()->GetResourceManager();
+    //
+    // NeighborIterator ni(neighbor_boxes, timestamp_);
+    // while (!ni.IsAtEnd()) {
+    //   auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
+    //   if (sim_object != &query) {
+    //     lambda(sim_object);
+    //   }
+    //   ++ni;
+    // }
+  }
 
-    FixedSizeVector<const Box*, 27> neighbor_boxes;
-    GetMooreBoxes(&neighbor_boxes, idx);
-
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
-    NeighborIterator ni(neighbor_boxes, timestamp_);
-    while (!ni.IsAtEnd()) {
-      auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
-      if (sim_object != &query) {
-        lambda(sim_object);
-      }
-      ++ni;
-    }
+  void prefetch(void* addr) {
+    __builtin_prefetch(addr);
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
@@ -539,10 +532,11 @@ class Grid {
     };
 
     while (!ni.IsAtEnd()) {
-      auto soh = *ni;
+      // auto soh = *ni;
+      auto* sim_object = *ni;
       // increment iterator already here to hide memory latency
       ++ni;
-      auto* sim_object = rm->GetSimObjectWithSoHandle(soh);
+      // auto* sim_object = rm->GetSimObjectWithSoHandle(soh);
       if (sim_object != &query) {
         sim_objects[size] = sim_object;
         const auto& pos = sim_object->GetPosition();
@@ -571,27 +565,27 @@ class Grid {
   void ForEachNeighborWithinRadius(
       const std::function<void(const SimObject*)>& lambda,
       const SimObject& query, double squared_radius) {
-    const auto& position = query.GetPosition();
-    auto idx = query.GetBoxIdx();
-
-    FixedSizeVector<const Box*, 27> neighbor_boxes;
-    GetMooreBoxes(&neighbor_boxes, idx);
-
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
-    NeighborIterator ni(neighbor_boxes, timestamp_);
-    while (!ni.IsAtEnd()) {
-      // Do something with neighbor object
-      auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
-      if (sim_object != &query) {
-        const auto& neighbor_position = sim_object->GetPosition();
-        if (this->WithinSquaredEuclideanDistance(squared_radius, position,
-                                                 neighbor_position)) {
-          lambda(sim_object);
-        }
-      }
-      ++ni;
-    }
+    // const auto& position = query.GetPosition();
+    // auto idx = query.GetBoxIdx();
+    //
+    // FixedSizeVector<const Box*, 27> neighbor_boxes;
+    // GetMooreBoxes(&neighbor_boxes, idx);
+    //
+    // auto* rm = Simulation::GetActive()->GetResourceManager();
+    //
+    // NeighborIterator ni(neighbor_boxes, timestamp_);
+    // while (!ni.IsAtEnd()) {
+    //   // Do something with neighbor object
+    //   auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
+    //   if (sim_object != &query) {
+    //     const auto& neighbor_position = sim_object->GetPosition();
+    //     if (this->WithinSquaredEuclideanDistance(squared_radius, position,
+    //                                              neighbor_position)) {
+    //       lambda(sim_object);
+    //     }
+    //   }
+    //   ++ni;
+    // }
   }
 
   /// @brief      Return the box index in the one dimensional array of the box
@@ -756,7 +750,7 @@ class Grid {
   ///     // Usage
   ///     SoHandle current_element = ...;
   ///     SoHandle next_element = successors_[current_element];
-  SimObjectVector<SoHandle> successors_;
+  // SimObjectVector<SimObject*> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
