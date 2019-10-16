@@ -138,6 +138,8 @@ class Grid {
       Iterator(Grid* grid, const Box* box) : box_(box) {
         if (grid->timestamp_ != box->timestamp_) {
           idx_ = box->sim_objects_.size();
+        } else {
+          current_value_ = box_->sim_objects_[idx_];
         }
       }
 
@@ -146,18 +148,18 @@ class Grid {
       Iterator& operator++() {
         idx_++;
         // countdown_--;
-        // if (countdown_ > 0) {
-        //   current_value_ = grid_->successors_[current_value_];
-        // }
+        if (idx_ < box_->sim_objects_.size()) {
+          current_value_ = box_->sim_objects_[idx_];
+        }
         return *this;
       }
 
-      SimObject* operator*() const { return box_->sim_objects_[idx_]; }
+      SimObject* operator*() const { return current_value_; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
       // Grid* grid_;
       // /// The current simulation object to be considered
-      // SoHandle current_value_;
+      SimObject* current_value_;
       // /// The remain number of simulation objects to consider
       // int countdown_ = 0;
       uint16_t idx_ = 0;
@@ -484,6 +486,7 @@ class Grid {
 
   void prefetch(void* addr) {
     __builtin_prefetch(addr);
+    __builtin_prefetch(static_cast<char*>(addr + 64));
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
