@@ -334,11 +334,13 @@ class Grid {
       CheckGridGrowth();
 
       // resize boxes_
-      if (boxes_.size() != total_num_boxes) {
-        if (boxes_.capacity() < total_num_boxes) {
-          boxes_.reserve(total_num_boxes * 2);
+      auto max_morton = libmorton::morton3D_64_encode(num_boxes_axis_[0], num_boxes_axis_[1], num_boxes_axis_[2]);
+      // std::cout << "max_morton " << max_morton << std::endl;
+      if (boxes_.size() != max_morton) {
+        if (boxes_.capacity() < max_morton) {
+          boxes_.reserve(max_morton * 2);
         }
-        boxes_.resize(total_num_boxes);
+        boxes_.resize(max_morton);
       }
 
       successors_.reserve();
@@ -468,6 +470,13 @@ class Grid {
       auto idx =  libmorton::morton3D_64_encode(x, y, z);
       std::cout << x << " " << y << " " << z << " " << idx << std::endl;
     }}}
+
+    std::vector<uint64_t> v =  {17, 1000, 2000, 10000};
+    for (auto& i : v) {
+      auto idx =  libmorton::morton3D_64_encode(i, i, i);
+      std::cout << i << " " << idx << " " << i * i * i << " " << idx / (i*i*i + 0.0) << std::endl;
+    }
+
 
     for (uint64_t i = 0; i < boxes_.size(); i++) {
       auto it = boxes_[i].begin();
@@ -1204,22 +1213,22 @@ class Grid {
   size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const {
 
     auto idx = libmorton::morton3D_64_encode(box_coord[0], box_coord[1], box_coord[2]);
-    int* ptr = nullptr;
-    if (idx >= boxes_.size()) {
-      std::cout << idx << " - " << boxes_.size() << std::endl;
-      std::cout << *ptr << std::endl;
-    }
+    // int* ptr = nullptr;
+    // if (idx >= boxes_.size()) {
+    //   std::cout << idx << " - " << boxes_.size() << std::endl;
+    //   std::cout << *ptr << std::endl;
+    // }
     return idx;
     // return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
     //        box_coord[0];
   }
   size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord, const std::array<int32_t, 3>& delta) const {
     auto idx =  libmorton::morton3D_64_encode(box_coord[0] + delta[0], box_coord[1]+delta[1], box_coord[2] + delta[2]);
-    int* ptr = nullptr;
-    if (idx >= boxes_.size()) {
-      std::cout << idx << " - " << boxes_.size() << std::endl;
-      std::cout << *ptr << std::endl;
-    }
+    // int* ptr = nullptr;
+    // if (idx >= boxes_.size()) {
+    //   std::cout << idx << " - " << boxes_.size() << std::endl;
+    //   std::cout << *ptr << std::endl;
+    // }
     return idx;
     // return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
     //        box_coord[0];
