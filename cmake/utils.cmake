@@ -306,6 +306,10 @@ function(add_bdm_packages_properties)
             DESCRIPTION "GNU C library POSIX threads implementation. (REQUIRED)"
             TYPE REQUIRED
             )
+    SET_PACKAGE_PROPERTIES(OpenCL PROPERTIES
+            DESCRIPTION "Code generation for GPU acceleration. (OPTIONAL)"
+            TYPE REQUIRED
+            )
     SET_PACKAGE_PROPERTIES(Git PROPERTIES
             DESCRIPTION "Open Source Distributed Version Control System. (OPTIONAL)"
             TYPE REQUIRED
