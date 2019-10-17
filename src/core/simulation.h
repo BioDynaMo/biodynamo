@@ -22,6 +22,7 @@
 #include "core/util/random.h"
 #include "core/util/root.h"
 #include "core/gpu/opencl_state.h"
+#include "core/memory/memory_manager.h"
 
 namespace bdm {
 
@@ -110,6 +111,8 @@ class Simulation {
   /// Returns all thread local execution contexts.
   std::vector<InPlaceExecutionContext*>& GetAllExecCtxts();
 
+  MemoryManager* GetMemoryManager() { return &mem_mgr_; }
+
   /// Return helper class for OpenCL environment
   OpenCLState* GetOpenCLState();
 
@@ -153,6 +156,9 @@ class Simulation {
   std::string unique_name_;  //!
   /// cached value where `unique_name_` is appended to `Param::output_dir_`
   std::string output_dir_;  //!
+
+  /// TODO add documentation
+  MemoryManager mem_mgr_;
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,

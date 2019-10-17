@@ -253,6 +253,14 @@ class SimObject {
   virtual void EventHandler(const Event& event, SimObject* other1,
                             SimObject* other2 = nullptr);
 
+  void* operator new(size_t size) {
+    return Simulation::GetActive()->GetMemoryManager()->New(size);
+  }
+
+  void operator delete(void* p) {
+    Simulation::GetActive()->GetMemoryManager()->Delete(p);
+  }
+  
  protected:
   /// unique id
   SoUid uid_;

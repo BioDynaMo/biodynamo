@@ -77,6 +77,14 @@ struct BaseBiologyModule {
   /// given event.
   bool Remove(EventId event) const { return (event & remove_mask_) != 0; }
 
+  void* operator new(size_t size) {
+    return Simulation::GetActive()->GetMemoryManager()->New(size);
+  }
+
+  void operator delete(void* p) {
+    Simulation::GetActive()->GetMemoryManager()->Delete(p);
+  }
+
  private:
   EventId copy_mask_;
   EventId remove_mask_;
