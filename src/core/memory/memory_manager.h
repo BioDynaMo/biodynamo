@@ -100,6 +100,8 @@ class PoolAllocator {
  public:
   PoolAllocator(std::size_t size);
 
+  PoolAllocator(const PoolAllocator& other);
+
   ~PoolAllocator();
 
   void* New(std::size_t size);
@@ -121,7 +123,7 @@ class MemoryManager {
  private:
   // FIXME
   // UnorderedSplitFlatMap<std::size_t, PoolAllocator, 20> allocators_;
-  static std::unordered_map<std::size_t, PoolAllocator*> allocators_;
+  static std::unordered_map<std::size_t, PoolAllocator> allocators_;
 };
 
 }  // namespace bdm

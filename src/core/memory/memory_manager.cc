@@ -172,11 +172,20 @@ PoolAllocator::PoolAllocator(std::size_t size)
   }
 }
 
+PoolAllocator::PoolAllocator(const PoolAllocator& other)
+    : size_(other.size_), tinfo_(ThreadInfo::GetInstance()) {
+  // FIXME not a real copy ctor...
+  // Alternative is unique_ptr
+  for (int nid = 0; nid < tinfo_->GetNumaNodes(); ++nid) {
+    numa_allocators_.push_back(new NumaPoolAllocator(size_, nid));
+  }
+}
+
 PoolAllocator::~PoolAllocator() {
-  // for (auto* el : numa_allocators_) {
-  //   delete el;
-  // }
-  // numa_allocators_.clear();
+  for (auto* el : numa_allocators_) {
+    delete el;
+  }
+  numa_allocators_.clear();
 }
 
 void* PoolAllocator::New(std::size_t size) {
@@ -194,9 +203,9 @@ void PoolAllocator::Delete(void* p) {
 void* MemoryManager::New(std::size_t size) {
   auto it = allocators_.find(size);
   if (it != allocators_.end()) {
-    return it->second->New(size);
+    return it->second.New(size);
   } else {
-    allocators_.emplace(size, new PoolAllocator(size));
+    allocators_.emplace(size, PoolAllocator(size));
     return New(size);
   }
 }
@@ -205,7 +214,6 @@ void MemoryManager::Delete(void* p) {
   // TODO
 }
 
-// FIXME destruct PoolAllocator
-std::unordered_map<std::size_t, PoolAllocator*> MemoryManager::allocators_;
+std::unordered_map<std::size_t, PoolAllocator> MemoryManager::allocators_;
 
 }  // namespace bdm
