@@ -18,11 +18,11 @@
 #include <string>
 #include <vector>
 
+#include "core/gpu/opencl_state.h"
+#include "core/memory/memory_manager.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
-#include "core/gpu/opencl_state.h"
-#include "core/memory/memory_manager.h"
 
 namespace bdm {
 

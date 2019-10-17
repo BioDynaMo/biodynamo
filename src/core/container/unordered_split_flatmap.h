@@ -22,19 +22,16 @@ namespace bdm {
 template <typename TKey, typename TValue, uint64_t TSize>
 class UnorderedSplitFlatMap {
  public:
-   UnorderedSplitFlatMap() {}
+  UnorderedSplitFlatMap() {}
 
-   TValue& operator[](const TKey& key) {
+  TValue& operator[](const TKey& key) {}
 
-   }
-
-   const TValue& at(const TKey& key) const {  // NOLINT
-
-   }
+  const TValue& at(const TKey& key) const {  // NOLINT
+  }
 
  private:
-   InlineVector<TKey, TSize> keys_;
-   InlineVector<TValue, TSize> values_;
+  InlineVector<TKey, TSize> keys_;
+  InlineVector<TValue, TSize> values_;
 };
 
 }  // namespace bdm

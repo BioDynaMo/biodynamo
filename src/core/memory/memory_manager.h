@@ -20,20 +20,18 @@
 #include <unordered_map>  // FIXME remove
 
 #include "core/container/unordered_split_flatmap.h"
-#include "core/util/thread_info.h"
 #include "core/util/numa.h"
 #include "core/util/spinlock.h"
+#include "core/util/thread_info.h"
 
 namespace bdm {
-
-
 
 struct Node {
   Node* next = nullptr;
 };
 
 class List {
-public:
+ public:
   List() {}
   List(const List& other) : head_(other.head_) {}
 
@@ -60,14 +58,13 @@ public:
 
   bool Empty() const;
 
-private:
+ private:
   Node* head_ = nullptr;
   Spinlock lock_;
 };
 
-
 class NumaPoolAllocator {
-public:
+ public:
   NumaPoolAllocator(uint64_t size, int nid);
 
   // NumaPoolAllocator(const NumaPoolAllocator* other) :
@@ -82,7 +79,7 @@ public:
 
   void Delete(void* p);
 
-private:
+ private:
   const double kGrowthFactor = 2;
   uint64_t total_size_ = 0;
   uint64_t size_;
@@ -94,38 +91,38 @@ private:
 
   void AllocNewMemoryBlock(std::size_t size);
 
-  void CreateFreeList(void* block, uint64_t mem_block_size, Node** head, Node** tail);
+  void CreateFreeList(void* block, uint64_t mem_block_size, Node** head,
+                      Node** tail);
 };
 
 // FIXME move to separate source file
 class PoolAllocator {
-  public:
-    PoolAllocator(std::size_t size);
+ public:
+  PoolAllocator(std::size_t size);
 
-    ~PoolAllocator();
+  ~PoolAllocator();
 
-    void* New(std::size_t size);
-
-    void Delete(void* p);
-
-  private:
-    std::size_t size_;
-    ThreadInfo* tinfo_;
-    std::vector<NumaPoolAllocator*> numa_allocators_;
-};
-
-class MemoryManager {
-public:
   void* New(std::size_t size);
 
   void Delete(void* p);
 
-private:
+ private:
+  std::size_t size_;
+  ThreadInfo* tinfo_;
+  std::vector<NumaPoolAllocator*> numa_allocators_;
+};
+
+class MemoryManager {
+ public:
+  void* New(std::size_t size);
+
+  void Delete(void* p);
+
+ private:
   // FIXME
   // UnorderedSplitFlatMap<std::size_t, PoolAllocator, 20> allocators_;
   std::unordered_map<std::size_t, PoolAllocator> allocators_;
 };
-
 
 }  // namespace bdm
 

@@ -35,14 +35,10 @@ class ThreadInfo {
   }
 
   // FIXME add test
-  int GetMyThreadId() const {
-    return omp_get_thread_num();
-  }
+  int GetMyThreadId() const { return omp_get_thread_num(); }
 
   // FIXME add test
-  int GetMyNumaNode() const {
-    return GetNumaNode(GetMyThreadId());
-  }
+  int GetMyNumaNode() const { return GetNumaNode(GetMyThreadId()); }
 
   /// Returns the number of NUMA nodes on this machine
   int GetNumaNodes() const { return numa_nodes_; }

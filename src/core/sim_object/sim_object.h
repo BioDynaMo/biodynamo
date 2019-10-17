@@ -260,7 +260,7 @@ class SimObject {
   void operator delete(void* p) {
     Simulation::GetActive()->GetMemoryManager()->Delete(p);
   }
-  
+
  protected:
   /// unique id
   SoUid uid_;

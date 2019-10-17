@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
 #include "core/memory/memory_manager.h"
+#include <gtest/gtest.h>
 
 namespace bdm {
 
