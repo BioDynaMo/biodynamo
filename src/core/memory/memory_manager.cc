@@ -74,8 +74,7 @@ NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
 
 NumaPoolAllocator::~NumaPoolAllocator() {
   for (auto& block : memory_blocks_) {
-    // numa_free(block.first, block.second);
-    // free(block.first); // FIXME
+    numa_free(block.first, block.second);
   }
 }
 
@@ -108,8 +107,7 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
     return;
   }
 
-  // void* block = numa_alloc_onnode(size, nid_);
-  void* block = malloc(size);
+  void* block = numa_alloc_onnode(size, nid_);
   if (block == nullptr) {
     Log::Fatal("NumaPoolAllocator::AllocNewMemoryBlock", "Allocation failed");
   }
