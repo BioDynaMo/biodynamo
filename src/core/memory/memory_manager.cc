@@ -185,7 +185,7 @@ void* PoolAllocator::New(std::size_t size) {
   assert(size_ == size && "Requested size does not match this PoolAllocator");
   auto tid = tinfo_->GetMyThreadId();
   auto nid = tinfo_->GetNumaNode(tid);
-  assert(nid < numa_allocators_.size());
+  assert(static_cast<uint64_t>(nid) < numa_allocators_.size());
   return numa_allocators_[nid]->New(tid);
 }
 
