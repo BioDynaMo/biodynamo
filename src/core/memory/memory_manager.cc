@@ -127,15 +127,15 @@ void NumaPoolAllocator::CreateFreeList(void* block, uint64_t mem_block_size,
   auto* pointer = start_pointer;
   const auto* end_pointer = pointer + mem_block_size - size_;
   const uint64_t num_elements = mem_block_size / size_;
-  std::cout << "block " << block << std::endl;
-  std::cout << "mbs   " << mem_block_size << std::endl;
-  std::cout << "size  " << size_ << std::endl;
-  std::cout << "ep    " << (void*)end_pointer << std::endl;
-  std::cout << "epo   " << end_pointer - static_cast<char*>(block) << std::endl;
+  // FIXME remove
+  // std::cout << "block " << block << std::endl;
+  // std::cout << "mbs   " << mem_block_size << std::endl;
+  // std::cout << "size  " << size_ << std::endl;
+  // std::cout << "ep    " << (void*)end_pointer << std::endl;
+  // std::cout << "epo   " << end_pointer - static_cast<char*>(block) << std::endl;
 
   pointer += (num_elements - 1) * size_;
   *head = new (pointer) Node();
-  // std::cout << "  " << pointer - static_cast<char*>(block) << std::endl;
   assert((*head)->next == nullptr);
   *tail = *head;
   pointer -= size_;
@@ -143,7 +143,6 @@ void NumaPoolAllocator::CreateFreeList(void* block, uint64_t mem_block_size,
   while (pointer >= start_pointer) {
     auto* old_head = *head;
     *head = new (pointer) Node();
-    // std::cout << "  " << pointer - static_cast<char*>(block) << std::endl;
     assert(pointer >= static_cast<char*>(block));
     assert(pointer <= end_pointer);
     assert((*head)->next == nullptr);
@@ -152,19 +151,19 @@ void NumaPoolAllocator::CreateFreeList(void* block, uint64_t mem_block_size,
   }
 
   // FIXME remove
-  assert((*tail)->next == nullptr);
-  Node* n = *head;
-  // std::cout << "    " << ((char*) n) - start_pointer << std::endl;
-  uint64_t cnt = 1;
-  while (n->next != nullptr) {
-    n = n->next;
-    // std::cout << "    " << ((char*) n) - start_pointer << " " << (void*) n << std::endl;
-    assert((void*) n >= block);
-    assert((char*) n <= end_pointer);
-    cnt++;
-  }
-  assert(cnt == mem_block_size / size_);
-  assert(n == *tail);
+  // assert((*tail)->next == nullptr);
+  // Node* n = *head;
+  // // std::cout << "    " << ((char*) n) - start_pointer << std::endl;
+  // uint64_t cnt = 1;
+  // while (n->next != nullptr) {
+  //   n = n->next;
+  //   // std::cout << "    " << ((char*) n) - start_pointer << " " << (void*) n << std::endl;
+  //   assert((void*) n >= block);
+  //   assert((char*) n <= end_pointer);
+  //   cnt++;
+  // }
+  // assert(cnt == mem_block_size / size_);
+  // assert(n == *tail);
   // FIXME remove end
 }
 
@@ -176,7 +175,6 @@ PoolAllocator::PoolAllocator(std::size_t size)
 }
 
 PoolAllocator::~PoolAllocator() {
-  std::cout << "~PoolAllocator" << std::endl;
   // for (auto* el : numa_allocators_) {
   //   delete el;
   // }
