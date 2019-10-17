@@ -27,6 +27,7 @@ Node* List::Pop() {
 
 void List::PopNThreadSafe(uint64_t n, Node** head, Node** tail) {
   std::lock_guard<Spinlock> guard(lock_);
+  std::cout << " --- PopNThreadSafe" << std::endl;
   if (!Empty()) {
     *head = head_;
     *tail = (*head)->next;
@@ -39,6 +40,7 @@ void List::PopNThreadSafe(uint64_t n, Node** head, Node** tail) {
       *tail = (*tail)->next;
     }
     head_ = (*tail)->next;
+    (*tail)->next = nullptr;
   }
 }
 
@@ -68,12 +70,13 @@ bool List::Empty() const { return head_ == nullptr; }
 NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
     : size_(size), nid_(nid) {
   free_lists_.resize(ThreadInfo::GetInstance()->GetThreadsInNumaNode(nid));
-  AllocNewMemoryBlock(40960);
+  AllocNewMemoryBlock(1000);
 }
 
 NumaPoolAllocator::~NumaPoolAllocator() {
   for (auto& block : memory_blocks_) {
-    numa_free(block.first, block.second);
+    // numa_free(block.first, block.second);
+    // free(block.first); // FIXME
   }
 }
 
@@ -87,7 +90,7 @@ void* NumaPoolAllocator::New(int tid) {
     tl_list.Push(head, tail);
     return tl_list.Pop();
   } else {
-    AllocNewMemoryBlock(total_size_ * kGrowthFactor);
+    AllocNewMemoryBlock(total_size_ * kGrowthFactor);  // FIXME growth factor - grows a lot faster
     return New(tid);
   }
 }
@@ -106,7 +109,8 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
     return;
   }
 
-  void* block = numa_alloc_onnode(size, nid_);
+  // void* block = numa_alloc_onnode(size, nid_);
+  void* block = malloc(size);
   if (block == nullptr) {
     Log::Fatal("NumaPoolAllocator::AllocNewMemoryBlock", "Allocation failed");
   }
@@ -114,20 +118,30 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
   memory_blocks_.push_back({block, size});
   Node *head = nullptr, *tail = nullptr;
   CreateFreeList(block, size, &head, &tail);
+  assert(central_.Empty()); // FIXME remove
   central_.PushThreadSafe(head, tail);
 }
 
 void NumaPoolAllocator::CreateFreeList(void* block, uint64_t mem_block_size,
                                        Node** head, Node** tail) {
   auto* pointer = static_cast<char*>(block);
+  const auto* end_pointer = pointer + mem_block_size - size_;
+  std::cout << "block " << block << std::endl;
+  std::cout << "mbs   " << mem_block_size << std::endl;
+  std::cout << "size  " << size_ << std::endl;
+  std::cout << "ep    " << (void*)end_pointer << std::endl;
+  std::cout << "epo   " << end_pointer - static_cast<char*>(block) << std::endl;
+
   *head = new (pointer) Node();
+  // std::cout << "  " << pointer - static_cast<char*>(block) << std::endl;
   assert((*head)->next == nullptr);
   *tail = *head;
   pointer += size_;
-  auto* end_pointer = pointer + mem_block_size - size_;
-  while (pointer < end_pointer) {
+
+  while (pointer <= end_pointer) {
     auto* old_head = *head;
     *head = new (pointer) Node();
+    // std::cout << "  " << pointer - static_cast<char*>(block) << std::endl;
     assert(pointer > static_cast<char*>(block));
     assert(pointer <= end_pointer);
     assert((*head)->next == nullptr);
@@ -138,12 +152,16 @@ void NumaPoolAllocator::CreateFreeList(void* block, uint64_t mem_block_size,
   // FIXME remove
   assert((*tail)->next == nullptr);
   Node* n = *head;
+  uint64_t cnt = 1;
   while (n->next != nullptr) {
     n = n->next;
     assert((void*) n >= block);
     assert((char*) n <= end_pointer);
+    cnt++;
   }
+  assert(cnt == mem_block_size / size_);
   assert(n == *tail);
+  // FIXME remove end
 }
 
 PoolAllocator::PoolAllocator(std::size_t size)
@@ -153,7 +171,13 @@ PoolAllocator::PoolAllocator(std::size_t size)
   }
 }
 
-PoolAllocator::~PoolAllocator() {}
+PoolAllocator::~PoolAllocator() {
+  std::cout << "~PoolAllocator" << std::endl;
+  // for (auto* el : numa_allocators_) {
+  //   delete el;
+  // }
+  // numa_allocators_.clear();
+}
 
 void* PoolAllocator::New(std::size_t size) {
   assert(size_ == size && "Requested size does not match this PoolAllocator");
@@ -170,9 +194,9 @@ void PoolAllocator::Delete(void* p) {
 void* MemoryManager::New(std::size_t size) {
   auto it = allocators_.find(size);
   if (it != allocators_.end()) {
-    return it->second.New(size);
+    return it->second->New(size);
   } else {
-    allocators_.emplace(size, PoolAllocator(size));
+    allocators_.emplace(size, new PoolAllocator(size));
     return New(size);
   }
 }
@@ -181,6 +205,7 @@ void MemoryManager::Delete(void* p) {
   // TODO
 }
 
-std::unordered_map<std::size_t, PoolAllocator> MemoryManager::allocators_;
+// FIXME destruct PoolAllocator
+std::unordered_map<std::size_t, PoolAllocator*> MemoryManager::allocators_;
 
 }  // namespace bdm

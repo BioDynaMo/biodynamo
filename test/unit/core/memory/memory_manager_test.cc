@@ -168,16 +168,58 @@ TEST(ListTest, PopNThreadSafe_Equal) {
   EXPECT_TRUE(l.Empty());
 }
 
+TEST(ListTest, PopNThreadSafe_Twice) {
+  List l;
+
+  Node n1;
+  Node n2;
+  Node n3;
+  Node n4;
+
+  n1.next = &n2;
+  n2.next = &n3;
+  n3.next = &n4;
+
+  l.Push(&n1, &n4);
+
+  {
+    Node *head = nullptr;
+    Node *tail = nullptr;
+    l.PopNThreadSafe(2, &head, &tail);
+
+    EXPECT_EQ(head, &n1);
+    EXPECT_EQ(tail, &n2);
+    EXPECT_EQ(tail->next, nullptr);
+    EXPECT_FALSE(l.Empty());
+  }
+
+  {
+    Node *head = nullptr;
+    Node *tail = nullptr;
+    l.PopNThreadSafe(2, &head, &tail);
+
+    EXPECT_EQ(head, &n3);
+    EXPECT_EQ(tail, &n4);
+    EXPECT_EQ(tail->next, nullptr);
+    EXPECT_TRUE(l.Empty());
+  }
+}
+
 TEST(MemoryManagerTest, New) {
   MemoryManager memory;
-  std::cout << memory.New(10) << std::endl;
+  // std::cout << memory.New(10) << std::endl;
 
-  std::cout << 40960 / sizeof(Cell) + 1 << std::endl;
-
-  for (uint64_t i = 0; i < (40960 / sizeof(Cell)) * 10 + 1; ++i) {
+  for (uint64_t i = 0; i < 10000; ++i) {
     auto so = new Cell();
+    // auto* so = MemoryManager::New(sizeof(Cell));
     ASSERT_TRUE(so != nullptr);
+    // std::cout << i << " " << so << std::endl;
   }
+  // for (uint64_t i = 0; i < 100; ++i) {
+  //   auto* so = MemoryManager::New(136);
+  //   ASSERT_TRUE(so != nullptr);
+  //   std::cout << i << " " << so << std::endl;
+  // }
 }
 
 }  // namespace bdm
