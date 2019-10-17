@@ -114,14 +114,14 @@ class PoolAllocator {
 
 class MemoryManager {
  public:
-  void* New(std::size_t size);
+  static void* New(std::size_t size);
 
-  void Delete(void* p);
+  static void Delete(void* p);
 
  private:
   // FIXME
   // UnorderedSplitFlatMap<std::size_t, PoolAllocator, 20> allocators_;
-  std::unordered_map<std::size_t, PoolAllocator> allocators_;
+  static std::unordered_map<std::size_t, PoolAllocator> allocators_;
 };
 
 }  // namespace bdm

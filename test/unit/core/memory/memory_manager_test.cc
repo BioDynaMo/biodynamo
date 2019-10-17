@@ -14,6 +14,7 @@
 
 #include "core/memory/memory_manager.h"
 #include <gtest/gtest.h>
+#include "core/sim_object/cell.h"
 
 namespace bdm {
 
@@ -44,6 +45,46 @@ TEST(ListTest, PushPopEmpty) {
   EXPECT_FALSE(l.Empty());
 
   EXPECT_EQ(l.Pop(), &n4);
+  EXPECT_TRUE(l.Empty());
+
+  EXPECT_EQ(l.Pop(), nullptr);
+}
+
+TEST(ListTest, PushTwice) {
+  List l;
+
+  Node n1;
+  Node n2;
+  Node n3;
+  Node n4;
+  Node n5;
+
+  // one linked list: n1 -> n2 -> n3
+  n1.next = &n2;
+  n2.next = &n3;
+
+  // second: n4 -> n5
+  n4.next = &n5;
+
+  EXPECT_TRUE(l.Empty());
+
+  l.Push(&n1, &n3);
+  l.Push(&n4, &n5);
+  EXPECT_FALSE(l.Empty());
+
+  EXPECT_EQ(l.Pop(), &n4);
+  EXPECT_FALSE(l.Empty());
+
+  EXPECT_EQ(l.Pop(), &n5);
+  EXPECT_FALSE(l.Empty());
+
+  EXPECT_EQ(l.Pop(), &n1);
+  EXPECT_FALSE(l.Empty());
+
+  EXPECT_EQ(l.Pop(), &n2);
+  EXPECT_FALSE(l.Empty());
+
+  EXPECT_EQ(l.Pop(), &n3);
   EXPECT_TRUE(l.Empty());
 
   EXPECT_EQ(l.Pop(), nullptr);
@@ -130,6 +171,13 @@ TEST(ListTest, PopNThreadSafe_Equal) {
 TEST(MemoryManagerTest, New) {
   MemoryManager memory;
   std::cout << memory.New(10) << std::endl;
+
+  std::cout << 40960 / sizeof(Cell) + 1 << std::endl;
+
+  for (uint64_t i = 0; i < (40960 / sizeof(Cell)) * 10 + 1; ++i) {
+    auto so = new Cell();
+    ASSERT_TRUE(so != nullptr);
+  }
 }
 
 }  // namespace bdm

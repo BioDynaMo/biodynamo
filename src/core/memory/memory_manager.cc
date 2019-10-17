@@ -43,7 +43,6 @@ void List::PopNThreadSafe(uint64_t n, Node** head, Node** tail) {
 }
 
 void List::Push(Node* head, Node* tail) {
-  std::lock_guard<Spinlock> guard(lock_);
   if (head == nullptr) {
     return;
   }
@@ -53,9 +52,9 @@ void List::Push(Node* head, Node* tail) {
     return;
   }
   if (tail == nullptr) {
-    head->next = old_head->next;
+    head->next = old_head;
   } else {
-    tail->next = old_head->next;
+    tail->next = old_head;
   }
 }
 
@@ -122,15 +121,29 @@ void NumaPoolAllocator::CreateFreeList(void* block, uint64_t mem_block_size,
                                        Node** head, Node** tail) {
   auto* pointer = static_cast<char*>(block);
   *head = new (pointer) Node();
+  assert((*head)->next == nullptr);
   *tail = *head;
   pointer += size_;
-  auto* end_pointer = pointer + mem_block_size;
+  auto* end_pointer = pointer + mem_block_size - size_;
   while (pointer < end_pointer) {
     auto* old_head = *head;
     *head = new (pointer) Node();
+    assert(pointer > static_cast<char*>(block));
+    assert(pointer <= end_pointer);
+    assert((*head)->next == nullptr);
     (*head)->next = old_head;
     pointer += size_;
   }
+
+  // FIXME remove
+  assert((*tail)->next == nullptr);
+  Node* n = *head;
+  while (n->next != nullptr) {
+    n = n->next;
+    assert((void*) n >= block);
+    assert((char*) n <= end_pointer);
+  }
+  assert(n == *tail);
 }
 
 PoolAllocator::PoolAllocator(std::size_t size)
@@ -167,5 +180,7 @@ void* MemoryManager::New(std::size_t size) {
 void MemoryManager::Delete(void* p) {
   // TODO
 }
+
+std::unordered_map<std::size_t, PoolAllocator> MemoryManager::allocators_;
 
 }  // namespace bdm

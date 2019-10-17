@@ -111,7 +111,7 @@ class Simulation {
   /// Returns all thread local execution contexts.
   std::vector<InPlaceExecutionContext*>& GetAllExecCtxts();
 
-  MemoryManager* GetMemoryManager() { return &mem_mgr_; }
+  // MemoryManager* GetMemoryManager() { return &mem_mgr_; }
 
   /// Return helper class for OpenCL environment
   OpenCLState* GetOpenCLState();
@@ -158,7 +158,7 @@ class Simulation {
   std::string output_dir_;  //!
 
   /// TODO add documentation
-  MemoryManager mem_mgr_;
+  // MemoryManager mem_mgr_;
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,

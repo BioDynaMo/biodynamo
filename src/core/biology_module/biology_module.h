@@ -77,12 +77,14 @@ struct BaseBiologyModule {
   /// given event.
   bool Remove(EventId event) const { return (event & remove_mask_) != 0; }
 
-  void* operator new(size_t size) {
-    return Simulation::GetActive()->GetMemoryManager()->New(size);
+  void* operator new(size_t size) {  // NOLINT
+    // return Simulation::GetActive()->GetMemoryManager()->New(size); // FIXME
+    return MemoryManager::New(size);
   }
 
-  void operator delete(void* p) {
-    Simulation::GetActive()->GetMemoryManager()->Delete(p);
+  void operator delete(void* p) {  // NOLINT
+    // Simulation::GetActive()->GetMemoryManager()->Delete(p); // FIXME
+    MemoryManager::Delete(p);
   }
 
  private:
