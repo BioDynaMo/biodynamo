@@ -22,6 +22,7 @@ Node* List::Pop() {
     head_ = head_->next;
     return ret;
   }
+  assert(false);
   return nullptr;
 }
 
@@ -69,7 +70,7 @@ bool List::Empty() const { return head_ == nullptr; }
 NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
     : size_(size), nid_(nid) {
   free_lists_.resize(ThreadInfo::GetInstance()->GetThreadsInNumaNode(nid));
-  AllocNewMemoryBlock(1000);
+  AllocNewMemoryBlock(40960);
 }
 
 NumaPoolAllocator::~NumaPoolAllocator() {
@@ -78,18 +79,22 @@ NumaPoolAllocator::~NumaPoolAllocator() {
   }
 }
 
-void* NumaPoolAllocator::New(int tid) {
-  auto& tl_list = free_lists_[tid];
+void* NumaPoolAllocator::New(int ntid) {
+  assert(ntid < free_lists_.size());
+  auto& tl_list = free_lists_[ntid];
   if (!tl_list.Empty()) {
     return tl_list.Pop();
   } else if (!central_.Empty()) {
     Node *head = nullptr, *tail = nullptr;
     central_.PopNThreadSafe(1000, &head, &tail);  // FIXME hardcoded value
+    if (head == nullptr) {
+      return New(ntid);
+    }
     tl_list.Push(head, tail);
     return tl_list.Pop();
   } else {
-    AllocNewMemoryBlock(total_size_ * kGrowthFactor);  // FIXME growth factor - grows a lot faster
-    return New(tid);
+    AllocNewMemoryBlock(total_size_ * (kGrowthFactor - 1.0) );  // FIXME growth factor - grows a lot faster
+    return New(ntid);
   }
 }
 
@@ -193,7 +198,7 @@ void* PoolAllocator::New(std::size_t size) {
   auto tid = tinfo_->GetMyThreadId();
   auto nid = tinfo_->GetNumaNode(tid);
   assert(static_cast<uint64_t>(nid) < numa_allocators_.size());
-  return numa_allocators_[nid]->New(tid);
+  return numa_allocators_[nid]->New(tinfo_->GetNumaThreadId(tid));
 }
 
 void PoolAllocator::Delete(void* p) {
