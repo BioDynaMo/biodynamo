@@ -161,20 +161,19 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   so_rearranged.resize(numa_nodes);
 
   // numa node -> vector of SoHandles
-  std::vector<std::vector<SoHandle>> sorted_so_handles;
-  sorted_so_handles.resize(numa_nodes);
+  std::vector<std::vector<const SimObject*>> sorted_sim_objects;
+  sorted_sim_objects.resize(numa_nodes);
 
   uint64_t cnt = 0;
   uint64_t current_numa = 0;
 
   auto rearrange = [&,this](const SimObject* sim_object) {
-    auto handle = this->GetSoHandle(sim_object->GetUid());
     if (cnt == so_per_numa[current_numa]) {
       cnt = 0;
       current_numa++;
     }
 
-    sorted_so_handles[current_numa].push_back(handle);
+    sorted_sim_objects[current_numa].push_back(sim_object);
     cnt++;
   };
 
@@ -191,7 +190,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
       if (nid == n) {
         auto old = std::atomic_exchange(&resized, true);
         if (!old) {
-          dest.resize(sorted_so_handles[n].size());
+          dest.resize(sorted_sim_objects[n].size());
         }
       }
     }
@@ -202,19 +201,18 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 
       if (nid == n) {
         auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-        auto& sohandles = sorted_so_handles[n];
+        auto& numa_sim_objects = sorted_sim_objects[n];
         assert(thread_info_->GetNumaNode(tid) ==
                numa_node_of_cpu(sched_getcpu()));
 
         // use static scheduling
-        auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
-        auto chunk = sohandles.size() / threads_in_numa + correction;
+        auto correction = numa_sim_objects.size() % threads_in_numa == 0 ? 0 : 1;
+        auto chunk = numa_sim_objects.size() / threads_in_numa + correction;
         auto start = thread_info_->GetNumaThreadId(tid) * chunk;
-        auto end = std::min(sohandles.size(), start + chunk);
+        auto end = std::min(numa_sim_objects.size(), start + chunk);
 
         for (uint64_t e = start; e < end; e++) {
-          auto& handle = sohandles[e];
-          auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
+          auto* so = numa_sim_objects[e];
           dest[e] = so->GetCopy();
           delete so;
         }
