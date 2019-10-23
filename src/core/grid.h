@@ -102,7 +102,7 @@ class Grid {
     Spinlock lock_;
     // std::atomic<bool> timestamp_;
     uint32_t timestamp_;
-    InlineVector<SimObject*, 5> sim_objects_;
+    InlineVector<SimObject*, 10> sim_objects_;
 
     Box() : timestamp_(0) {}
     /// Copy Constructor required for boxes_.resize()
@@ -486,7 +486,7 @@ class Grid {
 
   void prefetch(void* addr) {
     __builtin_prefetch(addr);
-    __builtin_prefetch(static_cast<char*>(addr + 64));
+    __builtin_prefetch(static_cast<char*>(addr) + 64);
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
