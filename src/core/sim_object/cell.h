@@ -286,7 +286,12 @@ class Cell : public SimObject {
 
     // PHYSICS
     // the physics force to move the point mass
-    Double3 translation_force_on_point_mass{0, 0, 0};
+    struct {
+      Double3 translation_force_on_point_mass{0, 0, 0};
+      Cell* cell;
+    } data;
+    data.cell = this;
+
     // the physics force to rotate the cell
     // Double3 rotation_force { 0, 0, 0 };
 
@@ -299,12 +304,12 @@ class Cell : public SimObject {
     //  (We check for every neighbor object if they touch us, i.e. push us
     //  away)
 
-    auto calculate_neighbor_forces = [&, this](const auto* neighbor) {
+    auto calculate_neighbor_forces = [&data](const auto* neighbor) {
       DefaultForce default_force;
-      auto neighbor_force = default_force.GetForce(this, neighbor);
-      translation_force_on_point_mass[0] += neighbor_force[0];
-      translation_force_on_point_mass[1] += neighbor_force[1];
-      translation_force_on_point_mass[2] += neighbor_force[2];
+      auto neighbor_force = default_force.GetForce(data.cell, neighbor);
+      data.translation_force_on_point_mass[0] += neighbor_force[0];
+      data.translation_force_on_point_mass[1] += neighbor_force[1];
+      data.translation_force_on_point_mass[2] += neighbor_force[2];
     };
 
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
@@ -313,8 +318,8 @@ class Cell : public SimObject {
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
-    double norm_of_force = std::sqrt(translation_force_on_point_mass *
-                                     translation_force_on_point_mass);
+    double norm_of_force = std::sqrt(data.translation_force_on_point_mass *
+                                     data.translation_force_on_point_mass);
 
     // is there enough force to :
     //  - make us biologically move (Tractor) :
@@ -326,7 +331,7 @@ class Cell : public SimObject {
     // adding the physics translation (scale by weight) if important enough
     if (physical_translation) {
       // We scale the move with mass and time step
-      movement_at_next_step += translation_force_on_point_mass * mh;
+      movement_at_next_step += data.translation_force_on_point_mass * mh;
 
       // Performing the translation itself :
       // but we want to avoid huge jumps in the simulation, so there are
