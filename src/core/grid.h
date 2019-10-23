@@ -507,8 +507,6 @@ class Grid {
     FixedSizeVector<const Box*, 27> neighbor_boxes;
     GetMooreBoxes(&neighbor_boxes, idx);
 
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
     NeighborIterator ni(neighbor_boxes, timestamp_);
     const unsigned batch_size = 64;
     uint64_t size = 0;
