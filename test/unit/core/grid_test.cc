@@ -50,7 +50,7 @@ TEST(GridTest, SetupGrid) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ApplyOnAllElements([&](SimObject* so) {
     auto uid = so->GetUid();
-    auto fill_neighbor_list = [&](const SimObject* neighbor) {
+    auto fill_neighbor_list = [&](const SimObject* neighbor, double d) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
@@ -293,12 +293,11 @@ TEST(GridTest, IterateZOrder) {
   zorder.resize(8);
   uint64_t box_cnt = 0;
   uint64_t cnt = 0;
-  auto lambda = [&](const SoHandle& soh) {
+  auto lambda = [&](const SimObject* so) {
     if (cnt == 8 || cnt == 12 || cnt == 16 || cnt == 18 || cnt == 22 ||
         cnt == 24 || cnt == 26) {
       box_cnt++;
     }
-    auto* so = rm->GetSimObjectWithSoHandle(soh);
     zorder[box_cnt].insert(so->GetUid() - ref_uid);
     cnt++;
   };
