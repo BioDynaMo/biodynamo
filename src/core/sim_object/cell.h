@@ -33,6 +33,7 @@
 #include "core/shape.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/math.h"
+#include "core/fen_func.h"
 
 namespace bdm {
 
@@ -258,6 +259,21 @@ class Cell : public SimObject {
     SetRunDisplacementForAllNextTs();
   }
 
+  struct DisplacementFen : FenFunc {
+    DefaultForce default_force;
+    SimObject* so_;
+    Double3 translation_force_on_point_mass{0, 0, 0};
+
+    DisplacementFen(SimObject* so) : so_(so) {}
+
+    void operator()(const SimObject* neighbor, double squared_distance) override {
+      auto neighbor_force = default_force.GetForce(so_, neighbor);
+      translation_force_on_point_mass[0] += neighbor_force[0];
+      translation_force_on_point_mass[1] += neighbor_force[1];
+      translation_force_on_point_mass[2] += neighbor_force[2];
+    }
+  };
+
   Double3 CalculateDisplacement(double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
@@ -286,11 +302,6 @@ class Cell : public SimObject {
 
     // PHYSICS
     // the physics force to move the point mass
-    struct {
-      Double3 translation_force_on_point_mass{0, 0, 0};
-      Cell* cell;
-    } data;
-    data.cell = this;
 
     // the physics force to rotate the cell
     // Double3 rotation_force { 0, 0, 0 };
@@ -304,22 +315,15 @@ class Cell : public SimObject {
     //  (We check for every neighbor object if they touch us, i.e. push us
     //  away)
 
-    auto calculate_neighbor_forces = [&data](const auto* neighbor) {
-      DefaultForce default_force;
-      auto neighbor_force = default_force.GetForce(data.cell, neighbor);
-      data.translation_force_on_point_mass[0] += neighbor_force[0];
-      data.translation_force_on_point_mass[1] += neighbor_force[1];
-      data.translation_force_on_point_mass[2] += neighbor_force[2];
-    };
-
+    DisplacementFen calculate_neighbor_forces(this);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
-    double norm_of_force = std::sqrt(data.translation_force_on_point_mass *
-                                     data.translation_force_on_point_mass);
+    double norm_of_force = std::sqrt(calculate_neighbor_forces.translation_force_on_point_mass *
+                                     calculate_neighbor_forces.translation_force_on_point_mass);
 
     // is there enough force to :
     //  - make us biologically move (Tractor) :
@@ -331,7 +335,7 @@ class Cell : public SimObject {
     // adding the physics translation (scale by weight) if important enough
     if (physical_translation) {
       // We scale the move with mass and time step
-      movement_at_next_step += data.translation_force_on_point_mass * mh;
+      movement_at_next_step += calculate_neighbor_forces.translation_force_on_point_mass * mh;
 
       // Performing the translation itself :
       // but we want to avoid huge jumps in the simulation, so there are

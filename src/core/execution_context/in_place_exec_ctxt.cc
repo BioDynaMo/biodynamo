@@ -199,8 +199,25 @@ void InPlaceExecutionContext::ForEachNeighbor(
   grid->ForEachNeighbor(lambda, query);
 }
 
+struct Fen : public FenFunc {
+  const Param* param = Simulation::GetActive()->GetParam();
+  std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
+  FenFunc& function_;
+
+  Fen(FenFunc& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
+   : function_(function), neighbor_cache_(neigbor_cache)
+  {}
+
+  void operator()(const SimObject* so, double squared_distance) override {
+    if (param->cache_neighbors_) {
+      neighbor_cache_.push_back(make_pair(so, squared_distance));
+    }
+    function_(so, squared_distance);
+  }
+};
+
 void InPlaceExecutionContext::ForEachNeighbor(
-    const std::function<void(const SimObject*, double)>& lambda,
+    FenFunc& lambda,
     const SimObject& query) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
@@ -212,24 +229,38 @@ void InPlaceExecutionContext::ForEachNeighbor(
 
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
-  auto* param = Simulation::GetActive()->GetParam();
-  auto for_each = [&, this](const SimObject* so, double squared_distance) {
-    if (param->cache_neighbors_) {
-      this->neighbor_cache_.push_back(make_pair(so, squared_distance));
-    }
-    lambda(so, squared_distance);
-  };
+  Fen for_each(lambda, neighbor_cache_);
   grid->ForEachNeighbor(for_each, query);
 }
 
+struct FenWithinRadius : public FenFunc {
+  const Param* param = Simulation::GetActive()->GetParam();
+  std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
+  double squared_radius_ = 0;
+  FenFunc& function_;
+
+  FenWithinRadius(FenFunc& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache, double squared_radius)
+   : function_(function), neighbor_cache_(neigbor_cache), squared_radius_(squared_radius)
+  {}
+
+  void operator()(const SimObject* so, double squared_distance) override {
+    if (param->cache_neighbors_) {
+      neighbor_cache_.push_back(make_pair(so, squared_distance));
+    }
+    if (squared_distance < squared_radius_) {
+      function_(so, 0);
+    }
+  }
+};
+
 void InPlaceExecutionContext::ForEachNeighborWithinRadius(
-    const std::function<void(const SimObject*)>& lambda, const SimObject& query,
+    FenFunc& lambda, const SimObject& query,
     double squared_radius) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
       if (pair.second < squared_radius) {
-        lambda(pair.first);
+        lambda(pair.first, 0);
       }
     }
     return;
@@ -237,24 +268,25 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
 
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
-  struct {
-    const Param* param = Simulation::GetActive()->GetParam();
-    InPlaceExecutionContext* ctxt;
-    double sradius;
-    const std::function<void(const SimObject*)>* lambda;
-  } data;
-  data.ctxt = this;
-  data.sradius = squared_radius;
-  data.lambda = &lambda;
-
-  auto for_each = [&data](const SimObject* so, double squared_distance) {
-    if (data.param->cache_neighbors_) {
-      data.ctxt->neighbor_cache_.push_back(make_pair(so, squared_distance));
-    }
-    if (squared_distance < data.sradius) {
-      (*data.lambda)(so);
-    }
-  };
+  // struct {
+  //   const Param* param = Simulation::GetActive()->GetParam();
+  //   InPlaceExecutionContext* ctxt;
+  //   double sradius;
+  //   const std::function<void(const SimObject*)>* lambda;
+  // } data;
+  // data.ctxt = this;
+  // data.sradius = squared_radius;
+  // data.lambda = &lambda;
+  //
+  // auto for_each = [&data](const SimObject* so, double squared_distance) {
+  //   if (data.param->cache_neighbors_) {
+  //     data.ctxt->neighbor_cache_.push_back(make_pair(so, squared_distance));
+  //   }
+  //   if (squared_distance < data.sradius) {
+  //     (*data.lambda)(so);
+  //   }
+  // };
+  FenWithinRadius for_each(lambda, neighbor_cache_, squared_radius);
   grid->ForEachNeighbor(for_each, query);
 }
 

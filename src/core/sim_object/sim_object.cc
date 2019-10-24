@@ -71,6 +71,18 @@ SimObject::~SimObject() {
   }
 }
 
+struct Fen1 : public FenFunc {
+  SimObject* so_;
+  Fen1(SimObject* so) : so_(so) {}
+
+  void operator()(const SimObject* neighbor, double squared_distance) override {
+    double distance = so_->GetDiameter() + neighbor->GetDiameter();
+    if (squared_distance < distance * distance) {
+      neighbor->SetRunDisplacementNextTimestep(true);
+    }
+  }
+};
+
 void SimObject::ApplyRunDisplacementForAllNextTs() {
   if (!Simulation::GetActive()->GetParam()->detect_static_sim_objects_) {
     run_displacement_next_ts_ = true;
@@ -83,14 +95,8 @@ void SimObject::ApplyRunDisplacementForAllNextTs() {
   run_displacement_for_all_next_ts_ = false;
   run_displacement_next_ts_ = true;
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-  ctxt->ForEachNeighbor(
-      [this](const SimObject* neighbor, double squared_distance) {
-        double distance = this->GetDiameter() + neighbor->GetDiameter();
-        if (squared_distance < distance * distance) {
-          neighbor->SetRunDisplacementNextTimestep(true);
-        }
-      },
-      *this);
+  Fen1 for_each(this);
+  ctxt->ForEachNeighbor(for_each, *this);
 }
 
 void SimObject::RunDiscretization() {}
