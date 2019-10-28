@@ -45,9 +45,8 @@ if [ -n "${BDMSYS}" ] ; then
    old_bdmsys=${BDMSYS}
 fi
 
-BDM_INSTALL_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-BDM_INSTALL_DIR=$(cd ${BDM_INSTALL_DIR}; cd ../ > /dev/null; pwd); export BDM_INSTALL_DIR;
-BDMSYS="${BDM_INSTALL_DIR}/"; export BDMSYS;
+export BDM_INSTALL_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+export BDMSYS="${BDM_INSTALL_DIR}"
 
 # Clear the env from previously set BioDynaMo paths.
 if [ -n "${old_bdmsys}" ] ; then
@@ -199,7 +198,7 @@ if [ -z ${BDM_ROOT_DIR} ] && [ -z ${ROOTSYS} ]; then
         echo "You can specify manually its location by executing 'export BDM_ROOT_DIR=path/to/root'"
         echo "before running cmake."
         echo "Sourcing BioDynaMo env failed!"
-        exit 1
+        return
     fi
 else
   # ROOTSYS has precedence over the BDM_ROOT_DIR custom configuration
@@ -224,7 +223,7 @@ if [ -z ${ParaView_DIR} ]; then
         echo "You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
         echo "together with 'export Qt5_DIR=path/to/qt' before running cmake."
         echo "Sourcing BioDynaMo env failed!"
-        exit 1
+        return
     fi
 fi
 
@@ -273,7 +272,7 @@ if [ -z ${Qt5_DIR} ]; then
         echo "You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
         echo "together with 'export ParaView_DIR=path/to/paraview' before running cmake."
         echo "Sourcing BioDynaMo env failed!"
-        exit 1
+        return
     fi
 fi
 
