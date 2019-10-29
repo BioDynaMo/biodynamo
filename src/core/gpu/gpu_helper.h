@@ -33,11 +33,11 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #endif
-#endif
+#endif  // USE_OPENCL
 
 #ifdef USE_CUDA
 #include "cuda_runtime_api.h"
-#endif
+#endif  // USE_CUDA
 
 #include "core/param/param.h"
 #include "core/simulation.h"
@@ -72,7 +72,7 @@ static void FindGpuDevicesCuda() {
   cudaGetDeviceProperties(&prop, param->preferred_gpu_);
   Log::Info("", "Selected GPU [", param->preferred_gpu_, "]: ", prop.name);
 }
-#endif
+#endif  // USE_CUDA
 
 #ifdef USE_OPENCL
 class OpenCLState {
@@ -231,8 +231,9 @@ static void FindGpuDevicesOpenCL() {
                err.err(), ")");
   }
 }
-#endif
+#endif  // USE_OPENCL
 
+#if defined(USE_CUDA) || defined(USE_OPENCL)
 static void InitializeGPUEnvironment() {
   auto* param = Simulation::GetActive()->GetParam();
   if (param->use_opencl_) {
@@ -243,7 +244,7 @@ static void InitializeGPUEnvironment() {
                "You tried to use the GPU (OpenCL) version of BioDynaMo, but no "
                "OpenCL installation was detected on this machine. Switching to "
                "the CPU version...");
-#endif
+#endif  // USE_OPENCL
   } else {
 #ifdef USE_CUDA
     FindGpuDevicesCuda();
@@ -252,9 +253,10 @@ static void InitializeGPUEnvironment() {
                "You tried to use the GPU (CUDA) version of BioDynaMo, but no "
                "CUDA installation was detected on this machine. Switching to "
                "the CPU version...");
-#endif
+#endif  // USE_CUDA
   }
 }
+#endif  // defined(USE_CUDA) || defined(USE_OPENCL)
 
 #ifdef USE_OPENCL
 const char* GetErrorString(cl_int error) {
@@ -415,7 +417,7 @@ cl_int ClAssert(cl_int const code, char const* const file, int const line,
 
   return code;
 }
-#endif
+#endif  // USE_OPENCL
 
 }  // namespace bdm
 

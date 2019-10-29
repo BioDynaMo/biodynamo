@@ -208,10 +208,12 @@ void Scheduler::Initialize() {
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
+#if defined(USE_CUDA) || defined(USE_OPENCL)
   if (!is_gpu_environment_initialized_ && param->use_gpu_) {
     InitializeGPUEnvironment();
     is_gpu_environment_initialized_ = true;
   }
+#endif
 
   if (param->bound_space_) {
     rm->ApplyOnAllElementsParallel(*bound_space_);
