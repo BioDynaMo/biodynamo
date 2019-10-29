@@ -332,7 +332,7 @@ endif()
 
 # Link to OpenCL
 if (OPENCL_FOUND)
-  if (OPENCL_HAS_CXX)
+  if (OPENCL_HAS_CXX OR APPLE)
     add_definitions("-DUSE_OPENCL")
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${OPENCL_LIBRARIES})
   else()
