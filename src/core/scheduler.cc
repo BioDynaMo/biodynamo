@@ -210,7 +210,7 @@ void Scheduler::Initialize() {
 
 #if defined(USE_CUDA) || defined(USE_OPENCL)
   if (!is_gpu_environment_initialized_ && param->use_gpu_) {
-    InitializeGPUEnvironment();
+    GpuHelper::GetInstance()->InitializeGPUEnvironment();
     is_gpu_environment_initialized_ = true;
   }
 #endif

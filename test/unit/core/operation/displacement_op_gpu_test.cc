@@ -46,7 +46,7 @@ void RunTest(ExecutionMode mode) {
   // Do this explicitly because this normally is only called in
   // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
 #if defined(USE_CUDA) || defined(USE_OPENCL)
-  InitializeGPUEnvironment();
+  GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
 
   auto ref_uid = SoUidGenerator::Get()->GetLastId();
@@ -138,7 +138,7 @@ void RunTest2(ExecutionMode mode) {
   // Do this explicitly because this normally is only called in
   // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
 #if defined(USE_CUDA) || defined(USE_OPENCL)
-  InitializeGPUEnvironment();
+  GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
 
   auto ref_uid = SoUidGenerator::Get()->GetLastId();
