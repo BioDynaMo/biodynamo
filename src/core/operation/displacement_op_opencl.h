@@ -22,6 +22,7 @@
 #include "core/grid.h"
 #include "core/operation/bound_space_op.h"
 #include "core/shape.h"
+#include "core/sim_object/cell.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
 
