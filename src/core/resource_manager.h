@@ -29,10 +29,14 @@
 #include <vector>
 
 #ifdef USE_OPENCL
-#define __CL_ENABLE_EXCEPTIONS
 #ifdef __APPLE__
-#include "cl.hpp"
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#include "cl2.hpp"
 #else
+#define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #endif
 #endif
