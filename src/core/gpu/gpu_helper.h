@@ -20,11 +20,17 @@
 #include <string>
 #include <vector>
 
+#ifndef __ROOTCLING__
+
 #ifdef USE_OPENCL
-#define __CL_ENABLE_EXCEPTIONS
 #ifdef __APPLE__
-#include "cl.hpp""
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#include "../cl2.hpp"
 #else
+#define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #endif
 #endif
@@ -123,7 +129,7 @@ static void CompileOpenCLKernels() {
   cl::Program displacement_op_program(
       *context,
       cl::Program::Sources(1, std::make_pair(buffer.str().c_str(),
-                                             strlen(buffer.str().c_str()))));
+                                             buffer.str().length())));
 
   all_programs->push_back(displacement_op_program);
 
@@ -412,5 +418,7 @@ cl_int ClAssert(cl_int const code, char const* const file, int const line,
 #endif
 
 }  // namespace bdm
+
+#endif  // __ROOTCLING__
 
 #endif  // CORE_GPU_GPU_HELPER_H_
