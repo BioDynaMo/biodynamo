@@ -25,7 +25,7 @@ if ! [ -f "CMakeCache.txt" ] || ! [ -d "third_party" ] ; then
 fi
 
 for f in *; do
-  if [[ "$f" != "third_party" ]] && [[ "$f" != "CMakeCache.txt" ]]; then
+  if [[ "$f" != "third_party" ]]; then
     rm -rf $f
   fi
 done
