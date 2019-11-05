@@ -194,7 +194,7 @@ BDM_SRC_DIR="${BDMSYS}/include"; export BDM_SRC_DIR
 if [ -z ${BDM_ROOT_DIR} ] && [ -z ${ROOTSYS} ]; then
     BDM_ROOT_DIR=${BDMSYS}/third_party/root
     if ! [ -d $BDM_ROOT_DIR ]; then
-        echo "We were unable to source ROOT! Please make sure it is installed in your system!"
+        echo "We are unable to source ROOT! Please make sure ROOT is installed on your system!"
         echo "You can specify manually its location by executing 'export BDM_ROOT_DIR=path/to/root'"
         echo "before running cmake."
         echo "Sourcing BioDynaMo env failed!"
@@ -202,11 +202,10 @@ if [ -z ${BDM_ROOT_DIR} ] && [ -z ${ROOTSYS} ]; then
     fi
 else
   # ROOTSYS has precedence over the BDM_ROOT_DIR custom configuration
-  if [ ! -z ${ROOTSYS} ]; then
+  if [ -n ${ROOTSYS} ]; then
     BDM_ROOT_DIR=${ROOTSYS}
-    echo "Warning! We have detected that both BDM_ROOT_DIR and ROOTSYS are already set!"
     echo "We will use the configuration from ROOTSYS which points to ${ROOTSYS}."
-    echo "Please check that it points to the corret ROOT installation you want to use."
+    echo "Please check that it points to the correct ROOT installation you want to use."
   fi
 fi
 
@@ -219,7 +218,7 @@ export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDMSYS}/i
 if [ -z ${ParaView_DIR} ]; then
     ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR;
     if ! [ -d $ParaView_DIR ]; then
-        echo "We were unable to find ParaView! Please make sure it is installed in your system!"
+        echo "We are unable to find ParaView! Please make sure it is installed in your system!"
         echo "You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
         echo "together with 'export Qt5_DIR=path/to/qt' before running cmake."
         echo "Sourcing BioDynaMo env failed!"
@@ -268,7 +267,7 @@ fi
 if [ -z ${Qt5_DIR} ]; then
     Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
     if ! [ -d $Qt5_DIR ]; then
-        echo "We were unable to find Qt! Please make sure it is installed in your system!"
+        echo "We are unable to find Qt! Please make sure it is installed in your system!"
         echo "You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
         echo "together with 'export ParaView_DIR=path/to/paraview' before running cmake."
         echo "Sourcing BioDynaMo env failed!"
@@ -324,7 +323,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
             export LLVMDIR="/usr/local/opt/llvm"
             export CC=$LLVMDIR/bin/clang
             export CXX=$LLVMDIR/bin/clang++
-            export CXXFLAGS=-I$LLVMDIR/include
+            export CXXFLAGS="-isysroot `xcrun --show-sdk-path`"
             export LDFLAGS=-L$LLVMDIR/lib
             export PATH=$LLVMDIR/bin:$PATH
         elif [ -x "/opt/local/bin/clang++-mp-8.0" ]; then
