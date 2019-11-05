@@ -21,7 +21,7 @@
 #ifdef USE_CUDA
 #include "core/operation/displacement_op_cuda.h"
 #endif
-#ifdef USE_OPENCL
+#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #include "core/operation/displacement_op_opencl.h"
 #endif
 #include "core/grid.h"
@@ -52,7 +52,7 @@ class DisplacementOp {
   void operator()() {
     auto* param = Simulation::GetActive()->GetParam();
     if (param->use_gpu_ && !force_cpu_implementation_) {
-#ifdef USE_OPENCL
+#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
       if (param->use_opencl_) {
         opencl_();
       }
@@ -78,7 +78,7 @@ class DisplacementOp {
 #ifdef USE_CUDA
   DisplacementOpCuda cuda_;  // NOLINT
 #endif
-#ifdef USE_OPENCL
+#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
   DisplacementOpOpenCL opencl_;
 #endif
 };

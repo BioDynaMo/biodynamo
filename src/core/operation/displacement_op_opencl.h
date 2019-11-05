@@ -18,7 +18,7 @@
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #include <vector>
 
-#include "core/gpu/gpu_helper.h"
+#include "core/gpu/opencl_state.h"
 #include "core/grid.h"
 #include "core/operation/bound_space_op.h"
 #include "core/shape.h"
@@ -194,7 +194,7 @@ class DisplacementOpOpenCL {
                                   local_size);
     } catch (const cl::Error& err) {
       Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(), ") = ",
-                 GetErrorString(err.err()));
+                 ocl_state->GetErrorString(err.err()));
       throw;
     }
 
@@ -204,7 +204,7 @@ class DisplacementOpOpenCL {
                                cell_movements.data()->data());
     } catch (const cl::Error& err) {
       Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(), ") = ",
-                 GetErrorString(err.err()));
+                 ocl_state->GetErrorString(err.err()));
       throw;
     }
 
