@@ -2,9 +2,9 @@
 
 A collection of answers for frequently asked questions regarding BioDynaMo.
 
-## Inncorect handling of data type.
+## Unexpected fraction output.
 
-When using some mathematics within the C++ language we need to make sure that our type is declared correctlly, as due to how the C++ language hadngles doubles and intergers e.t.c in some mathematics we may get an unexpected result or error.
+When using some mathematics within the C++ language such as fractions one may get different behaviour than they expect if your data types are not declared correctly , the most likely cause of this is due to how C++ handles doubles and integers. 
 
 This is most commonly caused by the use of fractions, as follows:
 
@@ -14,7 +14,7 @@ double A = pow(25.0, 1/2);
 
 ```
 
-We know that if handled correctlly A should return as 5, however it will return as 0. This error is due to the fraction we are using, C++ see's the power as an interger rather than a double and then handles it inccorectly causing A to output 0 if called.
+If  our data types where correctly declared A should return as 5, however in this case we will return a 0. This error is due to the fraction we are using, C++ sees the power as an integer rather than a double and then handles it in a way you may not be expecting, causing A to output 0 if called.
 This can be simply fixed by making sure our fraction is in the form of double, as follows:
 
 ```
@@ -29,12 +29,7 @@ in the case of a fractional power we could also simply use:
 double A = pow(25.0 , 0.5);
 
 ```
-in the case of other mathematical fractions we could simply use:
 
-```
+## General C ++ tutorial.
 
-double A = 1.0 *(x/y);
-
-```
-
-Where x and y could be any previously defined variable, here the 1.0 is ensuring that we get a double value for A to prevent unexpected results.
+If you are unfamiliar with the basics of the C++ language in general or simply need a refresher there are a plethora of useful guides online. For example cplusplus provides and excellent guide http://www.cplusplus.com/doc/tutorial/ , from entry level to more adept concepts for C++ including compilation, data types and much more.
