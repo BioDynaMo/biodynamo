@@ -34,5 +34,5 @@ if [ `uname` = "Darwin" ]; then
 fi
 
 make
-./my-simulation 2>/dev/null | grep '^Simulation completed successfully!$'
+./makefile_project 2>/dev/null | grep '^Simulation completed successfully!$'
 exit $?

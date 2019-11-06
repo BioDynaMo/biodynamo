@@ -103,6 +103,7 @@ option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
 option(paraview  "Enable ParaView" ON)
+option(notebooks "Generate ROOT notebooks" OFF)
 option(sbml      "Enable SBML" OFF)
 option(vtune     "Enable VTune performance analysis" OFF)
 option(coverage  "Enable test coverage report generation. Sets build type to coverage" OFF)
@@ -204,7 +205,7 @@ endif()
 find_package(Git)
 
 # Find ROOT and check its installation
-find_package(ROOT COMPONENTS Geom Gui)
+find_package(ROOT COMPONENTS Geom Gui Eve GenVector)
 if(ROOT_FOUND)
   message("-- ROOT_VERSION = ${ROOT_VERSION}")
 endif()
@@ -526,6 +527,9 @@ if (test)
     endif()
   endif()
 endif()
+
+# -------------------- Generate notebooks --------------------------------------
+include(Notebooks)
 
 # -------------------- Install configuration -----------------------------------
 include(Installation)

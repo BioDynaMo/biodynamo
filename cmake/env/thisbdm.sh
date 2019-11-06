@@ -149,6 +149,16 @@ else
    PATH="${BDMSYS}/bin":$PATH; export PATH
 fi
 
+# If pip and jupyter are installed locally (with --user flag), we have to
+# prepend PATH with the local directory to be able to find jupyter when we want
+# to convert demos to notebooks (with demo_to_notebook.py). This is the case
+# if BDM is installed with the prerequisites script
+if [[ $(uname -s) == "Darwin"* ]]; then
+  export PATH=$HOME/Library/Python/2.7/bin:$PATH
+else
+  export PATH=$HOME/.local/bin:$PATH
+fi
+
 if [ -z "${LD_LIBRARY_PATH}" ]; then
    LD_LIBRARY_PATH="${BDMSYS}/lib"; export LD_LIBRARY_PATH       # Linux, ELF HP-UX
 else
@@ -244,11 +254,8 @@ else
    PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH; export PV_PLUGIN_PATH
 fi
 
-if [ -z "${PATH}" ]; then
-   PATH="${ParaView_DIR}/bin"; export PATH
-else
-   PATH="${ParaView_DIR}/bin":$PATH; export PATH
-fi
+alias paraview='${ParaView_DIR}/bin/paraview'
+alias pvpython='${ParaView_DIR}/bin/pvpython'
 
 if [ -z "${LD_LIBRARY_PATH}" ]; then
    LD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export LD_LIBRARY_PATH
@@ -342,7 +349,7 @@ else
         if [ -z ${CXX} ] && [ -z ${CC} ] ; then
             . scl_source enable devtoolset-7
         fi
-        . scl_source enable rh-python36
+        . scl_source enable python27
 
         . /etc/profile.d/modules.sh
         module load mpi

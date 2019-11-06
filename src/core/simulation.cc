@@ -31,6 +31,7 @@
 #include "core/util/log.h"
 #include "core/util/string.h"
 #include "core/util/thread_info.h"
+#include "core/visualization/root_adaptor.h"
 #include "version.h"
 
 namespace bdm {
@@ -121,6 +122,7 @@ Simulation::~Simulation() {
 
 void Simulation::Activate() { active_ = this; }
 
+/// Returns the ResourceManager instance
 ResourceManager* Simulation::GetResourceManager() { return rm_; }
 
 void Simulation::SetResourceManager(ResourceManager* rm) {
@@ -128,12 +130,21 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
   rm_ = rm;
 }
 
+/// Returns the simulation parameters
 const Param* Simulation::GetParam() const { return param_; }
 
 Grid* Simulation::GetGrid() { return grid_; }
 
 Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
+void Simulation::Simulate(uint64_t steps) { scheduler_->Simulate(steps); }
+
+/// Returns the total number of simulation objects
+size_t Simulation::GetNumSimObjects(int numa_node) const {
+  return rm_->GetNumSimObjects(numa_node);
+}
+
+/// Returns a random number generator (thread-specific)
 Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
 std::vector<Random*>& Simulation::GetAllRandom() { return random_; }
@@ -146,8 +157,10 @@ std::vector<InPlaceExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
+/// Returns the name of the simulation
 const std::string& Simulation::GetUniqueName() const { return unique_name_; }
 
+/// Returns the path to the simulation's output directory
 const std::string& Simulation::GetOutputDir() const { return output_dir_; }
 
 void Simulation::ReplaceScheduler(Scheduler* scheduler) {
@@ -288,6 +301,15 @@ void Simulation::InitializeOutputDir() {
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
     Log::Fatal("Simulation", "Failed to make output directory ", output_dir_);
   }
+}
+
+/// Visualize the simulation objects in ROOT notebooks
+void Simulation::VisualizeInNotebook(size_t w, size_t h, std::string opt) {
+  auto* param = this->GetParam();
+  // Force an update of the visualization engine
+  this->GetScheduler()->GetRootVisualization()->Visualize(
+      param->visualization_export_interval_);
+  this->GetScheduler()->GetRootVisualization()->DrawInCanvas(w, h, opt);
 }
 
 }  // namespace bdm

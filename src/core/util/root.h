@@ -169,13 +169,64 @@
  private:
 // NOLINT
 
+#define BDM_NULL_CLASS_DEF_OVERRIDE(class_name, class_version_id) \
+ public:                                                          \
+  static TClass* Class() {                                        \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return nullptr;                                               \
+  }                                                               \
+  static const char* Class_Name() {                               \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return nullptr;                                               \
+  }                                                               \
+  static Version_t Class_Version() {                              \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return class_version_id;                                      \
+  }                                                               \
+  static TClass* Dictionary() {                                   \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return nullptr;                                               \
+  }                                                               \
+  TClass* IsA() const override {                                  \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return class_name::Class();                                   \
+  }                                                               \
+  void ShowMembers(TMemberInspector& insp) const override {       \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+  }                                                               \
+  void Streamer(TBuffer&) override {                              \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+  }                                                               \
+  void StreamerNVirtual(TBuffer& ClassDef_StreamerNVirtual_b) {   \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+  }                                                               \
+  static const char* DeclFileName() {                             \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return nullptr;                                               \
+  }                                                               \
+  static int ImplFileLine() {                                     \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return -1;                                                    \
+  }                                                               \
+  static const char* ImplFileName() {                             \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return nullptr;                                               \
+  }                                                               \
+  static int DeclFileLine() {                                     \
+    Log::Fatal("Dictionary", BDM_DICT_ERROR_MSG);                 \
+    return __LINE__;                                              \
+  }                                                               \
+                                                                  \
+ private:
+// NOLINT
+
 /// Forward all calls to BDM_NULL_CLASS_DEF
 #define BDM_CLASS_DEF(class_name, class_version_id) \
   BDM_NULL_CLASS_DEF(class_name, class_version_id)
 #define BDM_CLASS_DEF_NV(class_name, class_version_id) \
   BDM_NULL_CLASS_DEF_NV(class_name, class_version_id)
 #define BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id) \
-  BDM_NULL_CLASS_DEF(class_name, class_version_id)
+  BDM_NULL_CLASS_DEF_OVERRIDE(class_name, class_version_id)
 #define BDM_TEMPLATE_CLASS_DEF(class_name, class_version_id) \
   BDM_NULL_CLASS_DEF(class_name, class_version_id)
 

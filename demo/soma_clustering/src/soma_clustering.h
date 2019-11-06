@@ -1,19 +1,28 @@
-// -----------------------------------------------------------------------------
-//
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//
-// See the LICENSE file distributed with this work for details.
-// See the NOTICE file distributed with this work for additional information
-// regarding copyright ownership.
-//
-// -----------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------
+///
+/// Copyright (C) The BioDynaMo Project.
+/// All Rights Reserved.
+///
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+///
+/// See the LICENSE file distributed with this work for details.
+/// See the NOTICE file distributed with this work for additional information
+/// regarding copyright ownership.
+///
+/// ----------------------------------------------------------------------------
+///
+/// This model examplifies the use of extracellur diffusion and shows
+/// how to extend the default "Cell". In step 0 one can see how an extra
+/// data member is added and can be accessed throughout the simulation with
+/// its Get and Set methods. N cells are randomly positioned in space, of which
+/// half are of type 1 and half of type -1. Each type secretes a different
+/// substance. Cells move towards the gradient of their own substance, which
+/// results in clusters being formed of cells of the same type.
+///
 
-#ifndef SOMA_CLUSTERING_H_
-#define SOMA_CLUSTERING_H_
+#ifndef DEMO_SOMA_CLUSTERING_H_
+#define DEMO_SOMA_CLUSTERING_H_
 
 #include <vector>
 
@@ -23,18 +32,6 @@
 #include "validation_criterion.h"
 
 namespace bdm {
-
-// ----------------------------------------------------------------------------
-// This model examplifies the use of extracellur diffusion and shows
-// how to extend the default "Cell". In step 0 one can see how an extra
-// data member is added and can be accessed throughout the simulation with
-// its Get and Set methods. N cells are randomly positioned in space, of which
-// half are of type 1 and half of type -1.
-//
-// Each type secretes a different substance. Cells move towards the gradient of
-// their own substance, which results in clusters being formed of cells of the
-// same type.
-// -----------------------------------------------------------------------------
 
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
@@ -57,7 +54,7 @@ inline int Simulate(int argc, const char** argv) {
 #pragma omp parallel
   simulation.GetRandom()->SetSeed(4357);
 
-  // Construct num_cells/2 cells of type 1
+  // Construct `num_cells`/2 cells of type 1
   auto construct_0 = [](const Double3& position) {
     MyCell* cell = new MyCell(position);
     cell->SetDiameter(10);
@@ -69,7 +66,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
                                       num_cells / 2, construct_0);
 
-  // Construct num_cells/2 cells of type -1
+  // Construct `num_cells`/2 cells of type -1
   auto construct_1 = [](const Double3& position) {
     MyCell* cell = new MyCell(position);
     cell->SetDiameter(10);
@@ -89,6 +86,7 @@ inline int Simulate(int argc, const char** argv) {
   // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(1000);
 
+  // Check if criterion is met
   double spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);
   if (crit) {
@@ -99,4 +97,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // SOMA_CLUSTERING_H_
+#endif  // DEMO_SOMA_CLUSTERING_H_

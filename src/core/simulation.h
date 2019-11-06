@@ -82,6 +82,10 @@ class Simulation {
 
   Scheduler* GetScheduler();
 
+  void Simulate(uint64_t steps);
+
+  size_t GetNumSimObjects(int numa_node = -1) const;
+
   /// Returns a thread local random number generator.
   Random* GetRandom();
 
@@ -105,6 +109,10 @@ class Simulation {
   /// scheduler (obtained with `GetScheduler()`) will be invalidated. \n
   /// Simulation will take ownership of the passed pointer
   void ReplaceScheduler(Scheduler* scheduler);
+
+  /// Displays the ROOT visualization in the Jupyter notebook
+  void VisualizeInNotebook(size_t w = 300, size_t h = 300,
+                           std::string opt = "");
 
  private:
   /// Currently active simulation

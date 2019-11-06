@@ -31,11 +31,15 @@ sudo apt-get update
 # Install required packages
 sudo apt-get install -y wget cmake make gcc g++ \
 libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev \
-libpthread-stubs0-dev python3 python3-dev python3-pip
+libpthread-stubs0-dev python-pip
 
 # Install optional packages
 if [ $1 == "all" ]; then
-    pip3 install --user mkdocs mkdocs-material
+    # this updates pip, but installs the updated version in $HOME/.local/bin
+    pip install --upgrade pip
+    PIP_PACKAGES="mkdocs mkdocs-material jupyter metakernel"
+    $HOME/.local/bin/pip2 install --user $PIP_PACKAGES
+
     sudo apt-get install -y valgrind \
       clang-3.9 clang-format-3.9 clang-tidy-3.9 \
       doxygen graphviz \

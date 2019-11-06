@@ -1,25 +1,30 @@
-// -----------------------------------------------------------------------------
-//
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//
-// See the LICENSE file distributed with this work for details.
-// See the NOTICE file distributed with this work for additional information
-// regarding copyright ownership.
-//
-// -----------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------
+///
+/// Copyright (C) The BioDynaMo Project.
+/// All Rights Reserved.
+///
+/// Licensed under the Apache License, Version 2.0 (the "License");
+/// you may not use this file except in compliance with the License.
+///
+/// See the LICENSE file distributed with this work for details.
+/// See the NOTICE file distributed with this work for additional information
+/// regarding copyright ownership.
+///
+/// ----------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------
+///
+/// A simulation of a conceptual model of a cancer tumor growth
+///
+/// ----------------------------------------------------------------------------
 
-#ifndef TUMOR_CONCEPT_H_
-#define TUMOR_CONCEPT_H_
+#ifndef DEMO_TUMOR_CONCEPT_H_
+#define DEMO_TUMOR_CONCEPT_H_
 
 #include "biodynamo.h"
 
 namespace bdm {
 
-// 0. Define my custom cell MyCell, which extends Cell by adding extra data
+// Define my custom cell MyCell, which extends Cell by adding extra data
 // members: cell_color and can_divide
 class MyCell : public Cell {  // our object extends the Cell object
                               // create the header with our new data member
@@ -63,7 +68,7 @@ class MyCell : public Cell {  // our object extends the Cell object
   int cell_color_;
 };
 
-// 1. Define growth behaviour
+// Define growth behaviour
 struct GrowthModule : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(GrowthModule, BaseBiologyModule, 1);
 
@@ -113,8 +118,8 @@ inline int Simulate(int argc, const char** argv) {
   Simulation simulation(argc, argv, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
-  auto* random = simulation.GetRandom();
-  // Since sim_objects in this simulation won't modify neighbors, we can
+  auto* myrand = simulation.GetRandom();
+  // Since `sim_objects` in this simulation won't modify neighbors, we can
   // safely disable neighbor guards to improve performance.
   simulation.GetExecutionContext()->DisableNeighborGuard();
 
@@ -124,9 +129,9 @@ inline int Simulate(int argc, const char** argv) {
   for (size_t i = 0; i < nb_of_cells; ++i) {
     // our modelling will be a cell cube of 100*100*100
     // random double between 0 and 100
-    x_coord = random->Uniform(param->min_bound_, param->max_bound_);
-    y_coord = random->Uniform(param->min_bound_, param->max_bound_);
-    z_coord = random->Uniform(param->min_bound_, param->max_bound_);
+    x_coord = myrand->Uniform(param->min_bound_, param->max_bound_);
+    y_coord = myrand->Uniform(param->min_bound_, param->max_bound_);
+    z_coord = myrand->Uniform(param->min_bound_, param->max_bound_);
 
     // creating the cell at position x, y, z
     MyCell* cell = new MyCell({x_coord, y_coord, z_coord});
@@ -147,7 +152,7 @@ inline int Simulate(int argc, const char** argv) {
   rm->push_back(cell);  // put the created cell in our cells structure
 
   // Run simulation
-  simulation.GetScheduler()->Simulate(500);
+  simulation.GetScheduler()->Simulate(50);
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
@@ -155,4 +160,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // TUMOR_CONCEPT_H_
+#endif  // DEMO_TUMOR_CONCEPT_H_
