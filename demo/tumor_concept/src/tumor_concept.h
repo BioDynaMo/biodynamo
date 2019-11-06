@@ -1,21 +1,19 @@
-/// ----------------------------------------------------------------------------
-///
-/// Copyright (C) The BioDynaMo Project.
-/// All Rights Reserved.
-///
-/// Licensed under the Apache License, Version 2.0 (the "License");
-/// you may not use this file except in compliance with the License.
-///
-/// See the LICENSE file distributed with this work for details.
-/// See the NOTICE file distributed with this work for additional information
-/// regarding copyright ownership.
-///
-/// ----------------------------------------------------------------------------
-/// ----------------------------------------------------------------------------
-///
-/// A simulation of a conceptual model of a cancer tumor growth
-///
-/// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+//
+// A simulation of a conceptual model of a cancer tumor growth
+//
 
 #ifndef DEMO_TUMOR_CONCEPT_H_
 #define DEMO_TUMOR_CONCEPT_H_

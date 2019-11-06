@@ -1,21 +1,21 @@
-/// ----------------------------------------------------------------------------
-///
-/// Copyright (C) The BioDynaMo Project.
-/// All Rights Reserved.
-///
-/// Licensed under the Apache License, Version 2.0 (the "License");
-/// you may not use this file except in compliance with the License.
-///
-/// See the LICENSE file distributed with this work for details.
-/// See the NOTICE file distributed with this work for additional information
-/// regarding copyright ownership.
-///
-/// ----------------------------------------------------------------------------
-///
-/// This model creates 8 cells at each corner of a cube, and one in the middle.
-/// The cell in the middle secretes a substance. The cells are modeled to move
-/// according to the extracellular gradient; in this case to the middle.
-///
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+//
+// This model creates 8 cells at each corner of a cube, and one in the middle.
+// The cell in the middle secretes a substance. The cells are modeled to move
+// according to the extracellular gradient; in this case to the middle.
+//
 
 #ifndef DEMO_DIFFUSION_MODULE_H_
 #define DEMO_DIFFUSION_MODULE_H_

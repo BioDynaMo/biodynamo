@@ -75,13 +75,13 @@ def ReadHeader(text):
 
 	description = ''
 	for i, line in enumerate(lines):
-		if line.startswith("/// \\title "):
-			newTitle = line[10:]
-		elif line.startswith("/// \\visualize"):
+		if line.startswith("// \\title "):
+			newTitle = line[9:]
+		elif line.startswith("// \\visualize"):
 			visualize = True
-		elif line.startswith("///"):
-			if line == "///" or not line.startswith("/// --"):
-				description += ('# ' + line[4:] + '\n')
+		elif line.startswith("//"):
+			if line == "//" or not line.startswith("// --"):
+				description += ('# ' + line[3:] + '\n')
 		else:
 			break
 	newtext = ''
@@ -368,10 +368,10 @@ def mainfunction(text, visualize):
 	# Command for loading biodynamo library
 	libloading = 'gSystem->Load("libbiodynamo");\n\n'
 
-	libloading_macro = 'R__LOAD_LIBRARY(libbiodynamo)\n\n'
+	libloading_macro = '%jsroot on\nR__LOAD_LIBRARY(libbiodynamo)\n\n'
 
 	# Append "using namespace bdm;" to headers
-	headers += '#include "core/visualization/root_adaptor.h"\n\nusing namespace bdm;\n'
+	headers += '\nusing namespace bdm;\n'
 
 	c_macro = headers + libloading_macro + rest + main_macro
 	with open(outPathNameMacro, 'w') as fout:
@@ -406,10 +406,6 @@ def mainfunction(text, visualize):
 	text = "# <markdowncell> \n# # %s\n%s\n%s# \n# \n# <codecell>\n%s\n# <codecell>\n%s\n# <codecell>\n%s" % (
 		tutTitle, hline, newDescription, libloading, headers, text)
 
-	# print("")
-	# print(text)
-	# print("")
-
 	# Create a notebook from the working text
 	nbook = v3.reads_py(text)
 	nbook = v4.upgrade(nbook)  # Upgrade v3 to v4
@@ -436,7 +432,6 @@ def mainfunction(text, visualize):
 	with open(outPathName, 'w') as fout:
 		json.dump(json_data, fout, indent=1, sort_keys=True)
 
-	# print(time.time() - starttime)
 	timeout = 60
 
 	execute = "--execute"
@@ -494,4 +489,3 @@ if __name__ == "__main__":
 
 	starttime = time.time()
 	mainfunction(text, visualize)
-	# print(time.time() - starttime)

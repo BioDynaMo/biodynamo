@@ -27,8 +27,8 @@ MACRO(SUBDIRLIST result curdir)
   SET(${result} ${dirlist})
 ENDMACRO()
 
-# Generate tutorial from demo DEMO_NAME
-function(GenerateTutorialTarget DEMO_NAME)
+# Generate notebook from demo DEMO_NAME
+function(GenerateNotebookTarget DEMO_NAME)
   set(DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/notebooks/${DEMO_NAME})
   set(DEMO_DIR ${PROJECT_SOURCE_DIR}/demo/${DEMO_NAME})
   set(SCRIPT   ${PROJECT_SOURCE_DIR}/util/demo_to_notebook.py)
@@ -37,13 +37,13 @@ function(GenerateTutorialTarget DEMO_NAME)
   if(NOT DEFINED "$ENV{BDM_INSTALL_DIR}" AND NOT DEFINED ENV{BDM_INSTALL_DIR})
     set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
   endif()
-  add_custom_target(tutorial-${DEMO_NAME}
+  add_custom_target(notebook-${DEMO_NAME}
       COMMAND rm -rf ${DEST_DIR}
       COMMAND mkdir -p ${DEST_DIR}
       COMMAND cp ${DEMO_DIR}/src/*.h ${DEST_DIR}
       COMMAND bash -c "${LAUNCHER} python -E ${SCRIPT} --tutpath=${DEMO_DIR}/src/${DEMO_NAME}.h --outdir=${DEST_DIR}")
-  add_dependencies(tutorial-${DEMO_NAME} biodynamo)
-endfunction(GenerateTutorialTarget)
+  add_dependencies(notebook-${DEMO_NAME} biodynamo)
+endfunction(GenerateNotebookTarget)
 
 # Demos to skip over
 set(SKIPLIST "soma_clustering" "tumor_concept" "multiple_simulations" "gene_regulation" "sbml_integration")
@@ -64,13 +64,13 @@ if(notebooks)
   math(EXPR NUM_DEMOS "${NUM_DEMOS} - 1")
   foreach(IT RANGE ${NUM_DEMOS})
     list(GET DEMOS ${IT} DEMO)
-    GenerateTutorialTarget(${DEMO})
+    GenerateNotebookTarget(${DEMO})
     if(IT EQUAL 0)
-      add_dependencies(notebooks tutorial-${DEMO})
+      add_dependencies(notebooks notebook-${DEMO})
     else()
       math(EXPR ITD "${IT} - 1")
       list(GET DEMOS ${ITD} PREVIOUS_DEMO)
-      add_dependencies(tutorial-${PREVIOUS_DEMO} tutorial-${DEMO})
+      add_dependencies(notebook-${PREVIOUS_DEMO} notebook-${DEMO})
     endif()
   endforeach()
 endif()

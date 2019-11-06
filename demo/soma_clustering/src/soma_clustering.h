@@ -1,25 +1,25 @@
-/// ----------------------------------------------------------------------------
-///
-/// Copyright (C) The BioDynaMo Project.
-/// All Rights Reserved.
-///
-/// Licensed under the Apache License, Version 2.0 (the "License");
-/// you may not use this file except in compliance with the License.
-///
-/// See the LICENSE file distributed with this work for details.
-/// See the NOTICE file distributed with this work for additional information
-/// regarding copyright ownership.
-///
-/// ----------------------------------------------------------------------------
-///
-/// This model examplifies the use of extracellur diffusion and shows
-/// how to extend the default "Cell". In step 0 one can see how an extra
-/// data member is added and can be accessed throughout the simulation with
-/// its Get and Set methods. N cells are randomly positioned in space, of which
-/// half are of type 1 and half of type -1. Each type secretes a different
-/// substance. Cells move towards the gradient of their own substance, which
-/// results in clusters being formed of cells of the same type.
-///
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+//
+// This model examplifies the use of extracellur diffusion and shows
+// how to extend the default "Cell". In step 0 one can see how an extra
+// data member is added and can be accessed throughout the simulation with
+// its Get and Set methods. N cells are randomly positioned in space, of which
+// half are of type 1 and half of type -1. Each type secretes a different
+// substance. Cells move towards the gradient of their own substance, which
+// results in clusters being formed of cells of the same type.
+//
 
 #ifndef DEMO_SOMA_CLUSTERING_H_
 #define DEMO_SOMA_CLUSTERING_H_
