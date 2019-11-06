@@ -303,13 +303,4 @@ void Simulation::InitializeOutputDir() {
   }
 }
 
-/// Visualize the simulation objects in ROOT notebooks
-void Simulation::VisualizeInNotebook(size_t w, size_t h, std::string opt) {
-  auto* param = this->GetParam();
-  // Force an update of the visualization engine
-  this->GetScheduler()->GetRootVisualization()->Visualize(
-      param->visualization_export_interval_);
-  this->GetScheduler()->GetRootVisualization()->DrawInCanvas(w, h, opt);
-}
-
 }  // namespace bdm

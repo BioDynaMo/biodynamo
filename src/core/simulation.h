@@ -110,10 +110,6 @@ class Simulation {
   /// Simulation will take ownership of the passed pointer
   void ReplaceScheduler(Scheduler* scheduler);
 
-  /// Displays the ROOT visualization in the Jupyter notebook
-  void VisualizeInNotebook(size_t w = 300, size_t h = 300,
-                           std::string opt = "");
-
  private:
   /// Currently active simulation
   static Simulation* active_;

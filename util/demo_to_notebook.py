@@ -382,7 +382,7 @@ def mainfunction(text, visualize):
 	
 	if visualize:
 		visComment = "# <markdowncell>\n Let's visualize the output!"
-		main += '\n%s\n# <codecell>\nsimulation.VisualizeInNotebook();\n' % visComment
+		main += '\n%s\n# <codecell>\nVisualizeInNotebook();\n' % visComment
 
 	# Convert top level code comments to Markdown cells
 	rest = Comments(rest)
@@ -404,7 +404,7 @@ def mainfunction(text, visualize):
 
 	# Add the title and header of the notebook
 	text = "# <markdowncell> \n# # %s\n%s\n%s# \n# \n# <codecell>\n%s\n# <codecell>\n%s\n# <codecell>\n%s" % (
-		tutTitle, hline, newDescription, libloading, headers, text)
+		tutTitle, hline, newDescription, libloading_macro, headers, text)
 
 	# Create a notebook from the working text
 	nbook = v3.reads_py(text)
