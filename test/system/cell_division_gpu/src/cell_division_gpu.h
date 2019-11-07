@@ -147,12 +147,11 @@ inline void RunTest(bool* wrong, ExecutionMode mode, bool verify,
 }
 
 inline int Simulate(int argc, const char** argv) {
-  auto parser = CustomCLOParser(argc, argv);
-  bool cuda = parser.GetValue("cuda", false);
-  bool opencl = parser.GetValue("opencl", false);
-  bool verify = parser.GetValue("verify", false);
-  uint64_t cells_per_dim = parser.GetValue("cells-per-dim", 2);
-  uint64_t timesteps = parser.GetValue("timesteps", 10);
+  auto options = DefaultSimulationOptionParser(argc, argv);
+  auto custom_options = CustomCLOParser(argc, argv);
+  bool verify = custom_options.GetValue("verify", false);
+  uint64_t cells_per_dim = custom_options.GetValue("cells-per-dim", 2);
+  uint64_t timesteps = custom_options.GetValue("timesteps", 10);
 
   bool wrong = true;
 
@@ -161,20 +160,20 @@ inline int Simulate(int argc, const char** argv) {
   // results if necessary
   omp_set_num_threads(1);
 
-  if (!cuda && !opencl) {
+  if (!options.cuda_ && !options.opencl_) {
     // Run CPU version
     RunTest(&wrong, kCpu, verify, timesteps, cells_per_dim);
   }
 
 #ifdef USE_CUDA
-  if (cuda) {
+  if (options.cuda_) {
     // Run GPU (CUDA) version
     RunTest(&wrong, kCuda, verify, timesteps, cells_per_dim);
   }
 #endif  // USE_CUDA
 
 #ifdef USE_OPENCL
-  if (opencl) {
+  if (options.opencl_) {
     // Run GPU (OpenCL) version
     RunTest(&wrong, kOpenCl, verify, timesteps, cells_per_dim);
   }
