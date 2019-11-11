@@ -38,7 +38,7 @@ PIP_PACKAGES="mkdocs mkdocs-material nbformat jupyter metakernel"
 sudo yum -y install wget cmake3 libXt-devel libXext-devel \
 devtoolset-7-gcc* numactl-devel \
 tbb-devel openmpi3-devel freeglut-devel \
-python27 python-pip git
+python27 python36 python-pip git
 
 # Install optional packages
 if [ $1 == "all" ]; then
