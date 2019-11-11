@@ -1,3 +1,27 @@
+---
+title: "Prerequisites"
+date: "2019-01-01"
+path: "/docs/userguide/prerequisites/"
+meta_title: "BioDynaMo Prerequisites"
+meta_description: "This is the prerequisites page."
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/prerequisites/"
+    title: "Prerequisites"
+    description: "This is the prerequisites page."
+sidebar: "userguide"
+keywords:
+  -prerequisites
+  -dependencies
+  -third
+  -party
+  -packages
+  -required
+  -optional
+---
+
+
 # Prerequisites
 
 This page lists the prerequisites packages that needs to be installed in order to build correctly BioDynaMo.
