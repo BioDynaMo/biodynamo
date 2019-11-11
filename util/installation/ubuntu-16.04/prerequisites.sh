@@ -37,7 +37,7 @@ libpthread-stubs0-dev python-pip python3-pip
 if [ $1 == "all" ]; then
     # this updates pip, but installs the updated version in $HOME/.local/bin
     pip install --upgrade pip
-    PIP_PACKAGES="mkdocs mkdocs-material jupyter metakernel"
+    PIP_PACKAGES="jupyter metakernel"
     if [ -f "$HOME/.local/bin/pip2" ]; then
       $HOME/.local/bin/pip2 install --user $PIP_PACKAGES
     else

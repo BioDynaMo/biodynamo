@@ -36,7 +36,7 @@ brew upgrade python cmake || true
 
 # Install the optional packages
 if [ $1 == "all" ]; then
-    PIP_PACKAGES="mkdocs mkdocs-material nbformat jupyter metakernel"
+    PIP_PACKAGES="nbformat jupyter metakernel"
     pip2 install --user $PIP_PACKAGES
 
     # Jupyter relies on tornado for logging, but the latest tornado (from version

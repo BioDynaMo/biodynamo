@@ -108,12 +108,6 @@ if [ $TRAVIS ]; then
   done
 fi
 
-# Add also locale variables only for Ubuntu 16.04. This is needed by mkdocs
-# when we need to deploy the documentation.
-if [ ${BDM_OS} = "ubuntu-16.04" ]; then
-  BDM_FORWARD_ENV="$BDM_FORWARD_ENV --env LANG=C.UTF-8 --env LC_ALL=C.UTF-8"
-fi
-
 # flattening the image somehow resets the default user specified in the
 # Dockerfile to root. Therefore, we have to add the --user option here
 sudo docker run \
