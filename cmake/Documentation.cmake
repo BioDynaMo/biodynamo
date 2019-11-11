@@ -44,17 +44,8 @@ function(GenerateAPIDocTarget)
   # install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/html" DESTINATION share/doc)
 endfunction(GenerateAPIDocTarget)
 
-function(GenerateLiveMkDocsTarget DOC_TYPE)
-  set(DOC_DIR ${PROJECT_SOURCE_DIR}/doc/${DOC_TYPE}_guide)
-  add_custom_target(live-${DOC_TYPE}-guide
-      COMMAND bash -c "${MKDOCS_PROGRAM} serve"
-      WORKING_DIRECTORY "${DOC_DIR}"
-      VERBATIM)
-endfunction(GenerateLiveMkDocsTarget)
-
 # ------------------------------------------------------------------------------
 find_package(Doxygen)
-find_package(MKDocs)
 
 if(DOXYGEN_FOUND)
 
@@ -68,7 +59,7 @@ visualizations in the documentation. Please install dot (graphviz) by issuing '.
   GenerateAPIDocTarget()
 
   add_custom_target(doc COMMENT "Generate documentation")
-  add_dependencies(doc doc-api doc-user doc-dev)
+  add_dependencies(doc doc-api)
 else()
   message(WARNING "Could not find Doxygen. Target doc won't be available. Therefore you will not \
 be able to build BioDynaMo's documentation.")
