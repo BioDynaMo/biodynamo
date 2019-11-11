@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
-#include "OptionParser.h"
+#include "cxxopts.h"
 #include "core/util/log.h"
 
 namespace bdm {

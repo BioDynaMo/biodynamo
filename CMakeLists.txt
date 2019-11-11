@@ -396,6 +396,7 @@ include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/omp")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/opencl")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/cxxopts")
 include_directories("${EXTRACTED_THIRD_PARTY_LIBS}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
