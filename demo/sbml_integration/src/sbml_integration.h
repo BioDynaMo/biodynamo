@@ -180,8 +180,12 @@ inline void PlotSbmlModules(const char* filename) {
 }
 
 inline int Simulate(int argc, const char** argv) {
-  auto parser = CustomCLOParser(argc, argv);
-  uint64_t num_cells = parser.GetValue("num-cells", 10);
+  auto options = CommandLineOptions::GetInstance(argc, argv);
+  options->AddOption()("num-cells", "The total number of cells",
+                       cxxopts::value<uint64_t>()->default_value("10"));
+  auto parser = options->Parse();
+
+  uint64_t num_cells = parser.Get<uint64_t>("num-cells");
 
   // roadrunner options
   rr::SimulateOptions opt;

@@ -195,31 +195,30 @@ void Simulation::InitializeRuntimeParams(
 
   param_ = new Param();
 
+  // detect if the biodynamo environment has been sourced
+  if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
+    Log::Fatal("Simulation::InitializeRuntimeParams",
+               "The BioDynaMo environment is not set up correctly. Please call "
+               "$use_biodynamo and retry this command.");
+  }
+
+  auto options = CommandLineOptions::GetInstance(argc, argv)->Parse();
+  LoadConfigFile(ctor_config, options.Get<std::string>("config"));
+
+  if (options.Get<std::string>("backup") != "") {
+    param_->backup_file_ = options.Get<std::string>("backup");
+  }
+  if (options.Get<std::string>("restore") != "") {
+    param_->restore_file_ = options.Get<std::string>("restore");
+  }
+
+  set_param(param_);
+
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
   // thing before setting that parameter.
   Log::Info("", "Initialize new simulation using BioDynaMo ",
             Version::String());
-
-  // detect if the biodynamo environment has been sourced
-  if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
-    Log::Fatal("Simulation::InitializeRuntimeParams",
-               "The BioDynaMo environment is not set up correctly. Please call "
-               "$use_biodynamo "
-               "and retry this command.");
-  }
-
-  auto options = bdm::DefaultSimulationOptionParser(argc, argv);
-  LoadConfigFile(ctor_config, options.config_file_);
-
-  if (options.backup_file_ != "") {
-    param_->backup_file_ = options.backup_file_;
-  }
-  if (options.restore_file_ != "") {
-    param_->restore_file_ = options.restore_file_;
-  }
-
-  set_param(param_);
 }
 
 void Simulation::LoadConfigFile(const std::string& ctor_config,

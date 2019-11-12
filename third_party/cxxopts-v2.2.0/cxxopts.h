@@ -1140,6 +1140,8 @@ namespace cxxopts
       std::vector<std::string>,
       bool allow_unrecognised,
       int&, char**&);
+    
+    // ParseResult(const ParseResult& obj);
 
     size_t
     count(const std::string& o) const
@@ -1153,6 +1155,11 @@ namespace cxxopts
       auto riter = m_results.find(iter->second);
 
       return riter->second.count();
+    }
+
+    template <typename T>
+    T Get(std::string val) {
+      return (*this)[val].as<T>();
     }
 
     const OptionValue&
@@ -1510,6 +1517,18 @@ ParseResult::ParseResult
 {
   parse(argc, argv);
 }
+
+// inline
+// ParseResult::ParseResult(const ParseResult& obj)
+// {
+//   m_options = obj.m_options;
+//   m_positional = std::copy(obj.m_positional);
+//   m_next_positional = obj.m_next_positional;
+//   m_allow_unrecognised = obj.m_allow_unrecognised;
+//   m_results = obj.m_results;
+//   m_positional_set = obj.m_positional_set;
+//   m_sequential = obj.m_sequential;
+// }
 
 inline
 OptionAdder
