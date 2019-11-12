@@ -30,59 +30,57 @@ namespace bdm {
 using cxxopts::value;
 using std::string;
 
-/// Class holding the parsed command line options
+/// Class to contain and parse command line options
 class CommandLineOptions {
  public:
-  // CommandLineOptions(int argc, const char** argv)
-  //     : argc_(argc),
-  //       argv_(argv),
-  //       options_(argv[0], " -- BioDynaMo command line options\n") {
-  //   AddCoreArguments();
-  // }
-
   static CommandLineOptions* GetInstance(int argc, const char** argv) {
     static CommandLineOptions clo(argc, argv);
     return &clo;
   }
 
-  // Add an extra command line option
+  /// Add an extra command line option
   cxxopts::OptionAdder AddOption(string group = "") {
     return cxxopts::OptionAdder(options_, std::move(group));
   }
 
-  // Parse the given command line arguments
+  /// Parse the given command line arguments
   cxxopts::ParseResult Parse() {
     // Make a non-const deep copy of argv
-    char** new_argv = (char**)malloc((argc_ + 1) * sizeof(char*));
+    char** argv_copy = (char**)malloc((argc_ + 1) * sizeof(char*));
     for (int i = 0; i < argc_; ++i) {
-      size_t length = strlen(argv_[i]) + 1;
-      new_argv[i] = (char*)malloc(length);
-      memcpy(new_argv[i], argv_[i], length);
+      size_t length = strlen(argv_[i]);
+      argv_copy[i] = (char*)malloc(length);
+      memcpy(argv_copy[i], argv_[i], length);
     }
-    new_argv[argc_] = NULL;
+    argv_copy[argc_] = NULL;
 
-    // Perform parsing
-    auto ret = options_.parse(argc_, new_argv);
+    // Perform parsing (consumes argv_copy)
+    auto ret = options_.parse(argc_, argv_copy);
+
+    // Perform operations on Core command line options
+    HandleCoreOptions(ret);
 
     // free memory
     for (int i = 0; i < argc_; ++i) {
-      free(new_argv[i]);
+      free(argv_copy[i]);
     }
-    free(new_argv);
+    free(argv_copy);
 
-    HandleCoreOptions(ret);
     return ret;
   }
 
  private:
+  // This constructor is only called on the first invocation to
+  // `CommandLineOptions::GetInstance()`
   CommandLineOptions(int argc, const char** argv)
       : argc_(argc),
         argv_(argv),
         options_(argv[0], " -- BioDynaMo command line options\n") {
-    AddCoreArguments();
+    AddCoreOptions();
   }
+
   // clang-format off
-  void AddCoreArguments() {
+  void AddCoreOptions() {
     options_.add_options("Core")
         ("h, help", "Print this help message.")
         ("version", "Print version number of BioDynaMo.")
