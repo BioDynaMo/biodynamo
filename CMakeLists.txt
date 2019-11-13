@@ -358,6 +358,7 @@ file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
 include(BioDynaMo)
 include(ExternalProject)
 include(Documentation)
+include(Website)
 include(Versioning)
 
 # -------------------- set default build type and compiler flags ---------------
