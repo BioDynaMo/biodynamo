@@ -8,12 +8,12 @@ Each module can define its own [`Param` class](https://biodynamo.github.io/api/s
 There are three ways to set the value of a parameter:
 
 1.  TOML configuration file
-2.  Command line parameter
+2.  Command line argument
 3.  Assignment in the source code.
 
 !!! Note
     Higher index takes precedence.  E.g. If you define the `backup_file` in the TOML file and the
-    command line parameter, the command line version will be used.
+    command line arguments, the command line version will be used.
 
 The documentation of each parameter contains a description of the
 parameter, its default value and how to set it in the TOML file ([example](https://biodynamo.github.io/api/structbdm_1_1Param.html#a3cc70d57ed2965f5551e03b36a4a7219))
@@ -44,31 +44,60 @@ name = "Cell"
 additional_data_members = [ "density_" ]
 ```
 
-### Command Line Parameter
+### Command Line Options
 
 Some parameter can be set as command line argument when you start the simulation.
 For a complete list execute the binary with the `--help` switch. e.g. `./cell_division --help`.
 
 Sample output:
 ```
-Info: Initialize new simulation using BioDynaMo v0.1.0-105-g74f6a24
+ -- BioDynaMo command line options
 
--v, --verbose
-    Verbose mode. Causes BioDynaMo to print debugging messages.
-    Multiple -v options increases the verbosity. The maximum is 3.
+Usage:
+  ./cell_division [OPTION...]
 
--r, --restore filename
-    Restores the simulation from the checkpoint found in filename and
-    continues simulation from that point.
+ Simulation options:
+  -n, --num-cells arg  The total number of cells (default: 10)
 
--b, --backup filename
-    Periodically create full simulation backup to the specified file
-    NOTA BENE: File will be overriden if it exists
-
---help
-    Print usage and exit.
+ Core options:
+  -h, --help          Print this help message.
+      --version       Print version number of BioDynaMo.
+      --opencl        Enable GPU acceleration through OpenCL.
+      --cuda          Enable GPU acceleration through CUDA.
+  -v, --verbose       Verbose mode. Causes BioDynaMo to print debugging
+                      messages. Multiple -v options increases the verbosity. The
+                      maximum is 3.
+  -r, --restore FILE  Restores the simulation from the checkpoint found in
+                      FILE and continues simulation from that point. (default: )
+  -b, --backup FILE   Periodically create full simulation backup to the
+                      specified file. NOTA BENE: File will be overriden if it
+                      exists. (default: )
+  -c, --config FILE   The TOML configuration that should be used. (default: )
 
 ```
+
+You can append your own command line options as following (e.g. `num-cells` as
+show in the sample above):
+
+```
+auto opts = CommandLineOptions(argc, argv);
+opts.AddOption<uint64_t>("n, num-cells", "The total number of cells", "10");
+
+// You will need to pass this object to the main Simulation object as follows:
+Simulation simulation(opts);
+
+// To retrieve the values from the command line in your simulation code
+auto parser = opts.Parse();
+uint64_t num_cells = parser.Get<uint64_t>("num-cells");
+```
+
+The `AddOption` function can be broken down as follows: The template parameter
+(`uint64_t`) specifies what value type your option should be. The first fucntion
+parameter is for the flag abbreviation (in this case -n and --num-cells) The
+second parameter is the name of your command line option The third parameter is
+the description (as shown in the help dialogue) The fourth parameter is the
+default value of the command line option (i.e. when you do not specify the
+flag).
 
 ### Assignment in the Source Code
 
