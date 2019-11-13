@@ -1518,18 +1518,6 @@ ParseResult::ParseResult
   parse(argc, argv);
 }
 
-// inline
-// ParseResult::ParseResult(const ParseResult& obj)
-// {
-//   m_options = obj.m_options;
-//   m_positional = std::copy(obj.m_positional);
-//   m_next_positional = obj.m_next_positional;
-//   m_allow_unrecognised = obj.m_allow_unrecognised;
-//   m_results = obj.m_results;
-//   m_positional_set = obj.m_positional_set;
-//   m_sequential = obj.m_sequential;
-// }
-
 inline
 OptionAdder
 Options::add_options(std::string group)

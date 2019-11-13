@@ -55,17 +55,30 @@ Simulation::Simulation(const std::string& simulation_name,
                        const std::string& config_file)
     : Simulation(simulation_name, [](auto* param) {}, config_file) {}
 
+Simulation::Simulation(CommandLineOptions clo,
+                       const std::string& config_file) {
+  Initialize(&clo, [](auto* param) {}, config_file);
+}
+
+Simulation::Simulation(CommandLineOptions clo,
+                       const std::function<void(Param*)>& set_param,
+                       const std::string& config_file) {
+  Initialize(&clo, set_param, config_file);
+}
+
 Simulation::Simulation(int argc, const char** argv,
                        const std::function<void(Param*)>& set_param,
                        const std::string& config_file) {
-  Initialize(argc, argv, set_param, config_file);
+  auto options = CommandLineOptions(argc, argv);
+  Initialize(&options, set_param, config_file);
 }
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::function<void(Param*)>& set_param,
                        const std::string& config_file) {
   const char* argv[1] = {simulation_name.c_str()};
-  Initialize(1, argv, set_param, config_file);
+  auto options = CommandLineOptions(1, argv);
+  Initialize(&options, set_param, config_file);
 }
 
 void Simulation::Restore(Simulation&& restored) {
@@ -155,13 +168,13 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
   scheduler_ = scheduler;
 }
 
-void Simulation::Initialize(int argc, const char** argv,
+void Simulation::Initialize(CommandLineOptions* clo,
                             const std::function<void(Param*)>& set_param,
                             const std::string& config_file) {
   id_ = counter_++;
   Activate();
-  InitializeUniqueName(ExtractSimulationName(argv[0]));
-  InitializeRuntimeParams(argc, argv, set_param, config_file);
+  InitializeUniqueName(clo->GetSimulationName());
+  InitializeRuntimeParams(clo, set_param, config_file);
   InitializeOutputDir();
   InitializeMembers();
 }
@@ -187,7 +200,7 @@ void Simulation::InitializeMembers() {
 }
 
 void Simulation::InitializeRuntimeParams(
-    int argc, const char** argv, const std::function<void(Param*)>& set_param,
+    CommandLineOptions* clo, const std::function<void(Param*)>& set_param,
     const std::string& ctor_config) {
   // Renew thread info just in case it has been initialised as static and a
   // simulation calls e.g. `omp_set_num_threads()` within main.
@@ -202,7 +215,7 @@ void Simulation::InitializeRuntimeParams(
                "$use_biodynamo and retry this command.");
   }
 
-  auto options = CommandLineOptions::GetInstance(argc, argv)->Parse();
+  auto options = clo->Parse();
   LoadConfigFile(ctor_config, options.Get<std::string>("config"));
 
   if (options.Get<std::string>("backup") != "") {
@@ -266,16 +279,6 @@ void Simulation::InitializeUniqueName(const std::string& simulation_name) {
     stream << id_;
   }
   unique_name_ = stream.str();
-}
-
-std::string Simulation::ExtractSimulationName(const char* path) {
-  std::string s(path);
-  auto pos = s.find_last_of("/");
-  if (pos == std::string::npos) {
-    return s;
-  } else {
-    return s.substr(pos + 1, s.length() - 1);
-  }
 }
 
 void Simulation::InitializeOutputDir() {

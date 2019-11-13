@@ -22,6 +22,7 @@
 #include "core/simulation.h"
 #include "version.h"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 
@@ -33,15 +34,25 @@ using std::string;
 /// Class to contain and parse command line options
 class CommandLineOptions {
  public:
-  static CommandLineOptions* GetInstance(int argc, const char** argv) {
-    static CommandLineOptions clo(argc, argv);
-    return &clo;
+  CommandLineOptions(int argc, const char** argv)
+      : argc_(argc),
+        argv_(argv),
+        options_(argv[0], " -- BioDynaMo command line options\n") {
+    AddCoreOptions();
   }
 
   /// Add an extra command line option
   cxxopts::OptionAdder AddOption(string group = "") {
     return cxxopts::OptionAdder(options_, std::move(group));
   }
+
+  template <typename T>
+  void AddOption(std::string opt, std::string description, std::string def,
+                 std::string group = "Simulation") {
+    AddOption(group)(opt, description, cxxopts::value<T>()->default_value(def));
+  }
+
+  std::string GetSimulationName() { return sim_name_; }
 
   /// Parse the given command line arguments
   cxxopts::ParseResult Parse() {
@@ -70,15 +81,6 @@ class CommandLineOptions {
   }
 
  private:
-  // This constructor is only called on the first invocation to
-  // `CommandLineOptions::GetInstance()`
-  CommandLineOptions(int argc, const char** argv)
-      : argc_(argc),
-        argv_(argv),
-        options_(argv[0], " -- BioDynaMo command line options\n") {
-    AddCoreOptions();
-  }
-
   // clang-format off
   void AddCoreOptions() {
     options_.add_options("Core")
@@ -96,10 +98,27 @@ class CommandLineOptions {
   }
   // clang-format on
 
+  /// Return only the executable name given the path
+  /// @param path path and filename of the executable
+  /// e.g. `executable`, `./executable`, './build/executable'
+  /// @return `executable`
+  void ExtractSimulationName(const char* path) {
+    std::string s(path);
+    auto pos = s.find_last_of("/");
+    if (pos == std::string::npos) {
+      sim_name_ = s;
+    } else {
+      sim_name_ = s.substr(pos + 1, s.length() - 1);
+    }
+  }
+
   void HandleCoreOptions(cxxopts::ParseResult& ret) {
     // Handle "help" argument
     if (ret.count("help")) {
-      std::cout << options_.help({"", "Core"}) << std::endl;
+      auto groups = options_.groups();
+      auto it = std::find(groups.begin(), groups.end(), "Core");
+      std::rotate(it, it + 1, groups.end());
+      std::cout << options_.help(groups) << std::endl;
       exit(0);
     }
 
@@ -145,6 +164,7 @@ class CommandLineOptions {
 
   int argc_;
   const char** argv_;
+  std::string sim_name_;
   cxxopts::Options options_;
 };
 
