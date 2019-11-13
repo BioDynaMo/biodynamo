@@ -153,12 +153,16 @@ class CommandLineOptions {
 
 // Handle "cuda" and "opencl" arguments
 #ifdef USE_CUDA
-    param->use_gpu_ = true;
+    if (ret.count("cuda")) {
+      param->use_gpu_ = true;
+    }
 #endif  // USE_CUDA
 
 #ifdef USE_OPENCL
-    param->use_gpu_ = true;
-    param->use_opencl_ = true;
+    if (ret.count("opencl")) {
+      param->use_gpu_ = true;
+      param->use_opencl_ = true;
+    }
 #endif  // USE_OPENCL
   }
 
