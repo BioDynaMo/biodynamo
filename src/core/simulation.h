@@ -84,8 +84,6 @@ class Simulation {
 
   void Simulate(uint64_t steps);
 
-  size_t GetNumSimObjects(int numa_node = -1) const;
-
   /// Returns a thread local random number generator.
   Random* GetRandom();
 

@@ -139,11 +139,6 @@ Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
 void Simulation::Simulate(uint64_t steps) { scheduler_->Simulate(steps); }
 
-/// Returns the total number of simulation objects
-size_t Simulation::GetNumSimObjects(int numa_node) const {
-  return rm_->GetNumSimObjects(numa_node);
-}
-
 /// Returns a random number generator (thread-specific)
 Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
