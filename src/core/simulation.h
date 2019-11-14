@@ -82,6 +82,8 @@ class Simulation {
 
   Scheduler* GetScheduler();
 
+  void Simulate(uint64_t steps);
+
   /// Returns a thread local random number generator.
   Random* GetRandom();
 

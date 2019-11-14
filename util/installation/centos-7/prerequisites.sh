@@ -33,14 +33,17 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 
+PIP_PACKAGES="mkdocs mkdocs-material nbformat jupyter metakernel"
+
 sudo yum -y install wget cmake3 libXt-devel libXext-devel \
 devtoolset-7-gcc* numactl-devel \
 tbb-devel openmpi3-devel freeglut-devel \
-rh-python36 python python-pip git
+python27 python36 python-pip git
 
 # Install optional packages
 if [ $1 == "all" ]; then
-    pip install --user mkdocs mkdocs-material
+    sudo pip install --upgrade pip
+    pip2 install --user $PIP_PACKAGES
     sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind
     # SBML integration
     sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
@@ -51,7 +54,6 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
-    sudo yum update -y
     sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
     sudo yum install -y libxml2-devel
 fi

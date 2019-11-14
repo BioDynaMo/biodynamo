@@ -36,6 +36,12 @@ brew upgrade python cmake || true
 
 # Install the optional packages
 if [ $1 == "all" ]; then
-    pip install --user mkdocs mkdocs-material
+    PIP_PACKAGES="mkdocs mkdocs-material nbformat jupyter metakernel"
+    pip2 install --user $PIP_PACKAGES
+
+    # Jupyter relies on tornado for logging, but the latest tornado (from version
+    # 6) is not compatible with Python 2. So we downgrade to 5.1.1
+    pip2 uninstall tornado -y
+    pip2 install --user tornado==5.1.1
     brew install doxygen graphviz lcov gcovr || true
 fi

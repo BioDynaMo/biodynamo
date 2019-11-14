@@ -103,6 +103,12 @@ if(test)
             DESTINATION ${DIRNAME}/bin)
 endif()
 
+if (notebooks)
+  install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/notebooks DESTINATION ${DIRNAME}
+          FILES_MATCHING
+          PATTERN "*.ipynb" PATTERN "*.h" PATTERN "*.C" PATTERN "*.html")
+endif()
+
 if(${ParaView_FOUND})
     install(TARGETS BDMGlyphFilter
             LIBRARY

@@ -12,15 +12,15 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef MULTIPLE_SIMULATIONS_H_
-#define MULTIPLE_SIMULATIONS_H_
+#ifndef DEMO_MULTIPLE_SIMULATIONS_H_
+#define DEMO_MULTIPLE_SIMULATIONS_H_
 
 #include <vector>
 #include "biodynamo.h"
 
 namespace bdm {
 
-/// BiologyModule that divides the simulation object at each time step
+// BiologyModule that divides the simulation object at each time step
 struct Divide : BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(Divide, BaseBiologyModule, 1);
 
@@ -75,4 +75,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // MULTIPLE_SIMULATIONS_H_
+#endif  // DEMO_MULTIPLE_SIMULATIONS_H_

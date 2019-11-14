@@ -20,6 +20,7 @@
 #if defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -494,8 +495,10 @@ class CatalystAdaptor {
   static void GenerateParaviewState() {
     auto* sim = Simulation::GetActive();
     std::stringstream python_cmd;
-    python_cmd << "pvpython "
-               << BDM_SRC_DIR "/core/visualization/generate_pv_state.py "
+    std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
+
+    python_cmd << bdm_src_dir << "/../third_party/paraview/bin/pvpython "
+               << bdm_src_dir << "/core/visualization/generate_pv_state.py "
                << sim->GetOutputDir() << "/" << kSimulationInfoJson;
     int ret_code = system(python_cmd.str().c_str());
     if (ret_code) {

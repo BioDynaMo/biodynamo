@@ -170,7 +170,7 @@ if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
   endif()
 endif()
 
-find_package(ROOT REQUIRED COMPONENTS Geom Gui)
+find_package(ROOT REQUIRED COMPONENTS Geom Gui Eve GenVector)
 verify_root()
 if (dict)
   add_definitions("-DUSE_DICT")

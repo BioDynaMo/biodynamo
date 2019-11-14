@@ -3,7 +3,7 @@ build/
 !demo/makefile_project/Makefile
 demo/makefile_project/bdm_generated_code.cc
 demo/makefile_project/*rdict.pcm
-demo/makefile_project/my-simulation
+demo/makefile_project/makefile_project
 
 **/.DS_Store
 
@@ -76,3 +76,9 @@ site/
 __pycache__/
 *.py[cod]
 *$py.class
+
+*.html
+*.ipynb
+*.root
+*.vtu
+*.pvtu

@@ -170,7 +170,7 @@ struct Param {
   // visualization values ------------------------------------------------------
 
   /// Use ParaView Catalyst for live visualization.\n
-  /// Defaut value: `false`\n
+  /// Default value: `false`\n
   /// TOML config file:
   ///
   ///     [visualization]
@@ -178,17 +178,25 @@ struct Param {
   bool live_visualization_ = false;
 
   /// Write data to file for post-simulation visualization
-  /// Defaut value: `false`\n
+  /// Default value: `false`\n
   /// TOML config file:
   ///
   ///     [visualization]
   ///     export = false
   bool export_visualization_ = false;
 
+  /// Use ROOT for enable visualization.\n
+  /// Default value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     root = false
+  bool root_visualization_ = false;
+
   /// If `export_visualization_` is set to true, this parameter specifies
   /// how often it should be exported. 1 = every timestep, 10: every 10
   /// time steps.\n
-  /// Defaut value: `1`\n
+  /// Default value: `1`\n
   /// TOML config file:
   ///
   ///     [visualization]
@@ -197,7 +205,7 @@ struct Param {
 
   /// If `export_visualization_` is set to true, this parameter specifies
   /// if the ParaView pvsm file will be generated!\n
-  /// Defaut value: `true`\n
+  /// Default value: `true`\n
   /// TOML config file:
   ///
   ///     [visualization]

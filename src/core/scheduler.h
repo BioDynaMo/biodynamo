@@ -27,6 +27,7 @@ namespace bdm {
 class SimObject;
 class SimulationBackup;
 class CatalystAdaptor;
+class RootAdaptor;
 class BoundSpace;
 class DisplacementOp;
 class DiffusionOp;
@@ -57,6 +58,8 @@ class Scheduler {
   /// returned.
   Operation* GetOperation(const std::string& op_name);
 
+  RootAdaptor* GetRootVisualization() { return root_visualization_; }
+
  protected:
   uint64_t total_steps_ = 0;
 
@@ -68,7 +71,8 @@ class Scheduler {
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  CatalystAdaptor* visualization_ = nullptr;  //!
+  CatalystAdaptor* visualization_ = nullptr;   //!
+  RootAdaptor* root_visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 
   BoundSpace* bound_space_;

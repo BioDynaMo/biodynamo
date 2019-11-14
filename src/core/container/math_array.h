@@ -19,6 +19,7 @@
 #include <cassert>
 #include <cmath>
 #include <numeric>
+#include <ostream>
 #include <stdexcept>
 #include <utility>
 
@@ -366,6 +367,17 @@ class MathArray {  // NOLINT
   T data_[N];
   BDM_CLASS_DEF_NV(MathArray, 1);  // NOLINT
 };
+
+template <class T, std::size_t N>
+std::ostream& operator<<(std::ostream& o, const MathArray<T, N>& arr) {
+  for (size_t i = 0; i < N; i++) {
+    o << arr[i];
+    if (i != N - 1) {
+      o << ", ";
+    }
+  }
+  return o;
+}
 
 /// Alias for a size 3 MathArray
 using Double3 = MathArray<double, 3>;

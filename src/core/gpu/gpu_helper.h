@@ -15,6 +15,7 @@
 #ifndef CORE_GPU_GPU_HELPER_H_
 #define CORE_GPU_GPU_HELPER_H_
 
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -52,7 +53,7 @@ class GpuHelper {
     static GpuHelper kInstance;
     return &kInstance;
   }
-  #ifdef USE_CUDA
+#ifdef USE_CUDA
   static void FindGpuDevicesCuda() {
     auto* param = Simulation::GetActive()->GetParam();
 
@@ -61,7 +62,7 @@ class GpuHelper {
     cudaGetDeviceCount(&n_devices);
     if (n_devices == 0) {
       Log::Fatal("FindGpuDevicesCuda",
-                "No CUDA-compatible GPU found on this machine!");
+                 "No CUDA-compatible GPU found on this machine!");
       return;
     }
 
@@ -79,11 +80,11 @@ class GpuHelper {
     cudaGetDeviceProperties(&prop, param->preferred_gpu_);
     Log::Info("", "Selected GPU [", param->preferred_gpu_, "]: ", prop.name);
   }
-  #endif  // USE_CUDA
+#endif  // USE_CUDA
 
-  #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
-  #define ClOk(err) \
-    OpenCLState::GetInstance()->ClAssert(err, __FILE__, __LINE__, true);
+#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
+#define ClOk(err) \
+  OpenCLState::GetInstance()->ClAssert(err, __FILE__, __LINE__, true);
 
   void CompileOpenCLKernels() {
     auto* sim = Simulation::GetActive();
@@ -95,10 +96,12 @@ class GpuHelper {
     std::vector<cl::Device>* devices = ocl_state->GetOpenCLDeviceList();
     // Compile OpenCL program for found device
     // TODO(ahmad): create more convenient way to compile all OpenCL kernels, by
-    // going through a list of header files. Also, create a stringifier that goes
+    // going through a list of header files. Also, create a stringifier that
+    // goes
     // from .cl --> .h, since OpenCL kernels must be input as a string here
-    std::ifstream cl_file(BDM_SRC_DIR
-                          "/core/gpu/displacement_op_opencl_kernel.cl");
+    std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
+    std::ifstream cl_file(bdm_src_dir +
+                          "/gpu/displacement_op_opencl_kernel.cl");
     if (cl_file.fail()) {
       Log::Error("CompileOpenCLKernels", "Kernel file does not exists!");
     }
@@ -106,8 +109,9 @@ class GpuHelper {
     buffer << cl_file.rdbuf();
 
     cl::Program displacement_op_program(
-        *context, cl::Program::Sources(1, std::make_pair(buffer.str().c_str(),
-                                                        buffer.str().length())));
+        *context,
+        cl::Program::Sources(
+            1, std::make_pair(buffer.str().c_str(), buffer.str().length())));
 
     all_programs->push_back(displacement_op_program);
 
@@ -126,7 +130,7 @@ class GpuHelper {
         prog.build(*devices, options.c_str());
       } catch (const cl::Error&) {
         Log::Error("CompileOpenCLKernels", "OpenCL compilation error: ",
-                  prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>((*devices)[0]));
+                   prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>((*devices)[0]));
       }
     }
   }
@@ -171,7 +175,7 @@ class GpuHelper {
           }
         } catch (...) {
           Log::Error("FindGpuDevicesOpenCL",
-                    "Found bad OpenCL platform! Continuing to next one");
+                     "Found bad OpenCL platform! Continuing to next one");
           devices->clear();
           continue;
         }
@@ -179,7 +183,7 @@ class GpuHelper {
 
       if (devices->empty()) {
         Log::Fatal("FindGpuDevicesCuda",
-                  "No CUDA-compatible GPU found on this machine!");
+                   "No CUDA-compatible GPU found on this machine!");
         return;
       }
 
@@ -206,35 +210,36 @@ class GpuHelper {
       CompileOpenCLKernels();
     } catch (const cl::Error& err) {
       Log::Error("FindGpuDevicesOpenCL", "OpenCL error: ", err.what(), "(",
-                err.err(), ")");
+                 err.err(), ")");
     }
   }
-  #endif  // defined(USE_OPENCL) && !defined(__ROOTCLING__)
+#endif  // defined(USE_OPENCL) && !defined(__ROOTCLING__)
 
-  #if (defined(USE_CUDA) || defined(USE_OPENCL)) && !defined(__ROOTCLING__)
+#if (defined(USE_CUDA) || defined(USE_OPENCL)) && !defined(__ROOTCLING__)
   void InitializeGPUEnvironment() {
     auto* param = Simulation::GetActive()->GetParam();
     if (param->use_opencl_) {
-  #ifdef USE_OPENCL
+#ifdef USE_OPENCL
       FindGpuDevicesOpenCL();
-  #else
-      Log::Fatal("InitializeGPUEnvironment",
-                "You tried to use the GPU (OpenCL) version of BioDynaMo, but no "
-                "OpenCL installation was detected on this machine. Switching to "
-                "the CPU version...");
-  #endif  // USE_OPENCL
+#else
+      Log::Fatal(
+          "InitializeGPUEnvironment",
+          "You tried to use the GPU (OpenCL) version of BioDynaMo, but no "
+          "OpenCL installation was detected on this machine. Switching to "
+          "the CPU version...");
+#endif  // USE_OPENCL
     } else {
-  #ifdef USE_CUDA
+#ifdef USE_CUDA
       FindGpuDevicesCuda();
-  #else
+#else
       Log::Fatal("InitializeGPUEnvironment",
-                "You tried to use the GPU (CUDA) version of BioDynaMo, but no "
-                "CUDA installation was detected on this machine. Switching to "
-                "the CPU version...");
-  #endif  // USE_CUDA
+                 "You tried to use the GPU (CUDA) version of BioDynaMo, but no "
+                 "CUDA installation was detected on this machine. Switching to "
+                 "the CPU version...");
+#endif  // USE_CUDA
     }
   }
-  #endif  // defined(USE_CUDA) || defined(USE_OPENCL) && !defined(__ROOTCLING__)
+#endif  // defined(USE_CUDA) || defined(USE_OPENCL) && !defined(__ROOTCLING__)
 };
 
 }  // namespace bdm

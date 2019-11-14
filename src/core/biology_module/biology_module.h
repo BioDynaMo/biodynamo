@@ -105,7 +105,7 @@ struct BaseBiologyModule {
   }                                                                            \
                                                                                \
  private:                                                                      \
-  BDM_CLASS_DEF(class_name, class_version_id);
+  BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id);
 
 }  // namespace bdm
 

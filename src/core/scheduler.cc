@@ -15,6 +15,7 @@
 #include "core/scheduler.h"
 
 #include <chrono>
+#include <cstdlib>
 #include <string>
 
 #include "core/execution_context/in_place_exec_ctxt.h"
@@ -29,6 +30,7 @@
 #include "core/simulation_backup.h"
 #include "core/util/log.h"
 #include "core/visualization/catalyst_adaptor.h"
+#include "core/visualization/root_adaptor.h"
 
 namespace bdm {
 
@@ -38,8 +40,10 @@ Scheduler::Scheduler() {
   if (backup_->RestoreEnabled()) {
     restore_point_ = backup_->GetSimulationStepsFromBackup();
   }
+  std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
   visualization_ =
-      new CatalystAdaptor(BDM_SRC_DIR "/visualization/simple_pipeline.py");
+      new CatalystAdaptor(bdm_src_dir + "/visualization/simple_pipeline.py");
+  root_visualization_ = new RootAdaptor();
   bound_space_ = new BoundSpace();
   displacement_ = new DisplacementOp();
   diffusion_ = new DiffusionOp();
@@ -66,6 +70,7 @@ Scheduler::Scheduler() {
 Scheduler::~Scheduler() {
   delete backup_;
   delete visualization_;
+  delete root_visualization_;
   delete bound_space_;
   delete displacement_;
   delete diffusion_;

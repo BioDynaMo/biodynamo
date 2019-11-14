@@ -31,6 +31,7 @@
 #include "core/util/log.h"
 #include "core/util/string.h"
 #include "core/util/thread_info.h"
+#include "core/visualization/root_adaptor.h"
 #include "version.h"
 
 namespace bdm {
@@ -121,6 +122,7 @@ Simulation::~Simulation() {
 
 void Simulation::Activate() { active_ = this; }
 
+/// Returns the ResourceManager instance
 ResourceManager* Simulation::GetResourceManager() { return rm_; }
 
 void Simulation::SetResourceManager(ResourceManager* rm) {
@@ -128,12 +130,16 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
   rm_ = rm;
 }
 
+/// Returns the simulation parameters
 const Param* Simulation::GetParam() const { return param_; }
 
 Grid* Simulation::GetGrid() { return grid_; }
 
 Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
+void Simulation::Simulate(uint64_t steps) { scheduler_->Simulate(steps); }
+
+/// Returns a random number generator (thread-specific)
 Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
 std::vector<Random*>& Simulation::GetAllRandom() { return random_; }
@@ -146,8 +152,10 @@ std::vector<InPlaceExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
+/// Returns the name of the simulation
 const std::string& Simulation::GetUniqueName() const { return unique_name_; }
 
+/// Returns the path to the simulation's output directory
 const std::string& Simulation::GetOutputDir() const { return output_dir_; }
 
 void Simulation::ReplaceScheduler(Scheduler* scheduler) {

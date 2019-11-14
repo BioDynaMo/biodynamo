@@ -238,7 +238,7 @@ function(generate_rootlogon)
   foreach( DIR ${INCLUDE_DIRS})
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\".include ${DIR}\")\;")
   endforeach()
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\".L libbiodynamo.so\")\;\n}")
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;\n}")
 
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)

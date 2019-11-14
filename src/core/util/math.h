@@ -20,6 +20,8 @@
 #include <numeric>
 #include <vector>
 
+#include <TMath.h>
+
 #include "core/container/math_array.h"
 #include "core/util/random.h"
 
@@ -27,9 +29,12 @@ namespace bdm {
 
 struct Math {
   /// value of pi
-  static constexpr double kPi = 3.141592653589793238462643383279502884;
+  static constexpr double kPi = TMath::Pi();
   /// Helpful constant to identify 'infinity'
   static constexpr double kInfinity = 1e20;
+
+  static double ToDegree(double rad) { return rad * (180 / kPi); }
+  static double ToRadian(double deg) { return deg * (kPi / 180); }
 
   // Helper function that returns distance (L2 norm) between two positions in 3D
   static double GetL2Distance(const Double3& pos1, const Double3& pos2) {

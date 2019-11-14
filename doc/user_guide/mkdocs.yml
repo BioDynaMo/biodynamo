@@ -51,6 +51,7 @@ pages:
     - Prerequisites: prerequisites.md
     - Installation: installation.md
     - First Steps: first_steps.md
+    - Notebooks: notebooks.md
     - Tutorials:
       - Hello World: hello_world.md
       - Visualization: visualization.md

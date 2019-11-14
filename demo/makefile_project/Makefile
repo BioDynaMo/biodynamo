@@ -20,9 +20,9 @@ BDM_CONFIG=bdm-config --cxx-compiler=$(CXX) --build-type=$(BUILD_TYPE)
 CXXFLAGS=`$(BDM_CONFIG) --cxxall`
 LINKFLAGS=`$(BDM_CONFIG) --linkflags`
 
-HEADER=my-simulation.h
+HEADER=src/makefile_project.h
 
-all: my-simulation
+all: makefile_project
 
 # BioDynaMo generate code: pass all headers that contain BioDynaMo code to the
 # code generator
@@ -30,14 +30,16 @@ bdm_generated_code.cc: $(HEADER)
 	bdm-code-generation $@ "$(BDM_CONFIG)" -h $?
 
 # Compile all source files
-%.o: %.cc
+bdm_generated_code.o: bdm_generated_code.cc
+	$(CXX) $(CXXFLAGS) -c $?
+makefile_project.o: src/makefile_project.cc
 	$(CXX) $(CXXFLAGS) -c $?
 
 # Generate binary (link object files and libraries)
-my-simulation: bdm_generated_code.o my-simulation.o
+makefile_project: bdm_generated_code.o makefile_project.o
 	$(CXX) $? -o $@ $(LINKFLAGS)
 
 clean:
 	@# Delete the bdm-config cache
 	bdm-config --clean
-	rm -rf *o bdm_generated_code.cc *_rdict.pcm my-simulation
+	rm -rf *o bdm_generated_code.cc *_rdict.pcm makefile_project
