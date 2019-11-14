@@ -18,7 +18,6 @@
 #include <string>
 #include <vector>
 
-#include "core/param/command_line_options.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
 
@@ -30,6 +29,7 @@ class Grid;
 class Scheduler;
 struct Param;
 class InPlaceExecutionContext;
+class CommandLineOptions;
 
 class SimulationTest;
 class CatalystAdaptorTest;
