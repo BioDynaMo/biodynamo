@@ -21,7 +21,7 @@
 # NB: DO NOT USE -x here. It would leak the github token to the terminal
 set -e +x
 
-if [ "$TRAVIS_BRANCH" != "web-updates" ] || [ "$TRAVIS_OS_NAME" != "linux" ]; then
+if [ "$TRAVIS_BRANCH" = "web-updates" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
   exit 0
 fi
 
