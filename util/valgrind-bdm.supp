@@ -163,7 +163,7 @@
    Memcheck:Param
    write(buf)
    obj:/lib/x86_64-linux-gnu/libpthread-2.23.so
-   fun:_ZN5TFile11WriteBufferEPKci.part.58.constprop.203
+   fun:_ZN5TFile11WriteBufferEPKci.part.*
 }
 
 {
@@ -171,7 +171,7 @@
    Memcheck:Param
    write(count)
    obj:/lib/x86_64-linux-gnu/libpthread-2.23.so
-   fun:_ZN5TFile11WriteBufferEPKci.part.58.constprop.203
+   fun:_ZN5TFile11WriteBufferEPKci.part.*
 }
 
 {

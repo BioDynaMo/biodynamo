@@ -17,6 +17,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+
 #include "core/util/random.h"
 #include "core/util/root.h"
 
@@ -28,6 +29,7 @@ class Grid;
 class Scheduler;
 struct Param;
 class InPlaceExecutionContext;
+class CommandLineOptions;
 
 class SimulationTest;
 class CatalystAdaptorTest;
@@ -47,6 +49,8 @@ class Simulation {
   /// Creation of a new simulation automatically activates it.
   Simulation(int argc, const char** argv, const std::string& config_file = "");
 
+  Simulation(CommandLineOptions clo, const std::string& config_file = "");
+
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
   /// Command line arguments are not parsed!\n
@@ -56,6 +60,10 @@ class Simulation {
                       const std::string& config_file = "");
 
   Simulation(int argc, const char** argv,
+             const std::function<void(Param*)>& set_param,
+             const std::string& config_file = "");
+
+  Simulation(CommandLineOptions clo,
              const std::function<void(Param*)>& set_param,
              const std::string& config_file = "");
 
@@ -136,23 +144,15 @@ class Simulation {
   std::string output_dir_;  //!
 
   /// Initialize Simulation
-  void Initialize(int argc, const char** argv,
+  void Initialize(CommandLineOptions* clo,
                   const std::function<void(Param*)>& set_param,
                   const std::string& ctor_config);
 
   /// Initialize data members that have a dependency on Simulation
   void InitializeMembers();
 
-  /// Return only the executable name given the path
-  /// @param path path and filename of the executable
-  /// e.g. `executable`, `./executable`, './build/executable'
-  /// @return `executable`
-  std::string ExtractSimulationName(const char* path);
-
   /// This function parses command line parameters and the configuration file.
-  /// @param argc argument count from main function
-  /// @param argv argument vector from main function
-  void InitializeRuntimeParams(int argc, const char** argv,
+  void InitializeRuntimeParams(CommandLineOptions* clo,
                                const std::function<void(Param*)>& set_param,
                                const std::string& ctor_config);
 

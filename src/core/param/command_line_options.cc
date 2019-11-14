@@ -1,147 +1,95 @@
-// -----------------------------------------------------------------------------
-//
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-//
-// See the LICENSE file distributed with this work for details.
-// See the NOTICE file distributed with this work for additional information
-// regarding copyright ownership.
-//
-// -----------------------------------------------------------------------------
-
 #include "core/param/command_line_options.h"
-#include <stdlib.h>
-#include <iostream>
-#include <sstream>
-#include "OptionParser.h"
-#include "core/util/log.h"
 
 namespace bdm {
 
-CommandLineOptions DefaultSimulationOptionParser(
-    int& argc,             // NOLINT
-    const char**& argv) {  // NOLINT
-  auto binary_name = argv[0];
+CommandLineOptions::CommandLineOptions(int argc, const char** argv)
+    : argc_(argc),
+      argv_(argv),
+      options_(argv[0], " -- BioDynaMo command line options\n") {
+  AddCoreOptions();
+  ExtractSimulationName(argv[0]);
+}
 
-  // NB: parser does not work without these statement
-  // skip program name argv[0] if present
-  argc -= (argc > 0);
-  argv += (argc > 0);
+cxxopts::OptionAdder CommandLineOptions::AddOption(string group) {
+  return cxxopts::OptionAdder(options_, std::move(group));
+}
 
-  enum OptionIndex {
-    kUnknown,
-    kVerbose,
-    kConfigFilename,
-    kRestoreFilename,
-    kBackupFilename,
-    kHelp
-  };
-  enum OptionTypes { kNoType, kString };
+std::string CommandLineOptions::GetSimulationName() { return sim_name_; }
 
-  std::stringstream simulation_usage_stream;
-  simulation_usage_stream << "Start " << binary_name << " simulation.\n";
-  simulation_usage_stream << "Usage: " << binary_name << " [options]\n\n";
-  simulation_usage_stream << "Options:\n";
-
-  const char* simulation_usage = simulation_usage_stream.str().c_str();
-
-  const char* verbose_usage =
-      "-v, --verbose\n"
-      "    Verbose mode. Causes BioDynaMo to print debugging messages.\n"
-      "    Multiple -v options increases the verbosity. The maximum is 3.\n";
-
-  const char* config_file_usage =
-      "-c, --config filename\n"
-      "    Specify the TOML configuration that should be used.\n";
-
-  const char* restore_file_usage =
-      "-r, --restore filename\n"
-      "    Restores the simulation from the checkpoint found in filename and\n"
-      "    continues simulation from that point.\n";
-
-  const char* backup_file_usage =
-      "-b, --backup filename\n"
-      "    Periodically create full simulation backup to the specified file\n"
-      "    NOTA BENE: File will be overriden if it exists\n";
-
-  // clang-format off
-  const ROOT::option::Descriptor simulation_usage_descriptor[] = {
-      {
-        kUnknown,
-        kNoType,
-        "", "",
-        ROOT::option::Arg::None,
-        simulation_usage
-      },
-
-      {
-        kVerbose,
-        kNoType,
-        "v", "",
-        ROOT::option::Arg::None,
-        verbose_usage
-      },
-
-      {
-        kConfigFilename,
-        kString,
-        "c", "config",
-        ROOT::option::FullArg::Required,
-        config_file_usage
-      },
-
-      {
-        kRestoreFilename,
-        kString,
-        "r", "restore",
-        ROOT::option::FullArg::Required,
-        restore_file_usage
-      },
-
-      {
-        kBackupFilename,
-        kString,
-        "b", "backup",
-        ROOT::option::FullArg::Required,
-        backup_file_usage
-      },
-
-      {
-        kHelp,
-        kNoType,
-        "h", "help",
-        ROOT::option::Arg::None,
-        "--help\n    Print usage and exit.\n"
-      },
-      {0, 0, 0, 0, 0, 0}
-    };
-  // clang-format on
-
-  ROOT::option::Stats stats(simulation_usage_descriptor, argc, argv);
-  ROOT::option::Option options[stats.options_max], buffer[stats.buffer_max];
-  ROOT::option::Parser parse(simulation_usage_descriptor, argc, argv, options,
-                             buffer);
-
-  if (parse.error()) {
-    Log::Error("CommandLineOptions", "Argument parsing error!\n");
-    ROOT::option::printUsage(std::cout, simulation_usage_descriptor);
-    exit(1);
+/// Parse the given command line arguments
+cxxopts::ParseResult CommandLineOptions::Parse() {
+  // Make a non-const deep copy of argv
+  char** argv_copy = (char**)malloc((argc_ + 1) * sizeof(char*));
+  int argc_copy = argc_;
+  for (int i = 0; i < argc_; ++i) {
+    size_t length = strlen(argv_[i]) + 1;
+    argv_copy[i] = (char*)malloc(length);
+    memcpy(argv_copy[i], argv_[i], length);
   }
+  argv_copy[argc_] = NULL;
 
-  // Print help if needed
-  if (options[kHelp]) {
-    ROOT::option::printUsage(std::cout, simulation_usage_descriptor);
+  // Perform parsing (consumes argv_copy)
+  auto ret = options_.parse(argc_copy, argv_copy);
+
+  // Perform operations on Core command line options
+  HandleCoreOptions(ret);
+
+  // free memory
+  for (int i = 0; i < argc_; ++i) {
+    free(argv_copy[i]);
+  }
+  free(argv_copy);
+
+  return ret;
+}
+
+// clang-format off
+void CommandLineOptions::AddCoreOptions() {
+  options_.add_options("Core")
+    ("h, help", "Print this help message.")
+    ("version", "Print version number of BioDynaMo.")
+    ("opencl", "Enable GPU acceleration through OpenCL.")
+    ("cuda", "Enable GPU acceleration through CUDA.")
+    ("v, verbose", "Verbose mode. Causes BioDynaMo to print debugging messages. Multiple "
+      "-v options increases the verbosity. The maximum is 3.", value<bool>())
+    ("r, restore", "Restores the simulation from the checkpoint found in FILE and "
+      "continues simulation from that point.", value<string>()->default_value(""), "FILE")
+    ("b, backup", "Periodically create full simulation backup to the specified file. "
+      "NOTA BENE: File will be overriden if it exists.", value<string>()->default_value(""), "FILE")
+    ("c, config", "The TOML configuration that should be used.", value<string>()->default_value(""), "FILE");
+  }
+// clang-format on
+
+void CommandLineOptions::ExtractSimulationName(const char* path) {
+  std::string s(path);
+  auto pos = s.find_last_of("/");
+  if (pos == std::string::npos) {
+    sim_name_ = s;
+  } else {
+    sim_name_ = s.substr(pos + 1, s.length() - 1);
+  }
+}
+
+void CommandLineOptions::HandleCoreOptions(cxxopts::ParseResult& ret) {
+  // Handle "help" argument
+  if (ret.count("help")) {
+    auto groups = options_.groups();
+    auto it = std::find(groups.begin(), groups.end(), "Core");
+    std::rotate(it, it + 1, groups.end());
+    std::cout << options_.help(groups) << std::endl;
     exit(0);
   }
 
-  CommandLineOptions cl_options;
+  if (ret.count("version")) {
+    std::cout << "BioDynaMo Version: " << Version::String() << std::endl;
+    exit(0);
+  }
 
+  // Handle "verbose" argument
   Int_t ll = kError;
-  if (options[kVerbose]) {
-    int verbosity = options[kVerbose].count();
+  if (ret.count("verbose")) {
+    auto verbosity = ret.count("verbose");
+
     switch (verbosity) {
       // case 0 can never occur; we wouldn't go into this if statement
       case 1:
@@ -158,25 +106,22 @@ CommandLineOptions DefaultSimulationOptionParser(
         break;
     }
   }
-
   // Global variable of ROOT that determines verbosity of logging functions
   gErrorIgnoreLevel = ll;
 
-  if (options[kConfigFilename]) {
-    cl_options.config_file_ = options[kConfigFilename].arg;
+// Handle "cuda" and "opencl" arguments
+#ifdef USE_CUDA
+  if (ret.count("cuda")) {
+    param->use_gpu_ = true;
   }
+#endif  // USE_CUDA
 
-  if (options[kRestoreFilename]) {
-    cl_options.restore_file_ = options[kRestoreFilename].arg;
-    // TODO(lukas) check file ending
+#ifdef USE_OPENCL
+  if (ret.count("opencl")) {
+    param->use_gpu_ = true;
+    param->use_opencl_ = true;
   }
-
-  if (options[kBackupFilename]) {
-    cl_options.backup_file_ = options[kBackupFilename].arg;
-    // TODO(lukas) check file ending
-  }
-
-  return cl_options;
+#endif  // USE_OPENCL
 }
 
 }  // namespace bdm
