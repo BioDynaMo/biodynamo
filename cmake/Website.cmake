@@ -14,14 +14,26 @@
 
 # add a target to generate BioDynaMo website using Gatsby static generator
 
-
+function(GenerateStaticFiles TARGET FLAGS)
 set(WEB_DIR ${CMAKE_CURRENT_BINARY_DIR}/website)
-add_custom_target(website
-    COMMAND rm -rf ${WEB_DIR}
-    COMMAND git clone https://github.com/BioDynaMo/website.git ${WEB_DIR}
+file(MAKE_DIRECTORY "${WEB_DIR}")
+add_custom_target(${TARGET}
     WORKING_DIRECTORY "${WEB_DIR}"
+    COMMAND rm -rf ${WEB_DIR} && mkdir ${WEB_DIR}
+    COMMAND git clone https://github.com/BioDynaMo/website.git .
+    # TODO: merge into master to avoid this
+    COMMAND git checkout web-updates
     COMMENT "Generate website"
-    COMMAND ./build_website --api
+    COMMAND ./build_website.sh --dir ${CMAKE_CURRENT_SOURCE_DIR} ${FLAGS}
     VERBATIM)
+endfunction()
+
+# Generate static website files
+GenerateStaticFiles(website "--api")
+# Generate staic website files and launches website on localhost for live editing
+GenerateStaticFiles(website-live "--develop")
+# Generate staic website files and launches website on localhost for live
+# editing, including the Doxygen API
+GenerateStaticFiles(website-live-api "--develop --api")
 
 # ------------------------------------------------------------------------------

@@ -29,13 +29,12 @@ function(GenerateAPIDocTarget)
 
   configure_file(${doxyfile_in} ${doxyfile} @ONLY)
   set(DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/doc/api)
-  add_custom_target(doc-api
+  add_custom_target(doc
       COMMAND rm -rf ${DEST_DIR}
       COMMAND mkdir -p ${DEST_DIR}
       COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-      COMMENT "Generating API documentation with Doxygen.
-       Open the following file in your browser: ${DEST_DIR}/index.html"
+      COMMENT "Generate documentation"
       VERBATIM)
 
   # Issue with long file names when building deb pacakages
@@ -57,9 +56,6 @@ visualizations in the documentation. Please install dot (graphviz) by issuing '.
   ENDIF()
 
   GenerateAPIDocTarget()
-
-  add_custom_target(doc COMMENT "Generate documentation")
-  add_dependencies(doc doc-api)
 else()
   message(WARNING "Could not find Doxygen. Target doc won't be available. Therefore you will not \
 be able to build BioDynaMo's documentation.")

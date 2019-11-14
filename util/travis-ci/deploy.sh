@@ -21,7 +21,7 @@
 # NB: DO NOT USE -x here. It would leak the github token to the terminal
 set -e +x
 
-if [ "$TRAVIS_BRANCH" != "master" ] || [ "$TRAVIS_OS_NAME" != "linux" ]; then
+if [ "$TRAVIS_BRANCH" != "web-updates" ] || [ "$TRAVIS_OS_NAME" != "linux" ]; then
   exit 0
 fi
 
@@ -31,7 +31,7 @@ git config --global user.name "BioDynaMo Travis-CI Bot"
 
 BDM_BUILD_DIR=`pwd`
 
-make doc
+make website
 if [ ! $? -eq 0 ]; then
     echo "# MAKE DOC ERROR #"
     echo "The make doc command failed. The deployment was interrupted and the website was not updated."
@@ -43,11 +43,13 @@ cd
 git clone https://github.com/BioDynaMo/biodynamo.github.io.git
 cd biodynamo.github.io
 rm -rf *
-mv $BDM_BUILD_DIR/doc/* .
+mv $BDM_BUILD_DIR/website/* .
+# Add CNAME file to redirect to biodynamo.org
+echo biodynamo.org > CNAME
 
 # commit
 git add -A
-git commit -m "Update documentation (Travis build: $TRAVIS_BUILD_NUMBER)"
+git commit -m "Update website (Travis build: $TRAVIS_BUILD_NUMBER)"
 
 # push changes
 set +x
