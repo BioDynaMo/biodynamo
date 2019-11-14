@@ -39,6 +39,7 @@ class CommandLineOptions {
         argv_(argv),
         options_(argv[0], " -- BioDynaMo command line options\n") {
     AddCoreOptions();
+    ExtractSimulationName(argv[0]);
   }
 
   /// Add an extra command line option
