@@ -514,17 +514,48 @@ class Grid {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     NeighborIterator ni(neighbor_boxes, timestamp_);
-    while (!ni.IsAtEnd()) {
-      // Do something with neighbor object
-      auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
-      if (sim_object != &query) {
-        const auto& neighbor_position = sim_object->GetPosition();
-        double squared_distance =
-            SquaredEuclideanDistance(position, neighbor_position);
-        lambda(sim_object, squared_distance);
+    const unsigned batch_size = 64;
+    uint64_t size = 0;
+    SimObject* sim_objects[batch_size] __attribute__((aligned(64)));
+    double x[batch_size] __attribute__((aligned(64)));
+    double y[batch_size] __attribute__((aligned(64)));
+    double z[batch_size] __attribute__((aligned(64)));
+    double squared_distance[batch_size] __attribute__((aligned(64)));
+
+    auto process_batch = [&]() {
+#pragma omp simd
+      for (uint64_t i = 0; i < size; ++i) {
+        const double dx = x[i] - position[0];
+        const double dy = y[i] - position[1];
+        const double dz = z[i] - position[2];
+
+        squared_distance[i] = dx * dx + dy * dy + dz * dz;
       }
+
+      for (uint64_t i = 0; i < size; ++i) {
+        lambda(sim_objects[i], squared_distance[i]);
+      }
+      size = 0;
+    };
+
+    while (!ni.IsAtEnd()) {
+      auto soh = *ni;
+      // increment iterator already here to hide memory latency
       ++ni;
+      auto* sim_object = rm->GetSimObjectWithSoHandle(soh);
+      if (sim_object != &query) {
+        sim_objects[size] = sim_object;
+        const auto& pos = sim_object->GetPosition();
+        x[size] = pos[0];
+        y[size] = pos[1];
+        z[size] = pos[2];
+        size++;
+        if (size == batch_size) {
+          process_batch();
+        }
+      }
     }
+    process_batch();
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
