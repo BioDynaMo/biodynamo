@@ -143,9 +143,6 @@ void Scheduler::Execute(bool last_iteration) {
   });
 
   Timing::Time("visualize", [&]() {
-    if (param->root_visualization_) {
-      root_visualization_->Visualize(total_steps_);
-    }
     visualization_->Visualize(total_steps_, last_iteration);
   });
   Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
