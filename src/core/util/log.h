@@ -17,6 +17,7 @@
 
 #include <TError.h>
 #include <cstdio>
+#include <cstdlib>
 
 #include <iostream>
 #include <string>
@@ -113,7 +114,8 @@ class Log {
   static void Fatal(const std::string& location, const Args&... parts) {
     std::string message = Concat(parts...);
     // ROOT function
-    ::Fatal(location.c_str(), "%s", message.c_str());
+    ::Error(location.c_str(), "%s", message.c_str());
+    exit(1);
   }
 };
 }  // namespace bdm
