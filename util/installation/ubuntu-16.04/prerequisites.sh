@@ -31,7 +31,7 @@ sudo apt-get update
 # Install required packages
 sudo apt-get install -y wget cmake make gcc g++ \
 libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev \
-libpthread-stubs0-dev python-pip  python3-pip
+libpthread-stubs0-dev python-pip python3-pip
 
 # Install optional packages
 if [ $1 == "all" ]; then
@@ -42,7 +42,6 @@ if [ $1 == "all" ]; then
 
     sudo apt-get install -y valgrind \
       clang-3.9 clang-format-3.9 clang-tidy-3.9 \
-      doxygen graphviz \
-      lcov gcovr \
+      doxygen graphviz lcov gcovr \
       llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
 fi

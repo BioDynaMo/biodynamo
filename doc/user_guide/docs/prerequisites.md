@@ -17,7 +17,7 @@ BioDynaMo provides also an automated procedure to install all the needed library
   * **libnuma-dev**: Development files for NUMA (simple programming interface to the policy supported by the Linux kernel);
   * **libtbb-dev**: Development files for TBB (C++ template library developed by Intel for parallel programming);
   * **libpthread-stubs0-dev**: Development files for managing threads;
-  * **python3**: Python 3 Interpreter;
+  * **python-pip**: Python 2 Package Manager.
   * **python3-pip**: Python 3 Package Manager.
 
 ### Optional Packages
@@ -39,13 +39,14 @@ BioDynaMo provides also an automated procedure to install all the needed library
 #### Required Packages
 ```bash
 sudo apt-get install -y wget cmake make gcc g++ \
-   libopenmpi-dev libomp-dev libnuma-dev libtbb-dev \
-   libpthread-stubs0-dev python3 python3-pip
+libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev \
+libpthread-stubs0-dev python-pip python3-pip
 ```
 
 #### Optional Packages
 ```bash
-pip3 install --user mkdocs mkdocs-material
+pip install --upgrade pip
+$HOME/.local/bin/pip2 install --user mkdocs mkdocs-material jupyter metakernel
 sudo apt-get install -y freeglut3-dev valgrind \
   clang-3.9 clang-format-3.9 clang-tidy-3.9 \
   doxygen graphviz lcov gcovr \
@@ -66,7 +67,7 @@ sudo apt-get install -y freeglut3-dev valgrind \
  * **numactl-devel**: Development files for NUMA (simple programming interface to the policy supported by the Linux kernel);
  * **tbb-devel**: Development files for TBB (C++ template library developed by Intel for parallel programming);
  * **openmpi3-devel**: Development files for OpenMP (API for multiprocessor programming);
- * **rh-python36**, **python** and **python-pip**: Python 3 Interpreter and Package Manager.
+ * **rh-python36**, **python27** and **python-pip**: Python 2 and 3 Interpreter and Package Manager.
 
 
 ### Optional Packages
@@ -90,12 +91,14 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install wget cmake3 libXt-devel libXext-devel \
-   devtoolset-7-gcc* numactl-devel tbb-devel openmpi3-devel \
-   rh-python36 python python-pip
+  devtoolset-7-gcc* numactl-devel \
+  tbb-devel openmpi3-devel freeglut-devel \
+  python27 python36 python-pip git
 ```
 #### Optional Packages
 ```bash
-pip install --user mkdocs mkdocs-material
+sudo pip install --upgrade pip
+pip2 install --user mkdocs mkdocs-material nbformat jupyter metakernel
 sudo yum -y install lcov gcovr llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
    # SBML integration
@@ -161,13 +164,13 @@ sudo fink install wget llvm-clang cmake libomp-dev libtbb4 openmpi \
 Using HomeBrew:
 
 ```bash
-pip install --user mkdocs mkdocs-material
+pip2 install --user mkdocs mkdocs-material nbformat jupyter metakernel
 brew install doxygen graphviz lcov gcovr || true
 ```
 
 Using Fink:
 
 ```bash
-pip install --user mkdocs mkdocs-material
+pip2 install --user mkdocs mkdocs-material nbformat jupyter metakernel
 sudo fink install doxygen graphviz
 ```
