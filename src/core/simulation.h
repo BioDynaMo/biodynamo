@@ -49,7 +49,7 @@ class Simulation {
   /// Creation of a new simulation automatically activates it.
   Simulation(int argc, const char** argv, const std::string& config_file = "");
 
-  Simulation(CommandLineOptions clo, const std::string& config_file = "");
+  Simulation(CommandLineOptions* clo, const std::string& config_file = "");
 
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
@@ -63,7 +63,7 @@ class Simulation {
              const std::function<void(Param*)>& set_param,
              const std::string& config_file = "");
 
-  Simulation(CommandLineOptions clo,
+  Simulation(CommandLineOptions* clo,
              const std::function<void(Param*)>& set_param,
              const std::string& config_file = "");
 

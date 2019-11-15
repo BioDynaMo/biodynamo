@@ -1,6 +1,10 @@
 #include "core/param/command_line_options.h"
+#include "core/util/log.h"
 
 namespace bdm {
+
+using cxxopts::value;
+using std::string;
 
 CommandLineOptions::CommandLineOptions(int argc, const char** argv)
     : argc_(argc),
@@ -10,14 +14,26 @@ CommandLineOptions::CommandLineOptions(int argc, const char** argv)
   ExtractSimulationName(argv[0]);
 }
 
+CommandLineOptions::~CommandLineOptions() {
+  if (parser_) {
+    delete parser_;
+    parser_ = nullptr;
+  }
+}
+
 cxxopts::OptionAdder CommandLineOptions::AddOption(string group) {
+  if (parser_ != nullptr) {
+    Log::Fatal("CommandLineOptions::AddOption",
+               "Please add all your command line options before:\n  1) Using "
+               "the Get() method.\n  2) Creating a Simulation object.");
+  }
   return cxxopts::OptionAdder(options_, std::move(group));
 }
 
 std::string CommandLineOptions::GetSimulationName() { return sim_name_; }
 
 /// Parse the given command line arguments
-cxxopts::ParseResult CommandLineOptions::Parse() {
+void CommandLineOptions::Parse() {
   // Make a non-const deep copy of argv
   char** argv_copy = (char**)malloc((argc_ + 1) * sizeof(char*));
   int argc_copy = argc_;
@@ -28,19 +44,32 @@ cxxopts::ParseResult CommandLineOptions::Parse() {
   }
   argv_copy[argc_] = NULL;
 
-  // Perform parsing (consumes argv_copy)
-  auto ret = options_.parse(argc_copy, argv_copy);
+  // Perform parsing (consumes argc_copy and argv_copy)
+  if (parser_) {
+    delete parser_;
+    parser_ = nullptr;
+  }
 
-  // Perform operations on Core command line options
-  HandleCoreOptions(ret);
+  try {
+    parser_ = new cxxopts::ParseResult(options_.parse(argc_copy, argv_copy));
+  } catch (cxxopts::option_not_exists_exception) {
+    Log::Fatal("CommandLineOptions::ParseResult",
+               "Please add all your command line options before:\n  1) Using "
+               "the CommandLineOptions::Get() method.\n  2) Creating a "
+               "Simulation object.");
+  }
+
+  if (first_parse_) {
+    // Perform operations on Core command line options
+    HandleCoreOptions();
+    first_parse_ = false;
+  }
 
   // free memory
   for (int i = 0; i < argc_; ++i) {
     free(argv_copy[i]);
   }
   free(argv_copy);
-
-  return ret;
 }
 
 // clang-format off
@@ -61,7 +90,7 @@ void CommandLineOptions::AddCoreOptions() {
 // clang-format on
 
 void CommandLineOptions::ExtractSimulationName(const char* path) {
-  std::string s(path);
+  string s(path);
   auto pos = s.find_last_of("/");
   if (pos == std::string::npos) {
     sim_name_ = s;
@@ -70,9 +99,9 @@ void CommandLineOptions::ExtractSimulationName(const char* path) {
   }
 }
 
-void CommandLineOptions::HandleCoreOptions(cxxopts::ParseResult& ret) {
+void CommandLineOptions::HandleCoreOptions() {
   // Handle "help" argument
-  if (ret.count("help")) {
+  if (parser_->count("help")) {
     auto groups = options_.groups();
     auto it = std::find(groups.begin(), groups.end(), "Core");
     std::rotate(it, it + 1, groups.end());
@@ -80,15 +109,15 @@ void CommandLineOptions::HandleCoreOptions(cxxopts::ParseResult& ret) {
     exit(0);
   }
 
-  if (ret.count("version")) {
+  if (parser_->count("version")) {
     std::cout << "BioDynaMo Version: " << Version::String() << std::endl;
     exit(0);
   }
 
   // Handle "verbose" argument
   Int_t ll = kError;
-  if (ret.count("verbose")) {
-    auto verbosity = ret.count("verbose");
+  if (parser_->count("verbose")) {
+    auto verbosity = parser_->count("verbose");
 
     switch (verbosity) {
       // case 0 can never occur; we wouldn't go into this if statement

@@ -56,15 +56,15 @@ Simulation::Simulation(const std::string& simulation_name,
                        const std::string& config_file)
     : Simulation(simulation_name, [](auto* param) {}, config_file) {}
 
-Simulation::Simulation(CommandLineOptions clo,
+Simulation::Simulation(CommandLineOptions* clo,
                        const std::string& config_file) {
-  Initialize(&clo, [](auto* param) {}, config_file);
+  Initialize(clo, [](auto* param) {}, config_file);
 }
 
-Simulation::Simulation(CommandLineOptions clo,
+Simulation::Simulation(CommandLineOptions* clo,
                        const std::function<void(Param*)>& set_param,
                        const std::string& config_file) {
-  Initialize(&clo, set_param, config_file);
+  Initialize(clo, set_param, config_file);
 }
 
 Simulation::Simulation(int argc, const char** argv,
@@ -181,6 +181,10 @@ void Simulation::Initialize(CommandLineOptions* clo,
                             const std::string& config_file) {
   id_ = counter_++;
   Activate();
+  if (!clo) {
+    Log::Fatal("Simulation::Initialize",
+               "CommandLineOptions argument was a nullptr!");
+  }
   InitializeUniqueName(clo->GetSimulationName());
   InitializeRuntimeParams(clo, set_param, config_file);
   InitializeOutputDir();
@@ -223,14 +227,12 @@ void Simulation::InitializeRuntimeParams(
                "$use_biodynamo and retry this command.");
   }
 
-  auto options = clo->Parse();
-  LoadConfigFile(ctor_config, options.Get<std::string>("config"));
-
-  if (options.Get<std::string>("backup") != "") {
-    param_->backup_file_ = options.Get<std::string>("backup");
+  LoadConfigFile(ctor_config, clo->Get<std::string>("config"));
+  if (clo->Get<std::string>("backup") != "") {
+    param_->backup_file_ = clo->Get<std::string>("backup");
   }
-  if (options.Get<std::string>("restore") != "") {
-    param_->restore_file_ = options.Get<std::string>("restore");
+  if (clo->Get<std::string>("restore") != "") {
+    param_->restore_file_ = clo->Get<std::string>("restore");
   }
 
   set_param(param_);

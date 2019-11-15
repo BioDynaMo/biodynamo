@@ -181,10 +181,8 @@ inline void PlotSbmlModules(const char* filename) {
 
 inline int Simulate(int argc, const char** argv) {
   auto opts = CommandLineOptions(argc, argv);
-  opts.AddOption<uint64_t>("n, num-cells", "The total number of cells", "10");
-  auto parser = opts.Parse();
-
-  uint64_t num_cells = parser.Get<uint64_t>("num-cells");
+  opts.AddOption<uint64_t>("n, num-cells", "10", "The total number of cells");
+  uint64_t num_cells = opts.Get<uint64_t>("num-cells");
 
   // roadrunner options
   rr::SimulateOptions opt;
@@ -196,7 +194,7 @@ inline int Simulate(int argc, const char** argv) {
     param->simulation_time_step_ = opt.duration / opt.steps;
   };
 
-  Simulation simulation(opts, set_param);
+  Simulation simulation(&opts, set_param);
 
   std::string sbml_file = "../src/sbml-model.xml";
   if (!FileExists(sbml_file)) {

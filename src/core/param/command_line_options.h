@@ -28,32 +28,39 @@
 
 namespace bdm {
 
-using cxxopts::value;
-using std::string;
-
 /// Class to contain and parse command line options
 class CommandLineOptions {
  public:
   CommandLineOptions(int argc, const char** argv);
 
+  ~CommandLineOptions();
+
   /// Add an extra command line option
-  cxxopts::OptionAdder AddOption(string group = "");
+  cxxopts::OptionAdder AddOption(std::string group = "Simulation");
 
   /// Add an extra command line option
   template <typename T>
-  void AddOption(string opt, string description, string def,
-                 string group = "Simulation") {
+  void AddOption(std::string opt, std::string def, std::string description = "",
+                 std::string group = "Simulation") {
     AddOption(group)(opt, description, cxxopts::value<T>()->default_value(def));
   }
 
   /// Return the simulation name that was parsed from argv[0]
   std::string GetSimulationName();
 
-  /// Parse the given command line arguments
-  cxxopts::ParseResult Parse();
+  template <typename T>
+  T Get(std::string val) {
+    if (parser_ == nullptr) {
+      this->Parse();
+    }
+    return parser_->Get<T>(val);
+  }
 
  private:
   void AddCoreOptions();
+
+  /// Parse the options with the given command line arguments
+  void Parse();
 
   /// Return only the executable name given the path
   /// @param path path and filename of the executable
@@ -61,12 +68,18 @@ class CommandLineOptions {
   /// @return `executable`
   void ExtractSimulationName(const char* path);
 
-  void HandleCoreOptions(cxxopts::ParseResult& ret);
+  /// Takes care of core options
+  void HandleCoreOptions();
 
   int argc_;
   const char** argv_;
-  string sim_name_;
+  // The name of the simulation
+  std::string sim_name_;
+
+  // Flag to determine if new options were added
+  bool first_parse_ = true;
   cxxopts::Options options_;
+  cxxopts::ParseResult* parser_ = nullptr;
 };
 
 }  // namespace bdm
