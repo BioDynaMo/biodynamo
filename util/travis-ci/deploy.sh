@@ -42,7 +42,7 @@ cd
 git clone https://github.com/BioDynaMo/biodynamo.github.io.git
 cd biodynamo.github.io
 rm -rf *
-mv $BDM_BUILD_DIR/website/* .
+mv $BDM_BUILD_DIR/website/public/* .
 # Add CNAME file to redirect to biodynamo.org
 echo biodynamo.org > CNAME
 
