@@ -254,8 +254,15 @@ else
    PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH; export PV_PLUGIN_PATH
 fi
 
-alias paraview='${ParaView_DIR}/bin/paraview'
-alias pvpython='${ParaView_DIR}/bin/pvpython'
+unset -f paraview || true
+function paraview {
+  ${ParaView_DIR}/bin/paraview $@
+}
+
+unset -f pvpython || true
+function pvpython {
+  ${ParaView_DIR}/bin/pvpython $@
+}
 
 if [ -z "${LD_LIBRARY_PATH}" ]; then
    LD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export LD_LIBRARY_PATH
