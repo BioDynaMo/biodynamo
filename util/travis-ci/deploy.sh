@@ -21,37 +21,35 @@
 set -e -x
 
 if [ "$TRAVIS_BRANCH" = "web-updates" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-  exit 0
+  # set-up git
+  git config --global user.email "bdmtravis@gmail.com"
+  git config --global user.name "BioDynaMo Travis-CI Bot"
+
+  BDM_BUILD_DIR=`pwd`
+
+  make website
+  if [ ! $? -eq 0 ]; then
+      echo "# MAKE DOC ERROR #"
+      echo "The make doc command failed. The deployment was interrupted and the website was not updated."
+      exit 1
+  fi
+
+  # checkout github pages dir, clean it and recreate folder structure
+  cd
+  git clone https://github.com/BioDynaMo/biodynamo.github.io.git
+  cd biodynamo.github.io
+  rm -rf *
+  mv $BDM_BUILD_DIR/website/public/* .
+  # Add CNAME file to redirect to biodynamo.org
+  echo biodynamo.org > CNAME
+
+  # commit
+  git add -A
+  git commit -m "Update website (Travis build: $TRAVIS_BUILD_NUMBER)"
+
+  # push changes
+  set +x
+  # NB: DO NOT USE -x here. It would leak the github token to the terminal
+  git remote add origin-pages https://${GH_TOKEN}@github.com/BioDynaMo/biodynamo.github.io.git > /dev/null 2>&1
+  git push --quiet --set-upstream origin-pages master > /dev/null 2>&1
 fi
-
-# set-up git
-git config --global user.email "bdmtravis@gmail.com"
-git config --global user.name "BioDynaMo Travis-CI Bot"
-
-BDM_BUILD_DIR=`pwd`
-
-make website
-if [ ! $? -eq 0 ]; then
-    echo "# MAKE DOC ERROR #"
-    echo "The make doc command failed. The deployment was interrupted and the website was not updated."
-    exit 1
-fi
-
-# checkout github pages dir, clean it and recreate folder structure
-cd
-git clone https://github.com/BioDynaMo/biodynamo.github.io.git
-cd biodynamo.github.io
-rm -rf *
-mv $BDM_BUILD_DIR/website/public/* .
-# Add CNAME file to redirect to biodynamo.org
-echo biodynamo.org > CNAME
-
-# commit
-git add -A
-git commit -m "Update website (Travis build: $TRAVIS_BUILD_NUMBER)"
-
-# push changes
-set +x
-# NB: DO NOT USE -x here. It would leak the github token to the terminal
-git remote add origin-pages https://${GH_TOKEN}@github.com/BioDynaMo/biodynamo.github.io.git > /dev/null 2>&1
-git push --quiet --set-upstream origin-pages master > /dev/null 2>&1
