@@ -18,8 +18,7 @@
 # helpful tutorial
 # https://gist.github.com/willprice/e07efd73fb7f13f917ea
 
-# NB: DO NOT USE -x here. It would leak the github token to the terminal
-set -e +x
+set -e -x
 
 if [ "$TRAVIS_BRANCH" = "web-updates" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
   exit 0
@@ -53,5 +52,6 @@ git commit -m "Update website (Travis build: $TRAVIS_BUILD_NUMBER)"
 
 # push changes
 set +x
+# NB: DO NOT USE -x here. It would leak the github token to the terminal
 git remote add origin-pages https://${GH_TOKEN}@github.com/BioDynaMo/biodynamo.github.io.git > /dev/null 2>&1
 git push --quiet --set-upstream origin-pages master > /dev/null 2>&1
