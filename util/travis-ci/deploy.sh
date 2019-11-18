@@ -25,7 +25,19 @@ if [ "$TRAVIS_BRANCH" = "web-updates" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ 
   git config --global user.email "bdmtravis@gmail.com"
   git config --global user.name "BioDynaMo Travis-CI Bot"
 
+  # Install docker to launch container for gatsby website generation
+  # Instructions from: https://www.vultr.com/docs/installing-docker-ce-on-ubuntu-16-04
+  sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+  sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  sudo apt-get update
+  sudo apt-get install docker-ce
+
   BDM_BUILD_DIR=`pwd`
+
+  # Source BioDynaMo prior to building the website for the container to find
+  # the generated Doxygen documentation
+  source ${BDM_BUILD_DIR}/bin/thisbdm.sh
 
   make website
   if [ ! $? -eq 0 ]; then
