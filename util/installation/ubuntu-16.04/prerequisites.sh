@@ -38,7 +38,12 @@ if [ $1 == "all" ]; then
     # this updates pip, but installs the updated version in $HOME/.local/bin
     pip install --upgrade pip
     PIP_PACKAGES="mkdocs mkdocs-material jupyter metakernel"
-    $HOME/.local/bin/pip2 install --user $PIP_PACKAGES
+    if [ -f "$HOME/.local/bin/pip2" ]; then
+      $HOME/.local/bin/pip2 install --user $PIP_PACKAGES
+    else
+      echo "WARNING: $HOME/.local/bin/pip2 not found.
+The following pip packages will not be installed: $PIP_PACKAGES"
+    fi
 
     sudo apt-get install -y valgrind \
       clang-3.9 clang-format-3.9 clang-tidy-3.9 \
