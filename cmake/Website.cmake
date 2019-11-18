@@ -26,6 +26,7 @@ add_custom_target(${TARGET}
     COMMENT "Generate website"
     COMMAND ./build_website.sh --dir ${CMAKE_CURRENT_SOURCE_DIR} ${FLAGS}
     VERBATIM)
+add_dependencies(${TARGET} doc)
 endfunction()
 
 # Generate static website files
