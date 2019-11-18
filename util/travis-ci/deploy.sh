@@ -27,11 +27,11 @@ if [ "$TRAVIS_BRANCH" = "web-updates" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ 
 
   # Install docker to launch container for gatsby website generation
   # Instructions from: https://www.vultr.com/docs/installing-docker-ce-on-ubuntu-16-04
-  sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+  sudo apt-get -y install apt-transport-https ca-certificates curl software-properties-common
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   sudo apt-get update
-  sudo apt-get install docker-ce
+  sudo apt-get -y install docker-ce
 
   BDM_BUILD_DIR=`pwd`
 
