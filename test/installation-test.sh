@@ -42,7 +42,7 @@ BDM_OS=$(DetectOs)
 if [ "$BDM_OS" != "osx" ] && [ "$BDM_OS" != "travis-osx" ]; then
   SBML_FLAG="-Dsbml=on"
 fi
-export BDM_CMAKE_FLAGS="-Dtest=off ${SBML_FLAG}"
+export BDM_CMAKE_FLAGS="-Dtest=off -Dnotebooks=on ${SBML_FLAG}"
 
 # Build BioDynaMo
 $BDM_PROJECT_DIR/install.sh << EOF

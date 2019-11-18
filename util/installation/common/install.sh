@@ -74,10 +74,6 @@ if [ "${BDM_OS}" = "ubuntu-16.04" ]; then
   export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
 fi
 
-# Have notebooks for ease of user installations and for installation tests
-BDM_CMAKE_FLAGS+=" -Dnotebooks=on"
-export BDM_CMAKE_FLAGS
-
 # perform a clean release build
 BUILD_DIR=$BDM_PROJECT_DIR/build
 CleanBuild $BUILD_DIR
