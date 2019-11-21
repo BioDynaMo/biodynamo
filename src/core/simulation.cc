@@ -28,6 +28,8 @@
 #include "core/environment/uniform_grid_environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/gpu/gpu_helper.h"
+#include "core/grid.h"
+#include "core/parallel_execution/xml_parser.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
@@ -76,6 +78,10 @@ Simulation::Simulation(CommandLineOptions* clo,
                        const std::function<void(Param*)>& set_param,
                        const std::string& config_file) {
   Initialize(clo, set_param, config_file);
+}
+
+Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params) {
+  Initialize(argc, argv, [](auto* param) {}, "", xml_params);
 }
 
 Simulation::Simulation(int argc, const char** argv,
@@ -231,6 +237,10 @@ Environment* Simulation::GetGrid() { return environment_; }
 
 Environment* Simulation::GetEnvironment() { return environment_; }
 
+const XMLParamMap Simulation::GetXMLParam() const {
+  return param_->GetXMLParam();
+}
+
 Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
 void Simulation::Simulate(uint64_t steps) { scheduler_->Simulate(steps); }
@@ -263,7 +273,8 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
 
 void Simulation::Initialize(CommandLineOptions* clo,
                             const std::function<void(Param*)>& set_param,
-                            const std::string& config_file) {
+                            const std::string& config_file,
+                            XMLParams* xml_params) {
   id_ = counter_++;
   Activate();
   if (!clo) {
@@ -271,7 +282,7 @@ void Simulation::Initialize(CommandLineOptions* clo,
                "CommandLineOptions argument was a nullptr!");
   }
   InitializeUniqueName(clo->GetSimulationName());
-  InitializeRuntimeParams(clo, set_param, config_file);
+  InitializeRuntimeParams(clo, set_param, config_file, xml_params);
   InitializeOutputDir();
   InitializeMembers();
 }
@@ -306,7 +317,7 @@ void Simulation::InitializeMembers() {
 
 void Simulation::InitializeRuntimeParams(
     CommandLineOptions* clo, const std::function<void(Param*)>& set_param,
-    const std::string& ctor_config) {
+    const std::string& ctor_config, XMLParams* xml_params) {
   // Renew thread info just in case it has been initialised as static and a
   // simulation calls e.g. `omp_set_num_threads()` within main.
   ThreadInfo::GetInstance()->Renew();
@@ -349,6 +360,12 @@ void Simulation::InitializeRuntimeParams(
   }
 
   ocl_state_ = new OpenCLState();
+
+  // Handle xml arguments
+  if (clo->Get<std::string>("xml") != "") {
+    XMLParser xp(clo->Get<std::string>("xml"));
+    param_->SetXMLParams(xp.CreateMap(xml_params));
+  }
 
   set_param(param_);
 

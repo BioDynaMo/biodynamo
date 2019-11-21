@@ -20,7 +20,7 @@ download_verify_extract(
 )
 
 # Run again find_package in order to find ROOT
-find_package(ROOT COMPONENTS Geom Gui GenVector REQUIRED)
+find_package(ROOT COMPONENTS Geom Gui GenVector XMLParser REQUIRED)
 
 # Set ROOTSYS variable
 string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})

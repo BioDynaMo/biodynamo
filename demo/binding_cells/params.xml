@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<model>
+  <world>
+    <timesteps>300</timesteps>
+    <min_space>0</min_space>
+    <max_space>100</max_space>
+  </world>
+  <simulation_objects>
+    <object>
+      <name>T_Cell</name>
+      <population value_type="scalar">100</population>
+      <type value_type="scalar">1</type>
+      <diameter value_type="scalar">5</diameter>
+      <velocity value_type="distribution_poisson">
+	      <mean>0</mean>
+      </velocity>
+    </object>
+    <object>
+      <name>Monocyte</name>
+      <population value_type="scalar">100</population>
+      <type value_type="scalar">0</type>
+      <diameter value_type="scalar">5</diameter>
+      <velocity value_type="scalar">2</velocity>
+    </object>
+  </simulation_objects>
+  <biology_modules>
+    <module>
+      <name>ConnectWithinRadius</name>
+      <binding_radius value_type="scalar">5</binding_radius>
+    </module>
+    <module>
+      <name>Inhibition</name>
+      <concentration_threshold value_type="scalar">0.0095</concentration_threshold>
+      <binding_probability value_type="scalar">0.2</binding_probability>
+    </module>
+  </biology_modules>
+  <substances>
+    <substance>
+      <name>Antibody</name>
+      <diffusion_rate value_type="scalar">0.4</diffusion_rate>
+      <decay_rate value_type="scalar">0</decay_rate>
+      <resolution value_type="scalar">20</resolution>
+    </substance>
+  </substances>
+</model>

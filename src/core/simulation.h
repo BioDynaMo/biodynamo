@@ -16,10 +16,13 @@
 
 #include <functional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "core/gpu/opencl_state.h"
 #include "core/memory/memory_manager.h"
+#include "core/parallel_execution/util.h"
+#include "core/parallel_execution/xml_util.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
@@ -73,6 +76,8 @@ class Simulation {
              const std::function<void(Param*)>& set_param,
              const std::string& config_file = "");
 
+  Simulation(int argc, const char** argv, XMLParams* xml_params);
+
   Simulation(const std::string& simulation_name,
              const std::function<void(Param*)>& set_param,
              const std::string& config_file = "");
@@ -97,6 +102,7 @@ class Simulation {
   [[deprecated("Replaced with GetEnvironment()")]] Environment* GetGrid();
 
   Environment* GetEnvironment();
+  const XMLParamMap GetXMLParam() const;
 
   Scheduler* GetScheduler();
 
@@ -148,8 +154,8 @@ class Simulation {
   SoUidGenerator* so_uid_generator_ = nullptr;  //!
   std::string name_;
   Environment* environment_ = nullptr;  //!
-  Scheduler* scheduler_ = nullptr;    //!
-  OpenCLState* ocl_state_ = nullptr;  //!
+  Scheduler* scheduler_ = nullptr;      //!
+  OpenCLState* ocl_state_ = nullptr;    //!
   bool is_gpu_environment_initialized_ = false;
   /// This id is unique for each simulation within the same process
   uint64_t id_ = 0;  //!
@@ -167,7 +173,8 @@ class Simulation {
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,
                   const std::function<void(Param*)>& set_param,
-                  const std::string& ctor_config);
+                  const std::string& ctor_config,
+                  XMLParams* xml_params = nullptr);
 
   /// Initialize data members that have a dependency on Simulation
   void InitializeMembers();
@@ -175,7 +182,8 @@ class Simulation {
   /// This function parses command line parameters and the configuration file.
   void InitializeRuntimeParams(CommandLineOptions* clo,
                                const std::function<void(Param*)>& set_param,
-                               const std::string& ctor_config);
+                               const std::string& ctor_config,
+                               XMLParams* xml_params = nullptr);
 
   void LoadConfigFile(const std::string& ctor_config,
                       const std::string& cli_config);

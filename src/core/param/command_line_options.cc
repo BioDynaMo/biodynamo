@@ -88,7 +88,8 @@ void CommandLineOptions::AddCoreOptions() {
       "continues simulation from that point.", value<string>()->default_value(""), "FILE")
     ("b, backup", "Periodically create full simulation backup to the specified file. "
       "NOTA BENE: File will be overriden if it exists.", value<string>()->default_value(""), "FILE")
-    ("c, config", "The TOML configuration that should be used.", value<string>()->default_value(""), "FILE");
+    ("c, config", "The TOML configuration that should be used.", value<string>()->default_value(""), "FILE")
+    ("x, xml", "The XML file used for Parallel Execution.", value<string>()->default_value(""), "FILE");
   }
 // clang-format on
 

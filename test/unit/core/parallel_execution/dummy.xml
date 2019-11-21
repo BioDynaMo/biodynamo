@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<model>
+  <simulation_objects>
+    <object>
+      <name>MyCell</name>
+      <population value_type="scalar">8</population>
+      <type value_type="scalar">0</type>
+      <mass value_type="set">
+      	<value>1</value>
+      	<value>2</value>
+      	<value>4</value>
+      </mass>
+      <diameter value_type="range">
+        <min>10</min>
+        <max>30</max>
+        <stride>5</stride>
+      </diameter>
+      <adherence value_type="range">
+        <min>0.0</min>
+        <max>1.0</max>
+        <stride>0.1</stride>
+      </adherence>
+      <velocity value_type="distribution_poisson">
+	      <mean>0</mean>
+      </velocity>
+    </object>
+  </simulation_objects>
+  <biology_modules>
+    <module>
+      <name>GrowDivide</name>
+      <growth_rate value_type="scalar">4000</growth_rate>
+      <threshold value_type="range">
+        <min>10</min>
+        <max>30</max>
+        <stride>5</stride>
+      </threshold>
+    </module>
+  </biology_modules>
+</model>

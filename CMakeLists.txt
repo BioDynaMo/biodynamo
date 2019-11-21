@@ -179,11 +179,17 @@ else()
     "rerun cmake with -DPython_ROOT_DIR=</path/to/pyenv>/versions/${pythonvers}")
 endif()
 
-# Check if OpenMPI is present
+# Check if OpenMPI is present. If you have multiple MPI installations on your
+# system, and you want to specify one, you can do so by:
+# cmake -DMPI_C_COMPILER=<path_to_mpi>/bin/mpicc
 find_package(MPI)
-if (MPI_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
-calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
+if (MPI_FOUND)
+  message("-- MPI_VERSION = ${MPI_C_VERSION}")
+   include_directories(${MPI_INCLUDE_PATH})
+   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${MPI_CXX_LIBRARIES})
+else()
+  MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
+  calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
 # Disable paraview until we upgrade to v5.8 on macOS, numa is not supported on macOS
@@ -244,7 +250,7 @@ endif()
 find_package(Git)
 
 # Find ROOT and check its installation
-find_package(ROOT COMPONENTS Geom Gui GenVector)
+find_package(ROOT COMPONENTS Geom Gui GenVector XMLParser)
 verify_ROOT()
 
 if (dict)
@@ -547,6 +553,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/parallel_execution/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc

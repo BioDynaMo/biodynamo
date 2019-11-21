@@ -24,6 +24,8 @@
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
 #include "core/model_initializer.h"
+#include "core/parallel_execution/parallel_execution_manager.h"
+#include "core/parallel_execution/util.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"

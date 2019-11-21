@@ -11,21 +11,18 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
-
 cmake_minimum_required(VERSION 3.2.0)
 
-project(cell_division)
+project(binding-cells)
 
 find_package(BioDynaMo REQUIRED)
-include("${BDM_USE_FILE}")
+include(${BDM_USE_FILE})
 include_directories("src")
-include_directories("$ROOTSYS/include")
-link_directories("$ROOTSYS/lib")
 
 file(GLOB_RECURSE HEADERS src/*.h)
 file(GLOB_RECURSE SOURCES src/*.cc)
 
-bdm_add_executable(cell_division
-                   HEADERS "${HEADERS}"
-                   SOURCES "${SOURCES}"
-                   LIBRARIES "${BDM_REQUIRED_LIBRARIES}" XMLParser)
+bdm_add_executable(binding-cells
+                   HEADERS ${HEADERS}
+                   SOURCES ${SOURCES}
+                   LIBRARIES ${BDM_REQUIRED_LIBRARIES})
