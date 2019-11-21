@@ -27,7 +27,6 @@
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
 #include "my_experiment.h"
-#include "my_param.h"
 #include "plot_graph.h"
 #include "simulation_objects/my_cell.h"
 
@@ -47,8 +46,6 @@ void MakeNonAtomic(const std::vector<std::atomic<T>>& a, std::vector<T>* na) {
 
 inline int Simulate(int argc, const char** argv,
                     XMLParams* xml_params = nullptr) {
-  bdm::Param::RegisterModuleParam(new MyParam());
-
   Simulation simulation(argc, argv, xml_params);
   auto xmlp = simulation.GetXMLParam();
 
