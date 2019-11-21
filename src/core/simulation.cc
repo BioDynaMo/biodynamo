@@ -81,7 +81,8 @@ Simulation::Simulation(CommandLineOptions* clo,
 }
 
 Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params) {
-  Initialize(argc, argv, [](auto* param) {}, "", xml_params);
+  auto options = CommandLineOptions(argc, argv);
+  Initialize(&options, [](auto* param) {}, "", xml_params);
 }
 
 Simulation::Simulation(int argc, const char** argv,
