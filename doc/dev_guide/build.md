@@ -168,12 +168,12 @@ Build targets indicated with `*` always come in three different flavors.
 | `check-submission` | will build, run all tests, check formatting, code style, and generate documentation and coverage report |
 | `fix-submission` | will attempt to fix the reported issues using `clang-format` and `clang-tidy`. Failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically |
 
-### Documentation Related Build Targets
+### Website Related Build Targets
 
 | Target          | Description  |
 | --------------- | ------------ |
-| `doc` | will generate the API, user and developer documentation in directory `build/doc` |
-| `live-dev-guide` and `live-user-guide` | starts a local web server so you can immediately view the documentation in the browser. The website is automatically reloaded if you change a source file.  |
+| `website` | will generate the static files used for biodynamo.org |
+| `website-live` and `website-live-api` | starts a local web server so you can immediately view the website (with or without Doxygen API) in the browser. The website is automatically reloaded if you change a source file. Use `website-live` if you don't need the Doxygen API files to be generated (is faster).  |
 
 ## Advanced Build Options
 
