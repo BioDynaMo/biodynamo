@@ -33,8 +33,12 @@ endfunction()
 GenerateStaticFiles(website "--api")
 # Generate staic website files and launches website on localhost for live editing
 GenerateStaticFiles(website-live "--develop")
-# Generate staic website files and launches website on localhost for live
-# editing, including the Doxygen API
-GenerateStaticFiles(website-live-api "--develop --api")
+
+# For website-live the Doxygen files are not generated because we expect users
+# to mostly be interested in how the markdown files will look like. There is
+# also some bug in trying to show the API files if you were to enable to it
+# (i.e. it doesn't resolve the path correctly). For those that want to see the
+# Doxygen output, you can open the index.html in the build/doc/api directory with
+# your browser
 
 # ------------------------------------------------------------------------------

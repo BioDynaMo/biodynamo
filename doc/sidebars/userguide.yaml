@@ -31,6 +31,10 @@
         link: /docs/userguide/substance_initializers/
       - title: GPU Acceleration
         link: /docs/userguide/gpu_acceleration/
+      - title: Notebook
+        link: /docs/userguide/notebook/
+      - title: Adding documentation webpage
+        link: /docs/userguide/add_page/
   - group: Troubleshooting
     items:
       - title: OpenGL

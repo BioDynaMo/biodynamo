@@ -102,8 +102,6 @@ mkdir build && cd build && cmake ../ && make
 make install
 ```
 
-
-
 ## CMake Build Options
 
 Our CMake build script uses a few options to influence the build process. They can be set as follows:
@@ -173,7 +171,7 @@ Build targets indicated with `*` always come in three different flavors.
 | Target          | Description  |
 | --------------- | ------------ |
 | `website` | will generate the static files used for biodynamo.org |
-| `website-live` and `website-live-api` | starts a local web server so you can immediately view the website (with or without Doxygen API) in the browser. The website is automatically reloaded if you change a source file. Use `website-live` if you don't need the Doxygen API files to be generated (is faster).  |
+| `website-live` | starts a local web server so you can immediately view the website in the browser. The website is automatically reloaded if you change a source file. |
 
 ## Advanced Build Options
 
