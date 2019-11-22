@@ -32,7 +32,7 @@ make -j4
 XML_FILE="params.xml"
 
 # start simulation
-mpirun -n 2 ./binding_cells --xml=$XML_FILE
+mpirun -n 2 -use-hwthread-cpus ./binding_cells --xml=$XML_FILE
 
 RETURN_CODE=$?
 

@@ -46,7 +46,8 @@ function(GenerateNotebookTarget DEMO_NAME)
 endfunction(GenerateNotebookTarget)
 
 # Demos to skip over
-set(SKIPLIST "soma_clustering" "tumor_concept" "multiple_simulations" "gene_regulation" "sbml_integration" "makefile_project")
+set(SKIPLIST "soma_clustering" "tumor_concept" "multiple_simulations"
+  "gene_regulation" "sbml_integration" "makefile_project" "binding_cells")
 
 # We chain the targets of the demos to each other, because of a race conditions
 # that occurs when invoking jupyter-notebook with multiple processes:
