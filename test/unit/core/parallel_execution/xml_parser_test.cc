@@ -61,6 +61,8 @@ class XMLParserTest : public ::testing::Test {
     xp = new XMLParser(std::string(kXMLFileName));
   }
 
+  ~XMLParserTest() { delete xp; }
+
   TXMLNode* GetRootNode() { return xp->root_node_; }
   XMLParser* GetParser() { return xp; }
 
