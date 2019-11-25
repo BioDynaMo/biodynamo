@@ -20,12 +20,14 @@
 #include <TXMLAttr.h>
 #include <TXMLNode.h>
 
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "core/parallel_execution/util.h"
 #include "core/param/param.h"
+#include "core/util/log.h"
 
 using std::vector;
 using std::string;
@@ -139,7 +141,9 @@ class XMLParser {
   // Any XML element that has "value_type = range" is expected to be proceeded
   // by the `min`, `max` and `stride` values
   void ExtractValues(Range *r, TXMLNode *node) {
+    std::string parent_name;
     for (; node; node = node->GetNextNode()) {
+      parent_name = std::string(node->GetParent()->GetNodeName());
       auto v = node->GetNodeName();
       if (string(v) == "min") {
         r->min_ = stod(node->GetText());
@@ -148,6 +152,16 @@ class XMLParser {
       } else if (string(v) == "stride") {
         r->stride_ = stod(node->GetText());
       }
+    }
+
+    // Check if max >= min
+    if (r->max_ < r->min_) {
+      std::stringstream ss;
+      ss << "We found a range type value where 'min (" << r->min_
+         << ")' is set to be greater than 'max (" << r->max_
+         << ")'. Please check your XML parameter file for parameter ["
+         << parent_name << "]" << std::endl;
+      Log::Fatal("ExtractValues<Range>", ss.str());
     }
   }
 
