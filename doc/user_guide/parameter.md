@@ -1,9 +1,27 @@
-# Parameter
+---
+title: "Parameter"
+date: "2019-01-01"
+path: "/docs/userguide/parameter/"
+meta_title: "BioDynaMo User Guide"
+meta_description: "This is the parameter page."
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/parameter/"
+    title: "Parameter"
+    description: "This is the parameter page."
+sidebar: "userguide"
+keywords:
+  -parameter
+  -configuration
+  -code
+  -setup
+---
 
 Parameters are used to tailor BioDynaMo to your specific simulation.
 
-The majority of parameters are defined in the [core engine](https://biodynamo.github.io/api/structbdm_1_1Param.html).
-Each module can define its own [`Param` class](https://biodynamo.github.io/api/structbdm_1_1experimental_1_1neuroscience_1_1Param.html) to add additional parameters.
+The majority of parameters are defined in the [core engine](/bioapi/structbdm_1_1Param.html).
+Each module can define its own [`Param` class](/bioapi/structbdm_1_1experimental_1_1neuroscience_1_1Param.html) to add additional parameters.
 
 There are three ways to set the value of a parameter:
 
@@ -11,12 +29,18 @@ There are three ways to set the value of a parameter:
 2.  Command line argument
 3.  Assignment in the source code.
 
-!!! Note
-    Higher index takes precedence.  E.g. If you define the `backup_file` in the TOML file and the
-    command line arguments, the command line version will be used.
+<br/>
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+      <h4><b>Note</b></h4>
+      <p>Higher index takes precedence.  E.g. If you define the <code>backup_file</code> in the TOML file and the
+    command line parameter, the command line version will be used.
+    </p>
+    </div>
+</a>
 
 The documentation of each parameter contains a description of the
-parameter, its default value and how to set it in the TOML file ([example](https://biodynamo.github.io/api/structbdm_1_1Param.html#a3cc70d57ed2965f5551e03b36a4a7219))
+parameter, its default value and how to set it in the TOML file ([example](/bioapi/structbdm_1_1Param.html#a13d24f045335b7ac62a091f56c6fe166))
 
 The following code snippet shows how to access a parameter in your
 simulation.

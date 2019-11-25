@@ -1,4 +1,17 @@
-# Add support for a new Operating System
+---
+title: "Add support for a new Operating System"
+date: "2019-01-01"
+path: "/docs/devguide/new_os/"
+meta_title: "BioDynaMo Dev Guide"
+meta_description: "Information about supported OSes."
+toc: true
+image: ""
+sidebar: "devguide"
+keywords:
+  -os
+  -operating
+  -system
+---
 
 In order to add BioDynaMo's support for a new operating systems, please follow the
 steps presented below:

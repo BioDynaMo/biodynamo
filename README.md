@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="http://biodynamo.web.cern.ch">
+  <a href="http://biodynamo.org">
     <img src="https://biodynamo.web.cern.ch/sites/biodynamo.web.cern.ch/files/Logo_Full_Big_0.png" alt="BioDynaMo logo" width="72" height="72">
   </a>
 </p>
@@ -9,7 +9,7 @@
 <p align="center">
   Biology Dynamics Modeller
   <br>
-  <a href="http://biodynamo.web.cern.ch/"><strong>Visit our website »</strong></a>
+  <a href="http://biodynamo.org/"><strong>Visit our website »</strong></a>
   <br>
   <br>
   <a href="https://github.com/BioDynaMo/biodynamo/issues/new">Report bug</a>

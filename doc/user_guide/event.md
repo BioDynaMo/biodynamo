@@ -1,4 +1,18 @@
-# Event
+---
+title: "Event"
+date: "2019-01-01"
+path: "/docs/userguide/event/"
+meta_title: "BioDynaMo User Guide"
+meta_description: "This is the event page."
+toc: true
+next:
+    url:  "/docs/userguide/event/"
+    title: "Event"
+    description: "This is the event page."
+sidebar: "userguide"
+keywords:
+  -event
+---
 
 If a new simulation object (e.g. Cell) is created during a simulation we denote
 it as an Event.
@@ -54,7 +68,7 @@ This architecture is important to support extension of simulation objects.
 Let's assume that you extend the Cell class to add a new data member
 `my_new_data_member_`.
 
-```c++
+```cpp
 class MyCell : public Cell {
   ...
   double my_new_data_member_ = {3.14};
@@ -68,7 +82,7 @@ defining a constructor and event handler. Let's assume that `new_data_member_`
 of the mother cell is divided between the daughters according to the volume
 ratio defined in `CellDivisionEvent`.
 
-```c++
+```cpp
 class MyCell : public Cell {
  public:
   MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
@@ -93,9 +107,13 @@ class MyCell : public Cell {
 The constructor initializes `new_data_member_` for daughter 2.
 The event handler performs the transition from mother to daughter 1.
 
-!!! CAUTION
-    Do not forget to forward the call to the constructor and event handler of the
-    base class.
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+      <h4><b>CAUTION</b></h4>
+      <p>Do not forget to forward the call to the constructor and event handler of the base class.
+    </p>
+    </div>
+</a>
 
 <!-- TODO explain default event handler and ctors -->
 

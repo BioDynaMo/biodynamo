@@ -1,0 +1,49 @@
+- groups:
+  - group: Welcome
+    items:
+      - title: Introduction
+        link: /docs/userguide/
+      - title: Installation
+        link: /docs/userguide/installation/
+      - title: First Steps
+        link: /docs/userguide/first_steps/
+  - group: Tutorials
+    items:
+      - title: Hello World
+        link: /docs/userguide/hello_world/
+      - title: Visualization
+        link: /docs/userguide/visualization/
+      - title: Diffusion
+        link: /docs/userguide/diffusion/
+      - title: Tumor Concept
+        link: /docs/userguide/tumor_concept/
+  - group: Documentation
+    items:
+      - title: Parameter
+        link: /docs/userguide/parameter/
+      - title: Event
+        link: /docs/userguide/event/
+      - title: Math Array
+        link: /docs/userguide/math_array/
+      - title: Operation
+        link: /docs/userguide/operation/
+      - title: Substance Initialization
+        link: /docs/userguide/substance_initializers/
+      - title: GPU Acceleration
+        link: /docs/userguide/gpu_acceleration/
+      - title: Notebook
+        link: /docs/userguide/notebook/
+      - title: Adding documentation webpage
+        link: /docs/userguide/add_page/
+  - group: Troubleshooting
+    items:
+      - title: OpenGL
+        link: /docs/userguide/opengl_issues/
+  - group: Changelog
+    items:
+      - title: Log
+        link: /docs/userguide/changelog/
+  - group: Contact
+    items:
+      - title: Info
+        link: /docs/userguide/contact/

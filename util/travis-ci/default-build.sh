@@ -89,6 +89,4 @@ ${CXX} -v || true
 
 ctest -V
 
-if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-  ../util/travis-ci/deploy.sh
-fi
+../util/travis-ci/deploy.sh

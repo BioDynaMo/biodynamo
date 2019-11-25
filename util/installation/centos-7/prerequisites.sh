@@ -33,7 +33,7 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 
-PIP_PACKAGES="mkdocs mkdocs-material nbformat jupyter metakernel"
+PIP_PACKAGES="nbformat jupyter metakernel"
 
 sudo yum -y install wget cmake3 libXt-devel libXext-devel \
 devtoolset-7-gcc* numactl-devel \

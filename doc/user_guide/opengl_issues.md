@@ -1,8 +1,26 @@
-# OpenGL issues
+---
+title: "OpenGL Issues"
+date: "2019-01-01"
+path: "/docs/userguide/opengl_issues/"
+meta_title: "BioDynaMo User Guide"
+meta_description: "This is the openGL issues page."
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/opengl_issues/"
+    title: "OpenGL Issues"
+    description: "This is the openGL issues page."
+sidebar: "userguide"
+keywords:
+  -opengl
+  -issues
+  -problem
+  -code
+---
 
 Turn on debugging output and run simulation again
 
-```
+```bash
 export LIBGL_DEBUG=verbose
 ./simulation
 ```
@@ -71,7 +89,7 @@ OpenGL ES profile extensions:
 
 https://stackoverflow.com/questions/42438619/run-chromium-inside-container-libgl-error
 
-```
+```bash
 # for intel cards
 docker run --device=/dev/dri:/dev/dri ...
 ```

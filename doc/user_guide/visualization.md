@@ -1,3 +1,27 @@
+---
+title: "Visualization"
+date: "2019-01-01"
+path: "/docs/userguide/visualization/"
+meta_title: "BioDynaMo User Guide"
+meta_description: "This is the visualization page."
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/visualization/"
+    title: "Visualization"
+    description: "This is the visualization page."
+sidebar: "userguide"
+keywords:
+  -visualization
+  -view
+  -look
+  -code
+  -paraview
+  -file
+  -simulation
+  -help
+---
+
 Enabling visualization is very easy. BioDynaMo can be configured through its own
 configuration file: `bdm.toml`. Visualization is just one of the many configuration
 options. Let's take a look at how to set it. We shall continue using the `hello_world`
@@ -8,7 +32,7 @@ example from the previous exercise.
 In your simulation directory `hello_world` create a new file called `bdm.toml`.
 You can also do this from the command line with the following command:
 
-``` sh
+```bash
 touch bdm.toml
 ```
 
@@ -36,10 +60,16 @@ Run your simulation with `biodynamo run`.
 
 Now we need to open ParaView:
 
-!!! warning
-	Make sure you start ParaView from the project directory. Otherwise, ParaView might not find the exported files.
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Warning</b><h/4>
+    	<p>Make sure you start ParaView from the project directory. Otherwise, ParaView might not find the exported files.
+		</p>
+    </div>
+</a>
+<br/>
 
-``` sh
+```bash
 paraview
 ```
 
@@ -54,7 +84,6 @@ Navigate to your simulation output directory and select the `pvsm` file.
 In the next window keep the default (_Use File Names From State_) and click OK.
 
 ![ParaView Load State Data](images/pv_load_state_3.png)
-
 <!-- ## Live visualization
 
 Another way to enable visualization is through ParaView's live visualization.

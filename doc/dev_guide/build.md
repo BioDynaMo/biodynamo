@@ -1,11 +1,32 @@
-# Building BioDynaMo
+---
+title: "Building Biodynamo"
+date: "2019-01-01"
+path: "/docs/devguide/build/"
+meta_title: "BioDynaMo Dev Guide"
+meta_description: "This is the how to build page."
+toc: true
+image: ""
+next:
+    url:  "/docs/devguide/build/"
+    title: "Building Biodynamo"
+    description: "This is the how to build page."
+sidebar: "devguide"
+keywords:
+  -build
+  -start
+  -create
+---
 
 To build BioDynaMo from source execute the following commands:
 
-!!! info
-    If you are a user please follow the installation instructions in our [user guide](https://biodynamo.github.io/user/)
-
-## Ubuntu 16.04, 18.04
+<a class="sbox" href= "/docs/userguide/" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Info<b><h4>
+    	<p>If you are a user please follow the installation instructions in our <font color="blue"><u>user guide</u></font>.
+		</p>
+    </div>
+</a>
+<br>
 
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
@@ -81,13 +102,14 @@ mkdir build && cd build && cmake ../ && make
 make install
 ```
 
-
-
 ## CMake Build Options
+
 Our CMake build script uses a few options to influence the build process. They can be set as follows:
+
 ``` bash
 cmake -Doption=value ..
 ```
+
 The value for binary options is `on` or `off`.
 If you change the value of these switches, you might have to delete `CMakeCache.txt` beforehand.
 
@@ -110,6 +132,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `CMAKE_BUILD_TYPE`  | specify the build type. Possible values are `Debug, Release, RelWithDebInfo, MinSizeRel` |
 
 ## Build Targets
+
 | Target          | Description  |
 | --------------- | ------------ |
 | `test`  | executes all tests |
@@ -122,6 +145,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `coverage-build` | same as `make coverage`, but builds it in a separate directory (`build/coverage`). Since building the coverage report requires different compiler flags, building it in a separate directory keeps the current build directory in good order. |
 
 ### C++ Code Style Related Build Targets
+
 The following targets are only available if `clang-format`, `clang-tidy` and `git` are installed.
 
 Build targets indicated with `*` always come in three different flavors.
@@ -142,12 +166,12 @@ Build targets indicated with `*` always come in three different flavors.
 | `check-submission` | will build, run all tests, check formatting, code style, and generate documentation and coverage report |
 | `fix-submission` | will attempt to fix the reported issues using `clang-format` and `clang-tidy`. Failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically |
 
-### Documentation Related Build Targets
+### Website Related Build Targets
 
 | Target          | Description  |
 | --------------- | ------------ |
-| `doc` | will generate the API, user and developer documentation in directory `build/doc` |
-| `live-dev-guide` and `live-user-guide` | starts a local web server so you can immediately view the documentation in the browser. The website is automatically reloaded if you change a source file.  |
+| `website` | will generate the static files used for biodynamo.org |
+| `website-live` | starts a local web server so you can immediately view the website in the browser. The website is automatically reloaded if you change a source file. |
 
 ## Advanced Build Options
 
@@ -208,6 +232,12 @@ If you want to download the files from remote LFS again execute:
 unset BDM_LOCAL_LFS
 ```
 
-!!! warning
-    At the moment there is no check if the local copy is in sync with
+<br>
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Warning<b><h4>
+    	<p>At the moment there is no check if the local copy is in synch with
     remote. You have to ensure that yourself!
+		</p>
+    </div>
+</a>

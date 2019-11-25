@@ -1,9 +1,28 @@
-# MathArray
- 
+---
+title: "Math Array"
+date: "2019-01-01"
+path: "/docs/userguide/math_array/"
+meta_title: "BioDynaMo User Guide"
+meta_description: "This is the math array page."
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/math_array/"
+    title: "Math Array"
+    description: "This is the math array page."
+sidebar: "userguide"
+keywords:
+  -math
+  -array
+  -complex
+  -operations
+  -description
+---
+
 ## Description
- 
+
 `MathArray<T,N>` is an array-like structure which provides a similar interface to the
-standard `std::array<T,N>` class, but it overloads many standard mathematical 
+standard `std::array<T,N>` class, but it overloads many standard mathematical
 operations (e.g. `+`, `-`, `+=`, etc.). Moreover, it implements several custom
 operations (e.g. `Norm()`, `Normalize()`, etc.).
 
@@ -11,7 +30,7 @@ operations (e.g. `Norm()`, `Normalize()`, etc.).
 
 It is possible to perform several mathematical operations with `MathArray` instances. For instance:
 
-```c++
+```cpp
 MathArray<double, 4> a {1,2,3,4};
 MathArray<double, 3> b {1,1,1,1};
 
@@ -23,14 +42,14 @@ auto sub = a-b;
 
 // Performs the dot product between the two MathArray
 // elements and it returns a single value. dot == 10
-auto dot = a*b; 
+auto dot = a*b;
 
 // div = {1,2,3,4};
 auto div = a/b;
 ```
 Increment and decrement operations are also defined (plus other in-place operations):
 
-```c++
+```cpp
 MathArray<double, 4> a {1,2,3,4};
 MathArray<double, 3> b {1,1,1,1};
 
@@ -47,7 +66,7 @@ a /= b;
 `MathArray` objects offer also a series of custom operations which make them
 easier to use and to manipulate.
 
-```c++
+```cpp
 MathArray<double, 4> a {1,2,3,4};
 MathArray<double, 3> b {2,2,2,2};
 

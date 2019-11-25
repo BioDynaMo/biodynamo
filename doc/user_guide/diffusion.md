@@ -1,3 +1,22 @@
+---
+title: "Diffusion"
+date: "2019-01-01"
+path: "/docs/userguide/diffusion/"
+meta_title: "BioDynaMo User Guide"
+meta_description: "This is the diffusion page."
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/diffusion/"
+    title: "Diffusion"
+    description: "This is the diffusion page."
+sidebar: "userguide"
+keywords:
+  -diffusion
+  -process
+  -condition
+---
+
 One of BioDynaMo's built-in biological processes is extracellular diffusion.
 It is the process of extracellular substances diffusing through space. The constants
 that govern the diffusion process can be set by the user. Let's go through an
@@ -8,7 +27,7 @@ example where diffusion plays a role.
 `diffusion` is one of many installed demos in BioDynaMo. It can be copied out
 with `biodynamo demo`.
 
-```sh
+```bash
 biodynamo demo diffusion .
 ```
 
@@ -19,7 +38,7 @@ We can note the following things from its content:
 
 #### 1. Substance list
 
-``` C++
+```cpp
 enum Substances { kKalium };
 ```
 
@@ -38,7 +57,7 @@ behavior of the simulation objects (i.e. cells).
 Open the `src/diffusion.h` source file.
 
 First, create a BioDynaMo simulation:
-``` C++
+```cpp
 Simulation simulation(argc, argv);
 ```
 
@@ -46,7 +65,7 @@ Next up is creating the initial model of our simulation.
 Therefore, we have to create an initial set of simulation objects and set their
 attributes:
 
-``` C++
+```cpp
   auto construct = [](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
@@ -115,13 +134,13 @@ extracellular diffusion
 
 Run the following commands to build and run the simulation.
 
-``` sh
+``` bash
 biodynamo run
 ```
 
 ### Visualize the simulation
 
-Load the generated ParaView state file as described in [Section Visualization](visualization.md#export-visualization-files).
+Load the generated ParaView state file as described in [Section Visualization](/docs/userguide/visualization/#export-visualization-files).
 
 From "View", select "Animation Panel". This will display some animation settings
 at the bottom of the screen. From the "Mode" select "Real Time".
@@ -136,7 +155,7 @@ Then click the Play button at the top of the screen to run the simulation visual
 The differential equations that describe the diffusion are solved in an
 analytical way using the central difference method as shown in the figure below:
 
-![Central Difference Method](images/diffusion_central_difference_method.png)
+[![Central Difference Method](images/diffusion_central_difference_method.png)](/docs/userguide/diffusion/#diffusion-parameter-constraints)
 
 The diffusion coefficient dictates the speed of diffusing a substance through
 space, while with the decay constant one controls the speed at which a substance
@@ -144,7 +163,7 @@ decays. Mathematically, the method would allow for unphysical behavior to occur,
 negative concentration values. In order to avoid such behavior from happening,
 we impose the following constraint on the parameters:
 
-![Parameter Constraint](images/diffusion_parameters_constraint.png)
+[![Parameter Constraint](images/diffusion_parameters_constraint.png)](/docs/userguide/diffusion/#diffusion-parameter-constraints)
 
 Since as a user, you are giving the resolution of the diffusion grid and not the
 distance between the grid points, you can determine this value by dividing the

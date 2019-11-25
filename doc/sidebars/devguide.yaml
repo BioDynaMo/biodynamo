@@ -1,0 +1,13 @@
+- groups:
+  - group: Welcome
+    items:
+      - title: Introduction
+        link: /docs/devguide/
+      - title: Build BioDynaMo
+        link: /docs/devguide/build/
+  - group: Code
+    items:
+      - title: Code Quality
+        link: /docs/devguide/code_quality/
+      - title: Contribute
+        link: /docs/devguide/contribute/

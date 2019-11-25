@@ -1,3 +1,27 @@
+---
+title: "Prerequisites"
+date: "2019-01-01"
+path: "/docs/userguide/prerequisites/"
+meta_title: "BioDynaMo Prerequisites"
+meta_description: "This is the prerequisites page."
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/prerequisites/"
+    title: "Prerequisites"
+    description: "This is the prerequisites page."
+sidebar: "userguide"
+keywords:
+  -prerequisites
+  -dependencies
+  -third
+  -party
+  -packages
+  -required
+  -optional
+---
+
+
 # Prerequisites
 
 This page lists the prerequisites packages that needs to be installed in order to build correctly BioDynaMo.
@@ -46,7 +70,7 @@ libpthread-stubs0-dev python-pip python3-pip
 #### Optional Packages
 ```bash
 pip install --upgrade pip
-$HOME/.local/bin/pip2 install --user mkdocs mkdocs-material jupyter metakernel
+$HOME/.local/bin/pip2 install --user jupyter metakernel
 sudo apt-get install -y freeglut3-dev valgrind \
   clang-3.9 clang-format-3.9 clang-tidy-3.9 \
   doxygen graphviz lcov gcovr \
@@ -98,7 +122,7 @@ sudo yum -y install wget cmake3 libXt-devel libXext-devel \
 #### Optional Packages
 ```bash
 sudo pip install --upgrade pip
-pip2 install --user mkdocs mkdocs-material nbformat jupyter metakernel
+pip2 install --user nbformat jupyter metakernel
 sudo yum -y install lcov gcovr llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
    # SBML integration
@@ -164,13 +188,13 @@ sudo fink install wget llvm-clang cmake libomp-dev libtbb4 openmpi \
 Using HomeBrew:
 
 ```bash
-pip2 install --user mkdocs mkdocs-material nbformat jupyter metakernel
+pip2 install --user nbformat jupyter metakernel
 brew install doxygen graphviz lcov gcovr || true
 ```
 
 Using Fink:
 
 ```bash
-pip2 install --user mkdocs mkdocs-material nbformat jupyter metakernel
+pip2 install --user nbformat jupyter metakernel
 sudo fink install doxygen graphviz
 ```

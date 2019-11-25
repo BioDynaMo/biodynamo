@@ -1,4 +1,21 @@
-# Notebooks
+---
+title: "BioDynaMo Notebooks"
+date: "2019-11-11"
+path: "/docs/userguide/notebook/"
+meta_title: "BioDynaMo Dev Guide"
+meta_description: "Information about BioDynaMo Notebooks"
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/add_page/"
+    title: "Adding documentation webpage"
+    description: "Information about adding documentation to the BioDynaMo website."
+sidebar: "userguide"
+keywords:
+  -notebooks
+  -jupyter
+  -web-app
+---
 
 BioDynaMo supports the use of Jupyter Notebooks to create, run and visualize
 simulations in. This is a more user-friendly interface to BioDynaMo, and is

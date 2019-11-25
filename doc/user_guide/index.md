@@ -1,4 +1,23 @@
-# Welcome to BioDynaMo
+---
+title: "Introduction"
+date: "2019-01-01"
+path: "/docs/userguide/"
+meta_title: "BioDynaMo User Guide"
+meta_description: "This is the introduction page for the user guide."
+toc: true
+image: ""
+next:
+    url:  "/docs/userguide/"
+    title: "Introduction"
+    description: "This is the introduction page for the user guide."
+sidebar: "userguide"
+keywords:
+  -introduction
+  -intro
+  -start
+  -begin
+  -beginning
+---
 
 ## What is BioDynaMo?
 
@@ -17,8 +36,8 @@ research questions.
 
 This guide corresponds to the latest version of BioDynaMo. Please make sure that
 your installation has the exact same version string as indicated at the top of the
-[API documentation](https://biodynamo.github.io/api/).
-Please head over to our [installation/update instructions](installation) if you haven't installed
+[API documentation](/bioapi/).
+Please head over to our [installation/update instructions](/docs/userguide/installation) if you haven't installed
 BioDynaMo yet, or the installation is outdated.
 
 Execute `biodynamo -v` to check which version is installed on your system.
@@ -29,5 +48,5 @@ it: `vMAJOR.MINOR.PATCH-ADDITIONAL_COMMITS-gCOMMIT_ID`
 
 BioDynaMo is in an early development stage. Therefore, our API changes quite
 rapidly as we learn new requirements from our users. In case your simulation
-does not compile after an update, please have a look at our [changelog](changelog)
+does not compile after an update, please have a look at our [changelog](/docs/userguide/changelog)
 and update your code.
