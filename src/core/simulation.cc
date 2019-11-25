@@ -236,18 +236,14 @@ void Simulation::InitializeRuntimeParams(
   }
 
   // Handle "cuda" and "opencl" arguments
-#ifdef USE_CUDA
   if (clo->Get<bool>("cuda")) {
-    parser_->use_gpu_ = true;
+    param_->use_gpu_ = true;
   }
-#endif  // USE_CUDA
 
-#ifdef USE_OPENCL
   if (clo->Get<bool>("opencl")) {
     param_->use_gpu_ = true;
     param_->use_opencl_ = true;
   }
-#endif  // USE_OPENCL
 
   set_param(param_);
 
