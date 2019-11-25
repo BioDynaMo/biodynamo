@@ -20,7 +20,7 @@
 
 set -e -x
 
-if [ "$TRAVIS_BRANCH" = "web-updates" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
   # set-up git
   git config --global user.email "bdmtravis@gmail.com"
   git config --global user.name "BioDynaMo Travis-CI Bot"
