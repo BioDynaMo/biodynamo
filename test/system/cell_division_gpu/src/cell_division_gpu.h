@@ -46,13 +46,13 @@ inline void ExpectArrayNear(const Double3& actual, const Double3& expected,
 
 enum ExecutionMode { kCpu, kCuda, kOpenCl };
 
-inline void RunTest(bool* wrong, ExecutionMode mode, bool verify,
-                    uint64_t timesteps, uint64_t cells_per_dim) {
+inline void RunTest(bool* wrong, ExecutionMode mode, uint64_t timesteps,
+                    uint64_t cells_per_dim) {
   std::cout << "Running simulation on ";
   auto set_param = [&](auto* param) {
     switch (mode) {
       case kCpu:
-        std::cout << "CPU (single core)\n";
+        std::cout << "CPU (" << omp_get_max_threads() << " threads)\n";
         break;
       case kOpenCl:
         std::cout << "GPU (OpenCL)\n";
@@ -65,12 +65,6 @@ inline void RunTest(bool* wrong, ExecutionMode mode, bool verify,
         break;
     }
   };
-
-  // Results below are with 2 cells per dimension and after 10 timesteps
-  if (verify) {
-    cells_per_dim = 2;
-    timesteps = 10;
-  }
 
   Simulation simulation("cell_division_gpu", set_param);
   auto* rm = simulation.GetResourceManager();
@@ -107,75 +101,43 @@ inline void RunTest(bool* wrong, ExecutionMode mode, bool verify,
     simulation.GetScheduler()->Simulate(timesteps);
   }
 
-  if (verify) {
-    ExpectArrayNear(
-        rm->GetSimObject(0)->GetPosition(),
-        {4.1399071506916413909, -5.9871942139195297727, 2.8344890446256703065},
-        wrong);
-    ExpectArrayNear(
-        rm->GetSimObject(1)->GetPosition(),
-        {-2.4263219149482031511, -1.4202336557809887019, 29.769029317615839147},
-        wrong);
-    ExpectArrayNear(
-        rm->GetSimObject(2)->GetPosition(),
-        {-4.9118212650644856865, 23.156656083480623209, -9.1231684411316447125},
-        wrong);
-    ExpectArrayNear(
-        rm->GetSimObject(3)->GetPosition(),
-        {4.3076765979041251597, 15.615300607043293368, 25.657658447555828474},
-        wrong);
-    ExpectArrayNear(
-        rm->GetSimObject(4)->GetPosition(),
-        {28.139314619772036963, -0.20987998233654170388, 4.6381417441282613012},
-        wrong);
-    ExpectArrayNear(
-        rm->GetSimObject(5)->GetPosition(),
-        {24.417550786690171094, 3.347525366344008102, 28.067824703341415216},
-        wrong);
-    ExpectArrayNear(
-        rm->GetSimObject(6)->GetPosition(),
-        {16.614520566718258721, 15.828015607618416638, -4.8357284569095106974},
-        wrong);
-    ExpectArrayNear(
-        rm->GetSimObject(7)->GetPosition(),
-        {14.446017269290647889, 22.250832446808978204, 20.180438615017894932},
-        wrong);
-    if (!wrong) {
-      std::cout << "Simulation was verified correctly!" << std::endl;
-    }
-  }
+  // TODO: add verification of results
 }
 
 inline int Simulate(int argc, const char** argv) {
-  auto options = DefaultSimulationOptionParser(argc, argv);
-  auto custom_options = CustomCLOParser(argc, argv);
-  bool verify = custom_options.GetValue("verify", false);
-  uint64_t cells_per_dim = custom_options.GetValue("cells-per-dim", 2);
-  uint64_t timesteps = custom_options.GetValue("timesteps", 10);
+  auto options = CommandLineOptions(argc, argv);
+  options.AddOption<bool>("verify", "false");
+  options.AddOption<uint64_t>("cells-per-dim", "64");
+  options.AddOption<uint64_t>("timesteps", "5");
+
+  uint64_t cells_per_dim = options.Get<uint64_t>("cells-per-dim");
+  uint64_t timesteps = options.Get<uint64_t>("timesteps");
 
   bool wrong = true;
+  bool is_opencl = options.Get<bool>("opencl");
+  bool is_cuda = options.Get<bool>("cuda");
 
   // TODO(ahmad): after Trello card ("Fix inconsistency in cell state due to
   // direct updates in Biology Modules") enable multithreading, and adjust
   // results if necessary
-  omp_set_num_threads(1);
+  // omp_set_num_threads(1);
 
-  if (!options.cuda_ && !options.opencl_) {
+  if (!is_cuda && !is_opencl) {
     // Run CPU version
-    RunTest(&wrong, kCpu, verify, timesteps, cells_per_dim);
+    RunTest(&wrong, kCpu, timesteps, cells_per_dim);
   }
 
 #ifdef USE_CUDA
-  if (options.cuda_) {
+  if (is_cuda) {
     // Run GPU (CUDA) version
-    RunTest(&wrong, kCuda, verify, timesteps, cells_per_dim);
+    RunTest(&wrong, kCuda, timesteps, cells_per_dim);
   }
 #endif  // USE_CUDA
 
 #ifdef USE_OPENCL
-  if (options.opencl_) {
+  if (is_opencl) {
     // Run GPU (OpenCL) version
-    RunTest(&wrong, kOpenCl, verify, timesteps, cells_per_dim);
+    RunTest(&wrong, kOpenCl, timesteps, cells_per_dim);
   }
 #endif  // USE_OPENCL
 
