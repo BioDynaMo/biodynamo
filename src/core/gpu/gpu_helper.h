@@ -101,7 +101,7 @@ class GpuHelper {
     // from .cl --> .h, since OpenCL kernels must be input as a string here
     std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
     std::ifstream cl_file(bdm_src_dir +
-                          "/gpu/displacement_op_opencl_kernel.cl");
+                          "/core/gpu/displacement_op_opencl_kernel.cl");
     if (cl_file.fail()) {
       Log::Error("CompileOpenCLKernels", "Kernel file does not exists!");
     }

@@ -1,4 +1,5 @@
 #include "core/param/command_line_options.h"
+#include "core/param/param.h"
 #include "core/util/log.h"
 
 namespace bdm {
@@ -137,20 +138,6 @@ void CommandLineOptions::HandleCoreOptions() {
   }
   // Global variable of ROOT that determines verbosity of logging functions
   gErrorIgnoreLevel = ll;
-
-// Handle "cuda" and "opencl" arguments
-#ifdef USE_CUDA
-  if (ret.count("cuda")) {
-    param->use_gpu_ = true;
-  }
-#endif  // USE_CUDA
-
-#ifdef USE_OPENCL
-  if (ret.count("opencl")) {
-    param->use_gpu_ = true;
-    param->use_opencl_ = true;
-  }
-#endif  // USE_OPENCL
 }
 
 }  // namespace bdm

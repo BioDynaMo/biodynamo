@@ -235,6 +235,20 @@ void Simulation::InitializeRuntimeParams(
     param_->restore_file_ = clo->Get<std::string>("restore");
   }
 
+  // Handle "cuda" and "opencl" arguments
+#ifdef USE_CUDA
+  if (clo->Get<bool>("cuda")) {
+    parser_->use_gpu_ = true;
+  }
+#endif  // USE_CUDA
+
+#ifdef USE_OPENCL
+  if (clo->Get<bool>("opencl")) {
+    param_->use_gpu_ = true;
+    param_->use_opencl_ = true;
+  }
+#endif  // USE_OPENCL
+
   set_param(param_);
 
   // Removing this line causes an unexplainable segfault due to setting the
