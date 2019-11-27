@@ -3,6 +3,8 @@
     items:
       - title: Introduction
         link: /docs/userguide/
+      - title: Prerequisites
+        link: /docs/userguide/prerequisites/
       - title: Installation
         link: /docs/userguide/installation/
       - title: First Steps
