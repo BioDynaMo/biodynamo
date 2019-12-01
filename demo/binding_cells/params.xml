@@ -30,8 +30,12 @@
     </module>
     <module>
       <name>Inhibition</name>
-      <concentration_threshold value_type="scalar">0.0095</concentration_threshold>
-      <binding_probability value_type="scalar">0.2</binding_probability>
+      <concentration_threshold value_type="range">
+      <min>0.0040</min>
+      <max>0.0095</max>
+      <stride>0.0005</stride>
+      </concentration_threshold>
+      <binding_probability value_type="scalar">0.8</binding_probability>
     </module>
   </biology_modules>
   <substances>

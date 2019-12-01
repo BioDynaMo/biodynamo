@@ -24,9 +24,10 @@
 #include "biology_modules/physical_bond_module.h"
 #include "biology_modules/random_walk_module.h"
 #include "biology_modules/spring_force_module.h"
+#include "core/parallel_execution/xml_util.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
-#include "my_experiment.h"
+#include "my_results.h"
 #include "plot_graph.h"
 #include "simulation_objects/my_cell.h"
 
@@ -48,6 +49,7 @@ inline int Simulate(int argc, const char** argv,
                     XMLParams* xml_params = nullptr) {
   Simulation simulation(argc, argv, xml_params);
   auto xmlp = simulation.GetXMLParam();
+  // xmlp.Print();
 
   // Simulation parameters
   // clang-format off
@@ -77,7 +79,7 @@ inline int Simulate(int argc, const char** argv,
   auto* rm = Simulation::GetActive()->GetResourceManager();
   auto* random = simulation.GetRandom();
   for (int i = 0; i < num_monocytes; i++) {
-    double x = random->Uniform(min_space, min_space);
+    double x = random->Uniform(min_space, max_space);
     double y = random->Uniform(min_space, max_space);
     double z = 0;
     auto* new_simulation_object = mc_builder({x, y, z});
@@ -99,8 +101,9 @@ inline int Simulate(int argc, const char** argv,
   // Create Antibody substance
   ModelInitializer::DefineSubstance(kAntibody, "Antibody", diff_rate,
                                     decay_rate, res);
-  ModelInitializer::InitializeSubstance(kAntibody, "Antibody",
-                                        GaussianBand(0, 5, Axis::kZAxis));
+  ModelInitializer::InitializeSubstance(
+      kAntibody, "Antibody",
+      GaussianBand((max_space - min_space) / 2, 5, Axis::kZAxis));
 
   // Schedule operation to obtain results of interest
   std::vector<int> t(timesteps);
@@ -130,8 +133,9 @@ inline int Simulate(int argc, const char** argv,
   // Store my experimental results and write to file
   std::string name = "binding_cells";
   std::string brief = "T-Cell_Activity_Study";
-  MyExperiment ex(name, brief);
+  MyResults ex(name, brief);
   ex.timesteps = timesteps;
+  ex.foo = 42.0;
   MakeNonAtomic(activity, &(ex.activity));
   MakeNonAtomic(occupancy, &(ex.occupancy));
   ex.WriteResultToROOT();

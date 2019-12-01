@@ -15,6 +15,8 @@
 
 #include "mpi.h"
 
+#include <cstdlib>
+
 int main(int argc, const char** argv) {
   // We need to pass a non-const version of argv to MPI_Init, so we make a deep
   // copy
@@ -40,6 +42,7 @@ int main(int argc, const char** argv) {
         bdm::ParallelExecutionManager pem(worldsize, xml_file);
         int ret = pem.Start();
         MPI_Finalize();
+        system("hadd results.root *.root");
         return ret;
       } else {
         bdm::Worker w(myrank, [&](bdm::XMLParams* params) {

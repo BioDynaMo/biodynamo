@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/parallel_execution/xml_util.h"
 #include "core/parallel_execution/util.h"
 #include "core/param/param.h"
 #include "core/util/log.h"
