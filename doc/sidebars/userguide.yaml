@@ -45,6 +45,10 @@
     items:
       - title: Log
         link: /docs/userguide/changelog/
+  - group: FAQ
+    items:
+      - title: FAQ
+        link: /docs/userguide/faq/
   - group: Contact
     items:
       - title: Info
