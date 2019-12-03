@@ -146,7 +146,7 @@ function(install_inside_build)
 
     include(GreatCMakeCookOff/TargetCopyFiles)
 
-    add_custom_target(copy_files_bdm ALL DEPENDS biodynamo)
+    add_custom_target(copy_files_bdm ALL DEPENDS biodynamo BDMGlyphFilter)
 
     # Install the enviroment source script
 
