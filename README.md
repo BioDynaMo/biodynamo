@@ -1,6 +1,6 @@
 <p align="center">
   <a href="http://biodynamo.org">
-    <img src="https://biodynamo.web.cern.ch/sites/biodynamo.web.cern.ch/files/Logo_Full_Big_0.png" alt="BioDynaMo logo" width="72" height="72">
+    <img src="https://biodynamo.org/images/bdm_logo_large.png" alt="BioDynaMo logo" width="72" height="72">
   </a>
 </p>
 
@@ -16,9 +16,9 @@
   ·
   <a href="https://github.com/BioDynaMo/biodynamo/issues/new">Request feature</a>
   ·
-  <a href="https://biodynamo.github.io/user/">User's guide</a>
+  <a href="https://biodynamo.org/docs/userguide/">User's guide</a>
   ·
-  <a href="https://biodynamo.github.io/dev/">Developer's guide</a>
+  <a href="https://biodynamo.org/docs/devguide/">Developer's guide</a>
 </p>
 
 <p align="center">
@@ -44,7 +44,7 @@ cd biodynamo
 ./install.sh
 ```
 
-For more information, check out our [user's guide](https://biodynamo.github.io/user/).
+For more information, check out our [user's guide](https://biodynamo.org/docs/userguide/).
 
 <!-- ## Examples
 -- Show some nice visualizations here, with a one-liner explanation -->
@@ -53,7 +53,7 @@ For more information, check out our [user's guide](https://biodynamo.github.io/u
 
 The main purpose of this repository is to evolve BioDynaMo, making it faster and
 easier to use. Development of BioDynaMo happens in the open on Github, and we are
-grateful to the community for contributing bugfixes and improvements. Please read our [contribution guide](https://biodynamo.github.io/dev/contribute/) and learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
+grateful to the community for contributing bugfixes and improvements. Please read our [contribution guide](https://biodynamo.org/docs/devguide/contribute/) and learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
 
 ### License
 
