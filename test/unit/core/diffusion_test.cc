@@ -540,7 +540,7 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
 
   // Write diffusion visualization to file
   CatalystAdaptor adaptor("");
-  adaptor.Visualize(1, true);
+  adaptor.Visualize();
   adaptor.WriteToFile(0);
 
   // Read back from file

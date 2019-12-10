@@ -65,7 +65,7 @@ class Scheduler {
 
   /// Executes one step.
   /// This design makes testing more convenient
-  virtual void Execute(bool last_iteration);
+  virtual void Execute();
 
  private:
   SimulationBackup* backup_ = nullptr;

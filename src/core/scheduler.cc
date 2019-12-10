@@ -87,7 +87,7 @@ void Scheduler::Simulate(uint64_t steps) {
 
   Initialize();
   for (unsigned step = 0; step < steps; step++) {
-    Execute(step == steps - 1);
+    Execute();
 
     total_steps_++;
     Backup();
@@ -131,7 +131,7 @@ Operation* Scheduler::GetOperation(const std::string& name) {
   return nullptr;
 }
 
-void Scheduler::Execute(bool last_iteration) {
+void Scheduler::Execute() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* grid = sim->GetGrid();
@@ -142,9 +142,7 @@ void Scheduler::Execute(bool last_iteration) {
     all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
   });
 
-  Timing::Time("visualize", [&]() {
-    visualization_->Visualize(total_steps_, last_iteration);
-  });
+  Timing::Time("visualize", [&]() { visualization_->Visualize(); });
   Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
 
   // update all sim objects: run all CPU operations

@@ -19,6 +19,7 @@
 #include "biodynamo.h"
 #include "core/util/io.h"
 #include "core/visualization/catalyst_adaptor.h"
+#include "core/visualization/catalyst_helper.h"
 #include "unit/core/visualization/catalyst_adaptor_test.h"
 #include "unit/test_util/test_util.h"
 
@@ -63,7 +64,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   Simulation simulation(kSimulationName, set_param);
 
   // create internal objects
-  vtkNew<vtkCPDataDescription> data_description;
+  vtkCPDataDescription* data_description = vtkCPDataDescription::New();
   std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids;
   vtk_so_grids["cell"] = new VtkSoGrid("cell", data_description);
   vtk_so_grids["cell"]->initialized_ = true;
@@ -76,7 +77,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   vtk_dgrids["sodium"] = new VtkDiffusionGrid("sodium", data_description);
   vtk_dgrids["sodium"]->used_ = true;
 
-  CatalystAdaptor::GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
+  GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
 
   // free memory
   for (auto& el : vtk_so_grids) {
@@ -85,6 +86,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   for (auto& el : vtk_dgrids) {
     delete el.second;
   }
+  data_description->Delete();
 
   ASSERT_TRUE(FileExists(kSimulationInfoJson));
 
@@ -203,7 +205,7 @@ TEST_F(CatalystAdaptorTest, DISABLED_CheckVisualizationSelection) {
   // This must not crash the system. Object might be created at a later stage
   // during simulation.
   CatalystAdaptor adaptor("");
-  adaptor.Visualize(1, true);
+  adaptor.Visualize();
   adaptor.WriteToFile(0);
 
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
@@ -225,7 +227,7 @@ TEST_F(CatalystAdaptorTest, DISABLED_CheckVisualizationSelection) {
   rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
 
   // Write diffusion visualization to file
-  adaptor.Visualize(2, true);
+  adaptor.Visualize();
   adaptor.WriteToFile(1);
 
   // Read back from file

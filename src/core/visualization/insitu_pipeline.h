@@ -43,7 +43,7 @@
 #include <vtkSMSourceProxy.h>
 #include <vtkUnstructuredGrid.h>
 
-#include "core/visualization/catalyst_helper_structs.h"
+#include "core/visualization/catalyst_helper.h"
 
 #endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
 
