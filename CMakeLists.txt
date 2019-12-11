@@ -280,7 +280,7 @@ if(paraview)
 
     # Add several ParaView related options
     include("${PARAVIEW_USE_FILE}")
-    add_definitions("-DUSE_CATALYST")
+    add_definitions("-DUSE_PARAVIEW")
     link_directories($ENV{ParaView_LIB_DIR})
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
           vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)

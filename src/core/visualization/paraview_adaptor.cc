@@ -12,11 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/visualization/catalyst_adaptor.h"
-#include "core/visualization/catalyst_helper.h"
+#include "core/visualization/paraview_adaptor.h"
+#include "core/visualization/paraview_helper.h"
 #include "core/visualization/insitu_pipeline.h"
 
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#include <cstdlib>
+
+#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
@@ -37,7 +39,7 @@
 
 namespace bdm {
 
-struct CatalystAdaptor::ParaViewImpl {
+struct ParaviewAdaptor::ParaViewImpl {
   vtkCPProcessor* g_processor_ = nullptr;
   std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids_;
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids_;
@@ -45,12 +47,12 @@ struct CatalystAdaptor::ParaViewImpl {
   vtkCPDataDescription* data_description_ = nullptr;
 };
 
-CatalystAdaptor::CatalystAdaptor(const std::string& script)
+ParaviewAdaptor::ParaviewAdaptor(const std::string& script)
     : python_script_(script) {
   counter_++;
 }
 
-CatalystAdaptor::~CatalystAdaptor() {
+ParaviewAdaptor::~ParaviewAdaptor() {
   auto* param = Simulation::GetActive()->GetParam();
   counter_--;
 
@@ -82,7 +84,7 @@ CatalystAdaptor::~CatalystAdaptor() {
   }
 }
 
-void CatalystAdaptor::Visualize() {
+void ParaviewAdaptor::Visualize() {
   if (!initialized_) {
     Initialize();
     initialized_ = true;
@@ -105,7 +107,7 @@ void CatalystAdaptor::Visualize() {
   }
 }
 
-void CatalystAdaptor::Initialize() {
+void ParaviewAdaptor::Initialize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
@@ -119,13 +121,13 @@ void CatalystAdaptor::Initialize() {
 
     if (param->live_visualization_ &&
         impl_->g_processor_->GetNumberOfPipelines() != 0) {
-      Log::Fatal("CatalystAdaptor",
+      Log::Fatal("ParaviewAdaptor",
                  "Live visualization does not support multiple "
                  "simulations. Turning off live visualization for ",
                  sim->GetUniqueName());
-    } else if (param->python_catalyst_pipeline_) {
+    } else if (param->python_paraview_pipeline_) {
       vtkNew<vtkCPPythonScriptPipeline> pipeline;
-      pipeline->Initialize(python_script_.c_str());
+      pipeline->Initialize(python_script_);
       impl_->g_processor_->AddPipeline(pipeline.GetPointer());
     } else if (!exclusive_export_viz_) {
       impl_->pipeline_ = new InSituPipeline();
@@ -152,7 +154,7 @@ void CatalystAdaptor::Initialize() {
   }
 }
 
-void CatalystAdaptor::LiveVisualization(double time, size_t step) {
+void ParaviewAdaptor::LiveVisualization(double time, size_t step) {
   if (impl_->data_description_ == nullptr) {
     impl_->data_description_ = vtkCPDataDescription::New();
   } else {
@@ -179,7 +181,7 @@ void CatalystAdaptor::LiveVisualization(double time, size_t step) {
 /// @param[in]  step            The time step
 /// @param[in]  last_time_step  The last time step
 ///
-void CatalystAdaptor::ExportVisualization(double time, size_t step) {
+void ParaviewAdaptor::ExportVisualization(double time, size_t step) {
   if (impl_->data_description_ == nullptr) {
     impl_->data_description_ = vtkCPDataDescription::New();
   } else {
@@ -192,12 +194,12 @@ void CatalystAdaptor::ExportVisualization(double time, size_t step) {
   WriteToFile(step);
 }
 
-void CatalystAdaptor::CreateVtkObjects() {
+void ParaviewAdaptor::CreateVtkObjects() {
   BuildSimObjectsVTKStructures();
   BuildDiffusionGridVTKStructures();
 }
 
-void CatalystAdaptor::ProcessSimObject(const SimObject* so) {
+void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
   auto* param = Simulation::GetActive()->GetParam();
   auto so_name = so->GetTypeName();
 
@@ -214,17 +216,17 @@ void CatalystAdaptor::ProcessSimObject(const SimObject* so) {
     // If we segfault at here it probably means that there is a problem
     // with the pipeline (either the C++ pipeline or Python pipeline)
     // We do not need to RequestDataDescription in Export Mode, because
-    // we do not make use of Catalyst CoProcessing capabilities
+    // we do not make use of ParaView Catalyst CoProcessing capabilities
     if (exclusive_export_viz_ ||
         (impl_->g_processor_->RequestDataDescription(
             impl_->data_description_)) != 0) {
-      CatalystSoVisitor visitor(vsg);
+      ParaviewSoVisitor visitor(vsg);
       so->ForEachDataMemberIn(vsg->vis_data_members_, &visitor);
     }
   }
 }
 
-void CatalystAdaptor::BuildSimObjectsVTKStructures() {
+void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
   rm->ApplyOnAllElements([&](SimObject* so) { ProcessSimObject(so); });
@@ -233,7 +235,7 @@ void CatalystAdaptor::BuildSimObjectsVTKStructures() {
 // ---------------------------------------------------------------------------
 // diffusion grids
 
-void CatalystAdaptor::ProcessDiffusionGrid(const DiffusionGrid* grid) {
+void ParaviewAdaptor::ProcessDiffusionGrid(const DiffusionGrid* grid) {
   auto* param = Simulation::GetActive()->GetParam();
   auto name = grid->GetSubstanceName();
 
@@ -284,14 +286,14 @@ void CatalystAdaptor::ProcessDiffusionGrid(const DiffusionGrid* grid) {
   }
 }
 
-void CatalystAdaptor::BuildDiffusionGridVTKStructures() {
+void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
   rm->ApplyOnAllDiffusionGrids(
       [&](DiffusionGrid* grid) { ProcessDiffusionGrid(grid); });
 }
 
-void CatalystAdaptor::WriteToFile(size_t step) {
+void ParaviewAdaptor::WriteToFile(size_t step) {
   auto* sim = Simulation::GetActive();
   for (auto& el : impl_->vtk_so_grids_) {
     vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
@@ -317,7 +319,7 @@ void CatalystAdaptor::WriteToFile(size_t step) {
 /// This function generates the Paraview state based on the exported files
 /// Therefore, the user can load the visualization simply by opening the pvsm
 /// file and does not have to perform a lot of manual steps.
-void CatalystAdaptor::GenerateParaviewState() {
+void ParaviewAdaptor::GenerateParaviewState() {
   auto* sim = Simulation::GetActive();
   std::stringstream python_cmd;
   std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
@@ -327,7 +329,7 @@ void CatalystAdaptor::GenerateParaviewState() {
              << sim->GetOutputDir() << "/" << kSimulationInfoJson;
   int ret_code = system(python_cmd.str().c_str());
   if (ret_code) {
-    Log::Fatal("CatalystAdaptor::GenerateParaviewState",
+    Log::Fatal("ParaviewAdaptor::GenerateParaviewState",
                "Error during generation of ParaView state\n", "Command\n",
                python_cmd.str());
   }
@@ -344,16 +346,16 @@ void CatalystAdaptor::GenerateParaviewState() {
 namespace bdm {
 
 /// False front (to ignore Catalyst in gtests)
-class CatalystAdaptor {
+class ParaviewAdaptor {
  public:
-  explicit CatalystAdaptor(const std::string& script) {}
+  explicit ParaviewAdaptor(const std::string& script) {}
 
   void Visualize() {}
 
  private:
-  friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
-  friend class CatalystAdaptorTest_GenerateParaviewState_Test;
-  friend class CatalystAdaptorTest_CheckVisualizationSelection_Test;
+  friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
+  friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
+  friend class ParaviewAdaptorTest_CheckVisualizationSelection_Test;
   friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
   void LiveVisualization(double time, size_t time_step) {}
@@ -371,4 +373,4 @@ void GenerateSimulationInfoJson(
 
 }  // namespace bdm
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)

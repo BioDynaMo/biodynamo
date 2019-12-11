@@ -12,13 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_CORE_VISUALIZATION_CATALYST_ADAPTOR_TEST_H_
-#define UNIT_CORE_VISUALIZATION_CATALYST_ADAPTOR_TEST_H_
+#ifndef UNIT_CORE_VISUALIZATION_PARAVIEW_ADAPTOR_TEST_H_
+#define UNIT_CORE_VISUALIZATION_PARAVIEW_ADAPTOR_TEST_H_
 
 #include "core/sim_object/cell.h"
 
 namespace bdm {
-namespace catalyst_adaptor_test_internal {
+namespace paraview_adaptor_test_internal {
 
 class MyCell : public Cell {
   BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, dummmy_);
@@ -42,7 +42,7 @@ class MyNeuron : public Cell {
   int dummmy_;
 };
 
-}  // namespace catalyst_adaptor_test_internal
+}  // namespace paraview_adaptor_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_CORE_VISUALIZATION_CATALYST_ADAPTOR_TEST_H_
+#endif  // UNIT_CORE_VISUALIZATION_PARAVIEW_ADAPTOR_TEST_H_

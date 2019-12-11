@@ -20,14 +20,14 @@
 #include "core/sim_object/cell.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
-#include "core/visualization/catalyst_adaptor.h"
+#include "core/visualization/paraview_adaptor.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
-#ifdef USE_CATALYST
+#ifdef USE_PARAVIEW
 #include <vtkImageData.h>
 #include <vtkXMLImageDataReader.h>
-#endif  // USE_CATALYST
+#endif  // USE_PARAVIEW
 
 #define ROOTFILE "bdmFile.root"
 
@@ -500,7 +500,7 @@ TEST(DiffusionTest, Convergence) {
   delete d_grid8;
 }
 
-#ifdef USE_CATALYST
+#ifdef USE_PARAVIEW
 
 // Travis does not support OpenGL 3.3
 // Therefore, pvpython crashes.
@@ -539,7 +539,7 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   rm->GetDiffusionGrid(kSubstance2)->RunInitializers();
 
   // Write diffusion visualization to file
-  CatalystAdaptor adaptor("");
+  ParaviewAdaptor adaptor("");
   adaptor.Visualize();
   adaptor.WriteToFile(0);
 
@@ -565,6 +565,6 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   remove(filename.c_str());
 }
 
-#endif  // USE_CATALYST
+#endif  // USE_PARAVIEW
 
 }  // namespace bdm

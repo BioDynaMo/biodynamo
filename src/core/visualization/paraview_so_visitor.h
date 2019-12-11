@@ -12,12 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_CATALYST_SO_VISITOR_H_
-#define CORE_VISUALIZATION_CATALYST_SO_VISITOR_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_SO_VISITOR_H_
+#define CORE_VISUALIZATION_PARAVIEW_SO_VISITOR_H_
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
 #include <string>
 
@@ -25,17 +25,17 @@
 #include "core/scheduler.h"
 #include "core/sim_object/so_visitor.h"
 #include "core/simulation.h"
-#include "core/visualization/catalyst_helper.h"
+#include "core/visualization/paraview_helper.h"
 
 namespace bdm {
 
 /// This simulation object visitor is used to extract data from simulation
 /// objects. It also creates the required vtk data structures and resets them
 /// at the beginning of each iteration.
-class CatalystSoVisitor : public SoVisitor {
+class ParaviewSoVisitor : public SoVisitor {
  public:
-  explicit CatalystSoVisitor(VtkSoGrid* so_grid);
-  virtual ~CatalystSoVisitor();
+  explicit ParaviewSoVisitor(VtkSoGrid* so_grid);
+  virtual ~ParaviewSoVisitor();
 
   void Visit(const std::string& dm_name, size_t type_hash_code,
              const void* data) override;
@@ -57,6 +57,6 @@ class CatalystSoVisitor : public SoVisitor {
 
 }  // namespace bdm
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
-#endif  // CORE_VISUALIZATION_CATALYST_SO_VISITOR_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_SO_VISITOR_H_

@@ -12,12 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_CATALYST_ADAPTOR_H_
-#define CORE_VISUALIZATION_CATALYST_ADAPTOR_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_ADAPTOR_H_
+#define CORE_VISUALIZATION_PARAVIEW_ADAPTOR_H_
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
 #include <algorithm>
 #include <cstdlib>
@@ -34,22 +34,22 @@
 #include "core/shape.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
-#include "core/visualization/catalyst_so_visitor.h"
+#include "core/visualization/paraview_so_visitor.h"
 #include "core/visualization/visualization_adaptor.h"
 
 namespace bdm {
 
 /// The class that bridges the simulation code with ParaView.
-class CatalystAdaptor : VisualizationAdaptor {
+class ParaviewAdaptor : VisualizationAdaptor {
  public:
   /// Initializes Catalyst with the predefined pipeline and allocates memory
   /// for the VTK grid structures
   ///
   /// @param[in]  script  The Python script that contains the pipeline
   ///
-  explicit CatalystAdaptor(const std::string& script);
+  explicit ParaviewAdaptor(const std::string& script);
 
-  ~CatalystAdaptor();
+  ~ParaviewAdaptor();
 
   /// Visualize one timestep based on the configuration in `Param`
   void Visualize();
@@ -64,9 +64,9 @@ class CatalystAdaptor : VisualizationAdaptor {
   bool initialized_ = false;
   bool exclusive_export_viz_ = false;
 
-  friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
-  friend class CatalystAdaptorTest_GenerateParaviewState_Test;
-  friend class CatalystAdaptorTest_DISABLED_CheckVisualizationSelection_Test;
+  friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
+  friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
+  friend class ParaviewAdaptorTest_DISABLED_CheckVisualizationSelection_Test;
   friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
   /// Parameters might be set after the constructor has been called.
@@ -142,16 +142,16 @@ class CatalystAdaptor : VisualizationAdaptor {
 namespace bdm {
 
 /// False front (to ignore Catalyst in gtests)
-class CatalystAdaptor {
+class ParaviewAdaptor {
  public:
-  explicit CatalystAdaptor(const std::string& script) {}
+  explicit ParaviewAdaptor(const std::string& script) {}
 
   void Visualize() {}
 
  private:
-  friend class CatalystAdaptorTest_GenerateSimulationInfoJson_Test;
-  friend class CatalystAdaptorTest_GenerateParaviewState_Test;
-  friend class CatalystAdaptorTest_CheckVisualizationSelection_Test;
+  friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
+  friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
+  friend class ParaviewAdaptorTest_CheckVisualizationSelection_Test;
   friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
   void LiveVisualization(double time, size_t time_step) {}
@@ -165,6 +165,6 @@ class CatalystAdaptor {
 
 }  // namespace bdm
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
-#endif  // CORE_VISUALIZATION_CATALYST_ADAPTOR_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_ADAPTOR_H_

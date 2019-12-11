@@ -323,8 +323,8 @@ struct Param {
   /// Default value: `false`\n
   /// TOML config file:
   ///     [development]
-  ///     python_catalyst_pipeline_ = false
-  bool python_catalyst_pipeline_ = false;
+  ///     python_paraview_pipeline_ = false
+  bool python_paraview_pipeline_ = false;
 
   /// Display the current simulation step in the terminal output
   /// Default value: `true`\n

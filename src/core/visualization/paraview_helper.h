@@ -12,12 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_CATALYST_HELPER_STRUCTS_H_
-#define CORE_VISUALIZATION_CATALYST_HELPER_STRUCTS_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_HELPER_STRUCTS_H_
+#define CORE_VISUALIZATION_PARAVIEW_HELPER_STRUCTS_H_
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
 #include <set>
 #include <string>
@@ -52,7 +52,7 @@ struct VtkDataArrayWrapper {
 };
 
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
-/// `CatalystAdaptor` to visualize simulation objects.
+/// `ParaviewAdaptor` to visualize simulation objects.
 struct VtkSoGrid {
   VtkSoGrid(const char* type_name, vtkCPDataDescription* data_description) {
     data_ = vtkUnstructuredGrid::New();
@@ -90,7 +90,7 @@ struct VtkSoGrid {
 };
 
 /// Adds additional data members to the `vtkImageData` required by
-/// `CatalystAdaptor` to visualize diffusion grid.
+/// `ParaviewAdaptor` to visualize diffusion grid.
 struct VtkDiffusionGrid {
   VtkDiffusionGrid(const std::string& name,
                    vtkCPDataDescription* data_description) {
@@ -253,6 +253,6 @@ inline void GenerateSimulationInfoJson(
 
 }  // namespace bdm
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
-#endif  // CORE_VISUALIZATION_CATALYST_HELPER_STRUCTS_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_HELPER_STRUCTS_H_

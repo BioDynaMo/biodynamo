@@ -12,12 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
 #include <string>
 
-#include "core/visualization/catalyst_helper.h"
-#include "core/visualization/catalyst_so_visitor.h"
+#include "core/visualization/paraview_helper.h"
+#include "core/visualization/paraview_so_visitor.h"
 
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
@@ -26,7 +26,7 @@
 
 namespace bdm {
 
-struct CatalystSoVisitor::ParaViewImpl {
+struct ParaviewSoVisitor::ParaViewImpl {
   VtkSoGrid* so_grid_;
 };
 
@@ -103,12 +103,12 @@ vtkDoubleArray* GetDouble3Array(const std::string& dm_name,
   return vtk_array;
 }
 
-CatalystSoVisitor::CatalystSoVisitor(VtkSoGrid* so_grid) {
+ParaviewSoVisitor::ParaviewSoVisitor(VtkSoGrid* so_grid) {
   impl_->so_grid_ = so_grid;
 }
-CatalystSoVisitor::~CatalystSoVisitor() {}
+ParaviewSoVisitor::~ParaviewSoVisitor() {}
 
-void CatalystSoVisitor::Visit(const std::string& dm_name, size_t type_hash_code,
+void ParaviewSoVisitor::Visit(const std::string& dm_name, size_t type_hash_code,
                               const void* data) {
   if (type_hash_code == typeid(double).hash_code()) {
     Double(dm_name, data);
@@ -121,37 +121,37 @@ void CatalystSoVisitor::Visit(const std::string& dm_name, size_t type_hash_code,
   } else if (type_hash_code == typeid(std::array<int, 3>).hash_code()) {
     Int3(dm_name, data);
   } else {
-    Log::Fatal("CatalystSoVisitor::Visit",
+    Log::Fatal("ParaviewSoVisitor::Visit",
                "This data member is not supported for visualization");
   }
 }
 
-void CatalystSoVisitor::Double(const std::string& dm_name, const void* d) {
+void ParaviewSoVisitor::Double(const std::string& dm_name, const void* d) {
   auto& data = *reinterpret_cast<const double*>(d);
   auto* vtk_array = GetDataArray<vtkDoubleArray>(dm_name, impl_->so_grid_);
   vtk_array->InsertNextTuple1(data);
 }
 
-void CatalystSoVisitor::MathArray3(const std::string& dm_name, const void* d) {
+void ParaviewSoVisitor::MathArray3(const std::string& dm_name, const void* d) {
   auto& data = *reinterpret_cast<const Double3*>(d);
   auto* vtk_array = GetDouble3Array(dm_name, impl_->so_grid_);
   // TODO(lukas, ahmad) is there a better way?
   vtk_array->InsertNextTuple3(data[0], data[1], data[2]);
 }
 
-void CatalystSoVisitor::Int(const std::string& dm_name, const void* d) {
+void ParaviewSoVisitor::Int(const std::string& dm_name, const void* d) {
   auto& data = *reinterpret_cast<const int*>(d);
   auto* vtk_array = GetDataArray<vtkIntArray>(dm_name, impl_->so_grid_);
   vtk_array->InsertNextTuple1(data);
 }
 
-void CatalystSoVisitor::Uint64T(const std::string& dm_name, const void* d) {
+void ParaviewSoVisitor::Uint64T(const std::string& dm_name, const void* d) {
   auto& data = *reinterpret_cast<const uint64_t*>(d);
   auto* vtk_array = GetDataArray<vtkIntArray>(dm_name, impl_->so_grid_);
   vtk_array->InsertNextTuple1(data);
 }
 
-void CatalystSoVisitor::Int3(const std::string& dm_name, const void* d) {
+void ParaviewSoVisitor::Int3(const std::string& dm_name, const void* d) {
   auto& data = *reinterpret_cast<const std::array<int, 3>*>(d);
   auto* vtk_array = GetDataArray<vtkIntArray>(dm_name, impl_->so_grid_, 3);
   // TODO(lukas, ahmad) is there a better way?
@@ -160,4 +160,4 @@ void CatalystSoVisitor::Int3(const std::string& dm_name, const void* d) {
 
 }  // namespace bdm
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
