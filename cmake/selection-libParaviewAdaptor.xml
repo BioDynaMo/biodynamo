@@ -1,5 +1,5 @@
 <!-- All types for which the dictionary can be prebuilt (non templated classes)
-     are listed here and included into libbiodynamo.
+     are listed here and included into libParaviewAdaptor.so.
      Classes from directory test are not included. -->
 <lcgdict>
   <selection>

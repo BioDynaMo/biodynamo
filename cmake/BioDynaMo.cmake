@@ -240,7 +240,7 @@ function(build_plugin TARGET)
     bdm_generate_dictionary(${TARGET}-dict OFF
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
-      SELECTION $ENV{BDM_CMAKE_DIR}/selection-libparaviewadaptor.xml
+      SELECTION $ENV{BDM_CMAKE_DIR}/selection-lib${TARGET}.xml
       DEPENDS ${TARGET}-objectlib)
 
     # generate shared library
