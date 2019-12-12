@@ -47,6 +47,8 @@ struct ParaviewAdaptor::ParaviewImpl {
   vtkCPDataDescription* data_description_ = nullptr;
 };
 
+std::atomic<uint64_t> ParaviewAdaptor::counter_;
+
 ParaviewAdaptor::ParaviewAdaptor() {
   counter_++;
   // auto* test = new ParaviewAdaptor::ParaviewImpl();

@@ -55,7 +55,7 @@ class ParaviewAdaptor : VisualizationAdaptor {
 
  private:
   std::unique_ptr<ParaviewImpl> impl_;     //!
-  std::atomic<uint64_t> counter_;  //!
+  static std::atomic<uint64_t> counter_;  //!
 
   /// only needed for live visualization
   bool initialized_ = false;           //!
