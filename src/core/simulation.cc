@@ -18,9 +18,11 @@
 #include <omp.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/grid.h"
 #include "core/param/command_line_options.h"
@@ -33,6 +35,8 @@
 #include "core/util/thread_info.h"
 #include "core/visualization/root/adaptor.h"
 #include "version.h"
+
+#include <TEnv.h>
 
 namespace bdm {
 
@@ -220,8 +224,13 @@ void Simulation::InitializeRuntimeParams(
 
   param_ = new Param();
 
-  // detect if the biodynamo environment has been sourced
-  if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
+  // Read our .rootrc to set BioDynaMo-related settings for ROOT
+  std::stringstream ss;
+  ss << std::getenv("BDMSYS") << "/etc/.rootrc";
+  gEnv->ReadFile(ss.str().c_str(), kEnvUser);
+
+      // detect if the biodynamo environment has been sourced
+      if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
     Log::Fatal("Simulation::InitializeRuntimeParams",
                "The BioDynaMo environment is not set up correctly. Please call "
                "$use_biodynamo and retry this command.");
