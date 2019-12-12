@@ -224,17 +224,17 @@ void Simulation::InitializeRuntimeParams(
 
   param_ = new Param();
 
-  // Read our .rootrc to set BioDynaMo-related settings for ROOT
-  std::stringstream ss;
-  ss << std::getenv("BDMSYS") << "/etc/.rootrc";
-  gEnv->ReadFile(ss.str().c_str(), kEnvUser);
-
-      // detect if the biodynamo environment has been sourced
-      if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
+  // detect if the biodynamo environment has been sourced
+  if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
     Log::Fatal("Simulation::InitializeRuntimeParams",
                "The BioDynaMo environment is not set up correctly. Please call "
                "$use_biodynamo and retry this command.");
   }
+
+  // Read our .rootrc to set BioDynaMo-related settings for ROOT
+  std::stringstream ss;
+  ss << std::getenv("BDMSYS") << "/etc/bdm.rootrc";
+  gEnv->ReadFile(ss.str().c_str(), kEnvUser);
 
   LoadConfigFile(ctor_config, clo->Get<std::string>("config"));
   if (clo->Get<std::string>("backup") != "") {
