@@ -40,8 +40,6 @@ Scheduler::Scheduler() {
   if (backup_->RestoreEnabled()) {
     restore_point_ = backup_->GetSimulationStepsFromBackup();
   }
-  gPluginMgr->AddHandler("VisualizationAdaptor", "paraview", "ParaviewAdaptor",
-                         "ParaViewAdaptor", "ParaviewAdaptor()");
   visualization_ = VisualizationAdaptor::Create("paraview");
   root_visualization_ = new RootAdaptor();
   bound_space_ = new BoundSpace();

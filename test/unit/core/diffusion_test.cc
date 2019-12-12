@@ -539,9 +539,9 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   rm->GetDiffusionGrid(kSubstance2)->RunInitializers();
 
   // Write diffusion visualization to file
-  ParaviewAdaptor adaptor;
-  adaptor.Visualize();
-  adaptor.WriteToFile(0);
+  auto adaptor = VisualizationAdaptor::Create("paraview");
+  adaptor->Visualize();
+  static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(0);
 
   // Read back from file
   vtkSmartPointer<vtkXMLImageDataReader> reader =
@@ -563,6 +563,7 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   size_t idx = rm->GetDiffusionGrid(kSubstance1)->GetBoxIndex(marker);
   EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);
   remove(filename.c_str());
+  delete adaptor;
 }
 
 #endif  // USE_PARAVIEW

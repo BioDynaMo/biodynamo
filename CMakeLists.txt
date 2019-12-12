@@ -413,15 +413,18 @@ file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 
 # Exclude paraview-related source files, which will be loaded dynamically as a
 # plugin upon request
-list(FILTER LIB_SOURCES EXCLUDE REGEX "paraview/*")
-list(FILTER HEADERS EXCLUDE REGEX "paraview/*")
+filter_list(LIB_SOURCES "${LIB_SOURCES}" "paraview/*")
+filter_list(HEADERS "${HEADERS}" "paraview/*")
+
+# Find paraview-related sources and headers for plugin generation
 file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
 file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
 
+set(REQUIRED_PARAVIEW_LIBRARIES "vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallelXML;vtkPVVTKExtensionsDefault;vtkPVServerManagerRendering")
 build_plugin(ParaviewAdaptor
                    SOURCES ${PV_SOURCES}
                    HEADERS ${PV_HEADERS}
-                   LIBRARIES vtkCommonCore vtkPVPythonCatalyst vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+                   LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES})
 # add_library(ParaviewAdaptor SHARED ${PV_SOURCES})
 # if(${ParaView_FOUND})
 #   link_directories($ENV{ParaView_LIB_DIR})
@@ -519,7 +522,8 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
   bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
-                          HEADERS ${TEST_HEADERS})
+                          HEADERS ${TEST_HEADERS}
+                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} ParaviewAdaptor)
   #   separate test binaries - each source file is compiled into a separate binary
   # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
   # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
