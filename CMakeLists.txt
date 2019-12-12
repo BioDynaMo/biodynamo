@@ -416,6 +416,11 @@ file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 filter_list(LIB_SOURCES "${LIB_SOURCES}" "paraview/*")
 filter_list(HEADERS "${HEADERS}" "paraview/*")
 
+build_libbiodynamo(biodynamo
+                   SOURCES ${LIB_SOURCES}
+                   HEADERS ${HEADERS}
+                   LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
+
 # Find paraview-related sources and headers for plugin generation
 file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
 file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
@@ -424,18 +429,8 @@ set(REQUIRED_PARAVIEW_LIBRARIES "vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallel
 build_plugin(ParaviewAdaptor
                    SOURCES ${PV_SOURCES}
                    HEADERS ${PV_HEADERS}
-                   LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES})
-# add_library(ParaviewAdaptor SHARED ${PV_SOURCES})
-# if(${ParaView_FOUND})
-#   link_directories($ENV{ParaView_LIB_DIR})
-#   target_link_libraries(ParaviewAdaptor vtkPVPythonCatalyst
-#         vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
-# endif()
+                   LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo)
 
-build_libbiodynamo(biodynamo
-                   SOURCES ${LIB_SOURCES}
-                   HEADERS ${HEADERS}
-                   LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 endif()
