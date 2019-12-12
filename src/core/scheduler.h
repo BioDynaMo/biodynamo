@@ -26,7 +26,7 @@ namespace bdm {
 
 class SimObject;
 class SimulationBackup;
-class CatalystAdaptor;
+class VisualizationAdaptor;
 class RootAdaptor;
 class BoundSpace;
 class DisplacementOp;
@@ -71,7 +71,7 @@ class Scheduler {
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  CatalystAdaptor* visualization_ = nullptr;   //!
+  VisualizationAdaptor* visualization_ = nullptr;   //!
   RootAdaptor* root_visualization_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;
 

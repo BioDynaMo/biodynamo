@@ -176,6 +176,13 @@ function(install_inside_build)
             GLOB "*.py" "*.sh"
             EXCLUDE "biodynamo.py"
             )
+    
+    # Copy cli files
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/etc/plugins
+            DESTINATION ${CMAKE_INSTALL_ROOT}/etc/plugins
+            GLOB "*.C"
+            )
 
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_BINDIR}

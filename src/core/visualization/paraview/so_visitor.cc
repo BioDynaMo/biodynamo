@@ -16,8 +16,8 @@
 
 #include <string>
 
-#include "core/visualization/paraview_helper.h"
-#include "core/visualization/paraview_so_visitor.h"
+#include "core/visualization/paraview/helper.h"
+#include "core/visualization/paraview/so_visitor.h"
 
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
@@ -26,7 +26,7 @@
 
 namespace bdm {
 
-struct ParaviewSoVisitor::ParaViewImpl {
+struct ParaviewSoVisitor::ParaviewImpl {
   VtkSoGrid* so_grid_;
 };
 
@@ -104,6 +104,8 @@ vtkDoubleArray* GetDouble3Array(const std::string& dm_name,
 }
 
 ParaviewSoVisitor::ParaviewSoVisitor(VtkSoGrid* so_grid) {
+  impl_ = std::unique_ptr<ParaviewSoVisitor::ParaviewImpl>(
+      new ParaviewSoVisitor::ParaviewImpl());
   impl_->so_grid_ = so_grid;
 }
 ParaviewSoVisitor::~ParaviewSoVisitor() {}

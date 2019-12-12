@@ -31,7 +31,7 @@
 #include "core/util/log.h"
 #include "core/util/string.h"
 #include "core/util/thread_info.h"
-#include "core/visualization/root_adaptor.h"
+#include "core/visualization/root/adaptor.h"
 #include "version.h"
 
 namespace bdm {

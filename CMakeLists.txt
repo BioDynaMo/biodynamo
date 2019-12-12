@@ -281,21 +281,19 @@ if(paraview)
     # Add several ParaView related options
     include("${PARAVIEW_USE_FILE}")
     add_definitions("-DUSE_PARAVIEW")
-    link_directories($ENV{ParaView_LIB_DIR})
-    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
-          vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+    # link_directories($ENV{ParaView_LIB_DIR})
+    # set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
+    #       vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
 
 # paraview version 5.5 (MacOS) does not contain TBB
-if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
-  find_package(TBB)
-  if (TBB_FOUND)
-    include_directories(${TBB_INCLUDE_DIRS})
-    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
-  else()
-    MESSAGE(FATAL_ERROR "TBB was not found on your system."
-    " Please run ./prerequisites.sh again before calling cmake.")
-  endif()
+find_package(TBB)
+if (TBB_FOUND)
+  include_directories(${TBB_INCLUDE_DIRS})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
+else()
+  MESSAGE(FATAL_ERROR "TBB was not found on your system."
+  " Please run ./prerequisites.sh again before calling cmake.")
 endif()
 
 if(sbml)
@@ -412,6 +410,25 @@ fix_rootcling_omp_issue()
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
 file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
+
+# Exclude paraview-related source files, which will be loaded dynamically as a
+# plugin upon request
+list(FILTER LIB_SOURCES EXCLUDE REGEX "paraview/*")
+list(FILTER HEADERS EXCLUDE REGEX "paraview/*")
+file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
+file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
+
+build_plugin(ParaviewAdaptor
+                   SOURCES ${PV_SOURCES}
+                   HEADERS ${PV_HEADERS}
+                   LIBRARIES vtkCommonCore vtkPVPythonCatalyst vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+# add_library(ParaviewAdaptor SHARED ${PV_SOURCES})
+# if(${ParaView_FOUND})
+#   link_directories($ENV{ParaView_LIB_DIR})
+#   target_link_libraries(ParaviewAdaptor vtkPVPythonCatalyst
+#         vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+# endif()
+
 build_libbiodynamo(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}

@@ -25,7 +25,7 @@
 #include "core/scheduler.h"
 #include "core/sim_object/so_visitor.h"
 #include "core/simulation.h"
-#include "core/visualization/paraview_helper.h"
+#include "core/visualization/paraview/helper.h"
 
 namespace bdm {
 
@@ -50,9 +50,10 @@ class ParaviewSoVisitor : public SoVisitor {
 
   void Int3(const std::string& dm_name, const void* d);
 
+  struct ParaviewImpl;
+
  private:
-  struct ParaViewImpl;
-  std::unique_ptr<ParaViewImpl> impl_;
+  std::unique_ptr<ParaviewImpl> impl_;
 };
 
 }  // namespace bdm

@@ -12,13 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/visualization/paraview_adaptor.h"
-#include "core/visualization/paraview_helper.h"
-#include "core/visualization/insitu_pipeline.h"
+#include "core/visualization/paraview/adaptor.h"
+#include "core/visualization/paraview/helper.h"
+#include "core/visualization/paraview/insitu_pipeline.h"
 
 #include <cstdlib>
 
-#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#if defined(USE_PARAVIEW)
 
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
@@ -39,7 +39,7 @@
 
 namespace bdm {
 
-struct ParaviewAdaptor::ParaViewImpl {
+struct ParaviewAdaptor::ParaviewImpl {
   vtkCPProcessor* g_processor_ = nullptr;
   std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids_;
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids_;
@@ -47,9 +47,11 @@ struct ParaviewAdaptor::ParaViewImpl {
   vtkCPDataDescription* data_description_ = nullptr;
 };
 
-ParaviewAdaptor::ParaviewAdaptor(const std::string& script)
-    : python_script_(script) {
+ParaviewAdaptor::ParaviewAdaptor() {
   counter_++;
+  // auto* test = new ParaviewAdaptor::ParaviewImpl();
+  impl_ = std::unique_ptr<ParaviewAdaptor::ParaviewImpl>(
+      new ParaviewAdaptor::ParaviewImpl());
 }
 
 ParaviewAdaptor::~ParaviewAdaptor() {
@@ -127,7 +129,10 @@ void ParaviewAdaptor::Initialize() {
                  sim->GetUniqueName());
     } else if (param->python_paraview_pipeline_) {
       vtkNew<vtkCPPythonScriptPipeline> pipeline;
-      pipeline->Initialize(python_script_);
+      std::string python_script =
+          std::string(std::getenv("BDM_SRC_DIR")) +
+          std::string("/visualization/paraview/simple_pipeline.py");
+      pipeline->Initialize(python_script.c_str());
       impl_->g_processor_->AddPipeline(pipeline.GetPointer());
     } else if (!exclusive_export_viz_) {
       impl_->pipeline_ = new InSituPipeline();
@@ -325,7 +330,8 @@ void ParaviewAdaptor::GenerateParaviewState() {
   std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
 
   python_cmd << bdm_src_dir << "/../third_party/paraview/bin/pvpython "
-             << bdm_src_dir << "/core/visualization/generate_pv_state.py "
+             << bdm_src_dir
+             << "/core/visualization/paraview/generate_pv_state.py "
              << sim->GetOutputDir() << "/" << kSimulationInfoJson;
   int ret_code = system(python_cmd.str().c_str());
   if (ret_code) {
@@ -348,7 +354,7 @@ namespace bdm {
 /// False front (to ignore Catalyst in gtests)
 class ParaviewAdaptor {
  public:
-  explicit ParaviewAdaptor(const std::string& script) {}
+  ParaviewAdaptor() {}
 
   void Visualize() {}
 

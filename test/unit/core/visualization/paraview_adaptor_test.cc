@@ -18,8 +18,8 @@
 
 #include "biodynamo.h"
 #include "core/util/io.h"
-#include "core/visualization/paraview_adaptor.h"
-#include "core/visualization/paraview_helper.h"
+#include "core/visualization/paraview/adaptor.h"
+#include "core/visualization/paraview/helper.h"
 #include "unit/core/visualization/paraview_adaptor_test.h"
 #include "unit/test_util/test_util.h"
 
@@ -204,7 +204,7 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   // Visualize one step before any sim objects or diffusion grids are created
   // This must not crash the system. Object might be created at a later stage
   // during simulation.
-  ParaviewAdaptor adaptor("");
+  ParaviewAdaptor adaptor;
   adaptor.Visualize();
   adaptor.WriteToFile(0);
 

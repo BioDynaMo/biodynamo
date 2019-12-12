@@ -20,7 +20,7 @@
 #include "core/sim_object/cell.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
-#include "core/visualization/paraview_adaptor.h"
+#include "core/visualization/paraview/adaptor.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
@@ -539,7 +539,7 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   rm->GetDiffusionGrid(kSubstance2)->RunInitializers();
 
   // Write diffusion visualization to file
-  ParaviewAdaptor adaptor("");
+  ParaviewAdaptor adaptor;
   adaptor.Visualize();
   adaptor.WriteToFile(0);
 

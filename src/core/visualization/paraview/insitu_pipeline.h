@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_INSITU_PIPELINE_H_
-#define CORE_VISUALIZATION_INSITU_PIPELINE_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_INSITU_PIPELINE_H_
+#define CORE_VISUALIZATION_PARAVIEW_INSITU_PIPELINE_H_
 
 #include <cstdlib>
 #include <map>
@@ -43,7 +43,7 @@
 #include <vtkSMSourceProxy.h>
 #include <vtkUnstructuredGrid.h>
 
-#include "core/visualization/paraview_helper.h"
+#include "core/visualization/paraview/helper.h"
 
 #endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
@@ -365,4 +365,4 @@ class InSituPipeline {
 
 }  // namespace bdm
 
-#endif  // CORE_VISUALIZATION_INSITU_PIPELINE_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_INSITU_PIPELINE_H_

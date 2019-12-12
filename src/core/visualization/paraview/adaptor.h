@@ -17,7 +17,7 @@
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
-#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#if defined(USE_PARAVIEW)
 
 #include <algorithm>
 #include <cstdlib>
@@ -34,7 +34,7 @@
 #include "core/shape.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
-#include "core/visualization/paraview_so_visitor.h"
+#include "core/visualization/paraview/so_visitor.h"
 #include "core/visualization/visualization_adaptor.h"
 
 namespace bdm {
@@ -44,25 +44,24 @@ class ParaviewAdaptor : VisualizationAdaptor {
  public:
   /// Initializes Catalyst with the predefined pipeline and allocates memory
   /// for the VTK grid structures
-  ///
-  /// @param[in]  script  The Python script that contains the pipeline
-  ///
-  explicit ParaviewAdaptor(const std::string& script);
+  ParaviewAdaptor();
 
   ~ParaviewAdaptor();
 
   /// Visualize one timestep based on the configuration in `Param`
   void Visualize();
 
+  struct ParaviewImpl;
+
  private:
-  struct ParaViewImpl;
-  std::unique_ptr<ParaViewImpl> impl_;
-  std::atomic<uint64_t> counter_;
+  std::unique_ptr<ParaviewImpl> impl_;     //!
+  std::atomic<uint64_t> counter_;  //!
 
   /// only needed for live visualization
-  std::string python_script_;
-  bool initialized_ = false;
-  bool exclusive_export_viz_ = false;
+  bool initialized_ = false;           //!
+  bool exclusive_export_viz_ = false;  //!
+
+  BDM_CLASS_DEF_NV(ParaviewAdaptor, 1);
 
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
@@ -144,7 +143,7 @@ namespace bdm {
 /// False front (to ignore Catalyst in gtests)
 class ParaviewAdaptor {
  public:
-  explicit ParaviewAdaptor(const std::string& script) {}
+  ParaviewAdaptor() {}
 
   void Visualize() {}
 

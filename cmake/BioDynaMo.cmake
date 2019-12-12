@@ -229,6 +229,35 @@ function(build_libbiodynamo TARGET)
   endif()
 endfunction(build_libbiodynamo)
 
+function(build_plugin TARGET)
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
+
+  if(dict)
+    add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
+
+    # generate dictionary using genreflex
+    set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}.cc")
+    bdm_generate_dictionary(${TARGET}-dict OFF
+      DICT "${DICT_FILE}"
+      HEADERS ${ARG_HEADERS}
+      SELECTION $ENV{BDM_CMAKE_DIR}/selection-libparaviewadaptor.xml
+      DEPENDS ${TARGET}-objectlib)
+
+    # generate shared library
+    add_library(${TARGET} SHARED $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
+    add_dependencies(${TARGET} ${TARGET}-dict update-version-info)
+    target_link_libraries(${TARGET} ${ARG_LIBRARIES})
+
+    SET(BIODYNAMO_TARGET_NAME "${TARGET}-objectlib" PARENT_SCOPE)
+  else()
+    add_library(${TARGET} SHARED ${ARG_SOURCES})
+    add_dependencies(${TARGET} update-version-info)
+    target_link_libraries(${TARGET} ${ARG_LIBRARIES})
+
+    SET(BIODYNAMO_TARGET_NAME "${TARGET}" PARENT_SCOPE)
+  endif()
+endfunction(build_plugin)
+
 # function generate_rootlogon
 # generates rootlogon.C which is required by ROOT's C++ interpreter cling
 function(generate_rootlogon)

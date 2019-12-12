@@ -112,5 +112,5 @@ endif()
 if(${ParaView_FOUND})
     install(TARGETS BDMGlyphFilter
             LIBRARY
-            DESTINATION ${DIRNAME}/lib/pv_plugin)
+            DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
 endif()
