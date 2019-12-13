@@ -15,8 +15,6 @@
 #include <chrono>
 #include <string>
 
-#include "TPluginManager.h"
-
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/gpu/gpu_helper.h"
 #include "core/operation/bound_space_op.h"

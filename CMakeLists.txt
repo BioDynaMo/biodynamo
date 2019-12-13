@@ -281,20 +281,17 @@ if(paraview)
     # Add several ParaView related options
     include("${PARAVIEW_USE_FILE}")
     add_definitions("-DUSE_PARAVIEW")
-    # link_directories($ENV{ParaView_LIB_DIR})
-    # set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
-    #       vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
 endif()
 
 # paraview version 5.5 (MacOS) does not contain TBB
-find_package(TBB)
-if (TBB_FOUND)
-  include_directories(${TBB_INCLUDE_DIRS})
-  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
-else()
-  MESSAGE(FATAL_ERROR "TBB was not found on your system."
-  " Please run ./prerequisites.sh again before calling cmake.")
-endif()
+# find_package(TBB)
+# if (TBB_FOUND)
+#   include_directories(${TBB_INCLUDE_DIRS})
+#   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
+# else()
+#   MESSAGE(FATAL_ERROR "TBB was not found on your system."
+#   " Please run ./prerequisites.sh again before calling cmake.")
+# endif()
 
 if(sbml)
   if(APPLE)
@@ -416,20 +413,23 @@ file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 filter_list(LIB_SOURCES "${LIB_SOURCES}" "paraview/*")
 filter_list(HEADERS "${HEADERS}" "paraview/*")
 
-build_libbiodynamo(biodynamo
+build_shared_library(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
 
-# Find paraview-related sources and headers for plugin generation
-file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
-file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
+# Build plugin
+if(paraview)
+  # Find paraview-related sources and headers for plugin generation
+  file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
+  file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
 
-set(REQUIRED_PARAVIEW_LIBRARIES "vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallelXML;vtkPVVTKExtensionsDefault;vtkPVServerManagerRendering")
-build_plugin(ParaviewAdaptor
-                   SOURCES ${PV_SOURCES}
-                   HEADERS ${PV_HEADERS}
-                   LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo)
+  set(REQUIRED_PARAVIEW_LIBRARIES "vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallelXML;vtkPVVTKExtensionsDefault;vtkPVServerManagerRendering")
+  build_shared_library(ParaviewAdaptor
+                    SOURCES ${PV_SOURCES}
+                    HEADERS ${PV_HEADERS}
+                    LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo)
+endif()
 
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})

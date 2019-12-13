@@ -195,48 +195,19 @@ function(bdm_add_executable TARGET)
   endif()
 endfunction(bdm_add_executable)
 
-# function bdm_add_executable( TARGET
+# function build_sharedlib( TARGET
 #                              SOURCES source1 source2 ...
 #                              HEADERS header1 header2 ...
 #                              LIBRARIES lib1 lib2 ...)
-# build libbiodynamo
-function(build_libbiodynamo TARGET)
+# build shared library with ROOT dictionaries
+function(build_shared_library TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
 
   if(dict)
     add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
 
     # generate dictionary using genreflex
-    set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/libbiodynamo_dict.cc")
-    bdm_generate_dictionary(${TARGET}-dict OFF
-      DICT "${DICT_FILE}"
-      HEADERS ${ARG_HEADERS}
-      SELECTION $ENV{BDM_CMAKE_DIR}/selection-libbiodynamo.xml
-      DEPENDS ${TARGET}-objectlib)
-
-    # generate shared library
-    add_library(${TARGET} SHARED $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
-    add_dependencies(${TARGET} ${TARGET}-dict update-version-info)
-    target_link_libraries(${TARGET} ${ARG_LIBRARIES})
-
-    SET(BIODYNAMO_TARGET_NAME "${TARGET}-objectlib" PARENT_SCOPE)
-  else()
-    add_library(${TARGET} SHARED ${ARG_SOURCES})
-    add_dependencies(${TARGET} update-version-info)
-    target_link_libraries(${TARGET} ${ARG_LIBRARIES})
-
-    SET(BIODYNAMO_TARGET_NAME "${TARGET}" PARENT_SCOPE)
-  endif()
-endfunction(build_libbiodynamo)
-
-function(build_plugin TARGET)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
-
-  if(dict)
-    add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
-
-    # generate dictionary using genreflex
-    set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}.cc")
+    set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict.cc")
     bdm_generate_dictionary(${TARGET}-dict OFF
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
@@ -256,7 +227,7 @@ function(build_plugin TARGET)
 
     SET(BIODYNAMO_TARGET_NAME "${TARGET}" PARENT_SCOPE)
   endif()
-endfunction(build_plugin)
+endfunction(build_shared_library)
 
 # function generate_rootlogon
 # generates rootlogon.C which is required by ROOT's C++ interpreter cling

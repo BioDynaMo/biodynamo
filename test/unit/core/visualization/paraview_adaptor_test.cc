@@ -204,9 +204,10 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   // Visualize one step before any sim objects or diffusion grids are created
   // This must not crash the system. Object might be created at a later stage
   // during simulation.
-  auto adaptor = VisualizationAdaptor::Create("paraview");
-  adaptor->Visualize();
-  static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(0);
+  sim.Simulate(1);
+  // auto adaptor = VisualizationAdaptor::Create("paraview");
+  // adaptor->Visualize();
+  // static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(0);
 
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
@@ -227,8 +228,9 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
 
   // Write diffusion visualization to file
-  adaptor->Visualize();
-  static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(1);
+  sim.Simulate(1);
+  // adaptor->Visualize();
+  // static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(1);
 
   // Read back from file
   std::set<std::string> required_files = {".",
@@ -259,7 +261,6 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   }
   closedir(dirp);
   EXPECT_EQ(required_files.size(), counter);
-  delete adaptor;
 }
 
 }  // namespace bdm

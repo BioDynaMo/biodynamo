@@ -143,9 +143,9 @@ namespace bdm {
 /// False front (to ignore Catalyst in gtests)
 class ParaviewAdaptor {
  public:
-  ParaviewAdaptor() {}
+  ParaviewAdaptor();
 
-  void Visualize() {}
+  void Visualize();
 
  private:
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
@@ -153,13 +153,13 @@ class ParaviewAdaptor {
   friend class ParaviewAdaptorTest_CheckVisualizationSelection_Test;
   friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
-  void LiveVisualization(double time, size_t time_step) {}
+  void LiveVisualization(double time, size_t time_step);
 
-  void ExportVisualization(double step, size_t time_step) {}
+  void ExportVisualization(double step, size_t time_step);
 
-  void WriteToFile(size_t step) {}
+  void WriteToFile(size_t step);
 
-  static void GenerateParaviewState() {}
+  static void GenerateParaviewState();
 };
 
 }  // namespace bdm

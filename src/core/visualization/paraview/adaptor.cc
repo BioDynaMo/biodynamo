@@ -347,37 +347,19 @@ void ParaviewAdaptor::GenerateParaviewState() {
 
 #else
 
-#include <string>
-#include <unordered_map>
-#include "core/shape.h"
-
 namespace bdm {
 
-/// False front (to ignore Catalyst in gtests)
-class ParaviewAdaptor {
- public:
-  ParaviewAdaptor() {}
+ParaviewAdaptor::ParaviewAdaptor() {}
 
-  void Visualize() {}
+void ParaviewAdaptor::Visualize() {}
 
- private:
-  friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
-  friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
-  friend class ParaviewAdaptorTest_CheckVisualizationSelection_Test;
-  friend class DISABLED_DiffusionTest_ModelInitializer_Test;
+void ParaviewAdaptor::LiveVisualization(double time, size_t time_step) {}
 
-  void LiveVisualization(double time, size_t time_step) {}
+void ParaviewAdaptor::ExportVisualization(double step, size_t time_step) {}
 
-  void ExportVisualization(double step, size_t time_step) {}
+void ParaviewAdaptor::WriteToFile(size_t step) {}
 
-  void WriteToFile(size_t step) {}
-
-  static void GenerateParaviewState() {}
-};
-
-void GenerateSimulationInfoJson(
-    const std::unordered_map<std::string, VtkSoGrid*>& vtk_so_grids,
-    const std::unordered_map<std::string, VtkDiffusionGrid*>& vtk_dgrids) {}
+void ParaviewAdaptor::GenerateParaviewState() {}
 
 }  // namespace bdm
 
