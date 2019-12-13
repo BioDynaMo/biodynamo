@@ -265,7 +265,6 @@ class Grid {
     int32_t inf = std::numeric_limits<int32_t>::max();
     grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
     threshold_dimensions_ = {inf, -inf};
-    // successors_.clear();
     has_grown_ = false;
   }
 
@@ -331,8 +330,6 @@ class Grid {
         }
         boxes_.resize(total_num_boxes);
       }
-
-      // successors_.reserve();
 
       // Assign simulation objects to boxes
       rm->ApplyOnAllElementsParallelDynamic(
@@ -467,6 +464,8 @@ class Grid {
   /// @param      query   The query object
   void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda,
                        const SimObject& query) const {
+
+    // FIXME
     // auto idx = query.GetBoxIdx();
     //
     // FixedSizeVector<const Box*, 27> neighbor_boxes;
@@ -533,11 +532,9 @@ class Grid {
     };
 
     while (!ni.IsAtEnd()) {
-      // auto soh = *ni;
       auto* sim_object = *ni;
       // increment iterator already here to hide memory latency
       ++ni;
-      // auto* sim_object = rm->GetSimObjectWithSoHandle(soh);
       if (sim_object != &query) {
         sim_objects[size] = sim_object;
         const auto& pos = sim_object->GetPosition();
@@ -566,6 +563,7 @@ class Grid {
   void ForEachNeighborWithinRadius(
       const std::function<void(const SimObject*)>& lambda,
       const SimObject& query, double squared_radius) {
+    // FIXME
     // const auto& position = query.GetPosition();
     // auto idx = query.GetBoxIdx();
     //
@@ -746,12 +744,6 @@ class Grid {
   std::array<uint32_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_ = 0;
-  /// Implements linked list - array index = key, value: next element
-  ///
-  ///     // Usage
-  ///     SoHandle current_element = ...;
-  ///     SoHandle next_element = successors_[current_element];
-  // SimObjectVector<SimObject*> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
