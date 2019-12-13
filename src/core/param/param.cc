@@ -69,6 +69,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients_,
                           "simulation.calculate_gradients");
   // visualization group
+  BDM_ASSIGN_CONFIG_VALUE(visualization_adaptor_, "visualization.adaptor");
   BDM_ASSIGN_CONFIG_VALUE(live_visualization_, "visualization.live");
   BDM_ASSIGN_CONFIG_VALUE(root_visualization_, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");

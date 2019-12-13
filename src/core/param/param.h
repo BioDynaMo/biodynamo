@@ -169,6 +169,15 @@ struct Param {
 
   // visualization values ------------------------------------------------------
 
+  /// Name of the visualization engine to use for visualizaing BioDynaMo
+  /// simulations\n
+  /// Default value: `"paraview"`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     adaptor = <name_of_adaptor>
+  std::string visualization_adaptor_ = "paraview";
+
   /// Use ParaView Catalyst for live visualization.\n
   /// Default value: `false`\n
   /// TOML config file:

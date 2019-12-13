@@ -15,7 +15,6 @@
 #include "core/visualization/visualization_adaptor.h"
 #include "core/util/log.h"
 
-#include <sstream>
 #include <string>
 
 #include "TPluginManager.h"
@@ -26,15 +25,19 @@ namespace bdm {
 VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
   TPluginHandler *h;
   VisualizationAdaptor *va = nullptr;
-
   if ((h = gPluginMgr->FindHandler("VisualizationAdaptor", adaptor.c_str()))) {
     if (h->LoadPlugin() == -1) {
-      std::stringstream ss;
-      ss << "Was unable to load plugin '" << adaptor << "'!" << std::endl;
-      Log::Warning("VisualizationAdaptor::Visualize", ss.str());
+      Log::Warning("VisualizationAdaptor::Create",
+                   "Was unable to load plugin '", adaptor, "'!");
       return nullptr;
     }
     va = (VisualizationAdaptor *)h->ExecPlugin(0);
+    Log::Info("VisualizationAdaptor::Create", "Loaded plugin '", adaptor,
+              "' successfully!");
+  } else {
+    Log::Warning(
+        "VisualizationAdaptor::Create", "Unable to find plugin '", adaptor,
+        "'. This is most likely because bdm.rootrc was not read properly.");
   }
   return va;
 }
