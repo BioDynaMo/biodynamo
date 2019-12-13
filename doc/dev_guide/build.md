@@ -123,6 +123,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `valgrind`      | `on` | enable memory leak checks |
 | `coverage`      | `off` | creates a make target to generate a html report indicating which parts of the code are tested by automatic tests |
 | `tcmalloc`      | `off` | use `tcmalloc` for memory allocations |
+| `website`       | `off` | enable website generation (`make website<-live>` target (see below for more information)) |
 
 ### Further CMake command line parameters
 

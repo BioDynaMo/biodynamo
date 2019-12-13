@@ -29,10 +29,16 @@ function(GenerateStaticFiles TARGET FLAGS)
   add_dependencies(${TARGET} doc)
 endfunction()
 
-# Generate static website files
-GenerateStaticFiles(website "--api")
-# Generate staic website files and launches website on localhost for live editing
-GenerateStaticFiles(website-live "--develop")
+if (website)
+  if (NOT DOXYGEN_FOUND)
+    message(FATAL "You cannot build the website without Doxygen. Please make
+    sure that Doxygen is installed before attempting to build the website!")
+  endif()
+  # Generate static website files
+  GenerateStaticFiles(website "--api")
+  # Generate staic website files and launches website on localhost for live editing
+  GenerateStaticFiles(website-live "--develop")
+endif()
 
 # For website-live the Doxygen files are not generated because we expect users
 # to mostly be interested in how the markdown files will look like. There is
