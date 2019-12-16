@@ -109,6 +109,7 @@ option(vtune     "Enable VTune performance analysis" OFF)
 option(coverage  "Enable test coverage report generation. Sets build type to coverage" OFF)
 option(verbose   "Enable verbosity when installing." OFF)
 option(tcmalloc  "Use tcmalloc for memory allocations." OFF)
+option(website   "Enable website generation (make website<-live>)." OFF)
 
 if(APPLE)
    # valgrind currently broken on macOS 10.12
