@@ -79,7 +79,7 @@ fi
 # Build BioDynaMo
 mkdir build
 cd build
-cmake ..
+cmake -Dwebsite=on ..
 make -j$(CPUCount)
 
 # output compiler information
