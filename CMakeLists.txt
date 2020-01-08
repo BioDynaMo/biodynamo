@@ -283,7 +283,9 @@ if(paraview)
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
-# paraview version 5.5 (MacOS) does not contain TBB
+# On non-OSX machines, we can use the tbb that comes with ROOT. On OSX machines,
+# we need to add TBB to BDM_REQUIRED_LIBRARIES, or we get linking errors.
+if(APPLE)
 find_package(TBB)
 if (TBB_FOUND)
   include_directories(${TBB_INCLUDE_DIRS})
@@ -291,6 +293,7 @@ if (TBB_FOUND)
 else()
   MESSAGE(FATAL_ERROR "TBB was not found on your system."
   " Please run ./prerequisites.sh again before calling cmake.")
+endif()
 endif()
 
 if(sbml)
