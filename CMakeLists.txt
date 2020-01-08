@@ -284,14 +284,14 @@ if(paraview)
 endif()
 
 # paraview version 5.5 (MacOS) does not contain TBB
-# find_package(TBB)
-# if (TBB_FOUND)
-#   include_directories(${TBB_INCLUDE_DIRS})
-#   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
-# else()
-#   MESSAGE(FATAL_ERROR "TBB was not found on your system."
-#   " Please run ./prerequisites.sh again before calling cmake.")
-# endif()
+find_package(TBB)
+if (TBB_FOUND)
+  include_directories(${TBB_INCLUDE_DIRS})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
+else()
+  MESSAGE(FATAL_ERROR "TBB was not found on your system."
+  " Please run ./prerequisites.sh again before calling cmake.")
+endif()
 
 if(sbml)
   if(APPLE)
