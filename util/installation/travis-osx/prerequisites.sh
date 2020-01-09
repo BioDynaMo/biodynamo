@@ -36,8 +36,8 @@ brew upgrade python cmake || true
 
 # temporary fix to create correct python3 symlinks
 # TODO: remove when we rely fully on Python 3
-brew unlink python@2 || true
-brew link python || true
+brew unlink python && brew link python
+ln -sf /usr/local/bin/python3 /usr/local/bin/python
 
 # Install the optional packages
 if [ $1 == "all" ]; then
