@@ -34,6 +34,11 @@ python python@2 llvm wget cmake || true
 
 brew upgrade python cmake || true
 
+# temporary fix to create correct python3 symlinks
+# TODO: remove when we rely fully on Python 3
+brew unlink python@2 || true
+brew link python || true
+
 # Install the optional packages
 if [ $1 == "all" ]; then
     PIP_PACKAGES="nbformat jupyter metakernel"
