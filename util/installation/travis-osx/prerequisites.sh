@@ -32,15 +32,18 @@ brew update-reset
 brew install libomp tbb open-mpi git \
 python python@2 llvm wget cmake || true
 
-brew upgrade python cmake || true
+brew upgrade python || true
+# necessary since symlinking broke with brew on travis since 3.6.7_1 release
+brew link --overwrite python
+brew upgrade cmake || true
 
 # Install the optional packages
 if [ $1 == "all" ]; then
     PIP_PACKAGES="nbformat jupyter metakernel"
     pip2 install --user $PIP_PACKAGES
 
-    # Jupyter relies on tornado for logging, but the latest tornado (from version
-    # 6) is not compatible with Python 2. So we downgrade to 5.1.1
+    # Jupyter relies on tornado for logging, but the latest tornado (version 6)
+    # is not compatible with Python 2. So we downgrade to 5.1.1
     pip2 uninstall tornado -y
     pip2 install --user tornado==5.1.1
     brew install doxygen graphviz lcov gcovr || true
