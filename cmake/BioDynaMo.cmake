@@ -201,9 +201,12 @@ endfunction(bdm_add_executable)
 #                              LIBRARIES lib1 lib2 ...)
 # build shared library with ROOT dictionaries
 function(build_shared_library TARGET)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES;PLUGIN" ${ARGN} )
 
-  if(dict)
+  # We always need dictionaries for the plugins (plugin manager requires class
+  # information)
+  if(dict OR DEFINED ARG_PLUGIN)
+    message(WARNING "PLUGIN FOUND: ${ARG_HEADERS}")
     add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
 
     # generate dictionary using genreflex

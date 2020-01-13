@@ -19,12 +19,16 @@
 
 #include "TPluginManager.h"
 #include "TROOT.h"
+#include "TInterpreter.h"
 
 namespace bdm {
 
 VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
   TPluginHandler *h;
   VisualizationAdaptor *va = nullptr;
+  std::string bdm_src_dir = std::string(std::getenv("BDM_SRC_DIR"));
+  gInterpreter->AddIncludePath(bdm_src_dir.c_str());
+  gInterpreter->Declare("#include \"core/visualization/paraview/adaptor.h\"");
   if ((h = gPluginMgr->FindHandler("VisualizationAdaptor", adaptor.c_str()))) {
     if (h->LoadPlugin() == -1) {
       Log::Warning("VisualizationAdaptor::Create",

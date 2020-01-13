@@ -286,14 +286,14 @@ endif()
 # On non-OSX machines, we can use the tbb that comes with ROOT. On OSX machines,
 # we need to add TBB to BDM_REQUIRED_LIBRARIES, or we get linking errors.
 if(APPLE)
-find_package(TBB)
-if (TBB_FOUND)
-  include_directories(${TBB_INCLUDE_DIRS})
-  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
-else()
-  MESSAGE(FATAL_ERROR "TBB was not found on your system."
-  " Please run ./prerequisites.sh again before calling cmake.")
-endif()
+  find_package(TBB)
+  if (TBB_FOUND)
+    include_directories(${TBB_INCLUDE_DIRS})
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
+  else()
+    MESSAGE(FATAL_ERROR "TBB was not found on your system."
+    " Please run ./prerequisites.sh again before calling cmake.")
+  endif()
 endif()
 
 if(sbml)
@@ -428,10 +428,11 @@ if(paraview)
   file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
 
   set(REQUIRED_PARAVIEW_LIBRARIES "vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallelXML;vtkPVVTKExtensionsDefault;vtkPVServerManagerRendering")
-  build_shared_library(ParaviewAdaptor
+  build_shared_library(VisualizationAdaptor
                     SOURCES ${PV_SOURCES}
                     HEADERS ${PV_HEADERS}
-                    LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo)
+                    LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
+                    PLUGIN "TRUE")
 endif()
 
 if(${VTune_FOUND})

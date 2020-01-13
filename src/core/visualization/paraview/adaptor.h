@@ -61,7 +61,7 @@ class ParaviewAdaptor : VisualizationAdaptor {
   bool initialized_ = false;           //!
   bool exclusive_export_viz_ = false;  //!
 
-  BDM_CLASS_DEF_NV(ParaviewAdaptor, 1);
+  ClassDefNV(ParaviewAdaptor, 1);
 
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
