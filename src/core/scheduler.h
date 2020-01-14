@@ -71,12 +71,10 @@ class Scheduler {
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  VisualizationAdaptor* visualization_ = nullptr;   //!
-  RootAdaptor* root_visualization_ = nullptr;  //!
+  VisualizationAdaptor* visualization_ = nullptr;  //!
+  RootAdaptor* root_visualization_ = nullptr;      //!
 
-#if defined(USE_CUDA) || defined(USE_OPENCL)
   bool is_gpu_environment_initialized_ = false;
-#endif
 
   BoundSpace* bound_space_;
   DisplacementOp* displacement_;

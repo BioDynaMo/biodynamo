@@ -205,9 +205,6 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   // This must not crash the system. Object might be created at a later stage
   // during simulation.
   sim.Simulate(1);
-  // auto adaptor = VisualizationAdaptor::Create("paraview");
-  // adaptor->Visualize();
-  // static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(0);
 
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
@@ -229,8 +226,6 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
 
   // Write diffusion visualization to file
   sim.Simulate(1);
-  // adaptor->Visualize();
-  // static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(1);
 
   // Read back from file
   std::set<std::string> required_files = {".",

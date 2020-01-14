@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#ifndef __ROOTCLING__
 
 #include <string>
 
@@ -162,4 +162,4 @@ void ParaviewSoVisitor::Int3(const std::string& dm_name, const void* d) {
 
 }  // namespace bdm
 
-#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#endif  // ifndef __ROOTCLING__

@@ -96,6 +96,7 @@ class SimulationTest : public ::testing::Test {
   }
 
   void ValidateNonCLIParameter(const Param* param) {
+    EXPECT_EQ("paraview", param->visualization_engine_);
     EXPECT_EQ("result-dir", param->output_dir_);
     EXPECT_EQ(3600u, param->backup_interval_);
     EXPECT_EQ(0.0125, param->simulation_time_step_);

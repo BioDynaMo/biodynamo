@@ -176,7 +176,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     adaptor = <name_of_adaptor>
-  std::string visualization_adaptor_ = "paraview";
+  std::string visualization_engine_ = "paraview";
 
   /// Use ParaView Catalyst for live visualization.\n
   /// Default value: `false`\n

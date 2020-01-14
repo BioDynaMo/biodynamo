@@ -17,7 +17,7 @@
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
-#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#ifndef __ROOTCLING__
 
 #include <set>
 #include <string>
@@ -253,6 +253,6 @@ inline void GenerateSimulationInfoJson(
 
 }  // namespace bdm
 
-#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#endif  // ifndef __ROOTCLING__
 
 #endif  // CORE_VISUALIZATION_PARAVIEW_HELPER_STRUCTS_H_

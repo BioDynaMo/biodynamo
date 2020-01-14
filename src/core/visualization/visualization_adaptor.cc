@@ -17,9 +17,9 @@
 
 #include <string>
 
+#include "TInterpreter.h"
 #include "TPluginManager.h"
 #include "TROOT.h"
-#include "TInterpreter.h"
 
 namespace bdm {
 
@@ -27,19 +27,17 @@ VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
   TPluginHandler *h;
   VisualizationAdaptor *va = nullptr;
   std::string bdm_src_dir = std::string(std::getenv("BDM_SRC_DIR"));
-  gInterpreter->AddIncludePath(bdm_src_dir.c_str());
-  gInterpreter->Declare("#include \"core/visualization/paraview/adaptor.h\"");
   if ((h = gPluginMgr->FindHandler("VisualizationAdaptor", adaptor.c_str()))) {
     if (h->LoadPlugin() == -1) {
-      Log::Warning("VisualizationAdaptor::Create",
-                   "Was unable to load plugin '", adaptor, "'!");
+      Log::Error("VisualizationAdaptor::Create", "Was unable to load plugin '",
+                 adaptor, "'!");
       return nullptr;
     }
     va = (VisualizationAdaptor *)h->ExecPlugin(0);
     Log::Info("VisualizationAdaptor::Create", "Loaded plugin '", adaptor,
               "' successfully!");
   } else {
-    Log::Warning(
+    Log::Error(
         "VisualizationAdaptor::Create", "Unable to find plugin '", adaptor,
         "'. This is most likely because bdm.rootrc was not read properly.");
   }

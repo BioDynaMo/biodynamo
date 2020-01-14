@@ -15,10 +15,6 @@
 #ifndef CORE_VISUALIZATION_PARAVIEW_ADAPTOR_H_
 #define CORE_VISUALIZATION_PARAVIEW_ADAPTOR_H_
 
-// check for ROOTCLING was necessary, due to ambigous reference to namespace
-// detail when using ROOT I/O
-#if defined(USE_PARAVIEW)
-
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
@@ -54,7 +50,7 @@ class ParaviewAdaptor : VisualizationAdaptor {
   struct ParaviewImpl;
 
  private:
-  std::unique_ptr<ParaviewImpl> impl_;     //!
+  std::unique_ptr<ParaviewImpl> impl_;    //!
   static std::atomic<uint64_t> counter_;  //!
 
   /// only needed for live visualization
@@ -163,7 +159,5 @@ class ParaviewAdaptor {
 };
 
 }  // namespace bdm
-
-#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
 
 #endif  // CORE_VISUALIZATION_PARAVIEW_ADAPTOR_H_

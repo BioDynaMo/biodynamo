@@ -18,7 +18,7 @@
 
 #include <cstdlib>
 
-#if defined(USE_PARAVIEW)
+#ifndef __ROOTCLING__
 
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
@@ -363,4 +363,4 @@ void ParaviewAdaptor::GenerateParaviewState() {}
 
 }  // namespace bdm
 
-#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#endif

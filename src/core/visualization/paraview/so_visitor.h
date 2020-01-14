@@ -17,7 +17,7 @@
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
-#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#ifndef __ROOTCLING__
 
 #include <string>
 
@@ -58,6 +58,6 @@ class ParaviewSoVisitor : public SoVisitor {
 
 }  // namespace bdm
 
-#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#endif  // ifndef __ROOTCLING__
 
 #endif  // CORE_VISUALIZATION_PARAVIEW_SO_VISITOR_H_

@@ -16,10 +16,11 @@
 #define CORE_UTIL_LOG_H_
 
 #include <TError.h>
+
 #include <cstdio>
 #include <cstdlib>
-
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "core/util/string.h"
@@ -115,7 +116,7 @@ class Log {
     std::string message = Concat(parts...);
     // ROOT function
     ::Error(location.c_str(), "%s", message.c_str());
-    exit(1);
+    std::runtime_error("");
   }
 };
 }  // namespace bdm

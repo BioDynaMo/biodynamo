@@ -195,11 +195,13 @@ function(bdm_add_executable TARGET)
   endif()
 endfunction(bdm_add_executable)
 
-# function build_sharedlib( TARGET
+# function build_shared_library( TARGET
 #                              SOURCES source1 source2 ...
 #                              HEADERS header1 header2 ...
-#                              LIBRARIES lib1 lib2 ...)
-# build shared library with ROOT dictionaries
+#                              LIBRARIES lib1 lib2 ...
+#                              PLUGIN <"TRUE">)
+# build shared library with ROOT dictionaries. If ARG_PLUGIN is set, we will
+# always generate dictionaries (as required by ROOT's plugin manager)
 function(build_shared_library TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES;PLUGIN" ${ARGN} )
 

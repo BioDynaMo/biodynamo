@@ -23,7 +23,7 @@
 
 #include "core/util/log.h"
 
-#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#ifndef __ROOTCLING__
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkCPPipeline.h>
@@ -45,11 +45,11 @@
 
 #include "core/visualization/paraview/helper.h"
 
-#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#endif  // ifndef __ROOTCLING__
 
 namespace bdm {
 
-#if defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#ifndef __ROOTCLING__
 
 class InSituPipeline : public vtkCPPipeline {
  public:
@@ -361,7 +361,7 @@ class InSituPipeline {
   }
 };
 
-#endif  // defined(USE_PARAVIEW) && !defined(__ROOTCLING__)
+#endif  // ifndef __ROOTCLING__
 
 }  // namespace bdm
 
