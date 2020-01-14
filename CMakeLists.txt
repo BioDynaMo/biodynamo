@@ -522,7 +522,7 @@ if (test)
   bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS}
-                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} ParaviewAdaptor)
+                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} VisualizationAdaptor)
   #   separate test binaries - each source file is compiled into a separate binary
   # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
   # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
