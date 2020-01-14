@@ -614,7 +614,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     UpdateVolume();
   }
 
-  struct DisplacementFen : public FenFunc {
+  struct DisplacementFen : public Functor<void, const SimObject*, double> {
     NeuriteElement* ne;
     Double3& force_from_neighbors;
     Double3& force_on_my_mothers_point_mass;

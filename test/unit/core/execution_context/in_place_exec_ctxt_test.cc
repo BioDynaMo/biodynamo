@@ -165,6 +165,21 @@ TEST(InPlaceExecutionContext, Execute) {
   EXPECT_TRUE(op2_called);
 }
 
+struct Foobar : Functor<void, const SimObject*, double> {
+  Foobar(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
+  virtual ~Foobar() {}
+
+  void operator()(const SimObject* neighbor, double squared_distance) override {
+    auto* non_const_nb = const_cast<SimObject*>(neighbor);
+    auto d1 = non_const_nb->GetDiameter();
+    non_const_nb->SetDiameter(d1 + 1);
+    nb_counter_++;
+  }
+
+ private:
+  uint64_t& nb_counter_;
+};
+
 TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
   Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
@@ -191,12 +206,7 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
     so->SetDiameter(d + 1);
 
     uint64_t nb_counter = 0;
-    auto nb_lambda = [&](const auto* neighbor) {
-      auto* non_const_nb = rm->GetSimObject(neighbor->GetUid());
-      auto d1 = non_const_nb->GetDiameter();
-      non_const_nb->SetDiameter(d1 + 1);
-      nb_counter++;
-    };
+    Foobar nb_lambda(nb_counter);
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = sim.GetExecutionContext();

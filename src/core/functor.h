@@ -17,8 +17,9 @@
 
 namespace bdm {
 
-struct FenFunc {
-  virtual void operator()(const SimObject* so, double squared_distance) = 0;
+template<typename TReturn, typename... TParameter>
+struct Functor {
+  virtual void operator()(TParameter... parameter) = 0;
 };
 
 }  // namespace bdm

@@ -199,12 +199,12 @@ void InPlaceExecutionContext::ForEachNeighbor(
   grid->ForEachNeighbor(lambda, query);
 }
 
-struct Fen : public FenFunc {
+struct Fen : public Functor<void, const SimObject*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
   std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
-  FenFunc& function_;
+  Functor<void, const SimObject*, double>& function_;
 
-  Fen(FenFunc& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
+  Fen(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
    : function_(function), neighbor_cache_(neigbor_cache)
   {}
 
@@ -217,7 +217,7 @@ struct Fen : public FenFunc {
 };
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    FenFunc& lambda,
+    Functor<void, const SimObject*, double>& lambda,
     const SimObject& query) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
@@ -233,13 +233,13 @@ void InPlaceExecutionContext::ForEachNeighbor(
   grid->ForEachNeighbor(for_each, query);
 }
 
-struct FenWithinRadius : public FenFunc {
+struct FenWithinRadius : public Functor<void, const SimObject*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
   std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
   double squared_radius_ = 0;
-  FenFunc& function_;
+  Functor<void, const SimObject*, double>& function_;
 
-  FenWithinRadius(FenFunc& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache, double squared_radius)
+  FenWithinRadius(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache, double squared_radius)
    : function_(function), neighbor_cache_(neigbor_cache), squared_radius_(squared_radius)
   {}
 
@@ -254,7 +254,7 @@ struct FenWithinRadius : public FenFunc {
 };
 
 void InPlaceExecutionContext::ForEachNeighborWithinRadius(
-    FenFunc& lambda, const SimObject& query,
+    Functor<void, const SimObject*, double>& lambda, const SimObject& query,
     double squared_radius) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {

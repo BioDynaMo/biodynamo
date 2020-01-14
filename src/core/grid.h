@@ -43,7 +43,7 @@
 #include "core/resource_manager.h"
 #include "core/util/log.h"
 #include "core/util/spinlock.h"
-#include "core/fen_func.h"
+#include "core/functor.h"
 
 namespace bdm {
 
@@ -504,7 +504,7 @@ class Grid {
   /// @param      query   The query object
   ///
   void ForEachNeighbor(
-      FenFunc& lambda,
+      Functor<void, const SimObject*, double>& lambda,
       const SimObject& query) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();

@@ -33,7 +33,7 @@
 #include "core/shape.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/math.h"
-#include "core/fen_func.h"
+#include "core/functor.h"
 
 namespace bdm {
 
@@ -259,7 +259,7 @@ class Cell : public SimObject {
     SetRunDisplacementForAllNextTs();
   }
 
-  struct DisplacementFen : FenFunc {
+  struct DisplacementFen : Functor<void, const SimObject*, double> {
     DefaultForce default_force;
     SimObject* so_;
     Double3 translation_force_on_point_mass{0, 0, 0};

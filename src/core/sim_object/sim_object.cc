@@ -71,7 +71,7 @@ SimObject::~SimObject() {
   }
 }
 
-struct Fen1 : public FenFunc {
+struct Fen1 : public Functor<void, const SimObject*, double> {
   SimObject* so_;
   Fen1(SimObject* so) : so_(so) {}
 
