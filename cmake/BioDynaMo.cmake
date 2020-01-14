@@ -208,7 +208,6 @@ function(build_shared_library TARGET)
   # We always need dictionaries for the plugins (plugin manager requires class
   # information)
   if(dict OR DEFINED ARG_PLUGIN)
-    message(WARNING "PLUGIN FOUND: ${ARG_HEADERS}")
     add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
 
     # generate dictionary using genreflex

@@ -61,7 +61,7 @@ add_custom_target(coverage-build
 
 
 function(bdm_add_test_executable TEST_TARGET)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS:LIBRARIES" ${ARGN} )
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
   # create test executable
   bdm_add_executable(${TEST_TARGET}
                      SOURCES ${ARG_SOURCES}

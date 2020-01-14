@@ -177,13 +177,6 @@ function(install_inside_build)
             EXCLUDE "biodynamo.py"
             )
     
-    # Copy plugin files
-    add_copy_directory(copy_files_bdm
-            ${CMAKE_SOURCE_DIR}/etc/plugins
-            DESTINATION ${CMAKE_INSTALL_ROOT}/etc/plugins
-            GLOB "*.C"
-            )
-
      # Copy etc files
      add_copy_directory(copy_files_bdm
             ${CMAKE_SOURCE_DIR}/etc
@@ -459,13 +452,12 @@ function(print_summary)
     MESSAGE("\n########################### SUMMARY ############################\n")
 endfunction()
 
-# From: https://github.com/sourcey/libsourcey/blob/master/cmake/CMakeHelpers.cmake
-function(filter_list result source regex)
-  set(items)
-  foreach(ITR ${source})
-    if(NOT ITR MATCHES ${regex})
-      list(APPEND items ${ITR})
+function(filter_list OUTPUT INPUT REGEX)
+  set(ITEMS)
+  foreach(ITR ${INPUT})
+    if(NOT ITR MATCHES ${REGEX})
+      list(APPEND INPUT ${ITR})
     endif()
   endforeach()
-  set(${result} ${items} PARENT_SCOPE)
+  set(${OUTPUT} ${ITEMS} PARENT_SCOPE)
 endfunction()
