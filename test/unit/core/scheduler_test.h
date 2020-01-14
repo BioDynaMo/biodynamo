@@ -34,14 +34,14 @@ namespace scheduler_test_internal {
 
 class TestSchedulerRestore : public Scheduler {
  public:
-  void Execute(bool last_iteration) override { execute_calls++; }
+  void Execute() override { execute_calls++; }
 
   unsigned execute_calls = 0;
 };
 
 class TestSchedulerBackup : public Scheduler {
  public:
-  void Execute(bool last_iteration) override {
+  void Execute() override {
     // sleep
     usleep(350000);
     // backup should be created every second -> every three iterations

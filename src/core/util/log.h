@@ -16,9 +16,9 @@
 #define CORE_UTIL_LOG_H_
 
 #include <TError.h>
+
 #include <cstdio>
 #include <cstdlib>
-
 #include <iostream>
 #include <string>
 
@@ -115,6 +115,7 @@ class Log {
     std::string message = Concat(parts...);
     // ROOT function
     ::Error(location.c_str(), "%s", message.c_str());
+    // std::runtime_error() will fail the DeathTests
     exit(1);
   }
 };

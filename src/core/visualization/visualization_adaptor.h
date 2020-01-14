@@ -12,18 +12,21 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/visualization/catalyst_adaptor.h"
+#ifndef CORE_VIRTUALIZATION_VIRTUALIZATION_ADAPTOR_H_
+#define CORE_VIRTUALIZATION_VIRTUALIZATION_ADAPTOR_H_
 
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#include <string>
 
 namespace bdm {
 
-vtkCPProcessor* CatalystAdaptor::g_processor_ = nullptr;
-
-constexpr const char* CatalystAdaptor::kSimulationInfoJson;
-
-std::atomic<uint64_t> CatalystAdaptor::counter_;
+class VisualizationAdaptor {
+ public:
+  VisualizationAdaptor() {}
+  static VisualizationAdaptor* Create(std::string adaptor);
+  virtual ~VisualizationAdaptor() {}
+  virtual void Visualize() = 0;
+};
 
 }  // namespace bdm
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#endif  // CORE_VIRTUALIZATION_VIRTUALIZATION_ADAPTOR_H_

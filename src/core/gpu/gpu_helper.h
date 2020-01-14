@@ -215,8 +215,8 @@ class GpuHelper {
   }
 #endif  // defined(USE_OPENCL) && !defined(__ROOTCLING__)
 
-#if (defined(USE_CUDA) || defined(USE_OPENCL)) && !defined(__ROOTCLING__)
   void InitializeGPUEnvironment() {
+#if (defined(USE_CUDA) || defined(USE_OPENCL)) && !defined(__ROOTCLING__)
     auto* param = Simulation::GetActive()->GetParam();
     if (param->use_opencl_) {
 #ifdef USE_OPENCL
@@ -238,8 +238,8 @@ class GpuHelper {
                  "the CPU version...");
 #endif  // USE_CUDA
     }
-  }
 #endif  // defined(USE_CUDA) || defined(USE_OPENCL) && !defined(__ROOTCLING__)
+  }
 };
 
 }  // namespace bdm

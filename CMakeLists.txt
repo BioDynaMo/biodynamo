@@ -280,14 +280,12 @@ if(paraview)
 
     # Add several ParaView related options
     include("${PARAVIEW_USE_FILE}")
-    add_definitions("-DUSE_CATALYST")
-    link_directories($ENV{ParaView_LIB_DIR})
-    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} vtkPVPythonCatalyst
-          vtkIOParallelXML vtkPVVTKExtensionsDefault vtkPVServerManagerRendering)
+    add_definitions("-DUSE_PARAVIEW")
 endif()
 
-# paraview version 5.5 (MacOS) does not contain TBB
-if (APPLE OR (NOT paraview OR NOT ${ParaView_FOUND}))
+# On non-OSX machines, we can use the tbb that comes with ROOT. On OSX machines,
+# we need to add TBB to BDM_REQUIRED_LIBRARIES, or we get linking errors.
+if(APPLE)
   find_package(TBB)
   if (TBB_FOUND)
     include_directories(${TBB_INCLUDE_DIRS})
@@ -412,10 +410,31 @@ fix_rootcling_omp_issue()
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
 file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
-build_libbiodynamo(biodynamo
+
+# Exclude paraview-related source files, which will be loaded dynamically as a
+# plugin upon request
+filter_list(LIB_SOURCES "${LIB_SOURCES}" "paraview/*")
+filter_list(HEADERS "${HEADERS}" "paraview/*")
+
+build_shared_library(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
+
+# Build plugin
+if(paraview)
+  # Find paraview-related sources and headers for plugin generation
+  file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
+  file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
+
+  set(REQUIRED_PARAVIEW_LIBRARIES "vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallelXML;vtkPVVTKExtensionsDefault;vtkPVServerManagerRendering")
+  build_shared_library(VisualizationAdaptor
+                    SOURCES ${PV_SOURCES}
+                    HEADERS ${PV_HEADERS}
+                    LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
+                    PLUGIN "TRUE")
+endif()
+
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
 endif()
@@ -502,7 +521,8 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
   bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
-                          HEADERS ${TEST_HEADERS})
+                          HEADERS ${TEST_HEADERS}
+                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} VisualizationAdaptor)
   #   separate test binaries - each source file is compiled into a separate binary
   # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
   # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")

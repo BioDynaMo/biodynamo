@@ -88,6 +88,17 @@ install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/third_party
 install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
               ${CMAKE_BIODYNAMO_BUILD_ROOT}/NOTICE
         DESTINATION ${DIRNAME})
+install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/etc
+        DESTINATION ${DIRNAME}
+        USE_SOURCE_PERMISSIONS
+        FILES_MATCHING PATTERN "*")
+if(notebooks)
+  install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/notebooks
+          DESTINATION ${DIRNAME}
+          USE_SOURCE_PERMISSIONS
+          FILES_MATCHING PATTERN "*"
+          PATTERN "*.tar.gz" EXCLUDE)
+endif()
 
 # We need to install manually these targets in order to clear their RPATH.
 # They have been already copied inside the final install directory by the
@@ -112,5 +123,5 @@ endif()
 if(${ParaView_FOUND})
     install(TARGETS BDMGlyphFilter
             LIBRARY
-            DESTINATION ${DIRNAME}/lib/pv_plugin)
+            DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
 endif()

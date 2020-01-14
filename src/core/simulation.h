@@ -32,7 +32,7 @@ class InPlaceExecutionContext;
 class CommandLineOptions;
 
 class SimulationTest;
-class CatalystAdaptorTest;
+class ParaviewAdaptorTest;
 
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
@@ -166,7 +166,7 @@ class Simulation {
   void InitializeOutputDir();
 
   friend SimulationTest;
-  friend CatalystAdaptorTest;
+  friend ParaviewAdaptorTest;
 
   BDM_CLASS_DEF_NV(Simulation, 1);
 };

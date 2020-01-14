@@ -169,6 +169,15 @@ struct Param {
 
   // visualization values ------------------------------------------------------
 
+  /// Name of the visualization engine to use for visualizaing BioDynaMo
+  /// simulations\n
+  /// Default value: `"paraview"`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     adaptor = <name_of_adaptor>
+  std::string visualization_engine_ = "paraview";
+
   /// Use ParaView Catalyst for live visualization.\n
   /// Default value: `false`\n
   /// TOML config file:
@@ -323,8 +332,8 @@ struct Param {
   /// Default value: `false`\n
   /// TOML config file:
   ///     [development]
-  ///     python_catalyst_pipeline_ = false
-  bool python_catalyst_pipeline_ = false;
+  ///     python_paraview_pipeline_ = false
+  bool python_paraview_pipeline_ = false;
 
   /// Display the current simulation step in the terminal output
   /// Default value: `true`\n

@@ -146,7 +146,7 @@ function(install_inside_build)
 
     include(GreatCMakeCookOff/TargetCopyFiles)
 
-    add_custom_target(copy_files_bdm ALL DEPENDS biodynamo BDMGlyphFilter)
+    add_custom_target(copy_files_bdm ALL DEPENDS biodynamo)
 
     # Install the enviroment source script
 
@@ -175,6 +175,13 @@ function(install_inside_build)
             DESTINATION ${CMAKE_INSTALL_BINDIR}
             GLOB "*.py" "*.sh"
             EXCLUDE "biodynamo.py"
+            )
+    
+     # Copy etc files
+     add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/etc
+            DESTINATION ${CMAKE_INSTALL_ROOT}/etc
+            GLOB "*" ".*"
             )
 
     add_copy_files(copy_files_bdm
@@ -443,4 +450,14 @@ endfunction()
 # Helper function to print a summary indication
 function(print_summary)
     MESSAGE("\n########################### SUMMARY ############################\n")
+endfunction()
+
+function(filter_list OUTPUT INPUT REGEX)
+  set(ITEMS)
+  foreach(ITR ${INPUT})
+    if(NOT ITR MATCHES ${REGEX})
+      list(APPEND ITEMS ${ITR})
+    endif()
+  endforeach()
+  set(${OUTPUT} ${ITEMS} PARENT_SCOPE)
 endfunction()

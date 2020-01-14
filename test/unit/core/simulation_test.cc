@@ -96,6 +96,7 @@ class SimulationTest : public ::testing::Test {
   }
 
   void ValidateNonCLIParameter(const Param* param) {
+    EXPECT_EQ("paraview", param->visualization_engine_);
     EXPECT_EQ("result-dir", param->output_dir_);
     EXPECT_EQ(3600u, param->backup_interval_);
     EXPECT_EQ(0.0125, param->simulation_time_step_);
@@ -272,7 +273,7 @@ TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
 
 #endif  // USE_DICT
 
-TEST_F(SimulationTest, SimulationId_OuputDir) {
+TEST_F(SimulationTest, SimulationId_OutputDir) {
   Simulation simulation("my-simulation");
   Simulation simulation1("my-simulation");
 
@@ -283,7 +284,7 @@ TEST_F(SimulationTest, SimulationId_OuputDir) {
   EXPECT_EQ("output/my-simulation1", simulation1.GetOutputDir());
 }
 
-TEST_F(SimulationTest, SimulationId_OuputDir2) {
+TEST_F(SimulationTest, SimulationId_OutputDir2) {
   Simulation simulation("");
 
   EXPECT_EQ("", simulation.GetUniqueName());

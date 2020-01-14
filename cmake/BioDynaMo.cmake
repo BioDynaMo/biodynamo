@@ -195,23 +195,27 @@ function(bdm_add_executable TARGET)
   endif()
 endfunction(bdm_add_executable)
 
-# function bdm_add_executable( TARGET
+# function build_shared_library( TARGET
 #                              SOURCES source1 source2 ...
 #                              HEADERS header1 header2 ...
-#                              LIBRARIES lib1 lib2 ...)
-# build libbiodynamo
-function(build_libbiodynamo TARGET)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
+#                              LIBRARIES lib1 lib2 ...
+#                              PLUGIN <"TRUE">)
+# build shared library with ROOT dictionaries. If ARG_PLUGIN is set, we will
+# always generate dictionaries (as required by ROOT's plugin manager)
+function(build_shared_library TARGET)
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES;PLUGIN" ${ARGN} )
 
-  if(dict)
+  # We always need dictionaries for the plugins (plugin manager requires class
+  # information)
+  if(dict OR DEFINED ARG_PLUGIN)
     add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
 
     # generate dictionary using genreflex
-    set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/libbiodynamo_dict.cc")
+    set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict.cc")
     bdm_generate_dictionary(${TARGET}-dict OFF
       DICT "${DICT_FILE}"
       HEADERS ${ARG_HEADERS}
-      SELECTION $ENV{BDM_CMAKE_DIR}/selection-libbiodynamo.xml
+      SELECTION $ENV{BDM_CMAKE_DIR}/selection-lib${TARGET}.xml
       DEPENDS ${TARGET}-objectlib)
 
     # generate shared library
@@ -227,7 +231,7 @@ function(build_libbiodynamo TARGET)
 
     SET(BIODYNAMO_TARGET_NAME "${TARGET}" PARENT_SCOPE)
   endif()
-endfunction(build_libbiodynamo)
+endfunction(build_shared_library)
 
 # function generate_rootlogon
 # generates rootlogon.C which is required by ROOT's C++ interpreter cling

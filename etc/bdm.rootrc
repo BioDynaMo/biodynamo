@@ -1,0 +1,2 @@
+Unix.*.Root.PluginPath:     $(ROOTSYS)/etc/plugins:$(BDMSYS)/etc/plugins
+Unix.*.Root.DynamicPath:      .:$(ROOTSYS)/macros:$(BDMSYS)/lib

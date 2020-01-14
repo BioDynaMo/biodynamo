@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_INSITU_PIPELINE_H_
-#define CORE_VISUALIZATION_INSITU_PIPELINE_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_INSITU_PIPELINE_H_
+#define CORE_VISUALIZATION_PARAVIEW_INSITU_PIPELINE_H_
 
 #include <cstdlib>
 #include <map>
@@ -23,7 +23,7 @@
 
 #include "core/util/log.h"
 
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#ifndef __ROOTCLING__
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkCPPipeline.h>
@@ -43,13 +43,13 @@
 #include <vtkSMSourceProxy.h>
 #include <vtkUnstructuredGrid.h>
 
-#include "core/visualization/catalyst_helper_structs.h"
+#include "core/visualization/paraview/helper.h"
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#endif  // ifndef __ROOTCLING__
 
 namespace bdm {
 
-#if defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#ifndef __ROOTCLING__
 
 class InSituPipeline : public vtkCPPipeline {
  public:
@@ -361,8 +361,8 @@ class InSituPipeline {
   }
 };
 
-#endif  // defined(USE_CATALYST) && !defined(__ROOTCLING__)
+#endif  // ifndef __ROOTCLING__
 
 }  // namespace bdm
 
-#endif  // CORE_VISUALIZATION_INSITU_PIPELINE_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_INSITU_PIPELINE_H_

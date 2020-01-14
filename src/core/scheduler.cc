@@ -12,10 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/scheduler.h"
-
 #include <chrono>
-#include <cstdlib>
 #include <string>
 
 #include "core/execution_context/in_place_exec_ctxt.h"
@@ -26,11 +23,12 @@
 #include "core/operation/op_timer.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
+#include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/simulation_backup.h"
 #include "core/util/log.h"
-#include "core/visualization/catalyst_adaptor.h"
-#include "core/visualization/root_adaptor.h"
+#include "core/visualization/root/adaptor.h"
+#include "core/visualization/visualization_adaptor.h"
 
 namespace bdm {
 
@@ -40,9 +38,7 @@ Scheduler::Scheduler() {
   if (backup_->RestoreEnabled()) {
     restore_point_ = backup_->GetSimulationStepsFromBackup();
   }
-  std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
-  visualization_ =
-      new CatalystAdaptor(bdm_src_dir + "/visualization/simple_pipeline.py");
+  visualization_ = VisualizationAdaptor::Create(param->visualization_engine_);
   root_visualization_ = new RootAdaptor();
   bound_space_ = new BoundSpace();
   displacement_ = new DisplacementOp();
@@ -87,7 +83,7 @@ void Scheduler::Simulate(uint64_t steps) {
 
   Initialize();
   for (unsigned step = 0; step < steps; step++) {
-    Execute(step == steps - 1);
+    Execute();
 
     total_steps_++;
     Backup();
@@ -131,7 +127,7 @@ Operation* Scheduler::GetOperation(const std::string& name) {
   return nullptr;
 }
 
-void Scheduler::Execute(bool last_iteration) {
+void Scheduler::Execute() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* grid = sim->GetGrid();
@@ -143,7 +139,9 @@ void Scheduler::Execute(bool last_iteration) {
   });
 
   Timing::Time("visualize", [&]() {
-    visualization_->Visualize(total_steps_, last_iteration);
+    if (visualization_ != nullptr) {
+      visualization_->Visualize();
+    }
   });
   Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
 
@@ -213,12 +211,10 @@ void Scheduler::Initialize() {
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
-#if defined(USE_CUDA) || defined(USE_OPENCL)
   if (!is_gpu_environment_initialized_ && param->use_gpu_) {
     GpuHelper::GetInstance()->InitializeGPUEnvironment();
     is_gpu_environment_initialized_ = true;
   }
-#endif
 
   if (param->bound_space_) {
     rm->ApplyOnAllElementsParallel(*bound_space_);

@@ -20,14 +20,14 @@
 #include "core/sim_object/cell.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
-#include "core/visualization/catalyst_adaptor.h"
+#include "core/visualization/paraview/adaptor.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
-#ifdef USE_CATALYST
+#ifdef USE_PARAVIEW
 #include <vtkImageData.h>
 #include <vtkXMLImageDataReader.h>
-#endif  // USE_CATALYST
+#endif  // USE_PARAVIEW
 
 #define ROOTFILE "bdmFile.root"
 
@@ -500,7 +500,7 @@ TEST(DiffusionTest, Convergence) {
   delete d_grid8;
 }
 
-#ifdef USE_CATALYST
+#ifdef USE_PARAVIEW
 
 // Travis does not support OpenGL 3.3
 // Therefore, pvpython crashes.
@@ -539,9 +539,10 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   rm->GetDiffusionGrid(kSubstance2)->RunInitializers();
 
   // Write diffusion visualization to file
-  CatalystAdaptor adaptor("");
-  adaptor.Visualize(1, true);
-  adaptor.WriteToFile(0);
+  sim.Simulate(1);
+  // auto adaptor = VisualizationAdaptor::Create("paraview");
+  // adaptor->Visualize();
+  // static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(0);
 
   // Read back from file
   vtkSmartPointer<vtkXMLImageDataReader> reader =
@@ -565,6 +566,6 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   remove(filename.c_str());
 }
 
-#endif  // USE_CATALYST
+#endif  // USE_PARAVIEW
 
 }  // namespace bdm

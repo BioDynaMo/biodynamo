@@ -11,24 +11,25 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#ifdef USE_CATALYST
+#ifdef USE_PARAVIEW
 
 #include <dirent.h>
 #include <gtest/gtest.h>
 
 #include "biodynamo.h"
 #include "core/util/io.h"
-#include "core/visualization/catalyst_adaptor.h"
-#include "unit/core/visualization/catalyst_adaptor_test.h"
+#include "core/visualization/paraview/adaptor.h"
+#include "core/visualization/paraview/helper.h"
+#include "unit/core/visualization/paraview_adaptor_test.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
 
-using MyCell = catalyst_adaptor_test_internal::MyCell;
-using MyNeuron = catalyst_adaptor_test_internal::MyNeuron;
+using MyCell = paraview_adaptor_test_internal::MyCell;
+using MyNeuron = paraview_adaptor_test_internal::MyNeuron;
 
 /// Test fixture for catalyst adaptor test to eliminate side effects
-class CatalystAdaptorTest : public ::testing::Test {
+class ParaviewAdaptorTest : public ::testing::Test {
  protected:
   static constexpr char const* kSimulationName = "MySimulation";
   static constexpr char const* kSimulationInfoJson =
@@ -49,7 +50,7 @@ class CatalystAdaptorTest : public ::testing::Test {
 };
 
 /// Tests if simulation_info.json is generated correctly during initialization.
-TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
+TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   auto set_param = [](auto* param) {
     // set-up Param values
     param->export_visualization_ = true;
@@ -63,7 +64,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   Simulation simulation(kSimulationName, set_param);
 
   // create internal objects
-  vtkNew<vtkCPDataDescription> data_description;
+  vtkCPDataDescription* data_description = vtkCPDataDescription::New();
   std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids;
   vtk_so_grids["cell"] = new VtkSoGrid("cell", data_description);
   vtk_so_grids["cell"]->initialized_ = true;
@@ -76,7 +77,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   vtk_dgrids["sodium"] = new VtkDiffusionGrid("sodium", data_description);
   vtk_dgrids["sodium"]->used_ = true;
 
-  CatalystAdaptor::GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
+  GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
 
   // free memory
   for (auto& el : vtk_so_grids) {
@@ -85,6 +86,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   for (auto& el : vtk_dgrids) {
     delete el.second;
   }
+  data_description->Delete();
 
   ASSERT_TRUE(FileExists(kSimulationInfoJson));
 
@@ -125,7 +127,7 @@ TEST_F(CatalystAdaptorTest, GenerateSimulationInfoJson) {
   EXPECT_EQ(expected, buffer.str());
 }
 
-TEST_F(CatalystAdaptorTest, OmitPvsmAndJsonGeneration) {
+TEST_F(ParaviewAdaptorTest, OmitPvsmAndJsonGeneration) {
   auto set_param = [](Param* param) {
     param->export_visualization_ = true;
     param->visualization_export_generate_pvsm_ = false;
@@ -145,7 +147,7 @@ TEST_F(CatalystAdaptorTest, OmitPvsmAndJsonGeneration) {
 }
 
 /// Tests if the catalyst state is generated.
-TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
+TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
   Simulation simulation("MySimulation");
   // before we can call finalize we need to modify the json object
   // we need to remove entries for sim_objects and extracellular_substances
@@ -166,7 +168,7 @@ TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
   ofs << empty_json;
   ofs.close();
 
-  CatalystAdaptor::GenerateParaviewState();
+  ParaviewAdaptor::GenerateParaviewState();
 
   ASSERT_TRUE(FileExists(kParaviewState));
 }
@@ -176,7 +178,7 @@ TEST_F(CatalystAdaptorTest, GenerateParaviewState) {
 /// FIXME: THIS TEST WAS DISABLED BECAUSE IT HANGS ON TRAVIS. THIS IS CAUSED
 /// BY PARAVIEW WHICH PROBABLY DEADLOCK WHILE EXECUTING THIS TEST. THIS TEST
 /// WILL BE ENABLED AGAIN WHEN PARAVIEW 5.7 WILL BE USED.
-TEST_F(CatalystAdaptorTest, DISABLED_CheckVisualizationSelection) {
+TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   auto set_param = [](auto* param) {
     param->export_visualization_ = true;
 
@@ -202,9 +204,7 @@ TEST_F(CatalystAdaptorTest, DISABLED_CheckVisualizationSelection) {
   // Visualize one step before any sim objects or diffusion grids are created
   // This must not crash the system. Object might be created at a later stage
   // during simulation.
-  CatalystAdaptor adaptor("");
-  adaptor.Visualize(1, true);
-  adaptor.WriteToFile(0);
+  sim.Simulate(1);
 
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
@@ -225,8 +225,7 @@ TEST_F(CatalystAdaptorTest, DISABLED_CheckVisualizationSelection) {
   rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
 
   // Write diffusion visualization to file
-  adaptor.Visualize(2, true);
-  adaptor.WriteToFile(1);
+  sim.Simulate(1);
 
   // Read back from file
   std::set<std::string> required_files = {".",
@@ -261,4 +260,4 @@ TEST_F(CatalystAdaptorTest, DISABLED_CheckVisualizationSelection) {
 
 }  // namespace bdm
 
-#endif  // USE_CATALYST
+#endif  // USE_PARAVIEW
