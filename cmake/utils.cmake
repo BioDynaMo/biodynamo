@@ -148,6 +148,12 @@ function(install_inside_build)
 
     add_custom_target(copy_files_bdm ALL DEPENDS biodynamo)
 
+    # Add this dependency, because notebooks depend on the target 'biodynamo'.
+    # Building each notebook would otherwise trigger: `biodynamo` -> `copy_files_bdm`.
+    if(notebooks)
+      add_dependencies(copy_files_bdm notebooks)
+    endif()
+
     # Install the enviroment source script
 
     # Copy biodynamo.py and make it executable.
