@@ -183,11 +183,16 @@ function(install_inside_build)
             EXCLUDE "biodynamo.py"
             )
     
-     # Copy etc files
-     add_copy_directory(copy_files_bdm
+    # Copy etc files
+    add_copy_directory(copy_files_bdm
             ${CMAKE_SOURCE_DIR}/etc
             DESTINATION ${CMAKE_INSTALL_ROOT}/etc
             GLOB "*" ".*"
+            )
+
+    add_copy_files(copy_files_bdm
+            ${CMAKE_BINARY_DIR}/rootlogon.C
+            DESTINATION ${CMAKE_INSTALL_ROOT}/etc
             )
 
     add_copy_files(copy_files_bdm
