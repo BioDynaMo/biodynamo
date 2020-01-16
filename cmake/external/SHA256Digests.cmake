@@ -13,7 +13,7 @@ SET(ubuntu-16.04-Qt 0feb2d00283102a1aa0c9d426436d99b75afa8288139ad9c6f70dff40d74
 
 SET(ubuntu-18.04-Libroadrunner 3d48ea52822ebd745826c5729bfa0ee551d8ca4e93dcf5c738488769152cbec1)
 SET(ubuntu-18.04-ParaView 167fc896bb06ded6a66f3943cab5b2f48de0d3d05c4740a2431aa957a4ca03dc)
-SET(ubuntu-18.04-ROOT 5a3bfe037de2444dffb6ac6dc79c6afe1042c94b294b4ea0eb927290b1b9bb3b)
+SET(ubuntu-18.04-ROOT 4a2510281fdb8ccaa0ebeca2a567fc0be628c769bd2cb77f32067d742839f90a)
 SET(ubuntu-18.04-Qt 25af84fcd15c7de49de2350cdeba8bb6eefa7fad428bcd48cb5cfa2bdef24be6)
 
 SET(centos-7-Libroadrunner 8a07c72e6cd9d0b7808b5d4973cb68621b4fb47b5ad12a47fd7973ea9cc533af)
