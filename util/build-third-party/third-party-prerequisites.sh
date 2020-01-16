@@ -73,7 +73,7 @@ EOF'
     sudo yum install -y zlib zlib-devel
 
     # Install dependencies to install Python with PyEnv
-    sudo yum install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+    sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
       sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 
     export LLVM_CONFIG="/opt/rh/llvm-toolset-6.0/root/usr/bin/llvm-config"

@@ -18,5 +18,5 @@ SET(ubuntu-18.04-Qt 25af84fcd15c7de49de2350cdeba8bb6eefa7fad428bcd48cb5cfa2bdef2
 
 SET(centos-7-Libroadrunner 8a07c72e6cd9d0b7808b5d4973cb68621b4fb47b5ad12a47fd7973ea9cc533af)
 SET(centos-7-ParaView 71c497813893c08f3c24db8f1a725db7d8b9ee3368587e3b6c8162bc93fe3496)
-SET(centos-7-ROOT f11eee9830cb472e252c128a58045aacf383adfb9c6d57daac9a66c56273586b)
+SET(centos-7-ROOT 2b580761db632f6f6e8d055655579c4fff02c256aff8eeaf76bdef0b1f6ab7ff)
 SET(centos-7-Qt ffef4f6f523c6fd161e840ec67af8aec53c03840988fa6b0922b37e4b52f8251)
