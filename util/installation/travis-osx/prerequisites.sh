@@ -29,22 +29,21 @@ brew style
 brew update-reset
 
 # Install and upgrade required packages
-brew install libomp tbb open-mpi git \
-python python@2 llvm wget cmake || true
-
-brew upgrade python || true
+brew install libomp tbb open-mpi git llvm wget cmake pyenv readline xz || true
+brew upgrade cmake python || true
 # necessary since symlinking broke with brew on travis since 3.6.7_1 release
 brew link --overwrite python
-brew upgrade cmake || true
+
+# On Travis CI pyenv is already installed, so we need to unset the following
+unset PYENV_ROOT
+
+eval "$(pyenv init -)" # this enables pyenv for the current shell
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+pyenv shell 3.6.9
 
 # Install the optional packages
 if [ $1 == "all" ]; then
-    PIP_PACKAGES="nbformat jupyter metakernel"
-    pip2 install --user $PIP_PACKAGES
-
-    # Jupyter relies on tornado for logging, but the latest tornado (version 6)
-    # is not compatible with Python 2. So we downgrade to 5.1.1
-    pip2 uninstall tornado -y
-    pip2 install --user tornado==5.1.1
-    brew install doxygen graphviz lcov gcovr || true
+  PIP_PACKAGES="nbformat jupyter metakernel"
+  pip install --user $PIP_PACKAGES
+  brew install doxygen graphviz lcov gcovr || true
 fi

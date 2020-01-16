@@ -8,7 +8,7 @@ SET(travis-osx-Qt 680a274b662271724c8fb51019baee2884b0b1bff45da34827f0dd77d50d4b
 
 SET(ubuntu-16.04-Libroadrunner 5b775a6f80bf689a1eb3a105c12360478c6d2c6169e00aa84af8efab8f907f28)
 SET(ubuntu-16.04-ParaView 3f3b9dfb5bdaf5d2a8f1b129422805da6259f40ad77c9fe1250e4f4c4a5f84ff)
-SET(ubuntu-16.04-ROOT 17859f9bef04fd55de5f9846d45a3c5caf1fee5a5e6ebfca42f5ccb5c286e4ee)
+SET(ubuntu-16.04-ROOT e3532ada9beabb77b4b8068e354e14d08cf3f542be5c2311ec998a5e29b928ac)
 SET(ubuntu-16.04-Qt 0feb2d00283102a1aa0c9d426436d99b75afa8288139ad9c6f70dff40d74bb9f)
 
 SET(ubuntu-18.04-Libroadrunner 3d48ea52822ebd745826c5729bfa0ee551d8ca4e93dcf5c738488769152cbec1)

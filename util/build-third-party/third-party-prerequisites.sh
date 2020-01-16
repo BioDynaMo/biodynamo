@@ -72,6 +72,10 @@ EOF'
     sudo yum install -y bzip2 bzip2-devel
     sudo yum install -y zlib zlib-devel
 
+    # Install dependencies to install Python with PyEnv
+    sudo yum install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+      sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+
     export LLVM_CONFIG="/opt/rh/llvm-toolset-6.0/root/usr/bin/llvm-config"
     set +e
     . scl_source enable devtoolset-7
@@ -107,6 +111,11 @@ EOF'
     # paraview
     sudo apt-get -y install libopenmpi-dev || true
 
+    # Install dependencies to install Python with PyEnv
+    sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev \
+      libreadline-dev libsqlite3-dev wget curl llvm \
+      xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
+
     sudo apt install -y libxt-dev freeglut3-dev
 
     # libroadrunner
@@ -121,6 +130,13 @@ EOF'
   DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.15.3 1
   export PATH=$WORKING_DIR/cmake-3.15.3/bin:$PATH
 
+  # Install pyenv and python 3.6.9
+  curl https://pyenv.run | bash
+  export PATH="$HOME/.pyenv/bin:$PATH"
+  eval "$(pyenv init -)"
+  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+  pyenv shell 3.6.9
+
 else
   brew install llvm@6
   brew install swig
@@ -133,4 +149,11 @@ else
 
   xcode-select --install || true
   brew install cmake
+
+  # Install pyenv and python 3.6.9
+  curl https://pyenv.run | bash
+  export PATH="$HOME/.pyenv/bin:$PATH"
+  eval "$(pyenv init -)"
+  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+  pyenv shell 3.6.9
 fi
