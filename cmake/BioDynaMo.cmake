@@ -236,10 +236,10 @@ endfunction(build_shared_library)
 # function generate_rootlogon
 # generates rootlogon.C which is required by ROOT's C++ interpreter cling
 function(generate_rootlogon)
-  set(CONTENT "{")
   get_directory_property(INCLUDE_DIRS INCLUDE_DIRECTORIES)
   set(INCLUDE_OPTIONS)
-  
+
+  set(CONTENT "{")
   # if USE_DICT is set for libbiodynamo.so, we also need to set it for rootcling
   # when we want to use the interpreter or notebooks. Otherwise there would break
   # the one-definition rule
@@ -254,17 +254,7 @@ function(generate_rootlogon)
   set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#include \\\"biodynamo.h\\\"\")\;")
   set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"using namespace bdm\;\")\;")
   set(CONTENT "${CONTENT}\n}\n")
-
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
-
-  # If no .rootrc exists in the home directory, then we make one for the
-  # convenience of not having to load our rootlogon.C explicitely for every
-  # cling session.
-  set(ROOTRC_PATH "$ENV{HOME}/.rootrc")
-  set(ROOTRC_CONTENT "Unix.*.Root.MacroPath:      .:$(ROOTSYS)/macros:$(BDMSYS)/etc\n")
-  if(NOT EXISTS "${ROOTRC_PATH}")
-    file(WRITE "${ROOTRC_PATH}" "${ROOTRC_CONTENT}")
-  endif()
 endfunction(generate_rootlogon)
 
 # generates a target to build the biodynamo paraview plugin

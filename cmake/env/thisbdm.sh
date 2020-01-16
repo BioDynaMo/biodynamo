@@ -223,6 +223,12 @@ fi
 export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDMSYS}/include"
 ########
 
+# Load the rootlogon.C 
+unset -f root || true
+function root {
+  ${BDM_ROOT_DIR}/bin/root -l -e "cout << \"Loading BioDynaMo into ROOT...\" << endl;gROOT->LoadMacro(\"${BDMSYS}/etc/rootlogon.C\");" $@
+}
+
 
 #### ParaView Specific Configurations ####
 if [ -z ${ParaView_DIR} ]; then
