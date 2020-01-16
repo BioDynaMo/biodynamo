@@ -236,14 +236,24 @@ endfunction(build_shared_library)
 # function generate_rootlogon
 # generates rootlogon.C which is required by ROOT's C++ interpreter cling
 function(generate_rootlogon)
-  set(CONTENT "{\n")
   get_directory_property(INCLUDE_DIRS INCLUDE_DIRECTORIES)
   set(INCLUDE_OPTIONS)
-  foreach( DIR ${INCLUDE_DIRS})
-    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\".include ${DIR}\")\;")
-  endforeach()
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;\n}")
 
+  set(CONTENT "{")
+  # if USE_DICT is set for libbiodynamo.so, we also need to set it for rootcling
+  # when we want to use the interpreter or notebooks. Otherwise there would break
+  # the one-definition rule
+  if (dict)
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define USE_DICT\")\;")
+  endif()
+
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;")
+  # We add this one because the ROOT visualization require it, and it's not one
+  # of the core libraries that is loaded by default in rootcling
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(GenVector)\")\;")
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#include \\\"biodynamo.h\\\"\")\;")
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"using namespace bdm\;\")\;")
+  set(CONTENT "${CONTENT}\n}\n")
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)
 
