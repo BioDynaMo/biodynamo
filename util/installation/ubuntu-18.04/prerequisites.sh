@@ -29,5 +29,9 @@ set -e
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
+# This will avoid tzdata package from requesting user interaction (tzdata is a
+# dependency of one of the prerequisites of PyEnv)
+DEBIAN_FRONTEND=noninteractive
+
 # use ubuntu-16.04 prerequisites script
 . $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/prerequisites.sh $1
