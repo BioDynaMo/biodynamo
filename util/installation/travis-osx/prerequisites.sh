@@ -37,6 +37,7 @@ brew link --overwrite python
 # On Travis CI pyenv is already installed, so we need to unset the following
 unset PYENV_ROOT
 
+export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)" # this enables pyenv for the current shell
 env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
 pyenv shell 3.6.9
