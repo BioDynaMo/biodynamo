@@ -29,3 +29,7 @@ for f in *; do
     rm -rf $f
   fi
 done
+
+for f in .ninja*; do
+  rm -f $f
+done
