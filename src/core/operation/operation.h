@@ -17,6 +17,8 @@
 
 #include <functional>
 #include <string>
+#include "core/functor.h"
+#include <iostream>
 
 namespace bdm {
 
@@ -25,16 +27,14 @@ class SimObject;
 /// An Operation contains a function that will be executed for each simulation
 /// object. It's data member `frequency_` specifies how often it will be
 /// executed (every simulation step, every second, ...).
-struct Operation {
-  using FunctionType = std::function<void(SimObject*)>;
-
+struct Operation : public Functor<void, SimObject*> {
   Operation();
 
-  Operation(const std::string& name, const FunctionType& f);
+  Operation(const std::string& name);
 
-  Operation(const std::string& name, uint32_t frequency, const FunctionType& f);
+  Operation(const std::string& name, uint32_t frequency);
 
-  void operator()(SimObject* so) const;
+  void operator()(SimObject* so) override {} // FIXME remove to make abstract
 
   /// Specifies how often this operation will be executed.\n
   /// 1: every timestep\n
@@ -43,9 +43,6 @@ struct Operation {
   uint32_t frequency_ = 1;
   /// Operation name / unique identifier
   std::string name_;
-
- private:
-  FunctionType function_;
 };
 
 }  // namespace bdm

@@ -230,7 +230,7 @@ class ResourceManager {
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
   void ApplyOnAllElementsParallel(
-      const std::function<void(SimObject*)>& function);
+      Functor<void,SimObject*>& function);
 
   /// Apply a function on all elements.\n
   /// Function invocations are parallelized.\n
@@ -241,7 +241,7 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   void ApplyOnAllElementsParallelDynamic(
       uint64_t chunk,
-      const std::function<void(SimObject*, SoHandle)>& function);
+      Functor<void,SimObject*, SoHandle>& function);
 
   /// Reserves enough memory to hold `capacity` number of simulation objects for
   /// each numa domain.

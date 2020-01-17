@@ -18,7 +18,7 @@
 namespace bdm {
 
 void ResourceManager::ApplyOnAllElementsParallel(
-    const std::function<void(SimObject*)>& function) {
+    Functor<void,SimObject*>& function) {
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
@@ -40,7 +40,7 @@ void ResourceManager::ApplyOnAllElementsParallel(
 }
 
 void ResourceManager::ApplyOnAllElementsParallelDynamic(
-    uint64_t chunk, const std::function<void(SimObject*, SoHandle)>& function) {
+    uint64_t chunk, Functor<void,SimObject*, SoHandle>& function) {
   // adapt chunk size
   auto num_so = GetNumSimObjects();
   uint64_t factor = (num_so / thread_info_->GetMaxThreads()) / chunk;
@@ -131,6 +131,18 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
     delete counter;
   }
 }
+
+struct UpdateUidSoHMapFunctor : public Functor<void, SimObject*, SoHandle> {
+  using Map = SoUidMap<SoHandle>;
+  UpdateUidSoHMapFunctor(Map& rm_uid_soh_map) : rm_uid_soh_map_(rm_uid_soh_map) {}
+
+  void operator()(SimObject* so, SoHandle soh) {
+    rm_uid_soh_map_.Insert(so->GetUid(), soh);
+  }
+
+private:
+  Map& rm_uid_soh_map_;
+};
 
 void ResourceManager::SortAndBalanceNumaNodes() {
   // balance simulation objects per numa node according to the number of
@@ -226,9 +238,8 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   }
 
   // update uid_soh_map_
-  ApplyOnAllElements([this](SimObject* so, SoHandle soh) {
-    this->uid_soh_map_.Insert(so->GetUid(), soh);
-  });
+  UpdateUidSoHMapFunctor functor(uid_soh_map_);
+  ApplyOnAllElements(functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa_) {
     DebugNuma();

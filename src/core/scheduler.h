@@ -45,7 +45,7 @@ class Scheduler {
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
-  void AddOperation(const Operation& operation);
+  void AddOperation(Operation* operation);
 
   /// Remove an operation. However, some operations are protected and cannot
   /// be removed. \see protected_operations_
@@ -80,7 +80,7 @@ class Scheduler {
   DisplacementOp* displacement_;
   DiffusionOp* diffusion_;
 
-  std::vector<Operation> operations_;  //!
+  std::vector<Operation*> operations_;  //!
   std::set<std::string> protected_operations_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
@@ -97,7 +97,7 @@ class Scheduler {
   void Initialize();
 
   // Decide which operations should be executed
-  std::vector<Operation> GetScheduleOps();
+  std::vector<Operation*> GetScheduleOps();
 };
 
 }  // namespace bdm

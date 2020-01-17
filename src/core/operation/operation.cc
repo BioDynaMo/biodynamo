@@ -19,13 +19,10 @@ namespace bdm {
 
 Operation::Operation() : name_("null") {}
 
-Operation::Operation(const std::string& name, const FunctionType& f)
-    : name_(name), function_(f) {}
+Operation::Operation(const std::string& name) : name_(name) {}
 
-Operation::Operation(const std::string& name, uint32_t frequency,
-                     const FunctionType& f)
-    : frequency_(frequency), name_(name), function_(f) {}
+Operation::Operation(const std::string& name, uint32_t frequency)
+    : frequency_(frequency), name_(name) {}
 
-void Operation::operator()(SimObject* so) const { function_(so); }
 
 }  // namespace bdm

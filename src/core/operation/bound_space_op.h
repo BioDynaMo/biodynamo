@@ -18,6 +18,7 @@
 #include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
+#include "core/operation/operation.h"
 
 namespace bdm {
 
@@ -43,12 +44,12 @@ inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
 
 /// Keeps the simulation objects contained within the bounds as defined in
 /// param.h
-class BoundSpace {
+class BoundSpace : public Operation {
  public:
   BoundSpace() {}
   ~BoundSpace() {}
 
-  void operator()(SimObject* sim_object) const {
+  void operator()(SimObject* sim_object) override {
     auto* param = Simulation::GetActive()->GetParam();
     if (param->bound_space_) {
       ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);

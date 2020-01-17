@@ -49,10 +49,10 @@ inline void RunTest() {
   simulation.GetGrid()->Initialize();
 
   // execute operation
-  Operation op("displacement", DisplacementOp());
+  std::vector<Operation> ops = {DisplacementOp()};
   auto* ctxt = simulation.GetExecutionContext();
-  ctxt->Execute(rm->GetSimObject(ref_uid), {op});
-  ctxt->Execute(rm->GetSimObject(ref_uid + 1), {op});
+  ctxt->Execute(rm->GetSimObject(ref_uid), ops);
+  ctxt->Execute(rm->GetSimObject(ref_uid + 1), ops);
 
   // check results
   // cell 0

@@ -30,18 +30,19 @@
 #include "core/shape.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
+#include "core/operation/operation.h"
 
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-class DisplacementOp {
+class DisplacementOp : public Operation {
  public:
-  DisplacementOp() {
+  DisplacementOp() : Operation("displacement") {
     // NB: check if there are non spherical shapes is not easily possible in the
     // dynamic solution.
   }
 
-  ~DisplacementOp() {}
+  virtual ~DisplacementOp() {}
 
   bool UseCpu() const {
     auto* param = Simulation::GetActive()->GetParam();
@@ -65,7 +66,7 @@ class DisplacementOp {
     }
   }
 
-  void operator()(SimObject* sim_object) { cpu_(sim_object); }
+  void operator()(SimObject* sim_object) override { cpu_(sim_object); }
 
  private:
   /// Currently the gpu implementation only supports Spheres.

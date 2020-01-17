@@ -58,11 +58,12 @@ class RootAdaptor {
 
     auto *rm = Simulation::GetActive()->GetResourceManager();
 
-    rm->ApplyOnAllElements([&](SimObject *so) {
-      auto container = new TGeoVolumeAssembly("A");
-      this->AddBranch(so, container);
-      top_->AddNode(container, top_->GetNdaughters());
-    });
+    // FIXME
+    // rm->ApplyOnAllElements([&](SimObject *so) {
+    //   auto container = new TGeoVolumeAssembly("A");
+    //   this->AddBranch(so, container);
+    //   top_->AddNode(container, top_->GetNdaughters());
+    // });
 
     gSystem->ProcessEvents();
     gGeoManager->Export(outfile_.c_str(), "biodynamo");

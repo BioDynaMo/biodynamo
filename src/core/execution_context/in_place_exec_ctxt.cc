@@ -160,20 +160,20 @@ void InPlaceExecutionContext::TearDownIterationAll(
 }
 
 void InPlaceExecutionContext::Execute(
-    SimObject* so, const std::vector<Operation>& operations) {
+    SimObject* so, const std::vector<Operation*>& operations) {
   auto* grid = Simulation::GetActive()->GetGrid();
   auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
   if (nb_mutex_builder != nullptr) {
     auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
     std::lock_guard<decltype(mutex)> guard(mutex);
     neighbor_cache_.clear();
-    for (auto& op : operations) {
-      op(so);
+    for (auto* op : operations) {
+      (*op)(so);
     }
   } else {
     neighbor_cache_.clear();
-    for (auto& op : operations) {
-      op(so);
+    for (auto* op : operations) {
+      (*op)(so);
     }
   }
 }

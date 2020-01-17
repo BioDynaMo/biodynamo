@@ -87,7 +87,7 @@ class InPlaceExecutionContext {
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
-  void Execute(SimObject* so, const std::vector<Operation>& operations);
+  void Execute(SimObject* so, const std::vector<Operation*>& operations);
 
   void push_back(SimObject* new_so);  // NOLINT
 
