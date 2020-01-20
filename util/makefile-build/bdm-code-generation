@@ -48,8 +48,4 @@ CXX_INCLUDES=$(${BDM_CONFIG} --cxxincludes | sed 's|-isystem |-I|g')
 
 CXX_DEFINES=$(${BDM_CONFIG} --cxxdefines)
 
-echo CXXFLAGS=`${BDM_CONFIG} --cxxall`
-echo LINKFLAGS=`${BDM_CONFIG} --linkflags`
-echo genreflex ${HEADERS} -o ${DICT} --select=${SELECTIONFILE} ${CXX_DEFINES} ${CXX_INCLUDES} $ADDITIONAL_CXX_FLAGS
-
 genreflex ${HEADERS} -o ${DICT} --select=${SELECTIONFILE} ${CXX_DEFINES} ${CXX_INCLUDES} $ADDITIONAL_CXX_FLAGS
