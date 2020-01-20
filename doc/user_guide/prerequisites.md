@@ -162,11 +162,7 @@ sudo yum install -y libxml2-devel
  * **libomp**: Development files for OpenMP (API for multiprocessor programming);
  * **tbb**: Development files for TBB (C++ template library developed by Intel for parallel programming);
  * **open-mpi**: Development files for OpenMP (API for multiprocessor programming);
- * **pyenv**: Python Version Management.
-
-We install pyenv as the Python Version Management to be able to switch
-to a supported Python environment for BioDynaMo. This will not interfere with
-your system's Python installation.
+ * **python** and **python@2**: Python 3 Interpreter.
 
 ### Optional Packages
 
@@ -182,14 +178,16 @@ your system's Python installation.
 Using HomeBrew:
 
 ```bash
-brew install llvm wget cmake libomp tbb open-mpi pyenv || true
-brew upgrade cmake || true
+brew install llvm wget cmake libomp tbb open-mpi python python@2 || true
+
+brew upgrade python cmake || true
 ```
 
 Using Fink:
 
 ```bash
-sudo fink install wget llvm-clang cmake libomp-dev libtbb4 openmpi pyenv
+sudo fink install wget llvm-clang cmake libomp-dev libtbb4 openmpi \
+   python3 pip-py37
 ```
 
 #### Optional Packages
@@ -197,13 +195,13 @@ sudo fink install wget llvm-clang cmake libomp-dev libtbb4 openmpi pyenv
 Using HomeBrew:
 
 ```bash
-pip install --user nbformat jupyter metakernel
+pip2 install --user nbformat jupyter metakernel
 brew install doxygen graphviz lcov gcovr || true
 ```
 
 Using Fink:
 
 ```bash
-pip install --user nbformat jupyter metakernel
+pip2 install --user nbformat jupyter metakernel
 sudo fink install doxygen graphviz
 ```
