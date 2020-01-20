@@ -74,6 +74,7 @@ function(verify_ROOT)
         SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
         SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
         SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
+        SET(ROOT_CONFIG_EXECUTABLE ${ROOT_CONFIG_EXECUTABLE} PARENT_SCOPE)
     else()
         # When ROOT is found, but it's not C++14 compliant, we exit the installation, because ROOT needs
         # to be properly sourced prior to invoking CMake (CMake cannot do this for us, because it requires
@@ -182,7 +183,7 @@ function(install_inside_build)
             GLOB "*.py" "*.sh"
             EXCLUDE "biodynamo.py"
             )
-    
+
     # Copy etc files
     add_copy_directory(copy_files_bdm
             ${CMAKE_SOURCE_DIR}/etc
@@ -198,7 +199,6 @@ function(install_inside_build)
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_BINDIR}
             ${CMAKE_BINARY_DIR}/version/version.py
-            ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-config
             ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
             )
 

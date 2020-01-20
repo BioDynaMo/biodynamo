@@ -27,12 +27,6 @@ biodynamo demo makefile_project "${temp_dir}"
 cd "${temp_dir}/makefile_project"
 make clean
 
-if [ `uname` = "Darwin" ]; then
-  # following line creates the cache for bdm-config
-  # without it the make call fails on Travis OSX
-  bdm-config --cxxflag
-fi
-
 make
 ./makefile_project 2>/dev/null | grep '^Simulation completed successfully!$'
 exit $?

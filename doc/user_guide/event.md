@@ -98,7 +98,7 @@ class MyCell : public Cell {
     Base::EventHandler(event, daughter_2);
   }
   ...
- private:  
+ private:
   double my_new_data_member_ = {3.14};
   ...
 };

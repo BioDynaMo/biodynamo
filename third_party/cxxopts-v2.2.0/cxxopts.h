@@ -1140,7 +1140,7 @@ namespace cxxopts
       std::vector<std::string>,
       bool allow_unrecognised,
       int&, char**&);
-    
+
     // ParseResult(const ParseResult& obj);
 
     size_t

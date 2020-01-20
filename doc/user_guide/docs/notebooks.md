@@ -34,7 +34,7 @@ different types of content (e.g. code snippets, text).
 
 You can use Notebooks to play around interactively with code snippets
 (e.g. to test code, or to quickly change parameters). Another great use is
-to create tutorials that can be presented to others for demonstrative or 
+to create tutorials that can be presented to others for demonstrative or
 educational purposes. You can embed the visualization to bring across certain
 points about your simulation in an effective manner.
 

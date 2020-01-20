@@ -29,10 +29,10 @@ Currently SBML is not supported on MacOS (see https://trello.com/c/vKPbh4iG).
 Major improvements of the BioDynaMo's build system.
 
   * Refactor build procedure.
-  * Improve dependency detection and diagnostic messages for the user.  
+  * Improve dependency detection and diagnostic messages for the user.
   * Rename `biodynamo-env.sh` to `thisbdm.sh`.
   * BioDynaMo can be used directly from the build directory. The install step has become optional.
-  * Improve user and developer guide.  
+  * Improve user and developer guide.
 
 ## 20.06.2019 [`257f1a3`](https://github.com/BioDynaMo/biodynamo/commit/257f1a39ba501da9915c5a50c93d517ac2673919)
 
@@ -160,13 +160,13 @@ class Cell : public SimulationObject {
 
 ## 08.10.2018 [`8a97cf2`](https://github.com/BioDynaMo/biodynamo/commit/8a97cf21ad3e07be19f764d116eb10cae5c6ab05)
 
-Allow builds without dictionaries to speed up compile time                                 
+Allow builds without dictionaries to speed up compile time
 
-Early development of a simulation requires fast iteration cycles.  
-During this stage serialization features are not needed. Thus,  
-we support builds without dictionaries.                                     
+Early development of a simulation requires fast iteration cycles.
+During this stage serialization features are not needed. Thus,
+we support builds without dictionaries.
 
-By default dictionaries will be built. To turn them off, run:  
+By default dictionaries will be built. To turn them off, run:
 cmake -Ddict=off ..
 
 | Old             | New                   |

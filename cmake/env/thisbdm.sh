@@ -184,9 +184,9 @@ else
 fi
 
 if [ -z "${MANPATH}" ]; then
-   MANPATH=@mandir@:${default_manpath}; export MANPATH
+   MANPATH="${BDMSYS}/man":${default_manpath}; export MANPATH
 else
-   MANPATH=@mandir@:$MANPATH; export MANPATH
+   MANPATH="${BDMSYS}/man":$MANPATH; export MANPATH
 fi
 
 ##### CMake Specific Configurations #####
@@ -213,17 +213,23 @@ if [ -z ${BDM_ROOT_DIR} ] && [ -z ${ROOTSYS} ]; then
 else
   # ROOTSYS has precedence over the BDM_ROOT_DIR custom configuration
   if [ -n ${ROOTSYS} ]; then
-    BDM_ROOT_DIR=${ROOTSYS}
-    echo "We will use the configuration from ROOTSYS which points to ${ROOTSYS}."
-    echo "Please check that it points to the correct ROOT installation you want to use."
+     orvers="@rootvers@"
+     crvers="$($ROOTSYS/bin/root-config --version)"
+     if [ $crvers == $orvers ]; then
+        BDM_ROOT_DIR=${ROOTSYS}
+     else
+        echo "ROOTSYS points to ROOT version $crvers, while BDM was build with version $orvers."
+        echo "Make sure that ROOTSYS points to the right version of ROOT."
+        echo "Sourcing BioDynaMo env failed!"
+     fi
   fi
 fi
 
 . ${BDM_ROOT_DIR}/bin/thisroot.sh
-export ROOT_INCLUDE_PATH="${ROOT_INCLUDE_PATH:+${ROOT_INCLUDE_PATH}:}${BDMSYS}/include"
+
 ########
 
-# Load the rootlogon.C 
+# Load the rootlogon.C
 unset -f root || true
 function root {
   ${BDM_ROOT_DIR}/bin/root -l -e "cout << \"Loading BioDynaMo into ROOT...\" << endl;gROOT->LoadMacro(\"${BDMSYS}/etc/rootlogon.C\");" $@
@@ -317,10 +323,6 @@ fi
 
 # OpenMP
 export OMP_PROC_BIND=true
-
-#if [ "x`bdm-config --arch | grep -v win32gcc | grep -i win32`" != "x" ]; then
-#  BDMSYS="`cygpath -w $BDM_INSTALL_DIR`"
-#fi
 
 # Apple specific
 if [[ $(uname -s) == "Darwin"* ]]; then

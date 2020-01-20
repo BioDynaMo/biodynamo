@@ -77,7 +77,7 @@ auto entry_prod = a.EntryWiseProduct(b)
 // It returns the sum of the array's content, which is 10.
 auto array_sum = a.Sum()
 
-// It computes and returns the array's norm.  
+// It computes and returns the array's norm.
 auto norm = a.Norm()
 
 // Normalize the array in-place.

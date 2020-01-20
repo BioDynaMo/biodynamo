@@ -585,14 +585,71 @@ feature_summary(WHAT DISABLED_FEATURES
 # Install all the files inside the build dir
 install_inside_build()
 
+#---Populate the configure arguments returned by 'bdm-config --config'
+get_cmake_property(variables CACHE_VARIABLES)
+foreach(var ${variables})
+  if((var MATCHES "_(LIBRARIES|LIBRARY|INCLUDE|VERSION)") AND
+     (NOT ${${var}} STREQUAL "") AND
+     (NOT ${var} MATCHES "NOTFOUND"))
+    if (var MATCHES "^QT_")
+      # filter out the very long list of Qt libraries and include dirs
+      if (var MATCHES "(QT_LIBRARY_DIR|QT_QTCORE_INCLUDE_DIR)")
+        set(BDM_CONFIGARGS "${BDM_CONFIGARGS}${var}=${${var}} ")
+      endif()
+    else()
+      if ((NOT var MATCHES "_(DOCS|TESTS|INSTALL)") AND (NOT var MATCHES "^_"))
+        set(BDM_CONFIGARGS "${BDM_CONFIGARGS}${var}=${${var}} ")
+      endif()
+    endif()
+  endif()
+endforeach()
+
+#--Local bdm-config and thisbdm
+EXECUTE_PROCESS(COMMAND ${ROOT_CONFIG_EXECUTABLE} --arch COMMAND tr -d '\n' OUTPUT_VARIABLE architecture)
+EXECUTE_PROCESS(COMMAND ${ROOT_CONFIG_EXECUTABLE} --platform COMMAND tr -d '\n' OUTPUT_VARIABLE platform)
+EXECUTE_PROCESS(COMMAND ${ROOT_CONFIG_EXECUTABLE} --version COMMAND tr -d '\n' OUTPUT_VARIABLE rootvers)
+EXECUTE_PROCESS(COMMAND ${ROOT_CONFIG_EXECUTABLE} --ncpu COMMAND tr -d '\n' OUTPUT_VARIABLE ncpu)
+set(altcxx ${CMAKE_CXX_COMPILER})
+set(altld ${CMAKE_CXX_COMPILER})
+set(cxxflags ${CMAKE_CXX_FLAGS})
+set(cxxstd ${CMAKE_CXX_STANDARD})
+set(cxxflagsdebug ${CMAKE_CXX_FLAGS_DEBUG})
+set(cxxflagsrelease ${CMAKE_CXX_FLAGS_RELEASE})
+set(ldflags ${CMAKE_EXE_LINKER_FLAGS})
+set(soflags ${CMAKE_SHARED_LINKER_FLAGS})
+set(socreatecxxflags ${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS})
+set(bindir ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(libdir ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(incdir ${CMAKE_CURRENT_BINARY_DIR}/include)
+set(cmakedir ${CMAKE_CURRENT_BINARY_DIR}/share/cmake)
+set(configargs ${BDM_CONFIGARGS})
+set(cmakeinvoke "${CMAKE_INVOKE} -G ${CMAKE_GENERATOR}")
+set(tbbinclude ${TBB_INCLUDE_DIRS})
+set(tbblibs ${TBB_LIBRARIES})
+set(omplibs ${OpenMP_CXX_LIBRARIES})
+
 # Copy the environmental files to their correct directory
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
+#configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.csh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh @ONLY NEWLINE_STYLE UNIX)
+#configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
+configure_file(${CMAKE_SOURCE_DIR}/cmake/env/bdm-config.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config @ONLY ESCAPE_QUOTES NEWLINE_STYLE UNIX)
 
 # Set run permission on the environmental files
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+#add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+#add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
+  set(buildcmd "make -j ${ncpu}")
+elseif (${CMAKE_GENERATOR} STREQUAL "Ninja")
+  set(buildcmd "ninja")
+else()
+  set(buildcmd "cmake --build . -j ${ncpu}")
+endif()
 
 PRINT_LINE()
-MESSAGE("You have just finished to configure BioDynaMo. Now you can run \"make .\" to compile it.\n\
-You can then call \"make install\" to install in your system.
-Remember to source ${BDM_INSTALL_DIR}/bin/thisbdm.sh before using the library.")
+MESSAGE("You have just finished to configure the BioDynaMo source.\n\
+Compile it by running \"${buildcmd}\".\n\
+Before using it do \". ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/thisbdm.sh.\"")
 PRINT_LINE()

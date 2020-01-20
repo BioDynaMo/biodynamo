@@ -379,7 +379,7 @@ def mainfunction(text, visualize):
 
 	if argumentsCell:
 		main = argumentsCell + main
-	
+
 	if visualize:
 		visComment = "# <markdowncell>\n Let's visualize the output!"
 		main += '\n%s\n# <codecell>\nVisualizeInNotebook();\n' % visComment

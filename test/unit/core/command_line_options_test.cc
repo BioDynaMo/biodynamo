@@ -38,7 +38,7 @@ TEST(CommandLineOptionsTest, MultipleOptions) {
 
   clo.AddOption<std::string>("output", "some_dir");
   clo.AddOption<std::string>("foo", "bar");
-  
+
   Simulation simulation(&clo);
 
   EXPECT_EQ("mydir", clo.Get<std::string>("output"));

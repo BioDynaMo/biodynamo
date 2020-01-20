@@ -292,7 +292,7 @@ function(fix_rootcling_omp_issue)
      execute_process(COMMAND cp -a ${CMAKE_SOURCE_DIR}/omp ${CMAKE_BINARY_DIR})
   else()
     execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/omp)
-    execute_process(COMMAND cp ${OMP_HEADER_PATH} ${CMAKE_BINARY_DIR}/omp)
+    execute_process(COMMAND cp -f ${OMP_HEADER_PATH} ${CMAKE_BINARY_DIR}/omp)
   endif()
   include_directories("${CMAKE_BINARY_DIR}/omp")
 

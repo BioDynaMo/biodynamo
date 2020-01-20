@@ -12,13 +12,15 @@
 #
 # -----------------------------------------------------------------------------
 
-BUILD_TYPE=Release
 # To avoid the repitition of the --cxx-compiler and --build-type arguments, store it in
 # a variable. These two options can be omitted: bdm-config will then use the default
 # compiler and the build type Release.
-BDM_CONFIG=bdm-config --cxx-compiler=$(CXX) --build-type=$(BUILD_TYPE)
-CXXFLAGS=`$(BDM_CONFIG) --cxxall`
-LINKFLAGS=`$(BDM_CONFIG) --linkflags`
+#BUILD_TYPE=--opt
+#BUILD_TYPE=--debug
+BUILD_TYPE=--opt --debug
+BDM_CONFIG=bdm-config $(BUILD_TYPE)
+CXXFLAGS=`$(BDM_CONFIG) --cxxflags`
+LINKFLAGS=`$(BDM_CONFIG) --ldflags --libs`
 
 HEADER=src/makefile_project.h
 
@@ -40,6 +42,4 @@ makefile_project: bdm_generated_code.o makefile_project.o
 	$(CXX) $? -o $@ $(LINKFLAGS)
 
 clean:
-	@# Delete the bdm-config cache
-	bdm-config --clean
 	rm -rf *o bdm_generated_code.cc *_rdict.pcm makefile_project

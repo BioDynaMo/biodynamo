@@ -21,7 +21,7 @@ if [ $# -lt 4 ]; then
     echo "   DICTIONARY file name of the dictionary that gets generated"
     echo "              (e.g., my-sim_dict.cc)"
     echo "   BDM_CONFIG bdm config command. Used to pass optional compiler and build type"
-    echo "              (e.g., \"bdm-config --cxx-compiler=g++ --build-type=Release\")"
+    echo "              (e.g., \"bdm-config --debug --opt\")"
     echo "   CXX_FLAGS  additional CXX flags (optional). Add includes or defines only!"
     echo "   HEADERS    at least one header file containing the biodynamo definitions"
     exit

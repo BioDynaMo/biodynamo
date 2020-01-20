@@ -22,7 +22,7 @@ keywords:
   -module
 ---
 
-Written by Jean de Montigny  
+Written by Jean de Montigny
 
 ## Introduction
 
@@ -179,7 +179,7 @@ auto set_param = [](auto* param) {
 Simulation simulation(argc, argv, set_param);
 ```
 
-Once again, it is important to note that if you want to change any visualization parameter using this second method, you will have to compile your code again. That is not the case using a configuration file. Hence, using the toml file is highly recommended.  
+Once again, it is important to note that if you want to change any visualization parameter using this second method, you will have to compile your code again. That is not the case using a configuration file. Hence, using the toml file is highly recommended.
 
 We will first have a look at export visualization then the live visualization. In both cases, simply run Paraview using the console line command `paraview &`. This window should appears
 
@@ -226,7 +226,7 @@ In both cases, even if we can now visualize our cell, they have all the same col
 
 ### Adding layers color
 
-In this chapter, we will modify our code in order to create a better coloring for our simulation.  
+In this chapter, we will modify our code in order to create a better coloring for our simulation.
 A good idea would be to create a coloring depending on the layer of the cell. By this way, we could display several layers of cell, and have an other color for our cancerous cells.
 To do that, we can extend the existing `Cell` class in order to add a new data member `cell_color`.
 We will do that directly in our `tutorial.h` file by writing:
@@ -267,7 +267,7 @@ class MyCell : public Cell {  // our object extends the Cell object
 
 ```
 
-Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value `cell_color_` that we will choose and use to display different colors!  
+Each cell (implementing our new object `MyCell`) of the modelling is now able to have a value `cell_color_` that we will choose and use to display different colors!
 In order to create cells with this attribute, we need to replace all `Cell` object by `MyCell` during cells creation (inside the `Simulate()` method). For example
 ```cpp
 // Cell* cell = new Cell({x_coord, y_coord, z_coord});
@@ -336,9 +336,9 @@ Double3 cell_movements =
 cell->UpdatePosition(cell_movements);
 ```
 
-Using the previous chapters, you should now be able to visualize cell movement during their growth.  
+Using the previous chapters, you should now be able to visualize cell movement during their growth.
 This is great, but every cancerous cell grows and divides indefinitely, and that is a bit too much.
-We will now add a mechanism to reduce the probability to divide, and assuring that a cancerous cell that didn't divide, will never divide any more.  
+We will now add a mechanism to reduce the probability to divide, and assuring that a cancerous cell that didn't divide, will never divide any more.
 To add a 0.8 probability to divide, simply write
 ```cpp
 if (random->Uniform(0, 1) < 0.8) {
