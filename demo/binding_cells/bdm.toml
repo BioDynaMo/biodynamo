@@ -3,16 +3,16 @@ run_mechanical_interactions = false
 bound_space = true
 
 [visualization]
-export = false
-export_interval = 1
+# export = false
+# export_interval = 1
   
     [[visualize_sim_object]]
       name = "MyCell"
       additional_data_members = [ "diameter_", "cell_type_" ]
 
-    [[visualize_diffusion]]
-    name = "Antibody"
-    gradient = false
+    # [[visualize_diffusion]]
+    # name = "Antibody"
+    # gradient = false
 
-[development]
-statistics = true
+# [development]
+# statistics = true

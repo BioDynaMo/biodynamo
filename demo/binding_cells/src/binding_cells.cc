@@ -42,7 +42,19 @@ int main(int argc, const char** argv) {
         bdm::ParallelExecutionManager pem(worldsize, xml_file);
         int ret = pem.Start();
         MPI_Finalize();
-        system("hadd results.root *.root");
+        if (system("rm results.root") != 0) {
+          bdm::Log::Warning(
+              "main",
+              "Non zero return code with with command `rm results.root`");
+        }
+        if (system("hadd results.root *.root > /dev/null")) {
+          bdm::Log::Error("main",
+                          "An error occured when trying to merge .root files");
+        } else {
+          std::cout << "Simulation finished successfully. Results are written "
+                       "to results.root"
+                    << std::endl;
+        }
         return ret;
       } else {
         bdm::Worker w(myrank, [&](bdm::XMLParams* params) {
@@ -55,8 +67,8 @@ int main(int argc, const char** argv) {
     }
   } else {
     bdm::Log::Error("Simulate",
-               "No XML file specified in the command line argument: "
-               "--xml=/path/to/xml/file.");
+                    "No XML file specified in the command line argument: "
+                    "--xml=/path/to/xml/file.");
     return bdm::Simulate(argc, argv);
   }
 }

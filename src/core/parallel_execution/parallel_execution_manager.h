@@ -27,6 +27,7 @@
 #include "core/parallel_execution/dynamic_loop.h"
 #include "core/parallel_execution/util.h"
 #include "core/parallel_execution/xml_parser.h"
+#include "core/util/log.h"
 #include "core/util/timing.h"
 #include "core/util/timing_aggregator.h"
 
@@ -42,10 +43,7 @@ namespace bdm {
 /// the workers in the MPI runtime.
 class ParallelExecutionManager {
  public:
-  void Log(string s) {
-    if (kLog)
-      cout << "[M]:   " << s << endl;
-  }
+  void Log(string s) { Log::Info("ParallelExecutionManager", "[M]:   ", s); }
 
   explicit ParallelExecutionManager(int ws, string xml_file)
       : worldsize_(ws), xml_file_(xml_file) {
@@ -147,11 +145,9 @@ class Worker {
     Log("Started");
   }
 
-  template<typename T>
+  template <typename T>
   void Log(T s) {
-    if (kLog) {
-      cout << "[W" << myrank_ << "]:  " << s << endl;
-    }
+    Log::Info("ParallelExecutionManager", "[W", myrank_, "]:  ", s);
   }
 
   ~Worker() {

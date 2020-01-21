@@ -61,7 +61,7 @@ class Results {
   }
 
  private:
-  ClassDef(Results, 1);
+  BDM_CLASS_DEF(Results, 1);
   /// The number of simulation timesteps ran for this experiment
   // int timesteps;
 

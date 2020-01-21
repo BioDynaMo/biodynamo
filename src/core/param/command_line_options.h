@@ -48,6 +48,9 @@ class CommandLineOptions {
   /// Return the simulation name that was parsed from argv[0]
   std::string GetSimulationName();
 
+  /// Check if the argument for the specified option was set
+  bool IsSet(std::string option);
+
   template <typename T>
   T Get(std::string val) {
     if (parser_ == nullptr) {

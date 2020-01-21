@@ -144,15 +144,9 @@ if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
 endif()
 
-# Check if OpenMPI is present. If you have multiple MPI installations on your
-# system, and you want to specify one, you can do so by:
-# cmake -DMPI_C_COMPILER=<path_to_mpi>/bin/mpicc
+# You need to specify CC and CXX to point to MPI compilers
 find_package(MPI)
-if (MPI_FOUND)
-  message("-- MPI_VERSION = ${MPI_C_VERSION}")
-   include_directories(${MPI_INCLUDE_PATH})
-   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${MPI_CXX_LIBRARIES})
-else()
+if (NOT MPI_FOUND)
   MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
   calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()

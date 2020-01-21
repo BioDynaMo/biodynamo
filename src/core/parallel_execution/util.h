@@ -27,7 +27,6 @@ using std::vector;
 
 namespace bdm {
 
-static const bool kLog = true;
 static const unsigned int kMaster = 0;
 
 enum Status { kBusy, kAvail };

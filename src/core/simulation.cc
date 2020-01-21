@@ -82,7 +82,8 @@ Simulation::Simulation(CommandLineOptions* clo,
 
 Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params) {
   auto options = CommandLineOptions(argc, argv);
-  Initialize(&options, [](auto* param) {}, "", xml_params);
+  Initialize(
+      &options, [](auto* param) {}, "", xml_params);
 }
 
 Simulation::Simulation(int argc, const char** argv,
@@ -361,6 +362,12 @@ void Simulation::InitializeRuntimeParams(
   }
 
   ocl_state_ = new OpenCLState();
+
+  if (clo->Get<bool>("visualize")) {
+    param_->export_visualization_ = true;
+    param_->visualization_export_interval_ =
+        clo->Get<uint32_t>("vis-frequency");
+  }
 
   // Handle xml arguments
   if (clo->Get<std::string>("xml") != "") {

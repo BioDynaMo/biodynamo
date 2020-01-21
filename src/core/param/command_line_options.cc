@@ -75,6 +75,10 @@ void CommandLineOptions::Parse() {
   free(argv_copy);
 }
 
+bool CommandLineOptions::IsSet(std::string option) {
+  return parser_->count(option) == 0 ? false : true;
+}
+
 // clang-format off
 void CommandLineOptions::AddCoreOptions() {
   options_.add_options("Core")
@@ -82,6 +86,8 @@ void CommandLineOptions::AddCoreOptions() {
     ("version", "Print version number of BioDynaMo.")
     ("opencl", "Enable GPU acceleration through OpenCL.")
     ("cuda", "Enable GPU acceleration through CUDA.")
+    ("visualize", "Enable exporting of visualization.")
+    ("vis-frequency", "Set the frequency of exporting the visualization.", value<uint32_t>()->default_value("10"), "FREQ")
     ("v, verbose", "Verbose mode. Causes BioDynaMo to print debugging messages. Multiple "
       "-v options increases the verbosity. The maximum is 3.", value<bool>())
     ("r, restore", "Restores the simulation from the checkpoint found in FILE and "
@@ -113,7 +119,7 @@ void CommandLineOptions::HandleCoreOptions() {
     exit(0);
   }
 
-  if (parser_->count("version")) {
+  if (IsSet("version")) {
     std::cout << "BioDynaMo Version: " << Version::String() << std::endl;
     exit(0);
   }
@@ -136,7 +142,7 @@ void CommandLineOptions::HandleCoreOptions() {
   else if (!slevel.CompareTo("Error", TString::kIgnoreCase))
     ll = kError;
 
-  if (parser_->count("verbose")) {
+  if (IsSet("verbose")) {
     auto verbosity = parser_->count("verbose");
 
     switch (verbosity) {
@@ -157,6 +163,20 @@ void CommandLineOptions::HandleCoreOptions() {
   }
   // Global variable of ROOT that determines verbosity of logging functions
   gErrorIgnoreLevel = ll;
+
+// Handle "cuda" and "opencl" arguments
+#ifdef USE_CUDA
+  if (IsSet("cuda")) {
+    param->use_gpu_ = true;
+  }
+#endif  // USE_CUDA
+
+#ifdef USE_OPENCL
+  if (IsSet("opencl")) {
+    param->use_gpu_ = true;
+    param->use_opencl_ = true;
+  }
+#endif  // USE_OPENCL
 }
 
 }  // namespace bdm

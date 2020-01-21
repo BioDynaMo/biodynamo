@@ -143,7 +143,7 @@ inline int Simulate(int argc, const char** argv,
   // PlotGraph(t, ex.result.activity, "activity_vs_time");
   // PlotGraph(t, ex.result.occupancy, "occupancy_vs_time");
 
-  std::cout << "Simulation completed successfully!" << std::endl;
+  // std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
 }
 
