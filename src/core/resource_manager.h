@@ -158,22 +158,23 @@ class ResourceManager {
   }
 
   void RestoreUidSoMap() {
-    // rebuild uid_soh_map_
-    uid_soh_map_.clear();
-    for (unsigned n = 0; n < sim_objects_.size(); ++n) {
-      for (unsigned i = 0; i < sim_objects_[n].size(); ++i) {
-        auto* so = sim_objects_[n][i];
-        this->uid_soh_map_[so->GetUid()] = SoHandle(n, i);
-      }
-    }
+    // FIXME
+    // // rebuild uid_soh_map_
+    // uid_soh_map_.clear();
+    // uid_soh_map_.resize(GetNumSimObjects());
+    // for (unsigned n = 0; n < sim_objects_.size(); ++n) {
+    //   for (unsigned i = 0; i < sim_objects_[n].size(); ++i) {
+    //     auto* so = sim_objects_[n][i];
+    //     this->uid_soh_map_[so->GetUid()] = SoHandle(n, i);
+    //   }
+    // }
   }
 
   SimObject* GetSimObject(SoUid uid) {
-    auto search_it = uid_soh_map_.find(uid);
-    if (search_it == uid_soh_map_.end()) {
+    if (!uid_soh_map_.Contains(uid)) {
       return nullptr;
     }
-    SoHandle soh = search_it->second;
+    auto& soh = uid_soh_map_[uid];
     return sim_objects_[soh.GetNumaNode()][soh.GetElementIdx()];
   }
 
@@ -319,7 +320,7 @@ class ResourceManager {
   /// Returns true if a sim object with the given uid is stored in this
   /// ResourceManager.
   bool Contains(SoUid uid) const {
-    return uid_soh_map_.find(uid) != uid_soh_map_.end();
+    return uid_soh_map_.Contains(uid);
   }
 
   /// Remove all simulation objects
@@ -347,9 +348,17 @@ class ResourceManager {
   /// not affected.
   void push_back(SimObject* so,  // NOLINT
                  typename SoHandle::NumaNode_t numa_node = 0) {
+    auto uid = so->GetUid();
+    if (uid >= uid_soh_map_.size()) {  // FIXME
+      uid_soh_map_.resize(uid + 1);
+    }
     sim_objects_[numa_node].push_back(so);
-    uid_soh_map_[so->GetUid()] =
+    uid_soh_map_[uid] =
         SoHandle(numa_node, sim_objects_[numa_node].size() - 1);
+  }
+
+  void ResizeUidSohMap() {
+    uid_soh_map_.resize(SoUidGenerator::Get()->GetLastId() + 1);
   }
 
   /// Adds `new_sim_objects` to `sim_objects_[numa_node]`. `offset` specifies
@@ -374,10 +383,8 @@ class ResourceManager {
   /// not affected.
   void Remove(SoUid uid) {
     // remove from map
-    auto it = uid_soh_map_.find(uid);
-    if (it != uid_soh_map_.end()) {
-      SoHandle soh = it->second;
-      uid_soh_map_.unsafe_erase(it);
+    SoHandle soh = uid_soh_map_.Remove(uid);
+    if (soh != SoHandle()) {
       // remove from vector
       auto& numa_sos = sim_objects_[soh.GetNumaNode()];
       if (soh.GetElementIdx() == numa_sos.size() - 1) {
@@ -397,7 +404,7 @@ class ResourceManager {
  protected:
 
   /// Maps an SoUid to its storage location in `sim_objects_` \n
-  tbb::concurrent_unordered_map<SoUid, SoHandle> uid_soh_map_;  //!
+  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(SoHandle());  //!
   /// Pointer container for all simulation objects
   std::vector<std::vector<SimObject*>> sim_objects_;
   /// Maps a diffusion grid ID to the pointer to the diffusion grid

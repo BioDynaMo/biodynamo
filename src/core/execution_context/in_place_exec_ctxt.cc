@@ -51,6 +51,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
   // reserve enough memory in ResourceManager
   std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
   auto* rm = Simulation::GetActive()->GetResourceManager();
+  rm->ResizeUidSohMap();
   for (unsigned n = 0; n < new_so_per_numa.size(); n++) {
     numa_offsets[n] = rm->GrowSoContainer(new_so_per_numa[n], n);
   }
@@ -66,6 +67,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
   }
 
   // remove
+#pragma omp parallel for schedule(static, 1)
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
     // removed sim objects
