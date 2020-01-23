@@ -313,6 +313,7 @@ class ResourceManager {
       return sim_objects_[numa_node].size();
     }
     auto current = sim_objects_[numa_node].size();
+    sim_objects_[numa_node].reserve((current + additional) * 1.5);
     sim_objects_[numa_node].resize(current + additional);
     return current;
   }
@@ -358,7 +359,9 @@ class ResourceManager {
   }
 
   void ResizeUidSohMap() {
-    uid_soh_map_.resize(SoUidGenerator::Get()->GetLastId() + 1);
+    if (SoUidGenerator::Get()->GetLastId() >= uid_soh_map_.size()) {
+      uid_soh_map_.resize(SoUidGenerator::Get()->GetLastId() * 1.5 + 1);
+    }
   }
 
   /// Adds `new_sim_objects` to `sim_objects_[numa_node]`. `offset` specifies
@@ -404,7 +407,7 @@ class ResourceManager {
  protected:
 
   /// Maps an SoUid to its storage location in `sim_objects_` \n
-  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(SoHandle());  //!
+  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(SoHandle(), 1e4);  //!
   /// Pointer container for all simulation objects
   std::vector<std::vector<SimObject*>> sim_objects_;
   /// Maps a diffusion grid ID to the pointer to the diffusion grid

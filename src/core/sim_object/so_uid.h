@@ -46,7 +46,9 @@ class SoUidGenerator {
 template <typename TValue>
 class SoUidMap {
 public:
-  SoUidMap(const TValue& empty_value) : empty_value_{empty_value} {}
+  SoUidMap(const TValue& empty_value, uint64_t initial_size) : empty_value_{empty_value} {
+    data_.resize(initial_size);
+  }
 
   void resize(uint64_t new_size) {  // NOLINT
     data_.resize(new_size, empty_value_);
