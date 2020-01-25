@@ -166,6 +166,17 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   const SoUid& GetUid() const override { return Base::GetUid(); }
+  Spinlock* GetLock() override { return Base::GetLock(); }
+  void CriticalRegion(std::set<Spinlock*>* locks) override {
+    locks->insert(mother_->GetLock());
+    if (daughter_left_ != nullptr) {
+      locks->insert(daughter_left_->GetLock());
+    }
+    if (daughter_right_ != nullptr) {
+      locks->insert(daughter_right_->GetLock());
+    }
+  }
+
 
   Shape GetShape() const override { return Shape::kCylinder; }
 

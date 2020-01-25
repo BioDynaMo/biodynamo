@@ -187,13 +187,23 @@ void InPlaceExecutionContext::TearDownIterationAll(
 void InPlaceExecutionContext::Execute(
     SimObject* so, const std::vector<Operation>& operations) {
   auto* grid = Simulation::GetActive()->GetGrid();
-  auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
-  if (nb_mutex_builder != nullptr) {
-    auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
-    std::lock_guard<decltype(mutex)> guard(mutex);
+  // auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
+  // if (nb_mutex_builder != nullptr) {
+  if (true) {
+    // auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
+    // std::lock_guard<decltype(mutex)> guard(mutex);
+    std::set<Spinlock*> locks;
+    locks.insert(so->GetLock());
+    so->CriticalRegion(&locks);
+    for(auto* l : locks) {
+      l->lock();
+    }
     neighbor_cache_.clear();
     for (auto& op : operations) {
       op(so);
+    }
+    for(auto* l : locks) {
+      l->unlock();
     }
   } else {
     neighbor_cache_.clear();

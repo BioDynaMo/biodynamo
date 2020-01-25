@@ -17,6 +17,8 @@
 
 #include <atomic>
 
+namespace bdm {
+
 class Spinlock {
  public:
   Spinlock() {}
@@ -35,5 +37,7 @@ class Spinlock {
  private:
   std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
 };
+
+}  // namespace bdm
 
 #endif  // CORE_UTIL_SPINLOCK_H_
