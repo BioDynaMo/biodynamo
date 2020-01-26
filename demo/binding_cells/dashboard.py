@@ -8,6 +8,7 @@ from xml.dom import minidom
 
 from subprocess import Popen, PIPE
 
+# Check if path exists on specified remote hostname
 def exists_remote(host, path):
     """Test if a file exists at path on a host accessible with SSH."""
     status = subprocess.call(
@@ -18,6 +19,7 @@ def exists_remote(host, path):
         return False
     raise Exception('SSH failed')
 
+# Generate XML file from user input
 def generate_xml(tabs, sim_name):
     def is_parseable_type(widget):
         allowed = [widgets.IntSlider, widgets.IntRangeSlider, widgets.FloatSlider,
@@ -103,20 +105,24 @@ def generate_xml(tabs, sim_name):
     myfile.write(prettify(model))
     myfile.close()
 
-
+# Entry point for visualizing the dashboard
 def gui():
     style = {'description_width': '100px'}
     style2 = {'description_width': '200px'}
 
     sim_objects = ['Monocyte', 'T_Cell']
     bio_modules = ['ConnectWithinRadius', 'Inhibition']
-    substances = ['Antibody']
+    substances  = ['Antibody']
 
     tab_contents = {}
 
     sim_name_field = widgets.Text(
         description='Name', value="Binding Cells")
 
+
+    ############################################################################
+    ## World Tab
+    ############################################################################
     world_content = widgets.GridspecLayout(4, 2)
     world_content[0, 0] = sim_name_field
     world_content[1, 0] = widgets.IntText(description='Timesteps', value=300)
@@ -126,9 +132,11 @@ def gui():
     world_content[1, 1] = widgets.IntText(description="Vis. Freq.", value=100)
     # world_content[3, 1] = widgets.FileUpload(multiple=False)
     world_content[3, 1] = widgets.Text(description='Binary path', placeholder='/path/to/binary')
-
     tab_contents['World'] = world_content
 
+    ############################################################################
+    ## Simulation Objects Tab
+    ############################################################################
     tab_contents['Simulation Objects'] = widgets.Accordion(children=[
         widgets.VBox([
             widgets.IntText(description='Population', value=100),
@@ -142,10 +150,12 @@ def gui():
             widgets.FloatText(description='Diameter', value=5)
         ])
     ])
-
     tab_contents['Simulation Objects'].set_title(0, sim_objects[0])
     tab_contents['Simulation Objects'].set_title(1, sim_objects[1])
 
+    ############################################################################
+    ## Biology Modules Tab
+    ############################################################################
     tab_contents['Biology Modules'] = widgets.Accordion(children=[
         widgets.VBox([
             widgets.FloatText(description='Binding radius',
@@ -158,10 +168,12 @@ def gui():
                 value=[0.0040, 0.0095], min=0.0, max=0.02, step=0.0005, readout_format='.4f')])
         ])
     ])
-
     tab_contents['Biology Modules'].set_title(0, bio_modules[0])
     tab_contents['Biology Modules'].set_title(1, bio_modules[1])
 
+    ############################################################################
+    ## Substances Tab
+    ############################################################################
     tab_contents['Substances'] = widgets.Accordion(children=[
         widgets.VBox([
             widgets.FloatText(description='Diffusion Rate',
@@ -172,11 +184,18 @@ def gui():
     ])
     tab_contents['Substances'].set_title(0, substances[0])
 
-    nb_cores = widgets.IntText(description="Num. Cores", value=2)
+    ############################################################################
+    ## Parallel Exedcution Tab
+    ############################################################################
+    nb_cores = widgets.IntText(description="Cores", value=2, style=style)
+    omp_threads = widgets.IntText(description="Threads / Core", value=1, style=style)
     hostfile = widgets.Textarea(placeholder="e.g. cloud.instance.01\ne.g. localhost",
-                                description="hostfile")
-    tab_contents['Parallel Execution'] = widgets.VBox([hostfile, nb_cores])
+                                description="hostfile", style=style)
+    tab_contents['Parallel Execution'] = widgets.VBox([hostfile, nb_cores, omp_threads])
 
+    ############################################################################
+    ## Compose Dashboard
+    ############################################################################
     tab_names = ['World'] + ['Simulation Objects'] + \
         ['Biology Modules'] + ['Substances'] + ['Parallel Execution']
     children = []
@@ -188,26 +207,20 @@ def gui():
     for i in range(len(tab_names)):
         tab.set_title(i, str(tab_names[i]))
 
-    # create the Simulate button
+    ############################################################################
+    ## Create the Simulate button
+    ############################################################################
     sim_button = widgets.Button(
         description="Start Simulation",
         layout=widgets.Layout(width='200px', height='50px'),
         button_style='info')
-    # button.style.button_color = 'lightgreen'
     sim_button.style.font_weight = 'bold'
-
-    # create the Clear Output button
-    clear_button = widgets.Button(
-        description="Clear Output",
-        layout=widgets.Layout(width='200px', height='50px'),
-        button_style='primary')
-    # button.style.button_color = 'lightgreen'
-    clear_button.style.font_weight = 'bold'
 
     # extract simulation name and create XML file name
     sim_name = sim_name_field.value.lower().replace(" ", "_")
     xml_file = "{}.xml".format(sim_name)
 
+    # Simulation button callback function
     def on_sim_click(b):
         with out:
             # generate binary file from given binary 
@@ -262,7 +275,8 @@ def gui():
               vis_freq = world_content[1, 1].value
 
             print("Executing BioDynaMo simulations in parallel...")
-            p = Popen(["mpirun", "-hostfile", "hostfile", "-np", str(nb_cores.value), binary_path,
+            p = Popen(["mpirun", "-hostfile", "hostfile", "-x", "OMP_NUM_THREADS={}".format(omp_threads.value),
+                       "-np", str(nb_cores.value), binary_path,
                        "{}".format(visualize), "--xml={}".format(xml_file)], stdout=PIPE, stderr=PIPE)
             pout = p.communicate()
             print(p.args)
@@ -271,11 +285,24 @@ def gui():
             # print stderr
             print(pout[1].decode("utf-8"))
     
+    sim_button.on_click(on_sim_click)
+
+    ############################################################################
+    ## Create the Clear Output button
+    ############################################################################
+    clear_button = widgets.Button(
+        description="Clear Output",
+        layout=widgets.Layout(width='200px', height='50px'),
+        button_style='primary')
+    clear_button.style.font_weight = 'bold'
+
+    # Clear Output button callback function
+    out = widgets.Output()
     def on_clear_click(b):
       with out:
         clear_output()
 
-    out = widgets.Output()
-    sim_button.on_click(on_sim_click)
     clear_button.on_click(on_clear_click)
+
+    # Display dashboard
     display(tab, widgets.HBox([sim_button, clear_button]), out)
