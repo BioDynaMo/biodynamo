@@ -20,26 +20,27 @@
 int main(int argc, const char** argv) {
   // We need to pass a non-const version of argv to MPI_Init, so we make a deep
   // copy
-  char** argv_cpy = (char**)malloc((argc + 1) * sizeof *argv_cpy);
+  char** argv_cpy = (char**)malloc((argc + 1) * sizeof(char*));
   for (int i = 0; i < argc; ++i) {
     size_t length = strlen(argv[i]) + 1;
     argv_cpy[i] = (char*)malloc(length);
     memcpy(argv_cpy[i], argv[i], length);
   }
+
+  int worldsize;
+  MPI_Init(&argc, &argv_cpy);
+  MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
+
   auto options = bdm::CommandLineOptions(argc, argv);
   std::string xml_file = options.Get<std::string>("xml");
   if (xml_file != "") {
-    int myrank, worldsize;
-    MPI_Init(&argc, &argv_cpy);
-    MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    if (worldsize == 1) {  // Single-Process Execution
-      // TODO(ahmad): Take into account that single-process execution
-      // could still be dealing with multiple parameter sets
-      return bdm::Simulate(argc, argv);
-    } else {  // Multi-Process Execution
+      int myrank;
+      MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
       if (myrank == 0) {
-        bdm::ParallelExecutionManager pem(worldsize, xml_file);
+        bdm::ParallelExecutionManager pem(
+            worldsize, xml_file, [&](bdm::XMLParams* params) {
+              return bdm::Simulate(argc, argv, params);
+            });
         int ret = pem.Start();
         MPI_Finalize();
         if (system("rm results.root") != 0) {
@@ -64,11 +65,10 @@ int main(int argc, const char** argv) {
         MPI_Finalize();
         return ret;
       }
-    }
   } else {
     bdm::Log::Error("Simulate",
                     "No XML file specified in the command line argument: "
                     "--xml=/path/to/xml/file.");
-    return bdm::Simulate(argc, argv);
+    return 1;
   }
 }

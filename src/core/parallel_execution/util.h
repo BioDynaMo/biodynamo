@@ -150,22 +150,22 @@ class MPIObject : public TMessage {
 
 /// Send object to worker using ROOT Serialization
 template <typename T>
-int MPI_Send_Obj_ROOT(T* obj, int worker, int tag) {
+int MPI_Send_Obj_ROOT(T* obj, int dest, int tag, MPI_Status* status = MPI_STATUS_IGNORE) {
   MPIObject mpio;
   mpio.WriteObject(obj);
   int size = mpio.Length();
   // First send the size of the buffer
-  MPI_Send(&size, 1, MPI_INT, worker, tag, MPI_COMM_WORLD);
+  MPI_Send(&size, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
   // Then send the buffer
-  return MPI_Send(mpio.Buffer(), size, MPI_BYTE, worker, tag, MPI_COMM_WORLD);
+  return MPI_Send(mpio.Buffer(), size, MPI_BYTE, dest, tag, MPI_COMM_WORLD);
 }
 
 /// Receive object from master using ROOT Serialization
 template <typename T>
-T* MPI_Recv_Obj_ROOT(int size, int tag, MPI_Status& status) {
+T* MPI_Recv_Obj_ROOT(int size, int source, int tag, MPI_Status* status = MPI_STATUS_IGNORE) {
   char* buf = (char*)malloc(size);
   // Then receive the buffer
-  MPI_Recv(buf, size, MPI_BYTE, kMaster, tag, MPI_COMM_WORLD, &status);
+  MPI_Recv(buf, size, MPI_BYTE, source, tag, MPI_COMM_WORLD, status);
   MPIObject* mpio = new MPIObject(buf, size);
   T* obj = (T*)(mpio->ReadObject(mpio->GetClass()));
   free(buf);

@@ -450,7 +450,6 @@ _source_thisbdm()
             . scl_source enable devtoolset-7 || return 1
         fi
         . /etc/profile.d/modules.sh || return 1
-        module load mpi || return 1
 
         # load llvm 6 required for libroadrunner
         if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then

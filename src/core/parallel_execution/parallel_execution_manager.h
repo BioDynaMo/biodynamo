@@ -16,6 +16,7 @@
 #define CORE_PARALLEL_EXECUTION_PARALLEL_EXECUTION_MANAGER_H_
 
 #include <algorithm>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -45,13 +46,37 @@ class ParallelExecutionManager {
  public:
   void Log(string s) { Log::Info("ParallelExecutionManager", "[M]:   ", s); }
 
-  explicit ParallelExecutionManager(int ws, string xml_file)
-      : worldsize_(ws), xml_file_(xml_file) {
+  explicit ParallelExecutionManager(int ws, string xml_file,
+                                    std::function<int(XMLParams *)> simulate)
+      : worldsize_(ws), xml_file_(xml_file), simulate_(simulate) {
     Log("Started Master process");
     availability_.resize(ws);
+    timings_.resize(ws);
   }
 
-  ~ParallelExecutionManager() { Log("Completed all tasks"); }
+  void WriteTimingsToFile() {
+    std::ofstream myfile;
+    myfile.open("timing_results.csv");
+    int worker = 0;
+    for (auto &t : timings_) {
+      myfile << worker << ",";
+      myfile << t["SIMULATE"] << ",";
+      myfile << t["MPI_CALL"] << "\n";
+      worker++;
+    }
+    Log("Timing results of all workers have been written to "
+        "timing_results.csv.");
+  }
+
+  ~ParallelExecutionManager() {
+    Log("Completed all tasks");
+    WriteTimingsToFile();
+  }
+
+  // Copy the timing results of the specified worker
+  void RecordTiming(int worker, TimingAggregator *agg) {
+    timings_[worker] = *agg;
+  }
 
   int Start() {
     XMLParser xp(xml_file_);
@@ -63,6 +88,20 @@ class ParallelExecutionManager {
     ss << "Found " << ranges.size() << " range values and " << sets.size();
     ss << " set values";
     Log(ss.str());
+
+    unsigned int total_num_sim = 0;
+    for (auto &r : ranges) {
+      total_num_sim += r.GetNumElements();
+    }
+    for (auto &s : sets) {
+      total_num_sim += s.GetNumElements();
+    }
+
+    unsigned int total_num_workers = worldsize_ > 1 ? worldsize_ - 1 : 1;
+
+    std::cout << "Number of simulations : " << total_num_sim << std::endl;
+    std::cout << "Number of cores       : " << total_num_workers << std::endl;
+
     Log("Waiting for workers to register themselves...");
     // Register all workers' availability
     ForAllWorkers([&](int worker) {
@@ -73,22 +112,28 @@ class ParallelExecutionManager {
     Log("All workers ready\n");
 
     auto dispatch_params = [&](const std::vector<int> &slots) {
-      auto worker = GetFirstAvailableWorker();
-      if (worker == -1) {
-        MPI_Status status;
-        MPI_Recv(nullptr, 0, MPI_INT, MPI_ANY_SOURCE, Tag::kReady,
-                 MPI_COMM_WORLD, &status);
-        ChangeStatusWorker(status.MPI_SOURCE, Status::kAvail);
-      }
-
-      worker = GetFirstAvailableWorker();
+      // Generate the XMLParams object
       XMLParams params;
       ParamGenerator(&params, slots, ranges, sets);
-      std::stringstream msg;
-      msg << "Sending parameters to [W" << worker << "]: " << params;
-      Log(msg.str());
-      MPI_Send_Obj_ROOT(&params, worker, Tag::kTask);
-      ChangeStatusWorker(worker, Status::kBusy);
+
+      // If there is only one MPI process, the master performs the simulation
+      if (worldsize_ == 1) {
+        simulate_(&params);
+      } else {  // otherwise we dispatch the work to the worker(s)
+        auto worker = GetFirstAvailableWorker();
+        if (worker == -1) {
+          MPI_Status status;
+          MPI_Recv(nullptr, 0, MPI_INT, MPI_ANY_SOURCE, Tag::kReady,
+                   MPI_COMM_WORLD, &status);
+          ChangeStatusWorker(status.MPI_SOURCE, Status::kAvail);
+        }
+        worker = GetFirstAvailableWorker();
+        std::stringstream msg;
+        msg << "Sending parameters to [W" << worker << "]: " << params;
+        Log(msg.str());
+        MPI_Send_Obj_ROOT(&params, worker, Tag::kTask);
+        ChangeStatusWorker(worker, Status::kBusy);
+      }
     };
     auto containers = MergeContainers(&ranges, &sets);
     // CHeck if there are any sets or range value types
@@ -98,8 +143,21 @@ class ParallelExecutionManager {
       dispatch_params({});
     }
 
+    // Send kill message to all workers
     ForAllWorkers([&](int worker) {
       MPI_Send(nullptr, 0, MPI_INT, worker, Tag::kKill, MPI_COMM_WORLD);
+    });
+
+    // Receive timing objects of all workers
+    ForAllWorkers([&](int worker) {
+      int size;
+      MPI_Status status;
+      MPI_Recv(&size, 1, MPI_INT, MPI_ANY_SOURCE, Tag::kKill, MPI_COMM_WORLD,
+               &status);
+
+      TimingAggregator *agg = MPI_Recv_Obj_ROOT<TimingAggregator>(
+          size, status.MPI_SOURCE, Tag::kKill);
+      RecordTiming(status.MPI_SOURCE, agg);
     });
 
     return 0;
@@ -135,6 +193,8 @@ class ParallelExecutionManager {
   vector<Status> availability_;
   int worldsize_;
   std::string xml_file_;
+  std::function<int(XMLParams *)> simulate_;
+  std::vector<TimingAggregator> timings_;
 };
 
 /// The Worker class in a Master-Worker design pattern.
@@ -153,7 +213,7 @@ class Worker {
   ~Worker() {
     string msg = "Stopped (Completed " + to_string(task_count_) + " tasks)";
     Log(msg);
-    Log(ta_);
+    std::cout << ta_ << std::endl;
   }
 
   int Start() {
@@ -181,13 +241,13 @@ class Worker {
           XMLParams *params = nullptr;
           {
             Timing t("MPI_CALL", &ta_);
-            params = MPI_Recv_Obj_ROOT<XMLParams>(size, Tag::kTask, status);
+            params = MPI_Recv_Obj_ROOT<XMLParams>(size, kMaster, Tag::kTask);
           }
           std::stringstream msg;
           msg << "Now working on parameters: " << *params;
           Log(msg.str());
           {
-            Timing sim("Simulating", &ta_);
+            Timing sim("SIMULATE", &ta_);
             simulate_(params);
           }
           IncrementTaskCount();
@@ -198,6 +258,8 @@ class Worker {
           break;
         }
         case Tag::kKill:
+          // Send back the timing results to the master for writing to file
+          MPI_Send_Obj_ROOT<TimingAggregator>(&ta_, kMaster, Tag::kKill);
           return 0;
         default:
           // TODO(ahmad): Should we stop or do something else?

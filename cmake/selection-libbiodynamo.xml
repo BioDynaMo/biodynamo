@@ -18,6 +18,7 @@
     <class name="bdm::Cell" />
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
     <class name="std::unordered_map<uint64_t, bdm::SoHandle>" />
+    <class name="std::map<std::string, std::vector<int64_t>>" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::BaseBiologyModule"/>
     <class name="bdm::GrowDivide"/>

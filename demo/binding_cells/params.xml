@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <model>
   <world>
-    <timesteps>300</timesteps>
+    <timesteps>700</timesteps>
     <min_space>0</min_space>
     <max_space>100</max_space>
   </world>
   <simulation_objects>
     <object>
       <name>T_Cell</name>
-      <population value_type="scalar">100</population>
+      <population value_type="scalar">5000</population>
       <type value_type="scalar">1</type>
       <diameter value_type="scalar">5</diameter>
       <velocity value_type="distribution_poisson">
-	      <mean>0</mean>
+              <mean>0</mean>
       </velocity>
     </object>
     <object>
       <name>Monocyte</name>
-      <population value_type="scalar">100</population>
+      <population value_type="scalar">5000</population>
       <type value_type="scalar">0</type>
       <diameter value_type="scalar">5</diameter>
       <velocity value_type="scalar">2</velocity>
@@ -32,8 +32,8 @@
       <name>Inhibition</name>
       <concentration_threshold value_type="range">
       <min>0.0040</min>
-      <max>0.0095</max>
-      <stride>0.0005</stride>
+      <max>0.0075</max>
+      <stride>0.00002</stride>
       </concentration_threshold>
       <binding_probability value_type="scalar">0.8</binding_probability>
     </module>

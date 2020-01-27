@@ -181,7 +181,11 @@ endif()
 
 # You need to specify CC and CXX to point to MPI compilers
 find_package(MPI)
-if(NOT MPI_FOUND)
+if(MPI_FOUND)
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} mpic++ --showme:incdirs
+                  OUTPUT_VARIABLE MPI_INCLUDE_PATH)
+  include_directories(${MPI_INCLUDE_PATH})
+else()
   MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
   calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
