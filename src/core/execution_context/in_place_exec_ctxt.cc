@@ -21,7 +21,9 @@
 namespace bdm {
 
 InPlaceExecutionContext::InPlaceExecutionContext()
-    : tinfo_(ThreadInfo::GetInstance()) {}
+    : tinfo_(ThreadInfo::GetInstance()) {
+      new_sim_objects_.reserve(1e6);
+    }
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
   for (auto& el : new_sim_objects_) {
@@ -169,14 +171,14 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
 }
 
 SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
-  auto* so = GetCachedSimObject(uid);
+  auto* sim = Simulation::GetActive();
+  auto* rm = sim->GetResourceManager();
+  auto* so = rm->GetSimObject(uid);
   if (so != nullptr) {
     return so;
   }
 
-  auto* sim = Simulation::GetActive();
-  auto* rm = sim->GetResourceManager();
-  so = rm->GetSimObject(uid);
+  so = GetCachedSimObject(uid);
   if (so != nullptr) {
     return so;
   }

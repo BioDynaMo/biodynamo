@@ -49,6 +49,7 @@
 #include "core/util/root.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
+#include "core/container/flatmap.h"
 
 namespace bdm {
 
@@ -370,7 +371,7 @@ class ResourceManager {
   /// not overlap!
   virtual void AddNewSimObjects(
       typename SoHandle::NumaNode_t numa_node, uint64_t offset,
-      const tbb::concurrent_unordered_map<SoUid, SimObject*>& new_sim_objects) {
+      const unordered_flatmap<SoUid, SimObject*>& new_sim_objects) {
     uint64_t i = 0;
     for (auto& pair : new_sim_objects) {
       auto uid = pair.first;

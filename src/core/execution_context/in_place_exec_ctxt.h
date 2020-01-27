@@ -19,10 +19,12 @@
 #include <functional>
 #include <utility>
 #include <vector>
+#include <unordered_map>
 
 #include "core/operation/operation.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/thread_info.h"
+#include "core/container/flatmap.h"
 
 namespace bdm {
 
@@ -101,7 +103,7 @@ class InPlaceExecutionContext {
   std::vector<SoUid> remove_;
 
   /// Pointer to new sim objects
-  tbb::concurrent_unordered_map<SoUid, SimObject*> new_sim_objects_;
+  unordered_flatmap<SoUid, SimObject*> new_sim_objects_;
 
   /// prevent race conditions for cached SimObjects
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
