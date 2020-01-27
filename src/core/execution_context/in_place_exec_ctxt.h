@@ -96,6 +96,9 @@ class InPlaceExecutionContext {
   void DisableNeighborGuard();
 
  private:
+   /// Lookup table SoUid -> SoPointer for new created sim objects
+  static SoUidMap<std::pair<SimObject*,uint64_t>> new_so_map_;
+
   ThreadInfo* tinfo_;
 
   /// Contains unique ids of sim objects that will be removed at the end of each
@@ -103,7 +106,7 @@ class InPlaceExecutionContext {
   std::vector<SoUid> remove_;
 
   /// Pointer to new sim objects
-  unordered_flatmap<SoUid, SimObject*> new_sim_objects_;
+  std::vector<SimObject*> new_sim_objects_;
 
   /// prevent race conditions for cached SimObjects
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;

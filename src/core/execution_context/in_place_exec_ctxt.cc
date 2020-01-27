@@ -17,17 +17,21 @@
 #include "core/grid.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/sim_object.h"
+#include "core/scheduler.h"
+
 
 namespace bdm {
 
+SoUidMap<std::pair<SimObject*, uint64_t>> InPlaceExecutionContext::new_so_map_({nullptr, 0}, 1e8);
+
 InPlaceExecutionContext::InPlaceExecutionContext()
     : tinfo_(ThreadInfo::GetInstance()) {
-      new_sim_objects_.reserve(1e6);
+      new_sim_objects_.reserve(1e3);
     }
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
-  for (auto& el : new_sim_objects_) {
-    delete el.second;
+  for (auto* so : new_sim_objects_) {
+    delete so;
   }
 }
 
@@ -80,6 +84,8 @@ void InPlaceExecutionContext::TearDownIterationAll(
     }
     ctxt->remove_.clear();
   }
+
+  InPlaceExecutionContext::new_so_map_.SetOffset(SoUidGenerator::Get()->GetLastId());
 }
 
 void InPlaceExecutionContext::Execute(
@@ -102,7 +108,10 @@ void InPlaceExecutionContext::Execute(
 }
 
 void InPlaceExecutionContext::push_back(SimObject* new_so) {  // NOLINT
-  new_sim_objects_[new_so->GetUid()] = new_so;
+  new_sim_objects_.push_back(new_so);
+  // FIXME logic to grow
+  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+  InPlaceExecutionContext::new_so_map_[new_so->GetUid()] = {new_so, timesteps};
 }
 
 void InPlaceExecutionContext::ForEachNeighbor(
@@ -183,13 +192,6 @@ SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
     return so;
   }
 
-  // sim object must be cached in another InPlaceExecutionContext
-  for (auto* ctxt : sim->GetAllExecCtxts()) {
-    so = ctxt->GetCachedSimObject(uid);
-    if (so != nullptr) {
-      return so;
-    }
-  }
   return nullptr;
 }
 
@@ -206,12 +208,15 @@ void InPlaceExecutionContext::DisableNeighborGuard() {
 }
 
 SimObject* InPlaceExecutionContext::GetCachedSimObject(SoUid uid) {
-  SimObject* ret_val = nullptr;
-  auto search_it = new_sim_objects_.find(uid);
-  if (search_it != new_sim_objects_.end()) {
-    ret_val = search_it->second;
+  if (!InPlaceExecutionContext::new_so_map_.Contains(uid)) {
+    return nullptr;
   }
-  return ret_val;
+  auto& pair = InPlaceExecutionContext::new_so_map_[uid];
+  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+  if (pair.second == timesteps) {
+    return pair.first;
+  }
+  return nullptr;
 }
 
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*

@@ -45,8 +45,14 @@ class SoUidGenerator {
 
 template <typename TValue>
 class SoUidMap {
+  struct Iterator {
+
+    SoUidMap* map_;
+    uint64_t idx_;
+  };
+
 public:
-  SoUidMap(const TValue& empty_value, uint64_t initial_size) : empty_value_{empty_value} {
+  SoUidMap(const TValue& empty_value, uint64_t initial_size, uint64_t offset = 0) : empty_value_{empty_value}, offset_{offset} {
     data_.resize(initial_size);
   }
 
@@ -60,32 +66,43 @@ public:
     }
   }
 
+  void ParallelClear() {
+    #pragma omp parallel for
+    for (uint64_t i = 0; i < data_.size(); ++i) {
+      data_[i] = empty_value_;
+    }
+  }
+
   uint64_t size() const {  // NOLINT
     return data_.size();
   }
 
   TValue Remove(const SoUid& key) {
-    if (key >= data_.size()) {
+    if (key - offset_ >= data_.size()) {
       return empty_value_;
     }
-    auto previous = data_[key];
-    data_[key] = empty_value_;
+    auto previous = data_[key - offset_];
+    data_[key - offset_] = empty_value_;
     return previous;
   }
 
   bool Contains(const SoUid& uid) const {
-    if (uid >= data_.size()) {
+    if (uid - offset_ >= data_.size()) {
       return false;
     }
-    return data_[uid] != empty_value_;
+    return data_[uid-offset_] != empty_value_;
+  }
+
+  void SetOffset(uint64_t offset) {
+    offset_ = offset;
   }
 
   TValue& operator[](const SoUid& key) {
-    return data_[key];
+    return data_[key-offset_];
   }
 
   const TValue& operator[](const SoUid& key) const {
-    return data_[key];
+    return data_[key-offset_];
   }
 
   // find, erase, begin, end
@@ -93,6 +110,7 @@ public:
 private:
   std::vector<TValue> data_;
   TValue empty_value_;
+  uint64_t offset_ = 0;
 };
 
 }  // namespace bdm

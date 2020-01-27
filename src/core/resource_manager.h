@@ -314,7 +314,9 @@ class ResourceManager {
       return sim_objects_[numa_node].size();
     }
     auto current = sim_objects_[numa_node].size();
-    sim_objects_[numa_node].reserve((current + additional) * 1.5);
+    if (current + additional < sim_objects_[numa_node].size()) {
+      sim_objects_[numa_node].reserve((current + additional) * 1.5);
+    }
     sim_objects_[numa_node].resize(current + additional);
     return current;
   }
@@ -371,12 +373,12 @@ class ResourceManager {
   /// not overlap!
   virtual void AddNewSimObjects(
       typename SoHandle::NumaNode_t numa_node, uint64_t offset,
-      const unordered_flatmap<SoUid, SimObject*>& new_sim_objects) {
+      const std::vector<SimObject*>& new_sim_objects) {
     uint64_t i = 0;
-    for (auto& pair : new_sim_objects) {
-      auto uid = pair.first;
+    for (auto* so : new_sim_objects) {
+      auto uid = so->GetUid();
       uid_soh_map_[uid] = SoHandle(numa_node, offset + i);
-      sim_objects_[numa_node][offset + i] = pair.second;
+      sim_objects_[numa_node][offset + i] = so;
       i++;
     }
   }
