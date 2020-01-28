@@ -179,7 +179,7 @@ class SimObject {
   const SoUid& GetUid() const;
 
   Spinlock* GetLock() { return &lock_; }
-  virtual void CriticalRegion(std::set<Spinlock*>* locks) {}
+  virtual void CriticalRegion(std::vector<Spinlock*>* locks) {}
 
   uint32_t GetBoxIdx() const;
 

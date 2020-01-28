@@ -63,7 +63,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 
   const SoUid& GetUid() const override { return Base::GetUid(); }
   Spinlock* GetLock() override { return Base::GetLock(); }
-  void CriticalRegion(std::set<Spinlock*>* locks) override {
+  void CriticalRegion(std::vector<Spinlock*>* locks) override {
     // FIXME
   }
 

@@ -192,9 +192,9 @@ void InPlaceExecutionContext::Execute(
   if (true) {
     // auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
     // std::lock_guard<decltype(mutex)> guard(mutex);
-    std::set<Spinlock*> locks;
-    locks.insert(so->GetLock());
+    locks.push_back(so->GetLock());
     so->CriticalRegion(&locks);
+    std::sort(locks.begin(), locks.end());
     for(auto* l : locks) {
       l->lock();
     }
@@ -205,6 +205,7 @@ void InPlaceExecutionContext::Execute(
     for(auto* l : locks) {
       l->unlock();
     }
+    locks.clear();
   } else {
     neighbor_cache_.clear();
     for (auto& op : operations) {
