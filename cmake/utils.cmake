@@ -69,12 +69,15 @@ function(verify_ROOT)
         include(external/ROOT)
 
         # Propagate the needed variables to the parent
+        SET(ROOT_FOUND ${ROOT_FOUND} PARENT_SCOPE)
         SET(ROOT_VERSION ${ROOT_VERSION} PARENT_SCOPE)
         SET(ROOT_LIBRARIES ${ROOT_LIBRARIES} PARENT_SCOPE)
-        SET(ROOT_INCLUDES ${ROOT_INCLUDES} PARENT_SCOPE)
         SET(ROOT_LIBRARY_DIR ${ROOT_LIBRARY_DIR} PARENT_SCOPE)
         SET(ROOT_INCLUDE_DIRS ${ROOT_INCLUDE_DIRS} PARENT_SCOPE)
+        SET(ROOT_ETC_DIR ${ROOT_ETC_DIR} PARENT_SCOPE)
         SET(ROOT_CONFIG_EXECUTABLE ${ROOT_CONFIG_EXECUTABLE} PARENT_SCOPE)
+        SET(ROOTCLING_EXECUTABLE ${ROOTCLING_EXECUTABLE} PARENT_SCOPE)
+        SET(GENREFLEX_EXECUTABLE ${GENREFLEX_EXECUTABLE} PARENT_SCOPE)
     else()
         # When ROOT is found, but it's not C++14 compliant, we exit the installation, because ROOT needs
         # to be properly sourced prior to invoking CMake (CMake cannot do this for us, because it requires
@@ -147,27 +150,17 @@ function(install_inside_build)
 
     include(GreatCMakeCookOff/TargetCopyFiles)
 
-    add_custom_target(copy_files_bdm ALL DEPENDS biodynamo)
-
-    # Add this dependency, because notebooks depend on the target 'biodynamo'.
-    # Building each notebook would otherwise trigger: `biodynamo` -> `copy_files_bdm`.
-    if(notebooks)
-      add_dependencies(copy_files_bdm notebooks)
-    endif()
+    set(artifact_files_builddir)
 
     # Install the enviroment source script
 
     # Copy biodynamo.py and make it executable.
-    add_copy_files(copy_files_bdm
-            DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ${CMAKE_SOURCE_DIR}/cli/biodynamo.py)
     add_custom_command(
-            TARGET copy_files_bdm
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_INSTALL_BINDIR}/biodynamo.py ${CMAKE_INSTALL_BINDIR}/biodynamo
-            VERBATIM
+            OUTPUT ${CMAKE_INSTALL_BINDIR}/biodynamo
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/cli/biodynamo.py ${CMAKE_INSTALL_BINDIR}/biodynamo
             DEPENDS ${CMAKE_SOURCE_DIR}/cli/biodynamo.py
     )
+    list(APPEND artifact_files_builddir ${CMAKE_INSTALL_BINDIR}/biodynamo)
 
     # Copy header files
     add_copy_directory(copy_files_bdm
@@ -248,7 +241,6 @@ function(install_inside_build)
             ${CMAKE_BINARY_DIR}/version/version.h
             )
 
-
     # libbdmcuda.a
     if(CUDA_FOUND)
         install(TARGETS bdmcuda ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} OPTIONAL)
@@ -301,6 +293,12 @@ function(install_inside_build)
               DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR}
               ${CMAKE_INSTALL_LIBDIR}/libBDMGlyphFilter${CMAKE_SHARED_LIBRARY_SUFFIX}
               )
+    endif()
+
+    add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})
+    add_dependencies(copy_files_bdm biodynamo)
+    if(paraview)
+      add_dependencies(copy_files_bdm BDMGlyphFilter)
     endif()
 
 endfunction()

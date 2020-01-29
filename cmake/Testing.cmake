@@ -67,13 +67,8 @@ function(bdm_add_test_executable TEST_TARGET)
                      SOURCES ${ARG_SOURCES}
                      HEADERS ${ARG_HEADERS}
                      LIBRARIES biodynamo libgtest ${ARG_LIBRARIES})
-  if(dict)
-    add_dependencies(${TEST_TARGET}-objectlib gtest)
-    SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}-objectlib" PARENT_SCOPE)
-  else()
-    add_dependencies(${TEST_TARGET} gtest)
-    SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}" PARENT_SCOPE)
-  endif()
+  add_dependencies(${TEST_TARGET} gtest)
+  SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}" PARENT_SCOPE)
 
   # execute all tests with command: make test
   add_test(NAME ${TEST_TARGET} COMMAND ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET})

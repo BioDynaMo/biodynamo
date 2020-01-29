@@ -340,6 +340,7 @@ class InSituPipeline {
     Log::Fatal("vtkCPVTKPipeline::RequestDataDescription",
                "Simulation was compiled without ParaView support, but you are "
                "trying to use it.");
+    return 0;
   }
 
   void CreatePipeline(vtkCPDataDescription* data_description) {
@@ -358,6 +359,7 @@ class InSituPipeline {
     Log::Fatal("vtkCPVTKPipeline::CoProcess",
                "Simulation was compiled without ParaView support, but you are "
                "trying to use it.");
+    return 0;
   }
 };
 

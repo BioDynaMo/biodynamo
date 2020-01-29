@@ -11,10 +11,10 @@ function(add_copy_files FILECOPIER_TARGET)
         ${ARGN}
     )
 
-    if(NOT TARGET "${FILECOPIER_TARGET}")
-        add_custom_target(${FILECOPIER_TARGET})
-    endif()
-    get_target_property(result ${FILECOPIER_TARGET} TYPE)
+    #if(NOT TARGET "${FILECOPIER_TARGET}")
+    #    add_custom_target(${FILECOPIER_TARGET})
+    #endif()
+    #get_target_property(result ${FILECOPIER_TARGET} TYPE)
     if(NOT FILECOPIER_DESTINATION)
         set(destination ${CMAKE_CURRENT_BINARY_DIR})
     else()
@@ -52,16 +52,18 @@ function(add_copy_files FILECOPIER_TARGET)
             unset(verbosity)
         endif()
         if(NOT "${input_abs}" STREQUAL "${output_abs}")
+            # TARGET ${FILECOPIER_TARGET}
+            # PRE_BUILD
             add_custom_command(
-                TARGET ${FILECOPIER_TARGET}
-                PRE_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    ${input_abs} ${output_abs}
+                OUTPUT ${output_abs}
+                COMMAND ${CMAKE_COMMAND} -E copy ${input_abs} ${output_abs}
                 ${verbosity}
-                DEPENDS "${input}"
+                DEPENDS "${input_abs}"
             )
+            list(APPEND artifact_files_builddir ${output_abs})
        endif()
     endforeach()
+    set(artifact_files_builddir ${artifact_files_builddir} PARENT_SCOPE)
 endfunction()
 
 function(add_copy_directory dircopy_TARGET directory)
@@ -69,9 +71,9 @@ function(add_copy_directory dircopy_TARGET directory)
         "VERBOSE" "DESTINATION;RELATIVE" "EXCLUDE;GLOB" ${ARGN})
 
     get_filename_component(directory "${directory}" ABSOLUTE)
-    if(NOT TARGET ${dircopy_TARGET})
-        add_custom_target(${dircopy_TARGET})
-    endif()
+    #if(NOT TARGET ${dircopy_TARGET})
+    #    add_custom_target(${dircopy_TARGET})
+    #endif()
     if(NOT dircopy_GLOB)
         set(dircopy_GLOB "*")
     endif()
@@ -120,15 +122,17 @@ function(add_copy_directory dircopy_TARGET directory)
             unset(verbosity)
         endif()
         if(NOT "${input_abs}" STREQUAL "${output_abs}")
+            # TARGET ${dircopy_TARGET}
+            # PRE_BUILD
             add_custom_command(
-                TARGET ${dircopy_TARGET}
-                PRE_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    ${input_abs} ${output_abs}
+                OUTPUT ${output_abs}
+                COMMAND ${CMAKE_COMMAND} -E copy ${input_abs} ${output_abs}
                 ${verbosity}
-                DEPENDS "${input}"
+                DEPENDS "${input_abs}"
             )
+            list(APPEND artifact_files_builddir ${output_abs})
         endif()
     endforeach()
+    set(artifact_files_builddir ${artifact_files_builddir} PARENT_SCOPE)
 endfunction()
 

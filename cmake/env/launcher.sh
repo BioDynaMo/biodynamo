@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# In order to avoid sourcing the BioDynaMo environments between buliding and
-# executing BDM binaries, we provide this wrapper. To be used as following:
+# In order to avoid sourcing the BioDynaMo environments between building and
+# executing BDM binaries, we provide this wrapper. To be used as follows:
 # launcher.sh <regular_command_invocation>
 
 SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

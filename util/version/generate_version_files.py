@@ -13,9 +13,11 @@
 #
 # -----------------------------------------------------------------------------
 
-# USAGE: generate_version_files.py git_executable build_dir
-#   git_executable e.g. git
-#   build_dir biodynamo cmake build directory
+# USAGE: generate_version_files.py git_executable build_dir default_version git_dir
+#   git_executable: e.g. git
+#   build_dir: biodynamo cmake build directory
+#   default_version: default version used if the git describe command fails
+#   git_dir: the full path to the .git dir of the project
 
 import os
 import re
@@ -27,10 +29,10 @@ def VerifyCmdLineArguments():
         print("ERROR: generate_version_files.py expects four arguments")
         print("""
 USAGE: generate_version_files.py git_executable build_dir default_version git_dir
-  git_executable e.g. git
-  build_dir biodynamo cmake build directory
-  default_version default version used if the git describe command fails
-  git_dir the full path to the .git dir of the project""")
+  git_executable: e.g. git
+  build_dir: biodynamo cmake build directory
+  default_version: default version used if the git describe command fails
+  git_dir: the full path to the .git dir of the project""")
         sys.exit(1)
 
 def GetGitDescribeString(git_dir, default_version_code):

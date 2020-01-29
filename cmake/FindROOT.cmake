@@ -9,15 +9,15 @@
 # ROOT_LIBRARY_DIR       PATH to the library directory
 # ROOT_ETC_DIR           PATH to the etc directory
 # ROOT_DEFINITIONS       Compiler definitions
-# ROOT_CXX_FLAGS         Compiler flags to used by client packages
-# ROOT_C_FLAGS           Compiler flags to used by client packages
-# ROOT_EXE_LINKER_FLAGS  Linker flags to used by client packages
+# ROOT_CXX_FLAGS         Compiler flags to be used by client packages
+# ROOT_C_FLAGS           Compiler flags to be used by client packages
+# ROOT_EXE_LINKER_FLAGS  Linker flags to be used by client packages
 #
 # Updated by K. Smith (ksmith37@nd.edu) to properly handle
 #  dependencies in ROOT_GENERATE_DICTIONARY
 
 find_program(ROOT_CONFIG_EXECUTABLE NAMES root-config
-HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
+  HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
 
 execute_process(
     COMMAND ${ROOT_CONFIG_EXECUTABLE} --prefix
@@ -95,9 +95,19 @@ find_package_handle_standard_args(ROOT DEFAULT_MSG ROOT_CONFIG_EXECUTABLE
 mark_as_advanced(ROOT_CONFIG_EXECUTABLE)
 
 include(CMakeParseArguments)
-find_program(ROOTCLING_EXECUTABLE rootcling HINTS $ENV{ROOTSYS}/bin)
-find_program(GENREFLEX_EXECUTABLE genreflex HINTS $ENV{ROOTSYS}/bin)
+find_program(ROOTCLING_EXECUTABLE rootcling
+  HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
+find_program(GENREFLEX_EXECUTABLE genreflex
+  HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
 find_package(GCCXML)
+
+# During installation we need launcher.sh to build dictionaries (since we
+# do not source environmentals). AFter the installation we do not need the
+# wrapper script, since we expect environmentals to be set.
+set(LAUNCHER)
+if(NOT DEFINED "$ENV{BDM_INSTALL_DIR}" AND NOT DEFINED ENV{BDM_INSTALL_DIR})
+  set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
+endif()
 
 #----------------------------------------------------------------------------
 # function ROOT_GENERATE_DICTIONARY( dictionary
@@ -138,7 +148,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   #---call rootcling------------------------------------------
   add_custom_command(OUTPUT ${dictionary}.cxx
                      OUTPUT ${dictionary}_rdict.pcm
-                     COMMAND ${ROOTCLING_EXECUTABLE} -f ${dictionary}.cxx
+                     COMMAND ${LAUNCHER} ${ROOTCLING_EXECUTABLE} -f ${dictionary}.cxx
                                           -c ${ARG_OPTIONS} ${includedirs} ${headerfiles} ${linkdefs}
                      DEPENDS ${headerfiles} ${linkdefs} VERBATIM)
 endfunction()
@@ -191,7 +201,7 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
   #set(rootmapopts --rootmap=${rootmapname} --rootmap-lib=${libprefix}${dictionary}Dict)
   #---Actual command----------------------------------------
   add_custom_command(OUTPUT ${gensrcdict} ${rootmapname} ${dictionary}_rdict.pcm
-                     COMMAND ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${gensrcdict} ${rootmapopts} --select=${selectionfile}
+                     COMMAND ${LAUNCHER} ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${gensrcdict} ${rootmapopts} --select=${selectionfile}
                             ${ARG_OPTIONS} ${includedirs} ${definitions}
                      DEPENDS ${headerfiles} ${selectionfile})
 endfunction()

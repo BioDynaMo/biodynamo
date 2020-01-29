@@ -20,7 +20,7 @@ include_directories(${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/)
 # Use the ADD_PARAVIEW_PLUGIN macro to build a plugin
 ADD_PARAVIEW_PLUGIN(
   BDMGlyphFilter              #<--Name for the plugin
- "1.0"                       #<--Version string
+  "1.0"                       #<--Version string
   SERVER_MANAGER_XML ${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/bdm_glyph_filter.xml  #<-- server manager xml
   SERVER_MANAGER_SOURCES ${BDMGLYPH_SOURCES} #<-- source files for the new classes
 )

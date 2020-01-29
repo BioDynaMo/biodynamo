@@ -207,10 +207,10 @@ find_package(Git)
 
 # Find ROOT and check its installation
 find_package(ROOT COMPONENTS Geom Gui Eve GenVector)
+verify_ROOT()
 if(ROOT_FOUND)
   message("-- ROOT_VERSION = ${ROOT_VERSION}")
 endif()
-verify_ROOT()
 
 if (dict)
   add_definitions("-DUSE_DICT")
@@ -479,6 +479,7 @@ add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
+
 if (${ParaView_FOUND})
     include("${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/CMakeLists.txt")
 endif()
