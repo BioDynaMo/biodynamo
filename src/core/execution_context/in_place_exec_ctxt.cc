@@ -179,7 +179,7 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   grid->ForEachNeighbor(for_each, query);
 }
 
-SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
+SimObject* InPlaceExecutionContext::GetSimObject(const SoUid& uid) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* so = rm->GetSimObject(uid);
@@ -195,11 +195,11 @@ SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
   return nullptr;
 }
 
-const SimObject* InPlaceExecutionContext::GetConstSimObject(SoUid uid) {
+const SimObject* InPlaceExecutionContext::GetConstSimObject(const SoUid& uid) {
   return GetSimObject(uid);
 }
 
-void InPlaceExecutionContext::RemoveFromSimulation(SoUid uid) {
+void InPlaceExecutionContext::RemoveFromSimulation(const SoUid& uid) {
   remove_.push_back(uid);
 }
 
@@ -207,7 +207,7 @@ void InPlaceExecutionContext::DisableNeighborGuard() {
   Simulation::GetActive()->GetGrid()->DisableNeighborMutexes();
 }
 
-SimObject* InPlaceExecutionContext::GetCachedSimObject(SoUid uid) {
+SimObject* InPlaceExecutionContext::GetCachedSimObject(const SoUid& uid) {
   if (!InPlaceExecutionContext::new_so_map_.Contains(uid)) {
     return nullptr;
   }

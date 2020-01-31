@@ -61,7 +61,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   void EventHandler(const Event& event, SimObject* other1,
                     SimObject* other2 = nullptr) override;
 
-  SoUid GetUid() const override { return Base::GetUid(); }
+  const SoUid& GetUid() const override { return Base::GetUid(); }
 
   // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *
@@ -86,7 +86,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  Double3 OriginOf(SoUid daughter_uid) const override;
+  Double3 OriginOf(const SoUid& daughter_uid) const override;
 
   void UpdateDependentPhysicalVariables() override;
 

@@ -175,7 +175,7 @@ class SimObject {
 
   void AssignNewUid();
 
-  SoUid GetUid() const;
+  const SoUid& GetUid() const;
 
   uint32_t GetBoxIdx() const;
 

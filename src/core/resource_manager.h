@@ -171,7 +171,7 @@ class ResourceManager {
     // }
   }
 
-  SimObject* GetSimObject(SoUid uid) {
+  SimObject* GetSimObject(const SoUid& uid) {
     if (!uid_soh_map_.Contains(uid)) {
       return nullptr;
     }
@@ -183,7 +183,7 @@ class ResourceManager {
     return sim_objects_[soh.GetNumaNode()][soh.GetElementIdx()];
   }
 
-  SoHandle GetSoHandle(SoUid uid) { return uid_soh_map_[uid]; }
+  SoHandle GetSoHandle(const SoUid& uid) { return uid_soh_map_[uid]; }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
     uint64_t substance_id = dgrid->GetSubstanceId();
@@ -323,7 +323,7 @@ class ResourceManager {
 
   /// Returns true if a sim object with the given uid is stored in this
   /// ResourceManager.
-  bool Contains(SoUid uid) const {
+  bool Contains(const SoUid& uid) const {
     return uid_soh_map_.Contains(uid);
   }
 
@@ -353,8 +353,8 @@ class ResourceManager {
   void push_back(SimObject* so,  // NOLINT
                  typename SoHandle::NumaNode_t numa_node = 0) {
     auto uid = so->GetUid();
-    if (uid >= uid_soh_map_.size()) {  // FIXME
-      uid_soh_map_.resize(uid + 1);
+    if (uid.GetIndex() >= uid_soh_map_.size()) {
+      uid_soh_map_.resize(uid.GetIndex() + 1);
     }
     sim_objects_[numa_node].push_back(so);
     uid_soh_map_[uid] =
@@ -362,8 +362,8 @@ class ResourceManager {
   }
 
   void ResizeUidSohMap() {
-    if (SoUidGenerator::Get()->GetLastId() >= uid_soh_map_.size()) {
-      uid_soh_map_.resize(SoUidGenerator::Get()->GetLastId() * 1.5 + 1);
+    if (SoUidGenerator::Get()->GetLastId().GetIndex() >= uid_soh_map_.size()) {
+      uid_soh_map_.resize(SoUidGenerator::Get()->GetLastId().GetIndex() * 1.5 + 1);
     }
   }
 
@@ -387,7 +387,7 @@ class ResourceManager {
   /// NB: This method is not thread-safe! This function invalidates
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
-  void Remove(SoUid uid) {
+  void Remove(const SoUid& uid) {
     // remove from map
     SoHandle soh = uid_soh_map_.Remove(uid);
     if (soh != SoHandle()) {

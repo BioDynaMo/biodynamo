@@ -91,7 +91,7 @@ TEST(GridTest, SetupGrid) {
   EXPECT_EQ(expected_63, neighbors[ref_uid + 63]);
 }
 
-void RunUpdateGridTest(Simulation* simulation, SoUid ref_uid) {
+void RunUpdateGridTest(Simulation* simulation, const SoUid& ref_uid) {
   auto* rm = simulation->GetResourceManager();
   auto* grid = simulation->GetGrid();
 

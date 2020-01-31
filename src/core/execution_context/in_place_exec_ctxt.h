@@ -83,11 +83,11 @@ class InPlaceExecutionContext {
       const std::function<void(const SimObject*)>& lambda,
       const SimObject& query, double squared_radius);
 
-  SimObject* GetSimObject(SoUid uid);
+  SimObject* GetSimObject(const SoUid& uid);
 
-  const SimObject* GetConstSimObject(SoUid uid);
+  const SimObject* GetConstSimObject(const SoUid& uid);
 
-  void RemoveFromSimulation(SoUid uid);
+  void RemoveFromSimulation(const SoUid& uid);
 
   /// If a sim objects modifies other simulation objects while it is updated,
   /// race conditions can occur using this execution context. This function
@@ -113,7 +113,7 @@ class InPlaceExecutionContext {
 
   std::vector<std::pair<const SimObject*, double>> neighbor_cache_;
 
-  SimObject* GetCachedSimObject(SoUid uid);
+  SimObject* GetCachedSimObject(const SoUid& uid);
 };
 
 }  // namespace bdm

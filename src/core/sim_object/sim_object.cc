@@ -96,7 +96,7 @@ void SimObject::RunDiscretization() {}
 
 void SimObject::AssignNewUid() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
 
-SoUid SimObject::GetUid() const { return uid_; }
+const SoUid& SimObject::GetUid() const { return uid_; }
 
 uint32_t SimObject::GetBoxIdx() const { return box_idx_; }
 

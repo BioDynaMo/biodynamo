@@ -39,7 +39,7 @@ class SimObject;
 template <typename TSimObject>
 class SoPointer {
  public:
-  explicit SoPointer(SoUid uid) : uid_(uid) {}
+  explicit SoPointer(const SoUid& uid) : uid_(uid) {}
 
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
@@ -51,7 +51,7 @@ class SoPointer {
 
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
   bool operator==(std::nullptr_t) const {
-    return uid_ == std::numeric_limits<uint64_t>::max();
+    return uid_ == SoUid();
   }
 
   /// Not equal operator that enables the following statement `so_ptr !=
@@ -72,7 +72,7 @@ class SoPointer {
   /// Assignment operator that changes the internal representation to nullptr.
   /// Makes the following statement possible `so_ptr = nullptr;`
   SoPointer& operator=(std::nullptr_t) {
-    uid_ = std::numeric_limits<uint64_t>::max();
+    uid_ = SoUid();
     return *this;
   }
 

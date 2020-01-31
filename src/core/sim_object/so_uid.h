@@ -21,7 +21,57 @@ namespace bdm {
 
 /// SoUid is a unique id for simulation objects that remains unchanged
 /// throughout the whole simulation.
-using SoUid = uint64_t;
+class SoUid {
+ public:
+  using Index_t = uint32_t;
+  using Reused_t = uint16_t;
+
+  static constexpr Reused_t kReusedMax = std::numeric_limits<Reused_t>::max();
+
+  constexpr SoUid() noexcept
+      : index_(std::numeric_limits<Index_t>::max()),
+        reused_(std::numeric_limits<Reused_t>::max()) {}
+
+  explicit SoUid(Index_t index)
+      : index_(index), reused_(0) {}
+
+  SoUid(Index_t idx, Reused_t reused)
+      : index_(idx), reused_(reused) {}
+
+  Reused_t GetReused() const { return reused_; }
+  Index_t GetIndex() const { return index_; }
+
+  bool operator==(const SoUid& other) const {
+    return index_ == other.index_ && reused_ == other.reused_;
+  }
+
+  bool operator!=(const SoUid& other) const { return !(*this == other); }
+
+  bool operator<(const SoUid& other) const {
+    if (reused_ == other.reused_) {
+      return index_ < other.index_;
+    } else {
+      return reused_ < other.reused_;
+    }
+  }
+
+  friend std::ostream& operator<<(std::ostream& stream, const SoUid& handle) {
+    stream << handle.index_ << "-" << handle.reused_;
+    return stream;
+  }
+
+ private:
+  /// Consistent with SoHandle::Index_t
+  /// -> max element_idx: 4.294.967.296
+  Index_t index_;
+
+  /// Determines how often index_ has been resused
+  Reused_t reused_;
+
+  // TODO delete assignement operator and copy ctor
+
+  BDM_CLASS_DEF_NV(SoUid, 1);
+};
 
 /// This class generates unique ids for simulation objects events satisfying the
 /// EventId invariant. Thread safe.
@@ -34,13 +84,13 @@ class SoUidGenerator {
     return &kInstance;
   }
 
-  SoUid NewSoUid() { return counter_++; }
+  SoUid NewSoUid() { return SoUid(counter_++); }
 
-  SoUid GetLastId() const { return counter_; }
+  SoUid GetLastId() const { return SoUid(counter_); }
 
  private:
   SoUidGenerator() : counter_(0) {}
-  std::atomic<SoUid> counter_;
+  std::atomic<typename SoUid::Index_t> counter_;
 };
 
 template <typename TValue>
@@ -54,15 +104,20 @@ class SoUidMap {
 public:
   SoUidMap(const TValue& empty_value, uint64_t initial_size, uint64_t offset = 0) : empty_value_{empty_value}, offset_{offset} {
     data_.resize(initial_size);
+    so_uid_reused_.resize(initial_size, SoUid::kReusedMax);
   }
 
   void resize(uint64_t new_size) {  // NOLINT
     data_.resize(new_size, empty_value_);
+    so_uid_reused_.resize(new_size, SoUid::kReusedMax);
   }
 
   void clear() {  // NOLINT
     for (auto& el: data_) {
-      el = empty_value_;
+      el = empty_value_;el = empty_value_; // FIXME is this needed??
+    }
+    for (auto& el: so_uid_reused_) {
+      el = SoUid::kReusedMax;
     }
   }
 
@@ -78,39 +133,38 @@ public:
   }
 
   TValue Remove(const SoUid& key) {
-    if (key - offset_ >= data_.size()) {
+    if (key.GetIndex() >= data_.size()) {
       return empty_value_;
     }
-    auto previous = data_[key - offset_];
-    data_[key - offset_] = empty_value_;
+    auto previous = data_[key.GetIndex()];
+    data_[key.GetIndex()] = empty_value_;  // FIXME is this needed??
+    so_uid_reused_[key.GetIndex()] = key.GetReused();
     return previous;
   }
 
   bool Contains(const SoUid& uid) const {
-    if (uid - offset_ >= data_.size()) {
+    if (uid.GetIndex() >= data_.size()) {
       return false;
     }
-    return data_[uid-offset_] != empty_value_;
-  }
-
-  void SetOffset(uint64_t offset) {
-    offset_ = offset;
+    // FIXME is comparison with empty value needed??
+    return data_[uid.GetIndex()] != empty_value_
+      && so_uid_reused_[uid.GetReused()] != SoUid::kReusedMax;
   }
 
   TValue& operator[](const SoUid& key) {
-    return data_[key-offset_];
+    return data_[key.GetIndex()];
   }
 
   const TValue& operator[](const SoUid& key) const {
-    return data_[key-offset_];
+    return data_[key.GetIndex()];
   }
 
   // find, erase, begin, end
 
 private:
   std::vector<TValue> data_;
+  std::vector<typename SoUid::Reused_t> so_uid_reused_;
   TValue empty_value_;
-  uint64_t offset_ = 0;
 };
 
 }  // namespace bdm
