@@ -14,6 +14,8 @@
 #include "binding_cells.h"
 #include "core/util/timing.h"
 
+#include "TSystem.h"
+
 #include "mpi.h"
 
 #include <cstdlib>
@@ -53,16 +55,22 @@ int main(int argc, const char** argv) {
       int ret = pem.Start();
       MPI_Finalize();
       auto t2 = bdm::Timing::Timestamp();
-      if (system("rm results.root") != 0) {
+
+      std::string result_dir = gSystem->GetWorkingDirectory();
+      std::stringstream ss;
+      ss << "rm " << result_dir << "/results.root";
+      if (system(ss.str().c_str()) != 0) {
         bdm::Log::Warning(
             "main", "Non zero return code with with command `rm results.root`");
       }
-      if (system("hadd results.root *.root > /dev/null")) {
+      ss.str("");
+      ss << "hadd " << result_dir << "/results.root " << "*.root > /dev/null";
+      if (system(ss.str().c_str())) {
         bdm::Log::Error("main",
                         "An error occured when trying to merge .root files");
       } else {
         std::cout << "Simulation finished successfully. Results are written "
-                     "to results.root"
+                     "to " << result_dir << "/results.root"
                   << std::endl;
       }
 

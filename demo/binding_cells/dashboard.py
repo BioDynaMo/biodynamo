@@ -12,6 +12,8 @@ class Dashboard:
 
   def __init__(self):
     self.hostfile_content_ = ""
+    self.local_xml_filepath = ""
+    self.remote_xml_filepath = ""
     self.remote_ = True
 
   # Check if path exists on specified remote hostname
@@ -109,6 +111,7 @@ class Dashboard:
 
       myfile = open("{}.xml".format(sim_name), "w")
       myfile.write(prettify(model))
+      self.local_xml_filepath = os.path.realpath(myfile.name)
       myfile.close()
 
   def generate_hostfile(self):
@@ -139,18 +142,16 @@ class Dashboard:
 
       tab_contents = {}
 
-      sim_name_field = widgets.Text(
-          description='Name', value="Binding Cells")
-
+      sim_name_field = widgets.Text(description='Name', value="Binding Cells")
 
       ############################################################################
       ## World Tab
       ############################################################################
       world_content = widgets.GridspecLayout(4, 2)
       world_content[0, 0] = sim_name_field
-      world_content[1, 0] = widgets.IntText(description='Timesteps', value=300)
+      world_content[1, 0] = widgets.IntText(description='Timesteps', value=4000)
       world_content[2, 0] = widgets.IntText(description='Min. Space', value=0)
-      world_content[3, 0] = widgets.IntText(description='Max. Space', value=100)
+      world_content[3, 0] = widgets.IntText(description='Max. Space', value=50)
       world_content[0, 1] = widgets.Checkbox(value=False, description='Visualization')
       world_content[1, 1] = widgets.IntText(description="Vis. Freq.", value=100)
       # world_content[3, 1] = widgets.FileUpload(multiple=False)
@@ -162,17 +163,18 @@ class Dashboard:
       ############################################################################
       tab_contents['Simulation Objects'] = widgets.Accordion(children=[
           widgets.VBox([
-              widgets.IntText(description='Population', value=100),
+              widgets.IntText(description='Population', value=200),
               widgets.IntText(description='Type', value=0),
               widgets.FloatText(description='Mass Density', value=1.067),
-              widgets.FloatText(description='Diameter', value=15),
+              widgets.FloatText(description='Diameter', value=1.5),
               widgets.FloatText(description='Velocity', value=2)
           ]),
           widgets.VBox([
-              widgets.IntText(description='Population', value=100),
+              widgets.IntText(description='Population', value=200),
               widgets.IntText(description='Type', value=1),
               widgets.FloatText(description='Mass Density', value=1.077),
-              widgets.FloatText(description='Diameter', value=6)
+              widgets.FloatText(description='Diameter', value=0.9),
+              widgets.FloatText(description='Velocity', value=5)
           ])
       ])
       tab_contents['Simulation Objects'].set_title(0, sim_objects[0])
@@ -186,12 +188,11 @@ class Dashboard:
               widgets.FloatText(description='Binding radius', value=5, style=style)
           ]),
           widgets.VBox([
-              widgets.VBox([widgets.Label('Binding Probability'), widgets.FloatText(value=0.8)]),
-              widgets.VBox([widgets.Label('Concentration Threshold'), widgets.FloatRangeSlider(
-                  value=[0.0040, 0.00684], min=0.0, max=0.01, step=0.0005, readout_format='.4f')])
+              widgets.VBox([widgets.Label('Binding Probability'), widgets.FloatText(value=0.75)]),
+              widgets.VBox([widgets.Label('Concentration Threshold'), widgets.FloatText(value=0.0040)])
           ]),
           widgets.VBox([
-              widgets.FloatText(description='Viscosity', value=0.00089, style=style),
+              widgets.FloatText(description='Viscosity', value=0.089, style=style),
               widgets.FloatText(description='Mass Density Fluid', value=0.997, style=style)
           ])
       ])
@@ -204,11 +205,11 @@ class Dashboard:
       ############################################################################
       tab_contents['Substances'] = widgets.Accordion(children=[
           widgets.VBox([
-              widgets.FloatText(description='Amount', value=0.1),
-              widgets.FloatText(description='Diffusion Rate',
-                                value=0.4, style=style),
+              widgets.FloatRangeSlider(description="Amount",
+                  value=[0.003, 0.004], min=0.0, max=0.005, step=0.00005, readout_format='.4f'),
+              widgets.FloatText(description='Diffusion Rate', value=0.01, style=style),
               widgets.FloatText(description='Decay Rate', value=0.0),
-              widgets.IntText(description='Resolution', value=20)
+              widgets.IntText(description='Resolution', value=10)
           ])
       ])
       tab_contents['Substances'].set_title(0, substances[0])
@@ -248,7 +249,6 @@ class Dashboard:
 
       # extract simulation name and create XML file name
       sim_name = sim_name_field.value.lower().replace(" ", "_")
-      xml_file = "{}.xml".format(sim_name)
 
       # Simulation button callback function
       def on_sim_click(b):
@@ -276,6 +276,18 @@ class Dashboard:
               # generate xml file
               print("Generating XML parameter file...")
               self.generate_xml(tab, sim_name)
+              # if we use remote machines, we need to copy the xml file to the
+              # server(s), because the MPI command will expect it to be on the
+              # remote machines
+              if self.remote_:
+                self.remote_build_dir = os.path.dirname(os.path.abspath(binary_path))
+                for host in self.hosts_:
+                  full_host_path = host + ":" + self.remote_build_dir
+                  p = Popen(["scp", self.local_xml_filepath, full_host_path], stdout=PIPE, stderr=PIPE)
+                  print(p.args)
+                  pout = p.communicate()
+                  print(pout[1].decode("utf-8"))
+                self.remote_xml_filepath = self.remote_build_dir + "/" + self.local_xml_filepath.split("/")[-1]
 
               # check if visualization was selected
               visualize = ""
@@ -295,7 +307,7 @@ class Dashboard:
                           "-np", str(nb_cores.value),
                           binary_path,
                           "{}".format(visualize),
-                          "--xml={}".format(xml_file)
+                          "--xml={}".format(self.remote_xml_filepath if self.remote_ else self.local_xml_filepath),
                           ], stdout=PIPE, stderr=PIPE)
                 for line in iter(p.stdout.readline, b''):
                   sys.stdout.write(line)
