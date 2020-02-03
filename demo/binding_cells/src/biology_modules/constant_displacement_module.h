@@ -15,7 +15,7 @@
 #define CONSTANT_DISPLACEMENT_MODULE_H_
 
 #include "biodynamo.h"
-#include "simulation_objects/my_cell.h"
+#include "simulation_objects/monocyte.h"
 
 namespace bdm {
 
@@ -72,7 +72,7 @@ struct ConstantDisplace : public BaseBiologyModule {
 
   void Run(SimObject* so) override {
     if (!reached_goal_) {
-      if (auto* cell = dynamic_cast<MyCell*>(so)) {
+      if (auto* cell = dynamic_cast<Monocyte*>(so)) {
         auto sq_distance =
             SquaredEuclideanDistance(so->GetPosition(), goal_position_);
         if (sq_distance > eps_) {

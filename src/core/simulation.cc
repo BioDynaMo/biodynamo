@@ -86,6 +86,12 @@ Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params) {
       &options, [](auto* param) {}, "", xml_params);
 }
 
+Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params,
+                       const std::function<void(Param*)>& set_param) {
+  auto options = CommandLineOptions(argc, argv);
+  Initialize(&options, set_param, "", xml_params);
+}
+
 Simulation::Simulation(int argc, const char** argv,
                        const std::function<void(Param*)>& set_param,
                        const std::string& config_file) {

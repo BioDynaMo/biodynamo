@@ -15,7 +15,8 @@
 #define SPRING_FORCE_MODULE_H_
 
 #include "biodynamo.h"
-#include "simulation_objects/my_cell.h"
+#include "simulation_objects/t_cell.h"
+#include "simulation_objects/monocyte.h"
 
 namespace bdm {
 
@@ -48,18 +49,18 @@ struct SpringForce : public BaseBiologyModule {
   BaseBiologyModule* GetCopy() const override { return new SpringForce(*this); }
 
   // Displacement calculated in the direction of so2
-  Double3 CalculateSpringForceDisplacement(MyCell* so1, SoPointer<MyCell> so2) {
+  Double3 CalculateSpringForceDisplacement(TCell* so1,
+                                           SoPointer<Monocyte> so2) {
     Double3 pos1 = so1->GetPosition();
     Double3 pos2 = so2->GetPosition();
     Double3 force = (pos1 - pos2) * (-spring_constant_);
-    double dt = 1;  // TODO: replace with simulation timestep
+    auto dt = Simulation::GetActive()->GetParam()->simulation_time_step_;
     Double3 displacement = force * dt * dt;
-    std::cout << displacement << std::endl;
     return displacement;
   }
 
   void Run(SimObject* so) override {
-    if (auto* this_cell = dynamic_cast<MyCell*>(so)) {
+    if (auto* this_cell = dynamic_cast<TCell*>(so)) {
       if (this_cell->IsConnected()) {
         auto other_cell = this_cell->GetConnectedCell();
         auto displacement =

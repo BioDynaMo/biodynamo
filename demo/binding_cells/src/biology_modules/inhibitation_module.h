@@ -15,14 +15,11 @@
 #define INHIBITATION_MODULE_H_
 
 #include "biodynamo.h"
-#include "simulation_objects/my_cell.h"
+#include "simulation_objects/t_cell.h"
 
 namespace bdm {
 
-/// If a cell A establishes a Gravity with another cell B, cell A
-/// attaches itself to B. Any displacement of cell B will result in cell A
-/// moving next to cell B. This effectively disables cell A from being able to
-/// move by itself.
+/// Inhibits Monocytes from forming an immune synapse with T-Cells
 struct Inhibitation : public BaseBiologyModule {
  public:
   Inhibitation() : BaseBiologyModule(gAllEventIds) {}
@@ -54,18 +51,21 @@ struct Inhibitation : public BaseBiologyModule {
   }
 
   void Run(SimObject* so) override {
-    if (auto* cell = dynamic_cast<MyCell*>(so)) {
-      Double3 cell_position = cell->GetPosition();
+    if (auto* monocyte = dynamic_cast<Monocyte*>(so)) {
+      // If this monocyte is already inhibited, we can prune this function
+      if (monocyte->IsInhibited()) {
+        return;
+      }
       auto* rm = Simulation::GetActive()->GetResourceManager();
       auto* dgrid = rm->GetDiffusionGrid(0);
-      double conc = dgrid->GetConcentration(cell_position);
+      double conc = dgrid->GetConcentration(monocyte->GetPosition());
 
       // With certain probability, depending on concentration value, we
-      // inhibit the cell from its bonding ability
+      // inhibit the monocyte from forming an immune synapse
       auto* r = Simulation::GetActive()->GetRandom();
       if ((conc >= conc_threshold_) &&
           (std::abs(r->Uniform()) < probability_)) {
-        cell->Inhibit();
+        monocyte->Inhibit();
       }
     }
   }

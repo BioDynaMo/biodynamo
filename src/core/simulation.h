@@ -78,6 +78,9 @@ class Simulation {
 
   Simulation(int argc, const char** argv, XMLParams* xml_params);
 
+  Simulation(int argc, const char** argv, XMLParams* xml_params,
+             const std::function<void(Param*)>& set_param);
+
   Simulation(const std::string& simulation_name,
              const std::function<void(Param*)>& set_param,
              const std::string& config_file = "");

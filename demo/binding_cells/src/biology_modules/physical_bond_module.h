@@ -15,7 +15,7 @@
 #define PHYSICAL_BOND_MODULE_H_
 
 #include "biodynamo.h"
-#include "simulation_objects/my_cell.h"
+#include "simulation_objects/monocyte.h"
 
 namespace bdm {
 
@@ -29,7 +29,10 @@ struct PhysicalBond : public BaseBiologyModule {
  public:
   PhysicalBond() : BaseBiologyModule(gAllEventIds) {}
 
-  void Connect(MyCell* cell_a, SoPointer<MyCell> cell_b) {
+  // NB: works only for spherical shaped cells
+  // Simple implementation of connecting `cell_a` to `cell_b`. We displace
+  // `cell_a` with a distance such that the edges of the spheres stay connected
+  void Connect(TCell* cell_a, SoPointer<Monocyte> cell_b) {
     Double3 distance = cell_b->GetPosition() - cell_a->GetPosition();
     Double3 distance_copy = distance;
     auto radius_a = cell_a->GetDiameter() / 2;
@@ -37,10 +40,13 @@ struct PhysicalBond : public BaseBiologyModule {
     Double3 displacement =
         distance - (distance_copy.Normalize() * (radius_a + radius_b));
     cell_a->UpdatePosition(displacement);
+    // if (Simulation::GetActive()->GetScheduler()->GetSimulatedSteps() == 1) {
+    //   Log::Error("PhysicalBond", "Displacement: ", displacement);
+    // }
   }
 
   void Run(SimObject* so) override {
-    if (auto* this_cell = dynamic_cast<MyCell*>(so)) {
+    if (auto* this_cell = dynamic_cast<TCell*>(so)) {
       if (this_cell->IsConnected()) {
         auto other_cell = this_cell->GetConnectedCell();
         Connect(this_cell, other_cell);

@@ -1,18 +1,23 @@
 [simulation]
 run_mechanical_interactions = false
 bound_space = true
+leaking_edges = false
 
 [visualization]
 # export = false
 # export_interval = 1
   
     [[visualize_sim_object]]
-      name = "MyCell"
-      additional_data_members = [ "diameter_", "cell_type_" ]
+      name = "TCell"
+      additional_data_members = [ "diameter_", "color_" ]
 
-    # [[visualize_diffusion]]
-    # name = "Antibody"
-    # gradient = false
+    [[visualize_sim_object]]
+      name = "Monocyte"
+      additional_data_members = [ "diameter_", "color_" ]
+
+    [[visualize_diffusion]]
+    name = "Antibody"
+    gradient = false
 
 # [development]
 # statistics = true

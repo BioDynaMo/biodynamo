@@ -15,7 +15,6 @@
 #define RANDOM_WALK_MODULE_H_
 
 #include "biodynamo.h"
-#include "simulation_objects/my_cell.h"
 
 namespace bdm {
 
@@ -45,38 +44,25 @@ struct RandomWalk : public BaseBiologyModule {
 
   Double3 GetRandomDirection() {
     auto* r = Simulation::GetActive()->GetRandom();
-    int c = int(r->Uniform(0, 6));
-    switch (c) {
-      case 0:
-        return {1, 0, 0};
-      case 1:
-        return {-1, 0, 0};
-      case 2:
-        return {0, 1, 0};
-      case 3:
-        return {0, -1, 0};
-      case 4:
-        return {0, 0, 1};
-      case 5:
-        return {0, 0, -1};
-      default:
-        return {0, 0, 0};
-    }
+    Double3 random_vector = r->UniformArray<3>(-1, 1);
+    return random_vector.Normalize();
   }
 
   void Run(SimObject* so) override {
-    if (MyCell* cell = dynamic_cast<MyCell*>(so)) {
-      if (!cell->IsConnected()) {
-        Double3 direction = GetRandomDirection();
-        Double3 vel = direction * velocity_;
-        Double3 movement = vel * dt_;
-        cell->UpdatePosition(movement);
+    if (auto* monocyte = dynamic_cast<Monocyte*>(so)) {
+      if (monocyte->AtBottom()) {
+        return;
       }
+    }
+    if (auto* cell = dynamic_cast<Cell*>(so)) {
+      Double3 direction = GetRandomDirection();
+      Double3 vel = direction * velocity_;
+      auto dt = Simulation::GetActive()->GetParam()->simulation_time_step_;
+      cell->UpdatePosition(vel * dt);
     }
   }
 
  private:
-  const double dt_ = 1;  // TODO: should be parameterized
   double velocity_;
 };
 
@@ -109,34 +95,23 @@ struct RandomWalkXY : public BaseBiologyModule {
 
   Double3 GetRandomDirection() {
     auto* r = Simulation::GetActive()->GetRandom();
-    int c = int(r->Uniform(0, 4));
-    switch (c) {
-      case 0:
-        return {1, 0, 0};
-      case 1:
-        return {-1, 0, 0};
-      case 2:
-        return {0, 1, 0};
-      case 3:
-        return {0, -1, 0};
-      default:
-        return {0, 0, 0};
-    }
+    Double3 random_vector;
+    random_vector[0] = r->Uniform(-1, 1);
+    random_vector[1] = r->Uniform(-1, 1);
+    random_vector[2] = 0;
+    return random_vector.Normalize();
   }
 
   void Run(SimObject* so) override {
-    if (MyCell* cell = dynamic_cast<MyCell*>(so)) {
-      if (!cell->IsConnected()) {
-        Double3 direction = GetRandomDirection();
-        Double3 vel = direction * velocity_;
-        Double3 movement = vel * dt_;
-        cell->UpdatePosition(movement);
-      }
+    if (auto* cell = dynamic_cast<Cell*>(so)) {
+      Double3 direction = GetRandomDirection();
+      Double3 vel = direction * velocity_;
+      auto dt = Simulation::GetActive()->GetParam()->simulation_time_step_;
+      cell->UpdatePosition(vel * dt);
     }
   }
 
  private:
-  const double dt_ = 1;  // TODO: should be parameterized
   double velocity_;
 };
 

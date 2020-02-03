@@ -134,7 +134,7 @@ class Dashboard:
       style2 = {'description_width': '200px'}
 
       sim_objects = ['Monocyte', 'T_Cell']
-      bio_modules = ['ConnectWithinRadius', 'Inhibition']
+      bio_modules = ['ConnectWithinRadius', 'Inhibition', 'StokesVelocity']
       substances  = ['Antibody']
 
       tab_contents = {}
@@ -164,13 +164,15 @@ class Dashboard:
           widgets.VBox([
               widgets.IntText(description='Population', value=100),
               widgets.IntText(description='Type', value=0),
-              widgets.FloatText(description='Diameter', value=5),
+              widgets.FloatText(description='Mass Density', value=1.067),
+              widgets.FloatText(description='Diameter', value=15),
               widgets.FloatText(description='Velocity', value=2)
           ]),
           widgets.VBox([
               widgets.IntText(description='Population', value=100),
               widgets.IntText(description='Type', value=1),
-              widgets.FloatText(description='Diameter', value=5)
+              widgets.FloatText(description='Mass Density', value=1.077),
+              widgets.FloatText(description='Diameter', value=6)
           ])
       ])
       tab_contents['Simulation Objects'].set_title(0, sim_objects[0])
@@ -186,17 +188,23 @@ class Dashboard:
           widgets.VBox([
               widgets.VBox([widgets.Label('Binding Probability'), widgets.FloatText(value=0.8)]),
               widgets.VBox([widgets.Label('Concentration Threshold'), widgets.FloatRangeSlider(
-                  value=[0.0040, 0.00684], min=0.0, max=0.01, step=0.00002, readout_format='.4f')])
+                  value=[0.0040, 0.00684], min=0.0, max=0.01, step=0.0005, readout_format='.4f')])
+          ]),
+          widgets.VBox([
+              widgets.FloatText(description='Viscosity', value=0.00089, style=style),
+              widgets.FloatText(description='Mass Density Fluid', value=0.997, style=style)
           ])
       ])
       tab_contents['Biology Modules'].set_title(0, bio_modules[0])
       tab_contents['Biology Modules'].set_title(1, bio_modules[1])
+      tab_contents['Biology Modules'].set_title(2, bio_modules[2])
 
       ############################################################################
       ## Substances Tab
       ############################################################################
       tab_contents['Substances'] = widgets.Accordion(children=[
           widgets.VBox([
+              widgets.FloatText(description='Amount', value=0.1),
               widgets.FloatText(description='Diffusion Rate',
                                 value=0.4, style=style),
               widgets.FloatText(description='Decay Rate', value=0.0),
@@ -245,24 +253,8 @@ class Dashboard:
       # Simulation button callback function
       def on_sim_click(b):
           with out:
-              # generate binary file from given binary 
-              # TODO(ahmad): this won't work properly because we also need to copy
-              # the generated .pcm files for I/O
-              # file_widget = world_content[3, 1]
-              # if bool(file_widget.value):
-              #   print("Uploading binary to server...")
-              #   binary = open("{}_notebook".format(sim_name), "wb")
-              #   binary.write(file_widget.value[next(iter(file_widget.value))]['content'])
-              #   binary.close()
-              #   # Change permissions so it can be executed (same as doing chmod +x)
-              #   st = os.stat(binary.name)
-              #   os.chmod(binary.name, st.st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-              # else:
-              #   print("Error: you must upload the simulation binary!")
-              #   return
-
               # generate the hostfile if specified in dashboard
-              hostfile_content_ = hostfile_box.value
+              self.hostfile_content_ = hostfile_box.value
               self.generate_hostfile()
 
               # Check if the binary exists at the given path
@@ -276,7 +268,7 @@ class Dashboard:
                   return
               else:
                 # For each remote machine check if path is valid
-                for host in hosts_:
+                for host in self.hosts_:
                   if not self.exists_remote(host, binary_path):
                     print("Error: The given binary path does not exist on {}!".format(host))
                     return
@@ -308,13 +300,13 @@ class Dashboard:
                 for line in iter(p.stdout.readline, b''):
                   sys.stdout.write(line)
                   f.write(line)
-                
-              # pout = p.communicate()
-              # print(p.args)
-              # print stdout
+
+              pout = p.communicate()
+              print(p.args)
+              # # print stdout
               # print(pout[0].decode("utf-8"))
               # print stderr
-              # print(pout[1].decode("utf-8"))
+              print(pout[1].decode("utf-8"))
       
       sim_button.on_click(on_sim_click)
 

@@ -79,6 +79,7 @@ struct Uniform {
 /// that follows the normal probability density function:
 /// ( 1/( sigma * sqrt(2*pi) ))*e^( (-(x - mean )^2) / (2*sigma^2))
 struct GaussianBand {
+  double scaling_;
   double mean_;
   double sigma_;
   uint8_t axis_;
@@ -90,11 +91,13 @@ struct GaussianBand {
   /// @param[in]  sigma  The sigma of the Gaussian distribution
   /// @param[in]  axis   The axis along which you want the Gaussian distribution
   ///                    to be oriented to
+  /// @param[in]  scaling The scaling factor
   ///
-  GaussianBand(double mean, double sigma, uint8_t axis) {
+  GaussianBand(double mean, double sigma, uint8_t axis, double scaling = 1.0) {
     mean_ = mean;
     sigma_ = sigma;
     axis_ = axis;
+    scaling_ = scaling;
   }
 
   /// @brief      The model that we want to apply for substance initialization.
@@ -107,11 +110,12 @@ struct GaussianBand {
   double operator()(double x, double y, double z) {
     switch (axis_) {
       case Axis::kXAxis:
-        return ROOT::Math::normal_pdf(x, sigma_, mean_);
+        return scaling_ * ROOT::Math::normal_pdf(x, sigma_, mean_);
       case Axis::kYAxis:
-        return ROOT::Math::normal_pdf(y, sigma_, mean_);
-      case Axis::kZAxis:
-        return ROOT::Math::normal_pdf(z, sigma_, mean_);
+        return scaling_ * ROOT::Math::normal_pdf(y, sigma_, mean_);
+      case Axis::kZAxis: {
+        return scaling_ * ROOT::Math::normal_pdf(z, sigma_, mean_);
+      }
       default:
         throw std::logic_error("You have chosen an non-existing axis!");
     }

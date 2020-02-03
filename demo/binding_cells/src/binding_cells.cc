@@ -32,13 +32,18 @@ int main(int argc, const char** argv) {
     }
     argv_cpy[argc] = nullptr;
 
-    int worldsize;
-    MPI_Init_thread(&argc, &argv_cpy, MPI_THREAD_SERIALIZED);
+    int worldsize, provided;
+    MPI_Init_thread(&argc, &argv_cpy, MPI_THREAD_SERIALIZED, &provided);
+    if (provided < MPI_THREAD_SERIALIZED) {
+      bdm::Log::Error(
+          "", "The threading support level is lesser than that demanded.");
+      MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
     MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
 
     int myrank;
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-    
+
     if (myrank == 0) {
       auto t1 = bdm::Timing::Timestamp();
       bdm::ParallelExecutionManager pem(
@@ -61,7 +66,7 @@ int main(int argc, const char** argv) {
                   << std::endl;
       }
 
-      std:ofstream tfile;
+      std::ofstream tfile;
       tfile.open("benchmark.csv", std::ofstream::out | std::ofstream::app);
       tfile << worldsize << "," << (t2 - t1) << std::endl;
       tfile.close();

@@ -13,7 +13,8 @@ class MyResults : public Results {
   std::vector<int> activity;
   std::vector<int> occupancy;
   int timesteps;
-  double foo;
+  double concentration_threshold;
+  double initial_concentration;
 
   MyResults() : Results() {}
   MyResults(std::string n, std::string b) : Results(n, b) {}
