@@ -28,7 +28,6 @@
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
 #include "my_results.h"
-#include "plot_graph.h"
 #include "simulation_objects/monocyte.h"
 #include "simulation_objects/t_cell.h"
 
@@ -39,10 +38,10 @@ enum Substances { kAntibody };
 
 // Helper function to convert atomic containers to non-atomic
 template <typename T>
-void MakeNonAtomic(const std::vector<std::atomic<T>>& a, std::vector<T>* na) {
-  na->resize(a.size());
-  for (size_t i = 0; i < a.size(); i++) {
-    (*na)[i] = a[i];
+void MakeNonAtomic(const std::vector<std::atomic<T>>& in, std::vector<T>* out) {
+  out->resize(in.size());
+  for (size_t i = 0; i < in.size(); i++) {
+    (*out)[i] = in[i];
   }
 }
 
@@ -53,33 +52,50 @@ inline int Simulate(int argc, const char** argv,
     param->min_bound_ = 0;
     param->max_bound_ = 50;
   };
+
   Simulation simulation(argc, argv, xml_params, set_param);
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Retrieve simulation parameters from XML parameter file
+  //////////////////////////////////////////////////////////////////////////////
   auto xmlp = simulation.GetXMLParam();
   // xmlp.Print();
 
-  // Simulation parameters
-  // clang-format off
+  // World parameters
   int timesteps = xmlp.Get("World", "timesteps");
   double min_space = xmlp.Get("World", "min_space");
   double max_space = xmlp.Get("World", "max_space");
-  int num_t_cells = xmlp.Get("T_Cell", "population");
+
+  // T-Cell parameters
+  int t_cell_population = xmlp.Get("T_Cell", "population");
   double t_cell_diameter = xmlp.Get("T_Cell", "diameter");
   double t_cell_walkspeed = xmlp.Get("T_Cell", "velocity");
-  double t_cell_density  = xmlp.Get("T_Cell", "mass_density");
-  int num_monocytes = xmlp.Get("Monocyte", "population");
+  double t_cell_density = xmlp.Get("T_Cell", "mass_density");
+  double t_cell_init_mean = xmlp.Get("T_Cell", "init_activation_mean");
+  double t_cell_init_sigma = xmlp.Get("T_Cell", "init_activation_sigma");
+
+  // Monocyte parameters
+  int monocyte_population = xmlp.Get("Monocyte", "population");
   double monocyte_diameter = xmlp.Get("Monocyte", "diameter");
   double monocyte_density = xmlp.Get("Monocyte", "mass_density");
+
+  // Antibody (substance) parameters
   double apd_amount = xmlp.Get("Antibody", "amount");
   double diff_rate = xmlp.Get("Antibody", "diffusion_rate");
   double decay_rate = xmlp.Get("Antibody", "decay_rate");
   double res = xmlp.Get("Antibody", "resolution");
-  double sigma = xmlp.Get("Inhibition", "sigma");
-  double mu = xmlp.Get("Inhibition", "mu");
+
+  // Inhibition module parameters
+  double inhib_sigma = xmlp.Get("Inhibition", "sigma");
+  double inhib_mu = xmlp.Get("Inhibition", "mu");
+
+  // StokesVelocity module parameters
   double stokes_u = xmlp.Get("StokesVelocity", "viscosity");
   double stokes_pf = xmlp.Get("StokesVelocity", "mass_density_fluid");
-  // clang-format on
 
-  // Create 2D layer of monocytes
+  //////////////////////////////////////////////////////////////////////////////
+  // Create and initialize monocytes
+  //////////////////////////////////////////////////////////////////////////////
   auto mc_builder = [&](Double3 position) {
     Monocyte* mc =
         new Monocyte(position, monocyte_diameter, CellType::kMonocyte);
@@ -87,16 +103,19 @@ inline int Simulate(int argc, const char** argv,
     mc->SetMaximumNumberOfSynapses(3);
     mc->AddBiologyModule(new RandomWalk(monocyte_diameter / 2));
     mc->AddBiologyModule(new StokesVelocity(stokes_u, stokes_pf));
-    mc->AddBiologyModule(new Inhibitation(sigma, mu));
+    mc->AddBiologyModule(new Inhibitation(inhib_sigma, inhib_mu));
     return mc;
   };
-  ModelInitializer::CreateCellsRandom(min_space, max_space, num_monocytes,
+  ModelInitializer::CreateCellsRandom(min_space, max_space, monocyte_population,
                                       mc_builder);
 
-  // Spawn T-Cells randomly
+  //////////////////////////////////////////////////////////////////////////////
+  // Create and initialize T-Cells
+  //////////////////////////////////////////////////////////////////////////////
   auto tc_builder = [&](Double3 position) {
     TCell* tc = new TCell(position, t_cell_diameter, CellType::kTCell);
     tc->SetDensity(t_cell_density);
+    tc->SetInitialActivationIntensity(t_cell_init_mean, t_cell_init_sigma);
     tc->AddBiologyModule(new RandomWalk(t_cell_walkspeed));
     tc->AddBiologyModule(new StokesVelocity(stokes_u, stokes_pf));
     tc->AddBiologyModule(new ConnectWithinRadius(
@@ -104,44 +123,51 @@ inline int Simulate(int argc, const char** argv,
     tc->AddBiologyModule(new PhysicalBond());
     return tc;
   };
-  ModelInitializer::CreateCellsRandom(min_space, max_space, num_t_cells,
+  ModelInitializer::CreateCellsRandom(min_space, max_space, t_cell_population,
                                       tc_builder);
 
-  // Create Antibody substance
+  //////////////////////////////////////////////////////////////////////////////
+  // Create and initialize Anti-PD-1 substance
+  //////////////////////////////////////////////////////////////////////////////
   ModelInitializer::DefineSubstance(Substances::kAntibody, "Antibody",
                                     diff_rate, decay_rate, res);
-  // We inject the antibodies on the floor of the cell wall
+  // We initialize Anti-PD-1 concentration uniformly over the volume
   ModelInitializer::InitializeSubstance(
       Substances::kAntibody, "Antibody",
       Uniform(min_space, max_space, apd_amount, Axis::kZAxis));
 
-  // Schedule operation to obtain interesting results over time
+  //////////////////////////////////////////////////////////////////////////////
+  // Schedule operation to obtain results of interest over time
+  //////////////////////////////////////////////////////////////////////////////
   std::vector<std::atomic<int>> activity(timesteps);
   for (int i = 0; i < timesteps; i++) {
-    activity[i] = num_t_cells;
+    activity[i] = 0;
   }
   auto* scheduler = simulation.GetScheduler();
   scheduler->AddOperation(Operation("Count activity", [&](SimObject* so) {
     uint64_t idx = scheduler->GetSimulatedSteps();
     if (auto* tcell = dynamic_cast<TCell*>(so)) {
-      if (tcell->IsConnected()) {
-        activity[idx]--;
+      if (tcell->IsActivated()) {
+        activity[idx]++;
       }
     }
   }));
 
+  //////////////////////////////////////////////////////////////////////////////
   // Run the simulation
+  //////////////////////////////////////////////////////////////////////////////
   simulation.GetScheduler()->Simulate(timesteps);
 
-  // Store my experimental results and write to file
+  //////////////////////////////////////////////////////////////////////////////
+  // Write my simulation results to file
+  //////////////////////////////////////////////////////////////////////////////
   std::string name = "binding_cells";
-  std::string brief = "T-Cell_Activity_Study";
+  std::string brief = "Effect of Anti-PD-1 Concentration on T-Cell Activation";
   MyResults ex(name, brief);
   ex.initial_concentration = apd_amount;
   MakeNonAtomic(activity, &(ex.activity));
   ex.WriteResultToROOT();
 
-  // std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
 }
 

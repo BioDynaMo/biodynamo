@@ -74,6 +74,7 @@ class Monocyte : public Cell {
   size_t max_connections_ = 1;
   // Is the monocyte at the bottom of the cell well?
   bool at_bottom_ = false;
+  // The color that will be used for visualization purposes
   size_t color_ = 0;
   // Is this T-Cell inhibited (i.e. due to PD-1 <-> PD-L1 interaction)
   bool inhibited_ = false;

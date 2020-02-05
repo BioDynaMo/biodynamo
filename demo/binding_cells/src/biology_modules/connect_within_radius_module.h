@@ -52,7 +52,7 @@ struct ConnectWithinRadius : public BaseBiologyModule {
 
   void Run(SimObject* so) override {
     if (auto* this_cell = dynamic_cast<TCell*>(so)) {
-      // Prune if we are already connected to some other cell
+      // Prune if we are already connected to a monocyte
       if (this_cell->IsConnected()) {
         return;
       }
@@ -61,8 +61,11 @@ struct ConnectWithinRadius : public BaseBiologyModule {
       double smallest_distance = Math::kInfinity;
       auto find_closest_cell = [&](const auto* neighbor) {
         if (auto* neighbor_cell = dynamic_cast<const Monocyte*>(neighbor)) {
-          // We can only connect to a neighbor cell if there is physically
-          // enough room
+          // T-Cells are activated if they are in close vicinity of monocytes
+          this_cell->Activate();
+
+          // We can only form an immune synapse with a monocyte if there is
+          // physically enough room and if the pathway is not inhibited
           if (!neighbor_cell->IsOccupied() && !neighbor_cell->IsInhibited()) {
             double distance = SquaredEuclideanDistance(
                 neighbor_cell->GetPosition(), this_cell->GetPosition());
@@ -76,10 +79,15 @@ struct ConnectWithinRadius : public BaseBiologyModule {
       auto* ctxt = Simulation::GetActive()->GetExecutionContext();
       ctxt->ForEachNeighborWithinRadius(find_closest_cell, *this_cell,
                                         squared_radius_);
+
+      // If we found an available monocyte then we connect this cell and the
+      // monocyte with each other, forming an immune synapse
       if (cell_to_connect_to != nullptr) {
         this_cell->ConnectTo(cell_to_connect_to);
         SoPointer<TCell> soptr(this_cell->GetUid());
         cell_to_connect_to->ConnectTo(soptr);
+        // A T-Cell is considered not activated when it formed an immune synapse
+        this_cell->Deactivate();
       }
     }
   }
