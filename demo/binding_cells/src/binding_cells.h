@@ -73,8 +73,8 @@ inline int Simulate(int argc, const char** argv,
   double diff_rate = xmlp.Get("Antibody", "diffusion_rate");
   double decay_rate = xmlp.Get("Antibody", "decay_rate");
   double res = xmlp.Get("Antibody", "resolution");
-  double ct = xmlp.Get("Inhibition", "concentration_threshold");
-  double bp = xmlp.Get("Inhibition", "binding_probability");
+  double sigma = xmlp.Get("Inhibition", "sigma");
+  double mu = xmlp.Get("Inhibition", "mu");
   double stokes_u = xmlp.Get("StokesVelocity", "viscosity");
   double stokes_pf = xmlp.Get("StokesVelocity", "mass_density_fluid");
   // clang-format on
@@ -87,7 +87,7 @@ inline int Simulate(int argc, const char** argv,
     mc->SetMaximumNumberOfSynapses(3);
     mc->AddBiologyModule(new RandomWalk(monocyte_diameter / 2));
     mc->AddBiologyModule(new StokesVelocity(stokes_u, stokes_pf));
-    mc->AddBiologyModule(new Inhibitation(ct, bp));
+    mc->AddBiologyModule(new Inhibitation(sigma, mu));
     return mc;
   };
   ModelInitializer::CreateCellsRandom(min_space, max_space, num_monocytes,
@@ -137,8 +137,6 @@ inline int Simulate(int argc, const char** argv,
   std::string name = "binding_cells";
   std::string brief = "T-Cell_Activity_Study";
   MyResults ex(name, brief);
-  ex.timesteps = timesteps;
-  ex.concentration_threshold = ct;
   ex.initial_concentration = apd_amount;
   MakeNonAtomic(activity, &(ex.activity));
   ex.WriteResultToROOT();

@@ -7,6 +7,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TSystem.h"
 
 #include "mpi.h"
 
@@ -31,8 +32,9 @@ class Results {
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
+    std::string result_dir = gSystem->GetWorkingDirectory();
     std::stringstream ss;
-    ss << name << "_results." << processor_name << "-" << world_rank << ".root";
+    ss << result_dir << "/" << name << "_results." << processor_name << "-" << world_rank << ".root";
 
     // Open a ROOT file specific to this MPI process (might not exist yet)
     TFile tfile(ss.str().c_str(), "UPDATE");

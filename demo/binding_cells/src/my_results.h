@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+
 #include "core/parallel_execution/results.h"
 
 namespace bdm {
@@ -11,9 +12,6 @@ class MyResults : public Results {
  public:
   // The results of interest
   std::vector<int> activity;
-  std::vector<int> occupancy;
-  int timesteps;
-  double concentration_threshold;
   double initial_concentration;
 
   MyResults() : Results() {}

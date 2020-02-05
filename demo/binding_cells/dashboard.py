@@ -30,7 +30,7 @@ class Dashboard:
   # Generate XML file from user input
   def generate_xml(self, tabs, sim_name):
       def is_parseable_type(widget):
-          allowed = [widgets.IntSlider, widgets.IntRangeSlider, widgets.FloatSlider,
+          allowed = [widgets.IntSlider, widgets.IntRangeSlider, widgets.FloatSlider, widgets.FloatLogSlider,
                     widgets.FloatRangeSlider, widgets.IntText, widgets.FloatText, widgets.HBox, widgets.VBox]
           if (isinstance(widget, tuple(allowed))):
               return True
@@ -39,8 +39,22 @@ class Dashboard:
       def is_range(widget):
           return "Slider" in str(type(widget)).split(".")[-1]
 
+      def is_log(widget):
+        return "LogSlider" in str(type(widget)).split(".")[-1]
+
       def set_value(elem, w):
           if (is_range(w)):
+            if (is_log(w)):
+              elem.set('value_type', 'log_range')
+              base = ET.SubElement(elem, 'base')
+              base.text = str(w.base)
+              minn = ET.SubElement(elem, 'min')
+              minn.text = str(w.min)
+              maxx = ET.SubElement(elem, 'max')
+              maxx.text = str(w.max)
+              stride = ET.SubElement(elem, 'stride')
+              stride.text = str(w.step)
+            else:
               elem.set('value_type', 'range')
               minn = ET.SubElement(elem, 'min')
               minn.text = str(w.value[0])
@@ -188,8 +202,8 @@ class Dashboard:
               widgets.FloatText(description='Binding radius', value=5, style=style)
           ]),
           widgets.VBox([
-              widgets.VBox([widgets.Label('Binding Probability'), widgets.FloatText(value=0.75)]),
-              widgets.VBox([widgets.Label('Concentration Threshold'), widgets.FloatText(value=0.0040)])
+              widgets.VBox([widgets.Label('Sigma'), widgets.FloatText(value=0.0001)]),
+              widgets.VBox([widgets.Label('Mu'), widgets.FloatText(value=0.0040)])
           ]),
           widgets.VBox([
               widgets.FloatText(description='Viscosity', value=0.089, style=style),
@@ -203,10 +217,18 @@ class Dashboard:
       ############################################################################
       ## Substances Tab
       ############################################################################
+      log_slider = widgets.HBox([widgets.Label('Amount'), 
+                           widgets.FloatLogSlider(value=10, min=-5, max=1, step=0.5, base=10)])
+      log_min = widgets.FloatText(description='Min', value=-5, style=style)
+      log_max = widgets.FloatText(description='Max', value=1, style=style)
+      log_step = widgets.FloatText(description='Step', value=0.5, style=style)
+
+      widgets.link((log_slider.children[1], 'min'), (log_min, 'value'))
+      widgets.link((log_slider.children[1], 'max'), (log_max, 'value'))
+      widgets.link((log_slider.children[1], 'step'), (log_step, 'value'))
       tab_contents['Substances'] = widgets.Accordion(children=[
           widgets.VBox([
-              widgets.FloatRangeSlider(description="Amount",
-                  value=[0.003, 0.004], min=0.0, max=0.005, step=0.00005, readout_format='.4f'),
+              log_slider, log_min, log_max, log_step,
               widgets.FloatText(description='Diffusion Rate', value=0.01, style=style),
               widgets.FloatText(description='Decay Rate', value=0.0),
               widgets.IntText(description='Resolution', value=10)

@@ -75,7 +75,7 @@ class XMLParser {
   /// the simulation with
   XMLParamMap CreateMap(XMLParams *xml_params) {
     XMLParamMap ret;
-    int r = 0, s = 0;
+    int r = 0, s = 0, lr = 0;
     // Lambda that populates the XMLParamsMap, and replaces range and set values
     // with the scalar values that this worker received from the master
     auto map_value = [&](TXMLNode *element, TXMLAttr *attr, TXMLNode *parent) {
@@ -87,6 +87,11 @@ class XMLParser {
         double scalar_val = xml_params->GetData()[0][r];
         ret.Set(parent_name, string(element->GetNodeName()), scalar_val);
         r++;
+      } else if (GetValueType(attr) == string("log_range")) {
+        // We take the value in the XMLParams that we assigned to us by master
+        double scalar_val = xml_params->GetData()[2][lr];
+        ret.Set(parent_name, string(element->GetNodeName()), scalar_val);
+        lr++;
       } else if (GetValueType(attr) == string("set")) {
         // We take the value in the XMLParams that we assigned to us by master
         double scalar_val = xml_params->GetData()[1][s];
@@ -163,6 +168,35 @@ class XMLParser {
          << ")'. Please check your XML parameter file for parameter ["
          << parent_name << "]" << std::endl;
       Log::Fatal("ExtractValues<Range>", ss.str());
+    }
+  }
+
+  // Any XML element that has "value_type = range" is expected to be proceeded
+  // by the `min`, `max` and `stride` values
+  void ExtractValues(LogRange *r, TXMLNode *node) {
+    std::string parent_name;
+    for (; node; node = node->GetNextNode()) {
+      parent_name = std::string(node->GetParent()->GetNodeName());
+      auto v = node->GetNodeName();
+      if (string(v) == "base") {
+        r->base_ = stod(node->GetText());
+      } else if (string(v) == "min") {
+        r->min_ = stod(node->GetText());
+      } else if (string(v) == "max") {
+        r->max_ = stod(node->GetText());
+      } else if (string(v) == "stride") {
+        r->stride_ = stod(node->GetText());
+      }
+    }
+
+    // Check if max >= min
+    if (r->max_ < r->min_) {
+      std::stringstream ss;
+      ss << "We found a range type value where 'min (" << r->min_
+         << ")' is set to be greater than 'max (" << r->max_
+         << ")'. Please check your XML parameter file for parameter ["
+         << parent_name << "]" << std::endl;
+      Log::Fatal("ExtractValues<LogRange>", ss.str());
     }
   }
 

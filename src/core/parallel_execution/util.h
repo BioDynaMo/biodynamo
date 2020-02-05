@@ -99,6 +99,34 @@ struct Range : public Container {
   double stride_ = 1;
 };
 
+/// A range of values
+struct LogRange : public Container {
+  LogRange() {}
+  LogRange(double base, double min, double max, double stride)
+      : base_(base), min_(min), max_(max), stride_(stride){};
+
+  // Get the nth value
+  double GetValue(int n) const {
+    double exp = min_ + n * stride_;
+    return exp > max_ ? std::pow(base_, max_) : std::pow(base_, exp);
+  }
+
+  // Returns the number of discrete values that this range contains (including
+  // the `min_` and `max_` values)
+  int GetNumElements() {
+    return std::round(((max_ - min_) + stride_) / stride_);
+  }
+
+  // The base value
+  double base_ = 10;
+  // The minimum value
+  double min_ = 0;
+  // THe maximum value
+  double max_ = 0;
+  // The stride
+  double stride_ = 1;
+};
+
 struct Set : public Container, public vector<double> {
   int GetNumElements() { return this->size(); }
   double GetValue(int n) const { return this->at(n); }
@@ -106,28 +134,41 @@ struct Set : public Container, public vector<double> {
 
 inline void ParamGenerator(XMLParams* params, const vector<int>& slots,
                            const vector<Range>& ranges,
-                           const vector<Set>& sets) {
+                           const vector<Set>& sets,
+                           const vector<LogRange>& log_ranges) {
   params->Append(ranges);
   params->Append(sets);
+  params->Append(log_ranges);
 
   size_t i = 0, j = 0;
   while (i < params->GetData()[0].size()) {
-    double val = ranges[i].GetValue(slots[i]);
-    params->SetData(0, i, val);
+    double val = ranges[j].GetValue(slots[i]);
+    params->SetData(0, j, val);
     i++;
+    j++;
   }
 
+  j = 0;
   while (j < params->GetData()[1].size()) {
     double val = sets[j].GetValue(slots[i]);
     params->SetData(1, j, val);
     i++;
     j++;
   }
+
+  j = 0;
+  while (j < params->GetData()[2].size()) {
+    double val = log_ranges[j].GetValue(slots[i]);
+    params->SetData(2, j, val);
+    i++;
+    j++;
+  }
 }
 
 inline vector<Container*> MergeContainers(vector<Range>* ranges,
-                                          vector<Set>* sets) {
-  vector<Container*> c(ranges->size() + sets->size());
+                                          vector<Set>* sets,
+                                          vector<LogRange>* log_ranges) {
+  vector<Container*> c(ranges->size() + sets->size() + log_ranges->size());
   int i = 0;
   for (Range& r : *ranges) {
     c[i] = &r;
@@ -135,6 +176,10 @@ inline vector<Container*> MergeContainers(vector<Range>* ranges,
   }
   for (Set& s : *sets) {
     c[i] = &s;
+    i++;
+  }
+  for (LogRange& lr : *log_ranges) {
+    c[i] = &lr;
     i++;
   }
   return c;

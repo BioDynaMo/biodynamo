@@ -81,17 +81,21 @@ class ParallelExecutionManager {
       Timing t_tot("TOTAL", &ta_);
       XMLParser xp(xml_file_);
       vector<Range> ranges = xp.GetContainer<Range>("range");
+      vector<LogRange> log_ranges = xp.GetContainer<LogRange>("log_range");
       vector<Set> sets = xp.GetContainer<Set>("set");
       // TODO: if there are no sets and ranges, we should run one simulation
       // with the fixed parameters
       std::stringstream ss;
-      ss << "Found " << ranges.size() << " range values and " << sets.size();
-      ss << " set values";
+      ss << "Found " << ranges.size() << " range values,  " << sets.size();
+      ss << " set values, and " << log_ranges.size() << " log range values.";
       Log(ss.str());
 
       unsigned int total_num_sim = 0;
       for (auto &r : ranges) {
         total_num_sim += r.GetNumElements();
+      }
+      for (auto &lr : log_ranges) {
+        total_num_sim += lr.GetNumElements();
       }
       for (auto &s : sets) {
         total_num_sim += s.GetNumElements();
@@ -120,7 +124,7 @@ class ParallelExecutionManager {
       auto dispatch_params = [&](const std::vector<int> &slots) {
         // Generate the XMLParams object
         XMLParams params;
-        ParamGenerator(&params, slots, ranges, sets);
+        ParamGenerator(&params, slots, ranges, sets, log_ranges);
 
         // If there is only one MPI process, the master performs the simulation
         if (worldsize_ == 1) {
@@ -153,9 +157,9 @@ class ParallelExecutionManager {
           ChangeStatusWorker(worker, Status::kBusy);
         }
       };
-      auto containers = MergeContainers(&ranges, &sets);
+      auto containers = MergeContainers(&ranges, &sets, &log_ranges);
       // CHeck if there are any sets or range value types
-      if (ranges.size() + sets.size() > 0) {
+      if (ranges.size() + sets.size() + log_ranges.size() > 0) {
         DynamicNestedLoop(containers, dispatch_params);
       } else {  // If not, we just dispatch the (what should be scalar) params
         dispatch_params({});

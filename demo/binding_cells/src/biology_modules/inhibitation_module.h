@@ -17,6 +17,8 @@
 #include "biodynamo.h"
 #include "simulation_objects/t_cell.h"
 
+#include "Math/DistFunc.h"
+
 namespace bdm {
 
 /// Inhibits Monocytes from forming an immune synapse with T-Cells
@@ -24,15 +26,15 @@ struct Inhibitation : public BaseBiologyModule {
  public:
   Inhibitation() : BaseBiologyModule(gAllEventIds) {}
 
-  Inhibitation(double c, double p)
-      : BaseBiologyModule(gAllEventIds), conc_threshold_(c), probability_(p) {}
+  Inhibitation(double s, double m)
+      : BaseBiologyModule(gAllEventIds), sigma_(s), mu_(m) {}
 
   Inhibitation(const Event& event, BaseBiologyModule* other,
                uint64_t new_oid = 0)
       : BaseBiologyModule(event, other, new_oid) {
     if (Inhibitation* gdbm = dynamic_cast<Inhibitation*>(other)) {
-      conc_threshold_ = gdbm->conc_threshold_;
-      probability_ = gdbm->probability_;
+      sigma_ = gdbm->sigma_;
+      mu_ = gdbm->mu_;
     } else {
       Log::Fatal("Inhibitation::EventConstructor",
                  "other was not of type Inhibitation");
@@ -61,18 +63,18 @@ struct Inhibitation : public BaseBiologyModule {
       double conc = dgrid->GetConcentration(monocyte->GetPosition());
 
       // With certain probability, depending on concentration value, we
-      // inhibit the monocyte from forming an immune synapse
+      // inhibit the monocyte from forming immune synapses
       auto* r = Simulation::GetActive()->GetRandom();
-      if ((conc >= conc_threshold_) &&
-          (std::abs(r->Uniform()) < probability_)) {
+      if (r->Uniform(0, 1) <
+          ROOT::Math::normal_cdf(std::log(conc) / std::log(10), sigma_, mu_)) {
         monocyte->Inhibit();
       }
     }
   }
 
  private:
-  double conc_threshold_ = 1;
-  double probability_ = 0.05;
+  double sigma_ = 1;
+  double mu_ = 0;
 };
 
 }  // namespace bdm

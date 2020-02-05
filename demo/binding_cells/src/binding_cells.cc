@@ -47,6 +47,15 @@ int main(int argc, const char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
     if (myrank == 0) {
+      // Delete existing root files 
+      std::string result_dir = gSystem->GetWorkingDirectory();
+      std::stringstream ss;
+      ss << "rm " << result_dir << "/*.root";
+      if (system(ss.str().c_str()) != 0) {
+        bdm::Log::Error(
+            "main", "Non zero return code with with command '", ss.str(), "'");
+      }
+
       auto t1 = bdm::Timing::Timestamp();
       bdm::ParallelExecutionManager pem(
           worldsize, xml_file, [&](bdm::XMLParams* params) {
@@ -56,15 +65,8 @@ int main(int argc, const char** argv) {
       MPI_Finalize();
       auto t2 = bdm::Timing::Timestamp();
 
-      std::string result_dir = gSystem->GetWorkingDirectory();
-      std::stringstream ss;
-      ss << "rm " << result_dir << "/results.root";
-      if (system(ss.str().c_str()) != 0) {
-        bdm::Log::Warning(
-            "main", "Non zero return code with with command `rm results.root`");
-      }
       ss.str("");
-      ss << "hadd " << result_dir << "/results.root " << "*.root > /dev/null";
+      ss << "hadd " << result_dir << "/results.root " << result_dir << "/*.root > /dev/null";
       if (system(ss.str().c_str())) {
         bdm::Log::Error("main",
                         "An error occured when trying to merge .root files");
