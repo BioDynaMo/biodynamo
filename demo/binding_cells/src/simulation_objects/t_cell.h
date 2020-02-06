@@ -15,6 +15,8 @@
 #ifndef T_CELL_H_
 #define T_CELL_H_
 
+#include "TH2I.h"
+
 #include "core/sim_object/cell.h"
 
 namespace bdm {
@@ -28,10 +30,13 @@ class TCell : public Cell {
 
  public:
   TCell() {}
-  explicit TCell(const Double3& position, double diameter, size_t color)
+  explicit TCell(const Double3& position, double diameter, size_t color, int t)
       : Base(position), color_(color) {
+    activation_histo_ = new TH2I("", "", 30, 0, 49, 30, 0, t - 1);
     this->SetDiameter(diameter);
   }
+
+  ~TCell() { delete activation_histo_; }
 
   /// Default event constructor
   TCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
@@ -43,13 +48,19 @@ class TCell : public Cell {
     Base::EventHandler(event, other1, other2);
   }
 
-  void Activate() {
-    auto* r = Simulation::GetActive()->GetRandom();
-    auto val = r->Gaus(10 * mean, 3 * sigma);
+  void IncreaseActivationIntensity(double val) {
     if (val > 0) {
       activation_intensity_ += val;
     }
+  }
+
+  void Activate() {
+    auto* r = Simulation::GetActive()->GetRandom();
+    auto val = r->Gaus(10 * mean_, 3 * sigma_);
+    IncreaseActivationIntensity(val);
     is_activated_ = true;
+    auto t = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+    activation_histo_->Fill(activation_intensity_, t);
   }
 
   void Deactivate() { is_activated_ = false; }
@@ -66,10 +77,10 @@ class TCell : public Cell {
     sigma_ = sigma;
     auto* r = Simulation::GetActive()->GetRandom();
     auto val = r->Gaus(mean, sigma);
-    if (val > 0) {
-      activation_intensity_ += val;
-    }
+    IncreaseActivationIntensity(val);
   }
+
+  TH2I* GetActivationHistogram() { return activation_histo_; }
 
   size_t GetActivationIntensity() { return activation_intensity_; }
 
@@ -90,8 +101,11 @@ class TCell : public Cell {
   size_t activation_intensity_ = 0;
   // The color that will be used for visualization purposes
   size_t color_ = 1;
+  // Mean for the normal distribution of the initial activation intensity
   double mean_ = 3;
+  // Sigma for the normal distribution of the initial activation intensity
   double sigma_ = 1;
+  TH2I* activation_histo_ = nullptr;
 };
 
 }  // namespace bdm

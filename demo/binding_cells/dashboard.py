@@ -165,7 +165,7 @@ class Dashboard:
       world_content[0, 0] = sim_name_field
       world_content[1, 0] = widgets.IntText(description='Timesteps', value=4000)
       world_content[2, 0] = widgets.IntText(description='Min. Space', value=0)
-      world_content[3, 0] = widgets.IntText(description='Max. Space', value=50)
+      world_content[3, 0] = widgets.IntText(description='Max. Space', value=200)
       world_content[0, 1] = widgets.Checkbox(value=False, description='Visualization')
       world_content[1, 1] = widgets.IntText(description="Vis. Freq.", value=100)
       # world_content[3, 1] = widgets.FileUpload(multiple=False)
@@ -177,18 +177,20 @@ class Dashboard:
       ############################################################################
       tab_contents['Simulation Objects'] = widgets.Accordion(children=[
           widgets.VBox([
-              widgets.IntText(description='Population', value=200),
+              widgets.IntText(description='Population', value=7272),
               widgets.IntText(description='Type', value=0),
               widgets.FloatText(description='Mass Density', value=1.067),
               widgets.FloatText(description='Diameter', value=1.5),
               widgets.FloatText(description='Velocity', value=2)
           ]),
           widgets.VBox([
-              widgets.IntText(description='Population', value=200),
+              widgets.IntText(description='Population', value=2727),
               widgets.IntText(description='Type', value=1),
               widgets.FloatText(description='Mass Density', value=1.077),
               widgets.FloatText(description='Diameter', value=0.9),
-              widgets.FloatText(description='Velocity', value=5)
+              widgets.FloatText(description='Velocity', value=5),
+              widgets.FloatText(description='Init Activation Mean', value=3),
+              widgets.FloatText(description='Init Activation Sigma', value=1)
           ])
       ])
       tab_contents['Simulation Objects'].set_title(0, sim_objects[0])
@@ -202,8 +204,8 @@ class Dashboard:
               widgets.FloatText(description='Binding radius', value=5, style=style)
           ]),
           widgets.VBox([
-              widgets.VBox([widgets.Label('Sigma'), widgets.FloatText(value=0.0001)]),
-              widgets.VBox([widgets.Label('Mu'), widgets.FloatText(value=0.0040)])
+              widgets.VBox([widgets.Label('Sigma'), widgets.FloatText(value=1)]),
+              widgets.VBox([widgets.Label('Mu'), widgets.FloatText(value=-8.5)])
           ]),
           widgets.VBox([
               widgets.FloatText(description='Viscosity', value=0.089, style=style),
@@ -218,10 +220,10 @@ class Dashboard:
       ## Substances Tab
       ############################################################################
       log_slider = widgets.HBox([widgets.Label('Amount'), 
-                           widgets.FloatLogSlider(value=10, min=-5, max=1, step=0.5, base=10)])
-      log_min = widgets.FloatText(description='Min', value=-5, style=style)
-      log_max = widgets.FloatText(description='Max', value=1, style=style)
-      log_step = widgets.FloatText(description='Step', value=0.5, style=style)
+                           widgets.FloatLogSlider(value=10, min=-15, max=-6, step=0.125, base=10)])
+      log_min = widgets.FloatText(description='Min', value=-15, style=style)
+      log_max = widgets.FloatText(description='Max', value=-6, style=style)
+      log_step = widgets.FloatText(description='Step', value=0.125, style=style)
 
       widgets.link((log_slider.children[1], 'min'), (log_min, 'value'))
       widgets.link((log_slider.children[1], 'max'), (log_max, 'value'))
@@ -229,7 +231,7 @@ class Dashboard:
       tab_contents['Substances'] = widgets.Accordion(children=[
           widgets.VBox([
               log_slider, log_min, log_max, log_step,
-              widgets.FloatText(description='Diffusion Rate', value=0.01, style=style),
+              widgets.FloatText(description='Diffusion Rate', value=0.0, style=style),
               widgets.FloatText(description='Decay Rate', value=0.0),
               widgets.IntText(description='Resolution', value=10)
           ])

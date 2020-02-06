@@ -46,7 +46,7 @@ struct PhysicalBond : public BaseBiologyModule {
   }
 
   void Run(SimObject* so) override {
-    if (auto* this_cell = dynamic_cast<TCell*>(so)) {
+    if (auto* this_cell = static_cast<TCell*>(so)) {
       if (this_cell->IsConnected()) {
         auto other_cell = this_cell->GetConnectedCell();
         Connect(this_cell, other_cell);

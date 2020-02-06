@@ -53,7 +53,7 @@ struct Inhibitation : public BaseBiologyModule {
   }
 
   void Run(SimObject* so) override {
-    if (auto* monocyte = dynamic_cast<Monocyte*>(so)) {
+    if (auto* monocyte = static_cast<Monocyte*>(so)) {
       // If this monocyte is already inhibited, we can prune this function
       if (monocyte->IsInhibited()) {
         return;

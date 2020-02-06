@@ -31,6 +31,8 @@
 #include "simulation_objects/monocyte.h"
 #include "simulation_objects/t_cell.h"
 
+#include "TH2I.h"
+
 namespace bdm {
 
 enum CellType { kMonocyte, kTCell };
@@ -47,13 +49,7 @@ void MakeNonAtomic(const std::vector<std::atomic<T>>& in, std::vector<T>* out) {
 
 inline int Simulate(int argc, const char** argv,
                     XMLParams* xml_params = nullptr) {
-  auto set_param = [](Param* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = 50;
-  };
-
-  Simulation simulation(argc, argv, xml_params, set_param);
+  Simulation simulation(argc, argv, xml_params);
 
   //////////////////////////////////////////////////////////////////////////////
   // Retrieve simulation parameters from XML parameter file
@@ -94,11 +90,10 @@ inline int Simulate(int argc, const char** argv,
   double stokes_pf = xmlp.Get("StokesVelocity", "mass_density_fluid");
 
   //////////////////////////////////////////////////////////////////////////////
-  // Create and initialize monocytes
+  // Create and initialize Monocytes
   //////////////////////////////////////////////////////////////////////////////
-  auto mc_builder = [&](Double3 position) {
-    Monocyte* mc =
-        new Monocyte(position, monocyte_diameter, CellType::kMonocyte);
+  auto mc_builder = [&](Double3 pos) {
+    Monocyte* mc = new Monocyte(pos, monocyte_diameter, CellType::kMonocyte);
     mc->SetDensity(monocyte_density);
     mc->SetMaximumNumberOfSynapses(3);
     mc->AddBiologyModule(new RandomWalk(monocyte_diameter / 2));
@@ -112,8 +107,8 @@ inline int Simulate(int argc, const char** argv,
   //////////////////////////////////////////////////////////////////////////////
   // Create and initialize T-Cells
   //////////////////////////////////////////////////////////////////////////////
-  auto tc_builder = [&](Double3 position) {
-    TCell* tc = new TCell(position, t_cell_diameter, CellType::kTCell);
+  auto tc_builder = [&](Double3 pos) {
+    TCell* tc = new TCell(pos, t_cell_diameter, CellType::kTCell, timesteps);
     tc->SetDensity(t_cell_density);
     tc->SetInitialActivationIntensity(t_cell_init_mean, t_cell_init_sigma);
     tc->AddBiologyModule(new RandomWalk(t_cell_walkspeed));
@@ -131,7 +126,6 @@ inline int Simulate(int argc, const char** argv,
   //////////////////////////////////////////////////////////////////////////////
   ModelInitializer::DefineSubstance(Substances::kAntibody, "Antibody",
                                     diff_rate, decay_rate, res);
-  // We initialize Anti-PD-1 concentration uniformly over the volume
   ModelInitializer::InitializeSubstance(
       Substances::kAntibody, "Antibody",
       Uniform(min_space, max_space, apd_amount, Axis::kZAxis));
@@ -158,6 +152,20 @@ inline int Simulate(int argc, const char** argv,
   //////////////////////////////////////////////////////////////////////////////
   simulation.GetScheduler()->Simulate(timesteps);
 
+  // Collect histograms
+  TH2I* merged_histo = nullptr;
+  auto* rm = simulation.GetResourceManager();
+  bool init = true;
+  rm->ApplyOnAllElements([&](SimObject* so, SoHandle soh) {
+    if (auto* tcell = dynamic_cast<TCell*>(so)) {
+      if (init) {
+        merged_histo = tcell->GetActivationHistogram();
+        init = false;
+      }
+      merged_histo->Add(tcell->GetActivationHistogram());
+    }
+  });
+
   //////////////////////////////////////////////////////////////////////////////
   // Write my simulation results to file
   //////////////////////////////////////////////////////////////////////////////
@@ -165,6 +173,7 @@ inline int Simulate(int argc, const char** argv,
   std::string brief = "Effect of Anti-PD-1 Concentration on T-Cell Activation";
   MyResults ex(name, brief);
   ex.initial_concentration = apd_amount;
+  ex.activation_intensity = *merged_histo;
   MakeNonAtomic(activity, &(ex.activity));
   ex.WriteResultToROOT();
 
