@@ -79,7 +79,7 @@ function(bdm_add_executable TARGET)
     if (DEFINED CMAKE_INSTALL_LIBDIR)
       add_custom_command(TARGET ${TARGET}
             POST_BUILD
-            COMMAND cp -f ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
+            COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_BINDIR})
     endif()
   else()
     add_executable(${TARGET} ${ARG_SOURCES})
@@ -110,7 +110,7 @@ function(build_shared_library TARGET)
     if (DEFINED CMAKE_INSTALL_LIBDIR)
       add_custom_command(TARGET ${TARGET}
             POST_BUILD
-            COMMAND cp -f ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
+            COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
     endif()
   else()
     add_library(${TARGET} SHARED ${ARG_SOURCES})
