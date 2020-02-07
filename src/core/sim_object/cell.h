@@ -342,6 +342,10 @@ class Cell : public SimObject {
 
   void ApplyDisplacement(const Double3& displacement) override;
 
+  void MovePointMass(const Double3& normalized_dir, double speed) {
+    tractor_force_ += normalized_dir * speed;
+  }
+
  protected:
   /// Returns the position in the polar coordinate system (cylindrical or
   /// spherical) of a point expressed in global cartesian coordinates
