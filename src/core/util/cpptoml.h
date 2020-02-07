@@ -25,4 +25,23 @@
     }                                                                        \
   }
 
+#define BDM_ASSIGN_CONFIG_DOUBLE3_VALUE(variable, config_key)          \
+  {                                                                    \
+    if (config->contains_qualified(config_key)) {                      \
+      auto value = config->get_array_of<double>(config_key);           \
+      if (value) {                                                     \
+        auto vector = *value;                                          \
+        if (vector.size() == variable.size()) {                        \
+          for (uint64_t i = 0; i < vector.size(); i++) {               \
+            variable[i] = vector[i];                                   \
+          }                                                            \
+        } else {                                                       \
+          Log::Fatal("cpptoml parameter parsing",                      \
+                     "An error occured during parameter parsing of (", \
+                     config_key, ". Array dimensions do not match");   \
+        }                                                              \
+      }                                                                \
+    }                                                                  \
+  }
+
 #endif  // CORE_UTIL_CPPTOML_H_
