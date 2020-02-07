@@ -130,6 +130,8 @@ inline int Simulate(int argc, const char** argv,
       Substances::kAntibody, "Antibody",
       Uniform(min_space, max_space, apd_amount, Axis::kZAxis));
 
+  simulation.GetExecutionContext()->DisableNeighborGuard();
+
   //////////////////////////////////////////////////////////////////////////////
   // Schedule operation to obtain results of interest over time
   //////////////////////////////////////////////////////////////////////////////
