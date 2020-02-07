@@ -85,7 +85,8 @@ void InPlaceExecutionContext::TearDownIterationAll(
     ctxt->remove_.clear();
   }
 
-  InPlaceExecutionContext::new_so_map_.SetOffset(SoUidGenerator::Get()->GetLastId());
+  // FIXME
+  // InPlaceExecutionContext::new_so_map_.SetOffset(SoUidGenerator::Get()->GetLastId());
 }
 
 void InPlaceExecutionContext::Execute(

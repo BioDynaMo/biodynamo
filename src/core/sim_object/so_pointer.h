@@ -47,7 +47,6 @@ class SoPointer {
   virtual ~SoPointer() {}
 
   uint64_t GetUid() const { return uid_; }
-  const uint64_t* GetUidPtr() const { return &uid_; }
 
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
   bool operator==(std::nullptr_t) const {
@@ -106,7 +105,7 @@ class SoPointer {
   const TSimObject* Get() const { return this->operator->(); }
 
  private:
-  SoUid uid_ = std::numeric_limits<uint64_t>::max();
+  SoUid uid_;
 
   BDM_CLASS_DEF(SoPointer, 2);
 };
@@ -123,17 +122,17 @@ struct is_so_ptr<SoPointer<T>> {
 
 namespace detail {
 
-struct ExtractUidPtr {
+struct ExtractUid {
   template <typename T>
-  static typename std::enable_if<is_so_ptr<T>::value, const uint64_t*>::type
-  GetUidPtr(const T& t) {
-    return t.GetUidPtr();
+  static typename std::enable_if<is_so_ptr<T>::value, uint64_t>::type
+  GetUid(const T& t) {
+    return t.GetUid();
   }
 
   template <typename T>
-  static typename std::enable_if<!is_so_ptr<T>::value, const uint64_t*>::type
-  GetUidPtr(const T& t) {
-    return nullptr;
+  static typename std::enable_if<!is_so_ptr<T>::value, uint64_t>::type
+  GetUid(const T& t) {
+    return 0;//std::numeric_limits<uint64_t>::max();
   }
 };
 

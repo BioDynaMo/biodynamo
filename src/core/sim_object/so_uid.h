@@ -16,6 +16,8 @@
 #define CORE_SIM_OBJECT_SO_UID_H_
 
 #include <atomic>
+#include <limits>
+#include "core/util/root.h"
 
 namespace bdm {
 
@@ -24,7 +26,8 @@ namespace bdm {
 class SoUid {
  public:
   using Index_t = uint32_t;
-  using Reused_t = uint16_t;
+  using Reused_t = uint32_t;
+  friend std::hash<SoUid>;
 
   static constexpr Reused_t kReusedMax = std::numeric_limits<Reused_t>::max();
 
@@ -55,6 +58,39 @@ class SoUid {
     }
   }
 
+  SoUid operator+(int i) const {
+    SoUid uid(*this);
+    uid.index_ += i;
+    return uid;
+  }
+
+  SoUid operator+(uint64_t i) const {
+    SoUid uid(*this);
+    uid.index_ += i;
+    return uid;
+  }
+
+  SoUid operator-(int i) const {
+    SoUid uid(*this);
+    uid.index_ -= i;
+    return uid;
+  }
+
+  SoUid operator-(uint64_t i) const {
+    SoUid uid(*this);
+    uid.index_ -= i;
+    return uid;
+  }
+
+  SoUid& operator+=(const SoUid& uid) {
+    index_ += uid.index_;
+    return *this;
+  }
+
+  operator uint64_t() const {
+    return (static_cast<uint64_t>(reused_) << 32) | static_cast<uint64_t>(index_);
+  }
+
   friend std::ostream& operator<<(std::ostream& stream, const SoUid& handle) {
     stream << handle.index_ << "-" << handle.reused_;
     return stream;
@@ -72,6 +108,8 @@ class SoUid {
 
   BDM_CLASS_DEF_NV(SoUid, 1);
 };
+
+
 
 /// This class generates unique ids for simulation objects events satisfying the
 /// EventId invariant. Thread safe.
@@ -102,7 +140,7 @@ class SoUidMap {
   };
 
 public:
-  SoUidMap(const TValue& empty_value, uint64_t initial_size, uint64_t offset = 0) : empty_value_{empty_value}, offset_{offset} {
+  SoUidMap(const TValue& empty_value, uint64_t initial_size) : empty_value_{empty_value} {
     data_.resize(initial_size);
     so_uid_reused_.resize(initial_size, SoUid::kReusedMax);
   }
@@ -168,5 +206,16 @@ private:
 };
 
 }  // namespace bdm
+
+namespace std {
+
+template<>
+struct hash<bdm::SoUid> {
+  std::size_t operator()(const bdm::SoUid& uid) const noexcept {
+      return (uid.index_) << uid.reused_;
+  }
+};
+
+}  // namespace std
 
 #endif  // CORE_SIM_OBJECT_SO_UID_H_
