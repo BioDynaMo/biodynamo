@@ -39,7 +39,9 @@
 
 namespace bdm {
 
-SimObject::SimObject() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
+SimObject::SimObject() {
+  uid_ = Simulation::GetActive()->GetSoUidGenerator()->NewSoUid();
+}
 
 SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid)
     : SimObject() {
@@ -94,7 +96,9 @@ void SimObject::ApplyRunDisplacementForAllNextTs() {
 
 void SimObject::RunDiscretization() {}
 
-void SimObject::AssignNewUid() { uid_ = SoUidGenerator::Get()->NewSoUid(); }
+void SimObject::AssignNewUid() {
+  uid_ = Simulation::GetActive()->GetSoUidGenerator()->NewSoUid();
+}
 
 const SoUid& SimObject::GetUid() const { return uid_; }
 

@@ -116,19 +116,15 @@ class SoUid {
 class SoUidGenerator {
  public:
   SoUidGenerator(const SoUidGenerator&) = delete;
-
-  static SoUidGenerator* Get() {
-    static SoUidGenerator kInstance;
-    return &kInstance;
-  }
+  SoUidGenerator() : counter_(0) {}
 
   SoUid NewSoUid() { return SoUid(counter_++); }
 
   SoUid GetLastId() const { return SoUid(counter_); }
 
  private:
-  SoUidGenerator() : counter_(0) {}
   std::atomic<typename SoUid::Index_t> counter_;
+  BDM_CLASS_DEF_NV(SoUidGenerator, 1);
 };
 
 template <typename TValue>

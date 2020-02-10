@@ -362,8 +362,10 @@ class ResourceManager {
   }
 
   void ResizeUidSohMap() {
-    if (SoUidGenerator::Get()->GetLastId().GetIndex() >= uid_soh_map_.size()) {
-      uid_soh_map_.resize(SoUidGenerator::Get()->GetLastId().GetIndex() * 1.5 + 1);
+    auto* so_uid_generator = Simulation::GetActive()->GetSoUidGenerator();
+    auto highest_idx = so_uid_generator->GetLastId().GetIndex();
+    if (highest_idx >= uid_soh_map_.size()) {
+      uid_soh_map_.resize(highest_idx * 1.5 + 1);
     }
   }
 

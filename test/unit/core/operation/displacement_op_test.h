@@ -27,7 +27,7 @@ inline void RunTest() {
   Simulation simulation("displacement_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   // cell 0
   Cell* cell0 = new Cell();

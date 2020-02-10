@@ -61,16 +61,18 @@ class B : public TestSimObject {
 
 inline void RunApplyOnAllElementsTest() {
   const double kEpsilon = abs_error<double>::value;
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
-  ResourceManager rm;
+  Simulation simulation("RunApplyOnAllElementsTest");
+  auto* rm = simulation.GetResourceManager();
 
-  rm.push_back(new A(12));
-  rm.push_back(new A(34));
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
-  rm.push_back(new B(3.14));
-  rm.push_back(new B(6.28));
+  rm->push_back(new A(12));
+  rm->push_back(new A(34));
+
+  rm->push_back(new B(3.14));
+  rm->push_back(new B(6.28));
   uint64_t counter = 0;
-  rm.ApplyOnAllElements([&](SimObject* element) {  // NOLINT
+  rm->ApplyOnAllElements([&](SimObject* element) {  // NOLINT
     counter++;
     switch (element->GetUid() - ref_uid) {
       case 0:
@@ -107,14 +109,16 @@ inline void RunGetNumSimObjects() {
 // This test uses Cells since A, and B are strippted down simulation objects
 // and are themselves not thread safe.
 inline void RunApplyOnAllElementsParallelTest() {
-  ResourceManager rm;
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  Simulation simulation("RunApplyOnAllElementsParallelTest");
+  auto* rm = simulation.GetResourceManager();
 
-  rm.push_back(new B(3.14));
-  rm.push_back(new B(6.28));
-  rm.push_back(new B(9.42));
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
-  rm.ApplyOnAllElementsParallel([&](SimObject* sim_object) {
+  rm->push_back(new B(3.14));
+  rm->push_back(new B(6.28));
+  rm->push_back(new B(9.42));
+
+  rm->ApplyOnAllElementsParallel([&](SimObject* sim_object) {
     const double kEpsilon = abs_error<double>::value;
     B* b = dynamic_cast<B*>(sim_object);
     SoUid uid = sim_object->GetUid();
@@ -216,24 +220,26 @@ inline void RunClearTest() {
 
 inline void RunPushBackAndGetSimObjectTest() {
   const double kEpsilon = abs_error<double>::value;
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
-  ResourceManager rm;
+  Simulation simulation("RunPushBackAndGetSimObjectTest");
+  auto* rm = simulation.GetResourceManager();
 
-  rm.push_back(new A(12));
-  rm.push_back(new A(34));
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
-  rm.push_back(new B(3.14));
-  rm.push_back(new B(6.28));
+  rm->push_back(new A(12));
+  rm->push_back(new A(34));
 
-  rm.push_back(new A(87));
+  rm->push_back(new B(3.14));
+  rm->push_back(new B(6.28));
 
-  EXPECT_EQ(dynamic_cast<A*>(rm.GetSimObject(ref_uid))->GetData(), 12);
-  EXPECT_EQ(dynamic_cast<A*>(rm.GetSimObject(ref_uid + 1))->GetData(), 34);
-  EXPECT_EQ(dynamic_cast<A*>(rm.GetSimObject(ref_uid + 4))->GetData(), 87);
+  rm->push_back(new A(87));
 
-  EXPECT_NEAR(dynamic_cast<B*>(rm.GetSimObject(ref_uid + 2))->GetData(), 3.14,
+  EXPECT_EQ(dynamic_cast<A*>(rm->GetSimObject(ref_uid))->GetData(), 12);
+  EXPECT_EQ(dynamic_cast<A*>(rm->GetSimObject(ref_uid + 1))->GetData(), 34);
+  EXPECT_EQ(dynamic_cast<A*>(rm->GetSimObject(ref_uid + 4))->GetData(), 87);
+
+  EXPECT_NEAR(dynamic_cast<B*>(rm->GetSimObject(ref_uid + 2))->GetData(), 3.14,
               kEpsilon);
-  EXPECT_NEAR(dynamic_cast<B*>(rm.GetSimObject(ref_uid + 3))->GetData(), 6.28,
+  EXPECT_NEAR(dynamic_cast<B*>(rm->GetSimObject(ref_uid + 3))->GetData(), 6.28,
               kEpsilon);
 }
 
@@ -536,27 +542,29 @@ inline void RunSortAndApplyOnAllElementsParallelDynamic() {
 
 inline void RunIOTest() {
   const double kEpsilon = abs_error<double>::value;
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
-  ResourceManager rm;
+  Simulation simulation("ResourceManagerTest-RunIOTest");
+  auto* rm = simulation.GetResourceManager();
+
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
   remove(ROOTFILE);
 
   // setup
-  rm.push_back(new A(12));
-  rm.push_back(new A(34));
-  rm.push_back(new A(42));
+  rm->push_back(new A(12));
+  rm->push_back(new A(34));
+  rm->push_back(new A(42));
 
-  rm.push_back(new B(3.14));
-  rm.push_back(new B(6.28));
+  rm->push_back(new B(3.14));
+  rm->push_back(new B(6.28));
 
   DiffusionGrid* dgrid_1 = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
   DiffusionGrid* dgrid_2 = new DiffusionGrid(1, "Natrium", 0.2, 0.1, 1);
-  rm.AddDiffusionGrid(dgrid_1);
-  rm.AddDiffusionGrid(dgrid_2);
+  rm->AddDiffusionGrid(dgrid_1);
+  rm->AddDiffusionGrid(dgrid_2);
 
   // backup
   WritePersistentObject(ROOTFILE, "rm", rm, "new");
 
-  rm.Clear();
+  rm->Clear();
 
   // restore
   ResourceManager* restored_rm = nullptr;

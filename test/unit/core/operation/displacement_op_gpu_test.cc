@@ -49,7 +49,7 @@ void RunTest(ExecutionMode mode) {
   GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   // Cell 0
   Cell* cell = new Cell();
@@ -141,7 +141,7 @@ void RunTest2(ExecutionMode mode) {
   GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   double space = 20;
   for (size_t i = 0; i < 3; i++) {

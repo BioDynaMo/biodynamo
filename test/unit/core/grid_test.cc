@@ -38,7 +38,7 @@ TEST(GridTest, SetupGrid) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   CellFactory(rm, 4);
 
@@ -153,7 +153,7 @@ TEST(GridTest, UpdateGrid) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   CellFactory(rm, 4);
 
@@ -173,7 +173,7 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   CellFactory(rm, 4);
 
@@ -224,7 +224,7 @@ TEST(GridTest, GridDimensions) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   CellFactory(rm, 3);
 
@@ -283,7 +283,7 @@ TEST(GridTest, IterateZOrder) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
   CellFactory(rm, 3);
 
   // expecting a 4 * 4 * 4 grid

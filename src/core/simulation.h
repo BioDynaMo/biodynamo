@@ -20,6 +20,7 @@
 
 #include "core/util/random.h"
 #include "core/util/root.h"
+#include "core/sim_object/so_uid.h"
 
 namespace bdm {
 
@@ -86,6 +87,8 @@ class Simulation {
 
   const Param* GetParam() const;
 
+  SoUidGenerator* GetSoUidGenerator();
+
   Grid* GetGrid();
 
   Scheduler* GetScheduler();
@@ -130,6 +133,7 @@ class Simulation {
 
   ResourceManager* rm_ = nullptr;
   Param* param_ = nullptr;
+  SoUidGenerator* so_uid_generator_;
   std::string name_;
   Grid* grid_ = nullptr;            //!
   Scheduler* scheduler_ = nullptr;  //!

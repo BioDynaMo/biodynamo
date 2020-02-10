@@ -26,7 +26,7 @@ namespace model_initializer_test_internal {
 TEST(ModelInitializerTest, Grid3DCube) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   ModelInitializer::Grid3D(2, 12, [](const Double3& pos) {
     Cell* cell = new Cell(pos);
@@ -48,7 +48,7 @@ TEST(ModelInitializerTest, Grid3DCube) {
 TEST(ModelInitializerTest, Grid3DCuboid) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   std::array<size_t, 3> grid_dimensions = {2, 3, 4};
 
@@ -71,7 +71,7 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
 TEST(ModelInitializerTest, CreateCells) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   std::vector<Double3> positions;
   positions.push_back({1, 2, 3});
@@ -92,7 +92,7 @@ TEST(ModelInitializerTest, CreateCells) {
 TEST(ModelInitializerTest, CreateCellsRandom) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
 
   ModelInitializer::CreateCellsRandom(-100, 100, 10, [](const Double3& pos) {
     Cell* cell = new Cell(pos);

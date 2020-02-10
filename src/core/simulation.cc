@@ -34,6 +34,7 @@
 #include "core/util/string.h"
 #include "core/util/thread_info.h"
 #include "core/visualization/root/adaptor.h"
+#include "core/sim_object/so_uid.h"
 #include "version.h"
 
 #include <TEnv.h>
@@ -127,6 +128,7 @@ Simulation::~Simulation() {
   delete rm_;
   delete grid_;
   delete scheduler_;
+  delete so_uid_generator_;
   delete param_;
   for (auto* r : random_) {
     delete r;
@@ -149,6 +151,10 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
 
 /// Returns the simulation parameters
 const Param* Simulation::GetParam() const { return param_; }
+
+SoUidGenerator* Simulation::GetSoUidGenerator() {
+  return so_uid_generator_;
+}
 
 Grid* Simulation::GetGrid() { return grid_; }
 
@@ -196,6 +202,7 @@ void Simulation::Initialize(CommandLineOptions* clo,
 }
 
 void Simulation::InitializeMembers() {
+  so_uid_generator_ = new SoUidGenerator();
   if (param_->debug_numa_) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
   }
