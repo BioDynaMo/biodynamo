@@ -131,6 +131,11 @@ struct RemoveModule : public BaseBiologyModule {
 };
 
 }  // namespace sim_object_test_internal
+
+#ifdef __ROOTCLING__
+static SoPointer<SimObject> dummy_ptr;
+#endif
+
 }  // namespace bdm
 
 #endif  // UNIT_CORE_SIM_OBJECT_SIM_OBJECT_TEST_H_

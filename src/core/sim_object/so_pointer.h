@@ -108,7 +108,7 @@ class SoPointer {
  private:
   SoUid uid_ = std::numeric_limits<uint64_t>::max();
 
-  BDM_TEMPLATE_CLASS_DEF(SoPointer, 2);
+  BDM_CLASS_DEF(SoPointer, 2);
 };
 
 template <typename T>

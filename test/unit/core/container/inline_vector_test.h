@@ -67,7 +67,15 @@ inline void RunIOTest() {
   remove(ROOTFILE);
 }
 
+#ifdef __ROOTCLING__
+static InlineVector<int, 2> ilv2;
+static InlineVector<int, 3> ilv3;
+static InlineVector<int, 4> ilv4;
+static std::vector<InlineVector<int, 8>> voilv;
+#endif
+
 }  // namespace inline_vector_test_internal
+
 }  // namespace bdm
 
 #endif  // UNIT_CORE_CONTAINER_INLINE_VECTOR_TEST_H_

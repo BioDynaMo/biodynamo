@@ -348,7 +348,7 @@ class InlineVector {
     return size_ - N;
   }
 
-  BDM_TEMPLATE_CLASS_DEF(InlineVector, 1);  // NOLINT
+  BDM_CLASS_DEF(InlineVector, 1);  // NOLINT
 };
 
 }  // namespace bdm

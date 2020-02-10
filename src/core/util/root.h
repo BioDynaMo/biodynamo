@@ -27,33 +27,6 @@
 #define BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id) \
   ClassDefOverride(class_name, class_version_id)
 
-#define BDM_TEMPLATE_CLASS_DEF(class_name, class_version_id)               \
- private:                                                                  \
-  static atomic_TClass_ptr fgIsA;                                          \
-                                                                           \
- public:                                                                   \
-  static TClass* Class() {                                                 \
-    throw "This method should have been replaced by the ROOT dictionary."; \
-  }                                                                        \
-  static const char* Class_Name();                                         \
-  static Version_t Class_Version() { return class_version_id; }            \
-  static TClass* Dictionary();                                             \
-  virtual TClass* IsA() const { return class_name::Class(); }              \
-  virtual void ShowMembers(TMemberInspector& insp) const {                 \
-    ::ROOT::Class_ShowMembers(class_name::Class(), this, insp);            \
-  }                                                                        \
-  virtual void Streamer(TBuffer&) {                                        \
-    throw "This method should have been replaced by the ROOT dictionary."; \
-  }                                                                        \
-  void StreamerNVirtual(TBuffer& ClassDef_StreamerNVirtual_b) {            \
-    class_name::Streamer(ClassDef_StreamerNVirtual_b);                     \
-  }                                                                        \
-  static const char* DeclFileName() { return __FILE__; }                   \
-  static int ImplFileLine();                                               \
-  static const char* ImplFileName();                                       \
-  static int DeclFileLine() { return __LINE__; }                           \
-                                                                           \
- private:
 // NOLINT
 
 // -----------------------------------------------------------------------------
@@ -227,8 +200,6 @@
   BDM_NULL_CLASS_DEF_NV(class_name, class_version_id)
 #define BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id) \
   BDM_NULL_CLASS_DEF_OVERRIDE(class_name, class_version_id)
-#define BDM_TEMPLATE_CLASS_DEF(class_name, class_version_id) \
-  BDM_NULL_CLASS_DEF(class_name, class_version_id)
 
 #endif  // defined(USE_DICT)
 
