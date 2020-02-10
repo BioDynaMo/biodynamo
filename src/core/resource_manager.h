@@ -159,16 +159,16 @@ class ResourceManager {
   }
 
   void RestoreUidSoMap() {
-    // FIXME
-    // // rebuild uid_soh_map_
-    // uid_soh_map_.clear();
-    // uid_soh_map_.resize(GetNumSimObjects());
-    // for (unsigned n = 0; n < sim_objects_.size(); ++n) {
-    //   for (unsigned i = 0; i < sim_objects_[n].size(); ++i) {
-    //     auto* so = sim_objects_[n][i];
-    //     this->uid_soh_map_[so->GetUid()] = SoHandle(n, i);
-    //   }
-    // }
+    // rebuild uid_soh_map_
+    uid_soh_map_.clear();
+    auto* so_uid_generator = Simulation::GetActive()->GetSoUidGenerator();
+    uid_soh_map_.resize(so_uid_generator->GetLastId());
+    for (unsigned n = 0; n < sim_objects_.size(); ++n) {
+      for (unsigned i = 0; i < sim_objects_[n].size(); ++i) {
+        auto* so = sim_objects_[n][i];
+        this->uid_soh_map_.Insert(so->GetUid(), SoHandle(n, i));
+      }
+    }
   }
 
   SimObject* GetSimObject(const SoUid& uid) {

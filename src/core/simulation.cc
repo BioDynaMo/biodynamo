@@ -128,7 +128,9 @@ Simulation::~Simulation() {
   delete rm_;
   delete grid_;
   delete scheduler_;
-  delete so_uid_generator_;
+  if (so_uid_generator_ != nullptr) {
+    delete so_uid_generator_;
+  }
   delete param_;
   for (auto* r : random_) {
     delete r;

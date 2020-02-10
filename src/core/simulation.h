@@ -133,7 +133,7 @@ class Simulation {
 
   ResourceManager* rm_ = nullptr;
   Param* param_ = nullptr;
-  SoUidGenerator* so_uid_generator_;
+  SoUidGenerator* so_uid_generator_ = nullptr;  //!
   std::string name_;
   Grid* grid_ = nullptr;            //!
   Scheduler* scheduler_ = nullptr;  //!

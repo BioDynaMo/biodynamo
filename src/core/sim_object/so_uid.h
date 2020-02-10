@@ -123,7 +123,7 @@ class SoUidGenerator {
   SoUid GetLastId() const { return SoUid(counter_); }
 
  private:
-  std::atomic<typename SoUid::Index_t> counter_;
+  std::atomic<typename SoUid::Index_t> counter_;  //!
   BDM_CLASS_DEF_NV(SoUidGenerator, 1);
 };
 

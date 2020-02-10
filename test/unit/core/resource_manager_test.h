@@ -565,7 +565,7 @@ inline void RunIOTest() {
   rm->AddDiffusionGrid(dgrid_2);
 
   // backup
-  WritePersistentObject(ROOTFILE, "rm", rm, "new");
+  WritePersistentObject(ROOTFILE, "rm", *rm, "new");
 
   rm->Clear();
 
