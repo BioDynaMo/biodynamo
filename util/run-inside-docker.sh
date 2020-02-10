@@ -114,6 +114,8 @@ sudo docker run \
   --name $BDM_CONTAINER \
   --user testuser \
   --net=host \
+  --cap-add=SYS_PTRACE \
+  --security-opt seccomp=unconfined \
   --env="DISPLAY" \
   $BDM_FORWARD_ENV \
   --volume $BDM_PROJECT_DIR_ABS:$BDM_PROJECT_DIR_ABS \
