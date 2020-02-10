@@ -136,20 +136,19 @@ class SoUidMap {
   };
 
 public:
-  SoUidMap(const TValue& empty_value, uint64_t initial_size) : empty_value_{empty_value} {
+  SoUidMap() {}
+
+  SoUidMap(uint64_t initial_size) {
     data_.resize(initial_size);
     so_uid_reused_.resize(initial_size, SoUid::kReusedMax);
   }
 
   void resize(uint64_t new_size) {  // NOLINT
-    data_.resize(new_size, empty_value_);
+    data_.resize(new_size);
     so_uid_reused_.resize(new_size, SoUid::kReusedMax);
   }
 
   void clear() {  // NOLINT
-    for (auto& el: data_) {
-      el = empty_value_;el = empty_value_; // FIXME is this needed??
-    }
     for (auto& el: so_uid_reused_) {
       el = SoUid::kReusedMax;
     }
@@ -158,7 +157,7 @@ public:
   void ParallelClear() {
     #pragma omp parallel for
     for (uint64_t i = 0; i < data_.size(); ++i) {
-      data_[i] = empty_value_;
+      so_uid_reused_[i] = SoUid::kReusedMax;
     }
   }
 
@@ -166,27 +165,25 @@ public:
     return data_.size();
   }
 
-  TValue Remove(const SoUid& key) {
+  void Remove(const SoUid& key) {
     if (key.GetIndex() >= data_.size()) {
-      return empty_value_;
+      return;
     }
-    auto previous = data_[key.GetIndex()];
-    data_[key.GetIndex()] = empty_value_;  // FIXME is this needed??
-    so_uid_reused_[key.GetIndex()] = key.GetReused();
-    return previous;
+    so_uid_reused_[key.GetIndex()] = SoUid::kReusedMax;
   }
 
   bool Contains(const SoUid& uid) const {
-    if (uid.GetIndex() >= data_.size()) {
+    auto idx = uid.GetIndex();
+    if (idx >= data_.size()) {
       return false;
     }
-    // FIXME is comparison with empty value needed??
-    return data_[uid.GetIndex()] != empty_value_
-      && so_uid_reused_[uid.GetReused()] != SoUid::kReusedMax;
+    return uid.GetReused() == so_uid_reused_[idx];
   }
 
-  TValue& operator[](const SoUid& key) {
-    return data_[key.GetIndex()];
+  void Insert(const SoUid& uid, const TValue& value) {
+    auto idx = uid.GetIndex();
+    data_[idx] = value;
+    so_uid_reused_[idx] = uid.GetReused();
   }
 
   const TValue& operator[](const SoUid& key) const {
@@ -198,7 +195,6 @@ public:
 private:
   std::vector<TValue> data_;
   std::vector<typename SoUid::Reused_t> so_uid_reused_;
-  TValue empty_value_;
 };
 
 }  // namespace bdm

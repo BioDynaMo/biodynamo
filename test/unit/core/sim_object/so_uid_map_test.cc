@@ -17,8 +17,13 @@
 
 namespace bdm {
 
-TEST(SoUidMapTest, CTor) {
-  SoUidMap<int> map(999, 10);
+TEST(SoUidMapTest, DefaultCtor) {
+  SoUidMap<int> map;
+  EXPECT_EQ(map.size(), 0u);
+}
+
+TEST(SoUidMapTest, Ctor) {
+  SoUidMap<int> map(10);
   EXPECT_EQ(map.size(), 10u);
 
   for(int i = 0; i < 10; ++i) {
@@ -27,23 +32,24 @@ TEST(SoUidMapTest, CTor) {
 }
 
 TEST(SoUidMapTest, AddElements) {
-  SoUidMap<int> map(999, 10);
+  SoUidMap<int> map(10);
   EXPECT_EQ(map.size(), 10u);
 
   for(int i = 0; i < 10; ++i) {
-    map[SoUid(i)] = i;
+    map.Insert(SoUid(i), i);
   }
 
   for(int i = 0; i < 10; ++i) {
+    EXPECT_TRUE(map.Contains(SoUid(i)));
     EXPECT_EQ(map[SoUid(i)], i);
   }
 }
 
 TEST(SoUidMapTest, Remove) {
-  SoUidMap<int> map(999, 5);
+  SoUidMap<int> map(5);
 
   for(unsigned i = 0; i < map.size(); ++i) {
-    map[SoUid(i)] = i;
+    map.Insert(SoUid(i), i);
   }
 
   map.Remove(SoUid(0));
@@ -59,11 +65,11 @@ TEST(SoUidMapTest, Remove) {
 }
 
 TEST(SoUidMapTest, ParallelClear) {
-  SoUidMap<int> map(999, 10);
+  SoUidMap<int> map(10);
   EXPECT_EQ(map.size(), 10u);
 
   for(int i = 0; i < 10; ++i) {
-    map[SoUid(i)] = i;
+    map.Insert(SoUid(i), i);
   }
 
   map.ParallelClear();
@@ -74,11 +80,11 @@ TEST(SoUidMapTest, ParallelClear) {
 }
 
 TEST(SoUidMapTest, resize) {
-  SoUidMap<int> map(999, 10);
+  SoUidMap<int> map(10);
   EXPECT_EQ(map.size(), 10u);
 
   for(int i = 0; i < 10; ++i) {
-    map[SoUid(i)] = i;
+    map.Insert(SoUid(i), i);
   }
 
   map.resize(20);

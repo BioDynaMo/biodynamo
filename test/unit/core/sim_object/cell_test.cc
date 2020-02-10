@@ -26,6 +26,8 @@ using sim_object_test_internal::GrowthModule;
 using sim_object_test_internal::MovementModule;
 
 TEST(CellTest, TransformCoordinatesGlobalToPolar) {
+  Simulation simulation(TEST_NAME);
+
   TestCell cell;
   cell.TestTransformCoordinatesGlobalToPolar();
 }

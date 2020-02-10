@@ -94,16 +94,17 @@ inline void RunApplyOnAllElementsTest() {
 }
 
 inline void RunGetNumSimObjects() {
-  ResourceManager rm;
+  Simulation simulation("ResourceManagerTest-RunGetNumSimObjects");
+  auto* rm = simulation.GetResourceManager();
 
-  rm.push_back(new A(12));
-  rm.push_back(new A(34));
-  rm.push_back(new A(59));
+  rm->push_back(new A(12));
+  rm->push_back(new A(34));
+  rm->push_back(new A(59));
 
-  rm.push_back(new B(3.14));
-  rm.push_back(new B(6.28));
+  rm->push_back(new B(3.14));
+  rm->push_back(new B(6.28));
 
-  EXPECT_EQ(5u, rm.GetNumSimObjects());
+  EXPECT_EQ(5u, rm->GetNumSimObjects());
 }
 
 // This test uses Cells since A, and B are strippted down simulation objects
@@ -135,87 +136,89 @@ inline void RunApplyOnAllElementsParallelTest() {
 }
 
 inline void RunRemoveAndContainsTest() {
-  ResourceManager rm;
+  Simulation simulation("ResourceManagerTest-RunRemoveAndContainsTest");
+  auto *rm = simulation.GetResourceManager();
 
   A* a0 = new A(12);
   auto a0_uid = a0->GetUid();
-  rm.push_back(a0);
+  rm->push_back(a0);
 
   A* a1 = new A(34);
   auto a1_uid = a1->GetUid();
-  rm.push_back(a1);
+  rm->push_back(a1);
 
   A* a2 = new A(59);
   auto a2_uid = a2->GetUid();
-  rm.push_back(a2);
+  rm->push_back(a2);
 
   B* b0 = new B(3.14);
   auto b0_uid = b0->GetUid();
-  rm.push_back(b0);
+  rm->push_back(b0);
 
   B* b1 = new B(6.28);
   auto b1_uid = b1->GetUid();
-  rm.push_back(b1);
+  rm->push_back(b1);
 
-  EXPECT_TRUE(rm.Contains(a0_uid));
-  EXPECT_TRUE(rm.Contains(a1_uid));
-  EXPECT_TRUE(rm.Contains(a2_uid));
-  EXPECT_TRUE(rm.Contains(b0_uid));
-  EXPECT_TRUE(rm.Contains(b1_uid));
+  EXPECT_TRUE(rm->Contains(a0_uid));
+  EXPECT_TRUE(rm->Contains(a1_uid));
+  EXPECT_TRUE(rm->Contains(a2_uid));
+  EXPECT_TRUE(rm->Contains(b0_uid));
+  EXPECT_TRUE(rm->Contains(b1_uid));
 
-  rm.Remove(a0_uid);
-  rm.Remove(a1_uid);
-  rm.Remove(a2_uid);
-  rm.Remove(b0_uid);
-  rm.Remove(b1_uid);
+  rm->Remove(a0_uid);
+  rm->Remove(a1_uid);
+  rm->Remove(a2_uid);
+  rm->Remove(b0_uid);
+  rm->Remove(b1_uid);
 
-  EXPECT_FALSE(rm.Contains(a0_uid));
-  EXPECT_FALSE(rm.Contains(a1_uid));
-  EXPECT_FALSE(rm.Contains(a2_uid));
-  EXPECT_FALSE(rm.Contains(b0_uid));
-  EXPECT_FALSE(rm.Contains(b1_uid));
+  EXPECT_FALSE(rm->Contains(a0_uid));
+  EXPECT_FALSE(rm->Contains(a1_uid));
+  EXPECT_FALSE(rm->Contains(a2_uid));
+  EXPECT_FALSE(rm->Contains(b0_uid));
+  EXPECT_FALSE(rm->Contains(b1_uid));
 
-  EXPECT_EQ(0u, rm.GetNumSimObjects());
+  EXPECT_EQ(0u, rm->GetNumSimObjects());
 }
 
 inline void RunClearTest() {
-  ResourceManager rm;
+  Simulation simulation("ResourceManagerTest-RunClearTest");
+  auto *rm = simulation.GetResourceManager();
 
   A* a0 = new A(12);
   auto a0_uid = a0->GetUid();
-  rm.push_back(a0);
+  rm->push_back(a0);
 
   A* a1 = new A(34);
   auto a1_uid = a1->GetUid();
-  rm.push_back(a1);
+  rm->push_back(a1);
 
   A* a2 = new A(59);
   auto a2_uid = a2->GetUid();
-  rm.push_back(a2);
+  rm->push_back(a2);
 
   B* b0 = new B(3.14);
   auto b0_uid = b0->GetUid();
-  rm.push_back(b0);
+  rm->push_back(b0);
 
   B* b1 = new B(6.28);
   auto b1_uid = b1->GetUid();
-  rm.push_back(b1);
+  rm->push_back(b1);
 
-  EXPECT_TRUE(rm.Contains(a0_uid));
-  EXPECT_TRUE(rm.Contains(a1_uid));
-  EXPECT_TRUE(rm.Contains(a2_uid));
-  EXPECT_TRUE(rm.Contains(b0_uid));
-  EXPECT_TRUE(rm.Contains(b1_uid));
+  EXPECT_TRUE(rm->Contains(a0_uid));
+  EXPECT_TRUE(rm->Contains(a1_uid));
+  EXPECT_TRUE(rm->Contains(a2_uid));
+  EXPECT_TRUE(rm->Contains(b0_uid));
+  EXPECT_TRUE(rm->Contains(b1_uid));
 
-  rm.Clear();
+  rm->Clear();
 
-  EXPECT_FALSE(rm.Contains(a0_uid));
-  EXPECT_FALSE(rm.Contains(a1_uid));
-  EXPECT_FALSE(rm.Contains(a2_uid));
-  EXPECT_FALSE(rm.Contains(b0_uid));
-  EXPECT_FALSE(rm.Contains(b1_uid));
+  EXPECT_FALSE(rm->Contains(a0_uid));
+  EXPECT_FALSE(rm->Contains(a1_uid));
+  EXPECT_FALSE(rm->Contains(a2_uid));
+  EXPECT_FALSE(rm->Contains(b0_uid));
+  EXPECT_FALSE(rm->Contains(b1_uid));
 
-  EXPECT_EQ(0u, rm.GetNumSimObjects());
+  EXPECT_EQ(0u, rm->GetNumSimObjects());
 }
 
 inline void RunPushBackAndGetSimObjectTest() {

@@ -21,6 +21,8 @@ namespace bdm {
 namespace sim_object_test_internal {
 
 TEST(SimObjectTest, CopyCtor) {
+  Simulation simulation(TEST_NAME);
+
   TestSimObject cell;
   cell.SetBoxIdx(123);
   GrowthModule* gm = new GrowthModule();
@@ -144,6 +146,8 @@ struct Visitor1 : public SoVisitor {
 };
 
 TEST(SimObjectUtilTest, ForEachDataMember) {
+  Simulation simulation(TEST_NAME);
+
   TestSimObject so;
   Visitor1 visitor;
   so.ForEachDataMember(&visitor);
@@ -164,6 +168,8 @@ struct Visitor2 : public SoVisitor {
 };
 
 TEST(SimObjectUtilTest, ForEachDataMemberIn) {
+  Simulation simulation(TEST_NAME);
+
   TestSimObject so;
   Visitor2 visitor;
   so.ForEachDataMemberIn(std::set<std::string>{"uid_", "position_"}, &visitor);
@@ -191,6 +197,8 @@ struct VerifyPosition : public SoVisitor {
 
 // for one data member check if the pointer contains the right data
 TEST(SimObjectUtilTest, ForEachDataMemberInDetailed) {
+  Simulation simulation(TEST_NAME);
+
   TestSimObject so;
   so.SetPosition({4, 5, 6});
   VerifyPosition visitor;

@@ -357,8 +357,8 @@ class ResourceManager {
       uid_soh_map_.resize(uid.GetIndex() + 1);
     }
     sim_objects_[numa_node].push_back(so);
-    uid_soh_map_[uid] =
-        SoHandle(numa_node, sim_objects_[numa_node].size() - 1);
+    uid_soh_map_.Insert(uid,
+        SoHandle(numa_node, sim_objects_[numa_node].size() - 1));
   }
 
   void ResizeUidSohMap() {
@@ -379,7 +379,7 @@ class ResourceManager {
     uint64_t i = 0;
     for (auto* so : new_sim_objects) {
       auto uid = so->GetUid();
-      uid_soh_map_[uid] = SoHandle(numa_node, offset + i);
+      uid_soh_map_.Insert(uid, SoHandle(numa_node, offset + i));
       sim_objects_[numa_node][offset + i] = so;
       i++;
     }
@@ -391,8 +391,9 @@ class ResourceManager {
   /// not affected.
   void Remove(const SoUid& uid) {
     // remove from map
-    SoHandle soh = uid_soh_map_.Remove(uid);
-    if (soh != SoHandle()) {
+    if (uid_soh_map_.Contains(uid)) {
+      auto soh = uid_soh_map_[uid];
+      uid_soh_map_.Remove(uid);
       // remove from vector
       auto& numa_sos = sim_objects_[soh.GetNumaNode()];
       if (soh.GetElementIdx() == numa_sos.size() - 1) {
@@ -404,7 +405,7 @@ class ResourceManager {
         auto* reordered = numa_sos.back();
         numa_sos[soh.GetElementIdx()] = reordered;
         numa_sos.pop_back();
-        uid_soh_map_[reordered->GetUid()] = soh;
+        uid_soh_map_.Insert(reordered->GetUid(), soh);
       }
     }
   }
@@ -412,7 +413,7 @@ class ResourceManager {
  protected:
 
   /// Maps an SoUid to its storage location in `sim_objects_` \n
-  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(SoHandle(), 1e4);  //!
+  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(1e4);  //!
   /// Pointer container for all simulation objects
   std::vector<std::vector<SimObject*>> sim_objects_;
   /// Maps a diffusion grid ID to the pointer to the diffusion grid

@@ -22,7 +22,7 @@
 
 namespace bdm {
 
-SoUidMap<std::pair<SimObject*, uint64_t>> InPlaceExecutionContext::new_so_map_({nullptr, 0}, 1e8);
+SoUidMap<std::pair<SimObject*, uint64_t>> InPlaceExecutionContext::new_so_map_(1e8);
 
 InPlaceExecutionContext::InPlaceExecutionContext()
     : tinfo_(ThreadInfo::GetInstance()) {
@@ -112,7 +112,7 @@ void InPlaceExecutionContext::push_back(SimObject* new_so) {  // NOLINT
   new_sim_objects_.push_back(new_so);
   // FIXME logic to grow
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-  InPlaceExecutionContext::new_so_map_[new_so->GetUid()] = {new_so, timesteps};
+  InPlaceExecutionContext::new_so_map_.Insert(new_so->GetUid(), {new_so, timesteps});
 }
 
 void InPlaceExecutionContext::ForEachNeighbor(
