@@ -231,10 +231,14 @@ void Simulation::InitializeRuntimeParams(
                "$use_biodynamo and retry this command.");
   }
 
-  // Read our .rootrc to set BioDynaMo-related settings for ROOT
-  std::stringstream ss;
-  ss << std::getenv("BDMSYS") << "/etc/bdm.rootrc";
-  gEnv->ReadFile(ss.str().c_str(), kEnvUser);
+  static bool readEnv = false;
+  if (!readEnv) {
+    // Read, only once, our bdm.rootrc to set BioDynaMo-related settings for ROOT
+    std::stringstream ss;
+    ss << std::getenv("BDMSYS") << "/etc/bdm.rootrc";
+    gEnv->ReadFile(ss.str().c_str(), kEnvUser);
+    readEnv = true;
+  }
 
   LoadConfigFile(ctor_config, clo->Get<std::string>("config"));
   if (clo->Get<std::string>("backup") != "") {
@@ -272,7 +276,7 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
       auto config = cpptoml::parse_file(ctor_config);
       param_->AssignFromConfig(config);
     } else {
-      Log::Fatal("Simulation::InitializeRuntimeParams", "The config file ",
+      Log::Fatal("Simulation::LoadConfigFile", "The config file ",
                  ctor_config,
                  " specified in the constructor of bdm::Simulation "
                  "could not be found.");
@@ -282,7 +286,7 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
       auto config = cpptoml::parse_file(cli_config);
       param_->AssignFromConfig(config);
     } else {
-      Log::Fatal("Simulation::InitializeRuntimeParams", "The config file ",
+      Log::Fatal("Simulation::LoadConfigFile", "The config file ",
                  cli_config,
                  " specified as command line argument "
                  "could not be found.");
@@ -294,7 +298,7 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
     auto config = cpptoml::parse_file(kConfigFileParentDir);
     param_->AssignFromConfig(config);
   } else {
-    Log::Warning("Simulation::InitializeRuntimeParams",
+    Log::Warning("Simulation::LoadConfigFile",
                  "Config file %s not found in `.` or `../` directory.",
                  kConfigFile);
   }
@@ -317,7 +321,7 @@ void Simulation::InitializeOutputDir() {
     output_dir_ = Concat(param_->output_dir_, "/", unique_name_);
   }
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
-    Log::Fatal("Simulation", "Failed to make output directory ", output_dir_);
+    Log::Fatal("Simulation::InitializeOutputDir", "Failed to make output directory ", output_dir_);
   }
 }
 
