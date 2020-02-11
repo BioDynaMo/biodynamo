@@ -49,7 +49,6 @@
 #include "core/util/root.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
-#include "core/container/flatmap.h"
 
 namespace bdm {
 
