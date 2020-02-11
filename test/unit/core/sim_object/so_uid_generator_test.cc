@@ -30,6 +30,7 @@ TEST_F(IOTest, SoUidGenerator) {
   BackupAndRestore(test, &restored);
 
   EXPECT_EQ(restored->GetHighestIndex(), 3u);
+  EXPECT_EQ(restored->NewSoUid(), SoUid(3u));
 
   delete restored;
 }
