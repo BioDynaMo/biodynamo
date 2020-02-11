@@ -140,13 +140,21 @@ find_program(WGET_BIN wget)
 if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
 endif()
-# Check if Python is present
-find_package(PythonInterp 3.5)
-if (PythonInterp_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not find any Python interpreter. Please run ./prerequisites.sh again before
-calling cmake. The Python interpreter is required in order to successfully use BioDynaMo." )
+
+# Check if Python 3.6.9 from PyEnv is installed
+set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
+if(EXISTS "${Python_ROOT_DIR}/bin/python")
+  set(PYTHON_FOUND TRUE)
+  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
+elseif(APPLE)
+  message("Python 3 support for BioDynaMo on MacOS will be available soon.")
+else()
+  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
+    "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "
+    "interpreter is required in order to successfully use BioDynaMo."
+    "If you installed PyEnv somewhere other than in your home directory, please "
+    "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")
 endif()
-find_package(pip)
 
 # Check if OpenMPI is present
 find_package(MPI)

@@ -72,7 +72,7 @@ cmake \
   -DCMAKE_CXX_COMPILER=$CXX \
   -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
   -Dcxx14=on \
-  -DPYTHON_EXECUTABLE=`which python3` \
+  -DPYTHON_EXECUTABLE=`pyenv which python3` \
   -DPYTHON_LIBRARY=`pyenv which python3`/../../lib/libpython3.6m.so \
   -DPYTHON_INCLUDE_DIR=`pyenv which python3`/../../include/python3.6m/ \
   ../root/
