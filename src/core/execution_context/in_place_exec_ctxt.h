@@ -15,7 +15,6 @@
 #ifndef CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
-#include <tbb/concurrent_unordered_map.h>
 #include <functional>
 #include <utility>
 #include <vector>

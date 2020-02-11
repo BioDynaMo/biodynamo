@@ -39,7 +39,6 @@ BioDynaMo provides also an automated procedure to install all the needed library
   * **libopenmpi-dev**: Development files for OpenMPI (Open Source Message Passing Interface);
   * **libomp-dev**: Development files for OpenMP (API for multiprocessor programming);
   * **libnuma-dev**: Development files for NUMA (simple programming interface to the policy supported by the Linux kernel);
-  * **libtbb-dev**: Development files for TBB (C++ template library developed by Intel for parallel programming);
   * **libpthread-stubs0-dev**: Development files for managing threads;
 
 ### Optional Packages
@@ -61,7 +60,7 @@ BioDynaMo provides also an automated procedure to install all the needed library
 #### Required Packages
 ```bash
 sudo apt-get install -y wget cmake make gcc g++ \
-libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev \
+libopenmpi-dev libomp-dev libnuma-dev freeglut3-dev \
 libpthread-stubs0-dev
 
 curl https://pyenv.run | bash
@@ -95,7 +94,6 @@ sudo apt-get install -y freeglut3-dev valgrind \
  * **libXext-devel**: Library which contains a handful of X11 extensions
  * **devtoolset-7-gcc**: Compiler suite for C and C++;
  * **numactl-devel**: Development files for NUMA (simple programming interface to the policy supported by the Linux kernel);
- * **tbb-devel**: Development files for TBB (C++ template library developed by Intel for parallel programming);
  * **openmpi3-devel**: Development files for OpenMP (API for multiprocessor programming);
 
 We install pyenv as the Python Version Management to be able to switch
@@ -124,7 +122,7 @@ sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install wget cmake3 libXt-devel libXext-devel \
   devtoolset-7-gcc* numactl-devel \
-  tbb-devel openmpi3-devel freeglut-devel git
+  openmpi3-devel freeglut-devel git
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
@@ -164,7 +162,6 @@ sudo yum install -y libxml2-devel
  * **wget**: Retrieves files from the web;
  * **cmake**: Set of tools for automate building, testing of software;
  * **libomp**: Development files for OpenMP (API for multiprocessor programming);
- * **tbb**: Development files for TBB (C++ template library developed by Intel for parallel programming);
  * **open-mpi**: Development files for OpenMP (API for multiprocessor programming);
  * **python** and **python@2**: Python 3 Interpreter.
 
@@ -182,7 +179,7 @@ sudo yum install -y libxml2-devel
 Using HomeBrew:
 
 ```bash
-brew install llvm wget cmake libomp tbb open-mpi python python@2 || true
+brew install llvm wget cmake libomp open-mpi python python@2 || true
 
 brew upgrade python cmake || true
 ```
@@ -190,7 +187,7 @@ brew upgrade python cmake || true
 Using Fink:
 
 ```bash
-sudo fink install wget llvm-clang cmake libomp-dev libtbb4 openmpi \
+sudo fink install wget llvm-clang cmake libomp-dev openmpi \
    python3 pip-py37
 ```
 

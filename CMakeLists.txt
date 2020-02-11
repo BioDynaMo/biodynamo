@@ -288,19 +288,6 @@ if(paraview)
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
-# On non-OSX machines, we can use the tbb that comes with ROOT. On OSX machines,
-# we need to add TBB to BDM_REQUIRED_LIBRARIES, or we get linking errors.
-if(APPLE)
-  find_package(TBB)
-  if (TBB_FOUND)
-    include_directories(${TBB_INCLUDE_DIRS})
-    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${TBB_LIBRARIES})
-  else()
-    MESSAGE(FATAL_ERROR "TBB was not found on your system."
-    " Please run ./prerequisites.sh again before calling cmake.")
-  endif()
-endif()
-
 if(sbml)
   if(APPLE)
     message(FATAL_ERROR "Currently SBML is not supported on MacOS (see https://trello.com/c/vKPbh4iG).")
@@ -630,8 +617,6 @@ set(incdir ${CMAKE_CURRENT_BINARY_DIR}/include)
 set(cmakedir ${CMAKE_CURRENT_BINARY_DIR}/share/cmake)
 set(configargs ${BDM_CONFIGARGS})
 set(cmakeinvoke "${CMAKE_INVOKE} -G ${CMAKE_GENERATOR}")
-set(tbbinclude ${TBB_INCLUDE_DIRS})
-set(tbblibs ${TBB_LIBRARIES})
 set(omplibs ${OpenMP_CXX_LIBRARIES})
 
 # Copy the environmental files to their correct directory

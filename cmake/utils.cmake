@@ -206,7 +206,6 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/cmake/FindVTune.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindOpenCL.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindNuma.cmake
-            ${CMAKE_SOURCE_DIR}/cmake/FindTBB.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindClangTools.cmake
             ${CMAKE_SOURCE_DIR}/cmake/RootUseFile.cmake
             ${CMAKE_SOURCE_DIR}/cmake/CppStyleGuideChecks.cmake
@@ -368,10 +367,6 @@ function(add_bdm_packages_properties)
             )
     SET_PACKAGE_PROPERTIES(Qt5 PROPERTIES
             DESCRIPTION "Open Source widget toolkit for creating user interfaces. It is needed by Paraview. (OPTIONAL)"
-            TYPE REQUIRED
-            )
-    SET_PACKAGE_PROPERTIES(TBB PROPERTIES
-            DESCRIPTION "Threading Building Blocks (TBB) C++ library used to easily write parallel C++ programs. (REQUIRED)"
             TYPE REQUIRED
             )
 
