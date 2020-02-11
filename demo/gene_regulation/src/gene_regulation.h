@@ -72,7 +72,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // Output concentration values for each gene
   auto* rm = simulation.GetResourceManager();
-  auto* sim_object = rm->GetSimObject(0);
+  auto* sim_object = rm->GetSimObject(SoUid(0));
   const auto* first_bm = sim_object->GetAllBiologyModules()[0];
   auto* regulate_genes = dynamic_cast<const RegulateGenes*>(first_bm);
   const auto& concentrations = regulate_genes->GetConcentrations();
