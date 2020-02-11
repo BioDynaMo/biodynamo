@@ -56,7 +56,8 @@ class InPlaceExecutionContext {
       void Insert(const SoUid& uid, const value_type& value);
       bool Contains(const SoUid& uid) const;
       const value_type& operator[](const SoUid& key) const;
-      uint64_t size() const;  // NOLINT
+      uint64_t Size() const;
+      void Resize(uint64_t new_size);
       void RemoveOldCopies();
 
        using Map = SoUidMap<value_type>;

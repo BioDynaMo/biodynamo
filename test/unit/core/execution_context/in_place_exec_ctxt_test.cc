@@ -220,7 +220,6 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
 
 TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
   Simulation simulation(TEST_NAME);
-  auto* so_uid_generator = simulation.GetSoUidGenerator();
 
   std::vector<uint64_t> used_indexes;
   used_indexes.reserve(100000);
@@ -237,21 +236,15 @@ TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
      uint64_t random_number = 0;
      uint64_t read_index = 0;
 
+     // select random element between 0 and max uid index and check if the
+     // data of the simulation object is correct
      #pragma omp critical
      {
        used_indexes.push_back(new_so->GetUid().GetIndex());
        random_number = static_cast<uint64_t>(std::round(random->Uniform(0, used_indexes.size() - 1)));
        read_index = used_indexes[random_number];
-      //  std::cout << "i " << new_so->GetUid().GetIndex() << " r " << read_index << std::endl;
      }
 
-     // select random element between 0 and max uid index and check if the
-     // data of the simulation object is correct
-    //  auto uid = SoUid(random_number);
-    //  std::cout << "read " << uid << std::endl;
-    //  auto* so = ctxt->GetSimObject(uid);
-    //   auto* tso = static_cast<TestSimObject*>(so);
-    // std::cout << ctxt->GetSimObject(SoUid(read_index)) << std::endl;
      auto* tso = static_cast<TestSimObject*>(ctxt->GetSimObject(SoUid(read_index)));
      EXPECT_EQ(static_cast<uint64_t>(tso->GetData()), read_index);
   }

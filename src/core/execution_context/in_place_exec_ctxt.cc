@@ -52,7 +52,6 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(const SoUid& uid, const
       new_map->resize(std::max(static_cast<uint64_t>(1000u), static_cast<uint64_t>(map_->size() * 1.5)));
       previous_maps_.emplace_back(map_);
       map_ = new_map;
-      std::cout << "grow " << map_->size() << std::endl;
     }
     map_->Insert(uid, value);
   }
@@ -66,8 +65,11 @@ const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type& InPlaceE
   return (*map_)[key];
 }
 
-uint64_t InPlaceExecutionContext::ThreadSafeSoUidMap::size() const {
+uint64_t InPlaceExecutionContext::ThreadSafeSoUidMap::Size() const {
   return map_->size();
+}
+void InPlaceExecutionContext::ThreadSafeSoUidMap::Resize(uint64_t new_size) {
+  map_->resize(new_size);
 }
 
 void InPlaceExecutionContext::ThreadSafeSoUidMap::RemoveOldCopies() {
@@ -141,6 +143,9 @@ void InPlaceExecutionContext::TearDownIterationAll(
   // FIXME
   // new_so_map_.SetOffset(SoUidGenerator::Get()->GetLastId());
   new_so_map_->RemoveOldCopies();
+  if (rm->GetNumSimObjects() > new_so_map_->Size()) {
+    new_so_map_->Resize(rm->GetNumSimObjects() * 1.5);
+  }
 }
 
 void InPlaceExecutionContext::Execute(
