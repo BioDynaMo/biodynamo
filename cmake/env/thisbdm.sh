@@ -149,16 +149,6 @@ else
    PATH="${BDMSYS}/bin":$PATH; export PATH
 fi
 
-# If pip and jupyter are installed locally (with --user flag), we have to
-# prepend PATH with the local directory to be able to find jupyter when we want
-# to convert demos to notebooks (with demo_to_notebook.py). This is the case
-# if BDM is installed with the prerequisites script
-if [[ $(uname -s) == "Darwin"* ]]; then
-  export PATH=$HOME/Library/Python/2.7/bin:$PATH
-else
-  export PATH=$HOME/.local/bin:$PATH
-fi
-
 if [ -z "${LD_LIBRARY_PATH}" ]; then
    LD_LIBRARY_PATH="${BDMSYS}/lib"; export LD_LIBRARY_PATH       # Linux, ELF HP-UX
 else
@@ -188,6 +178,14 @@ if [ -z "${MANPATH}" ]; then
 else
    MANPATH="${BDMSYS}/man":$MANPATH; export MANPATH
 fi
+
+##### Python Specific Configurations #####
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+pyenv shell 3.6.9
+# Location of jupyter executable (installed with `pip install --user` command)
+export PATH="$HOME/.local/bin:$PATH"
+########
 
 ##### CMake Specific Configurations #####
 if [ -z "${CMAKE_PREFIX_PATH}" ]; then
@@ -254,26 +252,27 @@ else
    ParaView_LIB_DIR="${ParaView_DIR}/lib":$ParaView_LIB_DIR; export ParaView_LIB_DIR
 fi
 
-if [ -z "${PYTHONPATH}" ]; then
-   PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages"; export PYTHONPATH
-else
-   PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH; export PYTHONPATH
-fi
-
 if [ -z "${PV_PLUGIN_PATH}" ]; then
    PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin"; export PV_PLUGIN_PATH
 else
    PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH; export PV_PLUGIN_PATH
 fi
 
+# We don't add the ParaView site-packages path to PYTHONPATH, because pip in the
+# pyenv environment will not function anymore: ModuleNotFoundError: No module named 'pip._internal'
 unset -f paraview || true
 function paraview {
-  ${ParaView_DIR}/bin/paraview $@
+  PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/paraview $@
 }
 
 unset -f pvpython || true
 function pvpython {
-  ${ParaView_DIR}/bin/pvpython $@
+  PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/pvpython $@
+}
+
+unset -f pvbatch || true
+function pvbatch {
+  PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/pvbatch $@
 }
 
 if [ -z "${LD_LIBRARY_PATH}" ]; then
@@ -364,8 +363,6 @@ else
         if [ -z ${CXX} ] && [ -z ${CC} ] ; then
             . scl_source enable devtoolset-7
         fi
-        . scl_source enable python27
-
         . /etc/profile.d/modules.sh
         module load mpi
 

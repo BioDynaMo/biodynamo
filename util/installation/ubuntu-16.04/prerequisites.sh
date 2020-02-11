@@ -29,24 +29,31 @@ fi
 sudo apt-get update
 
 # Install required packages
-sudo apt-get install -y wget cmake make gcc g++ \
-libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev \
-libpthread-stubs0-dev python-pip python3-pip zlib1g-dev libbz2-dev
+sudo apt-get install -y wget curl cmake make gcc g++ \
+  libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev \
+  libpthread-stubs0-dev zlib1g-dev libbz2-dev
+
+# On Travis CI pyenv is already installed, so we need to unset the following
+unset PYENV_ROOT
+
+# Install dependencies to install Python with PyEnv
+sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
+  libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
+
+curl https://pyenv.run | bash
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+pyenv shell 3.6.9
 
 # Install optional packages
 if [ $1 == "all" ]; then
-    # this updates pip, but installs the updated version in $HOME/.local/bin
-    pip install --upgrade pip
-    PIP_PACKAGES="jupyter metakernel"
-    if [ -f "$HOME/.local/bin/pip2" ]; then
-      $HOME/.local/bin/pip2 install --user $PIP_PACKAGES
-    else
-      echo "WARNING: $HOME/.local/bin/pip2 not found.
-The following pip packages will not be installed: $PIP_PACKAGES"
-    fi
+  # this updates pip, but installs the updated version in $HOME/.local/bin
+  PIP_PACKAGES="nbformat jupyter metakernel"
+  pip install --user $PIP_PACKAGES
 
-    sudo apt-get install -y valgrind \
-      clang-3.9 clang-format-3.9 clang-tidy-3.9 \
-      doxygen graphviz lcov gcovr \
-      llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
+  sudo apt-get install -y valgrind \
+    clang-3.9 clang-format-3.9 clang-tidy-3.9 \
+    doxygen graphviz lcov gcovr \
+    llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
 fi

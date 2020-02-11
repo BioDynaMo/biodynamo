@@ -365,13 +365,8 @@ def mainfunction(text, visualize):
 	main = Comments(Unindent(ExtractMainFunction(main)))
 	rest = RemoveIncludeGuardsAndNamespace(rest)
 
-	# Command for loading biodynamo library
-	libloading = 'gSystem->Load("libbiodynamo");\n\n'
-
-	libloading_macro = '%jsroot on\nR__LOAD_LIBRARY(libbiodynamo)\n\n'
-
-	# Append "using namespace bdm;" to headers
-	headers += '\nusing namespace bdm;\n'
+	# Command for loading rootlogon.C
+	libloading_macro = '%jsroot on\ngROOT->LoadMacro("${BDMSYS}/etc/rootlogon.C");\n\n'
 
 	c_macro = headers + libloading_macro + rest + main_macro
 	with open(outPathNameMacro, 'w') as fout:

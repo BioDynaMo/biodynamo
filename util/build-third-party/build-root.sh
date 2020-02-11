@@ -59,6 +59,11 @@ git checkout $ROOT_VERSION
 git status
 cd ..
 
+# Set Python to 3.6.9
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+pyenv shell 3.6.9
+
 mkdir build
 cd build
 cmake \
@@ -67,11 +72,14 @@ cmake \
   -DCMAKE_CXX_COMPILER=$CXX \
   -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
   -Dcxx14=on \
+  -DPYTHON_EXECUTABLE=`which python3` \
+  -DPYTHON_LIBRARY=`pyenv which python3`/../../lib/libpython3.6m.so \
+  -DPYTHON_INCLUDE_DIR=`pyenv which python3`/../../include/python3.6m/ \
   ../root/
 make -j$(CPUCount) install
 
 cd $ROOT_INSTALL_DIR
-RESULT_FILE=root_${ROOT_VERSION}_${BDM_OS}.tar.gz
+RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
 tar -zcf ${RESULT_FILE} *
 
 # mv to destination directory

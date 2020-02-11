@@ -33,20 +33,29 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 
-PIP_PACKAGES="nbformat jupyter metakernel"
-
 sudo yum -y install wget cmake3 libXt-devel libXext-devel \
-devtoolset-7-gcc* numactl-devel \
-tbb-devel openmpi3-devel freeglut-devel \
-python27 python36 python-pip git bzip2-devel zlib-devel
+  devtoolset-7-gcc* numactl-devel bzip2-devel zlib-devel \
+  tbb-devel openmpi3-devel freeglut-devel git
+
+sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+  sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+
+# On Travis CI pyenv is already installed, so we need to unset the following
+unset PYENV_ROOT
+
+curl https://pyenv.run | bash
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+pyenv shell 3.6.9
 
 # Install optional packages
 if [ $1 == "all" ]; then
-    sudo pip install --upgrade pip
-    pip2 install --user $PIP_PACKAGES
-    sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind
-    # SBML integration
-    sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
+  PIP_PACKAGES="nbformat jupyter metakernel"
+  pip install --user $PIP_PACKAGES
+  sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind
+  # SBML integration
+  sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
 name=Springdale SCL Base 7.6 - x86_64
 mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
@@ -54,14 +63,14 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
-    sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
-    sudo yum install -y libxml2-devel
+  sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
+  sudo yum install -y libxml2-devel
 fi
 
 # Set up cmake alias such to be able to use it
 # FIXME: this is will basically change permanently the system of the user
 sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
---slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
---slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
---slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
---family cmake
+  --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
+  --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
+  --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
+  --family cmake
