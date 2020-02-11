@@ -31,6 +31,23 @@ TEST(SoUidMapTest, Ctor) {
   }
 }
 
+TEST(SoUidMapTest, CopyCtor) {
+  SoUidMap<int> map(10);
+  EXPECT_EQ(map.size(), 10u);
+
+  for(int i = 0; i < 10; ++i) {
+    map.Insert(SoUid(i), i);
+  }
+
+  SoUidMap<int> copy(map);
+  EXPECT_EQ(copy.size(), 10u);
+
+  for(int i = 0; i < 10; ++i) {
+    EXPECT_TRUE(copy.Contains(SoUid(i)));
+    EXPECT_EQ(copy[SoUid(i)], i);
+  }
+}
+
 TEST(SoUidMapTest, AddElements) {
   SoUidMap<int> map(10);
   EXPECT_EQ(map.size(), 10u);

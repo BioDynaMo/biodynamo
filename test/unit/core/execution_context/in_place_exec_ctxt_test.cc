@@ -19,6 +19,7 @@
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
 #include "unit/test_util/test_util.h"
+#include "unit/test_util/test_sim_object.h"
 
 namespace bdm {
 
@@ -215,6 +216,45 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
     // expected diameter: initial value + num_neighbors + 1
     EXPECT_EQ(num_neighbors[so->GetUid()] + 11, so->GetDiameter());
   });
+}
+
+TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
+  Simulation simulation(TEST_NAME);
+  auto* so_uid_generator = simulation.GetSoUidGenerator();
+
+  std::vector<uint64_t> used_indexes;
+  used_indexes.reserve(100000);
+
+#pragma omp parallel for
+  for(uint64_t i = 0; i < 100000; ++i) {
+     auto* new_so = new TestSimObject();
+     new_so->SetData(new_so->GetUid().GetIndex());
+
+     auto* ctxt = simulation.GetExecutionContext();
+     ctxt->push_back(new_so);
+
+     auto* random = simulation.GetRandom();
+     uint64_t random_number = 0;
+     uint64_t read_index = 0;
+
+     #pragma omp critical
+     {
+       used_indexes.push_back(new_so->GetUid().GetIndex());
+       random_number = static_cast<uint64_t>(std::round(random->Uniform(0, used_indexes.size() - 1)));
+       read_index = used_indexes[random_number];
+      //  std::cout << "i " << new_so->GetUid().GetIndex() << " r " << read_index << std::endl;
+     }
+
+     // select random element between 0 and max uid index and check if the
+     // data of the simulation object is correct
+    //  auto uid = SoUid(random_number);
+    //  std::cout << "read " << uid << std::endl;
+    //  auto* so = ctxt->GetSimObject(uid);
+    //   auto* tso = static_cast<TestSimObject*>(so);
+    // std::cout << ctxt->GetSimObject(SoUid(read_index)) << std::endl;
+     auto* tso = static_cast<TestSimObject*>(ctxt->GetSimObject(SoUid(read_index)));
+     EXPECT_EQ(static_cast<uint64_t>(tso->GetData()), read_index);
+  }
 }
 
 }  // namespace bdm

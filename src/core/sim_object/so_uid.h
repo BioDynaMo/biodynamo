@@ -138,6 +138,9 @@ class SoUidMap {
 public:
   SoUidMap() {}
 
+  SoUidMap(const SoUidMap& other)
+    : data_(other.data_), so_uid_reused_(other.so_uid_reused_) {}
+
   SoUidMap(uint64_t initial_size) {
     data_.resize(initial_size);
     so_uid_reused_.resize(initial_size, SoUid::kReusedMax);

@@ -19,11 +19,12 @@
 #include <functional>
 #include <utility>
 #include <vector>
-#include <unordered_map>
+#include <memory>
 
 #include "core/operation/operation.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/thread_info.h"
+#include "core/util/spinlock.h"
 #include "core/container/flatmap.h"
 
 namespace bdm {
@@ -47,7 +48,24 @@ class SimObject;
 /// Also removal of a sim object happens at the end of each iteration.
 class InPlaceExecutionContext {
  public:
-  InPlaceExecutionContext();
+   struct ThreadSafeSoUidMap {
+     using value_type = std::pair<SimObject*,uint64_t>;
+     ThreadSafeSoUidMap();
+     ~ThreadSafeSoUidMap();
+
+      void Insert(const SoUid& uid, const value_type& value);
+      bool Contains(const SoUid& uid) const;
+      const value_type& operator[](const SoUid& key) const;
+      uint64_t size() const;  // NOLINT
+      void RemoveOldCopies();
+
+       using Map = SoUidMap<value_type>;
+       Spinlock lock_;
+      Map* map_;
+      std::vector<Map*> previous_maps_;
+   };
+
+  InPlaceExecutionContext(const std::shared_ptr<ThreadSafeSoUidMap>& map);
 
   virtual ~InPlaceExecutionContext();
 
@@ -97,7 +115,7 @@ class InPlaceExecutionContext {
 
  private:
    /// Lookup table SoUid -> SoPointer for new created sim objects
-  static SoUidMap<std::pair<SimObject*,uint64_t>> new_so_map_;
+   std::shared_ptr<ThreadSafeSoUidMap> new_so_map_;
 
   ThreadInfo* tinfo_;
 
