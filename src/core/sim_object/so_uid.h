@@ -120,7 +120,8 @@ class SoUidGenerator {
 
   SoUid NewSoUid() { return SoUid(counter_++); }
 
-  SoUid GetLastId() const { return SoUid(counter_); }
+  // Returns the highest index that was used for a SoUid
+  uint64_t GetHighestIndex() const { return counter_; }
 
  private:
   std::atomic<typename SoUid::Index_t> counter_;  //!

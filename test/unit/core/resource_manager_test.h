@@ -64,7 +64,7 @@ inline void RunApplyOnAllElementsTest() {
   Simulation simulation("RunApplyOnAllElementsTest");
   auto* rm = simulation.GetResourceManager();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
 
   rm->push_back(new A(12));
   rm->push_back(new A(34));
@@ -113,7 +113,7 @@ inline void RunApplyOnAllElementsParallelTest() {
   Simulation simulation("RunApplyOnAllElementsParallelTest");
   auto* rm = simulation.GetResourceManager();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
 
   rm->push_back(new B(3.14));
   rm->push_back(new B(6.28));
@@ -226,7 +226,7 @@ inline void RunPushBackAndGetSimObjectTest() {
   Simulation simulation("RunPushBackAndGetSimObjectTest");
   auto* rm = simulation.GetResourceManager();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
 
   rm->push_back(new A(12));
   rm->push_back(new A(34));
@@ -548,7 +548,7 @@ inline void RunIOTest() {
   Simulation simulation("ResourceManagerTest-RunIOTest");
   auto* rm = simulation.GetResourceManager();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
   remove(ROOTFILE);
 
   // setup

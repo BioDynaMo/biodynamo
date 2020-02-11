@@ -161,7 +161,7 @@ class ResourceManager {
     // rebuild uid_soh_map_
     uid_soh_map_.clear();
     auto* so_uid_generator = Simulation::GetActive()->GetSoUidGenerator();
-    uid_soh_map_.resize(so_uid_generator->GetLastId());
+    uid_soh_map_.resize(so_uid_generator->GetHighestIndex() + 1);
     for (unsigned n = 0; n < sim_objects_.size(); ++n) {
       for (unsigned i = 0; i < sim_objects_[n].size(); ++i) {
         auto* so = sim_objects_[n][i];
@@ -362,7 +362,7 @@ class ResourceManager {
 
   void ResizeUidSohMap() {
     auto* so_uid_generator = Simulation::GetActive()->GetSoUidGenerator();
-    auto highest_idx = so_uid_generator->GetLastId().GetIndex();
+    auto highest_idx = so_uid_generator->GetHighestIndex();
     if (highest_idx >= uid_soh_map_.size()) {
       uid_soh_map_.resize(highest_idx * 1.5 + 1);
     }

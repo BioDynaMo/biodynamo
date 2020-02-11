@@ -38,8 +38,6 @@ TEST(GridTest, SetupGrid) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
-
   CellFactory(rm, 4);
 
   grid->Initialize();
@@ -67,31 +65,18 @@ TEST(GridTest, SetupGrid) {
                                     SoUid(54), SoUid(55), SoUid(57), SoUid(58), SoUid(59), SoUid(61), SoUid(62), SoUid(63)};
   std::vector<SoUid> expected_63 = {SoUid(42), SoUid(43), SoUid(46), SoUid(47), SoUid(58), SoUid(59), SoUid(62)};
 
-  for (auto& el : expected_0) {
-    el += ref_uid;
-  }
-  for (auto& el : expected_4) {
-    el += ref_uid;
-  }
-  for (auto& el : expected_42) {
-    el += ref_uid;
-  }
-  for (auto& el : expected_63) {
-    el += ref_uid;
-  }
+  std::sort(neighbors[SoUid(0)].begin(), neighbors[SoUid(0)].end());
+  std::sort(neighbors[SoUid(4)].begin(), neighbors[SoUid(4)].end());
+  std::sort(neighbors[SoUid(42)].begin(), neighbors[SoUid(42)].end());
+  std::sort(neighbors[SoUid(63)].begin(), neighbors[SoUid(63)].end());
 
-  std::sort(neighbors[ref_uid].begin(), neighbors[ref_uid].end());
-  std::sort(neighbors[ref_uid + 4].begin(), neighbors[ref_uid + 4].end());
-  std::sort(neighbors[ref_uid + 42].begin(), neighbors[ref_uid + 42].end());
-  std::sort(neighbors[ref_uid + 63].begin(), neighbors[ref_uid + 63].end());
-
-  EXPECT_EQ(expected_0, neighbors[ref_uid]);
-  EXPECT_EQ(expected_4, neighbors[ref_uid + 4]);
-  EXPECT_EQ(expected_42, neighbors[ref_uid + 42]);
-  EXPECT_EQ(expected_63, neighbors[ref_uid + 63]);
+  EXPECT_EQ(expected_0, neighbors[SoUid(0)]);
+  EXPECT_EQ(expected_4, neighbors[SoUid(4)]);
+  EXPECT_EQ(expected_42, neighbors[SoUid(42)]);
+  EXPECT_EQ(expected_63, neighbors[SoUid(63)]);
 }
 
-void RunUpdateGridTest(Simulation* simulation, const SoUid& ref_uid) {
+void RunUpdateGridTest(Simulation* simulation) {
   auto* rm = simulation->GetResourceManager();
   auto* grid = simulation->GetGrid();
 
@@ -122,28 +107,15 @@ void RunUpdateGridTest(Simulation* simulation, const SoUid& ref_uid) {
                                     SoUid(54), SoUid(56), SoUid(57), SoUid(58), SoUid(60), SoUid(61), SoUid(62)};
   std::vector<SoUid> expected_61 = {SoUid(40), SoUid(41), SoUid(44), SoUid(45), SoUid(46), SoUid(56), SoUid(57), SoUid(58), SoUid(60), SoUid(62)};
 
-  for (auto& el : expected_0) {
-    el += ref_uid;
-  }
-  for (auto& el : expected_5) {
-    el += ref_uid;
-  }
-  for (auto& el : expected_41) {
-    el += ref_uid;
-  }
-  for (auto& el : expected_61) {
-    el += ref_uid;
-  }
+  std::sort(neighbors[SoUid(0)].begin(), neighbors[SoUid(0)].end());
+  std::sort(neighbors[SoUid(5)].begin(), neighbors[SoUid(5)].end());
+  std::sort(neighbors[SoUid(41)].begin(), neighbors[SoUid(41)].end());
+  std::sort(neighbors[SoUid(61)].begin(), neighbors[SoUid(61)].end());
 
-  std::sort(neighbors[ref_uid].begin(), neighbors[ref_uid].end());
-  std::sort(neighbors[ref_uid + 5].begin(), neighbors[ref_uid + 5].end());
-  std::sort(neighbors[ref_uid + 41].begin(), neighbors[ref_uid + 41].end());
-  std::sort(neighbors[ref_uid + 61].begin(), neighbors[ref_uid + 61].end());
-
-  EXPECT_EQ(expected_0, neighbors[ref_uid]);
-  EXPECT_EQ(expected_5, neighbors[ref_uid + 5]);
-  EXPECT_EQ(expected_41, neighbors[ref_uid + 41]);
-  EXPECT_EQ(expected_61, neighbors[ref_uid + 61]);
+  EXPECT_EQ(expected_0, neighbors[SoUid(0)]);
+  EXPECT_EQ(expected_5, neighbors[SoUid(5)]);
+  EXPECT_EQ(expected_41, neighbors[SoUid(41)]);
+  EXPECT_EQ(expected_61, neighbors[SoUid(61)]);
 }
 
 // TODO(lukas) Add tests for Grid::ForEachNeighbor
@@ -153,19 +125,17 @@ TEST(GridTest, UpdateGrid) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
-
   CellFactory(rm, 4);
 
   grid->Initialize();
 
   // Remove cells 1 and 42
-  rm->Remove(ref_uid + 1);
-  rm->Remove(ref_uid + 42);
+  rm->Remove(SoUid(1));
+  rm->Remove(SoUid(42));
 
   EXPECT_EQ(62u, rm->GetNumSimObjects());
 
-  RunUpdateGridTest(&simulation, ref_uid);
+  RunUpdateGridTest(&simulation);
 }
 
 TEST(GridTest, NoRaceConditionDuringUpdate) {
@@ -173,23 +143,21 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
-
   CellFactory(rm, 4);
 
   // make sure that there are multiple cells per box
-  rm->GetSimObject(ref_uid)->SetDiameter(60);
+  rm->GetSimObject(SoUid(0))->SetDiameter(60);
 
   grid->Initialize();
 
   // Remove cells 1 and 42
-  rm->Remove(ref_uid + 1);
-  rm->Remove(ref_uid + 42);
+  rm->Remove(SoUid(1));
+  rm->Remove(SoUid(42));
 
   // run 100 times to increase possibility of race condition due to different
   // scheduling of threads
   for (uint16_t i = 0; i < 100; i++) {
-    RunUpdateGridTest(&simulation, ref_uid);
+    RunUpdateGridTest(&simulation);
   }
 }
 
@@ -224,8 +192,6 @@ TEST(GridTest, GridDimensions) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
-
   CellFactory(rm, 3);
 
   grid->Initialize();
@@ -235,7 +201,7 @@ TEST(GridTest, GridDimensions) {
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
-  rm->GetSimObject(ref_uid)->SetPosition({{100, 0, 0}});
+  rm->GetSimObject(SoUid(0))->SetPosition({{100, 0, 0}});
   grid->UpdateGrid();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
   auto& dim_1 = grid->GetDimensions();
@@ -283,7 +249,7 @@ TEST(GridTest, IterateZOrder) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = simulation.GetSoUidGenerator()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
   CellFactory(rm, 3);
 
   // expecting a 4 * 4 * 4 grid
