@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <vector>
 
+#include "core/util/root.h"
+
 namespace bdm {
 
 /// \brief std::vector with parallel resize
@@ -28,6 +30,7 @@ class ParallelResizeVector {
   using const_iterator = const T*;
   using value_type = T;
 
+  explicit ParallelResizeVector(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
   ParallelResizeVector() {}
   ParallelResizeVector(std::initializer_list<T> init) {
     reserve(init.size());
@@ -49,7 +52,7 @@ class ParallelResizeVector {
     capacity_ = other.capacity_;
   }
 
-  ~ParallelResizeVector() {
+  virtual ~ParallelResizeVector() {
     if (data_ != nullptr) {
 #pragma omp parallel for
       for (std::size_t i = 0; i < size_; i++) {
@@ -81,7 +84,7 @@ class ParallelResizeVector {
     other.data_ = tmp;
   }
 
-  std::size_t capacity() const { return capacity_; }  // NOLINT
+  UInt_t capacity() const { return capacity_; }  // NOLINT
 
   void push_back(const T& element) {  // NOLINT
     if (capacity_ == size_) {
@@ -90,7 +93,7 @@ class ParallelResizeVector {
     new (&(data_[size_++])) T(element);
   }
 
-  void reserve(std::size_t new_capacity) {  // NOLINT
+  void reserve(UInt_t new_capacity) {  // NOLINT
     if (new_capacity > capacity_) {
       T* new_data = static_cast<T*>(malloc(new_capacity * sizeof(T)));
       if (data_ != nullptr) {
@@ -165,8 +168,9 @@ class ParallelResizeVector {
  private:
   static constexpr float kGrowFactor = 1.5;
   std::size_t size_ = 0;
-  std::size_t capacity_ = 0;
-  T* data_ = nullptr;
+  UInt_t capacity_ = 0;
+  T* data_ = nullptr;  //[capacity_]  // NOLINT
+  BDM_CLASS_DEF(ParallelResizeVector, 1);  // NOLINT
 };
 
 }  // namespace bdm
