@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
-#include "core/sim_object/so_uid.h"
+#include "core/container/so_uid_map.h"
 
 namespace bdm {
 

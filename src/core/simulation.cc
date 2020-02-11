@@ -34,7 +34,6 @@
 #include "core/util/string.h"
 #include "core/util/thread_info.h"
 #include "core/visualization/root/adaptor.h"
-#include "core/sim_object/so_uid.h"
 #include "version.h"
 
 #include <TEnv.h>

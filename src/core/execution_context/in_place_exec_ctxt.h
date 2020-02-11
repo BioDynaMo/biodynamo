@@ -21,6 +21,7 @@
 #include <vector>
 #include <memory>
 
+#include "core/container/so_uid_map.h"
 #include "core/operation/operation.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/thread_info.h"

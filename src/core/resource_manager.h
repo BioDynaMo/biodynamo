@@ -41,6 +41,7 @@
 #endif
 #endif
 
+#include "core/container/so_uid_map.h"
 #include "core/diffusion_grid.h"
 #include "core/sim_object/sim_object.h"
 #include "core/sim_object/so_uid.h"

@@ -21,6 +21,7 @@
 #include "core/util/random.h"
 #include "core/util/root.h"
 #include "core/sim_object/so_uid.h"
+#include "core/sim_object/so_uid_generator.h"
 
 namespace bdm {
 

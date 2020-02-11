@@ -30,7 +30,6 @@
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/grid.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/so_uid.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 #include "core/util/macros.h"
