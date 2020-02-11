@@ -19,12 +19,22 @@ keywords:
   -tracking
 ---
 
+## 11.02.2020 [`0d6407d`](https://github.com/BioDynaMo/biodynamo/commit/0d6407d52e8fdfdf981364ed6c41aa37206f422e)
+
+Upgrade to Python 3.
+
+Since Python 2 is not supported in 2020 anymore, we upgrade to Python 3 (Mac OS
+excluded momentarily. We rely on PyEnv to create a consistent Python 3
+environment through `thisbdm.sh`. For those who are not on Mac OS, please make
+sure that PyEnv is installed correctly by rerunning the prerequisites script, or
+check out the installation guide.
+
 ## 11.09.2019 [`0719cd6`](https://github.com/BioDynaMo/biodynamo/commit/0719cd6bafd100439336de71bee55ee2c506e9cf)
 
 Add SBML integration.
 Currently SBML is not supported on MacOS (see https://trello.com/c/vKPbh4iG).
 
-## 05.08.2019 [`/d7bab00`](https://github.com/BioDynaMo/biodynamo/commit/d7bab00d9307b29794490de0519c4c5c77bac435)
+## 05.08.2019 [`d7bab00`](https://github.com/BioDynaMo/biodynamo/commit/d7bab00d9307b29794490de0519c4c5c77bac435)
 
 Major improvements of the BioDynaMo's build system.
 
