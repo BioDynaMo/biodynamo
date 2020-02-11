@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 #include "core/sim_object/so_uid.h"
+#include "unit/test_util/io_test.h"
 
 namespace bdm {
 
@@ -99,5 +100,19 @@ TEST(SoUidTest, uint64_tOperator2) {
   uint64_t idx = uid;
   EXPECT_EQ(idx, 8589934715u); //(2 << 32) | 123u);
 }
+
+#ifdef USE_DICT
+TEST_F(IOTest, SoUid) {
+  SoUid test{123u, 456u};
+  SoUid* restored = nullptr;
+
+  BackupAndRestore(test, &restored);
+
+  EXPECT_EQ(restored->GetIndex(), 123u);
+  EXPECT_EQ(restored->GetReused(), 456u);
+
+  delete restored;
+}
+#endif  // USE_DICT
 
 }  // namespace bdm
