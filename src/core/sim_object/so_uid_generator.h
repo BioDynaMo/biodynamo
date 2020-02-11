@@ -35,8 +35,23 @@ class SoUidGenerator {
 
  private:
   std::atomic<typename SoUid::Index_t> counter_;  //!
+  /// ROOT can't persist std::atomic.
+  /// Therefore this additional helper variable is needed.
+  typename SoUid::Index_t root_counter_;
   BDM_CLASS_DEF_NV(SoUidGenerator, 1);
 };
+
+inline void SoUidGenerator::Streamer(TBuffer &R__b) {
+  // Stream an object of class Foo.
+  if (R__b.IsReading()) {
+    R__b.ReadClassBuffer(SoUidGenerator::Class(), this);
+    this->counter_ = this->root_counter_;
+  } else {
+    this->root_counter_ = this->counter_.load();
+    R__b.WriteClassBuffer(SoUidGenerator::Class(), this);
+  }
+}
+
 
 }  // namespace bdm
 
