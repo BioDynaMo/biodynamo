@@ -40,6 +40,7 @@ class SimulationTest : public ::testing::Test {
       "bound_space = true\n"
       "min_bound = -100\n"
       "max_bound =  200\n"
+      "thread_safety_mechanism = \"automatic\"\n"
       "\n"
       "[visualization]\n"
       "live = false\n"
@@ -108,6 +109,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_TRUE(param->bound_space_);
     EXPECT_EQ(-100, param->min_bound_);
     EXPECT_EQ(200, param->max_bound_);
+    EXPECT_EQ(Param::ThreadSafetyMechanism::kAutomatic, param->thread_safety_mechanism_);
     EXPECT_FALSE(param->live_visualization_);
     EXPECT_TRUE(param->export_visualization_);
     EXPECT_EQ(100u, param->visualization_export_interval_);

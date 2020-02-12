@@ -46,6 +46,30 @@ void Param::Restore(Param&& other) {
   other.modules_.clear();
 }
 
+void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config, Param* param) {
+  const std::string config_key = "simulation.thread_safety_mechanism";
+  std::cout << "FOO 1" << std::endl;
+  if (config->contains_qualified(config_key)) {
+    std::cout << "FOO 2" << std::endl;
+    auto value = config->get_qualified_as<std::string>(config_key);
+    std::cout << "FOO 3" << std::endl;
+    if (!value) {
+      return;
+    }
+    std::cout << "FOO 4" << std::endl;
+    auto str_value = *value;
+    std::cout << "FOO 5" << std::endl;
+    if (str_value == "none") {
+      param->thread_safety_mechanism_ = Param::ThreadSafetyMechanism::kNone;
+    } else if (str_value == "user-specified") {
+      param->thread_safety_mechanism_ = Param::ThreadSafetyMechanism::kUserSpecified;
+    } else if (str_value == "automatic") {
+      param->thread_safety_mechanism_ = Param::ThreadSafetyMechanism::kAutomatic;
+    }
+    std::cout << "FOO 6" << std::endl;
+  }
+}
+
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // module parameters
   for (auto& el : modules_) {
@@ -68,6 +92,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(leaking_edges_, "simulation.leaking_edges");
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients_,
                           "simulation.calculate_gradients");
+  AssignThreadSafetyMechanism(config, this);
+
   // visualization group
   BDM_ASSIGN_CONFIG_VALUE(visualization_engine_, "visualization.adaptor");
   BDM_ASSIGN_CONFIG_VALUE(live_visualization_, "visualization.live");
