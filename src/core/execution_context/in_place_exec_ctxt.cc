@@ -305,10 +305,6 @@ void InPlaceExecutionContext::RemoveFromSimulation(const SoUid& uid) {
   remove_.push_back(uid);
 }
 
-void InPlaceExecutionContext::DisableNeighborGuard() {
-  Simulation::GetActive()->GetGrid()->DisableNeighborMutexes();
-}
-
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*
 
 }  // namespace bdm

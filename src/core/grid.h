@@ -359,7 +359,7 @@ class Grid {
         threshold_dimensions_ = {min, max};
       }
 
-      if (nb_mutex_builder_ != nullptr) {
+      if (param->thread_safety_mechanism_ == Param::ThreadSafetyMechanism::kAutomatic) {
         nb_mutex_builder_->Update();
       }
     } else {
@@ -726,13 +726,8 @@ class Grid {
     std::vector<MutexWrapper> mutexes_;
   };
 
-  /// Disable neighbor mutexes management. `GetNeighborMutexBuilder()` will
-  /// return a nullptr.
-  void DisableNeighborMutexes() { nb_mutex_builder_ = nullptr; }
-
   /// Returns the `NeighborMutexBuilder`. The client use it to create a
-  /// `NeighborMutex`. If neighbor mutexes has been disabled by calling
-  /// `DisableNeighborMutexes`, this function will return a nullptr.
+  /// `NeighborMutex`.
   NeighborMutexBuilder* GetNeighborMutexBuilder() {
     return nb_mutex_builder_.get();
   }
@@ -774,8 +769,9 @@ class Grid {
   /// stores pairs of <box morton code,  box pointer> sorted by morton code.
   ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
 
-  /// Holds instance of NeighborMutexBuilder if it is enabled.
-  /// If `DisableNeighborMutexes` has been called this member set to nullptr.
+  /// Holds instance of NeighborMutexBuilder.
+  /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism_`
+  /// is set to `kAutomatic`
   std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ =
       std::make_unique<NeighborMutexBuilder>();
 
