@@ -15,9 +15,6 @@
 #define VISUALIZATION_ROOT_ADAPTOR_H_
 
 #include <TCanvas.h>
-#include <TEveBrowser.h>
-#include <TEveGeoNode.h>
-#include <TEveManager.h>
 #include <TGeoManager.h>
 #include <TMath.h>
 #include <TSystem.h>

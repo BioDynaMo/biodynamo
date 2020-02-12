@@ -214,11 +214,8 @@ endif()
 find_package(Git)
 
 # Find ROOT and check its installation
-find_package(ROOT COMPONENTS Geom Gui Eve GenVector)
+find_package(ROOT COMPONENTS Geom Gui GenVector)
 verify_ROOT()
-if(ROOT_FOUND)
-  message("-- ROOT_VERSION = ${ROOT_VERSION}")
-endif()
 
 if (dict)
   add_definitions("-DUSE_DICT")
