@@ -62,10 +62,10 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
                     SimObject* other2 = nullptr) override;
 
   const SoUid& GetUid() const override { return Base::GetUid(); }
+
   Spinlock* GetLock() override { return Base::GetLock(); }
-  void CriticalRegion(std::vector<Spinlock*>* locks) override {
-    // FIXME
-  }
+
+  void CriticalRegion(std::vector<Spinlock*>* locks) override;
 
   // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *

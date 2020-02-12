@@ -190,7 +190,6 @@ void InPlaceExecutionContext::Execute(
   auto* param = Simulation::GetActive()->GetParam();
 
   if (param->thread_safety_mechanism_ == Param::ThreadSafetyMechanism::kUserSpecified) {
-    locks.push_back(so->GetLock());
     so->CriticalRegion(&locks);
     std::sort(locks.begin(), locks.end());
     for(auto* l : locks) {
