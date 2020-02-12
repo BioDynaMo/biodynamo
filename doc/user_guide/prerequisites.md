@@ -65,6 +65,8 @@ libopenmpi-dev libomp-dev libnuma-dev libtbb-dev freeglut3-dev \
 libpthread-stubs0-dev
 
 curl https://pyenv.run | bash
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
 env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
 ```
 
@@ -125,6 +127,8 @@ sudo yum -y install wget cmake3 libXt-devel libXext-devel \
   tbb-devel openmpi3-devel freeglut-devel git
 
 curl https://pyenv.run | bash
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
 env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
 ```
 #### Optional Packages
