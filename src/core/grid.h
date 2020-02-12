@@ -359,7 +359,8 @@ class Grid {
         threshold_dimensions_ = {min, max};
       }
 
-      if (param->thread_safety_mechanism_ == Param::ThreadSafetyMechanism::kAutomatic) {
+      if (param->thread_safety_mechanism_ ==
+          Param::ThreadSafetyMechanism::kAutomatic) {
         nb_mutex_builder_->Update();
       }
     } else {

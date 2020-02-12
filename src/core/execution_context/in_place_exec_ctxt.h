@@ -25,7 +25,6 @@
 #include "core/sim_object/so_uid.h"
 #include "core/util/spinlock.h"
 #include "core/util/thread_info.h"
-#include "core/util/spinlock.h"
 
 namespace bdm {
 

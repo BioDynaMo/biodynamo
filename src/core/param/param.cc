@@ -46,7 +46,8 @@ void Param::Restore(Param&& other) {
   other.modules_.clear();
 }
 
-void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config, Param* param) {
+void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config,
+                                 Param* param) {
   const std::string config_key = "simulation.thread_safety_mechanism";
   if (config->contains_qualified(config_key)) {
     auto value = config->get_qualified_as<std::string>(config_key);
@@ -57,9 +58,11 @@ void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config, 
     if (str_value == "none") {
       param->thread_safety_mechanism_ = Param::ThreadSafetyMechanism::kNone;
     } else if (str_value == "user-specified") {
-      param->thread_safety_mechanism_ = Param::ThreadSafetyMechanism::kUserSpecified;
+      param->thread_safety_mechanism_ =
+          Param::ThreadSafetyMechanism::kUserSpecified;
     } else if (str_value == "automatic") {
-      param->thread_safety_mechanism_ = Param::ThreadSafetyMechanism::kAutomatic;
+      param->thread_safety_mechanism_ =
+          Param::ThreadSafetyMechanism::kAutomatic;
     }
   }
 }

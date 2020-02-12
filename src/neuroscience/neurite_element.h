@@ -181,7 +181,6 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     }
   }
 
-
   Shape GetShape() const override { return Shape::kCylinder; }
 
   /// Returns the data members that are required to visualize this simulation

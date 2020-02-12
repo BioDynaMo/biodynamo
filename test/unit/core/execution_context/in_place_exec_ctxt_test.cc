@@ -163,10 +163,11 @@ TEST(InPlaceExecutionContext, Execute) {
   EXPECT_TRUE(op2_called);
 }
 
-void RunInPlaceExecutionContextExecuteThreadSafety(Param::ThreadSafetyMechanism mechanism) {
-  Simulation sim("RunInPlaceExecutionContextExecuteThreadSafety", [&](Param* param) {
-    param->thread_safety_mechanism_ = mechanism;
-  });
+void RunInPlaceExecutionContextExecuteThreadSafety(
+    Param::ThreadSafetyMechanism mechanism) {
+  Simulation sim(
+      "RunInPlaceExecutionContextExecuteThreadSafety",
+      [&](Param* param) { param->thread_safety_mechanism_ = mechanism; });
   auto* rm = sim.GetResourceManager();
 
   // create cells
@@ -201,7 +202,7 @@ void RunInPlaceExecutionContextExecuteThreadSafety(Param::ThreadSafetyMechanism 
     // one corresponding to the master thread
     auto* ctxt = sim.GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(nb_lambda, *so, 100);
-  #pragma omp critical
+#pragma omp critical
     num_neighbors[so->GetUid()] = nb_counter;
   });
 
@@ -218,12 +219,15 @@ void RunInPlaceExecutionContextExecuteThreadSafety(Param::ThreadSafetyMechanism 
   });
 }
 
-TEST(InPlaceExecutionContext, ExecuteThreadSafetyTestWithUserSpecifiedThreadSafety) {
-  RunInPlaceExecutionContextExecuteThreadSafety(Param::ThreadSafetyMechanism::kUserSpecified);
+TEST(InPlaceExecutionContext,
+     ExecuteThreadSafetyTestWithUserSpecifiedThreadSafety) {
+  RunInPlaceExecutionContextExecuteThreadSafety(
+      Param::ThreadSafetyMechanism::kUserSpecified);
 }
 
 TEST(InPlaceExecutionContext, ExecuteThreadSafetyTestAutomaticThreadSafety) {
-  RunInPlaceExecutionContextExecuteThreadSafety(Param::ThreadSafetyMechanism::kAutomatic);
+  RunInPlaceExecutionContextExecuteThreadSafety(
+      Param::ThreadSafetyMechanism::kAutomatic);
 }
 
 TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {

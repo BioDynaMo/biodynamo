@@ -139,7 +139,7 @@ const std::vector<SoPointer<NeuriteElement>>& NeuronSoma::GetDaughters() const {
 void NeuronSoma::CriticalRegion(std::vector<Spinlock*>* locks) {
   locks->reserve(daughters_.size() + 1);
   locks->push_back(GetLock());
-  for(auto& daughter : daughters_) {
+  for (auto& daughter : daughters_) {
     locks->push_back(daughter->GetLock());
   }
 }

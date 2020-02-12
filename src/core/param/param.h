@@ -180,7 +180,8 @@ struct Param {
   ///
   ///     [simulation]
   ///     thread_safety_mechanism_ = "none"
-  ThreadSafetyMechanism thread_safety_mechanism_ = ThreadSafetyMechanism::kUserSpecified;
+  ThreadSafetyMechanism thread_safety_mechanism_ =
+      ThreadSafetyMechanism::kUserSpecified;
 
   // visualization values ------------------------------------------------------
 
