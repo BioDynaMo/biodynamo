@@ -179,6 +179,14 @@ class SimObject {
   const SoUid& GetUid() const;
 
   Spinlock* GetLock() { return &lock_; }
+
+  /// If the thread-safety mechanism is set to user-specified this function
+  /// will be called before the operations are executed for this simulation
+  /// object.\n
+  /// Subclasses define the critical region by adding the locks of all
+  /// simulation objects that must not be processed in parallel. \n
+  /// Don't forget to add the lock of the current simulation object.\n
+  /// \see `Param::thread_safety_mechanism_`
   virtual void CriticalRegion(std::vector<Spinlock*>* locks) {}
 
   uint32_t GetBoxIdx() const;

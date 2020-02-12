@@ -169,8 +169,10 @@ struct Param {
 
   /// List of thread-safety mechanisms \n
   /// `kNone`: \n
-  /// `kUserSpecified`:
-  /// `kAutomatic`:
+  /// `kUserSpecified`: The user has to define all simulation object that must
+  /// not be processed in parallel. \see `SimObject::CriticalRegion`.\n
+  /// `kAutomatic`: The simulation automatically locks all simulation objects
+  /// of the microenvironment.
   enum ThreadSafetyMechanism { kNone = 0, kUserSpecified, kAutomatic };
   /// Select the thread-safety mechanism.\n
   /// Possible values are: none, user-specified, automatic.\n

@@ -217,7 +217,7 @@ void InPlaceExecutionContext::Execute(
       op(so);
     }
   } else {
-    Log::Fatal("InPlaceExecutionContext::Execut", "Invalid value for parameter thread_safety_mechanism_: ", param->thread_safety_mechanism_);
+    Log::Fatal("InPlaceExecutionContext::Execute", "Invalid value for parameter thread_safety_mechanism_: ", param->thread_safety_mechanism_);
   }
 }
 
