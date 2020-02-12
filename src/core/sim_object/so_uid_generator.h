@@ -27,13 +27,16 @@
 
 namespace bdm {
 
-/// This class generates unique ids for simulation objects events satisfying the
-/// EventId invariant. Thread safe.
+/// This class generates unique ids for simulation objects.
+/// All functions are  thread safe.
 class SoUidGenerator {
  public:
   SoUidGenerator(const SoUidGenerator&) = delete;
   SoUidGenerator() : counter_(0) {}
 
+  /// Generates SoUid with increasing index.
+  /// In defragmentation mode it resuses index values from removed sim objects
+  /// and sets the reused field to the current simulation step.
   SoUid NewSoUid() {
     if (map_ != nullptr) {
       // defragmentation mode

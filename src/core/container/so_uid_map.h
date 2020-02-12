@@ -22,7 +22,12 @@
 
 namespace bdm {
 
-// TODO documentation
+/// SoUidMap is an associative container that exploits the properties of SoUid
+/// to store data in contigous arrays.
+/// Inserting elements and reading elements at the same time is thread-safe
+/// as long as the keys are different.
+/// These operations with distinct keys are lock-free and atomic free, and thus
+/// offer high-performance.
 template <typename TValue>
 class SoUidMap {
   struct Iterator {
@@ -92,8 +97,6 @@ public:
   typename SoUid::Reused_t GetReused(uint64_t index) const {
     return so_uid_reused_[index];
   }
-
-  // find, erase, begin, end
 
 private:
   std::vector<TValue> data_;
