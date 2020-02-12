@@ -29,6 +29,7 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
+#include "core/sim_object/so_uid_generator.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
 #include "core/util/string.h"
@@ -127,6 +128,9 @@ Simulation::~Simulation() {
   delete rm_;
   delete grid_;
   delete scheduler_;
+  if (so_uid_generator_ != nullptr) {
+    delete so_uid_generator_;
+  }
   delete param_;
   for (auto* r : random_) {
     delete r;
@@ -149,6 +153,8 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
 
 /// Returns the simulation parameters
 const Param* Simulation::GetParam() const { return param_; }
+
+SoUidGenerator* Simulation::GetSoUidGenerator() { return so_uid_generator_; }
 
 Grid* Simulation::GetGrid() { return grid_; }
 
@@ -196,6 +202,7 @@ void Simulation::Initialize(CommandLineOptions* clo,
 }
 
 void Simulation::InitializeMembers() {
+  so_uid_generator_ = new SoUidGenerator();
   if (param_->debug_numa_) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
   }
@@ -206,9 +213,11 @@ void Simulation::InitializeMembers() {
     random_[i] = new Random();
   }
   exec_ctxt_.resize(omp_get_max_threads());
+  auto map =
+      std::make_shared<typename InPlaceExecutionContext::ThreadSafeSoUidMap>();
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
-    exec_ctxt_[i] = new InPlaceExecutionContext();
+    exec_ctxt_[i] = new InPlaceExecutionContext(map);
   }
   rm_ = new ResourceManager();
   grid_ = new Grid();

@@ -15,6 +15,7 @@
 // I/O related code must be in header file
 #include "unit/core/resource_manager_test.h"
 #include "unit/test_util/io_test.h"
+#include "unit/test_util/test_sim_object.h"
 
 namespace bdm {
 
@@ -76,6 +77,43 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   counter = 0;
   rm.ApplyOnAllDiffusionGrids(count);
   ASSERT_EQ(2, counter);
+}
+
+TEST(ResourceManagerTest, TurnOnOffSoUidDefragmentation) {
+  auto set_param = [](Param* param) {
+    param->souid_defragmentation_low_watermark_ = 0.3;
+    param->souid_defragmentation_high_watermark_ = 0.8;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  auto* rm = simulation.GetResourceManager();
+  auto* so_uid_generator = simulation.GetSoUidGenerator();
+
+  // utilization = 0.5 > low watermark -> don't defragment
+  //   create 10 objects
+  for (uint64_t i = 0; i < 10; i++) {
+    rm->push_back(new TestSimObject());
+  }
+  //   remove 5
+  for (uint64_t i = 0; i < 5; i++) {
+    rm->Remove(SoUid(i));
+  }
+  rm->EndOfIteration();
+  EXPECT_FALSE(so_uid_generator->IsInDefragmentationMode());
+
+  // utilization 0.2 < low watermark -> turn on defragmentation
+  rm->Remove(SoUid(5));
+  rm->Remove(SoUid(6));
+  rm->Remove(SoUid(7));
+  rm->EndOfIteration();
+  EXPECT_FALSE(so_uid_generator->IsInDefragmentationMode());
+
+  // utilization < low watermark -> turn off defragmentation
+  for (uint64_t i = 0; i < 6; i++) {
+    rm->push_back(new TestSimObject());
+  }
+  rm->EndOfIteration();
+  EXPECT_FALSE(so_uid_generator->IsInDefragmentationMode());
 }
 
 }  // namespace bdm

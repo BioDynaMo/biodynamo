@@ -31,7 +31,7 @@ inline void RunTest() {
   auto* ctxt = simulation.GetExecutionContext();
   ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
 
   Cell* cell_0 = new Cell(41.0);
   Cell* cell_1 = new Cell(19.0);

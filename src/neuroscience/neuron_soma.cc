@@ -101,7 +101,7 @@ void NeuronSoma::RemoveDaughter(const SoPointer<NeuriteElement>& daughter) {
   daughters_.erase(it);
 }
 
-Double3 NeuronSoma::OriginOf(SoUid daughter_uid) const {
+Double3 NeuronSoma::OriginOf(const SoUid& daughter_uid) const {
   Double3 xyz = daughters_coord_.at(daughter_uid);
 
   double radius = Base::diameter_ * .5;

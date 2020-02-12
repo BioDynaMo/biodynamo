@@ -308,6 +308,24 @@ struct Param {
   ///     cache_neighbors = false
   bool cache_neighbors_ = false;
 
+  /// If the utilization in the SoUidMap inside ResourceManager falls below
+  /// this watermark, defragmentation will be turned on.\n
+  /// Default value: `0.5`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     souid_defragmentation_low_watermark = 0.5
+  double souid_defragmentation_low_watermark_ = 0.5;
+
+  /// If the utilization in the SoUidMap inside ResourceManager rises above
+  /// this watermark, defragmentation will be turned off.\n
+  /// Default value: `0.9`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     souid_defragmentation_high_watermark = 0.9
+  double souid_defragmentation_high_watermark_ = 0.9;
+
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n

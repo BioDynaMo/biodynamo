@@ -25,7 +25,7 @@ TEST(DisplacementOpTest, ComputeNew) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
 
   double space = 20;
   for (size_t i = 0; i < 3; i++) {

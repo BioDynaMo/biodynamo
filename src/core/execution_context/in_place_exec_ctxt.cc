@@ -14,18 +14,88 @@
 
 #include "core/execution_context/in_place_exec_ctxt.h"
 
+#include <algorithm>
+#include <mutex>
+
 #include "core/grid.h"
 #include "core/resource_manager.h"
+#include "core/scheduler.h"
 #include "core/sim_object/sim_object.h"
 
 namespace bdm {
 
-InPlaceExecutionContext::InPlaceExecutionContext()
-    : tinfo_(ThreadInfo::GetInstance()) {}
+InPlaceExecutionContext::ThreadSafeSoUidMap::ThreadSafeSoUidMap() {
+  map_ = new ThreadSafeSoUidMap::Map(
+      0);  // Map(1e8);  // FIXME find better initialization value
+}
+
+InPlaceExecutionContext::ThreadSafeSoUidMap::~ThreadSafeSoUidMap() {
+  if (map_) {
+    delete map_;
+  }
+  for (auto* map : previous_maps_) {
+    delete map;
+  }
+  previous_maps_.clear();
+}
+
+void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
+    const SoUid& uid,
+    const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
+        value) {
+  auto index = uid.GetIndex();
+  if (map_->size() > index + ThreadInfo::GetInstance()->GetMaxThreads()) {
+    // enough free slots -> no locking required
+    map_->Insert(uid, value);
+  } else {
+    std::lock_guard<Spinlock> guard(lock_);
+    // check again
+    if (map_->size() <= index) {
+      // map is too small -> grow
+      auto* new_map = new Map(*map_);
+      new_map->resize(std::max(static_cast<uint64_t>(1000u),
+                               static_cast<uint64_t>(map_->size() * 1.5)));
+      previous_maps_.emplace_back(map_);
+      map_ = new_map;
+    }
+    map_->Insert(uid, value);
+  }
+}
+
+bool InPlaceExecutionContext::ThreadSafeSoUidMap::Contains(
+    const SoUid& uid) const {
+  return map_->Contains(uid);
+}
+
+const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
+    InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](
+        const SoUid& key) const {
+  return (*map_)[key];
+}
+
+uint64_t InPlaceExecutionContext::ThreadSafeSoUidMap::Size() const {
+  return map_->size();
+}
+void InPlaceExecutionContext::ThreadSafeSoUidMap::Resize(uint64_t new_size) {
+  map_->resize(new_size);
+}
+
+void InPlaceExecutionContext::ThreadSafeSoUidMap::RemoveOldCopies() {
+  for (auto* map : previous_maps_) {
+    delete map;
+  }
+  previous_maps_.clear();
+}
+
+InPlaceExecutionContext::InPlaceExecutionContext(
+    const std::shared_ptr<ThreadSafeSoUidMap>& map)
+    : new_so_map_(map), tinfo_(ThreadInfo::GetInstance()) {
+  new_sim_objects_.reserve(1e3);
+}
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
-  for (auto& el : new_sim_objects_) {
-    delete el.second;
+  for (auto* so : new_sim_objects_) {
+    delete so;
   }
 }
 
@@ -51,6 +121,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
   // reserve enough memory in ResourceManager
   std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
   auto* rm = Simulation::GetActive()->GetResourceManager();
+  rm->ResizeUidSohMap();
   for (unsigned n = 0; n < new_so_per_numa.size(); n++) {
     numa_offsets[n] = rm->GrowSoContainer(new_so_per_numa[n], n);
   }
@@ -65,7 +136,8 @@ void InPlaceExecutionContext::TearDownIterationAll(
     ctxt->new_sim_objects_.clear();
   }
 
-  // remove
+// remove
+#pragma omp parallel for schedule(static, 1)
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
     // removed sim objects
@@ -75,6 +147,15 @@ void InPlaceExecutionContext::TearDownIterationAll(
       rm->Remove(uid);
     }
     ctxt->remove_.clear();
+  }
+
+  rm->EndOfIteration();
+
+  // FIXME
+  // new_so_map_.SetOffset(SoUidGenerator::Get()->GetLastId());
+  new_so_map_->RemoveOldCopies();
+  if (rm->GetNumSimObjects() > new_so_map_->Size()) {
+    new_so_map_->Resize(rm->GetNumSimObjects() * 1.5);
   }
 }
 
@@ -98,7 +179,9 @@ void InPlaceExecutionContext::Execute(
 }
 
 void InPlaceExecutionContext::push_back(SimObject* new_so) {  // NOLINT
-  new_sim_objects_[new_so->GetUid()] = new_so;
+  new_sim_objects_.push_back(new_so);
+  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+  new_so_map_->Insert(new_so->GetUid(), {new_so, timesteps});
 }
 
 void InPlaceExecutionContext::ForEachNeighbor(
@@ -166,34 +249,23 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   grid->ForEachNeighbor(for_each, query);
 }
 
-SimObject* InPlaceExecutionContext::GetSimObject(SoUid uid) {
-  auto* so = GetCachedSimObject(uid);
-  if (so != nullptr) {
-    return so;
-  }
-
+SimObject* InPlaceExecutionContext::GetSimObject(const SoUid& uid) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
-  so = rm->GetSimObject(uid);
+  auto* so = rm->GetSimObject(uid);
   if (so != nullptr) {
     return so;
   }
 
-  // sim object must be cached in another InPlaceExecutionContext
-  for (auto* ctxt : sim->GetAllExecCtxts()) {
-    so = ctxt->GetCachedSimObject(uid);
-    if (so != nullptr) {
-      return so;
-    }
-  }
-  return nullptr;
+  // returns nullptr if the object is not found
+  return GetCachedSimObject(uid);
 }
 
-const SimObject* InPlaceExecutionContext::GetConstSimObject(SoUid uid) {
+const SimObject* InPlaceExecutionContext::GetConstSimObject(const SoUid& uid) {
   return GetSimObject(uid);
 }
 
-void InPlaceExecutionContext::RemoveFromSimulation(SoUid uid) {
+void InPlaceExecutionContext::RemoveFromSimulation(const SoUid& uid) {
   remove_.push_back(uid);
 }
 
@@ -201,13 +273,16 @@ void InPlaceExecutionContext::DisableNeighborGuard() {
   Simulation::GetActive()->GetGrid()->DisableNeighborMutexes();
 }
 
-SimObject* InPlaceExecutionContext::GetCachedSimObject(SoUid uid) {
-  SimObject* ret_val = nullptr;
-  auto search_it = new_sim_objects_.find(uid);
-  if (search_it != new_sim_objects_.end()) {
-    ret_val = search_it->second;
+SimObject* InPlaceExecutionContext::GetCachedSimObject(const SoUid& uid) {
+  if (!new_so_map_->Contains(uid)) {
+    return nullptr;
   }
-  return ret_val;
+  auto& pair = (*new_so_map_)[uid];
+  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+  if (pair.second == timesteps) {
+    return pair.first;
+  }
+  return nullptr;
 }
 
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*

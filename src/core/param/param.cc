@@ -151,6 +151,10 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(detect_static_sim_objects_,
                           "performance.detect_static_sim_objects");
   BDM_ASSIGN_CONFIG_VALUE(cache_neighbors_, "performance.cache_neighbors");
+  BDM_ASSIGN_CONFIG_VALUE(souid_defragmentation_low_watermark_,
+                          "performance.souid_defragmentation_low_watermark");
+  BDM_ASSIGN_CONFIG_VALUE(souid_defragmentation_high_watermark_,
+                          "performance.souid_defragmentation_high_watermark");
 
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");

@@ -27,6 +27,8 @@ using experimental::neuroscience::NeuriteElement;
 /// overlapping neighbors
 /// implementation uses virual bigger radii to have distant interaction
 TEST(DefaultForce, GeneralSphere) {
+  Simulation simulation(TEST_NAME);
+
   Cell cell({1.1, 1.0, 0.9});
   cell.SetDiameter(8);
   Cell nb({0, 0, 0});
@@ -51,6 +53,8 @@ TEST(DefaultForce, GeneralSphere) {
 /// Tests the special case that non of the neighbors overlap
 /// with the reference cell
 TEST(DefaultForce, AllNonOverlappingSphere) {
+  Simulation simulation(TEST_NAME);
+
   Cell cell({0, 0, 0});
   cell.SetDiameter(8);
   Cell nb({11.01, 0, 0});

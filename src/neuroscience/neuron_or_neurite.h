@@ -33,7 +33,7 @@ class NeuronOrNeurite {
  public:
   virtual ~NeuronOrNeurite();
 
-  virtual SoUid GetUid() const = 0;
+  virtual const SoUid& GetUid() const = 0;
 
   SoPointer<NeuronOrNeurite> GetNeuronOrNeuriteSoPtr() const;
 
@@ -41,7 +41,7 @@ class NeuronOrNeurite {
 
   bool IsNeuriteElement() const;
 
-  virtual Double3 OriginOf(SoUid daughter_uid) const = 0;
+  virtual Double3 OriginOf(const SoUid& daughter_uid) const = 0;
 
   virtual void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) = 0;
 

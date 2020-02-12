@@ -39,7 +39,7 @@ class SimObject;
 template <typename TSimObject>
 class SoPointer {
  public:
-  explicit SoPointer(SoUid uid) : uid_(uid) {}
+  explicit SoPointer(const SoUid& uid) : uid_(uid) {}
 
   /// constructs an SoPointer object representing a nullptr
   SoPointer() {}
@@ -47,12 +47,9 @@ class SoPointer {
   virtual ~SoPointer() {}
 
   uint64_t GetUid() const { return uid_; }
-  const uint64_t* GetUidPtr() const { return &uid_; }
 
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
-  bool operator==(std::nullptr_t) const {
-    return uid_ == std::numeric_limits<uint64_t>::max();
-  }
+  bool operator==(std::nullptr_t) const { return uid_ == SoUid(); }
 
   /// Not equal operator that enables the following statement `so_ptr !=
   /// nullptr;`
@@ -72,7 +69,7 @@ class SoPointer {
   /// Assignment operator that changes the internal representation to nullptr.
   /// Makes the following statement possible `so_ptr = nullptr;`
   SoPointer& operator=(std::nullptr_t) {
-    uid_ = std::numeric_limits<uint64_t>::max();
+    uid_ = SoUid();
     return *this;
   }
 
@@ -106,7 +103,7 @@ class SoPointer {
   const TSimObject* Get() const { return this->operator->(); }
 
  private:
-  SoUid uid_ = std::numeric_limits<uint64_t>::max();
+  SoUid uid_;
 
   BDM_CLASS_DEF(SoPointer, 2);
 };
@@ -123,17 +120,17 @@ struct is_so_ptr<SoPointer<T>> {
 
 namespace detail {
 
-struct ExtractUidPtr {
+struct ExtractUid {
   template <typename T>
-  static typename std::enable_if<is_so_ptr<T>::value, const uint64_t*>::type
-  GetUidPtr(const T& t) {
-    return t.GetUidPtr();
+  static typename std::enable_if<is_so_ptr<T>::value, uint64_t>::type GetUid(
+      const T& t) {
+    return t.GetUid();
   }
 
   template <typename T>
-  static typename std::enable_if<!is_so_ptr<T>::value, const uint64_t*>::type
-  GetUidPtr(const T& t) {
-    return nullptr;
+  static typename std::enable_if<!is_so_ptr<T>::value, uint64_t>::type GetUid(
+      const T& t) {
+    return 0;  // std::numeric_limits<uint64_t>::max();
   }
 };
 

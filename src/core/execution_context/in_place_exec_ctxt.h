@@ -15,13 +15,15 @@
 #ifndef CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
-#include <tbb/concurrent_unordered_map.h>
 #include <functional>
+#include <memory>
 #include <utility>
 #include <vector>
 
+#include "core/container/so_uid_map.h"
 #include "core/operation/operation.h"
 #include "core/sim_object/so_uid.h"
+#include "core/util/spinlock.h"
 #include "core/util/thread_info.h"
 
 namespace bdm {
@@ -45,7 +47,26 @@ class SimObject;
 /// Also removal of a sim object happens at the end of each iteration.
 class InPlaceExecutionContext {
  public:
-  InPlaceExecutionContext();
+  struct ThreadSafeSoUidMap {
+    using value_type = std::pair<SimObject*, uint64_t>;
+    ThreadSafeSoUidMap();
+    ~ThreadSafeSoUidMap();
+
+    void Insert(const SoUid& uid, const value_type& value);
+    bool Contains(const SoUid& uid) const;
+    const value_type& operator[](const SoUid& key) const;
+    uint64_t Size() const;
+    void Resize(uint64_t new_size);
+    void RemoveOldCopies();
+
+    using Map = SoUidMap<value_type>;
+    Spinlock lock_;
+    Map* map_;
+    std::vector<Map*> previous_maps_;
+  };
+
+  explicit InPlaceExecutionContext(
+      const std::shared_ptr<ThreadSafeSoUidMap>& map);
 
   virtual ~InPlaceExecutionContext();
 
@@ -81,11 +102,11 @@ class InPlaceExecutionContext {
       const std::function<void(const SimObject*)>& lambda,
       const SimObject& query, double squared_radius);
 
-  SimObject* GetSimObject(SoUid uid);
+  SimObject* GetSimObject(const SoUid& uid);
 
-  const SimObject* GetConstSimObject(SoUid uid);
+  const SimObject* GetConstSimObject(const SoUid& uid);
 
-  void RemoveFromSimulation(SoUid uid);
+  void RemoveFromSimulation(const SoUid& uid);
 
   /// If a sim objects modifies other simulation objects while it is updated,
   /// race conditions can occur using this execution context. This function
@@ -94,6 +115,9 @@ class InPlaceExecutionContext {
   void DisableNeighborGuard();
 
  private:
+  /// Lookup table SoUid -> SoPointer for new created sim objects
+  std::shared_ptr<ThreadSafeSoUidMap> new_so_map_;
+
   ThreadInfo* tinfo_;
 
   /// Contains unique ids of sim objects that will be removed at the end of each
@@ -101,14 +125,14 @@ class InPlaceExecutionContext {
   std::vector<SoUid> remove_;
 
   /// Pointer to new sim objects
-  tbb::concurrent_unordered_map<SoUid, SimObject*> new_sim_objects_;
+  std::vector<SimObject*> new_sim_objects_;
 
   /// prevent race conditions for cached SimObjects
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
   std::vector<std::pair<const SimObject*, double>> neighbor_cache_;
 
-  SimObject* GetCachedSimObject(SoUid uid);
+  SimObject* GetCachedSimObject(const SoUid& uid);
 };
 
 }  // namespace bdm

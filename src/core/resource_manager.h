@@ -17,7 +17,6 @@
 
 #include <omp.h>
 #include <sched.h>
-#include <tbb/concurrent_unordered_map.h>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -41,9 +40,12 @@
 #endif
 #endif
 
+#include "core/container/so_uid_map.h"
 #include "core/diffusion_grid.h"
 #include "core/sim_object/sim_object.h"
+#include "core/sim_object/so_handle.h"
 #include "core/sim_object/so_uid.h"
+#include "core/sim_object/so_uid_generator.h"
 #include "core/simulation.h"
 #include "core/util/numa.h"
 #include "core/util/root.h"
@@ -51,62 +53,6 @@
 #include "core/util/type.h"
 
 namespace bdm {
-
-/// Unique identifier of a simulation object. Acts as a type erased pointer.
-/// Has the same type for every simulation object. \n
-/// Points to the storage location of a sim object inside ResourceManager.\n
-/// The id is split into two parts: Numa node, element index.
-/// The first one is used to obtain the numa storage, and the second specifies
-/// the element within this vector.
-class SoHandle {
- public:
-  using NumaNode_t = uint16_t;
-  using ElementIdx_t = uint32_t;
-
-  constexpr SoHandle() noexcept
-      : numa_node_(std::numeric_limits<NumaNode_t>::max()),
-        element_idx_(std::numeric_limits<ElementIdx_t>::max()) {}
-
-  explicit SoHandle(ElementIdx_t element_idx)
-      : numa_node_(0), element_idx_(element_idx) {}
-
-  SoHandle(NumaNode_t numa_node, ElementIdx_t element_idx)
-      : numa_node_(numa_node), element_idx_(element_idx) {}
-
-  NumaNode_t GetNumaNode() const { return numa_node_; }
-  ElementIdx_t GetElementIdx() const { return element_idx_; }
-  void SetElementIdx(ElementIdx_t element_idx) { element_idx_ = element_idx; }
-
-  bool operator==(const SoHandle& other) const {
-    return numa_node_ == other.numa_node_ && element_idx_ == other.element_idx_;
-  }
-
-  bool operator!=(const SoHandle& other) const { return !(*this == other); }
-
-  bool operator<(const SoHandle& other) const {
-    if (numa_node_ == other.numa_node_) {
-      return element_idx_ < other.element_idx_;
-    } else {
-      return numa_node_ < other.numa_node_;
-    }
-  }
-
-  friend std::ostream& operator<<(std::ostream& stream,
-                                  const SoHandle& handle) {
-    stream << "Numa node: " << handle.numa_node_
-           << " element idx: " << handle.element_idx_;
-    return stream;
-  }
-
- private:
-  NumaNode_t numa_node_;
-
-  /// changed element index to uint32_t after issues with std::atomic with
-  /// size 16 -> max element_idx: 4.294.967.296
-  ElementIdx_t element_idx_;
-
-  BDM_CLASS_DEF_NV(SoHandle, 1);
-};
 
 /// ResourceManager stores simulation objects and diffusion grids and provides
 /// methods to add, remove, and access them. Sim objects are uniquely identified
@@ -160,20 +106,21 @@ class ResourceManager {
   void RestoreUidSoMap() {
     // rebuild uid_soh_map_
     uid_soh_map_.clear();
+    auto* so_uid_generator = Simulation::GetActive()->GetSoUidGenerator();
+    uid_soh_map_.resize(so_uid_generator->GetHighestIndex() + 1);
     for (unsigned n = 0; n < sim_objects_.size(); ++n) {
       for (unsigned i = 0; i < sim_objects_[n].size(); ++i) {
         auto* so = sim_objects_[n][i];
-        this->uid_soh_map_[so->GetUid()] = SoHandle(n, i);
+        this->uid_soh_map_.Insert(so->GetUid(), SoHandle(n, i));
       }
     }
   }
 
-  SimObject* GetSimObject(SoUid uid) {
-    auto search_it = uid_soh_map_.find(uid);
-    if (search_it == uid_soh_map_.end()) {
+  SimObject* GetSimObject(const SoUid& uid) {
+    if (!uid_soh_map_.Contains(uid)) {
       return nullptr;
     }
-    SoHandle soh = search_it->second;
+    auto& soh = uid_soh_map_[uid];
     return sim_objects_[soh.GetNumaNode()][soh.GetElementIdx()];
   }
 
@@ -181,7 +128,7 @@ class ResourceManager {
     return sim_objects_[soh.GetNumaNode()][soh.GetElementIdx()];
   }
 
-  SoHandle GetSoHandle(SoUid uid) { return uid_soh_map_[uid]; }
+  SoHandle GetSoHandle(const SoUid& uid) { return uid_soh_map_[uid]; }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
     uint64_t substance_id = dgrid->GetSubstanceId();
@@ -312,15 +259,16 @@ class ResourceManager {
       return sim_objects_[numa_node].size();
     }
     auto current = sim_objects_[numa_node].size();
+    if (current + additional < sim_objects_[numa_node].size()) {
+      sim_objects_[numa_node].reserve((current + additional) * 1.5);
+    }
     sim_objects_[numa_node].resize(current + additional);
     return current;
   }
 
   /// Returns true if a sim object with the given uid is stored in this
   /// ResourceManager.
-  bool Contains(SoUid uid) const {
-    return uid_soh_map_.find(uid) != uid_soh_map_.end();
-  }
+  bool Contains(const SoUid& uid) const { return uid_soh_map_.Contains(uid); }
 
   /// Remove all simulation objects
   /// NB: This method is not thread-safe! This function invalidates
@@ -347,9 +295,34 @@ class ResourceManager {
   /// not affected.
   void push_back(SimObject* so,  // NOLINT
                  typename SoHandle::NumaNode_t numa_node = 0) {
+    auto uid = so->GetUid();
+    if (uid.GetIndex() >= uid_soh_map_.size()) {
+      uid_soh_map_.resize(uid.GetIndex() + 1);
+    }
     sim_objects_[numa_node].push_back(so);
-    uid_soh_map_[so->GetUid()] =
-        SoHandle(numa_node, sim_objects_[numa_node].size() - 1);
+    uid_soh_map_.Insert(
+        uid, SoHandle(numa_node, sim_objects_[numa_node].size() - 1));
+  }
+
+  void ResizeUidSohMap() {
+    auto* so_uid_generator = Simulation::GetActive()->GetSoUidGenerator();
+    auto highest_idx = so_uid_generator->GetHighestIndex();
+    if (highest_idx >= uid_soh_map_.size()) {
+      uid_soh_map_.resize(highest_idx * 1.5 + 1);
+    }
+  }
+
+  void EndOfIteration() {
+    // Check if SoUiD defragmentation should be turned on or off
+    double utilization = static_cast<double>(uid_soh_map_.size()) /
+                         static_cast<double>(GetNumSimObjects());
+    auto* sim = Simulation::GetActive();
+    auto* param = sim->GetParam();
+    if (utilization < param->souid_defragmentation_low_watermark_) {
+      sim->GetSoUidGenerator()->EnableDefragmentation(&uid_soh_map_);
+    } else if (utilization > param->souid_defragmentation_high_watermark_) {
+      sim->GetSoUidGenerator()->DisableDefragmentation();
+    }
   }
 
   /// Adds `new_sim_objects` to `sim_objects_[numa_node]`. `offset` specifies
@@ -358,12 +331,12 @@ class ResourceManager {
   /// not overlap!
   virtual void AddNewSimObjects(
       typename SoHandle::NumaNode_t numa_node, uint64_t offset,
-      const tbb::concurrent_unordered_map<SoUid, SimObject*>& new_sim_objects) {
+      const std::vector<SimObject*>& new_sim_objects) {
     uint64_t i = 0;
-    for (auto& pair : new_sim_objects) {
-      auto uid = pair.first;
-      uid_soh_map_[uid] = SoHandle(numa_node, offset + i);
-      sim_objects_[numa_node][offset + i] = pair.second;
+    for (auto* so : new_sim_objects) {
+      auto uid = so->GetUid();
+      uid_soh_map_.Insert(uid, SoHandle(numa_node, offset + i));
+      sim_objects_[numa_node][offset + i] = so;
       i++;
     }
   }
@@ -372,12 +345,11 @@ class ResourceManager {
   /// NB: This method is not thread-safe! This function invalidates
   /// sim_object references pointing into the ResourceManager. SoPointer are
   /// not affected.
-  void Remove(SoUid uid) {
+  void Remove(const SoUid& uid) {
     // remove from map
-    auto it = uid_soh_map_.find(uid);
-    if (it != uid_soh_map_.end()) {
-      SoHandle soh = it->second;
-      uid_soh_map_.unsafe_erase(it);
+    if (uid_soh_map_.Contains(uid)) {
+      auto soh = uid_soh_map_[uid];
+      uid_soh_map_.Remove(uid);
       // remove from vector
       auto& numa_sos = sim_objects_[soh.GetNumaNode()];
       if (soh.GetElementIdx() == numa_sos.size() - 1) {
@@ -389,15 +361,14 @@ class ResourceManager {
         auto* reordered = numa_sos.back();
         numa_sos[soh.GetElementIdx()] = reordered;
         numa_sos.pop_back();
-        uid_soh_map_[reordered->GetUid()] = soh;
+        uid_soh_map_.Insert(reordered->GetUid(), soh);
       }
     }
   }
 
  protected:
-
   /// Maps an SoUid to its storage location in `sim_objects_` \n
-  tbb::concurrent_unordered_map<SoUid, SoHandle> uid_soh_map_;  //!
+  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(10000u);  //!
   /// Pointer container for all simulation objects
   std::vector<std::vector<SimObject*>> sim_objects_;
   /// Maps a diffusion grid ID to the pointer to the diffusion grid

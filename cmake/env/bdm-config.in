@@ -93,8 +93,6 @@ soflags="@soflags@"
 socreatecxxflags="@socreatecxxflags@"
 cmakeinvoke="@cmakeinvoke@"
 configargs="@configargs@"
-tbbinclude="@tbbinclude@"
-tbblibs="@tbblibs@"
 omplibs="@omplibs@"
 
 ### BDM libraries ###
@@ -105,10 +103,6 @@ bdmlibs="-lbiodynamo"
 
 # Set the C++ standard version
 cxxversionflag="-std=c++${cxxstd}"
-
-if [ -n "$tbbinclude" ]; then
-   tbbinc=-I$tbbinclude
-fi
 
 ### end of machine and compiler dependent settings ###
 
@@ -159,14 +153,14 @@ while test $# -gt 0; do
       if test ${incdir} != /usr/include; then
          includes=-I${incdir}
       fi
-      out="$out $includes $cxxdefines $cxxversionflag $cxxflags $cxxoptflags $cxxdebflags $(root-config --cflags) $tbbinc"
+      out="$out $includes $cxxdefines $cxxversionflag $cxxflags $cxxoptflags $cxxdebflags $(root-config --cflags)"
       ;;
     --cxxincludes)
       ### Output only the include flags for BioDynaMo headers
       if test ${incdir} != /usr/include; then
          includes=-I${incdir}
       fi
-      out="$out $includes $(root-config --noauxcflags --cflags) $tbbinc"
+      out="$out $includes $(root-config --noauxcflags --cflags)"
       # local omp directory needed for rootcling (used in bdm-code-generation)
       out="$out -I${incdir}/../omp"
       ;;
@@ -182,18 +176,11 @@ while test $# -gt 0; do
       if test ${libdir} != /usr/lib; then
          libdirs=-L${libdir}
       fi
-      if [ -n "$tbblibs" ]; then
-         split_multiple_lib_path $tbblibs
-         tbblibs=$found_libs
-      else
-         # revise this once libraries are sanitized
-         tbblibs="-ltbb"
-      fi
       if [ -n "$omplibs" ]; then
          split_multiple_lib_path $omplibs
          omplibs=$found_libs
       fi
-      libs="$bdmlibs $(root-config --libs) $tbblibs $omplibs"
+      libs="$bdmlibs $(root-config --libs) $omplibs"
       out="$out $libdirs $libs"
       ;;
     --bindir)

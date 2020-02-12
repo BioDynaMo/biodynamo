@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "core/sim_object/so_uid.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
 
@@ -30,6 +31,7 @@ class Scheduler;
 struct Param;
 class InPlaceExecutionContext;
 class CommandLineOptions;
+class SoUidGenerator;
 
 class SimulationTest;
 class ParaviewAdaptorTest;
@@ -49,7 +51,8 @@ class Simulation {
   /// Creation of a new simulation automatically activates it.
   Simulation(int argc, const char** argv, const std::string& config_file = "");
 
-  Simulation(CommandLineOptions* clo, const std::string& config_file = "");
+  explicit Simulation(CommandLineOptions* clo,
+                      const std::string& config_file = "");
 
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
@@ -85,6 +88,8 @@ class Simulation {
   void SetResourceManager(ResourceManager* rm);
 
   const Param* GetParam() const;
+
+  SoUidGenerator* GetSoUidGenerator();
 
   Grid* GetGrid();
 
@@ -130,6 +135,7 @@ class Simulation {
 
   ResourceManager* rm_ = nullptr;
   Param* param_ = nullptr;
+  SoUidGenerator* so_uid_generator_ = nullptr;  //!
   std::string name_;
   Grid* grid_ = nullptr;            //!
   Scheduler* scheduler_ = nullptr;  //!

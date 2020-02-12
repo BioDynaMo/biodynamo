@@ -43,13 +43,13 @@ void RunTest(ExecutionMode mode) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  // Do this explicitly because this normally is only called in
-  // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
+// Do this explicitly because this normally is only called in
+// Scheduler::Initialize(), but in this test we call DisplacementOp directly.
 #if defined(USE_CUDA) || defined(USE_OPENCL)
   GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
 
   // Cell 0
   Cell* cell = new Cell();
@@ -135,13 +135,13 @@ void RunTest2(ExecutionMode mode) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  // Do this explicitly because this normally is only called in
-  // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
+// Do this explicitly because this normally is only called in
+// Scheduler::Initialize(), but in this test we call DisplacementOp directly.
 #if defined(USE_CUDA) || defined(USE_OPENCL)
   GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
 
-  auto ref_uid = SoUidGenerator::Get()->GetLastId();
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
 
   double space = 20;
   for (size_t i = 0; i < 3; i++) {

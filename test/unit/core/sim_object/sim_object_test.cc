@@ -21,6 +21,8 @@ namespace bdm {
 namespace sim_object_test_internal {
 
 TEST(SimObjectTest, CopyCtor) {
+  Simulation simulation(TEST_NAME);
+
   TestSimObject cell;
   cell.SetBoxIdx(123);
   GrowthModule* gm = new GrowthModule();
@@ -120,7 +122,7 @@ TEST(SimObjectTest, RemoveBiologyModule) {
   EXPECT_TRUE(dynamic_cast<GrowthModule*>(bms[1]) != nullptr);
   // check if MovementModule and GrowthModule have been executed correctly.
   EXPECT_ARR_NEAR({1, 2, 3}, cell.GetPosition());
-  EXPECT_NEAR(0.5, cell.GetDiameter(), abs_error<double>::value);
+  EXPECT_NEAR(10.5, cell.GetDiameter(), abs_error<double>::value);
 
   cell.AddBiologyModule(new RemoveModule());
   ASSERT_EQ(3u, bms.size());
@@ -144,6 +146,8 @@ struct Visitor1 : public SoVisitor {
 };
 
 TEST(SimObjectUtilTest, ForEachDataMember) {
+  Simulation simulation(TEST_NAME);
+
   TestSimObject so;
   Visitor1 visitor;
   so.ForEachDataMember(&visitor);
@@ -164,6 +168,8 @@ struct Visitor2 : public SoVisitor {
 };
 
 TEST(SimObjectUtilTest, ForEachDataMemberIn) {
+  Simulation simulation(TEST_NAME);
+
   TestSimObject so;
   Visitor2 visitor;
   so.ForEachDataMemberIn(std::set<std::string>{"uid_", "position_"}, &visitor);
@@ -191,6 +197,8 @@ struct VerifyPosition : public SoVisitor {
 
 // for one data member check if the pointer contains the right data
 TEST(SimObjectUtilTest, ForEachDataMemberInDetailed) {
+  Simulation simulation(TEST_NAME);
+
   TestSimObject so;
   so.SetPosition({4, 5, 6});
   VerifyPosition visitor;

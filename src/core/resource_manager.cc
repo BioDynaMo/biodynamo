@@ -227,7 +227,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 
   // update uid_soh_map_
   ApplyOnAllElements([this](SimObject* so, SoHandle soh) {
-    this->uid_soh_map_[so->GetUid()] = soh;
+    this->uid_soh_map_.Insert(so->GetUid(), soh);
   });
 
   if (Simulation::GetActive()->GetParam()->debug_numa_) {
