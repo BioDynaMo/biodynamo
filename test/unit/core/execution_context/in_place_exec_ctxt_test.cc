@@ -18,8 +18,8 @@
 #include "core/grid.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
-#include "unit/test_util/test_util.h"
 #include "unit/test_util/test_sim_object.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 
@@ -225,28 +225,30 @@ TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
   used_indexes.reserve(100000);
 
 #pragma omp parallel for
-  for(uint64_t i = 0; i < 100000; ++i) {
-     auto* new_so = new TestSimObject();
-     new_so->SetData(new_so->GetUid().GetIndex());
+  for (uint64_t i = 0; i < 100000; ++i) {
+    auto* new_so = new TestSimObject();
+    new_so->SetData(new_so->GetUid().GetIndex());
 
-     auto* ctxt = simulation.GetExecutionContext();
-     ctxt->push_back(new_so);
+    auto* ctxt = simulation.GetExecutionContext();
+    ctxt->push_back(new_so);
 
-     auto* random = simulation.GetRandom();
-     uint64_t random_number = 0;
-     uint64_t read_index = 0;
+    auto* random = simulation.GetRandom();
+    uint64_t random_number = 0;
+    uint64_t read_index = 0;
 
-     // select random element between 0 and max uid index and check if the
-     // data of the simulation object is correct
-     #pragma omp critical
-     {
-       used_indexes.push_back(new_so->GetUid().GetIndex());
-       random_number = static_cast<uint64_t>(std::round(random->Uniform(0, used_indexes.size() - 1)));
-       read_index = used_indexes[random_number];
-     }
+// select random element between 0 and max uid index and check if the
+// data of the simulation object is correct
+#pragma omp critical
+    {
+      used_indexes.push_back(new_so->GetUid().GetIndex());
+      random_number = static_cast<uint64_t>(
+          std::round(random->Uniform(0, used_indexes.size() - 1)));
+      read_index = used_indexes[random_number];
+    }
 
-     auto* tso = static_cast<TestSimObject*>(ctxt->GetSimObject(SoUid(read_index)));
-     EXPECT_EQ(static_cast<uint64_t>(tso->GetData()), read_index);
+    auto* tso =
+        static_cast<TestSimObject*>(ctxt->GetSimObject(SoUid(read_index)));
+    EXPECT_EQ(static_cast<uint64_t>(tso->GetData()), read_index);
   }
 }
 

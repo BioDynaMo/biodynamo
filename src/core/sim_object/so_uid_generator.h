@@ -16,14 +16,15 @@
 #define CORE_SIM_OBJECT_SO_UID_GENERATOR_H_
 
 #include <atomic>
+#include <limits>
 #include <mutex>
 #include "core/container/so_uid_map.h"
+#include "core/scheduler.h"
 #include "core/sim_object/so_handle.h"
 #include "core/sim_object/so_uid.h"
+#include "core/simulation.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
-#include "core/simulation.h"
-#include "core/scheduler.h"
 
 namespace bdm {
 
@@ -42,11 +43,12 @@ class SoUidGenerator {
       // defragmentation mode
       std::lock_guard<Spinlock> guard(lock_);
       while (search_index_ != map_->size() &&
-        map_->GetReused(search_index_) != std::numeric_limits<typename SoUid::Reused_t>::max()){
+             map_->GetReused(search_index_) !=
+                 std::numeric_limits<typename SoUid::Reused_t>::max()) {
         search_index_++;
       }
       // find unused element in map
-      if(search_index_ < map_->size()) {
+      if (search_index_ < map_->size()) {
         auto* scheduler = Simulation::GetActive()->GetScheduler();
         return SoUid(search_index_++, scheduler->GetSimulatedSteps());
       }
@@ -87,7 +89,7 @@ class SoUidGenerator {
 // generation, but not to the interpreter!
 #if !defined(__CLING__) || defined(__ROOTCLING__)
 
-inline void SoUidGenerator::Streamer(TBuffer &R__b) {
+inline void SoUidGenerator::Streamer(TBuffer& R__b) {
   // Stream an object of class Foo.
   if (R__b.IsReading()) {
     R__b.ReadClassBuffer(SoUidGenerator::Class(), this);

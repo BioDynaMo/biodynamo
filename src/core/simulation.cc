@@ -154,9 +154,7 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
 /// Returns the simulation parameters
 const Param* Simulation::GetParam() const { return param_; }
 
-SoUidGenerator* Simulation::GetSoUidGenerator() {
-  return so_uid_generator_;
-}
+SoUidGenerator* Simulation::GetSoUidGenerator() { return so_uid_generator_; }
 
 Grid* Simulation::GetGrid() { return grid_; }
 
@@ -215,7 +213,8 @@ void Simulation::InitializeMembers() {
     random_[i] = new Random();
   }
   exec_ctxt_.resize(omp_get_max_threads());
-  auto map = std::make_shared<typename InPlaceExecutionContext::ThreadSafeSoUidMap>();
+  auto map =
+      std::make_shared<typename InPlaceExecutionContext::ThreadSafeSoUidMap>();
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
     exec_ctxt_[i] = new InPlaceExecutionContext(map);

@@ -12,9 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/sim_object/so_uid_generator.h"
 #include <gtest/gtest.h>
 #include "core/resource_manager.h"
-#include "core/sim_object/so_uid_generator.h"
 #include "core/simulation.h"
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_sim_object.h"

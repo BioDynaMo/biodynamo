@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <gtest/gtest.h>
 #include "core/sim_object/so_uid.h"
+#include <gtest/gtest.h>
 #include "unit/test_util/io_test.h"
 
 namespace bdm {
@@ -98,7 +98,7 @@ TEST(SoUidTest, uint64_tOperator) {
 TEST(SoUidTest, uint64_tOperator2) {
   SoUid uid(123, 2);
   uint64_t idx = uid;
-  EXPECT_EQ(idx, 8589934715u); //(2 << 32) | 123u);
+  EXPECT_EQ(idx, 8589934715u);  // (2 << 32) | 123u);
 }
 
 #ifdef USE_DICT

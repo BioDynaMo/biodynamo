@@ -14,18 +14,19 @@
 
 #include "core/execution_context/in_place_exec_ctxt.h"
 
+#include <algorithm>
 #include <mutex>
 
 #include "core/grid.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/sim_object.h"
 #include "core/scheduler.h"
-
+#include "core/sim_object/sim_object.h"
 
 namespace bdm {
 
 InPlaceExecutionContext::ThreadSafeSoUidMap::ThreadSafeSoUidMap() {
-  map_ = new ThreadSafeSoUidMap::Map(0); //Map(1e8);  // FIXME find better initialization value
+  map_ = new ThreadSafeSoUidMap::Map(
+      0);  // Map(1e8);  // FIXME find better initialization value
 }
 
 InPlaceExecutionContext::ThreadSafeSoUidMap::~ThreadSafeSoUidMap() {
@@ -38,7 +39,10 @@ InPlaceExecutionContext::ThreadSafeSoUidMap::~ThreadSafeSoUidMap() {
   previous_maps_.clear();
 }
 
-void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(const SoUid& uid, const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type& value) {
+void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
+    const SoUid& uid,
+    const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
+        value) {
   auto index = uid.GetIndex();
   if (map_->size() > index + ThreadInfo::GetInstance()->GetMaxThreads()) {
     // enough free slots -> no locking required
@@ -49,7 +53,8 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(const SoUid& uid, const
     if (map_->size() <= index) {
       // map is too small -> grow
       auto* new_map = new Map(*map_);
-      new_map->resize(std::max(static_cast<uint64_t>(1000u), static_cast<uint64_t>(map_->size() * 1.5)));
+      new_map->resize(std::max(static_cast<uint64_t>(1000u),
+                               static_cast<uint64_t>(map_->size() * 1.5)));
       previous_maps_.emplace_back(map_);
       map_ = new_map;
     }
@@ -57,11 +62,14 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(const SoUid& uid, const
   }
 }
 
-bool InPlaceExecutionContext::ThreadSafeSoUidMap::Contains(const SoUid& uid) const {
+bool InPlaceExecutionContext::ThreadSafeSoUidMap::Contains(
+    const SoUid& uid) const {
   return map_->Contains(uid);
 }
 
-const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type& InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& key) const {
+const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
+    InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](
+        const SoUid& key) const {
   return (*map_)[key];
 }
 
@@ -79,10 +87,11 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::RemoveOldCopies() {
   previous_maps_.clear();
 }
 
-InPlaceExecutionContext::InPlaceExecutionContext(const std::shared_ptr<ThreadSafeSoUidMap>& map)
-    :  new_so_map_(map), tinfo_(ThreadInfo::GetInstance()) {
-      new_sim_objects_.reserve(1e3);
-    }
+InPlaceExecutionContext::InPlaceExecutionContext(
+    const std::shared_ptr<ThreadSafeSoUidMap>& map)
+    : new_so_map_(map), tinfo_(ThreadInfo::GetInstance()) {
+  new_sim_objects_.reserve(1e3);
+}
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
   for (auto* so : new_sim_objects_) {
@@ -127,7 +136,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
     ctxt->new_sim_objects_.clear();
   }
 
-  // remove
+// remove
 #pragma omp parallel for schedule(static, 1)
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];

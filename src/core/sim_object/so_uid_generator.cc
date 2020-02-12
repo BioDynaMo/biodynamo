@@ -16,7 +16,8 @@
 
 namespace bdm {
 
-// constexpr typename SoUid::Reused_t SoUid::kReusedMax = std::numeric_limits<typename SoUid::Reused_t>::max();
+// constexpr typename SoUid::Reused_t SoUid::kReusedMax =
+// std::numeric_limits<typename SoUid::Reused_t>::max();
 const typename SoUid::Reused_t SoUid::kReusedMax;
 
 }  // namespace bdm

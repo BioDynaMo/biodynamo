@@ -49,9 +49,7 @@ class SoPointer {
   uint64_t GetUid() const { return uid_; }
 
   /// Equals operator that enables the following statement `so_ptr == nullptr;`
-  bool operator==(std::nullptr_t) const {
-    return uid_ == SoUid();
-  }
+  bool operator==(std::nullptr_t) const { return uid_ == SoUid(); }
 
   /// Not equal operator that enables the following statement `so_ptr !=
   /// nullptr;`
@@ -124,15 +122,15 @@ namespace detail {
 
 struct ExtractUid {
   template <typename T>
-  static typename std::enable_if<is_so_ptr<T>::value, uint64_t>::type
-  GetUid(const T& t) {
+  static typename std::enable_if<is_so_ptr<T>::value, uint64_t>::type GetUid(
+      const T& t) {
     return t.GetUid();
   }
 
   template <typename T>
-  static typename std::enable_if<!is_so_ptr<T>::value, uint64_t>::type
-  GetUid(const T& t) {
-    return 0;//std::numeric_limits<uint64_t>::max();
+  static typename std::enable_if<!is_so_ptr<T>::value, uint64_t>::type GetUid(
+      const T& t) {
+    return 0;  // std::numeric_limits<uint64_t>::max();
   }
 };
 

@@ -43,8 +43,8 @@ void RunTest(ExecutionMode mode) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  // Do this explicitly because this normally is only called in
-  // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
+// Do this explicitly because this normally is only called in
+// Scheduler::Initialize(), but in this test we call DisplacementOp directly.
 #if defined(USE_CUDA) || defined(USE_OPENCL)
   GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
@@ -135,8 +135,8 @@ void RunTest2(ExecutionMode mode) {
   auto* rm = simulation.GetResourceManager();
   auto* grid = simulation.GetGrid();
 
-  // Do this explicitly because this normally is only called in
-  // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
+// Do this explicitly because this normally is only called in
+// Scheduler::Initialize(), but in this test we call DisplacementOp directly.
 #if defined(USE_CUDA) || defined(USE_OPENCL)
   GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif

@@ -222,7 +222,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  Double3 OriginOf(const SoUid& daughter_uid) const override { return mass_location_; }
+  Double3 OriginOf(const SoUid& daughter_uid) const override {
+    return mass_location_;
+  }
 
   // TODO(neurites) arrange in order end
 

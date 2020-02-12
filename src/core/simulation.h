@@ -18,9 +18,9 @@
 #include <string>
 #include <vector>
 
+#include "core/sim_object/so_uid.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
-#include "core/sim_object/so_uid.h"
 
 namespace bdm {
 
@@ -51,7 +51,8 @@ class Simulation {
   /// Creation of a new simulation automatically activates it.
   Simulation(int argc, const char** argv, const std::string& config_file = "");
 
-  Simulation(CommandLineOptions* clo, const std::string& config_file = "");
+  explicit Simulation(CommandLineOptions* clo,
+                      const std::string& config_file = "");
 
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n

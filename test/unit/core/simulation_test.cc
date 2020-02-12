@@ -151,8 +151,10 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(123u, param->scheduling_batch_size_);
     EXPECT_TRUE(param->detect_static_sim_objects_);
     EXPECT_TRUE(param->cache_neighbors_);
-    EXPECT_NEAR(0.123, param->souid_defragmentation_low_watermark_, abs_error<double>::value);
-    EXPECT_NEAR(0.456, param->souid_defragmentation_high_watermark_, abs_error<double>::value);
+    EXPECT_NEAR(0.123, param->souid_defragmentation_low_watermark_,
+                abs_error<double>::value);
+    EXPECT_NEAR(0.456, param->souid_defragmentation_high_watermark_,
+                abs_error<double>::value);
 
     // development group
     EXPECT_TRUE(param->statistics_);

@@ -137,7 +137,7 @@ inline void RunApplyOnAllElementsParallelTest() {
 
 inline void RunRemoveAndContainsTest() {
   Simulation simulation("ResourceManagerTest-RunRemoveAndContainsTest");
-  auto *rm = simulation.GetResourceManager();
+  auto* rm = simulation.GetResourceManager();
 
   A* a0 = new A(12);
   auto a0_uid = a0->GetUid();
@@ -182,7 +182,7 @@ inline void RunRemoveAndContainsTest() {
 
 inline void RunClearTest() {
   Simulation simulation("ResourceManagerTest-RunClearTest");
-  auto *rm = simulation.GetResourceManager();
+  auto* rm = simulation.GetResourceManager();
 
   A* a0 = new A(12);
   auto a0_uid = a0->GetUid();
@@ -250,7 +250,7 @@ inline void RunPushBackAndGetSimObjectTest() {
 // https://github.com/osmhpi/pgasus/blob/775a5f90d8f6fa89cfb93eac6de16dcfe27167ce/src/util/mmaphelper.cpp
 inline static void* AlignPage(const void* ptr) {
   static constexpr uintptr_t kPageMask = ~(uintptr_t(0xFFF));
-  return (void*)(((uintptr_t)ptr) & kPageMask);
+  return (void*)(((uintptr_t)ptr) & kPageMask);  // NOLINT
 }
 
 inline int GetNumaNodeForMemory(const void* ptr) {

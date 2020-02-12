@@ -34,11 +34,9 @@ class SoUid {
       : index_(std::numeric_limits<Index_t>::max()),
         reused_(std::numeric_limits<Reused_t>::max()) {}
 
-  explicit SoUid(Index_t index)
-      : index_(index), reused_(0) {}
+  explicit SoUid(Index_t index) : index_(index), reused_(0) {}
 
-  SoUid(Index_t idx, Reused_t reused)
-      : index_(idx), reused_(reused) {}
+  SoUid(Index_t idx, Reused_t reused) : index_(idx), reused_(reused) {}
 
   Reused_t GetReused() const { return reused_; }
   Index_t GetIndex() const { return index_; }
@@ -87,7 +85,8 @@ class SoUid {
   }
 
   operator uint64_t() const {
-    return (static_cast<uint64_t>(reused_) << 32) | static_cast<uint64_t>(index_);
+    return (static_cast<uint64_t>(reused_) << 32) |
+           static_cast<uint64_t>(index_);
   }
 
   friend std::ostream& operator<<(std::ostream& stream, const SoUid& handle) {
@@ -103,8 +102,6 @@ class SoUid {
   /// Determines how often index_ has been resused
   Reused_t reused_;
 
-  // TODO delete assignement operator and copy ctor
-
   BDM_CLASS_DEF_NV(SoUid, 1);
 };
 
@@ -112,10 +109,10 @@ class SoUid {
 
 namespace std {
 
-template<>
+template <>
 struct hash<bdm::SoUid> {
   std::size_t operator()(const bdm::SoUid& uid) const noexcept {
-      return (uid.index_) << uid.reused_;
+    return (uid.index_) << uid.reused_;
   }
 };
 

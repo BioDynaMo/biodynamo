@@ -16,15 +16,15 @@
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
 #include <functional>
+#include <memory>
 #include <utility>
 #include <vector>
-#include <memory>
 
 #include "core/container/so_uid_map.h"
 #include "core/operation/operation.h"
 #include "core/sim_object/so_uid.h"
-#include "core/util/thread_info.h"
 #include "core/util/spinlock.h"
+#include "core/util/thread_info.h"
 
 namespace bdm {
 
@@ -47,25 +47,26 @@ class SimObject;
 /// Also removal of a sim object happens at the end of each iteration.
 class InPlaceExecutionContext {
  public:
-   struct ThreadSafeSoUidMap {
-     using value_type = std::pair<SimObject*,uint64_t>;
-     ThreadSafeSoUidMap();
-     ~ThreadSafeSoUidMap();
+  struct ThreadSafeSoUidMap {
+    using value_type = std::pair<SimObject*, uint64_t>;
+    ThreadSafeSoUidMap();
+    ~ThreadSafeSoUidMap();
 
-      void Insert(const SoUid& uid, const value_type& value);
-      bool Contains(const SoUid& uid) const;
-      const value_type& operator[](const SoUid& key) const;
-      uint64_t Size() const;
-      void Resize(uint64_t new_size);
-      void RemoveOldCopies();
+    void Insert(const SoUid& uid, const value_type& value);
+    bool Contains(const SoUid& uid) const;
+    const value_type& operator[](const SoUid& key) const;
+    uint64_t Size() const;
+    void Resize(uint64_t new_size);
+    void RemoveOldCopies();
 
-       using Map = SoUidMap<value_type>;
-       Spinlock lock_;
-      Map* map_;
-      std::vector<Map*> previous_maps_;
-   };
+    using Map = SoUidMap<value_type>;
+    Spinlock lock_;
+    Map* map_;
+    std::vector<Map*> previous_maps_;
+  };
 
-  InPlaceExecutionContext(const std::shared_ptr<ThreadSafeSoUidMap>& map);
+  explicit InPlaceExecutionContext(
+      const std::shared_ptr<ThreadSafeSoUidMap>& map);
 
   virtual ~InPlaceExecutionContext();
 
@@ -114,8 +115,8 @@ class InPlaceExecutionContext {
   void DisableNeighborGuard();
 
  private:
-   /// Lookup table SoUid -> SoPointer for new created sim objects
-   std::shared_ptr<ThreadSafeSoUidMap> new_so_map_;
+  /// Lookup table SoUid -> SoPointer for new created sim objects
+  std::shared_ptr<ThreadSafeSoUidMap> new_so_map_;
 
   ThreadInfo* tinfo_;
 

@@ -268,9 +268,7 @@ class ResourceManager {
 
   /// Returns true if a sim object with the given uid is stored in this
   /// ResourceManager.
-  bool Contains(const SoUid& uid) const {
-    return uid_soh_map_.Contains(uid);
-  }
+  bool Contains(const SoUid& uid) const { return uid_soh_map_.Contains(uid); }
 
   /// Remove all simulation objects
   /// NB: This method is not thread-safe! This function invalidates
@@ -302,8 +300,8 @@ class ResourceManager {
       uid_soh_map_.resize(uid.GetIndex() + 1);
     }
     sim_objects_[numa_node].push_back(so);
-    uid_soh_map_.Insert(uid,
-        SoHandle(numa_node, sim_objects_[numa_node].size() - 1));
+    uid_soh_map_.Insert(
+        uid, SoHandle(numa_node, sim_objects_[numa_node].size() - 1));
   }
 
   void ResizeUidSohMap() {
@@ -316,7 +314,8 @@ class ResourceManager {
 
   void EndOfIteration() {
     // Check if SoUiD defragmentation should be turned on or off
-    double utilization = static_cast<double>(uid_soh_map_.size()) / static_cast<double>(GetNumSimObjects());
+    double utilization = static_cast<double>(uid_soh_map_.size()) /
+                         static_cast<double>(GetNumSimObjects());
     auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
     if (utilization < param->souid_defragmentation_low_watermark_) {
@@ -368,9 +367,8 @@ class ResourceManager {
   }
 
  protected:
-
   /// Maps an SoUid to its storage location in `sim_objects_` \n
-  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(1e4);  //!
+  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(10000u);  //!
   /// Pointer container for all simulation objects
   std::vector<std::vector<SimObject*>> sim_objects_;
   /// Maps a diffusion grid ID to the pointer to the diffusion grid

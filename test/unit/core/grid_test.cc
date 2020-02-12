@@ -58,12 +58,19 @@ TEST(GridTest, SetupGrid) {
     grid->ForEachNeighborWithinRadius(fill_neighbor_list, *so, 1201);
   });
 
-  std::vector<SoUid> expected_0 = {SoUid(1), SoUid(4), SoUid(5), SoUid(16), SoUid(17), SoUid(20), SoUid(21)};
-  std::vector<SoUid> expected_4 = {SoUid(0), SoUid(1), SoUid(5), SoUid(8), SoUid(9), SoUid(16), SoUid(17), SoUid(20), SoUid(21), SoUid(24), SoUid(25)};
-  std::vector<SoUid> expected_42 = {SoUid(21), SoUid(22), SoUid(23), SoUid(25), SoUid(26), SoUid(27), SoUid(29), SoUid(30), SoUid(31),
-                                    SoUid(37), SoUid(38), SoUid(39), SoUid(41), SoUid(43), SoUid(45), SoUid(46), SoUid(47), SoUid(53),
-                                    SoUid(54), SoUid(55), SoUid(57), SoUid(58), SoUid(59), SoUid(61), SoUid(62), SoUid(63)};
-  std::vector<SoUid> expected_63 = {SoUid(42), SoUid(43), SoUid(46), SoUid(47), SoUid(58), SoUid(59), SoUid(62)};
+  std::vector<SoUid> expected_0 = {SoUid(1),  SoUid(4),  SoUid(5), SoUid(16),
+                                   SoUid(17), SoUid(20), SoUid(21)};
+  std::vector<SoUid> expected_4 = {SoUid(0),  SoUid(1),  SoUid(5),  SoUid(8),
+                                   SoUid(9),  SoUid(16), SoUid(17), SoUid(20),
+                                   SoUid(21), SoUid(24), SoUid(25)};
+  std::vector<SoUid> expected_42 = {
+      SoUid(21), SoUid(22), SoUid(23), SoUid(25), SoUid(26), SoUid(27),
+      SoUid(29), SoUid(30), SoUid(31), SoUid(37), SoUid(38), SoUid(39),
+      SoUid(41), SoUid(43), SoUid(45), SoUid(46), SoUid(47), SoUid(53),
+      SoUid(54), SoUid(55), SoUid(57), SoUid(58), SoUid(59), SoUid(61),
+      SoUid(62), SoUid(63)};
+  std::vector<SoUid> expected_63 = {SoUid(42), SoUid(43), SoUid(46), SoUid(47),
+                                    SoUid(58), SoUid(59), SoUid(62)};
 
   std::sort(neighbors[SoUid(0)].begin(), neighbors[SoUid(0)].end());
   std::sort(neighbors[SoUid(4)].begin(), neighbors[SoUid(4)].end());
@@ -99,13 +106,21 @@ void RunUpdateGridTest(Simulation* simulation) {
     grid->ForEachNeighborWithinRadius(fill_neighbor_list, *so, 1201);
   });
 
-  std::vector<SoUid> expected_0 = {SoUid(4), SoUid(5), SoUid(16), SoUid(17), SoUid(20), SoUid(21)};
-  std::vector<SoUid> expected_5 = {SoUid(0), SoUid( 2), SoUid( 4), SoUid( 6), SoUid( 8), SoUid( 9), SoUid( 10), SoUid(16),
-                                   SoUid(17), SoUid(18), SoUid(20), SoUid(21), SoUid(22), SoUid(24), SoUid(25), SoUid(26)};
-  std::vector<SoUid> expected_41 = {SoUid(20), SoUid(21), SoUid(22), SoUid(24), SoUid(25), SoUid(26), SoUid(28), SoUid(29), SoUid(30),
-                                    SoUid(36), SoUid(37), SoUid(38), SoUid(40), SoUid(44), SoUid(45), SoUid(46), SoUid(52), SoUid(53),
-                                    SoUid(54), SoUid(56), SoUid(57), SoUid(58), SoUid(60), SoUid(61), SoUid(62)};
-  std::vector<SoUid> expected_61 = {SoUid(40), SoUid(41), SoUid(44), SoUid(45), SoUid(46), SoUid(56), SoUid(57), SoUid(58), SoUid(60), SoUid(62)};
+  std::vector<SoUid> expected_0 = {SoUid(4),  SoUid(5),  SoUid(16),
+                                   SoUid(17), SoUid(20), SoUid(21)};
+  std::vector<SoUid> expected_5 = {SoUid(0),  SoUid(2),  SoUid(4),  SoUid(6),
+                                   SoUid(8),  SoUid(9),  SoUid(10), SoUid(16),
+                                   SoUid(17), SoUid(18), SoUid(20), SoUid(21),
+                                   SoUid(22), SoUid(24), SoUid(25), SoUid(26)};
+  std::vector<SoUid> expected_41 = {
+      SoUid(20), SoUid(21), SoUid(22), SoUid(24), SoUid(25),
+      SoUid(26), SoUid(28), SoUid(29), SoUid(30), SoUid(36),
+      SoUid(37), SoUid(38), SoUid(40), SoUid(44), SoUid(45),
+      SoUid(46), SoUid(52), SoUid(53), SoUid(54), SoUid(56),
+      SoUid(57), SoUid(58), SoUid(60), SoUid(61), SoUid(62)};
+  std::vector<SoUid> expected_61 = {SoUid(40), SoUid(41), SoUid(44), SoUid(45),
+                                    SoUid(46), SoUid(56), SoUid(57), SoUid(58),
+                                    SoUid(60), SoUid(62)};
 
   std::sort(neighbors[SoUid(0)].begin(), neighbors[SoUid(0)].end());
   std::sort(neighbors[SoUid(5)].begin(), neighbors[SoUid(5)].end());
@@ -273,7 +288,8 @@ TEST(GridTest, IterateZOrder) {
   ASSERT_EQ(27u, cnt);
   // check each box; no order within a box
   std::vector<std::set<SoUid>> expected(8);
-  expected[0] = std::set<SoUid>{SoUid(0), SoUid(1), SoUid(3), SoUid(4), SoUid(9), SoUid(10), SoUid(12), SoUid(13)};
+  expected[0] = std::set<SoUid>{SoUid(0), SoUid(1),  SoUid(3),  SoUid(4),
+                                SoUid(9), SoUid(10), SoUid(12), SoUid(13)};
   expected[1] = std::set<SoUid>{SoUid(2), SoUid(5), SoUid(11), SoUid(14)};
   expected[2] = std::set<SoUid>{SoUid(6), SoUid(7), SoUid(15), SoUid(16)};
   expected[3] = std::set<SoUid>{SoUid(8), SoUid(17)};

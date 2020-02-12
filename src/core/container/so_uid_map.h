@@ -31,18 +31,17 @@ namespace bdm {
 template <typename TValue>
 class SoUidMap {
   struct Iterator {
-
     SoUidMap* map_;
     uint64_t idx_;
   };
 
-public:
+ public:
   SoUidMap() {}
 
   SoUidMap(const SoUidMap& other)
-    : data_(other.data_), so_uid_reused_(other.so_uid_reused_) {}
+      : data_(other.data_), so_uid_reused_(other.so_uid_reused_) {}
 
-  SoUidMap(uint64_t initial_size) {
+  explicit SoUidMap(uint64_t initial_size) {
     data_.resize(initial_size);
     so_uid_reused_.resize(initial_size, SoUid::kReusedMax);
   }
@@ -53,13 +52,13 @@ public:
   }
 
   void clear() {  // NOLINT
-    for (auto& el: so_uid_reused_) {
+    for (auto& el : so_uid_reused_) {
       el = SoUid::kReusedMax;
     }
   }
 
   void ParallelClear() {
-    #pragma omp parallel for
+#pragma omp parallel for
     for (uint64_t i = 0; i < data_.size(); ++i) {
       so_uid_reused_[i] = SoUid::kReusedMax;
     }
@@ -98,7 +97,7 @@ public:
     return so_uid_reused_[index];
   }
 
-private:
+ private:
   std::vector<TValue> data_;
   std::vector<typename SoUid::Reused_t> so_uid_reused_;
 };

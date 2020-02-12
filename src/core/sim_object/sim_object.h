@@ -44,9 +44,9 @@ namespace bdm {
 
 #define BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR(data_member)                 \
   if (is_so_ptr<decltype(data_member)>::value) {                            \
-    const uint64_t uid = detail::ExtractUid::GetUid(data_member);                         \
-    visitor->Visit(#data_member, typeid(uint64_t).hash_code(), \
-    static_cast<const void*>(&uid));                          \
+    const uint64_t uid = detail::ExtractUid::GetUid(data_member);           \
+    visitor->Visit(#data_member, typeid(uint64_t).hash_code(),              \
+                   static_cast<const void*>(&uid));                         \
   } else {                                                                  \
     visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
                    static_cast<const void*>(&data_member));                 \
@@ -55,20 +55,20 @@ namespace bdm {
 #define BDM_SIM_OBJECT_FOREACHDMIN_BODY(...) \
   EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
 
-#define BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR(data_member)               \
-  {                                                                         \
-    auto it = dm_selector.find(#data_member);                               \
-    if (it != dm_selector.end()) {                                          \
-      if (is_so_ptr<decltype(data_member)>::value) {                        \
-        const uint64_t uid = detail::ExtractUid::GetUid(data_member);                         \
-        visitor->Visit(#data_member, typeid(uint64_t).hash_code(), \
-        static_cast<const void*>(&uid));                          \
-      } else {                                                              \
-        visitor->Visit(#data_member,                                        \
-                       typeid(decltype(data_member)).hash_code(),           \
-                       static_cast<const void*>(&data_member));             \
-      }                                                                     \
-    }                                                                       \
+#define BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR(data_member)         \
+  {                                                                   \
+    auto it = dm_selector.find(#data_member);                         \
+    if (it != dm_selector.end()) {                                    \
+      if (is_so_ptr<decltype(data_member)>::value) {                  \
+        const uint64_t uid = detail::ExtractUid::GetUid(data_member); \
+        visitor->Visit(#data_member, typeid(uint64_t).hash_code(),    \
+                       static_cast<const void*>(&uid));               \
+      } else {                                                        \
+        visitor->Visit(#data_member,                                  \
+                       typeid(decltype(data_member)).hash_code(),     \
+                       static_cast<const void*>(&data_member));       \
+      }                                                               \
+    }                                                                 \
   }
 
 /// Macro to insert required boilerplate code into simulation object

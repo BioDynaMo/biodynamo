@@ -75,7 +75,7 @@ namespace cell_test_internal {
 
 inline void RunIOTest() {
   Simulation simulation("CellTest-RunIOTest");
-  
+
   using GrowthModule = sim_object_test_internal::GrowthModule;
   using MovementModule = sim_object_test_internal::MovementModule;
   remove(ROOTFILE);
