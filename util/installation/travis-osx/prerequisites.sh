@@ -29,7 +29,7 @@ brew style
 brew update-reset
 
 # Install and upgrade required packages
-brew install libomp open-mpi git \
+brew install libomp tbb open-mpi git \
 python python@2 llvm wget cmake || true
 
 brew upgrade python || true

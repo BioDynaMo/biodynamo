@@ -162,6 +162,7 @@ sudo yum install -y libxml2-devel
  * **wget**: Retrieves files from the web;
  * **cmake**: Set of tools for automate building, testing of software;
  * **libomp**: Development files for OpenMP (API for multiprocessor programming);
+ * **tbb**: Development files for TBB (C++ template library developed by Intel for parallel programming);
  * **open-mpi**: Development files for OpenMP (API for multiprocessor programming);
  * **python** and **python@2**: Python 3 Interpreter.
 
@@ -179,7 +180,7 @@ sudo yum install -y libxml2-devel
 Using HomeBrew:
 
 ```bash
-brew install llvm wget cmake libomp open-mpi python python@2 || true
+brew install llvm wget cmake libomp tbb open-mpi python python@2 || true
 
 brew upgrade python cmake || true
 ```
@@ -187,7 +188,7 @@ brew upgrade python cmake || true
 Using Fink:
 
 ```bash
-sudo fink install wget llvm-clang cmake libomp-dev openmpi \
+sudo fink install wget llvm-clang cmake libomp-dev libtbb4 openmpi \
    python3 pip-py37
 ```
 
