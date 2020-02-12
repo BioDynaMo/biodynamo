@@ -16,8 +16,14 @@
 #define CORE_SIM_OBJECT_SO_UID_GENERATOR_H_
 
 #include <atomic>
+#include <mutex>
+#include "core/container/so_uid_map.h"
+#include "core/sim_object/so_handle.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/root.h"
+#include "core/util/spinlock.h"
+#include "core/simulation.h"
+#include "core/scheduler.h"
 
 namespace bdm {
 
@@ -28,16 +34,47 @@ class SoUidGenerator {
   SoUidGenerator(const SoUidGenerator&) = delete;
   SoUidGenerator() : counter_(0) {}
 
-  SoUid NewSoUid() { return SoUid(counter_++); }
+  SoUid NewSoUid() {
+    if (map_ != nullptr) {
+      // defragmentation mode
+      std::lock_guard<Spinlock> guard(lock_);
+      while (search_index_ != map_->size() &&
+        map_->GetReused(search_index_) != std::numeric_limits<typename SoUid::Reused_t>::max()){
+        search_index_++;
+      }
+      // find unused element in map
+      if(search_index_ < map_->size()) {
+        auto* scheduler = Simulation::GetActive()->GetScheduler();
+        return SoUid(search_index_++, scheduler->GetSimulatedSteps());
+      }
+      // didn't find any empty slots -> disable defragmentation mode
+      map_ = nullptr;
+    }
+    return SoUid(counter_++);
+  }
 
   // Returns the highest index that was used for a SoUid
   uint64_t GetHighestIndex() const { return counter_; }
+
+  void EnableDefragmentation(const SoUidMap<SoHandle>* map) {
+    map_ = map;
+    search_index_ = 0;
+  }
+
+  void DisableDefragmentation() { map_ = nullptr; }
 
  private:
   std::atomic<typename SoUid::Index_t> counter_;  //!
   /// ROOT can't persist std::atomic.
   /// Therefore this additional helper variable is needed.
   typename SoUid::Index_t root_counter_;
+
+  ///
+  const SoUidMap<SoHandle>* map_ = nullptr;  //!
+  /// Lock needed for defragmentation mode
+  Spinlock lock_;  //!
+  /// Current search position
+  typename SoUid::Index_t search_index_ = 0;  //!
   BDM_CLASS_DEF_NV(SoUidGenerator, 1);
 };
 

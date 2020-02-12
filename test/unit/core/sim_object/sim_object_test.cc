@@ -122,7 +122,7 @@ TEST(SimObjectTest, RemoveBiologyModule) {
   EXPECT_TRUE(dynamic_cast<GrowthModule*>(bms[1]) != nullptr);
   // check if MovementModule and GrowthModule have been executed correctly.
   EXPECT_ARR_NEAR({1, 2, 3}, cell.GetPosition());
-  EXPECT_NEAR(0.5, cell.GetDiameter(), abs_error<double>::value);
+  EXPECT_NEAR(10.5, cell.GetDiameter(), abs_error<double>::value);
 
   cell.AddBiologyModule(new RemoveModule());
   ASSERT_EQ(3u, bms.size());

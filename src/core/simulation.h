@@ -21,7 +21,6 @@
 #include "core/util/random.h"
 #include "core/util/root.h"
 #include "core/sim_object/so_uid.h"
-#include "core/sim_object/so_uid_generator.h"
 
 namespace bdm {
 
@@ -32,6 +31,7 @@ class Scheduler;
 struct Param;
 class InPlaceExecutionContext;
 class CommandLineOptions;
+class SoUidGenerator;
 
 class SimulationTest;
 class ParaviewAdaptorTest;

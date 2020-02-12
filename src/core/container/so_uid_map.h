@@ -89,6 +89,10 @@ public:
     return data_[key.GetIndex()];
   }
 
+  typename SoUid::Reused_t GetReused(uint64_t index) const {
+    return so_uid_reused_[index];
+  }
+
   // find, erase, begin, end
 
 private:

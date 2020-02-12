@@ -62,7 +62,7 @@ class TestSimObject : public SimObject {
 
  protected:
   Double3 position_ = {{0, 0, 0}};
-  double diameter_ = 0;
+  double diameter_ = 10;
   int data_ = 0;
 };
 
