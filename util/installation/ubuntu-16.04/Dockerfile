@@ -26,6 +26,12 @@ RUN apt-get update && apt-get install -y \
   wget \
   xvfb
 
+# This will avoid tzdata package from requesting user interaction (tzdata is a
+# dependency of one of the prerequisites of PyEnv)
+RUN if ! [ -L /etc/localtime ]; then \
+      sudo ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime; \
+    fi
+
 RUN git config --system user.name "Test User" && \
     git config --system user.email user@test.com
 
