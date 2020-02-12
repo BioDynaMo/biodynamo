@@ -20,13 +20,13 @@
 #include "core/sim_object/cell.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
-#include "core/visualization/paraview/adaptor.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 #ifdef USE_PARAVIEW
 #include <vtkImageData.h>
 #include <vtkXMLImageDataReader.h>
+#include "core/visualization/paraview/adaptor.h"
 #endif  // USE_PARAVIEW
 
 #define ROOTFILE "bdmFile.root"
