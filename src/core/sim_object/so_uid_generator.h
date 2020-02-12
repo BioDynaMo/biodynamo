@@ -63,6 +63,8 @@ class SoUidGenerator {
 
   void DisableDefragmentation() { map_ = nullptr; }
 
+  bool IsInDefragmentationMode() const { return map_ != nullptr; }
+
  private:
   std::atomic<typename SoUid::Index_t> counter_;  //!
   /// ROOT can't persist std::atomic.

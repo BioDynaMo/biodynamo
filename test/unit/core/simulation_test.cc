@@ -21,6 +21,7 @@
 #include "core/sim_object/cell.h"
 #include "core/simulation_backup.h"
 #include "unit/test_util/io_test.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 
@@ -66,6 +67,8 @@ class SimulationTest : public ::testing::Test {
       "scheduling_batch_size = 123\n"
       "detect_static_sim_objects = true\n"
       "cache_neighbors = true\n"
+      "souid_defragmentation_low_watermark = 0.123\n"
+      "souid_defragmentation_high_watermark = 0.456\n"
       "\n"
       "[development]\n"
       "# this is a comment\n"
@@ -148,6 +151,8 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(123u, param->scheduling_batch_size_);
     EXPECT_TRUE(param->detect_static_sim_objects_);
     EXPECT_TRUE(param->cache_neighbors_);
+    EXPECT_NEAR(0.123, param->souid_defragmentation_low_watermark_, abs_error<double>::value);
+    EXPECT_NEAR(0.456, param->souid_defragmentation_high_watermark_, abs_error<double>::value);
 
     // development group
     EXPECT_TRUE(param->statistics_);

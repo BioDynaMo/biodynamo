@@ -140,6 +140,8 @@ void InPlaceExecutionContext::TearDownIterationAll(
     ctxt->remove_.clear();
   }
 
+  rm->EndOfIteration();
+
   // FIXME
   // new_so_map_.SetOffset(SoUidGenerator::Get()->GetLastId());
   new_so_map_->RemoveOldCopies();

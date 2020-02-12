@@ -314,6 +314,18 @@ class ResourceManager {
     }
   }
 
+  void EndOfIteration() {
+    // Check if SoUiD defragmentation should be turned on or off
+    double utilization = static_cast<double>(uid_soh_map_.size()) / static_cast<double>(GetNumSimObjects());
+    auto* sim = Simulation::GetActive();
+    auto* param = sim->GetParam();
+    if (utilization < param->souid_defragmentation_low_watermark_) {
+      sim->GetSoUidGenerator()->EnableDefragmentation(&uid_soh_map_);
+    } else if (utilization > param->souid_defragmentation_high_watermark_) {
+      sim->GetSoUidGenerator()->DisableDefragmentation();
+    }
+  }
+
   /// Adds `new_sim_objects` to `sim_objects_[numa_node]`. `offset` specifies
   /// the index at which the first element is inserted. Sim objects are inserted
   /// consecutively. This methos is thread safe only if insertion intervals do
