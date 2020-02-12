@@ -83,6 +83,10 @@ class SoUidGenerator {
   BDM_CLASS_DEF_NV(SoUidGenerator, 1);
 };
 
+// The following custom streamer should be visible to rootcling for dictionary
+// generation, but not to the interpreter!
+#if !defined(__CLING__) || defined(__ROOTCLING__)
+
 inline void SoUidGenerator::Streamer(TBuffer &R__b) {
   // Stream an object of class Foo.
   if (R__b.IsReading()) {
@@ -94,6 +98,7 @@ inline void SoUidGenerator::Streamer(TBuffer &R__b) {
   }
 }
 
+#endif  // !defined(__CLING__) || defined(__ROOTCLING__)
 
 }  // namespace bdm
 
