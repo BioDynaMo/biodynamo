@@ -46,7 +46,7 @@ inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
 /// param.h
 class BoundSpace : public Operation {
  public:
-  BoundSpace() {}
+  BoundSpace() : Operation("bdm::BoundSpace") {}
   ~BoundSpace() {}
 
   void operator()(SimObject* sim_object) override {

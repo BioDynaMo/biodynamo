@@ -201,8 +201,8 @@ void InPlaceExecutionContext::ForEachNeighbor(
 
 struct Fen : public Functor<void, const SimObject*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
-  std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
   Functor<void, const SimObject*, double>& function_;
+  std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
 
   Fen(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
    : function_(function), neighbor_cache_(neigbor_cache)
@@ -235,9 +235,9 @@ void InPlaceExecutionContext::ForEachNeighbor(
 
 struct FenWithinRadius : public Functor<void, const SimObject*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
+  Functor<void, const SimObject*, double>& function_;
   std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
   double squared_radius_ = 0;
-  Functor<void, const SimObject*, double>& function_;
 
   FenWithinRadius(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache, double squared_radius)
    : function_(function), neighbor_cache_(neigbor_cache), squared_radius_(squared_radius)

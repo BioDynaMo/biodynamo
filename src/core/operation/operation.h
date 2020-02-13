@@ -28,13 +28,13 @@ class SimObject;
 /// object. It's data member `frequency_` specifies how often it will be
 /// executed (every simulation step, every second, ...).
 struct Operation : public Functor<void, SimObject*> {
-  Operation(); // FIXME remove
-
   Operation(const std::string& name);
 
   Operation(const std::string& name, uint32_t frequency);
 
-  void operator()(SimObject* so) override {} // FIXME remove to make abstract
+  virtual ~Operation();
+
+  void operator()(SimObject* so) override = 0;
 
   /// Specifies how often this operation will be executed.\n
   /// 1: every timestep\n
