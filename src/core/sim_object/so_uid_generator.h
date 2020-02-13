@@ -87,7 +87,7 @@ class SoUidGenerator {
 
 // The following custom streamer should be visible to rootcling for dictionary
 // generation, but not to the interpreter!
-#if !defined(__CLING__) || defined(__ROOTCLING__)
+#if (!defined(__CLING__) || defined(__ROOTCLING__)) && defined(USE_DICT)
 
 inline void SoUidGenerator::Streamer(TBuffer& R__b) {
   // Stream an object of class Foo.
