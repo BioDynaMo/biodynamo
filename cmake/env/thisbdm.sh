@@ -180,11 +180,19 @@ else
 fi
 
 ##### Python Specific Configurations #####
-export PATH="$HOME/.pyenv/bin:$PATH"
+if [ ! -z "${PYENV_ROOT}" ]; then
+  export PATH="$PYENV_ROOT/.pyenv/bin:$PATH"
+else
+  export PATH="$HOME/.pyenv/bin:$PATH"
+fi
 eval "$(pyenv init -)"
 pyenv shell 3.6.9
 # Location of jupyter executable (installed with `pip install --user` command)
-export PATH="$HOME/.local/bin:$PATH"
+if [ ! -z "${PYTHONUSERBASE}" ]; then
+  export PATH="$PYTHONUSERBASE/.local/bin:$PATH"
+else
+  export PATH="$HOME/.local/bin:$PATH"
+fi
 ########
 
 ##### CMake Specific Configurations #####
