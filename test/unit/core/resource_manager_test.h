@@ -107,33 +107,35 @@ inline void RunGetNumSimObjects() {
   EXPECT_EQ(5u, rm->GetNumSimObjects());
 }
 
+struct ApplyOnAllElementsParallelTestFunctor : Functor<void, SimObject*> {
+  void operator()(SimObject* sim_object) override {
+    const double kEpsilon = abs_error<double>::value;
+    B* b = dynamic_cast<B*>(sim_object);
+    SoUid uid = sim_object->GetUid();
+    if (uid == SoUid(0)) {
+      EXPECT_EQ(3.14, b->GetData());
+    } else if (uid == SoUid(1)) {
+      EXPECT_EQ(6.28, b->GetData());
+    } else if (uid == SoUid(2)) {
+      EXPECT_NEAR(9.42, b->GetData(), kEpsilon);
+    } else {
+      FAIL();
+    }
+  }
+};
+
 // This test uses Cells since A, and B are strippted down simulation objects
 // and are themselves not thread safe.
 inline void RunApplyOnAllElementsParallelTest() {
-  // Simulation simulation("RunApplyOnAllElementsParallelTest");
-  // auto* rm = simulation.GetResourceManager();
-  //
-  // auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
-  //
-  // rm->push_back(new B(3.14));
-  // rm->push_back(new B(6.28));
-  // rm->push_back(new B(9.42));
-  //
-  // rm->ApplyOnAllElementsParallel([&](SimObject* sim_object) {
-  //   const double kEpsilon = abs_error<double>::value;
-  //   B* b = dynamic_cast<B*>(sim_object);
-  //   SoUid uid = sim_object->GetUid();
-  //   if (uid == ref_uid) {
-  //     EXPECT_EQ(3.14, b->GetData());
-  //   } else if (uid == ref_uid + 1) {
-  //     EXPECT_EQ(6.28, b->GetData());
-  //   } else if (uid == ref_uid + 2) {
-  //     EXPECT_NEAR(9.42, b->GetData(), kEpsilon);
-  //   } else {
-  //     FAIL();
-  //   }
-  // });
-  // FIXME
+  Simulation simulation("RunApplyOnAllElementsParallelTest");
+  auto* rm = simulation.GetResourceManager();
+
+  rm->push_back(new B(3.14));
+  rm->push_back(new B(6.28));
+  rm->push_back(new B(9.42));
+
+  ApplyOnAllElementsParallelTestFunctor functor;
+  rm->ApplyOnAllElementsParallel(functor);
 }
 
 inline void RunRemoveAndContainsTest() {
@@ -281,121 +283,132 @@ inline std::vector<uint64_t> GetSoPerNuma(uint64_t num_sim_objects) {
 }
 
 // -----------------------------------------------------------------------------
-// inline void CheckApplyOnAllElements(ResourceManager* rm,
-//                                     uint64_t num_so_per_type,
-//                                     bool numa_checks = false) {
-//   std::vector<bool> found(2 * num_so_per_type);
-//   ASSERT_EQ(2 * num_so_per_type, found.size());
-//   for (uint64_t i = 0; i < found.size(); ++i) {
-//     found[i] = false;
-//   }
-//
-//   std::atomic<uint64_t> cnt(0);
-//   auto* ti = ThreadInfo::GetInstance();
-//   // counts the number of sim objects in each numa domain
-//   std::vector<uint64_t> numa_so_cnts;
-//   numa_so_cnts.resize(ti->GetNumaNodes());
-//   std::atomic<uint64_t> numa_memory_errors(0);
-//   std::atomic<uint64_t> numa_thread_errors(0);
-//
-//   rm->ApplyOnAllElementsParallel([&](SimObject* so) {
-//     size_t index = 0;
-//     if (A* a = dynamic_cast<A*>(so)) {
-//       index = a->GetData();
-//     } else if (B* b = dynamic_cast<B*>(so)) {
-//       index = std::round(b->GetData());
-//     }
-//     auto handle = rm->GetSoHandle(so->GetUid());
-//
-// #pragma omp critical
-//     {
-//       found[index] = true;
-//
-//       // verify that a thread processes sim objects on the same NUMA node.
-//       if (numa_checks && handle.GetNumaNode() != GetNumaNodeForMemory(so)) {
-//         numa_memory_errors++;
-//       }
-//       if (numa_checks &&
-//           handle.GetNumaNode() != numa_node_of_cpu(sched_getcpu())) {
-//         numa_thread_errors++;
-//       }
-//
-//       numa_so_cnts[handle.GetNumaNode()]++;
-//     }
-//     cnt++;
-//   });
-//
-//   EXPECT_EQ(2 * num_so_per_type, cnt.load());
-//   ASSERT_EQ(2 * num_so_per_type, found.size());
-//   for (uint64_t i = 0; i < found.size(); ++i) {
-//     if (!found[i]) {
-//       FAIL()
-//           << "ApplyOnAllElementsParallel was not called for element with data_="
-//           << i;
-//     }
-//   }
-//
-//   if (numa_checks) {
-//     EXPECT_EQ(0u, numa_memory_errors.load());
-//     EXPECT_EQ(0u, numa_thread_errors.load());
-//     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
-//     for (int n = 0; n < ti->GetNumaNodes(); ++n) {
-//       EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
-//     }
-//   }
-// }
-//
-// inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_so_per_type) {
-//   Simulation simulation("RunSortAndApplyOnAllElementsParallel");
-//   auto* rm = simulation.GetResourceManager();
-//
-//   std::unordered_map<SoUid, double> a_x_values;
-//   std::unordered_map<SoUid, double> b_x_values;
-//   for (uint64_t i = 0; i < num_so_per_type; ++i) {
-//     double x_pos = i * 30.0;
-//
-//     A* a = new A(i);
-//     a->SetDiameter(10);
-//     a->SetPosition({x_pos, 0, 0});
-//     rm->push_back(a);
-//     a_x_values[a->GetUid()] = x_pos;
-//
-//     B* b = new B(i + num_so_per_type);
-//     b->SetDiameter(10);
-//     b->SetPosition({x_pos, 0, 0});
-//     rm->push_back(b);
-//     b_x_values[b->GetUid()] = x_pos;
-//   }
-//
-//   CheckApplyOnAllElements(rm, num_so_per_type);
-//
-//   simulation.GetGrid()->UpdateGrid();
-//   rm->SortAndBalanceNumaNodes();
-//
-//   CheckApplyOnAllElements(rm, num_so_per_type, true);
-//
-//   // check if sim object uids still point to the correct object
-//   for (auto& entry : a_x_values) {
-//     auto x_actual = rm->GetSimObject(entry.first)->GetPosition()[0];
-//     EXPECT_EQ(x_actual, entry.second);
-//   }
-//   for (auto& entry : b_x_values) {
-//     auto x_actual = rm->GetSimObject(entry.first)->GetPosition()[0];
-//     EXPECT_EQ(x_actual, entry.second);
-//   }
-// }
-//
-// inline void RunSortAndApplyOnAllElementsParallel() {
-//   int num_threads = omp_get_max_threads();
-//   std::vector<int> num_so_per_type = {std::max(1, num_threads - 1), num_threads,
-//                                       3 * num_threads, 3 * num_threads + 1};
-//
-//   for (auto n : num_so_per_type) {
-//     RunSortAndApplyOnAllElementsParallel(n);
-//   }
-//
-//   RunSortAndApplyOnAllElementsParallel(1000);
-// }
+struct CheckApplyOnAllElementsFunctor : Functor<void, SimObject*> {
+  bool numa_checks;
+  std::vector<bool> found;
+  std::atomic<uint64_t> cnt;
+  // counts the number of sim objects in each numa domain
+  std::vector<uint64_t> numa_so_cnts;
+  std::atomic<uint64_t> numa_memory_errors;
+  std::atomic<uint64_t> numa_thread_errors;
+
+  CheckApplyOnAllElementsFunctor(uint64_t num_so_per_type, bool numa_checks) : numa_checks(numa_checks), cnt(0), numa_memory_errors(0), numa_thread_errors(0) {
+    found.resize(2 * num_so_per_type);
+    for (uint64_t i = 0; i < found.size(); ++i) {
+      found[i] = false;
+    }
+
+    auto* ti = ThreadInfo::GetInstance();
+    numa_so_cnts.resize(ti->GetNumaNodes());
+  }
+
+  void operator()(SimObject* so) override {
+    size_t index = 0;
+    if (A* a = dynamic_cast<A*>(so)) {
+      index = a->GetData();
+    } else if (B* b = dynamic_cast<B*>(so)) {
+      index = std::round(b->GetData());
+    }
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    auto handle = rm->GetSoHandle(so->GetUid());
+
+#pragma omp critical
+    {
+      found[index] = true;
+
+      // verify that a thread processes sim objects on the same NUMA node.
+      if (numa_checks && handle.GetNumaNode() != GetNumaNodeForMemory(so)) {
+        numa_memory_errors++;
+      }
+      if (numa_checks &&
+          handle.GetNumaNode() != numa_node_of_cpu(sched_getcpu())) {
+        numa_thread_errors++;
+      }
+
+      numa_so_cnts[handle.GetNumaNode()]++;
+    }
+    cnt++;
+  }
+};
+
+inline void CheckApplyOnAllElements(ResourceManager* rm,
+                                    uint64_t num_so_per_type,
+                                    bool numa_checks = false) {
+  CheckApplyOnAllElementsFunctor functor(num_so_per_type, numa_checks);
+  rm->ApplyOnAllElementsParallel(functor);
+
+  EXPECT_EQ(2 * num_so_per_type, functor.cnt.load());
+  ASSERT_EQ(2 * num_so_per_type, functor.found.size());
+  for (uint64_t i = 0; i < functor.found.size(); ++i) {
+    if (!functor.found[i]) {
+      FAIL()
+          << "ApplyOnAllElementsParallel was not called for element with data_="
+          << i;
+    }
+  }
+
+  if (numa_checks) {
+    EXPECT_EQ(0u, functor.numa_memory_errors.load());
+    EXPECT_EQ(0u, functor.numa_thread_errors.load());
+    auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
+    auto* ti = ThreadInfo::GetInstance();
+    for (int n = 0; n < ti->GetNumaNodes(); ++n) {
+      EXPECT_EQ(so_per_numa[n], functor.numa_so_cnts[n]);
+    }
+  }
+}
+
+inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_so_per_type) {
+  Simulation simulation("RunSortAndApplyOnAllElementsParallel");
+  auto* rm = simulation.GetResourceManager();
+
+  std::unordered_map<SoUid, double> a_x_values;
+  std::unordered_map<SoUid, double> b_x_values;
+  for (uint64_t i = 0; i < num_so_per_type; ++i) {
+    double x_pos = i * 30.0;
+
+    A* a = new A(i);
+    a->SetDiameter(10);
+    a->SetPosition({x_pos, 0, 0});
+    rm->push_back(a);
+    a_x_values[a->GetUid()] = x_pos;
+
+    B* b = new B(i + num_so_per_type);
+    b->SetDiameter(10);
+    b->SetPosition({x_pos, 0, 0});
+    rm->push_back(b);
+    b_x_values[b->GetUid()] = x_pos;
+  }
+
+  CheckApplyOnAllElements(rm, num_so_per_type);
+
+  simulation.GetGrid()->UpdateGrid();
+  rm->SortAndBalanceNumaNodes();
+
+  CheckApplyOnAllElements(rm, num_so_per_type, true);
+
+  // check if sim object uids still point to the correct object
+  for (auto& entry : a_x_values) {
+    auto x_actual = rm->GetSimObject(entry.first)->GetPosition()[0];
+    EXPECT_EQ(x_actual, entry.second);
+  }
+  for (auto& entry : b_x_values) {
+    auto x_actual = rm->GetSimObject(entry.first)->GetPosition()[0];
+    EXPECT_EQ(x_actual, entry.second);
+  }
+}
+
+inline void RunSortAndApplyOnAllElementsParallel() {
+  int num_threads = omp_get_max_threads();
+  std::vector<int> num_so_per_type = {std::max(1, num_threads - 1), num_threads,
+                                      3 * num_threads, 3 * num_threads + 1};
+
+  for (auto n : num_so_per_type) {
+    RunSortAndApplyOnAllElementsParallel(n);
+  }
+
+  RunSortAndApplyOnAllElementsParallel(1000);
+}
 
 // //
 // -----------------------------------------------------------------------------

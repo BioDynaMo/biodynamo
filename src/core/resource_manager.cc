@@ -239,7 +239,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 
   // update uid_soh_map_
   UpdateUidSoHMapFunctor functor(uid_soh_map_);
-  ApplyOnAllElements(functor);
+  ApplyOnAllElementsParallelDynamic(1000, functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa_) {
     DebugNuma();

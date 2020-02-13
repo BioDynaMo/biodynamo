@@ -229,8 +229,7 @@ class ResourceManager {
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallel(
-      Functor<void,SimObject*>& function);
+  void ApplyOnAllElementsParallel(Functor<void,SimObject*>& function);
 
   /// Apply a function on all elements.\n
   /// Function invocations are parallelized.\n

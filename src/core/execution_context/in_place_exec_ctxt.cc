@@ -268,24 +268,7 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
 
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
-  // struct {
-  //   const Param* param = Simulation::GetActive()->GetParam();
-  //   InPlaceExecutionContext* ctxt;
-  //   double sradius;
-  //   const std::function<void(const SimObject*)>* lambda;
-  // } data;
-  // data.ctxt = this;
-  // data.sradius = squared_radius;
-  // data.lambda = &lambda;
-  //
-  // auto for_each = [&data](const SimObject* so, double squared_distance) {
-  //   if (data.param->cache_neighbors_) {
-  //     data.ctxt->neighbor_cache_.push_back(make_pair(so, squared_distance));
-  //   }
-  //   if (squared_distance < data.sradius) {
-  //     (*data.lambda)(so);
-  //   }
-  // };
+
   FenWithinRadius for_each(lambda, neighbor_cache_, squared_radius);
   grid->ForEachNeighbor(for_each, query);
 }

@@ -93,45 +93,47 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   EXPECT_FALSE(grid->HasGrown());
 }
 
-// FIXME uncomment
-// TEST(SchedulerTest, OperationManagement) {
-//   Simulation simulation(TEST_NAME);
-//
-//   simulation.GetResourceManager()->push_back(new Cell(10));
-//
-//   uint64_t op1_cnt = 0;
-//   Operation op1 = Operation("op1", [&](SimObject* so) { op1_cnt++; });
-//
-//   uint64_t op2_cnt = 0;
-//   Operation op2 = Operation("op2", [&](SimObject* so) { op2_cnt++; });
-//
-//   // add operations
-//   auto* scheduler = simulation.GetScheduler();
-//   scheduler->AddOperation(op1);
-//   scheduler->AddOperation(op2);
-//   scheduler->Simulate(10);
-//   EXPECT_EQ(10u, op1_cnt);
-//   EXPECT_EQ(10u, op2_cnt);
-//
-//   // change frequency of operation
-//   scheduler->GetOperation(op1.name_)->frequency_ = 3;
-//   scheduler->Simulate(10);
-//   EXPECT_EQ(13u, op1_cnt);
-//   EXPECT_EQ(20u, op2_cnt);
-//
-//   // remove operation
-//   scheduler->RemoveOperation(op2.name_);
-//   scheduler->Simulate(10);
-//   EXPECT_EQ(16u, op1_cnt);
-//   EXPECT_EQ(20u, op2_cnt);
-//
-//   // get non existing and protected operations
-//   EXPECT_TRUE(scheduler->GetOperation("does not exist") == nullptr);
-//   EXPECT_TRUE(scheduler->GetOperation("first") == nullptr);  // is protected
-//   scheduler->Simulate(10);
-//   EXPECT_EQ(20u, op1_cnt);
-//   EXPECT_EQ(20u, op2_cnt);
-// }
+struct TestOp : public Operation {
+  TestOp(const std::string& id) : Operation(id) {}
+  void operator()(SimObject* so) override { counter++; }
+  int counter=0;
+};
+
+TEST(SchedulerTest, OperationManagement) {
+  Simulation simulation(TEST_NAME);
+
+  simulation.GetResourceManager()->push_back(new Cell(10));
+
+  auto* op1 = new TestOp("op1");
+  auto* op2 = new TestOp("op2");
+
+  // add operations
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->AddOperation(op1);
+  scheduler->AddOperation(op2);
+  scheduler->Simulate(10);
+  EXPECT_EQ(10u, op1->counter);
+  EXPECT_EQ(10u, op2->counter);
+
+  // change frequency of operation
+  scheduler->GetOperation(op1->name_)->frequency_ = 3;
+  scheduler->Simulate(10);
+  EXPECT_EQ(13u, op1->counter);
+  EXPECT_EQ(20u, op2->counter);
+
+  // remove operation
+  scheduler->RemoveOperation(op2->name_);
+  scheduler->Simulate(10);
+  EXPECT_EQ(16u, op1->counter);
+  EXPECT_EQ(20u, op2->counter);
+
+  // get non existing and protected operations
+  EXPECT_TRUE(scheduler->GetOperation("does not exist") == nullptr);
+  EXPECT_TRUE(scheduler->GetOperation("first") == nullptr);  // is protected
+  scheduler->Simulate(10);
+  EXPECT_EQ(20u, op1->counter);
+  EXPECT_EQ(20u, op2->counter);
+}
 
 }  // namespace scheduler_test_internal
 }  // namespace bdm

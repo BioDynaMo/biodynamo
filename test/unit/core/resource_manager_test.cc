@@ -39,10 +39,9 @@ TEST(ResourceManagerTest, RemoveAndContains) { RunRemoveAndContainsTest(); }
 
 TEST(ResourceManagerTest, Clear) { RunClearTest(); }
 
-// FIXME uncomment
-// TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
-//   RunSortAndApplyOnAllElementsParallel();
-// }
+TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
+  RunSortAndApplyOnAllElementsParallel();
+}
 
 TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {
   RunSortAndApplyOnAllElementsParallelDynamic();
