@@ -1,3 +1,0 @@
-#!/bin/sh
-export LD_LIBRARY_PATH=@ROOT_LIBRARY_DIR@;
-export ROOTSYS=@ROOT_LIBRARY_DIR@/../;

@@ -138,11 +138,6 @@ ${ALL_OS}
     endif()
 endfunction()
 
-# Copy the source_root_auto.sh file by supplying the right information
-function(source_root_file INSTALL_DIR)
-    configure_file(cmake/env/source_root_auto.sh ${INSTALL_DIR}/source_root_auto.sh @ONLY)
-endfunction()
-
 # This function will create a pre-install directory which will contain all the files
 # needed to use BioDynaMo as an external project. Moreover, it will create custom
 # targets such to run this procedure after the build process has completed.
