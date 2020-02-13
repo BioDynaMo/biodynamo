@@ -234,10 +234,12 @@ void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
 }
 
 struct ProcessSimObjectFunctor : public Functor<void, SimObject*> {
-  CatalystAdaptor* ca_;
+  ParaviewAdaptor* pa_;
+
+  ProcessSimObjectFunctor(ParaviewAdaptor* pa) : pa_(pa) {}
 
   void operator()(SimObject* so) {
-    ca_->ProcessSimObject(so);
+    pa_->ProcessSimObject(so);
   }
 };
 

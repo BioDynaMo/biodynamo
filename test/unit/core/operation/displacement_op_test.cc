@@ -44,10 +44,10 @@ TEST(DisplacementOpTest, ComputeNew) {
   grid->Initialize();
 
   // execute operation
-  std::vector<Operation> ops = {DisplacementOp()};
+  DisplacementOp op;
   auto* ctxt = simulation.GetExecutionContext();
   for (uint64_t i = 0; i < 27; i++) {
-    ctxt->Execute(rm->GetSimObject(ref_uid + i), ops);
+    ctxt->Execute(rm->GetSimObject(ref_uid + i), {&op});
   }
 
   // clang-format off
