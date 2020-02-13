@@ -35,7 +35,7 @@ namespace bdm {
 struct FirstOp : Operation {
   FirstOp() : Operation("first op") {};
 
-  void operator()(SimObject* so) {
+  void operator()(SimObject* so) override {
     so->UpdateRunDisplacement();
   }
 };
@@ -43,7 +43,7 @@ struct FirstOp : Operation {
 struct LastOp : Operation {
   LastOp() : Operation("last op") {};
 
-  void operator()(SimObject* so) {
+  void operator()(SimObject* so) override {
     so->ApplyRunDisplacementForAllNextTs();
   }
 };
@@ -51,7 +51,7 @@ struct LastOp : Operation {
 struct BiologyModuleOp : Operation {
   BiologyModuleOp() : Operation("biology module") {};
 
-  void operator()(SimObject* so) {
+  void operator()(SimObject* so) override {
     so->RunBiologyModules();
   }
 };
@@ -59,7 +59,7 @@ struct BiologyModuleOp : Operation {
 struct DiscretizationOp : Operation {
   DiscretizationOp() : Operation("discretization") {};
 
-  void operator()(SimObject* so) {
+  void operator()(SimObject* so) override {
     so->RunDiscretization();
   }
 };
@@ -76,7 +76,6 @@ Scheduler::Scheduler() {
   displacement_ = new DisplacementOp();
   diffusion_ = new DiffusionOp();
 
-  //FIXME memory leak
   auto* first_op = new FirstOp();
   auto* biology_module_op = new BiologyModuleOp();
   auto* discretization_op = new DiscretizationOp();
@@ -92,9 +91,10 @@ Scheduler::~Scheduler() {
   delete backup_;
   delete visualization_;
   delete root_visualization_;
-  delete bound_space_;
-  delete displacement_;
   delete diffusion_;
+  for(auto* op : operations_) {
+    delete op;
+  }
   auto* param = Simulation::GetActive()->GetParam();
   if (param->statistics_) {
     std::cout << gStatistics << std::endl;
@@ -131,6 +131,7 @@ void Scheduler::RemoveOperation(const std::string& name) {
   }
   for (auto it = operations_.begin(); it != operations_.end(); ++it) {
     if (name == (*it)->name_) {
+      delete *it;
       operations_.erase(it);
       return;
     }

@@ -410,11 +410,9 @@ inline void RunSortAndApplyOnAllElementsParallel() {
   RunSortAndApplyOnAllElementsParallel(1000);
 }
 
-// //
 // -----------------------------------------------------------------------------
-// FIXME name
-struct Foo : Functor<void, SimObject*, SoHandle> {
-  Foo(bool numa_checks, std::vector<bool>& found)
+struct CheckApplyOnAllElementsDynamicFunctor : Functor<void, SimObject*, SoHandle> {
+  CheckApplyOnAllElementsDynamicFunctor(bool numa_checks, std::vector<bool>& found)
     : numa_checks_(numa_checks), found_(found), cnt(0), numa_memory_errors(0) {
     auto* ti = ThreadInfo::GetInstance();
     numa_so_cnts.resize(ti->GetNumaNodes());
@@ -451,9 +449,8 @@ struct Foo : Functor<void, SimObject*, SoHandle> {
   std::atomic<uint64_t> numa_memory_errors;
 };
 
-// FIXME name
-struct Bar : Functor<void, SimObject*, SoHandle> {
-  Bar() : numa_thread_errors(0) {
+struct CheckNumaThreadErrors : Functor<void, SimObject*, SoHandle> {
+  CheckNumaThreadErrors() : numa_thread_errors(0) {
     ti_ = ThreadInfo::GetInstance();
   }
 
@@ -486,16 +483,16 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
 
   auto* ti = ThreadInfo::GetInstance();
 
-  Foo foo(numa_checks, found);
-  rm->ApplyOnAllElementsParallelDynamic(batch_size, foo);
+  CheckApplyOnAllElementsDynamicFunctor functor(numa_checks, found);
+  rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
 
   // critical sections increase the variance of numa_thread_errors.
   // Therefore, there are checked separately.
-  Bar bar;
-  rm->ApplyOnAllElementsParallelDynamic(batch_size, bar);
+  CheckNumaThreadErrors check_numa_thread_functor;
+  rm->ApplyOnAllElementsParallelDynamic(batch_size, check_numa_thread_functor);
 
   // verify that the function has been called once for each sim object
-  EXPECT_EQ(2 * num_so_per_type, foo.cnt.load());
+  EXPECT_EQ(2 * num_so_per_type, functor.cnt.load());
   ASSERT_EQ(2 * num_so_per_type, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     if (!found[i]) {
@@ -510,15 +507,15 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
     // `cat /proc/sys/kernel/numa_balancing` is zero.
     // Automatic rebalancing can lead to numa memory errors.
     // only 0.1% of all sim objects may be on a wrong numa node
-    EXPECT_GT(0.001, (foo.numa_memory_errors.load() + 0.0) / (2 * num_so_per_type));
+    EXPECT_GT(0.001, (functor.numa_memory_errors.load() + 0.0) / (2 * num_so_per_type));
     // work stealing can cause thread errors. This check ensures that at least
     // 75% of the work is done by the correct CPU-Memory mapping.
     if (num_so_per_type > 20 * static_cast<uint64_t>(omp_get_max_threads())) {
-      EXPECT_GT(num_so_per_type / 4, bar.numa_thread_errors.load());
+      EXPECT_GT(num_so_per_type / 4, check_numa_thread_functor.numa_thread_errors.load());
     }
     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
     for (int n = 0; n < ti->GetNumaNodes(); ++n) {
-      EXPECT_EQ(so_per_numa[n], foo.numa_so_cnts[n]);
+      EXPECT_EQ(so_per_numa[n], functor.numa_so_cnts[n]);
     }
   }
 }
