@@ -22,8 +22,6 @@ keywords:
 ---
 
 
-# Prerequisites
-
 This page lists the prerequisites packages that needs to be installed in order to build correctly BioDynaMo.
 BioDynaMo provides also an automated procedure to install all the needed library.
 
@@ -62,6 +60,10 @@ BioDynaMo provides also an automated procedure to install all the needed library
 sudo apt-get install -y wget cmake make gcc g++ \
 libopenmpi-dev libomp-dev libnuma-dev freeglut3-dev \
 libpthread-stubs0-dev
+
+# Install dependencies to install Python with PyEnv
+sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
+  libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
@@ -123,6 +125,10 @@ sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install wget cmake3 libXt-devel libXext-devel \
   devtoolset-7-gcc* numactl-devel \
   openmpi3-devel freeglut-devel git
+
+# Install dependencies to install Python with PyEnv
+sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
+  sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"

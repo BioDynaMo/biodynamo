@@ -37,6 +37,7 @@ sudo yum -y install wget cmake3 libXt-devel libXext-devel \
   devtoolset-7-gcc* numactl-devel bzip2-devel zlib-devel \
   openmpi3-devel freeglut-devel git
 
+# Install dependencies to install Python with PyEnv
 sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
   sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 
