@@ -39,13 +39,16 @@ InPlaceExecutionContext::ThreadSafeSoUidMap::~ThreadSafeSoUidMap() {
   previous_maps_.clear();
 }
 
+// NB: There is small risk of a race condition here if another thread grows
+// the container. In this situation, the element will be inserted in a map
+// that will be moved to previous_maps_.
+// This race-condition can be mitigated in `ThreadSafeSoUidMap::operator[]`.
 void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
     const SoUid& uid,
     const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
         value) {
   auto index = uid.GetIndex();
   if (map_->size() > index + ThreadInfo::GetInstance()->GetMaxThreads()) {
-    // enough free slots -> no locking required
     map_->Insert(uid, value);
   } else {
     std::lock_guard<Spinlock> guard(lock_);
@@ -62,15 +65,37 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
   }
 }
 
-bool InPlaceExecutionContext::ThreadSafeSoUidMap::Contains(
-    const SoUid& uid) const {
-  return map_->Contains(uid);
-}
-
+/// NB: This method fixes any race-condition of `ThreadSafeSoUidMap::Insert`
+/// It might happen that a ThreadSafeSoUidMap::Insert inserts the element
+/// into one of the `previous_maps_`.
+/// Therefore, if we don't find the element in `map_`, we iterate through
+/// `previous_maps_` to see if we can find it there.
+/// This iteration happens only in the unlikely event of a race-condition
+/// and is therefore not performance relevant.
 const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
     InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](
-        const SoUid& key) const {
-  return (*map_)[key];
+        const SoUid& uid) {
+  static InPlaceExecutionContext::ThreadSafeSoUidMap::value_type kDefault;
+  auto& pair = (*map_)[uid];
+  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+
+  if (pair.second == timesteps && pair.first != nullptr) {
+    return pair;
+  }
+
+  std::lock_guard<Spinlock> guard(lock_);
+  for (auto* m : previous_maps_) {
+    if (m->size() <= uid.GetIndex()) {
+      continue;
+    }
+    auto& pair = (*m)[uid];
+    if (pair.second == timesteps && pair.first != nullptr) {
+      map_->Insert(uid, pair);
+      return pair;
+    }
+  }
+
+  return kDefault;
 }
 
 uint64_t InPlaceExecutionContext::ThreadSafeSoUidMap::Size() const {
@@ -258,7 +283,7 @@ SimObject* InPlaceExecutionContext::GetSimObject(const SoUid& uid) {
   }
 
   // returns nullptr if the object is not found
-  return GetCachedSimObject(uid);
+  return (*new_so_map_)[uid].first;
 }
 
 const SimObject* InPlaceExecutionContext::GetConstSimObject(const SoUid& uid) {
@@ -271,18 +296,6 @@ void InPlaceExecutionContext::RemoveFromSimulation(const SoUid& uid) {
 
 void InPlaceExecutionContext::DisableNeighborGuard() {
   Simulation::GetActive()->GetGrid()->DisableNeighborMutexes();
-}
-
-SimObject* InPlaceExecutionContext::GetCachedSimObject(const SoUid& uid) {
-  if (!new_so_map_->Contains(uid)) {
-    return nullptr;
-  }
-  auto& pair = (*new_so_map_)[uid];
-  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-  if (pair.second == timesteps) {
-    return pair.first;
-  }
-  return nullptr;
 }
 
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*

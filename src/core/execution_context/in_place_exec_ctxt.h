@@ -53,8 +53,7 @@ class InPlaceExecutionContext {
     ~ThreadSafeSoUidMap();
 
     void Insert(const SoUid& uid, const value_type& value);
-    bool Contains(const SoUid& uid) const;
-    const value_type& operator[](const SoUid& key) const;
+    const value_type& operator[](const SoUid& key);
     uint64_t Size() const;
     void Resize(uint64_t new_size);
     void RemoveOldCopies();
@@ -131,8 +130,6 @@ class InPlaceExecutionContext {
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
   std::vector<std::pair<const SimObject*, double>> neighbor_cache_;
-
-  SimObject* GetCachedSimObject(const SoUid& uid);
 };
 
 }  // namespace bdm
