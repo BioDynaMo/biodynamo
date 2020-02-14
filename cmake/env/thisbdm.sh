@@ -272,16 +272,19 @@ unset -f paraview || true
 function paraview {
   PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/paraview $@
 }
+export -f paraview
 
 unset -f pvpython || true
 function pvpython {
   PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/pvpython $@
 }
+export -f pvpython
 
 unset -f pvbatch || true
 function pvbatch {
   PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/pvbatch $@
 }
+export -f pvbatch
 
 if [ -z "${LD_LIBRARY_PATH}" ]; then
    LD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export LD_LIBRARY_PATH
