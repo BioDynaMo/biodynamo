@@ -70,7 +70,6 @@ class MyCell : public Cell {  // our object extends the Cell object
 struct GrowthModule : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(GrowthModule, BaseBiologyModule, 1);
 
- public:
   GrowthModule() : BaseBiologyModule(gAllEventIds) {}
 
   /// Empty default event constructor, because GrowthModule does not have state.

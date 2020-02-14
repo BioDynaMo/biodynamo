@@ -34,6 +34,8 @@ namespace bdm {
 /// The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver_`.
 struct RegulateGenes : public BaseBiologyModule {
+  BDM_BM_HEADER(RegulateGenes, BaseBiologyModule, 1);
+
   RegulateGenes() : BaseBiologyModule(gAllEventIds) {}
 
   explicit RegulateGenes(EventId event) : BaseBiologyModule(event) {}
@@ -48,23 +50,6 @@ struct RegulateGenes : public BaseBiologyModule {
       Log::Fatal("RegulateGenes::EventConstructor",
                  "other was not of type RegulateGenes");
     }
-  }
-
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new RegulateGenes(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override {
-    return new RegulateGenes(*this);
-  }
-
-  /// Empty default event handler.
-  void EventHandler(const Event& event, BaseBiologyModule* other1,
-                    BaseBiologyModule* other2 = nullptr) override {
-    BaseBiologyModule::EventHandler(event, other1, other2);
   }
 
   /// AddGene adds a new differential equation.
@@ -131,8 +116,6 @@ struct RegulateGenes : public BaseBiologyModule {
   /// change.
   /// New functions can be added through method AddGene()
   std::vector<std::function<double(double, double)>> first_derivatives_ = {};
-
-  BDM_CLASS_DEF_OVERRIDE(RegulateGenes, 1);
 };
 
 }  // namespace bdm

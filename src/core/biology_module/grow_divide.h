@@ -26,6 +26,7 @@ namespace bdm {
 /// This biology module grows the simulation object until the diameter reaches
 /// the specified threshold and divides the object afterwards.
 struct GrowDivide : public BaseBiologyModule {
+  BDM_BM_HEADER(GrowDivide, BaseBiologyModule, 1);
   GrowDivide() : BaseBiologyModule(gAllEventIds) {}
   GrowDivide(double threshold, double growth_rate,
              std::initializer_list<EventId> event_list)
@@ -44,21 +45,8 @@ struct GrowDivide : public BaseBiologyModule {
     }
   }
 
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new GrowDivide(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override { return new GrowDivide(*this); }
-
   /// Default event handler (exising biology module won't be modified on
   /// any event)
-  void EventHandler(const Event& event, BaseBiologyModule* other1,
-                    BaseBiologyModule* other2 = nullptr) override {
-    BaseBiologyModule::EventHandler(event, other1, other2);
-  }
 
   void Run(SimObject* so) override {
     if (Cell* cell = dynamic_cast<Cell*>(so)) {
@@ -73,7 +61,6 @@ struct GrowDivide : public BaseBiologyModule {
   }
 
  private:
-  BDM_CLASS_DEF_OVERRIDE(GrowDivide, 1);
   double threshold_ = 40;
   double growth_rate_ = 300;
 };

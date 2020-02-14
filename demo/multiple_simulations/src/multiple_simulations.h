@@ -24,7 +24,6 @@ namespace bdm {
 struct Divide : BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(Divide, BaseBiologyModule, 1);
 
- public:
   Divide() {}
 
   void Run(SimObject* sim_object) override {
