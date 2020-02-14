@@ -233,10 +233,19 @@ void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
   }
 }
 
+struct ProcessSimObjectFunctor : public Functor<void, SimObject*> {
+  ParaviewAdaptor* pa_;
+
+  ProcessSimObjectFunctor(ParaviewAdaptor* pa) : pa_(pa) {}
+
+  void operator()(SimObject* so) { pa_->ProcessSimObject(so); }
+};
+
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
-  rm->ApplyOnAllElements([&](SimObject* so) { ProcessSimObject(so); });
+  ProcessSimObjectFunctor functor{this};
+  rm->ApplyOnAllElements(functor);
 }
 
 // ---------------------------------------------------------------------------

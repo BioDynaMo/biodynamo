@@ -22,6 +22,7 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
+namespace in_place_exec_ctxt_detail {
 
 TEST(InPlaceExecutionContext, RemoveFromSimulation) {
   Simulation sim(TEST_NAME);
@@ -130,38 +131,114 @@ TEST(InPlaceExecutionContext, NewAndGetSimObject) {
   EXPECT_EQ(789, rm->GetSimObject(uid_1)->GetDiameter());
 }
 
+struct Op1 : public Operation {
+  bool& op1_called;
+  bool& op2_called;
+
+  Op1(bool& op1_called, bool& op2_called)
+      : Operation("op1"), op1_called(op1_called), op2_called(op2_called) {}
+
+  void operator()(SimObject* so) override {
+    // op1 must be  called first
+    EXPECT_FALSE(op1_called);
+    EXPECT_FALSE(op2_called);
+    EXPECT_EQ(so->GetUid(), SoUid(0));
+    op1_called = true;
+  }
+};
+
+struct Op2 : public Operation {
+  bool& op1_called;
+  bool& op2_called;
+
+  Op2(bool& op1_called, bool& op2_called)
+      : Operation("op2"), op1_called(op1_called), op2_called(op2_called) {}
+
+  void operator()(SimObject* so) override {
+    // op2 must be  called first
+    EXPECT_TRUE(op1_called);
+    EXPECT_FALSE(op2_called);
+    EXPECT_EQ(so->GetUid(), SoUid(0));
+    op2_called = true;
+  }
+};
+
 TEST(InPlaceExecutionContext, Execute) {
   Simulation sim(TEST_NAME);
   auto* ctxt = sim.GetExecutionContext();
 
   Cell cell_0;
   cell_0.SetDiameter(123);
-  auto uid_0 = cell_0.GetUid();
 
   bool op1_called = false;
   bool op2_called = false;
 
-  auto op1 = Operation("op1", [&](SimObject* so) {
-    // op1 must be  called first
-    EXPECT_FALSE(op1_called);
-    EXPECT_FALSE(op2_called);
-    EXPECT_EQ(so->GetUid(), uid_0);
-    op1_called = true;
-  });
-
-  auto op2 = Operation("op2", [&](SimObject* so) {
-    // op2 must be  called first
-    EXPECT_TRUE(op1_called);
-    EXPECT_FALSE(op2_called);
-    EXPECT_EQ(so->GetUid(), uid_0);
-    op2_called = true;
-  });
-  std::vector<Operation> operations = {op1, op2};
+  Op1 op1(op1_called, op2_called);
+  Op2 op2(op1_called, op2_called);
+  std::vector<Operation*> operations = {&op1, &op2};
   ctxt->Execute(&cell_0, operations);
 
   EXPECT_TRUE(op1_called);
   EXPECT_TRUE(op2_called);
 }
+
+struct NeighborFunctor : public Functor<void, const SimObject*, double> {
+  NeighborFunctor(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
+  virtual ~NeighborFunctor() {}
+
+  void operator()(const SimObject* neighbor, double squared_distance) override {
+    auto* non_const_nb = const_cast<SimObject*>(neighbor);
+    auto d1 = non_const_nb->GetDiameter();
+    non_const_nb->SetDiameter(d1 + 1);
+    nb_counter_++;
+  }
+
+ private:
+  uint64_t& nb_counter_;
+};
+
+struct TestFunctor1 : public Functor<void, SimObject*> {
+  Operation* op;
+
+  TestFunctor1(Operation* op) : op(op) {}
+  void operator()(SimObject* so) override {
+    // ctxt must be obtained inside the lambda, otherwise we always get the
+    // one corresponding to the master thread
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    ctxt->Execute(so, {op});
+  }
+};
+
+struct TestFunctor2 : public Functor<void, SimObject*> {
+  Operation* op;
+
+  TestFunctor2(Operation* op) : op(op) {}
+  void operator()(SimObject* so) override {
+    // ctxt must be obtained inside the lambda, otherwise we always get the
+    // one corresponding to the master thread
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    ctxt->Execute(so, {op});
+  }
+};
+
+struct TestOperation : public Operation {
+  std::unordered_map<SoUid, uint64_t> num_neighbors;
+
+  TestOperation() : Operation("op") {}
+  void operator()(SimObject* so) override {
+    auto d = so->GetDiameter();
+    so->SetDiameter(d + 1);
+
+    uint64_t nb_counter = 0;
+    NeighborFunctor nb_functor(nb_counter);
+    // ctxt must be obtained inside the lambda, otherwise we always get the
+    // one corresponding to the master thread
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    ctxt->ForEachNeighborWithinRadius(nb_functor, *so, 100);
+#pragma omp critical
+    num_neighbors[so->GetUid()] = nb_counter;
+  }
+};
 
 void RunInPlaceExecutionContextExecuteThreadSafety(
     Param::ThreadSafetyMechanism mechanism) {
@@ -183,40 +260,15 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
   all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
   sim.GetGrid()->Initialize();
 
-  std::unordered_map<SoUid, uint64_t> num_neighbors;
-
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.
-  Operation op("op", [&](auto* so) {
-    auto d = so->GetDiameter();
-    so->SetDiameter(d + 1);
+  TestOperation op;
 
-    uint64_t nb_counter = 0;
-    auto nb_lambda = [&](const auto* neighbor) {
-      auto* non_const_nb = rm->GetSimObject(neighbor->GetUid());
-      auto d1 = non_const_nb->GetDiameter();
-      non_const_nb->SetDiameter(d1 + 1);
-      nb_counter++;
-    };
-    // ctxt must be obtained inside the lambda, otherwise we always get the
-    // one corresponding to the master thread
-    auto* ctxt = sim.GetExecutionContext();
-    ctxt->ForEachNeighborWithinRadius(nb_lambda, *so, 100);
-#pragma omp critical
-    num_neighbors[so->GetUid()] = nb_counter;
-  });
+  TestFunctor1 functor1(&op);
+  rm->ApplyOnAllElementsParallel(functor1);
 
-  rm->ApplyOnAllElementsParallel([&](SimObject* so) {
-    // ctxt must be obtained inside the lambda, otherwise we always get the
-    // one corresponding to the master thread
-    auto* ctxt = sim.GetExecutionContext();
-    ctxt->Execute(so, {op});
-  });
-
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    // expected diameter: initial value + num_neighbors + 1
-    EXPECT_EQ(num_neighbors[so->GetUid()] + 11, so->GetDiameter());
-  });
+  TestFunctor2 functor2(&op);
+  rm->ApplyOnAllElements(functor2);
 }
 
 TEST(InPlaceExecutionContext,
@@ -264,4 +316,5 @@ TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
   }
 }
 
+}  // namespace in_place_exec_ctxt_detail
 }  // namespace bdm

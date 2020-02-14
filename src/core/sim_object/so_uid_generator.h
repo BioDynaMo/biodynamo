@@ -90,7 +90,6 @@ class SoUidGenerator {
 #if (!defined(__CLING__) || defined(__ROOTCLING__)) && defined(USE_DICT)
 
 inline void SoUidGenerator::Streamer(TBuffer& R__b) {
-  // Stream an object of class Foo.
   if (R__b.IsReading()) {
     R__b.ReadClassBuffer(SoUidGenerator::Class(), this);
     this->counter_ = this->root_counter_;

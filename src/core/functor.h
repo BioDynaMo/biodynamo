@@ -12,16 +12,17 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/operation/operation.h"
-#include "core/sim_object/sim_object.h"
+#ifndef CORE_FUNCTOR_H_
+#define CORE_FUNCTOR_H_
 
 namespace bdm {
 
-Operation::Operation(const std::string& name) : name_(name) {}
-
-Operation::Operation(const std::string& name, uint32_t frequency)
-    : frequency_(frequency), name_(name) {}
-
-Operation::~Operation() {}
+template <typename TReturn, typename... TParameter>
+struct Functor {
+  virtual ~Functor() {}
+  virtual void operator()(TParameter... parameter) = 0;
+};
 
 }  // namespace bdm
+
+#endif  // CORE_FUNCTOR_H_

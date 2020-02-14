@@ -16,18 +16,19 @@
 #define CORE_OPERATION_DIVIDING_CELL_OP_H_
 
 #include <cstdint>
+#include "core/operation/operation.h"
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
 
 namespace bdm {
 
-class DividingCellOp {
+class DividingCellOp : public Operation {
  public:
-  DividingCellOp() {}
-  ~DividingCellOp() {}
+  DividingCellOp() : Operation("bdm::DividingCellOp") {}
+  virtual ~DividingCellOp() {}
 
-  void operator()(SimObject* sim_object) const {
+  void operator()(SimObject* sim_object) override {
     if (Cell* cell = dynamic_cast<Cell*>(sim_object)) {
       if (cell->GetDiameter() <= 40) {
         cell->ChangeVolume(300);

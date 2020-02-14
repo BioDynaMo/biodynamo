@@ -73,8 +73,7 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
 /// This iteration happens only in the unlikely event of a race-condition
 /// and is therefore not performance relevant.
 const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
-    InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](
-        const SoUid& uid) {
+    InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
   static InPlaceExecutionContext::ThreadSafeSoUidMap::value_type kDefault;
   auto& pair = (*map_)[uid];
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
@@ -185,7 +184,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
 }
 
 void InPlaceExecutionContext::Execute(
-    SimObject* so, const std::vector<Operation>& operations) {
+    SimObject* so, const std::vector<Operation*>& operations) {
   auto* grid = Simulation::GetActive()->GetGrid();
   auto* param = Simulation::GetActive()->GetParam();
 
@@ -198,7 +197,7 @@ void InPlaceExecutionContext::Execute(
     }
     neighbor_cache_.clear();
     for (auto& op : operations) {
-      op(so);
+      (*op)(so);
     }
     for (auto* l : locks) {
       l->unlock();
@@ -210,14 +209,14 @@ void InPlaceExecutionContext::Execute(
     auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
     std::lock_guard<decltype(mutex)> guard(mutex);
     neighbor_cache_.clear();
-    for (auto& op : operations) {
-      op(so);
+    for (auto* op : operations) {
+      (*op)(so);
     }
   } else if (param->thread_safety_mechanism_ ==
              Param::ThreadSafetyMechanism::kNone) {
     neighbor_cache_.clear();
-    for (auto& op : operations) {
-      op(so);
+    for (auto* op : operations) {
+      (*op)(so);
     }
   } else {
     Log::Fatal("InPlaceExecutionContext::Execute",
@@ -247,9 +246,26 @@ void InPlaceExecutionContext::ForEachNeighbor(
   grid->ForEachNeighbor(lambda, query);
 }
 
+struct ForEachNeighborFunctor : public Functor<void, const SimObject*, double> {
+  const Param* param = Simulation::GetActive()->GetParam();
+  Functor<void, const SimObject*, double>& function_;
+  std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
+
+  ForEachNeighborFunctor(
+      Functor<void, const SimObject*, double>& function,
+      std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
+      : function_(function), neighbor_cache_(neigbor_cache) {}
+
+  void operator()(const SimObject* so, double squared_distance) override {
+    if (param->cache_neighbors_) {
+      neighbor_cache_.push_back(make_pair(so, squared_distance));
+    }
+    function_(so, squared_distance);
+  }
+};
+
 void InPlaceExecutionContext::ForEachNeighbor(
-    const std::function<void(const SimObject*, double)>& lambda,
-    const SimObject& query) {
+    Functor<void, const SimObject*, double>& lambda, const SimObject& query) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
@@ -260,24 +276,43 @@ void InPlaceExecutionContext::ForEachNeighbor(
 
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
-  auto* param = Simulation::GetActive()->GetParam();
-  auto for_each = [&, this](const SimObject* so, double squared_distance) {
-    if (param->cache_neighbors_) {
-      this->neighbor_cache_.push_back(make_pair(so, squared_distance));
-    }
-    lambda(so, squared_distance);
-  };
+  ForEachNeighborFunctor for_each(lambda, neighbor_cache_);
   grid->ForEachNeighbor(for_each, query);
 }
 
+struct ForEachNeighborWithinRadiusFunctor
+    : public Functor<void, const SimObject*, double> {
+  const Param* param = Simulation::GetActive()->GetParam();
+  Functor<void, const SimObject*, double>& function_;
+  std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
+  double squared_radius_ = 0;
+
+  ForEachNeighborWithinRadiusFunctor(
+      Functor<void, const SimObject*, double>& function,
+      std::vector<std::pair<const SimObject*, double>>& neigbor_cache,
+      double squared_radius)
+      : function_(function),
+        neighbor_cache_(neigbor_cache),
+        squared_radius_(squared_radius) {}
+
+  void operator()(const SimObject* so, double squared_distance) override {
+    if (param->cache_neighbors_) {
+      neighbor_cache_.push_back(make_pair(so, squared_distance));
+    }
+    if (squared_distance < squared_radius_) {
+      function_(so, 0);
+    }
+  }
+};
+
 void InPlaceExecutionContext::ForEachNeighborWithinRadius(
-    const std::function<void(const SimObject*)>& lambda, const SimObject& query,
+    Functor<void, const SimObject*, double>& lambda, const SimObject& query,
     double squared_radius) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
       if (pair.second < squared_radius) {
-        lambda(pair.first);
+        lambda(pair.first, 0);
       }
     }
     return;
@@ -285,15 +320,9 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
 
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
-  auto* param = Simulation::GetActive()->GetParam();
-  auto for_each = [&, this](const SimObject* so, double squared_distance) {
-    if (param->cache_neighbors_) {
-      this->neighbor_cache_.push_back(make_pair(so, squared_distance));
-    }
-    if (squared_distance < squared_radius) {
-      lambda(so);
-    }
-  };
+
+  ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
+                                              squared_radius);
   grid->ForEachNeighbor(for_each, query);
 }
 

@@ -93,16 +93,22 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   EXPECT_FALSE(grid->HasGrown());
 }
 
+struct TestOp : public Operation {
+  TestOp(const std::string& id, uint64_t& counter)
+      : Operation(id), counter(counter) {}
+  void operator()(SimObject* so) override { counter++; }
+  uint64_t& counter;
+};
+
 TEST(SchedulerTest, OperationManagement) {
   Simulation simulation(TEST_NAME);
 
   simulation.GetResourceManager()->push_back(new Cell(10));
 
   uint64_t op1_cnt = 0;
-  Operation op1 = Operation("op1", [&](SimObject* so) { op1_cnt++; });
-
   uint64_t op2_cnt = 0;
-  Operation op2 = Operation("op2", [&](SimObject* so) { op2_cnt++; });
+  auto* op1 = new TestOp("op1", op1_cnt);
+  auto* op2 = new TestOp("op2", op2_cnt);
 
   // add operations
   auto* scheduler = simulation.GetScheduler();
@@ -113,13 +119,13 @@ TEST(SchedulerTest, OperationManagement) {
   EXPECT_EQ(10u, op2_cnt);
 
   // change frequency of operation
-  scheduler->GetOperation(op1.name_)->frequency_ = 3;
+  scheduler->GetOperation(op1->name_)->frequency_ = 3;
   scheduler->Simulate(10);
   EXPECT_EQ(13u, op1_cnt);
   EXPECT_EQ(20u, op2_cnt);
 
   // remove operation
-  scheduler->RemoveOperation(op2.name_);
+  scheduler->RemoveOperation(op2->name_);
   scheduler->Simulate(10);
   EXPECT_EQ(16u, op1_cnt);
   EXPECT_EQ(20u, op2_cnt);

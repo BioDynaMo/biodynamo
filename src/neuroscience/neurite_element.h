@@ -628,6 +628,78 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     UpdateVolume();
   }
 
+  struct DisplacementFunctor : public Functor<void, const SimObject*, double> {
+    NeuriteElement* ne;
+    Double3& force_from_neighbors;
+    Double3& force_on_my_mothers_point_mass;
+    double& h_over_m;
+    bool& has_neurite_neighbor;
+    DefaultForce force;
+
+    DisplacementFunctor(NeuriteElement* neurite, Double3& force_from_neighbors_,
+                        Double3& force_on_my_mothers_point_mass_,
+                        double& h_over_m_, bool& has_neurite_neighbor_)
+        : ne(neurite),
+          force_from_neighbors(force_from_neighbors_),
+          force_on_my_mothers_point_mass(force_on_my_mothers_point_mass_),
+          h_over_m(h_over_m_),
+          has_neurite_neighbor(has_neurite_neighbor_) {}
+
+    void operator()(const SimObject* neighbor,
+                    double squared_distance) override {
+      // if neighbor is a NeuriteElement
+      // use shape to determine if neighbor is a NeuriteElement
+      // this is much faster than using a dynamic_cast
+      if (neighbor->GetShape() == Shape::kCylinder) {
+        // if it is a direct relative, or sister branch, we don't take it into
+        // account
+        if (ne->GetDaughterLeft() == *neighbor ||
+            ne->GetDaughterRight() == *neighbor ||
+            ne->GetMother() ==
+                bdm_static_cast<const NeuriteElement*>(neighbor)->GetMother() ||
+            (ne->GetMother() == *neighbor)) {
+          return;
+        }
+      } else if (auto* neighbor_soma =
+                     dynamic_cast<const NeuronSoma*>(neighbor)) {
+        // if neighbor is NeuronSoma
+        // if it is a direct relative, we don't take it into account
+        if (ne->GetMother() == *neighbor_soma) {
+          return;
+        }
+      }
+
+      Double4 force_from_neighbor = force.GetForce(ne, neighbor);
+
+      // hack: if the neighbour is a neurite, we need to reduce the force from
+      // that neighbour in order to avoid kink behaviour
+      if (neighbor->GetShape() == Shape::kCylinder) {
+        force_from_neighbor = force_from_neighbor * h_over_m;
+        has_neurite_neighbor = true;
+      }
+
+      if (std::abs(force_from_neighbor[3]) <
+          1E-10) {  // TODO(neurites) hard coded value
+        // (if all the force is transmitted to the (distal end) point mass)
+        force_from_neighbors[0] += force_from_neighbor[0];
+        force_from_neighbors[1] += force_from_neighbor[1];
+        force_from_neighbors[2] += force_from_neighbor[2];
+      } else {
+        // (if there is a part transmitted to the proximal end)
+        double part_for_point_mass = 1.0 - force_from_neighbor[3];
+        force_from_neighbors[0] += force_from_neighbor[0] * part_for_point_mass;
+        force_from_neighbors[1] += force_from_neighbor[1] * part_for_point_mass;
+        force_from_neighbors[2] += force_from_neighbor[2] * part_for_point_mass;
+        force_on_my_mothers_point_mass[0] +=
+            force_from_neighbor[0] * force_from_neighbor[3];
+        force_on_my_mothers_point_mass[1] +=
+            force_from_neighbor[1] * force_from_neighbor[3];
+        force_on_my_mothers_point_mass[2] +=
+            force_from_neighbor[2] * force_from_neighbor[3];
+      }
+    }
+  };
+
   // ***************************************************************************
   //   Physics
   // ***************************************************************************
@@ -665,64 +737,10 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // 3) Object avoidance force
     bool has_neurite_neighbor = false;
     //  (We check for every neighbor object if they touch us, i.e. push us away)
-    auto calculate_neighbor_forces = [this, &force_from_neighbors,
-                                      &force_on_my_mothers_point_mass,
-                                      &h_over_m, &has_neurite_neighbor](
-        const SimObject* neighbor) {
-      // if neighbor is a NeuriteElement
-      // use shape to determine if neighbor is a NeuriteElement
-      // this is much faster than using a dynamic_cast
-      if (neighbor->GetShape() == Shape::kCylinder) {
-        // if it is a direct relative, or sister branch, we don't take it into
-        // account
-        if (this->GetDaughterLeft() == *neighbor ||
-            this->GetDaughterRight() == *neighbor ||
-            this->GetMother() ==
-                bdm_static_cast<const NeuriteElement*>(neighbor)->GetMother() ||
-            (this->GetMother() == *neighbor)) {
-          return;
-        }
-      } else if (auto* neighbor_soma =
-                     dynamic_cast<const NeuronSoma*>(neighbor)) {
-        // if neighbor is NeuronSoma
-        // if it is a direct relative, we don't take it into account
-        if (this->GetMother() == *neighbor_soma) {
-          return;
-        }
-      }
-
-      DefaultForce force;
-      Double4 force_from_neighbor = force.GetForce(this, neighbor);
-
-      // hack: if the neighbour is a neurite, we need to reduce the force from
-      // that neighbour in order to avoid kink behaviour
-      if (neighbor->GetShape() == Shape::kCylinder) {
-        force_from_neighbor = force_from_neighbor * h_over_m;
-        has_neurite_neighbor = true;
-      }
-
-      if (std::abs(force_from_neighbor[3]) <
-          1E-10) {  // TODO(neurites) hard coded value
-        // (if all the force is transmitted to the (distal end) point mass)
-        force_from_neighbors[0] += force_from_neighbor[0];
-        force_from_neighbors[1] += force_from_neighbor[1];
-        force_from_neighbors[2] += force_from_neighbor[2];
-      } else {
-        // (if there is a part transmitted to the proximal end)
-        double part_for_point_mass = 1.0 - force_from_neighbor[3];
-        force_from_neighbors[0] += force_from_neighbor[0] * part_for_point_mass;
-        force_from_neighbors[1] += force_from_neighbor[1] * part_for_point_mass;
-        force_from_neighbors[2] += force_from_neighbor[2] * part_for_point_mass;
-        force_on_my_mothers_point_mass[0] +=
-            force_from_neighbor[0] * force_from_neighbor[3];
-        force_on_my_mothers_point_mass[1] +=
-            force_from_neighbor[1] * force_from_neighbor[3];
-        force_on_my_mothers_point_mass[2] +=
-            force_from_neighbor[2] * force_from_neighbor[3];
-      }
-    };
-
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    DisplacementFunctor calculate_neighbor_forces(
+        this, force_from_neighbors, force_on_my_mothers_point_mass, h_over_m,
+        has_neurite_neighbor);
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
     // hack: if the neighbour is a neurite, and as we reduced the force from

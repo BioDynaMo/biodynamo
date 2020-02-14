@@ -107,32 +107,35 @@ inline void RunGetNumSimObjects() {
   EXPECT_EQ(5u, rm->GetNumSimObjects());
 }
 
+struct ApplyOnAllElementsParallelTestFunctor : Functor<void, SimObject*> {
+  void operator()(SimObject* sim_object) override {
+    const double kEpsilon = abs_error<double>::value;
+    B* b = dynamic_cast<B*>(sim_object);
+    SoUid uid = sim_object->GetUid();
+    if (uid == SoUid(0)) {
+      EXPECT_EQ(3.14, b->GetData());
+    } else if (uid == SoUid(1)) {
+      EXPECT_EQ(6.28, b->GetData());
+    } else if (uid == SoUid(2)) {
+      EXPECT_NEAR(9.42, b->GetData(), kEpsilon);
+    } else {
+      FAIL();
+    }
+  }
+};
+
 // This test uses Cells since A, and B are strippted down simulation objects
 // and are themselves not thread safe.
 inline void RunApplyOnAllElementsParallelTest() {
   Simulation simulation("RunApplyOnAllElementsParallelTest");
   auto* rm = simulation.GetResourceManager();
 
-  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
-
   rm->push_back(new B(3.14));
   rm->push_back(new B(6.28));
   rm->push_back(new B(9.42));
 
-  rm->ApplyOnAllElementsParallel([&](SimObject* sim_object) {
-    const double kEpsilon = abs_error<double>::value;
-    B* b = dynamic_cast<B*>(sim_object);
-    SoUid uid = sim_object->GetUid();
-    if (uid == ref_uid) {
-      EXPECT_EQ(3.14, b->GetData());
-    } else if (uid == ref_uid + 1) {
-      EXPECT_EQ(6.28, b->GetData());
-    } else if (uid == ref_uid + 2) {
-      EXPECT_NEAR(9.42, b->GetData(), kEpsilon);
-    } else {
-      FAIL();
-    }
-  });
+  ApplyOnAllElementsParallelTestFunctor functor;
+  rm->ApplyOnAllElementsParallel(functor);
 }
 
 inline void RunRemoveAndContainsTest() {
@@ -280,30 +283,37 @@ inline std::vector<uint64_t> GetSoPerNuma(uint64_t num_sim_objects) {
 }
 
 // -----------------------------------------------------------------------------
-inline void CheckApplyOnAllElements(ResourceManager* rm,
-                                    uint64_t num_so_per_type,
-                                    bool numa_checks = false) {
-  std::vector<bool> found(2 * num_so_per_type);
-  ASSERT_EQ(2 * num_so_per_type, found.size());
-  for (uint64_t i = 0; i < found.size(); ++i) {
-    found[i] = false;
-  }
-
-  std::atomic<uint64_t> cnt(0);
-  auto* ti = ThreadInfo::GetInstance();
+struct CheckApplyOnAllElementsFunctor : Functor<void, SimObject*> {
+  bool numa_checks;
+  std::vector<bool> found;
+  std::atomic<uint64_t> cnt;
   // counts the number of sim objects in each numa domain
   std::vector<uint64_t> numa_so_cnts;
-  numa_so_cnts.resize(ti->GetNumaNodes());
-  std::atomic<uint64_t> numa_memory_errors(0);
-  std::atomic<uint64_t> numa_thread_errors(0);
+  std::atomic<uint64_t> numa_memory_errors;
+  std::atomic<uint64_t> numa_thread_errors;
 
-  rm->ApplyOnAllElementsParallel([&](SimObject* so) {
+  CheckApplyOnAllElementsFunctor(uint64_t num_so_per_type, bool numa_checks)
+      : numa_checks(numa_checks),
+        cnt(0),
+        numa_memory_errors(0),
+        numa_thread_errors(0) {
+    found.resize(2 * num_so_per_type);
+    for (uint64_t i = 0; i < found.size(); ++i) {
+      found[i] = false;
+    }
+
+    auto* ti = ThreadInfo::GetInstance();
+    numa_so_cnts.resize(ti->GetNumaNodes());
+  }
+
+  void operator()(SimObject* so) override {
     size_t index = 0;
     if (A* a = dynamic_cast<A*>(so)) {
       index = a->GetData();
     } else if (B* b = dynamic_cast<B*>(so)) {
       index = std::round(b->GetData());
     }
+    auto* rm = Simulation::GetActive()->GetResourceManager();
     auto handle = rm->GetSoHandle(so->GetUid());
 
 #pragma omp critical
@@ -322,12 +332,19 @@ inline void CheckApplyOnAllElements(ResourceManager* rm,
       numa_so_cnts[handle.GetNumaNode()]++;
     }
     cnt++;
-  });
+  }
+};
 
-  EXPECT_EQ(2 * num_so_per_type, cnt.load());
-  ASSERT_EQ(2 * num_so_per_type, found.size());
-  for (uint64_t i = 0; i < found.size(); ++i) {
-    if (!found[i]) {
+inline void CheckApplyOnAllElements(ResourceManager* rm,
+                                    uint64_t num_so_per_type,
+                                    bool numa_checks = false) {
+  CheckApplyOnAllElementsFunctor functor(num_so_per_type, numa_checks);
+  rm->ApplyOnAllElementsParallel(functor);
+
+  EXPECT_EQ(2 * num_so_per_type, functor.cnt.load());
+  ASSERT_EQ(2 * num_so_per_type, functor.found.size());
+  for (uint64_t i = 0; i < functor.found.size(); ++i) {
+    if (!functor.found[i]) {
       FAIL()
           << "ApplyOnAllElementsParallel was not called for element with data_="
           << i;
@@ -335,11 +352,12 @@ inline void CheckApplyOnAllElements(ResourceManager* rm,
   }
 
   if (numa_checks) {
-    EXPECT_EQ(0u, numa_memory_errors.load());
-    EXPECT_EQ(0u, numa_thread_errors.load());
+    EXPECT_EQ(0u, functor.numa_memory_errors.load());
+    EXPECT_EQ(0u, functor.numa_thread_errors.load());
     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
+    auto* ti = ThreadInfo::GetInstance();
     for (int n = 0; n < ti->GetNumaNodes(); ++n) {
-      EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
+      EXPECT_EQ(so_per_numa[n], functor.numa_so_cnts[n]);
     }
   }
 }
@@ -396,8 +414,71 @@ inline void RunSortAndApplyOnAllElementsParallel() {
   RunSortAndApplyOnAllElementsParallel(1000);
 }
 
-// //
 // -----------------------------------------------------------------------------
+struct CheckApplyOnAllElementsDynamicFunctor
+    : Functor<void, SimObject*, SoHandle> {
+  CheckApplyOnAllElementsDynamicFunctor(bool numa_checks,
+                                        std::vector<bool>& found)
+      : numa_checks_(numa_checks),
+        found_(found),
+        cnt(0),
+        numa_memory_errors(0) {
+    auto* ti = ThreadInfo::GetInstance();
+    numa_so_cnts.resize(ti->GetNumaNodes());
+  }
+  void operator()(SimObject* so, SoHandle handle) override {
+#pragma omp critical
+    {
+      size_t index = 0;
+      if (A* a = dynamic_cast<A*>(so)) {
+        index = a->GetData();
+      } else if (B* b = dynamic_cast<B*>(so)) {
+        index = std::round(b->GetData());
+      }
+      found_[index] = true;
+
+      // verify that a thread processes sim objects on the same NUMA node.
+      if (numa_checks_ && handle.GetNumaNode() != GetNumaNodeForMemory(so)) {
+        numa_memory_errors++;
+      }
+
+      numa_so_cnts[handle.GetNumaNode()]++;
+    }
+    cnt++;
+  }
+
+  bool numa_checks_;
+  std::vector<bool>& found_;
+
+  std::atomic<uint64_t> cnt;
+  // counts the number of sim objects in each numa domain
+  std::vector<uint64_t> numa_so_cnts;
+  // If a simulation object is not stored on the NUMA indicated, it is a memory
+  // error.
+  std::atomic<uint64_t> numa_memory_errors;
+};
+
+struct CheckNumaThreadErrors : Functor<void, SimObject*, SoHandle> {
+  CheckNumaThreadErrors() : numa_thread_errors(0) {
+    ti_ = ThreadInfo::GetInstance();
+  }
+
+  void operator()(SimObject* so, SoHandle handle) override {
+    volatile double d = 0;
+    for (int i = 0; i < 10000; i++) {
+      d += std::sin(i);
+    }
+    if (handle.GetNumaNode() != ti_->GetNumaNode(omp_get_thread_num())) {
+      numa_thread_errors++;
+    }
+  }
+
+  // If a sim object is processed by a thread that doesn't belong to the NUMA
+  // domain the sim object is stored on, it is a thread error.
+  std::atomic<uint64_t> numa_thread_errors;
+  ThreadInfo* ti_;
+};
+
 inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
                                            uint64_t num_so_per_type,
                                            uint64_t batch_size,
@@ -408,55 +489,18 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
     found[i] = false;
   }
 
-  std::atomic<uint64_t> cnt(0);
   auto* ti = ThreadInfo::GetInstance();
-  // counts the number of sim objects in each numa domain
-  std::vector<uint64_t> numa_so_cnts;
-  numa_so_cnts.resize(ti->GetNumaNodes());
-  // If a simulation object is not stored on the NUMA indicated, it is a memory
-  // error.
-  std::atomic<uint64_t> numa_memory_errors(0);
-  // If a sim object is processed by a thread that doesn't belong to the NUMA
-  // domain the sim object is stored on, it is a thread error.
-  std::atomic<uint64_t> numa_thread_errors(0);
 
-  rm->ApplyOnAllElementsParallelDynamic(
-      batch_size, [&](SimObject* so, SoHandle handle) {
-#pragma omp critical
-        {
-          size_t index = 0;
-          if (A* a = dynamic_cast<A*>(so)) {
-            index = a->GetData();
-          } else if (B* b = dynamic_cast<B*>(so)) {
-            index = std::round(b->GetData());
-          }
-          found[index] = true;
-
-          // verify that a thread processes sim objects on the same NUMA node.
-          if (numa_checks && handle.GetNumaNode() != GetNumaNodeForMemory(so)) {
-            numa_memory_errors++;
-          }
-
-          numa_so_cnts[handle.GetNumaNode()]++;
-        }
-        cnt++;
-      });
+  CheckApplyOnAllElementsDynamicFunctor functor(numa_checks, found);
+  rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
 
   // critical sections increase the variance of numa_thread_errors.
   // Therefore, there are checked separately.
-  rm->ApplyOnAllElementsParallelDynamic(
-      batch_size, [&](SimObject* so, SoHandle handle) {
-        volatile double d = 0;
-        for (int i = 0; i < 10000; i++) {
-          d += std::sin(i);
-        }
-        if (handle.GetNumaNode() != ti->GetNumaNode(omp_get_thread_num())) {
-          numa_thread_errors++;
-        }
-      });
+  CheckNumaThreadErrors check_numa_thread_functor;
+  rm->ApplyOnAllElementsParallelDynamic(batch_size, check_numa_thread_functor);
 
   // verify that the function has been called once for each sim object
-  EXPECT_EQ(2 * num_so_per_type, cnt.load());
+  EXPECT_EQ(2 * num_so_per_type, functor.cnt.load());
   ASSERT_EQ(2 * num_so_per_type, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     if (!found[i]) {
@@ -471,15 +515,17 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
     // `cat /proc/sys/kernel/numa_balancing` is zero.
     // Automatic rebalancing can lead to numa memory errors.
     // only 0.1% of all sim objects may be on a wrong numa node
-    EXPECT_GT(0.001, (numa_memory_errors.load() + 0.0) / (2 * num_so_per_type));
+    EXPECT_GT(0.001, (functor.numa_memory_errors.load() + 0.0) /
+                         (2 * num_so_per_type));
     // work stealing can cause thread errors. This check ensures that at least
     // 75% of the work is done by the correct CPU-Memory mapping.
     if (num_so_per_type > 20 * static_cast<uint64_t>(omp_get_max_threads())) {
-      EXPECT_GT(num_so_per_type / 4, numa_thread_errors.load());
+      EXPECT_GT(num_so_per_type / 4,
+                check_numa_thread_functor.numa_thread_errors.load());
     }
     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
     for (int n = 0; n < ti->GetNumaNodes(); ++n) {
-      EXPECT_EQ(so_per_numa[n], numa_so_cnts[n]);
+      EXPECT_EQ(so_per_numa[n], functor.numa_so_cnts[n]);
     }
   }
 }

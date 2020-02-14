@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "core/container/so_uid_map.h"
+#include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/spinlock.h"
@@ -83,21 +84,20 @@ class InPlaceExecutionContext {
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
-  void Execute(SimObject* so, const std::vector<Operation>& operations);
+  void Execute(SimObject* so, const std::vector<Operation*>& operations);
 
   void push_back(SimObject* new_so);  // NOLINT
 
   void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda,
                        const SimObject& query);
 
-  void ForEachNeighbor(
-      const std::function<void(const SimObject*, double)>& lambda,
-      const SimObject& query);
+  void ForEachNeighbor(Functor<void, const SimObject*, double>& lambda,
+                       const SimObject& query);
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
   void ForEachNeighborWithinRadius(
-      const std::function<void(const SimObject*)>& lambda,
-      const SimObject& query, double squared_radius);
+      Functor<void, const SimObject*, double>& lambda, const SimObject& query,
+      double squared_radius);
 
   SimObject* GetSimObject(const SoUid& uid);
 

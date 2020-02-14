@@ -39,6 +39,7 @@
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/container/sim_object_vector.h"
+#include "core/functor.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/util/log.h"
@@ -278,6 +279,21 @@ class Grid {
     has_grown_ = false;
   }
 
+  struct AssignToBoxesFunctor : public Functor<void, SimObject*, SoHandle> {
+    AssignToBoxesFunctor(Grid* grid) : grid_(grid) {}
+
+    void operator()(SimObject* sim_object, SoHandle soh) override {
+      const auto& position = sim_object->GetPosition();
+      auto idx = grid_->GetBoxIndex(position);
+      auto box = grid_->GetBoxPointer(idx);
+      box->AddObject(soh, &(grid_->successors_), grid_);
+      sim_object->SetBoxIdx(idx);
+    }
+
+   private:
+    Grid* grid_ = nullptr;
+  };
+
   /// Updates the grid, as simulation objects may have moved, added or deleted
   void UpdateGrid() {
     auto* rm = Simulation::GetActive()->GetResourceManager();
@@ -344,14 +360,8 @@ class Grid {
       successors_.reserve();
 
       // Assign simulation objects to boxes
-      rm->ApplyOnAllElementsParallelDynamic(
-          1000, [this](SimObject* sim_object, SoHandle soh) {
-            const auto& position = sim_object->GetPosition();
-            auto idx = this->GetBoxIndex(position);
-            auto box = this->GetBoxPointer(idx);
-            box->AddObject(soh, &successors_, this);
-            sim_object->SetBoxIdx(idx);
-          });
+      AssignToBoxesFunctor functor(this);
+      rm->ApplyOnAllElementsParallelDynamic(1000, functor);
       auto* param = Simulation::GetActive()->GetParam();
       if (param->bound_space_) {
         int min = param->min_bound_;
@@ -503,9 +513,8 @@ class Grid {
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
   ///
-  void ForEachNeighbor(
-      const std::function<void(const SimObject*, double)>& lambda,
-      const SimObject& query) {
+  void ForEachNeighbor(Functor<void, const SimObject*, double>& lambda,
+                       const SimObject& query) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -797,6 +806,62 @@ class Grid {
     }
   }
 
+  struct SimDimensionAndLargestObjectFunctor
+      : public Functor<void, SimObject*, SoHandle> {
+    using Type = std::vector<std::array<double, 8>>;
+
+    SimDimensionAndLargestObjectFunctor(Type& xmin, Type& xmax, Type& ymin,
+                                        Type& ymax, Type& zmin, Type& zmax,
+                                        Type& largest)
+        : xmin_(xmin),
+          xmax_(xmax),
+          ymin_(ymin),
+          ymax_(ymax),
+          zmin_(zmin),
+          zmax_(zmax),
+          largest_(largest) {}
+
+    void operator()(SimObject* so, SoHandle) override {
+      auto tid = omp_get_thread_num();
+      const auto& position = so->GetPosition();
+      // x
+      if (position[0] < xmin_[tid][0]) {
+        xmin_[tid][0] = position[0];
+      }
+      if (position[0] > xmax_[tid][0]) {
+        xmax_[tid][0] = position[0];
+      }
+      // y
+      if (position[1] < ymin_[tid][0]) {
+        ymin_[tid][0] = position[1];
+      }
+      if (position[1] > ymax_[tid][0]) {
+        ymax_[tid][0] = position[1];
+      }
+      // z
+      if (position[2] < zmin_[tid][0]) {
+        zmin_[tid][0] = position[2];
+      }
+      if (position[2] > zmax_[tid][0]) {
+        zmax_[tid][0] = position[2];
+      }
+      // largest object
+      auto diameter = so->GetDiameter();
+      if (diameter > largest_[tid][0]) {
+        largest_[tid][0] = diameter;
+      }
+    }
+
+    Type& xmin_;
+    Type& xmax_;
+    Type& ymin_;
+    Type& ymax_;
+    Type& zmin_;
+    Type& zmax_;
+
+    Type& largest_;
+  };
+
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// simulation objects
   void CalculateGridDimensions(std::array<double, 6>* ret_grid_dimensions) {
@@ -806,45 +871,19 @@ class Grid {
     // allocate version for each thread - avoid false sharing by padding them
     // assumes 64 byte cache lines (8 * sizeof(double))
     std::vector<std::array<double, 8>> xmin(max_threads, {{Math::kInfinity}});
-    std::vector<std::array<double, 8>> ymin(max_threads, {{Math::kInfinity}});
-    std::vector<std::array<double, 8>> zmin(max_threads, {{Math::kInfinity}});
-
     std::vector<std::array<double, 8>> xmax(max_threads, {{-Math::kInfinity}});
+
+    std::vector<std::array<double, 8>> ymin(max_threads, {{Math::kInfinity}});
     std::vector<std::array<double, 8>> ymax(max_threads, {{-Math::kInfinity}});
+
+    std::vector<std::array<double, 8>> zmin(max_threads, {{Math::kInfinity}});
     std::vector<std::array<double, 8>> zmax(max_threads, {{-Math::kInfinity}});
 
     std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 
-    rm->ApplyOnAllElementsParallelDynamic(1000, [&](SimObject* so, SoHandle) {
-      auto tid = omp_get_thread_num();
-      const auto& position = so->GetPosition();
-      // x
-      if (position[0] < xmin[tid][0]) {
-        xmin[tid][0] = position[0];
-      }
-      if (position[0] > xmax[tid][0]) {
-        xmax[tid][0] = position[0];
-      }
-      // y
-      if (position[1] < ymin[tid][0]) {
-        ymin[tid][0] = position[1];
-      }
-      if (position[1] > ymax[tid][0]) {
-        ymax[tid][0] = position[1];
-      }
-      // z
-      if (position[2] < zmin[tid][0]) {
-        zmin[tid][0] = position[2];
-      }
-      if (position[2] > zmax[tid][0]) {
-        zmax[tid][0] = position[2];
-      }
-      // larget object
-      auto diameter = so->GetDiameter();
-      if (diameter > largest[tid][0]) {
-        largest[tid][0] = diameter;
-      }
-    });
+    SimDimensionAndLargestObjectFunctor functor(xmin, xmax, ymin, ymax, zmin,
+                                                zmax, largest);
+    rm->ApplyOnAllElementsParallelDynamic(1000, functor);
 
     // reduce partial results into global one
     double& gxmin = (*ret_grid_dimensions)[0];
