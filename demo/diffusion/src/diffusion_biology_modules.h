@@ -27,7 +27,6 @@ enum Substances { kKalium };
 struct Chemotaxis : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(Chemotaxis, BaseBiologyModule, 1);
 
- public:
   Chemotaxis() : BaseBiologyModule(gAllEventIds) {}
 
   void Run(SimObject* so) override {
@@ -50,7 +49,6 @@ struct Chemotaxis : public BaseBiologyModule {
 struct KaliumSecretion : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(KaliumSecretion, BaseBiologyModule, 1);
 
- public:
   KaliumSecretion() : BaseBiologyModule() {}
 
   void Run(SimObject* so) override {

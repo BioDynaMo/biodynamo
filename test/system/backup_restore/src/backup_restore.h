@@ -23,7 +23,6 @@ namespace bdm {
 struct TestBehaviour : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(TestBehaviour, BaseBiologyModule, 1);
 
- public:
   TestBehaviour() : BaseBiologyModule(gAllEventIds) {}
 
   void Run(SimObject* so) override {

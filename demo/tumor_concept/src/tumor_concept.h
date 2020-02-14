@@ -70,7 +70,6 @@ class MyCell : public Cell {  // our object extends the Cell object
 struct GrowthModule : public BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(GrowthModule, BaseBiologyModule, 1);
 
- public:
   GrowthModule() : BaseBiologyModule(gAllEventIds) {}
 
   /// Empty default event constructor, because GrowthModule does not have state.
@@ -117,9 +116,6 @@ inline int Simulate(int argc, const char** argv) {
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   auto* myrand = simulation.GetRandom();
-  // Since `sim_objects` in this simulation won't modify neighbors, we can
-  // safely disable neighbor guards to improve performance.
-  simulation.GetExecutionContext()->DisableNeighborGuard();
 
   size_t nb_of_cells = 2400;  // number of cells in the simulation
   double x_coord, y_coord, z_coord;

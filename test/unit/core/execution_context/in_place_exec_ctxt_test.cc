@@ -167,8 +167,6 @@ TEST(InPlaceExecutionContext, Execute) {
   Simulation sim(TEST_NAME);
   auto* ctxt = sim.GetExecutionContext();
 
-  ctxt->DisableNeighborGuard();
-
   Cell cell_0;
   cell_0.SetDiameter(123);
 
@@ -242,8 +240,11 @@ struct TestOperation : public Operation {
   }
 };
 
-TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
-  Simulation sim(TEST_NAME);
+void RunInPlaceExecutionContextExecuteThreadSafety(
+    Param::ThreadSafetyMechanism mechanism) {
+  Simulation sim(
+      "RunInPlaceExecutionContextExecuteThreadSafety",
+      [&](Param* param) { param->thread_safety_mechanism_ = mechanism; });
   auto* rm = sim.GetResourceManager();
 
   // create cells
@@ -268,6 +269,17 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
 
   TestFunctor2 functor2(&op);
   rm->ApplyOnAllElements(functor2);
+}
+
+TEST(InPlaceExecutionContext,
+     ExecuteThreadSafetyTestWithUserSpecifiedThreadSafety) {
+  RunInPlaceExecutionContextExecuteThreadSafety(
+      Param::ThreadSafetyMechanism::kUserSpecified);
+}
+
+TEST(InPlaceExecutionContext, ExecuteThreadSafetyTestAutomaticThreadSafety) {
+  RunInPlaceExecutionContextExecuteThreadSafety(
+      Param::ThreadSafetyMechanism::kAutomatic);
 }
 
 TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
