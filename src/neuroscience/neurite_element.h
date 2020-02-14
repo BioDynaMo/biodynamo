@@ -614,7 +614,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     UpdateVolume();
   }
 
-  struct DisplacementFen : public Functor<void, const SimObject*, double> {
+  struct DisplacementFunctor : public Functor<void, const SimObject*, double> {
     NeuriteElement* ne;
     Double3& force_from_neighbors;
     Double3& force_on_my_mothers_point_mass;
@@ -622,7 +622,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     bool& has_neurite_neighbor;
     DefaultForce force;
 
-    DisplacementFen(NeuriteElement* neurite,
+    DisplacementFunctor(NeuriteElement* neurite,
                     Double3& force_from_neighbors_,
                     Double3& force_on_my_mothers_point_mass_,
                     double& h_over_m_,
@@ -728,7 +728,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     bool has_neurite_neighbor = false;
     //  (We check for every neighbor object if they touch us, i.e. push us away)
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    DisplacementFen calculate_neighbor_forces(this, force_from_neighbors, force_on_my_mothers_point_mass, h_over_m, has_neurite_neighbor);
+    DisplacementFunctor calculate_neighbor_forces(this, force_from_neighbors, force_on_my_mothers_point_mass, h_over_m, has_neurite_neighbor);
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
     // hack: if the neighbour is a neurite, and as we reduced the force from

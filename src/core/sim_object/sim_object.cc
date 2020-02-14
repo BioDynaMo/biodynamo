@@ -71,9 +71,9 @@ SimObject::~SimObject() {
   }
 }
 
-struct Fen1 : public Functor<void, const SimObject*, double> {
+struct SetRunDisplacementForEachNeighbor : public Functor<void, const SimObject*, double> {
   SimObject* so_;
-  Fen1(SimObject* so) : so_(so) {}
+  SetRunDisplacementForEachNeighbor(SimObject* so) : so_(so) {}
 
   void operator()(const SimObject* neighbor, double squared_distance) override {
     double distance = so_->GetDiameter() + neighbor->GetDiameter();
@@ -95,7 +95,7 @@ void SimObject::ApplyRunDisplacementForAllNextTs() {
   run_displacement_for_all_next_ts_ = false;
   run_displacement_next_ts_ = true;
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-  Fen1 for_each(this);
+  SetRunDisplacementForEachNeighbor for_each(this);
   ctxt->ForEachNeighbor(for_each, *this);
 }
 

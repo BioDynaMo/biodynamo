@@ -182,9 +182,9 @@ TEST(InPlaceExecutionContext, Execute) {
   EXPECT_TRUE(op2_called);
 }
 
-struct Foobar : public Functor<void, const SimObject*, double> {
-  Foobar(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
-  virtual ~Foobar() {}
+struct NeighborFunctor : public Functor<void, const SimObject*, double> {
+  NeighborFunctor(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
+  virtual ~NeighborFunctor() {}
 
   void operator()(const SimObject* neighbor, double squared_distance) override {
     auto* non_const_nb = const_cast<SimObject*>(neighbor);
@@ -230,11 +230,11 @@ struct TestOperation : public Operation {
     so->SetDiameter(d + 1);
 
     uint64_t nb_counter = 0;
-    Foobar nb_lambda(nb_counter);
+    NeighborFunctor nb_functor(nb_counter);
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighborWithinRadius(nb_lambda, *so, 100);
+    ctxt->ForEachNeighborWithinRadius(nb_functor, *so, 100);
 #pragma omp critical
     num_neighbors[so->GetUid()] = nb_counter;
   }

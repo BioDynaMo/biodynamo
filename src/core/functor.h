@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_FEN_FUNC_H_
-#define CORE_FEN_FUNC_H_
+#ifndef CORE_FUNCTOR_H_
+#define CORE_FUNCTOR_H_
 
 namespace bdm {
 
@@ -25,4 +25,4 @@ struct Functor {
 
 }  // namespace bdm
 
-#endif  // CORE_FEN_FUNC_H_
+#endif  // CORE_FUNCTOR_H_

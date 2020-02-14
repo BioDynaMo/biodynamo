@@ -199,12 +199,12 @@ void InPlaceExecutionContext::ForEachNeighbor(
   grid->ForEachNeighbor(lambda, query);
 }
 
-struct Fen : public Functor<void, const SimObject*, double> {
+struct ForEachNeighborFunctor : public Functor<void, const SimObject*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
   Functor<void, const SimObject*, double>& function_;
   std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
 
-  Fen(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
+  ForEachNeighborFunctor(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
    : function_(function), neighbor_cache_(neigbor_cache)
   {}
 
@@ -229,17 +229,17 @@ void InPlaceExecutionContext::ForEachNeighbor(
 
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
-  Fen for_each(lambda, neighbor_cache_);
+  ForEachNeighborFunctor for_each(lambda, neighbor_cache_);
   grid->ForEachNeighbor(for_each, query);
 }
 
-struct FenWithinRadius : public Functor<void, const SimObject*, double> {
+struct ForEachNeighborWithinRadius : public Functor<void, const SimObject*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
   Functor<void, const SimObject*, double>& function_;
   std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
   double squared_radius_ = 0;
 
-  FenWithinRadius(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache, double squared_radius)
+  ForEachNeighborWithinRadius(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache, double squared_radius)
    : function_(function), neighbor_cache_(neigbor_cache), squared_radius_(squared_radius)
   {}
 
@@ -269,7 +269,7 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
 
-  FenWithinRadius for_each(lambda, neighbor_cache_, squared_radius);
+  ForEachNeighborWithinRadius for_each(lambda, neighbor_cache_, squared_radius);
   grid->ForEachNeighbor(for_each, query);
 }
 

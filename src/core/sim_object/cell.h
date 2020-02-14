@@ -259,12 +259,12 @@ class Cell : public SimObject {
     SetRunDisplacementForAllNextTs();
   }
 
-  struct DisplacementFen : Functor<void, const SimObject*, double> {
+  struct DisplacementFunctor : Functor<void, const SimObject*, double> {
     DefaultForce default_force;
     SimObject* so_;
     Double3 translation_force_on_point_mass{0, 0, 0};
 
-    DisplacementFen(SimObject* so) : so_(so) {}
+    DisplacementFunctor(SimObject* so) : so_(so) {}
 
     void operator()(const SimObject* neighbor, double squared_distance) override {
       auto neighbor_force = default_force.GetForce(so_, neighbor);
@@ -315,7 +315,7 @@ class Cell : public SimObject {
     //  (We check for every neighbor object if they touch us, i.e. push us
     //  away)
 
-    DisplacementFen calculate_neighbor_forces(this);
+    DisplacementFunctor calculate_neighbor_forces(this);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
