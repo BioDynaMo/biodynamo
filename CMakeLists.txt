@@ -151,8 +151,6 @@ if(EXISTS "${Python_ROOT_DIR}/bin/python")
   set(PYTHON_FOUND TRUE)
   set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
   message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")
-elseif(APPLE)
-  message("Python 3 support for BioDynaMo on MacOS will be available soon.")
 else()
   message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
     "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "

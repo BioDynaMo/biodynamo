@@ -18,7 +18,7 @@ be done statically. In order to enable the automatic detection, please run prere
 endif()
 
 execute_process(
-     COMMAND "util/version/generate_version_files.py" ${GIT_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}
+     COMMAND ${PYTHON_EXECUTABLE} util/version/generate_version_files.py ${GIT_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}
              ${PROJECT_VERSION} ${CMAKE_SOURCE_DIR}/.git
      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 

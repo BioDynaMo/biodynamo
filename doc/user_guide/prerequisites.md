@@ -21,7 +21,6 @@ keywords:
   -optional
 ---
 
-
 This page lists the prerequisites packages that needs to be installed in order to build correctly BioDynaMo.
 BioDynaMo provides also an automated procedure to install all the needed library.
 
@@ -156,11 +155,9 @@ sudo yum install -y libxml2-devel
 
 ## MacOS
 
-!!! attention
-
-    Currently we support only installation of BioDynaMo using Homebrew and Fink.
-    If you are using another package manager you will need to install all
-    the corresponding packages.
+Currently we only test MacOS installations of BioDynaMo using Homebrew.
+If you are using another package manager you will need to install all
+the corresponding packages.
 
 ### Required Packages
 
@@ -183,33 +180,22 @@ sudo yum install -y libxml2-devel
 
 #### Required Packages
 
-Using HomeBrew:
+Using Homebrew:
 
 ```bash
-brew install llvm wget cmake libomp tbb open-mpi python python@2 || true
-
+brew install libomp tbb open-mpi git pyenv llvm wget cmake || true
 brew upgrade python cmake || true
-```
 
-Using Fink:
-
-```bash
-sudo fink install wget llvm-clang cmake libomp-dev libtbb4 openmpi \
-   python3 pip-py37
+# Install Python 3.6.9 environment
+eval "$(pyenv init -)"
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
 ```
 
 #### Optional Packages
 
-Using HomeBrew:
+Using Homebrew:
 
 ```bash
-pip2 install --user nbformat jupyter metakernel
+pip install --user nbformat jupyter metakernel
 brew install doxygen graphviz lcov gcovr || true
-```
-
-Using Fink:
-
-```bash
-pip2 install --user nbformat jupyter metakernel
-sudo fink install doxygen graphviz
 ```
