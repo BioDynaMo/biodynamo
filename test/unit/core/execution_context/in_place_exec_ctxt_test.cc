@@ -135,7 +135,8 @@ struct Op1 : public Operation {
   bool& op1_called;
   bool& op2_called;
 
-  Op1(bool& op1_called, bool& op2_called) : Operation("op1"), op1_called(op1_called), op2_called(op2_called) {}
+  Op1(bool& op1_called, bool& op2_called)
+      : Operation("op1"), op1_called(op1_called), op2_called(op2_called) {}
 
   void operator()(SimObject* so) override {
     // op1 must be  called first
@@ -150,7 +151,8 @@ struct Op2 : public Operation {
   bool& op1_called;
   bool& op2_called;
 
-  Op2(bool& op1_called, bool& op2_called) : Operation("op2"), op1_called(op1_called), op2_called(op2_called) {}
+  Op2(bool& op1_called, bool& op2_called)
+      : Operation("op2"), op1_called(op1_called), op2_called(op2_called) {}
 
   void operator()(SimObject* so) override {
     // op2 must be  called first
@@ -256,7 +258,6 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
   const auto& all_exec_ctxts = sim.GetAllExecCtxts();
   all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
   sim.GetGrid()->Initialize();
-
 
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.

@@ -292,7 +292,11 @@ struct CheckApplyOnAllElementsFunctor : Functor<void, SimObject*> {
   std::atomic<uint64_t> numa_memory_errors;
   std::atomic<uint64_t> numa_thread_errors;
 
-  CheckApplyOnAllElementsFunctor(uint64_t num_so_per_type, bool numa_checks) : numa_checks(numa_checks), cnt(0), numa_memory_errors(0), numa_thread_errors(0) {
+  CheckApplyOnAllElementsFunctor(uint64_t num_so_per_type, bool numa_checks)
+      : numa_checks(numa_checks),
+        cnt(0),
+        numa_memory_errors(0),
+        numa_thread_errors(0) {
     found.resize(2 * num_so_per_type);
     for (uint64_t i = 0; i < found.size(); ++i) {
       found[i] = false;
@@ -411,14 +415,19 @@ inline void RunSortAndApplyOnAllElementsParallel() {
 }
 
 // -----------------------------------------------------------------------------
-struct CheckApplyOnAllElementsDynamicFunctor : Functor<void, SimObject*, SoHandle> {
-  CheckApplyOnAllElementsDynamicFunctor(bool numa_checks, std::vector<bool>& found)
-    : numa_checks_(numa_checks), found_(found), cnt(0), numa_memory_errors(0) {
+struct CheckApplyOnAllElementsDynamicFunctor
+    : Functor<void, SimObject*, SoHandle> {
+  CheckApplyOnAllElementsDynamicFunctor(bool numa_checks,
+                                        std::vector<bool>& found)
+      : numa_checks_(numa_checks),
+        found_(found),
+        cnt(0),
+        numa_memory_errors(0) {
     auto* ti = ThreadInfo::GetInstance();
     numa_so_cnts.resize(ti->GetNumaNodes());
   }
   void operator()(SimObject* so, SoHandle handle) override {
-    #pragma omp critical
+#pragma omp critical
     {
       size_t index = 0;
       if (A* a = dynamic_cast<A*>(so)) {
@@ -470,7 +479,6 @@ struct CheckNumaThreadErrors : Functor<void, SimObject*, SoHandle> {
   ThreadInfo* ti_;
 };
 
-
 inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
                                            uint64_t num_so_per_type,
                                            uint64_t batch_size,
@@ -507,11 +515,13 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
     // `cat /proc/sys/kernel/numa_balancing` is zero.
     // Automatic rebalancing can lead to numa memory errors.
     // only 0.1% of all sim objects may be on a wrong numa node
-    EXPECT_GT(0.001, (functor.numa_memory_errors.load() + 0.0) / (2 * num_so_per_type));
+    EXPECT_GT(0.001, (functor.numa_memory_errors.load() + 0.0) /
+                         (2 * num_so_per_type));
     // work stealing can cause thread errors. This check ensures that at least
     // 75% of the work is done by the correct CPU-Memory mapping.
     if (num_so_per_type > 20 * static_cast<uint64_t>(omp_get_max_threads())) {
-      EXPECT_GT(num_so_per_type / 4, check_numa_thread_functor.numa_thread_errors.load());
+      EXPECT_GT(num_so_per_type / 4,
+                check_numa_thread_functor.numa_thread_errors.load());
     }
     auto so_per_numa = GetSoPerNuma(2 * num_so_per_type);
     for (int n = 0; n < ti->GetNumaNodes(); ++n) {

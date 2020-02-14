@@ -25,12 +25,12 @@
 #include "core/operation/displacement_op_opencl.h"
 #endif
 #include "core/grid.h"
+#include "core/operation/operation.h"
 #include "core/param/param.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
-#include "core/operation/operation.h"
 
 namespace bdm {
 

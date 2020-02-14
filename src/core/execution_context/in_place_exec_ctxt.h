@@ -21,11 +21,11 @@
 #include <vector>
 
 #include "core/container/so_uid_map.h"
+#include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/spinlock.h"
 #include "core/util/thread_info.h"
-#include "core/functor.h"
 
 namespace bdm {
 
@@ -94,14 +94,13 @@ class InPlaceExecutionContext {
   void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda,
                        const SimObject& query);
 
-  void ForEachNeighbor(
-      Functor<void, const SimObject*, double>& lambda,
-      const SimObject& query);
+  void ForEachNeighbor(Functor<void, const SimObject*, double>& lambda,
+                       const SimObject& query);
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
   void ForEachNeighborWithinRadius(
-      Functor<void, const SimObject*, double>& lambda,
-      const SimObject& query, double squared_radius);
+      Functor<void, const SimObject*, double>& lambda, const SimObject& query,
+      double squared_radius);
 
   SimObject* GetSimObject(const SoUid& uid);
 

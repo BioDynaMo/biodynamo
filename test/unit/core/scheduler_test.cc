@@ -94,7 +94,8 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
 }
 
 struct TestOp : public Operation {
-  TestOp(const std::string& id, uint64_t& counter) : Operation(id), counter(counter) {}
+  TestOp(const std::string& id, uint64_t& counter)
+      : Operation(id), counter(counter) {}
   void operator()(SimObject* so) override { counter++; }
   uint64_t& counter;
 };

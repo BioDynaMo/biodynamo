@@ -39,11 +39,11 @@
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/container/sim_object_vector.h"
+#include "core/functor.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/util/log.h"
 #include "core/util/spinlock.h"
-#include "core/functor.h"
 
 namespace bdm {
 
@@ -290,7 +290,7 @@ class Grid {
       sim_object->SetBoxIdx(idx);
     }
 
-  private:
+   private:
     Grid* grid_ = nullptr;
   };
 
@@ -361,8 +361,7 @@ class Grid {
 
       // Assign simulation objects to boxes
       AssignToBoxesFunctor functor(this);
-      rm->ApplyOnAllElementsParallelDynamic(
-          1000, functor);
+      rm->ApplyOnAllElementsParallelDynamic(1000, functor);
       auto* param = Simulation::GetActive()->GetParam();
       if (param->bound_space_) {
         int min = param->min_bound_;
@@ -513,9 +512,8 @@ class Grid {
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
   ///
-  void ForEachNeighbor(
-      Functor<void, const SimObject*, double>& lambda,
-      const SimObject& query) {
+  void ForEachNeighbor(Functor<void, const SimObject*, double>& lambda,
+                       const SimObject& query) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -811,11 +809,20 @@ class Grid {
     }
   }
 
-  struct SimDimensionAndLargestObjectFunctor : public Functor<void, SimObject*, SoHandle> {
+  struct SimDimensionAndLargestObjectFunctor
+      : public Functor<void, SimObject*, SoHandle> {
     using Type = std::vector<std::array<double, 8>>;
 
-    SimDimensionAndLargestObjectFunctor(Type& xmin, Type& xmax, Type& ymin, Type& ymax, Type& zmin, Type& zmax, Type& largest)
-      : xmin_(xmin), xmax_(xmax), ymin_(ymin), ymax_(ymax), zmin_(zmin), zmax_(zmax), largest_(largest) {}
+    SimDimensionAndLargestObjectFunctor(Type& xmin, Type& xmax, Type& ymin,
+                                        Type& ymax, Type& zmin, Type& zmax,
+                                        Type& largest)
+        : xmin_(xmin),
+          xmax_(xmax),
+          ymin_(ymin),
+          ymax_(ymax),
+          zmin_(zmin),
+          zmax_(zmax),
+          largest_(largest) {}
 
     void operator()(SimObject* so, SoHandle) override {
       auto tid = omp_get_thread_num();
@@ -877,7 +884,8 @@ class Grid {
 
     std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 
-    SimDimensionAndLargestObjectFunctor functor(xmin, xmax, ymin, ymax, zmin, zmax, largest);
+    SimDimensionAndLargestObjectFunctor functor(xmin, xmax, ymin, ymax, zmin,
+                                                zmax, largest);
     rm->ApplyOnAllElementsParallelDynamic(1000, functor);
 
     // reduce partial results into global one

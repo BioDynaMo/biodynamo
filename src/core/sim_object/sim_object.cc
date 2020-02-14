@@ -71,7 +71,8 @@ SimObject::~SimObject() {
   }
 }
 
-struct SetRunDisplacementForEachNeighbor : public Functor<void, const SimObject*, double> {
+struct SetRunDisplacementForEachNeighbor
+    : public Functor<void, const SimObject*, double> {
   SimObject* so_;
   SetRunDisplacementForEachNeighbor(SimObject* so) : so_(so) {}
 

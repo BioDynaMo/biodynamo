@@ -15,10 +15,10 @@
 #ifndef CORE_OPERATION_BOUND_SPACE_OP_H_
 #define CORE_OPERATION_BOUND_SPACE_OP_H_
 
+#include "core/operation/operation.h"
 #include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
-#include "core/operation/operation.h"
 
 namespace bdm {
 

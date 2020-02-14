@@ -622,21 +622,17 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     bool& has_neurite_neighbor;
     DefaultForce force;
 
-    DisplacementFunctor(NeuriteElement* neurite,
-                    Double3& force_from_neighbors_,
-                    Double3& force_on_my_mothers_point_mass_,
-                    double& h_over_m_,
-                    bool& has_neurite_neighbor_
-                  ):
-                  ne(neurite),
-                  force_from_neighbors(force_from_neighbors_),
-                  force_on_my_mothers_point_mass(force_on_my_mothers_point_mass_),
-                  h_over_m(h_over_m_),
-                  has_neurite_neighbor(has_neurite_neighbor_)
-                  {}
+    DisplacementFunctor(NeuriteElement* neurite, Double3& force_from_neighbors_,
+                        Double3& force_on_my_mothers_point_mass_,
+                        double& h_over_m_, bool& has_neurite_neighbor_)
+        : ne(neurite),
+          force_from_neighbors(force_from_neighbors_),
+          force_on_my_mothers_point_mass(force_on_my_mothers_point_mass_),
+          h_over_m(h_over_m_),
+          has_neurite_neighbor(has_neurite_neighbor_) {}
 
-
-    void operator()(const SimObject* neighbor, double squared_distance) override {
+    void operator()(const SimObject* neighbor,
+                    double squared_distance) override {
       // if neighbor is a NeuriteElement
       // use shape to determine if neighbor is a NeuriteElement
       // this is much faster than using a dynamic_cast
@@ -728,7 +724,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     bool has_neurite_neighbor = false;
     //  (We check for every neighbor object if they touch us, i.e. push us away)
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    DisplacementFunctor calculate_neighbor_forces(this, force_from_neighbors, force_on_my_mothers_point_mass, h_over_m, has_neurite_neighbor);
+    DisplacementFunctor calculate_neighbor_forces(
+        this, force_from_neighbors, force_on_my_mothers_point_mass, h_over_m,
+        has_neurite_neighbor);
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
     // hack: if the neighbour is a neurite, and as we reduced the force from

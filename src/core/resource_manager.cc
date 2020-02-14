@@ -18,7 +18,7 @@
 namespace bdm {
 
 void ResourceManager::ApplyOnAllElementsParallel(
-    Functor<void,SimObject*>& function) {
+    Functor<void, SimObject*>& function) {
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
@@ -40,7 +40,7 @@ void ResourceManager::ApplyOnAllElementsParallel(
 }
 
 void ResourceManager::ApplyOnAllElementsParallelDynamic(
-    uint64_t chunk, Functor<void,SimObject*, SoHandle>& function) {
+    uint64_t chunk, Functor<void, SimObject*, SoHandle>& function) {
   // adapt chunk size
   auto num_so = GetNumSimObjects();
   uint64_t factor = (num_so / thread_info_->GetMaxThreads()) / chunk;
@@ -134,13 +134,14 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
 
 struct UpdateUidSoHMapFunctor : public Functor<void, SimObject*, SoHandle> {
   using Map = SoUidMap<SoHandle>;
-  UpdateUidSoHMapFunctor(Map& rm_uid_soh_map) : rm_uid_soh_map_(rm_uid_soh_map) {}
+  UpdateUidSoHMapFunctor(Map& rm_uid_soh_map)
+      : rm_uid_soh_map_(rm_uid_soh_map) {}
 
   void operator()(SimObject* so, SoHandle soh) {
     rm_uid_soh_map_.Insert(so->GetUid(), soh);
   }
 
-private:
+ private:
   Map& rm_uid_soh_map_;
 };
 

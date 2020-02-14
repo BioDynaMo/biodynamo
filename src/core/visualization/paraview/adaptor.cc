@@ -238,9 +238,7 @@ struct ProcessSimObjectFunctor : public Functor<void, SimObject*> {
 
   ProcessSimObjectFunctor(ParaviewAdaptor* pa) : pa_(pa) {}
 
-  void operator()(SimObject* so) {
-    pa_->ProcessSimObject(so);
-  }
+  void operator()(SimObject* so) { pa_->ProcessSimObject(so); }
 };
 
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {

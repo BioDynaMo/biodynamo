@@ -204,9 +204,10 @@ struct ForEachNeighborFunctor : public Functor<void, const SimObject*, double> {
   Functor<void, const SimObject*, double>& function_;
   std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
 
-  ForEachNeighborFunctor(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
-   : function_(function), neighbor_cache_(neigbor_cache)
-  {}
+  ForEachNeighborFunctor(
+      Functor<void, const SimObject*, double>& function,
+      std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
+      : function_(function), neighbor_cache_(neigbor_cache) {}
 
   void operator()(const SimObject* so, double squared_distance) override {
     if (param->cache_neighbors_) {
@@ -217,8 +218,7 @@ struct ForEachNeighborFunctor : public Functor<void, const SimObject*, double> {
 };
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    Functor<void, const SimObject*, double>& lambda,
-    const SimObject& query) {
+    Functor<void, const SimObject*, double>& lambda, const SimObject& query) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
@@ -233,15 +233,20 @@ void InPlaceExecutionContext::ForEachNeighbor(
   grid->ForEachNeighbor(for_each, query);
 }
 
-struct ForEachNeighborWithinRadius : public Functor<void, const SimObject*, double> {
+struct ForEachNeighborWithinRadiusFunctor
+    : public Functor<void, const SimObject*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
   Functor<void, const SimObject*, double>& function_;
   std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
   double squared_radius_ = 0;
 
-  ForEachNeighborWithinRadius(Functor<void, const SimObject*, double>& function, std::vector<std::pair<const SimObject*, double>>& neigbor_cache, double squared_radius)
-   : function_(function), neighbor_cache_(neigbor_cache), squared_radius_(squared_radius)
-  {}
+  ForEachNeighborWithinRadiusFunctor(
+      Functor<void, const SimObject*, double>& function,
+      std::vector<std::pair<const SimObject*, double>>& neigbor_cache,
+      double squared_radius)
+      : function_(function),
+        neighbor_cache_(neigbor_cache),
+        squared_radius_(squared_radius) {}
 
   void operator()(const SimObject* so, double squared_distance) override {
     if (param->cache_neighbors_) {
@@ -269,7 +274,8 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   // forward call to grid and populate cache
   auto* grid = Simulation::GetActive()->GetGrid();
 
-  ForEachNeighborWithinRadius for_each(lambda, neighbor_cache_, squared_radius);
+  ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
+                                              squared_radius);
   grid->ForEachNeighbor(for_each, query);
 }
 

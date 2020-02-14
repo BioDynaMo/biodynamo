@@ -29,11 +29,11 @@
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
+#include "core/functor.h"
 #include "core/param/param.h"
 #include "core/shape.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/math.h"
-#include "core/functor.h"
 
 namespace bdm {
 
@@ -266,7 +266,8 @@ class Cell : public SimObject {
 
     DisplacementFunctor(SimObject* so) : so_(so) {}
 
-    void operator()(const SimObject* neighbor, double squared_distance) override {
+    void operator()(const SimObject* neighbor,
+                    double squared_distance) override {
       auto neighbor_force = default_force.GetForce(so_, neighbor);
       translation_force_on_point_mass[0] += neighbor_force[0];
       translation_force_on_point_mass[1] += neighbor_force[1];
@@ -322,8 +323,9 @@ class Cell : public SimObject {
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
-    double norm_of_force = std::sqrt(calculate_neighbor_forces.translation_force_on_point_mass *
-                                     calculate_neighbor_forces.translation_force_on_point_mass);
+    double norm_of_force =
+        std::sqrt(calculate_neighbor_forces.translation_force_on_point_mass *
+                  calculate_neighbor_forces.translation_force_on_point_mass);
 
     // is there enough force to :
     //  - make us biologically move (Tractor) :
@@ -335,7 +337,8 @@ class Cell : public SimObject {
     // adding the physics translation (scale by weight) if important enough
     if (physical_translation) {
       // We scale the move with mass and time step
-      movement_at_next_step += calculate_neighbor_forces.translation_force_on_point_mass * mh;
+      movement_at_next_step +=
+          calculate_neighbor_forces.translation_force_on_point_mass * mh;
 
       // Performing the translation itself :
       // but we want to avoid huge jumps in the simulation, so there are

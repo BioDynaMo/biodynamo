@@ -17,7 +17,7 @@
 
 namespace bdm {
 
-template<typename TReturn, typename... TParameter>
+template <typename TReturn, typename... TParameter>
 struct Functor {
   virtual ~Functor() {}
   virtual void operator()(TParameter... parameter) = 0;

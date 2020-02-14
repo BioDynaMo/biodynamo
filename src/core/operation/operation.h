@@ -16,9 +16,9 @@
 #define CORE_OPERATION_OPERATION_H_
 
 #include <functional>
+#include <iostream>
 #include <string>
 #include "core/functor.h"
-#include <iostream>
 
 namespace bdm {
 

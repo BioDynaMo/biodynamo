@@ -16,10 +16,10 @@
 #define CORE_OPERATION_DIVIDING_CELL_OP_H_
 
 #include <cstdint>
+#include "core/operation/operation.h"
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
-#include "core/operation/operation.h"
 
 namespace bdm {
 
