@@ -167,6 +167,20 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   const SoUid& GetUid() const override { return Base::GetUid(); }
 
+  Spinlock* GetLock() override { return Base::GetLock(); }
+
+  void CriticalRegion(std::vector<Spinlock*>* locks) override {
+    locks->reserve(4);
+    locks->push_back(GetLock());
+    locks->push_back(mother_->GetLock());
+    if (daughter_left_ != nullptr) {
+      locks->push_back(daughter_left_->GetLock());
+    }
+    if (daughter_right_ != nullptr) {
+      locks->push_back(daughter_right_->GetLock());
+    }
+  }
+
   Shape GetShape() const override { return Shape::kCylinder; }
 
   /// Returns the data members that are required to visualize this simulation

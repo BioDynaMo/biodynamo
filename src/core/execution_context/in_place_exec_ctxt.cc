@@ -187,19 +187,42 @@ void InPlaceExecutionContext::TearDownIterationAll(
 void InPlaceExecutionContext::Execute(
     SimObject* so, const std::vector<Operation>& operations) {
   auto* grid = Simulation::GetActive()->GetGrid();
-  auto nb_mutex_builder = grid->GetNeighborMutexBuilder();
-  if (nb_mutex_builder != nullptr) {
+  auto* param = Simulation::GetActive()->GetParam();
+
+  if (param->thread_safety_mechanism_ ==
+      Param::ThreadSafetyMechanism::kUserSpecified) {
+    so->CriticalRegion(&locks);
+    std::sort(locks.begin(), locks.end());
+    for (auto* l : locks) {
+      l->lock();
+    }
+    neighbor_cache_.clear();
+    for (auto& op : operations) {
+      op(so);
+    }
+    for (auto* l : locks) {
+      l->unlock();
+    }
+    locks.clear();
+  } else if (param->thread_safety_mechanism_ ==
+             Param::ThreadSafetyMechanism::kAutomatic) {
+    auto* nb_mutex_builder = grid->GetNeighborMutexBuilder();
     auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
     std::lock_guard<decltype(mutex)> guard(mutex);
     neighbor_cache_.clear();
     for (auto& op : operations) {
       op(so);
     }
-  } else {
+  } else if (param->thread_safety_mechanism_ ==
+             Param::ThreadSafetyMechanism::kNone) {
     neighbor_cache_.clear();
     for (auto& op : operations) {
       op(so);
     }
+  } else {
+    Log::Fatal("InPlaceExecutionContext::Execute",
+               "Invalid value for parameter thread_safety_mechanism_: ",
+               param->thread_safety_mechanism_);
   }
 }
 
@@ -292,10 +315,6 @@ const SimObject* InPlaceExecutionContext::GetConstSimObject(const SoUid& uid) {
 
 void InPlaceExecutionContext::RemoveFromSimulation(const SoUid& uid) {
   remove_.push_back(uid);
-}
-
-void InPlaceExecutionContext::DisableNeighborGuard() {
-  Simulation::GetActive()->GetGrid()->DisableNeighborMutexes();
 }
 
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*

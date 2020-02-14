@@ -134,8 +134,6 @@ TEST(InPlaceExecutionContext, Execute) {
   Simulation sim(TEST_NAME);
   auto* ctxt = sim.GetExecutionContext();
 
-  ctxt->DisableNeighborGuard();
-
   Cell cell_0;
   cell_0.SetDiameter(123);
   auto uid_0 = cell_0.GetUid();
@@ -165,8 +163,11 @@ TEST(InPlaceExecutionContext, Execute) {
   EXPECT_TRUE(op2_called);
 }
 
-TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
-  Simulation sim(TEST_NAME);
+void RunInPlaceExecutionContextExecuteThreadSafety(
+    Param::ThreadSafetyMechanism mechanism) {
+  Simulation sim(
+      "RunInPlaceExecutionContextExecuteThreadSafety",
+      [&](Param* param) { param->thread_safety_mechanism_ = mechanism; });
   auto* rm = sim.GetResourceManager();
 
   // create cells
@@ -216,6 +217,17 @@ TEST(InPlaceExecutionContext, ExecuteThreadSafety) {
     // expected diameter: initial value + num_neighbors + 1
     EXPECT_EQ(num_neighbors[so->GetUid()] + 11, so->GetDiameter());
   });
+}
+
+TEST(InPlaceExecutionContext,
+     ExecuteThreadSafetyTestWithUserSpecifiedThreadSafety) {
+  RunInPlaceExecutionContextExecuteThreadSafety(
+      Param::ThreadSafetyMechanism::kUserSpecified);
+}
+
+TEST(InPlaceExecutionContext, ExecuteThreadSafetyTestAutomaticThreadSafety) {
+  RunInPlaceExecutionContextExecuteThreadSafety(
+      Param::ThreadSafetyMechanism::kAutomatic);
 }
 
 TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {

@@ -167,6 +167,22 @@ struct Param {
   ///     calculate_gradients = true
   bool calculate_gradients_ = true;
 
+  /// List of thread-safety mechanisms \n
+  /// `kNone`: \n
+  /// `kUserSpecified`: The user has to define all simulation object that must
+  /// not be processed in parallel. \see `SimObject::CriticalRegion`.\n
+  /// `kAutomatic`: The simulation automatically locks all simulation objects
+  /// of the microenvironment.
+  enum ThreadSafetyMechanism { kNone = 0, kUserSpecified, kAutomatic };
+  /// Select the thread-safety mechanism.\n
+  /// Possible values are: none, user-specified, automatic.\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     thread_safety_mechanism_ = "none"
+  ThreadSafetyMechanism thread_safety_mechanism_ =
+      ThreadSafetyMechanism::kUserSpecified;
+
   // visualization values ------------------------------------------------------
 
   /// Name of the visualization engine to use for visualizaing BioDynaMo

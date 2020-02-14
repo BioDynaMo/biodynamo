@@ -40,9 +40,7 @@ class SimObject;
 /// Subsequent operations observe the changes of earlier operations.\n
 /// In-place updates can lead to race conditions if simulation objects not only
 /// modify themselves, but also neighbors. Therefore, a protection mechanism has
-/// been added. If neighbors are not modified, this protection can be turned off
-///  to improve performance using `DisableNeighborGuard()`. By default it is
-/// turned on.\n
+/// been added. \see `Param::thread_safety_mechanism_`
 /// New sim objects will only be visible at the next iteration. \n
 /// Also removal of a sim object happens at the end of each iteration.
 class InPlaceExecutionContext {
@@ -107,12 +105,6 @@ class InPlaceExecutionContext {
 
   void RemoveFromSimulation(const SoUid& uid);
 
-  /// If a sim objects modifies other simulation objects while it is updated,
-  /// race conditions can occur using this execution context. This function
-  /// turns the protection mechanism off to improve performance. This is safe
-  /// simulation objects only update themselves.
-  void DisableNeighborGuard();
-
  private:
   /// Lookup table SoUid -> SoPointer for new created sim objects
   std::shared_ptr<ThreadSafeSoUidMap> new_so_map_;
@@ -122,6 +114,7 @@ class InPlaceExecutionContext {
   /// Contains unique ids of sim objects that will be removed at the end of each
   /// iteration.
   std::vector<SoUid> remove_;
+  std::vector<Spinlock*> locks;
 
   /// Pointer to new sim objects
   std::vector<SimObject*> new_sim_objects_;
