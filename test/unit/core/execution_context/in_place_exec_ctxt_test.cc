@@ -54,6 +54,34 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
   EXPECT_FALSE(rm->Contains(uid_2));
 }
 
+TEST(InPlaceExecutionContext, RemoveFromSimulationMultithreading) {
+  Simulation sim(TEST_NAME);
+  auto* rm = sim.GetResourceManager();
+  auto* ctxt = sim.GetExecutionContext();
+
+  for (uint64_t i = 0; i < 1000; i++) {
+    rm->push_back(new Cell());
+  }
+
+  EXPECT_EQ(1000u, rm->GetNumSimObjects());
+
+#pragma omp parallel for
+  for (uint64_t i = 0; i < 1000; i += 2) {
+    sim.GetExecutionContext()->RemoveFromSimulation(SoUid(i));
+  }
+
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+
+  EXPECT_EQ(500u, rm->GetNumSimObjects());
+
+  for (uint64_t i = 1; i < 100; i += 2) {
+    EXPECT_TRUE(rm->Contains(SoUid(i)));
+  }
+
+  rm->ApplyOnAllElements(
+      [](SimObject* so, SoHandle) { EXPECT_TRUE(so->GetUid() % 2 == 1); });
+}
+
 // Remove object that has been created in the same iteration. Thus it has not
 // been added to the ResourceManager yet.
 TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {

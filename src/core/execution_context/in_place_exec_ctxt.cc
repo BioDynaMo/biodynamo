@@ -160,8 +160,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
     ctxt->new_sim_objects_.clear();
   }
 
-// remove
-#pragma omp parallel for schedule(static, 1)
+  // remove
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
     // removed sim objects
