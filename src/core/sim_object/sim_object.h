@@ -256,7 +256,7 @@ class SimObject {
   /// unique id
   SoUid uid_;
   /// Grid box index
-  uint32_t box_idx_;
+  uint32_t box_idx_ = 0;
   /// collection of biology modules which define the internal behavior
   std::vector<BaseBiologyModule*> biology_modules_;
 

@@ -21,6 +21,8 @@
 #include "core/util/io.h"
 #include "unit/test_util/test_util.h"
 
+#include "TBufferJSON.h"
+
 namespace bdm {
 
 /// Test fixture for io tests that follow the same form
@@ -42,9 +44,13 @@ namespace bdm {
 class IOTest : public ::testing::Test {
  public:
   static constexpr char const* kRootFile = "io-test.root";
+  static constexpr char const* kJsonFile = "io-test.json";
 
  protected:
-  virtual void SetUp() { remove(kRootFile); }
+  virtual void SetUp() {
+    remove(kRootFile);
+    remove(kJsonFile);
+  }
 };
 
 /// Writes backup to file and reads it back into restored
@@ -55,6 +61,11 @@ template <typename T>
 void BackupAndRestore(const T& backup, T** restored) {
   // write to root file
   WritePersistentObject(IOTest::kRootFile, "T", backup, "new");
+
+  // Two benefits of writing an object to JSON:
+  // 1) Ensures that a dictionary must exists; otherwise linking error
+  // 2) Print out the object's content for debugging purposes
+  TBufferJSON::ExportToFile(IOTest::kJsonFile, &backup, backup.Class());
 
   // read back
   GetPersistentObject(IOTest::kRootFile, "T", *restored);
