@@ -428,11 +428,10 @@ if(paraview)
                     HEADERS ${PV_HEADERS}
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
                     PLUGIN "TRUE")
-  set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallelXML;vtkPVVTKExtensionsDefault;vtkPVServerManagerRendering;VisualizationAdaptor")
+  set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
 else()
   # If paraview is disabled, linking the biodynamo-unit-tests failes due to
-  # an undefined tbb reference error.
-  # Adding this library fixed this
+  # an undefined tbb reference error. Adding this library fixed this
   set(REQUIRED_PARAVIEW_LIBRARIES "tbb")
 endif()
 
@@ -481,7 +480,7 @@ add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
 
-if (${ParaView_FOUND})
+if(paraview)
     include("${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/CMakeLists.txt")
 endif()
 
