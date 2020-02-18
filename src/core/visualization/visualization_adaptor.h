@@ -22,8 +22,12 @@ namespace bdm {
 class VisualizationAdaptor {
  public:
   VisualizationAdaptor() {}
+
   static VisualizationAdaptor* Create(std::string adaptor);
+
   virtual ~VisualizationAdaptor() {}
+
+  // To be implemented by the adaptor
   virtual void Visualize() = 0;
 };
 

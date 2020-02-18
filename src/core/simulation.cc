@@ -240,13 +240,13 @@ void Simulation::InitializeRuntimeParams(
                "$use_biodynamo and retry this command.");
   }
 
-  static bool readEnv = false;
-  if (!readEnv) {
-    // Read, only once, our bdm.rootrc to set BioDynaMo-related settings for ROOT
+  static bool read_env = false;
+  if (!read_env) {
+    // Read, only once, bdm.rootrc to set BioDynaMo-related settings for ROOT
     std::stringstream ss;
     ss << std::getenv("BDMSYS") << "/etc/bdm.rootrc";
     gEnv->ReadFile(ss.str().c_str(), kEnvUser);
-    readEnv = true;
+    read_env = true;
   }
 
   LoadConfigFile(ctor_config, clo->Get<std::string>("config"));
@@ -285,8 +285,7 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
       auto config = cpptoml::parse_file(ctor_config);
       param_->AssignFromConfig(config);
     } else {
-      Log::Fatal("Simulation::LoadConfigFile", "The config file ",
-                 ctor_config,
+      Log::Fatal("Simulation::LoadConfigFile", "The config file ", ctor_config,
                  " specified in the constructor of bdm::Simulation "
                  "could not be found.");
     }
@@ -295,8 +294,7 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
       auto config = cpptoml::parse_file(cli_config);
       param_->AssignFromConfig(config);
     } else {
-      Log::Fatal("Simulation::LoadConfigFile", "The config file ",
-                 cli_config,
+      Log::Fatal("Simulation::LoadConfigFile", "The config file ", cli_config,
                  " specified as command line argument "
                  "could not be found.");
     }
@@ -330,7 +328,8 @@ void Simulation::InitializeOutputDir() {
     output_dir_ = Concat(param_->output_dir_, "/", unique_name_);
   }
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
-    Log::Fatal("Simulation::InitializeOutputDir", "Failed to make output directory ", output_dir_);
+    Log::Fatal("Simulation::InitializeOutputDir",
+               "Failed to make output directory ", output_dir_);
   }
 }
 
