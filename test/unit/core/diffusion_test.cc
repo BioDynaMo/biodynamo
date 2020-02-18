@@ -540,9 +540,6 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
 
   // Write diffusion visualization to file
   sim.Simulate(1);
-  // auto adaptor = VisualizationAdaptor::Create("paraview");
-  // adaptor->Visualize();
-  // static_cast<ParaviewAdaptor*>(adaptor)->WriteToFile(0);
 
   // Read back from file
   vtkSmartPointer<vtkXMLImageDataReader> reader =

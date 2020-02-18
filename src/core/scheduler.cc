@@ -82,11 +82,13 @@ Scheduler::Scheduler() {
 
 Scheduler::~Scheduler() {
   delete backup_;
-  delete visualization_;
   delete root_visualization_;
   delete diffusion_;
   for (auto* op : operations_) {
     delete op;
+  }
+  if (visualization_) {
+    delete visualization_;
   }
   auto* param = Simulation::GetActive()->GetParam();
   if (param->statistics_) {

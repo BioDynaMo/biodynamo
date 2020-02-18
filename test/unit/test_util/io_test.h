@@ -45,12 +45,6 @@ class IOTest : public ::testing::Test {
  public:
   static constexpr char const* kRootFile = "io-test.root";
   static constexpr char const* kJsonFile = "io-test.json";
-
- protected:
-  virtual void SetUp() {
-    remove(kRootFile);
-    remove(kJsonFile);
-  }
 };
 
 /// Writes backup to file and reads it back into restored
@@ -59,6 +53,9 @@ class IOTest : public ::testing::Test {
 /// error and must be placed in a source file.
 template <typename T>
 void BackupAndRestore(const T& backup, T** restored) {
+  remove(IOTest::kRootFile);
+  remove(IOTest::kJsonFile);
+
   // write to root file
   WritePersistentObject(IOTest::kRootFile, "T", backup, "new");
 
