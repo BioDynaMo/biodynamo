@@ -143,7 +143,7 @@ endif()
 
 # Check if Python 3.6.9 from PyEnv is installed
 if (DEFINED ENV{PYENV_ROOT})
-  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
+  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
 else()
   set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
 endif()
