@@ -202,6 +202,7 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/cmake/FindOpenCL.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindNuma.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindClangTools.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/Findtcmalloc.cmake
             ${CMAKE_SOURCE_DIR}/cmake/RootUseFile.cmake
             ${CMAKE_SOURCE_DIR}/cmake/CppStyleGuideChecks.cmake
             ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake
