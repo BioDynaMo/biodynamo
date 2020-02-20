@@ -122,6 +122,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `opencl`        | `off` | enable OpenCL code generation for GPU acceleration |
 | `valgrind`      | `on` | enable memory leak checks |
 | `coverage`      | `off` | creates a make target to generate a html report indicating which parts of the code are tested by automatic tests |
+| `jemalloc`      | `off` | use `jemalloc` for memory allocations |
 | `tcmalloc`      | `off` | use `tcmalloc` for memory allocations |
 | `website`       | `off` | enable website generation (`make website<-live>` target (see below for more information)) |
 

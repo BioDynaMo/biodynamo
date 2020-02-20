@@ -36,6 +36,7 @@ SET(paraview_default @paraview@)
 SET(sbml_default @sbml@)
 SET(vtune_default @vtune@)
 SET(tcmalloc_default @tcmalloc@)
+SET(jemalloc_default @jemalloc@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
@@ -45,6 +46,7 @@ option(paraview  "Enable ParaView" @paraview@)
 option(sbml      "Enable SBML support" @sbml@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
 option(tcmalloc  "Use tcmalloc." @tcmalloc@)
+option(jemalloc  "Use jemalloc." @jemalloc@)
 
 if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
@@ -76,6 +78,12 @@ if (NOT "${tcmalloc_lower}" STREQUAL "${tcmalloc_default_lower}")
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dtcmalloc=${tcmalloc}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Dtcmalloc to ${tcmalloc_default}. Please change -Dtcmalloc to -Dtcmalloc=${tcmalloc_default}.")
 endif()
+string(TOLOWER "${jemalloc}" jemalloc_lower )
+string(TOLOWER "${jemalloc_default}" jemalloc_default_lower )
+if (NOT "${jemalloc_lower}" STREQUAL "${jemalloc_default_lower}")
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Djemalloc=${jemalloc}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Djemalloc to ${jemalloc_default}. Please change -Djemalloc to -Djemalloc=${jemalloc_default}.")
+endif()
 
 # This file contains the build setup for simulation projects outside the
 # biodynamo repository
@@ -105,6 +113,15 @@ if (tcmalloc)
   message("Tcmalloc libarary found: ${TCMALLOC_LIBRARY_PATH}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ltcmalloc -L ${TCMALLOC_LIBRARY_PATH}")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ltcmalloc -L ${TCMALLOC_LIBRARY_PATH}")
+endif()
+if (jemalloc)
+  find_package(jemalloc)
+  if(NOT JEMALLOC_FOUND)
+    message(FATAL_ERROR "jemalloc not found.")
+  endif()
+  message("jemalloc libarary found: ${JEMALLOC_LIBRARY_DIR}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ljemalloc -L ${JEMALLOC_LIBRARY_DIR}")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ljemalloc -L ${JEMALLOC_LIBRARY_DIR}")
 endif()
 
 find_program(WGET_BIN wget)

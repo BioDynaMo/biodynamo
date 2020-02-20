@@ -203,6 +203,7 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/cmake/FindNuma.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindClangTools.cmake
             ${CMAKE_SOURCE_DIR}/cmake/Findtcmalloc.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/Findjemalloc.cmake
             ${CMAKE_SOURCE_DIR}/cmake/RootUseFile.cmake
             ${CMAKE_SOURCE_DIR}/cmake/CppStyleGuideChecks.cmake
             ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake
@@ -382,6 +383,7 @@ function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(coverage coverage "Enable test coverage report generation. Sets build type to coverage.")
     ADD_FEATURE_INFO(verbose verbose "Enable verbosity when running make install.")
     ADD_FEATURE_INFO(tcmalloc tcmalloc "Use tcmalloc for memory allocations.")
+    ADD_FEATURE_INFO(jemalloc jemalloc "Use jemalloc for memory allocations.")
     ADD_FEATURE_INFO(notebooks notebooks "Generate ROOT notebooks")
 endfunction()
 
