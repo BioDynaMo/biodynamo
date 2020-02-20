@@ -15,6 +15,7 @@
 #include "core/memory/memory_manager.h"
 #include <gtest/gtest.h>
 #include "core/sim_object/cell.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 
@@ -206,6 +207,8 @@ TEST(ListTest, PopNThreadSafe_Twice) {
 }
 
 TEST(MemoryManagerTest, New) {
+  Simulation simulation(TEST_NAME);
+
   MemoryManager memory;
   // std::cout << memory.New(10) << std::endl;
 
