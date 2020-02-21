@@ -940,9 +940,9 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetAxon(bool is_axon) { is_axon_ = is_axon; }
 
-  SoPointer<NeuronOrNeurite> GetMother() { return mother_; }
+  SoPointer<NeuronOrNeurite>& GetMother() { return mother_; }
 
-  const SoPointer<NeuronOrNeurite> GetMother() const { return mother_; }
+  const SoPointer<NeuronOrNeurite>& GetMother() const { return mother_; }
 
   void SetMother(const SoPointer<NeuronOrNeurite>& mother) { mother_ = mother; }
 
