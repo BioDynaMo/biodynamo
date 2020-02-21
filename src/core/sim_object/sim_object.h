@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/container/inline_vector.h"
 #include "core/container/math_array.h"
 #include "core/shape.h"
 #include "core/sim_object/so_pointer.h"
@@ -232,7 +233,7 @@ class SimObject {
   void RunBiologyModules();
 
   /// Return all biology modules
-  const std::vector<BaseBiologyModule*>& GetAllBiologyModules() const;
+  const InlineVector<BaseBiologyModule*, 5>& GetAllBiologyModules() const;
   // ---------------------------------------------------------------------------
 
   virtual Double3 CalculateDisplacement(double squared_radius, double dt) = 0;
@@ -258,7 +259,7 @@ class SimObject {
   /// Grid box index
   uint32_t box_idx_ = 0;
   /// collection of biology modules which define the internal behavior
-  std::vector<BaseBiologyModule*> biology_modules_;
+  InlineVector<BaseBiologyModule*, 5> biology_modules_;
 
  private:
   Spinlock lock_;

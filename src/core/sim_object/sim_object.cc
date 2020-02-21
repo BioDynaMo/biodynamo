@@ -116,7 +116,7 @@ void SimObject::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 // Biology modules
 
 void SimObject::AddBiologyModule(BaseBiologyModule* module) {
-  biology_modules_.emplace_back(module);
+  biology_modules_.push_back(module);
 }
 
 void SimObject::RemoveBiologyModule(const BaseBiologyModule* remove_module) {
@@ -139,7 +139,8 @@ void SimObject::RunBiologyModules() {
   }
 }
 
-const std::vector<BaseBiologyModule*>& SimObject::GetAllBiologyModules() const {
+const InlineVector<BaseBiologyModule*, 5>& SimObject::GetAllBiologyModules()
+    const {
   return biology_modules_;
 }
 // ---------------------------------------------------------------------------

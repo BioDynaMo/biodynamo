@@ -1,5 +1,6 @@
 <lcgdict>
   <selection>
+    <class pattern="bdm::InlineVector*" noStreamer="true" />
     <class pattern="bdm::*" />
     <class pattern="std::vector<bdm::*>" />
   </selection>
@@ -44,6 +45,8 @@
     <class name="bdm::Random" />
     <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<double, 4>" />
+    <class name="bdm::InlineVector<bdm::BaseBiologyModule*, 5>" />
+    <class name="bdm::VectorTypeWrapper<bdm::BaseBiologyModule*>" />
     <!-- list of biodynamo classes that should be ignored  -->
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />

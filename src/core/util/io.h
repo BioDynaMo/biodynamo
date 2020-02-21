@@ -16,6 +16,7 @@
 #define CORE_UTIL_IO_H_
 
 #include <string>
+#include <vector>
 
 #include <TFile.h>
 #include <TSystem.h>
@@ -69,6 +70,17 @@ class IntegralTypeWrapper {
  private:
   T data_;
   BDM_CLASS_DEF_NV(IntegralTypeWrapper, 1);
+};
+
+/// ROOT cannot write array of pointers. Therefore, this wrapper is needed. See
+/// for example `InlineVector` for its usage
+template <typename T>
+class VectorTypeWrapper {
+public:
+  VectorTypeWrapper() {}
+
+  std::vector<T> vector_;
+  ClassDefNV(VectorTypeWrapper, 1);
 };
 
 bool FileExists(const std::string& file_name);

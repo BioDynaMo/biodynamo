@@ -33,5 +33,7 @@
     <class name="bdm::ParallelResizeVector<double>" />
     <class name="bdm::ParallelResizeVector<bdm::Grid::Box>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::Grid::Box const*>>" />
+    <class name="bdm::InlineVector<bdm::BaseBiologyModule*, 5>" noStreamer="true" />
+    <class name="bdm::VectorTypeWrapper<bdm::BaseBiologyModule*>" />
   </selection>
 </lcgdict>

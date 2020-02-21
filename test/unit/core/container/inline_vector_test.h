@@ -67,11 +67,13 @@ inline void RunIOTest() {
   remove(ROOTFILE);
 }
 
+// Some template instances used in the implementation file. Since genreflex only
+// digests the headers, we instantiate them here to have their dictionaries
+// generated
 #ifdef __ROOTCLING__
 static InlineVector<int, 2> ilv2;
 static InlineVector<int, 3> ilv3;
 static InlineVector<int, 4> ilv4;
-static std::vector<InlineVector<int, 8>> voilv;
 #endif
 
 }  // namespace inline_vector_test_internal
