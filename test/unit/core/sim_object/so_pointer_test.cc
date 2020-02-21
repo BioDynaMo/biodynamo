@@ -31,17 +31,33 @@ TEST(SoPointerTest, Basics) {
   SoPointer<TestSimObject> so_ptr(so->GetUid());
 
   EXPECT_TRUE(so_ptr != nullptr);
-  EXPECT_TRUE(so_ptr == *so);
-  EXPECT_FALSE(so_ptr != *so);
+  EXPECT_TRUE(so_ptr == so);
+  EXPECT_FALSE(so_ptr != so);
+
   EXPECT_EQ(123, so_ptr->GetData());
+  EXPECT_EQ(123, (*so_ptr).GetData());
+  EXPECT_EQ(123, so_ptr.Get()->GetData());
+  const SoPointer<TestSimObject>* const_soptr = &so_ptr;
+  EXPECT_EQ(123, (*const_soptr)->GetData());
+  EXPECT_EQ(123, (*(*const_soptr)).GetData());
+  EXPECT_EQ(123, (*const_soptr).Get()->GetData());
 
   TestSimObject* so1 = new TestSimObject();
-  EXPECT_FALSE(so_ptr == *so1);
-  EXPECT_TRUE(so_ptr != *so1);
+  EXPECT_FALSE(so_ptr == so1);
+  EXPECT_TRUE(so_ptr != so1);
+
+  if (!so_ptr) {
+    FAIL();
+  }
 
   so_ptr = nullptr;
   EXPECT_TRUE(so_ptr == nullptr);
-  EXPECT_FALSE(so_ptr == *so1);
+  EXPECT_FALSE(so_ptr == so1);
+
+  if (so_ptr) {
+    FAIL();
+  }
+
   delete so1;
 }
 

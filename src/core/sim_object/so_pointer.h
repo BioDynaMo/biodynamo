@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <limits>
 #include <ostream>
+#include <type_traits>
 
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/sim_object/so_uid.h"
@@ -57,12 +58,15 @@ class SoPointer {
 
   bool operator==(const SoPointer& other) const { return uid_ == other.uid_; }
 
+  bool operator!=(const SoPointer& other) const { return uid_ != other.uid_; }
+
   template <typename TSo>
-  bool operator==(const TSo& other) const {
-    return uid_ == other.GetUid();
+  bool operator==(const TSo* other) const {
+    return uid_ == other->GetUid();
   }
 
-  bool operator!=(const TSimObject& other) const {
+  template <typename TSo>
+  bool operator!=(const TSo* other) const {
     return !this->operator==(other);
   }
 
@@ -76,13 +80,14 @@ class SoPointer {
   TSimObject* operator->() {
     assert(*this != nullptr);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return dynamic_cast<TSimObject*>(ctxt->GetSimObject(uid_));
+    return Cast<SimObject, TSimObject>(ctxt->GetSimObject(uid_));
   }
 
   const TSimObject* operator->() const {
     assert(*this != nullptr);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return dynamic_cast<const TSimObject*>(ctxt->GetConstSimObject(uid_));
+    return Cast<const SimObject, const TSimObject>(
+        ctxt->GetConstSimObject(uid_));
   }
 
   friend std::ostream& operator<<(std::ostream& str, const SoPointer& so_ptr) {
@@ -90,20 +95,30 @@ class SoPointer {
     return str;
   }
 
-  // TODO(lukas) add test
   TSimObject& operator*() { return *(this->operator->()); }
 
-  // TODO(lukas) add test
   const TSimObject& operator*() const { return *(this->operator->()); }
 
-  // TODO(lukas) add test
+  operator bool() const { return *this != nullptr; }
+
   TSimObject* Get() { return this->operator->(); }
 
-  // TODO(lukas) add test
   const TSimObject* Get() const { return this->operator->(); }
 
  private:
   SoUid uid_;
+
+  template <typename TFrom, typename TTo>
+  typename std::enable_if<std::is_base_of<TFrom, TTo>::value, TTo*>::type Cast(
+      TFrom* so) const {
+    return static_cast<TTo*>(so);
+  }
+
+  template <typename TFrom, typename TTo>
+  typename std::enable_if<!std::is_base_of<TFrom, TTo>::value, TTo*>::type Cast(
+      TFrom* so) const {
+    return dynamic_cast<TTo*>(so);
+  }
 
   BDM_CLASS_DEF(SoPointer, 2);
 };

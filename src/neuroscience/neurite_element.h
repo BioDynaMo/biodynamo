@@ -479,17 +479,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   // TODO(neurites) add documentation
   void UpdateRelative(const NeuronOrNeurite& old_relative,
                       const NeuronOrNeurite& new_relative) override {
-    if (&old_relative == &*mother_) {
+    if (mother_ == &old_relative) {
       mother_ = new_relative.GetNeuronOrNeuriteSoPtr();
     } else {
       auto new_neurite_soptr =
           bdm_static_cast<const NeuriteElement*>(&new_relative)
               ->GetSoPtr<NeuriteElement>();
-      if (&*daughter_left_ ==
-          dynamic_cast<const NeuriteElement*>(&old_relative)) {
+      if (daughter_left_ == &old_relative) {
         daughter_left_ = new_neurite_soptr;
-      } else if (&*daughter_right_ ==
-                 dynamic_cast<const NeuriteElement*>(&old_relative)) {
+      } else if (daughter_right_ == &old_relative) {
         daughter_right_ = new_neurite_soptr;
       }
     }
@@ -499,7 +497,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// It is the sum of the spring force and the part of the inter-object force
   /// computed earlier in `CalculateDisplacement`
   Double3 ForceTransmittedFromDaugtherToMother(const NeuronOrNeurite& mother) {
-    if (mother_ != mother) {
+    if (mother_ != &mother) {
       Fatal("NeuriteElement", "Given object is not the mother!");
       return {0, 0, 0};
     }
@@ -653,18 +651,18 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       if (neighbor->GetShape() == Shape::kCylinder) {
         // if it is a direct relative, or sister branch, we don't take it into
         // account
-        if (ne->GetDaughterLeft() == *neighbor ||
-            ne->GetDaughterRight() == *neighbor ||
+        if (ne->GetDaughterLeft() == neighbor ||
+            ne->GetDaughterRight() == neighbor ||
             ne->GetMother() ==
                 bdm_static_cast<const NeuriteElement*>(neighbor)->GetMother() ||
-            (ne->GetMother() == *neighbor)) {
+            (ne->GetMother() == neighbor)) {
           return;
         }
       } else if (auto* neighbor_soma =
                      dynamic_cast<const NeuronSoma*>(neighbor)) {
         // if neighbor is NeuronSoma
         // if it is a direct relative, we don't take it into account
-        if (ne->GetMother() == *neighbor_soma) {
+        if (ne->GetMother() == neighbor_soma) {
           return;
         }
       }
