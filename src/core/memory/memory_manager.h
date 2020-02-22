@@ -19,7 +19,6 @@
 #include <mutex>
 #include <unordered_map>  // FIXME remove
 
-#include "core/container/unordered_split_flatmap.h"
 #include "core/util/numa.h"
 #include "core/util/spinlock.h"
 #include "core/util/thread_info.h"
@@ -121,8 +120,6 @@ class MemoryManager {
   static void Delete(void* p);
 
  private:
-  // FIXME
-  // UnorderedSplitFlatMap<std::size_t, PoolAllocator, 20> allocators_;
   static std::unordered_map<std::size_t, PoolAllocator> allocators_;
 };
 
