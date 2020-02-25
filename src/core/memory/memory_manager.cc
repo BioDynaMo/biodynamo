@@ -14,6 +14,7 @@
 
 #include "core/memory/memory_manager.h"
 #include <cmath>
+#include <cstdlib>
 #include <mutex>
 
 namespace bdm {
@@ -92,7 +93,11 @@ NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
 NumaPoolAllocator::~NumaPoolAllocator() {
   for (auto& block : memory_blocks_) {
     uint64_t size = block.end_pointer_ - block.start_pointer_;
+#ifdef __APPLE__
+    free(block.start_pointer_);
+#else
     numa_free(block.start_pointer_, size);
+#endif  // __APPLE__
   }
 }
 
@@ -150,7 +155,11 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
   uint64_t size_n_pages = MemoryManager::kSizeNPages;
   assert((size & (size_n_pages -1)) == 0
     && "Size must be a multiple of page_size * num_pages_aligned");
+#ifdef __APPLE__
   void* block = numa_alloc_onnode(size, nid_);
+#else
+  void* block = malloc(size);
+#endif  // __APPLE__
   if (block == nullptr) {
     Log::Fatal("NumaPoolAllocator::AllocNewMemoryBlock", "Allocation failed");
   }
