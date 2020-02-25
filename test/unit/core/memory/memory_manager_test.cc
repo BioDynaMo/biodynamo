@@ -205,61 +205,77 @@ TEST(ListTest, PopNThreadSafe_Twice) {
     EXPECT_TRUE(l.Empty());
   }
 }
+
 // -----------------------------------------------------------------------------
-TEST(PageTreeTest, Ctor) {
-  // 1 TB memory, 4k pages
-  PageTree pt1(std::pow(1024, 4), 12);
-  EXPECT_EQ(268435456, pt1.max_number_pages_);
-  EXPECT_EQ(646, pt1.num_elements_per_node_);
-  EXPECT_EQ(10u, pt1.bits_per_index_);
-  EXPECT_EQ(0x3FF, pt1.idx0_mask_);
-  EXPECT_EQ(0xFFC00, pt1.idx1_mask_);
-  EXPECT_EQ(0x3FF00000, pt1.idx2_mask_);
+TEST(AllocatedBlock, PerfectAligned) {
+  auto* end = reinterpret_cast<char*>(2*MemoryManager::kSizeNPages);
+  AllocatedBlock block = {0, end, 0};
+  EXPECT_FALSE(block.IsFullyInitialized());
 
-  // 8 GB memory, 4k pages
-  PageTree pt2(8 * std::pow(1024, 3), 12);
-  EXPECT_EQ(2097152, pt2.max_number_pages_);
-  EXPECT_EQ(128, pt2.num_elements_per_node_);
-  EXPECT_EQ(7u, pt2.bits_per_index_);
-  EXPECT_EQ(0x7F, pt2.idx0_mask_);
-  EXPECT_EQ(0x3F80, pt2.idx1_mask_);
-  EXPECT_EQ(0x1FC000, pt2.idx2_mask_);
+  char* batch = nullptr;
+  uint64_t size = 0;
+  block.GetNextPageBatch(&batch, &size);
+  EXPECT_EQ(0, batch);
+  EXPECT_EQ(MemoryManager::kSizeNPages, size);
 
-  // 32 GB memory, 8k pages
-  PageTree pt3(32 * std::pow(1024, 3), 13);
-  EXPECT_EQ(4194304, pt3.max_number_pages_);
-  EXPECT_EQ(162, pt3.num_elements_per_node_);
-  EXPECT_EQ(8u, pt3.bits_per_index_);
-  EXPECT_EQ(0xFF, pt3.idx0_mask_);
-  EXPECT_EQ(0xFF00, pt3.idx1_mask_);
-  EXPECT_EQ(0xFF0000, pt3.idx2_mask_);
+  EXPECT_FALSE(block.IsFullyInitialized());
+
+  block.GetNextPageBatch(&batch, &size);
+  EXPECT_EQ(reinterpret_cast<char*>(MemoryManager::kSizeNPages), batch);
+  EXPECT_EQ(MemoryManager::kSizeNPages, size);
+
+  EXPECT_TRUE(block.IsFullyInitialized());
 }
 
-TEST(PageTreeTest, AddOnePageAndGet) {
-  PageTree pt(8 * std::pow(1024, 3), 12);
-  auto* npa = reinterpret_cast<NumaPoolAllocator*>(0x456789);
-  pt.AddPage(123123, npa);
-  EXPECT_EQ(npa, pt.GetAllocator(123123));
+TEST(AllocatedBlock, NotPerfectlyAligned) {
+  auto* start = reinterpret_cast<char*>(4096);
+  auto* end = reinterpret_cast<char*>(2*MemoryManager::kSizeNPages+4096);
+  auto* initialized = reinterpret_cast<char*>(MemoryManager::kSizeNPages);
+  AllocatedBlock block = {start, end, initialized};
+  EXPECT_FALSE(block.IsFullyInitialized());
+
+  char* batch = nullptr;
+  uint64_t size = 0;
+  block.GetNextPageBatch(&batch, &size);
+  EXPECT_EQ(initialized, batch);
+  EXPECT_EQ(MemoryManager::kSizeNPages, size);
+
+  EXPECT_FALSE(block.IsFullyInitialized());
+
+  block.GetNextPageBatch(&batch, &size);
+  EXPECT_EQ(reinterpret_cast<char*>(2*MemoryManager::kSizeNPages), batch);
+  EXPECT_EQ(4096u, size);
+
+  EXPECT_TRUE(block.IsFullyInitialized());
+}
+
+// -----------------------------------------------------------------------------
+TEST(NumaPoolAllocatorTest, RoundUpTo) {
+  EXPECT_EQ(0u, NumaPoolAllocator::RoundUpTo(0, 4096));
+  EXPECT_EQ(4096u, NumaPoolAllocator::RoundUpTo(1, 4096));
+  EXPECT_EQ(4096u, NumaPoolAllocator::RoundUpTo(4096, 4096));
+  EXPECT_EQ(8192u, NumaPoolAllocator::RoundUpTo(4097, 4096));
 }
 
 // -----------------------------------------------------------------------------
 TEST(MemoryManagerTest, New) {
   Simulation simulation(TEST_NAME);
 
-  MemoryManager memory;
-  // std::cout << memory.New(10) << std::endl;
-
-  for (uint64_t i = 0; i < 10000; ++i) {
-    auto so = new Cell();
-    // auto* so = MemoryManager::New(sizeof(Cell));
+  for (uint64_t i = 0; i < 1000; ++i) {
+    auto* so = new Cell();
     ASSERT_TRUE(so != nullptr);
-    // std::cout << i << " " << so << std::endl;
+
+    // check if we can find the numa pool allocator pointer at the beginning of
+    // the N aligned pages that is used to free the memory once `so` is deleted
+    auto addr = reinterpret_cast<uint64_t>(so);
+    auto page_number = addr >> (MemoryManager::kPageShift + MemoryManager::kNumPagesAlignedShift);
+    auto* page_addr = reinterpret_cast<char*>(page_number << (MemoryManager::kPageShift + MemoryManager::kNumPagesAlignedShift));
+
+    auto* npa = *reinterpret_cast<NumaPoolAllocator**>(page_addr);
+
+    EXPECT_EQ(sizeof(Cell), npa->size_);
+    delete so;
   }
-  // for (uint64_t i = 0; i < 100; ++i) {
-  //   auto* so = MemoryManager::New(136);
-  //   ASSERT_TRUE(so != nullptr);
-  //   std::cout << i << " " << so << std::endl;
-  // }
 }
 
 }  // namespace bdm

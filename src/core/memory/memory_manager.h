@@ -62,8 +62,20 @@ class List {
   Spinlock lock_;
 };
 
+struct AllocatedBlock {
+  char* start_pointer_;
+  char* end_pointer_;
+  char* initialized_until_;
+
+  bool IsFullyInitialized() const;
+
+  void GetNextPageBatch(char** start, uint64_t* size);
+};
+
 class NumaPoolAllocator {
  public:
+  static uint64_t RoundUpTo(uint64_t number, uint64_t multiple);
+
   NumaPoolAllocator(uint64_t size, int nid);
 
   // NumaPoolAllocator(const NumaPoolAllocator* other) :
@@ -78,58 +90,21 @@ class NumaPoolAllocator {
 
   void Delete(void* p);
 
- private:
+ // private: FIXME
   const double kGrowthFactor = 2;
   uint64_t total_size_ = 0;
   uint64_t size_;
   int nid_;
   ThreadInfo* tinfo_;
-  std::vector<std::pair<void*, std::size_t>> memory_blocks_;
+  // TODO rename to allocated_blocks_ ?
+  std::vector<AllocatedBlock> memory_blocks_;
   std::vector<List> free_lists_;  // one per thread
   List central_;
-  std::mutex mutex_; // TODO replace with Spinlock
+  Spinlock lock_;
 
   void AllocNewMemoryBlock(std::size_t size);
 
-  void CreateFreeList(void* block, uint64_t mem_block_size, Node** head,
-                      Node** tail);
-
-  void ProcessPages(void* block, uint64_t mem_block_size);
-};
-
-struct TreeNode;
-
-union TreeData {
-  TreeNode* node_ = nullptr;
-  NumaPoolAllocator* data_;
-};
-
-struct TreeNode {
-  TreeNode(uint64_t num_elements);
-  std::vector<TreeData> nodes_;
-  Spinlock lock_;
-};
-
-class PageTree {
-public:
-  PageTree(uint64_t total_memory, uint64_t page_shift);
-
-  NumaPoolAllocator* GetAllocator(uint64_t page_number) const;
-
-  void AddPage(uint64_t page, NumaPoolAllocator* npa);
-
-private:
-  uint64_t max_number_pages_;
-  uint64_t num_elements_per_node_;
-  uint64_t bits_per_index_;
-  uint64_t idx0_mask_;
-  uint64_t idx1_mask_;
-  uint64_t idx2_mask_;
-  TreeNode* head_;
-
-  std::array<uint64_t, 3> GetIndices(uint64_t page_number) const;
-
-  friend class PageTreeTest_Ctor_Test;
+  void InitializeNPages(List* tl_list, char* block, uint64_t mem_block_size);
 };
 
 // FIXME move to separate source file
@@ -153,10 +128,12 @@ class PoolAllocator {
 
 class MemoryManager {
  public:
+   // TODO: sysconf(_SC_PAGESIZE)
    static constexpr uint64_t kPageSize = 4096;
    static constexpr uint64_t kPageShift = 12;
-
-  static PageTree page_tree_;
+   static constexpr uint64_t kNumPagesAlignedShift = 5;
+   static constexpr uint64_t kNumPagesAligned = (1 << 5);
+   static constexpr uint64_t kSizeNPages = 1 << (kPageShift + kNumPagesAlignedShift);
 
   static void* New(std::size_t size);
 
