@@ -19,40 +19,40 @@
 
 namespace bdm {
 
-TEST(ListTest, PushPopEmpty) {
-  List l;
+TEST(ListTest, PushFrontPopFront) {
+  List l(4);
 
   Node n1;
   Node n2;
   Node n3;
   Node n4;
 
-  n1.next = &n2;
-  n2.next = &n3;
-  n3.next = &n4;
-
   EXPECT_TRUE(l.Empty());
 
-  l.Push(&n1, &n3);
+  l.PushFront(&n1);
+  l.PushFront(&n2);
+  l.PushFront(&n3);
+  l.PushFront(&n4);
+
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n1);
+  EXPECT_EQ(l.PopFront(), &n4);
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n2);
+  EXPECT_EQ(l.PopFront(), &n3);
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n3);
+  EXPECT_EQ(l.PopFront(), &n2);
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n4);
+  EXPECT_EQ(l.PopFront(), &n1);
   EXPECT_TRUE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), nullptr);
+  EXPECT_EQ(l.PopFront(), nullptr);
 }
 
-TEST(ListTest, PushTwice) {
-  List l;
+TEST(ListTest, PushBackN) {
+  List l(4);
 
   Node n1;
   Node n2;
@@ -61,150 +61,243 @@ TEST(ListTest, PushTwice) {
   Node n5;
 
   // one linked list: n1 -> n2 -> n3
-  n1.next = &n2;
   n2.next = &n3;
-
-  // second: n4 -> n5
+  n3.next = &n4;
   n4.next = &n5;
 
   EXPECT_TRUE(l.Empty());
 
-  l.Push(&n1, &n3);
-  l.Push(&n4, &n5);
+  l.PushFront(&n1);
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n4);
+  l.PushBackN(&n2, &n5);
+
+  EXPECT_EQ(l.PopFront(), &n1);
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n5);
+  EXPECT_EQ(l.PopFront(), &n2);
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n1);
+  EXPECT_EQ(l.PopFront(), &n3);
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n2);
+  EXPECT_EQ(l.PopFront(), &n4);
   EXPECT_FALSE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), &n3);
+  EXPECT_EQ(l.PopFront(), &n5);
+  EXPECT_TRUE(l.Empty());
+}
+
+TEST(ListTest, PopBackN) {
+  List l(4);
+
+  Node n1;
+  Node n2;
+  Node n3;
+  Node n4;
+  Node n5;
+
+  // one linked list: n1 -> n2 -> n3
+  n2.next = &n3;
+  n3.next = &n4;
+  n4.next = &n5;
+
   EXPECT_TRUE(l.Empty());
 
-  EXPECT_EQ(l.Pop(), nullptr);
+  l.PushFront(&n1);
+  EXPECT_FALSE(l.Empty());
+
+  l.PushBackN(&n2, &n5);
+
+  Node* head = nullptr;
+  Node* tail = nullptr;
+  l.PopBackN(&head, &tail);
+  EXPECT_FALSE(l.Empty());
+
+  EXPECT_EQ(l.PopFront(), &n1);
+  EXPECT_TRUE(l.Empty());
+}
+
+TEST(ListTest, PushBackNPopBackN) {
+  List l(4);
+
+  Node n1;
+  Node n2;
+  Node n3;
+  Node n4;
+
+  // one linked list: n1 -> n2 -> n3
+  n1.next = &n2;
+  n2.next = &n3;
+  n3.next = &n4;
+
+  EXPECT_TRUE(l.Empty());
+
+  l.PushBackN(&n1, &n4);
+
+  Node* head = nullptr;
+  Node* tail = nullptr;
+  l.PopBackN(&head, &tail);
+  // cannot get elements back if only N elements are stored inside
+  EXPECT_EQ(nullptr, head);
+  EXPECT_EQ(nullptr, tail);
+  EXPECT_FALSE(l.Empty());
+
+  Node n5;
+  l.PushFront(&n5);
+  l.PopBackN(&head, &tail);
+  EXPECT_EQ(&n1, head);
+  EXPECT_EQ(&n4, tail);
+  EXPECT_FALSE(l.Empty());
+
+  EXPECT_EQ(l.PopFront(), &n5);
+  EXPECT_TRUE(l.Empty());
+}
+
+TEST(ListTest, CreateRemoveSkipListEntry) {
+  List l(2);
+
+  Node n1;
+  Node n2;
+  Node n3;
+  Node n4;
+  Node n5;
+  Node n6;
+  Node* head = nullptr;
+  Node* tail = nullptr;
+
+  l.PushFront(&n1);
+  l.PushFront(&n2);
+  l.PushFront(&n3); // skip list item should be created
+  l.PopFront();     // skip list item should be removed
+
+  l.PopBackN(&head, &tail);
+  EXPECT_EQ(nullptr, head);
+  EXPECT_EQ(nullptr, tail);
+
+  l.PushFront(&n4);  // skip list item should be created again
+  l.PushFront(&n5);
+
+  l.PopBackN(&head, &tail);
+  EXPECT_EQ(&n2, head);
+  EXPECT_EQ(&n1, tail);
+  EXPECT_EQ(2u, l.Size());
 }
 
 // Pop less elements than are in the list
-TEST(ListTest, PopNThreadSafe_Less) {
-  List l;
-
-  Node n1;
-  Node n2;
-  Node n3;
-  Node n4;
-
-  n1.next = &n2;
-  n2.next = &n3;
-  n3.next = &n4;
-
-  l.Push(&n1, &n4);
-
-  Node *head = nullptr;
-  Node *tail = nullptr;
-  l.PopNThreadSafe(3, &head, &tail);
-
-  EXPECT_EQ(head, &n1);
-  EXPECT_EQ(tail, &n3);
-
-  EXPECT_FALSE(l.Empty());
-
-  EXPECT_EQ(l.Pop(), &n4);
-  EXPECT_TRUE(l.Empty());
-}
-
-// Pop more elements than are in the list
-TEST(ListTest, PopNThreadSafe_More) {
-  List l;
-
-  Node n1;
-  Node n2;
-  Node n3;
-  Node n4;
-
-  n1.next = &n2;
-  n2.next = &n3;
-  n3.next = &n4;
-
-  l.Push(&n1, &n4);
-
-  Node *head = nullptr;
-  Node *tail = nullptr;
-  l.PopNThreadSafe(8, &head, &tail);
-
-  EXPECT_EQ(head, &n1);
-  EXPECT_EQ(tail, &n4);
-
-  EXPECT_TRUE(l.Empty());
-}
-
-// Pop exeaclty the number of elements that are in the list
-TEST(ListTest, PopNThreadSafe_Equal) {
-  List l;
-
-  Node n1;
-  Node n2;
-  Node n3;
-  Node n4;
-
-  n1.next = &n2;
-  n2.next = &n3;
-  n3.next = &n4;
-
-  l.Push(&n1, &n4);
-
-  Node *head = nullptr;
-  Node *tail = nullptr;
-  l.PopNThreadSafe(4, &head, &tail);
-
-  EXPECT_EQ(head, &n1);
-  EXPECT_EQ(tail, &n4);
-
-  EXPECT_TRUE(l.Empty());
-}
-
-TEST(ListTest, PopNThreadSafe_Twice) {
-  List l;
-
-  Node n1;
-  Node n2;
-  Node n3;
-  Node n4;
-
-  n1.next = &n2;
-  n2.next = &n3;
-  n3.next = &n4;
-
-  l.Push(&n1, &n4);
-
-  {
-    Node *head = nullptr;
-    Node *tail = nullptr;
-    l.PopNThreadSafe(2, &head, &tail);
-
-    EXPECT_EQ(head, &n1);
-    EXPECT_EQ(tail, &n2);
-    EXPECT_EQ(tail->next, nullptr);
-    EXPECT_FALSE(l.Empty());
-  }
-
-  {
-    Node *head = nullptr;
-    Node *tail = nullptr;
-    l.PopNThreadSafe(2, &head, &tail);
-
-    EXPECT_EQ(head, &n3);
-    EXPECT_EQ(tail, &n4);
-    EXPECT_EQ(tail->next, nullptr);
-    EXPECT_TRUE(l.Empty());
-  }
-}
+// TEST(ListTest, PopNThreadSafe_Less) {
+//   List l;
+//
+//   Node n1;
+//   Node n2;
+//   Node n3;
+//   Node n4;
+//
+//   n1.next = &n2;
+//   n2.next = &n3;
+//   n3.next = &n4;
+//
+//   l.PushBackN(&n1, &n4);
+//
+//   Node *head = nullptr;
+//   Node *tail = nullptr;
+//   l.PopNThreadSafe(3, &head, &tail);
+//
+//   EXPECT_EQ(head, &n1);
+//   EXPECT_EQ(tail, &n3);
+//
+//   EXPECT_FALSE(l.Empty());
+//
+//   EXPECT_EQ(l.PopFront(), &n4);
+//   EXPECT_TRUE(l.Empty());
+// }
+//
+// // Pop more elements than are in the list
+// TEST(ListTest, PopNThreadSafe_More) {
+//   List l;
+//
+//   Node n1;
+//   Node n2;
+//   Node n3;
+//   Node n4;
+//
+//   n1.next = &n2;
+//   n2.next = &n3;
+//   n3.next = &n4;
+//
+//   l.Push(&n1, &n4);
+//
+//   Node *head = nullptr;
+//   Node *tail = nullptr;
+//   l.PopNThreadSafe(8, &head, &tail);
+//
+//   EXPECT_EQ(head, &n1);
+//   EXPECT_EQ(tail, &n4);
+//
+//   EXPECT_TRUE(l.Empty());
+// }
+//
+// // Pop exeaclty the number of elements that are in the list
+// TEST(ListTest, PopNThreadSafe_Equal) {
+//   List l;
+//
+//   Node n1;
+//   Node n2;
+//   Node n3;
+//   Node n4;
+//
+//   n1.next = &n2;
+//   n2.next = &n3;
+//   n3.next = &n4;
+//
+//   l.Push(&n1, &n4);
+//
+//   Node *head = nullptr;
+//   Node *tail = nullptr;
+//   l.PopNThreadSafe(4, &head, &tail);
+//
+//   EXPECT_EQ(head, &n1);
+//   EXPECT_EQ(tail, &n4);
+//
+//   EXPECT_TRUE(l.Empty());
+// }
+//
+// TEST(ListTest, PopNThreadSafe_Twice) {
+//   List l;
+//
+//   Node n1;
+//   Node n2;
+//   Node n3;
+//   Node n4;
+//
+//   n1.next = &n2;
+//   n2.next = &n3;
+//   n3.next = &n4;
+//
+//   l.Push(&n1, &n4);
+//
+//   {
+//     Node *head = nullptr;
+//     Node *tail = nullptr;
+//     l.PopNThreadSafe(2, &head, &tail);
+//
+//     EXPECT_EQ(head, &n1);
+//     EXPECT_EQ(tail, &n2);
+//     EXPECT_EQ(tail->next, nullptr);
+//     EXPECT_FALSE(l.Empty());
+//   }
+//
+//   {
+//     Node *head = nullptr;
+//     Node *tail = nullptr;
+//     l.PopNThreadSafe(2, &head, &tail);
+//
+//     EXPECT_EQ(head, &n3);
+//     EXPECT_EQ(tail, &n4);
+//     EXPECT_EQ(tail->next, nullptr);
+//     EXPECT_TRUE(l.Empty());
+//   }
+// }
 
 // -----------------------------------------------------------------------------
 TEST(AllocatedBlock, PerfectAligned) {

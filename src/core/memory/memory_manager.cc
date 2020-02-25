@@ -19,55 +19,123 @@
 
 namespace bdm {
 
-Node* List::Pop() {
+List::List(uint64_t n) : n_(n) {
+  // TODO check if n_ is power of two -> otherwise fatal
+}
+
+// TODO
+List::List(const List& other) : head_(other.head_)
+{}
+
+Node* List::PopFront() {
   if (!Empty()) {
     auto* ret = head_;
     head_ = head_->next;
+    if (tail_ == ret) {
+      tail_ = nullptr;
+    }
+    --size_;
+    // --nodes_before_skip_list_;
+    if (skip_list_.back() == ret) {
+      skip_list_.pop_back();
+      // nodes_before_skip_list_ = n_;
+    }
     return ret;
   }
   return nullptr;
 }
 
-void List::PopNThreadSafe(uint64_t n, Node** head, Node** tail) {
-  std::lock_guard<Spinlock> guard(lock_);
-  if (!Empty()) {
-    *head = head_;
-    *tail = (*head)->next;
-    if (*tail == nullptr) {
-      head_ = nullptr;
-      return;
-    }
-    --n;
-    while (--n > 0 && (*tail)->next != nullptr) {
-      *tail = (*tail)->next;
-    }
-    head_ = (*tail)->next;
-    (*tail)->next = nullptr;
-  }
-}
+void List::PushFront(Node* head) {
+  assert(head != nullptr);
 
-void List::Push(Node* head, Node* tail) {
-  if (head == nullptr) {
-    return;
-  }
   auto* old_head = head_;
   head_ = head;
+  head_->next = old_head;
   if (old_head == nullptr) {
-    return;
+    tail_ = head_;
   }
-  if (tail == nullptr) {
-    head->next = old_head;
-  } else {
-    tail->next = old_head;
+  ++size_;
+  // ++nodes_before_skip_list_;
+
+  // (size_ + 1) mod n == 0
+  if (((size_ - 1) & (n_ - 1)) == 0 && size_ > n_) {
+  // if (nodes_before_skip_list_ > n_) {
+    skip_list_.push_back(head_);
+    // nodes_before_skip_list_ = 0;
   }
 }
 
-void List::PushThreadSafe(Node* head, Node* tail) {
+void List::PushFrontThreadSafe(Node* head) {
   std::lock_guard<Spinlock> guard(lock_);
-  Push(head, tail);
+  PushFront(head);
+}
+
+void List::PushBackN(Node* head, Node* tail) {
+  assert(head != nullptr);
+  assert(tail != nullptr);
+
+  if (head_ == nullptr) {
+    head_ = head;
+    tail_ = tail;
+    size_ = n_;
+    // nodes_before_skip_list_ = n_;
+    return;
+  }
+
+  skip_list_.push_front(tail_);
+  tail_->next = head;
+  tail_ = tail;
+  size_+= n_;
+}
+
+void List::PushBackNThreadSafe(Node* head, Node* tail) {
+  std::lock_guard<Spinlock> guard(lock_);
+  PushBackN(head, tail);
+}
+
+void List::PopBackN(Node** head, Node** tail) {
+  assert(head_ != nullptr);
+  assert(tail_ != nullptr);
+
+  if (skip_list_.size() == 0) {
+    return;
+  }
+
+  *head = skip_list_.front()->next;
+  skip_list_.front()->next = nullptr;
+  *tail = tail_;
+  tail_ = skip_list_.front();
+  skip_list_.pop_front();
+  size_ -= n_;
+
+  // if (!Empty()) {
+  //   *head = head_;
+  //   *tail = (*head)->next;
+  //   if (*tail == nullptr) {
+  //     head_ = nullptr;
+  //     return;
+  //   }
+  //   --n;
+  //   while (--n > 0 && (*tail)->next != nullptr) {
+  //     *tail = (*tail)->next;
+  //   }
+  //   head_ = (*tail)->next;
+  //   (*tail)->next = nullptr;
+  // }
+}
+
+void List::PopBackNThreadSafe(Node** head, Node** tail) {
+  std::lock_guard<Spinlock> guard(lock_);
+  PopBackN(head, tail);
 }
 
 bool List::Empty() const { return head_ == nullptr; }
+
+uint64_t List::Size() const { return size_; }
+
+uint64_t List::GetN() const { return n_; }
+
+uint64_t List::SetN(uint64_t n)  { n_ = n; }
 
 // -----------------------------------------------------------------------------
 bool AllocatedBlock::IsFullyInitialized() const {
@@ -86,7 +154,13 @@ void AllocatedBlock::GetNextPageBatch(char** start, uint64_t* size) {
 // -----------------------------------------------------------------------------
 NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
     : size_(size), nid_(nid), tinfo_(ThreadInfo::GetInstance()) {
-  free_lists_.resize(tinfo_->GetThreadsInNumaNode(nid));
+
+  auto num_elements_fast_migrate = (MemoryManager::kSizeNPages - 8) / size;
+  free_lists_.reserve(tinfo_->GetThreadsInNumaNode(nid));
+  for (int i = 0; i < tinfo_->GetThreadsInNumaNode(nid); ++i) {
+    free_lists_.emplace_back(1024);
+  }
+  central_.SetN(1024);
   AllocNewMemoryBlock(MemoryManager::kSizeNPages * 2);
 }
 
@@ -102,18 +176,22 @@ NumaPoolAllocator::~NumaPoolAllocator() {
 }
 
 void* NumaPoolAllocator::New(int ntid) {
-  assert(ntid < free_lists_.size());
+  assert(static_cast<uint64_t>(ntid) < free_lists_.size());
   auto& tl_list = free_lists_[ntid];
   if (!tl_list.Empty()) {
-    return tl_list.Pop();
-  } else if (!central_.Empty()) {
+    auto *ret = tl_list.PopFront();
+    assert(ret != nullptr);
+    return ret;
+  } else if (central_.Size() > central_.GetN()) {
     Node *head = nullptr, *tail = nullptr;
-    central_.PopNThreadSafe(1000, &head, &tail);  // FIXME hardcoded value
+    central_.PopBackNThreadSafe(&head, &tail);
     if (head == nullptr) {
       return New(ntid);
     }
-    tl_list.Push(head, tail);
-    return tl_list.Pop();
+    tl_list.PushBackN(head, tail);
+    auto *ret = tl_list.PopFront();
+    assert(ret != nullptr);
+    return ret;
   } else {
     lock_.lock();
     if (memory_blocks_.back().IsFullyInitialized()) {
@@ -127,7 +205,9 @@ void* NumaPoolAllocator::New(int ntid) {
     memory_blocks_.back().GetNextPageBatch(&start_pointer, &size);
     lock_.unlock();
     InitializeNPages(&tl_list, start_pointer, size);
-    return tl_list.Pop();
+    auto *ret = tl_list.PopFront();
+    assert(ret != nullptr);
+    return ret;
   }
 }
 
@@ -135,9 +215,9 @@ void NumaPoolAllocator::Delete(void* p) {
   auto* node = new (p) Node();
   if (tinfo_->GetMyNumaNode() == nid_) {
     auto ntid = tinfo_->GetMyNumaThreadId();
-    free_lists_[ntid].Push(node, nullptr);
+    free_lists_[ntid].PushFront(node);
   } else {
-    central_.PushThreadSafe(node, nullptr);
+    central_.PushFrontThreadSafe(node);
   }
 }
 
@@ -156,9 +236,9 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
   assert((size & (size_n_pages -1)) == 0
     && "Size must be a multiple of page_size * num_pages_aligned");
 #ifdef __APPLE__
-  void* block = numa_alloc_onnode(size, nid_);
-#else
   void* block = malloc(size);
+#else
+  void* block = numa_alloc_onnode(size, nid_);
 #endif  // __APPLE__
   if (block == nullptr) {
     Log::Fatal("NumaPoolAllocator::AllocNewMemoryBlock", "Allocation failed");
@@ -181,16 +261,13 @@ void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block, uint64_t me
   auto* block_npa = reinterpret_cast<NumaPoolAllocator**>(block);
   *block_npa = this;
 
-  Node* head = nullptr;
-  Node* tail = nullptr;
-
   // TODO cache line allign? 64
   uint64_t metadata_size = sizeof(NumaPoolAllocator*);
   auto* start_pointer = static_cast<char*>(block + metadata_size);
   auto* pointer = start_pointer;
   const uint64_t num_elements = (mem_block_size - metadata_size) / size_;
   // FIXME remove
-  // const auto* end_pointer = pointer + mem_block_size - size_;
+  // const auto* end_pointer = start_pointer + mem_block_size - size_;
   // std::cout << "block " << block << std::endl;
   // std::cout << "mbs   " << mem_block_size << std::endl;
   // std::cout << "size  " << size_ << std::endl;
@@ -198,19 +275,31 @@ void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block, uint64_t me
   // std::cout << "epo   " << end_pointer - static_cast<char*>(block) << std::endl;
 
   pointer += (num_elements - 1) * size_;
-  head = new (pointer) Node();
-  assert(head->next == nullptr);
-  tail = head;
-  pointer -= size_;
+  if (tl_list->GetN() == num_elements) {
 
-  while (pointer >= start_pointer) {
-    auto* old_head = head;
-    head = new (pointer) Node();
-    assert(pointer >= static_cast<char*>(block));
-    // assert(pointer <= end_pointer);
+    auto* head = new (pointer) Node();
     assert(head->next == nullptr);
-    head->next = old_head;
+    auto* tail = head;
     pointer -= size_;
+
+    while (pointer >= start_pointer) {
+      auto* old_head = head;
+      head = new (pointer) Node();
+      assert(pointer >= static_cast<char*>(block));
+      assert(pointer <= (start_pointer + mem_block_size - size_));
+      assert(head->next == nullptr);
+      head->next = old_head;
+      pointer -= size_;
+    }
+    tl_list->PushBackN(head, tail);
+
+  } else {
+    while (pointer >= start_pointer) {
+      assert(pointer >= static_cast<char*>(block));
+      assert(pointer <= start_pointer + mem_block_size - size_);
+      tl_list->PushFront(new (pointer) Node());
+      pointer -= size_;
+    }
   }
 
   // FIXME remove
@@ -229,7 +318,6 @@ void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block, uint64_t me
   // assert(n == tail);
   // FIXME remove end
 
-  tl_list->Push(head, tail);
 }
 
 uint64_t NumaPoolAllocator::RoundUpTo(uint64_t number, uint64_t multiple) {

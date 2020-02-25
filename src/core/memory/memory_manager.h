@@ -16,8 +16,8 @@
 #define CORE_MEMORY_MEMORY_MANAGER_H_
 
 #include <cassert>
-#include <mutex>
-#include <unordered_map>  // FIXME remove
+#include <list>
+#include <unordered_map>
 
 #include "core/util/numa.h"
 #include "core/util/spinlock.h"
@@ -32,11 +32,10 @@ struct Node {
 class List {
  public:
   List() {}
-  List(const List& other) : head_(other.head_) {}
+  List(uint64_t n);
+  List(const List& other);
 
-  Node* Pop();
-
-  void PopNThreadSafe(uint64_t n, Node** head, Node** tail);
+  Node* PopFront();
 
   // void Push(Node* node) {
   //   Node* tail = node;
@@ -51,14 +50,35 @@ class List {
   //   std::lock_guard<Spinlock> guard(lock_);
   //   Push(node);
   // }
-  void Push(Node* head, Node* tail);
+  void PushFront(Node* head);
 
-  void PushThreadSafe(Node* head, Node* tail);
+  void PushFrontThreadSafe(Node* head);
+
+  void PushBackN(Node* head, Node* tail);
+
+  void PushBackNThreadSafe(Node* head, Node* tail);
+
+  void PopBackN(Node** head, Node** tail);
+
+  void PopBackNThreadSafe(Node** head, Node** tail);
 
   bool Empty() const;
 
+  uint64_t Size() const;
+
+  uint64_t GetN() const;
+
+  // FIXME remove - must not be changed 
+  uint64_t SetN(uint64_t n);
+
  private:
   Node* head_ = nullptr;
+  Node* tail_ = nullptr;
+  std::list<Node*> skip_list_;
+  uint64_t size_ = 0;
+  // uint64_t nodes_before_skip_list_ = 0;
+  /// Number of nodes for which fast migrations are supported
+  uint64_t n_;
   Spinlock lock_;
 };
 
