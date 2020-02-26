@@ -84,7 +84,7 @@ struct AllocatedBlock {
 
   bool IsFullyInitialized() const;
 
-  void GetNextPageBatch(char** start, uint64_t* size);
+  void GetNextPageBatch(uint64_t size_n_pages, char** start, uint64_t* size);
 };
 
 /// Pool allocator for a specific allocation size and numa node. \n
@@ -92,7 +92,7 @@ class NumaPoolAllocator {
  public:
   static uint64_t RoundUpTo(uint64_t number, uint64_t multiple);
 
-  NumaPoolAllocator(uint64_t size, int nid);
+  NumaPoolAllocator(uint64_t size, int nid, uint64_t size_n_pages, double growth_rate);
 
   ~NumaPoolAllocator();
 
@@ -104,7 +104,8 @@ class NumaPoolAllocator {
 
  private:
   static constexpr uint64_t kMetadataSize = 8;
-  static constexpr double kGrowthFactor = 2;
+  uint64_t size_n_pages_;
+  double growth_rate_;
   uint64_t num_elements_per_n_pages_;
   uint64_t total_size_ = 0;
   uint64_t size_;
@@ -122,8 +123,9 @@ class NumaPoolAllocator {
 
 class PoolAllocator {
  public:
-  explicit PoolAllocator(std::size_t size);
+  PoolAllocator(std::size_t size, uint64_t size_n_pages, double growth_rate);
 
+  PoolAllocator(PoolAllocator&& other);
   PoolAllocator(const PoolAllocator& other) = delete;
 
   ~PoolAllocator();
@@ -140,18 +142,19 @@ class PoolAllocator {
 
 class MemoryManager {
  public:
-   // TODO: sysconf(_SC_PAGESIZE)
-   static constexpr uint64_t kPageSize = 4096;
-   static constexpr uint64_t kPageShift = 12;
-   static constexpr uint64_t kNumPagesAlignedShift = 8;
-   static constexpr uint64_t kNumPagesAligned = (1 << kNumPagesAlignedShift);
-   static constexpr uint64_t kSizeNPages = 1 << (kPageShift + kNumPagesAlignedShift);
+   MemoryManager();
 
   void* New(std::size_t size);
 
   void Delete(void* p);
 
  private:
+   uint64_t page_size_;
+   uint64_t page_shift_;
+   uint64_t aligned_pages_shift_;
+   uint64_t aligned_pages_;
+   uint64_t size_n_pages_;
+
   std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator> allocators_;
 };
 

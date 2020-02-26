@@ -206,42 +206,44 @@ TEST(ListTest, PushFrontPushBackN_LargeScale) {
 
 // -----------------------------------------------------------------------------
 TEST(AllocatedBlock, PerfectAligned) {
-  auto* end = reinterpret_cast<char*>(2*MemoryManager::kSizeNPages);
+  uint64_t size_n_pages = 65536;
+  auto* end = reinterpret_cast<char*>(2*size_n_pages);
   AllocatedBlock block = {0, end, 0};
   EXPECT_FALSE(block.IsFullyInitialized());
 
   char* batch = nullptr;
   uint64_t size = 0;
-  block.GetNextPageBatch(&batch, &size);
+  block.GetNextPageBatch(size_n_pages, &batch, &size);
   EXPECT_EQ(0, batch);
-  EXPECT_EQ(MemoryManager::kSizeNPages, size);
+  EXPECT_EQ(size_n_pages, size);
 
   EXPECT_FALSE(block.IsFullyInitialized());
 
-  block.GetNextPageBatch(&batch, &size);
-  EXPECT_EQ(reinterpret_cast<char*>(MemoryManager::kSizeNPages), batch);
-  EXPECT_EQ(MemoryManager::kSizeNPages, size);
+  block.GetNextPageBatch(size_n_pages, &batch, &size);
+  EXPECT_EQ(reinterpret_cast<char*>(size_n_pages), batch);
+  EXPECT_EQ(size_n_pages, size);
 
   EXPECT_TRUE(block.IsFullyInitialized());
 }
 
 TEST(AllocatedBlock, NotPerfectlyAligned) {
+  uint64_t size_n_pages = 65536;
   auto* start = reinterpret_cast<char*>(4096);
-  auto* end = reinterpret_cast<char*>(2*MemoryManager::kSizeNPages+4096);
-  auto* initialized = reinterpret_cast<char*>(MemoryManager::kSizeNPages);
+  auto* end = reinterpret_cast<char*>(2*size_n_pages+4096);
+  auto* initialized = reinterpret_cast<char*>(size_n_pages);
   AllocatedBlock block = {start, end, initialized};
   EXPECT_FALSE(block.IsFullyInitialized());
 
   char* batch = nullptr;
   uint64_t size = 0;
-  block.GetNextPageBatch(&batch, &size);
+  block.GetNextPageBatch(size_n_pages, &batch, &size);
   EXPECT_EQ(initialized, batch);
-  EXPECT_EQ(MemoryManager::kSizeNPages, size);
+  EXPECT_EQ(size_n_pages, size);
 
   EXPECT_FALSE(block.IsFullyInitialized());
 
-  block.GetNextPageBatch(&batch, &size);
-  EXPECT_EQ(reinterpret_cast<char*>(2*MemoryManager::kSizeNPages), batch);
+  block.GetNextPageBatch(size_n_pages, &batch, &size);
+  EXPECT_EQ(reinterpret_cast<char*>(2*size_n_pages), batch);
   EXPECT_EQ(4096u, size);
 
   EXPECT_TRUE(block.IsFullyInitialized());
@@ -259,6 +261,9 @@ TEST(NumaPoolAllocatorTest, RoundUpTo) {
 TEST(MemoryManagerTest, New) {
   Simulation simulation(TEST_NAME);
 
+  uint64_t page_shift = static_cast<uint64_t>(std::log2(sysconf(_SC_PAGESIZE)));
+  uint64_t aligned_pages_shift_ = 8;
+
   for (uint64_t i = 0; i < 1000; ++i) {
     auto* so = new Cell();
     ASSERT_TRUE(so != nullptr);
@@ -266,8 +271,8 @@ TEST(MemoryManagerTest, New) {
     // check if we can find the numa pool allocator pointer at the beginning of
     // the N aligned pages that is used to free the memory once `so` is deleted
     auto addr = reinterpret_cast<uint64_t>(so);
-    auto page_number = addr >> (MemoryManager::kPageShift + MemoryManager::kNumPagesAlignedShift);
-    auto* page_addr = reinterpret_cast<char*>(page_number << (MemoryManager::kPageShift + MemoryManager::kNumPagesAlignedShift));
+    auto page_number = addr >> (page_shift + aligned_pages_shift_);
+    auto* page_addr = reinterpret_cast<char*>(page_number << (page_shift + aligned_pages_shift_));
 
     auto* npa = *reinterpret_cast<NumaPoolAllocator**>(page_addr);
 

@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/memory/memory_manager.h"
+#include <unistd.h>
 #include <cmath>
 #include <cstdlib>
 #include <mutex>
@@ -125,18 +126,19 @@ bool AllocatedBlock::IsFullyInitialized() const {
   return initialized_until_ >= end_pointer_;
 }
 
-void AllocatedBlock::GetNextPageBatch(char** start, uint64_t* size) {
+void AllocatedBlock::GetNextPageBatch(uint64_t size_n_pages, char** start, uint64_t* size) {
   *start = initialized_until_;
-  initialized_until_ += MemoryManager::kSizeNPages;
-  *size = MemoryManager::kSizeNPages;
+  initialized_until_ += size_n_pages;
+  *size = size_n_pages;
   if(initialized_until_ > end_pointer_) {
     *size = end_pointer_ - *start;
   }
 }
 
 // -----------------------------------------------------------------------------
-NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
-    : num_elements_per_n_pages_((MemoryManager::kSizeNPages - kMetadataSize) / size),
+NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid, uint64_t size_n_pages, double growth_rate)
+    : size_n_pages_(size_n_pages), growth_rate_(growth_rate),
+      num_elements_per_n_pages_((size_n_pages_ - kMetadataSize) / size),
       size_(size), nid_(nid), tinfo_(ThreadInfo::GetInstance()),
       central_(num_elements_per_n_pages_) {
   free_lists_.reserve(tinfo_->GetThreadsInNumaNode(nid));
@@ -144,7 +146,7 @@ NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
     free_lists_.emplace_back(num_elements_per_n_pages_);
   }
   // To get one block of N aligned pages, at least 2 N pages must be allocated
-  AllocNewMemoryBlock(MemoryManager::kSizeNPages * 2);
+  AllocNewMemoryBlock(size_n_pages_ * 2);
 }
 
 NumaPoolAllocator::~NumaPoolAllocator() {
@@ -178,13 +180,13 @@ void* NumaPoolAllocator::New(int ntid) {
   } else {
     lock_.lock();
     if (memory_blocks_.back().IsFullyInitialized()) {
-      auto size = total_size_ * (kGrowthFactor - 1.0);
-      size = RoundUpTo(size, MemoryManager::kSizeNPages);
+      auto size = total_size_ * (growth_rate_ - 1.0);
+      size = RoundUpTo(size, size_n_pages_);
       AllocNewMemoryBlock(size);
     }
     char* start_pointer;
     uint64_t size;
-    memory_blocks_.back().GetNextPageBatch(&start_pointer, &size);
+    memory_blocks_.back().GetNextPageBatch(size_n_pages_, &start_pointer, &size);
     lock_.unlock();
     InitializeNPages(&tl_list, start_pointer, size);
     auto *ret = tl_list.PopFront();
@@ -207,8 +209,7 @@ uint64_t NumaPoolAllocator::GetSize() const { return size_; }
 
 void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
   // check if size is multiple of N pages aligned
-  uint64_t size_n_pages = MemoryManager::kSizeNPages;
-  assert((size & (size_n_pages -1)) == 0
+  assert((size & (size_n_pages_ -1)) == 0
     && "Size must be a multiple of MemoryManager::kSizeNPages");
 #ifdef __APPLE__
   void* block = malloc(size);
@@ -219,14 +220,14 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
     Log::Fatal("NumaPoolAllocator::AllocNewMemoryBlock", "Allocation failed");
   }
   total_size_ += size;
-  auto n_pages_aligned = RoundUpTo(reinterpret_cast<uint64_t>(block), size_n_pages);
+  auto n_pages_aligned = RoundUpTo(reinterpret_cast<uint64_t>(block), size_n_pages_);
   auto* start = reinterpret_cast<char*>(block);
   char* end = start + size;
   memory_blocks_.push_back({start, end, reinterpret_cast<char*>(n_pages_aligned)});
 }
 
 void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block, uint64_t mem_block_size) {
-  assert((reinterpret_cast<uint64_t>(block) & (MemoryManager::kSizeNPages -1)) == 0 && "block is not N page aligned");
+  assert((reinterpret_cast<uint64_t>(block) & (size_n_pages_ -1)) == 0 && "block is not N page aligned");
   auto* block_npa = reinterpret_cast<NumaPoolAllocator**>(block);
   *block_npa = this;
 
@@ -269,12 +270,15 @@ uint64_t NumaPoolAllocator::RoundUpTo(uint64_t number, uint64_t multiple) {
 }
 
 // -----------------------------------------------------------------------------
-PoolAllocator::PoolAllocator(std::size_t size)
+PoolAllocator::PoolAllocator(std::size_t size, uint64_t size_n_pages, double growth_rate)
     : size_(size), tinfo_(ThreadInfo::GetInstance()) {
   for (int nid = 0; nid < tinfo_->GetNumaNodes(); ++nid) {
-    numa_allocators_.push_back(new NumaPoolAllocator(size, nid));
+    numa_allocators_.push_back(new NumaPoolAllocator(size, nid, size_n_pages, growth_rate));
   }
 }
+
+PoolAllocator::PoolAllocator(PoolAllocator&& other) : size_(other.size_),
+  tinfo_(other.tinfo_), numa_allocators_(std::move(other.numa_allocators_)) {}
 
 PoolAllocator::~PoolAllocator() {
   for (auto* el : numa_allocators_) {
@@ -294,24 +298,30 @@ void* PoolAllocator::New(std::size_t size) {
 }  // namespace memory_manager_detail
 
 // -----------------------------------------------------------------------------
+MemoryManager::MemoryManager() :
+ page_size_(sysconf(_SC_PAGESIZE)),
+ page_shift_(static_cast<uint64_t>(std::log2(page_size_))) {
+   aligned_pages_shift_ = 8;
+   aligned_pages_ = (1 << aligned_pages_shift_);
+   size_n_pages_ = (1 << (page_shift_ + aligned_pages_shift_));
+}
+
 void* MemoryManager::New(std::size_t size) {
   auto it = allocators_.find(size);
   if (it != allocators_.end()) {
     return it->second.New(size);
   } else {
-    allocators_.emplace(size, size);
+    allocators_.insert(std::make_pair(size, std::move(memory_manager_detail::PoolAllocator(size, size_n_pages_, 2.0))));
     return New(size);
   }
 }
 
 void MemoryManager::Delete(void* p) {
   auto addr = reinterpret_cast<uint64_t>(p);
-  auto page_number = addr >> (MemoryManager::kPageShift + MemoryManager::kNumPagesAlignedShift);
-  auto* page_addr = reinterpret_cast<char*>(page_number << (MemoryManager::kPageShift + MemoryManager::kNumPagesAlignedShift));
+  auto page_number = addr >> (page_shift_ + aligned_pages_shift_);
+  auto* page_addr = reinterpret_cast<char*>(page_number << (page_shift_ + aligned_pages_shift_));
   auto* npa = *reinterpret_cast<memory_manager_detail::NumaPoolAllocator**>(page_addr);
   npa->Delete(p);
 }
-
-constexpr uint64_t MemoryManager::kSizeNPages;
 
 }  // namespace bdm
