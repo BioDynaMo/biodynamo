@@ -162,13 +162,14 @@ void AllocatedBlock::GetNextPageBatch(char** start, uint64_t* size) {
 // -----------------------------------------------------------------------------
 NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
     : size_(size), nid_(nid), tinfo_(ThreadInfo::GetInstance()) {
-
+  // TODO remove code duplication - 8 is the size of the metadata at the
+  // beginning of each N aligned pages - duplicated in InializeNPages
   auto num_elements_fast_migrate = (MemoryManager::kSizeNPages - 8) / size;
   free_lists_.reserve(tinfo_->GetThreadsInNumaNode(nid));
   for (int i = 0; i < tinfo_->GetThreadsInNumaNode(nid); ++i) {
-    free_lists_.emplace_back(1024);
+    free_lists_.emplace_back(num_elements_fast_migrate);
   }
-  central_.SetN(1024);
+  central_.SetN(num_elements_fast_migrate);
   AllocNewMemoryBlock(MemoryManager::kSizeNPages * 2);
 }
 

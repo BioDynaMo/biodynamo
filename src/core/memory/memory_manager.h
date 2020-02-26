@@ -153,8 +153,8 @@ class MemoryManager {
    // TODO: sysconf(_SC_PAGESIZE)
    static constexpr uint64_t kPageSize = 4096;
    static constexpr uint64_t kPageShift = 12;
-   static constexpr uint64_t kNumPagesAlignedShift = 5;
-   static constexpr uint64_t kNumPagesAligned = (1 << 5);
+   static constexpr uint64_t kNumPagesAlignedShift = 8;
+   static constexpr uint64_t kNumPagesAligned = (1 << kNumPagesAlignedShift);
    static constexpr uint64_t kSizeNPages = 1 << (kPageShift + kNumPagesAlignedShift);
 
   static void* New(std::size_t size);
