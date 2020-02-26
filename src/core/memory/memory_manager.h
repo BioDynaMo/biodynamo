@@ -24,32 +24,26 @@
 #include "core/util/thread_info.h"
 
 namespace bdm {
+namespace memory_manager_detail {
 
 struct Node {
   Node* next = nullptr;
 };
 
+/// List to store free memory regions. \n
+/// Supports fast migration of N nodes to and from the list. \n
+/// N has to be set when the object is constructed. \n
+/// Fast migration is supported by maintaining a skip list.\n
 class List {
  public:
-  List() {}
-  List(uint64_t n);
+  /// \param n n is the number of elements that can be added and removed very
+  /// fast.
+  explicit List(uint64_t n);
+
   List(const List& other);
 
   Node* PopFront();
 
-  // void Push(Node* node) {
-  //   Node* tail = node;
-  //   while (tail->next != nullptr) {
-  //     tail = tail->next;
-  //   }
-  //   tail->next = head_->next;
-  //   head_ = node;
-  // }
-  //
-  // void PushThreadSafe(Node* node) {
-  //   std::lock_guard<Spinlock> guard(lock_);
-  //   Push(node);
-  // }
   void PushFront(Node* head);
 
   void PushFrontThreadSafe(Node* head);
@@ -70,9 +64,6 @@ class List {
 
   uint64_t GetN() const;
 
-  // FIXME remove - must not be changed
-  void SetN(uint64_t n);
-
  private:
   Node* head_ = nullptr;
   Node* tail_ = nullptr;
@@ -84,9 +75,11 @@ class List {
   Spinlock lock_;
 };
 
+/// Contains metadata for an allocated memory block.
 struct AllocatedBlock {
   char* start_pointer_;
   char* end_pointer_;
+  /// Memory to the left has been initialized.
   char* initialized_until_;
 
   bool IsFullyInitialized() const;
@@ -94,17 +87,12 @@ struct AllocatedBlock {
   void GetNextPageBatch(char** start, uint64_t* size);
 };
 
+/// Pool allocator for a specific allocation size and numa node. \n
 class NumaPoolAllocator {
  public:
   static uint64_t RoundUpTo(uint64_t number, uint64_t multiple);
 
   NumaPoolAllocator(uint64_t size, int nid);
-
-  // NumaPoolAllocator(const NumaPoolAllocator* other) :
-  //  total_size_(other->total_size_),
-  //  size_(other->size_),
-  //  nid_(other->nid_),
-  //  memory_blocks_(other->nid_),
 
   ~NumaPoolAllocator();
 
@@ -112,13 +100,16 @@ class NumaPoolAllocator {
 
   void Delete(void* p);
 
- // private: FIXME
-  const double kGrowthFactor = 2;
+  uint64_t GetSize() const;
+
+ private:
+  static constexpr uint64_t kMetadataSize = 8;
+  static constexpr double kGrowthFactor = 2;
+  uint64_t num_elements_per_n_pages_;
   uint64_t total_size_ = 0;
   uint64_t size_;
   int nid_;
   ThreadInfo* tinfo_;
-  // TODO rename to allocated_blocks_ ?
   std::vector<AllocatedBlock> memory_blocks_;
   std::vector<List> free_lists_;  // one per thread
   List central_;
@@ -129,24 +120,23 @@ class NumaPoolAllocator {
   void InitializeNPages(List* tl_list, char* block, uint64_t mem_block_size);
 };
 
-// FIXME move to separate source file
 class PoolAllocator {
  public:
-  PoolAllocator(std::size_t size);
+  explicit PoolAllocator(std::size_t size);
 
-  PoolAllocator(const PoolAllocator& other);
+  PoolAllocator(const PoolAllocator& other) = delete;
 
   ~PoolAllocator();
 
   void* New(std::size_t size);
-
-  void Delete(void* p);
 
  private:
   std::size_t size_;
   ThreadInfo* tinfo_;
   std::vector<NumaPoolAllocator*> numa_allocators_;
 };
+
+}  // namespace memory_manager_detail
 
 class MemoryManager {
  public:
@@ -162,7 +152,7 @@ class MemoryManager {
   static void Delete(void* p);
 
  private:
-  static std::unordered_map<std::size_t, PoolAllocator> allocators_;
+  static std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator> allocators_;
 };
 
 }  // namespace bdm

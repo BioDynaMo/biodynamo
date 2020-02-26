@@ -18,14 +18,14 @@
 #include <mutex>
 
 namespace bdm {
+namespace memory_manager_detail {
 
-List::List(uint64_t n) : n_(n) {
-  // TODO check if n_ is power of two -> otherwise fatal
-}
+List::List(uint64_t n) : n_(n) {}
 
-// TODO
-List::List(const List& other) : head_(other.head_)
-{}
+List::List(const List& other) : head_(other.head_), tail_(other.tail_),
+  skip_list_(other.skip_list_), size_(other.size_),
+  nodes_before_skip_list_(other.nodes_before_skip_list_),
+  n_(other.n_) {}
 
 Node* List::PopFront() {
   if (!Empty()) {
@@ -57,8 +57,6 @@ void List::PushFront(Node* head) {
   ++size_;
   ++nodes_before_skip_list_;
 
-  // (size_ + 1) mod n == 0
-  // if (((size_ - 1) & (n_ - 1)) == 0 && size_ > n_) {
   if (nodes_before_skip_list_ >= n_ && size_ > n_) {
     skip_list_.push_back(head_);
     nodes_before_skip_list_ = 0;
@@ -67,8 +65,6 @@ void List::PushFront(Node* head) {
 
 void List::PushFrontThreadSafe(Node* head) {
   std::lock_guard<Spinlock> guard(lock_);
-  // #pragma omp critical
-  // std::cout << this << " push front" << std::endl;
   PushFront(head);
 }
 
@@ -92,8 +88,6 @@ void List::PushBackN(Node* head, Node* tail) {
 
 void List::PushBackNThreadSafe(Node* head, Node* tail) {
   std::lock_guard<Spinlock> guard(lock_);
-  // #pragma omp critical
-  // std::cout << this << " push back N" << std::endl;
   PushBackN(head, tail);
 }
 
@@ -111,27 +105,10 @@ void List::PopBackN(Node** head, Node** tail) {
   tail_ = skip_list_.front();
   skip_list_.pop_front();
   size_ -= n_;
-
-  // if (!Empty()) {
-  //   *head = head_;
-  //   *tail = (*head)->next;
-  //   if (*tail == nullptr) {
-  //     head_ = nullptr;
-  //     return;
-  //   }
-  //   --n;
-  //   while (--n > 0 && (*tail)->next != nullptr) {
-  //     *tail = (*tail)->next;
-  //   }
-  //   head_ = (*tail)->next;
-  //   (*tail)->next = nullptr;
-  // }
 }
 
 void List::PopBackNThreadSafe(Node** head, Node** tail) {
   std::lock_guard<Spinlock> guard(lock_);
-  // #pragma omp critical
-  // std::cout << this << " pop back N "  << " size " << size_  << " sk-size " << skip_list_.size() << " nbsk " << nodes_before_skip_list_ << std::endl;
   PopBackN(head, tail);
 }
 
@@ -142,8 +119,6 @@ bool List::CanPopBackN() const { return skip_list_.size() != 0; }
 uint64_t List::Size() const { return size_; }
 
 uint64_t List::GetN() const { return n_; }
-
-void List::SetN(uint64_t n)  { n_ = n; }
 
 // -----------------------------------------------------------------------------
 bool AllocatedBlock::IsFullyInitialized() const {
@@ -161,15 +136,14 @@ void AllocatedBlock::GetNextPageBatch(char** start, uint64_t* size) {
 
 // -----------------------------------------------------------------------------
 NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid)
-    : size_(size), nid_(nid), tinfo_(ThreadInfo::GetInstance()) {
-  // TODO remove code duplication - 8 is the size of the metadata at the
-  // beginning of each N aligned pages - duplicated in InializeNPages
-  auto num_elements_fast_migrate = (MemoryManager::kSizeNPages - 8) / size;
+    : num_elements_per_n_pages_((MemoryManager::kSizeNPages - kMetadataSize) / size),
+      size_(size), nid_(nid), tinfo_(ThreadInfo::GetInstance()),
+      central_(num_elements_per_n_pages_) {
   free_lists_.reserve(tinfo_->GetThreadsInNumaNode(nid));
   for (int i = 0; i < tinfo_->GetThreadsInNumaNode(nid); ++i) {
-    free_lists_.emplace_back(num_elements_fast_migrate);
+    free_lists_.emplace_back(num_elements_per_n_pages_);
   }
-  central_.SetN(num_elements_fast_migrate);
+  // To get one block of N aligned pages, at least 2 N pages must be allocated
   AllocNewMemoryBlock(MemoryManager::kSizeNPages * 2);
 }
 
@@ -204,7 +178,6 @@ void* NumaPoolAllocator::New(int ntid) {
   } else {
     lock_.lock();
     if (memory_blocks_.back().IsFullyInitialized()) {
-      // FIXME growth factor - grows a lot faster
       auto size = total_size_ * (kGrowthFactor - 1.0);
       size = RoundUpTo(size, MemoryManager::kSizeNPages);
       AllocNewMemoryBlock(size);
@@ -230,20 +203,13 @@ void NumaPoolAllocator::Delete(void* p) {
   }
 }
 
-void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
-  // check again if it is empty or if an allocation happened while a thread
-  // was put to sleep by the lock above.
-  // FIXME problematic if an object gets freed before first thread gets to
-  // here
-  // if (!central_.Empty()) {
-  //   return;
-  // }
+uint64_t NumaPoolAllocator::GetSize() const { return size_; }
 
-  // TODO improve text
+void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
   // check if size is multiple of N pages aligned
   uint64_t size_n_pages = MemoryManager::kSizeNPages;
   assert((size & (size_n_pages -1)) == 0
-    && "Size must be a multiple of page_size * num_pages_aligned");
+    && "Size must be a multiple of MemoryManager::kSizeNPages");
 #ifdef __APPLE__
   void* block = malloc(size);
 #else
@@ -257,31 +223,16 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
   auto* start = reinterpret_cast<char*>(block);
   char* end = start + size;
   memory_blocks_.push_back({start, end, reinterpret_cast<char*>(n_pages_aligned)});
-
-  // Node *head = nullptr, *tail = nullptr;
-  // CreateFreeList(block, size, &head, &tail);
-  // ProcessPages(block, size);
-  // assert(central_.Empty()); // FIXME remove
-  // central_.PushThreadSafe(head, tail);
 }
 
 void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block, uint64_t mem_block_size) {
-  // TODO assert N page aligned
+  assert((reinterpret_cast<uint64_t>(block) & (MemoryManager::kSizeNPages -1)) == 0 && "block is not N page aligned");
   auto* block_npa = reinterpret_cast<NumaPoolAllocator**>(block);
   *block_npa = this;
 
-  // TODO cache line allign? 64
-  uint64_t metadata_size = sizeof(NumaPoolAllocator*);
-  auto* start_pointer = static_cast<char*>(block + metadata_size);
+  auto* start_pointer = static_cast<char*>(block + kMetadataSize);
   auto* pointer = start_pointer;
-  const uint64_t num_elements = (mem_block_size - metadata_size) / size_;
-  // FIXME remove
-  // const auto* end_pointer = start_pointer + mem_block_size - size_;
-  // std::cout << "block " << block << std::endl;
-  // std::cout << "mbs   " << mem_block_size << std::endl;
-  // std::cout << "size  " << size_ << std::endl;
-  // std::cout << "ep    " << (void*)end_pointer << std::endl;
-  // std::cout << "epo   " << end_pointer - static_cast<char*>(block) << std::endl;
+  const uint64_t num_elements = (mem_block_size - kMetadataSize) / size_;
 
   pointer += (num_elements - 1) * size_;
   if (tl_list->GetN() == num_elements) {
@@ -310,23 +261,6 @@ void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block, uint64_t me
       pointer -= size_;
     }
   }
-
-  // FIXME remove
-  // assert(tail->next == nullptr);
-  // Node* n = *head;
-  // // std::cout << "    " << ((char*) n) - start_pointer << std::endl;
-  // uint64_t cnt = 1;
-  // while (n->next != nullptr) {
-  //   n = n->next;
-  //   // std::cout << "    " << ((char*) n) - start_pointer << " " << (void*) n << std::endl;
-  //   assert((void*) n >= block);
-  //   assert((char*) n <= end_pointer);
-  //   cnt++;
-  // }
-  // assert(cnt == mem_block_size / size_);
-  // assert(n == tail);
-  // FIXME remove end
-
 }
 
 uint64_t NumaPoolAllocator::RoundUpTo(uint64_t number, uint64_t multiple) {
@@ -339,15 +273,6 @@ PoolAllocator::PoolAllocator(std::size_t size)
     : size_(size), tinfo_(ThreadInfo::GetInstance()) {
   for (int nid = 0; nid < tinfo_->GetNumaNodes(); ++nid) {
     numa_allocators_.push_back(new NumaPoolAllocator(size, nid));
-  }
-}
-
-PoolAllocator::PoolAllocator(const PoolAllocator& other)
-    : size_(other.size_), tinfo_(ThreadInfo::GetInstance()) {
-  // FIXME not a real copy ctor...
-  // Alternative is unique_ptr
-  for (int nid = 0; nid < tinfo_->GetNumaNodes(); ++nid) {
-    numa_allocators_.push_back(new NumaPoolAllocator(size_, nid));
   }
 }
 
@@ -366,9 +291,7 @@ void* PoolAllocator::New(std::size_t size) {
   return numa_allocators_[nid]->New(tinfo_->GetNumaThreadId(tid));
 }
 
-void PoolAllocator::Delete(void* p) {
-  // TODO
-}
+}  // namespace memory_manager_detail
 
 // -----------------------------------------------------------------------------
 void* MemoryManager::New(std::size_t size) {
@@ -376,7 +299,7 @@ void* MemoryManager::New(std::size_t size) {
   if (it != allocators_.end()) {
     return it->second.New(size);
   } else {
-    allocators_.emplace(size, PoolAllocator(size));
+    allocators_.emplace(size, size);
     return New(size);
   }
 }
@@ -385,10 +308,11 @@ void MemoryManager::Delete(void* p) {
   auto addr = reinterpret_cast<uint64_t>(p);
   auto page_number = addr >> (MemoryManager::kPageShift + MemoryManager::kNumPagesAlignedShift);
   auto* page_addr = reinterpret_cast<char*>(page_number << (MemoryManager::kPageShift + MemoryManager::kNumPagesAlignedShift));
-  auto* npa = *reinterpret_cast<NumaPoolAllocator**>(page_addr);
+  auto* npa = *reinterpret_cast<memory_manager_detail::NumaPoolAllocator**>(page_addr);
   npa->Delete(p);
 }
 
-std::unordered_map<std::size_t, PoolAllocator> MemoryManager::allocators_;
+std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator> MemoryManager::allocators_;
 constexpr uint64_t MemoryManager::kSizeNPages;
+
 }  // namespace bdm

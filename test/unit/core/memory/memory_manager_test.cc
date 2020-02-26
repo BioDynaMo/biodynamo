@@ -18,6 +18,7 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
+namespace memory_manager_detail {
 
 TEST(ListTest, PushFrontPopFront) {
   List l(4);
@@ -203,121 +204,6 @@ TEST(ListTest, PushFrontPushBackN_LargeScale) {
 
 }
 
-// Pop less elements than are in the list
-// TEST(ListTest, PopNThreadSafe_Less) {
-//   List l;
-//
-//   Node n1;
-//   Node n2;
-//   Node n3;
-//   Node n4;
-//
-//   n1.next = &n2;
-//   n2.next = &n3;
-//   n3.next = &n4;
-//
-//   l.PushBackN(&n1, &n4);
-//
-//   Node *head = nullptr;
-//   Node *tail = nullptr;
-//   l.PopNThreadSafe(3, &head, &tail);
-//
-//   EXPECT_EQ(head, &n1);
-//   EXPECT_EQ(tail, &n3);
-//
-//   EXPECT_FALSE(l.Empty());
-//
-//   EXPECT_EQ(l.PopFront(), &n4);
-//   EXPECT_TRUE(l.Empty());
-// }
-//
-// // Pop more elements than are in the list
-// TEST(ListTest, PopNThreadSafe_More) {
-//   List l;
-//
-//   Node n1;
-//   Node n2;
-//   Node n3;
-//   Node n4;
-//
-//   n1.next = &n2;
-//   n2.next = &n3;
-//   n3.next = &n4;
-//
-//   l.Push(&n1, &n4);
-//
-//   Node *head = nullptr;
-//   Node *tail = nullptr;
-//   l.PopNThreadSafe(8, &head, &tail);
-//
-//   EXPECT_EQ(head, &n1);
-//   EXPECT_EQ(tail, &n4);
-//
-//   EXPECT_TRUE(l.Empty());
-// }
-//
-// // Pop exeaclty the number of elements that are in the list
-// TEST(ListTest, PopNThreadSafe_Equal) {
-//   List l;
-//
-//   Node n1;
-//   Node n2;
-//   Node n3;
-//   Node n4;
-//
-//   n1.next = &n2;
-//   n2.next = &n3;
-//   n3.next = &n4;
-//
-//   l.Push(&n1, &n4);
-//
-//   Node *head = nullptr;
-//   Node *tail = nullptr;
-//   l.PopNThreadSafe(4, &head, &tail);
-//
-//   EXPECT_EQ(head, &n1);
-//   EXPECT_EQ(tail, &n4);
-//
-//   EXPECT_TRUE(l.Empty());
-// }
-//
-// TEST(ListTest, PopNThreadSafe_Twice) {
-//   List l;
-//
-//   Node n1;
-//   Node n2;
-//   Node n3;
-//   Node n4;
-//
-//   n1.next = &n2;
-//   n2.next = &n3;
-//   n3.next = &n4;
-//
-//   l.Push(&n1, &n4);
-//
-//   {
-//     Node *head = nullptr;
-//     Node *tail = nullptr;
-//     l.PopNThreadSafe(2, &head, &tail);
-//
-//     EXPECT_EQ(head, &n1);
-//     EXPECT_EQ(tail, &n2);
-//     EXPECT_EQ(tail->next, nullptr);
-//     EXPECT_FALSE(l.Empty());
-//   }
-//
-//   {
-//     Node *head = nullptr;
-//     Node *tail = nullptr;
-//     l.PopNThreadSafe(2, &head, &tail);
-//
-//     EXPECT_EQ(head, &n3);
-//     EXPECT_EQ(tail, &n4);
-//     EXPECT_EQ(tail->next, nullptr);
-//     EXPECT_TRUE(l.Empty());
-//   }
-// }
-
 // -----------------------------------------------------------------------------
 TEST(AllocatedBlock, PerfectAligned) {
   auto* end = reinterpret_cast<char*>(2*MemoryManager::kSizeNPages);
@@ -385,9 +271,10 @@ TEST(MemoryManagerTest, New) {
 
     auto* npa = *reinterpret_cast<NumaPoolAllocator**>(page_addr);
 
-    EXPECT_EQ(sizeof(Cell), npa->size_);
+    EXPECT_EQ(sizeof(Cell), npa->GetSize());
     delete so;
   }
 }
 
+}  // namespace memory_manager_detail
 }  // namespace bdm
