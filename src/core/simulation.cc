@@ -205,7 +205,11 @@ void Simulation::Initialize(CommandLineOptions* clo,
 }
 
 void Simulation::InitializeMembers() {
-  mem_mgr_ = new MemoryManager();
+  if (param_->use_bdm_mem_mgr_) {
+    mem_mgr_ = new MemoryManager(param_->mem_mgr_aligned_pages_shift_,
+                                 param_->mem_mgr_growth_rate_,
+                                 param_->mem_mgr_max_mem_per_thread_);
+  }
   so_uid_generator_ = new SoUidGenerator();
   if (param_->debug_numa_) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;

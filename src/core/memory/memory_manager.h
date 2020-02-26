@@ -142,13 +142,15 @@ class PoolAllocator {
 
 class MemoryManager {
  public:
-   MemoryManager();
+   MemoryManager(uint64_t aligned_pages_shift, double growth_rate, uint64_t max_mem_per_thread);
 
   void* New(std::size_t size);
 
   void Delete(void* p);
 
  private:
+   double growth_rate_;
+   uint64_t max_mem_per_thread_;
    uint64_t page_size_;
    uint64_t page_shift_;
    uint64_t aligned_pages_shift_;

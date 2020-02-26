@@ -50,6 +50,7 @@
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />
     <class pattern="std::vector<bdm::memory_manager_detail::*>" />
+    <class name="bdm::MemoryManager" />
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />
     <class name="bdm::Grid" />
