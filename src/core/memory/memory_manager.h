@@ -18,6 +18,7 @@
 #include <cassert>
 #include <list>
 #include <unordered_map>
+#include <vector>
 
 #include "core/util/numa.h"
 #include "core/util/spinlock.h"

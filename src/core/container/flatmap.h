@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_CONTAINER_UNORDERED_FLATMAP_H_
-#define CORE_CONTAINER_UNORDERED_FLATMAP_H_
+#ifndef CORE_CONTAINER_FLATMAP_H_
+#define CORE_CONTAINER_FLATMAP_H_
 
 #include <cassert>
 #include <cstddef>
@@ -102,4 +102,4 @@ class UnorderedFlatmap {
 
 }  // namespace bdm
 
-#endif  // CORE_CONTAINER_UNORDERED_FLATMAP_H_
+#endif  // CORE_CONTAINER_FLATMAP_H_
