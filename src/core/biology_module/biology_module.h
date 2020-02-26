@@ -78,13 +78,21 @@ struct BaseBiologyModule {
   bool Remove(EventId event) const { return (event & remove_mask_) != 0; }
 
   void* operator new(size_t size) {  // NOLINT
-    // return Simulation::GetActive()->GetMemoryManager()->New(size); // FIXME
-    return MemoryManager::New(size);
+    auto* mem_mgr = Simulation::GetActive()->GetMemoryManager();
+    if (mem_mgr) {
+      return mem_mgr->New(size);
+    } else {
+      return malloc(size);
+    }
   }
 
   void operator delete(void* p) {  // NOLINT
-    // Simulation::GetActive()->GetMemoryManager()->Delete(p); // FIXME
-    MemoryManager::Delete(p);
+    auto* mem_mgr = Simulation::GetActive()->GetMemoryManager();
+    if (mem_mgr) {
+      mem_mgr->Delete(p);
+    } else {
+      free(p);
+    }
   }
 
  private:

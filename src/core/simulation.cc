@@ -205,6 +205,7 @@ void Simulation::Initialize(CommandLineOptions* clo,
 }
 
 void Simulation::InitializeMembers() {
+  mem_mgr_ = new MemoryManager();
   so_uid_generator_ = new SoUidGenerator();
   if (param_->debug_numa_) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;

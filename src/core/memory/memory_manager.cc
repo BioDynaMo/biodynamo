@@ -312,7 +312,6 @@ void MemoryManager::Delete(void* p) {
   npa->Delete(p);
 }
 
-std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator> MemoryManager::allocators_;
 constexpr uint64_t MemoryManager::kSizeNPages;
 
 }  // namespace bdm

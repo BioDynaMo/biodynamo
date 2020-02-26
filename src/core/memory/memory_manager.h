@@ -147,12 +147,12 @@ class MemoryManager {
    static constexpr uint64_t kNumPagesAligned = (1 << kNumPagesAlignedShift);
    static constexpr uint64_t kSizeNPages = 1 << (kPageShift + kNumPagesAlignedShift);
 
-  static void* New(std::size_t size);
+  void* New(std::size_t size);
 
-  static void Delete(void* p);
+  void Delete(void* p);
 
  private:
-  static std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator> allocators_;
+  std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator> allocators_;
 };
 
 }  // namespace bdm
