@@ -92,7 +92,8 @@ class NumaPoolAllocator {
  public:
   static uint64_t RoundUpTo(uint64_t number, uint64_t multiple);
 
-  NumaPoolAllocator(uint64_t size, int nid, uint64_t size_n_pages, double growth_rate, uint64_t max_mem_per_thread);
+  NumaPoolAllocator(uint64_t size, int nid, uint64_t size_n_pages,
+                    double growth_rate, uint64_t max_mem_per_thread);
 
   ~NumaPoolAllocator();
 
@@ -124,7 +125,8 @@ class NumaPoolAllocator {
 
 class PoolAllocator {
  public:
-  PoolAllocator(std::size_t size, uint64_t size_n_pages, double growth_rate, uint64_t max_mem_per_thread);
+  PoolAllocator(std::size_t size, uint64_t size_n_pages, double growth_rate,
+                uint64_t max_mem_per_thread);
 
   PoolAllocator(PoolAllocator&& other);
   PoolAllocator(const PoolAllocator& other) = delete;
@@ -143,22 +145,24 @@ class PoolAllocator {
 
 class MemoryManager {
  public:
-   MemoryManager(uint64_t aligned_pages_shift, double growth_rate, uint64_t max_mem_per_thread);
+  MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
+                uint64_t max_mem_per_thread);
 
   void* New(std::size_t size);
 
   void Delete(void* p);
 
  private:
-   double growth_rate_;
-   uint64_t max_mem_per_thread_;
-   uint64_t page_size_;
-   uint64_t page_shift_;
-   uint64_t aligned_pages_shift_;
-   uint64_t aligned_pages_;
-   uint64_t size_n_pages_;
+  double growth_rate_;
+  uint64_t max_mem_per_thread_;
+  uint64_t page_size_;
+  uint64_t page_shift_;
+  uint64_t aligned_pages_shift_;
+  uint64_t aligned_pages_;
+  uint64_t size_n_pages_;
 
-  std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator> allocators_;
+  std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator>
+      allocators_;
 };
 
 }  // namespace bdm

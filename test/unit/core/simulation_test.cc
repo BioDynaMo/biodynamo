@@ -164,8 +164,7 @@ class SimulationTest : public ::testing::Test {
                 abs_error<double>::value);
     EXPECT_FALSE(param->use_bdm_mem_mgr_);
     EXPECT_EQ(7u, param->mem_mgr_aligned_pages_shift_);
-    EXPECT_NEAR(1.123, param->mem_mgr_growth_rate_,
-                abs_error<double>::value);
+    EXPECT_NEAR(1.123, param->mem_mgr_growth_rate_, abs_error<double>::value);
     EXPECT_EQ(987654u, param->mem_mgr_max_mem_per_thread_);
 
     // development group

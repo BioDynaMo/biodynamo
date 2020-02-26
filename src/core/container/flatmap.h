@@ -18,9 +18,8 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <vector>
 #include <utility>
-#include <iostream> // FIXME remove
+#include <vector>
 #include "core/util/string.h"
 
 namespace bdm {
@@ -28,17 +27,17 @@ namespace bdm {
 template <typename TKey, typename TValue>
 class UnorderedFlatmap {
  public:
-   using value_type = TValue;
-   using Iterator = std::pair<TKey, TValue>*;
-   using ConstIterator = const std::pair<TKey, TValue>*;
+  using value_type = TValue;
+  using Iterator = std::pair<TKey, TValue>*;
+  using ConstIterator = const std::pair<TKey, TValue>*;
 
-   UnorderedFlatmap() {}
+  UnorderedFlatmap() {}
 
-   void reserve(uint64_t new_capacity) {
-     if (new_capacity > size_ ) {
-       data_.resize(new_capacity);
-     }
-   }
+  void reserve(uint64_t new_capacity) {
+    if (new_capacity > size_) {
+      data_.resize(new_capacity);
+    }
+  }
 
   size_t size() const { return size_; }  // NOLINT
 
@@ -46,7 +45,8 @@ class UnorderedFlatmap {
 
   const TValue& at(const TKey& key) const {
     auto idx = FindIndexConst(key);
-    assert(idx < size_ && Concat("Key (", key, ") not found in UnorderedFlatmap").c_str());
+    assert(idx < size_ &&
+           Concat("Key (", key, ") not found in UnorderedFlatmap").c_str());
     return data_.at(idx).second;
   }
 
@@ -63,7 +63,9 @@ class UnorderedFlatmap {
 
   Iterator find(const TKey& key) { return &(data_[FindIndexConst(key)]); }
 
-  ConstIterator find(const TKey& key) const { return &(data_[FindIndexConst(key)]); }
+  ConstIterator find(const TKey& key) const {
+    return &(data_[FindIndexConst(key)]);
+  }
 
   Iterator begin() { return &(data_[0]); }
   ConstIterator begin() const { return &(data_[0]); }

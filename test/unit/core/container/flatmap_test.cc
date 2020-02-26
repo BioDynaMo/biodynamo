@@ -92,7 +92,7 @@ TEST(UnorderedFlatmapTest, ForEach) {
   map[10] = 5;
 
   int counter = 0;
-  for(auto& pair : map) {
+  for (auto& pair : map) {
     if (counter == 0) {
       EXPECT_EQ(2, pair.first);
       EXPECT_EQ(1, pair.second);
@@ -120,6 +120,5 @@ TEST(UnorderedFlatmapTest, Reserve) {
   map.reserve(10);
   EXPECT_EQ(2u, map.size());
 }
-
 
 }  // namespace bdm

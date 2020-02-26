@@ -169,8 +169,8 @@ TEST(ListTest, CreateRemoveSkipListEntry) {
 
   l.PushFront(&n1);
   l.PushFront(&n2);
-  l.PushFront(&n3); // skip list item should be created
-  l.PopFront();     // skip list item should be removed
+  l.PushFront(&n3);  // skip list item should be created
+  l.PopFront();      // skip list item should be removed
 
   l.PopBackN(&head, &tail);
   EXPECT_EQ(nullptr, head);
@@ -201,13 +201,12 @@ TEST(ListTest, PushFrontPushBackN_LargeScale) {
     EXPECT_TRUE(tail != nullptr);
   }
   EXPECT_EQ(2u, l.Size());
-
 }
 
 // -----------------------------------------------------------------------------
 TEST(AllocatedBlock, PerfectAligned) {
   uint64_t size_n_pages = 65536;
-  auto* end = reinterpret_cast<char*>(2*size_n_pages);
+  auto* end = reinterpret_cast<char*>(2 * size_n_pages);
   AllocatedBlock block = {0, end, 0};
   EXPECT_FALSE(block.IsFullyInitialized());
 
@@ -229,7 +228,7 @@ TEST(AllocatedBlock, PerfectAligned) {
 TEST(AllocatedBlock, NotPerfectlyAligned) {
   uint64_t size_n_pages = 65536;
   auto* start = reinterpret_cast<char*>(4096);
-  auto* end = reinterpret_cast<char*>(2*size_n_pages+4096);
+  auto* end = reinterpret_cast<char*>(2 * size_n_pages + 4096);
   auto* initialized = reinterpret_cast<char*>(size_n_pages);
   AllocatedBlock block = {start, end, initialized};
   EXPECT_FALSE(block.IsFullyInitialized());
@@ -243,7 +242,7 @@ TEST(AllocatedBlock, NotPerfectlyAligned) {
   EXPECT_FALSE(block.IsFullyInitialized());
 
   block.GetNextPageBatch(size_n_pages, &batch, &size);
-  EXPECT_EQ(reinterpret_cast<char*>(2*size_n_pages), batch);
+  EXPECT_EQ(reinterpret_cast<char*>(2 * size_n_pages), batch);
   EXPECT_EQ(4096u, size);
 
   EXPECT_TRUE(block.IsFullyInitialized());
@@ -272,7 +271,8 @@ TEST(MemoryManagerTest, New) {
     // the N aligned pages that is used to free the memory once `so` is deleted
     auto addr = reinterpret_cast<uint64_t>(so);
     auto page_number = addr >> (page_shift + aligned_pages_shift_);
-    auto* page_addr = reinterpret_cast<char*>(page_number << (page_shift + aligned_pages_shift_));
+    auto* page_addr = reinterpret_cast<char*>(
+        page_number << (page_shift + aligned_pages_shift_));
 
     auto* npa = *reinterpret_cast<NumaPoolAllocator**>(page_addr);
 
