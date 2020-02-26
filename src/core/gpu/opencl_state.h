@@ -2,13 +2,22 @@
 #define CORE_GPU_OPENCL_STATE_H_
 
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
+
+#ifdef __APPLE__
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#include "cl2.hpp"
+#else
+#define __CL_ENABLE_EXCEPTIONS
+#include <CL/cl.hpp>
+#endif
+
+namespace bdm {
+
 class OpenCLState {
  public:
-  static OpenCLState* GetInstance() {
-    static OpenCLState kInstance;
-    return &kInstance;
-  }
-
   /// Returns the OpenCL Context
   cl::Context* GetOpenCLContext() { return &opencl_context_; }
 
@@ -187,6 +196,24 @@ class OpenCLState {
   std::vector<cl::Device> opencl_devices_;    //!
   std::vector<cl::Program> opencl_programs_;  //!
 };
+
+}  // namespace bdm
+
+#else
+
+#include "core/util/log.h"
+
+namespace bdm {
+
+class OpenCLState {
+  static OpenCLState* GetInstance() {
+    Log::Fatal("OpenCLState::GetInstance",
+               "You did not compile BioDynaMo with OpenCL");
+    return nullptr;
+  }
+};
+
+}  // namespace bdm
 
 #endif  // defined(USE_OPENCL) && !defined(__ROOTCLING__)
 

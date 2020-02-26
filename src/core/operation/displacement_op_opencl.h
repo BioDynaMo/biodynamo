@@ -45,6 +45,7 @@ class DisplacementOpOpenCL {
     auto* grid = sim->GetGrid();
     auto* param = sim->GetParam();
     auto* rm = sim->GetResourceManager();
+    auto* ocl_state = sim->GetOpenCLState();
 
     // Check the number of NUMA domains on the system. Currently only 1 is
     // supported for GPU execution.
@@ -57,7 +58,6 @@ class DisplacementOpOpenCL {
 
     uint32_t num_objects = rm->GetNumSimObjects();
 
-    auto* ocl_state = OpenCLState::GetInstance();
     auto context = ocl_state->GetOpenCLContext();
     auto queue = ocl_state->GetOpenCLCommandQueue();
     auto programs = ocl_state->GetOpenCLProgramList();

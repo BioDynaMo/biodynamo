@@ -40,7 +40,6 @@
 #include "cuda_runtime_api.h"
 #endif  // USE_CUDA
 
-#include "core/gpu/opencl_state.h"
 #include "core/param/param.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
@@ -83,13 +82,14 @@ class GpuHelper {
 #endif  // USE_CUDA
 
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
-#define ClOk(err) \
-  OpenCLState::GetInstance()->ClAssert(err, __FILE__, __LINE__, true);
+#define ClOk(err)                                                              \
+  Simulation::GetActive()->GetOpenCLState()->ClAssert(err, __FILE__, __LINE__, \
+                                                      true);
 
   void CompileOpenCLKernels() {
     auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
-    auto* ocl_state = OpenCLState::GetInstance();
+    auto* ocl_state = sim->GetOpenCLState();
 
     std::vector<cl::Program>* all_programs = ocl_state->GetOpenCLProgramList();
     cl::Context* context = ocl_state->GetOpenCLContext();
@@ -141,7 +141,7 @@ class GpuHelper {
       // accessible elsewhere to create command queues and buffers from
       auto* sim = Simulation::GetActive();
       auto* param = sim->GetParam();
-      auto* ocl_state = OpenCLState::GetInstance();
+      auto* ocl_state = sim->GetOpenCLState();
 
       cl::Context* context = ocl_state->GetOpenCLContext();
       cl::CommandQueue* queue = ocl_state->GetOpenCLCommandQueue();

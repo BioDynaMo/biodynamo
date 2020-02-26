@@ -21,6 +21,7 @@
 #include "core/sim_object/so_uid.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
+#include "core/gpu/opencl_state.h"
 
 namespace bdm {
 
@@ -109,6 +110,9 @@ class Simulation {
   /// Returns all thread local execution contexts.
   std::vector<InPlaceExecutionContext*>& GetAllExecCtxts();
 
+  /// Return helper class for OpenCL environment
+  OpenCLState* GetOpenCLState();
+
   /// @see `unique_name_`
   const std::string& GetUniqueName() const;
 
@@ -137,8 +141,9 @@ class Simulation {
   Param* param_ = nullptr;
   SoUidGenerator* so_uid_generator_ = nullptr;  //!
   std::string name_;
-  Grid* grid_ = nullptr;            //!
-  Scheduler* scheduler_ = nullptr;  //!
+  Grid* grid_ = nullptr;              //!
+  Scheduler* scheduler_ = nullptr;    //!
+  OpenCLState* ocl_state_ = nullptr;  //!
   /// This id is unique for each simulation within the same process
   uint64_t id_ = 0;  //!
   /// cached value where `id_` is appended to `name_` if `id_` is

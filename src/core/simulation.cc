@@ -139,6 +139,7 @@ Simulation::~Simulation() {
     delete ectxt;
   }
   active_ = tmp;
+  delete ocl_state_;
 }
 
 void Simulation::Activate() { active_ = this; }
@@ -174,6 +175,8 @@ InPlaceExecutionContext* Simulation::GetExecutionContext() {
 std::vector<InPlaceExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
 }
+
+OpenCLState* Simulation::GetOpenCLState() { return ocl_state_; }
 
 /// Returns the name of the simulation
 const std::string& Simulation::GetUniqueName() const { return unique_name_; }
@@ -266,6 +269,8 @@ void Simulation::InitializeRuntimeParams(
     param_->use_gpu_ = true;
     param_->use_opencl_ = true;
   }
+
+  ocl_state_ = new OpenCLState();
 
   set_param(param_);
 
