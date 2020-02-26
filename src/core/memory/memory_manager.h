@@ -64,19 +64,21 @@ class List {
 
   bool Empty() const;
 
+  bool CanPopBackN() const;
+
   uint64_t Size() const;
 
   uint64_t GetN() const;
 
-  // FIXME remove - must not be changed 
-  uint64_t SetN(uint64_t n);
+  // FIXME remove - must not be changed
+  void SetN(uint64_t n);
 
  private:
   Node* head_ = nullptr;
   Node* tail_ = nullptr;
   std::list<Node*> skip_list_;
   uint64_t size_ = 0;
-  // uint64_t nodes_before_skip_list_ = 0;
+  uint64_t nodes_before_skip_list_ = 0;
   /// Number of nodes for which fast migrations are supported
   uint64_t n_;
   Spinlock lock_;

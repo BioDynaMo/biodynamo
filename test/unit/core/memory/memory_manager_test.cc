@@ -184,6 +184,25 @@ TEST(ListTest, CreateRemoveSkipListEntry) {
   EXPECT_EQ(2u, l.Size());
 }
 
+TEST(ListTest, PushFrontPushBackN_LargeScale) {
+  List l(4);
+
+  for (uint64_t i = 0; i < 402; i++) {
+    l.PushFrontThreadSafe(new Node());
+  }
+  EXPECT_EQ(402u, l.Size());
+
+  Node* head = nullptr;
+  Node* tail = nullptr;
+  for (uint64_t i = 0; i < 100; i++) {
+    l.PopBackNThreadSafe(&head, &tail);
+    EXPECT_TRUE(head != nullptr);
+    EXPECT_TRUE(tail != nullptr);
+  }
+  EXPECT_EQ(2u, l.Size());
+
+}
+
 // Pop less elements than are in the list
 // TEST(ListTest, PopNThreadSafe_Less) {
 //   List l;

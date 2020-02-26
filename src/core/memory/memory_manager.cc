@@ -35,10 +35,10 @@ Node* List::PopFront() {
       tail_ = nullptr;
     }
     --size_;
-    // --nodes_before_skip_list_;
+    --nodes_before_skip_list_;
     if (skip_list_.back() == ret) {
       skip_list_.pop_back();
-      // nodes_before_skip_list_ = n_;
+      nodes_before_skip_list_ = n_;
     }
     return ret;
   }
@@ -55,18 +55,20 @@ void List::PushFront(Node* head) {
     tail_ = head_;
   }
   ++size_;
-  // ++nodes_before_skip_list_;
+  ++nodes_before_skip_list_;
 
   // (size_ + 1) mod n == 0
-  if (((size_ - 1) & (n_ - 1)) == 0 && size_ > n_) {
-  // if (nodes_before_skip_list_ > n_) {
+  // if (((size_ - 1) & (n_ - 1)) == 0 && size_ > n_) {
+  if (nodes_before_skip_list_ >= n_ && size_ > n_) {
     skip_list_.push_back(head_);
-    // nodes_before_skip_list_ = 0;
+    nodes_before_skip_list_ = 0;
   }
 }
 
 void List::PushFrontThreadSafe(Node* head) {
   std::lock_guard<Spinlock> guard(lock_);
+  // #pragma omp critical
+  // std::cout << this << " push front" << std::endl;
   PushFront(head);
 }
 
@@ -78,7 +80,7 @@ void List::PushBackN(Node* head, Node* tail) {
     head_ = head;
     tail_ = tail;
     size_ = n_;
-    // nodes_before_skip_list_ = n_;
+    nodes_before_skip_list_ = n_;
     return;
   }
 
@@ -90,6 +92,8 @@ void List::PushBackN(Node* head, Node* tail) {
 
 void List::PushBackNThreadSafe(Node* head, Node* tail) {
   std::lock_guard<Spinlock> guard(lock_);
+  // #pragma omp critical
+  // std::cout << this << " push back N" << std::endl;
   PushBackN(head, tail);
 }
 
@@ -126,16 +130,20 @@ void List::PopBackN(Node** head, Node** tail) {
 
 void List::PopBackNThreadSafe(Node** head, Node** tail) {
   std::lock_guard<Spinlock> guard(lock_);
+  // #pragma omp critical
+  // std::cout << this << " pop back N "  << " size " << size_  << " sk-size " << skip_list_.size() << " nbsk " << nodes_before_skip_list_ << std::endl;
   PopBackN(head, tail);
 }
 
 bool List::Empty() const { return head_ == nullptr; }
 
+bool List::CanPopBackN() const { return skip_list_.size() != 0; }
+
 uint64_t List::Size() const { return size_; }
 
 uint64_t List::GetN() const { return n_; }
 
-uint64_t List::SetN(uint64_t n)  { n_ = n; }
+void List::SetN(uint64_t n)  { n_ = n; }
 
 // -----------------------------------------------------------------------------
 bool AllocatedBlock::IsFullyInitialized() const {
@@ -182,7 +190,7 @@ void* NumaPoolAllocator::New(int ntid) {
     auto *ret = tl_list.PopFront();
     assert(ret != nullptr);
     return ret;
-  } else if (central_.Size() > central_.GetN()) {
+  } else if (central_.CanPopBackN()) {
     Node *head = nullptr, *tail = nullptr;
     central_.PopBackNThreadSafe(&head, &tail);
     if (head == nullptr) {
