@@ -12,6 +12,15 @@
 //
 // -----------------------------------------------------------------------------
 
+double norm(double3);
+double squared_euclidian_distance(__global double*, uint, uint);
+int3 get_box_coordinates(double3, __constant int*, uint);
+int3 get_box_coordinates_2(uint, __constant uint*);
+uint get_box_id_2(int3,__constant uint*);
+uint get_box_id(double3, __constant uint*, __constant int*, uint);
+void compute_force(__global double*, __global double*, uint, uint, double3*);
+void default_force(__global double*, __global double*, uint, uint, ushort, __global uint*, double, double3*);
+
 double norm(double3 v) {
   return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
