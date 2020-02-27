@@ -188,8 +188,11 @@ TEST(ListTest, CreateRemoveSkipListEntry) {
 TEST(ListTest, PushFrontPushBackN_LargeScale) {
   List l(4);
 
-  for (uint64_t i = 0; i < 402; i++) {
-    l.PushFrontThreadSafe(new Node());
+  std::vector<Node> nodes;
+  nodes.resize(402);
+
+  for (uint64_t i = 0; i < nodes.size(); i++) {
+    l.PushFrontThreadSafe(&nodes[i]);
   }
   EXPECT_EQ(402u, l.Size());
 
