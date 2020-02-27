@@ -138,6 +138,9 @@ Simulation::~Simulation() {
   for (auto* ectxt : exec_ctxt_) {
     delete ectxt;
   }
+  if (mem_mgr_) {
+    delete mem_mgr_;
+  }
   active_ = tmp;
   delete ocl_state_;
 }
