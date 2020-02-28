@@ -55,6 +55,7 @@ class InSituPipeline : public vtkCPPipeline {
  public:
   vtkTypeMacro(InSituPipeline, vtkCPPipeline);
   InSituPipeline() {
+    std::cout << "InSituPipeline" << std::endl;
     this->pipeline_created_ = false;
 
     // Get current proxy manager
@@ -62,20 +63,20 @@ class InSituPipeline : public vtkCPPipeline {
     session_manager_ = proxy_manager_->GetActiveSessionProxyManager();
     controller_ = vtkSMParaViewPipelineControllerWithRendering::New();
     plugin_manager_ = vtkSMPluginManager::New();
-#ifdef __APPLE__
-    std::string plugin_path =
-        std::string(std::getenv("BDM_INSTALL_DIR")) +
-        "/biodynamo/lib/pv_plugin/libBDMGlyphFilter.dylib";
-#else
-    std::string plugin_path = std::string(std::getenv("BDM_INSTALL_DIR")) +
-                              "/biodynamo/lib/pv_plugin/libBDMGlyphFilter.so";
-#endif
-    // Load custom plugin to enable cylinder glyph scaling
-    if (!plugin_manager_->LoadLocalPlugin(plugin_path.c_str())) {
-      Fatal("LoadLocalPlugin",
-            "Was unable to load our custom visualzation plugin. Have you "
-            "sourced the BioDynaMo environment?");
-    }
+// #ifdef __APPLE__
+//     std::string plugin_path =
+//         std::string(std::getenv("BDM_INSTALL_DIR")) +
+//         "/biodynamo/lib/pv_plugin/libBDMGlyphFilter.dylib";
+// #else
+//     std::string plugin_path = std::string(std::getenv("BDM_INSTALL_DIR")) +
+//                               "/biodynamo/lib/pv_plugin/libBDMGlyphFilter.so";
+// #endif
+//     // Load custom plugin to enable cylinder glyph scaling
+//     if (!plugin_manager_->LoadLocalPlugin(plugin_path.c_str())) {
+//       Fatal("LoadLocalPlugin",
+//             "Was unable to load our custom visualzation plugin. Have you "
+//             "sourced the BioDynaMo environment?");
+//     }
   }
 
   virtual ~InSituPipeline() {
@@ -91,6 +92,8 @@ class InSituPipeline : public vtkCPPipeline {
   }
 
   int RequestDataDescription(vtkCPDataDescription* data_description) override {
+    std::cout << "RequestDataDescription " << std::endl;
+
     if (!data_description) {
       vtkWarningMacro(
           "The data description is empty. There is nothing to visualize!");
@@ -128,6 +131,7 @@ class InSituPipeline : public vtkCPPipeline {
   // 5. Add it to the map of producers
   void CreatePipeline(vtkCPDataDescription* data_description) {
     auto n_inputs = data_description->GetNumberOfInputDescriptions();
+    std::cout << "CreatePipeline " << n_inputs << std::endl;
     for (size_t i = 0; i < n_inputs; i++) {
       auto vtk_object = data_description->GetInputDescription(i)->GetGrid();
       auto object_name = data_description->GetInputDescriptionName(i);
@@ -293,6 +297,8 @@ class InSituPipeline : public vtkCPPipeline {
   }
 
   int CoProcess(vtkCPDataDescription* data_description) override {
+    std::cout << "CoProcess " << data_description->GetNumberOfInputDescriptions() << std::endl;
+
     if (!data_description) {
       vtkWarningMacro(
           "The data description is empty. There is nothing to visualize!");

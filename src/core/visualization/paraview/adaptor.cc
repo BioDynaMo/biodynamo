@@ -123,23 +123,23 @@ void ParaviewAdaptor::Initialize() {
       impl_->g_processor_->Initialize();
     }
 
-    if (param->live_visualization_ &&
-        impl_->g_processor_->GetNumberOfPipelines() != 0) {
-      Log::Fatal("ParaviewAdaptor",
-                 "Live visualization does not support multiple "
-                 "simulations. Turning off live visualization for ",
-                 sim->GetUniqueName());
-    } else if (param->python_paraview_pipeline_) {
+    // if (param->live_visualization_ &&
+    //     impl_->g_processor_->GetNumberOfPipelines() != 0) {
+    //   Log::Fatal("ParaviewAdaptor",
+    //              "Live visualization does not support multiple "
+    //              "simulations. Turning off live visualization for ",
+    //              sim->GetUniqueName());
+    // } else if (param->python_paraview_pipeline_) {
       vtkNew<vtkCPPythonScriptPipeline> pipeline;
       std::string python_script =
           std::string(std::getenv("BDM_SRC_DIR")) +
-          std::string("/visualization/paraview/simple_pipeline.py");
+          std::string("/core/visualization/paraview/simple_pipeline.py");
       pipeline->Initialize(python_script.c_str());
       impl_->g_processor_->AddPipeline(pipeline.GetPointer());
-    } else if (!exclusive_export_viz_) {
-      impl_->pipeline_ = new InSituPipeline();
-      impl_->g_processor_->AddPipeline(impl_->pipeline_);
-    }
+    // } else if (!exclusive_export_viz_) {
+    //   impl_->pipeline_ = new InSituPipeline();
+    //   impl_->g_processor_->AddPipeline(impl_->pipeline_);
+    // }
 
     if (impl_->data_description_ == nullptr) {
       impl_->data_description_ = vtkCPDataDescription::New();
@@ -149,7 +149,7 @@ void ParaviewAdaptor::Initialize() {
     }
     impl_->data_description_->SetTimeData(0, 0);
 
-    auto* param = Simulation::GetActive()->GetParam();
+    // auto* param = Simulation::GetActive()->GetParam();
     for (auto& pair : param->visualize_sim_objects_) {
       impl_->vtk_so_grids_[pair.first.c_str()] =
           new VtkSoGrid(pair.first.c_str(), impl_->data_description_);
@@ -164,10 +164,11 @@ void ParaviewAdaptor::Initialize() {
 void ParaviewAdaptor::LiveVisualization(double time, size_t step) {
   if (impl_->data_description_ == nullptr) {
     impl_->data_description_ = vtkCPDataDescription::New();
-  } else {
-    impl_->data_description_->Delete();
-    impl_->data_description_ = vtkCPDataDescription::New();
   }
+  // else {
+  //   impl_->data_description_->Delete();
+  //   impl_->data_description_ = vtkCPDataDescription::New();
+  // }
   impl_->data_description_->SetTimeData(time, step);
 
   CreateVtkObjects();
@@ -177,6 +178,10 @@ void ParaviewAdaptor::LiveVisualization(double time, size_t step) {
       impl_->pipeline_->Initialize(impl_->vtk_so_grids_);
     }
   }
+
+  // without the following line DoCoProcessing is not called inside the
+  // python script
+  impl_->data_description_->ForceOutputOn();
 
   impl_->g_processor_->CoProcess(impl_->data_description_);
 }
@@ -224,12 +229,13 @@ void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
     // with the pipeline (either the C++ pipeline or Python pipeline)
     // We do not need to RequestDataDescription in Export Mode, because
     // we do not make use of ParaView Catalyst CoProcessing capabilities
-    if (exclusive_export_viz_ ||
-        (impl_->g_processor_->RequestDataDescription(
-            impl_->data_description_)) != 0) {
+    // std::cout << "  ProcessSimObject " << impl_->g_processor_->RequestDataDescription(impl_->data_description_) << std::endl;
+    // if (exclusive_export_viz_ ||
+    //     (impl_->g_processor_->RequestDataDescription(
+    //         impl_->data_description_)) != 0) {
       ParaviewSoVisitor visitor(vsg);
       so->ForEachDataMemberIn(vsg->vis_data_members_, &visitor);
-    }
+    // }
   }
 }
 
