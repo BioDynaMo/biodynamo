@@ -119,13 +119,14 @@ def RequestDataDescription(datadescription):
     coprocessor.LoadRequestedData(datadescription)
 
 #--------------------------------- Processing method ----------------------------------
-
 def DoCoProcessing(datadescription):
     "Callback to do co-processing for current timestep"
     global coprocessor
 
     print("Python Catalyst DoCoProcessing")
-    print(datadescription)
+    # print(datadescription)
+    print(datadescription.GetTime())
+    print(datadescription.GetTimeStep())
 
     #Update the coprocessor by providing it the newly generated simulation data.
     #If the pipeline hasn't been setup yet, this will setup the pipeline.
@@ -135,9 +136,32 @@ def DoCoProcessing(datadescription):
     cells = FindSource('Cells')
     SetActiveSource(cells)
     renderView1.ResetCamera()
-    SaveScreenshot('my-screen.png', renderView1, ImageResolution=[512, 512], FontScaling='Scale fonts proportionally')
 
 
+    cells.GlyphType.ThetaResolution = 20
+    cells.GlyphType.PhiResolution = 20
+
+    # Properties modified on renderView1
+    renderView1.EnableOSPRay = 1
+
+    # get the material library
+    materialLibrary1 = GetMaterialLibrary()
+
+    # Properties modified on renderView1
+    renderView1.OSPRayRenderer = 'pathtracer'
+
+    # update the view to ensure updated data information
+    renderView1.Update()
+
+    # Properties modified on renderView1
+    renderView1.Shadows = 1
+
+    # Properties modified on renderView1
+    renderView1.SamplesPerPixel = 20
+
+    SaveScreenshot("my-screen-{}.png".format(datadescription.GetTimeStep()), renderView1, ImageResolution=[512, 512], FontScaling='Scale fonts proportionally')
+
+    # counter += 1
     print(cells)
 
 
