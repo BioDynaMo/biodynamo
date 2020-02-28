@@ -34,7 +34,7 @@ static std::unordered_map<std::string, TPluginHandler *> loaded_;
 
 VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
   auto *param = Simulation::GetActive()->GetParam();
-  if (!(param->live_visualization_ || param->export_visualization_)) {
+  if (!(param->live_visualization_ || param->export_visualization_ || param->python_paraview_pipeline_)) {
     return nullptr;
   }
   VisualizationAdaptor *va = nullptr;
