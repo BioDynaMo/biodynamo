@@ -179,6 +179,9 @@ void ParaviewAdaptor::LiveVisualization(double time, size_t step) {
     }
   }
 
+  auto* param = Simulation::GetActive()->GetParam();
+  impl_->data_description_->SetTimeData(step * param->simulation_time_step_, step);
+
   // without the following line DoCoProcessing is not called inside the
   // python script
   impl_->data_description_->ForceOutputOn();
