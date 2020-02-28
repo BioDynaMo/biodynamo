@@ -27,36 +27,7 @@ def CreateCoProcessor():
             #disable automatic camera reset on 'Show'
             paraview.simple._DisableFirstRenderCameraReset()
 
-            # renderView1 = GetActiveViewOrCreate('RenderView')
-            #
-            # glyph1 = Glyph(Input=so_data, GlyphType=glyph_type)
-            # glyph1.GlyphTransform = 'Transform2'
-            #
-            # glyph1.GlyphType = glyph_type
-            # glyph1.ScaleFactor = 1.0
-            # glyph1.GlyphMode = 'All Points'
-            # #
-            # # # show data in view
-            # glyph1Display = Show(glyph1, render_view)
-            # # # trace defaults for the display properties.
-            # glyph1Display.Representation = 'Surface'
-            # glyph1Display.ColorArrayName = [None, '']
-            # glyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-            # glyph1Display.SelectOrientationVectors = 'None'
-            # glyph1Display.ScaleFactor = 1.0
-            # glyph1Display.SelectScaleArray = 'None'
-            # glyph1Display.GlyphType = 'Sphere'
-            # glyph1Display.GlyphTableIndexArray = 'None'
-            # glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
-            # glyph1Display.PolarAxes = 'PolarAxesRepresentation'
-            # glyph1Display.GaussianRadius = -1.0000000000000001e+298
-            # glyph1Display.SetScaleArray = [None, '']
-            # glyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
-            # glyph1Display.OpacityArray = [None, '']
-            # glyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
-            #
-            # renderView1.Update()
-
+            renderView1 = GetActiveViewOrCreate('RenderView')
 
             # #create a producer from a simulation input
             # diffusion_grid_data = coprocessor.CreateProducer(datadescription, 'dgrid_data')
@@ -66,19 +37,41 @@ def CreateCoProcessor():
                 data = coprocessor.CreateProducer(datadescription, data_name)
                 grid = datadescription.GetInputDescription(i).GetGrid()
 
-                print(data_name)
-                print(data)
-                print(grid)
-            #
-            #     #create a new 'Glyph'
-            #     if grid.IsA("vtkUnstructuredGrid") == True:
-            #         gui_name = data_name + "_glyph"
-            #         glyph = Glyph(guiName=gui_name, Input=data, GlyphType='Sphere')
-            #         glyph.Scalars = [ 'POINTS', 'Diameters' ]
-            #         glyph.Vectors = [ 'POINTS', 'None' ]
-            #         glyph.ScaleMode = 'scalar'
-            #         glyph.GlyphMode = 'All Points'
-            #         glyph.GlyphTransform = 'Transform2'
+                # print(data_name)
+                # print(data)
+                # print(grid)
+
+                #create a new 'Glyph'
+                if grid.IsA("vtkUnstructuredGrid") == True:
+                    glyph1 = Glyph(guiName="Cells", Input=data)
+                    glyph1.GlyphTransform = 'Transform2'
+
+                    glyph1.GlyphType = 'Sphere'
+                    glyph1.ScaleFactor = 1.0
+                    glyph1.GlyphMode = 'All Points'
+                    #
+                    # # show data in view
+                    glyph1Display = Show(glyph1, renderView1)
+                    # # trace defaults for the display properties.
+                    glyph1Display.Representation = 'Surface'
+                    glyph1Display.ColorArrayName = [None, '']
+                    glyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+                    glyph1Display.SelectOrientationVectors = 'None'
+                    glyph1Display.ScaleFactor = 1.0
+                    glyph1Display.SelectScaleArray = 'None'
+                    glyph1Display.GlyphType = 'Sphere'
+                    glyph1Display.GlyphTableIndexArray = 'None'
+                    glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
+                    glyph1Display.PolarAxes = 'PolarAxesRepresentation'
+                    glyph1Display.GaussianRadius = -1.0000000000000001e+298
+                    glyph1Display.SetScaleArray = [None, '']
+                    glyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
+                    glyph1Display.OpacityArray = [None, '']
+                    glyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
+                    glyph1.ScaleArray = ['POINTS', "diameter_"]
+
+                    renderView1.Update()
+
 
         return Pipeline()
 
@@ -137,6 +130,16 @@ def DoCoProcessing(datadescription):
     #Update the coprocessor by providing it the newly generated simulation data.
     #If the pipeline hasn't been setup yet, this will setup the pipeline.
     coprocessor.UpdateProducers(datadescription)
+
+    renderView1 = GetActiveViewOrCreate('RenderView')
+    cells = FindSource('Cells')
+    SetActiveSource(cells)
+    renderView1.ResetCamera()
+    SaveScreenshot('my-screen.png', renderView1, ImageResolution=[512, 512], FontScaling='Scale fonts proportionally')
+
+
+    print(cells)
+
 
     #Live Visualization, if enabled.
     # coprocessor.DoLiveVisualization(datadescription, "localhost", 22222)
