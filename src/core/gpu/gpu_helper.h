@@ -97,8 +97,7 @@ class GpuHelper {
     // Compile OpenCL program for found device
     // TODO(ahmad): create more convenient way to compile all OpenCL kernels, by
     // going through a list of header files. Also, create a stringifier that
-    // goes
-    // from .cl --> .h, since OpenCL kernels must be input as a string here
+    // goes from .cl --> .h, since OpenCL kernels must be input as a string here
     std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
     std::ifstream cl_file(bdm_src_dir +
                           "/core/gpu/displacement_op_opencl_kernel.cl");
@@ -157,15 +156,20 @@ class GpuHelper {
         Log::Error("FindGpuDevicesOpenCL", "No OpenCL platforms found");
       }
 
-      // Go over all available platforms and devices until first device is found
+      // Go over all available platforms and devices until all compatible devices are found
       for (auto p = platform.begin(); p != platform.end(); p++) {
         std::vector<cl::Device> pldev;
 
         try {
+          // Only select GPU's
           p->getDevices(CL_DEVICE_TYPE_GPU, &pldev);
 
           for (auto d = pldev.begin(); d != pldev.end(); d++) {
             if (!d->getInfo<CL_DEVICE_AVAILABLE>())  // NOLINT
+              continue;
+
+            // Only select GPU's with double support
+            if (!d->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>())  // NOLINT
               continue;
 
             // The OpenCL extension available on this device
@@ -182,8 +186,8 @@ class GpuHelper {
       }
 
       if (devices->empty()) {
-        Log::Fatal("FindGpuDevicesCuda",
-                   "No CUDA-compatible GPU found on this machine!");
+        Log::Fatal("FindGpuDevicesOpenCL",
+                   "No OpenCL compatible GPU's found on this machine!");
         return;
       }
 
@@ -202,7 +206,7 @@ class GpuHelper {
 
       // Create command queue for that GPU
       cl_int queue_err;
-      *queue = cl::CommandQueue(*context, (*devices)[param->preferred_gpu_],
+      *queue = cl::CommandQueue(*context, (*devices)[selected_gpu],
                                 CL_QUEUE_PROFILING_ENABLE, &queue_err);
       ClOk(queue_err);
 
