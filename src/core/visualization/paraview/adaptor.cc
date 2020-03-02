@@ -101,13 +101,16 @@ void ParaviewAdaptor::Visualize() {
     return;
   }
 
-  if (param->live_visualization_) {
-    double time = param->simulation_time_step_ * total_steps;
-    LiveVisualization(time, total_steps);
+  double time = param->simulation_time_step_ * total_steps;
+  impl_->data_description_->SetTimeData(time, total_steps);
+
+  CreateVtkObjects();
+
+  if (param->live_visualization_ || param->python_paraview_pipeline_) {
+    LiveVisualization();  // FIXME rename to InsituVisualization
   }
   if (param->export_visualization_) {
-    double time = param->simulation_time_step_ * total_steps;
-    ExportVisualization(time, total_steps);
+    ExportVisualization();
   }
 }
 
@@ -115,31 +118,23 @@ void ParaviewAdaptor::Initialize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
-  exclusive_export_viz_ =
-      param->export_visualization_ && !param->live_visualization_;
-  if (param->live_visualization_ || param->export_visualization_) {
+  if (param->live_visualization_ || param->export_visualization_ || param->python_paraview_pipeline_) {
     if (impl_->g_processor_ == nullptr) {
       impl_->g_processor_ = vtkCPProcessor::New();
       impl_->g_processor_->Initialize();
     }
 
-    // if (param->live_visualization_ &&
-    //     impl_->g_processor_->GetNumberOfPipelines() != 0) {
-    //   Log::Fatal("ParaviewAdaptor",
-    //              "Live visualization does not support multiple "
-    //              "simulations. Turning off live visualization for ",
-    //              sim->GetUniqueName());
-    // } else if (param->python_paraview_pipeline_) {
+    if (param->live_visualization_) {
+        impl_->pipeline_ = new InSituPipeline();
+        impl_->g_processor_->AddPipeline(impl_->pipeline_);
+    } else if (param->python_paraview_pipeline_) {
       vtkNew<vtkCPPythonScriptPipeline> pipeline;
       std::string python_script =
           std::string(std::getenv("BDM_SRC_DIR")) +
           std::string("/core/visualization/paraview/simple_pipeline.py");
       pipeline->Initialize(python_script.c_str());
       impl_->g_processor_->AddPipeline(pipeline.GetPointer());
-    // } else if (!exclusive_export_viz_) {
-    //   impl_->pipeline_ = new InSituPipeline();
-    //   impl_->g_processor_->AddPipeline(impl_->pipeline_);
-    // }
+    }
 
     if (impl_->data_description_ == nullptr) {
       impl_->data_description_ = vtkCPDataDescription::New();
@@ -161,52 +156,14 @@ void ParaviewAdaptor::Initialize() {
   }
 }
 
-void ParaviewAdaptor::LiveVisualization(double time, size_t step) {
-  if (impl_->data_description_ == nullptr) {
-    impl_->data_description_ = vtkCPDataDescription::New();
-  }
-  // else {
-  //   impl_->data_description_->Delete();
-  //   impl_->data_description_ = vtkCPDataDescription::New();
-  // }
-  impl_->data_description_->SetTimeData(time, step);
-
-  CreateVtkObjects();
-
-  if (impl_->pipeline_ != nullptr) {
-    if (!(impl_->pipeline_->IsInitialized())) {
-      impl_->pipeline_->Initialize(impl_->vtk_so_grids_);
-    }
-  }
-
-  auto* param = Simulation::GetActive()->GetParam();
-  impl_->data_description_->SetTimeData(step * param->simulation_time_step_, step);
-
-  // without the following line DoCoProcessing is not called inside the
-  // python script
+void ParaviewAdaptor::LiveVisualization() {
+  impl_->g_processor_->RequestDataDescription(impl_->data_description_);
   impl_->data_description_->ForceOutputOn();
-
   impl_->g_processor_->CoProcess(impl_->data_description_);
 }
 
-/// Exports the visualized objects to file, so that they can be imported and
-/// visualized in ParaView at a later point in time
-///
-/// @param[in]  time            The simulation time
-/// @param[in]  step            The time step
-/// @param[in]  last_time_step  The last time step
-///
-void ParaviewAdaptor::ExportVisualization(double time, size_t step) {
-  if (impl_->data_description_ == nullptr) {
-    impl_->data_description_ = vtkCPDataDescription::New();
-  } else {
-    impl_->data_description_->Delete();
-    impl_->data_description_ = vtkCPDataDescription::New();
-  }
-  impl_->data_description_->SetTimeData(time, step);
-
-  CreateVtkObjects();
-  WriteToFile(step);
+void ParaviewAdaptor::ExportVisualization() {
+  WriteToFile();
 }
 
 void ParaviewAdaptor::CreateVtkObjects() {
@@ -220,25 +177,14 @@ void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
 
   if (param->visualize_sim_objects_.find(so_name) !=
       param->visualize_sim_objects_.end()) {
-    // assert(impl_->vtk_so_grids_.find(so->GetTypeName()) !=
-    // impl_->vtk_so_grids_.end() &&
-    // Concat("VtkSoGrid for ", so->GetTypeName(), " not found!");
+
     auto* vsg = impl_->vtk_so_grids_[so->GetTypeName()];
     if (!vsg->initialized_) {
       vsg->Init(so);
     }
 
-    // If we segfault at here it probably means that there is a problem
-    // with the pipeline (either the C++ pipeline or Python pipeline)
-    // We do not need to RequestDataDescription in Export Mode, because
-    // we do not make use of ParaView Catalyst CoProcessing capabilities
-    // std::cout << "  ProcessSimObject " << impl_->g_processor_->RequestDataDescription(impl_->data_description_) << std::endl;
-    // if (exclusive_export_viz_ ||
-    //     (impl_->g_processor_->RequestDataDescription(
-    //         impl_->data_description_)) != 0) {
-      ParaviewSoVisitor visitor(vsg);
-      so->ForEachDataMemberIn(vsg->vis_data_members_, &visitor);
-    // }
+    ParaviewSoVisitor visitor(vsg);
+    so->ForEachDataMemberIn(vsg->vis_data_members_, &visitor);
   }
 }
 
@@ -318,7 +264,8 @@ void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
       [&](DiffusionGrid* grid) { ProcessDiffusionGrid(grid); });
 }
 
-void ParaviewAdaptor::WriteToFile(size_t step) {
+void ParaviewAdaptor::WriteToFile() {
+  auto step = impl_->data_description_->GetTimeStep();
   auto* sim = Simulation::GetActive();
   for (auto& el : impl_->vtk_so_grids_) {
     vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
@@ -371,11 +318,11 @@ ParaviewAdaptor::ParaviewAdaptor() {}
 
 void ParaviewAdaptor::Visualize() {}
 
-void ParaviewAdaptor::LiveVisualization(double time, size_t time_step) {}
+void ParaviewAdaptor::LiveVisualization() {}
 
-void ParaviewAdaptor::ExportVisualization(double step, size_t time_step) {}
+void ParaviewAdaptor::ExportVisualization() {}
 
-void ParaviewAdaptor::WriteToFile(size_t step) {}
+void ParaviewAdaptor::WriteToFile() {}
 
 void ParaviewAdaptor::GenerateParaviewState() {}
 

@@ -23,11 +23,11 @@ from paraview import coprocessing
 def CreateCoProcessor():
     def _CreatePipeline(coprocessor, datadescription):
         class Pipeline :
-            print("FOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo")
             #disable automatic camera reset on 'Show'
             paraview.simple._DisableFirstRenderCameraReset()
 
-            renderView1 = GetActiveViewOrCreate('RenderView')
+            renderView1 = CreateView('RenderView')
+            renderView1.ViewTime = datadescription.GetTime()
 
             # #create a producer from a simulation input
             # diffusion_grid_data = coprocessor.CreateProducer(datadescription, 'dgrid_data')
@@ -72,6 +72,40 @@ def CreateCoProcessor():
 
                     renderView1.Update()
 
+            # ------------------------------------------------------------------
+            # end default pipeline - start custom script
+
+            renderView1 = GetActiveViewOrCreate('RenderView')
+            renderView1.Update()
+            cells = FindSource('Cells')
+            SetActiveSource(cells)
+            renderView1.ResetCamera()
+
+            cells.GlyphType.ThetaResolution = 20
+            cells.GlyphType.PhiResolution = 20
+
+            # Properties modified on renderView1
+            # renderView1.EnableOSPRay = 1
+            #
+            # # get the material library
+            # materialLibrary1 = GetMaterialLibrary()
+            #
+            # # Properties modified on renderView1
+            # renderView1.OSPRayRenderer = 'pathtracer'
+            #
+            # # update the view to ensure updated data information
+            # renderView1.Update()
+            #
+            # # Properties modified on renderView1
+            # renderView1.Shadows = 1
+            #
+            # # Properties modified on renderView1
+            # renderView1.SamplesPerPixel = 20
+
+            # SaveScreenshot("my-screen-{}.png".format(datadescription.GetTimeStep()), renderView1, ImageResolution=[512, 512], FontScaling='Scale fonts proportionally')
+            coprocessor.RegisterView(renderView1,
+                               filename="my-screen-%t.png", freq=1, fittoscreen=1, magnification=1, width=512, height=512)
+
 
         return Pipeline()
 
@@ -80,7 +114,7 @@ def CreateCoProcessor():
             self.Pipeline = _CreatePipeline(self, datadescription)
 
     coprocessor = CoProcessor()
-    # freqs = { 'input' : [100, 100]}
+    # freqs = { 'Cells' : [1]}
     # coprocessor.SetUpdateFrequencies(freqs)
     return coprocessor
 
@@ -102,7 +136,6 @@ def RequestDataDescription(datadescription):
 
     print("Python Catalyst RequestDataDescription")
     # print(datadescription)
-
 
     if datadescription.GetForceOutput() == True:
         print("   datadescription.GetForceOutput()")
@@ -131,39 +164,7 @@ def DoCoProcessing(datadescription):
     #Update the coprocessor by providing it the newly generated simulation data.
     #If the pipeline hasn't been setup yet, this will setup the pipeline.
     coprocessor.UpdateProducers(datadescription)
-
-    renderView1 = GetActiveViewOrCreate('RenderView')
-    cells = FindSource('Cells')
-    SetActiveSource(cells)
-    renderView1.ResetCamera()
-
-
-    cells.GlyphType.ThetaResolution = 20
-    cells.GlyphType.PhiResolution = 20
-
-    # Properties modified on renderView1
-    renderView1.EnableOSPRay = 1
-
-    # get the material library
-    materialLibrary1 = GetMaterialLibrary()
-
-    # Properties modified on renderView1
-    renderView1.OSPRayRenderer = 'pathtracer'
-
-    # update the view to ensure updated data information
-    renderView1.Update()
-
-    # Properties modified on renderView1
-    renderView1.Shadows = 1
-
-    # Properties modified on renderView1
-    renderView1.SamplesPerPixel = 20
-
-    SaveScreenshot("my-screen-{}.png".format(datadescription.GetTimeStep()), renderView1, ImageResolution=[512, 512], FontScaling='Scale fonts proportionally')
-
-    # counter += 1
-    print(cells)
-
+    coprocessor.WriteImages(datadescription)
 
     #Live Visualization, if enabled.
     # coprocessor.DoLiveVisualization(datadescription, "localhost", 22222)
