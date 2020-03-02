@@ -348,14 +348,19 @@ MemoryManager::MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
   }
 }
 
+MemoryManager::~MemoryManager() {
+  for (auto& pair : allocators_) {
+    delete pair.second;
+  }
+}
+
 void* MemoryManager::New(std::size_t size) {
   auto it = allocators_.find(size);
   if (it != allocators_.end()) {
-    return it->second.New(size);
+    return it->second->New(size);
   } else {
-    allocators_.insert(std::make_pair(
-        size, std::move(memory_manager_detail::PoolAllocator(
-                  size, size_n_pages_, growth_rate_, max_mem_per_thread_))));
+    allocators_.insert(size, new memory_manager_detail::PoolAllocator(
+      size, size_n_pages_, growth_rate_, max_mem_per_thread_));
     return New(size);
   }
 }

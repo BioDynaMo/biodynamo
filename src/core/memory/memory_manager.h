@@ -17,9 +17,9 @@
 
 #include <cassert>
 #include <list>
-#include <unordered_map>
 #include <vector>
 
+#include "core/container/flatmap.h"
 #include "core/util/numa.h"
 #include "core/util/spinlock.h"
 #include "core/util/thread_info.h"
@@ -149,6 +149,8 @@ class MemoryManager {
   MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
                 uint64_t max_mem_per_thread);
 
+  ~MemoryManager();
+
   void* New(std::size_t size);
 
   void Delete(void* p);
@@ -162,7 +164,7 @@ class MemoryManager {
   uint64_t aligned_pages_;
   uint64_t size_n_pages_;
 
-  std::unordered_map<std::size_t, memory_manager_detail::PoolAllocator>
+  UnorderedFlatmap<std::size_t, memory_manager_detail::PoolAllocator*>
       allocators_;
 };
 
