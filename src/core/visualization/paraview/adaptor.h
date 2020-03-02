@@ -70,21 +70,11 @@ class ParaviewAdaptor : VisualizationAdaptor {
   void Initialize();
 
   /// Applies the pipeline to the simulation objects during live visualization
-  ///
-  /// @param[in]  time            The simulation time
-  /// @param[in]  step            The time step duration
-  /// @param[in]  last_time_step  Last time step or not
-  ///
-  void LiveVisualization(double time, size_t step);
+  void LiveVisualization();
 
   /// Exports the visualized objects to file, so that they can be imported and
   /// visualized in ParaView at a later point in time
-  ///
-  /// @param[in]  time            The simulation time
-  /// @param[in]  step            The time step
-  /// @param[in]  last_time_step  The last time step
-  ///
-  void ExportVisualization(double time, size_t step);
+  void ExportVisualization();
 
   /// Creates the VTK objects that represent the simulation objects in ParaView.
   ///
@@ -118,7 +108,7 @@ class ParaviewAdaptor : VisualizationAdaptor {
   ///
   /// @param[in]  step  The step
   ///
-  void WriteToFile(size_t step);
+  void WriteToFile();
 
   /// This function generates the Paraview state based on the exported files
   /// Therefore, the user can load the visualization simply by opening the pvsm
@@ -153,7 +143,7 @@ class ParaviewAdaptor {
 
   void ExportVisualization(double step, size_t time_step);
 
-  void WriteToFile(size_t step);
+  void WriteToFile();
 
   static void GenerateParaviewState();
 };
