@@ -262,7 +262,7 @@ class SimObject {
   InlineVector<BaseBiologyModule*, 5> biology_modules_;
 
  private:
-  Spinlock lock_;
+  Spinlock lock_;   //!
 
   /// Helper variable used to support removal of biology modules while
   /// `RunBiologyModules` iterates over them.
