@@ -227,6 +227,7 @@ else
         echo "ROOTSYS points to ROOT version $crvers, while BDM was build with version $orvers."
         echo "Make sure that ROOTSYS points to the right version of ROOT."
         echo "Sourcing BioDynaMo env failed!"
+        return
      fi
   fi
 fi
