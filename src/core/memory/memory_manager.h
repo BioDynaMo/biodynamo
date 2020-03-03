@@ -163,9 +163,12 @@ class MemoryManager {
   uint64_t aligned_pages_shift_;
   uint64_t aligned_pages_;
   uint64_t size_n_pages_;
+  uint64_t num_threads_;
 
   UnorderedFlatmap<std::size_t, memory_manager_detail::PoolAllocator*>
       allocators_;
+
+  Spinlock lock_;
 };
 
 }  // namespace bdm

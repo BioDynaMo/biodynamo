@@ -57,8 +57,8 @@ TEST(UnorderedFlatmapTest, At) {
 TEST(UnorderedFlatmapTest, Insert) {
   UnorderedFlatmap<int, int> map;
 
-  map.insert(2, 1);
-  map.insert(10, 5);
+  map.insert(std::make_pair(2, 1));
+  map.insert(std::make_pair(10, 5));
 
   EXPECT_EQ(2u, map.size());
   EXPECT_EQ(1, map[2]);

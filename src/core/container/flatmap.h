@@ -28,8 +28,9 @@ template <typename TKey, typename TValue>
 class UnorderedFlatmap {
  public:
   using value_type = TValue;
-  using Iterator = std::pair<TKey, TValue>*;
-  using ConstIterator = const std::pair<TKey, TValue>*;
+  using Pair = std::pair<TKey, TValue>;
+  using Iterator = Pair*;
+  using ConstIterator = const Pair*;
 
   UnorderedFlatmap() {}
 
@@ -41,6 +42,8 @@ class UnorderedFlatmap {
 
   size_t size() const { return size_; }  // NOLINT
 
+  size_t Capacity() const { return data_.capacity(); }
+
   void clear() { size_ = 0; }
 
   const TValue& at(const TKey& key) const {
@@ -50,13 +53,11 @@ class UnorderedFlatmap {
     return data_.at(idx).second;
   }
 
-  void insert(const TKey& key, const TValue& value) {
+  void insert(Pair&& pair) {
     if (size_ <= data_.size()) {
       data_.resize((size_ + 1) * 2);
     }
-    auto& p = data_[size_++];
-    p.first = key;
-    p.second = value;
+    data_[size_++] = pair;
   }
 
   TValue& operator[](const TKey& key) { return data_[FindIndex(key)].second; }
@@ -73,7 +74,7 @@ class UnorderedFlatmap {
   ConstIterator end() const { return &(data_[size_]); }
 
  private:
-  std::vector<std::pair<TKey, TValue>> data_;
+  std::vector<Pair> data_;
   std::size_t size_ = 0;
 
   uint64_t FindIndex(const TKey& key) {
