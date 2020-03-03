@@ -37,6 +37,9 @@ Node* List::PopFront() {
   if (!Empty()) {
     auto* ret = head_;
     head_ = head_->next;
+    if (head_ != nullptr) {
+      __builtin_prefetch(head_->next);
+    }
     if (tail_ == ret) {
       tail_ = nullptr;
     }
@@ -153,8 +156,8 @@ NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid,
       nid_(nid),
       tinfo_(ThreadInfo::GetInstance()),
       central_(num_elements_per_n_pages_) {
-  free_lists_.reserve(tinfo_->GetThreadsInNumaNode(nid));
-  for (int i = 0; i < tinfo_->GetThreadsInNumaNode(nid); ++i) {
+  free_lists_.reserve(tinfo_->GetMaxThreads());
+  for (int i = 0; i < tinfo_->GetMaxThreads(); ++i) {
     free_lists_.emplace_back(num_elements_per_n_pages_);
   }
   // To get one block of N aligned pages, at least 2 N pages must be allocated
@@ -164,17 +167,13 @@ NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid,
 NumaPoolAllocator::~NumaPoolAllocator() {
   for (auto& block : memory_blocks_) {
     uint64_t size = block.end_pointer_ - block.start_pointer_;
-#ifdef __APPLE__
-    free(block.start_pointer_);
-#else
     numa_free(block.start_pointer_, size);
-#endif  // __APPLE__
   }
 }
 
-void* NumaPoolAllocator::New(int ntid) {
-  assert(static_cast<uint64_t>(ntid) < free_lists_.size());
-  auto& tl_list = free_lists_[ntid];
+void* NumaPoolAllocator::New(int tid) {
+  assert(static_cast<uint64_t>(tid) < free_lists_.size());
+  auto& tl_list = free_lists_[tid];
   if (!tl_list.Empty()) {
     auto* ret = tl_list.PopFront();
     assert(ret != nullptr);
@@ -183,7 +182,7 @@ void* NumaPoolAllocator::New(int ntid) {
     Node *head = nullptr, *tail = nullptr;
     central_.PopBackNThreadSafe(&head, &tail);
     if (head == nullptr) {
-      return New(ntid);
+      return New(tid);
     }
     tl_list.PushBackN(head, tail);
     auto* ret = tl_list.PopFront();
@@ -210,20 +209,16 @@ void* NumaPoolAllocator::New(int ntid) {
 
 void NumaPoolAllocator::Delete(void* p) {
   auto* node = new (p) Node();
-  if (tinfo_->GetMyNumaNode() == nid_) {
-    auto ntid = tinfo_->GetMyNumaThreadId();
-    auto& tl_list = free_lists_[ntid];
-    tl_list.PushFront(node);
-    // migrate too much unused memory to the central list so other threads
-    // can obtain it
-    if (tl_list.Size() > max_nodes_per_thread_ && tl_list.CanPopBackN()) {
-      Node* head = nullptr;
-      Node* tail = nullptr;
-      tl_list.PopBackN(&head, &tail);
-      central_.PushBackNThreadSafe(head, tail);
-    }
-  } else {
-    central_.PushFrontThreadSafe(node);
+  auto tid = tinfo_->GetMyThreadId();
+  auto& tl_list = free_lists_[tid];
+  tl_list.PushFront(node);
+  // migrate too much unused memory to the central list so other threads
+  // can obtain it
+  if (tl_list.Size() > max_nodes_per_thread_ && tl_list.CanPopBackN()) {
+    Node* head = nullptr;
+    Node* tail = nullptr;
+    tl_list.PopBackN(&head, &tail);
+    central_.PushBackNThreadSafe(head, tail);
   }
 }
 
@@ -233,11 +228,7 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
   // check if size is multiple of N pages aligned
   assert((size & (size_n_pages_ - 1)) == 0 &&
          "Size must be a multiple of MemoryManager::kSizeNPages");
-#ifdef __APPLE__
-  void* block = malloc(size);
-#else
   void* block = numa_alloc_onnode(size, nid_);
-#endif  // __APPLE__
   if (block == nullptr) {
     Log::Fatal("NumaPoolAllocator::AllocNewMemoryBlock", "Allocation failed");
   }
@@ -261,30 +252,28 @@ void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block,
   auto* pointer = start_pointer;
   const uint64_t num_elements = (mem_block_size - kMetadataSize) / size_;
 
-  pointer += (num_elements - 1) * size_;
   if (tl_list->GetN() == num_elements) {
     auto* head = new (pointer) Node();
     assert(head->next == nullptr);
     auto* tail = head;
-    pointer -= size_;
 
-    while (pointer >= start_pointer) {
-      auto* old_head = head;
-      head = new (pointer) Node();
-      assert(pointer >= static_cast<char*>(block));
-      assert(pointer <= (start_pointer + mem_block_size - size_));
-      assert(head->next == nullptr);
-      head->next = old_head;
-      pointer -= size_;
-    }
-    tl_list->PushBackN(head, tail);
-
-  } else {
-    while (pointer >= start_pointer) {
+    for (uint64_t i = 1; i < num_elements; ++i) {
       assert(pointer >= static_cast<char*>(block));
       assert(pointer <= start_pointer + mem_block_size - size_);
+      __builtin_prefetch(pointer + size_);
+      auto* node = new (pointer) Node();
+      tail->next = node;
+      tail = node;
+      pointer += size_;
+    }
+    tl_list->PushBackN(head, tail);
+  } else {
+    for (uint64_t i = 0; i < num_elements; ++i) {
+      assert(pointer >= static_cast<char*>(block));
+      assert(pointer <= start_pointer + mem_block_size - size_);
+      __builtin_prefetch(pointer + size_);
       tl_list->PushFront(new (pointer) Node());
-      pointer -= size_;
+      pointer += size_;
     }
   }
 }
@@ -300,7 +289,8 @@ PoolAllocator::PoolAllocator(std::size_t size, uint64_t size_n_pages,
                              double growth_rate, uint64_t max_mem_per_thread)
     : size_(size), tinfo_(ThreadInfo::GetInstance()) {
   for (int nid = 0; nid < tinfo_->GetNumaNodes(); ++nid) {
-    numa_allocators_.push_back(new NumaPoolAllocator(
+    void* ptr = numa_alloc_onnode(sizeof(NumaPoolAllocator), nid);
+    numa_allocators_.push_back(new (ptr) NumaPoolAllocator(
         size, nid, size_n_pages, growth_rate, max_mem_per_thread));
   }
 }
@@ -312,7 +302,8 @@ PoolAllocator::PoolAllocator(PoolAllocator&& other)
 
 PoolAllocator::~PoolAllocator() {
   for (auto* el : numa_allocators_) {
-    delete el;
+    el->~NumaPoolAllocator();
+    numa_free(el, sizeof(NumaPoolAllocator));
   }
   numa_allocators_.clear();
 }
@@ -322,7 +313,7 @@ void* PoolAllocator::New(std::size_t size) {
   auto tid = tinfo_->GetMyThreadId();
   auto nid = tinfo_->GetNumaNode(tid);
   assert(static_cast<uint64_t>(nid) < numa_allocators_.size());
-  return numa_allocators_[nid]->New(tinfo_->GetNumaThreadId(tid));
+  return numa_allocators_[nid]->New(tid);
 }
 
 }  // namespace memory_manager_detail
@@ -358,7 +349,7 @@ MemoryManager::~MemoryManager() {
 }
 
 void* MemoryManager::New(std::size_t size) {
-  if(allocators_.Capacity() > num_threads_) {
+  if (allocators_.Capacity() > num_threads_) {
     auto it = allocators_.find(size);
     if (it != allocators_.end()) {
       return it->second->New(size);
@@ -366,8 +357,9 @@ void* MemoryManager::New(std::size_t size) {
       std::lock_guard<Spinlock> guard(lock_);
       // check again, another thread might have created it in between
       if (allocators_.find(size) == allocators_.end()) {
-        allocators_.insert(std::make_pair(size, new memory_manager_detail::PoolAllocator(
-          size, size_n_pages_, growth_rate_, max_mem_per_thread_)));
+        allocators_.insert(std::make_pair(
+            size, new memory_manager_detail::PoolAllocator(
+                      size, size_n_pages_, growth_rate_, max_mem_per_thread_)));
       }
       return New(size);
     }
@@ -377,8 +369,9 @@ void* MemoryManager::New(std::size_t size) {
     if (it != allocators_.end()) {
       return it->second->New(size);
     } else {
-      allocators_.insert(std::make_pair(size, new memory_manager_detail::PoolAllocator(
-        size, size_n_pages_, growth_rate_, max_mem_per_thread_)));
+      allocators_.insert(std::make_pair(
+          size, new memory_manager_detail::PoolAllocator(
+                    size, size_n_pages_, growth_rate_, max_mem_per_thread_)));
       return allocators_.find(size)->second;
     }
   }

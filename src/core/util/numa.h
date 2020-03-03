@@ -33,6 +33,8 @@ inline int numa_move_pages(int pid, unsigned long count, void **pages,
   *status = 0;
   return 0;
 }
+inline void *numa_alloc_onnode(uint64_t size, int nid) { return malloc(size); }
+inline void numa_free(void *p, uint64_t) { free(p); }
 
 // on linux in <sched.h>, but missing on MacOS
 inline int sched_getcpu() { return 0; }
