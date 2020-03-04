@@ -366,7 +366,7 @@ class ResourceManager {
 
  protected:
   /// Maps an SoUid to its storage location in `sim_objects_` \n
-  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(10000u);  //!
+  SoUidMap<SoHandle> uid_soh_map_ = SoUidMap<SoHandle>(100u);  //!
   /// Pointer container for all simulation objects
   std::vector<std::vector<SimObject*>> sim_objects_;
   /// Maps a diffusion grid ID to the pointer to the diffusion grid
