@@ -368,8 +368,8 @@ struct Param {
   /// TOML config file:
   ///
   ///     [performance]
-  ///     mem_mgr_growth_rate = 2.0
-  double mem_mgr_growth_rate_ = 2.0;
+  ///     mem_mgr_growth_rate = 1.1
+  double mem_mgr_growth_rate_ = 1.1;
 
   /// The BioDynaMo memory manager can migrate memory between thread pools
   /// to avoid memory leaks.\n
