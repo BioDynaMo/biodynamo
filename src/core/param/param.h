@@ -383,6 +383,20 @@ struct Param {
   ///     mem_mgr_max_mem_per_thread = 10485760
   uint64_t mem_mgr_max_mem_per_thread_ = 1024 * 1024 * 10;
 
+  /// This parameter is used inside `ResourceManager::SortAndBalanceNumaNodes`.
+  /// If it is set to true, the function will reuse existing memory to rebalance
+  /// simulation objects to NUMA nodes. (A small amount of additional memory
+  /// is still required.)\n
+  /// If this parameter is set to false, the balancing function will first
+  /// create new objects and delete the old ones in a second step. In the worst
+  /// case this will double the required memory for simulation objects for.
+  /// Default value: `true`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     minimize_memory_while_rebalancing = true
+  bool minimize_memory_while_rebalancing_ = true;
+
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n

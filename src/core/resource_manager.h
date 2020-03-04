@@ -231,6 +231,9 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   void ApplyOnAllElementsParallel(Functor<void, SimObject*>& function);
 
+  void ApplyOnAllElementsParallel(
+      Functor<void, SimObject*, SoHandle>& function);
+
   /// Apply a function on all elements.\n
   /// Function invocations are parallelized.\n
   /// Uses dynamic scheduling and work stealing. Batch size controlled by

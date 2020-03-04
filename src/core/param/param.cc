@@ -185,6 +185,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "performance.mem_mgr_growth_rate");
   BDM_ASSIGN_CONFIG_VALUE(mem_mgr_max_mem_per_thread_,
                           "performance.mem_mgr_max_mem_per_thread");
+  BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing_,
+                          "performance.minimize_memory_while_rebalancing");
 
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");

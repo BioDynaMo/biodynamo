@@ -18,7 +18,7 @@
 namespace bdm {
 
 void ResourceManager::ApplyOnAllElementsParallel(
-    Functor<void, SimObject*>& function) {
+    Functor<void, SimObject*, SoHandle>& function) {
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
@@ -34,9 +34,23 @@ void ResourceManager::ApplyOnAllElementsParallel(
     auto end = std::min(numa_sos.size(), start + chunk);
 
     for (uint64_t i = start; i < end; ++i) {
-      function(numa_sos[i]);
+      function(numa_sos[i], SoHandle(nid, i));
     }
   }
+}
+
+struct ApplyOnAllElementsParallelFunctor
+    : public Functor<void, SimObject*, SoHandle> {
+  Functor<void, SimObject*>& functor_;
+  ApplyOnAllElementsParallelFunctor(Functor<void, SimObject*>& f)
+      : functor_(f) {}
+  void operator()(SimObject* so, SoHandle) { functor_(so); }
+};
+
+void ResourceManager::ApplyOnAllElementsParallel(
+    Functor<void, SimObject*>& function) {
+  ApplyOnAllElementsParallelFunctor functor(function);
+  ApplyOnAllElementsParallel(functor);
 }
 
 void ResourceManager::ApplyOnAllElementsParallelDynamic(
@@ -132,6 +146,10 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
   }
 }
 
+struct DeleteSimObjectsFunctor : public Functor<void, SimObject*> {
+  void operator()(SimObject* so) { delete so; }
+};
+
 struct UpdateUidSoHMapFunctor : public Functor<void, SimObject*, SoHandle> {
   using Map = SoUidMap<SoHandle>;
   UpdateUidSoHMapFunctor(Map& rm_uid_soh_map)
@@ -176,6 +194,13 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   // numa node -> vector of SoHandles
   std::vector<std::vector<SoHandle>> sorted_so_handles;
   sorted_so_handles.resize(numa_nodes);
+#pragma omp parallel for
+  for (int n = 0; n < numa_nodes; ++n) {
+    if (thread_info_->GetMyNumaNode() == n &&
+        thread_info_->GetMyNumaThreadId() == 0) {
+      sorted_so_handles[n].reserve(so_per_numa[n]);
+    }
+  }
 
   uint64_t cnt = 0;
   uint64_t current_numa = 0;
@@ -193,45 +218,56 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   auto* grid = Simulation::GetActive()->GetGrid();
   grid->IterateZOrder(rearrange);
 
-  for (int n = 0; n < numa_nodes; n++) {
-    auto& dest = so_rearranged[n];
-    std::atomic<bool> resized(false);
+  auto* param = Simulation::GetActive()->GetParam();
+  const bool minimize_memory = param->minimize_memory_while_rebalancing_;
+
+// create new objects
 #pragma omp parallel
-    {
-      auto tid = omp_get_thread_num();
-      auto nid = thread_info_->GetNumaNode(tid);
-      if (nid == n) {
-        auto old = std::atomic_exchange(&resized, true);
-        if (!old) {
-          dest.resize(sorted_so_handles[n].size());
-        }
+  {
+    auto tid = thread_info_->GetMyThreadId();
+    auto nid = thread_info_->GetNumaNode(tid);
+
+    for (int n = 0; n < numa_nodes; n++) {
+      if (nid != n) {
+        continue;
       }
-    }
-#pragma omp parallel
-    {
-      auto tid = omp_get_thread_num();
-      auto nid = thread_info_->GetNumaNode(tid);
+      auto& dest = so_rearranged[n];
 
-      if (nid == n) {
-        auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-        auto& sohandles = sorted_so_handles[n];
-        assert(thread_info_->GetNumaNode(tid) ==
-               numa_node_of_cpu(sched_getcpu()));
+      if (thread_info_->GetNumaThreadId(tid) == 0) {
+        dest.resize(sorted_so_handles[n].size());
+      }
 
-        // use static scheduling
-        auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
-        auto chunk = sohandles.size() / threads_in_numa + correction;
-        auto start = thread_info_->GetNumaThreadId(tid) * chunk;
-        auto end = std::min(sohandles.size(), start + chunk);
+#pragma omp barrier
 
-        for (uint64_t e = start; e < end; e++) {
-          auto& handle = sohandles[e];
-          auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
-          dest[e] = so->GetCopy();
+      auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
+      auto& sohandles = sorted_so_handles[n];
+      assert(thread_info_->GetNumaNode(tid) ==
+             numa_node_of_cpu(sched_getcpu()));
+
+      // use static scheduling
+      auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
+      auto chunk = sohandles.size() / threads_in_numa + correction;
+      auto start = thread_info_->GetNumaThreadId(tid) * chunk;
+      auto end = std::min(sohandles.size(), start + chunk);
+
+      for (uint64_t e = start; e < end; e++) {
+        auto& handle = sohandles[e];
+        auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
+        dest[e] = so->GetCopy();
+        if (minimize_memory) {
           delete so;
         }
       }
     }
+  }
+
+  // delete old objects. This approach has a high chance that a thread
+  // in the right numa node will delete the object, thus minimizing thread
+  // synchronization overheads. The bdm memory allocator does not have this
+  // issue.
+  if (!minimize_memory) {
+    DeleteSimObjectsFunctor delete_functor;
+    ApplyOnAllElementsParallel(delete_functor);
   }
 
   for (int n = 0; n < numa_nodes; n++) {
@@ -240,7 +276,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 
   // update uid_soh_map_
   UpdateUidSoHMapFunctor functor(uid_soh_map_);
-  ApplyOnAllElementsParallelDynamic(1000, functor);
+  ApplyOnAllElementsParallel(functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa_) {
     DebugNuma();
