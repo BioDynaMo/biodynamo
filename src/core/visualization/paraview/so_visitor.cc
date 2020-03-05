@@ -49,8 +49,6 @@ TDataArray* GetDataArray(const std::string& dm_name, VtkSoGrid* so_grid,
 
   } else {
     // create
-    std::cout << "  Create Array " << dm_name << " " << typeid(TDataArray).name() << std::endl;
-
     vtkNew<TDataArray> new_vtk_array;
     new_vtk_array->SetName(dm_name.c_str());
     vtk_array = new_vtk_array.GetPointer();
@@ -81,7 +79,6 @@ vtkDoubleArray* GetDouble3Array(const std::string& dm_name,
 
   } else {
     // create
-    std::cout << "  Create Double3Array " << dm_name << std::endl;
     vtkNew<vtkDoubleArray> new_vtk_array;
     new_vtk_array->SetName(dm_name.c_str());
     vtk_array = new_vtk_array.GetPointer();
