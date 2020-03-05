@@ -121,21 +121,24 @@ void ParaviewAdaptor::Initialize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
-  if (param->live_visualization_ || param->export_visualization_ || param->python_paraview_pipeline_ != "") {
+  if (param->live_visualization_ || param->export_visualization_ ||
+      param->python_paraview_pipeline_ != "") {
     if (impl_->g_processor_ == nullptr) {
       impl_->g_processor_ = vtkCPProcessor::New();
       impl_->g_processor_->Initialize();
     }
 
     if (param->live_visualization_) {
-        impl_->pipeline_ = new InSituPipeline();
-        impl_->g_processor_->AddPipeline(impl_->pipeline_);
+      impl_->pipeline_ = new InSituPipeline();
+      impl_->g_processor_->AddPipeline(impl_->pipeline_);
     } else if (param->python_paraview_pipeline_ != "") {
-      const std::string& script = ParaviewAdaptor::BuildPythonScriptString(param->python_paraview_pipeline_);
+      const std::string& script = ParaviewAdaptor::BuildPythonScriptString(
+          param->python_paraview_pipeline_);
       std::ofstream ofs;
       auto* sim = Simulation::GetActive();
       // TODO use vtkCPPythonStringPipeline once we update to Paraview v5.8
-      std::string final_python_script_name = Concat(sim->GetOutputDir(), "/insitu_pipline.py");
+      std::string final_python_script_name =
+          Concat(sim->GetOutputDir(), "/insitu_pipline.py");
       ofs.open(final_python_script_name);
       ofs << script;
       ofs.close();
@@ -170,9 +173,7 @@ void ParaviewAdaptor::InsituVisualization() {
   impl_->g_processor_->CoProcess(impl_->data_description_);
 }
 
-void ParaviewAdaptor::ExportVisualization() {
-  WriteToFile();
-}
+void ParaviewAdaptor::ExportVisualization() { WriteToFile(); }
 
 void ParaviewAdaptor::CreateVtkObjects() {
   BuildSimObjectsVTKStructures();
@@ -185,7 +186,6 @@ void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
 
   if (param->visualize_sim_objects_.find(so_name) !=
       param->visualize_sim_objects_.end()) {
-
     auto* vsg = impl_->vtk_so_grids_[so->GetTypeName()];
     if (!vsg->initialized_) {
       vsg->Init(so);
@@ -316,25 +316,30 @@ void ParaviewAdaptor::GenerateParaviewState() {
   }
 }
 
-std::string ParaviewAdaptor::BuildPythonScriptString(const std::string& python_script) {
+std::string ParaviewAdaptor::BuildPythonScriptString(
+    const std::string& python_script) {
   std::stringstream script;
 
   std::ifstream ifs;
   ifs.open(python_script, std::ifstream::in);
   if (!ifs.is_open()) {
-    Log::Fatal("ParaviewAdaptor::BuildPythonScriptString", Concat("Python script (", python_script, ") was not found or could not be opened."));
+    Log::Fatal("ParaviewAdaptor::BuildPythonScriptString",
+               Concat("Python script (", python_script,
+                      ") was not found or could not be opened."));
   }
   script << ifs.rdbuf();
   ifs.close();
 
   std::string default_python_script =
-    std::string(std::getenv("BDM_SRC_DIR")) +
-    std::string("/core/visualization/paraview/default_insitu_pipeline.py");
+      std::string(std::getenv("BDM_SRC_DIR")) +
+      std::string("/core/visualization/paraview/default_insitu_pipeline.py");
 
   std::ifstream ifs_default;
   ifs_default.open(default_python_script, std::ifstream::in);
   if (!ifs_default.is_open()) {
-    Log::Fatal("ParaviewAdaptor::BuildPythonScriptString", Concat("Python script (", default_python_script, ") was not found or could not be opened."));
+    Log::Fatal("ParaviewAdaptor::BuildPythonScriptString",
+               Concat("Python script (", default_python_script,
+                      ") was not found or could not be opened."));
   }
   script << std::endl << ifs_default.rdbuf();
   ifs_default.close();
@@ -359,7 +364,8 @@ void ParaviewAdaptor::WriteToFile() {}
 
 void ParaviewAdaptor::GenerateParaviewState() {}
 
-std::string ParaviewAdaptor::BuildPythonScriptString(const std::string& python_script) {}
+std::string ParaviewAdaptor::BuildPythonScriptString(
+    const std::string& python_script) {}
 }  // namespace bdm
 
 #endif

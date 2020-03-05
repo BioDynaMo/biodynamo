@@ -222,7 +222,7 @@ struct Param {
   /// Default value: `""`\n
   /// TOML config file:
   ///     [development]
-  ///     python_paraview_pipeline_ = "" 
+  ///     python_paraview_pipeline_ = ""
   std::string python_paraview_pipeline_ = "";
 
   /// If `export_visualization_` is set to true, this parameter specifies
