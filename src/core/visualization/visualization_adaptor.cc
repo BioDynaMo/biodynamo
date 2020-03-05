@@ -12,13 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/visualization/visualization_adaptor.h"
+#include <string>
+#include <unordered_map>
+
 #include "core/param/param.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
-
-#include <string>
-#include <unordered_map>
+#include "core/visualization/visualization_adaptor.h"
 
 #include "TInterpreter.h"
 #include "TPluginManager.h"
@@ -49,7 +49,7 @@ VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
       if (h->LoadPlugin() == 0) {
         // Register the plugin handler for future use
         loaded_[adaptor] = h;
-        va = (VisualizationAdaptor *)h->ExecPlugin(0);
+        va = reinterpret_cast<VisualizationAdaptor *>(h->ExecPlugin(0));
         return va;
       } else {
         Log::Error("VisualizationAdaptor::Create",
@@ -64,7 +64,8 @@ VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
   } else {  // If we already tried loading this plugin, we avoid dynamically
             // loading the shared library again
     if (loaded_[adaptor]) {  // If we successfully loaded the plugin before
-      va = (VisualizationAdaptor *)loaded_[adaptor]->ExecPlugin(0);
+      va = reinterpret_cast<VisualizationAdaptor *>(
+          loaded_[adaptor]->ExecPlugin(0));
       return va;
     } else {  // If we failed to load the plugin before
       return nullptr;

@@ -12,14 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
 #include "core/visualization/paraview/insitu_pipeline.h"
-
-#include <cstdlib>
 
 #ifndef __ROOTCLING__
 
@@ -136,7 +135,8 @@ void ParaviewAdaptor::Initialize() {
           param->python_paraview_pipeline_);
       std::ofstream ofs;
       auto* sim = Simulation::GetActive();
-      // TODO use vtkCPPythonStringPipeline once we update to Paraview v5.8
+      // TODO(lukas) use vtkCPPythonStringPipeline once we update to Paraview
+      // v5.8
       std::string final_python_script_name =
           Concat(sim->GetOutputDir(), "/insitu_pipline.py");
       ofs.open(final_python_script_name);
@@ -199,7 +199,7 @@ void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
 struct ProcessSimObjectFunctor : public Functor<void, SimObject*> {
   ParaviewAdaptor* pa_;
 
-  ProcessSimObjectFunctor(ParaviewAdaptor* pa) : pa_(pa) {}
+  explicit ProcessSimObjectFunctor(ParaviewAdaptor* pa) : pa_(pa) {}
 
   void operator()(SimObject* so) { pa_->ProcessSimObject(so); }
 };
