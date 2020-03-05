@@ -115,7 +115,8 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// file and does not have to perform a lot of manual steps.
   static void GenerateParaviewState();
 
-  /// TODO
+  /// Combine user-defined python script with biodynamo default python
+  /// insitu pipeline.
   static std::string BuildPythonScriptString(const std::string& python_script);
 };
 
