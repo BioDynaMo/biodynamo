@@ -7,6 +7,9 @@ demo/makefile_project/makefile_project
 
 **/.DS_Store
 
+#----------------- vim ----------------------
+*.swp
+
 #----------------- intellij -----------------
 .idea
 cx3d-cpp.iml
