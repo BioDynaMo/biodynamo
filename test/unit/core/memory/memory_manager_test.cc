@@ -163,7 +163,6 @@ TEST(ListTest, CreateRemoveSkipListEntry) {
   Node n3;
   Node n4;
   Node n5;
-  Node n6;
   Node* head = nullptr;
   Node* tail = nullptr;
 
