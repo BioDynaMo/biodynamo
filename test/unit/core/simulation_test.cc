@@ -70,6 +70,10 @@ class SimulationTest : public ::testing::Test {
       "cache_neighbors = true\n"
       "souid_defragmentation_low_watermark = 0.123\n"
       "souid_defragmentation_high_watermark = 0.456\n"
+      "use_bdm_mem_mgr = false\n"
+      "mem_mgr_aligned_pages_shift = 7\n"
+      "mem_mgr_growth_rate = 1.123\n"
+      "mem_mgr_max_mem_per_thread = 987654\n"
       "\n"
       "[development]\n"
       "# this is a comment\n"
@@ -158,6 +162,10 @@ class SimulationTest : public ::testing::Test {
                 abs_error<double>::value);
     EXPECT_NEAR(0.456, param->souid_defragmentation_high_watermark_,
                 abs_error<double>::value);
+    EXPECT_FALSE(param->use_bdm_mem_mgr_);
+    EXPECT_EQ(7u, param->mem_mgr_aligned_pages_shift_);
+    EXPECT_NEAR(1.123, param->mem_mgr_growth_rate_, abs_error<double>::value);
+    EXPECT_EQ(987654u, param->mem_mgr_max_mem_per_thread_);
 
     // development group
     EXPECT_TRUE(param->statistics_);

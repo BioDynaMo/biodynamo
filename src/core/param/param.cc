@@ -178,6 +178,13 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "performance.souid_defragmentation_low_watermark");
   BDM_ASSIGN_CONFIG_VALUE(souid_defragmentation_high_watermark_,
                           "performance.souid_defragmentation_high_watermark");
+  BDM_ASSIGN_CONFIG_VALUE(use_bdm_mem_mgr_, "performance.use_bdm_mem_mgr");
+  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_aligned_pages_shift_,
+                          "performance.mem_mgr_aligned_pages_shift");
+  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_growth_rate_,
+                          "performance.mem_mgr_growth_rate");
+  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_max_mem_per_thread_,
+                          "performance.mem_mgr_max_mem_per_thread");
 
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");

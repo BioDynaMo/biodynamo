@@ -510,6 +510,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/biology_module/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.cc
@@ -522,6 +523,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/biology_module/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h

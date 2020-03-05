@@ -18,10 +18,11 @@
 #include <string>
 #include <vector>
 
+#include "core/gpu/opencl_state.h"
+#include "core/memory/memory_manager.h"
 #include "core/sim_object/so_uid.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
-#include "core/gpu/opencl_state.h"
 
 namespace bdm {
 
@@ -110,6 +111,8 @@ class Simulation {
   /// Returns all thread local execution contexts.
   std::vector<InPlaceExecutionContext*>& GetAllExecCtxts();
 
+  MemoryManager* GetMemoryManager() { return mem_mgr_; }
+
   /// Return helper class for OpenCL environment
   OpenCLState* GetOpenCLState();
 
@@ -153,6 +156,9 @@ class Simulation {
   std::string unique_name_;  //!
   /// cached value where `unique_name_` is appended to `Param::output_dir_`
   std::string output_dir_;  //!
+
+  /// BioDynaMo memory manager. If nullptr, default allocator will be used.
+  MemoryManager* mem_mgr_ = nullptr;  //!
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,

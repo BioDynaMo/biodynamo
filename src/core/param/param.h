@@ -342,6 +342,47 @@ struct Param {
   ///     souid_defragmentation_high_watermark = 0.9
   double souid_defragmentation_high_watermark_ = 0.9;
 
+  /// Use the BioDynaMo memory manager.
+  /// Default value: `true`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     use_bdm_mem_mgr = true
+  bool use_bdm_mem_mgr_ = true;
+
+  /// The BioDynaMo memory manager allocates N page aligned memory blocks.
+  /// The bigger N, the lower the memory overhead due to metadata storage
+  /// if a lot of memory is used.\n
+  /// N must be a number of two.\n
+  /// Therefore, this parameter specifies the shift for N. `N = 2 ^ shift`\n
+  /// Default value: `8` `-> N = 256`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     mem_mgr_aligned_pages_shift = 8
+  uint64_t mem_mgr_aligned_pages_shift_ = 8;
+
+  /// The BioDynaMo memory manager allocates memory in increasing sizes using
+  /// a geometric series. This parameter specifies the growth rate.
+  /// Default value: `2.0`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     mem_mgr_growth_rate = 1.1
+  double mem_mgr_growth_rate_ = 1.1;
+
+  /// The BioDynaMo memory manager can migrate memory between thread pools
+  /// to avoid memory leaks.\n
+  /// This parameter specifies the maximum memory size in bytes before
+  /// migration happens.\n
+  /// This value must be bigger than `PAGE_SIZE * 2 ^ mem_mgr_growth_rate_`\n
+  /// Default value: `10485760` (10 MB)\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     mem_mgr_max_mem_per_thread = 10485760
+  uint64_t mem_mgr_max_mem_per_thread_ = 1024 * 1024 * 10;
+
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n
