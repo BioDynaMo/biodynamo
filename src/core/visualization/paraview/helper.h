@@ -57,12 +57,8 @@ struct VtkSoGrid {
   VtkSoGrid(const char* type_name, vtkCPDataDescription* data_description) {
     data_ = vtkUnstructuredGrid::New();
     name_ = type_name;
-    std::cout << "              " << data_description->GetNumberOfInputDescriptions() << std::endl;
     data_description->AddInput(type_name);
     data_description->GetInputDescriptionByName(type_name)->SetGrid(data_);
-
-    std::cout << "New VtkSoGrid " << type_name << std::endl;
-    std::cout << "              " << data_description->GetNumberOfInputDescriptions() << std::endl;
   }
 
   ~VtkSoGrid() {
