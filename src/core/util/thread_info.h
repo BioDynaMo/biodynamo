@@ -147,11 +147,17 @@ class ThreadInfo {
   std::vector<int> threads_in_numa_;
 
   ThreadInfo() {
-    if (omp_get_proc_bind() != 1) {
-      Log::Fatal("ThreadInfo",
-                 "The environmental variable OMP_PROC_BIND must be set to "
-                 "true. On Linux run 'export OMP_PROC_BIND=true' prior to "
-                 "running BioDynaMo");
+    auto proc_bind = omp_get_proc_bind();
+    if (proc_bind != 1 && proc_bind != 4) {
+      // 4 corresponds to OMP_PROC_BIND=spread
+      // Due to some reason some OpenMP implementations set proc bind to spread
+      // even though OMP_PROC_BIND is set to true.
+      // A performance analysis showed almost identical results between true,
+      // and spread.
+      Log::Warning("ThreadInfo",
+                   "The environmental variable OMP_PROC_BIND must be set to "
+                   "true. On Linux run 'export OMP_PROC_BIND=true' prior to "
+                   "running BioDynaMo");
     }
     Renew();
   }
