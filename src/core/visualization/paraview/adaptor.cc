@@ -329,7 +329,7 @@ std::string ParaviewAdaptor::BuildPythonScriptString(const std::string& python_s
 
   std::string default_python_script =
     std::string(std::getenv("BDM_SRC_DIR")) +
-    std::string("/core/visualization/paraview/simple_pipeline.py");
+    std::string("/core/visualization/paraview/default_insitu_pipeline.py");
 
   std::ifstream ifs_default;
   ifs_default.open(default_python_script, std::ifstream::in);
