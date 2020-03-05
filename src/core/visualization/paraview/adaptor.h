@@ -69,8 +69,8 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// `Visualize`.
   void Initialize();
 
-  /// Applies the pipeline to the simulation objects during live visualization
-  void LiveVisualization();
+  /// Execute the insitu pipelines that were defined in `Initialize`
+  void InsituVisualization();
 
   /// Exports the visualized objects to file, so that they can be imported and
   /// visualized in ParaView at a later point in time
@@ -114,6 +114,9 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// Therefore, the user can load the visualization simply by opening the pvsm
   /// file and does not have to perform a lot of manual steps.
   static void GenerateParaviewState();
+
+  /// TODO
+  static std::string BuildPythonScriptString(const std::string& python_script);
 };
 
 }  // namespace bdm
