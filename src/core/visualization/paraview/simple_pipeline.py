@@ -16,9 +16,6 @@ from paraview.simple import *
 from paraview import vtk
 from paraview import coprocessing
 
-#Code generated from cpstate.py to create the CoProcessor.
-#ParaView 5.3.0 64 bits
-
 #CoProcessor definition
 def CreateCoProcessor():
     def _CreatePipeline(coprocessor, datadescription):
@@ -71,41 +68,9 @@ def CreateCoProcessor():
                     glyph1.ScaleArray = ['POINTS', "diameter_"]
 
                     renderView1.Update()
-
             # ------------------------------------------------------------------
             # end default pipeline - start custom script
-
-            renderView1 = GetActiveViewOrCreate('RenderView')
-            renderView1.Update()
-            cells = FindSource('Cells')
-            SetActiveSource(cells)
-            renderView1.ResetCamera()
-
-            cells.GlyphType.ThetaResolution = 20
-            cells.GlyphType.PhiResolution = 20
-
-            # Properties modified on renderView1
-            # renderView1.EnableOSPRay = 1
-            #
-            # # get the material library
-            # materialLibrary1 = GetMaterialLibrary()
-            #
-            # # Properties modified on renderView1
-            # renderView1.OSPRayRenderer = 'pathtracer'
-            #
-            # # update the view to ensure updated data information
-            # renderView1.Update()
-            #
-            # # Properties modified on renderView1
-            # renderView1.Shadows = 1
-            #
-            # # Properties modified on renderView1
-            # renderView1.SamplesPerPixel = 20
-
-            # SaveScreenshot("my-screen-{}.png".format(datadescription.GetTimeStep()), renderView1, ImageResolution=[512, 512], FontScaling='Scale fonts proportionally')
-            coprocessor.RegisterView(renderView1,
-                               filename="my-screen-%t.png", freq=1, fittoscreen=1, magnification=1, width=512, height=512)
-
+            ExtendDefaultPipeline(renderView1, coprocessor, datadescription)
 
         return Pipeline()
 

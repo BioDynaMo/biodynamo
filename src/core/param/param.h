@@ -218,6 +218,13 @@ struct Param {
   ///     root = false
   bool root_visualization_ = false;
 
+  /// Enable insitu visualization with a custom python pipeline
+  /// Default value: `""`\n
+  /// TOML config file:
+  ///     [development]
+  ///     python_paraview_pipeline_ = "" 
+  std::string python_paraview_pipeline_ = "";
+
   /// If `export_visualization_` is set to true, this parameter specifies
   /// how often it should be exported. 1 = every timestep, 10: every 10
   /// time steps.\n
@@ -415,14 +422,6 @@ struct Param {
   ///     [development]
   ///     debug_numa = false
   bool debug_numa_ = false;
-
-  /// Use the python script (simple_pipeline.py) to do Live Visualization with
-  /// ParaView. If false, we use the C++ pipeline
-  /// Default value: `false`\n
-  /// TOML config file:
-  ///     [development]
-  ///     python_paraview_pipeline_ = false
-  bool python_paraview_pipeline_ = false;
 
   /// Display the current simulation step in the terminal output
   /// Default value: `true`\n

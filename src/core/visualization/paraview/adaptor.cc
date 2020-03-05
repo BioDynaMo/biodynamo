@@ -12,6 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <fstream>
+#include <sstream>
+
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
 #include "core/visualization/paraview/insitu_pipeline.h"
@@ -106,8 +109,8 @@ void ParaviewAdaptor::Visualize() {
 
   CreateVtkObjects();
 
-  if (param->live_visualization_ || param->python_paraview_pipeline_) {
-    LiveVisualization();  // FIXME rename to InsituVisualization
+  if (param->live_visualization_ || param->python_paraview_pipeline_ != "") {
+    InsituVisualization();
   }
   if (param->export_visualization_) {
     ExportVisualization();
@@ -118,7 +121,7 @@ void ParaviewAdaptor::Initialize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
-  if (param->live_visualization_ || param->export_visualization_ || param->python_paraview_pipeline_) {
+  if (param->live_visualization_ || param->export_visualization_ || param->python_paraview_pipeline_ != "") {
     if (impl_->g_processor_ == nullptr) {
       impl_->g_processor_ = vtkCPProcessor::New();
       impl_->g_processor_->Initialize();
@@ -127,12 +130,17 @@ void ParaviewAdaptor::Initialize() {
     if (param->live_visualization_) {
         impl_->pipeline_ = new InSituPipeline();
         impl_->g_processor_->AddPipeline(impl_->pipeline_);
-    } else if (param->python_paraview_pipeline_) {
+    } else if (param->python_paraview_pipeline_ != "") {
+      const std::string& script = ParaviewAdaptor::BuildPythonScriptString(param->python_paraview_pipeline_);
+      std::ofstream ofs;
+      auto* sim = Simulation::GetActive();
+      // TODO use vtkCPPythonStringPipeline once we update to Paraview v5.8
+      std::string final_python_script_name = Concat(sim->GetOutputDir(), "/insitu_pipline.py");
+      ofs.open(final_python_script_name);
+      ofs << script;
+      ofs.close();
       vtkNew<vtkCPPythonScriptPipeline> pipeline;
-      std::string python_script =
-          std::string(std::getenv("BDM_SRC_DIR")) +
-          std::string("/core/visualization/paraview/simple_pipeline.py");
-      pipeline->Initialize(python_script.c_str());
+      pipeline->Initialize(final_python_script_name.c_str());
       impl_->g_processor_->AddPipeline(pipeline.GetPointer());
     }
 
@@ -156,7 +164,7 @@ void ParaviewAdaptor::Initialize() {
   }
 }
 
-void ParaviewAdaptor::LiveVisualization() {
+void ParaviewAdaptor::InsituVisualization() {
   impl_->g_processor_->RequestDataDescription(impl_->data_description_);
   impl_->data_description_->ForceOutputOn();
   impl_->g_processor_->CoProcess(impl_->data_description_);
@@ -308,6 +316,31 @@ void ParaviewAdaptor::GenerateParaviewState() {
   }
 }
 
+std::string ParaviewAdaptor::BuildPythonScriptString(const std::string& python_script) {
+  std::stringstream script;
+
+  std::ifstream ifs;
+  ifs.open(python_script, std::ifstream::in);
+  if (!ifs.is_open()) {
+    Log::Fatal("ParaviewAdaptor::BuildPythonScriptString", Concat("Python script (", python_script, ") was not found or could not be opened."));
+  }
+  script << ifs.rdbuf();
+  ifs.close();
+
+  std::string default_python_script =
+    std::string(std::getenv("BDM_SRC_DIR")) +
+    std::string("/core/visualization/paraview/simple_pipeline.py");
+
+  std::ifstream ifs_default;
+  ifs_default.open(default_python_script, std::ifstream::in);
+  if (!ifs_default.is_open()) {
+    Log::Fatal("ParaviewAdaptor::BuildPythonScriptString", Concat("Python script (", default_python_script, ") was not found or could not be opened."));
+  }
+  script << std::endl << ifs_default.rdbuf();
+  ifs_default.close();
+  return script.str();
+}
+
 }  // namespace bdm
 
 #else
@@ -318,7 +351,7 @@ ParaviewAdaptor::ParaviewAdaptor() {}
 
 void ParaviewAdaptor::Visualize() {}
 
-void ParaviewAdaptor::LiveVisualization() {}
+void ParaviewAdaptor::InsituVisualization() {}
 
 void ParaviewAdaptor::ExportVisualization() {}
 
@@ -326,6 +359,7 @@ void ParaviewAdaptor::WriteToFile() {}
 
 void ParaviewAdaptor::GenerateParaviewState() {}
 
+std::string ParaviewAdaptor::BuildPythonScriptString(const std::string& python_script) {}
 }  // namespace bdm
 
 #endif

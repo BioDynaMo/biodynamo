@@ -45,6 +45,7 @@ class SimulationTest : public ::testing::Test {
       "[visualization]\n"
       "live = false\n"
       "export = true\n"
+      "python_paraview_pipeline = \"my-insitu-script.py\"\n"
       "export_interval = 100\n"
       "export_generate_pvsm = false\n"
       "\n"
@@ -118,6 +119,7 @@ class SimulationTest : public ::testing::Test {
               param->thread_safety_mechanism_);
     EXPECT_FALSE(param->live_visualization_);
     EXPECT_TRUE(param->export_visualization_);
+    EXPECT_EQ("my-insitu-script.py", param->pyton_paraview_pipeline_);
     EXPECT_EQ(100u, param->visualization_export_interval_);
     EXPECT_FALSE(param->visualization_export_generate_pvsm_);
 
