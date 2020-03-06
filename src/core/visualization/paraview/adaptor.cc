@@ -232,35 +232,27 @@ void ParaviewAdaptor::ProcessDiffusionGrid(const DiffusionGrid* grid) {
       vdg->Init();
     }
 
-    // If we segfault at here it probably means that there is a problem
-    // with  the pipeline (either the C++ pipeline or Python pipeline)
-    // We do not need to RequestDataDescription in Export Mode, because
-    // we do not make use of Catalyst CoProcessing capabilities
-    if (exclusive_export_viz_ ||
-        (impl_->g_processor_->RequestDataDescription(
-            impl_->data_description_)) != 0) {
-      auto num_boxes = grid->GetNumBoxesArray();
-      auto grid_dimensions = grid->GetDimensions();
-      auto box_length = grid->GetBoxLength();
-      auto total_boxes = grid->GetNumBoxes();
+    auto num_boxes = grid->GetNumBoxesArray();
+    auto grid_dimensions = grid->GetDimensions();
+    auto box_length = grid->GetBoxLength();
+    auto total_boxes = grid->GetNumBoxes();
 
-      double origin_x = grid_dimensions[0];
-      double origin_y = grid_dimensions[2];
-      double origin_z = grid_dimensions[4];
-      vdg->data_->SetOrigin(origin_x, origin_y, origin_z);
-      vdg->data_->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
-      vdg->data_->SetSpacing(box_length, box_length, box_length);
+    double origin_x = grid_dimensions[0];
+    double origin_y = grid_dimensions[2];
+    double origin_z = grid_dimensions[4];
+    vdg->data_->SetOrigin(origin_x, origin_y, origin_z);
+    vdg->data_->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
+    vdg->data_->SetSpacing(box_length, box_length, box_length);
 
-      if (vdg->concentration_) {
-        auto* co_ptr = const_cast<double*>(grid->GetAllConcentrations());
-        vdg->concentration_->SetArray(co_ptr,
-                                      static_cast<vtkIdType>(total_boxes), 1);
-      }
-      if (vdg->gradient_) {
-        auto gr_ptr = const_cast<double*>(grid->GetAllGradients());
-        vdg->gradient_->SetArray(gr_ptr,
-                                 static_cast<vtkIdType>(total_boxes * 3), 1);
-      }
+    if (vdg->concentration_) {
+      auto* co_ptr = const_cast<double*>(grid->GetAllConcentrations());
+      vdg->concentration_->SetArray(co_ptr,
+                                    static_cast<vtkIdType>(total_boxes), 1);
+    }
+    if (vdg->gradient_) {
+      auto gr_ptr = const_cast<double*>(grid->GetAllGradients());
+      vdg->gradient_->SetArray(gr_ptr,
+                               static_cast<vtkIdType>(total_boxes * 3), 1);
     }
   }
 }
