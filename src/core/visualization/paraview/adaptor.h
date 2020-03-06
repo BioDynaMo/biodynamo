@@ -55,7 +55,6 @@ class ParaviewAdaptor : VisualizationAdaptor {
 
   /// only needed for live visualization
   bool initialized_ = false;           //!
-  bool exclusive_export_viz_ = false;  //!
 
   ClassDefNV(ParaviewAdaptor, 1);
 

@@ -15,62 +15,257 @@
 from paraview.simple import *
 from paraview import vtk
 from paraview import coprocessing
+import json
 
-#CoProcessor definition
+json_string = '{"sim_objects": [{"name":"Cell","glyph":"Glyph","shape":"Sphere","scaling_attribute":"diameter_"}],"extracellular_substances": [{"name": "Substance_0", "has_gradient":"false"}]}'
+
+build_info = json.loads(json_string)
+
+# ------------------------------------------------------------------------------
+# Helper functions -------------------------------------------------------------
+# ------------------------------------------------------------------------------
+def ProcessSphere(so_info, so_data, render_view):
+    # create a new 'Glyph'
+    glyph_type = str(so_info['shape'])
+    glyph1 = Glyph(Input=so_data, GlyphType=glyph_type)
+    glyph1.GlyphTransform = 'Transform2'
+
+    glyph1.GlyphType = glyph_type
+    glyph1.ScaleFactor = 1.0
+    glyph1.GlyphMode = 'All Points'
+    #
+    # # show data in view
+    glyph1Display = Show(glyph1, render_view)
+    # # trace defaults for the display properties.
+    glyph1Display.Representation = 'Surface'
+    glyph1Display.ColorArrayName = [None, '']
+    glyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    glyph1Display.SelectOrientationVectors = 'None'
+    glyph1Display.ScaleFactor = 1.0
+    glyph1Display.SelectScaleArray = 'None'
+    glyph1Display.GlyphType = 'Sphere'
+    glyph1Display.GlyphTableIndexArray = 'None'
+    glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
+    glyph1Display.PolarAxes = 'PolarAxesRepresentation'
+    glyph1Display.GaussianRadius = -1.0000000000000001e+298
+    glyph1Display.SetScaleArray = [None, '']
+    glyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
+    glyph1Display.OpacityArray = [None, '']
+    glyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
+
+    # following statement causes:
+    # Warning: In vtkSMPVRepresentationProxy.cxx, line 612
+    # vtkSMPVRepresentationProxy (0x522db70): Failed to determine the
+    # LookupTable being used.
+    # glyph1Display.SetScalarBarVisibility(renderView1, True)
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on glyph1
+    # ignored if set earlier
+    if paraview.servermanager.vtkSMProxyManager.GetVersionMinor() == 5:
+        glyph1.Scalars = ['POINTS', so_info['scaling_attribute']]
+    else:
+        glyph1.ScaleArray = ['POINTS', so_info['scaling_attribute']]
+    RenameSource('{0}s'.format(so_info['name']), glyph1)
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+# ------------------------------------------------------------------------------
+def ProcessCylinder(so_info, so_data, render_view):
+    glyph_type = str(so_info['shape'])
+    bDMGlyph1 = BDMGlyph(Input=so_data, GlyphType=glyph_type)
+    bDMGlyph1.Vectors = ['POINTS', 'None']
+    bDMGlyph1.XScaling = ['POINTS', 'None']
+    bDMGlyph1.YScaling = ['POINTS', 'None']
+    bDMGlyph1.ZScaling = ['POINTS', 'None']
+    bDMGlyph1.MassLocation = ['POINTS', 'None']
+    bDMGlyph1.ScaleFactor = 0.1
+    bDMGlyph1.GlyphTransform = 'Transform2'
+
+    # show data in view
+    bDMGlyph1Display = Show(bDMGlyph1, render_view)
+    # trace defaults for the display properties.
+    bDMGlyph1Display.Representation = 'Surface'
+    bDMGlyph1Display.ColorArrayName = [None, '']
+    bDMGlyph1Display.OSPRayScaleArray = 'actual_length_'
+    bDMGlyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    bDMGlyph1Display.SelectOrientationVectors = 'None'
+    bDMGlyph1Display.ScaleFactor = 0.010000000149011612
+    bDMGlyph1Display.SelectScaleArray = 'None'
+    bDMGlyph1Display.GlyphType = glyph_type
+    bDMGlyph1Display.GlyphTableIndexArray = 'None'
+    bDMGlyph1Display.DataAxesGrid = 'GridAxesRepresentation'
+    bDMGlyph1Display.PolarAxes = 'PolarAxesRepresentation'
+    bDMGlyph1Display.GaussianRadius = 0.005000000074505806
+    bDMGlyph1Display.SetScaleArray = ['POINTS', 'actual_length_']
+    bDMGlyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
+    bDMGlyph1Display.OpacityArray = ['POINTS', 'actual_length_']
+    bDMGlyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.XScaling = ['POINTS', 'diameter_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.YScaling = ['POINTS', 'diameter_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.YScaling = ['POINTS', 'actual_length_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.ZScaling = ['POINTS', 'diameter_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.MassLocation = ['POINTS', 'mass_location_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.Vectors = ['POINTS', 'spring_axis_']
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.GlyphType = 'Cylinder'
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.ScaleMode = 'normal'
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    # Properties modified on bDMGlyph1
+    bDMGlyph1.ScaleFactor = 1.0
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+    bDMGlyph1.GlyphMode = 'All Points'
+    RenameSource('{0}s'.format(so_info['name']), bDMGlyph1)
+
+    render_view.Update()
+
+# ------------------------------------------------------------------------------
+def ProcessSimulationObject(so_info, so_data, render_view):
+    # following line was in trace, but seems to be superfluous
+    # so_data.PointArrayStatus = ['diameter_', 'volume_']
+
+    # rename data source
+    so_name = so_info['name']
+    so_data_name = '{0}-data'.format(so_name)
+    RenameSource(so_data_name, so_data)
+
+    shape = str(so_info['shape'])
+    if shape == "Sphere":
+        ProcessSphere(so_info, so_data, render_view)
+    elif shape == "Cylinder":
+        ProcessCylinder(so_info, so_data, render_view)
+
+    # reset view to fit data
+    render_view.ResetCamera()
+
+# ------------------------------------------------------------------------------
+def AddDiffusionGradientGlyph(substance_name, substance_data, render_view):
+    glyph1 = Glyph(Input=substance_data, GlyphType='Arrow')
+    glyph1.ScaleFactor = 10
+    glyph1.GlyphTransform = 'Transform2'
+
+    # show data in view
+    glyph1Display = Show(glyph1, render_view)
+    # trace defaults for the display properties.
+    glyph1Display.Representation = 'Surface'
+    glyph1Display.ColorArrayName = [None, '']
+    glyph1Display.OSPRayScaleArray = 'Diffusion Gradient'
+    glyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    glyph1Display.SelectOrientationVectors = 'GlyphVector'
+    glyph1Display.ScaleFactor = 10
+    glyph1Display.SelectScaleArray = 'Diffusion Gradient'
+    glyph1Display.GlyphType = 'Arrow'
+    glyph1Display.GlyphTableIndexArray = 'Diffusion Gradient'
+    glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
+    glyph1Display.PolarAxes = 'PolarAxesRepresentation'
+    glyph1Display.GaussianRadius = 9.73499984741211
+    glyph1Display.SetScaleArray = ['POINTS', 'No scale array']
+    glyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
+    glyph1Display.OpacityArray = ['POINTS', 'Substance Concentration']
+    glyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
+
+    RenameSource('{0}-gradient'.format(substance_name), glyph1)
+
+    # update the view to ensure updated data information
+    render_view.Update()
+
+# ------------------------------------------------------------------------------
+def ProcessExtracellularSubstance(substance_info, substance_data, render_view):
+    # get display properties
+    substance_display = Show(substance_data, render_view)
+    # set scalar coloring
+    ColorBy(substance_display, ('POINTS', 'Substance Concentration', 'Magnitude'))
+    # rescale color and/or opacity maps used to include current data range
+    substance_display.RescaleTransferFunctionToDataRange(True, True)
+    # change representation type
+    # NB: Paraview v5.6.0 screenshots from within catalyst don't render volume
+    #     rendering. -> Change default to Wireframe
+    substance_display.SetRepresentationType('Wireframe')
+    # get color transfer function/color map for 'DiffusionGradient'
+    diffusionGradientLUT = GetColorTransferFunction('DiffusionGradient')
+
+    # rename data source
+    substance_name = substance_info['name']
+    RenameSource('{0}-concentration'.format(substance_name), substance_data)
+
+    if substance_info['has_gradient'] == "true":
+        AddDiffusionGradientGlyph(substance_name, substance_data, render_view)
+
+# ------------------------------------------------------------------------------
+# CoProcessor definition -------------------------------------------------------
+# ------------------------------------------------------------------------------
 def CreateCoProcessor():
     def _CreatePipeline(coprocessor, datadescription):
         class Pipeline :
             #disable automatic camera reset on 'Show'
             paraview.simple._DisableFirstRenderCameraReset()
 
-            renderView1 = CreateView('RenderView')
-            renderView1.ViewTime = datadescription.GetTime()
+            renderview = CreateView('RenderView')
+            renderview.ViewTime = datadescription.GetTime()
 
-            # #create a producer from a simulation input
-            # diffusion_grid_data = coprocessor.CreateProducer(datadescription, 'dgrid_data')
-            print(datadescription.GetNumberOfInputDescriptions())
-            for i in range(datadescription.GetNumberOfInputDescriptions()):
-                data_name = datadescription.GetInputDescriptionName(i)
-                data = coprocessor.CreateProducer(datadescription, data_name)
-                grid = datadescription.GetInputDescription(i).GetGrid()
+            # simulation objects
+            for so_info in build_info['sim_objects']:
+                data = coprocessor.CreateProducer(datadescription, so_info['name'])
+                ProcessSimulationObject(so_info, data, renderview)
+            # extracellular substances
+            for substance_info in build_info['extracellular_substances']:
+                producer = coprocessor.CreateProducer(datadescription, substance_info['name'])
+                grid = datadescription.GetInputDescriptionByName(substance_info['name']).GetGrid()
+                producer.GetClientSideObject().SetOutput(grid)
+                producer.UpdatePipeline()
+                ProcessExtracellularSubstance(substance_info, producer, renderview)
 
-                # print(data_name)
-                # print(data)
-                # print(grid)
-
-                #create a new 'Glyph'
-                if grid.IsA("vtkUnstructuredGrid") == True:
-                    glyph1 = Glyph(guiName="Cells", Input=data)
-                    glyph1.GlyphTransform = 'Transform2'
-
-                    glyph1.GlyphType = 'Sphere'
-                    glyph1.ScaleFactor = 1.0
-                    glyph1.GlyphMode = 'All Points'
-                    #
-                    # # show data in view
-                    glyph1Display = Show(glyph1, renderView1)
-                    # # trace defaults for the display properties.
-                    glyph1Display.Representation = 'Surface'
-                    glyph1Display.ColorArrayName = [None, '']
-                    glyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-                    glyph1Display.SelectOrientationVectors = 'None'
-                    glyph1Display.ScaleFactor = 1.0
-                    glyph1Display.SelectScaleArray = 'None'
-                    glyph1Display.GlyphType = 'Sphere'
-                    glyph1Display.GlyphTableIndexArray = 'None'
-                    glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
-                    glyph1Display.PolarAxes = 'PolarAxesRepresentation'
-                    glyph1Display.GaussianRadius = -1.0000000000000001e+298
-                    glyph1Display.SetScaleArray = [None, '']
-                    glyph1Display.ScaleTransferFunction = 'PiecewiseFunction'
-                    glyph1Display.OpacityArray = [None, '']
-                    glyph1Display.OpacityTransferFunction = 'PiecewiseFunction'
-                    glyph1.ScaleArray = ['POINTS', "diameter_"]
-
-                    renderView1.Update()
             # ------------------------------------------------------------------
             # end default pipeline - start custom script
-            ExtendDefaultPipeline(renderView1, coprocessor, datadescription)
+            ExtendDefaultPipeline(renderview, coprocessor, datadescription)
 
         return Pipeline()
 
@@ -103,12 +298,12 @@ def RequestDataDescription(datadescription):
     # print(datadescription)
 
     if datadescription.GetForceOutput() == True:
-        print("   datadescription.GetForceOutput()")
+        # print("   datadescription.GetForceOutput()")
 
         #We are just going to request all fields and meshes from the simulation code / adaptor.
-        print("   {}".format(datadescription.GetNumberOfInputDescriptions()))
+        # print("   {}".format(datadescription.GetNumberOfInputDescriptions()))
         for i in range(datadescription.GetNumberOfInputDescriptions()):
-            print("   {0}".format(datadescription.GetInputDescription(i)))
+            # print("   {0}".format(datadescription.GetInputDescription(i)))
             datadescription.GetInputDescription(i).AllFieldsOn()
             datadescription.GetInputDescription(i).GenerateMeshOn()
         return
