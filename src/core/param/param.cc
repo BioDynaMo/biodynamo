@@ -94,6 +94,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // visualization group
   BDM_ASSIGN_CONFIG_VALUE(visualization_engine_, "visualization.adaptor");
   BDM_ASSIGN_CONFIG_VALUE(live_visualization_, "visualization.live");
+  BDM_ASSIGN_CONFIG_VALUE(python_paraview_pipeline_,
+                          "visualization.python_paraview_pipeline");
   BDM_ASSIGN_CONFIG_VALUE(root_visualization_, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
   BDM_ASSIGN_CONFIG_VALUE(visualization_export_interval_,
@@ -191,8 +193,6 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");
   BDM_ASSIGN_CONFIG_VALUE(debug_numa_, "development.debug_numa");
-  BDM_ASSIGN_CONFIG_VALUE(python_paraview_pipeline_,
-                          "development.python_paraview_pipeline");
   BDM_ASSIGN_CONFIG_VALUE(show_simulation_step_,
                           "development.show_simulation_step");
   BDM_ASSIGN_CONFIG_VALUE(simulation_step_freq_,
