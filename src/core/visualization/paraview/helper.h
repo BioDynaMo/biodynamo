@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_PARAVIEW_HELPER_STRUCTS_H_
-#define CORE_VISUALIZATION_PARAVIEW_HELPER_STRUCTS_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_HELPER_H_
+#define CORE_VISUALIZATION_PARAVIEW_HELPER_H_
 
 // check for ROOTCLING was necessary, due to ambigous reference to namespace
 // detail when using ROOT I/O
@@ -147,7 +147,7 @@ struct VtkDiffusionGrid {
 /// information on the C++ side to a python script which generates the
 /// ParaView state file. The Json file is generated inside this function
 /// \see GenerateParaviewState
-inline void GenerateSimulationInfoJson(
+inline std::string GenerateSimulationInfoJson(
     const std::unordered_map<std::string, VtkSoGrid*>& vtk_so_grids,
     const std::unordered_map<std::string, VtkDiffusionGrid*>& vtk_dgrids) {
   auto* sim = Simulation::GetActive();
@@ -235,24 +235,23 @@ inline void GenerateSimulationInfoJson(
   }
 
   // write to file
-  std::ofstream ofstr;
-  ofstr.open(Concat(sim->GetOutputDir(), "/", kSimulationInfoJson));
-  ofstr << "{" << std::endl
-        << "  \"simulation\": {" << std::endl
-        << "    \"name\":\"" << sim->GetUniqueName() << "\"," << std::endl
-        << "    \"result_dir\":\"" << sim->GetOutputDir() << "\"" << std::endl
-        << "  }," << std::endl
-        << "  \"sim_objects\": [" << std::endl
-        << sim_objects.str() << "  ]," << std::endl
-        << "  \"extracellular_substances\": [" << std::endl
-        << substances.str() << std::endl
-        << "  ]" << std::endl
-        << "}" << std::endl;
-  ofstr.close();
+  std::stringstream str;
+  str << "{" << std::endl
+      << "  \"simulation\": {" << std::endl
+      << "    \"name\":\"" << sim->GetUniqueName() << "\"," << std::endl
+      << "    \"result_dir\":\"" << sim->GetOutputDir() << "\"" << std::endl
+      << "  }," << std::endl
+      << "  \"sim_objects\": [" << std::endl
+      << sim_objects.str() << "  ]," << std::endl
+      << "  \"extracellular_substances\": [" << std::endl
+      << substances.str() << std::endl
+      << "  ]" << std::endl
+      << "}" << std::endl;
+  return str.str();
 }
 
 }  // namespace bdm
 
 #endif  // ifndef __ROOTCLING__
 
-#endif  // CORE_VISUALIZATION_PARAVIEW_HELPER_STRUCTS_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_HELPER_H_

@@ -54,7 +54,7 @@ class ParaviewAdaptor : VisualizationAdaptor {
   static std::atomic<uint64_t> counter_;  //!
 
   /// only needed for live visualization
-  bool initialized_ = false;           //!
+  bool initialized_ = false;  //!
 
   ClassDefNV(ParaviewAdaptor, 1);
 

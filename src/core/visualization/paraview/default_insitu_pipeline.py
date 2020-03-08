@@ -17,13 +17,11 @@ from paraview import vtk
 from paraview import coprocessing
 import json
 
-json_string = '{"sim_objects": [{"name":"Cell","glyph":"Glyph","shape":"Sphere","scaling_attribute":"diameter_"}],"extracellular_substances": [{"name": "Substance_0", "has_gradient":"false"}]}'
-
-build_info = json.loads(json_string)
-
 # ------------------------------------------------------------------------------
 # Helper functions -------------------------------------------------------------
 # ------------------------------------------------------------------------------
+is_insitu_pipeline = False
+
 def ProcessSphere(so_info, so_data, render_view):
     # create a new 'Glyph'
     glyph_type = str(so_info['shape'])
@@ -228,7 +226,11 @@ def ProcessExtracellularSubstance(substance_info, substance_data, render_view):
     # change representation type
     # NB: Paraview v5.6.0 screenshots from within catalyst don't render volume
     #     rendering. -> Change default to Wireframe
-    substance_display.SetRepresentationType('Wireframe')
+    print("is insitu pipeline {}".format(is_insitu_pipeline))
+    if is_insitu_pipeline:
+        substance_display.SetRepresentationType('Wireframe')
+    else:
+        substance_display.SetRepresentationType('Volume')
     # get color transfer function/color map for 'DiffusionGradient'
     diffusionGradientLUT = GetColorTransferFunction('DiffusionGradient')
 
@@ -250,6 +252,13 @@ def CreateCoProcessor():
 
             renderview = CreateView('RenderView')
             renderview.ViewTime = datadescription.GetTime()
+
+            user_data = datadescription.GetUserData()
+            json_string = user_data.GetAbstractArray("metadata").GetVariantValue(0).ToString()
+            build_info = json.loads(json_string)
+            global is_insitu_pipeline
+            is_insitu_pipeline = True
+            print("is insitu pipeline {}".format(is_insitu_pipeline))
 
             # simulation objects
             for so_info in build_info['sim_objects']:
