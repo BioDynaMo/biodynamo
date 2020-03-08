@@ -77,7 +77,13 @@ ParaviewAdaptor::~ParaviewAdaptor() {
     }
     if (param->export_visualization_ &&
         param->visualization_export_generate_pvsm_) {
-      GenerateSimulationInfoJson(impl_->vtk_so_grids_, impl_->vtk_dgrids_);
+      std::ofstream ofstr;
+      auto* sim = Simulation::GetActive();
+      ofstr.open(Concat(sim->GetOutputDir(), "/", kSimulationInfoJson));
+      ofstr << GenerateSimulationInfoJson(impl_->vtk_so_grids_,
+                                          impl_->vtk_dgrids_);
+      ofstr.close();
+
       GenerateParaviewState();
     }
 
@@ -178,6 +184,15 @@ void ParaviewAdaptor::ExportVisualization() { WriteToFile(); }
 void ParaviewAdaptor::CreateVtkObjects() {
   BuildSimObjectsVTKStructures();
   BuildDiffusionGridVTKStructures();
+  if (impl_->data_description_->GetUserData() == nullptr) {
+    vtkNew<vtkStringArray> json;
+    json->SetName("metadata");
+    json->InsertNextValue(
+        GenerateSimulationInfoJson(impl_->vtk_so_grids_, impl_->vtk_dgrids_));
+    vtkNew<vtkFieldData> field;
+    field->AddArray(json);
+    impl_->data_description_->SetUserData(field);
+  }
 }
 
 void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
@@ -246,13 +261,13 @@ void ParaviewAdaptor::ProcessDiffusionGrid(const DiffusionGrid* grid) {
 
     if (vdg->concentration_) {
       auto* co_ptr = const_cast<double*>(grid->GetAllConcentrations());
-      vdg->concentration_->SetArray(co_ptr,
-                                    static_cast<vtkIdType>(total_boxes), 1);
+      vdg->concentration_->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes),
+                                    1);
     }
     if (vdg->gradient_) {
       auto gr_ptr = const_cast<double*>(grid->GetAllGradients());
-      vdg->gradient_->SetArray(gr_ptr,
-                               static_cast<vtkIdType>(total_boxes * 3), 1);
+      vdg->gradient_->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3),
+                               1);
     }
   }
 }

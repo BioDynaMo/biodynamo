@@ -77,7 +77,7 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   vtk_dgrids["sodium"] = new VtkDiffusionGrid("sodium", data_description);
   vtk_dgrids["sodium"]->used_ = true;
 
-  GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
+  auto json = GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
 
   // free memory
   for (auto& el : vtk_so_grids) {
@@ -87,13 +87,6 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
     delete el.second;
   }
   data_description->Delete();
-
-  ASSERT_TRUE(FileExists(kSimulationInfoJson));
-
-  // check file contents
-  std::ifstream ifs(kSimulationInfoJson);
-  std::stringstream buffer;
-  buffer << ifs.rdbuf();
 
   const char* expected = R"STR({
   "simulation": {
@@ -124,7 +117,7 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
 }
 )STR";
 
-  EXPECT_EQ(expected, buffer.str());
+  EXPECT_EQ(expected, json);
 }
 
 TEST_F(ParaviewAdaptorTest, OmitPvsmAndJsonGeneration) {
