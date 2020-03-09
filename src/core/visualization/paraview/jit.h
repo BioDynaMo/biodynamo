@@ -27,6 +27,7 @@
 #ifndef __ROOTCLING__
 
 #include <vtkIntArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -43,27 +44,57 @@ struct GetVtkArrayType<double> {
 
 template <>
 struct GetVtkArrayType<int> {
-  using type = vtkDoubleArray;
+  using type = vtkIntArray;
 };
 
 template <>
 struct GetVtkArrayType<uint64_t> {
-  using type = vtkDoubleArray;
+  using type = vtkIntArray;
+};
+
+template <typename T, std::size_t N>
+struct GetVtkArrayType<MathArray<T, N>> {
+  using type = typename GetVtkArrayType<T>::type;
 };
 
 template <typename T>
-inline void CreateVtkDataArray(const std::string& dm_name, uint64_t components, VtkSoGrid* so_grid) {
+struct GetNumberOfComponents {
+  static const int value = 1;
+};
+
+template <typename T, std::size_t N>
+struct GetNumberOfComponents<MathArray<T, N>> {
+  static const int value = N;
+};
+
+template <typename T, std::size_t N>
+struct GetNumberOfComponents<std::array<T, N>> {
+  static const int value = N;
+};
+
+template<typename T>
+struct IsArray : std::false_type {};
+
+template<typename T, size_t N>
+struct IsArray<std::array<T, N>> : std::true_type {};
+
+template<typename T, std::size_t N>
+struct IsArray<MathArray<T, N>> : std::true_type {};
+
+template <typename T>
+inline int CreateVtkDataArray(const std::string& dm_name, VtkSoGrid* so_grid) {
   using VtkArrayType = typename GetVtkArrayType<T>::type;
+  unsigned components = GetNumberOfComponents<T>::value;
   vtkNew<VtkArrayType> new_vtk_array;
   new_vtk_array->SetName(dm_name.c_str());
   auto* vtk_array = new_vtk_array.GetPointer();
   vtk_array->SetNumberOfComponents(components);
   auto* point_data = so_grid->data_->GetPointData();
-  point_data->AddArray(vtk_array);
+  return point_data->AddArray(vtk_array);
 }
 
 template <>
-inline void CreateVtkDataArray<Double3>(const std::string& dm_name, uint64_t components, VtkSoGrid* so_grid) {
+inline int CreateVtkDataArray<Double3>(const std::string& dm_name, VtkSoGrid* so_grid) {
   vtkNew<vtkDoubleArray> new_vtk_array;
   new_vtk_array->SetName(dm_name.c_str());
   auto* vtk_array = new_vtk_array.GetPointer();
@@ -72,27 +103,34 @@ inline void CreateVtkDataArray<Double3>(const std::string& dm_name, uint64_t com
     vtkNew<vtkPoints> points;
     points->SetData(vtk_array);
     so_grid->data_->SetPoints(points.GetPointer());
+    return -1;
   } else if (dm_name == "mass_location_") {
     // create points with position {0, 0, 0}
     // BDMGlyph will rotate and translate based on the attribute data
     vtkNew<vtkPoints> points;
     points->SetData(vtk_array);
     so_grid->data_->SetPoints(points.GetPointer());
-    so_grid->data_->GetPointData()->AddArray(vtk_array);
+    return so_grid->data_->GetPointData()->AddArray(vtk_array);
   } else {
-    so_grid->data_->GetPointData()->AddArray(vtk_array);
+    return so_grid->data_->GetPointData()->AddArray(vtk_array);
   }
+  return -1;
 }
 
 inline void InitializeVtkSoGrid(VtkSoGrid* so_grid) {
-  so_grid->shape_ = Shape::kSphere;
-  so_grid->vis_data_members_ = {"position_", "diameter_"};// FIXME so->GetRequiredVisDataMembers();
+  Cell so;
+  so_grid->shape_ = so.GetShape();
+  so_grid->vis_data_members_ = so.GetRequiredVisDataMembers();
   auto* param = Simulation::GetActive()->GetParam();
   for (auto& dm : param->visualize_sim_objects_.at(so_grid->name_)) {
     so_grid->vis_data_members_.insert(dm);
   }
-  CreateVtkDataArray<Double3>("position_", 3, so_grid);
-  CreateVtkDataArray<double>("diameter_", 1, so_grid);
+
+  so_grid->data_members_.push_back({"position_", "Double3", "Cell", 104});
+  so_grid->data_members_.push_back({"diameter_", "double", "Cell", 152});
+
+  so_grid->data_members_[0].array_idx = CreateVtkDataArray<Double3>("position_", so_grid);
+  so_grid->data_members_[1].array_idx = CreateVtkDataArray<double>("diameter_", so_grid);
 }
 
 struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
@@ -101,12 +139,33 @@ struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
 
   PopulateDataArraysFunctor(VtkSoGrid* so_grid) : grid_(so_grid->data_), point_data_(so_grid->data_->GetPointData()) {}
 
+  template <typename TClass, typename TDataMember>
+  typename std::enable_if<IsArray<TDataMember>::value>::type
+  SetTuple(SimObject* so, uint64_t so_idx, int array_idx, uint64_t dm_offset) {
+    auto* casted_so = static_cast<TClass*>(so);
+    if (array_idx == -1) {
+      auto* data = reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so)+dm_offset)->data();
+      grid_->GetPoints()->GetData()->SetTuple(so_idx, data);
+    } else {
+      auto* data = reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so)+dm_offset)->data();
+      point_data_->GetArray(array_idx)->SetTuple(so_idx, data);
+    }
+  }
+
+  template <typename TClass, typename TDataMember>
+  typename std::enable_if<!IsArray<TDataMember>::value>::type
+  SetTuple(SimObject* so, uint64_t so_idx, int array_idx, uint64_t dm_offset) {
+    auto* casted_so = static_cast<TClass*>(so);
+    if (array_idx != -1) {
+      auto* data = reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so)+dm_offset);
+      point_data_->GetArray(array_idx)->SetTuple(so_idx, data);
+    }
+  }
+
   void operator()(SimObject* so, SoHandle soh) {
     auto idx = soh.GetElementIdx();
-    auto* cell = static_cast<Cell*>(so);
-    const auto& pos = cell->GetPosition();
-    grid_->GetPoints()->GetData()->SetTuple3(idx, pos[0], pos[1], pos[2]);
-    static_cast<vtkDoubleArray*>(point_data_->GetArray(0))->SetTuple1(idx, cell->GetDiameter());
+    SetTuple<Cell, Double3>(so, idx, -1, 104);
+    SetTuple<Cell, double>(so, idx, 0, 152);
   }
 };
 

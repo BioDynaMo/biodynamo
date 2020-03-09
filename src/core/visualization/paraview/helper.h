@@ -43,9 +43,18 @@ struct VtkSoGrid {
 
   void ResetAndResizeDataArrays(uint64_t new_size);
 
+  struct DataMember {
+    std::string name;
+    std::string type;
+    std::string class_name;
+    unsigned data_member_offset;
+    int array_idx;
+  };
+
   std::string name_;
   vtkUnstructuredGrid* data_ = nullptr;
   Shape shape_;
+  std::vector<DataMember> data_members_;
   std::set<std::string> vis_data_members_;
 };
 
