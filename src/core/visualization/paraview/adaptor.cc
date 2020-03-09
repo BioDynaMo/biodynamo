@@ -19,6 +19,7 @@
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
 #include "core/visualization/paraview/insitu_pipeline.h"
+#include "core/visualization/paraview/jit.h"
 
 #ifndef __ROOTCLING__
 
@@ -161,7 +162,6 @@ void ParaviewAdaptor::Initialize() {
     }
     impl_->data_description_->SetTimeData(0, 0);
 
-    // auto* param = Simulation::GetActive()->GetParam();
     for (auto& pair : param->visualize_sim_objects_) {
       impl_->vtk_so_grids_[pair.first.c_str()] =
           new VtkSoGrid(pair.first.c_str(), impl_->data_description_);
@@ -185,6 +185,12 @@ void ParaviewAdaptor::InsituVisualization() {
 void ParaviewAdaptor::ExportVisualization() { WriteToFile(); }
 
 void ParaviewAdaptor::CreateVtkObjects() {
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+  for (auto& pair : impl_->vtk_so_grids_) {
+    auto num_so = rm->GetNumSimObjects(); // FIXME use type index
+    pair.second->ResetAndResizeDataArrays(num_so);
+  }
+
   BuildSimObjectsVTKStructures();
   BuildDiffusionGridVTKStructures();
   if (impl_->data_description_->GetUserData() == nullptr) {
@@ -205,9 +211,6 @@ void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
   if (param->visualize_sim_objects_.find(so_name) !=
       param->visualize_sim_objects_.end()) {
     auto* vsg = impl_->vtk_so_grids_[so->GetTypeName()];
-    if (!vsg->initialized_) {
-      vsg->Init(so);
-    }
 
     ParaviewSoVisitor visitor(vsg);
     so->ForEachDataMemberIn(vsg->vis_data_members_, &visitor);
@@ -225,7 +228,7 @@ struct ProcessSimObjectFunctor : public Functor<void, SimObject*> {
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
-  ProcessSimObjectFunctor functor{this};
+  PopulateDataArraysFunctor functor{impl_->vtk_so_grids_["Cell"]}; // FIXME
   rm->ApplyOnAllElements(functor);
 }
 
