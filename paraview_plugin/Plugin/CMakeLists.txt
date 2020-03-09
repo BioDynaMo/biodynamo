@@ -1,0 +1,6 @@
+paraview_add_plugin(BDMGlyphFilter
+  VERSION "1.0"
+  REQUIRED_ON_SERVER
+  REQUIRED_ON_CLIENT
+  MODULES BDM
+  MODULE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/BDMGlyphFilter/vtk.module")

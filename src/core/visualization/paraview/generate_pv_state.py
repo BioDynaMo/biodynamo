@@ -34,6 +34,7 @@ import glob
 import json
 import os.path
 import sys
+import functools
 from paraview.simple import *
 
 def ExtractIterationFromFilename(x): return int(x.split('-')[-1].split('.')[0])
@@ -191,7 +192,8 @@ def ProcessSimulationObject(result_dir, so_info):
         print('No data files found for simulation object {0}'.format(so_name))
         sys.exit(1)
 
-    files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
+    files = sorted(files, key=functools.cmp_to_key(lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y)))
+    # files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
 
 
     # create a new 'XML Partitioned Unstructured Grid Reader'
@@ -260,7 +262,8 @@ def ProcessExtracellularSubstance(result_dir, substance_info):
         print('No data files found for substance {0}'.format(substance_name))
         sys.exit(1)
 
-    files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
+    files = sorted(files, key=functools.cmp_to_key(lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y)))
+    # files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
 
     substance_data = XMLPartitionedImageDataReader(FileName=files)
     substance_data.PointArrayStatus = ['Substance Concentration', 'Diffusion Gradient']

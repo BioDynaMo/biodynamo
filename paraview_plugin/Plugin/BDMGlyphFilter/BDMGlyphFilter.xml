@@ -81,12 +81,6 @@ dataset from which the points are selected to be glyphed.
                       name="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <FieldDataDomain name="field_list">
-          <RequiredProperties>
-            <Property function="Input"
-                      name="Input" />
-          </RequiredProperties>
-        </FieldDataDomain>
         <Documentation>
 Select the input array to be treated as the active **Scalars**.  You
 can scale the glyphs using the selected scalars by setting the **Scale
@@ -108,12 +102,6 @@ Mode** property to **scalar**.
                       name="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <FieldDataDomain name="field_list">
-          <RequiredProperties>
-            <Property function="Input"
-                      name="Input" />
-          </RequiredProperties>
-        </FieldDataDomain>
         <Documentation>
 Select the input array to be treated as the active **Normals**.  You can
 scale the glyphs using the selected vectors by setting the **Scale
@@ -136,12 +124,6 @@ glyphs using the selected vectors by checking the **Orient** property.
                       name="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <FieldDataDomain name="field_list">
-          <RequiredProperties>
-            <Property function="Input"
-                      name="Input" />
-          </RequiredProperties>
-        </FieldDataDomain>
         <Documentation>
 Select the input array to be treated as the active **Vectors**.  You can
 scale the glyphs using the selected vectors by setting the **Scale
@@ -164,12 +146,6 @@ glyphs using the selected vectors by checking the **Orient** property.
                       name="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <FieldDataDomain name="field_list">
-          <RequiredProperties>
-            <Property function="Input"
-                      name="Input" />
-          </RequiredProperties>
-        </FieldDataDomain>
         <Documentation>
 Select the input array to be treated as the active **Vectors**.  You can
 scale the glyphs using the selected vectors by setting the **Scale
@@ -192,12 +168,6 @@ glyphs using the selected vectors by checking the **Orient** property.
                       name="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <FieldDataDomain name="field_list">
-          <RequiredProperties>
-            <Property function="Input"
-                      name="Input" />
-          </RequiredProperties>
-        </FieldDataDomain>
         <Documentation>
 Select the input array to be treated as the active **Vectors**.  You can
 scale the glyphs using the selected vectors by setting the **Scale
@@ -220,12 +190,6 @@ glyphs using the selected vectors by checking the **Orient** property.
                       name="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <FieldDataDomain name="field_list">
-          <RequiredProperties>
-            <Property function="Input"
-                      name="Input" />
-          </RequiredProperties>
-        </FieldDataDomain>
         <Documentation>
 Select the input array to be treated as the active **Normals**.  You can
 scale the glyphs using the selected vectors by setting the **Scale

@@ -265,8 +265,7 @@ if(paraview)
     endif()
 
     # Check the first time if ParaView exists in the system.
-    find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-            vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+    find_package(ParaView 5.3 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
             PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
@@ -290,13 +289,11 @@ if(paraview)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
-      find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+      find_package(ParaView 5.3 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
     endif()
 
-    # Add several ParaView related options
-    include("${PARAVIEW_USE_FILE}")
+    include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
@@ -431,13 +428,14 @@ if(paraview)
   file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
   file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
 
-  set(REQUIRED_PARAVIEW_LIBRARIES "vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallelXML;vtkPVVTKExtensionsDefault;vtkPVServerManagerRendering")
+  set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
   build_shared_library(VisualizationAdaptor
                     SOURCES ${PV_SOURCES}
                     HEADERS ${PV_HEADERS}
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
                     PLUGIN "TRUE")
   set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
+  SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
 else()
   # If paraview is disabled, linking the biodynamo-unit-tests failes due to
   # an undefined tbb reference error. Adding this library fixed this
@@ -490,7 +488,7 @@ add_dependencies(bdmclean libbdmclean)
 generate_rootlogon()
 
 if(paraview)
-    include("${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/CMakeLists.txt")
+    include("${CMAKE_SOURCE_DIR}/paraview_plugin/CMakeLists.txt")
 endif()
 
 # create cmake files used by external builds

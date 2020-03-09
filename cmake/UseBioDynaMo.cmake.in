@@ -19,6 +19,13 @@
 #   bdm_add_executable(...)
 # -----------------------------------------------------------------------------
 
+set(policy_new CMP0072 CMP0057 CMP0077)
+foreach(policy ${policy_new})
+  if(POLICY ${policy})
+    cmake_policy(SET ${policy} NEW)
+  endif()
+endforeach()
+
 # Add our CMake files (e.g. FindXXX.cmake files) to the module path, so that out
 # of source build can find them
 get_filename_component(CMAKE_DIR ${BDM_USE_FILE} DIRECTORY)

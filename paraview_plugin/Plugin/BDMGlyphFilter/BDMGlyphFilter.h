@@ -50,11 +50,11 @@
 #define PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPHFILTER_H_
 
 #include "BDMGlyph.h"
-#include "vtkPVVTKExtensionsDefaultModule.h"  // needed for exports
+#include "vtkPVVTKExtensionsFiltersGeneralModule.h"  // needed for exports
 
 class vtkMultiProcessController;
 
-class VTKPVVTKEXTENSIONSDEFAULT_EXPORT BDMGlyphFilter : public BDMGlyph {
+class VTKPVVTKEXTENSIONSFILTERSGENERAL_EXPORT BDMGlyphFilter : public BDMGlyph {
  public:
   enum GlyphModeType {
     ALL_POINTS,
@@ -63,7 +63,7 @@ class VTKPVVTKEXTENSIONSDEFAULT_EXPORT BDMGlyphFilter : public BDMGlyph {
   };
 
   vtkTypeMacro(BDMGlyphFilter, BDMGlyph);
-  void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;  // NOLINT
+  void PrintSelf(ostream& os, vtkIndent indent) override;  // NOLINT
   static BDMGlyphFilter* New();
 
   //@{
@@ -115,7 +115,7 @@ class VTKPVVTKEXTENSIONSDEFAULT_EXPORT BDMGlyphFilter : public BDMGlyph {
    * Overridden to create output data of appropriate type.
    */
   virtual int ProcessRequest(vtkInformation*, vtkInformationVector**,
-                             vtkInformationVector*) VTK_OVERRIDE;
+                             vtkInformationVector*) override;
 
  protected:
   BDMGlyphFilter();
@@ -124,16 +124,16 @@ class VTKPVVTKEXTENSIONSDEFAULT_EXPORT BDMGlyphFilter : public BDMGlyph {
 
   // Standard Pipeline methods
   virtual int RequestData(vtkInformation*, vtkInformationVector**,
-                          vtkInformationVector*) VTK_OVERRIDE;
+                          vtkInformationVector*) override;
   virtual int RequestDataObject(vtkInformation*, vtkInformationVector**,
                                 vtkInformationVector*);
-  virtual int FillInputPortInformation(int, vtkInformation*) VTK_OVERRIDE;
-  virtual int FillOutputPortInformation(int, vtkInformation*) VTK_OVERRIDE;
+  virtual int FillInputPortInformation(int, vtkInformation*) override;
+  virtual int FillOutputPortInformation(int, vtkInformation*) override;
 
   /**
    * Returns 1 if point is to be glyped, otherwise returns 0.
    */
-  virtual int IsPointVisible(vtkDataSet* ds, vtkIdType ptId) VTK_OVERRIDE;
+  virtual int IsPointVisible(vtkDataSet* ds, vtkIdType ptId) override;
 
   /**
    * Returns true if input Scalars and Vectors are compatible, otherwise returns
@@ -174,8 +174,8 @@ class VTKPVVTKEXTENSIONSDEFAULT_EXPORT BDMGlyphFilter : public BDMGlyph {
   vtkMultiProcessController* Controller;
 
  private:
-  BDMGlyphFilter(const BDMGlyphFilter&) VTK_DELETE_FUNCTION;
-  void operator=(const BDMGlyphFilter&) VTK_DELETE_FUNCTION;
+  BDMGlyphFilter(const BDMGlyphFilter&) = delete;
+  void operator=(const BDMGlyphFilter&) = delete;
 
   class vtkInternals;
   vtkInternals* Internals;

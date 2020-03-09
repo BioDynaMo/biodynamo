@@ -1,0 +1,7 @@
+NAME
+  BDMGlyphFilter
+DESCRIPTION
+  The BioDynaMo Glyph Filter
+REQUIRES_MODULES
+  VTK::CommonCore
+  VTK::FiltersCore

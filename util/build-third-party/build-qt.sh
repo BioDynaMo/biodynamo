@@ -45,39 +45,52 @@ if [ -d $QT_INSTALL_DIR ]; then
   exit 1
 fi
 
-# install prerequisites
-. $BDM_PROJECT_DIR/util/build-third-party/third-party-prerequisites.sh
+################################################################################
+# Since 2020, Qt requires you to login with an account to download the
+# libraries. Instead, we download a previously built Qt directly from cernbox
+################################################################################
 
-if [ `uname` = "Linux" ]; then
-  QT_INSTALLER=qt-installer.run
-  QT_URL="https://download.qt.io/archive/qt/5.11/5.11.0/qt-opensource-linux-x64-5.11.0.run"
-  QT_SILENT_INSTALL_JS=$BDM_PROJECT_DIR/util/build-third-party/qt-silent-install-linux.js
-  QT_LIB_PLUGINS_PARENT=$QT_INSTALL_DIR/5.11.0/gcc_64
-else
-  QT_INSTALLER=qt-installer.dmg
-  QT_URL="https://download.qt.io/archive/qt/5.11/5.11.0/qt-opensource-mac-x64-5.11.0.dmg"
-  QT_SILENT_INSTALL_JS=$BDM_PROJECT_DIR/util/build-third-party/qt-silent-install-macos.js
-  QT_LIB_PLUGINS_PARENT=$QT_INSTALL_DIR/5.11.0/clang_64
-fi
+# if [ `uname` = "Linux" ]; then
+#   QT_INSTALLER=qt-installer.run
+#   QT_URL="https://download.qt.io/archive/qt/5.11/5.11.0/qt-opensource-linux-x64-5.11.0.run"
+#   QT_SILENT_INSTALL_JS=$BDM_PROJECT_DIR/util/build-third-party/qt-silent-install-linux.js
+#   QT_LIB_PLUGINS_PARENT=$QT_INSTALL_DIR/5.11.0/gcc_64
+# else
+#   QT_INSTALLER=qt-installer.dmg
+#   QT_URL="https://download.qt.io/archive/qt/5.11/5.11.0/qt-opensource-mac-x64-5.11.0.dmg"
+#   QT_SILENT_INSTALL_JS=$BDM_PROJECT_DIR/util/build-third-party/qt-silent-install-macos.js
+#   QT_LIB_PLUGINS_PARENT=$QT_INSTALL_DIR/5.11.0/clang_64
+# fi
 
-# Download and install qt
-wget --progress=dot:giga -O $QT_INSTALLER $QT_URL
-if [ `uname` = "Linux" ]; then
-  chmod u+x $QT_INSTALLER
-  ./$QT_INSTALLER --script $QT_SILENT_INSTALL_JS -platform minimal
-  rm $QT_INSTALLER
-else
-  hdiutil attach $QT_INSTALLER
-  /Volumes/qt-opensource-mac-x64-5.11.0/qt-opensource-mac-x64-5.11.0.app/Contents/MacOS/qt-opensource-mac-x64-5.11.0 \
-    --script $QT_SILENT_INSTALL_JS \
-    -platform minimal
-  hdiutil detach /Volumes/qt-opensource-mac-x64-5.11.0
-  rm $QT_INSTALLER
-fi
+# # Download and install qt
+# wget --progress=dot:giga -O $QT_INSTALLER $QT_URL
+# if [ `uname` = "Linux" ]; then
+#   chmod u+x $QT_INSTALLER
+#   ./$QT_INSTALLER --script $QT_SILENT_INSTALL_JS --platform minimal
+#   rm $QT_INSTALLER
+# else
+#   hdiutil attach $QT_INSTALLER
+#   /Volumes/qt-opensource-mac-x64-5.11.0/qt-opensource-mac-x64-5.11.0.app/Contents/MacOS/qt-opensource-mac-x64-5.11.0 \
+#     --script $QT_SILENT_INSTALL_JS \
+#     --platform minimal
+#   hdiutil detach /Volumes/qt-opensource-mac-x64-5.11.0
+#   rm $QT_INSTALLER
+# fi
 
-# package
-cd $QT_LIB_PLUGINS_PARENT
-tar -zcf qt.tar.gz *
+# # package
+# cd $QT_LIB_PLUGINS_PARENT
+# tar -zcf qt.tar.gz *
 
-# mv to destination directory
-mv qt.tar.gz $DEST_DIR
+# # mv to destination directory
+# mv qt.tar.gz $DEST_DIR
+
+################################################################################
+
+mkdir -p $QT_INSTALL_DIR
+QT_TAR_FILE="${QT_INSTALL_DIR}/qt.tar.gz"
+QT_TAR_FILE_URL="$(DetectOs)/qt.tar.gz"
+QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE_URL}
+wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
+cd ${QT_INSTALL_DIR}
+tar -zxf qt.tar.gz
+mv $QT_TAR_FILE $DEST_DIR

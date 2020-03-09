@@ -48,7 +48,7 @@ cd $WORKING_DIR
 
 # Install prerequisites will be called inside build-qt.sh
 ## Install Qt using the silent JavaScript installer
-. $BDM_PROJECT_DIR/util/build-third-party/build-qt.sh
+# . $BDM_PROJECT_DIR/util/build-third-party/build-qt.sh
 cd $WORKING_DIR
 
 if [ `uname` = "Linux" ]; then
@@ -101,6 +101,7 @@ cmake \
   -DENABLE_ospraymaterials:BOOL=ON \
   -DENABLE_paraviewsdk:BOOL=ON \
   -DENABLE_python:BOOL=ON \
+  -DENABLE_python3:BOOL=ON \
   -DENABLE_qt5:BOOL=ON \
   -DUSE_SYSTEM_qt5:BOOL=ON \
   -DENABLE_mpi:BOOL=ON \
@@ -108,7 +109,7 @@ cmake \
   ../paraview-superbuild
 
 ## Step 4: compile and install
-make -j$(CPUCount) install
+make -j2 install
 
 # patch and bundle
 # TODO(ahmad): Patch is probably not necessary anymore after relying on rpath

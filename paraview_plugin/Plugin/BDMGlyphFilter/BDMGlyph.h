@@ -26,7 +26,7 @@ class VTK_EXPORT BDMGlyph : public vtkGlyph3D {
  public:
   static BDMGlyph* New();
   vtkTypeMacro(BDMGlyph, vtkGlyph3D);
-  void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;  // NOLINT
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
  protected:
   BDMGlyph();
@@ -39,14 +39,14 @@ class VTK_EXPORT BDMGlyph : public vtkGlyph3D {
    * parameters.
    */
   bool Execute(vtkDataSet* input, vtkInformationVector* sourceVector,
-               vtkPolyData* output) VTK_OVERRIDE;
+               vtkPolyData* output) override;
   bool Execute(vtkDataSet* input, vtkInformationVector* sourceVector,
                vtkPolyData* output, vtkDataArray* inSScalars,
-               vtkDataArray* inVectors) VTK_OVERRIDE;
+               vtkDataArray* inVectors) override;
 
  private:
-  BDMGlyph(const BDMGlyph&) VTK_DELETE_FUNCTION;
-  void operator=(const BDMGlyph&) VTK_DELETE_FUNCTION;
+  BDMGlyph(const BDMGlyph&) = delete;
+  void operator=(const BDMGlyph&) = delete;
 };
 
 #endif  // PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPH_H_
