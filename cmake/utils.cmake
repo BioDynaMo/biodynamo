@@ -285,10 +285,13 @@ function(install_inside_build)
 
     # BioDynaMo paraview plugin
     if(paraview)
-      add_copy_directory(copy_files_bdm
-              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/
+      add_copy_files(copy_files_bdm
               DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR}
-              GLOB "*.so"
+              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so
+              )
+      add_copy_files(copy_files_bdm
+              DESTINATION ${CMAKE_INSTALL_ROOT}/lib
+              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so
               )
     endif()
 

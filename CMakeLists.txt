@@ -152,20 +152,21 @@ endif()
 
 # Check if Python 3.6.9 from PyEnv is installed
 if (DEFINED ENV{PYENV_ROOT})
-  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")	
-else()	
-  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")	
-endif()	
-if(EXISTS "${Python_ROOT_DIR}/bin/python")	
-  set(PYTHON_FOUND TRUE)	
-  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")	
-  message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")	
-else()	
-  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "	
-    "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "	
-    "interpreter is required in order to successfully use BioDynaMo."	
-    "If you installed PyEnv somewhere other than in your home directory, please "	
-    "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")	
+  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
+else()
+  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
+endif()
+if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS "${Python_ROOT_DIR}/lib/libpython3.6m.so")
+  set(PYTHON_FOUND TRUE)
+  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
+  set(Python_LIBRARIES "${Python_ROOT_DIR}/lib/libpython3.6m.so")
+  message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")
+else()
+  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
+    "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "
+    "interpreter is required in order to successfully use BioDynaMo."
+    "If you installed PyEnv somewhere other than in your home directory, please "
+    "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")
 endif()
 
 # Check if OpenMPI is present
