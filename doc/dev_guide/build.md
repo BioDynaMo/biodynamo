@@ -205,7 +205,7 @@ cd biodynamo
 source <root_installation_dir>/bin/thisroot.sh
 
 # For ParaView
-export ParaView_DIR=<paraview_installation_dir>/lib/cmake/paraview-5.6
+export ParaView_DIR=<paraview_installation_dir>/lib/cmake/paraview-5.8
 export Qt5_DIR=<qt5_installation_dir>/lib/cmake/Qt5
 
 ./install.sh

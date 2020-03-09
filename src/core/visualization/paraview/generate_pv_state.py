@@ -193,8 +193,6 @@ def ProcessSimulationObject(result_dir, so_info):
         sys.exit(1)
 
     files = sorted(files, key=functools.cmp_to_key(lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y)))
-    # files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
-
 
     # create a new 'XML Partitioned Unstructured Grid Reader'
     so_data = XMLPartitionedUnstructuredGridReader(FileName=files)
@@ -263,7 +261,6 @@ def ProcessExtracellularSubstance(result_dir, substance_info):
         sys.exit(1)
 
     files = sorted(files, key=functools.cmp_to_key(lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y)))
-    # files.sort(cmp=lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y))
 
     substance_data = XMLPartitionedImageDataReader(FileName=files)
     substance_data.PointArrayStatus = ['Substance Concentration', 'Diffusion Gradient']
@@ -318,6 +315,10 @@ def BuildParaviewState(build_info):
 
     os.chdir(result_dir)
     SaveState('{0}.pvsm'.format(sim_info['name']))
+
+    # This avoid the error: Inconsistency detected by ld.so
+    # See: https://discourse.paraview.org/t/inconsistency-detected-by-ld-so/3778
+    Show(Cone())
 
 
 # ------------------------------------------------------------------------------

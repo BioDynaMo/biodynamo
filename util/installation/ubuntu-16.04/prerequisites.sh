@@ -25,6 +25,11 @@ Arguments:
   exit 1
 fi
 
+# Add ppa for newer CMake version
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+REPO="deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main"
+sudo apt-add-repository "$REPO"
+
 # Update
 sudo apt-get update
 

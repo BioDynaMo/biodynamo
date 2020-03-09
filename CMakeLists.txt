@@ -429,6 +429,8 @@ if(paraview)
   file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
   file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
 
+  # We link against python3 libraries, so that the paraview libraries can
+  # resolve missing python symbols when creating binaries
   set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
   build_shared_library(VisualizationAdaptor
                     SOURCES ${PV_SOURCES}
