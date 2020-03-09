@@ -185,12 +185,6 @@ void ParaviewAdaptor::InsituVisualization() {
 void ParaviewAdaptor::ExportVisualization() { WriteToFile(); }
 
 void ParaviewAdaptor::CreateVtkObjects() {
-  auto* rm = Simulation::GetActive()->GetResourceManager();
-  for (auto& pair : impl_->vtk_so_grids_) {
-    auto num_so = rm->GetNumSimObjects(); // FIXME use type index
-    pair.second->ResetAndResizeDataArrays(num_so);
-  }
-
   BuildSimObjectsVTKStructures();
   BuildDiffusionGridVTKStructures();
   if (impl_->data_description_->GetUserData() == nullptr) {
@@ -204,32 +198,15 @@ void ParaviewAdaptor::CreateVtkObjects() {
   }
 }
 
-void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
-  auto* param = Simulation::GetActive()->GetParam();
-  auto so_name = so->GetTypeName();
-
-  if (param->visualize_sim_objects_.find(so_name) !=
-      param->visualize_sim_objects_.end()) {
-    auto* vsg = impl_->vtk_so_grids_[so->GetTypeName()];
-
-    ParaviewSoVisitor visitor(vsg);
-    so->ForEachDataMemberIn(vsg->vis_data_members_, &visitor);
-  }
-}
-
-struct ProcessSimObjectFunctor : public Functor<void, SimObject*> {
-  ParaviewAdaptor* pa_;
-
-  explicit ProcessSimObjectFunctor(ParaviewAdaptor* pa) : pa_(pa) {}
-
-  void operator()(SimObject* so) { pa_->ProcessSimObject(so); }
-};
-
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
+  for (auto& pair : impl_->vtk_so_grids_) {
+    auto num_so = rm->GetNumSimObjects(); // FIXME use type index
+    pair.second->ResetAndResizeDataArrays(num_so);
 
-  PopulateDataArraysFunctor functor{impl_->vtk_so_grids_["Cell"]}; // FIXME
-  rm->ApplyOnAllElements(functor);
+    PopulateDataArraysFunctor functor{pair.second}; // FIXME
+    rm->ApplyOnAllElementsParallel(functor);
+  }
 }
 
 // ---------------------------------------------------------------------------

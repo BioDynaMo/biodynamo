@@ -76,22 +76,10 @@ class ParaviewAdaptor : VisualizationAdaptor {
   void ExportVisualization();
 
   /// Creates the VTK objects that represent the simulation objects in ParaView.
-  ///
-  /// @param      data_description  The data description
-  ///
   void CreateVtkObjects();
-
-  // ---------------------------------------------------------------------------
-  // simulation objects
-
-  // Process a single simulation object
-  void ProcessSimObject(const SimObject* so);
 
   /// Create the required vtk objects to visualize simulation objects.
   void BuildSimObjectsVTKStructures();
-
-  // ---------------------------------------------------------------------------
-  // diffusion grids
 
   /// Sets the properties of the diffusion VTK grid structures
   void ProcessDiffusionGrid(const DiffusionGrid* grid);
@@ -104,9 +92,6 @@ class ParaviewAdaptor : VisualizationAdaptor {
 
   /// Helper function to write simulation objects to file. It loops through the
   /// vectors of VTK grid structures and calls the internal VTK writer methods
-  ///
-  /// @param[in]  step  The step
-  ///
   void WriteToFile();
 
   /// This function generates the Paraview state based on the exported files

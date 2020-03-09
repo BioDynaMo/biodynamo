@@ -52,13 +52,13 @@ VtkSoGrid::~VtkSoGrid() {
 void VtkSoGrid::ResetAndResizeDataArrays(uint64_t new_size) {
   auto* parray = data_->GetPoints()->GetData();
   parray->Reset();
-  parray->Resize(new_size);
+  parray->SetNumberOfTuples(new_size);
 
   auto* point_data = data_->GetPointData();
-  for (uint64_t i = 0; i < point_data->GetNumberOfArrays(); i++) {
+  for (int i = 0; i < point_data->GetNumberOfArrays(); i++) {
     auto* array = point_data->GetArray(i);
     array->Reset();
-    // array->Resize(new_size);
+    array->SetNumberOfTuples(new_size);
   }
 }
 

@@ -105,10 +105,8 @@ struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
     auto idx = soh.GetElementIdx();
     auto* cell = static_cast<Cell*>(so);
     const auto& pos = cell->GetPosition();
-    auto* array = grid_->GetPoints()->GetData();
-    // array->SetTuple(idx, pos.data());
-    array->InsertNextTuple3(pos[0], pos[1], pos[2]);
-    static_cast<vtkDoubleArray*>(point_data_->GetArray("diameter_"))->InsertNextTuple1(cell->GetDiameter());
+    grid_->GetPoints()->GetData()->SetTuple3(idx, pos[0], pos[1], pos[2]);
+    static_cast<vtkDoubleArray*>(point_data_->GetArray(0))->SetTuple1(idx, cell->GetDiameter());
   }
 };
 
