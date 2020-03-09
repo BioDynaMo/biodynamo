@@ -226,7 +226,6 @@ def ProcessExtracellularSubstance(substance_info, substance_data, render_view):
     # change representation type
     # NB: Paraview v5.6.0 screenshots from within catalyst don't render volume
     #     rendering. -> Change default to Wireframe
-    print("is insitu pipeline {}".format(is_insitu_pipeline))
     if is_insitu_pipeline:
         substance_display.SetRepresentationType('Wireframe')
     else:
@@ -258,7 +257,6 @@ def CreateCoProcessor():
             build_info = json.loads(json_string)
             global is_insitu_pipeline
             is_insitu_pipeline = True
-            print("is insitu pipeline {}".format(is_insitu_pipeline))
 
             # simulation objects
             for so_info in build_info['sim_objects']:
@@ -274,7 +272,13 @@ def CreateCoProcessor():
 
             # ------------------------------------------------------------------
             # end default pipeline - start custom script
-            ExtendDefaultPipeline(renderview, coprocessor, datadescription)
+            # check if a custom script was defined
+            try:
+                ExtendDefaultPipeline
+            except NameError:
+                print("WARNING: No user-defined paraview script found")
+            else:
+                ExtendDefaultPipeline(renderview, coprocessor, datadescription)
 
         return Pipeline()
 
@@ -283,36 +287,27 @@ def CreateCoProcessor():
             self.Pipeline = _CreatePipeline(self, datadescription)
 
     coprocessor = CoProcessor()
-    # freqs = { 'Cells' : [1]}
-    # coprocessor.SetUpdateFrequencies(freqs)
     return coprocessor
 
-#---------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #Global variables that will hold the pipeline for each timestep
 #Creating the CoProcessor object, doesn't actually create the ParaView pipeline.
 #It will be automatically setup when coprocessor.UpdateProducers() is called the
 #first time.
 coprocessor = CreateCoProcessor()
 
-#---------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #Enable Live - Visualizaton with ParaView
 # coprocessor.EnableLiveVisualization(True, 1)
 
-#------------------------------- Data Selection method ---------------------------------
+#------------------------------- Data Selection method -------------------------
 
 def RequestDataDescription(datadescription):
     global coprocessor
 
-    print("Python Catalyst RequestDataDescription")
-    # print(datadescription)
-
     if datadescription.GetForceOutput() == True:
-        # print("   datadescription.GetForceOutput()")
-
         #We are just going to request all fields and meshes from the simulation code / adaptor.
-        # print("   {}".format(datadescription.GetNumberOfInputDescriptions()))
         for i in range(datadescription.GetNumberOfInputDescriptions()):
-            # print("   {0}".format(datadescription.GetInputDescription(i)))
             datadescription.GetInputDescription(i).AllFieldsOn()
             datadescription.GetInputDescription(i).GenerateMeshOn()
         return
@@ -320,15 +315,10 @@ def RequestDataDescription(datadescription):
     #setup requests for all inputs based on the requirements of the pipeline.
     coprocessor.LoadRequestedData(datadescription)
 
-#--------------------------------- Processing method ----------------------------------
+#--------------------------------- Processing method ---------------------------
 def DoCoProcessing(datadescription):
     "Callback to do co-processing for current timestep"
     global coprocessor
-
-    print("Python Catalyst DoCoProcessing")
-    # print(datadescription)
-    print(datadescription.GetTime())
-    print(datadescription.GetTimeStep())
 
     #Update the coprocessor by providing it the newly generated simulation data.
     #If the pipeline hasn't been setup yet, this will setup the pipeline.
