@@ -13,22 +13,30 @@
 // -----------------------------------------------------------------------------
 
 #include "core/visualization/paraview/helper.h"
-#include "core/param/param.h"
-#include "core/sim_object/sim_object.h"
-#include "core/simulation.h"
-#include "core/util/jit.h"
-
-#include "core/param/param.h"
-#include "core/shape.h"
-#include "core/sim_object/sim_object.h"
-#include "core/simulation.h"
-#include "core/visualization/paraview/jit_helper.h"
-
+// std
+#include <algorithm>
+#include <set>
+#include <vector>
+// ParaView
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
+// ROOT
+#include <TClassTable.h>
+#include <TClass.h>
+#include <TDataMember.h>
+// BioDynaMo
+#include "core/param/param.h"
+#include "core/sim_object/sim_object.h"
+#include "core/simulation.h"
+#include "core/util/jit.h"
+#include "core/param/param.h"
+#include "core/shape.h"
+#include "core/sim_object/sim_object.h"
+#include "core/simulation.h"
+#include "core/visualization/paraview/jit_helper.h"
 
 namespace bdm {
 
@@ -38,20 +46,21 @@ VtkSoGrid::VtkSoGrid(const char* type_name, vtkCPDataDescription* data_descripti
   data_description->AddInput(type_name);
   data_description->GetInputDescriptionByName(type_name)->SetGrid(data_);
 
+  auto* tmp_instance = GetSimObjectInstance();
+  shape_ = tmp_instance->GetShape();
   std::vector<std::string> data_members;
+  InitializeDataMembers(tmp_instance, &data_members);
+  array_indices_.resize(data_members.size());
+
   //InitializeVtkSoGrid(this);
-  JitForEachDataMemberFunctor jitcreate(name_, data_members, "CreateVtkDataArraysFunctor", [](){
-    return R"ESCSEQ(namespace bdm {
+  JitForEachDataMemberFunctor jitcreate(name_, data_members, "CreateVtkDataArraysFunctor", [](const std::vector<TDataMember*>& tdata_members){
+    std::stringstream sstr;
+    sstr << R"ESCSEQ(
+      namespace bdm {
 
       struct CreateVtkDataArraysFunctor : public Functor<void, VtkSoGrid*> {
       void operator()(VtkSoGrid* so_grid) {
-        Cell so;
-        so_grid->shape_ = so.GetShape();
-        so_grid->vis_data_members_ = so.GetRequiredVisDataMembers();
-        auto* param = Simulation::GetActive()->GetParam();
-        for (auto& dm : param->visualize_sim_objects_.at(so_grid->name_)) {
-          so_grid->vis_data_members_.insert(dm);
-        }
+      )ESCSEQ";
 
         // TODO
         // 1. Find class name
@@ -67,16 +76,31 @@ VtkSoGrid::VtkSoGrid(const char* type_name, vtkCPDataDescription* data_descripti
         // Push back so_grid->data_members_
         // Generate code based on so_grid->data_members_
 
-        so_grid->data_members_.push_back({"position_", "Double3", "Cell", 104});
-        so_grid->data_members_.push_back({"diameter_", "double", "Cell", 152});
+        // so_grid->data_members_.push_back({"position_", "Double3", "Cell", 104});
+        // so_grid->data_members_.push_back({"diameter_", "double", "Cell", 152});
+      uint64_t counter = 0;
+      for (auto* tdm : tdata_members) {
+        // example:
+        // so_grid->array_indices_[0] =
+        //    CreateVtkDataArray<Double3>("position_", so_grid);
+        sstr << "  so_grid->array_indices_["
+             << counter++
+             << "] = CreateVtkDataArray<"
+             << tdm->GetTypeName()
+             << ">(\""
+             << tdm->GetName()
+             << "\", so_grid);\n";
+        counter++;
+      }
 
-        so_grid->data_members_[0].array_idx = CreateVtkDataArray<Double3>("position_", so_grid);
-        so_grid->data_members_[1].array_idx = CreateVtkDataArray<double>("diameter_", so_grid);
+      sstr << R"ESCSEQ(
       }
     };
 
   } // namespace bdm
   )ESCSEQ";
+
+  return sstr.str();
 
   });
   jitcreate.Compile();
@@ -84,8 +108,9 @@ VtkSoGrid::VtkSoGrid(const char* type_name, vtkCPDataDescription* data_descripti
   (*create_functor)(this);
   delete create_functor;
 
-  JitForEachDataMemberFunctor jitpopulate(name_, data_members, "PopulateDataArraysFunctorImpl", [](){
-    return R"ESCSEQ(
+  JitForEachDataMemberFunctor jitpopulate(name_, data_members, "PopulateDataArraysFunctorImpl", [](const std::vector<TDataMember*>& tdata_members){
+    std::stringstream sstr;
+    sstr << R"ESCSEQ(
       namespace bdm {
 
       struct PopulateDataArraysFunctorImpl : public PopulateDataArraysFunctor {
@@ -93,13 +118,31 @@ VtkSoGrid::VtkSoGrid(const char* type_name, vtkCPDataDescription* data_descripti
 
         void operator()(SimObject* so, SoHandle soh) {
           auto idx = soh.GetElementIdx();
-          PopulateDataArraysFunctor::SetTuple<Cell, Double3>(so, idx, -1, 104);
-          PopulateDataArraysFunctor::SetTuple<Cell, double>(so, idx, 0, 152);
+        )ESCSEQ";
+
+      uint64_t counter = 0;
+      for (auto* tdm : tdata_members) {
+        // example:
+        // PopulateDataArraysFunctor::SetTuple<Cell, Double3>(so, idx,
+        //     so_grid_->array_indices_[0], 104);
+        sstr << "PopulateDataArraysFunctor::SetTuple<"
+             << tdm->GetClass()->GetName()
+             << ", "
+             << tdm->GetTypeName()
+             << ">(so, idx, so_grid_->array_indices_["
+             << counter++
+             << "], "
+             << tdm->GetOffset()
+             << ");\n";
+          }
+
+    sstr << R"ESCSEQ(
         }
       };
 
       }  // namespace bdm
       )ESCSEQ";
+    return sstr.str();
   });
   jitpopulate.Compile();
   populate_arrays_ = jitpopulate.New<PopulateDataArraysFunctor>(Concat("reinterpret_cast<bdm::VtkSoGrid*>(", this, ")"));
@@ -109,7 +152,6 @@ VtkSoGrid::~VtkSoGrid() {
   name_ = "";
   data_->Delete();
   data_ = nullptr;
-  vis_data_members_.clear();
   if (populate_arrays_) {
     delete populate_arrays_;
   }
@@ -126,6 +168,28 @@ void VtkSoGrid::ResetAndResizeDataArrays(uint64_t new_size) {
     array->Reset();
     array->SetNumberOfTuples(new_size);
   }
+}
+
+SimObject* VtkSoGrid::GetSimObjectInstance() {
+  const auto& tclass_vector = FindClassSlow(name_);
+  if (tclass_vector.size() == 0) {
+    // TODO message
+    Log::Fatal("VtkSoGrid::VtkSoGrid", "Class not found");
+  } else if (tclass_vector.size() == 0) {
+    // TODO message
+    Log::Fatal("VtkSoGrid::VtkSoGrid", "Class name ambigous. Add namespace modifier");
+  }
+  return static_cast<SimObject*>(tclass_vector[0]->New());
+}
+
+void VtkSoGrid::InitializeDataMembers(SimObject* so, std::vector<std::string>* data_members) {
+  std::set<std::string> dm_set = so->GetRequiredVisDataMembers();
+  auto* param = Simulation::GetActive()->GetParam();
+  for (auto& dm : param->visualize_sim_objects_.at(name_)) {
+    dm_set.insert(dm);
+  }
+  data_members->resize(dm_set.size());
+  std::copy(dm_set.begin(), dm_set.end(), data_members->begin());
 }
 
 // -----------------------------------------------------------------------------

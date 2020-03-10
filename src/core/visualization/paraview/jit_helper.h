@@ -115,10 +115,11 @@ inline int CreateVtkDataArray<Double3>(const std::string& dm_name, VtkSoGrid* so
 }
 
 struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
+  VtkSoGrid* so_grid_;
   vtkUnstructuredGrid* grid_;
   vtkPointData* point_data_;
 
-  PopulateDataArraysFunctor(VtkSoGrid* so_grid) : grid_(so_grid->data_), point_data_(so_grid->data_->GetPointData()) {}
+  PopulateDataArraysFunctor(VtkSoGrid* so_grid) : so_grid_(so_grid), grid_(so_grid->data_), point_data_(so_grid->data_->GetPointData()) {}
 
   template <typename TClass, typename TDataMember>
   typename std::enable_if<IsArray<TDataMember>::value>::type

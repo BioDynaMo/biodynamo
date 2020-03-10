@@ -30,6 +30,8 @@ namespace bdm {
 
 static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
+class SimObject;
+
 struct PopulateDataArraysFunctor;
 
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
@@ -41,20 +43,16 @@ struct VtkSoGrid {
 
   void ResetAndResizeDataArrays(uint64_t new_size);
 
-  struct DataMember {
-    std::string name;
-    std::string type;
-    std::string class_name;
-    unsigned data_member_offset;
-    int array_idx;
-  };
-
   std::string name_;
   vtkUnstructuredGrid* data_ = nullptr;
   Shape shape_;
   PopulateDataArraysFunctor* populate_arrays_ = nullptr;
-  std::vector<DataMember> data_members_;
-  std::set<std::string> vis_data_members_;
+  /// stores vtk array index - position is index of data member
+  std::vector<int> array_indices_;
+
+private:
+   SimObject* GetSimObjectInstance();
+   void InitializeDataMembers(SimObject* so, std::vector<std::string>* data_members);
 };
 
 /// Adds additional data members to the `vtkImageData` required by
