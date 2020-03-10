@@ -24,7 +24,7 @@ class TDataMember;
 
 namespace bdm {
 
-/// Iterates over all entries in `TClassTable` and returns a list of candidate
+/// Iterates over all entries in `TClassTable` and returns a vector of candidate
 /// TClass* that match the given class name.
 /// \param class_name does not have to be fully qualified
 ///        (e.g. `Cell` instead of `bdm::Cell`). \n
@@ -33,9 +33,18 @@ namespace bdm {
 ///         were found in different namespaces
 std::vector<TClass*> FindClassSlow(const std::string& class_name);
 
+/// Iterates over all data members of `tclass` and its base classes and returns
+/// TClass* that match the given class name.
+/// \param tclass TClass for which the data members should be determined
+/// \param data_member name of the data_member
+///        (e.g. `position_` or  `bdm::Cell::position_`). \n
+/// \return multiple values if data_member name is ambigous and multiple
+///         instances were found in `tclass` and its base classes
+std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass, const std::string& data_member);
+
 class JitForEachDataMemberFunctor {
 public:
- JitForEachDataMemberFunctor(const std::string class_name,
+ JitForEachDataMemberFunctor(TClass* tclass,
                              const std::vector<std::string> dm_names,
                              const std::string functor_name,
                              const std::function<std::string(const std::vector<TDataMember*>&)>& code_generation);

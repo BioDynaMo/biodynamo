@@ -26,12 +26,13 @@
 
 #include "core/shape.h"
 
+class TClass;
+
 namespace bdm {
 
 static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
 class SimObject;
-
 struct PopulateDataArraysFunctor;
 
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
@@ -51,7 +52,7 @@ struct VtkSoGrid {
   std::vector<int> array_indices_;
 
 private:
-   SimObject* GetSimObjectInstance();
+   TClass* GetTClass();
    void InitializeDataMembers(SimObject* so, std::vector<std::string>* data_members);
 };
 

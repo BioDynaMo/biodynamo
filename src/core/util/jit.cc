@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <stack>
 #include <iostream> // FIXME remove
 
 #include <TInterpreter.h>
@@ -22,9 +23,11 @@
 
 #include "core/util/jit.h"
 #include "core/util/string.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
+// FIXME add tests
 std::vector<TClass*> FindClassSlow(const std::string& class_name) {
   bool cn_has_scope = class_name.find("::") != std::string::npos;
   std::string cn_with_scope_prefix = std::string("::") + class_name;
@@ -53,17 +56,67 @@ std::vector<TClass*> FindClassSlow(const std::string& class_name) {
   return tclasses;
 }
 
-JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(const std::string class_name,
+// FIXME add tests
+std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass, const std::string& data_member) {
+  std::vector<TDataMember*> ret_val;
+
+  bool dm_has_scope = data_member.find("::") != std::string::npos;
+  std::string class_name = "";
+  std::string dm_only_name = data_member;
+  if (dm_has_scope) {
+    auto idx = data_member.find_last_of("::");
+    class_name = data_member.substr(0, idx - 1);
+    dm_only_name = data_member.substr(idx + 1, data_member.size());
+  }
+
+  std::stack<TClass*> tc_stack;
+  tc_stack.push(tclass);
+
+  while(tc_stack.size() != 0) {
+    auto* current_tc = tc_stack.top();
+    tc_stack.pop();
+    for (const auto&& base : *current_tc->GetListOfBases()) {
+      auto* tbase = TClassTable::GetDict(base->GetName())();
+      tc_stack.push(tbase);
+    }
+
+    for(int i = 0; i < current_tc->GetListOfDataMembers()->GetSize(); ++i) {
+      auto* dm = static_cast<TDataMember*>(current_tc->GetListOfDataMembers()->At(i));
+      if (dm_has_scope) {
+        if (dm_only_name.compare(dm->GetName()) == 0 && EndsWith(std::string(current_tc->GetName()), class_name)) {
+          ret_val.push_back(dm);
+        }
+      } else {
+        if (data_member.compare(dm->GetName()) == 0) {
+          ret_val.push_back(dm);
+        }
+      }
+    }
+  }
+
+  return ret_val;
+}
+
+JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(TClass* tclass,
                            const std::vector<std::string> dm_names,
                            const std::string functor_name,
                            const std::function<std::string(const std::vector<TDataMember*>&)>& code_generator)
                            : functor_name_(functor_name)
                            , code_generator_(code_generator) {
 
-  auto* tclass = TClassTable::GetDict("bdm::Cell")();
-  data_members_.resize(2);
-  data_members_[0] = static_cast<TDataMember*>(tclass->GetListOfDataMembers()->At(4));
-  data_members_[1] = static_cast<TDataMember*>(tclass->GetListOfDataMembers()->At(6));
+  data_members_.reserve(dm_names.size());
+  for(auto& dm : dm_names) {
+    auto candidates = FindDataMemberSlow(tclass, dm);
+    if (candidates.size() == 1) {
+      data_members_.push_back(candidates[0]);
+    } else if (candidates.size() == 0) {
+      // FIXME message
+      Log::Fatal("JitForEachDataMemberFunctor::JitForEachDataMemberFunctor", "Could not find data member");
+    } else {
+      // FIXME message
+      Log::Fatal("JitForEachDataMemberFunctor::JitForEachDataMemberFunctor", "Data member name is ambigous");
+    }
+  }
 }
 
 void JitForEachDataMemberFunctor::Compile() {
