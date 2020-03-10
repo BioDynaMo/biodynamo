@@ -103,9 +103,9 @@ std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
 JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
     TClass* tclass, const std::vector<std::string> dm_names,
     const std::string functor_name,
-    const std::function<std::string(const std::vector<TDataMember*>&)>&
+    const std::function<std::string(const std::string&, const std::vector<TDataMember*>&)>&
         code_generator)
-    : functor_name_(functor_name), code_generator_(code_generator) {
+    : functor_name_(Concat(functor_name, counter_++)), code_generator_(code_generator) {
   data_members_.reserve(dm_names.size());
   for (auto& dm : dm_names) {
     auto candidates = FindDataMemberSlow(tclass, dm);
@@ -124,12 +124,14 @@ JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
 }
 
 void JitForEachDataMemberFunctor::Compile() {
-  gInterpreter->ProcessLineSynch(code_generator_(data_members_).c_str());
+  gInterpreter->ProcessLineSynch(code_generator_(functor_name_, data_members_).c_str());
 }
 
 void* JitForEachDataMemberFunctor::New(const std::string& parameter) {
   auto cmd = Concat("new bdm::", functor_name_, "(", parameter, ")");
   return reinterpret_cast<void*>(gInterpreter->Calc(cmd.c_str()));
 }
+
+std::atomic<int> JitForEachDataMemberFunctor::counter_;
 
 }  // namespace bdm

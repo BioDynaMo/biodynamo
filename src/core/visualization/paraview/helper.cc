@@ -57,14 +57,11 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
   // InitializeVtkSoGrid(this);
   JitForEachDataMemberFunctor jitcreate(
       tclass, data_members, "CreateVtkDataArraysFunctor",
-      [](const std::vector<TDataMember*>& tdata_members) {
+      [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
         std::stringstream sstr;
-        sstr << R"ESCSEQ(
-      namespace bdm {
-
-      struct CreateVtkDataArraysFunctor : public Functor<void, VtkSoGrid*> {
-      void operator()(VtkSoGrid* so_grid) {)ESCSEQ";
-        sstr << "\n";
+        sstr << "namespace bdm {\n\n"
+             << "struct " << functor_name << " : public Functor<void, VtkSoGrid*> {\n"
+             << "  void operator()(VtkSoGrid* so_grid) {\n";
 
         uint64_t counter = 0;
         for (auto* tdm : tdata_members) {
@@ -76,12 +73,9 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
                << tdm->GetName() << "\", so_grid);\n";
         }
 
-        sstr << R"ESCSEQ(
-      }
-    };
-
-  } // namespace bdm
-  )ESCSEQ";
+        sstr << "  }\n";
+        sstr << "};\n\n";
+        sstr << "}  // namespace bdm\n";
 
         return sstr.str();
 
@@ -93,17 +87,14 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
 
   JitForEachDataMemberFunctor jitpopulate(
       tclass, data_members, "PopulateDataArraysFunctorImpl",
-      [](const std::vector<TDataMember*>& tdata_members) {
+      [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
         std::stringstream sstr;
-        sstr << R"ESCSEQ(
-      namespace bdm {
-
-      struct PopulateDataArraysFunctorImpl : public PopulateDataArraysFunctor {
-        PopulateDataArraysFunctorImpl(VtkSoGrid* so_grid) : PopulateDataArraysFunctor(so_grid) {}
-
-        void operator()(SimObject* so, SoHandle soh) {
-          auto idx = soh.GetElementIdx();)ESCSEQ";
-        sstr << "\n";
+        sstr << "namespace bdm {\n\n"
+             << "struct " << functor_name << " : public PopulateDataArraysFunctor {\n"
+             << "  " << functor_name << "(VtkSoGrid* so_grid) \n"
+             << "          : PopulateDataArraysFunctor(so_grid) {}\n"
+             << "  void operator()(SimObject* so, SoHandle soh) {\n"
+             << "    auto idx = soh.GetElementIdx();\n";
 
         uint64_t counter = 0;
         for (auto* tdm : tdata_members) {
@@ -116,12 +107,9 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
                << tdm->GetOffset() << ");\n";
         }
 
-        sstr << R"ESCSEQ(
-        }
-      };
-
-      }  // namespace bdm
-      )ESCSEQ";
+        sstr << "  }\n";
+        sstr << "};\n\n";
+        sstr << "}  // namespace bdm\n";
         return sstr.str();
       });
   jitpopulate.Compile();
