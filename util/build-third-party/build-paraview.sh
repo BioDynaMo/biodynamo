@@ -128,9 +128,9 @@ cd install
 sed -i 's|/home/testuser/bdm-build-third-party/paraview-build/install/include/python3.7m||g' lib/cmake/paraview-5.8/vtk/VTK-targets.cmake || true
 
 # Some dependencies could be put into lib64 (e.g. OpenImageDenoise), so we copy
-# it into the lib directory
+# it into the lib directory (don't delete lib64, because some CMake files will
+# be referring to that directory)
 rsync -a lib64/ lib/ || true
-rm -rf lib64
 
 ## tar the install directory
 tar -zcf paraview-$PV_VERSION.tar.gz *
