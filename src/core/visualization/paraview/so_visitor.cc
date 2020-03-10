@@ -1,4 +1,5 @@
-// // -----------------------------------------------------------------------------
+// //
+// -----------------------------------------------------------------------------
 // //
 // // Copyright (C) The BioDynaMo Project.
 // // All Rights Reserved.
@@ -10,7 +11,8 @@
 // // See the NOTICE file distributed with this work for additional information
 // // regarding copyright ownership.
 // //
-// // -----------------------------------------------------------------------------
+// //
+// -----------------------------------------------------------------------------
 //
 // #ifndef __ROOTCLING__
 //
@@ -110,7 +112,8 @@
 // }
 // ParaviewSoVisitor::~ParaviewSoVisitor() {}
 //
-// void ParaviewSoVisitor::Visit(const std::string& dm_name, size_t type_hash_code,
+// void ParaviewSoVisitor::Visit(const std::string& dm_name, size_t
+// type_hash_code,
 //                               const void* data) {
 //   if (type_hash_code == typeid(double).hash_code()) {
 //     Double(dm_name, data);
@@ -134,7 +137,8 @@
 //   vtk_array->InsertNextTuple1(data);
 // }
 //
-// void ParaviewSoVisitor::MathArray3(const std::string& dm_name, const void* d) {
+// void ParaviewSoVisitor::MathArray3(const std::string& dm_name, const void* d)
+// {
 //   auto& data = *reinterpret_cast<const Double3*>(d);
 //   auto* vtk_array = GetDouble3Array(dm_name, impl_->so_grid_);
 //   // TODO(lukas, ahmad) is there a better way?

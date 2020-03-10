@@ -17,14 +17,14 @@
 
 #include "core/container/math_array.h"
 #include "core/functor.h"
-#include "core/visualization/paraview/helper.h"
-#include "core/simulation.h"
 #include "core/param/param.h"
-#include "core/sim_object/sim_object.h"
 #include "core/resource_manager.h"
+#include "core/sim_object/sim_object.h"
+#include "core/simulation.h"
+#include "core/visualization/paraview/helper.h"
 
-#include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -69,13 +69,13 @@ struct GetNumberOfComponents<std::array<T, N>> {
   static const int value = N;
 };
 
-template<typename T>
+template <typename T>
 struct IsArray : std::false_type {};
 
-template<typename T, size_t N>
+template <typename T, size_t N>
 struct IsArray<std::array<T, N>> : std::true_type {};
 
-template<typename T, std::size_t N>
+template <typename T, std::size_t N>
 struct IsArray<MathArray<T, N>> : std::true_type {};
 
 template <typename T>
@@ -91,7 +91,8 @@ inline int CreateVtkDataArray(const std::string& dm_name, VtkSoGrid* so_grid) {
 }
 
 template <>
-inline int CreateVtkDataArray<Double3>(const std::string& dm_name, VtkSoGrid* so_grid) {
+inline int CreateVtkDataArray<Double3>(const std::string& dm_name,
+                                       VtkSoGrid* so_grid) {
   vtkNew<vtkDoubleArray> new_vtk_array;
   new_vtk_array->SetName(dm_name.c_str());
   auto* vtk_array = new_vtk_array.GetPointer();
@@ -119,32 +120,39 @@ struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
   vtkUnstructuredGrid* grid_;
   vtkPointData* point_data_;
 
-  PopulateDataArraysFunctor(VtkSoGrid* so_grid) : so_grid_(so_grid), grid_(so_grid->data_), point_data_(so_grid->data_->GetPointData()) {}
+  PopulateDataArraysFunctor(VtkSoGrid* so_grid)
+      : so_grid_(so_grid),
+        grid_(so_grid->data_),
+        point_data_(so_grid->data_->GetPointData()) {}
 
   template <typename TClass, typename TDataMember>
-  typename std::enable_if<IsArray<TDataMember>::value>::type
-  SetTuple(SimObject* so, uint64_t so_idx, int array_idx, uint64_t dm_offset) {
+  typename std::enable_if<IsArray<TDataMember>::value>::type SetTuple(
+      SimObject* so, uint64_t so_idx, int array_idx, uint64_t dm_offset) {
     auto* casted_so = static_cast<TClass*>(so);
     if (array_idx == -1) {
-      auto* data = reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so)+dm_offset)->data();
+      auto* data = reinterpret_cast<TDataMember*>(
+                       reinterpret_cast<char*>(casted_so) + dm_offset)
+                       ->data();
       grid_->GetPoints()->GetData()->SetTuple(so_idx, data);
     } else {
-      auto* data = reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so)+dm_offset)->data();
+      auto* data = reinterpret_cast<TDataMember*>(
+                       reinterpret_cast<char*>(casted_so) + dm_offset)
+                       ->data();
       point_data_->GetArray(array_idx)->SetTuple(so_idx, data);
     }
   }
 
   template <typename TClass, typename TDataMember>
-  typename std::enable_if<!IsArray<TDataMember>::value>::type
-  SetTuple(SimObject* so, uint64_t so_idx, int array_idx, uint64_t dm_offset) {
+  typename std::enable_if<!IsArray<TDataMember>::value>::type SetTuple(
+      SimObject* so, uint64_t so_idx, int array_idx, uint64_t dm_offset) {
     auto* casted_so = static_cast<TClass*>(so);
     if (array_idx != -1) {
-      auto* data = reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so)+dm_offset);
+      auto* data = reinterpret_cast<TDataMember*>(
+          reinterpret_cast<char*>(casted_so) + dm_offset);
       point_data_->GetArray(array_idx)->SetTuple(so_idx, data);
     }
   }
 };
-
 
 // clang-format off
 /// The following functor is only needed to fix a bug in ROOT Cling
@@ -164,7 +172,6 @@ struct ROOTClingFix : public PopulateDataArraysFunctor {
     PopulateDataArraysFunctor::SetTuple<SimObject, Double3>(so, 0, 0, 0);
   }
 };
-
 
 }  // namespace bdm
 

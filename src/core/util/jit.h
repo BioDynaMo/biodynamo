@@ -15,9 +15,9 @@
 #ifndef CORE_UTIL_JIT_H_
 #define CORE_UTIL_JIT_H_
 
+#include <functional>
 #include <string>
 #include <vector>
-#include <functional>
 
 class TClass;
 class TDataMember;
@@ -40,28 +40,30 @@ std::vector<TClass*> FindClassSlow(const std::string& class_name);
 ///        (e.g. `position_` or  `bdm::Cell::position_`). \n
 /// \return multiple values if data_member name is ambigous and multiple
 ///         instances were found in `tclass` and its base classes
-std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass, const std::string& data_member);
+std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
+                                             const std::string& data_member);
 
 class JitForEachDataMemberFunctor {
-public:
- JitForEachDataMemberFunctor(TClass* tclass,
-                             const std::vector<std::string> dm_names,
-                             const std::string functor_name,
-                             const std::function<std::string(const std::vector<TDataMember*>&)>& code_generation);
+ public:
+  JitForEachDataMemberFunctor(
+      TClass* tclass, const std::vector<std::string> dm_names,
+      const std::string functor_name,
+      const std::function<std::string(const std::vector<TDataMember*>&)>&
+          code_generation);
 
- void Compile();
+  void Compile();
 
- void* New(const std::string& parameter = "");
+  void* New(const std::string& parameter = "");
 
- template <typename TFunctor>
- TFunctor* New(const std::string& parameter = "") {
-   return static_cast<TFunctor*>(New(parameter));
- }
+  template <typename TFunctor>
+  TFunctor* New(const std::string& parameter = "") {
+    return static_cast<TFunctor*>(New(parameter));
+  }
 
  private:
-   std::string functor_name_;
-   std::vector<TDataMember*> data_members_;
-   std::function<std::string(const std::vector<TDataMember*>&)> code_generator_;
+  std::string functor_name_;
+  std::vector<TDataMember*> data_members_;
+  std::function<std::string(const std::vector<TDataMember*>&)> code_generator_;
 };
 
 }  // namespace bdm

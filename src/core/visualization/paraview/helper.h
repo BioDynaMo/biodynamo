@@ -51,9 +51,10 @@ struct VtkSoGrid {
   /// stores vtk array index - position is index of data member
   std::vector<int> array_indices_;
 
-private:
-   TClass* GetTClass();
-   void InitializeDataMembers(SimObject* so, std::vector<std::string>* data_members);
+ private:
+  TClass* GetTClass();
+  void InitializeDataMembers(SimObject* so,
+                             std::vector<std::string>* data_members);
 };
 
 /// Adds additional data members to the `vtkImageData` required by

@@ -201,7 +201,7 @@ void ParaviewAdaptor::CreateVtkObjects() {
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   for (auto& pair : impl_->vtk_so_grids_) {
-    auto num_so = rm->GetNumSimObjects(); // FIXME use type index
+    auto num_so = rm->GetNumSimObjects();  // FIXME use type index
     pair.second->ResetAndResizeDataArrays(num_so);
 
     rm->ApplyOnAllElementsParallel(*pair.second->populate_arrays_);
