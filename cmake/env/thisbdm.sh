@@ -182,10 +182,9 @@ fi
 ##### Python Specific Configurations #####
 if [ -z "${PYENV_ROOT}" ]; then
   export PYENV_ROOT="$HOME/.pyenv"
-else
+fi
 export PATH="$PYENV_ROOT/bin:$PATH"
 
-fi
 eval "$(pyenv init -)"
 pyenv shell 3.6.9
 # Location of jupyter executable (installed with `pip install --user` command)
@@ -194,7 +193,7 @@ if [ ! -z "${PYTHONUSERBASE}" ]; then
 else
   export PATH="$HOME/.local/bin:$PATH"
 fi
-export LD_LIBRARY_PATH="$PYENV_ROOT/versions/3.6.9/lib"
+export LD_LIBRARY_PATH="$PYENV_ROOT/versions/3.6.9/lib":$LD_LIBRARY_PATH
 ########
 
 ##### CMake Specific Configurations #####
