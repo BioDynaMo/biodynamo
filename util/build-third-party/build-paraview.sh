@@ -124,6 +124,11 @@ fi
 
 cd install
 
+# For some reason this path is hardcoded in this file, which causes CMake to
+# panic. We just remove it.
+sed -i 's|/home/testuser/bdm-build-third-party/paraview-build/install/include/python3.7m||g' lib/cmake/paraview-5.8/vtk/VTK-targets.cmake || true
+
+
 ## tar the install directory
 tar -zcf paraview-$PV_VERSION.tar.gz *
 
