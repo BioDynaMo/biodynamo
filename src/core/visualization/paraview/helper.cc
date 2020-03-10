@@ -47,8 +47,8 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
   data_description->AddInput(type_name);
   data_description->GetInputDescriptionByName(type_name)->SetGrid(data_);
 
-  auto* tclass = GetTClass();
-  auto* tmp_instance = static_cast<SimObject*>(tclass->New());
+  tclass_ = GetTClass();
+  auto* tmp_instance = static_cast<SimObject*>(tclass_->New());
   shape_ = tmp_instance->GetShape();
   std::vector<std::string> data_members;
   InitializeDataMembers(tmp_instance, &data_members);
@@ -56,7 +56,7 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
 
   // InitializeVtkSoGrid(this);
   JitForEachDataMemberFunctor jitcreate(
-      tclass, data_members, "CreateVtkDataArraysFunctor",
+      tclass_, data_members, "CreateVtkDataArraysFunctor",
       [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
         std::stringstream sstr;
         sstr << "namespace bdm {\n\n"
@@ -86,7 +86,7 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
   delete create_functor;
 
   JitForEachDataMemberFunctor jitpopulate(
-      tclass, data_members, "PopulateDataArraysFunctorImpl",
+      tclass_, data_members, "PopulateDataArraysFunctorImpl",
       [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
         std::stringstream sstr;
         sstr << "namespace bdm {\n\n"

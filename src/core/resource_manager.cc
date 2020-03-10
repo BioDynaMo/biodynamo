@@ -14,8 +14,23 @@
 
 #include "core/resource_manager.h"
 #include "core/environment/environment.h"
+#include "core/simulation.h"
 
 namespace bdm {
+
+ResourceManager::ResourceManager() {
+  // Must be called prior any other function call to libnuma
+  if (auto ret = numa_available() == -1) {
+    Log::Fatal("ResourceManager",
+               "Call to numa_available failed with return code: ", ret);
+  }
+  sim_objects_.resize(numa_num_configured_nodes());
+
+  auto* param = Simulation::GetActive()->GetParam();
+  if (param->export_visualization_ || param->live_visualization_ || param->python_paraview_pipeline_ != "") {
+    type_index_ = new TypeIndex();
+  }
+}
 
 void ResourceManager::ApplyOnAllElementsParallel(
     Functor<void, SimObject*, SoHandle>& function) {

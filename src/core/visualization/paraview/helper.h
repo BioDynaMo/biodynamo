@@ -45,6 +45,7 @@ struct VtkSoGrid {
   void ResetAndResizeDataArrays(uint64_t new_size);
 
   std::string name_;
+  TClass* tclass_;
   vtkUnstructuredGrid* data_ = nullptr;
   Shape shape_;
   PopulateDataArraysFunctor* populate_arrays_ = nullptr;

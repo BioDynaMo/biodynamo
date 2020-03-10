@@ -25,6 +25,7 @@
 
 #ifdef USE_PARAVIEW
 #include <vtkImageData.h>
+#include <vtkPointData.h>
 #include <vtkXMLImageDataReader.h>
 #include "core/visualization/paraview/adaptor.h"
 #endif  // USE_PARAVIEW

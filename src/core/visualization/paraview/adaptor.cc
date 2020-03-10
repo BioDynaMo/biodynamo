@@ -201,10 +201,13 @@ void ParaviewAdaptor::CreateVtkObjects() {
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   for (auto& pair : impl_->vtk_so_grids_) {
-    auto num_so = rm->GetNumSimObjects();  // FIXME use type index
-    pair.second->ResetAndResizeDataArrays(num_so);
+    const auto& sim_objects = rm->GetTypeIndex()->GetType(pair.second->tclass_);
+    pair.second->ResetAndResizeDataArrays(sim_objects.size());
 
-    rm->ApplyOnAllElementsParallel(*pair.second->populate_arrays_);
+    #pragma omp parallel for
+    for (uint64_t i =0; i < sim_objects.size(); ++i) {
+      (*pair.second->populate_arrays_)(sim_objects[i], SoHandle(i));
+    }
   }
 }
 
