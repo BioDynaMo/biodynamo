@@ -15,10 +15,6 @@
 #ifndef CORE_VISUALIZATION_PARAVIEW_HELPER_H_
 #define CORE_VISUALIZATION_PARAVIEW_HELPER_H_
 
-// check for ROOTCLING was necessary, due to ambigous reference to namespace
-// detail when using ROOT I/O
-#ifndef __ROOTCLING__
-
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -33,6 +29,8 @@
 namespace bdm {
 
 static constexpr char const* kSimulationInfoJson = "simulation_info.json";
+
+struct PopulateDataArraysFunctor;
 
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
 /// `ParaviewAdaptor` to visualize simulation objects.
@@ -54,6 +52,7 @@ struct VtkSoGrid {
   std::string name_;
   vtkUnstructuredGrid* data_ = nullptr;
   Shape shape_;
+  PopulateDataArraysFunctor* populate_arrays_ = nullptr;
   std::vector<DataMember> data_members_;
   std::set<std::string> vis_data_members_;
 };
@@ -84,7 +83,5 @@ std::string GenerateSimulationInfoJson(
     const std::unordered_map<std::string, VtkDiffusionGrid*>& vtk_dgrids);
 
 }  // namespace bdm
-
-#endif  // ifndef __ROOTCLING__
 
 #endif  // CORE_VISUALIZATION_PARAVIEW_HELPER_H_

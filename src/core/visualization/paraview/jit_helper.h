@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_PARAVIEW_JIT_H_
-#define CORE_VISUALIZATION_PARAVIEW_JIT_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_JIT_HELPER_H_
+#define CORE_VISUALIZATION_PARAVIEW_JIT_HELPER_H_
 
 #include "core/container/math_array.h"
 #include "core/functor.h"
@@ -22,9 +22,6 @@
 #include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/cell.h" // FIXME remove
-
-#ifndef __ROOTCLING__
 
 #include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
@@ -117,22 +114,6 @@ inline int CreateVtkDataArray<Double3>(const std::string& dm_name, VtkSoGrid* so
   return -1;
 }
 
-inline void InitializeVtkSoGrid(VtkSoGrid* so_grid) {
-  Cell so;
-  so_grid->shape_ = so.GetShape();
-  so_grid->vis_data_members_ = so.GetRequiredVisDataMembers();
-  auto* param = Simulation::GetActive()->GetParam();
-  for (auto& dm : param->visualize_sim_objects_.at(so_grid->name_)) {
-    so_grid->vis_data_members_.insert(dm);
-  }
-
-  so_grid->data_members_.push_back({"position_", "Double3", "Cell", 104});
-  so_grid->data_members_.push_back({"diameter_", "double", "Cell", 152});
-
-  so_grid->data_members_[0].array_idx = CreateVtkDataArray<Double3>("position_", so_grid);
-  so_grid->data_members_[1].array_idx = CreateVtkDataArray<double>("diameter_", so_grid);
-}
-
 struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
   vtkUnstructuredGrid* grid_;
   vtkPointData* point_data_;
@@ -161,16 +142,29 @@ struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
       point_data_->GetArray(array_idx)->SetTuple(so_idx, data);
     }
   }
+};
 
+
+// clang-format off
+/// The following functor is only needed to fix a bug in ROOT Cling
+/// Without it it is unable to compile
+/// `PopulateDataArraysFunctor::SetTuple<SimObject, Double3>(...)` \n
+/// It throws the following error:\n
+///
+///     input_line_15:9:38: error: no matching member function for call to 'SetTuple'
+///               PopulateDataArraysFunctor::SetTuple<Cell, Double3>(so, idx, -1, 104);
+///               ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+///     libVisualizationAdaptor_dict dictionary payload:244:3: note: candidate template
+///           ignored: substitution failure [with TClass = bdm::Cell, TDataMember = bdm::MathArray<double, 3>]: a
+///           lambda expression may not appear inside of a constant expression
+// clang-format on
+struct ROOTClingFix : public PopulateDataArraysFunctor {
   void operator()(SimObject* so, SoHandle soh) {
-    auto idx = soh.GetElementIdx();
-    SetTuple<Cell, Double3>(so, idx, -1, 104);
-    SetTuple<Cell, double>(so, idx, 0, 152);
+    PopulateDataArraysFunctor::SetTuple<SimObject, Double3>(so, 0, 0, 0);
   }
 };
 
 
 }  // namespace bdm
 
-#endif  // __ROOTCLING__
-#endif  // CORE_VISUALIZATION_PARAVIEW_JIT_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_JIT_HELPER_H_

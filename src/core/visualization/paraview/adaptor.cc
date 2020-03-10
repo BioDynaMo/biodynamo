@@ -19,7 +19,7 @@
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
 #include "core/visualization/paraview/insitu_pipeline.h"
-#include "core/visualization/paraview/jit.h"
+#include "core/visualization/paraview/jit_helper.h"
 
 #ifndef __ROOTCLING__
 
@@ -204,8 +204,7 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
     auto num_so = rm->GetNumSimObjects(); // FIXME use type index
     pair.second->ResetAndResizeDataArrays(num_so);
 
-    PopulateDataArraysFunctor functor{pair.second}; // FIXME
-    rm->ApplyOnAllElementsParallel(functor);
+    rm->ApplyOnAllElementsParallel(*pair.second->populate_arrays_);
   }
 }
 

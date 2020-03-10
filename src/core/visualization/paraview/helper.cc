@@ -13,17 +13,16 @@
 // -----------------------------------------------------------------------------
 
 #include "core/visualization/paraview/helper.h"
-#include "core/visualization/paraview/jit.h"
 #include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
-
+#include "core/util/jit.h"
 
 #include "core/param/param.h"
 #include "core/shape.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
-#include "core/visualization/paraview/jit.h"
+#include "core/visualization/paraview/jit_helper.h"
 
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
@@ -39,7 +38,71 @@ VtkSoGrid::VtkSoGrid(const char* type_name, vtkCPDataDescription* data_descripti
   data_description->AddInput(type_name);
   data_description->GetInputDescriptionByName(type_name)->SetGrid(data_);
 
-  InitializeVtkSoGrid(this);
+  std::vector<std::string> data_members;
+  //InitializeVtkSoGrid(this);
+  JitForEachDataMemberFunctor jitcreate(name_, data_members, "CreateVtkDataArraysFunctor", [](){
+    return R"ESCSEQ(namespace bdm {
+
+      struct CreateVtkDataArraysFunctor : public Functor<void, VtkSoGrid*> {
+      void operator()(VtkSoGrid* so_grid) {
+        Cell so;
+        so_grid->shape_ = so.GetShape();
+        so_grid->vis_data_members_ = so.GetRequiredVisDataMembers();
+        auto* param = Simulation::GetActive()->GetParam();
+        for (auto& dm : param->visualize_sim_objects_.at(so_grid->name_)) {
+          so_grid->vis_data_members_.insert(dm);
+        }
+
+        // TODO
+        // 1. Find class name
+        //    (Errors: Does not exist or ambigous)
+        // 2. Find all data members
+        //    (Errors: Does not exist or ambigous)
+
+        // For each class in TClassTable match end; if match add to candidates
+        //    (Errors if candidates.size() != 1)
+        // Create collection of data members that should be visualized
+        // For each data member in vis list traverse all bases and find candidates
+        //    (Errors if candidates.size() != 1)
+        // Push back so_grid->data_members_
+        // Generate code based on so_grid->data_members_
+
+        so_grid->data_members_.push_back({"position_", "Double3", "Cell", 104});
+        so_grid->data_members_.push_back({"diameter_", "double", "Cell", 152});
+
+        so_grid->data_members_[0].array_idx = CreateVtkDataArray<Double3>("position_", so_grid);
+        so_grid->data_members_[1].array_idx = CreateVtkDataArray<double>("diameter_", so_grid);
+      }
+    };
+
+  } // namespace bdm
+  )ESCSEQ";
+
+  });
+  jitcreate.Compile();
+  auto* create_functor = jitcreate.New<Functor<void, VtkSoGrid*>>();
+  (*create_functor)(this);
+  delete create_functor;
+
+  JitForEachDataMemberFunctor jitpopulate(name_, data_members, "PopulateDataArraysFunctorImpl", [](){
+    return R"ESCSEQ(
+      namespace bdm {
+
+      struct PopulateDataArraysFunctorImpl : public PopulateDataArraysFunctor {
+        PopulateDataArraysFunctorImpl(VtkSoGrid* so_grid) : PopulateDataArraysFunctor(so_grid) {}
+
+        void operator()(SimObject* so, SoHandle soh) {
+          auto idx = soh.GetElementIdx();
+          PopulateDataArraysFunctor::SetTuple<Cell, Double3>(so, idx, -1, 104);
+          PopulateDataArraysFunctor::SetTuple<Cell, double>(so, idx, 0, 152);
+        }
+      };
+
+      }  // namespace bdm
+      )ESCSEQ";
+  });
+  jitpopulate.Compile();
+  populate_arrays_ = jitpopulate.New<PopulateDataArraysFunctor>(Concat("reinterpret_cast<bdm::VtkSoGrid*>(", this, ")"));
 }
 
 VtkSoGrid::~VtkSoGrid() {
@@ -47,6 +110,9 @@ VtkSoGrid::~VtkSoGrid() {
   data_->Delete();
   data_ = nullptr;
   vis_data_members_.clear();
+  if (populate_arrays_) {
+    delete populate_arrays_;
+  }
 }
 
 void VtkSoGrid::ResetAndResizeDataArrays(uint64_t new_size) {

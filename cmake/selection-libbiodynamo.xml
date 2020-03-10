@@ -28,6 +28,7 @@
     <class name="unordered_map<unsigned long,bdm::ModuleParam*>" />
     <class name="unordered_map<bdm::ModuleParamUid, bdm::ModuleParam*>" />
     <class name="bdm::Random" />
+    <class name="bdm::Functor" />
     <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<double, 4>" />
     <class name="bdm::ParallelResizeVector<double>" />
