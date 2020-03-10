@@ -51,8 +51,8 @@ cd $WORKING_DIR
 cd $WORKING_DIR
 
 if [ `uname` = "Linux" ]; then
-  export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/gcc_64/lib/cmake
-  export LD_LIBRARY_PATH=$WORKING_DIR/qt/5.11.0/gcc_64/lib:$LD_LIBRARY_PATH
+  export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
+  export LD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$LD_LIBRARY_PATH
 else
   export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/clang_64/lib/cmake
 fi
@@ -108,7 +108,7 @@ cmake \
   ../paraview-superbuild
 
 ## Step 4: compile and install
-make -j2 install
+make -j$(CPUCount) install
 
 # patch and bundle
 # TODO(ahmad): Patch is probably not necessary anymore after relying on rpath
