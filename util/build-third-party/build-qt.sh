@@ -45,6 +45,9 @@ if [ -d $QT_INSTALL_DIR ]; then
   exit 1
 fi
 
+# install prerequisites
+. $BDM_PROJECT_DIR/util/build-third-party/third-party-prerequisites.sh
+
 ################################################################################
 # Since 2020, Qt requires you to login with an account to download the
 # libraries. Instead, we download a previously built Qt directly from cernbox

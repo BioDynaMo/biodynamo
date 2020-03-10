@@ -46,9 +46,8 @@ WORKING_DIR=~/bdm-build-third-party
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 
-# Install prerequisites will be called inside build-qt.sh
-## Install Qt using the silent JavaScript installer
-# . $BDM_PROJECT_DIR/util/build-third-party/build-qt.sh
+# Install Qt (prerequisites will be installed inside build-qt.sh)
+. $BDM_PROJECT_DIR/util/build-third-party/build-qt.sh
 cd $WORKING_DIR
 
 if [ `uname` = "Linux" ]; then
