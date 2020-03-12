@@ -28,8 +28,33 @@ inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-__device__ double norm(double3 v) {
+inline __host__ __device__ double norm(double3 &v) {
   return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+inline __host__ __device__ void operator*=(double3 &a, double b){
+  a.x *= b;
+  a.y *= b;
+  a.z *= b;
+}
+
+inline __host__ __device__ double3 operator*(double3 a, float b) {
+  return make_double3(a.x * b, a.y * b, a.z * b);
+}
+
+inline __host__ __device__ double3 operator/(double3 a, float b)
+{
+    return make_double3(a.x / b, a.y / b, a.z / b);
+}
+
+inline __host__ __device__ void operator+=(double3 &a, double3 b) {
+  a.x += b.x;
+  a.y += b.y;
+  a.z += b.z;
+}
+
+inline __host__ __device__ double3 normalize(double3 v) {
+    return v / norm(v);
 }
 
 __device__ double squared_euclidian_distance(double* positions, uint32_t idx, uint32_t nidx) {
@@ -141,6 +166,8 @@ __global__ void collide(
        uint32_t* num_objects,
        uint32_t* starts,
        uint16_t* lengths,
+       uint64_t* timestamps,
+       uint64_t* current_timestamp,
        uint32_t* successors,
        uint32_t* box_length,
        uint32_t* num_boxes_axis,
@@ -151,9 +178,9 @@ __global__ void collide(
     result[3*tidx + 0] = timestep[0] * tractor_force[3*tidx + 0];
     result[3*tidx + 1] = timestep[0] * tractor_force[3*tidx + 1];
     result[3*tidx + 2] = timestep[0] * tractor_force[3*tidx + 2];
-    // printf("cell_movement = (%f, %f, %f)\n", result[3*tidx + 0], result[3*tidx + 1], result[3*tidx + 2]);
     
     double3 collision_force = make_double3(0, 0, 0);
+    double3 movement_at_next_step = make_double3(0, 0, 0);
 
     // Moore neighborhood
     int3 box_coords = get_box_coordinates_2(box_id[tidx], num_boxes_axis);
@@ -161,7 +188,7 @@ __global__ void collide(
       for (int y = -1; y <= 1; y++) {
         for (int x = -1; x <= 1; x++) {
           uint32_t bidx = get_box_id_2(box_coords + make_int3(x, y, z), num_boxes_axis);
-          if (lengths[bidx] != 0) {
+          if (timestamps[bidx] == current_timestamp[0] && lengths[bidx] != 0) {
             default_force(positions, diameters, tidx, starts[bidx], lengths[bidx], successors, squared_radius, &collision_force);
           }
         }
@@ -173,17 +200,17 @@ __global__ void collide(
     // printf("mh = %f\n", mh);
 
     if (norm(collision_force) > adherence[tidx]) {
-      result[3*tidx + 0] += collision_force.x * mh;
-      result[3*tidx + 1] += collision_force.y * mh;
-      result[3*tidx + 2] += collision_force.z * mh;
+      movement_at_next_step += collision_force * mh;
       // printf("collision_force = (%f, %f, %f)\n", collision_force.x, collision_force.y, collision_force.z);
       // printf("cell_movement (1) = (%f, %f, %f)\n", result[3*tidx + 0], result[3*tidx + 1], result[3*tidx + 2]);
 
       if (norm(collision_force) * mh > max_displacement[0]) {
-        result[3*tidx + 0] = max_displacement[0];
-        result[3*tidx + 1] = max_displacement[0];
-        result[3*tidx + 2] = max_displacement[0];
+        movement_at_next_step = normalize(movement_at_next_step);
+        movement_at_next_step *= max_displacement[0];
       }
+      result[3*tidx + 0] = movement_at_next_step.x;
+      result[3*tidx + 1] = movement_at_next_step.y;
+      result[3*tidx + 2] = movement_at_next_step.z;
       // printf("cell_movement (2) = (%f, %f, %f)\n", result[3*tidx + 0], result[3*tidx + 1], result[3*tidx + 2]);
     }
   }
@@ -203,6 +230,8 @@ bdm::DisplacementOpCudaKernel::DisplacementOpCudaKernel(uint32_t num_objects, ui
   GpuErrchk(cudaMalloc(&d_num_objects_, sizeof(uint32_t)));
   GpuErrchk(cudaMalloc(&d_starts_, num_boxes * sizeof(uint32_t)));
   GpuErrchk(cudaMalloc(&d_lengths_, num_boxes * sizeof(uint16_t)));
+  GpuErrchk(cudaMalloc(&d_timestamps_, num_boxes * sizeof(uint64_t)));
+  GpuErrchk(cudaMalloc(&d_current_timestamp_, sizeof(uint64_t)));
   GpuErrchk(cudaMalloc(&d_successors_, num_objects * sizeof(uint32_t)));
   GpuErrchk(cudaMalloc(&d_box_length_, sizeof(uint32_t)));
   GpuErrchk(cudaMalloc(&d_num_boxes_axis_, 3 * sizeof(uint32_t)));
@@ -212,9 +241,9 @@ bdm::DisplacementOpCudaKernel::DisplacementOpCudaKernel(uint32_t num_objects, ui
 
 void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* positions,
     const double* diameters, const double* tractor_force, const double* adherence,
-    uint32_t* box_id, const double* mass, const double* timestep, const double* max_displacement,
-    const double* squared_radius, uint32_t* num_objects, uint32_t* starts,
-    uint16_t* lengths, uint32_t* successors, uint32_t* box_length,
+    const uint32_t* box_id, const double* mass, const double* timestep, const double* max_displacement,
+    const double* squared_radius, const uint32_t* num_objects, uint32_t* starts,
+    uint16_t* lengths, uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors, uint32_t* box_length,
     uint32_t* num_boxes_axis, int32_t* grid_dimensions,
     double* cell_movements) {
   uint32_t num_boxes = num_boxes_axis[0] * num_boxes_axis[1] * num_boxes_axis[2];
@@ -231,6 +260,8 @@ void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* posit
   GpuErrchk(cudaMemcpy(d_num_objects_, 				num_objects, sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_starts_, 			starts, num_boxes * sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_lengths_, 			lengths, num_boxes * sizeof(uint16_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpy(d_timestamps_, 			timestamps, num_boxes * sizeof(uint64_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpy(d_current_timestamp_, 			current_timestamp, sizeof(uint64_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_successors_, 		successors, num_objects[0] * sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_box_length_, 		box_length, sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_num_boxes_axis_, 	num_boxes_axis, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
@@ -247,8 +278,9 @@ void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* posit
   // printf("gridSize = %d  |  blockSize = %d\n", gridSize, blockSize);
   collide<<<gridSize, blockSize>>>(d_positions_, d_diameters_, d_tractor_force_,
     d_adherence_, d_box_id_, d_mass_, d_timestep_, d_max_displacement_,
-    d_squared_radius_, d_num_objects_, d_starts_, d_lengths_, d_successors_,
-    d_box_length_, d_num_boxes_axis_, d_grid_dimensions_, d_cell_movements_);
+    d_squared_radius_, d_num_objects_, d_starts_, d_lengths_, d_timestamps_,
+    d_current_timestamp_, d_successors_, d_box_length_, d_num_boxes_axis_,
+    d_grid_dimensions_, d_cell_movements_);
 
   // We need to wait for the kernel to finish before reading back the result
   cudaDeviceSynchronize();
@@ -278,9 +310,11 @@ void bdm::DisplacementOpCudaKernel::ResizeCellBuffers(uint32_t num_cells) {
 void bdm::DisplacementOpCudaKernel::ResizeGridBuffers(uint32_t num_boxes) {
   cudaFree(d_starts_);
   cudaFree(d_lengths_);
+  cudaFree(d_timestamps_);
 
   cudaMalloc(&d_starts_, num_boxes * sizeof(uint32_t));
   cudaMalloc(&d_lengths_, num_boxes * sizeof(uint16_t));
+  cudaMalloc(&d_timestamps_, num_boxes * sizeof(uint64_t));
 }
 
 bdm::DisplacementOpCudaKernel::~DisplacementOpCudaKernel() {
@@ -296,6 +330,8 @@ bdm::DisplacementOpCudaKernel::~DisplacementOpCudaKernel() {
   cudaFree(d_num_objects_);
   cudaFree(d_starts_);
   cudaFree(d_lengths_);
+  cudaFree(d_timestamps_);
+  cudaFree(d_current_timestamp_);
   cudaFree(d_successors_);
   cudaFree(d_num_boxes_axis_);
   cudaFree(d_grid_dimensions_);

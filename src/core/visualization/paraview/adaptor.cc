@@ -340,7 +340,7 @@ void ParaviewAdaptor::GenerateParaviewState() {
   std::stringstream python_cmd;
   std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
 
-  python_cmd << bdm_src_dir << "/../third_party/paraview/bin/pvpython "
+  python_cmd << bdm_src_dir << "/../third_party/paraview/bin/pvbatch "
              << bdm_src_dir
              << "/core/visualization/paraview/generate_pv_state.py "
              << sim->GetOutputDir() << "/" << kSimulationInfoJson;

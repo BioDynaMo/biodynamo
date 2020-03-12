@@ -151,22 +151,7 @@ if (NOT WGET_BIN)
 endif()
 
 # Check if Python 3.6.9 from PyEnv is installed
-if (DEFINED ENV{PYENV_ROOT})
-  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
-else()
-  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
-endif()
-if(EXISTS "${Python_ROOT_DIR}/bin/python")
-  set(PYTHON_FOUND TRUE)
-  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
-  message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")
-else()
-  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
-    "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "
-    "interpreter is required in order to successfully use BioDynaMo."
-    "If you installed PyEnv somewhere other than in your home directory, please "
-    "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")
-endif()
+find_package(Python)
 
 # Check if OpenMPI is present
 find_package(MPI)
@@ -238,14 +223,6 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   # with various development tools, such as Vim's YouCompleteMe plugin.
   # See http://clang.llvm.org/docs/JSONCompilationDatabase.html
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-endif()
-
-find_package(Numa)
-if (NUMA_FOUND)
-   include_directories(${NUMA_INCLUDE_DIR})
-   link_directories(${NUMA_LIBRARY_DIR})
-   add_definitions("-DUSE_NUMA")
-   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
 endif()
 
 if(paraview)

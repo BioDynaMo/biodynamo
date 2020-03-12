@@ -27,10 +27,12 @@ class DisplacementOpCudaKernel {
   virtual ~DisplacementOpCudaKernel();
 
   void LaunchDisplacementKernel(
-      const double* positions, const double* diameter, const double* tractor_force,
-      const double* adherence, uint32_t* box_id, const double* mass, const double* timestep,
-      const double* max_displacement, const double* squared_radius, uint32_t* num_objects,
-      uint32_t* starts, uint16_t* lengths, uint32_t* successors,
+      const double* positions, const double* diameter,
+      const double* tractor_force, const double* adherence,
+      const uint32_t* box_id, const double* mass, const double* timestep,
+      const double* max_displacement, const double* squared_radius,
+      const uint32_t* num_objects, uint32_t* starts, uint16_t* lengths,
+      uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors,
       uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
       double* cell_movements);
 
@@ -38,23 +40,25 @@ class DisplacementOpCudaKernel {
   void ResizeGridBuffers(uint32_t num_boxes);
 
  private:
-  double* d_positions_ = NULL;
-  double* d_diameters_ = NULL;
-  double* d_mass_ = NULL;
-  double* d_timestep_ = NULL;
-  double* d_max_displacement_ = NULL;
-  double* d_squared_radius_ = NULL;
-  uint32_t* d_num_objects_ = NULL;
-  double* d_cell_movements_ = NULL;
-  double* d_tractor_force_ = NULL;
-  double* d_adherence_ = NULL;
-  uint32_t* d_box_id_ = NULL;
-  uint32_t* d_starts_ = NULL;
-  uint16_t* d_lengths_ = NULL;
-  uint32_t* d_successors_ = NULL;
-  uint32_t* d_box_length_ = NULL;
-  uint32_t* d_num_boxes_axis_ = NULL;
-  int32_t* d_grid_dimensions_ = NULL;
+  double* d_positions_ = nullptr;
+  double* d_diameters_ = nullptr;
+  double* d_mass_ = nullptr;
+  double* d_timestep_ = nullptr;
+  double* d_max_displacement_ = nullptr;
+  double* d_squared_radius_ = nullptr;
+  uint32_t* d_num_objects_ = nullptr;
+  double* d_cell_movements_ = nullptr;
+  double* d_tractor_force_ = nullptr;
+  double* d_adherence_ = nullptr;
+  uint32_t* d_box_id_ = nullptr;
+  uint32_t* d_starts_ = nullptr;
+  uint16_t* d_lengths_ = nullptr;
+  uint64_t* d_timestamps_ = nullptr;
+  uint64_t* d_current_timestamp_ = nullptr;
+  uint32_t* d_successors_ = nullptr;
+  uint32_t* d_box_length_ = nullptr;
+  uint32_t* d_num_boxes_axis_ = nullptr;
+  int32_t* d_grid_dimensions_ = nullptr;
 };
 
 }  // namespace bdm

@@ -51,9 +51,10 @@ class DisplacementOpCuda {
 
     // Check the number of NUMA domains on the system. Currently only 1 is
     // supported for GPU execution.
+    auto num_numa = ThreadInfo::GetInstance()->GetNumaNodes();
     if (ThreadInfo::GetInstance()->GetNumaNodes() > 1) {
       Log::Fatal(
-          "DisplacementOpCuda",
+          "DisplacementOpCuda", "This system has ", num_numa, " NUMA domains. ",
           "\nThe GPU execution only supports systems with 1 NUMA domain.");
       return;
     }
@@ -73,6 +74,7 @@ class DisplacementOpCuda {
     std::vector<double> mass(num_objects);
     std::vector<uint32_t> starts;
     std::vector<uint16_t> lengths;
+    std::vector<uint64_t> timestamps;
     std::vector<uint32_t> successors(num_objects);
     uint32_t box_length;
     std::array<uint32_t, 3> num_boxes_axis;
@@ -108,12 +110,17 @@ class DisplacementOpCuda {
       successors[i] = grid->successors_[sh].GetElementIdx();
     }
 
+    uint64_t current_timestamp = grid->timestamp_;
     starts.resize(grid->boxes_.size());
     lengths.resize(grid->boxes_.size());
+    timestamps.resize(grid->boxes_.size());
     size_t i = 0;
     for (auto& box : grid->boxes_) {
-      starts[i] = box.start_.GetElementIdx();
-      lengths[i] = box.length_;
+      timestamps[i] = box.timestamp_;
+      if (box.timestamp_ == current_timestamp) {
+        lengths[i] = box.length_;
+        starts[i] = box.start_.GetElementIdx();
+      }
       i++;
     }
     grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
@@ -159,9 +166,9 @@ class DisplacementOpCuda {
         cell_tractor_force.data()->data(), cell_adherence.data(),
         cell_boxid.data(), mass.data(), &(param->simulation_time_step_),
         &(param->simulation_max_displacement_), &squared_radius, &num_objects,
-        starts.data(), lengths.data(), successors.data(), &box_length,
-        num_boxes_axis.data(), grid_dimensions.data(),
-        cell_movements.data()->data());
+        starts.data(), lengths.data(), timestamps.data(), &current_timestamp,
+        successors.data(), &box_length, num_boxes_axis.data(),
+        grid_dimensions.data(), cell_movements.data()->data());
 
     // set new positions after all updates have been calculated
     // otherwise some cells would see neighbors with already updated positions

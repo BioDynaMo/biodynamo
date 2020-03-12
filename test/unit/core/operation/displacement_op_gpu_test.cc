@@ -87,7 +87,7 @@ void RunTest(ExecutionMode mode) {
   // cell 1
   final_position = final_cell1->GetPosition();
   EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
-  EXPECT_NEAR(5.0992371702325645, final_position[1], abs_error<double>::value);
+  EXPECT_NEAR(5.0992371670902221, final_position[1], abs_error<double>::value);
   EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
 
   // check if tractor_force has been reset to zero
@@ -164,33 +164,33 @@ void RunTest2(ExecutionMode mode) {
   op();
 
   // clang-format off
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 0)->GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 1)->GetPosition(), {20, -0.22419529008561653, -0.22419529008561653});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 2)->GetPosition(), {40.201609668095067, -0.20160966809506442, -0.20160966809506442});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 3)->GetPosition(), {-0.22419529008561653, 20, -0.22419529008561653});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 4)->GetPosition(), {20, 20, -0.24678091207616867});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 5)->GetPosition(), {40.224195290085618, 20, -0.22419529008561653});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 6)->GetPosition(), {-0.20160966809506442, 40.201609668095067, -0.20160966809506442});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 7)->GetPosition(), {20, 40.224195290085618, -0.22419529008561653});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 8)->GetPosition(), {40.201609668095067, 40.201609668095067, -0.20160966809506442});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 9)->GetPosition(), {-0.22419529008561653, -0.22419529008561653, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 10)->GetPosition(), {20, -0.24678091207616867, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 11)->GetPosition(), {40.224195290085618, -0.22419529008561653, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 12)->GetPosition(), {-0.24678091207616867, 20, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 13)->GetPosition(), {20, 20, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 14)->GetPosition(), {40.246780912076169, 20, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 15)->GetPosition(), {-0.22419529008561653, 40.224195290085618, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 16)->GetPosition(), {20, 40.246780912076169, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 17)->GetPosition(), {40.224195290085618, 40.224195290085618, 20});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 18)->GetPosition(), {-0.20160966809506442, -0.20160966809506442, 40.201609668095067});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 19)->GetPosition(), {20, -0.22419529008561653, 40.224195290085618});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 20)->GetPosition(), {40.201609668095067, -0.20160966809506442, 40.201609668095067});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 21)->GetPosition(), {-0.22419529008561653, 20, 40.224195290085618});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 22)->GetPosition(), {20, 20, 40.246780912076169});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 23)->GetPosition(), {40.224195290085618, 20, 40.224195290085618});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 24)->GetPosition(), {-0.20160966809506442, 40.201609668095067, 40.201609668095067});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 25)->GetPosition(), {20, 40.224195290085618, 40.224195290085618});
-  EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 26)->GetPosition(), {40.201609668095067, 40.201609668095067, 40.201609668095067});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 0)->GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 1)->GetPosition(), {20, -0.22419529008561653, -0.22419529008561653});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 2)->GetPosition(), {40.201609668095067, -0.20160966809506442, -0.20160966809506442});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 3)->GetPosition(), {-0.22419529008561653, 20, -0.22419529008561653});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 4)->GetPosition(), {20, 20, -0.24678091207616867});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 5)->GetPosition(), {40.224195290085618, 20, -0.22419529008561653});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 6)->GetPosition(), {-0.20160966809506442, 40.201609668095067, -0.20160966809506442});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 7)->GetPosition(), {20, 40.224195290085618, -0.22419529008561653});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 8)->GetPosition(), {40.201609668095067, 40.201609668095067, -0.20160966809506442});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 9)->GetPosition(), {-0.22419529008561653, -0.22419529008561653, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 10)->GetPosition(), {20, -0.24678091207616867, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 11)->GetPosition(), {40.224195290085618, -0.22419529008561653, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 12)->GetPosition(), {-0.24678091207616867, 20, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 13)->GetPosition(), {20, 20, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 14)->GetPosition(), {40.246780912076169, 20, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 15)->GetPosition(), {-0.22419529008561653, 40.224195290085618, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 16)->GetPosition(), {20, 40.246780912076169, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 17)->GetPosition(), {40.224195290085618, 40.224195290085618, 20});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 18)->GetPosition(), {-0.20160966809506442, -0.20160966809506442, 40.201609668095067});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 19)->GetPosition(), {20, -0.22419529008561653, 40.224195290085618});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 20)->GetPosition(), {40.201609668095067, -0.20160966809506442, 40.201609668095067});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 21)->GetPosition(), {-0.22419529008561653, 20, 40.224195290085618});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 22)->GetPosition(), {20, 20, 40.246780912076169});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 23)->GetPosition(), {40.224195290085618, 20, 40.224195290085618});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 24)->GetPosition(), {-0.20160966809506442, 40.201609668095067, 40.201609668095067});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 25)->GetPosition(), {20, 40.224195290085618, 40.224195290085618});
+  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 26)->GetPosition(), {40.201609668095067, 40.201609668095067, 40.201609668095067});
   // clang-format on
 }
 
