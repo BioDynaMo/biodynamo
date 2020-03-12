@@ -170,6 +170,7 @@ void ParaviewAdaptor::Initialize() {
       impl_->vtk_dgrids_[entry.name_] =
           new VtkDiffusionGrid(entry.name_, impl_->data_description_);
     }
+    impl_->pipeline_->Initialize(impl_->vtk_so_grids_);
   }
 }
 
