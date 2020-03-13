@@ -38,7 +38,21 @@
 #include "core/util/jit.h"
 #include "core/visualization/paraview/jit_helper.h"
 
+#include "core/sim_object/cell.h"
+
 namespace bdm {
+
+
+struct PopulateDataArraysFunctorImpl1 : public PopulateDataArraysFunctor {
+  PopulateDataArraysFunctorImpl1(VtkSoGrid* so_grid) 
+          : PopulateDataArraysFunctor(so_grid) {}
+  void operator()(SimObject* so, SoHandle soh) {
+    auto idx = soh.GetElementIdx();
+PopulateDataArraysFunctor::SetTuple<bdm::Cell, double>(so, idx, so_grid_->array_indices_[0], 152);
+PopulateDataArraysFunctor::SetTuple<bdm::Cell, bdm::MathArray<double,3>>(so, idx, so_grid_->array_indices_[1], 104);
+  }
+};
+
 
 VtkSoGrid::VtkSoGrid(const char* type_name,
                      vtkCPDataDescription* data_description) {
@@ -113,8 +127,9 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
         return sstr.str();
       });
   jitpopulate.Compile();
-  populate_arrays_ = jitpopulate.New<PopulateDataArraysFunctor>(
-      Concat("reinterpret_cast<bdm::VtkSoGrid*>(", this, ")"));
+  //populate_arrays_ = jitpopulate.New<PopulateDataArraysFunctor>(
+      //Concat("reinterpret_cast<bdm::VtkSoGrid*>(", this, ")"));
+  populate_arrays_ = new PopulateDataArraysFunctorImpl1(this);
 }
 
 VtkSoGrid::~VtkSoGrid() {

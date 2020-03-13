@@ -267,12 +267,26 @@ void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
 void ParaviewAdaptor::WriteToFile() {
   auto step = impl_->data_description_->GetTimeStep();
   auto* sim = Simulation::GetActive();
+  auto* tinfo = ThreadInfo::GetInstance();
+  
   for (auto& el : impl_->vtk_so_grids_) {
-    vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
+      auto* so_grid = el.second;
+
+#pragma omm parallel for schedule(static, 1)
+    for(int i = 0; i < tinfo->GetMaxThreads(); ++i) {
+      vtkNew<vtkXMLPUnstructuredGridWriter> vtu_writer;
+      auto filename = Concat(sim->GetOutputDir(), "/", el.second->name_, "-", step, ".vtu");
+      vtu_writer->SetFileName();
+      vtu_writer->SetInputData(...);
+      vtu_writer->Write();
+    }
+
+    vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;   
     auto filename =
         Concat(sim->GetOutputDir(), "/", el.second->name_, "-", step, ".pvtu");
     cells_writer->SetFileName(filename.c_str());
     cells_writer->SetInputData(el.second->data_);
+    cells_writer->SetNumberOfPieces(ThreadInfo::GetInstance()->GetMaxNumThreads());
     cells_writer->Update();
   }
 
