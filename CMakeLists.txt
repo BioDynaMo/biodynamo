@@ -240,6 +240,14 @@ if ("$ENV{CMAKE_EXPORT_COMPILE_COMMANDS}" STREQUAL "1" OR CLANG_TIDY_FOUND)
   set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 endif()
 
+find_package(Numa)
+if (NUMA_FOUND)
+   include_directories(${NUMA_INCLUDE_DIR})
+   link_directories(${NUMA_LIBRARY_DIR})
+   add_definitions("-DUSE_NUMA")
+   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
+endif()
+
 if(paraview)
     # If we specify a custom location for ParaView then we need to specify also a custom location
     # for Qt.
