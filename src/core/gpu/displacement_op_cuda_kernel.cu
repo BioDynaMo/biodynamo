@@ -20,7 +20,7 @@ inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 {
    if (code != cudaSuccess) 
    {
-      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      fprintf(stderr,"GPUassert (error code %d): %s %s %d\n", code, cudaGetErrorString(code), file, line);
       if (code == cudaErrorInsufficientDriver) {
         printf("This probably means that no CUDA-compatible GPU has been detected. Consider setting the use_opencl flag to \"true\" in the bmd.toml file to use OpenCL instead.\n");
       }
@@ -173,10 +173,18 @@ __global__ void collide(
        uint32_t* num_boxes_axis,
        int32_t* grid_dimensions,
        double* result) {
-  uint32_t tidx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (tidx < num_objects[0]) {
-    result[3*tidx + 0] = timestep[0] * tractor_force[3*tidx + 0];
-    result[3*tidx + 1] = timestep[0] * tractor_force[3*tidx + 1];
+    uint32_t tidx = blockIdx.x * blockDim.x + threadIdx.x;
+    // printf("[Kernel] box_id[tidx] = %d\n", box_id[tidx]);
+    // printf("[Kernel] num_objects = %d\n", num_objects[0]);
+    // printf("[Kernel] blockDim.x = %d\n", blockDim.x);
+    // printf("[Kernel] positions = {");
+    // for (uint32_t i = 0; i < 3*num_objects[0]; i++) {
+    //   printf("%p, ", &(positions[i]));
+    // }
+    // printf("}\n");
+    if (tidx < num_objects[0]) {
+      result[3*tidx + 0] = timestep[0] * tractor_force[3*tidx + 0];
+      result[3*tidx + 1] = timestep[0] * tractor_force[3*tidx + 1];
     result[3*tidx + 2] = timestep[0] * tractor_force[3*tidx + 2];
     
     double3 collision_force = make_double3(0, 0, 0);
@@ -217,7 +225,7 @@ __global__ void collide(
 }
 
 bdm::DisplacementOpCudaKernel::DisplacementOpCudaKernel(uint32_t num_objects, uint32_t num_boxes) {
-  // printf("num_objects = %u  |  num_boxes = %u\n", num_objects, num_boxes);
+  // printf("[DisplacementOpCudaKernel] num_objects = %u  |  num_boxes = %u\n", num_objects, num_boxes);
   GpuErrchk(cudaMalloc(&d_positions_, 3 * num_objects * sizeof(double)));
   GpuErrchk(cudaMalloc(&d_diameters_, num_objects * sizeof(double)));
   GpuErrchk(cudaMalloc(&d_tractor_force_, 3 * num_objects * sizeof(double)));
@@ -247,6 +255,9 @@ void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* posit
     uint32_t* num_boxes_axis, int32_t* grid_dimensions,
     double* cell_movements) {
   uint32_t num_boxes = num_boxes_axis[0] * num_boxes_axis[1] * num_boxes_axis[2];
+  // printf("[LaunchDisplacementKernel] num_objects = %u  |  num_boxes = %u\n", num_objects[0], num_boxes);
+  // printf("[LaunchDisplacementKernel] d_positions_ = %p  |  positions = %p\n", d_positions_, positions);
+  // printf("[LaunchDisplacementKernel] positions[0] = %f  |  positions[1] = %f\n", positions[0], positions[1]);
 
   GpuErrchk(cudaMemcpy(d_positions_, 		positions, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_diameters_, 		diameters, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));

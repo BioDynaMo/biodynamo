@@ -12,7 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <array>
+
 #include "core/biology_module/grow_divide.h"
+#include "core/functor.h"
 #include "core/gpu/gpu_helper.h"
 #include "core/grid.h"
 #include "core/operation/displacement_op.h"
@@ -29,6 +32,64 @@ namespace displacement_op_gpu_test_internal {
 
 enum ExecutionMode { kCuda, kOpenCl };
 
+static constexpr double kEps = 10 * abs_error<double>::value;
+
+class DisplacementOpCpuVerify {
+ public:
+  struct CalculateDisplacement;
+  struct UpdateCells;
+
+  void operator()() {
+    auto* sim = Simulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+
+    SimObjectVector<Double3> displacements;
+
+    CalculateDisplacement cd(&displacements);
+    rm->ApplyOnAllElementsParallelDynamic(1000, cd);
+    UpdateCells uc(&displacements);
+    rm->ApplyOnAllElementsParallelDynamic(1000, uc);
+  }
+
+  struct CalculateDisplacement : public Functor<void, SimObject*, SoHandle> {
+    SimObjectVector<Double3>* displacements_;
+
+    CalculateDisplacement(SimObjectVector<Double3>* displacements) {
+      displacements_ = displacements;
+    }
+
+    void operator()(SimObject* so, SoHandle soh) override {
+      auto* sim = Simulation::GetActive();
+      auto* grid = sim->GetGrid();
+      auto* param = sim->GetParam();
+
+      auto search_radius = grid->GetLargestObjectSize();
+      auto squared_radius_ = search_radius * search_radius;
+      const auto& displacement = so->CalculateDisplacement(
+          squared_radius_, param->simulation_time_step_);
+      (*displacements_)[soh] = displacement;
+    }
+  };
+
+  struct UpdateCells : public Functor<void, SimObject*, SoHandle> {
+    SimObjectVector<Double3>* displacements_;
+
+    UpdateCells(SimObjectVector<Double3>* displacements) {
+      displacements_ = displacements;
+    }
+
+    void operator()(SimObject* so, SoHandle soh) override {
+      auto* sim = Simulation::GetActive();
+      auto* param = sim->GetParam();
+
+      so->ApplyDisplacement((*displacements_)[soh]);
+      if (param->bound_space_) {
+        ApplyBoundingBox(so, param->min_bound_, param->max_bound_);
+      }
+    }
+  };
+};
+
 void RunTest(ExecutionMode mode) {
   auto set_param = [&](Param* param) {
     switch (mode) {
@@ -39,78 +100,81 @@ void RunTest(ExecutionMode mode) {
         param->use_gpu_ = true;
     }
   };
-  Simulation simulation("displacement_op_gpu_test_RunTest", set_param);
-  auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+
+  enum Case { kCompute, kVerify };
+
+  std::vector<Simulation*> sims;
+  sims.push_back(new Simulation("GPU", set_param));
+  sims.push_back(new Simulation("CPU_Verify", set_param));
+  std::array<SoUid, 2> uid_ref;
+
+  for (size_t i = 0; i < sims.size(); i++) {
+    auto& sim = sims[i];
+    sim->Activate();
+    auto* rm = sim->GetResourceManager();
+    auto* grid = sim->GetGrid();
+    uid_ref[i] = SoUid(sim->GetSoUidGenerator()->GetHighestIndex());
 
 // Do this explicitly because this normally is only called in
 // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
 #if defined(USE_CUDA) || defined(USE_OPENCL)
-  GpuHelper::GetInstance()->InitializeGPUEnvironment();
+    GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
 
-  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
+    // Cell 0
+    Cell* cell = new Cell();
+    cell->SetAdherence(0.3);
+    cell->SetDiameter(10);
+    cell->SetMass(1.4);
+    cell->SetPosition({0, 0, 0});
+    rm->push_back(cell);
 
-  // Cell 0
-  Cell* cell = new Cell();
-  cell->SetAdherence(0.3);
-  cell->SetDiameter(9);
-  cell->SetMass(1.4);
-  cell->SetPosition({0, 0, 0});
-  cell->SetPosition({0, 0, 0});
-  rm->push_back(cell);
+    // Cell 1
+    Cell* cell_1 = new Cell();
+    cell_1->SetAdherence(0.4);
+    cell_1->SetDiameter(10);
+    cell_1->SetMass(1.1);
+    cell_1->SetPosition({0, 8, 0});
+    rm->push_back(cell_1);
 
-  // Cell 1
-  Cell* cell_1 = new Cell();
-  cell_1->SetAdherence(0.4);
-  cell_1->SetDiameter(11);
-  cell_1->SetMass(1.1);
-  cell_1->SetPosition({0, 5, 0});
-  cell_1->SetPosition({0, 5, 0});
-  rm->push_back(cell_1);
+    grid->Initialize();
 
-  grid->Initialize();
-
-  // execute operation
-  DisplacementOp op;
-  op();
+    if (i == Case::kCompute) {
+      // Execute operation
+      DisplacementOp op;
+      op();
+    } else {
+      // Run verification on CPU
+      DisplacementOpCpuVerify cpu_op;
+      cpu_op();
+    }
+  }
 
   // check results
-  // cell 0
-  Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 0));
-  Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 1));
-  auto final_position = final_cell0->GetPosition();
-  EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
-  EXPECT_NEAR(-0.07797206232558615, final_position[1],
-              abs_error<double>::value);
-  EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
-  // cell 1
-  final_position = final_cell1->GetPosition();
-  EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
-  EXPECT_NEAR(5.0992371670902221, final_position[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+  auto rm0 = sims[Case::kCompute]->GetResourceManager();
+  auto rm1 = sims[Case::kVerify]->GetResourceManager();
+
+  auto cell0 = static_cast<Cell*>(rm0->GetSimObject(uid_ref[0] + 0));
+  auto cell1 = static_cast<Cell*>(rm0->GetSimObject(uid_ref[0] + 1));
+  auto vcell0 = static_cast<Cell*>(rm1->GetSimObject(uid_ref[1] + 0));
+  auto vcell1 = static_cast<Cell*>(rm1->GetSimObject(uid_ref[1] + 1));
+
+  EXPECT_ARR_NEAR_GPU(vcell0->GetPosition(), cell0->GetPosition());
+  EXPECT_ARR_NEAR_GPU(vcell1->GetPosition(), cell1->GetPosition());
 
   // check if tractor_force has been reset to zero
-  // cell 0
-  auto final_tf = final_cell0->GetTractorForce();
-  EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
-  // cell 1
-  final_tf = final_cell1->GetTractorForce();
-  EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  EXPECT_ARR_NEAR_GPU(cell0->GetTractorForce(), {0, 0, 0});
+  EXPECT_ARR_NEAR_GPU(cell1->GetTractorForce(), {0, 0, 0});
 
   // remaining fields should remain unchanged
   // cell 0
-  EXPECT_NEAR(0.3, final_cell0->GetAdherence(), abs_error<double>::value);
-  EXPECT_NEAR(9, final_cell0->GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(1.4, final_cell0->GetMass(), abs_error<double>::value);
+  EXPECT_NEAR(0.3, cell0->GetAdherence(), kEps);
+  EXPECT_NEAR(10, cell0->GetDiameter(), kEps);
+  EXPECT_NEAR(1.4, cell0->GetMass(), kEps);
   // cell 1
-  EXPECT_NEAR(0.4, final_cell1->GetAdherence(), abs_error<double>::value);
-  EXPECT_NEAR(11, final_cell1->GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(1.1, final_cell1->GetMass(), abs_error<double>::value);
+  EXPECT_NEAR(0.4, cell1->GetAdherence(), kEps);
+  EXPECT_NEAR(10, cell1->GetDiameter(), kEps);
+  EXPECT_NEAR(1.1, cell1->GetMass(), kEps);
 }
 
 #ifdef USE_CUDA
@@ -131,66 +195,85 @@ void RunTest2(ExecutionMode mode) {
         param->use_gpu_ = true;
     }
   };
-  Simulation simulation("DisplacementOpGpuTest_RunTest2", set_param);
-  auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+
+  enum Case { kCompute, kVerify };
+
+  std::vector<Simulation*> sims;
+  sims.push_back(new Simulation("GPU", set_param));
+  sims.push_back(new Simulation("CPU_Verify", set_param));
+  std::array<SoUid, 2> uid_ref;
+
+  for (size_t i = 0; i < sims.size(); i++) {
+    auto& sim = sims[i];
+    sim->Activate();
+    auto* rm = sim->GetResourceManager();
+    auto* grid = sim->GetGrid();
+    uid_ref[i] = SoUid(sim->GetSoUidGenerator()->GetHighestIndex());
 
 // Do this explicitly because this normally is only called in
 // Scheduler::Initialize(), but in this test we call DisplacementOp directly.
 #if defined(USE_CUDA) || defined(USE_OPENCL)
-  GpuHelper::GetInstance()->InitializeGPUEnvironment();
+    GpuHelper::GetInstance()->InitializeGPUEnvironment();
 #endif
 
-  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
-
-  double space = 20;
-  for (size_t i = 0; i < 3; i++) {
-    for (size_t j = 0; j < 3; j++) {
-      for (size_t k = 0; k < 3; k++) {
-        Cell* cell = new Cell({k * space, j * space, i * space});
-        cell->SetDiameter(30);
-        cell->SetAdherence(0.4);
-        cell->SetMass(1.0);
-        rm->push_back(cell);
+    double space = 20;
+    for (size_t i = 0; i < 3; i++) {
+      for (size_t j = 0; j < 3; j++) {
+        for (size_t k = 0; k < 3; k++) {
+          Cell* cell = new Cell({k * space, j * space, i * space});
+          cell->SetDiameter(30);
+          cell->SetAdherence(0.4);
+          cell->SetMass(1.0);
+          rm->push_back(cell);
+        }
       }
+    }
+
+    grid->Initialize();
+
+    if (i == Case::kCompute) {
+      // Execute operation
+      DisplacementOp op;
+      op();
+    } else {
+      // Run verification on CPU
+      DisplacementOpCpuVerify cpu_op;
+      cpu_op();
     }
   }
 
-  grid->ClearGrid();
-  grid->Initialize();
-
-  // execute operation on all cells
-  DisplacementOp op;
-  op();
+  // check results
+  auto rm0 = sims[Case::kCompute]->GetResourceManager();
+  auto rm1 = sims[Case::kVerify]->GetResourceManager();
 
   // clang-format off
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 0)->GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 1)->GetPosition(), {20, -0.22419529008561653, -0.22419529008561653});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 2)->GetPosition(), {40.201609668095067, -0.20160966809506442, -0.20160966809506442});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 3)->GetPosition(), {-0.22419529008561653, 20, -0.22419529008561653});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 4)->GetPosition(), {20, 20, -0.24678091207616867});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 5)->GetPosition(), {40.224195290085618, 20, -0.22419529008561653});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 6)->GetPosition(), {-0.20160966809506442, 40.201609668095067, -0.20160966809506442});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 7)->GetPosition(), {20, 40.224195290085618, -0.22419529008561653});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 8)->GetPosition(), {40.201609668095067, 40.201609668095067, -0.20160966809506442});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 9)->GetPosition(), {-0.22419529008561653, -0.22419529008561653, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 10)->GetPosition(), {20, -0.24678091207616867, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 11)->GetPosition(), {40.224195290085618, -0.22419529008561653, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 12)->GetPosition(), {-0.24678091207616867, 20, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 13)->GetPosition(), {20, 20, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 14)->GetPosition(), {40.246780912076169, 20, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 15)->GetPosition(), {-0.22419529008561653, 40.224195290085618, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 16)->GetPosition(), {20, 40.246780912076169, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 17)->GetPosition(), {40.224195290085618, 40.224195290085618, 20});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 18)->GetPosition(), {-0.20160966809506442, -0.20160966809506442, 40.201609668095067});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 19)->GetPosition(), {20, -0.22419529008561653, 40.224195290085618});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 20)->GetPosition(), {40.201609668095067, -0.20160966809506442, 40.201609668095067});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 21)->GetPosition(), {-0.22419529008561653, 20, 40.224195290085618});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 22)->GetPosition(), {20, 20, 40.246780912076169});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 23)->GetPosition(), {40.224195290085618, 20, 40.224195290085618});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 24)->GetPosition(), {-0.20160966809506442, 40.201609668095067, 40.201609668095067});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 25)->GetPosition(), {20, 40.224195290085618, 40.224195290085618});
-  EXPECT_ARR_NEAR_GPU(rm->GetSimObject(ref_uid + 26)->GetPosition(), {40.201609668095067, 40.201609668095067, 40.201609668095067});
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 0)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 0)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 1)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 1)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 2)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 2)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 3)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 3)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 4)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 4)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 5)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 5)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 6)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 6)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 7)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 7)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 8)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 8)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 9)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 9)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 10)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 10)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 11)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 11)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 12)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 12)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 13)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 13)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 14)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 14)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 15)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 15)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 16)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 16)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 17)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 17)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 18)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 18)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 19)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 19)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 20)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 20)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 21)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 21)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 22)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 22)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 23)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 23)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 24)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 24)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 25)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 25)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 26)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 26)->GetPosition());
   // clang-format on
 }
 
