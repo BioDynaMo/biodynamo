@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "core/util/log.h"
+#include "core/util/string.h"
 
 #ifndef __ROOTCLING__
 #include <vtkCPDataDescription.h>
@@ -62,20 +63,19 @@ class InSituPipeline : public vtkCPPipeline {
     session_manager_ = proxy_manager_->GetActiveSessionProxyManager();
     controller_ = vtkSMParaViewPipelineControllerWithRendering::New();
     plugin_manager_ = vtkSMPluginManager::New();
-//#ifdef __APPLE__
-    //std::string plugin_path =
-        //std::string(std::getenv("BDM_INSTALL_DIR")) +
-        //"/biodynamo/lib/pv_plugin/libBDMGlyphFilter.dylib";
-//#else
-    //std::string plugin_path = std::string(std::getenv("BDM_INSTALL_DIR")) +
-                              //"/biodynamo/lib/pv_plugin/libBDMGlyphFilter.so";
-//#endif
+#ifdef __APPLE__
+    auto plugin_path =
+        Concat(std::getenv("BDMSYS"), "/lib/pv_plugin/libBDMGlyphFilter.dylib");
+#else
+    auto plugin_path =
+        Concat(std::getenv("BDMSYS"), "/lib/pv_plugin/libBDMGlyphFilter.so");
+#endif
     // Load custom plugin to enable cylinder glyph scaling
-    //if (!plugin_manager_->LoadLocalPlugin(plugin_path.c_str())) {
-      //Fatal("LoadLocalPlugin",
-            //"Was unable to load our custom visualzation plugin. Have you "
-            //"sourced the BioDynaMo environment?");
-    //}
+    if (!plugin_manager_->LoadLocalPlugin(plugin_path.c_str())) {
+      Fatal("LoadLocalPlugin",
+            "Was unable to load our custom visualzation plugin. Have you "
+            "sourced the BioDynaMo environment?");
+    }
   }
 
   virtual ~InSituPipeline() {
@@ -293,7 +293,7 @@ class InSituPipeline : public vtkCPPipeline {
   }
 
   int CoProcess(vtkCPDataDescription* data_description) override {
-	  if (!data_description) {
+    if (!data_description) {
       vtkWarningMacro(
           "The data description is empty. There is nothing to visualize!");
       return 0;
