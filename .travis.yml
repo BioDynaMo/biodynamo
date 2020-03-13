@@ -9,11 +9,6 @@ matrix:
       sudo: required
       group: edge
       env: SCRIPT="util/run-inside-docker.sh ubuntu-16.04 util/travis-ci/default-build.sh"
-    # Default build on osx
-    - os: osx
-      osx_image: xcode10.1
-      language: generic
-      env: SCRIPT="util/travis-ci/default-build.sh"
     # Code style checks on linux
     - os: linux
       compiler: gcc
@@ -42,13 +37,6 @@ matrix:
       sudo: required
       group: edge
       env: SCRIPT="util/travis-ci/installation-test.sh centos-7"
-    # Test development installation on osx
-    - os: osx
-      osx_image: xcode10.1
-      before_install:
-       - test -n $CC  && unset CC
-       - test -n $CXX && unset CXX
-      env: SCRIPT="util/travis-ci/installation-test.sh osx"
 
 script:
   - shell_session_update() { :; };
