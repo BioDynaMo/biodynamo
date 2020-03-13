@@ -132,18 +132,18 @@ class Grid {
     ///
     /// @param[in]  so       The object's identifier
     /// @param   AddObject   successors   The successors
-    void AddObject(SoHandle so, SimObjectVector<SoHandle>* successors,
+    void AddObject(SoHandle soh, SimObjectVector<SoHandle>* successors,
                    Grid* grid) {
       std::lock_guard<Spinlock> lock_guard(lock_);
 
       if (timestamp_ != grid->timestamp_) {
         timestamp_ = grid->timestamp_;
         length_ = 1;
-        start_ = so;
+        start_ = soh;
       } else {
         length_++;
-        (*successors)[so] = start_;
-        start_ = so;
+        (*successors)[soh] = start_;
+        start_ = soh;
       }
     }
 
