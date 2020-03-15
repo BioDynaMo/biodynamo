@@ -139,7 +139,7 @@ void SimObject::RunBiologyModules() {
   }
 }
 
-const InlineVector<BaseBiologyModule*, 5>& SimObject::GetAllBiologyModules()
+const InlineVector<BaseBiologyModule*, 2>& SimObject::GetAllBiologyModules()
     const {
   return biology_modules_;
 }

@@ -233,7 +233,7 @@ class SimObject {
   void RunBiologyModules();
 
   /// Return all biology modules
-  const InlineVector<BaseBiologyModule*, 5>& GetAllBiologyModules() const;
+  const InlineVector<BaseBiologyModule*, 2>& GetAllBiologyModules() const;
   // ---------------------------------------------------------------------------
 
   virtual Double3 CalculateDisplacement(double squared_radius, double dt) = 0;
@@ -277,7 +277,7 @@ class SimObject {
   /// Grid box index
   uint32_t box_idx_ = 0;
   /// collection of biology modules which define the internal behavior
-  InlineVector<BaseBiologyModule*, 5> biology_modules_;
+  InlineVector<BaseBiologyModule*, 2> biology_modules_;
 
  private:
   Spinlock lock_;   //!
