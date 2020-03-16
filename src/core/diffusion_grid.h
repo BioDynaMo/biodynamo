@@ -558,6 +558,110 @@ class DiffusionGrid {
     }      // block ny
     c1_.swap(c2_);
   }
+  
+  void RK(){ /* Rungge-Kutta diffusion method*/
+
+    if (IsFixedSubstance()) {
+      return;
+    }
+
+    const auto nx = num_boxes_axis_[0];
+    const auto ny = num_boxes_axis_[1];
+    const auto nz = num_boxes_axis_[2];
+
+    const double ibl2 = 1 / (box_length_ * box_length_);
+    const double d = 1 - dc_[0];
+
+    #define YBF 16
+    #pragma omp parallel for collapse(2)
+    for (size_t yy = 0; yy < ny; yy += YBF) {
+      for (size_t z = 0; z < nz; z++) {
+        size_t ymax = yy + YBF;
+        if (ymax >= ny) {
+          ymax = ny;
+        }
+        for (size_t y = yy; y < ymax; y++) {
+          size_t x = 0;
+          int c, cp, cm, n, s, b, t;
+          c = x + y * nx + z * nx * ny;
+    #pragma omp simd
+          for (x = 1; x < nx - 1; x++) {
+            ++c;
+            ++n;
+            ++s;
+            ++b;
+            ++t;
+            /* if ( y==0 || y== ny-1 || z==0 || z=nz-1 ){
+                      continue;
+                      }*/
+            // TODO (Jack) This is to be used in the case of an insulated box
+            // for Thermo and is a WIP.
+
+            cm = c - 1;
+            cp = c + 1;
+            n = c - nx;
+            s = c + nx;
+            b = c - nx * ny;
+            t = c + nx * ny;
+
+            /* X axis */
+            if (x == 1) {
+              cm = c + 1;
+            } else if (x == nx - 2) {
+              cp = c - 1;
+            }
+
+            /* Y axis */
+            if (y == 0) {
+              n = s;
+            } else if (y == ny - 1) {
+              s = n;
+            }
+
+            /* Z axis */
+            if (z == 0) {
+              b = t;
+            } else if (z == nz - 1) {
+              t = b;
+            }
+
+                for (int order = 1; order < 4; order++ ){
+                if(order < 2){ /* for k1 */
+
+                k_[order] = 0.5 * ( d *(c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
+                        d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                        d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
+
+                } else if (order > 1 && order < 4){ /* for k2 and k3 */
+                int nm1 = order -1;
+                k_[order] =  0.5 * ((d * ((1.0*dt_)/2) * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
+                                d * ((1.0*dt_)/2) * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                                d * ((1.0*dt_)/2) * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) + ((1.0*dt_)/2)*k_[nm1]);
+
+                }else{ /* for k4 */
+                int nm1 = order -1;
+                k_[order] = 0.5 * ((d * ((1.0*dt_)/2) * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
+                            d * ((1.0*dt_)/2) * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                            d * ((1.0*dt_)/2) * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) + (2.0*dt_)*k_[nm1]);
+
+                        c2_[c] =
+                        c1_[c] + ((1.0*dt_)/3)*(k_[1] + k_[2] + k_[3] + k_[4])*
+                (1 - mu_);
+                }
+                }
+
+            }
+
+          ++c;
+          ++n;
+          ++s;
+          ++b;
+          ++t;
+        }  // tile ny
+      }    // tile nz
+    }      // block ny
+    c1_.swap(c2_);
+  }
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -754,6 +858,8 @@ class DiffusionGrid {
   ParallelResizeVector<double> c1_ = {};
   /// An extra concentration data buffer for faster value updating
   ParallelResizeVector<double> c2_ = {};
+    // k vector for Rungge Kutta 4th order.
+  std::array<double, 4> k_ = {{0}};
   /// The array of gradients (x, y, z)
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
