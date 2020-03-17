@@ -118,6 +118,9 @@ void ParaviewSoVisitor::Visit(const std::string& dm_name, size_t type_hash_code,
     Int(dm_name, data);
   } else if (type_hash_code == typeid(uint64_t).hash_code()) {
     Uint64T(dm_name, data);
+  } else if (type_hash_code == typeid(SoUid).hash_code()) {
+    uint64_t uid = *static_cast<const SoUid*>(data);
+    Uint64T(dm_name, &uid);
   } else if (type_hash_code == typeid(Double3).hash_code()) {
     MathArray3(dm_name, data);
   } else if (type_hash_code == typeid(std::array<int, 3>).hash_code()) {
