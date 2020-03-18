@@ -79,19 +79,19 @@ template <typename T, std::size_t N>
 struct IsArray<MathArray<T, N>> : std::true_type {};
 
 template <typename T>
-inline int CreateVtkDataArray(const std::string& dm_name, VtkSoGrid* so_grid) {
+inline int CreateVtkDataArray(uint64_t tid, const std::string& dm_name, VtkSoGrid* so_grid) {
   using VtkArrayType = typename GetVtkArrayType<T>::type;
   unsigned components = GetNumberOfComponents<T>::value;
   vtkNew<VtkArrayType> new_vtk_array;
   new_vtk_array->SetName(dm_name.c_str());
   auto* vtk_array = new_vtk_array.GetPointer();
   vtk_array->SetNumberOfComponents(components);
-  auto* point_data = so_grid->data_->GetPointData();
+  auto* point_data = so_grid->data_[tid]->GetPointData();
   return point_data->AddArray(vtk_array);
 }
 
 template <>
-inline int CreateVtkDataArray<Double3>(const std::string& dm_name,
+inline int CreateVtkDataArray<Double3>(uint64_t tid, const std::string& dm_name,
                                        VtkSoGrid* so_grid) {
   vtkNew<vtkDoubleArray> new_vtk_array;
   new_vtk_array->SetName(dm_name.c_str());
@@ -100,17 +100,17 @@ inline int CreateVtkDataArray<Double3>(const std::string& dm_name,
   if (dm_name == "position_") {
     vtkNew<vtkPoints> points;
     points->SetData(vtk_array);
-    so_grid->data_->SetPoints(points.GetPointer());
+    so_grid->data_[tid]->SetPoints(points.GetPointer());
     return -1;
   } else if (dm_name == "mass_location_") {
     // create points with position {0, 0, 0}
     // BDMGlyph will rotate and translate based on the attribute data
     vtkNew<vtkPoints> points;
     points->SetData(vtk_array);
-    so_grid->data_->SetPoints(points.GetPointer());
-    return so_grid->data_->GetPointData()->AddArray(vtk_array);
+    so_grid->data_[tid]->SetPoints(points.GetPointer());
+    return so_grid->data_[tid]->GetPointData()->AddArray(vtk_array);
   } else {
-    return so_grid->data_->GetPointData()->AddArray(vtk_array);
+    return so_grid->data_[tid]->GetPointData()->AddArray(vtk_array);
   }
   return -1;
 }
@@ -120,10 +120,10 @@ struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
   vtkUnstructuredGrid* grid_;
   vtkPointData* point_data_;
 
-  PopulateDataArraysFunctor(VtkSoGrid* so_grid)
+  PopulateDataArraysFunctor(VtkSoGrid* so_grid, int tid)
       : so_grid_(so_grid),
-        grid_(so_grid->data_),
-        point_data_(so_grid->data_->GetPointData()) {}
+        grid_(so_grid->data_[tid]),
+        point_data_(so_grid->data_[tid]->GetPointData()) {}
 
   template <typename TClass, typename TDataMember>
   typename std::enable_if<IsArray<TDataMember>::value>::type SetTuple(

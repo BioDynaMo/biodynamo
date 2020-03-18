@@ -44,8 +44,8 @@ namespace bdm {
 
 
 struct PopulateDataArraysFunctorImpl1 : public PopulateDataArraysFunctor {
-  PopulateDataArraysFunctorImpl1(VtkSoGrid* so_grid) 
-          : PopulateDataArraysFunctor(so_grid) {}
+  PopulateDataArraysFunctorImpl1(VtkSoGrid* so_grid, int tid)
+          : PopulateDataArraysFunctor(so_grid, tid) {}
   void operator()(SimObject* so, SoHandle soh) {
     auto idx = soh.GetElementIdx();
 PopulateDataArraysFunctor::SetTuple<bdm::Cell, double>(so, idx, so_grid_->array_indices_[0], 152);
@@ -56,10 +56,17 @@ PopulateDataArraysFunctor::SetTuple<bdm::Cell, bdm::MathArray<double,3>>(so, idx
 
 VtkSoGrid::VtkSoGrid(const char* type_name,
                      vtkCPDataDescription* data_description) {
-  data_ = vtkUnstructuredGrid::New();
+  auto* tinfo = ThreadInfo::GetInstance();
+  // The last element is a dummy grid required to write the pvtu file
+  data_.resize(tinfo->GetMaxThreads() + 1);
+  #pragma omp parallel for schedule(static, 1)
+  for (uint64_t i = 0; i < data_.size(); ++i) {
+    data_[i] = vtkUnstructuredGrid::New();
+  }
   name_ = type_name;
-  data_description->AddInput(type_name);
-  data_description->GetInputDescriptionByName(type_name)->SetGrid(data_);
+  // FIXME
+  // data_description->AddInput(type_name);
+  // data_description->GetInputDescriptionByName(type_name)->SetGrid(data_);
 
   tclass_ = GetTClass();
   auto* tmp_instance = static_cast<SimObject*>(tclass_->New());
@@ -68,14 +75,14 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
   InitializeDataMembers(tmp_instance, &data_members);
   array_indices_.resize(data_members.size());
 
-  // InitializeVtkSoGrid(this);
+  // InitializeVtkSoGrid(this); FIXME
   JitForEachDataMemberFunctor jitcreate(
       tclass_, data_members, "CreateVtkDataArraysFunctor",
       [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
         std::stringstream sstr;
         sstr << "namespace bdm {\n\n"
-             << "struct " << functor_name << " : public Functor<void, VtkSoGrid*> {\n"
-             << "  void operator()(VtkSoGrid* so_grid) {\n";
+             << "struct " << functor_name << " : public Functor<void, VtkSoGrid*, int> {\n"
+             << "  void operator()(VtkSoGrid* so_grid, int tid) {\n";
 
         uint64_t counter = 0;
         for (auto* tdm : tdata_members) {
@@ -83,8 +90,8 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
           // so_grid->array_indices_[0] =
           //    CreateVtkDataArray<Double3>("position_", so_grid);
           sstr << "  so_grid->array_indices_[" << counter++
-               << "] = CreateVtkDataArray<" << tdm->GetTypeName() << ">(\""
-               << tdm->GetName() << "\", so_grid);\n";
+               << "] = CreateVtkDataArray<" << tdm->GetTypeName() << ">("
+               << "tid, \"" << tdm->GetName() << "\", so_grid);\n";
         }
 
         sstr << "  }\n";
@@ -95,8 +102,10 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
 
       });
   jitcreate.Compile();
-  auto* create_functor = jitcreate.New<Functor<void, VtkSoGrid*>>();
-  (*create_functor)(this);
+  auto* create_functor = jitcreate.New<Functor<void, VtkSoGrid*, int>>();
+  for (uint64_t i = 0; i < data_.size(); ++i) {
+    (*create_functor)(this, i);
+  }
   delete create_functor;
 
   JitForEachDataMemberFunctor jitpopulate(
@@ -105,8 +114,8 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
         std::stringstream sstr;
         sstr << "namespace bdm {\n\n"
              << "struct " << functor_name << " : public PopulateDataArraysFunctor {\n"
-             << "  " << functor_name << "(VtkSoGrid* so_grid) \n"
-             << "          : PopulateDataArraysFunctor(so_grid) {}\n"
+             << "  " << functor_name << "(VtkSoGrid* so_grid, int tid) \n"
+             << "          : PopulateDataArraysFunctor(so_grid, tid) {}\n"
              << "  void operator()(SimObject* so, SoHandle soh) {\n"
              << "    auto idx = soh.GetElementIdx();\n";
 
@@ -127,26 +136,33 @@ VtkSoGrid::VtkSoGrid(const char* type_name,
         return sstr.str();
       });
   jitpopulate.Compile();
+  // FIXME
   //populate_arrays_ = jitpopulate.New<PopulateDataArraysFunctor>(
       //Concat("reinterpret_cast<bdm::VtkSoGrid*>(", this, ")"));
-  populate_arrays_ = new PopulateDataArraysFunctorImpl1(this);
+  populate_arrays_.resize(data_.size());
+#pragma omp parallel for schedule(static, 1)
+  for (uint64_t i = 0; i < populate_arrays_.size(); ++i) {
+    populate_arrays_[i] = new PopulateDataArraysFunctorImpl1(this, i);
+  }
 }
 
 VtkSoGrid::~VtkSoGrid() {
   name_ = "";
-  data_->Delete();
-  data_ = nullptr;
-  if (populate_arrays_) {
-    delete populate_arrays_;
+  for (auto& el : data_) {
+    el->Delete();
   }
+  data_.clear();
+  for (auto& el : populate_arrays_) {
+    delete el;
+  }
+  populate_arrays_.clear();
 }
 
-void VtkSoGrid::ResetAndResizeDataArrays(uint64_t new_size) {
-  auto* parray = data_->GetPoints()->GetData();
+void VtkSoGrid::ResetAndResizeDataArrays(uint64_t tid, uint64_t new_size) {
+  auto* parray = data_[tid]->GetPoints()->GetData();
   parray->Reset();
   parray->SetNumberOfTuples(new_size);
-
-  auto* point_data = data_->GetPointData();
+  auto* point_data = data_[tid]->GetPointData();
   for (int i = 0; i < point_data->GetNumberOfArrays(); i++) {
     auto* array = point_data->GetArray(i);
     array->Reset();

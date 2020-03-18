@@ -42,13 +42,13 @@ struct VtkSoGrid {
 
   ~VtkSoGrid();
 
-  void ResetAndResizeDataArrays(uint64_t new_size);
+  void ResetAndResizeDataArrays(uint64_t tid, uint64_t new_size);
 
   std::string name_;
   TClass* tclass_;
-  vtkUnstructuredGrid* data_ = nullptr;
+  std::vector<vtkUnstructuredGrid*> data_;
   Shape shape_;
-  PopulateDataArraysFunctor* populate_arrays_ = nullptr;
+  std::vector<PopulateDataArraysFunctor*> populate_arrays_;
   /// stores vtk array index - position is index of data member
   std::vector<int> array_indices_;
 

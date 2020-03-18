@@ -39,6 +39,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLPImageDataWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 
 namespace bdm {
 
@@ -202,12 +203,32 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   for (auto& pair : impl_->vtk_so_grids_) {
     const auto& sim_objects = rm->GetTypeIndex()->GetType(pair.second->tclass_);
-    pair.second->ResetAndResizeDataArrays(sim_objects.size());
 
-    #pragma omp parallel for
-    for (uint64_t i =0; i < sim_objects.size(); ++i) {
-      (*pair.second->populate_arrays_)(sim_objects[i], SoHandle(i));
-    }
+    std::cout << "sim object size " << sim_objects.size() << std::endl;
+
+    #pragma omp parallel
+      {
+        auto* tinfo = ThreadInfo::GetInstance();
+        auto tid = tinfo->GetMyThreadId();
+        auto max_threads = tinfo->GetMaxThreads();
+
+        // use static scheduling for now
+        auto correction = sim_objects.size() % max_threads == 0 ? 0 : 1;
+        auto chunk = sim_objects.size() / max_threads + correction;
+        auto start = tid * chunk;
+        auto end = std::min(sim_objects.size(), start + chunk);
+
+        pair.second->ResetAndResizeDataArrays(tid, end - start);
+
+        for (uint64_t i = start; i < end; ++i) {
+          (*pair.second->populate_arrays_[tid])(sim_objects[i], SoHandle(i - start));
+        }
+        // write one data element into each array of the dummy grid  
+        if (tid == 0 && sim_objects.size() != 0) {
+          pair.second->ResetAndResizeDataArrays(max_threads, 1);
+          (*pair.second->populate_arrays_[max_threads])(sim_objects[0], SoHandle(0));
+        }
+      }
   }
 }
 
@@ -265,41 +286,44 @@ void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
 }
 
 void ParaviewAdaptor::WriteToFile() {
-  auto step = impl_->data_description_->GetTimeStep();
-  auto* sim = Simulation::GetActive();
-  auto* tinfo = ThreadInfo::GetInstance();
-  
-  for (auto& el : impl_->vtk_so_grids_) {
-      auto* so_grid = el.second;
+   auto step = impl_->data_description_->GetTimeStep();
+   auto* sim = Simulation::GetActive();
+   auto* tinfo = ThreadInfo::GetInstance();
 
-#pragma omm parallel for schedule(static, 1)
-    for(int i = 0; i < tinfo->GetMaxThreads(); ++i) {
-      vtkNew<vtkXMLPUnstructuredGridWriter> vtu_writer;
-      auto filename = Concat(sim->GetOutputDir(), "/", el.second->name_, "-", step, ".vtu");
-      vtu_writer->SetFileName();
-      vtu_writer->SetInputData(...);
-      vtu_writer->Write();
-    }
+   for (auto& el : impl_->vtk_so_grids_) {
+     auto* so_grid = el.second;
 
-    vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;   
-    auto filename =
-        Concat(sim->GetOutputDir(), "/", el.second->name_, "-", step, ".pvtu");
-    cells_writer->SetFileName(filename.c_str());
-    cells_writer->SetInputData(el.second->data_);
-    cells_writer->SetNumberOfPieces(ThreadInfo::GetInstance()->GetMaxNumThreads());
-    cells_writer->Update();
-  }
+     vtkNew<vtkXMLPUnstructuredGridWriter> pvtu_writer;
+     auto filename =
+         Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, ".pvtu");
+     pvtu_writer->SetFileName(filename.c_str());
+     auto max_threads =ThreadInfo::GetInstance()->GetMaxThreads(); 
+     pvtu_writer->SetInputData(so_grid->data_.back());
+     pvtu_writer->SetNumberOfPieces(max_threads);
+     pvtu_writer->SetStartPiece(0);
+     pvtu_writer->SetEndPiece(max_threads - 1);
+     pvtu_writer->Write();
 
-  for (auto& entry : impl_->vtk_dgrids_) {
-    vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
+ #pragma omp parallel for schedule(static, 1)
+     for(int i = 0; i < tinfo->GetMaxThreads(); ++i) {
+       vtkNew<vtkXMLUnstructuredGridWriter> vtu_writer;
+       auto filename = Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, "_", i, ".vtu");
+       vtu_writer->SetFileName(filename.c_str());
+       vtu_writer->SetInputData(so_grid->data_[i]);
+       vtu_writer->Write();
+     }
+   }
 
-    const auto& substance_name = entry.second->name_;
-    auto filename =
-        Concat(sim->GetOutputDir(), "/", substance_name, "-", step, ".pvti");
-    dgrid_writer->SetFileName(filename.c_str());
-    dgrid_writer->SetInputData(entry.second->data_);
-    dgrid_writer->Update();
-  }
+   for (auto& entry : impl_->vtk_dgrids_) {
+     vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
+
+     const auto& substance_name = entry.second->name_;
+     auto filename =
+         Concat(sim->GetOutputDir(), "/", substance_name, "-", step, ".pvti");
+     dgrid_writer->SetFileName(filename.c_str());
+     dgrid_writer->SetInputData(entry.second->data_);
+     dgrid_writer->Update();
+   }
 }
 
 /// This function generates the Paraview state based on the exported files
