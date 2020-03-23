@@ -57,8 +57,7 @@ PopulateDataArraysFunctor::SetTuple<bdm::Cell, bdm::MathArray<double,3>>(so, idx
 VtkSoGrid::VtkSoGrid(const char* type_name,
                      vtkCPDataDescription* data_description) {
   auto* tinfo = ThreadInfo::GetInstance();
-  // The last element is a dummy grid required to write the pvtu file
-  data_.resize(tinfo->GetMaxThreads() + 1);
+  data_.resize(tinfo->GetMaxThreads());
   #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < data_.size(); ++i) {
     data_[i] = vtkUnstructuredGrid::New();

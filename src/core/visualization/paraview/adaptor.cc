@@ -55,7 +55,6 @@ std::atomic<uint64_t> ParaviewAdaptor::counter_;
 
 ParaviewAdaptor::ParaviewAdaptor() {
   counter_++;
-  // auto* test = new ParaviewAdaptor::ParaviewImpl();
   impl_ = std::unique_ptr<ParaviewAdaptor::ParaviewImpl>(
       new ParaviewAdaptor::ParaviewImpl());
 }
@@ -223,11 +222,6 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
         for (uint64_t i = start; i < end; ++i) {
           (*pair.second->populate_arrays_[tid])(sim_objects[i], SoHandle(i - start));
         }
-        // write one data element into each array of the dummy grid  
-        if (tid == 0 && sim_objects.size() != 0) {
-          pair.second->ResetAndResizeDataArrays(max_threads, 1);
-          (*pair.second->populate_arrays_[max_threads])(sim_objects[0], SoHandle(0));
-        }
       }
   }
 }
@@ -285,6 +279,29 @@ void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
       [&](DiffusionGrid* grid) { ProcessDiffusionGrid(grid); });
 }
 
+void FixPvtu(const std::string& filename, const std::string& grid_name, uint64_t step, uint64_t pieces) {
+  // read whole pvtu file into buffer 
+  std::ifstream ifs(filename);
+  ifs.seekg(0, std::ios::end);
+  size_t size = ifs.tellg();
+  std::string buffer(size, ' ');
+  ifs.seekg(0);
+  ifs.read(&buffer[0], size);
+ 
+  // create new file 
+  std::string find = Concat("<Piece Source=\"", grid_name, "-", step, "_0.vtu\"/>");
+  std::stringstream newfile;
+  auto pos = buffer.find(find);
+  newfile << buffer.substr(0, pos);
+  for(uint64_t i = 0; i < pieces; ++i) {
+    newfile << "<Piece Source=\""<< grid_name << "-" <<  step << "_" << i << ".vtu\"/>\n"; 
+  }
+  newfile << buffer.substr(pos + find.size(), buffer.size());
+  // write new file
+  std::ofstream ofs(filename);
+  ofs << newfile.str();
+}
+
 void ParaviewAdaptor::WriteToFile() {
    auto step = impl_->data_description_->GetTimeStep();
    auto* sim = Simulation::GetActive();
@@ -293,24 +310,25 @@ void ParaviewAdaptor::WriteToFile() {
    for (auto& el : impl_->vtk_so_grids_) {
      auto* so_grid = el.second;
 
-     vtkNew<vtkXMLPUnstructuredGridWriter> pvtu_writer;
-     auto filename =
-         Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, ".pvtu");
-     pvtu_writer->SetFileName(filename.c_str());
-     auto max_threads =ThreadInfo::GetInstance()->GetMaxThreads(); 
-     pvtu_writer->SetInputData(so_grid->data_.back());
-     pvtu_writer->SetNumberOfPieces(max_threads);
-     pvtu_writer->SetStartPiece(0);
-     pvtu_writer->SetEndPiece(max_threads - 1);
-     pvtu_writer->Write();
-
  #pragma omp parallel for schedule(static, 1)
      for(int i = 0; i < tinfo->GetMaxThreads(); ++i) {
-       vtkNew<vtkXMLUnstructuredGridWriter> vtu_writer;
-       auto filename = Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, "_", i, ".vtu");
-       vtu_writer->SetFileName(filename.c_str());
-       vtu_writer->SetInputData(so_grid->data_[i]);
-       vtu_writer->Write();
+       if (i == 0) {
+         vtkNew<vtkXMLPUnstructuredGridWriter> pvtu_writer;
+         auto filename =
+             Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, ".pvtu");
+         pvtu_writer->SetFileName(filename.c_str());
+         auto max_threads =ThreadInfo::GetInstance()->GetMaxThreads(); 
+         pvtu_writer->SetInputData(so_grid->data_[0]);
+         pvtu_writer->Write();
+
+         FixPvtu(filename, so_grid->name_, step, max_threads);
+       } else {
+         vtkNew<vtkXMLUnstructuredGridWriter> vtu_writer;
+         auto filename = Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, "_", i, ".vtu");
+         vtu_writer->SetFileName(filename.c_str());
+         vtu_writer->SetInputData(so_grid->data_[i]);
+         vtu_writer->Write();
+       }
      }
    }
 
