@@ -266,7 +266,7 @@ if(paraview)
     endif()
 
     # Check the first time if ParaView exists in the system.
-    find_package(ParaView 5.3 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+    find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
             PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
@@ -290,7 +290,7 @@ if(paraview)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
-      find_package(ParaView 5.3 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+      find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
     endif()
 
