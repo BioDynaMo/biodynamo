@@ -217,11 +217,7 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
         auto start = tid * chunk;
         auto end = std::min(sim_objects.size(), start + chunk);
 
-        pair.second->ResetAndResizeDataArrays(tid, end - start);
-
-        for (uint64_t i = start; i < end; ++i) {
-          (*pair.second->populate_arrays_[tid])(sim_objects[i], SoHandle(i - start));
-        }
+        pair.second->UpdateMappedDataArrays(tid, &sim_objects, start, end);
       }
   }
 }

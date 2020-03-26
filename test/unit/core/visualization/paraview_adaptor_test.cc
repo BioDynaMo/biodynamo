@@ -67,10 +67,8 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   vtkCPDataDescription* data_description = vtkCPDataDescription::New();
   std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids;
   vtk_so_grids["cell"] = new VtkSoGrid("cell", data_description);
-  vtk_so_grids["cell"]->initialized_ = true;
   vtk_so_grids["cell"]->shape_ = kSphere;
   vtk_so_grids["neurite"] = new VtkSoGrid("neurite", data_description);
-  vtk_so_grids["neurite"]->initialized_ = true;
   vtk_so_grids["neurite"]->shape_ = kCylinder;
 
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids;

@@ -25,23 +25,23 @@ TEST(StringUtilTest, Concat) {
 }
 
 TEST(StringUtilTest, EndsWith) {
-  EXPECT_TRUE(EndsWith("foo bar baz", "z");
-  EXPECT_TRUE(EndsWith("foo bar baz", "baz");
-  EXPECT_TRUE(EndsWith("foo bar baz", " baz");
-  EXPECT_TRUE(EndsWith("foo bar baz", "bar baz");
-  EXPECT_TRUE(EndsWith("foo bar baz", "foo bar baz");
-  EXPECT_FALSE(EndsWith("foo bar baz", "");
-  EXPECT_FALSE(EndsWith("foo bar baz", "1foo bar baz");
+  EXPECT_TRUE(EndsWith("foo bar baz", "z"));
+  EXPECT_TRUE(EndsWith("foo bar baz", "baz"));
+  EXPECT_TRUE(EndsWith("foo bar baz", " baz"));
+  EXPECT_TRUE(EndsWith("foo bar baz", "bar baz"));
+  EXPECT_TRUE(EndsWith("foo bar baz", "foo bar baz"));
+  EXPECT_FALSE(EndsWith("foo bar baz", ""));
+  EXPECT_FALSE(EndsWith("foo bar baz", "1foo bar baz"));
 }
 
 TEST(StringUtilTest, StartsWith) {
-  EXPECT_TRUE(StartsWith("foo bar baz", "f");
-  EXPECT_TRUE(StartsWith("foo bar baz", "foo");
-  EXPECT_TRUE(StartsWith("foo bar baz", "foo ");
-  EXPECT_TRUE(StartsWith("foo bar baz", "foo bar");
-  EXPECT_TRUE(StartsWith("foo bar baz", "foo bar baz");
-  EXPECT_FALSE(StartsWith("foo bar baz", "");
-  EXPECT_FALSE(StartsWith("foo bar baz", "foo bar baz1");
+  EXPECT_TRUE(StartsWith("foo bar baz", "f"));
+  EXPECT_TRUE(StartsWith("foo bar baz", "foo"));
+  EXPECT_TRUE(StartsWith("foo bar baz", "foo "));
+  EXPECT_TRUE(StartsWith("foo bar baz", "foo bar"));
+  EXPECT_TRUE(StartsWith("foo bar baz", "foo bar baz"));
+  EXPECT_FALSE(StartsWith("foo bar baz", ""));
+  EXPECT_FALSE(StartsWith("foo bar baz", "foo bar baz1"));
 }
 
 }  // namespace bdm

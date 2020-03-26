@@ -22,9 +22,8 @@
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
 #include "core/visualization/paraview/helper.h"
+#include "core/visualization/paraview/mapped_data_array.h"
 
-#include <vtkDoubleArray.h>
-#include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -36,17 +35,17 @@ struct GetVtkArrayType {};
 
 template <>
 struct GetVtkArrayType<double> {
-  using type = vtkDoubleArray;
+  using type = MappedDataArray<double>;
 };
 
 template <>
 struct GetVtkArrayType<int> {
-  using type = vtkIntArray;
+  using type = MappedDataArray<int>;
 };
 
 template <>
 struct GetVtkArrayType<uint64_t> {
-  using type = vtkIntArray;
+  using type = MappedDataArray<int>;
 };
 
 template <typename T, std::size_t N>
@@ -78,42 +77,76 @@ struct IsArray<std::array<T, N>> : std::true_type {};
 template <typename T, std::size_t N>
 struct IsArray<MathArray<T, N>> : std::true_type {};
 
-template <typename T>
-inline int CreateVtkDataArray(uint64_t tid, const std::string& dm_name, VtkSoGrid* so_grid) {
-  using VtkArrayType = typename GetVtkArrayType<T>::type;
-  unsigned components = GetNumberOfComponents<T>::value;
-  vtkNew<VtkArrayType> new_vtk_array;
-  new_vtk_array->SetName(dm_name.c_str());
-  auto* vtk_array = new_vtk_array.GetPointer();
-  vtk_array->SetNumberOfComponents(components);
-  auto* point_data = so_grid->data_[tid]->GetPointData();
-  return point_data->AddArray(vtk_array);
-}
-
-template <>
-inline int CreateVtkDataArray<Double3>(uint64_t tid, const std::string& dm_name,
-                                       VtkSoGrid* so_grid) {
-  vtkNew<vtkDoubleArray> new_vtk_array;
-  new_vtk_array->SetName(dm_name.c_str());
-  auto* vtk_array = new_vtk_array.GetPointer();
-  vtk_array->SetNumberOfComponents(3);
-  if (dm_name == "position_") {
-    vtkNew<vtkPoints> points;
-    points->SetData(vtk_array);
-    so_grid->data_[tid]->SetPoints(points.GetPointer());
-    return -1;
-  } else if (dm_name == "mass_location_") {
-    // create points with position {0, 0, 0}
-    // BDMGlyph will rotate and translate based on the attribute data
-    vtkNew<vtkPoints> points;
-    points->SetData(vtk_array);
-    so_grid->data_[tid]->SetPoints(points.GetPointer());
-    return so_grid->data_[tid]->GetPointData()->AddArray(vtk_array);
-  } else {
-    return so_grid->data_[tid]->GetPointData()->AddArray(vtk_array);
+template <typename TReturn, typename TClass, typename TDataMember>
+struct GetDataMemberFunctor : public Functor<TReturn, SimObject*> {
+  GetDataMemberFunctor(uint64_t dm_offset) : dm_offset_(dm_offset) {}
+ 
+  TReturn operator()(SimObject* so) override {
+    return OperatorImpl(so);
   }
-  return -1;
-}
+  
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<IsArray<TTDataMember>::value, TReturn>::type
+  OperatorImpl(SimObject* so) {
+    auto* casted_so = static_cast<TClass*>(so);
+    auto* data = reinterpret_cast<TDataMember*>(
+                     reinterpret_cast<char*>(casted_so) + dm_offset_)
+                     ->data();
+    return const_cast<TReturn>(data);
+  }
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<!IsArray<TTDataMember>::value, TReturn>::type
+  OperatorImpl(SimObject* so) {
+    auto* casted_so = static_cast<TClass*>(so);
+    return reinterpret_cast<TDataMember*>(
+                     reinterpret_cast<char*>(casted_so) + dm_offset_);
+  }
+
+ private:
+  uint64_t dm_offset_;
+};
+
+template <typename TClass, typename TDataMember>
+struct CreateVtkDataArray {
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<!std::is_same<TTDataMember, Double3>::value>::type
+  operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset, VtkSoGrid* so_grid) {
+    using VtkArrayType = typename GetVtkArrayType<TDataMember>::type;
+    using VtkValueType = typename VtkArrayType::ValueType;
+    unsigned components = GetNumberOfComponents<TDataMember>::value;
+    auto* access_dm = new GetDataMemberFunctor<VtkValueType*, TClass, TDataMember>(dm_offset);
+    vtkNew<VtkArrayType> new_vtk_array;
+    new_vtk_array->Initialize(dm_name, components, access_dm);
+    auto* vtk_array = new_vtk_array.GetPointer();
+    auto* point_data = so_grid->data_[tid]->GetPointData();
+    point_data->AddArray(vtk_array);
+  }
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<std::is_same<TTDataMember, Double3>::value>::type
+  operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset, VtkSoGrid* so_grid) {
+    auto* access_dm = new GetDataMemberFunctor<double*, TClass, Double3>(dm_offset);
+    vtkNew<MappedDataArray<double>> new_vtk_array;
+    new_vtk_array->Initialize(dm_name, 3, access_dm);
+    auto* vtk_array = new_vtk_array.GetPointer();
+    if (dm_name == "position_") {
+      vtkNew<vtkPoints> points;
+      points->SetData(vtk_array);
+      so_grid->data_[tid]->SetPoints(points.GetPointer());
+    } else if (dm_name == "mass_location_") {
+      // create points with position {0, 0, 0}
+      // BDMGlyph will rotate and translate based on the attribute data
+      vtkNew<vtkPoints> points;
+      points->SetData(vtk_array);
+      so_grid->data_[tid]->SetPoints(points.GetPointer());
+      so_grid->data_[tid]->GetPointData()->AddArray(vtk_array);
+    } else {
+      so_grid->data_[tid]->GetPointData()->AddArray(vtk_array);
+    }
+  }
+};
 
 struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
   VtkSoGrid* so_grid_;
