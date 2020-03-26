@@ -12,7 +12,6 @@
 //
 // -----------------------------------------------------------------------------
 
-
 // Based on default Kitware glyph
 
 #ifndef PARAVIEW_PLUGIN_BDM_GLYPH_BDMGLYPH_H_
