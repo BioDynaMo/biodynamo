@@ -21,6 +21,7 @@
 #include "core/resource_manager.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
+#include "core/util/type.h"
 #include "core/visualization/paraview/helper.h"
 #include "core/visualization/paraview/mapped_data_array.h"
 
@@ -31,26 +32,26 @@
 namespace bdm {
 
 template <typename T>
-struct GetVtkArrayType {};
+struct GetVtkValueType {};
 
 template <>
-struct GetVtkArrayType<double> {
-  using type = MappedDataArray<double>;
+struct GetVtkValueType<double> {
+  using type = double;
 };
 
 template <>
-struct GetVtkArrayType<int> {
-  using type = MappedDataArray<int>;
+struct GetVtkValueType<int> {
+  using type = int;
 };
 
 template <>
-struct GetVtkArrayType<uint64_t> {
-  using type = MappedDataArray<int>;
+struct GetVtkValueType<uint64_t> {
+  using type = int;
 };
 
 template <typename T, std::size_t N>
-struct GetVtkArrayType<MathArray<T, N>> {
-  using type = typename GetVtkArrayType<T>::type;
+struct GetVtkValueType<MathArray<T, N>> {
+  using type = typename GetVtkValueType<T>::type;
 };
 
 template <typename T>
@@ -68,57 +69,17 @@ struct GetNumberOfComponents<std::array<T, N>> {
   static const int value = N;
 };
 
-template <typename T>
-struct IsArray : std::false_type {};
-
-template <typename T, size_t N>
-struct IsArray<std::array<T, N>> : std::true_type {};
-
-template <typename T, std::size_t N>
-struct IsArray<MathArray<T, N>> : std::true_type {};
-
-template <typename TReturn, typename TClass, typename TDataMember>
-struct GetDataMemberFunctor : public Functor<TReturn, SimObject*> {
-  GetDataMemberFunctor(uint64_t dm_offset) : dm_offset_(dm_offset) {}
- 
-  TReturn operator()(SimObject* so) final {
-    return OperatorImpl(so);
-  }
-  
-  template <typename TTDataMember = TDataMember>
-  typename std::enable_if<IsArray<TTDataMember>::value, TReturn>::type
-  OperatorImpl(SimObject* so) {
-    auto* casted_so = static_cast<TClass*>(so);
-    auto* data = reinterpret_cast<TDataMember*>(
-                     reinterpret_cast<char*>(casted_so) + dm_offset_)
-                     ->data();
-    return const_cast<TReturn>(data);
-  }
-
-  template <typename TTDataMember = TDataMember>
-  typename std::enable_if<!IsArray<TTDataMember>::value, TReturn>::type
-  OperatorImpl(SimObject* so) {
-    auto* casted_so = static_cast<TClass*>(so);
-    return reinterpret_cast<TDataMember*>(
-                     reinterpret_cast<char*>(casted_so) + dm_offset_);
-  }
-
- private:
-  uint64_t dm_offset_;
-};
-
 template <typename TClass, typename TDataMember>
 struct CreateVtkDataArray {
 
   template <typename TTDataMember = TDataMember>
   typename std::enable_if<!std::is_same<TTDataMember, Double3>::value>::type
   operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset, VtkSoGrid* so_grid) {
-    using VtkArrayType = typename GetVtkArrayType<TDataMember>::type;
-    using VtkValueType = typename VtkArrayType::ValueType;
+    using VtkValueType = typename GetVtkValueType<TDataMember>::type;
+    using VtkArrayType = MappedDataArray<VtkValueType, TClass, TDataMember>;
     unsigned components = GetNumberOfComponents<TDataMember>::value;
-    auto* access_dm = new GetDataMemberFunctor<VtkValueType*, TClass, TDataMember>(dm_offset);
     vtkNew<VtkArrayType> new_vtk_array;
-    new_vtk_array->Initialize(dm_name, components, access_dm);
+    new_vtk_array->Initialize(dm_name, components, dm_offset);
     auto* vtk_array = new_vtk_array.GetPointer();
     auto* point_data = so_grid->data_[tid]->GetPointData();
     point_data->AddArray(vtk_array);
@@ -127,9 +88,9 @@ struct CreateVtkDataArray {
   template <typename TTDataMember = TDataMember>
   typename std::enable_if<std::is_same<TTDataMember, Double3>::value>::type
   operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset, VtkSoGrid* so_grid) {
-    auto* access_dm = new GetDataMemberFunctor<double*, TClass, Double3>(dm_offset);
-    vtkNew<MappedDataArray<double>> new_vtk_array;
-    new_vtk_array->Initialize(dm_name, 3, access_dm);
+    using VtkArrayType = MappedDataArray<double, TClass, TDataMember>;
+    vtkNew<VtkArrayType> new_vtk_array;
+    new_vtk_array->Initialize(dm_name, 3, dm_offset);
     auto* vtk_array = new_vtk_array.GetPointer();
     if (dm_name == "position_") {
       vtkNew<vtkPoints> points;

@@ -19,10 +19,14 @@
 #include <string>
 #include <vector>
 
+#include "core/util/type.h"
+
 class TClass;
 class TDataMember;
 
 namespace bdm {
+
+class SimObject;
 
 /// Iterates over all entries in `TClassTable` and returns a vector of candidate
 /// TClass* that match the given class name.
@@ -66,6 +70,30 @@ class JitForEachDataMemberFunctor {
   std::string functor_name_;
   std::vector<TDataMember*> data_members_;
   std::function<std::string(const std::string&, const std::vector<TDataMember*>&)> code_generator_;
+};
+
+// FIXME document
+template <typename TReturn, typename TClass, typename TDataMember>
+struct GetDataMemberFunctor {
+  uint64_t dm_offset_;
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<IsArray<TTDataMember>::value, TReturn>::type
+  operator()(SimObject* so) const {
+    auto* casted_so = static_cast<TClass*>(so);
+    auto* data = reinterpret_cast<TDataMember*>(
+                     reinterpret_cast<char*>(casted_so) + dm_offset_)
+                     ->data();
+    return const_cast<TReturn>(data);
+  }
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<!IsArray<TTDataMember>::value, TReturn>::type
+  operator()(SimObject* so) const {
+    auto* casted_so = static_cast<TClass*>(so);
+    return reinterpret_cast<TDataMember*>(
+                     reinterpret_cast<char*>(casted_so) + dm_offset_);
+  }
 };
 
 }  // namespace bdm
