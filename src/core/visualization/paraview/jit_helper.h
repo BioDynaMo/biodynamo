@@ -81,7 +81,7 @@ template <typename TReturn, typename TClass, typename TDataMember>
 struct GetDataMemberFunctor : public Functor<TReturn, SimObject*> {
   GetDataMemberFunctor(uint64_t dm_offset) : dm_offset_(dm_offset) {}
  
-  TReturn operator()(SimObject* so) override {
+  TReturn operator()(SimObject* so) final {
     return OperatorImpl(so);
   }
   

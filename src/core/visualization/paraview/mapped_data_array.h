@@ -1,4 +1,4 @@
-// -----------------------------------------------------------------------------
+//  -----------------------------------------------------------------------------
 //
 // Copyright (C) The BioDynaMo Project.
 // All Rights Reserved.
@@ -41,63 +41,63 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
 
   void Initialize(const std::string& name, uint64_t num_components, Functor<TScalar*, SimObject*>* access_dm);
   void Update(const std::vector<SimObject*>* sim_objects, uint64_t start,
-              uint64_t end) override;
+              uint64_t end) final;
 
   // Reimplemented virtuals -- see superclasses for descriptions:
-  void PrintSelf(ostream& os, vtkIndent indent) override;
-  void Initialize() override;
-  void GetTuples(vtkIdList* pt_ids, vtkAbstractArray* output) override;
-  void GetTuples(vtkIdType p1, vtkIdType p2, vtkAbstractArray* output) override;
-  void Squeeze() override;
-  vtkArrayIterator* NewIterator() override;
-  vtkIdType LookupValue(vtkVariant value) override;
-  void LookupValue(vtkVariant value, vtkIdList* ids) override;
-  vtkVariant GetVariantValue(vtkIdType idx) override;
-  void ClearLookup() override;
-  double* GetTuple(vtkIdType i) override;
-  void GetTuple(vtkIdType i, double* tuple) override;
-  vtkIdType LookupTypedValue(TScalar value) override;
-  void LookupTypedValue(TScalar value, vtkIdList* ids) override;
-  ValueType GetValue(vtkIdType idx) const override;
-  TScalar& GetValueReference(vtkIdType idx) override;
-  void GetTypedTuple(vtkIdType idx, TScalar* t) const override;
+  void PrintSelf(ostream& os, vtkIndent indent) final;
+  void Initialize() final;
+  void GetTuples(vtkIdList* pt_ids, vtkAbstractArray* output) final;
+  void GetTuples(vtkIdType p1, vtkIdType p2, vtkAbstractArray* output) final;
+  void Squeeze() final;
+  vtkArrayIterator* NewIterator() final;
+  vtkIdType LookupValue(vtkVariant value) final;
+  void LookupValue(vtkVariant value, vtkIdList* ids) final;
+  vtkVariant GetVariantValue(vtkIdType idx) final;
+  void ClearLookup() final;
+  double* GetTuple(vtkIdType i) final;
+  void GetTuple(vtkIdType i, double* tuple) final;
+  vtkIdType LookupTypedValue(TScalar value) final;
+  void LookupTypedValue(TScalar value, vtkIdList* ids) final;
+  ValueType GetValue(vtkIdType idx) const final;
+  TScalar& GetValueReference(vtkIdType idx) final;
+  void GetTypedTuple(vtkIdType idx, TScalar* t) const final;
 
   // Description:
   // This container is read only -- this method does nothing but print a
   // warning.
-  int Allocate(vtkIdType sz, vtkIdType ext) override;
-  int Resize(vtkIdType num_tuples) override;
-  void SetNumberOfTuples(vtkIdType number) override;
-  void SetTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) override;
-  void SetTuple(vtkIdType i, const float* source) override;
-  void SetTuple(vtkIdType i, const double* source) override;
-  void InsertTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) override;
-  void InsertTuple(vtkIdType i, const float* source) override;
-  void InsertTuple(vtkIdType i, const double* source) override;
+  int Allocate(vtkIdType sz, vtkIdType ext) final;
+  int Resize(vtkIdType num_tuples) final;
+  void SetNumberOfTuples(vtkIdType number) final;
+  void SetTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) final;
+  void SetTuple(vtkIdType i, const float* source) final;
+  void SetTuple(vtkIdType i, const double* source) final;
+  void InsertTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) final;
+  void InsertTuple(vtkIdType i, const float* source) final;
+  void InsertTuple(vtkIdType i, const double* source) final;
   void InsertTuples(vtkIdList* dstIds, vtkIdList* srcIds,
-                    vtkAbstractArray* source) override;
+                    vtkAbstractArray* source) final;
   void InsertTuples(vtkIdType dstStart, vtkIdType n, vtkIdType srcStart,
-                    vtkAbstractArray* source) override;
-  vtkIdType InsertNextTuple(vtkIdType j, vtkAbstractArray* source) override;
-  vtkIdType InsertNextTuple(const float* source) override;
-  vtkIdType InsertNextTuple(const double* source) override;
-  void DeepCopy(vtkAbstractArray* aa) override;
-  void DeepCopy(vtkDataArray* da) override;
+                    vtkAbstractArray* source) final;
+  vtkIdType InsertNextTuple(vtkIdType j, vtkAbstractArray* source) final;
+  vtkIdType InsertNextTuple(const float* source) final;
+  vtkIdType InsertNextTuple(const double* source) final;
+  void DeepCopy(vtkAbstractArray* aa) final;
+  void DeepCopy(vtkDataArray* da) final;
   void InterpolateTuple(vtkIdType i, vtkIdList* ptIndices,
-                        vtkAbstractArray* source, double* weights) override;
+                        vtkAbstractArray* source, double* weights) final;
   void InterpolateTuple(vtkIdType i, vtkIdType id1, vtkAbstractArray* source1,
-                        vtkIdType id2, vtkAbstractArray* source2, double t) override;
-  void SetVariantValue(vtkIdType idx, vtkVariant value) override;
-  void InsertVariantValue(vtkIdType idx, vtkVariant value) override;
-  void RemoveTuple(vtkIdType id) override;
-  void RemoveFirstTuple() override;
-  void RemoveLastTuple() override;
-  void SetTypedTuple(vtkIdType i, const TScalar* t) override;
-  void InsertTypedTuple(vtkIdType i, const TScalar* t) override;
-  vtkIdType InsertNextTypedTuple(const TScalar* t) override;
-  void SetValue(vtkIdType idx, TScalar value) override;
-  vtkIdType InsertNextValue(TScalar v) override;
-  void InsertValue(vtkIdType idx, TScalar v) override;
+                        vtkIdType id2, vtkAbstractArray* source2, double t) final;
+  void SetVariantValue(vtkIdType idx, vtkVariant value) final;
+  void InsertVariantValue(vtkIdType idx, vtkVariant value) final;
+  void RemoveTuple(vtkIdType id) final;
+  void RemoveFirstTuple() final;
+  void RemoveLastTuple() final;
+  void SetTypedTuple(vtkIdType i, const TScalar* t) final;
+  void InsertTypedTuple(vtkIdType i, const TScalar* t) final;
+  vtkIdType InsertNextTypedTuple(const TScalar* t) final;
+  void SetValue(vtkIdType idx, TScalar value) final;
+  vtkIdType InsertNextValue(TScalar v) final;
+  void InsertValue(vtkIdType idx, TScalar v) final;
 
  protected:
   MappedDataArray();
@@ -109,6 +109,13 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   uint64_t start_ = 0;
   uint64_t end_ = 0;
   TScalar* temp_array_ = nullptr;
+  
+  enum Mode { kZeroCopy, kCopy, kCache};
+
+  Mode mode_ = Mode::kZeroCopy;
+  bool match_value = true;
+  std::vector<bool> is_matching_;
+  std::vector<TScalar> data_;
 
  private:
   MappedDataArray(const MappedDataArray&) = delete;
@@ -135,6 +142,27 @@ void MappedDataArray<TScalar>::Update(const std::vector<SimObject*>* sim_objects
   this->Size = this->NumberOfComponents * (end - start);
   this->MaxId = this->Size - 1;
   this->Modified();
+  
+  if (mode_ != Mode::kZeroCopy) {
+    if (data_.capacity() < this->Size) {
+      data_.reserve(this->Size * 1.5);
+    }
+    if (mode_ == Mode::kCopy) {
+      uint64_t counter = 0;
+      for(uint64_t i = start; i < end; ++i) {
+        auto* data = (*access_dm_)((*sim_objects_)[i]);
+        for (uint64_t c = 0; c < this->NumberOfComponents; ++c) {
+          data_[counter++] = data[c];
+        }
+      } 
+    } else {
+      // mode_ == kCache
+      match_value = !match_value;
+      if (is_matching_.capacity() < this->Size) {
+        is_matching_.reserve(this->Size * 1.5);
+      }
+    }
+  }  
 }
 
 //------------------------------------------------------------------------------
@@ -298,13 +326,29 @@ typename MappedDataArray<TScalar>::ValueType MappedDataArray<TScalar>::GetValue(
 //------------------------------------------------------------------------------
 template <class TScalar>
 TScalar& MappedDataArray<TScalar>::GetValueReference(vtkIdType idx) {
-  const vtkIdType tuple = idx / this->NumberOfComponents;
-  auto* data = (*access_dm_)((*sim_objects_)[start_ + tuple]); 
-  if (this->NumberOfComponents == 1) {
-    return *data;   
+  switch(mode_) {
+    case kCache:
+      if (is_matching_[idx] == match_value) {
+        return data_[idx];
+      }
+    case kZeroCopy:
+      {
+      if (this->NumberOfComponents == 1) {
+        return *(*access_dm_)((*sim_objects_)[start_ + idx]); 
+      }
+      const vtkIdType tuple = idx / this->NumberOfComponents;
+      const vtkIdType comp = idx % this->NumberOfComponents;
+      auto* data = (*access_dm_)((*sim_objects_)[start_ + tuple]); 
+      if (mode_ == kCache) {
+        data_[idx] = data[comp];
+        is_matching_[idx] = match_value;
+      }
+      return data[comp];
+      }
+      break;
+    case kCopy:
+      return data_[idx];
   }
-  const vtkIdType comp = idx % this->NumberOfComponents;
-  return data[comp];
 }
 
 //------------------------------------------------------------------------------
