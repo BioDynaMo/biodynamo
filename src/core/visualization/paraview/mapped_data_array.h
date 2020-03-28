@@ -112,7 +112,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   
   enum Mode { kZeroCopy, kCopy, kCache};
 
-  Mode mode_ = Mode::kCopy;
+  Mode mode_ = Mode::kCache;
   mutable bool match_value = true;
   mutable std::vector<bool> is_matching_;
   mutable std::vector<TScalar> data_;
@@ -289,13 +289,42 @@ double* MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType i) {
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id, double* tuple) {
-  auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]); 
-  std::cout << "GetTuple i " << tuple_id << " ";
-  for(uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-    std::cout << data[i] << ", ";
-    tuple[i] = static_cast<double>(data[i]);
+  uint64_t idx = tuple_id * this->NumberOfComponents;
+  TScalar* data;
+  switch(mode_) {
+    case kCache:
+      { 
+        bool all_matches = true;
+        for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
+          all_matches |= (is_matching_[i] == match_value);
+        }
+        if (all_matches) {
+          uint64_t cnt = 0;
+          for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
+            tuple[cnt++] = static_cast<double>(data_[i]);
+          }
+          return;
+        }
+      }
+    case kZeroCopy:
+      {
+        auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]); 
+        for(uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents); ++i) {
+          tuple[i] = static_cast<double>(data[i]);
+          if (mode_ == kCache) {
+            data_[idx + i] = data[i];
+            is_matching_[idx + i] = match_value;
+          }
+        }
+        return;
+      }
+      break;
+    case kCopy:
+      uint64_t cnt = 0;
+      for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
+        tuple[cnt++] = static_cast<double>(data_[i]);
+      }
   }
-  std::cout << std::endl;
 }
 
 //------------------------------------------------------------------------------
@@ -318,6 +347,8 @@ void MappedDataArray<TScalar, TClass, TDataMember>::LookupTypedValue(TScalar val
 template <typename TScalar, typename TClass, typename TDataMember>
 typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArray<TScalar, TClass, TDataMember>::GetValue(
     vtkIdType idx) const {
+  //FIXME code duplication with GetValueReference 
+  // make non virtual private helper function and call it from here and GetValueReference
   switch(mode_) {
     case kCache:
       if (is_matching_[idx] == match_value) {

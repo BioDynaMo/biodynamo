@@ -62,16 +62,23 @@ struct CreateVtkDataArray1 : public Functor<void, VtkSoGrid*, int> {
 
 VtkSoGrid::VtkSoGrid(const char* type_name,
                      vtkCPDataDescription* data_description) {
+  auto* param = Simulation::GetActive()->GetParam();
   auto* tinfo = ThreadInfo::GetInstance();
-  data_.resize(tinfo->GetMaxThreads());
+  if (param->export_visualization_) {
+    data_.resize(tinfo->GetMaxThreads());
+  } else {
+    data_.resize(1);
+  }
   #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < data_.size(); ++i) {
     data_[i] = vtkUnstructuredGrid::New();
   }
   name_ = type_name;
-  // FIXME
-  // data_description->AddInput(type_name);
-  // data_description->GetInputDescriptionByName(type_name)->SetGrid(data_);
+
+  if (!param->export_visualization_) {
+    data_description->AddInput(type_name);
+    data_description->GetInputDescriptionByName(type_name)->SetGrid(data_[0]);
+  }
 
   tclass_ = GetTClass();
   auto* tmp_instance = static_cast<SimObject*>(tclass_->New());

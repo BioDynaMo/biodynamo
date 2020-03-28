@@ -200,11 +200,12 @@ void ParaviewAdaptor::CreateVtkObjects() {
 
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
+  auto* param = Simulation::GetActive()->GetParam();
   for (auto& pair : impl_->vtk_so_grids_) {
     const auto& sim_objects = rm->GetTypeIndex()->GetType(pair.second->tclass_);
 
     std::cout << "sim object size " << sim_objects.size() << std::endl;
-
+    if (param->export_visualization_) {
     #pragma omp parallel
       {
         auto* tinfo = ThreadInfo::GetInstance();
@@ -219,6 +220,9 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
 
         pair.second->UpdateMappedDataArrays(tid, &sim_objects, start, end);
       }
+    } else {
+      pair.second->UpdateMappedDataArrays(0, &sim_objects, 0, sim_objects.size());
+    }
   }
 }
 
