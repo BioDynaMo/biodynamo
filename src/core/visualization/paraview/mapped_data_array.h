@@ -112,10 +112,10 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   
   enum Mode { kZeroCopy, kCopy, kCache};
 
-  Mode mode_ = Mode::kZeroCopy;
-  bool match_value = true;
-  std::vector<bool> is_matching_;
-  std::vector<TScalar> data_;
+  Mode mode_ = Mode::kCopy;
+  mutable bool match_value = true;
+  mutable std::vector<bool> is_matching_;
+  mutable std::vector<TScalar> data_;
 
  private:
   MappedDataArray(const MappedDataArray&) = delete;
@@ -318,9 +318,34 @@ void MappedDataArray<TScalar, TClass, TDataMember>::LookupTypedValue(TScalar val
 template <typename TScalar, typename TClass, typename TDataMember>
 typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArray<TScalar, TClass, TDataMember>::GetValue(
     vtkIdType idx) const {
-  // Work around const-correct inconsistencies:
-  typedef MappedDataArray<TScalar, TClass, TDataMember> ThisClass;
-  return const_cast<ThisClass*>(this)->GetValueReference(idx);
+  switch(mode_) {
+    case kCache:
+      if (is_matching_[idx] == match_value) {
+        return data_[idx];
+      }
+    case kZeroCopy:
+      {
+      if (this->NumberOfComponents == 1) {
+        auto* data = get_dm_((*sim_objects_)[start_ + idx]); 
+        if (mode_ == kCache) {
+          data_[idx] = *data;
+          is_matching_[idx] = match_value;
+        }
+        return *data;
+      }
+      const vtkIdType tuple = idx / this->NumberOfComponents;
+      const vtkIdType comp = idx % this->NumberOfComponents;
+      auto* data = get_dm_((*sim_objects_)[start_ + tuple]); 
+      if (mode_ == kCache) {
+        data_[idx] = data[comp];
+        is_matching_[idx] = match_value;
+      }
+      return data[comp];
+      }
+      break;
+    case kCopy:
+      return data_[idx];
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -334,7 +359,12 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdT
     case kZeroCopy:
       {
       if (this->NumberOfComponents == 1) {
-        return *get_dm_((*sim_objects_)[start_ + idx]); 
+        auto* data = get_dm_((*sim_objects_)[start_ + idx]); 
+        if (mode_ == kCache) {
+          data_[idx] = *data;
+          is_matching_[idx] = match_value;
+        }
+        return *data;
       }
       const vtkIdType tuple = idx / this->NumberOfComponents;
       const vtkIdType comp = idx % this->NumberOfComponents;
