@@ -551,6 +551,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.cc)
   file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.h
@@ -565,11 +566,12 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
   bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS}
-                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES})
+                          LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};stdc++fs")
   #   separate test binaries - each source file is compiled into a separate binary
   # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
   # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")

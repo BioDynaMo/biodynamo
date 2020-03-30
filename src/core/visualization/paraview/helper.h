@@ -15,16 +15,18 @@
 #ifndef CORE_VISUALIZATION_PARAVIEW_HELPER_H_
 #define CORE_VISUALIZATION_PARAVIEW_HELPER_H_
 
+// std
 #include <set>
 #include <string>
+#include <vector>
 #include <unordered_map>
-
+// Paraview
 #include <vtkCPDataDescription.h>
 #include <vtkDoubleArray.h>
-#include <vtkImageData.h>
 #include <vtkUnstructuredGrid.h>
-
+// BioDynaMo
 #include "core/shape.h"
+#include "core/visualization/paraview/vtk_diffusion_grid.h"
 
 class TClass;
 
@@ -33,7 +35,6 @@ namespace bdm {
 static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 
 class SimObject;
-struct PopulateDataArraysFunctor;
 
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
 /// `ParaviewAdaptor` to visualize simulation objects.
@@ -55,22 +56,7 @@ struct VtkSoGrid {
                              std::vector<std::string>* data_members);
 };
 
-/// Adds additional data members to the `vtkImageData` required by
-/// `ParaviewAdaptor` to visualize diffusion grid.
-struct VtkDiffusionGrid {
-  VtkDiffusionGrid(const std::string& name,
-                   vtkCPDataDescription* data_description);
-
-  ~VtkDiffusionGrid();
-
-  void Init();
-
-  bool used_ = false;
-  std::string name_;
-  vtkImageData* data_ = nullptr;
-  vtkDoubleArray* concentration_ = nullptr;
-  vtkDoubleArray* gradient_ = nullptr;
-};
+// FIXME move to different file?
 
 /// If the user selects the visualiation option export, we need to pass the
 /// information on the C++ side to a python script which generates the

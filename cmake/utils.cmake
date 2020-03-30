@@ -287,6 +287,16 @@ function(install_inside_build)
               )
     endif()
 
+    if (test)
+      message("-------------------------")
+      message(              ${CMAKE_SOURCE_DIR}/test/unit)
+      add_copy_directory(copy_files_bdm
+              ${CMAKE_SOURCE_DIR}/test/unit/
+              DESTINATION ${CMAKE_INSTALL_ROOT}/share/test
+              GLOB "**/*.py"
+              )
+    endif()
+
     add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})
     add_dependencies(copy_files_bdm biodynamo)
     if(paraview)

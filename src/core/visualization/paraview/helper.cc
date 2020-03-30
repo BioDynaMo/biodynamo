@@ -29,11 +29,8 @@
 #include <TDataMember.h>
 // BioDynaMo
 #include "core/param/param.h"
-#include "core/param/param.h"
 #include "core/shape.h"
 #include "core/sim_object/sim_object.h"
-#include "core/sim_object/sim_object.h"
-#include "core/simulation.h"
 #include "core/simulation.h"
 #include "core/util/jit.h"
 #include "core/visualization/paraview/jit_helper.h"
@@ -201,51 +198,6 @@ void VtkSoGrid::InitializeDataMembers(SimObject* so,
   data_members->resize(dm_set.size());
   std::copy(dm_set.begin(), dm_set.end(), data_members->begin());
 }
-
-// -----------------------------------------------------------------------------
-VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
-                                   vtkCPDataDescription* data_description) {
-  data_ = vtkImageData::New();
-  name_ = name;
-
-  // get visualization config
-  auto* param = Simulation::GetActive()->GetParam();
-  const Param::VisualizeDiffusion* vd = nullptr;
-  for (auto& entry : param->visualize_diffusion_) {
-    if (entry.name_ == name) {
-      vd = &entry;
-      break;
-    }
-  }
-
-  // Add attribute data
-  if (vd->concentration_) {
-    vtkNew<vtkDoubleArray> concentration;
-    concentration->SetName("Substance Concentration");
-    concentration_ = concentration.GetPointer();
-    data_->GetPointData()->AddArray(concentration.GetPointer());
-  }
-  if (vd->gradient_) {
-    vtkNew<vtkDoubleArray> gradient;
-    gradient->SetName("Diffusion Gradient");
-    gradient->SetNumberOfComponents(3);
-    gradient_ = gradient.GetPointer();
-    data_->GetPointData()->AddArray(gradient.GetPointer());
-  }
-
-  data_description->AddInput(name.c_str());
-  data_description->GetInputDescriptionByName(name.c_str())->SetGrid(data_);
-}
-
-VtkDiffusionGrid::~VtkDiffusionGrid() {
-  name_ = "";
-  data_->Delete();
-  data_ = nullptr;
-  concentration_ = nullptr;
-  gradient_ = nullptr;
-}
-
-void VtkDiffusionGrid::Init() { used_ = true; }
 
 // -----------------------------------------------------------------------------
 std::string GenerateSimulationInfoJson(

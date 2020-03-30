@@ -20,7 +20,7 @@
 #include "core/util/io.h"
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
-#include "unit/core/visualization/paraview_adaptor_test.h"
+#include "unit/core/visualization/paraview/adaptor_test.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {

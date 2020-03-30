@@ -37,9 +37,11 @@
 #include <vtkPoints.h>
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkXMLImageDataWriter.h>
 #include <vtkXMLPImageDataWriter.h>
-#include <vtkXMLPUnstructuredGridWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
+#include <vtkXMLPUnstructuredGridWriter.h>
+#include <vtkImageDataStreamer.h>
 
 namespace bdm {
 
@@ -127,52 +129,49 @@ void ParaviewAdaptor::Initialize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
-  if (param->live_visualization_ || param->export_visualization_ ||
-      param->python_paraview_pipeline_ != "") {
-    if (impl_->g_processor_ == nullptr) {
-      impl_->g_processor_ = vtkCPProcessor::New();
-      impl_->g_processor_->Initialize();
-    }
+  if ((param->live_visualization_ || param->python_paraview_pipeline_ != "") && impl_->g_processor_ == nullptr) {
+    impl_->g_processor_ = vtkCPProcessor::New();
+    impl_->g_processor_->Initialize();
+  }
 
-    if (param->live_visualization_) {
-      impl_->pipeline_ = new InSituPipeline();
-      impl_->g_processor_->AddPipeline(impl_->pipeline_);
-    } else if (param->python_paraview_pipeline_ != "") {
-      const std::string& script = ParaviewAdaptor::BuildPythonScriptString(
-          param->python_paraview_pipeline_);
-      std::ofstream ofs;
-      auto* sim = Simulation::GetActive();
-      // TODO(lukas) use vtkCPPythonStringPipeline once we update to Paraview
-      // v5.8
-      std::string final_python_script_name =
-          Concat(sim->GetOutputDir(), "/insitu_pipline.py");
-      ofs.open(final_python_script_name);
-      ofs << script;
-      ofs.close();
-      vtkNew<vtkCPPythonScriptPipeline> pipeline;
-      pipeline->Initialize(final_python_script_name.c_str());
-      impl_->g_processor_->AddPipeline(pipeline.GetPointer());
-    }
+  if (param->live_visualization_) {
+    impl_->pipeline_ = new InSituPipeline();
+    impl_->g_processor_->AddPipeline(impl_->pipeline_);
+  } else if (param->python_paraview_pipeline_ != "") {
+    const std::string& script = ParaviewAdaptor::BuildPythonScriptString(
+        param->python_paraview_pipeline_);
+    std::ofstream ofs;
+    auto* sim = Simulation::GetActive();
+    // TODO(lukas) use vtkCPPythonStringPipeline once we update to Paraview
+    // v5.8
+    std::string final_python_script_name =
+        Concat(sim->GetOutputDir(), "/insitu_pipline.py");
+    ofs.open(final_python_script_name);
+    ofs << script;
+    ofs.close();
+    vtkNew<vtkCPPythonScriptPipeline> pipeline;
+    pipeline->Initialize(final_python_script_name.c_str());
+    impl_->g_processor_->AddPipeline(pipeline.GetPointer());
+  }
 
-    if (impl_->data_description_ == nullptr) {
-      impl_->data_description_ = vtkCPDataDescription::New();
-    } else {
-      impl_->data_description_->Delete();
-      impl_->data_description_ = vtkCPDataDescription::New();
-    }
-    impl_->data_description_->SetTimeData(0, 0);
+  if (impl_->data_description_ == nullptr) {
+    impl_->data_description_ = vtkCPDataDescription::New();
+  } else {
+    impl_->data_description_->Delete();
+    impl_->data_description_ = vtkCPDataDescription::New();
+  }
+  impl_->data_description_->SetTimeData(0, 0);
 
-    for (auto& pair : param->visualize_sim_objects_) {
-      impl_->vtk_so_grids_[pair.first.c_str()] =
-          new VtkSoGrid(pair.first.c_str(), impl_->data_description_);
-    }
-    for (auto& entry : param->visualize_diffusion_) {
-      impl_->vtk_dgrids_[entry.name_] =
-          new VtkDiffusionGrid(entry.name_, impl_->data_description_);
-    }
-    if (impl_->pipeline_) {
-      impl_->pipeline_->Initialize(impl_->vtk_so_grids_);
-    }
+  for (auto& pair : param->visualize_sim_objects_) {
+    impl_->vtk_so_grids_[pair.first.c_str()] =
+        new VtkSoGrid(pair.first.c_str(), impl_->data_description_);
+  }
+  for (auto& entry : param->visualize_diffusion_) {
+    impl_->vtk_dgrids_[entry.name_] =
+        new VtkDiffusionGrid(entry.name_, impl_->data_description_);
+  }
+  if (impl_->pipeline_) {
+    impl_->pipeline_->Initialize(impl_->vtk_so_grids_);
   }
 }
 
@@ -182,7 +181,64 @@ void ParaviewAdaptor::InsituVisualization() {
   impl_->g_processor_->CoProcess(impl_->data_description_);
 }
 
-void ParaviewAdaptor::ExportVisualization() { WriteToFile(); }
+// FIXME move to other file
+void FixPvtu(const std::string& filename, const std::string& grid_name, uint64_t step, uint64_t pieces) {
+  // read whole pvtu file into buffer 
+  std::ifstream ifs(filename);
+  ifs.seekg(0, std::ios::end);
+  size_t size = ifs.tellg();
+  std::string buffer(size, ' ');
+  ifs.seekg(0);
+  ifs.read(&buffer[0], size);
+ 
+  // create new file 
+  std::string find = Concat("<Piece Source=\"", grid_name, "-", step, "_0.vtu\"/>");
+  std::stringstream newfile;
+  auto pos = buffer.find(find);
+  newfile << buffer.substr(0, pos);
+  for(uint64_t i = 0; i < pieces; ++i) {
+    newfile << "<Piece Source=\""<< grid_name << "-" <<  step << "_" << i << ".vtu\"/>\n"; 
+  }
+  newfile << buffer.substr(pos + find.size(), buffer.size());
+  // write new file
+  std::ofstream ofs(filename);
+  ofs << newfile.str();
+}
+
+void ParaviewAdaptor::ExportVisualization() { 
+   auto step = impl_->data_description_->GetTimeStep();
+   auto* sim = Simulation::GetActive();
+   auto* tinfo = ThreadInfo::GetInstance();
+
+   for (auto& el : impl_->vtk_so_grids_) {
+     auto* so_grid = el.second;
+
+ #pragma omp parallel for schedule(static, 1)
+     for(int i = 0; i < tinfo->GetMaxThreads(); ++i) {
+       if (i == 0) {
+         vtkNew<vtkXMLPUnstructuredGridWriter> pvtu_writer;
+         auto filename =
+             Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, ".pvtu");
+         pvtu_writer->SetFileName(filename.c_str());
+         auto max_threads =ThreadInfo::GetInstance()->GetMaxThreads(); 
+         pvtu_writer->SetInputData(so_grid->data_[0]);
+         pvtu_writer->Write();
+
+         FixPvtu(filename, so_grid->name_, step, max_threads);
+       } else {
+         vtkNew<vtkXMLUnstructuredGridWriter> vtu_writer;
+         auto filename = Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, "_", i, ".vtu");
+         vtu_writer->SetFileName(filename.c_str());
+         vtu_writer->SetInputData(so_grid->data_[i]);
+         vtu_writer->Write();
+       }
+     }
+   }
+
+   for (auto& el : impl_->vtk_dgrids_) {
+     el.second->WriteToFile(step);
+   }
+}
 
 void ParaviewAdaptor::CreateVtkObjects() {
   BuildSimObjectsVTKStructures();
@@ -229,119 +285,14 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
 // ---------------------------------------------------------------------------
 // diffusion grids
 
-void ParaviewAdaptor::ProcessDiffusionGrid(const DiffusionGrid* grid) {
-  auto* param = Simulation::GetActive()->GetParam();
-  auto name = grid->GetSubstanceName();
-
-  // get visualization config
-  const Param::VisualizeDiffusion* vd = nullptr;
-  for (auto& entry : param->visualize_diffusion_) {
-    if (entry.name_ == name) {
-      vd = &entry;
-    }
-  }
-
-  if (vd != nullptr) {
-    auto* vdg = impl_->vtk_dgrids_[grid->GetSubstanceName()];
-    if (!vdg->used_) {
-      vdg->Init();
-    }
-
-    auto num_boxes = grid->GetNumBoxesArray();
-    auto grid_dimensions = grid->GetDimensions();
-    auto box_length = grid->GetBoxLength();
-    auto total_boxes = grid->GetNumBoxes();
-
-    double origin_x = grid_dimensions[0];
-    double origin_y = grid_dimensions[2];
-    double origin_z = grid_dimensions[4];
-    vdg->data_->SetOrigin(origin_x, origin_y, origin_z);
-    vdg->data_->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
-    vdg->data_->SetSpacing(box_length, box_length, box_length);
-
-    if (vdg->concentration_) {
-      auto* co_ptr = const_cast<double*>(grid->GetAllConcentrations());
-      vdg->concentration_->SetArray(co_ptr, static_cast<vtkIdType>(total_boxes),
-                                    1);
-    }
-    if (vdg->gradient_) {
-      auto gr_ptr = const_cast<double*>(grid->GetAllGradients());
-      vdg->gradient_->SetArray(gr_ptr, static_cast<vtkIdType>(total_boxes * 3),
-                               1);
-    }
-  }
-}
-
 void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
   rm->ApplyOnAllDiffusionGrids(
-      [&](DiffusionGrid* grid) { ProcessDiffusionGrid(grid); });
-}
-
-void FixPvtu(const std::string& filename, const std::string& grid_name, uint64_t step, uint64_t pieces) {
-  // read whole pvtu file into buffer 
-  std::ifstream ifs(filename);
-  ifs.seekg(0, std::ios::end);
-  size_t size = ifs.tellg();
-  std::string buffer(size, ' ');
-  ifs.seekg(0);
-  ifs.read(&buffer[0], size);
- 
-  // create new file 
-  std::string find = Concat("<Piece Source=\"", grid_name, "-", step, "_0.vtu\"/>");
-  std::stringstream newfile;
-  auto pos = buffer.find(find);
-  newfile << buffer.substr(0, pos);
-  for(uint64_t i = 0; i < pieces; ++i) {
-    newfile << "<Piece Source=\""<< grid_name << "-" <<  step << "_" << i << ".vtu\"/>\n"; 
-  }
-  newfile << buffer.substr(pos + find.size(), buffer.size());
-  // write new file
-  std::ofstream ofs(filename);
-  ofs << newfile.str();
-}
-
-void ParaviewAdaptor::WriteToFile() {
-   auto step = impl_->data_description_->GetTimeStep();
-   auto* sim = Simulation::GetActive();
-   auto* tinfo = ThreadInfo::GetInstance();
-
-   for (auto& el : impl_->vtk_so_grids_) {
-     auto* so_grid = el.second;
-
- #pragma omp parallel for schedule(static, 1)
-     for(int i = 0; i < tinfo->GetMaxThreads(); ++i) {
-       if (i == 0) {
-         vtkNew<vtkXMLPUnstructuredGridWriter> pvtu_writer;
-         auto filename =
-             Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, ".pvtu");
-         pvtu_writer->SetFileName(filename.c_str());
-         auto max_threads =ThreadInfo::GetInstance()->GetMaxThreads(); 
-         pvtu_writer->SetInputData(so_grid->data_[0]);
-         pvtu_writer->Write();
-
-         FixPvtu(filename, so_grid->name_, step, max_threads);
-       } else {
-         vtkNew<vtkXMLUnstructuredGridWriter> vtu_writer;
-         auto filename = Concat(sim->GetOutputDir(), "/", so_grid->name_, "-", step, "_", i, ".vtu");
-         vtu_writer->SetFileName(filename.c_str());
-         vtu_writer->SetInputData(so_grid->data_[i]);
-         vtu_writer->Write();
-       }
-     }
-   }
-
-   for (auto& entry : impl_->vtk_dgrids_) {
-     vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
-
-     const auto& substance_name = entry.second->name_;
-     auto filename =
-         Concat(sim->GetOutputDir(), "/", substance_name, "-", step, ".pvti");
-     dgrid_writer->SetFileName(filename.c_str());
-     dgrid_writer->SetInputData(entry.second->data_);
-     dgrid_writer->Update();
-   }
+      [&](DiffusionGrid* grid) { 
+    auto* vdg = impl_->vtk_dgrids_[grid->GetSubstanceName()];
+    vdg->Update(grid); 
+  });
 }
 
 /// This function generates the Paraview state based on the exported files

@@ -56,8 +56,6 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// only needed for live visualization
   bool initialized_ = false;  //!
 
-  ClassDefNV(ParaviewAdaptor, 1);
-
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
   friend class ParaviewAdaptorTest_DISABLED_CheckVisualizationSelection_Test;
@@ -81,18 +79,11 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// Create the required vtk objects to visualize simulation objects.
   void BuildSimObjectsVTKStructures();
 
-  /// Sets the properties of the diffusion VTK grid structures
-  void ProcessDiffusionGrid(const DiffusionGrid* grid);
-
   /// Create the required vtk objects to visualize diffusion grids.
   void BuildDiffusionGridVTKStructures();
 
   // ---------------------------------------------------------------------------
   // generate files
-
-  /// Helper function to write simulation objects to file. It loops through the
-  /// vectors of VTK grid structures and calls the internal VTK writer methods
-  void WriteToFile();
 
   /// This function generates the Paraview state based on the exported files
   /// Therefore, the user can load the visualization simply by opening the pvsm
@@ -102,6 +93,8 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// Combine user-defined python script with biodynamo default python
   /// insitu pipeline.
   static std::string BuildPythonScriptString(const std::string& python_script);
+
+  ClassDefNV(ParaviewAdaptor, 1);
 };
 
 }  // namespace bdm
