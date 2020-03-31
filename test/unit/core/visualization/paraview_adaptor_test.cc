@@ -175,10 +175,7 @@ TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
 
 /// Test if the objects that we want to output for visualization are indeed
 /// the only ones (no more, no less).
-/// FIXME: THIS TEST WAS DISABLED BECAUSE IT HANGS ON TRAVIS. THIS IS CAUSED
-/// BY PARAVIEW WHICH PROBABLY DEADLOCK WHILE EXECUTING THIS TEST. THIS TEST
-/// WILL BE ENABLED AGAIN WHEN PARAVIEW 5.7 WILL BE USED.
-TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
+TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   auto set_param = [](auto* param) {
     param->export_visualization_ = true;
 
@@ -191,7 +188,7 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
     param->visualize_sim_objects_["MyCell"] = {};
     param->visualize_sim_objects_["Cell"] = {};
   };
-  auto status = std::system(Concat("rm output/", TEST_NAME, "/*").c_str());
+  auto status = std::system(Concat("rm -f output/", TEST_NAME, "/*").c_str());
   if (status != 0) {
     Log::Warning(TEST_NAME,
                  "Error during removal of Paraview files -- status code: ",
@@ -201,11 +198,6 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
 
-  // Visualize one step before any sim objects or diffusion grids are created
-  // This must not crash the system. Object might be created at a later stage
-  // during simulation.
-  sim.Simulate(1);
-
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
   // Create two types of cells
@@ -214,9 +206,9 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   rm->push_back(new MyNeuron());
 
   // Define the substances
-  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0);
-  ModelInitializer::DefineSubstance(kSubstance2, "Substance_2", 0.5, 0);
-  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0);
+  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.05, 0, 5);
+  ModelInitializer::DefineSubstance(kSubstance2, "Substance_2", 0.05, 0, 5);
+  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.05, 0, 5);
 
   int l = -100;
   int r = 100;
@@ -225,19 +217,23 @@ TEST_F(ParaviewAdaptorTest, DISABLED_CheckVisualizationSelection) {
   rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
 
   // Write diffusion visualization to file
-  sim.Simulate(1);
+  sim.Simulate(3);
 
-  // Read back from file
+  std::string pvsm = TEST_NAME + std::string(".pvsm");
+
+  // Check if all the output files of the selected items were generated
   std::set<std::string> required_files = {".",
                                           "..",
                                           "Cell-0.pvtu",
                                           "Cell-1.pvtu",
                                           "Cell-2.pvtu",
+                                          "MyCell-0_0.vtu",
                                           "MyCell-0.pvtu",
                                           "MyCell-1_0.vtu",
                                           "MyCell-1.pvtu",
                                           "MyCell-2_0.vtu",
                                           "MyCell-2.pvtu",
+                                          "Substance_1-0_0.vti",
                                           "Substance_1-0.pvti",
                                           "Substance_1-1_0.vti",
                                           "Substance_1-1.pvti",

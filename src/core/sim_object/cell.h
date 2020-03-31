@@ -49,7 +49,7 @@ class Cell : public SimObject {
   /// Third axis of the local coordinate system.
   static const Double3 kZAxis;
 
-  Cell() : density_(1.0) {}
+  Cell() : diameter_(1.0), volume_(1.0), density_(1.0) {}
   explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }

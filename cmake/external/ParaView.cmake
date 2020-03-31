@@ -6,7 +6,7 @@ SET(PARAVIEW_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/paraview")
 if (APPLE)
     SET(PARAVIEW_DOWNLOAD_NAME paraview.tar.gz)
 ELSE()
-    SET(PARAVIEW_DOWNLOAD_NAME paraview-v5.6.0.tar.gz)
+    SET(PARAVIEW_DOWNLOAD_NAME paraview-v5.8.0.tar.gz)
 ENDIF()
 
 download_verify_extract(

@@ -90,7 +90,7 @@ fi
 
 if [ -n "${old_bdmsys_base}" ] ; then
    if [ -n "${ParaView_DIR}" ]; then
-      drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys_base}/third_party/paraview/lib/cmake/paraview-5.6"
+      drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys_base}/third_party/paraview/lib/cmake/paraview-5.8"
       ParaView_DIR=$newpath
    fi
    if [ -n "${ParaView_LIB_DIR}" ]; then
@@ -180,11 +180,11 @@ else
 fi
 
 ##### Python Specific Configurations #####
-if [ ! -z "${PYENV_ROOT}" ]; then
-  export PATH="$PYENV_ROOT/.pyenv/bin:$PATH"
-else
-  export PATH="$HOME/.pyenv/bin:$PATH"
+if [ -z "${PYENV_ROOT}" ]; then
+  export PYENV_ROOT="$HOME/.pyenv"
 fi
+export PATH="$PYENV_ROOT/bin:$PATH"
+
 eval "$(pyenv init -)"
 pyenv shell 3.6.9
 # Location of jupyter executable (installed with `pip install --user` command)
@@ -193,6 +193,7 @@ if [ ! -z "${PYTHONUSERBASE}" ]; then
 else
   export PATH="$HOME/.local/bin:$PATH"
 fi
+export LD_LIBRARY_PATH="$PYENV_ROOT/versions/3.6.9/lib":$LD_LIBRARY_PATH
 ########
 
 ##### CMake Specific Configurations #####

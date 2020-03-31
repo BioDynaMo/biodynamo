@@ -287,7 +287,11 @@ function(install_inside_build)
     if(paraview)
       add_copy_files(copy_files_bdm
               DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR}
-              ${CMAKE_INSTALL_LIBDIR}/libBDMGlyphFilter${CMAKE_SHARED_LIBRARY_SUFFIX}
+              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so
+              )
+      add_copy_files(copy_files_bdm
+              DESTINATION ${CMAKE_INSTALL_ROOT}/lib
+              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so
               )
     endif()
 

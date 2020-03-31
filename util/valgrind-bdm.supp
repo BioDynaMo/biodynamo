@@ -704,6 +704,13 @@
    fun:_ZN23vtkInitializationHelper10InitializeEiPPciP12vtkPVOptions
 }
 
+{
+   paraview-catalyst
+   Memcheck:Leak
+   ...
+   obj:*/libvtkPVCatalyst-pv*.so.*
+}
+
 ######### Suppress TBB issues
 
 {

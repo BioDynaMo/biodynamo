@@ -12,7 +12,7 @@
 #
 # -----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
 
 set(policy_new CMP0072 CMP0077)
 foreach(policy ${policy_new})
@@ -152,20 +152,21 @@ endif()
 
 # Check if Python 3.6.9 from PyEnv is installed
 if (DEFINED ENV{PYENV_ROOT})
-  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")	
-else()	
-  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")	
-endif()	
-if(EXISTS "${Python_ROOT_DIR}/bin/python")	
-  set(PYTHON_FOUND TRUE)	
-  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")	
-  message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")	
-else()	
-  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "	
-    "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "	
-    "interpreter is required in order to successfully use BioDynaMo."	
-    "If you installed PyEnv somewhere other than in your home directory, please "	
-    "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")	
+  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
+else()
+  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
+endif()
+if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS "${Python_ROOT_DIR}/lib/libpython3.6m.so")
+  set(PYTHON_FOUND TRUE)
+  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
+  set(Python_LIBRARIES "${Python_ROOT_DIR}/lib/libpython3.6m.so")
+  message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")
+else()
+  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
+    "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "
+    "interpreter is required in order to successfully use BioDynaMo."
+    "If you installed PyEnv somewhere other than in your home directory, please "
+    "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")
 endif()
 
 # Check if OpenMPI is present
@@ -265,8 +266,7 @@ if(paraview)
     endif()
 
     # Check the first time if ParaView exists in the system.
-    find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-            vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+    find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
             PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
@@ -290,13 +290,11 @@ if(paraview)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
-      find_package(ParaView 5.3 OPTIONAL_COMPONENTS vtkPVPythonCatalyst
-              vtkPVVTKExtensionsDefault vtkPVServerManagerRendering
+      find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
     endif()
 
-    # Add several ParaView related options
-    include("${PARAVIEW_USE_FILE}")
+    include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
@@ -431,13 +429,16 @@ if(paraview)
   file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
   file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
 
-  set(REQUIRED_PARAVIEW_LIBRARIES "vtkCommonCore;vtkPVPythonCatalyst;vtkIOParallelXML;vtkPVVTKExtensionsDefault;vtkPVServerManagerRendering")
+  # We link against python3 libraries, so that the paraview libraries can
+  # resolve missing python symbols when creating binaries
+  set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
   build_shared_library(VisualizationAdaptor
                     SOURCES ${PV_SOURCES}
                     HEADERS ${PV_HEADERS}
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
                     PLUGIN "TRUE")
   set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
+  SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
 else()
   # If paraview is disabled, linking the biodynamo-unit-tests failes due to
   # an undefined tbb reference error. Adding this library fixed this
@@ -490,7 +491,7 @@ add_dependencies(bdmclean libbdmclean)
 generate_rootlogon()
 
 if(paraview)
-    include("${CMAKE_SOURCE_DIR}/paraview_plugin/bdm_glyph/CMakeLists.txt")
+    include("${CMAKE_SOURCE_DIR}/paraview_plugin/CMakeLists.txt")
 endif()
 
 # create cmake files used by external builds

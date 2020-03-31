@@ -46,14 +46,13 @@ WORKING_DIR=~/bdm-build-third-party
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 
-# Install prerequisites will be called inside build-qt.sh
-## Install Qt using the silent JavaScript installer
+# Install Qt (prerequisites will be installed inside build-qt.sh)
 . $BDM_PROJECT_DIR/util/build-third-party/build-qt.sh
 cd $WORKING_DIR
 
 if [ `uname` = "Linux" ]; then
-  export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/gcc_64/lib/cmake
-  export LD_LIBRARY_PATH=$WORKING_DIR/qt/5.11.0/gcc_64/lib:$LD_LIBRARY_PATH
+  export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
+  export LD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$LD_LIBRARY_PATH
 else
   export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/clang_64/lib/cmake
 fi
@@ -101,6 +100,7 @@ cmake \
   -DENABLE_ospraymaterials:BOOL=ON \
   -DENABLE_paraviewsdk:BOOL=ON \
   -DENABLE_python:BOOL=ON \
+  -DENABLE_python3:BOOL=ON \
   -DENABLE_qt5:BOOL=ON \
   -DUSE_SYSTEM_qt5:BOOL=ON \
   -DENABLE_mpi:BOOL=ON \
@@ -122,6 +122,15 @@ if [ `uname` = "Darwin" ]; then
 fi
 
 cd install
+
+# For some reason this path is hardcoded in this file, which causes CMake to
+# panic. We just remove it.
+sed -i 's|/home/testuser/bdm-build-third-party/paraview-build/install/include/python3.7m||g' lib/cmake/paraview-5.8/vtk/VTK-targets.cmake || true
+
+# Some dependencies could be put into lib64 (e.g. OpenImageDenoise), so we copy
+# it into the lib directory (don't delete lib64, because some CMake files will
+# be referring to that directory)
+rsync -a lib64/ lib/ || true
 
 ## tar the install directory
 tar -zcf paraview-$PV_VERSION.tar.gz *
