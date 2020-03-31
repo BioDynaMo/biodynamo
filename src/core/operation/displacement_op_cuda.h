@@ -30,14 +30,11 @@
 #include "core/util/log.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
+#include "neuroscience/neurite_element.h"
 
 namespace bdm {
 
-inline void IsNonSphericalObjectPresent(const SimObject* so, bool* answer) {
-  if (so->GetShape() != Shape::kSphere) {
-    *answer = true;
-  }
-}
+using experimental::neuroscience::NeuriteElement;
 
 /// Defines the 3D physical interactions between physical objects
 class DisplacementOpCuda {
@@ -55,6 +52,9 @@ class DisplacementOpCuda {
     auto* param = sim->GetParam();
     auto* rm = sim->GetResourceManager();
 
+    CountShapes cs;
+    rm->ApplyOnAllElements(cs);
+
     auto num_numa_nodes = ThreadInfo::GetInstance()->GetNumaNodes();
     std::vector<SoHandle::ElementIdx_t> offset(num_numa_nodes);
     offset[0] = 0;
@@ -69,6 +69,8 @@ class DisplacementOpCuda {
     // a void pointer. The conversion of `const double *` to `void *` is
     // illegal.
     std::vector<std::array<double, 3>> cell_movements(total_num_objects);
+    std::vector<std::array<double, 3>> force_to_transmit_to_proximal_mass(
+        total_num_objects);
     std::vector<SoHandle::ElementIdx_t> successors(total_num_objects);
     std::vector<uint32_t> starts;
     std::vector<uint16_t> lengths;
@@ -138,20 +140,26 @@ class DisplacementOpCuda {
     }
 
     cdo_->LaunchDisplacementKernel(
-        f.cell_positions.data()->data(), f.cell_diameters.data(),
+        f.shape.data(), f.position.data()->data(), f.diameters.data(),
         f.cell_tractor_force.data()->data(), f.cell_adherence.data(),
-        f.cell_boxid.data(), f.mass.data(), &(param->simulation_time_step_),
+        f.boxid.data(), f.mass.data(), f.ne_proximal_end.data()->data(),
+        f.ne_distal_end.data()->data(), f.ne_axis.data()->data(),
+        f.ne_tension.data(),
+        f.ne_force_to_transmit_to_proximal_mass.data()->data(),
+        f.daughter_left.data(), f.daughter_right.data(), f.mother.data(),
+        f.has_daughter_or_mother.data(), &(param->simulation_time_step_),
         &(param->simulation_max_displacement_), &squared_radius,
         &total_num_objects, starts.data(), lengths.data(), timestamps.data(),
         &current_timestamp, successors.data(), &box_length,
         num_boxes_axis.data(), grid_dimensions.data(),
-        cell_movements.data()->data());
+        cell_movements.data()->data(),
+        force_to_transmit_to_proximal_mass.data()->data());
 
     // set new positions after all updates have been calculated
     // otherwise some cells would see neighbors with already updated positions
     // which would lead to inconsistencies
 
-    UpdateCPUResults b(cell_movements, offset);
+    UpdateCPUResults b(&cell_movements, offset);
     rm->ApplyOnAllElementsParallelDynamic(1000, b);
   }
 
@@ -161,10 +169,12 @@ class DisplacementOpCuda {
   uint32_t total_num_objects_ = 0;
 
   struct UpdateCPUResults : public Functor<void, SimObject*, SoHandle> {
-    std::vector<std::array<double, 3>> cell_movements;
+    const std::vector<std::array<double, 3>>* cell_movements;
+    const std::vector<std::array<double, 3>>*
+        force_to_transmit_to_proximal_mass;
     std::vector<SoHandle::ElementIdx_t> offset;
 
-    UpdateCPUResults(std::vector<std::array<double, 3>> cm,
+    UpdateCPUResults(const std::vector<std::array<double, 3>>* cm,
                      const std::vector<SoHandle::ElementIdx_t>& offs) {
       cell_movements = cm;
       offset = offs;
@@ -172,58 +182,133 @@ class DisplacementOpCuda {
 
     void operator()(SimObject* so, SoHandle soh) override {
       auto* param = Simulation::GetActive()->GetParam();
-      auto* cell = dynamic_cast<Cell*>(so);
       auto idx = offset[soh.GetNumaNode()] + soh.GetElementIdx();
       Double3 new_pos;
-      new_pos[0] = cell_movements[idx][0];
-      new_pos[1] = cell_movements[idx][1];
-      new_pos[2] = cell_movements[idx][2];
-      cell->UpdatePosition(new_pos);
+      new_pos[0] = (*cell_movements)[idx][0];
+      new_pos[1] = (*cell_movements)[idx][1];
+      new_pos[2] = (*cell_movements)[idx][2];
+      so->ApplyDisplacement(new_pos);
+      if (so->GetShape() == Shape::kCylinder) {
+        auto ne = bdm_static_cast<NeuriteElement*>(so);
+        Double3 temp;
+        temp[0] = (*force_to_transmit_to_proximal_mass)[idx][0];
+        temp[1] = (*force_to_transmit_to_proximal_mass)[idx][1];
+        temp[2] = (*force_to_transmit_to_proximal_mass)[idx][2];
+        ne->SetForceToTransmitToProximalMass(temp);
+      }
       if (param->bound_space_) {
         ApplyBoundingBox(so, param->min_bound_, param->max_bound_);
       }
     }
   };
 
+  struct CountShapes : public Functor<void, SimObject*, SoHandle> {
+    uint32_t num_cylinders = 0;
+    uint32_t num_spheres = 0;
+
+    void operator()(SimObject* so, SoHandle soh) override {
+      if (so->GetShape() == Shape::kSphere) {
+        num_spheres++;
+      } else {
+        num_cylinders++;
+      }
+    }
+  };
+
   struct InitializeGPUData : public Functor<void, SimObject*, SoHandle> {
-    bool is_non_spherical_object = false;
-    std::vector<Double3> cell_positions;
-    std::vector<double> cell_diameters;
+    // Data members required for both Cell and NeuriteElement objects
+    std::vector<Double3> position;
+    std::vector<double> diameters;
+    std::vector<double> mass;
+    std::vector<uint32_t> boxid;
+    std::vector<uint8_t> shape;
+
+    // Cell-specific data members
     std::vector<double> cell_adherence;
     std::vector<Double3> cell_tractor_force;
-    std::vector<uint32_t> cell_boxid;
-    std::vector<double> mass;
+
+    // Neurite-Element-specific data members
+    std::vector<Double3> ne_distal_end;
+    std::vector<Double3> ne_proximal_end;
+    std::vector<Double3> ne_axis;
+    std::vector<Double3> ne_force_to_transmit_to_proximal_mass;
+    std::vector<double> ne_tension;
+    std::vector<SoHandle::ElementIdx_t> daughter_left;
+    std::vector<SoHandle::ElementIdx_t> daughter_right;
+    std::vector<SoHandle::ElementIdx_t> mother;
+    std::vector<uint8_t> has_daughter_or_mother;
+
+    // Index offset required to merge NUMA-separated containers
     std::vector<SoHandle::ElementIdx_t> offset;
 
     InitializeGPUData(uint32_t num_objects,
                       const std::vector<SoHandle::ElementIdx_t>& offs) {
-      cell_positions.resize(num_objects);
-      cell_diameters.resize(num_objects);
+      diameters.resize(num_objects);
+      mass.resize(num_objects);
+      boxid.resize(num_objects);
+      shape.resize(num_objects);
+      position.resize(num_objects);
       cell_adherence.resize(num_objects);
       cell_tractor_force.resize(num_objects);
-      cell_boxid.resize(num_objects);
-      mass.resize(num_objects);
+      ne_distal_end.resize(num_objects);
+      ne_proximal_end.resize(num_objects);
+      ne_axis.resize(num_objects);
+      ne_force_to_transmit_to_proximal_mass.resize(num_objects);
+      ne_tension.resize(num_objects);
+      daughter_left.resize(num_objects);
+      daughter_right.resize(num_objects);
+      mother.resize(num_objects);
+      has_daughter_or_mother.resize(num_objects);
       offset = offs;
     }
 
     void operator()(SimObject* so, SoHandle soh) override {
-      // Check if there are any non-spherical objects in our simulation, because
-      // GPU accelerations currently supports only sphere-sphere interactions
-      IsNonSphericalObjectPresent(so, &is_non_spherical_object);
-      if (is_non_spherical_object) {
-        Log::Fatal("DisplacementOpCuda",
-                   "\nWe detected a non-spherical object during the GPU "
-                   "execution. This is currently not supported.");
-        return;
-      }
-      auto* cell = bdm_static_cast<Cell*>(so);
       auto idx = offset[soh.GetNumaNode()] + soh.GetElementIdx();
-      mass[idx] = cell->GetMass();
-      cell_diameters[idx] = cell->GetDiameter();
-      cell_adherence[idx] = cell->GetAdherence();
-      cell_tractor_force[idx] = cell->GetTractorForce();
-      cell_positions[idx] = cell->GetPosition();
-      cell_boxid[idx] = cell->GetBoxIdx();
+      auto* rm = Simulation::GetActive()->GetResourceManager();
+
+      // FIXME: we can differentiate cells and neurite elements by shape
+      // currently, but in the future this could change
+      if (so->GetShape() == Shape::kSphere) {
+        auto* cell = bdm_static_cast<Cell*>(so);
+        shape[idx] = Shape::kSphere;
+        position[idx] = cell->GetPosition();
+        mass[idx] = cell->GetMass();
+        cell_adherence[idx] = cell->GetAdherence();
+        cell_tractor_force[idx] = cell->GetTractorForce();
+      } else {
+        auto* ne = bdm_static_cast<NeuriteElement*>(so);
+        shape[idx] = Shape::kCylinder;
+        position[idx] = ne->GetMassLocation();
+        mass[idx] = ne->GetMass();
+        ne_distal_end[idx] = ne->DistalEnd();
+        ne_proximal_end[idx] = ne->ProximalEnd();
+        ne_axis[idx] = ne->GetSpringAxis();
+        ne_tension[idx] = ne->GetTension();
+        ne_force_to_transmit_to_proximal_mass[idx] =
+            ne->GetForceToTransmitToProximalMass();
+
+        auto dl_ptr = ne->GetDaughterLeft();
+        auto dr_ptr = ne->GetDaughterRight();
+        auto m_ptr = ne->GetMother();
+
+        if (dl_ptr) {
+          has_daughter_or_mother[idx] |= kHasDaughterLeft;
+          auto dl = rm->GetSoHandle(dl_ptr->GetUid());
+          daughter_left[idx] = offset[dl.GetNumaNode()] + dl.GetElementIdx();
+        }
+        if (dr_ptr) {
+          has_daughter_or_mother[idx] |= kHasDaughterRight;
+          auto dr = rm->GetSoHandle(dr_ptr->GetUid());
+          daughter_right[idx] = offset[dr.GetNumaNode()] + dr.GetElementIdx();
+        }
+        if (m_ptr) {
+          has_daughter_or_mother[idx] |= kHasMother;
+          auto m = rm->GetSoHandle(m_ptr->GetUid());
+          mother[idx] = offset[m.GetNumaNode()] + m.GetElementIdx();
+        }
+      }
+      diameters[idx] = so->GetDiameter();
+      boxid[idx] = so->GetBoxIdx();
     }
   };
 };

@@ -151,22 +151,7 @@ if (NOT WGET_BIN)
 endif()
 
 # Check if Python 3.6.9 from PyEnv is installed
-if (DEFINED ENV{PYENV_ROOT})
-  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")	
-else()	
-  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")	
-endif()	
-if(EXISTS "${Python_ROOT_DIR}/bin/python")	
-  set(PYTHON_FOUND TRUE)	
-  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")	
-  message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")	
-else()	
-  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "	
-    "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "	
-    "interpreter is required in order to successfully use BioDynaMo."	
-    "If you installed PyEnv somewhere other than in your home directory, please "	
-    "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")	
-endif()
+find_package(Python 3)
 
 # Check if OpenMPI is present
 find_package(MPI)
@@ -460,11 +445,11 @@ if (CUDA_FOUND)
     add_definitions("-DUSE_CUDA")
 
     # Detect CUDA architecture and get best NVCC flags
-    if(NOT COMMAND CUDA_SELECT_NVCC_ARCH_FLAGS)
-      INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/select_compute_arch.cmake)
-    endif()
-    CUDA_SELECT_NVCC_ARCH_FLAGS(NVCC_FLAGS_EXTRA $ENV{TORCH_CUDA_ARCH_LIST})
-    list(APPEND CUDA_NVCC_FLAGS ${NVCC_FLAGS_EXTRA})
+    # if(NOT COMMAND CUDA_SELECT_NVCC_ARCH_FLAGS)
+    #   INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/cmake/select_compute_arch.cmake)
+    # endif()
+    # CUDA_SELECT_NVCC_ARCH_FLAGS(NVCC_FLAGS_EXTRA $ENV{TORCH_CUDA_ARCH_LIST})
+    list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75")
 
     set(CUDA_HOST_COMPILER "/usr/bin/")
     set(NVCCFLAGS "--compiler-bindir ${CUDA_HOST_COMPILER}")

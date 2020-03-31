@@ -1022,6 +1022,14 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// Returns the position of the distal end == position_
   const Double3& DistalEnd() const { return mass_location_; }
 
+  Double3 GetForceToTransmitToProximalMass() {
+    return force_to_transmit_to_proximal_mass_;
+  }
+
+  void SetForceToTransmitToProximalMass(const Double3& a) {
+    force_to_transmit_to_proximal_mass_ = a;
+  }
+
   /// Returns the total (actual) length of all the neurite elements (including
   /// the one in which this method is
   /// called) before the previous branching point. Used to decide if long enough
