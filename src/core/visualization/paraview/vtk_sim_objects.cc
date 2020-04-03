@@ -40,24 +40,6 @@
 
 namespace bdm {
 
-// FIXME
-// struct PopulateDataArraysFunctorImpl1 : public PopulateDataArraysFunctor {
-//   PopulateDataArraysFunctorImpl1(VtkSimObjects* so_grid, int tid)
-//           : PopulateDataArraysFunctor(so_grid, tid) {}
-//   void operator()(SimObject* so, SoHandle soh) {
-//     auto idx = soh.GetElementIdx();
-// PopulateDataArraysFunctor::SetTuple<bdm::Cell, double>(so, idx, so_grid_->array_indices_[0], 152);
-// PopulateDataArraysFunctor::SetTuple<bdm::Cell, bdm::MathArray<double,3>>(so, idx, so_grid_->array_indices_[1], 104);
-//   }
-// };
-
-struct CreateVtkDataArray1 : public Functor<void, VtkSimObjects*, int> {
-  void operator()(VtkSimObjects* so_grid, int tid) {
-    CreateVtkDataArray<bdm::Cell, double> f; f(tid, "diameter_", 152, so_grid); 
-    CreateVtkDataArray<bdm::Cell, bdm::MathArray<double,3>> f1; f1(tid, "position_", 104, so_grid); 
-  }
-};
-
 // -----------------------------------------------------------------------------
 VtkSimObjects::VtkSimObjects(const char* type_name,
                      vtkCPDataDescription* data_description) {
@@ -85,78 +67,38 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
   std::vector<std::string> data_members;
   InitializeDataMembers(tmp_instance, &data_members);
 
-  // InitializeVtkSoGrid(this); FIXME
-  // JitForEachDataMemberFunctor jitcreate(
-  //     tclass_, data_members, "CreateVtkDataArraysFunctor",
-  //     [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
-  //       std::stringstream sstr;
-  //       sstr << "namespace bdm {\n\n"
-  //            << "struct " << functor_name << " : public Functor<void, VtkSimObjects*, int> {\n"
-  //            << "  void operator()(VtkSimObjects* so_grid, int tid) {\n";
-  // 
-  //       uint64_t counter = 0;
-  //       for (auto* tdm : tdata_members) {
-  //         // example:
-  //         // CreateVtkDataArray<Cell, Double3>("position_", 123, so_grid);
-  //         sstr << "CreateVtkDataArray<" 
-  //              << tdm->GetClass()->GetName() << ", " 
-  //              << tdm->GetTypeName() << ">("
-  //              << "tid, \"" << tdm->GetName() << "\", " 
-  //              << tdm->GetOffset() << ", so_grid);\n";
-  //       }
-  // 
-  //       sstr << "  }\n";
-  //       sstr << "};\n\n";
-  //       sstr << "}  // namespace bdm\n";
-  // 
-  //       return sstr.str();
-  // 
-  //     });
-  // jitcreate.Compile();
-  // auto* create_functor = jitcreate.New<Functor<void, VtkSimObjects*, int>>(); FIXME
-  auto create_functor = new CreateVtkDataArray1();
+  JitForEachDataMemberFunctor jitcreate(
+      tclass_, data_members, "CreateVtkDataArrays",
+      [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
+        std::stringstream sstr;
+        sstr << "namespace bdm {\n\n"
+             << "struct " << functor_name << " : public Functor<void, VtkSimObjects*, int> {\n"
+             << "  void operator()(VtkSimObjects* so_grid, int tid) {\n";
+  
+        uint64_t counter = 0;
+        for (auto* tdm : tdata_members) {
+          // example:
+          // { CreateVtkDataArray<Cell, Double3> f; f(tid, "position_", 123, so_grid); }
+          sstr << "{ CreateVtkDataArray<" 
+               << tdm->GetClass()->GetName() << ", " 
+               << tdm->GetTypeName() << ">f; f("
+               << "tid, \"" << tdm->GetName() << "\", " 
+               << tdm->GetOffset() << ", so_grid); }\n";
+        }
+  
+        sstr << "  }\n";
+        sstr << "};\n\n";
+        sstr << "}  // namespace bdm\n";
+  
+        return sstr.str();
+  
+      });
+  jitcreate.Compile();
+  auto* create_functor = jitcreate.New<Functor<void, VtkSimObjects*, int>>();
   for (uint64_t i = 0; i < data_.size(); ++i) {
     (*create_functor)(this, i);
   }
   delete create_functor;
-
-  // FIXME
-//   JitForEachDataMemberFunctor jitpopulate(
-//       tclass_, data_members, "PopulateDataArraysFunctorImpl",
-//       [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
-//         std::stringstream sstr;
-//         sstr << "namespace bdm {\n\n"
-//              << "struct " << functor_name << " : public PopulateDataArraysFunctor {\n"
-//              << "  " << functor_name << "(VtkSimObjects* so_grid, int tid) \n"
-//              << "          : PopulateDataArraysFunctor(so_grid, tid) {}\n"
-//              << "  void operator()(SimObject* so, SoHandle soh) {\n"
-//              << "    auto idx = soh.GetElementIdx();\n";
-// 
-//         uint64_t counter = 0;
-//         for (auto* tdm : tdata_members) {
-//           // example:
-//           // PopulateDataArraysFunctor::SetTuple<Cell, Double3>(so, idx,
-//           //     so_grid_->array_indices_[0], 104);
-//           sstr << "PopulateDataArraysFunctor::SetTuple<"
-//                << tdm->GetClass()->GetName() << ", " << tdm->GetTypeName()
-//                << ">(so, idx, so_grid_->array_indices_[" << counter++ << "], "
-//                << tdm->GetOffset() << ");\n";
-//         }
-// 
-//         sstr << "  }\n";
-//         sstr << "};\n\n";
-//         sstr << "}  // namespace bdm\n";
-//         return sstr.str();
-//       });
-//   jitpopulate.Compile();
-//   // FIXME
-//   //populate_arrays_ = jitpopulate.New<PopulateDataArraysFunctor>(
-//       //Concat("reinterpret_cast<bdm::VtkSimObjects*>(", this, ")"));
-//   populate_arrays_.resize(data_.size());
-// #pragma omp parallel for schedule(static, 1)
-//   for (uint64_t i = 0; i < populate_arrays_.size(); ++i) {
-//     populate_arrays_[i] = new PopulateDataArraysFunctorImpl1(this, i);
-//   }
 }
 
 // -----------------------------------------------------------------------------

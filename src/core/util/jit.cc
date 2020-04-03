@@ -77,8 +77,10 @@ std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
     auto* current_tc = tc_stack.top();
     tc_stack.pop();
     for (const auto&& base : *current_tc->GetListOfBases()) {
-      auto* tbase = TClassTable::GetDict(base->GetName())();
-      tc_stack.push(tbase);
+      auto get_dict_functor = TClassTable::GetDict(base->GetName()); 
+      if (get_dict_functor != nullptr) {
+        tc_stack.push(get_dict_functor());
+      }
     }
 
     for (int i = 0; i < current_tc->GetListOfDataMembers()->GetSize(); ++i) {
@@ -124,7 +126,6 @@ JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
 }
 
 void JitForEachDataMemberFunctor::Compile() {
-  std::cout << code_generator_(functor_name_, data_members_) << std::endl;
   gInterpreter->ProcessLineSynch(code_generator_(functor_name_, data_members_).c_str());
 }
 
