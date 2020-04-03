@@ -32,6 +32,7 @@
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/vtune.h"
+#include "core/util/root.h"
 #include "core/visualization/root/notebook_util.h"
 
 #endif  // BIODYNAMO_H_

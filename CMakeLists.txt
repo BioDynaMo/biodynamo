@@ -455,10 +455,11 @@ file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 filter_list(LIB_SOURCES "${LIB_SOURCES}" "paraview/*")
 filter_list(HEADERS "${HEADERS}" "paraview/*")
 
+# NB: Remove stdc++fs after switching to c++17  
 build_shared_library(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
-                   LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
+                   LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} stdc++fs)
 
 # Build plugin
 if(paraview)
@@ -568,6 +569,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
+  # NB: Remove stdc++fs after switching to c++17  
   bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS}

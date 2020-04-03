@@ -20,6 +20,16 @@
 #include <Rtypes.h>
 #include <TBuffer.h>
 
+namespace bdm {
+
+/// This global variable is used to load the executable dictionary
+/// into cling at startup of the simulation
+struct RunAtStartup {
+  const static bool value;
+};
+
+}  // namespace 
+
 #define BDM_CLASS_DEF(class_name, class_version_id) \
   ClassDef(class_name, class_version_id)
 #define BDM_CLASS_DEF_NV(class_name, class_version_id) \

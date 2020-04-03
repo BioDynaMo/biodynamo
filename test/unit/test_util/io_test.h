@@ -28,6 +28,10 @@
 
 namespace bdm {
 
+// Hide testing::Test from the generated dictionary.
+// Otherwise ROOT is unable to load it into cling.
+#ifndef __ROOTCLING__
+
 /// Test fixture for io tests that follow the same form
 /// Usage:
 ///
@@ -45,6 +49,8 @@ namespace bdm {
 ///       ...
 ///     }
 class IOTest : public ::testing::Test {};
+
+#endif  // __ROOTCLING__
 
 /// Writes backup to file and reads it back into restored
 /// Outside the test fixture so it can be called in a function from the header.

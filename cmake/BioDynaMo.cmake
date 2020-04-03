@@ -75,18 +75,23 @@ function(bdm_add_executable TARGET)
     endif()
     REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/selection.xml)
 
+    add_library(${TARGET}-dict SHARED ${DICT_FILE}.cc)
+    target_compile_definitions(${TARGET}-dict PRIVATE -D__ROOTCLING__)
+
     # generate executable
-    add_executable(${TARGET} ${ARG_SOURCES} ${DICT_FILE}.cc)
+    add_executable(${TARGET} ${ARG_SOURCES})
+    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-Wl,-rpath,$ORIGIN")
     if (OPENCL_FOUND)
       # Do this here; we don't want libbiodynamo.so to contain any OpenCL symbols
       set(ARG_LIBRARIES ${ARG_LIBRARIES} ${OPENCL_LIBRARIES})
       target_compile_definitions(${TARGET} PUBLIC -DUSE_OPENCL)
     endif()
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
+    target_link_libraries(${TARGET} ${TARGET}-dict)
     if (DEFINED CMAKE_INSTALL_LIBDIR)
       add_custom_command(TARGET ${TARGET}
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_BINDIR})
+            COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
     endif()
   else()
     add_executable(${TARGET} ${ARG_SOURCES})
