@@ -67,20 +67,20 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
 
   // create internal objects
   vtkCPDataDescription* data_description = vtkCPDataDescription::New();
-  std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids;
-  vtk_so_grids["Cell"] = new VtkSoGrid("Cell", data_description);
-  vtk_so_grids["Cell"]->shape_ = kSphere;
-  vtk_so_grids["NeuriteElement"] = new VtkSoGrid("NeuriteElement", data_description);
-  vtk_so_grids["NeuriteElement"]->shape_ = kCylinder;
+  std::unordered_map<std::string, VtkSimObjects*> vtk_sim_objects;
+  vtk_sim_objects["Cell"] = new VtkSimObjects("Cell", data_description);
+  vtk_sim_objects["Cell"]->shape_ = kSphere;
+  vtk_sim_objects["NeuriteElement"] = new VtkSimObjects("NeuriteElement", data_description);
+  vtk_sim_objects["NeuriteElement"]->shape_ = kCylinder;
 
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids;
   vtk_dgrids["sodium"] = new VtkDiffusionGrid("sodium", data_description);
   vtk_dgrids["sodium"]->used_ = true;
 
-  auto json = GenerateSimulationInfoJson(vtk_so_grids, vtk_dgrids);
+  auto json = GenerateSimulationInfoJson(vtk_sim_objects, vtk_dgrids);
 
   // free memory
-  for (auto& el : vtk_so_grids) {
+  for (auto& el : vtk_sim_objects) {
     delete el.second;
   }
   for (auto& el : vtk_dgrids) {

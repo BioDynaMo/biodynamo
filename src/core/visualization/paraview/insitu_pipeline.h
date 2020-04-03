@@ -85,8 +85,8 @@ class InSituPipeline : public vtkCPPipeline {
   }
 
   void Initialize(
-      const std::unordered_map<std::string, VtkSoGrid*>& vtk_so_grids) {
-    vtk_so_grids_ = vtk_so_grids;
+      const std::unordered_map<std::string, VtkSimObjects*>& vtk_sim_objects) {
+    vtk_sim_objects_ = vtk_sim_objects;
     initialized_ = true;
   }
 
@@ -149,7 +149,7 @@ class InSituPipeline : public vtkCPPipeline {
       if (vtk_object->IsA("vtkUnstructuredGrid")) {
         real_producer->SetOutput(vtk_object);
 
-        auto& shape = vtk_so_grids_[object_name]->shape_;
+        auto& shape = vtk_sim_objects_[object_name]->shape_;
 
         if (shape == Shape::kCylinder) {
           source_name = "CylinderSource";
@@ -321,7 +321,7 @@ class InSituPipeline : public vtkCPPipeline {
   std::map<std::string, vtkSmartPointer<vtkSMSourceProxy>> filter_map_;
   vtkSmartPointer<vtkLiveInsituLink> insitu_link_;
   vtkSMParaViewPipelineControllerWithRendering* controller_;
-  std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids_;
+  std::unordered_map<std::string, VtkSimObjects*> vtk_sim_objects_;
   bool initialized_ = false;
 };
 

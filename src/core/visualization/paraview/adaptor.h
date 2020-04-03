@@ -30,7 +30,6 @@
 #include "core/shape.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
-#include "core/visualization/paraview/so_visitor.h"
 #include "core/visualization/visualization_adaptor.h"
 
 namespace bdm {
