@@ -141,8 +141,16 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<Sim
   end_ = end;
   this->Size = this->NumberOfComponents * (end - start);
   this->MaxId = this->Size - 1;
+
+  if (this->Size <= 0) {
+    this->Size = 0;
+    this->MaxId = -1;
+    this->Modified();
+    return;
+  }
+
   this->Modified();
-  
+
   if (mode_ != Mode::kZeroCopy) {
     if (data_.capacity() < this->Size) {
       data_.reserve(this->Size * 1.5);

@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 #ifdef USE_PARAVIEW
 
-#include <dirent.h>
+#include <experimental/filesystem>
 #include <gtest/gtest.h>
 
 #include "biodynamo.h"
@@ -22,6 +22,8 @@
 #include "core/visualization/paraview/helper.h"
 #include "unit/core/visualization/paraview/adaptor_test.h"
 #include "unit/test_util/test_util.h"
+
+namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 
@@ -55,8 +57,8 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
     // set-up Param values
     param->export_visualization_ = true;
     param->visualize_sim_objects_.clear();
-    param->visualize_sim_objects_["cell"] = {};
-    param->visualize_sim_objects_["neurite"] = {};
+    param->visualize_sim_objects_["Cell"] = {};
+    param->visualize_sim_objects_["NeuriteElement"] = {};
     param->visualize_diffusion_.clear();
     param->visualize_diffusion_.push_back({"sodium", true, true});
   };
@@ -66,10 +68,10 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   // create internal objects
   vtkCPDataDescription* data_description = vtkCPDataDescription::New();
   std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids;
-  vtk_so_grids["cell"] = new VtkSoGrid("cell", data_description);
-  vtk_so_grids["cell"]->shape_ = kSphere;
-  vtk_so_grids["neurite"] = new VtkSoGrid("neurite", data_description);
-  vtk_so_grids["neurite"]->shape_ = kCylinder;
+  vtk_so_grids["Cell"] = new VtkSoGrid("Cell", data_description);
+  vtk_so_grids["Cell"]->shape_ = kSphere;
+  vtk_so_grids["NeuriteElement"] = new VtkSoGrid("NeuriteElement", data_description);
+  vtk_so_grids["NeuriteElement"]->shape_ = kCylinder;
 
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids;
   vtk_dgrids["sodium"] = new VtkDiffusionGrid("sodium", data_description);
@@ -93,7 +95,7 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   },
   "sim_objects": [
     {
-      "name":"neurite",
+      "name":"NeuriteElement",
       "glyph":"BDMGlyph",
       "shape":"Cylinder",
       "x_scaling_attribute":"diameter_",
@@ -103,7 +105,7 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
       "MassLocation":"mass_location_"
     },
     {
-      "name":"cell",
+      "name":"Cell",
       "glyph":"Glyph",
       "shape":"Sphere",
       "scaling_attribute":"diameter_"
@@ -187,6 +189,10 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   }
 
   Simulation sim(TEST_NAME, set_param);
+  auto output_dir = sim.GetOutputDir();
+  fs::remove_all(output_dir); 
+  fs::create_directory(output_dir); 
+
   auto* rm = sim.GetResourceManager();
 
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
@@ -213,36 +219,22 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   std::string pvsm = TEST_NAME + std::string(".pvsm");
 
   // Check if all the output files of the selected items were generated
-  std::set<std::string> required_files = {".",
-                                          "..",
-                                          "Cell-0.pvtu",
+  // Don't check for vtu or vti files. This depends on the number
+  // of threads and data.
+  // Other tests cover this.
+  std::set<std::string> required_files = {"Cell-0.pvtu",
                                           "Cell-1.pvtu",
                                           "Cell-2.pvtu",
-                                          "MyCell-0_0.vtu",
                                           "MyCell-0.pvtu",
-                                          "MyCell-1_0.vtu",
                                           "MyCell-1.pvtu",
-                                          "MyCell-2_0.vtu",
                                           "MyCell-2.pvtu",
-                                          "Substance_1-0_0.vti",
                                           "Substance_1-0.pvti",
-                                          "Substance_1-1_0.vti",
                                           "Substance_1-1.pvti",
-                                          "Substance_1-2_0.vti",
                                           "Substance_1-2.pvti"};
 
-  auto* dirp = opendir(sim.GetOutputDir().c_str());
-  struct dirent* dp;
-  unsigned counter = 0;
-  while ((dp = readdir(dirp)) != NULL) {
-    EXPECT_TRUE(required_files.find(dp->d_name) != required_files.end());
-    if (required_files.find(dp->d_name) == required_files.end()) {
-      std::cout << dp->d_name << std::endl;
-    }
-    counter++;
+  for (auto& file : required_files) {
+    EXPECT_TRUE(fs::exists(Concat(sim.GetOutputDir(), "/", file)));
   }
-  closedir(dirp);
-  EXPECT_EQ(required_files.size(), counter);
 }
 
 }  // namespace bdm
