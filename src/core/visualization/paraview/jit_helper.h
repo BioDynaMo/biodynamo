@@ -81,7 +81,7 @@ struct CreateVtkDataArray {
     vtkNew<VtkArrayType> new_vtk_array;
     new_vtk_array->Initialize(dm_name, components, dm_offset);
     auto* vtk_array = new_vtk_array.GetPointer();
-    auto* point_data = vtk_sim_objects->data_[tid]->GetPointData();
+    auto* point_data = vtk_sim_objects->GetData(tid)->GetPointData();
     point_data->AddArray(vtk_array);
   }
 
@@ -95,16 +95,16 @@ struct CreateVtkDataArray {
     if (dm_name == "position_") {
       vtkNew<vtkPoints> points;
       points->SetData(vtk_array);
-      vtk_sim_objects->data_[tid]->SetPoints(points.GetPointer());
+      vtk_sim_objects->GetData(tid)->SetPoints(points.GetPointer());
     } else if (dm_name == "mass_location_") {
       // create points with position {0, 0, 0}
       // BDMGlyph will rotate and translate based on the attribute data
       vtkNew<vtkPoints> points;
       points->SetData(vtk_array);
-      vtk_sim_objects->data_[tid]->SetPoints(points.GetPointer());
-      vtk_sim_objects->data_[tid]->GetPointData()->AddArray(vtk_array);
+      vtk_sim_objects->GetData(tid)->SetPoints(points.GetPointer());
+      vtk_sim_objects->GetData(tid)->GetPointData()->AddArray(vtk_array);
     } else {
-      vtk_sim_objects->data_[tid]->GetPointData()->AddArray(vtk_array);
+      vtk_sim_objects->GetData(tid)->GetPointData()->AddArray(vtk_array);
     }
   }
 };
@@ -116,8 +116,8 @@ struct PopulateDataArraysFunctor : public Functor<void, SimObject*, SoHandle> {
 
   PopulateDataArraysFunctor(VtkSimObjects* vtk_sim_objects, int tid)
       : vtk_sim_objects_(vtk_sim_objects),
-        grid_(vtk_sim_objects->data_[tid]),
-        point_data_(vtk_sim_objects->data_[tid]->GetPointData()) {}
+        grid_(vtk_sim_objects->GetData(tid)),
+        point_data_(vtk_sim_objects->GetData(tid)->GetPointData()) {}
 
   template <typename TClass, typename TDataMember>
   typename std::enable_if<IsArray<TDataMember>::value>::type SetTuple(

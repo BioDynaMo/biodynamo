@@ -79,7 +79,7 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
     data_description->GetInputDescriptionByName(type_name)->SetGrid(data_[0]);
   }
 
-  tclass_ = GetTClass();
+  tclass_ = FindTClass();
   auto* tmp_instance = static_cast<SimObject*>(tclass_->New());
   shape_ = tmp_instance->GetShape();
   std::vector<std::string> data_members;
@@ -169,6 +169,15 @@ VtkSimObjects::~VtkSimObjects() {
 }
 
 // -----------------------------------------------------------------------------
+vtkUnstructuredGrid* VtkSimObjects::GetData(uint64_t idx) { return data_[idx]; }
+
+// -----------------------------------------------------------------------------
+Shape VtkSimObjects::GetShape() const { return shape_; }
+
+// -----------------------------------------------------------------------------
+TClass* VtkSimObjects::GetTClass() { return tclass_; }
+
+// -----------------------------------------------------------------------------
 void VtkSimObjects::Update(const std::vector<SimObject*>* sim_objects) {
   auto* param = Simulation::GetActive()->GetParam();
   if (param->export_visualization_) {
@@ -213,7 +222,7 @@ void VtkSimObjects::UpdateMappedDataArrays(uint64_t tid, const std::vector<SimOb
 }
 
 // -----------------------------------------------------------------------------
-TClass* VtkSimObjects::GetTClass() {
+TClass* VtkSimObjects::FindTClass() {
   const auto& tclass_vector = FindClassSlow(name_);
   if (tclass_vector.size() == 0) {
     // TODO message

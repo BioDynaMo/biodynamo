@@ -222,7 +222,7 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   auto* param = Simulation::GetActive()->GetParam();
   for (auto& pair : impl_->vtk_sim_objects_) {
-    const auto& sim_objects = rm->GetTypeIndex()->GetType(pair.second->tclass_);
+    const auto& sim_objects = rm->GetTypeIndex()->GetType(pair.second->GetTClass());
 
     std::cout << "sim object size " << sim_objects.size() << std::endl;
     pair.second->Update(&sim_objects);

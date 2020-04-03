@@ -86,6 +86,9 @@ VtkDiffusionGrid::~VtkDiffusionGrid() {
 }
 
 // -----------------------------------------------------------------------------
+bool VtkDiffusionGrid::IsUsed() const { return used_; }
+
+// -----------------------------------------------------------------------------
 void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
   used_ = true;
 

@@ -149,7 +149,7 @@ class InSituPipeline : public vtkCPPipeline {
       if (vtk_object->IsA("vtkUnstructuredGrid")) {
         real_producer->SetOutput(vtk_object);
 
-        auto& shape = vtk_sim_objects_[object_name]->shape_;
+        const auto& shape = vtk_sim_objects_[object_name]->GetShape();
 
         if (shape == Shape::kCylinder) {
           source_name = "CylinderSource";

@@ -27,17 +27,22 @@
 
 namespace bdm {
 
+class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
+
 /// Adds additional data members to the `vtkImageData` required by
 /// `ParaviewAdaptor` to visualize diffusion grid.
-struct VtkDiffusionGrid {
+class VtkDiffusionGrid {
+ public:
   VtkDiffusionGrid(const std::string& name,
                    vtkCPDataDescription* data_description);
 
   ~VtkDiffusionGrid();
 
+  bool IsUsed() const;
   void Update(const DiffusionGrid* grid);
   void WriteToFile(uint64_t step) const;
 
+ private:
   std::vector<vtkImageData*> data_;
   std::string name_;
   bool used_ = false;
@@ -54,12 +59,13 @@ struct VtkDiffusionGrid {
   std::array<int, 6> whole_extent_;
   std::vector<std::array<int, 6>> piece_extents_;
 
- private:
   /// Calculate in how many pieces the vtkImageData should be split
   /// and how thick the z-layer slices are.
   void Dissect(uint64_t boxes_z, uint64_t num_pieces_target);
 
   void CalcPieceExtents(const std::array<size_t, 3>& num_boxes);
+
+  friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
 };
 
 }  // namespace bdm

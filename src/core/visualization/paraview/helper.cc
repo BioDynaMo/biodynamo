@@ -41,11 +41,11 @@ std::string GenerateSimulationInfoJson(
 
     sim_objects << "    {" << std::endl
                 << "      \"name\":\"" << so_name << "\"," << std::endl;
-    if (so_grid->shape_ == Shape::kSphere) {
+    if (so_grid->GetShape() == Shape::kSphere) {
       sim_objects << "      \"glyph\":\"Glyph\"," << std::endl
                   << "      \"shape\":\"Sphere\"," << std::endl
                   << "      \"scaling_attribute\":\"diameter_\"" << std::endl;
-    } else if (so_grid->shape_ == kCylinder) {
+    } else if (so_grid->GetShape() == kCylinder) {
       sim_objects << "      \"glyph\":\"BDMGlyph\"," << std::endl
                   << "      \"shape\":\"Cylinder\"," << std::endl
                   << "      \"x_scaling_attribute\":\"diameter_\"," << std::endl
@@ -76,7 +76,7 @@ std::string GenerateSimulationInfoJson(
     auto* dgrid = search->second;
     // user wanted to export this substance, but it did not exist during
     // the entire simulation
-    if (!dgrid->used_) {
+    if (!dgrid->IsUsed()) {
       Log::Warning(
           "Visualize Diffusion Grids",
           "You are trying to visualize diffusion grid ", name,

@@ -29,27 +29,34 @@ class TClass;
 
 namespace bdm {
 
+class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
+
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
 /// `ParaviewAdaptor` to visualize simulation objects.
-struct VtkSimObjects {
+class VtkSimObjects {
+ public:
   VtkSimObjects(const char* type_name, vtkCPDataDescription* data_description);
 
   ~VtkSimObjects();
 
+  vtkUnstructuredGrid* GetData(uint64_t idx);
+  Shape GetShape() const;
+  TClass* GetTClass();
   void Update(const std::vector<SimObject*>* sim_objects);
   void WriteToFile(uint64_t step) const;
   
+ private:
   std::string name_;
   TClass* tclass_;
   std::vector<vtkUnstructuredGrid*> data_;
   Shape shape_;
 
- private:
-  TClass* GetTClass();
+  TClass* FindTClass();
   void InitializeDataMembers(SimObject* so,
                              std::vector<std::string>* data_members);
   void UpdateMappedDataArrays(uint64_t tid, const std::vector<SimObject*>* sim_objects, uint64_t start, uint64_t end);
 
+  friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
 };
 
 }  // namespace bdm
