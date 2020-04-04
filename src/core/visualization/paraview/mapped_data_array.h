@@ -108,7 +108,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   const std::vector<SimObject*>* sim_objects_ = nullptr;
   uint64_t start_ = 0;
   uint64_t end_ = 0;
-  TScalar* temp_array_ = nullptr;
+  double* temp_array_ = nullptr;
   
   enum Mode { kZeroCopy, kCopy, kCache};
 
