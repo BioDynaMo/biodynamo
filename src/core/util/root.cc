@@ -36,7 +36,8 @@ bool LoadExecutableDictIntoCling() {
 #endif  // LINUX
   auto libstr = Concat(exe_dir, "lib", exe_name, "-dict", so_ending);
   if (!fs::exists(libstr)) {
-    libstr = Concat(exe_dir, "lib/lib", exe_name, "-dict", so_ending);
+    // special case for biodynamo-unit-test
+    libstr = Concat(exe_dir, "../lib/lib", exe_name, "-dict", so_ending);
     if (!fs::exists(libstr)) {
       Log::Warning("LoadExecutableDictIntoCling", "Couldn't find dictionary.");
     }

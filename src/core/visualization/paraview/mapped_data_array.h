@@ -21,14 +21,81 @@
 
 #include "core/functor.h"
 #include "core/sim_object/sim_object.h"
-#include "core/util/jit.h"
+#include "core/sim_object/so_pointer.h"
+#include "core/sim_object/sim_object.h"
+#include "core/util/type.h"
+
 namespace bdm {
 
+// -----------------------------------------------------------------------------
+// FIXME document
+template <typename TReturn, typename TClass, typename TDataMember>
+struct GetDataMemberForVis {
+  uint64_t dm_offset_;
+  mutable typename std::remove_pointer<TReturn>::type temp_value;
+
+  enum DataType { kDefault, kArray, kSoUid, kSoPointer };
+
+  template <typename T> 
+  static constexpr DataType GetDataType() {
+    if (IsArray<T>::value) {
+      return DataType::kArray;
+    } else if (std::is_same<T, SoUid>::value) {
+      return DataType::kSoUid;
+    } else if (is_so_ptr<T>::value) {
+      return DataType::kSoPointer;
+    }
+    return DataType::kDefault;
+  };
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kDefault, TReturn>::type
+  operator()(SimObject* so) const {
+    auto* casted_so = static_cast<TClass*>(so);
+    return reinterpret_cast<TDataMember*>(
+                     reinterpret_cast<char*>(casted_so) + dm_offset_);
+  }
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kArray, TReturn>::type
+  operator()(SimObject* so) const {
+    auto* casted_so = static_cast<TClass*>(so);
+    auto* data = reinterpret_cast<TDataMember*>(
+                     reinterpret_cast<char*>(casted_so) + dm_offset_)
+                     ->data();
+    return const_cast<TReturn>(data);
+  }
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoUid, TReturn>::type
+  operator()(SimObject* so) const {
+    auto* casted_so = static_cast<TClass*>(so);
+    auto* data = reinterpret_cast<TDataMember*>(
+                     reinterpret_cast<char*>(casted_so) + dm_offset_);
+    uint64_t uid = *data;
+    temp_value = uid;
+    return &temp_value;
+  }
+
+  template <typename TTDataMember = TDataMember>
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoPointer, TReturn>::type
+  operator()(SimObject* so) const {
+    auto* casted_so = static_cast<TClass*>(so);
+    auto* data = reinterpret_cast<TDataMember*>(
+                     reinterpret_cast<char*>(casted_so) + dm_offset_);
+    uint64_t uid = data->GetUid();
+    temp_value = uid;
+    return &temp_value;
+  }
+};
+
+// -----------------------------------------------------------------------------
 struct MappedDataArrayInterface {
   virtual void Update(const std::vector<SimObject*>* sim_objects, uint64_t start,
                       uint64_t end) = 0;
 };
 
+// -----------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 class MappedDataArray : public vtkMappedDataArray<TScalar>,
                         public MappedDataArrayInterface {
@@ -104,7 +171,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   ~MappedDataArray();
 
   /// Access sim object data member functor.
-  GetDataMemberFunctor<TScalar*, TClass, TDataMember> get_dm_;
+  GetDataMemberForVis<TScalar*, TClass, TDataMember> get_dm_;
   const std::vector<SimObject*>* sim_objects_ = nullptr;
   uint64_t start_ = 0;
   uint64_t end_ = 0;
@@ -112,7 +179,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   
   enum Mode { kZeroCopy, kCopy, kCache};
 
-  Mode mode_ = Mode::kCache;
+  Mode mode_ = Mode::kZeroCopy;
   mutable bool match_value = true;
   mutable std::vector<bool> is_matching_;
   mutable std::vector<TScalar> data_;

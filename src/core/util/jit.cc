@@ -126,6 +126,7 @@ JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
 }
 
 void JitForEachDataMemberFunctor::Compile() {
+  std::cout <<code_generator_(functor_name_, data_members_).c_str()  << std::endl;
   gInterpreter->ProcessLineSynch(code_generator_(functor_name_, data_members_).c_str());
 }
 

@@ -81,6 +81,7 @@ def BuildParaviewState(build_info):
 
     # get active view
     render_view = GetActiveViewOrCreate('RenderView')
+    render_view.InteractionMode = '3D'
 
     # simulation objects
     for so_info in build_info['sim_objects']:
