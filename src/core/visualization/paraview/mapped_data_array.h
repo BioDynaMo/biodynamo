@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "core/functor.h"
+#include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/sim_object/so_pointer.h"
 #include "core/sim_object/sim_object.h"
@@ -106,7 +107,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
           MappedDataArray) static MappedDataArray* New();
   typedef typename Superclass::ValueType ValueType;
 
-  void Initialize(const std::string& name, uint64_t num_components, uint64_t dm_offset);
+  void Initialize(Param::MappedDataArrayMode mode, const std::string& name, uint64_t num_components, uint64_t dm_offset);
   void Update(const std::vector<SimObject*>* sim_objects, uint64_t start,
               uint64_t end) final;
 
@@ -177,9 +178,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   uint64_t end_ = 0;
   double* temp_array_ = nullptr;
   
-  enum Mode { kZeroCopy, kCopy, kCache};
-
-  Mode mode_ = Mode::kZeroCopy;
+  Param::MappedDataArrayMode mode_;
   mutable bool match_value = true;
   mutable std::vector<bool> is_matching_;
   mutable std::vector<TScalar> data_;
@@ -194,8 +193,9 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
 // ----------------------------------------------------------------------------
 // Implementation
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::Initialize(const std::string& name, uint64_t num_components, uint64_t dm_offset) {
+void MappedDataArray<TScalar, TClass, TDataMember>::Initialize(Param::MappedDataArrayMode mode, const std::string& name, uint64_t num_components, uint64_t dm_offset) {
   get_dm_.dm_offset_ = dm_offset;
+  mode_ = mode;
   this->NumberOfComponents = num_components;
   this->SetName(name.c_str());
 }
@@ -218,11 +218,11 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<Sim
 
   this->Modified();
 
-  if (mode_ != Mode::kZeroCopy) {
+  if (mode_ != Param::MappedDataArrayMode::kZeroCopy) {
     if (data_.capacity() < this->Size) {
       data_.reserve(this->Size * 1.5);
     }
-    if (mode_ == Mode::kCopy) {
+    if (mode_ == Param::MappedDataArrayMode::kCopy) {
       uint64_t counter = 0;
       for(uint64_t i = start; i < end; ++i) {
         auto* data = get_dm_((*sim_objects_)[i]);
@@ -231,7 +231,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<Sim
         }
       } 
     } else {
-      // mode_ == kCache
+      // mode_ == Param::MappedDataArrayMode::kCache
       match_value = !match_value;
       if (is_matching_.capacity() < this->Size) {
         is_matching_.reserve(this->Size * 1.5);
@@ -367,7 +367,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
   uint64_t idx = tuple_id * this->NumberOfComponents;
   TScalar* data;
   switch(mode_) {
-    case kCache:
+    case Param::MappedDataArrayMode::kCache:
       { 
         bool all_matches = true;
         for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
@@ -381,12 +381,12 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
           return;
         }
       }
-    case kZeroCopy:
+    case Param::MappedDataArrayMode::kZeroCopy:
       {
         auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]); 
         for(uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents); ++i) {
           tuple[i] = static_cast<double>(data[i]);
-          if (mode_ == kCache) {
+          if (mode_ == Param::MappedDataArrayMode::kCache) {
             data_[idx + i] = data[i];
             is_matching_[idx + i] = match_value;
           }
@@ -394,7 +394,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
         return;
       }
       break;
-    case kCopy:
+    case Param::MappedDataArrayMode::kCopy:
       uint64_t cnt = 0;
       for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
         tuple[cnt++] = static_cast<double>(data_[i]);
@@ -425,15 +425,15 @@ typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArra
   //FIXME code duplication with GetValueReference 
   // make non virtual private helper function and call it from here and GetValueReference
   switch(mode_) {
-    case kCache:
+    case Param::MappedDataArrayMode::kCache:
       if (is_matching_[idx] == match_value) {
         return data_[idx];
       }
-    case kZeroCopy:
+    case Param::MappedDataArrayMode::kZeroCopy:
       {
       if (this->NumberOfComponents == 1) {
         auto* data = get_dm_((*sim_objects_)[start_ + idx]); 
-        if (mode_ == kCache) {
+        if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx] = *data;
           is_matching_[idx] = match_value;
         }
@@ -442,14 +442,14 @@ typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArra
       const vtkIdType tuple = idx / this->NumberOfComponents;
       const vtkIdType comp = idx % this->NumberOfComponents;
       auto* data = get_dm_((*sim_objects_)[start_ + tuple]); 
-      if (mode_ == kCache) {
+      if (mode_ == Param::MappedDataArrayMode::kCache) {
         data_[idx] = data[comp];
         is_matching_[idx] = match_value;
       }
       return data[comp];
       }
       break;
-    case kCopy:
+    case Param::MappedDataArrayMode::kCopy:
       return data_[idx];
   }
 }
@@ -458,15 +458,15 @@ typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArra
 template <typename TScalar, typename TClass, typename TDataMember>
 TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdType idx) {
   switch(mode_) {
-    case kCache:
+    case Param::MappedDataArrayMode::kCache:
       if (is_matching_[idx] == match_value) {
         return data_[idx];
       }
-    case kZeroCopy:
+    case Param::MappedDataArrayMode::kZeroCopy:
       {
       if (this->NumberOfComponents == 1) {
         auto* data = get_dm_((*sim_objects_)[start_ + idx]); 
-        if (mode_ == kCache) {
+        if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx] = *data;
           is_matching_[idx] = match_value;
         }
@@ -475,14 +475,14 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdT
       const vtkIdType tuple = idx / this->NumberOfComponents;
       const vtkIdType comp = idx % this->NumberOfComponents;
       auto* data = get_dm_((*sim_objects_)[start_ + tuple]); 
-      if (mode_ == kCache) {
+      if (mode_ == Param::MappedDataArrayMode::kCache) {
         data_[idx] = data[comp];
         is_matching_[idx] = match_value;
       }
       return data[comp];
       }
       break;
-    case kCopy:
+    case Param::MappedDataArrayMode::kCopy:
       return data_[idx];
   }
 }

@@ -104,7 +104,8 @@ struct CreateVtkDataArray {
     using VtkArrayType = MappedDataArray<VtkValueType, TClass, TDataMember>;
     unsigned components = GetNumberOfComponents<TDataMember>::value;
     vtkNew<VtkArrayType> new_vtk_array;
-    new_vtk_array->Initialize(dm_name, components, dm_offset);
+    auto mode = Simulation::GetActive()->GetParam()->mapped_data_array_mode_;
+    new_vtk_array->Initialize(mode, dm_name, components, dm_offset);
     auto* vtk_array = new_vtk_array.GetPointer();
     auto* point_data = vtk_sim_objects->GetData(tid)->GetPointData();
     point_data->AddArray(vtk_array);
@@ -115,7 +116,8 @@ struct CreateVtkDataArray {
   operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset, VtkSimObjects* vtk_sim_objects) {
     using VtkArrayType = MappedDataArray<double, TClass, TDataMember>;
     vtkNew<VtkArrayType> new_vtk_array;
-    new_vtk_array->Initialize(dm_name, 3, dm_offset);
+    auto mode = Simulation::GetActive()->GetParam()->mapped_data_array_mode_;
+    new_vtk_array->Initialize(mode, dm_name, 3, dm_offset);
     auto* vtk_array = new_vtk_array.GetPointer();
     if (dm_name == "position_") {
       vtkNew<vtkPoints> points;

@@ -67,6 +67,27 @@ void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config,
   }
 }
 
+void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
+                               Param* param) {
+  const std::string config_key = "performance.mapped_data_array_mode";
+  if (config->contains_qualified(config_key)) {
+    auto value = config->get_qualified_as<std::string>(config_key);
+    if (!value) {
+      return;
+    }
+    auto str_value = *value;
+    if (str_value == "zero-copy") {
+      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kZeroCopy;
+    } else if (str_value == "cache") {
+      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCache; 
+    } else if (str_value == "copy") {
+      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCopy;
+    } else {
+      Log::Fatal("Param", Concat("Parameter mapped_data_array_mode was set to an invalid value (", str_value, ")."));
+    }
+  }
+}
+
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // module parameters
   for (auto& el : modules_) {
@@ -190,6 +211,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "performance.mem_mgr_max_mem_per_thread");
   BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing_,
                           "performance.minimize_memory_while_rebalancing");
+  AssignMappedDataArrayMode(config, this);
 
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");

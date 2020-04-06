@@ -186,6 +186,7 @@ struct Param {
   /// `kAutomatic`: The simulation automatically locks all simulation objects
   /// of the microenvironment.
   enum ThreadSafetyMechanism { kNone = 0, kUserSpecified, kAutomatic };
+  
   /// Select the thread-safety mechanism.\n
   /// Possible values are: none, user-specified, automatic.\n
   /// TOML config file:
@@ -286,7 +287,7 @@ struct Param {
     bool gradient_ = false;
   };
 
-  /// Spceifies for which substances extracellular diffusion should be
+  /// Specifies for which substances extracellular diffusion should be
   /// visualized.\n
   /// Default value: empty (no diffusion will be visualized)\n
   /// TOML config file:
@@ -415,6 +416,25 @@ struct Param {
   ///     [performance]
   ///     minimize_memory_while_rebalancing = true
   bool minimize_memory_while_rebalancing_ = true;
+
+  /// MappedDataArrayMode options:
+  ///   `kZeroCopy`: access simulation object data directly only if it is 
+  ///                requested. \n
+  ///   `kCache`:    Like `kZeroCopy` but stores the results in contigous 
+  ///                array, to speed up access if it is used again.\n
+  ///   `kCopy`:     Copy all data elements to a contigous array at 
+  ///                initialization time. Serves requests from the cache.
+  enum MappedDataArrayMode { kZeroCopy = 0, kCopy, kCache};
+
+  /// This parameter sets the operation mode in `bdm::MappedDataArray`.\n
+  /// Allowed values are defined in `MappedDataArrayMode`\n 
+  /// Possible values: zero-copy, cache, copy\n
+  /// Default value: `zero-copy`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     mapped_data_array_mode_ = "zero-copy"
+  Param::MappedDataArrayMode mapped_data_array_mode_ = MappedDataArrayMode::kZeroCopy;
 
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
