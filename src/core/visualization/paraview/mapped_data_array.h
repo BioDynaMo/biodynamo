@@ -179,8 +179,8 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   double* temp_array_ = nullptr;
   
   Param::MappedDataArrayMode mode_;
-  mutable bool match_value = true;
-  mutable std::vector<bool> is_matching_;
+  mutable uint16_t match_value = true;
+  mutable std::vector<uint64_t> is_matching_;
   mutable std::vector<TScalar> data_;
 
  private:
@@ -232,10 +232,14 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<Sim
       } 
     } else {
       // mode_ == Param::MappedDataArrayMode::kCache
-      match_value = !match_value;
-      if (is_matching_.capacity() < this->Size) {
+      auto cap = is_matching_.capacity();
+      if (cap < this->Size) {
         is_matching_.reserve(this->Size * 1.5);
+        for (uint64_t i = cap; i < is_matching_.capacity(); ++i) {
+          is_matching_[i] = match_value;
+        }
       }
+      match_value++;
     }
   }  
 }

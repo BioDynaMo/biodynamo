@@ -17,19 +17,23 @@
 #include <gtest/gtest.h>
 
 #include "biodynamo.h"
+#include "neuroscience/neuroscience.h"
+#include "core/visualization/visualization_adaptor.h"
 
 namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-void ValidateDiffusionGrid(const std::string& sim_name, uint64_t num_elements) {
+void Validate(const std::string& python_script, 
+              const std::string& sim_name, 
+              uint64_t num_elements) {
   std::stringstream cmd;
   std::string bdm_sys_env = std::getenv("BDMSYS");
    
   cmd << bdm_sys_env << "/third_party/paraview/bin/pvpython "
              << bdm_sys_env
-             << "/share/test/core/visualization/paraview/validate_diffusion_grid.py"
+             << "/share/test/core/visualization/paraview/" << python_script
              << " --sim_name=" << sim_name 
              << " --num_elements=" << num_elements;
   int ret_code = system(cmd.str().c_str());
@@ -89,7 +93,7 @@ void RunExportDiffusionGridTest(uint64_t max_bound, uint64_t resolution) {
   // create pvsm file
   delete sim;
 
-  ValidateDiffusionGrid(sim_name, num_boxes); 
+  Validate("validate_diffusion_grid.py", sim_name, num_boxes); 
 }
 
 // -----------------------------------------------------------------------------
@@ -102,6 +106,91 @@ TEST(ParaviewFullCyleTest, ExportDiffusionGrid_SlicesLtNumThreads) {
 TEST(ParaviewFullCyleTest, ExportDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunExportDiffusionGridTest(3 * max_threads + 1, max_threads);
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+void RunExportSimObjectsTest(Param::MappedDataArrayMode mode, 
+                             uint64_t num_so) {
+  auto set_param = [&](Param* param) {
+    param->run_mechanical_interactions_ = false;
+    param->export_visualization_ = true;
+    param->visualize_sim_objects_.insert({"NeuriteElement", {"uid_", "daughter_right_"}});
+    param->mapped_data_array_mode_= mode;
+  };
+  experimental::neuroscience::InitModule();
+  auto sim_name = Concat("ExportSimObjectsTest_", num_so, "_", mode);
+  auto* sim = new Simulation(sim_name, set_param);
+
+  auto output_dir = sim->GetOutputDir();
+  fs::remove_all(output_dir); 
+  fs::create_directory(output_dir); 
+  
+  using NeuriteElement = experimental::neuroscience::NeuriteElement; 
+
+  auto* rm = sim->GetResourceManager();
+   
+  auto construct = [&](uint64_t i) {
+    auto* ne = new NeuriteElement();
+    auto d = static_cast<double>(i);
+    ne->SetDiameter(d + 10);
+    ne->SetMassLocation({d, d, d});
+    ne->SetActualLength(d + 10);
+    ne->SetDaughterRight(SoPointer<NeuriteElement>(SoUid(i)));
+    rm->push_back(ne);
+  }; 
+
+  for (uint64_t i = 0; i < num_so; ++i) {
+    construct(i); 
+  }
+ 
+  // Don't run a simulation step, because neurites are not properly set up. 
+  auto vis = VisualizationAdaptor::Create("paraview");
+  vis->Visualize();
+
+  sim_name = sim->GetUniqueName();
+  
+  // create pvsm file
+  delete vis;
+
+  Validate("validate_sim_objects.py", sim_name, num_so); 
+  
+  // deleting sim would overwrite the pvsm and json file
+  fs::path pvsm = Concat("output/", sim_name, "/", sim_name, ".pvsm"); 
+  fs::path json = Concat("output/", sim_name, "/simulation_info.json");
+  fs::path pvsm_tmp = Concat(pvsm.string(), ".tmp"); 
+  fs::path json_tmp = Concat(json.string(), ".tmp"); 
+  fs::rename(pvsm, pvsm_tmp);
+  fs::rename(json, json_tmp);
+  delete sim;
+  fs::remove(pvsm);
+  fs::remove(json);
+  fs::rename(pvsm_tmp, pvsm);
+  fs::rename(json_tmp, json);
+}
+
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCyleTest, ExportSimObjects_ZeroCopy) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  auto mode = Param::MappedDataArrayMode::kZeroCopy;
+  RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));
+  RunExportSimObjectsTest(mode, 10 * max_threads + 1);
+}
+
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCyleTest, ExportSimObjects_Cache) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  auto mode = Param::MappedDataArrayMode::kCache;
+  RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));
+  RunExportSimObjectsTest(mode, 10 * max_threads + 1);
+}
+
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCyleTest, ExportSimObjects_Copy) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  auto mode = Param::MappedDataArrayMode::kCopy;
+  RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));
+  RunExportSimObjectsTest(mode, 10 * max_threads + 1);
 }
 
 }  // namespace bdm
