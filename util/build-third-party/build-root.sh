@@ -54,10 +54,14 @@ mkdir -p $ROOT_INSTALL_DIR
 # install prerequisites
 . $BDM_PROJECT_DIR/util/build-third-party/third-party-prerequisites.sh
 
-# Get the right ROOT source version, untar creates "root-$ROOT_VERSION"
-wget https://root.cern.ch/download/root_v$ROOT_VERSION.source.tar.gz
-tar -zxf root_v$ROOT_VERSION.source.tar.gz
-ROOTSRC=root-$ROOT_VERSION
+git clone https://github.com/root-project/root.git
+
+cd root
+git checkout $ROOT_VERSION
+git apply $BDM_PROJECT_DIR/util/build-third-party/cling-performance.patch
+git status
+ROOTSRC=`pwd`
+cd ..
 
 # Set Python to $PYVERS
 export PATH="$HOME/.pyenv/bin:$PATH"
@@ -116,7 +120,7 @@ fi
 ninja install
 
 cd $ROOT_INSTALL_DIR
-RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
+RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}-cling-patch.tar.gz
 tar -zcf ${RESULT_FILE} *
 
 # mv to destination directory

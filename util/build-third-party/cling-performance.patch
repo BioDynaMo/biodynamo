@@ -1,0 +1,71 @@
+diff --git a/cmake/modules/SetUpWindows.cmake b/cmake/modules/SetUpWindows.cmake
+index c855408..d9f383c 100644
+--- a/cmake/modules/SetUpWindows.cmake
++++ b/cmake/modules/SetUpWindows.cmake
+@@ -38,8 +38,8 @@ elseif(MSVC)
+     set(BLDCXXFLAGS "-Zc:__cplusplus -MDd -GR")
+     set(BLDCFLAGS   "-MDd")
+   else()
+-    set(BLDCXXFLAGS "-Zc:__cplusplus -MD -GR")
+-    set(BLDCFLAGS   "-MD")
++    set(BLDCXXFLAGS "-Zc:__cplusplus -MD -GR -DNDEBUG")
++    set(BLDCFLAGS   "-MD -DNDEBUG")
+   endif()
+ 
+   if(CMAKE_PROJECT_NAME STREQUAL ROOT)
+diff --git a/core/metacling/src/TCling.cxx b/core/metacling/src/TCling.cxx
+index 9d99683..e9c2b40 100644
+--- a/core/metacling/src/TCling.cxx
++++ b/core/metacling/src/TCling.cxx
+@@ -1384,6 +1384,10 @@ TCling::TCling(const char *name, const char *title, const char* const argv[])
+                                                         &(interpArgs[0]),
+                                                         llvmResourceDir, extensions);
+ 
++   // force optlevel 3 
++   fInterpreter->getCI()->getCodeGenOpts().OptimizationLevel = 3;
++   fInterpreter->setDefaultOptLevel(3);
++
+    if (!fromRootCling) {
+       fInterpreter->installLazyFunctionCreator(llvmLazyFunctionCreator);
+    }
+diff --git a/interpreter/cling/lib/Interpreter/BackendPasses.cpp b/interpreter/cling/lib/Interpreter/BackendPasses.cpp
+index 58a4671..66481ff 100644
+--- a/interpreter/cling/lib/Interpreter/BackendPasses.cpp
++++ b/interpreter/cling/lib/Interpreter/BackendPasses.cpp
+@@ -158,6 +158,9 @@ void BackendPasses::CreatePasses(llvm::Module& M, int OptLevel)
+     // Inlining = CGOpts.NoInlining;
+   }
+ 
++// force normal inlining (as above says: NoInlining is kills)
++  const_cast<CodeGenOptions&>(m_CGOpts).setInlining(CodeGenOptions::NormalInlining);
++
+   llvm::PassManagerBuilder PMBuilder;
+   PMBuilder.OptLevel = OptLevel;
+   PMBuilder.SizeLevel = m_CGOpts.OptimizeSize;
+diff --git a/interpreter/cling/lib/Interpreter/CIFactory.cpp b/interpreter/cling/lib/Interpreter/CIFactory.cpp
+index 49b1ae0..86b33da 100644
+--- a/interpreter/cling/lib/Interpreter/CIFactory.cpp
++++ b/interpreter/cling/lib/Interpreter/CIFactory.cpp
+@@ -1562,7 +1562,7 @@ static void stringifyPreprocSetting(PreprocessorOptions& PPOpts,
+     // FIXME: We have a bug when we switch to -O2, for some cases it takes
+     // several minutes to optimize, while the same code compiled by clang -O2
+     // takes only a few seconds.
+-    CGOpts.OptimizationLevel = 0;
++    CGOpts.OptimizationLevel = 3;
+     // Taken from a -O2 run of clang:
+     CGOpts.DiscardValueNames = 1;
+     CGOpts.OmitLeafFramePointer = 1;
+diff --git a/interpreter/cling/lib/Interpreter/IncrementalParser.cpp b/interpreter/cling/lib/Interpreter/IncrementalParser.cpp
+index 5900fab..58278c4 100644
+--- a/interpreter/cling/lib/Interpreter/IncrementalParser.cpp
++++ b/interpreter/cling/lib/Interpreter/IncrementalParser.cpp
+@@ -912,7 +912,7 @@ namespace cling {
+     std::vector<ASTTPtr_t> ASTTransformers;
+     ASTTransformers.emplace_back(new AutoSynthesizer(TheSema));
+     ASTTransformers.emplace_back(new EvaluateTSynthesizer(TheSema));
+-    if (hasCodeGenerator() && !m_Interpreter->getOptions().NoRuntime) {
++    if (0 && hasCodeGenerator() && !m_Interpreter->getOptions().NoRuntime) {
+       // Don't protect against crashes if we cannot run anything.
+       // cling might also be in a PCH-generation mode; don't inject our Sema
+       // pointer into the PCH.
+
