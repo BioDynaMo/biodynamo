@@ -67,6 +67,8 @@ void ParallelVtuWriter::operator()(const std::string& folder,
        pvtu_writer->SetFileName(filename.c_str());
        auto max_threads =ThreadInfo::GetInstance()->GetMaxThreads(); 
        pvtu_writer->SetInputData(grids[0]);
+       pvtu_writer->SetDataModeToBinary();
+       pvtu_writer->SetEncodeAppendedData(false);
        pvtu_writer->Write();
 
        FixPvtu(filename, file_prefix, max_threads);
@@ -75,6 +77,8 @@ void ParallelVtuWriter::operator()(const std::string& folder,
        auto filename = Concat(folder, "/", file_prefix, "_", i, ".vtu");
        vtu_writer->SetFileName(filename.c_str());
        vtu_writer->SetInputData(grids[i]);
+       vtu_writer->SetDataModeToBinary();
+       vtu_writer->SetEncodeAppendedData(false);
        vtu_writer->Write();
      }
    }

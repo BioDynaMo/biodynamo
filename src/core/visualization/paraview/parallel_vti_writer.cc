@@ -103,7 +103,8 @@ void ParallelVtiWriter::operator()(const std::string& folder,
     vti->SetFileName(vti_filename.c_str());
     vti->SetInputData(images[i]);
     vti->SetWholeExtent(whole_extent.data());
-    vti->SetDataModeToAscii(); // FIXME remove
+    vti->SetDataModeToBinary();
+    vti->SetEncodeAppendedData(false);
     vti->Write();
     
     if (i == 0) {
