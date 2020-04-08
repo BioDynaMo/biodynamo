@@ -16,7 +16,6 @@
 #include <string>
 
 #include "core/execution_context/in_place_exec_ctxt.h"
-#include "core/gpu/gpu_helper.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
 #include "core/operation/displacement_op.h"
@@ -243,11 +242,6 @@ void Scheduler::Initialize() {
   // commit all changes
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
-
-  if (!is_gpu_environment_initialized_ && param->use_gpu_) {
-    GpuHelper::GetInstance()->InitializeGPUEnvironment();
-    is_gpu_environment_initialized_ = true;
-  }
 
   if (param->bound_space_) {
     rm->ApplyOnAllElementsParallel(*bound_space_);

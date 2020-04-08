@@ -30,6 +30,7 @@
 #include "core/util/log.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
+#include "core/util/vtune_helper.h"
 
 namespace bdm {
 
@@ -68,8 +69,10 @@ class DisplacementOpCuda {
     // pointer to the underlying array, whereas the CUDA kernel will cast it to
     // a void pointer. The conversion of `const double *` to `void *` is
     // illegal.
-    std::vector<std::array<double, 3>> cell_movements(total_num_objects);
-    std::vector<SoHandle::ElementIdx_t> successors(total_num_objects);
+    std::vector<std::array<double, 3>> cell_movements;
+    cell_movements.reserve(total_num_objects);
+    std::vector<SoHandle::ElementIdx_t> successors;
+    successors.reserve(total_num_objects);
     std::vector<uint32_t> starts;
     std::vector<uint16_t> lengths;
     std::vector<uint64_t> timestamps;
@@ -92,9 +95,10 @@ class DisplacementOpCuda {
     }
 
     uint64_t current_timestamp = grid->timestamp_;
-    starts.resize(grid->boxes_.size());
-    lengths.resize(grid->boxes_.size());
-    timestamps.resize(grid->boxes_.size());
+    auto num_boxes = grid->boxes_.size();
+    starts.reserve(num_boxes);
+    lengths.reserve(num_boxes);
+    timestamps.reserve(num_boxes);
     size_t i = 0;
     for (auto& box : grid->boxes_) {
       timestamps[i] = box.timestamp_;
@@ -112,7 +116,7 @@ class DisplacementOpCuda {
       // Allocate 25% more memory so we don't need to reallocate GPU memory
       // for every (small) change
       total_num_objects_ = static_cast<uint32_t>(1.25 * total_num_objects);
-      num_boxes_ = static_cast<uint32_t>(1.25 * starts.size());
+      num_boxes_ = static_cast<uint32_t>(1.25 * num_boxes);
 
       // Allocate required GPU memory
       cdo_ = new DisplacementOpCudaKernel(total_num_objects_, num_boxes_);
@@ -132,7 +136,7 @@ class DisplacementOpCuda {
         Log::Info("DisplacementOpCuda",
                   "\nThe number of boxes increased signficantly (from ",
                   num_boxes_, " to ", "), so we allocate bigger GPU buffers\n");
-        num_boxes_ = static_cast<uint32_t>(1.25 * starts.size());
+        num_boxes_ = static_cast<uint32_t>(1.25 * num_boxes);
         cdo_->ResizeGridBuffers(num_boxes_);
       }
     }
@@ -151,7 +155,7 @@ class DisplacementOpCuda {
     // otherwise some cells would see neighbors with already updated positions
     // which would lead to inconsistencies
 
-    UpdateCPUResults b(cell_movements, offset);
+    UpdateCPUResults b(&cell_movements, offset);
     rm->ApplyOnAllElementsParallelDynamic(1000, b);
   }
 
@@ -161,10 +165,10 @@ class DisplacementOpCuda {
   uint32_t total_num_objects_ = 0;
 
   struct UpdateCPUResults : public Functor<void, SimObject*, SoHandle> {
-    std::vector<std::array<double, 3>> cell_movements;
+    std::vector<std::array<double, 3>>* cell_movements = nullptr;
     std::vector<SoHandle::ElementIdx_t> offset;
 
-    UpdateCPUResults(std::vector<std::array<double, 3>> cm,
+    UpdateCPUResults(std::vector<std::array<double, 3>>* cm,
                      const std::vector<SoHandle::ElementIdx_t>& offs) {
       cell_movements = cm;
       offset = offs;
@@ -175,9 +179,9 @@ class DisplacementOpCuda {
       auto* cell = dynamic_cast<Cell*>(so);
       auto idx = offset[soh.GetNumaNode()] + soh.GetElementIdx();
       Double3 new_pos;
-      new_pos[0] = cell_movements[idx][0];
-      new_pos[1] = cell_movements[idx][1];
-      new_pos[2] = cell_movements[idx][2];
+      new_pos[0] = (*cell_movements)[idx][0];
+      new_pos[1] = (*cell_movements)[idx][1];
+      new_pos[2] = (*cell_movements)[idx][2];
       cell->UpdatePosition(new_pos);
       if (param->bound_space_) {
         ApplyBoundingBox(so, param->min_bound_, param->max_bound_);
@@ -197,12 +201,12 @@ class DisplacementOpCuda {
 
     InitializeGPUData(uint32_t num_objects,
                       const std::vector<SoHandle::ElementIdx_t>& offs) {
-      cell_positions.resize(num_objects);
-      cell_diameters.resize(num_objects);
-      cell_adherence.resize(num_objects);
-      cell_tractor_force.resize(num_objects);
-      cell_boxid.resize(num_objects);
-      mass.resize(num_objects);
+      cell_positions.reserve(num_objects);
+      cell_diameters.reserve(num_objects);
+      cell_adherence.reserve(num_objects);
+      cell_tractor_force.reserve(num_objects);
+      cell_boxid.reserve(num_objects);
+      mass.reserve(num_objects);
       offset = offs;
     }
 

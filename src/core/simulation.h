@@ -147,6 +147,7 @@ class Simulation {
   Grid* grid_ = nullptr;              //!
   Scheduler* scheduler_ = nullptr;    //!
   OpenCLState* ocl_state_ = nullptr;  //!
+  bool is_gpu_environment_initialized_ = false;
   /// This id is unique for each simulation within the same process
   uint64_t id_ = 0;  //!
   /// cached value where `id_` is appended to `name_` if `id_` is

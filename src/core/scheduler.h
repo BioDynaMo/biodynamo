@@ -74,8 +74,6 @@ class Scheduler {
   VisualizationAdaptor* visualization_ = nullptr;  //!
   RootAdaptor* root_visualization_ = nullptr;      //!
 
-  bool is_gpu_environment_initialized_ = false;
-
   BoundSpace* bound_space_;
   DisplacementOp* displacement_;
   DiffusionOp* diffusion_;

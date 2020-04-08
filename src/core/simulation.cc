@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "core/execution_context/in_place_exec_ctxt.h"
+#include "core/gpu/gpu_helper.h"
 #include "core/grid.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"
@@ -281,6 +282,11 @@ void Simulation::InitializeRuntimeParams(
   ocl_state_ = new OpenCLState();
 
   set_param(param_);
+
+  if (!is_gpu_environment_initialized_ && param_->use_gpu_) {
+    GpuHelper::GetInstance()->InitializeGPUEnvironment();
+    is_gpu_environment_initialized_ = true;
+  }
 
   // Removing this line causes an unexplainable segfault due to setting the
   // gErrorIngoreLevel global parameter of ROOT. We need to log at least one
