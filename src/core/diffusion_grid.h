@@ -92,6 +92,10 @@ class DiffusionGrid {
     // Allocate memory for the concentration and gradient arrays
     c1_.resize(total_num_boxes_);
     c2_.resize(total_num_boxes_);
+    r1_.resize(total_num_boxes_);
+    r2_.resize(total_num_boxes_);
+    r3_.resize(total_num_boxes_);
+    
     gradients_.resize(3 * total_num_boxes_);
 
     initialized_ = true;
@@ -574,6 +578,7 @@ class DiffusionGrid {
 
     #define YBF 16
     #pragma omp parallel for collapse(2)
+    for (int order = 1; order < 4; order++ ){
     for (size_t yy = 0; yy < ny; yy += YBF) {
       for (size_t z = 0; z < nz; z++) {
         size_t ymax = yy + YBF;
@@ -625,29 +630,36 @@ class DiffusionGrid {
               t = b;
             }
 
-                for (int order = 1; order < 4; order++ ){
-                if(order < 2){ /* for k1 */
+                if(order == 0){ /* for k1 */
 
-                k_[order] = 0.5 * ( d *(c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
-                        d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                        d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
+                k_[order] = c1_[c];
+                y_[order] = c1_[c] + k_[order] *(1.0/2.0);
+                r1_[c] = y_[order];  
 
-                } else if (order > 1 && order < 4){ /* for k2 and k3 */
-                int nm1 = order -1;
-                k_[order] =  0.5 * ((d * ((1.0*dt_)/2) * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
-                                d * ((1.0*dt_)/2) * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                                d * ((1.0*dt_)/2) * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) + ((1.0*dt_)/2)*k_[nm1]);
-
+                } else if (order == 1){ /* for k2 */
+    
+                k_[order] = ((d * ((1.0*dt_)/2.0) * (r1_[cm] - 2 * r1_[c] + r1_[cp]) * ibl2 +
+                                d * ((1.0*dt_)/2.0) * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
+                                d * ((1.0*dt_)/2.0) * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
+                y_[order] = c1_[c] + k_[order]*(1.0/2.0);
+                r2_[c] = y_[order];             
+                 
+                } else if (order == 2){ /* for k3 */
+    
+                k_[order] = ((d * ((1.0*dt_)/2.0) * (r2_[cm] - 2 * r2_[c] + r2_[cp]) * ibl2 +
+                                d * ((1.0*dt_)/2.0) * (r2_[s] - 2 * r2_[c] + r2_[n]) * ibl2 +
+                                d * ((1.0*dt_)/2.0) * (r2_[b] - 2 * r2_[c] + r2_[t]) * ibl2);
+                y_[order] = c1_[c] + k_[order]*(1.0/2.0);
+                r3_[c] = y_[order];             
+          
                 }else{ /* for k4 */
-                int nm1 = order -1;
-                k_[order] = 0.5 * ((d * ((1.0*dt_)/2) * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
-                            d * ((1.0*dt_)/2) * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                            d * ((1.0*dt_)/2) * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) + (2.0*dt_)*k_[nm1]);
+                k_[order] = (d * ((1.0*dt_)/2.0) * (r3_[cm] - 2 * r3_[c] + r3_[cp]) * ibl2 +
+                            d * ((1.0*dt_)/2.0) * (r3_[s] - 2 * r3_[c] + r3_[n]) * ibl2 +
+                            d * ((1.0*dt_)/2.0) * (r3_[b] - 2 * r3_[c] + r3_[t]) * ibl2);
 
                         c2_[c] =
-                        c1_[c] + ((1.0*dt_)/3)*(k_[1] + 2.0*k_[2] + 2.0*k_[3] + k_[4])*
+                        (c1_[c] + (1.0*dt_)/6.0)*(k_[0] + 2.0*k_[1] + 2.0*k_[2] + k_[3])*
                 (1 - mu_);
-                }
                 }
 
             }
@@ -660,6 +672,7 @@ class DiffusionGrid {
         }  // tile ny
       }    // tile nz
     }      // block ny
+   }
     c1_.swap(c2_);
   }
 
@@ -858,8 +871,14 @@ class DiffusionGrid {
   ParallelResizeVector<double> c1_ = {};
   /// An extra concentration data buffer for faster value updating
   ParallelResizeVector<double> c2_ = {};
+  /// Re-scalable vectors for Runge-Kutta.
+  ParallelResizeVector<double> r1_ = {};
+  ParallelResizeVector<double> r2_ = {};
+  ParallelResizeVector<double> r3_ = {};                           
+                             
     // k vector for Rungge Kutta 4th order.
   std::array<double, 4> k_ = {{0}};
+  std::array<double, 4> y_ = {{0}};                           
   /// The array of gradients (x, y, z)
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
