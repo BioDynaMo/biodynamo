@@ -445,10 +445,13 @@ class Grid {
     // TODO(lukas) this is a very quick attempt to test an idea
     // improve performance of this brute force solution
     zorder_sorted_boxes_.resize(boxes_.size());
+    const uint32_t nx = num_boxes_axis_[0];
+    const uint32_t ny = num_boxes_axis_[1];
+    const uint32_t nz = num_boxes_axis_[2];
 #pragma omp parallel for collapse(3)
-    for (uint32_t x = 0; x < num_boxes_axis_[0]; x++) {
-      for (uint32_t y = 0; y < num_boxes_axis_[1]; y++) {
-        for (uint32_t z = 0; z < num_boxes_axis_[2]; z++) {
+    for (uint32_t x = 0; x < nx; x++) {
+      for (uint32_t y = 0; y < ny; y++) {
+        for (uint32_t z = 0; z < nz; z++) {
           auto box_idx = GetBoxIndex(std::array<uint32_t, 3>{x, y, z});
           auto morton = libmorton::morton3D_64_encode(x, y, z);
           zorder_sorted_boxes_[box_idx] =
