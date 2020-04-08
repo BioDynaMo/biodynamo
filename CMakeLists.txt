@@ -447,6 +447,7 @@ endif()
 
 if(${VTune_FOUND})
   target_link_libraries(biodynamo ${VTUNE_LIBRARIES})
+  add_definitions("-DUSE_VTUNE")
 endif()
 
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "Suppress cmake development warnings")
