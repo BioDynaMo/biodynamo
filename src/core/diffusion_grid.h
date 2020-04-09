@@ -632,33 +632,35 @@ class DiffusionGrid {
 
                 if(order == 0){ /* for k1 */
 
-                k_[order] = c1_[c];
+                k_[order] = (d * (r1_[cm] - 2 * r1_[c] + r1_[cp]) * ibl2 +
+                                d  * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
+                                d  * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
                 y_[order] = c1_[c] + k_[order] *(1.0/2.0);
                 r1_[c] = y_[order];  
 
                 } else if (order == 1){ /* for k2 */
     
-                k_[order] = (d * ((1.0*dt_)/2.0) * (r1_[cm] - 2 * r1_[c] + r1_[cp]) * ibl2 +
-                                d * ((1.0*dt_)/2.0) * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
-                                d * ((1.0*dt_)/2.0) * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
+                k_[order] = (d * 1.0*(dt_/2.0) * (r1_[cm] - 2 * r1_[c] + r1_[cp]) * ibl2 +
+                                d * 1.0*(dt_/2.0) * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
+                                d * 1.0*(dt_/2.0) * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
                 y_[order] = c1_[c] + k_[order]*(1.0/2.0);
                 r2_[c] = y_[order];             
                  
                 } else if (order == 2){ /* for k3 */
     
-                k_[order] = (d * ((1.0*dt_)/2.0) * (r2_[cm] - 2 * r2_[c] + r2_[cp]) * ibl2 +
-                                d * ((1.0*dt_)/2.0) * (r2_[s] - 2 * r2_[c] + r2_[n]) * ibl2 +
-                                d * ((1.0*dt_)/2.0) * (r2_[b] - 2 * r2_[c] + r2_[t]) * ibl2);
-                y_[order] = c1_[c] + k_[order]*(1.0/2.0);
+                k_[order] = (d * 1.0*(dt_/2.0) * (r2_[cm] - 2 * r2_[c] + r2_[cp]) * ibl2 +
+                                d * 1.0*(dt_/2.0) * (r2_[s] - 2 * r2_[c] + r2_[n]) * ibl2 +
+                                d * 1.0*(dt_/2.0) * (r2_[b] - 2 * r2_[c] + r2_[t]) * ibl2);
+                y_[order] = c1_[c] + k_[order] * dt_;
                 r3_[c] = y_[order];             
           
                 }else{ /* for k4 */
-                k_[order] = (d * ((1.0*dt_)/2.0) * (r3_[cm] - 2 * r3_[c] + r3_[cp]) * ibl2 +
-                            d * ((1.0*dt_)/2.0) * (r3_[s] - 2 * r3_[c] + r3_[n]) * ibl2 +
-                            d * ((1.0*dt_)/2.0) * (r3_[b] - 2 * r3_[c] + r3_[t]) * ibl2);
+                k_[order] = (d * dt_ * (r3_[cm] - 2 * r3_[c] + r3_[cp]) * ibl2 +
+                            d * dt_ * (r3_[s] - 2 * r3_[c] + r3_[n]) * ibl2 +
+                            d * dt_ * (r3_[b] - 2 * r3_[c] + r3_[t]) * ibl2);
 
                         c2_[c] =
-                        (c1_[c] + (1.0*dt_)/6.0)*(k_[0] + 2.0*k_[1] + 2.0*k_[2] + k_[3])*
+                        (c1_[c] + 1.0*(dt_/6.0)*(k_[0] + 2.0*k_[1] + 2.0*k_[2] + k_[3])*
                 (1 - mu_);
                 }
 
