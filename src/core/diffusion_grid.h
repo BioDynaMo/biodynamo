@@ -578,7 +578,8 @@ class DiffusionGrid {
 
     #define YBF 16
     #pragma omp parallel for collapse(2)
-    for (int order = 1; order < 4; order++ ){
+    for( size_t i = 5; i < 100; i += 5){ 
+    for (size_t order = 0; order < 3; order++ ){
     for (size_t yy = 0; yy < ny; yy += YBF) {
       for (size_t z = 0; z < nz; z++) {
         size_t ymax = yy + YBF;
@@ -629,29 +630,31 @@ class DiffusionGrid {
             } else if (z == nz - 1) {
               t = b;
             }
+            
+            double h = 1.0* (i/20.0);
 
                 if(order == 0){ /* for k1 */
 
                 k_[order] = (d * (r1_[cm] - 2 * r1_[c] + r1_[cp]) * ibl2 +
                                 d  * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
                                 d  * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
-                y_[order] = c1_[c] + k_[order] * 1.0*(dt_/2.0);
+                y_[order] = c1_[c] + k_[order] * 1.0*((1.0 *h)/2.0);
                 r1_[c] = y_[order];  
 
                 } else if (order == 1){ /* for k2 */
     
-                k_[order] = (d * 1.0*(dt_/2.0) * (r1_[cm] - 2 * r1_[c] + r1_[cp]) * ibl2 +
-                                d * 1.0*(dt_/2.0) * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
-                                d * 1.0*(dt_/2.0) * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
-                y_[order] = c1_[c] + k_[order]*1.0*(dt_/2.0);
+                k_[order] = (d * 1.0*((1.0 *h)/2.0) * (r1_[cm] - 2 * r1_[c] + r1_[cp]) * ibl2 +
+                                d * 1.0*((1.0 *h)/2.0) * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
+                                d * 1.0*((1.0 *h)/2.0) * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
+                y_[order] = c1_[c] + k_[order]* 1.0*((1.0 *h)/2.0);
                 r2_[c] = y_[order];             
                  
                 } else if (order == 2){ /* for k3 */
     
-                k_[order] = (d * 1.0*(dt_/2.0) * (r2_[cm] - 2 * r2_[c] + r2_[cp]) * ibl2 +
-                                d * 1.0*(dt_/2.0) * (r2_[s] - 2 * r2_[c] + r2_[n]) * ibl2 +
-                                d * 1.0*(dt_/2.0) * (r2_[b] - 2 * r2_[c] + r2_[t]) * ibl2);
-                y_[order] = c1_[c] + k_[order] * dt_;
+                k_[order] = (d * 1.0*((1.0 *h)/2.0) * (r2_[cm] - 2 * r2_[c] + r2_[cp]) * ibl2 +
+                                d * 1.0*((1.0 *h)/2.0) * (r2_[s] - 2 * r2_[c] + r2_[n]) * ibl2 +
+                                d * 1.0*((1.0 *h)/2.0) * (r2_[b] - 2 * r2_[c] + r2_[t]) * ibl2);
+                y_[order] = c1_[c] + k_[order] * (1.0 * h);
                 r3_[c] = y_[order];             
           
                 }else{ /* for k4 */
@@ -660,7 +663,7 @@ class DiffusionGrid {
                             d * dt_ * (r3_[b] - 2 * r3_[c] + r3_[t]) * ibl2);
 
                         c2_[c] =
-                        (c1_[c] + 1.0*(dt_/6.0)*(k_[0] + 2.0*k_[1] + 2.0*k_[2] + k_[3])*
+                        (c1_[c] + 1.0*((1.0*h)/6.0)*(k_[0] + 2.0*k_[1] + 2.0*k_[2] + k_[3])*
                 (1 - mu_);
                 }
 
@@ -675,6 +678,7 @@ class DiffusionGrid {
       }    // tile nz
     }      // block ny
    }
+  }
     c1_.swap(c2_);
   }
 
