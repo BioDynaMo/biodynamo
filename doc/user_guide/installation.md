@@ -29,10 +29,9 @@ cd biodynamo
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Important</b></h4>
-    	<p>1. After the installation you need to restart your terminal.
-	      In every new terminal execute <code>source <path-to-bdm-installation>/biodynamo-env.sh</code>
+    	<p>1. In every new terminal execute <code>source &lt;path-to-bdm-installation&gt;/bin/thisbdm.sh</code>
 	      to use BioDynaMo!<br>
-      2. It is also possible to use the library without running `make install`.
+      2. It is also possible to use BioDynaMo without running <code>make install</code>.
         You will just need to source <code>thisbdm.sh</code> from the build directory: <code>`source &lt;path-to-bdm-build-dir&gt;/bin/thisbdm.sh`</code><br>
 	    3. BioDynaMo uses a customized version of ParaView.
 		     Therefore, you should not install ParaView separately.
