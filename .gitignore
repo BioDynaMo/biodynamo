@@ -9,6 +9,8 @@ demo/makefile_project/makefile_project
 
 #----------------- vim ----------------------
 *.swp
+*.swo
+.ctags
 
 #----------------- intellij -----------------
 .idea
