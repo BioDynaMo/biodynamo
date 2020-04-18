@@ -207,7 +207,8 @@ class ResourceManager {
   ///     rm->ApplyOnAllElements([](SimObject* element) {
   ///                              std::cout << *element << std::endl;
   ///                          });
-  void ApplyOnAllElements(const std::function<void(SimObject*)>& function) {
+  virtual void ApplyOnAllElements(
+      const std::function<void(SimObject*)>& function) {
     for (auto& numa_sos : sim_objects_) {
       for (auto* so : numa_sos) {
         function(so);
@@ -215,7 +216,7 @@ class ResourceManager {
     }
   }
 
-  void ApplyOnAllElements(
+  virtual void ApplyOnAllElements(
       const std::function<void(SimObject*, SoHandle)>& function) {
     for (uint64_t n = 0; n < sim_objects_.size(); ++n) {
       auto& numa_sos = sim_objects_[n];
@@ -229,9 +230,9 @@ class ResourceManager {
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallel(Functor<void, SimObject*>& function);
+  virtual void ApplyOnAllElementsParallel(Functor<void, SimObject*>& function);
 
-  void ApplyOnAllElementsParallel(
+  virtual void ApplyOnAllElementsParallel(
       Functor<void, SimObject*, SoHandle>& function);
 
   /// Apply a function on all elements.\n
@@ -241,7 +242,7 @@ class ResourceManager {
   /// \param chunk number of sim objects that are assigned to a thread (batch
   /// size)
   /// \see ApplyOnAllElements
-  void ApplyOnAllElementsParallelDynamic(
+  virtual void ApplyOnAllElementsParallelDynamic(
       uint64_t chunk, Functor<void, SimObject*, SoHandle>& function);
 
   /// Reserves enough memory to hold `capacity` number of simulation objects for
@@ -287,7 +288,7 @@ class ResourceManager {
 
   /// Reorder simulation objects such that, sim objects are distributed to NUMA
   /// nodes. Nearby sim objects will be moved to the same NUMA node.
-  void SortAndBalanceNumaNodes();
+  virtual void SortAndBalanceNumaNodes();
 
   void DebugNuma() const;
 
