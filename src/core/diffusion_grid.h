@@ -640,7 +640,7 @@ class DiffusionGrid {
                             d * ((double)h) * (r3_[b] - 2 * r3_[c] + r3_[t]) * ibl2);
 
                         c2_[c] =
-                        (c1_[c] + ((((double)h)/((double)h3)))*(k_[0] + 2.0*k_[1] + 2.0*k_[2] + k_[3]) * (1 - mu_);
+                        (c1_[c] + ((((double)h)/((double)h3)))*(k_[0] + 2.0*k_[1] + 2.0*k_[2] + k_[3])) * (1 - mu_);
                 }
 
             }
