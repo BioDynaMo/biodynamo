@@ -597,7 +597,7 @@ class DiffusionGrid {
             ++s;
             ++b;
             ++t;
-             if ( y==0 || y== ny-1 || z==0 || z=nz-1 ){
+             if ( y==0 || y== ny-1 || z==0 || z==nz-1 ){
                       continue;
              }
             
