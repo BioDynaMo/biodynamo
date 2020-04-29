@@ -92,6 +92,10 @@ class DiffusionGrid {
     // Allocate memory for the concentration and gradient arrays
     c1_.resize(total_num_boxes_);
     c2_.resize(total_num_boxes_);
+    r1_.resize(total_num_boxes_);
+    r2_.resize(total_num_boxes_);
+    r3_.resize(total_num_boxes_);
+
     gradients_.resize(3 * total_num_boxes_);
 
     initialized_ = true;
@@ -370,13 +374,51 @@ class DiffusionGrid {
         }
         for (size_t y = yy; y < ymax; y++) {
           size_t x;
-          int c, n, s, b, t;
+          int c, cm, cp, n, s, b, t;
           x = 0;
+
           c = x + y * nx + z * nx * ny;
           n = (y == 0) ? c : c - nx;
           s = (y == ny - 1) ? c : c + nx;
           b = (z == 0) ? c : c - nx * ny;
           t = (z == nz - 1) ? c : c + nx * ny;
+
+            ++c;
+            ++n;
+            ++s;
+            ++b;
+            ++t;
+
+//             if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
+//               continue;
+//             }
+
+//             cm = c - 1;
+//             cp = c + 1;
+//             n = c - nx;
+//             s = c + nx;
+//             b = c - nx * ny;
+//             t = c + nx * ny;
+//
+//             /* X axis.*/
+//             if ( x ==1){
+//               cm = c + 1;
+//             }else if (x == nx -2){
+//               cp = c - 1;
+//             }
+//             /* Y axis.*/
+//             if(y == 0){
+//             n = s;
+//             }else if (y == ny - 1){
+//              s = n;
+//             }
+//             /* Z axis.*/
+//             if(z == 0){
+//              b = t;
+//             }else if(z == nz -1){
+//              t = b;
+//             }
+
           c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c] + dc_[2] * c1_[c + 1] +
                     dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
                     dc_[6] * c1_[t]) *
@@ -408,7 +450,7 @@ class DiffusionGrid {
     c1_.swap(c2_);
   }
 
-  void DiffuseEuler() {
+   void DiffuseEuler() {
     // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
@@ -432,7 +474,7 @@ class DiffusionGrid {
         }
         for (size_t y = yy; y < ymax; y++) {
           size_t x = 0;
-          int c, n, s, b, t;
+          int c, cm, cp, n, s, b, t;
           c = x + y * nx + z * nx * ny;
 #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
@@ -446,10 +488,34 @@ class DiffusionGrid {
               continue;
             }
 
+//             cm = c - 1;
+//             cp = c + 1;
             n = c - nx;
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
+
+//             /* X axis.*/
+//             if ( x ==1){
+//               cm = c + 1;
+//             }else if (x == nx -2){
+//               cp = c -1;
+//             }
+//             /* Y axis.*/
+//             if(y == 0){
+//             n = s;
+//             }else if (y == ny - 1){
+//              s = n;
+//             }
+//             /* Z axis.*/
+//             if(z == 0){
+//              b = t;
+//             }else if(z == nz -1){
+//              t = b;
+//             }
+
+
+
             c2_[c] = (c1_[c] +
                       d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
                       d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
@@ -558,6 +624,122 @@ class DiffusionGrid {
     }      // block ny
     c1_.swap(c2_);
   }
+
+    void RK() {
+     // check if diffusion coefficient and decay constant are 0
+    // i.e. if we don't need to calculate diffusion update
+    if (IsFixedSubstance()) {
+      return;
+    }
+
+    const auto nx = num_boxes_axis_[0];
+    const auto ny = num_boxes_axis_[1];
+    const auto nz = num_boxes_axis_[2];
+
+    const double ibl2 = 1 / (box_length_ * box_length_);
+    const double d = 1 - dc_[0];
+
+#define YBF 16
+#pragma omp parallel for collapse(2)
+    for (size_t i = 1; i < 2 ; i += 1){
+    for (size_t order = 0 ; order < 4 ; order ++){
+    for (size_t yy = 0; yy < ny; yy += YBF) {
+      for (size_t z = 0; z < nz; z++) {
+        size_t ymax = yy + YBF;
+        if (ymax >= ny) {
+          ymax = ny;
+        }
+        for (size_t y = yy; y < ymax; y++) {
+          size_t x = 0;
+          int c, n, s, b, t;
+          c = x + y * nx + z * nx * ny;
+#pragma omp simd
+          for (x = 1; x < nx - 1; x++) {
+            ++c;
+            ++n;
+            ++s;
+            ++b;
+            ++t;
+
+            if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
+              continue;
+            }
+
+//             cm = c - 1;
+//             cp = c + 1;
+            n = c - nx;
+            s = c + nx;
+            b = c - nx * ny;
+            t = c + nx * ny;
+
+//             /* X axis.*/
+//             if ( x ==1){
+//               cm = c + 1;
+//             }else if (x == nx -2){
+//               cp = c -1;
+//             }
+//             /* Y axis.*/
+//             if(y == 0){
+//             n = s;
+//             }else if (y == ny - 1){
+//              s = n;
+//             }
+//             /* Z axis.*/
+//             if(z == 0){
+//              b = t;
+//             }else if(z == nz -1){
+//              t = b;
+//             }
+            double h = 2.5/*1.0*((2.0*i)/1.0)*/;
+            double h2 = ((double)h/(double)2.0);
+            double h3 = ((double)h/(double)6.0);
+             if (order == 0){ /*for k1*/
+
+               k_[0] = (d  * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                      d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                      d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
+//                k_[0] = 0.0;
+               y_[order] = c1_[c]+(k_[0]* (double)h2);
+               r1_[c] = y_[order];
+            }
+            else if( order == 1 ){ /*for k2 */
+
+              k_[1] = (d  * h2 * (r1_[c - 1] - 2 * r1_[c] + r1_[c + 1]) * ibl2 +
+                      d  * h2 * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
+                      d * h2 * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
+              y_[order] = c1_[c] + (k_[1]*(double)h2);
+              c2_[c] = y_[order];
+            }
+            else if( order == 2 ){ /*for k3 */
+
+              k_[2] = (d  * h2 * (r2_[c - 1] - 2 * r2_[c] + r2_[c + 1]) * ibl2 +
+                      d  * h2 * (r2_[s] - 2 * r2_[c] + r2_[n]) * ibl2 +
+                      d  * h2 * (r2_[b] - 2 * r2_[c] + r2_[t]) * ibl2) ;
+              y_[order] = c1_[c] + (k_[2]*1.0*(double)h);
+              r3_[c] = y_[order];
+            }
+            else if (order == 3) { /* for k4 */
+
+              k_[3] = (d * (1.0*(double)h) * (r3_[c - 1] - 2 * r3_[c] + r3_[c + 1]) * ibl2 +
+                      d * (1.0*(double)h) * (r3_[s] - 2 * r3_[c] + r3_[n]) * ibl2 +
+                      d * (1.0*(double)h)* (r3_[b] - 2 * r3_[c] + r3_[t]) * ibl2);
+
+            c2_[c] =  (c1_[c] + h3 *( k_[0] + 2.0*(k_[1] + k_[2]) +k_[3] )) * (1 - mu_);
+            }
+
+          }
+          ++c;
+          ++n;
+          ++s;
+          ++b;
+          ++t;
+        }  // tile ny
+      }    // tile nz
+     }      // block ny
+    }
+    }
+    c1_.swap(c2_);
+    }
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -754,6 +936,14 @@ class DiffusionGrid {
   ParallelResizeVector<double> c1_ = {};
   /// An extra concentration data buffer for faster value updating
   ParallelResizeVector<double> c2_ = {};
+  /// Buffers for Runge Kutta
+  ParallelResizeVector<double> r1_ = {};
+  ParallelResizeVector<double> r2_ = {};
+  ParallelResizeVector<double> r3_ = {};
+  /// K array for runge-kutta.
+  std::array<double, 4> k_ = {};
+  /// y array for runge-kutta.
+  std::array<double, 4> y_ = {};
   /// The array of gradients (x, y, z)
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
@@ -762,7 +952,7 @@ class DiffusionGrid {
   std::array<double, 7> dc_ = {{0}};
   /// The timestep resolution fhe diffusion grid
   // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
-  double dt_ = 1;
+  double dt_ = 1.0;
   /// The decay constant
   double mu_ = 0;
   /// The grid dimensions of the diffusion grid
