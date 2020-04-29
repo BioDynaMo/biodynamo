@@ -640,9 +640,9 @@ class DiffusionGrid {
     const double d = 1 - dc_[0];
 
 #define YBF 16
-#pragma omp parallel for collapse(2)
     for (size_t i = 1; i < 2 ; i += 1){
     for (size_t order = 0 ; order < 4 ; order ++){
+    #pragma omp parallel for collapse(2) 
     for (size_t yy = 0; yy < ny; yy += YBF) {
       for (size_t z = 0; z < nz; z++) {
         size_t ymax = yy + YBF;
@@ -690,7 +690,7 @@ class DiffusionGrid {
 //             }else if(z == nz -1){
 //              t = b;
 //             }
-            double h = 2.5/*1.0*((2.0*i)/1.0)*/;
+            double h = 1.0/*1.0*((2.0*i)/1.0)*/;
             double h2 = ((double)h/(double)2.0);
             double h3 = ((double)h/(double)6.0);
              if (order == 0){ /*for k1*/
@@ -736,9 +736,9 @@ class DiffusionGrid {
         }  // tile ny
       }    // tile nz
      }      // block ny
-    }
-    }
-    c1_.swap(c2_);
+     c1_.swap(c2_); 
+     }
+     }
     }
 
   /// Calculates the gradient for each box in the diffusion grid.
