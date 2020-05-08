@@ -58,8 +58,8 @@ CheckOsSupported $BDM_PROJECT_DIR/util/installation ${BDM_DETECTED_OS}
 # Check if the required install procedure is available
 CheckTypeInstallSupported $1
 
-EchoInfo "This script install the prerequisites of BioDynaMo. For more details, please have a look at the official website:"
-EchoInfo "https://biodynamo.github.io/user/installation/"
+EchoInfo "This script installs the prerequisites of BioDynaMo. For more details, please have a look at the official website:"
+EchoInfo "https://biodynamo.org/docs/userguide/prerequisites/"
 EchoInfo ""
 EchoInfo "These commands require sudo rights. If you are sure that these packages have already been installed, you can skip this step."
 EchoInfo ""
