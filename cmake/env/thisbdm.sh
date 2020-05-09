@@ -97,10 +97,6 @@ if [ -n "${old_bdmsys_base}" ] ; then
       drop_bdm_from_path "$ParaView_LIB_DIR" "${old_bdmsys_base}/third_party/paraview/lib"
       ParaView_LIB_DIR=$newpath
    fi
-   if [ -n "${PYTHONPATH}" ]; then
-      drop_bdm_from_path "$PYTHONPATH" "${old_bdmsys_base}/third_party/paraview/lib/python2.7/site-packages"
-      PYTHONPATH=$newpath
-   fi
    if [ -n "${PV_PLUGIN_PATH}" ]; then
       drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys_base}/biodynamo/lib/pv_plugin"
       PV_PLUGIN_PATH=$newpath
@@ -272,19 +268,19 @@ fi
 # pyenv environment will not function anymore: ModuleNotFoundError: No module named 'pip._internal'
 unset -f paraview || true
 function paraview {
-  PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/paraview $@
+  ${ParaView_DIR}/bin/paraview $@
 }
 export -f paraview
 
 unset -f pvpython || true
 function pvpython {
-  PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/pvpython $@
+  ${ParaView_DIR}/bin/pvpython $@
 }
 export -f pvpython
 
 unset -f pvbatch || true
 function pvbatch {
-  PYTHONPATH="${ParaView_DIR}/lib/python2.7/site-packages":$PYTHONPATH ${ParaView_DIR}/bin/pvbatch $@
+  ${ParaView_DIR}/bin/pvbatch $@
 }
 export -f pvbatch
 
