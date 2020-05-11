@@ -6,7 +6,7 @@ meta_title: "BioDynaMo User Guide"
 meta_description: "This is the substance initialization page."
 toc: true
 image: ""
-next:
+next:integration
     url:  "/docs/userguide/substance_initializers/"
     title: "Substance Initialization"
     description: "This is the substance initialization page."
@@ -26,7 +26,7 @@ in your simulation. In this tutorial we shal take a look on how to do so.
 
 ## Tutorial by example
 
-Go into the `test/integration` directory and open the source file
+Go into the `test/system/substance_initialization/src` directory and open the source file
 `substance_initialization.h` in your favorite editor.
 
 ### 1. List the substance(s)
