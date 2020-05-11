@@ -642,7 +642,7 @@ class DiffusionGrid {
 #define YBF 16
     for (size_t i = 0; i < 1 ; i += 1){
     for (size_t order = 0 ; order < 3 ; order ++){
-    #pragma omp parallel for collapse(2)
+//     #pragma omp parallel for collapse(2)
     for (size_t yy = 0; yy < ny; yy += YBF) {
       for (size_t z = 0; z < nz; z++) {
         size_t ymax = yy + YBF;
@@ -653,7 +653,7 @@ class DiffusionGrid {
           size_t x = 0;
           int c, n, s, b, t;
           c = x + y * nx + z * nx * ny;
-    #pragma omp simd
+//     #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
