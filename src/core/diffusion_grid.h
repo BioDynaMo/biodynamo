@@ -625,7 +625,7 @@ class DiffusionGrid {
     c1_.swap(c2_);
   }
 
-    void RK() {
+    void RK() {  // 2nd Order Runge-Kutta, refered to as the Improved Euler method.
      // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
@@ -640,9 +640,9 @@ class DiffusionGrid {
     const double d = 1 - dc_[0];
 
 #define YBF 16
-    for (size_t i = 1; i < 2 ; i += 1){
-    for (size_t order = 0 ; order < 4 ; order ++){
-    #pragma omp parallel for collapse(2) 
+    for (size_t i = 0; i < 1 ; i += 1){
+    for (size_t order = 0 ; order < 3 ; order ++){
+    #pragma omp parallel for collapse(2)
     for (size_t yy = 0; yy < ny; yy += YBF) {
       for (size_t z = 0; z < nz; z++) {
         size_t ymax = yy + YBF;
@@ -653,7 +653,7 @@ class DiffusionGrid {
           size_t x = 0;
           int c, n, s, b, t;
           c = x + y * nx + z * nx * ny;
-#pragma omp simd
+    #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
@@ -665,66 +665,29 @@ class DiffusionGrid {
               continue;
             }
 
-//             cm = c - 1;
-//             cp = c + 1;
+
             n = c - nx;
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
 
-//             /* X axis.*/
-//             if ( x ==1){
-//               cm = c + 1;
-//             }else if (x == nx -2){
-//               cp = c -1;
-//             }
-//             /* Y axis.*/
-//             if(y == 0){
-//             n = s;
-//             }else if (y == ny - 1){
-//              s = n;
-//             }
-//             /* Z axis.*/
-//             if(z == 0){
-//              b = t;
-//             }else if(z == nz -1){
-//              t = b;
-//             }
-            double h = 1.0/*1.0*((2.0*i)/1.0)*/;
+            double h = (double)1.00;
             double h2 = ((double)h/(double)2.0);
-            double h3 = ((double)h/(double)6.0);
-             if (order == 0){ /*for k1*/
+
+            if (order == 0){ /*for k1*/
 
                k_[0] = (d  * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
                       d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
                       d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
-//                k_[0] = 0.0;
-               y_[order] = c1_[c]+(k_[0]* (double)h2);
-               r1_[c] = y_[order];
+                r1_[c] = c1_[c]+(k_[0]* (double)h2);
             }
-            else if( order == 1 ){ /*for k2 */
+            else if (order == 1) { /* for k2 */
 
-              k_[1] = (d  * h2 * (r1_[c - 1] - 2 * r1_[c] + r1_[c + 1]) * ibl2 +
-                      d  * h2 * (r1_[s] - 2 * r1_[c] + r1_[n]) * ibl2 +
-                      d * h2 * (r1_[b] - 2 * r1_[c] + r1_[t]) * ibl2);
-              y_[order] = c1_[c] + (k_[1]*(double)h2);
-              c2_[c] = y_[order];
-            }
-            else if( order == 2 ){ /*for k3 */
+              k_[1] = (d * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                      d *(c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                      d *(c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
 
-              k_[2] = (d  * h2 * (r2_[c - 1] - 2 * r2_[c] + r2_[c + 1]) * ibl2 +
-                      d  * h2 * (r2_[s] - 2 * r2_[c] + r2_[n]) * ibl2 +
-                      d  * h2 * (r2_[b] - 2 * r2_[c] + r2_[t]) * ibl2) ;
-              y_[order] = c1_[c] + (k_[2]*1.0*(double)h);
-              r3_[c] = y_[order];
-            }
-            else if (order == 3) { /* for k4 */
-
-              k_[3] = (d * (1.0*(double)h) * (r3_[c - 1] - 2 * r3_[c] + r3_[c + 1]) * ibl2 +
-                      d * (1.0*(double)h) * (r3_[s] - 2 * r3_[c] + r3_[n]) * ibl2 +
-                      d * (1.0*(double)h)* (r3_[b] - 2 * r3_[c] + r3_[t]) * ibl2);
-
-            c2_[c] =  (c1_[c] + h3 *( k_[0] + 2.0*(k_[1] + k_[2]) +k_[3] )) * (1 - mu_);
+            c2_[c] =  c1_[c] + (k_[1] * (double)h);
             }
 
           }
@@ -736,9 +699,9 @@ class DiffusionGrid {
         }  // tile ny
       }    // tile nz
      }      // block ny
-     c1_.swap(c2_); 
-     }
-     }
+    }
+          c1_.swap(c2_);
+    }
     }
 
   /// Calculates the gradient for each box in the diffusion grid.
