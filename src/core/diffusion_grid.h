@@ -625,7 +625,7 @@ class DiffusionGrid {
     c1_.swap(c2_);
   }
 
-    void RK() {  // 2nd Order Runge-Kutta, refered to as the Improved Euler method.
+    void RK2() {  // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
      // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
@@ -640,9 +640,9 @@ class DiffusionGrid {
     const double d = 1 - dc_[0];
 
 #define YBF 16
-    for (size_t i = 0; i < 1 ; i += 1){
-    for (size_t order = 0 ; order < 3 ; order ++){
-//     #pragma omp parallel for collapse(2)
+    for (size_t i = 0; i < 4 ; i += 1){
+    for (size_t order = 0 ; order < 2 ; order ++){
+    #pragma omp parallel for collapse(2)
     for (size_t yy = 0; yy < ny; yy += YBF) {
       for (size_t z = 0; z < nz; z++) {
         size_t ymax = yy + YBF;
@@ -653,7 +653,7 @@ class DiffusionGrid {
           size_t x = 0;
           int c, n, s, b, t;
           c = x + y * nx + z * nx * ny;
-//     #pragma omp simd
+    #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
@@ -665,13 +665,12 @@ class DiffusionGrid {
               continue;
             }
 
-
             n = c - nx;
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
 
-            double h = (double)1.00;
+            double h = (double)0.25;
             double h2 = ((double)h/(double)2.0);
 
             if (order == 0){ /*for k1*/
