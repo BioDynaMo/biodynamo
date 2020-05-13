@@ -1,0 +1,20 @@
+diff --git a/projects/paraview.cmake b/projects/paraview.cmake
+index 552052e..9f47581 100644
+--- a/projects/paraview.cmake
++++ b/projects/paraview.cmake
+@@ -48,13 +48,14 @@ if (superbuild_build_phase)
+   string(REPLACE ";" "${_superbuild_list_separator}" paraview_plugin_dirs "${paraview_plugin_dirs}")
+ endif ()
+ 
+-set(paraview_smp_backend "Sequential")
++set(paraview_smp_backend "OpenMP")
+ if (tbb_enabled)
+   set(paraview_smp_backend "TBB")
+ endif ()
+ 
+ set(paraview_enable_cuda "OFF")
+ if(vtkm_enabled AND cuda_enabled)
++  message("ENABLE CUDA ---------------------------------------------------------------")
+   set(paraview_enable_cuda "ON")
+ endif()
+

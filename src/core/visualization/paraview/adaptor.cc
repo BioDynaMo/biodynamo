@@ -250,9 +250,10 @@ void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
 void ParaviewAdaptor::GenerateParaviewState() {
   auto* sim = Simulation::GetActive();
   std::stringstream python_cmd;
+  std::string pv_dir = std::getenv("ParaView_DIR");
   std::string bdmsys = std::getenv("BDMSYS");
 
-  python_cmd << bdmsys << "/third_party/paraview/bin/pvbatch "
+  python_cmd << pv_dir << "/bin/pvbatch "
              << bdmsys
              << "/include/core/visualization/paraview/generate_pv_state.py "
              << sim->GetOutputDir() << "/" << kSimulationInfoJson;

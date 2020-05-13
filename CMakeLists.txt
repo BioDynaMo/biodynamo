@@ -287,11 +287,11 @@ if(paraview)
     # compatible binaries
     if(APPLE)
       find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
-            vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+            vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
       include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
     else()
       find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
       include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
     endif()
 
