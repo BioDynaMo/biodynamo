@@ -6,7 +6,7 @@ meta_title: "BioDynaMo User Guide"
 meta_description: "This is the substance initialization page."
 toc: true
 image: ""
-next:integration
+next:
     url:  "/docs/userguide/substance_initializers/"
     title: "Substance Initialization"
     description: "This is the substance initialization page."
