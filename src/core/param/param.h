@@ -104,7 +104,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     time_step = 0.0125
-  double simulation_time_step_ = 0.01;
+  double simulation_time_step_ = 1.00;
 
   /// Maximum jump that a point mass can do in one time step. Useful to
   /// stabilize the simulation\n
@@ -159,6 +159,22 @@ struct Param {
   ///     [simulation]
   ///     leaking_edges = true
   bool leaking_edges_ = true;
+
+  /* A string for determining diffusion type within the simulation space.
+  current inputs include Euler and RK
+
+          [simulation]
+          diffusion_type_ = "Euler"
+  */
+
+  std::string diffusion_type_ = "Euler";
+
+  // Stepper for the Runge-Kutta method.
+  // Takes real rational natural numbers between 1-10 as a double.
+  // determines the number of steps to be taken by the method each second.
+
+  double diffusion_step_ = 1.0;
+
 
   /// Calculate the diffusion gradient for each substance.\n
   /// TOML config file:

@@ -40,12 +40,13 @@ class DiffusionGrid {
  public:
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 11)
+                double mu, int resolution = 11, double diffusion_step = 1.0)
       : substance_(substance_id),
         substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
-        resolution_(resolution) {}
+        resolution_(resolution),
+        diffusion_step_(diffusion_step){}
 
   virtual ~DiffusionGrid() {}
 
@@ -112,6 +113,13 @@ class DiffusionGrid {
           "] will result in unphysical behavior (diffusion coefficient = ",
           (1 - dc_[0]), ", resolution = ", resolution_,
           "). Please refer to the user guide for more information.");
+    } else if ( floor(diffusion_step_)!=diffusion_step_ || diffusion_step_ <= (double)0.0 || diffusion_step_ > (double)10.0) {
+      Log::Fatal(
+           "DiffusionFrid",
+           " The specified amount of diffusion steps for the grid with substance [",
+           substance_name_,
+           "] is not a real natural number between 1 to 10 please correct this and run the simulation again."
+           );
     }
   }
 
@@ -374,7 +382,7 @@ class DiffusionGrid {
         }
         for (size_t y = yy; y < ymax; y++) {
           size_t x;
-          int c, cm, cp, n, s, b, t;
+          int c, n, s, b, t;
           x = 0;
 
           c = x + y * nx + z * nx * ny;
@@ -389,35 +397,10 @@ class DiffusionGrid {
             ++b;
             ++t;
 
-//             if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
-//               continue;
-//             }
+            if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
+              continue;
+            }
 
-//             cm = c - 1;
-//             cp = c + 1;
-//             n = c - nx;
-//             s = c + nx;
-//             b = c - nx * ny;
-//             t = c + nx * ny;
-//
-//             /* X axis.*/
-//             if ( x ==1){
-//               cm = c + 1;
-//             }else if (x == nx -2){
-//               cp = c - 1;
-//             }
-//             /* Y axis.*/
-//             if(y == 0){
-//             n = s;
-//             }else if (y == ny - 1){
-//              s = n;
-//             }
-//             /* Z axis.*/
-//             if(z == 0){
-//              b = t;
-//             }else if(z == nz -1){
-//              t = b;
-//             }
 
           c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c] + dc_[2] * c1_[c + 1] +
                     dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
@@ -474,7 +457,7 @@ class DiffusionGrid {
         }
         for (size_t y = yy; y < ymax; y++) {
           size_t x = 0;
-          int c, cm, cp, n, s, b, t;
+          int c, n, s, b, t;
           c = x + y * nx + z * nx * ny;
 #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
@@ -488,32 +471,10 @@ class DiffusionGrid {
               continue;
             }
 
-//             cm = c - 1;
-//             cp = c + 1;
             n = c - nx;
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
-
-//             /* X axis.*/
-//             if ( x ==1){
-//               cm = c + 1;
-//             }else if (x == nx -2){
-//               cp = c -1;
-//             }
-//             /* Y axis.*/
-//             if(y == 0){
-//             n = s;
-//             }else if (y == ny - 1){
-//              s = n;
-//             }
-//             /* Z axis.*/
-//             if(z == 0){
-//              b = t;
-//             }else if(z == nz -1){
-//              t = b;
-//             }
-
 
 
             c2_[c] = (c1_[c] +
@@ -625,7 +586,7 @@ class DiffusionGrid {
     c1_.swap(c2_);
   }
 
-    void RK2() {  // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
+    void RK() {  // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
      // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
@@ -638,9 +599,10 @@ class DiffusionGrid {
 
     const double ibl2 = 1 / (box_length_ * box_length_);
     const double d = 1 - dc_[0];
-
+    double step = diffusion_step_;
+    double h = (((double)dt_)/((double)step));
 #define YBF 16
-    for (size_t i = 0; i < 4 ; i += 1){
+    for (size_t i = 0; i < step ; i += 1){
     for (size_t order = 0 ; order < 2 ; order ++){
     #pragma omp parallel for collapse(2)
     for (size_t yy = 0; yy < ny; yy += YBF) {
@@ -670,7 +632,6 @@ class DiffusionGrid {
             b = c - nx * ny;
             t = c + nx * ny;
 
-            double h = (double)0.25;
             double h2 = ((double)h/(double)2.0);
 
             if (order == 0){ /*for k1*/
@@ -836,6 +797,8 @@ class DiffusionGrid {
     return GetBoxIndex(box_coord);
   }
 
+  void SetDiffusionSteps(double diffusion_step) {diffusion_step_ = diffusion_step;}
+
   void SetDecayConstant(double mu) { mu_ = mu; }
 
   void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
@@ -906,6 +869,8 @@ class DiffusionGrid {
   std::array<double, 4> k_ = {};
   /// y array for runge-kutta.
   std::array<double, 4> y_ = {};
+  /// Number of steps for RK diffusion grid;
+  double diffusion_step_ = 1.0;
   /// The array of gradients (x, y, z)
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
