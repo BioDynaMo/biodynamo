@@ -51,13 +51,15 @@ class DiffusionOp {
                   "come into play!");
         dg->Update(grid->GetDimensionThresholds());
       }
-
-      if (param->leaking_edges_) {
+     if(param->diffusion_type_ == "RK"){
+         dg -> RK();
+     } else {
+      if (param-> leaking_edges_) {
         dg->DiffuseEulerLeakingEdge();
       } else {
         dg->DiffuseEuler();
       }
-
+     }
       if (param->calculate_gradients_) {
         dg->CalculateGradient();
       }
