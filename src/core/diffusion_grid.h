@@ -384,24 +384,11 @@ class DiffusionGrid {
           size_t x;
           int c, n, s, b, t;
           x = 0;
-
           c = x + y * nx + z * nx * ny;
           n = (y == 0) ? c : c - nx;
           s = (y == ny - 1) ? c : c + nx;
           b = (z == 0) ? c : c - nx * ny;
           t = (z == nz - 1) ? c : c + nx * ny;
-
-            ++c;
-            ++n;
-            ++s;
-            ++b;
-            ++t;
-
-            if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
-              continue;
-            }
-
-
           c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c] + dc_[2] * c1_[c + 1] +
                     dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
                     dc_[6] * c1_[t]) *
@@ -432,7 +419,6 @@ class DiffusionGrid {
     }      // block ny
     c1_.swap(c2_);
   }
-
    void DiffuseEuler() {
     // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
@@ -475,8 +461,6 @@ class DiffusionGrid {
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
-
-
             c2_[c] = (c1_[c] +
                       d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
                       d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
