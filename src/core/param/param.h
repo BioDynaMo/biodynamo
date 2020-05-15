@@ -104,7 +104,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     time_step = 0.0125
-  double simulation_time_step_ = 1.00;
+  double simulation_time_step_ = 0.01;
 
   /// Maximum jump that a point mass can do in one time step. Useful to
   /// stabilize the simulation\n
