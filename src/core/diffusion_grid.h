@@ -648,6 +648,122 @@ class DiffusionGrid {
     }
     }
 
+    void RKLeaking() {  // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
+     // check if diffusion coefficient and decay constant are 0
+    // i.e. if we don't need to calculate diffusion update
+    if (IsFixedSubstance()) {
+      return;
+    }
+
+    const auto nx = num_boxes_axis_[0];
+    const auto ny = num_boxes_axis_[1];
+    const auto nz = num_boxes_axis_[2];
+
+    const double ibl2 = 1 / (box_length_ * box_length_);
+    const double d = 1 - dc_[0];
+    std::array<int, 6> l;
+
+    double step = diffusion_step_;
+    double h = (((double)dt_)/((double)step));
+#define YBF 16
+    for (size_t i = 0; i < step ; i += 1){
+    for (size_t order = 0 ; order < 2 ; order ++){
+    #pragma omp parallel for collapse(2)
+    for (size_t yy = 0; yy < ny; yy += YBF) {
+      for (size_t z = 0; z < nz; z++) {
+        size_t ymax = yy + YBF;
+        if (ymax >= ny) {
+          ymax = ny;
+        }
+        for (size_t y = yy; y < ymax; y++) {
+          size_t x = 0;
+          int c, cm, cp , n, s, b, t;
+          c = x + y * nx + z * nx * ny;
+
+          l.fill(1);
+
+          if (y == 0) {
+            n = c;
+            l[2] = 0;
+          } else {
+            n = c - nx;
+          }
+
+          if (y == ny - 1) {
+            s = c;
+            l[3] = 0;
+          } else {
+            s = c + nx;
+          }
+
+          if (z == 0) {
+            b = c;
+            l[4] = 0;
+          } else {
+            b = c - nx * ny;
+          }
+
+          if (z == nz - 1) {
+            t = c;
+            l[5] = 0;
+          } else {
+            t = c + nx * ny;
+          }
+
+    #pragma omp simd
+          for (x = 1; x < nx - 1; x++) {
+            ++c;
+            ++n;
+            ++s;
+            ++b;
+            ++t;
+
+          if (x == 0) {
+            cm = c;
+            l[0] = 0;
+          } else {
+            cm = c - 1;
+          }
+
+          if (y == ny - 1) {
+            cp = c;
+            l[1] = 0;
+          } else {
+            cp = c + 1;
+          }
+
+            double h2 = ((double)h/(double)2.0);
+
+            if (order == 0){ /*for k1*/
+
+               k_[0] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
+                       d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
+                       d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2);
+                r1_[c] = c1_[c]+(k_[0]* (double)h2);
+            }
+            else if (order == 1) { /* for k2 */
+
+              k_[1] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
+                       d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
+                       d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2);
+
+            c2_[c] =  c1_[c] + (k_[1] * (double)h);
+            }
+
+          }
+          ++c;
+          ++n;
+          ++s;
+          ++b;
+          ++t;
+        }  // tile ny
+      }    // tile nz
+     }      // block ny
+    }
+          c1_.swap(c2_);
+    }
+    }
+
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
   ///
