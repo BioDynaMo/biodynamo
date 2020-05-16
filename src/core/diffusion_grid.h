@@ -738,14 +738,14 @@ class DiffusionGrid {
 
                k_[0] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
                        d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
-                       d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2);
+                       d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
                 r1_[c] = c1_[c]+(k_[0]* (double)h2);
             }
             else if (order == 1) { /* for k2 */
 
               k_[1] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
                        d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
-                       d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2);
+                       d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
 
             c2_[c] =  c1_[c] + (k_[1] * (double)h);
             }
