@@ -434,15 +434,27 @@ TEST(DiffusionTest, Convergence) {
   DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
   DiffusionGrid* d_grid8 = new DiffusionGrid(2, "Kalium8", diff_coef, 0, 81);
 
+  DiffusionGrid* RKd_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
+  DiffusionGrid* RKd_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
+  DiffusionGrid* RKd_grid8 = new DiffusionGrid(2, "Kalium8", diff_coef, 0, 81);
+
   int l = -100;
   int r = 100;
   d_grid2->Initialize({l, r, l, r, l, r});
   d_grid4->Initialize({l, r, l, r, l, r});
   d_grid8->Initialize({l, r, l, r, l, r});
 
+  RKd_grid2->Initialize({l, r, l, r, l, r});
+  RKd_grid4->Initialize({l, r, l, r, l, r});
+  RKd_grid8->Initialize({l, r, l, r, l, r});
+
   d_grid2->SetConcentrationThreshold(1e15);
   d_grid4->SetConcentrationThreshold(1e15);
   d_grid8->SetConcentrationThreshold(1e15);
+
+  RKd_grid2->SetConcentrationThreshold(1e15);
+  RKd_grid4->SetConcentrationThreshold(1e15);
+  RKd_grid8->SetConcentrationThreshold(1e15);
 
   // instantaneous point source
   int init = 1e5;
@@ -454,17 +466,33 @@ TEST(DiffusionTest, Convergence) {
   d_grid8->IncreaseConcentrationBy(source,
                                    init / pow(d_grid8->GetBoxLength(), 3));
 
+  RKd_grid2->IncreaseConcentrationBy(source,
+                                   init / pow(RKd_grid2->GetBoxLength(), 3));
+  RKd_grid4->IncreaseConcentrationBy(source,
+                                   init / pow(RKd_grid4->GetBoxLength(), 3));
+  RKd_grid8->IncreaseConcentrationBy(source,
+                                   init / pow(RKd_grid8->GetBoxLength(), 3));
+
   auto conc2 = d_grid2->GetAllConcentrations();
   auto conc4 = d_grid4->GetAllConcentrations();
   auto conc8 = d_grid8->GetAllConcentrations();
+
+  auto concRK2 = RKd_grid2->GetAllConcentrations();
+  auto concRK4 = RKd_grid4->GetAllConcentrations();
+  auto concRK8 = RKd_grid8->GetAllConcentrations();
 
   Double3 marker = {10.0, 10.0, 10.0};
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
+    // Euler diffusion grids.
     d_grid2->DiffuseEuler();
     d_grid4->DiffuseEuler();
     d_grid8->DiffuseEuler();
+    //Runge Kutta diffusion grids.
+    RKd_grid2->RK();
+    RKd_grid4->RK();
+    RKd_grid8->RK();
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
@@ -484,6 +512,7 @@ TEST(DiffusionTest, Convergence) {
   auto real_val8 =
       CalculateAnalyticalSolution(init, rc8[0], rc8[1], rc8[2], diff_coef, tot);
 
+  // Euler error checking.
   auto error2 = std::abs(real_val2 - conc2[d_grid2->GetBoxIndex(marker)]) /
                 std::abs(real_val2);
   auto error4 = std::abs(real_val4 - conc4[d_grid4->GetBoxIndex(marker)]) /
@@ -491,13 +520,29 @@ TEST(DiffusionTest, Convergence) {
   auto error8 = std::abs(real_val8 - conc8[d_grid8->GetBoxIndex(marker)]) /
                 std::abs(real_val8);
 
+ // Runge-Kutta error checking.
+  auto errorRK2 = std::abs(real_val2 - concRK2[RKd_grid2->GetBoxIndex(marker)]) /
+                std::abs(real_val2);
+  auto errorRK4 = std::abs(real_val4 - concRK4[RKd_grid4->GetBoxIndex(marker)]) /
+                std::abs(real_val4);
+  auto errorRK8 = std::abs(real_val8 - concRK8[RKd_grid8->GetBoxIndex(marker)]) /
+                std::abs(real_val8);
+
+
   EXPECT_TRUE(error4 < error2);
   EXPECT_TRUE(error8 < error4);
   EXPECT_NEAR(error8, 0.01, 0.005);
 
+  EXPECT_TRUE(errorRK4 < errorRK2);
+  EXPECT_TRUE(errorRK8 < errorRK4);
+  EXPECT_NEAR(errorRK8, 0.01, 0.005);
+
   delete d_grid2;
   delete d_grid4;
   delete d_grid8;
+  delete RKd_grid2;
+  delete RKd_grid4;
+  delete RKd_grid8;
 }
 
 #ifdef USE_PARAVIEW
