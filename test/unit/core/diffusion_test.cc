@@ -428,7 +428,7 @@ TEST(DiffusionTest, CorrectParameters) {
   d_grid.Initialize({{0, 100, 0, 100, 0, 100}});
 }
 
-TEST(DiffusionTest, Euler-Convergence) {
+TEST(DiffusionTest, Euler_Convergence) {
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
   DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
@@ -500,7 +500,7 @@ TEST(DiffusionTest, Euler-Convergence) {
   delete d_grid8;
 }
 
-TEST(DiffusionTest, Runge-Kutta-Convergence) {
+TEST(DiffusionTest, Runge_Kutta_Convergence) {
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
   DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
