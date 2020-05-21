@@ -93,12 +93,7 @@ class DiffusionGrid {
     // Allocate memory for the concentration and gradient arrays
     c1_.resize(total_num_boxes_);
     c2_.resize(total_num_boxes_);
-<<<<<<< HEAD
-=======
-    r1_.resize(total_num_boxes_);
-    r2_.resize(total_num_boxes_);
-    r3_.resize(total_num_boxes_);
->>>>>>> 5f3e510439dac64269a426869787a954d922915b
+
 
     gradients_.resize(3 * total_num_boxes_);
 
@@ -116,7 +111,7 @@ class DiffusionGrid {
           "] will result in unphysical behavior (diffusion coefficient = ",
           (1 - dc_[0]), ", resolution = ", resolution_,
           "). Please refer to the user guide for more information.");
-    } else if ( floor(diffusion_step_)!=diffusion_step_ || diffusion_step_ <= (double)0.0 || diffusion_step_ > (double)10.0) {
+    } else if ( int(floor(diffusion_step_)) != int(diffusion_step_) || diffusion_step_ <= (double)0.0 || diffusion_step_ > (double)10.0) {
       Log::Fatal(
            "DiffusionFrid",
            " The specified amount of diffusion steps for the grid with substance [",
@@ -580,13 +575,10 @@ class DiffusionGrid {
       return;
     }
 
-<<<<<<< HEAD
     r1_.resize(total_num_boxes_);
     r2_.resize(total_num_boxes_);
     r3_.resize(total_num_boxes_);
 
-=======
->>>>>>> 5f3e510439dac64269a426869787a954d922915b
     const auto nx = num_boxes_axis_[0];
     const auto ny = num_boxes_axis_[1];
     const auto nz = num_boxes_axis_[2];
@@ -665,13 +657,10 @@ class DiffusionGrid {
       return;
     }
 
-<<<<<<< HEAD
     r1_.resize(total_num_boxes_);
     r2_.resize(total_num_boxes_);
     r3_.resize(total_num_boxes_);
 
-=======
->>>>>>> 5f3e510439dac64269a426869787a954d922915b
     const auto nx = num_boxes_axis_[0];
     const auto ny = num_boxes_axis_[1];
     const auto nz = num_boxes_axis_[2];
