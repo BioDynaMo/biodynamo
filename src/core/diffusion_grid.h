@@ -93,6 +93,12 @@ class DiffusionGrid {
     // Allocate memory for the concentration and gradient arrays
     c1_.resize(total_num_boxes_);
     c2_.resize(total_num_boxes_);
+<<<<<<< HEAD
+=======
+    r1_.resize(total_num_boxes_);
+    r2_.resize(total_num_boxes_);
+    r3_.resize(total_num_boxes_);
+>>>>>>> 5f3e510439dac64269a426869787a954d922915b
 
     gradients_.resize(3 * total_num_boxes_);
 
@@ -574,10 +580,13 @@ class DiffusionGrid {
       return;
     }
 
+<<<<<<< HEAD
     r1_.resize(total_num_boxes_);
     r2_.resize(total_num_boxes_);
     r3_.resize(total_num_boxes_);
 
+=======
+>>>>>>> 5f3e510439dac64269a426869787a954d922915b
     const auto nx = num_boxes_axis_[0];
     const auto ny = num_boxes_axis_[1];
     const auto nz = num_boxes_axis_[2];
@@ -656,10 +665,13 @@ class DiffusionGrid {
       return;
     }
 
+<<<<<<< HEAD
     r1_.resize(total_num_boxes_);
     r2_.resize(total_num_boxes_);
     r3_.resize(total_num_boxes_);
 
+=======
+>>>>>>> 5f3e510439dac64269a426869787a954d922915b
     const auto nx = num_boxes_axis_[0];
     const auto ny = num_boxes_axis_[1];
     const auto nz = num_boxes_axis_[2];
