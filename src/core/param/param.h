@@ -169,13 +169,6 @@ struct Param {
 
   std::string diffusion_type_ = "Euler";
 
-  // Stepper for the Runge-Kutta method.
-  // Takes real rational natural numbers between 1-10 as a double.
-  // determines the number of steps to be taken by the method each second.
-
-  double diffusion_step_ = 1.0;
-
-
   /// Calculate the diffusion gradient for each substance.\n
   /// TOML config file:
   ///
