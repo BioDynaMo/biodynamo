@@ -52,7 +52,11 @@ class DiffusionOp {
         dg->Update(grid->GetDimensionThresholds());
       }
      if(param->diffusion_type_ == "RK"){
+       if (param-> leaking_edges_) {
+         dg ->RKLeaking();
+       }else{
          dg -> RK();
+       }
      } else {
       if (param-> leaking_edges_) {
         dg->DiffuseEulerLeakingEdge();
