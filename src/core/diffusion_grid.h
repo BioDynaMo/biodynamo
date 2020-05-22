@@ -566,7 +566,6 @@ class DiffusionGrid {
     c1_.swap(c2_);
   }
 
-    // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
     void RK() {
      // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
@@ -585,7 +584,7 @@ class DiffusionGrid {
     const double ibl2 = 1 / (box_length_ * box_length_);
     const double d = 1 - dc_[0];
     double step = diffusion_step_;
-    double h = (((double)dt_)/((double)step));
+    double h = (1.0*dt_)/(1.0*step);
     #define YBF 16
     for (size_t i = 0; i < step ; i += 1){
     for (size_t order = 0 ; order < 2 ; order ++){
@@ -617,14 +616,14 @@ class DiffusionGrid {
             b = c - nx * ny;
             t = c + nx * ny;
 
-            double h2 = ((double)h/(double)2.0);
+            double h2 = (1.0*h/2.0);
 
             if (order == 0){
 
                k_[0] = (d  * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
                       d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
                       d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
-                r1_[c] = c1_[c]+(k_[0]* (double)h2);
+                r1_[c] = c1_[c]+(k_[0]* h2);
             }
             else if (order == 1) {
 
@@ -632,7 +631,7 @@ class DiffusionGrid {
                       d *(c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
                       d *(c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
 
-            c2_[c] =  c1_[c] + (k_[1] * (double)h);
+            c2_[c] =  c1_[c] + (k_[1] * h);
             }
 
           }
@@ -737,14 +736,14 @@ class DiffusionGrid {
             cp = c + 1;
           }
 
-            double h2 = ((double)h/(double)2.0);
+            double h2 = (1.0*h/2.0);
 
             if (order == 0){
 
                k_[0] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
                        d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
                        d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
-                r1_[c] = c1_[c]+(k_[0]* (double)h2);
+                r1_[c] = c1_[c]+(k_[0]* h2);
             }
             else if (order == 1) {
 
@@ -752,7 +751,7 @@ class DiffusionGrid {
                        d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
                        d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
 
-            c2_[c] =  c1_[c] + (k_[1] * (double)h);
+            c2_[c] =  c1_[c] + (k_[1] * h);
             }
 
           }
@@ -975,7 +974,7 @@ class DiffusionGrid {
   /// y array for runge-kutta.
   std::array<double, 4> y_ = {};
   /// Number of steps for RK diffusion grid;
-  double diffusion_step_ = 1.0;
+  int diffusion_step_ = 1.0;
   /// The array of gradients (x, y, z)
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
