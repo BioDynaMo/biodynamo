@@ -205,8 +205,8 @@ export_interval = 10
 ```
 
 Notes :
-    * This method requires the input of known initial boundary conditions for the ODE being solved.
-    * This method is also commonly referred to as the midpoint method or improved Euler.
-    * This method can additionally be used to solve partial differential equations (PDEs) but requires each component to be individually broken down into separate ODEs.  
+* This method requires the input of known initial boundary conditions for the ODE being solved.
+* This method is also commonly referred to as the midpoint method or improved Euler.	
+* This method can additionally be used to solve partial differential equations (PDEs) but requires each component to be individually broken down into separate ODEs.  
 
 
