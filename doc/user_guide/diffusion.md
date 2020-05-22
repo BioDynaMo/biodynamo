@@ -197,7 +197,7 @@ diffusion_type_ = "RK"
 [visualization]
 export = true
 export_interval = 10
-diffusion_type_ = "RK"
+diffusion_type = "RK"
 
 	[[visualize_sim_object]]
 	name = "Cell"
