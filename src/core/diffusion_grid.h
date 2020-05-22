@@ -109,7 +109,7 @@ class DiffusionGrid {
           "] will result in unphysical behavior (diffusion coefficient = ",
           (1 - dc_[0]), ", resolution = ", resolution_,
           "). Please refer to the user guide for more information.");
-    } else if ( (int)floor(diffusion_step_) != (int)diffusion_step_ || diffusion_step_ <= (double)0.0 || diffusion_step_ > (double)10.0) {
+    } else if ( diffusion_step_ <= 0.0 || diffusion_step_ > 10.0) {
       Log::Fatal(
            "DiffusionGrid",
            " The specified amount of diffusion steps for the grid with substance [",

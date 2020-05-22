@@ -160,12 +160,12 @@ struct Param {
   ///     leaking_edges = true
   bool leaking_edges_ = true;
 
-  /* A string for determining diffusion type within the simulation space.
-  current inputs include Euler and RK
-
-          [simulation]
-          diffusion_type_ = "Euler"
-  */
+  // A string for determining diffusion type within the simulation space.
+  //current inputs include Euler and RK
+  //
+  //        [simulation]
+  //        diffusion_type_ = "Euler"
+  //
 
   std::string diffusion_type_ = "Euler";
 
