@@ -99,8 +99,7 @@ class DiffusionGrid {
   }
 
   void ParametersCheck() {
-    if (((1 - dc_[0]) * dt_) / (box_length_ * box_length_) >=
-        (1.0 / 6)) {
+    if (((1 - dc_[0]) * dt_) / (box_length_ * box_length_) >= (1.0 / 6)) {
       Log::Fatal(
           "DiffusionGrid",
           "The specified parameters of the diffusion grid with substance [",
@@ -584,7 +583,7 @@ class DiffusionGrid {
     const double ibl2 = 1 / (box_length_ * box_length_);
     const double d = 1 - dc_[0];
     double step = diffusion_step_;
-    double h = dt_/step;
+    double h = dt_ / step;
 #define YBF 16
     for (size_t i = 0; i < step; i += 1) {
       for (size_t order = 0; order < 2; order++) {
@@ -616,7 +615,7 @@ class DiffusionGrid {
                 b = c - nx * ny;
                 t = c + nx * ny;
 
-                double h2 =  h / 2.0;
+                double h2 = h / 2.0;
 
                 if (order == 0) {
                   k_[0] = (d * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
@@ -664,7 +663,7 @@ class DiffusionGrid {
     std::array<int, 6> l;
 
     double step = diffusion_step_;
-    double h = dt_/step;
+    double h = dt_ / step;
 #define YBF 16
     for (size_t i = 0; i < step; i += 1) {
       for (size_t order = 0; order < 2; order++) {
