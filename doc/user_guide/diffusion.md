@@ -172,3 +172,41 @@ function `DiffusionGrid::GetBoxLength()`.
 
 For more information on the inner workings of the diffusion module, please
 refer to: https://repository.tudelft.nl/islandora/object/uuid%3A2fa2203b-ca26-4aa2-9861-1a4352391e09?collection=education
+
+### Runge-Kutta method:
+We have additionally implemented the 2nd order Runge-Kutta method within BioDynaMo.
+The Runge-Kutta method is an iterative method for solving ordinary differential equations (ODEs) ,both implicitly and explicitly. Often out performing the Euler method for complex ODEs. 
+
+The Runge-Kutta method solves ODEs of the form:
+
+[![Runge-Kutta function](images/runge_kutta_function.png)](/docs/userguide/diffusion/#runge_kutta_function)
+
+We estimate a solution explicitly using the following steps:
+
+[![Runge-Kutta equation](images/runge_kutta_equation.png)](/docs/userguide/diffusion/#runge_kutta_equation)
+
+Here k1 is the slope at the beginning of the interval and k2 is the slope at the midpoint of the interval. With h determining interval length being solved for.
+
+To access the Runge-Kutta method for diffusion, one simply needs to update the bdm.toml file as follows :
+
+```
+[visualization]
+export = true
+export_interval = 10
+
+	[[visualize_sim_object]]
+	name = "Cell"
+	additional_data_members = [ "diameter_" ]
+
+	[[visualize_diffusion]]
+	name = "Kalium"
+	gradient = true
+	diffusion_type_ = "RK"
+```
+
+Notes :
+    * This method requires the input of known initial boundary conditions for the ODE being solved.
+    * This method is also commonly referred to as the midpoint method or improved Euler.
+    * This method can additionally be used to solve partial differential equations (PDEs) but requires each component to be individually broken down into separate ODEs.  
+
+
