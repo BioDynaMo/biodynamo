@@ -193,6 +193,7 @@ To access the Runge-Kutta method for diffusion, one simply needs to update the b
 [visualization]
 export = true
 export_interval = 10
+diffusion_type_ = "RK"
 
 	[[visualize_sim_object]]
 	name = "Cell"
@@ -201,7 +202,6 @@ export_interval = 10
 	[[visualize_diffusion]]
 	name = "Kalium"
 	gradient = true
-	diffusion_type_ = "RK"
 ```
 
 Notes :

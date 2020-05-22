@@ -93,8 +93,6 @@ class DiffusionGrid {
     // Allocate memory for the concentration and gradient arrays
     c1_.resize(total_num_boxes_);
     c2_.resize(total_num_boxes_);
-
-
     gradients_.resize(3 * total_num_boxes_);
 
     initialized_ = true;
@@ -113,7 +111,7 @@ class DiffusionGrid {
           "). Please refer to the user guide for more information.");
     } else if ( (int)floor(diffusion_step_) != (int)diffusion_step_ || diffusion_step_ <= (double)0.0 || diffusion_step_ > (double)10.0) {
       Log::Fatal(
-           "DiffusionFrid",
+           "DiffusionGrid",
            " The specified amount of diffusion steps for the grid with substance [",
            substance_name_,
            "] is not a real natural number between 1 to 10 please correct this and run the simulation again."
@@ -525,7 +523,7 @@ class DiffusionGrid {
             l[2] = 0;
           } else {
             b = c - nx * ny;
-          }
+          }    // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
 
           if (z == nz - 1) {
             t = c;
@@ -568,7 +566,8 @@ class DiffusionGrid {
     c1_.swap(c2_);
   }
 
-    void RK() {  // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
+    // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
+    void RK() {
      // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
@@ -587,7 +586,7 @@ class DiffusionGrid {
     const double d = 1 - dc_[0];
     double step = diffusion_step_;
     double h = (((double)dt_)/((double)step));
-#define YBF 16
+    #define YBF 16
     for (size_t i = 0; i < step ; i += 1){
     for (size_t order = 0 ; order < 2 ; order ++){
     #pragma omp parallel for collapse(2)
@@ -601,7 +600,7 @@ class DiffusionGrid {
           size_t x = 0;
           int c, n, s, b, t;
           c = x + y * nx + z * nx * ny;
-    #pragma omp simd
+          #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
@@ -620,14 +619,14 @@ class DiffusionGrid {
 
             double h2 = ((double)h/(double)2.0);
 
-            if (order == 0){ /*for k1*/
+            if (order == 0){
 
                k_[0] = (d  * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
                       d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
                       d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
                 r1_[c] = c1_[c]+(k_[0]* (double)h2);
             }
-            else if (order == 1) { /* for k2 */
+            else if (order == 1) {
 
               k_[1] = (d * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
                       d *(c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
@@ -643,15 +642,15 @@ class DiffusionGrid {
           ++b;
           ++t;
         }  // tile ny
-      }    // tile nz
-     }      // block ny
+      }   // tile nz
+     }   // block ny
     }
           c1_.swap(c2_);
     }
     }
 
-    void RKLeaking() {  // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
-     // check if diffusion coefficient and decay constant are 0
+    void RKLeaking() {
+    // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
       return;
@@ -671,7 +670,7 @@ class DiffusionGrid {
 
     double step = diffusion_step_;
     double h = (((double)dt_)/((double)step));
-#define YBF 16
+    #define YBF 16
     for (size_t i = 0; i < step ; i += 1){
     for (size_t order = 0 ; order < 2 ; order ++){
     #pragma omp parallel for collapse(2)
@@ -716,7 +715,7 @@ class DiffusionGrid {
             t = c + nx * ny;
           }
 
-    #pragma omp simd
+          #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
@@ -740,14 +739,14 @@ class DiffusionGrid {
 
             double h2 = ((double)h/(double)2.0);
 
-            if (order == 0){ /*for k1*/
+            if (order == 0){
 
                k_[0] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
                        d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
                        d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
                 r1_[c] = c1_[c]+(k_[0]* (double)h2);
             }
-            else if (order == 1) { /* for k2 */
+            else if (order == 1) {
 
               k_[1] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
                        d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
@@ -763,8 +762,8 @@ class DiffusionGrid {
           ++b;
           ++t;
         }  // tile ny
-      }    // tile nz
-     }      // block ny
+      }   // tile nz
+     }   // block ny
     }
           c1_.swap(c2_);
     }
