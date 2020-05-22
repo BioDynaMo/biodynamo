@@ -40,6 +40,7 @@ class SimulationTest : public ::testing::Test {
       "bound_space = true\n"
       "min_bound = -100\n"
       "max_bound =  200\n"
+      "diffusion_type = \"RK\"\n"
       "thread_safety_mechanism = \"automatic\"\n"
       "\n"
       "[visualization]\n"
