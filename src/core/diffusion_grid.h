@@ -40,7 +40,7 @@ class DiffusionGrid {
  public:
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 11, double diffusion_step = 1.0)
+                double mu, int resolution = 11, int diffusion_step = 1)
       : substance_(substance_id),
         substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
@@ -902,7 +902,7 @@ class DiffusionGrid {
     return GetBoxIndex(box_coord);
   }
 
-  void SetDiffusionSteps(double diffusion_step) {diffusion_step_ = diffusion_step;}
+  void SetDiffusionSteps(int diffusion_step) {diffusion_step_ = diffusion_step;}
 
   void SetDecayConstant(double mu) { mu_ = mu; }
 
