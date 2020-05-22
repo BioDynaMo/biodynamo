@@ -46,7 +46,7 @@ class DiffusionGrid {
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
         resolution_(resolution),
-        diffusion_step_(diffusion_step){}
+        diffusion_step_(diffusion_step) {}
 
   virtual ~DiffusionGrid() {}
 
@@ -109,13 +109,13 @@ class DiffusionGrid {
           "] will result in unphysical behavior (diffusion coefficient = ",
           (1 - dc_[0]), ", resolution = ", resolution_,
           "). Please refer to the user guide for more information.");
-    } else if ( diffusion_step_ <= 0.0 || diffusion_step_ > 10.0) {
-      Log::Fatal(
-           "DiffusionGrid",
-           " The specified amount of diffusion steps for the grid with substance [",
-           substance_name_,
-           "] is not a real natural number between 1 to 10 please correct this and run the simulation again."
-           );
+    } else if (diffusion_step_ <= 0.0 || diffusion_step_ > 10.0) {
+      Log::Fatal("DiffusionGrid",
+                 " The specified amount of diffusion steps for the grid with "
+                 "substance [",
+                 substance_name_,
+                 "] is not a real natural number between 1 to 10 please "
+                 "correct this and run the simulation again.");
     }
   }
 
@@ -415,7 +415,7 @@ class DiffusionGrid {
     }      // block ny
     c1_.swap(c2_);
   }
-   void DiffuseEuler() {
+  void DiffuseEuler() {
     // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
@@ -523,7 +523,8 @@ class DiffusionGrid {
             l[2] = 0;
           } else {
             b = c - nx * ny;
-          }    // 2nd Order Runge-Kutta diffusion, often refered to as the improved Euler or midpoint method.
+          }  // 2nd Order Runge-Kutta diffusion, often refered to as the
+             // improved Euler or midpoint method.
 
           if (z == nz - 1) {
             t = c;
@@ -566,8 +567,8 @@ class DiffusionGrid {
     c1_.swap(c2_);
   }
 
-    void RK() {
-     // check if diffusion coefficient and decay constant are 0
+  void RK() {
+    // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
       return;
@@ -584,71 +585,67 @@ class DiffusionGrid {
     const double ibl2 = 1 / (box_length_ * box_length_);
     const double d = 1 - dc_[0];
     double step = diffusion_step_;
-    double h = (1.0*dt_)/(1.0*step);
-    #define YBF 16
-    for (size_t i = 0; i < step ; i += 1){
-    for (size_t order = 0 ; order < 2 ; order ++){
-    #pragma omp parallel for collapse(2)
-    for (size_t yy = 0; yy < ny; yy += YBF) {
-      for (size_t z = 0; z < nz; z++) {
-        size_t ymax = yy + YBF;
-        if (ymax >= ny) {
-          ymax = ny;
-        }
-        for (size_t y = yy; y < ymax; y++) {
-          size_t x = 0;
-          int c, n, s, b, t;
-          c = x + y * nx + z * nx * ny;
-          #pragma omp simd
-          for (x = 1; x < nx - 1; x++) {
-            ++c;
-            ++n;
-            ++s;
-            ++b;
-            ++t;
-
-            if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
-              continue;
+    double h = (1.0 * dt_) / (1.0 * step);
+#define YBF 16
+    for (size_t i = 0; i < step; i += 1) {
+      for (size_t order = 0; order < 2; order++) {
+#pragma omp parallel for collapse(2)
+        for (size_t yy = 0; yy < ny; yy += YBF) {
+          for (size_t z = 0; z < nz; z++) {
+            size_t ymax = yy + YBF;
+            if (ymax >= ny) {
+              ymax = ny;
             }
+            for (size_t y = yy; y < ymax; y++) {
+              size_t x = 0;
+              int c, n, s, b, t;
+              c = x + y * nx + z * nx * ny;
+#pragma omp simd
+              for (x = 1; x < nx - 1; x++) {
+                ++c;
+                ++n;
+                ++s;
+                ++b;
+                ++t;
 
-            n = c - nx;
-            s = c + nx;
-            b = c - nx * ny;
-            t = c + nx * ny;
+                if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
+                  continue;
+                }
 
-            double h2 = (1.0*h/2.0);
+                n = c - nx;
+                s = c + nx;
+                b = c - nx * ny;
+                t = c + nx * ny;
 
-            if (order == 0){
+                double h2 = (1.0 * h / 2.0);
 
-               k_[0] = (d  * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                      d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                      d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
-                r1_[c] = c1_[c]+(k_[0]* h2);
-            }
-            else if (order == 1) {
+                if (order == 0) {
+                  k_[0] = (d * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                           d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                           d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
+                  r1_[c] = c1_[c] + (k_[0] * h2);
+                } else if (order == 1) {
+                  k_[1] = (d * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                           d * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                           d * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
 
-              k_[1] = (d * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                      d *(c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                      d *(c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2);
-
-            c2_[c] =  c1_[c] + (k_[1] * h);
-            }
-
-          }
-          ++c;
-          ++n;
-          ++s;
-          ++b;
-          ++t;
-        }  // tile ny
-      }   // tile nz
-     }   // block ny
+                  c2_[c] = c1_[c] + (k_[1] * h);
+                }
+              }
+              ++c;
+              ++n;
+              ++s;
+              ++b;
+              ++t;
+            }  // tile ny
+          }    // tile nz
+        }      // block ny
+      }
+      c1_.swap(c2_);
     }
-          c1_.swap(c2_);
-    }
-    }
+  }
 
-    void RKLeaking() {
+  void RKLeaking() {
     // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
@@ -668,105 +665,105 @@ class DiffusionGrid {
     std::array<int, 6> l;
 
     double step = diffusion_step_;
-    double h = (((double)dt_)/((double)step));
-    #define YBF 16
-    for (size_t i = 0; i < step ; i += 1){
-    for (size_t order = 0 ; order < 2 ; order ++){
-    #pragma omp parallel for collapse(2)
-    for (size_t yy = 0; yy < ny; yy += YBF) {
-      for (size_t z = 0; z < nz; z++) {
-        size_t ymax = yy + YBF;
-        if (ymax >= ny) {
-          ymax = ny;
-        }
-        for (size_t y = yy; y < ymax; y++) {
-          size_t x = 0;
-          int c, cm, cp , n, s, b, t;
-          c = x + y * nx + z * nx * ny;
-
-          l.fill(1);
-
-          if (y == 0) {
-            n = c;
-            l[2] = 0;
-          } else {
-            n = c - nx;
-          }
-
-          if (y == ny - 1) {
-            s = c;
-            l[3] = 0;
-          } else {
-            s = c + nx;
-          }
-
-          if (z == 0) {
-            b = c;
-            l[4] = 0;
-          } else {
-            b = c - nx * ny;
-          }
-
-          if (z == nz - 1) {
-            t = c;
-            l[5] = 0;
-          } else {
-            t = c + nx * ny;
-          }
-
-          #pragma omp simd
-          for (x = 1; x < nx - 1; x++) {
-            ++c;
-            ++n;
-            ++s;
-            ++b;
-            ++t;
-
-          if (x == 0) {
-            cm = c;
-            l[0] = 0;
-          } else {
-            cm = c - 1;
-          }
-
-          if (y == ny - 1) {
-            cp = c;
-            l[1] = 0;
-          } else {
-            cp = c + 1;
-          }
-
-            double h2 = (1.0*h/2.0);
-
-            if (order == 0){
-
-               k_[0] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
-                       d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
-                       d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
-                r1_[c] = c1_[c]+(k_[0]* h2);
+    double h = (((double)dt_) / ((double)step));
+#define YBF 16
+    for (size_t i = 0; i < step; i += 1) {
+      for (size_t order = 0; order < 2; order++) {
+#pragma omp parallel for collapse(2)
+        for (size_t yy = 0; yy < ny; yy += YBF) {
+          for (size_t z = 0; z < nz; z++) {
+            size_t ymax = yy + YBF;
+            if (ymax >= ny) {
+              ymax = ny;
             }
-            else if (order == 1) {
+            for (size_t y = yy; y < ymax; y++) {
+              size_t x = 0;
+              int c, cm, cp, n, s, b, t;
+              c = x + y * nx + z * nx * ny;
 
-              k_[1] = d * (l[0]*c1_[cm] - 2 * c1_[c] + l[1]*c1_[cp]) * ibl2 +
-                       d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
-                       d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
+              l.fill(1);
 
-            c2_[c] =  c1_[c] + (k_[1] * h);
-            }
+              if (y == 0) {
+                n = c;
+                l[2] = 0;
+              } else {
+                n = c - nx;
+              }
 
-          }
-          ++c;
-          ++n;
-          ++s;
-          ++b;
-          ++t;
-        }  // tile ny
-      }   // tile nz
-     }   // block ny
+              if (y == ny - 1) {
+                s = c;
+                l[3] = 0;
+              } else {
+                s = c + nx;
+              }
+
+              if (z == 0) {
+                b = c;
+                l[4] = 0;
+              } else {
+                b = c - nx * ny;
+              }
+
+              if (z == nz - 1) {
+                t = c;
+                l[5] = 0;
+              } else {
+                t = c + nx * ny;
+              }
+
+#pragma omp simd
+              for (x = 1; x < nx - 1; x++) {
+                ++c;
+                ++n;
+                ++s;
+                ++b;
+                ++t;
+
+                if (x == 0) {
+                  cm = c;
+                  l[0] = 0;
+                } else {
+                  cm = c - 1;
+                }
+
+                if (y == ny - 1) {
+                  cp = c;
+                  l[1] = 0;
+                } else {
+                  cp = c + 1;
+                }
+
+                double h2 = (1.0 * h / 2.0);
+
+                if (order == 0) {
+                  k_[0] =
+                      d * (l[0] * c1_[cm] - 2 * c1_[c] + l[1] * c1_[cp]) *
+                          ibl2 +
+                      d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
+                      d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
+                  r1_[c] = c1_[c] + (k_[0] * h2);
+                } else if (order == 1) {
+                  k_[1] =
+                      d * (l[0] * c1_[cm] - 2 * c1_[c] + l[1] * c1_[cp]) *
+                          ibl2 +
+                      d * (l[2] * c1_[s] - 2 * c1_[c] + l[3] * c1_[n]) * ibl2 +
+                      d * (l[4] * c1_[b] - 2 * c1_[c] + l[5] * c1_[t]) * ibl2;
+
+                  c2_[c] = c1_[c] + (k_[1] * h);
+                }
+              }
+              ++c;
+              ++n;
+              ++s;
+              ++b;
+              ++t;
+            }  // tile ny
+          }    // tile nz
+        }      // block ny
+      }
+      c1_.swap(c2_);
     }
-          c1_.swap(c2_);
-    }
-    }
+  }
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -901,7 +898,9 @@ class DiffusionGrid {
     return GetBoxIndex(box_coord);
   }
 
-  void SetDiffusionSteps(int diffusion_step) {diffusion_step_ = diffusion_step;}
+  void SetDiffusionSteps(int diffusion_step) {
+    diffusion_step_ = diffusion_step;
+  }
 
   void SetDecayConstant(double mu) { mu_ = mu; }
 
