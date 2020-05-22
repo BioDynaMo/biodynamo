@@ -190,6 +190,10 @@ Here k1 is the slope at the beginning of the interval and k2 is the slope at the
 To access the Runge-Kutta method for diffusion, one simply needs to update the bdm.toml file as follows :
 
 ```
+
+[simulation]
+diffusion_type_ = "RK"
+
 [visualization]
 export = true
 export_interval = 10
