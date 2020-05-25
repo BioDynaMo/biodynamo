@@ -970,8 +970,6 @@ class DiffusionGrid {
   std::array<double, 4> k_ = {};
   /// y array for runge-kutta.
   std::array<double, 4> y_ = {};
-  /// Number of steps for RK diffusion grid;
-  int diffusion_step_ = 1.0;
   /// The array of gradients (x, y, z)
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
@@ -993,6 +991,8 @@ class DiffusionGrid {
   bool initialized_ = false;
   /// The resolution of the diffusion grid
   int resolution_ = 0;
+  /// Number of steps for RK diffusion grid;
+  int diffusion_step_ = 1.0;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
