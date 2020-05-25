@@ -29,6 +29,7 @@
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/param/param.h"
+#include "core/simulation.h"
 #include "core/util/log.h"
 #include "core/util/math.h"
 
@@ -221,6 +222,16 @@ class DiffusionGrid {
       assert(total_num_boxes_ >= tmp_num_boxes_axis[0] * tmp_num_boxes_axis[1] *
                                      tmp_num_boxes_axis[2] &&
              "The diffusion grid tried to shrink! It can only become larger");
+    }
+
+    // If we are utilising the Runge-Kutta method we need to resize an
+    // additional
+    // vector, this will be used in estimating the concentration between
+    // diffsuion steps.
+    auto* sim = Simulation::GetActive();
+    auto* param = sim->GetParam();
+    if (param->diffusion_type_ == "RK") {
+      r1_.resize(total_num_boxes_);
     }
   }
 
@@ -521,8 +532,7 @@ class DiffusionGrid {
             l[2] = 0;
           } else {
             b = c - nx * ny;
-          }  // 2nd Order Runge-Kutta diffusion, often refered to as the
-             // improved Euler or midpoint method.
+          }
 
           if (z == nz - 1) {
             t = c;
@@ -571,10 +581,6 @@ class DiffusionGrid {
     if (IsFixedSubstance()) {
       return;
     }
-
-    r1_.resize(total_num_boxes_);
-    r2_.resize(total_num_boxes_);
-    r3_.resize(total_num_boxes_);
 
     const auto nx = num_boxes_axis_[0];
     const auto ny = num_boxes_axis_[1];
@@ -649,10 +655,6 @@ class DiffusionGrid {
     if (IsFixedSubstance()) {
       return;
     }
-
-    r1_.resize(total_num_boxes_);
-    r2_.resize(total_num_boxes_);
-    r3_.resize(total_num_boxes_);
 
     const auto nx = num_boxes_axis_[0];
     const auto ny = num_boxes_axis_[1];
@@ -964,8 +966,6 @@ class DiffusionGrid {
   ParallelResizeVector<double> c2_ = {};
   /// Buffers for Runge Kutta
   ParallelResizeVector<double> r1_ = {};
-  ParallelResizeVector<double> r2_ = {};
-  ParallelResizeVector<double> r3_ = {};
   /// K array for runge-kutta.
   std::array<double, 4> k_ = {};
   /// y array for runge-kutta.
