@@ -96,6 +96,14 @@ class DiffusionGrid {
     c2_.resize(total_num_boxes_);
     gradients_.resize(3 * total_num_boxes_);
 
+    // If we are utilising the Runge-Kutta method we need to resize an
+    // additional vector, this will be used in estimating the concentration
+    // between diffsuion steps.
+    auto* param = Simulation::GetActive()->GetParam();
+    if (param->diffusion_type_ == "RK") {
+      r1_.resize(total_num_boxes_);
+    }
+
     initialized_ = true;
   }
 
@@ -225,11 +233,9 @@ class DiffusionGrid {
     }
 
     // If we are utilising the Runge-Kutta method we need to resize an
-    // additional
-    // vector, this will be used in estimating the concentration between
-    // diffsuion steps.
-    auto* sim = Simulation::GetActive();
-    auto* param = sim->GetParam();
+    // additional vector, this will be used in estimating the concentration
+    // between diffsuion steps.
+    auto* param = Simulation::GetActive()->GetParam();
     if (param->diffusion_type_ == "RK") {
       r1_.resize(total_num_boxes_);
     }

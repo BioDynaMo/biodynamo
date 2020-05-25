@@ -216,6 +216,7 @@ TEST(DiffusionTest, LeakingEdge) {
 // Create a 5x5x5 diffusion grid, with a substance being
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, ClosedEdge) {
+  Simulation simulation(TEST_NAME);
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
@@ -279,6 +280,7 @@ TEST(DiffusionTest, ClosedEdge) {
 // Tests if the concentration / gradient values are correctly copied
 // after the grid has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
+  Simulation simulation(TEST_NAME);
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
@@ -348,6 +350,7 @@ TEST(DiffusionTest, CopyOldData) {
 // Test if all the data members of the diffusion grid are correctly serialized
 // and deserialzed with I/O
 TEST(DiffusionTest, IOTest) {
+  Simulation simulation(TEST_NAME);
   remove(ROOTFILE);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.6, 0);
@@ -424,11 +427,13 @@ TEST(DISABLED_DiffusionTest, WrongParameters) {
 }
 
 TEST(DiffusionTest, CorrectParameters) {
+  Simulation simulation(TEST_NAME);
   DiffusionGrid d_grid(0, "Kalium", 1, 0.5, 6);
   d_grid.Initialize({{0, 100, 0, 100, 0, 100}});
 }
 
 TEST(DiffusionTest, EulerConvergence) {
+  Simulation simulation(TEST_NAME);
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
   DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
@@ -501,6 +506,8 @@ TEST(DiffusionTest, EulerConvergence) {
 }
 
 TEST(DiffusionTest, RungeKuttaConvergence) {
+  auto set_param = [](Param* param){ param->diffusion_type_ = "RK"; };
+  Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
   DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
