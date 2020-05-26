@@ -41,7 +41,7 @@ class DiffusionGrid {
  public:
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 11, int diffusion_step = 1)
+                double mu, int resolution = 11, unsigned int diffusion_step = 1)
       : substance_(substance_id),
         substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
@@ -116,12 +116,12 @@ class DiffusionGrid {
           "] will result in unphysical behavior (diffusion coefficient = ",
           (1 - dc_[0]), ", resolution = ", resolution_,
           "). Please refer to the user guide for more information.");
-    } else if (diffusion_step_ <= 0.0 || diffusion_step_ > 10.0) {
+    } else if (diffusion_step_ == 0) {
       Log::Fatal("DiffusionGrid",
                  " The specified amount of diffusion steps for the grid with "
                  "substance [",
                  substance_name_,
-                 "] is not a real natural number between 1 to 10 please "
+                 "] is not greater than or equal to 1, "
                  "correct this and run the simulation again.");
     }
   }
@@ -972,10 +972,6 @@ class DiffusionGrid {
   ParallelResizeVector<double> c2_ = {};
   /// Buffers for Runge Kutta
   ParallelResizeVector<double> r1_ = {};
-  /// K array for runge-kutta.
-  std::array<double, 4> k_ = {};
-  /// y array for runge-kutta.
-  std::array<double, 4> y_ = {};
   /// The array of gradients (x, y, z)
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
@@ -998,7 +994,7 @@ class DiffusionGrid {
   /// The resolution of the diffusion grid
   int resolution_ = 0;
   /// Number of steps for RK diffusion grid;
-  int diffusion_step_ = 1.0;
+  unsigned int diffusion_step_ = 1;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
