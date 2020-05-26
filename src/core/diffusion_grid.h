@@ -597,7 +597,7 @@ class DiffusionGrid {
     double step = diffusion_step_;
     double h = dt_ / step;
 #define YBF 16
-    for (size_t i = 0; i < step; i += 1) {
+    for (size_t i = 0; i < step; i ++) {
       for (size_t order = 0; order < 2; order++) {
 #pragma omp parallel for collapse(2)
         for (size_t yy = 0; yy < ny; yy += YBF) {
@@ -673,7 +673,7 @@ class DiffusionGrid {
     double step = diffusion_step_;
     double h = dt_ / step;
 #define YBF 16
-    for (size_t i = 0; i < step; i += 1) {
+    for (size_t i = 0; i < step; i ++) {
       for (size_t order = 0; order < 2; order++) {
 #pragma omp parallel for collapse(2)
         for (size_t yy = 0; yy < ny; yy += YBF) {
