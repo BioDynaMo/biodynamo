@@ -87,6 +87,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(min_bound_, "simulation.min_bound");
   BDM_ASSIGN_CONFIG_VALUE(max_bound_, "simulation.max_bound");
   BDM_ASSIGN_CONFIG_VALUE(leaking_edges_, "simulation.leaking_edges");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_type_, "simulation.diffusion_type");
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients_,
                           "simulation.calculate_gradients");
   AssignThreadSafetyMechanism(config, this);

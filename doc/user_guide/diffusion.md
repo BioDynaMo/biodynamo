@@ -172,3 +172,74 @@ function `DiffusionGrid::GetBoxLength()`.
 
 For more information on the inner workings of the diffusion module, please
 refer to: https://repository.tudelft.nl/islandora/object/uuid%3A2fa2203b-ca26-4aa2-9861-1a4352391e09?collection=education
+
+### Runge-Kutta method:
+We have additionally implemented the 2nd order Runge-Kutta method within BioDynaMo.
+The Runge-Kutta method is an iterative method for solving ordinary differential equations (ODEs), both implicitly and explicitly. Often outperforming the Euler method for complex ODEs. 
+Unlike the Euler method which estimates the next time step based on the rate of change of the defined ODE at the current point, the Runge-Kutta method is a family of schemes which
+involve slope calculations between the current and next time step, with the number of slope estimates depending on the order of the Runge-Kutta method being utilised.
+
+In the case of the 2nd order Runge-Kutta method implemented here, a slope estimate is taken at the midpoint between the current and next time step, in addition to utilising the rate of change
+at the current time step.
+
+The Runge-Kutta method solves ODEs of the form:
+
+[![Runge-Kutta function](images/runge_kutta_function.png)](/docs/userguide/diffusion/#runge_kutta_function)
+
+We estimate a solution explicitly using the following steps:
+
+[![Runge-Kutta equation](images/runge_kutta_equation.png)](/docs/userguide/diffusion/#runge_kutta_equation)
+
+Here k1 is the slope at the beginning of the interval and k2 is the slope at the midpoint of the interval. With h determining interval length being solved for.
+
+For example, with a h value of 1, we would be estimating between the current time step t to t+1 with a single midpoint slope estimate. For most ODEs
+increasing the number of intervals to be taken per time step increases overall accuracy, as we will be taking a greater number of midpoint slope estimates between t to t+1.
+
+So, if we instead set h = 0.5, the method will first estimate over t to t + 0.5 with a midpoint slope estimate, repeating this for t + 0.5 to t + 1 with a second midpoint slope estimate. 
+However, there is a trade-off taken here with increased computational time for increasing accuracy.
+
+As stated, the higher order Runge-Kutta methods often outperform lower order solvers for ODEs, however this does not happen for the currently implemented version of chemical diffusion. 
+This is due to the fact that when one breaks down the partial differential equations (PDEs) that define chemical diffusion into the set of ODEs that define equation 3.1, 
+the time dependant variable is lost on the right hand side of the equation.
+This results in the extra steps being taken for the Runge-Kutta method having minimal impact as there is no time dependant variable to estimate the slope from.
+
+Within BioDynaMo the number of intervals for the Runge-Kutta method to iterate over per time step can be set within the declaration of a diffusion grid itself as follows:
+
+```
+
+DiffusionGrid* d_grid = new DiffusionGrid(substance_id, "substance_name", diffusion_coefficient,
+                decay_constant, resolution, diffusion_step)
+                
+```
+Note: 
+* The entered value for the diffusion_step is required to be a positive integer value of greater than 0.
+
+To access the Runge-Kutta method for diffusion, one simply needs to update the bdm.toml file as follows :
+
+```
+
+[simulation]
+diffusion_type_ = "RK"
+
+[visualization]
+export = true
+export_interval = 10
+diffusion_type = "RK"
+
+	[[visualize_sim_object]]
+	name = "Cell"
+	additional_data_members = [ "diameter_" ]
+
+	[[visualize_diffusion]]
+	name = "Kalium"
+	gradient = true
+```
+
+
+
+Note:
+* This method requires the input of known initial boundary conditions for the ODE being solved.
+* This method is also commonly referred to as the midpoint method or improved Euler.	
+* This method can additionally be used to solve partial differential equations (PDEs) but requires each component to be individually broken down into separate ODEs.
+
+

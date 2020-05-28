@@ -216,6 +216,7 @@ TEST(DiffusionTest, LeakingEdge) {
 // Create a 5x5x5 diffusion grid, with a substance being
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, ClosedEdge) {
+  Simulation simulation(TEST_NAME);
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
@@ -279,6 +280,7 @@ TEST(DiffusionTest, ClosedEdge) {
 // Tests if the concentration / gradient values are correctly copied
 // after the grid has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
+  Simulation simulation(TEST_NAME);
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
@@ -348,6 +350,7 @@ TEST(DiffusionTest, CopyOldData) {
 // Test if all the data members of the diffusion grid are correctly serialized
 // and deserialzed with I/O
 TEST(DiffusionTest, IOTest) {
+  Simulation simulation(TEST_NAME);
   remove(ROOTFILE);
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.6, 0);
@@ -424,11 +427,13 @@ TEST(DISABLED_DiffusionTest, WrongParameters) {
 }
 
 TEST(DiffusionTest, CorrectParameters) {
+  Simulation simulation(TEST_NAME);
   DiffusionGrid d_grid(0, "Kalium", 1, 0.5, 6);
   d_grid.Initialize({{0, 100, 0, 100, 0, 100}});
 }
 
-TEST(DiffusionTest, Convergence) {
+TEST(DiffusionTest, EulerConvergence) {
+  Simulation simulation(TEST_NAME);
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
   DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
@@ -465,6 +470,80 @@ TEST(DiffusionTest, Convergence) {
     d_grid2->DiffuseEuler();
     d_grid4->DiffuseEuler();
     d_grid8->DiffuseEuler();
+  }
+
+  auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
+                                d_grid2->GetBoxCoordinates(marker),
+                                d_grid2->GetBoxLength());
+  auto rc4 = GetRealCoordinates(d_grid4->GetBoxCoordinates(source),
+                                d_grid4->GetBoxCoordinates(marker),
+                                d_grid4->GetBoxLength());
+  auto rc8 = GetRealCoordinates(d_grid8->GetBoxCoordinates(source),
+                                d_grid8->GetBoxCoordinates(marker),
+                                d_grid8->GetBoxLength());
+
+  auto real_val2 =
+      CalculateAnalyticalSolution(init, rc2[0], rc2[1], rc2[2], diff_coef, tot);
+  auto real_val4 =
+      CalculateAnalyticalSolution(init, rc4[0], rc4[1], rc4[2], diff_coef, tot);
+  auto real_val8 =
+      CalculateAnalyticalSolution(init, rc8[0], rc8[1], rc8[2], diff_coef, tot);
+
+  auto error2 = std::abs(real_val2 - conc2[d_grid2->GetBoxIndex(marker)]) /
+                std::abs(real_val2);
+  auto error4 = std::abs(real_val4 - conc4[d_grid4->GetBoxIndex(marker)]) /
+                std::abs(real_val4);
+  auto error8 = std::abs(real_val8 - conc8[d_grid8->GetBoxIndex(marker)]) /
+                std::abs(real_val8);
+
+  EXPECT_TRUE(error4 < error2);
+  EXPECT_TRUE(error8 < error4);
+  EXPECT_NEAR(error8, 0.01, 0.005);
+
+  delete d_grid2;
+  delete d_grid4;
+  delete d_grid8;
+}
+
+TEST(DiffusionTest, RungeKuttaConvergence) {
+  auto set_param = [](Param* param){ param->diffusion_type_ = "RK"; };
+  Simulation simulation(TEST_NAME, set_param);
+  double diff_coef = 0.5;
+  DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
+  DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
+  DiffusionGrid* d_grid8 = new DiffusionGrid(2, "Kalium8", diff_coef, 0, 81);
+
+  int l = -100;
+  int r = 100;
+  d_grid2->Initialize({l, r, l, r, l, r});
+  d_grid4->Initialize({l, r, l, r, l, r});
+  d_grid8->Initialize({l, r, l, r, l, r});
+
+  d_grid2->SetConcentrationThreshold(1e15);
+  d_grid4->SetConcentrationThreshold(1e15);
+  d_grid8->SetConcentrationThreshold(1e15);
+
+  // instantaneous point source
+  int init = 1e5;
+  Double3 source = {{0, 0, 0}};
+  d_grid2->IncreaseConcentrationBy(source,
+                                   init / pow(d_grid2->GetBoxLength(), 3));
+  d_grid4->IncreaseConcentrationBy(source,
+                                   init / pow(d_grid4->GetBoxLength(), 3));
+  d_grid8->IncreaseConcentrationBy(source,
+                                   init / pow(d_grid8->GetBoxLength(), 3));
+
+  auto conc2 = d_grid2->GetAllConcentrations();
+  auto conc4 = d_grid4->GetAllConcentrations();
+  auto conc8 = d_grid8->GetAllConcentrations();
+
+  Double3 marker = {10.0, 10.0, 10.0};
+
+  int tot = 100;
+  for (int t = 0; t < tot; t++) {
+    d_grid2->RK();
+    d_grid4->RK();
+    d_grid8->RK();
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
