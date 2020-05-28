@@ -160,17 +160,20 @@ struct Param {
   ///     leaking_edges = true
   bool leaking_edges_ = true;
 
-  // A string for determining diffusion type within the simulation space.
-  // current inputs include Euler and RK
-  //
-  //        [simulation]
-  //        diffusion_type_ = "Euler"
-  //
+  /// A string for determining diffusion type within the simulation space.
+  /// current inputs include "Euler" and Runga Kutta ("RK")
+  /// Default value: `"Euler"`\n
+  /// TOML config file:
+  ///
+  ///        [simulation]
+  ///        diffusion_type_ = <diffusion method>
+  ///
 
   std::string diffusion_type_ = "Euler";
 
   /// Calculate the diffusion gradient for each substance.\n
   /// TOML config file:
+  /// Default value: `true`\n
   ///
   ///     [simulation]
   ///     calculate_gradients = true
