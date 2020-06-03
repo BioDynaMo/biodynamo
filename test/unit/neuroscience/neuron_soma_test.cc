@@ -747,7 +747,7 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   // cell2.SetMass(1.1);
   // cell2.SetPosition({0, 5, 0});
   //
-  // simulation.GetGrid()->Initialize();
+  // simulation.GetEnvironment()->Initialize();
   //
   // execute operation
   // DisplacementOp<> op;

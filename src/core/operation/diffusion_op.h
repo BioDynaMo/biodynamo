@@ -21,7 +21,7 @@
 
 #include "core/container/inline_vector.h"
 #include "core/diffusion_grid.h"
-#include "core/grid.h"
+#include "core/environment/environment.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
@@ -37,19 +37,19 @@ class DiffusionOp {
   void operator()() {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    auto* grid = sim->GetGrid();
+    auto* env = sim->GetEnvironment();
     auto* param = sim->GetParam();
 
     rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dg) {
-      // Update the diffusion grid dimension if the neighbor grid dimensions
+      // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
-      if (grid->HasGrown() && !param->bound_space_) {
+      if (env->HasGrown() && !param->bound_space_) {
         Log::Info("DiffusionOp",
                   "Your simulation objects are getting near the edge of the "
                   "simulation space. Be aware of boundary conditions that may "
                   "come into play!");
-        dg->Update(grid->GetDimensionThresholds());
+        dg->Update(env->GetDimensionThresholds());
       }
       if (param->diffusion_type_ == "RK") {
         if (param->leaking_edges_) {

@@ -23,7 +23,7 @@ TEST(DisplacementOpTest, Compute) { RunTest(); }
 TEST(DisplacementOpTest, ComputeNew) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
 
   auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
 
@@ -40,8 +40,8 @@ TEST(DisplacementOpTest, ComputeNew) {
     }
   }
 
-  grid->ClearGrid();
-  grid->Initialize();
+  env->Clear();
+  env->Update();
 
   // execute operation
   DisplacementOp op;

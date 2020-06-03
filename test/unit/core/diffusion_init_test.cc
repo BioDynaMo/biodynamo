@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/diffusion_grid.h"
-#include "core/grid.h"
+#include "core/environment/environment.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
 #include "core/simulation.h"
@@ -54,7 +54,7 @@ TEST(DiffusionInitTest, GaussianBand) {
   ModelInitializer::InitializeSubstance(kSubstance, "Substance",
                                         GaussianBand(125, 50, Axis::kXAxis));
 
-  simulation.GetGrid()->Initialize();
+  simulation.GetEnvironment()->Update();
 
   int lbound = param->min_bound_;
   int rbound = param->max_bound_;

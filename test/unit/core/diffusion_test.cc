@@ -15,7 +15,7 @@
 #include <fstream>
 
 #include "core/diffusion_grid.h"
-#include "core/grid.h"
+#include "core/environment/environment.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
 #include "core/substance_initializers.h"
@@ -44,10 +44,10 @@ void CellFactory(const std::vector<Double3>& positions) {
 }
 
 // Test if the dimensions of the diffusion grid are corresponding to the
-// neighbor grid dimensions
+// neighbor env dimensions
 TEST(DiffusionTest, GridDimensions) {
   Simulation simulation(TEST_NAME);
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
 
   std::vector<Double3> positions;
   positions.push_back({-10, -10, -10});
@@ -56,8 +56,8 @@ TEST(DiffusionTest, GridDimensions) {
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
 
-  grid->Initialize();
-  d_grid->Initialize(grid->GetDimensions());
+  env->Update();
+  d_grid->Initialize(env->GetDimensions());
 
   auto dims = d_grid->GetDimensions();
 
@@ -72,10 +72,10 @@ TEST(DiffusionTest, GridDimensions) {
 }
 
 // Test if the dimension of the diffusion grid update correctly with the
-// neighbor grid dimensions (we expect the diffusion grid to stay cube-shaped)
+// neighbor env dimensions (we expect the diffusion grid to stay cube-shaped)
 TEST(DiffusionTest, UpdateGrid) {
   Simulation simulation(TEST_NAME);
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
 
   std::vector<Double3> positions;
   positions.push_back({-10, -10, -10});
@@ -84,17 +84,17 @@ TEST(DiffusionTest, UpdateGrid) {
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 7);
 
-  grid->Initialize();
-  d_grid->Initialize(grid->GetDimensions());
+  env->Update();
+  d_grid->Initialize(env->GetDimensions());
 
   std::vector<Double3> positions_2;
   positions_2.push_back({-30, -10, -10});
   positions_2.push_back({90, 150, 90});
   CellFactory(positions_2);
 
-  grid->UpdateGrid();
+  env->Update();
 
-  d_grid->Update(grid->GetDimensionThresholds());
+  d_grid->Update(env->GetDimensionThresholds());
 
   auto d_dims = d_grid->GetDimensions();
 
@@ -108,11 +108,11 @@ TEST(DiffusionTest, UpdateGrid) {
   delete d_grid;
 }
 
-// Test if the diffusion grid does not change if the neighbor grid dimensions
+// Test if the diffusion grid does not change if the neighbor env dimensions
 // do not change
 TEST(DiffusionTest, FalseUpdateGrid) {
   Simulation simulation(TEST_NAME);
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
 
   std::vector<Double3> positions;
   positions.push_back({-10, -10, -10});
@@ -121,9 +121,9 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 1);
 
-  grid->Initialize();
-  d_grid->Initialize(grid->GetDimensions());
-  d_grid->Update(grid->GetDimensionThresholds());
+  env->Update();
+  d_grid->Initialize(env->GetDimensions());
+  d_grid->Update(env->GetDimensionThresholds());
 
   auto dims = d_grid->GetDimensions();
 
@@ -134,7 +134,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   EXPECT_EQ(140, dims[3]);
   EXPECT_EQ(140, dims[5]);
 
-  d_grid->Update(grid->GetDimensionThresholds());
+  d_grid->Update(env->GetDimensionThresholds());
 
   dims = d_grid->GetDimensions();
 
@@ -278,7 +278,7 @@ TEST(DiffusionTest, ClosedEdge) {
 }
 
 // Tests if the concentration / gradient values are correctly copied
-// after the grid has grown and DiffusionGrid::CopyOldData is called
+// after the env has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
   Simulation simulation(TEST_NAME);
   DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);

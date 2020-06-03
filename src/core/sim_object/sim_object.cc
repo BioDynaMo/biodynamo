@@ -26,9 +26,9 @@
 #include <vector>
 
 #include "core/biology_module/biology_module.h"
+#include "core/environment/environment.h"
 #include "core/event/event.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
-#include "core/grid.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "core/util/log.h"

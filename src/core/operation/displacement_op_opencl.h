@@ -18,8 +18,8 @@
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #include <vector>
 
+#include "core/environment/environment.h"
 #include "core/gpu/opencl_state.h"
-#include "core/grid.h"
 #include "core/operation/bound_space_op.h"
 #include "core/shape.h"
 #include "core/sim_object/cell.h"
@@ -42,10 +42,16 @@ class DisplacementOpOpenCL {
 
   void operator()() {
     auto* sim = Simulation::GetActive();
-    auto* grid = sim->GetGrid();
+    auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
     auto* param = sim->GetParam();
     auto* rm = sim->GetResourceManager();
     auto* ocl_state = sim->GetOpenCLState();
+
+    if (!grid) {
+      Log::Fatal(
+          "DisplacementOpOpenCL::operator()",
+          "DisplacementOpOpenCL only works with UniformGridEnvironement.");
+    }
 
     // Check the number of NUMA domains on the system. Currently only 1 is
     // supported for GPU execution.

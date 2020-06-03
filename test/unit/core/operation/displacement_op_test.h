@@ -15,7 +15,6 @@
 #ifndef UNIT_CORE_OPERATION_DISPLACEMENT_OP_TEST_H_
 #define UNIT_CORE_OPERATION_DISPLACEMENT_OP_TEST_H_
 
-#include "core/grid.h"
 #include "core/operation/displacement_op.h"
 #include "core/sim_object/cell.h"
 #include "unit/test_util/test_util.h"
@@ -46,7 +45,7 @@ inline void RunTest() {
   cell1->SetPosition({0, 5, 0});
   rm->push_back(cell1);
 
-  simulation.GetGrid()->Initialize();
+  simulation.GetEnvironment()->Update();
 
   // execute operation
   DisplacementOp op;

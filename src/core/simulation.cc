@@ -23,9 +23,10 @@
 #include <string>
 #include <vector>
 
+#include "core/environment/environment.h"
+#include "core/environment/uniform_grid_environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/gpu/gpu_helper.h"
-#include "core/grid.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
@@ -127,7 +128,7 @@ Simulation::~Simulation() {
   active_ = this;
 
   delete rm_;
-  delete grid_;
+  delete environment_;
   delete scheduler_;
   if (so_uid_generator_ != nullptr) {
     delete so_uid_generator_;
@@ -161,7 +162,9 @@ const Param* Simulation::GetParam() const { return param_; }
 
 SoUidGenerator* Simulation::GetSoUidGenerator() { return so_uid_generator_; }
 
-Grid* Simulation::GetGrid() { return grid_; }
+Environment* Simulation::GetGrid() { return environment_; }
+
+Environment* Simulation::GetEnvironment() { return environment_; }
 
 Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
@@ -232,7 +235,7 @@ void Simulation::InitializeMembers() {
     exec_ctxt_[i] = new InPlaceExecutionContext(map);
   }
   rm_ = new ResourceManager();
-  grid_ = new Grid();
+  environment_ = new UniformGridEnvironment();
   scheduler_ = new Scheduler();
 }
 

@@ -164,7 +164,7 @@ struct RunAllScheduldedOps : Functor<void, SimObject*, SoHandle> {
 void Scheduler::Execute() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
-  auto* grid = sim->GetGrid();
+  auto* env = sim->GetEnvironment();
   auto* param = sim->GetParam();
 
   Timing::Time("Set up exec context", [&]() {
@@ -177,7 +177,7 @@ void Scheduler::Execute() {
       visualization_->Visualize();
     }
   });
-  Timing::Time("neighbors", [&]() { grid->UpdateGrid(); });
+  Timing::Time("neighbors", [&]() { env->Update(); });
 
   // update all sim objects: run all CPU operations
   auto scheduled_ops = GetScheduleOps();
@@ -235,7 +235,7 @@ bool Scheduler::Restore(uint64_t* steps) {
 // if Simulate is called with one timestep.
 void Scheduler::Initialize() {
   auto* sim = Simulation::GetActive();
-  auto* grid = sim->GetGrid();
+  auto* env = sim->GetEnvironment();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
 
@@ -246,11 +246,11 @@ void Scheduler::Initialize() {
   if (param->bound_space_) {
     rm->ApplyOnAllElementsParallel(*bound_space_);
   }
-  grid->Initialize();
-  int lbound = grid->GetDimensionThresholds()[0];
-  int rbound = grid->GetDimensionThresholds()[1];
+  env->Update();
+  int lbound = env->GetDimensionThresholds()[0];
+  int rbound = env->GetDimensionThresholds()[1];
   rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dgrid) {
-    // Create data structures, whose size depend on the grid dimensions
+    // Create data structures, whose size depend on the env dimensions
     dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
     // Initialize data structures with user-defined values
     dgrid->RunInitializers();

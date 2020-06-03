@@ -19,8 +19,9 @@
 
 #include <vector>
 
+#include "core/environment/environment.h"
+#include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/displacement_op_cuda_kernel.h"
-#include "core/grid.h"
 #include "core/operation/bound_space_op.h"
 #include "core/resource_manager.h"
 #include "core/shape.h"
@@ -52,9 +53,14 @@ class DisplacementOpCuda {
 
   void operator()() {
     auto* sim = Simulation::GetActive();
-    auto* grid = sim->GetGrid();
+    auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
     auto* param = sim->GetParam();
     auto* rm = sim->GetResourceManager();
+
+    if (!grid) {
+      Log::Fatal("DisplacementOpCuda::operator()",
+                 "DisplacementOpCuda only works with UniformGridEnvironement.");
+    }
 
     auto num_numa_nodes = ThreadInfo::GetInstance()->GetNumaNodes();
     std::vector<SoHandle::ElementIdx_t> offset(num_numa_nodes);

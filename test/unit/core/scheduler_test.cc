@@ -26,7 +26,7 @@ TEST(SchedulerTest, NoRestoreFile) {
   remove(ROOTFILE);
 
   Cell* cell = new Cell();
-  cell->SetDiameter(10);  // important for grid to determine box size
+  cell->SetDiameter(10);  // important for env to determine box size
   rm->push_back(cell);
 
   // start restore validation
@@ -59,11 +59,11 @@ TEST(SchedulerTest, EmptySimulationFromBeginning) {
 
   simulation.GetScheduler()->Simulate(1);
 
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
   std::array<int32_t, 2> expected_dim_threshold = {-10, 10};
-  EXPECT_EQ(expected_dim_threshold, grid->GetDimensionThresholds());
+  EXPECT_EQ(expected_dim_threshold, env->GetDimensionThresholds());
   std::array<int32_t, 6> expected_dimensions = {-10, 10, -10, 10, -10, 10};
-  EXPECT_EQ(expected_dimensions, grid->GetDimensions());
+  EXPECT_EQ(expected_dimensions, env->GetDimensions());
 }
 
 TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
@@ -75,22 +75,22 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   Simulation simulation(TEST_NAME, set_param);
 
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
   auto* scheduler = simulation.GetScheduler();
 
   Cell* cell = new Cell(10);
   rm->push_back(cell);
   scheduler->Simulate(1);
 
-  auto max_dimensions = grid->GetDimensionThresholds();
-  auto dimensions = grid->GetDimensions();
+  auto max_dimensions = env->GetDimensionThresholds();
+  auto dimensions = env->GetDimensions();
   rm->Clear();
 
   scheduler->Simulate(1);
 
-  EXPECT_EQ(max_dimensions, grid->GetDimensionThresholds());
-  EXPECT_EQ(dimensions, grid->GetDimensions());
-  EXPECT_FALSE(grid->HasGrown());
+  EXPECT_EQ(max_dimensions, env->GetDimensionThresholds());
+  EXPECT_EQ(dimensions, env->GetDimensions());
+  EXPECT_FALSE(env->HasGrown());
 }
 
 struct TestOp : public Operation {

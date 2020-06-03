@@ -15,9 +15,10 @@
 #include <array>
 
 #include "core/biology_module/grow_divide.h"
+#include "core/container/sim_object_vector.h"
+#include "core/environment/environment.h"
 #include "core/functor.h"
 #include "core/gpu/gpu_helper.h"
-#include "core/grid.h"
 #include "core/operation/displacement_op.h"
 #include "core/sim_object/cell.h"
 #include "gtest/gtest.h"
@@ -60,10 +61,10 @@ class DisplacementOpCpuVerify {
 
     void operator()(SimObject* so, SoHandle soh) override {
       auto* sim = Simulation::GetActive();
-      auto* grid = sim->GetGrid();
+      auto* env = sim->GetEnvironment();
       auto* param = sim->GetParam();
 
-      auto search_radius = grid->GetLargestObjectSize();
+      auto search_radius = env->GetLargestObjectSize();
       auto squared_radius_ = search_radius * search_radius;
       const auto& displacement = so->CalculateDisplacement(
           squared_radius_, param->simulation_time_step_);
@@ -112,7 +113,7 @@ void RunTest(ExecutionMode mode) {
     auto& sim = sims[i];
     sim->Activate();
     auto* rm = sim->GetResourceManager();
-    auto* grid = sim->GetGrid();
+    auto* env = sim->GetEnvironment();
     uid_ref[i] = SoUid(sim->GetSoUidGenerator()->GetHighestIndex());
 
     // Cell 0
@@ -131,7 +132,7 @@ void RunTest(ExecutionMode mode) {
     cell_1->SetPosition({0, 8, 0});
     rm->push_back(cell_1);
 
-    grid->Initialize();
+    env->Update();
 
     if (i == Case::kCompute) {
       // Execute operation
@@ -201,7 +202,7 @@ void RunTest2(ExecutionMode mode) {
     auto& sim = sims[i];
     sim->Activate();
     auto* rm = sim->GetResourceManager();
-    auto* grid = sim->GetGrid();
+    auto* env = sim->GetEnvironment();
     uid_ref[i] = SoUid(sim->GetSoUidGenerator()->GetHighestIndex());
 
     double space = 20;
@@ -217,7 +218,7 @@ void RunTest2(ExecutionMode mode) {
       }
     }
 
-    grid->Initialize();
+    env->Update();
 
     if (i == Case::kCompute) {
       // Execute operation

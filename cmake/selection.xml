@@ -53,9 +53,9 @@
     <class name="bdm::MemoryManager" />
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />
-    <class name="bdm::Grid" />
-    <class name="bdm::Grid::NeighborMutexBuilder::MutexWrapper" />
-    <class name="bdm::Grid::SimDimensionAndLargestObjectFunctor" />
+    <class name="bdm::UniformGridEnvironment" />
+    <class name="bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper" />
+    <class name="bdm::UniformGridEnvironment::SimDimensionAndLargestObjectFunctor" />
     <class name="bdm::ParallelResizeVector<double>" />
     <class name="bdm::ParallelResizeVector<bdm::Grid::Box>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::Grid::Box const*>>" />

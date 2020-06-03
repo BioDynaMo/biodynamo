@@ -20,7 +20,7 @@
 #include <limits>
 #include <vector>
 
-#include "core/grid.h"
+#include "core/environment/environment.h"
 #include "core/operation/bound_space_op.h"
 #include "core/param/param.h"
 #include "core/scheduler.h"
@@ -57,8 +57,7 @@ class DisplacementOpCpu {
     if (last_iteration_[tid] != current_iteration) {
       last_iteration_[tid] = current_iteration;
 
-      auto* grid = sim->GetGrid();
-      auto search_radius = grid->GetLargestObjectSize();
+      auto search_radius = sim->GetEnvironment()->GetLargestObjectSize();
       squared_radius_ = search_radius * search_radius;
       auto current_time =
           (current_iteration + 1) * param->simulation_time_step_;

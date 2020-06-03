@@ -21,7 +21,7 @@
 #include <unistd.h>
 #include <string>
 
-#include "core/grid.h"
+#include "core/environment/environment.h"
 #include "core/sim_object/cell.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"

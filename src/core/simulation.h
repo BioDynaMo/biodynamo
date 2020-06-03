@@ -28,6 +28,7 @@ namespace bdm {
 
 // forward declarations
 class ResourceManager;
+class Environment;
 class Grid;
 class Scheduler;
 struct Param;
@@ -93,7 +94,9 @@ class Simulation {
 
   SoUidGenerator* GetSoUidGenerator();
 
-  Grid* GetGrid();
+  [[deprecated("Replaced with GetEnvironment()")]] Environment* GetGrid();
+
+  Environment* GetEnvironment();
 
   Scheduler* GetScheduler();
 
@@ -144,7 +147,7 @@ class Simulation {
   Param* param_ = nullptr;
   SoUidGenerator* so_uid_generator_ = nullptr;  //!
   std::string name_;
-  Grid* grid_ = nullptr;              //!
+  Environment* environment_ = nullptr;  //!
   Scheduler* scheduler_ = nullptr;    //!
   OpenCLState* ocl_state_ = nullptr;  //!
   bool is_gpu_environment_initialized_ = false;

@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/resource_manager.h"
-#include "core/grid.h"
+#include "core/environment/environment.h"
 
 namespace bdm {
 
@@ -163,6 +163,27 @@ struct UpdateUidSoHMapFunctor : public Functor<void, SimObject*, SoHandle> {
   Map& rm_uid_soh_map_;
 };
 
+struct RearrangeFunctor : public Functor<void, const SoHandle&> {
+  std::vector<std::vector<SoHandle>>& sorted_so_handles;
+  const std::vector<uint64_t>& so_per_numa;
+  uint64_t cnt = 0;
+  uint64_t current_numa = 0;
+
+  RearrangeFunctor(std::vector<std::vector<SoHandle>>& sorted_so_handles,
+                   const std::vector<uint64_t>& so_per_numa)
+      : sorted_so_handles(sorted_so_handles), so_per_numa(so_per_numa) {}
+
+  void operator()(const SoHandle& handle) {
+    if (cnt == so_per_numa[current_numa]) {
+      cnt = 0;
+      current_numa++;
+    }
+
+    sorted_so_handles[current_numa].push_back(handle);
+    cnt++;
+  }
+};
+
 void ResourceManager::SortAndBalanceNumaNodes() {
   // balance simulation objects per numa node according to the number of
   // threads associated with each numa domain
@@ -202,21 +223,9 @@ void ResourceManager::SortAndBalanceNumaNodes() {
     }
   }
 
-  uint64_t cnt = 0;
-  uint64_t current_numa = 0;
-
-  auto rearrange = [&](const SoHandle& handle) {
-    if (cnt == so_per_numa[current_numa]) {
-      cnt = 0;
-      current_numa++;
-    }
-
-    sorted_so_handles[current_numa].push_back(handle);
-    cnt++;
-  };
-
-  auto* grid = Simulation::GetActive()->GetGrid();
-  grid->IterateZOrder(rearrange);
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  RearrangeFunctor rearrange(sorted_so_handles, so_per_numa);
+  env->IterateZOrder(rearrange);
 
   auto* param = Simulation::GetActive()->GetParam();
   const bool minimize_memory = param->minimize_memory_while_rebalancing_;

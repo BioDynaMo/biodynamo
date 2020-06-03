@@ -12,7 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/grid.h"
+#include "core/environment/environment.h"
+#include "core/environment/uniform_grid_environment.h"
 #include "core/sim_object/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
@@ -36,11 +37,12 @@ void CellFactory(ResourceManager* rm, size_t cells_per_dim) {
 TEST(GridTest, SetupGrid) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* grid =
+      static_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
 
   CellFactory(rm, 4);
 
-  grid->Initialize();
+  grid->Update();
 
   std::unordered_map<SoUid, std::vector<SoUid>> neighbors;
   neighbors.reserve(rm->GetNumSimObjects());
@@ -85,10 +87,11 @@ TEST(GridTest, SetupGrid) {
 
 void RunUpdateGridTest(Simulation* simulation) {
   auto* rm = simulation->GetResourceManager();
-  auto* grid = simulation->GetGrid();
+  auto* grid =
+      static_cast<UniformGridEnvironment*>(simulation->GetEnvironment());
 
   // Update the grid
-  grid->UpdateGrid();
+  grid->Update();
 
   std::unordered_map<SoUid, std::vector<SoUid>> neighbors;
   neighbors.reserve(rm->GetNumSimObjects());
@@ -133,16 +136,16 @@ void RunUpdateGridTest(Simulation* simulation) {
   EXPECT_EQ(expected_61, neighbors[SoUid(61)]);
 }
 
-// TODO(lukas) Add tests for Grid::ForEachNeighbor
+// TODO(lukas) Add tests for UniformGridEnvironment::ForEachNeighbor
 
 TEST(GridTest, UpdateGrid) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
 
   CellFactory(rm, 4);
 
-  grid->Initialize();
+  env->Update();
 
   // Remove cells 1 and 42
   rm->Remove(SoUid(1));
@@ -156,14 +159,14 @@ TEST(GridTest, UpdateGrid) {
 TEST(GridTest, NoRaceConditionDuringUpdate) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
 
   CellFactory(rm, 4);
 
   // make sure that there are multiple cells per box
   rm->GetSimObject(SoUid(0))->SetDiameter(60);
 
-  grid->Initialize();
+  env->Update();
 
   // Remove cells 1 and 42
   rm->Remove(SoUid(1));
@@ -179,11 +182,12 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
 TEST(GridTest, GetBoxIndex) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* grid =
+      static_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
 
   CellFactory(rm, 3);
 
-  grid->Initialize();
+  grid->Update();
 
   Double3 position_0 = {{0, 0, 0}};
   Double3 position_1 = {{1e-15, 1e-15, 1e-15}};
@@ -205,21 +209,21 @@ TEST(GridTest, GetBoxIndex) {
 TEST(GridTest, GridDimensions) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
 
   CellFactory(rm, 3);
 
-  grid->Initialize();
+  env->Update();
 
   std::array<int32_t, 6> expected_dim_0 = {{-30, 90, -30, 90, -30, 90}};
-  auto& dim_0 = grid->GetDimensions();
+  auto& dim_0 = env->GetDimensions();
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
   rm->GetSimObject(SoUid(0))->SetPosition({{100, 0, 0}});
-  grid->UpdateGrid();
+  env->Update();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
-  auto& dim_1 = grid->GetDimensions();
+  auto& dim_1 = env->GetDimensions();
 
   EXPECT_EQ(expected_dim_1, dim_1);
 }
@@ -227,12 +231,13 @@ TEST(GridTest, GridDimensions) {
 TEST(GridTest, GetBoxCoordinates) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* grid =
+      static_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
 
   CellFactory(rm, 3);
 
   // expecting a 4 * 4 * 4 grid
-  grid->Initialize();
+  grid->Update();
 
   EXPECT_ARR_EQ({3, 0, 0}, grid->GetBoxCoordinates(3));
   EXPECT_ARR_EQ({1, 2, 0}, grid->GetBoxCoordinates(9));
@@ -248,33 +253,30 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
 
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
+  auto* env = simulation.GetEnvironment();
 
   rm->push_back(new Cell(10));
 
-  grid->Initialize();
+  env->Update();
 
-  auto max_dimensions = grid->GetDimensionThresholds();
+  auto max_dimensions = env->GetDimensionThresholds();
   EXPECT_EQ(1, max_dimensions[0]);
   EXPECT_EQ(99, max_dimensions[1]);
 }
 
-TEST(GridTest, IterateZOrder) {
-  Simulation simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-  auto* grid = simulation.GetGrid();
-
-  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
-  CellFactory(rm, 3);
-
-  // expecting a 4 * 4 * 4 grid
-  grid->Initialize();
-
+struct ZOrderCallback : Functor<void, const SoHandle&> {
   std::vector<std::set<SoUid>> zorder;
-  zorder.resize(8);
   uint64_t box_cnt = 0;
   uint64_t cnt = 0;
-  auto lambda = [&](const SoHandle& soh) {
+  ResourceManager* rm;
+  SoUid ref_uid;
+
+  ZOrderCallback(ResourceManager* rm, SoUid ref_uid)
+      : rm(rm), ref_uid(ref_uid) {
+    zorder.resize(8);
+  }
+
+  void operator()(const SoHandle& soh) {
     if (cnt == 8 || cnt == 12 || cnt == 16 || cnt == 18 || cnt == 22 ||
         cnt == 24 || cnt == 26) {
       box_cnt++;
@@ -282,10 +284,24 @@ TEST(GridTest, IterateZOrder) {
     auto* so = rm->GetSimObjectWithSoHandle(soh);
     zorder[box_cnt].insert(so->GetUid() - ref_uid);
     cnt++;
-  };
-  grid->IterateZOrder(lambda);
+  }
+};
 
-  ASSERT_EQ(27u, cnt);
+TEST(GridTest, IterateZOrder) {
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  auto* env = simulation.GetEnvironment();
+
+  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
+  CellFactory(rm, 3);
+
+  // expecting a 4 * 4 * 4 grid
+  env->Update();
+
+  ZOrderCallback callback(rm, ref_uid);
+  env->IterateZOrder(callback);
+
+  ASSERT_EQ(27u, callback.cnt);
   // check each box; no order within a box
   std::vector<std::set<SoUid>> expected(8);
   expected[0] = std::set<SoUid>{SoUid(0), SoUid(1),  SoUid(3),  SoUid(4),
@@ -298,7 +314,7 @@ TEST(GridTest, IterateZOrder) {
   expected[6] = std::set<SoUid>{SoUid(24), SoUid(25)};
   expected[7] = std::set<SoUid>{SoUid(26)};
   for (int i = 0; i < 8; i++) {
-    EXPECT_EQ(expected[i], zorder[i]);
+    EXPECT_EQ(expected[i], callback.zorder[i]);
   }
 }
 

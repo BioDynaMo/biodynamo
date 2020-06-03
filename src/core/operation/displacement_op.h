@@ -24,7 +24,7 @@
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #include "core/operation/displacement_op_opencl.h"
 #endif
-#include "core/grid.h"
+#include "core/environment/environment.h"
 #include "core/operation/operation.h"
 #include "core/param/param.h"
 #include "core/scheduler.h"

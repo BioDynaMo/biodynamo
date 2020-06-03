@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_GRID_H_
-#define CORE_GRID_H_
+#ifndef CORE_ENVIRONMENT_UNIFORM_GRID_ENVIRONMENT_H_
+#define CORE_ENVIRONMENT_UNIFORM_GRID_ENVIRONMENT_H_
 
 #include <assert.h>
 #include <omp.h>
@@ -39,6 +39,7 @@
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/container/sim_object_vector.h"
+#include "core/environment/environment.h"
 #include "core/functor.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
@@ -47,52 +48,10 @@
 
 namespace bdm {
 
-/// FIFO data structure. Stores max N number of objects.
-/// Adding more elements will overwrite the oldest ones.
-template <typename T, uint64_t N>
-class CircularBuffer {
- public:
-  CircularBuffer() {
-    for (uint64_t i = 0; i < N; i++) {
-      data_[i] = T();
-    }
-  }
-
-  void clear() {  // NOLINT
-    position_ = 0;
-    for (uint64_t i = 0; i < N; i++) {
-      data_[i].clear();
-    }
-  }
-
-  void push_back(const T& data) {  // NOLINT
-    data_[position_] = data;
-    Increment();
-  }
-
-  T& operator[](uint64_t idx) { return data_[(idx + position_) % N]; }
-
-  const T& operator[](uint64_t idx) const {
-    return data_[(idx + position_) % N];
-  }
-
-  /// Calling function `End` and afterwards `Increment` is equivalent to
-  /// `push_back`, but avoids copying data
-  T* End() { return &(data_[position_]); }
-
-  void Increment() {
-    position_++;
-    position_ %= N;
-  }
-
- private:
-  T data_[N];
-  uint64_t position_ = 0;
-};
-
 /// A class that represents Cartesian 3D grid
-class Grid {
-  // DisplacementOpCuda needs access to some Grid private members to reconstruct
+class UniformGridEnvironment : public Environment {
+  // DisplacementOpCuda needs access to some UniformGridEnvironment private
+  // members to reconstruct
   // the grid on GPU (same for DisplacementOpOpenCL)
   friend class DisplacementOpCuda;
   friend class DisplacementOpOpenCL;
@@ -133,7 +92,7 @@ class Grid {
     /// @param[in]  so       The object's identifier
     /// @param   AddObject   successors   The successors
     void AddObject(SoHandle soh, SimObjectVector<SoHandle>* successors,
-                   Grid* grid) {
+                   UniformGridEnvironment* grid) {
       std::lock_guard<Spinlock> lock_guard(lock_);
 
       if (timestamp_ != grid->timestamp_) {
@@ -149,7 +108,7 @@ class Grid {
 
     /// An iterator that iterates over the cells in this box
     struct Iterator {
-      Iterator(Grid* grid, const Box* box)
+      Iterator(UniformGridEnvironment* grid, const Box* box)
           : grid_(grid), current_value_(box->start_), countdown_(box->length_) {
         if (grid->timestamp_ != box->timestamp_) {
           countdown_ = 0;
@@ -169,7 +128,7 @@ class Grid {
       SoHandle operator*() const { return current_value_; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
-      Grid* grid_;
+      UniformGridEnvironment* grid_;
       /// The current simulation object to be considered
       SoHandle current_value_;
       /// The remain number of simulation objects to consider
@@ -177,7 +136,9 @@ class Grid {
     };
 
     Iterator begin() const {  // NOLINT
-      return Iterator(Simulation::GetActive()->GetGrid(), this);
+      auto* grid = static_cast<UniformGridEnvironment*>(
+          Simulation::GetActive()->GetEnvironment());
+      return Iterator(grid, this);
     }
   };
 
@@ -250,24 +211,15 @@ class Grid {
     kHigh    /**< The closest 26  neighboring boxes */
   };
 
-  Grid() {}
+  UniformGridEnvironment(Adjacency adjacency = kHigh) : adjacency_(adjacency) {}
 
-  Grid(Grid const&) = delete;
-  void operator=(Grid const&) = delete;
+  UniformGridEnvironment(UniformGridEnvironment const&) = delete;
+  void operator=(UniformGridEnvironment const&) = delete;
 
-  /// @brief      Initialize the grid with the given simulation objects
-  /// @param[in]  adjacency    The adjacency (see #Adjacency)
-  void Initialize(Adjacency adjacency = kHigh) {
-    adjacency_ = adjacency;
-
-    UpdateGrid();
-    initialized_ = true;
-  }
-
-  virtual ~Grid() {}
+  virtual ~UniformGridEnvironment() {}
 
   /// Clears the grid
-  void ClearGrid() {
+  void Clear() override {
     box_length_ = 1;
     largest_object_size_ = 0;
     num_boxes_axis_ = {{0}};
@@ -280,7 +232,7 @@ class Grid {
   }
 
   struct AssignToBoxesFunctor : public Functor<void, SimObject*, SoHandle> {
-    AssignToBoxesFunctor(Grid* grid) : grid_(grid) {}
+    AssignToBoxesFunctor(UniformGridEnvironment* grid) : grid_(grid) {}
 
     void operator()(SimObject* sim_object, SoHandle soh) override {
       const auto& position = sim_object->GetPosition();
@@ -291,20 +243,20 @@ class Grid {
     }
 
    private:
-    Grid* grid_ = nullptr;
+    UniformGridEnvironment* grid_ = nullptr;
   };
 
   /// Updates the grid, as simulation objects may have moved, added or deleted
-  void UpdateGrid() {
+  void Update() override {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     if (rm->GetNumSimObjects() != 0) {
-      ClearGrid();
+      Clear();
       timestamp_++;
 
       auto inf = Math::kInfinity;
       std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-      CalculateGridDimensions(&tmp_dim);
+      CalcSimDimensionsAndLargestSimObject(&tmp_dim, &largest_object_size_);
       RoundOffGridDimensions(tmp_dim);
 
       auto los = ceil(largest_object_size_);
@@ -395,7 +347,7 @@ class Grid {
         has_grown_ = false;
       } else {
         Log::Fatal(
-            "Grid",
+            "UniformGridEnvironment",
             "You tried to initialize an empty simulation without bound space. "
             "Therefore we cannot determine the size of the simulation space. "
             "Please add simulation objects, or set Param::bound_space_, "
@@ -472,13 +424,12 @@ class Grid {
 
   /// This method iterates over all elements. Iteration is performed in
   /// Z-order of boxes. There is no particular order for elements inside a box.
-  template <typename Lambda>
-  void IterateZOrder(const Lambda& lambda) {
+  void IterateZOrder(Functor<void, const SoHandle&>& callback) override {
     UpdateBoxZOrder();
     for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
       auto it = zorder_sorted_boxes_[i].second->begin();
       while (!it.IsAtEnd()) {
-        lambda(*it);
+        callback(*it);
         ++it;
       }
     }
@@ -517,7 +468,7 @@ class Grid {
   /// @param      query   The query object
   ///
   void ForEachNeighbor(Functor<void, const SimObject*, double>& lambda,
-                       const SimObject& query) {
+                       const SimObject& query) override {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -624,21 +575,19 @@ class Grid {
   }
 
   /// Gets the size of the largest object in the grid
-  double GetLargestObjectSize() const { return largest_object_size_; }
+  double GetLargestObjectSize() const override { return largest_object_size_; }
 
-  const std::array<int32_t, 6>& GetDimensions() const {
+  const std::array<int32_t, 6>& GetDimensions() const override {
     return grid_dimensions_;
   }
 
-  const std::array<int32_t, 2>& GetDimensionThresholds() const {
+  const std::array<int32_t, 2>& GetDimensionThresholds() const override {
     return threshold_dimensions_;
   }
 
   uint64_t GetNumBoxes() const { return boxes_.size(); }
 
   uint32_t GetBoxLength() { return box_length_; }
-
-  bool HasGrown() { return has_grown_; }
 
   std::array<uint32_t, 3> GetBoxCoordinates(size_t box_idx) const {
     std::array<uint32_t, 3> box_coord;
@@ -648,8 +597,6 @@ class Grid {
     box_coord[0] = remainder % num_boxes_axis_[0];
     return box_coord;
   }
-
-  bool IsInitialized() { return initialized_; }
 
   /// @brief      Gets the information about the grid
   ///
@@ -677,15 +624,16 @@ class Grid {
   /// This class ensures thread-safety for the InPlaceExecutionContext for the
   /// case
   /// that a simulation object modifies its neighbors.
-  class NeighborMutexBuilder {
+  class GridNeighborMutexBuilder : public Environment::NeighborMutexBuilder {
    public:
     /// The NeighborMutex class is a synchronization primitive that can be
     /// used to protect sim_objects data from being simultaneously accessed by
     /// multiple threads.
-    class NeighborMutex {
+    class GridNeighborMutex
+        : public Environment::NeighborMutexBuilder::NeighborMutex {
      public:
-      NeighborMutex(const FixedSizeVector<uint64_t, 27>& mutex_indices,
-                    NeighborMutexBuilder* mutex_builder)
+      GridNeighborMutex(const FixedSizeVector<uint64_t, 27>& mutex_indices,
+                        GridNeighborMutexBuilder* mutex_builder)
           : mutex_indices_(mutex_indices), mutex_builder_(mutex_builder) {
         // Deadlocks occur if mutliple threads try to acquire the same locks,
         // but in different order.
@@ -693,7 +641,9 @@ class Grid {
         std::sort(mutex_indices_.begin(), mutex_indices_.end());
       }
 
-      void lock() {  // NOLINT
+      virtual ~GridNeighborMutex() {}
+
+      void lock() override {  // NOLINT
         for (auto idx : mutex_indices_) {
           auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
           // acquire lock (and spin if another thread is holding it)
@@ -702,7 +652,7 @@ class Grid {
         }
       }
 
-      void unlock() {  // NOLINT
+      void unlock() override {  // NOLINT
         for (auto idx : mutex_indices_) {
           auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
           mutex.clear(std::memory_order_release);
@@ -711,7 +661,7 @@ class Grid {
 
      private:
       FixedSizeVector<uint64_t, 27> mutex_indices_;
-      NeighborMutexBuilder* mutex_builder_;
+      GridNeighborMutexBuilder* mutex_builder_;
     };
 
     /// Used to store mutexes in a vector.
@@ -722,26 +672,30 @@ class Grid {
       std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
     };
 
+    virtual ~GridNeighborMutexBuilder() {}
+
     void Update() {
-      auto* grid = Simulation::GetActive()->GetGrid();
+      auto* grid = static_cast<UniformGridEnvironment*>(
+          Simulation::GetActive()->GetEnvironment());
       mutexes_.resize(grid->GetNumBoxes());
     }
 
-    NeighborMutex GetMutex(uint64_t box_idx) {
-      auto* grid = Simulation::GetActive()->GetGrid();
+    NeighborMutex GetMutex(uint64_t box_idx) override {
+      auto* grid = static_cast<UniformGridEnvironment*>(
+          Simulation::GetActive()->GetEnvironment());
       FixedSizeVector<uint64_t, 27> box_indices;
       grid->GetMooreBoxIndices(&box_indices, box_idx);
-      return NeighborMutex(box_indices, this);
+      return GridNeighborMutex(box_indices, this);
     }
 
    private:
-    /// one mutex for each box in `Grid::boxes_`
+    /// one mutex for each box in `UniformGridEnvironment::boxes_`
     std::vector<MutexWrapper> mutexes_;
   };
 
   /// Returns the `NeighborMutexBuilder`. The client use it to create a
   /// `NeighborMutex`.
-  NeighborMutexBuilder* GetNeighborMutexBuilder() {
+  NeighborMutexBuilder* GetNeighborMutexBuilder() override {
     return nb_mutex_builder_.get();
   }
 
@@ -750,7 +704,7 @@ class Grid {
   /// Using parallel resize vector to enable parallel initialization and thus
   /// better scalability.
   ParallelResizeVector<Box> boxes_;
-  /// is incremented at each call to UpdateGrid
+  /// is incremented at each call to Update
   /// This is used to decide if boxes should be reinitialized
   uint32_t timestamp_ = 0;
   /// Length of a Box
@@ -775,18 +729,14 @@ class Grid {
   /// Stores the min / max dimension value that need to be surpassed in order
   /// to trigger a diffusion grid change
   std::array<int32_t, 2> threshold_dimensions_;
-  /// Flag to indicate that the grid dimensions have increased
-  bool has_grown_ = false;
-  /// Flag to indicate if the grid has been initialized or not
-  bool initialized_ = false;
   /// stores pairs of <box morton code,  box pointer> sorted by morton code.
   ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
 
   /// Holds instance of NeighborMutexBuilder.
   /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism_`
   /// is set to `kAutomatic`
-  std::unique_ptr<NeighborMutexBuilder> nb_mutex_builder_ =
-      std::make_unique<NeighborMutexBuilder>();
+  std::unique_ptr<GridNeighborMutexBuilder> nb_mutex_builder_ =
+      std::make_unique<GridNeighborMutexBuilder>();
 
   void CheckGridGrowth() {
     // Determine if the grid dimensions have changed (changed in the sense that
@@ -800,127 +750,12 @@ class Grid {
       has_grown_ = true;
     }
     if (max_gd > threshold_dimensions_[1]) {
-      Log::Info("Grid",
+      Log::Info("UniformGridEnvironment",
                 "Your simulation objects are getting near the edge of "
                 "the simulation space. Be aware of boundary conditions that "
                 "may come into play!");
       threshold_dimensions_[1] = max_gd;
       has_grown_ = true;
-    }
-  }
-
-  struct SimDimensionAndLargestObjectFunctor
-      : public Functor<void, SimObject*, SoHandle> {
-    using Type = std::vector<std::array<double, 8>>;
-
-    SimDimensionAndLargestObjectFunctor(Type& xmin, Type& xmax, Type& ymin,
-                                        Type& ymax, Type& zmin, Type& zmax,
-                                        Type& largest)
-        : xmin_(xmin),
-          xmax_(xmax),
-          ymin_(ymin),
-          ymax_(ymax),
-          zmin_(zmin),
-          zmax_(zmax),
-          largest_(largest) {}
-
-    void operator()(SimObject* so, SoHandle) override {
-      auto tid = omp_get_thread_num();
-      const auto& position = so->GetPosition();
-      // x
-      if (position[0] < xmin_[tid][0]) {
-        xmin_[tid][0] = position[0];
-      }
-      if (position[0] > xmax_[tid][0]) {
-        xmax_[tid][0] = position[0];
-      }
-      // y
-      if (position[1] < ymin_[tid][0]) {
-        ymin_[tid][0] = position[1];
-      }
-      if (position[1] > ymax_[tid][0]) {
-        ymax_[tid][0] = position[1];
-      }
-      // z
-      if (position[2] < zmin_[tid][0]) {
-        zmin_[tid][0] = position[2];
-      }
-      if (position[2] > zmax_[tid][0]) {
-        zmax_[tid][0] = position[2];
-      }
-      // largest object
-      auto diameter = so->GetDiameter();
-      if (diameter > largest_[tid][0]) {
-        largest_[tid][0] = diameter;
-      }
-    }
-
-    Type& xmin_;
-    Type& xmax_;
-    Type& ymin_;
-    Type& ymax_;
-    Type& zmin_;
-    Type& zmax_;
-
-    Type& largest_;
-  };
-
-  /// Calculates what the grid dimensions need to be in order to contain all the
-  /// simulation objects
-  void CalculateGridDimensions(std::array<double, 6>* ret_grid_dimensions) {
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
-    const auto max_threads = omp_get_max_threads();
-    // allocate version for each thread - avoid false sharing by padding them
-    // assumes 64 byte cache lines (8 * sizeof(double))
-    std::vector<std::array<double, 8>> xmin(max_threads, {{Math::kInfinity}});
-    std::vector<std::array<double, 8>> xmax(max_threads, {{-Math::kInfinity}});
-
-    std::vector<std::array<double, 8>> ymin(max_threads, {{Math::kInfinity}});
-    std::vector<std::array<double, 8>> ymax(max_threads, {{-Math::kInfinity}});
-
-    std::vector<std::array<double, 8>> zmin(max_threads, {{Math::kInfinity}});
-    std::vector<std::array<double, 8>> zmax(max_threads, {{-Math::kInfinity}});
-
-    std::vector<std::array<double, 8>> largest(max_threads, {{0}});
-
-    SimDimensionAndLargestObjectFunctor functor(xmin, xmax, ymin, ymax, zmin,
-                                                zmax, largest);
-    rm->ApplyOnAllElementsParallelDynamic(1000, functor);
-
-    // reduce partial results into global one
-    double& gxmin = (*ret_grid_dimensions)[0];
-    double& gxmax = (*ret_grid_dimensions)[1];
-    double& gymin = (*ret_grid_dimensions)[2];
-    double& gymax = (*ret_grid_dimensions)[3];
-    double& gzmin = (*ret_grid_dimensions)[4];
-    double& gzmax = (*ret_grid_dimensions)[5];
-    for (int tid = 0; tid < max_threads; tid++) {
-      // x
-      if (xmin[tid][0] < gxmin) {
-        gxmin = xmin[tid][0];
-      }
-      if (xmax[tid][0] > gxmax) {
-        gxmax = xmax[tid][0];
-      }
-      // y
-      if (ymin[tid][0] < gymin) {
-        gymin = ymin[tid][0];
-      }
-      if (ymax[tid][0] > gymax) {
-        gymax = ymax[tid][0];
-      }
-      // z
-      if (zmin[tid][0] < gzmin) {
-        gzmin = zmin[tid][0];
-      }
-      if (zmax[tid][0] > gzmax) {
-        gzmax = zmax[tid][0];
-      }
-      // larget object
-      if (largest[tid][0] > largest_object_size_) {
-        largest_object_size_ = largest[tid][0];
-      }
     }
   }
 
@@ -1060,8 +895,6 @@ class Grid {
   ///         B = back
   /// For each box pair which is centro-symmetric only one box is taken --
   /// e.g. E-W: E, or BNW-FSE: BNW
-  /// NB: for the update mechanism using a CircularBuffer the order is
-  /// important.
   ///
   ///        (x-axis to the right \ y-axis up)
   ///        z=1
@@ -1154,4 +987,4 @@ class Grid {
 
 }  // namespace bdm
 
-#endif  // CORE_GRID_H_
+#endif  // CORE_ENVIRONMENT_UNIFORM_GRID_ENVIRONMENT_H_

@@ -17,7 +17,7 @@
 
 #include <algorithm>
 #include <vector>
-#include "core/grid.h"
+#include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/io.h"
@@ -386,7 +386,7 @@ inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_so_per_type) {
 
   CheckApplyOnAllElements(rm, num_so_per_type);
 
-  simulation.GetGrid()->UpdateGrid();
+  simulation.GetEnvironment()->Update();
   rm->SortAndBalanceNumaNodes();
 
   CheckApplyOnAllElements(rm, num_so_per_type, true);
@@ -555,7 +555,7 @@ inline void RunSortAndApplyOnAllElementsParallelDynamic(
 
   CheckApplyOnAllElementsDynamic(rm, num_so_per_type, batch_size);
 
-  simulation.GetGrid()->UpdateGrid();
+  simulation.GetEnvironment()->Update();
   rm->SortAndBalanceNumaNodes();
 
   CheckApplyOnAllElementsDynamic(rm, num_so_per_type, batch_size, true);

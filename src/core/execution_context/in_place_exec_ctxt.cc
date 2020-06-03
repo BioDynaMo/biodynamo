@@ -16,8 +16,9 @@
 
 #include <algorithm>
 #include <mutex>
+#include <utility>
 
-#include "core/grid.h"
+#include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/sim_object/sim_object.h"
@@ -184,7 +185,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
 
 void InPlaceExecutionContext::Execute(
     SimObject* so, const std::vector<Operation*>& operations) {
-  auto* grid = Simulation::GetActive()->GetGrid();
+  auto* env = Simulation::GetActive()->GetEnvironment();
   auto* param = Simulation::GetActive()->GetParam();
 
   if (param->thread_safety_mechanism_ ==
@@ -204,7 +205,7 @@ void InPlaceExecutionContext::Execute(
     locks.clear();
   } else if (param->thread_safety_mechanism_ ==
              Param::ThreadSafetyMechanism::kAutomatic) {
-    auto* nb_mutex_builder = grid->GetNeighborMutexBuilder();
+    auto* nb_mutex_builder = env->GetNeighborMutexBuilder();
     auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
     std::lock_guard<decltype(mutex)> guard(mutex);
     neighbor_cache_.clear();
@@ -230,21 +231,6 @@ void InPlaceExecutionContext::push_back(SimObject* new_so) {  // NOLINT
   new_so_map_->Insert(new_so->GetUid(), {new_so, timesteps});
 }
 
-void InPlaceExecutionContext::ForEachNeighbor(
-    const std::function<void(const SimObject*)>& lambda,
-    const SimObject& query) {
-  // use values in cache
-  if (neighbor_cache_.size() != 0) {
-    for (auto& pair : neighbor_cache_) {
-      lambda(pair.first);
-    }
-    return;
-  }
-
-  auto* grid = Simulation::GetActive()->GetGrid();
-  grid->ForEachNeighbor(lambda, query);
-}
-
 struct ForEachNeighborFunctor : public Functor<void, const SimObject*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
   Functor<void, const SimObject*, double>& function_;
@@ -257,7 +243,7 @@ struct ForEachNeighborFunctor : public Functor<void, const SimObject*, double> {
 
   void operator()(const SimObject* so, double squared_distance) override {
     if (param->cache_neighbors_) {
-      neighbor_cache_.push_back(make_pair(so, squared_distance));
+      neighbor_cache_.push_back(std::make_pair(so, squared_distance));
     }
     function_(so, squared_distance);
   }
@@ -273,10 +259,10 @@ void InPlaceExecutionContext::ForEachNeighbor(
     return;
   }
 
-  // forward call to grid and populate cache
-  auto* grid = Simulation::GetActive()->GetGrid();
+  // forward call to env and populate cache
+  auto* env = Simulation::GetActive()->GetEnvironment();
   ForEachNeighborFunctor for_each(lambda, neighbor_cache_);
-  grid->ForEachNeighbor(for_each, query);
+  env->ForEachNeighbor(for_each, query);
 }
 
 struct ForEachNeighborWithinRadiusFunctor
@@ -296,7 +282,7 @@ struct ForEachNeighborWithinRadiusFunctor
 
   void operator()(const SimObject* so, double squared_distance) override {
     if (param->cache_neighbors_) {
-      neighbor_cache_.push_back(make_pair(so, squared_distance));
+      neighbor_cache_.push_back(std::make_pair(so, squared_distance));
     }
     if (squared_distance < squared_radius_) {
       function_(so, 0);
@@ -317,12 +303,12 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
     return;
   }
 
-  // forward call to grid and populate cache
-  auto* grid = Simulation::GetActive()->GetGrid();
+  // forward call to env and populate cache
+  auto* env = Simulation::GetActive()->GetEnvironment();
 
   ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
                                               squared_radius);
-  grid->ForEachNeighbor(for_each, query);
+  env->ForEachNeighbor(for_each, query);
 }
 
 SimObject* InPlaceExecutionContext::GetSimObject(const SoUid& uid) {

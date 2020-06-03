@@ -14,8 +14,8 @@
 
 #include <gtest/gtest.h>
 
+#include "core/environment/environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
-#include "core/grid.h"
 #include "core/model_initializer.h"
 #include "core/sim_object/cell.h"
 #include "unit/test_util/test_sim_object.h"
@@ -286,7 +286,7 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
   // initialize
   const auto& all_exec_ctxts = sim.GetAllExecCtxts();
   all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
-  sim.GetGrid()->Initialize();
+  sim.GetEnvironment()->Update();
 
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.
