@@ -283,8 +283,8 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/NOTICE
             )
 
-    # BioDynaMo paraview plugin
-    if(paraview)
+    # BioDynaMo paraview plugin (Apple support when we upgrade to v5.8 on macos)
+    if(paraview AND NOT APPLE)
       add_copy_files(copy_files_bdm
               DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR}
               ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so

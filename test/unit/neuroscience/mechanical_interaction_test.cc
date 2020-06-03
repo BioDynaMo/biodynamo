@@ -317,8 +317,6 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  gErrorIgnoreLevel = kWarning;
-
   NeuronSoma* neuron = new NeuronSoma();
   auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
@@ -488,8 +486,6 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
-
-  gErrorIgnoreLevel = kWarning;
 
   NeuronSoma* neuron1 = new NeuronSoma();
   auto neuron1_id = neuron1->GetUid();

@@ -34,10 +34,10 @@ project(BioDynaMo LANGUAGES VERSION "0.1.0")
 set(ENV{LANG} C)
 
 # Directory in which we saved all the cmake informations.
-set(ENV{BDM_CMAKE_DIR} ${CMAKE_SOURCE_DIR}/cmake)
+set(BDM_CMAKE_DIR ${CMAKE_SOURCE_DIR}/cmake)
 
 # Add an additional path to make include() look in the right places.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_CMAKE_DIR}")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/")
 
 # Include some cmake files with utilities
@@ -111,20 +111,21 @@ option(verbose   "Enable verbosity when installing." OFF)
 option(tcmalloc  "Use tcmalloc for memory allocations." OFF)
 option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
+option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 
 if(APPLE)
-   # valgrind currently broken on macOS 10.12
-   option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." OFF)
-else()
-   option(valgrind "Enable valgrind tests and make build compatible with valgrind tool." ON)
+  find_program(BREW_BIN brew)
+  if(BREW_BIN)
+    execute_process(COMMAND ${BREW_BIN} --prefix llvm
+                    OUTPUT_VARIABLE LLVM_BREW_PREFIX
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  endif()
 endif()
 
 if(UNIX AND NOT APPLE)
-    set(LINUX TRUE)
-    add_definitions("-DLINUX")
+  set(LINUX TRUE)
+  add_definitions("-DLINUX")
 endif()
-
-add_definitions(-DBDM_SRC_DIR=\"${CMAKE_SOURCE_DIR}/src\")  # escaped quotes are mandatory
 
 # -------------------- find packages ------------------------------------------
 if (tcmalloc)
@@ -151,13 +152,17 @@ if (NOT WGET_BIN)
 endif()
 
 # Check if Python 3.6.9 from PyEnv is installed
+set(pythonvers "3.6.9")
+string(REPLACE "." ";" pythonvers_list ${pythonvers})
+list(GET pythonvers_list 0 pythonvers_major)
+list(GET pythonvers_list 1 pythonvers_minor)
+list(GET pythonvers_list 2 pythonvers_patch)
 if (DEFINED ENV{PYENV_ROOT})
-  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
+  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
 else()
-  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/3.6.9" CACHE PATH "The path to the Python 3.6.9 installation of PyEnv.")
+  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
 endif()
-set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython3.6m${CMAKE_SHARED_LIBRARY_SUFFIX}")
-message("Python_LIB_PATH = ${Python_LIB_PATH}")
+set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
 if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
   set(PYTHON_FOUND TRUE)
   set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
@@ -165,8 +170,8 @@ if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
   message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")
 else()
   message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
-    "Please run ./prerequisites.sh again before calling cmake. The Python 3.6.9 "
-    "interpreter is required in order to successfully use BioDynaMo."
+    "Please run ./prerequisites.sh again before calling cmake. The Python ${pythonvers} "
+    "interpreter is required in order to successfully use BioDynaMo. "
     "If you installed PyEnv somewhere other than in your home directory, please "
     "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")
 endif()
@@ -180,13 +185,15 @@ endif()
 
 # Check if GLUT is present. If we do not have it, then we
 # disable directly paraview.
-find_package(GLUT)
-if(NOT GLUT_FOUND)
-    PRINT_WARNING()
-    MESSAGE("GLUT libraries were not found in the system. In order to use ParaView they need to be installed.
-If you want to do that automatically, please run the ./prerequisites.sh script.")
-    PRINT_LINE()
-    SET(paraview OFF)
+if(paraview)
+  find_package(GLUT)
+  if(NOT GLUT_FOUND)
+      PRINT_WARNING()
+      MESSAGE("GLUT libraries were not found in the system. In order to use ParaView they need to be installed.
+ If you want to do that automatically, please run the ./prerequisites.sh script.")
+      PRINT_LINE()
+      SET(paraview OFF)
+  endif()
 endif()
 
 # Check if we have a compatible openmp compiler
@@ -268,8 +275,15 @@ if(paraview)
     endif()
 
     # Check the first time if ParaView exists in the system.
-    find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+    # Upgrade to ParaView 5.8 on MacOS will happen as soon as Kitware releases the Python3
+    # compatible binaries
+    if(APPLE)
+      find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
+            vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+    else()
+      find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
             PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+    endif()
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
     # to download it.
@@ -292,11 +306,16 @@ if(paraview)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
-      find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+      if(APPLE)
+        find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
+              vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+      else()
+        find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+      endif()
     endif()
 
-    include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
+    include_directories(${ParaView_PREFIX_PATH}/include/paraview-${PARAVIEW_VERSION})
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
@@ -325,7 +344,7 @@ endif()
 
 # Check if we can find the valgrind executable
 if (valgrind)
-    find_package(Valgrind QUIET)
+    find_package(Valgrind)
     if (NOT VALGRIND_FOUND)
         MESSAGE("valgrind was not found in your system, therefore it was disabled. You will not be able to run the memory
 checks. In order to enable this functionality please install valgrind for your system. This can be done automatically with
@@ -441,10 +460,6 @@ if(paraview)
                     PLUGIN "TRUE")
   set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
   SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
-else()
-  # If paraview is disabled, linking the biodynamo-unit-tests failes due to
-  # an undefined tbb reference error. Adding this library fixed this
-  set(REQUIRED_PARAVIEW_LIBRARIES "tbb")
 endif()
 
 if(${VTune_FOUND})
@@ -558,7 +573,7 @@ if(OPENCL_FOUND OR CUDA_FOUND)
   bdm_add_executable(cell_division_gpu
                       SOURCES test/system/cell_division_gpu/src/cell_division_gpu.cc
                       HEADERS test/system/cell_division_gpu/src/cell_division_gpu.h
-                      LIBRARIES biodynamo tbb)
+                      LIBRARIES biodynamo)
 endif()
 
 # -------------------- Generate notebooks --------------------------------------
@@ -628,13 +643,17 @@ set(cxxflagsrelease ${CMAKE_CXX_FLAGS_RELEASE})
 set(ldflags ${CMAKE_EXE_LINKER_FLAGS})
 set(soflags ${CMAKE_SHARED_LINKER_FLAGS})
 set(socreatecxxflags ${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS})
-set(bindir ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(libdir ${CMAKE_CURRENT_BINARY_DIR}/lib)
-set(incdir ${CMAKE_CURRENT_BINARY_DIR}/include)
-set(cmakedir ${CMAKE_CURRENT_BINARY_DIR}/share/cmake)
+set(bindir "$BDMSYS/bin")
+set(libdir "$BDMSYS/lib")
+set(incdir "$BDMSYS/include")
+set(cmakedir "$BDMSYS/share/cmake")
 set(configargs ${BDM_CONFIGARGS})
 set(cmakeinvoke "${CMAKE_INVOKE} -G ${CMAKE_GENERATOR}")
 set(omplibs ${OpenMP_CXX_LIBRARIES})
+set(with_paraview ON)
+if(NOT paraview)
+  set(with_paraview OFF)
+endif()
 
 # Copy the environmental files to their correct directory
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)

@@ -1,2 +1,4 @@
 Unix.*.Root.PluginPath:     $(ROOTSYS)/etc/plugins:$(BDMSYS)/etc/plugins
 Unix.*.Root.DynamicPath:      .:$(ROOTSYS)/lib:$(BDMSYS)/lib
+
+#Root.ErrorIgnoreLevel: Info

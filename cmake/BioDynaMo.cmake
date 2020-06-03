@@ -53,7 +53,7 @@ endfunction(get_implicit_dependencies)
 # is compiled first, then dictionaries are generated. Afterwards these
 # dictionaries are compiled and linked with the object files compiled in the
 # first step.
-# Uses the variable `BDM_CMAKE_DIR` to point to the cmake directory. This is
+# Uses the variable `BDMSYS` to point to the cmake directory. This is
 # necessary, since this function is used from within the BioDynaMo repository
 # and external simulation projects.
 # \param TARGET target name for the executable
@@ -66,7 +66,14 @@ function(bdm_add_executable TARGET)
   if(dict)
     # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict")
-    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION $ENV{BDM_CMAKE_DIR}/selection.xml)
+
+    # Since the location of the CMake files differ in the build and installation
+    # directory, we check if BDM_CMAKE_DIR is already set (in build directory
+    # case). Otherwise, set it to the installation directory
+    if(NOT DEFINED BDM_CMAKE_DIR)
+      set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
+    endif()
+    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/selection.xml)
 
     # generate executable
     add_executable(${TARGET} ${ARG_SOURCES} ${DICT_FILE}.cc)
@@ -102,7 +109,14 @@ function(build_shared_library TARGET)
   if(dict OR DEFINED ARG_PLUGIN)
     # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
-    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION $ENV{BDM_CMAKE_DIR}/selection-lib${TARGET}.xml)
+
+    # Since the location of the CMake files differ in the build and installation
+    # directory, we check if BDM_CMAKE_DIR is already set (in build directory
+    # case). Otherwise, set it to the installation directory
+    if(NOT DEFINED BDM_CMAKE_DIR)
+      set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
+    endif()
+    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/selection-lib${TARGET}.xml)
 
     # generate shared library
     add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc)

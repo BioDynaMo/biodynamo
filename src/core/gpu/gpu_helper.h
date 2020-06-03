@@ -98,9 +98,9 @@ class GpuHelper {
     // TODO(ahmad): create more convenient way to compile all OpenCL kernels, by
     // going through a list of header files. Also, create a stringifier that
     // goes from .cl --> .h, since OpenCL kernels must be input as a string here
-    std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
-    std::ifstream cl_file(bdm_src_dir +
-                          "/core/gpu/displacement_op_opencl_kernel.cl");
+    std::string bdmsys = std::getenv("BDMSYS");
+    std::ifstream cl_file(bdmsys +
+                          "/include/core/gpu/displacement_op_opencl_kernel.cl");
     if (cl_file.fail()) {
       Log::Error("CompileOpenCLKernels", "Kernel file does not exists!");
     }

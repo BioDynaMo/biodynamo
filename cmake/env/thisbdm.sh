@@ -78,14 +78,6 @@ if [ -n "${old_bdmsys}" ] ; then
       drop_bdm_from_path "$CMAKE_PREFIX_PATH" "${old_bdmsys}"
       CMAKE_PREFIX_PATH=$newpath
    fi
-   if [ -n "${BDM_CMAKE_DIR}" ]; then
-      drop_bdm_from_path "$BDM_CMAKE_DIR" "${old_bdmsys}/share/cmake"
-      BDM_CMAKE_DIR=$newpath
-   fi
-   if [ -n "${BDM_SRC_DIR}" ]; then
-      drop_bdm_from_path "$BDM_SRC_DIR" "${old_bdmsys}/include"
-      BDM_SRC_DIR=$newpath
-   fi
 fi
 
 if [ -n "${old_bdmsys_base}" ] ; then
@@ -182,14 +174,15 @@ fi
 export PATH="$PYENV_ROOT/bin:$PATH"
 
 eval "$(pyenv init -)"
-pyenv shell 3.6.9
+pyenv shell @pythonvers@
+
 # Location of jupyter executable (installed with `pip install --user` command)
 if [ ! -z "${PYTHONUSERBASE}" ]; then
   export PATH="$PYTHONUSERBASE/.local/bin:$PATH"
 else
   export PATH="$HOME/.local/bin:$PATH"
 fi
-export LD_LIBRARY_PATH="$PYENV_ROOT/versions/3.6.9/lib":$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="$PYENV_ROOT/versions/@pythonvers@/lib":$LD_LIBRARY_PATH
 ########
 
 ##### CMake Specific Configurations #####
@@ -198,9 +191,6 @@ if [ -z "${CMAKE_PREFIX_PATH}" ]; then
 else
    CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake":$CMAKE_PREFIX_PATH; export CMAKE_PREFIX_PATH
 fi
-
-BDM_CMAKE_DIR="${BDMSYS}/share/cmake"; export BDM_CMAKE_DIR
-BDM_SRC_DIR="${BDMSYS}/include"; export BDM_SRC_DIR
 ########
 
 #### ROOT Specific Configurations ####
@@ -239,92 +229,96 @@ function root {
   ${BDM_ROOT_DIR}/bin/root -l -e "cout << \"Loading BioDynaMo into ROOT...\" << endl;gROOT->LoadMacro(\"${BDMSYS}/etc/rootlogon.C\");" $@
 }
 
-
 #### ParaView Specific Configurations ####
-if [ -z ${ParaView_DIR} ]; then
-    ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR;
-    if ! [ -d $ParaView_DIR ]; then
-        echo "We are unable to find ParaView! Please make sure it is installed in your system!"
-        echo "You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
-        echo "together with 'export Qt5_DIR=path/to/qt' before running cmake."
-        echo "Sourcing BioDynaMo env failed!"
-        return
-    fi
-fi
+with_paraview=@with_paraview@
+if [ $with_paraview == "ON" ]; then
 
-if [ -z "${ParaView_LIB_DIR}" ]; then
-   ParaView_LIB_DIR="${ParaView_DIR}/lib"; export ParaView_LIB_DIR
-else
-   ParaView_LIB_DIR="${ParaView_DIR}/lib":$ParaView_LIB_DIR; export ParaView_LIB_DIR
-fi
+   if [ -z ${ParaView_DIR} ]; then
+      ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR;
+      if ! [ -d $ParaView_DIR ]; then
+         echo "We are unable to find ParaView! Please make sure it is installed in your system!"
+         echo "You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
+         echo "together with 'export Qt5_DIR=path/to/qt' before running cmake."
+         echo "Sourcing BioDynaMo env failed!"
+         return
+      fi
+   fi
 
-if [ -z "${PV_PLUGIN_PATH}" ]; then
-   PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin"; export PV_PLUGIN_PATH
-else
-   PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH; export PV_PLUGIN_PATH
-fi
+   if [ -z "${ParaView_LIB_DIR}" ]; then
+      ParaView_LIB_DIR="${ParaView_DIR}/lib"; export ParaView_LIB_DIR
+   else
+      ParaView_LIB_DIR="${ParaView_DIR}/lib":$ParaView_LIB_DIR; export ParaView_LIB_DIR
+   fi
 
-# We don't add the ParaView site-packages path to PYTHONPATH, because pip in the
-# pyenv environment will not function anymore: ModuleNotFoundError: No module named 'pip._internal'
-unset -f paraview || true
-function paraview {
-  ${ParaView_DIR}/bin/paraview $@
-}
-export -f paraview
+   if [ -z "${PV_PLUGIN_PATH}" ]; then
+      PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin"; export PV_PLUGIN_PATH
+   else
+      PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH; export PV_PLUGIN_PATH
+   fi
 
-unset -f pvpython || true
-function pvpython {
-  ${ParaView_DIR}/bin/pvpython $@
-}
-export -f pvpython
+   # We don't add the ParaView site-packages path to PYTHONPATH, because pip in the
+   # pyenv environment will not function anymore: ModuleNotFoundError: No module named 'pip._internal'
+   unset -f paraview || true
+   function paraview {
+     ${ParaView_DIR}/bin/paraview $@
+   }
+   export -f paraview
 
-unset -f pvbatch || true
-function pvbatch {
-  ${ParaView_DIR}/bin/pvbatch $@
-}
-export -f pvbatch
+   unset -f pvpython || true
+   function pvpython {
+     ${ParaView_DIR}/bin/pvpython $@
+   }
+   export -f pvpython
 
-if [ -z "${LD_LIBRARY_PATH}" ]; then
-   LD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export LD_LIBRARY_PATH
-else
-   LD_LIBRARY_PATH="${ParaView_LIB_DIR}":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
-fi
+   unset -f pvbatch || true
+   function pvbatch {
+     ${ParaView_DIR}/bin/pvbatch $@
+   }
+   export -f pvbatch
 
-if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-   DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export DYLD_LIBRARY_PATH
-else
-   DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
-fi
+   if [ -z "${LD_LIBRARY_PATH}" ]; then
+      LD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export LD_LIBRARY_PATH
+   else
+      LD_LIBRARY_PATH="${ParaView_LIB_DIR}":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+   fi
+
+   if [ -z "${DYLD_LIBRARY_PATH}" ]; then
+      DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export DYLD_LIBRARY_PATH
+   else
+      DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
+   fi
 ########
 
 #### Qt5 Specific Configurations ####
-if [ -z ${Qt5_DIR} ]; then
-    Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
-    if ! [ -d $Qt5_DIR ]; then
-        echo "We are unable to find Qt! Please make sure it is installed in your system!"
-        echo "You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
-        echo "together with 'export ParaView_DIR=path/to/paraview' before running cmake."
-        echo "Sourcing BioDynaMo env failed!"
-        return
-    fi
-fi
+   if [ -z ${Qt5_DIR} ]; then
+      Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
+      if ! [ -d $Qt5_DIR ]; then
+         echo "We are unable to find Qt! Please make sure it is installed in your system!"
+         echo "You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
+         echo "together with 'export ParaView_DIR=path/to/paraview' before running cmake."
+         echo "Sourcing BioDynaMo env failed!"
+         return
+      fi
+   fi
 
-if [ -z "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
-   QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins"; export QT_QPA_PLATFORM_PLUGIN_PATH
-else
-   QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins":$QT_QPA_PLATFORM_PLUGIN_PATH; export QT_QPA_PLATFORM_PLUGIN_PATH
-fi
+   if [ -z "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
+      QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins"; export QT_QPA_PLATFORM_PLUGIN_PATH
+   else
+      QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins":$QT_QPA_PLATFORM_PLUGIN_PATH; export QT_QPA_PLATFORM_PLUGIN_PATH
+   fi
 
-if [ -z "${LD_LIBRARY_PATH}" ]; then
-   LD_LIBRARY_PATH="${Qt5_DIR}/lib"; export LD_LIBRARY_PATH
-else
-   LD_LIBRARY_PATH="${Qt5_DIR}/lib":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
-fi
+   if [ -z "${LD_LIBRARY_PATH}" ]; then
+      LD_LIBRARY_PATH="${Qt5_DIR}/lib"; export LD_LIBRARY_PATH
+   else
+      LD_LIBRARY_PATH="${Qt5_DIR}/lib":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+   fi
 
-if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-   DYLD_LIBRARY_PATH="${Qt5_DIR}/lib"; export DYLD_LIBRARY_PATH
-else
-   DYLD_LIBRARY_PATH="${Qt5_DIR}/lib":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
+   if [ -z "${DYLD_LIBRARY_PATH}" ]; then
+      DYLD_LIBRARY_PATH="${Qt5_DIR}/lib"; export DYLD_LIBRARY_PATH
+   else
+      DYLD_LIBRARY_PATH="${Qt5_DIR}/lib":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
+   fi
+
 fi
 
 #######
@@ -347,7 +341,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
     fi
     unset old_llvmdir
 
-    # Automatically set the MacOS compiler
+    # Automatically set the macOS compiler
     if [ -z ${CXX} ] && [ -z ${CC} ] ; then
         if [ -x "/usr/local/opt/llvm/bin/clang++" ]; then
             export LLVMDIR="/usr/local/opt/llvm"
@@ -376,7 +370,7 @@ else
         module load mpi
 
         # load llvm 6 required for libroadrunner
-        if ! [ -z ${BDMSYS}/third_party/libroadrunner ]; then
+        if [ -d ${BDMSYS}/third_party/libroadrunner ]; then
           . scl_source enable llvm-toolset-6.0
         fi
     fi

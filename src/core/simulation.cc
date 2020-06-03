@@ -246,10 +246,10 @@ void Simulation::InitializeRuntimeParams(
   param_ = new Param();
 
   // detect if the biodynamo environment has been sourced
-  if (std::getenv("BDM_CMAKE_DIR") == nullptr) {
+  if (std::getenv("BDMSYS") == nullptr) {
     Log::Fatal("Simulation::InitializeRuntimeParams",
-               "The BioDynaMo environment is not set up correctly. Please call "
-               "$use_biodynamo and retry this command.");
+               "The BioDynaMo environment is not set up correctly. Please execute "
+               "'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this command.");
   }
 
   static bool read_env = false;
@@ -325,8 +325,7 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
     param_->AssignFromConfig(config);
   } else {
     Log::Warning("Simulation::LoadConfigFile",
-                 "Config file %s not found in `.` or `../` directory.",
-                 kConfigFile);
+                 "Config file ", kConfigFile, " not found in `.` or `..` directory.");
   }
 }
 

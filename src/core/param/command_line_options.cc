@@ -2,6 +2,8 @@
 #include "core/param/param.h"
 #include "core/util/log.h"
 
+#include <TEnv.h>
+
 namespace bdm {
 
 using cxxopts::value;
@@ -116,7 +118,23 @@ void CommandLineOptions::HandleCoreOptions() {
   }
 
   // Handle "verbose" argument
+  // If set in etc/bdm.rootrc use that value, command line argument will override it
   Int_t ll = kError;
+  TString slevel = "Error";
+  TEnvRec *rec = gEnv->Lookup("Root.ErrorIgnoreLevel");
+  if (rec) {
+    if (rec->GetLevel() == kEnvUser)
+      slevel = rec->GetValue();
+  }
+  if (!slevel.CompareTo("Print", TString::kIgnoreCase))
+    ll = kPrint;
+  else if (!slevel.CompareTo("Info", TString::kIgnoreCase))
+    ll = kInfo;
+  else if (!slevel.CompareTo("Warning", TString::kIgnoreCase))
+    ll = kWarning;
+  else if (!slevel.CompareTo("Error", TString::kIgnoreCase))
+    ll = kError;
+
   if (parser_->count("verbose")) {
     auto verbosity = parser_->count("verbose");
 

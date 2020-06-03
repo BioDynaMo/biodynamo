@@ -33,16 +33,16 @@
 
 find_file(BDM_USE_FILE
           UseBioDynaMo.cmake
-          PATHS "$ENV{BDM_CMAKE_DIR}")
+          PATHS "$ENV{BDMSYS}/share/cmake")
 
 if(NOT BDM_USE_FILE AND BioDynaMo_FIND_REQUIRED)
-  message(FATAL_ERROR "BioDynaMo not found! Try to set BDM_CMAKE_DIR environment variable \
-                       pointing to the directory that contains the file UseBioDynaMo.cmake \
-                       or add -DBDM_CMAKE_DIR=... to the cmake command")
+  message(FATAL_ERROR "BioDynaMo not found! Try to set BDMSYS environment variable \
+                       pointing to the directory that contains the file share/cmake/UseBioDynaMo.cmake \
+                       or execute 'source <path-to-bdm-installation>/bin/thisbdm.sh'")
 elseif(NOT BDM_USE_FILE AND NOT BioDynaMo_FIND_QUIETLY)
-  message(WARNING "BioDynaMo not found! Try to set BDM_CMAKE_DIR environment variable \
-                   pointing to the directory that contains the file UseBioDynaMo.cmake \
-                   or add -DBDM_CMAKE_DIR=... to the cmake command")
+  message(WARNING "BioDynaMo not found! Try to set BDMSYS environment variable \
+                   pointing to the directory that contains the file share/cmake/UseBioDynaMo.cmake \
+                   or execute 'source <path-to-bdm-installation>/bin/thisbdm.sh'")
 endif()
 
 set(BioDynaMo_FOUND TRUE)

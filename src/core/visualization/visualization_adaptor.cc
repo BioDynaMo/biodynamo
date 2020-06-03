@@ -38,7 +38,6 @@ VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
     return nullptr;
   }
   VisualizationAdaptor *va = nullptr;
-  std::string bdm_src_dir = std::string(std::getenv("BDM_SRC_DIR"));
   bool first_try = !loaded_.count(adaptor);
   // If this is the first time we try to load `adaptor`
   if (first_try) {

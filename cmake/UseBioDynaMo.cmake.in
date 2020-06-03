@@ -103,12 +103,12 @@ if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
 endif()
 
-if(DEFINED ENV{BDM_CMAKE_DIR})
-    set(BDM_CMAKE_DIR $ENV{BDM_CMAKE_DIR})
-    add_definitions(-DBDM_SRC_DIR=\"$ENV{BDM_SRC_DIR}\")
+if(DEFINED ENV{BDMSYS})
+    set(BDMSYS $ENV{BDMSYS})
+    add_definitions(-DBDMSYS=\"$ENV{BDMSYS}\")
 else()
   execute_process(COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles)
-  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please call 'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this command.")
+  message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please execute 'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this command.")
 endif()
 
 # -------------------- find packages ------------------------------------------
@@ -241,7 +241,7 @@ else()
     endif()
     # It is used by format/style checks. It needs to be defined here such
     # to enable relocation of the scripts.
-    set(BUILD_SUPPORT_DIR "${BDM_CMAKE_DIR}/../util")
+    set(BUILD_SUPPORT_DIR "${BDMSYS}/share/util")
     include(CppStyleGuideChecks)
 endif()
 
@@ -249,7 +249,7 @@ endif()
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
-include("${BDM_CMAKE_DIR}/SetCompilerFlags.cmake")
+include("${BDMSYS}/share/cmake/SetCompilerFlags.cmake")
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
@@ -259,13 +259,13 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 set(CMAKE_INSTALL_RPATH "")
 
 # -------------------- includes -----------------------------------------------
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDM_CMAKE_DIR}")
-include("${BDM_CMAKE_DIR}/BioDynaMo.cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDMSYS}/share/cmake")
+include("${BDMSYS}/share/cmake/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
 fix_rootcling_omp_issue()
 
 set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES})
 
-include_directories("$ENV{BDM_CMAKE_DIR}/../../include")
-link_directories("$ENV{BDM_CMAKE_DIR}/../../lib")
+include_directories("$ENV{BDMSYS}/include")
+link_directories("$ENV{BDMSYS}/lib")

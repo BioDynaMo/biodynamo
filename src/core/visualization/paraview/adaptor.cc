@@ -132,8 +132,8 @@ void ParaviewAdaptor::Initialize() {
     } else if (param->python_paraview_pipeline_) {
       vtkNew<vtkCPPythonScriptPipeline> pipeline;
       std::string python_script =
-          std::string(std::getenv("BDM_SRC_DIR")) +
-          std::string("/visualization/paraview/simple_pipeline.py");
+          std::string(std::getenv("BDMSYS")) +
+          std::string("/include/core/visualization/paraview/simple_pipeline.py");
       pipeline->Initialize(python_script.c_str());
       impl_->g_processor_->AddPipeline(pipeline.GetPointer());
     } else if (!exclusive_export_viz_) {
@@ -338,11 +338,11 @@ void ParaviewAdaptor::WriteToFile(size_t step) {
 void ParaviewAdaptor::GenerateParaviewState() {
   auto* sim = Simulation::GetActive();
   std::stringstream python_cmd;
-  std::string bdm_src_dir = std::getenv("BDM_SRC_DIR");
+  std::string bdmsys = std::getenv("BDMSYS");
 
-  python_cmd << bdm_src_dir << "/../third_party/paraview/bin/pvbatch "
-             << bdm_src_dir
-             << "/core/visualization/paraview/generate_pv_state.py "
+  python_cmd << bdmsys << "/third_party/paraview/bin/pvbatch "
+             << bdmsys
+             << "/include/core/visualization/paraview/generate_pv_state.py "
              << sim->GetOutputDir() << "/" << kSimulationInfoJson;
   int ret_code = system(python_cmd.str().c_str());
   if (ret_code) {
