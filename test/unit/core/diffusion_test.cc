@@ -24,9 +24,9 @@
 #include "unit/test_util/test_util.h"
 
 #ifdef USE_PARAVIEW
+#include "core/visualization/paraview/adaptor.h"
 #include <vtkImageData.h>
 #include <vtkXMLImageDataReader.h>
-#include "core/visualization/paraview/adaptor.h"
 #endif  // USE_PARAVIEW
 
 #define ROOTFILE "bdmFile.root"

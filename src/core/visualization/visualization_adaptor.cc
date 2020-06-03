@@ -56,9 +56,11 @@ VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
         return nullptr;
       }
     } else {
+#ifndef __ROOTCLING__
       Log::Error(
           "VisualizationAdaptor::Create", "Unable to find plugin '", adaptor,
           "'. This is most likely because bdm.rootrc was not read properly.");
+#endif
     }
   } else {  // If we already tried loading this plugin, we avoid dynamically
             // loading the shared library again

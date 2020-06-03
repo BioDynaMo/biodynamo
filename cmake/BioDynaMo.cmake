@@ -155,6 +155,22 @@ function(generate_rootlogon)
   set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"using namespace bdm\;\")\;")
   set(CONTENT "${CONTENT}\n}\n")
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
+
+  # For usage with Binder (notebooks) we need a different rootlogon, because we
+  # rely on conda-root (doesn't include ROOTSYS/lib in LD_LIBRARY_PATH)
+  set(CONTENT "{")
+  if (dict)
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define USE_DICT\")\;")
+  endif()
+  # Needed to avoid error that comes from conda-tbb
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define __GLIBC_USE(...) 0\")\;")
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\".include /home/jovyan/biodynamo/include\")\;")
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#include \\\"biodynamo.h\\\"\")\;")
+  set(CONTENT "${CONTENT}\n  gSystem->Load(\"\${HOME}/biodynamo/lib/libbiodynamo.so\")\;")
+  set(CONTENT "${CONTENT}\n  gSystem->Load(\"\${HOME}/biodynamo/third_party/root/lib/libGenVector.so\")\;")
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"using namespace bdm\;\")\;")
+  set(CONTENT "${CONTENT}\n}\n")
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/binder_rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)
 
 # Fix for rootcling not able to find omp.h. We cannot include the entire include
