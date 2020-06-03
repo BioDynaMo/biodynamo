@@ -53,7 +53,7 @@ void CommandLineOptions::Parse() {
 
   try {
     parser_ = new cxxopts::ParseResult(options_.parse(argc_copy, argv_copy));
-  } catch (cxxopts::option_not_exists_exception) {
+  } catch (const cxxopts::option_not_exists_exception&) {
     Log::Fatal("CommandLineOptions::ParseResult",
                "Please add all your command line options before:\n  1) Using "
                "the CommandLineOptions::Get() method.\n  2) Creating a "
