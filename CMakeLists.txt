@@ -173,7 +173,7 @@ else()
     "Please run ./prerequisites.sh again before calling cmake. The Python ${pythonvers} "
     "interpreter is required in order to successfully use BioDynaMo. "
     "If you installed PyEnv somewhere other than in your home directory, please "
-    "rerun cmake with -DPython_ROOT_DIR=/path/to/pyenv/root")
+    "rerun cmake with -DPython_ROOT_DIR=</path/to/pyenv>/versions/${pythonvers}")
 endif()
 
 # Check if OpenMPI is present
@@ -183,8 +183,7 @@ if (MPI_NOT_FOUND)
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
-# Check if GLUT is present. If we do not have it, then we
-# disable directly paraview.
+# Check if GLUT is present. If we do not have it, then we disable directly paraview.
 if(paraview)
   find_package(GLUT)
   if(NOT GLUT_FOUND)
