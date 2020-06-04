@@ -687,11 +687,15 @@ endif()
 
 # Copy the environmental files to their correct directory
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
+configure_file(${CMAKE_SOURCE_DIR}/cmake/env/binder_thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/binder_thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
+#configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.csh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh @ONLY NEWLINE_STYLE UNIX)
 #configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/bdm-config.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config @ONLY ESCAPE_QUOTES NEWLINE_STYLE UNIX)
 
 # Set run permission on the environmental files
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/binder_thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+#add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
