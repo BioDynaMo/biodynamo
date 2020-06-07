@@ -174,7 +174,7 @@ pyenv shell 3.6.9
 pip install --user nbformat jupyter metakernel
 sudo yum -y install lcov gcovr llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
-   # SBML integration
+# SBML integration
 sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
 name=Springdale SCL Base 7.6 - x86_64
@@ -198,20 +198,19 @@ using the command "xcode-select --install".
 
 ### Required Packages
 
- * **llvm**: LLVM compiler suite with also OpenMP compliant clang and clang++;
- * **wget**: Retrieves files from the web;
- * **cmake**: Set of tools for automate building, testing of software;
- * **libomp**: Development files for OpenMP (API for multiprocessor programming);
- * **tbb**: Development files for TBB (C++ template library developed by Intel for parallel programming);
- * **open-mpi**: Development files for OpenMP (API for multiprocessor programming);
- * **python**: Python 3 Interpreter.
+ * **llvm**: LLVM compiler suite with also OpenMP compliant clang and clang++
+ * **wget**: Retrieves files from the web
+ * **cmake**: Set of tools for automate building, testing of software
+ * **libomp**: Development files for OpenMP (API for multiprocessor programming)
+ * **open-mpi**: Development files for OpenMP (API for multiprocessor programming)
+ * **python**: Python 3 Interpreter
 
 ### Optional Packages
 
- * **doxygen**: Tool for generating documentation from annotated C++ sources;
- * **graphviz**: Graph Visualization Software used optionally by Doxygen;
- * **lcov**: Graphical front-end for GCC's coverage testing tool gcov;
- * **gcovr**: Tool to test code coverage in programs.
+ * **doxygen**: Tool for generating documentation from annotated C++ sources
+ * **graphviz**: Graph Visualization Software used optionally by Doxygen
+ * **lcov**: Graphical front-end for GCC's coverage testing tool gcov
+ * **gcovr**: Tool to test code coverage in programs
 
 ### Installation
 
@@ -219,7 +218,7 @@ using the command "xcode-select --install".
 
 ```bash
 brew update; brew upgrade
-brew install libomp tbb open-mpi git pyenv llvm wget cmake python || true
+brew install libomp open-mpi git pyenv llvm wget cmake python || true
 
 # Install Python 3.6.9 environment
 eval "$(pyenv init -)"
