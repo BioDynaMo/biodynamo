@@ -70,7 +70,7 @@ jobs:
         . bin/thisbdm.sh
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
-        bin/biodynamo-unit-tests
+        ninja run-unit-tests
         ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
