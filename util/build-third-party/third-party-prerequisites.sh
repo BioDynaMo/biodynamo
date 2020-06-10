@@ -84,18 +84,10 @@ EOF'
     CC=gcc
     CXX=g++
   else
-    if [ $BDM_OS = "travis-linux" ]; then
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      sudo apt-get update
-      sudo apt-get -y install gcc-5 g++-5
-      CC=gcc-5
-      CXX=g++-5
-    else
-      sudo apt update
-      sudo apt-get -y install gcc g++
-      CC=gcc
-      CXX=g++
-    fi
+    sudo apt update
+    sudo apt-get -y install gcc g++
+    CC=gcc
+    CXX=g++
     # only for ubuntu image
     sudo apt-get -y install wget git make
     #  root required packages

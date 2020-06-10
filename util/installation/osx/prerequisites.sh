@@ -24,9 +24,22 @@ Arguments:
   exit 1
 fi
 
-set -e
+brew update
+brew style
+brew update-reset
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+# Install and upgrade required packages
+brew install libomp open-mpi git pyenv llvm wget cmake || true
+brew upgrade cmake || true
 
-# use travis-osx prerequisites script
-. $BDM_PROJECT_DIR/util/installation/travis-osx/prerequisites.sh $1
+# Install Python 3.6.9 environment
+eval "$(pyenv init -)"
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+pyenv shell 3.6.9
+
+# Install the optional packages
+if [ $1 == "all" ]; then
+    PIP_PACKAGES="nbformat jupyter metakernel"
+    pip install --user $PIP_PACKAGES
+    brew install doxygen graphviz lcov gcovr || true
+fi

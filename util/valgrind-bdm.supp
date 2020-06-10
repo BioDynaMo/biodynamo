@@ -244,7 +244,7 @@
    ...
 }
 
-######### Suppress protobuf library issues (for travis)
+######### Suppress protobuf library issues
 {
    ignore_protobuf_memleaks
    Memcheck:Leak

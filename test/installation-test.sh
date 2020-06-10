@@ -41,7 +41,7 @@ NOTEBOOK_FLAG="-Dnotebooks=off"
 
 # speed-up build by disabling tests and demos
 # Currently SBML and notebooks is not supported on osx
-if [ "$BDM_OS" != "osx" ] && [ "$BDM_OS" != "travis-osx" ]; then
+if [ "$BDM_OS" != "osx" ]; then
   SBML_FLAG="-Dsbml=on"
   NOTEBOOK_FLAG="-Dnotebooks=on"
 fi

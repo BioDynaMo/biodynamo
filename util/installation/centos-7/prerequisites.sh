@@ -41,8 +41,9 @@ sudo yum -y install wget cmake3 libXt-devel libXext-devel \
 sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
   sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 
-# On Travis CI pyenv is already installed, so we need to unset the following
-unset PYENV_ROOT
+if [ -n "${PYENV_ROOT}" ]; then
+  unset PYENV_ROOT
+fi
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"

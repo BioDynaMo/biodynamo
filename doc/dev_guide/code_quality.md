@@ -31,7 +31,7 @@ A coding styleguide is a set of guidelines and best practices which improve read
 ## Test Driven Development (TDD) and Continues Integration (CI)
 
 TDD and CI are two practices from agile development. Test Driven Development is a special way of using unit tests. A unit test is a piece of code that tests a certain functionality of our application. If we make some changes in the code and at the end all unit tests pass, we most likely did not break something. This increases confidence in the code and reduces the fear to "touch" others code.
-Continues Integration takes all this automated tests and executes them on every change to the code repository. We are using [Travis-CI](https://travis-ci.org/BioDynaMo/biodynamo)
+Continues Integration takes all this automated tests and executes them on every change to the code repository. We are using [Github Actions](https://github.com/BioDynaMo/biodynamo/actions).
 
 More information:
 

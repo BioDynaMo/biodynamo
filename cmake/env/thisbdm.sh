@@ -201,7 +201,7 @@ if [ -z ${BDM_ROOT_DIR} ] && [ -z ${ROOTSYS} ]; then
         echo "You can specify manually its location by executing 'export BDM_ROOT_DIR=path/to/root'"
         echo "before running cmake."
         echo "Sourcing BioDynaMo env failed!"
-        return
+        return 1
     fi
 else
   # ROOTSYS has precedence over the BDM_ROOT_DIR custom configuration
@@ -214,7 +214,7 @@ else
         echo "ROOTSYS points to ROOT version $crvers, while BDM was build with version $orvers."
         echo "Make sure that ROOTSYS points to the right version of ROOT."
         echo "Sourcing BioDynaMo env failed!"
-        return
+        return 1
      fi
   fi
 fi
@@ -240,7 +240,7 @@ if [ $with_paraview == "ON" ]; then
          echo "You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
          echo "together with 'export Qt5_DIR=path/to/qt' before running cmake."
          echo "Sourcing BioDynaMo env failed!"
-         return
+         return 1
       fi
    fi
 
@@ -297,7 +297,7 @@ if [ $with_paraview == "ON" ]; then
          echo "You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
          echo "together with 'export ParaView_DIR=path/to/paraview' before running cmake."
          echo "Sourcing BioDynaMo env failed!"
-         return
+         return 1
       fi
    fi
 
@@ -382,3 +382,5 @@ unset thisbdm
 unset -f drop_bdm_from_path
 
 echo "You have successfully sourced BioDynaMo's environment."
+
+return 0

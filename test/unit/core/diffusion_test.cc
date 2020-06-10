@@ -581,9 +581,9 @@ TEST(DiffusionTest, RungeKuttaConvergence) {
 
 #ifdef USE_PARAVIEW
 
-// Travis does not support OpenGL 3.3
+// Github Actions does not support OpenGL 3.3.
 // Therefore, pvpython crashes.
-// Renable this test after this issue has been resolved
+// Renable this test after this issue has been resolved.
 TEST(DISABLED_DiffusionTest, ModelInitializer) {
   auto set_param = [](auto* param) {
     Param::VisualizeDiffusion vd;

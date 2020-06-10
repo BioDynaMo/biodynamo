@@ -156,9 +156,9 @@ git commit
 
 Please create a [pull request](https://help.github.com/articles/creating-a-pull-request/)
 
-#### 14. Verify if Travis-CI builds are OK
+#### 14. Verify if Github Actions CI builds are OK
 
-Open the Travis-CI build for Linux and OSX and go through the checklist from point 11 for each of them.
+Open the Github Actions build for Linux and OSX and go through the checklist from point 11 for each of them.
 Unlike compilation and test suite execution, problems caused by formatting, code style and documentation will not fail the build. However, they need to be fixed!
 
 #### 15. If everything is OK contact one of the code reviewers on Slack

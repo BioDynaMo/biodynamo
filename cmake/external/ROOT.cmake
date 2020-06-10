@@ -4,11 +4,19 @@ include(utils)
 # should be something like <build_dir>/third_party/...).
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
-set(ROOT_TAR_FILE root_v6-18-04_python3_${DETECTED_OS}.tar.gz)
+if (APPLE)
+  EXECUTE_PROCESS(COMMAND sw_vers "-productVersion"
+                  COMMAND cut -d . -f 1-2
+                  OUTPUT_VARIABLE MACOS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(DETECTED_OS_VERS ${DETECTED_OS}-${MACOS_VERSION})
+else()
+  set(DETECTED_OS_VERS ${DETECTED_OS})
+endif()
+set(ROOT_TAR_FILE root_v6.20.04_python3_${DETECTED_OS_VERS}.tar.gz)
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}
   ${ROOT_SOURCE_DIR}/root
-  ${${DETECTED_OS}-ROOT}
+  ${${DETECTED_OS_VERS}-ROOT}
 )
 
 # Run again find_package in order to find ROOT

@@ -20,14 +20,7 @@
 
 PROJECT_ROOT_DIR=$1
 
-# Since we are comparing to origin/master, CI builds on the master branch
-# will not work, because the set of changed files is always {}.
-# In this case we determine the changed files using $TRAVIS_COMMIT_RANGE
-if [ "$TRAVIS_BRANCH" == "master" ]; then
-  FILES=$(git diff --name-only $TRAVIS_COMMIT_RANGE | grep ".*\.\(cc\|h\)$")
-else
-  FILES=$(git diff --name-only origin/master | grep ".*\.\(cc\|h\)$")
-fi
+FILES=$(git diff --name-only origin/master | grep ".*\.\(cc\|h\)$")
 
 # filter files that have been deleted or are in directory third_party
 for f in $FILES; do

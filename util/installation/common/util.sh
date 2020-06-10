@@ -24,16 +24,13 @@ SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # This function asks the user for the sudo password and keeps it in the cache
 # for the duration of the script execution.
 function RequireSudo {
-  # Workaround for: https://github.com/travis-ci/travis-ci/issues/9608
-  if [ "$TRAVIS_OS_NAME" != "osx" ]; then
-    # Print message if sudo password needs to be entered
-    sudo -n true &>/dev/null || echo "Some commands in this script require sudo priviledges"
-    sudo -v
-    # keep sudo priviledges alive
-    # kill -0 "$$": checks if parent process is still running
-    # https://github.com/mathiasbynens/dotfiles/blob/master/.macos
-    while true; do sudo -n true; sleep 10; kill -0 "$$" || exit; done 2>/dev/null &
-  fi
+  # Print message if sudo password needs to be entered
+  sudo -n true &>/dev/null || echo "Some commands in this script require sudo priviledges"
+  sudo -v
+  # keep sudo priviledges alive
+  # kill -0 "$$": checks if parent process is still running
+  # https://github.com/mathiasbynens/dotfiles/blob/master/.macos
+  while true; do sudo -n true; sleep 10; kill -0 "$$" || exit; done 2>/dev/null &
 }
 
 # Function that detects the OS
@@ -41,10 +38,7 @@ function RequireSudo {
 # This function prints an error and exits if is not linux or macos.
 function DetectOs {
   # detect operating system
-  if [ ${TRAVIS-""} ] && [ "$TRAVIS_OS_NAME" = "osx" ]; then
-    echo "travis-osx"
-    # Travis linux always runs inside a container -> use DetectLinuxFlavour
-  elif [ `uname` = "Linux" ]; then
+  if [ `uname` = "Linux" ]; then
     # linux
     DISTRIBUTOR=$(lsb_release -si)
     RELEASE=$(lsb_release -sr)

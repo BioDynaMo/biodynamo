@@ -25,19 +25,5 @@ steps presented below:
   look to the already existing `prerequisites.sh` for more information;
   * Add a `Dockerfile` which will be used to instantiate a container with your operating system for testing purposes.
   The `Dockerfile` needs also to be placed inside `util/installation/<your-os-name>-<version>`.
-  * Add to `.travis.yml` two new tests for the newly added operating system. More specifically, you will need to
-  add these two lines:
-  ```yaml
-  - os: linux
-    before_install:
-     - test -n $CC  && unset CC
-     - test -n $CXX && unset CXX
-    env: SCRIPT="util/travis-ci/installation-test.sh <your-os-name>-<version>"
-  - os: linux
-    compiler: gcc
-    dist: trusty
-    sudo: required
-    group: edge
-    env: SCRIPT="util/run-inside-docker.sh <your-os-name>-<version> util/travis-ci/default-build.sh"
-
-  ```
+  * Add to `.github/workflows/` a new yml file for the newly added operating system. You can use [Act](https://github.com/nektos/act)
+  to locally test your yml file.

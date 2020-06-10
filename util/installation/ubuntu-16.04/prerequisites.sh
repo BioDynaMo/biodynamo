@@ -42,8 +42,9 @@ sudo apt-get install -y wget curl cmake make gcc g++ \
   libopenmpi-dev libomp-dev libnuma-dev freeglut3-dev \
   libpthread-stubs0-dev zlib1g-dev libbz2-dev
 
-# On Travis CI pyenv is already installed, so we need to unset the following
-unset PYENV_ROOT
+if [ -n "${PYENV_ROOT}" ]; then
+  unset PYENV_ROOT
+fi
 
 # Install dependencies to install Python with PyEnv
 sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \

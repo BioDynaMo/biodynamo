@@ -36,7 +36,5 @@ cmake --build $BINARY_DIR --target show-format
 cmake --build $BINARY_DIR --target show-tidy
 cmake --build $BINARY_DIR --target check-cpplint
 cmake --build $BINARY_DIR --target doc
-if ! [ $TRAVIS ]; then
-  cmake --build $BINARY_DIR --target coverage-build
-fi
+cmake --build $BINARY_DIR --target coverage-build
 exit $RETURN_VALUE

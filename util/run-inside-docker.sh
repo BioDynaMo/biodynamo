@@ -101,12 +101,6 @@ if [ $BDM_LOCAL_LFS ]; then
   BDM_FORWARD_ENV="$BDM_FORWARD_ENV --env BDM_LOCAL_LFS=$BDM_LOCAL_LFS"
   BDM_LOCAL_LFS_VOLUME="--volume $BDM_LOCAL_LFS:$BDM_LOCAL_LFS"
 fi
-# forward travis environment variables
-if [ $TRAVIS ]; then
-  for e in $(printenv | grep '\(^TRAVIS\)\|\(^GH\)'); do
-    BDM_FORWARD_ENV="$BDM_FORWARD_ENV --env=$e"
-  done
-fi
 
 # flattening the image somehow resets the default user specified in the
 # Dockerfile to root. Therefore, we have to add the --user option here

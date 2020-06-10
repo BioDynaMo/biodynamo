@@ -15,23 +15,17 @@
 # Detect the system flavour and version. Generate a variable
 # called BDM_OS which will have as content <OS>-<version>.
 # If lsb_release is not found we ask the user to specify manually
-# the software version. Moreover, another check is performed such to
-# detect if we are building BioDynaMo for the CI (Travis).
+# the software version.
 function(detect_os)
     find_program(LSB_RELEASE_EXEC lsb_release)
     if (DETECTED_OS STREQUAL "none")
-        if (DEFINED lsb_release-NOTFOUND AND NOT APPLE AND NOT DEFINED ${DETECTED_OS})
-            MESSAGE(FATAL_ERROR "We were unable to detect your OS version. This usually happens because we were unable to find\
- lsb_release command. In order to fix this error you can: install lsb_release for your distribution or specify which \
- system you are using. To specify the OS you have to call again cmake by passing -DOS=<your_os> as argument. The current\
- supported OS are: ubuntu-16.04, ubuntu-18.04, centos-7, osx.")
+        if (DEFINED lsb_release-NOTFOUND AND NOT APPLE)
+            MESSAGE(FATAL_ERROR "We were unable to detect the OS version. This happens because we did not find \
+ the lsb_release command. In order to fix this error you should install the lsb_release command or specify which \
+ system you are using. To specify the OS you have to run again cmake and set -DOS=<your_os> as argument. The current \
+ supported OS'es are: ubuntu-18.04, ubuntu-20.04, centos-7, osx.")
         elseif(APPLE)
-            # We check if we are using Travis (therefore the BDM_OS has a slightly different name).
-            if ($ENV{TRAVIS})
-                SET(DETECTED_OS "travis-osx" PARENT_SCOPE)
-            else()
-                SET(DETECTED_OS "osx" PARENT_SCOPE)
-            endif()
+            SET(DETECTED_OS "osx" PARENT_SCOPE)
         else()
             execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
                     OUTPUT_VARIABLE LSB_RELEASE_DISTRIBUTOR
@@ -83,10 +77,8 @@ function(verify_ROOT)
         # to be properly sourced prior to invoking CMake (CMake cannot do this for us, because it requires
         # reverting the previous find_package() call, which is not possible.)
         if(NOT ROOT_cxx14_FOUND)
-          set(ROOT_TAR_FILE root_v6-18-04_${DETECTED_OS}.tar.gz PARENT_SCOPE)
           message(FATAL_ERROR "The ROOT installation found in ${ROOTSYS} is not C++14 compliant. "
-            "Please download a compatible ROOT version from http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}, "
-            "and source bin/thisroot.sh prior to installing BioDynaMo. For more information: https://biodynamo.github.io/dev/build/#use-a-custom-paraviewroot-installation")
+            "Please unset ROOTSYS and re-run cmake so that a compatible version of ROOT will be downloaded.")
         endif()
 
         if (NOT DEFINED ROOTSYS OR NOT DEFINED ${ROOTSYS})
@@ -131,8 +123,8 @@ function(check_detected_os OS)
     # Then we check if the given OS is in that list
     # If it is not then we issue a fatal error
     if (NOT "${OS}" IN_LIST SUPPORTED_OS)
-        MESSAGE(FATAL_ERROR "The operative system you specified with the -DOS flag (${OS}) is not\
-        supported by the current BioDynaMo. The operative systems we support at the moment are:
+        MESSAGE(FATAL_ERROR "The operating system you specified with the -DOS flag (${OS}) is not \
+        supported by BioDynaMo. The operating systems we support at the moment are:
 ${ALL_OS}
 ")
     endif()
@@ -381,6 +373,7 @@ function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(cuda cuda "Enable CUDA code generation for GPU acceleration.")
     ADD_FEATURE_INFO(opencl opencl "Enable OpenCL code generation for GPU acceleration.")
     ADD_FEATURE_INFO(dict dict "Build with ROOT dictionaries.")
+    ADD_FEATURE_INFO(numa numa "Enable NUMA-Awareness in BioDynaMo.")
     ADD_FEATURE_INFO(paraview paraview "Enable ParaView.")
     ADD_FEATURE_INFO(sbml sbml "Enable SBML integration.")
     ADD_FEATURE_INFO(vtune vtune "Enable VTune performance analysis.")

@@ -22,7 +22,9 @@
 </p>
 
 <p align="center">
-  <a href="https://travis-ci.org/BioDynaMo/biodynamo"><img src="https://travis-ci.org/BioDynaMo/biodynamo.svg?branch=master"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22Ubuntu+CI%22"><img src="https://github.com/BioDynaMo/biodynamo/workflows/Ubuntu%20CI/badge.svg?branch=github-actions"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22CentOS+CI%22"><img src="https://github.com/BioDynaMo/biodynamo//workflows/CentOS%20CI/badge.svg?branch=github-actions"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22macOS+CI%22"><img src="https://github.com/BioDynaMo/biodynamo//workflows/macOS%20CI/badge.svg?branch=github-actions"/></a>
   <a href="https://cernopenlab.slack.com/messages/biodynamo/"><img src="https://img.shields.io/badge/chat-on_slack-ff69b4.svg?style=flat"/></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
 </p>
