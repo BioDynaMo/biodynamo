@@ -66,9 +66,9 @@ jobs:
     - name: System tests BioDynaMo
       shell: bash
       working-directory: build
-      on:
-        schedule:
-          - cron: "3 * * *"
+      # on:
+      #   schedule:
+      #     - cron: "3 * * *"
       run: |
         . bin/thisbdm.sh
         export DISPLAY=:99.0
