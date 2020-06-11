@@ -154,10 +154,9 @@ class ThreadInfo {
       // even though OMP_PROC_BIND is set to true.
       // A performance analysis showed almost identical results between true,
       // and spread.
-      Log::Warning("ThreadInfo",
-                   "The environmental variable OMP_PROC_BIND must be set to "
-                   "true. On Linux run 'export OMP_PROC_BIND=true' prior to "
-                   "running BioDynaMo");
+      Log::Warning("ThreadInfo::ThreadInfo",
+                   "The environment variable OMP_PROC_BIND must be set to "
+                   "true prior to running BioDynaMo ('export OMP_PROC_BIND=true')");
     }
     Renew();
   }
