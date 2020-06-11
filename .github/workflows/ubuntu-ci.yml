@@ -76,9 +76,6 @@ jobs:
     - name: System tests BioDynaMo
       shell: bash
       working-directory: build
-      on:
-        schedule:
-          - cron: "3 * * *"
       run: |
         . bin/thisbdm.sh
         sudo git config --system user.name "Test User"	
