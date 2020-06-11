@@ -68,25 +68,14 @@ jobs:
       working-directory: build
       run: |
         . bin/thisbdm.sh
+        git config --system user.name "Test User"	
+        git config --system user.email user@test.com
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         ninja run-unit-tests
         ../util/xvfb-initd.sh stop
 
     - name: System tests BioDynaMo
-      shell: bash
-      working-directory: build
-      # on:
-      #   schedule:
-      #     - cron: "3 * * *"
-      run: |
-        . bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        ninja run-demos
-        ../util/xvfb-initd.sh stop
-
-    - name: Build and deploy biodynamo.org
       shell: bash
       working-directory: build
       # on:
