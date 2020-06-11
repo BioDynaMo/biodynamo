@@ -93,8 +93,8 @@ jobs:
       #     - cron: "3 * * *"
       run: |
         . bin/thisbdm.sh
-        git config --system user.name "Test User"	
-        git config --system user.email user@test.com
+        sudo git config --system user.name "Test User"	
+        sudo git config --system user.email user@test.com
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         ninja run-demos
