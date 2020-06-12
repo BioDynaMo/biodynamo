@@ -26,6 +26,8 @@ namespace bdm {
 struct TypeIndex {
   void Add(SimObject* so);
 
+  void Update(SimObject* new_so);
+  
   void Remove(SimObject* so);
 
   void Clear();

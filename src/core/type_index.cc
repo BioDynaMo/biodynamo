@@ -18,6 +18,7 @@
 
 namespace bdm {
 
+// -----------------------------------------------------------------------------
 void TypeIndex::Add(SimObject* so) {
   auto& type_vector = data_[so->IsA()];
   auto uid = so->GetUid();
@@ -28,6 +29,14 @@ void TypeIndex::Add(SimObject* so) {
   type_vector.push_back(so);
 }
 
+// -----------------------------------------------------------------------------
+void TypeIndex::Update(SimObject* new_so) {
+  auto idx = index_[new_so->GetUid()];
+  auto& type_vector = data_[new_so->IsA()];
+  type_vector[idx] = new_so; 
+}
+
+// -----------------------------------------------------------------------------
 void TypeIndex::Remove(SimObject* so) {
   auto idx = index_[so->GetUid()];
   auto& type_vector = data_[so->IsA()];
@@ -42,6 +51,7 @@ void TypeIndex::Remove(SimObject* so) {
   }
 }
 
+// -----------------------------------------------------------------------------
 void TypeIndex::Clear() {
   index_.clear();
   for (auto& pair : data_) {
@@ -49,12 +59,14 @@ void TypeIndex::Clear() {
   }
 }
 
+// -----------------------------------------------------------------------------
 void TypeIndex::Reserve(uint64_t capacity) {
   if (index_.size() < capacity) {
     index_.resize(capacity * 1.5);
   }
 }
 
+// -----------------------------------------------------------------------------
 const std::vector<SimObject*>& TypeIndex::GetType(TClass* tclass) const {
   return data_[tclass];
 }

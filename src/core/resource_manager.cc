@@ -278,6 +278,9 @@ void ResourceManager::SortAndBalanceNumaNodes() {
         auto& handle = sohandles[e];
         auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
         dest[e] = so->GetCopy();
+        if (type_index_) {
+          type_index_->Update(dest[e]); 
+        }
         if (minimize_memory) {
           delete so;
         }
