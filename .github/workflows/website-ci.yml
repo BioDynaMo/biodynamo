@@ -14,7 +14,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build doxygen
+        sudo apt-get install -y ninja-build doxygen graphviz
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.sh
         chmod +x cmake-3.17.3-Linux-x86_64.sh
         sudo ./cmake-3.17.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
