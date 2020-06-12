@@ -43,11 +43,17 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Cache Third Party Packages
+      uses: actions/cache@v2
+      with:
+        path: build/third_party
+        key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+
     - name: Build website
       shell: bash
       run: |
         cmake -G Ninja \
-          -Dwebsite=on
+          -Dwebsite=on \
           -B build
         cd build
         ninja website
