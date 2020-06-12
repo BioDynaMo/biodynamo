@@ -75,7 +75,6 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
              << "struct " << functor_name << " : public Functor<void, VtkSimObjects*, int> {\n"
              << "  void operator()(VtkSimObjects* so_grid, int tid) {\n";
   
-        uint64_t counter = 0;
         for (auto* tdm : tdata_members) {
           // example:
           // { CreateVtkDataArray<Cell, Double3> f; f(tid, "position_", 123, so_grid); }
