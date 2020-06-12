@@ -95,7 +95,14 @@ class ResourceManager {
     diffusion_grids_ = std::move(other.diffusion_grids_);
 
     RestoreUidSoMap();
-    // FIXME restore type_index_
+    // restore type_index_
+    if (type_index_) {
+      for (auto& numa_sos : sim_objects_) {
+        for (auto* so : numa_sos) {
+          type_index_->Add(so);
+        }
+      } 
+    }
     return *this;
   }
 
