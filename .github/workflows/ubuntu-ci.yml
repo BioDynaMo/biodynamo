@@ -93,7 +93,6 @@ jobs:
         make website
 
     - name: Deploy biodynamo.org
-      shell: bash
       uses: peaceiris/actions-gh-pages@v3
       with:
         deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
