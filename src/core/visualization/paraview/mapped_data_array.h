@@ -496,12 +496,9 @@ template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::GetTypedTuple(vtkIdType tuple_id,
                                              TScalar* tuple) const {
   auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]); 
-  std::cout << "GetTuple i " << tuple_id << " ";
   for(uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-    std::cout << data[i] << ", ";
     tuple[i] = data[i];
   }
-  std::cout << std::endl;
 }
 
 //------------------------------------------------------------------------------
@@ -688,11 +685,15 @@ void MappedDataArray<TScalar, TClass, TDataMember>::InsertValue(vtkIdType, TScal
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-MappedDataArray<TScalar, TClass, TDataMember>::MappedDataArray() {}
+MappedDataArray<TScalar, TClass, TDataMember>::MappedDataArray() {
+  this->temp_array_ = new double[this->NumberOfComponents];
+}
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-MappedDataArray<TScalar, TClass, TDataMember>::~MappedDataArray() {}
+MappedDataArray<TScalar, TClass, TDataMember>::~MappedDataArray() {
+  delete[] this->temp_array_;
+}
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
