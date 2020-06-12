@@ -29,7 +29,8 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-// FIXME document
+/// Extract the data member value of a SimObject given its concrete type, type
+/// of the data member, and data member offset from its concrete pointer. 
 template <typename TReturn, typename TClass, typename TDataMember>
 struct GetDataMemberForVis {
   uint64_t dm_offset_;
@@ -179,8 +180,13 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   double* temp_array_ = nullptr;
   
   Param::MappedDataArrayMode mode_;
-  mutable uint16_t match_value = true;
+  /// Comparison value to determine if cached data is valid
+  /// This value is increemented at each simulation iteration.
+  mutable uint64_t match_value_ = 0;
+  /// Stores match_value at the time the data element was cached.
+  /// Data is valid for one iteration, i.e. as long as match_value_ doesn't change. 
   mutable std::vector<uint64_t> is_matching_;
+  /// If mode_ is kCopy or kCache, data from SimObjects is written to data_
   mutable std::vector<TScalar> data_;
 
  private:
@@ -236,10 +242,10 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<Sim
       if (cap < this->Size) {
         is_matching_.reserve(this->Size * 1.5);
         for (uint64_t i = cap; i < is_matching_.capacity(); ++i) {
-          is_matching_[i] = match_value;
+          is_matching_[i] = match_value_;
         }
       }
-      match_value++;
+      match_value_++;
     }
   }  
 }
@@ -255,9 +261,14 @@ MappedDataArray<TScalar, TClass, TDataMember>* MappedDataArray<TScalar, TClass, 
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::PrintSelf(ostream& os, vtkIndent indent) {
   this->MappedDataArray<TScalar, TClass, TDataMember>::Superclass::PrintSelf(os, indent);
-  // FIXME
-  // os << indent << "Array: " << this->Array << std::endl;
-  // os << indent << "temp_array_: " << this->temp_array_ << std::endl;
+  os << indent << "sim_objects_: " << this->sim_objects_ << std::endl;
+  os << indent << "start_: " << this->start_ << std::endl;
+  os << indent << "end_: " << this->end_ << std::endl;
+  os << indent << "temp_array_: " << this->temp_array_ << std::endl;
+  os << indent << "mode_: " << this->mode_ << std::endl;
+  os << indent << "match_value_: " << this->match_value_ << std::endl;
+  os << indent << "is_matching_.size(): " << this->is_matching_.size() << std::endl;
+  os << indent << "data_.size(): " << this->data_.size() << std::endl;
 }
 
 //------------------------------------------------------------------------------
@@ -375,7 +386,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
       { 
         bool all_matches = true;
         for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-          all_matches |= (is_matching_[i] == match_value);
+          all_matches |= (is_matching_[i] == match_value_);
         }
         if (all_matches) {
           uint64_t cnt = 0;
@@ -392,7 +403,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
           tuple[i] = static_cast<double>(data[i]);
           if (mode_ == Param::MappedDataArrayMode::kCache) {
             data_[idx + i] = data[i];
-            is_matching_[idx + i] = match_value;
+            is_matching_[idx + i] = match_value_;
           }
         }
         return;
@@ -426,11 +437,11 @@ void MappedDataArray<TScalar, TClass, TDataMember>::LookupTypedValue(TScalar val
 template <typename TScalar, typename TClass, typename TDataMember>
 typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArray<TScalar, TClass, TDataMember>::GetValue(
     vtkIdType idx) const {
-  //FIXME code duplication with GetValueReference 
+  // TODO(lukas) resolve code duplication with GetValueReference 
   // make non virtual private helper function and call it from here and GetValueReference
   switch(mode_) {
     case Param::MappedDataArrayMode::kCache:
-      if (is_matching_[idx] == match_value) {
+      if (is_matching_[idx] == match_value_) {
         return data_[idx];
       }
     case Param::MappedDataArrayMode::kZeroCopy:
@@ -439,7 +450,7 @@ typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArra
         auto* data = get_dm_((*sim_objects_)[start_ + idx]); 
         if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx] = *data;
-          is_matching_[idx] = match_value;
+          is_matching_[idx] = match_value_;
         }
         return *data;
       }
@@ -448,7 +459,7 @@ typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArra
       auto* data = get_dm_((*sim_objects_)[start_ + tuple]); 
       if (mode_ == Param::MappedDataArrayMode::kCache) {
         data_[idx] = data[comp];
-        is_matching_[idx] = match_value;
+        is_matching_[idx] = match_value_;
       }
       return data[comp];
       }
@@ -463,7 +474,7 @@ template <typename TScalar, typename TClass, typename TDataMember>
 TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdType idx) {
   switch(mode_) {
     case Param::MappedDataArrayMode::kCache:
-      if (is_matching_[idx] == match_value) {
+      if (is_matching_[idx] == match_value_) {
         return data_[idx];
       }
     case Param::MappedDataArrayMode::kZeroCopy:
@@ -472,7 +483,7 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdT
         auto* data = get_dm_((*sim_objects_)[start_ + idx]); 
         if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx] = *data;
-          is_matching_[idx] = match_value;
+          is_matching_[idx] = match_value_;
         }
         return *data;
       }
@@ -481,7 +492,7 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdT
       auto* data = get_dm_((*sim_objects_)[start_ + tuple]); 
       if (mode_ == Param::MappedDataArrayMode::kCache) {
         data_[idx] = data[comp];
-        is_matching_[idx] = match_value;
+        is_matching_[idx] = match_value_;
       }
       return data[comp];
       }

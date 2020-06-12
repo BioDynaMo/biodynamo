@@ -12,7 +12,6 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <iostream>  // FIXME remove
 #include <stack>
 
 #include <TClass.h>
@@ -27,7 +26,6 @@
 
 namespace bdm {
 
-// FIXME add tests
 std::vector<TClass*> FindClassSlow(const std::string& class_name) {
   bool cn_has_scope = class_name.find("::") != std::string::npos;
   std::string cn_with_scope_prefix = std::string("::") + class_name;
@@ -56,7 +54,6 @@ std::vector<TClass*> FindClassSlow(const std::string& class_name) {
   return tclasses;
 }
 
-// FIXME add tests
 std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
                                              const std::string& data_member) {
   std::vector<TDataMember*> ret_val;
@@ -114,19 +111,16 @@ JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
     if (candidates.size() == 1) {
       data_members_.push_back(candidates[0]);
     } else if (candidates.size() == 0) {
-      // FIXME message
       Log::Fatal("JitForEachDataMemberFunctor::JitForEachDataMemberFunctor",
-                 "Could not find data member");
+                 "Could not find data member ", dm);
     } else {
-      // FIXME message
       Log::Fatal("JitForEachDataMemberFunctor::JitForEachDataMemberFunctor",
-                 "Data member name is ambigous");
+                 "Data member name (", dm ,") is ambigous");
     }
   }
 }
 
 void JitForEachDataMemberFunctor::Compile() {
-  std::cout <<code_generator_(functor_name_, data_members_).c_str()  << std::endl;
   gInterpreter->ProcessLineSynch(code_generator_(functor_name_, data_members_).c_str());
 }
 
@@ -138,3 +132,4 @@ void* JitForEachDataMemberFunctor::New(const std::string& parameter) {
 std::atomic<int> JitForEachDataMemberFunctor::counter_;
 
 }  // namespace bdm
+

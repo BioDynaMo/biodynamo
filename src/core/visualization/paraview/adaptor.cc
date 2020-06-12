@@ -245,7 +245,6 @@ void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
   });
 }
 
-//FIXME move
 // ----------------------------------------------------------------------------
 /// This function generates the Paraview state based on the exported files
 /// Therefore, the user can load the visualization simply by opening the pvsm
