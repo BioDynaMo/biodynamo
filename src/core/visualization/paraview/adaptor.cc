@@ -184,6 +184,10 @@ void ParaviewAdaptor::Initialize() {
 
 // ----------------------------------------------------------------------------
 void ParaviewAdaptor::InsituVisualization() {
+#ifdef BDM_PV_EXPERIMENTAL
+  vtkCommand::kOpenGLCacheEnable = true;
+  vtkCommand::kOpenGLCacheIndex = 0;
+#endif  // BDM_PV_EXPERIMENTAL
   impl_->g_processor_->RequestDataDescription(impl_->data_description_);
   impl_->data_description_->ForceOutputOn();
   impl_->g_processor_->CoProcess(impl_->data_description_);
