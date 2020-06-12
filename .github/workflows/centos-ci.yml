@@ -93,8 +93,8 @@ jobs:
         . /etc/profile.d/modules.sh || true
         module load mpi
         . bin/thisbdm.sh
-        sudo git config --system user.name "Test User"	
-        sudo git config --system user.email user@test.com
+        git config --system user.name "Test User"	
+        git config --system user.email user@test.com
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         ninja run-demos
