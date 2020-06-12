@@ -89,6 +89,9 @@ jobs:
       shell: bash
       working-directory: build
       run: |
+        . scl_source enable devtoolset-7 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
         . bin/thisbdm.sh
         sudo git config --system user.name "Test User"	
         sudo git config --system user.email user@test.com
