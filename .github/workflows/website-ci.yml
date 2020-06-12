@@ -1,0 +1,48 @@
+name: Website CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Build website
+      shell: bash
+      run: |
+        cmake -G Ninja \
+          -Dwebsite=on
+          -B build
+        cd build
+        ninja website
+
+    - name: Deploy biodynamo.org
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        external_repository: BioDynaMo/biodynamo.github.io
+        publish_branch: master
+        user_name: 'github-actions[bot]'
+        user_email: 'bdmtravis@gmail.com'
+        commit_message: ${{ github.event.head_commit.message }}
+        publish_dir: ./build/website/public
+
+    - name: Notify Slack
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        author_name: Integration Test
+        fields: repo,ref,message,author,action,workflow # default: repo,commit
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # optional
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+      if: always() # Pick up events even if the job fails or is canceled.

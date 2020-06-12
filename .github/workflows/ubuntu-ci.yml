@@ -85,26 +85,6 @@ jobs:
         ninja run-demos
         ../util/xvfb-initd.sh stop
 
-    - name: Build biodynamo.org
-      shell: bash
-      working-directory: build
-      if: matrix.os == 'ubuntu-20.04'
-      run: |
-        cmake -Dwebsite=on ..
-        . bin/thisbdm.sh
-        make website
-
-    - name: Deploy biodynamo.org
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        external_repository: BioDynaMo/biodynamo.github.io
-        publish_branch: master
-        user_name: 'github-actions[bot]'
-        user_email: 'bdmtravis@gmail.com'
-        commit_message: ${{ github.event.head_commit.message }}
-        publish_dir: ./website/public
-
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
       with:
