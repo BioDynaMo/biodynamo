@@ -14,10 +14,13 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build
+        sudo apt-get install -y ninja-build doxygen
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.sh
         chmod +x cmake-3.17.3-Linux-x86_64.sh
         sudo ./cmake-3.17.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+
+    - name: Set OSVERS
+      run: echo "::set-env name=OSVERS::$(lsb_release -si)-$(lsb_release -sr)"
 
     - name: Cache pyenv
       uses: actions/cache@v2
