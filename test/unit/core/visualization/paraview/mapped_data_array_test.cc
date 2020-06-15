@@ -41,7 +41,7 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
   {
     ne.SetDiameter(123);
     auto dms = FindDataMemberSlow(tclass, "diameter_");
-    ASSERT_EQ(1, dms.size());
+    ASSERT_EQ(1u, dms.size());
     
     GetDataMemberForVis<double*, NeuriteElement, double> get_dm; 
     get_dm.dm_offset_ = dms[0]->GetOffset();
@@ -52,7 +52,7 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
   {
     ne.SetActualLength(123);
     auto dms = FindDataMemberSlow(tclass, "actual_length_");
-    ASSERT_EQ(1, dms.size());
+    ASSERT_EQ(1u, dms.size());
     
     GetDataMemberForVis<double*, NeuriteElement, double> get_dm; 
     get_dm.dm_offset_ = dms[0]->GetOffset();
@@ -63,7 +63,7 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
   {
     ne.SetMassLocation({1, 2, 3});
     auto dms = FindDataMemberSlow(tclass, "mass_location_");
-    ASSERT_EQ(1, dms.size());
+    ASSERT_EQ(1u, dms.size());
     
     GetDataMemberForVis<double*, NeuriteElement, Double3> get_dm; 
     get_dm.dm_offset_ = dms[0]->GetOffset();
@@ -74,22 +74,22 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
   // uid_ 
   {
     auto dms = FindDataMemberSlow(tclass, "uid_");
-    ASSERT_EQ(1, dms.size());
+    ASSERT_EQ(1u, dms.size());
     
     GetDataMemberForVis<uint64_t*, SimObject, SoUid> get_dm; 
     get_dm.dm_offset_ = dms[0]->GetOffset();
-    EXPECT_EQ(1, *get_dm(&ne));
-    EXPECT_EQ(1, get_dm(&ne)[0]);
+    EXPECT_EQ(1u, *get_dm(&ne));
+    EXPECT_EQ(1u, get_dm(&ne)[0]);
   }
   // so_pointer_ 
   {
     auto dms = FindDataMemberSlow(tclass, "daughter_right_");
-    ASSERT_EQ(1, dms.size());
+    ASSERT_EQ(1u, dms.size());
     
     GetDataMemberForVis<uint64_t*, NeuriteElement, SoPointer<NeuronOrNeurite>> get_dm; 
     get_dm.dm_offset_ = dms[0]->GetOffset();
-    EXPECT_EQ(18446744073709551615, *get_dm(&ne));
-    EXPECT_EQ(18446744073709551615, get_dm(&ne)[0]);
+    EXPECT_EQ(18446744073709551615ULL, *get_dm(&ne));
+    EXPECT_EQ(18446744073709551615ULL, get_dm(&ne)[0]);
   }
 }
 
