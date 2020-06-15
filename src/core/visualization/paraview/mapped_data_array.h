@@ -18,6 +18,7 @@
 #include <vtkMappedDataArray.h>
 #include <vtkObjectFactory.h>
 #include <vector>
+#include <thread>
 
 #include "core/functor.h"
 #include "core/param/param.h"
@@ -25,8 +26,10 @@
 #include "core/sim_object/so_pointer.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/type.h"
+#include "core/util/thread_info.h"
 
 namespace bdm {
+
 
 // -----------------------------------------------------------------------------
 /// Extract the data member value of a SimObject given its concrete type, type
@@ -34,7 +37,18 @@ namespace bdm {
 template <typename TReturn, typename TClass, typename TDataMember>
 struct GetDataMemberForVis {
   uint64_t dm_offset_;
-  mutable typename std::remove_pointer<TReturn>::type temp_value;
+  using TempValueType = typename std::remove_pointer<TReturn>::type; 
+  /// Thread local storage for temporary values.
+  mutable std::vector<std::array<TempValueType, 64 / sizeof(TempValueType)>> temp_values_;
+
+  GetDataMemberForVis() {
+    temp_values_.resize(256);
+  }
+
+  void Update() {
+    // We assume that number of threads won't double within one iteration
+    temp_values_.resize(2 * std::max(ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256UL));
+  }
 
   enum DataType { kDefault, kArray, kSoUid, kSoPointer };
 
@@ -75,8 +89,10 @@ struct GetDataMemberForVis {
     auto* data = reinterpret_cast<TDataMember*>(
                      reinterpret_cast<char*>(casted_so) + dm_offset_);
     uint64_t uid = *data;
-    temp_value = uid;
-    return &temp_value;
+    auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
+    assert(temp_values_.size() > tid);
+    temp_values_[tid][0] = uid; 
+    return &temp_values_[tid][0];
   }
 
   template <typename TTDataMember = TDataMember>
@@ -86,8 +102,10 @@ struct GetDataMemberForVis {
     auto* data = reinterpret_cast<TDataMember*>(
                      reinterpret_cast<char*>(casted_so) + dm_offset_);
     uint64_t uid = data->GetUid();
-    temp_value = uid;
-    return &temp_value;
+    auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
+    assert(temp_values_.size() > tid);
+    temp_values_[tid][0] = uid; 
+    return &temp_values_[tid][0];
   }
 };
 
@@ -212,6 +230,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<Sim
   sim_objects_ = sim_objects;
   start_ = start;
   end_ = end;
+  get_dm_.Update();
   this->Size = this->NumberOfComponents * (end - start);
   this->MaxId = this->Size - 1;
 

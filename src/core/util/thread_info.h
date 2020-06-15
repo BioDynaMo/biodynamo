@@ -15,6 +15,7 @@
 #ifndef CORE_UTIL_THREAD_INFO_H_
 #define CORE_UTIL_THREAD_INFO_H_
 
+#include <atomic>
 #include <omp.h>
 #include <sched.h>
 #include <vector>
@@ -63,6 +64,15 @@ class ThreadInfo {
 
   /// Return the maximum number of threads.
   int GetMaxThreads() const { return max_threads_; }
+
+  /// Returns a unique thread id even for parallel regions that 
+  /// don't use OpenMP. 
+  uint64_t GetUniversalThreadId() const {
+      thread_local uint64_t tid = thread_counter_++;
+      return tid;
+  }
+  
+  uint64_t GetMaxUniversalThreadId() const { return thread_counter_; }
 
   /// Renews the metadata.\n
   /// Whenever a thread is scheduled on a different cpu, e.g. using
@@ -125,6 +135,8 @@ class ThreadInfo {
   }
 
  private:
+  static std::atomic<uint64_t> thread_counter_;
+
   /// Maximum number of threads for this simulation.
   uint64_t max_threads_;
   /// Number of NUMA nodes on this machine.

@@ -97,13 +97,13 @@ void RunExportDiffusionGridTest(uint64_t max_bound, uint64_t resolution) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCyleTest, ExportDiffusionGrid_SlicesLtNumThreads) {
+TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunExportDiffusionGridTest(max_threads - 1, max_threads - 1);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCyleTest, ExportDiffusionGrid_SlicesGtNumThreads) {
+TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunExportDiffusionGridTest(3 * max_threads + 1, max_threads);
 }
@@ -143,7 +143,7 @@ void RunExportSimObjectsTest(Param::MappedDataArrayMode mode,
   for (uint64_t i = 0; i < num_so; ++i) {
     construct(i); 
   }
- 
+  
   // Don't run a simulation step, because neurites are not properly set up. 
   auto vis = VisualizationAdaptor::Create("paraview");
   vis->Visualize();
@@ -170,7 +170,7 @@ void RunExportSimObjectsTest(Param::MappedDataArrayMode mode,
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCyleTest, ExportSimObjects_ZeroCopy) {
+TEST(ParaviewFullCycleTest, ExportSimObjects_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
   RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));
@@ -178,7 +178,7 @@ TEST(ParaviewFullCyleTest, ExportSimObjects_ZeroCopy) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCyleTest, ExportSimObjects_Cache) {
+TEST(ParaviewFullCycleTest, ExportSimObjects_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
   RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));
@@ -186,7 +186,7 @@ TEST(ParaviewFullCyleTest, ExportSimObjects_Cache) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCyleTest, ExportSimObjects_Copy) {
+TEST(ParaviewFullCycleTest, ExportSimObjects_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
   RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));

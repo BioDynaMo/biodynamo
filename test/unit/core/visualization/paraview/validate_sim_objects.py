@@ -17,11 +17,14 @@ def ValidateDataMember(params, neurite, data_member_name, offset):
         components = data.GetNumberOfComponents()  
         if components == 1:
             if i != (int(data.GetValue(i)) - offset): 
+                print("ERROR for attribute", data_member_name, "expected:", i + offset, "actual:", int(data.GetValue(i)))
                 sys.exit(2)
         else:
             t = data.GetTuple(i)
             for j in range(0, components):
                 if i != (int(t[j]) - offset): 
+                    print("ERROR for attribute", data_member_name, "expected:", i + offset, "actual:", int(t[j]))
+                    print(data_member_name, i, " ", t)
                     sys.exit(2)
             
 
