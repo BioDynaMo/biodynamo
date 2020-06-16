@@ -95,6 +95,9 @@ ParaviewAdaptor::~ParaviewAdaptor() {
       GenerateParaviewState();
     }
 
+    if (impl_->data_description_ != nullptr) {
+      impl_->data_description_->Delete();
+    }
     for (auto& el : impl_->vtk_sim_objects_) {
       delete el.second;
     }
@@ -211,6 +214,7 @@ void ParaviewAdaptor::CreateVtkObjects() {
   BuildSimObjectsVTKStructures();
   BuildDiffusionGridVTKStructures();
   if (impl_->data_description_->GetUserData() == nullptr) {
+    std::cout << "Create user data " << std::endl;
     vtkNew<vtkStringArray> json;
     json->SetName("metadata");
     json->InsertNextValue(
