@@ -73,6 +73,16 @@ jobs:
         ninja run-unit-tests
         ../util/xvfb-initd.sh stop
 
+    - name: Valgrind tests BioDynaMo
+      shell: bash
+      working-directory: build
+      run: |
+        . bin/thisbdm.sh
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        ninja run-valgrind
+        ../util/xvfb-initd.sh stop
+
     - name: System tests BioDynaMo
       shell: bash
       working-directory: build
