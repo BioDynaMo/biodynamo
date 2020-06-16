@@ -99,7 +99,11 @@ void RunExportDiffusionGridTest(uint64_t max_bound, uint64_t resolution) {
 // -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunExportDiffusionGridTest(max_threads - 1, max_threads - 1);
+  if (max_threads == 1) {
+    RunExportDiffusionGridTest(max_threads, max_threads);
+  } else {
+    RunExportDiffusionGridTest(max_threads - 1, max_threads - 1);
+  }
 }
 
 // -----------------------------------------------------------------------------

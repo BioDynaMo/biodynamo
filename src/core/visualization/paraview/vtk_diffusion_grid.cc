@@ -98,6 +98,7 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
   auto total_boxes = grid->GetNumBoxes();
 
   auto* tinfo = ThreadInfo::GetInstance();
+  whole_extent_ = {{0, std::max(static_cast<int>(num_boxes[0]) - 1, 0), 0, std::max(static_cast<int>(num_boxes[1]) - 1, 0), 0, std::max(static_cast<int>(num_boxes[2]) - 1, 0)}};
   Dissect(num_boxes[2], tinfo->GetMaxThreads());
   CalcPieceExtents(num_boxes);
   uint64_t xy_num_boxes = num_boxes[0] * num_boxes[1];
@@ -165,8 +166,6 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
       }
     } 
   }
-    
-  whole_extent_ = {{0, static_cast<int>(num_boxes[0]) - 1, 0, static_cast<int>(num_boxes[1]) - 1, 0, static_cast<int>(num_boxes[2]) - 1}};
 }
 
 // -----------------------------------------------------------------------------
@@ -180,7 +179,11 @@ void VtkDiffusionGrid::WriteToFile(uint64_t step) const {
 
 // -----------------------------------------------------------------------------
 void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
-  if (boxes_z <= num_pieces_target) {
+  if (num_pieces_target == 1) {
+    piece_boxes_z_last_ = 1;
+    piece_boxes_z_ = 1;
+    num_pieces_ = 1;
+  } else if (boxes_z <= num_pieces_target) {
     piece_boxes_z_last_ = 2;
     piece_boxes_z_ = 1;
     num_pieces_ = boxes_z - 1;
@@ -197,6 +200,10 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
 // -----------------------------------------------------------------------------
 void VtkDiffusionGrid::CalcPieceExtents(const std::array<size_t, 3>& num_boxes) {
   piece_extents_.resize(num_pieces_);
+  if (num_pieces_ == 1) {
+    piece_extents_[0] = whole_extent_;
+    return;
+  }
   int c = piece_boxes_z_;
   piece_extents_[0] = {{0, static_cast<int>(num_boxes[0]) - 1, 0, static_cast<int>(num_boxes[1]) - 1, 0, c}};
   for(uint64_t i = 1; i < num_pieces_ - 1; ++i) {
