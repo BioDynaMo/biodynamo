@@ -17,6 +17,7 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
 
 valgrind \
   --track-origins=yes \
+  --num-callers=50 \
   --leak-resolution=high \
   --tool=memcheck \
   --leak-check=full \
