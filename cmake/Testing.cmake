@@ -81,9 +81,9 @@ function(bdm_add_test_executable TEST_TARGET)
   if (valgrind AND VALGRIND_FOUND AND NOT coverage)
     # filter out SchedulerTest.Backup because of timing issue
     add_test(NAME "valgrind_${TEST_TARGET}"
-    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*)
+    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*)
     add_custom_target(run-valgrind
-    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*)
+    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*)
     add_dependencies(run-valgrind biodynamo-unit-tests)
   endif()
 
