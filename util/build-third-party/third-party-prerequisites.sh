@@ -45,7 +45,7 @@ EOF'
 
     #  root required packages
     sudo yum install -y git binutils \
-      libX11-devel libXpm-devel libXft-devel libXext-devel
+      libX11-devel libXpm-devel libXft-devel libXext-devel ninja-build
     #  root optional packages
     sudo yum install -y gcc-gfortran openssl-devel pcre-devel \
       mesa-libGL-devel mesa-libGLU-devel glew-devel ftgl-devel mysql-devel \
@@ -89,7 +89,7 @@ EOF'
     CC=gcc
     CXX=g++
     # only for ubuntu image
-    sudo apt-get -y install wget git make
+    sudo apt-get -y install wget git make ninja-build
     #  root required packages
     sudo apt-get -y install git dpkg-dev g++ gcc binutils libx11-dev libxpm-dev \
       libxft-dev libxext-dev
@@ -118,9 +118,9 @@ EOF'
     export LLVM_CONFIG="/usr/bin/llvm-config-6.0"
   fi
   # update cmake to build ROOT
-  URL="https://cmake.org/files/v3.15/cmake-3.15.3-Linux-x86_64.tar.gz"
-  DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.15.3 1
-  export PATH=$WORKING_DIR/cmake-3.15.3/bin:$PATH
+  URL="https://cmake.org/files/v3.17/cmake-3.17.3-Linux-x86_64.tar.gz"
+  DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.17.3 1
+  export PATH=$WORKING_DIR/cmake-3.17.3/bin:$PATH
 
   # Install pyenv and python 3.6.9
   curl https://pyenv.run | bash
@@ -133,6 +133,7 @@ else
   brew install llvm@6
   brew install swig
   brew install git
+  brew install ninja
 
   export CXX=/usr/local/opt/llvm@6/bin/clang++
   export CC=/usr/local/opt/llvm@6/bin/clang

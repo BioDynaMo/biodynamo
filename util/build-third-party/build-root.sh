@@ -19,13 +19,15 @@ Description:
   This script builds ROOT.
   The archive will be stored in BDM_PROJECT_DIR/build/root.tar.gz
 Arguments:
-  \$1 ROOT version that should be build"
+  \$1 ROOT version that should be build (e.g. 6.20.04)"
   exit 1
 fi
 
 set -e -x
 
 ROOT_VERSION=$1
+PYVERS=3.6.9
+
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 cd $BDM_PROJECT_DIR
 
@@ -52,37 +54,72 @@ mkdir -p $ROOT_INSTALL_DIR
 # install prerequisites
 . $BDM_PROJECT_DIR/util/build-third-party/third-party-prerequisites.sh
 
-git clone https://github.com/root-project/root.git
+# Get the right ROOT source version, untar creates "root-$ROOT_VERSION"
+wget https://root.cern.ch/download/root_v$ROOT_VERSION.source.tar.gz
+tar -zxf root_v$ROOT_VERSION.source.tar.gz
+ROOTSRC=root-$ROOT_VERSION
 
-cd root
-git checkout $ROOT_VERSION
-git status
-cd ..
-
-# Set Python to 3.6.9
+# Set Python to $PYVERS
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-pyenv shell 3.6.9
+pyenv shell $PYVERS
+pip install --user numpy
+
+# unset any env var to local installed libraries
+unset XRDSYS
+unset RFIO
+unset CASTOR
+unset FFTW3
+unset MONALISA
+unset ORACLE
+unset PYTHIA6
+unset PYTHIA8
+unset DAVIX
 
 mkdir build
 cd build
-cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_COMPILER=$CC \
-  -DCMAKE_CXX_COMPILER=$CXX \
-  -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
-  -Dcxx14=on \
-  -DPYTHON_EXECUTABLE=`pyenv which python3` \
-  -DPYTHON_LIBRARY=`pyenv which python3`/../../lib/libpython3.6m.so \
-  -DPYTHON_INCLUDE_DIR=`pyenv which python3`/../../include/python3.6m/ \
-  ../root/
-make -j$(CPUCount) install
+
+if [[ $(uname -s) == "Darwin"* ]]; then
+  cmake -G Ninja -Dmacos_native=YES -Dbuiltin_glew=ON \
+   -DCMAKE_BUILD_TYPE=Release \
+   -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
+   -DCMAKE_C_COMPILER=$CC \
+   -DCMAKE_CXX_COMPILER=$CXX \
+   -DCMAKE_CXX_STANDARD=14 \
+   -DPYTHON_EXECUTABLE=`pyenv which python3` \
+   ../$ROOTSRC
+else
+  cmake -G Ninja \
+    -Dbuiltin_fftw3=ON \
+    -Dbuiltin_freetype=ON \
+    -Dbuiltin_ftgl=ON \
+    -Dbuiltin_glew=ON \
+    -Dbuiltin_gsl=ON \
+    -Dbuiltin_lz4=ON \
+    -Dbuiltin_lzma=ON \
+    -Dbuiltin_openssl=ON \
+    -Dbuiltin_pcre=ON \
+    -Dbuiltin_tbb=ON \
+    -Dbuiltin_unuran=ON \
+    -Dbuiltin_xxhash=ON \
+    -Dbuiltin_zlib=ON \
+    -Dbuiltin_zstd=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_COMPILER=$CC \
+    -DCMAKE_CXX_COMPILER=$CXX \
+    -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
+    -DCMAKE_CXX_STANDARD=14 \
+    -DPYTHON_EXECUTABLE=`pyenv which python3` \
+    ../$ROOTSRC
+fi
+
+ninja install
 
 cd $ROOT_INSTALL_DIR
-RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
+RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
 tar -zcf ${RESULT_FILE} *
 
 # mv to destination directory
 mv ${RESULT_FILE} $DEST_DIR
 cd $DEST_DIR
-sha256sum ${RESULT_FILE} > ${RESULT_FILE}.sha256
+shasum -a256 ${RESULT_FILE} > ${RESULT_FILE}.sha256
