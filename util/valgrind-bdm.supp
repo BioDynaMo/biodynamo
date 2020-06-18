@@ -327,6 +327,18 @@
    ...
 }
 
+{
+   gh_actions_centos_false_positives
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   ...
+   fun:opal_libevent2022_event_base_loop
+   ...
+   fun:start_thread
+   fun:clone
+}
+
 ######### Suppress libevent issues
 {
    ignore_libevent_false_positives
