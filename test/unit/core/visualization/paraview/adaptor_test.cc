@@ -113,7 +113,8 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   ],
   "extracellular_substances": [
     { "name":"sodium", "has_gradient":"true" }
-  ]
+  ],
+  "insitu_script_arguments": ""
 }
 )STR";
 

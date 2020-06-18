@@ -96,7 +96,6 @@ std::string GenerateSimulationInfoJson(
     }
   }
 
-  // write to file
   std::stringstream str;
   str << "{" << std::endl
       << "  \"simulation\": {" << std::endl
@@ -107,7 +106,8 @@ std::string GenerateSimulationInfoJson(
       << sim_objects.str() << "  ]," << std::endl
       << "  \"extracellular_substances\": [" << std::endl
       << substances.str() << std::endl
-      << "  ]" << std::endl
+      << "  ]," << std::endl
+      << "  \"insitu_script_arguments\": \"" << param->python_insitu_script_arguments_ << "\"" << std::endl
       << "}" << std::endl;
   return str.str();
 }

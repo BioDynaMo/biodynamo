@@ -255,6 +255,7 @@ def CreateCoProcessor():
             user_data = datadescription.GetUserData()
             json_string = user_data.GetAbstractArray("metadata").GetVariantValue(0).ToString()
             build_info = json.loads(json_string)
+            insitu_script_arguments = build_info["insitu_script_arguments"].split(" ")
             global is_insitu_pipeline
             is_insitu_pipeline = True
 
@@ -276,9 +277,10 @@ def CreateCoProcessor():
             try:
                 ExtendDefaultPipeline
             except NameError:
-                print("WARNING: No user-defined paraview script found")
+                pass
             else:
-                ExtendDefaultPipeline(renderview, coprocessor, datadescription)
+                ExtendDefaultPipeline(renderview, coprocessor, datadescription, 
+                        insitu_script_arguments)
 
         return Pipeline()
 

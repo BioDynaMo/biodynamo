@@ -25,15 +25,22 @@ namespace fs = std::experimental::filesystem;
 namespace bdm {
 
 // -----------------------------------------------------------------------------
+std::string GetPythonScriptPath(const std::string& python_script) {
+  std::stringstream path;
+  path << std::getenv("BDMSYS")   
+       << "/share/test/core/visualization/paraview/" << python_script;
+  return path.str();  
+} 
+
+// -----------------------------------------------------------------------------
 void Validate(const std::string& python_script, 
               const std::string& sim_name, 
               uint64_t num_elements) {
   std::stringstream cmd;
-  std::string bdm_sys_env = std::getenv("BDMSYS");
+  std::string pv_dir = std::getenv("ParaView_DIR");
    
-  cmd << bdm_sys_env << "/third_party/paraview/bin/pvpython "
-             << bdm_sys_env
-             << "/share/test/core/visualization/paraview/" << python_script
+  cmd << pv_dir << "/bin/pvbatch "
+             << GetPythonScriptPath(python_script)
              << " --sim_name=" << sim_name 
              << " --num_elements=" << num_elements;
   int ret_code = system(cmd.str().c_str());
@@ -41,18 +48,28 @@ void Validate(const std::string& python_script,
 }
 
 // -----------------------------------------------------------------------------
-void RunExportDiffusionGridTest(uint64_t max_bound, uint64_t resolution) {
+/// For insitu visualization tests, this function is called in a different process.
+/// Therefore, it uses exit(0) at the end to indicate a passing test.
+/// All ASSERT* macros exit the function before the macro if they evaluate
+/// to false, thus failing the test also in the insitu case
+void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution, bool export_visualization = true) {
+  auto num_diffusion_boxes = std::pow(resolution, 3);
   auto set_param = [&](Param* param) {
     param->min_bound_ = 0; 
     param->max_bound_ = max_bound;
-    param->export_visualization_ = true;
+    param->export_visualization_ = export_visualization;
+    if (!export_visualization) {
+      param->python_paraview_pipeline_ = GetPythonScriptPath("validate_diffusion_grid.py"); 
+      auto sim_name = Simulation::GetActive()->GetUniqueName();
+      param->python_insitu_script_arguments_ = Concat("--sim_name=", sim_name, " --num_elements=", num_diffusion_boxes);
+    }
     param->visualize_diffusion_.push_back({"Substance", true});
   };
   auto sim_name = Concat("ExportDiffusionGridTest_", max_bound, "_", resolution);
   auto* sim = new Simulation(sim_name, set_param);
   auto output_dir = sim->GetOutputDir();
-  fs::remove_all(output_dir); 
-  fs::create_directory(output_dir); 
+  // fs::remove_all(output_dir); 
+  // fs::create_directory(output_dir); 
   
   ModelInitializer::DefineSubstance(0, "Substance", 0.0001, 0.001, resolution);
   // create a sequence 1, 2, 3...
@@ -87,29 +104,43 @@ void RunExportDiffusionGridTest(uint64_t max_bound, uint64_t resolution) {
   sim->GetScheduler()->Simulate(1);
  
   auto* dg = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
-  auto num_boxes = dg->GetNumBoxes();
+  EXPECT_EQ(num_diffusion_boxes, dg->GetNumBoxes());
   sim_name = sim->GetUniqueName();
-  
   // create pvsm file
   delete sim;
 
-  Validate("validate_diffusion_grid.py", sim_name, num_boxes); 
+  // NB: for insitu visualization the validation step happed in call Simulate
+  if (export_visualization) {
+    Validate("validate_diffusion_grid.py", sim_name, num_diffusion_boxes); 
+  }
+  ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
+  if (!export_visualization) {
+    exit(0);
+  }
 }
 
 // -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  if (max_threads == 1) {
-    RunExportDiffusionGridTest(max_threads, max_threads);
-  } else {
-    RunExportDiffusionGridTest(max_threads - 1, max_threads - 1);
-  }
+  RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1));
 }
 
 // -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunExportDiffusionGridTest(3 * max_threads + 1, max_threads);
+  RunDiffusionGridTest(3 * max_threads + 1, max_threads);
+}
+
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCycleTest, InsituDiffusionGrid_SlicesLtNumThreads) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  EXPECT_EXIT(RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), false), ::testing::ExitedWithCode(0), "");
+}
+
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCycleTest, InsituDiffusionGrid_SlicesGtNumThreads) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  EXPECT_EXIT(RunDiffusionGridTest(3 * max_threads + 1, max_threads, false), ::testing::ExitedWithCode(0), "");
 }
 
 // -----------------------------------------------------------------------------

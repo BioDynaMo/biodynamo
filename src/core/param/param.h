@@ -238,6 +238,9 @@ struct Param {
   ///     python_paraview_pipeline_ = ""
   std::string python_paraview_pipeline_ = "";
 
+  // FIXME docuementation + source file + test
+  std::string python_insitu_script_arguments_ = "";
+
   /// If `export_visualization_` is set to true, this parameter specifies
   /// how often it should be exported. 1 = every timestep, 10: every 10
   /// time steps.\n
