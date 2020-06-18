@@ -19,6 +19,7 @@ function(GenerateStaticFiles TARGET FLAGS)
   file(MAKE_DIRECTORY "${WEB_DIR}")
   add_custom_target(${TARGET}
       WORKING_DIRECTORY "${WEB_DIR}"
+      COMMAND rm -rf ${WEB_DIR} && mkdir ${WEB_DIR}
       COMMAND git clone https://github.com/BioDynaMo/website.git .
       # TODO: merge into master to avoid this
       COMMAND git checkout web-updates

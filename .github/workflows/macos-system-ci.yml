@@ -1,8 +1,15 @@
-name: macOS CI
+# Runs the installation tests in the following cases:
+#   1) every day at 3 am
+#   2) a pull request to the master branch
+
+name: macOS System CI
 
 on:
-  push:
+  schedule:
+    # Every day at 3 am
+    - cron: '0 3 * * *'
   pull_request:
+    # Upon pull requests
     branches:
       - master
 
@@ -56,12 +63,17 @@ jobs:
           -B build
         cmake --build build --parallel --config Release
 
-    - name: Unit tests BioDynaMo
+    - name: System tests BioDynaMo
       shell: bash
       working-directory: build
       run: |
         . bin/thisbdm.sh
-        ninja run-unit-tests
+        git config --system user.name "Test User"	
+        git config --system user.email user@test.com
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        ninja run-demos
+        ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3

@@ -18,8 +18,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-          libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build \
-          valgrind
+          libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.sh
         chmod +x cmake-3.17.3-Linux-x86_64.sh
         sudo ./cmake-3.17.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
@@ -71,28 +70,6 @@ jobs:
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         ninja run-unit-tests
-        ../util/xvfb-initd.sh stop
-
-    - name: Valgrind tests BioDynaMo
-      shell: bash
-      working-directory: build
-      run: |
-        . bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        ninja run-valgrind
-        ../util/xvfb-initd.sh stop
-
-    - name: System tests BioDynaMo
-      shell: bash
-      working-directory: build
-      run: |
-        . bin/thisbdm.sh
-        sudo git config --system user.name "Test User"	
-        sudo git config --system user.email user@test.com
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        ninja run-demos
         ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
