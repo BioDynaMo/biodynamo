@@ -253,6 +253,14 @@
    ...
 }
 
+{
+   false_positive_root_4
+   Memcheck:Overlap
+   ...
+   fun:CreateInterpreter
+   ...
+}
+
 ######### Suppress protobuf library issues
 {
    ignore_protobuf_memleaks
