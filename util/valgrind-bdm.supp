@@ -244,6 +244,14 @@
    ...
 }
 
+{
+   false_positive_root_3
+   Memcheck:Param
+   ...
+   fun:cling_runtime_internal_throwIfInvalidPointer
+   ...
+}
+
 ######### Suppress protobuf library issues
 {
    ignore_protobuf_memleaks
@@ -297,6 +305,14 @@
 {
    ignore_openmpi_false_positives
    Memcheck:Leak
+   ...
+   obj:*/openmpi/*.so*
+   ...
+}
+
+{
+   ignore_openmpi_false_positives_cond
+   Memcheck:Cond
    ...
    obj:*/openmpi/*.so*
    ...
