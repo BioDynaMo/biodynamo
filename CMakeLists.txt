@@ -113,6 +113,7 @@ option(tcmalloc  "Use tcmalloc for memory allocations." OFF)
 option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
+option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 
 if(APPLE)
   find_program(BREW_BIN brew)
@@ -394,16 +395,22 @@ endif()
 include(SetCompilerFlags)
 
 # -------------------- set rpath options ---------------------------------------
-# When building, use the RPATH
-set(CMAKE_INSTALL_RPATH "")
-set(CMAKE_BUILD_RPATH "")
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_SKIP_BUILD_RPATH TRUE) # skip the full RPATH for the build tree
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-set(CMAKE_MACOSX_RPATH TRUE) # use @rpath keyword for the MacOS rpath
-# Sets @rpath for libbiodynamo.dylib on Mac OS in the build directory
-if (APPLE)
-  SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+#  When building, don't use the install RPATH already (but later on when installing)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)         # don't skip the full RPATH for the build tree
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # use always the build RPATH for the build tree
+set(CMAKE_MACOSX_RPATH TRUE)              # use RPATH for MacOSX
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
+
+# Check whether to add RPATH to the installation (the build tree always has the RPATH enabled)
+if(rpath)
+  set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}) # install LIBDIR
+  set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
+elseif(APPLE)
+  set(CMAKE_INSTALL_NAME_DIR "@rpath")
+  set(CMAKE_INSTALL_RPATH "@loader_path/../lib")    # self relative LIBDIR
+  set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
+else()
+  set(CMAKE_SKIP_INSTALL_RPATH TRUE)           # skip the full RPATH for the install tree
 endif()
 
 # -------------------- extract third party libraries ---------------------------

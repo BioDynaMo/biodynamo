@@ -23,6 +23,9 @@
 
 #include "TBufferJSON.h"
 
+#define ROOT_FILE "io-test.root"
+#define JSON_FILE "io-test.json"
+
 namespace bdm {
 
 /// Test fixture for io tests that follow the same form
@@ -41,11 +44,7 @@ namespace bdm {
 ///       EXPECT_EQ(..., restored->GetDataMember1());
 ///       ...
 ///     }
-class IOTest : public ::testing::Test {
- public:
-  static constexpr char const* kRootFile = "io-test.root";
-  static constexpr char const* kJsonFile = "io-test.json";
-};
+class IOTest : public ::testing::Test {};
 
 /// Writes backup to file and reads it back into restored
 /// Outside the test fixture so it can be called in a function from the header.
@@ -53,19 +52,19 @@ class IOTest : public ::testing::Test {
 /// error and must be placed in a source file.
 template <typename T>
 void BackupAndRestore(const T& backup, T** restored) {
-  remove(IOTest::kRootFile);
-  remove(IOTest::kJsonFile);
+  remove(ROOT_FILE);
+  remove(JSON_FILE);
 
   // write to root file
-  WritePersistentObject(IOTest::kRootFile, "T", backup, "new");
+  WritePersistentObject(ROOT_FILE, "T", backup, "new");
 
   // Two benefits of writing an object to JSON:
   // 1) Ensures that a dictionary must exists; otherwise linking error
   // 2) Print out the object's content for debugging purposes
-  TBufferJSON::ExportToFile(IOTest::kJsonFile, &backup, backup.Class());
+  TBufferJSON::ExportToFile(JSON_FILE, &backup, backup.Class());
 
   // read back
-  GetPersistentObject(IOTest::kRootFile, "T", *restored);
+  GetPersistentObject(ROOT_FILE, "T", *restored);
 }
 
 }  // namespace bdm

@@ -40,7 +40,11 @@ set_target_properties(libgtest PROPERTIES
 include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
 
 # create target that shows the test ouput on failure
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure)
+add_custom_target(run-check COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure)
+
+# create target for running biodynamo-unit-tests
+add_custom_target(run-unit-tests COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-unit-tests)
+add_dependencies(run-unit-tests biodynamo-unit-tests)
 
 # add custom clean target for test project
 add_custom_target(testbdmclean)
@@ -77,10 +81,16 @@ function(bdm_add_test_executable TEST_TARGET)
   if (valgrind AND VALGRIND_FOUND AND NOT coverage)
     # filter out SchedulerTest.Backup because of timing issue
     add_test(NAME "valgrind_${TEST_TARGET}"
-    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*)
+    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*)
+    add_custom_target(run-valgrind
+    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*)
+    add_dependencies(run-valgrind biodynamo-unit-tests)
   endif()
 
-  add_dependencies(check ${TEST_TARGET})
+  add_dependencies(run-check ${TEST_TARGET})
+
+  # add target for system tests
+  add_custom_target(run-demos COMMAND ${CMAKE_SOURCE_DIR}/test/system-test.sh)
 
   add_custom_target("testbdmclean_${TEST_TARGET}" COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/${TEST_TARGET}.dir/cmake_clean.cmake")
   add_dependencies(testbdmclean "testbdmclean_${TEST_TARGET}")

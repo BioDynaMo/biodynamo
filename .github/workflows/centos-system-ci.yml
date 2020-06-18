@@ -1,8 +1,15 @@
-name: CentOS CI
+# Runs the installation tests and valgrind tests in the following cases:
+#   1) every day at 3 am
+#   2) a pull request to the master branch
+
+name: CentOS System CI
 
 on:
-  push:
+  schedule:
+    # Every day at 3 am
+    - cron: '0 3 * * *'
   pull_request:
+    # Upon pull requests
     branches:
       - master
 
@@ -19,7 +26,7 @@ jobs:
         yum -y install centos-release-scl epel-release
         yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
           devtoolset-7-gcc* numactl-devel openmpi3-devel freeglut-devel redhat-lsb-core \
-          scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
+          scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers valgrind
         yum -y install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
           sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
         yum -y remove git*
@@ -72,7 +79,7 @@ jobs:
           -B build
         cmake --build build --parallel --config Release
 
-    - name: Unit tests BioDynaMo
+    - name: Valgrind tests BioDynaMo
       shell: bash
       working-directory: build
       run: |
@@ -83,7 +90,23 @@ jobs:
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         sleep 3
-        ninja run-unit-tests
+        ninja run-valgrind
+        ../util/xvfb-initd.sh stop
+
+    - name: System tests BioDynaMo
+      shell: bash
+      working-directory: build
+      run: |
+        . scl_source enable devtoolset-7 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        . bin/thisbdm.sh
+        git config --system user.name "Test User"	
+        git config --system user.email user@test.com
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        sleep 3
+        ninja run-demos
         ../util/xvfb-initd.sh stop
 
     - name: Notify Slack

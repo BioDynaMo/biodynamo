@@ -65,7 +65,7 @@ class TestCell : public Cell {
   double captured_phi_ = 0.0;
   double captured_theta_ = 0.0;
 
-  bool placeholder_;  // BDM_SIM_OBJECT_HEADER needs at least one member
+  bool placeholder_ = false;  // BDM_SIM_OBJECT_HEADER needs at least one member
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };
 

@@ -137,9 +137,12 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 
 | Target          | Description  |
 | --------------- | ------------ |
-| `test`  | executes all tests |
-| `check` | executes all tests and shows test output on failure |
+| `run-unit-tests` | executes all BioDynaMo unit tests |
+| `run-valgrind` | executes BioDynaMo valgrind tests |
+| `run-check` | executes both unit and valgrind tests |
+| `run-demos` | executes all demos and integration tests |
 | `clean` | will clean all targets, also the external projects |
+| `cleanbuild` | will clean everything in the build directory, except for third_party (useful for avoiding downloading third party software) |
 | `bdmclean` | will only clean the `biodynamo` and `runBiodynamoTests*` targets |
 | `testbdmclean` | will only clean the `runBiodynamoTests*` target |
 | `doc` | will generate the API, user and developer documentation in directory `build/doc`. |

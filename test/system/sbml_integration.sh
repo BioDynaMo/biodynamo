@@ -26,6 +26,15 @@ if [ "$BDM_OS" = "osx" ]; then
   exit 0
 fi
 
+# Check if SBML was enabled for this BioDynaMo installation
+set +e
+bdm-config --config | grep -i sbml
+rc_sbml=$?
+set -e
+if [ $rc_sbml -ne 0 ]; then
+  exit 0
+fi
+
 demo_name="sbml_integration"
 demo_dir=$(mktemp -d)
 biodynamo demo "${demo_name}" "${demo_dir}"

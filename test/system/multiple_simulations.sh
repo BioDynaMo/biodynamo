@@ -22,6 +22,15 @@ biodynamo demo multiple_simulations "${tmp_dir}"
 cd "${tmp_dir}/multiple_simulations"
 biodynamo run
 
+# Check if ParaView was enabled for this BioDynaMo installation
+set +e
+bdm-config --config | grep -i paraview
+rc_pv=$?
+set -e
+if [ $rc_pv -ne 0 ]; then
+  exit 0
+fi
+
 # check if ParaView files exists
 # first simulation
 [ -f output/multiple_simulations/simulation_info.json ]
