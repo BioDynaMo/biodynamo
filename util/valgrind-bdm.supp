@@ -330,7 +330,7 @@
 {
    gh_actions_centos_false_positives
    Memcheck:Leak
-   match-leak-kinds: indirect
+   match-leak-kinds: all
    fun:malloc
    ...
    fun:opal_libevent2022_event_base_loop
