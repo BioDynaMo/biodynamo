@@ -89,6 +89,7 @@ jobs:
         . bin/thisbdm.sh
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
+        sleep 3
         ninja run-valgrind
         ../util/xvfb-initd.sh stop
 
@@ -104,6 +105,7 @@ jobs:
         git config --system user.email user@test.com
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
+        sleep 3
         ninja run-demos
         ../util/xvfb-initd.sh stop
 
