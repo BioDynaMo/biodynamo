@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include "core/operation/operation.h"
+#include "core/param/param.h"
 
 namespace bdm {
 
@@ -68,6 +69,7 @@ class Scheduler {
   virtual void Execute();
 
  private:
+  friend void RunSimObjectsTest(Param::MappedDataArrayMode, uint64_t, bool); 
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();

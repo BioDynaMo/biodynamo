@@ -14,13 +14,12 @@
 
 import argparse
 import sys
-import os
 from paraview.simple import *
 from paraview import coprocessing
 
 # Returning an error code using sys.exit does not work for the insitu tests
 # because it would exit the whole unit test process.
-# Thus we create a file validation_error to indicate a failed validation
+# Thus we create a valid file to indicate a passing test
 def CreateValidFile(sim_name):
     with open("output/{0}/valid".format(sim_name), 'w') as fp: 
         pass

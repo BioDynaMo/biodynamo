@@ -19,6 +19,7 @@
 #include "biodynamo.h"
 #include "neuroscience/neuroscience.h"
 #include "core/visualization/visualization_adaptor.h"
+#include "unit/test_util/test_util.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -109,7 +110,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution, bool export_v
   // create pvsm file
   delete sim;
 
-  // NB: for insitu visualization the validation step happed in call Simulate
+  // NB: for insitu visualization the validation step happened in call Simulate
   if (export_visualization) {
     Validate("validate_diffusion_grid.py", sim_name, num_diffusion_boxes); 
   }
@@ -134,22 +135,27 @@ TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesGtNumThreads) {
 // -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, InsituDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  EXPECT_EXIT(RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), false), ::testing::ExitedWithCode(0), "");
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), false));
 }
 
 // -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, InsituDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  EXPECT_EXIT(RunDiffusionGridTest(3 * max_threads + 1, max_threads, false), ::testing::ExitedWithCode(0), "");
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, max_threads, false));
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void RunExportSimObjectsTest(Param::MappedDataArrayMode mode, 
-                             uint64_t num_so) {
+void RunSimObjectsTest(Param::MappedDataArrayMode mode, 
+                             uint64_t num_so, bool export_visualization = true) {
   auto set_param = [&](Param* param) {
+    param->export_visualization_ = export_visualization;
+    if (!export_visualization) {
+      param->python_paraview_pipeline_ = GetPythonScriptPath("validate_sim_objects.py"); 
+      auto sim_name = Simulation::GetActive()->GetUniqueName();
+      param->python_insitu_script_arguments_ = Concat("--sim_name=", sim_name, " --num_elements=", num_so);
+    }
     param->run_mechanical_interactions_ = false;
-    param->export_visualization_ = true;
     param->visualize_sim_objects_.insert({"NeuriteElement", {"uid_", "daughter_right_"}});
     param->mapped_data_array_mode_= mode;
   };
@@ -180,54 +186,71 @@ void RunExportSimObjectsTest(Param::MappedDataArrayMode mode,
   }
   
   // Don't run a simulation step, because neurites are not properly set up. 
-  auto vis = VisualizationAdaptor::Create("paraview");
-  vis->Visualize();
+  sim->GetScheduler()->visualization_->Visualize();
 
   sim_name = sim->GetUniqueName();
   
-  // create pvsm file
-  delete vis;
 
-  Validate("validate_sim_objects.py", sim_name, num_so); 
-  
-  // deleting sim would overwrite the pvsm and json file
-  fs::path pvsm = Concat("output/", sim_name, "/", sim_name, ".pvsm"); 
-  fs::path json = Concat("output/", sim_name, "/simulation_info.json");
-  fs::path pvsm_tmp = Concat(pvsm.string(), ".tmp"); 
-  fs::path json_tmp = Concat(json.string(), ".tmp"); 
-  fs::rename(pvsm, pvsm_tmp);
-  fs::rename(json, json_tmp);
-  delete sim;
-  fs::remove(pvsm);
-  fs::remove(json);
-  fs::rename(pvsm_tmp, pvsm);
-  fs::rename(json_tmp, json);
+  // NB: for insitu visualization the validation step happened in call Simulate
+  if (export_visualization) {
+    // create pvsm file
+    delete sim;
+    Validate("validate_sim_objects.py", sim_name, num_so); 
+    ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
+  } else {
+    delete sim; 
+    ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
+    exit(0);
+  }
 }
 
 // -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, ExportSimObjects_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunExportSimObjectsTest(mode, 10 * max_threads + 1);
+  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
+  RunSimObjectsTest(mode, 10 * max_threads + 1);
 }
 
 // -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, ExportSimObjects_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
-  RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunExportSimObjectsTest(mode, 10 * max_threads + 1);
+  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
+  RunSimObjectsTest(mode, 10 * max_threads + 1);
 }
 
 // -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, ExportSimObjects_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
-  RunExportSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunExportSimObjectsTest(mode, 10 * max_threads + 1);
+  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
+  RunSimObjectsTest(mode, 10 * max_threads + 1);
 }
 
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCycleTest, InsituSimObjects_ZeroCopy) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  auto mode = Param::MappedDataArrayMode::kZeroCopy;
+  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
+  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+}
+
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCycleTest, InsituSimObjects_Cache) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  auto mode = Param::MappedDataArrayMode::kCache;
+  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, std::max(1, max_threads - 1), false)); 
+  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+}
+
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCycleTest, InsituSimObjects_Copy) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  auto mode = Param::MappedDataArrayMode::kCopy;
+  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
+  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+}
 }  // namespace bdm
 
 #endif  // USE_PARAVIEW
