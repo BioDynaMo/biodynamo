@@ -36,7 +36,8 @@ std::string GetPythonScriptPath(const std::string& python_script) {
 // -----------------------------------------------------------------------------
 void Validate(const std::string& python_script, 
               const std::string& sim_name, 
-              uint64_t num_elements) {
+              uint64_t num_elements,
+              bool use_pvsm) {
   std::stringstream cmd;
   std::string pv_dir = std::getenv("ParaView_DIR");
    
@@ -44,6 +45,9 @@ void Validate(const std::string& python_script,
              << GetPythonScriptPath(python_script)
              << " --sim_name=" << sim_name 
              << " --num_elements=" << num_elements;
+  if (use_pvsm) {
+    cmd << " --use_pvsm";
+  }
   int ret_code = system(cmd.str().c_str());
   EXPECT_EQ(0, ret_code);
 }
@@ -53,7 +57,9 @@ void Validate(const std::string& python_script,
 /// Therefore, it uses exit(0) at the end to indicate a passing test.
 /// All ASSERT* macros exit the function before the macro if they evaluate
 /// to false, thus failing the test also in the insitu case
-void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution, bool export_visualization = true) {
+void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution, 
+                          bool export_visualization = true, 
+                          bool use_pvsm = true) {
   auto num_diffusion_boxes = std::pow(resolution, 3);
   auto set_param = [&](Param* param) {
     param->min_bound_ = 0; 
@@ -112,7 +118,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution, bool export_v
 
   // NB: for insitu visualization the validation step happened in call Simulate
   if (export_visualization) {
-    Validate("validate_diffusion_grid.py", sim_name, num_diffusion_boxes); 
+    Validate("validate_diffusion_grid.py", sim_name, num_diffusion_boxes, use_pvsm); 
   }
   ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
   if (!export_visualization) {
@@ -133,6 +139,12 @@ TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesGtNumThreads) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(ParaviewFullCycleTest, ExportDiffusionGridLoadWithoutPVSM) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), true, false);
+}
+
+// -----------------------------------------------------------------------------
 TEST(ParaviewFullCycleTest, InsituDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), false));
@@ -147,9 +159,11 @@ TEST(ParaviewFullCycleTest, InsituDiffusionGrid_SlicesGtNumThreads) {
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 void RunSimObjectsTest(Param::MappedDataArrayMode mode, 
-                             uint64_t num_so, bool export_visualization = true) {
+                             uint64_t num_so, bool export_visualization = true,
+                             bool use_pvsm = true) {
   auto set_param = [&](Param* param) {
     param->export_visualization_ = export_visualization;
+    param->visualization_export_generate_pvsm_ = use_pvsm;
     if (!export_visualization) {
       param->python_paraview_pipeline_ = GetPythonScriptPath("validate_sim_objects.py"); 
       auto sim_name = Simulation::GetActive()->GetUniqueName();
@@ -195,7 +209,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode,
   if (export_visualization) {
     // create pvsm file
     delete sim;
-    Validate("validate_sim_objects.py", sim_name, num_so); 
+    Validate("validate_sim_objects.py", sim_name, num_so, use_pvsm); 
     ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
   } else {
     delete sim; 
@@ -226,6 +240,13 @@ TEST(ParaviewFullCycleTest, ExportSimObjects_Copy) {
   auto mode = Param::MappedDataArrayMode::kCopy;
   RunSimObjectsTest(mode, std::max(1, max_threads - 1));
   RunSimObjectsTest(mode, 10 * max_threads + 1);
+}
+
+// -----------------------------------------------------------------------------
+TEST(ParaviewFullCycleTest, ExportSimObjectsLoadWithoutPVSM) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  auto mode = Param::MappedDataArrayMode::kZeroCopy;
+  RunSimObjectsTest(mode, std::max(1, max_threads - 1), true, false);
 }
 
 // -----------------------------------------------------------------------------

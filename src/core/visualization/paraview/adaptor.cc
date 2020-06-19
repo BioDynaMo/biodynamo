@@ -85,13 +85,7 @@ ParaviewAdaptor::~ParaviewAdaptor() {
     }
     if (param->export_visualization_ &&
         param->visualization_export_generate_pvsm_) {
-      std::ofstream ofstr;
-      auto* sim = Simulation::GetActive();
-      ofstr.open(Concat(sim->GetOutputDir(), "/", kSimulationInfoJson));
-      ofstr << GenerateSimulationInfoJson(impl_->vtk_sim_objects_,
-                                          impl_->vtk_dgrids_);
-      ofstr.close();
-
+      WriteSimulationInfoJsonFile();
       GenerateParaviewState();
     }
 
@@ -198,6 +192,8 @@ void ParaviewAdaptor::InsituVisualization() {
 
 // ----------------------------------------------------------------------------
 void ParaviewAdaptor::ExportVisualization() { 
+   WriteSimulationInfoJsonFile();
+
    auto step = impl_->data_description_->GetTimeStep();
 
    for (auto& el : impl_->vtk_sim_objects_) {
@@ -247,6 +243,20 @@ void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
       it->second->Update(grid); 
     }
   });
+}
+
+// ----------------------------------------------------------------------------
+void ParaviewAdaptor::WriteSimulationInfoJsonFile() {
+  // create simulation_info.json 
+  if (!simulation_info_json_generated_) {
+    std::ofstream ofstr;
+    auto* sim = Simulation::GetActive();
+    ofstr.open(Concat(sim->GetOutputDir(), "/", kSimulationInfoJson));
+    ofstr << GenerateSimulationInfoJson(impl_->vtk_sim_objects_,
+                                        impl_->vtk_dgrids_);
+    ofstr.close();
+    simulation_info_json_generated_ = true;
+  }
 }
 
 // ----------------------------------------------------------------------------

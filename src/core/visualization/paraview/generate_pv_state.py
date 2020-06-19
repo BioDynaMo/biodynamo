@@ -67,7 +67,15 @@ def LoadExtracellularSubstanceData(result_dir, substance_info):
     return XMLPartitionedImageDataReader(FileName=files)
 
 # ------------------------------------------------------------------------------
-def BuildParaviewState(build_info):
+def BuildDefaultPipeline(json_filename):
+    # load json file containing the information to generate the state
+    if os.path.exists(json_filename):
+        with open(json_filename, 'r') as json_file:
+            build_info = json.load(json_file)
+    else:
+        print('Json file {0} does not exist'.format(json_filename))
+        sys.exit(1)
+    
     #### disable automatic camera reset on 'Show'
     paraview.simple._DisableFirstRenderCameraReset()
 
@@ -97,13 +105,19 @@ def BuildParaviewState(build_info):
     # update animation scene based on data timesteps
     animation_scene.UpdateAnimationUsingDataTimeSteps()
 
+    return build_info
+
+# ------------------------------------------------------------------------------
+def WritePvsmFile(build_info):
+    sim_info = build_info['simulation']
+    result_dir = sim_info['result_dir']
+
     os.chdir(result_dir)
     SaveState('{0}.pvsm'.format(sim_info['name']))
 
     # This avoid the error: Inconsistency detected by ld.so
     # See: https://discourse.paraview.org/t/inconsistency-detected-by-ld-so/3778
     Show(Cone())
-
 
 # ------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -113,12 +127,7 @@ if __name__ == '__main__':
         sys.exit(1)
     json_filename = arguments[0]
 
-    # load json file containing the information to generate the state
-    if os.path.exists(json_filename):
-        with open(json_filename, 'r') as json_file:
-            build_info = json.load(json_file)
-    else:
-        print('Json file {0} does not exist'.format(json_filename))
-        sys.exit(1)
 
-    BuildParaviewState(build_info)
+    build_info = BuildDefaultPipeline(json_filename)
+    WritePvsmFile(build_info)    
+    

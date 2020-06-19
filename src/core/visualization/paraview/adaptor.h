@@ -54,6 +54,7 @@ class ParaviewAdaptor : VisualizationAdaptor {
 
   /// only needed for live visualization
   bool initialized_ = false;  //!
+  bool simulation_info_json_generated_ = false;
 
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
@@ -83,6 +84,8 @@ class ParaviewAdaptor : VisualizationAdaptor {
 
   // ---------------------------------------------------------------------------
   // generate files
+
+  void WriteSimulationInfoJsonFile();
 
   /// This function generates the Paraview state based on the exported files
   /// Therefore, the user can load the visualization simply by opening the pvsm

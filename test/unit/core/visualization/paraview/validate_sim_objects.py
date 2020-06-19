@@ -13,6 +13,7 @@
 # -----------------------------------------------------------------------------
 
 import argparse
+import os
 import sys
 from paraview.simple import *
 from paraview import coprocessing
@@ -51,7 +52,7 @@ def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args)
     parser = argparse.ArgumentParser(description='Validate Simulation Objects')
     parser.add_argument('--sim_name', action='store', type=str)
     parser.add_argument('--num_elements', action='store', type=int)
-    params = parser.parse_args(script_args)
+    params, other = parser.parse_known_args(script_args)
     
     neurite_source = FindSource('NeuriteElement-data')
     
@@ -71,10 +72,16 @@ def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Validate Simulation Objects')
     parser.add_argument('--sim_name', action='store', type=str)
+    parser.add_argument('--use_pvsm', action='store_true', dest="use_pvsm")
     params, args = parser.parse_known_args()
-    
+   
     #### disable automatic camera reset on 'Show'
     paraview.simple._DisableFirstRenderCameraReset()
-    LoadState('output/{0}/{0}.pvsm'.format(params.sim_name))
+    if params.use_pvsm:
+        LoadState('output/{0}/{0}.pvsm'.format(params.sim_name))
+    else:
+        sys.path.insert(0, "{0}/include/core/visualization/paraview".format(os.environ['BDMSYS']))
+        from generate_pv_state import BuildDefaultPipeline
+        BuildDefaultPipeline('output/{0}/simulation_info.json'.format(params.sim_name))
     ExtendDefaultPipeline(None, None, None, sys.argv[1:]) 
 
