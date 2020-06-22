@@ -128,31 +128,31 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesLtNumThreads) {
+TEST(ParaviewIntegrationTest, ExportDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1));
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, ExportDiffusionGrid_SlicesGtNumThreads) {
+TEST(ParaviewIntegrationTest, ExportDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunDiffusionGridTest(3 * max_threads + 1, max_threads);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, ExportDiffusionGridLoadWithoutPVSM) {
+TEST(ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), true, false);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, InsituDiffusionGrid_SlicesLtNumThreads) {
+TEST(ParaviewIntegrationTest, InsituDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), false));
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, InsituDiffusionGrid_SlicesGtNumThreads) {
+TEST(ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, max_threads, false));
 }
@@ -221,7 +221,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode,
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, ExportSimObjects_ZeroCopy) {
+TEST(ParaviewIntegrationTest, ExportSimObjects_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
   RunSimObjectsTest(mode, std::max(1, max_threads - 1));
@@ -229,7 +229,7 @@ TEST(ParaviewFullCycleTest, ExportSimObjects_ZeroCopy) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, ExportSimObjects_Cache) {
+TEST(ParaviewIntegrationTest, ExportSimObjects_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
   RunSimObjectsTest(mode, std::max(1, max_threads - 1));
@@ -237,7 +237,7 @@ TEST(ParaviewFullCycleTest, ExportSimObjects_Cache) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, ExportSimObjects_Copy) {
+TEST(ParaviewIntegrationTest, ExportSimObjects_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
   RunSimObjectsTest(mode, std::max(1, max_threads - 1));
@@ -245,14 +245,14 @@ TEST(ParaviewFullCycleTest, ExportSimObjects_Copy) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, ExportSimObjectsLoadWithoutPVSM) {
+TEST(ParaviewIntegrationTest, ExportSimObjectsLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
   RunSimObjectsTest(mode, std::max(1, max_threads - 1), true, false);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, InsituSimObjects_ZeroCopy) {
+TEST(ParaviewIntegrationTest, InsituSimObjects_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
   LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
@@ -260,7 +260,7 @@ TEST(ParaviewFullCycleTest, InsituSimObjects_ZeroCopy) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, InsituSimObjects_Cache) {
+TEST(ParaviewIntegrationTest, InsituSimObjects_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
   LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, std::max(1, max_threads - 1), false)); 
@@ -268,7 +268,7 @@ TEST(ParaviewFullCycleTest, InsituSimObjects_Cache) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewFullCycleTest, InsituSimObjects_Copy) {
+TEST(ParaviewIntegrationTest, InsituSimObjects_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
   LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
