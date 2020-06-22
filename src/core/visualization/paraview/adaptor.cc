@@ -20,7 +20,6 @@
 #include "core/visualization/paraview/helper.h"
 #include "core/visualization/paraview/vtk_diffusion_grid.h"
 #include "core/visualization/paraview/vtk_sim_objects.h"
-#include "core/visualization/paraview/insitu_pipeline.h"
 
 #ifndef __ROOTCLING__
 
@@ -51,7 +50,6 @@ struct ParaviewAdaptor::ParaviewImpl {
   vtkCPProcessor* g_processor_ = nullptr;
   std::unordered_map<std::string, VtkSimObjects*> vtk_sim_objects_;
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids_;
-  InSituPipeline* pipeline_ = nullptr;
   vtkCPDataDescription* data_description_ = nullptr;
 };
 
@@ -71,12 +69,6 @@ ParaviewAdaptor::~ParaviewAdaptor() {
   counter_--;
 
   if (impl_) {
-    if (impl_->pipeline_) {
-      impl_->g_processor_->RemovePipeline(impl_->pipeline_);
-      impl_->pipeline_->Delete();
-      impl_->pipeline_ = nullptr;
-    }
-
     if (counter_ == 0 && impl_->g_processor_) {
       impl_->g_processor_->RemoveAllPipelines();
       impl_->g_processor_->Finalize();
@@ -120,7 +112,7 @@ void ParaviewAdaptor::Visualize() {
 
   CreateVtkObjects();
 
-  if (param->live_visualization_ || param->python_paraview_pipeline_ != "") {
+  if (param->insitu_visualization_) {
     InsituVisualization();
   }
   if (param->export_visualization_) {
@@ -133,15 +125,12 @@ void ParaviewAdaptor::Initialize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
-  if ((param->live_visualization_ || param->python_paraview_pipeline_ != "") && impl_->g_processor_ == nullptr) {
+  if (param->insitu_visualization_ && impl_->g_processor_ == nullptr) {
     impl_->g_processor_ = vtkCPProcessor::New();
     impl_->g_processor_->Initialize();
   }
 
-  if (param->live_visualization_) {
-    impl_->pipeline_ = new InSituPipeline();
-    impl_->g_processor_->AddPipeline(impl_->pipeline_);
-  } else if (param->python_paraview_pipeline_ != "") {
+  if (param->insitu_visualization_) {
     const std::string& script = ParaviewAdaptor::BuildPythonScriptString(
         param->python_paraview_pipeline_);
     std::ofstream ofs;
@@ -173,9 +162,6 @@ void ParaviewAdaptor::Initialize() {
   for (auto& entry : param->visualize_diffusion_) {
     impl_->vtk_dgrids_[entry.name_] =
         new VtkDiffusionGrid(entry.name_, impl_->data_description_);
-  }
-  if (impl_->pipeline_) {
-    impl_->pipeline_->Initialize(impl_->vtk_sim_objects_);
   }
 }
 

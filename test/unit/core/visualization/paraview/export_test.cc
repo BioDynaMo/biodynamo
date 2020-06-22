@@ -65,6 +65,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
     param->min_bound_ = 0; 
     param->max_bound_ = max_bound;
     param->export_visualization_ = export_visualization;
+    param->insitu_visualization_ = !export_visualization;
     if (!export_visualization) {
       param->python_paraview_pipeline_ = GetPythonScriptPath("validate_diffusion_grid.py"); 
       auto sim_name = Simulation::GetActive()->GetUniqueName();
@@ -163,6 +164,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode,
                              bool use_pvsm = true) {
   auto set_param = [&](Param* param) {
     param->export_visualization_ = export_visualization;
+    param->insitu_visualization_ = !export_visualization;
     param->visualization_export_generate_pvsm_ = use_pvsm;
     if (!export_visualization) {
       param->python_paraview_pipeline_ = GetPythonScriptPath("validate_sim_objects.py"); 

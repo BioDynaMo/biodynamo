@@ -44,7 +44,7 @@ class SimulationTest : public ::testing::Test {
       "thread_safety_mechanism = \"automatic\"\n"
       "\n"
       "[visualization]\n"
-      "live = false\n"
+      "insitu = false\n"
       "export = true\n"
       "python_paraview_pipeline = \"my-insitu-script.py\"\n"
       "export_interval = 100\n"
@@ -120,7 +120,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(200, param->max_bound_);
     EXPECT_EQ(Param::ThreadSafetyMechanism::kAutomatic,
               param->thread_safety_mechanism_);
-    EXPECT_FALSE(param->live_visualization_);
+    EXPECT_FALSE(param->insitu_visualization_);
     EXPECT_TRUE(param->export_visualization_);
     EXPECT_EQ("my-insitu-script.py", param->python_paraview_pipeline_);
     EXPECT_EQ(100u, param->visualization_export_interval_);

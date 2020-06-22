@@ -46,13 +46,14 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// Visualize one timestep based on the configuration in `Param`
   void Visualize();
 
+  // FIXME make private
   struct ParaviewImpl;
 
  private:
   std::unique_ptr<ParaviewImpl> impl_;    //!
   static std::atomic<uint64_t> counter_;  //!
 
-  /// only needed for live visualization
+  /// only needed for insitu visualization
   bool initialized_ = false;  //!
   bool simulation_info_json_generated_ = false;
 
@@ -122,7 +123,7 @@ class ParaviewAdaptor {
   friend class ParaviewAdaptorTest_CheckVisualizationSelection_Test;
   friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
-  void LiveVisualization(double time, size_t time_step);
+  void InsituVisualization(double time, size_t time_step);
 
   void ExportVisualization(double step, size_t time_step);
 

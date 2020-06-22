@@ -27,7 +27,7 @@ ResourceManager::ResourceManager() {
   sim_objects_.resize(numa_num_configured_nodes());
 
   auto* param = Simulation::GetActive()->GetParam();
-  if (param->export_visualization_ || param->live_visualization_ || param->python_paraview_pipeline_ != "") {
+  if (param->export_visualization_ || param->insitu_visualization_) {
     type_index_ = new TypeIndex();
   }
 }

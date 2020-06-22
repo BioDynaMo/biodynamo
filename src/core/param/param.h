@@ -207,13 +207,16 @@ struct Param {
   ///     adaptor = <name_of_adaptor>
   std::string visualization_engine_ = "paraview";
 
-  /// Use ParaView Catalyst for live visualization.\n
+  /// Use ParaView Catalyst for insitu visualization.\n
+  /// Insitu visualization supports live visualization 
+  /// and rendering without writing files to the harddisk.\n
+  ///
   /// Default value: `false`\n
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     live = false
-  bool live_visualization_ = false;
+  ///     insitu = false
+  bool insitu_visualization_ = false;
 
   /// Write data to file for post-simulation visualization
   /// Default value: `false`\n
@@ -270,7 +273,7 @@ struct Param {
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     # turn on live or export
+  ///     # turn on insitu or export
   ///     export = true
   ///
   ///       [[visualize_sim_object]]
@@ -296,7 +299,7 @@ struct Param {
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     # turn on live or export
+  ///     # turn on insitu or export
   ///     export = true
   ///
   ///       [[visualize_diffusion]]
