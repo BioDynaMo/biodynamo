@@ -17,15 +17,16 @@
 
 #include <cstdint>
 #include "core/operation/operation.h"
+#include "core/operation/operation_registry.h"
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
 
 namespace bdm {
 
-class DividingCellOp : public Operation {
+class DividingCellOp : public OperationImpl {
  public:
-  DividingCellOp() : Operation("bdm::DividingCellOp") {}
+  DividingCellOp() {}
   virtual ~DividingCellOp() {}
 
   void operator()(SimObject* sim_object) override {
@@ -37,7 +38,12 @@ class DividingCellOp : public Operation {
       }
     }
   }
+ private:
+  static bool registered_;
 };
+
+// Register this operation in BioDynaMo
+REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 
 }  // namespace bdm
 

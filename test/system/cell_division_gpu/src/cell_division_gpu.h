@@ -56,12 +56,11 @@ inline void RunTest(bool* wrong, ExecutionMode mode, uint64_t timesteps,
         break;
       case kOpenCl:
         std::cout << "GPU (OpenCL)\n";
-        param->use_gpu_ = true;
-        param->use_opencl_ = true;
+        param->compute_target_ = "opencl";
         break;
       case kCuda:
         std::cout << "GPU (CUDA)\n";
-        param->use_gpu_ = true;
+        param->compute_target_ = "cuda";
         break;
     }
   };

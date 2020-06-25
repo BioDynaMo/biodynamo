@@ -222,7 +222,7 @@ class GpuHelper {
   void InitializeGPUEnvironment() {
 #if (defined(USE_CUDA) || defined(USE_OPENCL)) && !defined(__ROOTCLING__)
     auto* param = Simulation::GetActive()->GetParam();
-    if (param->use_opencl_) {
+    if (param->compute_target_ = "opencl") {
 #ifdef USE_OPENCL
       FindGpuDevicesOpenCL();
 #else

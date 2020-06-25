@@ -90,7 +90,7 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
 /// This iteration happens only in the unlikely event of a race-condition
 /// and is therefore not performance relevant.
 const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
-    InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
+InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
   static InPlaceExecutionContext::ThreadSafeSoUidMap::value_type kDefault;
   auto& pair = (*map_)[uid];
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
@@ -300,6 +300,8 @@ struct ForEachNeighborWithinRadiusFunctor
     if (param->cache_neighbors_) {
       neighbor_cache_.push_back(std::make_pair(so, squared_distance));
     }
+    // std::cout << "squared_distance = " << squared_distance
+    //           << " | squared_radius_ = " << squared_radius_ << std::endl;
     if (squared_distance < squared_radius_) {
       function_(so, 0);
     }
@@ -322,6 +324,7 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   // forward call to env and populate cache
   auto* env = Simulation::GetActive()->GetEnvironment();
 
+  std::cout << "SQUARED RADUS = " << squared_radius << std::endl;
   ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
                                               squared_radius);
   env->ForEachNeighbor(for_each, query);

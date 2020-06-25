@@ -40,13 +40,13 @@ The only thing you need to do to enjoy GPU acceleration is enabling it through t
 
 ```Python
 [experimental]
-use_gpu = true
+compute_target = "cuda"
 ```
 
-By default we assume that your GPU is only CUDA-compatible. If you want to let BioDynaMo know you have an OpenCL-compatible GPU just append the following to the above snippet:
+This enables GPU acceleration using the CUDA backend. If you want to let BioDynaMo know you have an OpenCL-compatible GPU configure this option as following:
 
 ```Python
-use_opencl = true
+compute_target = "opencl"
 ```
 <br/>
 <a class="sbox" target="_blank" rel="noopener">

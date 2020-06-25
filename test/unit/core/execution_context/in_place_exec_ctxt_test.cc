@@ -17,6 +17,7 @@
 #include "core/environment/environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/model_initializer.h"
+#include "core/operation/operation_registry.h"
 #include "core/sim_object/cell.h"
 #include "unit/test_util/test_sim_object.h"
 #include "unit/test_util/test_util.h"
@@ -159,37 +160,41 @@ TEST(InPlaceExecutionContext, NewAndGetSimObject) {
   EXPECT_EQ(789, rm->GetSimObject(uid_1)->GetDiameter());
 }
 
-struct Op1 : public Operation {
-  bool& op1_called;
-  bool& op2_called;
-
-  Op1(bool& op1_called, bool& op2_called)
-      : Operation("op1"), op1_called(op1_called), op2_called(op2_called) {}
+struct Op1 : public OperationImpl {
+  bool* op1_called_;
+  bool* op2_called_;
 
   void operator()(SimObject* so) override {
     // op1 must be  called first
-    EXPECT_FALSE(op1_called);
-    EXPECT_FALSE(op2_called);
+    EXPECT_FALSE(*op1_called_);
+    EXPECT_FALSE(*op2_called_);
     EXPECT_EQ(so->GetUid(), SoUid(0));
-    op1_called = true;
+    *op1_called_ = true;
   }
+
+ private:
+  static bool registered_;
 };
 
-struct Op2 : public Operation {
-  bool& op1_called;
-  bool& op2_called;
+REGISTER_OP(Op1, "Op1", kCpu);
 
-  Op2(bool& op1_called, bool& op2_called)
-      : Operation("op2"), op1_called(op1_called), op2_called(op2_called) {}
+struct Op2 : public OperationImpl {
+  bool* op1_called_;
+  bool* op2_called_;
 
   void operator()(SimObject* so) override {
     // op2 must be  called first
-    EXPECT_TRUE(op1_called);
-    EXPECT_FALSE(op2_called);
+    EXPECT_TRUE(*op1_called_);
+    EXPECT_FALSE(*op2_called_);
     EXPECT_EQ(so->GetUid(), SoUid(0));
-    op2_called = true;
+    *op2_called_ = true;
   }
+
+ private:
+  static bool registered_;
 };
+
+REGISTER_OP(Op2, "Op2", kCpu);
 
 TEST(InPlaceExecutionContext, Execute) {
   Simulation sim(TEST_NAME);
@@ -201,9 +206,17 @@ TEST(InPlaceExecutionContext, Execute) {
   bool op1_called = false;
   bool op2_called = false;
 
-  Op1 op1(op1_called, op2_called);
-  Op2 op2(op1_called, op2_called);
-  std::vector<Operation*> operations = {&op1, &op2};
+  auto* op1 = GET_OP("Op1");
+  auto* op2 = GET_OP("Op2");
+  static_cast<Op1*>(op1->GetOperationImpl(OpComputeTarget::kCpu))->op1_called_ =
+      &op1_called;
+  static_cast<Op1*>(op1->GetOperationImpl(OpComputeTarget::kCpu))->op2_called_ =
+      &op2_called;
+  static_cast<Op2*>(op2->GetOperationImpl(OpComputeTarget::kCpu))->op1_called_ =
+      &op1_called;
+  static_cast<Op2*>(op2->GetOperationImpl(OpComputeTarget::kCpu))->op2_called_ =
+      &op2_called;
+  std::vector<Operation*> operations = {op1, op2};
   ctxt->Execute(&cell_0, operations);
 
   EXPECT_TRUE(op1_called);
@@ -237,10 +250,21 @@ struct TestFunctor1 : public Functor<void, SimObject*> {
   }
 };
 
-struct TestOperation : public Operation {
+struct TestFunctor2 : public Functor<void, SimObject*> {
+  Operation* op;
+
+  TestFunctor2(Operation* op) : op(op) {}
+  void operator()(SimObject* so) override {
+    // ctxt must be obtained inside the lambda, otherwise we always get the
+    // one corresponding to the master thread
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    ctxt->Execute(so, {op});
+  }
+};
+
+struct TestOperation : public OperationImpl {
   std::unordered_map<SoUid, uint64_t> num_neighbors;
 
-  TestOperation() : Operation("op") {}
   void operator()(SimObject* so) override {
     auto d = so->GetDiameter();
     so->SetDiameter(d + 1);
@@ -254,7 +278,12 @@ struct TestOperation : public Operation {
 #pragma omp critical
     num_neighbors[so->GetUid()] = nb_counter;
   }
+
+ private:
+  static bool registered_;
 };
+
+REGISTER_OP(TestOperation, "TestOperation", kCpu);
 
 void RunInPlaceExecutionContextExecuteThreadSafety(
     Param::ThreadSafetyMechanism mechanism) {
@@ -278,14 +307,11 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
 
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.
-  TestOperation op;
-
-  TestFunctor1 functor1(&op);
+  TestFunctor1 functor1(GET_OP("TestOperation"));
   rm->ApplyOnAllElementsParallel(functor1);
 
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    EXPECT_EQ(11 + op.num_neighbors[so->GetUid()], so->GetDiameter());
-  });
+  TestFunctor2 functor2(GET_OP("TestOperation"));
+  rm->ApplyOnAllElements(functor2);
 }
 
 TEST(InPlaceExecutionContext,

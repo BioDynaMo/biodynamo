@@ -31,31 +31,43 @@
 
 namespace bdm {
 
-struct FirstOp : Operation {
-  FirstOp() : Operation("first op"){};
-
+struct FirstOp : OperationImpl {
   void operator()(SimObject* so) override { so->UpdateRunDisplacement(); }
+
+ private:
+  static bool registered_;
 };
 
-struct LastOp : Operation {
-  LastOp() : Operation("last op"){};
+REGISTER_OP(FirstOp, "first op", kCpu);
 
+struct LastOp : OperationImpl {
   void operator()(SimObject* so) override {
     so->ApplyRunDisplacementForAllNextTs();
   }
+
+ private:
+  static bool registered_;
 };
 
-struct BiologyModuleOp : Operation {
-  BiologyModuleOp() : Operation("biology module"){};
+REGISTER_OP(LastOp, "last op", kCpu);
 
+struct BiologyModuleOp : OperationImpl {
   void operator()(SimObject* so) override { so->RunBiologyModules(); }
+
+ private:
+  static bool registered_;
 };
 
-struct DiscretizationOp : Operation {
-  DiscretizationOp() : Operation("discretization"){};
+REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
 
+struct DiscretizationOp : OperationImpl {
   void operator()(SimObject* so) override { so->RunDiscretization(); }
+
+ private:
+  static bool registered_;
 };
+
+REGISTER_OP(DiscretizationOp, "discretization", kCpu);
 
 Scheduler::Scheduler() {
   auto* param = Simulation::GetActive()->GetParam();
@@ -65,27 +77,18 @@ Scheduler::Scheduler() {
   }
   visualization_ = VisualizationAdaptor::Create(param->visualization_engine_);
   root_visualization_ = new RootAdaptor();
-  bound_space_ = new BoundSpace();
-  displacement_ = new DisplacementOp();
-  diffusion_ = new DiffusionOp();
 
-  auto* first_op = new FirstOp();
-  auto* biology_module_op = new BiologyModuleOp();
-  auto* discretization_op = new DiscretizationOp();
-  auto* last_op = new LastOp();
-  operations_ = {first_op,      bound_space_,      biology_module_op,
-                 displacement_, discretization_op, last_op};
-  protected_operations_ = {first_op->name_, biology_module_op->name_,
-                           discretization_op->name_, last_op->name_};
+  operations_ = {GET_OP("first op"),       GET_OP("bound space"),
+                 GET_OP("biology module"), GET_OP("displacement"),
+                 GET_OP("discretization"), GET_OP("diffusion"),
+                 GET_OP("last op")};
+  protected_operations_ = {"first op", "biology module", "discretization",
+                           "last op"};
 }
 
 Scheduler::~Scheduler() {
   delete backup_;
   delete root_visualization_;
-  delete diffusion_;
-  for (auto* op : operations_) {
-    delete op;
-  }
   if (visualization_) {
     delete visualization_;
   }
@@ -93,6 +96,7 @@ Scheduler::~Scheduler() {
   if (param->statistics_) {
     std::cout << gStatistics << std::endl;
   }
+  // We do not delete operations here; we leave that to OperationRegistry
 }
 
 void Scheduler::Simulate(uint64_t steps) {
@@ -116,37 +120,6 @@ void Scheduler::AddOperation(Operation* op) {
   operations_.insert(it, op);
 }
 
-void Scheduler::RemoveOperation(const std::string& name) {
-  if (protected_operations_.find(name) != protected_operations_.end()) {
-    Log::Warning("Scheduler::GetOperation",
-                 "You tried to remove the protected operation ", name,
-                 "! This request was ignored.");
-    return;
-  }
-  for (auto it = operations_.begin(); it != operations_.end(); ++it) {
-    if (name == (*it)->name_) {
-      delete *it;
-      operations_.erase(it);
-      return;
-    }
-  }
-}
-
-Operation* Scheduler::GetOperation(const std::string& name) {
-  if (protected_operations_.find(name) != protected_operations_.end()) {
-    Log::Warning("Scheduler::GetOperation",
-                 "You tried to get the protected operation ", name, "!");
-    return nullptr;
-  }
-  for (uint64_t i = 0; i < operations_.size(); i++) {
-    auto* op = operations_[i];
-    if (name == op->name_) {
-      return op;
-    }
-  }
-  return nullptr;
-}
-
 struct RunAllScheduldedOps : Functor<void, SimObject*, SoHandle> {
   RunAllScheduldedOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
@@ -161,11 +134,34 @@ struct RunAllScheduldedOps : Functor<void, SimObject*, SoHandle> {
   std::vector<Operation*>& scheduled_ops_;
 };
 
-void Scheduler::Execute() {
+void Scheduler::RunScheduledOps() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* env = sim->GetEnvironment();
   auto* param = sim->GetParam();
+  auto batch_size = param->scheduling_batch_size_;
+
+  // Run the row-wise operations
+  std::vector<Operation*> row_wise_operations;
+  for (auto* op : scheduled_row_wise_operations_) {
+    if (total_steps_ % op->frequency_ == 0) {
+      row_wise_operations.push_back(op);
+    }
+  }
+  RunAllScheduldedOps functor(row_wise_operations);
+  rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
+
+  // Run the stand-alone operations
+  for (auto* op : scheduled_operations_) {
+    if (total_steps_ % op->frequency_ == 0) {
+      (*op)();
+    }
+  }
+}
+
+void Scheduler::Execute() {
+  auto* sim = Simulation::GetActive();
+  auto* env = sim->GetEnvironment();
 
   Timing::Time("Set up exec context", [&]() {
     const auto& all_exec_ctxts = sim->GetAllExecCtxts();
@@ -179,29 +175,16 @@ void Scheduler::Execute() {
   });
   Timing::Time("neighbors", [&]() { env->Update(); });
 
-  // update all sim objects: run all CPU operations
-  auto scheduled_ops = GetScheduleOps();
-  RunAllScheduldedOps functor(scheduled_ops);
-  rm->ApplyOnAllElementsParallelDynamic(param->scheduling_batch_size_, functor);
-
-  // update all sim objects: hardware accelerated operations
-  if (param->run_mechanical_interactions_ && !displacement_->UseCpu()) {
-    Timing::Time("displacement (GPU/FPGA)", *displacement_);
-  }
-
   // finish updating sim objects
   Timing::Time("Tear down exec context", [&]() {
     const auto& all_exec_ctxts = sim->GetAllExecCtxts();
     all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
   });
-
-  // update all substances (DiffusionGrids)
-  Timing::Time("diffusion", *diffusion_);
 }
 
 void Scheduler::Backup() {
-  using std::chrono::seconds;
   using std::chrono::duration_cast;
+  using std::chrono::seconds;
   auto* param = Simulation::GetActive()->GetParam();
   if (backup_->BackupEnabled() &&
       duration_cast<seconds>(Clock::now() - last_backup_).count() >=
@@ -244,7 +227,7 @@ void Scheduler::Initialize() {
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
   if (param->bound_space_) {
-    rm->ApplyOnAllElementsParallel(*bound_space_);
+    rm->ApplyOnAllElementsParallel(*GET_OP("bound space"));
   }
   env->Update();
   int lbound = env->GetDimensionThresholds()[0];
@@ -257,21 +240,25 @@ void Scheduler::Initialize() {
   });
 }
 
-std::vector<Operation*> Scheduler::GetScheduleOps() {
-  std::vector<Operation*> scheduled_ops;
-  scheduled_ops.reserve(operations_.size());
+// Schedule the operations
+void Scheduler::ScheduleOps() {
   auto* param = Simulation::GetActive()->GetParam();
   for (auto* op : operations_) {
-    // special condition for displacement
-    if (op->name_ == "displacement" &&
-        (!param->run_mechanical_interactions_ || !displacement_->UseCpu())) {
-      continue;
+    if (param->compute_target_ == "cuda" &&
+        op->IsComputeTargetSupported(kCuda)) {
+      op->SelectComputeTarget(kCuda);
+    } else if (param->compute_target_ == "opencl" &&
+               op->IsComputeTargetSupported(kOpenCl)) {
+      op->SelectComputeTarget(kOpenCl);
+    } else {
+      op->SelectComputeTarget(kCpu);
     }
-    if (total_steps_ % op->frequency_ == 0) {
-      scheduled_ops.push_back(op);
+    if (op->IsForAllSimObjects()) {
+      scheduled_row_wise_operations_.push_back(op);
+    } else {
+      scheduled_operations_.push_back(op);
     }
   }
-  return scheduled_ops;
 }
 
 }  // namespace bdm

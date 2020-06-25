@@ -34,7 +34,6 @@ inline void RunTest() {
   cell0->SetDiameter(9);
   cell0->SetMass(1.4);
   cell0->SetPosition({0, 0, 0});
-  // cell.SetTractorForce(tractor_force);
   rm->push_back(cell0);
 
   // cell 1
@@ -48,10 +47,9 @@ inline void RunTest() {
   simulation.GetEnvironment()->Update();
 
   // execute operation
-  DisplacementOp op;
   auto* ctxt = simulation.GetExecutionContext();
-  ctxt->Execute(rm->GetSimObject(ref_uid), {&op});
-  ctxt->Execute(rm->GetSimObject(ref_uid + 1), {&op});
+  ctxt->Execute(rm->GetSimObject(ref_uid), {GET_OP("displacement")});
+  ctxt->Execute(rm->GetSimObject(ref_uid + 1), {GET_OP("displacement")});
 
   // check results
   // cell 0

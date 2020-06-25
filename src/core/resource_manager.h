@@ -42,6 +42,7 @@
 
 #include "core/container/so_uid_map.h"
 #include "core/diffusion_grid.h"
+#include "core/operation/operation.h"
 #include "core/sim_object/sim_object.h"
 #include "core/sim_object/so_handle.h"
 #include "core/sim_object/so_uid.h"
@@ -231,6 +232,12 @@ class ResourceManager {
   /// Uses static scheduling.
   /// \see ApplyOnAllElements
   virtual void ApplyOnAllElementsParallel(Functor<void, SimObject*>& function);
+
+  /// Apply an operation on all elements.\n
+  /// Function invocations are parallelized.\n
+  /// Uses static scheduling.
+  /// \see ApplyOnAllElements
+  virtual void ApplyOnAllElementsParallel(Operation& op);
 
   virtual void ApplyOnAllElementsParallel(
       Functor<void, SimObject*, SoHandle>& function);

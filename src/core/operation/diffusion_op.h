@@ -22,6 +22,9 @@
 #include "core/container/inline_vector.h"
 #include "core/diffusion_grid.h"
 #include "core/environment/environment.h"
+#include "core/environment/environment.h"
+#include "core/operation/operation.h"
+#include "core/operation/operation_registry.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
@@ -29,12 +32,12 @@
 namespace bdm {
 
 /// A class that sets up diffusion grids of the substances in this simulation
-class DiffusionOp {
+class DiffusionOp : OperationImpl {
  public:
   DiffusionOp() {}
   virtual ~DiffusionOp() {}
 
-  void operator()() {
+  void operator()() override {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto* env = sim->GetEnvironment();
@@ -70,7 +73,12 @@ class DiffusionOp {
       }
     });
   }
+
+ private:
+  static bool registered_;
 };
+
+REGISTER_OP(DiffusionOp, "diffusion", kCpu);
 
 }  // namespace bdm
 

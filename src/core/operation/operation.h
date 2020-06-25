@@ -16,33 +16,121 @@
 #define CORE_OPERATION_OPERATION_H_
 
 #include <functional>
-#include <iostream>
 #include <string>
-#include "core/functor.h"
+#include <vector>
+
+#include "core/util/log.h"
 
 namespace bdm {
 
 class SimObject;
 
-/// An Operation contains a function that will be executed for each simulation
-/// object. It's data member `frequency_` specifies how often it will be
-/// executed (every simulation step, every second, ...).
-struct Operation : public Functor<void, SimObject*> {
-  Operation(const std::string& name);
+enum OpComputeTarget { kCpu, kCuda, kOpenCl };
 
-  Operation(const std::string& name, uint32_t frequency);
+/// Interface for implementing an operation
+struct OperationImpl {
+  virtual ~OperationImpl() {}
+  virtual void operator()(SimObject *so) {
+    Log::Fatal("OperationImpl:operator()(SimObject*)",
+               "Column-wise function operator not implemented");
+  }
+  virtual void operator()() {
+    Log::Fatal("OperationImpl:operator()(SimObject*)",
+               "Row-wise function operator not implemented");
+  }
+  virtual bool IsGpuOperation() { return false; }
 
-  virtual ~Operation();
+  virtual bool IsForAllSimObjects() { return false; }
+};
 
-  void operator()(SimObject* so) override = 0;
+struct OperationImplGpu : public OperationImpl {
+  virtual void InitializeGpuData() = 0;
+  virtual void UpdateCpuData() = 0;
+
+  bool IsGpuOperation() override { return true; }
+
+  virtual ~OperationImplGpu() {}
+
+  // sub class to avoid overriding this operator
+  void operator()(SimObject *so) override {
+    Log::Fatal("OperationImplGpu",
+               "GPU operations do not support this function operator");
+  }
+};
+
+/// A BioDynaMo operation that is executed every `frequency_` timesteps. An
+/// operation can have multiple implementations for various execution platform,
+/// or "compute targets", such as CUDA or OpenCL, to target GPU hardware for
+/// instance.
+struct Operation {
+  /// @brief      Construct an operation
+  ///
+  /// @param[in]  name  The name of the operation
+  ///
+  Operation(const std::string &name);
+
+  /// @brief      Construct an operation
+  ///
+  /// @param[in]  name       The name of the operation
+  /// @param[in]  frequency  The frequency at which the operation is executed
+  ///
+  Operation(const std::string &name, uint32_t frequency);
+
+  ~Operation();
+
+  /// Operate on an individual simulation object. Typically this operator is
+  /// called in a loop over all simulation objects
+  ///
+  /// @param      so    Handle to the simulation object
+  ///
+  void operator()(SimObject *so);
+
+  /// Operate in a stand-alone fashion. Typically this operator is called for
+  /// GPU operations, or operations that do not need to loop over simulation
+  /// objects (such as updating diffusion grids)
+  void operator()();
+
+  /// Add an operation implementation for the specified compute target
+  ///
+  /// @param[in]  target  The compute target
+  /// @param      impl    The implementation
+  ///
+  void AddOperationImpl(OpComputeTarget target, OperationImpl *impl);
+
+  OperationImpl* GetOperationImpl(OpComputeTarget target);
+
+  /// Check whether an implementation is available for the requested compute
+  /// target
+  ///
+  /// @param[in]  target  The compute target
+  ///
+  /// @return     True if the specified compute target is supported, False
+  ///             otherwise.
+  ///
+  bool IsComputeTargetSupported(OpComputeTarget target);
+
+  /// Select which of the operation implementation should be used for this
+  /// operation, by specifying the compute target
+  ///
+  /// @param[in]  target  The compute target
+  ///
+  void SelectComputeTarget(OpComputeTarget target);
+
+  bool IsForAllSimObjects() {
+    return implementations_[OpComputeTarget::kCpu]->IsForAllSimObjects();
+  }
 
   /// Specifies how often this operation will be executed.\n
   /// 1: every timestep\n
   /// 2: every second timestep\n
   /// ...
-  uint32_t frequency_ = 1;
+  size_t frequency_ = 1;
   /// Operation name / unique identifier
   std::string name_;
+  /// The compute target that this operation will be executed on
+  OpComputeTarget active_target_;
+  /// The different operation implementations for each supported compute target
+  std::vector<OperationImpl *> implementations_;
 };
 
 }  // namespace bdm

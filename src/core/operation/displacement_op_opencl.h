@@ -22,6 +22,8 @@
 #include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/opencl_state.h"
 #include "core/operation/bound_space_op.h"
+#include "core/operation/operation.h"
+#include "core/operation/operation_registry.h"
 #include "core/shape.h"
 #include "core/sim_object/cell.h"
 #include "core/util/thread_info.h"
@@ -30,7 +32,7 @@
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-class DisplacementOpOpenCL {
+class DisplacementOpOpenCL : OperationImplGpu {
  public:
   DisplacementOpOpenCL() {}
   ~DisplacementOpOpenCL() {}
@@ -41,7 +43,7 @@ class DisplacementOpOpenCL {
     }
   }
 
-  void operator()() {
+  void operator()() override {
     auto* sim = Simulation::GetActive();
     auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
     auto* param = sim->GetParam();
@@ -200,8 +202,8 @@ class DisplacementOpOpenCL {
       queue->enqueueNDRangeKernel(collide, cl::NullRange, global_size,
                                   local_size);
     } catch (const cl::Error& err) {
-      Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(), ") = ",
-                 ocl_state->GetErrorString(err.err()));
+      Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(),
+                 ") = ", ocl_state->GetErrorString(err.err()));
       throw;
     }
 
@@ -210,8 +212,8 @@ class DisplacementOpOpenCL {
                                num_objects * 3 * sizeof(cl_double),
                                cell_movements.data()->data());
     } catch (const cl::Error& err) {
-      Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(), ") = ",
-                 ocl_state->GetErrorString(err.err()));
+      Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(),
+                 ") = ", ocl_state->GetErrorString(err.err()));
       throw;
     }
 
@@ -231,7 +233,13 @@ class DisplacementOpOpenCL {
       }
     });
   }
+
+ private:
+  static bool registered_;
 };
+
+
+REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCL);
 
 }  // namespace bdm
 

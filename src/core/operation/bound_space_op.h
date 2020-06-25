@@ -16,6 +16,7 @@
 #define CORE_OPERATION_BOUND_SPACE_OP_H_
 
 #include "core/operation/operation.h"
+#include "core/operation/operation_registry.h"
 #include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
@@ -44,9 +45,9 @@ inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
 
 /// Keeps the simulation objects contained within the bounds as defined in
 /// param.h
-class BoundSpace : public Operation {
+class BoundSpace : public OperationImpl {
  public:
-  BoundSpace() : Operation("bdm::BoundSpace") {}
+  BoundSpace() {}
   ~BoundSpace() {}
 
   void operator()(SimObject* sim_object) override {
@@ -55,7 +56,12 @@ class BoundSpace : public Operation {
       ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
     }
   }
+
+ private:
+  static bool registered_;
 };
+
+REGISTER_OP(BoundSpace, "bound space", kCpu);
 
 }  // namespace bdm
 

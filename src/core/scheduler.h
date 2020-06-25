@@ -47,16 +47,9 @@ class Scheduler {
 
   void AddOperation(Operation* operation);
 
-  /// Remove an operation. However, some operations are protected and cannot
-  /// be removed. \see protected_operations_
-  /// A request to remove a proteced operation is ignored.
-  void RemoveOperation(const std::string& op_name);
+  void RunScheduledOps();
 
-  /// Returns a reference to an operation. However, some operations are
-  /// protected and will not be returned. \see protected_operations_
-  /// If the operation does not exist or is protected, a nullptr will be
-  /// returned.
-  Operation* GetOperation(const std::string& op_name);
+  void ScheduleOps();
 
   RootAdaptor* GetRootVisualization() { return root_visualization_; }
 
@@ -74,11 +67,9 @@ class Scheduler {
   VisualizationAdaptor* visualization_ = nullptr;  //!
   RootAdaptor* root_visualization_ = nullptr;      //!
 
-  BoundSpace* bound_space_;
-  DisplacementOp* displacement_;
-  DiffusionOp* diffusion_;
-
   std::vector<Operation*> operations_;  //!
+  std::vector<Operation*> scheduled_operations_;  //!
+  std::vector<Operation*> scheduled_row_wise_operations_;  //!
   std::set<std::string> protected_operations_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
