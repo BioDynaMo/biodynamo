@@ -76,10 +76,18 @@ jobs:
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
       with:
-        status: ${{ job.status }}
-        author_name: Integration Test
-        fields: repo,ref,message,author,action,workflow # default: repo,commit
+        status: custom
+        fields: workflow,job,commit,repo,ref,author,took,message
+        custom_payload: |
+          {
+            username: 'GitHub CI',
+            icon_emoji: ':octocat:',
+            attachments: [{
+              color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+              text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}\n${process.env.AS_MESSAGE}`
+            }]
+          }
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # optional
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: always() # Pick up events even if the job fails or is canceled.
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: always() # Pick up events even if the job fails or is canceled

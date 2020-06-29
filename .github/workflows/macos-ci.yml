@@ -70,7 +70,7 @@ jobs:
         fields: workflow,job,commit,repo,ref,author,took,message
         custom_payload: |
           {
-            username: 'action-slack',
+            username: 'GitHub CI',
             icon_emoji: ':octocat:',
             attachments: [{
               color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
