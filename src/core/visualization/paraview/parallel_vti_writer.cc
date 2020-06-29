@@ -19,7 +19,9 @@
 #include <vtkPointData.h>
 #include <vtkDataArray.h>
 // BioDynaMo
+#include "core/simulation.h"
 #include "core/util/string.h"
+#include "core/param/param.h"
 
 namespace bdm {
 
@@ -96,6 +98,8 @@ void ParallelVtiWriter::operator()(const std::string& folder,
                                    const std::array<int, 6>& whole_extent, 
                                    const std::vector<std::array<int, 6>>& piece_extents) const {
 
+    auto* param = Simulation::GetActive()->GetParam();
+
 #pragma omp parallel for schedule(static, 1)
   for(uint64_t i = 0; i < num_pieces; ++i) {
     auto vti_filename = Concat(folder, "/", file_prefix, "_", i, ".vti");
@@ -105,6 +109,9 @@ void ParallelVtiWriter::operator()(const std::string& folder,
     vti->SetWholeExtent(whole_extent.data());
     vti->SetDataModeToBinary();
     vti->SetEncodeAppendedData(false);
+    if (!param->visualization_compress_pv_files_) {
+      vti->SetCompressorTypeToNone();
+    }
     vti->Write();
     
     if (i == 0) {

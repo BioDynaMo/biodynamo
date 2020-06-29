@@ -49,6 +49,7 @@ class SimulationTest : public ::testing::Test {
       "python_paraview_pipeline = \"my-insitu-script.py\"\n"
       "export_interval = 100\n"
       "export_generate_pvsm = false\n"
+      "compress_pv_files = false\n"
       "\n"
       "  [[visualize_sim_object]]\n"
       "  name = \"Cell\"\n"
@@ -125,6 +126,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ("my-insitu-script.py", param->python_paraview_pipeline_);
     EXPECT_EQ(100u, param->visualization_export_interval_);
     EXPECT_FALSE(param->visualization_export_generate_pvsm_);
+    EXPECT_FALSE(param->visualization_compress_pv_files_);
 
     // visualize_sim_object
     EXPECT_EQ(2u, param->visualize_sim_objects_.size());

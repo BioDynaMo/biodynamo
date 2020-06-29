@@ -20,6 +20,8 @@
 #include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
 // BioDynaMo
+#include "core/param/param.h"
+#include "core/simulation.h"
 #include "core/util/string.h"
 #include "core/util/thread_info.h"
 
@@ -59,6 +61,8 @@ void ParallelVtuWriter::operator()(const std::string& folder,
                                    const std::vector<vtkUnstructuredGrid*>& grids) const {
 
     auto* tinfo = ThreadInfo::GetInstance();
+    auto* param = Simulation::GetActive()->GetParam();
+
 #pragma omp parallel for schedule(static, 1)
    for(int i = 0; i < tinfo->GetMaxThreads(); ++i) {
      if (i == 0) {
@@ -69,6 +73,9 @@ void ParallelVtuWriter::operator()(const std::string& folder,
        pvtu_writer->SetInputData(grids[0]);
        pvtu_writer->SetDataModeToBinary();
        pvtu_writer->SetEncodeAppendedData(false);
+       if (!param->visualization_compress_pv_files_) {
+        pvtu_writer->SetCompressorTypeToNone();
+       }
        pvtu_writer->Write();
 
        FixPvtu(filename, file_prefix, max_threads);
@@ -79,6 +86,9 @@ void ParallelVtuWriter::operator()(const std::string& folder,
        vtu_writer->SetInputData(grids[i]);
        vtu_writer->SetDataModeToBinary();
        vtu_writer->SetEncodeAppendedData(false);
+       if (!param->visualization_compress_pv_files_) {
+        vtu_writer->SetCompressorTypeToNone();
+       }
        vtu_writer->Write();
      }
    }

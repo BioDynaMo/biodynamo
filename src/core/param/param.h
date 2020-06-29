@@ -317,6 +317,17 @@ struct Param {
   ///       # default values: concentration = true and gradient = false
   std::vector<VisualizeDiffusion> visualize_diffusion_;
 
+  /// Specifies if the ParView files that are generated in export mode 
+  /// should be compressed.\n
+  /// Default value: true\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     export = true
+  ///     compress_pv_files = true
+  ///
+  bool visualization_compress_pv_files_ = true;
+  
   // performance values --------------------------------------------------------
 
   /// Batch size used by the `Scheduler` to iterate over simulation objects\n
