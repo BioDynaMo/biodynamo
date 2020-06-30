@@ -186,13 +186,14 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
   } else if (boxes_z <= num_pieces_target) {
     piece_boxes_z_last_ = 2;
     piece_boxes_z_ = 1;
-    num_pieces_ = boxes_z - 1;
+    num_pieces_ = std::max(1UL, boxes_z - 1);
   } else {
     auto boxes_per_piece = static_cast<double>(boxes_z) / num_pieces_target;
     piece_boxes_z_ = static_cast<uint64_t>(std::ceil(boxes_per_piece));
     num_pieces_ = boxes_z / piece_boxes_z_;
     piece_boxes_z_last_ = boxes_z - (num_pieces_ - 1) * piece_boxes_z_;
   }
+  assert(num_pieces_ > 0);
   assert(piece_boxes_z_last_ >= 2);
   assert((num_pieces_ - 1) * piece_boxes_z_ + piece_boxes_z_last_ == boxes_z);
 }
