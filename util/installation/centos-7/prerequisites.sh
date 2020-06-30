@@ -45,11 +45,22 @@ if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
 fi
 
-curl https://pyenv.run | bash
+# If PyEnv is not installed, install it
+if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+  echo "PyEnv was not found. Installing now..."
+  curl https://pyenv.run | bash
+fi
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
-pyenv shell 3.6.9
+
+PYVERS=3.6.9
+
+# If Python $PYVERS is not installed, install it
+if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
+  echo "Python $PYVERS was not found. Installing now..."
+  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
+fi
+pyenv shell $PYVERS
 
 # Install optional packages
 if [ $1 == "all" ]; then
