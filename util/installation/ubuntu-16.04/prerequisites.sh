@@ -63,7 +63,7 @@ if [ $1 == "all" ]; then
   pip install --user $PIP_PACKAGES
 
   sudo apt-get install -y valgrind \
-    clang-3.9 clang-format-3.9 clang-tidy-3.9 \
+    clang clang-format clang-tidy \
     doxygen graphviz lcov gcovr \
     llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
 fi
