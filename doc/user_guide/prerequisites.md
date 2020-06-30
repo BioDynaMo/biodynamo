@@ -34,6 +34,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **gcc**: GNU C compiler
   * **g++**: GNU C++ compiler
   * **libopenmpi-dev**: Development files for OpenMPI (Open Source Message Passing Interface)
+  * **libomp5**: OpenMP library
   * **libomp-dev**: Development files for OpenMP (API for multiprocessor programming)
   * **libnuma-dev**: Development files for NUMA (simple programming interface to the policy supported by the Linux kernel)
   * **freeglut3-dev**: Development files for GLUT (OpenGL Utility Toolkit)
@@ -71,7 +72,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 ```bash
 sudo apt-get update
 sudo apt-get install -y wget cmake make gcc g++ \
-libopenmpi-dev libomp-dev libnuma-dev freeglut3-dev \
+libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
 libpthread-stubs0-dev
 ```
 
