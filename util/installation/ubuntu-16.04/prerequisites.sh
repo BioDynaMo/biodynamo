@@ -39,7 +39,7 @@ sudo apt-get update
 
 # Install required packages
 sudo apt-get install -y wget curl cmake make gcc g++ \
-  libopenmpi-dev libomp-dev libnuma-dev freeglut3-dev \
+  libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
   libpthread-stubs0-dev zlib1g-dev libbz2-dev
 
 if [ -n "${PYENV_ROOT}" ]; then

@@ -58,8 +58,12 @@ fi
 # Custom instructions for CentOS
 set +e
 if [ $BDM_OS = "centos-7" ]; then
-  export MESA_GL_VERSION_OVERRIDE=3.3
-  . scl_source enable rh-python36
+  # Turn of NUMA for Github Actions CentOS runner, because we get "mbind
+  # operation not permitted errors", due to docker security constraints
+  if [ ! -z ${GITHUB_ACTIONS+x} ]; then
+    BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -Dnuma=off"
+  fi
+
   if [ -z ${CXX} ] && [ -z ${CC} ] ; then
     . scl_source enable devtoolset-7
   fi
