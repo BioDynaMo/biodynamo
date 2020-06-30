@@ -19,7 +19,7 @@
 #include "core/container/flatmap.h"
 #include "core/sim_object/sim_object.h"
 
-struct TClass;
+class TClass;
 
 namespace bdm {
 
