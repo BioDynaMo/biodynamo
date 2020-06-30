@@ -80,5 +80,11 @@ CleanBuild $BUILD_DIR
 
 # print final steps
 EchoSuccess "Installation of BioDynaMo finished successfully!"
-# TODO(ahmad): stay consistent with the configured install directory in CMake
-EchoFinishThisStep $HOME/bdm
+
+# Get version name with same regex as in Installation.cmake
+# TOOD(ahmad): needs more portable solution
+VERSION=`git describe --tags`
+REGEX='[^-]*'
+[[ $VERSION =~ $REGEX ]]
+INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
+EchoFinishThisStep $INSTALL_DIR
