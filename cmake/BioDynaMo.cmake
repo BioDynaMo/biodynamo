@@ -77,6 +77,9 @@ function(bdm_add_executable TARGET)
 
     add_library(${TARGET}-dict SHARED ${DICT_FILE}.cc)
     target_compile_definitions(${TARGET}-dict PRIVATE -D__ROOTCLING__)
+    if (APPLE) 
+      set_target_properties(${TARGET}-dict PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup") 
+    endif()
 
     # generate executable
     add_executable(${TARGET} ${ARG_SOURCES})
