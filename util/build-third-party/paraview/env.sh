@@ -18,18 +18,9 @@
 # import util functions
 . "$BDM_PROJECT_DIR/util/installation/common/util.sh"
 
-if [ "$PV_FLAVOR" = "default" ]; then
-  export PV_SUPERBUILD_VERSION="v5.8.0"
-  export PV_VERSION="v5.8.0"
-  export PV_GIT_REPO="https://gitlab.kitware.com/paraview/paraview.git"
-elif [ "$PV_FLAVOR" = "nvidia-headless" ]; then
-  export PV_SUPERBUILD_VERSION="v5.8.0"
-  export PV_VERSION="parallelize"
-  export PV_GIT_REPO="https://github.com/breitwieserCern/paraview.git"
-else 
-  echo "ERROR: ParaView flavor ($PV_FLAVOR) is not supported"
-  exit 1
-fi
+export PV_SUPERBUILD_VERSION="v5.8.0"
+export PV_VERSION="v5.8.0"
+export PV_GIT_REPO="https://gitlab.kitware.com/paraview/paraview.git"
 
 export BDM_OS=$(DetectOs)
 export QT_INSTALL_DIR="$WORKING_DIR/qt"
