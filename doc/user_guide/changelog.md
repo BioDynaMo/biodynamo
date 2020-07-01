@@ -244,7 +244,7 @@ This commit changes it to opt-in (`--github`).
 ## 26.06.2018 [`ba4fe1f`](https://github.com/BioDynaMo/biodynamo/commit/ba4fe1f9f911e007bd61237d53a8399aa1b2268d#comments)
 
 -   Add support for multiple simulations per process. Only one simulation
-    can be active at the same time. Introduces new class `Simulation` (see [API](/bioapi/classbdm_1_1Simulation.html)).
+    can be active at the same time. Introduces new class `Simulation` (see [API](/api/classbdm_1_1Simulation.html)).
     This change causes many API changes -- see subsection below.
 
 -   Write simulation files to separate directory: `output/simulation-id/`
