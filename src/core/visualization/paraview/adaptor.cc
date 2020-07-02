@@ -196,7 +196,6 @@ void ParaviewAdaptor::CreateVtkObjects() {
   BuildSimObjectsVTKStructures();
   BuildDiffusionGridVTKStructures();
   if (impl_->data_description_->GetUserData() == nullptr) {
-    std::cout << "Create user data " << std::endl;
     vtkNew<vtkStringArray> json;
     json->SetName("metadata");
     json->InsertNextValue(
@@ -212,8 +211,6 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   for (auto& pair : impl_->vtk_sim_objects_) {
     const auto& sim_objects = rm->GetTypeIndex()->GetType(pair.second->GetTClass());
-
-    std::cout << "sim object size " << sim_objects.size() << std::endl;
     pair.second->Update(&sim_objects);
   }
 }
