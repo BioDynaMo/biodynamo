@@ -22,7 +22,8 @@ keywords:
   -help
 ---
 
-Enabling visualization is very easy. BioDynaMo can be configured through its own
+Visualization is disabled by default due to performance reasons, but enabling it is 
+very easy. BioDynaMo can be configured through its own
 configuration file: `bdm.toml`. Visualization is just one of the many configuration
 options. Let's take a look at how to set it. We shall continue using the `hello_world`
 example from the previous exercise.
@@ -30,7 +31,7 @@ example from the previous exercise.
 ## Create the configuration file
 
 In your simulation directory `hello_world` create a new file called `bdm.toml`.
-You can also do this from the command line with the following command:
+You can do this from the command line with the following command:
 
 ```bash
 touch bdm.toml
@@ -39,7 +40,7 @@ touch bdm.toml
 ## Export visualization files
 
 One way to enable visualization is to export a visualization file every time step
-(or every N time steps). In the `bmd.toml` file add the following lines:
+(or every N time steps). In the `bdm.toml` file add the following lines:
 
 ```
 [visualization]
@@ -48,14 +49,13 @@ export_interval = 1
 
 	[[visualize_sim_object]]
 	name = "Cell"
-	additional_data_members = [ "diameter_" ]
 
 ```
 
 This will export a visualization file every time step. You can set the frequency
 by setting the `export_interval`. Make sure that you run a good number of steps
 so that the cells have time to divide. Set it to around 2000 for the `hello_world` example.
-You can do this in `src/hello_world.h` in the `scheduler.Simulate(time_steps)` function.
+You can do this in `src/hello_world.h` in the `Simulate(time_steps)` function.
 Run your simulation with `biodynamo run`.
 
 Now we need to open ParaView:

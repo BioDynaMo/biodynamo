@@ -61,11 +61,12 @@ You should see "Simulation completed succesfully" as the output.
 
 Let's make the simulation more interesting by adding a biological behavior to the
 cell: cell division. Open the `src/hello_world.h` and add the following line to
-the simulate function after the cell is created.
+the simulate function after the cell is created and before it is added to the 
+resource manager.
 
 ```cpp
 // Add the biological behavior to the cell.
-cell.AddBiologyModule(new GrowDivide(32, 3000, {gAllEventIds}));
+cell->AddBiologyModule(new GrowDivide(32, 3000, {gAllEventIds}));
 ```
 
 Rebuild and rerun the simulation to have the cell division take effect. visit the
