@@ -268,6 +268,22 @@ TEST(ParaviewIntegrationTest, InsituSimObjects_Cache) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(ParaviewIntegrationTest, DefaultInsituPipeline) {
+  auto set_param = [](Param* param) {
+    param->insitu_visualization_ = true;
+    param->visualize_sim_objects_.insert({"Cell", {}});
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  auto* rm = simulation.GetResourceManager();
+  auto* cell = new Cell(30);
+  rm->push_back(cell);
+
+  simulation.GetScheduler()->Simulate(1);
+  // Test passes if there is no crash
+}
+
+// -----------------------------------------------------------------------------
 TEST(ParaviewIntegrationTest, InsituSimObjects_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
