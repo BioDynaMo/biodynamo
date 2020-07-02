@@ -17,4 +17,4 @@ keywords:
   -information
 ---
 
-Please contact us at: [biodynamo-contact@cern.ch](mailto:biodynamo-contact@cern.ch)
+Please contact us at: [contact@biodynamo.org](mailto:contact@biodynamo.org)
