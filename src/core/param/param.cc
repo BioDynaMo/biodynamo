@@ -116,8 +116,10 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // visualization group
   BDM_ASSIGN_CONFIG_VALUE(visualization_engine_, "visualization.adaptor");
   BDM_ASSIGN_CONFIG_VALUE(insitu_visualization_, "visualization.insitu");
-  BDM_ASSIGN_CONFIG_VALUE(python_paraview_pipeline_,
-                          "visualization.python_paraview_pipeline");
+  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline_,
+                          "visualization.pv_insitu_pipeline");
+  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline_arguments_,
+                          "visualization.pv_insitu_pipeline_arguments");
   BDM_ASSIGN_CONFIG_VALUE(root_visualization_, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
   BDM_ASSIGN_CONFIG_VALUE(visualization_export_interval_,

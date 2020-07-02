@@ -132,7 +132,7 @@ void ParaviewAdaptor::Initialize() {
 
   if (param->insitu_visualization_) {
     const std::string& script = ParaviewAdaptor::BuildPythonScriptString(
-        param->python_paraview_pipeline_);
+        param->pv_insitu_pipeline_);
     std::ofstream ofs;
     auto* sim = Simulation::GetActive();
     // TODO(lukas) use vtkCPPythonStringPipeline once we update to Paraview

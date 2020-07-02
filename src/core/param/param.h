@@ -235,14 +235,23 @@ struct Param {
   bool root_visualization_ = false;
 
   /// Enable insitu visualization with a custom python pipeline
-  /// Default value: `""`\n
+  /// Default value: `"<path-to-bdm>/include/core/visualization/paraview/default_insitu_pipeline.py"`\n
   /// TOML config file:
-  ///     [development]
-  ///     python_paraview_pipeline_ = ""
-  std::string python_paraview_pipeline_ = "";
+  ///     [visualization]
+  ///     pv_insitu_pipeline = ""
+  std::string pv_insitu_pipeline_ = Concat(std::getenv("BDMSYS"), "/include/core/visualization/paraview/default_insitu_pipeline.py");
 
-  // FIXME docuementation + source file + test
-  std::string python_insitu_script_arguments_ = "";
+  /// Arguments that will be passed to the python ParaView insitu pipeline
+  /// specified in `Param::pv_insitu_pipeline_`.\n
+  /// The arguments will be passed to the ExtendDefaultPipeline function
+  /// `def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args):`
+  /// as fourth argument.\n
+  /// Default value: ""\n
+  /// TOML config file:
+  /// 
+  ///     [visualization]
+  ///     pv_insitu_pipeline_arguments = ""
+  std::string pv_insitu_pipeline_arguments_ = "";
 
   /// If `export_visualization_` is set to true, this parameter specifies
   /// how often it should be exported. 1 = every timestep, 10: every 10

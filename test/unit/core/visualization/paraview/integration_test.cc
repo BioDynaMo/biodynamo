@@ -67,9 +67,9 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
     param->export_visualization_ = export_visualization;
     param->insitu_visualization_ = !export_visualization;
     if (!export_visualization) {
-      param->python_paraview_pipeline_ = GetPythonScriptPath("validate_diffusion_grid.py"); 
+      param->pv_insitu_pipeline_ = GetPythonScriptPath("validate_diffusion_grid.py"); 
       auto sim_name = Simulation::GetActive()->GetUniqueName();
-      param->python_insitu_script_arguments_ = Concat("--sim_name=", sim_name, " --num_elements=", num_diffusion_boxes);
+      param->pv_insitu_pipeline_arguments_ = Concat("--sim_name=", sim_name, " --num_elements=", num_diffusion_boxes);
     }
     param->visualize_diffusion_.push_back({"Substance", true});
   };
@@ -167,9 +167,9 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode,
     param->insitu_visualization_ = !export_visualization;
     param->visualization_export_generate_pvsm_ = use_pvsm;
     if (!export_visualization) {
-      param->python_paraview_pipeline_ = GetPythonScriptPath("validate_sim_objects.py"); 
+      param->pv_insitu_pipeline_ = GetPythonScriptPath("validate_sim_objects.py"); 
       auto sim_name = Simulation::GetActive()->GetUniqueName();
-      param->python_insitu_script_arguments_ = Concat("--sim_name=", sim_name, " --num_elements=", num_so);
+      param->pv_insitu_pipeline_arguments_ = Concat("--sim_name=", sim_name, " --num_elements=", num_so);
     }
     param->run_mechanical_interactions_ = false;
     param->visualize_sim_objects_.insert({"NeuriteElement", {"uid_", "daughter_right_"}});

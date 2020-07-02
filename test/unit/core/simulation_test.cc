@@ -46,7 +46,8 @@ class SimulationTest : public ::testing::Test {
       "[visualization]\n"
       "insitu = false\n"
       "export = true\n"
-      "python_paraview_pipeline = \"my-insitu-script.py\"\n"
+      "pv_insitu_pipeline = \"my-insitu-script.py\"\n"
+      "pv_insitu_pipeline_arguments = \"--param1=123\"\n"
       "export_interval = 100\n"
       "export_generate_pvsm = false\n"
       "compress_pv_files = false\n"
@@ -123,7 +124,8 @@ class SimulationTest : public ::testing::Test {
               param->thread_safety_mechanism_);
     EXPECT_FALSE(param->insitu_visualization_);
     EXPECT_TRUE(param->export_visualization_);
-    EXPECT_EQ("my-insitu-script.py", param->python_paraview_pipeline_);
+    EXPECT_EQ("my-insitu-script.py", param->pv_insitu_pipeline_);
+    EXPECT_EQ("--param1=123", param->pv_insitu_pipeline_arguments_);
     EXPECT_EQ(100u, param->visualization_export_interval_);
     EXPECT_FALSE(param->visualization_export_generate_pvsm_);
     EXPECT_FALSE(param->visualization_compress_pv_files_);
