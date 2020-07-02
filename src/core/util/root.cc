@@ -29,6 +29,12 @@ namespace bdm {
 bool LoadExecutableDictIntoCling() {
   auto exe_dir = GetExecutableDirectory();
   auto exe_name = GetExecutableName();
+  // when running inside the ROOT interpreter don't attempt to load 
+  // a corresponding dictionary. It does not exist.
+  if (exe_dir == Concat(std::getenv("ROOTSYS"), "/bin/") && exe_name == "root.exe") {
+    return false;
+  }
+
 #ifdef LINUX
   auto so_ending = ".so";
 #else  // APPLE
@@ -41,6 +47,7 @@ bool LoadExecutableDictIntoCling() {
     if (!fs::exists(libstr)) {
       Log::Warning("LoadExecutableDictIntoCling", "Couldn't find dictionary.");
     }
+    return false;
   }
   gROOT->ProcessLine(Concat("R__LOAD_LIBRARY(", libstr, ")").c_str());
   return true;
