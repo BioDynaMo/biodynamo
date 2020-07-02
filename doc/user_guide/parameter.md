@@ -61,7 +61,7 @@ in the working directory and add your configuration. You can find a sample below
 ```
 [visualization]
 export = true
-export_interval = 1
+interval = 1
 
 [[visualize_sim_object]]
 name = "Cell"

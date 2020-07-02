@@ -80,7 +80,7 @@ configuration file:
 ```
 [visualization]
 export = true
-export_interval = 10
+interval = 10
 
 	[[visualize_sim_object]]
 	name = "MyCell"

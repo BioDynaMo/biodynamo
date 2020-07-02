@@ -103,7 +103,7 @@ void ParaviewAdaptor::Visualize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   uint64_t total_steps = sim->GetScheduler()->GetSimulatedSteps();
-  if (total_steps % param->visualization_export_interval_ != 0) {
+  if (total_steps % param->visualization_interval != 0) {
     return;
   }
 

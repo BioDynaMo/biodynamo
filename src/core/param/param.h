@@ -260,8 +260,8 @@ struct Param {
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     export_interval = 1
-  uint32_t visualization_export_interval_ = 1;
+  ///     interval = 1
+  uint32_t visualization_interval = 1;
 
   /// If `export_visualization_` is set to true, this parameter specifies
   /// if the ParaView pvsm file will be generated!\n

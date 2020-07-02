@@ -157,7 +157,7 @@ In the previous chapter we created a simulation of a great number of cell, also 
 [visualization]
 live = false
 export = false
-export_interval = 2
+interval = 2
 ```
 
 Afterwards, we have to define which simulation objects will be considered for visualization:
@@ -172,7 +172,7 @@ We can note that instead of creating a configuration file, you can do the same b
 auto set_param = [](auto* param) {
   param->live_visualization_ = true; // allows live visualisation
   param->export_visualization_ = true; // allows export of visualisation files
-  param->visualization_export_interval_ = 2; // export visualisation files every 2 steps
+  param->visualization_interval = 2; // export visualisation files every 2 steps
   param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "" };
 }
 Simulation simulation(argc, argv, set_param);
