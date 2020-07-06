@@ -92,6 +92,6 @@ This feature allows you to inspect your simulation while it is running. In your
 
 ```
 [visualization]
-live = true
+insitu = true
 ```
  -->

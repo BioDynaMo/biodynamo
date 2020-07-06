@@ -152,10 +152,10 @@ In the previous chapter we created a simulation of a great number of cell, also 
 
 ### Paraview
 
-[Paraview](https://www.paraview.org/) is an open source application for interactive and scientific visualisation. First of all, we need to tell BioDynaMo that we will use Paraview and so that we want the visualisation to be enable. To do that, we need to create a configuration file `bdm.toml` in the tutorial folder. Visualisation is of course not the only configuration we can do using this file. You can allow live visualisation and/or export visualisation (here every 2 simulation step) by adding in `bdm.toml`
+[Paraview](https://www.paraview.org/) is an open source application for interactive and scientific visualisation. First of all, we need to tell BioDynaMo that we will use Paraview and so that we want the visualisation to be enable. To do that, we need to create a configuration file `bdm.toml` in the tutorial folder. Visualisation is of course not the only configuration we can do using this file. You can allow live visualisation (`insitu=true`) and/or export visualisation (here every 2 simulation step) by adding in `bdm.toml`
 ```cpp
 [visualization]
-live = false
+insitu = false
 export = false
 interval = 2
 ```
@@ -170,7 +170,7 @@ Because those visualization parameters are not in the source code, you don’t n
 We can note that instead of creating a configuration file, you can do the same by creating this lambda function and passing it to the constructor of `Simulation`
 ```cpp
 auto set_param = [](auto* param) {
-  param->live_visualization_ = true; // allows live visualisation
+  param->insitu_visualization_ = true; // allows live visualisation
   param->export_visualization_ = true; // allows export of visualisation files
   param->visualization_interval = 2; // export visualisation files every 2 steps
   param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "" };
@@ -194,7 +194,7 @@ A major advantage of export visualisation, in addition of not impacting the simu
 
 #### Live visualisation
 
-To use live visualisation, turn the live option of your configuration file to true, then click on the _Catalyst_ top menu, and select _Connect_ . This windows should appears
+To use live visualisation, turn the `insitu` option of your configuration file to true, then click on the _Catalyst_ top menu, and select _Connect_ . This windows should appears
 
 [![Connect ParaView](images/jean_tutorial/paraview2.png)](/docs/userguide/tumor_concept/#paraview)
 
