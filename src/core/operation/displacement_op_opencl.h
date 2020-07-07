@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "core/environment/environment.h"
+#include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/opencl_state.h"
 #include "core/operation/bound_space_op.h"
 #include "core/shape.h"
