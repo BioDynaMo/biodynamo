@@ -430,6 +430,7 @@ class DiffusionGrid {
     }      // block ny
     c1_.swap(c2_);
   }
+
   void DiffuseEuler() {
     // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
@@ -454,7 +455,7 @@ class DiffusionGrid {
         }
         for (size_t y = yy; y < ymax; y++) {
           size_t x = 0;
-          int c, n, s, b, t;
+          int c, cp, cm, n, s, b, t;
           c = x + y * nx + z * nx * ny;
 #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
@@ -463,20 +464,47 @@ class DiffusionGrid {
             ++s;
             ++b;
             ++t;
+            /* if ( y==0 || y== ny-1 || z==0 || z=nz-1 ){
+                      continue;
+                      }*/
+            // TODO (Jack) This is to be used in the case of an insulated box
+            // for Thermo and is a WIP.
 
-            if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
-              continue;
-            }
-
+            cm = c - 1;
+            cp = c + 1;
             n = c - nx;
             s = c + nx;
             b = c - nx * ny;
             t = c + nx * ny;
-            c2_[c] = (c1_[c] +
-                      d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                      d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                      d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
-                     (1 - mu_);
+
+            /* X axis */
+            if (x == 1) {
+              cm = c + 1;
+            } else if (x == nx - 2) {
+              cp = c - 1;
+            }
+
+            /* Y axis */
+            if (y == 0) {
+              n = s;
+            } else if (y == ny - 1) {
+              s = n;
+            }
+
+            /* Z axis */
+            if (z == 0) {
+              b = t;
+            } else if (z == nz - 1) {
+              t = b;
+            }
+
+            // TODO WIP
+
+            c2_[c] =
+                (c1_[c] + d * dt_ * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
+                 d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                 d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+                (1 - mu_);
           }
           ++c;
           ++n;
@@ -858,6 +886,8 @@ class DiffusionGrid {
     c1_[idx] += amount;
     if (c1_[idx] > concentration_threshold_) {
       c1_[idx] = concentration_threshold_;
+    } else if (c1_[idx] < concentration_lower_threshold_){
+      c1_[idx] = concentration_lower_threshold_;
     }
   }
 
@@ -913,6 +943,10 @@ class DiffusionGrid {
   void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
 
   double GetConcentrationThreshold() const { return concentration_threshold_; }
+
+  void SetConcentrationLowerThreshold(double t2) { concentration_lower_threshold_ = t2; }
+
+  double GetConcentrationLowerThreshold() const { return concentration_lower_threshold_; }
 
   const double* GetAllConcentrations() const { return c1_.data(); }
 
@@ -978,6 +1012,7 @@ class DiffusionGrid {
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
   double concentration_threshold_ = 1e15;
+  double concentration_lower_threshold_ = -40.0;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   std::array<double, 7> dc_ = {{0}};
   /// The timestep resolution fhe diffusion grid
