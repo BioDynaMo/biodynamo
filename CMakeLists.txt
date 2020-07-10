@@ -185,6 +185,11 @@ if (MPI_NOT_FOUND)
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
+# Disable paraview for macOS until we upgrade to v5.8 on macOS
+if(APPLE)
+  set(paraview OFF)
+endif()
+
 # Check if GLUT is present. If we do not have it, then we disable directly paraview.
 if(paraview)
   find_package(GLUT)
@@ -519,7 +524,7 @@ add_dependencies(bdmclean libbdmclean)
 generate_rootlogon()
 
 if(paraview)
-    include("${CMAKE_SOURCE_DIR}/paraview_plugin/CMakeLists.txt")
+  include("${CMAKE_SOURCE_DIR}/paraview_plugin/CMakeLists.txt")
 endif()
 
 # create cmake files used by external builds
