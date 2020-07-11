@@ -56,4 +56,6 @@ fi
 
 checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_ROOT}"
 
-${BDM_ROOT}/install.sh
+${BDM_ROOT}/install.sh << EOF
+y
+EOF
