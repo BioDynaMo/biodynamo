@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+
+# Adapted from https://github.com/pyenv/pyenv-installer/blob/master/bin/pyenv-installer
+
+set -e
+
+if [ -z "$BDM_ROOT" ]; then
+  BDM_ROOT="${HOME}/biodynamo"
+fi
+
+colorize() {
+  if [ -t 1 ]; then printf "\e[%sm%s\e[m" "$1" "$2"
+  else echo -n "$2"
+  fi
+}
+
+# Determine the shell type (bash, zsh, ksh, fish, etc..)
+shell="$1"
+if [ -z "$shell" ]; then
+  shell="$(ps c -p "$PPID" -o 'ucomm=' 2>/dev/null || true)"
+  shell="${shell##-}"
+  shell="${shell%% *}"
+  shell="$(basename "${shell:-$SHELL}")"
+fi
+
+
+# Checks for `biodynamo` directory, and suggests to remove it for installing
+if [ -d "$BDM_ROOT" ]; then
+  { echo
+    colorize 1 "WARNING"
+    echo ": Can not proceed with installation. Kindly remove the '$BDM_ROOT' directory first."
+    echo
+  } >&2
+    exit 1
+fi
+
+failed_checkout() {
+  echo "Failed to git clone $1"
+  exit -1
+}
+
+checkout() {
+  [ -d "$2" ] || git clone --depth 1 "$1" "$2" || failed_checkout "$1"
+}
+
+if ! command -v git 1>/dev/null 2>&1; then
+  echo "pyenv: Git is not installed, can't continue." >&2
+  exit 1
+fi
+
+if [ -n "${USE_GIT_URI}" ]; then
+  GITHUB="git://github.com"
+else
+  GITHUB="https://github.com"
+fi
+
+checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_ROOT}"
+
+${BDM_ROOT}/install.sh
+
+if ! command -v pyenv 1>/dev/null; then
+  { echo
+    colorize 1 "WARNING"
+    echo ": seems you still have not added 'pyenv' to the load path."
+    echo
+  } >&2
+
+  case "$shell" in
+  bash )
+    profile="~/.bashrc"
+    ;;
+  zsh )
+    profile="~/.zshrc"
+    ;;
+  ksh )
+    profile="~/.profile"
+    ;;
+  fish )
+    profile="~/.config/fish/config.fish"
+    ;;
+  * )
+    profile="your profile"
+    ;;
+  esac
+
+  { echo "# Load pyenv automatically by adding"
+    echo "# the following to ${profile}:"
+    echo
+    case "$shell" in
+    fish )
+      echo "set -x PATH \"${PYENV_ROOT}/bin\" \$PATH"
+      echo 'status --is-interactive; and . (pyenv init -|psub)'
+      echo 'status --is-interactive; and . (pyenv virtualenv-init -|psub)'
+      ;;
+    * )
+      echo "export PATH=\"${PYENV_ROOT}/bin:\$PATH\""
+      echo "eval \"\$(pyenv init -)\""
+      echo "eval \"\$(pyenv virtualenv-init -)\""
+      ;;
+    esac
+  } >&2
+fi
