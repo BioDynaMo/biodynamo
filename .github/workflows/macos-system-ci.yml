@@ -52,6 +52,7 @@ jobs:
       run: |
         cmake -G Ninja \
           -Dopencl=OFF \
+          -Dnotebooks=ON \
           -Dparaview=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ \
