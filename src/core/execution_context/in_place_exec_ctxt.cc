@@ -206,8 +206,8 @@ void InPlaceExecutionContext::Execute(
   } else if (param->thread_safety_mechanism_ ==
              Param::ThreadSafetyMechanism::kAutomatic) {
     auto* nb_mutex_builder = env->GetNeighborMutexBuilder();
-    auto mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
-    std::lock_guard<decltype(mutex)> guard(mutex);
+    auto* mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
+    std::lock_guard<decltype(*mutex)> guard(*mutex);
     neighbor_cache_.clear();
     for (auto* op : operations) {
       (*op)(so);

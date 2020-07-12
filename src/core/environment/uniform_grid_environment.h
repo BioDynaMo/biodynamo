@@ -659,6 +659,11 @@ class UniformGridEnvironment : public Environment {
         }
       }
 
+      void SetMutexIndices(const FixedSizeVector<uint64_t, 27>& indices) {
+        mutex_indices_ = indices;
+        std::sort(mutex_indices_.begin(), mutex_indices_.end());
+      }
+
      private:
       FixedSizeVector<uint64_t, 27> mutex_indices_;
       GridNeighborMutexBuilder* mutex_builder_;
@@ -680,12 +685,15 @@ class UniformGridEnvironment : public Environment {
       mutexes_.resize(grid->GetNumBoxes());
     }
 
-    NeighborMutex GetMutex(uint64_t box_idx) override {
+    NeighborMutex* GetMutex(uint64_t box_idx) override {
       auto* grid = static_cast<UniformGridEnvironment*>(
           Simulation::GetActive()->GetEnvironment());
       FixedSizeVector<uint64_t, 27> box_indices;
       grid->GetMooreBoxIndices(&box_indices, box_idx);
-      return GridNeighborMutex(box_indices, this);
+      thread_local GridNeighborMutex* mutex =
+          new GridNeighborMutex(box_indices, this);
+      mutex->SetMutexIndices(box_indices);
+      return mutex;
     }
 
    private:

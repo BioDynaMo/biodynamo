@@ -237,18 +237,6 @@ struct TestFunctor1 : public Functor<void, SimObject*> {
   }
 };
 
-struct TestFunctor2 : public Functor<void, SimObject*> {
-  Operation* op;
-
-  TestFunctor2(Operation* op) : op(op) {}
-  void operator()(SimObject* so) override {
-    // ctxt must be obtained inside the lambda, otherwise we always get the
-    // one corresponding to the master thread
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->Execute(so, {op});
-  }
-};
-
 struct TestOperation : public Operation {
   std::unordered_map<SoUid, uint64_t> num_neighbors;
 
@@ -262,7 +250,7 @@ struct TestOperation : public Operation {
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighborWithinRadius(nb_functor, *so, 100);
+    ctxt->ForEachNeighborWithinRadius(nb_functor, *so, 101);
 #pragma omp critical
     num_neighbors[so->GetUid()] = nb_counter;
   }
@@ -295,8 +283,9 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
   TestFunctor1 functor1(&op);
   rm->ApplyOnAllElementsParallel(functor1);
 
-  TestFunctor2 functor2(&op);
-  rm->ApplyOnAllElements(functor2);
+  rm->ApplyOnAllElements([&](SimObject* so) {
+    EXPECT_EQ(11 + op.num_neighbors[so->GetUid()], so->GetDiameter());
+  });
 }
 
 TEST(InPlaceExecutionContext,
