@@ -26,13 +26,16 @@
 namespace bdm {
 
 InPlaceExecutionContext::ThreadSafeSoUidMap::ThreadSafeSoUidMap() {
-  map_ = new ThreadSafeSoUidMap::Map(
-      0);  // Map(1e8);  // FIXME find better initialization value
+  map_ = new ThreadSafeSoUidMap::Map(1000);
+  next_ = new ThreadSafeSoUidMap::Map(static_cast<uint64_t>(map_->size() * 2));
 }
 
 InPlaceExecutionContext::ThreadSafeSoUidMap::~ThreadSafeSoUidMap() {
   if (map_) {
     delete map_;
+  }
+  if (next_) {
+    delete next_;
   }
   for (auto* map : previous_maps_) {
     delete map;
@@ -52,15 +55,26 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
   if (map_->size() > index + ThreadInfo::GetInstance()->GetMaxThreads()) {
     map_->Insert(uid, value);
   } else {
-    std::lock_guard<Spinlock> guard(lock_);
-    // check again
-    if (map_->size() <= index) {
-      // map is too small -> grow
-      auto* new_map = new Map(*map_);
-      new_map->resize(std::max(static_cast<uint64_t>(1000u),
-                               static_cast<uint64_t>(map_->size() * 1.5)));
-      previous_maps_.emplace_back(map_);
-      map_ = new_map;
+    bool resized = false;
+    {
+      std::lock_guard<Spinlock> guard(lock_);
+      // check again
+      if (map_->size() <= index) {
+        resized = true;
+        if (next_ == nullptr) {
+          // another thread is still creating a new map
+          // wait until this operation is finished.
+          std::lock_guard<Spinlock> guard(next_lock_);
+        }
+        previous_maps_.emplace_back(map_);
+        map_ = next_;
+        next_ = nullptr;
+      }
+    }
+    if (resized) {
+      std::lock_guard<Spinlock> guard(next_lock_);
+      next_ =
+          new ThreadSafeSoUidMap::Map(static_cast<uint64_t>(map_->size() * 2));
     }
     map_->Insert(uid, value);
   }

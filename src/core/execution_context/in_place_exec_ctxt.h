@@ -59,7 +59,9 @@ class InPlaceExecutionContext {
 
     using Map = SoUidMap<value_type>;
     Spinlock lock_;
+    Spinlock next_lock_;
     Map* map_;
+    Map* next_;
     std::vector<Map*> previous_maps_;
   };
 
