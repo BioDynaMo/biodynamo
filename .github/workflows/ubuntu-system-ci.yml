@@ -49,6 +49,7 @@ jobs:
         eval "$(pyenv init -)"
         PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
         pyenv shell 3.6.9
+        pip install nbformat jupyter metakernel
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
