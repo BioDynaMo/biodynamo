@@ -31,7 +31,7 @@ Arguments:
     Default value: $WORKING_DIR
   -f
     paraview flavour. Possible values: default or nvidia-headless
-    Default value: $WORKING_DIR
+    Default value: $PV_FLAVOR
   -p
     Install prerequisites. Skip this step if -p is missing"
   exit 1
@@ -41,7 +41,7 @@ Arguments:
 while getopts ":w:f:p" opt; do
   case ${opt} in
     w )
-      WORKING_DIR=$OPTARG
+      WORKING_DIR=$(realpath $OPTARG)
       ;;
     f )
       PV_FLAVOR=$OPTARG
