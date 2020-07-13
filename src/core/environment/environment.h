@@ -57,7 +57,7 @@ class Environment {
     };
 
     virtual ~NeighborMutexBuilder() {}
-    virtual NeighborMutex GetMutex(uint64_t box_idx) = 0;
+    virtual NeighborMutex* GetMutex(uint64_t box_idx) = 0;
   };
 
   /// Returns the `NeighborMutexBuilder`. The client uses it to create a

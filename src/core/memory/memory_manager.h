@@ -155,6 +155,8 @@ class MemoryManager {
 
   void Delete(void* p);
 
+  void SetIgnoreDelete(bool value);
+
  private:
   double growth_rate_;
   uint64_t max_mem_per_thread_;
@@ -164,6 +166,7 @@ class MemoryManager {
   uint64_t aligned_pages_;
   uint64_t size_n_pages_;
   uint64_t num_threads_;
+  bool ignore_delete_ = false;
 
   UnorderedFlatmap<std::size_t, memory_manager_detail::PoolAllocator*>
       allocators_;

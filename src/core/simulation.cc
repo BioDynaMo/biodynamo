@@ -117,6 +117,9 @@ void Simulation::Restore(Simulation&& restored) {
 }
 
 Simulation::~Simulation() {
+  if (mem_mgr_) {
+    mem_mgr_->SetIgnoreDelete(true);
+  }
   if (param_ != nullptr && rm_ != nullptr && param_->debug_numa_) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
     rm_->DebugNuma();
@@ -250,9 +253,11 @@ void Simulation::InitializeRuntimeParams(
 
   // detect if the biodynamo environment has been sourced
   if (std::getenv("BDMSYS") == nullptr) {
-    Log::Fatal("Simulation::InitializeRuntimeParams",
-               "The BioDynaMo environment is not set up correctly. Please execute "
-               "'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this command.");
+    Log::Fatal(
+        "Simulation::InitializeRuntimeParams",
+        "The BioDynaMo environment is not set up correctly. Please execute "
+        "'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this "
+        "command.");
   }
 
   static bool read_env = false;
@@ -327,8 +332,8 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
     auto config = cpptoml::parse_file(kConfigFileParentDir);
     param_->AssignFromConfig(config);
   } else {
-    Log::Warning("Simulation::LoadConfigFile",
-                 "Config file ", kConfigFile, " not found in `.` or `..` directory.");
+    Log::Warning("Simulation::LoadConfigFile", "Config file ", kConfigFile,
+                 " not found in `.` or `..` directory.");
   }
 }
 
