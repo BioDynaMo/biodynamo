@@ -464,11 +464,6 @@ class DiffusionGrid {
             ++s;
             ++b;
             ++t;
-            /* if ( y==0 || y== ny-1 || z==0 || z=nz-1 ){
-                      continue;
-                      }*/
-            // TODO (Jack) This is to be used in the case of an insulated box
-            // for Thermo and is a WIP.
 
             cm = c - 1;
             cp = c + 1;
@@ -497,8 +492,6 @@ class DiffusionGrid {
             } else if (z == nz - 1) {
               t = b;
             }
-
-            // TODO WIP
 
             c2_[c] =
                 (c1_[c] + d * dt_ * (c1_[cm] - 2 * c1_[c] + c1_[cp]) * ibl2 +
