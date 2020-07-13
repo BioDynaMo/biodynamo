@@ -378,6 +378,9 @@ void* MemoryManager::New(std::size_t size) {
 }
 
 void MemoryManager::Delete(void* p) {
+  if (ignore_delete_) {
+    return;
+  }
   auto addr = reinterpret_cast<uint64_t>(p);
   auto page_number = addr >> (page_shift_ + aligned_pages_shift_);
   auto* page_addr = reinterpret_cast<char*>(
@@ -386,5 +389,7 @@ void MemoryManager::Delete(void* p) {
       *reinterpret_cast<memory_manager_detail::NumaPoolAllocator**>(page_addr);
   npa->Delete(p);
 }
+
+void MemoryManager::SetIgnoreDelete(bool value) { ignore_delete_ = value; }
 
 }  // namespace bdm
