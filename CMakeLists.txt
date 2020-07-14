@@ -288,11 +288,15 @@ if(paraview)
     if(APPLE)
       find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
             vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-      include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
+      if(${ParaView_FOUND})
+        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
+      endif()
     else()
       find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-      include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
+      if(${ParaView_FOUND})
+        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
+      endif()
     endif()
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
@@ -319,9 +323,11 @@ if(paraview)
       if(APPLE)
         find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
               vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
       else()
         find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
       endif()
     endif()
 
