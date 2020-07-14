@@ -30,15 +30,14 @@ SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . ${SCRIPTPATH}/util/build-third-party/third-party-prerequisites.sh
 
 # Software versions
-PARAVIEW_VERSION=v5.5.2
-ROOT_VERSION=v6-18-04
-ROADRUNNER_VERSION=11259a0854204a2b6fda613f6307713abfa70e44
+ROOT_VERSION=v6-20-06
+ROADRUNNER_VERSION=release
 
 # root
 $SCRIPTPATH/build-root.sh $ROOT_VERSION
 
 # paraview and qt
-$SCRIPTPATH/build-paraview.sh $PARAVIEW_VERSION
+$SCRIPTPATH/build-paraview.sh
 
 # roadrunner
 $SCRIPTPATH/build-roadrunner.sh $ROADRUNNER_VERSION

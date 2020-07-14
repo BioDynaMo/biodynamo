@@ -91,7 +91,7 @@ if [[ $(uname -s) == "Darwin"* ]]; then
    -DCMAKE_CXX_COMPILER=$CXX \
    -DCMAKE_CXX_STANDARD=14 \
    -DPYTHON_EXECUTABLE=`pyenv which python3` \
-   ../$ROOTSRC
+   $ROOTSRC
 else
   cmake -G Ninja \
     -Dbuiltin_fftw3=ON \
@@ -114,16 +114,17 @@ else
     -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
     -DCMAKE_CXX_STANDARD=14 \
     -DPYTHON_EXECUTABLE=`pyenv which python3` \
-    ../$ROOTSRC
+    $ROOTSRC
 fi
 
 ninja install
 
 cd $ROOT_INSTALL_DIR
-RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}-cling-patch.tar.gz
+RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}-cling-patch.tar.gz
 tar -zcf ${RESULT_FILE} *
 
 # mv to destination directory
 mv ${RESULT_FILE} $DEST_DIR
 cd $DEST_DIR
 shasum -a256 ${RESULT_FILE} > ${RESULT_FILE}.sha256
+

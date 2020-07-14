@@ -14,6 +14,12 @@
 
 FROM ubuntu:20.04
 
+# This will avoid tzdata package from requesting user interaction (tzdata is a
+# dependency of one of the prerequisites of PyEnv)
+RUN if ! [ -L /etc/localtime ]; then \
+      ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime; \
+    fi
+
 # lsb-release and lsb-core required to determine operating system
 # man required by ROOT
 RUN apt-get update && apt-get install -y \
@@ -25,12 +31,6 @@ RUN apt-get update && apt-get install -y \
   software-properties-common \
   wget \
   xvfb
-
-# This will avoid tzdata package from requesting user interaction (tzdata is a
-# dependency of one of the prerequisites of PyEnv)
-RUN if ! [ -L /etc/localtime ]; then \
-      sudo ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime; \
-    fi
 
 RUN git config --system user.name "Test User" && \
     git config --system user.email user@test.com
