@@ -12,7 +12,7 @@ if (APPLE)
   set(ROOT_TAR_FILE root_v6.20.04_python3_${DETECTED_OS_VERS}.tar.gz)
 else()
   set(DETECTED_OS_VERS ${DETECTED_OS})
-  set(ROOT_TAR_FILE root_v6.20.06_python3_${DETECTED_OS_VERS}-cling-patch.tar.gz)
+  set(ROOT_TAR_FILE root_v6-20-06_python3_${DETECTED_OS_VERS}-cling-patch.tar.gz)
 endif()
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}
