@@ -165,16 +165,16 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   void InsertTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) final;
   void InsertTuple(vtkIdType i, const float* source) final;
   void InsertTuple(vtkIdType i, const double* source) final;
-  void InsertTuples(vtkIdList* dstIds, vtkIdList* srcIds,
+  void InsertTuples(vtkIdList* dst_ids, vtkIdList* src_ids,
                     vtkAbstractArray* source) final;
-  void InsertTuples(vtkIdType dstStart, vtkIdType n, vtkIdType srcStart,
+  void InsertTuples(vtkIdType dst_start, vtkIdType n, vtkIdType src_start,
                     vtkAbstractArray* source) final;
   vtkIdType InsertNextTuple(vtkIdType j, vtkAbstractArray* source) final;
   vtkIdType InsertNextTuple(const float* source) final;
   vtkIdType InsertNextTuple(const double* source) final;
   void DeepCopy(vtkAbstractArray* aa) final;
   void DeepCopy(vtkDataArray* da) final;
-  void InterpolateTuple(vtkIdType i, vtkIdList* ptIndices,
+  void InterpolateTuple(vtkIdType i, vtkIdList* pt_indices,
                         vtkAbstractArray* source, double* weights) final;
   void InterpolateTuple(vtkIdType i, vtkIdType id1, vtkAbstractArray* source1,
                         vtkIdType id2, vtkAbstractArray* source2,
@@ -217,7 +217,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   MappedDataArray(const MappedDataArray&) = delete;
   void operator=(const MappedDataArray&) = delete;
 
-  vtkIdType Lookup(const TScalar& val, vtkIdType startIndex);
+  vtkIdType Lookup(const TScalar& val, vtkIdType start_index);
 };
 
 // ----------------------------------------------------------------------------

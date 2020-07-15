@@ -71,4 +71,4 @@ std::string GetExecutableName() {
   return bin_path.filename().string();
 }
 
-}  // namspace bdm
+}  // namespace bdm
