@@ -27,7 +27,7 @@ struct TypeIndex {
   void Add(SimObject* so);
 
   void Update(SimObject* new_so);
-  
+
   void Remove(SimObject* so);
 
   void Clear();
@@ -36,7 +36,7 @@ struct TypeIndex {
 
   const std::vector<SimObject*>& GetType(TClass* tclass) const;
 
-private:
+ private:
   UnorderedFlatmap<TClass*, std::vector<SimObject*>> data_;
   SoUidMap<uint64_t> index_;
 };

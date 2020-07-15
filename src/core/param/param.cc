@@ -79,11 +79,15 @@ void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
     if (str_value == "zero-copy") {
       param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kZeroCopy;
     } else if (str_value == "cache") {
-      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCache; 
+      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCache;
     } else if (str_value == "copy") {
       param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCopy;
     } else {
-      Log::Fatal("Param", Concat("Parameter mapped_data_array_mode was set to an invalid value (", str_value, ")."));
+      Log::Fatal(
+          "Param",
+          Concat(
+              "Parameter mapped_data_array_mode was set to an invalid value (",
+              str_value, ")."));
     }
   }
 }
@@ -122,11 +126,11 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "visualization.pv_insitu_pipeline_arguments");
   BDM_ASSIGN_CONFIG_VALUE(root_visualization_, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_interval,
-                          "visualization.interval");
+  BDM_ASSIGN_CONFIG_VALUE(visualization_interval, "visualization.interval");
   BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm_,
                           "visualization.export_generate_pvsm");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files_, "visualization.compress_pv_files");
+  BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files_,
+                          "visualization.compress_pv_files");
 
   //   visualize_sim_objects_
   auto visualize_sim_objects_tarr =

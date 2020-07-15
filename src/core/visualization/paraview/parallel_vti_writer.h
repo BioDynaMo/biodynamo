@@ -17,10 +17,10 @@
 
 // std
 #include <array>
-#include <vector>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 // Paraview
 #include <vtkImageData.h>
 #include <vtkXMLImageDataWriter.h>
@@ -37,7 +37,8 @@ class VtiWriter : public vtkXMLImageDataWriter {
 
   void SetWholeExtent(const int* whole_extent);
 
-  void WritePrimaryElementAttributes(std::ostream& os, vtkIndent indent) override;
+  void WritePrimaryElementAttributes(std::ostream& os,
+                                     vtkIndent indent) override;
 
  private:
   const int* whole_extent_;
@@ -46,8 +47,8 @@ class VtiWriter : public vtkXMLImageDataWriter {
 // -----------------------------------------------------------------------------
 class PvtiWriter {
  public:
-  void Write(const std::string& folder, const std::string& file_prefix, 
-             const std::array<int, 6>& whole_extent, 
+  void Write(const std::string& folder, const std::string& file_prefix,
+             const std::array<int, 6>& whole_extent,
              const std::vector<std::array<int, 6>>& piece_extents,
              vtkImageData* img, VtiWriter* vti);
 
@@ -65,12 +66,10 @@ class PvtiWriter {
 
 // -----------------------------------------------------------------------------
 struct ParallelVtiWriter {
-  void operator()(const std::string& folder, 
-                   const std::string& file_prefix,
-                   const std::vector<vtkImageData*>& images, 
-                   uint64_t num_pieces, 
-                   const std::array<int, 6>& whole_extent,
-                   const std::vector<std::array<int, 6>>& piece_extents) const;
+  void operator()(const std::string& folder, const std::string& file_prefix,
+                  const std::vector<vtkImageData*>& images, uint64_t num_pieces,
+                  const std::array<int, 6>& whole_extent,
+                  const std::vector<std::array<int, 6>>& piece_extents) const;
 };
 
 }  // namespace bdm

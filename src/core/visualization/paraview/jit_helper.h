@@ -19,9 +19,9 @@
 #include "core/functor.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/so_uid.h"
-#include "core/sim_object/so_pointer.h"
 #include "core/sim_object/sim_object.h"
+#include "core/sim_object/so_pointer.h"
+#include "core/sim_object/so_uid.h"
 #include "core/simulation.h"
 #include "core/util/type.h"
 #include "core/visualization/paraview/helper.h"
@@ -96,10 +96,10 @@ struct GetNumberOfComponents<std::array<T, N>> {
 // -----------------------------------------------------------------------------
 template <typename TClass, typename TDataMember>
 struct CreateVtkDataArray {
-
   template <typename TTDataMember = TDataMember>
   typename std::enable_if<!std::is_same<TTDataMember, Double3>::value>::type
-  operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset, VtkSimObjects* vtk_sim_objects) {
+  operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset,
+             VtkSimObjects* vtk_sim_objects) {
     using VtkValueType = typename GetVtkValueType<TDataMember>::type;
     using VtkArrayType = MappedDataArray<VtkValueType, TClass, TDataMember>;
     unsigned components = GetNumberOfComponents<TDataMember>::value;
@@ -113,7 +113,8 @@ struct CreateVtkDataArray {
 
   template <typename TTDataMember = TDataMember>
   typename std::enable_if<std::is_same<TTDataMember, Double3>::value>::type
-  operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset, VtkSimObjects* vtk_sim_objects) {
+  operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset,
+             VtkSimObjects* vtk_sim_objects) {
     using VtkArrayType = MappedDataArray<double, TClass, TDataMember>;
     vtkNew<VtkArrayType> new_vtk_array;
     auto mode = Simulation::GetActive()->GetParam()->mapped_data_array_mode_;

@@ -33,7 +33,7 @@ void TypeIndex::Add(SimObject* so) {
 void TypeIndex::Update(SimObject* new_so) {
   auto idx = index_[new_so->GetUid()];
   auto& type_vector = data_[new_so->IsA()];
-  type_vector[idx] = new_so; 
+  type_vector[idx] = new_so;
 }
 
 // -----------------------------------------------------------------------------

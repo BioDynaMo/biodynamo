@@ -13,8 +13,8 @@
 // -----------------------------------------------------------------------------
 #ifdef USE_PARAVIEW
 
-#include <experimental/filesystem>
 #include <gtest/gtest.h>
+#include <experimental/filesystem>
 
 #include "biodynamo.h"
 #include "core/util/io.h"
@@ -70,7 +70,8 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   std::unordered_map<std::string, VtkSimObjects*> vtk_sim_objects;
   vtk_sim_objects["Cell"] = new VtkSimObjects("Cell", data_description);
   vtk_sim_objects["Cell"]->shape_ = kSphere;
-  vtk_sim_objects["NeuriteElement"] = new VtkSimObjects("NeuriteElement", data_description);
+  vtk_sim_objects["NeuriteElement"] =
+      new VtkSimObjects("NeuriteElement", data_description);
   vtk_sim_objects["NeuriteElement"]->shape_ = kCylinder;
 
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids;
@@ -191,8 +192,8 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
 
   Simulation sim(TEST_NAME, set_param);
   auto output_dir = sim.GetOutputDir();
-  fs::remove_all(output_dir); 
-  fs::create_directory(output_dir); 
+  fs::remove_all(output_dir);
+  fs::create_directory(output_dir);
 
   auto* rm = sim.GetResourceManager();
 
@@ -223,15 +224,10 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   // Don't check for vtu or vti files. This depends on the number
   // of threads and data.
   // Other tests cover this.
-  std::set<std::string> required_files = {"Cell-0.pvtu",
-                                          "Cell-1.pvtu",
-                                          "Cell-2.pvtu",
-                                          "MyCell-0.pvtu",
-                                          "MyCell-1.pvtu",
-                                          "MyCell-2.pvtu",
-                                          "Substance_1-0.pvti",
-                                          "Substance_1-1.pvti",
-                                          "Substance_1-2.pvti"};
+  std::set<std::string> required_files = {
+      "Cell-0.pvtu",        "Cell-1.pvtu",        "Cell-2.pvtu",
+      "MyCell-0.pvtu",      "MyCell-1.pvtu",      "MyCell-2.pvtu",
+      "Substance_1-0.pvti", "Substance_1-1.pvti", "Substance_1-2.pvti"};
 
   for (auto& file : required_files) {
     EXPECT_TRUE(fs::exists(Concat(sim.GetOutputDir(), "/", file)));

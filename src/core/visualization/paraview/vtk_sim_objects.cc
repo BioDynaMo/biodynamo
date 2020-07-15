@@ -42,7 +42,7 @@ namespace bdm {
 
 // -----------------------------------------------------------------------------
 VtkSimObjects::VtkSimObjects(const char* type_name,
-                     vtkCPDataDescription* data_description) {
+                             vtkCPDataDescription* data_description) {
   auto* param = Simulation::GetActive()->GetParam();
   auto* tinfo = ThreadInfo::GetInstance();
   if (param->export_visualization_) {
@@ -50,7 +50,7 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
   } else {
     data_.resize(1);
   }
-  #pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < data_.size(); ++i) {
     data_[i] = vtkUnstructuredGrid::New();
   }
@@ -69,28 +69,30 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
 
   JitForEachDataMemberFunctor jitcreate(
       tclass_, data_members, "CreateVtkDataArrays",
-      [](const std::string& functor_name, const std::vector<TDataMember*>& tdata_members) {
+      [](const std::string& functor_name,
+         const std::vector<TDataMember*>& tdata_members) {
         std::stringstream sstr;
         sstr << "namespace bdm {\n\n"
-             << "struct " << functor_name << " : public Functor<void, VtkSimObjects*, int> {\n"
+             << "struct " << functor_name
+             << " : public Functor<void, VtkSimObjects*, int> {\n"
              << "  void operator()(VtkSimObjects* so_grid, int tid) {\n";
-  
+
         for (auto* tdm : tdata_members) {
           // example:
-          // { CreateVtkDataArray<Cell, Double3> f; f(tid, "position_", 123, so_grid); }
-          sstr << "{ CreateVtkDataArray<" 
-               << tdm->GetClass()->GetName() << ", " 
+          // { CreateVtkDataArray<Cell, Double3> f; f(tid, "position_", 123,
+          // so_grid); }
+          sstr << "{ CreateVtkDataArray<" << tdm->GetClass()->GetName() << ", "
                << tdm->GetTypeName() << ">f; f("
-               << "tid, \"" << tdm->GetName() << "\", " 
-               << tdm->GetOffset() << ", so_grid); }\n";
+               << "tid, \"" << tdm->GetName() << "\", " << tdm->GetOffset()
+               << ", so_grid); }\n";
         }
-  
+
         sstr << "  }\n";
         sstr << "};\n\n";
         sstr << "}  // namespace bdm\n";
-  
+
         return sstr.str();
-  
+
       });
   jitcreate.Compile();
   auto* create_functor = jitcreate.New<Functor<void, VtkSimObjects*, int>>();
@@ -122,7 +124,7 @@ TClass* VtkSimObjects::GetTClass() { return tclass_; }
 void VtkSimObjects::Update(const std::vector<SimObject*>* sim_objects) {
   auto* param = Simulation::GetActive()->GetParam();
   if (param->export_visualization_) {
-  #pragma omp parallel
+#pragma omp parallel
     {
       auto* tinfo = ThreadInfo::GetInstance();
       auto tid = tinfo->GetMyThreadId();
@@ -139,25 +141,28 @@ void VtkSimObjects::Update(const std::vector<SimObject*>* sim_objects) {
   } else {
     UpdateMappedDataArrays(0, sim_objects, 0, sim_objects->size());
   }
-
 }
 
 // -----------------------------------------------------------------------------
 void VtkSimObjects::WriteToFile(uint64_t step) const {
   auto* sim = Simulation::GetActive();
   auto filename_prefix = Concat(name_, "-", step);
-  
+
   ParallelVtuWriter writer;
   writer(sim->GetOutputDir(), filename_prefix, data_);
 }
 
 // -----------------------------------------------------------------------------
-void VtkSimObjects::UpdateMappedDataArrays(uint64_t tid, const std::vector<SimObject*>* sim_objects, uint64_t start, uint64_t end) { 
-  auto* parray = dynamic_cast<MappedDataArrayInterface*>(data_[tid]->GetPoints()->GetData());
+void VtkSimObjects::UpdateMappedDataArrays(
+    uint64_t tid, const std::vector<SimObject*>* sim_objects, uint64_t start,
+    uint64_t end) {
+  auto* parray = dynamic_cast<MappedDataArrayInterface*>(
+      data_[tid]->GetPoints()->GetData());
   parray->Update(sim_objects, start, end);
   auto* point_data = data_[tid]->GetPointData();
   for (int i = 0; i < point_data->GetNumberOfArrays(); i++) {
-    auto* array = dynamic_cast<MappedDataArrayInterface*>(point_data->GetArray(i));
+    auto* array =
+        dynamic_cast<MappedDataArrayInterface*>(point_data->GetArray(i));
     array->Update(sim_objects, start, end);
   }
 }
@@ -177,8 +182,8 @@ TClass* VtkSimObjects::FindTClass() {
 }
 
 // -----------------------------------------------------------------------------
-void VtkSimObjects::InitializeDataMembers(SimObject* so,
-                                      std::vector<std::string>* data_members) {
+void VtkSimObjects::InitializeDataMembers(
+    SimObject* so, std::vector<std::string>* data_members) {
   std::set<std::string> dm_set = so->GetRequiredVisDataMembers();
   auto* param = Simulation::GetActive()->GetParam();
   for (auto& dm : param->visualize_sim_objects_.at(name_)) {

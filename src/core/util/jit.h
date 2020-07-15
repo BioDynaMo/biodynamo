@@ -50,7 +50,8 @@ class JitForEachDataMemberFunctor {
   JitForEachDataMemberFunctor(
       TClass* tclass, const std::vector<std::string> dm_names,
       const std::string functor_name,
-      const std::function<std::string(const std::string&, const std::vector<TDataMember*>&)>&
+      const std::function<std::string(const std::string&,
+                                      const std::vector<TDataMember*>&)>&
           code_generation);
 
   void Compile();
@@ -67,7 +68,9 @@ class JitForEachDataMemberFunctor {
   static std::atomic<int> counter_;
   std::string functor_name_;
   std::vector<TDataMember*> data_members_;
-  std::function<std::string(const std::string&, const std::vector<TDataMember*>&)> code_generator_;
+  std::function<std::string(const std::string&,
+                            const std::vector<TDataMember*>&)>
+      code_generator_;
 };
 
 }  // namespace bdm

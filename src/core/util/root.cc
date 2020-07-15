@@ -14,13 +14,13 @@
 
 #if defined(USE_DICT)
 
-#include <experimental/filesystem>
 #include <TROOT.h>
+#include <experimental/filesystem>
 
-#include "core/util/root.h" 
-#include "core/util/proc.h"
-#include "core/util/string.h"
 #include "core/util/log.h"
+#include "core/util/proc.h"
+#include "core/util/root.h"
+#include "core/util/string.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -29,15 +29,16 @@ namespace bdm {
 bool LoadExecutableDictIntoCling() {
   auto exe_dir = GetExecutableDirectory();
   auto exe_name = GetExecutableName();
-  // when running inside the ROOT interpreter don't attempt to load 
+  // when running inside the ROOT interpreter don't attempt to load
   // a corresponding dictionary. It does not exist.
-  if (exe_dir == Concat(std::getenv("ROOTSYS"), "/bin/") && exe_name == "root.exe") {
+  if (exe_dir == Concat(std::getenv("ROOTSYS"), "/bin/") &&
+      exe_name == "root.exe") {
     return false;
   }
 
 #ifdef LINUX
   auto so_ending = ".so";
-#else  // APPLE
+#else   // APPLE
   auto so_ending = ".dylib";
 #endif  // LINUX
   auto libstr = Concat(exe_dir, "lib", exe_name, "-dict", so_ending);
@@ -53,9 +54,7 @@ bool LoadExecutableDictIntoCling() {
   return true;
 }
 
-
 const bool RunAtStartup::value = LoadExecutableDictIntoCling();
-
 
 }  // namespace bdm
 

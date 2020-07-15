@@ -28,7 +28,7 @@ struct RunAtStartup {
   const static bool value;
 };
 
-}  // namespace 
+}  // namespace
 
 #define BDM_CLASS_DEF(class_name, class_version_id) \
   ClassDef(class_name, class_version_id)

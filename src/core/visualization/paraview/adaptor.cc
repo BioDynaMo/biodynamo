@@ -31,6 +31,7 @@
 #include <vtkFieldData.h>
 #include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
+#include <vtkImageDataStreamer.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
@@ -39,9 +40,8 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLImageDataWriter.h>
 #include <vtkXMLPImageDataWriter.h>
-#include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
-#include <vtkImageDataStreamer.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 
 namespace bdm {
 
@@ -131,8 +131,8 @@ void ParaviewAdaptor::Initialize() {
   }
 
   if (param->insitu_visualization_) {
-    const std::string& script = ParaviewAdaptor::BuildPythonScriptString(
-        param->pv_insitu_pipeline_);
+    const std::string& script =
+        ParaviewAdaptor::BuildPythonScriptString(param->pv_insitu_pipeline_);
     std::ofstream ofs;
     auto* sim = Simulation::GetActive();
     // TODO(lukas) use vtkCPPythonStringPipeline once we update to Paraview
@@ -177,18 +177,18 @@ void ParaviewAdaptor::InsituVisualization() {
 }
 
 // ----------------------------------------------------------------------------
-void ParaviewAdaptor::ExportVisualization() { 
-   WriteSimulationInfoJsonFile();
+void ParaviewAdaptor::ExportVisualization() {
+  WriteSimulationInfoJsonFile();
 
-   auto step = impl_->data_description_->GetTimeStep();
+  auto step = impl_->data_description_->GetTimeStep();
 
-   for (auto& el : impl_->vtk_sim_objects_) {
-     el.second->WriteToFile(step);
-   }
+  for (auto& el : impl_->vtk_sim_objects_) {
+    el.second->WriteToFile(step);
+  }
 
-   for (auto& el : impl_->vtk_dgrids_) {
-     el.second->WriteToFile(step);
-   }
+  for (auto& el : impl_->vtk_dgrids_) {
+    el.second->WriteToFile(step);
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -198,8 +198,8 @@ void ParaviewAdaptor::CreateVtkObjects() {
   if (impl_->data_description_->GetUserData() == nullptr) {
     vtkNew<vtkStringArray> json;
     json->SetName("metadata");
-    json->InsertNextValue(
-        GenerateSimulationInfoJson(impl_->vtk_sim_objects_, impl_->vtk_dgrids_));
+    json->InsertNextValue(GenerateSimulationInfoJson(impl_->vtk_sim_objects_,
+                                                     impl_->vtk_dgrids_));
     vtkNew<vtkFieldData> field;
     field->AddArray(json);
     impl_->data_description_->SetUserData(field);
@@ -210,7 +210,8 @@ void ParaviewAdaptor::CreateVtkObjects() {
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   for (auto& pair : impl_->vtk_sim_objects_) {
-    const auto& sim_objects = rm->GetTypeIndex()->GetType(pair.second->GetTClass());
+    const auto& sim_objects =
+        rm->GetTypeIndex()->GetType(pair.second->GetTClass());
     pair.second->Update(&sim_objects);
   }
 }
@@ -219,18 +220,17 @@ void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
 void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
-  rm->ApplyOnAllDiffusionGrids(
-      [&](DiffusionGrid* grid) {
+  rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* grid) {
     auto it = impl_->vtk_dgrids_.find(grid->GetSubstanceName());
     if (it != impl_->vtk_dgrids_.end()) {
-      it->second->Update(grid); 
+      it->second->Update(grid);
     }
   });
 }
 
 // ----------------------------------------------------------------------------
 void ParaviewAdaptor::WriteSimulationInfoJsonFile() {
-  // create simulation_info.json 
+  // create simulation_info.json
   if (!simulation_info_json_generated_) {
     std::ofstream ofstr;
     auto* sim = Simulation::GetActive();
@@ -252,8 +252,7 @@ void ParaviewAdaptor::GenerateParaviewState() {
   std::string pv_dir = std::getenv("ParaView_DIR");
   std::string bdmsys = std::getenv("BDMSYS");
 
-  python_cmd << pv_dir << "/bin/pvbatch "
-             << bdmsys
+  python_cmd << pv_dir << "/bin/pvbatch " << bdmsys
              << "/include/core/visualization/paraview/generate_pv_state.py "
              << sim->GetOutputDir() << "/" << kSimulationInfoJson;
   int ret_code = system(python_cmd.str().c_str());
@@ -281,7 +280,8 @@ std::string ParaviewAdaptor::BuildPythonScriptString(
 
   std::string default_python_script =
       std::string(std::getenv("BDMSYS")) +
-      std::string("/include/core/visualization/paraview/default_insitu_pipeline.py");
+      std::string(
+          "/include/core/visualization/paraview/default_insitu_pipeline.py");
 
   std::ifstream ifs_default;
   ifs_default.open(default_python_script, std::ifstream::in);

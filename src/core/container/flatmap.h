@@ -62,7 +62,9 @@ class UnorderedFlatmap {
 
   TValue& operator[](const TKey& key) { return data_[FindIndex(key)].second; }
 
-  const TValue& operator[](const TKey& key) const { return data_[FindIndexConst(key)].second; }
+  const TValue& operator[](const TKey& key) const {
+    return data_[FindIndexConst(key)].second;
+  }
 
   Iterator find(const TKey& key) { return &(data_[FindIndexConst(key)]); }
 

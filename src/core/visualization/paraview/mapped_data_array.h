@@ -17,42 +17,42 @@
 
 #include <vtkMappedDataArray.h>
 #include <vtkObjectFactory.h>
-#include <vector>
 #include <thread>
+#include <vector>
 
 #include "core/functor.h"
 #include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
-#include "core/sim_object/so_pointer.h"
 #include "core/sim_object/sim_object.h"
-#include "core/util/type.h"
+#include "core/sim_object/so_pointer.h"
 #include "core/util/thread_info.h"
+#include "core/util/type.h"
 
 namespace bdm {
 
-
 // -----------------------------------------------------------------------------
 /// Extract the data member value of a SimObject given its concrete type, type
-/// of the data member, and data member offset from its concrete pointer. 
+/// of the data member, and data member offset from its concrete pointer.
 template <typename TReturn, typename TClass, typename TDataMember>
 struct GetDataMemberForVis {
   uint64_t dm_offset_;
-  using TempValueType = typename std::remove_pointer<TReturn>::type; 
+  using TempValueType = typename std::remove_pointer<TReturn>::type;
   /// Thread local storage for temporary values.
-  mutable std::vector<std::array<TempValueType, 64 / sizeof(TempValueType)>> temp_values_;
+  mutable std::vector<std::array<TempValueType, 64 / sizeof(TempValueType)>>
+      temp_values_;
 
-  GetDataMemberForVis() {
-    temp_values_.resize(256);
-  }
+  GetDataMemberForVis() { temp_values_.resize(256); }
 
   void Update() {
     // We assume that number of threads won't double within one iteration
-    temp_values_.resize(2 * std::max(ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256UL));
+    temp_values_.resize(
+        2 *
+        std::max(ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256UL));
   }
 
   enum DataType { kDefault, kArray, kSoUid, kSoPointer };
 
-  template <typename T> 
+  template <typename T>
   static constexpr DataType GetDataType() {
     if (IsArray<T>::value) {
       return DataType::kArray;
@@ -65,15 +65,17 @@ struct GetDataMemberForVis {
   };
 
   template <typename TTDataMember = TDataMember>
-  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kDefault, TReturn>::type
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kDefault,
+                          TReturn>::type
   operator()(SimObject* so) const {
     auto* casted_so = static_cast<TClass*>(so);
-    return reinterpret_cast<TDataMember*>(
-                     reinterpret_cast<char*>(casted_so) + dm_offset_);
+    return reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so) +
+                                          dm_offset_);
   }
 
   template <typename TTDataMember = TDataMember>
-  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kArray, TReturn>::type
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kArray,
+                          TReturn>::type
   operator()(SimObject* so) const {
     auto* casted_so = static_cast<TClass*>(so);
     auto* data = reinterpret_cast<TDataMember*>(
@@ -83,36 +85,38 @@ struct GetDataMemberForVis {
   }
 
   template <typename TTDataMember = TDataMember>
-  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoUid, TReturn>::type
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoUid,
+                          TReturn>::type
   operator()(SimObject* so) const {
     auto* casted_so = static_cast<TClass*>(so);
     auto* data = reinterpret_cast<TDataMember*>(
-                     reinterpret_cast<char*>(casted_so) + dm_offset_);
+        reinterpret_cast<char*>(casted_so) + dm_offset_);
     uint64_t uid = *data;
     auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
     assert(temp_values_.size() > tid);
-    temp_values_[tid][0] = uid; 
+    temp_values_[tid][0] = uid;
     return &temp_values_[tid][0];
   }
 
   template <typename TTDataMember = TDataMember>
-  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoPointer, TReturn>::type
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoPointer,
+                          TReturn>::type
   operator()(SimObject* so) const {
     auto* casted_so = static_cast<TClass*>(so);
     auto* data = reinterpret_cast<TDataMember*>(
-                     reinterpret_cast<char*>(casted_so) + dm_offset_);
+        reinterpret_cast<char*>(casted_so) + dm_offset_);
     uint64_t uid = data->GetUid();
     auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
     assert(temp_values_.size() > tid);
-    temp_values_[tid][0] = uid; 
+    temp_values_[tid][0] = uid;
     return &temp_values_[tid][0];
   }
 };
 
 // -----------------------------------------------------------------------------
 struct MappedDataArrayInterface {
-  virtual void Update(const std::vector<SimObject*>* sim_objects, uint64_t start,
-                      uint64_t end) = 0;
+  virtual void Update(const std::vector<SimObject*>* sim_objects,
+                      uint64_t start, uint64_t end) = 0;
 };
 
 // -----------------------------------------------------------------------------
@@ -120,13 +124,13 @@ template <typename TScalar, typename TClass, typename TDataMember>
 class MappedDataArray : public vtkMappedDataArray<TScalar>,
                         public MappedDataArrayInterface {
  public:
-  vtkAbstractTemplateTypeMacro(MappedDataArray,
-                               vtkMappedDataArray<TScalar>)
+  vtkAbstractTemplateTypeMacro(MappedDataArray, vtkMappedDataArray<TScalar>)
       vtkMappedDataArrayNewInstanceMacro(
           MappedDataArray) static MappedDataArray* New();
   typedef typename Superclass::ValueType ValueType;
 
-  void Initialize(Param::MappedDataArrayMode mode, const std::string& name, uint64_t num_components, uint64_t dm_offset);
+  void Initialize(Param::MappedDataArrayMode mode, const std::string& name,
+                  uint64_t num_components, uint64_t dm_offset);
   void Update(const std::vector<SimObject*>* sim_objects, uint64_t start,
               uint64_t end) final;
 
@@ -173,7 +177,8 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   void InterpolateTuple(vtkIdType i, vtkIdList* ptIndices,
                         vtkAbstractArray* source, double* weights) final;
   void InterpolateTuple(vtkIdType i, vtkIdType id1, vtkAbstractArray* source1,
-                        vtkIdType id2, vtkAbstractArray* source2, double t) final;
+                        vtkIdType id2, vtkAbstractArray* source2,
+                        double t) final;
   void SetVariantValue(vtkIdType idx, vtkVariant value) final;
   void InsertVariantValue(vtkIdType idx, vtkVariant value) final;
   void RemoveTuple(vtkIdType id) final;
@@ -196,13 +201,14 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   uint64_t start_ = 0;
   uint64_t end_ = 0;
   double* temp_array_ = nullptr;
-  
+
   Param::MappedDataArrayMode mode_;
   /// Comparison value to determine if cached data is valid
   /// This value is increemented at each simulation iteration.
   mutable uint64_t match_value_ = 0;
   /// Stores match_value at the time the data element was cached.
-  /// Data is valid for one iteration, i.e. as long as match_value_ doesn't change. 
+  /// Data is valid for one iteration, i.e. as long as match_value_ doesn't
+  /// change.
   mutable std::vector<uint64_t> is_matching_;
   /// If mode_ is kCopy or kCache, data from SimObjects is written to data_
   mutable std::vector<TScalar> data_;
@@ -217,7 +223,9 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
 // ----------------------------------------------------------------------------
 // Implementation
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::Initialize(Param::MappedDataArrayMode mode, const std::string& name, uint64_t num_components, uint64_t dm_offset) {
+void MappedDataArray<TScalar, TClass, TDataMember>::Initialize(
+    Param::MappedDataArrayMode mode, const std::string& name,
+    uint64_t num_components, uint64_t dm_offset) {
   get_dm_.dm_offset_ = dm_offset;
   mode_ = mode;
   this->NumberOfComponents = num_components;
@@ -225,8 +233,8 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Initialize(Param::MappedData
 }
 
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<SimObject*>* sim_objects,
-                                uint64_t start, uint64_t end) {
+void MappedDataArray<TScalar, TClass, TDataMember>::Update(
+    const std::vector<SimObject*>* sim_objects, uint64_t start, uint64_t end) {
   sim_objects_ = sim_objects;
   start_ = start;
   end_ = end;
@@ -249,12 +257,12 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<Sim
     }
     if (mode_ == Param::MappedDataArrayMode::kCopy) {
       uint64_t counter = 0;
-      for(uint64_t i = start; i < end; ++i) {
+      for (uint64_t i = start; i < end; ++i) {
         auto* data = get_dm_((*sim_objects_)[i]);
         for (uint64_t c = 0; c < this->NumberOfComponents; ++c) {
           data_[counter++] = data[c];
         }
-      } 
+      }
     } else {
       // mode_ == Param::MappedDataArrayMode::kCache
       auto cap = is_matching_.capacity();
@@ -266,27 +274,31 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(const std::vector<Sim
       }
       match_value_++;
     }
-  }  
+  }
 }
 
 //------------------------------------------------------------------------------
 // Can't use vtkStandardNewMacro with a template.
 template <typename TScalar, typename TClass, typename TDataMember>
-MappedDataArray<TScalar, TClass, TDataMember>* MappedDataArray<TScalar, TClass, TDataMember>::New() {
+MappedDataArray<TScalar, TClass, TDataMember>*
+MappedDataArray<TScalar, TClass, TDataMember>::New() {
   VTK_STANDARD_NEW_BODY(MappedDataArray);
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::PrintSelf(ostream& os, vtkIndent indent) {
-  this->MappedDataArray<TScalar, TClass, TDataMember>::Superclass::PrintSelf(os, indent);
+void MappedDataArray<TScalar, TClass, TDataMember>::PrintSelf(
+    ostream& os, vtkIndent indent) {
+  this->MappedDataArray<TScalar, TClass, TDataMember>::Superclass::PrintSelf(
+      os, indent);
   os << indent << "sim_objects_: " << this->sim_objects_ << std::endl;
   os << indent << "start_: " << this->start_ << std::endl;
   os << indent << "end_: " << this->end_ << std::endl;
   os << indent << "temp_array_: " << this->temp_array_ << std::endl;
   os << indent << "mode_: " << this->mode_ << std::endl;
   os << indent << "match_value_: " << this->match_value_ << std::endl;
-  os << indent << "is_matching_.size(): " << this->is_matching_.size() << std::endl;
+  os << indent << "is_matching_.size(): " << this->is_matching_.size()
+     << std::endl;
   os << indent << "data_.size(): " << this->data_.size() << std::endl;
 }
 
@@ -300,8 +312,8 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Initialize() {
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::GetTuples(vtkIdList* pt_ids,
-                                         vtkAbstractArray* output) {
+void MappedDataArray<TScalar, TClass, TDataMember>::GetTuples(
+    vtkIdList* pt_ids, vtkAbstractArray* output) {
   vtkDataArray* out_array = vtkDataArray::FastDownCast(output);
   if (!out_array) {
     vtkWarningMacro(<< "Input is not a vtkDataArray");
@@ -320,8 +332,8 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuples(vtkIdList* pt_ids,
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::GetTuples(vtkIdType p1, vtkIdType p2,
-                                         vtkAbstractArray* output) {
+void MappedDataArray<TScalar, TClass, TDataMember>::GetTuples(
+    vtkIdType p1, vtkIdType p2, vtkAbstractArray* output) {
   vtkDataArray* da = vtkDataArray::FastDownCast(output);
   if (!da) {
     vtkErrorMacro(<< "Input is not a vtkDataArray");
@@ -353,7 +365,8 @@ vtkArrayIterator* MappedDataArray<TScalar, TClass, TDataMember>::NewIterator() {
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::LookupValue(vtkVariant value) {
+vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::LookupValue(
+    vtkVariant value) {
   bool valid = true;
   TScalar val = vtkVariantCast<TScalar>(value, &valid);
   if (valid) {
@@ -364,7 +377,8 @@ vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::LookupValue(vtkVariant 
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::LookupValue(vtkVariant value, vtkIdList* ids) {
+void MappedDataArray<TScalar, TClass, TDataMember>::LookupValue(
+    vtkVariant value, vtkIdList* ids) {
   bool valid = true;
   TScalar val = vtkVariantCast<TScalar>(value, &valid);
   ids->Reset();
@@ -378,7 +392,8 @@ void MappedDataArray<TScalar, TClass, TDataMember>::LookupValue(vtkVariant value
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkVariant MappedDataArray<TScalar, TClass, TDataMember>::GetVariantValue(vtkIdType idx) {
+vtkVariant MappedDataArray<TScalar, TClass, TDataMember>::GetVariantValue(
+    vtkIdType idx) {
   return vtkVariant(this->GetValueReference(idx));
 }
 
@@ -397,40 +412,42 @@ double* MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType i) {
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id, double* tuple) {
+void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
+                                                             double* tuple) {
   uint64_t idx = tuple_id * this->NumberOfComponents;
   TScalar* data;
-  switch(mode_) {
-    case Param::MappedDataArrayMode::kCache:
-      { 
-        bool all_matches = true;
-        for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-          all_matches |= (is_matching_[i] == match_value_);
-        }
-        if (all_matches) {
-          uint64_t cnt = 0;
-          for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-            tuple[cnt++] = static_cast<double>(data_[i]);
-          }
-          return;
-        }
+  switch (mode_) {
+    case Param::MappedDataArrayMode::kCache: {
+      bool all_matches = true;
+      for (uint64_t i = idx;
+           i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
+        all_matches |= (is_matching_[i] == match_value_);
       }
-    case Param::MappedDataArrayMode::kZeroCopy:
-      {
-        auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]); 
-        for(uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-          tuple[i] = static_cast<double>(data[i]);
-          if (mode_ == Param::MappedDataArrayMode::kCache) {
-            data_[idx + i] = data[i];
-            is_matching_[idx + i] = match_value_;
-          }
+      if (all_matches) {
+        uint64_t cnt = 0;
+        for (uint64_t i = idx;
+             i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
+          tuple[cnt++] = static_cast<double>(data_[i]);
         }
         return;
       }
-      break;
+    }
+    case Param::MappedDataArrayMode::kZeroCopy: {
+      auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]);
+      for (uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents);
+           ++i) {
+        tuple[i] = static_cast<double>(data[i]);
+        if (mode_ == Param::MappedDataArrayMode::kCache) {
+          data_[idx + i] = data[i];
+          is_matching_[idx + i] = match_value_;
+        }
+      }
+      return;
+    } break;
     case Param::MappedDataArrayMode::kCopy:
       uint64_t cnt = 0;
-      for(uint64_t i = idx; i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
+      for (uint64_t i = idx;
+           i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
         tuple[cnt++] = static_cast<double>(data_[i]);
       }
   }
@@ -438,13 +455,15 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::LookupTypedValue(TScalar value) {
+vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::LookupTypedValue(
+    TScalar value) {
   return this->Lookup(value, 0);
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::LookupTypedValue(TScalar value, vtkIdList* ids) {
+void MappedDataArray<TScalar, TClass, TDataMember>::LookupTypedValue(
+    TScalar value, vtkIdList* ids) {
   ids->Reset();
   vtkIdType index = 0;
   while ((index = this->Lookup(value, index)) >= 0) {
@@ -454,19 +473,19 @@ void MappedDataArray<TScalar, TClass, TDataMember>::LookupTypedValue(TScalar val
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArray<TScalar, TClass, TDataMember>::GetValue(
-    vtkIdType idx) const {
-  // TODO(lukas) resolve code duplication with GetValueReference 
-  // make non virtual private helper function and call it from here and GetValueReference
-  switch(mode_) {
+typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType
+MappedDataArray<TScalar, TClass, TDataMember>::GetValue(vtkIdType idx) const {
+  // TODO(lukas) resolve code duplication with GetValueReference
+  // make non virtual private helper function and call it from here and
+  // GetValueReference
+  switch (mode_) {
     case Param::MappedDataArrayMode::kCache:
       if (is_matching_[idx] == match_value_) {
         return data_[idx];
       }
-    case Param::MappedDataArrayMode::kZeroCopy:
-      {
+    case Param::MappedDataArrayMode::kZeroCopy: {
       if (this->NumberOfComponents == 1) {
-        auto* data = get_dm_((*sim_objects_)[start_ + idx]); 
+        auto* data = get_dm_((*sim_objects_)[start_ + idx]);
         if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx] = *data;
           is_matching_[idx] = match_value_;
@@ -475,14 +494,13 @@ typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArra
       }
       const vtkIdType tuple = idx / this->NumberOfComponents;
       const vtkIdType comp = idx % this->NumberOfComponents;
-      auto* data = get_dm_((*sim_objects_)[start_ + tuple]); 
+      auto* data = get_dm_((*sim_objects_)[start_ + tuple]);
       if (mode_ == Param::MappedDataArrayMode::kCache) {
         data_[idx] = data[comp];
         is_matching_[idx] = match_value_;
       }
       return data[comp];
-      }
-      break;
+    } break;
     case Param::MappedDataArrayMode::kCopy:
       return data_[idx];
   }
@@ -490,16 +508,16 @@ typename MappedDataArray<TScalar, TClass, TDataMember>::ValueType MappedDataArra
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdType idx) {
-  switch(mode_) {
+TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(
+    vtkIdType idx) {
+  switch (mode_) {
     case Param::MappedDataArrayMode::kCache:
       if (is_matching_[idx] == match_value_) {
         return data_[idx];
       }
-    case Param::MappedDataArrayMode::kZeroCopy:
-      {
+    case Param::MappedDataArrayMode::kZeroCopy: {
       if (this->NumberOfComponents == 1) {
-        auto* data = get_dm_((*sim_objects_)[start_ + idx]); 
+        auto* data = get_dm_((*sim_objects_)[start_ + idx]);
         if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx] = *data;
           is_matching_[idx] = match_value_;
@@ -508,14 +526,13 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdT
       }
       const vtkIdType tuple = idx / this->NumberOfComponents;
       const vtkIdType comp = idx % this->NumberOfComponents;
-      auto* data = get_dm_((*sim_objects_)[start_ + tuple]); 
+      auto* data = get_dm_((*sim_objects_)[start_ + tuple]);
       if (mode_ == Param::MappedDataArrayMode::kCache) {
         data_[idx] = data[comp];
         is_matching_[idx] = match_value_;
       }
       return data[comp];
-      }
-      break;
+    } break;
     case Param::MappedDataArrayMode::kCopy:
       return data_[idx];
   }
@@ -523,194 +540,241 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(vtkIdT
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::GetTypedTuple(vtkIdType tuple_id,
-                                             TScalar* tuple) const {
-  auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]); 
-  for(uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents); ++i) {
+void MappedDataArray<TScalar, TClass, TDataMember>::GetTypedTuple(
+    vtkIdType tuple_id, TScalar* tuple) const {
+  auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]);
+  for (uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents);
+       ++i) {
     tuple[i] = data[i];
   }
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-int MappedDataArray<TScalar, TClass, TDataMember>::Allocate(vtkIdType, vtkIdType) {
-  vtkErrorMacro("Read only container."); return 0;
+int MappedDataArray<TScalar, TClass, TDataMember>::Allocate(vtkIdType,
+                                                            vtkIdType) {
+  vtkErrorMacro("Read only container.");
+  return 0;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 int MappedDataArray<TScalar, TClass, TDataMember>::Resize(vtkIdType) {
-  vtkErrorMacro("Read only container."); return 0;
+  vtkErrorMacro("Read only container.");
+  return 0;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::SetNumberOfTuples(vtkIdType) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::SetNumberOfTuples(
+    vtkIdType) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType, vtkIdType,
-                                        vtkAbstractArray*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(
+    vtkIdType, vtkIdType, vtkAbstractArray*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType, const float*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType,
+                                                             const float*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType, const double*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType,
+                                                             const double*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType, vtkIdType,
-                                           vtkAbstractArray*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(
+    vtkIdType, vtkIdType, vtkAbstractArray*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType, const float*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType,
+                                                                const float*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType, const double*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType,
+                                                                const double*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuples(vtkIdList*, vtkIdList*,
-                                            vtkAbstractArray*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuples(
+    vtkIdList*, vtkIdList*, vtkAbstractArray*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuples(vtkIdType, vtkIdType, vtkIdType,
-                                            vtkAbstractArray*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuples(
+    vtkIdType, vtkIdType, vtkIdType, vtkAbstractArray*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(vtkIdType,
-                                                    vtkAbstractArray*) {
-  vtkErrorMacro("Read only container."); return -1;
+vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(
+    vtkIdType, vtkAbstractArray*) {
+  vtkErrorMacro("Read only container.");
+  return -1;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(const float*) {
-  vtkErrorMacro("Read only container."); return -1;
+vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(
+    const float*) {
+  vtkErrorMacro("Read only container.");
+  return -1;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(const double*) {
-  vtkErrorMacro("Read only container."); return -1;
+vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(
+    const double*) {
+  vtkErrorMacro("Read only container.");
+  return -1;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::DeepCopy(vtkAbstractArray*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::DeepCopy(
+    vtkAbstractArray*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::DeepCopy(vtkDataArray*) {
-  vtkErrorMacro("Read only container."); return;
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(vtkIdType, vtkIdList*,
-                                                vtkAbstractArray*, double*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(
+    vtkIdType, vtkIdList*, vtkAbstractArray*, double*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(vtkIdType, vtkIdType,
-                                                vtkAbstractArray*, vtkIdType,
-                                                vtkAbstractArray*, double) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(
+    vtkIdType, vtkIdType, vtkAbstractArray*, vtkIdType, vtkAbstractArray*,
+    double) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::SetVariantValue(vtkIdType, vtkVariant) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::SetVariantValue(
+    vtkIdType, vtkVariant) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InsertVariantValue(vtkIdType, vtkVariant) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InsertVariantValue(
+    vtkIdType, vtkVariant) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::RemoveTuple(vtkIdType) {
-  vtkErrorMacro("Read only container."); return;
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::RemoveFirstTuple() {
-  vtkErrorMacro("Read only container."); return;
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::RemoveLastTuple() {
-  vtkErrorMacro("Read only container."); return;
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::SetTypedTuple(vtkIdType, const TScalar*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::SetTypedTuple(
+    vtkIdType, const TScalar*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InsertTypedTuple(vtkIdType, const TScalar*) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InsertTypedTuple(
+    vtkIdType, const TScalar*) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTypedTuple(const TScalar*) {
-  vtkErrorMacro("Read only container."); return -1;
+vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTypedTuple(
+    const TScalar*) {
+  vtkErrorMacro("Read only container.");
+  return -1;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::SetValue(vtkIdType, TScalar) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::SetValue(vtkIdType,
+                                                             TScalar) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextValue(TScalar) {
-  vtkErrorMacro("Read only container."); return -1;
+vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextValue(
+    TScalar) {
+  vtkErrorMacro("Read only container.");
+  return -1;
 }
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-void MappedDataArray<TScalar, TClass, TDataMember>::InsertValue(vtkIdType, TScalar) {
-  vtkErrorMacro("Read only container."); return;
+void MappedDataArray<TScalar, TClass, TDataMember>::InsertValue(vtkIdType,
+                                                                TScalar) {
+  vtkErrorMacro("Read only container.");
+  return;
 }
 
 //------------------------------------------------------------------------------
@@ -727,8 +791,8 @@ MappedDataArray<TScalar, TClass, TDataMember>::~MappedDataArray() {
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::Lookup(const TScalar& val,
-                                           vtkIdType index) {
+vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::Lookup(
+    const TScalar& val, vtkIdType index) {
   while (index <= this->MaxId) {
     if (this->GetValueReference(index++) == val) {
       return index;

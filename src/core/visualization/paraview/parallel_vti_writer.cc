@@ -14,14 +14,14 @@
 
 #include "core/visualization/paraview/parallel_vti_writer.h"
 // Paraview
-#include <vtkObjectFactory.h>
-#include <vtkDataCompressor.h>
-#include <vtkPointData.h>
 #include <vtkDataArray.h>
+#include <vtkDataCompressor.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 // BioDynaMo
+#include "core/param/param.h"
 #include "core/simulation.h"
 #include "core/util/string.h"
-#include "core/param/param.h"
 
 namespace bdm {
 
@@ -29,10 +29,13 @@ namespace bdm {
 VtiWriter::VtiWriter() {}
 
 // -----------------------------------------------------------------------------
-void VtiWriter::SetWholeExtent(const int* whole_extent) { whole_extent_ = whole_extent; }
+void VtiWriter::SetWholeExtent(const int* whole_extent) {
+  whole_extent_ = whole_extent;
+}
 
 // -----------------------------------------------------------------------------
-void VtiWriter::WritePrimaryElementAttributes(std::ostream& os, vtkIndent indent) {
+void VtiWriter::WritePrimaryElementAttributes(std::ostream& os,
+                                              vtkIndent indent) {
   this->WriteVectorAttribute("WholeExtent", 6, const_cast<int*>(whole_extent_));
   vtkImageData* input = this->GetInput();
   this->WriteVectorAttribute("Origin", 3, input->GetOrigin());
@@ -43,17 +46,23 @@ void VtiWriter::WritePrimaryElementAttributes(std::ostream& os, vtkIndent indent
 vtkStandardNewMacro(VtiWriter);
 
 // -----------------------------------------------------------------------------
-void PvtiWriter::Write(const std::string& folder, const std::string& file_prefix, 
-                       const std::array<int, 6>& whole_extent, 
+void PvtiWriter::Write(const std::string& folder,
+                       const std::string& file_prefix,
+                       const std::array<int, 6>& whole_extent,
                        const std::vector<std::array<int, 6>>& piece_extents,
                        vtkImageData* img, VtiWriter* vti) {
   auto* origin = img->GetOrigin();
   auto* spacing = img->GetSpacing();
-  auto endianess_str = vti->GetByteOrder() == vtkXMLWriter::LittleEndian ? "LittleEndian" : "BigEndian";
-  auto header_type_str = vti->GetHeaderType() == vtkXMLWriter::UInt32 ? "UInt32" : "UInt64";
+  auto endianess_str = vti->GetByteOrder() == vtkXMLWriter::LittleEndian
+                           ? "LittleEndian"
+                           : "BigEndian";
+  auto header_type_str =
+      vti->GetHeaderType() == vtkXMLWriter::UInt32 ? "UInt32" : "UInt64";
   auto* compressor = vti->GetCompressor();
-  std::string compressor_str = compressor != nullptr ? compressor->GetClassName() : "";
-  // vti->GetDataSetMajorVersion() and vti->GetDataSetMinorVersion() are protected
+  std::string compressor_str =
+      compressor != nullptr ? compressor->GetClassName() : "";
+  // vti->GetDataSetMajorVersion() and vti->GetDataSetMinorVersion() are
+  // protected
   auto version_str = "0.1";
 
   auto filename = Concat(folder, "/", file_prefix, ".pvti");
@@ -91,17 +100,15 @@ void PvtiWriter::Write(const std::string& folder, const std::string& file_prefix
 }
 
 // -----------------------------------------------------------------------------
-void ParallelVtiWriter::operator()(const std::string& folder, 
-                                   const std::string& file_prefix,
-                                   const std::vector<vtkImageData*>& images, 
-                                   uint64_t num_pieces, 
-                                   const std::array<int, 6>& whole_extent, 
-                                   const std::vector<std::array<int, 6>>& piece_extents) const {
-
-    auto* param = Simulation::GetActive()->GetParam();
+void ParallelVtiWriter::operator()(
+    const std::string& folder, const std::string& file_prefix,
+    const std::vector<vtkImageData*>& images, uint64_t num_pieces,
+    const std::array<int, 6>& whole_extent,
+    const std::vector<std::array<int, 6>>& piece_extents) const {
+  auto* param = Simulation::GetActive()->GetParam();
 
 #pragma omp parallel for schedule(static, 1)
-  for(uint64_t i = 0; i < num_pieces; ++i) {
+  for (uint64_t i = 0; i < num_pieces; ++i) {
     auto vti_filename = Concat(folder, "/", file_prefix, "_", i, ".vti");
     vtkNew<VtiWriter> vti;
     vti->SetFileName(vti_filename.c_str());
@@ -113,13 +120,13 @@ void ParallelVtiWriter::operator()(const std::string& folder,
       vti->SetCompressorTypeToNone();
     }
     vti->Write();
-    
+
     if (i == 0) {
       PvtiWriter pvti;
-      pvti.Write(folder, file_prefix, whole_extent, piece_extents, images[0], vti);
+      pvti.Write(folder, file_prefix, whole_extent, piece_extents, images[0],
+                 vti);
     }
   }
 }
 
 }  // namespace bdm
-

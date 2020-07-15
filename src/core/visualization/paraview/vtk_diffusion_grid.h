@@ -17,8 +17,8 @@
 
 // std
 #include <array>
-#include <vector>
 #include <string>
+#include <vector>
 // Paraview
 #include <vtkCPDataDescription.h>
 #include <vtkImageData.h>
@@ -48,11 +48,12 @@ class VtkDiffusionGrid {
   bool used_ = false;
   int concentration_array_idx_ = -1;
   int gradient_array_idx_ = -1;
-  
-  // The following data members are needed to partition a diffusion grid into multiple
+
+  // The following data members are needed to partition a diffusion grid into
+  // multiple
   // vtkImageData objects for parallel processing.
   // ParaView calls the partition pieces.
-  
+
   uint64_t num_pieces_;
   uint64_t piece_boxes_z_;
   uint64_t piece_boxes_z_last_;

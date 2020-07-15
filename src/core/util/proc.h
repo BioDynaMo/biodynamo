@@ -24,7 +24,7 @@ std::string GetExecutablePath();
 
 std::string GetExecutableDirectory();
 
-std::string GetExecutableName(); 
+std::string GetExecutableName();
 
 }  // namespace bdm
 

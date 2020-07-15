@@ -18,8 +18,8 @@
 #include <type_traits>
 #include <typeinfo>
 
-#include "core/shape.h"
 #include "core/container/math_array.h"
+#include "core/shape.h"
 #include "core/util/string.h"
 
 namespace bdm {

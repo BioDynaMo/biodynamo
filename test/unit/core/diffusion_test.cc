@@ -24,9 +24,9 @@
 #include "unit/test_util/test_util.h"
 
 #ifdef USE_PARAVIEW
+#include <vtkDoubleArray.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
-#include <vtkDoubleArray.h>
 #include <vtkXMLImageDataReader.h>
 #include "core/visualization/paraview/adaptor.h"
 #endif  // USE_PARAVIEW
@@ -508,7 +508,7 @@ TEST(DiffusionTest, EulerConvergence) {
 }
 
 TEST(DiffusionTest, RungeKuttaConvergence) {
-  auto set_param = [](Param* param){ param->diffusion_type_ = "RK"; };
+  auto set_param = [](Param* param) { param->diffusion_type_ = "RK"; };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);

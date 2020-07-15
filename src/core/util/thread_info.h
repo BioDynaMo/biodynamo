@@ -15,9 +15,9 @@
 #ifndef CORE_UTIL_THREAD_INFO_H_
 #define CORE_UTIL_THREAD_INFO_H_
 
-#include <atomic>
 #include <omp.h>
 #include <sched.h>
+#include <atomic>
 #include <vector>
 
 #include "core/util/log.h"
@@ -65,13 +65,13 @@ class ThreadInfo {
   /// Return the maximum number of threads.
   int GetMaxThreads() const { return max_threads_; }
 
-  /// Returns a unique thread id even for parallel regions that 
-  /// don't use OpenMP. 
+  /// Returns a unique thread id even for parallel regions that
+  /// don't use OpenMP.
   uint64_t GetUniversalThreadId() const {
-      thread_local uint64_t tid = thread_counter_++;
-      return tid;
+    thread_local uint64_t tid = thread_counter_++;
+    return tid;
   }
-  
+
   uint64_t GetMaxUniversalThreadId() const { return thread_counter_; }
 
   /// Renews the metadata.\n
@@ -166,9 +166,10 @@ class ThreadInfo {
       // even though OMP_PROC_BIND is set to true.
       // A performance analysis showed almost identical results between true,
       // and spread.
-      Log::Warning("ThreadInfo::ThreadInfo",
-                   "The environment variable OMP_PROC_BIND must be set to "
-                   "true prior to running BioDynaMo ('export OMP_PROC_BIND=true')");
+      Log::Warning(
+          "ThreadInfo::ThreadInfo",
+          "The environment variable OMP_PROC_BIND must be set to "
+          "true prior to running BioDynaMo ('export OMP_PROC_BIND=true')");
     }
     Renew();
   }

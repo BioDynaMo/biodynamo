@@ -74,7 +74,7 @@ std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
     auto* current_tc = tc_stack.top();
     tc_stack.pop();
     for (const auto&& base : *current_tc->GetListOfBases()) {
-      auto get_dict_functor = TClassTable::GetDict(base->GetName()); 
+      auto get_dict_functor = TClassTable::GetDict(base->GetName());
       if (get_dict_functor != nullptr) {
         tc_stack.push(get_dict_functor());
       }
@@ -102,9 +102,10 @@ std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
 JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
     TClass* tclass, const std::vector<std::string> dm_names,
     const std::string functor_name,
-    const std::function<std::string(const std::string&, const std::vector<TDataMember*>&)>&
-        code_generator)
-    : functor_name_(Concat(functor_name, counter_++)), code_generator_(code_generator) {
+    const std::function<std::string(
+        const std::string&, const std::vector<TDataMember*>&)>& code_generator)
+    : functor_name_(Concat(functor_name, counter_++)),
+      code_generator_(code_generator) {
   data_members_.reserve(dm_names.size());
   for (auto& dm : dm_names) {
     auto candidates = FindDataMemberSlow(tclass, dm);
@@ -115,13 +116,14 @@ JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
                  "Could not find data member ", dm);
     } else {
       Log::Fatal("JitForEachDataMemberFunctor::JitForEachDataMemberFunctor",
-                 "Data member name (", dm ,") is ambigous");
+                 "Data member name (", dm, ") is ambigous");
     }
   }
 }
 
 void JitForEachDataMemberFunctor::Compile() {
-  gInterpreter->ProcessLineSynch(code_generator_(functor_name_, data_members_).c_str());
+  gInterpreter->ProcessLineSynch(
+      code_generator_(functor_name_, data_members_).c_str());
 }
 
 void* JitForEachDataMemberFunctor::New(const std::string& parameter) {
@@ -132,4 +134,3 @@ void* JitForEachDataMemberFunctor::New(const std::string& parameter) {
 std::atomic<int> JitForEachDataMemberFunctor::counter_;
 
 }  // namespace bdm
-

@@ -16,11 +16,11 @@
 // ParaView
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
+#include <vtkDoubleArray.h>
+#include <vtkExtentTranslator.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkDoubleArray.h>
-#include <vtkExtentTranslator.h>
 // BioDynaMo
 #include "core/param/param.h"
 #include "core/simulation.h"
@@ -40,7 +40,7 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
     data_.resize(1);
   }
 
-  #pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < data_.size(); ++i) {
     data_[i] = vtkImageData::New();
   }
@@ -60,19 +60,22 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
     if (vd->concentration_) {
       vtkNew<vtkDoubleArray> concentration;
       concentration->SetName("Substance Concentration");
-      concentration_array_idx_ = data_[i]->GetPointData()->AddArray(concentration.GetPointer());
+      concentration_array_idx_ =
+          data_[i]->GetPointData()->AddArray(concentration.GetPointer());
     }
     if (vd->gradient_) {
       vtkNew<vtkDoubleArray> gradient;
       gradient->SetName("Diffusion Gradient");
       gradient->SetNumberOfComponents(3);
-      gradient_array_idx_ = data_[i]->GetPointData()->AddArray(gradient.GetPointer());
+      gradient_array_idx_ =
+          data_[i]->GetPointData()->AddArray(gradient.GetPointer());
     }
   }
-  
+
   if (!param->export_visualization_) {
     data_description->AddInput(name.c_str());
-    data_description->GetInputDescriptionByName(name.c_str())->SetGrid(data_[0]);
+    data_description->GetInputDescriptionByName(name.c_str())
+        ->SetGrid(data_[0]);
   }
 }
 
@@ -98,7 +101,9 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
   auto total_boxes = grid->GetNumBoxes();
 
   auto* tinfo = ThreadInfo::GetInstance();
-  whole_extent_ = {{0, std::max(static_cast<int>(num_boxes[0]) - 1, 0), 0, std::max(static_cast<int>(num_boxes[1]) - 1, 0), 0, std::max(static_cast<int>(num_boxes[2]) - 1, 0)}};
+  whole_extent_ = {{0, std::max(static_cast<int>(num_boxes[0]) - 1, 0), 0,
+                    std::max(static_cast<int>(num_boxes[1]) - 1, 0), 0,
+                    std::max(static_cast<int>(num_boxes[2]) - 1, 0)}};
   Dissect(num_boxes[2], tinfo->GetMaxThreads());
   CalcPieceExtents(num_boxes);
   uint64_t xy_num_boxes = num_boxes[0] * num_boxes[1];
@@ -114,41 +119,45 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
 
     if (concentration_array_idx_ != -1) {
       auto* co_ptr = const_cast<double*>(grid->GetAllConcentrations());
-      auto elements = static_cast<vtkIdType>(total_boxes); 
-      auto* array = static_cast<vtkDoubleArray*>(data_[0]->GetPointData()->GetArray(concentration_array_idx_)); 
+      auto elements = static_cast<vtkIdType>(total_boxes);
+      auto* array = static_cast<vtkDoubleArray*>(
+          data_[0]->GetPointData()->GetArray(concentration_array_idx_));
       array->SetArray(co_ptr, elements, 1);
     }
     if (gradient_array_idx_ != -1) {
       auto gr_ptr = const_cast<double*>(grid->GetAllGradients());
-      auto elements = static_cast<vtkIdType>(total_boxes * 3); 
-      auto* array = static_cast<vtkDoubleArray*>(data_[0]->GetPointData()->GetArray(gradient_array_idx_)); 
+      auto elements = static_cast<vtkIdType>(total_boxes * 3);
+      auto* array = static_cast<vtkDoubleArray*>(
+          data_[0]->GetPointData()->GetArray(gradient_array_idx_));
       array->SetArray(gr_ptr, elements, 1);
-    } 
-    return; 
+    }
+    return;
   }
 
-#pragma omp parallel for schedule(static,1) 
+#pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < num_pieces_; ++i) {
     uint64_t piece_elements;
     auto* e = piece_extents_[i].data();
     if (i < num_pieces_ - 1) {
       piece_elements = piece_boxes_z_ * xy_num_boxes;
       data_[i]->SetDimensions(num_boxes[0], num_boxes[1], piece_boxes_z_);
-      data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4], e[4] + piece_boxes_z_ - 1);
+      data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
+                          e[4] + piece_boxes_z_ - 1);
     } else {
       piece_elements = piece_boxes_z_last_ * xy_num_boxes;
       data_[i]->SetDimensions(num_boxes[0], num_boxes[1], piece_boxes_z_last_);
       data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
-                     e[4] + piece_boxes_z_last_ - 1);
+                          e[4] + piece_boxes_z_last_ - 1);
     }
-    int piece_origin_z = origin_z + box_length * piece_boxes_z_ * i; 
+    int piece_origin_z = origin_z + box_length * piece_boxes_z_ * i;
     data_[i]->SetOrigin(origin_x, origin_y, piece_origin_z);
     data_[i]->SetSpacing(box_length, box_length, box_length);
 
     if (concentration_array_idx_ != -1) {
       auto* co_ptr = const_cast<double*>(grid->GetAllConcentrations());
-      auto elements = static_cast<vtkIdType>(piece_elements); 
-      auto* array = static_cast<vtkDoubleArray*>(data_[i]->GetPointData()->GetArray(concentration_array_idx_)); 
+      auto elements = static_cast<vtkIdType>(piece_elements);
+      auto* array = static_cast<vtkDoubleArray*>(
+          data_[i]->GetPointData()->GetArray(concentration_array_idx_));
       if (i < num_pieces_ - 1) {
         array->SetArray(co_ptr + (elements * i), elements, 1);
       } else {
@@ -157,14 +166,15 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
     }
     if (gradient_array_idx_ != -1) {
       auto gr_ptr = const_cast<double*>(grid->GetAllGradients());
-      auto elements = static_cast<vtkIdType>(piece_elements * 3); 
-      auto* array = static_cast<vtkDoubleArray*>(data_[i]->GetPointData()->GetArray(gradient_array_idx_)); 
+      auto elements = static_cast<vtkIdType>(piece_elements * 3);
+      auto* array = static_cast<vtkDoubleArray*>(
+          data_[i]->GetPointData()->GetArray(gradient_array_idx_));
       if (i < num_pieces_ - 1) {
         array->SetArray(gr_ptr + (elements * i), elements, 1);
       } else {
         array->SetArray(gr_ptr + total_boxes - elements, elements, 1);
       }
-    } 
+    }
   }
 }
 
@@ -172,9 +182,10 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
 void VtkDiffusionGrid::WriteToFile(uint64_t step) const {
   auto* sim = Simulation::GetActive();
   auto filename_prefix = Concat(name_, "-", step);
-  
+
   ParallelVtiWriter writer;
-  writer(sim->GetOutputDir(), filename_prefix, data_, num_pieces_, whole_extent_, piece_extents_);
+  writer(sim->GetOutputDir(), filename_prefix, data_, num_pieces_,
+         whole_extent_, piece_extents_);
 }
 
 // -----------------------------------------------------------------------------
@@ -199,19 +210,25 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
 }
 
 // -----------------------------------------------------------------------------
-void VtkDiffusionGrid::CalcPieceExtents(const std::array<size_t, 3>& num_boxes) {
+void VtkDiffusionGrid::CalcPieceExtents(
+    const std::array<size_t, 3>& num_boxes) {
   piece_extents_.resize(num_pieces_);
   if (num_pieces_ == 1) {
     piece_extents_[0] = whole_extent_;
     return;
   }
   int c = piece_boxes_z_;
-  piece_extents_[0] = {{0, static_cast<int>(num_boxes[0]) - 1, 0, static_cast<int>(num_boxes[1]) - 1, 0, c}};
-  for(uint64_t i = 1; i < num_pieces_ - 1; ++i) {
-    piece_extents_[i] = {{0, static_cast<int>(num_boxes[0]) - 1, 0, static_cast<int>(num_boxes[1]) - 1, c, c + static_cast<int>(piece_boxes_z_)}};
+  piece_extents_[0] = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
+                        static_cast<int>(num_boxes[1]) - 1, 0, c}};
+  for (uint64_t i = 1; i < num_pieces_ - 1; ++i) {
+    piece_extents_[i] = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
+                          static_cast<int>(num_boxes[1]) - 1, c,
+                          c + static_cast<int>(piece_boxes_z_)}};
     c += piece_boxes_z_;
   }
-  piece_extents_.back() = {{0, static_cast<int>(num_boxes[0]) - 1, 0, static_cast<int>(num_boxes[1]) - 1, c, static_cast<int>(num_boxes[2]) - 1}};
+  piece_extents_.back() = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
+                            static_cast<int>(num_boxes[1]) - 1, c,
+                            static_cast<int>(num_boxes[2]) - 1}};
 }
 
 }  // namespace bdm

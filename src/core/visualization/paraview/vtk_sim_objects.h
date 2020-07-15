@@ -44,7 +44,7 @@ class VtkSimObjects {
   TClass* GetTClass();
   void Update(const std::vector<SimObject*>* sim_objects);
   void WriteToFile(uint64_t step) const;
-  
+
  private:
   std::string name_;
   TClass* tclass_;
@@ -54,7 +54,9 @@ class VtkSimObjects {
   TClass* FindTClass();
   void InitializeDataMembers(SimObject* so,
                              std::vector<std::string>* data_members);
-  void UpdateMappedDataArrays(uint64_t tid, const std::vector<SimObject*>* sim_objects, uint64_t start, uint64_t end);
+  void UpdateMappedDataArrays(uint64_t tid,
+                              const std::vector<SimObject*>* sim_objects,
+                              uint64_t start, uint64_t end);
 
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
 };

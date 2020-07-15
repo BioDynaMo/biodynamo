@@ -107,7 +107,8 @@ std::string GenerateSimulationInfoJson(
       << "  \"extracellular_substances\": [" << std::endl
       << substances.str() << std::endl
       << "  ]," << std::endl
-      << "  \"insitu_script_arguments\": \"" << param->pv_insitu_pipeline_arguments_ << "\"" << std::endl
+      << "  \"insitu_script_arguments\": \""
+      << param->pv_insitu_pipeline_arguments_ << "\"" << std::endl
       << "}" << std::endl;
   return str.str();
 }

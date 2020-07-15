@@ -19,4 +19,3 @@ namespace bdm {
 std::atomic<uint64_t> ThreadInfo::thread_counter_;
 
 }  // namespace bdm
-

@@ -177,7 +177,8 @@ class SimulationTest : public ::testing::Test {
     EXPECT_NEAR(1.123, param->mem_mgr_growth_rate_, abs_error<double>::value);
     EXPECT_EQ(987654u, param->mem_mgr_max_mem_per_thread_);
     EXPECT_FALSE(param->minimize_memory_while_rebalancing_);
-    EXPECT_EQ(Param::MappedDataArrayMode::kCache, param->mapped_data_array_mode_);
+    EXPECT_EQ(Param::MappedDataArrayMode::kCache,
+              param->mapped_data_array_mode_);
 
     // development group
     EXPECT_TRUE(param->statistics_);

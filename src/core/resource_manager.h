@@ -101,7 +101,7 @@ class ResourceManager {
         for (auto* so : numa_sos) {
           type_index_->Add(so);
         }
-      } 
+      }
     }
     return *this;
   }
@@ -358,7 +358,7 @@ class ResourceManager {
       i++;
     }
     if (type_index_) {
-      #pragma omp critical
+#pragma omp critical
       for (auto* so : new_sim_objects) {
         type_index_->Add(so);
       }

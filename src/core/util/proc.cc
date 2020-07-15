@@ -12,9 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/util/proc.h" 
-#include <experimental/filesystem>
+#include "core/util/proc.h"
 #include <unistd.h>
+#include <experimental/filesystem>
 #include "core/util/log.h"
 
 namespace fs = std::experimental::filesystem;
@@ -27,7 +27,8 @@ std::string GetExecutablePath() {
   char buffer[1024];
   int path_size = readlink("/proc/self/exe", buffer, sizeof(buffer));
   if (path_size <= 0) {
-    Log::Fatal("GetExecutablePath", "readlink(\"/proc/self/exe\", ...)  failed");
+    Log::Fatal("GetExecutablePath",
+               "readlink(\"/proc/self/exe\", ...)  failed");
   }
   // return value of readlink is not null terminated
   buffer[path_size] = '\0';
@@ -38,8 +39,8 @@ std::string GetExecutablePath() {
 
 #else  // APPLE
 
-#include <cstdlib>
 #include <libproc.h>
+#include <cstdlib>
 
 namespace bdm {
 
@@ -48,7 +49,8 @@ std::string GetExecutablePath() {
   char buffer[1024];
   int path_size = proc_pidpath(pid, buffer, sizeof(buffer));
   if (path_size <= 0) {
-    Log::Fatal("GetExecutablePath", "readlink(\"/proc/self/exe\", ...)  failed");
+    Log::Fatal("GetExecutablePath",
+               "readlink(\"/proc/self/exe\", ...)  failed");
   }
   return std::string(buffer);
 }
@@ -57,17 +59,16 @@ std::string GetExecutablePath() {
 
 #endif  // LINUX
 
-
 namespace bdm {
 
 std::string GetExecutableDirectory() {
-  fs::path bin_path= GetExecutablePath();
-  return bin_path.remove_filename().string(); 
+  fs::path bin_path = GetExecutablePath();
+  return bin_path.remove_filename().string();
 }
 
 std::string GetExecutableName() {
-  fs::path bin_path= GetExecutablePath();
-  return bin_path.filename().string(); 
-} 
+  fs::path bin_path = GetExecutablePath();
+  return bin_path.filename().string();
+}
 
 }  // namspace bdm
