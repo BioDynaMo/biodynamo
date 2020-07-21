@@ -39,4 +39,4 @@ fi
 colorize 1 "Cloning BioDynaMo into ${BDM_SRC}..."; echo ""
 checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
 
-SILENT_INSTALL=1 ${BDM_SRC}/install.sh
+${BDM_SRC}/install.sh
