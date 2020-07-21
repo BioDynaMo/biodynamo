@@ -39,4 +39,4 @@ fi
 colorize 1 "Cloning BioDynaMo into ${BDM_SRC}..."; echo ""
 checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
 
-${BDM_SRC}/install.sh
+BDM_CMAKE_FLAGS="-Dtest=off -Dnotebooks=on -Dsbml=ON" ${BDM_SRC}/install.sh
