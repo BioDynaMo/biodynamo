@@ -33,24 +33,9 @@ function RequireSudo {
   while true; do sudo -n true; sleep 10; kill -0 "$$" || exit; done 2>/dev/null &
 }
 
-# Read input from terminal and store in character ($1)
-GetC() {
-  local save_state
-  save_state=$(/bin/stty -g)
-  /bin/stty raw -echo
-  IFS= read -r -n 1 -d '' "$@"
-  /bin/stty "$save_state"
-}
-
 # Wait for user input
 WaitForUser() {
-  local c
-  EchoInfo "Press RETURN to continue or any other key to abort"
-  GetC c
-  # we test for \r and \n because some stuff does \r instead
-  if ! [[ "$c" == $'\r' || "$c" == $'\n' ]]; then
-    exit 1
-  fi
+  read -n1 -rsp $'Press any key to continue or Ctrl+C to exit...\n'
 }
 
 # Function that detects the OS
