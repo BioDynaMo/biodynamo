@@ -35,7 +35,7 @@ function RequireSudo {
 
 # Wait for user input
 WaitForUser() {
-  read -n1 -rsp $'Press any key to continue or Ctrl+C to exit...\n'
+  read -n1 -rsp $'Press any key to continue or Ctrl+C to exit...\n' </dev/tty
 }
 
 # Function that detects the OS
