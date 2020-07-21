@@ -58,8 +58,10 @@ endfunction(get_implicit_dependencies)
 # and external simulation projects.
 # \param TARGET target name for the executable
 # \param SOURCES list of source files
-# \param LIBRARIES list of libraries that should be linked to the executable.
-#        can also be a target name of a library
+# \param LIBRARIES list of *shared* libraries that should be linked to the executable.
+#        can also be a target name of a library.
+#        STATIC libraries not compiled with -fPIC must be linked in a separate command using 
+#        target_link_libraries(${TARGET} static-lib-wo-fpic)
 function(bdm_add_executable TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
 

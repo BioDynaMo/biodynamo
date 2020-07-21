@@ -53,7 +53,7 @@
     <class name="bdm::MemoryManager" />
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />
-    <class name="bdm::Environment::SimDimensionAndLargestObjectFunctor" />
+    <class name="bdm::Environment::SimDimensionAndLargestSimObjectFunctor" />
     <class name="bdm::UniformGridEnvironment" />
     <class name="bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper" />
     <class name="bdm::ParallelResizeVector<double>" />
