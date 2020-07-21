@@ -466,6 +466,7 @@ if (LINUX)
   set(FS_LIB stdc++fs)
 endif()
 build_shared_library(biodynamo
+                   SELECTION selection-libbiodynamo.xml
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} ${FS_LIB})
@@ -480,6 +481,7 @@ if(paraview)
   # resolve missing python symbols when creating binaries
   set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
   build_shared_library(VisualizationAdaptor
+                    SELECTION selection-libVisualizationAdaptor.xml
                     SOURCES ${PV_SOURCES}
                     HEADERS ${PV_HEADERS}
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
