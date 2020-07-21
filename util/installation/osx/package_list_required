@@ -1,0 +1,7 @@
+cmake
+git
+libomp
+llvm
+open-mpi
+pyenv
+wget

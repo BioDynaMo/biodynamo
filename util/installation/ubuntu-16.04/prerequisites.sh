@@ -25,6 +25,8 @@ Arguments:
   exit 1
 fi
 
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+
 # Required to add Kitware ppa below
 sudo apt-get update
 sudo apt-get install apt-transport-https
@@ -38,17 +40,16 @@ sudo apt-add-repository "$REPO"
 sudo apt-get update
 
 # Install required packages
-sudo apt-get install -y wget curl cmake make gcc g++ \
-  libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-  libpthread-stubs0-dev zlib1g-dev libbz2-dev
+sudo apt-get install -y \
+  $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/package_list_required)
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
 fi
 
 # Install dependencies to install Python with PyEnv
-sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
-  libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
+sudo apt-get install -y \
+  $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/package_list_pyenv)
 
 # If PyEnv is not installed, install it
 if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
@@ -73,8 +74,6 @@ if [ $1 == "all" ]; then
   PIP_PACKAGES="nbformat jupyter metakernel"
   pip install --user $PIP_PACKAGES
 
-  sudo apt-get install -y valgrind \
-    clang clang-format clang-tidy \
-    doxygen graphviz lcov gcovr \
-    llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
+  sudo apt-get install -y \
+    $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/package_list_extra)
 fi

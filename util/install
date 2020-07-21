@@ -4,9 +4,8 @@
 
 set -e
 
-if [ -z "$BDM_ROOT" ]; then
-  BDM_ROOT="${HOME}/biodynamo"
-fi
+temp_dir=$(mktemp -d)
+BDM_SRC="${temp_dir}/biodynamo"
 
 colorize() {
   if [ -t 1 ]; then printf "\e[%sm%s\e[m" "$1" "$2"
@@ -14,27 +13,8 @@ colorize() {
   fi
 }
 
-# Determine the shell type (bash, zsh, ksh, fish, etc..)
-shell="$1"
-if [ -z "$shell" ]; then
-  shell="$(ps c -p "$PPID" -o 'ucomm=' 2>/dev/null || true)"
-  shell="${shell##-}"
-  shell="${shell%% *}"
-  shell="$(basename "${shell:-$SHELL}")"
-fi
-
-
-# Checks for `biodynamo` directory, and suggests to remove it for installing
-if [ -d "$BDM_ROOT" ]; then
-  { echo
-    colorize 1 "WARNING"
-    echo ": Can not proceed with installation. Kindly remove the '$BDM_ROOT' directory first."
-    echo
-  } >&2
-    exit 1
-fi
-
 failed_checkout() {
+  colorize 1 "ERROR"
   echo "Failed to git clone $1"
   exit -1
 }
@@ -45,7 +25,8 @@ checkout() {
 }
 
 if ! command -v git 1>/dev/null 2>&1; then
-  echo "pyenv: Git is not installed, can't continue." >&2
+  colorize 1 "ERROR"
+  echo "Git is not installed, can't continue." >&2
   exit 1
 fi
 
@@ -55,8 +36,7 @@ else
   GITHUB="https://github.com"
 fi
 
-checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_ROOT}"
+colorize 1 "Cloning BioDynaMo into ${BDM_SRC}..."; echo ""
+checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
 
-${BDM_ROOT}/install.sh << EOF
-y
-EOF
+SILENT_INSTALL=1 ${BDM_SRC}/install.sh

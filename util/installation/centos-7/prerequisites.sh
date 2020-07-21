@@ -29,17 +29,13 @@ sudo -v
 # add repository for clang-3.9
 sudo yum update -y
 
-# install packages
-sudo yum -y install centos-release-scl epel-release
-sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-
-sudo yum -y install wget cmake3 libXt-devel libXext-devel \
-  devtoolset-7-gcc* numactl-devel bzip2-devel zlib-devel \
-  openmpi3-devel freeglut-devel git
+# Install required packages
+sudo apt-get install -y \
+  $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_required)
 
 # Install dependencies to install Python with PyEnv
-sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-  sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+sudo apt-get install -y \
+  $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_pyenv)
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
@@ -66,7 +62,6 @@ pyenv shell $PYVERS
 if [ $1 == "all" ]; then
   PIP_PACKAGES="nbformat jupyter metakernel"
   pip install --user $PIP_PACKAGES
-  sudo yum -y install lcov gcovr llvm-toolset-7 llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind
   # SBML integration
   sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
@@ -76,8 +71,8 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
-  sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
-  sudo yum install -y libxml2-devel
+  sudo apt-get install -y \
+    $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_extra)
 fi
 
 # Set up cmake alias such to be able to use it
