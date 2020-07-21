@@ -329,6 +329,7 @@ if(sbml)
   find_package(Libroadrunner)
   if(NOT Libroadrunner_FOUND)
     include(external/Libroadrunner)
+    find_package(Libroadrunner)
   endif()
 endif()
 

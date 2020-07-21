@@ -28,7 +28,7 @@ fi
 
 # Check if SBML was enabled for this BioDynaMo installation
 set +e
-bdm-config --config | grep -i sbml
+bdm-config --config | grep -i libroadrunner
 rc_sbml=$?
 set -e
 if [ $rc_sbml -ne 0 ]; then
