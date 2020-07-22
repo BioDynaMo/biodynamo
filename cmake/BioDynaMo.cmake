@@ -66,19 +66,20 @@ function(bdm_add_executable TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
 
   if(dict)
-    build_shared_library(lib${TARGET}
-                            SELECTION selection.xml
-                            HEADERS ${ARG_HEADERS}
-                            SOURCES ${ARG_SOURCES}
-                            LIBRARIES ${ARG_LIBRARIES})
+    build_shared_library(${TARGET}
+                         SELECTION selection.xml
+                         HEADERS ${ARG_HEADERS}
+                         SOURCES ${ARG_SOURCES}
+                         LIBRARIES ${ARG_LIBRARIES})
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${TARGET}-main.cc "int main(int argc, const char** argv);")
-    add_executable(${TARGET} ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${TARGET}-main.cc)
-    target_link_libraries(${TARGET} lib${TARGET})
+    add_executable(${TARGET}-bin ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${TARGET}-main.cc)
+    target_link_libraries(${TARGET}-bin ${TARGET})
     if (LINUX)
-      set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-Wl,-rpath,$ORIGIN")
+      set_target_properties(${TARGET}-bin PROPERTIES LINK_FLAGS "-Wl,-rpath,$ORIGIN")
     else()
-      set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-Wl,-rpath,@loader_path")
+      set_target_properties(${TARGET}-bin PROPERTIES LINK_FLAGS "-Wl,-rpath,@loader_path")
     endif()
+    set_target_properties(${TARGET}-bin PROPERTIES OUTPUT_NAME ${TARGET})
   else()
     add_executable(${TARGET} ${ARG_SOURCES})
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
