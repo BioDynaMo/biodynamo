@@ -40,18 +40,7 @@ jobs:
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
 
-    - name: Valgrind tests BioDynaMo
-      shell: bash
-      working-directory: build
-      run: |
-        . $INSTALL_DIR/bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        make run-valgrind
-        ../util/xvfb-initd.sh stop
-
-    - name: System tests BioDynaMo
+    - name: Valgrind and System tests BioDynaMo
       shell: bash
       working-directory: build
       run: |
@@ -61,20 +50,11 @@ jobs:
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         sleep 3
-        make run-demos
-        ../util/xvfb-initd.sh stop
-
-    - name: Test out-of-source simulation
-      shell: bash
-      working-directory: build
-      run: |
-        . $INSTALL_DIR/bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
+        make run-valgrind
+        make run-demos
         ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
