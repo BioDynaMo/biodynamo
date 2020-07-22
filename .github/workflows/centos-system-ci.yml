@@ -51,7 +51,7 @@ jobs:
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
 
-    - name: System tests
+    - name: Run valgrind and system tests
       shell: bash
       working-directory: build
       run: |
@@ -68,6 +68,7 @@ jobs:
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
+        make run-valgrind
         make run-demos
         ../util/xvfb-initd.sh stop
 

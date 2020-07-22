@@ -34,6 +34,9 @@ jobs:
         y
         EOF
 
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v2
+
     - name: System tests BioDynaMo
       shell: bash
       working-directory: build
