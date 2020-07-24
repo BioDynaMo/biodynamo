@@ -7,25 +7,26 @@ set -e
 temp_dir=$(mktemp -d)
 BDM_SRC="${temp_dir}/biodynamo"
 
-colorize() {
+Colorize() {
   if [ -t 1 ]; then printf "\e[%sm%s\e[m" "$1" "$2"
   else echo -n "$2"
   fi
 }
 
-failed_checkout() {
-  colorize 1 "ERROR"
+FailedCheckout() {
+  Colorize 1 "ERROR"
   echo "Failed to git clone $1"
   exit -1
 }
 
 # TODO: replace branch with 'master' when merging
-checkout() {
-  [ -d "$2" ] || git clone --branch one-line-install "$1" "$2" || failed_checkout "$1"
+Checkout() {
+  [ -d "$2" ] || git clone --branch one-line-install "$1" "$2" || FailedCheckout "$1"
 }
 
+# Check if git is installed
 if ! command -v git 1>/dev/null 2>&1; then
-  colorize 1 "ERROR"
+  Colorize 1 "ERROR"
   echo "Git is not installed, can't continue." >&2
   exit 1
 fi
@@ -36,7 +37,8 @@ else
   GITHUB="https://github.com"
 fi
 
-colorize 1 "Cloning BioDynaMo into ${BDM_SRC}..."; echo ""
-checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
+# Clone BioDynaMo
+Checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
 
+# Run ./install.sh
 BDM_CMAKE_FLAGS="-Dtest=off -Dnotebooks=on -Dsbml=ON" ${BDM_SRC}/install.sh
