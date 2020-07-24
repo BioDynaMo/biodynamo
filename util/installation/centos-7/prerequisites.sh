@@ -25,16 +25,18 @@ Arguments:
   exit 1
 fi
 
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+
 sudo -v
 # add repository for clang-3.9
 sudo yum update -y
 
 # Install required packages
-sudo apt-get install -y \
+sudo yum install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_required)
 
 # Install dependencies to install Python with PyEnv
-sudo apt-get install -y \
+sudo yum install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_pyenv)
 
 if [ -n "${PYENV_ROOT}" ]; then
@@ -71,7 +73,7 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
-  sudo apt-get install -y \
+  sudo yum install -y \
     $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_extra)
 fi
 
