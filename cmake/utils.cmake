@@ -14,38 +14,24 @@
 
 # Detect the system flavour and version. Generate a variable
 # called BDM_OS which will have as content <OS>-<version>.
-# If lsb_release is not found we ask the user to specify manually
-# the software version.
 function(detect_os)
-    find_program(LSB_RELEASE_EXEC lsb_release)
-    if (DETECTED_OS STREQUAL "none")
-        if (DEFINED lsb_release-NOTFOUND AND NOT APPLE)
-            MESSAGE(FATAL_ERROR "We were unable to detect the OS version. This happens because we did not find \
- the lsb_release command. In order to fix this error you should install the lsb_release command or specify which \
- system you are using. To specify the OS you have to run again cmake and set -DOS=<your_os> as argument. The current \
- supported OS'es are: ubuntu-18.04, ubuntu-20.04, centos-7, osx.")
-        elseif(APPLE)
-            SET(DETECTED_OS "osx" PARENT_SCOPE)
-        else()
-            execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
-                    OUTPUT_VARIABLE LSB_RELEASE_DISTRIBUTOR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE
-                    )
-            execute_process(COMMAND ${LSB_RELEASE_EXEC} -sr
-                    OUTPUT_VARIABLE LSB_RELEASE_RELEASE
-                    OUTPUT_STRIP_TRAILING_WHITESPACE
-                    )
-            if (${LSB_RELEASE_DISTRIBUTOR} STREQUAL "CentOS")
-              string(SUBSTRING ${LSB_RELEASE_RELEASE} 0 1 CENTOS_MAJOR)
-              SET(BDM_OS "${LSB_RELEASE_DISTRIBUTOR}-${CENTOS_MAJOR}")
-            else()
-              SET(BDM_OS "${LSB_RELEASE_DISTRIBUTOR}-${LSB_RELEASE_RELEASE}")
-            endif()
-            string(TOLOWER "${BDM_OS}" BDM_OS)
-            SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
-            SET(DETECTED_OS_VERSION ${LSB_RELEASE_RELEASE} PARENT_SCOPE)
-            SET(DETECTED_OS_TYPE ${LSB_RELEASE_DISTRIBUTOR} PARENT_SCOPE)
-        endif()
+    if(APPLE)
+        SET(DETECTED_OS "osx" PARENT_SCOPE)
+    else()
+        set(GET_OS_ID "echo $(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '\"')")
+        set(GET_OS_VERSION "echo $(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '\"')")
+        message("GET_OS_ID = ${GET_OS_ID}")
+        execute_process(COMMAND bash -c "${GET_OS_ID}"
+                OUTPUT_VARIABLE DISTRO_NAME
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+        execute_process(COMMAND bash -c "${GET_OS_VERSION}"
+                OUTPUT_VARIABLE DISTRO_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+        SET(BDM_OS "${DISTRO_NAME}-${DISTRO_VERSION}")
+        SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
+        SET(DETECTED_OS_VERSION ${DISTRO_VERSION} PARENT_SCOPE)
     endif()
 endfunction()
 

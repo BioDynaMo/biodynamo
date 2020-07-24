@@ -18,7 +18,7 @@ jobs:
         yum -y update
         yum -y install centos-release-scl epel-release
         yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
-          devtoolset-7-gcc* numactl-devel openmpi3-devel freeglut-devel redhat-lsb-core \
+          devtoolset-7-gcc* numactl-devel openmpi3-devel freeglut-devel \
           scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         yum -y install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
           sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
@@ -30,7 +30,10 @@ jobs:
         ./cmake-3.17.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
     - name: Set OSVERS
-      run: echo "::set-env name=OSVERS::$(lsb_release -si)-$(lsb_release -sr)"
+      run: |
+        ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+        VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+        echo "::set-env name=OSVERS::$ID-$VERSION"
 
     - name: Cache pyenv
       uses: actions/cache@v2

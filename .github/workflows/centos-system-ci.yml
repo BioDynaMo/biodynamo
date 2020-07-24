@@ -38,8 +38,7 @@ jobs:
       shell: bash
       run: |
         yum update -y
-        yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb fontconfig \
-          mesa-dri-drivers
+        yum install -y sudo xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         BDM_CMAKE_FLAGS="-Dnotebooks=ON -Dsbml=ON" ./install.sh << EOF
         y
         EOF

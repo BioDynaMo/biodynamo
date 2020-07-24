@@ -33,7 +33,8 @@ sudo apt-get install apt-transport-https
 
 # Add ppa for newer CMake version
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-REPO="deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main"
+CODENAME=$(grep -oP '(?<=^UBUNTU_CODENAME=).+' /etc/os-release | tr -d '"')
+REPO="deb https://apt.kitware.com/ubuntu/ ${CODENAME} main"
 sudo apt-add-repository "$REPO"
 
 # Update

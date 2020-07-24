@@ -9,7 +9,7 @@ set -e
 # `echo ""`
 exe() { echo -e "\n\$ $@" ; "$@" ; }
 
-exe lsb_release -a
+exe cat /etc/os-release
 exe uname -a
 exe free -h 
 exe lscpu

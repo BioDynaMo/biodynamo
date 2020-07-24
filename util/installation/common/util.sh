@@ -45,13 +45,9 @@ function DetectOs {
   # detect operating system
   if [ `uname` = "Linux" ]; then
     # linux
-    DISTRIBUTOR=$(lsb_release -si)
-    RELEASE=$(lsb_release -sr)
-    if [ "${DISTRIBUTOR}" = "CentOS" ]; then
-      OS="${DISTRIBUTOR}-${RELEASE:0:1}"
-    else
-      OS="${DISTRIBUTOR}-${RELEASE}"
-    fi
+    DISTRIBUTOR=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+    RELEASE=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+    OS="${DISTRIBUTOR}-${RELEASE}"
     echo $OS | awk '{print tolower($0)}'
   elif [ `uname` = "Darwin" ]; then
     # macOS
