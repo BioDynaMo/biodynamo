@@ -1,11 +1,11 @@
-bzip2-devel
+https://centos7.iuscommunity.org/ius-release.rpm
+epel-release
 centos-release-scl
+bzip2-devel
 cmake3
 devtoolset-7-gcc*
-epel-release
 freeglut-devel
 git
-https://centos7.iuscommunity.org/ius-release.rpm
 libXext-devel
 libXt-devel
 numactl-devel

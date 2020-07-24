@@ -35,10 +35,6 @@ sudo yum update -y
 sudo yum install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_required)
 
-# Install dependencies to install Python with PyEnv
-sudo yum install -y \
-  $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_pyenv)
-
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
 fi

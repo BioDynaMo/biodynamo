@@ -48,10 +48,6 @@ if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
 fi
 
-# Install dependencies to install Python with PyEnv
-sudo apt-get install -y \
-  $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/package_list_pyenv)
-
 # If PyEnv is not installed, install it
 if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
   echo "PyEnv was not found. Installing now..."
