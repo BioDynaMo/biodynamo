@@ -40,5 +40,10 @@ fi
 # Clone BioDynaMo
 Checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
 
+# Enable silent installation if we are running Github Actions
+if [ ! -z ${GITHUB_ACTIONS+x} ]; then
+  export SILENT_INSTALL=1
+fi
+
 # Run ./install.sh
 BDM_CMAKE_FLAGS="-Dtest=off -Dnotebooks=on -Dsbml=ON" ${BDM_SRC}/install.sh
