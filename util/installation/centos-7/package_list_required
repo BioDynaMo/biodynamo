@@ -1,6 +1,3 @@
-https://centos7.iuscommunity.org/ius-release.rpm
-epel-release
-centos-release-scl
 bzip2-devel
 cmake3
 devtoolset-7-gcc*
