@@ -24,8 +24,8 @@ jobs:
     - name: Install BioDynaMo
       shell: bash
       run: |
-        apt update
-        apt install -y sudo curl
+        sudo apt update
+        sudo apt install -y curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/one-line-install/util/install | bash
 
     - name: Checkout BioDynaMo
