@@ -68,7 +68,6 @@ jobs:
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
-        make run-valgrind
         make run-demos
         ../util/xvfb-initd.sh stop
 
