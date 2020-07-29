@@ -11,6 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: centos:7
+    env:
+      UNIT_TEST_SH_SCRIPT: |
+        . scl_source enable devtoolset-7 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        . bin/thisbdm.sh
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        sleep 3
+        ninja run-unit-tests
+        ../util/xvfb-initd.sh stop
 
     steps:
     - name: Install dependencies
@@ -19,7 +30,7 @@ jobs:
         yum -y install centos-release-scl epel-release
         yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
           devtoolset-7-gcc* numactl-devel openmpi3-devel freeglut-devel redhat-lsb-core \
-          scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
+          scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers zsh
         yum -y install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
           sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
         yum -y remove git*
@@ -75,16 +86,12 @@ jobs:
     - name: Unit tests BioDynaMo
       shell: bash
       working-directory: build
-      run: |
-        . scl_source enable devtoolset-7 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
-        . bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        ninja run-unit-tests
-        ../util/xvfb-initd.sh stop
+      run: ${{ env.UNIT_TEST_SH_SCRIPT }}
+
+    - name: (zsh) Unit tests BioDynaMo
+      shell: zsh {0}
+      working-directory: build
+      run: ${{ env.UNIT_TEST_SH_SCRIPT }}
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3

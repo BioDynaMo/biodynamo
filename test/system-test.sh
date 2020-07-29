@@ -12,55 +12,68 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
-
-if [ $# -ne 0 ]; then
-  echo "Wrong number of arguments.
-Description:
-  Run system tests in a BioDynaMo environment.
-Usage:
-  system-test.sh
-No Arguments
-  "
-  exit 1
-fi
-
-set -e -x
-
-source $(dirname "$BASH_SOURCE[0]")/util.inc
-
-# Run all known demos.
-for demo_name in ${CMAKE_DEMOS[@]}  # No quotation.
-do
-  specialized_test="${BDM_PROJECT_DIR}/test/system/${demo_name}.sh"
-  if [ -f "${specialized_test}" ]; then
-    # We have a specialized test, run it.
-    "${specialized_test}"
-  else
-    # Otherwise, just build and run with biodynamo run.
-    demo_dir=$(mktemp -d)
-    biodynamo demo "${demo_name}" "${demo_dir}"
-    run_cmake_simulation "${demo_dir}/${demo_name}"
-    rm -rf "${demo_dir}"
+run_bdm_system_test()
+{
+  if [ $# -ne 0 ]; then
+    echo "Wrong number of arguments.
+  Description:
+    Run system tests in a BioDynaMo environment.
+  Usage:
+    system-test.sh
+  No Arguments
+    "
+    exit 1
   fi
-done
 
-# Do the same for directories in test/system.
-CMAKE_SYSTEM_TESTS=$(find "${BDM_PROJECT_DIR}/test/system" -name CMakeLists.txt \
-                       -exec sh -c 'basename $(dirname {})' \;)
-for test_name in ${CMAKE_SYSTEM_TESTS[@]}
-do
-  specialized_test="${BDM_PROJECT_DIR}/test/system/${test_name}.sh"
-  if [ -f "${specialized_test}" ]; then
-    "${specialized_test}"
-  else
-    temp_dir=$(mktemp -d)
-    cp -r "${BDM_PROJECT_DIR}/test/system/${test_name}" "${temp_dir}"
-    run_cmake_simulation "${temp_dir}/${test_name}"
-    rm -rf "${temp_dir}"
+  set -e -x
+
+  if [ -n "$BASH_VERSION" ]; then
+    source "$(dirname "${BASH_SOURCE[0]}")/util.inc"
+  elif [ -n "$ZSH_VERSION" ]; then
+    emulate -LR bash
+    # shellcheck disable=SC2154
+    source "$(dirname "${(%):-%x}")/util.inc"
   fi
-done
 
-# Other specialized tests.
-"${BDM_PROJECT_DIR}/test/system/makefile_project.sh"
+  # source $(dirname "${(%):-%x}")/util.inc
 
-exit $?
+  # Run all known demos.
+  for demo_name in ${CMAKE_DEMOS[@]}  # No quotation.
+  do
+    specialized_test="${BDM_PROJECT_DIR}/test/system/${demo_name}.sh"
+    if [ -f "${specialized_test}" ]; then
+      # We have a specialized test, run it.
+      "${specialized_test}"
+    else
+      # Otherwise, just build and run with biodynamo run.
+      demo_dir=$(mktemp -d)
+      biodynamo demo "${demo_name}" "${demo_dir}"
+      run_cmake_simulation "${demo_dir}/${demo_name}"
+      rm -rf "${demo_dir}"
+    fi
+  done
+
+  # Do the same for directories in test/system.
+  CMAKE_SYSTEM_TESTS=$(find "${BDM_PROJECT_DIR}/test/system" -name CMakeLists.txt \
+                        -exec sh -c 'basename $(dirname {})' \;)
+
+  for test_name in ${CMAKE_SYSTEM_TESTS[@]}
+  do
+    specialized_test="${BDM_PROJECT_DIR}/test/system/${test_name}.sh"
+    if [ -f "${specialized_test}" ]; then
+      "${specialized_test}"
+    else
+      temp_dir=$(mktemp -d)
+      cp -r "${BDM_PROJECT_DIR}/test/system/${test_name}" "${temp_dir}"
+      run_cmake_simulation "${temp_dir}/${test_name}"
+      rm -rf "${temp_dir}"
+    fi
+  done
+
+  # Other specialized tests.
+  "${BDM_PROJECT_DIR}/test/system/makefile_project.sh"
+
+  exit $?
+}
+
+run_bdm_system_test "$@"

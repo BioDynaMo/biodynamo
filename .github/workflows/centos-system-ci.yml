@@ -18,6 +18,33 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: centos:7
+    env:
+      SYS_TESTS_SH_SCRIPT: |
+        . scl_source enable devtoolset-7 || true
+        . scl_source enable llvm-toolset-6.0 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        . $INSTALL_DIR/bin/thisbdm.sh
+        git config --system user.name "Test User"
+        git config --system user.email user@test.com
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        sleep 3
+        make run-demos
+        ../util/xvfb-initd.sh stop
+      OOS_SIM_TEST_SH_SCRIPT: |
+        . scl_source enable devtoolset-7 || true
+        . scl_source enable llvm-toolset-6.0 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        . $INSTALL_DIR/bin/thisbdm.sh
+        biodynamo new test-sim
+        . ../test/util.inc
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        run_cmake_simulation test-sim
+        ../util/xvfb-initd.sh stop
+        rm -rf test-sim
 
     steps:
       # Do this prior to Checkout BioDynaMo, because the CentOS docker container
@@ -33,13 +60,13 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    
+
     - name: Install BioDynaMo
       shell: bash
       run: |
         yum update -y
         yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb fontconfig \
-          mesa-dri-drivers
+          mesa-dri-drivers zsh
         BDM_CMAKE_FLAGS="-Dnotebooks=ON -Dsbml=ON" ./install.sh << EOF
         y
         EOF
@@ -51,38 +78,25 @@ jobs:
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
 
-    - name: System tests
+    - name: System tests BioDynaMo
       shell: bash
       working-directory: build
-      run: |
-        . scl_source enable devtoolset-7 || true
-        . scl_source enable llvm-toolset-6.0 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
-        . $INSTALL_DIR/bin/thisbdm.sh
-        git config --system user.name "Test User"
-        git config --system user.email user@test.com
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        make run-demos
-        ../util/xvfb-initd.sh stop
+      run: ${{ env.SYS_TESTS_SH_SCRIPT }}
+
+    - name: (zsh) System tests BioDynaMo
+      shell: zsh {0}
+      working-directory: build
+      run: ${{ env.SYS_TESTS_SH_SCRIPT }}
 
     - name: Test out-of-source simulation
       shell: bash
       working-directory: build
-      run: |
-        . scl_source enable devtoolset-7 || true
-        . scl_source enable llvm-toolset-6.0 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
-        . $INSTALL_DIR/bin/thisbdm.sh
-        biodynamo new test-sim
-        . ../test/util.inc
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        run_cmake_simulation test-sim
-        ../util/xvfb-initd.sh stop
+      run: ${{ env.OOS_SIM_TEST_SH_SCRIPT }}
+
+    - name: (zsh) Test out-of-source simulation
+      shell: zsh {0}
+      working-directory: build
+      run: ${{ env.OOS_SIM_TEST_SH_SCRIPT }}
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3

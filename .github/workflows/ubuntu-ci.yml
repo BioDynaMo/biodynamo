@@ -12,13 +12,21 @@ jobs:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04]
     runs-on: ${{ matrix.os }}
+    env:
+      UNIT_TEST_SH_SCRIPT: |
+        . bin/thisbdm.sh
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        sleep 3
+        ninja run-unit-tests
+        ../util/xvfb-initd.sh stop
 
     steps:
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-          libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build
+          libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build zsh
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.sh
         chmod +x cmake-3.17.3-Linux-x86_64.sh
         sudo ./cmake-3.17.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
@@ -65,13 +73,12 @@ jobs:
     - name: Unit tests BioDynaMo
       shell: bash
       working-directory: build
-      run: |
-        . bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        ninja run-unit-tests
-        ../util/xvfb-initd.sh stop
+      run: ${{ env.UNIT_TEST_SH_SCRIPT }}
+
+    - name: (zsh) Unit tests BioDynaMo
+      shell: zsh {0}
+      working-directory: build
+      run: ${{ env.UNIT_TEST_SH_SCRIPT }}
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
