@@ -56,7 +56,6 @@ jobs:
         module load mpi
         cmake \
           -Dparaview=ON \
-          -Dnotebooks=ON \
           -Dsbml=ON \
           -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
