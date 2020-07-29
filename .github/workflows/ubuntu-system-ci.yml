@@ -21,17 +21,17 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+    - name: Install BioDynaMo
+      shell: bash
+      run: |
+        apt update
+        apt install -y sudo curl
+        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/one-line-install/util/install | bash
+
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-
-    - name: Install BioDynaMo
-      shell: bash
-      run: |
-        BDM_CMAKE_FLAGS="-Dnotebooks=ON -Dsbml=ON" ./install.sh << EOF
-        y
-        EOF
 
     - name: Set INSTALL_DIR
       run: |
@@ -39,6 +39,16 @@ jobs:
         REGEX='[^-]*'
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
+
+    - name: Build BioDynaMo
+      shell: bash
+      run: |
+        cmake \
+          -Dparaview=ON \
+          -Dsbml=ON \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B build
+        cmake --build build --parallel --config Release
 
     - name: Valgrind tests BioDynaMo
       shell: bash
