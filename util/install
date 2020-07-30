@@ -49,7 +49,8 @@ fi
 # See: https://trello.com/c/vKPbh4iG
 if [[ $(uname -s) != "Darwin"* ]]; then
   SBML="-Dsbml=ON"
+  NOTEBOOKS="-Dnotebooks=ON"
 fi
 
 # Run ./install.sh
-BDM_CMAKE_FLAGS="-Dtest=off -Dnotebooks=on $SBML" ${BDM_SRC}/install.sh
+BDM_CMAKE_FLAGS="-Dtest=off $NOTEBOOKS $SBML" ${BDM_SRC}/install.sh
