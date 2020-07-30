@@ -49,6 +49,7 @@ CMAKE_SYSTEM_TESTS=$(find "${BDM_PROJECT_DIR}/test/system" -name CMakeLists.txt 
                        -exec sh -c 'basename $(dirname {})' \;)
 for test_name in ${CMAKE_SYSTEM_TESTS[@]}
 do
+  ps -ef
   specialized_test="${BDM_PROJECT_DIR}/test/system/${test_name}.sh"
   if [ -f "${specialized_test}" ]; then
     "${specialized_test}"
