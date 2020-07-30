@@ -12,6 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 //
+// \visualize
+//
 // This model creates 8 cells at each corner of a cube, and one in the middle.
 // The cell in the middle secretes a substance. The cells are modeled to move
 // according to the extracellular gradient; in this case to the middle.
@@ -59,7 +61,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
 
   // Run simulation for N timesteps
-  simulation.GetScheduler()->Simulate(1);
+  simulation.GetScheduler()->Simulate(300);
   std::cout << "Simulation completed successfully!\n";
   return 0;
 }
