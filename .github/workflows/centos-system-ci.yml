@@ -34,7 +34,7 @@ jobs:
       run: |
         yum update -y
         yum install -y sudo curl
-        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/one-line-install/util/install | bash
+        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2

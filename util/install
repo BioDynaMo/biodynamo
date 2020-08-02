@@ -19,9 +19,8 @@ FailedCheckout() {
   exit -1
 }
 
-# TODO: replace branch with 'master' when merging
 Checkout() {
-  [ -d "$2" ] || git clone --branch one-line-install "$1" "$2" || FailedCheckout "$1"
+  [ -d "$2" ] || git clone --branch master "$1" "$2" || FailedCheckout "$1"
 }
 
 # Check if git is installed
