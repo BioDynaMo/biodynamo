@@ -18,13 +18,16 @@ keywords:
   -track
   -tracking
 ---
+## 02.09.2020 [`4cca726`](https://github.com/BioDynaMo/biodynamo/commit/4cca726f9de686501527456e30df9c87bc06d812)
+
+Change biodynamo.org/bioapi to biodynamo.org/api
 
 ## 11.02.2020 [`0d6407d`](https://github.com/BioDynaMo/biodynamo/commit/0d6407d52e8fdfdf981364ed6c41aa37206f422e)
 
 Upgrade to Python 3.
 
 Since Python 2 is not supported in 2020 anymore, we upgrade to Python 3 (Mac OS
-excluded momentarily. We rely on PyEnv to create a consistent Python 3
+excluded momentarily). We rely on PyEnv to create a consistent Python 3
 environment through `thisbdm.sh`. For those who are not on Mac OS, please make
 sure that PyEnv is installed correctly by rerunning the prerequisites script, or
 check out the installation guide.
