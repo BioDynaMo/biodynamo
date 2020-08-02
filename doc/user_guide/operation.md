@@ -26,7 +26,7 @@ If it is set to one it means that this function will be executed for every
 time step. If this member is set to two it will be executed every second time
 step, and so on.
 
-Here the link for the complete API documentation for [Operation](/bioapi/structbdm_1_1Operation.html)
+Here the link for the complete API documentation for [Operation](/api/structbdm_1_1Operation.html)
 
 ## Usage examples
 

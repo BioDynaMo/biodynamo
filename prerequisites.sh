@@ -16,8 +16,10 @@
 # This script installs the prerequisites of BioDynaMo, but not BioDynaMo
 # itself.
 # Arguments:
-#  $1 operative systems
-#  $2 type of install (all or just required)
+#  $1 type of install (all or just required)
+#  $2 operating system
+#
+# To install without a prompt set the following envar: SILENT_INSTALL=1
 
 set -e
 
@@ -58,23 +60,19 @@ CheckOsSupported $BDM_PROJECT_DIR/util/installation ${BDM_DETECTED_OS}
 # Check if the required install procedure is available
 CheckTypeInstallSupported $1
 
-EchoInfo "This script installs the prerequisites of BioDynaMo. For more details, please have a look at the official website:"
-EchoInfo "https://biodynamo.org/docs/userguide/prerequisites/"
-EchoInfo ""
-EchoInfo "These commands require sudo rights. If you are sure that these packages have already been installed, you can skip this step."
-EchoInfo ""
-EchoInfo "Do you want to perform these changes? (yes/no)?"
+# Compile the list of packages that will be installed
+CompileListOfPackages $1 $BDM_PROJECT_DIR/util/installation ${BDM_DETECTED_OS}
 
-# Ask user if she/he really wants to perform this changes
-while true; do
-  read -p "" yn
-  case $yn in
-    [Yy]* ) echo "Installing packages..." ; break;;
-    [Nn]* ) echo "Skipping package installation."; exit 0;;
-        * ) echo "Please answer yes or no.";;
-  esac
-done
+EchoInfo "This script installs the following packages with sudo:"
+EchoInfo ""
+column ${BDM_PKG_LIST}
+EchoInfo ""
 
+if [ -z $SILENT_INSTALL ]; then
+  WaitForUser
+fi
+
+EchoInfo "Installing prerequisites..." 
 
 # Call install script for the detected OS
 CallOSSpecificScript $BDM_PROJECT_DIR prerequisites.sh $1

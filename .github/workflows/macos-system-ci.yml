@@ -22,23 +22,46 @@ jobs:
       run: |
         brew install git
 
+    - name: Install BioDynaMo
+      shell: bash
+      run: |
+        brew update
+        brew install curl
+        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
+
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
-    - name: Install BioDynaMo
+    - name: Set INSTALL_DIR
+      run: |
+        VERSION=`git describe --tags`
+        REGEX='[^-]*'
+        [[ $VERSION =~ $REGEX ]]
+        echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
+
+    - name: Build BioDynaMo
       shell: bash
       run: |
-        ./install.sh << EOF
-        y
-        EOF
+        cmake \
+          -Dopencl=OFF \
+          -Dparaview=OFF \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ \
+          -DCMAKE_CXX_FLAGS="-isysroot `xcrun --show-sdk-path`" \
+          -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+          -DCMAKE_EXE_LINKER_FLAGS_INIT=-L/usr/local/opt/llvm/lib \
+          -DCMAKE_SHARED_LINKER_FLAGS_INIT=-L/usr/local/opt/llvm/lib \
+          -B build
+        cmake --build build --parallel --config Release
 
     - name: System tests BioDynaMo
       shell: bash
       working-directory: build
       run: |
-        . bin/thisbdm.sh
+        . $INSTALL_DIR/bin/thisbdm.sh
         git config --system user.name "Test User"
         git config --system user.email user@test.com
         make run-demos

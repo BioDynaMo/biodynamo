@@ -14,13 +14,10 @@
 
 FROM ubuntu:18.04
 
-# lsb-release and lsb-core required to determine operating system
 # man required by ROOT
 RUN apt-get update && apt-get install -y \
   git \
   sudo \
-  lsb-release \
-  lsb-core \
   man \
   software-properties-common \
   wget \

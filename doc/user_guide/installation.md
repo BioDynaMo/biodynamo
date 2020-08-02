@@ -16,13 +16,11 @@ keywords:
   -start
 ---
 
-To install BioDynaMo for the first time execute the following commands.
+To install BioDynaMo for the first time execute the following command.
 The installation will also install all required packages including ParaView, ROOT and Qt5.
 
 ```bash
-git clone https://github.com/BioDynaMo/biodynamo.git
-cd biodynamo
-./install.sh
+curl https://biodynamo.org/install | bash
 ```
 <br/>
 

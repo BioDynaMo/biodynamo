@@ -24,12 +24,15 @@ Arguments:
   exit 1
 fi
 
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+
 brew update
 brew style
 brew update-reset
 
 # Install and upgrade required packages
-brew install libomp open-mpi git pyenv llvm wget cmake || true
+brew install \
+  $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_required) || true
 brew upgrade cmake || true
 
 # Install Python 3.6.9 environment
@@ -41,5 +44,6 @@ pyenv shell 3.6.9
 if [ $1 == "all" ]; then
     PIP_PACKAGES="nbformat jupyter metakernel"
     pip install --user $PIP_PACKAGES
-    brew install doxygen graphviz lcov gcovr || true
+    brew install \
+      $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_extra) || true
 fi
