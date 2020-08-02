@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-
-# Adapted from https://github.com/pyenv/pyenv-installer/blob/master/bin/pyenv-installer
+# Adapted from https://github.com/pyenv/pyenv-installer/
+# Usage: curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash 
 
 set -e
 
@@ -52,5 +52,17 @@ if [[ $(uname -s) != "Darwin"* ]]; then
   NOTEBOOKS="-Dnotebooks=ON"
 fi
 
+# Log the installation process and print error message upon failure
+log=${BDM_SRC}/installation.log
+touch log
+out_msg="Something went wrong with the installation. For more details check \
+  the log file: \"${log}\""
+trap "echo $out_msg" ERR
+
+# Manifest exit code of command that is piped to tee
+set -o pipefail
+
 # Run ./install.sh
-BDM_CMAKE_FLAGS="-Dtest=off $NOTEBOOKS $SBML" ${BDM_SRC}/install.sh
+BDM_CMAKE_FLAGS="-Dtest=off $NOTEBOOKS $SBML" ${BDM_SRC}/install.sh | tee "$log"
+
+set +o pipefail
