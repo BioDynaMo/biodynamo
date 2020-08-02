@@ -38,12 +38,10 @@ BioDynaMo is a software platform to easily create, run, and visualise 3D agent-b
 
 ## Installation
 
-Simply run the following three commands:
+Simply run the following command:
 
 ```
-git clone https://github.com/BioDynaMo/biodynamo.git
-cd biodynamo
-./install.sh
+curl https://biodynamo.org/install | bash
 ```
 
 For more information, check out our [user's guide](https://biodynamo.org/docs/userguide/).

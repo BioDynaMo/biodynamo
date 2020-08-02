@@ -42,4 +42,4 @@ fi
 $BDM_PROJECT_DIR/prerequisites.sh all ${BDM_DETECTED_OS}
 
 # call install script for the detected OS
-util/installation/common/install.sh ${BDM_DETECTED_OS}
+$BDM_PROJECT_DIR/util/installation/common/install.sh ${BDM_DETECTED_OS}

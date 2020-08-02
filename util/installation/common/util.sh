@@ -33,6 +33,11 @@ function RequireSudo {
   while true; do sudo -n true; sleep 10; kill -0 "$$" || exit; done 2>/dev/null &
 }
 
+# Wait for user input
+WaitForUser() {
+  read -n1 -rsp $'Press any key to continue or Ctrl+C to exit...\n' </dev/tty
+}
+
 # Function that detects the OS
 # Returns linux flavour or osx.
 # This function prints an error and exits if is not linux or macos.
@@ -40,13 +45,9 @@ function DetectOs {
   # detect operating system
   if [ `uname` = "Linux" ]; then
     # linux
-    DISTRIBUTOR=$(lsb_release -si)
-    RELEASE=$(lsb_release -sr)
-    if [ "${DISTRIBUTOR}" = "CentOS" ]; then
-      OS="${DISTRIBUTOR}-${RELEASE:0:1}"
-    else
-      OS="${DISTRIBUTOR}-${RELEASE}"
-    fi
+    DISTRIBUTOR=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+    RELEASE=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+    OS="${DISTRIBUTOR}-${RELEASE}"
     echo $OS | awk '{print tolower($0)}'
   elif [ `uname` = "Darwin" ]; then
     # macOS
@@ -95,6 +96,30 @@ function CheckTypeInstallSupported {
     echo "Supported install types are are: "
     echo "- all: install required and optional packages;"
     echo "- required: install only the required packages."
+  fi
+}
+
+# 
+# Arguments:
+#   $1 installation type ("all" or "required")
+#   $2 path to biodynamo installation src folder (util/installation)
+#   $3 OS identifier e.g. ubuntu-16.04 (see DetectOs)
+function CompileListOfPackages {
+  local BDM_INSTALL_SRC="$2"
+  local LOCAL_OS=$3
+
+  # The list of packages on Ubuntu 18.04 and 20.04 are identical to Ubuntu 16.04
+  if [ $LOCAL_OS == "ubuntu-18.04" ] || [ $LOCAL_OS == "ubuntu-20.04" ]; then
+    LOCAL_OS="ubuntu-16.04"
+  fi
+
+  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$LOCAL_OS
+
+  BDM_PKG_LIST=""
+  if [ $1 == "all" ]; then
+    BDM_PKG_LIST="${BDM_INSTALL_OS_SRC}/package_list*"
+  else
+    BDM_PKG_LIST="${BDM_INSTALL_OS_SRC}/package_list_required"
   fi
 }
 

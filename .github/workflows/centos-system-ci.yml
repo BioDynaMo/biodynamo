@@ -29,20 +29,17 @@ jobs:
         yum install -y http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm
         yum install -y git
 
-    - name: Checkout BioDynaMo
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    
     - name: Install BioDynaMo
       shell: bash
       run: |
         yum update -y
-        yum install -y redhat-lsb-core sudo xorg-x11-server-Xvfb fontconfig \
-          mesa-dri-drivers
-        BDM_CMAKE_FLAGS="-Dnotebooks=ON -Dsbml=ON" ./install.sh << EOF
-        y
-        EOF
+        yum install -y sudo curl
+        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
+
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Set INSTALL_DIR
       run: |
@@ -51,10 +48,25 @@ jobs:
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
 
-    - name: System tests
+    - name: Build BioDynaMo
+      shell: bash
+      run: |
+        . scl_source enable devtoolset-7 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        cmake \
+          -Dparaview=ON \
+          -Dsbml=ON \
+          -Dnuma=OFF \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B build
+        cmake --build build --parallel --config Release
+
+    - name: Run system tests
       shell: bash
       working-directory: build
       run: |
+        yum install -y xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         . scl_source enable devtoolset-7 || true
         . scl_source enable llvm-toolset-6.0 || true
         . /etc/profile.d/modules.sh || true

@@ -360,8 +360,9 @@ if [[ $(uname -s) == "Darwin"* ]]; then
     fi
 
 else
-    # CentOs specifics
-    if [ `lsb_release -si` == "CentOS" ]; then
+    # CentOS specifics
+    OS_ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+    if [ ${OS_ID} == "centos" ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
         if [ -z ${CXX} ] && [ -z ${CC} ] ; then
             . scl_source enable devtoolset-7
