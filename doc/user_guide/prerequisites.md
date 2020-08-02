@@ -87,14 +87,14 @@ sudo apt-get install -y curl libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.6.9
-pip install --user nbformat jupyter metakernel
+pyenv shell 3.8.0
+python -m pip install --user nbformat jupyter metakernel
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
   doxygen graphviz lcov gcovr libxml2-dev
@@ -165,14 +165,14 @@ sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sql
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.6.9
-pip install --user nbformat jupyter metakernel
+pyenv shell 3.8.0
+python -m pip install --user nbformat jupyter metakernel
 sudo yum -y install lcov gcovr llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 # SBML integration
@@ -191,20 +191,18 @@ sudo yum install -y libxml2-devel
 
 ## MacOS
 
-Currently we only support macOS installations of BioDynaMo using Homebrew
-(if you are using another package manager you will need to install the
-equivalent packages).
+Currently we only support macOS installations of BioDynaMo using Homebrew.
 But first, before doing anything else, install Xcode (from the App Store) and the command line tools,
-using the command "xcode-select --install".
+using the command ``"xcode-select --install"``.
 
 ### Required Packages
 
- * **llvm**: LLVM compiler suite with also OpenMP compliant clang and clang++
- * **wget**: Retrieves files from the web
- * **cmake**: Set of tools for automate building, testing of software
  * **libomp**: Development files for OpenMP (API for multiprocessor programming)
  * **open-mpi**: Development files for OpenMP (API for multiprocessor programming)
- * **python**: Python 3 Interpreter
+ * **pyenv**: Virtual Python environment
+ * **wget**: Retrieves files from the web
+ * **cmake**: Set of tools for automate building, testing of software
+ * **ninja**: Ninja is a small build system with a focus on speed
 
 ### Optional Packages
 
@@ -219,17 +217,18 @@ using the command "xcode-select --install".
 
 ```bash
 brew update; brew upgrade
-brew install libomp open-mpi git pyenv llvm wget cmake python || true
+brew install libomp open-mpi pyenv wget cmake ninja
 
-# Install Python 3.6.9 environment
+# Install Python 3.8.0 environment
+export PYENV_ROOT=/usr/local/opt/.pyenv
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.6.9
-pip install --user nbformat jupyter metakernel
-brew install doxygen graphviz lcov gcovr || true
+pyenv shell 3.8.0
+python -m pip install --user nbformat jupyter metakernel
+brew install doxygen graphviz lcov gcovr
 ```

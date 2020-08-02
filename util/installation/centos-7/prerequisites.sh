@@ -51,19 +51,19 @@ fi
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
 
-PYVERS=3.6.9
+PYVERS=3.8.0
 
 # If Python $PYVERS is not installed, install it
 if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
   echo "Python $PYVERS was not found. Installing now..."
-  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
+  /usr/bin/env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
 fi
 pyenv shell $PYVERS
 
 # Install optional packages
 if [ $1 == "all" ]; then
   PIP_PACKAGES="nbformat jupyter metakernel"
-  pip install --user $PIP_PACKAGES
+  python -m pip install --user $PIP_PACKAGES
   # SBML integration
   sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
@@ -84,3 +84,5 @@ sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
   --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
   --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
   --family cmake
+
+exit 0

@@ -56,12 +56,12 @@ fi
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
 
-PYVERS=3.6.9
+PYVERS=3.8.0
 
 # If Python $PYVERS is not installed, install it
 if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
   echo "Python $PYVERS was not found. Installing now..."
-  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
+  /usr/bin/env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
 fi
 pyenv shell $PYVERS
 
@@ -69,8 +69,10 @@ pyenv shell $PYVERS
 if [ $1 == "all" ]; then
   # this updates pip, but installs the updated version in $HOME/.local/bin
   PIP_PACKAGES="nbformat jupyter metakernel"
-  pip install --user $PIP_PACKAGES
+  python -m pip install --user $PIP_PACKAGES
 
   sudo apt-get install -y \
     $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/package_list_extra)
 fi
+
+exit 0

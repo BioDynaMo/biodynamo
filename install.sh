@@ -40,6 +40,9 @@ fi
 
 # Install all prerequisites
 $BDM_PROJECT_DIR/prerequisites.sh all ${BDM_DETECTED_OS}
+if [ $? != 0 ]; then
+   exit 1
+fi
 
 # call install script for the detected OS
 $BDM_PROJECT_DIR/util/installation/common/install.sh ${BDM_DETECTED_OS}

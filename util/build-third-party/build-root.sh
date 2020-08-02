@@ -19,14 +19,14 @@ Description:
   This script builds ROOT.
   The archive will be stored in BDM_PROJECT_DIR/build/root.tar.gz
 Arguments:
-  \$1 ROOT version that should be build (e.g. 6.20.04)"
+  \$1 ROOT version that should be build (e.g. 6.22.00)"
   exit 1
 fi
 
 set -e -x
 
 ROOT_VERSION=$1
-PYVERS=3.6.9
+PYVERS=3.8.0
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 cd $BDM_PROJECT_DIR
@@ -60,10 +60,12 @@ tar -zxf root_v$ROOT_VERSION.source.tar.gz
 ROOTSRC=root-$ROOT_VERSION
 
 # Set Python to $PYVERS
-export PATH="$HOME/.pyenv/bin:$PATH"
+if [[ $(uname -s) == "Darwin"* ]]; then
+  export PYENV_ROOT=/usr/local/opt/.pyenv
+fi
 eval "$(pyenv init -)"
 pyenv shell $PYVERS
-pip install --user numpy
+python -m pip install --user numpy
 
 # unset any env var to local installed libraries
 unset XRDSYS
@@ -80,14 +82,26 @@ mkdir build
 cd build
 
 if [[ $(uname -s) == "Darwin"* ]]; then
-  cmake -G Ninja -Dmacos_native=YES -Dbuiltin_glew=ON \
-   -DCMAKE_BUILD_TYPE=Release \
-   -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
-   -DCMAKE_C_COMPILER=$CC \
-   -DCMAKE_CXX_COMPILER=$CXX \
-   -DCMAKE_CXX_STANDARD=14 \
-   -DPYTHON_EXECUTABLE=`pyenv which python3` \
-   ../$ROOTSRC
+  cmake -G Ninja -Dmacos_native=YES \
+     -Dbuiltin_fftw3=ON \
+     -Dbuiltin_freetype=ON \
+     -Dbuiltin_ftgl=ON \
+     -Dbuiltin_glew=ON \
+     -Dbuiltin_gsl=ON \
+     -Dbuiltin_lz4=ON \
+     -Dbuiltin_lzma=ON \
+     -Dbuiltin_openssl=ON \
+     -Dbuiltin_pcre=ON \
+     -Dbuiltin_tbb=ON \
+     -Dbuiltin_unuran=ON \
+     -Dbuiltin_xxhash=ON \
+     -Dbuiltin_zlib=ON \
+     -Dbuiltin_zstd=ON \
+     -DCMAKE_BUILD_TYPE=Release \
+     -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
+     -DCMAKE_CXX_STANDARD=14 \
+     -DPYTHON_EXECUTABLE=`pyenv which python` \
+     ../$ROOTSRC
 else
   cmake -G Ninja \
     -Dbuiltin_fftw3=ON \
@@ -109,7 +123,7 @@ else
     -DCMAKE_CXX_COMPILER=$CXX \
     -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
     -DCMAKE_CXX_STANDARD=14 \
-    -DPYTHON_EXECUTABLE=`pyenv which python3` \
+    -DPYTHON_EXECUTABLE=`pyenv which python` \
     ../$ROOTSRC
 fi
 
