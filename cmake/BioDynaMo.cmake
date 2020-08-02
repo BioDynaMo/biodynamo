@@ -166,7 +166,7 @@ function(fix_rootcling_omp_issue)
   # above command returns path with "\n" appended
   string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
   if ("${OMP_HEADER_PATH}" STREQUAL "include/omp.h")
-     execute_process(COMMAND cp -a ${CMAKE_SOURCE_DIR}/omp ${CMAKE_BINARY_DIR})
+     execute_process(COMMAND cp -a ${CMAKE_SOURCE_DIR}/third_party/omp ${CMAKE_BINARY_DIR})
   else()
     execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/omp)
     execute_process(COMMAND cp -f ${OMP_HEADER_PATH} ${CMAKE_BINARY_DIR}/omp)

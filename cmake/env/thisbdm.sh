@@ -168,6 +168,7 @@ else
 fi
 
 ##### Python Specific Configurations #####
+export PYENV_ROOT=@pyenvroot@
 if [ -z "${PYENV_ROOT}" ]; then
   export PYENV_ROOT="$HOME/.pyenv"
 fi
@@ -177,7 +178,7 @@ eval "$(pyenv init -)"
 pyenv shell @pythonvers@
 
 # Location of jupyter executable (installed with `pip install --user` command)
-if [ ! -z "${PYTHONUSERBASE}" ]; then
+if [ -n "${PYTHONUSERBASE}" ]; then
   export PATH="$PYTHONUSERBASE/.local/bin:$PATH"
 else
   export PATH="$HOME/.local/bin:$PATH"
@@ -326,40 +327,8 @@ fi
 # OpenMP
 export OMP_PROC_BIND=true
 
-# Apple specific
-if [[ $(uname -s) == "Darwin"* ]]; then
-
-    # Remove previous LLVM path
-    if [ -n "${LLVMDIR}" ] ; then
-        old_llvmdir=${LLVMDIR}
-    fi
-    if [ -n "${old_llvmdir}" ]; then
-      if [ -n "${PATH}" ]; then
-        drop_bdm_from_path "$PATH" "${old_llvmdir}/bin"
-        PATH=$newpath
-      fi
-    fi
-    unset old_llvmdir
-
-    # Automatically set the macOS compiler
-    if [ -z ${CXX} ] && [ -z ${CC} ] ; then
-        if [ -x "/usr/local/opt/llvm/bin/clang++" ]; then
-            export LLVMDIR="/usr/local/opt/llvm"
-            export CC=$LLVMDIR/bin/clang
-            export CXX=$LLVMDIR/bin/clang++
-            export CXXFLAGS="-isysroot `xcrun --show-sdk-path`"
-            export LDFLAGS=-L$LLVMDIR/lib
-            export PATH=$LLVMDIR/bin:$PATH
-        elif [ -x "/opt/local/bin/clang++-mp-8.0" ]; then
-            export CC=/opt/local/bin/clang++-mp-8.0
-            export CXX=/opt/local/bin/clang-mp-8.0
-        elif [ -x "/sw/opt/llvm-5.0/bin/clang++" ]; then
-            export CC=/sw/opt/llvm-5.0/bin/clang++
-            export CXX=/sw/opt/llvm-5.0/bin/clang
-        fi
-    fi
-
-else
+# Linux specifics
+if [ $(uname) != "Darwin" ]; then
     # CentOS specifics
     OS_ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
     if [ ${OS_ID} == "centos" ]; then

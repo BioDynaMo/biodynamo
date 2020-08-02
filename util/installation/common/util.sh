@@ -258,14 +258,14 @@ function EchoFinishThisStep {
     exit 1
   fi
 
-  EchoInfo "To complete this step execute:"
-  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
-  EchoInfo "This command must be executed in every terminal before you build or use BioDynaMo."
-  EchoInfo "To avoid this additional step add it to your $(BashrcFile) file:"
-  EchoInfo "    echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
+  EchoInfo "Before running BioDynaMo execute:"
+  EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
+  EchoInfo "To avoid this extra step do:"
+  EchoInfo "   echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
+  EchoInfo "to have it executed automatically when starting a new shell."
 }
 
-# This function prompts the user for the biodynamo installation direcotory
+# This function prompts the user for the biodynamo installation directory
 # providing an option to accept a default.
 function SelectInstallDir {
   if [[ $# -ne 0 ]]; then
@@ -365,7 +365,6 @@ function CopyEnvironmentScript {
 # Arguments:
 #   $1 actual version
 #   $2 required version
-# TODO(ahmad): Fails on OSX because `sort` not installed by default
 function VersionLessThan {
   local VERSION=$1
   local REQUIRED=$2
