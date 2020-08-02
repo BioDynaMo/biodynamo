@@ -1,7 +1,6 @@
-cmake
-git
 libomp
-llvm
 open-mpi
 pyenv
 wget
+cmake
+ninja
