@@ -18,6 +18,7 @@
 #include <vtkDataCompressor.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkXMLPImageDataWriter.h>
 // BioDynaMo
 #include "core/param/param.h"
 #include "core/simulation.h"
@@ -83,7 +84,9 @@ void PvtiWriter::Write(const std::string& folder,
   auto* pd = img->GetPointData();
   for (int i = 0; i < pd->GetNumberOfArrays(); ++i) {
     auto name = pd->GetArray(i)->GetName();
-    ofs << "      <PDataArray type=\"Float64\" Name=\"" << name << "\"/>\n";
+    auto components = pd->GetArray(i)->GetNumberOfComponents();
+    ofs << "      <PDataArray type=\"Float64\" Name=\"" << name
+        << "\" NumberOfComponents=\"" << components << "\"/>\n";
   }
   ofs << "  </PPointData>\n";
 
