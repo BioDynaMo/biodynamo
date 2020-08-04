@@ -430,8 +430,11 @@ _source_thisbdm()
       fi
     fi
   else # GNU/Linux
+    local os_id
+    os_id=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+
     # CentOS specifics
-    if [ "$(lsb_release -si)" = "CentOS" ]; then
+    if [ "$os_id" = "centos" ]; then
       export MESA_GL_VERSION_OVERRIDE=3.3
       if [ -z ${CXX} ] && [ -z ${CC} ] ; then
         . scl_source enable devtoolset-7

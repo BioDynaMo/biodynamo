@@ -17,20 +17,8 @@
 #
 #   $1 the directory containing the CMake simulation code
 function run_cmake_simulation() {
-  if [ -n "$ZSH_VERSION" ]; then
-    emulate -LR bash
-  fi
   log=$(mktemp)
-  echo "created logfile ${log}"
-
-  if [ -n "$ZSH_VERSION" ]; then
-    TRAPEXIT() {
-      rm -rf "${log}"
-      sleep 1
-    }
-  else
-    trap "rm -rf \"${log}\"" RETURN
-  fi
+  trap "rm -rf \"${log}\"" RETURN
 
   pushd "$1"
   biodynamo run | tee "${log}"
@@ -38,7 +26,7 @@ function run_cmake_simulation() {
   popd
 
   if [ "${SIM_RET_VAL}" != "0" ]; then
-    return $SIM_RET_VAL
+    returm $SIM_RET_VAL
   fi
 
   expected="Simulation completed successfully!"
@@ -46,12 +34,6 @@ function run_cmake_simulation() {
   return $?
 }
 
-if [ -n "$BASH_VERSION" ]; then
-  BDM_PROJECT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-elif [ -n "$ZSH_VERSION" ]; then
-  # shellcheck disable=SC2154
-  BDM_PROJECT_DIR=$(cd "$(dirname "${(%):-%x}")/.." && pwd)
-fi
-
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CMAKE_DEMOS=$(find "${BDM_PROJECT_DIR}/demo" -name CMakeLists.txt \
                 -exec sh -c 'basename $(dirname {})' \;)

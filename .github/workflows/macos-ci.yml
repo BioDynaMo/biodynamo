@@ -59,7 +59,6 @@ jobs:
         . bin/thisbdm.sh
         ninja run-unit-tests
 
-    # running under default macOS 10.15+ zsh
     - name: (zsh) Unit tests BioDynaMo
       shell: zsh {0}
       working-directory: build
