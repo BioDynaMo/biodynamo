@@ -21,24 +21,71 @@
 #
 # Author: Fons Rademakers, 16/5/2019
 
-drop_bdm_from_path()
+_bdm_quiet='OFF'
+
+_bdm_err()
+{
+  if [ "$_bdm_quiet" = 'OFF' ]; then
+    echo -e "\e[31m$*\e[0m"
+  fi
+}
+
+_bdm_ok()
+{
+  if [ "$_bdm_quiet" = 'OFF' ]; then
+    echo -e "\e[32m$*\e[0m"
+  fi
+}
+
+_drop_bdm_from_path()
 {
    # Assert that we got enough arguments
    if test $# -ne 2 ; then
-      echo "drop_bdm_from_path: needs 2 arguments"
+      _bdm_err "[ERR] drop_bdm_from_path: needs 2 arguments"
       return 1
    fi
 
    local p=$1
    local drop=$2
 
-   newpath=$(echo "$p" | sed -e "s;:${drop}:;:;g"\
-                             -e "s;:${drop}\$;;g"\
-                             -e "s;^${drop}:;;g" \
-                             -e "s;^${drop}\$;;g")
+   _newpath=$(echo "$p" | sed -e "s;:${drop}:;:;g"\
+                              -e "s;:${drop}\$;;g"\
+                              -e "s;^${drop}:;;g" \
+                              -e "s;^${drop}\$;;g")
 }
 
-source_thisbdm()
+_bdm_define_command()
+{
+  unset -f "$1" >/dev/null 2>&1 || true
+  unalias  "$1" >/dev/null 2>&1 || true
+  if [ -n  "$ZSH_VERSION" ]; then
+    autoload -Uz "$1"
+  else
+    # shellcheck disable=SC1090
+    source "${BDMSYS}/bin/shell_functions/$1"
+    export -f "${1?}"
+  fi
+}
+
+_bdm_unset()
+{
+  unset "$@" >/dev/null 2>&1 || true
+}
+
+_thisbdm_cleanup() {
+  _bdm_unset thisbdm
+  _bdm_unset _bdm_quiet
+  _bdm_unset _newpath
+  _bdm_unset -f _drop_bdm_from_path
+  _bdm_unset -f _source_thisbdm
+  _bdm_unset -f _bdm_define_command
+  _bdm_unset -f _bdm_err
+  _bdm_unset -f _bdm_ok
+  unset -f _bdm_unset >/dev/null 2>&1 || true
+  unset -f _thisbdm_cleanup >/dev/null 2>&1 || true
+}
+
+_source_thisbdm()
 {
   # detect bash-like shell
   local bdm_shell
@@ -49,14 +96,31 @@ source_thisbdm()
     # The reason why this script is wrapped in this god function
     # is to enable bash compatibility *only* inside its respective
     # scope. Local vars are a nice bonus.
-    emulate -LR bash
+    emulate -LR sh
   else
-    # In case we encounter a shell that can mostly execute this.
-    # In reality, csh and fish will fail immediately due to parsing errors.
-    echo "[X] Your shell is not supported, please use bash or zsh."
-    echo "    For csh and fish, please source 'thisbdm.csh' or 'thisbdm.fish', respectively."
+    # In case we encounter a shell that can this script up to here.
+    # In reality, most shells (csh, fish, etc.) will fail immediately due to parsing errors.
+    _bdm_err "[ERR] Your shell is not supported, please use bash or zsh."
+    _bdm_err "      For csh and fish, please source 'thisbdm.csh' or 'thisbdm.fish', respectively."
     return 1
   fi
+
+  local positional=()
+  while [[ $# -gt 0 ]]; do
+    local key="$1"
+
+    case $key in
+        -q|--quiet)
+        _bdm_quiet='ON'
+        shift # next key
+        ;;
+        *)    # positional arg
+        positional+=("$1")
+        shift # next key
+        ;;
+    esac
+  done
+  set -- "${positional[@]}" # restore positional parameters
 
   if [ -n "${BDM_INSTALL_DIR}" ]; then
      local old_bdmsys_base=${BDM_INSTALL_DIR}
@@ -79,73 +143,72 @@ source_thisbdm()
   # Clear the env from previously set BioDynaMo paths.
   if [ -n "${old_bdmsys}" ] ; then
      if [ -n "${PATH}" ]; then
-      drop_bdm_from_path "$PATH" "${old_bdmsys}/bin"
-      PATH=$newpath
+      _drop_bdm_from_path "$PATH" "${old_bdmsys}/bin"
+      PATH=$_newpath
      fi
      if [ -n "${LD_LIBRARY_PATH}" ]; then
-      drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/lib"
-      LD_LIBRARY_PATH=$newpath
+      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/lib"
+      LD_LIBRARY_PATH=$_newpath
      fi
      if [ -n "${DYLD_LIBRARY_PATH}" ]; then
-      drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/lib"
-      DYLD_LIBRARY_PATH=$newpath
+      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/lib"
+      DYLD_LIBRARY_PATH=$_newpath
      fi
      if [ -n "${SHLIB_PATH}" ]; then
-      drop_bdm_from_path "$SHLIB_PATH" "${old_bdmsys}/lib"
-      SHLIB_PATH=$newpath
+      _drop_bdm_from_path "$SHLIB_PATH" "${old_bdmsys}/lib"
+      SHLIB_PATH=$_newpath
      fi
      if [ -n "${LIBPATH}" ]; then
-      drop_bdm_from_path "$LIBPATH" "${old_bdmsys}/lib"
-      LIBPATH=$newpath
+      _drop_bdm_from_path "$LIBPATH" "${old_bdmsys}/lib"
+      LIBPATH=$_newpath
      fi
      if [ -n "${MANPATH}" ]; then
-      drop_bdm_from_path "$MANPATH" "${old_bdmsys}/man"
-      MANPATH=$newpath
+      _drop_bdm_from_path "$MANPATH" "${old_bdmsys}/man"
+      MANPATH=$_newpath
      fi
      if [ -n "${CMAKE_PREFIX_PATH}" ]; then
-      drop_bdm_from_path "$CMAKE_PREFIX_PATH" "${old_bdmsys}"
-      CMAKE_PREFIX_PATH=$newpath
+      _drop_bdm_from_path "$CMAKE_PREFIX_PATH" "${old_bdmsys}"
+      CMAKE_PREFIX_PATH=$_newpath
      fi
   fi
 
   if [ -n "${old_bdmsys_base}" ]; then
      if [ -n "${ParaView_DIR}" ]; then
-      drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys_base}/third_party/paraview/lib/cmake/paraview-5.8"
-      ParaView_DIR=$newpath
+      _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys_base}/third_party/paraview/lib/cmake/paraview-5.8"
+      ParaView_DIR=$_newpath
      fi
      if [ -n "${ParaView_LIB_DIR}" ]; then
-      drop_bdm_from_path "$ParaView_LIB_DIR" "${old_bdmsys_base}/third_party/paraview/lib"
-      ParaView_LIB_DIR=$newpath
+      _drop_bdm_from_path "$ParaView_LIB_DIR" "${old_bdmsys_base}/third_party/paraview/lib"
+      ParaView_LIB_DIR=$_newpath
      fi
      if [ -n "${PV_PLUGIN_PATH}" ]; then
-      drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys_base}/biodynamo/lib/pv_plugin"
-      PV_PLUGIN_PATH=$newpath
+      _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys_base}/biodynamo/lib/pv_plugin"
+      PV_PLUGIN_PATH=$_newpath
      fi
      if [ -n "${PATH}" ]; then
-      drop_bdm_from_path "$PATH" "${old_bdmsys_base}/third_party/paraview/bin"
-      PATH=$newpath
+      _drop_bdm_from_path "$PATH" "${old_bdmsys_base}/third_party/paraview/bin"
+      PATH=$_newpath
      fi
      if [ -n "${Qt5_DIR}" ]; then
-      drop_bdm_from_path "$Qt5_DIR" "${old_bdmsys_base}/third_party/qt/lib/cmake/Qt5"
-      Qt5_DIR=$newpath
+      _drop_bdm_from_path "$Qt5_DIR" "${old_bdmsys_base}/third_party/qt/lib/cmake/Qt5"
+      Qt5_DIR=$_newpath
      fi
      if [ -n "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
-      drop_bdm_from_path "$QT_QPA_PLATFORM_PLUGIN_PATH" "${old_bdmsys_base}/third_party/qt/plugins"
-      QT_QPA_PLATFORM_PLUGIN_PATH=$newpath
+      _drop_bdm_from_path "$QT_QPA_PLATFORM_PLUGIN_PATH" "${old_bdmsys_base}/third_party/qt/plugins"
+      QT_QPA_PLATFORM_PLUGIN_PATH=$_newpath
      fi
      if [ -n "${DYLD_LIBRARY_PATH}" ]; then
-      drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
-      DYLD_LIBRARY_PATH=$newpath
-      drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
-      DYLD_LIBRARY_PATH=$newpath
+      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
+      DYLD_LIBRARY_PATH=$_newpath
+      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
+      DYLD_LIBRARY_PATH=$_newpath
      fi
      if [ -n "${LD_LIBRARY_PATH}" ]; then
-      drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
-      LD_LIBRARY_PATH=$newpath
-      drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
-      LD_LIBRARY_PATH=$newpath
+      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
+      LD_LIBRARY_PATH=$_newpath
+      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
+      LD_LIBRARY_PATH=$_newpath
      fi
-
   fi
   #########
 
@@ -227,9 +290,9 @@ source_thisbdm()
   if [ -z "${BDM_ROOT_DIR}" ] && [ -z "${ROOTSYS}" ]; then
     BDM_ROOT_DIR=${BDMSYS}/third_party/root
     if ! [ -d "$BDM_ROOT_DIR" ]; then
-      echo "[ERR] We are unable to source ROOT! Please make sure ROOT is installed on your system!"
-      echo "      You can specify manually its location by executing 'export BDM_ROOT_DIR=path/to/root'"
-      echo "      before running cmake."
+      _bdm_err "[ERR] We are unable to source ROOT! Please make sure ROOT is installed on your system!"
+      _bdm_err "      You can specify manually its location by executing 'export BDM_ROOT_DIR=path/to/root'"
+      _bdm_err "      before running cmake."
       return 1
     fi
   else
@@ -241,27 +304,29 @@ source_thisbdm()
      if [ "$crvers" = "$orvers" ]; then
       BDM_ROOT_DIR=${ROOTSYS}
      else
-      echo "[ERR] ROOTSYS points to ROOT version $crvers, while BDM was build with version $orvers."
-      echo "      Make sure that ROOTSYS points to the right version of ROOT."
+      _bdm_err "[ERR] ROOTSYS points to ROOT version $crvers, while BDM was build with version $orvers."
+      _bdm_err "      Make sure that ROOTSYS points to the right version of ROOT."
       return 1
      fi
     fi
   fi
 
+  # shellcheck disable=SC1090
   . "${BDM_ROOT_DIR}"/bin/thisroot.sh
+  _bdm_define_command root
 
   ########
 
   #### ParaView Specific Configurations ####
-  local with_paraview=@with_paraview@
+  local with_paraview='OFF'
   if [ "$with_paraview" = 'ON' ]; then
 
      if [ -z "${ParaView_DIR}" ]; then
       ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR;
       if ! [ -d "$ParaView_DIR" ]; then
-       echo "[ERR] We are unable to find ParaView! Please make sure it is installed in your system!"
-       echo "      You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
-       echo "      together with 'export Qt5_DIR=path/to/qt' before running cmake."
+       _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed in your system!"
+       _bdm_err "      You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
+       _bdm_err "      together with 'export Qt5_DIR=path/to/qt' before running cmake."
        return 1
       fi
      fi
@@ -280,11 +345,9 @@ source_thisbdm()
 
      # We don't add the ParaView site-packages path to PYTHONPATH, because pip in the
      # pyenv environment will not function anymore: ModuleNotFoundError: No module named 'pip._internal'
-     unset -f paraview >/dev/null 2>&1 || true
-     # zsh displays a warning when a key in a map doesn't exist,
-     # it seems we can safely ignore this, hence the redir to null
-     unset -f pvpython >/dev/null 2>&1 || true
-     unset -f pvbatch  >/dev/null 2>&1 || true
+     _bdm_define_command paraview
+     _bdm_define_command pvpython
+     _bdm_define_command pvbatch
 
      if [ -z "${LD_LIBRARY_PATH}" ]; then
       LD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export LD_LIBRARY_PATH
@@ -297,15 +360,15 @@ source_thisbdm()
      else
       DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
      fi
-  ########
+     ########
 
-  #### Qt5 Specific Configurations ####
+     #### Qt5 Specific Configurations ####
      if [ -z "${Qt5_DIR}" ]; then
       Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
       if ! [ -d "$Qt5_DIR" ]; then
-       echo "[ERR] We are unable to find Qt! Please make sure it is installed in your system!"
-       echo "      You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
-       echo "      together with 'export ParaView_DIR=path/to/paraview' before running cmake."
+       _bdm_err "[ERR] We are unable to find Qt! Please make sure it is installed in your system!"
+       _bdm_err "      You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
+       _bdm_err "      together with 'export ParaView_DIR=path/to/paraview' before running cmake."
        return 1
       fi
      fi
@@ -327,9 +390,7 @@ source_thisbdm()
      else
       DYLD_LIBRARY_PATH="${Qt5_DIR}/lib":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
      fi
-
   fi
-
   #######
 
   # OpenMP
@@ -345,8 +406,8 @@ source_thisbdm()
     fi
     if [ -n "${old_llvmdir}" ]; then
       if [ -n "${PATH}" ]; then
-      drop_bdm_from_path "$PATH" "${old_llvmdir}/bin"
-      PATH=$newpath
+      _drop_bdm_from_path "$PATH" "${old_llvmdir}/bin"
+      PATH=$_newpath
       fi
     fi
     unset old_llvmdir >/dev/null 2>&1
@@ -385,48 +446,21 @@ source_thisbdm()
     fi
   fi
 
-  ###### Aliases
-  unset -f root >/dev/null 2>&1 || true
-  # Note: ROOT will execute the commands inside the single quotes...
-  #                                            V ...beginning here.
-  alias root='${BDM_ROOT_DIR}'"/bin/root -l -e 'cout << \"Loading BioDynaMo into ROOT...\" << endl;gROOT->LoadMacro(\""'${BDMSYS}'"/etc/rootlogon.C\");'"
-  alias paraview='${ParaView_DIR}/bin/paraview'
-  alias pvpython='${ParaView_DIR}/bin/pvpython'
-  alias pvbatch='${ParaView_DIR}/bin/pvbatch'
-
-  ###### Env Indicator
-  # Append a little tag to the user's shell prompt.
-  # to indicate that they're in thisbdm's environment.
-  # Rationale: Users might forget that they've sourced thisbdm
-  # which may appear to break some of their own enviroment variables.
-  # Note: Fancy custom prompts will most likely clobber this.
-  local prompt_tag='[BioDynaMo]'
-  if [ "$bdm_shell" = "bash" ]; then
-    export PS1="$prompt_tag $PS1"
-  elif [ "$bdm_shell" = "zsh" ]; then
-    export PROMPT="$prompt_tag $PROMPT"
+  # For autoloading to work properly
+  if [ "$bdm_shell" = "zsh" ]; then
+    FPATH="${BDMSYS}/bin/shell_functions:$FPATH"
   fi
 
   return 0
 }
 
-# Clean up all globals created during this script's execution.
-cleanup_globals()
-{
-  unset newpath
-  unset thisbdm
-  unset -f drop_bdm_from_path
-  unset -f source_thisbdm
-  unset -f cleanup_globals
-}
-
-# Run (excuse the repeated code)
-if source_thisbdm; then
-  echo "[OK] You have successfully sourced BioDynaMo's environment."
-  cleanup_globals
+# Run
+if _source_thisbdm "$@"; then
+  _bdm_ok "[OK] You have successfully sourced BioDynaMo's environment."
+  _thisbdm_cleanuddp
   return 0
 else
-  echo "[ERR] BioDynaMo's environment could not be sourced."
-  cleanup_globals
+  _bdm_err "[ERR] BioDynaMo's environment could not be sourced."
+  _thisbdm_cleanup
   return 1
 fi
