@@ -261,6 +261,7 @@ _source_thisbdm()
   fi
 
   ##### Python Specific Configurations #####
+  export PYENV_ROOT=@pyenvroot@
   if [ -z "${PYENV_ROOT}" ]; then
     export PYENV_ROOT="$HOME/.pyenv"
   fi
@@ -398,58 +399,30 @@ _source_thisbdm()
 
   ###### Platform-specific Configuration
   # Apple specific
-  if [[ $(uname -s) == "Darwin"* ]]; then
-
-    # Remove previous LLVM path
-    if [ -n "${LLVMDIR}" ] ; then
-      local old_llvmdir=${LLVMDIR}
-    fi
-    if [ -n "${old_llvmdir}" ]; then
-      if [ -n "${PATH}" ]; then
-      _drop_bdm_from_path "$PATH" "${old_llvmdir}/bin"
-      PATH=$_newpath
-      fi
-    fi
-    unset old_llvmdir >/dev/null 2>&1
-
-    # Automatically set the macOS compiler
-    if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
-      if [ -x "/usr/local/opt/llvm/bin/clang++" ]; then
-        LLVMDIR="/usr/local/opt/llvm"; export LLVMDIR
-        CC="$LLVMDIR/bin/clang"; export CC
-        CXX=$LLVMDIR/bin/clang++; export CXX
-        CXXFLAGS="-isysroot $(xcrun --show-sdk-path)"; export CXXFLAGS
-        LDFLAGS="-L$LLVMDIR/lib"; export LDFLAGS
-        PATH="$LLVMDIR/bin:$PATH"; export PATH
-      elif [ -x "/opt/local/bin/clang++-mp-8.0" ]; then
-        CC="/opt/local/bin/clang++-mp-8.0"; export CC
-        CXX="/opt/local/bin/clang-mp-8.0"; export CXX
-      elif [ -x "/sw/opt/llvm-5.0/bin/clang++" ]; then
-        CC="/sw/opt/llvm-5.0/bin/clang++"; export CC
-        CXX="/sw/opt/llvm-5.0/bin/clang"; export CXX
-      fi
-    fi
+  if [ "$(uname)" = 'Darwin' ]; then
+    # Nothing for now
+    true
   else # GNU/Linux
+    # CentOS specifics
     local os_id
     os_id=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
-
-    # CentOS specifics
     if [ "$os_id" = "centos" ]; then
-      export MESA_GL_VERSION_OVERRIDE=3.3
-      if [ -z ${CXX} ] && [ -z ${CC} ] ; then
-        . scl_source enable devtoolset-7
-      fi
-      . /etc/profile.d/modules.sh
-      module load mpi
+        export MESA_GL_VERSION_OVERRIDE=3.3
+        if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
+            . scl_source enable devtoolset-7
+        fi
+        . /etc/profile.d/modules.sh
+        module load mpi
 
-      # load llvm 6 required for libroadrunner
-      if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then
-        . scl_source enable llvm-toolset-6.0
-      fi
+        # load llvm 6 required for libroadrunner
+        if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then
+          . scl_source enable llvm-toolset-6.0
+        fi
     fi
   fi
+  #######
 
-  # For autoloading to work properly
+  # for zsh autoloads
   if [ "$bdm_shell" = "zsh" ]; then
     FPATH="${BDMSYS}/bin/shell_functions:$FPATH"
   fi
