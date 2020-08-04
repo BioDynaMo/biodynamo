@@ -457,7 +457,7 @@ _source_thisbdm()
 # Run
 if _source_thisbdm "$@"; then
   _bdm_ok "[OK] You have successfully sourced BioDynaMo's environment."
-  _thisbdm_cleanuddp
+  _thisbdm_cleanup
   return 0
 else
   _bdm_err "[ERR] BioDynaMo's environment could not be sourced."
