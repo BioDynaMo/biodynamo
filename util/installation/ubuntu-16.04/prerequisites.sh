@@ -25,30 +25,28 @@ Arguments:
   exit 1
 fi
 
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+
 # Required to add Kitware ppa below
 sudo apt-get update
 sudo apt-get install apt-transport-https
 
 # Add ppa for newer CMake version
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-REPO="deb https://apt.kitware.com/ubuntu/ `lsb_release -cs` main"
+CODENAME=$(grep -oP '(?<=^UBUNTU_CODENAME=).+' /etc/os-release | tr -d '"')
+REPO="deb https://apt.kitware.com/ubuntu/ ${CODENAME} main"
 sudo apt-add-repository "$REPO"
 
 # Update
 sudo apt-get update
 
 # Install required packages
-sudo apt-get install -y wget curl cmake make gcc g++ \
-  libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-  libpthread-stubs0-dev zlib1g-dev libbz2-dev
+sudo apt-get install -y \
+  $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/package_list_required)
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
 fi
-
-# Install dependencies to install Python with PyEnv
-sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
-  libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
 
 # If PyEnv is not installed, install it
 if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
@@ -58,12 +56,12 @@ fi
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
 
-PYVERS=3.6.9
+PYVERS=3.8.0
 
 # If Python $PYVERS is not installed, install it
 if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
   echo "Python $PYVERS was not found. Installing now..."
-  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
+  /usr/bin/env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
 fi
 pyenv shell $PYVERS
 
@@ -71,10 +69,10 @@ pyenv shell $PYVERS
 if [ $1 == "all" ]; then
   # this updates pip, but installs the updated version in $HOME/.local/bin
   PIP_PACKAGES="nbformat jupyter metakernel"
-  pip install --user $PIP_PACKAGES
+  python -m pip install --user $PIP_PACKAGES
 
-  sudo apt-get install -y valgrind \
-    clang clang-format clang-tidy \
-    doxygen graphviz lcov gcovr \
-    llvm-6.0 llvm-6.0-dev llvm-6.0-runtime libxml2-dev
+  sudo apt-get install -y \
+    $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/package_list_extra)
 fi
+
+exit 0

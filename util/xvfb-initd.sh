@@ -4,10 +4,11 @@
 XVFB=/usr/bin/Xvfb
 XVFBARGS=":99 -ac -screen 0 2560x1440x24"
 PIDFILE=/tmp/cucumber_xvfb_99.pid
+OS_ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
 case "$1" in
   start)
     echo -n "Starting virtual X frame buffer: Xvfb"
-    if [ `lsb_release -si` != "CentOS" ]; then
+    if [ ${OS_ID} != "centos" ]; then
 	     /sbin/start-stop-daemon --start --quiet --pidfile $PIDFILE --make-pidfile --background --exec $XVFB -- $XVFBARGS
     elif [ "$(ps -ef | grep "$XVFB" | wc -l)" != "2" ]; then
       $XVFB $XVFBARGS &
@@ -16,7 +17,7 @@ case "$1" in
     ;;
   stop)
     echo -n "Stopping virtual X frame buffer: Xvfb"
-    if [ `lsb_release -si` != "CentOS" ]; then
+    if [ ${OS_ID} != "centos" ]; then
       /sbin/start-stop-daemon --stop --quiet --pidfile $PIDFILE
     else
       pkill -f "$XVFB"

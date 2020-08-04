@@ -1,30 +1,44 @@
-# -----------------------------------------------------------------------------
+# Module for locating libnuma
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Read-only variables:
+#   NUMA_FOUND
+#     Indicates that the library has been found.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+#   NUMA_INCLUDE_DIR
+#     Points to the libnuma include directory.
 #
-# See the LICENSE file distributed with this work for details.
-# See the NOTICE file distributed with this work for additional information
-# regarding copyright ownership.
+#   NUMA_LIBRARY_DIR
+#     Points to the directory that contains the libraries.
+#     The content of this variable can be passed to link_directories.
 #
-# -----------------------------------------------------------------------------
+#   NUMA_LIBRARY
+#     Points to the libnuma that can be passed to target_link_libararies.
+#
+# Copyright (c) 2015 Steve Borho
 
-# This script will set the following variables
-#  NUMA_FOUND - System has NUMA
-#  NUMA_INCLUDE_DIR - NUMA include directory
-#  NUMA_LIBRARY_DIR - NUMA library directory
-#  NUMA_LIBRARIES - The libraries needed to use NUMA
+include(FindPackageHandleStandardArgs)
 
-find_path(NUMA_INCLUDE_DIR NAMES numa.h)
-find_library(NUMA_LIBRARY_DIR NAMES numa)
+find_path(NUMA_ROOT_DIR
+  NAMES include/numa.h
+  PATHS ENV NUMA_ROOT
+  DOC "NUMA root directory")
 
-if (NUMA_LIBRARY_DIR)
-  set(NUMA_FOUND TRUE)
-  set(NUMA_LIBRARIES numa)
-  message(STATUS "Found NUMA library ${NUMA_LIBRARY_DIR}")
-else()
-  message(STATUS "NUMA library not found")
+find_path(NUMA_INCLUDE_DIR
+  NAMES numa.h
+  HINTS ${NUMA_ROOT_DIR}
+  PATH_SUFFIXES include
+  DOC "NUMA include directory")
+
+find_library(NUMA_LIBRARY
+  NAMES numa
+  HINTS ${NUMA_ROOT_DIR}
+  DOC "NUMA library")
+
+if (NUMA_LIBRARY)
+    get_filename_component(NUMA_LIBRARY_DIR ${NUMA_LIBRARY} DIRECTORY)
 endif()
+
+mark_as_advanced(NUMA_INCLUDE_DIR NUMA_LIBRARY_DIR NUMA_LIBRARY)
+
+INCLUDE(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Numa REQUIRED_VARS NUMA_LIBRARY NUMA_INCLUDE_DIR NUMA_LIBRARY_DIR)

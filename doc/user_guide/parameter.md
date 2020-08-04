@@ -20,8 +20,8 @@ keywords:
 
 Parameters are used to tailor BioDynaMo to your specific simulation.
 
-The majority of parameters are defined in the [core engine](/bioapi/structbdm_1_1Param.html).
-Each module can define its own [`Param` class](/bioapi/structbdm_1_1experimental_1_1neuroscience_1_1Param.html) to add additional parameters.
+The majority of parameters are defined in the [core engine](/api/structbdm_1_1Param.html).
+Each module can define its own [`Param` class](/api/structbdm_1_1experimental_1_1neuroscience_1_1Param.html) to add additional parameters.
 
 There are three ways to set the value of a parameter:
 
@@ -40,7 +40,7 @@ There are three ways to set the value of a parameter:
 </a>
 
 The documentation of each parameter contains a description of the
-parameter, its default value and how to set it in the TOML file ([example](/bioapi/structbdm_1_1Param.html#a13d24f045335b7ac62a091f56c6fe166))
+parameter, its default value and how to set it in the TOML file ([example](/api/structbdm_1_1Param.html#a13d24f045335b7ac62a091f56c6fe166))
 
 The following code snippet shows how to access a parameter in your
 simulation.

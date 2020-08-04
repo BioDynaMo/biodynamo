@@ -1,0 +1,6 @@
+libomp
+open-mpi
+pyenv
+wget
+cmake
+ninja

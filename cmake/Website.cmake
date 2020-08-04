@@ -21,8 +21,7 @@ function(GenerateStaticFiles TARGET FLAGS)
       WORKING_DIRECTORY "${WEB_DIR}"
       COMMAND rm -rf ${WEB_DIR} && mkdir ${WEB_DIR}
       COMMAND git clone https://github.com/BioDynaMo/website.git .
-      # TODO: merge into master to avoid this
-      COMMAND git checkout web-updates
+      COMMAND git checkout master
       COMMENT "Generate website"
       COMMAND ./build_website.sh --dir ${CMAKE_CURRENT_SOURCE_DIR} ${FLAGS}
       VERBATIM)

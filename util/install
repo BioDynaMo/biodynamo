@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Adapted from https://github.com/pyenv/pyenv-installer/
+# Usage: curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash 
+
+set -e
+
+temp_dir=$(mktemp -d)
+BDM_SRC="${temp_dir}/biodynamo"
+
+Colorize() {
+  if [ -t 1 ]; then printf "\e[%sm%s\e[m" "$1" "$2"
+  else echo -n "$2"
+  fi
+}
+
+FailedCheckout() {
+  Colorize 1 "ERROR"
+  echo "Failed to git clone $1"
+  exit -1
+}
+
+Checkout() {
+  [ -d "$2" ] || git clone --branch master "$1" "$2" || FailedCheckout "$1"
+}
+
+# Check if git is installed
+if ! command -v git 1>/dev/null 2>&1; then
+  Colorize 1 "ERROR"
+  echo "Git is not installed, can't continue." >&2
+  exit 1
+fi
+
+if [ -n "${USE_GIT_URI}" ]; then
+  GITHUB="git://github.com"
+else
+  GITHUB="https://github.com"
+fi
+
+# Clone BioDynaMo
+Checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
+
+# Enable silent installation if we are running Github Actions
+if [ ! -z ${GITHUB_ACTIONS+x} ]; then
+  export SILENT_INSTALL=1
+fi
+
+# SBML is currently not supported on macOS
+# See: https://trello.com/c/vKPbh4iG
+if [[ $(uname -s) != "Darwin"* ]]; then
+  SBML="-Dsbml=ON"
+  NOTEBOOKS="-Dnotebooks=ON"
+fi
+
+# Log the installation process and print error message upon failure
+log=${BDM_SRC}/installation.log
+touch log
+out_msg="Something went wrong with the installation. For more details check \
+  the log file: \"${log}\""
+trap "echo $out_msg" ERR
+
+# Manifest exit code of command that is piped to tee
+set -o pipefail
+
+# Run ./install.sh
+BDM_CMAKE_FLAGS="-Dtest=off $NOTEBOOKS $SBML" ${BDM_SRC}/install.sh | tee "$log"
+
+set +o pipefail

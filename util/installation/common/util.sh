@@ -33,6 +33,11 @@ function RequireSudo {
   while true; do sudo -n true; sleep 10; kill -0 "$$" || exit; done 2>/dev/null &
 }
 
+# Wait for user input
+WaitForUser() {
+  read -n1 -rsp $'Press any key to continue or Ctrl+C to exit...\n' </dev/tty
+}
+
 # Function that detects the OS
 # Returns linux flavour or osx.
 # This function prints an error and exits if is not linux or macos.
@@ -40,13 +45,9 @@ function DetectOs {
   # detect operating system
   if [ `uname` = "Linux" ]; then
     # linux
-    DISTRIBUTOR=$(lsb_release -si)
-    RELEASE=$(lsb_release -sr)
-    if [ "${DISTRIBUTOR}" = "CentOS" ]; then
-      OS="${DISTRIBUTOR}-${RELEASE:0:1}"
-    else
-      OS="${DISTRIBUTOR}-${RELEASE}"
-    fi
+    DISTRIBUTOR=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+    RELEASE=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+    OS="${DISTRIBUTOR}-${RELEASE}"
     echo $OS | awk '{print tolower($0)}'
   elif [ `uname` = "Darwin" ]; then
     # macOS
@@ -95,6 +96,30 @@ function CheckTypeInstallSupported {
     echo "Supported install types are are: "
     echo "- all: install required and optional packages;"
     echo "- required: install only the required packages."
+  fi
+}
+
+# 
+# Arguments:
+#   $1 installation type ("all" or "required")
+#   $2 path to biodynamo installation src folder (util/installation)
+#   $3 OS identifier e.g. ubuntu-16.04 (see DetectOs)
+function CompileListOfPackages {
+  local BDM_INSTALL_SRC="$2"
+  local LOCAL_OS=$3
+
+  # The list of packages on Ubuntu 18.04 and 20.04 are identical to Ubuntu 16.04
+  if [ $LOCAL_OS == "ubuntu-18.04" ] || [ $LOCAL_OS == "ubuntu-20.04" ]; then
+    LOCAL_OS="ubuntu-16.04"
+  fi
+
+  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$LOCAL_OS
+
+  BDM_PKG_LIST=""
+  if [ $1 == "all" ]; then
+    BDM_PKG_LIST="${BDM_INSTALL_OS_SRC}/package_list*"
+  else
+    BDM_PKG_LIST="${BDM_INSTALL_OS_SRC}/package_list_required"
   fi
 }
 
@@ -233,14 +258,14 @@ function EchoFinishThisStep {
     exit 1
   fi
 
-  EchoInfo "To complete this step execute:"
-  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
-  EchoInfo "This command must be executed in every terminal before you build or use BioDynaMo."
-  EchoInfo "To avoid this additional step add it to your $(BashrcFile) file:"
-  EchoInfo "    echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
+  EchoInfo "Before running BioDynaMo execute:"
+  EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
+  EchoInfo "To avoid this extra step do:"
+  EchoInfo "   echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
+  EchoInfo "to have it executed automatically when starting a new shell."
 }
 
-# This function prompts the user for the biodynamo installation direcotory
+# This function prompts the user for the biodynamo installation directory
 # providing an option to accept a default.
 function SelectInstallDir {
   if [[ $# -ne 0 ]]; then
@@ -340,7 +365,6 @@ function CopyEnvironmentScript {
 # Arguments:
 #   $1 actual version
 #   $2 required version
-# TODO(ahmad): Fails on OSX because `sort` not installed by default
 function VersionLessThan {
   local VERSION=$1
   local REQUIRED=$2

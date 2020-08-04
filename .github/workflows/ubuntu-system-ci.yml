@@ -19,41 +19,19 @@ jobs:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04]
     runs-on: ${{ matrix.os }}
-    env:
-      SYS_TESTS_SH_SCRIPT: |
-        . $INSTALL_DIR/bin/thisbdm.sh
-        sudo git config --system user.name "Test User"
-        sudo git config --system user.email user@test.com
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        make run-demos
-        ../util/xvfb-initd.sh stop
-      OOS_SIM_TEST_SH_SCRIPT: |
-        . $INSTALL_DIR/bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        biodynamo new test-sim
-        . ../test/util.inc
-        run_cmake_simulation test-sim
-        ../util/xvfb-initd.sh stop
-        rm -rf test-sim
 
     steps:
+    - name: Install BioDynaMo
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y curl
+        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
+
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-
-    - name: Install BioDynaMo
-      shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y zsh
-        BDM_CMAKE_FLAGS="-Dnotebooks=ON -Dsbml=ON" ./install.sh << EOF
-        y
-        EOF
 
     - name: Set INSTALL_DIR
       run: |
@@ -61,6 +39,16 @@ jobs:
         REGEX='[^-]*'
         [[ $VERSION =~ $REGEX ]]
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
+
+    - name: Build BioDynaMo
+      shell: bash
+      run: |
+        cmake \
+          -Dparaview=ON \
+          -Dsbml=ON \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B build
+        cmake --build build --parallel --config Release
 
     - name: Valgrind tests BioDynaMo
       shell: bash
@@ -76,22 +64,28 @@ jobs:
     - name: System tests BioDynaMo
       shell: bash
       working-directory: build
-      run: ${{ env.SYS_TESTS_SH_SCRIPT }}
-
-    - name: (zsh) System tests BioDynaMo
-      shell: zsh {0}
-      working-directory: build
-      run: ${{ env.SYS_TESTS_SH_SCRIPT }}
+      run: |
+        . $INSTALL_DIR/bin/thisbdm.sh
+        sudo git config --system user.name "Test User"
+        sudo git config --system user.email user@test.com
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        sleep 3
+        make run-demos
+        ../util/xvfb-initd.sh stop
 
     - name: Test out-of-source simulation
       shell: bash
       working-directory: build
-      run: ${{ env.OOS_SIM_TEST_SH_SCRIPT }}
-
-    - name: (zsh) Test out-of-source simulation
-      shell: zsh {0}
-      working-directory: build
-      run: ${{ env.OOS_SIM_TEST_SH_SCRIPT }}
+      run: |
+        . $INSTALL_DIR/bin/thisbdm.sh
+        export DISPLAY=:99.0
+        ../util/xvfb-initd.sh start
+        sleep 3
+        biodynamo new test-sim
+        . ../test/util.inc
+        run_cmake_simulation test-sim
+        ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3

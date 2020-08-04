@@ -153,8 +153,8 @@ if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
 endif()
 
-# Check if Python 3.6.9 from PyEnv is installed
-set(pythonvers "3.6.9")
+# Check if Python 3.8.0 from PyEnv is installed
+set(pythonvers "3.8.0")
 string(REPLACE "." ";" pythonvers_list ${pythonvers})
 list(GET pythonvers_list 0 pythonvers_major)
 list(GET pythonvers_list 1 pythonvers_minor)
@@ -164,7 +164,10 @@ if (DEFINED ENV{PYENV_ROOT})
 else()
   set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
 endif()
-set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+if(NOT EXISTS ${Python_LIB_PATH})
+  set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
+endif()
 if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
   set(PYTHON_FOUND TRUE)
   set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
@@ -195,8 +198,8 @@ if(paraview)
   find_package(GLUT)
   if(NOT GLUT_FOUND)
       PRINT_WARNING()
-      MESSAGE("GLUT libraries were not found in the system. In order to use ParaView they need to be installed.
- If you want to do that automatically, please run the ./prerequisites.sh script.")
+      MESSAGE("GLUT libraries were not found. In order to use ParaView they need to be installed.
+ Please run ./prerequisites.sh before calling cmake.")
       PRINT_LINE()
       SET(paraview OFF)
   endif()
@@ -204,13 +207,13 @@ endif()
 
 # Check if we have a compatible openmp compiler
 find_package(OpenMP)
-if (OpenMP_FOUND)
+if (OpenMP_CXX_FOUND)
   get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
   link_directories(${OpenMP_CXX_LIB_DIR})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} OpenMP::OpenMP_CXX)
 else()
-    MESSAGE(FATAL_ERROR "OpenMP was not found in your system. Please run ./prerequisites.sh again before
-calling cmake. If this does not work, then your current compiler might not support OpenMP (this happens for instance
-with Apple's standard compiler). Please update it to a more recent version and then run cmake again.")
+  MESSAGE(FATAL_ERROR "OpenMP support was not found. Please run ./prerequisites.sh before
+calling cmake.")
 endif()
 
 if (test)
@@ -262,7 +265,7 @@ if(numa)
     include_directories(${NUMA_INCLUDE_DIR})
     link_directories(${NUMA_LIBRARY_DIR})
     add_definitions("-DUSE_NUMA")
-    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARY})
   endif()
 endif()
 
@@ -413,10 +416,12 @@ if(rpath)
   set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
 elseif(APPLE)
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
-  set(CMAKE_INSTALL_RPATH "@loader_path/../lib")    # self relative LIBDIR
+  set(CMAKE_INSTALL_RPATH "@loader_path/../lib")  # self relative LIBDIR
   set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
 else()
-  set(CMAKE_SKIP_INSTALL_RPATH TRUE)           # skip the full RPATH for the install tree
+  set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)       # skip the full RPATH for the install tree
+  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")   # self relative LIBDIR
+  set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
 endif()
 
 # -------------------- extract third party libraries ---------------------------
@@ -665,6 +670,11 @@ set(cmakedir "$BDMSYS/share/cmake")
 set(configargs ${BDM_CONFIGARGS})
 set(cmakeinvoke "${CMAKE_INVOKE} -G ${CMAKE_GENERATOR}")
 set(omplibs ${OpenMP_CXX_LIBRARIES})
+if (DEFINED ENV{PYENV_ROOT})
+  set(pyenvroot "$ENV{PYENV_ROOT}")
+else()
+  set(pyenvroot "")
+endif()
 set(with_paraview ON)
 if(NOT paraview)
   set(with_paraview OFF)
@@ -672,7 +682,6 @@ endif()
 
 # Copy the environmental files to their correct directory
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
-#configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.csh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh @ONLY NEWLINE_STYLE UNIX)
 #configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/bdm-config.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config @ONLY ESCAPE_QUOTES NEWLINE_STYLE UNIX)
 
