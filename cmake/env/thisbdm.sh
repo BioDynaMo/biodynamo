@@ -318,7 +318,7 @@ _source_thisbdm()
   ########
 
   #### ParaView Specific Configurations ####
-  local with_paraview='OFF'
+  local with_paraview=@with_paraview@
   if [ "$with_paraview" = 'ON' ]; then
 
      if [ -z "${ParaView_DIR}" ]; then
