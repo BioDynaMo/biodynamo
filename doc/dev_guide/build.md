@@ -21,7 +21,7 @@ To build BioDynaMo from source execute the following commands:
 
 <a class="sbox" href= "/docs/userguide/" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Info<b><h4>
+    	<h4><b>Note</b></h4>
     	<p>If you are a user please follow the installation instructions in our <font color="blue"><u>user guide</u></font>.
 		</p>
     </div>
@@ -51,11 +51,15 @@ The script `prerequisites.sh` is used to install all the dependencies needed by 
 to run it before actually calling `cmake` and `make`. It will also choose the specific dependencies given the operating systems.
 Run `./prerequisites.sh --help` to see how to use it.
 
-!!! attention
-
-    When trying to install the prerequisites on MacOS the script will user `brew` as a default install method.
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Note</b></h4>
+    	<p>When trying to install the prerequisites on MacOS the script will user `brew` as a default install method.
     If you do not have `brew` on your system, or you are using a different package manager, you will need to
-    manually install all the required packages. Please have a look to the [Prerequisites](user/prerequisites) page.
+    manually install all the required packages. Please have a look to the prerequisites page.
+		</p>
+    </div>
+</a>
 
 ## CentOS 7
 
@@ -214,10 +218,16 @@ export Qt5_DIR=<qt5_installation_dir>/lib/cmake/Qt5
 ./install.sh
 ```
 
-!!! attention
-
-    If you specify ParaView_DIR, then you will need to provide also the Qt5_DIR variable.
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Note</b></h4>
+    	<p>If you specify ParaView_DIR, then you will need to provide also the Qt5_DIR variable.
     This is because ParaView implicitly relies on the Qt5 installation.
+		</p>
+    </div>
+</a>
+<br>
+
 
 #### Speed Up Installation Tests with a Local BioDynaMo-LFS Copy
 
