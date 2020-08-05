@@ -55,7 +55,8 @@ class DisplacementOp : public OperationImpl {
       return;
     }
 
-    // update search radius and delta_time_ at beginning of each iteration
+    // Update search radius and delta_time_ at beginning of each iteration, and
+    // avoid updating them within an iteration
     auto current_iteration = scheduler->GetSimulatedSteps();
     auto tid = omp_get_thread_num();
     if (last_iteration_[tid] != current_iteration) {
@@ -63,7 +64,6 @@ class DisplacementOp : public OperationImpl {
 
       auto* grid = sim->GetEnvironment();
       auto search_radius = grid->GetLargestObjectSize();
-      std::cout << "los = " << search_radius << std::endl;
       squared_radius_ = search_radius * search_radius;
       auto current_time =
           (current_iteration + 1) * param->simulation_time_step_;
@@ -79,6 +79,14 @@ class DisplacementOp : public OperationImpl {
     }
   }
 
+  void TearDown() override {
+    squared_radius_ = 0;
+    std::fill(last_time_run_.begin(), last_time_run_.end(), 0);
+    std::fill(delta_time_.begin(), delta_time_.end(), 0);
+    //
+    std::fill(last_iteration_.begin(), last_iteration_.end(), -1);
+  }
+
  private:
   double squared_radius_ = 0;
   std::vector<double> last_time_run_;
@@ -86,8 +94,6 @@ class DisplacementOp : public OperationImpl {
   std::vector<uint64_t> last_iteration_;
   static bool registered_;
 };
-
-REGISTER_OP(DisplacementOp, "displacement", kCpu);
 
 }  // namespace bdm
 

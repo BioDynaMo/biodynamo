@@ -61,8 +61,6 @@ class BoundSpace : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(BoundSpace, "bound space", kCpu);
-
 }  // namespace bdm
 
 #endif  // CORE_OPERATION_BOUND_SPACE_OP_H_

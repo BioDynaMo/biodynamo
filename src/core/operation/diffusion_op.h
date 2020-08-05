@@ -37,6 +37,8 @@ class DiffusionOp : OperationImpl {
   DiffusionOp() {}
   virtual ~DiffusionOp() {}
 
+  bool IsRowWise() override { return false; }
+
   void operator()() override {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
@@ -77,8 +79,6 @@ class DiffusionOp : OperationImpl {
  private:
   static bool registered_;
 };
-
-REGISTER_OP(DiffusionOp, "diffusion", kCpu);
 
 }  // namespace bdm
 

@@ -238,9 +238,6 @@ class DisplacementOpOpenCL : OperationImplGpu {
   static bool registered_;
 };
 
-
-REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCL);
-
 }  // namespace bdm
 
 #endif  // defined(USE_OPENCL) && !defined(__ROOTCLING__)

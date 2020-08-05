@@ -4,7 +4,6 @@ namespace bdm {
 
 OperationRegistry::~OperationRegistry() {
   for (auto &pair : operations_) {
-    std::cout << "Deleting " << pair.first << std::endl;
     delete pair.second;
   }
 }
@@ -31,6 +30,10 @@ bool OperationRegistry::AddOperationImpl(const std::string &op_name,
   if (op == nullptr) {
     op = new Operation(op_name, frequency);
     operations_[op_name] = op;
+  } else if (op->GetOperationImpl(target)) {
+    Log::Fatal("OperationRegistry::AddOperationImpl", "Operation '", op_name,
+               "' with implementation '", OpComputeTargetString(target),
+               "' already exists in the registry!");
   }
   op->AddOperationImpl(target, impl);
   return true;

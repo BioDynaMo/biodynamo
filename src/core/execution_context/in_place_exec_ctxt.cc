@@ -324,7 +324,6 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   // forward call to env and populate cache
   auto* env = Simulation::GetActive()->GetEnvironment();
 
-  std::cout << "SQUARED RADUS = " << squared_radius << std::endl;
   ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
                                               squared_radius);
   env->ForEachNeighbor(for_each, query);

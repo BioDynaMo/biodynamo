@@ -252,8 +252,6 @@ class DisplacementOpCuda : OperationImplGpu {
   };
 };
 
-REGISTER_OP(DisplacementOpCuda, "displacement", kCuda);
-
 }  // namespace bdm
 
 #endif  // CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_

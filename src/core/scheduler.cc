@@ -78,7 +78,7 @@ Scheduler::Scheduler() {
   visualization_ = VisualizationAdaptor::Create(param->visualization_engine_);
   root_visualization_ = new RootAdaptor();
 
-  operations_ = {GET_OP("first op"),       GET_OP("bound space"),
+  ops_to_add_ = {GET_OP("first op"),       GET_OP("bound space"),
                  GET_OP("biology module"), GET_OP("displacement"),
                  GET_OP("discretization"), GET_OP("diffusion"),
                  GET_OP("last op")};
@@ -115,9 +115,17 @@ void Scheduler::Simulate(uint64_t steps) {
 
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 
-void Scheduler::AddOperation(Operation* op) {
-  auto it = operations_.end() - 2;
-  operations_.insert(it, op);
+void Scheduler::AddOperation(Operation* op) { ops_to_add_.push_back(op); }
+
+void Scheduler::RemoveOperation(const std::string& name) {
+  if (protected_operations_.find(name) != protected_operations_.end()) {
+    Log::Warning("Scheduler::GetOperation",
+                 "You tried to remove the protected operation ", name,
+                 "! This request was ignored.");
+    return;
+  }
+
+  ops_to_remove_.push_back(GET_OP(name));
 }
 
 struct RunAllScheduldedOps : Functor<void, SimObject*, SoHandle> {
@@ -151,8 +159,8 @@ void Scheduler::RunScheduledOps() {
   RunAllScheduldedOps functor(row_wise_operations);
   rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
 
-  // Run the stand-alone operations
-  for (auto* op : scheduled_operations_) {
+  // Run the column-wise operations
+  for (auto* op : scheduled_column_wise_operations_) {
     if (total_steps_ % op->frequency_ == 0) {
       (*op)();
     }
@@ -174,6 +182,8 @@ void Scheduler::Execute() {
     }
   });
   Timing::Time("neighbors", [&]() { env->Update(); });
+
+  RunScheduledOps();
 
   // finish updating sim objects
   Timing::Time("Tear down exec context", [&]() {
@@ -238,12 +248,16 @@ void Scheduler::Initialize() {
     // Initialize data structures with user-defined values
     dgrid->RunInitializers();
   });
+
+  ScheduleOps();
 }
 
 // Schedule the operations
 void Scheduler::ScheduleOps() {
   auto* param = Simulation::GetActive()->GetParam();
-  for (auto* op : operations_) {
+  // Add requested operations
+  for (auto it = ops_to_add_.begin(); it != ops_to_add_.end();) {
+    auto* op = *it;
     if (param->compute_target_ == "cuda" &&
         op->IsComputeTargetSupported(kCuda)) {
       op->SelectComputeTarget(kCuda);
@@ -253,10 +267,33 @@ void Scheduler::ScheduleOps() {
     } else {
       op->SelectComputeTarget(kCpu);
     }
-    if (op->IsForAllSimObjects()) {
+    if (op->IsRowWise()) {
       scheduled_row_wise_operations_.push_back(op);
     } else {
-      scheduled_operations_.push_back(op);
+      scheduled_column_wise_operations_.push_back(op);
+    }
+    // Remove operation from ops_to_add_
+    it = ops_to_add_.erase(it);
+  }
+
+  // Remove requested operations
+  for (auto* op : ops_to_remove_) {
+    // Check scheduled row-wise operations list
+    for (auto it = scheduled_row_wise_operations_.begin();
+         it != scheduled_row_wise_operations_.end(); ++it) {
+      if (op->name_ == (*it)->name_) {
+        scheduled_row_wise_operations_.erase(it);
+        return;
+      }
+    }
+
+    // Check scheduled column-wise operations list
+    for (auto it = scheduled_column_wise_operations_.begin();
+         it != scheduled_column_wise_operations_.end(); ++it) {
+      if (op->name_ == (*it)->name_) {
+        scheduled_column_wise_operations_.erase(it);
+        return;
+      }
     }
   }
 }

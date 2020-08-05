@@ -27,27 +27,48 @@ class SimObject;
 
 enum OpComputeTarget { kCpu, kCuda, kOpenCl };
 
+inline std::string OpComputeTargetString(OpComputeTarget t) {
+  switch (t) {
+    case OpComputeTarget::kCpu:
+      return "kCpu";
+    case OpComputeTarget::kCuda:
+      return "kCuda";
+    case OpComputeTarget::kOpenCl:
+      return "kOpenCl";
+    default:
+      return "Invalid";
+  }
+}
+
 /// Interface for implementing an operation
 struct OperationImpl {
   virtual ~OperationImpl() {}
+
+  virtual void Setup() {}
+
+  virtual void TearDown() {}
+
   virtual void operator()(SimObject *so) {
-    Log::Fatal("OperationImpl:operator()(SimObject*)",
-               "Column-wise function operator not implemented");
+    Log::Fatal("OperationImpl::operator()(SimObject*)",
+               "Row-wise function operator not implemented");
   }
   virtual void operator()() {
-    Log::Fatal("OperationImpl:operator()(SimObject*)",
-               "Row-wise function operator not implemented");
+    Log::Fatal("OperationImpl::operator()()",
+               "Column-wise function operator not implemented");
   }
   virtual bool IsGpuOperation() { return false; }
 
-  virtual bool IsForAllSimObjects() { return false; }
+  virtual bool IsRowWise() { return true; }
 };
 
+/// Interface for implementing an operation that should run on a GPU
 struct OperationImplGpu : public OperationImpl {
+ public:
   virtual void InitializeGpuData() = 0;
   virtual void UpdateCpuData() = 0;
 
   bool IsGpuOperation() override { return true; }
+  bool IsRowWise() override { return false; }
 
   virtual ~OperationImplGpu() {}
 
@@ -97,7 +118,9 @@ struct Operation {
   ///
   void AddOperationImpl(OpComputeTarget target, OperationImpl *impl);
 
-  OperationImpl* GetOperationImpl(OpComputeTarget target);
+  OperationImpl *GetOperationImpl(OpComputeTarget target);
+
+  OperationImpl *GetActiveOperationImpl();
 
   /// Check whether an implementation is available for the requested compute
   /// target
@@ -116,8 +139,8 @@ struct Operation {
   ///
   void SelectComputeTarget(OpComputeTarget target);
 
-  bool IsForAllSimObjects() {
-    return implementations_[OpComputeTarget::kCpu]->IsForAllSimObjects();
+  bool IsRowWise() {
+    return implementations_[active_target_]->IsRowWise();
   }
 
   /// Specifies how often this operation will be executed.\n

@@ -42,9 +42,6 @@ class DividingCellOp : public OperationImpl {
   static bool registered_;
 };
 
-// Register this operation in BioDynaMo
-REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
-
 }  // namespace bdm
 
 #endif  // CORE_OPERATION_DIVIDING_CELL_OP_H_

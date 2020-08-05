@@ -269,7 +269,6 @@ class Cell : public SimObject {
     void operator()(const SimObject* neighbor,
                     double squared_distance) override {
       auto neighbor_force = default_force.GetForce(so_, neighbor);
-      std::cout << "neighbor force " << neighbor_force << std::endl;
       translation_force_on_point_mass[0] += neighbor_force[0];
       translation_force_on_point_mass[1] += neighbor_force[1];
       translation_force_on_point_mass[2] += neighbor_force[2];

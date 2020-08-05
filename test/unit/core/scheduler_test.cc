@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/core/scheduler_test.h"
+#include "core/operation/operation_registry.h"
 
 namespace bdm {
 namespace scheduler_test_internal {
@@ -93,54 +94,61 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   EXPECT_FALSE(env->HasGrown());
 }
 
-// struct TestOp : public OperationImpl {
-//   TestOp(const std::string& id, uint64_t& counter) : counter(counter) {}
-//   void operator()(SimObject* so) override { counter++; }
-//   uint64_t& counter;
+struct TestOp1 : public OperationImpl {
+  TestOp1(uint64_t counter) : counter(counter) {}
+  void operator()(SimObject* so) override { counter++; }
+  uint64_t counter;
 
-//  private:
-//   static bool registered_;
-// };
+ private:
+  static bool registered_;
+};
 
-// REGISTER_OP(TestOp, )
+struct TestOp2 : public OperationImpl {
+  TestOp2(uint64_t counter) : counter(counter) {}
+  void operator()(SimObject* so) override { counter++; }
+  uint64_t counter;
 
-// TEST(SchedulerTest, OperationManagement) {
-//   Simulation simulation(TEST_NAME);
+ private:
+  static bool registered_;
+};
 
-//   simulation.GetResourceManager()->push_back(new Cell(10));
 
-//   uint64_t op1_cnt = 0;
-//   uint64_t op2_cnt = 0;
-//   auto* op1 = new TestOp("op1", op1_cnt);
-//   auto* op2 = new TestOp("op2", op2_cnt);
+REGISTER_OP(TestOp1, "test_op1", kCpu, 0)
+REGISTER_OP(TestOp2, "test_op2", kCpu, 0)
 
-//   // add operations
-//   auto* scheduler = simulation.GetScheduler();
-//   scheduler->AddOperation(op1);
-//   scheduler->AddOperation(op2);
-//   scheduler->Simulate(10);
-//   EXPECT_EQ(10u, op1_cnt);
-//   EXPECT_EQ(10u, op2_cnt);
+TEST(SchedulerTest, OperationManagement) {
+  Simulation simulation(TEST_NAME);
 
-//   // change frequency of operation
-//   scheduler->GetOperation(op1->name_)->frequency_ = 3;
-//   scheduler->Simulate(10);
-//   EXPECT_EQ(13u, op1_cnt);
-//   EXPECT_EQ(20u, op2_cnt);
+  simulation.GetResourceManager()->push_back(new Cell(10));
+  
+  auto* op1 = dynamic_cast<TestOp1*>(GET_OP("test_op1")->GetActiveOperationImpl());
+  auto* op2 = static_cast<TestOp2*>(GET_OP("test_op2")->GetActiveOperationImpl());
 
-//   // remove operation
-//   scheduler->RemoveOperation(op2->name_);
-//   scheduler->Simulate(10);
-//   EXPECT_EQ(16u, op1_cnt);
-//   EXPECT_EQ(20u, op2_cnt);
+  // add operations
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->AddOperation(GET_OP("test_op1"));
+  scheduler->AddOperation(GET_OP("test_op2"));
+  scheduler->Simulate(10);
+  EXPECT_EQ(10u, op1->counter);
+  EXPECT_EQ(10u, op2->counter);
 
-//   // get non existing and protected operations
-//   EXPECT_TRUE(scheduler->GetOperation("does not exist") == nullptr);
-//   EXPECT_TRUE(scheduler->GetOperation("first") == nullptr);  // is protected
-//   scheduler->Simulate(10);
-//   EXPECT_EQ(20u, op1_cnt);
-//   EXPECT_EQ(20u, op2_cnt);
-// }
+  // change frequency of operation
+  GET_OP("test_op1")->frequency_ = 3;
+  scheduler->Simulate(10);
+  EXPECT_EQ(13u, op1->counter);
+  EXPECT_EQ(20u, op2->counter);
+
+  // remove operation
+  scheduler->RemoveOperation(GET_OP("test_op2")->name_);
+  scheduler->Simulate(10);
+  EXPECT_EQ(16u, op1->counter);
+  EXPECT_EQ(20u, op2->counter);
+
+  // get non existing and protected operations
+  scheduler->Simulate(10);
+  EXPECT_EQ(20u, op1->counter);
+  EXPECT_EQ(20u, op2->counter);
+}
 
 }  // namespace scheduler_test_internal
 }  // namespace bdm

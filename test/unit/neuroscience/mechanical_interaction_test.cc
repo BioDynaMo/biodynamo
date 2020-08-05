@@ -572,36 +572,26 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
                  ->ExtendNewNeurite({0, 0, 1});
   ne2->SetDiameter(1);
 
-  Scheduler scheduler;
-
   Double3 direction1 = {0.5, 0, 1};
   Double3 direction2 = {0, 0, 1};
-
-  Double3 ne1_axis;
-  Double3 ne2_axis;
-
-  Double3 ne1_position;
-  Double3 ne2_position;
 
   for (int i = 0; i < 200; i++) {
     ne1->ElongateTerminalEnd(10, direction1);
     ne2->ElongateTerminalEnd(10, direction2);
     ne1->RunDiscretization();
     ne2->RunDiscretization();
-    scheduler.Simulate(1);
+    simulation.Simulate(1);
 
-    ne1_axis = ne1->GetSpringAxis();
-    ne2_axis = ne2->GetSpringAxis();
-    ne1_position = ne1->GetMassLocation();
-    ne2_position = ne2->GetMassLocation();
+    auto& ne1_position = ne1->GetMassLocation();
+    auto& ne2_position = ne2->GetMassLocation();
 
     EXPECT_LT(ne1_position[0], ne2_position[0]);
   }
 
-  ne1_axis = ne1->GetSpringAxis();
-  ne2_axis = ne2->GetSpringAxis();
-  ne1_position = ne1->GetMassLocation();
-  ne2_position = ne2->GetMassLocation();
+  auto& ne1_axis = ne1->GetSpringAxis();
+  auto& ne2_axis = ne2->GetSpringAxis();
+  auto& ne1_position = ne1->GetMassLocation();
+  auto& ne2_position = ne2->GetMassLocation();
 
   EXPECT_NEAR(ne1_axis[1], 0, abs_error<double>::value);
   EXPECT_NEAR(ne2_axis[1], 0, abs_error<double>::value);

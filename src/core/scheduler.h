@@ -47,6 +47,8 @@ class Scheduler {
 
   void AddOperation(Operation* operation);
 
+  void RemoveOperation(const std::string& name);
+
   void RunScheduledOps();
 
   void ScheduleOps();
@@ -67,8 +69,9 @@ class Scheduler {
   VisualizationAdaptor* visualization_ = nullptr;  //!
   RootAdaptor* root_visualization_ = nullptr;      //!
 
-  std::vector<Operation*> operations_;  //!
-  std::vector<Operation*> scheduled_operations_;  //!
+  std::vector<Operation*> ops_to_add_;  //!
+  std::vector<Operation*> ops_to_remove_;  //!
+  std::vector<Operation*> scheduled_column_wise_operations_;  //!
   std::vector<Operation*> scheduled_row_wise_operations_;  //!
   std::set<std::string> protected_operations_;
 

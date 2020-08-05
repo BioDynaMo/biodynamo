@@ -21,7 +21,11 @@ Operation::Operation(const std::string &name) : name_(name) {}
 Operation::Operation(const std::string &name, uint32_t frequency)
     : frequency_(frequency), name_(name) {}
 
-Operation::~Operation() {}
+Operation::~Operation() {
+  for (auto i : implementations_) {
+    delete i;
+  }
+}
 
 void Operation::operator()(SimObject *so) {
   (*implementations_[active_target_])(so);
@@ -39,13 +43,20 @@ void Operation::operator()() {
 
 void Operation::AddOperationImpl(OpComputeTarget target, OperationImpl *impl) {
   if (implementations_.size() <= target) {
-    implementations_.resize(target + 1);
+    implementations_.resize(target + 1, nullptr);
   }
   implementations_[target] = impl;
 }
 
 OperationImpl *Operation::GetOperationImpl(OpComputeTarget target) {
+  if (implementations_.size() <= target) {
+    return nullptr;
+  }
   return implementations_[target];
+}
+
+OperationImpl *Operation::GetActiveOperationImpl() {
+  return implementations_[active_target_];
 }
 
 bool Operation::IsComputeTargetSupported(OpComputeTarget target) {
