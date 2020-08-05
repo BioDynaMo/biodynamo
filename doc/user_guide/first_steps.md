@@ -19,11 +19,11 @@ Setting up a simulation and running it is done with the BioDynaMo command line
 interface (CLI). Open a new terminal and execute:
 
 ```bash
-source $BDMSYS/bin/thisbdm.sh
+source <installation-directory>/bin/thisbdm.sh
 ```
 
 This command must be executed whenever you want to use BioDynaMo in a new terminal!
-By default `BDMSYS` will be `$HOME/biodynamo-vX.Y.Z`, where X.Y.Z is the version number
+By default `<installation-directory>` will be `$HOME/biodynamo-vX.Y.Z`, where X.Y.Z is the version number
 
 
 ## Basic Workflow
