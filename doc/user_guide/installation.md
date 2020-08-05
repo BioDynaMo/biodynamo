@@ -16,7 +16,7 @@ keywords:
   -start
 ---
 
-To install BioDynaMo execute the following command.
+To install and update BioDynaMo execute the following command.
 
 ```bash
 curl https://biodynamo.org/install | bash
@@ -30,18 +30,11 @@ By default the installation directory is set to `$HOME/biodynamo-vX.Y.Z`, where 
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Important</b></h4>
-    	<p>In every new terminal execute <code>source $BDMSYS/bin/thisbdm.sh</code> to use BioDynaMo!<br>
+    	<p>In every new terminal execute <code>source &lt;installation-directory&gt;/bin/thisbdm.sh</code>
+      to use BioDynaMo, where <code>&lt;installation-directory&gt;</code> is the BioDynaMo installation directory.<br>
 		</p>
     </div>
 </a>
-
-## Update Installation
-
-The following command updates your BioDynaMo installation:
-
-```bash
-curl https://biodynamo.org/install | bash
-```
 
 ## Supported platforms
 
