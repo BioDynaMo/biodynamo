@@ -159,6 +159,9 @@ string(REPLACE "." ";" pythonvers_list ${pythonvers})
 list(GET pythonvers_list 0 pythonvers_major)
 list(GET pythonvers_list 1 pythonvers_minor)
 list(GET pythonvers_list 2 pythonvers_patch)
+if(APPLE)
+  set(ENV{PYENV_ROOT} /usr/local/opt/.pyenv)
+endif()
 if (DEFINED ENV{PYENV_ROOT})
   set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
 else()
@@ -188,9 +191,10 @@ if (MPI_NOT_FOUND)
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
-# Disable paraview for macOS until we upgrade to v5.8 on macOS
+# Disable paraview until we upgrade to v5.8 on macOS, numa is not supported on macOS
 if(APPLE)
   set(paraview OFF)
+  set(numa OFF)
 endif()
 
 # Check if GLUT is present. If we do not have it, then we disable directly paraview.
@@ -448,6 +452,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 # search for system / C++ standard headers in that same directory, we instead
 # copy omp.h to our local build directory and include that
 fix_rootcling_omp_issue()
+fix_macos_opencl_header_issue()
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
@@ -697,7 +702,6 @@ configure_file(${CMAKE_SOURCE_DIR}/cmake/env/bdm-config.in ${CMAKE_CURRENT_BINAR
 
 # Set run permission on the environmental files
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-#add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 

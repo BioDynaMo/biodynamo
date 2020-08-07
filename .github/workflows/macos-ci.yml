@@ -44,7 +44,6 @@ jobs:
     - name: Build BioDynaMo
       shell: bash
       run: |
-        export PYENV_ROOT=/usr/local/opt/.pyenv
         cmake -G Ninja \
           -Dopencl=OFF \
           -Dparaview=OFF \

@@ -16,8 +16,6 @@
 #
 # Copyright (c) 2015 Steve Borho
 
-include(FindPackageHandleStandardArgs)
-
 find_path(NUMA_ROOT_DIR
   NAMES include/numa.h
   PATHS ENV NUMA_ROOT

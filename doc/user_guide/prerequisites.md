@@ -203,6 +203,7 @@ using the command ``"xcode-select --install"``.
  * **wget**: Retrieves files from the web
  * **cmake**: Set of tools for automate building, testing of software
  * **ninja**: Ninja is a small build system with a focus on speed
+ * **bash**: Recent version of bash shell
 
 ### Optional Packages
 
@@ -217,7 +218,7 @@ using the command ``"xcode-select --install"``.
 
 ```bash
 brew update; brew upgrade
-brew install libomp open-mpi pyenv wget cmake ninja
+brew install libomp open-mpi pyenv wget cmake ninja bash
 
 # Install Python 3.8.0 environment
 export PYENV_ROOT=/usr/local/opt/.pyenv
