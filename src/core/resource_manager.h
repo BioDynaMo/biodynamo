@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-#ifdef USE_OPENCL
+#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #ifdef __APPLE__
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
