@@ -60,7 +60,7 @@ tar -zxf root_v$ROOT_VERSION.source.tar.gz
 ROOTSRC=root-$ROOT_VERSION
 
 # Set Python to $PYVERS
-if [[ $(uname -s) == "Darwin"* ]]; then
+if [[ $(uname -s) == "Darwin" ]]; then
   export PYENV_ROOT=/usr/local/opt/.pyenv
 fi
 eval "$(pyenv init -)"
@@ -81,7 +81,7 @@ unset DAVIX
 mkdir build
 cd build
 
-if [[ $(uname -s) == "Darwin"* ]]; then
+if [[ $(uname -s) == "Darwin" ]]; then
   cmake -G Ninja -Dmacos_native=YES \
      -Dbuiltin_fftw3=ON \
      -Dbuiltin_freetype=ON \
