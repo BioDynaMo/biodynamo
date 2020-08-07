@@ -94,8 +94,9 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   EXPECT_FALSE(env->HasGrown());
 }
 
-struct TestOp1 : public OperationImpl {
-  TestOp1(uint64_t counter) : counter(counter) {}
+struct TestOp : public OperationImpl {
+  TestOp(uint64_t counter) : counter(counter) {}
+  TestOp* Clone() override { return new TestOp(*this); }
   void operator()(SimObject* so) override { counter++; }
   uint64_t counter;
 
@@ -103,51 +104,46 @@ struct TestOp1 : public OperationImpl {
   static bool registered_;
 };
 
-struct TestOp2 : public OperationImpl {
-  TestOp2(uint64_t counter) : counter(counter) {}
-  void operator()(SimObject* so) override { counter++; }
-  uint64_t counter;
-
- private:
-  static bool registered_;
-};
-
-
-REGISTER_OP(TestOp1, "test_op1", kCpu, 0)
-REGISTER_OP(TestOp2, "test_op2", kCpu, 0)
+REGISTER_OP(TestOp, "test_op", kCpu, 0)
 
 TEST(SchedulerTest, OperationManagement) {
   Simulation simulation(TEST_NAME);
 
   simulation.GetResourceManager()->push_back(new Cell(10));
-  
-  auto* op1 = dynamic_cast<TestOp1*>(GET_OP("test_op1")->GetActiveOperationImpl());
-  auto* op2 = static_cast<TestOp2*>(GET_OP("test_op2")->GetActiveOperationImpl());
 
-  // add operations
+  auto* op1 = GET_OP("test_op");
+  auto* op2 = GET_OP("test_op");
+  
+  auto* op1_impl = op1->GetImplementation<TestOp>();
+  auto* op2_impl = op2->GetImplementation<TestOp>();
+  
+  // Change the state of one of the operations
+  op1_impl->counter = 1;
+
+  // schedule operations
   auto* scheduler = simulation.GetScheduler();
-  scheduler->AddOperation(GET_OP("test_op1"));
-  scheduler->AddOperation(GET_OP("test_op2"));
+  scheduler->ScheduleOp(op1);
+  scheduler->ScheduleOp(op2);
   scheduler->Simulate(10);
-  EXPECT_EQ(10u, op1->counter);
-  EXPECT_EQ(10u, op2->counter);
+  EXPECT_EQ(11u, op1_impl->counter);
+  EXPECT_EQ(10u, op2_impl->counter);
 
   // change frequency of operation
-  GET_OP("test_op1")->frequency_ = 3;
+  op1->frequency_ = 3;
   scheduler->Simulate(10);
-  EXPECT_EQ(13u, op1->counter);
-  EXPECT_EQ(20u, op2->counter);
+  EXPECT_EQ(14u, op1_impl->counter);
+  EXPECT_EQ(20u, op2_impl->counter);
 
   // remove operation
-  scheduler->RemoveOperation(GET_OP("test_op2")->name_);
+  scheduler->UnscheduleOp(op2);
   scheduler->Simulate(10);
-  EXPECT_EQ(16u, op1->counter);
-  EXPECT_EQ(20u, op2->counter);
+  EXPECT_EQ(17u, op1_impl->counter);
+  EXPECT_EQ(20u, op2_impl->counter);
 
   // get non existing and protected operations
   scheduler->Simulate(10);
-  EXPECT_EQ(20u, op1->counter);
-  EXPECT_EQ(20u, op2->counter);
+  EXPECT_EQ(21u, op1_impl->counter);
+  EXPECT_EQ(20u, op2_impl->counter);
 }
 
 }  // namespace scheduler_test_internal

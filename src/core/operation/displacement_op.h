@@ -46,6 +46,8 @@ class DisplacementOp : public OperationImpl {
 
   virtual ~DisplacementOp() {}
 
+  DisplacementOp* Clone() override { return new DisplacementOp(*this); }
+
   void operator()(SimObject* sim_object) override {
     auto* sim = Simulation::GetActive();
     auto* scheduler = sim->GetScheduler();

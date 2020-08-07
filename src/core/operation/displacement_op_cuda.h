@@ -43,7 +43,7 @@ inline void IsNonSphericalObjectPresent(const SimObject* so, bool* answer) {
 }
 
 /// Defines the 3D physical interactions between physical objects
-class DisplacementOpCuda : OperationImplGpu {
+class DisplacementOpCuda : public OperationImplGpu {
  private:
   struct InitializeGPUData;
   struct UpdateCPUResults;
@@ -51,6 +51,8 @@ class DisplacementOpCuda : OperationImplGpu {
  public:
   DisplacementOpCuda() {}
   ~DisplacementOpCuda() {}
+
+  DisplacementOpCuda* Clone() override { return new DisplacementOpCuda(*this); }
 
   void InitializeGpuData() override {
     auto* sim = Simulation::GetActive();

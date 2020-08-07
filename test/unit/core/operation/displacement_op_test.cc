@@ -43,11 +43,16 @@ TEST(DisplacementOpTest, ComputeNew) {
   env->Clear();
   env->Update();
 
+  // Create operation
+  auto* displacement_op = GET_OP("displacement");
+  // Reset the state of the DisplacementOp (needs to be done in gtests)
+  displacement_op->GetImplementation<DisplacementOp>()->TearDown();
+
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();
-  GET_OP("displacement")->GetActiveOperationImpl()->TearDown();
+
   for (uint64_t i = 0; i < 27; i++) {
-    ctxt->Execute(rm->GetSimObject(ref_uid + i), {GET_OP("displacement")});
+    ctxt->Execute(rm->GetSimObject(ref_uid + i), {displacement_op});
   }
 
   // clang-format off

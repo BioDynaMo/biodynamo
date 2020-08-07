@@ -32,12 +32,14 @@
 namespace bdm {
 
 /// A class that sets up diffusion grids of the substances in this simulation
-class DiffusionOp : OperationImpl {
+class DiffusionOp : public OperationImpl {
  public:
   DiffusionOp() {}
   virtual ~DiffusionOp() {}
 
   bool IsRowWise() override { return false; }
+
+  DiffusionOp* Clone() override { return new DiffusionOp(*this); }
 
   void operator()() override {
     auto* sim = Simulation::GetActive();

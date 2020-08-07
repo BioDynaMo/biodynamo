@@ -164,6 +164,8 @@ struct Op1 : public OperationImpl {
   bool* op1_called_;
   bool* op2_called_;
 
+  Op1* Clone() override { return new Op1(*this); }
+
   void operator()(SimObject* so) override {
     // op1 must be  called first
     EXPECT_FALSE(*op1_called_);
@@ -181,6 +183,8 @@ REGISTER_OP(Op1, "Op1", kCpu);
 struct Op2 : public OperationImpl {
   bool* op1_called_;
   bool* op2_called_;
+
+  Op2* Clone() override { return new Op2(*this); }
 
   void operator()(SimObject* so) override {
     // op2 must be  called first
@@ -208,14 +212,10 @@ TEST(InPlaceExecutionContext, Execute) {
 
   auto* op1 = GET_OP("Op1");
   auto* op2 = GET_OP("Op2");
-  static_cast<Op1*>(op1->GetOperationImpl(OpComputeTarget::kCpu))->op1_called_ =
-      &op1_called;
-  static_cast<Op1*>(op1->GetOperationImpl(OpComputeTarget::kCpu))->op2_called_ =
-      &op2_called;
-  static_cast<Op2*>(op2->GetOperationImpl(OpComputeTarget::kCpu))->op1_called_ =
-      &op1_called;
-  static_cast<Op2*>(op2->GetOperationImpl(OpComputeTarget::kCpu))->op2_called_ =
-      &op2_called;
+  op1->GetImplementation<Op1>(OpComputeTarget::kCpu)->op1_called_ = &op1_called;
+  op1->GetImplementation<Op1>(OpComputeTarget::kCpu)->op2_called_ = &op2_called;
+  op2->GetImplementation<Op1>(OpComputeTarget::kCpu)->op1_called_ = &op1_called;
+  op2->GetImplementation<Op1>(OpComputeTarget::kCpu)->op2_called_ = &op2_called;
   std::vector<Operation*> operations = {op1, op2};
   ctxt->Execute(&cell_0, operations);
 
@@ -265,6 +265,8 @@ struct TestFunctor2 : public Functor<void, SimObject*> {
 struct TestOperation : public OperationImpl {
   std::unordered_map<SoUid, uint64_t> num_neighbors;
 
+  TestOperation* Clone() override { return new TestOperation(*this); }
+
   void operator()(SimObject* so) override {
     auto d = so->GetDiameter();
     so->SetDiameter(d + 1);
@@ -307,11 +309,16 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
 
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.
-  TestFunctor1 functor1(GET_OP("TestOperation"));
+  auto* op1 = GET_OP("TestOperation");
+  TestFunctor1 functor1(op1);
   rm->ApplyOnAllElementsParallel(functor1);
 
-  TestFunctor2 functor2(GET_OP("TestOperation"));
+  auto* op2 = GET_OP("TestOperation");
+  TestFunctor2 functor2(op2);
   rm->ApplyOnAllElements(functor2);
+
+  delete op1;
+  delete op2;
 }
 
 TEST(InPlaceExecutionContext,

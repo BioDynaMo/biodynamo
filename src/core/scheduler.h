@@ -19,6 +19,7 @@
 #include <functional>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include "core/operation/operation.h"
 
@@ -45,9 +46,11 @@ class Scheduler {
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
-  void AddOperation(Operation* operation);
+  void ScheduleOp(Operation* op);
 
-  void RemoveOperation(const std::string& name);
+  void UnscheduleOp(Operation* op);
+
+  Operation* GetDefaultOp(const std::string& name);
 
   void RunScheduledOps();
 
@@ -69,11 +72,19 @@ class Scheduler {
   VisualizationAdaptor* visualization_ = nullptr;  //!
   RootAdaptor* root_visualization_ = nullptr;      //!
 
+  /// List of operations that are to be added in the upcoming timestep
   std::vector<Operation*> ops_to_add_;  //!
+  /// List of operations that are to be removed in the upcoming timestep
   std::vector<Operation*> ops_to_remove_;  //!
-  std::vector<Operation*> scheduled_column_wise_operations_;  //!
-  std::vector<Operation*> scheduled_row_wise_operations_;  //!
-  std::set<std::string> protected_operations_;
+  /// List of operations that were removed from scheduling, but could be reused
+  /// later on in a simulation
+  std::vector<Operation*> unscheduled_ops_;  //!
+  /// List of operations will be executed as a stand-alone operation
+  std::vector<Operation*> scheduled_column_wise_ops_;  //!
+  /// List of operations will be executed on all simulation objects
+  std::vector<Operation*> scheduled_row_wise_ops_;  //!
+  /// List of operations that cannot be affected by the user
+  std::set<std::string> protected_ops_;  //!
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup();
@@ -87,9 +98,6 @@ class Scheduler {
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
   void Initialize();
-
-  // Decide which operations should be executed
-  std::vector<Operation*> GetScheduleOps();
 };
 
 }  // namespace bdm

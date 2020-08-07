@@ -43,6 +43,10 @@ class DisplacementOpOpenCL : OperationImplGpu {
     }
   }
 
+  DisplacementOpOpenCL* Clone() override {
+    return new DisplacementOpOpenCL(*this);
+  }
+
   void operator()() override {
     auto* sim = Simulation::GetActive();
     auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());

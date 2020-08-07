@@ -30,7 +30,7 @@ bool OperationRegistry::AddOperationImpl(const std::string &op_name,
   if (op == nullptr) {
     op = new Operation(op_name, frequency);
     operations_[op_name] = op;
-  } else if (op->GetOperationImpl(target)) {
+  } else if (op->GetImplementation<OperationImpl>(target)) {
     Log::Fatal("OperationRegistry::AddOperationImpl", "Operation '", op_name,
                "' with implementation '", OpComputeTargetString(target),
                "' already exists in the registry!");

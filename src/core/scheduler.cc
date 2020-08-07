@@ -31,7 +31,8 @@
 
 namespace bdm {
 
-struct FirstOp : OperationImpl {
+struct FirstOp : public OperationImpl {
+  FirstOp* Clone() override { return new FirstOp(*this); }
   void operator()(SimObject* so) override { so->UpdateRunDisplacement(); }
 
  private:
@@ -40,7 +41,8 @@ struct FirstOp : OperationImpl {
 
 REGISTER_OP(FirstOp, "first op", kCpu);
 
-struct LastOp : OperationImpl {
+struct LastOp : public OperationImpl {
+  LastOp* Clone() override { return new LastOp(*this); }
   void operator()(SimObject* so) override {
     so->ApplyRunDisplacementForAllNextTs();
   }
@@ -51,7 +53,8 @@ struct LastOp : OperationImpl {
 
 REGISTER_OP(LastOp, "last op", kCpu);
 
-struct BiologyModuleOp : OperationImpl {
+struct BiologyModuleOp : public OperationImpl {
+  BiologyModuleOp* Clone() override { return new BiologyModuleOp(*this); }
   void operator()(SimObject* so) override { so->RunBiologyModules(); }
 
  private:
@@ -60,7 +63,8 @@ struct BiologyModuleOp : OperationImpl {
 
 REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
 
-struct DiscretizationOp : OperationImpl {
+struct DiscretizationOp : public OperationImpl {
+  DiscretizationOp* Clone() override { return new DiscretizationOp(*this); }
   void operator()(SimObject* so) override { so->RunDiscretization(); }
 
  private:
@@ -82,11 +86,19 @@ Scheduler::Scheduler() {
                  GET_OP("biology module"), GET_OP("displacement"),
                  GET_OP("discretization"), GET_OP("diffusion"),
                  GET_OP("last op")};
-  protected_operations_ = {"first op", "biology module", "discretization",
-                           "last op"};
+  protected_ops_ = {"first op", "biology module", "discretization", "last op"};
 }
 
 Scheduler::~Scheduler() {
+  for (auto* op : unscheduled_ops_) {
+    delete op;
+  }
+  for (auto* op : scheduled_row_wise_ops_) {
+    delete op;
+  }
+  for (auto* op : scheduled_column_wise_ops_) {
+    delete op;
+  }
   delete backup_;
   delete root_visualization_;
   if (visualization_) {
@@ -115,17 +127,35 @@ void Scheduler::Simulate(uint64_t steps) {
 
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 
-void Scheduler::AddOperation(Operation* op) { ops_to_add_.push_back(op); }
+void Scheduler::ScheduleOp(Operation* op) { ops_to_add_.push_back(op); }
 
-void Scheduler::RemoveOperation(const std::string& name) {
-  if (protected_operations_.find(name) != protected_operations_.end()) {
-    Log::Warning("Scheduler::GetOperation",
-                 "You tried to remove the protected operation ", name,
+void Scheduler::UnscheduleOp(Operation* op) {
+  if (protected_ops_.find(op->name_) != protected_ops_.end()) {
+    Log::Warning("Scheduler::UnscheduleOp",
+                 "You tried to remove the protected operation ", op->name_,
                  "! This request was ignored.");
     return;
   }
 
-  ops_to_remove_.push_back(GET_OP(name));
+  ops_to_remove_.push_back(op);
+}
+
+Operation* Scheduler::GetDefaultOp(const std::string& name) {
+  for (auto it = scheduled_row_wise_ops_.begin();
+       it != scheduled_row_wise_ops_.end(); ++it) {
+    if ((*it)->name_ == name) {
+      return *it;
+    }
+  }
+
+  for (auto it = scheduled_column_wise_ops_.begin();
+       it != scheduled_column_wise_ops_.end(); ++it) {
+    if ((*it)->name_ == name) {
+      return *it;
+    }
+  }
+
+  return nullptr;
 }
 
 struct RunAllScheduldedOps : Functor<void, SimObject*, SoHandle> {
@@ -151,7 +181,7 @@ void Scheduler::RunScheduledOps() {
 
   // Run the row-wise operations
   std::vector<Operation*> row_wise_operations;
-  for (auto* op : scheduled_row_wise_operations_) {
+  for (auto* op : scheduled_row_wise_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
       row_wise_operations.push_back(op);
     }
@@ -160,7 +190,7 @@ void Scheduler::RunScheduledOps() {
   rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
 
   // Run the column-wise operations
-  for (auto* op : scheduled_column_wise_operations_) {
+  for (auto* op : scheduled_column_wise_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
       (*op)();
     }
@@ -258,6 +288,8 @@ void Scheduler::ScheduleOps() {
   // Add requested operations
   for (auto it = ops_to_add_.begin(); it != ops_to_add_.end();) {
     auto* op = *it;
+    // Enable GPU operation implementations (if available) if CUDA or OpenCL
+    // flags are set
     if (param->compute_target_ == "cuda" &&
         op->IsComputeTargetSupported(kCuda)) {
       op->SelectComputeTarget(kCuda);
@@ -267,34 +299,43 @@ void Scheduler::ScheduleOps() {
     } else {
       op->SelectComputeTarget(kCpu);
     }
+
     if (op->IsRowWise()) {
-      scheduled_row_wise_operations_.push_back(op);
+      scheduled_row_wise_ops_.push_back(op);
     } else {
-      scheduled_column_wise_operations_.push_back(op);
+      scheduled_column_wise_ops_.push_back(op);
     }
+
     // Remove operation from ops_to_add_
     it = ops_to_add_.erase(it);
   }
 
   // Remove requested operations
-  for (auto* op : ops_to_remove_) {
+  for (auto it = ops_to_remove_.begin(); it != ops_to_remove_.end();) {
+    auto* op = *it;
     // Check scheduled row-wise operations list
-    for (auto it = scheduled_row_wise_operations_.begin();
-         it != scheduled_row_wise_operations_.end(); ++it) {
-      if (op->name_ == (*it)->name_) {
-        scheduled_row_wise_operations_.erase(it);
-        return;
+    for (auto it2 = scheduled_row_wise_ops_.begin();
+         it2 != scheduled_row_wise_ops_.end(); ++it2) {
+      if (op == (*it2)) {
+        // Add to list of unscheduled operations
+        unscheduled_ops_.push_back(op);
+        scheduled_row_wise_ops_.erase(it2);
+        goto label;
       }
     }
 
     // Check scheduled column-wise operations list
-    for (auto it = scheduled_column_wise_operations_.begin();
-         it != scheduled_column_wise_operations_.end(); ++it) {
-      if (op->name_ == (*it)->name_) {
-        scheduled_column_wise_operations_.erase(it);
-        return;
+    for (auto it2 = scheduled_column_wise_ops_.begin();
+         it2 != scheduled_column_wise_ops_.end(); ++it2) {
+      if (op == (*it2)) {
+        // Delete the cloned operation
+        unscheduled_ops_.push_back(op);
+        scheduled_column_wise_ops_.erase(it2);
+        goto label;
       }
     }
+  label:
+    it = ops_to_remove_.erase(it);
   }
 }
 

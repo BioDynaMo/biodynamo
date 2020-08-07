@@ -50,6 +50,8 @@ class BoundSpace : public OperationImpl {
   BoundSpace() {}
   ~BoundSpace() {}
 
+  BoundSpace* Clone() override { return new BoundSpace(*this); }
+
   void operator()(SimObject* sim_object) override {
     auto* param = Simulation::GetActive()->GetParam();
     if (param->bound_space_) {

@@ -51,7 +51,13 @@ struct OperationRegistry {
       name, OpComputeTarget::target, new op(__VA_ARGS__));
 
 /// A convenient macro to retrieve an operation from the registry by its name
-#define GET_OP(name) OperationRegistry::GetInstance()->GetOperation(name)
+#define GET_OP(name) OperationRegistry::GetInstance()->GetOperation(name)->Clone()
+
+// /// A convenient function to get a new operation from the registry by its name
+// inline Operation *GetNewOperation(const std::string &name) {
+//   return OperationRegistry::GetInstance()->GetOperation(name)->Clone();
+// }
+
 
 }  // namespace bdm
 

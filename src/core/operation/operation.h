@@ -48,6 +48,8 @@ struct OperationImpl {
 
   virtual void TearDown() {}
 
+  virtual OperationImpl *Clone() = 0;
+
   virtual void operator()(SimObject *so) {
     Log::Fatal("OperationImpl::operator()(SimObject*)",
                "Row-wise function operator not implemented");
@@ -99,6 +101,8 @@ struct Operation {
 
   ~Operation();
 
+  Operation *Clone();
+
   /// Operate on an individual simulation object. Typically this operator is
   /// called in a loop over all simulation objects
   ///
@@ -118,9 +122,20 @@ struct Operation {
   ///
   void AddOperationImpl(OpComputeTarget target, OperationImpl *impl);
 
-  OperationImpl *GetOperationImpl(OpComputeTarget target);
+  /// Returns the active implementation
+  template <typename T>
+  T *GetImplementation() {
+    return static_cast<T *>(implementations_[active_target_]);
+  }
 
-  OperationImpl *GetActiveOperationImpl();
+  /// Returns the implementation of the specified target
+  template <typename T>
+  T *GetImplementation(OpComputeTarget target) {
+    if (implementations_.size() <= target) {
+      return nullptr;
+    }
+    return static_cast<T *>(implementations_[target]);
+  }
 
   /// Check whether an implementation is available for the requested compute
   /// target
@@ -139,9 +154,7 @@ struct Operation {
   ///
   void SelectComputeTarget(OpComputeTarget target);
 
-  bool IsRowWise() {
-    return implementations_[active_target_]->IsRowWise();
-  }
+  bool IsRowWise() { return implementations_[active_target_]->IsRowWise(); }
 
   /// Specifies how often this operation will be executed.\n
   /// 1: every timestep\n

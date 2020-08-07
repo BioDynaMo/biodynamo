@@ -29,6 +29,8 @@ class DividingCellOp : public OperationImpl {
   DividingCellOp() {}
   virtual ~DividingCellOp() {}
 
+  DividingCellOp* Clone() override { return new DividingCellOp(*this); }
+
   void operator()(SimObject* sim_object) override {
     if (Cell* cell = dynamic_cast<Cell*>(sim_object)) {
       if (cell->GetDiameter() <= 40) {

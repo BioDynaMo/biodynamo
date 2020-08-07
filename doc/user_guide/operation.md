@@ -40,7 +40,7 @@ auto* scheduler = simulation.GetScheduler();
 Operation op("print uid op", [](SimObject* so){
     std::cout << "SimObject " << so->GetUid() << std::endl;
 });
-scheduler->AddOperation(op);
+scheduler->ScheduleOp(op);
 ```
 
 ### Change the execution frequency of an operation
