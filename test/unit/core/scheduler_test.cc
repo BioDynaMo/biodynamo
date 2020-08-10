@@ -146,5 +146,63 @@ TEST(SchedulerTest, OperationManagement) {
   EXPECT_EQ(20u, op2_impl->counter);
 }
 
+TEST(SchedulerTest, MultipleSimulations) {
+  Simulation* sim1 = new Simulation("sim1");
+  Simulation* sim2 = new Simulation("sim2");
+
+  Cell* cell = new Cell(10);
+  Cell* cell2 = new Cell(10);
+
+  sim1->Activate();
+  sim1->GetResourceManager()->push_back(cell);
+  auto* op1 = GET_OP("test_op");
+  sim1->GetScheduler()->ScheduleOp(op1);
+  sim1->Simulate(10);
+  
+  sim2->Activate();
+  sim2->GetResourceManager()->push_back(cell2);
+  auto* op2 = GET_OP("test_op");
+  sim2->GetScheduler()->ScheduleOp(op2);
+
+  auto* op1_impl = op1->GetImplementation<TestOp>();
+  auto* op2_impl = op2->GetImplementation<TestOp>();
+
+  EXPECT_EQ(10u, op1_impl->counter);
+  EXPECT_EQ(0u, op2_impl->counter);
+
+  sim2->Simulate(10);
+
+  EXPECT_EQ(10u, op1_impl->counter);
+  EXPECT_EQ(10u, op2_impl->counter);
+
+  sim1->Activate();
+  sim1->GetScheduler()->UnscheduleOp(op1);
+  sim1->Simulate(10);
+
+  EXPECT_EQ(10u, op1_impl->counter);
+  EXPECT_EQ(10u, op2_impl->counter);
+}
+
+TEST(SchedulerTest, DefaultOps) {
+  Simulation sim(TEST_NAME);
+  sim.GetResourceManager()->push_back(new Cell(10));
+  auto* scheduler = sim.GetScheduler();
+  sim.Simulate(1);
+
+  auto def_ops = scheduler->GetListOfDefaultOps();
+
+  for (auto& def_op : def_ops) {
+    std::cout << def_op << std::endl;
+    auto* op = scheduler->GetDefaultOp(def_op);
+    EXPECT_EQ(op->name_, def_op);
+  }
+
+  // Try to get a non-default op
+  auto* test_op = GET_OP("test_op");
+  scheduler->ScheduleOp(test_op);
+  auto* op = scheduler->GetDefaultOp("test_op");
+  EXPECT_EQ(op, nullptr);
+}
+
 }  // namespace scheduler_test_internal
 }  // namespace bdm

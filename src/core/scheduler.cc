@@ -82,10 +82,14 @@ Scheduler::Scheduler() {
   visualization_ = VisualizationAdaptor::Create(param->visualization_engine_);
   root_visualization_ = new RootAdaptor();
 
-  ops_to_add_ = {GET_OP("first op"),       GET_OP("bound space"),
-                 GET_OP("biology module"), GET_OP("displacement"),
-                 GET_OP("discretization"), GET_OP("diffusion"),
-                 GET_OP("last op")};
+  default_ops_ = {"first op",     "bound space",    "biology module",
+                  "displacement", "discretization", "diffusion",
+                  "last op"};
+
+  for (auto& def_op : default_ops_) {
+    ScheduleOp(GET_OP(def_op));
+  }
+
   protected_ops_ = {"first op", "biology module", "discretization", "last op"};
 }
 
@@ -141,6 +145,19 @@ void Scheduler::UnscheduleOp(Operation* op) {
 }
 
 Operation* Scheduler::GetDefaultOp(const std::string& name) {
+  // Check if Initialize has been called, otherwise the scheduler operation
+  // lists will be empty
+  if (!initialized_) {
+    Log::Fatal("Scheduler::GetDefaultOp",
+               "The scheduler has not been yet initialized!");
+    return nullptr;
+  }
+  if (default_ops_.find(name) == default_ops_.end()) {
+    Log::Warning("Scheduler::GetDefaultOp", "The operation '", name,
+                 "' is not a default operation. Request ignored.");
+    return nullptr;
+  }
+
   for (auto it = scheduled_row_wise_ops_.begin();
        it != scheduled_row_wise_ops_.end(); ++it) {
     if ((*it)->name_ == name) {
@@ -280,6 +297,8 @@ void Scheduler::Initialize() {
   });
 
   ScheduleOps();
+
+  initialized_ = true;
 }
 
 // Schedule the operations

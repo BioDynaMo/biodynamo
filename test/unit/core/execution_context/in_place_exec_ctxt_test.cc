@@ -212,10 +212,10 @@ TEST(InPlaceExecutionContext, Execute) {
 
   auto* op1 = GET_OP("Op1");
   auto* op2 = GET_OP("Op2");
-  op1->GetImplementation<Op1>(OpComputeTarget::kCpu)->op1_called_ = &op1_called;
-  op1->GetImplementation<Op1>(OpComputeTarget::kCpu)->op2_called_ = &op2_called;
-  op2->GetImplementation<Op1>(OpComputeTarget::kCpu)->op1_called_ = &op1_called;
-  op2->GetImplementation<Op1>(OpComputeTarget::kCpu)->op2_called_ = &op2_called;
+  op1->GetImplementation<Op1>()->op1_called_ = &op1_called;
+  op1->GetImplementation<Op1>()->op2_called_ = &op2_called;
+  op2->GetImplementation<Op2>()->op1_called_ = &op1_called;
+  op2->GetImplementation<Op2>()->op2_called_ = &op2_called;
   std::vector<Operation*> operations = {op1, op2};
   ctxt->Execute(&cell_0, operations);
 

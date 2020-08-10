@@ -52,6 +52,9 @@ class Scheduler {
 
   Operation* GetDefaultOp(const std::string& name);
 
+  /// Return a list of operations that are scheduled by default
+  std::set<std::string> GetListOfDefaultOps() { return default_ops_; }
+
   void RunScheduledOps();
 
   void ScheduleOps();
@@ -83,8 +86,12 @@ class Scheduler {
   std::vector<Operation*> scheduled_column_wise_ops_;  //!
   /// List of operations will be executed on all simulation objects
   std::vector<Operation*> scheduled_row_wise_ops_;  //!
+  /// List of operations that are scheduled by default
+  std::set<std::string> default_ops_;  //!
   /// List of operations that cannot be affected by the user
   std::set<std::string> protected_ops_;  //!
+  /// Flag to check if scheduler has beeen initialized at least once
+  bool initialized_ = false;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup();
