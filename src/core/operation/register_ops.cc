@@ -14,7 +14,9 @@ REGISTER_OP(DiffusionOp, "diffusion", kCpu);
 
 REGISTER_OP(DisplacementOp, "displacement", kCpu);
 
+#ifdef USE_CUDA
 REGISTER_OP(DisplacementOpCuda, "displacement", kCuda);
+#endif
 
 REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 
