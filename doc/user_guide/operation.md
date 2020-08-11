@@ -17,38 +17,144 @@ keywords:
   -example
 ---
 
-Operations are functions that are executed for each simulation object.
+Operations are functions that are executed at a given frequency throughout
+the simulation.
 To execute a function for *specific* simulation objects have a look at
 biology modules.
+An operation can have multiple implementations. Each implementation can target a different type of hardware (e.g. CPU or GPU) as shown in the following image:
 
-To support multiscale simulations, operations have a data member frequency.
-If it is set to one it means that this function will be executed for every
-time step. If this member is set to two it will be executed every second time
-step, and so on.
+![Operation Overview](images/operation.svg)
 
-Here the link for the complete API documentation for [Operation](/api/structbdm_1_1Operation.html)
+This example shows an overview of the displacement operation; one of the default operations in BioDynaMo.
+This operation is implemented for different computing targets, of which two are shown in the image above.
+The `DisplacementOp` implementation targets execution on CPUs, whereas `DisplacementOpCuda` targets execution on GPUs using the CUDA framework.
 
-## Usage examples
+An operation operates at a certain frequency, which can be set after *registering* the operation.
 
-### Add a user-defined operation
+## Registering an operation
 
-Below you can find a code example to add an operation that prints all
-simulation object unique ids.
+Operations are stored in an `OperationRegistry` in BioDynaMo.
+Any new operation that you wish to add to BioDynaMo needs to be registered before it can be used.
+Let's use the displacement operation as an example to see how this works.
 
-```cpp
-auto* scheduler = simulation.GetScheduler();
-Operation op("print uid op", [](SimObject* so){
-    std::cout << "SimObject " << so->GetUid() << std::endl;
-});
-scheduler->ScheduleOp(op);
-```
-
-### Change the execution frequency of an operation
-
-Let's assume that we want to output all unique ids every 100 timesteps instead
-of every.
+First, create two files: a header file (.h) and an implementation file (.cc).
+The header file contains the logic of your operation, whereas the implementation file registers the operation.
 
 ```cpp
-auto* scheduler = simulation.GetScheduler();
-scheduler->GetOperation("print uid op")->frequency_ = 100;
+// File: displacement_op.h (minimal version)
+
+struct DisplacementOp : public OperationImpl {
+  // You need to provide a Clone implementation
+  void Clone() override { return new DisplacementOp(*this); }
+
+  // This operator needs to be overridden
+  void operator()(SimObject* sim_object) override {
+    // your logic here (the `sim_object` pointer is a handle to each 
+    // simulation object in your simulation)
+  }
+
+ private:
+  // Required data member for registration
+  static bool registered_;
+}
+
 ```
+
+```cpp
+// File: displacement_op.cc (minimal version)
+
+#include "core/operation/operation.h"
+#include "core/operation/displacement_op.h"
+
+// This registers our DisplacementOp in the OperationRegistry under 
+// the name "displacement". Since this operation is targeted to run 
+// on a CPU, we specify "kCpu"
+REGISTER_OP(DisplacementOp, "displacement", kCpu);
+
+```
+
+Here the link for the complete API documentation for [Operation](/bioapi/structbdm_1_1Operation.html)
+
+## Usage example
+
+Once an operation is registered, using it for a simulation is done as follows.
+
+```cpp
+Simulation simulation("my-sim");
+auto* scheduler = simulation.GetScheduler();
+
+// Get the operation by its registered name
+auto* displacement_op = GET_OP("displacement");
+
+// Change the frequency to the desired number
+// 1 is the default, so we could have skipped this step
+displacement_op->frequency_ = 1;
+
+// Schedule the operation for execution
+scheduler->ScheduleOp(displacement_op);
+
+// Simulate for 10 timesteps. The displacement operation will be 
+// executed every timestep, because the frequency is 1
+simulation.Simulate(10);
+```
+
+## Schedule multiple operations with the same name
+
+There are cases in which you might want to schedule multiple instances of a single operation, each with a slightly different logic.
+An example could be to query how many simulation objects there are with a certain diameter. For example: how many simulation objects are there with a diameter greater than 10, and the same question for a diameter greater than 20.
+You could approach this the following way.
+
+```cpp
+// File: check_diameter.h
+
+// Create an operation implementation with a state
+struct CheckDiameter : public OperationImpl {
+  void Clone() override { return new CheckDiameter(*this); }
+  
+  void operator()(SimObject* sim_object) override {
+    if (sim_object->GetDiameter() > threshold_) {
+      counter_++;
+    }
+  }
+
+  // The state consists of these two data members
+  double threshold_ = 0;
+  uint32_t counter_ = 0;
+  
+ private:
+  static bool registered_;
+}
+
+```
+
+```cpp
+// File: check_diameter.cc
+
+#include "core/operation/operation.h"
+#include "check_diameter.h"
+
+REGISTER_OP(CheckDiameter, "check_diameter", kCpu);
+
+```
+
+```cpp
+Simulation simulation("test_sim");
+auto* scheduler = simulation.GetScheduler();
+
+// We instantiate two "check_diameter" operations
+auto* check_diameter10 = GET_OP("check_diameter");
+auto* check_diameter20 = GET_OP("check_diameter");
+
+// Change the threshold values of each instantiation
+check_diameter10->GetImplementation<CheckDiameter>()->threshold_ = 10;
+check_diameter20->GetImplementation<CheckDiameter>()->threshold_ = 20;
+
+// Schedule both of them
+scheduler->ScheduleOp(query_op10);
+scheduler->ScheduleOp(query_op20);
+
+// Now your simulation will 
+simulation.Simulate(1);
+```
+
+Since an `Operation` can have multiple implementations (`OperationImpl`), we need to specify which of the implementations we are targeting with `GetImplementation<T>()`, where `T` is the type of your operation implementation.
