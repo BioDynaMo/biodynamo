@@ -165,7 +165,7 @@ struct Operation {
   /// Operation name / unique identifier
   std::string name_;
   /// The compute target that this operation will be executed on
-  OpComputeTarget active_target_;
+  OpComputeTarget active_target_ = kCpu;
   /// The different operation implementations for each supported compute target
   std::vector<OperationImpl *> implementations_;
 };

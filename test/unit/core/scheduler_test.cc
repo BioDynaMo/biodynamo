@@ -196,39 +196,83 @@ struct MultiOpOpenCl : public OperationImplGpu {
 REGISTER_OP(MultiOpOpenCl, "multi_op", kOpenCl)
 
 TEST(SchedulerTest, OperationImpl) {
-  auto* cpu_op = GET_OP("cpu_op")->GetImplementation<CpuOp>();
-  auto* cuda_op = GET_OP("cuda_op")->GetImplementation<CudaOp>();
-  auto* opencl_op = GET_OP("opencl_op")->GetImplementation<OpenClOp>();
-  auto* multi_op_cpu = GET_OP("multi_op")->GetImplementation<MultiOp>();
-  auto* multi_op_ocl = GET_OP("multi_op")->GetImplementation<MultiOpOpenCl>();
+  auto* cpu_op = GET_OP("cpu_op");
+  auto* cuda_op = GET_OP("cuda_op");
+  auto* opencl_op = GET_OP("opencl_op");
+  auto* multi_op = GET_OP("multi_op");
 
-  EXPECT_NE(cpu_op, nullptr);
-  EXPECT_NE(cuda_op, nullptr);
-  EXPECT_NE(opencl_op, nullptr);
-  EXPECT_NE(multi_op_cpu, nullptr);
-  EXPECT_NE(multi_op_ocl, nullptr);
+  auto* cpu_impl = cpu_op->GetImplementation<CpuOp>();
+  auto* cuda_impl = cuda_op->GetImplementation<CudaOp>();
+  auto* opencl_impl = opencl_op->GetImplementation<OpenClOp>();
+  auto* multi_cpu_impl = multi_op->GetImplementation<MultiOp>();
+  auto* multi_ocl_impl = multi_op->GetImplementation<MultiOpOpenCl>();
 
-  EXPECT_EQ(cpu_op->target_, kCpu);
-  EXPECT_EQ(cuda_op->target_, kCuda);
-  EXPECT_EQ(opencl_op->target_, kOpenCl);
-  EXPECT_EQ(multi_op_cpu->target_, kCpu);
-  EXPECT_EQ(multi_op_ocl->target_, kOpenCl);
+  // Check casting to correct target type
+  EXPECT_NE(cpu_impl, nullptr);
+  EXPECT_NE(cuda_impl, nullptr);
+  EXPECT_NE(opencl_impl, nullptr);
+  EXPECT_NE(multi_cpu_impl, nullptr);
+  EXPECT_NE(multi_ocl_impl, nullptr);
 
-  EXPECT_EQ(cpu_op->IsGpuOperation(), false);
-  EXPECT_EQ(cuda_op->IsGpuOperation(), true);
-  EXPECT_EQ(opencl_op->IsGpuOperation(), true);
-  EXPECT_EQ(multi_op_cpu->IsGpuOperation(), false);
-  EXPECT_EQ(multi_op_ocl->IsGpuOperation(), true);
+  // Check resizing and initialization if implementations_ vector
+  EXPECT_EQ(cpu_op->implementations_.size(), 1u);
+  EXPECT_NE(cpu_op->implementations_[kCpu], nullptr);
+  EXPECT_EQ(cuda_op->implementations_.size(), 2u);
+  EXPECT_EQ(cuda_op->implementations_[kCpu], nullptr);
+  EXPECT_NE(cuda_op->implementations_[kCuda], nullptr);
+  EXPECT_EQ(opencl_op->implementations_.size(), 3u);
+  EXPECT_EQ(opencl_op->implementations_[kCpu], nullptr);
+  EXPECT_EQ(opencl_op->implementations_[kCuda], nullptr);
+  EXPECT_NE(opencl_op->implementations_[kOpenCl], nullptr);
+  EXPECT_EQ(multi_op->implementations_.size(), 3u);
+  EXPECT_NE(multi_op->implementations_[kCpu], nullptr);
+  EXPECT_EQ(multi_op->implementations_[kCuda], nullptr);
+  EXPECT_NE(multi_op->implementations_[kOpenCl], nullptr);
 
-  EXPECT_EQ(cpu_op->IsRowWise(), true);
-  EXPECT_EQ(cuda_op->IsRowWise(), false);
-  EXPECT_EQ(opencl_op->IsRowWise(), false);
-  EXPECT_EQ(multi_op_cpu->IsRowWise(), true);
-  EXPECT_EQ(multi_op_ocl->IsRowWise(), false);
+
+  EXPECT_EQ(cpu_op->IsComputeTargetSupported(kCpu), true);
+  EXPECT_EQ(cpu_op->IsComputeTargetSupported(kCuda), false);
+  EXPECT_EQ(cpu_op->IsComputeTargetSupported(kOpenCl), false);
+  EXPECT_EQ(cuda_op->IsComputeTargetSupported(kCpu), false);
+  EXPECT_EQ(cuda_op->IsComputeTargetSupported(kCuda), true);
+  EXPECT_EQ(cuda_op->IsComputeTargetSupported(kOpenCl), false);
+  EXPECT_EQ(opencl_op->IsComputeTargetSupported(kCpu), false);
+  EXPECT_EQ(opencl_op->IsComputeTargetSupported(kCuda), false);
+  EXPECT_EQ(opencl_op->IsComputeTargetSupported(kOpenCl), true);
+  EXPECT_EQ(multi_op->IsComputeTargetSupported(kCpu), true);
+  EXPECT_EQ(multi_op->IsComputeTargetSupported(kCuda), false);
+  EXPECT_EQ(multi_op->IsComputeTargetSupported(kOpenCl), true);
+
+  // Check correctness of target initialization
+  EXPECT_EQ(cpu_impl->target_, kCpu);
+  EXPECT_EQ(cuda_impl->target_, kCuda);
+  EXPECT_EQ(opencl_impl->target_, kOpenCl);
+  EXPECT_EQ(multi_cpu_impl->target_, kCpu);
+  EXPECT_EQ(multi_ocl_impl->target_, kOpenCl);
+
+  EXPECT_EQ(cpu_impl->IsGpuOperation(), false);
+  EXPECT_EQ(cuda_impl->IsGpuOperation(), true);
+  EXPECT_EQ(opencl_impl->IsGpuOperation(), true);
+  EXPECT_EQ(multi_cpu_impl->IsGpuOperation(), false);
+  EXPECT_EQ(multi_ocl_impl->IsGpuOperation(), true);
+
+  EXPECT_EQ(cpu_impl->IsRowWise(), true);
+  EXPECT_EQ(cuda_impl->IsRowWise(), false);
+  EXPECT_EQ(opencl_impl->IsRowWise(), false);
+  EXPECT_EQ(multi_cpu_impl->IsRowWise(), true);
+  EXPECT_EQ(multi_ocl_impl->IsRowWise(), false);
 
   // Try to obtain non-existing implementation
-  auto* cpu_op2 = GET_OP("cpu_op")->GetImplementation<CudaOp>();
-  EXPECT_EQ(cpu_op2, nullptr);
+  auto* cpu_op2 = GET_OP("cpu_op");
+  auto* cpu_impl2 = cpu_op2->GetImplementation<CudaOp>();
+  EXPECT_EQ(cpu_impl2, nullptr);
+
+  // Since we didn't schedule the operations, we are responsible for freeing up
+  delete cpu_op;
+  delete cpu_op2;
+  delete cuda_op;
+  delete opencl_op;
+  delete multi_op;
 }
 
 struct ComplexStateOp : public OperationImpl {
@@ -258,6 +302,7 @@ REGISTER_OP(ComplexStateOp, "complex_state_op", kCpu)
 TEST(SchedulerTest, OperationCloning) {
   auto* op = GET_OP("complex_state_op");
   op->frequency_ = 42;
+  op->active_target_ = kOpenCl;
 
   auto* op_impl = op->GetImplementation<ComplexStateOp>();
   op_impl->b_ = true;
@@ -268,11 +313,17 @@ TEST(SchedulerTest, OperationCloning) {
   auto* clone_impl = clone->GetImplementation<ComplexStateOp>();
 
   EXPECT_EQ(clone->frequency_, 42u);
+  EXPECT_EQ(clone->active_target_, kOpenCl);
   EXPECT_EQ(clone_impl->b_, true);
   EXPECT_NE(clone_impl->a_vec_[0], nullptr);
   // Since we do an explicit deep copy of the ComplexStateOp::a_vec_ vector, we
   // don't expect the same values here
   EXPECT_NE(clone_impl->a_vec_[0], a);
+
+  delete a;
+  delete op;
+  delete clone_impl->a_vec_[0];
+  delete clone;
 }
 
 TEST(SchedulerTest, MultipleSimulations) {
@@ -310,6 +361,9 @@ TEST(SchedulerTest, MultipleSimulations) {
 
   EXPECT_EQ(10u, op1_impl->counter);
   EXPECT_EQ(10u, op2_impl->counter);
+
+  delete sim1;
+  delete sim2;
 }
 
 TEST(SchedulerTest, DefaultOps) {

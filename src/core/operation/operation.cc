@@ -36,6 +36,8 @@ Operation *Operation::Clone() {
   for (auto *imp : implementations_) {
     if (imp) {
       clone->implementations_[i] = imp->Clone();
+    } else {
+      clone->implementations_[i] = nullptr;
     }
     i++;
   }
@@ -57,7 +59,7 @@ void Operation::operator()() {
 }
 
 void Operation::AddOperationImpl(OpComputeTarget target, OperationImpl *impl) {
-  if (implementations_.size() <= target) {
+  if (implementations_.size() < static_cast<size_t>(target + 1)) {
     implementations_.resize(target + 1, nullptr);
   }
   implementations_[target] = impl;
@@ -65,7 +67,7 @@ void Operation::AddOperationImpl(OpComputeTarget target, OperationImpl *impl) {
 }
 
 bool Operation::IsComputeTargetSupported(OpComputeTarget target) {
-  if (implementations_.size() <= target) {
+  if (implementations_.size() < static_cast<size_t>(target + 1)) {
     return false;
   }
   return implementations_[target] != nullptr;

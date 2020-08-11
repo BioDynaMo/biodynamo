@@ -103,6 +103,12 @@ Scheduler::~Scheduler() {
   for (auto* op : scheduled_column_wise_ops_) {
     delete op;
   }
+  // Normally this list of ops is empty, but it can happen that an uninitialized
+  // Scheduler gets destructed, leaving all the ops in this vector
+  // In such cases we loop over this vector
+  for (auto* op : ops_to_add_) {
+    delete op;
+  }
   delete backup_;
   delete root_visualization_;
   if (visualization_) {
@@ -284,7 +290,9 @@ void Scheduler::Initialize() {
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
   if (param->bound_space_) {
-    rm->ApplyOnAllElementsParallel(*GET_OP("bound space"));
+    auto* bound_space = GET_OP("bound space");
+    rm->ApplyOnAllElementsParallel(*bound_space);
+    delete bound_space;
   }
   env->Update();
   int lbound = env->GetDimensionThresholds()[0];
@@ -338,7 +346,7 @@ void Scheduler::ScheduleOps() {
       if (op == (*it2)) {
         // Add to list of unscheduled operations
         unscheduled_ops_.push_back(op);
-        scheduled_row_wise_ops_.erase(it2);
+        it2 = scheduled_row_wise_ops_.erase(it2);
         goto label;
       }
     }
@@ -349,7 +357,7 @@ void Scheduler::ScheduleOps() {
       if (op == (*it2)) {
         // Delete the cloned operation
         unscheduled_ops_.push_back(op);
-        scheduled_column_wise_ops_.erase(it2);
+        it2 = scheduled_column_wise_ops_.erase(it2);
         goto label;
       }
     }

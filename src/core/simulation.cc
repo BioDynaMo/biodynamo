@@ -45,7 +45,6 @@ namespace bdm {
 
 /// Implementation for `Simulation`:
 /// It must be separate to avoid circular dependencies.
-/// It can't be defined in a source file, because it is templated.
 
 std::atomic<uint64_t> Simulation::counter_;
 
@@ -146,8 +145,8 @@ Simulation::~Simulation() {
   if (mem_mgr_) {
     delete mem_mgr_;
   }
-  active_ = tmp;
   delete ocl_state_;
+  active_ = tmp;
 }
 
 void Simulation::Activate() { active_ = this; }

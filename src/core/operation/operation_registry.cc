@@ -26,16 +26,25 @@ bool OperationRegistry::AddOperationImpl(const std::string &op_name,
                                          OpComputeTarget target,
                                          OperationImpl *impl,
                                          size_t frequency) {
-  auto *op = operations_[op_name];
-  if (op == nullptr) {
-    op = new Operation(op_name, frequency);
-    operations_[op_name] = op;
-  } else if (op->implementations_[target]) {
-    Log::Fatal("OperationRegistry::AddOperationImpl", "Operation '", op_name,
-               "' with implementation '", OpComputeTargetString(target),
-               "' already exists in the registry!");
+  auto op = operations_.find(op_name);
+  // If operation doesn't exist yet, make a new operation under given name
+  if (op == operations_.end()) {
+    operations_.insert(
+        std::make_pair(op_name, new Operation(op_name, frequency)));
+    op = operations_.find(op_name);
+    op->second->AddOperationImpl(target, impl);
+  } else if (op->second->implementations_.size() >=
+             static_cast<size_t>(target + 1)) {
+    // If operation exists, check if the implementation already exists too
+    if (op->second->implementations_[target]) {
+      Log::Fatal("OperationRegistry::AddOperationImpl", "Operation '", op_name,
+                 "' with implementation '", OpComputeTargetString(target),
+                 "' already exists in the registry!");
+    }
+  } else {
+    // Add the implementation to the existing operation
+    op->second->AddOperationImpl(target, impl);
   }
-  op->AddOperationImpl(target, impl);
   return true;
 }
 

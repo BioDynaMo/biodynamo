@@ -46,9 +46,9 @@ struct OperationRegistry {
 /// A convenient macro to register a new operation implemented. To be used as:
 /// REGISTER_OP(MyOp, "my operation", kCpu)
 /// MyOp is required to have member: `static bool registered_`
-#define REGISTER_OP(op, name, target, ...)                                        \
+#define REGISTER_OP(op, name, target)                                        \
   bool op::registered_ = OperationRegistry::GetInstance()->AddOperationImpl( \
-      name, OpComputeTarget::target, new op(__VA_ARGS__));
+      name, OpComputeTarget::target, new op());
 
 /// A convenient macro to retrieve an operation from the registry by its name
 #define GET_OP(name) OperationRegistry::GetInstance()->GetOperation(name)->Clone()
