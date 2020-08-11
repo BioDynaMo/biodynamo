@@ -198,7 +198,6 @@ struct RunAllScheduldedOps : Functor<void, SimObject*, SoHandle> {
 void Scheduler::RunScheduledOps() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
-  auto* env = sim->GetEnvironment();
   auto* param = sim->GetParam();
   auto batch_size = param->scheduling_batch_size_;
 

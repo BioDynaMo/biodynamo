@@ -57,7 +57,6 @@ class DisplacementOpCuda : public OperationImplGpu {
   void InitializeGpuData() override {
     auto* sim = Simulation::GetActive();
     auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
-    auto* param = sim->GetParam();
     auto* rm = sim->GetResourceManager();
 
     if (!grid) {
@@ -107,7 +106,7 @@ class DisplacementOpCuda : public OperationImplGpu {
 
   void operator()() override {
     auto* sim = Simulation::GetActive();
-    auto* grid = sim->GetEnvironment();
+    auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
     auto* param = sim->GetParam();
     auto* rm = sim->GetResourceManager();
 
