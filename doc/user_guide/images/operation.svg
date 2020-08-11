@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="183.24329mm"
+   height="108.40782mm"
+   viewBox="0 0 183.24329 108.40782"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="operation.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="348.24224"
+     inkscape:cy="89.992334"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1848"
+     inkscape:window-height="1016"
+     inkscape:window-x="72"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-14.751633,-16.418804)">
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect815"
+       width="181.74329"
+       height="106.90782"
+       x="15.501633"
+       y="17.168804" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="23.492859"
+       y="32.317215"
+       id="text819"><tspan
+         sodipodi:role="line"
+         id="tspan817"
+         x="23.492859"
+         y="32.317215"
+         style="font-weight:bold;stroke-width:0.26458332">Operation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="23.770872"
+       y="42.532551"
+       id="text823"><tspan
+         sodipodi:role="line"
+         x="23.770872"
+         y="42.532551"
+         style="font-size:7.05555534px;stroke-width:0.26458332"
+         id="tspan825">name: Displacement</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot829"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="scale(0.26458333)"><flowRegion
+         id="flowRegion831"><rect
+           id="rect833"
+           width="19.192898"
+           height="110.10663"
+           x="83.842659"
+           y="150.75293" /></flowRegion><flowPara
+         id="flowPara835"></flowPara></flowRoot>    <text
+       id="text839"
+       y="51.085175"
+       x="23.770872"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         id="tspan837"
+         style="font-size:7.05555534px;stroke-width:0.26458332"
+         y="51.085175"
+         x="23.770872"
+         sodipodi:role="line">frequency: 1</tspan></text>
+    <rect
+       style="opacity:1;fill:#d6d6d6;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect841"
+       width="77.508163"
+       height="51.048485"
+       x="23.786989"
+       y="62.070084" />
+    <rect
+       y="62.070084"
+       x="112.78774"
+       height="51.315754"
+       width="77.508156"
+       id="rect845"
+       style="opacity:1;fill:#d6d6d6;fill-opacity:1;stroke:#000000;stroke-width:1.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    <text
+       id="text849"
+       y="71.932198"
+       x="28.319826"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         style="font-weight:bold;font-size:5.64444447px;fill:#000000;fill-opacity:1;stroke-width:0.26458332"
+         y="71.932198"
+         x="28.319826"
+         id="tspan847"
+         sodipodi:role="line">DisplacementOp</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="117.33132"
+       y="72.990532"
+       id="text857"><tspan
+         sodipodi:role="line"
+         id="tspan855"
+         x="117.33132"
+         y="72.990532"
+         style="font-weight:bold;font-size:5.64444447px;stroke-width:0.26458332">DisplacementOpCuda</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot859"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="scale(0.26458333)"><flowRegion
+         id="flowRegion861"><rect
+           id="rect863"
+           width="269.71072"
+           height="190.91884"
+           x="102.02541"
+           y="318.43826" /></flowRegion><flowPara
+         id="flowPara867" /></flowRoot>    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="28.303711"
+       y="105.17972"
+       id="text940"><tspan
+         sodipodi:role="line"
+         x="28.303711"
+         y="105.17972"
+         style="font-size:5.64444447px;stroke-width:0.26458332"
+         id="tspan938">Target: kCpu</tspan></text>
+    <text
+       id="text944"
+       y="103.82726"
+       x="117.31521"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         id="tspan942"
+         style="font-size:5.64444447px;stroke-width:0.26458332"
+         y="103.82726"
+         x="117.31521"
+         sodipodi:role="line">Target: kCuda</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot946"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:22.06666756px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="scale(0.26458333)"><flowRegion
+         id="flowRegion948"
+         style="line-height:22.06666756px"><rect
+           id="rect950"
+           width="248.49753"
+           height="82.832504"
+           x="107.07617"
+           y="300.25552"
+           style="line-height:22.06666756px" /></flowRegion><flowPara
+         id="flowPara952"
+         style="font-size:21.33333397px;line-height:22.06666756px">Inherits from:</flowPara><flowPara
+         style="font-size:21.33333397px;line-height:22.06666756px"
+         id="flowPara954">     OperationImpl</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot956"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="scale(0.26458333)"><flowRegion
+         id="flowRegion958"><rect
+           id="rect960"
+           width="53.538086"
+           height="85.862968"
+           x="262.63965"
+           y="306.31644" /></flowRegion><flowPara
+         id="flowPara962"></flowPara></flowRoot>    <flowRoot
+       transform="matrix(0.26458333,0,0,0.26458333,89.535292,0)"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:22.06666756px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       id="flowRoot972"
+       xml:space="preserve"><flowRegion
+         style="line-height:22.06666756px"
+         id="flowRegion966"><rect
+           style="line-height:22.06666756px"
+           y="300.25552"
+           x="107.07617"
+           height="82.832504"
+           width="248.49753"
+           id="rect964" /></flowRegion><flowPara
+         style="font-size:21.33333397px;line-height:22.06666756px"
+         id="flowPara968">Inherits from:</flowPara><flowPara
+         id="flowPara970"
+         style="font-size:21.33333397px;line-height:22.06666756px">     OperationImplGpu</flowPara></flowRoot>  </g>
+</svg>
