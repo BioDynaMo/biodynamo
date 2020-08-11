@@ -1,10 +1,10 @@
-#include "operation.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
 #include "core/operation/displacement_op.h"
 #include "core/operation/displacement_op_cuda.h"
 #include "core/operation/displacement_op_opencl.h"
 #include "core/operation/dividing_cell_op.h"
+#include "core/operation/operation.h"
 
 namespace bdm {
 
@@ -22,4 +22,4 @@ REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCl);
 #endif
 
-} // namespace bdm
+}  // namespace bdm

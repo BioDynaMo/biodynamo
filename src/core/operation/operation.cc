@@ -34,7 +34,9 @@ Operation *Operation::Clone() {
   // Deep copy of the implementations
   int i = 0;
   for (auto *imp : implementations_) {
-    clone->implementations_[i] = imp->Clone();
+    if (imp) {
+      clone->implementations_[i] = imp->Clone();
+    }
     i++;
   }
   return clone;
@@ -59,6 +61,7 @@ void Operation::AddOperationImpl(OpComputeTarget target, OperationImpl *impl) {
     implementations_.resize(target + 1, nullptr);
   }
   implementations_[target] = impl;
+  impl->target_ = target;
 }
 
 bool Operation::IsComputeTargetSupported(OpComputeTarget target) {

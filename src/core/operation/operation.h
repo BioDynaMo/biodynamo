@@ -58,18 +58,21 @@ struct OperationImpl {
     Log::Fatal("OperationImpl::operator()()",
                "Column-wise function operator not implemented");
   }
-  virtual bool IsGpuOperation() { return false; }
+  bool IsGpuOperation() { return target_ == kCuda || target_ == kOpenCl; }
 
   virtual bool IsRowWise() { return true; }
+
+  OpComputeTarget target_ = kCpu;
 };
 
 /// Interface for implementing an operation that should run on a GPU
 struct OperationImplGpu : public OperationImpl {
- public:
-  virtual void InitializeGpuData() = 0;
-  virtual void UpdateCpuData() = 0;
+  /// Initialize GPU buffers with data on CPU
+  virtual void InitializeGpuData() {};
 
-  bool IsGpuOperation() override { return true; }
+  /// Update data on CPU with values computed on GPU
+  virtual void UpdateCpuData() {};
+
   bool IsRowWise() override { return false; }
 
   virtual ~OperationImplGpu() {}
@@ -122,19 +125,17 @@ struct Operation {
   ///
   void AddOperationImpl(OpComputeTarget target, OperationImpl *impl);
 
-  /// Returns the active implementation
+  /// Returns the implementation corresponding to the template argument
   template <typename T>
   T *GetImplementation() {
-    return static_cast<T *>(implementations_[active_target_]);
-  }
-
-  /// Returns the implementation of the specified target
-  template <typename T>
-  T *GetImplementation(OpComputeTarget target) {
-    if (implementations_.size() <= target) {
-      return nullptr;
+    T* implementation = nullptr;
+    // Go over the available implementations and return the requested one
+    for (auto* imp : implementations_) {
+      if (dynamic_cast<T*>(imp)) {
+        implementation = dynamic_cast<T*>(imp);
+      }
     }
-    return static_cast<T *>(implementations_[target]);
+    return implementation;
   }
 
   /// Check whether an implementation is available for the requested compute
