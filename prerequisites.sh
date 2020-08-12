@@ -68,7 +68,7 @@ EchoInfo ""
 column ${BDM_PKG_LIST}
 EchoInfo ""
 
-if [ -z $SILENT_INSTALL ]; then
+if [ -z $SILENT_INSTALL ] || [ -z $GITHUB_ACTIONS ]; then
   WaitForUser
 fi
 

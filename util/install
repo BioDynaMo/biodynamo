@@ -44,11 +44,6 @@ fi
 # Clone BioDynaMo
 Checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
 
-# Enable silent installation if we are running Github Actions
-if [ ! -z ${GITHUB_ACTIONS+x} ]; then
-  export SILENT_INSTALL=1
-fi
-
 # SBML is currently not supported on macOS
 # See: https://trello.com/c/vKPbh4iG
 if [[ $(uname -s) != "Darwin"* ]]; then
