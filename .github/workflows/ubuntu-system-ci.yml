@@ -39,6 +39,7 @@ jobs:
     - name: Install BioDynaMo
       shell: bash
       run: |
+        set -x
         sudo apt update
         sudo apt install -y curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
