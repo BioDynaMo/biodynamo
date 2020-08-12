@@ -15,6 +15,8 @@
 #ifndef CORE_PARALLEL_EXECUTION_PARALLEL_EXECUTION_MANAGER_H_
 #define CORE_PARALLEL_EXECUTION_PARALLEL_EXECUTION_MANAGER_H_
 
+#ifdef USE_MPI
+
 #include <algorithm>
 #include <fstream>
 #include <functional>
@@ -313,5 +315,7 @@ class Worker {
 };
 
 }  // namespace bdm
+
+#endif  // USE_MPI
 
 #endif  // CORE_PARALLEL_EXECUTION_PARALLEL_EXECUTION_MANAGER_H_

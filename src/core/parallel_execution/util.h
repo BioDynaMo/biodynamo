@@ -15,6 +15,8 @@
 #ifndef CORE_PARALLEL_EXECUTION_UTIL_H_
 #define CORE_PARALLEL_EXECUTION_UTIL_H_
 
+#ifdef USE_MPI
+
 #include <sstream>
 #include <string>
 #include <vector>
@@ -218,5 +220,7 @@ T* MPI_Recv_Obj_ROOT(int size, int source, int tag, MPI_Status* status = MPI_STA
 }
 
 }  // namespace bdm
+
+#endif  // USE_MPI
 
 #endif  // CORE_PARALLEL_EXECUTION_UTIL_H_

@@ -64,6 +64,8 @@ function(bdm_add_executable TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
 
   if(dict)
+    add_library(${TARGET}-objectlib OBJECT ${ARG_SOURCES})
+
     # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict")
 
@@ -77,12 +79,11 @@ function(bdm_add_executable TARGET)
 
     # generate dictionary library (to be used to load into PyROOT to resolve bdm
     # symbols: ROOT.gSystem.Load("${TARGET}-dict.so"))
-    add_library(${TARGET}_dict SHARED ${DICT_FILE})
-    add_dependencies(${TARGET}_dict ${TARGET}-dict)
+    add_library(${TARGET}_dict SHARED ${DICT_FILE}.cc)
     target_link_libraries(${TARGET}_dict biodynamo)
 
     # generate executable
-    add_executable(${TARGET} $<TARGET_OBJECTS:${TARGET}-objectlib> ${DICT_FILE})
+    add_executable(${TARGET} $<TARGET_OBJECTS:${TARGET}-objectlib>)
     add_dependencies(${TARGET} ${TARGET}_dict)
     if (OPENCL_FOUND)
       # Do this here; we don't want libbiodynamo.so to contain any OpenCL symbols

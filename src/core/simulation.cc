@@ -28,7 +28,6 @@
 #include "core/environment/uniform_grid_environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/gpu/gpu_helper.h"
-#include "core/grid.h"
 #include "core/parallel_execution/xml_parser.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"

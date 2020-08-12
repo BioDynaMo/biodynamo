@@ -11,6 +11,9 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
+
+#ifdef USE_MPI
+
 #include "binding_cells.h"
 #include "core/util/timing.h"
 
@@ -101,3 +104,5 @@ int main(int argc, const char** argv) {
     return 1;
   }
 }
+
+#endif  // USE_MPI

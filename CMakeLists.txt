@@ -180,15 +180,17 @@ else()
 endif()
 
 # You need to specify CC and CXX to point to MPI compilers
-find_package(MPI)
+find_package(MPI COMPONENTS CXX)
 if(MPI_FOUND)
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} mpic++ --showme:incdirs
-                  OUTPUT_VARIABLE MPI_INCLUDE_PATH)
+  if(NOT DEFINED MPI_INCLUDE_PATH)
+    MESSAGE(FATAL_ERROR "We could not find the MPI header files.")
+  endif()
   include_directories(${MPI_INCLUDE_PATH})
-else()
+  add_definitions("-DUSE_MPI")
+else(MPI_FOUND)
   MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
   calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
-endif()
+endif(MPI_FOUND)
 
 # Disable paraview until we upgrade to v5.8 on macOS, numa is not supported on macOS
 if(APPLE)

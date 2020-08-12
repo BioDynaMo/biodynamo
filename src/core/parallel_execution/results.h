@@ -1,6 +1,8 @@
 #ifndef CORE_PARALLEL_EXECUTION_RESULTS_H_
 #define CORE_PARALLEL_EXECUTION_RESULTS_H_
 
+#ifdef USE_MPI
+
 #include <sstream>
 #include <string>
 #include <vector>
@@ -75,5 +77,7 @@ class Results {
 };
 
 }  // namespace bdm
+
+#endif  // USE_MPI
 
 #endif  // CORE_PARALLEL_EXECUTION_RESULTS_H_
