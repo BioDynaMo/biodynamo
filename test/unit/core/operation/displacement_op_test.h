@@ -48,8 +48,9 @@ inline void RunTest() {
 
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();
-  ctxt->Execute(rm->GetSimObject(ref_uid), {NewOperation("displacement")});
-  ctxt->Execute(rm->GetSimObject(ref_uid + 1), {NewOperation("displacement")});
+  auto* op = NewOperation("displacement");
+  ctxt->Execute(rm->GetSimObject(ref_uid), {op});
+  ctxt->Execute(rm->GetSimObject(ref_uid + 1), {op});
 
   // check results
   // cell 0
@@ -87,6 +88,8 @@ inline void RunTest() {
   EXPECT_NEAR(0.4, final_cell1->GetAdherence(), abs_error<double>::value);
   EXPECT_NEAR(11, final_cell1->GetDiameter(), abs_error<double>::value);
   EXPECT_NEAR(1.1, final_cell1->GetMass(), abs_error<double>::value);
+
+  delete op;
 }
 
 }  // namespace displacement_op_test_internal
