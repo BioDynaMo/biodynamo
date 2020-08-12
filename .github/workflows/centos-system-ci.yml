@@ -44,6 +44,10 @@ jobs:
         yum install -y http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm
         yum install -y git
 
+    - name: Set GHA_BRANCH_NAME
+      run: |
+        echo "::set-env name=GHA_BRANCH_NAME::${{ github.head_ref }}"
+
     - name: Install BioDynaMo
       shell: bash
       run: |
