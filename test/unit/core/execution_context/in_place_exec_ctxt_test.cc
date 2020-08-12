@@ -210,8 +210,8 @@ TEST(InPlaceExecutionContext, Execute) {
   bool op1_called = false;
   bool op2_called = false;
 
-  auto* op1 = GET_OP("Op1");
-  auto* op2 = GET_OP("Op2");
+  auto* op1 = NewOperation("Op1");
+  auto* op2 = NewOperation("Op2");
   op1->GetImplementation<Op1>()->op1_called_ = &op1_called;
   op1->GetImplementation<Op1>()->op2_called_ = &op2_called;
   op2->GetImplementation<Op2>()->op1_called_ = &op1_called;
@@ -312,11 +312,11 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
 
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.
-  auto* op1 = GET_OP("TestOperation");
+  auto* op1 = NewOperation("TestOperation");
   TestFunctor1 functor1(op1);
   rm->ApplyOnAllElementsParallel(functor1);
 
-  auto* op2 = GET_OP("TestOperation");
+  auto* op2 = NewOperation("TestOperation");
   TestFunctor2 functor2(op2);
   rm->ApplyOnAllElements(functor2);
 

@@ -44,7 +44,7 @@ TEST(DisplacementOpTest, ComputeNew) {
   env->Update();
 
   // Create operation
-  auto* displacement_op = GET_OP("displacement");
+  auto* displacement_op = NewOperation("displacement");
   // Reset the state of the DisplacementOp (needs to be done in gtests)
   displacement_op->GetImplementation<DisplacementOp>()->TearDown();
 

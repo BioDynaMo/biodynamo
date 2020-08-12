@@ -135,7 +135,7 @@ void RunTest(ExecutionMode mode) {
 
     if (i == Case::kCompute) {
       // Execute operation
-      (*GET_OP("displacement"))();
+      (*NewOperation("displacement"))();
     } else {
       // Run verification on CPU
       DisplacementOpCpuVerify cpu_op;
@@ -219,7 +219,7 @@ void RunTest2(ExecutionMode mode) {
 
     if (i == Case::kCompute) {
       // Execute operation
-      (*GET_OP("displacement"))();
+      (*NewOperation("displacement"))();
     } else {
       // Run verification on CPU
       DisplacementOpCpuVerify cpu_op;

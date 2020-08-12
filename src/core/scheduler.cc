@@ -87,7 +87,7 @@ Scheduler::Scheduler() {
                   "last op"};
 
   for (auto& def_op : default_ops_) {
-    ScheduleOp(GET_OP(def_op));
+    ScheduleOp(NewOperation(def_op));
   }
 
   protected_ops_ = {"first op", "biology module", "discretization", "last op"};
@@ -289,7 +289,7 @@ void Scheduler::Initialize() {
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
   if (param->bound_space_) {
-    auto* bound_space = GET_OP("bound space");
+    auto* bound_space = NewOperation("bound space");
     rm->ApplyOnAllElementsParallel(*bound_space);
     delete bound_space;
   }

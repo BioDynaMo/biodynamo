@@ -51,7 +51,7 @@ struct OperationRegistry {
       name, OpComputeTarget::target, new op());
 
 /// A convenient macro to retrieve an operation from the registry by its name
-#define GET_OP(name) OperationRegistry::GetInstance()->GetOperation(name)->Clone()
+#define NewOperation(name) OperationRegistry::GetInstance()->GetOperation(name)->Clone()
 
 // /// A convenient function to get a new operation from the registry by its name
 // inline Operation *GetNewOperation(const std::string &name) {

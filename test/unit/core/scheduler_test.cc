@@ -110,8 +110,8 @@ TEST(SchedulerTest, OperationManagement) {
 
   simulation.GetResourceManager()->push_back(new Cell(10));
 
-  auto* op1 = GET_OP("test_op");
-  auto* op2 = GET_OP("test_op");
+  auto* op1 = NewOperation("test_op");
+  auto* op2 = NewOperation("test_op");
 
   auto* op1_impl = op1->GetImplementation<TestOp>();
   auto* op2_impl = op2->GetImplementation<TestOp>();
@@ -196,10 +196,10 @@ struct MultiOpOpenCl : public OperationImplGpu {
 REGISTER_OP(MultiOpOpenCl, "multi_op", kOpenCl)
 
 TEST(SchedulerTest, OperationImpl) {
-  auto* cpu_op = GET_OP("cpu_op");
-  auto* cuda_op = GET_OP("cuda_op");
-  auto* opencl_op = GET_OP("opencl_op");
-  auto* multi_op = GET_OP("multi_op");
+  auto* cpu_op = NewOperation("cpu_op");
+  auto* cuda_op = NewOperation("cuda_op");
+  auto* opencl_op = NewOperation("opencl_op");
+  auto* multi_op = NewOperation("multi_op");
 
   auto* cpu_impl = cpu_op->GetImplementation<CpuOp>();
   auto* cuda_impl = cuda_op->GetImplementation<CudaOp>();
@@ -263,7 +263,7 @@ TEST(SchedulerTest, OperationImpl) {
   EXPECT_EQ(multi_ocl_impl->IsRowWise(), false);
 
   // Try to obtain non-existing implementation
-  auto* cpu_op2 = GET_OP("cpu_op");
+  auto* cpu_op2 = NewOperation("cpu_op");
   auto* cpu_impl2 = cpu_op2->GetImplementation<CudaOp>();
   EXPECT_EQ(cpu_impl2, nullptr);
 
@@ -300,7 +300,7 @@ struct ComplexStateOp : public OperationImpl {
 REGISTER_OP(ComplexStateOp, "complex_state_op", kCpu)
 
 TEST(SchedulerTest, OperationCloning) {
-  auto* op = GET_OP("complex_state_op");
+  auto* op = NewOperation("complex_state_op");
   op->frequency_ = 42;
   op->active_target_ = kOpenCl;
 
@@ -335,13 +335,13 @@ TEST(SchedulerTest, MultipleSimulations) {
 
   sim1->Activate();
   sim1->GetResourceManager()->push_back(cell);
-  auto* op1 = GET_OP("test_op");
+  auto* op1 = NewOperation("test_op");
   sim1->GetScheduler()->ScheduleOp(op1);
   sim1->Simulate(10);
 
   sim2->Activate();
   sim2->GetResourceManager()->push_back(cell2);
-  auto* op2 = GET_OP("test_op");
+  auto* op2 = NewOperation("test_op");
   sim2->GetScheduler()->ScheduleOp(op2);
 
   auto* op1_impl = op1->GetImplementation<TestOp>();
@@ -380,7 +380,7 @@ TEST(SchedulerTest, DefaultOps) {
   }
 
   // Try to get a non-default op
-  auto* test_op = GET_OP("test_op");
+  auto* test_op = NewOperation("test_op");
   scheduler->ScheduleOp(test_op);
   auto* op = scheduler->GetDefaultOp("test_op");
   EXPECT_EQ(op, nullptr);

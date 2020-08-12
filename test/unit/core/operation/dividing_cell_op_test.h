@@ -42,7 +42,7 @@ inline void RunTest() {
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
 
-  auto* op = GET_OP("DividingCellOp");
+  auto* op = NewOperation("DividingCellOp");
   rm->ApplyOnAllElementsParallel(*op);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());

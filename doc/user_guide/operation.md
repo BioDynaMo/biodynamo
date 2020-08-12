@@ -84,7 +84,7 @@ Simulation simulation("my-sim");
 auto* scheduler = simulation.GetScheduler();
 
 // Get the operation by its registered name
-auto* displacement_op = GET_OP("displacement");
+auto* displacement_op = NewOperation("displacement");
 
 // Change the frequency to the desired number
 // 1 is the default, so we could have skipped this step
@@ -97,6 +97,9 @@ scheduler->ScheduleOp(displacement_op);
 // executed every timestep, because the frequency is 1
 simulation.Simulate(10);
 ```
+
+Once you schedule your operation with `Scheduler::ScheduleOp` you are not longer responsible for the memory management; the scheduler will take care of that.
+If you do not schedule your operation, you should free the create operation to avoid memory leaks. In the above example it would be `delete displacement_op`.
 
 ## Schedule multiple operations with the same name
 
@@ -142,8 +145,8 @@ Simulation simulation("test_sim");
 auto* scheduler = simulation.GetScheduler();
 
 // We instantiate two "check_diameter" operations
-auto* check_diameter10 = GET_OP("check_diameter");
-auto* check_diameter20 = GET_OP("check_diameter");
+auto* check_diameter10 = NewOperation("check_diameter");
+auto* check_diameter20 = NewOperation("check_diameter");
 
 // Change the threshold values of each instantiation
 check_diameter10->GetImplementation<CheckDiameter>()->threshold_ = 10;
