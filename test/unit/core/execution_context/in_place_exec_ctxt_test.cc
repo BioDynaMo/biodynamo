@@ -221,6 +221,9 @@ TEST(InPlaceExecutionContext, Execute) {
 
   EXPECT_TRUE(op1_called);
   EXPECT_TRUE(op2_called);
+  
+  delete op1;
+  delete op2;
 }
 
 struct NeighborFunctor : public Functor<void, const SimObject*, double> {

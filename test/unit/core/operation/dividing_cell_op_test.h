@@ -42,7 +42,8 @@ inline void RunTest() {
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
 
-  rm->ApplyOnAllElementsParallel(*GET_OP("DividingCellOp"));
+  auto* op = GET_OP("DividingCellOp");
+  rm->ApplyOnAllElementsParallel(*op);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
@@ -64,6 +65,8 @@ inline void RunTest() {
   EXPECT_NEAR(volume_mother,
               final_cell0->GetVolume() + final_cell2->GetVolume(),
               abs_error<double>::value);
+
+  delete op;
 }
 
 }  // namespace dividing_cell_op_test_internal
