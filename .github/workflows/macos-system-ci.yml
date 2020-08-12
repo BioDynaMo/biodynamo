@@ -83,6 +83,27 @@ jobs:
         path: build/third_party
         key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
+    - name: Cache pyenv
+      uses: actions/cache@v2
+      id: pyenv-cache
+      with:
+        path: /usr/local/opt/.pyenv
+        key: ${{ runner.os }}-pyenv-3.8.0
+
+    - name: Install pyenv dependency
+      if: steps.pyenv-cache.outputs.cache-hit != 'true'
+      run: |
+        export PYENV_ROOT=/usr/local/opt/.pyenv
+        eval "$(pyenv init -)"
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+        pyenv shell 3.8.0
+
+    - name: Cache Third Party Packages
+      uses: actions/cache@v2
+      with:
+        path: build/third_party
+        key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+
     - name: Build BioDynaMo
       shell: zsh {0}
       run: |
