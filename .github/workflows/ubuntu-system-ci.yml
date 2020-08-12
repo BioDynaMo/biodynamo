@@ -20,6 +20,7 @@ jobs:
         os: [ubuntu-18.04, ubuntu-20.04]
     runs-on: ${{ matrix.os }}
 
+    steps:
     - name: Set GHA_BRANCH_NAME
       run: |
         echo "::set-env name=GHA_BRANCH_NAME::${{ github.head_ref }}"

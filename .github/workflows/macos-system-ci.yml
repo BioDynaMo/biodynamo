@@ -17,6 +17,7 @@ jobs:
   build:
     runs-on: macos-latest
 
+    steps:
     - name: Set GHA_BRANCH_NAME
       run: |
         echo "::set-env name=GHA_BRANCH_NAME::${{ github.head_ref }}"
