@@ -95,34 +95,6 @@ jobs:
         path: build/third_party
         key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
-    - name: Set OSVERS
-      run: |
-        ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
-        VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
-        echo "::set-env name=OSVERS::$ID-$VERSION"
-
-    - name: Cache pyenv
-      uses: actions/cache@v2
-      id: pyenv-cache
-      with:
-        path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.8.0
-
-    - name: Install pyenv dependency
-      if: steps.pyenv-cache.outputs.cache-hit != 'true'
-      run: |
-        curl https://pyenv.run | bash
-        export PATH="$HOME/.pyenv/bin:$PATH"
-        eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-        pyenv shell 3.8.0
-
-    - name: Cache Third Party Packages
-      uses: actions/cache@v2
-      with:
-        path: build/third_party
-        key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
-
     - name: Build BioDynaMo
       shell: bash
       run: |
