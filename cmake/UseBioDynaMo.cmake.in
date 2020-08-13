@@ -56,6 +56,7 @@ option(sbml      "Enable SBML support" @sbml@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
 option(tcmalloc  "Use tcmalloc." @tcmalloc@)
 option(jemalloc  "Use jemalloc." @jemalloc@)
+option(parallel_execution "Enable parallel execution framework" ON)
 
 if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
@@ -144,16 +145,18 @@ if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
 endif()
 
-# You need to specify CC and CXX to point to MPI compilers
-find_package(MPI)
+# In order to correctly compile and link the parallel execution manager with MPI,
+# you need to set CMAKE_[CXX|C]_COMPILER to [mpic++|mpicc]
+# We still however need to explicitely add the mpi.h include path to our include_directories
+# because rootcling will complaing about missing mpi.h
+find_package(MPI COMPONENTS CXX)
 if(MPI_FOUND)
-  execute_process(COMMAND ${MPI_CXX_COMPILER} --showme:incdirs
-                  OUTPUT_VARIABLE MPI_INCLUDE_PATH)
-  include_directories(${MPI_INCLUDE_PATH})
-else()
+  include_directories(${MPI_CXX_COMPILER_INCLUDE_DIRS})
+  add_definitions("-DUSE_MPI")
+else(MPI_FOUND)
   MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
   calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
-endif()
+endif(MPI_FOUND)
 
 find_package(OpenMP REQUIRED)
 

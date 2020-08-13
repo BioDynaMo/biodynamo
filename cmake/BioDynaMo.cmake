@@ -90,6 +90,12 @@ function(bdm_add_executable TARGET)
       set(ARG_LIBRARIES ${ARG_LIBRARIES} ${OPENCL_LIBRARIES})
       target_compile_definitions(${TARGET} PUBLIC -DUSE_OPENCL)
     endif()
+    # Link targets against mpi libraries (might want to avoid doing so for targets
+    # that don't need this)
+    if(parallel_execution AND MPI_FOUND)
+      set(ARG_LIBRARIES ${ARG_LIBRARIES} ${MPI_mpi_LIBRARY})
+      set(ARG_LIBRARIES ${ARG_LIBRARIES} ${MPI_mpi_cxx_LIBRARY})
+    endif()
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
     if (DEFINED CMAKE_INSTALL_LIBDIR)
       add_custom_command(TARGET ${TARGET}

@@ -15,6 +15,7 @@
 #define CONNECT_WITHIN_RADIUS_MODULE_H_
 
 #include "biodynamo.h"
+#include "core/environment/uniform_grid_environment.h"
 #include "biology_modules/constant_displacement_module.h"
 #include "simulation_objects/monocyte.h"
 #include "simulation_objects/t_cell.h"
@@ -59,7 +60,7 @@ struct ConnectWithinRadius : public BaseBiologyModule {
 
       SoPointer<Monocyte> cell_to_connect_to;  // nullptr initially
       double smallest_distance = Math::kInfinity;
-      auto find_closest_cell = [&](const auto* neighbor) {
+      auto find_closest_cell = [&](const SimObject* neighbor) {
         if (auto* neighbor_cell = dynamic_cast<const Monocyte*>(neighbor)) {
           // T-Cells are activated if they are in close vicinity of monocytes
           if (!this_cell->IsActivated() || !this_cell->IsConnected()) {
@@ -78,8 +79,9 @@ struct ConnectWithinRadius : public BaseBiologyModule {
           }
         }
       };
-      auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-      ctxt->ForEachNeighborWithinRadius(find_closest_cell, *this_cell,
+      auto* grid = static_cast<UniformGridEnvironment*>(
+          Simulation::GetActive()->GetEnvironment());
+      grid->ForEachNeighborWithinRadius(find_closest_cell, *this_cell,
                                         squared_radius_);
 
       // If we found an available monocyte then we connect this cell and the

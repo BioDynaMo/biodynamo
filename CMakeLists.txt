@@ -109,6 +109,7 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
+option(parallel_execution "Enable parallel execution framework" ON)
 
 if(APPLE)
   find_program(BREW_BIN brew)
@@ -185,11 +186,7 @@ endif()
 # because rootcling will complaing about missing mpi.h
 find_package(MPI COMPONENTS CXX)
 if(MPI_FOUND)
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} --showme:incdirs
-                  OUTPUT_VARIABLE MPI_INCLUDE_PATH)
-  string (REPLACE " " ";" MPI_INCLUDE_PATH "${MPI_INCLUDE_PATH}")
-  message("MPI_INCLUDE_PATH = ${MPI_INCLUDE_PATH}")
-  include_directories(${MPI_INCLUDE_PATH})
+  include_directories(${MPI_CXX_COMPILER_INCLUDE_DIRS})
   add_definitions("-DUSE_MPI")
 else(MPI_FOUND)
   MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before

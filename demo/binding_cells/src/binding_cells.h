@@ -130,24 +130,35 @@ inline int Simulate(int argc, const char** argv,
       Substances::kAntibody, "Antibody",
       Uniform(min_space, max_space, apd_amount, Axis::kZAxis));
 
-  simulation.GetExecutionContext()->DisableNeighborGuard();
-
   //////////////////////////////////////////////////////////////////////////////
   // Schedule operation to obtain results of interest over time
   //////////////////////////////////////////////////////////////////////////////
-  std::vector<std::atomic<int>> activity(timesteps);
-  for (int i = 0; i < timesteps; i++) {
-    activity[i] = 0;
-  }
-  auto* scheduler = simulation.GetScheduler();
-  scheduler->AddOperation(Operation("Count activity", [&](SimObject* so) {
-    uint64_t idx = scheduler->GetSimulatedSteps();
-    if (auto* tcell = dynamic_cast<TCell*>(so)) {
-      if (tcell->IsActivated()) {
-        activity[idx]++;
+  struct CountOp : public Operation {
+    CountOp(const std::string& id, int timesteps) : Operation(id) {
+      scheduler = Simulation::GetActive()->GetScheduler();
+      activity = new std::vector<std::atomic<int>>(timesteps);
+      for (int i = 0; i < timesteps; i++) {
+        (*activity)[i] = 0;
       }
     }
-  }));
+
+    void operator()(SimObject* so) override {
+      uint64_t idx = scheduler->GetSimulatedSteps();
+      if (auto* tcell = dynamic_cast<TCell*>(so)) {
+        if (tcell->IsActivated()) {
+          (*activity)[idx]++;
+        }
+      }
+    }
+
+    std::vector<std::atomic<int>>* activity = nullptr;
+    Scheduler* scheduler = nullptr;
+  };
+
+  auto* op = new CountOp("Count Activity", timesteps);
+
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->AddOperation(op);
 
   //////////////////////////////////////////////////////////////////////////////
   // Run the simulation
@@ -176,7 +187,7 @@ inline int Simulate(int argc, const char** argv,
   MyResults ex(name, brief);
   ex.initial_concentration = apd_amount;
   ex.activation_intensity = *merged_histo;
-  MakeNonAtomic(activity, &(ex.activity));
+  MakeNonAtomic(*(op->activity), &(ex.activity));
   ex.WriteResultToROOT();
 
   return 0;
