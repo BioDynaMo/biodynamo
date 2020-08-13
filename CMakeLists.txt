@@ -179,12 +179,16 @@ else()
     "rerun cmake with -DPython_ROOT_DIR=</path/to/pyenv>/versions/${pythonvers}")
 endif()
 
-# You need to specify CC and CXX to point to MPI compilers
+# In order to correctly compile and link the parallel execution manager with MPI,
+# you need to set CMAKE_[CXX|C]_COMPILER to [mpic++|mpicc]
+# We still however need to explicitely add the mpi.h include path to our include_directories
+# because rootcling will complaing about missing mpi.h
 find_package(MPI COMPONENTS CXX)
 if(MPI_FOUND)
-  if(NOT DEFINED MPI_INCLUDE_PATH)
-    MESSAGE(FATAL_ERROR "We could not find the MPI header files.")
-  endif()
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} --showme:incdirs
+                  OUTPUT_VARIABLE MPI_INCLUDE_PATH)
+  string (REPLACE " " ";" MPI_INCLUDE_PATH "${MPI_INCLUDE_PATH}")
+  message("MPI_INCLUDE_PATH = ${MPI_INCLUDE_PATH}")
   include_directories(${MPI_INCLUDE_PATH})
   add_definitions("-DUSE_MPI")
 else(MPI_FOUND)
