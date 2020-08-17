@@ -105,6 +105,7 @@ class Simulation {
   [[deprecated("Replaced with GetEnvironment()")]] Environment* GetGrid();
 
   Environment* GetEnvironment();
+
   const XMLParamMap GetXMLParam() const;
 
   Scheduler* GetScheduler();

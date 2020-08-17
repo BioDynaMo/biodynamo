@@ -1141,8 +1141,6 @@ namespace cxxopts
       bool allow_unrecognised,
       int&, char**&);
 
-    // ParseResult(const ParseResult& obj);
-
     size_t
     count(const std::string& o) const
     {

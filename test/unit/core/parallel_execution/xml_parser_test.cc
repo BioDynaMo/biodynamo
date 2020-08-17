@@ -68,6 +68,7 @@ class XMLParserTest : public ::testing::Test {
 
   bool IsValidNode(TXMLNode* n) { return xp->IsValidNode(n); }
 
+  // Checking of private members must be done here
   void CheckConstruction() {
     EXPECT_TRUE(xp->dom_parser_ != nullptr);
     EXPECT_EQ(0, xp->dom_parser_->GetValidate());

@@ -63,7 +63,7 @@ void CommandLineOptions::Parse() {
   }
 
   if (first_parse_) {
-    // Perform operations on Core command line options
+    // Perform operations on core command line options
     HandleCoreOptions();
     first_parse_ = false;
   }
