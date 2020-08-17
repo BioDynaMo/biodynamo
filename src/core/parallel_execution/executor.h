@@ -24,7 +24,8 @@
 #include <cstdlib>
 #include <fstream>
 
-#include "core/util/timing.h"
+#include "core/parallel_execution/parallel_execution_manager.h"
+#include "core/param/command_line_options.h"
 
 namespace bdm {
 
@@ -68,16 +69,16 @@ class ParallelExecutor {
                      ss.str(), "'");
         }
 
-        auto t1 = Timing::Timestamp();
         ParallelExecutionManager pem(
             worldsize, xml_file, [&](XMLParams* params) {
               return simulate_call(argc_, argv_, params);
             });
         int ret = pem.Start();
         MPI_Finalize();
-        auto t2 = Timing::Timestamp();
 
         ss.str("");
+
+        // Merge result files of all workers into single ROOT file
         ss << "hadd " << result_dir << "/results.root " << result_dir
            << "/*.root > /dev/null";
         if (system(ss.str().c_str())) {
@@ -88,12 +89,6 @@ class ParallelExecutor {
                        "to "
                     << result_dir << "/results.root" << std::endl;
         }
-
-        std::ofstream tfile;
-        tfile.open("benchmark.csv", std::ofstream::out | std::ofstream::app);
-        tfile << worldsize << "," << (t2 - t1) << std::endl;
-        tfile.close();
-
         return ret;
       } else {
         Worker w(myrank, [&](XMLParams* params) {
