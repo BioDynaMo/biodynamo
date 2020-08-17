@@ -301,6 +301,10 @@ _source_thisbdm()
   eval "$(pyenv init -)" || return 1
   pyenv shell @pythonvers@ || return 1
 
+  # Expose parallel execution dashboard, so that we can do in notebooks:
+  # from dashboard import *
+  export PYTHONPATH=$BDMSYS/include/core/parallel_execution:$PYTHONPATH
+
   # Location of jupyter executable (installed with `pip install --user` command)
   if [ -n "${PYTHONUSERBASE}" ]; then
     export PATH="$PYTHONUSERBASE/.local/bin:$PATH"

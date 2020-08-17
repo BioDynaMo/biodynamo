@@ -8,13 +8,83 @@ from xml.dom import minidom
 
 from subprocess import Popen, PIPE
 
+class Entry:
+
+  def __init__(self):
+    self.name_ = ""
+    self.params_ = []
+
+  def AddParam(self, param):
+    self.params_ = self.params_ + param
+
+  def ToVBox(self):
+    return VBox(self.params_)
+
 class Dashboard:
 
   def __init__(self):
     self.hostfile_content_ = ""
-    self.local_xml_filepath = ""
-    self.remote_xml_filepath = ""
+    self.local_xml_filepath_ = ""
+    self.remote_xml_filepath_ = ""
     self.remote_ = True
+    self.style_ = {'description_width': '100px'}
+    self.sim_name_ = "Binding Cells"
+    self.tab_names_ = ['World', 'Simulation Objects', 'Biology Modules', 'Substances', 'Parallel Execution']
+    self.tab_contents_ = {}
+
+    # Create placeholders for each tab content (World and Parallel Execution)
+    # are of different types
+    for tab_name in self.tab_names_:
+      if tab_name == "World":
+        self.tab_contents_[tab_name] = widgets.GridspecLayout(4, 2)
+      elif tab_name == "Parallel Execution":
+        self.tab_contents_[tab_name] = widgets.VBox()
+      else:
+        self.tab_contents_[tab_name] = widgets.Accordion()
+
+    ############################################################################
+    ## World Tab
+    ############################################################################
+    self.tab_contents_['World'][0, 0] = widgets.Text(description='Name', value=self.sim_name_)
+    self.tab_contents_['World'][1, 0] = widgets.IntText(description='Timesteps', value=4000)
+    self.tab_contents_['World'][2, 0] = widgets.IntText(description='Min. Space', value=0)
+    self.tab_contents_['World'][3, 0] = widgets.IntText(description='Max. Space', value=200)
+    self.tab_contents_['World'][0, 1] = widgets.Checkbox(value=False, description='Visualization')
+    self.tab_contents_['World'][1, 1] = widgets.IntText(description="Vis. Freq.", value=100)
+    self.tab_contents_['World'][3, 1] = widgets.Text(description='Binary path', placeholder='/path/to/binary')
+
+    ############################################################################
+    ## Parallel Execution Tab
+    ############################################################################
+    hostfile_box = widgets.Textarea(placeholder="e.g. cloud.instance.01\ne.g. localhost",
+                                description="hostfile", style=self.style_)
+    self.nb_cores_ = widgets.IntText(description="Cores", value=2, style=self.style_)
+    self.omp_threads_ = widgets.IntText(description="Threads / Core", value=1, style=self.style_)
+    
+    self.tab_contents_['Parallel Execution'] = widgets.VBox([hostfile_box, self.nb_cores_, self.omp_threads_])
+
+  def AddEntry(self, tab_name, name, obj):
+    idx = len(self.tab_contents_[tab_name].children)
+    self.tab_contents_[tab_name].children = tuple(list(self.tab_contents_[tab_name].children) + [obj])
+    self.tab_contents_[tab_name].set_title(idx, name)
+
+  def AddSimulationObject(self, name, obj):
+    tab_name = 'Simulation Objects'
+    idx = len(self.tab_contents_[tab_name].children)
+    self.tab_contents_[tab_name].children = tuple(list(self.tab_contents_[tab_name].children) + [obj])
+    self.tab_contents_[tab_name].set_title(idx, name)
+
+  def AddBiologyModule(self, name, obj):
+    tab_name = 'Biology Modules'
+    idx = len(self.tab_contents_[tab_name].children)
+    self.tab_contents_[tab_name].children = tuple(list(self.tab_contents_[tab_name].children) + [obj])
+    self.tab_contents_[tab_name].set_title(idx, name)
+  
+  def AddSubstance(self, name, obj):
+    tab_name = 'Substances'
+    idx = len(self.tab_contents_[tab_name].children)
+    self.tab_contents_[tab_name].children = tuple(list(self.tab_contents_[tab_name].children) + [obj])
+    self.tab_contents_[tab_name].set_title(idx, name)
 
   # Check if path exists on specified remote hostname
   def exists_remote(self, host, path):
@@ -29,6 +99,7 @@ class Dashboard:
 
   # Generate XML file from user input
   def generate_xml(self, tabs, sim_name):
+      # Check if widget is of a type that we support for the dashboard
       def is_parseable_type(widget):
           allowed = [widgets.IntSlider, widgets.IntRangeSlider, widgets.FloatSlider, widgets.FloatLogSlider,
                     widgets.FloatRangeSlider, widgets.IntText, widgets.FloatText, widgets.HBox, widgets.VBox]
@@ -36,12 +107,16 @@ class Dashboard:
               return True
           return False
 
+      # Check if widget is a Slider (i.e. a range type)
       def is_range(widget):
           return "Slider" in str(type(widget)).split(".")[-1]
 
+      # Check if widget is a LogSlider
       def is_log(widget):
         return "LogSlider" in str(type(widget)).split(".")[-1]
 
+      # Set the value type of the XML node to the corresponding widget type
+      # And fill in the data for each value type
       def set_value(elem, w):
           if (is_range(w)):
             if (is_log(w)):
@@ -66,6 +141,8 @@ class Dashboard:
               elem.set('value_type', 'scalar')
               elem.text = str(w.value)
 
+      # Traverse the widgets that are in the dashboard (i.e. which is called an
+      # "accordion" in ipywidgets)
       def traverse_accordion(parent, n, accordion):
           j = 0
           for vbox in accordion.children:
@@ -84,6 +161,7 @@ class Dashboard:
                       set_value(temp, w)
               j = j + 1
 
+      # Traverse the World parameters
       def traverse_world_params(parent, vbox):
           for w in vbox.children:
             if (is_parseable_type(w)):
@@ -125,9 +203,10 @@ class Dashboard:
 
       myfile = open("{}.xml".format(sim_name), "w")
       myfile.write(prettify(model))
-      self.local_xml_filepath = os.path.realpath(myfile.name)
+      self.local_xml_filepath_ = os.path.realpath(myfile.name)
       myfile.close()
 
+  # Generate the hostfile for the MPI runtime
   def generate_hostfile(self):
     file = open("hostfile", "w")
     # remove spaces
@@ -147,120 +226,17 @@ class Dashboard:
 
   # Entry point for visualizing the dashboard
   def display(self):
-      style = {'description_width': '100px'}
-      style2 = {'description_width': '200px'}
-
-      sim_objects = ['Monocyte', 'T_Cell']
-      bio_modules = ['ConnectWithinRadius', 'Inhibition', 'StokesVelocity']
-      substances  = ['Antibody']
-
-      tab_contents = {}
-
-      sim_name_field = widgets.Text(description='Name', value="Binding Cells")
-
-      ############################################################################
-      ## World Tab
-      ############################################################################
-      world_content = widgets.GridspecLayout(4, 2)
-      world_content[0, 0] = sim_name_field
-      world_content[1, 0] = widgets.IntText(description='Timesteps', value=4000)
-      world_content[2, 0] = widgets.IntText(description='Min. Space', value=0)
-      world_content[3, 0] = widgets.IntText(description='Max. Space', value=200)
-      world_content[0, 1] = widgets.Checkbox(value=False, description='Visualization')
-      world_content[1, 1] = widgets.IntText(description="Vis. Freq.", value=100)
-      # world_content[3, 1] = widgets.FileUpload(multiple=False)
-      world_content[3, 1] = widgets.Text(description='Binary path', placeholder='/path/to/binary')
-      tab_contents['World'] = world_content
-
-      ############################################################################
-      ## Simulation Objects Tab
-      ############################################################################
-      tab_contents['Simulation Objects'] = widgets.Accordion(children=[
-          widgets.VBox([
-              widgets.IntText(description='Population', value=7272),
-              widgets.IntText(description='Type', value=0),
-              widgets.FloatText(description='Mass Density', value=1.067),
-              widgets.FloatText(description='Diameter', value=1.5),
-              widgets.FloatText(description='Velocity', value=2)
-          ]),
-          widgets.VBox([
-              widgets.IntText(description='Population', value=2727),
-              widgets.IntText(description='Type', value=1),
-              widgets.FloatText(description='Mass Density', value=1.077),
-              widgets.FloatText(description='Diameter', value=0.9),
-              widgets.FloatText(description='Velocity', value=5),
-              widgets.FloatText(description='Init Activation Mean', value=3),
-              widgets.FloatText(description='Init Activation Sigma', value=1)
-          ])
-      ])
-      tab_contents['Simulation Objects'].set_title(0, sim_objects[0])
-      tab_contents['Simulation Objects'].set_title(1, sim_objects[1])
-
-      ############################################################################
-      ## Biology Modules Tab
-      ############################################################################
-      tab_contents['Biology Modules'] = widgets.Accordion(children=[
-          widgets.VBox([
-              widgets.FloatText(description='Binding radius', value=5, style=style)
-          ]),
-          widgets.VBox([
-              widgets.VBox([widgets.Label('Sigma'), widgets.FloatText(value=1)]),
-              widgets.VBox([widgets.Label('Mu'), widgets.FloatText(value=-8.5)])
-          ]),
-          widgets.VBox([
-              widgets.FloatText(description='Viscosity', value=0.089, style=style),
-              widgets.FloatText(description='Mass Density Fluid', value=0.997, style=style)
-          ])
-      ])
-      tab_contents['Biology Modules'].set_title(0, bio_modules[0])
-      tab_contents['Biology Modules'].set_title(1, bio_modules[1])
-      tab_contents['Biology Modules'].set_title(2, bio_modules[2])
-
-      ############################################################################
-      ## Substances Tab
-      ############################################################################
-      log_slider = widgets.HBox([widgets.Label('Amount'), 
-                           widgets.FloatLogSlider(value=10, min=-15, max=-6, step=0.125, base=10)])
-      log_min = widgets.FloatText(description='Min', value=-15, style=style)
-      log_max = widgets.FloatText(description='Max', value=-6, style=style)
-      log_step = widgets.FloatText(description='Step', value=0.125, style=style)
-
-      widgets.link((log_slider.children[1], 'min'), (log_min, 'value'))
-      widgets.link((log_slider.children[1], 'max'), (log_max, 'value'))
-      widgets.link((log_slider.children[1], 'step'), (log_step, 'value'))
-      tab_contents['Substances'] = widgets.Accordion(children=[
-          widgets.VBox([
-              log_slider, log_min, log_max, log_step,
-              widgets.FloatText(description='Diffusion Rate', value=0.0, style=style),
-              widgets.FloatText(description='Decay Rate', value=0.0),
-              widgets.IntText(description='Resolution', value=10)
-          ])
-      ])
-      tab_contents['Substances'].set_title(0, substances[0])
-
-      ############################################################################
-      ## Parallel Execution Tab
-      ############################################################################
-      hostfile_box = widgets.Textarea(placeholder="e.g. cloud.instance.01\ne.g. localhost",
-                                  description="hostfile", style=style)
-      nb_cores = widgets.IntText(description="Cores", value=2, style=style)
-      omp_threads = widgets.IntText(description="Threads / Core", value=1, style=style)
-      
-      tab_contents['Parallel Execution'] = widgets.VBox([hostfile_box, nb_cores, omp_threads])
-
       ############################################################################
       ## Compose Dashboard
       ############################################################################
-      tab_names = ['World'] + ['Simulation Objects'] + \
-          ['Biology Modules'] + ['Substances'] + ['Parallel Execution']
       children = []
-      for i in range(len(tab_names)):
-          temp = tab_contents[tab_names[i]]
+      for i in range(len(self.tab_names_)):
+          temp = self.tab_contents_[self.tab_names_[i]]
           children.append(temp)
       tab = widgets.Tab()
       tab.children = children
-      for i in range(len(tab_names)):
-          tab.set_title(i, str(tab_names[i]))
+      for i in range(len(self.tab_names_)):
+          tab.set_title(i, str(self.tab_names_[i]))
 
       ############################################################################
       ## Create the Simulate button
@@ -272,28 +248,28 @@ class Dashboard:
       sim_button.style.font_weight = 'bold'
 
       # extract simulation name and create XML file name
-      sim_name = sim_name_field.value.lower().replace(" ", "_")
+      sim_name = self.sim_name_.lower().replace(" ", "_")
 
       # Simulation button callback function
       def on_sim_click(b):
           with out:
               # generate the hostfile if specified in dashboard
-              self.hostfile_content_ = hostfile_box.value
+              self.hostfile_content_ = self.tab_contents_["Parallel Execution"].children[0].value
               self.generate_hostfile()
 
               # Check if the binary exists at the given path
-              binary_path = world_content[3, 1].value
-              # for debugging
-              if not binary_path:
-                binary_path = "/data/ahhesam/biodynamo/build/demo/binding_cells/build/binding_cells"
+              self.binary_path_ = self.tab_contents_['World'][3, 1].value
+              self.bin_dir_ = os.path.split(self.binary_path_)[0]
+              self.bin_name_ = os.path.split(self.binary_path_)[1]
+              self.dict_path_ = self.bin_dir_ + "/lib" + self.bin_name_ + "_dict.so"
               if not self.remote_:
-                if not os.path.exists(binary_path):
+                if not os.path.exists(self.binary_path_):
                   print("Error: The given binary path does not exist!")
                   return
               else:
                 # For each remote machine check if path is valid
                 for host in self.hosts_:
-                  if not self.exists_remote(host, binary_path):
+                  if not self.exists_remote(host, self.binary_path_):
                     print("Error: The given binary path does not exist on {}!".format(host))
                     return
 
@@ -304,45 +280,45 @@ class Dashboard:
               # server(s), because the MPI command will expect it to be on the
               # remote machines
               if self.remote_:
-                self.remote_build_dir = os.path.dirname(os.path.abspath(binary_path))
+                remote_build_dir = os.path.dirname(os.path.abspath(self.binary_path_))
                 for host in self.hosts_:
-                  full_host_path = host + ":" + self.remote_build_dir
-                  p = Popen(["scp", self.local_xml_filepath, full_host_path], stdout=PIPE, stderr=PIPE)
+                  full_host_path = host + ":" + remote_build_dir
+                  p = Popen(["scp", self.local_xml_filepath_, full_host_path], stdout=PIPE, stderr=PIPE)
                   print(p.args)
                   pout = p.communicate()
                   print(pout[1].decode("utf-8"))
-                self.remote_xml_filepath = self.remote_build_dir + "/" + self.local_xml_filepath.split("/")[-1]
+                self.remote_xml_filepath_ = remote_build_dir + "/" + self.local_xml_filepath_.split("/")[-1]
 
               # check if visualization was selected
               visualize = ""
               vis_freq = 0
-              if world_content[0, 1].value:
+              if self.tab_contents_['World'][0, 1].value:
                 visualize = "--visualize"
-                vis_freq = world_content[1, 1].value
+                vis_freq = self.tab_contents_['World'][1, 1].value
 
               print("Executing BioDynaMo simulations in parallel...")
               filename = '{}.log'.format(sim_name)
               with open(filename, 'wb') as f:
                 p = Popen(["mpirun",
                           "-hostfile", "hostfile",
-                          "-x", "OMP_NUM_THREADS={}".format(omp_threads.value),
+                          "-x", "OMP_NUM_THREADS={}".format(self.omp_threads_.value),
                           "--use-hwthread-cpus",
                           "--bind-to", "hwthread",
-                          "-np", str(nb_cores.value),
-                          binary_path,
+                          "-np", str(self.nb_cores_.value),
+                          self.binary_path_,
                           "{}".format(visualize),
-                          "--xml={}".format(self.remote_xml_filepath if self.remote_ else self.local_xml_filepath),
+                          "--xml={}".format(self.remote_xml_filepath_ if self.remote_ else self.local_xml_filepath_),
                           ], stdout=PIPE, stderr=PIPE)
                 for line in iter(p.stdout.readline, b''):
                   sys.stdout.write(line)
                   f.write(line)
 
               pout = p.communicate()
-              print(p.args)
+              # print(p.args)
               # # print stdout
-              # print(pout[0].decode("utf-8"))
+              print(pout[0].decode("utf-8"))
               # print stderr
-              print(pout[1].decode("utf-8"))
+              # print(pout[1].decode("utf-8"))
       
       sim_button.on_click(on_sim_click)
 
