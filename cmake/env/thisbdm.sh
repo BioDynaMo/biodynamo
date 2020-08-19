@@ -138,7 +138,7 @@ _source_thisbdm()
   esac
 
   export BDM_INSTALL_DIR
-  export  BDMSYS="${BDM_INSTALL_DIR}"
+  export BDMSYS="${BDM_INSTALL_DIR}"
 
   # Clear the env from previously set BioDynaMo paths.
   if [ -n "${old_bdmsys}" ] ; then
@@ -270,8 +270,8 @@ _source_thisbdm()
 
   # FIXME Some paths are (ap/pre)pended n times for n calls to thisbdm.*sh
   # due to https://github.com/pyenv/pyenv/issues/969
-  eval "$(pyenv init -)"
-  pyenv shell @pythonvers@
+  eval "$(pyenv init -)" || return 1
+  pyenv shell @pythonvers@ || return 1
 
   # Location of jupyter executable (installed with `pip install --user` command)
   if [ -n "${PYTHONUSERBASE}" ]; then
@@ -317,7 +317,7 @@ _source_thisbdm()
 
   export BDM_ROOT_DIR
   # shellcheck disable=SC1090
-  . "${BDM_ROOT_DIR}"/bin/thisroot.sh
+  . "${BDM_ROOT_DIR}"/bin/thisroot.sh || return 1
   _bdm_define_command root
   ########
 
@@ -414,14 +414,14 @@ _source_thisbdm()
     if [ "$os_id" = 'centos' ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
         if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
-            . scl_source enable devtoolset-7
+            . scl_source enable devtoolset-7 || return 1
         fi
-        . /etc/profile.d/modules.sh
-        module load mpi
+        . /etc/profile.d/modules.sh || return 1
+        module load mpi || return 1
 
         # load llvm 6 required for libroadrunner
         if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then
-          . scl_source enable llvm-toolset-6.0
+          . scl_source enable llvm-toolset-6.0 || return 1
         fi
     fi
   fi
@@ -439,23 +439,23 @@ _source_thisbdm()
 
     ### Enable commands in child shells (like in bash) ###
     local ld_root='if [ -d "${BDM_ROOT_DIR}" ]; then autoload -Uz root; fi;'
-    local ld_pv='if [ -d "${BDM_ROOT_DIR}" ]; then autoload -Uz paraview pvpython pvbatch; fi;'
+    local ld_pv='if [ -d "${ParaView_DIR}" ]; then autoload -Uz paraview pvpython pvbatch; fi;'
     local marker=' # >>thisbdm<<'
-    local zshrc_line='if [ -d "${BDMSYS}" ]; then; '"${ld_root} ""${ld_pv}"' ; fi;'"${marker}"
+    local zshenv_line='if [ -d "${BDMSYS}" ]; then; '"${ld_root} ""${ld_pv}"' ; fi;'"${marker}"
+    local zsh_config_dir="$HOME"
+    if [ -n "$ZDOTDIR" ]; then
+      zsh_config_dir="$ZDOTDIR"
+    fi
 
-    local zshrc_file="${HOME}/.zshrc"
-    echo "${HOME}/.zshrc"
-    if [ -f "$zshrc_file" ]; then true
-    elif [ -f "${ZDOTDIR}/.zshrc" ]; then
-        zshrc_file="${ZDOTDIR}/.zshrc"
-    else
-        _bdm_err "[ERR] Could not find your .zshrc file! Please execute 'export ZDOTDIR=path/to/zsh/config'"
-        return 1
+    local zshenv_file="${zsh_config_dir}/.zshenv"
+    if ! [ -f "$zshenv_file" ]; then
+      _bdm_ok "[INFO] creating .zshenv file"
+      touch "$zshenv_file"
     fi
 
     # ensure the above is only called once in .zshrc
-    sed -i '/^.*'"$marker"'$/,$d' "$zshrc_file"
-    echo "${zshrc_line}" >> "$zshrc_file"
+    sed -i.bak '/^.*'"$marker"'$/,$d' "$zshenv_file" && rm "${zshenv_file}.bak" || return 1
+    echo "$zshenv_line" >> "$zshenv_file"
   fi
 
   ### Environment Indicator ###

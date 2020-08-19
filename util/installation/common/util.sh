@@ -237,10 +237,9 @@ function CallOSSpecificScript {
   $BDM_SCRIPTPATH $BDM_SCRIPT_ARGUMENTS
 }
 
-# Return the zshrc file based on whether Z
+# Return the zshrc file based on whether or not ZDOTDIR is defined
 function ZshrcFile {
   local zshrc_file="${HOME}/.zshrc"
-
   if [ -f "$zshrc_file" ]; then true
   elif [ -f "${ZDOTDIR}/.zshrc" ]; then
     zshrc_file="${ZDOTDIR}/.zshrc"

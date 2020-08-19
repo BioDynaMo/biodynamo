@@ -78,7 +78,7 @@ function source_thisbdm
     end
 
     set -l curr_filename (status --current-filename)
-    set -gx BDM_INSTALL_DIR (fish -c "cd (dirname $curr_filename)/..; and pwd")
+    set -gx BDM_INSTALL_DIR (fish -c "cd (dirname $curr_filename)/..; and pwd"); or return 1
     set -gx BDMSYS "$BDM_INSTALL_DIR"
 
     # Clear the env from previously set BioDynaMo paths.
@@ -109,9 +109,9 @@ function source_thisbdm
     if test -z "$MANPATH"
         # Grab the default man path before setting the path to avoid duplicates
         if type -qt manpath
-            set default_manpath (manpath)
+            set default_manpath (manpath); or return 1
         else if type -qt man
-            set default_manpath (man -w 2> /dev/null)
+            set default_manpath (man -w 2> /dev/null); or return 1
         end
     end
 
@@ -161,8 +161,8 @@ function source_thisbdm
 
     # FIXME Some paths are (ap/pre)pended n times for n calls to thisbdm.*sh
     # due to https://github.com/pyenv/pyenv/issues/969
-    pyenv init - | source
-    pyenv shell @pythonvers@
+    pyenv init - | source; or return 1
+    pyenv shell @pythonvers@; or return 1
 
     # Location of jupyter executable (installed with `pip install --user` command)
     if test -n "$PYTHONUSERBASE"
@@ -209,8 +209,7 @@ function source_thisbdm
     end
 
     function __bdm_root
-        "$BDM_ROOT_DIR"/bin/root -l -e \
-        'cout << "Loading BioDynaMo into ROOT..." << endl; gROOT->LoadMacro("'"$BDMSYS"'/etc/rootlogon.C");' $argv
+        "$BDM_ROOT_DIR"/bin/root -l -e 'cout << "Loading BioDynaMo into ROOT..." << endl; gROOT->LoadMacro("'"$BDMSYS"'/etc/rootlogon.C");' $argv
     end
     funcsave __bdm_root
     . "$BDM_ROOT_DIR/bin/thisroot.fish"
@@ -302,19 +301,19 @@ function source_thisbdm
         true
     else # GNU/Linux
         # CentOS specifics
-        set -l os_id (grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+        set -l os_id (grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"'); or return 1
         if test "$os_id" = 'centos'
             set -gx MESA_GL_VERSION_OVERRIDE "3.3"
             if test -z "$CXX"; and test -z "$CC"
-                . scl_source enable devtoolset-7
+                . scl_source enable devtoolset-7; or return 1
             end
 
-            . /etc/profile.d/modules.sh
-            module load mpi
+            . /etc/profile.d/modules.sh; or return 1
+            module load mpi; or return 1
 
             # load llvm 6 required for libroadrunner
             if test -d "$BDMSYS"/third_party/libroadrunner
-                . scl_source enable llvm-toolset-6.0
+                . scl_source enable llvm-toolset-6.0; or return 1
             end
         end
     end
@@ -337,11 +336,11 @@ function source_thisbdm
     set -l marker ' # >>thisbdm<<'
     if test -e $__fish_config_dir/config.fish
             # ensure the above is only called once in config.fish
-            sed -i '/^.*'"$marker"'$/,$d' $__fish_config_dir/config.fish
+            sed -i.bak '/^.*'"$marker"'$/,$d' $__fish_config_dir/config.fish; and rm "$__fish_config_dir/config.fish.bak"; or return 1
     end
 
-    echo "__bdm_fish_functions$marker" >> $__fish_config_dir/config.fish
-    __bdm_fish_functions
+    echo "__bdm_fish_functions$marker" >> $__fish_config_dir/config.fish; or return 1
+    __bdm_fish_functions; or return 1
 
     ### Environment Indicator ###
     if not $_bdm_quiet
