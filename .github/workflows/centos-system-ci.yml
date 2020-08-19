@@ -20,6 +20,15 @@ jobs:
       image: centos:7
 
     steps:
+    - name: Set GHA_BRANCH_NAME
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "::set-env name=GHA_BRANCH_NAME::${{ github.head_ref }}"
+        fi
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          echo "::set-env name=GHA_BRANCH_NAME::${GITHUB_REF#refs/heads/}"
+        fi
+    
       # Do this prior to Checkout BioDynaMo, because the CentOS docker container
       # does not come with git preinstalled. This would mess up later calls to 
       # `git describe --tags`
@@ -34,7 +43,7 @@ jobs:
       run: |
         yum update -y
         yum install -y sudo curl
-        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${{ github.head_ref }}/util/install | bash
+        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
