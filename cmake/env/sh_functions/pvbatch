@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+pvbatch() {
+ "${ParaView_DIR}/bin/pvbatch" "$@"
+}

@@ -688,22 +688,16 @@ endif()
 # Copy the environmental files to their correct directory
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
 
-file(GLOB _SHELL_FNS ${CMAKE_SOURCE_DIR}/cmake/env/shell_functions/*)
-file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shell_functions)
-file(COPY ${_SHELL_FNS} DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shell_functions
+file(GLOB _SHELL_FNS ${CMAKE_SOURCE_DIR}/cmake/env/sh_functions/*)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sh_functions)
+file(COPY ${_SHELL_FNS} DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sh_functions
         FILE_PERMISSIONS
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ GROUP_EXECUTE
         WORLD_READ WORLD_EXECUTE)
 
 #configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.csh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh @ONLY NEWLINE_STYLE UNIX)
-#configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
-configure_file(${CMAKE_SOURCE_DIR}/cmake/env/bdm-config.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config @ONLY ESCAPE_QUOTES NEWLINE_STYLE UNIX)
-
-# Set run permission on the environmental files
-add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-#add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
 
 if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
   set(buildcmd "make -j ${ncpu}")

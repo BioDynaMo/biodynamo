@@ -14,55 +14,52 @@
 # -----------------------------------------------------------------------------
 # Source this script to set up the BioDynaMo build that this script is part of.
 #
-# Conveniently an alias like this can be defined in .bashrc:
-#   alias thisbdm=". bin/thisbdm.sh"
+# Conveniently an alias like this can be defined in .bashrc or .zshrc:
+#   alias thisbdm="source path/to/biodynamo/bin/thisbdm.sh -q"
 #
-# This script if for the bash like shells, see thisbdm.csh for csh like shells.
+# This script is for bash like shells, see thisbdm.fish for fish.
 #
 # Author: Fons Rademakers, 16/5/2019
 
-_bdm_quiet='OFF'
+_bdm_quiet=false
 
 _bdm_err()
 {
-  if [ "$_bdm_quiet" = 'OFF' ]; then
-    echo -e "\e[31m$*\e[0m"
-  fi
+  echo -e "\e[31m$*\e[0m"
 }
 
 _bdm_ok()
 {
-  if [ "$_bdm_quiet" = 'OFF' ]; then
-    echo -e "\e[32m$*\e[0m"
-  fi
+  $_bdm_quiet || echo -e "\e[32m$*\e[0m"
 }
 
 _drop_bdm_from_path()
 {
-   # Assert that we got enough arguments
-   if test $# -ne 2 ; then
-      _bdm_err "[ERR] drop_bdm_from_path: needs 2 arguments"
-      return 1
-   fi
+  # Assert that we got enough arguments
+  if test $# -ne 2 ; then
+    _bdm_err "[ERR] drop_bdm_from_path: needs 2 arguments"
+    return 1
+  fi
 
-   local p=$1
-   local drop=$2
+  local p=$1
+  local drop=$2
 
-   _newpath=$(echo "$p" | sed -e "s;:${drop}:;:;g"\
-                              -e "s;:${drop}\$;;g"\
-                              -e "s;^${drop}:;;g" \
-                              -e "s;^${drop}\$;;g")
+  _newpath=$(echo "$p" | sed -e "s;:${drop}:;:;g"\
+                             -e "s;:${drop}\$;;g"\
+                             -e "s;^${drop}:;;g" \
+                             -e "s;^${drop}\$;;g")
 }
 
 _bdm_define_command()
 {
   unset -f "$1" >/dev/null 2>&1 || true
   unalias  "$1" >/dev/null 2>&1 || true
+
   if [ -n  "$ZSH_VERSION" ]; then
     autoload -Uz "$1"
   else
     # shellcheck disable=SC1090
-    source "${BDMSYS}/bin/shell_functions/$1"
+    source "${BDMSYS}/bin/sh_functions/$1"
     export -f "${1?}"
   fi
 }
@@ -87,7 +84,7 @@ _thisbdm_cleanup() {
 
 _source_thisbdm()
 {
-  # detect bash-like shell
+  ### Detect bash-like shell, and act accordingly ###
   local bdm_shell
   if [ -n "$BASH_VERSION" ]; then
     bdm_shell="bash"
@@ -98,29 +95,29 @@ _source_thisbdm()
     # scope. Local vars are a nice bonus.
     emulate -LR sh
   else
-    # In case we encounter a shell that can this script up to here.
-    # In reality, most shells (csh, fish, etc.) will fail immediately due to parsing errors.
+    # In case we encounter a shell (e.g., ksh) that can run this script up to here.
+    # In reality, most shells (csh, fish, etc.) will fail immediately due to parse errors.
     _bdm_err "[ERR] Your shell is not supported, please use bash or zsh."
-    _bdm_err "      For csh and fish, please source 'thisbdm.csh' or 'thisbdm.fish', respectively."
+    _bdm_err "      For fish, please source 'thisbdm.fish' instead."
     return 1
   fi
+  ########
 
-  local positional=()
+  ### Arguments ###
   while [[ $# -gt 0 ]]; do
     local key="$1"
-
     case $key in
         -q|--quiet)
-        _bdm_quiet='ON'
+        _bdm_quiet=true
         shift # next key
         ;;
-        *)    # positional arg
-        positional+=("$1")
-        shift # next key
+        *)
+        _bdm_err "[ERR] Unknown option $key"
+        return 1
         ;;
     esac
   done
-  set -- "${positional[@]}" # restore positional parameters
+  ########
 
   if [ -n "${BDM_INSTALL_DIR}" ]; then
      local old_bdmsys_base=${BDM_INSTALL_DIR}
@@ -129,16 +126,19 @@ _source_thisbdm()
      local old_bdmsys=${BDMSYS}
   fi
 
-  if [ "$bdm_shell" = "bash" ]; then
-     BDM_INSTALL_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-  elif [ "$bdm_shell" = "zsh" ]; then
-     # The zsh equivalent of ${BASH_SOURCE[0]} is ${(%):-%x}
-     # shellcheck disable=SC2154
-     BDM_INSTALL_DIR=$(cd "$(dirname "${(%):-%x}")/.." && pwd)
-  fi
+  case $bdm_shell in
+    bash)
+      BDM_INSTALL_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+      ;;
+    zsh)
+      # The zsh equivalent of ${BASH_SOURCE[0]} is ${(%):-%x}
+      # shellcheck disable=SC2154
+      BDM_INSTALL_DIR=$(cd "$(dirname "${(%):-%x}")/.." && pwd)
+      ;;
+  esac
 
   export BDM_INSTALL_DIR
-  export BDMSYS="${BDM_INSTALL_DIR}"
+  export  BDMSYS="${BDM_INSTALL_DIR}"
 
   # Clear the env from previously set BioDynaMo paths.
   if [ -n "${old_bdmsys}" ] ; then
@@ -225,48 +225,51 @@ _source_thisbdm()
   fi
 
   if [ -z "${PATH}" ]; then
-     PATH="${BDMSYS}/bin"; export PATH
+     export PATH="${BDMSYS}/bin"
   else
-     PATH="${BDMSYS}/bin":$PATH; export PATH
+     export PATH="${BDMSYS}/bin":$PATH
   fi
 
   if [ -z "${LD_LIBRARY_PATH}" ]; then
-     LD_LIBRARY_PATH="${BDMSYS}/lib"; export LD_LIBRARY_PATH       # Linux, ELF HP-UX
+     export LD_LIBRARY_PATH="${BDMSYS}/lib" # Linux, ELF HP-UX
   else
-     LD_LIBRARY_PATH="${BDMSYS}/lib":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+     export LD_LIBRARY_PATH="${BDMSYS}/lib":$LD_LIBRARY_PATH
   fi
 
   if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-     DYLD_LIBRARY_PATH="${BDMSYS}/lib"; export DYLD_LIBRARY_PATH   # Mac OS X
+     export DYLD_LIBRARY_PATH="${BDMSYS}/lib"; # Mac OS X
   else
-     DYLD_LIBRARY_PATH="${BDMSYS}/lib":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
+     export DYLD_LIBRARY_PATH="${BDMSYS}/lib":$DYLD_LIBRARY_PATH
   fi
 
   if [ -z "${SHLIB_PATH}" ]; then
-     SHLIB_PATH="${BDMSYS}/lib"; export SHLIB_PATH                 # legacy HP-UX
+     export SHLIB_PATH="${BDMSYS}/lib" # legacy HP-UX
   else
-     SHLIB_PATH="${BDMSYS}/lib":$SHLIB_PATH; export SHLIB_PATH
+     export SHLIB_PATH="${BDMSYS}/lib":$SHLIB_PATH
   fi
 
   if [ -z "${LIBPATH}" ]; then
-     LIBPATH="${BDMSYS}/lib"; export LIBPATH                       # AIX
+     export LIBPATH="${BDMSYS}/lib" # AIX
   else
-     LIBPATH="${BDMSYS}/lib":$LIBPATH; export LIBPATH
+     export LIBPATH="${BDMSYS}/lib":$LIBPATH
   fi
 
   if [ -z "${MANPATH}" ]; then
-     MANPATH="${BDMSYS}/man":${default_manpath}; export MANPATH
+     export MANPATH="${BDMSYS}/man":${default_manpath}
   else
-     MANPATH="${BDMSYS}/man":$MANPATH; export MANPATH
+     export MANPATH="${BDMSYS}/man":$MANPATH
   fi
 
   ##### Python Specific Configurations #####
-  export PYENV_ROOT=@pyenvroot@
+  PYENV_ROOT=@pyenvroot@
   if [ -z "${PYENV_ROOT}" ]; then
-    export PYENV_ROOT="$HOME/.pyenv"
+    PYENV_ROOT="$HOME/.pyenv"
   fi
+  export PYENV_ROOT
   export PATH="$PYENV_ROOT/bin:$PATH"
 
+  # FIXME Some paths are (ap/pre)pended n times for n calls to thisbdm.*sh
+  # due to https://github.com/pyenv/pyenv/issues/969
   eval "$(pyenv init -)"
   pyenv shell @pythonvers@
 
@@ -281,9 +284,9 @@ _source_thisbdm()
 
   ##### CMake Specific Configurations #####
   if [ -z "${CMAKE_PREFIX_PATH}" ]; then
-     CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake"; export CMAKE_PREFIX_PATH       # Linux, ELF HP-UX
+     export CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake" # Linux, ELF HP-UX
   else
-     CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake":$CMAKE_PREFIX_PATH; export CMAKE_PREFIX_PATH
+     export CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake":$CMAKE_PREFIX_PATH
   fi
   ########
 
@@ -312,18 +315,17 @@ _source_thisbdm()
     fi
   fi
 
+  export BDM_ROOT_DIR
   # shellcheck disable=SC1090
   . "${BDM_ROOT_DIR}"/bin/thisroot.sh
   _bdm_define_command root
-
   ########
 
   #### ParaView Specific Configurations ####
   local with_paraview=@with_paraview@
   if [ "$with_paraview" = 'ON' ]; then
-
      if [ -z "${ParaView_DIR}" ]; then
-      ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR;
+      ParaView_DIR=${BDMSYS}/third_party/paraview
       if ! [ -d "$ParaView_DIR" ]; then
        _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed in your system!"
        _bdm_err "      You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
@@ -332,16 +334,18 @@ _source_thisbdm()
       fi
      fi
 
+     export ParaView_DIR
+
      if [ -z "${ParaView_LIB_DIR}" ]; then
-      ParaView_LIB_DIR="${ParaView_DIR}/lib"; export ParaView_LIB_DIR
+      export ParaView_LIB_DIR="${ParaView_DIR}/lib"
      else
-      ParaView_LIB_DIR="${ParaView_DIR}/lib":$ParaView_LIB_DIR; export ParaView_LIB_DIR
+      export ParaView_LIB_DIR="${ParaView_DIR}/lib":$ParaView_LIB_DIR
      fi
 
      if [ -z "${PV_PLUGIN_PATH}" ]; then
-      PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin"; export PV_PLUGIN_PATH
+      export PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin"
      else
-      PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH; export PV_PLUGIN_PATH
+      export PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH
      fi
 
      # We don't add the ParaView site-packages path to PYTHONPATH, because pip in the
@@ -351,21 +355,21 @@ _source_thisbdm()
      _bdm_define_command pvbatch
 
      if [ -z "${LD_LIBRARY_PATH}" ]; then
-      LD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH="${ParaView_LIB_DIR}"
      else
-      LD_LIBRARY_PATH="${ParaView_LIB_DIR}":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH="${ParaView_LIB_DIR}":$LD_LIBRARY_PATH
      fi
 
      if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-      DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}"; export DYLD_LIBRARY_PATH
+      export DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}"
      else
-      DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
+      export DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}":$DYLD_LIBRARY_PATH
      fi
      ########
 
      #### Qt5 Specific Configurations ####
      if [ -z "${Qt5_DIR}" ]; then
-      Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
+      Qt5_DIR=${BDMSYS}/third_party/qt
       if ! [ -d "$Qt5_DIR" ]; then
        _bdm_err "[ERR] We are unable to find Qt! Please make sure it is installed in your system!"
        _bdm_err "      You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
@@ -373,23 +377,24 @@ _source_thisbdm()
        return 1
       fi
      fi
+     export Qt5_DIR
 
      if [ -z "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
-      QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins"; export QT_QPA_PLATFORM_PLUGIN_PATH
+      export QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins"
      else
-      QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins":$QT_QPA_PLATFORM_PLUGIN_PATH; export QT_QPA_PLATFORM_PLUGIN_PATH
+      export QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins":$QT_QPA_PLATFORM_PLUGIN_PATH
      fi
 
      if [ -z "${LD_LIBRARY_PATH}" ]; then
-      LD_LIBRARY_PATH="${Qt5_DIR}/lib"; export LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH="${Qt5_DIR}/lib"
      else
-      LD_LIBRARY_PATH="${Qt5_DIR}/lib":$LD_LIBRARY_PATH; export LD_LIBRARY_PATH
+      export LD_LIBRARY_PATH="${Qt5_DIR}/lib":$LD_LIBRARY_PATH
      fi
 
      if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-      DYLD_LIBRARY_PATH="${Qt5_DIR}/lib"; export DYLD_LIBRARY_PATH
+      export DYLD_LIBRARY_PATH="${Qt5_DIR}/lib"
      else
-      DYLD_LIBRARY_PATH="${Qt5_DIR}/lib":$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
+      export DYLD_LIBRARY_PATH="${Qt5_DIR}/lib":$DYLD_LIBRARY_PATH
      fi
   fi
   #######
@@ -406,7 +411,7 @@ _source_thisbdm()
     # CentOS specifics
     local os_id
     os_id=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
-    if [ "$os_id" = "centos" ]; then
+    if [ "$os_id" = 'centos' ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
         if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
             . scl_source enable devtoolset-7
@@ -422,9 +427,46 @@ _source_thisbdm()
   fi
   #######
 
-  # for zsh autoloads
-  if [ "$bdm_shell" = "zsh" ]; then
-    FPATH="${BDMSYS}/bin/shell_functions:$FPATH"
+  if [ -n "$ZSH_VERSION" ]; then
+    # for autoload
+    if [ -n "${old_bdmsys}" ]; then
+      _drop_bdm_from_path "$FPATH" "${old_bdmsys}/bin/sh_functions"
+      FPATH=$_newpath
+    fi
+
+    FPATH="${BDMSYS}/bin/sh_functions:$FPATH"
+    export FPATH
+
+    ### Enable commands in child shells (like in bash) ###
+    local ld_root='if [ -d "${BDM_ROOT_DIR}" ]; then autoload -Uz root; fi;'
+    local ld_pv='if [ -d "${BDM_ROOT_DIR}" ]; then autoload -Uz paraview pvpython pvbatch; fi;'
+    local marker=' # >>thisbdm<<'
+    local zshrc_line='if [ -d "${BDMSYS}" ]; then; '"${ld_root} ""${ld_pv}"' ; fi;'"${marker}"
+
+    local zshrc_file="${HOME}/.zshrc"
+    echo "${HOME}/.zshrc"
+    if [ -f "$zshrc_file" ]; then true
+    elif [ -f "${ZDOTDIR}/.zshrc" ]; then
+        zshrc_file="${ZDOTDIR}/.zshrc"
+    else
+        _bdm_err "[ERR] Could not find your .zshrc file! Please execute 'export ZDOTDIR=path/to/zsh/config'"
+        return 1
+    fi
+
+    # ensure the above is only called once in .zshrc
+    sed -i '/^.*'"$marker"'$/,$d' "$zshrc_file"
+    echo "${zshrc_line}" >> "$zshrc_file"
+  fi
+
+  ### Environment Indicator ###
+  if [ "$_bdm_quiet" = false ]; then
+    local bdm_major_minor='';
+    bdm_major_minor=$(bdm-config --version | sed -n  '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
+    if [ -z "$__bdm_sh_prompt_original" ]; then
+      __bdm_sh_prompt_original=$PS1
+    fi
+    # NB: overrides prompt for current session only
+    export PS1="[bdm-$bdm_major_minor] $__bdm_sh_prompt_original"
   fi
 
   return 0
@@ -437,6 +479,8 @@ if _source_thisbdm "$@"; then
   return 0
 else
   _bdm_err "[ERR] BioDynaMo's environment could not be sourced."
+  # traps don't particularly work well (for this use-case)
+  # in zsh, so we'll repeat ourselves just this once
   _thisbdm_cleanup
   return 1
 fi

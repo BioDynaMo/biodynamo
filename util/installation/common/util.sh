@@ -237,7 +237,19 @@ function CallOSSpecificScript {
   $BDM_SCRIPTPATH $BDM_SCRIPT_ARGUMENTS
 }
 
-# Return the bashrc file based on the current operating system
+# Return the zshrc file based on whether Z
+function ZshrcFile {
+  local zshrc_file="${HOME}/.zshrc"
+
+  if [ -f "$zshrc_file" ]; then true
+  elif [ -f "${ZDOTDIR}/.zshrc" ]; then
+    zshrc_file="${ZDOTDIR}/.zshrc"
+  else
+    zshrc_file="<zshrc-file>"
+  fi
+  echo $zshrc_file
+}
+
 function BashrcFile {
   if [ `uname` = "Darwin" ]; then
     echo ~/.bash_profile
@@ -258,11 +270,35 @@ function EchoFinishThisStep {
     exit 1
   fi
 
+  local extraStepStr="To avoid this extra step do:"
+  local haveExecStr="to have it executed automatically when starting a new shell."
+
   EchoInfo "Before running BioDynaMo execute:"
-  EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
-  EchoInfo "To avoid this extra step do:"
-  EchoInfo "   echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
-  EchoInfo "to have it executed automatically when starting a new shell."
+  case $SHELL in
+    *bash | *zsh )
+      EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh [-q | --quiet]"
+      EchoInfo "$extraStepStr"
+      if [ -n "$BASH_VERSION" ]; then
+        EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(BashrcFile)"
+      elif [ -n "$ZSH_VERSION" ]; then
+        EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(ZshrcFile)"
+      fi
+      EchoInfo "$haveExecStr"
+    ;;
+    *fish )
+      EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.fish"
+      EchoInfo "$extraStepStr"
+      EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.fish -q\" >>""$(fish -c 'echo $__fish_config_dir')"
+      EchoInfo "$haveExecStr"
+    ;;
+    *)
+      EchoInfo "${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.<sh|fish> [-q | --quiet]"
+      EchoInfo "We could not detect your default shell."
+      EchoInfo "BioDynaMo currently supports the following shells:"
+      EchoInfo "   ${BDM_ECHO_BOLD}bash, zsh, and fish."
+    ;;
+  esac
+  EchoInfo "The -q (or --quiet) flag will disable the prompt indicator, and all non-essential logging."
 }
 
 # This function prompts the user for the biodynamo installation directory
@@ -355,6 +391,9 @@ function CopyEnvironmentScript {
 
   cat $ENV_SRC | sed "s|export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@|export BDM_INSTALL_DIR=${BDM_INSTALL_DIR}|g" >$TMP_ENV
   mv $TMP_ENV $ENV_DEST
+
+  ENV_DEST=$BDM_INSTALL_DIR/bin/thisbdm.fish
+  cat $ENV_SRC | sed "s|export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@|export BDM_INSTALL_DIR=${BDM_INSTALL_DIR}|g" >$TMP_ENV
 }
 
 # This function has a zero exit code if the version is below the required
