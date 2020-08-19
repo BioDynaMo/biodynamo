@@ -84,6 +84,42 @@ BDM_CMAKE_DIR="${BDMSYS}/share/cmake"; export BDM_CMAKE_DIR
 BDM_SRC_DIR="${BDMSYS}/include"; export BDM_SRC_DIR
 ########
 
+#### ROOT Specific Configurations ####
+if [ -z ${BDM_ROOT_DIR} ] && [ -z ${ROOTSYS} ]; then
+    BDM_ROOT_DIR=${BDMSYS}/third_party/root
+    if ! [ -d $BDM_ROOT_DIR ]; then
+        echo "We are unable to source ROOT! Please make sure ROOT is installed on your system!"
+        echo "You can specify manually its location by executing 'export BDM_ROOT_DIR=path/to/root'"
+        echo "before running cmake."
+        echo "Sourcing BioDynaMo env failed!"
+        return 1
+    fi
+else
+  # ROOTSYS has precedence over the BDM_ROOT_DIR custom configuration
+  if [ -n ${ROOTSYS} ]; then
+     orvers="@rootvers@"
+     crvers="$($ROOTSYS/bin/root-config --version)"
+     if [ $crvers == $orvers ]; then
+        BDM_ROOT_DIR=${ROOTSYS}
+     else
+        echo "ROOTSYS points to ROOT version $crvers, while BDM was build with version $orvers."
+        echo "Make sure that ROOTSYS points to the right version of ROOT."
+        echo "Sourcing BioDynaMo env failed!"
+        return 1
+     fi
+  fi
+fi
+
+. ${BDM_ROOT_DIR}/bin/thisroot.sh
+
+########
+
+# Load the rootlogon.C
+unset -f root || true
+function root {
+  ${BDM_ROOT_DIR}/bin/root -l -e "cout << \"Loading BioDynaMo into ROOT...\" << endl;gROOT->LoadMacro(\"${BDMSYS}/etc/rootlogon.C\");" $@
+}
+
 # OpenMP
 export OMP_PROC_BIND=true
 
