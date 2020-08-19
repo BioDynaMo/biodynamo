@@ -225,47 +225,52 @@ _source_thisbdm()
   fi
 
   if [ -z "${PATH}" ]; then
-     export PATH="${BDMSYS}/bin"
+    PATH="${BDMSYS}/bin"
   else
-     export PATH="${BDMSYS}/bin":$PATH
+    PATH="${BDMSYS}/bin":$PATH
   fi
+  export PATH
 
   if [ -z "${LD_LIBRARY_PATH}" ]; then
-     export LD_LIBRARY_PATH="${BDMSYS}/lib" # Linux, ELF HP-UX
+    LD_LIBRARY_PATH="${BDMSYS}/lib" # Linux, ELF HP-UX
   else
-     export LD_LIBRARY_PATH="${BDMSYS}/lib":$LD_LIBRARY_PATH
+    LD_LIBRARY_PATH="${BDMSYS}/lib":$LD_LIBRARY_PATH
   fi
+  export LD_LIBRARY_PATH
 
   if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-     export DYLD_LIBRARY_PATH="${BDMSYS}/lib"; # Mac OS X
+    DYLD_LIBRARY_PATH="${BDMSYS}/lib"; # Mac OS X
   else
-     export DYLD_LIBRARY_PATH="${BDMSYS}/lib":$DYLD_LIBRARY_PATH
+    DYLD_LIBRARY_PATH="${BDMSYS}/lib":$DYLD_LIBRARY_PATH
   fi
+  export DYLD_LIBRARY_PATH
 
   if [ -z "${SHLIB_PATH}" ]; then
-     export SHLIB_PATH="${BDMSYS}/lib" # legacy HP-UX
+    SHLIB_PATH="${BDMSYS}/lib" # legacy HP-UX
   else
-     export SHLIB_PATH="${BDMSYS}/lib":$SHLIB_PATH
+    SHLIB_PATH="${BDMSYS}/lib":$SHLIB_PATH
   fi
+  export SHLIB_PATH
 
   if [ -z "${LIBPATH}" ]; then
-     export LIBPATH="${BDMSYS}/lib" # AIX
+    LIBPATH="${BDMSYS}/lib" # AIX
   else
-     export LIBPATH="${BDMSYS}/lib":$LIBPATH
+    LIBPATH="${BDMSYS}/lib":$LIBPATH
   fi
+  export LIBPATH
 
   if [ -z "${MANPATH}" ]; then
-     export MANPATH="${BDMSYS}/man":${default_manpath}
+    MANPATH="${BDMSYS}/man":${default_manpath}
   else
-     export MANPATH="${BDMSYS}/man":$MANPATH
+    MANPATH="${BDMSYS}/man":$MANPATH
   fi
+  export MANPATH
 
   ##### Python Specific Configurations #####
-  PYENV_ROOT=@pyenvroot@
+  export PYENV_ROOT=@pyenvroot@
   if [ -z "${PYENV_ROOT}" ]; then
-    PYENV_ROOT="$HOME/.pyenv"
+    export PYENV_ROOT="$HOME/.pyenv"
   fi
-  export PYENV_ROOT
   export PATH="$PYENV_ROOT/bin:$PATH"
 
   # FIXME Some paths are (ap/pre)pended n times for n calls to thisbdm.*sh
@@ -284,10 +289,11 @@ _source_thisbdm()
 
   ##### CMake Specific Configurations #####
   if [ -z "${CMAKE_PREFIX_PATH}" ]; then
-     export CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake" # Linux, ELF HP-UX
+    CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake" # Linux, ELF HP-UX
   else
-     export CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake":$CMAKE_PREFIX_PATH
+    CMAKE_PREFIX_PATH="${BDMSYS}/share/cmake":$CMAKE_PREFIX_PATH
   fi
+  export CMAKE_PREFIX_PATH
   ########
 
   #### ROOT Specific Configurations ####
@@ -325,7 +331,7 @@ _source_thisbdm()
   local with_paraview=@with_paraview@
   if [ "$with_paraview" = 'ON' ]; then
      if [ -z "${ParaView_DIR}" ]; then
-      ParaView_DIR=${BDMSYS}/third_party/paraview
+      ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR
       if ! [ -d "$ParaView_DIR" ]; then
        _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed in your system!"
        _bdm_err "      You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
@@ -334,19 +340,19 @@ _source_thisbdm()
       fi
      fi
 
-     export ParaView_DIR
-
      if [ -z "${ParaView_LIB_DIR}" ]; then
-      export ParaView_LIB_DIR="${ParaView_DIR}/lib"
+       ParaView_LIB_DIR="${ParaView_DIR}/lib"
      else
-      export ParaView_LIB_DIR="${ParaView_DIR}/lib":$ParaView_LIB_DIR
+       ParaView_LIB_DIR="${ParaView_DIR}/lib":$ParaView_LIB_DIR
      fi
+     export ParaView_LIB_DIR
 
      if [ -z "${PV_PLUGIN_PATH}" ]; then
-      export PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin"
+      PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin"
      else
-      export PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH
+      PV_PLUGIN_PATH="${BDMSYS}/lib/pv_plugin":$PV_PLUGIN_PATH
      fi
+     export PV_PLUGIN_PATH
 
      # We don't add the ParaView site-packages path to PYTHONPATH, because pip in the
      # pyenv environment will not function anymore: ModuleNotFoundError: No module named 'pip._internal'
@@ -355,21 +361,23 @@ _source_thisbdm()
      _bdm_define_command pvbatch
 
      if [ -z "${LD_LIBRARY_PATH}" ]; then
-      export LD_LIBRARY_PATH="${ParaView_LIB_DIR}"
+       LD_LIBRARY_PATH="${ParaView_LIB_DIR}"
      else
-      export LD_LIBRARY_PATH="${ParaView_LIB_DIR}":$LD_LIBRARY_PATH
+       LD_LIBRARY_PATH="${ParaView_LIB_DIR}":$LD_LIBRARY_PATH
      fi
+     export LD_LIBRARY_PATH
 
      if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-      export DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}"
+       DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}"
      else
-      export DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}":$DYLD_LIBRARY_PATH
+       DYLD_LIBRARY_PATH="${ParaView_LIB_DIR}":$DYLD_LIBRARY_PATH
      fi
+     export DYLD_LIBRARY_PATH
      ########
 
      #### Qt5 Specific Configurations ####
      if [ -z "${Qt5_DIR}" ]; then
-      Qt5_DIR=${BDMSYS}/third_party/qt
+      Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
       if ! [ -d "$Qt5_DIR" ]; then
        _bdm_err "[ERR] We are unable to find Qt! Please make sure it is installed in your system!"
        _bdm_err "      You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
@@ -377,25 +385,27 @@ _source_thisbdm()
        return 1
       fi
      fi
-     export Qt5_DIR
 
      if [ -z "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
-      export QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins"
+       QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins"
      else
-      export QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins":$QT_QPA_PLATFORM_PLUGIN_PATH
+       QT_QPA_PLATFORM_PLUGIN_PATH="${Qt5_DIR}/plugins":$QT_QPA_PLATFORM_PLUGIN_PATH
      fi
+     export QT_QPA_PLATFORM_PLUGIN_PATH
 
      if [ -z "${LD_LIBRARY_PATH}" ]; then
-      export LD_LIBRARY_PATH="${Qt5_DIR}/lib"
+       LD_LIBRARY_PATH="${Qt5_DIR}/lib"
      else
-      export LD_LIBRARY_PATH="${Qt5_DIR}/lib":$LD_LIBRARY_PATH
+       LD_LIBRARY_PATH="${Qt5_DIR}/lib":$LD_LIBRARY_PATH
      fi
+     export LD_LIBRARY_PATH
 
      if [ -z "${DYLD_LIBRARY_PATH}" ]; then
-      export DYLD_LIBRARY_PATH="${Qt5_DIR}/lib"
+       DYLD_LIBRARY_PATH="${Qt5_DIR}/lib"
      else
-      export DYLD_LIBRARY_PATH="${Qt5_DIR}/lib":$DYLD_LIBRARY_PATH
+       DYLD_LIBRARY_PATH="${Qt5_DIR}/lib":$DYLD_LIBRARY_PATH
      fi
+     export DYLD_LIBRARY_PATH
   fi
   #######
 
