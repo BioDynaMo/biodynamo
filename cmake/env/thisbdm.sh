@@ -22,10 +22,11 @@
 # Author: Fons Rademakers, 16/5/2019
 
 _bdm_quiet=false
+_bdm_silent=false
 
 _bdm_err()
 {
-  echo -e "\e[31m$*\e[0m"
+  $_bdm_silent || echo -e "\e[31m$*\e[0m"
 }
 
 _bdm_ok()
@@ -56,12 +57,13 @@ _bdm_define_command()
   unalias  "$1" >/dev/null 2>&1 || true
 
   if [ -n  "$ZSH_VERSION" ]; then
-    autoload -Uz "$1"
+    autoload -Uz "$1" || return 1
   else
     # shellcheck disable=SC1090
-    source "${BDMSYS}/bin/sh_functions/$1"
-    export -f "${1?}"
+    source "${BDMSYS}/bin/sh_functions/$1" || return 1
+    export -f "${1?}" || return 1
   fi
+  return 0
 }
 
 _bdm_unset()
@@ -72,6 +74,7 @@ _bdm_unset()
 _thisbdm_cleanup() {
   _bdm_unset thisbdm
   _bdm_unset _bdm_quiet
+  _bdm_unset _bdm_silent
   _bdm_unset _newpath
   _bdm_unset -f _drop_bdm_from_path
   _bdm_unset -f _source_thisbdm
@@ -111,8 +114,12 @@ _source_thisbdm()
         _bdm_quiet=true
         shift # next key
         ;;
+        -Q|--silent)
+        _bdm_silent=true
+        _bdm_quiet=true
+        shift # next key
+        ;;
         *)
-        _bdm_err "[ERR] Unknown option $key"
         return 1
         ;;
     esac
@@ -133,7 +140,7 @@ _source_thisbdm()
     zsh)
       # The zsh equivalent of ${BASH_SOURCE[0]} is ${(%):-%x}
       # shellcheck disable=SC2154
-      BDM_INSTALL_DIR=$(cd "$(dirname "${(%):-%x}")/.." && pwd)
+      BDM_INSTALL_DIR=$(cd "$(dirname "${(%):-%x}")/.." && pwd) || return 1
       ;;
   esac
 
@@ -324,7 +331,7 @@ _source_thisbdm()
   export BDM_ROOT_DIR
   # shellcheck disable=SC1090
   . "${BDM_ROOT_DIR}"/bin/thisroot.sh || return 1
-  _bdm_define_command root
+  _bdm_define_command root || return 1
   ########
 
   #### ParaView Specific Configurations ####
@@ -356,9 +363,9 @@ _source_thisbdm()
 
      # We don't add the ParaView site-packages path to PYTHONPATH, because pip in the
      # pyenv environment will not function anymore: ModuleNotFoundError: No module named 'pip._internal'
-     _bdm_define_command paraview
-     _bdm_define_command pvpython
-     _bdm_define_command pvbatch
+     _bdm_define_command paraview || return 1
+     _bdm_define_command pvpython || return 1
+     _bdm_define_command pvbatch || return 1
 
      if [ -z "${LD_LIBRARY_PATH}" ]; then
        LD_LIBRARY_PATH="${ParaView_LIB_DIR}"
@@ -420,7 +427,7 @@ _source_thisbdm()
   else # GNU/Linux
     # CentOS specifics
     local os_id
-    os_id=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+    os_id=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"') || return 1
     if [ "$os_id" = 'centos' ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
         if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
@@ -473,10 +480,18 @@ _source_thisbdm()
     local bdm_major_minor='';
     bdm_major_minor=$(bdm-config --version | sed -n  '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
     if [ -z "$__bdm_sh_prompt_original" ]; then
+      case $bdm_shell in
+        bash) __bdm_sh_prompt_original=$PS1 ;;
+        zsh)  __bdm_sh_prompt_original=$PROMPT ;;
+      esac
       __bdm_sh_prompt_original=$PS1
     fi
     # NB: overrides prompt for current session only
-    export PS1="[bdm-$bdm_major_minor] $__bdm_sh_prompt_original"
+
+    case $bdm_shell in
+      bash) export PS1="[bdm-$bdm_major_minor] $__bdm_sh_prompt_original" ;;
+      zsh)  export PROMPT="[bdm-$bdm_major_minor] $__bdm_sh_prompt_original" ;;
+    esac
   fi
 
   return 0

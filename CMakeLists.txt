@@ -690,6 +690,11 @@ configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_D
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/bdm-config.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config @ONLY ESCAPE_QUOTES NEWLINE_STYLE UNIX)
 
+# Set run permission on the environmental files
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
 # Copy over sh_functions directory and contents, and set execute permissions
 file(GLOB _SHELL_FNS ${CMAKE_SOURCE_DIR}/cmake/env/sh_functions/*)
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sh_functions)
@@ -698,12 +703,7 @@ file(COPY ${_SHELL_FNS} DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sh_functi
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ GROUP_EXECUTE
         WORLD_READ WORLD_EXECUTE)
-
-# Set run permission on the environmental files
-add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
+        
 if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
   set(buildcmd "make -j ${ncpu}")
 elseif (${CMAKE_GENERATOR} STREQUAL "Ninja")

@@ -66,6 +66,7 @@ BUILD_DIR=$BDM_PROJECT_DIR/build
 CleanBuild $BUILD_DIR
 
 # print final steps
+echo
 EchoSuccess "Installation of BioDynaMo finished successfully!"
 
 # Get version name with same regex as in Installation.cmake
@@ -74,4 +75,6 @@ VERSION=`git describe --tags`
 REGEX='[^-]*'
 [[ $VERSION =~ $REGEX ]]
 INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
+
 EchoFinishThisStep $INSTALL_DIR
+echo

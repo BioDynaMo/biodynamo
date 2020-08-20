@@ -99,7 +99,7 @@ function CheckTypeInstallSupported {
   fi
 }
 
-# 
+#
 # Arguments:
 #   $1 installation type ("all" or "required")
 #   $2 path to biodynamo installation src folder (util/installation)
@@ -260,7 +260,7 @@ function BashrcFile {
   fi
 }
 
-# Print message that tells the user to reload the bash and source the environment.
+# Print message that tells the user to reload their shell and source the environment.
 # Arguments:
 #   $1 biodynamo install directory
 function EchoFinishThisStep {
@@ -274,30 +274,37 @@ function EchoFinishThisStep {
 
   EchoInfo "Before running BioDynaMo execute:"
   case $SHELL in
-    *bash | *zsh )
-      EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh [-q | --quiet]"
+    *bash | *zsh)
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh [-q | --quiet]"
       EchoInfo "$extraStepStr"
-      if [ -n "$BASH_VERSION" ]; then
-        EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(BashrcFile)"
-      elif [ -n "$ZSH_VERSION" ]; then
-        EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(ZshrcFile)"
-      fi
+      case $SHELL in
+        *bash) EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(BashrcFile)" ;;
+        *zsh)  EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(ZshrcFile)" ;;
+      esac
       EchoInfo "$haveExecStr"
     ;;
-    *fish )
-      EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.fish"
+    *fish)
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.fish"
       EchoInfo "$extraStepStr"
-      EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.fish -q\" >>""$(fish -c 'echo $__fish_config_dir')"
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.fish -q\" >> ""$(fish -c 'echo $__fish_config_dir')"
       EchoInfo "$haveExecStr"
     ;;
     *)
-      EchoInfo "${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.<sh|fish> [-q | --quiet]"
-      EchoInfo "We could not detect your default shell."
-      EchoInfo "BioDynaMo currently supports the following shells:"
-      EchoInfo "   ${BDM_ECHO_BOLD}bash, zsh, and fish."
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.<sh|fish> [-q | --quiet]"
+      echo
+      EchoWarning "We could not detect your default shell."
+      EchoWarning "BioDynaMo currently supports the following shells:"
+      EchoWarning "   ${BDM_ECHO_UNDERLINE}bash, zsh, and fish."
+      return
     ;;
   esac
-  EchoInfo "The -q (or --quiet) flag will disable the prompt indicator, and all non-essential logging."
+  echo
+  EchoInfo "The -q (or --quiet) flag will disable the prompt indicator, and will only report errors."
+  echo
+  EchoNewStep "NOTE: Your login shell appears to be '$SHELL'."
+  EchoNewStep "The instructions above are for this shell."
+  EchoNewStep "For other shells, or for more information, see:"
+  EchoNewStep "   ${BDM_ECHO_UNDERLINE}https://biodynamo.org/docs/userguide/first_steps/"
 }
 
 # This function prompts the user for the biodynamo installation directory
@@ -390,9 +397,6 @@ function CopyEnvironmentScript {
 
   cat $ENV_SRC | sed "s|export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@|export BDM_INSTALL_DIR=${BDM_INSTALL_DIR}|g" >$TMP_ENV
   mv $TMP_ENV $ENV_DEST
-
-  ENV_DEST=$BDM_INSTALL_DIR/bin/thisbdm.fish
-  cat $ENV_SRC | sed "s|export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@|export BDM_INSTALL_DIR=${BDM_INSTALL_DIR}|g" >$TMP_ENV
 }
 
 # This function has a zero exit code if the version is below the required

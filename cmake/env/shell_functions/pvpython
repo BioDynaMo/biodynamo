@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-pvpython() {
- "${ParaView_DIR}/bin/pvpython" "$@"
-}

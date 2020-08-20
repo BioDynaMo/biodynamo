@@ -40,7 +40,7 @@ function _drop_from_var
 end
 
 function _bdm_err
-    echo -e "\e[31m$argv\e[0m"
+    $_bdm_silent; or echo -e "\e[31m$argv\e[0m"
 end
 
 function _bdm_ok
@@ -52,18 +52,22 @@ function _thisbdm_cleanup
   functions -e _drop_from_var
   functions -e _bdm_err
   functions -e _bdm_ok
+  set -e _bdm_silent
   set -e _bdm_quiet
   functions -e _thisbdm_cleanup
 end
 
 function source_thisbdm
     set -g _bdm_quiet false
+    set -g _bdm_silent false
     for option in $argv
         switch "$option"
             case -q --quiet
                 set _bdm_quiet true
+            case -Q --silent
+                set _bdm_quiet true
+                set _bdm_silent true
             case \*
-                _bdm_err "[ERR] Unknown option $option"
                 return 1
         end
     end
