@@ -20,7 +20,6 @@ function(detect_os)
     else()
         set(GET_OS_ID "echo $(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '\"')")
         set(GET_OS_VERSION "echo $(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '\"')")
-        message("GET_OS_ID = ${GET_OS_ID}")
         execute_process(COMMAND bash -c "${GET_OS_ID}"
                 OUTPUT_VARIABLE DISTRO_NAME
                 OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -72,6 +71,11 @@ function(verify_ROOT)
           string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
           set(ENV{ROOTSYS} ${TMP_ROOT_PATH})
         endif()
+    endif()
+
+    # Fixes bug: https://sft.its.cern.ch/jira/browse/ROOT-10916
+    if("${ROOT_VERSION}" STREQUAL "6.20/00")
+      execute_process(COMMAND sed -i -e "s/JSROOT.gStyle, style/JSROOT.gStyle, obj/g" ${ROOTSYS}/js/scripts/JSRootPainter.v6.js)
     endif()
 endfunction()
 
