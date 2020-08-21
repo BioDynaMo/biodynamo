@@ -146,6 +146,7 @@ function(generate_rootlogon)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define USE_DICT\")\;")
   endif()
 
+  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_LIBRARY_PATH($BDMSYS/lib)\")\;")
   set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;")
   # We add this one because the ROOT visualization require it, and it's not one
   # of the core libraries that is loaded by default in rootcling
