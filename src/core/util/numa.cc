@@ -16,7 +16,7 @@
 
 #include <omp.h>
 
-#include "util/numa.h"
+#include "core/util/numa.h"
 
 int numa_available() { return 0; }
 int numa_num_configured_nodes() { return 1; }
