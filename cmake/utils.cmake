@@ -144,8 +144,8 @@ function(install_inside_build)
     # Copy biodynamo.py and make it executable.
     add_custom_command(
             OUTPUT ${CMAKE_INSTALL_BINDIR}/biodynamo
-            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/cli/biodynamo.py ${CMAKE_INSTALL_BINDIR}/biodynamo
-            DEPENDS ${CMAKE_SOURCE_DIR}/cli/biodynamo.py
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/python/cli/biodynamo.py ${CMAKE_INSTALL_BINDIR}/biodynamo
+            DEPENDS ${CMAKE_SOURCE_DIR}/python/cli/biodynamo.py
     )
     list(APPEND artifact_files_builddir ${CMAKE_INSTALL_BINDIR}/biodynamo)
 
@@ -158,11 +158,18 @@ function(install_inside_build)
 
     # Copy cli files
     add_copy_directory(copy_files_bdm
-            ${CMAKE_SOURCE_DIR}/cli/
+            ${CMAKE_SOURCE_DIR}/python/cli/
             DESTINATION ${CMAKE_INSTALL_BINDIR}
             GLOB "*.py" "*.sh"
             EXCLUDE "biodynamo.py"
             )
+
+    # Copy dashboard files
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/python/dashboard/
+            DESTINATION ${CMAKE_INSTALL_ROOT}/python/dashboard
+            GLOB "*.py" "*.sh"
+    )
 
     # Copy etc files
     add_copy_directory(copy_files_bdm

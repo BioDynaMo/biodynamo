@@ -303,7 +303,7 @@ _source_thisbdm()
 
   # Expose parallel execution dashboard, so that we can do in notebooks:
   # from dashboard import *
-  export PYTHONPATH=$BDMSYS/include/core/parallel_execution:$PYTHONPATH
+  export PYTHONPATH=$BDMSYS/python/dashboard:$PYTHONPATH
 
   # Location of jupyter executable (installed with `pip install --user` command)
   if [ -n "${PYTHONUSERBASE}" ]; then
