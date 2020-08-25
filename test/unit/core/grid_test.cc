@@ -15,6 +15,7 @@
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/sim_object/cell.h"
+#include "core/sim_object/so_uid_generator.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 

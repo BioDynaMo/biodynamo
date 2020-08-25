@@ -23,6 +23,7 @@
 #include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/sim_object.h"
+#include "core/sim_object/so_uid_generator.h"
 #include "core/util/io.h"
 #include "core/util/type.h"
 #include "unit/test_util/test_sim_object.h"

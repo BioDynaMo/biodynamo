@@ -23,6 +23,7 @@
 #include "core/scheduler.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
+#include "core/sim_object/so_uid_generator.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"
 #include "unit/test_util/test_util.h"
