@@ -12,6 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <omp.h>
+
 #include "core/resource_manager.h"
 #include "core/environment/environment.h"
 

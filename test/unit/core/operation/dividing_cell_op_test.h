@@ -15,7 +15,6 @@
 #ifndef UNIT_CORE_OPERATION_DIVIDING_CELL_OP_TEST_H_
 #define UNIT_CORE_OPERATION_DIVIDING_CELL_OP_TEST_H_
 
-#include <omp.h>
 #include "core/operation/dividing_cell_op.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/cell.h"

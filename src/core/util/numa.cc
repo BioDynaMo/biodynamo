@@ -12,30 +12,26 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_UTIL_NUMA_H_
-#define CORE_UTIL_NUMA_H_
+#ifndef USE_NUMA
 
-#ifdef USE_NUMA
+#include <omp.h>
 
-#include <numa.h>
+#include "util/numa.h"
 
-#else
-
-#include <cstdint>
-
-inline int numa_available();
-inline int numa_num_configured_nodes();
-inline int numa_num_configured_cpus();
-inline int numa_run_on_node(int);
-inline int numa_node_of_cpu(int);
+inline int numa_available() { return 0; }
+inline int numa_num_configured_nodes() { return 1; }
+inline int numa_num_configured_cpus() { return omp_get_max_threads(); }
+inline int numa_run_on_node(int) { return 0; }
+inline int numa_node_of_cpu(int) { return 0; }
 inline int numa_move_pages(int pid, unsigned long count, void **pages,
-                           const int *nodes, int *status, int flags);
-inline void *numa_alloc_onnode(uint64_t size, int nid);
-inline void numa_free(void *p, uint64_t);
+                           const int *nodes, int *status, int flags) {
+  *status = 0;
+  return 0;
+}
+inline void *numa_alloc_onnode(uint64_t size, int nid) { return malloc(size); }
+inline void numa_free(void *p, uint64_t) { free(p); }
 
 // on linux in <sched.h>, but missing on MacOS
-inline int sched_getcpu();
+inline int sched_getcpu() { return 0; }
 
 #endif  // USE_NUMA
-
-#endif  // CORE_UTIL_NUMA_H_

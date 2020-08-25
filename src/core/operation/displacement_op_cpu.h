@@ -53,7 +53,7 @@ class DisplacementOpCpu {
 
     // update search radius and delta_time_ at beginning of each iteration
     auto current_iteration = scheduler->GetSimulatedSteps();
-    auto tid = omp_get_thread_num();
+    auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
     if (last_iteration_[tid] != current_iteration) {
       last_iteration_[tid] = current_iteration;
 
