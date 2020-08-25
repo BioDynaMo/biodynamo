@@ -15,13 +15,13 @@
 #ifndef UNIT_CORE_SCHEDULER_TEST_H_
 #define UNIT_CORE_SCHEDULER_TEST_H_
 
-#include "core/scheduler.h"
-
 #include <gtest/gtest.h>
 #include <unistd.h>
 #include <string>
 
 #include "core/environment/environment.h"
+#include "core/scheduler.h"
+#include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"

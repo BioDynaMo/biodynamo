@@ -17,6 +17,9 @@
 
 #include <algorithm>
 #include <vector>
+
+#include <omp.h>
+
 #include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/sim_object.h"

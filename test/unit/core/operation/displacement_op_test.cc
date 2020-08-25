@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/resource_manager.h"
 #include "unit/core/operation/displacement_op_test.h"
 #include "gtest/gtest.h"
 

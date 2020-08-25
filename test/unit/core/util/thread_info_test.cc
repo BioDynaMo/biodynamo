@@ -15,6 +15,9 @@
 #include <gtest/gtest.h>
 #include <set>
 
+#include <omp.h>
+
+#include "core/util/numa.h"
 #include "core/util/thread_info.h"
 
 namespace bdm {
