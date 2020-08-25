@@ -18,20 +18,20 @@
 
 #include "util/numa.h"
 
-inline int numa_available() { return 0; }
-inline int numa_num_configured_nodes() { return 1; }
-inline int numa_num_configured_cpus() { return omp_get_max_threads(); }
-inline int numa_run_on_node(int) { return 0; }
-inline int numa_node_of_cpu(int) { return 0; }
-inline int numa_move_pages(int pid, unsigned long count, void **pages,
-                           const int *nodes, int *status, int flags) {
+int numa_available() { return 0; }
+int numa_num_configured_nodes() { return 1; }
+int numa_num_configured_cpus() { return omp_get_max_threads(); }
+int numa_run_on_node(int) { return 0; }
+int numa_node_of_cpu(int) { return 0; }
+int numa_move_pages(int pid, unsigned long count, void **pages,
+                    const int *nodes, int *status, int flags) {
   *status = 0;
   return 0;
 }
-inline void *numa_alloc_onnode(uint64_t size, int nid) { return malloc(size); }
-inline void numa_free(void *p, uint64_t) { free(p); }
+void *numa_alloc_onnode(uint64_t size, int nid) { return malloc(size); }
+void numa_free(void *p, uint64_t) { free(p); }
 
 // on linux in <sched.h>, but missing on MacOS
-inline int sched_getcpu() { return 0; }
+int sched_getcpu() { return 0; }
 
 #endif  // USE_NUMA

@@ -23,18 +23,18 @@
 
 #include <cstdint>
 
-inline int numa_available();
-inline int numa_num_configured_nodes();
-inline int numa_num_configured_cpus();
-inline int numa_run_on_node(int);
-inline int numa_node_of_cpu(int);
-inline int numa_move_pages(int pid, unsigned long count, void **pages,
-                           const int *nodes, int *status, int flags);
-inline void *numa_alloc_onnode(uint64_t size, int nid);
-inline void numa_free(void *p, uint64_t);
+int numa_available();
+int numa_num_configured_nodes();
+int numa_num_configured_cpus();
+int numa_run_on_node(int);
+int numa_node_of_cpu(int);
+int numa_move_pages(int pid, unsigned long count, void **pages,
+                    const int *nodes, int *status, int flags);
+void *numa_alloc_onnode(uint64_t size, int nid);
+void numa_free(void *p, uint64_t);
 
 // on linux in <sched.h>, but missing on MacOS
-inline int sched_getcpu();
+int sched_getcpu();
 
 #endif  // USE_NUMA
 
