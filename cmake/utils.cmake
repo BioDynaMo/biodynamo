@@ -74,7 +74,7 @@ function(verify_ROOT)
     endif()
 
     # Fixes bug: https://sft.its.cern.ch/jira/browse/ROOT-10916
-    if("${ROOT_VERSION}" STREQUAL "6.20/00")
+    if("${ROOT_VERSION}" STREQUAL "6.22/00")
       execute_process(COMMAND sed -i -e "s/JSROOT.gStyle, style/JSROOT.gStyle, obj/g" ${ROOTSYS}/js/scripts/JSRootPainter.v6.js)
     endif()
 endfunction()
