@@ -91,7 +91,7 @@
  * include an updated approach to defining supported feature versions
  * and the range of valid underlying OpenCL runtime versions supported.
  *
- * The combination of preprocessor macros CL_HPP_TARNewOperationENCL_VERSION and
+ * The combination of preprocessor macros CL_HPP_TARGET_OPENCL_VERSION and
  * CL_HPP_MINIMUM_OPENCL_VERSION control this range. These are three digit
  * decimal values representing OpenCL runime versions. The default for
  * the target is 200, representing OpenCL 2.0 and the minimum is also
@@ -147,7 +147,7 @@
  * \section parameterization Parameters
  * This header may be parameterized by a set of preprocessor macros.
  *
- * - CL_HPP_TARNewOperationENCL_VERSION
+ * - CL_HPP_TARGET_OPENCL_VERSION
  *
  *   Defines the target OpenCL runtime version to build the header
  *   against. Defaults to 200, representing OpenCL 2.0.
@@ -215,7 +215,7 @@
  *
  * \code
     #define CL_HPP_ENABLE_EXCEPTIONS
-    #define CL_HPP_TARNewOperationENCL_VERSION 200
+    #define CL_HPP_TARGET_OPENCL_VERSION 200
 
     #include <CL/cl2.hpp>
     #include <iostream>
@@ -436,14 +436,14 @@
 #endif
 
 /* Detect which version to target */
-#if !defined(CL_HPP_TARNewOperationENCL_VERSION)
-# pragma message("cl2.hpp: CL_HPP_TARNewOperationENCL_VERSION is not defined. It will default to 200 (OpenCL 2.0)")
-# define CL_HPP_TARNewOperationENCL_VERSION 200
+#if !defined(CL_HPP_TARGET_OPENCL_VERSION)
+# pragma message("cl2.hpp: CL_HPP_TARGET_OPENCL_VERSION is not defined. It will default to 200 (OpenCL 2.0)")
+# define CL_HPP_TARGET_OPENCL_VERSION 200
 #endif
-#if CL_HPP_TARNewOperationENCL_VERSION != 100 && CL_HPP_TARNewOperationENCL_VERSION != 110 && CL_HPP_TARNewOperationENCL_VERSION != 120 && CL_HPP_TARNewOperationENCL_VERSION != 200
-# pragma message("cl2.hpp: CL_HPP_TARNewOperationENCL_VERSION is not a valid value (100, 110, 120 or 200). It will be set to 200")
-# undef CL_HPP_TARNewOperationENCL_VERSION
-# define CL_HPP_TARNewOperationENCL_VERSION 200
+#if CL_HPP_TARGET_OPENCL_VERSION != 100 && CL_HPP_TARGET_OPENCL_VERSION != 110 && CL_HPP_TARGET_OPENCL_VERSION != 120 && CL_HPP_TARGET_OPENCL_VERSION != 200
+# pragma message("cl2.hpp: CL_HPP_TARGET_OPENCL_VERSION is not a valid value (100, 110, 120 or 200). It will be set to 200")
+# undef CL_HPP_TARGET_OPENCL_VERSION
+# define CL_HPP_TARGET_OPENCL_VERSION 200
 #endif
 
 #if !defined(CL_HPP_MINIMUM_OPENCL_VERSION)
@@ -454,8 +454,8 @@
 # undef CL_HPP_MINIMUM_OPENCL_VERSION
 # define CL_HPP_MINIMUM_OPENCL_VERSION 100
 #endif
-#if CL_HPP_MINIMUM_OPENCL_VERSION > CL_HPP_TARNewOperationENCL_VERSION
-# error "CL_HPP_MINIMUM_OPENCL_VERSION must not be greater than CL_HPP_TARNewOperationENCL_VERSION"
+#if CL_HPP_MINIMUM_OPENCL_VERSION > CL_HPP_TARGET_OPENCL_VERSION
+# error "CL_HPP_MINIMUM_OPENCL_VERSION must not be greater than CL_HPP_TARGET_OPENCL_VERSION"
 #endif
 
 #if CL_HPP_MINIMUM_OPENCL_VERSION <= 100 && !defined(CL_USE_DEPRECATED_OPENCL_1_0_APIS)
@@ -575,7 +575,7 @@ namespace cl {
 } // namespace cl
 #endif // #if !defined(CL_HPP_NO_STD_STRING)
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
 #if !defined(CL_HPP_NO_STD_UNIQUE_PTR)
 #include <memory>
@@ -586,7 +586,7 @@ namespace cl {
     using pointer = std::unique_ptr<T, D>;
 } // namespace cl
 #endif
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 #if !defined(CL_HPP_NO_STD_ARRAY)
 #include <array>
 namespace cl {
@@ -787,9 +787,9 @@ static inline cl_int errHandler (cl_int err, const char * errStr = NULL)
 #define __GET_IMAGE_INFO_ERR                CL_HPP_ERR_STR_(clGetImageInfo)
 #define __GET_SAMPLER_INFO_ERR              CL_HPP_ERR_STR_(clGetSamplerInfo)
 #define __GET_KERNEL_INFO_ERR               CL_HPP_ERR_STR_(clGetKernelInfo)
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __GET_KERNEL_ARG_INFO_ERR           CL_HPP_ERR_STR_(clGetKernelArgInfo)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __GET_KERNEL_WORK_GROUP_INFO_ERR    CL_HPP_ERR_STR_(clGetKernelWorkGroupInfo)
 #define __GET_PROGRAM_INFO_ERR              CL_HPP_ERR_STR_(clGetProgramInfo)
 #define __GET_PROGRAM_BUILD_INFO_ERR        CL_HPP_ERR_STR_(clGetProgramBuildInfo)
@@ -805,11 +805,11 @@ static inline cl_int errHandler (cl_int err, const char * errStr = NULL)
 #define __CREATE_GL_BUFFER_ERR              CL_HPP_ERR_STR_(clCreateFromGLBuffer)
 #define __CREATE_GL_RENDER_BUFFER_ERR       CL_HPP_ERR_STR_(clCreateFromGLBuffer)
 #define __GET_GL_OBJECT_INFO_ERR            CL_HPP_ERR_STR_(clGetGLObjectInfo)
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __CREATE_IMAGE_ERR                  CL_HPP_ERR_STR_(clCreateImage)
 #define __CREATE_GL_TEXTURE_ERR             CL_HPP_ERR_STR_(clCreateFromGLTexture)
 #define __IMAGE_DIMENSION_ERR               CL_HPP_ERR_STR_(Incorrect image dimensions)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __SET_MEM_OBJECT_DESTRUCTOR_CALLBACK_ERR CL_HPP_ERR_STR_(clSetMemObjectDestructorCallback)
 
 #define __CREATE_USER_EVENT_ERR             CL_HPP_ERR_STR_(clCreateUserEvent)
@@ -821,20 +821,20 @@ static inline cl_int errHandler (cl_int err, const char * errStr = NULL)
 #define __SET_KERNEL_ARGS_ERR               CL_HPP_ERR_STR_(clSetKernelArg)
 #define __CREATE_PROGRAM_WITH_SOURCE_ERR    CL_HPP_ERR_STR_(clCreateProgramWithSource)
 #define __CREATE_PROGRAM_WITH_BINARY_ERR    CL_HPP_ERR_STR_(clCreateProgramWithBinary)
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __CREATE_PROGRAM_WITH_BUILT_IN_KERNELS_ERR    CL_HPP_ERR_STR_(clCreateProgramWithBuiltInKernels)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __BUILD_PROGRAM_ERR                 CL_HPP_ERR_STR_(clBuildProgram)
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __COMPILE_PROGRAM_ERR               CL_HPP_ERR_STR_(clCompileProgram)
 #define __LINK_PROGRAM_ERR                  CL_HPP_ERR_STR_(clLinkProgram)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __CREATE_KERNELS_IN_PROGRAM_ERR     CL_HPP_ERR_STR_(clCreateKernelsInProgram)
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 #define __CREATE_COMMAND_QUEUE_WITH_PROPERTIES_ERR          CL_HPP_ERR_STR_(clCreateCommandQueueWithProperties)
 #define __CREATE_SAMPLER_WITH_PROPERTIES_ERR                CL_HPP_ERR_STR_(clCreateSamplerWithProperties)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 200
 #define __SET_COMMAND_QUEUE_PROPERTY_ERR    CL_HPP_ERR_STR_(clSetCommandQueueProperty)
 #define __ENQUEUE_READ_BUFFER_ERR           CL_HPP_ERR_STR_(clEnqueueReadBuffer)
 #define __ENQUEUE_READ_BUFFER_RECT_ERR      CL_HPP_ERR_STR_(clEnqueueReadBufferRect)
@@ -854,9 +854,9 @@ static inline cl_int errHandler (cl_int err, const char * errStr = NULL)
 #define __ENQUEUE_UNMAP_MEM_OBJECT_ERR      CL_HPP_ERR_STR_(clEnqueueUnMapMemObject)
 #define __ENQUEUE_NDRANGE_KERNEL_ERR        CL_HPP_ERR_STR_(clEnqueueNDRangeKernel)
 #define __ENQUEUE_NATIVE_KERNEL             CL_HPP_ERR_STR_(clEnqueueNativeKernel)
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __ENQUEUE_MIGRATE_MEM_OBJECTS_ERR   CL_HPP_ERR_STR_(clEnqueueMigrateMemObjects)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
 #define __ENQUEUE_ACQUIRE_GL_ERR            CL_HPP_ERR_STR_(clEnqueueAcquireGLObjects)
 #define __ENQUEUE_RELEASE_GL_ERR            CL_HPP_ERR_STR_(clEnqueueReleaseGLObjects)
@@ -874,11 +874,11 @@ static inline cl_int errHandler (cl_int err, const char * errStr = NULL)
 /**
  * CL 1.2 version that uses device fission.
  */
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __CREATE_SUB_DEVICES_ERR            CL_HPP_ERR_STR_(clCreateSubDevices)
 #else
 #define __CREATE_SUB_DEVICES_ERR            CL_HPP_ERR_STR_(clCreateSubDevicesEXT)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
 /**
  * Deprecated APIs for 1.2
@@ -906,10 +906,10 @@ static inline cl_int errHandler (cl_int err, const char * errStr = NULL)
 /**
  * CL 1.2 marker and barrier commands
  */
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 #define __ENQUEUE_MARKER_WAIT_LIST_ERR                CL_HPP_ERR_STR_(clEnqueueMarkerWithWaitList)
 #define __ENQUEUE_BARRIER_WAIT_LIST_ERR               CL_HPP_ERR_STR_(clEnqueueBarrierWithWaitList)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
 #endif // CL_HPP_USER_OVERRIDE_ERROR_STRINGS
 //! \endcond
@@ -1311,15 +1311,15 @@ struct param_traits<detail:: token,param_name>       \
 };
 
 CL_HPP_PARAM_NAME_INFO_1_0_(CL_HPP_DECLARE_PARAM_TRAITS_)
-#if CL_HPP_TARNewOperationENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 110
 CL_HPP_PARAM_NAME_INFO_1_1_(CL_HPP_DECLARE_PARAM_TRAITS_)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 CL_HPP_PARAM_NAME_INFO_1_2_(CL_HPP_DECLARE_PARAM_TRAITS_)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 CL_HPP_PARAM_NAME_INFO_2_0_(CL_HPP_DECLARE_PARAM_TRAITS_)
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
 
 
 // Flags deprecated in OpenCL 2.0
@@ -1334,13 +1334,13 @@ CL_HPP_PARAM_NAME_INFO_2_0_(CL_HPP_DECLARE_PARAM_TRAITS_)
 
 // Include deprecated query flags based on versions
 // Only include deprecated 1.0 flags if 2.0 not active as there is an enum clash
-#if CL_HPP_TARNewOperationENCL_VERSION > 100 && CL_HPP_MINIMUM_OPENCL_VERSION < 200 && CL_HPP_TARNewOperationENCL_VERSION < 200
+#if CL_HPP_TARGET_OPENCL_VERSION > 100 && CL_HPP_MINIMUM_OPENCL_VERSION < 200 && CL_HPP_TARGET_OPENCL_VERSION < 200
 CL_HPP_PARAM_NAME_INFO_1_0_DEPRECATED_IN_2_0_(CL_HPP_DECLARE_PARAM_TRAITS_)
 #endif // CL_HPP_MINIMUM_OPENCL_VERSION < 110
-#if CL_HPP_TARNewOperationENCL_VERSION > 110 && CL_HPP_MINIMUM_OPENCL_VERSION < 200
+#if CL_HPP_TARGET_OPENCL_VERSION > 110 && CL_HPP_MINIMUM_OPENCL_VERSION < 200
 CL_HPP_PARAM_NAME_INFO_1_1_DEPRECATED_IN_2_0_(CL_HPP_DECLARE_PARAM_TRAITS_)
 #endif // CL_HPP_MINIMUM_OPENCL_VERSION < 120
-#if CL_HPP_TARNewOperationENCL_VERSION > 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 200
+#if CL_HPP_TARGET_OPENCL_VERSION > 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 200
 CL_HPP_PARAM_NAME_INFO_1_2_DEPRECATED_IN_2_0_(CL_HPP_DECLARE_PARAM_TRAITS_)
 #endif // CL_HPP_MINIMUM_OPENCL_VERSION < 200
 
@@ -1457,7 +1457,7 @@ template<typename T>
 struct ReferenceHandler
 { };
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 /**
  * OpenCL 1.2 devices do have retain/release.
  */
@@ -1487,7 +1487,7 @@ struct ReferenceHandler<cl_device_id>
     static cl_int release(cl_device_id device)
     { return ::clReleaseDevice(device); }
 };
-#else // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#else // CL_HPP_TARGET_OPENCL_VERSION >= 120
 /**
  * OpenCL 1.1 devices do not have retain/release.
  */
@@ -1501,7 +1501,7 @@ struct ReferenceHandler<cl_device_id>
     static cl_int release(cl_device_id)
     { return CL_SUCCESS; }
 };
-#endif // ! (CL_HPP_TARNewOperationENCL_VERSION >= 120)
+#endif // ! (CL_HPP_TARGET_OPENCL_VERSION >= 120)
 
 template <>
 struct ReferenceHandler<cl_platform_id>
@@ -1578,7 +1578,7 @@ struct ReferenceHandler<cl_event>
 };
 
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 120
 // Extracts version number with major in the upper 16 bits, minor in the lower 16
 static cl_uint getVersion(const vector<char> &versionInfo)
 {
@@ -1628,7 +1628,7 @@ static cl_uint getContextPlatformVersion(cl_context context)
     clGetContextInfo(context, CL_CONTEXT_DEVICES, size, devices.data(), NULL);
     return getDevicePlatformVersion(devices[0]);
 }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 120
 
 template <typename T>
 class Wrapper
@@ -1740,7 +1740,7 @@ protected:
     static bool isReferenceCountable(cl_device_id device)
     {
         bool retVal = false;
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 #if CL_HPP_MINIMUM_OPENCL_VERSION < 120
         if (device != NULL) {
             int version = getDevicePlatformVersion(device);
@@ -1751,7 +1751,7 @@ protected:
 #else // CL_HPP_MINIMUM_OPENCL_VERSION < 120
         retVal = true;
 #endif // CL_HPP_MINIMUM_OPENCL_VERSION < 120
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
         return retVal;
     }
 
@@ -2095,7 +2095,7 @@ public:
     /**
      * CL 1.2 version
      */
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
     //! \brief Wrapper for clCreateSubDevices().
     cl_int createSubDevices(
         const cl_device_partition_property * properties,
@@ -2528,14 +2528,14 @@ public:
         return default_platform;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
     //! \brief Wrapper for clUnloadCompiler().
     cl_int
     unloadCompiler()
     {
         return ::clUnloadPlatformCompiler(object_);
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 }; // class Platform
 
 CL_HPP_DEFINE_STATIC_MEMBER_ std::once_flag Platform::default_initialized_;
@@ -3060,7 +3060,7 @@ public:
             __WAIT_FOR_EVENTS_ERR);
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 110
     /*! \brief Registers a user callback function for a specific command execution status.
      *
      *  Wraps clSetEventCallback().
@@ -3078,7 +3078,7 @@ public:
                 user_data),
             __SET_EVENT_CALLBACK_ERR);
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
 
     /*! \brief Blocks the calling thread until every event specified is complete.
      *
@@ -3094,7 +3094,7 @@ public:
     }
 };
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 110
 /*! \brief Class interface for user events (a subset of cl_event's).
  *
  *  See Event for details about copy semantics, etc.
@@ -3135,7 +3135,7 @@ public:
             __SET_USER_EVENT_STATUS_ERR);
     }
 };
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
 
 /*! \brief Blocks the calling thread until every event specified is complete.
  *
@@ -3241,7 +3241,7 @@ public:
         return param;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 110
     /*! \brief Registers a callback function to be called when the memory object
      *         is no longer needed.
      *
@@ -3266,7 +3266,7 @@ public:
                 user_data),
             __SET_MEM_OBJECT_DESTRUCTOR_CALLBACK_ERR);
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
 
 };
 
@@ -3282,7 +3282,7 @@ template< typename IteratorType >
 cl_int copy( const CommandQueue &queue, const cl::Buffer &buffer, IteratorType startIterator, IteratorType endIterator );
 
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 namespace detail
 {
     class SVMTraitNull
@@ -3639,7 +3639,7 @@ using fine_svm_vector = vector<T, cl::SVMAllocator<int, cl::SVMTraitFine<>>>;
 template < class T >
 using atomic_svm_vector = vector<T, cl::SVMAllocator<int, cl::SVMTraitAtomic<>>>;
 
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
 
 /*! \brief Class interface for Buffer Memory Objects.
@@ -3821,7 +3821,7 @@ public:
         return *this;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 110
     /*! \brief Creates a new buffer object from this.
      *
      *  Wraps clCreateSubBuffer().
@@ -3848,7 +3848,7 @@ public:
 
         return result;
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
 };
 
 #if defined (CL_HPP_USE_DX_INTEROP)
@@ -3880,7 +3880,7 @@ public:
             cl_context context, cl_mem_flags flags, ID3D10Buffer*  buffer,
             cl_int* errcode_ret);
         PFN_clCreateFromD3D10BufferKHR pfn_clCreateFromD3D10BufferKHR;
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
         vector<cl_context_properties> props = context.getInfo<CL_CONTEXT_PROPERTIES>();
         cl_platform platform = -1;
         for( int i = 0; i < props.size(); ++i ) {
@@ -3889,7 +3889,7 @@ public:
             }
         }
         CL_HPP_INIT_CL_EXT_FCN_PTR_PLATFORM_(platform, clCreateFromD3D10BufferKHR);
-#elif CL_HPP_TARNewOperationENCL_VERSION >= 110
+#elif CL_HPP_TARGET_OPENCL_VERSION >= 110
         CL_HPP_INIT_CL_EXT_FCN_PTR_(clCreateFromD3D10BufferKHR);
 #endif
 
@@ -4240,7 +4240,7 @@ public:
     }
 };
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 /*! \brief Class interface for 1D Image Memory objects.
  *
  *  See Memory for details about copy semantics, etc.
@@ -4508,7 +4508,7 @@ public:
     }
 
 };
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 120
 
 
 /*! \brief Class interface for 2D Image Memory objects.
@@ -4537,19 +4537,19 @@ public:
         cl_int error;
         bool useCreateImage;
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 120
         // Run-time decision based on the actual platform
         {
             cl_uint version = detail::getContextPlatformVersion(context());
             useCreateImage = (version >= 0x10002); // OpenCL 1.2 or above
         }
-#elif CL_HPP_TARNewOperationENCL_VERSION >= 120
+#elif CL_HPP_TARGET_OPENCL_VERSION >= 120
         useCreateImage = true;
 #else
         useCreateImage = false;
 #endif
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
         if (useCreateImage)
         {
             cl_image_desc desc =
@@ -4574,7 +4574,7 @@ public:
                 *err = error;
             }
         }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 #if CL_HPP_MINIMUM_OPENCL_VERSION < 120
         if (!useCreateImage)
         {
@@ -4589,7 +4589,7 @@ public:
 #endif // CL_HPP_MINIMUM_OPENCL_VERSION < 120
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
     /*! \brief Constructs a 2D Image from a buffer.
     * \note This will share storage with the underlying buffer.
     *
@@ -4630,9 +4630,9 @@ public:
             *err = error;
         }
     }
-#endif //#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif //#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
     /*! \brief Constructs a 2D Image from an image.
     * \note This will share storage with the underlying image but may
     *       reinterpret the channel order and type.
@@ -4696,7 +4696,7 @@ public:
             *err = error;
         }
     }
-#endif //#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif //#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
     //! \brief Default constructor - initializes to NULL.
     Image2D() { }
@@ -4848,7 +4848,7 @@ public:
 } CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
 #endif // CL_USE_DEPRECATED_OPENCL_1_1_APIS
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 /*! \class Image2DArray
  * \brief Image interface for arrays of 2D images.
  */
@@ -4938,7 +4938,7 @@ public:
         return *this;
     }
 };
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 120
 
 /*! \brief Class interface for 3D Image Memory objects.
  *
@@ -4968,19 +4968,19 @@ public:
         cl_int error;
         bool useCreateImage;
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120 && CL_HPP_MINIMUM_OPENCL_VERSION < 120
         // Run-time decision based on the actual platform
         {
             cl_uint version = detail::getContextPlatformVersion(context());
             useCreateImage = (version >= 0x10002); // OpenCL 1.2 or above
         }
-#elif CL_HPP_TARNewOperationENCL_VERSION >= 120
+#elif CL_HPP_TARGET_OPENCL_VERSION >= 120
         useCreateImage = true;
 #else
         useCreateImage = false;
 #endif
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
         if (useCreateImage)
         {
             cl_image_desc desc =
@@ -5007,7 +5007,7 @@ public:
                 *err = error;
             }
         }
-#endif  // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif  // CL_HPP_TARGET_OPENCL_VERSION >= 120
 #if CL_HPP_MINIMUM_OPENCL_VERSION < 120
         if (!useCreateImage)
         {
@@ -5168,7 +5168,7 @@ public:
 };
 #endif // CL_USE_DEPRECATED_OPENCL_1_1_APIS
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 /*! \class ImageGL
  * \brief general image interface for GL interop.
  * We abstract the 2D and 3D GL images into a single instance here
@@ -5247,11 +5247,11 @@ public:
         return *this;
     }
 };
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
 
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 /*! \brief Class interface for Pipe Memory Objects.
 *
 *  See Memory for details about copy semantics, etc.
@@ -5388,7 +5388,7 @@ public:
         return param;
     }
 }; // class Pipe
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 200
 
 
 /*! \brief Class interface for cl_sampler.
@@ -5418,7 +5418,7 @@ public:
     {
         cl_int error;
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
         cl_sampler_properties sampler_properties[] = {
             CL_SAMPLER_NORMALIZED_COORDS, normalized_coords,
             CL_SAMPLER_ADDRESSING_MODE, addressing_mode,
@@ -5744,7 +5744,7 @@ public:
         return param;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
     template <typename T>
     cl_int getArgInfo(cl_uint argIndex, cl_kernel_arg_info name, T* param) const
     {
@@ -5765,7 +5765,7 @@ public:
         }
         return param;
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
     template <typename T>
     cl_int getWorkGroupInfo(
@@ -5790,7 +5790,7 @@ public:
         return param;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 #if defined(CL_HPP_USE_CL_SUB_GROUPS_KHR)
     cl_int getSubGroupInfo(const cl::Device &dev, cl_kernel_sub_group_info name, const cl::NDRange &range, size_type* param) const
     {
@@ -5814,9 +5814,9 @@ public:
         return param;
     }
 #endif // #if defined(CL_HPP_USE_CL_SUB_GROUPS_KHR)
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
     /*! \brief setArg overload taking a shared_ptr type
      */
     template<typename T, class D>
@@ -5847,7 +5847,7 @@ public:
             ::clSetKernelArgSVMPointer(object_, index, argPtr),
             __SET_KERNEL_ARGS_ERR);
     }
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
     /*! \brief setArg overload taking a POD type
      */
@@ -5871,7 +5871,7 @@ public:
             __SET_KERNEL_ARGS_ERR);
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
     /*!
      * Specify a vector of SVM pointers that the kernel may access in
      * addition to its arguments.
@@ -5966,7 +5966,7 @@ public:
             sizeof(void*)*(1 + sizeof...(Ts)),
             pointerList.data()));
     }
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 };
 
 /*! \class Program
@@ -6207,7 +6207,7 @@ public:
     }
 
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
     /**
      * Create program using builtin kernels.
      * \param kernelNames Semi-colon separated list of builtin kernel names
@@ -6239,7 +6239,7 @@ public:
             *err = error;
         }
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
     Program() { }
 
@@ -6329,7 +6329,7 @@ public:
         return detail::buildErrHandler(buildError, __BUILD_PROGRAM_ERR, getBuildInfo<CL_PROGRAM_BUILD_LOG>());
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
     cl_int compile(
         const char* options = NULL,
         void (CL_CALLBACK * notifyFptr)(cl_program, void *) = NULL,
@@ -6347,7 +6347,7 @@ public:
             data);
         return detail::buildErrHandler(error, __COMPILE_PROGRAM_ERR, getBuildInfo<CL_PROGRAM_BUILD_LOG>());
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
     template <typename T>
     cl_int getInfo(cl_program_info name, T* param) const
@@ -6468,7 +6468,7 @@ public:
     }
 };
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
 inline Program linkProgram(
     Program input1,
     Program input2,
@@ -6545,7 +6545,7 @@ inline Program linkProgram(
 
     return Program(prog, false);
 }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
 // Template specialization for CL_PROGRAM_BINARIES
 template <>
@@ -6698,7 +6698,7 @@ public:
         else {
             Device device = context.getInfo<CL_CONTEXT_DEVICES>()[0];
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
             cl_queue_properties queue_properties[] = {
                 CL_QUEUE_PROPERTIES, properties, 0 };
             if ((properties & CL_QUEUE_ON_DEVICE) == 0) {
@@ -6746,7 +6746,7 @@ public:
        else {
            Device device = context.getInfo<CL_CONTEXT_DEVICES>()[0];
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
            cl_queue_properties queue_properties[] = {
                CL_QUEUE_PROPERTIES, static_cast<cl_queue_properties>(properties), 0 };
 
@@ -6793,7 +6793,7 @@ public:
             return;
         }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
         cl_queue_properties queue_properties[] = {
             CL_QUEUE_PROPERTIES, properties, 0 };
         if ((properties & CL_QUEUE_ON_DEVICE) == 0) {
@@ -6843,7 +6843,7 @@ public:
             return;
         }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
         cl_queue_properties queue_properties[] = {
             CL_QUEUE_PROPERTIES, static_cast<cl_queue_properties>(properties), 0 };
         object_ = ::clCreateCommandQueueWithProperties(
@@ -6877,7 +6877,7 @@ public:
     {
         cl_int error;
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
         cl_queue_properties queue_properties[] = {
             CL_QUEUE_PROPERTIES, properties, 0 };
         object_ = ::clCreateCommandQueueWithProperties(
@@ -6910,7 +6910,7 @@ public:
     {
             cl_int error;
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
             cl_queue_properties queue_properties[] = {
                 CL_QUEUE_PROPERTIES, static_cast<cl_queue_properties>(properties), 0 };
             object_ = ::clCreateCommandQueueWithProperties(
@@ -6934,11 +6934,11 @@ public:
     static CommandQueue getDefault(cl_int * err = NULL)
     {
         std::call_once(default_initialized_, makeDefault);
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
         detail::errHandler(default_error_, __CREATE_COMMAND_QUEUE_WITH_PROPERTIES_ERR);
-#else // CL_HPP_TARNewOperationENCL_VERSION >= 200
+#else // CL_HPP_TARGET_OPENCL_VERSION >= 200
         detail::errHandler(default_error_, __CREATE_COMMAND_QUEUE_ERR);
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 200
         if (err != NULL) {
             *err = default_error_;
         }
@@ -7216,7 +7216,7 @@ public:
         return err;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
     /**
      * Enqueue a command to fill a buffer object with a pattern
      * of a given size. The pattern is specified as a vector type.
@@ -7256,7 +7256,7 @@ public:
 
         return err;
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
     cl_int enqueueReadImage(
         const Image& image,
@@ -7353,7 +7353,7 @@ public:
         return err;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
     /**
      * Enqueue a command to fill an image object with a specified color.
      * \param fillColor is the color to use to fill the image.
@@ -7455,7 +7455,7 @@ public:
 
         return err;
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
     cl_int enqueueCopyImageToBuffer(
         const Image& src,
@@ -7577,7 +7577,7 @@ public:
         return result;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
     /**
      * Enqueues a command that will allow the host to update a region of a coarse-grained SVM buffer.
      * This variant takes a raw SVM pointer.
@@ -7658,7 +7658,7 @@ public:
 
         return err;
     }
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
     cl_int enqueueUnmapMemObject(
         const Memory& memory,
@@ -7682,7 +7682,7 @@ public:
     }
 
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
     /**
      * Enqueues a command that will release a coarse-grained SVM buffer back to the OpenCL runtime.
      * This variant takes a raw SVM pointer.
@@ -7757,9 +7757,9 @@ public:
 
         return err;
     }
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
     /**
      * Enqueues a marker command which waits for either a list of events to complete,
      * or all previously enqueued commands to complete.
@@ -7856,7 +7856,7 @@ public:
 
         return err;
     }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
 
     cl_int enqueueNDRangeKernel(
         const Kernel& kernel,
@@ -8033,13 +8033,13 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *PFN_clEnqueueReleaseD3D10ObjectsKHR)(
          Event* event = NULL) const
     {
         static PFN_clEnqueueAcquireD3D10ObjectsKHR pfn_clEnqueueAcquireD3D10ObjectsKHR = NULL;
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
         cl_context context = getInfo<CL_QUEUE_CONTEXT>();
         cl::Device device(getInfo<CL_QUEUE_DEVICE>());
         cl_platform_id platform = device.getInfo<CL_DEVICE_PLATFORM>();
         CL_HPP_INIT_CL_EXT_FCN_PTR_PLATFORM_(platform, clEnqueueAcquireD3D10ObjectsKHR);
 #endif
-#if CL_HPP_TARNewOperationENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 110
         CL_HPP_INIT_CL_EXT_FCN_PTR_(clEnqueueAcquireD3D10ObjectsKHR);
 #endif
 
@@ -8066,15 +8066,15 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *PFN_clEnqueueReleaseD3D10ObjectsKHR)(
          Event* event = NULL) const
     {
         static PFN_clEnqueueReleaseD3D10ObjectsKHR pfn_clEnqueueReleaseD3D10ObjectsKHR = NULL;
-#if CL_HPP_TARNewOperationENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 120
         cl_context context = getInfo<CL_QUEUE_CONTEXT>();
         cl::Device device(getInfo<CL_QUEUE_DEVICE>());
         cl_platform_id platform = device.getInfo<CL_DEVICE_PLATFORM>();
         CL_HPP_INIT_CL_EXT_FCN_PTR_PLATFORM_(platform, clEnqueueReleaseD3D10ObjectsKHR);
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 120
-#if CL_HPP_TARNewOperationENCL_VERSION >= 110
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 120
+#if CL_HPP_TARGET_OPENCL_VERSION >= 110
         CL_HPP_INIT_CL_EXT_FCN_PTR_(clEnqueueReleaseD3D10ObjectsKHR);
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
 
         cl_event tmp;
         cl_int err = detail::errHandler(
@@ -8123,7 +8123,7 @@ CL_HPP_DEFINE_STATIC_MEMBER_ CommandQueue CommandQueue::default_;
 CL_HPP_DEFINE_STATIC_MEMBER_ cl_int CommandQueue::default_error_ = CL_SUCCESS;
 
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 enum class DeviceQueueProperties : cl_command_queue_properties
 {
     None = 0,
@@ -8385,7 +8385,7 @@ namespace detail
     };
 } // namespace detail
 
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
 
 template< typename IteratorType >
@@ -8557,7 +8557,7 @@ inline void* enqueueMapBuffer(
 }
 
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 /**
  * Enqueues to the default queue a command that will allow the host to
  * update a region of a coarse-grained SVM buffer.
@@ -8629,7 +8629,7 @@ inline cl_int enqueueMapSVM(
         container, blocking, flags, events, event);
 }
 
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
 inline cl_int enqueueUnmapMemObject(
     const Memory& memory,
@@ -8659,7 +8659,7 @@ inline cl_int enqueueUnmapMemObject(
     return err;
 }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 /**
  * Enqueues to the default queue a command that will release a coarse-grained
  * SVM buffer back to the OpenCL runtime.
@@ -8724,7 +8724,7 @@ inline cl_int enqueueUnmapSVM(
         __ENQUEUE_UNMAP_MEM_OBJECT_ERR);
 }
 
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
 inline cl_int enqueueCopyBuffer(
         const Buffer& src,
@@ -8848,7 +8848,7 @@ inline cl_int copy( const CommandQueue &queue, const cl::Buffer &buffer, Iterato
 }
 
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
 /**
  * Blocking SVM map operation - performs a blocking map underneath.
  */
@@ -8867,9 +8867,9 @@ inline cl_int unmapSVM(cl::vector<T, Alloc> &container)
     return enqueueUnmapSVM(container);
 }
 
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 110
+#if CL_HPP_TARGET_OPENCL_VERSION >= 110
 inline cl_int enqueueReadBufferRect(
     const Buffer& buffer,
     cl_bool blocking,
@@ -8975,7 +8975,7 @@ inline cl_int enqueueCopyBufferRect(
         events,
         event);
 }
-#endif // CL_HPP_TARNewOperationENCL_VERSION >= 110
+#endif // CL_HPP_TARGET_OPENCL_VERSION >= 110
 
 inline cl_int enqueueReadImage(
     const Image& image,
@@ -9418,7 +9418,7 @@ public:
         return event;
     }
 
-#if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#if CL_HPP_TARGET_OPENCL_VERSION >= 200
     cl_int setSVMPointers(const vector<void*> &pointerList)
     {
         return kernel_.setSVMPointers(pointerList);
@@ -9429,7 +9429,7 @@ public:
     {
         return kernel_.setSVMPointers(t0, ts...);
     }
-#endif // #if CL_HPP_TARNewOperationENCL_VERSION >= 200
+#endif // #if CL_HPP_TARGET_OPENCL_VERSION >= 200
 
     Kernel getKernel()
     {

@@ -33,7 +33,7 @@ An operation operates at a certain frequency, which can be set after *registerin
 
 ## Registering an operation
 
-Operations are stored in an `OperationRegistry` in BioDynaMo.
+Operations are stored in the `OperationRegistry` in BioDynaMo.
 Any new operation that you wish to add to BioDynaMo needs to be registered before it can be used.
 Let's use the displacement operation as an example to see how this works.
 
@@ -57,7 +57,6 @@ struct DisplacementOp : public OperationImpl {
   // Required data member for registration
   static bool registered_;
 }
-
 ```
 
 ```cpp
@@ -70,7 +69,6 @@ struct DisplacementOp : public OperationImpl {
 // the name "displacement". Since this operation is targeted to run 
 // on a CPU, we specify "kCpu"
 REGISTER_OP(DisplacementOp, "displacement", kCpu);
-
 ```
 
 Here the link for the complete API documentation for [Operation](/bioapi/structbdm_1_1Operation.html)
