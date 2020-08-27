@@ -14,7 +14,7 @@ struct OperationRegistry {
   /// Singleton class - returns the static instance
   static OperationRegistry *GetInstance();
 
-  /// @brief      Gets the operation
+  /// Gets the operation
   ///
   /// @param[in]  op_name  The operation's name
   ///
@@ -22,7 +22,7 @@ struct OperationRegistry {
   ///
   Operation *GetOperation(const std::string &op_name);
 
-  /// @brief      Adds an operation implementation to the registry
+  /// Adds an operation implementation to the registry
   ///
   /// @param[in]  op_name    The operation's name
   /// @param[in]  target     The compute target
@@ -46,18 +46,14 @@ struct OperationRegistry {
 /// A convenient macro to register a new operation implemented. To be used as:
 /// BDM_REGISTER_OP(MyOp, "my operation", kCpu)
 /// MyOp is required to have member: `static bool registered_`
-#define BDM_REGISTER_OP(op, name, target)                                        \
+#define BDM_REGISTER_OP(op, name, target)                                    \
   bool op::registered_ = OperationRegistry::GetInstance()->AddOperationImpl( \
       name, OpComputeTarget::target, new op());
 
-/// A convenient macro to retrieve an operation from the registry by its name
-#define NewOperation(name) OperationRegistry::GetInstance()->GetOperation(name)->Clone()
-
-// /// A convenient function to get a new operation from the registry by its name
-// inline Operation *GetNewOperation(const std::string &name) {
-//   return OperationRegistry::GetInstance()->GetOperation(name)->Clone();
-// }
-
+/// A convenient function to get a new operation from the registry by its name
+inline Operation *NewOperation(const std::string &name) {
+  return OperationRegistry::GetInstance()->GetOperation(name)->Clone();
+}
 
 }  // namespace bdm
 

@@ -20,6 +20,7 @@
 #include "core/operation/diffusion_op.h"
 #include "core/operation/displacement_op.h"
 #include "core/operation/op_timer.h"
+#include "core/operation/operation_registry.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
