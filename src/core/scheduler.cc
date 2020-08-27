@@ -354,7 +354,7 @@ void Scheduler::ScheduleOps() {
     for (auto it2 = scheduled_column_wise_ops_.begin();
          it2 != scheduled_column_wise_ops_.end(); ++it2) {
       if (op == (*it2)) {
-        // Delete the cloned operation
+        // Add to list of unscheduled operations
         unscheduled_ops_.push_back(op);
         it2 = scheduled_column_wise_ops_.erase(it2);
         goto label;
