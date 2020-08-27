@@ -300,8 +300,6 @@ struct ForEachNeighborWithinRadiusFunctor
     if (param->cache_neighbors_) {
       neighbor_cache_.push_back(std::make_pair(so, squared_distance));
     }
-    // std::cout << "squared_distance = " << squared_distance
-    //           << " | squared_radius_ = " << squared_radius_ << std::endl;
     if (squared_distance < squared_radius_) {
       function_(so, 0);
     }

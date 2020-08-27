@@ -8,20 +8,20 @@
 
 namespace bdm {
 
-REGISTER_OP(BoundSpace, "bound space", kCpu);
+BDM_REGISTER_OP(BoundSpace, "bound space", kCpu);
 
-REGISTER_OP(DiffusionOp, "diffusion", kCpu);
+BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
 
-REGISTER_OP(DisplacementOp, "displacement", kCpu);
+BDM_REGISTER_OP(DisplacementOp, "displacement", kCpu);
 
 #ifdef USE_CUDA
-REGISTER_OP(DisplacementOpCuda, "displacement", kCuda);
+BDM_REGISTER_OP(DisplacementOpCuda, "displacement", kCuda);
 #endif
 
-REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
+BDM_REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
-REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCl);
+BDM_REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCl);
 #endif
 
 }  // namespace bdm

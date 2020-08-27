@@ -45,8 +45,6 @@ TEST(DisplacementOpTest, ComputeNew) {
 
   // Create operation
   auto* displacement_op = NewOperation("displacement");
-  // Reset the state of the DisplacementOp (needs to be done in gtests)
-  displacement_op->GetImplementation<DisplacementOp>()->TearDown();
 
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();

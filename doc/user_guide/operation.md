@@ -68,7 +68,7 @@ struct DisplacementOp : public OperationImpl {
 // This registers our DisplacementOp in the OperationRegistry under 
 // the name "displacement". Since this operation is targeted to run 
 // on a CPU, we specify "kCpu"
-REGISTER_OP(DisplacementOp, "displacement", kCpu);
+BDM_REGISTER_OP(DisplacementOp, "displacement", kCpu);
 ```
 
 Here the link for the complete API documentation for [Operation](/bioapi/structbdm_1_1Operation.html)
@@ -97,7 +97,7 @@ simulation.Simulate(10);
 ```
 
 Once you schedule your operation with `Scheduler::ScheduleOp` you are not longer responsible for the memory management; the scheduler will take care of that.
-If you do not schedule your operation, you should free the create operation to avoid memory leaks. In the above example it would be `delete displacement_op`.
+If you do not schedule your operation, you should free the created operation to avoid memory leaks. In the above example it would be `delete displacement_op`.
 
 ## Schedule multiple operations with the same name
 
@@ -120,7 +120,10 @@ struct CheckDiameter : public OperationImpl {
 
   // The state consists of these two data members
   double threshold_ = 0;
-  uint32_t counter_ = 0;
+  // Data members that can be changed in `operator()(SimObject* 
+  // sim_object)` need to be of atomic type to avoid race 
+  // conditions
+  std::atomic<uint32_t> counter_ = 0;
   
  private:
   static bool registered_;
@@ -134,7 +137,7 @@ struct CheckDiameter : public OperationImpl {
 #include "core/operation/operation.h"
 #include "check_diameter.h"
 
-REGISTER_OP(CheckDiameter, "check_diameter", kCpu);
+BDM_REGISTER_OP(CheckDiameter, "check_diameter", kCpu);
 
 ```
 
@@ -154,7 +157,7 @@ check_diameter20->GetImplementation<CheckDiameter>()->threshold_ = 20;
 scheduler->ScheduleOp(query_op10);
 scheduler->ScheduleOp(query_op20);
 
-// Now your simulation will 
+// Now your simulation will run both operations at each timestep
 simulation.Simulate(1);
 ```
 

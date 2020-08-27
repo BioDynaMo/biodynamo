@@ -103,7 +103,7 @@ struct TestOp : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(TestOp, "test_op", kCpu)
+BDM_REGISTER_OP(TestOp, "test_op", kCpu)
 
 TEST(SchedulerTest, OperationManagement) {
   Simulation simulation(TEST_NAME);
@@ -153,7 +153,7 @@ struct CpuOp : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(CpuOp, "cpu_op", kCpu)
+BDM_REGISTER_OP(CpuOp, "cpu_op", kCpu)
 
 struct CudaOp : public OperationImplGpu {
   CudaOp* Clone() override { return new CudaOp(*this); }
@@ -163,7 +163,7 @@ struct CudaOp : public OperationImplGpu {
   static bool registered_;
 };
 
-REGISTER_OP(CudaOp, "cuda_op", kCuda)
+BDM_REGISTER_OP(CudaOp, "cuda_op", kCuda)
 
 struct OpenClOp : public OperationImplGpu {
   OpenClOp* Clone() override { return new OpenClOp(*this); }
@@ -173,7 +173,7 @@ struct OpenClOp : public OperationImplGpu {
   static bool registered_;
 };
 
-REGISTER_OP(OpenClOp, "opencl_op", kOpenCl)
+BDM_REGISTER_OP(OpenClOp, "opencl_op", kOpenCl)
 
 struct MultiOp : public OperationImpl {
   MultiOp* Clone() override { return new MultiOp(*this); }
@@ -183,7 +183,7 @@ struct MultiOp : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(MultiOp, "multi_op", kCpu)
+BDM_REGISTER_OP(MultiOp, "multi_op", kCpu)
 
 struct MultiOpOpenCl : public OperationImplGpu {
   MultiOpOpenCl* Clone() override { return new MultiOpOpenCl(*this); }
@@ -193,7 +193,7 @@ struct MultiOpOpenCl : public OperationImplGpu {
   static bool registered_;
 };
 
-REGISTER_OP(MultiOpOpenCl, "multi_op", kOpenCl)
+BDM_REGISTER_OP(MultiOpOpenCl, "multi_op", kOpenCl)
 
 TEST(SchedulerTest, OperationImpl) {
   auto* cpu_op = NewOperation("cpu_op");
@@ -297,7 +297,7 @@ struct ComplexStateOp : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(ComplexStateOp, "complex_state_op", kCpu)
+BDM_REGISTER_OP(ComplexStateOp, "complex_state_op", kCpu)
 
 TEST(SchedulerTest, OperationCloning) {
   auto* op = NewOperation("complex_state_op");

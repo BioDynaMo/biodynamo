@@ -54,7 +54,7 @@ class DisplacementOpCuda : public OperationImplGpu {
 
   DisplacementOpCuda* Clone() override { return new DisplacementOpCuda(*this); }
 
-  void InitializeGpuData() override {
+  void Setup() override {
     auto* sim = Simulation::GetActive();
     auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
     auto* rm = sim->GetResourceManager();
@@ -155,7 +155,7 @@ class DisplacementOpCuda : public OperationImplGpu {
         i_->grid_dimensions.data(), i_->cell_movements.data()->data());
   }
 
-  void UpdateCpuData() override {
+  void TearDown() override {
     u_ = new UpdateCPUResults(&(i_->cell_movements), i_->offset);
     Simulation::GetActive()
         ->GetResourceManager()

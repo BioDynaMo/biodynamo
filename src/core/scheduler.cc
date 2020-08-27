@@ -39,7 +39,7 @@ struct FirstOp : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(FirstOp, "first op", kCpu);
+BDM_REGISTER_OP(FirstOp, "first op", kCpu);
 
 struct LastOp : public OperationImpl {
   LastOp* Clone() override { return new LastOp(*this); }
@@ -51,7 +51,7 @@ struct LastOp : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(LastOp, "last op", kCpu);
+BDM_REGISTER_OP(LastOp, "last op", kCpu);
 
 struct BiologyModuleOp : public OperationImpl {
   BiologyModuleOp* Clone() override { return new BiologyModuleOp(*this); }
@@ -61,7 +61,7 @@ struct BiologyModuleOp : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
+BDM_REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
 
 struct DiscretizationOp : public OperationImpl {
   DiscretizationOp* Clone() override { return new DiscretizationOp(*this); }
@@ -71,7 +71,7 @@ struct DiscretizationOp : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(DiscretizationOp, "discretization", kCpu);
+BDM_REGISTER_OP(DiscretizationOp, "discretization", kCpu);
 
 Scheduler::Scheduler() {
   auto* param = Simulation::GetActive()->GetParam();
@@ -118,7 +118,6 @@ Scheduler::~Scheduler() {
   if (param->statistics_) {
     std::cout << gStatistics << std::endl;
   }
-  // We do not delete operations here; we leave that to OperationRegistry
 }
 
 void Scheduler::Simulate(uint64_t steps) {

@@ -178,7 +178,7 @@ struct Op1 : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(Op1, "Op1", kCpu);
+BDM_REGISTER_OP(Op1, "Op1", kCpu);
 
 struct Op2 : public OperationImpl {
   bool* op1_called_;
@@ -198,7 +198,7 @@ struct Op2 : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(Op2, "Op2", kCpu);
+BDM_REGISTER_OP(Op2, "Op2", kCpu);
 
 TEST(InPlaceExecutionContext, Execute) {
   Simulation sim(TEST_NAME);
@@ -288,7 +288,7 @@ struct TestOperation : public OperationImpl {
   static bool registered_;
 };
 
-REGISTER_OP(TestOperation, "TestOperation", kCpu);
+BDM_REGISTER_OP(TestOperation, "TestOperation", kCpu);
 
 void RunInPlaceExecutionContextExecuteThreadSafety(
     Param::ThreadSafetyMechanism mechanism) {

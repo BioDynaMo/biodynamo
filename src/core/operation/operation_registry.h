@@ -44,9 +44,9 @@ struct OperationRegistry {
 };
 
 /// A convenient macro to register a new operation implemented. To be used as:
-/// REGISTER_OP(MyOp, "my operation", kCpu)
+/// BDM_REGISTER_OP(MyOp, "my operation", kCpu)
 /// MyOp is required to have member: `static bool registered_`
-#define REGISTER_OP(op, name, target)                                        \
+#define BDM_REGISTER_OP(op, name, target)                                        \
   bool op::registered_ = OperationRegistry::GetInstance()->AddOperationImpl( \
       name, OpComputeTarget::target, new op());
 

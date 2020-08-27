@@ -49,13 +49,9 @@ void Operation::operator()(SimObject *so) {
 }
 void Operation::operator()() {
   auto op_impl = implementations_[active_target_];
-  if (op_impl->IsGpuOperation()) {
-    static_cast<OperationImplGpu *>(op_impl)->InitializeGpuData();
-  }
+  op_impl->Setup();
   (*op_impl)();
-  if (op_impl->IsGpuOperation()) {
-    static_cast<OperationImplGpu *>(op_impl)->UpdateCpuData();
-  }
+  op_impl->TearDown();
 }
 
 void Operation::AddOperationImpl(OpComputeTarget target, OperationImpl *impl) {
