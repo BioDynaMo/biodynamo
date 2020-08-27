@@ -28,7 +28,7 @@ jobs:
         fi
     
     - name: Install BioDynaMo
-      shell: zsh
+      shell: zsh {0}
       run: |
         brew update
         brew install curl
@@ -47,7 +47,7 @@ jobs:
         echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
 
     - name: Build BioDynaMo
-      shell: zsh
+      shell: zsh {0}
       run: |
         cmake \
           -Dopencl=OFF \
@@ -57,7 +57,7 @@ jobs:
         cmake --build build --parallel --config Release
 
     - name: System tests BioDynaMo
-      shell: zsh
+      shell: zsh {0}
       working-directory: build
       run: |
         . $INSTALL_DIR/bin/thisbdm.sh
