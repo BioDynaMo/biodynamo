@@ -179,6 +179,26 @@ _source_thisbdm()
      fi
   fi
 
+  # Clear the env from previously set PyEnv paths.
+  if [ -n "${old_bdmsys}" ] ; then
+    if [ -n "${PATH}" ]; then
+      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/bin"
+      PATH=$_newpath
+      if [ -n "${PYTHONUSERBASE}" ]; then
+        _drop_bdm_from_path "$PATH" "$PYTHONUSERBASE/.local/bin"
+      else
+        _drop_bdm_from_path "$PATH" "$HOME/.local/bin"
+      fi
+      PATH=$_newpath
+    fi
+
+    if [ -n "${LD_LIBRARY_PATH}" ]; then
+      _drop_bdm_from_path "$LD_LIBRARY_PATH" "$PYENV_ROOT/versions/$PYENV_VERSION/lib"
+      LD_LIBRARY_PATH=$_newpath
+    fi
+  fi
+
+  # Clear the env from previously set ParaView and Qt paths.
   if [ -n "${old_bdmsys_base}" ]; then
      if [ -n "${ParaView_DIR}" ]; then
       _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys_base}/third_party/paraview/lib/cmake/paraview-5.8"
