@@ -58,13 +58,6 @@ jobs:
         . bin/thisbdm.sh
         ninja run-unit-tests
 
-    - name: (zsh) Unit tests BioDynaMo
-      shell: zsh {0}
-      working-directory: build
-      run: |
-        . bin/thisbdm.sh
-        ninja run-unit-tests
-
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
       with:
