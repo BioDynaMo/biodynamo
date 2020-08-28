@@ -53,16 +53,16 @@ class DiffusionOp {
       }
       if (param->diffusion_type_ == "RK") {
         if (param->leaking_edges_) {
-          dg->RKLeaking();
+          dg->DiffuseWithLeakingEdge();
         } else {
-          dg->RK();
+          dg->Diffuse();
         }
 
       } else {
         if (param->leaking_edges_) {
-          dg->DiffuseEulerLeakingEdge();
+          dg->DiffuseWithLeakingEdge();
         } else {
-          dg->DiffuseEuler();
+          dg->Diffuse();
         }
       }
       if (param->calculate_gradients_) {

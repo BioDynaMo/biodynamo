@@ -153,7 +153,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 TEST(DiffusionTest, LeakingEdge) {
   Simulation simulation(TEST_NAME);
 
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
+  AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
   int rbound = 100;
@@ -217,7 +217,7 @@ TEST(DiffusionTest, LeakingEdge) {
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, ClosedEdge) {
   Simulation simulation(TEST_NAME);
- DiffusionGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0.0, 5);
+ AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0.0, 5);
 
   int lbound = -100;
   int rbound = 100;
@@ -281,7 +281,7 @@ TEST(DiffusionTest, ClosedEdge) {
 // after the env has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
   Simulation simulation(TEST_NAME);
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
+  AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
   int rbound = 100;
