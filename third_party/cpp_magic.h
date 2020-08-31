@@ -36,8 +36,8 @@
  * recursion in macros such as FOR.
  *
  *   #define A(x) x+1
- *   #define EMPTY
- *   #define NOT_QUITE_RIGHT(x) A EMPTY (x)
+ *   #define M_EMPTY
+ *   #define NOT_QUITE_RIGHT(x) A M_EMPTY (x)
  *   NOT_QUITE_RIGHT(999)
  *
  * Here's what happens inside the C preprocessor:
@@ -46,10 +46,10 @@
  *    pass on its arguments. Since the argument is "999" and this isn't a macro,
  *    this is a boring step resulting in no change.
  * 2. The NOT_QUITE_RIGHT macro is substituted for its definition giving "A
- *    EMPTY() (x)".
+ *    M_EMPTY() (x)".
  * 3. The expander moves from left-to-right trying to expand the macro:
  *    The first token, A, cannot be expanded since there are no brackets
- *    immediately following it. The second token EMPTY(), however, can be
+ *    immediately following it. The second token M_EMPTY(), however, can be
  *    expanded (recursively in this manner) and is replaced with "".
  * 4. Expansion continues from the start of the substituted test (which in this
  *    case is just empty), and sees "(999)" but since no macro name is present,
@@ -89,14 +89,14 @@
 
 
 /**
- * Macros which expand to common values
+ * Macros which expand to common values (M_ for Magic, to make them less trivial)
  */
-#define PASS(...) __VA_ARGS__
-#define EMPTY()
-#define COMMA() ,
-#define PLUS() +
-#define ZERO() 0
-#define ONE() 1
+#define M_PASS(...) __VA_ARGS__
+#define M_EMPTY()
+#define M_COMMA() ,
+#define M_PLUS() +
+#define M_ZERO() 0
+#define M_ONE() 1
 
 /**
  * Causes a function-style macro to require an additional pass to be expanded.
@@ -114,15 +114,15 @@
  * 1. When DEFER1 is expanded, first its arguments are expanded which are
  *    simply IN_NEXT_PASS. Since this is a function-style macro and it has no
  *    arguments, nothing will happen.
- * 2. The body of DEFER1 will now be expanded resulting in EMPTY() being
+ * 2. The body of DEFER1 will now be expanded resulting in M_EMPTY() being
  *    deleted. This results in "IN_NEXT_PASS (args, to, the macro)". Note that
  *    since the macro expander has already passed IN_NEXT_PASS by the time it
- *    expands EMPTY() and so it won't spot that the brackets which remain can be
+ *    expands M_EMPTY() and so it won't spot that the brackets which remain can be
  *    applied to IN_NEXT_PASS.
  * 3. At this point the macro expansion completes. If one more pass is made,
  *    IN_NEXT_PASS(args, to, the, macro) will be expanded as desired.
  */
-#define DEFER1(id) id EMPTY()
+#define DEFER1(id) id M_EMPTY()
 
 /**
  * As with DEFER1 except here n additional passes are required for DEFERn.
@@ -132,13 +132,13 @@
  * Note that there doesn't appear to be a way of combining DEFERn macros in
  * order to achieve exponentially increasing defers e.g. as is done by EVAL.
  */
-#define DEFER2(id) id EMPTY EMPTY()()
-#define DEFER3(id) id EMPTY EMPTY EMPTY()()()
-#define DEFER4(id) id EMPTY EMPTY EMPTY EMPTY()()()()
-#define DEFER5(id) id EMPTY EMPTY EMPTY EMPTY EMPTY()()()()()
-#define DEFER6(id) id EMPTY EMPTY EMPTY EMPTY EMPTY EMPTY()()()()()()
-#define DEFER7(id) id EMPTY EMPTY EMPTY EMPTY EMPTY EMPTY EMPTY()()()()()()()
-#define DEFER8(id) id EMPTY EMPTY EMPTY EMPTY EMPTY EMPTY EMPTY EMPTY()()()()()()()()
+#define DEFER2(id) id M_EMPTY M_EMPTY()()
+#define DEFER3(id) id M_EMPTY M_EMPTY M_EMPTY()()()
+#define DEFER4(id) id M_EMPTY M_EMPTY M_EMPTY M_EMPTY()()()()
+#define DEFER5(id) id M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY()()()()()
+#define DEFER6(id) id M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY()()()()()()
+#define DEFER7(id) id M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY()()()()()()()
+#define DEFER8(id) id M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY M_EMPTY()()()()()()()()
 
 
 /**
@@ -275,8 +275,8 @@
  * Example Usage:
  *
  *   #define MAKE_HAPPY(x) happy_##x
- *   #define COMMA() ,
- *   MAP(MAKE_HAPPY, COMMA, 1,2,3)
+ *   #define M_COMMA() ,
+ *   MAP(MAKE_HAPPY, M_COMMA, 1,2,3)
  *
  * Which expands to:
  *
@@ -295,7 +295,7 @@
  * 5. Since the IF is followed by a set of brackets containing the "if true"
  *    clause, these become the argument to _IF_0 or _IF_1. At this point, the
  *    macro in the brackets will be expanded giving the separator followed by
- *    _MAP_INNER EMPTY()()(op, sep, __VA_ARGS__).
+ *    _MAP_INNER M_EMPTY()()(op, sep, __VA_ARGS__).
  * 5. If the IF was not taken, the above will simply be discarded and everything
  *    stops. If the IF is taken, The expression is then processed a second time
  *    yielding "_MAP_INNER()(op, sep, __VA_ARGS__)". Note that this call looks
@@ -353,7 +353,7 @@
  * Example:
  *
  *   #define MAKE_STATIC_VAR(type, name) static type name;
- *   MAP_WITH_ID(MAKE_STATIC_VAR, EMPTY, int, int, int, bool, char)
+ *   MAP_WITH_ID(MAKE_STATIC_VAR, M_EMPTY, int, int, int, bool, char)
  *
  * Which expands to:
  *
@@ -383,7 +383,7 @@
  * Example:
  *
  *   #define MAKE_STATIC_VAR(type, name) static type name;
- *   MAP_PAIRS(MAKE_STATIC_VAR, EMPTY, char, my_char, int, my_int)
+ *   MAP_PAIRS(MAKE_STATIC_VAR, M_EMPTY, char, my_char, int, my_int)
  *
  * Which expands to:
  *
@@ -417,7 +417,7 @@
  *   #define SIMON_SAYS_LAST_OP(val) last_but_not_least_##val
  *   #define SIMON_SAYS() 0
  *
- *   MAP_SLIDE(SIMON_SAYS_OP, SIMON_SAYS_LAST_OP, EMPTY, wiggle, SIMON_SAYS, dance, move, SIMON_SAYS, boogie, stop)
+ *   MAP_SLIDE(SIMON_SAYS_OP, SIMON_SAYS_LAST_OP, M_EMPTY, wiggle, SIMON_SAYS, dance, move, SIMON_SAYS, boogie, stop)
  *
  * Which expands to:
  *
@@ -440,7 +440,7 @@
  * Strip any excess commas from a set of arguments.
  */
 #define REMOVE_TRAILING_COMMAS(...) \
-	MAP(PASS, COMMA, __VA_ARGS__)
+	MAP(M_PASS, M_COMMA, __VA_ARGS__)
 
 
 #endif
