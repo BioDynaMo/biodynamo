@@ -55,6 +55,15 @@ inline Operation *NewOperation(const std::string &name) {
   return OperationRegistry::GetInstance()->GetOperation(name)->Clone();
 }
 
+/// A convenient macro to hide some of the boilerplate code from the user in
+/// implementing new operations.
+#define BDM_OP_HEADER(class_name) \
+ private:                         \
+  static bool registered_;        \
+                                  \
+ public:                          \
+  class_name *Clone() override { return new class_name(*this); }
+
 }  // namespace bdm
 
 #endif  // CORE_OPERATION_OPERATION_REGISTRY_H_

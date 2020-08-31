@@ -33,43 +33,35 @@
 namespace bdm {
 
 struct FirstOp : public OperationImpl {
-  FirstOp* Clone() override { return new FirstOp(*this); }
-  void operator()(SimObject* so) override { so->UpdateRunDisplacement(); }
+  BDM_OP_HEADER(FirstOp);
 
- private:
-  static bool registered_;
+  void operator()(SimObject* so) override { so->UpdateRunDisplacement(); }
 };
 
 BDM_REGISTER_OP(FirstOp, "first op", kCpu);
 
 struct LastOp : public OperationImpl {
-  LastOp* Clone() override { return new LastOp(*this); }
+  BDM_OP_HEADER(LastOp);
+
   void operator()(SimObject* so) override {
     so->ApplyRunDisplacementForAllNextTs();
   }
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(LastOp, "last op", kCpu);
 
 struct BiologyModuleOp : public OperationImpl {
-  BiologyModuleOp* Clone() override { return new BiologyModuleOp(*this); }
-  void operator()(SimObject* so) override { so->RunBiologyModules(); }
+  BDM_OP_HEADER(BiologyModuleOp);
 
- private:
-  static bool registered_;
+  void operator()(SimObject* so) override { so->RunBiologyModules(); }
 };
 
 BDM_REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
 
 struct DiscretizationOp : public OperationImpl {
-  DiscretizationOp* Clone() override { return new DiscretizationOp(*this); }
-  void operator()(SimObject* so) override { so->RunDiscretization(); }
+  BDM_OP_HEADER(DiscretizationOp);
 
- private:
-  static bool registered_;
+  void operator()(SimObject* so) override { so->RunDiscretization(); }
 };
 
 BDM_REGISTER_OP(DiscretizationOp, "discretization", kCpu);

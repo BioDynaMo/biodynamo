@@ -45,12 +45,8 @@ inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
 
 /// Keeps the simulation objects contained within the bounds as defined in
 /// param.h
-class BoundSpace : public OperationImpl {
- public:
-  BoundSpace() {}
-  ~BoundSpace() {}
-
-  BoundSpace* Clone() override { return new BoundSpace(*this); }
+struct BoundSpace : public OperationImpl {
+  BDM_OP_HEADER(BoundSpace);
 
   void operator()(SimObject* sim_object) override {
     auto* param = Simulation::GetActive()->GetParam();
@@ -58,9 +54,6 @@ class BoundSpace : public OperationImpl {
       ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
     }
   }
-
- private:
-  static bool registered_;
 };
 
 }  // namespace bdm

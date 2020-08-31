@@ -43,17 +43,14 @@ inline void IsNonSphericalObjectPresent(const SimObject* so, bool* answer) {
 }
 
 /// Defines the 3D physical interactions between physical objects
-class DisplacementOpCuda : public OperationImplGpu {
+struct DisplacementOpCuda : public OperationImplGpu {
+  BDM_OP_HEADER(DisplacementOpCuda);
+
  private:
   struct InitializeGPUData;
   struct UpdateCPUResults;
 
  public:
-  DisplacementOpCuda() {}
-  ~DisplacementOpCuda() {}
-
-  DisplacementOpCuda* Clone() override { return new DisplacementOpCuda(*this); }
-
   void Setup() override {
     auto* sim = Simulation::GetActive();
     auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
@@ -168,7 +165,6 @@ class DisplacementOpCuda : public OperationImplGpu {
   UpdateCPUResults* u_ = nullptr;
   uint32_t num_boxes_ = 0;
   uint32_t total_num_objects_ = 0;
-  static bool registered_;
 
   struct UpdateCPUResults : public Functor<void, SimObject*, SoHandle> {
     std::vector<std::array<double, 3>>* cell_movements = nullptr;

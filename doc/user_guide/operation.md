@@ -44,18 +44,15 @@ The header file contains the logic of your operation, whereas the implementation
 // File: displacement_op.h (minimal version)
 
 struct DisplacementOp : public OperationImpl {
-  // You need to provide a Clone implementation
-  void Clone() override { return new DisplacementOp(*this); }
+  // This macro will generate the boilerplate code. It must be included.
+  BDM_OP_HEADER(DisplacementOp);
 
-  // This operator needs to be overridden
+  // Here you define you operation's logic. The `sim_object` pointer is a handle
+  // to each simulation object in your simulation
   void operator()(SimObject* sim_object) override {
-    // your logic here (the `sim_object` pointer is a handle to each 
-    // simulation object in your simulation)
+    // In the displacement operation we check the environment of `sim_object`,
+    // and apply a displacement force if there is a collision
   }
-
- private:
-  // Required data member for registration
-  static bool registered_;
 }
 ```
 
@@ -110,7 +107,7 @@ You could approach this the following way.
 
 // Create an operation implementation with a state
 struct CheckDiameter : public OperationImpl {
-  void Clone() override { return new CheckDiameter(*this); }
+  BDM_OP_HEADER(CheckDiameter);
   
   void operator()(SimObject* sim_object) override {
     if (sim_object->GetDiameter() > threshold_) {
@@ -121,12 +118,8 @@ struct CheckDiameter : public OperationImpl {
   // The state consists of these two data members
   double threshold_ = 0;
   // Data members that can be changed in `operator()(SimObject* 
-  // sim_object)` need to be of atomic type to avoid race 
-  // conditions
+  // sim_object)` need to be of atomic type to avoid race conditions
   std::atomic<uint32_t> counter_ = 0;
-  
- private:
-  static bool registered_;
 }
 
 ```

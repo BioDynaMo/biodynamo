@@ -161,10 +161,10 @@ TEST(InPlaceExecutionContext, NewAndGetSimObject) {
 }
 
 struct Op1 : public OperationImpl {
+  BDM_OP_HEADER(Op1);
+
   bool* op1_called_;
   bool* op2_called_;
-
-  Op1* Clone() override { return new Op1(*this); }
 
   void operator()(SimObject* so) override {
     // op1 must be  called first
@@ -173,18 +173,15 @@ struct Op1 : public OperationImpl {
     EXPECT_EQ(so->GetUid(), SoUid(0));
     *op1_called_ = true;
   }
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(Op1, "Op1", kCpu);
 
 struct Op2 : public OperationImpl {
+  BDM_OP_HEADER(Op2);
+
   bool* op1_called_;
   bool* op2_called_;
-
-  Op2* Clone() override { return new Op2(*this); }
 
   void operator()(SimObject* so) override {
     // op2 must be  called first
@@ -193,9 +190,6 @@ struct Op2 : public OperationImpl {
     EXPECT_EQ(so->GetUid(), SoUid(0));
     *op2_called_ = true;
   }
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(Op2, "Op2", kCpu);
@@ -221,7 +215,7 @@ TEST(InPlaceExecutionContext, Execute) {
 
   EXPECT_TRUE(op1_called);
   EXPECT_TRUE(op2_called);
-  
+
   delete op1;
   delete op2;
 }
@@ -266,9 +260,9 @@ struct TestFunctor2 : public Functor<void, SimObject*> {
 };
 
 struct TestOperation : public OperationImpl {
-  std::unordered_map<SoUid, uint64_t> num_neighbors;
+  BDM_OP_HEADER(TestOperation);
 
-  TestOperation* Clone() override { return new TestOperation(*this); }
+  std::unordered_map<SoUid, uint64_t> num_neighbors;
 
   void operator()(SimObject* so) override {
     auto d = so->GetDiameter();
@@ -283,9 +277,6 @@ struct TestOperation : public OperationImpl {
 #pragma omp critical
     num_neighbors[so->GetUid()] = nb_counter;
   }
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(TestOperation, "TestOperation", kCpu);

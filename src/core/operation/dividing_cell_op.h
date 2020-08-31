@@ -24,12 +24,8 @@
 
 namespace bdm {
 
-class DividingCellOp : public OperationImpl {
- public:
-  DividingCellOp() {}
-  virtual ~DividingCellOp() {}
-
-  DividingCellOp* Clone() override { return new DividingCellOp(*this); }
+struct DividingCellOp : public OperationImpl {
+  BDM_OP_HEADER(DividingCellOp);
 
   void operator()(SimObject* sim_object) override {
     if (Cell* cell = dynamic_cast<Cell*>(sim_object)) {
@@ -40,8 +36,6 @@ class DividingCellOp : public OperationImpl {
       }
     }
   }
- private:
-  static bool registered_;
 };
 
 }  // namespace bdm

@@ -34,8 +34,9 @@
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-class DisplacementOp : public OperationImpl {
- public:
+struct DisplacementOp : public OperationImpl {
+  BDM_OP_HEADER(DisplacementOp);
+
   DisplacementOp() {
     auto* tinfo = ThreadInfo::GetInstance();
     last_iteration_.resize(tinfo->GetMaxThreads(),
@@ -43,10 +44,6 @@ class DisplacementOp : public OperationImpl {
     last_time_run_.resize(tinfo->GetMaxThreads(), 0);
     delta_time_.resize(tinfo->GetMaxThreads(), 0);
   }
-
-  virtual ~DisplacementOp() {}
-
-  DisplacementOp* Clone() override { return new DisplacementOp(*this); }
 
   void operator()(SimObject* sim_object) override {
     auto* sim = Simulation::GetActive();
@@ -94,7 +91,6 @@ class DisplacementOp : public OperationImpl {
   std::vector<double> last_time_run_;
   std::vector<double> delta_time_;
   std::vector<uint64_t> last_iteration_;
-  static bool registered_;
 };
 
 }  // namespace bdm

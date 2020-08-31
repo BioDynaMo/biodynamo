@@ -32,14 +32,10 @@
 namespace bdm {
 
 /// A class that sets up diffusion grids of the substances in this simulation
-class DiffusionOp : public OperationImpl {
- public:
-  DiffusionOp() {}
-  virtual ~DiffusionOp() {}
+struct DiffusionOp : public OperationImpl {
+  BDM_OP_HEADER(DiffusionOp);
 
   bool IsRowWise() override { return false; }
-
-  DiffusionOp* Clone() override { return new DiffusionOp(*this); }
 
   void operator()() override {
     auto* sim = Simulation::GetActive();
@@ -77,9 +73,6 @@ class DiffusionOp : public OperationImpl {
       }
     });
   }
-
- private:
-  static bool registered_;
 };
 
 }  // namespace bdm

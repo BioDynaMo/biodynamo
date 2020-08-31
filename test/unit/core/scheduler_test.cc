@@ -95,12 +95,11 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
 }
 
 struct TestOp : public OperationImpl {
-  TestOp* Clone() override { return new TestOp(*this); }
-  void operator()(SimObject* so) override { counter++; }
-  uint64_t counter;
+  BDM_OP_HEADER(TestOp);
 
- private:
-  static bool registered_;
+  void operator()(SimObject* so) override { counter++; }
+
+  uint64_t counter;
 };
 
 BDM_REGISTER_OP(TestOp, "test_op", kCpu)
@@ -146,51 +145,36 @@ TEST(SchedulerTest, OperationManagement) {
 }
 
 struct CpuOp : public OperationImpl {
-  CpuOp* Clone() override { return new CpuOp(*this); }
+  BDM_OP_HEADER(CpuOp);
   void operator()(SimObject* so) override {}
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(CpuOp, "cpu_op", kCpu)
 
 struct CudaOp : public OperationImplGpu {
-  CudaOp* Clone() override { return new CudaOp(*this); }
+  BDM_OP_HEADER(CudaOp);
   void operator()() override {}
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(CudaOp, "cuda_op", kCuda)
 
 struct OpenClOp : public OperationImplGpu {
-  OpenClOp* Clone() override { return new OpenClOp(*this); }
+  BDM_OP_HEADER(OpenClOp);
   void operator()() override {}
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(OpenClOp, "opencl_op", kOpenCl)
 
 struct MultiOp : public OperationImpl {
-  MultiOp* Clone() override { return new MultiOp(*this); }
+  BDM_OP_HEADER(MultiOp);
   void operator()() override {}
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(MultiOp, "multi_op", kCpu)
 
 struct MultiOpOpenCl : public OperationImplGpu {
-  MultiOpOpenCl* Clone() override { return new MultiOpOpenCl(*this); }
+  BDM_OP_HEADER(MultiOpOpenCl);
   void operator()() override {}
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(MultiOpOpenCl, "multi_op", kOpenCl)
@@ -228,7 +212,6 @@ TEST(SchedulerTest, OperationImpl) {
   EXPECT_NE(multi_op->implementations_[kCpu], nullptr);
   EXPECT_EQ(multi_op->implementations_[kCuda], nullptr);
   EXPECT_NE(multi_op->implementations_[kOpenCl], nullptr);
-
 
   EXPECT_EQ(cpu_op->IsComputeTargetSupported(kCpu), true);
   EXPECT_EQ(cpu_op->IsComputeTargetSupported(kCuda), false);
@@ -276,25 +259,29 @@ TEST(SchedulerTest, OperationImpl) {
 }
 
 struct ComplexStateOp : public OperationImpl {
-  class A {};
-  ComplexStateOp* Clone() override {
-    auto* clone = new ComplexStateOp(*this);
+  BDM_OP_HEADER(ComplexStateOp);
+  class A {
+   public:
+    explicit A(int a) : a_(a) {}
 
+    int a_;
+  };
+
+  ComplexStateOp() {}
+
+  ComplexStateOp(const ComplexStateOp& other) {
     // Deep copy of vector
     int i = 0;
-    for (auto* a : a_vec_) {
-      clone->a_vec_[i] = new A(*a);
+    for (auto* a : other.a_vec_) {
+      this->a_vec_.push_back(new A(*a));
       i++;
     }
-    return clone;
+    b_ = other.b_;
   }
   void operator()(SimObject* so) override {}
 
   bool b_ = false;
   std::vector<A*> a_vec_;
-
- private:
-  static bool registered_;
 };
 
 BDM_REGISTER_OP(ComplexStateOp, "complex_state_op", kCpu)
@@ -306,8 +293,8 @@ TEST(SchedulerTest, OperationCloning) {
 
   auto* op_impl = op->GetImplementation<ComplexStateOp>();
   op_impl->b_ = true;
-  ComplexStateOp::A* a = new ComplexStateOp::A();
-  op_impl->a_vec_ = {a};
+  ComplexStateOp::A* a = new ComplexStateOp::A(42);
+  op_impl->a_vec_.push_back(a);
 
   auto* clone = op->Clone();
   auto* clone_impl = clone->GetImplementation<ComplexStateOp>();
@@ -316,6 +303,8 @@ TEST(SchedulerTest, OperationCloning) {
   EXPECT_EQ(clone->active_target_, kOpenCl);
   EXPECT_EQ(clone_impl->b_, true);
   EXPECT_NE(clone_impl->a_vec_[0], nullptr);
+  EXPECT_EQ(clone_impl->a_vec_[0]->a_, op_impl->a_vec_[0]->a_);
+  EXPECT_EQ(clone_impl->a_vec_[0]->a_, 42);
   // Since we do an explicit deep copy of the ComplexStateOp::a_vec_ vector, we
   // don't expect the same values here
   EXPECT_NE(clone_impl->a_vec_[0], a);
