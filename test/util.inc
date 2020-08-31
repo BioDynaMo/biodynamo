@@ -26,7 +26,7 @@ function run_cmake_simulation() {
   popd
 
   if [ "${SIM_RET_VAL}" != "0" ]; then
-    returm $SIM_RET_VAL
+    return $SIM_RET_VAL
   fi
 
   expected="Simulation completed successfully!"

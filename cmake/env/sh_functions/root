@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+root() {
+  "${BDM_ROOT_DIR}"/bin/root -l -e \
+  'cout << "Loading BioDynaMo into ROOT..." << endl; gROOT->LoadMacro("'"${BDMSYS}"'/etc/rootlogon.C");' "$@"
+}

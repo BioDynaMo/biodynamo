@@ -99,7 +99,7 @@ function CheckTypeInstallSupported {
   fi
 }
 
-# 
+#
 # Arguments:
 #   $1 installation type ("all" or "required")
 #   $2 path to biodynamo installation src folder (util/installation)
@@ -237,7 +237,18 @@ function CallOSSpecificScript {
   $BDM_SCRIPTPATH $BDM_SCRIPT_ARGUMENTS
 }
 
-# Return the bashrc file based on the current operating system
+# Return the zshrc file based on whether or not ZDOTDIR is defined
+function ZshrcFile {
+  local zshrc_file="${HOME}/.zshrc"
+  if [ -f "$zshrc_file" ]; then true
+  elif [ -f "${ZDOTDIR}/.zshrc" ]; then
+    zshrc_file="${ZDOTDIR}/.zshrc"
+  else
+    zshrc_file="<zshrc-file>"
+  fi
+  echo $zshrc_file
+}
+
 function BashrcFile {
   if [ `uname` = "Darwin" ]; then
     echo ~/.bash_profile
@@ -249,7 +260,7 @@ function BashrcFile {
   fi
 }
 
-# Print message that tells the user to reload the bash and source the environment.
+# Print message that tells the user to reload their shell and source the environment.
 # Arguments:
 #   $1 biodynamo install directory
 function EchoFinishThisStep {
@@ -258,11 +269,42 @@ function EchoFinishThisStep {
     exit 1
   fi
 
+  local extraStepStr="To avoid this extra step do:"
+  local haveExecStr="to have it executed automatically when starting a new shell."
+
   EchoInfo "Before running BioDynaMo execute:"
-  EchoInfo "   ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
-  EchoInfo "To avoid this extra step do:"
-  EchoInfo "   echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
-  EchoInfo "to have it executed automatically when starting a new shell."
+  case $SHELL in
+    *bash | *zsh)
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh [-q | --quiet]"
+      EchoInfo "$extraStepStr"
+      case $SHELL in
+        *bash) EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(BashrcFile)" ;;
+        *zsh)  EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(ZshrcFile)" ;;
+      esac
+      EchoInfo "$haveExecStr"
+    ;;
+    *fish)
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.fish"
+      EchoInfo "$extraStepStr"
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.fish -q\" >> ""$(fish -c 'echo $__fish_config_dir')"
+      EchoInfo "$haveExecStr"
+    ;;
+    *)
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.<sh|fish> [-q | --quiet]"
+      echo
+      EchoWarning "We could not detect your default shell."
+      EchoWarning "BioDynaMo currently supports the following shells:"
+      EchoWarning "   ${BDM_ECHO_UNDERLINE}bash, zsh, and fish."
+      return
+    ;;
+  esac
+  echo
+  EchoInfo "The -q (or --quiet) flag will disable the prompt indicator, and will only report errors."
+  echo
+  EchoNewStep "NOTE: Your login shell appears to be '$SHELL'."
+  EchoNewStep "The instructions above are for this shell."
+  EchoNewStep "For other shells, or for more information, see:"
+  EchoNewStep "   ${BDM_ECHO_UNDERLINE}https://biodynamo.org/docs/userguide/first_steps/"
 }
 
 # This function prompts the user for the biodynamo installation directory
