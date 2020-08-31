@@ -156,7 +156,8 @@ class GpuHelper {
         Log::Error("FindGpuDevicesOpenCL", "No OpenCL platforms found");
       }
 
-      // Go over all available platforms and devices until all compatible devices are found
+      // Go over all available platforms and devices until all compatible
+      // devices are found
       for (auto p = platform.begin(); p != platform.end(); p++) {
         std::vector<cl::Device> pldev;
 
@@ -169,7 +170,8 @@ class GpuHelper {
               continue;
 
             // Only select GPU's with double support
-            if (!d->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>())  // NOLINT
+            if (!d->getInfo<
+                    CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>())  // NOLINT
               continue;
 
             // The OpenCL extension available on this device
@@ -201,8 +203,8 @@ class GpuHelper {
       }
 
       int selected_gpu = param->preferred_gpu_;
-      Log::Info("", "Selected GPU [", selected_gpu, "]: ",
-                (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
+      Log::Info("", "Selected GPU [", selected_gpu,
+                "]: ", (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
 
       // Create command queue for that GPU
       cl_int queue_err;

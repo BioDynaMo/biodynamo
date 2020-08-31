@@ -16,10 +16,10 @@
 
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
-#include "core/simulation.h"
-#include "core/scheduler.h"
 #include "core/resource_manager.h"
+#include "core/scheduler.h"
 #include "core/sim_object/cell.h"
+#include "core/simulation.h"
 
 namespace bdm {
 

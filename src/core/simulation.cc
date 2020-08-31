@@ -56,15 +56,18 @@ Simulation::Simulation(TRootIOCtor* p) {}
 
 Simulation::Simulation(int argc, const char** argv,
                        const std::string& config_file)
-    : Simulation(argc, argv, [](auto* param) {}, config_file) {}
+    : Simulation(
+          argc, argv, [](auto* param) {}, config_file) {}
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::string& config_file)
-    : Simulation(simulation_name, [](auto* param) {}, config_file) {}
+    : Simulation(
+          simulation_name, [](auto* param) {}, config_file) {}
 
 Simulation::Simulation(CommandLineOptions* clo,
                        const std::string& config_file) {
-  Initialize(clo, [](auto* param) {}, config_file);
+  Initialize(
+      clo, [](auto* param) {}, config_file);
 }
 
 Simulation::Simulation(CommandLineOptions* clo,

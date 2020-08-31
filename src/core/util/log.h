@@ -121,7 +121,8 @@ class Log {
   }
 
   template <typename... Args>
-  static void Condition(const std::function<bool()>& lambda, const Args&... parts) {
+  static void Condition(const std::function<bool()>& lambda,
+                        const Args&... parts) {
     // kPrint has the highest level of verbosity
     if (lambda()) {
       std::string message = Concat(parts...);

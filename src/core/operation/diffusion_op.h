@@ -22,7 +22,6 @@
 #include "core/container/inline_vector.h"
 #include "core/diffusion_grid.h"
 #include "core/environment/environment.h"
-#include "core/environment/environment.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/param/param.h"

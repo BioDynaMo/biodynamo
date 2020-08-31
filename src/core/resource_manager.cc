@@ -43,14 +43,14 @@ template <typename TFunctor>
 struct ApplyOnAllElementsParallelFunctor
     : public Functor<void, SimObject*, SoHandle> {
   TFunctor& functor_;
-  ApplyOnAllElementsParallelFunctor(TFunctor& f)
-      : functor_(f) {}
+  ApplyOnAllElementsParallelFunctor(TFunctor& f) : functor_(f) {}
   void operator()(SimObject* so, SoHandle) { functor_(so); }
 };
 
 void ResourceManager::ApplyOnAllElementsParallel(
     Functor<void, SimObject*>& function) {
-  ApplyOnAllElementsParallelFunctor<Functor<void, SimObject*>> functor(function);
+  ApplyOnAllElementsParallelFunctor<Functor<void, SimObject*>> functor(
+      function);
   ApplyOnAllElementsParallel(functor);
 }
 
