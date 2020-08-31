@@ -215,6 +215,8 @@ void Scheduler::Execute() {
   auto* sim = Simulation::GetActive();
   auto* env = sim->GetEnvironment();
 
+  ScheduleOps();
+
   Timing::Time("Set up exec context", [&]() {
     const auto& all_exec_ctxts = sim->GetAllExecCtxts();
     all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
