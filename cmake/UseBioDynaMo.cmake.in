@@ -30,7 +30,7 @@ endforeach()
 # of source build can find them
 get_filename_component(CMAKE_DIR ${BDM_USE_FILE} DIRECTORY)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_DIR})
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_INSTALL_DIR}/biodynamo/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDMSYS}/biodynamo/cmake/")
 
 # Add utils and other methods needed
 include(utils)

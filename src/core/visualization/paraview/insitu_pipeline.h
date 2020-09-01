@@ -64,10 +64,10 @@ class InSituPipeline : public vtkCPPipeline {
     plugin_manager_ = vtkSMPluginManager::New();
 #ifdef __APPLE__
     std::string plugin_path =
-        std::string(std::getenv("BDM_INSTALL_DIR")) +
+        std::string(std::getenv("BDMSYS")) +
         "/biodynamo/lib/pv_plugin/libBDMGlyphFilter.dylib";
 #else
-    std::string plugin_path = std::string(std::getenv("BDM_INSTALL_DIR")) +
+    std::string plugin_path = std::string(std::getenv("BDMSYS")) +
                               "/biodynamo/lib/pv_plugin/libBDMGlyphFilter.so";
 #endif
     // Load custom plugin to enable cylinder glyph scaling

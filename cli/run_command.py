@@ -27,7 +27,7 @@ def RunCommand(args, debug=False):
     args_str = ' '.join(args)
     cmd = "./build/" + sim_name
     if platform.system() == 'Darwin':
-      launcher = os.environ['BDM_INSTALL_DIR'] + '/bin/launcher.sh'
+      launcher = os.environ['BDMSYS'] + '/bin/launcher.sh'
     else:
       launcher = ""
 

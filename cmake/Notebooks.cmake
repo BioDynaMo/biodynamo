@@ -33,10 +33,7 @@ function(GenerateNotebookTarget DEMO_NAME)
   set(DEMO_DIR ${PROJECT_SOURCE_DIR}/demo/${DEMO_NAME})
   set(SCRIPT   ${PROJECT_SOURCE_DIR}/util/demo_to_notebook.py)
   set(ENV{PYTHONPATH} "${ROOTSYS}/lib")
-  set(LAUNCHER)
-  if(NOT DEFINED "$ENV{BDM_INSTALL_DIR}" AND NOT DEFINED ENV{BDM_INSTALL_DIR})
-    set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
-  endif()
+  set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
   add_custom_target(notebook-${DEMO_NAME}
       COMMAND rm -rf ${DEST_DIR}
       COMMAND mkdir -p ${DEST_DIR}
