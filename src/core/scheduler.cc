@@ -32,40 +32,6 @@
 
 namespace bdm {
 
-struct FirstOp : public OperationImpl {
-  BDM_OP_HEADER(FirstOp);
-
-  void operator()(SimObject* so) override { so->UpdateRunDisplacement(); }
-};
-
-BDM_REGISTER_OP(FirstOp, "first op", kCpu);
-
-struct LastOp : public OperationImpl {
-  BDM_OP_HEADER(LastOp);
-
-  void operator()(SimObject* so) override {
-    so->ApplyRunDisplacementForAllNextTs();
-  }
-};
-
-BDM_REGISTER_OP(LastOp, "last op", kCpu);
-
-struct BiologyModuleOp : public OperationImpl {
-  BDM_OP_HEADER(BiologyModuleOp);
-
-  void operator()(SimObject* so) override { so->RunBiologyModules(); }
-};
-
-BDM_REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
-
-struct DiscretizationOp : public OperationImpl {
-  BDM_OP_HEADER(DiscretizationOp);
-
-  void operator()(SimObject* so) override { so->RunDiscretization(); }
-};
-
-BDM_REGISTER_OP(DiscretizationOp, "discretization", kCpu);
-
 Scheduler::Scheduler() {
   auto* param = Simulation::GetActive()->GetParam();
   backup_ = new SimulationBackup(param->backup_file_, param->restore_file_);
@@ -79,6 +45,7 @@ Scheduler::Scheduler() {
                   "displacement", "discretization", "diffusion",
                   "last op"};
 
+  // Schedule the default operations
   for (auto& def_op : default_ops_) {
     ScheduleOp(NewOperation(def_op));
   }
