@@ -46,6 +46,29 @@ jobs:
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
       if: github.event_name == 'schedule' 
 
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Install prerequisites
+      run: |
+        yum install -y sudo
+        SILENT_INSTALL=1 ./prerequisites.sh all
+      if: github.event_name == 'pull_request' 
+
+    - name: Set INSTALL_DIR
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "::set-env name=INSTALL_DIR::${GITHUB_WORKSPACE}/build"
+        fi
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          VERSION=`git describe --tags`
+          REGEX='[^-]*'
+          [[ $VERSION =~ $REGEX ]]
+          echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
+        fi
+
     - name: Cache pyenv
       uses: actions/cache@v2
       id: pyenv-cache
@@ -62,34 +85,12 @@ jobs:
         PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
         pyenv shell 3.8.0
 
-    - name: Checkout BioDynaMo
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
 
     - name: Cache Third Party Packages
       uses: actions/cache@v2
       with:
         path: build/third_party
         key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
-
-    - name: Set INSTALL_DIR
-      run: |
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          echo "::set-env name=INSTALL_DIR::${GITHUB_WORKSPACE}/build"
-        fi
-        if [ "${{ github.event_name }}" = "schedule" ]; then
-          VERSION=`git describe --tags`
-          REGEX='[^-]*'
-          [[ $VERSION =~ $REGEX ]]
-          echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
-        fi
-
-    - name: Install prerequisites (on pull request)
-      run: |
-        yum install -y sudo
-        ./prerequisites.sh all
-      if: github.event_name == 'pull_request' 
 
     - name: Build BioDynaMo
       shell: bash
