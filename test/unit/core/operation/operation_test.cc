@@ -23,14 +23,12 @@
 
 namespace bdm {
 
-struct OperationTestOp : public OperationImpl {
-  void Setup() override { setup_counter_++; }
+struct OperationTestOp : public StandaloneOperationImpl {
+  void SetUp() override { setup_counter_++; }
 
   void operator()() override {}
 
   OperationTestOp* Clone() { return new OperationTestOp(); }
-
-  bool IsRowWise() override { return false; }
 
   void TearDown() override { teardown_counter_++; }
 

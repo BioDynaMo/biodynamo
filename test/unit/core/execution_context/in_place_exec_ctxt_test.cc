@@ -160,7 +160,7 @@ TEST(InPlaceExecutionContext, NewAndGetSimObject) {
   EXPECT_EQ(789, rm->GetSimObject(uid_1)->GetDiameter());
 }
 
-struct Op1 : public OperationImpl {
+struct Op1 : public SimObjectOperationImpl {
   BDM_OP_HEADER(Op1);
 
   bool* op1_called_;
@@ -177,7 +177,7 @@ struct Op1 : public OperationImpl {
 
 BDM_REGISTER_OP(Op1, "Op1", kCpu);
 
-struct Op2 : public OperationImpl {
+struct Op2 : public SimObjectOperationImpl {
   BDM_OP_HEADER(Op2);
 
   bool* op1_called_;
@@ -259,7 +259,7 @@ struct TestFunctor2 : public Functor<void, SimObject*> {
   }
 };
 
-struct TestOperation : public OperationImpl {
+struct TestOperation : public SimObjectOperationImpl {
   BDM_OP_HEADER(TestOperation);
 
   std::unordered_map<SoUid, uint64_t> num_neighbors;

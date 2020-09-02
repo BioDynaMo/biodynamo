@@ -40,56 +40,53 @@ inline std::string OpComputeTargetString(OpComputeTarget t) {
   }
 }
 
-/// Interface for implementing an operation
 struct OperationImpl {
   virtual ~OperationImpl() {}
 
   /// This function is run before the operator() call. It is useful to perform
   /// tasks such as data transfer from CPU -> GPU in GPU operations
-  virtual void Setup() {}
+  virtual void SetUp() {}
 
   /// This function is run after the operator() call. It is useful to perform
   /// tasks such as data transfer from GPU -> CPU in GPU operations
   virtual void TearDown() {}
 
+  virtual void operator()(SimObject *so) = 0;
+
+  virtual void operator()() = 0;
+
   /// Operation implementations can be cloned. This function should return a
   /// copy of the operation implementation
   virtual OperationImpl *Clone() = 0;
 
-  /// The operator that is run once per timestep for each simulation object
-  virtual void operator()(SimObject *so) {
-    Log::Fatal("OperationImpl::operator()(SimObject*)",
-               "Row-wise function operator not implemented");
-  }
-
-  /// The operator that is run once per timestep
-  virtual void operator()() {
-    Log::Fatal("OperationImpl::operator()()",
-               "Column-wise function operator not implemented");
-  }
-
   /// Returns whether or not this operation is supposed to run on a GPU
   bool IsGpuOperation() { return target_ == kCuda || target_ == kOpenCl; }
 
-  /// Returns whether or not this operations is run for all simulation objects
-  virtual bool IsRowWise() { return true; }
+  /// Returns whether or not this operations is a stand-alone operation
+  virtual bool IsStandalone() = 0;
 
   /// The target that this operation implementation is supposed to run on
   OpComputeTarget target_ = kCpu;
 };
 
-/// Interface for implementing an operation that should run on a GPU
-struct OperationImplGpu : public OperationImpl {
-  bool IsRowWise() override { return false; }
-
-  virtual ~OperationImplGpu() {}
-
-  /// GPU operations are not supposed to be executed for each simulation object,
-  /// so we override it here to avoid accidental implementations
-  void operator()(SimObject *so) override {
-    Log::Fatal("OperationImplGpu",
-               "GPU operations do not support this function operator");
+/// Interface for implementing an operation
+struct SimObjectOperationImpl : public OperationImpl {
+  void operator()() override {
+    Log::Fatal("SimObjectOperationImpl",
+               "SimObjectOperationImpl do not support this function operator");
   }
+
+  bool IsStandalone() override { return false; }
+};
+
+/// Interface for implementing an operation that should run on a GPU
+struct StandaloneOperationImpl : public OperationImpl {
+  void operator()(SimObject *so) override {
+    Log::Fatal("StandaloneOperationImpl",
+               "StandaloneOperationImpl do not support this function operator");
+  }
+
+  bool IsStandalone() override { return true; }
 };
 
 /// A BioDynaMo operation that is executed every `frequency_` timesteps. An
@@ -163,7 +160,15 @@ struct Operation {
   ///
   void SelectComputeTarget(OpComputeTarget target);
 
-  bool IsRowWise() { return implementations_[active_target_]->IsRowWise(); }
+  bool IsStandalone() {
+    return implementations_[active_target_]->IsStandalone();
+  }
+
+  /// Forwards call to implementation's Setup function
+  void SetUp();
+
+  /// Forwards call to implementation's TearDown function
+  void TearDown();
 
   /// Specifies how often this operation will be executed.\n
   /// 1: every timestep\n

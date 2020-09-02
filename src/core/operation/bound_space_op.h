@@ -45,7 +45,7 @@ inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
 
 /// Keeps the simulation objects contained within the bounds as defined in
 /// param.h
-struct BoundSpace : public OperationImpl {
+struct BoundSpace : public SimObjectOperationImpl {
   BDM_OP_HEADER(BoundSpace);
 
   void operator()(SimObject* sim_object) override {

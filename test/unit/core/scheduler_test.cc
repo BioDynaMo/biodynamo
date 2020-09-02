@@ -94,7 +94,7 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   EXPECT_FALSE(env->HasGrown());
 }
 
-struct TestOp : public OperationImpl {
+struct TestOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(TestOp);
 
   void operator()(SimObject* so) override { counter++; }
@@ -144,35 +144,35 @@ TEST(SchedulerTest, OperationManagement) {
   EXPECT_EQ(20u, op2_impl->counter);
 }
 
-struct CpuOp : public OperationImpl {
+struct CpuOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(CpuOp);
   void operator()(SimObject* so) override {}
 };
 
 BDM_REGISTER_OP(CpuOp, "cpu_op", kCpu)
 
-struct CudaOp : public OperationImplGpu {
+struct CudaOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(CudaOp);
   void operator()() override {}
 };
 
 BDM_REGISTER_OP(CudaOp, "cuda_op", kCuda)
 
-struct OpenClOp : public OperationImplGpu {
+struct OpenClOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(OpenClOp);
   void operator()() override {}
 };
 
 BDM_REGISTER_OP(OpenClOp, "opencl_op", kOpenCl)
 
-struct MultiOp : public OperationImpl {
+struct MultiOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(MultiOp);
   void operator()() override {}
 };
 
 BDM_REGISTER_OP(MultiOp, "multi_op", kCpu)
 
-struct MultiOpOpenCl : public OperationImplGpu {
+struct MultiOpOpenCl : public StandaloneOperationImpl {
   BDM_OP_HEADER(MultiOpOpenCl);
   void operator()() override {}
 };
@@ -239,11 +239,11 @@ TEST(SchedulerTest, OperationImpl) {
   EXPECT_EQ(multi_cpu_impl->IsGpuOperation(), false);
   EXPECT_EQ(multi_ocl_impl->IsGpuOperation(), true);
 
-  EXPECT_EQ(cpu_impl->IsRowWise(), true);
-  EXPECT_EQ(cuda_impl->IsRowWise(), false);
-  EXPECT_EQ(opencl_impl->IsRowWise(), false);
-  EXPECT_EQ(multi_cpu_impl->IsRowWise(), true);
-  EXPECT_EQ(multi_ocl_impl->IsRowWise(), false);
+  EXPECT_EQ(cpu_impl->IsStandalone(), false);
+  EXPECT_EQ(cuda_impl->IsStandalone(), true);
+  EXPECT_EQ(opencl_impl->IsStandalone(), true);
+  EXPECT_EQ(multi_cpu_impl->IsStandalone(), true);
+  EXPECT_EQ(multi_ocl_impl->IsStandalone(), true);
 
   // Try to obtain non-existing implementation
   auto* cpu_op2 = NewOperation("cpu_op");
@@ -258,7 +258,7 @@ TEST(SchedulerTest, OperationImpl) {
   delete multi_op;
 }
 
-struct ComplexStateOp : public OperationImpl {
+struct ComplexStateOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(ComplexStateOp);
   class A {
    public:

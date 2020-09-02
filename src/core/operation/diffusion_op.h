@@ -31,10 +31,8 @@
 namespace bdm {
 
 /// A class that sets up diffusion grids of the substances in this simulation
-struct DiffusionOp : public OperationImpl {
+struct DiffusionOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(DiffusionOp);
-
-  bool IsRowWise() override { return false; }
 
   void operator()() override {
     auto* sim = Simulation::GetActive();

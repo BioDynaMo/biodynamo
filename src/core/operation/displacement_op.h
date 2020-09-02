@@ -34,7 +34,7 @@
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-struct DisplacementOp : public OperationImpl {
+struct DisplacementOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(DisplacementOp);
 
   DisplacementOp() {
@@ -76,14 +76,6 @@ struct DisplacementOp : public OperationImpl {
     if (param->bound_space_) {
       ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
     }
-  }
-
-  void TearDown() override {
-    squared_radius_ = 0;
-    std::fill(last_time_run_.begin(), last_time_run_.end(), 0);
-    std::fill(delta_time_.begin(), delta_time_.end(), 0);
-    //
-    std::fill(last_iteration_.begin(), last_iteration_.end(), -1);
   }
 
  private:

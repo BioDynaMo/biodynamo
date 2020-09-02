@@ -24,7 +24,7 @@
 
 namespace bdm {
 
-struct DividingCellOp : public OperationImpl {
+struct DividingCellOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(DividingCellOp);
 
   void operator()(SimObject* sim_object) override {

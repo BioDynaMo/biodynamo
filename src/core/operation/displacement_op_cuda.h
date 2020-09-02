@@ -43,7 +43,7 @@ inline void IsNonSphericalObjectPresent(const SimObject* so, bool* answer) {
 }
 
 /// Defines the 3D physical interactions between physical objects
-struct DisplacementOpCuda : public OperationImplGpu {
+struct DisplacementOpCuda : public StandaloneOperationImpl {
   BDM_OP_HEADER(DisplacementOpCuda);
 
  private:
@@ -51,7 +51,7 @@ struct DisplacementOpCuda : public OperationImplGpu {
   struct UpdateCPUResults;
 
  public:
-  void Setup() override {
+  void SetUp() override {
     auto* sim = Simulation::GetActive();
     auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
     auto* rm = sim->GetResourceManager();

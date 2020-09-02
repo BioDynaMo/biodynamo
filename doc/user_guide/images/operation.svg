@@ -102,12 +102,12 @@
     <text
        id="text857"
        y="72.990532"
-       x="117.33132"
+       x="115.74381"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-weight:bold;font-size:5.64444447px;stroke-width:0.26458332"
          y="72.990532"
-         x="117.33132"
+         x="115.74381"
          id="tspan855">DisplacementOpCuda</tspan></text>
     <flowRoot
        transform="scale(0.26458333)"
@@ -133,40 +133,40 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="117.31521"
+       x="116.25687"
        y="103.82726"
        id="text944"><tspan
-         x="117.31521"
+         x="116.25687"
          y="103.82726"
          style="font-size:5.64444447px;stroke-width:0.26458332"
          id="tspan942">Target: kCuda</tspan></text>
     <text
        id="text1075"
        y="85.111115"
-       x="28.33057"
+       x="23.038898"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:5.83847237px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="stroke-width:0.26458332"
          id="tspan1069"
          y="85.111115"
-         x="28.33057"><tspan
+         x="23.038898"><tspan
            id="tspan1065"
            style="font-size:5.64444447px;line-height:5.83847237px;stroke-width:0.26458332"
            y="85.111115"
-           x="28.33057">Inherits from:</tspan><tspan
+           x="23.038898">   Inherits from:</tspan><tspan
            id="tspan1067"
            style="font-size:5.64444447px;line-height:5.83847237px;stroke-width:0.26458332"
            y="85.111115"
-           x="66.496712"
+           x="61.20504"
            dx="0" /></tspan><tspan
          style="stroke-width:0.26458332"
          id="tspan1073"
          y="92.232536"
-         x="28.33057"><tspan
+         x="23.038898"><tspan
            id="tspan1071"
            style="font-size:5.64444447px;line-height:5.83847237px;stroke-width:0.26458332"
            y="92.232536"
-           x="28.33057">     OperationImpl</tspan></tspan></text>
+           x="23.038898">   SimObjectOperationImpl</tspan></tspan></text>
     <flowRoot
        transform="scale(0.26458333)"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
@@ -181,29 +181,29 @@
          id="flowPara962" /></flowRoot>    <text
        id="text1063"
        y="85.111115"
-       x="117.86586"
+       x="116.27837"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:5.83847237px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="stroke-width:0.26458332"
          id="tspan1057"
          y="85.111115"
-         x="117.86586"><tspan
+         x="116.27837"><tspan
            id="tspan1053"
            style="font-size:5.64444447px;line-height:5.83847237px;stroke-width:0.26458332"
            y="85.111115"
-           x="117.86586">Inherits from:</tspan><tspan
+           x="116.27837">Inherits from:</tspan><tspan
            id="tspan1055"
            style="font-size:5.64444447px;line-height:5.83847237px;stroke-width:0.26458332"
            y="85.111115"
-           x="156.03201"
+           x="154.44453"
            dx="0" /></tspan><tspan
          style="stroke-width:0.26458332"
          id="tspan1061"
          y="92.232536"
-         x="117.86586"><tspan
+         x="116.27837"><tspan
            id="tspan1059"
            style="font-size:5.64444447px;line-height:5.83847237px;stroke-width:0.26458332"
            y="92.232536"
-           x="117.86586">     OperationImplGpu</tspan></tspan></text>
+           x="116.27837">StandaloneOperationImpl</tspan></tspan></text>
   </g>
 </svg>

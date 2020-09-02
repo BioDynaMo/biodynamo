@@ -57,10 +57,10 @@ Scheduler::~Scheduler() {
   for (auto* op : unscheduled_ops_) {
     delete op;
   }
-  for (auto* op : scheduled_row_wise_ops_) {
+  for (auto* op : scheduled_sim_object_ops_) {
     delete op;
   }
-  for (auto* op : scheduled_column_wise_ops_) {
+  for (auto* op : scheduled_standalone_ops_) {
     delete op;
   }
   // Normally this list of ops is empty, but it can happen that an uninitialized
@@ -123,15 +123,15 @@ Operation* Scheduler::GetDefaultOp(const std::string& name) {
     return nullptr;
   }
 
-  for (auto it = scheduled_row_wise_ops_.begin();
-       it != scheduled_row_wise_ops_.end(); ++it) {
+  for (auto it = scheduled_sim_object_ops_.begin();
+       it != scheduled_sim_object_ops_.end(); ++it) {
     if ((*it)->name_ == name) {
       return *it;
     }
   }
 
-  for (auto it = scheduled_column_wise_ops_.begin();
-       it != scheduled_column_wise_ops_.end(); ++it) {
+  for (auto it = scheduled_standalone_ops_.begin();
+       it != scheduled_standalone_ops_.end(); ++it) {
     if ((*it)->name_ == name) {
       return *it;
     }
@@ -140,8 +140,8 @@ Operation* Scheduler::GetDefaultOp(const std::string& name) {
   return nullptr;
 }
 
-struct RunAllScheduldedOps : Functor<void, SimObject*, SoHandle> {
-  RunAllScheduldedOps(std::vector<Operation*>& scheduled_ops)
+struct RunAllScheduledOps : Functor<void, SimObject*, SoHandle> {
+  RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
     sim_ = Simulation::GetActive();
   }
@@ -154,6 +154,34 @@ struct RunAllScheduldedOps : Functor<void, SimObject*, SoHandle> {
   std::vector<Operation*>& scheduled_ops_;
 };
 
+void Scheduler::SetUpOps() {
+  for (auto* op : scheduled_sim_object_ops_) {
+    if (total_steps_ % op->frequency_ == 0) {
+      op->SetUp();
+    }
+  }
+
+  for (auto* op : scheduled_standalone_ops_) {
+    if (total_steps_ % op->frequency_ == 0) {
+      op->SetUp();
+    }
+  }
+}
+
+void Scheduler::TearDownOps() {
+  for (auto* op : scheduled_sim_object_ops_) {
+    if (total_steps_ % op->frequency_ == 0) {
+      op->TearDown();
+    }
+  }
+
+  for (auto* op : scheduled_standalone_ops_) {
+    if (total_steps_ % op->frequency_ == 0) {
+      op->TearDown();
+    }
+  }
+}
+
 void Scheduler::RunScheduledOps() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
@@ -162,16 +190,16 @@ void Scheduler::RunScheduledOps() {
 
   // Run the row-wise operations
   std::vector<Operation*> row_wise_operations;
-  for (auto* op : scheduled_row_wise_ops_) {
+  for (auto* op : scheduled_sim_object_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
       row_wise_operations.push_back(op);
     }
   }
-  RunAllScheduldedOps functor(row_wise_operations);
+  RunAllScheduledOps functor(row_wise_operations);
   rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
 
   // Run the column-wise operations
-  for (auto* op : scheduled_column_wise_ops_) {
+  for (auto* op : scheduled_standalone_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
       (*op)();
     }
@@ -196,7 +224,9 @@ void Scheduler::Execute() {
   });
   Timing::Time("neighbors", [&]() { env->Update(); });
 
+  SetUpOps();
   RunScheduledOps();
+  TearDownOps();
 
   // finish updating sim objects
   Timing::Time("Tear down exec context", [&]() {
@@ -287,10 +317,10 @@ void Scheduler::ScheduleOps() {
       op->SelectComputeTarget(kCpu);
     }
 
-    if (op->IsRowWise()) {
-      scheduled_row_wise_ops_.push_back(op);
+    if (op->IsStandalone()) {
+      scheduled_standalone_ops_.push_back(op);
     } else {
-      scheduled_column_wise_ops_.push_back(op);
+      scheduled_sim_object_ops_.push_back(op);
     }
 
     // Remove operation from ops_to_add_
@@ -301,23 +331,23 @@ void Scheduler::ScheduleOps() {
   for (auto it = ops_to_remove_.begin(); it != ops_to_remove_.end();) {
     auto* op = *it;
     // Check scheduled row-wise operations list
-    for (auto it2 = scheduled_row_wise_ops_.begin();
-         it2 != scheduled_row_wise_ops_.end(); ++it2) {
+    for (auto it2 = scheduled_sim_object_ops_.begin();
+         it2 != scheduled_sim_object_ops_.end(); ++it2) {
       if (op == (*it2)) {
         // Add to list of unscheduled operations
         unscheduled_ops_.push_back(op);
-        it2 = scheduled_row_wise_ops_.erase(it2);
+        it2 = scheduled_sim_object_ops_.erase(it2);
         goto label;
       }
     }
 
     // Check scheduled column-wise operations list
-    for (auto it2 = scheduled_column_wise_ops_.begin();
-         it2 != scheduled_column_wise_ops_.end(); ++it2) {
+    for (auto it2 = scheduled_standalone_ops_.begin();
+         it2 != scheduled_standalone_ops_.end(); ++it2) {
       if (op == (*it2)) {
         // Add to list of unscheduled operations
         unscheduled_ops_.push_back(op);
-        it2 = scheduled_column_wise_ops_.erase(it2);
+        it2 = scheduled_standalone_ops_.erase(it2);
         goto label;
       }
     }

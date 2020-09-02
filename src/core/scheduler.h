@@ -55,6 +55,10 @@ class Scheduler {
   /// Return a list of operations that are scheduled by default
   std::set<std::string> GetListOfDefaultOps() { return default_ops_; }
 
+  void SetUpOps();
+
+  void TearDownOps();
+
   void RunScheduledOps();
 
   void ScheduleOps();
@@ -83,9 +87,9 @@ class Scheduler {
   /// later on in a simulation
   std::vector<Operation*> unscheduled_ops_;  //!
   /// List of operations will be executed as a stand-alone operation
-  std::vector<Operation*> scheduled_column_wise_ops_;  //!
+  std::vector<Operation*> scheduled_standalone_ops_;  //!
   /// List of operations will be executed on all simulation objects
-  std::vector<Operation*> scheduled_row_wise_ops_;  //!
+  std::vector<Operation*> scheduled_sim_object_ops_;  //!
   /// List of operations that are scheduled by default
   std::set<std::string> default_ops_;  //!
   /// List of operations that cannot be affected by the user

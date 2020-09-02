@@ -24,7 +24,7 @@ BDM_REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 BDM_REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCl);
 #endif
 
-struct FirstOp : public OperationImpl {
+struct FirstOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(FirstOp);
 
   void operator()(SimObject* so) override { so->UpdateRunDisplacement(); }
@@ -32,7 +32,7 @@ struct FirstOp : public OperationImpl {
 
 BDM_REGISTER_OP(FirstOp, "first op", kCpu);
 
-struct LastOp : public OperationImpl {
+struct LastOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(LastOp);
 
   void operator()(SimObject* so) override {
@@ -42,7 +42,7 @@ struct LastOp : public OperationImpl {
 
 BDM_REGISTER_OP(LastOp, "last op", kCpu);
 
-struct BiologyModuleOp : public OperationImpl {
+struct BiologyModuleOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(BiologyModuleOp);
 
   void operator()(SimObject* so) override { so->RunBiologyModules(); }
@@ -50,7 +50,7 @@ struct BiologyModuleOp : public OperationImpl {
 
 BDM_REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
 
-struct DiscretizationOp : public OperationImpl {
+struct DiscretizationOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(DiscretizationOp);
 
   void operator()(SimObject* so) override { so->RunDiscretization(); }

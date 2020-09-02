@@ -47,12 +47,8 @@ Operation *Operation::Clone() {
 void Operation::operator()(SimObject *so) {
   (*implementations_[active_target_])(so);
 }
-void Operation::operator()() {
-  auto op_impl = implementations_[active_target_];
-  op_impl->Setup();
-  (*op_impl)();
-  op_impl->TearDown();
-}
+
+void Operation::operator()() { (*implementations_[active_target_])(); }
 
 void Operation::AddOperationImpl(OpComputeTarget target, OperationImpl *impl) {
   if (implementations_.size() < static_cast<size_t>(target + 1)) {
@@ -76,5 +72,9 @@ void Operation::SelectComputeTarget(OpComputeTarget target) {
   }
   active_target_ = target;
 }
+
+void Operation::SetUp() { implementations_[active_target_]->SetUp(); }
+
+void Operation::TearDown() { implementations_[active_target_]->TearDown(); }
 
 }  // namespace bdm
