@@ -30,6 +30,12 @@ jobs:
           echo "::set-env name=GHA_BRANCH_NAME::${GITHUB_REF#refs/heads/}"
         fi
 
+    - name: Set OSVERS
+      run: |
+        ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+        VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+        echo "::set-env name=OSVERS::$ID-$VERSION"
+
     - name: Install BioDynaMo
       shell: bash
       run: |
@@ -65,7 +71,7 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ runner.os }}-pyenv-3.8.0
+        key: ${{ env.OSVERS }}-pyenv-3.8.0
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
@@ -80,7 +86,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: build/third_party
-        key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+        key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
     - name: Build BioDynaMo
       shell: bash
