@@ -76,7 +76,9 @@ jobs:
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
       run: |
-        curl https://pyenv.run | bash
+        if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+          curl https://pyenv.run | bash
+        fi
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init -)"
         PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
