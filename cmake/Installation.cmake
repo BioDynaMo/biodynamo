@@ -20,6 +20,11 @@ if (NOT verbose)
     set(CMAKE_INSTALL_MESSAGE NEVER)
 endif()
 
+# We set the default installation directory to $HOME/
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}" CACHE PATH "The BioDynaMo installation path" FORCE)
+endif()
+
 execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # This regex extracts whatever is before the first "-" character, which should be
