@@ -15,9 +15,9 @@
 #ifndef CORE_SCHEDULER_H_
 #define CORE_SCHEDULER_H_
 
+#include <algorithm>
 #include <chrono>
 #include <functional>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -53,7 +53,25 @@ class Scheduler {
   Operation* GetDefaultOp(const std::string& name);
 
   /// Return a list of operations that are scheduled by default
-  std::set<std::string> GetListOfDefaultOps() { return default_ops_; }
+  std::vector<std::string> GetListOfDefaultOps() { return default_ops_; }
+
+  /// Return a list of SimObjectOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledSimObjectOps() {
+    std::vector<std::string> list;
+    for (auto *op : scheduled_sim_object_ops_) {
+      list.push_back(op->name_);
+    }
+    return list;
+  }
+
+  /// Return a list of StandAloneOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledStandaloneOps() {
+    std::vector<std::string> list;
+    for (auto *op : scheduled_standalone_ops_) {
+      list.push_back(op->name_);
+    }
+    return list;
+  }
 
   void SetUpOps();
 
@@ -91,9 +109,9 @@ class Scheduler {
   /// List of operations will be executed on all simulation objects
   std::vector<Operation*> scheduled_sim_object_ops_;  //!
   /// List of operations that are scheduled by default
-  std::set<std::string> default_ops_;  //!
+  std::vector<std::string> default_ops_;  //!
   /// List of operations that cannot be affected by the user
-  std::set<std::string> protected_ops_;  //!
+  std::vector<std::string> protected_ops_;  //!
   /// Flag to check if scheduler has beeen initialized at least once
   bool initialized_ = false;
 

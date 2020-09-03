@@ -375,5 +375,23 @@ TEST(SchedulerTest, DefaultOps) {
   EXPECT_EQ(op, nullptr);
 }
 
+TEST(SchedulerTest, ScheduleOrder) {
+  Simulation sim(TEST_NAME);
+  sim.GetResourceManager()->push_back(new Cell(10));
+  auto* scheduler = sim.GetScheduler();
+  sim.Simulate(1);
+
+  std::vector<std::string> so_ops = {"first op",       "bound space",
+                                     "biology module", "displacement",
+                                     "discretization", "last op"};
+  std::vector<std::string> sa_ops = {"diffusion"};
+
+  int i = 0;
+  for (auto so_op_name : scheduler->GetListOfScheduledSimObjectOps()) {
+    EXPECT_EQ(so_ops[i], so_op_name);
+    i++;
+  }
+}
+
 }  // namespace scheduler_test_internal
 }  // namespace bdm

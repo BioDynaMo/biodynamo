@@ -99,7 +99,8 @@ uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 void Scheduler::ScheduleOp(Operation* op) { ops_to_add_.push_back(op); }
 
 void Scheduler::UnscheduleOp(Operation* op) {
-  if (protected_ops_.find(op->name_) != protected_ops_.end()) {
+  if (std::find(protected_ops_.begin(), protected_ops_.end(), op->name_) !=
+      protected_ops_.end()) {
     Log::Warning("Scheduler::UnscheduleOp",
                  "You tried to remove the protected operation ", op->name_,
                  "! This request was ignored.");
@@ -117,7 +118,9 @@ Operation* Scheduler::GetDefaultOp(const std::string& name) {
                "The scheduler has not been yet initialized!");
     return nullptr;
   }
-  if (default_ops_.find(name) == default_ops_.end()) {
+
+  if (std::find(default_ops_.begin(), default_ops_.end(), name) ==
+      default_ops_.end()) {
     Log::Warning("Scheduler::GetDefaultOp", "The operation '", name,
                  "' is not a default operation. Request ignored.");
     return nullptr;
