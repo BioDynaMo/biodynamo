@@ -102,7 +102,9 @@ find_program(GENREFLEX_EXECUTABLE genreflex
 find_package(GCCXML)
 
 # We use the launcher script to emulate a `source thisbdm.sh` call
-set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
+if(NOT BDM_OUT_OF_SOURCE)
+  set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
+endif()
 
 #----------------------------------------------------------------------------
 # function ROOT_GENERATE_DICTIONARY( dictionary
