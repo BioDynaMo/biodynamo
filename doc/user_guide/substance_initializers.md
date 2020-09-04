@@ -31,7 +31,7 @@ Go into the `test/system/substance_initialization/src` directory and open the so
 
 ### 1. List the substance(s)
 
-We start the code of by listing the s we will use in our simulation in an enum
+We start the code off by listing the substances we will use in our simulation in an enum
 data structure. In this example we just create one substance.
 
 ```cpp
@@ -42,9 +42,9 @@ enum Substances { kSubstance };
 We bound our space to keep things simple.
 
 ```cpp
-Param::bound_space_ = true;
-Param::min_bound_ = 0;
-Param::max_bound_ = 250;
+param->bound_space_ = true;
+param->min_bound_ = -100;
+param->max_bound_ = 100;
 ```
 
 ### 3. Create a cell
@@ -57,32 +57,34 @@ auto construct = [](const Double3& position) {
   cell->SetDiameter(10);
   return cell;
 };
-ModelInitializer::CreateCellsRandom(Param::min_bound_, Param::max_bound_,
-                                      1, construct);
+ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
+                                    construct);
 ```
 
 ### 4. Define the substance(s)
 We define the diffusion parameters of the substance(s) in our simulation. We
-choose a diffusion coefficient of 0.5, a decay constant 0f 0.1 and a resolution
-of 1.
+choose a diffusion coefficient of 0.5, a decay constant 0f 0 and a resolution
+of 20.
 
 ```cpp
-ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 1);
+ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0, 20);
 ```
 
 ### 5. Initialize the substance(s)
 Now comes the most important part of the tutorial: initializing our substance(s)
 concentration values throught the space. We will use the function
 `ModelInitializer::InitializeSubstance` for this purpose.
+In this example we initialize our substance according to a Gaussian distribution.
 
 ```cpp
-ModelInitializer::InitializeSubstance(kSubstance, "Substance", GaussianBand(120, 5, Axis::kXAxis));
+ModelInitializer::InitializeSubstance(kSubstance, "Substance",
+                                      GaussianBand(0, 5, Axis::kXAxis));
 ```
 
 Let's break this down. We first pass the substance enum id and name in the
 function in order to specify which substance we want to initialize. Then we
 simply pass the model we want to initialize the substance with (we call these "initializers").
-In this case we choose for a GaussianBand with a mean value of 120 along the
+In this case we choose for a GaussianBand with a mean value of 0 along the
 x-axis, and a variance of 5.
 
 The result (visualized with ParaView) is the following:
@@ -138,7 +140,7 @@ the following lambda:
 
 ```cpp
 auto gaussian_band = [](double x, double y, double z) {
-  return ROOT::Math::normal_pdf(x, 5, 120);
+  return ROOT::Math::normal_pdf(x, 5, 0);
 };
 ```
 
