@@ -78,6 +78,18 @@ jobs:
         ninja run-unit-tests
         ../util/xvfb-initd.sh stop
 
+    - name: Style guide checks
+      shell: bash
+      run: |
+        sudo apt install -y cloc clang-tidy clang-format
+        cloc --exclude-dir=build .
+        cmake --build . --target gtest || true
+        cmake --build . --target show-format || true
+        cmake --build . --target show-tidy || true
+        cmake --build . --target check-cpplint || true
+      if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
+
+
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
       with:
