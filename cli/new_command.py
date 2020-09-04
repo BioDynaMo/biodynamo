@@ -41,7 +41,7 @@ def CleanupOnError(sim_name):
 def CopyTemplate(sim_name):
     Print.new_step("Copy simulation template")
     try:
-        src_path = "{0}/simulation-template".format(os.environ['BDM_INSTALL_DIR'])
+        src_path = "{0}/simulation-template".format(os.environ['BDMSYS'])
         sp.check_output(["cp", "-R", src_path, "./{0}".format(sim_name)])
     except sp.CalledProcessError as err:
         Print.error("Error while copying the template project.")
