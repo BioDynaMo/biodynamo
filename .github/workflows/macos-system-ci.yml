@@ -78,11 +78,6 @@ jobs:
         path: build/third_party
         key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
-    - name: Install prerequisites (on pull request)
-      run: |
-        ./prerequisites.sh all
-      if: github.event_name == 'pull_request'
-
     - name: Build BioDynaMo
       shell: zsh {0}
       run: |
