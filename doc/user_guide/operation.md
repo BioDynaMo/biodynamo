@@ -22,7 +22,9 @@ To execute a function for *specific* simulation objects have a look at biology m
 **An operation can have multiple implementations.**
 Each implementation can target a different type of hardware (e.g. CPU or GPU) as shown in the following image:
 
-![Operation Overview](images/operation.svg)
+<p align="center">
+  <img src="images/operation.svg" />
+</p>
 
 This example shows an overview of the displacement operation; one of the default operations in BioDynaMo.
 This operation is implemented for different computing targets, of which two are shown in the image above.
@@ -32,7 +34,7 @@ The BioDynaMo core will be able to select the right implementation based on your
 
 An operation operates at a certain frequency, which can be set after *registering* the operation.
 
-## Operation Implementation Types
+## Operation implementation types
 There are two types of operation implementations:
 
 1. `SimObjectOperationImpl`: executed for each simulation object at the given frequency
@@ -135,7 +137,7 @@ struct CheckDiameter : public SimObjectOperationImpl {
   }
 
   // The state consists of these two data members
-  double max_diameter_ = 0;
+  double max_diameter_ = 1;
   // Data members that can be changed in `operator()(SimObject* 
   // sim_object)` need to be of atomic type to avoid race conditions
   std::atomic<uint32_t> counter_ = 0;
@@ -167,11 +169,50 @@ check_diameter10->GetImplementation<CheckDiameter>()->max_diameter_ = 10;
 check_diameter20->GetImplementation<CheckDiameter>()->max_diameter_ = 20;
 
 // Schedule both of them
-scheduler->ScheduleOp(query_op10);
-scheduler->ScheduleOp(query_op20);
+scheduler->ScheduleOp(check_diameter10);
+scheduler->ScheduleOp(check_diameter20);
 
 // Now your simulation will run both operations at each timestep
-simulation.Simulate(1);
+simulation.Simulate(10);
 ```
 
 Since an `Operation` can have multiple implementations (`OperationImpl`), we need to specify which of the implementations we are targeting with `GetImplementation<T>()`, where `T` is the type of your operation implementation.
+
+## Unschedule an operation
+
+If you wish to unschedule an operation from a simulation, you can do that in the
+following way (we reuse the `CheckDiameter` operation from before):
+
+```cpp
+Simulation simulation("test_sim");
+auto* scheduler = simulation.GetScheduler();
+
+auto* check_diameter = NewOperation("check_diameter");
+scheduler->ScheduleOp(check_diameter);
+
+// Your simulation will run CheckDiameter at each timestep
+simulation.Simulate(10);
+
+// Unschedule the CheckDiameter operation
+scheduler->UnscheduleOp(check_diameter);
+
+// Your simulation will not run CheckDiameter anymore
+simulation.Simulate(10);
+```
+
+## Default operations
+
+BioDynaMo runs a list of operations by default. This list can be retrieved with
+the call to `Scheduler::GetListOfDefaultOps()`.
+A default operation can be unscheduled in the following way:
+
+```cpp
+Simulation simulation("test_sim");
+auto* scheduler = simulation.GetScheduler();
+
+auto* displacement_op = scheduler->GetDefaultOp("displacement");
+scheduler->UnscheduleOp(displacement_op);
+
+// Your simulation will not run the displacement operation
+simulation.Simulate(10);
+```
