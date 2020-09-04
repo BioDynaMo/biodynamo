@@ -16,6 +16,7 @@
 #define CORE_OPERATION_BOUND_SPACE_OP_H_
 
 #include "core/operation/operation.h"
+#include "core/operation/operation_registry.h"
 #include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
@@ -44,10 +45,8 @@ inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
 
 /// Keeps the simulation objects contained within the bounds as defined in
 /// param.h
-class BoundSpace : public Operation {
- public:
-  BoundSpace() : Operation("bdm::BoundSpace") {}
-  ~BoundSpace() {}
+struct BoundSpace : public SimObjectOperationImpl {
+  BDM_OP_HEADER(BoundSpace);
 
   void operator()(SimObject* sim_object) override {
     auto* param = Simulation::GetActive()->GetParam();

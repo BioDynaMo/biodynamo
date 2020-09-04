@@ -18,7 +18,13 @@ keywords:
   -track
   -tracking
 ---
-## 02.09.2020 [`4cca726`](https://github.com/BioDynaMo/biodynamo/commit/4cca726f9de686501527456e30df9c87bc06d812)
+## 04.09.2020 [`PR-#110`](https://github.com/BioDynaMo/biodynamo/pull/110)
+
+Rewrite of operations and operation management.
+See the docs of [Operation](/docs/userguide/operation) for details on how to
+create, register and (un)schedule operations in BioDynaMo.
+
+## 02.08.2020 [`4cca726`](https://github.com/BioDynaMo/biodynamo/commit/4cca726f9de686501527456e30df9c87bc06d812)
 
 Change biodynamo.org/bioapi to biodynamo.org/api
 

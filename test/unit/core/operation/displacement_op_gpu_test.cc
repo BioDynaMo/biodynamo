@@ -95,10 +95,9 @@ void RunTest(ExecutionMode mode) {
   auto set_param = [&](Param* param) {
     switch (mode) {
       case kOpenCl:
-        param->use_gpu_ = true;
-        param->use_opencl_ = true;
+        param->compute_target_ = "opencl";
       case kCuda:
-        param->use_gpu_ = true;
+        param->compute_target_ = "cuda";
     }
   };
 
@@ -136,8 +135,7 @@ void RunTest(ExecutionMode mode) {
 
     if (i == Case::kCompute) {
       // Execute operation
-      DisplacementOp op;
-      op();
+      (*NewOperation("displacement"))();
     } else {
       // Run verification on CPU
       DisplacementOpCpuVerify cpu_op;
@@ -184,10 +182,9 @@ void RunTest2(ExecutionMode mode) {
   auto set_param = [&](auto* param) {
     switch (mode) {
       case kOpenCl:
-        param->use_gpu_ = true;
-        param->use_opencl_ = true;
+        param->compute_target_ = "opencl";
       case kCuda:
-        param->use_gpu_ = true;
+        param->compute_target_ = "cuda";
     }
   };
 
@@ -222,8 +219,7 @@ void RunTest2(ExecutionMode mode) {
 
     if (i == Case::kCompute) {
       // Execute operation
-      DisplacementOp op;
-      op();
+      (*NewOperation("displacement"))();
     } else {
       // Run verification on CPU
       DisplacementOpCpuVerify cpu_op;

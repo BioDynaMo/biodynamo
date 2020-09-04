@@ -45,7 +45,6 @@ namespace bdm {
 
 /// Implementation for `Simulation`:
 /// It must be separate to avoid circular dependencies.
-/// It can't be defined in a source file, because it is templated.
 
 std::atomic<uint64_t> Simulation::counter_;
 
@@ -57,15 +56,18 @@ Simulation::Simulation(TRootIOCtor* p) {}
 
 Simulation::Simulation(int argc, const char** argv,
                        const std::string& config_file)
-    : Simulation(argc, argv, [](auto* param) {}, config_file) {}
+    : Simulation(
+          argc, argv, [](auto* param) {}, config_file) {}
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::string& config_file)
-    : Simulation(simulation_name, [](auto* param) {}, config_file) {}
+    : Simulation(
+          simulation_name, [](auto* param) {}, config_file) {}
 
 Simulation::Simulation(CommandLineOptions* clo,
                        const std::string& config_file) {
-  Initialize(clo, [](auto* param) {}, config_file);
+  Initialize(
+      clo, [](auto* param) {}, config_file);
 }
 
 Simulation::Simulation(CommandLineOptions* clo,
@@ -146,8 +148,8 @@ Simulation::~Simulation() {
   if (mem_mgr_) {
     delete mem_mgr_;
   }
-  active_ = tmp;
   delete ocl_state_;
+  active_ = tmp;
 }
 
 void Simulation::Activate() { active_ = this; }
@@ -279,19 +281,18 @@ void Simulation::InitializeRuntimeParams(
 
   // Handle "cuda" and "opencl" arguments
   if (clo->Get<bool>("cuda")) {
-    param_->use_gpu_ = true;
+    param_->compute_target_ = "cuda";
   }
 
   if (clo->Get<bool>("opencl")) {
-    param_->use_gpu_ = true;
-    param_->use_opencl_ = true;
+    param_->compute_target_ = "opencl";
   }
 
   ocl_state_ = new OpenCLState();
 
   set_param(param_);
 
-  if (!is_gpu_environment_initialized_ && param_->use_gpu_) {
+  if (!is_gpu_environment_initialized_ && param_->compute_target_ != "cpu") {
     GpuHelper::GetInstance()->InitializeGPUEnvironment();
     is_gpu_environment_initialized_ = true;
   }
