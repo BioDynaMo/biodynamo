@@ -90,7 +90,7 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
 /// This iteration happens only in the unlikely event of a race-condition
 /// and is therefore not performance relevant.
 const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
-    InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
+InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
   static InPlaceExecutionContext::ThreadSafeSoUidMap::value_type kDefault;
   auto& pair = (*map_)[uid];
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();

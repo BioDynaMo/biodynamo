@@ -455,19 +455,12 @@ struct Param {
   // experimental group
 
   /// Run the simulation partially on the GPU for improved performance.
-  /// Default value: `false`\n
+  /// Possible values: "cpu", "cuda", "opencl"
+  /// Default value: `"cpu"`\n
   /// TOML config file:
   ///     [experimental]
-  ///     use_gpu = false
-  bool use_gpu_ = false;
-
-  /// When both CUDA and OpenCL are available on a machine, the preference to
-  /// OpenCL can be set with this flag, as per default CUDA is used.
-  /// Default value: `false`\n
-  /// TOML config file:
-  ///     [experimental]
-  ///     use_opencl = false
-  bool use_opencl_ = false;
+  ///     compute_target = false
+  std::string compute_target_ = "cpu";
 
   /// Compile OpenCL kernels with debugging symbols, for debugging on CPU
   /// targets with GNU gdb.

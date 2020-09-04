@@ -32,7 +32,7 @@ sudo -v
 sudo yum update -y
 
 # Install repositories
-yum install -y https://centos7.iuscommunity.org/ius-release.rpm \
+sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm \
   epel-release centos-release-scl
 
 # Install required packages
