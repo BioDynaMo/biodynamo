@@ -83,6 +83,7 @@ jobs:
       run: |
         sudo apt install -y cloc clang-tidy clang-format
         cloc --exclude-dir=build .
+        cmake -B build
         cmake --build . --target gtest || true
         cmake --build . --target show-format || true
         cmake --build . --target show-tidy || true
