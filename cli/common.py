@@ -18,7 +18,7 @@ import shutil
 from print_command import Print
 
 def CopySupportFiles(sim_name):
-    SUPPORT_DIR = os.path.join(os.environ['BDM_INSTALL_DIR'], 'share', 'util', 'support_files')
+    SUPPORT_DIR = os.path.join(os.environ['BDMSYS'], 'share', 'util', 'support_files')
     Print.new_step("Copy additional support files")
     for filename in os.listdir(SUPPORT_DIR):
         full_file_name = os.path.join(SUPPORT_DIR, filename)

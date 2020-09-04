@@ -126,26 +126,22 @@ _source_thisbdm()
   done
   ########
 
-  if [ -n "${BDM_INSTALL_DIR}" ]; then
-     local old_bdmsys_base=${BDM_INSTALL_DIR}
-  fi
   if [ -n "${BDMSYS}" ]; then
      local old_bdmsys=${BDMSYS}
   fi
 
   case $bdm_shell in
     bash)
-      BDM_INSTALL_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+      BDMSYS=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
       ;;
     zsh)
       # The zsh equivalent of ${BASH_SOURCE[0]} is ${(%):-%x}
       # shellcheck disable=SC2154
-      BDM_INSTALL_DIR=$(cd "$(dirname "${(%):-%x}")/.." && pwd) || return 1
+      BDMSYS=$(cd "$(dirname "${(%):-%x}")/.." && pwd) || return 1
       ;;
   esac
 
-  export BDM_INSTALL_DIR
-  export BDMSYS="${BDM_INSTALL_DIR}"
+  export BDMSYS
 
   # Clear the env from previously set BioDynaMo paths.
   if [ -n "${old_bdmsys}" ] ; then
@@ -199,41 +195,41 @@ _source_thisbdm()
   fi
 
   # Clear the env from previously set ParaView and Qt paths.
-  if [ -n "${old_bdmsys_base}" ]; then
+  if [ -n "${old_bdmsys}" ]; then
      if [ -n "${ParaView_DIR}" ]; then
-      _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys_base}/third_party/paraview/lib/cmake/paraview-5.8"
+      _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys}/third_party/paraview/lib/cmake/paraview-5.8"
       ParaView_DIR=$_newpath
      fi
      if [ -n "${ParaView_LIB_DIR}" ]; then
-      _drop_bdm_from_path "$ParaView_LIB_DIR" "${old_bdmsys_base}/third_party/paraview/lib"
+      _drop_bdm_from_path "$ParaView_LIB_DIR" "${old_bdmsys}/third_party/paraview/lib"
       ParaView_LIB_DIR=$_newpath
      fi
      if [ -n "${PV_PLUGIN_PATH}" ]; then
-      _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys_base}/biodynamo/lib/pv_plugin"
+      _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys}/biodynamo/lib/pv_plugin"
       PV_PLUGIN_PATH=$_newpath
      fi
      if [ -n "${PATH}" ]; then
-      _drop_bdm_from_path "$PATH" "${old_bdmsys_base}/third_party/paraview/bin"
+      _drop_bdm_from_path "$PATH" "${old_bdmsys}/third_party/paraview/bin"
       PATH=$_newpath
      fi
      if [ -n "${Qt5_DIR}" ]; then
-      _drop_bdm_from_path "$Qt5_DIR" "${old_bdmsys_base}/third_party/qt/lib/cmake/Qt5"
+      _drop_bdm_from_path "$Qt5_DIR" "${old_bdmsys}/third_party/qt/lib/cmake/Qt5"
       Qt5_DIR=$_newpath
      fi
      if [ -n "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
-      _drop_bdm_from_path "$QT_QPA_PLATFORM_PLUGIN_PATH" "${old_bdmsys_base}/third_party/qt/plugins"
+      _drop_bdm_from_path "$QT_QPA_PLATFORM_PLUGIN_PATH" "${old_bdmsys}/third_party/qt/plugins"
       QT_QPA_PLATFORM_PLUGIN_PATH=$_newpath
      fi
      if [ -n "${DYLD_LIBRARY_PATH}" ]; then
-      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
+      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/third_party/paraview/lib"
       DYLD_LIBRARY_PATH=$_newpath
-      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
+      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/third_party/qt/lib"
       DYLD_LIBRARY_PATH=$_newpath
      fi
      if [ -n "${LD_LIBRARY_PATH}" ]; then
-      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/paraview/lib"
+      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/third_party/paraview/lib"
       LD_LIBRARY_PATH=$_newpath
-      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys_base}/third_party/qt/lib"
+      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/third_party/qt/lib"
       LD_LIBRARY_PATH=$_newpath
      fi
   fi

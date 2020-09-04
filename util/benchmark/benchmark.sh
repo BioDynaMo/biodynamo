@@ -10,7 +10,7 @@ Arguments:
   exit 1
 fi
 
-if [ -z "$BDM_INSTALL_DIR" ]; then
+if [ -z "$BDMSYS" ]; then
   echo "ERROR: Please source the BioDynaMo environmental script."
   exit 1
 fi  

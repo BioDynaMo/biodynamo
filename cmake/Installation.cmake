@@ -20,18 +20,12 @@ if (NOT verbose)
     set(CMAKE_INSTALL_MESSAGE NEVER)
 endif()
 
-# check if CMAKE_INSTALL_PREFIX is empty or /opt/biodynamo
-# We only allow /opt/biodynamo as prefix path. This enables us to provide
-# one development environment script for building biodynamo and out of source
-# simulations. (The path to the development install is known and can be
-# hardcoded )
-if (NOT CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX ${BDM_INSTALL_DIR} CACHE PATH "BioDynaMo install prefix" FORCE)
-elseif(CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
-  set(CMAKE_INSTALL_PREFIX ${BDM_INSTALL_DIR} CACHE PATH "BioDynaMo install prefix" FORCE)
-elseif( CMAKE_INSTALL_PREFIX AND NOT CMAKE_INSTALL_PREFIX STREQUAL "${BDM_INSTALL_DIR}" )
-  message(FATAL_ERROR "CMAKE_INSTALL_PREFIX must be ${BDM_INSTALL_DIR}")
+# We set the default installation directory to $HOME/
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}" CACHE PATH "The BioDynaMo installation path" FORCE)
 endif()
+
+execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # This regex extracts whatever is before the first "-" character, which should be
 # the version number in the form vMAJOR.MINOR.PATCH

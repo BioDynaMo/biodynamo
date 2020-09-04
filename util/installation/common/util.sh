@@ -339,66 +339,6 @@ function SelectInstallDir {
   done
 }
 
-# This function checks if the given directory is valid, if it needs to be
-# created, or if containing files need to be removed.
-# Arguments:
-#   $1 biodynamo install directory
-function PrepareInstallDir {
-  if [[ $# -ne 1 ]]; then
-    echo "ERROR in PrepareInstallDir: Wrong number of arguments"
-    exit 1
-  fi
-
-  local BDM_INSTALL_DIR=$1
-
-  if [[ $BDM_INSTALL_DIR == "" ]] || [[ $BDM_INSTALL_DIR == / ]] || [[ $BDM_INSTALL_DIR == /usr* ]]; then
-    echo "ERROR: Invalid installation directory: $BDM_INSTALL_DIR"
-    exit 1
-  elif [ ! -d $BDM_INSTALL_DIR ]; then
-    # Install directory does not exist
-    echo "installdir " $BDM_INSTALL_DIR
-    mkdir -p $BDM_INSTALL_DIR
-  elif [ ! -z "$(ls -A $BDM_INSTALL_DIR)" ]; then
-    # Install directory is not empty
-    MSG="The chosen installation directory is not empty!
-The installation process will remove all files in $BDM_INSTALL_DIR! Do you want to continue?"
-    while true; do
-      read -p "$MSG (y/n) " yn
-      case $yn in
-        [Yy]* )
-          rm -rf $BDM_INSTALL_DIR/*
-          break
-        ;;
-        [Nn]* )
-        exit 1;;
-        * ) echo "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-# This function copies the environment script to the install path and
-# corrects the BDM_INSTALL_DIR environment variable inside the script.
-# Arguments:
-#   $1 environment source script
-#   $2 biodynamo install directory
-function CopyEnvironmentScript {
-  if [[ $# -ne 2 ]]; then
-    echo "ERROR in CopyEnvironmentScript: Wrong number of arguments"
-    exit 1
-  fi
-
-  local ENV_SRC=$1
-  local BDM_INSTALL_DIR=$2
-
-  local ENV_DEST=$BDM_INSTALL_DIR/bin/thisbdm.sh
-
-  local TMP_ENV=${ENV_DEST}_$RANDOM
-
-  cat $ENV_SRC | sed "s|export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@|export BDM_INSTALL_DIR=${BDM_INSTALL_DIR}|g" >$TMP_ENV
-  mv $TMP_ENV $ENV_DEST
-}
-
 # This function has a zero exit code if the version is below the required
 # version. This function can be used inside an if statement:
 #    if $(versionLessThan "$(gcc -dumpversion)" "5.4.0"); then

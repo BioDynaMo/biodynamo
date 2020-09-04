@@ -72,18 +72,13 @@ function source_thisbdm
         end
     end
 
-    set -l old_bdmsys_base
     set -l old_bdmsys
-    if test -n "$BDM_INSTALL_DIR"
-        set old_bdmsys_base $BDM_INSTALL_DIR
-    end
     if test -n "$BDMSYS"
         set old_bdmsys $BDMSYS
     end
 
     set -l curr_filename (status --current-filename)
-    set -gx BDM_INSTALL_DIR (fish -c "cd (dirname $curr_filename)/..; and pwd"); or return 1
-    set -gx BDMSYS "$BDM_INSTALL_DIR"
+    set -gx BDMSYS (fish -c "cd (dirname $curr_filename)/..; and pwd"); or return 1
 
     # Clear the env from previously set BioDynaMo paths.
     if test -n "$old_bdmsys"
@@ -95,17 +90,17 @@ function source_thisbdm
         _drop_from_var CMAKE_PREFIX_PATH "$old_bdmsys"
 	end
 
-	if test -n "$old_bdmsys_base"
-        _drop_from_var ParaView_DIR "$old_bdmsys_base/third_party/paraview/lib/cmake/paraview-5.8"
-        _drop_from_var ParaView_LIB_DIR "$old_bdmsys_base/third_party/paraview/lib"
-        _drop_from_var PV_PLUGIN_PATH "$old_bdmsys_base/biodynamo/lib/pv_plugin"
-        _drop_from_var PATH "$old_bdmsys_base/third_party/paraview/bin"
-        _drop_from_var Qt5_DIR "$old_bdmsys_base/third_party/qt/lib/cmake/Qt5"
-        _drop_from_var QT_QPA_PLATFORM_PLUGIN_PATH "$old_bdmsys_base/third_party/qt/plugins"
-        _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys_base/third_party/paraview/lib"
-        _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys_base/third_party/qt/lib"
-        _drop_from_var LD_LIBRARY_PATH "$old_bdmsys_base/third_party/paraview/lib"
-        _drop_from_var LD_LIBRARY_PATH "$old_bdmsys_base/third_party/qt/lib"
+	if test -n "$old_bdmsys"
+        _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-5.8"
+        _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
+        _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/biodynamo/lib/pv_plugin"
+        _drop_from_var PATH "$old_bdmsys/third_party/paraview/bin"
+        _drop_from_var Qt5_DIR "$old_bdmsys/third_party/qt/lib/cmake/Qt5"
+        _drop_from_var QT_QPA_PLATFORM_PLUGIN_PATH "$old_bdmsys/third_party/qt/plugins"
+        _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
+        _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
+        _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
+        _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
 	end
     #########
 
