@@ -188,6 +188,7 @@ class Simulation {
 
   friend SimulationTest;
   friend ParaviewAdaptorTest;
+  friend std::ostream& operator<<(std::ostream& os, const Simulation& sim);
 
   BDM_CLASS_DEF_NV(Simulation, 1);
 };

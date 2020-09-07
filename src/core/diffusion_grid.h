@@ -972,6 +972,14 @@ class DiffusionGrid {
     return grid_dimensions_;
   }
 
+  std::array<int32_t, 3> GetGridSize() const {
+    std::array<int32_t, 3> ret;
+    ret[0] = grid_dimensions_[1] - grid_dimensions_[0];
+    ret[1] = grid_dimensions_[3] - grid_dimensions_[2];
+    ret[2] = grid_dimensions_[5] - grid_dimensions_[4];
+    return ret;
+  }
+
   const std::array<double, 7>& GetDiffusionCoefficients() const { return dc_; }
 
   bool IsInitialized() const { return initialized_; }

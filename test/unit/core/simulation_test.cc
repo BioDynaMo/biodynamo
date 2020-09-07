@@ -79,7 +79,7 @@ class SimulationTest : public ::testing::Test {
       "\n"
       "[development]\n"
       "# this is a comment\n"
-      "statistics = true\n"
+      "statistics = false\n"
       "debug_numa = true\n";
 
  protected:
@@ -172,7 +172,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_FALSE(param->minimize_memory_while_rebalancing_);
 
     // development group
-    EXPECT_TRUE(param->statistics_);
+    EXPECT_FALSE(param->statistics_);
     EXPECT_TRUE(param->debug_numa_);
   }
 };
