@@ -5,6 +5,7 @@
 #include "core/operation/displacement_op_opencl.h"
 #include "core/operation/dividing_cell_op.h"
 #include "core/operation/operation.h"
+#include "core/visualization/visualization_adaptor.h"
 
 namespace bdm {
 
@@ -58,5 +59,69 @@ struct DiscretizationOp : public SimObjectOperationImpl {
 
 BDM_REGISTER_OP(DiscretizationOp, "discretization", kCpu);
 
+struct SetUpIterationOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(SetUpIterationOp);
+
+  void operator()() override {
+    auto* sim = Simulation::GetActive();
+    const auto& all_exec_ctxts = sim->GetAllExecCtxts();
+    all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
+  }
+};
+
+BDM_REGISTER_OP(SetUpIterationOp, "set up exec context", kCpu);
+
+struct TearDownIterationOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(TearDownIterationOp);
+
+  void operator()() override {
+    auto* sim = Simulation::GetActive();
+    const auto& all_exec_ctxts = sim->GetAllExecCtxts();
+    all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
+  }
+};
+
+BDM_REGISTER_OP(TearDownIterationOp, "tear down exec context", kCpu);
+
+struct UpdateEnvironmentOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(UpdateEnvironmentOp);
+
+  void operator()() override {
+    auto* sim = Simulation::GetActive();
+    auto* env = sim->GetEnvironment();
+    env->Update();
+  }
+};
+
+BDM_REGISTER_OP(UpdateEnvironmentOp, "update environment", kCpu);
+
+struct VisualizationOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(VisualizationOp);
+
+  ~VisualizationOp() {
+    if (visualization_) {
+      delete visualization_;
+    }
+  }
+
+  void operator()() override {
+    // Cannot be done in constructor because no Simulation object will be
+    // created statically
+    if (!initialized_) {
+      auto* param = Simulation::GetActive()->GetParam();
+      visualization_ =
+          VisualizationAdaptor::Create(param->visualization_engine_);
+      initialized_ = true;
+    }
+    if (visualization_ != nullptr) {
+      visualization_->Visualize();
+    }
+  }
+
+  VisualizationAdaptor* visualization_ = nullptr;
+  bool initialized_ = false;
+};
+
+BDM_REGISTER_OP(VisualizationOp, "visualize", kCpu);
 
 }  // namespace bdm

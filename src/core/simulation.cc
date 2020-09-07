@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -36,6 +37,7 @@
 #include "core/util/log.h"
 #include "core/util/string.h"
 #include "core/util/thread_info.h"
+#include "core/util/timing.h"
 #include "core/visualization/root/adaptor.h"
 #include "version.h"
 
@@ -118,13 +120,71 @@ void Simulation::Restore(Simulation&& restored) {
   InitializeOutputDir();
 }
 
+inline std::ostream& operator<<(std::ostream& os, Simulation& sim) {
+  std::vector<std::string> dg_names;
+  std::vector<int> dg_resolutions;
+  std::vector<std::array<int32_t, 3>> dg_dimensions;
+
+  sim.GetResourceManager()->ApplyOnAllDiffusionGrids([&](auto* dg) {
+    dg_names.push_back(dg->GetSubstanceName());
+    dg_resolutions.push_back(dg->GetResolution());
+    dg_dimensions.push_back(dg->GetGridSize());
+  });
+
+  os << std::endl;
+
+  os << "***********************************************" << std::endl;
+  os << std::endl;
+  os << "\033[1mSimulation name\t\t\t: \033[0m" << sim.GetUniqueName()
+     << std::endl;
+  os << "\033[1mNumber of iterations executed\t: \033[0m"
+     << sim.GetScheduler()->GetSimulatedSteps() << std::endl;
+  os << "\033[1mNumber of simulation objects\t: \033[0m"
+     << sim.GetResourceManager()->GetNumSimObjects() << std::endl;
+
+  if (dg_names.size() != 0) {
+    os << "\033[1mDiffusion grids\033[0m" << std::endl;
+    for (size_t i = 0; i < dg_names.size(); ++i) {
+      os << "  " << dg_names[i] << ":" << std::endl;
+      auto& dim = dg_dimensions[i];
+      os << "\t"
+         << "Resolution\t\t: " << dg_resolutions[i] << std::endl;
+      os << "\t"
+         << "Size\t\t\t: " << dim[0] << " x " << dim[1] << " x " << dim[2]
+         << std::endl;
+    }
+  }
+
+  os << "\033[1mOutput directory\t\t: \033[0m" << sim.GetOutputDir()
+     << std::endl;
+  os << "  size\t\t\t\t: "
+     << gSystem->GetFromPipe(
+            Concat("du -sh ", sim.GetOutputDir(), " | cut -f1").c_str())
+     << std::endl;
+  os << std::endl;
+  os << "***********************************************" << std::endl;
+  os << *(sim.GetScheduler()->GetOpTimes()) << std::endl;
+  os << "***********************************************" << std::endl;
+  os << std::endl;
+  os << "\033[1mThread Info\033[0m" << std::endl;
+  os << *ThreadInfo::GetInstance();
+  os << std::endl;
+  os << "***********************************************" << std::endl;
+  os << std::endl;
+  os << *(sim.GetResourceManager());
+  os << std::endl;
+  os << "***********************************************" << std::endl;
+
+  return os;
+}
+
 Simulation::~Simulation() {
+  if (param_ != nullptr && param_->statistics_) {
+    std::cout << *this << std::endl;
+  }
+
   if (mem_mgr_) {
     mem_mgr_->SetIgnoreDelete(true);
-  }
-  if (param_ != nullptr && rm_ != nullptr && param_->debug_numa_) {
-    std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
-    rm_->DebugNuma();
   }
   Simulation* tmp = nullptr;
   if (active_ != this) {
@@ -265,9 +325,9 @@ void Simulation::InitializeRuntimeParams(
   static bool read_env = false;
   if (!read_env) {
     // Read, only once, bdm.rootrc to set BioDynaMo-related settings for ROOT
-    std::stringstream ss;
-    ss << std::getenv("BDMSYS") << "/etc/bdm.rootrc";
-    gEnv->ReadFile(ss.str().c_str(), kEnvUser);
+    std::stringstream os;
+    os << std::getenv("BDMSYS") << "/etc/bdm.rootrc";
+    gEnv->ReadFile(os.str().c_str(), kEnvUser);
     read_env = true;
   }
 

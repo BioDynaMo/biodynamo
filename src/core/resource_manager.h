@@ -386,8 +386,19 @@ class ResourceManager {
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
   friend class SimulationBackup;
+  friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
   BDM_CLASS_DEF_NV(ResourceManager, 1);
 };
+
+inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {
+  os << "\033[1mSimulation objects per numa node\033[0m"
+     << std::endl;
+  uint64_t cnt = 0;
+  for (auto& numa_sos : rm.sim_objects_) {
+    os << "numa node " << cnt++ << " -> size: " << numa_sos.size() << std::endl;
+  }
+  return os;
+}
 
 }  // namespace bdm
 

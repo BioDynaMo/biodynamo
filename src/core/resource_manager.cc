@@ -294,16 +294,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   ApplyOnAllElementsParallel(functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa_) {
-    DebugNuma();
-  }
-}
-
-void ResourceManager::DebugNuma() const {
-  std::cout << "ResourceManager size of sim object containers\n" << std::endl;
-  uint64_t cnt = 0;
-  for (auto& numa_sos : sim_objects_) {
-    std::cout << "  numa node " << cnt++ << " size " << numa_sos.size()
-              << std::endl;
+    std::cout << *this << std::endl;
   }
 }
 

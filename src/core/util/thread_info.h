@@ -103,22 +103,22 @@ class ThreadInfo {
   }
 
   friend std::ostream& operator<<(std::ostream& str, const ThreadInfo& ti) {
-    str << "max_threads            " << ti.max_threads_
-        << "\nnum_numa nodes         " << ti.numa_nodes_;
+    str << "max_threads\t\t: " << ti.max_threads_
+        << "\nnum_numa nodes\t\t: " << ti.numa_nodes_;
 
-    str << "\nthread to numa mapping ";
+    str << "\nthread to numa mapping\t: ";
     for (auto& el : ti.thread_numa_mapping_) {
-      str << " " << el;
+      str << el << " ";
     }
 
-    str << "\nthread id in numa node ";
+    str << "\nthread id in numa node\t: ";
     for (auto& el : ti.numa_thread_id_) {
-      str << " " << el;
+      str << el << " ";
     }
 
-    str << "\nnum threads per numa   ";
+    str << "\nnum threads per numa\t: ";
     for (auto& el : ti.threads_in_numa_) {
-      str << " " << el;
+      str << el << " ";
     }
     str << "\n";
     return str;

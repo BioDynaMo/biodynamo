@@ -28,7 +28,6 @@
 #include "core/simulation_backup.h"
 #include "core/util/log.h"
 #include "core/visualization/root/adaptor.h"
-#include "core/visualization/visualization_adaptor.h"
 
 namespace bdm {
 
@@ -38,19 +37,29 @@ Scheduler::Scheduler() {
   if (backup_->RestoreEnabled()) {
     restore_point_ = backup_->GetSimulationStepsFromBackup();
   }
-  visualization_ = VisualizationAdaptor::Create(param->visualization_engine_);
   root_visualization_ = new RootAdaptor();
 
-  default_ops_ = {"first op",     "bound space",    "biology module",
-                  "displacement", "discretization", "diffusion",
-                  "last op"};
+  // Operations are scheduled in the following order (sub categorated by their
+  // operation implementation type, so that actual order may vary)
+  default_ops_ = {"set up exec context",
+                  "visualize",
+                  "update environment",
+                  "first op",
+                  "bound space",
+                  "biology module",
+                  "displacement",
+                  "discretization",
+                  "diffusion",
+                  "last op",
+                  "tear down exec context"};
 
   // Schedule the default operations
   for (auto& def_op : default_ops_) {
     ScheduleOp(NewOperation(def_op));
   }
 
-  protected_ops_ = {"first op", "biology module", "discretization", "last op"};
+  protected_ops_ = {"set up exec context", "tear down exec context", "first op",
+                    "biology module",      "discretization",         "last op"};
 }
 
 Scheduler::~Scheduler() {
@@ -71,13 +80,6 @@ Scheduler::~Scheduler() {
   }
   delete backup_;
   delete root_visualization_;
-  if (visualization_) {
-    delete visualization_;
-  }
-  auto* param = Simulation::GetActive()->GetParam();
-  if (param->statistics_) {
-    std::cout << gStatistics << std::endl;
-  }
 }
 
 void Scheduler::Simulate(uint64_t steps) {
@@ -95,6 +97,8 @@ void Scheduler::Simulate(uint64_t steps) {
 }
 
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
+
+TimingAggregator* Scheduler::GetOpTimes() { return &op_times_; }
 
 void Scheduler::ScheduleOp(Operation* op) { ops_to_add_.push_back(op); }
 
@@ -199,43 +203,27 @@ void Scheduler::RunScheduledOps() {
     }
   }
   RunAllScheduledOps functor(row_wise_operations);
-  rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
+
+  Timing::Time("sim object ops", [&]() {
+    rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
+  });
 
   // Run the column-wise operations
   for (auto* op : scheduled_standalone_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
-      (*op)();
+      Timing::Time(op->name_, [&]() { (*op)(); });
     }
   }
 }
 
 void Scheduler::Execute() {
-  auto* sim = Simulation::GetActive();
-  auto* env = sim->GetEnvironment();
-
   ScheduleOps();
 
-  Timing::Time("Set up exec context", [&]() {
-    const auto& all_exec_ctxts = sim->GetAllExecCtxts();
-    all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
-  });
-
-  Timing::Time("visualize", [&]() {
-    if (visualization_ != nullptr) {
-      visualization_->Visualize();
-    }
-  });
-  Timing::Time("neighbors", [&]() { env->Update(); });
-
   SetUpOps();
-  RunScheduledOps();
-  TearDownOps();
 
-  // finish updating sim objects
-  Timing::Time("Tear down exec context", [&]() {
-    const auto& all_exec_ctxts = sim->GetAllExecCtxts();
-    all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
-  });
+  RunScheduledOps();
+
+  TearDownOps();
 }
 
 void Scheduler::Backup() {

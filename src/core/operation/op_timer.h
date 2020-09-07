@@ -31,8 +31,9 @@ struct OpTimer {
   template <typename Container>
   void operator()(Container* cells, uint16_t numa_node, uint16_t type_idx) {
     auto* param = Simulation::GetActive()->GetParam();
+    auto* agg = Simulation::GetActive()->GetScheduler()->GetOpTimes();
     if (param->statistics_) {
-      Timing timer(timer_msg_, &gStatistics);
+      Timing timer(timer_msg_, agg);
       operation_(cells, numa_node, type_idx);
     } else {
       operation_(cells, numa_node, type_idx);

@@ -21,7 +21,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 #include "core/operation/operation.h"
+#include "core/util/timing_aggregator.h"
 
 namespace bdm {
 
@@ -83,6 +85,8 @@ class Scheduler {
 
   RootAdaptor* GetRootVisualization() { return root_visualization_; }
 
+  TimingAggregator* GetOpTimes();
+
  protected:
   uint64_t total_steps_ = 0;
 
@@ -94,7 +98,6 @@ class Scheduler {
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  VisualizationAdaptor* visualization_ = nullptr;  //!
   RootAdaptor* root_visualization_ = nullptr;      //!
 
   /// List of operations that are to be added in the upcoming timestep
@@ -114,6 +117,8 @@ class Scheduler {
   std::vector<std::string> protected_ops_;  //!
   /// Flag to check if scheduler has beeen initialized at least once
   bool initialized_ = false;
+  /// Tracks operations' execution times
+  TimingAggregator op_times_;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup();
