@@ -325,7 +325,7 @@ if(paraview)
       endif()
     endif()
 
-    include_directories(${ParaView_PREFIX_PATH}/include/paraview-${PARAVIEW_VERSION})
+    include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
