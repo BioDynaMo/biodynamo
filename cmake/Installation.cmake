@@ -123,9 +123,3 @@ if (notebooks)
           FILES_MATCHING
           PATTERN "*.ipynb" PATTERN "*.h" PATTERN "*.C" PATTERN "*.html")
 endif()
-
-if(${ParaView_FOUND})
-    install(TARGETS BDMGlyphFilter
-            LIBRARY
-            DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR})
-endif()
