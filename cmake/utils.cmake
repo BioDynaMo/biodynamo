@@ -91,6 +91,14 @@ function (ListToString result delim)
     set(${result} "${temp}" PARENT_SCOPE)
 endfunction(ListToString)
 
+function(BuildParaViewPlugin)
+  add_custom_target(BDMGlyphFilter
+    WORKING_DIRECTORY ${CMAKE_BDM_PVPLUGINDIR}
+    COMMAND cmake -B build
+    COMMAND cmake --build build
+  )
+endfunction(BuildParaViewPlugin)
+
 # Check if the OS given by the user is supported by the current BioDynaMo release.
 #   OS: the OS specified by the user.
 function(check_detected_os OS)
@@ -265,24 +273,25 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/NOTICE
             )
 
+    BuildParaViewPlugin()
+    
     # BioDynaMo paraview plugin (Apple support when we upgrade to v5.8 on macos)
     if(paraview AND NOT APPLE)
       add_copy_files(copy_files_bdm
               DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR}
-              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so
+              ${CMAKE_BDM_PVPLUGINDIR}/build/lib/BDMGlyphFilter/BDMGlyphFilter.so
               )
       add_copy_files(copy_files_bdm
               DESTINATION ${CMAKE_INSTALL_ROOT}/lib
-              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so
+              ${CMAKE_BDM_PVPLUGINDIR}/build/lib/BDMGlyphFilter/libBDM.so
               )
     endif()
 
     add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})
     add_dependencies(copy_files_bdm biodynamo)
-    if(paraview)
+    if(paraview AND NOT APPLE)
       add_dependencies(copy_files_bdm BDMGlyphFilter)
     endif()
-
 endfunction()
 
 # This function add a description to the packages which will be displayed

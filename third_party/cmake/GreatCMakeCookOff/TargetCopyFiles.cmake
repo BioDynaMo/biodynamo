@@ -135,4 +135,3 @@ function(add_copy_directory dircopy_TARGET directory)
     endforeach()
     set(artifact_files_builddir ${artifact_files_builddir} PARENT_SCOPE)
 endfunction()
-

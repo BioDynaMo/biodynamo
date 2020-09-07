@@ -66,6 +66,7 @@ set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin")
 set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include")
 set(CMAKE_INSTALL_LIBDIR        "${CMAKE_INSTALL_ROOT}/lib")
 set(CMAKE_INSTALL_PVPLUGINDIR   "${CMAKE_INSTALL_ROOT}/lib/pv_plugin") # Must be in separate dir!
+set(CMAKE_BDM_PVPLUGINDIR       "${CMAKE_INSTALL_ROOT}/../paraview_plugin/")
 set(CMAKE_INSTALL_CMAKEDIR      "${CMAKE_INSTALL_ROOT}/cmake")
 set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share")
 set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake")
@@ -526,10 +527,6 @@ add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
-
-if(paraview)
-  include("${CMAKE_SOURCE_DIR}/paraview_plugin/CMakeLists.txt")
-endif()
 
 # create cmake files used by external builds
 configure_file("cmake/UseBioDynaMo.cmake.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake" @ONLY)
