@@ -85,6 +85,7 @@ jobs:
         cloc --exclude-dir=build .
         cmake -B build
         cd build
+        cmake --build . --target fetch-master
         cmake --build . --target gtest || true
         cmake --build . --target show-format || true
         cmake --build . --target show-tidy || true
