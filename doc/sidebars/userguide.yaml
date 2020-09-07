@@ -17,6 +17,8 @@
         link: /docs/userguide/visualization/
       - title: Diffusion
         link: /docs/userguide/diffusion/
+      - title: Simulation Parameters
+        link: /docs/userguide/simulation_parameter_tutorial/
       - title: Tumor Concept
         link: /docs/userguide/tumor_concept/
   - group: Documentation

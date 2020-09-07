@@ -15,16 +15,16 @@
 #ifndef CORE_PARAM_COMMAND_LINE_OPTIONS_H_
 #define CORE_PARAM_COMMAND_LINE_OPTIONS_H_
 
-#include "cxxopts.h"
-
-#include "TError.h"
-
-#include "core/simulation.h"
-#include "version.h"
+#include <cxxopts.h>
+#include <TError.h>
 
 #include <algorithm>
 #include <iostream>
+#include <ostream>
 #include <string>
+
+#include "core/simulation.h"
+#include "version.h"
 
 namespace bdm {
 
@@ -57,6 +57,9 @@ class CommandLineOptions {
   }
 
  private:
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const CommandLineOptions& clo);
+
   void AddCoreOptions();
 
   /// Parse the options with the given command line arguments

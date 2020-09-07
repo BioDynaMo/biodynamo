@@ -62,6 +62,7 @@ class Simulation {
   /// Command line arguments are not parsed!\n
   /// Creation of a new simulation automatically activates it.
   /// \param config_file Use a different config file than the default bdm.toml
+  ///        or bdm.json
   explicit Simulation(const std::string& simulation_name,
                       const std::string& config_file = "");
 
@@ -148,8 +149,8 @@ class Simulation {
   SoUidGenerator* so_uid_generator_ = nullptr;  //!
   std::string name_;
   Environment* environment_ = nullptr;  //!
-  Scheduler* scheduler_ = nullptr;    //!
-  OpenCLState* ocl_state_ = nullptr;  //!
+  Scheduler* scheduler_ = nullptr;      //!
+  OpenCLState* ocl_state_ = nullptr;    //!
   bool is_gpu_environment_initialized_ = false;
   /// This id is unique for each simulation within the same process
   uint64_t id_ = 0;  //!
@@ -160,7 +161,9 @@ class Simulation {
   std::string unique_name_;  //!
   /// cached value where `unique_name_` is appended to `Param::output_dir_`
   std::string output_dir_;  //!
-
+  /// Stores command line arguments if (argc,argv) or CommandLineOptions
+  /// are passed to the constructor.\n
+  std::string command_line_parameter_str_;  //!
   /// BioDynaMo memory manager. If nullptr, default allocator will be used.
   MemoryManager* mem_mgr_ = nullptr;  //!
 
@@ -188,7 +191,7 @@ class Simulation {
 
   friend SimulationTest;
   friend ParaviewAdaptorTest;
-  friend std::ostream& operator<<(std::ostream& os, const Simulation& sim);
+  friend std::ostream& operator<<(std::ostream& os, Simulation& sim);
 
   BDM_CLASS_DEF_NV(Simulation, 1);
 };

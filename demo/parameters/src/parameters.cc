@@ -11,23 +11,12 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-
-#include "core/param/module_param.h"
-#include <memory>
+#include "parameters.h"
 
 namespace bdm {
 
-ModuleParamUidGenerator* ModuleParamUidGenerator::Get() {
-  static ModuleParamUidGenerator kInstance;
-  return &kInstance;
-}
-
-ModuleParamUidGenerator::ModuleParamUidGenerator() : counter_(0) {}
-
-ModuleParamUid ModuleParamUidGenerator::NewUid() { return counter_++; }
-
-ModuleParam::~ModuleParam() {}
-
-void ModuleParam::AssignFromConfig(const std::shared_ptr<cpptoml::table>&) {}
+const ModuleParamUid SimParam::kUid = ModuleParamUidGenerator::Get()->NewUid();
 
 }  // namespace bdm
+
+int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }

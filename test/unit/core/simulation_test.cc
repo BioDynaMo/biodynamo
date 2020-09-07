@@ -27,8 +27,8 @@ namespace bdm {
 
 class SimulationTest : public ::testing::Test {
  public:
-  static constexpr const char* kConfigFileName = "bdm.toml";
-  static constexpr const char* kConfigContent =
+  static constexpr const char* kTomlFileName = "bdm.toml";
+  static constexpr const char* kTomlContent =
       "[simulation]\n"
       "output_dir = \"result-dir\"\n"
       "backup_file = \"backup.root\"\n"
@@ -84,14 +84,14 @@ class SimulationTest : public ::testing::Test {
 
  protected:
   virtual void SetUp() {
-    remove(kConfigFileName);
+    remove(kTomlFileName);
     remove("restore.root");
     CreateEmptyRestoreFile("restore.root");
     Simulation::counter_ = 0;
   }
 
   virtual void TearDown() {
-    remove(kConfigFileName);
+    remove(kTomlFileName);
     remove("restore.root");
   }
 
@@ -128,10 +128,10 @@ class SimulationTest : public ::testing::Test {
     auto it = param->visualize_sim_objects_.cbegin();
     uint64_t counter = 0;
     while (it != param->visualize_sim_objects_.cend()) {
-      if (counter == 1) {
+      if (counter == 0) {
         EXPECT_EQ("Cell", (*it).first);
         EXPECT_EQ(0u, (*it).second.size());
-      } else if (counter == 0) {
+      } else if (counter == 1) {
         EXPECT_EQ("Neurite", (*it).first);
         auto additional_dm = (*it).second;
         EXPECT_EQ(2u, additional_dm.size());
@@ -179,8 +179,8 @@ class SimulationTest : public ::testing::Test {
 
 #ifdef USE_DICT
 TEST_F(SimulationTest, InitializeRuntimeParams) {
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(kTomlFileName);
+  config_file << kTomlContent;
   config_file.close();
 
   const char* argv[1] = {"./binary_name"};
@@ -194,8 +194,8 @@ TEST_F(SimulationTest, InitializeRuntimeParams) {
 }
 
 TEST_F(SimulationTest, InitializeRuntimeParams2) {
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(kTomlFileName);
+  config_file << kTomlContent;
   config_file.close();
 
   Simulation simulation("my-simulation");
@@ -208,8 +208,8 @@ TEST_F(SimulationTest, InitializeRuntimeParams2) {
 }
 
 TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(kTomlFileName);
+  config_file << kTomlContent;
   config_file.close();
 
   CreateEmptyRestoreFile("myrestore.root");
@@ -229,10 +229,10 @@ TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
 
 TEST_F(SimulationTest, InitializeRuntimeParamsCLIConfigFileName) {
   std::string config_filename = "my-config-file.toml";
-  remove(kConfigFileName);
+  remove(kTomlFileName);
   remove(config_filename.c_str());
   std::ofstream config_file(config_filename);
-  config_file << kConfigContent;
+  config_file << kTomlContent;
   config_file.close();
 
   const char* argv[3] = {"./binary_name", "-c", config_filename.c_str()};
@@ -245,10 +245,10 @@ TEST_F(SimulationTest, InitializeRuntimeParamsCLIConfigFileName) {
 
 TEST_F(SimulationTest, InitializeRuntimeParamsCtorConfigFileName) {
   std::string config_filename = "my-config-file.toml";
-  remove(kConfigFileName);
+  remove(kTomlFileName);
   remove(config_filename.c_str());
   std::ofstream config_file(config_filename);
-  config_file << kConfigContent;
+  config_file << kTomlContent;
   config_file.close();
 
   {
@@ -313,6 +313,14 @@ TEST_F(SimulationTest, SimulationId_OutputDir2) {
   EXPECT_EQ("output", simulation.GetOutputDir());
 }
 
+TEST_F(SimulationTest, InlineConfig) {
+  const char* argv[3] = {
+      "./binary_name", "--inline-config",
+      "{ \"bdm::Param\": { \"simulation_time_step_\": 6.28}}"};
+  Simulation sim(3, argv);
+  EXPECT_NEAR(6.28, sim.GetParam()->simulation_time_step_, 1e-5);
+}
+
 #ifdef USE_DICT
 TEST_F(IOTest, Simulation) {
   // change state of each data member in Simulation
@@ -370,8 +378,8 @@ TEST_F(IOTest, Simulation) {
 // The Param IOTest is located here to reuse the infrastructure used to test
 // parsing parameters.
 TEST_F(SimulationTest, ParamIOTest) {
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(kTomlFileName);
+  config_file << kTomlContent;
   config_file.close();
 
   Simulation simulation(TEST_NAME);
