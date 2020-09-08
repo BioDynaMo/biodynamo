@@ -49,8 +49,7 @@ inline void RunTest() {
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();
   auto* op = NewOperation("displacement");
-  ctxt->Execute(rm->GetSimObject(ref_uid), {op});
-  ctxt->Execute(rm->GetSimObject(ref_uid + 1), {op});
+  ctxt->Execute({op});
 
   // check results
   // cell 0

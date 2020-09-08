@@ -199,45 +199,69 @@ void InPlaceExecutionContext::TearDownIterationAll(
   }
 }
 
-void InPlaceExecutionContext::Execute(
-    SimObject* so, const std::vector<Operation*>& operations) {
-  auto* env = Simulation::GetActive()->GetEnvironment();
-  auto* param = Simulation::GetActive()->GetParam();
+struct InPlaceExecutionContext::LockAndExecute
+    : public Functor<void, SimObject*, SoHandle> {
+  LockAndExecute(const std::vector<Operation*>& operations,
+                 InPlaceExecutionContext* iec)
+      : scheduled_ops_(operations), context_(iec) {}
 
-  if (param->thread_safety_mechanism_ ==
-      Param::ThreadSafetyMechanism::kUserSpecified) {
-    so->CriticalRegion(&locks);
-    std::sort(locks.begin(), locks.end());
-    for (auto* l : locks) {
-      l->lock();
+  void operator()(SimObject* so, SoHandle) override {
+    auto* env = Simulation::GetActive()->GetEnvironment();
+    auto* param = Simulation::GetActive()->GetParam();
+
+    if (param->thread_safety_mechanism_ ==
+        Param::ThreadSafetyMechanism::kUserSpecified) {
+      so->CriticalRegion(&(context_->locks_));
+      std::sort(context_->locks_.begin(), context_->locks_.end());
+      for (auto* l : context_->locks_) {
+        l->lock();
+      }
+      context_->neighbor_cache_.clear();
+      for (auto& op : scheduled_ops_) {
+        (*op)(so);
+      }
+      for (auto* l : context_->locks_) {
+        l->unlock();
+      }
+      context_->locks_.clear();
+    } else if (param->thread_safety_mechanism_ ==
+               Param::ThreadSafetyMechanism::kAutomatic) {
+      auto* nb_mutex_builder = env->GetNeighborMutexBuilder();
+      auto* mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
+      std::lock_guard<decltype(*mutex)> guard(*mutex);
+      context_->neighbor_cache_.clear();
+      for (auto* op : scheduled_ops_) {
+        (*op)(so);
+      }
+    } else if (param->thread_safety_mechanism_ ==
+               Param::ThreadSafetyMechanism::kNone) {
+      context_->neighbor_cache_.clear();
+      for (auto* op : scheduled_ops_) {
+        (*op)(so);
+      }
+    } else {
+      Log::Fatal("InPlaceExecutionContext::Execute",
+                 "Invalid value for parameter thread_safety_mechanism_: ",
+                 param->thread_safety_mechanism_);
     }
-    neighbor_cache_.clear();
-    for (auto& op : operations) {
-      (*op)(so);
-    }
-    for (auto* l : locks) {
-      l->unlock();
-    }
-    locks.clear();
-  } else if (param->thread_safety_mechanism_ ==
-             Param::ThreadSafetyMechanism::kAutomatic) {
-    auto* nb_mutex_builder = env->GetNeighborMutexBuilder();
-    auto* mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
-    std::lock_guard<decltype(*mutex)> guard(*mutex);
-    neighbor_cache_.clear();
-    for (auto* op : operations) {
-      (*op)(so);
-    }
-  } else if (param->thread_safety_mechanism_ ==
-             Param::ThreadSafetyMechanism::kNone) {
-    neighbor_cache_.clear();
-    for (auto* op : operations) {
-      (*op)(so);
-    }
+  }
+  const std::vector<Operation*>& scheduled_ops_;
+  InPlaceExecutionContext* context_;
+};
+
+void InPlaceExecutionContext::Execute(
+    const std::vector<Operation*>& operations) {
+  auto* param = Simulation::GetActive()->GetParam();
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+  auto bs = param->scheduling_batch_size_;
+  if (param->scheduling_columnar_) {
+    auto functor = LockAndExecute(operations, this);
+    rm->ApplyOnAllElementsParallelDynamic(bs, functor);
   } else {
-    Log::Fatal("InPlaceExecutionContext::Execute",
-               "Invalid value for parameter thread_safety_mechanism_: ",
-               param->thread_safety_mechanism_);
+    for (auto* op : operations) {
+      auto functor = LockAndExecute({op}, this);
+      rm->ApplyOnAllElementsParallelDynamic(bs, functor);
+    }
   }
 }
 

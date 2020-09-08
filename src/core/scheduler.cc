@@ -147,20 +147,6 @@ Operation* Scheduler::GetDefaultOp(const std::string& name) {
   return nullptr;
 }
 
-struct RunAllScheduledOps : Functor<void, SimObject*, SoHandle> {
-  RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
-      : scheduled_ops_(scheduled_ops) {
-    sim_ = Simulation::GetActive();
-  }
-
-  void operator()(SimObject* so, SoHandle) override {
-    sim_->GetExecutionContext()->Execute(so, scheduled_ops_);
-  }
-
-  Simulation* sim_;
-  std::vector<Operation*>& scheduled_ops_;
-};
-
 void Scheduler::SetUpOps() {
   for (auto* op : scheduled_sim_object_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
@@ -191,9 +177,6 @@ void Scheduler::TearDownOps() {
 
 void Scheduler::RunScheduledOps() {
   auto* sim = Simulation::GetActive();
-  auto* rm = sim->GetResourceManager();
-  auto* param = sim->GetParam();
-  auto batch_size = param->scheduling_batch_size_;
 
   // Run the row-wise operations
   std::vector<Operation*> row_wise_operations;
@@ -202,11 +185,7 @@ void Scheduler::RunScheduledOps() {
       row_wise_operations.push_back(op);
     }
   }
-  RunAllScheduledOps functor(row_wise_operations);
-
-  Timing::Time("sim object ops", [&]() {
-    rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
-  });
+  sim->GetExecutionContext()->Execute(row_wise_operations);
 
   // Run the column-wise operations
   for (auto* op : scheduled_standalone_ops_) {

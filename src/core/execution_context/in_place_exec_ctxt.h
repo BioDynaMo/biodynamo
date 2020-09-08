@@ -65,6 +65,8 @@ class InPlaceExecutionContext {
     std::vector<Map*> previous_maps_;
   };
 
+  struct LockAndExecute;
+
   explicit InPlaceExecutionContext(
       const std::shared_ptr<ThreadSafeSoUidMap>& map);
 
@@ -86,7 +88,7 @@ class InPlaceExecutionContext {
 
   /// Execute a series of operations on a simulation object in the order given
   /// in the argument
-  void Execute(SimObject* so, const std::vector<Operation*>& operations);
+  void Execute(const std::vector<Operation*>& operations);
 
   void push_back(SimObject* new_so);  // NOLINT
 
@@ -113,7 +115,7 @@ class InPlaceExecutionContext {
   /// Contains unique ids of sim objects that will be removed at the end of each
   /// iteration.
   std::vector<SoUid> remove_;
-  std::vector<Spinlock*> locks;
+  std::vector<Spinlock*> locks_;
 
   /// Pointer to new sim objects
   std::vector<SimObject*> new_sim_objects_;

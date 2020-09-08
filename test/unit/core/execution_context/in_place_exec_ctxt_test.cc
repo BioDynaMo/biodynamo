@@ -211,7 +211,7 @@ TEST(InPlaceExecutionContext, Execute) {
   op2->GetImplementation<Op2>()->op1_called_ = &op1_called;
   op2->GetImplementation<Op2>()->op2_called_ = &op2_called;
   std::vector<Operation*> operations = {op1, op2};
-  ctxt->Execute(&cell_0, operations);
+  ctxt->Execute(operations);
 
   EXPECT_TRUE(op1_called);
   EXPECT_TRUE(op2_called);
@@ -233,30 +233,6 @@ struct NeighborFunctor : public Functor<void, const SimObject*, double> {
 
  private:
   uint64_t& nb_counter_;
-};
-
-struct TestFunctor1 : public Functor<void, SimObject*> {
-  Operation* op;
-
-  TestFunctor1(Operation* op) : op(op) {}
-  void operator()(SimObject* so) override {
-    // ctxt must be obtained inside the lambda, otherwise we always get the
-    // one corresponding to the master thread
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->Execute(so, {op});
-  }
-};
-
-struct TestFunctor2 : public Functor<void, SimObject*> {
-  Operation* op;
-
-  TestFunctor2(Operation* op) : op(op) {}
-  void operator()(SimObject* so) override {
-    // ctxt must be obtained inside the lambda, otherwise we always get the
-    // one corresponding to the master thread
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->Execute(so, {op});
-  }
 };
 
 struct TestOperation : public SimObjectOperationImpl {
@@ -286,7 +262,6 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
   Simulation sim(
       "RunInPlaceExecutionContextExecuteThreadSafety",
       [&](Param* param) { param->thread_safety_mechanism_ = mechanism; });
-  auto* rm = sim.GetResourceManager();
 
   // create cells
   auto construct = [](const Double3& position) {
@@ -301,15 +276,15 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
   all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
   sim.GetEnvironment()->Update();
 
+  auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+
   // this operation increases the diameter of the current sim_object and of all
   // its neighbors.
   auto* op1 = NewOperation("TestOperation");
-  TestFunctor1 functor1(op1);
-  rm->ApplyOnAllElementsParallel(functor1);
+  ctxt->Execute({op1});
 
   auto* op2 = NewOperation("TestOperation");
-  TestFunctor2 functor2(op2);
-  rm->ApplyOnAllElements(functor2);
+  ctxt->Execute({op2});
 
   delete op1;
   delete op2;

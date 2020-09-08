@@ -193,7 +193,7 @@ struct Param {
   ///     [simulation]
   ///     thread_safety_mechanism_ = "none"
   ThreadSafetyMechanism thread_safety_mechanism_ =
-      ThreadSafetyMechanism::kUserSpecified;
+      ThreadSafetyMechanism::kAutomatic;
 
   // visualization values ------------------------------------------------------
 
@@ -312,6 +312,17 @@ struct Param {
   ///     [performance]
   ///     scheduling_batch_size = 1000
   uint64_t scheduling_batch_size_ = 1000;
+
+  /// Scheduling method for executing sim object operations. Columnar scheduling
+  /// refers to executing all operations per simulation object.
+  /// Non-columnar scheduling refers to executing all simulation objects per
+  /// operation\n
+  /// Default value: `true`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     scheduling_columnar = true
+  bool scheduling_columnar_ = true;
 
   /// Calculation of the displacement (mechanical interaction) is an
   /// expensive operation. If simulation objects do not move or grow,

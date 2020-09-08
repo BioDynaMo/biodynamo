@@ -48,10 +48,11 @@ TEST(DisplacementOpTest, ComputeNew) {
 
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();
+  ctxt->Execute({displacement_op});
 
-  for (uint64_t i = 0; i < 27; i++) {
-    ctxt->Execute(rm->GetSimObject(ref_uid + i), {displacement_op});
-  }
+  // for (uint64_t i = 0; i < 27; i++) {
+  //   ctxt->Execute(rm->GetSimObject(ref_uid + i), {displacement_op});
+  // }
 
   // clang-format off
   EXPECT_ARR_NEAR(rm->GetSimObject(ref_uid + 0)->GetPosition(), {-0.20160966809506442, -0.20160966809506442, -0.20160966809506442});
