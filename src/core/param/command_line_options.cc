@@ -138,8 +138,8 @@ void CommandLineOptions::HandleCoreOptions() {
   // Handle "verbose" argument
   // If set in etc/bdm.rootrc use that value, command line argument will
   // override it
-  Int_t ll = kError;
-  TString slevel = "Error";
+  Int_t ll = kWarning;
+  TString slevel = "Warning";
   TEnvRec* rec = gEnv->Lookup("Root.ErrorIgnoreLevel");
   if (rec) {
     if (rec->GetLevel() == kEnvUser)
