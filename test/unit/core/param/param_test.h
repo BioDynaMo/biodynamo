@@ -12,22 +12,22 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/param/module_param.h"
-#include <memory>
+#ifndef UNIT_CORE_PARAM_PARAM_TEST_H_
+#define UNIT_CORE_PARAM_PARAM_TEST_H_
+
+#include "core/param/param.h"
 
 namespace bdm {
 
-ModuleParamUidGenerator* ModuleParamUidGenerator::Get() {
-  static ModuleParamUidGenerator kInstance;
-  return &kInstance;
-}
+struct TestModuleParam : public ModuleParam {
+  BDM_MODULE_PARAM_HEADER(TestModuleParam, 1);
 
-ModuleParamUidGenerator::ModuleParamUidGenerator() : counter_(0) {}
-
-ModuleParamUid ModuleParamUidGenerator::NewUid() { return counter_++; }
-
-ModuleParam::~ModuleParam() {}
-
-void ModuleParam::AssignFromConfig(const std::shared_ptr<cpptoml::table>&) {}
+  double test_param1 = 3.14;
+  uint64_t test_param2 = 42;
+  int test_param3 = -1;
+};
 
 }  // namespace bdm
+
+#endif  // UNIT_CORE_PARAM_PARAM_TEST_H_
+#include <memory>
