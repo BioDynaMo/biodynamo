@@ -195,7 +195,12 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
 
 Simulation::~Simulation() {
   if (param_ != nullptr && param_->statistics_) {
-    std::cout << *this << std::endl;
+    std::stringstream sstr;
+    sstr << *this << std::endl;
+    std::cout << sstr.str() << std::endl;
+    // write to file
+    std::ofstream ofs(Concat(output_dir_, "/metadata"));
+    ofs << sstr.str() << std::endl;
   }
 
   if (mem_mgr_) {
