@@ -425,6 +425,8 @@ struct Param {
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n
+  /// If set to true it prints simulation data at the end of the simulation
+  /// to std::cout and a file.\n
   /// Default Value: `false`\n
   /// TOML config file:
   ///
