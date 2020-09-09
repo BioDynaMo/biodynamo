@@ -19,9 +19,12 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <fstream>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/environment/environment.h"
@@ -120,12 +123,12 @@ void Simulation::Restore(Simulation&& restored) {
   InitializeOutputDir();
 }
 
-inline std::ostream& operator<<(std::ostream& os, Simulation& sim) {
+std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   std::vector<std::string> dg_names;
   std::vector<int> dg_resolutions;
   std::vector<std::array<int32_t, 3>> dg_dimensions;
 
-  sim.GetResourceManager()->ApplyOnAllDiffusionGrids([&](auto* dg) {
+  sim.rm_->ApplyOnAllDiffusionGrids([&](auto* dg) {
     dg_names.push_back(dg->GetSubstanceName());
     dg_resolutions.push_back(dg->GetResolution());
     dg_dimensions.push_back(dg->GetGridSize());
@@ -134,16 +137,22 @@ inline std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   os << std::endl;
 
   os << "***********************************************" << std::endl;
+  os << "***********************************************" << std::endl;
+  os << "\033[1mSimulation Metadata:\033[0m" << std::endl;
+  os << "***********************************************" << std::endl;
   os << std::endl;
-  os << "\033[1mSimulation name\t\t\t: \033[0m" << sim.GetUniqueName()
+  os << "\033[1mGeneral\033[0m" << std::endl;
+  if (sim.command_line_parameter_str_ != "") {
+    os << "Command\t\t\t\t: " << sim.command_line_parameter_str_ << std::endl;
+  }
+  os << "Simulation name\t\t\t: " << sim.GetUniqueName() << std::endl;
+  os << "Number of iterations executed\t: "
+     << sim.scheduler_->GetSimulatedSteps() << std::endl;
+  os << "Number of simulation objects\t: " << sim.rm_->GetNumSimObjects()
      << std::endl;
-  os << "\033[1mNumber of iterations executed\t: \033[0m"
-     << sim.GetScheduler()->GetSimulatedSteps() << std::endl;
-  os << "\033[1mNumber of simulation objects\t: \033[0m"
-     << sim.GetResourceManager()->GetNumSimObjects() << std::endl;
 
   if (dg_names.size() != 0) {
-    os << "\033[1mDiffusion grids\033[0m" << std::endl;
+    os << "Diffusion grids" << std::endl;
     for (size_t i = 0; i < dg_names.size(); ++i) {
       os << "  " << dg_names[i] << ":" << std::endl;
       auto& dim = dg_dimensions[i];
@@ -155,15 +164,14 @@ inline std::ostream& operator<<(std::ostream& os, Simulation& sim) {
     }
   }
 
-  os << "\033[1mOutput directory\t\t: \033[0m" << sim.GetOutputDir()
-     << std::endl;
+  os << "Output directory\t\t: " << sim.GetOutputDir() << std::endl;
   os << "  size\t\t\t\t: "
      << gSystem->GetFromPipe(
             Concat("du -sh ", sim.GetOutputDir(), " | cut -f1").c_str())
      << std::endl;
   os << std::endl;
   os << "***********************************************" << std::endl;
-  os << *(sim.GetScheduler()->GetOpTimes()) << std::endl;
+  os << *(sim.scheduler_->GetOpTimes()) << std::endl;
   os << "***********************************************" << std::endl;
   os << std::endl;
   os << "\033[1mThread Info\033[0m" << std::endl;
@@ -171,8 +179,14 @@ inline std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   os << std::endl;
   os << "***********************************************" << std::endl;
   os << std::endl;
-  os << *(sim.GetResourceManager());
+  os << *(sim.rm_);
   os << std::endl;
+  os << "***********************************************" << std::endl;
+  os << std::endl;
+  os << "\033[1mParameters\033[0m" << std::endl;
+  os << sim.param_->ToJsonString();
+  os << std::endl;
+  os << "***********************************************" << std::endl;
   os << "***********************************************" << std::endl;
 
   return os;
@@ -311,6 +325,10 @@ void Simulation::InitializeRuntimeParams(
   // simulation calls e.g. `omp_set_num_threads()` within main.
   ThreadInfo::GetInstance()->Renew();
 
+  std::stringstream sstr;
+  sstr << (*clo);
+  command_line_parameter_str_ = sstr.str();
+
   param_ = new Param();
 
   // detect if the biodynamo environment has been sourced
@@ -332,6 +350,10 @@ void Simulation::InitializeRuntimeParams(
   }
 
   LoadConfigFile(ctor_config, clo->Get<std::string>("config"));
+  if (clo->Get<std::string>("inline-config") != "") {
+    param_->MergeJsonPatch(clo->Get<std::string>("inline-config"));
+  }
+
   if (clo->Get<std::string>("backup") != "") {
     param_->backup_file_ = clo->Get<std::string>("backup");
   }
@@ -366,12 +388,15 @@ void Simulation::InitializeRuntimeParams(
 
 void Simulation::LoadConfigFile(const std::string& ctor_config,
                                 const std::string& cli_config) {
-  constexpr auto kConfigFile = "bdm.toml";
-  constexpr auto kConfigFileParentDir = "../bdm.toml";
+  constexpr auto kTomlConfigFile = "bdm.toml";
+  constexpr auto kJsonConfigFile = "bdm.json";
+  constexpr auto kTomlConfigFileParentDir = "../bdm.toml";
+  constexpr auto kJsonConfigFileParentDir = "../bdm.json";
+  // find config file
+  std::string config = "";
   if (ctor_config != "") {
     if (FileExists(ctor_config)) {
-      auto config = cpptoml::parse_file(ctor_config);
-      param_->AssignFromConfig(config);
+      config = ctor_config;
     } else {
       Log::Fatal("Simulation::LoadConfigFile", "The config file ", ctor_config,
                  " specified in the constructor of bdm::Simulation "
@@ -379,22 +404,35 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
     }
   } else if (cli_config != "") {
     if (FileExists(cli_config)) {
-      auto config = cpptoml::parse_file(cli_config);
-      param_->AssignFromConfig(config);
+      config = cli_config;
     } else {
       Log::Fatal("Simulation::LoadConfigFile", "The config file ", cli_config,
                  " specified as command line argument "
                  "could not be found.");
     }
-  } else if (FileExists(kConfigFile)) {
-    auto config = cpptoml::parse_file(kConfigFile);
-    param_->AssignFromConfig(config);
-  } else if (FileExists(kConfigFileParentDir)) {
-    auto config = cpptoml::parse_file(kConfigFileParentDir);
-    param_->AssignFromConfig(config);
+  } else if (FileExists(kTomlConfigFile)) {
+    config = kTomlConfigFile;
+  } else if (FileExists(kTomlConfigFileParentDir)) {
+    config = kTomlConfigFileParentDir;
+  } else if (FileExists(kJsonConfigFile)) {
+    config = kJsonConfigFile;
+  } else if (FileExists(kJsonConfigFileParentDir)) {
+    config = kJsonConfigFileParentDir;
   } else {
-    Log::Warning("Simulation::LoadConfigFile", "Config file ", kConfigFile,
+    Log::Warning("Simulation::LoadConfigFile", "Config file ", kTomlConfigFile,
+                 " or ", kJsonConfigFile,
                  " not found in `.` or `..` directory.");
+  }
+
+  // load config file
+  if (EndsWith(config, ".toml")) {
+    auto toml = cpptoml::parse_file(config);
+    param_->AssignFromConfig(toml);
+  } else if (EndsWith(config, ".json")) {
+    std::ifstream ifs(config);
+    std::stringstream buffer;
+    buffer << ifs.rdbuf();
+    param_->MergeJsonPatch(buffer.str());
   }
 }
 

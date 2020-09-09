@@ -16,6 +16,7 @@
 #define CORE_PARAM_PARAM_H_
 
 #include <cinttypes>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -38,6 +39,18 @@ struct Param {
   ~Param();
 
   void Restore(Param&& other);
+
+  /// Returns a Json representation of this parameter and all
+  /// ModuleParameter.
+  /// The modules_ data member has been flattened to simplify
+  /// JSON merge patches (https://tools.ietf.org/html/rfc7386).
+  std::string ToJsonString() const;
+
+  /// Applies a JSON merge patch (https://tools.ietf.org/html/rfc7386)
+  /// to this parameter and ModuleParameter.
+  /// The modules_ data member must be flattened. See output of
+  /// `ToJsonString()`.
+  void MergeJsonPatch(const std::string& patch);
 
   template <typename TModuleParam>
   const TModuleParam* GetModuleParam() const {
@@ -270,8 +283,8 @@ struct Param {
   ///       # The former block can be repeated for further simulation objects
   ///       [[visualize_sim_object]]
   ///       name = "Neurite"
-  std::unordered_map<std::string, std::set<std::string>>
-      visualize_sim_objects_;  //!
+  std::map<std::string, std::set<std::string>>
+      visualize_sim_objects_;  ///<  JSON_object
 
   struct VisualizeDiffusion {
     std::string name_;
@@ -477,12 +490,10 @@ struct Param {
   ///     preferred_gpu = 0
   int preferred_gpu_ = 0;
 
- protected:
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
-  friend class Simulation;
   static std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
       registered_modules_;
   std::unordered_map<ModuleParamUid, ModuleParam*> modules_;

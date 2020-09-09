@@ -16,6 +16,7 @@
 #define NEUROSCIENCE_PARAM_H_
 
 #include <cinttypes>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -29,11 +30,7 @@ namespace experimental {
 namespace neuroscience {
 
 struct Param : public ModuleParam {
-  static const ModuleParamUid kUid;
-
-  ModuleParam* GetCopy() const override;
-
-  ModuleParamUid GetUid() const override;
+  BDM_MODULE_PARAM_HEADER(Param, 1);
 
   /// Default actual length value of a neurite.\n
   /// Default value: `1.0`\n
@@ -111,9 +108,6 @@ struct Param : public ModuleParam {
  protected:
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&) override;
-
- private:
-  BDM_CLASS_DEF_OVERRIDE(Param, 1);
 };
 
 }  // namespace neuroscience
