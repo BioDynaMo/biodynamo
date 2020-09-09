@@ -146,6 +146,8 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
     os << "Command\t\t\t\t: " << sim.command_line_parameter_str_ << std::endl;
   }
   os << "Simulation name\t\t\t: " << sim.GetUniqueName() << std::endl;
+  os << "Total simulation runtime\t: " << (sim.dtor_ts_ - sim.ctor_ts_) << " ms"
+     << std::endl;
   os << "Number of iterations executed\t: "
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
   os << "Number of simulation objects\t: " << sim.rm_->GetNumSimObjects()
@@ -194,6 +196,8 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
 }
 
 Simulation::~Simulation() {
+  dtor_ts_ = bdm::Timing::Timestamp();
+
   if (param_ != nullptr && param_->statistics_) {
     std::stringstream sstr;
     sstr << *this << std::endl;
@@ -284,6 +288,7 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
 void Simulation::Initialize(CommandLineOptions* clo,
                             const std::function<void(Param*)>& set_param,
                             const std::string& config_file) {
+  ctor_ts_ = bdm::Timing::Timestamp();
   id_ = counter_++;
   Activate();
   if (!clo) {
