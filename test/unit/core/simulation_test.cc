@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 #include <omp.h>
+#include <experimental/filesystem>
 #include <fstream>
 #include <type_traits>
 
@@ -22,6 +23,8 @@
 #include "core/simulation_backup.h"
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_util.h"
+
+namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 
@@ -319,6 +322,27 @@ TEST_F(SimulationTest, InlineConfig) {
       "{ \"bdm::Param\": { \"simulation_time_step_\": 6.28}}"};
   Simulation sim(3, argv);
   EXPECT_NEAR(6.28, sim.GetParam()->simulation_time_step_, 1e-5);
+}
+
+TEST_F(SimulationTest, DontRemoveOutputDirContents) {
+  fs::create_directory(Concat("output/", TEST_NAME));
+  fs::create_directory(Concat("output/", TEST_NAME, "/subdir"));
+  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+
+  Simulation sim(TEST_NAME);
+  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+}
+
+TEST_F(SimulationTest, RemoveOutputDirContents) {
+  fs::create_directory(Concat("output/", TEST_NAME));
+  fs::create_directory(Concat("output/", TEST_NAME, "/subdir"));
+  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+
+  auto set_param = [](Param* param) {
+    param->remove_output_dir_contents_ = true;
+  };
+  Simulation sim(TEST_NAME, set_param);
+  EXPECT_TRUE(fs::is_empty(Concat("output/", TEST_NAME)));
 }
 
 #ifdef USE_DICT

@@ -83,6 +83,11 @@ struct Param {
   ///     ouput_dir = "output"
   std::string output_dir_ = "output";
 
+  /// If set to true, BioDynaMo will automatically delete all contents
+  /// inside `Param::output_dir_` at the beginning of the simulation.
+  /// Use with caution, especially in combination with `Param::output_dir_`
+  bool remove_output_dir_contents_ = false;
+
   /// Backup file name for full simulation backups\n
   /// Path is relative to working directory.\n
   /// Default value: `""` (no backups will be made)\n
