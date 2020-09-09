@@ -166,6 +166,10 @@ class Simulation {
   std::string command_line_parameter_str_;  //!
   /// BioDynaMo memory manager. If nullptr, default allocator will be used.
   MemoryManager* mem_mgr_ = nullptr;  //!
+  /// Timestep when constructor was called
+  int64_t ctor_ts_ = 0;  //!
+  /// Timestep when destructor was called
+  int64_t dtor_ts_ = 0;  //!
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,
