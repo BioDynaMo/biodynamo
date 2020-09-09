@@ -42,6 +42,7 @@
 #include "core/util/thread_info.h"
 #include "core/util/timing.h"
 #include "core/visualization/root/adaptor.h"
+#include "memory_usage.h"
 #include "version.h"
 
 #include <TEnv.h>
@@ -147,6 +148,8 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   }
   os << "Simulation name\t\t\t: " << sim.GetUniqueName() << std::endl;
   os << "Total simulation runtime\t: " << (sim.dtor_ts_ - sim.ctor_ts_) << " ms"
+     << std::endl;
+  os << "Peak memory usage (MB)\t\t: " << (getPeakRSS() / 1048576.0)
      << std::endl;
   os << "Number of iterations executed\t: "
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
