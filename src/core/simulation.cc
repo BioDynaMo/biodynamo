@@ -169,6 +169,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << gSystem->GetFromPipe(
             Concat("du -sh ", sim.GetOutputDir(), " | cut -f1").c_str())
      << std::endl;
+  os << "BioDynaMo version:\t\t: " << Version::String() << std::endl;
   os << std::endl;
   os << "***********************************************" << std::endl;
   os << *(sim.scheduler_->GetOpTimes()) << std::endl;
