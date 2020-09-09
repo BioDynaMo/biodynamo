@@ -31,6 +31,7 @@
 #include "core/shape.h"
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
+#include "core/util/filesystem.h"
 #include "core/util/timing.h"
 #include "core/util/vtune.h"
 #include "core/visualization/root/notebook_util.h"
