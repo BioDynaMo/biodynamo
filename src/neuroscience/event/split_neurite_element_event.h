@@ -18,7 +18,6 @@
 #include "core/event/event.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 /// \brief Contains the parameters to split a neurite element into two segments.
@@ -42,7 +41,6 @@ struct SplitNeuriteElementEvent : public Event {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_EVENT_SPLIT_NEURITE_ELEMENT_EVENT_H_

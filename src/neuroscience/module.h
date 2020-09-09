@@ -16,7 +16,6 @@
 #define NEUROSCIENCE_MODULE_H_
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 /// Initializes the neuroscience module.
@@ -24,7 +23,6 @@ namespace neuroscience {
 void InitModule();
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_MODULE_H_

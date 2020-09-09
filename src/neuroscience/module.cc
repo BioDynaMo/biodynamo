@@ -17,14 +17,12 @@
 #include "neuroscience/param.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 void InitModule() {
-  using NeuroscienceParam = bdm::experimental::neuroscience::Param;
+  using NeuroscienceParam = bdm::neuroscience::Param;
   bdm::Param::RegisterModuleParam(new NeuroscienceParam());
 }
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm

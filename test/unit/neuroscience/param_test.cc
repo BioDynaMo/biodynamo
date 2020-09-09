@@ -22,7 +22,6 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 TEST(neuroscience, Param) {
@@ -62,5 +61,4 @@ TEST(neuroscience, Param) {
 }
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm

@@ -16,7 +16,6 @@
 #include "core/util/cpptoml.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 const ModuleParamUid Param::kUid = ModuleParamUidGenerator::Get()->NewUid();
@@ -43,5 +42,4 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
 }
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
