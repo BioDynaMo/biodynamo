@@ -22,8 +22,8 @@ SimulationBackup::SimulationBackup(const std::string& backup_file,
   backup_ = true;
   if (backup_file_ == "") {
     backup_ = false;
-    Log::Warning("SimulationBackup",
-                 "No backup file name given. No backups will be made!");
+    Log::Info("SimulationBackup",
+              "No backup file name given. No backups will be made!");
   } else if (backup_file_ == restore_file_) {
     Log::Warning(
         "SimulationBackup",
@@ -34,8 +34,8 @@ SimulationBackup::SimulationBackup(const std::string& backup_file,
   if (restore_file_ == "") {
     restore_ = false;
   } else if (!FileExists(restore_file_)) {
-    Log::Fatal("SimulationBackup", "Given restore file does not exist: ",
-               restore_file_);
+    Log::Fatal("SimulationBackup",
+               "Given restore file does not exist: ", restore_file_);
   }
 }
 

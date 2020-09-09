@@ -436,10 +436,6 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
     config = kJsonConfigFile;
   } else if (FileExists(kJsonConfigFileParentDir)) {
     config = kJsonConfigFileParentDir;
-  } else {
-    Log::Warning("Simulation::LoadConfigFile", "Config file ", kTomlConfigFile,
-                 " or ", kJsonConfigFile,
-                 " not found in `.` or `..` directory.");
   }
 
   // load config file
@@ -451,6 +447,17 @@ void Simulation::LoadConfigFile(const std::string& ctor_config,
     std::stringstream buffer;
     buffer << ifs.rdbuf();
     param_->MergeJsonPatch(buffer.str());
+  }
+
+  // Log config file info
+  if (config != "") {
+    Log::Info("Simulation::LoadConfigFile", "Used config file: ", config);
+  } else {
+    Log::Info("Simulation::LoadConfigFile", "Default config file ",
+              kTomlConfigFile, " or ", kJsonConfigFile,
+              " not found in `.` or `..` directory. No other config file was "
+              "specified as command line parameter or passed to the "
+              "constructor of bdm::Simulation.");
   }
 }
 
