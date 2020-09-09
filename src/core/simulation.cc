@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <experimental/filesystem>
 #include <fstream>
 #include <memory>
 #include <ostream>
@@ -36,6 +37,7 @@
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/sim_object/so_uid_generator.h"
+#include "core/util/filesystem.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
 #include "core/util/string.h"
@@ -46,6 +48,8 @@
 #include "version.h"
 
 #include <TEnv.h>
+
+namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 
@@ -469,6 +473,19 @@ void Simulation::InitializeOutputDir() {
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
     Log::Fatal("Simulation::InitializeOutputDir",
                "Failed to make output directory ", output_dir_);
+  }
+  if (!fs::is_empty(output_dir_)) {
+    if (param_->remove_output_dir_contents_) {
+      RemoveDirectoryContents(output_dir_);
+    } else {
+      Log::Warning(
+          "Simulation::InitializeOutputDir", "Ouput dir (", output_dir_,
+          ") is not empty. Files will be overriden. This could cause "
+          "inconsistent state of (e.g. visualization files). Consider removing "
+          "all contents "
+          "prior to running a simulation. Have a look at "
+          "Param::remove_output_dir_contents_ to remove files automatically.");
+    }
   }
 }
 
