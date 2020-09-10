@@ -41,21 +41,21 @@ Scheduler::Scheduler() {
 
   // Operations are scheduled in the following order (sub categorated by their
   // operation implementation type, so that actual order may vary)
-  default_ops_ = {"set up exec context",
-                  "visualize",
-                  "update environment",
-                  "first op",
-                  "bound space",
-                  "biology module",
-                  "displacement",
-                  "discretization",
-                  "diffusion",
-                  "load balancing",
-                  "last op",
-                  "tear down exec context"};
+  std::vector<std::string> default_ops = {"set up exec context",
+                                          "visualize",
+                                          "update environment",
+                                          "first op",
+                                          "bound space",
+                                          "biology module",
+                                          "displacement",
+                                          "discretization",
+                                          "diffusion",
+                                          "load balancing",
+                                          "last op",
+                                          "tear down exec context"};
 
   // Schedule the default operations
-  for (auto& def_op : default_ops_) {
+  for (auto& def_op : default_ops) {
     ScheduleOp(NewOperation(def_op));
   }
 
@@ -64,19 +64,7 @@ Scheduler::Scheduler() {
 }
 
 Scheduler::~Scheduler() {
-  for (auto* op : unscheduled_ops_) {
-    delete op;
-  }
-  for (auto* op : scheduled_sim_object_ops_) {
-    delete op;
-  }
-  for (auto* op : scheduled_standalone_ops_) {
-    delete op;
-  }
-  // Normally this list of ops is empty, but it can happen that an uninitialized
-  // Scheduler gets destructed, leaving all the ops in this vector
-  // In such cases we loop over this vector
-  for (auto* op : ops_to_add_) {
+  for (auto* op : all_ops_) {
     delete op;
   }
   delete backup_;
@@ -101,7 +89,10 @@ uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 
 TimingAggregator* Scheduler::GetOpTimes() { return &op_times_; }
 
-void Scheduler::ScheduleOp(Operation* op) { ops_to_add_.push_back(op); }
+void Scheduler::ScheduleOp(Operation* op) {
+  all_ops_.push_back(op);
+  ops_to_add_.push_back(op);
+}
 
 void Scheduler::UnscheduleOp(Operation* op) {
   if (std::find(protected_ops_.begin(), protected_ops_.end(), op->name_) !=
@@ -115,37 +106,22 @@ void Scheduler::UnscheduleOp(Operation* op) {
   ops_to_remove_.push_back(op);
 }
 
-Operation* Scheduler::GetDefaultOp(const std::string& name) {
-  // Check if Initialize has been called, otherwise the scheduler operation
-  // lists will be empty
-  if (!initialized_) {
-    Log::Fatal("Scheduler::GetDefaultOp",
-               "The scheduler has not been yet initialized!");
-    return nullptr;
+std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
+  std::vector<Operation*> ret;
+  if (std::find(protected_ops_.begin(), protected_ops_.end(), name) !=
+      protected_ops_.end()) {
+    Log::Warning("Scheduler::GetOps", "The operation '", name,
+                 "' is a protected operation. Request ignored.");
+    return ret;
   }
 
-  if (std::find(default_ops_.begin(), default_ops_.end(), name) ==
-      default_ops_.end()) {
-    Log::Warning("Scheduler::GetDefaultOp", "The operation '", name,
-                 "' is not a default operation. Request ignored.");
-    return nullptr;
-  }
-
-  for (auto it = scheduled_sim_object_ops_.begin();
-       it != scheduled_sim_object_ops_.end(); ++it) {
+  for (auto it = all_ops_.begin(); it != all_ops_.end(); ++it) {
     if ((*it)->name_ == name) {
-      return *it;
+      ret.push_back(*it);
     }
   }
 
-  for (auto it = scheduled_standalone_ops_.begin();
-       it != scheduled_standalone_ops_.end(); ++it) {
-    if ((*it)->name_ == name) {
-      return *it;
-    }
-  }
-
-  return nullptr;
+  return ret;
 }
 
 struct RunAllScheduledOps : Functor<void, SimObject*, SoHandle> {
@@ -287,8 +263,6 @@ void Scheduler::Initialize() {
   });
 
   ScheduleOps();
-
-  initialized_ = true;
 }
 
 // Schedule the operations
