@@ -13,10 +13,10 @@
 // -----------------------------------------------------------------------------
 
 #include "core/param/param.h"
-#include <utility>
-#include <vector>
 #include <TBufferJSON.h>
 #include <json.hpp>
+#include <utility>
+#include <vector>
 #include "core/util/cpptoml.h"
 #include "core/util/log.h"
 
@@ -152,6 +152,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   }
 
   // simulation group
+  BDM_ASSIGN_CONFIG_VALUE(random_seed_, "simulation.random_seed");
   BDM_ASSIGN_CONFIG_VALUE(output_dir_, "simulation.output_dir");
   BDM_ASSIGN_CONFIG_VALUE(backup_file_, "simulation.backup_file");
   BDM_ASSIGN_CONFIG_VALUE(restore_file_, "simulation.restore_file");

@@ -33,6 +33,7 @@ class SimulationTest : public ::testing::Test {
   static constexpr const char* kTomlFileName = "bdm.toml";
   static constexpr const char* kTomlContent =
       "[simulation]\n"
+      "random_seed = 123\n"
       "output_dir = \"result-dir\"\n"
       "backup_file = \"backup.root\"\n"
       "restore_file = \"restore.root\"\n"
@@ -109,6 +110,7 @@ class SimulationTest : public ::testing::Test {
   }
 
   void ValidateNonCLIParameter(const Param* param) {
+    EXPECT_EQ(123u, param->random_seed_);
     EXPECT_EQ("paraview", param->visualization_engine_);
     EXPECT_EQ("result-dir", param->output_dir_);
     EXPECT_EQ("RK", param->diffusion_type_);

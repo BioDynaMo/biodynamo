@@ -68,6 +68,16 @@ struct Param {
   }
 
   // simulation values ---------------------------------------------------------
+  /// Set random number seed.\n
+  /// The pseudo random number generator (prng) of each thread will be
+  /// initialized as follows:
+  /// `prng[tid].SetSeed(random_seed_ * (tid + 1));`\n
+  /// Default value: `"output"`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     random_seed = 0
+  uint64_t random_seed_ = 0;
 
   /// Variable which specifies method using for solving differential equation
   /// {"Euler", "RK4"}.

@@ -59,10 +59,10 @@ class Random {
   double Gaus(double mean = 0.0, double sigma = 1.0);
 
   /// Forwards call to TRandom3::SetSeed
-  void SetSeed(double seed);
+  void SetSeed(uint64_t seed);
 
   /// Forwards call to TRandom3::GetSeed
-  double GetSeed() const;
+  uint64_t GetSeed() const;
 
  private:
   TRandom3 generator_;
