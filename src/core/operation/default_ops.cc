@@ -4,6 +4,7 @@
 #include "core/operation/displacement_op_cuda.h"
 #include "core/operation/displacement_op_opencl.h"
 #include "core/operation/dividing_cell_op.h"
+#include "core/operation/load_balancing_op.h"
 #include "core/operation/operation.h"
 #include "core/visualization/visualization_adaptor.h"
 
@@ -12,6 +13,10 @@ namespace bdm {
 BDM_REGISTER_OP(BoundSpace, "bound space", kCpu);
 
 BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
+
+// By default run load balancing only in the first iteration.
+BDM_REGISTER_OP_WITH_FREQ(LoadBalancingOp, "load balancing", kCpu,
+                          std::numeric_limits<std::size_t>::max());
 
 BDM_REGISTER_OP(DisplacementOp, "displacement", kCpu);
 

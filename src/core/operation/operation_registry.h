@@ -50,6 +50,13 @@ struct OperationRegistry {
   bool op::registered_ = OperationRegistry::GetInstance()->AddOperationImpl( \
       name, OpComputeTarget::target, new op());
 
+/// \see BDM_REGISTER_OP
+/// Adds parameter to specigy default execution frequency (\see
+/// Operation::frequency_)
+#define BDM_REGISTER_OP_WITH_FREQ(op, name, target, frequency)               \
+  bool op::registered_ = OperationRegistry::GetInstance()->AddOperationImpl( \
+      name, OpComputeTarget::target, new op(), frequency);
+
 /// A convenient function to get a new operation from the registry by its name
 inline Operation *NewOperation(const std::string &name) {
   return OperationRegistry::GetInstance()->GetOperation(name)->Clone();
