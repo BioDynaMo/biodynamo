@@ -33,14 +33,12 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   auto* scheduler = simulation.GetScheduler();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto* ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                 ->ExtendNewNeurite({1, 0, 0});
+  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetSoPtr<NeuriteElement>();
 
   Double3 neAxis = ne->GetSpringAxis();
 
@@ -79,14 +77,12 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   double branching_factor = 0.005;
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto* ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                 ->ExtendNewNeurite({0, 0, 1});
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(1);
 
   Double3 previous_direction;

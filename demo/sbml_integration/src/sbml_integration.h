@@ -28,7 +28,6 @@
 #include "rrException.h"
 #include "rrExecutableModel.h"
 #include "rrLogger.h"
-#include "rrLogger.h"
 #include "rrRoadRunner.h"
 #include "rrUtils.h"
 
@@ -56,8 +55,30 @@ class MyCell : public Cell {
 
 // Define SbmlModule to simulate intracellular chemical reaction network.
 struct SbmlModule : public BaseBiologyModule {
+  BDM_BM_HEADER(SbmlModule, BaseBiologyModule, 1)
+
   SbmlModule(const std::string& sbml_file, const rr::SimulateOptions& opt)
       : BaseBiologyModule(gNullEventId, gNullEventId) {
+    Initialize(sbml_file, opt);
+  }
+
+  SbmlModule(const SbmlModule& other) {
+    auto other_sbml_bm = bdm_static_cast<const SbmlModule*>(&other);
+    Initialize(other_sbml_bm->sbml_file_, other_sbml_bm->initial_options_);
+    result_ = other_sbml_bm->result_;
+  }
+
+  virtual ~SbmlModule() { delete rr_; }
+
+  // SbmlModule is not copied for any event in this example
+  SbmlModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0)
+      : BaseBiologyModule(event, other, new_oid) {}
+
+  void Initialize(const std::string& sbml_file,
+                  const rr::SimulateOptions& opt) {
+    sbml_file_ = sbml_file;
+    initial_options_ = opt;
+
     rr_ = new rr::RoadRunner(sbml_file);
     rr_->getSimulateOptions() = opt;
     // setup integrator
@@ -69,27 +90,6 @@ struct SbmlModule : public BaseBiologyModule {
     integrator->setValue("maximum_time_step", dt_);
 
     result_.resize(opt.steps, 4);
-  }
-
-  virtual ~SbmlModule() { delete rr_; }
-
-  SbmlModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
-
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new SbmlModule(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override { return new SbmlModule(*this); }
-
-  /// Default event handler (exising biology module won't be modified on
-  /// any event)
-  void EventHandler(const Event& event, BaseBiologyModule* other1,
-                    BaseBiologyModule* other2 = nullptr) override {
-    BaseBiologyModule::EventHandler(event, other1, other2);
   }
 
   void Run(SimObject* so) override {
@@ -114,11 +114,12 @@ struct SbmlModule : public BaseBiologyModule {
   const ls::DoubleMatrix& GetResult() const { return result_; }
 
  private:
+  std::string sbml_file_;
+  rr::SimulateOptions initial_options_;
   ls::DoubleMatrix result_;
   bool active_ = true;
   rr::RoadRunner* rr_;
   double dt_;
-  BDM_CLASS_DEF_OVERRIDE(SbmlModule, 1);
 };
 
 inline void AddToPlot(TMultiGraph* mg, const ls::Matrix<double>* result) {
