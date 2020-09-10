@@ -48,19 +48,23 @@ class Scheduler {
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
+  /// Adds the given operation to the list of to be scheduled
+  /// operations.
+  /// Scheduler takes over ownership of the object `op`.
+  /// NB: Don't pass stack objects to this function.
   void ScheduleOp(Operation* op);
 
   void UnscheduleOp(Operation* op);
 
-  Operation* GetDefaultOp(const std::string& name);
-
-  /// Return a list of operations that are scheduled by default
-  std::vector<std::string> GetListOfDefaultOps() { return default_ops_; }
+  /// Returns a vector of operations with the given name.
+  /// If the name is in the list of proected ops, this
+  /// function returns an empty vector.
+  std::vector<Operation*> GetOps(const std::string& name);
 
   /// Return a list of SimObjectOperations that are scheduled
   std::vector<std::string> GetListOfScheduledSimObjectOps() {
     std::vector<std::string> list;
-    for (auto *op : scheduled_sim_object_ops_) {
+    for (auto* op : scheduled_sim_object_ops_) {
       list.push_back(op->name_);
     }
     return list;
@@ -69,7 +73,7 @@ class Scheduler {
   /// Return a list of StandAloneOperations that are scheduled
   std::vector<std::string> GetListOfScheduledStandaloneOps() {
     std::vector<std::string> list;
-    for (auto *op : scheduled_standalone_ops_) {
+    for (auto* op : scheduled_standalone_ops_) {
       list.push_back(op->name_);
     }
     return list;
@@ -98,8 +102,13 @@ class Scheduler {
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  RootAdaptor* root_visualization_ = nullptr;      //!
+  RootAdaptor* root_visualization_ = nullptr;  //!
 
+  /// List of all operations that have been add either as default
+  /// or by a call to Scheduler::ScheduleOp.
+  /// Scheduler::UnscheduleOp doesn't remove the operation from this
+  /// list.
+  std::vector<Operation*> all_ops_;  //!
   /// List of operations that are to be added in the upcoming timestep
   std::vector<Operation*> ops_to_add_;  //!
   /// List of operations that are to be removed in the upcoming timestep
@@ -111,12 +120,8 @@ class Scheduler {
   std::vector<Operation*> scheduled_standalone_ops_;  //!
   /// List of operations will be executed on all simulation objects
   std::vector<Operation*> scheduled_sim_object_ops_;  //!
-  /// List of operations that are scheduled by default
-  std::vector<std::string> default_ops_;  //!
   /// List of operations that cannot be affected by the user
   std::vector<std::string> protected_ops_;  //!
-  /// Flag to check if scheduler has beeen initialized at least once
-  bool initialized_ = false;
   /// Tracks operations' execution times
   TimingAggregator op_times_;
 

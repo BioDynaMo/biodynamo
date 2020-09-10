@@ -355,24 +355,34 @@ TEST(SchedulerTest, MultipleSimulations) {
   delete sim2;
 }
 
-TEST(SchedulerTest, DefaultOps) {
+TEST(SchedulerTest, GetOps) {
   Simulation sim(TEST_NAME);
   sim.GetResourceManager()->push_back(new Cell(10));
   auto* scheduler = sim.GetScheduler();
-  sim.Simulate(1);
 
-  auto def_ops = scheduler->GetListOfDefaultOps();
+  std::vector<std::string> def_ops = {"visualize", "update environment",
+                                      "displacement", "diffusion",
+                                      "load balancing"};
 
   for (auto& def_op : def_ops) {
-    auto* op = scheduler->GetDefaultOp(def_op);
-    EXPECT_EQ(op->name_, def_op);
+    auto ops = scheduler->GetOps(def_op);
+    EXPECT_EQ(1u, ops.size());
+    EXPECT_EQ(def_op, ops[0]->name_);
   }
 
   // Try to get a non-default op
   auto* test_op = NewOperation("test_op");
   scheduler->ScheduleOp(test_op);
-  auto* op = scheduler->GetDefaultOp("test_op");
-  EXPECT_EQ(op, nullptr);
+  auto ops = scheduler->GetOps("test_op");
+  EXPECT_EQ(test_op, ops[0]);
+
+  // check if empty vector is returned for operation
+  // which is not part of the default ops and which
+  // hasn't been added to the scheduler
+  EXPECT_EQ(0u, scheduler->GetOps("unknown").size());
+
+  // check if empty vector is returned for protected ops
+  EXPECT_EQ(0u, scheduler->GetOps("first op").size());
 }
 
 TEST(SchedulerTest, ScheduleOrder) {

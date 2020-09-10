@@ -200,18 +200,22 @@ scheduler->UnscheduleOp(check_diameter);
 simulation.Simulate(10);
 ```
 
-## Default operations
+## Get operations
 
-BioDynaMo runs a list of operations by default. This list can be retrieved with
-the call to `Scheduler::GetListOfDefaultOps()`.
-A default operation can be unscheduled in the following way:
+The scheduler of BioDynaMo runs a list of all operations that have
+been added either by default or by calling `Scheduler::ScheduleOp(op)`.
+A pointer to these operations can be retrieved by calling: `Scheduler::GetOps(name)`. 
+This function returns a vector of operation pointers with operations that match 
+the given name.
+If the given operation name is a protected operation the returned vector will be empty.
+A default (non protected) operation can be unscheduled in the following way:
 
 ```cpp
 Simulation simulation("test_sim");
 auto* scheduler = simulation.GetScheduler();
 
-auto* displacement_op = scheduler->GetDefaultOp("displacement");
-scheduler->UnscheduleOp(displacement_op);
+auto ops = scheduler->GetOps("displacement");
+scheduler->UnscheduleOp(ops[0]);
 
 // Your simulation will not run the displacement operation
 simulation.Simulate(10);
