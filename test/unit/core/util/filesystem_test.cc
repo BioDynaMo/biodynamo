@@ -26,15 +26,15 @@ TEST(FileSystemTest, RemoveDirectoryContents) {
   fs::create_directory("file-system-test");
 
   // ignore empty directory check
-  EXPECT_EQ(0, RemoveDirectoryContents("file-system-test"));
+  EXPECT_EQ(0u, RemoveDirectoryContents("file-system-test"));
   EXPECT_TRUE(fs::exists("file-system-test"));
   // ignore files check
   std::ofstream ofs("file-system-test/file");
   ofs << "This is a test" << std::endl;
-  EXPECT_EQ(0, RemoveDirectoryContents("file-system-test/file"));
+  EXPECT_EQ(0u, RemoveDirectoryContents("file-system-test/file"));
   EXPECT_TRUE(fs::exists("file-system-test/file"));
   // check if directory is emptied
-  EXPECT_EQ(1, RemoveDirectoryContents("file-system-test"));
+  EXPECT_EQ(1u, RemoveDirectoryContents("file-system-test"));
   EXPECT_FALSE(fs::exists("file-system-test/file"));
 
   // clean-up
