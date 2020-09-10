@@ -35,7 +35,7 @@ double Random::Gaus(double mean, double sigma) {
   return generator_.Gaus(mean, sigma);
 }
 
-void Random::SetSeed(double seed) { generator_.SetSeed(seed); }
-double Random::GetSeed() const { return generator_.GetSeed(); }
+void Random::SetSeed(uint64_t seed) { generator_.SetSeed(seed); }
+uint64_t Random::GetSeed() const { return generator_.GetSeed(); }
 
 }  // namespace bdm
