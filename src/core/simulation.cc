@@ -323,6 +323,7 @@ void Simulation::InitializeMembers() {
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
+    random_[i]->SetSeed(param_->random_seed_ * (i + 1));
   }
   exec_ctxt_.resize(omp_get_max_threads());
   auto map =
