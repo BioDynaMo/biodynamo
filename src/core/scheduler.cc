@@ -50,6 +50,7 @@ Scheduler::Scheduler() {
                   "displacement",
                   "discretization",
                   "diffusion",
+                  "load balancing",
                   "last op",
                   "tear down exec context"};
 
