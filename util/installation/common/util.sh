@@ -260,51 +260,96 @@ function BashrcFile {
   fi
 }
 
+# Print a warning and list of of offending shell config files
+# if there are any naive cases of 'source|. .../thisbdm.sh'
+function WarnIfSourceThisbdmInShellConfigs {
+  # collect shell config files
+  local config_files=("$HOME/.profile")
+  if ! [ command -v bash &> /dev/null ]; then
+    config_files+=("$HOME/.bashrc" "$HOME/.bash_profile")
+  fi
+  if ! [ command -v zsh &> /dev/null ]; then
+    config_files+=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
+  fi
+  if ! [ command -v fish &> /dev/null ]; then
+    config_files+=("$(fish -c 'echo $__fish_config_dir/config.fish')")
+  fi
+  
+  local source_pattern='s/^\s*(\.\s+|source).*thisbdm\.(fish|sh)\s*(#IGNORE)?$/\3/mg;t;d'
+  local nr_matches='0'
+  local source_occurrences=()
+  # check if any config files naively source thisbdm
+  for f in ${config_files[@]}; do
+    if [ -f "$f" ]; then
+      # one may append #IGNORE if match is a false positive, or they really want to keep that line
+      nr_matches=$(sed -E "$source_pattern" $f | grep -v "#IGNORE" | wc -l)
+      if [ "$nr_matches" -gt '0' ]; then
+        source_occurrences+=("$f")
+      fi
+    fi
+  done
+
+  if [ "${#source_occurrences[@]}" -gt '0' ]; then
+    EchoWarning "WARN: You may have automatically sourced thisbdm in the following file(s):"
+    for f in ${source_occurrences[@]}; do
+      EchoWarning "- $f"
+    done
+    EchoWarning "Please check as this is not advised."
+    EchoWarning "If a matching line is a false positive, append ' #IGNORE' to its end."
+  fi
+}
+
 # Print message that tells the user to reload their shell and source the environment.
 # Arguments:
 #   $1 biodynamo install directory
-function EchoFinishThisStep {
+function EchoFinishInstallation {
   if [[ $# -ne 1 ]]; then
-    echo "ERROR in EchoFinishThisStep: Wrong number of arguments"
+    echo "ERROR in EchoFinishInstallation: Wrong number of arguments"
     exit 1
   fi
 
-  local extraStepStr="To avoid this extra step do:"
-  local haveExecStr="to have it executed automatically when starting a new shell."
+  local addToConfigStr="   ${BDM_ECHO_UNDERLINE}echo \"alias thisbdm='source $1/bin/thisbdm"
+  local setQuietEnvVarStr
 
   EchoInfo "Before running BioDynaMo execute:"
   case $SHELL in
     *bash | *zsh)
-      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh [-q | --quiet]"
-      EchoInfo "$extraStepStr"
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
+
       case $SHELL in
-        *bash) EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(BashrcFile)" ;;
-        *zsh)  EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(ZshrcFile)" ;;
+        *bash) addToConfigStr="$addToConfigStr.sh'\" >> $(BashrcFile)" ;;
+        *zsh)  addToConfigStr="$addToConfigStr.sh'\" >> $(ZshrcFile)" ;;
       esac
-      EchoInfo "$haveExecStr"
+      setQuietEnvVarStr="'export BDM_THISBDM_QUIET=true'"
     ;;
     *fish)
       EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.fish"
-      EchoInfo "$extraStepStr"
-      EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.fish -q\" >> ""$(fish -c 'echo $__fish_config_dir')"
-      EchoInfo "$haveExecStr"
+      addToConfigStr="$addToConfigStr.fish'\" >> (fish -c 'echo "'$__fish_config_dir'"/config.fish')"
+      setQuietEnvVarStr="'set -gx BDM_THISBDM_QUIET true'"
     ;;
     *)
-      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.<sh|fish> [-q | --quiet]"
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.{sh|fish}"
       echo
-      EchoWarning "We could not detect your default shell."
+      EchoWarning "WARN: Your login shell appears to be '$SHELL'."
       EchoWarning "BioDynaMo currently supports the following shells:"
       EchoWarning "   ${BDM_ECHO_UNDERLINE}bash, zsh, and fish."
       return
     ;;
   esac
+
+  EchoInfo "For added convenience, run (in your terminal):"
+  EchoNewStep "$addToConfigStr"
+  EchoInfo "to be able to quickly source thisbdm in your shell session."
   echo
-  EchoInfo "The -q (or --quiet) flag will disable the prompt indicator, and will only report errors."
+  EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator, and silence non-critical output."
   echo
   EchoNewStep "NOTE: Your login shell appears to be '$SHELL'."
   EchoNewStep "The instructions above are for this shell."
   EchoNewStep "For other shells, or for more information, see:"
   EchoNewStep "   ${BDM_ECHO_UNDERLINE}https://biodynamo.org/docs/userguide/first_steps/"
+  # Transition away from telling users to add problematic automatic sourcing of thisbdm
+  echo
+  WarnIfSourceThisbdmInShellConfigs
 }
 
 # This function prompts the user for the biodynamo installation directory
