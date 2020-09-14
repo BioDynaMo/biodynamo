@@ -61,6 +61,6 @@ trap "echo $out_msg" ERR
 set -o pipefail
 
 # Run ./install.sh
-BDM_CMAKE_FLAGS="-Dtest=off -Dnotebooks=on $SBML" ${BDM_SRC}/install.sh | tee "$log"
+BDM_CMAKE_FLAGS="-Dtest=off -Dnotebooks=off $SBML" ${BDM_SRC}/install.sh | tee "$log"
 
 set +o pipefail
