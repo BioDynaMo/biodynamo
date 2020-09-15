@@ -49,11 +49,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install prerequisites
-      run: |
-        SILENT_INSTALL=1 ./prerequisites.sh all
-      if: github.event_name == 'pull_request'
-
     - name: Set INSTALL_DIR
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -89,6 +84,11 @@ jobs:
       with:
         path: build/third_party
         key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+
+    - name: Install prerequisites
+      run: |
+        SILENT_INSTALL=1 ./prerequisites.sh all
+      if: github.event_name == 'pull_request'
 
     - name: Build BioDynaMo
       shell: bash

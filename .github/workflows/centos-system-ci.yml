@@ -57,12 +57,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install prerequisites
-      run: |
-        yum install -y sudo
-        SILENT_INSTALL=1 ./prerequisites.sh all
-      if: github.event_name == 'pull_request' 
-
     - name: Set INSTALL_DIR
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -93,12 +87,17 @@ jobs:
         PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
         pyenv shell 3.8.0
 
-
     - name: Cache Third Party Packages
       uses: actions/cache@v2
       with:
         path: build/third_party
         key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+
+    - name: Install prerequisites
+      run: |
+        yum install -y sudo
+        SILENT_INSTALL=1 ./prerequisites.sh all
+      if: github.event_name == 'pull_request' 
 
     - name: Build BioDynaMo
       shell: bash
