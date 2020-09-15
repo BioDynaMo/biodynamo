@@ -38,6 +38,8 @@
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::BaseBiologyModule"/>
     <class name="bdm::GrowDivide"/>
+    <class name="bdm::Chemotaxis"/>
+    <class name="bdm::Secretion"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <class name="bdm::RegulateGenes" />
     <class name="bdm::Param" />

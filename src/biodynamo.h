@@ -18,8 +18,10 @@
 #include <string>
 
 #include "core/biology_module/biology_module.h"
+#include "core/biology_module/chemotaxis.h"
 #include "core/biology_module/grow_divide.h"
 #include "core/biology_module/regulate_genes.h"
+#include "core/biology_module/secretion.h"
 #include "core/environment/environment.h"
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
