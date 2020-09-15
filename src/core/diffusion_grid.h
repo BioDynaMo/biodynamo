@@ -874,7 +874,7 @@ class DiffusionGrid {
   }
 
   /// Increase the concentration at specified position with specified amount
-  void IncreaseConcentrationBy(const Double3& position, double amount) {
+  virtual void IncreaseConcentrationBy(const Double3& position, double amount) {
     auto idx = GetBoxIndex(position);
     IncreaseConcentrationBy(idx, amount);
   }
@@ -897,7 +897,7 @@ class DiffusionGrid {
   }
 
   /// Get the (normalized) gradient at specified position
-  void GetGradient(const Double3& position, Double3* gradient) const {
+  virtual void GetGradient(const Double3& position, Double3* gradient) const {
     auto idx = GetBoxIndex(position);
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
