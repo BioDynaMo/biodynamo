@@ -52,10 +52,11 @@ class Simulation {
   /// Constructor that takes the arguments from `main` to parse command line
   /// arguments. The simulation name is extracted from the executable name.
   /// Creation of a new simulation automatically activates it.
-  Simulation(int argc, const char** argv, const std::string& config_file = "");
+  Simulation(int argc, const char** argv,
+             const std::vector<std::string>& config_files = {});
 
   explicit Simulation(CommandLineOptions* clo,
-                      const std::string& config_file = "");
+                      const std::vector<std::string>& config_files = {});
 
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
@@ -64,19 +65,19 @@ class Simulation {
   /// \param config_file Use a different config file than the default bdm.toml
   ///        or bdm.json
   explicit Simulation(const std::string& simulation_name,
-                      const std::string& config_file = "");
+                      const std::vector<std::string>& config_files = {});
 
   Simulation(int argc, const char** argv,
              const std::function<void(Param*)>& set_param,
-             const std::string& config_file = "");
+             const std::vector<std::string>& config_files = {});
 
   Simulation(CommandLineOptions* clo,
              const std::function<void(Param*)>& set_param,
-             const std::string& config_file = "");
+             const std::vector<std::string>& config_files = {});
 
   Simulation(const std::string& simulation_name,
              const std::function<void(Param*)>& set_param,
-             const std::string& config_file = "");
+             const std::vector<std::string>& config_files = {});
 
   ~Simulation();
 
@@ -174,7 +175,7 @@ class Simulation {
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,
                   const std::function<void(Param*)>& set_param,
-                  const std::string& ctor_config);
+                  const std::vector<std::string>& config_files);
 
   /// Initialize data members that have a dependency on Simulation
   void InitializeMembers();
@@ -182,10 +183,10 @@ class Simulation {
   /// This function parses command line parameters and the configuration file.
   void InitializeRuntimeParams(CommandLineOptions* clo,
                                const std::function<void(Param*)>& set_param,
-                               const std::string& ctor_config);
+                               const std::vector<std::string>& ctor_config);
 
-  void LoadConfigFile(const std::string& ctor_config,
-                      const std::string& cli_config);
+  void LoadConfigFiles(const std::vector<std::string>& ctor_configs,
+                       const std::vector<std::string>& cli_configs);
 
   /// This function initialzes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);
