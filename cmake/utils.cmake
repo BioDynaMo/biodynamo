@@ -248,7 +248,7 @@ function(install_inside_build)
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             ${CMAKE_SOURCE_DIR}/third_party/cpp_magic.h
-            ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.0/cxxopts.h
+            ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1/cxxopts.h
             )
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpptoml

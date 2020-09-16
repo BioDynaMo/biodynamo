@@ -103,8 +103,8 @@ void CommandLineOptions::AddCoreOptions() {
       "continues simulation from that point.", value<string>()->default_value(""), "FILE")
     ("b, backup", "Periodically create full simulation backup to the specified file. "
       "NOTA BENE: File will be overriden if it exists.", value<string>()->default_value(""), "FILE")
-    ("c, config", "The TOML or JSON configuration that should be used. The JSON file must be in JSON merge patch format (https://tools.ietf.org/html/rfc7386)", value<string>()->default_value(""), "FILE")
-    ("inline-config", "JSON configuration string passed directly on the command line. Overwrites values specified in config file.  The JSON string must be in JSON merge patch format (https://tools.ietf.org/html/rfc7386)", value<string>()->default_value(""), "JSON_STRING")
+    ("c, config", "The TOML or JSON configuration that should be used. The JSON file must be in JSON merge patch format (https://tools.ietf.org/html/rfc7386). This option can be used multiple times.", value<std::vector<string>>()->default_value(""), "FILE")
+    ("inline-config", "JSON configuration string passed directly on the command line. Overwrites values specified in config file.  The JSON string must be in JSON merge patch format (https://tools.ietf.org/html/rfc7386). This option can be used multiple times.", value<std::vector<string>>()->default_value(""), "JSON_STRING")
     ("output-default-json", "Prints a JSON string with all parameters and their default values and exits.")
     ("toml-to-json", "Converts a TOML file to a JSON patch. After printing the JSON patch the application will exit.", value<string>()->default_value(""), "TOML_FILE");
   }
@@ -187,8 +187,8 @@ void CommandLineOptions::HandleCoreOptions() {
     exit(0);
   }
 
-  if (parser_->Get<std::string>("toml-to-json") != "") {
-    auto toml_file = parser_->Get<std::string>("toml-to-json");
+  auto toml_file = (*parser_)["toml-to-json"].as<std::string>();
+  if (toml_file != "") {
     if (!FileExists(toml_file)) {
       Log::Fatal("CommandLineOptions::HandleCoreOptions",
                  "Specified TOML file (", toml_file, ") does not exist.");

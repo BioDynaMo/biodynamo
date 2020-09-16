@@ -76,7 +76,7 @@ class IntegralTypeWrapper {
 /// for example `InlineVector` for its usage
 template <typename T>
 class VectorTypeWrapper {
-public:
+ public:
   VectorTypeWrapper() {}
 
   std::vector<T> vector_;
@@ -84,6 +84,8 @@ public:
 };
 
 bool FileExists(const std::string& file_name);
+
+void WriteToFile(const std::string& filename, const std::string& content);
 
 /// @brief      Gets the persistent object from the specified ROOT file.
 ///
