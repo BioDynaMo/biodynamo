@@ -80,4 +80,10 @@ bool FileExists(const std::string& file_name) {
   return infile.good();
 }
 
+void WriteToFile(const std::string& filename, const std::string& content) {
+  std::ofstream ofs(filename);
+  ofs << content;
+  ofs.close();
+}
+
 }  // namespace bdm

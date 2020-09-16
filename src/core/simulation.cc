@@ -65,40 +65,40 @@ Simulation* Simulation::GetActive() { return active_; }
 Simulation::Simulation(TRootIOCtor* p) {}
 
 Simulation::Simulation(int argc, const char** argv,
-                       const std::string& config_file)
+                       const std::vector<std::string>& config_files)
     : Simulation(
-          argc, argv, [](auto* param) {}, config_file) {}
+          argc, argv, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(const std::string& simulation_name,
-                       const std::string& config_file)
+                       const std::vector<std::string>& config_files)
     : Simulation(
-          simulation_name, [](auto* param) {}, config_file) {}
+          simulation_name, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(CommandLineOptions* clo,
-                       const std::string& config_file) {
+                       const std::vector<std::string>& config_files) {
   Initialize(
-      clo, [](auto* param) {}, config_file);
+      clo, [](auto* param) {}, config_files);
 }
 
 Simulation::Simulation(CommandLineOptions* clo,
                        const std::function<void(Param*)>& set_param,
-                       const std::string& config_file) {
-  Initialize(clo, set_param, config_file);
+                       const std::vector<std::string>& config_files) {
+  Initialize(clo, set_param, config_files);
 }
 
 Simulation::Simulation(int argc, const char** argv,
                        const std::function<void(Param*)>& set_param,
-                       const std::string& config_file) {
+                       const std::vector<std::string>& config_files) {
   auto options = CommandLineOptions(argc, argv);
-  Initialize(&options, set_param, config_file);
+  Initialize(&options, set_param, config_files);
 }
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::function<void(Param*)>& set_param,
-                       const std::string& config_file) {
+                       const std::vector<std::string>& config_files) {
   const char* argv[1] = {simulation_name.c_str()};
   auto options = CommandLineOptions(1, argv);
-  Initialize(&options, set_param, config_file);
+  Initialize(&options, set_param, config_files);
 }
 
 void Simulation::Restore(Simulation&& restored) {
@@ -294,7 +294,7 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
 
 void Simulation::Initialize(CommandLineOptions* clo,
                             const std::function<void(Param*)>& set_param,
-                            const std::string& config_file) {
+                            const std::vector<std::string>& config_files) {
   ctor_ts_ = bdm::Timing::Timestamp();
   id_ = counter_++;
   Activate();
@@ -303,7 +303,7 @@ void Simulation::Initialize(CommandLineOptions* clo,
                "CommandLineOptions argument was a nullptr!");
   }
   InitializeUniqueName(clo->GetSimulationName());
-  InitializeRuntimeParams(clo, set_param, config_file);
+  InitializeRuntimeParams(clo, set_param, config_files);
   InitializeOutputDir();
   InitializeMembers();
 }
@@ -339,7 +339,7 @@ void Simulation::InitializeMembers() {
 
 void Simulation::InitializeRuntimeParams(
     CommandLineOptions* clo, const std::function<void(Param*)>& set_param,
-    const std::string& ctor_config) {
+    const std::vector<std::string>& ctor_config_files) {
   // Renew thread info just in case it has been initialised as static and a
   // simulation calls e.g. `omp_set_num_threads()` within main.
   ThreadInfo::GetInstance()->Renew();
@@ -368,9 +368,13 @@ void Simulation::InitializeRuntimeParams(
     read_env = true;
   }
 
-  LoadConfigFile(ctor_config, clo->Get<std::string>("config"));
-  if (clo->Get<std::string>("inline-config") != "") {
-    param_->MergeJsonPatch(clo->Get<std::string>("inline-config"));
+  LoadConfigFiles(ctor_config_files,
+                  clo->Get<std::vector<std::string>>("config"));
+  auto inline_configs = clo->Get<std::vector<std::string>>("inline-config");
+  if (inline_configs.size()) {
+    for (auto& inline_config : inline_configs) {
+      param_->MergeJsonPatch(inline_config);
+    }
   }
 
   if (clo->Get<std::string>("backup") != "") {
@@ -405,56 +409,69 @@ void Simulation::InitializeRuntimeParams(
             Version::String());
 }
 
-void Simulation::LoadConfigFile(const std::string& ctor_config,
-                                const std::string& cli_config) {
+void Simulation::LoadConfigFiles(const std::vector<std::string>& ctor_configs,
+                                 const std::vector<std::string>& cli_configs) {
   constexpr auto kTomlConfigFile = "bdm.toml";
   constexpr auto kJsonConfigFile = "bdm.json";
   constexpr auto kTomlConfigFileParentDir = "../bdm.toml";
   constexpr auto kJsonConfigFileParentDir = "../bdm.json";
   // find config file
-  std::string config = "";
-  if (ctor_config != "") {
-    if (FileExists(ctor_config)) {
-      config = ctor_config;
-    } else {
-      Log::Fatal("Simulation::LoadConfigFile", "The config file ", ctor_config,
-                 " specified in the constructor of bdm::Simulation "
-                 "could not be found.");
+  std::vector<std::string> configs = {};
+  if (ctor_configs.size()) {
+    for (auto& ctor_config : ctor_configs) {
+      if (FileExists(ctor_config)) {
+        configs.push_back(ctor_config);
+      } else {
+        Log::Fatal("Simulation::LoadConfigFiles", "The config file ",
+                   ctor_config,
+                   " specified in the constructor of bdm::Simulation "
+                   "could not be found.");
+      }
     }
-  } else if (cli_config != "") {
-    if (FileExists(cli_config)) {
-      config = cli_config;
-    } else {
-      Log::Fatal("Simulation::LoadConfigFile", "The config file ", cli_config,
-                 " specified as command line argument "
-                 "could not be found.");
+  }
+  if (cli_configs.size()) {
+    for (auto& cli_config : cli_configs) {
+      if (FileExists(cli_config)) {
+        configs.push_back(cli_config);
+      } else {
+        Log::Fatal("Simulation::LoadConfigFiles", "The config file ",
+                   cli_config,
+                   " specified as command line argument "
+                   "could not be found.");
+      }
     }
-  } else if (FileExists(kTomlConfigFile)) {
-    config = kTomlConfigFile;
-  } else if (FileExists(kTomlConfigFileParentDir)) {
-    config = kTomlConfigFileParentDir;
-  } else if (FileExists(kJsonConfigFile)) {
-    config = kJsonConfigFile;
-  } else if (FileExists(kJsonConfigFileParentDir)) {
-    config = kJsonConfigFileParentDir;
   }
 
-  // load config file
-  if (EndsWith(config, ".toml")) {
-    auto toml = cpptoml::parse_file(config);
-    param_->AssignFromConfig(toml);
-  } else if (EndsWith(config, ".json")) {
-    std::ifstream ifs(config);
-    std::stringstream buffer;
-    buffer << ifs.rdbuf();
-    param_->MergeJsonPatch(buffer.str());
+  // no config file specified in ctor or cli -> look for default
+  if (!configs.size()) {
+    if (FileExists(kTomlConfigFile)) {
+      configs.push_back(kTomlConfigFile);
+    } else if (FileExists(kTomlConfigFileParentDir)) {
+      configs.push_back(kTomlConfigFileParentDir);
+    } else if (FileExists(kJsonConfigFile)) {
+      configs.push_back(kJsonConfigFile);
+    } else if (FileExists(kJsonConfigFileParentDir)) {
+      configs.push_back(kJsonConfigFileParentDir);
+    }
   }
 
-  // Log config file info
-  if (config != "") {
-    Log::Info("Simulation::LoadConfigFile", "Used config file: ", config);
+  // load config files
+  if (configs.size()) {
+    for (auto& config : configs) {
+      if (EndsWith(config, ".toml")) {
+        auto toml = cpptoml::parse_file(config);
+        param_->AssignFromConfig(toml);
+      } else if (EndsWith(config, ".json")) {
+        std::ifstream ifs(config);
+        std::stringstream buffer;
+        buffer << ifs.rdbuf();
+        param_->MergeJsonPatch(buffer.str());
+      }
+      Log::Info("Simulation::LoadConfigFiles",
+                "Processed config file: ", config);
+    }
   } else {
-    Log::Info("Simulation::LoadConfigFile", "Default config file ",
+    Log::Info("Simulation::LoadConfigFiles", "Default config file ",
               kTomlConfigFile, " or ", kJsonConfigFile,
               " not found in `.` or `..` directory. No other config file was "
               "specified as command line parameter or passed to the "

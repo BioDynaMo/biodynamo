@@ -243,7 +243,7 @@ Simulation completed successfully!
 There is another way to tell BioDynaMo to use a specific configuration file. You can pass a config file parameter as an argument to the `bdm::Simulation` constructor.
  
 Therefore, in file `src/parameters.h` replace `Simulation simulation(argc, argv)`
-with `Simulation simulation(argc, argv, "../config.json")`.
+with `Simulation simulation(argc, argv, {"../config.json"})`.
 Since we changed the code, we have to recompile it before we can execute it.
 
 ```

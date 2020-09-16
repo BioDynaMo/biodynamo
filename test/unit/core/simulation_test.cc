@@ -21,6 +21,7 @@
 #include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
 #include "core/simulation_backup.h"
+#include "core/util/io.h"
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_util.h"
 
@@ -258,19 +259,12 @@ TEST_F(SimulationTest, InitializeRuntimeParamsCtorConfigFileName) {
 
   {
     const char* argv[1] = {"./binary_name"};
-    Simulation simulation(1, argv, config_filename);
+    Simulation simulation(1, argv, {config_filename});
     ValidateNonCLIParameter(simulation.GetParam());
   }
 
   {
-    Simulation simulation("./binary_name", config_filename);
-    ValidateNonCLIParameter(simulation.GetParam());
-  }
-
-  // test presedence of ctor config_file over cli config file
-  {
-    const char* argv[3] = {"./binary_name", "-c", "does-not-exist.toml"};
-    Simulation simulation(3, argv, config_filename);
+    Simulation simulation("./binary_name", {config_filename});
     ValidateNonCLIParameter(simulation.GetParam());
   }
 
@@ -296,6 +290,88 @@ TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
 
   Simulation simulation3("binary_name");
   EXPECT_EQ("binary_name3", simulation3.GetUniqueName());
+}
+
+TEST_F(SimulationTest, MultipleJsonConfigsAndPrecedence) {
+  const char* ctor1_config = R"EOF(
+{
+  "bdm::Param": {
+    "random_seed_": 1,
+    "scheduling_batch_size_": 1,
+    "backup_file_": "ctor1",
+    "mem_mgr_growth_rate_": 1.11,
+    "backup_interval_": 1,
+    "simulation_time_step_": 1
+  }
+}
+)EOF";
+
+  // overwrite all but first parameter
+  const char* ctor2_config = R"EOF(
+{
+  "bdm::Param": {
+    "scheduling_batch_size_": 2,
+    "backup_file_": "ctor2",
+    "mem_mgr_growth_rate_": 1.12,
+    "backup_interval_": 2,
+    "simulation_time_step_": 2
+  }
+}
+)EOF";
+
+  // overwrite all but first two parameter
+  const char* cli1_config = R"EOF(
+{
+  "bdm::Param": {
+    "backup_file_": "cli1",
+    "mem_mgr_growth_rate_": 1.13,
+    "backup_interval_": 3,
+    "simulation_time_step_": 3
+  }
+}
+)EOF";
+
+  // overwrite all but first three parameter
+  const char* cli2_config = R"EOF(
+{
+  "bdm::Param": {
+    "mem_mgr_growth_rate_": 1.14,
+    "backup_interval_": 4,
+    "simulation_time_step_": 4
+  }
+}
+)EOF";
+
+  WriteToFile("ctor1.json", ctor1_config);
+  WriteToFile("ctor2.json", ctor2_config);
+  WriteToFile("cli1.json", cli1_config);
+  WriteToFile("cli2.json", cli2_config);
+
+  const char* argv[9] = {TEST_NAME,
+                         "-c",
+                         "cli1.json",
+                         "-c",
+                         "cli2.json",
+                         "--inline-config",
+                         "{ \"bdm::Param\": { \"backup_interval_\": 5, "
+                         "\"simulation_time_step_\": 5 }}",
+                         "--inline-config",
+                         "{ \"bdm::Param\": { \"simulation_time_step_\": 6 }}"};
+
+  Simulation sim(9, argv, {"ctor1.json", "ctor2.json"});
+  auto* param = sim.GetParam();
+
+  EXPECT_EQ(1u, param->random_seed_);
+  EXPECT_EQ(2u, param->scheduling_batch_size_);
+  EXPECT_EQ("cli1", param->backup_file_);
+  EXPECT_NEAR(1.14, param->mem_mgr_growth_rate_, abs_error<double>::value);
+  EXPECT_EQ(5u, param->backup_interval_);
+  EXPECT_NEAR(6.0, param->simulation_time_step_, abs_error<double>::value);
+
+  std::remove("ctor1.json");
+  std::remove("ctor2.json");
+  std::remove("cli1.json");
+  std::remove("cli2.json");
 }
 
 #endif  // USE_DICT
