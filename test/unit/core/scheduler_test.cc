@@ -360,8 +360,7 @@ TEST(SchedulerTest, GetOps) {
   sim.GetResourceManager()->push_back(new Cell(10));
   auto* scheduler = sim.GetScheduler();
 
-  std::vector<std::string> def_ops = {"visualize", "update environment",
-                                      "displacement", "diffusion",
+  std::vector<std::string> def_ops = {"visualize", "displacement", "diffusion",
                                       "load balancing"};
 
   for (auto& def_op : def_ops) {
@@ -391,14 +390,23 @@ TEST(SchedulerTest, ScheduleOrder) {
   auto* scheduler = sim.GetScheduler();
   sim.Simulate(1);
 
-  std::vector<std::string> so_ops = {"first op",       "bound space",
-                                     "biology module", "displacement",
-                                     "discretization", "last op"};
-  std::vector<std::string> sa_ops = {"diffusion"};
+  std::vector<std::string> so_ops = {
+      "update run displacement", "bound space",
+      "biology module",          "displacement",
+      "discretization",          "distribute run displacement info"};
+  std::vector<std::string> sa_ops = {"diffusion", "visualize",
+                                     "load balancing"};
 
   int i = 0;
-  for (auto so_op_name : scheduler->GetListOfScheduledSimObjectOps()) {
+  ASSERT_EQ(so_ops.size(), scheduler->GetListOfScheduledSimObjectOps().size());
+  for (auto& so_op_name : scheduler->GetListOfScheduledSimObjectOps()) {
     EXPECT_EQ(so_ops[i], so_op_name);
+    i++;
+  }
+  i = 0;
+  ASSERT_EQ(sa_ops.size(), scheduler->GetListOfScheduledStandaloneOps().size());
+  for (auto& sa_op_name : scheduler->GetListOfScheduledStandaloneOps()) {
+    EXPECT_EQ(sa_ops[i], sa_op_name);
     i++;
   }
 }

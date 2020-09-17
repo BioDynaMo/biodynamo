@@ -41,32 +41,36 @@ Scheduler::Scheduler() {
 
   // Operations are scheduled in the following order (sub categorated by their
   // operation implementation type, so that actual order may vary)
-  std::vector<std::string> default_ops = {"set up exec context",
-                                          "visualize",
-                                          "update environment",
-                                          "first op",
+  std::vector<std::string> default_ops = {"update run displacement",
                                           "bound space",
                                           "biology module",
                                           "displacement",
                                           "discretization",
+                                          "distribute run displacement info",
                                           "diffusion",
-                                          "load balancing",
-                                          "last op",
-                                          "tear down exec context"};
+                                          "visualize",
+                                          "load balancing"};
 
   // Schedule the default operations
   for (auto& def_op : default_ops) {
     ScheduleOp(NewOperation(def_op));
   }
 
-  protected_ops_ = {"set up exec context", "tear down exec context", "first op",
-                    "biology module",      "discretization",         "last op"};
+  setup_iteration_op_ = NewOperation("set up iteration");
+  teardown_iteration_op_ = NewOperation("tear down iteration");
+  update_environment_op_ = NewOperation("update environment");
+
+  protected_ops_ = {"update run displacement", "biology module",
+                    "discretization", "distribute run displacment info"};
 }
 
 Scheduler::~Scheduler() {
   for (auto* op : all_ops_) {
     delete op;
   }
+  delete update_environment_op_;
+  delete setup_iteration_op_;
+  delete teardown_iteration_op_;
   delete backup_;
   delete root_visualization_;
 }
@@ -172,14 +176,17 @@ void Scheduler::RunScheduledOps() {
   auto* param = sim->GetParam();
   auto batch_size = param->scheduling_batch_size_;
 
-  // Run the row-wise operations
-  std::vector<Operation*> row_wise_operations;
+  Timing::Time(update_environment_op_->name_,
+               [&]() { (*update_environment_op_)(); });
+
+  // Run the sim object operations
+  std::vector<Operation*> sim_object_ops;
   for (auto* op : scheduled_sim_object_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
-      row_wise_operations.push_back(op);
+      sim_object_ops.push_back(op);
     }
   }
-  RunAllScheduledOps functor(row_wise_operations);
+  RunAllScheduledOps functor(sim_object_ops);
 
   Timing::Time("sim object ops", [&]() {
     rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
@@ -195,12 +202,12 @@ void Scheduler::RunScheduledOps() {
 
 void Scheduler::Execute() {
   ScheduleOps();
-
+  Timing::Time(setup_iteration_op_->name_, [&]() { (*setup_iteration_op_)(); });
   SetUpOps();
-
   RunScheduledOps();
-
   TearDownOps();
+  Timing::Time(teardown_iteration_op_->name_,
+               [&]() { (*teardown_iteration_op_)(); });
 }
 
 void Scheduler::Backup() {
