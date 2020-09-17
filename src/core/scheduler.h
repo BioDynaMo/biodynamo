@@ -62,7 +62,7 @@ class Scheduler {
   std::vector<Operation*> GetOps(const std::string& name);
 
   /// Return a list of SimObjectOperations that are scheduled
-  std::vector<std::string> GetListOfScheduledSimObjectOps() {
+  std::vector<std::string> GetListOfScheduledSimObjectOps() const {
     std::vector<std::string> list;
     for (auto* op : scheduled_sim_object_ops_) {
       list.push_back(op->name_);
@@ -71,7 +71,7 @@ class Scheduler {
   }
 
   /// Return a list of StandAloneOperations that are scheduled
-  std::vector<std::string> GetListOfScheduledStandaloneOps() {
+  std::vector<std::string> GetListOfScheduledStandaloneOps() const {
     std::vector<std::string> list;
     for (auto* op : scheduled_standalone_ops_) {
       list.push_back(op->name_);
@@ -124,6 +124,9 @@ class Scheduler {
   std::vector<std::string> protected_ops_;  //!
   /// Tracks operations' execution times
   TimingAggregator op_times_;
+  Operation* update_environment_op_ = nullptr;
+  Operation* setup_iteration_op_ = nullptr;
+  Operation* teardown_iteration_op_ = nullptr;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup();
