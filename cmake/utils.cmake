@@ -92,6 +92,7 @@ function (ListToString result delim)
 endfunction(ListToString)
 
 function(BuildParaViewPlugin)
+  file(MAKE_DIRECTORY ${CMAKE_INSTALL_PVPLUGINDIR})
   add_custom_target(BDMGlyphFilter
     WORKING_DIRECTORY ${CMAKE_BDM_PVPLUGINDIR}
     COMMAND ${LAUNCHER} ${CMAKE_COMMAND} -B build
