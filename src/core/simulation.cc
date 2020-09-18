@@ -129,11 +129,13 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   std::vector<std::string> dg_names;
   std::vector<int> dg_resolutions;
   std::vector<std::array<int32_t, 3>> dg_dimensions;
+  std::vector<uint64_t> dg_voxels;
 
   sim.rm_->ApplyOnAllDiffusionGrids([&](auto* dg) {
     dg_names.push_back(dg->GetSubstanceName());
     dg_resolutions.push_back(dg->GetResolution());
     dg_dimensions.push_back(dg->GetGridSize());
+    dg_voxels.push_back(dg->GetNumBoxes());
   });
 
   os << std::endl;
@@ -166,7 +168,8 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
          << "Resolution\t\t: " << dg_resolutions[i] << std::endl;
       os << "\t"
          << "Size\t\t\t: " << dim[0] << " x " << dim[1] << " x " << dim[2]
-         << std::endl;
+         << std::endl
+         << "\tVoxels\t\t\t: " << dg_voxels[i] << std::endl;
     }
   }
 
