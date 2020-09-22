@@ -31,9 +31,9 @@ class SimObject;
 class SimulationBackup;
 class VisualizationAdaptor;
 class RootAdaptor;
-class BoundSpace;
-class DisplacementOp;
-class DiffusionOp;
+struct BoundSpace;
+struct DisplacementOp;
+struct DiffusionOp;
 
 class Scheduler {
  public:

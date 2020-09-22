@@ -31,8 +31,6 @@ namespace displacement_op_gpu_test_internal {
 // from the CPU version. Once the CPU version supports the same execution
 // context, we can include it for direct comparison of results.
 
-enum ExecutionMode { kCuda, kOpenCl };
-
 static constexpr double kEps = 10 * abs_error<double>::value;
 
 class DisplacementOpCpuVerify {
@@ -91,13 +89,15 @@ class DisplacementOpCpuVerify {
   };
 };
 
-void RunTest(ExecutionMode mode) {
+void RunTest(OpComputeTarget mode) {
   auto set_param = [&](Param* param) {
     switch (mode) {
       case kOpenCl:
         param->compute_target_ = "opencl";
       case kCuda:
         param->compute_target_ = "cuda";
+      default:
+        return;
     }
   };
 
@@ -178,13 +178,15 @@ TEST(DisplacementOpGpuTest, ComputeSoaCuda) { RunTest(kCuda); }
 TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) { RunTest(kOpenCl); }
 #endif
 
-void RunTest2(ExecutionMode mode) {
+void RunTest2(OpComputeTarget mode) {
   auto set_param = [&](auto* param) {
     switch (mode) {
       case kOpenCl:
         param->compute_target_ = "opencl";
       case kCuda:
         param->compute_target_ = "cuda";
+      default:
+        return;
     }
   };
 

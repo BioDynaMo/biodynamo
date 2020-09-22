@@ -32,7 +32,7 @@
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-struct DisplacementOpOpenCL : OperationImplGpu {
+struct DisplacementOpOpenCL : StandaloneOperationImpl {
   BDM_OP_HEADER(DisplacementOpOpenCL);
 
   void IsNonSphericalObjectPresent(const SimObject* so, bool* answer) {
