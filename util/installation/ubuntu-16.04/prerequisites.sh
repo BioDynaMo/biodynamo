@@ -70,6 +70,8 @@ if [ $1 == "all" ]; then
   # this updates pip, but installs the updated version in $HOME/.local/bin
   PIP_PACKAGES="nbformat jupyter metakernel"
   python -m pip install --user $PIP_PACKAGES
+  # nbconvert > 6 breaks the notebooks
+  python -m pip install --user nbconvert==5.6.1
 
   sudo apt-get install -y \
     $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/package_list_extra)
