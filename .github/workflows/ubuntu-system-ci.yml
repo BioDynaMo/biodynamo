@@ -90,6 +90,9 @@ jobs:
         SILENT_INSTALL=1 ./prerequisites.sh all
       if: github.event_name == 'pull_request'
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
     - name: Build BioDynaMo
       shell: bash
       run: |
