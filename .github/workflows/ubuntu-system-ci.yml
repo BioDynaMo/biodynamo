@@ -17,7 +17,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [ubuntu-18.04, ubuntu-20.04]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -88,6 +88,18 @@ jobs:
     - name: Install prerequisites
       run: |
         SILENT_INSTALL=1 ./prerequisites.sh all
+
+    # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
+    # runners, while waiting for other targets to be compiled
+    - name: Run notebooks
+      shell: bash
+      run: |
+        cmake \
+          -Dnotebooks=ON \
+          -Dsbml=ON \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B build
+        cmake --build build --parallel --config Release --target notebooks
       if: github.event_name == 'pull_request'
 
     - name: Build BioDynaMo
@@ -99,16 +111,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release
-
-    # Enable this in a separate step, because notebooks might time out in GHA
-    # runners, while waiting for other targets to be compiled
-    - name: Run notebooks
-      shell: bash
-      run: |
-        cmake \
-          -Dnotebooks=ON \
-          -B build
-        cmake --build build --parallel --config Release --target notebooks
 
     - name: Valgrind tests BioDynaMo
       shell: bash
