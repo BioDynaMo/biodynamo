@@ -99,10 +99,19 @@ jobs:
         cmake \
           -Dparaview=ON \
           -Dsbml=ON \
-          -Dnotebooks=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release
+
+    # Enable this in a separate step, because notebooks might time out in GHA
+    # runners, while waiting for other targets to be compiled
+    - name: Run notebooks
+      shell: bash
+      run: |
+        cmake \
+          -Dnotebooks=ON \
+          -B build
+        cmake --build build --parallel --config Release --target notebooks
 
     - name: Valgrind tests BioDynaMo
       shell: bash
