@@ -29,7 +29,8 @@ set -e
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
-wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+wget https://apt.llvm.org/llvm-snapshot.gpg.key
+sudo apt-key add llvm-snapshot.gpg.key
 sudo add-apt-repository "deb http://apt.llvm.org/focal/llvm-toolchain-focal-10 main"
 sudo apt update
 
