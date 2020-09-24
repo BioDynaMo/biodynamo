@@ -63,7 +63,8 @@ pyenv shell $PYVERS
 # Install optional packages
 if [ $1 == "all" ]; then
   PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
-  python -m pip install --user $PIP_PACKAGES
+  # Don't install --user: the packages should end up in the PYENV_ROOT directory
+  python -m pip install $PIP_PACKAGES
   # SBML integration
   sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]

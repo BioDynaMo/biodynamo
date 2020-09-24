@@ -59,7 +59,8 @@ pyenv shell $PYVERS
 # Install the optional packages
 if [ $1 == "all" ]; then
     PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
-    python -m pip install --user $PIP_PACKAGES
+    # Don't install --user: the packages should end up in the PYENV_ROOT directory
+    python -m pip install $PIP_PACKAGES
     brew install \
       $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_extra) || true
 fi
