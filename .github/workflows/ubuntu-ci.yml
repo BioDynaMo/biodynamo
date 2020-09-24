@@ -81,6 +81,10 @@ jobs:
     - name: Style guide checks
       shell: bash
       run: |
+        wget https://apt.llvm.org/llvm-snapshot.gpg.key
+        sudo apt-key add llvm-snapshot.gpg.key
+        sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main"
+        sudo apt update
         sudo apt install -y cloc clang-tidy clang-format
         cloc --exclude-dir=build .
         cmake -B build
