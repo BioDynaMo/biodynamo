@@ -22,9 +22,7 @@ To execute a function for *specific* simulation objects have a look at biology m
 **An operation can have multiple implementations.**
 Each implementation can target a different type of hardware (e.g. CPU or GPU) as shown in the following image:
 
-<p align="center">
-  <img src="images/operation.svg" />
-</p>
+![Operations](images/operation.png)
 
 This example shows an overview of the displacement operation; one of the default operations in BioDynaMo.
 This operation is implemented for different computing targets, of which two are shown in the image above.
