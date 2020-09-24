@@ -78,12 +78,12 @@ jobs:
         ninja run-unit-tests
         ../util/xvfb-initd.sh stop
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
     - name: Style guide checks
       shell: bash
       run: |
+        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+        sudo add-apt-repository "deb http://apt.llvm.org/focal/llvm-toolchain-focal-10  main"
+        sudo apt update
         sudo apt install -y cloc clang-tidy clang-format
         cloc --exclude-dir=build .
         cmake -B build
