@@ -88,9 +88,6 @@ jobs:
           -B build
         cmake --build build --parallel --config Release
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
     # runners, while waiting for other targets to be compiled
     - name: Run notebooks
