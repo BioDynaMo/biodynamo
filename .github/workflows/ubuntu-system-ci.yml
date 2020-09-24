@@ -106,6 +106,7 @@ jobs:
       shell: bash
       run: |
         cmake \
+          -Dnotebooks=OFF \
           -Dparaview=ON \
           -Dsbml=ON \
           -DCMAKE_BUILD_TYPE=Release \
