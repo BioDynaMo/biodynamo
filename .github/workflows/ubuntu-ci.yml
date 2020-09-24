@@ -78,6 +78,9 @@ jobs:
         ninja run-unit-tests
         ../util/xvfb-initd.sh stop
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
     - name: Style guide checks
       shell: bash
       run: |
