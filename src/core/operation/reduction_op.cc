@@ -12,17 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_FUNCTOR_H_
-#define CORE_FUNCTOR_H_
+#include "core/operation/reduction_op.h"
+#include "core/operation/operation_registry.h"
 
 namespace bdm {
 
-template <typename TReturn, typename... TParameter>
-struct Functor {
-  virtual ~Functor() {}
-  virtual TReturn operator()(TParameter... parameter) = 0;
-};
+BDM_REGISTER_TEMPLATE_OP(ReductionOp, int, "ReductionOpInt", kCpu);
+BDM_REGISTER_TEMPLATE_OP(ReductionOp, double, "ReductionOpDouble", kCpu);
 
 }  // namespace bdm
-
-#endif  // CORE_FUNCTOR_H_
