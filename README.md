@@ -60,3 +60,4 @@ We expect contributors to adhere to the [Contributor Covenant](https://www.contr
 ### License
 
 BioDynaMo is [Apache 2.0 licensed](./LICENSE).
+
