@@ -3,7 +3,8 @@ name: Ubuntu CI
 on:
   push:
   pull_request_target:
-    types: [assigned, opened, synchronize, edited, reopened]
+    branches:
+      - master
 
 jobs:
   build:
@@ -113,6 +114,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         MATRIX_CONTEXT: ${{ toJson(matrix) }} # Required when using matrix
-      # Pick up events if the job succeeds, fails or is canceled, and if this
-      # job is not executed in forked repositories (Slack Action will fail due to GITHUB_TOKEN being absent)
-      if: (${{ failure() }} || ${{ success() }} || ${{ cancelled() }}) && ${{ github.repository_owner }} == "BioDynaMo"
+      if: always() # Pick up events even if the job fails or is canceled
