@@ -3,9 +3,6 @@ name: Ubuntu CI
 on:
   push:
   pull_request_target:
-  pull_request:
-    branches:
-      - master
 
 jobs:
   build:
