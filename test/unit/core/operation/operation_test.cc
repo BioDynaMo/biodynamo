@@ -28,7 +28,7 @@ struct OperationTestOp : public StandaloneOperationImpl {
 
   void operator()() override {}
 
-  OperationTestOp* Clone() { return new OperationTestOp(); }
+  OperationTestOp* Clone() override { return new OperationTestOp(); }
 
   void TearDown() override { teardown_counter_++; }
 

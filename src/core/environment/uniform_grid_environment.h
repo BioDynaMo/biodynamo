@@ -53,8 +53,8 @@ class UniformGridEnvironment : public Environment {
   // DisplacementOpCuda needs access to some UniformGridEnvironment private
   // members to reconstruct
   // the grid on GPU (same for DisplacementOpOpenCL)
-  friend class DisplacementOpCuda;
-  friend class DisplacementOpOpenCL;
+  friend struct DisplacementOpCuda;
+  friend struct DisplacementOpOpenCL;
 
  public:
   /// A single unit cube of the grid
