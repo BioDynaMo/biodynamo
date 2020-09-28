@@ -34,7 +34,8 @@ set(CLANG_TOOLS_SEARCH_PATHS
     ${ClangTools_PATH}
     $ENV{CLANG_TOOLS_PATH}
     /usr/local/bin
-    /usr/bin)
+    /usr/bin
+    /opt/rh/llvm-toolset-7/root/usr/bin)
 if(LLVM_BREW_PREFIX)
   list(APPEND CLANG_TOOLS_SEARCH_PATHS "${LLVM_BREW_PREFIX}/bin")
 endif()
