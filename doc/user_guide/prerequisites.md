@@ -61,8 +61,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **clang-tidy**: clang-based C++ “linter” tool
   * **doxygen**: Tool for generating documentation from annotated C++ sources
   * **graphviz**: Graph Visualization Software used optionally by Doxygen
-  * **lcov**: Graphical front-end for GCC's coverage testing tool gcov
-  * **gcovr**: Tool to test code coverage in programs
+  * **kcov**: Code coverage testing tool (only on Ubuntu 20.04)
   * **libxml2-dev**: Development files for the GNOME XML library
 
 ### Installation
@@ -97,7 +96,9 @@ pyenv shell 3.8.0
 python -m pip install --user nbformat jupyter metakernel
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
-  doxygen graphviz lcov gcovr libxml2-dev
+  doxygen graphviz libxml2-dev
+# on Ubuntu 20.04
+sudo apt-get install -y kcov
 ```
 
 ## CentOS 7
@@ -131,8 +132,6 @@ sudo apt-get install -y valgrind \
 
 ### Optional Packages
 
- * **lcov**: Graphical front-end for GCC's coverage testing tool gcov
- * **gcov**: Tool to test code coverage in programs
  * **llvm-toolset-7**: software collection that provides software from the LLVM suite
  * **llvm-toolset-7-clang-tools-extra**: software collection that provides `clang-format` and `clang-tidy`
  * **valgrind**: A suite of tools for debugging and profiling
@@ -173,7 +172,7 @@ PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 ```bash
 pyenv shell 3.8.0
 python -m pip install --user nbformat jupyter metakernel
-sudo yum -y install lcov gcovr llvm-toolset-7 \
+sudo yum -y install llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 # SBML integration
 sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
@@ -209,8 +208,7 @@ using the command ``"xcode-select --install"``.
 
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
- * **lcov**: Graphical front-end for GCC's coverage testing tool gcov
- * **gcovr**: Tool to test code coverage in programs
+ * **kcov**: Code coverage testing tool
 
 ### Installation
 
@@ -231,5 +229,5 @@ PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 ```bash
 pyenv shell 3.8.0
 python -m pip install --user nbformat jupyter metakernel
-brew install doxygen graphviz lcov gcovr
+brew install doxygen graphviz kcov 
 ```

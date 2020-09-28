@@ -2,9 +2,7 @@ clang
 clang-format
 clang-tidy
 doxygen
-gcovr
 graphviz
-lcov
 libxml2-dev
 llvm-6.0
 llvm-6.0-dev

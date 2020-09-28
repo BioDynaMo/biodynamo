@@ -150,7 +150,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `bdmclean` | will only clean the `biodynamo` and `runBiodynamoTests*` targets |
 | `testbdmclean` | will only clean the `runBiodynamoTests*` target |
 | `doc` | will generate the API, user and developer documentation in directory `build/doc`. |
-| `coverage` | will execute the test target and generate a coverage report in `build/coverage`. Make sure that `gcov` and `lcov` are installed and configure cmake with `cmake -Dcoverage=on ..` |
+| `coverage` | will execute the test target and generate a coverage report in `build/coverage`. Make sure that `kcov` are installed and configure cmake with `cmake -Dcoverage=on ..` |
 | `coverage-build` | same as `make coverage`, but builds it in a separate directory (`build/coverage`). Since building the coverage report requires different compiler flags, building it in a separate directory keeps the current build directory in good order. |
 
 ### C++ Code Style Related Build Targets
