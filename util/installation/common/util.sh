@@ -260,51 +260,131 @@ function BashrcFile {
   fi
 }
 
-# Print message that tells the user to reload their shell and source the environment.
+# Echo lines (with line numbers) matching a given pattern for a list of given files.
 # Arguments:
-#   $1 biodynamo install directory
-function EchoFinishThisStep {
-  if [[ $# -ne 1 ]]; then
-    echo "ERROR in EchoFinishThisStep: Wrong number of arguments"
+#   $1 message to echo before echoing matches
+#   $2 pattern to pass to 'sed -E', this pattern must output matching line
+#      numbers, and optionally '#IGNORE' if a match is to be ignored.
+#   $@ files to match on
+function EchoMatchingLinesInFiles() {
+  if [[ $# -lt 3 ]]; then
+    echo "ERROR in EchoMatchingLinesInFiles: Wrong number of arguments"
     exit 1
   fi
 
-  local extraStepStr="To avoid this extra step do:"
-  local haveExecStr="to have it executed automatically when starting a new shell."
+  local matchMessage="$1"
+  local sedPattern="$2"
+  shift # rest
+  local fileList=("$@")
+
+  local matches
+  local matchAccum=()
+  local matchLinesAccum=()
+
+  for f in ${fileList[@]}; do
+    if [ -f "$f" ]; then
+      matches=$(cat -n $f | sed -E "$sedPattern" | grep -v '#IGNORE' | sed ':a; N; $!ba; s/\n/p;/g')
+      if [ -n "$matches" ]; then
+        matchAccum+=("$f")
+        matchLinesAccum+="$(cat -n $f | sed -n "$matches"'p;')"
+      fi
+    fi
+  done
+  
+  if [ "${#matchAccum[@]}" -gt '0' ]; then
+    echo -e "$matchMessage"
+    for i in ${!matchAccum[@]}; do
+      echo "-> '${matchAccum[$i]}', on line(s)"
+      echo "${matchLinesAccum[$i]}"
+    done
+    return 0
+  fi
+
+  return 1
+}
+
+# Print warnings and list of offending lines in shell config files
+function WarnPossibleBadShellConfigs {
+  # collect shell config files
+  local configFiles=("$HOME/.profile")
+  if ! [ command -v bash &> /dev/null ]; then
+    configFiles+=("$HOME/.bashrc" "$HOME/.bash_profile")
+  fi
+  if ! [ command -v zsh &> /dev/null ]; then
+    configFiles+=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
+  fi
+  if ! [ command -v fish &> /dev/null ]; then
+    configFiles+=("$(fish -c 'echo $__fish_config_dir/config.fish')")
+  fi
+  local didWarn=false
+  # these regexes are quite naive but we aren't going to parse a shell file for a warning
+  local sourcePattern='s/^\s+([0-9][0-9]*)\s+(\.\s+|source).*thisbdm\.(fish|sh)\s*(#IGNORE)?$/\1\4/mg;t;d'
+  local aliasPattern='s/^\s+([0-9][0-9]*)\s+alias\s+thisbdm='"'"'(\.\s+|source)(.*)thisbdm\.(fish|sh)'"'"'\s*(#IGNORE)?$/\1\5/mg;t;d'
+  local warnFmt="$BDM_ECHO_YELLOW$BDM_ECHO_BOLD[WARN] "
+  local warnMsg="${warnFmt}You may have automatically sourced thisbdm in the following file(s):$BDM_ECHO_RESET"
+  # warn if there are any naive cases of 'source|. .../thisbdm.sh' 
+  EchoMatchingLinesInFiles "$warnMsg" "$sourcePattern" "${configFiles[@]}"\
+  && EchoWarning "This is no longer advised." && didWarn=true
+  # remind that alias to a thisbdm exists
+  warnMsg="${warnFmt}You may have aliased a thisbdm in the following file(s):$BDM_ECHO_RESET"
+  EchoMatchingLinesInFiles "$warnMsg" "$aliasPattern" "${configFiles[@]}"\
+  && EchoWarning "Please check if aliased version(s) is/are up-to-date." && didWarn=true
+  $didWarn && EchoWarning "If a matching line is a false positive, append ' #IGNORE' to its end."
+}
+
+# Print message that tells the user to reload their shell and source the environment.
+# Arguments:
+#   $1 biodynamo install directory
+function EchoFinishInstallation {
+  if [[ $# -ne 1 ]]; then
+    echo "ERROR in EchoFinishInstallation: Wrong number of arguments"
+    exit 1
+  fi
+
+  local addToConfigStr="   ${BDM_ECHO_UNDERLINE}echo \"alias thisbdm='source $1/bin/thisbdm"
+  local setQuietEnvVarStr
 
   EchoInfo "Before running BioDynaMo execute:"
   case $SHELL in
     *bash | *zsh)
-      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh [-q | --quiet]"
-      EchoInfo "$extraStepStr"
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
+
       case $SHELL in
-        *bash) EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(BashrcFile)" ;;
-        *zsh)  EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.sh -q\" >> $(ZshrcFile)" ;;
+        *bash) addToConfigStr="$addToConfigStr.sh'\" >> $(BashrcFile)" ;;
+        *zsh)  addToConfigStr="$addToConfigStr.sh'\" >> $(ZshrcFile)" ;;
       esac
-      EchoInfo "$haveExecStr"
+      setQuietEnvVarStr="'export BDM_THISBDM_QUIET=true'"
     ;;
     *fish)
       EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.fish"
-      EchoInfo "$extraStepStr"
-      EchoNewStep "   ${BDM_ECHO_UNDERLINE}echo \"source $1/bin/thisbdm.fish -q\" >> ""$(fish -c 'echo $__fish_config_dir')"
-      EchoInfo "$haveExecStr"
+      addToConfigStr="$addToConfigStr.fish'\" >> (fish -c 'echo "'$__fish_config_dir'"/config.fish')"
+      setQuietEnvVarStr="'set -gx BDM_THISBDM_QUIET true'"
     ;;
     *)
-      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.<sh|fish> [-q | --quiet]"
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.{sh|fish}"
       echo
-      EchoWarning "We could not detect your default shell."
+      EchoWarning "WARN: Your login shell appears to be '$SHELL'."
       EchoWarning "BioDynaMo currently supports the following shells:"
       EchoWarning "   ${BDM_ECHO_UNDERLINE}bash, zsh, and fish."
       return
     ;;
   esac
+
+  EchoInfo "For added convenience, run (in your terminal):"
+  EchoNewStep "$addToConfigStr"
+  EchoInfo "to able to just type 'thisbdm', instead of"
+  EchoInfo "'source $1/bin/thisbdm.[fi]sh'"
   echo
-  EchoInfo "The -q (or --quiet) flag will disable the prompt indicator, and will only report errors."
+  EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator, and silence non-critical output."
   echo
   EchoNewStep "NOTE: Your login shell appears to be '$SHELL'."
   EchoNewStep "The instructions above are for this shell."
   EchoNewStep "For other shells, or for more information, see:"
   EchoNewStep "   ${BDM_ECHO_UNDERLINE}https://biodynamo.org/docs/userguide/first_steps/"
+  echo
+  # any warnings about users' post-install shell 
+  # configuration may be added to the function called below
+  WarnPossibleBadShellConfigs
 }
 
 # This function prompts the user for the biodynamo installation directory
