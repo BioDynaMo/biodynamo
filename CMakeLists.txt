@@ -117,6 +117,9 @@ if(APPLE)
                     OUTPUT_VARIABLE LLVM_BREW_PREFIX
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
+  # Silence std::experimental::filesystem warning on MacOS.
+  # Remove after update to c++17
+  add_definitions("-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM")
 endif()
 
 if(UNIX AND NOT APPLE)
