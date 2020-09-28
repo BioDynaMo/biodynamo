@@ -60,10 +60,12 @@ TEST(DefaultForce, AllNonOverlappingSphere) {
   Cell nb({11.01, 0, 0});
   nb.SetDiameter(8);
 
+  std::cout << "~~~~~~ THIS IS A FORKED PR TEST ~~~~~" << std::endl;
+
   DefaultForce force;
   auto result = force.GetForce(&cell, &nb);
 
-  EXPECT_NEAR(0, result[0], abs_error<double>::value);
+  EXPECT_NEAR(1, result[0], abs_error<double>::value);
   EXPECT_NEAR(0, result[1], abs_error<double>::value);
   EXPECT_NEAR(0, result[2], abs_error<double>::value);
 }
