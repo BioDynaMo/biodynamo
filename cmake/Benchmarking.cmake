@@ -14,27 +14,24 @@
 
 # setup google benchmark
 ExternalProject_Add(
-  gtest
+  benchmark
   URL "${CMAKE_SOURCE_DIR}/third_party/benchmark.zip"
-  PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+  PREFIX "${CMAKE_CURRENT_BINARY_DIR}/benchmark"
   CMAKE_CACHE_ARGS
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
   INSTALL_COMMAND "" # Disable install step
-  # Ugly but necessary, in future versions one can use ${binary_dir}
-  # in BUILD_BYPRODUCTS
-  #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
-  BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/libgtest.a"
+#  BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/libgtest.a"
 )
-ExternalProject_Get_Property(gtest source_dir binary_dir)
+ExternalProject_Get_Property(benchmark source_dir binary_dir)
 
 # Create a libgtest target to be used as a dependency by test program
-add_library(libgtest IMPORTED STATIC GLOBAL)
-add_dependencies(libgtest gtest)
-set_target_properties(libgtest PROPERTIES
-    IMPORTED_LOCATION "${binary_dir}/libgtest.a"
-    IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
-)
+#add_library(libgtest IMPORTED STATIC GLOBAL)
+#add_dependencies(libgtest gtest)
+#set_target_properties(libgtest PROPERTIES
+#    IMPORTED_LOCATION "${binary_dir}/libgtest.a"
+#    IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
+#)
 
 # add include directories for gtest
 include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
@@ -70,8 +67,8 @@ function(bdm_add_test_executable TEST_TARGET)
   bdm_add_executable(${TEST_TARGET}
                      SOURCES ${ARG_SOURCES}
                      HEADERS ${ARG_HEADERS}
-                     LIBRARIES biodynamo libgtest ${ARG_LIBRARIES})
-  add_dependencies(${TEST_TARGET} gtest)
+                     LIBRARIES ${ARG_LIBRARIES} benchmark)
+  add_dependencies(${TEST_TARGET} benchmark)
   SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}" PARENT_SCOPE)
 
   # execute all tests with command: make test
