@@ -144,15 +144,21 @@ function(generate_rootlogon)
   # the one-definition rule
   if (dict)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define USE_DICT\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_LIBRARY_PATH($BDMSYS/lib)\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;")
+    # We add this one because the ROOT visualization require it, and it's not one
+    # of the core libraries that is loaded by default in rootcling
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(GenVector)\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#include \\\"biodynamo.h\\\"\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"using namespace bdm\;\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"Simulation simulation(\\\"simulation\\\")\;\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"INFO: Created simulation object 'simulation' with UniqueName='simulation'.\\\" << endl\;\")\;")
+  else()
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"ERROR: Loading BioDynaMo into ROOT failed!\\\" << endl\;\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"       BioDynaMo was not built with dict=ON\\\" << endl\;\")\;")
   endif()
 
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_LIBRARY_PATH($BDMSYS/lib)\")\;")
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;")
-  # We add this one because the ROOT visualization require it, and it's not one
-  # of the core libraries that is loaded by default in rootcling
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(GenVector)\")\;")
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#include \\\"biodynamo.h\\\"\")\;")
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"using namespace bdm\;\")\;")
+
   set(CONTENT "${CONTENT}\n}\n")
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)

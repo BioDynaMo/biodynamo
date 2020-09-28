@@ -76,5 +76,5 @@ REGEX='[^-]*'
 [[ $VERSION =~ $REGEX ]]
 INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
 
-EchoFinishThisStep $INSTALL_DIR
+EchoFinishInstallation $INSTALL_DIR
 echo

@@ -15,23 +15,25 @@
 # Source this script to set up the BioDynaMo build that this script is part of.
 #
 # Conveniently an alias like this can be defined in .bashrc or .zshrc:
-#   alias thisbdm="source path/to/biodynamo/bin/thisbdm.sh -q"
+#   alias thisbdm="source path/to/biodynamo/bin/thisbdm.sh"
 #
 # This script is for bash like shells, see thisbdm.fish for fish.
 #
 # Author: Fons Rademakers, 16/5/2019
 
-_bdm_quiet=false
-_bdm_silent=false
-
 _bdm_err()
 {
-  $_bdm_silent || echo -e "\e[31m$*\e[0m"
+  if ! [ "$BDM_THISBDM_SILENT" = true ]; then echo -e "\e[91m$*\e[0m"; fi
+}
+
+_bdm_warn()
+{
+  if ! [ "$BDM_THISBDM_QUIET" = true ]; then echo -e "\e[93m$*\e[0m"; fi
 }
 
 _bdm_ok()
 {
-  $_bdm_quiet || echo -e "\e[32m$*\e[0m"
+  if ! [ "$BDM_THISBDM_QUIET" = true ]; then echo -e "\e[92m$*\e[0m"; fi
 }
 
 _drop_bdm_from_path()
@@ -73,13 +75,12 @@ _bdm_unset()
 
 _thisbdm_cleanup() {
   _bdm_unset thisbdm
-  _bdm_unset _bdm_quiet
-  _bdm_unset _bdm_silent
   _bdm_unset _newpath
   _bdm_unset -f _drop_bdm_from_path
   _bdm_unset -f _source_thisbdm
   _bdm_unset -f _bdm_define_command
   _bdm_unset -f _bdm_err
+  _bdm_unset -f _bdm_warn
   _bdm_unset -f _bdm_ok
   unset -f _bdm_unset >/dev/null 2>&1 || true
   unset -f _thisbdm_cleanup >/dev/null 2>&1 || true
@@ -87,6 +88,11 @@ _thisbdm_cleanup() {
 
 _source_thisbdm()
 {
+  if [ "$BDM_THISBDM_SILENT" = true ]; then
+    # silent->quiet
+    export BDM_THISBDM_QUIET=true
+  fi
+
   ### Detect bash-like shell, and act accordingly ###
   local bdm_shell
   if [ -n "$BASH_VERSION" ]; then
@@ -105,43 +111,52 @@ _source_thisbdm()
     return 1
   fi
   ########
-
-  ### Arguments ###
-  while [[ $# -gt 0 ]]; do
-    local key="$1"
-    case $key in
-        -q|--quiet)
-        _bdm_quiet=true
-        shift # next key
-        ;;
-        -Q|--silent)
-        _bdm_silent=true
-        _bdm_quiet=true
-        shift # next key
-        ;;
-        *)
-        return 1
-        ;;
-    esac
-  done
-  ########
-
+  
+  local old_bdmsys
   if [ -n "${BDMSYS}" ]; then
-     local old_bdmsys=${BDMSYS}
+     old_bdmsys=${BDMSYS}
   fi
 
+  # set bdmsys and collect relevant config files
+  local config_files=("$HOME/.profile")
   case $bdm_shell in
     bash)
-      BDMSYS=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+      BDMSYS=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd) || return 1
+      config_files+=("$HOME/.bashrc" "$HOME/.bash_profile")
       ;;
     zsh)
       # The zsh equivalent of ${BASH_SOURCE[0]} is ${(%):-%x}
       # shellcheck disable=SC2154
       BDMSYS=$(cd "$(dirname "${(%):-%x}")/.." && pwd) || return 1
+      config_files+=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
       ;;
   esac
-
   export BDMSYS
+
+  if [ -n "$old_bdmsys" ]; then
+    if [ "$old_bdmsys" = "$BDMSYS" ]; then
+      _bdm_warn "[WARN] You've already sourced this same 'thisbdm' in your current shell session."
+    else
+      _bdm_warn "[WARN] You've already sourced another 'thisbdm' in your current shell session."
+      _bdm_warn "       this BDM install='$BDMSYS' -- prev. BDM install='$old_bdmsys'"
+    fi
+    _bdm_warn ""
+    _bdm_warn "       You may encounter undefined behavior. It is recommended that you start a new"
+    _bdm_warn "       shell session, or otherwise check if you automatically source 'thisbdm' in one"
+    _bdm_warn "       of your shell configuration files (e.g., bashrc)--this is no longer advised."
+  fi
+
+  # check if any config files naively source thisbdm
+  for f in ${config_files[@]}; do
+    if [ -f "$f" ]; then
+      local source_pattern='s/^\s*(\.\s+|source).*thisbdm\.(fish|sh)\s*(#IGNORE)?$/\3/mg;t;d'
+      # one may append #IGNORE if match is a false positive, or they really want to keep that line
+      local nr_matches=$(sed -E "$source_pattern" $f | grep -v "#IGNORE" | wc -l)
+      if [ "$nr_matches" -gt '0' ]; then
+        _bdm_warn "[WARN] You may have sourced thisbdm in '$f'. Please check as this is not advised."
+      fi
+    fi
+  done
 
   # Clear the env from previously set BioDynaMo paths.
   if [ -n "${old_bdmsys}" ] ; then
@@ -320,28 +335,38 @@ _source_thisbdm()
   ########
 
   #### ROOT Specific Configurations ####
-  if [ -z "${BDM_ROOT_DIR}" ] && [ -z "${ROOTSYS}" ]; then
+  if [ -z "$BDM_CUSTOM_ROOT" ]; then
+    if [ -z "${ROOTSYS}" ]; then
+      export BDM_CUSTOM_ROOT=false
+    else
+      export BDM_CUSTOM_ROOT=true
+    fi
+  fi
+
+  if [[ ( -z "${BDM_ROOT_DIR}" && -z "${ROOTSYS}" ) || "$BDM_CUSTOM_ROOT" = false ]]; then
     BDM_ROOT_DIR=${BDMSYS}/third_party/root
-    if ! [ -d "$BDM_ROOT_DIR" ]; then
-      _bdm_err "[ERR] We are unable to source ROOT! Please make sure ROOT is installed on your system!"
-      _bdm_err "      You can specify manually its location by executing 'export BDM_ROOT_DIR=path/to/root'"
-      _bdm_err "      before running cmake."
-      return 1
-    fi
-  else
-    # ROOTSYS has precedence over the BDM_ROOT_DIR custom configuration
-    if [ -n "${ROOTSYS}" ]; then
-     local orvers="@rootvers@"
-     local crvers
-     crvers="$("$ROOTSYS"/bin/root-config --version)"
-     if [ "$crvers" = "$orvers" ]; then
+    export BDM_CUSTOM_ROOT=false
+  fi
+
+  if [ "$BDM_CUSTOM_ROOT" = true ] && [ -n "${ROOTSYS}" ]; then
+    _bdm_warn "[INFO] Custom ROOT 'ROOTSYS=${ROOTSYS}'"
+    local orvers="@rootvers@"
+    local crvers
+    crvers=$("$ROOTSYS"/bin/root-config --version || echo '')
+    if [ "$crvers" = "$orvers" ]; then
       BDM_ROOT_DIR=${ROOTSYS}
-     else
-      _bdm_err "[ERR] ROOTSYS points to ROOT version $crvers, while BDM was build with version $orvers."
-      _bdm_err "      Make sure that ROOTSYS points to the right version of ROOT."
-      return 1
-     fi
+    else
+      _bdm_warn "[WARN] ROOTSYS points to ROOT version '$crvers', while BDM was built with version '$orvers'."
+      _bdm_warn "       You may encounter errors as compatibility is not guaranteed."
+      # no longer fatal as user probably wants to override this for a reason.
     fi
+  fi
+
+  if ! [ -d "$BDM_ROOT_DIR" ]; then
+    _bdm_err "[ERR] We are unable to source ROOT! Please make sure ROOT is installed on your system!"
+    _bdm_err "      You can manually specify its location by executing 'export BDM_ROOT_DIR=path/to/root'"
+    _bdm_err "      before running cmake."
+    return 1
   fi
 
   export BDM_ROOT_DIR
@@ -353,14 +378,25 @@ _source_thisbdm()
   #### ParaView Specific Configurations ####
   local with_paraview=@with_paraview@
   if [ "$with_paraview" = 'ON' ]; then
-     if [ -z "${ParaView_DIR}" ]; then
-      ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR
-      if ! [ -d "$ParaView_DIR" ]; then
-       _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed in your system!"
-       _bdm_err "      You can specify manually its location by executing 'export ParaView_DIR=path/to/paraview'"
+     if [ -z "$BDM_CUSTOM_PV" ]; then
+       if [ -z "${ParaView_DIR}" ]; then
+         export BDM_CUSTOM_PV=false
+       else
+         export BDM_CUSTOM_PV=true
+       fi
+     fi
+
+     if [ "$BDM_CUSTOM_PV" = false ] || [ -z "${ParaView_DIR}" ]; then
+       ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR
+     else
+       _bdm_warn "[INFO] Custom ParaView 'ParaView_DIR=${ParaView_DIR}'"
+     fi
+
+     if ! [ -d "$ParaView_DIR" ]; then
+       _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed on your system!"
+       _bdm_err "      You can manually specify its location by executing 'export ParaView_DIR=path/to/paraview'"
        _bdm_err "      together with 'export Qt5_DIR=path/to/qt' before running cmake."
        return 1
-      fi
      fi
 
      if [ -z "${ParaView_LIB_DIR}" ]; then
@@ -399,14 +435,25 @@ _source_thisbdm()
      ########
 
      #### Qt5 Specific Configurations ####
-     if [ -z "${Qt5_DIR}" ]; then
-      Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
-      if ! [ -d "$Qt5_DIR" ]; then
-       _bdm_err "[ERR] We are unable to find Qt! Please make sure it is installed in your system!"
-       _bdm_err "      You can specify manually its location by executing 'export Qt5_DIR=path/to/qt'"
+     if [ -z "$BDM_CUSTOM_QT" ]; then
+       if [ -z "${Qt5_DIR}" ]; then
+         export BDM_CUSTOM_QT=false
+       else
+         export BDM_CUSTOM_QT=true
+       fi
+     fi
+
+     if [ "$BDM_CUSTOM_QT" = false ] || [ -z "${Qt5_DIR}" ]; then
+       Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
+     else
+       _bdm_warn "[INFO] Custom Qt5 'Qt5_DIR=${QT5_DIR}'"
+     fi
+
+     if ! [ -d "$Qt5_DIR" ]; then
+       _bdm_err "[ERR] We are unable to find Qt5! Please make sure it is installed on your system!"
+       _bdm_err "      You can manually specify its location by executing 'export Qt5_DIR=path/to/qt'"
        _bdm_err "      together with 'export ParaView_DIR=path/to/paraview' before running cmake."
        return 1
-      fi
      fi
 
      if [ -z "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
@@ -482,7 +529,7 @@ _source_thisbdm()
 
     local zshenv_file="${zsh_config_dir}/.zshenv"
     if ! [ -f "$zshenv_file" ]; then
-      _bdm_ok "[INFO] creating .zshenv file"
+      _bdm_warn "[INFO] creating .zshenv file '$zshenv_file'"
       touch "$zshenv_file"
     fi
 
@@ -492,18 +539,17 @@ _source_thisbdm()
   fi
 
   ### Environment Indicator ###
-  if [ "$_bdm_quiet" = false ]; then
+  if ! [ "$BDM_THISBDM_QUIET" = true ]; then
     local bdm_major_minor='';
-    bdm_major_minor=$(bdm-config --version | sed -n  '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
+    bdm_major_minor=$(bdm-config --version | sed -n '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
     if [ -z "$__bdm_sh_prompt_original" ]; then
       case $bdm_shell in
         bash) __bdm_sh_prompt_original=$PS1 ;;
         zsh)  __bdm_sh_prompt_original=$PROMPT ;;
       esac
-      __bdm_sh_prompt_original=$PS1
     fi
-    # NB: overrides prompt for current session only
 
+    # NB: overrides prompt for current session only
     case $bdm_shell in
       bash) export PS1="[bdm-$bdm_major_minor] $__bdm_sh_prompt_original" ;;
       zsh)  export PROMPT="[bdm-$bdm_major_minor] $__bdm_sh_prompt_original" ;;
@@ -514,7 +560,7 @@ _source_thisbdm()
 }
 
 # Run
-if _source_thisbdm "$@"; then
+if _source_thisbdm; then
   _bdm_ok "[OK] You have successfully sourced BioDynaMo's environment."
   _thisbdm_cleanup
   return 0
