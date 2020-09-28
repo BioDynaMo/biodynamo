@@ -1,7 +1,5 @@
 doxygen
-gcovr
 graphviz
-lcov
 libxml2-devel
 llvm-toolset-6.0-llvm-devel
 llvm-toolset-6.0-llvm-static
