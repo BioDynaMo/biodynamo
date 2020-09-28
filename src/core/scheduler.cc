@@ -48,7 +48,6 @@ Scheduler::Scheduler() {
                                           "discretization",
                                           "distribute run displacement info",
                                           "diffusion",
-                                          "visualize",
                                           "load balancing"};
 
   // Schedule the default operations
@@ -56,6 +55,7 @@ Scheduler::Scheduler() {
     ScheduleOp(NewOperation(def_op));
   }
 
+  visualize_op_ = NewOperation("visualize");
   setup_iteration_op_ = NewOperation("set up iteration");
   teardown_iteration_op_ = NewOperation("tear down iteration");
   update_environment_op_ = NewOperation("update environment");
@@ -68,6 +68,7 @@ Scheduler::~Scheduler() {
   for (auto* op : all_ops_) {
     delete op;
   }
+  delete visualize_op_;
   delete update_environment_op_;
   delete setup_iteration_op_;
   delete teardown_iteration_op_;
@@ -208,6 +209,7 @@ void Scheduler::Execute() {
   TearDownOps();
   Timing::Time(teardown_iteration_op_->name_,
                [&]() { (*teardown_iteration_op_)(); });
+  Timing::Time(visualize_op_->name_, [&]() { (*visualize_op_)(); });
 }
 
 void Scheduler::Backup() {
