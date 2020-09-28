@@ -82,8 +82,10 @@ TEST(DefaultForce, AllAtSamePositionSphere) {
   DefaultForce force;
   auto result = force.GetForce(&cell, &nb);
 
+  std::cout << "FORKED REPOOOOOOOOOOOOO" << std::endl;
+
   // random number must be in interval [-3.0, 3.0]
-  EXPECT_NEAR(0, result[0], 3);
+  EXPECT_NEAR(1, result[0], 3);
   EXPECT_NEAR(0, result[1], 3);
   EXPECT_NEAR(0, result[2], 3);
 }
