@@ -37,4 +37,8 @@ sudo apt update
 # use ubuntu-16.04 prerequisites script
 . $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/prerequisites.sh $1
 
+if [ $1 == "all" ]; then
+  sudo apt-get install -y kcov
+fi
+
 exit 0

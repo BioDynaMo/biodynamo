@@ -1,4 +1,3 @@
 doxygen
 graphviz
-lcov
-gcovr
+kcov
