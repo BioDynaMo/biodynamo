@@ -93,12 +93,13 @@ endfunction(ListToString)
 
 function(BuildParaViewPlugin)
   file(MAKE_DIRECTORY ${CMAKE_INSTALL_PVPLUGINDIR})
+  set(BDM_PVPLUGIN_BUILDDIR ${CMAKE_BINARY_DIR}/pv-plugin-build)
   add_custom_target(BDMGlyphFilter
     WORKING_DIRECTORY ${CMAKE_BDM_PVPLUGINDIR}
-    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} -B build
-    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} --build build
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BDM_PVPLUGINDIR}/build/lib/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so ${CMAKE_INSTALL_PVPLUGINDIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BDM_PVPLUGINDIR}/build/lib/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so ${CMAKE_INSTALL_ROOT}/lib
+    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} -B "${BDM_PVPLUGIN_BUILDDIR}"
+    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} --build "${BDM_PVPLUGIN_BUILDDIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so" "${CMAKE_INSTALL_PVPLUGINDIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so" "${CMAKE_INSTALL_ROOT}/lib"
   )
 endfunction(BuildParaViewPlugin)
 

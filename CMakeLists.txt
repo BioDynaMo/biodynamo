@@ -608,7 +608,6 @@ include(CppStyleGuideChecks)
 # ------ cleanbuild command ------ #
 add_custom_target(cleanbuild
                   COMMAND ${PROJECT_SOURCE_DIR}/util/clean-build-dir.sh "${CMAKE_BINARY_DIR}"
-                  COMMAND rm -rf ${CMAKE_BDM_PVPLUGINDIR}/build
 )
 
 # --------------------- Final Message to the user ------------------------------
