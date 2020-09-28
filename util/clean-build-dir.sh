@@ -12,6 +12,13 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
+   
+if [ $# -ne 1 ]; then
+  echo "ERROR: $0 expects one argument."
+  echo "USAGE:"
+  echo "  $0 path-to-build-dir"
+  exit 1
+fi
 
 cd $1
 
