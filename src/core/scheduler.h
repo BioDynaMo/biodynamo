@@ -124,6 +124,7 @@ class Scheduler {
   std::vector<std::string> protected_ops_;  //!
   /// Tracks operations' execution times
   TimingAggregator op_times_;
+  Operation* visualize_op_ = nullptr;
   Operation* update_environment_op_ = nullptr;
   Operation* setup_iteration_op_ = nullptr;
   Operation* teardown_iteration_op_ = nullptr;
