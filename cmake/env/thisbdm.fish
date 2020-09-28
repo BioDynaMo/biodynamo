@@ -74,15 +74,24 @@ function source_thisbdm
 
     set -l old_bdmsys
     if test -n "$BDMSYS"
-        _bdm_warn "[WARN] It appears that you've already sourced 'thisbdm' in your current shell session."
-        _bdm_warn "       You may encounter undefined behavior. It is recommended that you start a new"
-        _bdm_warn "       shell session, or otherwise check if you source 'thisbdm' in one of your"
-        _bdm_warn "       shell configuration files (e.g., bashrc)--this is no longer advised."
         set old_bdmsys $BDMSYS
     end
 
     set -l curr_filename (status --current-filename)
     set -gx BDMSYS (fish -c "cd (dirname $curr_filename)/..; and pwd"); or return 1
+    
+    if test -n "$old_bdmsys"
+        if test "$old_bdmsys" = "$BDMSYS"
+            _bdm_warn "[WARN] You've already sourced this same 'thisbdm' in your current shell session."
+        else
+            _bdm_warn "[WARN] You've already sourced another 'thisbdm' in your current shell session."
+            _bdm_warn "       this BDM install='$BDMSYS' -- prev. BDM install='$old_bdmsys'"
+        end
+        _bdm_warn ""
+        _bdm_warn "       You may encounter undefined behavior. It is recommended that you start a new"
+        _bdm_warn "       shell session, or otherwise check if you automatically source 'thisbdm' in one"
+        _bdm_warn "       of your shell configuration files (e.g., config.fish)--this is no longer advised."
+    end
 
     # check if any config files naively source thisbdm
     set -l config_files "$__fish_config_dir/config.fish"
@@ -214,7 +223,7 @@ function source_thisbdm
     end
 
     if test "$BDM_CUSTOM_ROOT" = true; and test -n "$ROOTSYS"
-        _bdm_warn "[INFO] Custom ROOT"
+        _bdm_warn "[INFO] Custom ROOT 'ROOTSYS=$ROOTSYS'"
         set orvers "@rootvers@"
         set crvers ("$ROOTSYS"/bin/root-config --version; or echo '')
         if test "$crvers" = "$orvers"
@@ -254,7 +263,7 @@ function source_thisbdm
         if test "$BDM_CUSTOM_PV" = false; or test -z "$ParaView_DIR"
             set -gx ParaView_DIR "$BDMSYS/third_party/paraview"
         else
-       _    bdm_warn "[INFO] Custom ParaView"
+       _    bdm_warn "[INFO] Custom ParaView 'ParaView_DIR=$ParaView_DIR'"
         end
      
         if not test -d "$ParaView_DIR"
@@ -308,7 +317,7 @@ function source_thisbdm
         if test "$BDM_CUSTOM_QT" = false; or test -z "$Qt5_DIR"
             set -gx Qt5_DIR "$BDMSYS/third_party/qt"
         else
-            _bdm_warn "[INFO] Custom Qt5"
+            _bdm_warn "[INFO] Custom Qt5 'Qt5_DIR=$QT5_DIR'"
         end
 
         if not test -d "$Qt5_DIR"
@@ -406,8 +415,7 @@ end
 
 if source_thisbdm
     _bdm_ok "[OK] You have successfully sourced BioDynaMo's environment."
-    _thisbdm_cleanup
 else
     _bdm_err "[ERR] BioDynaMo's environment could not be sourced."
-    _thisbdm_cleanup
 end
+_thisbdm_cleanup

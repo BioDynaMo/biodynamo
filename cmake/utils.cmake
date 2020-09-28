@@ -390,9 +390,9 @@ endfunction()
 # to download the file if the download did not work.
 #
 # This method also has the ability to source files locally if a BDM_LOCAL_LFS
-# environment variable is exported, and set to a directory containing tar files that 
-# would have otherwise been downloaded. Directory structure and filenames of the LFS  
-# must precisely match its online counterpart. Hashes will not be verified for this use-case.
+# environment variable is exported, and set to a directory containing tar files that
+# would have otherwise been downloaded. Directory structure and filenames of the LFS
+# must precisely match its online counterpart.
 # Example: lfs.com/biodynamo-lfs/file.tar.gz => ~/Downloads/bdm/biodynamo-lfs/file.tar.gz
 # where BDM_LOCAL_LFS=~/Downloads/bdm/
 #
@@ -414,31 +414,30 @@ function(download_verify_extract URL DEST HASH)
     list(GET URL_COMPONENTS 1 LFS_FILEPATH)
     set(LOCAL_TAR_FILE "$ENV{BDM_LOCAL_LFS}${LFS_FILEPATH}")
     if(EXISTS "${LOCAL_TAR_FILE}")
-        file(COPY ${LOCAL_TAR_FILE} DESTINATION ${DEST_PARENT})
+      file(COPY ${LOCAL_TAR_FILE} DESTINATION ${DEST_PARENT})
     else()
-        message(FATAL_ERROR "\nERROR: We were unable find '${LFS_FILEPATH}' in BDM_LOCAL_LFS='$ENV{BDM_LOCAL_LFS}'\n")
+      message(FATAL_ERROR "\nERROR: We were unable find '${LFS_FILEPATH}' in BDM_LOCAL_LFS='$ENV{BDM_LOCAL_LFS}'\n")
     endif()
   else()
-  # Download the file
-  execute_process(COMMAND ${WGET_BIN} --progress=dot:giga -O ${FULL_TAR_PATH} ${URL}
-                  RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
+    # Download the file
+    execute_process(COMMAND ${WGET_BIN} --progress=dot:giga -O ${FULL_TAR_PATH} ${URL}
+                    RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
     if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
       message( FATAL_ERROR "\nERROR: We were unable to download:\
     ${URL}\n\
-  This may be caused by several reasons, like network error connections or just \
-  temporary network failure. Please retry again in a few minutes by deleting all \
-  the contents of the build directory and by issuing again the 'cmake' command.\n")
-    endif()
-
-    # Verify download
-    file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
-    if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
-      message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
-    Expected: ${HASH}\n\
-    Actual:   ${ACTUAL_SHA256}\n")
+This may be caused by several reasons, like network error connections or just \
+temporary network failure. Please retry again in a few minutes by deleting all \
+the contents of the build directory and by issuing again the 'cmake' command.\n")
     endif()
   endif()
 
+  # Verify download
+  file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
+  if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
+    message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
+    Expected: ${HASH}\n\
+    Actual:   ${ACTUAL_SHA256}\n")
+  endif()
   # Extract
   execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${FULL_TAR_PATH}
                   WORKING_DIRECTORY ${DEST}

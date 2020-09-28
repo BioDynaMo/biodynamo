@@ -111,13 +111,10 @@ _source_thisbdm()
     return 1
   fi
   ########
-
+  
+  local old_bdmsys
   if [ -n "${BDMSYS}" ]; then
-     _bdm_warn "[WARN] It appears that you've already sourced 'thisbdm' in your current shell session."
-     _bdm_warn "       You may encounter undefined behavior. It is recommended that you start a new"
-     _bdm_warn "       shell session, or otherwise check if you source 'thisbdm' in one of your"
-     _bdm_warn "       shell configuration files (e.g., bashrc)--this is no longer advised."
-     local old_bdmsys=${BDMSYS}
+     old_bdmsys=${BDMSYS}
   fi
 
   # set bdmsys and collect relevant config files
@@ -135,6 +132,19 @@ _source_thisbdm()
       ;;
   esac
   export BDMSYS
+
+  if [ -n "$old_bdmsys" ]; then
+    if [ "$old_bdmsys" = "$BDMSYS" ]; then
+      _bdm_warn "[WARN] You've already sourced this same 'thisbdm' in your current shell session."
+    else
+      _bdm_warn "[WARN] You've already sourced another 'thisbdm' in your current shell session."
+      _bdm_warn "       this BDM install='$BDMSYS' -- prev. BDM install='$old_bdmsys'"
+    fi
+    _bdm_warn ""
+    _bdm_warn "       You may encounter undefined behavior. It is recommended that you start a new"
+    _bdm_warn "       shell session, or otherwise check if you automatically source 'thisbdm' in one"
+    _bdm_warn "       of your shell configuration files (e.g., bashrc)--this is no longer advised."
+  fi
 
   # check if any config files naively source thisbdm
   for f in ${config_files[@]}; do
@@ -332,14 +342,14 @@ _source_thisbdm()
       export BDM_CUSTOM_ROOT=true
     fi
   fi
-  
+
   if [[ ( -z "${BDM_ROOT_DIR}" && -z "${ROOTSYS}" ) || "$BDM_CUSTOM_ROOT" = false ]]; then
     BDM_ROOT_DIR=${BDMSYS}/third_party/root
     export BDM_CUSTOM_ROOT=false
   fi
 
   if [ "$BDM_CUSTOM_ROOT" = true ] && [ -n "${ROOTSYS}" ]; then
-    _bdm_warn "[INFO] Custom ROOT"
+    _bdm_warn "[INFO] Custom ROOT 'ROOTSYS=${ROOTSYS}'"
     local orvers="@rootvers@"
     local crvers
     crvers=$("$ROOTSYS"/bin/root-config --version || echo '')
@@ -358,7 +368,7 @@ _source_thisbdm()
     _bdm_err "      before running cmake."
     return 1
   fi
-  
+
   export BDM_ROOT_DIR
   # shellcheck disable=SC1090
   . "${BDM_ROOT_DIR}"/bin/thisroot.sh || return 1
@@ -375,13 +385,13 @@ _source_thisbdm()
          export BDM_CUSTOM_PV=true
        fi
      fi
-  
+
      if [ "$BDM_CUSTOM_PV" = false ] || [ -z "${ParaView_DIR}" ]; then
        ParaView_DIR=${BDMSYS}/third_party/paraview; export ParaView_DIR
      else
-       _bdm_warn "[INFO] Custom ParaView"
+       _bdm_warn "[INFO] Custom ParaView 'ParaView_DIR=${ParaView_DIR}'"
      fi
-     
+
      if ! [ -d "$ParaView_DIR" ]; then
        _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed on your system!"
        _bdm_err "      You can manually specify its location by executing 'export ParaView_DIR=path/to/paraview'"
@@ -432,13 +442,13 @@ _source_thisbdm()
          export BDM_CUSTOM_QT=true
        fi
      fi
-  
+
      if [ "$BDM_CUSTOM_QT" = false ] || [ -z "${Qt5_DIR}" ]; then
        Qt5_DIR=${BDMSYS}/third_party/qt; export Qt5_DIR
      else
-       _bdm_warn "[INFO] Custom Qt5"
+       _bdm_warn "[INFO] Custom Qt5 'Qt5_DIR=${QT5_DIR}'"
      fi
-  
+
      if ! [ -d "$Qt5_DIR" ]; then
        _bdm_err "[ERR] We are unable to find Qt5! Please make sure it is installed on your system!"
        _bdm_err "      You can manually specify its location by executing 'export Qt5_DIR=path/to/qt'"
