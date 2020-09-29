@@ -25,8 +25,6 @@
 
 namespace bdm {
 
-static TimingAggregator gStatistics;
-
 class Timing {
  public:
   typedef std::chrono::high_resolution_clock Clock;
@@ -44,7 +42,8 @@ class Timing {
   static void Time(const std::string& description, TFunctor&& f) {
     static bool kUseTimer = Simulation::GetActive()->GetParam()->statistics_;
     if (kUseTimer) {
-      Timing timing(description, &gStatistics);
+      auto* agg = Simulation::GetActive()->GetScheduler()->GetOpTimes();
+      Timing timing(description, agg);
       f();
     } else {
       f();

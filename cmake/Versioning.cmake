@@ -22,6 +22,11 @@ execute_process(
              ${PROJECT_VERSION} ${CMAKE_SOURCE_DIR}/.git
      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
+# Set CMake variable that can be consumed by other build scripts
+execute_process(COMMAND cat version/last_version
+                OUTPUT_VARIABLE VERSION
+                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
 set_property(DIRECTORY APPEND
     PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/.git/index")

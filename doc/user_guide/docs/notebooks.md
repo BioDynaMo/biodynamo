@@ -72,9 +72,14 @@ option from the "Cell" drop down menu, or "Shift + Enter" on your keyboard.
 If you wish to execute the entire notebook at once you can click on "Restart & Run All"
 from the "Kernel" dropdown menu.
 
-!!! Note
-    You can find a list of common shortcuts in the "command palette" by clicking
+<a class="sbox" target="_blank" rel="noopener">
+    <div class="sbox-content">
+    	<h4><b>Tip</b></h4>
+    	<p>You can find a list of common shortcuts in the "command palette" by clicking
     on the keyboard icon in the menu bar
+		</p>
+    </div>
+</a>
 
 ## How to create a Notebook
 

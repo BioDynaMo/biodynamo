@@ -32,7 +32,7 @@
 #include "cl2.hpp"
 #else
 #define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
+#include <CL/cl2.hpp>
 #endif
 #endif  // USE_OPENCL
 
@@ -107,10 +107,7 @@ class GpuHelper {
     std::stringstream buffer;
     buffer << cl_file.rdbuf();
 
-    cl::Program displacement_op_program(
-        *context,
-        cl::Program::Sources(
-            1, std::make_pair(buffer.str().c_str(), buffer.str().length())));
+    cl::Program displacement_op_program(*context, buffer.str());
 
     all_programs->push_back(displacement_op_program);
 
@@ -156,7 +153,8 @@ class GpuHelper {
         Log::Error("FindGpuDevicesOpenCL", "No OpenCL platforms found");
       }
 
-      // Go over all available platforms and devices until all compatible devices are found
+      // Go over all available platforms and devices until all compatible
+      // devices are found
       for (auto p = platform.begin(); p != platform.end(); p++) {
         std::vector<cl::Device> pldev;
 
@@ -169,7 +167,8 @@ class GpuHelper {
               continue;
 
             // Only select GPU's with double support
-            if (!d->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>())  // NOLINT
+            if (!d->getInfo<
+                    CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>())  // NOLINT
               continue;
 
             // The OpenCL extension available on this device
@@ -201,8 +200,8 @@ class GpuHelper {
       }
 
       int selected_gpu = param->preferred_gpu_;
-      Log::Info("", "Selected GPU [", selected_gpu, "]: ",
-                (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
+      Log::Info("", "Selected GPU [", selected_gpu,
+                "]: ", (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
 
       // Create command queue for that GPU
       cl_int queue_err;
@@ -222,7 +221,7 @@ class GpuHelper {
   void InitializeGPUEnvironment() {
 #if (defined(USE_CUDA) || defined(USE_OPENCL)) && !defined(__ROOTCLING__)
     auto* param = Simulation::GetActive()->GetParam();
-    if (param->use_opencl_) {
+    if (param->compute_target_ == "opencl") {
 #ifdef USE_OPENCL
       FindGpuDevicesOpenCL();
 #else

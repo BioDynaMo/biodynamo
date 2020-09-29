@@ -20,6 +20,9 @@
 #include <string>
 #include <vector>
 
+#include "TSystem.h"
+
+#include "core/simulation.h"
 #include "core/util/math.h"
 
 namespace bdm {
@@ -52,7 +55,7 @@ inline std::ostream& operator<<(std::ostream& os, const TimingAggregator& ta) {
   os << std::endl;
 
   if (ta.timings_.size() != 0) {
-    os << "\033[1mTotal execution time per operation:\033[0m" << std::endl;
+    os << "\033[1mTotal execution time per operation\033[0m" << std::endl;
     for (auto& timing : ta.timings_) {
       os << timing.first << ": "
          << std::accumulate(timing.second.begin(), timing.second.end(), 0)

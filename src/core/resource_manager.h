@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-#ifdef USE_OPENCL
+#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #ifdef __APPLE__
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
@@ -36,12 +36,13 @@
 #include "cl2.hpp"
 #else
 #define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
+#include <CL/cl2.hpp>
 #endif
 #endif
 
 #include "core/container/so_uid_map.h"
 #include "core/diffusion_grid.h"
+#include "core/operation/operation.h"
 #include "core/sim_object/sim_object.h"
 #include "core/sim_object/so_handle.h"
 #include "core/sim_object/so_uid.h"
@@ -235,6 +236,12 @@ class ResourceManager {
   /// \see ApplyOnAllElements
   virtual void ApplyOnAllElementsParallel(Functor<void, SimObject*>& function);
 
+  /// Apply an operation on all elements.\n
+  /// Function invocations are parallelized.\n
+  /// Uses static scheduling.
+  /// \see ApplyOnAllElements
+  virtual void ApplyOnAllElementsParallel(Operation& op);
+
   virtual void ApplyOnAllElementsParallel(
       Functor<void, SimObject*, SoHandle>& function);
 
@@ -410,8 +417,19 @@ class ResourceManager {
   TypeIndex* type_index_ = nullptr;
 
   friend class SimulationBackup;
+  friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
   BDM_CLASS_DEF_NV(ResourceManager, 1);
 };
+
+inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {
+  os << "\033[1mSimulation objects per numa node\033[0m"
+     << std::endl;
+  uint64_t cnt = 0;
+  for (auto& numa_sos : rm.sim_objects_) {
+    os << "numa node " << cnt++ << " -> size: " << numa_sos.size() << std::endl;
+  }
+  return os;
+}
 
 }  // namespace bdm
 

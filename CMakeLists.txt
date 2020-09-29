@@ -58,12 +58,6 @@ endif()
 # Find a suitable compiler
 include(CheckCompiler)
 
-# Directory in which BioDynaMo will be installed. It can be provided
-# by the user itself.
-if (NOT DEFINED ${BDM_INSTALL_DIR})
-    set(BDM_INSTALL_DIR $ENV{HOME})
-endif()
-
 # Specify some directories which will be used to structure BioDynaMo build.
 set(CMAKE_BIODYNAMO_BUILD_ROOT  "${CMAKE_BINARY_DIR}")
 set(CMAKE_INSTALL_ROOT          "${CMAKE_BIODYNAMO_BUILD_ROOT}")
@@ -72,6 +66,7 @@ set(CMAKE_INSTALL_BINDIR        "${CMAKE_INSTALL_ROOT}/bin")
 set(CMAKE_INSTALL_INCLUDEDIR    "${CMAKE_INSTALL_ROOT}/include")
 set(CMAKE_INSTALL_LIBDIR        "${CMAKE_INSTALL_ROOT}/lib")
 set(CMAKE_INSTALL_PVPLUGINDIR   "${CMAKE_INSTALL_ROOT}/lib/pv_plugin") # Must be in separate dir!
+set(CMAKE_BDM_PVPLUGINDIR       "${CMAKE_INSTALL_ROOT}/../paraview_plugin/")
 set(CMAKE_INSTALL_CMAKEDIR      "${CMAKE_INSTALL_ROOT}/cmake")
 set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share")
 set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake")
@@ -122,6 +117,9 @@ if(APPLE)
                     OUTPUT_VARIABLE LLVM_BREW_PREFIX
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
+  # Silence std::experimental::filesystem warning on MacOS.
+  # Remove after update to c++17
+  add_definitions("-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM")
 endif()
 
 if(UNIX AND NOT APPLE)
@@ -153,18 +151,24 @@ if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
 endif()
 
-# Check if Python 3.6.9 from PyEnv is installed
-set(pythonvers "3.6.9")
+# Check if Python 3.8.0 from PyEnv is installed
+set(pythonvers "3.8.0")
 string(REPLACE "." ";" pythonvers_list ${pythonvers})
 list(GET pythonvers_list 0 pythonvers_major)
 list(GET pythonvers_list 1 pythonvers_minor)
 list(GET pythonvers_list 2 pythonvers_patch)
+if(APPLE)
+  set(ENV{PYENV_ROOT} /usr/local/opt/.pyenv)
+endif()
 if (DEFINED ENV{PYENV_ROOT})
   set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
 else()
   set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
 endif()
-set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+if(NOT EXISTS ${Python_LIB_PATH})
+  set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
+endif()
 if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
   set(PYTHON_FOUND TRUE)
   set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
@@ -185,9 +189,10 @@ if (MPI_NOT_FOUND)
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
-# Disable paraview for macOS until we upgrade to v5.8 on macOS
+# Disable paraview until we upgrade to v5.8 on macOS, numa is not supported on macOS
 if(APPLE)
   set(paraview OFF)
+  set(numa OFF)
 endif()
 
 # Check if GLUT is present. If we do not have it, then we disable directly paraview.
@@ -195,8 +200,8 @@ if(paraview)
   find_package(GLUT)
   if(NOT GLUT_FOUND)
       PRINT_WARNING()
-      MESSAGE("GLUT libraries were not found in the system. In order to use ParaView they need to be installed.
- If you want to do that automatically, please run the ./prerequisites.sh script.")
+      MESSAGE("GLUT libraries were not found. In order to use ParaView they need to be installed.
+ Please run ./prerequisites.sh before calling cmake.")
       PRINT_LINE()
       SET(paraview OFF)
   endif()
@@ -204,13 +209,13 @@ endif()
 
 # Check if we have a compatible openmp compiler
 find_package(OpenMP)
-if (OpenMP_FOUND)
+if (OpenMP_CXX_FOUND)
   get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
   link_directories(${OpenMP_CXX_LIB_DIR})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} OpenMP::OpenMP_CXX)
 else()
-    MESSAGE(FATAL_ERROR "OpenMP was not found in your system. Please run ./prerequisites.sh again before
-calling cmake. If this does not work, then your current compiler might not support OpenMP (this happens for instance
-with Apple's standard compiler). Please update it to a more recent version and then run cmake again.")
+  MESSAGE(FATAL_ERROR "OpenMP support was not found. Please run ./prerequisites.sh before
+calling cmake.")
 endif()
 
 if (test)
@@ -262,7 +267,7 @@ if(numa)
     include_directories(${NUMA_INCLUDE_DIR})
     link_directories(${NUMA_LIBRARY_DIR})
     add_definitions("-DUSE_NUMA")
-    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARY})
   endif()
 endif()
 
@@ -420,10 +425,12 @@ if(rpath)
   set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
 elseif(APPLE)
   set(CMAKE_INSTALL_NAME_DIR "@rpath")
-  set(CMAKE_INSTALL_RPATH "@loader_path/../lib")    # self relative LIBDIR
+  set(CMAKE_INSTALL_RPATH "@loader_path/../lib")  # self relative LIBDIR
   set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
 else()
-  set(CMAKE_SKIP_INSTALL_RPATH TRUE)           # skip the full RPATH for the install tree
+  set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)       # skip the full RPATH for the install tree
+  set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib")   # self relative LIBDIR
+  set(CMAKE_SKIP_INSTALL_RPATH FALSE)          # don't skip the full RPATH for the install tree
 endif()
 
 # -------------------- extract third party libraries ---------------------------
@@ -442,7 +449,7 @@ include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/omp")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/opencl")
-include_directories("${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.0")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1")
 include_directories("${EXTRACTED_THIRD_PARTY_LIBS}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 
@@ -450,6 +457,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 # search for system / C++ standard headers in that same directory, we instead
 # copy omp.h to our local build directory and include that
 fix_rootcling_omp_issue()
+fix_macos_opencl_header_issue()
 
 # build libbiodynamo
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
@@ -535,10 +543,6 @@ add_custom_target(bdmclean)
 add_dependencies(bdmclean libbdmclean)
 
 generate_rootlogon()
-
-if(paraview)
-  include("${CMAKE_SOURCE_DIR}/paraview_plugin/CMakeLists.txt")
-endif()
 
 # create cmake files used by external builds
 configure_file("cmake/UseBioDynaMo.cmake.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake" @ONLY)
@@ -681,6 +685,11 @@ set(cmakedir "$BDMSYS/share/cmake")
 set(configargs ${BDM_CONFIGARGS})
 set(cmakeinvoke "${CMAKE_INVOKE} -G ${CMAKE_GENERATOR}")
 set(omplibs ${OpenMP_CXX_LIBRARIES})
+if (DEFINED ENV{PYENV_ROOT})
+  set(pyenvroot "$ENV{PYENV_ROOT}")
+else()
+  set(pyenvroot "")
+endif()
 set(with_paraview ON)
 if(NOT paraview)
   set(with_paraview OFF)
@@ -688,16 +697,23 @@ endif()
 
 # Copy the environmental files to their correct directory
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.sh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh @ONLY NEWLINE_STYLE UNIX)
-#configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.csh ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh @ONLY NEWLINE_STYLE UNIX)
-#configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
+configure_file(${CMAKE_SOURCE_DIR}/cmake/env/thisbdm.fish ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish @ONLY NEWLINE_STYLE UNIX)
 configure_file(${CMAKE_SOURCE_DIR}/cmake/env/bdm-config.in ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config @ONLY ESCAPE_QUOTES NEWLINE_STYLE UNIX)
 
 # Set run permission on the environmental files
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.sh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-#add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.csh" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-#add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/thisbdm.fish" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 add_permissions("${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/bdm-config" ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+# Copy over sh_functions directory and contents, and set execute permissions
+file(GLOB _SHELL_FNS ${CMAKE_SOURCE_DIR}/cmake/env/sh_functions/*)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sh_functions)
+file(COPY ${_SHELL_FNS} DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sh_functions
+        FILE_PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE)
+        
 if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
   set(buildcmd "make -j ${ncpu}")
 elseif (${CMAKE_GENERATOR} STREQUAL "Ninja")

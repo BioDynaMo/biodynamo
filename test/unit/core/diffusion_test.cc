@@ -507,7 +507,7 @@ TEST(DiffusionTest, EulerConvergence) {
   delete d_grid8;
 }
 
-TEST(DiffusionTest, RungeKuttaConvergence) {
+TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   auto set_param = [](Param* param) { param->diffusion_type_ = "RK"; };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;

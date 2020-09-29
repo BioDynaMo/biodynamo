@@ -52,30 +52,32 @@ class Simulation {
   /// Constructor that takes the arguments from `main` to parse command line
   /// arguments. The simulation name is extracted from the executable name.
   /// Creation of a new simulation automatically activates it.
-  Simulation(int argc, const char** argv, const std::string& config_file = "");
+  Simulation(int argc, const char** argv,
+             const std::vector<std::string>& config_files = {});
 
   explicit Simulation(CommandLineOptions* clo,
-                      const std::string& config_file = "");
+                      const std::vector<std::string>& config_files = {});
 
   /// Alternative constructor, if the arguments from function `main` are not
   /// available, or if a different simulation name should be chosen. \n
   /// Command line arguments are not parsed!\n
   /// Creation of a new simulation automatically activates it.
   /// \param config_file Use a different config file than the default bdm.toml
+  ///        or bdm.json
   explicit Simulation(const std::string& simulation_name,
-                      const std::string& config_file = "");
+                      const std::vector<std::string>& config_files = {});
 
   Simulation(int argc, const char** argv,
              const std::function<void(Param*)>& set_param,
-             const std::string& config_file = "");
+             const std::vector<std::string>& config_files = {});
 
   Simulation(CommandLineOptions* clo,
              const std::function<void(Param*)>& set_param,
-             const std::string& config_file = "");
+             const std::vector<std::string>& config_files = {});
 
   Simulation(const std::string& simulation_name,
              const std::function<void(Param*)>& set_param,
-             const std::string& config_file = "");
+             const std::vector<std::string>& config_files = {});
 
   ~Simulation();
 
@@ -148,8 +150,8 @@ class Simulation {
   SoUidGenerator* so_uid_generator_ = nullptr;  //!
   std::string name_;
   Environment* environment_ = nullptr;  //!
-  Scheduler* scheduler_ = nullptr;    //!
-  OpenCLState* ocl_state_ = nullptr;  //!
+  Scheduler* scheduler_ = nullptr;      //!
+  OpenCLState* ocl_state_ = nullptr;    //!
   bool is_gpu_environment_initialized_ = false;
   /// This id is unique for each simulation within the same process
   uint64_t id_ = 0;  //!
@@ -160,14 +162,20 @@ class Simulation {
   std::string unique_name_;  //!
   /// cached value where `unique_name_` is appended to `Param::output_dir_`
   std::string output_dir_;  //!
-
+  /// Stores command line arguments if (argc,argv) or CommandLineOptions
+  /// are passed to the constructor.\n
+  std::string command_line_parameter_str_;  //!
   /// BioDynaMo memory manager. If nullptr, default allocator will be used.
   MemoryManager* mem_mgr_ = nullptr;  //!
+  /// Timestep when constructor was called
+  int64_t ctor_ts_ = 0;  //!
+  /// Timestep when destructor was called
+  int64_t dtor_ts_ = 0;  //!
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,
                   const std::function<void(Param*)>& set_param,
-                  const std::string& ctor_config);
+                  const std::vector<std::string>& config_files);
 
   /// Initialize data members that have a dependency on Simulation
   void InitializeMembers();
@@ -175,10 +183,10 @@ class Simulation {
   /// This function parses command line parameters and the configuration file.
   void InitializeRuntimeParams(CommandLineOptions* clo,
                                const std::function<void(Param*)>& set_param,
-                               const std::string& ctor_config);
+                               const std::vector<std::string>& ctor_config);
 
-  void LoadConfigFile(const std::string& ctor_config,
-                      const std::string& cli_config);
+  void LoadConfigFiles(const std::vector<std::string>& ctor_configs,
+                       const std::vector<std::string>& cli_configs);
 
   /// This function initialzes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);
@@ -188,6 +196,7 @@ class Simulation {
 
   friend SimulationTest;
   friend ParaviewAdaptorTest;
+  friend std::ostream& operator<<(std::ostream& os, Simulation& sim);
 
   BDM_CLASS_DEF_NV(Simulation, 1);
 };

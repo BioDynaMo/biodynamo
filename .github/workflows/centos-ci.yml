@@ -18,7 +18,7 @@ jobs:
         yum -y update
         yum -y install centos-release-scl epel-release
         yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
-          devtoolset-7-gcc* numactl-devel openmpi3-devel freeglut-devel redhat-lsb-core \
+          devtoolset-7-gcc* numactl-devel openmpi3-devel freeglut-devel \
           scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         yum -y install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
           sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
@@ -30,23 +30,28 @@ jobs:
         ./cmake-3.17.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
     - name: Set OSVERS
-      run: echo "::set-env name=OSVERS::$(lsb_release -si)-$(lsb_release -sr)"
+      run: |
+        ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+        VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+        echo "::set-env name=OSVERS::$ID-$VERSION"
 
     - name: Cache pyenv
       uses: actions/cache@v2
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.6.9
+        key: ${{ env.OSVERS }}-pyenv-3.8.0
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
       run: |
-        curl https://pyenv.run | bash
+        if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+          curl https://pyenv.run | bash
+        fi
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
-        pyenv shell 3.6.9
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+        pyenv shell 3.8.0
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
@@ -103,4 +108,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: always() # Pick up events even if the job fails or is canceled
+      # Notify Slack step should run when the following holds true:
+      #   * One of the previous steps 1) succeeded, 2) failed, or 3) was cancelled
+      #   * This workflow is triggered from our base repository (i.e. forked PRs don't
+      #     have the right to push Slack message to our channel)
+      if: ${{ ( failure() || success() || cancelled() ) && ( github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name ) }}

@@ -96,6 +96,12 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   },
   "sim_objects": [
     {
+      "name":"Cell",
+      "glyph":"Glyph",
+      "shape":"Sphere",
+      "scaling_attribute":"diameter_"
+    },
+    {
       "name":"NeuriteElement",
       "glyph":"BDMGlyph",
       "shape":"Cylinder",
@@ -104,12 +110,6 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
       "z_scaling_attribute":"diameter_",
       "Vectors":"spring_axis_",
       "MassLocation":"mass_location_"
-    },
-    {
-      "name":"Cell",
-      "glyph":"Glyph",
-      "shape":"Sphere",
-      "scaling_attribute":"diameter_"
     }
   ],
   "extracellular_substances": [
@@ -185,9 +185,9 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   };
   auto status = std::system(Concat("rm -f output/", TEST_NAME, "/*").c_str());
   if (status != 0) {
-    Log::Warning(TEST_NAME,
-                 "Error during removal of Paraview files -- status code: ",
-                 status);
+    Log::Warning(
+        TEST_NAME,
+        "Error during removal of Paraview files -- status code: ", status);
   }
 
   Simulation sim(TEST_NAME, set_param);

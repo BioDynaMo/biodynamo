@@ -13,31 +13,40 @@
 // -----------------------------------------------------------------------------
 
 #include "core/param/param.h"
+#include <TBufferJSON.h>
+#include <json.hpp>
+#include <utility>
 #include <vector>
 #include "core/util/cpptoml.h"
 #include "core/util/log.h"
+
+using nlohmann::json;
 
 namespace bdm {
 
 std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
     Param::registered_modules_;
 
+// -----------------------------------------------------------------------------
 void Param::RegisterModuleParam(ModuleParam* param) {
   registered_modules_[param->GetUid()] = std::unique_ptr<ModuleParam>(param);
 }
 
+// -----------------------------------------------------------------------------
 Param::Param() {
   for (auto& el : registered_modules_) {
     modules_[el.first] = el.second->GetCopy();
   }
 }
 
+// -----------------------------------------------------------------------------
 Param::~Param() {
   for (auto& el : modules_) {
     delete el.second;
   }
 }
 
+// -----------------------------------------------------------------------------
 void Param::Restore(Param&& other) {
   for (auto& el : modules_) {
     delete el.second;
@@ -46,6 +55,74 @@ void Param::Restore(Param&& other) {
   other.modules_.clear();
 }
 
+// -----------------------------------------------------------------------------
+json FlattenModules(const json& j_document) {
+  json j_copy = j_document;
+  j_copy.erase("modules_");
+
+  json j_new;
+  j_new["bdm::Param"] = j_copy;
+
+  // iterator over all module parameters
+  auto j_modules = j_document["modules_"];
+  for (json::iterator it = j_modules.begin(); it != j_modules.end(); ++it) {
+    j_new[(*it)["second"]["_typename"].get<std::string>()] = (*it)["second"];
+  }
+  return j_new;
+}
+
+// -----------------------------------------------------------------------------
+json UnflattenModules(const json& j_flattened, const json& j_original) {
+  json j_return = j_flattened["bdm::Param"];
+  j_return["modules_"] = {};
+  auto& j_modules = j_return["modules_"];
+
+  auto j_original_modules = j_original["modules_"];
+  for (json::iterator it = j_original_modules.begin();
+       it != j_original_modules.end(); ++it) {
+    json j_module_param;
+    j_module_param["$pair"] = (*it)["$pair"];
+    j_module_param["first"] = (*it)["first"];
+    j_module_param["second"] =
+        j_flattened[(*it)["second"]["_typename"].get<std::string>()];
+    j_modules.push_back(j_module_param);
+  }
+  return j_return;
+}
+
+// -----------------------------------------------------------------------------
+std::string Param::ToJsonString() const {
+  std::string current_json_str(
+      TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
+  // Flatten modules_ to simplify json patches in rfc7386 format.
+  json j_document = json::parse(current_json_str);
+  auto j_flattened = FlattenModules(j_document);
+  return j_flattened.dump(4);
+}
+
+// -----------------------------------------------------------------------------
+void Param::MergeJsonPatch(const std::string& patch) {
+  std::string json_str(
+      TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
+  json j_param = json::parse(json_str);
+  auto j_flattened = FlattenModules(j_param);
+
+  try {
+    auto j_patch = json::parse(patch);
+    j_flattened.merge_patch(j_patch);
+  } catch (std::exception& e) {
+    Log::Fatal("Param::RestoreFromJson",
+               Concat("Couldn't parse or merge the given json parameters.\n",
+                      e.what(), "\n", patch));
+  }
+
+  auto j_unflattened = UnflattenModules(j_flattened, j_param);
+  Param* restored = nullptr;
+  TBufferJSON::FromJSON(restored, j_unflattened.dump().c_str());
+  Restore(std::move(*restored));
+}
+
+// -----------------------------------------------------------------------------
 void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config,
                                  Param* param) {
   const std::string config_key = "simulation.thread_safety_mechanism";
@@ -67,6 +144,7 @@ void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config,
   }
 }
 
+// -----------------------------------------------------------------------------
 void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
                                Param* param) {
   const std::string config_key = "performance.mapped_data_array_mode";
@@ -92,6 +170,7 @@ void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
   }
 }
 
+// -----------------------------------------------------------------------------
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // module parameters
   for (auto& el : modules_) {
@@ -99,6 +178,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   }
 
   // simulation group
+  BDM_ASSIGN_CONFIG_VALUE(random_seed_, "simulation.random_seed");
   BDM_ASSIGN_CONFIG_VALUE(output_dir_, "simulation.output_dir");
   BDM_ASSIGN_CONFIG_VALUE(backup_file_, "simulation.backup_file");
   BDM_ASSIGN_CONFIG_VALUE(restore_file_, "simulation.restore_file");
@@ -229,8 +309,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "development.simulation_step_freq");
 
   // experimental group
-  BDM_ASSIGN_CONFIG_VALUE(use_gpu_, "experimental.use_gpu");
-  BDM_ASSIGN_CONFIG_VALUE(use_opencl_, "experimental.use_opencl");
+  BDM_ASSIGN_CONFIG_VALUE(compute_target_, "experimental.compute_target");
   BDM_ASSIGN_CONFIG_VALUE(opencl_debug_, "experimental.opencl_debug");
   BDM_ASSIGN_CONFIG_VALUE(preferred_gpu_, "experimental.preferred_gpu");
 }

@@ -24,22 +24,45 @@ Arguments:
   exit 1
 fi
 
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+
+if [ ! -x "/usr/local/bin/brew" ]; then
+   echo "First install the Homebrew macOS package manager from https://brew.sh"
+   exit 1
+fi
+
+if [ ! -x "/usr/bin/git" ]; then
+   echo "First install Xcode (from the App Store) and the command line tools"
+   echo "using the command \"xcode-select --install\"."
+   exit 1
+fi
+
 brew update
 brew style
 brew update-reset
 
 # Install and upgrade required packages
-brew install libomp open-mpi git pyenv llvm wget cmake || true
+brew install \
+  $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_required) || true
 brew upgrade cmake || true
 
-# Install Python 3.6.9 environment
+# Install Python 3.8.0 environment
+PYVERS=3.8.0
+export PYENV_ROOT=/usr/local/opt/.pyenv
 eval "$(pyenv init -)"
-env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
-pyenv shell 3.6.9
+if [ ! -f  "$PYENV_ROOT/versions/$PYVERS/lib/libpython3.8.dylib" ]; then
+   echo "Python $PYVERS was not found. Installing now..."
+   /usr/bin/env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
+fi
+pyenv shell $PYVERS
 
 # Install the optional packages
 if [ $1 == "all" ]; then
-    PIP_PACKAGES="nbformat jupyter metakernel"
-    pip install --user $PIP_PACKAGES
-    brew install doxygen graphviz lcov gcovr || true
+    PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
+    # Don't install --user: the packages should end up in the PYENV_ROOT directory
+    python -m pip install $PIP_PACKAGES
+    brew install \
+      $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_extra) || true
 fi
+
+exit 0

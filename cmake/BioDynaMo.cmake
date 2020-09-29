@@ -137,14 +137,21 @@ function(generate_rootlogon)
   # the one-definition rule
   if (dict)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define USE_DICT\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_LIBRARY_PATH($BDMSYS/lib)\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;")
+    # We add this one because the ROOT visualization require it, and it's not one
+    # of the core libraries that is loaded by default in rootcling
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(GenVector)\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#include \\\"biodynamo.h\\\"\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"using namespace bdm\;\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"Simulation simulation(\\\"simulation\\\")\;\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"INFO: Created simulation object 'simulation' with UniqueName='simulation'.\\\" << endl\;\")\;")
+  else()
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"ERROR: Loading BioDynaMo into ROOT failed!\\\" << endl\;\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"       BioDynaMo was not built with dict=ON\\\" << endl\;\")\;")
   endif()
 
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;")
-  # We add this one because the ROOT visualization require it, and it's not one
-  # of the core libraries that is loaded by default in rootcling
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(GenVector)\")\;")
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#include \\\"biodynamo.h\\\"\")\;")
-  set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"using namespace bdm\;\")\;")
+
   set(CONTENT "${CONTENT}\n}\n")
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)
@@ -159,7 +166,15 @@ function(fix_rootcling_omp_issue)
   # above command returns path with "\n" appended
   string(REGEX REPLACE "\n$" "" OMP_HEADER_PATH "${OMP_HEADER_PATH}")
   if ("${OMP_HEADER_PATH}" STREQUAL "include/omp.h")
-     execute_process(COMMAND cp -a ${CMAKE_SOURCE_DIR}/omp ${CMAKE_BINARY_DIR})
+     if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/omp/omp.h")
+       execute_process(COMMAND cp -a ${CMAKE_SOURCE_DIR}/third_party/omp ${CMAKE_BINARY_DIR})
+     elseif(EXISTS "$ENV{BDMSYS}/third_party/omp/omp.h")
+       execute_process(COMMAND cp -a $ENV{BDMSYS}/third_party/omp ${CMAKE_BINARY_DIR})
+     elseif(EXISTS "$ENV{BDMSYS}/omp/omp.h")
+       execute_process(COMMAND cp -a $ENV{BDMSYS}/omp ${CMAKE_BINARY_DIR})
+     else()
+       message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please execute 'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this command.")
+     endif()
   else()
     execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/omp)
     execute_process(COMMAND cp -f ${OMP_HEADER_PATH} ${CMAKE_BINARY_DIR}/omp)
@@ -167,3 +182,22 @@ function(fix_rootcling_omp_issue)
   include_directories("${CMAKE_BINARY_DIR}/omp")
 
 endfunction(fix_rootcling_omp_issue)
+
+# Fix to be able to find opencl C++ include file cl2.hpp. On macOS this include
+# is missing so we should make sure it is available during compilation on macOS.
+function(fix_macos_opencl_header_issue)
+
+  if (APPLE)
+     if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/opencl/cl2.hpp")
+       execute_process(COMMAND cp -a ${CMAKE_SOURCE_DIR}/third_party/opencl ${CMAKE_BINARY_DIR})
+     elseif(EXISTS "$ENV{BDMSYS}/third_party/opencl/cl2.hpp")
+       execute_process(COMMAND cp -a $ENV{BDMSYS}/third_party/opencl ${CMAKE_BINARY_DIR})
+     elseif(EXISTS "$ENV{BDMSYS}/opencl/cl2.hpp")
+       execute_process(COMMAND cp -a $ENV{BDMSYS}/opencl ${CMAKE_BINARY_DIR})
+     else()
+       message(FATAL_ERROR "The BioDynaMo environment is not set up correctly. Please execute 'source <path-to-bdm-installation>/bin/thisbdm.sh' and retry this command.")
+     endif()
+     include_directories("${CMAKE_BINARY_DIR}/opencl")
+  endif()
+
+endfunction(fix_macos_opencl_header_issue)

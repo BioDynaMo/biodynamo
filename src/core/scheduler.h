@@ -15,13 +15,16 @@
 #ifndef CORE_SCHEDULER_H_
 #define CORE_SCHEDULER_H_
 
+#include <algorithm>
 #include <chrono>
 #include <functional>
-#include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
 #include "core/operation/operation.h"
 #include "core/param/param.h"
+#include "core/util/timing_aggregator.h"
 
 namespace bdm {
 
@@ -29,9 +32,9 @@ class SimObject;
 class SimulationBackup;
 class VisualizationAdaptor;
 class RootAdaptor;
-class BoundSpace;
-class DisplacementOp;
-class DiffusionOp;
+struct BoundSpace;
+struct DisplacementOp;
+struct DiffusionOp;
 
 class Scheduler {
  public:
@@ -46,20 +49,48 @@ class Scheduler {
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
-  void AddOperation(Operation* operation);
+  /// Adds the given operation to the list of to be scheduled
+  /// operations.
+  /// Scheduler takes over ownership of the object `op`.
+  /// NB: Don't pass stack objects to this function.
+  void ScheduleOp(Operation* op);
 
-  /// Remove an operation. However, some operations are protected and cannot
-  /// be removed. \see protected_operations_
-  /// A request to remove a proteced operation is ignored.
-  void RemoveOperation(const std::string& op_name);
+  void UnscheduleOp(Operation* op);
 
-  /// Returns a reference to an operation. However, some operations are
-  /// protected and will not be returned. \see protected_operations_
-  /// If the operation does not exist or is protected, a nullptr will be
-  /// returned.
-  Operation* GetOperation(const std::string& op_name);
+  /// Returns a vector of operations with the given name.
+  /// If the name is in the list of proected ops, this
+  /// function returns an empty vector.
+  std::vector<Operation*> GetOps(const std::string& name);
+
+  /// Return a list of SimObjectOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledSimObjectOps() const {
+    std::vector<std::string> list;
+    for (auto* op : scheduled_sim_object_ops_) {
+      list.push_back(op->name_);
+    }
+    return list;
+  }
+
+  /// Return a list of StandAloneOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledStandaloneOps() const {
+    std::vector<std::string> list;
+    for (auto* op : scheduled_standalone_ops_) {
+      list.push_back(op->name_);
+    }
+    return list;
+  }
+
+  void SetUpOps();
+
+  void TearDownOps();
+
+  void RunScheduledOps();
+
+  void ScheduleOps();
 
   RootAdaptor* GetRootVisualization() { return root_visualization_; }
+
+  TimingAggregator* GetOpTimes();
 
  protected:
   uint64_t total_steps_ = 0;
@@ -74,15 +105,32 @@ class Scheduler {
   SimulationBackup* backup_ = nullptr;
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  VisualizationAdaptor* visualization_ = nullptr;  //!
-  RootAdaptor* root_visualization_ = nullptr;      //!
+  RootAdaptor* root_visualization_ = nullptr;  //!
 
-  BoundSpace* bound_space_;
-  DisplacementOp* displacement_;
-  DiffusionOp* diffusion_;
-
-  std::vector<Operation*> operations_;  //!
-  std::set<std::string> protected_operations_;
+  /// List of all operations that have been add either as default
+  /// or by a call to Scheduler::ScheduleOp.
+  /// Scheduler::UnscheduleOp doesn't remove the operation from this
+  /// list.
+  std::vector<Operation*> all_ops_;  //!
+  /// List of operations that are to be added in the upcoming timestep
+  std::vector<Operation*> ops_to_add_;  //!
+  /// List of operations that are to be removed in the upcoming timestep
+  std::vector<Operation*> ops_to_remove_;  //!
+  /// List of operations that were removed from scheduling, but could be reused
+  /// later on in a simulation
+  std::vector<Operation*> unscheduled_ops_;  //!
+  /// List of operations will be executed as a stand-alone operation
+  std::vector<Operation*> scheduled_standalone_ops_;  //!
+  /// List of operations will be executed on all simulation objects
+  std::vector<Operation*> scheduled_sim_object_ops_;  //!
+  /// List of operations that cannot be affected by the user
+  std::vector<std::string> protected_ops_;  //!
+  /// Tracks operations' execution times
+  TimingAggregator op_times_;
+  Operation* visualize_op_ = nullptr;
+  Operation* update_environment_op_ = nullptr;
+  Operation* setup_iteration_op_ = nullptr;
+  Operation* teardown_iteration_op_ = nullptr;
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval_`
   void Backup();
@@ -96,9 +144,6 @@ class Scheduler {
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
   void Initialize();
-
-  // Decide which operations should be executed
-  std::vector<Operation*> GetScheduleOps();
 };
 
 }  // namespace bdm

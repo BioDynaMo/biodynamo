@@ -16,10 +16,12 @@
 #define UNIT_CORE_OPERATION_DIVIDING_CELL_OP_TEST_H_
 
 #include <omp.h>
+
+#include "gtest/gtest.h"
+
 #include "core/operation/dividing_cell_op.h"
 #include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
-#include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
@@ -42,8 +44,8 @@ inline void RunTest() {
 
   EXPECT_EQ(2u, rm->GetNumSimObjects());
 
-  DividingCellOp op;
-  rm->ApplyOnAllElementsParallel(op);
+  auto* op = NewOperation("DividingCellOp");
+  rm->ApplyOnAllElementsParallel(*op);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
@@ -65,6 +67,8 @@ inline void RunTest() {
   EXPECT_NEAR(volume_mother,
               final_cell0->GetVolume() + final_cell2->GetVolume(),
               abs_error<double>::value);
+
+  delete op;
 }
 
 }  // namespace dividing_cell_op_test_internal

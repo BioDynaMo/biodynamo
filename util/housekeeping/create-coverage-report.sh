@@ -21,9 +21,15 @@
 PROJECT_ROOT_DIR=$1
 BUILD_DIR=$2
 
+set -x
+
 pushd $BUILD_DIR
 mkdir coverage 2>/dev/null
 cd coverage
 cmake -Dcoverage=on $PROJECT_ROOT_DIR >/dev/null
+cmake --build . --target all >/dev/null
+set +x
+. bin/thisbdm.sh ""
+set -x
 cmake --build . --target coverage >/dev/null
 popd

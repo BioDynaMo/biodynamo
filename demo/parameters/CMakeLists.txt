@@ -11,14 +11,18 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
-include(FindPackageHandleStandardArgs)
+cmake_minimum_required(VERSION 3.2.0)
 
-find_program(GCOV_PATH gcov)
-find_program(LCOV_PATH lcov)
-find_program(GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
+project(parameters)
 
-find_program(GENINFO_PATH geninfo)
-find_program(GENHTML_PATH genhtml)
-find_package_handle_standard_args(Coverage DEFAULT_MSG
-        GCOV_PATH LCOV_PATH GENINFO_PATH GENHTML_PATH
-)
+find_package(BioDynaMo REQUIRED)
+include(${BDM_USE_FILE})
+include_directories("src")
+
+file(GLOB_RECURSE HEADERS src/*.h)
+file(GLOB_RECURSE SOURCES src/*.cc)
+
+bdm_add_executable(parameters
+                   HEADERS ${HEADERS}
+                   SOURCES ${SOURCES}
+                   LIBRARIES ${BDM_REQUIRED_LIBRARIES})

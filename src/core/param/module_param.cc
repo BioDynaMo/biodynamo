@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/param/module_param.h"
+#include <memory>
 
 namespace bdm {
 
@@ -26,5 +27,7 @@ ModuleParamUidGenerator::ModuleParamUidGenerator() : counter_(0) {}
 ModuleParamUid ModuleParamUidGenerator::NewUid() { return counter_++; }
 
 ModuleParam::~ModuleParam() {}
+
+void ModuleParam::AssignFromConfig(const std::shared_ptr<cpptoml::table>&) {}
 
 }  // namespace bdm

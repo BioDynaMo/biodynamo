@@ -13,21 +13,22 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
-        brew install libomp open-mpi git pyenv llvm wget cmake ninja
+        brew install libomp open-mpi pyenv wget cmake ninja
 
     - name: Cache pyenv
       uses: actions/cache@v2
       id: pyenv-cache
       with:
-        path: ~/.pyenv
-        key: ${{ runner.os }}-pyenv-3.6.9
+        path: /usr/local/opt/.pyenv
+        key: ${{ runner.os }}-pyenv-3.8.0
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
       run: |
+        export PYENV_ROOT=/usr/local/opt/.pyenv
         eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
-        pyenv shell 3.6.9
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+        pyenv shell 3.8.0
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
@@ -47,12 +48,6 @@ jobs:
           -Dopencl=OFF \
           -Dparaview=OFF \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ \
-          -DCMAKE_CXX_FLAGS="-isysroot `xcrun --show-sdk-path`" \
-          -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
-          -DCMAKE_EXE_LINKER_FLAGS_INIT=-L/usr/local/opt/llvm/lib \
-          -DCMAKE_SHARED_LINKER_FLAGS_INIT=-L/usr/local/opt/llvm/lib \
           -B build
         cmake --build build --parallel --config Release
 
@@ -80,4 +75,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: always() # Pick up events even if the job fails or is canceled
+      # Notify Slack step should run when the following holds true:
+      #   * One of the previous steps 1) succeeded, 2) failed, or 3) was cancelled
+      #   * This workflow is triggered from our base repository (i.e. forked PRs don't
+      #     have the right to push Slack message to our channel)
+      if: ${{ ( failure() || success() || cancelled() ) && ( github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name ) }}

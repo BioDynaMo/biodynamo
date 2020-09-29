@@ -434,8 +434,8 @@ def mainfunction(text, visualize):
 		execute = ""
 
 	# Call commmand that executes the notebook and creates a new notebook with the output
-	nbconvert_cmd = "jupyter nbconvert --ExecutePreprocessor.timeout=%d %s %s" % (timeout, execute, outPathName)
-	r = subprocess.call(["jupyter", "nbconvert", "--ExecutePreprocessor.timeout=%d" %
+	nbconvert_cmd = "jupyter nbconvert --to=html --ExecutePreprocessor.timeout=%d %s %s" % (timeout, execute, outPathName)
+	r = subprocess.call(["jupyter", "nbconvert", "--to=html", "--ExecutePreprocessor.timeout=%d" %
 						 timeout,  execute,  outPathName])
 
 	if r != 0:

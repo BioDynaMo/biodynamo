@@ -11,7 +11,7 @@
 #include "cl2.hpp"
 #else
 #define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
+#include <CL/cl2.hpp>
 #endif
 
 namespace bdm {

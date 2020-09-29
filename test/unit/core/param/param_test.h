@@ -1,0 +1,33 @@
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+
+#ifndef UNIT_CORE_PARAM_PARAM_TEST_H_
+#define UNIT_CORE_PARAM_PARAM_TEST_H_
+
+#include "core/param/param.h"
+
+namespace bdm {
+
+struct TestModuleParam : public ModuleParam {
+  BDM_MODULE_PARAM_HEADER(TestModuleParam, 1);
+
+  double test_param1 = 3.14;
+  uint64_t test_param2 = 42;
+  int test_param3 = -1;
+};
+
+}  // namespace bdm
+
+#endif  // UNIT_CORE_PARAM_PARAM_TEST_H_
+#include <memory>

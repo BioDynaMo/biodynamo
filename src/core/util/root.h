@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #else
 
+#include <TClass.h>
 #include "core/util/log.h"
 
 #define BDM_DICT_ERROR_MSG                            \

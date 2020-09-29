@@ -17,16 +17,15 @@
 
 #include <cstdint>
 #include "core/operation/operation.h"
+#include "core/operation/operation_registry.h"
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
 #include "core/simulation.h"
 
 namespace bdm {
 
-class DividingCellOp : public Operation {
- public:
-  DividingCellOp() : Operation("bdm::DividingCellOp") {}
-  virtual ~DividingCellOp() {}
+struct DividingCellOp : public SimObjectOperationImpl {
+  BDM_OP_HEADER(DividingCellOp);
 
   void operator()(SimObject* sim_object) override {
     if (Cell* cell = dynamic_cast<Cell*>(sim_object)) {

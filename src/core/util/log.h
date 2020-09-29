@@ -19,6 +19,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
 #include <string>
 
@@ -117,6 +118,17 @@ class Log {
     ::Error(location.c_str(), "%s", message.c_str());
     // std::runtime_error() will fail the DeathTests
     exit(1);
+  }
+
+  template <typename... Args>
+  static void Condition(const std::function<bool()>& lambda,
+                        const Args&... parts) {
+    // kPrint has the highest level of verbosity
+    if (lambda()) {
+      std::string message = Concat(parts...);
+      // Mimic ROOT logging output
+      fprintf(stdout, "%s\n", message.c_str());
+    }
   }
 };
 }  // namespace bdm

@@ -54,17 +54,23 @@ void ResourceManager::ApplyOnAllElementsParallel(
   }
 }
 
+template <typename TFunctor>
 struct ApplyOnAllElementsParallelFunctor
     : public Functor<void, SimObject*, SoHandle> {
-  Functor<void, SimObject*>& functor_;
-  ApplyOnAllElementsParallelFunctor(Functor<void, SimObject*>& f)
-      : functor_(f) {}
+  TFunctor& functor_;
+  ApplyOnAllElementsParallelFunctor(TFunctor& f) : functor_(f) {}
   void operator()(SimObject* so, SoHandle) { functor_(so); }
 };
 
 void ResourceManager::ApplyOnAllElementsParallel(
     Functor<void, SimObject*>& function) {
-  ApplyOnAllElementsParallelFunctor functor(function);
+  ApplyOnAllElementsParallelFunctor<Functor<void, SimObject*>> functor(
+      function);
+  ApplyOnAllElementsParallel(functor);
+}
+
+void ResourceManager::ApplyOnAllElementsParallel(Operation& op) {
+  ApplyOnAllElementsParallelFunctor<Operation> functor(op);
   ApplyOnAllElementsParallel(functor);
 }
 
@@ -219,8 +225,8 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   // alternative, use numa_alloc_onnode.
   int ret = numa_run_on_node(0);
   if (ret != 0) {
-    Log::Fatal("ResourceManager", "Run on numa node failed. Return code: ",
-               ret);
+    Log::Fatal("ResourceManager",
+               "Run on numa node failed. Return code: ", ret);
   }
 
   // new data structure for rearranged SimObject*
@@ -306,16 +312,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   ApplyOnAllElementsParallel(functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa_) {
-    DebugNuma();
-  }
-}
-
-void ResourceManager::DebugNuma() const {
-  std::cout << "ResourceManager size of sim object containers\n" << std::endl;
-  uint64_t cnt = 0;
-  for (auto& numa_sos : sim_objects_) {
-    std::cout << "  numa node " << cnt++ << " size " << numa_sos.size()
-              << std::endl;
+    std::cout << *this << std::endl;
   }
 }
 

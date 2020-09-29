@@ -101,11 +101,8 @@ find_program(GENREFLEX_EXECUTABLE genreflex
   HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
 find_package(GCCXML)
 
-# During installation we need launcher.sh to build dictionaries (since we
-# do not source environmentals). AFter the installation we do not need the
-# wrapper script, since we expect environmentals to be set.
-set(LAUNCHER)
-if(NOT DEFINED "$ENV{BDM_INSTALL_DIR}" AND NOT DEFINED ENV{BDM_INSTALL_DIR})
+# We use the launcher script to emulate a `source thisbdm.sh` call
+if(NOT BDM_OUT_OF_SOURCE)
   set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
 endif()
 

@@ -61,8 +61,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **clang-tidy**: clang-based C++ “linter” tool
   * **doxygen**: Tool for generating documentation from annotated C++ sources
   * **graphviz**: Graph Visualization Software used optionally by Doxygen
-  * **lcov**: Graphical front-end for GCC's coverage testing tool gcov
-  * **gcovr**: Tool to test code coverage in programs
+  * **kcov**: Code coverage testing tool (only on Ubuntu 20.04)
   * **libxml2-dev**: Development files for the GNOME XML library
 
 ### Installation
@@ -87,17 +86,19 @@ sudo apt-get install -y curl libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.6.9
-pip install --user nbformat jupyter metakernel
+pyenv shell 3.8.0
+python -m pip install --user nbformat jupyter metakernel
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
-  doxygen graphviz lcov gcovr libxml2-dev
+  doxygen graphviz libxml2-dev
+# on Ubuntu 20.04
+sudo apt-get install -y kcov
 ```
 
 ## CentOS 7
@@ -131,8 +132,6 @@ sudo apt-get install -y valgrind \
 
 ### Optional Packages
 
- * **lcov**: Graphical front-end for GCC's coverage testing tool gcov
- * **gcov**: Tool to test code coverage in programs
  * **llvm-toolset-7**: software collection that provides software from the LLVM suite
  * **llvm-toolset-7-clang-tools-extra**: software collection that provides `clang-format` and `clang-tidy`
  * **valgrind**: A suite of tools for debugging and profiling
@@ -165,15 +164,15 @@ sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sql
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.6.9
-pip install --user nbformat jupyter metakernel
-sudo yum -y install lcov gcovr llvm-toolset-7 \
+pyenv shell 3.8.0
+python -m pip install --user nbformat jupyter metakernel
+sudo yum -y install llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 # SBML integration
 sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
@@ -191,27 +190,25 @@ sudo yum install -y libxml2-devel
 
 ## MacOS
 
-Currently we only support macOS installations of BioDynaMo using Homebrew
-(if you are using another package manager you will need to install the
-equivalent packages).
+Currently we only support macOS installations of BioDynaMo using Homebrew.
 But first, before doing anything else, install Xcode (from the App Store) and the command line tools,
-using the command "xcode-select --install".
+using the command ``"xcode-select --install"``.
 
 ### Required Packages
 
- * **llvm**: LLVM compiler suite with also OpenMP compliant clang and clang++
- * **wget**: Retrieves files from the web
- * **cmake**: Set of tools for automate building, testing of software
  * **libomp**: Development files for OpenMP (API for multiprocessor programming)
  * **open-mpi**: Development files for OpenMP (API for multiprocessor programming)
- * **python**: Python 3 Interpreter
+ * **pyenv**: Virtual Python environment
+ * **wget**: Retrieves files from the web
+ * **cmake**: Set of tools for automate building, testing of software
+ * **ninja**: Ninja is a small build system with a focus on speed
+ * **bash**: Recent version of bash shell
 
 ### Optional Packages
 
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
- * **lcov**: Graphical front-end for GCC's coverage testing tool gcov
- * **gcovr**: Tool to test code coverage in programs
+ * **kcov**: Code coverage testing tool
 
 ### Installation
 
@@ -219,17 +216,18 @@ using the command "xcode-select --install".
 
 ```bash
 brew update; brew upgrade
-brew install libomp open-mpi git pyenv llvm wget cmake python || true
+brew install libomp open-mpi pyenv wget cmake ninja bash
 
-# Install Python 3.6.9 environment
+# Install Python 3.8.0 environment
+export PYENV_ROOT=/usr/local/opt/.pyenv
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.6.9
-pip install --user nbformat jupyter metakernel
-brew install doxygen graphviz lcov gcovr || true
+pyenv shell 3.8.0
+python -m pip install --user nbformat jupyter metakernel
+brew install doxygen graphviz kcov 
 ```

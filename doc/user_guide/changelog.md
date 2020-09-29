@@ -18,13 +18,22 @@ keywords:
   -track
   -tracking
 ---
+## 04.09.2020 [`PR-#110`](https://github.com/BioDynaMo/biodynamo/pull/110)
+
+Rewrite of operations and operation management.
+See the docs of [Operation](/docs/userguide/operation) for details on how to
+create, register and (un)schedule operations in BioDynaMo.
+
+## 02.08.2020 [`4cca726`](https://github.com/BioDynaMo/biodynamo/commit/4cca726f9de686501527456e30df9c87bc06d812)
+
+Change biodynamo.org/bioapi to biodynamo.org/api
 
 ## 11.02.2020 [`0d6407d`](https://github.com/BioDynaMo/biodynamo/commit/0d6407d52e8fdfdf981364ed6c41aa37206f422e)
 
 Upgrade to Python 3.
 
 Since Python 2 is not supported in 2020 anymore, we upgrade to Python 3 (Mac OS
-excluded momentarily. We rely on PyEnv to create a consistent Python 3
+excluded momentarily). We rely on PyEnv to create a consistent Python 3
 environment through `thisbdm.sh`. For those who are not on Mac OS, please make
 sure that PyEnv is installed correctly by rerunning the prerequisites script, or
 check out the installation guide.
@@ -244,7 +253,7 @@ This commit changes it to opt-in (`--github`).
 ## 26.06.2018 [`ba4fe1f`](https://github.com/BioDynaMo/biodynamo/commit/ba4fe1f9f911e007bd61237d53a8399aa1b2268d#comments)
 
 -   Add support for multiple simulations per process. Only one simulation
-    can be active at the same time. Introduces new class `Simulation` (see [API](/bioapi/classbdm_1_1Simulation.html)).
+    can be active at the same time. Introduces new class `Simulation` (see [API](/api/classbdm_1_1Simulation.html)).
     This change causes many API changes -- see subsection below.
 
 -   Write simulation files to separate directory: `output/simulation-id/`

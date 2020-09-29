@@ -1,8 +1,23 @@
-#include "core/param/command_line_options.h"
-#include "core/param/param.h"
-#include "core/util/log.h"
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
 
+#include "core/param/command_line_options.h"
 #include <TEnv.h>
+#include <utility>
+#include "core/param/param.h"
+#include "core/util/io.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
@@ -88,7 +103,10 @@ void CommandLineOptions::AddCoreOptions() {
       "continues simulation from that point.", value<string>()->default_value(""), "FILE")
     ("b, backup", "Periodically create full simulation backup to the specified file. "
       "NOTA BENE: File will be overriden if it exists.", value<string>()->default_value(""), "FILE")
-    ("c, config", "The TOML configuration that should be used.", value<string>()->default_value(""), "FILE");
+    ("c, config", "The TOML or JSON configuration that should be used. The JSON file must be in JSON merge patch format (https://tools.ietf.org/html/rfc7386). This option can be used multiple times.", value<std::vector<string>>()->default_value(""), "FILE")
+    ("inline-config", "JSON configuration string passed directly on the command line. Overwrites values specified in config file.  The JSON string must be in JSON merge patch format (https://tools.ietf.org/html/rfc7386). This option can be used multiple times.", value<std::vector<string>>()->default_value(""), "JSON_STRING")
+    ("output-default-json", "Prints a JSON string with all parameters and their default values and exits.")
+    ("toml-to-json", "Converts a TOML file to a JSON patch. After printing the JSON patch the application will exit.", value<string>()->default_value(""), "TOML_FILE");
   }
 // clang-format on
 
@@ -118,10 +136,11 @@ void CommandLineOptions::HandleCoreOptions() {
   }
 
   // Handle "verbose" argument
-  // If set in etc/bdm.rootrc use that value, command line argument will override it
-  Int_t ll = kError;
-  TString slevel = "Error";
-  TEnvRec *rec = gEnv->Lookup("Root.ErrorIgnoreLevel");
+  // If set in etc/bdm.rootrc use that value, command line argument will
+  // override it
+  Int_t ll = kWarning;
+  TString slevel = "Warning";
+  TEnvRec* rec = gEnv->Lookup("Root.ErrorIgnoreLevel");
   if (rec) {
     if (rec->GetLevel() == kEnvUser)
       slevel = rec->GetValue();
@@ -156,6 +175,37 @@ void CommandLineOptions::HandleCoreOptions() {
   }
   // Global variable of ROOT that determines verbosity of logging functions
   gErrorIgnoreLevel = ll;
+
+  if (parser_->count("output-default-json")) {
+    Param param;
+    std::cout << "Below you can find a JSON string with all available "
+                 "parameters and their default values.\n"
+              << "Have a look at https://biodynamo.org/bioapi/ for more "
+                 "details about each parameter."
+              << std::endl;
+    std::cout << param.ToJsonString() << std::endl;
+    exit(0);
+  }
+
+  auto toml_file = (*parser_)["toml-to-json"].as<std::string>();
+  if (toml_file != "") {
+    if (!FileExists(toml_file)) {
+      Log::Fatal("CommandLineOptions::HandleCoreOptions",
+                 "Specified TOML file (", toml_file, ") does not exist.");
+    }
+    auto toml = cpptoml::parse_file(toml_file);
+    Param param;
+    param.AssignFromConfig(toml);
+    std::cout << param.ToJsonString() << std::endl;
+    exit(0);
+  }
+}
+
+std::ostream& operator<<(std::ostream& os, const CommandLineOptions& clo) {
+  for (int i = 0; i < clo.argc_; ++i) {
+    os << clo.argv_[i] << " ";
+  }
+  return os;
 }
 
 }  // namespace bdm

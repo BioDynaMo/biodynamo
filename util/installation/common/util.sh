@@ -33,6 +33,11 @@ function RequireSudo {
   while true; do sudo -n true; sleep 10; kill -0 "$$" || exit; done 2>/dev/null &
 }
 
+# Wait for user input
+WaitForUser() {
+  read -n1 -rsp $'Press any key to continue or Ctrl+C to exit...\n' </dev/tty
+}
+
 # Function that detects the OS
 # Returns linux flavour or osx.
 # This function prints an error and exits if is not linux or macos.
@@ -40,13 +45,9 @@ function DetectOs {
   # detect operating system
   if [ `uname` = "Linux" ]; then
     # linux
-    DISTRIBUTOR=$(lsb_release -si)
-    RELEASE=$(lsb_release -sr)
-    if [ "${DISTRIBUTOR}" = "CentOS" ]; then
-      OS="${DISTRIBUTOR}-${RELEASE:0:1}"
-    else
-      OS="${DISTRIBUTOR}-${RELEASE}"
-    fi
+    DISTRIBUTOR=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+    RELEASE=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+    OS="${DISTRIBUTOR}-${RELEASE}"
     echo $OS | awk '{print tolower($0)}'
   elif [ `uname` = "Darwin" ]; then
     # macOS
@@ -95,6 +96,30 @@ function CheckTypeInstallSupported {
     echo "Supported install types are are: "
     echo "- all: install required and optional packages;"
     echo "- required: install only the required packages."
+  fi
+}
+
+#
+# Arguments:
+#   $1 installation type ("all" or "required")
+#   $2 path to biodynamo installation src folder (util/installation)
+#   $3 OS identifier e.g. ubuntu-16.04 (see DetectOs)
+function CompileListOfPackages {
+  local BDM_INSTALL_SRC="$2"
+  local LOCAL_OS=$3
+
+  # The list of packages on Ubuntu 18.04 and 20.04 are identical to Ubuntu 16.04
+  if [ $LOCAL_OS == "ubuntu-18.04" ] || [ $LOCAL_OS == "ubuntu-20.04" ]; then
+    LOCAL_OS="ubuntu-16.04"
+  fi
+
+  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$LOCAL_OS
+
+  BDM_PKG_LIST=""
+  if [ $1 == "all" ]; then
+    BDM_PKG_LIST="${BDM_INSTALL_OS_SRC}/package_list*"
+  else
+    BDM_PKG_LIST="${BDM_INSTALL_OS_SRC}/package_list_required"
   fi
 }
 
@@ -212,7 +237,18 @@ function CallOSSpecificScript {
   $BDM_SCRIPTPATH $BDM_SCRIPT_ARGUMENTS
 }
 
-# Return the bashrc file based on the current operating system
+# Return the zshrc file based on whether or not ZDOTDIR is defined
+function ZshrcFile {
+  local zshrc_file="${HOME}/.zshrc"
+  if [ -f "$zshrc_file" ]; then true
+  elif [ -f "${ZDOTDIR}/.zshrc" ]; then
+    zshrc_file="${ZDOTDIR}/.zshrc"
+  else
+    zshrc_file="<zshrc-file>"
+  fi
+  echo $zshrc_file
+}
+
 function BashrcFile {
   if [ `uname` = "Darwin" ]; then
     echo ~/.bash_profile
@@ -224,23 +260,134 @@ function BashrcFile {
   fi
 }
 
-# Print message that tells the user to reload the bash and source the environment.
+# Echo lines (with line numbers) matching a given pattern for a list of given files.
 # Arguments:
-#   $1 biodynamo install directory
-function EchoFinishThisStep {
-  if [[ $# -ne 1 ]]; then
-    echo "ERROR in EchoFinishThisStep: Wrong number of arguments"
+#   $1 message to echo before echoing matches
+#   $2 pattern to pass to 'sed -E', this pattern must output matching line
+#      numbers, and optionally '#IGNORE' if a match is to be ignored.
+#   $@ files to match on
+function EchoMatchingLinesInFiles() {
+  if [[ $# -lt 3 ]]; then
+    echo "ERROR in EchoMatchingLinesInFiles: Wrong number of arguments"
     exit 1
   fi
 
-  EchoInfo "To complete this step execute:"
-  EchoInfo "    ${BDM_ECHO_BOLD}${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
-  EchoInfo "This command must be executed in every terminal before you build or use BioDynaMo."
-  EchoInfo "To avoid this additional step add it to your $(BashrcFile) file:"
-  EchoInfo "    echo \"source $1/bin/thisbdm.sh\" >> $(BashrcFile)"
+  local matchMessage="$1"
+  local sedPattern="$2"
+  shift # rest
+  local fileList=("$@")
+
+  local matches
+  local matchAccum=()
+  local matchLinesAccum=()
+
+  for f in ${fileList[@]}; do
+    if [ -f "$f" ]; then
+      matches=$(cat -n $f | sed -E "$sedPattern" | grep -v '#IGNORE' | sed ':a; N; $!ba; s/\n/p;/g')
+      if [ -n "$matches" ]; then
+        matchAccum+=("$f")
+        matchLinesAccum+="$(cat -n $f | sed -n "$matches"'p;')"
+      fi
+    fi
+  done
+  
+  if [ "${#matchAccum[@]}" -gt '0' ]; then
+    echo -e "$matchMessage"
+    for i in ${!matchAccum[@]}; do
+      echo "-> '${matchAccum[$i]}', on line(s)"
+      echo "${matchLinesAccum[$i]}"
+    done
+    return 0
+  fi
+
+  return 1
 }
 
-# This function prompts the user for the biodynamo installation direcotory
+# Print warnings and list of offending lines in shell config files
+function WarnPossibleBadShellConfigs {
+  # collect shell config files
+  local configFiles=("$HOME/.profile")
+  if command -v bash &> /dev/null; then
+    configFiles+=("$HOME/.bashrc" "$HOME/.bash_profile")
+  fi
+  if command -v zsh &> /dev/null; then
+    configFiles+=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
+  fi
+  if command -v fish &> /dev/null; then
+    configFiles+=("$(fish -c 'echo $__fish_config_dir/config.fish')")
+  fi
+  local didWarn=false
+  # these regexes are quite naive but we aren't going to parse a shell file for a warning
+  local sourcePattern='s/^\s+([0-9][0-9]*)\s+(\.\s+|source).*thisbdm\.(fish|sh)\s*(#IGNORE)?$/\1\4/mg;t;d'
+  local aliasPattern='s/^\s+([0-9][0-9]*)\s+alias\s+thisbdm='"'"'(\.\s+|source)(.*)thisbdm\.(fish|sh)'"'"'\s*(#IGNORE)?$/\1\5/mg;t;d'
+  local warnFmt="$BDM_ECHO_YELLOW$BDM_ECHO_BOLD[WARN] "
+  local warnMsg="${warnFmt}You may have automatically sourced thisbdm in the following file(s):$BDM_ECHO_RESET"
+  # warn if there are any naive cases of 'source|. .../thisbdm.sh' 
+  (EchoMatchingLinesInFiles "$warnMsg" "$sourcePattern" "${configFiles[@]}"\
+  && EchoWarning "This is no longer advised." && didWarn=true) || true
+  # remind that alias to a thisbdm exists
+  warnMsg="${warnFmt}You may have aliased a thisbdm in the following file(s):$BDM_ECHO_RESET"
+  (EchoMatchingLinesInFiles "$warnMsg" "$aliasPattern" "${configFiles[@]}"\
+  && EchoWarning "Please check if aliased version(s) is/are up-to-date." && didWarn=true) || true
+  $didWarn && EchoWarning "If a matching line is a false positive, append ' #IGNORE' to its end."
+}
+
+# Print message that tells the user to reload their shell and source the environment.
+# Arguments:
+#   $1 biodynamo install directory
+function EchoFinishInstallation {
+  if [[ $# -ne 1 ]]; then
+    echo "ERROR in EchoFinishInstallation: Wrong number of arguments"
+    exit 1
+  fi
+
+  local addToConfigStr="   ${BDM_ECHO_UNDERLINE}echo \"alias thisbdm='source $1/bin/thisbdm"
+  local setQuietEnvVarStr
+
+  EchoInfo "Before running BioDynaMo execute:"
+  case $SHELL in
+    *bash | *zsh)
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.sh"
+
+      case $SHELL in
+        *bash) addToConfigStr="$addToConfigStr.sh'\" >> $(BashrcFile)" ;;
+        *zsh)  addToConfigStr="$addToConfigStr.sh'\" >> $(ZshrcFile)" ;;
+      esac
+      setQuietEnvVarStr="'export BDM_THISBDM_QUIET=true'"
+    ;;
+    *fish)
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.fish"
+      addToConfigStr="$addToConfigStr.fish'\" >> (fish -c 'echo "'$__fish_config_dir'"/config.fish')"
+      setQuietEnvVarStr="'set -gx BDM_THISBDM_QUIET true'"
+    ;;
+    *)
+      EchoNewStep "   ${BDM_ECHO_UNDERLINE}source $1/bin/thisbdm.{sh|fish}"
+      echo
+      EchoWarning "WARN: Your login shell appears to be '$SHELL'."
+      EchoWarning "BioDynaMo currently supports the following shells:"
+      EchoWarning "   ${BDM_ECHO_UNDERLINE}bash, zsh, and fish."
+      return
+    ;;
+  esac
+
+  EchoInfo "For added convenience, run (in your terminal):"
+  EchoNewStep "$addToConfigStr"
+  EchoInfo "to able to just type 'thisbdm', instead of"
+  EchoInfo "'source $1/bin/thisbdm.[fi]sh'"
+  echo
+  EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator, and silence non-critical output."
+  echo
+  EchoNewStep "NOTE: Your login shell appears to be '$SHELL'."
+  EchoNewStep "The instructions above are for this shell."
+  EchoNewStep "For other shells, or for more information, see:"
+  EchoNewStep "   ${BDM_ECHO_UNDERLINE}https://biodynamo.org/docs/userguide/first_steps/"
+  echo
+  # any warnings about users' post-install shell 
+  # configuration may be added to the function called below
+  WarnPossibleBadShellConfigs || true
+}
+
+# This function prompts the user for the biodynamo installation directory
 # providing an option to accept a default.
 function SelectInstallDir {
   if [[ $# -ne 0 ]]; then
@@ -272,66 +419,6 @@ function SelectInstallDir {
   done
 }
 
-# This function checks if the given directory is valid, if it needs to be
-# created, or if containing files need to be removed.
-# Arguments:
-#   $1 biodynamo install directory
-function PrepareInstallDir {
-  if [[ $# -ne 1 ]]; then
-    echo "ERROR in PrepareInstallDir: Wrong number of arguments"
-    exit 1
-  fi
-
-  local BDM_INSTALL_DIR=$1
-
-  if [[ $BDM_INSTALL_DIR == "" ]] || [[ $BDM_INSTALL_DIR == / ]] || [[ $BDM_INSTALL_DIR == /usr* ]]; then
-    echo "ERROR: Invalid installation directory: $BDM_INSTALL_DIR"
-    exit 1
-  elif [ ! -d $BDM_INSTALL_DIR ]; then
-    # Install directory does not exist
-    echo "installdir " $BDM_INSTALL_DIR
-    mkdir -p $BDM_INSTALL_DIR
-  elif [ ! -z "$(ls -A $BDM_INSTALL_DIR)" ]; then
-    # Install directory is not empty
-    MSG="The chosen installation directory is not empty!
-The installation process will remove all files in $BDM_INSTALL_DIR! Do you want to continue?"
-    while true; do
-      read -p "$MSG (y/n) " yn
-      case $yn in
-        [Yy]* )
-          rm -rf $BDM_INSTALL_DIR/*
-          break
-        ;;
-        [Nn]* )
-        exit 1;;
-        * ) echo "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-# This function copies the environment script to the install path and
-# corrects the BDM_INSTALL_DIR environment variable inside the script.
-# Arguments:
-#   $1 environment source script
-#   $2 biodynamo install directory
-function CopyEnvironmentScript {
-  if [[ $# -ne 2 ]]; then
-    echo "ERROR in CopyEnvironmentScript: Wrong number of arguments"
-    exit 1
-  fi
-
-  local ENV_SRC=$1
-  local BDM_INSTALL_DIR=$2
-
-  local ENV_DEST=$BDM_INSTALL_DIR/bin/thisbdm.sh
-
-  local TMP_ENV=${ENV_DEST}_$RANDOM
-
-  cat $ENV_SRC | sed "s|export BDM_INSTALL_DIR=@CMAKE_INSTALL_PREFIX@|export BDM_INSTALL_DIR=${BDM_INSTALL_DIR}|g" >$TMP_ENV
-  mv $TMP_ENV $ENV_DEST
-}
-
 # This function has a zero exit code if the version is below the required
 # version. This function can be used inside an if statement:
 #    if $(versionLessThan "$(gcc -dumpversion)" "5.4.0"); then
@@ -340,7 +427,6 @@ function CopyEnvironmentScript {
 # Arguments:
 #   $1 actual version
 #   $2 required version
-# TODO(ahmad): Fails on OSX because `sort` not installed by default
 function VersionLessThan {
   local VERSION=$1
   local REQUIRED=$2

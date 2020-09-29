@@ -597,7 +597,7 @@ class DiffusionGrid {
     double step = diffusion_step_;
     double h = dt_ / step;
 #define YBF 16
-    for (size_t i = 0; i < step; i ++) {
+    for (size_t i = 0; i < step; i++) {
       for (size_t order = 0; order < 2; order++) {
 #pragma omp parallel for collapse(2)
         for (size_t yy = 0; yy < ny; yy += YBF) {
@@ -673,7 +673,7 @@ class DiffusionGrid {
     double step = diffusion_step_;
     double h = dt_ / step;
 #define YBF 16
-    for (size_t i = 0; i < step; i ++) {
+    for (size_t i = 0; i < step; i++) {
       for (size_t order = 0; order < 2; order++) {
 #pragma omp parallel for collapse(2)
         for (size_t yy = 0; yy < ny; yy += YBF) {
@@ -846,7 +846,7 @@ class DiffusionGrid {
   }
 
   /// Increase the concentration at specified position with specified amount
-  void IncreaseConcentrationBy(const Double3& position, double amount) {
+  virtual void IncreaseConcentrationBy(const Double3& position, double amount) {
     auto idx = GetBoxIndex(position);
     IncreaseConcentrationBy(idx, amount);
   }
@@ -867,7 +867,7 @@ class DiffusionGrid {
   }
 
   /// Get the (normalized) gradient at specified position
-  void GetGradient(const Double3& position, Double3* gradient) const {
+  virtual void GetGradient(const Double3& position, Double3* gradient) const {
     auto idx = GetBoxIndex(position);
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
@@ -938,6 +938,14 @@ class DiffusionGrid {
     return grid_dimensions_;
   }
 
+  std::array<int32_t, 3> GetGridSize() const {
+    std::array<int32_t, 3> ret;
+    ret[0] = grid_dimensions_[1] - grid_dimensions_[0];
+    ret[1] = grid_dimensions_[3] - grid_dimensions_[2];
+    ret[2] = grid_dimensions_[5] - grid_dimensions_[4];
+    return ret;
+  }
+
   const std::array<double, 7>& GetDiffusionCoefficients() const { return dc_; }
 
   bool IsInitialized() const { return initialized_; }
@@ -1000,7 +1008,9 @@ class DiffusionGrid {
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
-  std::vector<std::function<double(double, double, double)>> initializers_ = {};
+  /// ROOT currently doesn't support IO of std::function
+  std::vector<std::function<double(double, double, double)>> initializers_ =
+      {};  //!
   // turn to true after gradient initialization
   bool init_gradient_ = false;
 

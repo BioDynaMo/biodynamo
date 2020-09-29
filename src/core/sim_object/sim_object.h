@@ -206,7 +206,7 @@ class SimObject {
     run_displacement_for_all_next_ts_ = value;
   }
 
-  void ApplyRunDisplacementForAllNextTs();
+  void DistributeRunDisplacementInfo();
 
   void UpdateRunDisplacement() {
     run_displacement_ = run_displacement_next_ts_;
@@ -280,7 +280,7 @@ class SimObject {
   InlineVector<BaseBiologyModule*, 2> biology_modules_;
 
  private:
-  Spinlock lock_;   //!
+  Spinlock lock_;  //!
 
   /// Helper variable used to support removal of biology modules while
   /// `RunBiologyModules` iterates over them.

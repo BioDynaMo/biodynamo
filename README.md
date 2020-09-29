@@ -38,12 +38,10 @@ BioDynaMo is a software platform to easily create, run, and visualise 3D agent-b
 
 ## Installation
 
-Simply run the following three commands:
+Simply run the following command:
 
 ```
-git clone https://github.com/BioDynaMo/biodynamo.git
-cd biodynamo
-./install.sh
+curl https://biodynamo.org/install | bash
 ```
 
 For more information, check out our [user's guide](https://biodynamo.org/docs/userguide/).
@@ -56,6 +54,8 @@ For more information, check out our [user's guide](https://biodynamo.org/docs/us
 The main purpose of this repository is to evolve BioDynaMo, making it faster and
 easier to use. Development of BioDynaMo happens in the open on Github, and we are
 grateful to the community for contributing bugfixes and improvements. Please read our [contribution guide](https://biodynamo.org/docs/devguide/contribute/) and learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
+
+We expect contributors to adhere to the [Contributor Covenant](https://www.contributor-covenant.org/version/2/0/code_of_conduct/).
 
 ### License
 

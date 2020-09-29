@@ -5,6 +5,7 @@
     <class pattern="std::vector<bdm::*>" />
   </selection>
   <exclusion>
+    <class name="bdm::OperationImpl" />
     <class pattern="cl::*" />
     <class name="cl::CommandQueue" />
     <class name="cl::Context" />
@@ -37,6 +38,8 @@
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::BaseBiologyModule"/>
     <class name="bdm::GrowDivide"/>
+    <class name="bdm::Chemotaxis"/>
+    <class name="bdm::Secretion"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <class name="bdm::RegulateGenes" />
     <class name="bdm::Param" />
@@ -53,6 +56,7 @@
     <class name="bdm::MemoryManager" />
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />
+    <class name="bdm::Environment" />
     <class name="bdm::Environment::SimDimensionAndLargestSimObjectFunctor" />
     <class name="bdm::UniformGridEnvironment" />
     <class name="bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper" />

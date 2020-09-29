@@ -17,14 +17,11 @@ FROM centos:7
 # workaround for https://github.com/containers/buildah/issues/1046
 RUN echo "" >> /etc/hosts && cat /etc/hosts && yum -y install setup
 
-# lsb-release and lsb-core required to determine operating system
 # man required by ROOT
 # mesa-dri-drivers: OpenGl driver (software renderer)
 RUN yum update -y && yum install -y \
   git \
   sudo \
-  redhat-lsb \
-  redhat-lsb-core \
   man \
   wget \
   xorg-x11-server-Xvfb \

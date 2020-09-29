@@ -18,8 +18,10 @@
 #include <string>
 
 #include "core/biology_module/biology_module.h"
+#include "core/biology_module/chemotaxis.h"
 #include "core/biology_module/grow_divide.h"
 #include "core/biology_module/regulate_genes.h"
+#include "core/biology_module/secretion.h"
 #include "core/environment/environment.h"
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
@@ -32,6 +34,8 @@
 #include "core/sim_object/cell.h"
 #include "core/sim_object/sim_object.h"
 #include "core/util/root.h"
+#include "core/util/filesystem.h"
+#include "core/util/timing.h"
 #include "core/util/vtune.h"
 #include "core/visualization/root/notebook_util.h"
 

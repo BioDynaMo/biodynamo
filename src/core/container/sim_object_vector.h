@@ -25,7 +25,7 @@ namespace bdm {
 /// object in the simulation.
 template <typename T>
 class SimObjectVector {
-  friend class DisplacementOpCuda;
+  friend struct DisplacementOpCuda;
 
  public:
   /// NB: Elements will not be initilized.

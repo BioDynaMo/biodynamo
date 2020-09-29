@@ -12,7 +12,7 @@ llvm_map_components_to_libnames(LLVM_LIBS mcjit native)
 find_library(Libroadrunner_LIBRARY
   NAMES roadrunner
   HINTS ${CMAKE_THIRD_PARTY_DIR}/libroadrunner/lib
-        $ENV{BDM_INSTALL_DIR}/third_party/libroadrunner/lib
+        $ENV{BDMSYS}/third_party/libroadrunner/lib
 )
 
 if (Libroadrunner_LIBRARY)

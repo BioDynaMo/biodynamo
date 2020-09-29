@@ -12,6 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 //
+// \visualize
+//
 // This model creates 8 cells at each corner of a cube, and one in the middle.
 // The cell in the middle secretes a substance. The cells are modeled to move
 // according to the extracellular gradient; in this case to the middle.
@@ -20,25 +22,31 @@
 #ifndef DEMO_DIFFUSION_MODULE_H_
 #define DEMO_DIFFUSION_MODULE_H_
 
-#include <vector>
-
 #include "biodynamo.h"
-#include "diffusion_biology_modules.h"
 
 namespace bdm {
+
+// List the extracellular substances
+enum Substances { kKalium };
 
 inline int Simulate(int argc, const char** argv) {
   // Initialize BioDynaMo
   Simulation simulation(argc, argv);
 
-  auto construct = [](const Double3& position) {
+  // Define the substances that cells may secrete
+  ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
+  auto* rm = simulation.GetResourceManager();
+  auto* dgrid = rm->GetDiffusionGrid(kKalium);
+
+  auto construct = [&](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetMass(1.0);
-    cell->AddBiologyModule(new Chemotaxis());
     Double3 secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell->AddBiologyModule(new KaliumSecretion());
+      cell->AddBiologyModule(new Secretion(dgrid, 4));
+    } else {
+      cell->AddBiologyModule(new Chemotaxis(dgrid, 0.5));
     }
     return cell;
   };
@@ -55,11 +63,8 @@ inline int Simulate(int argc, const char** argv) {
   positions.push_back({50, 50, 50});
   ModelInitializer::CreateCells(positions, construct);
 
-  // Define the substances that cells may secrete
-  ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
-
   // Run simulation for N timesteps
-  simulation.GetScheduler()->Simulate(1);
+  simulation.GetScheduler()->Simulate(300);
   std::cout << "Simulation completed successfully!\n";
   return 0;
 }

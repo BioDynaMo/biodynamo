@@ -16,44 +16,28 @@ keywords:
   -start
 ---
 
-To install BioDynaMo for the first time execute the following commands.
-The installation will also install all required packages including ParaView, ROOT and Qt5.
+To install and update BioDynaMo execute the following command.
 
 ```bash
-git clone https://github.com/BioDynaMo/biodynamo.git
-cd biodynamo
-./install.sh
+curl https://biodynamo.org/install | bash
 ```
+
+This will also install all prerequisites, including ParaView, ROOT and Qt5.
+By default the installation directory is set to `$HOME/biodynamo-vX.Y.Z`, where X.Y.Z is the version number.
+
 <br/>
 
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Important</b></h4>
-    	<p>1. In every new terminal execute <code>source &lt;path-to-bdm-installation&gt;/bin/thisbdm.sh</code>
-	      to use BioDynaMo!<br>
-      2. It is also possible to use BioDynaMo without running <code>make install</code>.
-        You will just need to source <code>thisbdm.sh</code> from the build directory: <code>`source &lt;path-to-bdm-build-dir&gt;/bin/thisbdm.sh`</code><br>
-	    3. BioDynaMo uses a customized version of ParaView.
-		     Therefore, you should not install ParaView separately.
+    	<p>In every new terminal execute <code>source &lt;installation-directory&gt;/bin/thisbdm.sh</code>
+      to use BioDynaMo, where <code>&lt;installation-directory&gt;</code> is the BioDynaMo installation directory.<br>
 		</p>
     </div>
 </a>
 
-## Update Installation
-
-The following commands update your BioDynaMo installation:
-
-```bash
-cd path/to/biodynamo
-# make sure you are on the master branch
-git checkout master
-# get latest changes
-git pull origin master
-./install.sh
-```
-
 ## Supported platforms
 
-*  **Ubuntu 16.04 (recommended)**, 18.04
-*  CentOS 7 (latest)
+*  Ubuntu 16.04, 18.04, 20.04
+*  CentOS 7
 *  Mac OSX

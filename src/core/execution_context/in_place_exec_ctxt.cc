@@ -59,7 +59,7 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
     {
       std::lock_guard<Spinlock> guard(lock_);
       // check again
-      if (map_->size() <= index) {
+      if (map_->size() <= index + ThreadInfo::GetInstance()->GetMaxThreads()) {
         resized = true;
         if (next_ == nullptr) {
           // another thread is still creating a new map
@@ -73,10 +73,12 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
     }
     if (resized) {
       std::lock_guard<Spinlock> guard(next_lock_);
-      next_ =
-          new ThreadSafeSoUidMap::Map(static_cast<uint64_t>(map_->size() * 2));
+      auto new_size =
+          std::max(uid.GetIndex(), static_cast<uint32_t>(map_->size() * 2));
+      next_ = new ThreadSafeSoUidMap::Map(new_size);
     }
-    map_->Insert(uid, value);
+    // new map might still be too small.
+    Insert(uid, value);
   }
 }
 
@@ -88,7 +90,7 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
 /// This iteration happens only in the unlikely event of a race-condition
 /// and is therefore not performance relevant.
 const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
-    InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
+InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
   static InPlaceExecutionContext::ThreadSafeSoUidMap::value_type kDefault;
   auto& pair = (*map_)[uid];
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();

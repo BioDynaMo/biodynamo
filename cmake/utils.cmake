@@ -14,38 +14,23 @@
 
 # Detect the system flavour and version. Generate a variable
 # called BDM_OS which will have as content <OS>-<version>.
-# If lsb_release is not found we ask the user to specify manually
-# the software version.
 function(detect_os)
-    find_program(LSB_RELEASE_EXEC lsb_release)
-    if (DETECTED_OS STREQUAL "none")
-        if (DEFINED lsb_release-NOTFOUND AND NOT APPLE)
-            MESSAGE(FATAL_ERROR "We were unable to detect the OS version. This happens because we did not find \
- the lsb_release command. In order to fix this error you should install the lsb_release command or specify which \
- system you are using. To specify the OS you have to run again cmake and set -DOS=<your_os> as argument. The current \
- supported OS'es are: ubuntu-18.04, ubuntu-20.04, centos-7, osx.")
-        elseif(APPLE)
-            SET(DETECTED_OS "osx" PARENT_SCOPE)
-        else()
-            execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
-                    OUTPUT_VARIABLE LSB_RELEASE_DISTRIBUTOR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE
-                    )
-            execute_process(COMMAND ${LSB_RELEASE_EXEC} -sr
-                    OUTPUT_VARIABLE LSB_RELEASE_RELEASE
-                    OUTPUT_STRIP_TRAILING_WHITESPACE
-                    )
-            if (${LSB_RELEASE_DISTRIBUTOR} STREQUAL "CentOS")
-              string(SUBSTRING ${LSB_RELEASE_RELEASE} 0 1 CENTOS_MAJOR)
-              SET(BDM_OS "${LSB_RELEASE_DISTRIBUTOR}-${CENTOS_MAJOR}")
-            else()
-              SET(BDM_OS "${LSB_RELEASE_DISTRIBUTOR}-${LSB_RELEASE_RELEASE}")
-            endif()
-            string(TOLOWER "${BDM_OS}" BDM_OS)
-            SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
-            SET(DETECTED_OS_VERSION ${LSB_RELEASE_RELEASE} PARENT_SCOPE)
-            SET(DETECTED_OS_TYPE ${LSB_RELEASE_DISTRIBUTOR} PARENT_SCOPE)
-        endif()
+    if(APPLE)
+        SET(DETECTED_OS "osx" PARENT_SCOPE)
+    else()
+        set(GET_OS_ID "echo $(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '\"')")
+        set(GET_OS_VERSION "echo $(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '\"')")
+        execute_process(COMMAND bash -c "${GET_OS_ID}"
+                OUTPUT_VARIABLE DISTRO_NAME
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+        execute_process(COMMAND bash -c "${GET_OS_VERSION}"
+                OUTPUT_VARIABLE DISTRO_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+        SET(BDM_OS "${DISTRO_NAME}-${DISTRO_VERSION}")
+        SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
+        SET(DETECTED_OS_VERSION ${DISTRO_VERSION} PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -87,6 +72,11 @@ function(verify_ROOT)
           set(ENV{ROOTSYS} ${TMP_ROOT_PATH})
         endif()
     endif()
+
+    # Fixes bug: https://sft.its.cern.ch/jira/browse/ROOT-10916
+    if("${ROOT_VERSION}" STREQUAL "6.20/00")
+      execute_process(COMMAND sed -i -e "s/JSROOT.gStyle, style/JSROOT.gStyle, obj/g" ${ROOTSYS}/js/scripts/JSRootPainter.v6.js)
+    endif()
 endfunction()
 
 # Convert a list to a better representation
@@ -100,6 +90,18 @@ function (ListToString result delim)
     endforeach()
     set(${result} "${temp}" PARENT_SCOPE)
 endfunction(ListToString)
+
+function(BuildParaViewPlugin)
+  file(MAKE_DIRECTORY ${CMAKE_INSTALL_PVPLUGINDIR})
+  set(BDM_PVPLUGIN_BUILDDIR ${CMAKE_BINARY_DIR}/pv-plugin-build)
+  add_custom_target(BDMGlyphFilter
+    WORKING_DIRECTORY ${CMAKE_BDM_PVPLUGINDIR}
+    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} -B "${BDM_PVPLUGIN_BUILDDIR}"
+    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} --build "${BDM_PVPLUGIN_BUILDDIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so" "${CMAKE_INSTALL_PVPLUGINDIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so" "${CMAKE_INSTALL_ROOT}/lib"
+  )
+endfunction(BuildParaViewPlugin)
 
 # Check if the OS given by the user is supported by the current BioDynaMo release.
 #   OS: the OS specified by the user.
@@ -248,7 +250,7 @@ function(install_inside_build)
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             ${CMAKE_SOURCE_DIR}/third_party/cpp_magic.h
-            ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.0/cxxopts.h
+            ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1/cxxopts.h
             )
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpptoml
@@ -277,14 +279,7 @@ function(install_inside_build)
 
     # BioDynaMo paraview plugin (Apple support when we upgrade to v5.8 on macos)
     if(paraview AND NOT APPLE)
-      add_copy_files(copy_files_bdm
-              DESTINATION ${CMAKE_INSTALL_PVPLUGINDIR}
-              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so
-              )
-      add_copy_files(copy_files_bdm
-              DESTINATION ${CMAKE_INSTALL_ROOT}/lib
-              ${CMAKE_INSTALL_LIBDIR}/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so
-              )
+      BuildParaViewPlugin()
     endif()
 
     if (test)
@@ -298,11 +293,10 @@ function(install_inside_build)
     endif()
 
     add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})
-    add_dependencies(copy_files_bdm biodynamo)
-    if(paraview)
+    if(paraview AND NOT APPLE)
       add_dependencies(copy_files_bdm BDMGlyphFilter)
     endif()
-
+    add_dependencies(copy_files_bdm biodynamo)
 endfunction()
 
 # This function add a description to the packages which will be displayed
@@ -406,6 +400,14 @@ endfunction()
 
 # Method used to download a file from a given URL. This method will also retry
 # to download the file if the download did not work.
+#
+# This method also has the ability to source files locally if a BDM_LOCAL_LFS
+# environment variable is exported, and set to a directory containing tar files that
+# would have otherwise been downloaded. Directory structure and filenames of the LFS
+# must precisely match its online counterpart.
+# Example: lfs.com/biodynamo-lfs/file.tar.gz => ~/Downloads/bdm-local-lfs/file.tar.gz
+# where BDM_LOCAL_LFS=~/Downloads/bdm-local-lfs
+#
 #   URL: URL from which we will download the file
 #   DEST: destination where the contents of the tar file will be extracted to
 #   HASH: hash of the download file to check consistency
@@ -415,29 +417,45 @@ function(download_verify_extract URL DEST HASH)
   get_filename_component(DEST_PARENT "${DEST}/.." ABSOLUTE)
   set(FULL_TAR_PATH "${DEST_PARENT}/${TAR_FILENAME}")
 
-  # Download the file
-  execute_process(COMMAND ${WGET_BIN} --progress=dot:giga -O ${FULL_TAR_PATH} ${URL}
-                  RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
-  if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
-    message( FATAL_ERROR "\nERROR: We were unable to download:\
-  ${URL}\n\
-This may be caused by several reason, like network error connections or just \
+  if(DEFINED ENV{BDM_LOCAL_LFS})
+    # If the user has set a directory for local LFS, try to find the tar there.
+    execute_process(COMMAND echo ${URL}
+                    COMMAND sed "s|\\(.*://[^/]*/\\)\\(.*\\)|\\1;\\2|g"
+                    OUTPUT_VARIABLE URL_COMPONENTS
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    list(GET URL_COMPONENTS 1 URL_FILEPATH)
+    string(REPLACE "biodynamo-lfs" "" LFS_FILEPATH ${URL_FILEPATH})
+    set(LOCAL_TAR_FILE "$ENV{BDM_LOCAL_LFS}${LFS_FILEPATH}")
+    if(EXISTS "${LOCAL_TAR_FILE}")
+      file(COPY ${LOCAL_TAR_FILE} DESTINATION ${DEST_PARENT})
+    else()
+      message(FATAL_ERROR "\nERROR: We were unable find file '${LOCAL_TAR_FILE}'.\n\
+Unset the environment variable BDM_LOCAL_LFS to download the file.")
+    endif()
+  else()
+    # Download the file
+    execute_process(COMMAND ${WGET_BIN} --progress=dot:giga -O ${FULL_TAR_PATH} ${URL}
+                    RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
+    if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
+      message( FATAL_ERROR "\nERROR: We were unable to download:\
+    ${URL}\n\
+This may be caused by several reasons, like network error connections or just \
 temporary network failure. Please retry again in a few minutes by deleting all \
 the contents of the build directory and by issuing again the 'cmake' command.\n")
+    endif()
   endif()
 
   # Verify download
   file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
   if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
     message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
-  Expected: ${HASH}\n\
-  Actual:   ${ACTUAL_SHA256}\n")
+    Expected: ${HASH}\n\
+    Actual:   ${ACTUAL_SHA256}\n")
   endif()
-
   # Extract
   execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${FULL_TAR_PATH}
                   WORKING_DIRECTORY ${DEST}
-                RESULT_VARIABLE EXTRACT_STATUS_CODE)
+                  RESULT_VARIABLE EXTRACT_STATUS_CODE)
   if (NOT ${EXTRACT_STATUS_CODE} EQUAL 0)
     message(FATAL_ERROR "ERROR: Extraction of file ${FULL_TAR_PATH} to ${DEST} failed.")
   endif()

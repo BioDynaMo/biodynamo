@@ -30,7 +30,7 @@ endforeach()
 # of source build can find them
 get_filename_component(CMAKE_DIR ${BDM_USE_FILE} DIRECTORY)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_DIR})
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDM_INSTALL_DIR}/biodynamo/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDMSYS}/biodynamo/cmake/")
 
 # Add utils and other methods needed
 include(utils)
@@ -39,6 +39,7 @@ include(utils)
 SET(cuda_default @cuda@)
 SET(opencl_default @opencl@)
 SET(dict_default @dict@)
+SET(numa_default @numa@)
 SET(sbml_default @sbml@)
 SET(vtune_default @vtune@)
 SET(tcmalloc_default @tcmalloc@)
@@ -48,6 +49,7 @@ SET(jemalloc_default @jemalloc@)
 option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" @opencl@)
 option(dict      "Build with ROOT dictionaries" @dict@)
+option(numa      "Enable Numa support" @numa@)
 option(sbml      "Enable SBML support" @sbml@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
 option(tcmalloc  "Use tcmalloc." @tcmalloc@)
@@ -64,6 +66,10 @@ endif()
 if (dict AND NOT dict_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Ddict=${dict}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Ddict to ${dict_default}. Please change -Ddict to -Ddict=${dict_default}.")
+endif()
+if (numa AND NOT numa_default)
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dnuma=${numa}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dnuma to ${numa_default}. Please change -Dnuma to -Dnuma=${numa_default}.")
 endif()
 if (sbml AND NOT sbml_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dsbml=${sbml}) is not compatible with \
@@ -96,6 +102,8 @@ endif()
 if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
 endif()
+
+set(BDM_OUT_OF_SOURCE true)
 
 if(DEFINED ENV{BDMSYS})
     set(BDMSYS $ENV{BDMSYS})
@@ -134,9 +142,10 @@ find_package(MPI)
 
 find_package(OpenMP REQUIRED)
 
-if (OpenMP_FOUND)
+if (OpenMP_CXX_FOUND)
   get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
   link_directories(${OpenMP_CXX_LIB_DIR})
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} OpenMP::OpenMP_CXX)
 endif()
 
 find_package(Git)
@@ -149,12 +158,14 @@ if(opencl)
   find_package(OpenCL)
 endif()
 
-find_package(Numa REQUIRED)
-if (NUMA_FOUND)
-   include_directories(${NUMA_INCLUDE_DIR})
-   link_directories(${NUMA_LIBRARY_DIR})
-   add_definitions("-DUSE_NUMA")
-   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARIES})
+if(numa)
+  find_package(Numa REQUIRED)
+  if (NUMA_FOUND)
+    include_directories(${NUMA_INCLUDE_DIR})
+    link_directories(${NUMA_LIBRARY_DIR})
+    add_definitions("-DUSE_NUMA")
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${NUMA_LIBRARY})
+  endif()
 endif()
 
 find_package(ROOT REQUIRED COMPONENTS Geom Gui Eve GenVector)
@@ -188,7 +199,7 @@ endif()
 
 # Link to OpenCL
 if (OPENCL_FOUND)
-  if (OPENCL_HAS_CXX)
+  if (OPENCL_HAS_CXX OR APPLE)
     add_definitions("-DUSE_OPENCL")
     set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${OPENCL_LIBRARIES})
   else()
@@ -233,10 +244,10 @@ include("${BDMSYS}/share/cmake/SetCompilerFlags.cmake")
 
 # -------------------- set rpath options ---------------------------------------
 # When building, use the RPATH
-# set(CMAKE_SKIP_BUILD_RPATH TRUE)           # don't skip the full RPATH for the build tree
-# set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-# set(CMAKE_INSTALL_RPATH "")
+set(CMAKE_SKIP_BUILD_RPATH TRUE)           # don't skip the full RPATH for the build tree
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_INSTALL_RPATH "")
 
 # -------------------- includes -----------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDMSYS}/share/cmake")
@@ -244,6 +255,7 @@ include("${BDMSYS}/share/cmake/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
 fix_rootcling_omp_issue()
+fix_macos_opencl_header_issue()
 
 # FIXME
 list(REMOVE_ITEM ROOT_LIBRARIES "$ENV{BDMSYS}/third_party/root/lib/libEve.so")

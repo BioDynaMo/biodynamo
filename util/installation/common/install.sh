@@ -34,27 +34,6 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
-# Custom instruction for MacOS (just in case)
-# Export path to make cmake find LLVM's clang (otherwise OpenMP won't work)
-if [ $BDM_OS = "osx" ]; then
-    if [ -z ${CXX} ] && [ -z ${CC} ] ; then
-        if [ -x "/usr/local/opt/llvm/bin/clang++" ]; then
-            export LLVMDIR="/usr/local/opt/llvm"
-            export CC=$LLVMDIR/bin/clang
-            export CXX=$LLVMDIR/bin/clang++
-            export CXXFLAGS=-I$LLVMDIR/include
-            export LDFLAGS=-L$LLVMDIR/lib
-            export PATH=$LLVMDIR/bin:$PATH
-        elif [ -x "/opt/local/bin/clang++-mp-8.0" ]; then
-            export CC=/opt/local/bin/clang++-mp-8.0
-            export CXX=/opt/local/bin/clang-mp-8.0
-        elif [ -x "/sw/opt/llvm-5.0/bin/clang++" ]; then
-            export CC=/sw/opt/llvm-5.0/bin/clang++
-            export CXX=/sw/opt/llvm-5.0/bin/clang
-        fi
-    fi
-fi
-
 # Custom instructions for CentOS
 set +e
 if [ $BDM_OS = "centos-7" ]; then
@@ -78,11 +57,16 @@ if [ "${BDM_OS}" = "ubuntu-16.04" ]; then
   export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
 fi
 
+if [ "${BDM_OS}" = "osx" ]; then
+  export PYENV_ROOT=/usr/local/opt/.pyenv
+fi
+
 # perform a clean release build
 BUILD_DIR=$BDM_PROJECT_DIR/build
 CleanBuild $BUILD_DIR
 
 # print final steps
+echo
 EchoSuccess "Installation of BioDynaMo finished successfully!"
 
 # Get version name with same regex as in Installation.cmake
@@ -91,4 +75,6 @@ VERSION=`git describe --tags`
 REGEX='[^-]*'
 [[ $VERSION =~ $REGEX ]]
 INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
-EchoFinishThisStep $INSTALL_DIR
+
+EchoFinishInstallation $INSTALL_DIR
+echo
