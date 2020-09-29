@@ -307,13 +307,13 @@ function EchoMatchingLinesInFiles() {
 function WarnPossibleBadShellConfigs {
   # collect shell config files
   local configFiles=("$HOME/.profile")
-  if ! [ command -v bash &> /dev/null ]; then
+  if command -v bash &> /dev/null; then
     configFiles+=("$HOME/.bashrc" "$HOME/.bash_profile")
   fi
-  if ! [ command -v zsh &> /dev/null ]; then
+  if command -v zsh &> /dev/null; then
     configFiles+=("$HOME/.zshrc" "$HOME/.zshenv" "$HOME/.zprofile")
   fi
-  if ! [ command -v fish &> /dev/null ]; then
+  if command -v fish &> /dev/null; then
     configFiles+=("$(fish -c 'echo $__fish_config_dir/config.fish')")
   fi
   local didWarn=false
