@@ -153,16 +153,15 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
   }
 
   void TearDown() override {
-    u_ = new UpdateCPUResults(&(i_->cell_movements), i_->offset);
+    auto u = UpdateCPUResults(&(i_->cell_movements), i_->offset);
     Simulation::GetActive()
         ->GetResourceManager()
-        ->ApplyOnAllElementsParallelDynamic(1000, *u_);
+        ->ApplyOnAllElementsParallelDynamic(1000, u);
   }
 
  private:
   DisplacementOpCudaKernel* cdo_ = nullptr;
   InitializeGPUData* i_ = nullptr;
-  UpdateCPUResults* u_ = nullptr;
   uint32_t num_boxes_ = 0;
   uint32_t total_num_objects_ = 0;
 
