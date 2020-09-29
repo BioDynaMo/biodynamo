@@ -47,8 +47,7 @@ Scheduler::Scheduler() {
                                           "displacement",
                                           "discretization",
                                           "distribute run displacement info",
-                                          "diffusion",
-                                          "load balancing"};
+                                          "diffusion"};
 
   // Schedule the default operations
   for (auto& def_op : default_ops) {
@@ -57,8 +56,11 @@ Scheduler::Scheduler() {
 
   visualize_op_ = NewOperation("visualize");
   setup_iteration_op_ = NewOperation("set up iteration");
+  sort_balance_op_ = NewOperation("load balancing");
   teardown_iteration_op_ = NewOperation("tear down iteration");
   update_environment_op_ = NewOperation("update environment");
+
+  outstanding_operations_ = {"load balancing", "visualize"};
 
   protected_ops_ = {"update run displacement", "biology module",
                     "discretization", "distribute run displacment info"};
@@ -69,6 +71,7 @@ Scheduler::~Scheduler() {
     delete op;
   }
   delete visualize_op_;
+  delete sort_balance_op_;
   delete update_environment_op_;
   delete setup_iteration_op_;
   delete teardown_iteration_op_;
@@ -100,10 +103,11 @@ void Scheduler::ScheduleOp(Operation* op) {
 }
 
 void Scheduler::UnscheduleOp(Operation* op) {
+  // We must not unschedule a protected operation
   if (std::find(protected_ops_.begin(), protected_ops_.end(), op->name_) !=
       protected_ops_.end()) {
     Log::Warning("Scheduler::UnscheduleOp",
-                 "You tried to remove the protected operation ", op->name_,
+                 "You tried to unschedule the protected operation ", op->name_,
                  "! This request was ignored.");
     return;
   }
@@ -177,9 +181,6 @@ void Scheduler::RunScheduledOps() {
   auto* param = sim->GetParam();
   auto batch_size = param->scheduling_batch_size_;
 
-  Timing::Time(update_environment_op_->name_,
-               [&]() { (*update_environment_op_)(); });
-
   // Run the sim object operations
   std::vector<Operation*> sim_object_ops;
   for (auto* op : scheduled_sim_object_ops_) {
@@ -204,9 +205,28 @@ void Scheduler::RunScheduledOps() {
 void Scheduler::Execute() {
   ScheduleOps();
   Timing::Time(setup_iteration_op_->name_, [&]() { (*setup_iteration_op_)(); });
+
+  // We cannot put sort and balance in the list of scheduled_standalone_ops_,
+  // because numa-aware data structures would be invalidated:
+  // ```
+  //  SetUpOps() <-- (1)
+  //  RunScheduledOps() <-- rebalance numa domains
+  //  TearDownOps() <-- indexing with SoHandles are different than at (1)
+  // ```
+  if (total_steps_ % sort_balance_op_->frequency_ == 0) {
+    Timing::Time(sort_balance_op_->name_, [&]() { (*sort_balance_op_)(); });
+  }
+
+  // We need to update the environment BEFORE setting up the operations, as
+  // some operations depend on the grid members to be up to date (e.g. GPU
+  // displacement operation)
+  Timing::Time(update_environment_op_->name_,
+               [&]() { (*update_environment_op_)(); });
+
   SetUpOps();
   RunScheduledOps();
   TearDownOps();
+
   Timing::Time(teardown_iteration_op_->name_,
                [&]() { (*teardown_iteration_op_)(); });
   Timing::Time(visualize_op_->name_, [&]() { (*visualize_op_)(); });

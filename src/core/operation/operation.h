@@ -181,6 +181,10 @@ struct Operation {
   OpComputeTarget active_target_ = kCpu;
   /// The different operation implementations for each supported compute target
   std::vector<OperationImpl *> implementations_;
+  /// Flag to determine if an operation should be executable in stand-alone mode
+  /// This can be useful for enabling / disabling of outstanding operations
+  /// in Scheduler
+  bool standalone_enabled_ = true;
 };
 
 }  // namespace bdm
