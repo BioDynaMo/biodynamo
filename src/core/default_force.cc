@@ -28,7 +28,7 @@
 
 namespace bdm {
 
-using experimental::neuroscience::NeuriteElement;
+using neuroscience::NeuriteElement;
 
 Double4 DefaultForce::GetForce(const SimObject* lhs, const SimObject* rhs) {
   if (lhs->GetShape() == Shape::kSphere && rhs->GetShape() == Shape::kSphere) {

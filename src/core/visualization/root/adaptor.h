@@ -33,7 +33,7 @@
 
 using ROOT::Math::AxisAngle;
 using ROOT::Math::EulerAngles;
-using bdm::experimental::neuroscience::NeuriteElement;
+using bdm::neuroscience::NeuriteElement;
 
 namespace bdm {
 

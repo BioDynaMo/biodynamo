@@ -19,7 +19,6 @@
 #include "core/event/event.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 /// \brief This event splits the current neurite element into two elements
@@ -57,7 +56,6 @@ struct NeuriteBranchingEvent : public Event {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_EVENT_NEURITE_BRANCHING_EVENT_H_

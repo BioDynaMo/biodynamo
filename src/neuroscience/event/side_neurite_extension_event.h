@@ -18,7 +18,6 @@
 #include "core/event/event.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 /// \brief Contains the parameters to add a side neurite element.
@@ -45,7 +44,6 @@ struct SideNeuriteExtensionEvent : public Event {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_EVENT_SIDE_NEURITE_EXTENSION_EVENT_H_
