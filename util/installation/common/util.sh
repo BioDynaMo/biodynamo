@@ -263,8 +263,9 @@ function BashrcFile {
 # Echo lines (with line numbers) matching a given pattern for a list of given files.
 # Arguments:
 #   $1 message to echo before echoing matches
-#   $2 pattern to pass to 'sed -E', this pattern must output matching line
-#      numbers, and optionally '#IGNORE' if a match is to be ignored.
+#   $2 pattern to pass to 'grep -E', this pattern must output matching lines.
+#      The pattern must also take into account that each line will be numbered
+#      due to 'cat -n <file>'. Lines ending with '#IGNORE' will not be echoed.
 #   $@ files to match on
 function EchoMatchingLinesInFiles() {
   if [[ $# -lt 3 ]]; then
@@ -273,7 +274,7 @@ function EchoMatchingLinesInFiles() {
   fi
 
   local matchMessage="$1"
-  local sedPattern="$2"
+  local pattern="$2"
   shift # rest
   local fileList=("$@")
 
@@ -281,26 +282,23 @@ function EchoMatchingLinesInFiles() {
   local matchAccum=()
   local matchLinesAccum=()
 
-  for f in ${fileList[@]}; do
+  for f in "${fileList[@]}"; do
     if [ -f "$f" ]; then
-      matches=$(cat -n $f | sed -E "$sedPattern" | grep -v '#IGNORE' | sed ':a; N; $!ba; s/\n/p;/g')
+      matches=$(cat -n "$f" | grep -E "$pattern" | grep -v '.*#IGNORE$')
       if [ -n "$matches" ]; then
         matchAccum+=("$f")
-        matchLinesAccum+="$(cat -n $f | sed -n "$matches"'p;')"
+        matchLinesAccum+=("$matches")
       fi
     fi
   done
-  
+
   if [ "${#matchAccum[@]}" -gt '0' ]; then
     echo -e "$matchMessage"
-    for i in ${!matchAccum[@]}; do
+    for i in "${!matchAccum[@]}"; do
       echo "-> '${matchAccum[$i]}', on line(s)"
       echo "${matchLinesAccum[$i]}"
     done
-    return 0
   fi
-
-  return 1
 }
 
 # Print warnings and list of offending lines in shell config files
@@ -316,19 +314,28 @@ function WarnPossibleBadShellConfigs {
   if command -v fish &> /dev/null; then
     configFiles+=("$(fish -c 'echo $__fish_config_dir/config.fish')")
   fi
-  local didWarn=false
+
   # these regexes are quite naive but we aren't going to parse a shell file for a warning
-  local sourcePattern='s/^\s+([0-9][0-9]*)\s+(\.\s+|source).*thisbdm\.(fish|sh)\s*(#IGNORE)?$/\1\4/mg;t;d'
-  local aliasPattern='s/^\s+([0-9][0-9]*)\s+alias\s+thisbdm='"'"'(\.\s+|source)(.*)thisbdm\.(fish|sh)'"'"'\s*(#IGNORE)?$/\1\5/mg;t;d'
-  local warnFmt="$BDM_ECHO_YELLOW$BDM_ECHO_BOLD[WARN] "
+  local sourcePattern='^\s*[0-9]+\s+(\.|source)\s+.*thisbdm\.(fish|sh).*'
+  local aliasPattern='^\s*[0-9]+\s+alias\s+thisbdm='"'"'\s*(\.|source)\s+.*thisbdm\.(fish|sh)\s*'"'.*"
+  local warnFmt="${BDM_ECHO_YELLOW}${BDM_ECHO_BOLD}[WARN] "
+
+  local didWarn=false
+  # warn if there are any naive cases of 'source|. .../thisbdm.sh'
   local warnMsg="${warnFmt}You may have automatically sourced thisbdm in the following file(s):$BDM_ECHO_RESET"
-  # warn if there are any naive cases of 'source|. .../thisbdm.sh' 
-  (EchoMatchingLinesInFiles "$warnMsg" "$sourcePattern" "${configFiles[@]}"\
-  && EchoWarning "This is no longer advised." && didWarn=true) || true
+  local srcWarn=$(EchoMatchingLinesInFiles "$warnMsg" "$sourcePattern" "${configFiles[@]}")
+  if [ -n "$srcWarn" ]; then
+    echo -e "$srcWarn"; EchoWarning "This is no longer advised."
+    didWarn=true
+  fi
   # remind that alias to a thisbdm exists
   warnMsg="${warnFmt}You may have aliased a thisbdm in the following file(s):$BDM_ECHO_RESET"
-  (EchoMatchingLinesInFiles "$warnMsg" "$aliasPattern" "${configFiles[@]}"\
-  && EchoWarning "Please check if aliased version(s) is/are up-to-date." && didWarn=true) || true
+  local aliasWarn=$(EchoMatchingLinesInFiles "$warnMsg" "$aliasPattern" "${configFiles[@]}")
+  if [ -n "$aliasWarn" ]; then
+    echo -e "$aliasWarn"; EchoWarning "Please check if aliased version(s) is/are up-to-date."
+    didWarn=true
+  fi
+
   $didWarn && EchoWarning "If a matching line is a false positive, append ' #IGNORE' to its end."
 }
 

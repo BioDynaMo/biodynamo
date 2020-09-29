@@ -79,7 +79,7 @@ function source_thisbdm
 
     set -l curr_filename (status --current-filename)
     set -gx BDMSYS (fish -c "cd (dirname $curr_filename)/..; and pwd"); or return 1
-    
+
     if test -n "$old_bdmsys"
         if test "$old_bdmsys" = "$BDMSYS"
             _bdm_warn "[WARN] You've already sourced this same 'thisbdm' in your current shell session."
@@ -97,9 +97,9 @@ function source_thisbdm
     set -l config_files "$__fish_config_dir/config.fish"
     for f in $config_files
        if test -f "$f"
-            set -l source_pattern 's/^\s*(\.\s+|source).*thisbdm\.(fish|sh)\s*(#IGNORE)?$/\3/mg;t;d'
+            set -l source_pattern '^\s*(\.|source)\s+.*thisbdm\.(fish|sh).*'
             # one may append #IGNORE if match is a false positive, or they really want to keep that line
-            set -l nr_matches (sed -E "$source_pattern" "$f" | grep -v "#IGNORE" | wc -l)
+            set -l nr_matches (cat "$f" | grep -E "$source_pattern" | grep -vc '.*#IGNORE$')
             if test "$nr_matches" -gt '0'
                 _bdm_warn "[WARN] You may have sourced thisbdm in '$f'. Please check as this is not advised."
             end
