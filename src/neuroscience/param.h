@@ -26,7 +26,6 @@
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 struct Param : public ModuleParam {
@@ -111,7 +110,6 @@ struct Param : public ModuleParam {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_PARAM_H_

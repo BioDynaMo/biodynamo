@@ -43,10 +43,6 @@ jobs:
         sudo apt install -y curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: failure()
-
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
       with:

@@ -193,13 +193,9 @@ _source_thisbdm()
   # Clear the env from previously set PyEnv paths.
   if [ -n "${old_bdmsys}" ] ; then
     if [ -n "${PATH}" ]; then
-      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/bin"
+      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/bin"      
       PATH=$_newpath
-      if [ -n "${PYTHONUSERBASE}" ]; then
-        _drop_bdm_from_path "$PATH" "$PYTHONUSERBASE/.local/bin"
-      else
-        _drop_bdm_from_path "$PATH" "$HOME/.local/bin"
-      fi
+      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/versions/@pythonvers@/bin"
       PATH=$_newpath
     fi
 
@@ -316,12 +312,8 @@ _source_thisbdm()
   eval "$(pyenv init -)" || return 1
   pyenv shell @pythonvers@ || return 1
 
-  # Location of jupyter executable (installed with `pip install --user` command)
-  if [ -n "${PYTHONUSERBASE}" ]; then
-    export PATH="$PYTHONUSERBASE/.local/bin:$PATH"
-  else
-    export PATH="$HOME/.local/bin:$PATH"
-  fi
+  # Location of jupyter executable (installed with `pip install` command)
+  export PATH="$PYENV_ROOT/versions/@pythonvers@/bin:$PATH"
   export LD_LIBRARY_PATH="$PYENV_ROOT/versions/@pythonvers@/lib":$LD_LIBRARY_PATH
   ########
 

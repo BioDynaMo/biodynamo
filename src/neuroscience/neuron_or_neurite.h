@@ -24,7 +24,6 @@ namespace bdm {
 
 class Spinlock;
 
-namespace experimental {
 namespace neuroscience {
 
 class NeuriteElement;
@@ -56,7 +55,6 @@ class NeuronOrNeurite {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_NEURON_OR_NEURITE_H_

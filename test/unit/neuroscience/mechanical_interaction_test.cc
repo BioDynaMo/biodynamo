@@ -23,7 +23,6 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowth) {
@@ -572,5 +571,4 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
 }
 
 }  // end namespace neuroscience
-}  // end namespace experimental
 }  // end namespace bdm

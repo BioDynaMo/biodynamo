@@ -395,8 +395,8 @@ endfunction()
 # environment variable is exported, and set to a directory containing tar files that
 # would have otherwise been downloaded. Directory structure and filenames of the LFS
 # must precisely match its online counterpart.
-# Example: lfs.com/biodynamo-lfs/file.tar.gz => ~/Downloads/bdm/biodynamo-lfs/file.tar.gz
-# where BDM_LOCAL_LFS=~/Downloads/bdm/
+# Example: lfs.com/biodynamo-lfs/file.tar.gz => ~/Downloads/bdm-local-lfs/file.tar.gz
+# where BDM_LOCAL_LFS=~/Downloads/bdm-local-lfs
 #
 #   URL: URL from which we will download the file
 #   DEST: destination where the contents of the tar file will be extracted to
@@ -413,12 +413,14 @@ function(download_verify_extract URL DEST HASH)
                     COMMAND sed "s|\\(.*://[^/]*/\\)\\(.*\\)|\\1;\\2|g"
                     OUTPUT_VARIABLE URL_COMPONENTS
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
-    list(GET URL_COMPONENTS 1 LFS_FILEPATH)
+    list(GET URL_COMPONENTS 1 URL_FILEPATH)
+    string(REPLACE "biodynamo-lfs" "" LFS_FILEPATH ${URL_FILEPATH})
     set(LOCAL_TAR_FILE "$ENV{BDM_LOCAL_LFS}${LFS_FILEPATH}")
     if(EXISTS "${LOCAL_TAR_FILE}")
       file(COPY ${LOCAL_TAR_FILE} DESTINATION ${DEST_PARENT})
     else()
-      message(FATAL_ERROR "\nERROR: We were unable find '${LFS_FILEPATH}' in BDM_LOCAL_LFS='$ENV{BDM_LOCAL_LFS}'\n")
+      message(FATAL_ERROR "\nERROR: We were unable find file '${LOCAL_TAR_FILE}'.\n\
+Unset the environment variable BDM_LOCAL_LFS to download the file.")
     endif()
   else()
     # Download the file
