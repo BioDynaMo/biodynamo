@@ -134,8 +134,11 @@ void RunTest(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      // Execute operation
-      (*NewOperation("displacement"))();
+      auto *op = NewOperation("displacement");
+      op->SelectComputeTarget(mode);
+      op->SetUp();
+      (*op)();
+      op->TearDown();
     } else {
       // Run verification on CPU
       DisplacementOpCpuVerify cpu_op;
@@ -220,8 +223,11 @@ void RunTest2(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      // Execute operation
-      (*NewOperation("displacement"))();
+      auto *op = NewOperation("displacement");
+      op->SelectComputeTarget(mode);
+      op->SetUp();
+      (*op)();
+      op->TearDown();
     } else {
       // Run verification on CPU
       DisplacementOpCpuVerify cpu_op;
