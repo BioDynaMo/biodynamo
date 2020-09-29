@@ -15,6 +15,19 @@
 #include "samples/common/inc/helper_math.h"
 #include "core/gpu/displacement_op_cuda_kernel.h"
 
+#include <iostream>
+#include <unistd.h>
+
+void printMemoryUsage() {
+  size_t availableMemory, totalMemory, usedMemory;
+  cudaMemGetInfo(&availableMemory, &totalMemory);
+  usedMemory = totalMemory - availableMemory;
+  std::cout << "Device memory: used " << usedMemory
+            << " available " << availableMemory
+            << " total " << totalMemory << std::endl;
+}
+
+
 #define GpuErrchk(ans) { GpuAssert((ans), __FILE__, __LINE__); }
 inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
 {
@@ -173,18 +186,18 @@ __global__ void collide(
        uint32_t* num_boxes_axis,
        int32_t* grid_dimensions,
        double* result) {
-    uint32_t tidx = blockIdx.x * blockDim.x + threadIdx.x;
-    // printf("[Kernel] box_id[tidx] = %d\n", box_id[tidx]);
-    // printf("[Kernel] num_objects = %d\n", num_objects[0]);
-    // printf("[Kernel] blockDim.x = %d\n", blockDim.x);
-    // printf("[Kernel] positions = {");
-    // for (uint32_t i = 0; i < 3*num_objects[0]; i++) {
-    //   printf("%p, ", &(positions[i]));
-    // }
-    // printf("}\n");
-    if (tidx < num_objects[0]) {
-      result[3*tidx + 0] = timestep[0] * tractor_force[3*tidx + 0];
-      result[3*tidx + 1] = timestep[0] * tractor_force[3*tidx + 1];
+  uint32_t tidx = blockIdx.x * blockDim.x + threadIdx.x;
+  // printf("[Kernel] box_id[tidx] = %d\n", box_id[tidx]);
+  // printf("[Kernel] num_objects = %d\n", num_objects[0]);
+  // printf("[Kernel] blockDim.x = %d\n", blockDim.x);
+  // printf("[Kernel] positions = {");
+  // for (uint32_t i = 0; i < 3*num_objects[0]; i++) {
+  //   printf("%p, ", &(positions[i]));
+  // }
+  // printf("}\n");
+  if (tidx < num_objects[0]) {
+    result[3*tidx + 0] = timestep[0] * tractor_force[3*tidx + 0];
+    result[3*tidx + 1] = timestep[0] * tractor_force[3*tidx + 1];
     result[3*tidx + 2] = timestep[0] * tractor_force[3*tidx + 2];
     
     double3 collision_force = make_double3(0, 0, 0);
@@ -285,6 +298,8 @@ void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* posit
   // Get a near-optimal occupancy with the following thread organization
   cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, collide, 0, num_objects[0]);
   gridSize = (num_objects[0] + blockSize - 1) / blockSize;
+
+  // printMemoryUsage();
 
   // printf("gridSize = %d  |  blockSize = %d\n", gridSize, blockSize);
   collide<<<gridSize, blockSize>>>(d_positions_, d_diameters_, d_tractor_force_,
