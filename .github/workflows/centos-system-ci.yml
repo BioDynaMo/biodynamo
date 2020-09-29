@@ -50,7 +50,6 @@ jobs:
         yum update -y
         yum install -y sudo curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
-      if: github.event_name == 'schedule' 
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
@@ -92,12 +91,6 @@ jobs:
       with:
         path: build/third_party
         key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
-
-    - name: Install prerequisites
-      run: |
-        yum install -y sudo
-        SILENT_INSTALL=1 ./prerequisites.sh all
-      if: github.event_name == 'pull_request' 
 
     - name: Build BioDynaMo
       shell: bash
