@@ -22,6 +22,17 @@
 
 #include "core/container/math_array.h"
 
+template <typename T>
+inline void debug_print(const std::string& name, T t) {
+  std::cout << name << " = " << t << std::endl;
+}
+
+// Convenience macro to quickly print out values of variables
+// Usage: BDM_PRINT_DEBUG(foo)
+// Output on terminal: $ foo = <value_of_foo>
+// arg must be printable
+#define BDM_PRINT_DEBUG(arg) debug_print(#arg, arg);
+
 inline void Print(const bdm::Double3& a, int precision = 10) {
   std::cout << std::setprecision(precision) << a[0] << ", " << a[1] << ", "
             << a[2] << std::endl;
