@@ -189,12 +189,8 @@ function source_thisbdm
     pyenv init - | source; or return 1
     pyenv shell @pythonvers@; or return 1
 
-    # Location of jupyter executable (installed with `pip install --user` command)
-    if test -n "$PYTHONUSERBASE"
-        set -pgx PATH "$PYTHONUSERBASE/.local/bin"
-    else
-        set -pgx PATH "$HOME/.local/bin"
-    end
+    # Location of jupyter executable (installed with `pip install` command)
+    set -pgx PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
     set -pgx LD_LIBRARY_PATH "$PYENV_ROOT/versions/@pythonvers@/lib"
     ########
 

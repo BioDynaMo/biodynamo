@@ -93,7 +93,7 @@ PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 
 ```bash
 pyenv shell 3.8.0
-python -m pip install --user nbformat jupyter metakernel
+python -m pip install nbformat jupyter metakernel jupyterlab
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
   doxygen graphviz libxml2-dev
@@ -171,7 +171,7 @@ PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 
 ```bash
 pyenv shell 3.8.0
-python -m pip install --user nbformat jupyter metakernel
+python -m pip install nbformat jupyter metakernel jupyterlab
 sudo yum -y install llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 # SBML integration
@@ -228,6 +228,6 @@ PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
 
 ```bash
 pyenv shell 3.8.0
-python -m pip install --user nbformat jupyter metakernel
+python -m pip install nbformat jupyter metakernel jupyterlab
 brew install doxygen graphviz kcov 
 ```
