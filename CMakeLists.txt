@@ -45,6 +45,7 @@ include(external/SHA256Digests)
 include(FeatureSummary)
 include(CaptureCommandLine)
 include(utils)
+include(Benchmarking)
 
 # Detect os type and version
 if (NOT DEFINED OS)
@@ -109,6 +110,7 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
+option(benchmark "Build a benchmark." ON)
 
 if(APPLE)
   find_program(BREW_BIN brew)
@@ -128,6 +130,14 @@ if(UNIX AND NOT APPLE)
 endif()
 
 # -------------------- find packages ------------------------------------------
+if (benchmark)
+  find_package(benchmark)
+  if(NOT BENCHMARK_FOUND)
+    message(FATAL_ERROR "benchmark not found.")
+  endif()
+  message("benchmark library found")
+endif()
+
 if (tcmalloc)
   find_package(tcmalloc)
   if(NOT TCMALLOC_FOUND)
