@@ -43,7 +43,6 @@ jobs:
         sudo apt install -y curl
         set -x
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
-        set +x
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
