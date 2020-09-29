@@ -323,12 +323,12 @@ function WarnPossibleBadShellConfigs {
   local warnFmt="$BDM_ECHO_YELLOW$BDM_ECHO_BOLD[WARN] "
   local warnMsg="${warnFmt}You may have automatically sourced thisbdm in the following file(s):$BDM_ECHO_RESET"
   # warn if there are any naive cases of 'source|. .../thisbdm.sh' 
-  EchoMatchingLinesInFiles "$warnMsg" "$sourcePattern" "${configFiles[@]}"\
-  && EchoWarning "This is no longer advised." && didWarn=true
+  (EchoMatchingLinesInFiles "$warnMsg" "$sourcePattern" "${configFiles[@]}"\
+  && EchoWarning "This is no longer advised." && didWarn=true) || true
   # remind that alias to a thisbdm exists
   warnMsg="${warnFmt}You may have aliased a thisbdm in the following file(s):$BDM_ECHO_RESET"
-  EchoMatchingLinesInFiles "$warnMsg" "$aliasPattern" "${configFiles[@]}"\
-  && EchoWarning "Please check if aliased version(s) is/are up-to-date." && didWarn=true
+  (EchoMatchingLinesInFiles "$warnMsg" "$aliasPattern" "${configFiles[@]}"\
+  && EchoWarning "Please check if aliased version(s) is/are up-to-date." && didWarn=true) || true
   $didWarn && EchoWarning "If a matching line is a false positive, append ' #IGNORE' to its end."
 }
 
@@ -384,7 +384,7 @@ function EchoFinishInstallation {
   echo
   # any warnings about users' post-install shell 
   # configuration may be added to the function called below
-  WarnPossibleBadShellConfigs
+  WarnPossibleBadShellConfigs || true
 }
 
 # This function prompts the user for the biodynamo installation directory
