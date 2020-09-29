@@ -17,7 +17,6 @@
 #include "neuroscience/neuron_soma.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 NeuronOrNeurite::~NeuronOrNeurite() {}
@@ -41,5 +40,4 @@ bool NeuronOrNeurite::IsNeuriteElement() const {
 }
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm

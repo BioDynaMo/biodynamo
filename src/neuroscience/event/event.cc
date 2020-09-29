@@ -19,7 +19,6 @@
 #include "neuroscience/event/split_neurite_element_event.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 const EventId NewNeuriteExtensionEvent::kEventId =
@@ -34,5 +33,4 @@ const EventId SideNeuriteExtensionEvent::kEventId =
     UniqueEventIdFactory::Get()->NewUniqueEventId();
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm

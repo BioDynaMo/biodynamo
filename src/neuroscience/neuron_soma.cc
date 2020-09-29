@@ -22,7 +22,6 @@
 #include "neuroscience/param.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 NeuronSoma::NeuronSoma() {}
@@ -145,5 +144,4 @@ void NeuronSoma::CriticalRegion(std::vector<Spinlock*>* locks) {
 }
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm

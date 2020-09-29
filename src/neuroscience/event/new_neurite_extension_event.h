@@ -18,7 +18,6 @@
 #include "core/event/event.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 /// \brief Contains the parameters to extend a new neurite from a neuron soma.
@@ -44,7 +43,6 @@ struct NewNeuriteExtensionEvent : public Event {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_EVENT_NEW_NEURITE_EXTENSION_EVENT_H_

@@ -23,7 +23,6 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
@@ -125,5 +124,4 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
 }  // end test
 
 }  // end namespace neuroscience
-}  // end namespace experimental
 }  // end namespace bdm
