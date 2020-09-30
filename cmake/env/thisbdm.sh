@@ -147,11 +147,11 @@ _source_thisbdm()
   fi
 
   # check if any config files naively source thisbdm
-  for f in ${config_files[@]}; do
+  for f in "${config_files[@]}"; do
     if [ -f "$f" ]; then
-      local source_pattern='s/^\s*(\.\s+|source).*thisbdm\.(fish|sh)\s*(#IGNORE)?$/\3/mg;t;d'
+      local source_pattern='^\s*(\.|source)\s+.*thisbdm\.(fish|sh).*'
       # one may append #IGNORE if match is a false positive, or they really want to keep that line
-      local nr_matches=$(sed -E "$source_pattern" $f | grep -v "#IGNORE" | wc -l)
+      local nr_matches=$(cat "$f" | grep -E "$source_pattern" | grep -vc '.*#IGNORE$')
       if [ "$nr_matches" -gt '0' ]; then
         _bdm_warn "[WARN] You may have sourced thisbdm in '$f'. Please check as this is not advised."
       fi
