@@ -21,7 +21,11 @@ ExternalProject_Add(
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
   INSTALL_COMMAND "" # Disable install step
-#  BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/libgtest.a"
+  BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/benchmark/build/src/libbenchmark.a"
 )
 ExternalProject_Get_Property(benchmark source_dir binary_dir)
+
+# add include directories for benchmark
+include_directories("${CMAKE_BINARY_DIR}/benchmark/include/benchmark/")
+
 
