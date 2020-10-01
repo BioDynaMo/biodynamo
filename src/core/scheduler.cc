@@ -112,7 +112,37 @@ void Scheduler::UnscheduleOp(Operation* op) {
     return;
   }
 
+  // Check if the requested operation is even scheduled
+  ForAllScheduledOperations([&](Operation* op) {
+    Log::Warning("Scheduler::UnscheduleOp",
+                 "You tried to unschedule the non-scheduled operation ",
+                 op->name_, "! This request was ignored.");
+    return;
+  });
+
+  // 'Unschedule' outstanding operations
+  if (std::find(outstanding_operations_.begin(), outstanding_operations_.end(),
+                op->name_) != outstanding_operations_.end()) {
+    op->standalone_enabled_ = false;
+  }
+
   ops_to_remove_.push_back(op);
+}
+
+std::vector<std::string> Scheduler::GetListOfScheduledSimObjectOps() const {
+  std::vector<std::string> list;
+  for (auto* op : scheduled_sim_object_ops_) {
+    list.push_back(op->name_);
+  }
+  return list;
+}
+
+std::vector<std::string> Scheduler::GetListOfScheduledStandaloneOps() const {
+  std::vector<std::string> list;
+  for (auto* op : scheduled_standalone_ops_) {
+    list.push_back(op->name_);
+  }
+  return list;
 }
 
 std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
@@ -148,31 +178,19 @@ struct RunAllScheduledOps : Functor<void, SimObject*, SoHandle> {
 };
 
 void Scheduler::SetUpOps() {
-  for (auto* op : scheduled_sim_object_ops_) {
+  ForAllScheduledOperations([&](Operation* op) {
     if (total_steps_ % op->frequency_ == 0) {
       op->SetUp();
     }
+  });
   }
-
-  for (auto* op : scheduled_standalone_ops_) {
-    if (total_steps_ % op->frequency_ == 0) {
-      op->SetUp();
-    }
-  }
-}
 
 void Scheduler::TearDownOps() {
-  for (auto* op : scheduled_sim_object_ops_) {
+  ForAllScheduledOperations([&](Operation* op) {
     if (total_steps_ % op->frequency_ == 0) {
       op->TearDown();
     }
-  }
-
-  for (auto* op : scheduled_standalone_ops_) {
-    if (total_steps_ % op->frequency_ == 0) {
-      op->TearDown();
-    }
-  }
+  });
 }
 
 void Scheduler::RunScheduledOps() {
