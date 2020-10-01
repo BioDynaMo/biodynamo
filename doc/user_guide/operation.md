@@ -127,7 +127,15 @@ You could approach this the following way.
 // Create an operation implementation with a state
 struct CheckDiameter : public SimObjectOperationImpl {
   BDM_OP_HEADER(CheckDiameter);
-  
+
+  CheckDiameter() {}
+
+  // Since atomic members don't have a deleted copy constructor, we have to
+  // define how to copy its value in this operation's copy constructor
+  explicit CheckDiameter(const CheckDiameter& other) {
+    this->counter_ = other.counter_.load();
+  }
+
   void operator()(SimObject* sim_object) override {
     if (sim_object->GetDiameter() > max_diameter_) {
       counter_++;
@@ -136,10 +144,10 @@ struct CheckDiameter : public SimObjectOperationImpl {
 
   // The state consists of these two data members
   double max_diameter_ = 1;
-  // Data members that can be changed in `operator()(SimObject* 
+  // Data members that can be changed in `operator()(SimObject*
   // sim_object)` need to be of atomic type to avoid race conditions
-  std::atomic<uint32_t> counter_ = 0;
-}
+  std::atomic<uint32_t> counter_;
+};
 
 ```
 
