@@ -113,12 +113,19 @@ void Scheduler::UnscheduleOp(Operation* op) {
   }
 
   // Check if the requested operation is even scheduled
-  ForAllScheduledOperations([&](Operation* op) {
+  bool not_in_scheduled_ops = true;
+  ForAllScheduledOperations([&](Operation* scheduled_op) {
+    if (op == scheduled_op) {
+      not_in_scheduled_ops = false;
+    }
+  });
+
+  if (not_in_scheduled_ops) {
     Log::Warning("Scheduler::UnscheduleOp",
                  "You tried to unschedule the non-scheduled operation ",
                  op->name_, "! This request was ignored.");
     return;
-  });
+  }
 
   // 'Unschedule' outstanding operations
   if (std::find(outstanding_operations_.begin(), outstanding_operations_.end(),
