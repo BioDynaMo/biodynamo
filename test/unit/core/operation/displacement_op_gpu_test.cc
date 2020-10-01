@@ -94,8 +94,10 @@ void RunTest(OpComputeTarget mode) {
     switch (mode) {
       case kOpenCl:
         param->compute_target_ = "opencl";
+        break;
       case kCuda:
         param->compute_target_ = "cuda";
+        break;
       default:
         return;
     }
@@ -186,8 +188,10 @@ void RunTest2(OpComputeTarget mode) {
     switch (mode) {
       case kOpenCl:
         param->compute_target_ = "opencl";
+        break;
       case kCuda:
         param->compute_target_ = "cuda";
+        break;
       default:
         return;
     }
