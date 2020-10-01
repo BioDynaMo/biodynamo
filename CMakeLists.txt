@@ -109,6 +109,7 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
+option(benchmark "Build a Benchmark." OFF)
 
 if(APPLE)
   find_program(BREW_BIN brew)
@@ -405,6 +406,14 @@ include(Website)
 include(Versioning)
 include(Benchmarking)
 
+if(benchmark)
+  find_package(benchmark)
+  if (NOT BENCHMARK_FOUND)
+    MESSAGE("Benchmark was not found in your system, therefore it was disabled to let you compile BioDynaMo.")
+    SET(benchmark OFF)
+  endif()
+endif()
+
 # -------------------- set default build type and compiler flags ---------------
 if(coverage)
   set(CMAKE_BUILD_TYPE Coverage)
@@ -547,6 +556,12 @@ generate_rootlogon()
 
 # create cmake files used by external builds
 configure_file("cmake/UseBioDynaMo.cmake.in" "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake" @ONLY)
+
+# -------------------- build benchmark project  -------------------------------
+
+#if (benchmark)
+#  include(Benchmarking)
+#endif()
 
 # -------------------- build test project  ------------------------------------
 if (test)
