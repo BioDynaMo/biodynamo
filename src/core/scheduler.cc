@@ -21,6 +21,7 @@
 #include "core/operation/displacement_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
+#include "core/operation/visualization_op.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
@@ -56,6 +57,8 @@ Scheduler::Scheduler() {
   }
 
   visualize_op_ = NewOperation("visualize");
+  visualize_op_->GetImplementation<VisualizationOp>()->Initialize();
+
   setup_iteration_op_ = NewOperation("set up iteration");
   teardown_iteration_op_ = NewOperation("tear down iteration");
   update_environment_op_ = NewOperation("update environment");
