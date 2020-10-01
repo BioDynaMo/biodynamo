@@ -183,7 +183,7 @@ void Scheduler::SetUpOps() {
       op->SetUp();
     }
   });
-  }
+}
 
 void Scheduler::TearDownOps() {
   ForAllScheduledOperations([&](Operation* op) {
@@ -247,7 +247,10 @@ void Scheduler::Execute() {
 
   Timing::Time(teardown_iteration_op_->name_,
                [&]() { (*teardown_iteration_op_)(); });
-  Timing::Time(visualize_op_->name_, [&]() { (*visualize_op_)(); });
+
+  if (total_steps_ % visualize_op_->frequency_ == 0) {
+    Timing::Time(visualize_op_->name_, [&]() { (*visualize_op_)(); });
+  }
 }
 
 void Scheduler::Backup() {
