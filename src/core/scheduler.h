@@ -61,23 +61,22 @@ class Scheduler {
   /// function returns an empty vector.
   std::vector<Operation*> GetOps(const std::string& name);
 
-  /// Return a list of SimObjectOperations that are scheduled
-  std::vector<std::string> GetListOfScheduledSimObjectOps() const {
-    std::vector<std::string> list;
+  template <typename Lambda>
+  void ForAllScheduledOperations(Lambda lambda) {
     for (auto* op : scheduled_sim_object_ops_) {
-      list.push_back(op->name_);
+      lambda(op);
     }
-    return list;
+
+    for (auto* op : scheduled_standalone_ops_) {
+      lambda(op);
+    }
   }
 
+  /// Return a list of SimObjectOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledSimObjectOps() const;
+
   /// Return a list of StandAloneOperations that are scheduled
-  std::vector<std::string> GetListOfScheduledStandaloneOps() const {
-    std::vector<std::string> list;
-    for (auto* op : scheduled_standalone_ops_) {
-      list.push_back(op->name_);
-    }
-    return list;
-  }
+  std::vector<std::string> GetListOfScheduledStandaloneOps() const;
 
   void SetUpOps();
 
