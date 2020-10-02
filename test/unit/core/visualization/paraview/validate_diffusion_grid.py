@@ -14,6 +14,7 @@
 
 import argparse
 import os
+import math
 import sys
 from paraview.simple import *
 from paraview import coprocessing
@@ -43,7 +44,7 @@ def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args)
         return
     
     for i in range(0, data.GetNumberOfTuples()):
-        if i != int(data.GetValue(i)): 
+        if not math.isclose(float(i), data.GetValue(i), abs_tol=1e-5):
             print("ERROR diffusion grid element", i, " has wrong value: expected:", i, 
                     "actual:", data.GetValue(i))
             return
