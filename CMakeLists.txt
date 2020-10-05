@@ -405,7 +405,7 @@ include(Documentation)
 include(Website)
 include(Versioning)
 
-# -------------------- benchmarking --------------------------------------------
+# -------------------- benchmarking -------------------------------------------
 if(benchmark)
   include(Benchmarking)
 endif()

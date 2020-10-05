@@ -38,3 +38,6 @@ add_executable(biodynamo-benchmark
               )
 
 target_link_libraries(biodynamo-benchmark benchmark::benchmark)
+
+add_custom_target(run-benchmark COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark)
+add_dependencies(run-benchmark biodynamo-benchmark)
