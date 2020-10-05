@@ -78,7 +78,8 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
       for (size_t j = 0; j < rm->GetNumSimObjects(i); j++) {
         auto idx = offset[i] + j;
         i_->successors[idx] =
-            offset[i] + grid->successors_.data_[i][j].GetElementIdx();
+            offset[grid->successors_.data_[i][j].GetNumaNode()] +
+            grid->successors_.data_[i][j].GetElementIdx();
       }
     }
 
