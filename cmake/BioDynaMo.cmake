@@ -118,8 +118,7 @@ function(build_shared_library TARGET)
     endif()
     add_custom_command(OUTPUT "${BDM_DICT_FILE}"
                        COMMAND ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_DICT_FILE} ${ARG_HEADERS}
-                       DEPENDS ${ARG_HEADERS} ${BDM_DICT_BIN_PATH}/bdm-dictionary
-                       BYPRODUCTS ${BDM_DICT_FILE}) 
+                       DEPENDS ${ARG_HEADERS} ${BDM_DICT_BIN_PATH}/bdm-dictionary)
     # generate shared library
     add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc ${BDM_DICT_FILE})
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
