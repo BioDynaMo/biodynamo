@@ -145,37 +145,6 @@ struct Visitor1 : public SoVisitor {
   }
 };
 
-TEST(SimObjectUtilTest, ForEachDataMember) {
-  Simulation simulation(TEST_NAME);
-
-  TestSimObject so;
-  Visitor1 visitor;
-  so.ForEachDataMember(&visitor);
-  EXPECT_EQ(6u, visitor.counter_);
-}
-
-struct Visitor2 : public SoVisitor {
-  uint16_t counter_ = 0;
-
-  void Visit(const std::string& dm_name, size_t type_hash_code,
-             const void* data) override {
-    counter_++;
-    if (dm_name != "uid_" && dm_name != "position_") {
-      FAIL() << "Lambda must not be called for data member " << dm_name
-             << std::endl;
-    }
-  }
-};
-
-TEST(SimObjectUtilTest, ForEachDataMemberIn) {
-  Simulation simulation(TEST_NAME);
-
-  TestSimObject so;
-  Visitor2 visitor;
-  so.ForEachDataMemberIn(std::set<std::string>{"uid_", "position_"}, &visitor);
-  EXPECT_EQ(2u, visitor.counter_);
-}
-
 struct VerifyPosition : public SoVisitor {
   void Visit(const std::string& dm_name, size_t type_hash_code,
              const void* data) override {
@@ -194,16 +163,6 @@ struct VerifyPosition : public SoVisitor {
     }
   }
 };
-
-// for one data member check if the pointer contains the right data
-TEST(SimObjectUtilTest, ForEachDataMemberInDetailed) {
-  Simulation simulation(TEST_NAME);
-
-  TestSimObject so;
-  so.SetPosition({4, 5, 6});
-  VerifyPosition visitor;
-  so.ForEachDataMemberIn(std::set<std::string>{"position_"}, &visitor);
-}
 
 TEST(SimObjectTest, GetSoPtr) {
   Simulation simulation(TEST_NAME);

@@ -29,7 +29,7 @@ namespace neuroscience {
 class NeuriteElement;
 
 class NeuronSoma : public Cell, public NeuronOrNeurite {
-  BDM_SIM_OBJECT_HEADER(NeuronSoma, Cell, 1, daughters_, daughters_coord_);
+  BDM_SIM_OBJECT_HEADER(NeuronSoma, Cell, 1);
 
  public:
   NeuronSoma();

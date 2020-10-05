@@ -30,7 +30,7 @@
 namespace bdm {
 
 class A : public TestSimObject {
-  BDM_SIM_OBJECT_HEADER(A, TestSimObject, 1, data_);
+  BDM_SIM_OBJECT_HEADER(A, TestSimObject, 1);
 
  public:
   A() {}  // for ROOT I/O
@@ -45,7 +45,7 @@ class A : public TestSimObject {
 };
 
 class B : public TestSimObject {
-  BDM_SIM_OBJECT_HEADER(B, TestSimObject, 1, data_);
+  BDM_SIM_OBJECT_HEADER(B, TestSimObject, 1);
 
  public:
   B() {}  // for ROOT I/O

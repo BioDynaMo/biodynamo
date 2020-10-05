@@ -38,8 +38,7 @@
 namespace bdm {
 
 class Cell : public SimObject {
-  BDM_SIM_OBJECT_HEADER(Cell, SimObject, 1, position_, tractor_force_,
-                        diameter_, volume_, adherence_, density_);
+  BDM_SIM_OBJECT_HEADER(Cell, SimObject, 1);
 
  public:
   /// First axis of the local coordinate system.

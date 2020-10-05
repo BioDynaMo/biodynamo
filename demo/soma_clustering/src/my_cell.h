@@ -22,7 +22,7 @@ namespace bdm {
 // Define my custom cell, which extends Cell by adding an extra
 // data member cell_type.
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}

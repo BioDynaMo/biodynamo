@@ -235,7 +235,7 @@ We will do that directly in our `tutorial.h` file by writing:
 // members: cell_color and can_divide
 class MyCell : public Cell {  // our object extends the Cell object
                               // create the header with our new data member
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
@@ -348,7 +348,7 @@ if (random->Uniform(0, 1) < 0.8) {
 Cells will now have only 80% chance to divide. However, it will have 80% chance to divide at every simulation step! We want that if a cell doesn't divide, it will not be able to divide any more.
 To do that, we will create a new `MyCell` boolean attribute called `can_divide_`, like we did for `cell_colour_` attribute (see chapter 3.2).
 ```cpp
-BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
+BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
 ```
 
 and create two methods, `SetCanDivide()` and `GetCanDivide()`.

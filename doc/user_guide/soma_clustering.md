@@ -44,7 +44,7 @@ In `src/my_cell.h` we can find the following code:
 
 ```cpp
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, cell_type_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
