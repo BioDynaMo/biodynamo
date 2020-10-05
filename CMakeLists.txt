@@ -404,14 +404,10 @@ include(ExternalProject)
 include(Documentation)
 include(Website)
 include(Versioning)
-include(Benchmarking)
 
+# -------------------- benchmarking --------------------------------------------
 if(benchmark)
-  find_package(benchmark)
-  if (NOT BENCHMARK_FOUND)
-    MESSAGE("The package benchmark was not found, therefore it was disabled to let you compile BioDynaMo.")
-    SET(benchmark OFF)
-  endif()
+  include(Benchmarking)
 endif()
 
 # -------------------- set default build type and compiler flags ---------------
