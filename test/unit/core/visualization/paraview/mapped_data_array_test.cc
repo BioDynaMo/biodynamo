@@ -26,17 +26,17 @@ namespace bdm {
 
 // -----------------------------------------------------------------------------
 TEST(GetDataMemberForVisTest, NeuriteElement) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
   // Discard the first uid to have a non zero uid for the simulation object
 
   simulation.GetSoUidGenerator()->NewSoUid();
-  using NeuriteElement = experimental::neuroscience::NeuriteElement;
-  using NeuronOrNeurite = experimental::neuroscience::NeuronOrNeurite;
+  using NeuriteElement = neuroscience::NeuriteElement;
+  using NeuronOrNeurite = neuroscience::NeuronOrNeurite;
   NeuriteElement ne;
 
   auto* tclass =
-      TClassTable::GetDict("bdm::experimental::neuroscience::NeuriteElement")();
+      TClassTable::GetDict("bdm::neuroscience::NeuriteElement")();
 
   // diameter
   {

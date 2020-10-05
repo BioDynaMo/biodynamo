@@ -184,7 +184,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
         {"NeuriteElement", {"uid_", "daughter_right_"}});
     param->mapped_data_array_mode_ = mode;
   };
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   auto sim_name = Concat("ExportSimObjectsTest_", num_so, "_", mode);
   auto* sim = new Simulation(sim_name, set_param);
 
@@ -192,7 +192,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
   fs::remove_all(output_dir);
   fs::create_directory(output_dir);
 
-  using NeuriteElement = experimental::neuroscience::NeuriteElement;
+  using NeuriteElement = neuroscience::NeuriteElement;
 
   auto* rm = sim->GetResourceManager();
 
