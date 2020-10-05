@@ -23,7 +23,6 @@
 #include "neuroscience/neuron_or_neurite.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 class NeuriteElement;
@@ -109,7 +108,6 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_NEURON_SOMA_H_

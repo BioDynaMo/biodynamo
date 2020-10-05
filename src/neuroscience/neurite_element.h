@@ -37,7 +37,6 @@
 #include "neuroscience/param.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 /// Class defining a neurite element with cylindrical geometry.
@@ -1420,7 +1419,6 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_NEURITE_ELEMENT_H_

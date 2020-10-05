@@ -3,11 +3,11 @@
      Classes from directory test are not included. -->
 <lcgdict>
   <selection>
-    <class name="bdm::experimental::neuroscience::NeuronSoma" />
-    <class name="bdm::experimental::neuroscience::NeuriteElement" />
-    <class name="bdm::SoPointer<bdm::experimental::neuroscience::NeuriteElement>" />
-    <class name="bdm::SoPointer<bdm::experimental::neuroscience::NeuronOrNeurite>" />
-    <class name="bdm::experimental::neuroscience::Param" />
+    <class name="bdm::neuroscience::NeuronSoma" />
+    <class name="bdm::neuroscience::NeuriteElement" />
+    <class name="bdm::SoPointer<bdm::neuroscience::NeuriteElement>" />
+    <class name="bdm::SoPointer<bdm::neuroscience::NeuronOrNeurite>" />
+    <class name="bdm::neuroscience::Param" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::Simulation" />
     <class name="bdm::ResourceManager" />

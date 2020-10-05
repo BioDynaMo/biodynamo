@@ -69,7 +69,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
 fi
 eval "$(pyenv init -)"
 pyenv shell $PYVERS
-python -m pip install --user numpy
+python -m pip install numpy
 
 # unset any env var to local installed libraries
 unset XRDSYS

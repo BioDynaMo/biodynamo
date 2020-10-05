@@ -94,8 +94,10 @@ void RunTest(OpComputeTarget mode) {
     switch (mode) {
       case kOpenCl:
         param->compute_target_ = "opencl";
+        break;
       case kCuda:
         param->compute_target_ = "cuda";
+        break;
       default:
         return;
     }
@@ -134,8 +136,11 @@ void RunTest(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      // Execute operation
-      (*NewOperation("displacement"))();
+      auto *op = NewOperation("displacement");
+      op->SelectComputeTarget(mode);
+      op->SetUp();
+      (*op)();
+      op->TearDown();
     } else {
       // Run verification on CPU
       DisplacementOpCpuVerify cpu_op;
@@ -183,8 +188,10 @@ void RunTest2(OpComputeTarget mode) {
     switch (mode) {
       case kOpenCl:
         param->compute_target_ = "opencl";
+        break;
       case kCuda:
         param->compute_target_ = "cuda";
+        break;
       default:
         return;
     }
@@ -220,8 +227,11 @@ void RunTest2(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      // Execute operation
-      (*NewOperation("displacement"))();
+      auto *op = NewOperation("displacement");
+      op->SelectComputeTarget(mode);
+      op->SetUp();
+      (*op)();
+      op->TearDown();
     } else {
       // Run verification on CPU
       DisplacementOpCpuVerify cpu_op;

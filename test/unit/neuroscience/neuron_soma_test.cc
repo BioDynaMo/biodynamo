@@ -22,7 +22,6 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
@@ -792,5 +791,4 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
 }
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm

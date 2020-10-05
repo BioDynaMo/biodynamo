@@ -360,8 +360,7 @@ TEST(SchedulerTest, GetOps) {
   sim.GetResourceManager()->push_back(new Cell(10));
   auto* scheduler = sim.GetScheduler();
 
-  std::vector<std::string> def_ops = {"displacement", "diffusion",
-                                      "load balancing"};
+  std::vector<std::string> def_ops = {"displacement", "diffusion"};
 
   for (auto& def_op : def_ops) {
     auto ops = scheduler->GetOps(def_op);
@@ -394,7 +393,7 @@ TEST(SchedulerTest, ScheduleOrder) {
       "update run displacement", "bound space",
       "biology module",          "displacement",
       "discretization",          "distribute run displacement info"};
-  std::vector<std::string> sa_ops = {"diffusion", "load balancing"};
+  std::vector<std::string> sa_ops = {"diffusion"};
 
   int i = 0;
   ASSERT_EQ(so_ops.size(), scheduler->GetListOfScheduledSimObjectOps().size());

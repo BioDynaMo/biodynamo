@@ -48,11 +48,16 @@ class Cell : public SimObject {
   /// Third axis of the local coordinate system.
   static const Double3 kZAxis;
 
-  Cell() : diameter_(1.0), volume_(1.0), density_(1.0) {}
+  Cell() : diameter_(1.0), density_(1.0) { UpdateVolume(); }
+
   explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
-  explicit Cell(const Double3& position) : position_(position), density_{1.0} {}
+
+  explicit Cell(const Double3& position)
+      : position_(position), diameter_(1.0), density_(1.0) {
+    UpdateVolume();
+  }
 
   /// \brief This constructor is used to initialise the values of daughter
   /// 2 for a cell division event.

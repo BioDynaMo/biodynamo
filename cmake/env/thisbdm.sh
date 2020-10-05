@@ -147,11 +147,11 @@ _source_thisbdm()
   fi
 
   # check if any config files naively source thisbdm
-  for f in ${config_files[@]}; do
+  for f in "${config_files[@]}"; do
     if [ -f "$f" ]; then
-      local source_pattern='s/^\s*(\.\s+|source).*thisbdm\.(fish|sh)\s*(#IGNORE)?$/\3/mg;t;d'
+      local source_pattern='^\s*(\.|source)\s+.*thisbdm\.(fish|sh).*'
       # one may append #IGNORE if match is a false positive, or they really want to keep that line
-      local nr_matches=$(sed -E "$source_pattern" $f | grep -v "#IGNORE" | wc -l)
+      local nr_matches=$(cat "$f" | grep -E "$source_pattern" | grep -vc '.*#IGNORE$')
       if [ "$nr_matches" -gt '0' ]; then
         _bdm_warn "[WARN] You may have sourced thisbdm in '$f'. Please check as this is not advised."
       fi
@@ -193,13 +193,9 @@ _source_thisbdm()
   # Clear the env from previously set PyEnv paths.
   if [ -n "${old_bdmsys}" ] ; then
     if [ -n "${PATH}" ]; then
-      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/bin"
+      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/bin"      
       PATH=$_newpath
-      if [ -n "${PYTHONUSERBASE}" ]; then
-        _drop_bdm_from_path "$PATH" "$PYTHONUSERBASE/.local/bin"
-      else
-        _drop_bdm_from_path "$PATH" "$HOME/.local/bin"
-      fi
+      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/versions/@pythonvers@/bin"
       PATH=$_newpath
     fi
 
@@ -316,12 +312,8 @@ _source_thisbdm()
   eval "$(pyenv init -)" || return 1
   pyenv shell @pythonvers@ || return 1
 
-  # Location of jupyter executable (installed with `pip install --user` command)
-  if [ -n "${PYTHONUSERBASE}" ]; then
-    export PATH="$PYTHONUSERBASE/.local/bin:$PATH"
-  else
-    export PATH="$HOME/.local/bin:$PATH"
-  fi
+  # Location of jupyter executable (installed with `pip install` command)
+  export PATH="$PYENV_ROOT/versions/@pythonvers@/bin:$PATH"
   export LD_LIBRARY_PATH="$PYENV_ROOT/versions/@pythonvers@/lib":$LD_LIBRARY_PATH
   ########
 

@@ -12,17 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef NEUROSCIENCE_MODULE_H_
-#define NEUROSCIENCE_MODULE_H_
+#include "core/operation/reduction_op.h"
+#include "core/operation/operation_registry.h"
 
 namespace bdm {
-namespace neuroscience {
 
-/// Initializes the neuroscience module.
-/// NB: Must be called before `bdm::Simulation` is created!
-void InitModule();
+BDM_REGISTER_TEMPLATE_OP(ReductionOp, int, "ReductionOpInt", kCpu);
+BDM_REGISTER_TEMPLATE_OP(ReductionOp, double, "ReductionOpDouble", kCpu);
 
-}  // namespace neuroscience
 }  // namespace bdm
-
-#endif  // NEUROSCIENCE_MODULE_H_
