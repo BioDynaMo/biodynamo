@@ -53,8 +53,8 @@ class UniformGridEnvironment : public Environment {
   // DisplacementOpCuda needs access to some UniformGridEnvironment private
   // members to reconstruct
   // the grid on GPU (same for DisplacementOpOpenCL)
-  friend class DisplacementOpCuda;
-  friend class DisplacementOpOpenCL;
+  friend struct DisplacementOpCuda;
+  friend struct DisplacementOpOpenCL;
 
  public:
   /// A single unit cube of the grid
@@ -768,12 +768,6 @@ class UniformGridEnvironment : public Environment {
   }
 
   void RoundOffGridDimensions(const std::array<double, 6>& grid_dimensions) {
-    assert(grid_dimensions_[0] > -9.999999999);
-    assert(grid_dimensions_[2] > -9.999999999);
-    assert(grid_dimensions_[4] > -9.999999999);
-    assert(grid_dimensions_[1] < 80);
-    assert(grid_dimensions_[3] < 80);
-    assert(grid_dimensions_[5] < 80);
     grid_dimensions_[0] = floor(grid_dimensions[0]);
     grid_dimensions_[2] = floor(grid_dimensions[2]);
     grid_dimensions_[4] = floor(grid_dimensions[4]);

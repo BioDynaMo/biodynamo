@@ -21,7 +21,7 @@
 
 namespace bdm {
 
-using experimental::neuroscience::NeuriteElement;
+using neuroscience::NeuriteElement;
 
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping neighbors
@@ -91,7 +91,7 @@ TEST(DefaultForce, AllAtSamePositionSphere) {
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping cylinder
 TEST(DISABLED_DefaultForce, GeneralSphereCylinder) {
-  // experimental::neuroscience::InitModule();
+  // neuroscience::InitModule();
   // Simulation simulation(TEST_NAME);
 
   // auto* param = Simulation::GetActive()->GetParam();
@@ -120,7 +120,7 @@ TEST(DISABLED_DefaultForce, GeneralSphereCylinder) {
 }
 
 TEST(DISABLED_DefaultForce, GeneralCylinder) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
   NeuriteElement cylinder1;
@@ -155,7 +155,7 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 }
 
 TEST(DefaultForce, CylinderIntersectingAxis) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   // simulation object required for random number generator
   Simulation simulation(TEST_NAME);
 
@@ -190,7 +190,7 @@ TEST(DefaultForce, CylinderIntersectingAxis) {
 }
 
 TEST(DefaultForce, NotTouchingParallelCylinders) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
   NeuriteElement cylinder1;
@@ -228,7 +228,7 @@ TEST(DefaultForce, NotTouchingParallelCylinders) {
 // sphere-cylinder interaction is done at the center and in the horizontal
 // orientation of the cylinder
 TEST(DefaultForce, SphereSmallCylinderHorizontal) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});
@@ -257,7 +257,7 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 // sphere-cylinder interaction is done vertically at the tip of the cylinder
 // (mass location)
 TEST(DefaultForce, SphereSmallCylinderVertical) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});
@@ -284,7 +284,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical) {
 
 // opposit case of Vertical: cylinder is below the cell
 TEST(DefaultForce, SphereSmallCylinderVertical2) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
   // auto* rm = simulation.GetResourceManager();
 
@@ -316,7 +316,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical2) {
 // sphere-cylinder interaction is done at the center and in the horizontal
 // orientation of the cylinder
 TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});
@@ -348,7 +348,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
 // sphere-cylinder interaction is done at the proximal end and in the horizontal
 // orientation of the cylinder
 TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});
@@ -380,7 +380,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
 // sphere-cylinder interaction is done at the distal point and in the horizontal
 // orientation of the cylinder
 TEST(DefaultForce, SphereLongCylinderHorizontalpD) {
-  experimental::neuroscience::InitModule();
+  neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
   Cell sphere({0, 0, 0});

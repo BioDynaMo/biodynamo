@@ -19,9 +19,13 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <experimental/filesystem>
+#include <fstream>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/environment/environment.h"
@@ -34,15 +38,19 @@
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/sim_object/so_uid_generator.h"
+#include "core/util/filesystem.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
 #include "core/util/string.h"
 #include "core/util/thread_info.h"
 #include "core/util/timing.h"
 #include "core/visualization/root/adaptor.h"
+#include "memory_usage.h"
 #include "version.h"
 
 #include <TEnv.h>
+
+namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 
@@ -58,52 +66,49 @@ Simulation* Simulation::GetActive() { return active_; }
 Simulation::Simulation(TRootIOCtor* p) {}
 
 Simulation::Simulation(int argc, const char** argv,
-                       const std::string& config_file)
-    : Simulation(
-          argc, argv, [](auto* param) {}, config_file) {}
+                       const std::vector<std::string>& config_files)
+    : Simulation(argc, argv, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(const std::string& simulation_name,
-                       const std::string& config_file)
-    : Simulation(
-          simulation_name, [](auto* param) {}, config_file) {}
+                       const std::vector<std::string>& config_files)
+    : Simulation(simulation_name, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(CommandLineOptions* clo,
-                       const std::string& config_file) {
-  Initialize(
-      clo, [](auto* param) {}, config_file);
+                       const std::vector<std::string>& config_files) {
+  Initialize(clo, [](auto* param) {}, config_files);
 }
 
 Simulation::Simulation(CommandLineOptions* clo,
                        const std::function<void(Param*)>& set_param,
-                       const std::string& config_file) {
-  Initialize(clo, set_param, config_file);
+                       const std::vector<std::string>& config_files) {
+  Initialize(clo, set_param, config_files);
 }
 
 Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params) {
   auto options = CommandLineOptions(argc, argv);
   Initialize(
-      &options, [](auto* param) {}, "", xml_params);
+      &options, [](auto* param) {}, {}, xml_params);
 }
 
 Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params,
                        const std::function<void(Param*)>& set_param) {
   auto options = CommandLineOptions(argc, argv);
-  Initialize(&options, set_param, "", xml_params);
+  Initialize(&options, set_param, {}, xml_params);
 }
 
 Simulation::Simulation(int argc, const char** argv,
                        const std::function<void(Param*)>& set_param,
-                       const std::string& config_file) {
+                       const std::vector<std::string>& config_files) {
   auto options = CommandLineOptions(argc, argv);
-  Initialize(&options, set_param, config_file);
+  Initialize(&options, set_param, config_files);
 }
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::function<void(Param*)>& set_param,
-                       const std::string& config_file) {
+                       const std::vector<std::string>& config_files) {
   const char* argv[1] = {simulation_name.c_str()};
   auto options = CommandLineOptions(1, argv);
-  Initialize(&options, set_param, config_file);
+  Initialize(&options, set_param, config_files);
 }
 
 void Simulation::Restore(Simulation&& restored) {
@@ -133,30 +138,42 @@ void Simulation::Restore(Simulation&& restored) {
   InitializeOutputDir();
 }
 
-inline std::ostream& operator<<(std::ostream& os, Simulation& sim) {
+std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   std::vector<std::string> dg_names;
   std::vector<int> dg_resolutions;
   std::vector<std::array<int32_t, 3>> dg_dimensions;
+  std::vector<uint64_t> dg_voxels;
 
-  sim.GetResourceManager()->ApplyOnAllDiffusionGrids([&](auto* dg) {
+  sim.rm_->ApplyOnAllDiffusionGrids([&](auto* dg) {
     dg_names.push_back(dg->GetSubstanceName());
     dg_resolutions.push_back(dg->GetResolution());
     dg_dimensions.push_back(dg->GetGridSize());
+    dg_voxels.push_back(dg->GetNumBoxes());
   });
 
   os << std::endl;
 
   os << "***********************************************" << std::endl;
+  os << "***********************************************" << std::endl;
+  os << "\033[1mSimulation Metadata:\033[0m" << std::endl;
+  os << "***********************************************" << std::endl;
   os << std::endl;
-  os << "\033[1mSimulation name\t\t\t: \033[0m" << sim.GetUniqueName()
+  os << "\033[1mGeneral\033[0m" << std::endl;
+  if (sim.command_line_parameter_str_ != "") {
+    os << "Command\t\t\t\t: " << sim.command_line_parameter_str_ << std::endl;
+  }
+  os << "Simulation name\t\t\t: " << sim.GetUniqueName() << std::endl;
+  os << "Total simulation runtime\t: " << (sim.dtor_ts_ - sim.ctor_ts_) << " ms"
      << std::endl;
-  os << "\033[1mNumber of iterations executed\t: \033[0m"
-     << sim.GetScheduler()->GetSimulatedSteps() << std::endl;
-  os << "\033[1mNumber of simulation objects\t: \033[0m"
-     << sim.GetResourceManager()->GetNumSimObjects() << std::endl;
+  os << "Peak memory usage (MB)\t\t: " << (getPeakRSS() / 1048576.0)
+     << std::endl;
+  os << "Number of iterations executed\t: "
+     << sim.scheduler_->GetSimulatedSteps() << std::endl;
+  os << "Number of simulation objects\t: " << sim.rm_->GetNumSimObjects()
+     << std::endl;
 
   if (dg_names.size() != 0) {
-    os << "\033[1mDiffusion grids\033[0m" << std::endl;
+    os << "Diffusion grids" << std::endl;
     for (size_t i = 0; i < dg_names.size(); ++i) {
       os << "  " << dg_names[i] << ":" << std::endl;
       auto& dim = dg_dimensions[i];
@@ -164,19 +181,20 @@ inline std::ostream& operator<<(std::ostream& os, Simulation& sim) {
          << "Resolution\t\t: " << dg_resolutions[i] << std::endl;
       os << "\t"
          << "Size\t\t\t: " << dim[0] << " x " << dim[1] << " x " << dim[2]
-         << std::endl;
+         << std::endl
+         << "\tVoxels\t\t\t: " << dg_voxels[i] << std::endl;
     }
   }
 
-  os << "\033[1mOutput directory\t\t: \033[0m" << sim.GetOutputDir()
-     << std::endl;
+  os << "Output directory\t\t: " << sim.GetOutputDir() << std::endl;
   os << "  size\t\t\t\t: "
      << gSystem->GetFromPipe(
             Concat("du -sh ", sim.GetOutputDir(), " | cut -f1").c_str())
      << std::endl;
+  os << "BioDynaMo version:\t\t: " << Version::String() << std::endl;
   os << std::endl;
   os << "***********************************************" << std::endl;
-  os << *(sim.GetScheduler()->GetOpTimes()) << std::endl;
+  os << *(sim.scheduler_->GetOpTimes()) << std::endl;
   os << "***********************************************" << std::endl;
   os << std::endl;
   os << "\033[1mThread Info\033[0m" << std::endl;
@@ -184,16 +202,29 @@ inline std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   os << std::endl;
   os << "***********************************************" << std::endl;
   os << std::endl;
-  os << *(sim.GetResourceManager());
+  os << *(sim.rm_);
   os << std::endl;
+  os << "***********************************************" << std::endl;
+  os << std::endl;
+  os << "\033[1mParameters\033[0m" << std::endl;
+  os << sim.param_->ToJsonString();
+  os << std::endl;
+  os << "***********************************************" << std::endl;
   os << "***********************************************" << std::endl;
 
   return os;
 }
 
 Simulation::~Simulation() {
+  dtor_ts_ = bdm::Timing::Timestamp();
+
   if (param_ != nullptr && param_->statistics_) {
-    std::cout << *this << std::endl;
+    std::stringstream sstr;
+    sstr << *this << std::endl;
+    std::cout << sstr.str() << std::endl;
+    // write to file
+    std::ofstream ofs(Concat(output_dir_, "/metadata"));
+    ofs << sstr.str() << std::endl;
   }
 
   if (mem_mgr_) {
@@ -280,16 +311,16 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
 
 void Simulation::Initialize(CommandLineOptions* clo,
                             const std::function<void(Param*)>& set_param,
-                            const std::string& config_file,
+                            const std::vector<std::string>& config_files,
                             XMLParams* xml_params) {
-  id_ = counter_++;
+  ctor_ts_ = bdm::Timing::Timestamp();
   Activate();
   if (!clo) {
     Log::Fatal("Simulation::Initialize",
                "CommandLineOptions argument was a nullptr!");
   }
   InitializeUniqueName(clo->GetSimulationName());
-  InitializeRuntimeParams(clo, set_param, config_file, xml_params);
+  InitializeRuntimeParams(clo, set_param, config_files, xml_params);
   InitializeOutputDir();
   InitializeMembers();
 }
@@ -309,6 +340,7 @@ void Simulation::InitializeMembers() {
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
+    random_[i]->SetSeed(param_->random_seed_ * (i + 1));
   }
   exec_ctxt_.resize(omp_get_max_threads());
   auto map =
@@ -324,10 +356,14 @@ void Simulation::InitializeMembers() {
 
 void Simulation::InitializeRuntimeParams(
     CommandLineOptions* clo, const std::function<void(Param*)>& set_param,
-    const std::string& ctor_config, XMLParams* xml_params) {
+    const std::vector<std::string>& ctor_config_files, XMLParams* xml_params) {
   // Renew thread info just in case it has been initialised as static and a
   // simulation calls e.g. `omp_set_num_threads()` within main.
   ThreadInfo::GetInstance()->Renew();
+
+  std::stringstream sstr;
+  sstr << (*clo);
+  command_line_parameter_str_ = sstr.str();
 
   param_ = new Param();
 
@@ -349,7 +385,15 @@ void Simulation::InitializeRuntimeParams(
     read_env = true;
   }
 
-  LoadConfigFile(ctor_config, clo->Get<std::string>("config"));
+  LoadConfigFiles(ctor_config_files,
+                  clo->Get<std::vector<std::string>>("config"));
+  auto inline_configs = clo->Get<std::vector<std::string>>("inline-config");
+  if (inline_configs.size()) {
+    for (auto& inline_config : inline_configs) {
+      param_->MergeJsonPatch(inline_config);
+    }
+  }
+
   if (clo->Get<std::string>("backup") != "") {
     param_->backup_file_ = clo->Get<std::string>("backup");
   }
@@ -394,37 +438,73 @@ void Simulation::InitializeRuntimeParams(
             Version::String());
 }
 
-void Simulation::LoadConfigFile(const std::string& ctor_config,
-                                const std::string& cli_config) {
-  constexpr auto kConfigFile = "bdm.toml";
-  constexpr auto kConfigFileParentDir = "../bdm.toml";
-  if (ctor_config != "") {
-    if (FileExists(ctor_config)) {
-      auto config = cpptoml::parse_file(ctor_config);
-      param_->AssignFromConfig(config);
-    } else {
-      Log::Fatal("Simulation::LoadConfigFile", "The config file ", ctor_config,
-                 " specified in the constructor of bdm::Simulation "
-                 "could not be found.");
+void Simulation::LoadConfigFiles(const std::vector<std::string>& ctor_configs,
+                                 const std::vector<std::string>& cli_configs) {
+  constexpr auto kTomlConfigFile = "bdm.toml";
+  constexpr auto kJsonConfigFile = "bdm.json";
+  constexpr auto kTomlConfigFileParentDir = "../bdm.toml";
+  constexpr auto kJsonConfigFileParentDir = "../bdm.json";
+  // find config file
+  std::vector<std::string> configs = {};
+  if (ctor_configs.size()) {
+    for (auto& ctor_config : ctor_configs) {
+      if (FileExists(ctor_config)) {
+        configs.push_back(ctor_config);
+      } else {
+        Log::Fatal("Simulation::LoadConfigFiles", "The config file ",
+                   ctor_config,
+                   " specified in the constructor of bdm::Simulation "
+                   "could not be found.");
+      }
     }
-  } else if (cli_config != "") {
-    if (FileExists(cli_config)) {
-      auto config = cpptoml::parse_file(cli_config);
-      param_->AssignFromConfig(config);
-    } else {
-      Log::Fatal("Simulation::LoadConfigFile", "The config file ", cli_config,
-                 " specified as command line argument "
-                 "could not be found.");
+  }
+  if (cli_configs.size()) {
+    for (auto& cli_config : cli_configs) {
+      if (FileExists(cli_config)) {
+        configs.push_back(cli_config);
+      } else {
+        Log::Fatal("Simulation::LoadConfigFiles", "The config file ",
+                   cli_config,
+                   " specified as command line argument "
+                   "could not be found.");
+      }
     }
-  } else if (FileExists(kConfigFile)) {
-    auto config = cpptoml::parse_file(kConfigFile);
-    param_->AssignFromConfig(config);
-  } else if (FileExists(kConfigFileParentDir)) {
-    auto config = cpptoml::parse_file(kConfigFileParentDir);
-    param_->AssignFromConfig(config);
+  }
+
+  // no config file specified in ctor or cli -> look for default
+  if (!configs.size()) {
+    if (FileExists(kTomlConfigFile)) {
+      configs.push_back(kTomlConfigFile);
+    } else if (FileExists(kTomlConfigFileParentDir)) {
+      configs.push_back(kTomlConfigFileParentDir);
+    } else if (FileExists(kJsonConfigFile)) {
+      configs.push_back(kJsonConfigFile);
+    } else if (FileExists(kJsonConfigFileParentDir)) {
+      configs.push_back(kJsonConfigFileParentDir);
+    }
+  }
+
+  // load config files
+  if (configs.size()) {
+    for (auto& config : configs) {
+      if (EndsWith(config, ".toml")) {
+        auto toml = cpptoml::parse_file(config);
+        param_->AssignFromConfig(toml);
+      } else if (EndsWith(config, ".json")) {
+        std::ifstream ifs(config);
+        std::stringstream buffer;
+        buffer << ifs.rdbuf();
+        param_->MergeJsonPatch(buffer.str());
+      }
+      Log::Info("Simulation::LoadConfigFiles",
+                "Processed config file: ", config);
+    }
   } else {
-    Log::Warning("Simulation::LoadConfigFile", "Config file ", kConfigFile,
-                 " not found in `.` or `..` directory.");
+    Log::Info("Simulation::LoadConfigFiles", "Default config file ",
+              kTomlConfigFile, " or ", kJsonConfigFile,
+              " not found in `.` or `..` directory. No other config file was "
+              "specified as command line parameter or passed to the "
+              "constructor of bdm::Simulation.");
   }
 }
 
@@ -447,6 +527,19 @@ void Simulation::InitializeOutputDir() {
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
     Log::Fatal("Simulation::InitializeOutputDir",
                "Failed to make output directory ", output_dir_);
+  }
+  if (!fs::is_empty(output_dir_)) {
+    if (param_->remove_output_dir_contents_) {
+      RemoveDirectoryContents(output_dir_);
+    } else {
+      Log::Warning(
+          "Simulation::InitializeOutputDir", "Ouput dir (", output_dir_,
+          ") is not empty. Files will be overriden. This could cause "
+          "inconsistent state of (e.g. visualization files). Consider removing "
+          "all contents "
+          "prior to running a simulation. Have a look at "
+          "Param::remove_output_dir_contents_ to remove files automatically.");
+    }
   }
 }
 

@@ -16,6 +16,7 @@
 #define CORE_PARAM_PARAM_H_
 
 #include <cinttypes>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -40,6 +41,18 @@ struct Param {
 
   void Restore(Param&& other);
 
+  /// Returns a Json representation of this parameter and all
+  /// ModuleParameter.
+  /// The modules_ data member has been flattened to simplify
+  /// JSON merge patches (https://tools.ietf.org/html/rfc7386).
+  std::string ToJsonString() const;
+
+  /// Applies a JSON merge patch (https://tools.ietf.org/html/rfc7386)
+  /// to this parameter and ModuleParameter.
+  /// The modules_ data member must be flattened. See output of
+  /// `ToJsonString()`.
+  void MergeJsonPatch(const std::string& patch);
+
   template <typename TModuleParam>
   const TModuleParam* GetModuleParam() const {
     assert(modules_.find(TModuleParam::kUid) != modules_.end() &&
@@ -56,6 +69,16 @@ struct Param {
   }
 
   // simulation values ---------------------------------------------------------
+  /// Set random number seed.\n
+  /// The pseudo random number generator (prng) of each thread will be
+  /// initialized as follows:
+  /// `prng[tid].SetSeed(random_seed_ * (tid + 1));`\n
+  /// Default value: `4357`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     random_seed = 4357
+  uint64_t random_seed_ = 4357;
 
   /// Variable which specifies method using for solving differential equation
   /// {"Euler", "RK4"}.
@@ -78,6 +101,11 @@ struct Param {
   ///     [simulation]
   ///     ouput_dir = "output"
   std::string output_dir_ = "output";
+
+  /// If set to true, BioDynaMo will automatically delete all contents
+  /// inside `Param::output_dir_` at the beginning of the simulation.
+  /// Use with caution, especially in combination with `Param::output_dir_`
+  bool remove_output_dir_contents_ = false;
 
   /// Backup file name for full simulation backups\n
   /// Path is relative to working directory.\n
@@ -279,8 +307,8 @@ struct Param {
   ///       # The former block can be repeated for further simulation objects
   ///       [[visualize_sim_object]]
   ///       name = "Neurite"
-  std::unordered_map<std::string, std::set<std::string>>
-      visualize_sim_objects_;  //!
+  std::map<std::string, std::set<std::string>>
+      visualize_sim_objects_;  ///<  JSON_object
 
   struct VisualizeDiffusion {
     std::string name_;
@@ -421,6 +449,8 @@ struct Param {
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n
+  /// If set to true it prints simulation data at the end of the simulation
+  /// to std::cout and a file.\n
   /// Default Value: `false`\n
   /// TOML config file:
   ///
@@ -486,12 +516,10 @@ struct Param {
   ///     preferred_gpu = 0
   int preferred_gpu_ = 0;
 
- protected:
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
-  friend class Simulation;
   static std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
       registered_modules_;
   std::unordered_map<ModuleParamUid, ModuleParam*> modules_;

@@ -151,11 +151,11 @@ if(NOT OPENCL_FOUND)
     endforeach()
     unset(CMAKE_REQUIRED_INCLUDES)
 
-    if(EXISTS ${OPENCL_INCLUDE_DIR}/${_OPENCL_INCLUDE_BASE}/cl.hpp)
+    if(EXISTS ${OPENCL_INCLUDE_DIR}/${_OPENCL_INCLUDE_BASE}/cl2.hpp)
       set(OPENCL_HAS_CXX TRUE)
 
       # Interrogate the C++ header for seperate version information
-      file(STRINGS ${OPENCL_INCLUDE_DIR}/${_OPENCL_INCLUDE_BASE}/cl.hpp
+      file(STRINGS ${OPENCL_INCLUDE_DIR}/${_OPENCL_INCLUDE_BASE}/cl2.hpp
         _OPENCL_VER REGEX "version 1\\.[0-9]"
       )
       string(REGEX MATCH "1\\.([0-9])" OPENCL_CXX_VERSION_STRING

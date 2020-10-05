@@ -40,36 +40,36 @@ function _drop_from_var
 end
 
 function _bdm_err
-    $_bdm_silent; or echo -e "\e[31m$argv\e[0m"
+    if not test "$BDM_THISBDM_SILENT" = true
+        echo -e "\e[91m$argv\e[0m"
+    end
+end
+
+function _bdm_warn
+    if not test "$BDM_THISBDM_QUIET" = true
+        echo -e "\e[93m$argv\e[0m"
+    end
 end
 
 function _bdm_ok
-    $_bdm_quiet; or echo -e "\e[32m$argv\e[0m"
+    if not test "$BDM_THISBDM_QUIET" = true
+        echo -e "\e[92m$argv\e[0m"
+    end
 end
 
 function _thisbdm_cleanup
   functions -e source_thisbdm
   functions -e _drop_from_var
   functions -e _bdm_err
+  functions -e _bdm_warn
   functions -e _bdm_ok
-  set -e _bdm_silent
-  set -e _bdm_quiet
   functions -e _thisbdm_cleanup
 end
 
 function source_thisbdm
-    set -g _bdm_quiet false
-    set -g _bdm_silent false
-    for option in $argv
-        switch "$option"
-            case -q --quiet
-                set _bdm_quiet true
-            case -Q --silent
-                set _bdm_quiet true
-                set _bdm_silent true
-            case \*
-                return 1
-        end
+    if test "$BDM_THISBDM_SILENT" = true
+        # silent->quiet
+        set -gx BDM_THISBDM_QUIET true
     end
 
     set -l old_bdmsys
@@ -80,6 +80,32 @@ function source_thisbdm
     set -l curr_filename (status --current-filename)
     set -gx BDMSYS (fish -c "cd (dirname $curr_filename)/..; and pwd"); or return 1
 
+    if test -n "$old_bdmsys"
+        if test "$old_bdmsys" = "$BDMSYS"
+            _bdm_warn "[WARN] You've already sourced this same 'thisbdm' in your current shell session."
+        else
+            _bdm_warn "[WARN] You've already sourced another 'thisbdm' in your current shell session."
+            _bdm_warn "       this BDM install='$BDMSYS' -- prev. BDM install='$old_bdmsys'"
+        end
+        _bdm_warn ""
+        _bdm_warn "       You may encounter undefined behavior. It is recommended that you start a new"
+        _bdm_warn "       shell session, or otherwise check if you automatically source 'thisbdm' in one"
+        _bdm_warn "       of your shell configuration files (e.g., config.fish)--this is no longer advised."
+    end
+
+    # check if any config files naively source thisbdm
+    set -l config_files "$__fish_config_dir/config.fish"
+    for f in $config_files
+       if test -f "$f"
+            set -l source_pattern '^\s*(\.|source)\s+.*thisbdm\.(fish|sh).*'
+            # one may append #IGNORE if match is a false positive, or they really want to keep that line
+            set -l nr_matches (cat "$f" | grep -E "$source_pattern" | grep -vc '.*#IGNORE$')
+            if test "$nr_matches" -gt '0'
+                _bdm_warn "[WARN] You may have sourced thisbdm in '$f'. Please check as this is not advised."
+            end
+        end
+    end
+
     # Clear the env from previously set BioDynaMo paths.
     if test -n "$old_bdmsys"
         _drop_from_var PATH "$old_bdmsys/bin"
@@ -88,9 +114,9 @@ function source_thisbdm
         _drop_from_var SHLIB_PATH "$old_bdmsys/lib"
         _drop_from_var MANPATH "$old_bdmsys/man"
         _drop_from_var CMAKE_PREFIX_PATH "$old_bdmsys"
-	end
-
-	if test -n "$old_bdmsys"
+    end
+    
+    if test -n "$old_bdmsys"
         _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-5.8"
         _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
         _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/biodynamo/lib/pv_plugin"
@@ -101,7 +127,7 @@ function source_thisbdm
         _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
         _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
         _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
-	end
+    end
     #########
 
     set -l default_manpath
@@ -163,12 +189,8 @@ function source_thisbdm
     pyenv init - | source; or return 1
     pyenv shell @pythonvers@; or return 1
 
-    # Location of jupyter executable (installed with `pip install --user` command)
-    if test -n "$PYTHONUSERBASE"
-        set -pgx PATH "$PYTHONUSERBASE/.local/bin"
-    else
-        set -pgx PATH "$HOME/.local/bin"
-    end
+    # Location of jupyter executable (installed with `pip install` command)
+    set -pgx PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
     set -pgx LD_LIBRARY_PATH "$PYENV_ROOT/versions/@pythonvers@/lib"
     ########
 
@@ -180,31 +202,40 @@ function source_thisbdm
     end
     ########
 
-    #### ROOT Specific Configurations ####
-    set -l orvers
-    set -l crvers
+    #### ROOT Specific Configurations ####    
+    if test -z "$BDM_CUSTOM_ROOT"
+        if test -z "$ROOTSYS"
+            set -gx BDM_CUSTOM_ROOT false
+        else
+            set -gx BDM_CUSTOM_ROOT true
+        end
+    end
 
-    if test -z "$BDM_ROOT_DIR"; and test -z "$ROOTSYS"
+    if  begin; 
+            test -z "$BDM_ROOT_DIR"; and test -z "$ROOTSYS";
+        end; or test "$BDM_CUSTOM_ROOT" = false
         set -gx BDM_ROOT_DIR "$BDMSYS/third_party/root"
-        if not test -d "$BDM_ROOT_DIR"
-            _bdm_err "[ERR] We are unable to source ROOT! Please make sure ROOT is installed on your system!"
-            _bdm_err "      You can specify manually its location by executing 'set -gx BDM_ROOT_DIR path/to/root'"
-            _bdm_err "      before running cmake."
-            return 1
+        set -gx BDM_CUSTOM_ROOT false
+    end
+
+    if test "$BDM_CUSTOM_ROOT" = true; and test -n "$ROOTSYS"
+        _bdm_warn "[INFO] Custom ROOT 'ROOTSYS=$ROOTSYS'"
+        set orvers "@rootvers@"
+        set crvers ("$ROOTSYS"/bin/root-config --version; or echo '')
+        if test "$crvers" = "$orvers"
+            set -gx BDM_ROOT_DIR "$ROOTSYS"
+        else
+            _bdm_warn "[WARN] ROOTSYS points to ROOT version '$crvers', while BDM was built with version '$orvers'."
+            _bdm_warn "       You may encounter errors as compatibility is not guaranteed."
+            # no longer fatal as user probably wants to override this for a reason.
         end
-    else
-        # ROOTSYS has precedence over the BDM_ROOT_DIR custom configuration
-        if test -n "$ROOTSYS"
-            set orvers "@rootvers@"
-            set crvers ("$ROOTSYS"/bin/root-config --version)
-            if test "$crvers" = "$orvers"
-                set -gx BDM_ROOT_DIR "$ROOTSYS"
-            else
-                _bdm_err "[ERR] ROOTSYS points to ROOT version $crvers, while BDM was build with version $orvers."
-                _bdm_err "      Make sure that ROOTSYS points to the right version of ROOT."
-                return 1
-            end
-        end
+    end
+
+    if not test -d "$BDM_ROOT_DIR"
+        _bdm_err "[ERR] We are unable to source ROOT! Please make sure ROOT is installed on your system!"
+        _bdm_err "      You can manually specify its location by executing 'export BDM_ROOT_DIR=path/to/root'"
+        _bdm_err "      before running cmake."
+        return 1
     end
 
     function __bdm_root
@@ -217,14 +248,25 @@ function source_thisbdm
     #### ParaView Specific Configurations ####
     set -l with_paraview @with_paraview@
     if test "$with_paraview" = 'ON'
-        if test -z "$ParaView_DIR"
-            set -gx ParaView_DIR $BDMSYS/third_party/paraview
-            if not test -d "$ParaView_DIR"
-                _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed in your system!"
-                _bdm_err "      You can specify manually its location by executing 'set -gx ParaView_DIR path/to/paraview'"
-                _bdm_err "      together with 'set -gx Qt5_DIR path/to/qt' before running cmake."
-                return 1
+        if test -z "$BDM_CUSTOM_PV"
+            if test -z "$ParaView_DIR"
+                set -gx BDM_CUSTOM_PV false
+            else
+                set -gx BDM_CUSTOM_PV true
             end
+        end
+    
+        if test "$BDM_CUSTOM_PV" = false; or test -z "$ParaView_DIR"
+            set -gx ParaView_DIR "$BDMSYS/third_party/paraview"
+        else
+       _    bdm_warn "[INFO] Custom ParaView 'ParaView_DIR=$ParaView_DIR'"
+        end
+     
+        if not test -d "$ParaView_DIR"
+            _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed on your system!"
+            _bdm_err "      You can manually specify its location by executing 'export ParaView_DIR=path/to/paraview'"
+            _bdm_err "      together with 'export Qt5_DIR=path/to/qt' before running cmake."
+            return 1
         end
 
         if test -z "$ParaView_LIB_DIR"
@@ -260,14 +302,25 @@ function source_thisbdm
         ########
 
         #### Qt5 Specific Configurations ####
-        if test -z "$Qt5_DIR"
-            set -gx Qt5_DIR $BDMSYS/third_party/qt
-            if not test -d "$Qt5_DIR"
-                _bdm_err "[ERR] We are unable to find Qt! Please make sure it is installed in your system!"
-                _bdm_err "      You can specify manually its location by executing 'set -gx Qt5_DIR path/to/qt'"
-                _bdm_err "      together with 'set -gx ParaView_DIR path/to/paraview' before running cmake."
-                return 1
+        if test -z "$BDM_CUSTOM_QT"
+            if test -z "$Qt5_DIR"
+                set -gx BDM_CUSTOM_QT false
+            else
+                set -gx BDM_CUSTOM_QT true
             end
+        end
+        
+        if test "$BDM_CUSTOM_QT" = false; or test -z "$Qt5_DIR"
+            set -gx Qt5_DIR "$BDMSYS/third_party/qt"
+        else
+            _bdm_warn "[INFO] Custom Qt5 'Qt5_DIR=$QT5_DIR'"
+        end
+
+        if not test -d "$Qt5_DIR"
+            _bdm_err "[ERR] We are unable to find Qt5! Please make sure it is installed on your system!"
+            _bdm_err "      You can manually specify its location by executing 'export Qt5_DIR=path/to/qt'"
+            _bdm_err "      together with 'export ParaView_DIR=path/to/paraview' before running cmake."
+            return 1
         end
 
         if test -z "$QT_QPA_PLATFORM_PLUGIN_PATH"
@@ -342,7 +395,7 @@ function source_thisbdm
     __bdm_fish_functions; or return 1
 
     ### Environment Indicator ###
-    if not $_bdm_quiet
+    if not test "$BDM_THISBDM_QUIET" = true
         set -gx __bdm_major_minor (bdm-config --version | sed -n  '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
         if not type -qt __bdm_fish_prompt_original
             functions --copy fish_prompt __bdm_fish_prompt_original
@@ -352,12 +405,13 @@ function source_thisbdm
             echo "[bdm-$__bdm_major_minor] "(__bdm_fish_prompt_original)
         end
     end
+
+    return 0
 end
 
-if source_thisbdm $argv
+if source_thisbdm
     _bdm_ok "[OK] You have successfully sourced BioDynaMo's environment."
-    _thisbdm_cleanup
 else
     _bdm_err "[ERR] BioDynaMo's environment could not be sourced."
-    _thisbdm_cleanup
 end
+_thisbdm_cleanup

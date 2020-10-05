@@ -108,4 +108,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      if: always() # Pick up events even if the job fails or is canceled
+      # Notify Slack step should run when the following holds true:
+      #   * One of the previous steps 1) succeeded, 2) failed, or 3) was cancelled
+      #   * This workflow is triggered from our base repository (i.e. forked PRs don't
+      #     have the right to push Slack message to our channel)
+      if: ${{ ( failure() || success() || cancelled() ) && ( github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name ) }}

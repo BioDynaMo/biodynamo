@@ -15,6 +15,7 @@
 #ifndef CORE_PARAM_MODULE_PARAM_H_
 #define CORE_PARAM_MODULE_PARAM_H_
 
+#include <memory>
 #include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
 
@@ -48,13 +49,26 @@ struct ModuleParam {
   virtual ModuleParamUid GetUid() const = 0;
 
  protected:
-  /// Assign values from config file to variables
-  virtual void AssignFromConfig(const std::shared_ptr<cpptoml::table>&) = 0;
+  /// Assign values from a toml config file.\n
+  /// Can be ommited if toml file support is not required.
+  virtual void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
   friend struct Param;
   BDM_CLASS_DEF(ModuleParam, 1);
 };
+
+#define BDM_MODULE_PARAM_HEADER(name, version_id)                   \
+  static const ModuleParamUid kUid;                                 \
+  name() {}                                                         \
+  virtual ~name() {}                                                \
+  ModuleParam* GetCopy() const override { return new name(*this); } \
+  ModuleParamUid GetUid() const override { return kUid; }           \
+                                                                    \
+ private:                                                           \
+  BDM_CLASS_DEF_OVERRIDE(name, version_id);                         \
+                                                                    \
+ public:
 
 }  // namespace bdm
 

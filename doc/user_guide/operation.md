@@ -22,9 +22,7 @@ To execute a function for *specific* simulation objects have a look at biology m
 **An operation can have multiple implementations.**
 Each implementation can target a different type of hardware (e.g. CPU or GPU) as shown in the following image:
 
-<p align="center">
-  <img src="images/operation.svg" />
-</p>
+![Operations](images/operation.png)
 
 This example shows an overview of the displacement operation; one of the default operations in BioDynaMo.
 This operation is implemented for different computing targets, of which two are shown in the image above.
@@ -129,7 +127,15 @@ You could approach this the following way.
 // Create an operation implementation with a state
 struct CheckDiameter : public SimObjectOperationImpl {
   BDM_OP_HEADER(CheckDiameter);
-  
+
+  CheckDiameter() {}
+
+  // Since atomic members don't have a deleted copy constructor, we have to
+  // define how to copy its value in this operation's copy constructor
+  explicit CheckDiameter(const CheckDiameter& other) {
+    this->counter_ = other.counter_.load();
+  }
+
   void operator()(SimObject* sim_object) override {
     if (sim_object->GetDiameter() > max_diameter_) {
       counter_++;
@@ -138,10 +144,10 @@ struct CheckDiameter : public SimObjectOperationImpl {
 
   // The state consists of these two data members
   double max_diameter_ = 1;
-  // Data members that can be changed in `operator()(SimObject* 
+  // Data members that can be changed in `operator()(SimObject*
   // sim_object)` need to be of atomic type to avoid race conditions
-  std::atomic<uint32_t> counter_ = 0;
-}
+  std::atomic<uint32_t> counter_;
+};
 
 ```
 
@@ -200,18 +206,22 @@ scheduler->UnscheduleOp(check_diameter);
 simulation.Simulate(10);
 ```
 
-## Default operations
+## Get operations
 
-BioDynaMo runs a list of operations by default. This list can be retrieved with
-the call to `Scheduler::GetListOfDefaultOps()`.
-A default operation can be unscheduled in the following way:
+The scheduler of BioDynaMo runs a list of all operations that have
+been added either by default or by calling `Scheduler::ScheduleOp(op)`.
+A pointer to these operations can be retrieved by calling: `Scheduler::GetOps(name)`. 
+This function returns a vector of operation pointers with operations that match 
+the given name.
+If the given operation name is a protected operation the returned vector will be empty.
+A default (non protected) operation can be unscheduled in the following way:
 
 ```cpp
 Simulation simulation("test_sim");
 auto* scheduler = simulation.GetScheduler();
 
-auto* displacement_op = scheduler->GetDefaultOp("displacement");
-scheduler->UnscheduleOp(displacement_op);
+auto ops = scheduler->GetOps("displacement");
+scheduler->UnscheduleOp(ops[0]);
 
 // Your simulation will not run the displacement operation
 simulation.Simulate(10);

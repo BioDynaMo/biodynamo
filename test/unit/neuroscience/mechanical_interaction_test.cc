@@ -23,7 +23,6 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowth) {
@@ -32,17 +31,15 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({1, 0, 0});
+  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -54,7 +51,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
@@ -74,17 +71,15 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({1, 0, 0});
+  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -95,7 +90,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   Double3 direction = {1, 0, 0};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
       double length = ne->GetActualLength();
@@ -113,17 +108,15 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({1, 1, 0});
+  auto ne = neuron->ExtendNewNeurite({1, 1, 0})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -133,7 +126,7 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
@@ -149,17 +142,15 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({1, 1, 1});
+  auto ne = neuron->ExtendNewNeurite({1, 1, 1})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(1);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -171,7 +162,7 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   for (int i = 0; i < 37; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
 
     ne_axis = ne->GetSpringAxis();
 
@@ -186,17 +177,15 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({1, 1, 1});
+  auto ne = neuron->ExtendNewNeurite({1, 1, 1})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -209,7 +198,7 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   for (int i = 0; i < 98; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
 
     ne_axis = ne->GetSpringAxis();
 
@@ -226,7 +215,6 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
   rm->push_back(neuron);
@@ -237,11 +225,10 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   neuron2->SetDiameter(10);
   rm->push_back(neuron2);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({0, 0, 1});
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -256,7 +243,7 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
@@ -272,7 +259,6 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
   neuron->SetMass(1);
@@ -284,10 +270,9 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   neuron2->SetMass(1);
   rm->push_back(neuron2);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({0, 0, 1});
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -299,7 +284,7 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
 
     ne_axis = ne->GetSpringAxis();
 
@@ -318,16 +303,14 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({0, 0, 1});
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -341,7 +324,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   for (int i = 0; i < 10; i++) {
     ne->ElongateTerminalEnd(100, {0, 0, 1});
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
   }
 
   auto branches = ne->Bifurcate();
@@ -353,7 +336,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
     branch_r->RunDiscretization();
     branch_l->ElongateTerminalEnd(100, direction2);
     branch_l->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
   }
   ne_axis = branch_l->GetSpringAxis();
   Double3 ne_axis_2 = branch_r->GetSpringAxis();
@@ -369,16 +352,14 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({0, 0, 1});
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis = ne->GetSpringAxis();
 
@@ -388,7 +369,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   for (int i = 0; i < 10; i++) {
     ne->ElongateTerminalEnd(100, {0, 0, 1});
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
   }
 
   auto ne2 = ne->Branch(0.5, direction2);
@@ -403,7 +384,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
     ne->RunDiscretization();
     ne2->RunDiscretization();
 
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
   }
 
   ne_axis = ne->GetSpringAxis();
@@ -422,16 +403,13 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   auto* random = simulation.GetRandom();
 
   NeuronSoma* neuron = new NeuronSoma();
-  auto neuron_id = neuron->GetUid();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
-                ->ExtendNewNeurite({0, 0, 1});
-  ne->SetDiameter(2);
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 ne_axis;
   Double3 ne_axis2;
@@ -441,7 +419,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
     direction = {random->Uniform(-1, 1), random->Uniform(-1, 1), 1};
     ne->ElongateTerminalEnd(10, direction);
     ne->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
 
     ne_axis = ne->GetSpringAxis();
     EXPECT_GT(ne_axis[2], 0.1);
@@ -452,8 +430,8 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   EXPECT_GT(ne_axis[2], 0.1);
 
   auto ne_list = ne->Bifurcate();
-  auto ne2 = ne_list[1];
-  ne = ne_list[0];
+  auto ne2 = ne_list[1]->GetSoPtr<NeuriteElement>();
+  ne = ne_list[0]->GetSoPtr<NeuriteElement>();
 
   for (int i = 0; i < 50; i++) {
     direction = {random->Uniform(-1, 1), random->Uniform(-1, 1), 1};
@@ -462,7 +440,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
     ne2->ElongateTerminalEnd(10, direction);
     ne->RunDiscretization();
     ne2->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
 
     ne_axis = ne->GetSpringAxis();
     ne_axis2 = ne2->GetSpringAxis();
@@ -488,25 +466,21 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron1 = new NeuronSoma();
-  auto neuron1_id = neuron1->GetUid();
   neuron1->SetPosition({0, 0, 0});
   neuron1->SetDiameter(10);
   rm->push_back(neuron1);
 
   NeuronSoma* neuron2 = new NeuronSoma();
-  auto neuron2_id = neuron2->GetUid();
   neuron2->SetPosition({20, 0, 0});
   neuron2->SetDiameter(10);
   rm->push_back(neuron2);
 
-  auto ne1 = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron1_id))
-                 ->ExtendNewNeurite({0, 0, 1});
+  auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
   ne1->SetDiameter(2);
-  auto ne2 = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron2_id))
-                 ->ExtendNewNeurite({0, 0, 1});
+  auto ne2 = neuron2->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
   ne2->SetDiameter(2);
 
-  Scheduler scheduler;
+  auto* scheduler = simulation.GetScheduler();
 
   Double3 direction1 = {0.5, 0, 1};
   Double3 direction2 = {-0.5, 0, 1};
@@ -519,7 +493,7 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
     ne2->ElongateTerminalEnd(10, direction2);
     ne1->RunDiscretization();
     ne2->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
 
     ne1_axis = ne1->GetSpringAxis();
     ne2_axis = ne2->GetSpringAxis();
@@ -533,7 +507,7 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
     ne2->ElongateTerminalEnd(10, direction2);
     ne1->RunDiscretization();
     ne2->RunDiscretization();
-    scheduler.Simulate(1);
+    scheduler->Simulate(1);
 
     ne1_axis = ne1->GetSpringAxis();
     ne2_axis = ne2->GetSpringAxis();
@@ -551,13 +525,11 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   NeuronSoma* neuron1 = new NeuronSoma();
   neuron1->SetPosition({0, 0, 0});
   neuron1->SetDiameter(6);
-  auto neuron1_id = neuron1->GetUid();
   rm->push_back(neuron1);
 
   NeuronSoma* neuron2 = new NeuronSoma();
   neuron2->SetPosition({5.5, 0, 0});
   neuron2->SetDiameter(5);
-  auto neuron2_id = neuron2->GetUid();
   rm->push_back(neuron2);
 
   NeuronSoma* neuron3 = new NeuronSoma();
@@ -565,11 +537,9 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   neuron3->SetDiameter(10);
   rm->push_back(neuron3);
 
-  auto ne1 = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron1_id))
-                 ->ExtendNewNeurite({0, 0, 1});
+  auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
   ne1->SetDiameter(1);
-  auto ne2 = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron2_id))
-                 ->ExtendNewNeurite({0, 0, 1});
+  auto ne2 = neuron2->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
   ne2->SetDiameter(1);
 
   Double3 direction1 = {0.5, 0, 1};
@@ -601,5 +571,4 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
 }
 
 }  // end namespace neuroscience
-}  // end namespace experimental
 }  // end namespace bdm

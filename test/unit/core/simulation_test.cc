@@ -14,22 +14,27 @@
 
 #include <gtest/gtest.h>
 #include <omp.h>
+#include <experimental/filesystem>
 #include <fstream>
 #include <type_traits>
 
 #include "core/resource_manager.h"
 #include "core/sim_object/cell.h"
 #include "core/simulation_backup.h"
+#include "core/util/io.h"
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_util.h"
+
+namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 
 class SimulationTest : public ::testing::Test {
  public:
-  static constexpr const char* kConfigFileName = "bdm.toml";
-  static constexpr const char* kConfigContent =
+  static constexpr const char* kTomlFileName = "bdm.toml";
+  static constexpr const char* kTomlContent =
       "[simulation]\n"
+      "random_seed = 123\n"
       "output_dir = \"result-dir\"\n"
       "backup_file = \"backup.root\"\n"
       "restore_file = \"restore.root\"\n"
@@ -84,14 +89,14 @@ class SimulationTest : public ::testing::Test {
 
  protected:
   virtual void SetUp() {
-    remove(kConfigFileName);
+    remove(kTomlFileName);
     remove("restore.root");
     CreateEmptyRestoreFile("restore.root");
     Simulation::counter_ = 0;
   }
 
   virtual void TearDown() {
-    remove(kConfigFileName);
+    remove(kTomlFileName);
     remove("restore.root");
   }
 
@@ -106,6 +111,7 @@ class SimulationTest : public ::testing::Test {
   }
 
   void ValidateNonCLIParameter(const Param* param) {
+    EXPECT_EQ(123u, param->random_seed_);
     EXPECT_EQ("paraview", param->visualization_engine_);
     EXPECT_EQ("result-dir", param->output_dir_);
     EXPECT_EQ("RK", param->diffusion_type_);
@@ -128,10 +134,10 @@ class SimulationTest : public ::testing::Test {
     auto it = param->visualize_sim_objects_.cbegin();
     uint64_t counter = 0;
     while (it != param->visualize_sim_objects_.cend()) {
-      if (counter == 1) {
+      if (counter == 0) {
         EXPECT_EQ("Cell", (*it).first);
         EXPECT_EQ(0u, (*it).second.size());
-      } else if (counter == 0) {
+      } else if (counter == 1) {
         EXPECT_EQ("Neurite", (*it).first);
         auto additional_dm = (*it).second;
         EXPECT_EQ(2u, additional_dm.size());
@@ -179,8 +185,8 @@ class SimulationTest : public ::testing::Test {
 
 #ifdef USE_DICT
 TEST_F(SimulationTest, InitializeRuntimeParams) {
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(kTomlFileName);
+  config_file << kTomlContent;
   config_file.close();
 
   const char* argv[1] = {"./binary_name"};
@@ -194,8 +200,8 @@ TEST_F(SimulationTest, InitializeRuntimeParams) {
 }
 
 TEST_F(SimulationTest, InitializeRuntimeParams2) {
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(kTomlFileName);
+  config_file << kTomlContent;
   config_file.close();
 
   Simulation simulation("my-simulation");
@@ -208,8 +214,8 @@ TEST_F(SimulationTest, InitializeRuntimeParams2) {
 }
 
 TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(kTomlFileName);
+  config_file << kTomlContent;
   config_file.close();
 
   CreateEmptyRestoreFile("myrestore.root");
@@ -229,10 +235,10 @@ TEST_F(SimulationTest, InitializeRuntimeParamsWithCLIArguments) {
 
 TEST_F(SimulationTest, InitializeRuntimeParamsCLIConfigFileName) {
   std::string config_filename = "my-config-file.toml";
-  remove(kConfigFileName);
+  remove(kTomlFileName);
   remove(config_filename.c_str());
   std::ofstream config_file(config_filename);
-  config_file << kConfigContent;
+  config_file << kTomlContent;
   config_file.close();
 
   const char* argv[3] = {"./binary_name", "-c", config_filename.c_str()};
@@ -245,27 +251,20 @@ TEST_F(SimulationTest, InitializeRuntimeParamsCLIConfigFileName) {
 
 TEST_F(SimulationTest, InitializeRuntimeParamsCtorConfigFileName) {
   std::string config_filename = "my-config-file.toml";
-  remove(kConfigFileName);
+  remove(kTomlFileName);
   remove(config_filename.c_str());
   std::ofstream config_file(config_filename);
-  config_file << kConfigContent;
+  config_file << kTomlContent;
   config_file.close();
 
   {
     const char* argv[1] = {"./binary_name"};
-    Simulation simulation(1, argv, config_filename);
+    Simulation simulation(1, argv, {config_filename});
     ValidateNonCLIParameter(simulation.GetParam());
   }
 
   {
-    Simulation simulation("./binary_name", config_filename);
-    ValidateNonCLIParameter(simulation.GetParam());
-  }
-
-  // test presedence of ctor config_file over cli config file
-  {
-    const char* argv[3] = {"./binary_name", "-c", "does-not-exist.toml"};
-    Simulation simulation(3, argv, config_filename);
+    Simulation simulation("./binary_name", {config_filename});
     ValidateNonCLIParameter(simulation.GetParam());
   }
 
@@ -293,6 +292,88 @@ TEST_F(SimulationTest, InitializeRuntimeParamsSimulationName) {
   EXPECT_EQ("binary_name3", simulation3.GetUniqueName());
 }
 
+TEST_F(SimulationTest, MultipleJsonConfigsAndPrecedence) {
+  const char* ctor1_config = R"EOF(
+{
+  "bdm::Param": {
+    "random_seed_": 1,
+    "scheduling_batch_size_": 1,
+    "backup_file_": "ctor1",
+    "mem_mgr_growth_rate_": 1.11,
+    "backup_interval_": 1,
+    "simulation_time_step_": 1
+  }
+}
+)EOF";
+
+  // overwrite all but first parameter
+  const char* ctor2_config = R"EOF(
+{
+  "bdm::Param": {
+    "scheduling_batch_size_": 2,
+    "backup_file_": "ctor2",
+    "mem_mgr_growth_rate_": 1.12,
+    "backup_interval_": 2,
+    "simulation_time_step_": 2
+  }
+}
+)EOF";
+
+  // overwrite all but first two parameter
+  const char* cli1_config = R"EOF(
+{
+  "bdm::Param": {
+    "backup_file_": "cli1",
+    "mem_mgr_growth_rate_": 1.13,
+    "backup_interval_": 3,
+    "simulation_time_step_": 3
+  }
+}
+)EOF";
+
+  // overwrite all but first three parameter
+  const char* cli2_config = R"EOF(
+{
+  "bdm::Param": {
+    "mem_mgr_growth_rate_": 1.14,
+    "backup_interval_": 4,
+    "simulation_time_step_": 4
+  }
+}
+)EOF";
+
+  WriteToFile("ctor1.json", ctor1_config);
+  WriteToFile("ctor2.json", ctor2_config);
+  WriteToFile("cli1.json", cli1_config);
+  WriteToFile("cli2.json", cli2_config);
+
+  const char* argv[9] = {TEST_NAME,
+                         "-c",
+                         "cli1.json",
+                         "-c",
+                         "cli2.json",
+                         "--inline-config",
+                         "{ \"bdm::Param\": { \"backup_interval_\": 5, "
+                         "\"simulation_time_step_\": 5 }}",
+                         "--inline-config",
+                         "{ \"bdm::Param\": { \"simulation_time_step_\": 6 }}"};
+
+  Simulation sim(9, argv, {"ctor1.json", "ctor2.json"});
+  auto* param = sim.GetParam();
+
+  EXPECT_EQ(1u, param->random_seed_);
+  EXPECT_EQ(2u, param->scheduling_batch_size_);
+  EXPECT_EQ("cli1", param->backup_file_);
+  EXPECT_NEAR(1.14, param->mem_mgr_growth_rate_, abs_error<double>::value);
+  EXPECT_EQ(5u, param->backup_interval_);
+  EXPECT_NEAR(6.0, param->simulation_time_step_, abs_error<double>::value);
+
+  std::remove("ctor1.json");
+  std::remove("ctor2.json");
+  std::remove("cli1.json");
+  std::remove("cli2.json");
+}
+
 #endif  // USE_DICT
 
 TEST_F(SimulationTest, SimulationId_OutputDir) {
@@ -311,6 +392,35 @@ TEST_F(SimulationTest, SimulationId_OutputDir2) {
 
   EXPECT_EQ("", simulation.GetUniqueName());
   EXPECT_EQ("output", simulation.GetOutputDir());
+}
+
+TEST_F(SimulationTest, InlineConfig) {
+  const char* argv[3] = {
+      "./binary_name", "--inline-config",
+      "{ \"bdm::Param\": { \"simulation_time_step_\": 6.28}}"};
+  Simulation sim(3, argv);
+  EXPECT_NEAR(6.28, sim.GetParam()->simulation_time_step_, 1e-5);
+}
+
+TEST_F(SimulationTest, DontRemoveOutputDirContents) {
+  fs::create_directory(Concat("output/", TEST_NAME));
+  fs::create_directory(Concat("output/", TEST_NAME, "/subdir"));
+  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+
+  Simulation sim(TEST_NAME);
+  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+}
+
+TEST_F(SimulationTest, RemoveOutputDirContents) {
+  fs::create_directory(Concat("output/", TEST_NAME));
+  fs::create_directory(Concat("output/", TEST_NAME, "/subdir"));
+  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+
+  auto set_param = [](Param* param) {
+    param->remove_output_dir_contents_ = true;
+  };
+  Simulation sim(TEST_NAME, set_param);
+  EXPECT_TRUE(fs::is_empty(Concat("output/", TEST_NAME)));
 }
 
 #ifdef USE_DICT
@@ -370,8 +480,8 @@ TEST_F(IOTest, Simulation) {
 // The Param IOTest is located here to reuse the infrastructure used to test
 // parsing parameters.
 TEST_F(SimulationTest, ParamIOTest) {
-  std::ofstream config_file(kConfigFileName);
-  config_file << kConfigContent;
+  std::ofstream config_file(kTomlFileName);
+  config_file << kTomlContent;
   config_file.close();
 
   Simulation simulation(TEST_NAME);

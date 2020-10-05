@@ -1,9 +1,24 @@
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
 #include "core/operation/displacement_op.h"
 #include "core/operation/displacement_op_cuda.h"
 #include "core/operation/displacement_op_opencl.h"
 #include "core/operation/dividing_cell_op.h"
+#include "core/operation/load_balancing_op.h"
 #include "core/operation/operation.h"
 #include "core/visualization/visualization_adaptor.h"
 
@@ -12,6 +27,10 @@ namespace bdm {
 BDM_REGISTER_OP(BoundSpace, "bound space", kCpu);
 
 BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
+
+// By default run load balancing only in the first iteration.
+BDM_REGISTER_OP_WITH_FREQ(LoadBalancingOp, "load balancing", kCpu,
+                          std::numeric_limits<std::size_t>::max());
 
 BDM_REGISTER_OP(DisplacementOp, "displacement", kCpu);
 
@@ -25,23 +44,24 @@ BDM_REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 BDM_REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCl);
 #endif
 
-struct FirstOp : public SimObjectOperationImpl {
-  BDM_OP_HEADER(FirstOp);
+struct UpdateRunDisplacementOp : public SimObjectOperationImpl {
+  BDM_OP_HEADER(UpdateRunDisplacementOp);
 
   void operator()(SimObject* so) override { so->UpdateRunDisplacement(); }
 };
 
-BDM_REGISTER_OP(FirstOp, "first op", kCpu);
+BDM_REGISTER_OP(UpdateRunDisplacementOp, "update run displacement", kCpu);
 
-struct LastOp : public SimObjectOperationImpl {
-  BDM_OP_HEADER(LastOp);
+struct DistributeRunDisplacementInfoOp : public SimObjectOperationImpl {
+  BDM_OP_HEADER(DistributeRunDisplacementInfoOp);
 
   void operator()(SimObject* so) override {
-    so->ApplyRunDisplacementForAllNextTs();
+    so->DistributeRunDisplacementInfo();
   }
 };
 
-BDM_REGISTER_OP(LastOp, "last op", kCpu);
+BDM_REGISTER_OP(DistributeRunDisplacementInfoOp,
+                "distribute run displacement info", kCpu);
 
 struct BiologyModuleOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(BiologyModuleOp);
@@ -69,7 +89,7 @@ struct SetUpIterationOp : public StandaloneOperationImpl {
   }
 };
 
-BDM_REGISTER_OP(SetUpIterationOp, "set up exec context", kCpu);
+BDM_REGISTER_OP(SetUpIterationOp, "set up iteration", kCpu);
 
 struct TearDownIterationOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(TearDownIterationOp);
@@ -81,7 +101,7 @@ struct TearDownIterationOp : public StandaloneOperationImpl {
   }
 };
 
-BDM_REGISTER_OP(TearDownIterationOp, "tear down exec context", kCpu);
+BDM_REGISTER_OP(TearDownIterationOp, "tear down iteration", kCpu);
 
 struct UpdateEnvironmentOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(UpdateEnvironmentOp);

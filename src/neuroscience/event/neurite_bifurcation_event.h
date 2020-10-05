@@ -21,7 +21,6 @@
 #include "core/event/event.h"
 
 namespace bdm {
-namespace experimental {
 namespace neuroscience {
 
 /// \brief Contains the parameters to bifurcate a growth cone.
@@ -61,7 +60,6 @@ struct NeuriteBifurcationEvent : public Event {
 };
 
 }  // namespace neuroscience
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // NEUROSCIENCE_EVENT_NEURITE_BIFURCATION_EVENT_H_

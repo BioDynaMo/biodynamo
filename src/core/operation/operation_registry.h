@@ -1,3 +1,17 @@
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) The BioDynaMo Project.
+// All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+
 #ifndef CORE_OPERATION_OPERATION_REGISTRY_H_
 #define CORE_OPERATION_OPERATION_REGISTRY_H_
 
@@ -49,6 +63,22 @@ struct OperationRegistry {
 #define BDM_REGISTER_OP(op, name, target)                                    \
   bool op::registered_ = OperationRegistry::GetInstance()->AddOperationImpl( \
       name, OpComputeTarget::target, new op());
+
+/// \see BDM_REGISTER_OP
+/// Adds parameter to specigy default execution frequency (\see
+/// Operation::frequency_)
+#define BDM_REGISTER_OP_WITH_FREQ(op, name, target, frequency)               \
+  bool op::registered_ = OperationRegistry::GetInstance()->AddOperationImpl( \
+      name, OpComputeTarget::target, new op(), frequency);
+
+/// A convenient macro to register a new operation implemented. To be used as:
+/// BDM_REGISTER_OP(MyOp, "my operation", kCpu)
+/// MyOp is required to have member: `static bool registered_`
+#define BDM_REGISTER_TEMPLATE_OP(op, T, name, target)     \
+  template <>                                             \
+  bool op<T>::registered_ =                               \
+      OperationRegistry::GetInstance()->AddOperationImpl( \
+          name, OpComputeTarget::target, new op<T>());
 
 /// A convenient function to get a new operation from the registry by its name
 inline Operation *NewOperation(const std::string &name) {

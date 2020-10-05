@@ -33,7 +33,7 @@ biodynamo demo diffusion .
 
 ### Inspect the code
 
-Go into the `diffusion` directory and open the source file `src/diffusion_biology_modules.h` in your favorite editor.
+Go into the `diffusion` directory and open the source file `src/diffusion.h` in your favorite editor.
 We can note the following things from its content:
 
 #### 1. Substance list
@@ -46,15 +46,7 @@ The extracellular substances that will be used in the simulation are listed in
 an `enum` data structure. In this case it is just a single substance. According to our C++
 coding style we will prepend the substance's name with the letter "k".
 
-#### 2. Biology modules
-
-In the same file you can find the definition of the biology modules `Chemotaxis`
-and `KaliumSecretion`. These are the modules that will govern the
-behavior of the simulation objects (i.e. cells).
-
-#### 3. Initial model
-
-Open the `src/diffusion.h` source file.
+#### 2. Initial model
 
 First, create a BioDynaMo simulation:
 ```cpp
@@ -62,18 +54,28 @@ Simulation simulation(argc, argv);
 ```
 
 Next up is creating the initial model of our simulation.
-Therefore, we have to create an initial set of simulation objects and set their
+
+We start by defining the substance that cells may secreate
+
+```cpp
+ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
+auto* rm = simulation.GetResourceManager();
+auto* dgrid = rm->GetDiffusionGrid(kKalium);
+```
+
+Next, we have to create an initial set of simulation objects and set their
 attributes:
 
 ```cpp
-  auto construct = [](const Double3& position) {
+  auto construct = [&](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetMass(1.0);
-    cell->AddBiologyModule(new Chemotaxis());
     Double3 secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell->AddBiologyModule(new KaliumSecretion());
+      cell->AddBiologyModule(new Secretion(dgrid, 4));
+    } else {
+      cell->AddBiologyModule(new Chemotaxis(dgrid, 0.5));
     }
     return cell;
   };
@@ -86,7 +88,7 @@ attributes:
   positions.push_back({100, 0, 100});
   positions.push_back({100, 100, 0});
   positions.push_back({100, 100, 100});
-  // the cell responsible for secretion
+  // The cell responsible for secretion
   positions.push_back({50, 50, 50});
   ModelInitializer::CreateCells(positions, construct);
 ```
@@ -95,11 +97,15 @@ The `construct` lambda defines the properties of each cell that we create. These
 physical properties (diameter, mass), but also biological properties and behaviors
 (chemotaxis, substance secretion)
 
-In this example, each cell is assigned the `Chemotaxis` behavior. In `diffusion_biology_behaviors.h` you can
-check the source code of this module. Basically it makes cells move according to the gradient,
-caused by a concentration difference of the substance. One of the cells
-(the cell at position `{50, 50, 50}`) will be the one secreting the substance;
-it therefore gets assigned the `SubstanceSecretion` behavior.
+This example uses the predefined biology modules `Chemotaxis` and `Secretion` that
+will govern the behavior of the simulation objects (i.e. cells).
+These two modules are included in the BioDynaMo installation.
+
+One of the cells (the cell at position `{50, 50, 50}`) will be the one secreting the substance;
+it therefore gets assigned the `Secretion` behavior.
+All other cells are assigned the `Chemotaxis` behavior. 
+Basically it makes cells move according to the gradient,
+caused by a concentration difference of the substance. 
 
 Furthermore, we define the initial positions of the cells. In this example it is
 done explicitly, but one could also generate a grid of cells, or a random distribution
@@ -207,7 +213,7 @@ Within BioDynaMo the number of intervals for the Runge-Kutta method to iterate o
 
 ```
 
-DiffusionGrid* d_grid = new DiffusionGrid(substance_id, "substance_name", diffusion_coefficient,
+DiffusionGrid* dgrid = new DiffusionGrid(substance_id, "substance_name", diffusion_coefficient,
                 decay_constant, resolution, diffusion_step)
                 
 ```

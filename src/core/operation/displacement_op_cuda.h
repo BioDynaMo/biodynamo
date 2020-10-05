@@ -78,7 +78,8 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
       for (size_t j = 0; j < rm->GetNumSimObjects(i); j++) {
         auto idx = offset[i] + j;
         i_->successors[idx] =
-            offset[i] + grid->successors_.data_[i][j].GetElementIdx();
+            offset[grid->successors_.data_[i][j].GetNumaNode()] +
+            grid->successors_.data_[i][j].GetElementIdx();
       }
     }
 
@@ -153,16 +154,15 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
   }
 
   void TearDown() override {
-    u_ = new UpdateCPUResults(&(i_->cell_movements), i_->offset);
+    auto u = UpdateCPUResults(&(i_->cell_movements), i_->offset);
     Simulation::GetActive()
         ->GetResourceManager()
-        ->ApplyOnAllElementsParallelDynamic(1000, *u_);
+        ->ApplyOnAllElementsParallelDynamic(1000, u);
   }
 
  private:
   DisplacementOpCudaKernel* cdo_ = nullptr;
   InitializeGPUData* i_ = nullptr;
-  UpdateCPUResults* u_ = nullptr;
   uint32_t num_boxes_ = 0;
   uint32_t total_num_objects_ = 0;
 

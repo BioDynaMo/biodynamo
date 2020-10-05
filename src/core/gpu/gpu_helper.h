@@ -32,7 +32,7 @@
 #include "cl2.hpp"
 #else
 #define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
+#include <CL/cl2.hpp>
 #endif
 #endif  // USE_OPENCL
 
@@ -107,10 +107,7 @@ class GpuHelper {
     std::stringstream buffer;
     buffer << cl_file.rdbuf();
 
-    cl::Program displacement_op_program(
-        *context,
-        cl::Program::Sources(
-            1, std::make_pair(buffer.str().c_str(), buffer.str().length())));
+    cl::Program displacement_op_program(*context, buffer.str());
 
     all_programs->push_back(displacement_op_program);
 

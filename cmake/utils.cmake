@@ -92,12 +92,14 @@ function (ListToString result delim)
 endfunction(ListToString)
 
 function(BuildParaViewPlugin)
+  file(MAKE_DIRECTORY ${CMAKE_INSTALL_PVPLUGINDIR})
+  set(BDM_PVPLUGIN_BUILDDIR ${CMAKE_BINARY_DIR}/pv-plugin-build)
   add_custom_target(BDMGlyphFilter
     WORKING_DIRECTORY ${CMAKE_BDM_PVPLUGINDIR}
-    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} -B build
-    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} --build build
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BDM_PVPLUGINDIR}/build/lib/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so ${CMAKE_INSTALL_PVPLUGINDIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BDM_PVPLUGINDIR}/build/lib/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so ${CMAKE_INSTALL_ROOT}/lib
+    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} -B "${BDM_PVPLUGIN_BUILDDIR}"
+    COMMAND ${LAUNCHER} ${CMAKE_COMMAND} --build "${BDM_PVPLUGIN_BUILDDIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so" "${CMAKE_INSTALL_PVPLUGINDIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so" "${CMAKE_INSTALL_ROOT}/lib"
   )
 endfunction(BuildParaViewPlugin)
 
@@ -255,7 +257,7 @@ function(install_inside_build)
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             ${CMAKE_SOURCE_DIR}/third_party/cpp_magic.h
-            ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.0/cxxopts.h
+            ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1/cxxopts.h
             )
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpptoml
@@ -395,6 +397,14 @@ endfunction()
 
 # Method used to download a file from a given URL. This method will also retry
 # to download the file if the download did not work.
+#
+# This method also has the ability to source files locally if a BDM_LOCAL_LFS
+# environment variable is exported, and set to a directory containing tar files that
+# would have otherwise been downloaded. Directory structure and filenames of the LFS
+# must precisely match its online counterpart.
+# Example: lfs.com/biodynamo-lfs/file.tar.gz => ~/Downloads/bdm-local-lfs/file.tar.gz
+# where BDM_LOCAL_LFS=~/Downloads/bdm-local-lfs
+#
 #   URL: URL from which we will download the file
 #   DEST: destination where the contents of the tar file will be extracted to
 #   HASH: hash of the download file to check consistency
@@ -404,29 +414,45 @@ function(download_verify_extract URL DEST HASH)
   get_filename_component(DEST_PARENT "${DEST}/.." ABSOLUTE)
   set(FULL_TAR_PATH "${DEST_PARENT}/${TAR_FILENAME}")
 
-  # Download the file
-  execute_process(COMMAND ${WGET_BIN} --progress=dot:giga -O ${FULL_TAR_PATH} ${URL}
-                  RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
-  if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
-    message( FATAL_ERROR "\nERROR: We were unable to download:\
-  ${URL}\n\
-This may be caused by several reason, like network error connections or just \
+  if(DEFINED ENV{BDM_LOCAL_LFS})
+    # If the user has set a directory for local LFS, try to find the tar there.
+    execute_process(COMMAND echo ${URL}
+                    COMMAND sed "s|\\(.*://[^/]*/\\)\\(.*\\)|\\1;\\2|g"
+                    OUTPUT_VARIABLE URL_COMPONENTS
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    list(GET URL_COMPONENTS 1 URL_FILEPATH)
+    string(REPLACE "biodynamo-lfs" "" LFS_FILEPATH ${URL_FILEPATH})
+    set(LOCAL_TAR_FILE "$ENV{BDM_LOCAL_LFS}${LFS_FILEPATH}")
+    if(EXISTS "${LOCAL_TAR_FILE}")
+      file(COPY ${LOCAL_TAR_FILE} DESTINATION ${DEST_PARENT})
+    else()
+      message(FATAL_ERROR "\nERROR: We were unable find file '${LOCAL_TAR_FILE}'.\n\
+Unset the environment variable BDM_LOCAL_LFS to download the file.")
+    endif()
+  else()
+    # Download the file
+    execute_process(COMMAND ${WGET_BIN} --progress=dot:giga -O ${FULL_TAR_PATH} ${URL}
+                    RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
+    if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
+      message( FATAL_ERROR "\nERROR: We were unable to download:\
+    ${URL}\n\
+This may be caused by several reasons, like network error connections or just \
 temporary network failure. Please retry again in a few minutes by deleting all \
 the contents of the build directory and by issuing again the 'cmake' command.\n")
+    endif()
   endif()
 
   # Verify download
   file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
   if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
     message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
-  Expected: ${HASH}\n\
-  Actual:   ${ACTUAL_SHA256}\n")
+    Expected: ${HASH}\n\
+    Actual:   ${ACTUAL_SHA256}\n")
   endif()
-
   # Extract
   execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${FULL_TAR_PATH}
                   WORKING_DIRECTORY ${DEST}
-                RESULT_VARIABLE EXTRACT_STATUS_CODE)
+                  RESULT_VARIABLE EXTRACT_STATUS_CODE)
   if (NOT ${EXTRACT_STATUS_CODE} EQUAL 0)
     message(FATAL_ERROR "ERROR: Extraction of file ${FULL_TAR_PATH} to ${DEST} failed.")
   endif()
