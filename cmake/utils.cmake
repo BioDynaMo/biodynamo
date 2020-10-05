@@ -182,6 +182,7 @@ function(install_inside_build)
             DESTINATION ${CMAKE_INSTALL_BINDIR}
             ${CMAKE_BINARY_DIR}/version/version.py
             ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
+            ${CMAKE_SOURCE_DIR}/cmake/bdm-dictionary
             )
 
     # Copy some cmake files

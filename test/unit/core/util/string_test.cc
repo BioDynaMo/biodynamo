@@ -42,4 +42,11 @@ TEST(StringUtilTest, StartsWith) {
   EXPECT_FALSE(StartsWith("foo bar baz", "foo bar baz1"));
 }
 
+TEST(StringUtilTest, Split) {
+  std::vector<std::string> expected = {"ab", "cde", "f"};  
+  EXPECT_EQ(expected, Split("ab cde f", " "));
+  EXPECT_EQ(expected, Split("ab<>cde<>f", "<>"));
+  EXPECT_EQ(expected, Split("ab -Icde -If", " -I"));
+}
+
 }  // namespace bdm

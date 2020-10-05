@@ -102,6 +102,7 @@ function(build_shared_library TARGET)
   if(dict OR DEFINED ARG_PLUGIN)
     # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
+    set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
 
     # Since the location of the CMake files differ in the build and installation
     # directory, we check if BDM_CMAKE_DIR is already set (in build directory
@@ -110,9 +111,17 @@ function(build_shared_library TARGET)
       set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
     endif()
     REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/${ARG_SELECTION})
-
+    if (BDM_OUT_OF_SOURCE) 
+      set(BDM_DICT_BIN_PATH "$ENV{BDMSYS}/bin")
+    else()
+      set(BDM_DICT_BIN_PATH "${PROJECT_SOURCE_DIR}/cmake")
+    endif()
+    add_custom_command(OUTPUT "${BDM_DICT_FILE}"
+                       COMMAND ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_DICT_FILE} ${ARG_HEADERS}
+                       DEPENDS ${ARG_HEADERS} ${BDM_DICT_BIN_PATH}/bdm-dictionary
+                       BYPRODUCTS ${BDM_DICT_FILE}) 
     # generate shared library
-    add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc)
+    add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc ${BDM_DICT_FILE})
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
     if (DEFINED CMAKE_INSTALL_LIBDIR)
       add_custom_command(TARGET ${TARGET}

@@ -73,7 +73,7 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
          const std::vector<TDataMember*>& tdata_members) {
         std::stringstream sstr;
         sstr << "namespace bdm {\n\n"
-             << "struct " << functor_name
+             << "struct R__CLING_PTRCHECK(off) " << functor_name
              << " : public Functor<void, VtkSimObjects*, int> {\n"
              << "  void operator()(VtkSimObjects* so_grid, int tid) {\n";
 

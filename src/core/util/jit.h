@@ -45,6 +45,7 @@ std::vector<TClass*> FindClassSlow(const std::string& class_name);
 std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
                                              const std::string& data_member);
 
+// -----------------------------------------------------------------------------
 class JitForEachDataMemberFunctor {
  public:
   JitForEachDataMemberFunctor(
@@ -72,6 +73,20 @@ class JitForEachDataMemberFunctor {
                             const std::vector<TDataMember*>&)>
       code_generator_;
 };
+
+// -----------------------------------------------------------------------------
+class JitHeaders {
+ public:
+   /// Header must be an absolute path or relative to one of the include
+   /// directories known to cling.
+   static void Register(const std::string& header);
+   /// Include headers from `JitHeaders::headers_` into cling and 
+   /// removes them from the vector.
+   static void IncludeIntoCling();
+ private:
+  static std::vector<std::string> headers_;
+};
+
 
 }  // namespace bdm
 

@@ -49,3 +49,12 @@ CXX_INCLUDES=$(${BDM_CONFIG} --cxxincludes | sed 's|-isystem |-I|g')
 CXX_DEFINES=$(${BDM_CONFIG} --cxxdefines)
 
 genreflex ${HEADERS} -o ${DICT} --select=${SELECTIONFILE} ${CXX_DEFINES} ${CXX_INCLUDES} $ADDITIONAL_CXX_FLAGS
+
+# Generate bdm dictionary and append to DICT
+BDM_DICT=$(mktemp)
+bdm-dictionary $BDM_DICT $HEADERS
+echo "" >> $DICT
+echo "// -------------------------------------------------------------------" >> $DICT
+echo "// Start BioDynaMo dictionary" >> $DICT
+cat $BDM_DICT >> $DICT
+rm $BDM_DICT

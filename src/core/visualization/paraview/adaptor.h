@@ -102,36 +102,4 @@ class ParaviewAdaptor : VisualizationAdaptor {
 
 }  // namespace bdm
 
-#else
-
-#include <string>
-#include <unordered_map>
-#include "core/shape.h"
-
-namespace bdm {
-
-/// False front (to ignore Catalyst in gtests)
-class ParaviewAdaptor {
- public:
-  ParaviewAdaptor();
-
-  void Visualize();
-
- private:
-  friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
-  friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
-  friend class ParaviewAdaptorTest_CheckVisualizationSelection_Test;
-  friend class DISABLED_DiffusionTest_ModelInitializer_Test;
-
-  void InsituVisualization(double time, size_t time_step);
-
-  void ExportVisualization(double step, size_t time_step);
-
-  void WriteToFile();
-
-  static void GenerateParaviewState();
-};
-
-}  // namespace bdm
-
 #endif  // CORE_VISUALIZATION_PARAVIEW_ADAPTOR_H_
