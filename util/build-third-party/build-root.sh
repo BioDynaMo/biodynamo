@@ -58,7 +58,6 @@ git clone https://github.com/root-project/root.git
 
 cd root
 git checkout $ROOT_VERSION
-git apply $BDM_PROJECT_DIR/util/build-third-party/cling-performance.patch
 git status
 ROOTSRC=`pwd`
 cd ..
@@ -105,7 +104,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
      -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
      -DCMAKE_CXX_STANDARD=14 \
      -DPYTHON_EXECUTABLE=`pyenv which python` \
-     ../$ROOTSRC
+     $ROOTSRC
 else
   cmake -G Ninja \
     -Dbuiltin_fftw3=ON \
@@ -128,13 +127,13 @@ else
     -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
     -DCMAKE_CXX_STANDARD=14 \
     -DPYTHON_EXECUTABLE=`pyenv which python` \
-    ../$ROOTSRC
+    $ROOTSRC
 fi
 
 ninja install
 
 cd $ROOT_INSTALL_DIR
-RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}-cling-patch.tar.gz
+RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
 tar -zcf ${RESULT_FILE} *
 
 # mv to destination directory
