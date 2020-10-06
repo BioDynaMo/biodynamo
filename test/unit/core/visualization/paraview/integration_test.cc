@@ -59,6 +59,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
                           bool use_pvsm = true) {
   auto num_diffusion_boxes = std::pow(resolution, 3);
   auto set_param = [&](Param* param) {
+    param->remove_output_dir_contents_ = true;
     param->min_bound_ = 0;
     param->max_bound_ = max_bound;
     param->export_visualization_ = export_visualization;
@@ -76,8 +77,6 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
       Concat("ExportDiffusionGridTest_", max_bound, "_", resolution);
   auto* sim = new Simulation(sim_name, set_param);
   auto output_dir = sim->GetOutputDir();
-  // fs::remove_all(output_dir);
-  // fs::create_directory(output_dir);
 
   ModelInitializer::DefineSubstance(0, "Substance", 0.0000000001, 0.000000001, resolution);
   // create a sequence 1, 2, 3...
@@ -169,6 +168,7 @@ TEST(ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
 void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
                        bool export_visualization = true, bool use_pvsm = true) {
   auto set_param = [&](Param* param) {
+    param->remove_output_dir_contents_ = true;
     param->export_visualization_ = export_visualization;
     param->insitu_visualization_ = !export_visualization;
     param->visualization_export_generate_pvsm_ = use_pvsm;
@@ -280,6 +280,7 @@ TEST(ParaviewIntegrationTest, InsituSimObjects_Cache) {
 // -----------------------------------------------------------------------------
 TEST(ParaviewIntegrationTest, DefaultInsituPipeline) {
   auto set_param = [](Param* param) {
+    param->remove_output_dir_contents_ = true;
     param->insitu_visualization_ = true;
     param->visualize_sim_objects_.insert({"Cell", {}});
   };
