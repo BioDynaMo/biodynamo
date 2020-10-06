@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <stack>
 #include <experimental/filesystem>
+#include <stack>
 
 #include <TClass.h>
 #include <TClassTable.h>
@@ -130,13 +130,13 @@ JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
 // -----------------------------------------------------------------------------
 void JitForEachDataMemberFunctor::Compile() {
   JitHeaders::IncludeIntoCling();
-  gInterpreter->Declare(
-      code_generator_(functor_name_, data_members_).c_str());
+  gInterpreter->Declare(code_generator_(functor_name_, data_members_).c_str());
 }
 
 // -----------------------------------------------------------------------------
 void* JitForEachDataMemberFunctor::New(const std::string& parameter) {
-  auto cmd = Concat("#pragma cling optimize(3)\nnew bdm::", functor_name_, "(", parameter, ")");
+  auto cmd = Concat("#pragma cling optimize(3)\nnew bdm::", functor_name_, "(",
+                    parameter, ")");
   return reinterpret_cast<void*>(gInterpreter->Calc(cmd.c_str()));
 }
 
@@ -155,7 +155,8 @@ bool ExistsInIncludePath(const std::string& header) {
   // "-I"/path/1 -I"/path/2"
   std::string inc_dir_flags = gInterpreter->GetIncludePath();
   // remove leading `-I"`, trailing `""` and split into separate tokens
-  auto include_dirs = Split(inc_dir_flags.substr(3, inc_dir_flags.length() - 4), "\" -I\"");
+  auto include_dirs =
+      Split(inc_dir_flags.substr(3, inc_dir_flags.length() - 4), "\" -I\"");
   // postprocess
   std::string slash_header = Concat("/", header);
   for (auto& dir : include_dirs) {
@@ -171,7 +172,8 @@ bool ExistsInIncludePath(const std::string& header) {
 
 std::string GetIncludePaths() {
   std::string inc_dir_flags = gInterpreter->GetIncludePath();
-  auto dirs = Split(inc_dir_flags.substr(3, inc_dir_flags.length() - 4), "\" -I\"");
+  auto dirs =
+      Split(inc_dir_flags.substr(3, inc_dir_flags.length() - 4), "\" -I\"");
   std::stringstream sstr;
   for (auto& dir : dirs) {
     sstr << dir << std::endl;
@@ -179,23 +181,28 @@ std::string GetIncludePaths() {
   return sstr.str();
 }
 
-}
+}  // namespace
 
 // -----------------------------------------------------------------------------
 void JitHeaders::IncludeIntoCling() {
   for (auto& header : headers_) {
     fs::path hpath = header;
     if (hpath.is_absolute()) {
-      if(fs::exists(hpath)) {
+      if (fs::exists(hpath)) {
         gInterpreter->Declare(Concat("#include \"", header, "\"").c_str());
       } else {
-        Log::Fatal("JitHeaders::Declare", Concat("Header file ", header, " does not exist."));
-      }  
+        Log::Fatal("JitHeaders::Declare",
+                   Concat("Header file ", header, " does not exist."));
+      }
     } else {
       if (ExistsInIncludePath(header)) {
         gInterpreter->Declare(Concat("#include \"", header, "\"").c_str());
       } else {
-        Log::Fatal("JitHeaders::Declare", Concat("Header file ", header, " does not exist in any of the following include directories.\n\n", GetIncludePaths()));
+        Log::Fatal("JitHeaders::Declare",
+                   Concat("Header file ", header,
+                          " does not exist in any of the following include "
+                          "directories.\n\n",
+                          GetIncludePaths()));
       }
     }
   }

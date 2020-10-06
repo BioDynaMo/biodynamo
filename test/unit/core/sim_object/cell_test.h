@@ -118,8 +118,9 @@ inline void RunIOTest() {
   EXPECT_TRUE(dynamic_cast<GrowthModule*>(
                   restored_cell->GetAllBiologyModules()[0]) != nullptr);
   EXPECT_NEAR(
-      0.5, dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0])
-               ->growth_rate_,
+      0.5,
+      dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0])
+          ->growth_rate_,
       kEpsilon);
   EXPECT_TRUE(dynamic_cast<MovementModule*>(
                   restored_cell->GetAllBiologyModules()[1]) != nullptr);

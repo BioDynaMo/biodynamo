@@ -16,14 +16,15 @@
 #include <iostream>
 namespace bdm {
 
-std::vector<std::string> Split(const std::string& s, const std::string& delimiter) {
+std::vector<std::string> Split(const std::string& s,
+                               const std::string& delimiter) {
   std::vector<std::string> result;
   uint64_t pos = 0;
   uint64_t last = 0;
-  
-  while((pos = s.find(delimiter, last)) != std::string::npos) {
+
+  while ((pos = s.find(delimiter, last)) != std::string::npos) {
     result.push_back(s.substr(last, pos - last));
-    last = pos + delimiter.length(); 
+    last = pos + delimiter.length();
   }
   result.push_back(s.substr(last));
   return result;

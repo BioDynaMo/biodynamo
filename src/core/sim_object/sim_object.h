@@ -230,16 +230,15 @@ class SimObject {
   ///        whether it should be copied to destination
   /// @param src  source vector of biology modules
   /// @param dest destination vector of biology modules
-  void CopyBiologyModules(const Event& event,
-                          decltype(biology_modules_) * dest);
+  void CopyBiologyModules(const Event& event, decltype(biology_modules_)* dest);
 
   /// @brief Function to invoke the EventHandler of the biology module or remove
   ///                  it from `current`.
   /// Forwards the event handler call to each biology modules of the triggered
   /// simulation object and removes biology modules if they are flagged.
   void BiologyModuleEventHandler(const Event& event,
-                                 decltype(biology_modules_) * other1,
-                                 decltype(biology_modules_) * other2);
+                                 decltype(biology_modules_)* other1,
+                                 decltype(biology_modules_)* other2);
 
   BDM_CLASS_DEF(SimObject, 1)
 };

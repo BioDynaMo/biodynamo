@@ -92,7 +92,6 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
         sstr << "}  // namespace bdm\n";
 
         return sstr.str();
-
       });
   jitcreate.Compile();
   auto* create_functor = jitcreate.New<Functor<void, VtkSimObjects*, int>>();
@@ -171,14 +170,19 @@ void VtkSimObjects::UpdateMappedDataArrays(
 TClass* VtkSimObjects::FindTClass() {
   const auto& tclass_vector = FindClassSlow(name_);
   if (tclass_vector.size() == 0) {
-    Log::Fatal("VtkSimObjects::VtkSimObjects", Concat("Could not find class: ", name_).c_str());
+    Log::Fatal("VtkSimObjects::VtkSimObjects",
+               Concat("Could not find class: ", name_).c_str());
   } else if (tclass_vector.size() == 0) {
     std::stringstream str;
     for (auto& tc : tclass_vector) {
       str << tc->GetName() << std::endl;
     }
     Log::Fatal("VtkSimObjects::VtkSimObjects",
-               Concat("Found multiple classes with name : ", name_, ". See list below. Fix this issue by adding a namespace modifier.\n'", str.str()).c_str());
+               Concat("Found multiple classes with name : ", name_,
+                      ". See list below. Fix this issue by adding a namespace "
+                      "modifier.\n'",
+                      str.str())
+                   .c_str());
   }
   return tclass_vector[0];
 }

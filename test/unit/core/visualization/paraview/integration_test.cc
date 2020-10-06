@@ -78,7 +78,8 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   auto* sim = new Simulation(sim_name, set_param);
   auto output_dir = sim->GetOutputDir();
 
-  ModelInitializer::DefineSubstance(0, "Substance", 0.0000000001, 0.000000001, resolution);
+  ModelInitializer::DefineSubstance(0, "Substance", 0.0000000001, 0.000000001,
+                                    resolution);
   // create a sequence 1, 2, 3...
   // since initialization is multithreaded returning in increasing counter
   // does not work. -> calculate and return box id

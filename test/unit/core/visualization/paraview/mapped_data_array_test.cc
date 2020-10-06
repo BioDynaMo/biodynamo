@@ -35,8 +35,7 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
   using NeuronOrNeurite = neuroscience::NeuronOrNeurite;
   NeuriteElement ne;
 
-  auto* tclass =
-      TClassTable::GetDict("bdm::neuroscience::NeuriteElement")();
+  auto* tclass = TClassTable::GetDict("bdm::neuroscience::NeuriteElement")();
 
   // diameter
   {

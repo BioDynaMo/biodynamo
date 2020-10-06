@@ -31,9 +31,9 @@
 #include "core/util/math.h"
 #include "neuroscience/neurite_element.h"
 
+using bdm::neuroscience::NeuriteElement;
 using ROOT::Math::AxisAngle;
 using ROOT::Math::EulerAngles;
-using bdm::neuroscience::NeuriteElement;
 
 namespace bdm {
 

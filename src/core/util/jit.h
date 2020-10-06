@@ -77,16 +77,16 @@ class JitForEachDataMemberFunctor {
 // -----------------------------------------------------------------------------
 class JitHeaders {
  public:
-   /// Header must be an absolute path or relative to one of the include
-   /// directories known to cling.
-   static void Register(const std::string& header);
-   /// Include headers from `JitHeaders::headers_` into cling and 
-   /// removes them from the vector.
-   static void IncludeIntoCling();
+  /// Header must be an absolute path or relative to one of the include
+  /// directories known to cling.
+  static void Register(const std::string& header);
+  /// Include headers from `JitHeaders::headers_` into cling and
+  /// removes them from the vector.
+  static void IncludeIntoCling();
+
  private:
   static std::vector<std::string> headers_;
 };
-
 
 }  // namespace bdm
 

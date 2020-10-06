@@ -422,8 +422,7 @@ class ResourceManager {
 };
 
 inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {
-  os << "\033[1mSimulation objects per numa node\033[0m"
-     << std::endl;
+  os << "\033[1mSimulation objects per numa node\033[0m" << std::endl;
   uint64_t cnt = 0;
   for (auto& numa_sos : rm.sim_objects_) {
     os << "numa node " << cnt++ << " -> size: " << numa_sos.size() << std::endl;

@@ -43,7 +43,7 @@ TEST(StringUtilTest, StartsWith) {
 }
 
 TEST(StringUtilTest, Split) {
-  std::vector<std::string> expected = {"ab", "cde", "f"};  
+  std::vector<std::string> expected = {"ab", "cde", "f"};
   EXPECT_EQ(expected, Split("ab cde f", " "));
   EXPECT_EQ(expected, Split("ab<>cde<>f", "<>"));
   EXPECT_EQ(expected, Split("ab -Icde -If", " -I"));

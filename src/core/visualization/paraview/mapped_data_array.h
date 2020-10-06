@@ -23,7 +23,6 @@
 #include "core/functor.h"
 #include "core/param/param.h"
 #include "core/sim_object/sim_object.h"
-#include "core/sim_object/sim_object.h"
 #include "core/sim_object/so_pointer.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
