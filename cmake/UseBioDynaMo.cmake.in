@@ -250,7 +250,6 @@ include(${ROOT_USE_FILE})
 fix_rootcling_omp_issue()
 fix_macos_opencl_header_issue()
 
-# FIXME
 list(REMOVE_ITEM ROOT_LIBRARIES "$ENV{BDMSYS}/third_party/root/lib/libEve.so")
 set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES})
 

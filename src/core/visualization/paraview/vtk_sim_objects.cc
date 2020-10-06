@@ -171,12 +171,14 @@ void VtkSimObjects::UpdateMappedDataArrays(
 TClass* VtkSimObjects::FindTClass() {
   const auto& tclass_vector = FindClassSlow(name_);
   if (tclass_vector.size() == 0) {
-    // TODO message
-    Log::Fatal("VtkSimObjects::VtkSimObjects", "Class not found");
+    Log::Fatal("VtkSimObjects::VtkSimObjects", Concat("Could not find class: ", name_).c_str());
   } else if (tclass_vector.size() == 0) {
-    // TODO message
+    std::stringstream str;
+    for (auto& tc : tclass_vector) {
+      str << tc->GetName() << std::endl;
+    }
     Log::Fatal("VtkSimObjects::VtkSimObjects",
-               "Class name ambigous. Add namespace modifier");
+               Concat("Found multiple classes with name : ", name_, ". See list below. Fix this issue by adding a namespace modifier.\n'", str.str()).c_str());
   }
   return tclass_vector[0];
 }

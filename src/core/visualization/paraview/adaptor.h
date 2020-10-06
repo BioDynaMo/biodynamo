@@ -46,7 +46,6 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// Visualize one timestep based on the configuration in `Param`
   void Visualize();
 
-  // FIXME make private
   struct ParaviewImpl;
 
  private:

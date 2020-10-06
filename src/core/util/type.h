@@ -44,7 +44,7 @@ template <typename T>
 using raw_type = std::remove_pointer_t<std::decay_t<T>>;  // NOLINT
 
 // ----------------------------------------------------------------------------
-/// TODO document
+/// Checks whether T is std::array or bdm::MathArray
 template <typename T>
 struct IsArray : std::false_type {};
 

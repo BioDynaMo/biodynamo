@@ -135,8 +135,6 @@ void ParaviewAdaptor::Initialize() {
         ParaviewAdaptor::BuildPythonScriptString(param->pv_insitu_pipeline_);
     std::ofstream ofs;
     auto* sim = Simulation::GetActive();
-    // TODO(lukas) use vtkCPPythonStringPipeline once we update to Paraview
-    // v5.8
     std::string final_python_script_name =
         Concat(sim->GetOutputDir(), "/insitu_pipline.py");
     ofs.open(final_python_script_name);
