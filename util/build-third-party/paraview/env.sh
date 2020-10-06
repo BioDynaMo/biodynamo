@@ -18,8 +18,8 @@
 # import util functions
 . "$BDM_PROJECT_DIR/util/installation/common/util.sh"
 
-export PV_SUPERBUILD_VERSION="v5.8.0"
-export PV_VERSION="v5.8.0"
+export PV_SUPERBUILD_VERSION="v5.8.1"
+export PV_VERSION="v5.8.1"
 export PV_GIT_REPO="https://gitlab.kitware.com/paraview/paraview.git"
 
 export BDM_OS=$(DetectOs)

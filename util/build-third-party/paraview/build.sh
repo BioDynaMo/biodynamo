@@ -45,8 +45,9 @@ else
   export LLVM_CONFIG="/usr/bin/llvm-config-6"
 fi
 export PATH="$HOME/.pyenv/bin:$PATH"
+export PYENV_ROOT="$HOME/.pyenv"
 eval "$(pyenv init -)"
-pyenv shell 3.6.9
+pyenv shell 3.8.0
 
 
 # The CMAKE_INSTALL_RPATH will put all the specified paths in all the installed
@@ -83,6 +84,7 @@ if [ "$PV_FLAVOR" = "default" ]; then
     -DUSE_SYSTEM_qt5:BOOL=ON \
     -DENABLE_mpi:BOOL=ON \
     -DUSE_SYSTEM_mpi:BOOL=ON \
+    -DUSE_SYSTEM_python3:BOOL=ON \
     ../superbuild
 elif [ "$PV_FLAVOR" = "nvidia-headless" ]; then
   cmake \
@@ -101,6 +103,7 @@ elif [ "$PV_FLAVOR" = "nvidia-headless" ]; then
     -DENABLE_vtkm:BOOL=ON \
     -DENABLE_mpi:BOOL=ON \
     -DUSE_SYSTEM_mpi:BOOL=ON \
+    -DUSE_SYSTEM_python3:BOOL=ON \
     ../superbuild
 fi 
 
@@ -126,10 +129,11 @@ fi
 
 # For some reason this path is hardcoded in this file, which causes CMake to
 # panic. We just remove it.
-sed -i "s|${WORKING_DIR}/build/install/include/python3.7m||g" lib/cmake/paraview-5.8/vtk/VTK-targets.cmake || true
+# TODO(lukas) use different path on MacOS
+sed -i "s|${PYENV_ROOT}|\$ENV{USER}/.pyenv|g" lib/cmake/paraview-5.8/vtk/VTK-targets.cmake || true
 
 # Some dependencies could be put into lib64 (e.g. OpenImageDenoise), so we copy
 # it into the lib directory (don't delete lib64, because some CMake files will
 # be referring to that directory)
-rsync -a lib64/ lib/ || true
+# rsync -a lib64/ lib/ || true
 

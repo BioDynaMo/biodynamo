@@ -23,6 +23,7 @@ cd "$SCRIPT_DIR/build/install"
 ## tar the install directory
 RESULT_FILE=paraview-$PV_VERSION-$BDM_OS-$PV_FLAVOR.tar.gz 
 tar -zcf $RESULT_FILE *
+shasum -a256 ${RESULT_FILE} > ${RESULT_FILE}.sha256
 
 # After untarring the directory tree should like like this:
 # paraview
@@ -33,4 +34,5 @@ tar -zcf $RESULT_FILE *
 
 # Step 5: cp to destination directory
 cp $RESULT_FILE $BDM_PROJECT_DIR/build
+cp ${RESULT_FILE}.sha256 $BDM_PROJECT_DIR/build
 

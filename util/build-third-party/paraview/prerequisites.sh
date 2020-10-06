@@ -35,6 +35,7 @@ if [ `uname` = "Linux" ]; then
     sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm || true
     sudo yum install -y devtoolset-7-gcc*
     sudo yum install -y ninja-build
+    sudo yum install -y rsync 
 
     # OpenGL packages
     sudo yum install -y mesa-libGL-devel mesa-libGLU-devel glew-devel ftgl-devel
@@ -47,16 +48,9 @@ if [ `uname` = "Linux" ]; then
       sudo yum install -y mesa-libEGL-devel libglvnd libglvnd-egl libglvnd-opengl
     fi
   else
-    if [ $BDM_OS = "travis-linux" ]; then
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      sudo apt-get update
-      sudo apt-get -y install gcc-5 g++-5
-    else
-      sudo apt update
-      sudo apt-get -y install gcc g++
-    fi
-    # only for ubuntu image
-    sudo apt-get -y install wget git make
+    sudo apt update
+    sudo apt-get -y install gcc g++
+    sudo apt-get -y install rsync wget git make
     # paraview
     sudo apt-get -y install libopenmpi-dev || true
     sudo apt-get install -y ninja-build
@@ -92,8 +86,8 @@ fi
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
-pyenv shell 3.6.9
+env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+pyenv shell 3.8.0
 
 # qt
 mkdir -p $QT_INSTALL_DIR

@@ -116,12 +116,12 @@ EOF'
   DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.17.3 1
   export PATH=$WORKING_DIR/cmake-3.17.3/bin:$PATH
 
-  # Install pyenv and python 3.6.9
+  # Install pyenv and python 3.8.0
   curl https://pyenv.run | bash
   export PATH="$HOME/.pyenv/bin:$PATH"
   eval "$(pyenv init -)"
-  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
-  pyenv shell 3.6.9
+  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+  pyenv shell 3.8.0
 
 else
   brew install llvm@6
