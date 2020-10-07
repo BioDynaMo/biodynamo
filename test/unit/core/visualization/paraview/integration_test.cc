@@ -212,7 +212,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
   }
 
   // Don't run a simulation step, because neurites are not properly set up.
-  (*sim->GetScheduler()->visualize_op_)();
+  (*sim->GetScheduler()->GetOps("visualize")[0])();
 
   sim_name = sim->GetUniqueName();
 
