@@ -21,13 +21,14 @@
 
 namespace bdm {
 
-/// A class that sets up diffusion grids of the substances in this simulation
+/// A operation that balances the simulation objects among the available NUMA
+/// domains in order to minimize crosstalk. This operation invalidates the
+/// SoHandles in the ResourceManager
 struct LoadBalancingOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(LoadBalancingOp);
 
   void operator()() override {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
     rm->SortAndBalanceNumaNodes();
   }
 };

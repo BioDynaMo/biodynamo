@@ -74,6 +74,53 @@ class SimObjectVector {
     return data_[handle.GetNumaNode()][handle.GetElementIdx()];
   }
 
+  bool operator==(const SimObjectVector<T>& other) const {
+    if (size_ != other.size_) {
+      return false;
+    }
+    // inline data
+    for (size_t i = 0; i < size_.size(); i++) {
+      auto sz = size_[i];
+      for (size_t j = 0; j < sz; j++) {
+        if (data_[i][j] != other.data_[i][j]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  bool operator!=(const SimObjectVector<T>& other) const {
+    return !this->operator==(other);
+  }
+
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const SimObjectVector<T>& sov) {
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    int nd = 0;
+    os << "{\n";
+    // For each numa domain
+    for (const auto& vec : sov.data_) {
+      os << "Domain " << nd << ": [";
+      int n = 0;
+      auto max = rm->GetNumSimObjects(nd);
+      // For each object in domain `nd` (and remaining extra buffer)
+      for (size_t i = 0; i < vec.capacity(); i++) {
+        os << sov.data_[nd][i];
+        if (n == max - 1) {
+          os << "   |||   ";
+        } else {
+          os << "   |   ";
+        };
+        n++;
+      }
+      os << std::endl;
+      nd++;
+    }
+    os << "\n}";
+    return os;
+  }
+
  private:
   /// one std::vector<T> for each numa node
   std::vector<std::vector<T>> data_;

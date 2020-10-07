@@ -328,8 +328,8 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   }
 
   auto branches = ne->Bifurcate();
-  auto branch_l = branches[0];
-  auto branch_r = branches[1];
+  auto branch_l = branches[0]->GetSoPtr<NeuriteElement>();
+  auto branch_r = branches[1]->GetSoPtr<NeuriteElement>();
 
   for (int i = 0; i < 200; i++) {
     branch_r->ElongateTerminalEnd(100, direction);
@@ -372,7 +372,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
     scheduler->Simulate(1);
   }
 
-  auto ne2 = ne->Branch(0.5, direction2);
+  auto ne2 = ne->Branch(0.5, direction2)->GetSoPtr<NeuriteElement>();
 
   EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);

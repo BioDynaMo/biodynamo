@@ -48,11 +48,7 @@ void Operation::operator()(SimObject *so) {
   (*implementations_[active_target_])(so);
 }
 
-void Operation::operator()() {
-  if (standalone_enabled_) {
-    (*implementations_[active_target_])();
-  }
-}
+void Operation::operator()() { (*implementations_[active_target_])(); }
 
 void Operation::AddOperationImpl(OpComputeTarget target, OperationImpl *impl) {
   if (implementations_.size() < static_cast<size_t>(target + 1)) {
