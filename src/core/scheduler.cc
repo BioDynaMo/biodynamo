@@ -84,7 +84,7 @@ Scheduler::Scheduler() {
       "discretization",          "distribute run displacment info",
       "set up iteration",        "update environment",
       "tear down iteration"};
-  
+
   GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
   // ScheduleOps();
 }
