@@ -218,6 +218,7 @@ class SimObject {
   /// Return simulation object pointer
   template <typename TSimObject = SimObject>
   SoPointer<TSimObject> GetSoPtr() const {
+    static_assert(!std::is_pointer<TSimObject>::value, "Cannot be of pointer type!");
     return SoPointer<TSimObject>(uid_);
   }
 

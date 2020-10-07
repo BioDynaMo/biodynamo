@@ -13,13 +13,49 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/core/scheduler_test.h"
+#include "core/environment/uniform_grid_environment.h"
+#include "core/model_initializer.h"
 #include "core/operation/operation_registry.h"
 
 namespace bdm {
-namespace scheduler_test_internal {
+
+class SchedulerTest : public ::testing::Test {
+ public:
+  SchedulerTest() {}
+  SchedulerTest(Scheduler* scheduler, UniformGridEnvironment* env) {
+    scheduler_ = scheduler;
+    env_ = env;
+  }
+
+  void ScheduleOps() { scheduler_->ScheduleOps(); };
+
+  void RunPreScheduledOps() { scheduler_->RunPreScheduledOps(); };
+
+  void RunScheduledOps() { scheduler_->RunScheduledOps(); };
+
+  void RunPostScheduledOps() { scheduler_->RunPostScheduledOps(); };
+
+  virtual void SetUp() {}
+
+  void TestBody() override {}
+
+  virtual void TearDown() {}
+
+  void Initialize() { scheduler_->restore_point_++; }
+
+  ParallelResizeVector<UniformGridEnvironment::Box>* GetBoxes() {
+    return &(env_->boxes_);
+  }
+
+  SimObjectVector<SoHandle>* GetSuccessors() { return &(env_->successors_); }
+
+ private:
+  Scheduler* scheduler_ = nullptr;
+  UniformGridEnvironment* env_ = nullptr;
+};
 
 #ifdef USE_DICT
-TEST(SchedulerTest, NoRestoreFile) {
+TEST_F(SchedulerTest, NoRestoreFile) {
   auto set_param = [](auto* param) { param->restore_file_ = ""; };
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
@@ -45,12 +81,12 @@ TEST(SchedulerTest, NoRestoreFile) {
   EXPECT_EQ(1u, rm->GetNumSimObjects());
 }
 
-TEST(SchedulerTest, Restore) { RunRestoreTest(); }
+TEST_F(SchedulerTest, Restore) { RunRestoreTest(); }
 
-TEST(SchedulerTest, Backup) { RunBackupTest(); }
+TEST_F(SchedulerTest, Backup) { RunBackupTest(); }
 #endif  // USE_DICT
 
-TEST(SchedulerTest, EmptySimulationFromBeginning) {
+TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
   auto set_param = [](auto* param) {
     param->bound_space_ = true;
     param->min_bound_ = -10;
@@ -67,7 +103,7 @@ TEST(SchedulerTest, EmptySimulationFromBeginning) {
   EXPECT_EQ(expected_dimensions, env->GetDimensions());
 }
 
-TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
+TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
   auto set_param = [](auto* param) {
     param->bound_space_ = true;
     param->min_bound_ = -10;
@@ -78,6 +114,12 @@ TEST(SchedulerTest, EmptySimulationAfterFirstIteration) {
   auto* rm = simulation.GetResourceManager();
   auto* env = simulation.GetEnvironment();
   auto* scheduler = simulation.GetScheduler();
+
+  // We cannot rebalance after the rm->Clear() below, since LoadBalancingOp
+  // relies on the ResourceManager. Therefore we only run it once at the
+  // beginning
+  scheduler->GetOps("load balancing")[0]->frequency_ =
+      std::numeric_limits<std::size_t>::max();
 
   Cell* cell = new Cell(10);
   rm->push_back(cell);
@@ -104,7 +146,7 @@ struct TestOp : public SimObjectOperationImpl {
 
 BDM_REGISTER_OP(TestOp, "test_op", kCpu)
 
-TEST(SchedulerTest, OperationManagement) {
+TEST_F(SchedulerTest, OperationManagement) {
   Simulation simulation(TEST_NAME);
 
   simulation.GetResourceManager()->push_back(new Cell(10));
@@ -179,7 +221,7 @@ struct MultiOpOpenCl : public StandaloneOperationImpl {
 
 BDM_REGISTER_OP(MultiOpOpenCl, "multi_op", kOpenCl)
 
-TEST(SchedulerTest, OperationImpl) {
+TEST_F(SchedulerTest, OperationImpl) {
   auto* cpu_op = NewOperation("cpu_op");
   auto* cuda_op = NewOperation("cuda_op");
   auto* opencl_op = NewOperation("opencl_op");
@@ -286,7 +328,7 @@ struct ComplexStateOp : public SimObjectOperationImpl {
 
 BDM_REGISTER_OP(ComplexStateOp, "complex_state_op", kCpu)
 
-TEST(SchedulerTest, OperationCloning) {
+TEST_F(SchedulerTest, OperationCloning) {
   auto* op = NewOperation("complex_state_op");
   op->frequency_ = 42;
   op->active_target_ = kOpenCl;
@@ -315,7 +357,7 @@ TEST(SchedulerTest, OperationCloning) {
   delete clone;
 }
 
-TEST(SchedulerTest, MultipleSimulations) {
+TEST_F(SchedulerTest, MultipleSimulations) {
   Simulation* sim1 = new Simulation("sim1");
   Simulation* sim2 = new Simulation("sim2");
 
@@ -355,7 +397,7 @@ TEST(SchedulerTest, MultipleSimulations) {
   delete sim2;
 }
 
-TEST(SchedulerTest, GetOps) {
+TEST_F(SchedulerTest, GetOps) {
   Simulation sim(TEST_NAME);
   sim.GetResourceManager()->push_back(new Cell(10));
   auto* scheduler = sim.GetScheduler();
@@ -383,7 +425,7 @@ TEST(SchedulerTest, GetOps) {
   EXPECT_EQ(0u, scheduler->GetOps("first op").size());
 }
 
-TEST(SchedulerTest, ScheduleOrder) {
+TEST_F(SchedulerTest, ScheduleOrder) {
   Simulation sim(TEST_NAME);
   sim.GetResourceManager()->push_back(new Cell(10));
   auto* scheduler = sim.GetScheduler();
@@ -409,5 +451,47 @@ TEST(SchedulerTest, ScheduleOrder) {
   }
 }
 
-}  // namespace scheduler_test_internal
+// The load and balance operation must be scheduled at the end of an interation,
+// in order to avoid using invalidated SoHandles in operations that rely
+// SoHandles
+TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
+  auto set_param = [&](Param* param) { param->scheduling_batch_size_ = 3; };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* scheduler = simulation.GetScheduler();
+
+  scheduler->GetOps("load balancing")[0]->frequency_ = 1;
+
+  UniformGridEnvironment* env =
+      static_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
+
+  ModelInitializer::Grid3D(2, 5, [](const Double3& pos) {
+    Cell* cell = new Cell(pos);
+    cell->SetDiameter(8);
+    return cell;
+  });
+
+  SchedulerTest scheduler_wrapper(scheduler, env);
+
+  // Scheduler::Execute() has the order:
+  //    ScheduleOps();
+  //    RunPreScheduledOps();
+  //    RunScheduledOps();
+  //    RunPostScheduledOps();
+
+  scheduler_wrapper.Initialize();
+  scheduler_wrapper.ScheduleOps();
+
+  // Emulate the Scheduler::Execute() call
+  for (int i = 0; i < 5; i++) {
+    auto* successors = scheduler_wrapper.GetSuccessors();
+    // The SoHandles must be consistent throughout these steps
+    scheduler_wrapper.RunPreScheduledOps();
+    EXPECT_EQ(successors, scheduler_wrapper.GetSuccessors());
+    scheduler_wrapper.RunScheduledOps();
+    EXPECT_EQ(successors, scheduler_wrapper.GetSuccessors());
+    scheduler_wrapper.RunPostScheduledOps();
+    EXPECT_EQ(successors, scheduler_wrapper.GetSuccessors());
+  }
+}
+
 }  // namespace bdm

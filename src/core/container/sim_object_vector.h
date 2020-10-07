@@ -74,6 +74,26 @@ class SimObjectVector {
     return data_[handle.GetNumaNode()][handle.GetElementIdx()];
   }
 
+  bool operator==(const SimObjectVector<T>& other) const {
+    if (size_ != other.size_) {
+      return false;
+    }
+    // inline data
+    for (size_t i = 0; i < size_.size(); i++) {
+      auto sz = size_[i];
+      for (size_t j = 0; j < sz; j++) {
+        if (data_[i][j] != other.data_[i][j]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  bool operator!=(const SimObjectVector<T>& other) const {
+    return !this->operator==(other);
+  }
+
  private:
   /// one std::vector<T> for each numa node
   std::vector<std::vector<T>> data_;
