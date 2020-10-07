@@ -60,7 +60,7 @@ Scheduler::Scheduler() {
   //  TearDownOps() <-- indexing with SoHandles is different than at (1)
   // ```
   std::vector<std::string> post_scheduled_ops_names = {
-      "visualize", "load balancing", "tear down iteration"};
+      "tear down iteration", "visualize", "load balancing"};
 
   // Schedule the default operations
   for (auto& def_op : default_op_names) {
