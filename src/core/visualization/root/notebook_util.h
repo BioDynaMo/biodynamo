@@ -26,7 +26,7 @@ inline void VisualizeInNotebook(size_t w = 300, size_t h = 300,
   auto* param = sim->GetParam();
   // Force an update of the visualization engine
   sim->GetScheduler()->GetRootVisualization()->Visualize(
-      param->visualization_interval);
+      param->visuallization_interval_);
   sim->GetScheduler()->GetRootVisualization()->DrawInCanvas(w, h, opt);
 }
 

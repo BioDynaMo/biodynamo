@@ -206,7 +206,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "visualization.pv_insitu_pipeline_arguments");
   BDM_ASSIGN_CONFIG_VALUE(root_visualization_, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_interval, "visualization.interval");
+  BDM_ASSIGN_CONFIG_VALUE(visuallization_interval_, "visualization.interval");
   BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm_,
                           "visualization.export_generate_pvsm");
   BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files_,
