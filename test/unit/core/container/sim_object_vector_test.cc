@@ -43,4 +43,36 @@ TEST(SimObjectVectorTest, All) {
   EXPECT_EQ(0u, vector.size(0));
 }
 
+TEST(SimObjectVectorTest, Equality) {
+  std::string sim_name("simulation_object_vector_test_RunInitializerTest2");
+  Simulation simulation(sim_name);
+  auto* rm = simulation.GetResourceManager();
+
+  rm->push_back(new TestSimObject());
+  rm->push_back(new TestSimObject());
+  rm->push_back(new TestSimObject());
+
+  SimObjectVector<int> vec_a;
+  SimObjectVector<int> vec_b;
+  EXPECT_EQ(3u, vec_a.size(0));
+  EXPECT_EQ(3u, vec_b.size(0));
+
+  // values are not initialized
+  vec_a[SoHandle(0, 0)] = 1;
+  vec_a[SoHandle(0, 1)] = 2;
+  vec_a[SoHandle(0, 2)] = 3;
+
+  EXPECT_NE(vec_a, vec_b);
+
+  vec_b[SoHandle(0, 0)] = 1;
+  vec_b[SoHandle(0, 1)] = 2;
+  vec_b[SoHandle(0, 2)] = 3;
+
+  EXPECT_EQ(vec_a, vec_b);
+
+  vec_a.clear();
+  vec_b.clear();
+  EXPECT_EQ(vec_a, vec_b);
+}
+
 }  // namespace bdm

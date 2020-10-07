@@ -30,7 +30,6 @@
 #define ROOTFILE "bdmFile.root"
 
 namespace bdm {
-namespace scheduler_test_internal {
 
 class TestSchedulerRestore : public Scheduler {
  public:
@@ -123,7 +122,6 @@ inline void RunBackupTest() {
   remove(ROOTFILE);
 }
 
-}  // namespace scheduler_test_internal
 }  // namespace bdm
 
 #endif  // UNIT_CORE_SCHEDULER_TEST_H_
