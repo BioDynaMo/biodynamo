@@ -50,7 +50,7 @@ Scheduler::Scheduler() {
       "distribute run displacement info",
       "diffusion"};
 
-  std::vector<std::string> pre_scheduled_ops_names = {"set up iteration", 
+  std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
                                                       "update environment"};
   // We cannot put sort and balance in the list of scheduled_standalone_ops_,
   // because numa-aware data structures would be invalidated:
@@ -59,8 +59,11 @@ Scheduler::Scheduler() {
   //  RunScheduledOps() <-- rebalance numa domains
   //  TearDownOps() <-- indexing with SoHandles is different than at (1)
   // ```
+  // Also, must be done before TearDownIteration, because that introduces new
+  // sim objects that are not yet in the environment (which load balancing
+  // relies on)
   std::vector<std::string> post_scheduled_ops_names = {
-      "tear down iteration", "visualize", "load balancing"};
+      "load balancing", "tear down iteration", "visualize"};
 
   // Schedule the default operations
   for (auto& def_op : default_op_names) {
@@ -80,6 +83,7 @@ Scheduler::Scheduler() {
       "discretization",          "distribute run displacment info",
       "set up iteration",        "update environment",
       "tear down iteration"};
+  ScheduleOps();
 }
 
 Scheduler::~Scheduler() {
@@ -130,7 +134,7 @@ void Scheduler::UnscheduleOp(Operation* op) {
 
   // Check if the requested operation is even scheduled
   bool not_in_scheduled_ops = true;
-  ForAllScheduledOperations([&](Operation* scheduled_op) {
+  ForAllOperations([&](Operation* scheduled_op) {
     if (op == scheduled_op) {
       not_in_scheduled_ops = false;
     }
