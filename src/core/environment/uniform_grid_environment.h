@@ -55,6 +55,7 @@ class UniformGridEnvironment : public Environment {
   // the grid on GPU (same for DisplacementOpOpenCL)
   friend struct DisplacementOpCuda;
   friend struct DisplacementOpOpenCL;
+  friend class SchedulerTest;
 
  public:
   /// A single unit cube of the grid
