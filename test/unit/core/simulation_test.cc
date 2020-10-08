@@ -132,7 +132,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_TRUE(param->export_visualization_);
     EXPECT_EQ("my-insitu-script.py", param->pv_insitu_pipeline_);
     EXPECT_EQ("--param1=123", param->pv_insitu_pipeline_arguments_);
-    EXPECT_EQ(100u, param->visuallization_interval_);
+    EXPECT_EQ(100u, param->visualization_interval_);
     EXPECT_FALSE(param->visualization_export_generate_pvsm_);
     EXPECT_FALSE(param->visualization_compress_pv_files_);
 

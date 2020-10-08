@@ -293,7 +293,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     interval = 1
-  uint32_t visuallization_interval_ = 1;
+  uint32_t visualization_interval_ = 1;
 
   /// If `export_visualization_` is set to true, this parameter specifies
   /// if the ParaView pvsm file will be generated!\n
