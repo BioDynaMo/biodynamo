@@ -404,6 +404,15 @@
 
 
 {
+   paraview-21
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:emutls_alloc
+   fun:__emutls_get_address
+}
+
+{
    paraview-catalyst
    Memcheck:Leak
    ...

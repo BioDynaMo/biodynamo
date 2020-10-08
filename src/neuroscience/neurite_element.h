@@ -54,13 +54,7 @@ namespace neuroscience {
 /// Only the distal end is moved. All the forces that are applied to the
 /// proximal node are transmitted to the mother element
 class NeuriteElement : public SimObject, public NeuronOrNeurite {
-  BDM_SIM_OBJECT_HEADER(NeuriteElement, SimObject, 1, mass_location_, position_,
-                        volume_, diameter_, density_, adherence_, x_axis_,
-                        y_axis_, z_axis_, is_axon_, mother_, daughter_left_,
-                        daughter_right_, branch_order_,
-                        force_to_transmit_to_proximal_mass_, spring_axis_,
-                        actual_length_, tension_, spring_constant_,
-                        resting_length_);
+  BDM_SIM_OBJECT_HEADER(NeuriteElement, SimObject, 1);
 
  public:
   NeuriteElement() {

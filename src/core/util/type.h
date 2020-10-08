@@ -17,6 +17,8 @@
 
 #include <type_traits>
 #include <typeinfo>
+
+#include "core/container/math_array.h"
 #include "core/shape.h"
 #include "core/util/string.h"
 
@@ -40,6 +42,17 @@ struct type_ternary_operator<false, T, U> {
 /// Type trait that converts `T*`, `T&`, `T&&`, `T*&` to `T`
 template <typename T>
 using raw_type = std::remove_pointer_t<std::decay_t<T>>;  // NOLINT
+
+// ----------------------------------------------------------------------------
+/// Checks whether T is std::array or bdm::MathArray
+template <typename T>
+struct IsArray : std::false_type {};
+
+template <typename T, size_t N>
+struct IsArray<std::array<T, N>> : std::true_type {};
+
+template <typename T, std::size_t N>
+struct IsArray<MathArray<T, N>> : std::true_type {};
 
 /// Use this cast if you want to downcast an object to a known type with extra
 /// safety. The extra safety check will only be performed in Debug mode.

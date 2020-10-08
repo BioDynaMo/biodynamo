@@ -119,7 +119,7 @@ into it:
 ```
 [visualization]
 export = true
-export_interval = 10
+interval = 10
 
 	[[visualize_sim_object]]
 	name = "Cell"
@@ -229,7 +229,7 @@ diffusion_type_ = "RK"
 
 [visualization]
 export = true
-export_interval = 10
+interval = 10
 diffusion_type = "RK"
 
 	[[visualize_sim_object]]

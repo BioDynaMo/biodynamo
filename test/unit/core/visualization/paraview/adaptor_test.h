@@ -21,7 +21,7 @@ namespace bdm {
 namespace paraview_adaptor_test_internal {
 
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, dummmy_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
@@ -32,7 +32,7 @@ class MyCell : public Cell {
 };
 
 class MyNeuron : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyNeuron, Cell, 1, dummmy_);
+  BDM_SIM_OBJECT_HEADER(MyNeuron, Cell, 1);
 
  public:
   MyNeuron() {}

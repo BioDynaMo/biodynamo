@@ -49,10 +49,13 @@ class SimulationTest : public ::testing::Test {
       "thread_safety_mechanism = \"automatic\"\n"
       "\n"
       "[visualization]\n"
-      "live = false\n"
+      "insitu = false\n"
       "export = true\n"
-      "export_interval = 100\n"
+      "pv_insitu_pipeline = \"my-insitu-script.py\"\n"
+      "pv_insitu_pipeline_arguments = \"--param1=123\"\n"
+      "interval = 100\n"
       "export_generate_pvsm = false\n"
+      "compress_pv_files = false\n"
       "\n"
       "  [[visualize_sim_object]]\n"
       "  name = \"Cell\"\n"
@@ -81,6 +84,7 @@ class SimulationTest : public ::testing::Test {
       "mem_mgr_growth_rate = 1.123\n"
       "mem_mgr_max_mem_per_thread = 987654\n"
       "minimize_memory_while_rebalancing = false\n"
+      "mapped_data_array_mode = \"cache\"\n"
       "\n"
       "[development]\n"
       "# this is a comment\n"
@@ -124,10 +128,13 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(200, param->max_bound_);
     EXPECT_EQ(Param::ThreadSafetyMechanism::kAutomatic,
               param->thread_safety_mechanism_);
-    EXPECT_FALSE(param->live_visualization_);
+    EXPECT_FALSE(param->insitu_visualization_);
     EXPECT_TRUE(param->export_visualization_);
-    EXPECT_EQ(100u, param->visualization_export_interval_);
+    EXPECT_EQ("my-insitu-script.py", param->pv_insitu_pipeline_);
+    EXPECT_EQ("--param1=123", param->pv_insitu_pipeline_arguments_);
+    EXPECT_EQ(100u, param->visuallization_interval_);
     EXPECT_FALSE(param->visualization_export_generate_pvsm_);
+    EXPECT_FALSE(param->visualization_compress_pv_files_);
 
     // visualize_sim_object
     EXPECT_EQ(2u, param->visualize_sim_objects_.size());
@@ -176,6 +183,8 @@ class SimulationTest : public ::testing::Test {
     EXPECT_NEAR(1.123, param->mem_mgr_growth_rate_, abs_error<double>::value);
     EXPECT_EQ(987654u, param->mem_mgr_max_mem_per_thread_);
     EXPECT_FALSE(param->minimize_memory_while_rebalancing_);
+    EXPECT_EQ(Param::MappedDataArrayMode::kCache,
+              param->mapped_data_array_mode_);
 
     // development group
     EXPECT_FALSE(param->statistics_);

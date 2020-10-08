@@ -17,6 +17,8 @@ ExternalProject_Add(
   gtest
   URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
+  CMAKE_ARGS
+    -DCMAKE_CXX_FLAGS="-fPIC"
   CMAKE_CACHE_ARGS
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
@@ -80,11 +82,11 @@ function(bdm_add_test_executable TEST_TARGET)
 
   # add valgrind test
   if (valgrind AND VALGRIND_FOUND AND NOT coverage)
-    # filter out SchedulerTest.Backup because of timing issue
+    # filter out tests that would take too long if tested under valgrind 
     add_test(NAME "valgrind_${TEST_TARGET}"
-    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*:SimObjectVectorTest.Equality:SchedulerTest::LoadAndBalanceAfterEnvironment)
+    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*:ParaviewIntegrationTest*:SimObjectVectorTest.Equality:SchedulerTest::LoadAndBalanceAfterEnvironment)
     add_custom_target(run-valgrind
-    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*:SimObjectVectorTest.Equality:SchedulerTest::LoadAndBalanceAfterEnvironment)
+    COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndApplyOnAllElementsParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*:ParaviewIntegrationTest*:SimObjectVectorTest.Equality:SchedulerTest::LoadAndBalanceAfterEnvironment)
     add_dependencies(run-valgrind biodynamo-unit-tests)
   endif()
 

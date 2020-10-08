@@ -48,6 +48,7 @@
 #include "core/sim_object/so_uid.h"
 #include "core/sim_object/so_uid_generator.h"
 #include "core/simulation.h"
+#include "core/type_index.h"
 #include "core/util/numa.h"
 #include "core/util/root.h"
 #include "core/util/thread_info.h"
@@ -62,16 +63,7 @@ class ResourceManager {
  public:
   explicit ResourceManager(TRootIOCtor* r) {}
 
-  /// Default constructor. Unfortunately needs to be public although it is
-  /// a singleton to be able to use ROOT I/O
-  ResourceManager() {
-    // Must be called prior any other function call to libnuma
-    if (auto ret = numa_available() == -1) {
-      Log::Fatal("ResourceManager",
-                 "Call to numa_available failed with return code: ", ret);
-    }
-    sim_objects_.resize(numa_num_configured_nodes());
-  }
+  ResourceManager();
 
   virtual ~ResourceManager() {
     for (auto& el : diffusion_grids_) {
@@ -81,6 +73,9 @@ class ResourceManager {
       for (auto* so : numa_sos) {
         delete so;
       }
+    }
+    if (type_index_) {
+      delete type_index_;
     }
   }
 
@@ -101,6 +96,14 @@ class ResourceManager {
     diffusion_grids_ = std::move(other.diffusion_grids_);
 
     RestoreUidSoMap();
+    // restore type_index_
+    if (type_index_) {
+      for (auto& numa_sos : sim_objects_) {
+        for (auto* so : numa_sos) {
+          type_index_->Add(so);
+        }
+      }
+    }
     return *this;
   }
 
@@ -258,6 +261,9 @@ class ResourceManager {
     for (auto& numa_sos : sim_objects_) {
       numa_sos.reserve(capacity);
     }
+    if (type_index_) {
+      type_index_->Reserve(capacity);
+    }
   }
 
   /// Resize `sim_objects_[numa_node]` such that it holds `current + additional`
@@ -291,6 +297,9 @@ class ResourceManager {
       }
       numa_sos.clear();
     }
+    if (type_index_) {
+      type_index_->Clear();
+    }
   }
 
   /// Reorder simulation objects such that, sim objects are distributed to NUMA
@@ -311,13 +320,20 @@ class ResourceManager {
     sim_objects_[numa_node].push_back(so);
     uid_soh_map_.Insert(
         uid, SoHandle(numa_node, sim_objects_[numa_node].size() - 1));
+    if (type_index_) {
+      type_index_->Add(so);
+    }
   }
 
   void ResizeUidSohMap() {
     auto* so_uid_generator = Simulation::GetActive()->GetSoUidGenerator();
     auto highest_idx = so_uid_generator->GetHighestIndex();
+    auto new_size = highest_idx * 1.5 + 1;
     if (highest_idx >= uid_soh_map_.size()) {
-      uid_soh_map_.resize(highest_idx * 1.5 + 1);
+      uid_soh_map_.resize(new_size);
+    }
+    if (type_index_) {
+      type_index_->Reserve(new_size);
     }
   }
 
@@ -348,6 +364,12 @@ class ResourceManager {
       sim_objects_[numa_node][offset + i] = so;
       i++;
     }
+    if (type_index_) {
+#pragma omp critical
+      for (auto* so : new_sim_objects) {
+        type_index_->Add(so);
+      }
+    }
   }
 
   /// Removes the simulation object with the given uid.\n
@@ -361,19 +383,26 @@ class ResourceManager {
       uid_soh_map_.Remove(uid);
       // remove from vector
       auto& numa_sos = sim_objects_[soh.GetNumaNode()];
+      SimObject* so = nullptr;
       if (soh.GetElementIdx() == numa_sos.size() - 1) {
-        delete numa_sos.back();
+        so = numa_sos.back();
         numa_sos.pop_back();
       } else {
         // swap
-        delete numa_sos[soh.GetElementIdx()];
+        so = numa_sos[soh.GetElementIdx()];
         auto* reordered = numa_sos.back();
         numa_sos[soh.GetElementIdx()] = reordered;
         numa_sos.pop_back();
         uid_soh_map_.Insert(reordered->GetUid(), soh);
       }
+      if (type_index_) {
+        type_index_->Remove(so);
+      }
+      delete so;
     }
   }
+
+  const TypeIndex* GetTypeIndex() const { return type_index_; }
 
  protected:
   /// Maps an SoUid to its storage location in `sim_objects_` \n
@@ -385,14 +414,15 @@ class ResourceManager {
 
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
+  TypeIndex* type_index_ = nullptr;
+
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
   BDM_CLASS_DEF_NV(ResourceManager, 1);
 };
 
 inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {
-  os << "\033[1mSimulation objects per numa node\033[0m"
-     << std::endl;
+  os << "\033[1mSimulation objects per numa node\033[0m" << std::endl;
   uint64_t cnt = 0;
   for (auto& numa_sos : rm.sim_objects_) {
     os << "numa node " << cnt++ << " -> size: " << numa_sos.size() << std::endl;

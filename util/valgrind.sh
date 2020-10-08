@@ -27,4 +27,4 @@ valgrind \
   --suppressions=${BDM_PROJECT_DIR}/util/valgrind-bdm.supp \
   --suppressions=$ROOTSYS/etc/valgrind-root.supp \
   --error-exitcode=1 \
-  $@
+  "$@"

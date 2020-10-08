@@ -20,7 +20,7 @@
 #include "core/operation/dividing_cell_op.h"
 #include "core/operation/load_balancing_op.h"
 #include "core/operation/operation.h"
-#include "core/visualization/visualization_adaptor.h"
+#include "core/operation/visualization_op.h"
 
 namespace bdm {
 
@@ -114,33 +114,6 @@ struct UpdateEnvironmentOp : public StandaloneOperationImpl {
 };
 
 BDM_REGISTER_OP(UpdateEnvironmentOp, "update environment", kCpu);
-
-struct VisualizationOp : public StandaloneOperationImpl {
-  BDM_OP_HEADER(VisualizationOp);
-
-  ~VisualizationOp() {
-    if (visualization_) {
-      delete visualization_;
-    }
-  }
-
-  void operator()() override {
-    // Cannot be done in constructor because no Simulation object will be
-    // created statically
-    if (!initialized_) {
-      auto* param = Simulation::GetActive()->GetParam();
-      visualization_ =
-          VisualizationAdaptor::Create(param->visualization_engine_);
-      initialized_ = true;
-    }
-    if (visualization_ != nullptr) {
-      visualization_->Visualize();
-    }
-  }
-
-  VisualizationAdaptor* visualization_ = nullptr;
-  bool initialized_ = false;
-};
 
 BDM_REGISTER_OP(VisualizationOp, "visualize", kCpu);
 

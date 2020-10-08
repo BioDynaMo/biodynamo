@@ -182,6 +182,7 @@ function(install_inside_build)
             DESTINATION ${CMAKE_INSTALL_BINDIR}
             ${CMAKE_BINARY_DIR}/version/version.py
             ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
+            ${CMAKE_SOURCE_DIR}/cmake/bdm-dictionary
             )
 
     # Copy some cmake files
@@ -249,7 +250,6 @@ function(install_inside_build)
             )
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            ${CMAKE_SOURCE_DIR}/third_party/cpp_magic.h
             ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1/cxxopts.h
             )
     add_copy_files(copy_files_bdm
@@ -280,6 +280,16 @@ function(install_inside_build)
     # BioDynaMo paraview plugin (Apple support when we upgrade to v5.8 on macos)
     if(paraview AND NOT APPLE)
       BuildParaViewPlugin()
+    endif()
+
+    if (test)
+      message("-------------------------")
+      message(              ${CMAKE_SOURCE_DIR}/test/unit)
+      add_copy_directory(copy_files_bdm
+              ${CMAKE_SOURCE_DIR}/test/unit/
+              DESTINATION ${CMAKE_INSTALL_ROOT}/share/test
+              GLOB "**/*.py"
+              )
     endif()
 
     add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})

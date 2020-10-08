@@ -54,10 +54,13 @@ mkdir -p $ROOT_INSTALL_DIR
 # install prerequisites
 . $BDM_PROJECT_DIR/util/build-third-party/third-party-prerequisites.sh
 
-# Get the right ROOT source version, untar creates "root-$ROOT_VERSION"
-wget https://root.cern.ch/download/root_v$ROOT_VERSION.source.tar.gz
-tar -zxf root_v$ROOT_VERSION.source.tar.gz
-ROOTSRC=root-$ROOT_VERSION
+git clone https://github.com/root-project/root.git
+
+cd root
+git checkout $ROOT_VERSION
+git status
+ROOTSRC=`pwd`
+cd ..
 
 # Set Python to $PYVERS
 if [[ $(uname -s) == "Darwin" ]]; then
@@ -101,7 +104,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
      -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
      -DCMAKE_CXX_STANDARD=14 \
      -DPYTHON_EXECUTABLE=`pyenv which python` \
-     ../$ROOTSRC
+     $ROOTSRC
 else
   cmake -G Ninja \
     -Dbuiltin_fftw3=ON \
@@ -124,16 +127,17 @@ else
     -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
     -DCMAKE_CXX_STANDARD=14 \
     -DPYTHON_EXECUTABLE=`pyenv which python` \
-    ../$ROOTSRC
+    $ROOTSRC
 fi
 
 ninja install
 
 cd $ROOT_INSTALL_DIR
-RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
+RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
 tar -zcf ${RESULT_FILE} *
 
 # mv to destination directory
 mv ${RESULT_FILE} $DEST_DIR
 cd $DEST_DIR
 shasum -a256 ${RESULT_FILE} > ${RESULT_FILE}.sha256
+

@@ -292,10 +292,16 @@ if(paraview)
     # compatible binaries
     if(APPLE)
       find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
-            vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+            vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
+      if(${ParaView_FOUND})
+        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
+      endif()
     else()
       find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
+      if(${ParaView_FOUND})
+        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
+      endif()
     endif()
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
@@ -322,13 +328,14 @@ if(paraview)
       if(APPLE)
         find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
               vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
       else()
         find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
               PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
       endif()
     endif()
 
-    include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
@@ -467,6 +474,7 @@ if (LINUX)
   set(FS_LIB stdc++fs)
 endif()
 build_shared_library(biodynamo
+                   SELECTION selection-libbiodynamo.xml
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} ${FS_LIB})
@@ -481,6 +489,7 @@ if(paraview)
   # resolve missing python symbols when creating binaries
   set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
   build_shared_library(VisualizationAdaptor
+                    SELECTION selection-libVisualizationAdaptor.xml
                     SOURCES ${PV_SOURCES}
                     HEADERS ${PV_HEADERS}
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
@@ -558,6 +567,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.cc)
   file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.h
@@ -572,7 +582,9 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
+  # NB: Remove stdc++fs after switching to c++17  
   bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS}

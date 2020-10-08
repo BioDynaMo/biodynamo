@@ -30,7 +30,6 @@
 #include "core/shape.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
-#include "core/visualization/paraview/so_visitor.h"
 #include "core/visualization/visualization_adaptor.h"
 
 namespace bdm {
@@ -53,11 +52,9 @@ class ParaviewAdaptor : VisualizationAdaptor {
   std::unique_ptr<ParaviewImpl> impl_;    //!
   static std::atomic<uint64_t> counter_;  //!
 
-  /// only needed for live visualization
-  bool initialized_ = false;           //!
-  bool exclusive_export_viz_ = false;  //!
-
-  ClassDefNV(ParaviewAdaptor, 1);
+  /// only needed for insitu visualization
+  bool initialized_ = false;  //!
+  bool simulation_info_json_generated_ = false;
 
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
@@ -69,43 +66,18 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// `Visualize`.
   void Initialize();
 
-  /// Applies the pipeline to the simulation objects during live visualization
-  ///
-  /// @param[in]  time            The simulation time
-  /// @param[in]  step            The time step duration
-  /// @param[in]  last_time_step  Last time step or not
-  ///
-  void LiveVisualization(double time, size_t step);
+  /// Execute the insitu pipelines that were defined in `Initialize`
+  void InsituVisualization();
 
   /// Exports the visualized objects to file, so that they can be imported and
   /// visualized in ParaView at a later point in time
-  ///
-  /// @param[in]  time            The simulation time
-  /// @param[in]  step            The time step
-  /// @param[in]  last_time_step  The last time step
-  ///
-  void ExportVisualization(double time, size_t step);
+  void ExportVisualization();
 
   /// Creates the VTK objects that represent the simulation objects in ParaView.
-  ///
-  /// @param      data_description  The data description
-  ///
   void CreateVtkObjects();
-
-  // ---------------------------------------------------------------------------
-  // simulation objects
-
-  // Process a single simulation object
-  void ProcessSimObject(const SimObject* so);
 
   /// Create the required vtk objects to visualize simulation objects.
   void BuildSimObjectsVTKStructures();
-
-  // ---------------------------------------------------------------------------
-  // diffusion grids
-
-  /// Sets the properties of the diffusion VTK grid structures
-  void ProcessDiffusionGrid(const DiffusionGrid* grid);
 
   /// Create the required vtk objects to visualize diffusion grids.
   void BuildDiffusionGridVTKStructures();
@@ -113,49 +85,18 @@ class ParaviewAdaptor : VisualizationAdaptor {
   // ---------------------------------------------------------------------------
   // generate files
 
-  /// Helper function to write simulation objects to file. It loops through the
-  /// vectors of VTK grid structures and calls the internal VTK writer methods
-  ///
-  /// @param[in]  step  The step
-  ///
-  void WriteToFile(size_t step);
+  void WriteSimulationInfoJsonFile();
 
   /// This function generates the Paraview state based on the exported files
   /// Therefore, the user can load the visualization simply by opening the pvsm
   /// file and does not have to perform a lot of manual steps.
   static void GenerateParaviewState();
-};
 
-}  // namespace bdm
+  /// Combine user-defined python script with biodynamo default python
+  /// insitu pipeline.
+  static std::string BuildPythonScriptString(const std::string& python_script);
 
-#else
-
-#include <string>
-#include <unordered_map>
-#include "core/shape.h"
-
-namespace bdm {
-
-/// False front (to ignore Catalyst in gtests)
-class ParaviewAdaptor {
- public:
-  ParaviewAdaptor();
-
-  void Visualize();
-
- private:
-  friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
-  friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
-  friend class ParaviewAdaptorTest_CheckVisualizationSelection_Test;
-  friend class DISABLED_DiffusionTest_ModelInitializer_Test;
-
-  void LiveVisualization(double time, size_t time_step);
-
-  void ExportVisualization(double step, size_t time_step);
-
-  void WriteToFile(size_t step);
-
-  static void GenerateParaviewState();
+  ClassDefNV(ParaviewAdaptor, 1);
 };
 
 }  // namespace bdm
