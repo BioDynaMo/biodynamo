@@ -22,7 +22,7 @@
 namespace bdm {
 
 class TestSimObject : public SimObject {
-  BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1, position_, diameter_);
+  BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1);
 
  public:
   TestSimObject() {}

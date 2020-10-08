@@ -58,36 +58,28 @@ endfunction(get_implicit_dependencies)
 # and external simulation projects.
 # \param TARGET target name for the executable
 # \param SOURCES list of source files
-# \param LIBRARIES list of libraries that should be linked to the executable.
-#        can also be a target name of a library
+# \param LIBRARIES list of *shared* libraries that should be linked to the executable.
+#        can also be a target name of a library.
+#        STATIC libraries not compiled with -fPIC must be linked in a separate command using 
+#        target_link_libraries(${TARGET} static-lib-wo-fpic)
 function(bdm_add_executable TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
 
   if(dict)
-    # generate dictionary using genreflex
-    set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_dict")
-
-    # Since the location of the CMake files differ in the build and installation
-    # directory, we check if BDM_CMAKE_DIR is already set (in build directory
-    # case). Otherwise, set it to the installation directory
-    if(NOT DEFINED BDM_CMAKE_DIR)
-      set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
+    build_shared_library(${TARGET}
+                         SELECTION selection.xml
+                         HEADERS ${ARG_HEADERS}
+                         SOURCES ${ARG_SOURCES}
+                         LIBRARIES ${ARG_LIBRARIES})
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${TARGET}-main.cc "int main(int argc, const char** argv);")
+    add_executable(${TARGET}-bin ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${TARGET}-main.cc)
+    target_link_libraries(${TARGET}-bin ${TARGET})
+    if (LINUX)
+      set_target_properties(${TARGET}-bin PROPERTIES LINK_FLAGS "-Wl,-rpath,$ORIGIN")
+    else()
+      set_target_properties(${TARGET}-bin PROPERTIES LINK_FLAGS "-Wl,-rpath,@loader_path")
     endif()
-    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/selection.xml)
-
-    # generate executable
-    add_executable(${TARGET} ${ARG_SOURCES} ${DICT_FILE}.cc)
-    if (OPENCL_FOUND)
-      # Do this here; we don't want libbiodynamo.so to contain any OpenCL symbols
-      set(ARG_LIBRARIES ${ARG_LIBRARIES} ${OPENCL_LIBRARIES})
-      target_compile_definitions(${TARGET} PUBLIC -DUSE_OPENCL)
-    endif()
-    target_link_libraries(${TARGET} ${ARG_LIBRARIES})
-    if (DEFINED CMAKE_INSTALL_LIBDIR)
-      add_custom_command(TARGET ${TARGET}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_BINDIR})
-    endif()
+    set_target_properties(${TARGET}-bin PROPERTIES OUTPUT_NAME ${TARGET})
   else()
     add_executable(${TARGET} ${ARG_SOURCES})
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
@@ -95,6 +87,7 @@ function(bdm_add_executable TARGET)
 endfunction(bdm_add_executable)
 
 # function build_shared_library( TARGET
+#                                SELECTION selection.xml
 #                                SOURCES source1 source2 ...
 #                                HEADERS header1 header2 ...
 #                                LIBRARIES lib1 lib2 ...
@@ -102,13 +95,14 @@ endfunction(bdm_add_executable)
 # build shared library with ROOT dictionaries. If ARG_PLUGIN is set, we will
 # always generate dictionaries (as required by ROOT's plugin manager)
 function(build_shared_library TARGET)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES;PLUGIN" ${ARGN} )
+  cmake_parse_arguments(ARG "" "" "SELECTION;SOURCES;HEADERS;LIBRARIES;PLUGIN" ${ARGN} )
 
   # We always need dictionaries for the plugins (plugin manager requires class
   # information)
   if(dict OR DEFINED ARG_PLUGIN)
     # generate dictionary using genreflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
+    set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
 
     # Since the location of the CMake files differ in the build and installation
     # directory, we check if BDM_CMAKE_DIR is already set (in build directory
@@ -116,10 +110,17 @@ function(build_shared_library TARGET)
     if(NOT DEFINED BDM_CMAKE_DIR)
       set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
     endif()
-    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/selection-lib${TARGET}.xml)
-
+    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/${ARG_SELECTION})
+    if (BDM_OUT_OF_SOURCE) 
+      set(BDM_DICT_BIN_PATH "$ENV{BDMSYS}/bin")
+    else()
+      set(BDM_DICT_BIN_PATH "${PROJECT_SOURCE_DIR}/cmake")
+    endif()
+    add_custom_command(OUTPUT "${BDM_DICT_FILE}"
+                       COMMAND ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_DICT_FILE} ${ARG_HEADERS}
+                       DEPENDS ${ARG_HEADERS} ${BDM_DICT_BIN_PATH}/bdm-dictionary)
     # generate shared library
-    add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc)
+    add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc ${BDM_DICT_FILE})
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
     if (DEFINED CMAKE_INSTALL_LIBDIR)
       add_custom_command(TARGET ${TARGET}

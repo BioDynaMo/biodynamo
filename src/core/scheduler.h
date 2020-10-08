@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "core/operation/operation.h"
+#include "core/param/param.h"
 #include "core/util/timing_aggregator.h"
 
 namespace bdm {
@@ -124,6 +125,8 @@ class Scheduler {
   virtual void Execute();
 
  private:
+  friend void RunSimObjectsTest(Param::MappedDataArrayMode, uint64_t, bool,
+                                bool);
   friend SchedulerTest;
 
   SimulationBackup* backup_ = nullptr;

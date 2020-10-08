@@ -131,23 +131,10 @@ jobs:
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         sleep 3
-        make run-demos
-        ../util/xvfb-initd.sh stop
-
-    - name: Test out-of-source simulation
-      shell: bash
-      working-directory: build
-      run: |
-        . scl_source enable devtoolset-7 || true
-        . scl_source enable llvm-toolset-6.0 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
-        . $INSTALL_DIR/bin/thisbdm.sh
         biodynamo new test-sim
         . ../test/util.inc
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
         run_cmake_simulation test-sim
+        make run-demos
         ../util/xvfb-initd.sh stop
 
     - name: Notify Slack

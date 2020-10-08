@@ -108,42 +108,28 @@ jobs:
           -B build
         cmake --build build --parallel --config Release
 
-    - name: Valgrind tests BioDynaMo
+    - name: Run valgrind and system tests
       shell: bash
       working-directory: build
       run: |
-        . $INSTALL_DIR/bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        make run-valgrind
-        ../util/xvfb-initd.sh stop
-
-    - name: System tests BioDynaMo
-      shell: bash
-      working-directory: build
-      run: |
+        ps -ef
         . $INSTALL_DIR/bin/thisbdm.sh
         sudo git config --system user.name "Test User"
         sudo git config --system user.email user@test.com
         export DISPLAY=:99.0
         ../util/xvfb-initd.sh start
         sleep 3
-        make run-demos
-        ../util/xvfb-initd.sh stop
-
-    - name: Test out-of-source simulation
-      shell: bash
-      working-directory: build
-      run: |
-        . $INSTALL_DIR/bin/thisbdm.sh
-        export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
+        ps -ef
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
+        ps -ef
+        make run-valgrind
+        ps -ef
+        make run-demos
+        ps -ef
         ../util/xvfb-initd.sh stop
+        ps -ef
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3

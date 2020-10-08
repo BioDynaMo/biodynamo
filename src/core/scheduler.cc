@@ -21,6 +21,7 @@
 #include "core/operation/displacement_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
+#include "core/operation/visualization_op.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
@@ -83,7 +84,9 @@ Scheduler::Scheduler() {
       "discretization",          "distribute run displacment info",
       "set up iteration",        "update environment",
       "tear down iteration"};
-  ScheduleOps();
+
+  GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
+  // ScheduleOps();
 }
 
 Scheduler::~Scheduler() {

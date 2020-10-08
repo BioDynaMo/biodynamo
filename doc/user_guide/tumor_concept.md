@@ -152,12 +152,12 @@ In the previous chapter we created a simulation of a great number of cell, also 
 
 ### Paraview
 
-[Paraview](https://www.paraview.org/) is an open source application for interactive and scientific visualisation. First of all, we need to tell BioDynaMo that we will use Paraview and so that we want the visualisation to be enable. To do that, we need to create a configuration file `bdm.toml` in the tutorial folder. Visualisation is of course not the only configuration we can do using this file. You can allow live visualisation and/or export visualisation (here every 2 simulation step) by adding in `bdm.toml`
+[Paraview](https://www.paraview.org/) is an open source application for interactive and scientific visualisation. First of all, we need to tell BioDynaMo that we will use Paraview and so that we want the visualisation to be enable. To do that, we need to create a configuration file `bdm.toml` in the tutorial folder. Visualisation is of course not the only configuration we can do using this file. You can allow live visualisation (`insitu=true`) and/or export visualisation (here every 2 simulation step) by adding in `bdm.toml`
 ```cpp
 [visualization]
-live = false
+insitu = false
 export = false
-export_interval = 2
+interval = 2
 ```
 
 Afterwards, we have to define which simulation objects will be considered for visualization:
@@ -170,9 +170,9 @@ Because those visualization parameters are not in the source code, you don’t n
 We can note that instead of creating a configuration file, you can do the same by creating this lambda function and passing it to the constructor of `Simulation`
 ```cpp
 auto set_param = [](auto* param) {
-  param->live_visualization_ = true; // allows live visualisation
+  param->insitu_visualization_ = true; // allows live visualisation
   param->export_visualization_ = true; // allows export of visualisation files
-  param->visualization_export_interval_ = 2; // export visualisation files every 2 steps
+  param->visuallization_interval_ = 2; // export visualisation files every 2 steps
   param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "" };
 }
 Simulation simulation(argc, argv, set_param);
@@ -194,7 +194,7 @@ A major advantage of export visualisation, in addition of not impacting the simu
 
 #### Live visualisation
 
-To use live visualisation, turn the live option of your configuration file to true, then click on the _Catalyst_ top menu, and select _Connect_ . This windows should appears
+To use live visualisation, turn the `insitu` option of your configuration file to true, then click on the _Catalyst_ top menu, and select _Connect_ . This windows should appears
 
 [![Connect ParaView](images/jean_tutorial/paraview2.png)](/docs/userguide/tumor_concept/#paraview)
 
@@ -235,7 +235,7 @@ We will do that directly in our `tutorial.h` file by writing:
 // members: cell_color and can_divide
 class MyCell : public Cell {  // our object extends the Cell object
                               // create the header with our new data member
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
@@ -348,7 +348,7 @@ if (random->Uniform(0, 1) < 0.8) {
 Cells will now have only 80% chance to divide. However, it will have 80% chance to divide at every simulation step! We want that if a cell doesn't divide, it will not be able to divide any more.
 To do that, we will create a new `MyCell` boolean attribute called `can_divide_`, like we did for `cell_colour_` attribute (see chapter 3.2).
 ```cpp
-BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, can_divide_, cell_color_);
+BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
 ```
 
 and create two methods, `SetCanDivide()` and `GetCanDivide()`.

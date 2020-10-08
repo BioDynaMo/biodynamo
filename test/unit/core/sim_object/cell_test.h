@@ -31,7 +31,7 @@ namespace cell_test_internal {
 
 /// Class used to get access to protected members
 class TestCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(TestCell, Cell, 1, placeholder_);
+  BDM_SIM_OBJECT_HEADER(TestCell, Cell, 1);
 
  public:
   TestCell() {}
@@ -65,7 +65,6 @@ class TestCell : public Cell {
   double captured_phi_ = 0.0;
   double captured_theta_ = 0.0;
 
-  bool placeholder_ = false;  // BDM_SIM_OBJECT_HEADER needs at least one member
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };
 
@@ -119,8 +118,9 @@ inline void RunIOTest() {
   EXPECT_TRUE(dynamic_cast<GrowthModule*>(
                   restored_cell->GetAllBiologyModules()[0]) != nullptr);
   EXPECT_NEAR(
-      0.5, dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0])
-               ->growth_rate_,
+      0.5,
+      dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0])
+          ->growth_rate_,
       kEpsilon);
   EXPECT_TRUE(dynamic_cast<MovementModule*>(
                   restored_cell->GetAllBiologyModules()[1]) != nullptr);

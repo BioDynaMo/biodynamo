@@ -30,6 +30,10 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 # archive destination dir
 DEST_DIR=$BDM_PROJECT_DIR/build
 mkdir -p $DEST_DIR
+# working dir
+WORKING_DIR=~/bdm-build-third-party
+mkdir -p $WORKING_DIR
+cd $WORKING_DIR
 
 # Install the prerequisites
 . ${BDM_PROJECT_DIR}/util/build-third-party/third-party-prerequisites.sh
