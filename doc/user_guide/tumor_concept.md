@@ -172,7 +172,7 @@ We can note that instead of creating a configuration file, you can do the same b
 auto set_param = [](auto* param) {
   param->insitu_visualization_ = true; // allows live visualisation
   param->export_visualization_ = true; // allows export of visualisation files
-  param->visuallization_interval_ = 2; // export visualisation files every 2 steps
+  param->visualization_interval_ = 2; // export visualisation files every 2 steps
   param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "" };
 }
 Simulation simulation(argc, argv, set_param);

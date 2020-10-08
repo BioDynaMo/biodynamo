@@ -50,7 +50,7 @@ class RootAdaptor {
     }
 
     auto *param = Simulation::GetActive()->GetParam();
-    if (total_steps % param->visuallization_interval_ != 0) {
+    if (total_steps % param->visualization_interval_ != 0) {
       return;
     }
 
