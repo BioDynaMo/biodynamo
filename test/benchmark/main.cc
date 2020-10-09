@@ -1,5 +1,5 @@
 #include <benchmark/benchmark.h>
-
+/*
 static void BM_StringCreation(benchmark::State& state) {
   for (auto _ : state)
     std::string empty_string;
@@ -16,9 +16,11 @@ static void BM_StringCopy(benchmark::State& state) {
 BENCHMARK(BM_StringCopy);
 
 BENCHMARK_MAIN();
+*/
 
-/*
 #include "../../demo/tumor_concept/src/tumor_concept.h"
+//#include "../../demo/soma_clustering/src/soma_clustering.h"
+
 
 static void BM_BDM(benchmark::State& state) {
   const char** argv = (const char**) malloc(2);
@@ -35,4 +37,3 @@ int main(int argc, const char** argv)
   ::benchmark::RunSpecifiedBenchmarks();
   return 0;
 }
-*/
