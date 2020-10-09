@@ -13,54 +13,6 @@
 # -----------------------------------------------------------------------------
 
 # setup google benchmark
-# project(biodynamo-benchmark)
-# set(CMAKE_CXX_STANDARD 14)
-# find_package(BioDynaMo)
-# if (NOT BioDynaMo_FOUND)
-# 	message(FATAL_ERROR "BioDynaMo not found.\n")
-# endif()
-# find_package(benchmark REQUIRED)
-# include_directories("src")
-# if (NOT benchmark_FOUND)
-# 	ExternalProject_Add(
-# 		benchmark 
-#   	URL "${CMAKE_SOURCE_DIR}/third_party/benchmark.zip"
-#   	PREFIX "${CMAKE_CURRENT_BINARY_DIR}/benchmark"
-# 		CMAKE_CACHE_ARGS
-#     	-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-#     	-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-#   	INSTALL_COMMAND ""
-# 	)
-# 	add_library(libbenchmark IMPORTED STATIC GLOBAL)
-# 	add_dependencies(libbenchmark benchmark)
-# 	find_package(benchmark REQUIRED)
-# endif()
-
-# set(SOURCES test/benchmark/bench-main.cc)
-# #set(HEADERS demo/tumor_concept/src/tumor_concept.h
-# #			src/biodynamo.h
-# #			)
-# #file(GLOB_RECURSE HEADERS src/*.h)
-# #set(HEADERS build/omp/omp.h)
-
-# add_executable(biodynamo-benchmark 
-# 			  ${SOURCES}
-# #			  ${HEADERS}
-#               )
-
-
-# #bdm_add_executable(biodynamo-benchmark
-# #                   HEADERS ${HEADERS}
-# #                   SOURCES ${SOURCES}
-# #				   LIBRARIES ${BDM_REQUIRED_LIBRARIES} benchmark)
-
-# target_link_libraries(biodynamo-benchmark benchmark::benchmark)
-# #target_link_libraries(biodynamo-benchmark biodynamo)
-
-# add_custom_target(run-benchmark COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark)
-# add_dependencies(run-benchmark biodynamo-benchmark)
-
-
 ExternalProject_Add(
 	gbench 
   	URL "${CMAKE_SOURCE_DIR}/third_party/benchmark.zip"
@@ -80,14 +32,13 @@ set_target_properties(libbenchmark PROPERTIES
 )
 include_directories("${CMAKE_BINARY_DIR}/benchmark/src/gbench/src/")
 
-set(SOURCES test/benchmark/bench-main.cc)
-
-add_executable(biodynamo-benchmark 
- 			  ${SOURCES}
-            	)
-
-target_link_libraries(biodynamo-benchmark benchmark)
-
+function(bdm_add_bench_executable BENCH_TARGET)
+	cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
+	bdm_add_executable(${BENCH_TARGET}
+                     SOURCES ${ARG_SOURCES}
+                     HEADERS ${ARG_HEADERS}
+					 LIBRARIES biodynamo libbenchmark ${ARG_LIBRARIES})
+endfunction(bdm_add_bench_executable)
 
 add_custom_target(run-benchmark COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark)
 add_dependencies(run-benchmark biodynamo-benchmark)

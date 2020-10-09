@@ -408,6 +408,12 @@ include(Versioning)
 # -------------------- benchmarking -------------------------------------------
 if(benchmark)
   include(Benchmarking)
+  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/bench-main.cc)
+  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
+  bdm_add_bench_executable(biodynamo-benchmark
+                          SOURCES ${BENCH_SOURCES}
+                          HEADERS ${BENCH_HEADERS}
+                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} ${FS_LIB})
 endif()
 
 # -------------------- set default build type and compiler flags ---------------
