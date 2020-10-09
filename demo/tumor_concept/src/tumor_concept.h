@@ -146,7 +146,7 @@ inline int Simulate(int argc, const char** argv) {
   rm->push_back(cell);  // put the created cell in our cells structure
 
   // Run simulation
-  simulation.GetScheduler()->Simulate(50);
+  simulation.GetScheduler()->Simulate(500);
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
