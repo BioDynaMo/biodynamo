@@ -145,6 +145,32 @@ void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config,
 }
 
 // -----------------------------------------------------------------------------
+void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
+                               Param* param) {
+  const std::string config_key = "performance.mapped_data_array_mode";
+  if (config->contains_qualified(config_key)) {
+    auto value = config->get_qualified_as<std::string>(config_key);
+    if (!value) {
+      return;
+    }
+    auto str_value = *value;
+    if (str_value == "zero-copy") {
+      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kZeroCopy;
+    } else if (str_value == "cache") {
+      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCache;
+    } else if (str_value == "copy") {
+      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCopy;
+    } else {
+      Log::Fatal(
+          "Param",
+          Concat(
+              "Parameter mapped_data_array_mode was set to an invalid value (",
+              str_value, ")."));
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // module parameters
   for (auto& el : modules_) {
@@ -173,13 +199,18 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
 
   // visualization group
   BDM_ASSIGN_CONFIG_VALUE(visualization_engine_, "visualization.adaptor");
-  BDM_ASSIGN_CONFIG_VALUE(live_visualization_, "visualization.live");
+  BDM_ASSIGN_CONFIG_VALUE(insitu_visualization_, "visualization.insitu");
+  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline_,
+                          "visualization.pv_insitu_pipeline");
+  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline_arguments_,
+                          "visualization.pv_insitu_pipeline_arguments");
   BDM_ASSIGN_CONFIG_VALUE(root_visualization_, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_export_interval_,
-                          "visualization.export_interval");
+  BDM_ASSIGN_CONFIG_VALUE(visualization_interval_, "visualization.interval");
   BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm_,
                           "visualization.export_generate_pvsm");
+  BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files_,
+                          "visualization.compress_pv_files");
 
   //   visualize_sim_objects_
   auto visualize_sim_objects_tarr =
@@ -267,12 +298,11 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "performance.mem_mgr_max_mem_per_thread");
   BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing_,
                           "performance.minimize_memory_while_rebalancing");
+  AssignMappedDataArrayMode(config, this);
 
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");
   BDM_ASSIGN_CONFIG_VALUE(debug_numa_, "development.debug_numa");
-  BDM_ASSIGN_CONFIG_VALUE(python_paraview_pipeline_,
-                          "development.python_paraview_pipeline");
   BDM_ASSIGN_CONFIG_VALUE(show_simulation_step_,
                           "development.show_simulation_step");
   BDM_ASSIGN_CONFIG_VALUE(simulation_step_freq_,

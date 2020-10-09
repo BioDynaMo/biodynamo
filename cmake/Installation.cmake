@@ -119,6 +119,9 @@ install(TARGETS biodynamo
 
 if(test)
     install(TARGETS biodynamo-unit-tests
+            LIBRARY
+            DESTINATION ${DIRNAME}/lib)
+    install(TARGETS biodynamo-unit-tests-bin
             RUNTIME
             DESTINATION ${DIRNAME}/bin)
 endif()

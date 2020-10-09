@@ -14,6 +14,9 @@
 
 FROM centos:7
 
+# workaround for https://github.com/containers/buildah/issues/1046
+RUN echo "" >> /etc/hosts && cat /etc/hosts && yum -y install setup
+
 # man required by ROOT
 # mesa-dri-drivers: OpenGl driver (software renderer)
 RUN yum update -y && yum install -y \

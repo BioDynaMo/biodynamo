@@ -31,9 +31,9 @@
 #include "core/util/math.h"
 #include "neuroscience/neurite_element.h"
 
+using bdm::neuroscience::NeuriteElement;
 using ROOT::Math::AxisAngle;
 using ROOT::Math::EulerAngles;
-using bdm::neuroscience::NeuriteElement;
 
 namespace bdm {
 
@@ -50,7 +50,7 @@ class RootAdaptor {
     }
 
     auto *param = Simulation::GetActive()->GetParam();
-    if (total_steps % param->visualization_export_interval_ != 0) {
+    if (total_steps % param->visualization_interval_ != 0) {
       return;
     }
 

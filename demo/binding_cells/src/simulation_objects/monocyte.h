@@ -22,8 +22,7 @@ namespace bdm {
 
 /// Define Monocyte cell type
 class Monocyte : public Cell {
-  BDM_SIM_OBJECT_HEADER(Monocyte, Cell, 2, connected_cells_, max_connections_,
-                        at_bottom_, color_, inhibited_);
+  BDM_SIM_OBJECT_HEADER(Monocyte, Cell, 1);
 
  public:
   Monocyte() {}

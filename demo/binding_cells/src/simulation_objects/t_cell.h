@@ -25,18 +25,15 @@ class Monocyte;
 
 /// Define T-Cell type
 class TCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(TCell, Cell, 2, is_connected_, connected_cell_,
-                        is_activated_, color_);
+  BDM_SIM_OBJECT_HEADER(TCell, Cell, 1);
 
  public:
   TCell() {}
   explicit TCell(const Double3& position, double diameter, size_t color, int t)
       : Base(position), color_(color) {
-    activation_histo_ = new TH2I("", "", 30, 0, 49, 30, 0, t - 1);
+    activation_histo_ = TH2I("", "", 30, 0, 49, 30, 0, t - 1);
     this->SetDiameter(diameter);
   }
-
-  ~TCell() { delete activation_histo_; }
 
   /// Default event constructor
   TCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
@@ -60,7 +57,7 @@ class TCell : public Cell {
     IncreaseActivationIntensity(val);
     is_activated_ = true;
     auto t = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-    activation_histo_->Fill(activation_intensity_, t);
+    activation_histo_.Fill(activation_intensity_, t);
   }
 
   void Deactivate() { is_activated_ = false; }
@@ -80,7 +77,7 @@ class TCell : public Cell {
     IncreaseActivationIntensity(val);
   }
 
-  TH2I* GetActivationHistogram() { return activation_histo_; }
+  TH2I* GetActivationHistogram() { return &activation_histo_; }
 
   size_t GetActivationIntensity() { return activation_intensity_; }
 
@@ -105,7 +102,7 @@ class TCell : public Cell {
   double mean_ = 3;
   // Sigma for the normal distribution of the initial activation intensity
   double sigma_ = 1;
-  TH2I* activation_histo_ = nullptr;
+  TH2I activation_histo_;
 };
 
 }  // namespace bdm

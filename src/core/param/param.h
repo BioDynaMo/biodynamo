@@ -223,6 +223,7 @@ struct Param {
   /// `kAutomatic`: The simulation automatically locks all simulation objects
   /// of the microenvironment.
   enum ThreadSafetyMechanism { kNone = 0, kUserSpecified, kAutomatic };
+
   /// Select the thread-safety mechanism.\n
   /// Possible values are: none, user-specified, automatic.\n
   /// TOML config file:
@@ -243,13 +244,16 @@ struct Param {
   ///     adaptor = <name_of_adaptor>
   std::string visualization_engine_ = "paraview";
 
-  /// Use ParaView Catalyst for live visualization.\n
+  /// Use ParaView Catalyst for insitu visualization.\n
+  /// Insitu visualization supports live visualization
+  /// and rendering without writing files to the harddisk.\n
+  ///
   /// Default value: `false`\n
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     live = false
-  bool live_visualization_ = false;
+  ///     insitu = false
+  bool insitu_visualization_ = false;
 
   /// Write data to file for post-simulation visualization
   /// Default value: `false`\n
@@ -267,6 +271,29 @@ struct Param {
   ///     root = false
   bool root_visualization_ = false;
 
+  /// Enable insitu visualization with a custom python pipeline
+  /// Default value:
+  /// `"<path-to-bdm>/include/core/visualization/paraview/default_insitu_pipeline.py"`\n
+  /// TOML config file:
+  ///     [visualization]
+  ///     pv_insitu_pipeline = ""
+  std::string pv_insitu_pipeline_ =
+      Concat(std::getenv("BDMSYS"),
+             "/include/core/visualization/paraview/default_insitu_pipeline.py");
+
+  /// Arguments that will be passed to the python ParaView insitu pipeline
+  /// specified in `Param::pv_insitu_pipeline_`.\n
+  /// The arguments will be passed to the ExtendDefaultPipeline function
+  /// `def ExtendDefaultPipeline(renderview, coprocessor, datadescription,
+  /// script_args):`
+  /// as fourth argument.\n
+  /// Default value: ""\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     pv_insitu_pipeline_arguments = ""
+  std::string pv_insitu_pipeline_arguments_ = "";
+
   /// If `export_visualization_` is set to true, this parameter specifies
   /// how often it should be exported. 1 = every timestep, 10: every 10
   /// time steps.\n
@@ -274,8 +301,8 @@ struct Param {
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     export_interval = 1
-  uint32_t visualization_export_interval_ = 1;
+  ///     interval = 1
+  uint32_t visualization_interval_ = 1;
 
   /// If `export_visualization_` is set to true, this parameter specifies
   /// if the ParaView pvsm file will be generated!\n
@@ -296,7 +323,7 @@ struct Param {
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     # turn on live or export
+  ///     # turn on insitu or export
   ///     export = true
   ///
   ///       [[visualize_sim_object]]
@@ -316,13 +343,13 @@ struct Param {
     bool gradient_ = false;
   };
 
-  /// Spceifies for which substances extracellular diffusion should be
+  /// Specifies for which substances extracellular diffusion should be
   /// visualized.\n
   /// Default value: empty (no diffusion will be visualized)\n
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     # turn on live or export
+  ///     # turn on insitu or export
   ///     export = true
   ///
   ///       [[visualize_diffusion]]
@@ -339,6 +366,17 @@ struct Param {
   ///       name = "K"
   ///       # default values: concentration = true and gradient = false
   std::vector<VisualizeDiffusion> visualize_diffusion_;
+
+  /// Specifies if the ParView files that are generated in export mode
+  /// should be compressed.\n
+  /// Default value: true\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     export = true
+  ///     compress_pv_files = true
+  ///
+  bool visualization_compress_pv_files_ = true;
 
   // performance values --------------------------------------------------------
 
@@ -446,6 +484,26 @@ struct Param {
   ///     minimize_memory_while_rebalancing = true
   bool minimize_memory_while_rebalancing_ = true;
 
+  /// MappedDataArrayMode options:
+  ///   `kZeroCopy`: access simulation object data directly only if it is
+  ///                requested. \n
+  ///   `kCache`:    Like `kZeroCopy` but stores the results in contigous
+  ///                array, to speed up access if it is used again.\n
+  ///   `kCopy`:     Copy all data elements to a contigous array at
+  ///                initialization time. Serves requests from the cache.
+  enum MappedDataArrayMode { kZeroCopy = 0, kCopy, kCache };
+
+  /// This parameter sets the operation mode in `bdm::MappedDataArray`.\n
+  /// Allowed values are defined in `MappedDataArrayMode`\n
+  /// Possible values: zero-copy, cache, copy\n
+  /// Default value: `zero-copy`\n
+  /// TOML config file:
+  ///
+  ///     [performance]
+  ///     mapped_data_array_mode_ = "zero-copy"
+  Param::MappedDataArrayMode mapped_data_array_mode_ =
+      MappedDataArrayMode::kZeroCopy;
+
   // development values --------------------------------------------------------
   /// Statistics of profiling data; keeps track of the execution time of each
   /// operation at every timestep.\n
@@ -466,14 +524,6 @@ struct Param {
   ///     [development]
   ///     debug_numa = false
   bool debug_numa_ = false;
-
-  /// Use the python script (simple_pipeline.py) to do Live Visualization with
-  /// ParaView. If false, we use the C++ pipeline
-  /// Default value: `false`\n
-  /// TOML config file:
-  ///     [development]
-  ///     python_paraview_pipeline_ = false
-  bool python_paraview_pipeline_ = false;
 
   /// Display the current simulation step in the terminal output
   /// Default value: `true`\n

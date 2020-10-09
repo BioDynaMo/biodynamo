@@ -21,6 +21,7 @@
 #include "core/operation/displacement_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
+#include "core/operation/visualization_op.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
@@ -41,29 +42,51 @@ Scheduler::Scheduler() {
 
   // Operations are scheduled in the following order (sub categorated by their
   // operation implementation type, so that actual order may vary)
-  std::vector<std::string> default_ops = {"update run displacement",
-                                          "bound space",
-                                          "biology module",
-                                          "displacement",
-                                          "discretization",
-                                          "distribute run displacement info",
-                                          "diffusion"};
+  std::vector<std::string> default_op_names = {
+      "update run displacement",
+      "bound space",
+      "biology module",
+      "displacement",
+      "discretization",
+      "distribute run displacement info",
+      "diffusion"};
+
+  std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
+                                                      "update environment"};
+  // We cannot put sort and balance in the list of scheduled_standalone_ops_,
+  // because numa-aware data structures would be invalidated:
+  // ```
+  //  SetUpOps() <-- (1)
+  //  RunScheduledOps() <-- rebalance numa domains
+  //  TearDownOps() <-- indexing with SoHandles is different than at (1)
+  // ```
+  // Also, must be done before TearDownIteration, because that introduces new
+  // sim objects that are not yet in the environment (which load balancing
+  // relies on)
+  std::vector<std::string> post_scheduled_ops_names = {
+      "load balancing", "tear down iteration", "visualize"};
 
   // Schedule the default operations
-  for (auto& def_op : default_ops) {
-    ScheduleOp(NewOperation(def_op));
+  for (auto& def_op : default_op_names) {
+    ScheduleOp(NewOperation(def_op), OpType::kSchedule);
   }
 
-  visualize_op_ = NewOperation("visualize");
-  setup_iteration_op_ = NewOperation("set up iteration");
-  sort_balance_op_ = NewOperation("load balancing");
-  teardown_iteration_op_ = NewOperation("tear down iteration");
-  update_environment_op_ = NewOperation("update environment");
+  for (auto& def_op : pre_scheduled_ops_names) {
+    ScheduleOp(NewOperation(def_op), OpType::kPreSchedule);
+  }
 
-  outstanding_operations_ = {"load balancing", "visualize"};
+  for (auto& def_op : post_scheduled_ops_names) {
+    ScheduleOp(NewOperation(def_op), OpType::kPostSchedule);
+  }
 
-  protected_ops_ = {"update run displacement", "biology module",
-                    "discretization", "distribute run displacment info"};
+  protected_op_names_ = {
+      "update run displacement", "biology module",
+      "discretization",          "distribute run displacment info",
+      "set up iteration",        "update environment",
+      "tear down iteration"};
+
+  GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
+  // ScheduleOps();
 }
 
 Scheduler::~Scheduler() {
@@ -97,15 +120,20 @@ uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 
 TimingAggregator* Scheduler::GetOpTimes() { return &op_times_; }
 
-void Scheduler::ScheduleOp(Operation* op) {
-  all_ops_.push_back(op);
-  ops_to_add_.push_back(op);
+void Scheduler::ScheduleOp(Operation* op, OpType op_type) {
+  // Check if operation is already in all_ops_ (could be the case when
+  // trying to reschedule a previously unscheduled operation)
+  if (std::find(all_ops_.begin(), all_ops_.end(), op) == all_ops_.end()) {
+    all_ops_.push_back(op);
+  }
+
+  schedule_ops_.push_back(std::make_pair(op_type, op));
 }
 
 void Scheduler::UnscheduleOp(Operation* op) {
   // We must not unschedule a protected operation
-  if (std::find(protected_ops_.begin(), protected_ops_.end(), op->name_) !=
-      protected_ops_.end()) {
+  if (std::find(protected_op_names_.begin(), protected_op_names_.end(),
+                op->name_) != protected_op_names_.end()) {
     Log::Warning("Scheduler::UnscheduleOp",
                  "You tried to unschedule the protected operation ", op->name_,
                  "! This request was ignored.");
@@ -114,7 +142,7 @@ void Scheduler::UnscheduleOp(Operation* op) {
 
   // Check if the requested operation is even scheduled
   bool not_in_scheduled_ops = true;
-  ForAllScheduledOperations([&](Operation* scheduled_op) {
+  ForAllOperations([&](Operation* scheduled_op) {
     if (op == scheduled_op) {
       not_in_scheduled_ops = false;
     }
@@ -127,13 +155,7 @@ void Scheduler::UnscheduleOp(Operation* op) {
     return;
   }
 
-  // 'Unschedule' outstanding operations
-  if (std::find(outstanding_operations_.begin(), outstanding_operations_.end(),
-                op->name_) != outstanding_operations_.end()) {
-    op->standalone_enabled_ = false;
-  }
-
-  ops_to_remove_.push_back(op);
+  unschedule_ops_.push_back(op);
 }
 
 std::vector<std::string> Scheduler::GetListOfScheduledSimObjectOps() const {
@@ -154,8 +176,10 @@ std::vector<std::string> Scheduler::GetListOfScheduledStandaloneOps() const {
 
 std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
   std::vector<Operation*> ret;
-  if (std::find(protected_ops_.begin(), protected_ops_.end(), name) !=
-      protected_ops_.end()) {
+
+  // Check if a protected op is trying to be fetched
+  if (std::find(protected_op_names_.begin(), protected_op_names_.end(), name) !=
+      protected_op_names_.end()) {
     Log::Warning("Scheduler::GetOps", "The operation '", name,
                  "' is a protected operation. Request ignored.");
     return ret;
@@ -200,11 +224,21 @@ void Scheduler::TearDownOps() {
   });
 }
 
+void Scheduler::RunPreScheduledOps() {
+  for (auto* pre_op : pre_scheduled_ops_) {
+    if (total_steps_ % pre_op->frequency_ == 0) {
+      Timing::Time(pre_op->name_, [&]() { (*pre_op)(); });
+    }
+  }
+}
+
 void Scheduler::RunScheduledOps() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
   auto batch_size = param->scheduling_batch_size_;
+
+  SetUpOps();
 
   // Run the sim object operations
   std::vector<Operation*> sim_object_ops;
@@ -225,6 +259,16 @@ void Scheduler::RunScheduledOps() {
       Timing::Time(op->name_, [&]() { (*op)(); });
     }
   }
+
+  TearDownOps();
+}
+
+void Scheduler::RunPostScheduledOps() {
+  for (auto* post_op : post_scheduled_ops_) {
+    if (total_steps_ % post_op->frequency_ == 0) {
+      Timing::Time(post_op->name_, [&]() { (*post_op)(); });
+    }
+  }
 }
 
 void Scheduler::Execute() {
@@ -242,22 +286,9 @@ void Scheduler::Execute() {
     Timing::Time(sort_balance_op_->name_, [&]() { (*sort_balance_op_)(); });
   }
 
-  // We need to update the environment BEFORE setting up the operations, as
-  // some operations depend on the grid members to be up to date (e.g. GPU
-  // displacement operation)
-  Timing::Time(update_environment_op_->name_,
-               [&]() { (*update_environment_op_)(); });
-
-  SetUpOps();
+  RunPreScheduledOps();
   RunScheduledOps();
-  TearDownOps();
-
-  Timing::Time(teardown_iteration_op_->name_,
-               [&]() { (*teardown_iteration_op_)(); });
-
-  if (total_steps_ % visualize_op_->frequency_ == 0) {
-    Timing::Time(visualize_op_->name_, [&]() { (*visualize_op_)(); });
-  }
+  RunPostScheduledOps();
 }
 
 void Scheduler::Backup() {
@@ -326,8 +357,10 @@ void Scheduler::Initialize() {
 void Scheduler::ScheduleOps() {
   auto* param = Simulation::GetActive()->GetParam();
   // Add requested operations
-  for (auto it = ops_to_add_.begin(); it != ops_to_add_.end();) {
-    auto* op = *it;
+  for (auto it = schedule_ops_.begin(); it != schedule_ops_.end();) {
+    auto op_type = it->first;
+    auto* op = it->second;
+
     // Enable GPU operation implementations (if available) if CUDA or OpenCL
     // flags are set
     if (param->compute_target_ == "cuda" &&
@@ -340,42 +373,45 @@ void Scheduler::ScheduleOps() {
       op->SelectComputeTarget(kCpu);
     }
 
-    if (op->IsStandalone()) {
-      scheduled_standalone_ops_.push_back(op);
-    } else {
-      scheduled_sim_object_ops_.push_back(op);
+    // Check operation type and append to corresponding list
+    switch (op_type) {
+      case kPreSchedule:
+        pre_scheduled_ops_.push_back(op);
+        break;
+      case kPostSchedule:
+        post_scheduled_ops_.push_back(op);
+        break;
+      default:
+        if (op->IsStandalone()) {
+          scheduled_standalone_ops_.push_back(op);
+        } else {
+          scheduled_sim_object_ops_.push_back(op);
+        }
     }
 
-    // Remove operation from ops_to_add_
-    it = ops_to_add_.erase(it);
+    // Remove operation from schedule_ops_
+    it = schedule_ops_.erase(it);
   }
 
-  // Remove requested operations
-  for (auto it = ops_to_remove_.begin(); it != ops_to_remove_.end();) {
+  // Unschedule requested operations
+  for (auto it = unschedule_ops_.begin(); it != unschedule_ops_.end();) {
     auto* op = *it;
-    // Check scheduled row-wise operations list
-    for (auto it2 = scheduled_sim_object_ops_.begin();
-         it2 != scheduled_sim_object_ops_.end(); ++it2) {
-      if (op == (*it2)) {
-        // Add to list of unscheduled operations
-        unscheduled_ops_.push_back(op);
-        it2 = scheduled_sim_object_ops_.erase(it2);
-        goto label;
-      }
-    }
 
-    // Check scheduled column-wise operations list
-    for (auto it2 = scheduled_standalone_ops_.begin();
-         it2 != scheduled_standalone_ops_.end(); ++it2) {
-      if (op == (*it2)) {
-        // Add to list of unscheduled operations
-        unscheduled_ops_.push_back(op);
-        it2 = scheduled_standalone_ops_.erase(it2);
-        goto label;
+    // Lists of operations that should be considered for unscheduling
+    std::vector<std::vector<Operation*>*> op_lists = {
+        &scheduled_sim_object_ops_, &scheduled_standalone_ops_,
+        &pre_scheduled_ops_, &post_scheduled_ops_};
+
+    for (auto* op_list : op_lists) {
+      for (auto it2 = op_list->begin(); it2 != op_list->end(); ++it2) {
+        if (op == (*it2)) {
+          it2 = op_list->erase(it2);
+          goto label;
+        }
       }
     }
   label:
-    it = ops_to_remove_.erase(it);
+    it = unschedule_ops_.erase(it);
   }
 }
 

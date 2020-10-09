@@ -1,0 +1,57 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+#
+# Copyright (C) The BioDynaMo Project.
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+#
+# See the LICENSE file distributed with this work for details.
+# See the NOTICE file distributed with this work for additional information
+# regarding copyright ownership.
+#
+# -----------------------------------------------------------------------------
+
+# This script generates BioDynaMo dictionaries
+
+if [ $# -lt 2 ]; then
+    echo "Wrong number of arguments"
+    echo "Usage: bdm-code-generation DICTIONARY BDM_CONFIG [CXX_FLAGS] -h header1.h [header2.h ...]"
+    echo "   DICTIONARY file name of the biodynamo dictionary that gets generated"
+    echo "              (e.g., my-sim_bdm_dict.cc)"
+    echo "   HEADERS    at least one header file containing the biodynamo definitions"
+    exit
+fi
+
+DICT=$1
+shift
+HEADERS=$@
+
+cat <<- EOF > $DICT
+// BioDynaMo dictionary.
+// This file was generated.
+// Do NOT change it. 
+// Changes will be lost the next time this file is generated.
+
+#include "core/util/jit.h"
+
+namespace {
+
+static struct BioDynaMoDictInit {
+  BioDynaMoDictInit() {
+EOF
+
+for header in "$@"; do
+  echo "    bdm::JitHeaders::Register(\"${header}\");" >> $DICT
+done
+
+
+cat <<- EOF >> $DICT
+  }
+} bdm_dict_initializer;
+
+}
+
+EOF
+

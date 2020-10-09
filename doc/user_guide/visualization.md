@@ -45,7 +45,7 @@ One way to enable visualization is to export a visualization file every time ste
 ```
 [visualization]
 export = true
-export_interval = 1
+interval = 1
 
 	[[visualize_sim_object]]
 	name = "Cell"
@@ -53,7 +53,7 @@ export_interval = 1
 ```
 
 This will export a visualization file every time step. You can set the frequency
-by setting the `export_interval`. Make sure that you run a good number of steps
+by setting the `interval`. Make sure that you run a good number of steps
 so that the cells have time to divide. Set it to around 2000 for the `hello_world` example.
 You can do this in `src/hello_world.h` in the `Simulate(time_steps)` function.
 Run your simulation with `biodynamo run`.
@@ -92,6 +92,6 @@ This feature allows you to inspect your simulation while it is running. In your
 
 ```
 [visualization]
-live = true
+insitu = true
 ```
  -->

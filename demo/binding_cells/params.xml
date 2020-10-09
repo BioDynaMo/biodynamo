@@ -1,49 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" ?>
 <model>
   <world>
-    <timesteps>300</timesteps>
-    <min_space>0</min_space>
-    <max_space>100</max_space>
+    <timesteps value_type="scalar">4000</timesteps>
+    <min_space value_type="scalar">0</min_space>
+    <max_space value_type="scalar">200</max_space>
+    <vis_freq value_type="scalar">100</vis_freq>
   </world>
   <simulation_objects>
     <object>
-      <name>T_Cell</name>
-      <population value_type="scalar">500</population>
-      <type value_type="scalar">1</type>
-      <diameter value_type="scalar">5</diameter>
-      <velocity value_type="distribution_poisson">
-              <mean>0</mean>
-      </velocity>
+      <name>Monocyte</name>
+      <population value_type="scalar">7272</population>
+      <type value_type="scalar">0</type>
+      <mass_density value_type="scalar">1.067</mass_density>
+      <diameter value_type="scalar">1.5</diameter>
+      <velocity value_type="scalar">2.0</velocity>
     </object>
     <object>
-      <name>Monocyte</name>
-      <population value_type="scalar">500</population>
-      <type value_type="scalar">0</type>
-      <diameter value_type="scalar">5</diameter>
-      <velocity value_type="scalar">2</velocity>
+      <name>T_Cell</name>
+      <population value_type="scalar">2727</population>
+      <type value_type="scalar">1</type>
+      <mass_density value_type="scalar">1.077</mass_density>
+      <diameter value_type="scalar">0.9</diameter>
+      <velocity value_type="scalar">5.0</velocity>
+      <init_activation_mean value_type="scalar">3.0</init_activation_mean>
+      <init_activation_sigma value_type="scalar">1.0</init_activation_sigma>
     </object>
   </simulation_objects>
   <biology_modules>
     <module>
       <name>ConnectWithinRadius</name>
-      <binding_radius value_type="scalar">5</binding_radius>
+      <binding_radius value_type="scalar">5.0</binding_radius>
     </module>
     <module>
       <name>Inhibition</name>
-      <concentration_threshold value_type="range">
-      <min>0.0040</min>
-      <max>0.00684</max>
-      <stride>0.00002</stride>
-      </concentration_threshold>
-      <binding_probability value_type="scalar">0.8</binding_probability>
+      <sigma value_type="scalar">1.0</sigma>
+      <mu value_type="scalar">-8.5</mu>
+    </module>
+    <module>
+      <name>StokesVelocity</name>
+      <viscosity value_type="scalar">0.089</viscosity>
+      <mass_density_fluid value_type="scalar">0.997</mass_density_fluid>
     </module>
   </biology_modules>
   <substances>
     <substance>
       <name>Antibody</name>
-      <diffusion_rate value_type="scalar">0.4</diffusion_rate>
-      <decay_rate value_type="scalar">0</decay_rate>
-      <resolution value_type="scalar">20</resolution>
+      <amount value_type="log_range">
+        <base>10.0</base>
+        <min>-15.0</min>
+        <max>-6.0</max>
+        <stride>0.125</stride>
+      </amount>
+      <min value_type="scalar">-15.0</min>
+      <max value_type="scalar">-6.0</max>
+      <step value_type="scalar">0.125</step>
+      <diffusion_rate value_type="scalar">0.0</diffusion_rate>
+      <decay_rate value_type="scalar">0.0</decay_rate>
+      <resolution value_type="scalar">10</resolution>
     </substance>
   </substances>
 </model>

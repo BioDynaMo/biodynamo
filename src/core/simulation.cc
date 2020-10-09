@@ -67,15 +67,18 @@ Simulation::Simulation(TRootIOCtor* p) {}
 
 Simulation::Simulation(int argc, const char** argv,
                        const std::vector<std::string>& config_files)
-    : Simulation(argc, argv, [](auto* param) {}, config_files) {}
+    : Simulation(
+          argc, argv, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::vector<std::string>& config_files)
-    : Simulation(simulation_name, [](auto* param) {}, config_files) {}
+    : Simulation(
+          simulation_name, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(CommandLineOptions* clo,
                        const std::vector<std::string>& config_files) {
-  Initialize(clo, [](auto* param) {}, config_files);
+  Initialize(
+      clo, [](auto* param) {}, config_files);
 }
 
 Simulation::Simulation(CommandLineOptions* clo,
@@ -314,6 +317,7 @@ void Simulation::Initialize(CommandLineOptions* clo,
                             const std::vector<std::string>& config_files,
                             XMLParams* xml_params) {
   ctor_ts_ = bdm::Timing::Timestamp();
+  id_ = counter_++;
   Activate();
   if (!clo) {
     Log::Fatal("Simulation::Initialize",
@@ -414,7 +418,7 @@ void Simulation::InitializeRuntimeParams(
 
   if (clo->Get<bool>("visualize")) {
     param_->export_visualization_ = true;
-    param_->visualization_export_interval_ =
+    param_->visualization_interval_ =
         clo->Get<uint32_t>("vis-frequency");
   }
 

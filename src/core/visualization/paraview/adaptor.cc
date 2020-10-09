@@ -12,11 +12,14 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <cstdlib>
+#include <fstream>
+#include <sstream>
+
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
-#include "core/visualization/paraview/insitu_pipeline.h"
-
-#include <cstdlib>
+#include "core/visualization/paraview/vtk_diffusion_grid.h"
+#include "core/visualization/paraview/vtk_sim_objects.h"
 
 #ifndef __ROOTCLING__
 
@@ -28,45 +31,44 @@
 #include <vtkFieldData.h>
 #include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
+#include <vtkImageDataStreamer.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkXMLImageDataWriter.h>
 #include <vtkXMLPImageDataWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 
 namespace bdm {
 
+// ----------------------------------------------------------------------------
 struct ParaviewAdaptor::ParaviewImpl {
   vtkCPProcessor* g_processor_ = nullptr;
-  std::unordered_map<std::string, VtkSoGrid*> vtk_so_grids_;
+  std::unordered_map<std::string, VtkSimObjects*> vtk_sim_objects_;
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids_;
-  InSituPipeline* pipeline_ = nullptr;
   vtkCPDataDescription* data_description_ = nullptr;
 };
 
+// ----------------------------------------------------------------------------
 std::atomic<uint64_t> ParaviewAdaptor::counter_;
 
+// ----------------------------------------------------------------------------
 ParaviewAdaptor::ParaviewAdaptor() {
   counter_++;
-  // auto* test = new ParaviewAdaptor::ParaviewImpl();
   impl_ = std::unique_ptr<ParaviewAdaptor::ParaviewImpl>(
       new ParaviewAdaptor::ParaviewImpl());
 }
 
+// ----------------------------------------------------------------------------
 ParaviewAdaptor::~ParaviewAdaptor() {
   auto* param = Simulation::GetActive()->GetParam();
   counter_--;
 
   if (impl_) {
-    if (impl_->pipeline_) {
-      impl_->g_processor_->RemovePipeline(impl_->pipeline_);
-      impl_->pipeline_->Delete();
-      impl_->pipeline_ = nullptr;
-    }
-
     if (counter_ == 0 && impl_->g_processor_) {
       impl_->g_processor_->RemoveAllPipelines();
       impl_->g_processor_->Finalize();
@@ -75,11 +77,14 @@ ParaviewAdaptor::~ParaviewAdaptor() {
     }
     if (param->export_visualization_ &&
         param->visualization_export_generate_pvsm_) {
-      GenerateSimulationInfoJson(impl_->vtk_so_grids_, impl_->vtk_dgrids_);
+      WriteSimulationInfoJsonFile();
       GenerateParaviewState();
     }
 
-    for (auto& el : impl_->vtk_so_grids_) {
+    if (impl_->data_description_ != nullptr) {
+      impl_->data_description_->Delete();
+    }
+    for (auto& el : impl_->vtk_sim_objects_) {
       delete el.second;
     }
     for (auto& el : impl_->vtk_dgrids_) {
@@ -88,6 +93,7 @@ ParaviewAdaptor::~ParaviewAdaptor() {
   }
 }
 
+// ----------------------------------------------------------------------------
 void ParaviewAdaptor::Visualize() {
   if (!initialized_) {
     Initialize();
@@ -97,251 +103,154 @@ void ParaviewAdaptor::Visualize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   uint64_t total_steps = sim->GetScheduler()->GetSimulatedSteps();
-  if (total_steps % param->visualization_export_interval_ != 0) {
+  if (total_steps % param->visualization_interval_ != 0) {
     return;
   }
 
-  if (param->live_visualization_) {
-    double time = param->simulation_time_step_ * total_steps;
-    LiveVisualization(time, total_steps);
+  double time = param->simulation_time_step_ * total_steps;
+  impl_->data_description_->SetTimeData(time, total_steps);
+
+  CreateVtkObjects();
+
+  if (param->insitu_visualization_) {
+    InsituVisualization();
   }
   if (param->export_visualization_) {
-    double time = param->simulation_time_step_ * total_steps;
-    ExportVisualization(time, total_steps);
+    ExportVisualization();
   }
 }
 
+// ----------------------------------------------------------------------------
 void ParaviewAdaptor::Initialize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
-  exclusive_export_viz_ =
-      param->export_visualization_ && !param->live_visualization_;
-  if (param->live_visualization_ || param->export_visualization_) {
-    if (impl_->g_processor_ == nullptr) {
-      impl_->g_processor_ = vtkCPProcessor::New();
-      impl_->g_processor_->Initialize();
-    }
-
-    if (param->live_visualization_ &&
-        impl_->g_processor_->GetNumberOfPipelines() != 0) {
-      Log::Fatal("ParaviewAdaptor",
-                 "Live visualization does not support multiple "
-                 "simulations. Turning off live visualization for ",
-                 sim->GetUniqueName());
-    } else if (param->python_paraview_pipeline_) {
-      vtkNew<vtkCPPythonScriptPipeline> pipeline;
-      std::string python_script =
-          std::string(std::getenv("BDMSYS")) +
-          std::string("/include/core/visualization/paraview/simple_pipeline.py");
-      pipeline->Initialize(python_script.c_str());
-      impl_->g_processor_->AddPipeline(pipeline.GetPointer());
-    } else if (!exclusive_export_viz_) {
-      impl_->pipeline_ = new InSituPipeline();
-      impl_->g_processor_->AddPipeline(impl_->pipeline_);
-    }
-
-    if (impl_->data_description_ == nullptr) {
-      impl_->data_description_ = vtkCPDataDescription::New();
-    } else {
-      impl_->data_description_->Delete();
-      impl_->data_description_ = vtkCPDataDescription::New();
-    }
-    impl_->data_description_->SetTimeData(0, 0);
-
-    auto* param = Simulation::GetActive()->GetParam();
-    for (auto& pair : param->visualize_sim_objects_) {
-      impl_->vtk_so_grids_[pair.first.c_str()] =
-          new VtkSoGrid(pair.first.c_str(), impl_->data_description_);
-    }
-    for (auto& entry : param->visualize_diffusion_) {
-      impl_->vtk_dgrids_[entry.name_] =
-          new VtkDiffusionGrid(entry.name_, impl_->data_description_);
-    }
+  if (param->insitu_visualization_ && impl_->g_processor_ == nullptr) {
+    impl_->g_processor_ = vtkCPProcessor::New();
+    impl_->g_processor_->Initialize();
   }
-}
 
-void ParaviewAdaptor::LiveVisualization(double time, size_t step) {
+  if (param->insitu_visualization_) {
+    const std::string& script =
+        ParaviewAdaptor::BuildPythonScriptString(param->pv_insitu_pipeline_);
+    std::ofstream ofs;
+    auto* sim = Simulation::GetActive();
+    std::string final_python_script_name =
+        Concat(sim->GetOutputDir(), "/insitu_pipline.py");
+    ofs.open(final_python_script_name);
+    ofs << script;
+    ofs.close();
+    vtkNew<vtkCPPythonScriptPipeline> pipeline;
+    pipeline->Initialize(final_python_script_name.c_str());
+    impl_->g_processor_->AddPipeline(pipeline.GetPointer());
+  }
+
   if (impl_->data_description_ == nullptr) {
     impl_->data_description_ = vtkCPDataDescription::New();
   } else {
     impl_->data_description_->Delete();
     impl_->data_description_ = vtkCPDataDescription::New();
   }
-  impl_->data_description_->SetTimeData(time, step);
+  impl_->data_description_->SetTimeData(0, 0);
 
-  CreateVtkObjects();
-
-  if (impl_->pipeline_ != nullptr) {
-    if (!(impl_->pipeline_->IsInitialized())) {
-      impl_->pipeline_->Initialize(impl_->vtk_so_grids_);
-    }
+  for (auto& pair : param->visualize_sim_objects_) {
+    impl_->vtk_sim_objects_[pair.first.c_str()] =
+        new VtkSimObjects(pair.first.c_str(), impl_->data_description_);
   }
+  for (auto& entry : param->visualize_diffusion_) {
+    impl_->vtk_dgrids_[entry.name_] =
+        new VtkDiffusionGrid(entry.name_, impl_->data_description_);
+  }
+}
 
+// ----------------------------------------------------------------------------
+void ParaviewAdaptor::InsituVisualization() {
+#ifdef BDM_PV_EXPERIMENTAL
+  vtkCommand::kOpenGLCacheEnable = true;
+  vtkCommand::kOpenGLCacheIndex = 0;
+#endif  // BDM_PV_EXPERIMENTAL
+  impl_->g_processor_->RequestDataDescription(impl_->data_description_);
+  impl_->data_description_->ForceOutputOn();
   impl_->g_processor_->CoProcess(impl_->data_description_);
 }
 
-/// Exports the visualized objects to file, so that they can be imported and
-/// visualized in ParaView at a later point in time
-///
-/// @param[in]  time            The simulation time
-/// @param[in]  step            The time step
-/// @param[in]  last_time_step  The last time step
-///
-void ParaviewAdaptor::ExportVisualization(double time, size_t step) {
-  if (impl_->data_description_ == nullptr) {
-    impl_->data_description_ = vtkCPDataDescription::New();
-  } else {
-    impl_->data_description_->Delete();
-    impl_->data_description_ = vtkCPDataDescription::New();
-  }
-  impl_->data_description_->SetTimeData(time, step);
+// ----------------------------------------------------------------------------
+void ParaviewAdaptor::ExportVisualization() {
+  WriteSimulationInfoJsonFile();
 
-  CreateVtkObjects();
-  WriteToFile(step);
+  auto step = impl_->data_description_->GetTimeStep();
+
+  for (auto& el : impl_->vtk_sim_objects_) {
+    el.second->WriteToFile(step);
+  }
+
+  for (auto& el : impl_->vtk_dgrids_) {
+    el.second->WriteToFile(step);
+  }
 }
 
+// ----------------------------------------------------------------------------
 void ParaviewAdaptor::CreateVtkObjects() {
   BuildSimObjectsVTKStructures();
   BuildDiffusionGridVTKStructures();
-}
-
-void ParaviewAdaptor::ProcessSimObject(const SimObject* so) {
-  auto* param = Simulation::GetActive()->GetParam();
-  auto so_name = so->GetTypeName();
-
-  if (param->visualize_sim_objects_.find(so_name) !=
-      param->visualize_sim_objects_.end()) {
-    // assert(impl_->vtk_so_grids_.find(so->GetTypeName()) !=
-    // impl_->vtk_so_grids_.end() &&
-    // Concat("VtkSoGrid for ", so->GetTypeName(), " not found!");
-    auto* vsg = impl_->vtk_so_grids_[so->GetTypeName()];
-    if (!vsg->initialized_) {
-      vsg->Init(so);
-    }
-
-    // If we segfault at here it probably means that there is a problem
-    // with the pipeline (either the C++ pipeline or Python pipeline)
-    // We do not need to RequestDataDescription in Export Mode, because
-    // we do not make use of ParaView Catalyst CoProcessing capabilities
-    if (exclusive_export_viz_ ||
-        (impl_->g_processor_->RequestDataDescription(
-            impl_->data_description_)) != 0) {
-      ParaviewSoVisitor visitor(vsg);
-      so->ForEachDataMemberIn(vsg->vis_data_members_, &visitor);
-    }
+  if (impl_->data_description_->GetUserData() == nullptr) {
+    vtkNew<vtkStringArray> json;
+    json->SetName("metadata");
+    json->InsertNextValue(GenerateSimulationInfoJson(impl_->vtk_sim_objects_,
+                                                     impl_->vtk_dgrids_));
+    vtkNew<vtkFieldData> field;
+    field->AddArray(json);
+    impl_->data_description_->SetUserData(field);
   }
 }
 
-struct ProcessSimObjectFunctor : public Functor<void, SimObject*> {
-  ParaviewAdaptor* pa_;
-
-  ProcessSimObjectFunctor(ParaviewAdaptor* pa) : pa_(pa) {}
-
-  void operator()(SimObject* so) { pa_->ProcessSimObject(so); }
-};
-
+// ----------------------------------------------------------------------------
 void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
-
-  ProcessSimObjectFunctor functor{this};
-  rm->ApplyOnAllElements(functor);
-}
-
-// ---------------------------------------------------------------------------
-// diffusion grids
-
-void ParaviewAdaptor::ProcessDiffusionGrid(const DiffusionGrid* grid) {
-  auto* param = Simulation::GetActive()->GetParam();
-  auto name = grid->GetSubstanceName();
-
-  // get visualization config
-  const Param::VisualizeDiffusion* vd = nullptr;
-  for (auto& entry : param->visualize_diffusion_) {
-    if (entry.name_ == name) {
-      vd = &entry;
-    }
-  }
-
-  if (vd != nullptr) {
-    auto* vdg = impl_->vtk_dgrids_[grid->GetSubstanceName()];
-    if (!vdg->used_) {
-      vdg->Init();
-    }
-
-    // If we segfault at here it probably means that there is a problem
-    // with  the pipeline (either the C++ pipeline or Python pipeline)
-    // We do not need to RequestDataDescription in Export Mode, because
-    // we do not make use of Catalyst CoProcessing capabilities
-    if (exclusive_export_viz_ ||
-        (impl_->g_processor_->RequestDataDescription(
-            impl_->data_description_)) != 0) {
-      auto num_boxes = grid->GetNumBoxesArray();
-      auto grid_dimensions = grid->GetDimensions();
-      auto box_length = grid->GetBoxLength();
-      auto total_boxes = grid->GetNumBoxes();
-
-      double origin_x = grid_dimensions[0];
-      double origin_y = grid_dimensions[2];
-      double origin_z = grid_dimensions[4];
-      vdg->data_->SetOrigin(origin_x, origin_y, origin_z);
-      vdg->data_->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
-      vdg->data_->SetSpacing(box_length, box_length, box_length);
-
-      if (vdg->concentration_) {
-        auto* co_ptr = const_cast<double*>(grid->GetAllConcentrations());
-        vdg->concentration_->SetArray(co_ptr,
-                                      static_cast<vtkIdType>(total_boxes), 1);
-      }
-      if (vdg->gradient_) {
-        auto gr_ptr = const_cast<double*>(grid->GetAllGradients());
-        vdg->gradient_->SetArray(gr_ptr,
-                                 static_cast<vtkIdType>(total_boxes * 3), 1);
-      }
-    }
+  for (auto& pair : impl_->vtk_sim_objects_) {
+    const auto& sim_objects =
+        rm->GetTypeIndex()->GetType(pair.second->GetTClass());
+    pair.second->Update(&sim_objects);
   }
 }
 
+// ----------------------------------------------------------------------------
 void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
-  rm->ApplyOnAllDiffusionGrids(
-      [&](DiffusionGrid* grid) { ProcessDiffusionGrid(grid); });
+  rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* grid) {
+    auto it = impl_->vtk_dgrids_.find(grid->GetSubstanceName());
+    if (it != impl_->vtk_dgrids_.end()) {
+      it->second->Update(grid);
+    }
+  });
 }
 
-void ParaviewAdaptor::WriteToFile(size_t step) {
-  auto* sim = Simulation::GetActive();
-  for (auto& el : impl_->vtk_so_grids_) {
-    vtkNew<vtkXMLPUnstructuredGridWriter> cells_writer;
-    auto filename =
-        Concat(sim->GetOutputDir(), "/", el.second->name_, "-", step, ".pvtu");
-    cells_writer->SetFileName(filename.c_str());
-    cells_writer->SetInputData(el.second->data_);
-    cells_writer->Update();
-  }
-
-  for (auto& entry : impl_->vtk_dgrids_) {
-    vtkNew<vtkXMLPImageDataWriter> dgrid_writer;
-
-    const auto& substance_name = entry.second->name_;
-    auto filename =
-        Concat(sim->GetOutputDir(), "/", substance_name, "-", step, ".pvti");
-    dgrid_writer->SetFileName(filename.c_str());
-    dgrid_writer->SetInputData(entry.second->data_);
-    dgrid_writer->Update();
+// ----------------------------------------------------------------------------
+void ParaviewAdaptor::WriteSimulationInfoJsonFile() {
+  // create simulation_info.json
+  if (!simulation_info_json_generated_) {
+    std::ofstream ofstr;
+    auto* sim = Simulation::GetActive();
+    ofstr.open(Concat(sim->GetOutputDir(), "/", kSimulationInfoJson));
+    ofstr << GenerateSimulationInfoJson(impl_->vtk_sim_objects_,
+                                        impl_->vtk_dgrids_);
+    ofstr.close();
+    simulation_info_json_generated_ = true;
   }
 }
 
+// ----------------------------------------------------------------------------
 /// This function generates the Paraview state based on the exported files
 /// Therefore, the user can load the visualization simply by opening the pvsm
 /// file and does not have to perform a lot of manual steps.
 void ParaviewAdaptor::GenerateParaviewState() {
   auto* sim = Simulation::GetActive();
   std::stringstream python_cmd;
+  std::string pv_dir = std::getenv("ParaView_DIR");
   std::string bdmsys = std::getenv("BDMSYS");
 
-  python_cmd << bdmsys << "/third_party/paraview/bin/pvbatch "
-             << bdmsys
+  python_cmd << pv_dir << "/bin/pvbatch " << bdmsys
              << "/include/core/visualization/paraview/generate_pv_state.py "
              << sim->GetOutputDir() << "/" << kSimulationInfoJson;
   int ret_code = system(python_cmd.str().c_str());
@@ -350,6 +259,38 @@ void ParaviewAdaptor::GenerateParaviewState() {
                "Error during generation of ParaView state\n", "Command\n",
                python_cmd.str());
   }
+}
+
+// ----------------------------------------------------------------------------
+std::string ParaviewAdaptor::BuildPythonScriptString(
+    const std::string& python_script) {
+  std::stringstream script;
+
+  std::ifstream ifs;
+  ifs.open(python_script, std::ifstream::in);
+  if (!ifs.is_open()) {
+    Log::Fatal("ParaviewAdaptor::BuildPythonScriptString",
+               Concat("Python script (", python_script,
+                      ") was not found or could not be opened."));
+  }
+  script << ifs.rdbuf();
+  ifs.close();
+
+  std::string default_python_script =
+      std::string(std::getenv("BDMSYS")) +
+      std::string(
+          "/include/core/visualization/paraview/default_insitu_pipeline.py");
+
+  std::ifstream ifs_default;
+  ifs_default.open(default_python_script, std::ifstream::in);
+  if (!ifs_default.is_open()) {
+    Log::Fatal("ParaviewAdaptor::BuildPythonScriptString",
+               Concat("Python script (", default_python_script,
+                      ") was not found or could not be opened."));
+  }
+  script << std::endl << ifs_default.rdbuf();
+  ifs_default.close();
+  return script.str();
 }
 
 }  // namespace bdm
@@ -362,14 +303,16 @@ ParaviewAdaptor::ParaviewAdaptor() {}
 
 void ParaviewAdaptor::Visualize() {}
 
-void ParaviewAdaptor::LiveVisualization(double time, size_t time_step) {}
+void ParaviewAdaptor::InsituVisualization() {}
 
-void ParaviewAdaptor::ExportVisualization(double step, size_t time_step) {}
+void ParaviewAdaptor::ExportVisualization() {}
 
-void ParaviewAdaptor::WriteToFile(size_t step) {}
+void ParaviewAdaptor::WriteToFile() {}
 
 void ParaviewAdaptor::GenerateParaviewState() {}
 
+std::string ParaviewAdaptor::BuildPythonScriptString(
+    const std::string& python_script) {}
 }  // namespace bdm
 
 #endif

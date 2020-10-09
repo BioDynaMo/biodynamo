@@ -22,6 +22,7 @@
 
 namespace bdm {
 
+// -----------------------------------------------------------------------------
 template <typename T>
 struct abs_error {
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
@@ -39,6 +40,7 @@ struct abs_error<double> {
   static constexpr double value = 1e-9;
 };
 
+// -----------------------------------------------------------------------------
 template <typename T, size_t N>
 void EXPECT_ARR_EQ(const MathArray<T, N>& expected,  // NOLINT
                    const MathArray<T, N>& actual) {
@@ -56,6 +58,7 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
   }
 }
 
+// -----------------------------------------------------------------------------
 /// Helper macro to compare two double arrays of size three
 /// parameter actual and expected have been switched for better readability
 ///
@@ -82,9 +85,20 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
     }                                                                \
   }(__VA_ARGS__);
 
+// -----------------------------------------------------------------------------
 /// Mangled test name.\n
 /// Only works within test class, since the implementation relies on `this`.
 #define TEST_NAME typeid(*this).name()
+
+// -----------------------------------------------------------------------------
+/// This macro launches a given function in a new process.
+/// The test will pass, if the function exits with exit code 0.
+/// e.g. using `exit(0)`.
+/// This is necessary for ParaView insitu tests because they invoke MPI_INIT
+/// and MPI_FINALIZE. These two methods must not be called more than once per
+/// process otherwise they will throw an error.
+#define LAUNCH_IN_NEW_PROCESS(...) \
+  EXPECT_EXIT(__VA_ARGS__, ::testing::ExitedWithCode(0), "");
 
 }  // namespace bdm
 

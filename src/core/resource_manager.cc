@@ -14,8 +14,23 @@
 
 #include "core/resource_manager.h"
 #include "core/environment/environment.h"
+#include "core/simulation.h"
 
 namespace bdm {
+
+ResourceManager::ResourceManager() {
+  // Must be called prior any other function call to libnuma
+  if (auto ret = numa_available() == -1) {
+    Log::Fatal("ResourceManager",
+               "Call to numa_available failed with return code: ", ret);
+  }
+  sim_objects_.resize(numa_num_configured_nodes());
+
+  auto* param = Simulation::GetActive()->GetParam();
+  if (param->export_visualization_ || param->insitu_visualization_) {
+    type_index_ = new TypeIndex();
+  }
+}
 
 void ResourceManager::ApplyOnAllElementsParallel(
     Functor<void, SimObject*, SoHandle>& function) {
@@ -269,6 +284,9 @@ void ResourceManager::SortAndBalanceNumaNodes() {
         auto& handle = sohandles[e];
         auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
         dest[e] = so->GetCopy();
+        if (type_index_) {
+          type_index_->Update(dest[e]);
+        }
         if (minimize_memory) {
           delete so;
         }

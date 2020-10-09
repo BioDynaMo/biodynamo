@@ -24,6 +24,9 @@
 #include "biology_modules/random_walk_module.h"
 #include "biology_modules/spring_force_module.h"
 #include "biology_modules/stokes_velocity_module.h"
+#include "core/operation/operation.h"
+#include "core/operation/reduction_op.h"
+#include "core/operation/operation_registry.h"
 #include "core/parallel_execution/xml_util.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
@@ -38,15 +41,6 @@ namespace bdm {
 enum CellType { kMonocyte, kTCell };
 enum Substances { kAntibody };
 
-// Helper function to convert atomic containers to non-atomic
-template <typename T>
-void MakeNonAtomic(const std::vector<std::atomic<T>>& in, std::vector<T>* out) {
-  out->resize(in.size());
-  for (size_t i = 0; i < in.size(); i++) {
-    (*out)[i] = in[i];
-  }
-}
-
 inline int Simulate(int argc, const char** argv,
                     XMLParams* xml_params = nullptr) {
   Simulation simulation(argc, argv, xml_params);
@@ -55,7 +49,11 @@ inline int Simulate(int argc, const char** argv,
   // Retrieve simulation parameters from XML parameter file
   //////////////////////////////////////////////////////////////////////////////
   auto xmlp = simulation.GetXMLParam();
-  // xmlp.Print();
+  xmlp.Print();
+
+  // T-Cells contain a TH2I histogram object that is not thread-safe by default,
+  // so we need to enable ROOT's implicit multithreading awareness
+  ROOT::EnableImplicitMT();
 
   // World parameters
   int timesteps = xmlp.Get("World", "timesteps");
@@ -133,32 +131,21 @@ inline int Simulate(int argc, const char** argv,
   //////////////////////////////////////////////////////////////////////////////
   // Schedule operation to obtain results of interest over time
   //////////////////////////////////////////////////////////////////////////////
-  struct CountOp : public Operation {
-    CountOp(const std::string& id, int timesteps) : Operation(id) {
-      scheduler = Simulation::GetActive()->GetScheduler();
-      activity = new std::vector<std::atomic<int>>(timesteps);
-      for (int i = 0; i < timesteps; i++) {
-        (*activity)[i] = 0;
-      }
-    }
-
-    void operator()(SimObject* so) override {
-      uint64_t idx = scheduler->GetSimulatedSteps();
+  struct CheckActivity : public Functor<void, SimObject*, int*> {
+    void operator()(SimObject* so, int* tl_result) {
       if (auto* tcell = dynamic_cast<TCell*>(so)) {
         if (tcell->IsActivated()) {
-          (*activity)[idx]++;
+          (*tl_result)++;
         }
       }
     }
-
-    std::vector<std::atomic<int>>* activity = nullptr;
-    Scheduler* scheduler = nullptr;
   };
 
-  auto* op = new CountOp("Count Activity", timesteps);
-
   auto* scheduler = simulation.GetScheduler();
-  scheduler->AddOperation(op);
+  auto* op = NewOperation("ReductionOpInt");
+  auto* op_impl = op->GetImplementation<ReductionOp<int>>();
+  op_impl->Initialize(new CheckActivity(), new SumReduction<int>());
+  scheduler->ScheduleOp(op);
 
   //////////////////////////////////////////////////////////////////////////////
   // Run the simulation
@@ -187,7 +174,7 @@ inline int Simulate(int argc, const char** argv,
   MyResults ex(name, brief);
   ex.initial_concentration = apd_amount;
   ex.activation_intensity = *merged_histo;
-  MakeNonAtomic(*(op->activity), &(ex.activity));
+  ex.activity = op_impl->results_;
   ex.WriteResultToROOT();
 
   return 0;

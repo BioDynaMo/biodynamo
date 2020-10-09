@@ -38,41 +38,6 @@
 
 namespace bdm {
 
-// -----------------------------------------------------------------------------
-// Helper macros used to generate code for all data members of a class
-
-#define BDM_SIM_OBJECT_FOREACHDM_BODY(...) \
-  EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR, __VA_ARGS__))
-
-#define BDM_SIM_OBJECT_FOREACHDM_BODY_ITERATOR(data_member)                 \
-  if (is_so_ptr<decltype(data_member)>::value) {                            \
-    const uint64_t uid = detail::ExtractUid::GetUid(data_member);           \
-    visitor->Visit(#data_member, typeid(uint64_t).hash_code(),              \
-                   static_cast<const void*>(&uid));                         \
-  } else {                                                                  \
-    visitor->Visit(#data_member, typeid(decltype(data_member)).hash_code(), \
-                   static_cast<const void*>(&data_member));                 \
-  }
-
-#define BDM_SIM_OBJECT_FOREACHDMIN_BODY(...) \
-  EVAL(LOOP(BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR, __VA_ARGS__))
-
-#define BDM_SIM_OBJECT_FOREACHDMIN_BODY_ITERATOR(data_member)         \
-  {                                                                   \
-    auto it = dm_selector.find(#data_member);                         \
-    if (it != dm_selector.end()) {                                    \
-      if (is_so_ptr<decltype(data_member)>::value) {                  \
-        const uint64_t uid = detail::ExtractUid::GetUid(data_member); \
-        visitor->Visit(#data_member, typeid(uint64_t).hash_code(),    \
-                       static_cast<const void*>(&uid));               \
-      } else {                                                        \
-        visitor->Visit(#data_member,                                  \
-                       typeid(decltype(data_member)).hash_code(),     \
-                       static_cast<const void*>(&data_member));       \
-      }                                                               \
-    }                                                                 \
-  }
-
 /// Macro to insert required boilerplate code into simulation object
 /// @param   class_name scalar class name of the simulation object
 /// @param   base_class scalar class name of the base simulation object
@@ -82,7 +47,7 @@ namespace bdm {
 ///          must be incremented by one. The class_version_id should be greater
 ///          or equal to 1.
 /// @param  ...: List of all data members of this class
-#define BDM_SIM_OBJECT_HEADER(class_name, base_class, class_version_id, ...) \
+#define BDM_SIM_OBJECT_HEADER(class_name, base_class, class_version_id)      \
  public:                                                                     \
   using Base = base_class;                                                   \
                                                                              \
@@ -98,19 +63,6 @@ namespace bdm {
   SimObject* GetCopy() const override { return new class_name(*this); }      \
                                                                              \
   const char* GetTypeName() const override { return #class_name; }           \
-                                                                             \
-  /** Executes the given function for all data members             */        \
-  void ForEachDataMember(SoVisitor* visitor) const override {                \
-    BDM_SIM_OBJECT_FOREACHDM_BODY(__VA_ARGS__)                               \
-    Base::ForEachDataMember(visitor);                                        \
-  }                                                                          \
-                                                                             \
-  /** Executes the given function for the specified data members    */       \
-  void ForEachDataMemberIn(const std::set<std::string>& dm_selector,         \
-                           SoVisitor* visitor) const override {              \
-    BDM_SIM_OBJECT_FOREACHDMIN_BODY(__VA_ARGS__)                             \
-    Base::ForEachDataMemberIn(dm_selector, visitor);                         \
-  }                                                                          \
                                                                              \
  protected:                                                                  \
   /** Cast `this` to the base class pointer (one level up) */                \
@@ -138,23 +90,6 @@ class SimObject {
   SimObject(const SimObject& other);
 
   virtual ~SimObject();
-
-  /// Executes the given function for all data members
-  /// \see `SoVisitor`
-  virtual void ForEachDataMember(SoVisitor* visitor) const {
-    BDM_SIM_OBJECT_FOREACHDM_BODY(uid_, box_idx_, biology_modules_,
-                                  run_bm_loop_idx_)
-  }
-
-  /// Executes the given visitor for the specified data members
-  /// \see `SoVisitor`
-  virtual void ForEachDataMemberIn(const std::set<std::string>& dm_selector,
-                                   SoVisitor* visitor) const {
-    BDM_SIM_OBJECT_FOREACHDMIN_BODY(uid_, box_idx_, biology_modules_,
-                                    run_bm_loop_idx_)
-  }
-
-  // ---------------------------------------------------------------------------
 
   /// Create a new instance of this object using the default constructor.
   virtual SimObject* GetInstance(const Event& event, SimObject* other,
@@ -218,6 +153,8 @@ class SimObject {
   /// Return simulation object pointer
   template <typename TSimObject = SimObject>
   SoPointer<TSimObject> GetSoPtr() const {
+    static_assert(!std::is_pointer<TSimObject>::value,
+                  "Cannot be of pointer type!");
     return SoPointer<TSimObject>(uid_);
   }
 
@@ -295,16 +232,15 @@ class SimObject {
   ///        whether it should be copied to destination
   /// @param src  source vector of biology modules
   /// @param dest destination vector of biology modules
-  void CopyBiologyModules(const Event& event,
-                          decltype(biology_modules_) * dest);
+  void CopyBiologyModules(const Event& event, decltype(biology_modules_)* dest);
 
   /// @brief Function to invoke the EventHandler of the biology module or remove
   ///                  it from `current`.
   /// Forwards the event handler call to each biology modules of the triggered
   /// simulation object and removes biology modules if they are flagged.
   void BiologyModuleEventHandler(const Event& event,
-                                 decltype(biology_modules_) * other1,
-                                 decltype(biology_modules_) * other2);
+                                 decltype(biology_modules_)* other1,
+                                 decltype(biology_modules_)* other2);
 
   BDM_CLASS_DEF(SimObject, 1)
 };

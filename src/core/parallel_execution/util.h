@@ -25,6 +25,8 @@
 
 #include "mpi.h"
 
+#include "core/util/root.h"
+
 using std::vector;
 
 namespace bdm {
@@ -193,6 +195,9 @@ class MPIObject : public TMessage {
  public:
   MPIObject() = default;
   MPIObject(void* buf, Int_t len) : TMessage(buf, len) {}
+
+ private:
+  BDM_CLASS_DEF(MPIObject, 1);
 };
 
 /// Send object to worker using ROOT Serialization

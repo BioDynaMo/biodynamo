@@ -36,7 +36,7 @@ namespace bdm {
 // Define my custom cell, which extends Cell by adding an extra
 // data member s1_.
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1, s1_);
+  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}

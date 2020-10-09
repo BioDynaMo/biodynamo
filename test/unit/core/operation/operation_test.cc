@@ -53,8 +53,8 @@ TEST(OperationTest, SetupTearDown) {
 
   auto* op_impl = op->GetImplementation<OperationTestOp>();
 
-  EXPECT_EQ(op_impl->setup_counter_, 5);
-  EXPECT_EQ(op_impl->teardown_counter_, 5);
+  EXPECT_EQ(5, op_impl->setup_counter_);
+  EXPECT_EQ(5, op_impl->teardown_counter_);
 }
 
 struct CheckDiameter : public Functor<void, SimObject*, int*> {
@@ -157,7 +157,7 @@ TEST(OperationTest, ReductionOpMultiThreading) {
 
   simulation.Simulate(1);
 
-  // Check the total number of sim objects with a diameter greater than 6
+  // Check the total number of sim objects with a diameter greater than 0
   EXPECT_EQ(8000, op_impl->results_[0]);
 }
 

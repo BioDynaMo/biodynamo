@@ -28,4 +28,4 @@ valgrind \
   --suppressions=$ROOTSYS/etc/valgrind-root.supp \
   --error-exitcode=1 \
   --num-callers=25 \
-$@
+  "$@"

@@ -5,6 +5,8 @@ d = Dashboard()
 ############################################################################
 ## My Simulation Objects
 ############################################################################
+
+# Monocyte parameters
 monocyte = widgets.VBox([
     widgets.IntText(description='Population', value=7272),
     widgets.IntText(description='Type', value=0),
@@ -13,6 +15,7 @@ monocyte = widgets.VBox([
     widgets.FloatText(description='Velocity', value=2)
 ])
 
+# T-Cell parameters
 t_cell = widgets.VBox([
     widgets.IntText(description='Population', value=2727),
     widgets.IntText(description='Type', value=1),
@@ -29,15 +32,19 @@ d.AddSimulationObject('T_Cell', t_cell)
 ############################################################################
 ## My Biology Modules
 ############################################################################
+
+# ConnectWithRadius biology module parameters
 connect_with_radius = widgets.VBox([
     widgets.FloatText(description='Binding Radius', value=5, style=d.style_)
 ])
 
+# Inhibition biology module parameters
 inhibition = widgets.VBox([
     widgets.VBox([widgets.Label('Sigma'), widgets.FloatText(value=1)]),
     widgets.VBox([widgets.Label('Mu'), widgets.FloatText(value=-8.5)])
 ])
 
+# StokesVelocity biology module parameters
 stokesvelocity = widgets.VBox([
     widgets.FloatText(description='Viscosity', value=0.089, style=d.style_),
     widgets.FloatText(description='Mass Density Fluid', value=0.997, style=d.style_)

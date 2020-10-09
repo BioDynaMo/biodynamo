@@ -16,131 +16,77 @@
 #####################################
 ## Building ParaView for BioDynaMo ##
 #####################################
+WORKING_DIR=~/bdm-build-third-party/paraview 
+PV_FLAVOR="default"
 
-if [[ $# -ne 1 ]]; then
-  echo "ERROR: Wrong number of arguments.
+function printUsageAndExit {
+  echo "
+  $0 [-w path-to-working-dir -f paraview-flavor -p]
 Description:
   This script builds paraview.
-  The archive will be stored in BDM_PROJECT_DIR/build/paraview.tar.gz
+  The archive will be stored in $BDM_PROJECT_DIR/build
 Arguments:
-  \$1 Paraview version that should be build"
+  -w
+    working dir path
+    Default value: $WORKING_DIR
+  -f
+    paraview flavour. Possible values: default or nvidia-headless
+    Default value: $PV_FLAVOR
+  -p
+    Install prerequisites. Skip this step if -p is missing"
   exit 1
-fi
+}
 
-set -e -x
+# parse options
+while getopts ":w:f:p" opt; do
+  case ${opt} in
+    w )
+      WORKING_DIR=$(realpath $OPTARG)
+      ;;
+    f )
+      PV_FLAVOR=$OPTARG
+      ;;
+    p )
+      INSTALL_PREREQUISITES=1
+      ;;
+    \? )
+      echo "Invalid option: $OPTARG" 1>&2
+      printUsageAndExit
+      ;;
+    : )
+      echo "Invalid option: $OPTARG requires an argument" 1>&2
+      printUsageAndExit
+      ;;
+  esac
+done
+shift $((OPTIND -1))
 
-PV_VERSION=$1
-shift
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 cd $BDM_PROJECT_DIR
 
-# import util functions
-. $BDM_PROJECT_DIR/util/installation/common/util.sh
+set -e -x
 
-# archive destination dir
-DEST_DIR=$BDM_PROJECT_DIR/build
-mkdir -p $DEST_DIR
-EchoNewStep "Start building ParaView $PV_VERSION. Result will be stored in $DEST_DIR"
-# working dir
-WORKING_DIR=~/bdm-build-third-party
-mkdir -p $WORKING_DIR
+mkdir -p "$WORKING_DIR"
+
+if [ ! -z "$(ls -A \"$WORKING_DIR\")" ]; then
+  echo "ERROR: Working directory ($WORKING_DIR) is not empty"
+  exit 2
+fi
+
+cp "$BDM_PROJECT_DIR/util/build-third-party/paraview/"* "$WORKING_DIR"
 cd $WORKING_DIR
 
-# Install Qt (prerequisites will be installed inside build-qt.sh)
-. $BDM_PROJECT_DIR/util/build-third-party/build-qt.sh
-cd $WORKING_DIR
+# Prepend parameters to env.sh so scripts can be called again at a later stage
+# This helps debugging an error at one stage.
+echo "export BDM_PROJECT_DIR=$BDM_PROJECT_DIR" > env.sh
+echo "export WORKING_DIR=$WORKING_DIR" >> env.sh
+echo "export PV_FLAVOR=$PV_FLAVOR" >> env.sh
+cat "$BDM_PROJECT_DIR/util/build-third-party/paraview/env.sh" >> env.sh
 
-if [ `uname` = "Linux" ]; then
-  export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
-  export LD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$LD_LIBRARY_PATH
-else
-  export QT_CMAKE_DIR=$WORKING_DIR/qt/5.11.0/clang_64/lib/cmake
+if [ ! -z "$INSTALL_PREREQUISITES" ]; then
+  ./prerequisites.sh
 fi
+./checkout-code.sh
+./build.sh
+./package.sh
 
-## Clone paraview github repository
-git clone https://gitlab.kitware.com/paraview/paraview-superbuild.git
-cd paraview-superbuild
-git fetch origin
-git submodule update --init --recursive
-git checkout $PV_VERSION
-git submodule update --init --recursive
-
-## Generate the cmake files for paraview
-#
-# If you want to build against a specific Qt library at /path/to/qt/cmake
-# then set CMAKE_PREFIX_PATH=/path/to/qt/cmake (in this dir all the Qt modules
-# should be available)
-
-mkdir -p ../paraview-build
-cd ../paraview-build
-
-# The CMAKE_INSTALL_RPATH will put all the specified paths in all the installed
-# targets (libraries and binaries) (upon make install). Since the relative paths
-# from the ParaView targets are always the same we can set the rpaths to be
-# relative from the ParaView targets (which are located at @loader_path). This
-# makes the ParaView installation portable (as long as we copy Qt with it)
-# DPARAVIEW_DO_UNIX_STYLE_INSTALLS forces CMake to install OSX build similarly
-# to Linux, and enforces the RPATH (instead of @executable_path/../).
-# The three RPATHS are respectively as follows:
-# 1. ParaView binaries  -> Qt libraries
-# 2. ParaView libraries -> Qt libraries
-# 3. ParaView binaries / libraries -> ParaView libraries
-
-if [ `uname` = "Darwin" ]; then
-  OSX_CMAKE_OPTIONS='-DPARAVIEW_DO_UNIX_STYLE_INSTALLS:BOOL=ON
-                     -DCMAKE_MACOSX_RPATH:BOOL=ON
-                     -DCMAKE_INSTALL_RPATH:STRING=@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib'
-fi
-
-export Qt5_DIR=$QT_CMAKE_DIR
-cmake \
-  -DCMAKE_INSTALL_PREFIX="../pv-install" \
-  -DCMAKE_BUILD_TYPE:STRING="Release" \
-  -DENABLE_ospray:BOOL=ON \
-  -DENABLE_ospraymaterials:BOOL=ON \
-  -DENABLE_paraviewsdk:BOOL=ON \
-  -DENABLE_python:BOOL=ON \
-  -DENABLE_python3:BOOL=ON \
-  -DENABLE_qt5:BOOL=ON \
-  -DUSE_SYSTEM_qt5:BOOL=ON \
-  -DENABLE_mpi:BOOL=ON \
-  -DUSE_SYSTEM_mpi:BOOL=ON \
-  ../paraview-superbuild
-
-## Step 4: compile and install
-make -j$(CPUCount) install
-
-# patch and bundle
-# TODO(ahmad): Patch is probably not necessary anymore after relying on rpath
-# on OS X. To be investigated.
-if [ `uname` = "Darwin" ]; then
-  ## Patch vtkkwProcessXML-pv5.5
-  # make install does not set the rpath correctly on OSX
-  install_name_tool -add_rpath "@loader_path/../../qt/lib" bin/vtkkwProcessXML-pv5.5
-  install_name_tool -add_rpath "@loader_path/../../../../../qt/lib" bin/vtkkwProcessXML-pv5.5
-  install_name_tool -add_rpath "@loader_path/../lib" bin/vtkkwProcessXML-pv5.5
-fi
-
-cd install
-
-# For some reason this path is hardcoded in this file, which causes CMake to
-# panic. We just remove it.
-sed -i 's|/home/testuser/bdm-build-third-party/paraview-build/install/include/python3.7m||g' lib/cmake/paraview-5.8/vtk/VTK-targets.cmake || true
-
-# Some dependencies could be put into lib64 (e.g. OpenImageDenoise), so we copy
-# it into the lib directory (don't delete lib64, because some CMake files will
-# be referring to that directory)
-rsync -a lib64/ lib/ || true
-
-## tar the install directory
-tar -zcf paraview-$PV_VERSION.tar.gz *
-
-# After untarring the directory tree should like like this:
-# paraview
-#   |-- bin
-#   |-- include
-#   |-- lib
-#   |-- share
-
-# Step 5: cp to destination directory
-cp paraview-$PV_VERSION.tar.gz $DEST_DIR

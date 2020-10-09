@@ -45,25 +45,20 @@ EOF'
 
     #  root required packages
     sudo yum install -y git binutils \
-      libX11-devel libXpm-devel libXft-devel libXext-devel ninja-build
+      libX11-devel libXpm-devel libXft-devel libXext-devel
     #  root optional packages
     sudo yum install -y gcc-gfortran openssl-devel pcre-devel \
       mesa-libGL-devel mesa-libGLU-devel glew-devel ftgl-devel mysql-devel \
       fftw-devel cfitsio-devel graphviz-devel \
       avahi-compat-libdns_sd-devel libldap-dev python-devel \
       libxml2-devel gsl-static || true
-    # paraview
-    ## issues with mpich and valgrind:
-    ## https://github.com/flow123d/flow123d/issues/806
-    sudo yum install -y openmpi3-devel || true
-    . /etc/profile.d/modules.sh
-    module load mpi
-
+    sudo yum install -y atlas-devel
     sudo yum install -y libXt-devel freeglut3-devel
 
     sudo yum install -y centos-release-scl epel-release
     sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm || true
     sudo yum install -y devtoolset-7-gcc*
+    sudo yum install -y ninja-build
 
     # libroadrunner
     sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
@@ -100,8 +95,7 @@ EOF'
       graphviz-dev libavahi-compat-libdnssd-dev \
       libldap2-dev python-dev libxml2-dev libkrb5-dev \
       libgsl0-dev libqt4-dev || true
-    # paraview
-    sudo apt-get -y install libopenmpi-dev || true
+    sudo apt install -y libatlas-base-dev
 
     # Install dependencies to install Python with PyEnv
     sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev \
@@ -122,12 +116,12 @@ EOF'
   DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.17.3 1
   export PATH=$WORKING_DIR/cmake-3.17.3/bin:$PATH
 
-  # Install pyenv and python 3.6.9
+  # Install pyenv and python 3.8.0
   curl https://pyenv.run | bash
   export PATH="$HOME/.pyenv/bin:$PATH"
   eval "$(pyenv init -)"
-  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
-  pyenv shell 3.6.9
+  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+  pyenv shell 3.8.0
 
 else
   brew install llvm@6
