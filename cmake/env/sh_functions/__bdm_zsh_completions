@@ -1,0 +1,9 @@
+#compdef __bdm_zsh_completions biodynamo
+
+function __bdm_zsh_completions {
+    _arguments -C \
+        "-h[show help message and exit]" \
+        "--help[show help message and exit]" \
+        "1: :(new build clean run demo)" \
+        "*::arg:->args"
+}
