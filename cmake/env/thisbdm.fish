@@ -430,7 +430,7 @@ function source_thisbdm
     __bdm_fish_functions; or return 1
 
     ### Environment Indicator ###
-    if not test "$BDM_THISBDM_QUIET" = true
+    if not test "$BDM_THISBDM_NOPROMPT" = true
         set -gx __bdm_major_minor (bdm-config --version | sed -n  '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
         if not type -qt __bdm_fish_prompt_original
             functions --copy fish_prompt __bdm_fish_prompt_original
