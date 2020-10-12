@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/container/math_array.h"
 #include "core/operation/reduction_op.h"
 #include "core/operation/operation_registry.h"
 
@@ -19,5 +20,7 @@ namespace bdm {
 
 BDM_REGISTER_TEMPLATE_OP(ReductionOp, int, "ReductionOpInt", kCpu);
 BDM_REGISTER_TEMPLATE_OP(ReductionOp, double, "ReductionOpDouble", kCpu);
+BDM_REGISTER_TEMPLATE_OP(ReductionOp, Double3, "ReductionOpDouble3", kCpu);
+BDM_REGISTER_TEMPLATE_OP(ReductionOp, Double4, "ReductionOpDouble4", kCpu);
 
 }  // namespace bdm
