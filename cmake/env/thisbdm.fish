@@ -431,7 +431,7 @@ function source_thisbdm
 
     ### Environment Indicator ###
     if not test "$BDM_THISBDM_NOPROMPT" = true
-        set -gx __bdm_major_minor (bdm-config --version | sed -n  '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
+        set -gx __bdm_major_minor (biodynamo --shortversion)
         if not type -qt __bdm_fish_prompt_original
             functions --copy fish_prompt __bdm_fish_prompt_original
         end
