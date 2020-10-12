@@ -40,7 +40,6 @@ template <typename T>
 struct ReductionOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(ReductionOp);
   ReductionOp() {
-    static_assert(std::is_arithmetic<T>::value, "Type needs to be arithmetic.");
     tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
   }
 
@@ -62,7 +61,7 @@ struct ReductionOp : public SimObjectOperationImpl {
 
   void SetUp() override {
     for (auto& arr : tl_results_) {
-      arr.fill(0);
+      arr[0] = T();
     }
   }
 
