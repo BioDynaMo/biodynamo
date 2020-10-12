@@ -405,16 +405,23 @@ include(Documentation)
 include(Website)
 include(Versioning)
 
-# -------------------- benchmarking -------------------------------------------
-if(benchmark)
-  include(Benchmarking)
-  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/bench-main.cc)
-  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
-  bdm_add_bench_executable(biodynamo-benchmark
-                          SOURCES ${BENCH_SOURCES}
-                          HEADERS ${BENCH_HEADERS}
-                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} ${FS_LIB})
-endif()
+# # -------------------- benchmarking -------------------------------------------
+# if(benchmark)
+#   include(Benchmarking)
+# #  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/bench-main.cc)
+# #  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
+#   file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/main.cc)
+#   file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/demo/tumor_concept/src/*.h)
+#   set(BENCH_HEADERS ${CMAKE_SOURCE_DIR}/src/biodynamo.h)
+#   set(BENCH_HEADERS ${CMAKE_SOURCE_DIR}/src/core/biology_module/biology_module.h)
+#   set(BENCH_HEADERS ${CMAKE_SOURCE_DIR}/src/core/event/event.h)
+#   set(BENCH_HEADERS ${CMAKE_SOURCE_DIR}/src/core/util/*.h)
+#   set(BENCH_HEADERS ${CMAKE_SOURCE_DIR}/src/core/container/*.h)
+#   bdm_add_bench_executable(biodynamo-benchmark
+#                           SOURCES ${BENCH_SOURCES}
+#                           HEADERS ${BENCH_HEADERS}
+#                           LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB})
+# endif()
 
 # -------------------- set default build type and compiler flags ---------------
 if(coverage)
@@ -621,6 +628,19 @@ if(OPENCL_FOUND OR CUDA_FOUND)
                       SOURCES test/system/cell_division_gpu/src/cell_division_gpu.cc
                       HEADERS test/system/cell_division_gpu/src/cell_division_gpu.h
                       LIBRARIES biodynamo)
+endif()
+
+# -------------------- benchmarking -------------------------------------------
+if(benchmark)
+  include(Benchmarking)
+#  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/bench-main.cc)
+#  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
+  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/main.cc)
+  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/demo/tumor_concept/src/*.h)
+  bdm_add_bench_executable(biodynamo-benchmark
+                          SOURCES ${BENCH_SOURCES}
+                          HEADERS ${BENCH_HEADERS}
+                          LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB})
 endif()
 
 # -------------------- Generate notebooks --------------------------------------
