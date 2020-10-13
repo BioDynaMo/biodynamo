@@ -1,5 +1,5 @@
 #include <benchmark.h>
-#include "tumor_concept.h"
+#include "soma_clustering.h"
 
 static void BM_BDM(benchmark::State& state) {
   const char** argv = (const char**) malloc(2);

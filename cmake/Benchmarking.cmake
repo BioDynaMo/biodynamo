@@ -39,7 +39,3 @@ function(bdm_add_bench_executable BENCH_TARGET)
                      HEADERS ${ARG_HEADERS}
 					 LIBRARIES biodynamo libbenchmark ${ARG_LIBRARIES})
 endfunction(bdm_add_bench_executable)
-
-add_custom_target(run-benchmark COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark)
-add_dependencies(run-benchmark biodynamo-benchmark)
-						
