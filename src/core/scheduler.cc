@@ -93,13 +93,6 @@ Scheduler::~Scheduler() {
   for (auto* op : all_ops_) {
     delete op;
   }
-  delete visualize_op_;
-  delete sort_balance_op_;
-  delete update_environment_op_;
-  delete setup_iteration_op_;
-  delete teardown_iteration_op_;
-  delete backup_;
-  delete root_visualization_;
 }
 
 void Scheduler::Simulate(uint64_t steps) {
@@ -273,18 +266,6 @@ void Scheduler::RunPostScheduledOps() {
 
 void Scheduler::Execute() {
   ScheduleOps();
-  Timing::Time(setup_iteration_op_->name_, [&]() { (*setup_iteration_op_)(); });
-
-  // We cannot put sort and balance in the list of scheduled_standalone_ops_,
-  // because numa-aware data structures would be invalidated:
-  // ```
-  //  SetUpOps() <-- (1)
-  //  RunScheduledOps() <-- rebalance numa domains
-  //  TearDownOps() <-- indexing with SoHandles are different than at (1)
-  // ```
-  if (total_steps_ % sort_balance_op_->frequency_ == 0) {
-    Timing::Time(sort_balance_op_->name_, [&]() { (*sort_balance_op_)(); });
-  }
 
   RunPreScheduledOps();
   RunScheduledOps();

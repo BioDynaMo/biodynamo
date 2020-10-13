@@ -41,51 +41,88 @@ namespace bdm {
 enum CellType { kMonocyte, kTCell };
 enum Substances { kAntibody };
 
+// Parameters specific for this simulation
+struct SimParam : public ModuleParam {
+  BDM_MODULE_PARAM_HEADER(SimParam, 1);
+
+  // World parameters
+  int timesteps = 0;
+  double min_space = 0;
+  double max_space = 0;
+
+  // T-Cell parameters
+  int t_cell_population = 0;
+  double t_cell_diameter = 0;
+  double t_cell_walkspeed = 0;
+  double t_cell_density = 0;
+  double t_cell_init_mean = 0;
+  double t_cell_init_sigma = 0;
+
+  // Monocyte parameters
+  int monocyte_population = 0;
+  double monocyte_diameter = 0;
+  double monocyte_density = 0;
+
+  // Antibody (substance) parameters
+  double apd_amount = 0;
+  double diff_rate = 0;
+  double decay_rate = 0;
+  double res = 0;
+
+  // Inhibition module parameters
+  double inhib_sigma = 0;
+  double inhib_mu = 0;
+
+  // StokesVelocity module parameters
+  double stokes_u = 0;
+  double stokes_pf = 0;
+};
+
 inline int Simulate(int argc, const char** argv,
                     XMLParams* xml_params = nullptr) {
+  Param::RegisterModuleParam(new SimParam());
   Simulation simulation(argc, argv, xml_params);
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Retrieve simulation parameters from XML parameter file
-  //////////////////////////////////////////////////////////////////////////////
-  auto xmlp = simulation.GetXMLParam();
-  xmlp.Print();
+  // get a pointer to the param object
+  auto* param = simulation.GetParam();
+  // get a pointer to an instance of SimParam
+  auto* sparam = param->GetModuleParam<SimParam>();
 
   // T-Cells contain a TH2I histogram object that is not thread-safe by default,
   // so we need to enable ROOT's implicit multithreading awareness
   ROOT::EnableImplicitMT();
 
   // World parameters
-  int timesteps = xmlp.Get("World", "timesteps");
-  double min_space = xmlp.Get("World", "min_space");
-  double max_space = xmlp.Get("World", "max_space");
+  int timesteps = sparam->timesteps;
+  double min_space = sparam->min_space;
+  double max_space = sparam->max_space;
 
   // T-Cell parameters
-  int t_cell_population = xmlp.Get("T_Cell", "population");
-  double t_cell_diameter = xmlp.Get("T_Cell", "diameter");
-  double t_cell_walkspeed = xmlp.Get("T_Cell", "velocity");
-  double t_cell_density = xmlp.Get("T_Cell", "mass_density");
-  double t_cell_init_mean = xmlp.Get("T_Cell", "init_activation_mean");
-  double t_cell_init_sigma = xmlp.Get("T_Cell", "init_activation_sigma");
+  int t_cell_population = sparam->t_cell_population;
+  double t_cell_diameter = sparam->t_cell_diameter;
+  double t_cell_walkspeed = sparam->t_cell_walkspeed;
+  double t_cell_density = sparam->t_cell_density;
+  double t_cell_init_mean = sparam->t_cell_init_mean;
+  double t_cell_init_sigma = sparam->t_cell_init_sigma;
 
   // Monocyte parameters
-  int monocyte_population = xmlp.Get("Monocyte", "population");
-  double monocyte_diameter = xmlp.Get("Monocyte", "diameter");
-  double monocyte_density = xmlp.Get("Monocyte", "mass_density");
+  int monocyte_population = sparam->monocyte_population;
+  double monocyte_diameter = sparam->monocyte_diameter;
+  double monocyte_density = sparam->monocyte_density;
 
   // Antibody (substance) parameters
-  double apd_amount = xmlp.Get("Antibody", "amount");
-  double diff_rate = xmlp.Get("Antibody", "diffusion_rate");
-  double decay_rate = xmlp.Get("Antibody", "decay_rate");
-  double res = xmlp.Get("Antibody", "resolution");
+  double apd_amount = sparam->apd_amount;
+  double diff_rate = sparam->diff_rate;
+  double decay_rate = sparam->decay_rate;
+  double res = sparam->res;
 
   // Inhibition module parameters
-  double inhib_sigma = xmlp.Get("Inhibition", "sigma");
-  double inhib_mu = xmlp.Get("Inhibition", "mu");
+  double inhib_sigma = sparam->inhib_sigma;
+  double inhib_mu = sparam->inhib_mu;
 
   // StokesVelocity module parameters
-  double stokes_u = xmlp.Get("StokesVelocity", "viscosity");
-  double stokes_pf = xmlp.Get("StokesVelocity", "mass_density_fluid");
+  double stokes_u = sparam->stokes_u;
+  double stokes_pf = sparam->stokes_pf;
 
   //////////////////////////////////////////////////////////////////////////////
   // Create and initialize Monocytes

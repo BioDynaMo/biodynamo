@@ -92,15 +92,13 @@ struct CheckXPosition : public Functor<void, SimObject*, double*> {
 TEST(OperationTest, ReductionOp) {
   // Lower the batch size such that multiple threads are working in parallel on
   // the operations (to test if multithreading doesn't cause race conditions)
-  auto set_param = [](Param* param) {
-    param->scheduling_batch_size_ = 3;
-  };
+  auto set_param = [](Param* param) { param->scheduling_batch_size_ = 3; };
   Simulation simulation("", set_param);
   auto* scheduler = simulation.GetScheduler();
 
   auto construct = [&](const Double3& position) {
     Cell* cell = new Cell(position);
-    cell->SetDiameter(1 + position[0]/10);
+    cell->SetDiameter(1 + position[0] / 10);
     return cell;
   };
   ModelInitializer::Grid3D(3, 50, construct);
@@ -137,9 +135,7 @@ TEST(OperationTest, ReductionOp) {
 TEST(OperationTest, ReductionOpMultiThreading) {
   // Lower the batch size such that multiple threads are working in parallel on
   // the operations (to test if multithreading doesn't cause race conditions)
-  auto set_param = [](Param* param) {
-    param->scheduling_batch_size_ = 3;
-  };
+  auto set_param = [](Param* param) { param->scheduling_batch_size_ = 3; };
   Simulation simulation("", set_param);
   auto* scheduler = simulation.GetScheduler();
 

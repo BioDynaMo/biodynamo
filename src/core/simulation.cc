@@ -96,7 +96,6 @@ Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params) {
 Simulation::Simulation(int argc, const char** argv, XMLParams* xml_params,
                        const std::function<void(Param*)>& set_param) {
   auto options = CommandLineOptions(argc, argv);
-  Initialize(&options, set_param, {}, xml_params);
 }
 
 Simulation::Simulation(int argc, const char** argv,
