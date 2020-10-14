@@ -1,18 +1,9 @@
-#include <benchmark.h>
-#include "tumor_concept.h"
-
-static void BM_BDM(benchmark::State& state) {
-  const char** argv = (const char**) malloc(2);
-  argv[0] = "./demo";
-  argv[1] = NULL;
-  int argc = 1;
-    for (auto _ : state)
-      bdm::Simulate(argc, argv);
-}
+#include "bdm-bench.h"
 
 int main(int argc, const char** argv)
 {
-  BENCHMARK(BM_BDM);
+  BENCHMARK(BM_BDM_SOMA);
+  BENCHMARK(BM_BDM_TUMOR);
   ::benchmark::RunSpecifiedBenchmarks();
   return 0;
 }

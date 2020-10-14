@@ -615,38 +615,22 @@ endif()
 # -------------------- benchmarking --------------------------------------------
 if(benchmark)
   include(Benchmarking)
-  file(GLOB BENCH_SOURCES_TUMOR ${CMAKE_SOURCE_DIR}/test/benchmark/main.cc)
-  file(GLOB BENCH_SOURCES_SOMA ${CMAKE_SOURCE_DIR}/test/benchmark/main-soma.cc)
-  file(GLOB BENCH_HEADERS_TUMOR ${CMAKE_SOURCE_DIR}/demo/tumor_concept/src/*.h)
-  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/bench-main.cc)
+  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/*.cc)
+  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/demo/tumor_concept/src/*.h)
   file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
-  file(GLOB BENCH_HEADERS_SOMA ${CMAKE_SOURCE_DIR}/demo/soma_clustering/src/*.h)
+  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/demo/soma_clustering/src/*.h)
+  include_directories("${CMAKE_SOURCE_DIR}/test/benchmark")
   include_directories("${CMAKE_SOURCE_DIR}/demo/soma_clustering/src")
   include_directories("${CMAKE_SOURCE_DIR}/demo/tumor_concept/src")
   include_directories("${CMAKE_SOURCE_DIR}/build/benchmark/src/gbench/include/benchmark")
+    
   bdm_add_bench_executable(biodynamo-benchmark
                           SOURCES ${BENCH_SOURCES}
                           HEADERS ${BENCH_HEADERS}
                           LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB})
   
-  bdm_add_bench_executable(biodynamo-benchmark-tumor
-                          SOURCES ${BENCH_SOURCES_TUMOR}
-                          HEADERS ${BENCH_HEADERS_TUMOR}
-                          LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB})
-  
-  bdm_add_bench_executable(biodynamo-benchmark-soma
-                          SOURCES ${BENCH_SOURCES_SOMA}
-                          HEADERS ${BENCH_HEADERS_SOMA}
-                          LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB})
-
-add_custom_target(run-benchmark COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark)
-add_dependencies(run-benchmark biodynamo-benchmark)
-
-add_custom_target(run-benchmark-tumor COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark-tumor)
-add_dependencies(run-benchmark-tumor biodynamo-benchmark-tumor)
-
-add_custom_target(run-benchmark-soma COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark-soma)
-add_dependencies(run-benchmark-soma biodynamo-benchmark-soma)
+  add_custom_target(run-benchmark COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark)
+  add_dependencies(run-benchmark biodynamo-benchmark)
 endif()
 
 # -------------------- Generate notebooks --------------------------------------
