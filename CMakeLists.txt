@@ -615,22 +615,6 @@ endif()
 # -------------------- benchmarking --------------------------------------------
 if(benchmark)
   include(Benchmarking)
-  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/*.cc)
-  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/demo/tumor_concept/src/*.h)
-  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
-  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/demo/soma_clustering/src/*.h)
-  include_directories("${CMAKE_SOURCE_DIR}/test/benchmark")
-  include_directories("${CMAKE_SOURCE_DIR}/demo/soma_clustering/src")
-  include_directories("${CMAKE_SOURCE_DIR}/demo/tumor_concept/src")
-  include_directories("${CMAKE_SOURCE_DIR}/build/benchmark/src/gbench/include/benchmark")
-    
-  bdm_add_bench_executable(biodynamo-benchmark
-                          SOURCES ${BENCH_SOURCES}
-                          HEADERS ${BENCH_HEADERS}
-                          LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB})
-  
-  add_custom_target(run-benchmark COMMAND ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark)
-  add_dependencies(run-benchmark biodynamo-benchmark)
 endif()
 
 # -------------------- Generate notebooks --------------------------------------
