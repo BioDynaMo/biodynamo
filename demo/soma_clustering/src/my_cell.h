@@ -18,6 +18,7 @@
 #include <biodynamo.h>
 
 namespace bdm {
+namespace soma_clustering {
 
 // Define my custom cell, which extends Cell by adding an extra
 // data member cell_type.
@@ -39,6 +40,7 @@ class MyCell : public Cell {
   int cell_type_;
 };
 
+}  // namespace soma_clustering
 }  // namespace bdm
 
 #endif  // MY_CELL_H_

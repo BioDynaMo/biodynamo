@@ -25,6 +25,7 @@
 #include "biodynamo.h"
 
 namespace bdm {
+namespace cell_division {
 
 inline int Simulate(int argc, const char** argv) {
   // Create a new simulation
@@ -54,6 +55,7 @@ inline int Simulate(int argc, const char** argv) {
   return 0;
 }
 
+}  // namespace cell_division
 }  // namespace bdm
 
 #endif  // DEMO_CELL_DIVISION_H_

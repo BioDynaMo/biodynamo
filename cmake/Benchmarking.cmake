@@ -12,19 +12,6 @@
 #
 # -----------------------------------------------------------------------------
 
-function(bdm_add_demo_benchmark DEMO_NAME)
-  file(GLOB BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/demo/${DEMO_NAME}_bm.h)
-  file(GLOB BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/demo/${DEMO_NAME}_bm.cc)
-  file(GLOB DEMO_HEADERS ${CMAKE_SOURCE_DIR}/demo/${DEMO_NAME}/src/*.h)
-  include_directories("${CMAKE_SOURCE_DIR}/demo/${DEMO_NAME}/src")
-  include_directories("${CMAKE_SOURCE_DIR}/build/benchmark/src/gbench/include/benchmark")
-  bdm_add_executable(biodynamo-benchmark-${DEMO_NAME}
-                     HEADERS ${DEMO_HEADERS} ${BENCH_HEADERS}
-                     SOURCES ${BENCH_SOURCES}
-                     LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB} biodynamo libbenchmark)
-  add_dependencies(run-benchmark biodynamo-benchmark-${DEMO_NAME})
-endfunction(bdm_add_demo_benchmark)
-
 # setup google benchmark
 ExternalProject_Add(
 	gbench 
@@ -53,11 +40,19 @@ include_directories("${CMAKE_SOURCE_DIR}/test/benchmark/demo")
 
 
 set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
-add_custom_target(run-benchmark 
-                  COMMAND ${LAUNCHER$} {CMAKE_BINARY_DIR}/bin/biodynamo-benchmark-tumor_concept
-                  COMMAND ${LAUNCHER$} {CMAKE_BINARY_DIR}/bin/biodynamo-benchmark-soma_clustering)
+add_custom_target(run-benchmarks 
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark)
 
-bdm_add_demo_benchmark(tumor_concept)
-bdm_add_demo_benchmark(soma_clustering)
-
+file(GLOB_RECURSE BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
+file(GLOB_RECURSE BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/*.cc)
+file(GLOB_RECURSE DEMO_HEADERS ${CMAKE_SOURCE_DIR}/demo/soma_clustering/*.h 
+                               ${CMAKE_SOURCE_DIR}/demo/tumor_concept/*.h)
+include_directories("${CMAKE_SOURCE_DIR}/demo/tumor_concept/src")
+include_directories("${CMAKE_SOURCE_DIR}/demo/soma_clustering/src")
+include_directories("${CMAKE_SOURCE_DIR}/build/benchmark/src/gbench/include/benchmark")
+bdm_add_executable(biodynamo-benchmark
+                   HEADERS ${DEMO_HEADERS} ${BENCH_HEADERS}
+                   SOURCES ${BENCH_SOURCES}
+                   LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB} biodynamo libbenchmark)
+add_dependencies(run-benchmarks biodynamo-benchmark)
 

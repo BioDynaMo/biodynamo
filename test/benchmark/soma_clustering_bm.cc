@@ -12,8 +12,24 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "cell_division.h"
+#include <benchmark.h>
+#include "soma_clustering.h"
 
-int main(int argc, const char** argv) {
-  return bdm::cell_division::Simulate(argc, argv);
+namespace bdm {
+namespace soma_clustering {
+
+void SomaClustering(benchmark::State& state) {
+  // FIXME memory leak
+  const char** argv = (const char**)malloc(2);
+  argv[0] = "./demo";
+  argv[1] = NULL;
+  int argc = 1;
+  for (auto _ : state) {
+    Simulate(argc, argv);
+  }
 }
+
+BENCHMARK(SomaClustering);
+
+}  // namespace soma_clustering
+}  // namespace bdm
