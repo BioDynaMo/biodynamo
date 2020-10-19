@@ -40,6 +40,14 @@ Param::Param() {
 }
 
 // -----------------------------------------------------------------------------
+Param::Param(const Param& other) {
+  *this = other;
+  for (auto el : other.modules_) {
+    this->modules_[el.first] = el.second->GetCopy();
+  }
+}
+
+// -----------------------------------------------------------------------------
 Param::~Param() {
   for (auto& el : modules_) {
     delete el.second;

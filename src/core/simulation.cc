@@ -101,7 +101,7 @@ Simulation::Simulation(const std::string& simulation_name,
 void Simulation::Restore(Simulation&& restored) {
   // random_
   if (random_.size() != restored.random_.size()) {
-    Log::Warning("Simulation", "The restore file (", param_->restore_file_,
+    Log::Warning("Simulation", "The restore file (", GetParam()->restore_file_,
                  ") was run with a different number of threads. Can't restore "
                  "complete random number generator state.");
     uint64_t min = std::min(random_.size(), restored.random_.size());
@@ -115,8 +115,10 @@ void Simulation::Restore(Simulation&& restored) {
   }
 
   // param and rm
-  param_->Restore(std::move(*restored.param_));
-  restored.param_ = nullptr;
+  for (uint64_t i = 0; i < params_.size(); ++i) {
+    params_[i]->Restore(std::move(*restored.params_[i]));
+    restored.params_[i] = nullptr;
+  }
   *rm_ = std::move(*restored.rm_);
   restored.rm_ = nullptr;
 
@@ -194,7 +196,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   os << "***********************************************" << std::endl;
   os << std::endl;
   os << "\033[1mParameters\033[0m" << std::endl;
-  os << sim.param_->ToJsonString();
+  os << sim.GetParam()->ToJsonString();
   os << std::endl;
   os << "***********************************************" << std::endl;
   os << "***********************************************" << std::endl;
@@ -205,7 +207,8 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
 Simulation::~Simulation() {
   dtor_ts_ = bdm::Timing::Timestamp();
 
-  if (param_ != nullptr && param_->statistics_) {
+  auto* param = GetParam();
+  if (param != nullptr && param->statistics_) {
     std::stringstream sstr;
     sstr << *this << std::endl;
     std::cout << sstr.str() << std::endl;
@@ -229,7 +232,9 @@ Simulation::~Simulation() {
   if (so_uid_generator_ != nullptr) {
     delete so_uid_generator_;
   }
-  delete param_;
+  for (auto* param : params_) {
+    delete param;
+  }
   for (auto* r : random_) {
     delete r;
   }
@@ -254,7 +259,7 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
 }
 
 /// Returns the simulation parameters
-const Param* Simulation::GetParam() const { return param_; }
+const Param* Simulation::GetParam() const { return params_[omp_get_thread_num()]; }
 
 SoUidGenerator* Simulation::GetSoUidGenerator() { return so_uid_generator_; }
 
@@ -309,13 +314,14 @@ void Simulation::Initialize(CommandLineOptions* clo,
 }
 
 void Simulation::InitializeMembers() {
-  if (param_->use_bdm_mem_mgr_) {
-    mem_mgr_ = new MemoryManager(param_->mem_mgr_aligned_pages_shift_,
-                                 param_->mem_mgr_growth_rate_,
-                                 param_->mem_mgr_max_mem_per_thread_);
+  auto* param = GetParam();
+  if (param->use_bdm_mem_mgr_) {
+    mem_mgr_ = new MemoryManager(param->mem_mgr_aligned_pages_shift_,
+                                 param->mem_mgr_growth_rate_,
+                                 param->mem_mgr_max_mem_per_thread_);
   }
   so_uid_generator_ = new SoUidGenerator();
-  if (param_->debug_numa_) {
+  if (param->debug_numa_) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
   }
 
@@ -323,7 +329,7 @@ void Simulation::InitializeMembers() {
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
-    random_[i]->SetSeed(param_->random_seed_ * (i + 1));
+    random_[i]->SetSeed(param->random_seed_ * (i + 1));
   }
   exec_ctxt_.resize(omp_get_max_threads());
   auto map =
@@ -348,7 +354,7 @@ void Simulation::InitializeRuntimeParams(
   sstr << (*clo);
   command_line_parameter_str_ = sstr.str();
 
-  param_ = new Param();
+  auto* param = new Param();
 
   // detect if the biodynamo environment has been sourced
   if (std::getenv("BDMSYS") == nullptr) {
@@ -368,38 +374,44 @@ void Simulation::InitializeRuntimeParams(
     read_env = true;
   }
 
-  LoadConfigFiles(ctor_config_files,
+  LoadConfigFiles(param, ctor_config_files,
                   clo->Get<std::vector<std::string>>("config"));
   auto inline_configs = clo->Get<std::vector<std::string>>("inline-config");
   if (inline_configs.size()) {
     for (auto& inline_config : inline_configs) {
-      param_->MergeJsonPatch(inline_config);
+      param->MergeJsonPatch(inline_config);
     }
   }
 
   if (clo->Get<std::string>("backup") != "") {
-    param_->backup_file_ = clo->Get<std::string>("backup");
+    param->backup_file_ = clo->Get<std::string>("backup");
   }
   if (clo->Get<std::string>("restore") != "") {
-    param_->restore_file_ = clo->Get<std::string>("restore");
+    param->restore_file_ = clo->Get<std::string>("restore");
   }
 
   // Handle "cuda" and "opencl" arguments
   if (clo->Get<bool>("cuda")) {
-    param_->compute_target_ = "cuda";
+    param->compute_target_ = "cuda";
   }
 
   if (clo->Get<bool>("opencl")) {
-    param_->compute_target_ = "opencl";
+    param->compute_target_ = "opencl";
   }
 
   ocl_state_ = new OpenCLState();
 
-  set_param(param_);
+  set_param(param);
 
-  if (!is_gpu_environment_initialized_ && param_->compute_target_ != "cpu") {
+  if (!is_gpu_environment_initialized_ && param->compute_target_ != "cpu") {
     GpuHelper::GetInstance()->InitializeGPUEnvironment();
     is_gpu_environment_initialized_ = true;
+  }
+  
+  params_.resize(omp_get_max_threads());
+#pragma omp parallel for schedule(static, 1)
+  for (uint64_t i = 0; i < params_.size(); i++) {
+    params_[i] = new Param(*param);
   }
 
   // Removing this line causes an unexplainable segfault due to setting the
@@ -409,7 +421,7 @@ void Simulation::InitializeRuntimeParams(
             Version::String());
 }
 
-void Simulation::LoadConfigFiles(const std::vector<std::string>& ctor_configs,
+void Simulation::LoadConfigFiles(Param* param, const std::vector<std::string>& ctor_configs,
                                  const std::vector<std::string>& cli_configs) {
   constexpr auto kTomlConfigFile = "bdm.toml";
   constexpr auto kJsonConfigFile = "bdm.json";
@@ -460,12 +472,12 @@ void Simulation::LoadConfigFiles(const std::vector<std::string>& ctor_configs,
     for (auto& config : configs) {
       if (EndsWith(config, ".toml")) {
         auto toml = cpptoml::parse_file(config);
-        param_->AssignFromConfig(toml);
+        param->AssignFromConfig(toml);
       } else if (EndsWith(config, ".json")) {
         std::ifstream ifs(config);
         std::stringstream buffer;
         buffer << ifs.rdbuf();
-        param_->MergeJsonPatch(buffer.str());
+        param->MergeJsonPatch(buffer.str());
       }
       Log::Info("Simulation::LoadConfigFiles",
                 "Processed config file: ", config);
@@ -490,17 +502,18 @@ void Simulation::InitializeUniqueName(const std::string& simulation_name) {
 }
 
 void Simulation::InitializeOutputDir() {
+  auto* param = GetParam();
   if (unique_name_ == "") {
-    output_dir_ = param_->output_dir_;
+    output_dir_ = param->output_dir_;
   } else {
-    output_dir_ = Concat(param_->output_dir_, "/", unique_name_);
+    output_dir_ = Concat(param->output_dir_, "/", unique_name_);
   }
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
     Log::Fatal("Simulation::InitializeOutputDir",
                "Failed to make output directory ", output_dir_);
   }
   if (!fs::is_empty(output_dir_)) {
-    if (param_->remove_output_dir_contents_) {
+    if (param->remove_output_dir_contents_) {
       RemoveDirectoryContents(output_dir_);
     } else {
       Log::Warning(

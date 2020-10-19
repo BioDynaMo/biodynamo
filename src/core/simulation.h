@@ -146,7 +146,8 @@ class Simulation {
   std::vector<InPlaceExecutionContext*> exec_ctxt_;  //!
 
   ResourceManager* rm_ = nullptr;
-  Param* param_ = nullptr;
+  /// Parameters for each thread
+  std::vector<Param*> params_;
   SoUidGenerator* so_uid_generator_ = nullptr;  //!
   std::string name_;
   Environment* environment_ = nullptr;  //!
@@ -185,7 +186,7 @@ class Simulation {
                                const std::function<void(Param*)>& set_param,
                                const std::vector<std::string>& ctor_config);
 
-  void LoadConfigFiles(const std::vector<std::string>& ctor_configs,
+  void LoadConfigFiles(Param* param, const std::vector<std::string>& ctor_configs,
                        const std::vector<std::string>& cli_configs);
 
   /// This function initialzes `unique_name_`

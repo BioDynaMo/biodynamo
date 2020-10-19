@@ -36,6 +36,8 @@ struct Param {
 
   Param();
 
+  Param(const Param& other);
+
   ~Param();
 
   void Restore(Param&& other);
