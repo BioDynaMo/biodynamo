@@ -109,7 +109,7 @@ class UniformGridEnvironment : public Environment {
 
     /// An iterator that iterates over the cells in this box
     struct Iterator {
-      Iterator(UniformGridEnvironment* grid, const Box* box)
+      Iterator(const UniformGridEnvironment* grid, const Box* box)
           : grid_(grid), current_value_(box->start_), countdown_(box->length_) {
         if (grid->timestamp_ != box->timestamp_) {
           countdown_ = 0;
@@ -129,16 +129,14 @@ class UniformGridEnvironment : public Environment {
       SimObject* operator*() const { return current_value_; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
-      UniformGridEnvironment* grid_;
+      const UniformGridEnvironment* grid_;
       /// The current simulation object to be considered
       SimObject* current_value_;
       /// The remain number of simulation objects to consider
       int countdown_ = 0;
     };
 
-    Iterator begin() const {  // NOLINT
-      auto* grid = static_cast<UniformGridEnvironment*>(
-          Simulation::GetActive()->GetEnvironment());
+    Iterator begin(const UniformGridEnvironment* grid) const {  // NOLINT
       return Iterator(grid, this);
     }
   };
@@ -146,11 +144,12 @@ class UniformGridEnvironment : public Environment {
   /// An iterator that iterates over the boxes in this grid
   struct NeighborIterator {
     explicit NeighborIterator(
-        const FixedSizeVector<const Box*, 27>& neighbor_boxes,
+        const UniformGridEnvironment* grid, const FixedSizeVector<const Box*, 27>& neighbor_boxes,
         uint64_t grid_timestamp)
-        : neighbor_boxes_(neighbor_boxes),
+        : grid_(grid), 
+          neighbor_boxes_(neighbor_boxes),
           // start iterator from box 0
-          box_iterator_(neighbor_boxes_[0]->begin()),
+          box_iterator_(neighbor_boxes_[0]->begin(grid_)),
           grid_timestamp_(grid_timestamp) {
       // if first box is empty
       if (neighbor_boxes_[0]->IsEmpty(grid_timestamp)) {
@@ -173,6 +172,7 @@ class UniformGridEnvironment : public Environment {
     }
 
    private:
+    const UniformGridEnvironment* grid_;
     /// The 27 neighbor boxes that will be searched for simulation objects
     const FixedSizeVector<const Box*, 27>& neighbor_boxes_;
     /// The box that shall be considered to iterate over for finding simulation
@@ -194,7 +194,7 @@ class UniformGridEnvironment : public Environment {
           continue;
         }
         // a non-empty box has been found
-        box_iterator_ = neighbor_boxes_[box_idx_]->begin();
+        box_iterator_ = neighbor_boxes_[box_idx_]->begin(grid_);
         return *this;
       }
       // all remaining boxes have been empty; reached end
@@ -432,7 +432,7 @@ class UniformGridEnvironment : public Environment {
   void IterateZOrder(Functor<void, const SimObject*>& callback) override {
     UpdateBoxZOrder();
     for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
-      auto it = zorder_sorted_boxes_[i].second->begin();
+      auto it = zorder_sorted_boxes_[i].second->begin(this);
       while (!it.IsAtEnd()) {
         callback(*it);
         ++it;
@@ -453,7 +453,7 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
       auto* sim_object = *ni;
       if (sim_object != &query) {
@@ -482,7 +482,7 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, neighbor_boxes, timestamp_);
     const unsigned batch_size = 64;
     uint64_t size = 0;
     SimObject* sim_objects[batch_size] __attribute__((aligned(64)));
@@ -547,7 +547,7 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       auto* sim_object = *ni;
