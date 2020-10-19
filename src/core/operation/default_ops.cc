@@ -54,9 +54,15 @@ BDM_REGISTER_OP(UpdateRunDisplacementOp, "update run displacement", kCpu);
 
 struct DistributeRunDisplacementInfoOp : public SimObjectOperationImpl {
   BDM_OP_HEADER(DistributeRunDisplacementInfoOp);
+  
+  bool detect_static_sim_objects_ = false;
+  DistributeRunDisplacementInfoOp() {}
+  DistributeRunDisplacementInfoOp(const DistributeRunDisplacementInfoOp&) {
+    detect_static_sim_objects_ = Simulation::GetActive()->GetParam()->detect_static_sim_objects_;
+  }
 
   void operator()(SimObject* so) override {
-    so->DistributeRunDisplacementInfo();
+    so->DistributeRunDisplacementInfo(detect_static_sim_objects_);
   }
 };
 

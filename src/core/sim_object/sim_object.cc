@@ -84,8 +84,8 @@ struct SetRunDisplacementForEachNeighbor
   }
 };
 
-void SimObject::DistributeRunDisplacementInfo() {
-  if (!Simulation::GetActive()->GetParam()->detect_static_sim_objects_) {
+void SimObject::DistributeRunDisplacementInfo(bool detect_static_sim_objects) {
+  if (!detect_static_sim_objects) {
     run_displacement_next_ts_ = true;
     return;
   }

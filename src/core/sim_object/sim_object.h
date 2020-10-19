@@ -141,7 +141,7 @@ class SimObject {
     run_displacement_for_all_next_ts_ = value;
   }
 
-  void DistributeRunDisplacementInfo();
+  void DistributeRunDisplacementInfo(bool detect_static_sim_objects);
 
   void UpdateRunDisplacement() {
     run_displacement_ = run_displacement_next_ts_;
