@@ -277,10 +277,6 @@ Environment* Simulation::GetGrid() { return environment_; }
 
 Environment* Simulation::GetEnvironment() { return environment_; }
 
-const XMLParamMap Simulation::GetXMLParam() const {
-  return param_->GetXMLParam();
-}
-
 Scheduler* Simulation::GetScheduler() { return scheduler_; }
 
 void Simulation::Simulate(uint64_t steps) { scheduler_->Simulate(steps); }
@@ -388,8 +384,11 @@ void Simulation::InitializeRuntimeParams(
     read_env = true;
   }
 
+  // Process `--config` arguments
   LoadConfigFiles(ctor_config_files,
                   clo->Get<std::vector<std::string>>("config"));
+
+  // Process `--inline-config` arguments
   auto inline_configs = clo->Get<std::vector<std::string>>("inline-config");
   if (inline_configs.size()) {
     for (auto& inline_config : inline_configs) {
@@ -419,12 +418,6 @@ void Simulation::InitializeRuntimeParams(
     param_->export_visualization_ = true;
     param_->visualization_interval_ =
         clo->Get<uint32_t>("vis-frequency");
-  }
-
-  // Handle xml arguments
-  if (clo->Get<std::string>("xml") != "") {
-    XMLParser xp(clo->Get<std::string>("xml"));
-    param_->SetXMLParams(xp.CreateMap(xml_params));
   }
 
   set_param(param_);

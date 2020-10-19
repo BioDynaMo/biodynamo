@@ -72,73 +72,117 @@ inline std::ostream& operator<<(std::ostream& os, const XMLParams& vv) {
 
 struct Container {
   Container() {}
+  explicit Container(const std::string& name) : param_name_(name) {}
   virtual ~Container() {}
-  virtual int GetNumElements() = 0;
+
+  virtual Container* GetCopy() const = 0;
+
+  virtual int GetNumElements() const = 0;
   virtual double GetValue(int n) const = 0;
+
+  // Return the substring before the last "::", which should be
+  // bdm::<ModuleParam>
+  std::string GetModuleName() {
+    size_t found = param_name_.find_last_of("::");
+    return param_name_.substr(0, found - 1);
+  }
+
+  // Return the substring after the last "::", which should be <param_name>
+  std::string GetParamName() {
+    size_t found = param_name_.find_last_of("::");
+    return param_name_.substr(found + 1);
+  }
+
+  // Must be in format bdm::<ModuleParam>::<param_name>
+  std::string param_name_;
+  BDM_CLASS_DEF(Container, 1);
 };
 
 /// A range of values
 struct Range : public Container {
   Range() {}
-  Range(double min, double max, double stride)
-      : min_(min), max_(max), stride_(stride){};
+  Range(const std::string& n, double min, double max, double stride)
+      : Container(n), lower_bound_(min), upper_bound_(max), stride_(stride){};
+
+  Container* GetCopy() const override { return new Range(*this); }
 
   // Get the nth value
-  double GetValue(int n) const {
-    double curr = min_ + n * stride_;
-    return curr > max_ ? max_ : curr;
+  double GetValue(int n) const override {
+    double curr = lower_bound_ + n * stride_;
+    return curr > upper_bound_ ? upper_bound_ : curr;
   }
 
   // Returns the number of discrete values that this range contains (including
-  // the `min_` and `max_` values)
-  int GetNumElements() {
-    return std::round(((max_ - min_) + stride_) / stride_);
+  // the `lower_bound_` and `upper_bound_` values)
+  int GetNumElements() const override {
+    return std::round(((upper_bound_ - lower_bound_) + stride_) / stride_);
   }
 
   // The minimum value
-  double min_ = 0;
+  double lower_bound_ = 0;
   // THe maximum value
-  double max_ = 0;
+  double upper_bound_ = 0;
   // The stride
   double stride_ = 1;
+  BDM_CLASS_DEF_OVERRIDE(Range, 1);
 };
 
 /// A range of values
 struct LogRange : public Container {
   LogRange() {}
-  LogRange(double base, double min, double max, double stride)
-      : base_(base), min_(min), max_(max), stride_(stride){};
+  LogRange(const std::string& n, double base, double min, double max,
+           double stride)
+      : Container(n),
+        base_(base),
+        lower_bound_(min),
+        upper_bound_(max),
+        stride_(stride){};
+
+  Container* GetCopy() const override { return new LogRange(*this); }
 
   // Get the nth value
-  double GetValue(int n) const {
-    double exp = min_ + n * stride_;
-    return exp > max_ ? std::pow(base_, max_) : std::pow(base_, exp);
+  double GetValue(int n) const override {
+    double exp = lower_bound_ + n * stride_;
+    return exp > upper_bound_ ? std::pow(base_, upper_bound_)
+                              : std::pow(base_, exp);
   }
 
   // Returns the number of discrete values that this range contains (including
-  // the `min_` and `max_` values)
-  int GetNumElements() {
-    return std::round(((max_ - min_) + stride_) / stride_);
+  // the `lower_bound_` and `upper_bound_` values)
+  int GetNumElements() const override {
+    return std::round(((upper_bound_ - lower_bound_) + stride_) / stride_);
   }
 
   // The base value
   double base_ = 10;
   // The minimum value
-  double min_ = 0;
+  double lower_bound_ = 0;
   // THe maximum value
-  double max_ = 0;
+  double upper_bound_ = 0;
   // The stride
   double stride_ = 1;
+  BDM_CLASS_DEF_OVERRIDE(LogRange, 1);
 };
 
-struct Set : public Container, public vector<double> {
-  int GetNumElements() { return this->size(); }
-  double GetValue(int n) const { return this->at(n); }
+struct Set : public Container {
+  Set() {}
+  Set(const std::string& n, const std::vector<double> v)
+      : Container(n), values_(v) {}
+
+  Container* GetCopy() const override { return new Set(*this); }
+
+  size_t size() const { return values_.size(); }
+  double at(size_t n) const { return values_.at(n); }
+
+  int GetNumElements() const override { return this->size(); }
+  double GetValue(int n) const override { return this->at(n); }
+
+  std::vector<double> values_;
+  BDM_CLASS_DEF_OVERRIDE(Set, 1);
 };
 
 inline void ParamGenerator(XMLParams* params, const vector<int>& slots,
-                           const vector<Range>& ranges,
-                           const vector<Set>& sets,
+                           const vector<Range>& ranges, const vector<Set>& sets,
                            const vector<LogRange>& log_ranges) {
   params->Append(ranges);
   params->Append(sets);
@@ -202,7 +246,8 @@ class MPIObject : public TMessage {
 
 /// Send object to worker using ROOT Serialization
 template <typename T>
-int MPI_Send_Obj_ROOT(T* obj, int dest, int tag, MPI_Status* status = MPI_STATUS_IGNORE) {
+int MPI_Send_Obj_ROOT(T* obj, int dest, int tag,
+                      MPI_Status* status = MPI_STATUS_IGNORE) {
   MPIObject mpio;
   mpio.WriteObject(obj);
   int size = mpio.Length();
@@ -214,7 +259,8 @@ int MPI_Send_Obj_ROOT(T* obj, int dest, int tag, MPI_Status* status = MPI_STATUS
 
 /// Receive object from master using ROOT Serialization
 template <typename T>
-T* MPI_Recv_Obj_ROOT(int size, int source, int tag, MPI_Status* status = MPI_STATUS_IGNORE) {
+T* MPI_Recv_Obj_ROOT(int size, int source, int tag,
+                     MPI_Status* status = MPI_STATUS_IGNORE) {
   char* buf = (char*)malloc(size);
   // Then receive the buffer
   MPI_Recv(buf, size, MPI_BYTE, source, tag, MPI_COMM_WORLD, status);

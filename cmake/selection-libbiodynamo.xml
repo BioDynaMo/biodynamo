@@ -15,6 +15,11 @@
     <class name="bdm::SoHandle" />
     <class name="bdm::SoUidGenerator" noStreamer="true"/>
     <class name="bdm::SoUid"/>
+    <class name="bdm::OptimizationParam" />
+    <class name="bdm::Container"/>
+    <class name="bdm::Set"/>
+    <class name="bdm::LogRange"/>
+    <class name="bdm::Range"/>
     <class name="bdm::Cell" />
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
     <class name="std::unordered_map<uint64_t, bdm::SoHandle>" />

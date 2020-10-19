@@ -12,14 +12,27 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "binding_cells.h"
-#include "core/parallel_execution/executor.h"
+#ifndef CORE_PARALLEL_EXECUTION_ALGORITHM_ALGORITHM_H_
+#define CORE_PARALLEL_EXECUTION_ALGORITHM_ALGORITHM_H_
 
-const bdm::ModuleParamUid bdm::SimParam::kUid =
-    bdm::ModuleParamUidGenerator::Get()->NewUid();
+#include <functional>
+#include <string>
 
-int main(int argc, const char** argv) {
-  bdm::Param::RegisterModuleParam(new bdm::SimParam());
-  bdm::ParallelExecutor pe(argc, argv);
-  return pe.Execute(bdm::Simulate);
-}
+#include "core/parallel_execution/optimization_param.h"
+#include "core/param/param.h"
+
+namespace bdm {
+
+struct Algorithm {
+  virtual ~Algorithm() {}
+
+  virtual void operator()(
+      const std::function<void(Param*)>& send_params_to_worker) = 0;
+
+  OptimizationParam* opt_params_;
+  Param* default_params_;
+};
+
+}  // namespace bdm
+
+#endif  // CORE_PARALLEL_EXECUTION_ALGORITHM_ALGORITHM_H_

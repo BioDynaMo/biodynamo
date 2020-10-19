@@ -24,11 +24,14 @@
 namespace bdm {
 
 // Emulates dynamic nested loops
+template <typename Lambda>
 inline void DynamicNestedLoop(const std::vector<Container*>& containers,
-                       std::function<void(const std::vector<int>)> action) {
+                              const Lambda& action) {
   // Initialize the slots to hold the iterator value for each depth
   auto depth = containers.size();
-  if (depth == 0) return;
+  if (depth == 0) {
+    return;
+  }
   std::vector<int> slots(depth, 0);
 
   // The depth index

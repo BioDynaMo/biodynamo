@@ -12,17 +12,24 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/param/param.h"
 #include <TBufferJSON.h>
+#include <TSystem.h>
 #include <json.hpp>
+
 #include <utility>
 #include <vector>
+
+#include "core/parallel_execution/optimization_param.h"
+#include "core/param/param.h"
 #include "core/util/cpptoml.h"
 #include "core/util/log.h"
 
 using nlohmann::json;
 
 namespace bdm {
+
+const bdm::ModuleParamUid bdm::OptimizationParam::kUid =
+    bdm::ModuleParamUidGenerator::Get()->NewUid();
 
 std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
     Param::registered_modules_;
@@ -34,6 +41,7 @@ void Param::RegisterModuleParam(ModuleParam* param) {
 
 // -----------------------------------------------------------------------------
 Param::Param() {
+  RegisterModuleParam(new OptimizationParam());
   for (auto& el : registered_modules_) {
     modules_[el.first] = el.second->GetCopy();
   }
@@ -53,6 +61,14 @@ void Param::Restore(Param&& other) {
   }
   *this = other;
   other.modules_.clear();
+}
+
+// -----------------------------------------------------------------------------
+Param::Param(const Param& other) {
+  *this = other;
+  for (auto el : other.modules_) {
+    this->modules_[el.first] = el.second->GetCopy();
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -95,9 +111,16 @@ std::string Param::ToJsonString() const {
   std::string current_json_str(
       TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
   // Flatten modules_ to simplify json patches in rfc7386 format.
-  json j_document = json::parse(current_json_str);
-  auto j_flattened = FlattenModules(j_document);
-  return j_flattened.dump(4);
+  try {
+    json j_document = json::parse(current_json_str);
+    auto j_flattened = FlattenModules(j_document);
+    return j_flattened.dump(4);
+  } catch (std::exception& e) {
+    Log::Fatal("Param::ToJsonString",
+               Concat("Couldn't parse `Param` parameters.\n", e.what(), "\n",
+                      current_json_str));
+    return std::string();
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -107,13 +130,13 @@ void Param::MergeJsonPatch(const std::string& patch) {
   json j_param = json::parse(json_str);
   auto j_flattened = FlattenModules(j_param);
 
+  auto j_patch = json::parse(patch);
   try {
-    auto j_patch = json::parse(patch);
     j_flattened.merge_patch(j_patch);
   } catch (std::exception& e) {
-    Log::Fatal("Param::RestoreFromJson",
-               Concat("Couldn't parse or merge the given json parameters.\n",
-                      e.what(), "\n", patch));
+    Log::Fatal("Param::MergeJsonPatch",
+               Concat("Couldn't merge the given json parameters.\n", e.what(),
+                      "\n", j_patch));
   }
 
   auto j_unflattened = UnflattenModules(j_flattened, j_param);

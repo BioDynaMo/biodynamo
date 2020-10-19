@@ -1,0 +1,15 @@
+{
+  "bdm::OptimizationParam": {
+    "algorithm_" : "ParameterSweep",
+    "params_" : [
+      {
+        "_typename": "bdm::LogRange",
+        "param_name_" : "bdm::SimParam::apd_amount",
+        "base_" : 10,
+        "lower_bound_" : -15.0,
+        "upper_bound_" : -6.0,
+        "stride_" : 0.125
+      }
+    ]
+  }
+}

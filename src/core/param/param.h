@@ -22,11 +22,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "core/parallel_execution/xml_util.h"
+
+#include "cpptoml/cpptoml.h"
+
 #include "core/param/module_param.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
-#include "cpptoml/cpptoml.h"
 
 namespace bdm {
 
@@ -38,6 +39,8 @@ struct Param {
   Param();
 
   ~Param();
+
+  Param(const Param& other);
 
   void Restore(Param&& other);
 
@@ -84,14 +87,6 @@ struct Param {
   /// {"Euler", "RK4"}.
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
   NumericalODESolver numerical_ode_solver_ = NumericalODESolver::kEuler;
-
-  void SetXMLParams(XMLParamMap xml_params) {
-    xml_params_ = xml_params;
-  }
-
-  const XMLParamMap GetXMLParam() const {
-    return xml_params_;
-  }
 
   /// Ouput Directory name used to store visualization and other files.\n
   /// Path is relative to working directory.\n
@@ -573,7 +568,6 @@ struct Param {
   static std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
       registered_modules_;
   std::unordered_map<ModuleParamUid, ModuleParam*> modules_;
-  XMLParamMap xml_params_;
   BDM_CLASS_DEF_NV(Param, 1);
 };
 

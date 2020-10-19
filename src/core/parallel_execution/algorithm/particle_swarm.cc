@@ -12,14 +12,18 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "binding_cells.h"
-#include "core/parallel_execution/executor.h"
+#include "core/parallel_execution/algorithm/algorithm.h"
+#include "core/parallel_execution/algorithm/algorithm_registry.h"
 
-const bdm::ModuleParamUid bdm::SimParam::kUid =
-    bdm::ModuleParamUidGenerator::Get()->NewUid();
+namespace bdm {
 
-int main(int argc, const char** argv) {
-  bdm::Param::RegisterModuleParam(new bdm::SimParam());
-  bdm::ParallelExecutor pe(argc, argv);
-  return pe.Execute(bdm::Simulate);
-}
+// struct ParticleSwarm : public Algorithm {
+//   BDM_ALGO_HEADER();
+
+//   void operator()(const std::function<void(Param*)>& send_params_to_worker,
+//                   const OptimizationParam* sweeping_params) override {}
+// };
+
+// BDM_REGISTER_ALGO(ParticleSwarm);
+
+}  // namespace bdm
