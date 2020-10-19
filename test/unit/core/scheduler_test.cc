@@ -35,11 +35,11 @@ class SchedulerTest : public ::testing::Test {
 
   void RunPostScheduledOps() { scheduler_->RunPostScheduledOps(); };
 
-  virtual void SetUp() {}
+  virtual void SetUp() override {}
 
   void TestBody() override {}
 
-  virtual void TearDown() {}
+  virtual void TearDown() override {}
 
   void Initialize() { scheduler_->restore_point_++; }
 
