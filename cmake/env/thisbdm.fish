@@ -40,19 +40,25 @@ function _drop_from_var
 end
 
 function _bdm_err
-    if not test "$BDM_THISBDM_SILENT" = true
+    if test "$BDM_THISBDM_LOGLEVEL" -gt 0
         echo -e "\e[91m$argv\e[0m"
     end
 end
 
 function _bdm_warn
-    if not test "$BDM_THISBDM_QUIET" = true
+    if test "$BDM_THISBDM_LOGLEVEL" -gt 1
         echo -e "\e[93m$argv\e[0m"
     end
 end
 
+function _bdm_info
+    if test "$BDM_THISBDM_LOGLEVEL" -gt 3
+        echo -e "\e[95m$argv\e[0m"
+    end
+end
+
 function _bdm_ok
-    if not test "$BDM_THISBDM_QUIET" = true
+    if test "$BDM_THISBDM_LOGLEVEL" -gt 4
         echo -e "\e[92m$argv\e[0m"
     end
 end
@@ -62,15 +68,31 @@ function _thisbdm_cleanup
   functions -e _drop_from_var
   functions -e _bdm_err
   functions -e _bdm_warn
+  functions -e _bdm_info
   functions -e _bdm_ok
   functions -e _thisbdm_cleanup
 end
 
 function source_thisbdm
-    if test "$BDM_THISBDM_SILENT" = true
-        # silent->quiet
-        set -gx BDM_THISBDM_QUIET true
+    ### Log verbosity config
+    if test -z "$BDM_THISBDM_LOGLEVEL"
+        set -gx BDM_THISBDM_LOGLEVEL 5 # enable everything
     end
+
+    # these two have priority over loglevel
+    if test "$BDM_THISBDM_QUIET" = true
+        set -gx BDM_THISBDM_LOGLEVEL 2 # disable prompt,info,ok
+    end
+    if test "$BDM_THISBDM_SILENT" = true
+        set -gx BDM_THISBDM_LOGLEVEL 0 # disable everything
+    end
+
+    if test "$BDM_THISBDM_LOGLEVEL" -le 2
+        set -gx BDM_THISBDM_NOPROMPT true
+    else
+        set -gx BDM_THISBDM_NOPROMPT false
+    end
+    ########
 
     set -l old_bdmsys
     if test -n "$BDMSYS"
@@ -79,18 +101,15 @@ function source_thisbdm
 
     set -l curr_filename (status --current-filename)
     set -gx BDMSYS (fish -c "cd (dirname $curr_filename)/..; and pwd"); or return 1
-
-    if test -n "$old_bdmsys"
-        if test "$old_bdmsys" = "$BDMSYS"
-            _bdm_warn "[WARN] You've already sourced this same 'thisbdm' in your current shell session."
-        else
-            _bdm_warn "[WARN] You've already sourced another 'thisbdm' in your current shell session."
-            _bdm_warn "       this BDM install='$BDMSYS' -- prev. BDM install='$old_bdmsys'"
-        end
-        _bdm_warn ""
-        _bdm_warn "       You may encounter undefined behavior. It is recommended that you start a new"
-        _bdm_warn "       shell session, or otherwise check if you automatically source 'thisbdm' in one"
-        _bdm_warn "       of your shell configuration files (e.g., config.fish)--this is no longer advised."
+    
+    if test -n "$old_bdmsys"; and test "$old_bdmsys" != "$BDMSYS"
+        _bdm_warn "[WARN] You've already sourced another 'thisbdm' in your current shell session."
+        _bdm_warn "       -> prev. installation='$old_bdmsys'"
+        _bdm_warn "       -> this installation='$BDMSYS'"
+        _bdm_warn "       You may encounter undefined behavior. It is recommended that you start"
+        _bdm_warn "       a new shell session, or otherwise check if you automatically source"
+        _bdm_warn "       'thisbdm' in one of your shell configuration files, e.g., 'config.fish'"
+        _bdm_warn "       (this is no longer advised)."
     end
 
     # check if any config files naively source thisbdm
@@ -101,7 +120,8 @@ function source_thisbdm
             # one may append #IGNORE if match is a false positive, or they really want to keep that line
             set -l nr_matches (cat "$f" | grep -E "$source_pattern" | grep -vc '.*#IGNORE$')
             if test "$nr_matches" -gt '0'
-                _bdm_warn "[WARN] You may have sourced thisbdm in '$f'. Please check as this is not advised."
+                _bdm_warn "[WARN] You may have sourced thisbdm in '$f'."
+                _bdm_warn "       Please check as this is not advised."
             end
         end
     end
@@ -115,7 +135,21 @@ function source_thisbdm
         _drop_from_var MANPATH "$old_bdmsys/man"
         _drop_from_var CMAKE_PREFIX_PATH "$old_bdmsys"
     end
-    
+
+    # Clear the env from previously set PyEnv paths.
+    if test -n "$old_bdmsys"
+        if test -n "$PATH"
+            _drop_from_var PATH "$PYENV_ROOT/bin"
+            _drop_from_var PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
+            _drop_from_var PATH "$PYENV_ROOT/shims"
+        end
+
+        if test -n "$LD_LIBRARY_PATH"
+            _drop_from_var LD_LIBRARY_PATH "$PYENV_ROOT/versions/$PYENV_VERSION/lib"
+        end
+    end
+
+    # Clear the env from previously set ParaView and Qt paths.
     if test -n "$old_bdmsys"
         _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-5.8"
         _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
@@ -184,8 +218,6 @@ function source_thisbdm
 
     set -pgx PATH "$PYENV_ROOT/bin"
 
-    # FIXME Some paths are (ap/pre)pended n times for n calls to thisbdm.*sh
-    # due to https://github.com/pyenv/pyenv/issues/969
     pyenv init - | source; or return 1
     pyenv shell @pythonvers@; or return 1
 
@@ -219,22 +251,23 @@ function source_thisbdm
     end
 
     if test "$BDM_CUSTOM_ROOT" = true; and test -n "$ROOTSYS"
-        _bdm_warn "[INFO] Custom ROOT 'ROOTSYS=$ROOTSYS'"
+        _bdm_info "[INFO] Custom ROOT 'ROOTSYS=$ROOTSYS'"
         set orvers "@rootvers@"
         set crvers ("$ROOTSYS"/bin/root-config --version; or echo '')
         if test "$crvers" = "$orvers"
             set -gx BDM_ROOT_DIR "$ROOTSYS"
         else
-            _bdm_warn "[WARN] ROOTSYS points to ROOT version '$crvers', while BDM was built with version '$orvers'."
+            _bdm_warn "[WARN] ROOTSYS points to ROOT version '$crvers',"
+            _bdm_warn "       while BDM was built with version '$orvers'."
             _bdm_warn "       You may encounter errors as compatibility is not guaranteed."
             # no longer fatal as user probably wants to override this for a reason.
         end
     end
 
     if not test -d "$BDM_ROOT_DIR"
-        _bdm_err "[ERR] We are unable to source ROOT! Please make sure ROOT is installed on your system!"
-        _bdm_err "      You can manually specify its location by executing 'export BDM_ROOT_DIR=path/to/root'"
-        _bdm_err "      before running cmake."
+        _bdm_err "[ERR] We are unable to source ROOT! Please make sure ROOT is installed"
+        _bdm_err "      on your system! You can manually specify its location by executing"
+        _bdm_err "      'export BDM_ROOT_DIR=path/to/root', before running cmake."
         return 1
     end
 
@@ -259,13 +292,14 @@ function source_thisbdm
         if test "$BDM_CUSTOM_PV" = false; or test -z "$ParaView_DIR"
             set -gx ParaView_DIR "$BDMSYS/third_party/paraview"
         else
-       _    bdm_warn "[INFO] Custom ParaView 'ParaView_DIR=$ParaView_DIR'"
+            _bdm_info "[INFO] Custom ParaView 'ParaView_DIR=$ParaView_DIR'"
         end
      
         if not test -d "$ParaView_DIR"
-            _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed on your system!"
-            _bdm_err "      You can manually specify its location by executing 'export ParaView_DIR=path/to/paraview'"
-            _bdm_err "      together with 'export Qt5_DIR=path/to/qt' before running cmake."
+            _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed"
+            _bdm_err "      on your system! You can manually specify its location by executing"
+            _bdm_err "      'export ParaView_DIR=path/to/paraview' together with"
+            _bdm_err "      'export Qt5_DIR=path/to/qt', before running cmake."
             return 1
         end
 
@@ -313,13 +347,14 @@ function source_thisbdm
         if test "$BDM_CUSTOM_QT" = false; or test -z "$Qt5_DIR"
             set -gx Qt5_DIR "$BDMSYS/third_party/qt"
         else
-            _bdm_warn "[INFO] Custom Qt5 'Qt5_DIR=$QT5_DIR'"
+            _bdm_info "[INFO] Custom Qt5 'Qt5_DIR=$QT5_DIR'"
         end
 
         if not test -d "$Qt5_DIR"
-            _bdm_err "[ERR] We are unable to find Qt5! Please make sure it is installed on your system!"
-            _bdm_err "      You can manually specify its location by executing 'export Qt5_DIR=path/to/qt'"
-            _bdm_err "      together with 'export ParaView_DIR=path/to/paraview' before running cmake."
+            _bdm_err "[ERR] We are unable to find Qt5! Please make sure it is installed"
+            _bdm_err "      on your system! You can manually specify its location by executing"
+            _bdm_err "      'export Qt5_DIR=path/to/qt' together with"
+            _bdm_err "      'export ParaView_DIR=path/to/paraview', before running cmake."
             return 1
         end
 
@@ -395,7 +430,7 @@ function source_thisbdm
     __bdm_fish_functions; or return 1
 
     ### Environment Indicator ###
-    if not test "$BDM_THISBDM_QUIET" = true
+    if not test "$BDM_THISBDM_NOPROMPT" = true
         set -gx __bdm_major_minor (bdm-config --version | sed -n  '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
         if not type -qt __bdm_fish_prompt_original
             functions --copy fish_prompt __bdm_fish_prompt_original

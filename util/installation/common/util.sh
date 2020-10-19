@@ -317,7 +317,7 @@ function WarnPossibleBadShellConfigs {
 
   # these regexes are quite naive but we aren't going to parse a shell file for a warning
   local sourcePattern='^\s*[0-9]+\s+(\.|source)\s+.*thisbdm\.(fish|sh).*'
-  local aliasPattern='^\s*[0-9]+\s+alias\s+thisbdm='"'"'\s*(\.|source)\s+.*thisbdm\.(fish|sh)\s*'"'.*"
+  local aliasPattern='^\s*[0-9]+\s+alias\s+thisbdm='"['\"]"'\s*(\.|source)\s+.*thisbdm\.(fish|sh)\s*'"['\"].*"
   local warnFmt="${BDM_ECHO_YELLOW}${BDM_ECHO_BOLD}[WARN] "
 
   local didWarn=false
@@ -380,9 +380,10 @@ function EchoFinishInstallation {
   EchoInfo "For added convenience, run (in your terminal):"
   EchoNewStep "$addToConfigStr"
   EchoInfo "to able to just type 'thisbdm', instead of"
-  EchoInfo "'source $1/bin/thisbdm.[fi]sh'"
+  EchoInfo "'source .../bin/thisbdm.[fi]sh'"
   echo
-  EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator, and silence non-critical output."
+  EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator,"
+  EchoInfo "and silence all non-critical output."
   echo
   EchoNewStep "NOTE: Your login shell appears to be '$SHELL'."
   EchoNewStep "The instructions above are for this shell."
