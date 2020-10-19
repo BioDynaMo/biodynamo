@@ -92,14 +92,14 @@ class SimulationTest : public ::testing::Test {
       "debug_numa = true\n";
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() override {
     remove(kTomlFileName);
     remove("restore.root");
     CreateEmptyRestoreFile("restore.root");
     Simulation::counter_ = 0;
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() override {
     remove(kTomlFileName);
     remove("restore.root");
   }
