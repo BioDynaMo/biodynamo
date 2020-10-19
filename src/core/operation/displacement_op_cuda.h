@@ -77,9 +77,9 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     for (int i = 0; i < num_numa_nodes; i++) {
       for (size_t j = 0; j < rm->GetNumSimObjects(i); j++) {
         auto idx = offset[i] + j;
-        i_->successors[idx] =
-            offset[grid->successors_.data_[i][j].GetNumaNode()] +
-            grid->successors_.data_[i][j].GetElementIdx();
+        // i_->successors[idx] =
+        //     offset[grid->successors_.data_[i][j].GetNumaNode()] +
+        //     grid->successors_.data_[i][j].GetElementIdx();
       }
     }
 
@@ -93,8 +93,8 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
       i_->timestamps[i] = box.timestamp_;
       if (box.timestamp_ == i_->current_timestamp) {
         i_->lengths[i] = box.length_;
-        i_->starts[i] =
-            offset[box.start_.GetNumaNode()] + box.start_.GetElementIdx();
+        // i_->starts[i] =
+        //     offset[box.start_.GetNumaNode()] + box.start_.GetElementIdx();
       }
       i++;
     }
@@ -177,17 +177,17 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     }
 
     void operator()(SimObject* so, SoHandle soh) override {
-      auto* param = Simulation::GetActive()->GetParam();
-      auto* cell = dynamic_cast<Cell*>(so);
-      auto idx = offset[soh.GetNumaNode()] + soh.GetElementIdx();
-      Double3 new_pos;
-      new_pos[0] = (*cell_movements)[idx][0];
-      new_pos[1] = (*cell_movements)[idx][1];
-      new_pos[2] = (*cell_movements)[idx][2];
-      cell->UpdatePosition(new_pos);
-      if (param->bound_space_) {
-        ApplyBoundingBox(so, param->min_bound_, param->max_bound_);
-      }
+      // auto* param = Simulation::GetActive()->GetParam();
+      // auto* cell = dynamic_cast<Cell*>(so);
+      // auto idx = offset[soh.GetNumaNode()] + soh.GetElementIdx();
+      // Double3 new_pos;
+      // new_pos[0] = (*cell_movements)[idx][0];
+      // new_pos[1] = (*cell_movements)[idx][1];
+      // new_pos[2] = (*cell_movements)[idx][2];
+      // cell->UpdatePosition(new_pos);
+      // if (param->bound_space_) {
+      //   ApplyBoundingBox(so, param->min_bound_, param->max_bound_);
+      // }
     }
   };
 

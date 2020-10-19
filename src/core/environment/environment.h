@@ -40,7 +40,7 @@ class Environment {
   /// Return the size of the largest sim object
   virtual double GetLargestObjectSize() const = 0;
 
-  virtual void IterateZOrder(Functor<void, const SoHandle&>& callback) = 0;
+  virtual void IterateZOrder(Functor<void, const SimObject*>& callback) = 0;
 
   /// This class ensures thread-safety for the case
   /// that a simulation object modifies its neighbors.

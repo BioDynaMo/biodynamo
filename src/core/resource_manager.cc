@@ -184,23 +184,23 @@ struct UpdateUidSoHMapFunctor : public Functor<void, SimObject*, SoHandle> {
   Map& rm_uid_soh_map_;
 };
 
-struct RearrangeFunctor : public Functor<void, const SoHandle&> {
-  std::vector<std::vector<SoHandle>>& sorted_so_handles;
+struct RearrangeFunctor : public Functor<void, const SimObject*> {
+  std::vector<std::vector<SimObject*>>& sorted_sim_objects;
   const std::vector<uint64_t>& so_per_numa;
   uint64_t cnt = 0;
   uint64_t current_numa = 0;
 
-  RearrangeFunctor(std::vector<std::vector<SoHandle>>& sorted_so_handles,
+  RearrangeFunctor(std::vector<std::vector<SimObject*>>& sorted_sim_objects,
                    const std::vector<uint64_t>& so_per_numa)
-      : sorted_so_handles(sorted_so_handles), so_per_numa(so_per_numa) {}
+      : sorted_sim_objects(sorted_sim_objects), so_per_numa(so_per_numa) {}
 
-  void operator()(const SoHandle& handle) {
+  void operator()(const SimObject* so) {
     if (cnt == so_per_numa[current_numa]) {
       cnt = 0;
       current_numa++;
     }
 
-    sorted_so_handles[current_numa].push_back(handle);
+    sorted_sim_objects[current_numa].push_back(const_cast<SimObject*>(so)); // FIXME remove const cast
     cnt++;
   }
 };
@@ -234,18 +234,18 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   so_rearranged.resize(numa_nodes);
 
   // numa node -> vector of SoHandles
-  std::vector<std::vector<SoHandle>> sorted_so_handles;
-  sorted_so_handles.resize(numa_nodes);
+  std::vector<std::vector<SimObject*>> sorted_sim_objects;
+  sorted_sim_objects.resize(numa_nodes);
 #pragma omp parallel for
   for (int n = 0; n < numa_nodes; ++n) {
     if (thread_info_->GetMyNumaNode() == n &&
         thread_info_->GetMyNumaThreadId() == 0) {
-      sorted_so_handles[n].reserve(so_per_numa[n]);
+      sorted_sim_objects[n].reserve(so_per_numa[n]);
     }
   }
 
   auto* env = Simulation::GetActive()->GetEnvironment();
-  RearrangeFunctor rearrange(sorted_so_handles, so_per_numa);
+  RearrangeFunctor rearrange(sorted_sim_objects, so_per_numa);
   env->IterateZOrder(rearrange);
 
   auto* param = Simulation::GetActive()->GetParam();
@@ -264,25 +264,24 @@ void ResourceManager::SortAndBalanceNumaNodes() {
       auto& dest = so_rearranged[n];
 
       if (thread_info_->GetNumaThreadId(tid) == 0) {
-        dest.resize(sorted_so_handles[n].size());
+        dest.resize(sorted_sim_objects[n].size());
       }
 
 #pragma omp barrier
 
       auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-      auto& sohandles = sorted_so_handles[n];
+      auto& sim_objects = sorted_sim_objects[n];
       assert(thread_info_->GetNumaNode(tid) ==
              numa_node_of_cpu(sched_getcpu()));
 
       // use static scheduling
-      auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
-      auto chunk = sohandles.size() / threads_in_numa + correction;
+      auto correction = sim_objects.size() % threads_in_numa == 0 ? 0 : 1;
+      auto chunk = sim_objects.size() / threads_in_numa + correction;
       auto start = thread_info_->GetNumaThreadId(tid) * chunk;
-      auto end = std::min(sohandles.size(), start + chunk);
+      auto end = std::min(sim_objects.size(), start + chunk);
 
       for (uint64_t e = start; e < end; e++) {
-        auto& handle = sohandles[e];
-        auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
+        auto* so = sim_objects[e];
         dest[e] = so->GetCopy();
         if (type_index_) {
           type_index_->Update(dest[e]);

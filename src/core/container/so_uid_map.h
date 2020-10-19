@@ -51,6 +51,11 @@ class SoUidMap {
     so_uid_reused_.resize(new_size, SoUid::kReusedMax);
   }
 
+  void reserve(uint64_t new_capacity) {  // NOLINT
+    data_.reserve(new_capacity);
+    so_uid_reused_.reserve(new_capacity);
+  }
+
   void clear() {  // NOLINT
     for (auto& el : so_uid_reused_) {
       el = SoUid::kReusedMax;
@@ -66,6 +71,10 @@ class SoUidMap {
 
   uint64_t size() const {  // NOLINT
     return data_.size();
+  }
+
+  uint64_t capacity() const {  // NOLINT
+    return data_.capacity();
   }
 
   void Remove(const SoUid& key) {

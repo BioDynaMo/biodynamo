@@ -264,7 +264,7 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
   EXPECT_EQ(99, max_dimensions[1]);
 }
 
-struct ZOrderCallback : Functor<void, const SoHandle&> {
+struct ZOrderCallback : Functor<void, const SimObject*> {
   std::vector<std::set<SoUid>> zorder;
   uint64_t box_cnt = 0;
   uint64_t cnt = 0;
@@ -276,12 +276,11 @@ struct ZOrderCallback : Functor<void, const SoHandle&> {
     zorder.resize(8);
   }
 
-  void operator()(const SoHandle& soh) {
+  void operator()(const SimObject* so) {
     if (cnt == 8 || cnt == 12 || cnt == 16 || cnt == 18 || cnt == 22 ||
         cnt == 24 || cnt == 26) {
       box_cnt++;
     }
-    auto* so = rm->GetSimObjectWithSoHandle(soh);
     zorder[box_cnt].insert(so->GetUid() - ref_uid);
     cnt++;
   }
