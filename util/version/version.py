@@ -16,3 +16,14 @@ class Version:
     @staticmethod
     def string():
         return "@VERSION@"
+
+    @staticmethod
+    def shortstring():
+        major = @VERSION_MAJOR@
+        minor = @VERSION_MINOR@
+        patch = @VERSION_PATCH@
+        if patch == 0:
+            return "{}.{}".format(major, minor)
+        else:
+            return "{}.{}.{}".format(major, minor, patch)
+

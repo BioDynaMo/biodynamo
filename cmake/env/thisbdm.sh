@@ -568,7 +568,7 @@ _source_thisbdm()
   ### Environment Indicator ###
   if ! [ "$BDM_THISBDM_NOPROMPT" = true ]; then
     local bdm_major_minor='';
-    bdm_major_minor=$(bdm-config --version | sed -n '1 s/.*v\([0-9]*.[0-9]*\).*/\1/p')
+    bdm_major_minor=$(biodynamo --shortversion)
     if [ -z "$__bdm_sh_prompt_original" ]; then
       case $bdm_shell in
         bash) __bdm_sh_prompt_original=$PS1 ;;

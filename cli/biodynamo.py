@@ -35,6 +35,10 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--version',
                         action='store_true',
                         help='Display BioDynaMo version')
+    parser.add_argument('--shortversion',
+                        action='store_true',
+                        help='Display BioDynaMo short version')
+
 
     assist_sp = sp.add_parser('assist', help='Use this command if you need help from the '
                                  'BiodynaMo developers. This command helps you '
@@ -96,6 +100,9 @@ if __name__ == '__main__':
         AssistCommand()
     elif args.version:
         print(Version.string())
+        sys.exit()
+    elif args.shortversion:
+        print(Version.shortstring())
         sys.exit()
     else:
         parser.print_help()

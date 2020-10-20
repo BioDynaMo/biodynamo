@@ -25,14 +25,10 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}" CACHE PATH "The BioDynaMo installation path" FORCE)
 endif()
 
-execute_process(COMMAND git describe --tags OUTPUT_VARIABLE VERSION WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-
-# This regex extracts whatever is before the first "-" character, which should be
-# the version number in the form vMAJOR.MINOR.PATCH
-STRING(REGEX MATCH "[^-]*" SHORT_VERSION ${VERSION})
+execute_process(COMMAND cat version/shortversion OUTPUT_VARIABLE SHORT_VERSION WORKING_DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT})
 
 # Remember to also update the install directory in the installation tests
-set(DIRNAME "biodynamo-${SHORT_VERSION}")
+set(DIRNAME "biodynamo-v${SHORT_VERSION}")
 
 # Install biodynamo in its final directory
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/bin
@@ -77,6 +73,7 @@ install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/third_party
         PATTERN "*.tar.gz" EXCLUDE)
 install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
               ${CMAKE_BIODYNAMO_BUILD_ROOT}/NOTICE
+              ${CMAKE_BIODYNAMO_BUILD_ROOT}/version/version
         DESTINATION ${DIRNAME})
 install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/omp/omp.h
         DESTINATION ${DIRNAME}/include)

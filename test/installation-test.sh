@@ -50,12 +50,8 @@ export BDM_CMAKE_FLAGS="-Dtest=off ${NOTEBOOK_FLAG} ${SBML_FLAG}"
 # Build BioDynaMo
 SILENT_INSTALL=1 $BDM_PROJECT_DIR/install.sh
 
-# Get version name with same regex as in Installation.cmake
-# TOOD(ahmad): needs more portable solution
-VERSION=`git describe --tags`
-REGEX='[^-]*'
-[[ $VERSION =~ $REGEX ]]
-INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
+BDM_VERSION=$(cat $BUILD_DIR/version/shortversion)
+INSTALL_DIR=${HOME}/biodynamo-v${BDM_VERSION}
 
 # reload shell and source biodynamo
 set +e +x
