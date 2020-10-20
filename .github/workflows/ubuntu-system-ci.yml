@@ -39,7 +39,7 @@ jobs:
     - name: Start Xvfb
       run: |
         set -e
-        sudo apt udpate
+        sudo apt update
         sudo apt-get -y install xvfb
         XVFBARGS=":99 -ac -screen 0 2560x1440x24"
         /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
