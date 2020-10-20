@@ -96,6 +96,7 @@ jobs:
         . bin/thisbdm.sh
         export DISPLAY=:99.0
         sleep 3
+        ps -ef
         ninja run-unit-tests
 
     - name: Notify Slack

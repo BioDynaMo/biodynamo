@@ -82,6 +82,7 @@ jobs:
       run: |
         . bin/thisbdm.sh
         export DISPLAY=:99.0
+        ps -ef
         ninja run-unit-tests
 
     - name: Style guide checks

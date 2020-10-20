@@ -135,6 +135,7 @@ jobs:
         git config --system user.name "Test User"
         git config --system user.email user@test.com
         export DISPLAY=:99.0
+        ps -ef
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
