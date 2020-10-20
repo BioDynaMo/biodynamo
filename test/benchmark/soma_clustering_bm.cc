@@ -18,18 +18,36 @@
 namespace bdm {
 namespace soma_clustering {
 
-void SomaClustering(benchmark::State& state) {
+static void SomaClustering1(benchmark::State& state) {
   // FIXME memory leak
-  const char** argv = (const char**)malloc(2);
-  argv[0] = "./demo";
-  argv[1] = NULL;
-  int argc = 1;
+  const char** argv = (const char**)malloc(4*sizeof(char*));
+  argv[0] = "./soma_clustering";
+  argv[1] = "--inline-config";
+  argv[2] = "{ \"bdm::Param\":{ \"export_visualization_\": true } }";
+  argv[3] = NULL;
+  int argc = 3;
   for (auto _ : state) {
     Simulate(argc, argv);
   }
 }
 
-BENCHMARK(SomaClustering);
+BENCHMARK(SomaClustering1)->MeasureProcessCPUTime();
+
+static void SomaClustering0(benchmark::State& state) {
+  // FIXME memory leak
+  const char** argv = (const char**)malloc(4*sizeof(char*));
+  argv[0] = "./soma_clustering_0";
+  argv[1] = "--inline-config";
+  argv[2] = "{ \"bdm::Param\":{ \"export_visualization_\": false } }";
+  argv[3] = NULL;
+  int argc = 3;
+  for (auto _ : state) {
+    Simulate(argc, argv);
+  }
+}
+
+BENCHMARK(SomaClustering0)->MeasureProcessCPUTime();
+
 
 }  // namespace soma_clustering
 }  // namespace bdm
