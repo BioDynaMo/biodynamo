@@ -113,7 +113,7 @@ jobs:
           -Dsbml=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
-        cmake --build build --parallel --config Release
+        cmake --build build --config Release
 
     - name: Run valgrind and system tests
       shell: bash
