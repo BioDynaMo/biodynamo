@@ -28,6 +28,15 @@ jobs:
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.sh
         chmod +x cmake-3.17.3-Linux-x86_64.sh
         ./cmake-3.17.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+        
+    - name: Start Xvfb
+      run: |
+        set -e
+        yum -y install xvfb
+        XVFBARGS=":99 -ac -screen 0 2560x1440x24"
+        /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
+        disown -ar
+        sleep 3
 
     - name: Set OSVERS
       run: |
@@ -86,10 +95,8 @@ jobs:
         module load mpi
         . bin/thisbdm.sh
         export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
         sleep 3
         ninja run-unit-tests
-        ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
