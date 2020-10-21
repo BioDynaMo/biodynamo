@@ -66,6 +66,7 @@ class UniformGridEnvironment : public Environment {
     /// start value of the linked list of simulation objects inside this box.
     /// Next element can be found at `successors_[start_->GetUid()]`
     SimObject* start_ = nullptr;
+    SoHandle start_soh_ = SoHandle();
     /// length of the linked list (i.e. number of simulation objects)
     /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
     uint16_t length_= 0;
@@ -80,6 +81,7 @@ class UniformGridEnvironment : public Environment {
       // start_ = other.start_.load(std::memory_order_relaxed);
       // length_ = other.length_.load(std::memory_order_relaxed);
       start_ = other.start_;
+      start_soh_ = other.start_soh_;
       length_ = other.length_;
       return *this;
     }
@@ -92,7 +94,7 @@ class UniformGridEnvironment : public Environment {
     ///
     /// @param[in]  so       The object's identifier
     /// @param   AddObject   successors   The successors
-    void AddObject(SimObject* so, SoUidMap<SimObject*>* successors,
+    void AddObject(SimObject* so, SoHandle soh, SimObjectVector<SoHandle>* successors,
                    UniformGridEnvironment* grid) {
       std::lock_guard<Spinlock> lock_guard(lock_);
 
@@ -100,17 +102,19 @@ class UniformGridEnvironment : public Environment {
         timestamp_ = grid->timestamp_;
         length_ = 1;
         start_ = so;
+        start_soh_ = soh;
       } else {
         length_++;
-        successors->Insert(so->GetUid(), start_);
+        (*successors)[soh] = start_soh_;
         start_ = so;
+        start_soh_ = soh;
       }
     }
 
     /// An iterator that iterates over the cells in this box
     struct Iterator {
-      Iterator(const UniformGridEnvironment* grid, const Box* box)
-          : grid_(grid), current_value_(box->start_), countdown_(box->length_) {
+      Iterator(const UniformGridEnvironment* grid, ResourceManager* rm, const Box* box)
+          : grid_(grid), rm_(rm), current_value_(box->start_), current_soh_value_(box->start_soh_), countdown_(box->length_) {
         if (grid->timestamp_ != box->timestamp_) {
           countdown_ = 0;
         }
@@ -121,7 +125,8 @@ class UniformGridEnvironment : public Environment {
       Iterator& operator++() {
         countdown_--;
         if (countdown_ > 0) {
-          current_value_ = grid_->successors_[current_value_->GetUid()];
+          current_soh_value_ = grid_->successors_[current_soh_value_];
+          current_value_ = rm_->GetSimObjectWithSoHandle(current_soh_value_);
         }
         return *this;
       }
@@ -130,26 +135,29 @@ class UniformGridEnvironment : public Environment {
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
       const UniformGridEnvironment* grid_;
+      ResourceManager* rm_;
       /// The current simulation object to be considered
       SimObject* current_value_;
+      SoHandle current_soh_value_;
       /// The remain number of simulation objects to consider
       int countdown_ = 0;
     };
 
-    Iterator begin(const UniformGridEnvironment* grid) const {  // NOLINT
-      return Iterator(grid, this);
+    Iterator begin(const UniformGridEnvironment* grid, ResourceManager* rm) const {  // NOLINT
+      return Iterator(grid, rm, this);
     }
   };
 
   /// An iterator that iterates over the boxes in this grid
   struct NeighborIterator {
     explicit NeighborIterator(
-        const UniformGridEnvironment* grid, const FixedSizeVector<const Box*, 27>& neighbor_boxes,
+        const UniformGridEnvironment* grid, ResourceManager* rm, const FixedSizeVector<const Box*, 27>& neighbor_boxes,
         uint64_t grid_timestamp)
         : grid_(grid), 
+          rm_(rm),
           neighbor_boxes_(neighbor_boxes),
           // start iterator from box 0
-          box_iterator_(neighbor_boxes_[0]->begin(grid_)),
+          box_iterator_(neighbor_boxes_[0]->begin(grid_, rm)),
           grid_timestamp_(grid_timestamp) {
       // if first box is empty
       if (neighbor_boxes_[0]->IsEmpty(grid_timestamp)) {
@@ -173,6 +181,7 @@ class UniformGridEnvironment : public Environment {
 
    private:
     const UniformGridEnvironment* grid_;
+    ResourceManager* rm_;
     /// The 27 neighbor boxes that will be searched for simulation objects
     const FixedSizeVector<const Box*, 27>& neighbor_boxes_;
     /// The box that shall be considered to iterate over for finding simulation
@@ -194,7 +203,7 @@ class UniformGridEnvironment : public Environment {
           continue;
         }
         // a non-empty box has been found
-        box_iterator_ = neighbor_boxes_[box_idx_]->begin(grid_);
+        box_iterator_ = neighbor_boxes_[box_idx_]->begin(grid_, rm_);
         return *this;
       }
       // all remaining boxes have been empty; reached end
@@ -228,7 +237,7 @@ class UniformGridEnvironment : public Environment {
     int32_t inf = std::numeric_limits<int32_t>::max();
     grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
     threshold_dimensions_ = {inf, -inf};
-    // FIXME successors_.clear();
+    successors_.clear();
     has_grown_ = false;
   }
 
@@ -239,7 +248,7 @@ class UniformGridEnvironment : public Environment {
       const auto& position = sim_object->GetPosition();
       auto idx = grid_->GetBoxIndex(position);
       auto box = grid_->GetBoxPointer(idx);
-      box->AddObject(sim_object, &(grid_->successors_), grid_);
+      box->AddObject(sim_object, soh, &(grid_->successors_), grid_);
       sim_object->SetBoxIdx(idx);
     }
 
@@ -310,11 +319,12 @@ class UniformGridEnvironment : public Environment {
         boxes_.resize(total_num_boxes);
       }
 
-      auto* souid_generator = Simulation::GetActive()->GetSoUidGenerator();
-      auto highest_souid_idx = souid_generator->GetHighestIndex();
-      if (successors_.capacity() < highest_souid_idx)  {
-        successors_.reserve(highest_souid_idx * 1.5);
-      }
+      // auto* souid_generator = Simulation::GetActive()->GetSoUidGenerator();
+      // auto highest_souid_idx = souid_generator->GetHighestIndex();
+      // if (successors_.capacity() < highest_souid_idx)  {
+      //   successors_.reserve(highest_souid_idx * 1.5);
+      // }
+      successors_.reserve();
 
       // Assign simulation objects to boxes
       AssignToBoxesFunctor functor(this);
@@ -431,8 +441,9 @@ class UniformGridEnvironment : public Environment {
   /// Z-order of boxes. There is no particular order for elements inside a box.
   void IterateZOrder(Functor<void, const SimObject*>& callback) override {
     UpdateBoxZOrder();
+    auto* rm = Simulation::GetActive()->GetResourceManager();
     for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
-      auto it = zorder_sorted_boxes_[i].second->begin(this);
+      auto it = zorder_sorted_boxes_[i].second->begin(this, rm);
       while (!it.IsAtEnd()) {
         callback(*it);
         ++it;
@@ -453,7 +464,7 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(this, neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, rm, neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
       auto* sim_object = *ni;
       if (sim_object != &query) {
@@ -482,7 +493,7 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(this, neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, rm, neighbor_boxes, timestamp_);
     const unsigned batch_size = 64;
     uint64_t size = 0;
     SimObject* sim_objects[batch_size] __attribute__((aligned(64)));
@@ -547,7 +558,7 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(this, neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, rm, neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
       auto* sim_object = *ni;
@@ -730,7 +741,7 @@ class UniformGridEnvironment : public Environment {
   ///     // Usage
   ///     SimObject* current_element = ...;
   ///     SimObject* next_element = successors_[current_element->GetUid];
-  SoUidMap<SimObject*> successors_;
+  SimObjectVector<SoHandle> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
