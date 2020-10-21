@@ -78,7 +78,7 @@ void CommandLineOptions::Parse() {
   }
 
   if (first_parse_) {
-    // Perform operations on Core command line options
+    // Perform operations on core command line options
     HandleCoreOptions();
     first_parse_ = false;
   }
@@ -90,6 +90,10 @@ void CommandLineOptions::Parse() {
   free(argv_copy);
 }
 
+bool CommandLineOptions::IsSet(std::string option) {
+  return parser_->count(option) == 0 ? false : true;
+}
+
 // clang-format off
 void CommandLineOptions::AddCoreOptions() {
   options_.add_options("Core")
@@ -97,6 +101,8 @@ void CommandLineOptions::AddCoreOptions() {
     ("version", "Print version number of BioDynaMo.")
     ("opencl", "Enable GPU acceleration through OpenCL.")
     ("cuda", "Enable GPU acceleration through CUDA.")
+    ("visualize", "Enable exporting of visualization.")
+    ("vis-frequency", "Set the frequency of exporting the visualization.", value<uint32_t>()->default_value("10"), "FREQ")
     ("v, verbose", "Verbose mode. Causes BioDynaMo to print debugging messages. Multiple "
       "-v options increases the verbosity. The maximum is 3.", value<bool>())
     ("r, restore", "Restores the simulation from the checkpoint found in FILE and "
@@ -107,7 +113,7 @@ void CommandLineOptions::AddCoreOptions() {
     ("inline-config", "JSON configuration string passed directly on the command line. Overwrites values specified in config file.  The JSON string must be in JSON merge patch format (https://tools.ietf.org/html/rfc7386). This option can be used multiple times.", value<std::vector<string>>()->default_value(""), "JSON_STRING")
     ("output-default-json", "Prints a JSON string with all parameters and their default values and exits.")
     ("toml-to-json", "Converts a TOML file to a JSON patch. After printing the JSON patch the application will exit.", value<string>()->default_value(""), "TOML_FILE");
-  }
+}
 // clang-format on
 
 void CommandLineOptions::ExtractSimulationName(const char* path) {
@@ -130,7 +136,7 @@ void CommandLineOptions::HandleCoreOptions() {
     exit(0);
   }
 
-  if (parser_->count("version")) {
+  if (IsSet("version")) {
     std::cout << "BioDynaMo Version: " << Version::String() << std::endl;
     exit(0);
   }
@@ -154,7 +160,7 @@ void CommandLineOptions::HandleCoreOptions() {
   else if (!slevel.CompareTo("Error", TString::kIgnoreCase))
     ll = kError;
 
-  if (parser_->count("verbose")) {
+  if (IsSet("verbose")) {
     auto verbosity = parser_->count("verbose");
 
     switch (verbosity) {
@@ -175,6 +181,20 @@ void CommandLineOptions::HandleCoreOptions() {
   }
   // Global variable of ROOT that determines verbosity of logging functions
   gErrorIgnoreLevel = ll;
+
+// Handle "cuda" and "opencl" arguments
+#ifdef USE_CUDA
+  if (IsSet("cuda")) {
+    param->use_gpu_ = true;
+  }
+#endif  // USE_CUDA
+
+#ifdef USE_OPENCL
+  if (IsSet("opencl")) {
+    param->use_gpu_ = true;
+    param->use_opencl_ = true;
+  }
+#endif  // USE_OPENCL
 
   if (parser_->count("output-default-json")) {
     Param param;

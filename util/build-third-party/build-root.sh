@@ -19,7 +19,7 @@ Description:
   This script builds ROOT.
   The archive will be stored in BDM_PROJECT_DIR/build/root.tar.gz
 Arguments:
-  \$1 ROOT version that should be build (e.g. 6.22.00)"
+  \$1 ROOT version that should be build (e.g. v6-22-00)"
   exit 1
 fi
 

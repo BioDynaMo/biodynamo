@@ -12,7 +12,7 @@
 #
 # -----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.17.0 FATAL_ERROR)
 
 set(policy_new CMP0072 CMP0077)
 foreach(policy ${policy_new})
@@ -109,6 +109,7 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
+option(multi_simulation "Enable multi simulation framework" ON)
 
 if(APPLE)
   find_program(BREW_BIN brew)
@@ -197,12 +198,18 @@ else()
    endif()
 endif()
 
-# Check if OpenMPI is present
-find_package(MPI)
-if (MPI_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
-calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
-endif()
+# In order to correctly compile and link the multi simulation manager with MPI,
+# you need to set CMAKE_[CXX|C]_COMPILER to [mpic++|mpicc]
+# We still however need to explicitely add the mpi.h include path to our include_directories
+# because rootcling will complaing about missing mpi.h
+find_package(MPI COMPONENTS CXX)
+if(MPI_FOUND)
+  include_directories(${MPI_CXX_COMPILER_INCLUDE_DIRS})
+  add_definitions("-DUSE_MPI")
+else(MPI_FOUND)
+  MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
+  calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
+endif(MPI_FOUND)
 
 # Disable paraview until we upgrade to v5.8 on macOS, numa is not supported on macOS
 if(APPLE)
@@ -579,6 +586,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/multi_simulation/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/agent/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc

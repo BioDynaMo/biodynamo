@@ -25,7 +25,6 @@
 #include "core/param/param_group.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
-#include "cpptoml/cpptoml.h"
 
 namespace bdm {
 
@@ -37,6 +36,8 @@ struct Param {
   Param();
 
   ~Param();
+
+  Param(const Param& other);
 
   void Restore(Param&& other);
 

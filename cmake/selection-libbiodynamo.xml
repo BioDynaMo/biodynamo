@@ -17,7 +17,12 @@
     <class name="bdm::Agent" />
     <class name="bdm::AgentHandle" />
     <class name="bdm::AgentUidGenerator" noStreamer="true"/>
+    <class name="bdm::OptimizationParam" />
     <class name="bdm::AgentUid"/>
+    <class name="bdm::LogRange"/>
+    <class name="bdm::Range"/>
+    <class name="bdm::Container"/>
+    <class name="bdm::Set"/>
     <class name="bdm::Cell" />
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
     <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />

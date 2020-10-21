@@ -341,10 +341,13 @@ _source_thisbdm()
     eval "$(pyenv init -)" || return 1
     pyenv shell @pythonvers@ || return 1
 
-    # Location of jupyter executable (installed with `pip install` command)
-    export PATH="$PYENV_ROOT/versions/@pythonvers@/bin:$PATH"
-    export LD_LIBRARY_PATH="$PYENV_ROOT/versions/@pythonvers@/lib":$LD_LIBRARY_PATH
-  fi
+  # Expose multi simulation dashboard, so that we can do in notebooks:
+  # from dashboard import *
+  export PYTHONPATH=$BDMSYS/python/dashboard:$PYTHONPATH
+
+  # Location of jupyter executable (installed with `pip install` command)
+  export PATH="$PYENV_ROOT/versions/@pythonvers@/bin:$PATH"
+  export LD_LIBRARY_PATH="$PYENV_ROOT/versions/@pythonvers@/lib":$LD_LIBRARY_PATH
   ########
 
   ##### CMake Specific Configurations #####
@@ -521,7 +524,6 @@ _source_thisbdm()
             . scl_source enable devtoolset-7 || return 1
         fi
         . /etc/profile.d/modules.sh || return 1
-        module load mpi || return 1
 
         # load llvm 6 required for libroadrunner
         if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then

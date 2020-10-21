@@ -44,9 +44,15 @@ class TimingAggregator {
 
   void AddDescription(const std::string text) { descriptions_.push_back(text); }
 
+  int operator[](std::string idx) {
+    auto sum = std::accumulate(timings_[idx].begin(), timings_[idx].end(), 0);
+    return sum;
+  }
+
  private:
   std::map<std::string, std::vector<int64_t>> timings_;
   std::vector<std::string> descriptions_;
+  BDM_CLASS_DEF_NV(TimingAggregator, 1);
 
   friend std::ostream& operator<<(std::ostream& os, const TimingAggregator& p);
 };

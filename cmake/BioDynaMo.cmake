@@ -66,6 +66,15 @@ function(bdm_add_executable TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
 
   if(dict)
+    if (OPENCL_FOUND)
+      # Do this here; we don't want libbiodynamo.so to contain any OpenCL symbols
+      set(ARG_LIBRARIES ${ARG_LIBRARIES} ${OPENCL_LIBRARIES})
+      target_compile_definitions(${TARGET} PUBLIC -DUSE_OPENCL)
+    endif()
+    if(multi_simulation AND MPI_FOUND)
+      set(ARG_LIBRARIES ${ARG_LIBRARIES} ${MPI_mpi_LIBRARY})
+      set(ARG_LIBRARIES ${ARG_LIBRARIES} ${MPI_mpi_cxx_LIBRARY})
+    endif()
     build_shared_library(${TARGET}
                          SELECTION selection.xml
                          HEADERS ${ARG_HEADERS}
