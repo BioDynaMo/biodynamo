@@ -201,8 +201,8 @@ void InPlaceExecutionContext::TearDownIterationAll(
 
 void InPlaceExecutionContext::Execute(
     SimObject* so, const std::vector<Operation*>& operations) {
-  auto* env = Simulation::GetActive()->GetEnvironment();
-  auto* param = Simulation::GetActive()->GetParam();
+  static auto* env = Simulation::GetActive()->GetEnvironment();
+  static auto* param = Simulation::GetActive()->GetParam();
 
   if (param->thread_safety_mechanism_ ==
       Param::ThreadSafetyMechanism::kUserSpecified) {
@@ -283,16 +283,17 @@ void InPlaceExecutionContext::ForEachNeighbor(
 
 struct ForEachNeighborWithinRadiusFunctor
     : public Functor<void, const SimObject*, double> {
-  const Param* param = Simulation::GetActive()->GetParam();
+  const Param* param;
   Functor<void, const SimObject*, double>& function_;
   std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
   double squared_radius_ = 0;
 
   ForEachNeighborWithinRadiusFunctor(
+      const Param* param, 
       Functor<void, const SimObject*, double>& function,
       std::vector<std::pair<const SimObject*, double>>& neigbor_cache,
       double squared_radius)
-      : function_(function),
+      : param(param), function_(function),
         neighbor_cache_(neigbor_cache),
         squared_radius_(squared_radius) {}
 
@@ -320,9 +321,10 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   }
 
   // forward call to env and populate cache
-  auto* env = Simulation::GetActive()->GetEnvironment();
+  static auto* env = Simulation::GetActive()->GetEnvironment();
+  static auto* param = Simulation::GetActive()->GetParam();
 
-  ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
+  ForEachNeighborWithinRadiusFunctor for_each(param, lambda, neighbor_cache_,
                                               squared_radius);
   env->ForEachNeighbor(for_each, query);
 }

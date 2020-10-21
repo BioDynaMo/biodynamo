@@ -46,9 +46,9 @@ struct DisplacementOp : public SimObjectOperationImpl {
   }
 
   void operator()(SimObject* sim_object) override {
-    auto* sim = Simulation::GetActive();
-    auto* scheduler = sim->GetScheduler();
-    auto* param = sim->GetParam();
+    static auto* sim = Simulation::GetActive();
+    static auto* scheduler = sim->GetScheduler();
+    static auto* param = sim->GetParam();
 
     if (!sim_object->RunDisplacement()) {
       return;

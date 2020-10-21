@@ -49,7 +49,7 @@ struct BoundSpace : public SimObjectOperationImpl {
   BDM_OP_HEADER(BoundSpace);
 
   void operator()(SimObject* sim_object) override {
-    auto* param = Simulation::GetActive()->GetParam();
+    static auto* param = Simulation::GetActive()->GetParam();
     if (param->bound_space_) {
       ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
     }

@@ -347,10 +347,10 @@ class Cell : public SimObject {
       // Performing the translation itself :
       // but we want to avoid huge jumps in the simulation, so there are
       // maximum distances possible
-      auto* param = Simulation::GetActive()->GetParam();
-      if (norm_of_force * mh > param->simulation_max_displacement_) {
+      static auto max_displacement = Simulation::GetActive()->GetParam()->simulation_max_displacement_;
+      if (norm_of_force * mh > max_displacement) {
         movement_at_next_step.Normalize();
-        movement_at_next_step *= param->simulation_max_displacement_;
+        movement_at_next_step *= max_displacement;
       }
     }
     return movement_at_next_step;
