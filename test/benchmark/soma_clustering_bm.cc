@@ -20,14 +20,13 @@ namespace soma_clustering {
 
 static void SomaClustering1(benchmark::State& state) {
   // FIXME memory leak
-  const char** argv = (const char**)malloc(4*sizeof(char*));
-  argv[0] = "./soma_clustering";
-  argv[1] = "--inline-config";
-  argv[2] = "{ \"bdm::Param\":{ \"export_visualization_\": true } }";
-  argv[3] = NULL;
-  int argc = 3;
+  const char* argv[3] = {
+    "./soma_clustering1",
+    "--inline-config",
+    "{ \"bdm::Param\":{ \"export_visualization_\": true } }"
+  };
   for (auto _ : state) {
-    Simulate(argc, argv);
+    Simulate(3, argv);
   }
 }
 
@@ -35,14 +34,13 @@ BENCHMARK(SomaClustering1)->MeasureProcessCPUTime();
 
 static void SomaClustering0(benchmark::State& state) {
   // FIXME memory leak
-  const char** argv = (const char**)malloc(4*sizeof(char*));
-  argv[0] = "./soma_clustering_0";
-  argv[1] = "--inline-config";
-  argv[2] = "{ \"bdm::Param\":{ \"export_visualization_\": false } }";
-  argv[3] = NULL;
-  int argc = 3;
+  const char* argv[3] = {
+    "./soma_clustering0",
+    "--inline-config",
+    "{ \"bdm::Param\":{ \"export_visualization_\": false } }"
+  };
   for (auto _ : state) {
-    Simulate(argc, argv);
+    Simulate(3, argv);
   }
 }
 
