@@ -178,7 +178,8 @@ def main():
     axis = plt.axis()
     size = -0.5/(axis[2]-axis[3])/100
     plt.axis([axis[0], axis[1], axis[2]*(1-size), axis[3]*(1+size)])
-    plt.show()
+#    plt.show()
+    plt.savefig('plots/'+sys.argv[2]+'.png')
 
 if __name__ == "__main__":
     try:

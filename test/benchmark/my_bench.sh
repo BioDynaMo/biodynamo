@@ -38,3 +38,9 @@ cat run.txt | awk '/TumorConcept1/ \
 printf "###################################\n\n" >> runtime.txt
 
 rm run.txt
+
+mkdir plots
+./graph.py -a tumor_concept0
+./graph.py -a tumor_concept1
+./graph.py -a soma_clustering0
+./graph.py -a soma_clustering1
