@@ -43,6 +43,10 @@ def search_loop(i, x):
         av = "soma_clustering: export=false"
     if sys.argv[2] == "soma_clustering1":
         av = "soma_clustering: export=true"
+    if sys.argv[2] == "tumor_concept0":
+        av = "tumor_concept: export=false"
+    if sys.argv[2] == "tumor_concept1":
+        av = "tumor_concept: export=true"
     demo = av
     runtime = open("runtime.txt")
     j = 0
@@ -63,6 +67,10 @@ def take_demo_time(i, x):
         av = "soma_clustering: export=false"
     if sys.argv[2] == "soma_clustering1":
         av = "soma_clustering: export=true"
+    if sys.argv[2] == "tumor_concept0":
+        av = "tumor_concept: export=false"
+    if sys.argv[2] == "tumor_concept1":
+        av = "tumor_concept: export=true"
     demo = av
     x = search_loop(i, x)
     runtime = open("runtime.txt")
@@ -94,6 +102,10 @@ def nb_runtimes():
         av = "soma_clustering: export=false"
     if sys.argv[2] == "soma_clustering1":
         av = "soma_clustering: export=true"
+    if sys.argv[2] == "tumor_concept0":
+        av = "tumor_concept: export=false"
+    if sys.argv[2] == "tumor_concept1":
+        av = "tumor_concept: export=true"
     demo = av
     runtime = open("runtime.txt")
     data = runtime.readline()
