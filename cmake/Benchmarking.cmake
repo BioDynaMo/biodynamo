@@ -41,7 +41,11 @@ include_directories("${CMAKE_SOURCE_DIR}/test/benchmark/demo")
 
 set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
 add_custom_target(run-benchmarks
-                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_format=json --benchmark_out=../test/benchmark/results.json)
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_format=json --benchmark_out=../test/benchmark/soma_clusterin0.json --benchmark_filter=SomaClustering0
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_format=json --benchmark_out=../test/benchmark/soma_clustering1.json --benchmark_filter=SomaClustering1
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_format=json --benchmark_out=../test/benchmark/tumor_concept0.json --benchmark_filter=TumorConcept0
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_format=json --benchmark_out=../test/benchmark/tumor_concept1.json --benchmark_filter=TumorConcept1)
+
 
 file(GLOB_RECURSE BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
 file(GLOB_RECURSE BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/*.cc)
