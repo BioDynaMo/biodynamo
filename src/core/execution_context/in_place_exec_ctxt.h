@@ -15,6 +15,7 @@
 #ifndef CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 #define CORE_EXECUTION_CONTEXT_IN_PLACE_EXEC_CTXT_H_
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -48,6 +49,7 @@ class InPlaceExecutionContext {
  public:
   struct ThreadSafeAgentUidMap {
     using value_type = std::pair<Agent*, uint64_t>;
+    using Batch = std::vector<value_type>;
     ThreadSafeAgentUidMap();
     ~ThreadSafeAgentUidMap();
 
@@ -55,14 +57,13 @@ class InPlaceExecutionContext {
     const value_type& operator[](const AgentUid& key);
     uint64_t Size() const;
     void Resize(uint64_t new_size);
-    void RemoveOldCopies();
+    void DeleteOldCopies();
 
-    using Map = AgentUidMap<value_type>;
     Spinlock lock_;
-    Spinlock next_lock_;
-    Map* map_;
-    Map* next_;
-    std::vector<Map*> previous_maps_;
+    constexpr static uint64_t kBatchSize = 10240;
+    uint64_t num_batches_ = 0;
+    std::atomic<Batch**> batches_;
+    std::vector<Batch**> old_copies_;
   };
 
   explicit InPlaceExecutionContext(
