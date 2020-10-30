@@ -63,7 +63,6 @@ def names():
             j+=1
         i+=1
     name_datas = name_datas[:j]
-    print(name_datas)
     return name_datas, j
 
 def main():
@@ -75,7 +74,8 @@ def main():
     return
 
 if __name__ == "__main__":
-    with open("results.json", "r") as read_file:
+    file = sys.argv[1]
+    with open(file, "r") as read_file:
         data = json.load(read_file)
     try:
         main()

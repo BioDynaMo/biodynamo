@@ -40,7 +40,8 @@ include_directories("${CMAKE_SOURCE_DIR}/test/benchmark/demo")
 
 set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
 add_custom_target(run-benchmarks
-                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_format=json --benchmark_out=../test/benchmark/results.json)
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_format=json --benchmark_out=../test/benchmark/results.json
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/../test/benchmark/gen_benchmark_plots.py ../test/benchmark/results.json)
 
 file(GLOB_RECURSE BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
 file(GLOB_RECURSE BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/*.cc)
