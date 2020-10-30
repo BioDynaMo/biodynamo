@@ -8,12 +8,12 @@ import json
 
 
 def data_cpu(name_demo):
-    nb = len(name_demo)
-    a = name_demo
     cpu = [0]*7
     i = 0
     j = 0
-    while i != 27:
+    a = name_demo
+    nb = len(name_demo)
+    while i != 7:
         b = data["benchmarks"][i]["name"]
         if a[:nb] == b[:nb]:
             cpu[j] = data["benchmarks"][i]["cpu_time"]
@@ -30,9 +30,7 @@ def graph(name_demo):
         tmp = cpu[h] + tmp
         h += 1
     moy = tmp / 7
-#    plt.plot(range(7), cpu, 'bo-')
     fig, ax = plt.subplots()
- #   plt.plot(range(1), moy, 'bo-')
     xlabels = ['str']
     ax.plot([1], moy, 'bo-')
     ax.set_title(name_demo)
@@ -41,10 +39,45 @@ def graph(name_demo):
     plt.show()
     return
 
-with open("results.json", "r") as read_file:
-    data = json.load(read_file)
+def plot(name_demo):
+    with open("results.json", "r") as read_file:
+        data = json.load(read_file)
+    graph(name_demo)
 
-graph("SomaClustering1")
-#graph("SomaClustering0")
-#graph("TumorConcept1")
-#graph("TumorConcept0")
+def name(i):
+    name_data = data["benchmarks"][i]["name"]
+    z = 0
+    while z in range( len(name_data)):
+        if name_data[z] == '/': break
+        z += 1
+    name_data = name_data[:z]
+    return name_data
+
+def names():
+    name_datas = [0] * len(data["benchmarks"])
+    i = 0
+    j = 0
+    while i != len(data["benchmarks"]):
+        if name(i) != name_datas[j-1]:
+            name_datas[j] = name(i)
+            j+=1
+        i+=1
+    name_datas = name_datas[:j]
+    print(name_datas)
+    return name_datas, j
+
+def main():
+    i = 0
+    name_datas, j = names()
+    while i < j:
+        plot(name_datas[i])
+        i += 1
+    return
+
+if __name__ == "__main__":
+    with open("results.json", "r") as read_file:
+        data = json.load(read_file)
+    try:
+        main()
+    except:
+        print("ERROR")
