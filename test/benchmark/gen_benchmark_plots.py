@@ -5,15 +5,16 @@ import numpy as np
 import sys
 from math import *
 import json
+import os
 
 
-def data_cpu(name_demo, iteration):
+def data_cpu(name_demo, iteration, ii):
     cpu = [0]*iteration
     i = 0
     j = 0
     a = name_demo
     nb = len(name_demo)
-    while i != iteration:
+    while i != iteration*ii:
         b = data["benchmarks"][i]["name"]
         if a[:nb] == b[:nb]:
             cpu[j] = data["benchmarks"][i]["cpu_time"]
@@ -21,8 +22,8 @@ def data_cpu(name_demo, iteration):
         i+=1
     return cpu
 
-def graph(name_demo, iteration):
-    cpu = data_cpu(name_demo, iteration)
+def graph(name_demo, iteration, i):
+    cpu = data_cpu(name_demo, iteration, i)
     moy = 0
     h = 0
     tmp = 0
@@ -36,13 +37,9 @@ def graph(name_demo, iteration):
     ax.set_title(name_demo)
     ax.set_xticks([1])
     ax.set_xticklabels(xlabels, rotation=40)
+#    plt.savefig(name_demo+'.png')
     plt.show()
     return
-
-def plot(name_demo, iteration):
-    with open("results.json", "r") as read_file:
-        data = json.load(read_file)
-    graph(name_demo, iteration)
 
 def name(i):
     name_data = data["benchmarks"][i]["name"]
@@ -84,7 +81,7 @@ def main():
     it = iteration()
     name_datas, j = names()
     while i < j:
-        plot(name_datas[i], it)
+        graph(name_datas[i], it, j)
         i += 1
     return
 
