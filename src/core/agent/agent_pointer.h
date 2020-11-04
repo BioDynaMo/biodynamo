@@ -60,13 +60,13 @@ class AgentPointer {
 
   bool operator!=(const AgentPointer& other) const { return uid_ != other.uid_; }
 
-  template <typename TAgent>
-  bool operator==(const TAgent* other) const {
+  template <typename TOtherAgent>
+  bool operator==(const TOtherAgent* other) const {
     return uid_ == other->GetUid();
   }
 
-  template <typename TAgent>
-  bool operator!=(const TAgent* other) const {
+  template <typename TOtherAgent>
+  bool operator!=(const TOtherAgent* other) const {
     return !this->operator==(other);
   }
 
