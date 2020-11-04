@@ -46,11 +46,11 @@ class AgentVector {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     for (int n = 0; n < thread_info_->GetNumaNodes(); n++) {
-      auto num_sos = rm->GetNumAgents(n);
-      if (data_[n].capacity() < num_sos) {
-        data_[n].reserve(num_sos * 1.5);
+      auto num_agents = rm->GetNumAgents(n);
+      if (data_[n].capacity() < num_agents) {
+        data_[n].reserve(num_agents * 1.5);
       }
-      size_[n] = num_sos;
+      size_[n] = num_agents;
     }
   }
 

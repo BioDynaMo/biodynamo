@@ -69,8 +69,8 @@ class ResourceManager {
     for (auto& el : diffusion_grids_) {
       delete el.second;
     }
-    for (auto& numa_sos : agents_) {
-      for (auto* agent : numa_sos) {
+    for (auto& numa_agents : agents_) {
+      for (auto* agent : numa_agents) {
         delete agent;
       }
     }
@@ -87,19 +87,19 @@ class ResourceManager {
     for (auto& el : diffusion_grids_) {
       delete el.second;
     }
-    for (auto& numa_sos : agents_) {
-      for (auto* agent : numa_sos) {
+    for (auto& numa_agents : agents_) {
+      for (auto* agent : numa_agents) {
         delete agent;
       }
     }
     agents_ = std::move(other.agents_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
 
-    RestoreUidSoMap();
+    RestoreUidAgentMap();
     // restore type_index_
     if (type_index_) {
-      for (auto& numa_sos : agents_) {
-        for (auto* agent : numa_sos) {
+      for (auto& numa_agents : agents_) {
+        for (auto* agent : numa_agents) {
           type_index_->Add(agent);
         }
       }
@@ -107,7 +107,7 @@ class ResourceManager {
     return *this;
   }
 
-  void RestoreUidSoMap() {
+  void RestoreUidAgentMap() {
     // rebuild uid_ah_map_
     uid_ah_map_.clear();
     auto* agent_uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
@@ -132,7 +132,7 @@ class ResourceManager {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
-  AgentHandle GetSoHandle(const AgentUid& uid) { return uid_ah_map_[uid]; }
+  AgentHandle GetAgentHandle(const AgentUid& uid) { return uid_ah_map_[uid]; }
 
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
     uint64_t substance_id = dgrid->GetSubstanceId();
@@ -196,8 +196,8 @@ class ResourceManager {
   size_t GetNumAgents(int numa_node = -1) const {
     if (numa_node == -1) {
       size_t num_so = 0;
-      for (auto& numa_sos : agents_) {
-        num_so += numa_sos.size();
+      for (auto& numa_agents : agents_) {
+        num_so += numa_agents.size();
       }
       return num_so;
     } else {
@@ -213,8 +213,8 @@ class ResourceManager {
   ///                          });
   virtual void ApplyOnAllElements(
       const std::function<void(Agent*)>& function) {
-    for (auto& numa_sos : agents_) {
-      for (auto* agent : numa_sos) {
+    for (auto& numa_agents : agents_) {
+      for (auto* agent : numa_agents) {
         function(agent);
       }
     }
@@ -223,9 +223,9 @@ class ResourceManager {
   virtual void ApplyOnAllElements(
       const std::function<void(Agent*, AgentHandle)>& function) {
     for (uint64_t n = 0; n < agents_.size(); ++n) {
-      auto& numa_sos = agents_[n];
-      for (uint64_t i = 0; i < numa_sos.size(); ++i) {
-        function(numa_sos[i], AgentHandle(n, i));
+      auto& numa_agents = agents_[n];
+      for (uint64_t i = 0; i < numa_agents.size(); ++i) {
+        function(numa_agents[i], AgentHandle(n, i));
       }
     }
   }
@@ -258,8 +258,8 @@ class ResourceManager {
   /// Reserves enough memory to hold `capacity` number of agents for
   /// each numa domain.
   void Reserve(size_t capacity) {
-    for (auto& numa_sos : agents_) {
-      numa_sos.reserve(capacity);
+    for (auto& numa_agents : agents_) {
+      numa_agents.reserve(capacity);
     }
     if (type_index_) {
       type_index_->Reserve(capacity);
@@ -291,11 +291,11 @@ class ResourceManager {
   /// not affected.
   void Clear() {
     uid_ah_map_.clear();
-    for (auto& numa_sos : agents_) {
-      for (auto* agent : numa_sos) {
+    for (auto& numa_agents : agents_) {
+      for (auto* agent : numa_agents) {
         delete agent;
       }
-      numa_sos.clear();
+      numa_agents.clear();
     }
     if (type_index_) {
       type_index_->Clear();
@@ -325,7 +325,7 @@ class ResourceManager {
     }
   }
 
-  void ResizeUidSohMap() {
+  void ResizeUidAgentMap() {
     auto* agent_uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
     auto highest_idx = agent_uid_generator->GetHighestIndex();
     auto new_size = highest_idx * 1.5 + 1;
@@ -382,17 +382,17 @@ class ResourceManager {
       auto ah = uid_ah_map_[uid];
       uid_ah_map_.Remove(uid);
       // remove from vector
-      auto& numa_sos = agents_[ah.GetNumaNode()];
+      auto& numa_agents = agents_[ah.GetNumaNode()];
       Agent* agent = nullptr;
-      if (ah.GetElementIdx() == numa_sos.size() - 1) {
-        agent = numa_sos.back();
-        numa_sos.pop_back();
+      if (ah.GetElementIdx() == numa_agents.size() - 1) {
+        agent = numa_agents.back();
+        numa_agents.pop_back();
       } else {
         // swap
-        agent = numa_sos[ah.GetElementIdx()];
-        auto* reordered = numa_sos.back();
-        numa_sos[ah.GetElementIdx()] = reordered;
-        numa_sos.pop_back();
+        agent = numa_agents[ah.GetElementIdx()];
+        auto* reordered = numa_agents.back();
+        numa_agents[ah.GetElementIdx()] = reordered;
+        numa_agents.pop_back();
         uid_ah_map_.Insert(reordered->GetUid(), ah);
       }
       if (type_index_) {
@@ -424,8 +424,8 @@ class ResourceManager {
 inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {
   os << "\033[1mSimulation objects per numa node\033[0m" << std::endl;
   uint64_t cnt = 0;
-  for (auto& numa_sos : rm.agents_) {
-    os << "numa node " << cnt++ << " -> size: " << numa_sos.size() << std::endl;
+  for (auto& numa_agents : rm.agents_) {
+    os << "numa node " << cnt++ << " -> size: " << numa_agents.size() << std::endl;
   }
   return os;
 }

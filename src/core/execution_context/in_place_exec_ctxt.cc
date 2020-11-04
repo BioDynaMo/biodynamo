@@ -162,7 +162,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
   // reserve enough memory in ResourceManager
   std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  rm->ResizeUidSohMap();
+  rm->ResizeUidAgentMap();
   for (unsigned n = 0; n < new_agent_per_numa.size(); n++) {
     numa_offsets[n] = rm->GrowSoContainer(new_agent_per_numa[n], n);
   }

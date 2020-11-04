@@ -39,17 +39,17 @@ void ResourceManager::ApplyOnAllElementsParallel(
     auto tid = omp_get_thread_num();
     auto nid = thread_info_->GetNumaNode(tid);
     auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-    auto& numa_sos = agents_[nid];
+    auto& numa_agents = agents_[nid];
     assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
     // use static scheduling for now
-    auto correction = numa_sos.size() % threads_in_numa == 0 ? 0 : 1;
-    auto chunk = numa_sos.size() / threads_in_numa + correction;
+    auto correction = numa_agents.size() % threads_in_numa == 0 ? 0 : 1;
+    auto chunk = numa_agents.size() / threads_in_numa + correction;
     auto start = thread_info_->GetNumaThreadId(tid) * chunk;
-    auto end = std::min(numa_sos.size(), start + chunk);
+    auto end = std::min(numa_agents.size(), start + chunk);
 
     for (uint64_t i = start; i < end; ++i) {
-      function(numa_sos[i], AgentHandle(nid, i));
+      function(numa_agents[i], AgentHandle(nid, i));
     }
   }
 }
@@ -145,15 +145,15 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
           continue;
         }
 
-        auto& numa_sos = agents_[current_nid];
+        auto& numa_agents = agents_[current_nid];
         uint64_t old_count = (*(counters[current_tid]))++;
         while (old_count < max_counters[current_tid]) {
           start = old_count * p_chunk;
           end =
-              std::min(static_cast<uint64_t>(numa_sos.size()), start + p_chunk);
+              std::min(static_cast<uint64_t>(numa_agents.size()), start + p_chunk);
 
           for (uint64_t i = start; i < end; ++i) {
-            function(numa_sos[i], AgentHandle(current_nid, i));
+            function(numa_agents[i], AgentHandle(current_nid, i));
           }
 
           old_count = (*(counters[current_tid]))++;
@@ -171,9 +171,9 @@ struct DeleteAgentsFunctor : public Functor<void, Agent*> {
   void operator()(Agent* agent) { delete agent; }
 };
 
-struct UpdateUidSoHMapFunctor : public Functor<void, Agent*, AgentHandle> {
+struct UpdateUidAgentHandleMapFunctor : public Functor<void, Agent*, AgentHandle> {
   using Map = AgentUidMap<AgentHandle>;
-  UpdateUidSoHMapFunctor(Map& rm_uid_ah_map)
+  UpdateUidAgentHandleMapFunctor(Map& rm_uid_ah_map)
       : rm_uid_ah_map_(rm_uid_ah_map) {}
 
   void operator()(Agent* agent, AgentHandle ah) {
@@ -308,7 +308,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   }
 
   // update uid_ah_map_
-  UpdateUidSoHMapFunctor functor(uid_ah_map_);
+  UpdateUidAgentHandleMapFunctor functor(uid_ah_map_);
   ApplyOnAllElementsParallel(functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa_) {

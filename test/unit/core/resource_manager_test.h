@@ -263,7 +263,7 @@ inline int GetNumaNodeForMemory(const void* ptr) {
   return (result != 0) ? -1 : loc;
 }
 
-inline std::vector<uint64_t> GetSoPerNuma(uint64_t num_agents) {
+inline std::vector<uint64_t> GetAgentsPerNuma(uint64_t num_agents) {
   // balance agents per numa node according to the number of
   // threads associated with each numa domain
   auto* ti = ThreadInfo::GetInstance();
@@ -314,7 +314,7 @@ struct CheckApplyOnAllElementsFunctor : Functor<void, Agent*> {
       index = std::round(b->GetData());
     }
     auto* rm = Simulation::GetActive()->GetResourceManager();
-    auto handle = rm->GetSoHandle(agent->GetUid());
+    auto handle = rm->GetAgentHandle(agent->GetUid());
 
 #pragma omp critical
     {
@@ -354,7 +354,7 @@ inline void CheckApplyOnAllElements(ResourceManager* rm,
   if (numa_checks) {
     EXPECT_EQ(0u, functor.numa_memory_errors.load());
     EXPECT_EQ(0u, functor.numa_thread_errors.load());
-    auto agent_per_numa = GetSoPerNuma(2 * num_agent_per_type);
+    auto agent_per_numa = GetAgentsPerNuma(2 * num_agent_per_type);
     auto* ti = ThreadInfo::GetInstance();
     for (int n = 0; n < ti->GetNumaNodes(); ++n) {
       EXPECT_EQ(agent_per_numa[n], functor.numa_agent_cnts[n]);
@@ -523,7 +523,7 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
       EXPECT_GT(num_agent_per_type / 4,
                 check_numa_thread_functor.numa_thread_errors.load());
     }
-    auto agent_per_numa = GetSoPerNuma(2 * num_agent_per_type);
+    auto agent_per_numa = GetAgentsPerNuma(2 * num_agent_per_type);
     for (int n = 0; n < ti->GetNumaNodes(); ++n) {
       EXPECT_EQ(agent_per_numa[n], functor.numa_agent_cnts[n]);
     }
@@ -618,7 +618,7 @@ inline void RunIOTest() {
   // restore
   ResourceManager* restored_rm = nullptr;
   GetPersistentObject(ROOTFILE, "rm", restored_rm);
-  restored_rm->RestoreUidSoMap();
+  restored_rm->RestoreUidAgentMap();
 
   // validate
   EXPECT_EQ(5u, restored_rm->GetNumAgents());
