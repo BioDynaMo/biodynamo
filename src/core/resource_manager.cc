@@ -77,9 +77,9 @@ void ResourceManager::ApplyOnAllElementsParallel(Operation& op) {
 void ResourceManager::ApplyOnAllElementsParallelDynamic(
     uint64_t chunk, Functor<void, Agent*, AgentHandle>& function) {
   // adapt chunk size
-  auto num_so = GetNumAgents();
-  uint64_t factor = (num_so / thread_info_->GetMaxThreads()) / chunk;
-  chunk = (num_so / thread_info_->GetMaxThreads()) / (factor + 1);
+  auto num_agents = GetNumAgents();
+  uint64_t factor = (num_agents / thread_info_->GetMaxThreads()) / chunk;
+  chunk = (num_agents / thread_info_->GetMaxThreads()) / (factor + 1);
   chunk = chunk >= 1 ? chunk : 1;
 
   // use dynamic scheduling
@@ -214,9 +214,9 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   auto max_threads = thread_info_->GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
     auto threads_in_numa = thread_info_->GetThreadsInNumaNode(n);
-    uint64_t num_so = GetNumAgents() * threads_in_numa / max_threads;
-    agent_per_numa[n] = num_so;
-    cummulative += num_so;
+    uint64_t num_agents = GetNumAgents() * threads_in_numa / max_threads;
+    agent_per_numa[n] = num_agents;
+    cummulative += num_agents;
   }
   agent_per_numa[0] = GetNumAgents() - cummulative;
 
@@ -233,7 +233,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   decltype(agents_) agent_rearranged;
   agent_rearranged.resize(numa_nodes);
 
-  // numa node -> vector of SoHandles
+  // numa node -> vector of AgentHandles
   std::vector<std::vector<AgentHandle>> sorted_agent_handles;
   sorted_agent_handles.resize(numa_nodes);
 #pragma omp parallel for

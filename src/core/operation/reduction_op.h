@@ -53,7 +53,7 @@ struct ReductionOp : public AgentOperationImpl {
   // The thread-local (partial) results
   ThreadLocalResults<T> tl_results_;
 
-  // The functor containing the logic on what to execute for each sim object
+  // The functor containing the logic on what to execute for each agent
   Functor<void, Agent*, T*>* agent_functor_ = nullptr;
   // The functor containing the logic on how to reduce the partial results into
   // a single result value of type T

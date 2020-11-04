@@ -334,11 +334,11 @@ TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
 
 #pragma omp parallel for
   for (uint64_t i = 0; i < 100000; ++i) {
-    auto* new_so = new TestAgent();
-    new_so->SetData(new_so->GetUid().GetIndex());
+    auto* new_agent = new TestAgent();
+    new_agent->SetData(new_agent->GetUid().GetIndex());
 
     auto* ctxt = simulation.GetExecutionContext();
-    ctxt->push_back(new_so);
+    ctxt->push_back(new_agent);
 
     auto* random = simulation.GetRandom();
     uint64_t random_number = 0;
@@ -348,15 +348,15 @@ TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
 // data of the agent is correct
 #pragma omp critical
     {
-      used_indexes.push_back(new_so->GetUid().GetIndex());
+      used_indexes.push_back(new_agent->GetUid().GetIndex());
       random_number = static_cast<uint64_t>(
           std::round(random->Uniform(0, used_indexes.size() - 1)));
       read_index = used_indexes[random_number];
     }
 
-    auto* tso =
+    auto* tagent =
         static_cast<TestAgent*>(ctxt->GetAgent(AgentUid(read_index)));
-    EXPECT_EQ(static_cast<uint64_t>(tso->GetData()), read_index);
+    EXPECT_EQ(static_cast<uint64_t>(tagent->GetData()), read_index);
   }
 }
 

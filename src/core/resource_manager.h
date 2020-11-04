@@ -57,7 +57,7 @@
 namespace bdm {
 
 /// ResourceManager stores agents and diffusion grids and provides
-/// methods to add, remove, and access them. Sim objects are uniquely identified
+/// methods to add, remove, and access them. Agents are uniquely identified
 /// by their AgentUid, and AgentHandle. A AgentHandle might change during the simulation.
 class ResourceManager {
  public:
@@ -128,7 +128,7 @@ class ResourceManager {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
-  Agent* GetAgentWithSoHandle(AgentHandle ah) {
+  Agent* GetAgentByHandle(AgentHandle ah) {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
@@ -195,11 +195,11 @@ class ResourceManager {
   /// Otherwise the number of agents in the specific numa node
   size_t GetNumAgents(int numa_node = -1) const {
     if (numa_node == -1) {
-      size_t num_so = 0;
+      size_t num_agents = 0;
       for (auto& numa_agents : agents_) {
-        num_so += numa_agents.size();
+        num_agents += numa_agents.size();
       }
-      return num_so;
+      return num_agents;
     } else {
       return agents_[numa_node].size();
     }
@@ -249,7 +249,7 @@ class ResourceManager {
   /// Function invocations are parallelized.\n
   /// Uses dynamic scheduling and work stealing. Batch size controlled by
   /// `chunk`.
-  /// \param chunk number of sim objects that are assigned to a thread (batch
+  /// \param chunk number of agents that are assigned to a thread (batch
   /// size)
   /// \see ApplyOnAllElements
   virtual void ApplyOnAllElementsParallelDynamic(
@@ -281,7 +281,7 @@ class ResourceManager {
     return current;
   }
 
-  /// Returns true if a sim object with the given uid is stored in this
+  /// Returns true if a agent with the given uid is stored in this
   /// ResourceManager.
   bool Contains(const AgentUid& uid) const { return uid_ah_map_.Contains(uid); }
 
@@ -302,8 +302,8 @@ class ResourceManager {
     }
   }
 
-  /// Reorder agents such that, sim objects are distributed to NUMA
-  /// nodes. Nearby sim objects will be moved to the same NUMA node.
+  /// Reorder agents such that, agents are distributed to NUMA
+  /// nodes. Nearby agents will be moved to the same NUMA node.
   virtual void SortAndBalanceNumaNodes();
 
   void DebugNuma() const;
@@ -351,7 +351,7 @@ class ResourceManager {
   }
 
   /// Adds `new_agents` to `agents_[numa_node]`. `offset` specifies
-  /// the index at which the first element is inserted. Sim objects are inserted
+  /// the index at which the first element is inserted. Agents are inserted
   /// consecutively. This methos is thread safe only if insertion intervals do
   /// not overlap!
   virtual void AddNewAgents(

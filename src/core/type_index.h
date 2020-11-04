@@ -26,7 +26,7 @@ namespace bdm {
 struct TypeIndex {
   void Add(Agent* agent);
 
-  void Update(Agent* new_so);
+  void Update(Agent* new_agent);
 
   void Remove(Agent* agent);
 

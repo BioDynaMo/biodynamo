@@ -274,9 +274,9 @@ inline std::vector<uint64_t> GetAgentsPerNuma(uint64_t num_agents) {
   auto max_threads = ti->GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
     auto threads_in_numa = ti->GetThreadsInNumaNode(n);
-    uint64_t num_so = num_agents * threads_in_numa / max_threads;
-    agent_per_numa[n] = num_so;
-    cummulative += num_so;
+    uint64_t num_agents = num_agents * threads_in_numa / max_threads;
+    agent_per_numa[n] = num_agents;
+    cummulative += num_agents;
   }
   agent_per_numa[0] = num_agents - cummulative;
   return agent_per_numa;
@@ -287,7 +287,7 @@ struct CheckApplyOnAllElementsFunctor : Functor<void, Agent*> {
   bool numa_checks;
   std::vector<bool> found;
   std::atomic<uint64_t> cnt;
-  // counts the number of sim objects in each numa domain
+  // counts the number of agents in each numa domain
   std::vector<uint64_t> numa_agent_cnts;
   std::atomic<uint64_t> numa_memory_errors;
   std::atomic<uint64_t> numa_thread_errors;
@@ -320,7 +320,7 @@ struct CheckApplyOnAllElementsFunctor : Functor<void, Agent*> {
     {
       found[index] = true;
 
-      // verify that a thread processes sim objects on the same NUMA node.
+      // verify that a thread processes agents on the same NUMA node.
       if (numa_checks && handle.GetNumaNode() != GetNumaNodeForMemory(agent)) {
         numa_memory_errors++;
       }
@@ -391,7 +391,7 @@ inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_agent_per_type) {
 
   CheckApplyOnAllElements(rm, num_agent_per_type, true);
 
-  // check if sim object uids still point to the correct object
+  // check if agent uids still point to the correct object
   for (auto& entry : a_x_values) {
     auto x_actual = rm->GetAgent(entry.first)->GetPosition()[0];
     EXPECT_EQ(x_actual, entry.second);
@@ -437,7 +437,7 @@ struct CheckApplyOnAllElementsDynamicFunctor
       }
       found_[index] = true;
 
-      // verify that a thread processes sim objects on the same NUMA node.
+      // verify that a thread processes agents on the same NUMA node.
       if (numa_checks_ && handle.GetNumaNode() != GetNumaNodeForMemory(agent)) {
         numa_memory_errors++;
       }
@@ -451,7 +451,7 @@ struct CheckApplyOnAllElementsDynamicFunctor
   std::vector<bool>& found_;
 
   std::atomic<uint64_t> cnt;
-  // counts the number of sim objects in each numa domain
+  // counts the number of agents in each numa domain
   std::vector<uint64_t> numa_agent_cnts;
   // If a agent is not stored on the NUMA indicated, it is a memory
   // error.
@@ -473,8 +473,8 @@ struct CheckNumaThreadErrors : Functor<void, Agent*, AgentHandle> {
     }
   }
 
-  // If a sim object is processed by a thread that doesn't belong to the NUMA
-  // domain the sim object is stored on, it is a thread error.
+  // If a agent is processed by a thread that doesn't belong to the NUMA
+  // domain the agent is stored on, it is a thread error.
   std::atomic<uint64_t> numa_thread_errors;
   ThreadInfo* ti_;
 };
@@ -499,7 +499,7 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
   CheckNumaThreadErrors check_numa_thread_functor;
   rm->ApplyOnAllElementsParallelDynamic(batch_size, check_numa_thread_functor);
 
-  // verify that the function has been called once for each sim object
+  // verify that the function has been called once for each agent
   EXPECT_EQ(2 * num_agent_per_type, functor.cnt.load());
   ASSERT_EQ(2 * num_agent_per_type, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
@@ -514,7 +514,7 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
     // If there are memory errors, check of
     // `cat /proc/sys/kernel/numa_balancing` is zero.
     // Automatic rebalancing can lead to numa memory errors.
-    // only 0.1% of all sim objects may be on a wrong numa node
+    // only 0.1% of all agents may be on a wrong numa node
     EXPECT_GT(0.001, (functor.numa_memory_errors.load() + 0.0) /
                          (2 * num_agent_per_type));
     // work stealing can cause thread errors. This check ensures that at least
@@ -560,7 +560,7 @@ inline void RunSortAndApplyOnAllElementsParallelDynamic(
 
   CheckApplyOnAllElementsDynamic(rm, num_agent_per_type, batch_size, true);
 
-  // check if sim object uids still point to the correct object
+  // check if agent uids still point to the correct object
   for (auto& entry : a_x_values) {
     auto x_actual = rm->GetAgent(entry.first)->GetPosition()[0];
     EXPECT_EQ(x_actual, entry.second);

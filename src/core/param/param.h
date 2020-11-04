@@ -383,7 +383,7 @@ struct Param {
   /// expensive operation. If agents do not move or grow,
   /// displacement calculation is ommited if detect_static_agents is turned
   /// on. However, the detection mechanism introduces an overhead. For dynamic
-  /// simulations where sim objects move and grow, the overhead outweighs the
+  /// simulations where agents move and grow, the overhead outweighs the
   /// benefits.\n
   /// Default value: `false`\n
   /// TOML config file:

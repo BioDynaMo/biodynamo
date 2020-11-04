@@ -327,7 +327,7 @@ class UniformGridEnvironment : public Environment {
         nb_mutex_builder_->Update();
       }
     } else {
-      // There are no sim objects in this simulation
+      // There are no agents in this simulation
       auto* param = Simulation::GetActive()->GetParam();
 
       bool uninitialized = boxes_.size() == 0;
@@ -451,7 +451,7 @@ class UniformGridEnvironment : public Environment {
 
     NeighborIterator ni(neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
-      auto* agent = rm->GetAgentWithSoHandle(*ni);
+      auto* agent = rm->GetAgentByHandle(*ni);
       if (agent != &query) {
         lambda(agent);
       }
@@ -507,7 +507,7 @@ class UniformGridEnvironment : public Environment {
       auto ah = *ni;
       // increment iterator already here to hide memory latency
       ++ni;
-      auto* agent = rm->GetAgentWithSoHandle(ah);
+      auto* agent = rm->GetAgentByHandle(ah);
       if (agent != &query) {
         agents[size] = agent;
         const auto& pos = agent->GetPosition();
@@ -547,7 +547,7 @@ class UniformGridEnvironment : public Environment {
     NeighborIterator ni(neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      auto* agent = rm->GetAgentWithSoHandle(*ni);
+      auto* agent = rm->GetAgentByHandle(*ni);
       if (agent != &query) {
         const auto& neighbor_position = agent->GetPosition();
         if (this->WithinSquaredEuclideanDistance(squared_radius, position,

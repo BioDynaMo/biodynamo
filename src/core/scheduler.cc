@@ -58,10 +58,10 @@ Scheduler::Scheduler() {
   // ```
   //  SetUpOps() <-- (1)
   //  RunScheduledOps() <-- rebalance numa domains
-  //  TearDownOps() <-- indexing with SoHandles is different than at (1)
+  //  TearDownOps() <-- indexing with AgentHandles is different than at (1)
   // ```
   // Also, must be done before TearDownIteration, because that introduces new
-  // sim objects that are not yet in the environment (which load balancing
+  // agents that are not yet in the environment (which load balancing
   // relies on)
   std::vector<std::string> post_scheduled_ops_names = {
       "load balancing", "tear down iteration", "visualize"};
@@ -235,7 +235,7 @@ void Scheduler::RunScheduledOps() {
 
   SetUpOps();
 
-  // Run the sim object operations
+  // Run the agent operations
   std::vector<Operation*> agent_ops;
   for (auto* op : scheduled_agent_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
@@ -244,7 +244,7 @@ void Scheduler::RunScheduledOps() {
   }
   RunAllScheduledOps functor(agent_ops);
 
-  Timing::Time("sim object ops", [&]() {
+  Timing::Time("agent ops", [&]() {
     rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
   });
 

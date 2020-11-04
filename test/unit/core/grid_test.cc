@@ -281,7 +281,7 @@ struct ZOrderCallback : Functor<void, const AgentHandle&> {
         cnt == 24 || cnt == 26) {
       box_cnt++;
     }
-    auto* agent = rm->GetAgentWithSoHandle(ah);
+    auto* agent = rm->GetAgentByHandle(ah);
     zorder[box_cnt].insert(agent->GetUid() - ref_uid);
     cnt++;
   }

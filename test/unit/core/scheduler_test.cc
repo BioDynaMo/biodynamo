@@ -452,8 +452,8 @@ TEST_F(SchedulerTest, ScheduleOrder) {
 }
 
 // The load and balance operation must be scheduled at the end of an interation,
-// in order to avoid using invalidated SoHandles in operations that rely
-// SoHandles
+// in order to avoid using invalidated AgentHandles in operations that rely
+// AgentHandles
 TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
   auto set_param = [&](Param* param) { param->scheduling_batch_size_ = 3; };
   Simulation simulation(TEST_NAME, set_param);
@@ -484,7 +484,7 @@ TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
   // Emulate the Scheduler::Execute() call
   for (int i = 0; i < 5; i++) {
     auto* successors = scheduler_wrapper.GetSuccessors();
-    // The SoHandles must be consistent throughout these steps
+    // The AgentHandles must be consistent throughout these steps
     scheduler_wrapper.RunPreScheduledOps();
     EXPECT_EQ(successors, scheduler_wrapper.GetSuccessors());
     scheduler_wrapper.RunScheduledOps();

@@ -30,12 +30,12 @@ NeuronSoma::~NeuronSoma() {}
 
 NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 
-NeuronSoma::NeuronSoma(const Event& event, Agent* mother_so,
+NeuronSoma::NeuronSoma(const Event& event, Agent* mother_agent,
                        uint64_t new_oid)
-    : Base(event, mother_so, new_oid) {
+    : Base(event, mother_agent, new_oid) {
   const CellDivisionEvent* cdevent =
       dynamic_cast<const CellDivisionEvent*>(&event);
-  NeuronSoma* mother = dynamic_cast<NeuronSoma*>(mother_so);
+  NeuronSoma* mother = dynamic_cast<NeuronSoma*>(mother_agent);
   if (cdevent && mother) {
     if (mother->daughters_.size() != 0) {
       Fatal("NeuronSoma",

@@ -131,7 +131,7 @@ TEST(AgentTest, RemoveBehavior) {
   ASSERT_EQ(2u, bms.size());
 }
 
-struct Visitor1 : public SoVisitor {
+struct Visitor1 : public AgentVisitor {
   uint16_t counter_ = 0;
 
   void Visit(const std::string& dm_name, size_t type_hash_code,
@@ -145,7 +145,7 @@ struct Visitor1 : public SoVisitor {
   }
 };
 
-struct VerifyPosition : public SoVisitor {
+struct VerifyPosition : public AgentVisitor {
   void Visit(const std::string& dm_name, size_t type_hash_code,
              const void* data) override {
     if (dm_name != "position_") {

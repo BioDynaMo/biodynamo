@@ -32,7 +32,7 @@ namespace bdm {
 class Agent;
 
 /// This execution context updates agents in place. \n
-/// Let's assume we have two sim objects `A, B` in our simulation that we want
+/// Let's assume we have two agents `A, B` in our simulation that we want
 /// to update to the next timestep `A*, B*`. If we have one thread it will first
 /// update `A` and afterwards `B` and write the updates directly to the same
 /// data structure. Therefore, before we start updating `B` the array looks
@@ -42,8 +42,8 @@ class Agent;
 /// In-place updates can lead to race conditions if agents not only
 /// modify themselves, but also neighbors. Therefore, a protection mechanism has
 /// been added. \see `Param::thread_safety_mechanism_`
-/// New sim objects will only be visible at the next iteration. \n
-/// Also removal of a sim object happens at the end of each iteration.
+/// New agents will only be visible at the next iteration. \n
+/// Also removal of a agent happens at the end of each iteration.
 class InPlaceExecutionContext {
  public:
   struct ThreadSafeAgentUidMap {
@@ -88,7 +88,7 @@ class InPlaceExecutionContext {
   /// in the argument
   void Execute(Agent* agent, const std::vector<Operation*>& operations);
 
-  void push_back(Agent* new_so);  // NOLINT
+  void push_back(Agent* new_agent);  // NOLINT
 
   void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
                        const Agent& query);
@@ -105,17 +105,17 @@ class InPlaceExecutionContext {
   void RemoveFromSimulation(const AgentUid& uid);
 
  private:
-  /// Lookup table AgentUid -> AgentPointer for new created sim objects
+  /// Lookup table AgentUid -> AgentPointer for new created agents
   std::shared_ptr<ThreadSafeAgentUidMap> new_agent_map_;
 
   ThreadInfo* tinfo_;
 
-  /// Contains unique ids of sim objects that will be removed at the end of each
+  /// Contains unique ids of agents that will be removed at the end of each
   /// iteration.
   std::vector<AgentUid> remove_;
   std::vector<Spinlock*> locks;
 
-  /// Pointer to new sim objects
+  /// Pointer to new agents
   std::vector<Agent*> new_agents_;
 
   /// prevent race conditions for cached Agents

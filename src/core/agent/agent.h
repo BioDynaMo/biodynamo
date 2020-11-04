@@ -160,10 +160,10 @@ class Agent {
 
   // ---------------------------------------------------------------------------
   // Behaviors
-  /// Add a behavior to this sim object
+  /// Add a behavior to this agent
   void AddBehavior(BaseBehavior* module);
 
-  /// Remove a behavior from this sim object
+  /// Remove a behavior from this agent
   void RemoveBehavior(const BaseBehavior* remove_module);
 
   /// Execute all behaviorsq

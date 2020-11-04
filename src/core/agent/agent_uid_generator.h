@@ -36,7 +36,7 @@ class AgentUidGenerator {
   AgentUidGenerator() : counter_(0) {}
 
   /// Generates AgentUid with increasing index.
-  /// In defragmentation mode it resuses index values from removed sim objects
+  /// In defragmentation mode it resuses index values from removed agents
   /// and sets the reused field to the current simulation step.
   AgentUid NewAgentUid() {
     if (map_ != nullptr) {

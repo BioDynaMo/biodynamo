@@ -67,8 +67,8 @@ struct GetDataMemberForVis {
   typename std::enable_if<GetDataType<TTDataMember>() == DataType::kDefault,
                           TReturn>::type
   operator()(Agent* agent) const {
-    auto* casted_so = static_cast<TClass*>(agent);
-    return reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so) +
+    auto* casted_agent = static_cast<TClass*>(agent);
+    return reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_agent) +
                                           dm_offset_);
   }
 
@@ -76,9 +76,9 @@ struct GetDataMemberForVis {
   typename std::enable_if<GetDataType<TTDataMember>() == DataType::kArray,
                           TReturn>::type
   operator()(Agent* agent) const {
-    auto* casted_so = static_cast<TClass*>(agent);
+    auto* casted_agent = static_cast<TClass*>(agent);
     auto* data = reinterpret_cast<TDataMember*>(
-                     reinterpret_cast<char*>(casted_so) + dm_offset_)
+                     reinterpret_cast<char*>(casted_agent) + dm_offset_)
                      ->data();
     return const_cast<TReturn>(data);
   }
@@ -87,9 +87,9 @@ struct GetDataMemberForVis {
   typename std::enable_if<GetDataType<TTDataMember>() == DataType::kAgentUid,
                           TReturn>::type
   operator()(Agent* agent) const {
-    auto* casted_so = static_cast<TClass*>(agent);
+    auto* casted_agent = static_cast<TClass*>(agent);
     auto* data = reinterpret_cast<TDataMember*>(
-        reinterpret_cast<char*>(casted_so) + dm_offset_);
+        reinterpret_cast<char*>(casted_agent) + dm_offset_);
     uint64_t uid = *data;
     auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
     assert(temp_values_.size() > tid);
@@ -101,9 +101,9 @@ struct GetDataMemberForVis {
   typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoPointer,
                           TReturn>::type
   operator()(Agent* agent) const {
-    auto* casted_so = static_cast<TClass*>(agent);
+    auto* casted_agent = static_cast<TClass*>(agent);
     auto* data = reinterpret_cast<TDataMember*>(
-        reinterpret_cast<char*>(casted_so) + dm_offset_);
+        reinterpret_cast<char*>(casted_agent) + dm_offset_);
     uint64_t uid = data->GetUid();
     auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
     assert(temp_values_.size() > tid);
@@ -194,7 +194,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   MappedDataArray();
   ~MappedDataArray();
 
-  /// Access sim object data member functor.
+  /// Access agent data member functor.
   GetDataMemberForVis<TScalar*, TClass, TDataMember> get_dm_;
   const std::vector<Agent*>* agents_ = nullptr;
   uint64_t start_ = 0;

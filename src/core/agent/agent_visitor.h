@@ -21,8 +21,8 @@
 namespace bdm {
 
 // Interface for agent visitors.
-struct SoVisitor {
-  virtual ~SoVisitor() {}
+struct AgentVisitor {
+  virtual ~AgentVisitor() {}
   virtual void Visit(const std::string& name, size_t type_hash_code,
                      const void* data) = 0;
 };

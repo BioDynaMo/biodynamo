@@ -43,7 +43,7 @@ void FixPvtu(const std::string& filename, const std::string& file_prefix,
   std::stringstream new_file;
   auto pos = buffer.find(find);
   if (pos == std::string::npos) {
-    // No sim objects in of this type in this timestep
+    // No agents in of this type in this timestep
     return;
   }
   new_file << buffer.substr(0, pos);

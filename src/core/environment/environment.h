@@ -37,7 +37,7 @@ class Environment {
 
   virtual const std::array<int32_t, 2>& GetDimensionThresholds() const = 0;
 
-  /// Return the size of the largest sim object
+  /// Return the size of the largest agent
   virtual double GetLargestObjectSize() const = 0;
 
   virtual void IterateZOrder(Functor<void, const AgentHandle&>& callback) = 0;
@@ -128,7 +128,7 @@ class Environment {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// agents
   void CalcSimDimensionsAndLargestAgent(
-      std::array<double, 6>* ret_grid_dimensions, double* largest_so) {
+      std::array<double, 6>* ret_grid_dimensions, double* largest_agent) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
@@ -179,8 +179,8 @@ class Environment {
         gzmax = zmax[tid][0];
       }
       // larget object
-      if (largest[tid][0] > (*largest_so)) {
-        (*largest_so) = largest[tid][0];
+      if (largest[tid][0] > (*largest_agent)) {
+        (*largest_agent) = largest[tid][0];
       }
     }
   }

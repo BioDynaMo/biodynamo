@@ -43,7 +43,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// somas with already attached neurite elements.
   ///
   /// \see CellDivisionEvent
-  NeuronSoma(const Event& event, Agent* mother_so, uint64_t new_oid = 0);
+  NeuronSoma(const Event& event, Agent* mother_agent, uint64_t new_oid = 0);
 
   NeuronSoma(const NeuronSoma& other)
       : Base(other),

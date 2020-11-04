@@ -180,7 +180,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
   // remove
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
-    // removed sim objects
+    // removed agents
     // remove them after adding new ones (maybe one has been removed
     // that was in new_agents_)
     for (auto& uid : ctxt->remove_) {
@@ -241,10 +241,10 @@ void InPlaceExecutionContext::Execute(
   }
 }
 
-void InPlaceExecutionContext::push_back(Agent* new_so) {  // NOLINT
-  new_agents_.push_back(new_so);
+void InPlaceExecutionContext::push_back(Agent* new_agent) {  // NOLINT
+  new_agents_.push_back(new_agent);
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-  new_agent_map_->Insert(new_so->GetUid(), {new_so, timesteps});
+  new_agent_map_->Insert(new_agent->GetUid(), {new_agent, timesteps});
 }
 
 struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {

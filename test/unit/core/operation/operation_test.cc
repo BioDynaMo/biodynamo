@@ -117,13 +117,13 @@ TEST(OperationTest, ReductionOp) {
 
   simulation.Simulate(1);
 
-  // Check the total number of sim objects with a diameter greater than 6
+  // Check the total number of agents with a diameter greater than 6
   EXPECT_EQ(9, op_impl->results_[0]);
 
-  auto num_so = simulation.GetResourceManager()->GetNumAgents();
+  auto num_agents = simulation.GetResourceManager()->GetNumAgents();
 
   // Check the average x position of all agents
-  EXPECT_EQ(50, op_d_impl->results_[0] / num_so);
+  EXPECT_EQ(50, op_d_impl->results_[0] / num_agents);
 
   size_t num_threads = ThreadInfo::GetInstance()->GetMaxThreads();
 
@@ -153,7 +153,7 @@ TEST(OperationTest, ReductionOpMultiThreading) {
 
   simulation.Simulate(1);
 
-  // Check the total number of sim objects with a diameter greater than 6
+  // Check the total number of agents with a diameter greater than 6
   EXPECT_EQ(8000, op_impl->results_[0]);
 }
 

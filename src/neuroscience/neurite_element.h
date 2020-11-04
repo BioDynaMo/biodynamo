@@ -259,7 +259,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     auto* core_param = Simulation::GetActive()->GetParam();
     speed *= core_param->simulation_time_step_;
 
-    auto* mother_soma = dynamic_cast<NeuronSoma*>(mother_.Get());
+    auto* mother_agentma = dynamic_cast<NeuronSoma*>(mother_.Get());
     auto* mother_neurite = dynamic_cast<NeuriteElement*>(mother_.Get());
 
     if (actual_length_ > speed + 0.1) {
@@ -278,7 +278,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
       SetMassLocation(mother_->OriginOf(Base::GetUid()) + spring_axis_);
       UpdatePosition();
       UpdateVolume();  // and update concentration of internal stuff.
-    } else if (mother_soma) {
+    } else if (mother_agentma) {
       mother_->RemoveDaughter(Base::GetAgentPtr<NeuriteElement>());
       this->RemoveFromSimulation();
     } else if (mother_neurite &&
@@ -522,12 +522,12 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     }
 
     auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
-    auto* mother_soma = dynamic_cast<NeuronSoma*>(mother_.Get());
+    auto* mother_agentma = dynamic_cast<NeuronSoma*>(mother_.Get());
     auto* mother_neurite = dynamic_cast<NeuriteElement*>(mother_.Get());
     if (actual_length_ > param->neurite_max_length_) {
       if (daughter_left_ == nullptr) {  // if terminal branch :
         SplitNeuriteElement(0.1);
-      } else if (mother_soma != nullptr) {  // if initial branch :
+      } else if (mother_agentma != nullptr) {  // if initial branch :
         SplitNeuriteElement(0.9);
       } else {
         SplitNeuriteElement(0.5);
@@ -1086,10 +1086,10 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     str << "resting_length_:  " << n.resting_length_ << std::endl;
     str << "d left         :  " << n.daughter_left_ << std::endl;
     str << "d right         :  " << n.daughter_right_ << std::endl;
-    auto* mother_soma = dynamic_cast<const NeuronSoma*>(n.mother_.Get());
+    auto* mother_agentma = dynamic_cast<const NeuronSoma*>(n.mother_.Get());
     auto* mother_neurite = dynamic_cast<const NeuriteElement*>(n.mother_.Get());
     auto mother =
-        mother_soma ? "neuron" : (mother_neurite ? "neurite" : "nullptr");
+        mother_agentma ? "neuron" : (mother_neurite ? "neurite" : "nullptr");
     str << "mother_           " << mother << std::endl;
     return str;
   }

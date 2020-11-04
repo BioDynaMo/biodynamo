@@ -151,7 +151,7 @@ void Agent::RemoveFromSimulation() const {
 
 void Agent::EventHandler(const Event& event, Agent* other1,
                              Agent* other2) {
-  // Run displacement if a new sim object has been created with an event.
+  // Run displacement if a new agent has been created with an event.
   SetRunDisplacementForAllNextTs();
   // call event handler for behaviors
   auto* left_behaviors = other1 == nullptr ? nullptr : &(other1->behaviors_);

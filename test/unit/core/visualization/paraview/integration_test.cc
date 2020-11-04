@@ -100,7 +100,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
                box_coord[1] * num_boxes[0] + box_coord[0];
       });
 
-  // every simulation needs at least one sim object
+  // every simulation needs at least one agent
   auto* cell = new Cell();
   cell->SetDiameter(10);
   cell->SetPosition({5, 5, 5});
@@ -166,7 +166,7 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
+void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
                        bool export_visualization = true, bool use_pvsm = true) {
   auto set_param = [&](Param* param) {
     param->remove_output_dir_contents_ = true;
@@ -178,7 +178,7 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
           GetPythonScriptPath("validate_agents.py");
       auto sim_name = Simulation::GetActive()->GetUniqueName();
       param->pv_insitu_pipeline_arguments_ =
-          Concat("--sim_name=", sim_name, " --num_elements=", num_so);
+          Concat("--sim_name=", sim_name, " --num_elements=", num_agents);
     }
     param->run_mechanical_interactions_ = false;
     param->visualize_agents_.insert(
@@ -186,7 +186,7 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
     param->mapped_data_array_mode_ = mode;
   };
   neuroscience::InitModule();
-  auto sim_name = Concat("ExportAgentsTest_", num_so, "_", mode);
+  auto sim_name = Concat("ExportAgentsTest_", num_agents, "_", mode);
   auto* sim = new Simulation(sim_name, set_param);
 
   auto output_dir = sim->GetOutputDir();
@@ -207,7 +207,7 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
     rm->push_back(ne);
   };
 
-  for (uint64_t i = 0; i < num_so; ++i) {
+  for (uint64_t i = 0; i < num_agents; ++i) {
     construct(i);
   }
 
@@ -220,7 +220,7 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
   if (export_visualization) {
     // create pvsm file
     delete sim;
-    Validate("validate_agents.py", sim_name, num_so, use_pvsm);
+    Validate("validate_agents.py", sim_name, num_agents, use_pvsm);
     ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
   } else {
     delete sim;

@@ -31,7 +31,7 @@ class Agent;
 
 /// Simulation object pointer. Required to point to a agent with
 /// throughout the whole simulation. Raw pointers cannot be used, because
-/// a sim object might be copied to a different NUMA domain, or if it resides
+/// a agent might be copied to a different NUMA domain, or if it resides
 /// on a different address space in case of a distributed runtime.
 /// Benefit compared to AgentHandle is, that the compiler knows
 /// the type returned by `Get` and can therefore inline the code from the callee
@@ -60,13 +60,13 @@ class AgentPointer {
 
   bool operator!=(const AgentPointer& other) const { return uid_ != other.uid_; }
 
-  template <typename TSo>
-  bool operator==(const TSo* other) const {
+  template <typename TAgent>
+  bool operator==(const TAgent* other) const {
     return uid_ == other->GetUid();
   }
 
-  template <typename TSo>
-  bool operator!=(const TSo* other) const {
+  template <typename TAgent>
+  bool operator!=(const TAgent* other) const {
     return !this->operator==(other);
   }
 

@@ -30,10 +30,10 @@ void TypeIndex::Add(Agent* agent) {
 }
 
 // -----------------------------------------------------------------------------
-void TypeIndex::Update(Agent* new_so) {
-  auto idx = index_[new_so->GetUid()];
-  auto& type_vector = data_[new_so->IsA()];
-  type_vector[idx] = new_so;
+void TypeIndex::Update(Agent* new_agent) {
+  auto idx = index_[new_agent->GetUid()];
+  auto& type_vector = data_[new_agent->IsA()];
+  type_vector[idx] = new_agent;
 }
 
 // -----------------------------------------------------------------------------
