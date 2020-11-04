@@ -32,12 +32,12 @@ def graph(name_demo, iteration, i):
         tmp = cpu[h] + tmp
         h += 1
     moy = tmp / iteration
-    fig, ax = plt.subplots()
-    xlabels = ['str']
-    ax.plot([1], moy, 'bo-')
-    ax.set_title(name_demo)
-    ax.set_xticks([1])
-    ax.set_xticklabels(xlabels, rotation=40)
+#    fig, ax = plt.subplots()
+#    xlabels = ['str']
+#    ax.plot([1], moy, 'bo-')
+#    ax.set_title(name_demo)
+#    ax.set_xticks([1])
+#    ax.set_xticklabels(xlabels, rotation=40)
 #    plt.savefig(name_demo+'.')
 #    plt.show()
     return name_demo, moy
@@ -79,11 +79,40 @@ def iteration():
 
 def store(cpu, name_demo):
     version = sys.argv[2]
-    print(name_demo)
     csvfile = open('benchmark/'+name_demo+'.csv', 'a+')
     writer = csv.writer(csvfile)
     writer.writerow( (version, cpu) )
     csvfile.close()
+
+def nb_data(name_demo):
+    with open('benchmark/'+name_demo+'.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            line_count += 1
+    return line_count
+
+
+def plot(name_demo):
+    nb = nb_data(name_demo)
+    v = [0]*nb
+    value = [0]*nb
+    fig, ax = plt.subplots()
+    with open('benchmark/'+name_demo+'.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            v[line_count] = row[0]
+            value[line_count] = float(row[1])/10**9
+            line_count += 1
+    xlabels = v
+    ax.plot(range(nb), value, 'bo-')
+    ax.set_title(name_demo)
+    ax.set_xticks(range(nb))
+    ax.set_xticklabels(xlabels, rotation=10)
+    plt.savefig('benchmark/'+name_demo+'.png')
+#    plt.show()
+    return
 
 def main():
     i = 0
@@ -94,10 +123,8 @@ def main():
     while i < j:
         name_demo[i], cpu[i] = graph(name_datas[i], it, j)
         store(cpu[i], name_demo[i])
+        plot(name_demo[i])
         i += 1
-    # print(cpu)
-    # print(name_demo)
-#    store('soma_clustering')
     return
 
 if __name__ == "__main__":
