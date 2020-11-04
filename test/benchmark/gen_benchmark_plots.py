@@ -6,6 +6,7 @@ import sys
 from math import *
 import json
 import os
+import csv
 
 
 def data_cpu(name_demo, iteration, ii):
@@ -37,9 +38,9 @@ def graph(name_demo, iteration, i):
     ax.set_title(name_demo)
     ax.set_xticks([1])
     ax.set_xticklabels(xlabels, rotation=40)
-#    plt.savefig(name_demo+'.png')
-    plt.show()
-    return
+#    plt.savefig(name_demo+'.')
+#    plt.show()
+    return name_demo, moy
 
 def name(i):
     name_data = data["benchmarks"][i]["name"]
@@ -76,20 +77,35 @@ def iteration():
             break
     return j+1
 
+def store(cpu, name_demo):
+    version = sys.argv[2]
+    print(name_demo)
+    csvfile = open('benchmark/'+name_demo+'.csv', 'a+')
+    writer = csv.writer(csvfile)
+    writer.writerow( (version, cpu) )
+    csvfile.close()
+
 def main():
     i = 0
     it = iteration()
     name_datas, j = names()
+    cpu = [0]*j
+    name_demo = [0]*j
     while i < j:
-        graph(name_datas[i], it, j)
+        name_demo[i], cpu[i] = graph(name_datas[i], it, j)
+        store(cpu[i], name_demo[i])
         i += 1
+    # print(cpu)
+    # print(name_demo)
+#    store('soma_clustering')
     return
 
 if __name__ == "__main__":
-    file = sys.argv[1]
-    with open(file, "r") as read_file:
-        data = json.load(read_file)
-    try:
+   file = sys.argv[1]
+   with open(file, "r") as read_file:
+       data = json.load(read_file)
+   try:
         main()
-    except:
-        print("ERROR")
+   except:
+       print("ERROR")
+#    main()
