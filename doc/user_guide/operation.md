@@ -18,7 +18,7 @@ keywords:
 ---
 
 Operations are functions that are executed at a given frequency throughout the simulation.
-To execute a function for *specific* agents have a look at biology modules.
+To execute a function for *specific* agents have a look at behaviors.
 **An operation can have multiple implementations.**
 Each implementation can target a different type of hardware (e.g. CPU or GPU) as shown in the following image:
 

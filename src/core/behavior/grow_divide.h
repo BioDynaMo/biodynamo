@@ -12,10 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_BIOLOGY_MODULE_GROW_DIVIDE_H_
-#define CORE_BIOLOGY_MODULE_GROW_DIVIDE_H_
+#ifndef CORE_BEHAVIOR_GROW_DIVIDE_H_
+#define CORE_BEHAVIOR_GROW_DIVIDE_H_
 
-#include "core/biology_module/biology_module.h"
+#include "core/behavior/behavior.h"
 #include "core/event/cell_division_event.h"
 #include "core/agent/cell.h"
 #include "core/util/log.h"
@@ -23,19 +23,19 @@
 
 namespace bdm {
 
-/// This biology module grows the agent until the diameter reaches
+/// This behavior grows the agent until the diameter reaches
 /// the specified threshold and divides the object afterwards.
-struct GrowDivide : public BaseBiologyModule {
-  BDM_BM_HEADER(GrowDivide, BaseBiologyModule, 1);
-  GrowDivide() : BaseBiologyModule(gAllEventIds) {}
+struct GrowDivide : public BaseBehavior {
+  BDM_BEHAVIOR_HEADER(GrowDivide, BaseBehavior, 1);
+  GrowDivide() : BaseBehavior(gAllEventIds) {}
   GrowDivide(double threshold, double growth_rate,
              std::initializer_list<EventId> event_list)
-      : BaseBiologyModule(event_list),
+      : BaseBehavior(event_list),
         threshold_(threshold),
         growth_rate_(growth_rate) {}
 
-  GrowDivide(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+  GrowDivide(const Event& event, BaseBehavior* other, uint64_t new_oid = 0)
+      : BaseBehavior(event, other, new_oid) {
     if (GrowDivide* gdbm = dynamic_cast<GrowDivide*>(other)) {
       threshold_ = gdbm->threshold_;
       growth_rate_ = gdbm->growth_rate_;
@@ -45,7 +45,7 @@ struct GrowDivide : public BaseBiologyModule {
     }
   }
 
-  /// Default event handler (exising biology module won't be modified on
+  /// Default event handler (exising behavior won't be modified on
   /// any event)
 
   void Run(Agent* agent) override {
@@ -67,4 +67,4 @@ struct GrowDivide : public BaseBiologyModule {
 
 }  // namespace bdm
 
-#endif  // CORE_BIOLOGY_MODULE_GROW_DIVIDE_H_
+#endif  // CORE_BEHAVIOR_GROW_DIVIDE_H_

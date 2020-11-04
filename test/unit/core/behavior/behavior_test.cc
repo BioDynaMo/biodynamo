@@ -12,40 +12,40 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/biology_module/biology_module.h"
+#include "core/behavior/behavior.h"
 #include <gtest/gtest.h>
 
 namespace bdm {
 
 /// Helper class to test run visitor
-struct TestBiologyModule : public BaseBiologyModule {
-  TestBiologyModule() : BaseBiologyModule(0, 0) {}
-  explicit TestBiologyModule(EventId copy_event, EventId remove_event = 0)
-      : BaseBiologyModule(copy_event, remove_event) {}
+struct TestBehavior : public BaseBehavior {
+  TestBehavior() : BaseBehavior(0, 0) {}
+  explicit TestBehavior(EventId copy_event, EventId remove_event = 0)
+      : BaseBehavior(copy_event, remove_event) {}
 
-  TestBiologyModule(std::initializer_list<EventId> copy_events,
+  TestBehavior(std::initializer_list<EventId> copy_events,
                     std::initializer_list<EventId> remove_events = {})
-      : BaseBiologyModule(copy_events, remove_events) {}
+      : BaseBehavior(copy_events, remove_events) {}
 
-  TestBiologyModule(const Event& event, BaseBiologyModule* other,
+  TestBehavior(const Event& event, BaseBehavior* other,
                     uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
+      : BaseBehavior(event, other, new_oid) {}
 
-  virtual ~TestBiologyModule() {}
+  virtual ~TestBehavior() {}
 
   void Run(Agent* agent) override {}
 
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other,
                                  uint64_t new_oid = 0) const override {
-    return new TestBiologyModule(event, other, new_oid);
+    return new TestBehavior(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const override {
-    return new TestBiologyModule(*this);
+  BaseBehavior* GetCopy() const override {
+    return new TestBehavior(*this);
   };
 };
 
-TEST(BaseBiologyModuleTest, CopyNever) {
-  TestBiologyModule bbm;
+TEST(BaseBehaviorTest, CopyNever) {
+  TestBehavior bbm;
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
@@ -53,8 +53,8 @@ TEST(BaseBiologyModuleTest, CopyNever) {
   }
 }
 
-TEST(BaseBiologyModuleTest, CopyAlways) {
-  TestBiologyModule bbm(gAllEventIds);
+TEST(BaseBehaviorTest, CopyAlways) {
+  TestBehavior bbm(gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
@@ -62,9 +62,9 @@ TEST(BaseBiologyModuleTest, CopyAlways) {
   }
 }
 
-TEST(BaseBiologyModuleTest, CopyOnSingleEvent) {
+TEST(BaseBehaviorTest, CopyOnSingleEvent) {
   uint64_t one = 1;
-  TestBiologyModule bbm(one << 5);
+  TestBehavior bbm(one << 5);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
@@ -76,9 +76,9 @@ TEST(BaseBiologyModuleTest, CopyOnSingleEvent) {
   }
 }
 
-TEST(BaseBiologyModuleTest, CopyOnEventList) {
+TEST(BaseBehaviorTest, CopyOnEventList) {
   uint64_t one = 1;
-  TestBiologyModule bbm({one << 5, one << 19, one << 49});
+  TestBehavior bbm({one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
@@ -90,10 +90,10 @@ TEST(BaseBiologyModuleTest, CopyOnEventList) {
   }
 }
 
-TEST(BaseBiologyModuleTest, RemoveNever) {
-  TestBiologyModule bbm;
+TEST(BaseBehaviorTest, RemoveNever) {
+  TestBehavior bbm;
   EventId any = 1;
-  TestBiologyModule bbm1(any, gNullEventId);
+  TestBehavior bbm1(any, gNullEventId);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
@@ -102,9 +102,9 @@ TEST(BaseBiologyModuleTest, RemoveNever) {
   }
 }
 
-TEST(BaseBiologyModuleTest, RemoveAlways) {
+TEST(BaseBehaviorTest, RemoveAlways) {
   EventId any = 1;
-  TestBiologyModule bbm(any, gAllEventIds);
+  TestBehavior bbm(any, gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
@@ -112,10 +112,10 @@ TEST(BaseBiologyModuleTest, RemoveAlways) {
   }
 }
 
-TEST(BaseBiologyModuleTest, RemoveOnSingleEvent) {
+TEST(BaseBehaviorTest, RemoveOnSingleEvent) {
   uint64_t one = 1;
   EventId any = 1;
-  TestBiologyModule bbm(any, one << 5);
+  TestBehavior bbm(any, one << 5);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
@@ -127,10 +127,10 @@ TEST(BaseBiologyModuleTest, RemoveOnSingleEvent) {
   }
 }
 
-TEST(BaseBiologyModuleTest, RemoveOnEventList) {
+TEST(BaseBehaviorTest, RemoveOnEventList) {
   uint64_t one = 1;
   EventId any = 1;
-  TestBiologyModule bbm({any}, {one << 5, one << 19, one << 49});
+  TestBehavior bbm({any}, {one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;

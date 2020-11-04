@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/model_initializer.h"
-#include "core/biology_module/biology_module.h"
+#include "core/behavior/behavior.h"
 #include "core/resource_manager.h"
 #include "core/agent/cell.h"
 #include "gtest/gtest.h"

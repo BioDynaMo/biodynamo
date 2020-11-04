@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_BIOLOGY_MODULE_BIOLOGY_MODULE_H_
-#define CORE_BIOLOGY_MODULE_BIOLOGY_MODULE_H_
+#ifndef CORE_BEHAVIOR_BEHAVIOR_H_
+#define CORE_BEHAVIOR_BEHAVIOR_H_
 
 #include "core/event/event.h"
 #include "core/agent/agent.h"
@@ -21,17 +21,17 @@
 
 namespace bdm {
 
-/// BaseBiologyModule encapsulates logic to decide for which EventIds
-/// a biology module should be copied or removed
-struct BaseBiologyModule {
+/// BaseBehavior encapsulates logic to decide for which EventIds
+/// a behavior should be copied or removed
+struct BaseBehavior {
   /// Default ctor sets `copy_mask_` and remove_mask_` to 0; meaning that
   /// `Copy` and `Remove` will always return false
-  BaseBiologyModule() : copy_mask_(0), remove_mask_(0) {}
+  BaseBehavior() : copy_mask_(0), remove_mask_(0) {}
 
-  explicit BaseBiologyModule(EventId copy_event, EventId remove_event = 0)
+  explicit BaseBehavior(EventId copy_event, EventId remove_event = 0)
       : copy_mask_(copy_event), remove_mask_(remove_event) {}
 
-  BaseBiologyModule(std::initializer_list<EventId> copy_events,
+  BaseBehavior(std::initializer_list<EventId> copy_events,
                     std::initializer_list<EventId> remove_events = {}) {
     // copy mask
     copy_mask_ = 0;
@@ -45,35 +45,35 @@ struct BaseBiologyModule {
     }
   }
 
-  BaseBiologyModule(const Event& event, BaseBiologyModule* other,
+  BaseBehavior(const Event& event, BaseBehavior* other,
                     uint64_t new_oid = 0) {
     copy_mask_ = other->copy_mask_;
     remove_mask_ = other->remove_mask_;
   }
 
-  BaseBiologyModule(const BaseBiologyModule& other)
+  BaseBehavior(const BaseBehavior& other)
       : copy_mask_(other.copy_mask_), remove_mask_(other.remove_mask_) {}
 
-  virtual ~BaseBiologyModule() {}
+  virtual ~BaseBehavior() {}
 
   /// Create a new instance of this object using the default constructor.
-  virtual BaseBiologyModule* GetInstance(const Event& event,
-                                         BaseBiologyModule* other,
+  virtual BaseBehavior* GetInstance(const Event& event,
+                                         BaseBehavior* other,
                                          uint64_t new_oid = 0) const = 0;
 
-  /// Create a copy of this biology module.
-  virtual BaseBiologyModule* GetCopy() const = 0;
+  /// Create a copy of this behavior.
+  virtual BaseBehavior* GetCopy() const = 0;
 
-  virtual void EventHandler(const Event& event, BaseBiologyModule* other1,
-                            BaseBiologyModule* other2 = nullptr) {}
+  virtual void EventHandler(const Event& event, BaseBehavior* other1,
+                            BaseBehavior* other2 = nullptr) {}
 
   virtual void Run(Agent* agent) = 0;
 
-  /// Function returns whether the biology module should be copied for the
+  /// Function returns whether the behavior should be copied for the
   /// given event.
   bool Copy(EventId event) const { return (event & copy_mask_) != 0; }
 
-  /// Function returns whether the biology module should be removed for the
+  /// Function returns whether the behavior should be removed for the
   /// given event.
   bool Remove(EventId event) const { return (event & remove_mask_) != 0; }
 
@@ -98,27 +98,27 @@ struct BaseBiologyModule {
  private:
   EventId copy_mask_;
   EventId remove_mask_;
-  BDM_CLASS_DEF(BaseBiologyModule, 2);
+  BDM_CLASS_DEF(BaseBehavior, 2);
 };
 
-/// Inserts boilerplate code for stateless biology modules
-#define BDM_STATELESS_BM_HEADER(class_name, base_class, class_version_id)      \
+/// Inserts boilerplate code for stateless behaviors
+#define BDM_STATELESS_BEHAVIOR_HEADER(class_name, base_class, class_version_id)      \
  public:                                                                       \
   /** Empty default event constructor, because module does not have state. */  \
-  class_name(const Event& event, BaseBiologyModule* other,                     \
+  class_name(const Event& event, BaseBehavior* other,                     \
              uint64_t new_oid = 0)                                             \
       : base_class(event, other, new_oid) {}                                   \
                                                                                \
   /** Event handler not needed, because this module does not have state. */    \
                                                                                \
   /** Create a new instance of this object using the default constructor. */   \
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, \
+  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other, \
                                  uint64_t new_oid = 0) const override {        \
     return new class_name(event, other, new_oid);                              \
   }                                                                            \
                                                                                \
-  /** Create a copy of this biology module. */                                 \
-  BaseBiologyModule* GetCopy() const override {                                \
+  /** Create a copy of this behavior. */                                 \
+  BaseBehavior* GetCopy() const override {                                \
     return new class_name(*this);                                              \
   }                                                                            \
                                                                                \
@@ -127,17 +127,17 @@ struct BaseBiologyModule {
                                                                                \
  public:
 
-/// Inserts boilerplate code for biology modules with state
-#define BDM_BM_HEADER(class_name, base_class, class_version_id)                \
+/// Inserts boilerplate code for behaviors with state
+#define BDM_BEHAVIOR_HEADER(class_name, base_class, class_version_id)                \
  public:                                                                       \
   /** Create a new instance of this object using the default constructor. */   \
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other, \
+  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other, \
                                  uint64_t new_oid = 0) const override {        \
     return new class_name(event, other, new_oid);                              \
   }                                                                            \
                                                                                \
-  /** Create a copy of this biology module. */                                 \
-  BaseBiologyModule* GetCopy() const override {                                \
+  /** Create a copy of this behavior. */                                 \
+  BaseBehavior* GetCopy() const override {                                \
     return new class_name(*this);                                              \
   }                                                                            \
                                                                                \
@@ -148,4 +148,4 @@ struct BaseBiologyModule {
 
 }  // namespace bdm
 
-#endif  // CORE_BIOLOGY_MODULE_BIOLOGY_MODULE_H_
+#endif  // CORE_BEHAVIOR_BEHAVIOR_H_

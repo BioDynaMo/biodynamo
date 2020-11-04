@@ -91,7 +91,7 @@ std::cout << "Value of foo                  " << sparam->foo << std::endl;
 std::cout << "Value of bar                  " << sparam->bar << std::endl;
 ```
 
-NB: If you don't have a pointer to `bdm::Simulation` inside e.g. a biology module, you can 
+NB: If you don't have a pointer to `bdm::Simulation` inside e.g. a behavior, you can 
 obtain it by calling `Simulation::GetActive()`.
 
 ### Build the simulation

@@ -44,9 +44,9 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetMass(1.0);
     Double3 secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell->AddBiologyModule(new Secretion(dgrid, 4));
+      cell->AddBehavior(new Secretion(dgrid, 4));
     } else {
-      cell->AddBiologyModule(new Chemotaxis(dgrid, 0.5));
+      cell->AddBehavior(new Chemotaxis(dgrid, 0.5));
     }
     return cell;
   };

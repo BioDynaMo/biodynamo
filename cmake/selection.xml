@@ -36,7 +36,7 @@
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
     <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
-    <class name="bdm::BaseBiologyModule"/>
+    <class name="bdm::BaseBehavior"/>
     <class name="bdm::GrowDivide"/>
     <class name="bdm::Chemotaxis"/>
     <class name="bdm::Secretion"/>
@@ -48,8 +48,8 @@
     <class name="bdm::Random" />
     <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<double, 4>" />
-    <class name="bdm::InlineVector<bdm::BaseBiologyModule*, 2>" />
-    <class name="bdm::VectorTypeWrapper<bdm::BaseBiologyModule*>" />
+    <class name="bdm::InlineVector<bdm::BaseBehavior*, 2>" />
+    <class name="bdm::VectorTypeWrapper<bdm::BaseBehavior*>" />
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />
     <class pattern="std::vector<bdm::memory_manager_detail::*>" />

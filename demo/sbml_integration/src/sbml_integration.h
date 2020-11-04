@@ -54,25 +54,25 @@ class MyCell : public Cell {
 };
 
 // Define SbmlModule to simulate intracellular chemical reaction network.
-struct SbmlModule : public BaseBiologyModule {
-  BDM_BM_HEADER(SbmlModule, BaseBiologyModule, 1)
+struct SbmlModule : public BaseBehavior {
+  BDM_BEHAVIOR_HEADER(SbmlModule, BaseBehavior, 1)
 
   SbmlModule(const std::string& sbml_file, const rr::SimulateOptions& opt)
-      : BaseBiologyModule(gNullEventId, gNullEventId) {
+      : BaseBehavior(gNullEventId, gNullEventId) {
     Initialize(sbml_file, opt);
   }
 
   SbmlModule(const SbmlModule& other) {
-    auto other_sbml_bm = bdm_static_cast<const SbmlModule*>(&other);
-    Initialize(other_sbml_bm->sbml_file_, other_sbml_bm->initial_options_);
-    result_ = other_sbml_bm->result_;
+    auto other_sbml_behavior = bdm_static_cast<const SbmlModule*>(&other);
+    Initialize(other_sbml_behavior->sbml_file_, other_sbml_behavior->initial_options_);
+    result_ = other_sbml_behavior->result_;
   }
 
   virtual ~SbmlModule() { delete rr_; }
 
   // SbmlModule is not copied for any event in this example
-  SbmlModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
+  SbmlModule(const Event& event, BaseBehavior* other, uint64_t new_oid = 0)
+      : BaseBehavior(event, other, new_oid) {}
 
   void Initialize(const std::string& sbml_file,
                   const rr::SimulateOptions& opt) {
@@ -162,7 +162,7 @@ inline void PlotSbmlModules(const char* filename) {
   Simulation::GetActive()->GetResourceManager()->ApplyOnAllElements(
       [&](Agent* agent) {
         auto* cell = static_cast<MyCell*>(agent);
-        const auto& bms = cell->GetAllBiologyModules();
+        const auto& bms = cell->GetAllBehaviors();
         if (bms.size() == 1) {
           AddToPlot(mg, &static_cast<SbmlModule*>(bms[0])->GetResult());
         }
@@ -210,7 +210,7 @@ inline int Simulate(int argc, const char** argv) {
     auto* cell = new MyCell();
     cell->SetPosition(position);
     cell->SetDiameter(10);
-    cell->AddBiologyModule(new SbmlModule(sbml_file, opt));
+    cell->AddBehavior(new SbmlModule(sbml_file, opt));
     return cell;
   };
   ModelInitializer::CreateCellsRandom(0, 200, num_cells, construct);

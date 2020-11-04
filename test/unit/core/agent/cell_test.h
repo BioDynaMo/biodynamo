@@ -86,8 +86,8 @@ inline void RunIOTest() {
   cell.UpdateVolume();
   cell.SetAdherence(1.1);
   cell.SetMass(5);
-  cell.AddBiologyModule(new GrowthModule());
-  cell.AddBiologyModule(new MovementModule({1, 2, 3}));
+  cell.AddBehavior(new GrowthModule());
+  cell.AddBehavior(new MovementModule({1, 2, 3}));
   cell.SetBoxIdx(123);
 
   // write to root file
@@ -114,16 +114,16 @@ inline void RunIOTest() {
   EXPECT_NEAR(1.1, restored_cell->GetAdherence(), kEpsilon);
   EXPECT_NEAR(5, restored_cell->GetMass(), kEpsilon);
 
-  EXPECT_EQ(2u, restored_cell->GetAllBiologyModules().size());
+  EXPECT_EQ(2u, restored_cell->GetAllBehaviors().size());
   EXPECT_TRUE(dynamic_cast<GrowthModule*>(
-                  restored_cell->GetAllBiologyModules()[0]) != nullptr);
+                  restored_cell->GetAllBehaviors()[0]) != nullptr);
   EXPECT_NEAR(
       0.5,
-      dynamic_cast<GrowthModule*>(restored_cell->GetAllBiologyModules()[0])
+      dynamic_cast<GrowthModule*>(restored_cell->GetAllBehaviors()[0])
           ->growth_rate_,
       kEpsilon);
   EXPECT_TRUE(dynamic_cast<MovementModule*>(
-                  restored_cell->GetAllBiologyModules()[1]) != nullptr);
+                  restored_cell->GetAllBehaviors()[1]) != nullptr);
 
   EXPECT_EQ(123u, restored_cell->GetBoxIdx());
 

@@ -44,7 +44,7 @@ You can access the installation page by clicking [here](/docs/userguide/installa
 As BioDynaMo is written is C++, it needs a particular structure. Fortunately, this procedure is really easy with BioDynaMo. To create a new project, you just need to run the command `biodynamo new <project>`. If you wish to have your Github account linked to your project you can append the `--github` option to the command. Try opening a terminal and running the command `biodynamo new tutorial`. This will create a folder named tutorial in your current directory, containing everything that BioDynaMo needs. Inside `tutorial/src`, two files with the basic structure already written have been created: `tutorial.cc` and `tutorial.h`. `tutorial.cc` will only contain the call to function `Simulate` which is defined in  `tutorial.h`. This is were the core of our work will be added. You can easily compile your code using the command `biodynamo build` and run your simulation by typing the command `biodynamo run`.
 You can also directly use `biodynamo demo tumor_concept` to try this demo.
 
-## Cells and biology modules
+## Cells and behaviors
 
 The structure built in the previous chapter only creates a single cell. In this chapter we will create more cells in order to build a square of 2 400 randomly distributed cells. Afterwards, we will create a number of cancerous cells, that will grow and divide.
 
@@ -104,19 +104,19 @@ We now have our structure containing all the 2400 cells! The code in charge of r
 simulation.GetScheduler()->Simulate(200);
 ```
 
-### Biology module
+### Behavior
 
-In the previous chapter, we created a great number of cells. However, those cells don’t do anything! We will here create a cancerous cell that will grow and divide when it reaches a certain diameter. For this, we will define a new biology module structure GrowthModule that will be applied to cell elements, and we will make this GrowthModule copied into the cell daughter (so the daughter will also contain an instance of the biology module GrowthModule)
+In the previous chapter, we created a great number of cells. However, those cells don’t do anything! We will here create a cancerous cell that will grow and divide when it reaches a certain diameter. For this, we will define a new behavior structure GrowthModule that will be applied to cell elements, and we will make this GrowthModule copied into the cell daughter (so the daughter will also contain an instance of the behavior GrowthModule)
 ```cpp
-struct GrowthModule : public BaseBiologyModule {
-  BDM_STATELESS_BM_HEADER(GrowthModule, BaseBiologyModule, 1);
+struct GrowthModule : public BaseBehavior {
+  BDM_STATELESS_BEHAVIOR_HEADER(GrowthModule, BaseBehavior, 1);
 
-  GrowthModule() : BaseBiologyModule(gAllEventIds) {}
+  GrowthModule() : BaseBehavior(gAllEventIds) {}
 
   /// Empty default event constructor, because GrowthModule does not have state.
   template <typename TEvent, typename TBm>
   GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
+      : BaseBehavior(event, other, new_oid) {}
 
   void Run(Agent* so) override {
     // code to be executed at each simulation step
@@ -140,7 +140,7 @@ Of course, we need to create at least one new cell that contains our `GrowthModu
 ```cpp
 Cell* cell = new Cell({20, 50, 50});
 cell->SetDiameter(6);
-cell->AddBiologyModule(new GrowthModule());
+cell->AddBehavior(new GrowthModule());
 rm->push_back(cell);  // put the created cell in our cells structure
 ```
 
@@ -323,7 +323,7 @@ This is of course just an example of what you can do with the threshold filters.
 ### Adding some complexity
 
 We now have all we want to visualize our modeling in the best conditions, but this modeling itself is a bit limited. We should add some movements to it as well as a new mechanism to complexity cell division.
-To add cell movement, we will modify the `Run()` method of our biology module `GrowthModule`, and use the function `UpdatePosition()`. To generate the direction we will again use a random a random number generator.
+To add cell movement, we will modify the `Run()` method of our behavior `GrowthModule`, and use the function `UpdatePosition()`. To generate the direction we will again use a random a random number generator.
 We choose here to give stochastic movement only to growing cells, so we will write the movement just after the volume change
 
 ```cpp

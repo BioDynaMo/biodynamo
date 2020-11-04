@@ -63,13 +63,13 @@ struct DistributeRunDisplacementInfoOp : public AgentOperationImpl {
 BDM_REGISTER_OP(DistributeRunDisplacementInfoOp,
                 "distribute run displacement info", kCpu);
 
-struct BiologyModuleOp : public AgentOperationImpl {
-  BDM_OP_HEADER(BiologyModuleOp);
+struct BehaviorOp : public AgentOperationImpl {
+  BDM_OP_HEADER(BehaviorOp);
 
-  void operator()(Agent* agent) override { agent->RunBiologyModules(); }
+  void operator()(Agent* agent) override { agent->RunBehaviors(); }
 };
 
-BDM_REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
+BDM_REGISTER_OP(BehaviorOp, "behavior", kCpu);
 
 struct DiscretizationOp : public AgentOperationImpl {
   BDM_OP_HEADER(DiscretizationOp);

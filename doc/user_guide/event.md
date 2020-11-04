@@ -60,7 +60,7 @@ This is performed in the `EventHandler` function. For cell division it has
 the following signature:
 `EventHandler(const CellDivisionEvent& event, TDaughter* daughter)`
 
-<!-- TODO events and biology modules -->
+<!-- TODO events and behaviors -->
 
 ## Extending Simulation Objects
 

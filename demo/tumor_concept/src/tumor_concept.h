@@ -67,15 +67,15 @@ class MyCell : public Cell {  // our object extends the Cell object
 };
 
 // Define growth behaviour
-struct GrowthModule : public BaseBiologyModule {
-  BDM_STATELESS_BM_HEADER(GrowthModule, BaseBiologyModule, 1);
+struct GrowthModule : public BaseBehavior {
+  BDM_STATELESS_BEHAVIOR_HEADER(GrowthModule, BaseBehavior, 1);
 
-  GrowthModule() : BaseBiologyModule(gAllEventIds) {}
+  GrowthModule() : BaseBehavior(gAllEventIds) {}
 
   /// Empty default event constructor, because GrowthModule does not have state.
   template <typename TEvent, typename TBm>
   GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
+      : BaseBehavior(event, other, new_oid) {}
 
   /// event handler not needed, because Chemotaxis does not have state.
 
@@ -137,12 +137,12 @@ inline int Simulate(int argc, const char** argv) {
     rm->push_back(cell);  // put the created cell in our cells structure
   }
 
-  // create a cancerous cell, containing the biology module GrowthModule
+  // create a cancerous cell, containing the behavior GrowthModule
   MyCell* cell = new MyCell({20, 50, 50});
   cell->SetDiameter(6);
   cell->SetCellColor(8);
   cell->SetCanDivide(true);
-  cell->AddBiologyModule(new GrowthModule());
+  cell->AddBehavior(new GrowthModule());
   rm->push_back(cell);  // put the created cell in our cells structure
 
   // Run simulation

@@ -73,9 +73,9 @@ attributes:
     cell->SetMass(1.0);
     Double3 secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell->AddBiologyModule(new Secretion(dgrid, 4));
+      cell->AddBehavior(new Secretion(dgrid, 4));
     } else {
-      cell->AddBiologyModule(new Chemotaxis(dgrid, 0.5));
+      cell->AddBehavior(new Chemotaxis(dgrid, 0.5));
     }
     return cell;
   };
@@ -97,7 +97,7 @@ The `construct` lambda defines the properties of each cell that we create. These
 physical properties (diameter, mass), but also biological properties and behaviors
 (chemotaxis, substance secretion)
 
-This example uses the predefined biology modules `Chemotaxis` and `Secretion` that
+This example uses the predefined behaviors `Chemotaxis` and `Secretion` that
 will govern the behavior of the agents (i.e. cells).
 These two modules are included in the BioDynaMo installation.
 

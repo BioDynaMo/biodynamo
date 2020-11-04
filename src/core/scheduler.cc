@@ -45,7 +45,7 @@ Scheduler::Scheduler() {
   std::vector<std::string> default_op_names = {
       "update run displacement",
       "bound space",
-      "biology module",
+      "behavior",
       "displacement",
       "discretization",
       "distribute run displacement info",
@@ -80,7 +80,7 @@ Scheduler::Scheduler() {
   }
 
   protected_op_names_ = {
-      "update run displacement", "biology module",
+      "update run displacement", "behavior",
       "discretization",          "distribute run displacment info",
       "set up iteration",        "update environment",
       "tear down iteration"};

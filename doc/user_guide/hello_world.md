@@ -66,7 +66,7 @@ resource manager.
 
 ```cpp
 // Add the biological behavior to the cell.
-cell->AddBiologyModule(new GrowDivide(32, 3000, {gAllEventIds}));
+cell->AddBehavior(new GrowDivide(32, 3000, {gAllEventIds}));
 ```
 
 Rebuild and rerun the simulation to have the cell division take effect. visit the

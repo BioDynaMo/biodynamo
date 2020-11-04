@@ -12,13 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_BIOLOGY_MODULE_REGULATE_GENES_H_
-#define CORE_BIOLOGY_MODULE_REGULATE_GENES_H_
+#ifndef CORE_BEHAVIOR_REGULATE_GENES_H_
+#define CORE_BEHAVIOR_REGULATE_GENES_H_
 
 #include <functional>
 #include <vector>
 
-#include "core/biology_module/biology_module.h"
+#include "core/behavior/behavior.h"
 #include "core/param/param.h"
 #include "core/scheduler.h"
 #include "core/simulation.h"
@@ -33,16 +33,16 @@ namespace bdm {
 /// for solving ODE. Both methods implemented inside the body of method Run().
 /// The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver_`.
-struct RegulateGenes : public BaseBiologyModule {
-  BDM_BM_HEADER(RegulateGenes, BaseBiologyModule, 1);
+struct RegulateGenes : public BaseBehavior {
+  BDM_BEHAVIOR_HEADER(RegulateGenes, BaseBehavior, 1);
 
-  RegulateGenes() : BaseBiologyModule(gAllEventIds) {}
+  RegulateGenes() : BaseBehavior(gAllEventIds) {}
 
-  explicit RegulateGenes(EventId event) : BaseBiologyModule(event) {}
+  explicit RegulateGenes(EventId event) : BaseBehavior(event) {}
 
-  RegulateGenes(const Event& event, BaseBiologyModule* other,
+  RegulateGenes(const Event& event, BaseBehavior* other,
                 uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+      : BaseBehavior(event, other, new_oid) {
     if (RegulateGenes* rgbm = dynamic_cast<RegulateGenes*>(other)) {
       concentrations_ = rgbm->concentrations_;
       first_derivatives_ = rgbm->first_derivatives_;
@@ -120,4 +120,4 @@ struct RegulateGenes : public BaseBiologyModule {
 
 }  // namespace bdm
 
-#endif  // CORE_BIOLOGY_MODULE_REGULATE_GENES_H_
+#endif  // CORE_BEHAVIOR_REGULATE_GENES_H_

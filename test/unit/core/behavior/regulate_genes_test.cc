@@ -12,10 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_BIOLOGY_MODULE_REGULATE_GENES_TEST
-#define UNIT_BIOLOGY_MODULE_REGULATE_GENES_TEST
+#ifndef UNIT_BEHAVIOR_REGULATE_GENES_TEST
+#define UNIT_BEHAVIOR_REGULATE_GENES_TEST
 
-#include "core/biology_module/regulate_genes.h"
+#include "core/behavior/regulate_genes.h"
 #include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
@@ -85,4 +85,4 @@ TEST(RegulateGenesTest, RK4Test) {
 }  // namespace regulate_genes_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_BIOLOGY_MODULE_REGULATE_GENES_TEST
+#endif  // UNIT_BEHAVIOR_REGULATE_GENES_TEST

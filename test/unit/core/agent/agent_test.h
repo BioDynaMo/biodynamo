@@ -16,7 +16,7 @@
 #define UNIT_CORE_AGENT_AGENT_TEST_H_
 
 #include <gtest/gtest.h>
-#include "core/biology_module/biology_module.h"
+#include "core/behavior/behavior.h"
 #include "core/agent/cell.h"
 #include "core/agent/agent.h"
 #include "unit/test_util/test_agent.h"
@@ -24,14 +24,14 @@
 namespace bdm {
 namespace agent_test_internal {
 
-struct GrowthModule : public BaseBiologyModule {
+struct GrowthModule : public BaseBehavior {
   double growth_rate_ = 0.5;
 
-  GrowthModule() : BaseBiologyModule(CellDivisionEvent::kEventId) {}
+  GrowthModule() : BaseBehavior(CellDivisionEvent::kEventId) {}
 
-  GrowthModule(const Event& event, BaseBiologyModule* other,
+  GrowthModule(const Event& event, BaseBehavior* other,
                uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+      : BaseBehavior(event, other, new_oid) {
     if (GrowthModule* gbm = dynamic_cast<GrowthModule*>(other)) {
       growth_rate_ = gbm->growth_rate_;
     } else {
@@ -42,19 +42,19 @@ struct GrowthModule : public BaseBiologyModule {
 
   virtual ~GrowthModule() {}
 
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other,
                                  uint64_t new_oid = 0) const override {
     return new GrowthModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const override {
+  BaseBehavior* GetCopy() const override {
     return new GrowthModule(*this);
   }
 
-  /// Default event handler (exising biology module won't be modified on
+  /// Default event handler (exising behavior won't be modified on
   /// any event)
-  void EventHandler(const Event& event, BaseBiologyModule* other1,
-                    BaseBiologyModule* other2 = nullptr) override {
-    BaseBiologyModule::EventHandler(event, other1, other2);
+  void EventHandler(const Event& event, BaseBehavior* other1,
+                    BaseBehavior* other2 = nullptr) override {
+    BaseBehavior::EventHandler(event, other1, other2);
   }
 
   void Run(Agent* t) override {
@@ -64,19 +64,19 @@ struct GrowthModule : public BaseBiologyModule {
   BDM_CLASS_DEF_OVERRIDE(GrowthModule, 1);
 };
 
-struct MovementModule : public BaseBiologyModule {
+struct MovementModule : public BaseBehavior {
   Double3 velocity_;
 
   MovementModule()
-      : BaseBiologyModule(0, CellDivisionEvent::kEventId),
+      : BaseBehavior(0, CellDivisionEvent::kEventId),
         velocity_({{0, 0, 0}}) {}
   explicit MovementModule(const Double3& velocity)
-      : BaseBiologyModule(0, CellDivisionEvent::kEventId),
+      : BaseBehavior(0, CellDivisionEvent::kEventId),
         velocity_(velocity) {}
 
-  MovementModule(const Event& event, BaseBiologyModule* other,
+  MovementModule(const Event& event, BaseBehavior* other,
                  uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+      : BaseBehavior(event, other, new_oid) {
     if (MovementModule* mbm = dynamic_cast<MovementModule*>(other)) {
       velocity_ = mbm->velocity_;
     } else {
@@ -86,18 +86,18 @@ struct MovementModule : public BaseBiologyModule {
   }
 
   /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other,
                                  uint64_t new_oid = 0) const override {
     return new MovementModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const override {
+  BaseBehavior* GetCopy() const override {
     return new MovementModule(*this);
   }
 
   /// Default event handler
-  void EventHandler(const Event& event, BaseBiologyModule* other1,
-                    BaseBiologyModule* other2 = nullptr) override {
-    BaseBiologyModule::EventHandler(event, other1, other2);
+  void EventHandler(const Event& event, BaseBehavior* other1,
+                    BaseBehavior* other2 = nullptr) override {
+    BaseBehavior::EventHandler(event, other1, other2);
   }
 
   void Run(Agent* agent) override {
@@ -108,23 +108,23 @@ struct MovementModule : public BaseBiologyModule {
   BDM_CLASS_DEF_OVERRIDE(MovementModule, 1);
 };
 
-/// This biology module removes itself the first time it is executed
-struct RemoveModule : public BaseBiologyModule {
+/// This behavior removes itself the first time it is executed
+struct RemoveModule : public BaseBehavior {
   RemoveModule() {}
-  RemoveModule(const Event& event, BaseBiologyModule* other,
+  RemoveModule(const Event& event, BaseBehavior* other,
                uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
+      : BaseBehavior(event, other, new_oid) {}
 
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
+  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other,
                                  uint64_t new_oid = 0) const override {
     return new RemoveModule(event, other, new_oid);
   }
-  BaseBiologyModule* GetCopy() const override {
+  BaseBehavior* GetCopy() const override {
     return new RemoveModule(*this);
   }
 
   void Run(Agent* agent) override {
-    agent->RemoveBiologyModule(this);
+    agent->RemoveBehavior(this);
   }
 
   BDM_CLASS_DEF_OVERRIDE(RemoveModule, 1);

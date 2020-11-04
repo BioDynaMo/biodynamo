@@ -20,10 +20,10 @@
 
 namespace bdm {
 
-struct TestBehaviour : public BaseBiologyModule {
-  BDM_STATELESS_BM_HEADER(TestBehaviour, BaseBiologyModule, 1);
+struct TestBehaviour : public BaseBehavior {
+  BDM_STATELESS_BEHAVIOR_HEADER(TestBehaviour, BaseBehavior, 1);
 
-  TestBehaviour() : BaseBiologyModule(gAllEventIds) {}
+  TestBehaviour() : BaseBehavior(gAllEventIds) {}
 
   void Run(Agent* agent) override {
     usleep(35000);  // 35 ms -> one iteration will take 350 ms
@@ -40,7 +40,7 @@ inline int Simulate(int argc, const char** argv) {
     auto* cell =
         new Cell({100.0 * i, 100.0 * i, 100.0 * i});  // no colliding cells
     cell->SetDiameter(i);
-    cell->AddBiologyModule(new TestBehaviour());
+    cell->AddBehavior(new TestBehaviour());
     rm->push_back(cell);
   }
 

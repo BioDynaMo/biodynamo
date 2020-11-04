@@ -21,22 +21,22 @@
 
 namespace bdm {
 
-/// EventId is used inside biology modules to determine if a biology module
+/// EventId is used inside behaviors to determine if a behavior
 /// should be copied if a new agent is created.
 /// Possible events are cell division, neurite branching, ...\n
 /// EventId invariant: the number of bits set to 1 must be 1.
 using EventId = uint64_t;
 
-/// Biology module event representing the union of all events.\n
-/// Used to create a biology module  which is copied for every event.
-/// @see `BaseBiologyModule`
+/// Behavior event representing the union of all events.\n
+/// Used to create a behavior  which is copied for every event.
+/// @see `BaseBehavior`
 const EventId gAllEventIds = std::numeric_limits<uint64_t>::max();
 
-/// Biology module event representing the null element = empty set of events.
-/// @see `BaseBiologyModule`
+/// Behavior event representing the null element = empty set of events.
+/// @see `BaseBehavior`
 const EventId gNullEventId = 0;
 
-/// This class generates unique ids for biology module events satisfying the
+/// This class generates unique ids for behavior events satisfying the
 /// EventId invariant. Thread safe.
 class UniqueEventIdFactory {
  public:

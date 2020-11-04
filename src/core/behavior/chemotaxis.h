@@ -12,28 +12,28 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_BIOLOGY_MODULE_CHEMOTAXIS_H_
-#define CORE_BIOLOGY_MODULE_CHEMOTAXIS_H_
+#ifndef CORE_BEHAVIOR_CHEMOTAXIS_H_
+#define CORE_BEHAVIOR_CHEMOTAXIS_H_
 
-#include "core/biology_module/biology_module.h"
+#include "core/behavior/behavior.h"
 #include "core/diffusion_grid.h"
 #include "core/agent/cell.h"
 
 namespace bdm {
 
 /// Move cells along the diffusion gradient (from low concentration to high)
-struct Chemotaxis : public BaseBiologyModule {
-  BDM_BM_HEADER(Chemotaxis, BaseBiologyModule, 1);
+struct Chemotaxis : public BaseBehavior {
+  BDM_BEHAVIOR_HEADER(Chemotaxis, BaseBehavior, 1);
 
   Chemotaxis(DiffusionGrid* dgrid, double speed,
              std::initializer_list<EventId> copy_events = {gAllEventIds},
              std::initializer_list<EventId> remove_events = {})
-      : BaseBiologyModule(copy_events, remove_events),
+      : BaseBehavior(copy_events, remove_events),
         dgrid_(dgrid),
         speed_(speed) {}
 
-  Chemotaxis(const Event& event, BaseBiologyModule* other, uint64_t new_uid)
-      : BaseBiologyModule(event, other, new_uid) {
+  Chemotaxis(const Event& event, BaseBehavior* other, uint64_t new_uid)
+      : BaseBehavior(event, other, new_uid) {
     dgrid_ = bdm_static_cast<Chemotaxis*>(other)->dgrid_;
     speed_ = bdm_static_cast<Chemotaxis*>(other)->speed_;
   }
@@ -55,4 +55,4 @@ struct Chemotaxis : public BaseBiologyModule {
 
 }  // namespace bdm
 
-#endif  // CORE_BIOLOGY_MODULE_CHEMOTAXIS_H_
+#endif  // CORE_BEHAVIOR_CHEMOTAXIS_H_

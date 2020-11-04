@@ -12,28 +12,28 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_BIOLOGY_MODULE_SECRETION_H_
-#define CORE_BIOLOGY_MODULE_SECRETION_H_
+#ifndef CORE_BEHAVIOR_SECRETION_H_
+#define CORE_BEHAVIOR_SECRETION_H_
 
-#include "core/biology_module/biology_module.h"
+#include "core/behavior/behavior.h"
 #include "core/diffusion_grid.h"
 #include "core/agent/cell.h"
 
 namespace bdm {
 
 /// Secrete substance at Agent position
-struct Secretion : public BaseBiologyModule {
-  BDM_BM_HEADER(Secretion, BaseBiologyModule, 1);
+struct Secretion : public BaseBehavior {
+  BDM_BEHAVIOR_HEADER(Secretion, BaseBehavior, 1);
 
   Secretion(DiffusionGrid* dgrid, double quantity = 1,
             std::initializer_list<EventId> copy_events = {gAllEventIds},
             std::initializer_list<EventId> remove_events = {})
-      : BaseBiologyModule(copy_events, remove_events),
+      : BaseBehavior(copy_events, remove_events),
         dgrid_(dgrid),
         quantity_(quantity) {}
 
-  Secretion(const Event& event, BaseBiologyModule* other, uint64_t new_uid)
-      : BaseBiologyModule(event, other, new_uid) {
+  Secretion(const Event& event, BaseBehavior* other, uint64_t new_uid)
+      : BaseBehavior(event, other, new_uid) {
     dgrid_ = bdm_static_cast<Secretion*>(other)->dgrid_;
     quantity_ = bdm_static_cast<Secretion*>(other)->quantity_;
   }
@@ -52,4 +52,4 @@ struct Secretion : public BaseBiologyModule {
 
 }  // namespace bdm
 
-#endif  // CORE_BIOLOGY_MODULE_SECRETION_H_
+#endif  // CORE_BEHAVIOR_SECRETION_H_

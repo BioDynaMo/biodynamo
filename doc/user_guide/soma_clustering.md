@@ -61,16 +61,16 @@ We create a new type of cell called "MyCell" that extends the default Cell.
 It contains a new data member called `cell_type_` that makes it possible to assign
 a type to a cell.
 
-### 2. Define substances and biology modules
+### 2. Define substances and behaviors
 
-In `src/soma_clustering_biology_modules.h` we can find the listing of the two substances
+In `src/soma_clustering_behaviors.h` we can find the listing of the two substances
 that are used in this simulation:
 
 ```cpp
 enum Substances { kSubstance_0, kSubstance_1 };
 ```
 
-We can also find the biology modules that were used in the Diffusion exercise.
+We can also find the behaviors that were used in the Diffusion exercise.
 
 ## Configure the simulation
 

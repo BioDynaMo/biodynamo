@@ -79,7 +79,7 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
     cell->SetMass(1.0);
-    cell->AddBiologyModule(new GrowDivide(30.05, 5000, {gAllEventIds}));
+    cell->AddBehavior(new GrowDivide(30.05, 5000, {gAllEventIds}));
     return cell;
   };
 

@@ -64,8 +64,8 @@ inline int Simulate(int argc, const char** argv) {
   auto construct = [&dg, &cell_type](const Double3& position) {
     auto* cell = new MyCell(position, cell_type);
     cell->SetDiameter(10);
-    cell->AddBiologyModule(new Secretion(dg));
-    cell->AddBiologyModule(new Chemotaxis(dg, 5));
+    cell->AddBehavior(new Secretion(dg));
+    cell->AddBehavior(new Chemotaxis(dg, 5));
     return cell;
   };
 

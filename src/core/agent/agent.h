@@ -76,7 +76,7 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 
 struct Event;
-struct BaseBiologyModule;
+struct BaseBehavior;
 
 /// Contains code required by all agents
 class Agent {
@@ -159,18 +159,18 @@ class Agent {
   }
 
   // ---------------------------------------------------------------------------
-  // Biology modules
-  /// Add a biology module to this sim object
-  void AddBiologyModule(BaseBiologyModule* module);
+  // Behaviors
+  /// Add a behavior to this sim object
+  void AddBehavior(BaseBehavior* module);
 
-  /// Remove a biology module from this sim object
-  void RemoveBiologyModule(const BaseBiologyModule* remove_module);
+  /// Remove a behavior from this sim object
+  void RemoveBehavior(const BaseBehavior* remove_module);
 
-  /// Execute all biology modulesq
-  void RunBiologyModules();
+  /// Execute all behaviorsq
+  void RunBehaviors();
 
-  /// Return all biology modules
-  const InlineVector<BaseBiologyModule*, 2>& GetAllBiologyModules() const;
+  /// Return all behaviors
+  const InlineVector<BaseBehavior*, 2>& GetAllBehaviors() const;
   // ---------------------------------------------------------------------------
 
   virtual Double3 CalculateDisplacement(double squared_radius, double dt) = 0;
@@ -213,34 +213,34 @@ class Agent {
   AgentUid uid_;
   /// Grid box index
   uint32_t box_idx_ = 0;
-  /// collection of biology modules which define the internal behavior
-  InlineVector<BaseBiologyModule*, 2> biology_modules_;
+  /// collection of behaviors which define the internal behavior
+  InlineVector<BaseBehavior*, 2> behaviors_;
 
  private:
   Spinlock lock_;  //!
 
-  /// Helper variable used to support removal of biology modules while
-  /// `RunBiologyModules` iterates over them.
-  uint32_t run_bm_loop_idx_ = 0;
+  /// Helper variable used to support removal of behaviors while
+  /// `RunBehaviors` iterates over them.
+  uint32_t run_behavior_loop_idx_ = 0;
 
   bool run_displacement_ = true;                   //!
   bool run_displacement_for_all_next_ts_ = false;  //!
   mutable bool run_displacement_next_ts_ = true;   //!
 
-  /// @brief Function to copy biology modules from one structure to another
-  /// @param event event will be passed on to biology module to determine
+  /// @brief Function to copy behaviors from one structure to another
+  /// @param event event will be passed on to behavior to determine
   ///        whether it should be copied to destination
-  /// @param src  source vector of biology modules
-  /// @param dest destination vector of biology modules
-  void CopyBiologyModules(const Event& event, decltype(biology_modules_)* dest);
+  /// @param src  source vector of behaviors
+  /// @param dest destination vector of behaviors
+  void CopyBehaviors(const Event& event, decltype(behaviors_)* dest);
 
-  /// @brief Function to invoke the EventHandler of the biology module or remove
+  /// @brief Function to invoke the EventHandler of the behavior or remove
   ///                  it from `current`.
-  /// Forwards the event handler call to each biology modules of the triggered
-  /// agent and removes biology modules if they are flagged.
-  void BiologyModuleEventHandler(const Event& event,
-                                 decltype(biology_modules_)* other1,
-                                 decltype(biology_modules_)* other2);
+  /// Forwards the event handler call to each behaviors of the triggered
+  /// agent and removes behaviors if they are flagged.
+  void BehaviorEventHandler(const Event& event,
+                                 decltype(behaviors_)* other1,
+                                 decltype(behaviors_)* other2);
 
   BDM_CLASS_DEF(Agent, 1)
 };

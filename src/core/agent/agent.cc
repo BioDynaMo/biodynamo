@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/biology_module/biology_module.h"
+#include "core/behavior/behavior.h"
 #include "core/environment/environment.h"
 #include "core/event/event.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
@@ -45,10 +45,10 @@ Agent::Agent() {
 Agent::Agent(const Event& event, Agent* other, uint64_t new_oid)
     : Agent() {
   box_idx_ = other->GetBoxIdx();
-  // biology modules
-  auto* other_bms = &(other->biology_modules_);
-  // copy biology_modules_ to me
-  CopyBiologyModules(event, other_bms);
+  // behaviors
+  auto* other_behaviors = &(other->behaviors_);
+  // copy behaviors_ to me
+  CopyBehaviors(event, other_behaviors);
 }
 
 Agent::Agent(TRootIOCtor* io_ctor) {}
@@ -56,17 +56,17 @@ Agent::Agent(TRootIOCtor* io_ctor) {}
 Agent::Agent(const Agent& other)
     : uid_(other.uid_),
       box_idx_(other.box_idx_),
-      run_bm_loop_idx_(other.run_bm_loop_idx_),
+      run_behavior_loop_idx_(other.run_behavior_loop_idx_),
       run_displacement_for_all_next_ts_(
           other.run_displacement_for_all_next_ts_),
       run_displacement_next_ts_(other.run_displacement_next_ts_) {
-  for (auto* module : other.biology_modules_) {
-    biology_modules_.push_back(module->GetCopy());
+  for (auto* module : other.behaviors_) {
+    behaviors_.push_back(module->GetCopy());
   }
 }
 
 Agent::~Agent() {
-  for (auto* el : biology_modules_) {
+  for (auto* el : behaviors_) {
     delete el;
   }
 }
@@ -113,35 +113,35 @@ uint32_t Agent::GetBoxIdx() const { return box_idx_; }
 void Agent::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 
 // ---------------------------------------------------------------------------
-// Biology modules
+// Behaviors
 
-void Agent::AddBiologyModule(BaseBiologyModule* module) {
-  biology_modules_.push_back(module);
+void Agent::AddBehavior(BaseBehavior* module) {
+  behaviors_.push_back(module);
 }
 
-void Agent::RemoveBiologyModule(const BaseBiologyModule* remove_module) {
-  for (unsigned int i = 0; i < biology_modules_.size(); i++) {
-    if (biology_modules_[i] == remove_module) {
+void Agent::RemoveBehavior(const BaseBehavior* remove_module) {
+  for (unsigned int i = 0; i < behaviors_.size(); i++) {
+    if (behaviors_[i] == remove_module) {
       delete remove_module;
-      biology_modules_.erase(biology_modules_.begin() + i);
-      // if remove_module was before or at the current run_bm_loop_idx_,
+      behaviors_.erase(behaviors_.begin() + i);
+      // if remove_module was before or at the current run_behavior_loop_idx_,
       // correct it by subtracting one.
-      run_bm_loop_idx_ -= i > run_bm_loop_idx_ ? 0 : 1;
+      run_behavior_loop_idx_ -= i > run_behavior_loop_idx_ ? 0 : 1;
     }
   }
 }
 
-void Agent::RunBiologyModules() {
-  for (run_bm_loop_idx_ = 0; run_bm_loop_idx_ < biology_modules_.size();
-       ++run_bm_loop_idx_) {
-    auto* module = biology_modules_[run_bm_loop_idx_];
+void Agent::RunBehaviors() {
+  for (run_behavior_loop_idx_ = 0; run_behavior_loop_idx_ < behaviors_.size();
+       ++run_behavior_loop_idx_) {
+    auto* module = behaviors_[run_behavior_loop_idx_];
     module->Run(this);
   }
 }
 
-const InlineVector<BaseBiologyModule*, 2>& Agent::GetAllBiologyModules()
+const InlineVector<BaseBehavior*, 2>& Agent::GetAllBehaviors()
     const {
-  return biology_modules_;
+  return behaviors_;
 }
 // ---------------------------------------------------------------------------
 
@@ -153,47 +153,47 @@ void Agent::EventHandler(const Event& event, Agent* other1,
                              Agent* other2) {
   // Run displacement if a new sim object has been created with an event.
   SetRunDisplacementForAllNextTs();
-  // call event handler for biology modules
-  auto* left_bms = other1 == nullptr ? nullptr : &(other1->biology_modules_);
-  auto* right_bms = other2 == nullptr ? nullptr : &(other2->biology_modules_);
-  BiologyModuleEventHandler(event, left_bms, right_bms);
+  // call event handler for behaviors
+  auto* left_behaviors = other1 == nullptr ? nullptr : &(other1->behaviors_);
+  auto* right_behaviors = other2 == nullptr ? nullptr : &(other2->behaviors_);
+  BehaviorEventHandler(event, left_behaviors, right_behaviors);
 }
 
-void Agent::CopyBiologyModules(const Event& event,
-                                   decltype(biology_modules_) * other) {
-  for (auto* bm : *other) {
-    if (bm->Copy(event.GetId())) {
-      auto* new_bm = bm->GetInstance(event, bm);
-      biology_modules_.push_back(new_bm);
+void Agent::CopyBehaviors(const Event& event,
+                                   decltype(behaviors_) * other) {
+  for (auto* behavior : *other) {
+    if (behavior->Copy(event.GetId())) {
+      auto* new_behavior = behavior->GetInstance(event, behavior);
+      behaviors_.push_back(new_behavior);
     }
   }
 }
 
-void Agent::BiologyModuleEventHandler(const Event& event,
-                                          decltype(biology_modules_) * other1,
-                                          decltype(biology_modules_) * other2) {
-  // call event handler for biology modules
+void Agent::BehaviorEventHandler(const Event& event,
+                                          decltype(behaviors_) * other1,
+                                          decltype(behaviors_) * other2) {
+  // call event handler for behaviors
   uint64_t cnt = 0;
-  for (auto* bm : biology_modules_) {
-    bool copy = bm->Copy(event.GetId());
-    if (!bm->Remove(event.GetId())) {
+  for (auto* behavior : behaviors_) {
+    bool copy = behavior->Copy(event.GetId());
+    if (!behavior->Remove(event.GetId())) {
       if (copy) {
-        auto* other1_bm = other1 != nullptr ? (*other1)[cnt] : nullptr;
-        auto* other2_bm = other2 != nullptr ? (*other2)[cnt] : nullptr;
-        bm->EventHandler(event, other1_bm, other2_bm);
+        auto* other1_behavior = other1 != nullptr ? (*other1)[cnt] : nullptr;
+        auto* other2_behavior = other2 != nullptr ? (*other2)[cnt] : nullptr;
+        behavior->EventHandler(event, other1_behavior, other2_behavior);
       } else {
-        bm->EventHandler(event, nullptr, nullptr);
+        behavior->EventHandler(event, nullptr, nullptr);
       }
     }
     cnt += copy ? 1 : 0;
   }
 
-  // remove biology modules from current
-  for (auto it = biology_modules_.begin(); it != biology_modules_.end();) {
-    auto* bm = *it;
-    if (bm->Remove(event.GetId())) {
+  // remove behaviors from current
+  for (auto it = behaviors_.begin(); it != behaviors_.end();) {
+    auto* behavior = *it;
+    if (behavior->Remove(event.GetId())) {
       delete *it;
-      it = biology_modules_.erase(it);
+      it = behaviors_.erase(it);
     } else {
       ++it;
     }

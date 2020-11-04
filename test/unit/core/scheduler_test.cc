@@ -433,7 +433,7 @@ TEST_F(SchedulerTest, ScheduleOrder) {
 
   std::vector<std::string> agent_ops = {
       "update run displacement", "bound space",
-      "biology module",          "displacement",
+      "behavior",          "displacement",
       "discretization",          "distribute run displacement info"};
   std::vector<std::string> sa_ops = {"diffusion"};
 

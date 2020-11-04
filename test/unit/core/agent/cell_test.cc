@@ -42,8 +42,8 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   mother.UpdateVolume();
   mother.SetAdherence(1.1);
   mother.SetMass(5);
-  mother.AddBiologyModule(new GrowthModule());
-  mother.AddBiologyModule(new MovementModule({1, 2, 3}));
+  mother.AddBehavior(new GrowthModule());
+  mother.AddBehavior(new MovementModule({1, 2, 3}));
   mother.SetBoxIdx(123);
 
   auto daughter = mother.Divide(0.75, 0.12, 0.34);
@@ -84,10 +84,10 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   EXPECT_NEAR(1.1, daughter->GetAdherence(), kEpsilon);
   EXPECT_NEAR(2.1428571428571437, daughter->GetMass(), kEpsilon);
 
-  // biology modules mother
-  EXPECT_EQ(1u, mother.GetAllBiologyModules().size());
-  EXPECT_EQ(1u, daughter->GetAllBiologyModules().size());
-  if (dynamic_cast<GrowthModule*>(daughter->GetAllBiologyModules()[0]) ==
+  // behaviors mother
+  EXPECT_EQ(1u, mother.GetAllBehaviors().size());
+  EXPECT_EQ(1u, daughter->GetAllBehaviors().size());
+  if (dynamic_cast<GrowthModule*>(daughter->GetAllBehaviors()[0]) ==
       nullptr) {
     FAIL() << "Variant type at position 0 is not a GrowthModule";
   }

@@ -12,55 +12,52 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/biology_module/chemotaxis.h"
+#include "core/behavior/secretion.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace chemotaxis_test_ns {
 
 struct TestDiffusionGrid : public DiffusionGrid {
-  TestDiffusionGrid(const Double3& normalized_gradient)
-      : DiffusionGrid(0, "TestSubstance", 1, 1),
-        normalized_gradient_(normalized_gradient) {}
+  TestDiffusionGrid() : DiffusionGrid(0, "TestSubstance", 1, 1) {}
 
-  void GetGradient(const Double3& position, Double3* gradient) const override {
-    (*gradient) = normalized_gradient_;
+  void IncreaseConcentrationBy(const Double3& position,
+                               double amount) override {
+    EXPECT_ARR_NEAR({10, 11, 12}, position);
+    EXPECT_NEAR(3.14, amount, abs_error<double>::value);
+    called = true;
   }
 
-  Double3 normalized_gradient_;
+  bool called = false;
 };
 
-TEST(ChemotaxisTest, Run) {
+TEST(SecretionTest, Run) {
   Simulation simulation(TEST_NAME);
 
   Cell cell;
-  Double3 pos = {10, 10, 10};
+  Double3 pos = {10, 11, 12};
   cell.SetPosition(pos);
   cell.SetDiameter(40);
 
-  Double3 normalized_gradient = {1, 2, 3};
-  normalized_gradient.Normalize();
-  TestDiffusionGrid dgrid(normalized_gradient);
+  TestDiffusionGrid dgrid;
 
-  Chemotaxis ct(&dgrid, 3.14);
-  ct.Run(&cell);
+  Secretion s(&dgrid, 3.14);
+  s.Run(&cell);
 
-  EXPECT_ARR_NEAR(pos + normalized_gradient * 3.14, cell.GetPosition());
+  EXPECT_TRUE(dgrid.called);
 }
 
-TEST(ChemotaxisTest, EventCopy) {
+TEST(SecretionTest, EventCopy) {
   auto event_id1 = UniqueEventIdFactory::Get()->NewUniqueEventId();
   auto event_id2 = UniqueEventIdFactory::Get()->NewUniqueEventId();
   auto event_id3 = UniqueEventIdFactory::Get()->NewUniqueEventId();
   auto event_id4 = UniqueEventIdFactory::Get()->NewUniqueEventId();
 
-  Chemotaxis ct(nullptr, 3.14, {event_id1}, {event_id4});
-  EXPECT_TRUE(ct.Copy(event_id1));
-  EXPECT_FALSE(ct.Copy(event_id2));
-  EXPECT_FALSE(ct.Remove(event_id3));
-  EXPECT_TRUE(ct.Remove(event_id4));
+  Secretion s(nullptr, 3.14, {event_id1}, {event_id4});
+  EXPECT_TRUE(s.Copy(event_id1));
+  EXPECT_FALSE(s.Copy(event_id2));
+  EXPECT_FALSE(s.Remove(event_id3));
+  EXPECT_TRUE(s.Remove(event_id4));
 }
 
-}  // namespace chemotaxis_test_ns
 }  // namespace bdm

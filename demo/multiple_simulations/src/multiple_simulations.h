@@ -20,9 +20,9 @@
 
 namespace bdm {
 
-// BiologyModule that divides the agent at each time step
-struct Divide : BaseBiologyModule {
-  BDM_STATELESS_BM_HEADER(Divide, BaseBiologyModule, 1);
+// Behavior that divides the agent at each time step
+struct Divide : BaseBehavior {
+  BDM_STATELESS_BEHAVIOR_HEADER(Divide, BaseBehavior, 1);
 
   Divide() {}
 
@@ -52,7 +52,7 @@ inline int Simulate(int argc, const char** argv) {
     // Create initial model
     auto* rm = sim->GetResourceManager();
     Cell* cell = new Cell(30);
-    cell->AddBiologyModule(new Divide());
+    cell->AddBehavior(new Divide());
     rm->push_back(cell);
   }
 

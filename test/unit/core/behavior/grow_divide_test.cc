@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/biology_module/grow_divide.h"
+#include "core/behavior/grow_divide.h"
 #include <typeinfo>
 #include "core/resource_manager.h"
 #include "gtest/gtest.h"
