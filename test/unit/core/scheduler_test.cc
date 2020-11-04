@@ -47,7 +47,7 @@ class SchedulerTest : public ::testing::Test {
     return &(env_->boxes_);
   }
 
-  SimObjectVector<SoHandle>* GetSuccessors() { return &(env_->successors_); }
+  AgentVector<AgentHandle>* GetSuccessors() { return &(env_->successors_); }
 
  private:
   Scheduler* scheduler_ = nullptr;
@@ -70,15 +70,15 @@ TEST_F(SchedulerTest, NoRestoreFile) {
   TestSchedulerRestore scheduler;
   scheduler.Simulate(100);
   EXPECT_EQ(100u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 
   scheduler.Simulate(100);
   EXPECT_EQ(200u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 
   scheduler.Simulate(100);
   EXPECT_EQ(300u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 }
 
 TEST_F(SchedulerTest, Restore) { RunRestoreTest(); }
@@ -136,10 +136,10 @@ TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
   EXPECT_FALSE(env->HasGrown());
 }
 
-struct TestOp : public SimObjectOperationImpl {
+struct TestOp : public AgentOperationImpl {
   BDM_OP_HEADER(TestOp);
 
-  void operator()(SimObject* so) override { counter++; }
+  void operator()(Agent* agent) override { counter++; }
 
   uint64_t counter;
 };
@@ -186,9 +186,9 @@ TEST_F(SchedulerTest, OperationManagement) {
   EXPECT_EQ(20u, op2_impl->counter);
 }
 
-struct CpuOp : public SimObjectOperationImpl {
+struct CpuOp : public AgentOperationImpl {
   BDM_OP_HEADER(CpuOp);
-  void operator()(SimObject* so) override {}
+  void operator()(Agent* agent) override {}
 };
 
 BDM_REGISTER_OP(CpuOp, "cpu_op", kCpu)
@@ -300,7 +300,7 @@ TEST_F(SchedulerTest, OperationImpl) {
   delete multi_op;
 }
 
-struct ComplexStateOp : public SimObjectOperationImpl {
+struct ComplexStateOp : public AgentOperationImpl {
   BDM_OP_HEADER(ComplexStateOp);
   class A {
    public:
@@ -320,7 +320,7 @@ struct ComplexStateOp : public SimObjectOperationImpl {
     }
     b_ = other.b_;
   }
-  void operator()(SimObject* so) override {}
+  void operator()(Agent* agent) override {}
 
   bool b_ = false;
   std::vector<A*> a_vec_;
@@ -431,16 +431,16 @@ TEST_F(SchedulerTest, ScheduleOrder) {
   auto* scheduler = sim.GetScheduler();
   sim.Simulate(1);
 
-  std::vector<std::string> so_ops = {
+  std::vector<std::string> agent_ops = {
       "update run displacement", "bound space",
       "biology module",          "displacement",
       "discretization",          "distribute run displacement info"};
   std::vector<std::string> sa_ops = {"diffusion"};
 
   int i = 0;
-  ASSERT_EQ(so_ops.size(), scheduler->GetListOfScheduledSimObjectOps().size());
-  for (auto& so_op_name : scheduler->GetListOfScheduledSimObjectOps()) {
-    EXPECT_EQ(so_ops[i], so_op_name);
+  ASSERT_EQ(agent_ops.size(), scheduler->GetListOfScheduledAgentOps().size());
+  for (auto& agent_op_name : scheduler->GetListOfScheduledAgentOps()) {
+    EXPECT_EQ(agent_ops[i], agent_op_name);
     i++;
   }
   i = 0;

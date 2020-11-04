@@ -14,7 +14,7 @@ keywords:
   -event
 ---
 
-If a new simulation object (e.g. Cell) is created during a simulation we denote
+If a new agent (e.g. Cell) is created during a simulation we denote
 it as an Event.
 
 An example is cell division: A mother cell splits into two daughter cells. By
@@ -31,8 +31,8 @@ Further examples are:
 ## Stages
 An event has two stages:
 
-  1. Create new simulation object(s)
-  2. Modify the simulation object which triggered the event (optional).
+  1. Create new agent(s)
+  2. Modify the agent which triggered the event (optional).
 
 ## Cell Division Example
 
@@ -64,7 +64,7 @@ the following signature:
 
 ## Extending Simulation Objects
 
-This architecture is important to support extension of simulation objects.
+This architecture is important to support extension of agents.
 Let's assume that you extend the Cell class to add a new data member
 `my_new_data_member_`.
 
@@ -85,13 +85,13 @@ ratio defined in `CellDivisionEvent`.
 ```cpp
 class MyCell : public Cell {
  public:
-  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
+  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
        : Base(event, other, new_oid) {
     new_data_member_ = mother->new_data_member_ * event.volume_ratio;
   }
 
-  void EventHandler((const Event& event, SimObject* other_1,
-                    SimObject* other_2 = nullptr) override {
+  void EventHandler((const Event& event, Agent* other_1,
+                    Agent* other_2 = nullptr) override {
     if (auto* daughter_2 = dynamic_cast<MyCell*>(other_2)) {
       new_data_member_ -= daughter_2->new_data_member_;
     }
@@ -122,6 +122,6 @@ The event handler performs the transition from mother to daughter 1.
   * It is possible to create a default constructor and event handler that is
     called for every event. This is useful for example if you extend a simulation
     object, but do not add additional data members.
-  * Events can create more than one simulation object. e.g. NeuriteBranchingEvent
-  * The type of the simulation object that triggers the event and newly created
+  * Events can create more than one agent. e.g. NeuriteBranchingEvent
+  * The type of the agent that triggers the event and newly created
     objects can be different. e.g. NewNeuriteExtensionEvent

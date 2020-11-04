@@ -28,7 +28,7 @@ namespace bdm {
 
 /// This module simulates expression of genes and contains all required
 /// additional variables for tracking of the concentration of proteins.
-/// Thus, it can work with any type of simulation object.
+/// Thus, it can work with any type of agent.
 /// It has the implementation of Euler and Runge-Kutta numerical methods
 /// for solving ODE. Both methods implemented inside the body of method Run().
 /// The user determines which method is picked in particular simulation
@@ -73,7 +73,7 @@ struct RegulateGenes : public BaseBiologyModule {
 
   /// Method Run() contains the implementation for Runge-Khutta and Euler
   /// methods for solving ODE.
-  void Run(SimObject* sim_object) override {
+  void Run(Agent* agent) override {
     auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
     auto* scheduler = sim->GetScheduler();

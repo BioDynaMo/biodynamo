@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_PARAVIEW_VTK_SIM_OBJECTS_H_
-#define CORE_VISUALIZATION_PARAVIEW_VTK_SIM_OBJECTS_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_VTK_AGENTS_H_
+#define CORE_VISUALIZATION_PARAVIEW_VTK_AGENTS_H_
 
 // std
 #include <string>
@@ -23,7 +23,7 @@
 #include <vtkUnstructuredGrid.h>
 // BioDynaMo
 #include "core/shape.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 
 class TClass;
 
@@ -32,17 +32,17 @@ namespace bdm {
 class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
 
 /// Adds additional data members to the `vtkUnstructuredGrid` required by
-/// `ParaviewAdaptor` to visualize simulation objects.
-class VtkSimObjects {
+/// `ParaviewAdaptor` to visualize agents.
+class VtkAgents {
  public:
-  VtkSimObjects(const char* type_name, vtkCPDataDescription* data_description);
+  VtkAgents(const char* type_name, vtkCPDataDescription* data_description);
 
-  ~VtkSimObjects();
+  ~VtkAgents();
 
   vtkUnstructuredGrid* GetData(uint64_t idx);
   Shape GetShape() const;
   TClass* GetTClass();
-  void Update(const std::vector<SimObject*>* sim_objects);
+  void Update(const std::vector<Agent*>* agents);
   void WriteToFile(uint64_t step) const;
 
  private:
@@ -52,10 +52,10 @@ class VtkSimObjects {
   Shape shape_;
 
   TClass* FindTClass();
-  void InitializeDataMembers(SimObject* so,
+  void InitializeDataMembers(Agent* agent,
                              std::vector<std::string>* data_members);
   void UpdateMappedDataArrays(uint64_t tid,
-                              const std::vector<SimObject*>* sim_objects,
+                              const std::vector<Agent*>* agents,
                               uint64_t start, uint64_t end);
 
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
@@ -63,4 +63,4 @@ class VtkSimObjects {
 
 }  // namespace bdm
 
-#endif  // CORE_VISUALIZATION_PARAVIEW_VTK_SIM_OBJECTS_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_VTK_AGENTS_H_

@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_SIM_OBJECT_SO_POINTER_H_
-#define CORE_SIM_OBJECT_SO_POINTER_H_
+#ifndef CORE_AGENT_AGENT_POINTER_H_
+#define CORE_AGENT_AGENT_POINTER_H_
 
 #include <cstdint>
 #include <limits>
@@ -21,44 +21,44 @@
 #include <type_traits>
 
 #include "core/execution_context/in_place_exec_ctxt.h"
-#include "core/sim_object/so_uid.h"
+#include "core/agent/agent_uid.h"
 #include "core/simulation.h"
 #include "core/util/root.h"
 
 namespace bdm {
 
-class SimObject;
+class Agent;
 
-/// Simulation object pointer. Required to point to a simulation object with
+/// Simulation object pointer. Required to point to a agent with
 /// throughout the whole simulation. Raw pointers cannot be used, because
 /// a sim object might be copied to a different NUMA domain, or if it resides
 /// on a different address space in case of a distributed runtime.
-/// Benefit compared to SoHandle is, that the compiler knows
+/// Benefit compared to AgentHandle is, that the compiler knows
 /// the type returned by `Get` and can therefore inline the code from the callee
 /// and perform optimizations.
-/// @tparam TSimObject simulation object type
-template <typename TSimObject>
-class SoPointer {
+/// @tparam TAgent agent type
+template <typename TAgent>
+class AgentPointer {
  public:
-  explicit SoPointer(const SoUid& uid) : uid_(uid) {}
+  explicit AgentPointer(const AgentUid& uid) : uid_(uid) {}
 
-  /// constructs an SoPointer object representing a nullptr
-  SoPointer() {}
+  /// constructs an AgentPointer object representing a nullptr
+  AgentPointer() {}
 
-  virtual ~SoPointer() {}
+  virtual ~AgentPointer() {}
 
   uint64_t GetUid() const { return uid_; }
 
-  /// Equals operator that enables the following statement `so_ptr == nullptr;`
-  bool operator==(std::nullptr_t) const { return uid_ == SoUid(); }
+  /// Equals operator that enables the following statement `agent_ptr == nullptr;`
+  bool operator==(std::nullptr_t) const { return uid_ == AgentUid(); }
 
-  /// Not equal operator that enables the following statement `so_ptr !=
+  /// Not equal operator that enables the following statement `agent_ptr !=
   /// nullptr;`
   bool operator!=(std::nullptr_t) const { return !this->operator==(nullptr); }
 
-  bool operator==(const SoPointer& other) const { return uid_ == other.uid_; }
+  bool operator==(const AgentPointer& other) const { return uid_ == other.uid_; }
 
-  bool operator!=(const SoPointer& other) const { return uid_ != other.uid_; }
+  bool operator!=(const AgentPointer& other) const { return uid_ != other.uid_; }
 
   template <typename TSo>
   bool operator==(const TSo* other) const {
@@ -71,65 +71,65 @@ class SoPointer {
   }
 
   /// Assignment operator that changes the internal representation to nullptr.
-  /// Makes the following statement possible `so_ptr = nullptr;`
-  SoPointer& operator=(std::nullptr_t) {
-    uid_ = SoUid();
+  /// Makes the following statement possible `agent_ptr = nullptr;`
+  AgentPointer& operator=(std::nullptr_t) {
+    uid_ = AgentUid();
     return *this;
   }
 
-  TSimObject* operator->() {
+  TAgent* operator->() {
     assert(*this != nullptr);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return Cast<SimObject, TSimObject>(ctxt->GetSimObject(uid_));
+    return Cast<Agent, TAgent>(ctxt->GetAgent(uid_));
   }
 
-  const TSimObject* operator->() const {
+  const TAgent* operator->() const {
     assert(*this != nullptr);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return Cast<const SimObject, const TSimObject>(
-        ctxt->GetConstSimObject(uid_));
+    return Cast<const Agent, const TAgent>(
+        ctxt->GetConstAgent(uid_));
   }
 
-  friend std::ostream& operator<<(std::ostream& str, const SoPointer& so_ptr) {
-    str << "{ uid: " << so_ptr.uid_ << "}";
+  friend std::ostream& operator<<(std::ostream& str, const AgentPointer& agent_ptr) {
+    str << "{ uid: " << agent_ptr.uid_ << "}";
     return str;
   }
 
-  TSimObject& operator*() { return *(this->operator->()); }
+  TAgent& operator*() { return *(this->operator->()); }
 
-  const TSimObject& operator*() const { return *(this->operator->()); }
+  const TAgent& operator*() const { return *(this->operator->()); }
 
   operator bool() const { return *this != nullptr; }
 
-  TSimObject* Get() { return this->operator->(); }
+  TAgent* Get() { return this->operator->(); }
 
-  const TSimObject* Get() const { return this->operator->(); }
+  const TAgent* Get() const { return this->operator->(); }
 
  private:
-  SoUid uid_;
+  AgentUid uid_;
 
   template <typename TFrom, typename TTo>
   typename std::enable_if<std::is_base_of<TFrom, TTo>::value, TTo*>::type Cast(
-      TFrom* so) const {
-    return static_cast<TTo*>(so);
+      TFrom* agent) const {
+    return static_cast<TTo*>(agent);
   }
 
   template <typename TFrom, typename TTo>
   typename std::enable_if<!std::is_base_of<TFrom, TTo>::value, TTo*>::type Cast(
-      TFrom* so) const {
-    return dynamic_cast<TTo*>(so);
+      TFrom* agent) const {
+    return dynamic_cast<TTo*>(agent);
   }
 
-  BDM_CLASS_DEF(SoPointer, 2);
+  BDM_CLASS_DEF(AgentPointer, 2);
 };
 
 template <typename T>
-struct is_so_ptr {
+struct is_agent_ptr {
   static constexpr bool value = false;  // NOLINT
 };
 
 template <typename T>
-struct is_so_ptr<SoPointer<T>> {
+struct is_agent_ptr<AgentPointer<T>> {
   static constexpr bool value = true;  // NOLINT
 };
 
@@ -137,13 +137,13 @@ namespace detail {
 
 struct ExtractUid {
   template <typename T>
-  static typename std::enable_if<is_so_ptr<T>::value, uint64_t>::type GetUid(
+  static typename std::enable_if<is_agent_ptr<T>::value, uint64_t>::type GetUid(
       const T& t) {
     return t.GetUid();
   }
 
   template <typename T>
-  static typename std::enable_if<!is_so_ptr<T>::value, uint64_t>::type GetUid(
+  static typename std::enable_if<!is_agent_ptr<T>::value, uint64_t>::type GetUid(
       const T& t) {
     return 0;  // std::numeric_limits<uint64_t>::max();
   }
@@ -153,4 +153,4 @@ struct ExtractUid {
 
 }  // namespace bdm
 
-#endif  // CORE_SIM_OBJECT_SO_POINTER_H_
+#endif  // CORE_AGENT_AGENT_POINTER_H_

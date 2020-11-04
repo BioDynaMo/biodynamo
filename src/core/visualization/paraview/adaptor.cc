@@ -19,7 +19,7 @@
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
 #include "core/visualization/paraview/vtk_diffusion_grid.h"
-#include "core/visualization/paraview/vtk_sim_objects.h"
+#include "core/visualization/paraview/vtk_agents.h"
 
 #ifndef __ROOTCLING__
 
@@ -48,7 +48,7 @@ namespace bdm {
 // ----------------------------------------------------------------------------
 struct ParaviewAdaptor::ParaviewImpl {
   vtkCPProcessor* g_processor_ = nullptr;
-  std::unordered_map<std::string, VtkSimObjects*> vtk_sim_objects_;
+  std::unordered_map<std::string, VtkAgents*> vtk_agents_;
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids_;
   vtkCPDataDescription* data_description_ = nullptr;
 };
@@ -84,7 +84,7 @@ ParaviewAdaptor::~ParaviewAdaptor() {
     if (impl_->data_description_ != nullptr) {
       impl_->data_description_->Delete();
     }
-    for (auto& el : impl_->vtk_sim_objects_) {
+    for (auto& el : impl_->vtk_agents_) {
       delete el.second;
     }
     for (auto& el : impl_->vtk_dgrids_) {
@@ -153,9 +153,9 @@ void ParaviewAdaptor::Initialize() {
   }
   impl_->data_description_->SetTimeData(0, 0);
 
-  for (auto& pair : param->visualize_sim_objects_) {
-    impl_->vtk_sim_objects_[pair.first.c_str()] =
-        new VtkSimObjects(pair.first.c_str(), impl_->data_description_);
+  for (auto& pair : param->visualize_agents_) {
+    impl_->vtk_agents_[pair.first.c_str()] =
+        new VtkAgents(pair.first.c_str(), impl_->data_description_);
   }
   for (auto& entry : param->visualize_diffusion_) {
     impl_->vtk_dgrids_[entry.name_] =
@@ -180,7 +180,7 @@ void ParaviewAdaptor::ExportVisualization() {
 
   auto step = impl_->data_description_->GetTimeStep();
 
-  for (auto& el : impl_->vtk_sim_objects_) {
+  for (auto& el : impl_->vtk_agents_) {
     el.second->WriteToFile(step);
   }
 
@@ -191,12 +191,12 @@ void ParaviewAdaptor::ExportVisualization() {
 
 // ----------------------------------------------------------------------------
 void ParaviewAdaptor::CreateVtkObjects() {
-  BuildSimObjectsVTKStructures();
+  BuildAgentsVTKStructures();
   BuildDiffusionGridVTKStructures();
   if (impl_->data_description_->GetUserData() == nullptr) {
     vtkNew<vtkStringArray> json;
     json->SetName("metadata");
-    json->InsertNextValue(GenerateSimulationInfoJson(impl_->vtk_sim_objects_,
+    json->InsertNextValue(GenerateSimulationInfoJson(impl_->vtk_agents_,
                                                      impl_->vtk_dgrids_));
     vtkNew<vtkFieldData> field;
     field->AddArray(json);
@@ -205,12 +205,12 @@ void ParaviewAdaptor::CreateVtkObjects() {
 }
 
 // ----------------------------------------------------------------------------
-void ParaviewAdaptor::BuildSimObjectsVTKStructures() {
+void ParaviewAdaptor::BuildAgentsVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  for (auto& pair : impl_->vtk_sim_objects_) {
-    const auto& sim_objects =
+  for (auto& pair : impl_->vtk_agents_) {
+    const auto& agents =
         rm->GetTypeIndex()->GetType(pair.second->GetTClass());
-    pair.second->Update(&sim_objects);
+    pair.second->Update(&agents);
   }
 }
 
@@ -233,7 +233,7 @@ void ParaviewAdaptor::WriteSimulationInfoJsonFile() {
     std::ofstream ofstr;
     auto* sim = Simulation::GetActive();
     ofstr.open(Concat(sim->GetOutputDir(), "/", kSimulationInfoJson));
-    ofstr << GenerateSimulationInfoJson(impl_->vtk_sim_objects_,
+    ofstr << GenerateSimulationInfoJson(impl_->vtk_agents_,
                                         impl_->vtk_dgrids_);
     ofstr.close();
     simulation_info_json_generated_ = true;

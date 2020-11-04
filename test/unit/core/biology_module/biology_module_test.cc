@@ -33,7 +33,7 @@ struct TestBiologyModule : public BaseBiologyModule {
 
   virtual ~TestBiologyModule() {}
 
-  void Run(SimObject* so) override {}
+  void Run(Agent* agent) override {}
 
   BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
                                  uint64_t new_oid = 0) const override {

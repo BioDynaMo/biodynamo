@@ -65,7 +65,7 @@ Simulation simulation(argc, argv, set_param);
 
 Afterwards, we obtain a reference to a few important objects.
 
-  * `ResourceManager` will store our simulation objects.
+  * `ResourceManager` will store our agents.
   * `Random` is a random number generator.
   * `Param` holds our simulation parameters.
 
@@ -118,7 +118,7 @@ struct GrowthModule : public BaseBiologyModule {
   GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0)
       : BaseBiologyModule(event, other, new_oid) {}
 
-  void Run(SimObject* so) override {
+  void Run(Agent* so) override {
     // code to be executed at each simulation step
   }
 };
@@ -160,9 +160,9 @@ export = false
 interval = 2
 ```
 
-Afterwards, we have to define which simulation objects will be considered for visualization:
+Afterwards, we have to define which agents will be considered for visualization:
 ```cpp
-[[visualize_sim_object]]
+[[visualize_agent]]
 name = "Cell"
 ```
 
@@ -173,7 +173,7 @@ auto set_param = [](auto* param) {
   param->insitu_visualization_ = true; // allows live visualisation
   param->export_visualization_ = true; // allows export of visualisation files
   param->visualization_interval_ = 2; // export visualisation files every 2 steps
-  param->visualize_sim_objects_["Cell"] = std::set<std::string>{ "" };
+  param->visualize_agents_["Cell"] = std::set<std::string>{ "" };
 }
 Simulation simulation(argc, argv, set_param);
 ```
@@ -235,14 +235,14 @@ We will do that directly in our `tutorial.h` file by writing:
 // members: cell_color and can_divide
 class MyCell : public Cell {  // our object extends the Cell object
                               // create the header with our new data member
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+  BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
   explicit MyCell(const Double3& position) : Base(position) {}
 
   /// If MyCell divides, daughter 2 copies the data members from the mother
-  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
+  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {
     if (auto* mother = dynamic_cast<MyCell*>(other)) {
       cell_color_ = mother->cell_color_;
@@ -250,8 +250,8 @@ class MyCell : public Cell {  // our object extends the Cell object
   }
 
   /// If a cell divides, daughter keeps the same state from its mother.
-  void EventHandler(const Event& event, SimObject* other1,
-                    SimObject* other2 = nullptr) override {
+  void EventHandler(const Event& event, Agent* other1,
+                    Agent* other2 = nullptr) override {
     Base::EventHandler(event, other1, other2);
   }
 
@@ -283,9 +283,9 @@ Do the same for the regular cells, setting the value depending on the y axis val
 cell->SetCellColour((int)(y_coord / param->max_bound_ * 6)); // will vary from 0 to 5. so 6 different layers depending on y_coord
 ```
 
-This new simulation is now functional, however before running it, we need to tell BioDynaMo to communicate all `cell_color_` values. Do do that, we will modify the configuration file `bdm.toml` by modifying the `visualize_sim_object`
+This new simulation is now functional, however before running it, we need to tell BioDynaMo to communicate all `cell_color_` values. Do do that, we will modify the configuration file `bdm.toml` by modifying the `visualize_agent`
 ```cpp
-[[visualize_sim_object]]
+[[visualize_agent]]
 name = "MyCell"
 additional_data_members = [ "cell_color_" ]
 ```
@@ -348,7 +348,7 @@ if (random->Uniform(0, 1) < 0.8) {
 Cells will now have only 80% chance to divide. However, it will have 80% chance to divide at every simulation step! We want that if a cell doesn't divide, it will not be able to divide any more.
 To do that, we will create a new `MyCell` boolean attribute called `can_divide_`, like we did for `cell_colour_` attribute (see chapter 3.2).
 ```cpp
-BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+BDM_AGENT_HEADER(MyCell, Cell, 1);
 ```
 
 and create two methods, `SetCanDivide()` and `GetCanDivide()`.

@@ -17,11 +17,11 @@
 
 #include "core/biology_module/biology_module.h"
 #include "core/diffusion_grid.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 
 namespace bdm {
 
-/// Secrete substance at SimObject position
+/// Secrete substance at Agent position
 struct Secretion : public BaseBiologyModule {
   BDM_BM_HEADER(Secretion, BaseBiologyModule, 1);
 
@@ -40,8 +40,8 @@ struct Secretion : public BaseBiologyModule {
 
   virtual ~Secretion() {}
 
-  void Run(SimObject* so) override {
-    auto& secretion_position = so->GetPosition();
+  void Run(Agent* agent) override {
+    auto& secretion_position = agent->GetPosition();
     dgrid_->IncreaseConcentrationBy(secretion_position, quantity_);
   }
 

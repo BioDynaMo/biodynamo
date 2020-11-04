@@ -22,7 +22,7 @@
 #include <string>
 
 #include "core/environment/environment.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"
 #include "unit/test_util/test_util.h"
@@ -68,7 +68,7 @@ inline void RunRestoreTest() {
     SimulationBackup backup(ROOTFILE, "");
     backup.Backup(149);
     rm->Clear();
-    EXPECT_EQ(0u, rm->GetNumSimObjects());
+    EXPECT_EQ(0u, rm->GetNumAgents());
   }
 
   // start restore validation
@@ -80,13 +80,13 @@ inline void RunRestoreTest() {
   // should be ignored
   scheduler.Simulate(100);
   EXPECT_EQ(0u, scheduler.execute_calls);
-  EXPECT_EQ(0u, rm->GetNumSimObjects());
+  EXPECT_EQ(0u, rm->GetNumAgents());
 
   // Restore should happen within this call
   scheduler.Simulate(100);
   //   only 51 steps should be simulated
   EXPECT_EQ(51u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 
   // add element to see if if restore happens again
   rm->push_back(new Cell());
@@ -94,7 +94,7 @@ inline void RunRestoreTest() {
   // normal simulation - no restore
   scheduler.Simulate(100);
   EXPECT_EQ(151u, scheduler.execute_calls);
-  EXPECT_EQ(2u, rm->GetNumSimObjects());
+  EXPECT_EQ(2u, rm->GetNumAgents());
 
   remove(ROOTFILE);
 }

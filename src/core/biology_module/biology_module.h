@@ -16,7 +16,7 @@
 #define CORE_BIOLOGY_MODULE_BIOLOGY_MODULE_H_
 
 #include "core/event/event.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 #include "core/util/type.h"
 
 namespace bdm {
@@ -67,7 +67,7 @@ struct BaseBiologyModule {
   virtual void EventHandler(const Event& event, BaseBiologyModule* other1,
                             BaseBiologyModule* other2 = nullptr) {}
 
-  virtual void Run(SimObject* so) = 0;
+  virtual void Run(Agent* agent) = 0;
 
   /// Function returns whether the biology module should be copied for the
   /// given event.

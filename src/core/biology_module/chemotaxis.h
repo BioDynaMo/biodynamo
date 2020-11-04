@@ -17,7 +17,7 @@
 
 #include "core/biology_module/biology_module.h"
 #include "core/diffusion_grid.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 
 namespace bdm {
 
@@ -40,8 +40,8 @@ struct Chemotaxis : public BaseBiologyModule {
 
   virtual ~Chemotaxis() {}
 
-  void Run(SimObject* so) override {
-    auto* cell = bdm_static_cast<Cell*>(so);
+  void Run(Agent* agent) override {
+    auto* cell = bdm_static_cast<Cell*>(agent);
     auto& position = cell->GetPosition();
     Double3 gradient;
     dgrid_->GetGradient(position, &gradient);  // returns normalized gradient

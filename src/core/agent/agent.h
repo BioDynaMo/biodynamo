@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_SIM_OBJECT_SIM_OBJECT_H_
-#define CORE_SIM_OBJECT_SIM_OBJECT_H_
+#ifndef CORE_AGENT_AGENT_H_
+#define CORE_AGENT_AGENT_H_
 
 #include <algorithm>
 #include <cassert>
@@ -29,38 +29,38 @@
 #include "core/container/inline_vector.h"
 #include "core/container/math_array.h"
 #include "core/shape.h"
-#include "core/sim_object/so_pointer.h"
-#include "core/sim_object/so_uid.h"
-#include "core/sim_object/so_visitor.h"
+#include "core/agent/agent_pointer.h"
+#include "core/agent/agent_uid.h"
+#include "core/agent/agent_visitor.h"
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
 
 namespace bdm {
 
-/// Macro to insert required boilerplate code into simulation object
-/// @param   class_name scalar class name of the simulation object
-/// @param   base_class scalar class name of the base simulation object
+/// Macro to insert required boilerplate code into agent
+/// @param   class_name scalar class name of the agent
+/// @param   base_class scalar class name of the base agent
 /// @param   class_version_id required for ROOT I/O (see ROOT BDM_CLASS_DEF
 ///          Macro).
 ///          Every time the layout of the class is changed, class_version_id
 ///          must be incremented by one. The class_version_id should be greater
 ///          or equal to 1.
 /// @param  ...: List of all data members of this class
-#define BDM_SIM_OBJECT_HEADER(class_name, base_class, class_version_id)      \
+#define BDM_AGENT_HEADER(class_name, base_class, class_version_id)      \
  public:                                                                     \
   using Base = base_class;                                                   \
                                                                              \
   explicit class_name(TRootIOCtor* io_ctor) {}                               \
                                                                              \
   /** Create a new instance of this object using the default constructor. */ \
-  SimObject* GetInstance(const Event& event, SimObject* other,               \
+  Agent* GetInstance(const Event& event, Agent* other,               \
                          uint64_t new_oid = 0) const override {              \
     return new class_name(event, other, new_oid);                            \
   }                                                                          \
                                                                              \
   /** Create a copy of this object. */                                       \
-  SimObject* GetCopy() const override { return new class_name(*this); }      \
+  Agent* GetCopy() const override { return new class_name(*this); }      \
                                                                              \
   const char* GetTypeName() const override { return #class_name; }           \
                                                                              \
@@ -78,27 +78,27 @@ namespace bdm {
 struct Event;
 struct BaseBiologyModule;
 
-/// Contains code required by all simulation objects
-class SimObject {
+/// Contains code required by all agents
+class Agent {
  public:
-  SimObject();
+  Agent();
 
-  SimObject(const Event& event, SimObject* other, uint64_t new_oid = 0);
+  Agent(const Event& event, Agent* other, uint64_t new_oid = 0);
 
-  explicit SimObject(TRootIOCtor* io_ctor);
+  explicit Agent(TRootIOCtor* io_ctor);
 
-  SimObject(const SimObject& other);
+  Agent(const Agent& other);
 
-  virtual ~SimObject();
+  virtual ~Agent();
 
   /// Create a new instance of this object using the default constructor.
-  virtual SimObject* GetInstance(const Event& event, SimObject* other,
+  virtual Agent* GetInstance(const Event& event, Agent* other,
                                  uint64_t new_oid = 0) const = 0;
 
   /// Create a copy of this object.
-  virtual SimObject* GetCopy() const = 0;
+  virtual Agent* GetCopy() const = 0;
 
-  virtual const char* GetTypeName() const { return "SimObject"; }
+  virtual const char* GetTypeName() const { return "Agent"; }
 
   virtual Shape GetShape() const = 0;
 
@@ -112,7 +112,7 @@ class SimObject {
 
   void AssignNewUid();
 
-  const SoUid& GetUid() const;
+  const AgentUid& GetUid() const;
 
   Spinlock* GetLock() { return &lock_; }
 
@@ -120,8 +120,8 @@ class SimObject {
   /// will be called before the operations are executed for this simulation
   /// object.\n
   /// Subclasses define the critical region by adding the locks of all
-  /// simulation objects that must not be processed in parallel. \n
-  /// Don't forget to add the lock of the current simulation object.\n
+  /// agents that must not be processed in parallel. \n
+  /// Don't forget to add the lock of the current agent.\n
   /// \see `Param::thread_safety_mechanism_`
   virtual void CriticalRegion(std::vector<Spinlock*>* locks) {}
 
@@ -150,12 +150,12 @@ class SimObject {
 
   bool RunDisplacement() const { return run_displacement_; }
 
-  /// Return simulation object pointer
-  template <typename TSimObject = SimObject>
-  SoPointer<TSimObject> GetSoPtr() const {
-    static_assert(!std::is_pointer<TSimObject>::value,
+  /// Return agent pointer
+  template <typename TAgent = Agent>
+  AgentPointer<TAgent> GetAgentPtr() const {
+    static_assert(!std::is_pointer<TAgent>::value,
                   "Cannot be of pointer type!");
-    return SoPointer<TSimObject>(uid_);
+    return AgentPointer<TAgent>(uid_);
   }
 
   // ---------------------------------------------------------------------------
@@ -187,8 +187,8 @@ class SimObject {
 
   void RemoveFromSimulation() const;
 
-  virtual void EventHandler(const Event& event, SimObject* other1,
-                            SimObject* other2 = nullptr);
+  virtual void EventHandler(const Event& event, Agent* other1,
+                            Agent* other2 = nullptr);
 
   void* operator new(size_t size) {  // NOLINT
     auto* mem_mgr = Simulation::GetActive()->GetMemoryManager();
@@ -210,7 +210,7 @@ class SimObject {
 
  protected:
   /// unique id
-  SoUid uid_;
+  AgentUid uid_;
   /// Grid box index
   uint32_t box_idx_ = 0;
   /// collection of biology modules which define the internal behavior
@@ -237,14 +237,14 @@ class SimObject {
   /// @brief Function to invoke the EventHandler of the biology module or remove
   ///                  it from `current`.
   /// Forwards the event handler call to each biology modules of the triggered
-  /// simulation object and removes biology modules if they are flagged.
+  /// agent and removes biology modules if they are flagged.
   void BiologyModuleEventHandler(const Event& event,
                                  decltype(biology_modules_)* other1,
                                  decltype(biology_modules_)* other2);
 
-  BDM_CLASS_DEF(SimObject, 1)
+  BDM_CLASS_DEF(Agent, 1)
 };
 
 }  // namespace bdm
 
-#endif  // CORE_SIM_OBJECT_SIM_OBJECT_H_
+#endif  // CORE_AGENT_AGENT_H_

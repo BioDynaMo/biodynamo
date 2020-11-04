@@ -18,16 +18,16 @@
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/param/param.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 #include "core/simulation.h"
 
 namespace bdm {
 
-inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
+inline void ApplyBoundingBox(Agent* agent, double lb, double rb) {
   // Need to create a small distance from the positive edge of each dimension;
   // otherwise it will fall out of the boundary of the simulation space
   double eps = 1e-10;
-  auto pos = sim_object->GetPosition();
+  auto pos = agent->GetPosition();
   bool updated = false;
   for (int i = 0; i < 3; i++) {
     if (pos[i] < lb) {
@@ -39,19 +39,19 @@ inline void ApplyBoundingBox(SimObject* sim_object, double lb, double rb) {
     }
   }
   if (updated) {
-    sim_object->SetPosition(pos);
+    agent->SetPosition(pos);
   }
 }
 
-/// Keeps the simulation objects contained within the bounds as defined in
+/// Keeps the agents contained within the bounds as defined in
 /// param.h
-struct BoundSpace : public SimObjectOperationImpl {
+struct BoundSpace : public AgentOperationImpl {
   BDM_OP_HEADER(BoundSpace);
 
-  void operator()(SimObject* sim_object) override {
+  void operator()(Agent* agent) override {
     auto* param = Simulation::GetActive()->GetParam();
     if (param->bound_space_) {
-      ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
+      ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
     }
   }
 };

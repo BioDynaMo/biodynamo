@@ -2,6 +2,6 @@
 export = true
 interval = 2
 
-[[visualize_sim_object]]
+[[visualize_agent]]
   name = "MyCell"
   additional_data_members = [ "cell_color_" ]

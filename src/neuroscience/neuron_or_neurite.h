@@ -17,8 +17,8 @@
 
 #include <array>
 #include "core/container/math_array.h"
-#include "core/sim_object/sim_object.h"
-#include "core/sim_object/so_pointer.h"
+#include "core/agent/agent.h"
+#include "core/agent/agent_pointer.h"
 
 namespace bdm {
 
@@ -35,18 +35,18 @@ class NeuronOrNeurite {
  public:
   virtual ~NeuronOrNeurite();
 
-  virtual const SoUid& GetUid() const = 0;
+  virtual const AgentUid& GetUid() const = 0;
   virtual Spinlock* GetLock() = 0;
 
-  SoPointer<NeuronOrNeurite> GetNeuronOrNeuriteSoPtr() const;
+  AgentPointer<NeuronOrNeurite> GetNeuronOrNeuriteAgentPtr() const;
 
   bool IsNeuronSoma() const;
 
   bool IsNeuriteElement() const;
 
-  virtual Double3 OriginOf(const SoUid& daughter_uid) const = 0;
+  virtual Double3 OriginOf(const AgentUid& daughter_uid) const = 0;
 
-  virtual void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) = 0;
+  virtual void RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) = 0;
 
   virtual void UpdateDependentPhysicalVariables() = 0;
 

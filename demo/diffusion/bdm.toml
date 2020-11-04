@@ -2,5 +2,5 @@
 export = true
 interval = 2
 
-[[visualize_sim_object]]
+[[visualize_agent]]
   name = "Cell"

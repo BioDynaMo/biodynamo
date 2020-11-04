@@ -66,7 +66,7 @@ in the working directory and add your configuration. You can find a sample below
 [visualization]
 export = true
 
-[[visualize_sim_object]]
+[[visualize_agent]]
 name = "Cell"
 additional_data_members = [ "density_" ]
 ```
@@ -80,7 +80,7 @@ in the working directory and add your configuration. You can find a sample below
 {
   "bdm::Param": {
     "export_visualization_": true,
-    "visualize_sim_objects_": {
+    "visualize_agents_": {
       "Cell": ["density_"]
     }
   }

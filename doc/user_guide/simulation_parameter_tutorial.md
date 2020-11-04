@@ -141,7 +141,7 @@ Have a look at https://biodynamo.org/bioapi/ for more details about each paramet
         "calculate_gradients_": true,
         "compute_target_": "cpu",
         "debug_numa_": false,
-        "detect_static_sim_objects_": false,
+        "detect_static_agents_": false,
         "diffusion_type_": "Euler",
         "export_visualization_": false,
         "leaking_edges_": true,
@@ -165,8 +165,8 @@ Have a look at https://biodynamo.org/bioapi/ for more details about each paramet
         "simulation_max_displacement_": 3,
         "simulation_step_freq_": 10,
         "simulation_time_step_": 0.01,
-        "souid_defragmentation_high_watermark_": 0.9,
-        "souid_defragmentation_low_watermark_": 0.5,
+        "agent_uid_defragmentation_high_watermark_": 0.9,
+        "agent_uid_defragmentation_low_watermark_": 0.5,
         "statistics_": false,
         "thread_safety_mechanism_": 1,
         "use_bdm_mem_mgr_": true,
@@ -174,7 +174,7 @@ Have a look at https://biodynamo.org/bioapi/ for more details about each paramet
         "visualization_export_generate_pvsm_": true,
         "visualization_export_interval_": 1,
         "visualize_diffusion_": [],
-        "visualize_sim_objects_": {
+        "visualize_agents_": {
             "_typename": "map<string,set<string> >"
         }
     },
@@ -320,7 +320,7 @@ General
 Command                       : ./parameters --inline-config { "bdm::SimParam": { "foo": 6.28 } } 
 Simulation name               : parameters
 Number of iterations executed : 0
-Number of simulation objects  : 0
+Number of agents  : 0
 Output directory              : output/parameters
   size                        : 4.0K
 
@@ -355,7 +355,7 @@ Parameters
         "calculate_gradients_": true,
         "compute_target_": "cpu",
         "debug_numa_": false,
-        "detect_static_sim_objects_": false,
+        "detect_static_agents_": false,
         "diffusion_type_": "Euler",
         "export_visualization_": false,
         "leaking_edges_": true,
@@ -379,8 +379,8 @@ Parameters
         "simulation_max_displacement_": 3,
         "simulation_step_freq_": 10,
         "simulation_time_step_": 1,
-        "souid_defragmentation_high_watermark_": 0.9,
-        "souid_defragmentation_low_watermark_": 0.5,
+        "agent_uid_defragmentation_high_watermark_": 0.9,
+        "agent_uid_defragmentation_low_watermark_": 0.5,
         "statistics_": true,
         "thread_safety_mechanism_": 1,
         "use_bdm_mem_mgr_": true,
@@ -388,7 +388,7 @@ Parameters
         "visualization_export_generate_pvsm_": true,
         "visualization_export_interval_": 1,
         "visualize_diffusion_": [],
-        "visualize_sim_objects_": {
+        "visualize_agents_": {
             "_typename": "map<string,set<string> >"
         }
     },

@@ -12,17 +12,17 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_CORE_SIM_OBJECT_SIM_OBJECT_TEST_H_
-#define UNIT_CORE_SIM_OBJECT_SIM_OBJECT_TEST_H_
+#ifndef UNIT_CORE_AGENT_AGENT_TEST_H_
+#define UNIT_CORE_AGENT_AGENT_TEST_H_
 
 #include <gtest/gtest.h>
 #include "core/biology_module/biology_module.h"
-#include "core/sim_object/cell.h"
-#include "core/sim_object/sim_object.h"
-#include "unit/test_util/test_sim_object.h"
+#include "core/agent/cell.h"
+#include "core/agent/agent.h"
+#include "unit/test_util/test_agent.h"
 
 namespace bdm {
-namespace sim_object_test_internal {
+namespace agent_test_internal {
 
 struct GrowthModule : public BaseBiologyModule {
   double growth_rate_ = 0.5;
@@ -57,7 +57,7 @@ struct GrowthModule : public BaseBiologyModule {
     BaseBiologyModule::EventHandler(event, other1, other2);
   }
 
-  void Run(SimObject* t) override {
+  void Run(Agent* t) override {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
 
@@ -100,9 +100,9 @@ struct MovementModule : public BaseBiologyModule {
     BaseBiologyModule::EventHandler(event, other1, other2);
   }
 
-  void Run(SimObject* so) override {
-    const auto& position = so->GetPosition();
-    so->SetPosition(position + velocity_);
+  void Run(Agent* agent) override {
+    const auto& position = agent->GetPosition();
+    agent->SetPosition(position + velocity_);
   }
 
   BDM_CLASS_DEF_OVERRIDE(MovementModule, 1);
@@ -123,19 +123,19 @@ struct RemoveModule : public BaseBiologyModule {
     return new RemoveModule(*this);
   }
 
-  void Run(SimObject* sim_object) override {
-    sim_object->RemoveBiologyModule(this);
+  void Run(Agent* agent) override {
+    agent->RemoveBiologyModule(this);
   }
 
   BDM_CLASS_DEF_OVERRIDE(RemoveModule, 1);
 };
 
-}  // namespace sim_object_test_internal
+}  // namespace agent_test_internal
 
 #ifdef __ROOTCLING__
-static SoPointer<SimObject> dummy_ptr;
+static AgentPointer<Agent> dummy_ptr;
 #endif
 
 }  // namespace bdm
 
-#endif  // UNIT_CORE_SIM_OBJECT_SIM_OBJECT_TEST_H_
+#endif  // UNIT_CORE_AGENT_AGENT_TEST_H_

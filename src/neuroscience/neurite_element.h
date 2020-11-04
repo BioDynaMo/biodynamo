@@ -23,7 +23,7 @@
 #include "core/default_force.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 #include "core/util/log.h"
 #include "core/util/math.h"
 #include "core/util/random.h"
@@ -53,8 +53,8 @@ namespace neuroscience {
 /// All the mass of the neurite element is concentrated at the distal point.
 /// Only the distal end is moved. All the forces that are applied to the
 /// proximal node are transmitted to the mother element
-class NeuriteElement : public SimObject, public NeuronOrNeurite {
-  BDM_SIM_OBJECT_HEADER(NeuriteElement, SimObject, 1);
+class NeuriteElement : public Agent, public NeuronOrNeurite {
+  BDM_AGENT_HEADER(NeuriteElement, Agent, 1);
 
  public:
   NeuriteElement() {
@@ -71,7 +71,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   }
 
   /// TODO
-  NeuriteElement(const Event& event, SimObject* other, uint64_t new_oid = 0)
+  NeuriteElement(const Event& event, Agent* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {
     resting_length_ =
         spring_constant_ * actual_length_ / (tension_ + spring_constant_);
@@ -116,15 +116,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     }
   }
 
-  void EventHandler(const Event& event, SimObject* other1,
-                    SimObject* other2 = nullptr) override {
+  void EventHandler(const Event& event, Agent* other1,
+                    Agent* other2 = nullptr) override {
     Base::EventHandler(event, other1, other2);
 
     if (event.GetId() == NeuriteBifurcationEvent::kEventId) {
-      SetDaughterLeft(other1->GetSoPtr<NeuriteElement>());
-      SetDaughterRight(other2->GetSoPtr<NeuriteElement>());
+      SetDaughterLeft(other1->GetAgentPtr<NeuriteElement>());
+      SetDaughterRight(other2->GetAgentPtr<NeuriteElement>());
     } else if (event.GetId() == SideNeuriteExtensionEvent::kEventId) {
-      SetDaughterRight(other2->GetSoPtr<NeuriteElement>());
+      SetDaughterRight(other2->GetAgentPtr<NeuriteElement>());
     } else if (event.GetId() == SplitNeuriteElementEvent::kEventId) {
       const auto& e = dynamic_cast<const SplitNeuriteElementEvent&>(event);
       auto* proximal = dynamic_cast<NeuriteElement*>(other1);
@@ -132,7 +132,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
       // family relations
       mother_->UpdateRelative(*this, *proximal);
-      mother_ = proximal->GetSoPtr<NeuronOrNeurite>();
+      mother_ = proximal->GetAgentPtr<NeuronOrNeurite>();
 
       UpdateDependentPhysicalVariables();
       proximal->UpdateDependentPhysicalVariables();
@@ -145,12 +145,12 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
       // TODO(lukas) some code duplication with SplitNeuriteElementEvent and
       // SideNeuriteExtensionEvent event handler
-      proximal->SetDaughterRight(branch->GetSoPtr<NeuriteElement>());
+      proximal->SetDaughterRight(branch->GetAgentPtr<NeuriteElement>());
 
       // elongation
       resting_length_ *= e.distal_portion_;
       mother_->UpdateRelative(*this, *proximal);
-      mother_ = proximal->GetSoPtr<NeuronOrNeurite>();
+      mother_ = proximal->GetAgentPtr<NeuronOrNeurite>();
 
       UpdateDependentPhysicalVariables();
       proximal->UpdateDependentPhysicalVariables();
@@ -159,13 +159,13 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     }
   }
 
-  const SoUid& GetUid() const override { return Base::GetUid(); }
+  const AgentUid& GetUid() const override { return Base::GetUid(); }
 
   Spinlock* GetLock() override { return Base::GetLock(); }
 
   void CriticalRegion(std::vector<Spinlock*>* locks) override {
     locks->reserve(4);
-    locks->push_back(SimObject::GetLock());
+    locks->push_back(Agent::GetLock());
     locks->push_back(mother_->GetLock());
     if (daughter_left_ != nullptr) {
       locks->push_back(daughter_left_->GetLock());
@@ -230,7 +230,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  Double3 OriginOf(const SoUid& daughter_uid) const override {
+  Double3 OriginOf(const AgentUid& daughter_uid) const override {
     return mass_location_;
   }
 
@@ -279,7 +279,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
       UpdatePosition();
       UpdateVolume();  // and update concentration of internal stuff.
     } else if (mother_soma) {
-      mother_->RemoveDaughter(Base::GetSoPtr<NeuriteElement>());
+      mother_->RemoveDaughter(Base::GetAgentPtr<NeuriteElement>());
       this->RemoveFromSimulation();
     } else if (mother_neurite &&
                mother_neurite->GetDaughterRight() == nullptr) {
@@ -290,7 +290,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     } else {
       // if mother is neurite element with other daughter or is not a neurite
       // segment: disappear.
-      mother_->RemoveDaughter(Base::GetSoPtr<NeuriteElement>());
+      mother_->RemoveDaughter(Base::GetAgentPtr<NeuriteElement>());
       this->RemoveFromSimulation();
 
       mother_->UpdateDependentPhysicalVariables();
@@ -454,7 +454,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   // ***************************************************************************
 
   // TODO(neurites) documentation
-  void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) override {
+  void RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) override {
     // If there is another daughter than the one we want to remove,
     // we have to be sure that it will be the daughterLeft->
     if (daughter == daughter_right_) {
@@ -474,15 +474,15 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
   void UpdateRelative(const NeuronOrNeurite& old_relative,
                       const NeuronOrNeurite& new_relative) override {
     if (mother_ == &old_relative) {
-      mother_ = new_relative.GetNeuronOrNeuriteSoPtr();
+      mother_ = new_relative.GetNeuronOrNeuriteAgentPtr();
     } else {
-      auto new_neurite_soptr =
+      auto new_neurite_agent_ptr =
           bdm_static_cast<const NeuriteElement*>(&new_relative)
-              ->GetSoPtr<NeuriteElement>();
+              ->GetAgentPtr<NeuriteElement>();
       if (daughter_left_ == &old_relative) {
-        daughter_left_ = new_neurite_soptr;
+        daughter_left_ = new_neurite_agent_ptr;
       } else if (daughter_right_ == &old_relative) {
-        daughter_right_ = new_neurite_soptr;
+        daughter_right_ = new_neurite_agent_ptr;
       }
     }
   }
@@ -620,7 +620,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     UpdateVolume();
   }
 
-  struct DisplacementFunctor : public Functor<void, const SimObject*, double> {
+  struct DisplacementFunctor : public Functor<void, const Agent*, double> {
     NeuriteElement* ne;
     Double3& force_from_neighbors;
     Double3& force_on_my_mothers_point_mass;
@@ -637,7 +637,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
           h_over_m(h_over_m_),
           has_neurite_neighbor(has_neurite_neighbor_) {}
 
-    void operator()(const SimObject* neighbor,
+    void operator()(const Agent* neighbor,
                     double squared_distance) override {
       // if neighbor is a NeuriteElement
       // use shape to determine if neighbor is a NeuriteElement
@@ -932,30 +932,30 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   void SetAxon(bool is_axon) { is_axon_ = is_axon; }
 
-  SoPointer<NeuronOrNeurite>& GetMother() { return mother_; }
+  AgentPointer<NeuronOrNeurite>& GetMother() { return mother_; }
 
-  const SoPointer<NeuronOrNeurite>& GetMother() const { return mother_; }
+  const AgentPointer<NeuronOrNeurite>& GetMother() const { return mother_; }
 
-  void SetMother(const SoPointer<NeuronOrNeurite>& mother) { mother_ = mother; }
+  void SetMother(const AgentPointer<NeuronOrNeurite>& mother) { mother_ = mother; }
 
   /// @return the (first) distal neurite element, if it exists,
   /// i.e. if this is not the terminal segment (otherwise returns nullptr).
-  const SoPointer<NeuriteElement>& GetDaughterLeft() const {
+  const AgentPointer<NeuriteElement>& GetDaughterLeft() const {
     return daughter_left_;
   }
 
-  void SetDaughterLeft(const SoPointer<NeuriteElement>& daughter) {
+  void SetDaughterLeft(const AgentPointer<NeuriteElement>& daughter) {
     daughter_left_ = daughter;
   }
 
   /// @return the second distal neurite element, if it exists
   /// i.e. if there is a branching point just after this element (otherwise
   /// returns nullptr).
-  const SoPointer<NeuriteElement>& GetDaughterRight() const {
+  const AgentPointer<NeuriteElement>& GetDaughterRight() const {
     return daughter_right_;
   }
 
-  void SetDaughterRight(const SoPointer<NeuriteElement>& daughter) {
+  void SetDaughterRight(const AgentPointer<NeuriteElement>& daughter) {
     daughter_right_ = daughter;
   }
 
@@ -1136,14 +1136,14 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
 
   /// Parent node in the neuron tree structure can be a Neurite element
   /// or cell body
-  SoPointer<NeuronOrNeurite> mother_;
+  AgentPointer<NeuronOrNeurite> mother_;
 
   /// First child node in the neuron tree structure (can only be a Neurite
   /// element)
-  SoPointer<NeuriteElement> daughter_left_;
+  AgentPointer<NeuriteElement> daughter_left_;
   /// Second child node in the neuron tree structure. (can only be a Neurite
   /// element)
-  SoPointer<NeuriteElement> daughter_right_;
+  AgentPointer<NeuriteElement> daughter_right_;
 
   /// number of branching points from here to the soma (root of the neuron
   /// tree-structure).
@@ -1201,7 +1201,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     // Re-organisation of the PhysicalObject tree structure: by-passing
     // proximalCylinder
     proximal_ne->GetMother()->UpdateRelative(*mother_, *this);
-    SetMother(mother_neurite->GetMother()->GetNeuronOrNeuriteSoPtr());
+    SetMother(mother_neurite->GetMother()->GetNeuronOrNeuriteAgentPtr());
 
     // Keeping the same tension :
     // (we don't use updateDependentPhysicalVariables(), because we have tension
@@ -1284,7 +1284,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     UpdateLocalCoordinateAxis();
 
     // family relations
-    SetMother(soma->GetSoPtr<NeuronOrNeurite>());
+    SetMother(soma->GetAgentPtr<NeuronOrNeurite>());
   }
 
   /// TODO
@@ -1299,7 +1299,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     adherence_ = param->neurite_default_adherence_;
 
     Copy(*mother);
-    SetMother(mother->GetSoPtr<NeuronOrNeurite>());
+    SetMother(mother->GetAgentPtr<NeuronOrNeurite>());
 
     // check that the directions are not pointing backwards
     auto dir_1 = direction;  // todo avoid cpy
@@ -1359,8 +1359,8 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     UpdatePosition();
 
     // family relations
-    SetMother(other->GetMother()->GetNeuronOrNeuriteSoPtr());
-    SetDaughterLeft(other->GetSoPtr<NeuriteElement>());
+    SetMother(other->GetMother()->GetNeuronOrNeuriteAgentPtr());
+    SetDaughterLeft(other->GetAgentPtr<NeuriteElement>());
 
     // physics
     resting_length_ = ((1 - distal_portion) * other_rl);
@@ -1407,7 +1407,7 @@ class NeuriteElement : public SimObject, public NeuronOrNeurite {
     SetDiameter(param->neurite_default_diameter_);
     UpdateLocalCoordinateAxis();
     // family relations
-    SetMother(mother->GetSoPtr<NeuronOrNeurite>());
+    SetMother(mother->GetAgentPtr<NeuronOrNeurite>());
 
     branch_order_ = mother->GetBranchOrder() + 1;
 

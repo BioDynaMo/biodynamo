@@ -12,56 +12,56 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_SIM_OBJECT_SO_UID_GENERATOR_H_
-#define CORE_SIM_OBJECT_SO_UID_GENERATOR_H_
+#ifndef CORE_AGENT_AGENT_UID_GENERATOR_H_
+#define CORE_AGENT_AGENT_UID_GENERATOR_H_
 
 #include <atomic>
 #include <limits>
 #include <mutex>
-#include "core/container/so_uid_map.h"
+#include "core/container/agent_uid_map.h"
 #include "core/scheduler.h"
-#include "core/sim_object/so_handle.h"
-#include "core/sim_object/so_uid.h"
+#include "core/agent/agent_handle.h"
+#include "core/agent/agent_uid.h"
 #include "core/simulation.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
 
 namespace bdm {
 
-/// This class generates unique ids for simulation objects.
+/// This class generates unique ids for agents.
 /// All functions are  thread safe.
-class SoUidGenerator {
+class AgentUidGenerator {
  public:
-  SoUidGenerator(const SoUidGenerator&) = delete;
-  SoUidGenerator() : counter_(0) {}
+  AgentUidGenerator(const AgentUidGenerator&) = delete;
+  AgentUidGenerator() : counter_(0) {}
 
-  /// Generates SoUid with increasing index.
+  /// Generates AgentUid with increasing index.
   /// In defragmentation mode it resuses index values from removed sim objects
   /// and sets the reused field to the current simulation step.
-  SoUid NewSoUid() {
+  AgentUid NewAgentUid() {
     if (map_ != nullptr) {
       // defragmentation mode
       std::lock_guard<Spinlock> guard(lock_);
       while (search_index_ != map_->size() &&
              map_->GetReused(search_index_) !=
-                 std::numeric_limits<typename SoUid::Reused_t>::max()) {
+                 std::numeric_limits<typename AgentUid::Reused_t>::max()) {
         search_index_++;
       }
       // find unused element in map
       if (search_index_ < map_->size()) {
         auto* scheduler = Simulation::GetActive()->GetScheduler();
-        return SoUid(search_index_++, scheduler->GetSimulatedSteps());
+        return AgentUid(search_index_++, scheduler->GetSimulatedSteps());
       }
       // didn't find any empty slots -> disable defragmentation mode
       map_ = nullptr;
     }
-    return SoUid(counter_++);
+    return AgentUid(counter_++);
   }
 
-  // Returns the highest index that was used for a SoUid
+  // Returns the highest index that was used for a AgentUid
   uint64_t GetHighestIndex() const { return counter_; }
 
-  void EnableDefragmentation(const SoUidMap<SoHandle>* map) {
+  void EnableDefragmentation(const AgentUidMap<AgentHandle>* map) {
     map_ = map;
     search_index_ = 0;
   }
@@ -71,31 +71,31 @@ class SoUidGenerator {
   bool IsInDefragmentationMode() const { return map_ != nullptr; }
 
  private:
-  std::atomic<typename SoUid::Index_t> counter_;  //!
+  std::atomic<typename AgentUid::Index_t> counter_;  //!
   /// ROOT can't persist std::atomic.
   /// Therefore this additional helper variable is needed.
-  typename SoUid::Index_t root_counter_;
+  typename AgentUid::Index_t root_counter_;
 
   ///
-  const SoUidMap<SoHandle>* map_ = nullptr;  //!
+  const AgentUidMap<AgentHandle>* map_ = nullptr;  //!
   /// Lock needed for defragmentation mode
   Spinlock lock_;  //!
   /// Current search position
-  typename SoUid::Index_t search_index_ = 0;  //!
-  BDM_CLASS_DEF_NV(SoUidGenerator, 1);
+  typename AgentUid::Index_t search_index_ = 0;  //!
+  BDM_CLASS_DEF_NV(AgentUidGenerator, 1);
 };
 
 // The following custom streamer should be visible to rootcling for dictionary
 // generation, but not to the interpreter!
 #if (!defined(__CLING__) || defined(__ROOTCLING__)) && defined(USE_DICT)
 
-inline void SoUidGenerator::Streamer(TBuffer& R__b) {
+inline void AgentUidGenerator::Streamer(TBuffer& R__b) {
   if (R__b.IsReading()) {
-    R__b.ReadClassBuffer(SoUidGenerator::Class(), this);
+    R__b.ReadClassBuffer(AgentUidGenerator::Class(), this);
     this->counter_ = this->root_counter_;
   } else {
     this->root_counter_ = this->counter_.load();
-    R__b.WriteClassBuffer(SoUidGenerator::Class(), this);
+    R__b.WriteClassBuffer(AgentUidGenerator::Class(), this);
   }
 }
 
@@ -103,4 +103,4 @@ inline void SoUidGenerator::Streamer(TBuffer& R__b) {
 
 }  // namespace bdm
 
-#endif  // CORE_SIM_OBJECT_SO_UID_GENERATOR_H_
+#endif  // CORE_AGENT_AGENT_UID_GENERATOR_H_

@@ -143,7 +143,7 @@ struct Param {
   ///     max_displacement = 3.0
   double simulation_max_displacement_ = 3.0;
 
-  /// Calculate mechanical interactions between simulation objects.\n
+  /// Calculate mechanical interactions between agents.\n
   /// Default value: `true`\n
   /// TOML config file:
   ///
@@ -209,9 +209,9 @@ struct Param {
 
   /// List of thread-safety mechanisms \n
   /// `kNone`: \n
-  /// `kUserSpecified`: The user has to define all simulation object that must
-  /// not be processed in parallel. \see `SimObject::CriticalRegion`.\n
-  /// `kAutomatic`: The simulation automatically locks all simulation objects
+  /// `kUserSpecified`: The user has to define all agent that must
+  /// not be processed in parallel. \see `Agent::CriticalRegion`.\n
+  /// `kAutomatic`: The simulation automatically locks all agents
   /// of the microenvironment.
   enum ThreadSafetyMechanism { kNone = 0, kUserSpecified, kAutomatic };
 
@@ -304,12 +304,12 @@ struct Param {
   ///     export_generate_pvsm = true
   bool visualization_export_generate_pvsm_ = true;
 
-  /// Specifies which simulation objects should be visualized. \n
-  /// Every simulation object defines the minimum set of data members which
+  /// Specifies which agents should be visualized. \n
+  /// Every agent defines the minimum set of data members which
   /// are required to visualize it. (e.g. Cell: `position_` and `diameter_`).\n
   /// With this parameter it is also possible to extend the number of data
   /// members that are sent to the visualization engine.
-  /// Default value: empty (no simulation object will be visualized)\n
+  /// Default value: empty (no agent will be visualized)\n
   /// NB: This data member is not backed up, due to a ROOT error.
   /// TOML config file:
   ///
@@ -317,16 +317,16 @@ struct Param {
   ///     # turn on insitu or export
   ///     export = true
   ///
-  ///       [[visualize_sim_object]]
+  ///       [[visualize_agent]]
   ///       name = "Cell"
   ///       # the following entry is optional
   ///       additional_data_members = [ "density_" ]
   ///
-  ///       # The former block can be repeated for further simulation objects
-  ///       [[visualize_sim_object]]
+  ///       # The former block can be repeated for further agents
+  ///       [[visualize_agent]]
   ///       name = "Neurite"
   std::map<std::string, std::set<std::string>>
-      visualize_sim_objects_;  ///<  JSON_object
+      visualize_agents_;  ///<  JSON_object
 
   struct VisualizeDiffusion {
     std::string name_;
@@ -371,7 +371,7 @@ struct Param {
 
   // performance values --------------------------------------------------------
 
-  /// Batch size used by the `Scheduler` to iterate over simulation objects\n
+  /// Batch size used by the `Scheduler` to iterate over agents\n
   /// Default value: `1000`\n
   /// TOML config file:
   ///
@@ -380,8 +380,8 @@ struct Param {
   uint64_t scheduling_batch_size_ = 1000;
 
   /// Calculation of the displacement (mechanical interaction) is an
-  /// expensive operation. If simulation objects do not move or grow,
-  /// displacement calculation is ommited if detect_static_sim_objects is turned
+  /// expensive operation. If agents do not move or grow,
+  /// displacement calculation is ommited if detect_static_agents is turned
   /// on. However, the detection mechanism introduces an overhead. For dynamic
   /// simulations where sim objects move and grow, the overhead outweighs the
   /// benefits.\n
@@ -389,10 +389,10 @@ struct Param {
   /// TOML config file:
   ///
   ///     [performance]
-  ///     detect_static_sim_objects = false
-  bool detect_static_sim_objects_ = false;
+  ///     detect_static_agents = false
+  bool detect_static_agents_ = false;
 
-  /// Neighbors of a simulation object can be cached so to avoid consecutive
+  /// Neighbors of a agent can be cached so to avoid consecutive
   /// searches. This of course only makes sense if there is more than one
   /// `ForEachNeighbor*` operation.\n
   /// Default value: `false`\n
@@ -402,23 +402,23 @@ struct Param {
   ///     cache_neighbors = false
   bool cache_neighbors_ = false;
 
-  /// If the utilization in the SoUidMap inside ResourceManager falls below
+  /// If the utilization in the AgentUidMap inside ResourceManager falls below
   /// this watermark, defragmentation will be turned on.\n
   /// Default value: `0.5`\n
   /// TOML config file:
   ///
   ///     [performance]
-  ///     souid_defragmentation_low_watermark = 0.5
-  double souid_defragmentation_low_watermark_ = 0.5;
+  ///     agent_uid_defragmentation_low_watermark = 0.5
+  double agent_uid_defragmentation_low_watermark_ = 0.5;
 
-  /// If the utilization in the SoUidMap inside ResourceManager rises above
+  /// If the utilization in the AgentUidMap inside ResourceManager rises above
   /// this watermark, defragmentation will be turned off.\n
   /// Default value: `0.9`\n
   /// TOML config file:
   ///
   ///     [performance]
-  ///     souid_defragmentation_high_watermark = 0.9
-  double souid_defragmentation_high_watermark_ = 0.9;
+  ///     agent_uid_defragmentation_high_watermark = 0.9
+  double agent_uid_defragmentation_high_watermark_ = 0.9;
 
   /// Use the BioDynaMo memory manager.
   /// Default value: `true`\n
@@ -463,11 +463,11 @@ struct Param {
 
   /// This parameter is used inside `ResourceManager::SortAndBalanceNumaNodes`.
   /// If it is set to true, the function will reuse existing memory to rebalance
-  /// simulation objects to NUMA nodes. (A small amount of additional memory
+  /// agents to NUMA nodes. (A small amount of additional memory
   /// is still required.)\n
   /// If this parameter is set to false, the balancing function will first
   /// create new objects and delete the old ones in a second step. In the worst
-  /// case this will double the required memory for simulation objects for.
+  /// case this will double the required memory for agents for.
   /// Default value: `true`\n
   /// TOML config file:
   ///
@@ -476,7 +476,7 @@ struct Param {
   bool minimize_memory_while_rebalancing_ = true;
 
   /// MappedDataArrayMode options:
-  ///   `kZeroCopy`: access simulation object data directly only if it is
+  ///   `kZeroCopy`: access agent data directly only if it is
   ///                requested. \n
   ///   `kCache`:    Like `kZeroCopy` but stores the results in contigous
   ///                array, to speed up access if it is used again.\n

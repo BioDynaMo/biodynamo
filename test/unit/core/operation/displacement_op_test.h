@@ -16,7 +16,7 @@
 #define UNIT_CORE_OPERATION_DISPLACEMENT_OP_TEST_H_
 
 #include "core/operation/displacement_op.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
@@ -26,7 +26,7 @@ inline void RunTest() {
   Simulation simulation("displacement_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
 
-  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
+  auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
 
   // cell 0
   Cell* cell0 = new Cell();
@@ -49,13 +49,13 @@ inline void RunTest() {
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();
   auto* op = NewOperation("displacement");
-  ctxt->Execute(rm->GetSimObject(ref_uid), {op});
-  ctxt->Execute(rm->GetSimObject(ref_uid + 1), {op});
+  ctxt->Execute(rm->GetAgent(ref_uid), {op});
+  ctxt->Execute(rm->GetAgent(ref_uid + 1), {op});
 
   // check results
   // cell 0
-  Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 0));
-  Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 1));
+  Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 0));
+  Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 1));
   auto final_position = final_cell0->GetPosition();
   EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
   EXPECT_NEAR(-0.07797206232558615, final_position[1],

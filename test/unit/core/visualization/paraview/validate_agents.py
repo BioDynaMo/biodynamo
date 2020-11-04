@@ -25,7 +25,7 @@ def ValidateDataMember(params, neurite, data_member_name, offset):
 
     global validation_error 
     if data.GetNumberOfTuples() != params.num_elements:
-        print("ERROR Wrong number of simulation objects. Expected:", params.num_elements, 
+        print("ERROR Wrong number of agents. Expected:", params.num_elements, 
                 "Actual:", data.GetNumberOfTuples())
         validation_error = True
         return

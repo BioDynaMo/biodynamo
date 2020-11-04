@@ -21,7 +21,7 @@
 
 namespace bdm {
 
-class SimObject;
+class Agent;
 
 class DefaultForce {
  public:
@@ -30,22 +30,22 @@ class DefaultForce {
   DefaultForce(const DefaultForce&) = delete;
   DefaultForce& operator=(const DefaultForce&) = delete;
 
-  Double4 GetForce(const SimObject* lhs, const SimObject* rhs);
+  Double4 GetForce(const Agent* lhs, const Agent* rhs);
 
  private:
-  void ForceBetweenSpheres(const SimObject* sphere_lhs,
-                           const SimObject* sphere_rhs, Double3* result) const;
+  void ForceBetweenSpheres(const Agent* sphere_lhs,
+                           const Agent* sphere_rhs, Double3* result) const;
 
-  void ForceOnACylinderFromASphere(const SimObject* cylinder,
-                                   const SimObject* sphere,
+  void ForceOnACylinderFromASphere(const Agent* cylinder,
+                                   const Agent* sphere,
                                    Double4* result) const;
 
-  void ForceOnASphereFromACylinder(const SimObject* sphere,
-                                   const SimObject* cylinder,
+  void ForceOnASphereFromACylinder(const Agent* sphere,
+                                   const Agent* cylinder,
                                    Double3* result) const;
 
-  void ForceBetweenCylinders(const SimObject* cylinder1,
-                             const SimObject* cylinder2, Double4* result) const;
+  void ForceBetweenCylinders(const Agent* cylinder1,
+                             const Agent* cylinder2, Double4* result) const;
 
   Double4 ComputeForceOfASphereOnASphere(const Double3& c1, double r1,
                                          const Double3& c2, double r2) const;

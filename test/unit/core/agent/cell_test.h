@@ -12,16 +12,16 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_CORE_SIM_OBJECT_CELL_TEST_H_
-#define UNIT_CORE_SIM_OBJECT_CELL_TEST_H_
+#ifndef UNIT_CORE_AGENT_CELL_TEST_H_
+#define UNIT_CORE_AGENT_CELL_TEST_H_
 
 #include <vector>
 
 #include "core/event/cell_division_event.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"
-#include "unit/core/sim_object/sim_object_test.h"
+#include "unit/core/agent/agent_test.h"
 #include "unit/test_util/test_util.h"
 
 #define ROOTFILE "bdmFile.root"
@@ -31,14 +31,14 @@ namespace cell_test_internal {
 
 /// Class used to get access to protected members
 class TestCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(TestCell, Cell, 1);
+  BDM_AGENT_HEADER(TestCell, Cell, 1);
 
  public:
   TestCell() {}
 
   virtual ~TestCell() {}
 
-  TestCell(const Event& event, SimObject* mother, uint64_t new_oid = 0)
+  TestCell(const Event& event, Agent* mother, uint64_t new_oid = 0)
       : Base(event, mother, new_oid) {
     const CellDivisionEvent* cdevent =
         dynamic_cast<const CellDivisionEvent*>(&event);
@@ -75,8 +75,8 @@ namespace cell_test_internal {
 inline void RunIOTest() {
   Simulation simulation("CellTest-RunIOTest");
 
-  using GrowthModule = sim_object_test_internal::GrowthModule;
-  using MovementModule = sim_object_test_internal::MovementModule;
+  using GrowthModule = agent_test_internal::GrowthModule;
+  using MovementModule = agent_test_internal::MovementModule;
   remove(ROOTFILE);
 
   TestCell cell;
@@ -135,4 +135,4 @@ inline void RunIOTest() {
 }  // namespace cell_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_CORE_SIM_OBJECT_CELL_TEST_H_
+#endif  // UNIT_CORE_AGENT_CELL_TEST_H_

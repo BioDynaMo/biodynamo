@@ -564,7 +564,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
-                         ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/agent/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.cc
@@ -579,7 +579,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
-                         ${CMAKE_SOURCE_DIR}/test/unit/core/sim_object/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/agent/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.h

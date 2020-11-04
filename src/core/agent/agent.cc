@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 
 #include <algorithm>
 #include <cassert>
@@ -38,12 +38,12 @@
 
 namespace bdm {
 
-SimObject::SimObject() {
-  uid_ = Simulation::GetActive()->GetSoUidGenerator()->NewSoUid();
+Agent::Agent() {
+  uid_ = Simulation::GetActive()->GetAgentUidGenerator()->NewAgentUid();
 }
 
-SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid)
-    : SimObject() {
+Agent::Agent(const Event& event, Agent* other, uint64_t new_oid)
+    : Agent() {
   box_idx_ = other->GetBoxIdx();
   // biology modules
   auto* other_bms = &(other->biology_modules_);
@@ -51,9 +51,9 @@ SimObject::SimObject(const Event& event, SimObject* other, uint64_t new_oid)
   CopyBiologyModules(event, other_bms);
 }
 
-SimObject::SimObject(TRootIOCtor* io_ctor) {}
+Agent::Agent(TRootIOCtor* io_ctor) {}
 
-SimObject::SimObject(const SimObject& other)
+Agent::Agent(const Agent& other)
     : uid_(other.uid_),
       box_idx_(other.box_idx_),
       run_bm_loop_idx_(other.run_bm_loop_idx_),
@@ -65,27 +65,27 @@ SimObject::SimObject(const SimObject& other)
   }
 }
 
-SimObject::~SimObject() {
+Agent::~Agent() {
   for (auto* el : biology_modules_) {
     delete el;
   }
 }
 
 struct SetRunDisplacementForEachNeighbor
-    : public Functor<void, const SimObject*, double> {
-  SimObject* so_;
-  SetRunDisplacementForEachNeighbor(SimObject* so) : so_(so) {}
+    : public Functor<void, const Agent*, double> {
+  Agent* agent_;
+  SetRunDisplacementForEachNeighbor(Agent* agent) : agent_(agent) {}
 
-  void operator()(const SimObject* neighbor, double squared_distance) override {
-    double distance = so_->GetDiameter() + neighbor->GetDiameter();
+  void operator()(const Agent* neighbor, double squared_distance) override {
+    double distance = agent_->GetDiameter() + neighbor->GetDiameter();
     if (squared_distance < distance * distance) {
       neighbor->SetRunDisplacementNextTimestep(true);
     }
   }
 };
 
-void SimObject::DistributeRunDisplacementInfo() {
-  if (!Simulation::GetActive()->GetParam()->detect_static_sim_objects_) {
+void Agent::DistributeRunDisplacementInfo() {
+  if (!Simulation::GetActive()->GetParam()->detect_static_agents_) {
     run_displacement_next_ts_ = true;
     return;
   }
@@ -100,26 +100,26 @@ void SimObject::DistributeRunDisplacementInfo() {
   ctxt->ForEachNeighbor(for_each, *this);
 }
 
-void SimObject::RunDiscretization() {}
+void Agent::RunDiscretization() {}
 
-void SimObject::AssignNewUid() {
-  uid_ = Simulation::GetActive()->GetSoUidGenerator()->NewSoUid();
+void Agent::AssignNewUid() {
+  uid_ = Simulation::GetActive()->GetAgentUidGenerator()->NewAgentUid();
 }
 
-const SoUid& SimObject::GetUid() const { return uid_; }
+const AgentUid& Agent::GetUid() const { return uid_; }
 
-uint32_t SimObject::GetBoxIdx() const { return box_idx_; }
+uint32_t Agent::GetBoxIdx() const { return box_idx_; }
 
-void SimObject::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
+void Agent::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 
 // ---------------------------------------------------------------------------
 // Biology modules
 
-void SimObject::AddBiologyModule(BaseBiologyModule* module) {
+void Agent::AddBiologyModule(BaseBiologyModule* module) {
   biology_modules_.push_back(module);
 }
 
-void SimObject::RemoveBiologyModule(const BaseBiologyModule* remove_module) {
+void Agent::RemoveBiologyModule(const BaseBiologyModule* remove_module) {
   for (unsigned int i = 0; i < biology_modules_.size(); i++) {
     if (biology_modules_[i] == remove_module) {
       delete remove_module;
@@ -131,7 +131,7 @@ void SimObject::RemoveBiologyModule(const BaseBiologyModule* remove_module) {
   }
 }
 
-void SimObject::RunBiologyModules() {
+void Agent::RunBiologyModules() {
   for (run_bm_loop_idx_ = 0; run_bm_loop_idx_ < biology_modules_.size();
        ++run_bm_loop_idx_) {
     auto* module = biology_modules_[run_bm_loop_idx_];
@@ -139,18 +139,18 @@ void SimObject::RunBiologyModules() {
   }
 }
 
-const InlineVector<BaseBiologyModule*, 2>& SimObject::GetAllBiologyModules()
+const InlineVector<BaseBiologyModule*, 2>& Agent::GetAllBiologyModules()
     const {
   return biology_modules_;
 }
 // ---------------------------------------------------------------------------
 
-void SimObject::RemoveFromSimulation() const {
+void Agent::RemoveFromSimulation() const {
   Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(uid_);
 }
 
-void SimObject::EventHandler(const Event& event, SimObject* other1,
-                             SimObject* other2) {
+void Agent::EventHandler(const Event& event, Agent* other1,
+                             Agent* other2) {
   // Run displacement if a new sim object has been created with an event.
   SetRunDisplacementForAllNextTs();
   // call event handler for biology modules
@@ -159,7 +159,7 @@ void SimObject::EventHandler(const Event& event, SimObject* other1,
   BiologyModuleEventHandler(event, left_bms, right_bms);
 }
 
-void SimObject::CopyBiologyModules(const Event& event,
+void Agent::CopyBiologyModules(const Event& event,
                                    decltype(biology_modules_) * other) {
   for (auto* bm : *other) {
     if (bm->Copy(event.GetId())) {
@@ -169,7 +169,7 @@ void SimObject::CopyBiologyModules(const Event& event,
   }
 }
 
-void SimObject::BiologyModuleEventHandler(const Event& event,
+void Agent::BiologyModuleEventHandler(const Event& event,
                                           decltype(biology_modules_) * other1,
                                           decltype(biology_modules_) * other2) {
   // call event handler for biology modules

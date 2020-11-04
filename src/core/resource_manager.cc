@@ -24,7 +24,7 @@ ResourceManager::ResourceManager() {
     Log::Fatal("ResourceManager",
                "Call to numa_available failed with return code: ", ret);
   }
-  sim_objects_.resize(numa_num_configured_nodes());
+  agents_.resize(numa_num_configured_nodes());
 
   auto* param = Simulation::GetActive()->GetParam();
   if (param->export_visualization_ || param->insitu_visualization_) {
@@ -33,13 +33,13 @@ ResourceManager::ResourceManager() {
 }
 
 void ResourceManager::ApplyOnAllElementsParallel(
-    Functor<void, SimObject*, SoHandle>& function) {
+    Functor<void, Agent*, AgentHandle>& function) {
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
     auto nid = thread_info_->GetNumaNode(tid);
     auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-    auto& numa_sos = sim_objects_[nid];
+    auto& numa_sos = agents_[nid];
     assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
     // use static scheduling for now
@@ -49,22 +49,22 @@ void ResourceManager::ApplyOnAllElementsParallel(
     auto end = std::min(numa_sos.size(), start + chunk);
 
     for (uint64_t i = start; i < end; ++i) {
-      function(numa_sos[i], SoHandle(nid, i));
+      function(numa_sos[i], AgentHandle(nid, i));
     }
   }
 }
 
 template <typename TFunctor>
 struct ApplyOnAllElementsParallelFunctor
-    : public Functor<void, SimObject*, SoHandle> {
+    : public Functor<void, Agent*, AgentHandle> {
   TFunctor& functor_;
   ApplyOnAllElementsParallelFunctor(TFunctor& f) : functor_(f) {}
-  void operator()(SimObject* so, SoHandle) { functor_(so); }
+  void operator()(Agent* agent, AgentHandle) { functor_(agent); }
 };
 
 void ResourceManager::ApplyOnAllElementsParallel(
-    Functor<void, SimObject*>& function) {
-  ApplyOnAllElementsParallelFunctor<Functor<void, SimObject*>> functor(
+    Functor<void, Agent*>& function) {
+  ApplyOnAllElementsParallelFunctor<Functor<void, Agent*>> functor(
       function);
   ApplyOnAllElementsParallel(functor);
 }
@@ -75,9 +75,9 @@ void ResourceManager::ApplyOnAllElementsParallel(Operation& op) {
 }
 
 void ResourceManager::ApplyOnAllElementsParallelDynamic(
-    uint64_t chunk, Functor<void, SimObject*, SoHandle>& function) {
+    uint64_t chunk, Functor<void, Agent*, AgentHandle>& function) {
   // adapt chunk size
-  auto num_so = GetNumSimObjects();
+  auto num_so = GetNumAgents();
   uint64_t factor = (num_so / thread_info_->GetMaxThreads()) / chunk;
   chunk = (num_so / thread_info_->GetMaxThreads()) / (factor + 1);
   chunk = chunk >= 1 ? chunk : 1;
@@ -90,8 +90,8 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
   auto max_threads = omp_get_max_threads();
   std::vector<uint64_t> num_chunks_per_numa(numa_nodes);
   for (int n = 0; n < numa_nodes; n++) {
-    auto correction = sim_objects_[n].size() % chunk == 0 ? 0 : 1;
-    num_chunks_per_numa[n] = sim_objects_[n].size() / chunk + correction;
+    auto correction = agents_[n].size() % chunk == 0 ? 0 : 1;
+    num_chunks_per_numa[n] = agents_[n].size() / chunk + correction;
   }
 
   std::vector<std::atomic<uint64_t>*> counters(max_threads, nullptr);
@@ -145,7 +145,7 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
           continue;
         }
 
-        auto& numa_sos = sim_objects_[current_nid];
+        auto& numa_sos = agents_[current_nid];
         uint64_t old_count = (*(counters[current_tid]))++;
         while (old_count < max_counters[current_tid]) {
           start = old_count * p_chunk;
@@ -153,7 +153,7 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
               std::min(static_cast<uint64_t>(numa_sos.size()), start + p_chunk);
 
           for (uint64_t i = start; i < end; ++i) {
-            function(numa_sos[i], SoHandle(current_nid, i));
+            function(numa_sos[i], AgentHandle(current_nid, i));
           }
 
           old_count = (*(counters[current_tid]))++;
@@ -167,58 +167,58 @@ void ResourceManager::ApplyOnAllElementsParallelDynamic(
   }
 }
 
-struct DeleteSimObjectsFunctor : public Functor<void, SimObject*> {
-  void operator()(SimObject* so) { delete so; }
+struct DeleteAgentsFunctor : public Functor<void, Agent*> {
+  void operator()(Agent* agent) { delete agent; }
 };
 
-struct UpdateUidSoHMapFunctor : public Functor<void, SimObject*, SoHandle> {
-  using Map = SoUidMap<SoHandle>;
-  UpdateUidSoHMapFunctor(Map& rm_uid_soh_map)
-      : rm_uid_soh_map_(rm_uid_soh_map) {}
+struct UpdateUidSoHMapFunctor : public Functor<void, Agent*, AgentHandle> {
+  using Map = AgentUidMap<AgentHandle>;
+  UpdateUidSoHMapFunctor(Map& rm_uid_ah_map)
+      : rm_uid_ah_map_(rm_uid_ah_map) {}
 
-  void operator()(SimObject* so, SoHandle soh) {
-    rm_uid_soh_map_.Insert(so->GetUid(), soh);
+  void operator()(Agent* agent, AgentHandle ah) {
+    rm_uid_ah_map_.Insert(agent->GetUid(), ah);
   }
 
  private:
-  Map& rm_uid_soh_map_;
+  Map& rm_uid_ah_map_;
 };
 
-struct RearrangeFunctor : public Functor<void, const SoHandle&> {
-  std::vector<std::vector<SoHandle>>& sorted_so_handles;
-  const std::vector<uint64_t>& so_per_numa;
+struct RearrangeFunctor : public Functor<void, const AgentHandle&> {
+  std::vector<std::vector<AgentHandle>>& sorted_agent_handles;
+  const std::vector<uint64_t>& agent_per_numa;
   uint64_t cnt = 0;
   uint64_t current_numa = 0;
 
-  RearrangeFunctor(std::vector<std::vector<SoHandle>>& sorted_so_handles,
-                   const std::vector<uint64_t>& so_per_numa)
-      : sorted_so_handles(sorted_so_handles), so_per_numa(so_per_numa) {}
+  RearrangeFunctor(std::vector<std::vector<AgentHandle>>& sorted_agent_handles,
+                   const std::vector<uint64_t>& agent_per_numa)
+      : sorted_agent_handles(sorted_agent_handles), agent_per_numa(agent_per_numa) {}
 
-  void operator()(const SoHandle& handle) {
-    if (cnt == so_per_numa[current_numa]) {
+  void operator()(const AgentHandle& handle) {
+    if (cnt == agent_per_numa[current_numa]) {
       cnt = 0;
       current_numa++;
     }
 
-    sorted_so_handles[current_numa].push_back(handle);
+    sorted_agent_handles[current_numa].push_back(handle);
     cnt++;
   }
 };
 
 void ResourceManager::SortAndBalanceNumaNodes() {
-  // balance simulation objects per numa node according to the number of
+  // balance agents per numa node according to the number of
   // threads associated with each numa domain
   auto numa_nodes = thread_info_->GetNumaNodes();
-  std::vector<uint64_t> so_per_numa(numa_nodes);
+  std::vector<uint64_t> agent_per_numa(numa_nodes);
   uint64_t cummulative = 0;
   auto max_threads = thread_info_->GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
     auto threads_in_numa = thread_info_->GetThreadsInNumaNode(n);
-    uint64_t num_so = GetNumSimObjects() * threads_in_numa / max_threads;
-    so_per_numa[n] = num_so;
+    uint64_t num_so = GetNumAgents() * threads_in_numa / max_threads;
+    agent_per_numa[n] = num_so;
     cummulative += num_so;
   }
-  so_per_numa[0] = GetNumSimObjects() - cummulative;
+  agent_per_numa[0] = GetNumAgents() - cummulative;
 
   // using first touch policy - page will be allocated to the numa domain of
   // the thread that accesses it first.
@@ -229,23 +229,23 @@ void ResourceManager::SortAndBalanceNumaNodes() {
                "Run on numa node failed. Return code: ", ret);
   }
 
-  // new data structure for rearranged SimObject*
-  decltype(sim_objects_) so_rearranged;
-  so_rearranged.resize(numa_nodes);
+  // new data structure for rearranged Agent*
+  decltype(agents_) agent_rearranged;
+  agent_rearranged.resize(numa_nodes);
 
   // numa node -> vector of SoHandles
-  std::vector<std::vector<SoHandle>> sorted_so_handles;
-  sorted_so_handles.resize(numa_nodes);
+  std::vector<std::vector<AgentHandle>> sorted_agent_handles;
+  sorted_agent_handles.resize(numa_nodes);
 #pragma omp parallel for
   for (int n = 0; n < numa_nodes; ++n) {
     if (thread_info_->GetMyNumaNode() == n &&
         thread_info_->GetMyNumaThreadId() == 0) {
-      sorted_so_handles[n].reserve(so_per_numa[n]);
+      sorted_agent_handles[n].reserve(agent_per_numa[n]);
     }
   }
 
   auto* env = Simulation::GetActive()->GetEnvironment();
-  RearrangeFunctor rearrange(sorted_so_handles, so_per_numa);
+  RearrangeFunctor rearrange(sorted_agent_handles, agent_per_numa);
   env->IterateZOrder(rearrange);
 
   auto* param = Simulation::GetActive()->GetParam();
@@ -261,34 +261,34 @@ void ResourceManager::SortAndBalanceNumaNodes() {
       if (nid != n) {
         continue;
       }
-      auto& dest = so_rearranged[n];
+      auto& dest = agent_rearranged[n];
 
       if (thread_info_->GetNumaThreadId(tid) == 0) {
-        dest.resize(sorted_so_handles[n].size());
+        dest.resize(sorted_agent_handles[n].size());
       }
 
 #pragma omp barrier
 
       auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-      auto& sohandles = sorted_so_handles[n];
+      auto& agent_handles = sorted_agent_handles[n];
       assert(thread_info_->GetNumaNode(tid) ==
              numa_node_of_cpu(sched_getcpu()));
 
       // use static scheduling
-      auto correction = sohandles.size() % threads_in_numa == 0 ? 0 : 1;
-      auto chunk = sohandles.size() / threads_in_numa + correction;
+      auto correction = agent_handles.size() % threads_in_numa == 0 ? 0 : 1;
+      auto chunk = agent_handles.size() / threads_in_numa + correction;
       auto start = thread_info_->GetNumaThreadId(tid) * chunk;
-      auto end = std::min(sohandles.size(), start + chunk);
+      auto end = std::min(agent_handles.size(), start + chunk);
 
       for (uint64_t e = start; e < end; e++) {
-        auto& handle = sohandles[e];
-        auto* so = sim_objects_[handle.GetNumaNode()][handle.GetElementIdx()];
-        dest[e] = so->GetCopy();
+        auto& handle = agent_handles[e];
+        auto* agent = agents_[handle.GetNumaNode()][handle.GetElementIdx()];
+        dest[e] = agent->GetCopy();
         if (type_index_) {
           type_index_->Update(dest[e]);
         }
         if (minimize_memory) {
-          delete so;
+          delete agent;
         }
       }
     }
@@ -299,16 +299,16 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   // synchronization overheads. The bdm memory allocator does not have this
   // issue.
   if (!minimize_memory) {
-    DeleteSimObjectsFunctor delete_functor;
+    DeleteAgentsFunctor delete_functor;
     ApplyOnAllElementsParallel(delete_functor);
   }
 
   for (int n = 0; n < numa_nodes; n++) {
-    sim_objects_[n].swap(so_rearranged[n]);
+    agents_[n].swap(agent_rearranged[n]);
   }
 
-  // update uid_soh_map_
-  UpdateUidSoHMapFunctor functor(uid_soh_map_);
+  // update uid_ah_map_
+  UpdateUidSoHMapFunctor functor(uid_ah_map_);
   ApplyOnAllElementsParallel(functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa_) {

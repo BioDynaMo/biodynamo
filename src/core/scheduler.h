@@ -29,7 +29,7 @@
 namespace bdm {
 
 class SchedulerTest;
-class SimObject;
+class Agent;
 class SimulationBackup;
 class VisualizationAdaptor;
 class RootAdaptor;
@@ -79,7 +79,7 @@ class Scheduler {
   /// Runs a lambda for each scheduled operation
   template <typename Lambda>
   void ForAllScheduledOperations(Lambda lambda) {
-    ForAllOperationsInList(scheduled_sim_object_ops_, lambda);
+    ForAllOperationsInList(scheduled_agent_ops_, lambda);
     ForAllOperationsInList(scheduled_standalone_ops_, lambda);
   }
 
@@ -91,8 +91,8 @@ class Scheduler {
     ForAllOperationsInList(post_scheduled_ops_, lambda);
   }
 
-  /// Return a list of SimObjectOperations that are scheduled
-  std::vector<std::string> GetListOfScheduledSimObjectOps() const;
+  /// Return a list of AgentOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledAgentOps() const;
 
   /// Return a list of StandAloneOperations that are scheduled
   std::vector<std::string> GetListOfScheduledStandaloneOps() const;
@@ -125,7 +125,7 @@ class Scheduler {
   virtual void Execute();
 
  private:
-  friend void RunSimObjectsTest(Param::MappedDataArrayMode, uint64_t, bool,
+  friend void RunAgentsTest(Param::MappedDataArrayMode, uint64_t, bool,
                                 bool);
   friend SchedulerTest;
 
@@ -145,8 +145,8 @@ class Scheduler {
   std::vector<Operation*> unschedule_ops_;  //!
   /// List of operations will be executed as a stand-alone operation
   std::vector<Operation*> scheduled_standalone_ops_;  //!
-  /// List of operations will be executed on all simulation objects
-  std::vector<Operation*> scheduled_sim_object_ops_;  //!
+  /// List of operations will be executed on all agents
+  std::vector<Operation*> scheduled_agent_ops_;  //!
   /// List of operations that cannot be affected by the user
   std::vector<std::string> protected_op_names_;  //!
   // Operations that are run before setting up, running and tearing down

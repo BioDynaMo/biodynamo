@@ -26,14 +26,14 @@ namespace bdm {
 // members: cell_color and can_divide
 class MyCell : public Cell {  // our object extends the Cell object
                               // create the header with our new data member
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+  BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
   explicit MyCell(const Double3& position) : Base(position) {}
 
   /// If MyCell divides, daughter 2 copies the data members from the mother
-  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
+  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {
     if (auto* mother = dynamic_cast<MyCell*>(other)) {
       cell_color_ = mother->cell_color_;
@@ -47,8 +47,8 @@ class MyCell : public Cell {  // our object extends the Cell object
   }
 
   /// If a cell divides, daughter keeps the same state from its mother.
-  void EventHandler(const Event& event, SimObject* other1,
-                    SimObject* other2 = nullptr) override {
+  void EventHandler(const Event& event, Agent* other1,
+                    Agent* other2 = nullptr) override {
     Base::EventHandler(event, other1, other2);
   }
 
@@ -79,8 +79,8 @@ struct GrowthModule : public BaseBiologyModule {
 
   /// event handler not needed, because Chemotaxis does not have state.
 
-  void Run(SimObject* so) override {
-    if (auto* cell = dynamic_cast<MyCell*>(so)) {
+  void Run(Agent* agent) override {
+    if (auto* cell = dynamic_cast<MyCell*>(agent)) {
       if (cell->GetDiameter() < 8) {
         auto* random = Simulation::GetActive()->GetRandom();
         // Here 400 is the speed and the change to the volume is based on the

@@ -28,20 +28,20 @@
 namespace bdm {
 
 struct ModelInitializer {
-  /// Creates a 3D cubic grid of simulation objects and adds them to the
-  /// ResourceManager. Type of the simulation object is determined by the return
+  /// Creates a 3D cubic grid of agents and adds them to the
+  /// ResourceManager. Type of the agent is determined by the return
   /// type of parameter cell_builder.
   ///
   ///     ModelInitializer::Grid3D(8, 10, [](const Double3& pos){
   ///     return Cell(pos); });
-  /// @param      cells_per_dim  number of simulation objects on each axis.
-  ///                            Number of generated simulation objects =
+  /// @param      cells_per_dim  number of agents on each axis.
+  ///                            Number of generated agents =
   ///                            `cells_per_dim ^ 3`
   /// @param      space          space between the positions - e.g space = 10:
   ///                            positions = `{(0, 0, 0), (0, 0, 10), (0, 0,
   ///                            20), ... }`
   /// @param      cell_builder   function containing the logic to instantiate a
-  ///                            new simulation object. Takes `const
+  ///                            new agent. Takes `const
   ///                            Double3&` as input parameter
   ///
   template <typename Function>
@@ -63,21 +63,21 @@ struct ModelInitializer {
     }
   }
 
-  /// Creates a 3D grid of simulation objects and adds them to the
-  /// ResourceManager. Type of the simulation object is determined by the return
+  /// Creates a 3D grid of agents and adds them to the
+  /// ResourceManager. Type of the agent is determined by the return
   /// type of parameter cell_builder.
   ///
   ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const Double3&
   ///     pos){ return Cell(pos); });
-  /// @param      cells_per_dim  number of simulation objects on each axis.
-  ///                            Number of generated simulation objects =
+  /// @param      cells_per_dim  number of agents on each axis.
+  ///                            Number of generated agents =
   ///                            `cells_per_dim[0] * cells_per_dim[1] *
   ///                            cells_per_dim[2]`
   /// @param      space          space between the positions - e.g space = 10:
   ///                            positions = `{(0, 0, 0), (0, 0, 10), (0, 0,
   ///                            20), ... }`
   /// @param      cell_builder   function containing the logic to instantiate a
-  ///                            new simulation object. Takes `const
+  ///                            new agent. Takes `const
   ///                            Double3&` as input parameter
   ///
   template <typename Function>
@@ -99,12 +99,12 @@ struct ModelInitializer {
     }
   }
 
-  /// Adds simulation objects to the ResourceManager. Type of the simulation
+  /// Adds agents to the ResourceManager. Type of the simulation
   /// object is determined by the return type of parameter cell_builder.
   ///
-  /// @param      positions     positions of the simulation objects to be
+  /// @param      positions     positions of the agents to be
   /// @param      cell_builder  function containing the logic to instantiate a
-  ///                           new simulation object. Takes `const
+  ///                           new agent. Takes `const
   ///                           Double3&` as input parameter
   ///
   template <typename Function>
@@ -121,15 +121,15 @@ struct ModelInitializer {
     }
   }
 
-  /// Adds simulation objects with random positions to the ResourceManager.
-  /// Type of the simulation object is determined by the return type of
+  /// Adds agents with random positions to the ResourceManager.
+  /// Type of the agent is determined by the return type of
   /// parameter cell_builder.
   ///
   /// @param[in]  min           The minimum position value
   /// @param[in]  max           The maximum position value
   /// @param[in]  num_cells     The number cells
   /// @param[in]  cell_builder  function containing the logic to instantiate a
-  ///                           new simulation object. Takes `const
+  ///                           new agent. Takes `const
   ///                           Double3&` as input parameter
   ///
   template <typename Function>

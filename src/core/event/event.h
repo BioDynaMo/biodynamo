@@ -22,7 +22,7 @@
 namespace bdm {
 
 /// EventId is used inside biology modules to determine if a biology module
-/// should be copied if a new simulation object is created.
+/// should be copied if a new agent is created.
 /// Possible events are cell division, neurite branching, ...\n
 /// EventId invariant: the number of bits set to 1 must be 1.
 using EventId = uint64_t;

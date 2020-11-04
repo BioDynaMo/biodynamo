@@ -38,13 +38,13 @@ biodynamo demo soma_clustering .
 Go into the `soma_clustering` directory and open the source file `src/soma_clustering.h` in your favorite editor.
 We can note the following things from its content:
 
-### 1. Creating a custom simulation object
+### 1. Creating a custom agent
 
 In `src/my_cell.h` we can find the following code:
 
 ```cpp
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+  BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
@@ -82,7 +82,7 @@ configuration file:
 export = true
 interval = 10
 
-	[[visualize_sim_object]]
+	[[visualize_agent]]
 	name = "MyCell"
 	additional_data_members = [ "diameter_", "cell_type_" ]
 
@@ -96,7 +96,7 @@ interval = 10
 
 This will enable exporting visualization files, so that we can visualize the
 simulation after it has finished. Furthermore, we enable the output of the diameter
-and the cell type of our simulation objects (named "MyCell"), and the two substances
+and the cell type of our agents (named "MyCell"), and the two substances
 that are secreted.
 
 ## Build and run the simulation

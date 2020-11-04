@@ -212,7 +212,7 @@ void NumaPoolAllocator::Delete(void* p) {
   auto tid = tinfo_->GetMyThreadId();
   auto& tl_list = free_lists_[tid];
   tl_list.PushFront(node);
-  // migrate too much unused memory to the central list so other threads
+  // migrate too much unused memory to the central list agent other threads
   // can obtain it
   if (tl_list.Size() > max_nodes_per_thread_ && tl_list.CanPopBackN()) {
     Node* head = nullptr;

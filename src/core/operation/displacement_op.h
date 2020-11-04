@@ -26,7 +26,7 @@
 #include "core/operation/operation_registry.h"
 #include "core/param/param.h"
 #include "core/scheduler.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 #include "core/simulation.h"
 #include "core/util/math.h"
 #include "core/util/thread_info.h"
@@ -34,7 +34,7 @@
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-struct DisplacementOp : public SimObjectOperationImpl {
+struct DisplacementOp : public AgentOperationImpl {
   BDM_OP_HEADER(DisplacementOp);
 
   DisplacementOp() {
@@ -45,12 +45,12 @@ struct DisplacementOp : public SimObjectOperationImpl {
     delta_time_.resize(tinfo->GetMaxThreads(), 0);
   }
 
-  void operator()(SimObject* sim_object) override {
+  void operator()(Agent* agent) override {
     auto* sim = Simulation::GetActive();
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
 
-    if (!sim_object->RunDisplacement()) {
+    if (!agent->RunDisplacement()) {
       return;
     }
 
@@ -71,10 +71,10 @@ struct DisplacementOp : public SimObjectOperationImpl {
     }
 
     const auto& displacement =
-        sim_object->CalculateDisplacement(squared_radius_, delta_time_[tid]);
-    sim_object->ApplyDisplacement(displacement);
+        agent->CalculateDisplacement(squared_radius_, delta_time_[tid]);
+    agent->ApplyDisplacement(displacement);
     if (param->bound_space_) {
-      ApplyBoundingBox(sim_object, param->min_bound_, param->max_bound_);
+      ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
     }
   }
 

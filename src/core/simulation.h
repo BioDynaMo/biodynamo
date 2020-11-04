@@ -20,7 +20,7 @@
 
 #include "core/gpu/opencl_state.h"
 #include "core/memory/memory_manager.h"
-#include "core/sim_object/so_uid.h"
+#include "core/agent/agent_uid.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
 
@@ -34,7 +34,7 @@ class Scheduler;
 struct Param;
 class InPlaceExecutionContext;
 class CommandLineOptions;
-class SoUidGenerator;
+class AgentUidGenerator;
 
 class SimulationTest;
 class ParaviewAdaptorTest;
@@ -42,7 +42,7 @@ class ParaviewAdaptorTest;
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
 /// It is possible to create multiple simulations, but only one can be active at
-/// the same time. Creating a new simulation object automatically activates it.
+/// the same time. Creating a new agent automatically activates it.
 class Simulation {
  public:
   /// This function returns the currently active Simulation simulation.
@@ -94,7 +94,7 @@ class Simulation {
 
   const Param* GetParam() const;
 
-  SoUidGenerator* GetSoUidGenerator();
+  AgentUidGenerator* GetAgentUidGenerator();
 
   [[deprecated("Replaced with GetEnvironment()")]] Environment* GetGrid();
 
@@ -147,7 +147,7 @@ class Simulation {
 
   ResourceManager* rm_ = nullptr;
   Param* param_ = nullptr;
-  SoUidGenerator* so_uid_generator_ = nullptr;  //!
+  AgentUidGenerator* agent_uid_generator_ = nullptr;  //!
   std::string name_;
   Environment* environment_ = nullptr;  //!
   Scheduler* scheduler_ = nullptr;      //!

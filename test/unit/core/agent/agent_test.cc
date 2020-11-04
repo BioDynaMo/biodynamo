@@ -12,24 +12,24 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/core/sim_object/sim_object_test.h"
+#include "unit/core/agent/agent_test.h"
 #include "core/resource_manager.h"
-#include "unit/test_util/test_sim_object.h"
+#include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace sim_object_test_internal {
+namespace agent_test_internal {
 
-TEST(SimObjectTest, CopyCtor) {
+TEST(AgentTest, CopyCtor) {
   Simulation simulation(TEST_NAME);
 
-  TestSimObject cell;
+  TestAgent cell;
   cell.SetBoxIdx(123);
   GrowthModule* gm = new GrowthModule();
   gm->growth_rate_ = 321;
   cell.AddBiologyModule(gm);
 
-  TestSimObject copy(cell);
+  TestAgent copy(cell);
   EXPECT_EQ(123u, copy.GetBoxIdx());
   EXPECT_EQ(cell.GetUid(), copy.GetUid());
   ASSERT_EQ(1u, copy.GetAllBiologyModules().size());
@@ -39,10 +39,10 @@ TEST(SimObjectTest, CopyCtor) {
   EXPECT_EQ(321, copy_gm->growth_rate_);
 }
 
-TEST(SimObjectTest, BiologyModule) {
+TEST(AgentTest, BiologyModule) {
   Simulation simulation(TEST_NAME);
 
-  TestSimObject cell;
+  TestAgent cell;
   double diameter = cell.GetDiameter();
   auto position = cell.GetPosition();
 
@@ -57,11 +57,11 @@ TEST(SimObjectTest, BiologyModule) {
   EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<double>::value);
 }
 
-TEST(SimObjectTest, GetBiologyModulesTest) {
+TEST(AgentTest, GetBiologyModulesTest) {
   Simulation simulation(TEST_NAME);
 
   // create cell and add biology modules
-  TestSimObject cell;
+  TestAgent cell;
   cell.AddBiologyModule(new GrowthModule());
   cell.AddBiologyModule(new GrowthModule());
   cell.AddBiologyModule(new MovementModule({1, 2, 3}));
@@ -81,16 +81,16 @@ TEST(SimObjectTest, GetBiologyModulesTest) {
   EXPECT_EQ(1u, movement_module_cnt);
 }
 
-TEST(SimObjectTest, BiologyModuleEventHandler) {
+TEST(AgentTest, BiologyModuleEventHandler) {
   Simulation simulation(TEST_NAME);
 
-  TestSimObject cell;
+  TestAgent cell;
 
   cell.AddBiologyModule(new MovementModule({1, 2, 3}));
   cell.AddBiologyModule(new GrowthModule());
 
   CellDivisionEvent event(1, 2, 3);
-  TestSimObject copy(event, &cell, 0);
+  TestAgent copy(event, &cell, 0);
   cell.EventHandler(event, &copy);
 
   const auto& bms = cell.GetAllBiologyModules();
@@ -102,10 +102,10 @@ TEST(SimObjectTest, BiologyModuleEventHandler) {
   EXPECT_TRUE(dynamic_cast<GrowthModule*>(copy_bms[0]) != nullptr);
 }
 
-TEST(SimObjectTest, RemoveBiologyModule) {
+TEST(AgentTest, RemoveBiologyModule) {
   Simulation simulation(TEST_NAME);
 
-  TestSimObject cell;
+  TestAgent cell;
 
   // add RemoveModule as first one! If removal while iterating over it is not
   // implemented correctly, MovementModule will not be executed.
@@ -164,26 +164,26 @@ struct VerifyPosition : public SoVisitor {
   }
 };
 
-TEST(SimObjectTest, GetSoPtr) {
+TEST(AgentTest, GetAgentPtr) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  std::vector<SimObject*> sim_objects;
+  std::vector<Agent*> agents;
   for (uint64_t i = 0; i < 10; i++) {
-    auto* so = new TestSimObject();
-    rm->push_back(so);
-    sim_objects.push_back(so);
+    auto* agent = new TestAgent();
+    rm->push_back(agent);
+    agents.push_back(agent);
   }
-  EXPECT_EQ(10u, rm->GetNumSimObjects());
+  EXPECT_EQ(10u, rm->GetNumAgents());
 
   for (uint64_t i = 0; i < 10; i++) {
-    SoPointer<TestSimObject> expected(sim_objects[i]->GetUid());
-    EXPECT_EQ(expected, sim_objects[i]->GetSoPtr<TestSimObject>());
+    AgentPointer<TestAgent> expected(agents[i]->GetUid());
+    EXPECT_EQ(expected, agents[i]->GetAgentPtr<TestAgent>());
 
-    SoPointer<SimObject> expected1(sim_objects[i]->GetUid());
-    EXPECT_EQ(expected1, sim_objects[i]->GetSoPtr());
+    AgentPointer<Agent> expected1(agents[i]->GetUid());
+    EXPECT_EQ(expected1, agents[i]->GetAgentPtr());
   }
 }
 
-}  // namespace sim_object_test_internal
+}  // namespace agent_test_internal
 }  // namespace bdm

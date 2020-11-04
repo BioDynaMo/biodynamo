@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/visualization/paraview/vtk_sim_objects.h"
+#include "core/visualization/paraview/vtk_agents.h"
 // std
 #include <algorithm>
 #include <set>
@@ -30,18 +30,18 @@
 // BioDynaMo
 #include "core/param/param.h"
 #include "core/shape.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 #include "core/simulation.h"
 #include "core/util/jit.h"
 #include "core/visualization/paraview/jit_helper.h"
 #include "core/visualization/paraview/parallel_vtu_writer.h"
 
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-VtkSimObjects::VtkSimObjects(const char* type_name,
+VtkAgents::VtkAgents(const char* type_name,
                              vtkCPDataDescription* data_description) {
   auto* param = Simulation::GetActive()->GetParam();
   auto* tinfo = ThreadInfo::GetInstance();
@@ -62,7 +62,7 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
   }
 
   tclass_ = FindTClass();
-  auto* tmp_instance = static_cast<SimObject*>(tclass_->New());
+  auto* tmp_instance = static_cast<Agent*>(tclass_->New());
   shape_ = tmp_instance->GetShape();
   std::vector<std::string> data_members;
   InitializeDataMembers(tmp_instance, &data_members);
@@ -74,17 +74,17 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
         std::stringstream sstr;
         sstr << "namespace bdm {\n\n"
              << "struct R__CLING_PTRCHECK(off) " << functor_name
-             << " : public Functor<void, VtkSimObjects*, int> {\n"
-             << "  void operator()(VtkSimObjects* so_grid, int tid) {\n";
+             << " : public Functor<void, VtkAgents*, int> {\n"
+             << "  void operator()(VtkAgents* agent_grid, int tid) {\n";
 
         for (auto* tdm : tdata_members) {
           // example:
           // { CreateVtkDataArray<Cell, Double3> f; f(tid, "position_", 123,
-          // so_grid); }
+          // agent_grid); }
           sstr << "{ CreateVtkDataArray<" << tdm->GetClass()->GetName() << ", "
                << tdm->GetTypeName() << ">f; f("
                << "tid, \"" << tdm->GetName() << "\", " << tdm->GetOffset()
-               << ", so_grid); }\n";
+               << ", agent_grid); }\n";
         }
 
         sstr << "  }\n";
@@ -94,7 +94,7 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
         return sstr.str();
       });
   jitcreate.Compile();
-  auto* create_functor = jitcreate.New<Functor<void, VtkSimObjects*, int>>();
+  auto* create_functor = jitcreate.New<Functor<void, VtkAgents*, int>>();
   for (uint64_t i = 0; i < data_.size(); ++i) {
     (*create_functor)(this, i);
   }
@@ -102,7 +102,7 @@ VtkSimObjects::VtkSimObjects(const char* type_name,
 }
 
 // -----------------------------------------------------------------------------
-VtkSimObjects::~VtkSimObjects() {
+VtkAgents::~VtkAgents() {
   name_ = "";
   for (auto& el : data_) {
     el->Delete();
@@ -111,16 +111,16 @@ VtkSimObjects::~VtkSimObjects() {
 }
 
 // -----------------------------------------------------------------------------
-vtkUnstructuredGrid* VtkSimObjects::GetData(uint64_t idx) { return data_[idx]; }
+vtkUnstructuredGrid* VtkAgents::GetData(uint64_t idx) { return data_[idx]; }
 
 // -----------------------------------------------------------------------------
-Shape VtkSimObjects::GetShape() const { return shape_; }
+Shape VtkAgents::GetShape() const { return shape_; }
 
 // -----------------------------------------------------------------------------
-TClass* VtkSimObjects::GetTClass() { return tclass_; }
+TClass* VtkAgents::GetTClass() { return tclass_; }
 
 // -----------------------------------------------------------------------------
-void VtkSimObjects::Update(const std::vector<SimObject*>* sim_objects) {
+void VtkAgents::Update(const std::vector<Agent*>* agents) {
   auto* param = Simulation::GetActive()->GetParam();
   if (param->export_visualization_) {
 #pragma omp parallel
@@ -130,20 +130,20 @@ void VtkSimObjects::Update(const std::vector<SimObject*>* sim_objects) {
       auto max_threads = tinfo->GetMaxThreads();
 
       // use static scheduling for now
-      auto correction = sim_objects->size() % max_threads == 0 ? 0 : 1;
-      auto chunk = sim_objects->size() / max_threads + correction;
+      auto correction = agents->size() % max_threads == 0 ? 0 : 1;
+      auto chunk = agents->size() / max_threads + correction;
       auto start = tid * chunk;
-      auto end = std::min(sim_objects->size(), start + chunk);
+      auto end = std::min(agents->size(), start + chunk);
 
-      UpdateMappedDataArrays(tid, sim_objects, start, end);
+      UpdateMappedDataArrays(tid, agents, start, end);
     }
   } else {
-    UpdateMappedDataArrays(0, sim_objects, 0, sim_objects->size());
+    UpdateMappedDataArrays(0, agents, 0, agents->size());
   }
 }
 
 // -----------------------------------------------------------------------------
-void VtkSimObjects::WriteToFile(uint64_t step) const {
+void VtkAgents::WriteToFile(uint64_t step) const {
   auto* sim = Simulation::GetActive();
   auto filename_prefix = Concat(name_, "-", step);
 
@@ -152,32 +152,32 @@ void VtkSimObjects::WriteToFile(uint64_t step) const {
 }
 
 // -----------------------------------------------------------------------------
-void VtkSimObjects::UpdateMappedDataArrays(
-    uint64_t tid, const std::vector<SimObject*>* sim_objects, uint64_t start,
+void VtkAgents::UpdateMappedDataArrays(
+    uint64_t tid, const std::vector<Agent*>* agents, uint64_t start,
     uint64_t end) {
   auto* parray = dynamic_cast<MappedDataArrayInterface*>(
       data_[tid]->GetPoints()->GetData());
-  parray->Update(sim_objects, start, end);
+  parray->Update(agents, start, end);
   auto* point_data = data_[tid]->GetPointData();
   for (int i = 0; i < point_data->GetNumberOfArrays(); i++) {
     auto* array =
         dynamic_cast<MappedDataArrayInterface*>(point_data->GetArray(i));
-    array->Update(sim_objects, start, end);
+    array->Update(agents, start, end);
   }
 }
 
 // -----------------------------------------------------------------------------
-TClass* VtkSimObjects::FindTClass() {
+TClass* VtkAgents::FindTClass() {
   const auto& tclass_vector = FindClassSlow(name_);
   if (tclass_vector.size() == 0) {
-    Log::Fatal("VtkSimObjects::VtkSimObjects",
+    Log::Fatal("VtkAgents::VtkAgents",
                Concat("Could not find class: ", name_).c_str());
   } else if (tclass_vector.size() == 0) {
     std::stringstream str;
     for (auto& tc : tclass_vector) {
       str << tc->GetName() << std::endl;
     }
-    Log::Fatal("VtkSimObjects::VtkSimObjects",
+    Log::Fatal("VtkAgents::VtkAgents",
                Concat("Found multiple classes with name : ", name_,
                       ". See list below. Fix this issue by adding a namespace "
                       "modifier.\n'",
@@ -188,11 +188,11 @@ TClass* VtkSimObjects::FindTClass() {
 }
 
 // -----------------------------------------------------------------------------
-void VtkSimObjects::InitializeDataMembers(
-    SimObject* so, std::vector<std::string>* data_members) {
-  std::set<std::string> dm_set = so->GetRequiredVisDataMembers();
+void VtkAgents::InitializeDataMembers(
+    Agent* agent, std::vector<std::string>* data_members) {
+  std::set<std::string> dm_set = agent->GetRequiredVisDataMembers();
   auto* param = Simulation::GetActive()->GetParam();
-  for (auto& dm : param->visualize_sim_objects_.at(name_)) {
+  for (auto& dm : param->visualize_agents_.at(name_)) {
     dm_set.insert(dm);
   }
   data_members->resize(dm_set.size());

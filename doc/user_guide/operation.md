@@ -18,7 +18,7 @@ keywords:
 ---
 
 Operations are functions that are executed at a given frequency throughout the simulation.
-To execute a function for *specific* simulation objects have a look at biology modules.
+To execute a function for *specific* agents have a look at biology modules.
 **An operation can have multiple implementations.**
 Each implementation can target a different type of hardware (e.g. CPU or GPU) as shown in the following image:
 
@@ -35,12 +35,12 @@ An operation operates at a certain frequency, which can be set after *registerin
 ## Operation implementation types
 There are two types of operation implementations:
 
-1. `SimObjectOperationImpl`: executed for each simulation object at the given frequency
+1. `AgentOperationImpl`: executed for each agent at the given frequency
 2. `StandaloneOperationImpl`: executed once at the given frequency
 
-`SimObjectOperationImpl` is used for operation implementations that will be executed for all simulation objects. The displacement operation in BioDynaMo is such a type of operation: for every simulation object we calculate the displacement force if there is a collision with other simulation objects.
-`StandaloneOperationImpl` is used for operations that will be executed once at the operation's given frequency. The diffusion operation is such a type of operation: it is independent of how many simulation objects there are.
-The displacement operation implementation for GPUs is also a `StandaloneOperationImpl` type, because the GPU implementation will not need to be executed for each simulation object.
+`AgentOperationImpl` is used for operation implementations that will be executed for all agents. The displacement operation in BioDynaMo is such a type of operation: for every agent we calculate the displacement force if there is a collision with other agents.
+`StandaloneOperationImpl` is used for operations that will be executed once at the operation's given frequency. The diffusion operation is such a type of operation: it is independent of how many agents there are.
+The displacement operation implementation for GPUs is also a `StandaloneOperationImpl` type, because the GPU implementation will not need to be executed for each agent.
 
 Both implementation types have a `SetUp()` and `TearDown()` method. These methods are, respectively, executed before and after the operation is executed.
 For GPU operations these can be used to copy data between the GPU and CPU.
@@ -57,14 +57,14 @@ The header file contains the logic of your operation, whereas the implementation
 ```cpp
 // File: displacement_op.h (minimal version)
 
-struct DisplacementOp : public SimObjectOperationImpl {
+struct DisplacementOp : public AgentOperationImpl {
   // This macro will generate the boilerplate code. It must be included.
   BDM_OP_HEADER(DisplacementOp);
 
-  // Here you define you operation's logic. The `sim_object` pointer is a handle
-  // to each simulation object in your simulation
-  void operator()(SimObject* sim_object) override {
-    // In the displacement operation we check the environment of `sim_object`,
+  // Here you define you operation's logic. The `agent` pointer is a handle
+  // to each agent in your simulation
+  void operator()(Agent* agent) override {
+    // In the displacement operation we check the environment of `agent`,
     // and apply a displacement force if there is a collision
   }
 }
@@ -118,14 +118,14 @@ If you do not schedule your operation, you should free the created operation to 
 ## Schedule multiple operations with the same name
 
 There are cases in which you might want to schedule multiple instances of a single operation, each with a slightly different logic.
-An example could be to query how many simulation objects there are with a certain diameter. For example: how many simulation objects are there with a diameter greater than 10, and how many simulation objects are there with a diameter greater than 20.
+An example could be to query how many agents there are with a certain diameter. For example: how many agents are there with a diameter greater than 10, and how many agents are there with a diameter greater than 20.
 You could approach this the following way.
 
 ```cpp
 // File: check_diameter.h
 
 // Create an operation implementation with a state
-struct CheckDiameter : public SimObjectOperationImpl {
+struct CheckDiameter : public AgentOperationImpl {
   BDM_OP_HEADER(CheckDiameter);
 
   CheckDiameter() {}
@@ -136,16 +136,16 @@ struct CheckDiameter : public SimObjectOperationImpl {
     this->counter_ = other.counter_.load();
   }
 
-  void operator()(SimObject* sim_object) override {
-    if (sim_object->GetDiameter() > max_diameter_) {
+  void operator()(Agent* agent) override {
+    if (agent->GetDiameter() > max_diameter_) {
       counter_++;
     }
   }
 
   // The state consists of these two data members
   double max_diameter_ = 1;
-  // Data members that can be changed in `operator()(SimObject*
-  // sim_object)` need to be of atomic type to avoid race conditions
+  // Data members that can be changed in `operator()(Agent*
+  // agent)` need to be of atomic type to avoid race conditions
   std::atomic<uint32_t> counter_;
 };
 

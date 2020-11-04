@@ -166,7 +166,7 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
+void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
                        bool export_visualization = true, bool use_pvsm = true) {
   auto set_param = [&](Param* param) {
     param->remove_output_dir_contents_ = true;
@@ -175,18 +175,18 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
     param->visualization_export_generate_pvsm_ = use_pvsm;
     if (!export_visualization) {
       param->pv_insitu_pipeline_ =
-          GetPythonScriptPath("validate_sim_objects.py");
+          GetPythonScriptPath("validate_agents.py");
       auto sim_name = Simulation::GetActive()->GetUniqueName();
       param->pv_insitu_pipeline_arguments_ =
           Concat("--sim_name=", sim_name, " --num_elements=", num_so);
     }
     param->run_mechanical_interactions_ = false;
-    param->visualize_sim_objects_.insert(
+    param->visualize_agents_.insert(
         {"NeuriteElement", {"uid_", "daughter_right_"}});
     param->mapped_data_array_mode_ = mode;
   };
   neuroscience::InitModule();
-  auto sim_name = Concat("ExportSimObjectsTest_", num_so, "_", mode);
+  auto sim_name = Concat("ExportAgentsTest_", num_so, "_", mode);
   auto* sim = new Simulation(sim_name, set_param);
 
   auto output_dir = sim->GetOutputDir();
@@ -203,7 +203,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
     ne->SetDiameter(d + 10);
     ne->SetMassLocation({d, d, d});
     ne->SetActualLength(d + 10);
-    ne->SetDaughterRight(SoPointer<NeuriteElement>(SoUid(i)));
+    ne->SetDaughterRight(AgentPointer<NeuriteElement>(AgentUid(i)));
     rm->push_back(ne);
   };
 
@@ -220,7 +220,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
   if (export_visualization) {
     // create pvsm file
     delete sim;
-    Validate("validate_sim_objects.py", sim_name, num_so, use_pvsm);
+    Validate("validate_agents.py", sim_name, num_so, use_pvsm);
     ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
   } else {
     delete sim;
@@ -230,52 +230,52 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
 }
 
 // -----------------------------------------------------------------------------
-TEST(FLAKY_ParaviewIntegrationTest, ExportSimObjects_ZeroCopy) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunSimObjectsTest(mode, 10 * max_threads + 1);
+  RunAgentsTest(mode, std::max(1, max_threads - 1));
+  RunAgentsTest(mode, 10 * max_threads + 1);
 }
 
 // -----------------------------------------------------------------------------
-TEST(FLAKY_ParaviewIntegrationTest, ExportSimObjects_Cache) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
-  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunSimObjectsTest(mode, 10 * max_threads + 1);
+  RunAgentsTest(mode, std::max(1, max_threads - 1));
+  RunAgentsTest(mode, 10 * max_threads + 1);
 }
 
 // -----------------------------------------------------------------------------
-TEST(FLAKY_ParaviewIntegrationTest, ExportSimObjects_Copy) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
-  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunSimObjectsTest(mode, 10 * max_threads + 1);
+  RunAgentsTest(mode, std::max(1, max_threads - 1));
+  RunAgentsTest(mode, 10 * max_threads + 1);
 }
 
 // -----------------------------------------------------------------------------
-TEST(FLAKY_ParaviewIntegrationTest, ExportSimObjectsLoadWithoutPVSM) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportAgentsLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunSimObjectsTest(mode, std::max(1, max_threads - 1), true, false);
+  RunAgentsTest(mode, std::max(1, max_threads - 1), true, false);
 }
 
 // -----------------------------------------------------------------------------
-TEST(FLAKY_ParaviewIntegrationTest, InsituSimObjects_ZeroCopy) {
+TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
   LAUNCH_IN_NEW_PROCESS(
-      RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
-  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+      RunAgentsTest(mode, std::max(1, max_threads - 1), false));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
 
 // -----------------------------------------------------------------------------
-TEST(FLAKY_ParaviewIntegrationTest, InsituSimObjects_Cache) {
+TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
   LAUNCH_IN_NEW_PROCESS(
-      RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
-  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+      RunAgentsTest(mode, std::max(1, max_threads - 1), false));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
 
 // -----------------------------------------------------------------------------
@@ -283,7 +283,7 @@ void RunDefaultInsituPipelineTest() {
   auto set_param = [](Param* param) {
     param->remove_output_dir_contents_ = true;
     param->insitu_visualization_ = true;
-    param->visualize_sim_objects_.insert({"Cell", {}});
+    param->visualize_agents_.insert({"Cell", {}});
   };
   Simulation simulation("RunDefaultInsituPipelineTest", set_param);
 
@@ -302,12 +302,12 @@ TEST(FLAKY_ParaviewIntegrationTest, DefaultInsituPipeline) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(FLAKY_ParaviewIntegrationTest, InsituSimObjects_Copy) {
+TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
   LAUNCH_IN_NEW_PROCESS(
-      RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
-  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+      RunAgentsTest(mode, std::max(1, max_threads - 1), false));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
 }  // namespace bdm
 

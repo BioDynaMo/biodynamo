@@ -30,7 +30,7 @@ NeuronSoma::~NeuronSoma() {}
 
 NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 
-NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so,
+NeuronSoma::NeuronSoma(const Event& event, Agent* mother_so,
                        uint64_t new_oid)
     : Base(event, mother_so, new_oid) {
   const CellDivisionEvent* cdevent =
@@ -46,8 +46,8 @@ NeuronSoma::NeuronSoma(const Event& event, SimObject* mother_so,
   }
 }
 
-void NeuronSoma::EventHandler(const Event& event, SimObject* other1,
-                              SimObject* other2) {
+void NeuronSoma::EventHandler(const Event& event, Agent* other1,
+                              Agent* other2) {
   Base::EventHandler(event, other1, other2);
 
   const NewNeuriteExtensionEvent* ne_event =
@@ -60,7 +60,7 @@ void NeuronSoma::EventHandler(const Event& event, SimObject* other1,
     double y_coord = std::sin(theta) * std::sin(phi);
     double z_coord = std::cos(theta);
 
-    daughters_.push_back(neurite->GetSoPtr<NeuriteElement>());
+    daughters_.push_back(neurite->GetAgentPtr<NeuriteElement>());
     daughters_coord_[neurite->GetUid()] = {x_coord, y_coord, z_coord};
   }
 
@@ -81,7 +81,7 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
                                              NeuriteElement* prototype) {
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
   NewNeuriteExtensionEvent event(diameter, phi, theta);
-  SimObject* neurite = nullptr;
+  Agent* neurite = nullptr;
   if (!prototype) {
     NeuriteElement ne_tmp;
     neurite = ne_tmp.GetInstance(event, this);
@@ -93,14 +93,14 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
   return bdm_static_cast<NeuriteElement*>(neurite);
 }
 
-void NeuronSoma::RemoveDaughter(const SoPointer<NeuriteElement>& daughter) {
+void NeuronSoma::RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) {
   auto it = std::find(std::begin(daughters_), std::end(daughters_), daughter);
   assert(it != std::end(daughters_) &&
          "The element you wanted to remove is not part of daughters_");
   daughters_.erase(it);
 }
 
-Double3 NeuronSoma::OriginOf(const SoUid& daughter_uid) const {
+Double3 NeuronSoma::OriginOf(const AgentUid& daughter_uid) const {
   Double3 xyz = daughters_coord_.at(daughter_uid);
 
   double radius = Base::diameter_ * .5;
@@ -118,26 +118,26 @@ void NeuronSoma::UpdateDependentPhysicalVariables() {}
 
 void NeuronSoma::UpdateRelative(const NeuronOrNeurite& old_rel,
                                 const NeuronOrNeurite& new_rel) {
-  auto old_rel_soptr = bdm_static_cast<const NeuriteElement*>(&old_rel)
-                           ->GetSoPtr<NeuriteElement>();
-  auto new_rel_soptr = bdm_static_cast<const NeuriteElement*>(&new_rel)
-                           ->GetSoPtr<NeuriteElement>();
-  auto coord = daughters_coord_[old_rel_soptr->GetUid()];
+  auto old_rel_agent_ptr = bdm_static_cast<const NeuriteElement*>(&old_rel)
+                           ->GetAgentPtr<NeuriteElement>();
+  auto new_rel_agent_ptr = bdm_static_cast<const NeuriteElement*>(&new_rel)
+                           ->GetAgentPtr<NeuriteElement>();
+  auto coord = daughters_coord_[old_rel_agent_ptr->GetUid()];
   auto it =
-      std::find(std::begin(daughters_), std::end(daughters_), old_rel_soptr);
+      std::find(std::begin(daughters_), std::end(daughters_), old_rel_agent_ptr);
   assert(it != std::end(daughters_) &&
          "old_element_idx could not be found in daughters_ vector");
-  *it = new_rel_soptr;
-  daughters_coord_[new_rel_soptr->GetUid()] = coord;
+  *it = new_rel_agent_ptr;
+  daughters_coord_[new_rel_agent_ptr->GetUid()] = coord;
 }
 
-const std::vector<SoPointer<NeuriteElement>>& NeuronSoma::GetDaughters() const {
+const std::vector<AgentPointer<NeuriteElement>>& NeuronSoma::GetDaughters() const {
   return daughters_;
 }
 
 void NeuronSoma::CriticalRegion(std::vector<Spinlock*>* locks) {
   locks->reserve(daughters_.size() + 1);
-  locks->push_back(SimObject::GetLock());
+  locks->push_back(Agent::GetLock());
   for (auto& daughter : daughters_) {
     locks->push_back(daughter->GetLock());
   }

@@ -19,7 +19,7 @@
 
 namespace bdm {
 
-/// Visualize the simulation objects in ROOT notebooks
+/// Visualize the agents in ROOT notebooks
 inline void VisualizeInNotebook(size_t w = 300, size_t h = 300,
                                 std::string opt = "") {
   auto* sim = Simulation::GetActive();

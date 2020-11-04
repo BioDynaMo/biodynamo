@@ -47,7 +47,7 @@ TEST(ParamTest, RestoreFromJson) {
   std::string patch1 = R"EOF(
 {
   "bdm::Param": {
-    "visualize_sim_objects_": {
+    "visualize_agents_": {
       "Cell": ["type"]
     }
   },
@@ -62,7 +62,7 @@ TEST(ParamTest, RestoreFromJson) {
 {
   "bdm::Param": {
     "simulation_time_step_" : 1.0,
-    "visualize_sim_objects_": {
+    "visualize_agents_": {
       "Cell": ["type", "some-dm"]
     }
   },
@@ -74,8 +74,8 @@ TEST(ParamTest, RestoreFromJson) {
 
   param.MergeJsonPatch(patch1);
 
-  EXPECT_EQ(1u, param.visualize_sim_objects_.size());
-  auto vis_cell = param.visualize_sim_objects_["Cell"];
+  EXPECT_EQ(1u, param.visualize_agents_.size());
+  auto vis_cell = param.visualize_agents_["Cell"];
   EXPECT_EQ(1u, vis_cell.size());
   EXPECT_TRUE(vis_cell.find("type") != vis_cell.end());
 
@@ -86,8 +86,8 @@ TEST(ParamTest, RestoreFromJson) {
 
   param.MergeJsonPatch(patch2);
 
-  EXPECT_EQ(1u, param.visualize_sim_objects_.size());
-  vis_cell = param.visualize_sim_objects_["Cell"];
+  EXPECT_EQ(1u, param.visualize_agents_.size());
+  vis_cell = param.visualize_agents_["Cell"];
   EXPECT_EQ(2u, vis_cell.size());
   EXPECT_TRUE(vis_cell.find("type") != vis_cell.end());
   EXPECT_TRUE(vis_cell.find("some-dm") != vis_cell.end());

@@ -14,7 +14,7 @@
 
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
@@ -44,45 +44,45 @@ TEST(GridTest, SetupGrid) {
 
   grid->Update();
 
-  std::unordered_map<SoUid, std::vector<SoUid>> neighbors;
-  neighbors.reserve(rm->GetNumSimObjects());
+  std::unordered_map<AgentUid, std::vector<AgentUid>> neighbors;
+  neighbors.reserve(rm->GetNumAgents());
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    auto uid = so->GetUid();
-    auto fill_neighbor_list = [&](const SimObject* neighbor) {
+  rm->ApplyOnAllElements([&](Agent* agent) {
+    auto uid = agent->GetUid();
+    auto fill_neighbor_list = [&](const Agent* neighbor) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
       }
     };
 
-    grid->ForEachNeighborWithinRadius(fill_neighbor_list, *so, 1201);
+    grid->ForEachNeighborWithinRadius(fill_neighbor_list, *agent, 1201);
   });
 
-  std::vector<SoUid> expected_0 = {SoUid(1),  SoUid(4),  SoUid(5), SoUid(16),
-                                   SoUid(17), SoUid(20), SoUid(21)};
-  std::vector<SoUid> expected_4 = {SoUid(0),  SoUid(1),  SoUid(5),  SoUid(8),
-                                   SoUid(9),  SoUid(16), SoUid(17), SoUid(20),
-                                   SoUid(21), SoUid(24), SoUid(25)};
-  std::vector<SoUid> expected_42 = {
-      SoUid(21), SoUid(22), SoUid(23), SoUid(25), SoUid(26), SoUid(27),
-      SoUid(29), SoUid(30), SoUid(31), SoUid(37), SoUid(38), SoUid(39),
-      SoUid(41), SoUid(43), SoUid(45), SoUid(46), SoUid(47), SoUid(53),
-      SoUid(54), SoUid(55), SoUid(57), SoUid(58), SoUid(59), SoUid(61),
-      SoUid(62), SoUid(63)};
-  std::vector<SoUid> expected_63 = {SoUid(42), SoUid(43), SoUid(46), SoUid(47),
-                                    SoUid(58), SoUid(59), SoUid(62)};
+  std::vector<AgentUid> expected_0 = {AgentUid(1),  AgentUid(4),  AgentUid(5), AgentUid(16),
+                                   AgentUid(17), AgentUid(20), AgentUid(21)};
+  std::vector<AgentUid> expected_4 = {AgentUid(0),  AgentUid(1),  AgentUid(5),  AgentUid(8),
+                                   AgentUid(9),  AgentUid(16), AgentUid(17), AgentUid(20),
+                                   AgentUid(21), AgentUid(24), AgentUid(25)};
+  std::vector<AgentUid> expected_42 = {
+      AgentUid(21), AgentUid(22), AgentUid(23), AgentUid(25), AgentUid(26), AgentUid(27),
+      AgentUid(29), AgentUid(30), AgentUid(31), AgentUid(37), AgentUid(38), AgentUid(39),
+      AgentUid(41), AgentUid(43), AgentUid(45), AgentUid(46), AgentUid(47), AgentUid(53),
+      AgentUid(54), AgentUid(55), AgentUid(57), AgentUid(58), AgentUid(59), AgentUid(61),
+      AgentUid(62), AgentUid(63)};
+  std::vector<AgentUid> expected_63 = {AgentUid(42), AgentUid(43), AgentUid(46), AgentUid(47),
+                                    AgentUid(58), AgentUid(59), AgentUid(62)};
 
-  std::sort(neighbors[SoUid(0)].begin(), neighbors[SoUid(0)].end());
-  std::sort(neighbors[SoUid(4)].begin(), neighbors[SoUid(4)].end());
-  std::sort(neighbors[SoUid(42)].begin(), neighbors[SoUid(42)].end());
-  std::sort(neighbors[SoUid(63)].begin(), neighbors[SoUid(63)].end());
+  std::sort(neighbors[AgentUid(0)].begin(), neighbors[AgentUid(0)].end());
+  std::sort(neighbors[AgentUid(4)].begin(), neighbors[AgentUid(4)].end());
+  std::sort(neighbors[AgentUid(42)].begin(), neighbors[AgentUid(42)].end());
+  std::sort(neighbors[AgentUid(63)].begin(), neighbors[AgentUid(63)].end());
 
-  EXPECT_EQ(expected_0, neighbors[SoUid(0)]);
-  EXPECT_EQ(expected_4, neighbors[SoUid(4)]);
-  EXPECT_EQ(expected_42, neighbors[SoUid(42)]);
-  EXPECT_EQ(expected_63, neighbors[SoUid(63)]);
+  EXPECT_EQ(expected_0, neighbors[AgentUid(0)]);
+  EXPECT_EQ(expected_4, neighbors[AgentUid(4)]);
+  EXPECT_EQ(expected_42, neighbors[AgentUid(42)]);
+  EXPECT_EQ(expected_63, neighbors[AgentUid(63)]);
 }
 
 void RunUpdateGridTest(Simulation* simulation) {
@@ -93,47 +93,47 @@ void RunUpdateGridTest(Simulation* simulation) {
   // Update the grid
   grid->Update();
 
-  std::unordered_map<SoUid, std::vector<SoUid>> neighbors;
-  neighbors.reserve(rm->GetNumSimObjects());
+  std::unordered_map<AgentUid, std::vector<AgentUid>> neighbors;
+  neighbors.reserve(rm->GetNumAgents());
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    auto uid = so->GetUid();
-    auto fill_neighbor_list = [&](const SimObject* neighbor) {
+  rm->ApplyOnAllElements([&](Agent* agent) {
+    auto uid = agent->GetUid();
+    auto fill_neighbor_list = [&](const Agent* neighbor) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
       }
     };
 
-    grid->ForEachNeighborWithinRadius(fill_neighbor_list, *so, 1201);
+    grid->ForEachNeighborWithinRadius(fill_neighbor_list, *agent, 1201);
   });
 
-  std::vector<SoUid> expected_0 = {SoUid(4),  SoUid(5),  SoUid(16),
-                                   SoUid(17), SoUid(20), SoUid(21)};
-  std::vector<SoUid> expected_5 = {SoUid(0),  SoUid(2),  SoUid(4),  SoUid(6),
-                                   SoUid(8),  SoUid(9),  SoUid(10), SoUid(16),
-                                   SoUid(17), SoUid(18), SoUid(20), SoUid(21),
-                                   SoUid(22), SoUid(24), SoUid(25), SoUid(26)};
-  std::vector<SoUid> expected_41 = {
-      SoUid(20), SoUid(21), SoUid(22), SoUid(24), SoUid(25),
-      SoUid(26), SoUid(28), SoUid(29), SoUid(30), SoUid(36),
-      SoUid(37), SoUid(38), SoUid(40), SoUid(44), SoUid(45),
-      SoUid(46), SoUid(52), SoUid(53), SoUid(54), SoUid(56),
-      SoUid(57), SoUid(58), SoUid(60), SoUid(61), SoUid(62)};
-  std::vector<SoUid> expected_61 = {SoUid(40), SoUid(41), SoUid(44), SoUid(45),
-                                    SoUid(46), SoUid(56), SoUid(57), SoUid(58),
-                                    SoUid(60), SoUid(62)};
+  std::vector<AgentUid> expected_0 = {AgentUid(4),  AgentUid(5),  AgentUid(16),
+                                   AgentUid(17), AgentUid(20), AgentUid(21)};
+  std::vector<AgentUid> expected_5 = {AgentUid(0),  AgentUid(2),  AgentUid(4),  AgentUid(6),
+                                   AgentUid(8),  AgentUid(9),  AgentUid(10), AgentUid(16),
+                                   AgentUid(17), AgentUid(18), AgentUid(20), AgentUid(21),
+                                   AgentUid(22), AgentUid(24), AgentUid(25), AgentUid(26)};
+  std::vector<AgentUid> expected_41 = {
+      AgentUid(20), AgentUid(21), AgentUid(22), AgentUid(24), AgentUid(25),
+      AgentUid(26), AgentUid(28), AgentUid(29), AgentUid(30), AgentUid(36),
+      AgentUid(37), AgentUid(38), AgentUid(40), AgentUid(44), AgentUid(45),
+      AgentUid(46), AgentUid(52), AgentUid(53), AgentUid(54), AgentUid(56),
+      AgentUid(57), AgentUid(58), AgentUid(60), AgentUid(61), AgentUid(62)};
+  std::vector<AgentUid> expected_61 = {AgentUid(40), AgentUid(41), AgentUid(44), AgentUid(45),
+                                    AgentUid(46), AgentUid(56), AgentUid(57), AgentUid(58),
+                                    AgentUid(60), AgentUid(62)};
 
-  std::sort(neighbors[SoUid(0)].begin(), neighbors[SoUid(0)].end());
-  std::sort(neighbors[SoUid(5)].begin(), neighbors[SoUid(5)].end());
-  std::sort(neighbors[SoUid(41)].begin(), neighbors[SoUid(41)].end());
-  std::sort(neighbors[SoUid(61)].begin(), neighbors[SoUid(61)].end());
+  std::sort(neighbors[AgentUid(0)].begin(), neighbors[AgentUid(0)].end());
+  std::sort(neighbors[AgentUid(5)].begin(), neighbors[AgentUid(5)].end());
+  std::sort(neighbors[AgentUid(41)].begin(), neighbors[AgentUid(41)].end());
+  std::sort(neighbors[AgentUid(61)].begin(), neighbors[AgentUid(61)].end());
 
-  EXPECT_EQ(expected_0, neighbors[SoUid(0)]);
-  EXPECT_EQ(expected_5, neighbors[SoUid(5)]);
-  EXPECT_EQ(expected_41, neighbors[SoUid(41)]);
-  EXPECT_EQ(expected_61, neighbors[SoUid(61)]);
+  EXPECT_EQ(expected_0, neighbors[AgentUid(0)]);
+  EXPECT_EQ(expected_5, neighbors[AgentUid(5)]);
+  EXPECT_EQ(expected_41, neighbors[AgentUid(41)]);
+  EXPECT_EQ(expected_61, neighbors[AgentUid(61)]);
 }
 
 // TODO(lukas) Add tests for UniformGridEnvironment::ForEachNeighbor
@@ -148,10 +148,10 @@ TEST(GridTest, UpdateGrid) {
   env->Update();
 
   // Remove cells 1 and 42
-  rm->Remove(SoUid(1));
-  rm->Remove(SoUid(42));
+  rm->Remove(AgentUid(1));
+  rm->Remove(AgentUid(42));
 
-  EXPECT_EQ(62u, rm->GetNumSimObjects());
+  EXPECT_EQ(62u, rm->GetNumAgents());
 
   RunUpdateGridTest(&simulation);
 }
@@ -164,13 +164,13 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
   CellFactory(rm, 4);
 
   // make sure that there are multiple cells per box
-  rm->GetSimObject(SoUid(0))->SetDiameter(60);
+  rm->GetAgent(AgentUid(0))->SetDiameter(60);
 
   env->Update();
 
   // Remove cells 1 and 42
-  rm->Remove(SoUid(1));
-  rm->Remove(SoUid(42));
+  rm->Remove(AgentUid(1));
+  rm->Remove(AgentUid(42));
 
   // run 100 times to increase possibility of race condition due to different
   // scheduling of threads
@@ -220,7 +220,7 @@ TEST(GridTest, GridDimensions) {
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
-  rm->GetSimObject(SoUid(0))->SetPosition({{100, 0, 0}});
+  rm->GetAgent(AgentUid(0))->SetPosition({{100, 0, 0}});
   env->Update();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
   auto& dim_1 = env->GetDimensions();
@@ -264,25 +264,25 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
   EXPECT_EQ(99, max_dimensions[1]);
 }
 
-struct ZOrderCallback : Functor<void, const SoHandle&> {
-  std::vector<std::set<SoUid>> zorder;
+struct ZOrderCallback : Functor<void, const AgentHandle&> {
+  std::vector<std::set<AgentUid>> zorder;
   uint64_t box_cnt = 0;
   uint64_t cnt = 0;
   ResourceManager* rm;
-  SoUid ref_uid;
+  AgentUid ref_uid;
 
-  ZOrderCallback(ResourceManager* rm, SoUid ref_uid)
+  ZOrderCallback(ResourceManager* rm, AgentUid ref_uid)
       : rm(rm), ref_uid(ref_uid) {
     zorder.resize(8);
   }
 
-  void operator()(const SoHandle& soh) {
+  void operator()(const AgentHandle& ah) {
     if (cnt == 8 || cnt == 12 || cnt == 16 || cnt == 18 || cnt == 22 ||
         cnt == 24 || cnt == 26) {
       box_cnt++;
     }
-    auto* so = rm->GetSimObjectWithSoHandle(soh);
-    zorder[box_cnt].insert(so->GetUid() - ref_uid);
+    auto* agent = rm->GetAgentWithSoHandle(ah);
+    zorder[box_cnt].insert(agent->GetUid() - ref_uid);
     cnt++;
   }
 };
@@ -292,7 +292,7 @@ TEST(GridTest, IterateZOrder) {
   auto* rm = simulation.GetResourceManager();
   auto* env = simulation.GetEnvironment();
 
-  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
+  auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
   CellFactory(rm, 3);
 
   // expecting a 4 * 4 * 4 grid
@@ -303,16 +303,16 @@ TEST(GridTest, IterateZOrder) {
 
   ASSERT_EQ(27u, callback.cnt);
   // check each box; no order within a box
-  std::vector<std::set<SoUid>> expected(8);
-  expected[0] = std::set<SoUid>{SoUid(0), SoUid(1),  SoUid(3),  SoUid(4),
-                                SoUid(9), SoUid(10), SoUid(12), SoUid(13)};
-  expected[1] = std::set<SoUid>{SoUid(2), SoUid(5), SoUid(11), SoUid(14)};
-  expected[2] = std::set<SoUid>{SoUid(6), SoUid(7), SoUid(15), SoUid(16)};
-  expected[3] = std::set<SoUid>{SoUid(8), SoUid(17)};
-  expected[4] = std::set<SoUid>{SoUid(18), SoUid(19), SoUid(21), SoUid(22)};
-  expected[5] = std::set<SoUid>{SoUid(20), SoUid(23)};
-  expected[6] = std::set<SoUid>{SoUid(24), SoUid(25)};
-  expected[7] = std::set<SoUid>{SoUid(26)};
+  std::vector<std::set<AgentUid>> expected(8);
+  expected[0] = std::set<AgentUid>{AgentUid(0), AgentUid(1),  AgentUid(3),  AgentUid(4),
+                                AgentUid(9), AgentUid(10), AgentUid(12), AgentUid(13)};
+  expected[1] = std::set<AgentUid>{AgentUid(2), AgentUid(5), AgentUid(11), AgentUid(14)};
+  expected[2] = std::set<AgentUid>{AgentUid(6), AgentUid(7), AgentUid(15), AgentUid(16)};
+  expected[3] = std::set<AgentUid>{AgentUid(8), AgentUid(17)};
+  expected[4] = std::set<AgentUid>{AgentUid(18), AgentUid(19), AgentUid(21), AgentUid(22)};
+  expected[5] = std::set<AgentUid>{AgentUid(20), AgentUid(23)};
+  expected[6] = std::set<AgentUid>{AgentUid(24), AgentUid(25)};
+  expected[7] = std::set<AgentUid>{AgentUid(26)};
   for (int i = 0; i < 8; i++) {
     EXPECT_EQ(expected[i], callback.zorder[i]);
   }

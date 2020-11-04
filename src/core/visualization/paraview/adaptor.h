@@ -73,11 +73,11 @@ class ParaviewAdaptor : VisualizationAdaptor {
   /// visualized in ParaView at a later point in time
   void ExportVisualization();
 
-  /// Creates the VTK objects that represent the simulation objects in ParaView.
+  /// Creates the VTK objects that represent the agents in ParaView.
   void CreateVtkObjects();
 
-  /// Create the required vtk objects to visualize simulation objects.
-  void BuildSimObjectsVTKStructures();
+  /// Create the required vtk objects to visualize agents.
+  void BuildAgentsVTKStructures();
 
   /// Create the required vtk objects to visualize diffusion grids.
   void BuildDiffusionGridVTKStructures();

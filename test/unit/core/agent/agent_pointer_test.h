@@ -12,45 +12,45 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_CORE_SIM_OBJECT_SO_POINTER_TEST_H_
-#define UNIT_CORE_SIM_OBJECT_SO_POINTER_TEST_H_
+#ifndef UNIT_CORE_AGENT_AGENT_POINTER_TEST_H_
+#define UNIT_CORE_AGENT_AGENT_POINTER_TEST_H_
 
 #include <gtest/gtest.h>
 
 #include "core/resource_manager.h"
-#include "core/sim_object/so_pointer.h"
+#include "core/agent/agent_pointer.h"
 #include "core/simulation.h"
 #include "unit/test_util/io_test.h"
-#include "unit/test_util/test_sim_object.h"
+#include "unit/test_util/test_agent.h"
 
 namespace bdm {
-namespace so_pointer_test_internal {
+namespace agent_pointer_test_internal {
 
 inline void RunIOTest(Simulation* sim) {
   auto* rm = sim->GetResourceManager();
-  rm->push_back(new TestSimObject(123));
-  TestSimObject* so2 = new TestSimObject(456);
+  rm->push_back(new TestAgent(123));
+  TestAgent* so2 = new TestAgent(456);
   rm->push_back(so2);
 
-  SoPointer<TestSimObject> soptr(so2->GetUid());
-  SoPointer<TestSimObject>* restored;
+  AgentPointer<TestAgent> agent_ptr(so2->GetUid());
+  AgentPointer<TestAgent>* restored;
 
-  BackupAndRestore(soptr, &restored);
+  BackupAndRestore(agent_ptr, &restored);
 
   EXPECT_TRUE(*restored != nullptr);
   EXPECT_EQ(456, (*restored)->GetData());
 }
 
 inline void IOTestSoPointerNullptr() {
-  SoPointer<TestSimObject> null_so_pointer;
-  SoPointer<TestSimObject>* restored = nullptr;
+  AgentPointer<TestAgent> null_agent_pointer;
+  AgentPointer<TestAgent>* restored = nullptr;
 
-  BackupAndRestore(null_so_pointer, &restored);
+  BackupAndRestore(null_agent_pointer, &restored);
 
   EXPECT_TRUE(*restored == nullptr);
 }
 
-}  // namespace so_pointer_test_internal
+}  // namespace agent_pointer_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_CORE_SIM_OBJECT_SO_POINTER_TEST_H_
+#endif  // UNIT_CORE_AGENT_AGENT_POINTER_TEST_H_

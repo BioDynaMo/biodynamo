@@ -25,9 +25,9 @@ struct TestBehaviour : public BaseBiologyModule {
 
   TestBehaviour() : BaseBiologyModule(gAllEventIds) {}
 
-  void Run(SimObject* so) override {
+  void Run(Agent* agent) override {
     usleep(35000);  // 35 ms -> one iteration will take 350 ms
-    so->SetDiameter(so->GetDiameter() + 1);
+    agent->SetDiameter(agent->GetDiameter() + 1);
   }
 };
 
@@ -58,11 +58,11 @@ inline int Simulate(int argc, const char** argv) {
   // check result
   int count = 0;
   bool failed = 0;
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    if (so->GetDiameter() != 16 + count) {
+  rm->ApplyOnAllElements([&](Agent* agent) {
+    if (agent->GetDiameter() != 16 + count) {
       std::cerr << "Test failure: result incorrect" << std::endl;
       std::cerr << "   Diameter of cell " << count << " is "
-                << so->GetDiameter() << " but should be 16" << std::endl;
+                << agent->GetDiameter() << " but should be 16" << std::endl;
       failed = true;
       return;
     }

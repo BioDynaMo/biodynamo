@@ -36,7 +36,7 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/sim_object/so_uid_generator.h"
+#include "core/agent/agent_uid_generator.h"
 #include "core/util/filesystem.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
@@ -156,7 +156,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << std::endl;
   os << "Number of iterations executed\t: "
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
-  os << "Number of simulation objects\t: " << sim.rm_->GetNumSimObjects()
+  os << "Number of agents\t: " << sim.rm_->GetNumAgents()
      << std::endl;
 
   if (dg_names.size() != 0) {
@@ -226,8 +226,8 @@ Simulation::~Simulation() {
   delete rm_;
   delete environment_;
   delete scheduler_;
-  if (so_uid_generator_ != nullptr) {
-    delete so_uid_generator_;
+  if (agent_uid_generator_ != nullptr) {
+    delete agent_uid_generator_;
   }
   delete param_;
   for (auto* r : random_) {
@@ -256,7 +256,7 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
 /// Returns the simulation parameters
 const Param* Simulation::GetParam() const { return param_; }
 
-SoUidGenerator* Simulation::GetSoUidGenerator() { return so_uid_generator_; }
+AgentUidGenerator* Simulation::GetAgentUidGenerator() { return agent_uid_generator_; }
 
 Environment* Simulation::GetGrid() { return environment_; }
 
@@ -314,7 +314,7 @@ void Simulation::InitializeMembers() {
                                  param_->mem_mgr_growth_rate_,
                                  param_->mem_mgr_max_mem_per_thread_);
   }
-  so_uid_generator_ = new SoUidGenerator();
+  agent_uid_generator_ = new AgentUidGenerator();
   if (param_->debug_numa_) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
   }
@@ -327,7 +327,7 @@ void Simulation::InitializeMembers() {
   }
   exec_ctxt_.resize(omp_get_max_threads());
   auto map =
-      std::make_shared<typename InPlaceExecutionContext::ThreadSafeSoUidMap>();
+      std::make_shared<typename InPlaceExecutionContext::ThreadSafeAgentUidMap>();
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
     exec_ctxt_[i] = new InPlaceExecutionContext(map);

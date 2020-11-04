@@ -212,11 +212,11 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files_,
                           "visualization.compress_pv_files");
 
-  //   visualize_sim_objects_
-  auto visualize_sim_objects_tarr =
-      config->get_table_array("visualize_sim_object");
-  if (visualize_sim_objects_tarr) {
-    for (const auto& table : *visualize_sim_objects_tarr) {
+  //   visualize_agents_
+  auto visualize_agents_tarr =
+      config->get_table_array("visualize_agent");
+  if (visualize_agents_tarr) {
+    for (const auto& table : *visualize_agents_tarr) {
       // We do a 'redundant' check here, because `get_as` on Mac OS does not
       // catch the exception when the "name" is not defined in the bdm.toml
       // Same goes for all the other redundant checks
@@ -224,7 +224,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
         auto name = table->get_as<std::string>("name");
         if (!name) {
           Log::Warning("AssignFromConfig",
-                       "Missing name for attribute visualize_sim_object");
+                       "Missing name for attribute visualize_agent");
           continue;
         }
 
@@ -236,10 +236,10 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
           for (const auto& val : *dm_option) {
             data_members.insert(val);
           }
-          visualize_sim_objects_[*name] = data_members;
+          visualize_agents_[*name] = data_members;
         } else {
           std::set<std::string> data_members;
-          visualize_sim_objects_[*name] = data_members;
+          visualize_agents_[*name] = data_members;
         }
       }
     }
@@ -282,13 +282,13 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // performance group
   BDM_ASSIGN_CONFIG_VALUE(scheduling_batch_size_,
                           "performance.scheduling_batch_size");
-  BDM_ASSIGN_CONFIG_VALUE(detect_static_sim_objects_,
-                          "performance.detect_static_sim_objects");
+  BDM_ASSIGN_CONFIG_VALUE(detect_static_agents_,
+                          "performance.detect_static_agents");
   BDM_ASSIGN_CONFIG_VALUE(cache_neighbors_, "performance.cache_neighbors");
-  BDM_ASSIGN_CONFIG_VALUE(souid_defragmentation_low_watermark_,
-                          "performance.souid_defragmentation_low_watermark");
-  BDM_ASSIGN_CONFIG_VALUE(souid_defragmentation_high_watermark_,
-                          "performance.souid_defragmentation_high_watermark");
+  BDM_ASSIGN_CONFIG_VALUE(agent_uid_defragmentation_low_watermark_,
+                          "performance.agent_uid_defragmentation_low_watermark");
+  BDM_ASSIGN_CONFIG_VALUE(agent_uid_defragmentation_high_watermark_,
+                          "performance.agent_uid_defragmentation_high_watermark");
   BDM_ASSIGN_CONFIG_VALUE(use_bdm_mem_mgr_, "performance.use_bdm_mem_mgr");
   BDM_ASSIGN_CONFIG_VALUE(mem_mgr_aligned_pages_shift_,
                           "performance.mem_mgr_aligned_pages_shift");

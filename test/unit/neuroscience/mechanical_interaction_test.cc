@@ -36,7 +36,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -76,7 +76,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -113,7 +113,7 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({1, 1, 0})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({1, 1, 0})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -147,7 +147,7 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({1, 1, 1})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({1, 1, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(1);
 
   auto* scheduler = simulation.GetScheduler();
@@ -182,7 +182,7 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({1, 1, 1})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({1, 1, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -225,7 +225,7 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   neuron2->SetDiameter(10);
   rm->push_back(neuron2);
 
-  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -270,7 +270,7 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   neuron2->SetMass(1);
   rm->push_back(neuron2);
 
-  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
 
   auto* scheduler = simulation.GetScheduler();
 
@@ -307,7 +307,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -328,8 +328,8 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   }
 
   auto branches = ne->Bifurcate();
-  auto branch_l = branches[0]->GetSoPtr<NeuriteElement>();
-  auto branch_r = branches[1]->GetSoPtr<NeuriteElement>();
+  auto branch_l = branches[0]->GetAgentPtr<NeuriteElement>();
+  auto branch_r = branches[1]->GetAgentPtr<NeuriteElement>();
 
   for (int i = 0; i < 200; i++) {
     branch_r->ElongateTerminalEnd(100, direction);
@@ -356,7 +356,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -372,7 +372,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
     scheduler->Simulate(1);
   }
 
-  auto ne2 = ne->Branch(0.5, direction2)->GetSoPtr<NeuriteElement>();
+  auto ne2 = ne->Branch(0.5, direction2)->GetAgentPtr<NeuriteElement>();
 
   EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
@@ -407,7 +407,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
 
   auto* scheduler = simulation.GetScheduler();
 
@@ -430,8 +430,8 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   EXPECT_GT(ne_axis[2], 0.1);
 
   auto ne_list = ne->Bifurcate();
-  auto ne2 = ne_list[1]->GetSoPtr<NeuriteElement>();
-  ne = ne_list[0]->GetSoPtr<NeuriteElement>();
+  auto ne2 = ne_list[1]->GetAgentPtr<NeuriteElement>();
+  ne = ne_list[0]->GetAgentPtr<NeuriteElement>();
 
   for (int i = 0; i < 50; i++) {
     direction = {random->Uniform(-1, 1), random->Uniform(-1, 1), 1};
@@ -475,9 +475,9 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   neuron2->SetDiameter(10);
   rm->push_back(neuron2);
 
-  auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne1->SetDiameter(2);
-  auto ne2 = neuron2->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne2 = neuron2->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne2->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -537,9 +537,9 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   neuron3->SetDiameter(10);
   rm->push_back(neuron3);
 
-  auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne1->SetDiameter(1);
-  auto ne2 = neuron2->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne2 = neuron2->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne2->SetDiameter(1);
 
   Double3 direction1 = {0.5, 0, 1};

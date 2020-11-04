@@ -18,17 +18,17 @@
 #include <cstdint>
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
-#include "core/sim_object/cell.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/cell.h"
+#include "core/agent/agent.h"
 #include "core/simulation.h"
 
 namespace bdm {
 
-struct DividingCellOp : public SimObjectOperationImpl {
+struct DividingCellOp : public AgentOperationImpl {
   BDM_OP_HEADER(DividingCellOp);
 
-  void operator()(SimObject* sim_object) override {
-    if (Cell* cell = dynamic_cast<Cell*>(sim_object)) {
+  void operator()(Agent* agent) override {
+    if (Cell* cell = dynamic_cast<Cell*>(agent)) {
       if (cell->GetDiameter() <= 40) {
         cell->ChangeVolume(300);
       } else {

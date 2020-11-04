@@ -23,7 +23,7 @@ keywords:
 
 Physical interactions are one of the most compute intensive operations in
 biological simulations. The main reason is that the computations that are
-involved often include operators that require multiple CPU cycles to perform the corresponding operation. In an accurate model, physical interactions happen between all simulation objects and their local environment, for every time step. Therefore, you can imagine that a lot of performance can be gained by accelerating these interactions.
+involved often include operators that require multiple CPU cycles to perform the corresponding operation. In an accurate model, physical interactions happen between all agents and their local environment, for every time step. Therefore, you can imagine that a lot of performance can be gained by accelerating these interactions.
 
 General purpose GPUs (GPGPUs) make it possible to obtain the computing performance of a small cluster computer. Almost any desktop computer, or laptop has a built-in GPU available. It mostly takes care of all the graphical computations that take place on a computer, but recent developments allow us to use GPUs for high-performance computing purposes. Frameworks such as CUDA and OpenCL make it possible to program a GPU to perform the computations that we specify at a speed much higher than on a regular CPU. Of course, this depends on the type of computation that you want to perform, but fortunately physical interactions in BioDynaMo fits the bill.
 

@@ -17,13 +17,13 @@
 
 #include "core/biology_module/biology_module.h"
 #include "core/event/cell_division_event.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "core/util/log.h"
 #include "core/util/root.h"
 
 namespace bdm {
 
-/// This biology module grows the simulation object until the diameter reaches
+/// This biology module grows the agent until the diameter reaches
 /// the specified threshold and divides the object afterwards.
 struct GrowDivide : public BaseBiologyModule {
   BDM_BM_HEADER(GrowDivide, BaseBiologyModule, 1);
@@ -48,15 +48,15 @@ struct GrowDivide : public BaseBiologyModule {
   /// Default event handler (exising biology module won't be modified on
   /// any event)
 
-  void Run(SimObject* so) override {
-    if (Cell* cell = dynamic_cast<Cell*>(so)) {
+  void Run(Agent* agent) override {
+    if (Cell* cell = dynamic_cast<Cell*>(agent)) {
       if (cell->GetDiameter() <= threshold_) {
         cell->ChangeVolume(growth_rate_);
       } else {
         cell->Divide();
       }
     } else {
-      Log::Fatal("GrowDivide::Run", "SimObject is not a Cell");
+      Log::Fatal("GrowDivide::Run", "Agent is not a Cell");
     }
   }
 

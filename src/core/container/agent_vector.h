@@ -12,11 +12,11 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_CONTAINER_SIM_OBJECT_VECTOR_H_
-#define CORE_CONTAINER_SIM_OBJECT_VECTOR_H_
+#ifndef CORE_CONTAINER_AGENT_VECTOR_H_
+#define CORE_CONTAINER_AGENT_VECTOR_H_
 
 #include <vector>
-#include "core/resource_manager.h"  // SoHandle
+#include "core/resource_manager.h"  // AgentHandle
 #include "core/simulation.h"
 
 namespace bdm {
@@ -24,19 +24,19 @@ namespace bdm {
 /// Two dimensional vector. Holds one element of type `T` for each simulation
 /// object in the simulation.
 template <typename T>
-class SimObjectVector {
+class AgentVector {
   friend struct DisplacementOpCuda;
 
  public:
   /// NB: Elements will not be initilized.
-  SimObjectVector() {
+  AgentVector() {
     data_.resize(thread_info_->GetNumaNodes());
     size_.resize(thread_info_->GetNumaNodes());
     reserve();
   }
 
   /// Reserves enough memory to hold N instances of type T (N being the number
-  /// of simulation objects in the simulation).
+  /// of agents in the simulation).
   /// e.g. ResourceManager has two types `A` and `B`. `A` has 10 elements
   /// and `B` 20. `data_[0]` corresponds to `A` and reserves 10 elements,
   /// while `data_[1]` corresponds to `B` and reserves 20 elements.
@@ -46,7 +46,7 @@ class SimObjectVector {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     for (int n = 0; n < thread_info_->GetNumaNodes(); n++) {
-      auto num_sos = rm->GetNumSimObjects(n);
+      auto num_sos = rm->GetNumAgents(n);
       if (data_[n].capacity() < num_sos) {
         data_[n].reserve(num_sos * 1.5);
       }
@@ -66,15 +66,15 @@ class SimObjectVector {
   // Returns the number of elements of specified type
   size_t size(uint16_t numa_node) { return size_[numa_node]; }  // NOLINT
 
-  const T& operator[](const SoHandle& handle) const {
+  const T& operator[](const AgentHandle& handle) const {
     return data_[handle.GetNumaNode()][handle.GetElementIdx()];
   }
 
-  T& operator[](const SoHandle& handle) {
+  T& operator[](const AgentHandle& handle) {
     return data_[handle.GetNumaNode()][handle.GetElementIdx()];
   }
 
-  bool operator==(const SimObjectVector<T>& other) const {
+  bool operator==(const AgentVector<T>& other) const {
     if (size_ != other.size_) {
       return false;
     }
@@ -90,7 +90,7 @@ class SimObjectVector {
     return true;
   }
 
-  bool operator!=(const SimObjectVector<T>& other) const {
+  bool operator!=(const AgentVector<T>& other) const {
     return !this->operator==(other);
   }
 
@@ -103,4 +103,4 @@ class SimObjectVector {
 
 }  // namespace bdm
 
-#endif  // CORE_CONTAINER_SIM_OBJECT_VECTOR_H_
+#endif  // CORE_CONTAINER_AGENT_VECTOR_H_

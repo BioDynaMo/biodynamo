@@ -63,7 +63,7 @@ auto* rm = simulation.GetResourceManager();
 auto* dgrid = rm->GetDiffusionGrid(kKalium);
 ```
 
-Next, we have to create an initial set of simulation objects and set their
+Next, we have to create an initial set of agents and set their
 attributes:
 
 ```cpp
@@ -98,7 +98,7 @@ physical properties (diameter, mass), but also biological properties and behavio
 (chemotaxis, substance secretion)
 
 This example uses the predefined biology modules `Chemotaxis` and `Secretion` that
-will govern the behavior of the simulation objects (i.e. cells).
+will govern the behavior of the agents (i.e. cells).
 These two modules are included in the BioDynaMo installation.
 
 One of the cells (the cell at position `{50, 50, 50}`) will be the one secreting the substance;
@@ -121,7 +121,7 @@ into it:
 export = true
 interval = 10
 
-	[[visualize_sim_object]]
+	[[visualize_agent]]
 	name = "Cell"
 	additional_data_members = [ "diameter_" ]
 
@@ -133,7 +133,7 @@ interval = 10
 
 This will enable exporting visualization files, so that we can visualize the
 simulation after it has finished. Furthermore, we enable the output of the diameter
-of our simulation objects (by default named "Cell"), and the gradient data of the
+of our agents (by default named "Cell"), and the gradient data of the
 extracellular diffusion
 
 ### Build and run the simulation
@@ -232,7 +232,7 @@ export = true
 interval = 10
 diffusion_type = "RK"
 
-	[[visualize_sim_object]]
+	[[visualize_agent]]
 	name = "Cell"
 	additional_data_members = [ "diameter_" ]
 

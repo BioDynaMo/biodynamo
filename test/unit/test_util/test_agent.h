@@ -12,29 +12,29 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_TEST_UTIL_TEST_SIM_OBJECT_H_
-#define UNIT_TEST_UTIL_TEST_SIM_OBJECT_H_
+#ifndef UNIT_TEST_UTIL_TEST_AGENT_H_
+#define UNIT_TEST_UTIL_TEST_AGENT_H_
 
 #include <set>
 #include <string>
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 
 namespace bdm {
 
-class TestSimObject : public SimObject {
-  BDM_SIM_OBJECT_HEADER(TestSimObject, SimObject, 1);
+class TestAgent : public Agent {
+  BDM_AGENT_HEADER(TestAgent, Agent, 1);
 
  public:
-  TestSimObject() {}
+  TestAgent() {}
 
-  explicit TestSimObject(int data) : data_(data) {}
+  explicit TestAgent(int data) : data_(data) {}
 
-  explicit TestSimObject(const Double3& pos) : position_{pos} {}
+  explicit TestAgent(const Double3& pos) : position_{pos} {}
 
-  TestSimObject(const Event& event, SimObject* other, uint64_t new_oid = 0)
+  TestAgent(const Event& event, Agent* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
 
-  virtual ~TestSimObject() {}
+  virtual ~TestAgent() {}
 
   Shape GetShape() const override { return Shape::kSphere; };
 
@@ -68,4 +68,4 @@ class TestSimObject : public SimObject {
 
 }  // namespace bdm
 
-#endif  // UNIT_TEST_UTIL_TEST_SIM_OBJECT_H_
+#endif  // UNIT_TEST_UTIL_TEST_AGENT_H_

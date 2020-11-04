@@ -12,12 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/sim_object/so_uid_generator.h"
+#include "core/agent/agent_uid_generator.h"
 
 namespace bdm {
 
-// constexpr typename SoUid::Reused_t SoUid::kReusedMax =
-// std::numeric_limits<typename SoUid::Reused_t>::max();
-const typename SoUid::Reused_t SoUid::kReusedMax;
+// constexpr typename AgentUid::Reused_t AgentUid::kReusedMax =
+// std::numeric_limits<typename AgentUid::Reused_t>::max();
+const typename AgentUid::Reused_t AgentUid::kReusedMax;
 
 }  // namespace bdm

@@ -17,24 +17,24 @@
     <class pattern="*_Test" />
     <class name="__gnu_cxx::__normal_iterator<double*,vector<double> >"/>
     <class name="__gnu_cxx::__normal_iterator<const double*,vector<double> >"/>
-    <class name="std::function<void(bdm::SimObject*)>"/>
+    <class name="std::function<void(bdm::Agent*)>"/>
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
     <class name="bdm::neuroscience::NeuronSoma" />
     <class name="bdm::neuroscience::NeuriteElement" />
-    <class name="bdm::SoPointer<bdm::neuroscience::NeuronOrNeurite>" />
-    <class name="bdm::SoPointer<bdm::neuroscience::NeuriteElement>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::Simulation" />
     <class name="bdm::ResourceManager" />
-    <class name="bdm::SimObject" />
-    <class name="bdm::SoHandle" />
-    <class name="bdm::SoUid" />
-    <class name="bdm::SoUidGenerator" />
+    <class name="bdm::Agent" />
+    <class name="bdm::AgentHandle" />
+    <class name="bdm::AgentUid" />
+    <class name="bdm::AgentUidGenerator" />
     <class name="bdm::Cell" />
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
-    <class name="std::unordered_map<uint64_t, bdm::SoHandle>" />
+    <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::BaseBiologyModule"/>
     <class name="bdm::GrowDivide"/>
@@ -57,7 +57,7 @@
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />
     <class name="bdm::Environment" />
-    <class name="bdm::Environment::SimDimensionAndLargestSimObjectFunctor" />
+    <class name="bdm::Environment::SimDimensionAndLargestAgentFunctor" />
     <class name="bdm::UniformGridEnvironment" />
     <class name="bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper" />
     <class name="bdm::ParallelResizeVector<double>" />

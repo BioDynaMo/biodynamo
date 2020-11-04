@@ -15,12 +15,12 @@
 #include <array>
 
 #include "core/biology_module/grow_divide.h"
-#include "core/container/sim_object_vector.h"
+#include "core/container/agent_vector.h"
 #include "core/environment/environment.h"
 #include "core/functor.h"
 #include "core/gpu/gpu_helper.h"
 #include "core/operation/displacement_op.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
@@ -42,7 +42,7 @@ class DisplacementOpCpuVerify {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
 
-    SimObjectVector<Double3> displacements;
+    AgentVector<Double3> displacements;
 
     CalculateDisplacement cd(&displacements);
     rm->ApplyOnAllElementsParallelDynamic(1000, cd);
@@ -50,40 +50,40 @@ class DisplacementOpCpuVerify {
     rm->ApplyOnAllElementsParallelDynamic(1000, uc);
   }
 
-  struct CalculateDisplacement : public Functor<void, SimObject*, SoHandle> {
-    SimObjectVector<Double3>* displacements_;
+  struct CalculateDisplacement : public Functor<void, Agent*, AgentHandle> {
+    AgentVector<Double3>* displacements_;
 
-    CalculateDisplacement(SimObjectVector<Double3>* displacements) {
+    CalculateDisplacement(AgentVector<Double3>* displacements) {
       displacements_ = displacements;
     }
 
-    void operator()(SimObject* so, SoHandle soh) override {
+    void operator()(Agent* agent, AgentHandle ah) override {
       auto* sim = Simulation::GetActive();
       auto* env = sim->GetEnvironment();
       auto* param = sim->GetParam();
 
       auto search_radius = env->GetLargestObjectSize();
       auto squared_radius_ = search_radius * search_radius;
-      const auto& displacement = so->CalculateDisplacement(
+      const auto& displacement = agent->CalculateDisplacement(
           squared_radius_, param->simulation_time_step_);
-      (*displacements_)[soh] = displacement;
+      (*displacements_)[ah] = displacement;
     }
   };
 
-  struct UpdateCells : public Functor<void, SimObject*, SoHandle> {
-    SimObjectVector<Double3>* displacements_;
+  struct UpdateCells : public Functor<void, Agent*, AgentHandle> {
+    AgentVector<Double3>* displacements_;
 
-    UpdateCells(SimObjectVector<Double3>* displacements) {
+    UpdateCells(AgentVector<Double3>* displacements) {
       displacements_ = displacements;
     }
 
-    void operator()(SimObject* so, SoHandle soh) override {
+    void operator()(Agent* agent, AgentHandle ah) override {
       auto* sim = Simulation::GetActive();
       auto* param = sim->GetParam();
 
-      so->ApplyDisplacement((*displacements_)[soh]);
+      agent->ApplyDisplacement((*displacements_)[ah]);
       if (param->bound_space_) {
-        ApplyBoundingBox(so, param->min_bound_, param->max_bound_);
+        ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
       }
     }
   };
@@ -108,14 +108,14 @@ void RunTest(OpComputeTarget mode) {
   std::vector<Simulation*> sims;
   sims.push_back(new Simulation("GPU", set_param));
   sims.push_back(new Simulation("CPU_Verify", set_param));
-  std::array<SoUid, 2> uid_ref;
+  std::array<AgentUid, 2> uid_ref;
 
   for (size_t i = 0; i < sims.size(); i++) {
     auto& sim = sims[i];
     sim->Activate();
     auto* rm = sim->GetResourceManager();
     auto* env = sim->GetEnvironment();
-    uid_ref[i] = SoUid(sim->GetSoUidGenerator()->GetHighestIndex());
+    uid_ref[i] = AgentUid(sim->GetAgentUidGenerator()->GetHighestIndex());
 
     // Cell 0
     Cell* cell = new Cell();
@@ -152,10 +152,10 @@ void RunTest(OpComputeTarget mode) {
   auto rm0 = sims[Case::kCompute]->GetResourceManager();
   auto rm1 = sims[Case::kVerify]->GetResourceManager();
 
-  auto cell0 = static_cast<Cell*>(rm0->GetSimObject(uid_ref[0] + 0));
-  auto cell1 = static_cast<Cell*>(rm0->GetSimObject(uid_ref[0] + 1));
-  auto vcell0 = static_cast<Cell*>(rm1->GetSimObject(uid_ref[1] + 0));
-  auto vcell1 = static_cast<Cell*>(rm1->GetSimObject(uid_ref[1] + 1));
+  auto cell0 = static_cast<Cell*>(rm0->GetAgent(uid_ref[0] + 0));
+  auto cell1 = static_cast<Cell*>(rm0->GetAgent(uid_ref[0] + 1));
+  auto vcell0 = static_cast<Cell*>(rm1->GetAgent(uid_ref[1] + 0));
+  auto vcell1 = static_cast<Cell*>(rm1->GetAgent(uid_ref[1] + 1));
 
   EXPECT_ARR_NEAR_GPU(vcell0->GetPosition(), cell0->GetPosition());
   EXPECT_ARR_NEAR_GPU(vcell1->GetPosition(), cell1->GetPosition());
@@ -202,14 +202,14 @@ void RunTest2(OpComputeTarget mode) {
   std::vector<Simulation*> sims;
   sims.push_back(new Simulation("GPU", set_param));
   sims.push_back(new Simulation("CPU_Verify", set_param));
-  std::array<SoUid, 2> uid_ref;
+  std::array<AgentUid, 2> uid_ref;
 
   for (size_t i = 0; i < sims.size(); i++) {
     auto& sim = sims[i];
     sim->Activate();
     auto* rm = sim->GetResourceManager();
     auto* env = sim->GetEnvironment();
-    uid_ref[i] = SoUid(sim->GetSoUidGenerator()->GetHighestIndex());
+    uid_ref[i] = AgentUid(sim->GetAgentUidGenerator()->GetHighestIndex());
 
     double space = 20;
     for (size_t i = 0; i < 3; i++) {
@@ -244,33 +244,33 @@ void RunTest2(OpComputeTarget mode) {
   auto rm1 = sims[Case::kVerify]->GetResourceManager();
 
   // clang-format off
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 0)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 0)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 1)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 1)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 2)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 2)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 3)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 3)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 4)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 4)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 5)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 5)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 6)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 6)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 7)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 7)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 8)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 8)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 9)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 9)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 10)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 10)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 11)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 11)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 12)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 12)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 13)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 13)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 14)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 14)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 15)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 15)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 16)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 16)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 17)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 17)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 18)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 18)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 19)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 19)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 20)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 20)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 21)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 21)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 22)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 22)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 23)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 23)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 24)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 24)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 25)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 25)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetSimObject(uid_ref[1] + 26)->GetPosition(), rm0->GetSimObject(uid_ref[0] + 26)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 0)->GetPosition(), rm0->GetAgent(uid_ref[0] + 0)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 1)->GetPosition(), rm0->GetAgent(uid_ref[0] + 1)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 2)->GetPosition(), rm0->GetAgent(uid_ref[0] + 2)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 3)->GetPosition(), rm0->GetAgent(uid_ref[0] + 3)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 4)->GetPosition(), rm0->GetAgent(uid_ref[0] + 4)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 5)->GetPosition(), rm0->GetAgent(uid_ref[0] + 5)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 6)->GetPosition(), rm0->GetAgent(uid_ref[0] + 6)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 7)->GetPosition(), rm0->GetAgent(uid_ref[0] + 7)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 8)->GetPosition(), rm0->GetAgent(uid_ref[0] + 8)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 9)->GetPosition(), rm0->GetAgent(uid_ref[0] + 9)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 10)->GetPosition(), rm0->GetAgent(uid_ref[0] + 10)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 11)->GetPosition(), rm0->GetAgent(uid_ref[0] + 11)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 12)->GetPosition(), rm0->GetAgent(uid_ref[0] + 12)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 13)->GetPosition(), rm0->GetAgent(uid_ref[0] + 13)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 14)->GetPosition(), rm0->GetAgent(uid_ref[0] + 14)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 15)->GetPosition(), rm0->GetAgent(uid_ref[0] + 15)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 16)->GetPosition(), rm0->GetAgent(uid_ref[0] + 16)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 17)->GetPosition(), rm0->GetAgent(uid_ref[0] + 17)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 18)->GetPosition(), rm0->GetAgent(uid_ref[0] + 18)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 19)->GetPosition(), rm0->GetAgent(uid_ref[0] + 19)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 20)->GetPosition(), rm0->GetAgent(uid_ref[0] + 20)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 21)->GetPosition(), rm0->GetAgent(uid_ref[0] + 21)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 22)->GetPosition(), rm0->GetAgent(uid_ref[0] + 22)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 23)->GetPosition(), rm0->GetAgent(uid_ref[0] + 23)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 24)->GetPosition(), rm0->GetAgent(uid_ref[0] + 24)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 25)->GetPosition(), rm0->GetAgent(uid_ref[0] + 25)->GetPosition());
+  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 26)->GetPosition(), rm0->GetAgent(uid_ref[0] + 26)->GetPosition());
   // clang-format on
 }
 

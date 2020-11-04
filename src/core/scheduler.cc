@@ -153,9 +153,9 @@ void Scheduler::UnscheduleOp(Operation* op) {
   unschedule_ops_.push_back(op);
 }
 
-std::vector<std::string> Scheduler::GetListOfScheduledSimObjectOps() const {
+std::vector<std::string> Scheduler::GetListOfScheduledAgentOps() const {
   std::vector<std::string> list;
-  for (auto* op : scheduled_sim_object_ops_) {
+  for (auto* op : scheduled_agent_ops_) {
     list.push_back(op->name_);
   }
   return list;
@@ -189,14 +189,14 @@ std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
   return ret;
 }
 
-struct RunAllScheduledOps : Functor<void, SimObject*, SoHandle> {
+struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
   RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
     sim_ = Simulation::GetActive();
   }
 
-  void operator()(SimObject* so, SoHandle) override {
-    sim_->GetExecutionContext()->Execute(so, scheduled_ops_);
+  void operator()(Agent* agent, AgentHandle) override {
+    sim_->GetExecutionContext()->Execute(agent, scheduled_ops_);
   }
 
   Simulation* sim_;
@@ -236,13 +236,13 @@ void Scheduler::RunScheduledOps() {
   SetUpOps();
 
   // Run the sim object operations
-  std::vector<Operation*> sim_object_ops;
-  for (auto* op : scheduled_sim_object_ops_) {
+  std::vector<Operation*> agent_ops;
+  for (auto* op : scheduled_agent_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
-      sim_object_ops.push_back(op);
+      agent_ops.push_back(op);
     }
   }
-  RunAllScheduledOps functor(sim_object_ops);
+  RunAllScheduledOps functor(agent_ops);
 
   Timing::Time("sim object ops", [&]() {
     rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
@@ -368,7 +368,7 @@ void Scheduler::ScheduleOps() {
         if (op->IsStandalone()) {
           scheduled_standalone_ops_.push_back(op);
         } else {
-          scheduled_sim_object_ops_.push_back(op);
+          scheduled_agent_ops_.push_back(op);
         }
     }
 
@@ -382,7 +382,7 @@ void Scheduler::ScheduleOps() {
 
     // Lists of operations that should be considered for unscheduling
     std::vector<std::vector<Operation*>*> op_lists = {
-        &scheduled_sim_object_ops_, &scheduled_standalone_ops_,
+        &scheduled_agent_ops_, &scheduled_standalone_ops_,
         &pre_scheduled_ops_, &post_scheduled_ops_};
 
     for (auto* op_list : op_lists) {

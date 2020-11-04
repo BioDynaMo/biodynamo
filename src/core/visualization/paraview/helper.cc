@@ -15,38 +15,38 @@
 #include "core/visualization/paraview/helper.h"
 #include "core/param/param.h"
 #include "core/shape.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 #include "core/simulation.h"
 
 namespace bdm {
 
 // -----------------------------------------------------------------------------
 std::string GenerateSimulationInfoJson(
-    const std::unordered_map<std::string, VtkSimObjects*>& vtk_sim_objects,
+    const std::unordered_map<std::string, VtkAgents*>& vtk_agents,
     const std::unordered_map<std::string, VtkDiffusionGrid*>& vtk_dgrids) {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
-  // simulation objects
-  std::stringstream sim_objects;
-  uint64_t num_sim_objects = param->visualize_sim_objects_.size();
+  // agents
+  std::stringstream agents;
+  uint64_t num_agents = param->visualize_agents_.size();
   uint64_t counter = 0;
-  for (const auto& entry : param->visualize_sim_objects_) {
-    std::string so_name = entry.first;
+  for (const auto& entry : param->visualize_agents_) {
+    std::string agent_name = entry.first;
 
-    auto search = vtk_sim_objects.find(so_name);
-    if (search == vtk_sim_objects.end()) {
+    auto search = vtk_agents.find(agent_name);
+    if (search == vtk_agents.end()) {
       continue;
     }
-    auto* so_grid = search->second;
+    auto* agent_grid = search->second;
 
-    sim_objects << "    {" << std::endl
-                << "      \"name\":\"" << so_name << "\"," << std::endl;
-    if (so_grid->GetShape() == Shape::kSphere) {
-      sim_objects << "      \"glyph\":\"Glyph\"," << std::endl
+    agents << "    {" << std::endl
+                << "      \"name\":\"" << agent_name << "\"," << std::endl;
+    if (agent_grid->GetShape() == Shape::kSphere) {
+      agents << "      \"glyph\":\"Glyph\"," << std::endl
                   << "      \"shape\":\"Sphere\"," << std::endl
                   << "      \"scaling_attribute\":\"diameter_\"" << std::endl;
-    } else if (so_grid->GetShape() == kCylinder) {
-      sim_objects << "      \"glyph\":\"BDMGlyph\"," << std::endl
+    } else if (agent_grid->GetShape() == kCylinder) {
+      agents << "      \"glyph\":\"BDMGlyph\"," << std::endl
                   << "      \"shape\":\"Cylinder\"," << std::endl
                   << "      \"x_scaling_attribute\":\"diameter_\"," << std::endl
                   << "      \"y_scaling_attribute\":\"actual_length_\","
@@ -55,11 +55,11 @@ std::string GenerateSimulationInfoJson(
                   << "      \"Vectors\":\"spring_axis_\"," << std::endl
                   << "      \"MassLocation\":\"mass_location_\"" << std::endl;
     }
-    sim_objects << "    }";
-    if (counter != num_sim_objects - 1) {
-      sim_objects << ",";
+    agents << "    }";
+    if (counter != num_agents - 1) {
+      agents << ",";
     }
-    sim_objects << std::endl;
+    agents << std::endl;
     counter++;
   }
 
@@ -102,8 +102,8 @@ std::string GenerateSimulationInfoJson(
       << "    \"name\":\"" << sim->GetUniqueName() << "\"," << std::endl
       << "    \"result_dir\":\"" << sim->GetOutputDir() << "\"" << std::endl
       << "  }," << std::endl
-      << "  \"sim_objects\": [" << std::endl
-      << sim_objects.str() << "  ]," << std::endl
+      << "  \"agents\": [" << std::endl
+      << agents.str() << "  ]," << std::endl
       << "  \"extracellular_substances\": [" << std::endl
       << substances.str() << std::endl
       << "  ]," << std::endl

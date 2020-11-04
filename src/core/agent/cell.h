@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_SIM_OBJECT_CELL_H_
-#define CORE_SIM_OBJECT_CELL_H_
+#ifndef CORE_AGENT_CELL_H_
+#define CORE_AGENT_CELL_H_
 
 #include <array>
 #include <cmath>
@@ -32,13 +32,13 @@
 #include "core/functor.h"
 #include "core/param/param.h"
 #include "core/shape.h"
-#include "core/sim_object/sim_object.h"
+#include "core/agent/agent.h"
 #include "core/util/math.h"
 
 namespace bdm {
 
-class Cell : public SimObject {
-  BDM_SIM_OBJECT_HEADER(Cell, SimObject, 1);
+class Cell : public Agent {
+  BDM_AGENT_HEADER(Cell, Agent, 1);
 
  public:
   /// First axis of the local coordinate system.
@@ -63,7 +63,7 @@ class Cell : public SimObject {
   /// 2 for a cell division event.
   ///
   /// \see CellDivisionEvent
-  Cell(const Event& event, SimObject* mother, uint64_t new_oid = 0)
+  Cell(const Event& event, Agent* mother, uint64_t new_oid = 0)
       : Base(event, mother, new_oid) {
     const CellDivisionEvent* cdevent =
         dynamic_cast<const CellDivisionEvent*>(&event);
@@ -131,8 +131,8 @@ class Cell : public SimObject {
   /// \param event contains parameters for cell division
   /// \param daughter_2 pointer to new cell (=daughter 2)
   /// \see Event, CellDivisionEvent
-  void EventHandler(const Event& event, SimObject* other1,
-                    SimObject* other2 = nullptr) override {
+  void EventHandler(const Event& event, Agent* other1,
+                    Agent* other2 = nullptr) override {
     Base::EventHandler(event, other1, other2);
   }
 
@@ -263,16 +263,16 @@ class Cell : public SimObject {
     SetRunDisplacementForAllNextTs();
   }
 
-  struct DisplacementFunctor : Functor<void, const SimObject*, double> {
+  struct DisplacementFunctor : Functor<void, const Agent*, double> {
     DefaultForce default_force;
-    SimObject* so_;
+    Agent* agent_;
     Double3 translation_force_on_point_mass{0, 0, 0};
 
-    DisplacementFunctor(SimObject* so) : so_(so) {}
+    DisplacementFunctor(Agent* agent) : agent_(agent) {}
 
-    void operator()(const SimObject* neighbor,
+    void operator()(const Agent* neighbor,
                     double squared_distance) override {
-      auto neighbor_force = default_force.GetForce(so_, neighbor);
+      auto neighbor_force = default_force.GetForce(agent_, neighbor);
       translation_force_on_point_mass[0] += neighbor_force[0];
       translation_force_on_point_mass[1] += neighbor_force[1];
       translation_force_on_point_mass[2] += neighbor_force[2];
@@ -382,4 +382,4 @@ class Cell : public SimObject {
 
 }  // namespace bdm
 
-#endif  // CORE_SIM_OBJECT_CELL_H_
+#endif  // CORE_AGENT_CELL_H_

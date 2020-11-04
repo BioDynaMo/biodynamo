@@ -2,7 +2,7 @@
 export = true
 interval = 10
 
-    [[visualize_sim_object]]
+    [[visualize_agent]]
     name = "MyCell"
     additional_data_members = [ "diameter_", "cell_type_" ]
 

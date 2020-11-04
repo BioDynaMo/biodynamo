@@ -26,8 +26,8 @@
 #include "core/operation/operation_registry.h"
 #include "core/resource_manager.h"
 #include "core/shape.h"
-#include "core/sim_object/cell.h"
-#include "core/sim_object/so_handle.h"
+#include "core/agent/cell.h"
+#include "core/agent/agent_handle.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 #include "core/util/thread_info.h"
@@ -36,8 +36,8 @@
 
 namespace bdm {
 
-inline void IsNonSphericalObjectPresent(const SimObject* so, bool* answer) {
-  if (so->GetShape() != Shape::kSphere) {
+inline void IsNonSphericalObjectPresent(const Agent* agent, bool* answer) {
+  if (agent->GetShape() != Shape::kSphere) {
     *answer = true;
   }
 }
@@ -62,20 +62,20 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     }
 
     auto num_numa_nodes = ThreadInfo::GetInstance()->GetNumaNodes();
-    std::vector<SoHandle::ElementIdx_t> offset(num_numa_nodes);
+    std::vector<AgentHandle::ElementIdx_t> offset(num_numa_nodes);
     offset[0] = 0;
     for (int nn = 1; nn < num_numa_nodes; nn++) {
-      offset[nn] = offset[nn - 1] + rm->GetNumSimObjects(nn - 1);
+      offset[nn] = offset[nn - 1] + rm->GetNumAgents(nn - 1);
     }
 
-    uint32_t total_num_objects = rm->GetNumSimObjects();
+    uint32_t total_num_objects = rm->GetNumAgents();
 
     i_ = new InitializeGPUData(total_num_objects, offset);
     rm->ApplyOnAllElementsParallelDynamic(1000, *i_);
 
     // Populate successor list
     for (int i = 0; i < num_numa_nodes; i++) {
-      for (size_t j = 0; j < rm->GetNumSimObjects(i); j++) {
+      for (size_t j = 0; j < rm->GetNumAgents(i); j++) {
         auto idx = offset[i] + j;
         i_->successors[idx] =
             offset[grid->successors_.data_[i][j].GetNumaNode()] +
@@ -108,7 +108,7 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     auto* param = sim->GetParam();
     auto* rm = sim->GetResourceManager();
 
-    uint32_t total_num_objects = rm->GetNumSimObjects();
+    uint32_t total_num_objects = rm->GetNumAgents();
     auto num_boxes = grid->boxes_.size();
     // If this is the first time we perform physics on GPU using CUDA
     if (cdo_ == nullptr) {
@@ -120,12 +120,12 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
       // Allocate required GPU memory
       cdo_ = new DisplacementOpCudaKernel(total_num_objects_, num_boxes_);
     } else {
-      // If the number of simulation objects increased
+      // If the number of agents increased
       if (total_num_objects >= total_num_objects_) {
         Log::Info("DisplacementOpCuda",
                   "\nThe number of cells increased signficantly (from ",
                   total_num_objects_, " to ", total_num_objects,
-                  "), so we allocate bigger GPU buffers\n");
+                  "), agent we allocate bigger GPU buffers\n");
         total_num_objects_ = static_cast<uint32_t>(1.25 * total_num_objects);
         cdo_->ResizeCellBuffers(total_num_objects_);
       }
@@ -166,32 +166,32 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
   uint32_t num_boxes_ = 0;
   uint32_t total_num_objects_ = 0;
 
-  struct UpdateCPUResults : public Functor<void, SimObject*, SoHandle> {
+  struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
     std::vector<std::array<double, 3>>* cell_movements = nullptr;
-    std::vector<SoHandle::ElementIdx_t> offset;
+    std::vector<AgentHandle::ElementIdx_t> offset;
 
     UpdateCPUResults(std::vector<std::array<double, 3>>* cm,
-                     const std::vector<SoHandle::ElementIdx_t>& offs) {
+                     const std::vector<AgentHandle::ElementIdx_t>& offs) {
       cell_movements = cm;
       offset = offs;
     }
 
-    void operator()(SimObject* so, SoHandle soh) override {
+    void operator()(Agent* agent, AgentHandle ah) override {
       auto* param = Simulation::GetActive()->GetParam();
-      auto* cell = dynamic_cast<Cell*>(so);
-      auto idx = offset[soh.GetNumaNode()] + soh.GetElementIdx();
+      auto* cell = dynamic_cast<Cell*>(agent);
+      auto idx = offset[ah.GetNumaNode()] + ah.GetElementIdx();
       Double3 new_pos;
       new_pos[0] = (*cell_movements)[idx][0];
       new_pos[1] = (*cell_movements)[idx][1];
       new_pos[2] = (*cell_movements)[idx][2];
       cell->UpdatePosition(new_pos);
       if (param->bound_space_) {
-        ApplyBoundingBox(so, param->min_bound_, param->max_bound_);
+        ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
       }
     }
   };
 
-  struct InitializeGPUData : public Functor<void, SimObject*, SoHandle> {
+  struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
     bool is_non_spherical_object = false;
     // Cannot use Double3 here, because the `data()` function returns a const
     // pointer to the underlying array, whereas the CUDA kernel will cast it to
@@ -204,8 +204,8 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     std::vector<Double3> cell_tractor_force;
     std::vector<uint32_t> cell_boxid;
     std::vector<double> mass;
-    std::vector<SoHandle::ElementIdx_t> offset;
-    std::vector<SoHandle::ElementIdx_t> successors;
+    std::vector<AgentHandle::ElementIdx_t> offset;
+    std::vector<AgentHandle::ElementIdx_t> successors;
     std::vector<uint32_t> starts;
     std::vector<uint16_t> lengths;
     std::vector<uint64_t> timestamps;
@@ -215,7 +215,7 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     std::array<int32_t, 3> grid_dimensions;
 
     InitializeGPUData(uint32_t num_objects,
-                      const std::vector<SoHandle::ElementIdx_t>& offs) {
+                      const std::vector<AgentHandle::ElementIdx_t>& offs) {
       cell_movements.reserve(num_objects);
       cell_positions.reserve(num_objects);
       successors.reserve(num_objects);
@@ -227,18 +227,18 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
       offset = offs;
     }
 
-    void operator()(SimObject* so, SoHandle soh) override {
+    void operator()(Agent* agent, AgentHandle ah) override {
       // Check if there are any non-spherical objects in our simulation, because
       // GPU accelerations currently supports only sphere-sphere interactions
-      IsNonSphericalObjectPresent(so, &is_non_spherical_object);
+      IsNonSphericalObjectPresent(agent, &is_non_spherical_object);
       if (is_non_spherical_object) {
         Log::Fatal("DisplacementOpCuda",
                    "\nWe detected a non-spherical object during the GPU "
                    "execution. This is currently not supported.");
         return;
       }
-      auto* cell = bdm_static_cast<Cell*>(so);
-      auto idx = offset[soh.GetNumaNode()] + soh.GetElementIdx();
+      auto* cell = bdm_static_cast<Cell*>(agent);
+      auto idx = offset[ah.GetNumaNode()] + ah.GetElementIdx();
       mass[idx] = cell->GetMass();
       cell_diameters[idx] = cell->GetDiameter();
       cell_adherence[idx] = cell->GetAdherence();

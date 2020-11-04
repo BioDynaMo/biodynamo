@@ -16,7 +16,7 @@
 #include "core/visualization/paraview/mapped_data_array.h"
 #include <TClassTable.h>
 #include <gtest/gtest.h>
-#include "core/sim_object/so_uid_generator.h"
+#include "core/agent/agent_uid_generator.h"
 #include "core/util/jit.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/neuroscience.h"
@@ -28,9 +28,9 @@ namespace bdm {
 TEST(GetDataMemberForVisTest, NeuriteElement) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
-  // Discard the first uid to have a non zero uid for the simulation object
+  // Discard the first uid to have a non zero uid for the agent
 
-  simulation.GetSoUidGenerator()->NewSoUid();
+  simulation.GetAgentUidGenerator()->NewAgentUid();
   using NeuriteElement = neuroscience::NeuriteElement;
   using NeuronOrNeurite = neuroscience::NeuronOrNeurite;
   NeuriteElement ne;
@@ -76,17 +76,17 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
     auto dms = FindDataMemberSlow(tclass, "uid_");
     ASSERT_EQ(1u, dms.size());
 
-    GetDataMemberForVis<uint64_t*, SimObject, SoUid> get_dm;
+    GetDataMemberForVis<uint64_t*, Agent, AgentUid> get_dm;
     get_dm.dm_offset_ = dms[0]->GetOffset();
     EXPECT_EQ(1u, *get_dm(&ne));
     EXPECT_EQ(1u, get_dm(&ne)[0]);
   }
-  // so_pointer_
+  // agent_pointer_
   {
     auto dms = FindDataMemberSlow(tclass, "daughter_right_");
     ASSERT_EQ(1u, dms.size());
 
-    GetDataMemberForVis<uint64_t*, NeuriteElement, SoPointer<NeuronOrNeurite>>
+    GetDataMemberForVis<uint64_t*, NeuriteElement, AgentPointer<NeuronOrNeurite>>
         get_dm;
     get_dm.dm_offset_ = dms[0]->GetOffset();
     EXPECT_EQ(18446744073709551615ULL, *get_dm(&ne));

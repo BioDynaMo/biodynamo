@@ -12,15 +12,15 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_SIM_OBJECT_SO_VISITOR_H_
-#define CORE_SIM_OBJECT_SO_VISITOR_H_
+#ifndef CORE_AGENT_AGENT_VISITOR_H_
+#define CORE_AGENT_AGENT_VISITOR_H_
 
 #include <atomic>
 #include <string>
 
 namespace bdm {
 
-// Interface for simulation object visitors.
+// Interface for agent visitors.
 struct SoVisitor {
   virtual ~SoVisitor() {}
   virtual void Visit(const std::string& name, size_t type_hash_code,
@@ -29,4 +29,4 @@ struct SoVisitor {
 
 }  // namespace bdm
 
-#endif  // CORE_SIM_OBJECT_SO_VISITOR_H_
+#endif  // CORE_AGENT_AGENT_VISITOR_H_

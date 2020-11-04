@@ -19,7 +19,7 @@
 #include <type_traits>
 
 #include "core/resource_manager.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"
 #include "unit/test_util/io_test.h"
@@ -57,10 +57,10 @@ class SimulationTest : public ::testing::Test {
       "export_generate_pvsm = false\n"
       "compress_pv_files = false\n"
       "\n"
-      "  [[visualize_sim_object]]\n"
+      "  [[visualize_agent]]\n"
       "  name = \"Cell\"\n"
       "\n"
-      "  [[visualize_sim_object]]\n"
+      "  [[visualize_agent]]\n"
       "  name = \"Neurite\"\n"
       "  additional_data_members = [ \"spring_axis_\", \"tension_\" ]\n"
       "\n"
@@ -75,10 +75,10 @@ class SimulationTest : public ::testing::Test {
       "\n"
       "[performance]\n"
       "scheduling_batch_size = 123\n"
-      "detect_static_sim_objects = true\n"
+      "detect_static_agents = true\n"
       "cache_neighbors = true\n"
-      "souid_defragmentation_low_watermark = 0.123\n"
-      "souid_defragmentation_high_watermark = 0.456\n"
+      "agent_uid_defragmentation_low_watermark = 0.123\n"
+      "agent_uid_defragmentation_high_watermark = 0.456\n"
       "use_bdm_mem_mgr = false\n"
       "mem_mgr_aligned_pages_shift = 7\n"
       "mem_mgr_growth_rate = 1.123\n"
@@ -136,11 +136,11 @@ class SimulationTest : public ::testing::Test {
     EXPECT_FALSE(param->visualization_export_generate_pvsm_);
     EXPECT_FALSE(param->visualization_compress_pv_files_);
 
-    // visualize_sim_object
-    EXPECT_EQ(2u, param->visualize_sim_objects_.size());
-    auto it = param->visualize_sim_objects_.cbegin();
+    // visualize_agent
+    EXPECT_EQ(2u, param->visualize_agents_.size());
+    auto it = param->visualize_agents_.cbegin();
     uint64_t counter = 0;
-    while (it != param->visualize_sim_objects_.cend()) {
+    while (it != param->visualize_agents_.cend()) {
       if (counter == 0) {
         EXPECT_EQ("Cell", (*it).first);
         EXPECT_EQ(0u, (*it).second.size());
@@ -172,11 +172,11 @@ class SimulationTest : public ::testing::Test {
 
     // performance group
     EXPECT_EQ(123u, param->scheduling_batch_size_);
-    EXPECT_TRUE(param->detect_static_sim_objects_);
+    EXPECT_TRUE(param->detect_static_agents_);
     EXPECT_TRUE(param->cache_neighbors_);
-    EXPECT_NEAR(0.123, param->souid_defragmentation_low_watermark_,
+    EXPECT_NEAR(0.123, param->agent_uid_defragmentation_low_watermark_,
                 abs_error<double>::value);
-    EXPECT_NEAR(0.456, param->souid_defragmentation_high_watermark_,
+    EXPECT_NEAR(0.456, param->agent_uid_defragmentation_high_watermark_,
                 abs_error<double>::value);
     EXPECT_FALSE(param->use_bdm_mem_mgr_);
     EXPECT_EQ(7u, param->mem_mgr_aligned_pages_shift_);
@@ -451,7 +451,7 @@ TEST_F(IOTest, Simulation) {
 
   Simulation* restored;
   BackupAndRestore(sim, &restored);
-  EXPECT_EQ(2u, restored->GetResourceManager()->GetNumSimObjects());
+  EXPECT_EQ(2u, restored->GetResourceManager()->GetNumAgents());
 
   // store next random number for later comparison
   std::vector<double> next_rand;
@@ -466,7 +466,7 @@ TEST_F(IOTest, Simulation) {
   rm->Clear();
   const_cast<Param*>(param)->simulation_time_step_ = 6.28;
   // check if rm is really empty to avoid false positive test results
-  EXPECT_EQ(0u, rm->GetNumSimObjects());
+  EXPECT_EQ(0u, rm->GetNumAgents());
 
   // assign restored simulation to current one
   sim.Restore(std::move(*restored));
@@ -477,7 +477,7 @@ TEST_F(IOTest, Simulation) {
   // For more detailed iotest see the repective classes
   // rm and param should still be valid!
   const double kEpsilon = abs_error<double>::value;
-  EXPECT_EQ(2u, rm->GetNumSimObjects());
+  EXPECT_EQ(2u, rm->GetNumAgents());
   EXPECT_NEAR(3.14, param->simulation_time_step_, kEpsilon);
 #pragma omp parallel
   {
@@ -505,8 +505,8 @@ TEST_F(SimulationTest, ParamIOTest) {
 
   // read back
   GetPersistentObject(root_file, "param", restored);
-  // NB visualize_sim_objects_ is currently not backed up due to a ROOT error
-  restored->visualize_sim_objects_ = param->visualize_sim_objects_;
+  // NB visualize_agents_ is currently not backed up due to a ROOT error
+  restored->visualize_agents_ = param->visualize_agents_;
 
   ValidateNonCLIParameter(restored);
   remove(root_file);

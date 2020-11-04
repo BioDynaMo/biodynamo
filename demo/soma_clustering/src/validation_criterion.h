@@ -30,7 +30,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   auto* param = sim->GetParam();
 
   // get number of MyCells
-  int n = rm->GetNumSimObjects();
+  int n = rm->GetNumAgents();
 
   // number of cells that are close (i.e. within a distance of
   // spatial_range)
@@ -54,8 +54,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // the locations of all cells within the subvolume are copied
   // to pos_sub_vol
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = dynamic_cast<MyCell*>(so)) {
+  rm->ApplyOnAllElements([&](Agent* agent) {
+    if (auto* cell = dynamic_cast<MyCell*>(agent)) {
       const auto& pos = cell->GetPosition();
       auto type = cell->GetCellType();
 

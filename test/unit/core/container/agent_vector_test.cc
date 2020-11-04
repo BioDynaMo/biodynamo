@@ -12,61 +12,61 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/container/sim_object_vector.h"
+#include "core/container/agent_vector.h"
 #include "gtest/gtest.h"
-#include "unit/test_util/test_sim_object.h"
+#include "unit/test_util/test_agent.h"
 
 namespace bdm {
 
-TEST(SimObjectVectorTest, All) {
+TEST(AgentVectorTest, All) {
   std::string sim_name("simulation_object_vector_test_RunInitializerTest");
   Simulation simulation(sim_name);
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(new TestSimObject());
-  rm->push_back(new TestSimObject());
-  rm->push_back(new TestSimObject());
+  rm->push_back(new TestAgent());
+  rm->push_back(new TestAgent());
+  rm->push_back(new TestAgent());
 
-  SimObjectVector<int> vector;
+  AgentVector<int> vector;
   EXPECT_EQ(3u, vector.size(0));
 
   // values are not initialized
-  vector[SoHandle(0, 0)] = 1;
-  vector[SoHandle(0, 1)] = 2;
-  vector[SoHandle(0, 2)] = 3;
+  vector[AgentHandle(0, 0)] = 1;
+  vector[AgentHandle(0, 1)] = 2;
+  vector[AgentHandle(0, 2)] = 3;
 
-  EXPECT_EQ(1, vector[SoHandle(0, 0)]);
-  EXPECT_EQ(2, vector[SoHandle(0, 1)]);
-  EXPECT_EQ(3, vector[SoHandle(0, 2)]);
+  EXPECT_EQ(1, vector[AgentHandle(0, 0)]);
+  EXPECT_EQ(2, vector[AgentHandle(0, 1)]);
+  EXPECT_EQ(3, vector[AgentHandle(0, 2)]);
 
   vector.clear();
   EXPECT_EQ(0u, vector.size(0));
 }
 
-TEST(SimObjectVectorTest, Equality) {
+TEST(AgentVectorTest, Equality) {
   std::string sim_name("simulation_object_vector_test_RunInitializerTest2");
   Simulation simulation(sim_name);
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(new TestSimObject());
-  rm->push_back(new TestSimObject());
-  rm->push_back(new TestSimObject());
+  rm->push_back(new TestAgent());
+  rm->push_back(new TestAgent());
+  rm->push_back(new TestAgent());
 
-  SimObjectVector<int> vec_a;
-  SimObjectVector<int> vec_b;
+  AgentVector<int> vec_a;
+  AgentVector<int> vec_b;
   EXPECT_EQ(3u, vec_a.size(0));
   EXPECT_EQ(3u, vec_b.size(0));
 
   // values are not initialized
-  vec_a[SoHandle(0, 0)] = 1;
-  vec_a[SoHandle(0, 1)] = 2;
-  vec_a[SoHandle(0, 2)] = 3;
+  vec_a[AgentHandle(0, 0)] = 1;
+  vec_a[AgentHandle(0, 1)] = 2;
+  vec_a[AgentHandle(0, 2)] = 3;
 
   EXPECT_NE(vec_a, vec_b);
 
-  vec_b[SoHandle(0, 0)] = 1;
-  vec_b[SoHandle(0, 1)] = 2;
-  vec_b[SoHandle(0, 2)] = 3;
+  vec_b[AgentHandle(0, 0)] = 1;
+  vec_b[AgentHandle(0, 1)] = 2;
+  vec_b[AgentHandle(0, 2)] = 3;
 
   EXPECT_EQ(vec_a, vec_b);
 

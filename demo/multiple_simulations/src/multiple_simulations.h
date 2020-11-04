@@ -20,14 +20,14 @@
 
 namespace bdm {
 
-// BiologyModule that divides the simulation object at each time step
+// BiologyModule that divides the agent at each time step
 struct Divide : BaseBiologyModule {
   BDM_STATELESS_BM_HEADER(Divide, BaseBiologyModule, 1);
 
   Divide() {}
 
-  void Run(SimObject* sim_object) override {
-    dynamic_cast<Cell*>(sim_object)->Divide();
+  void Run(Agent* agent) override {
+    dynamic_cast<Cell*>(agent)->Divide();
   }
 };
 
@@ -35,7 +35,7 @@ inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
     // Turn on export visualization
     param->export_visualization_ = true;
-    param->visualize_sim_objects_["Cell"] = {};
+    param->visualize_agents_["Cell"] = {};
   };
 
   // Create two simulations

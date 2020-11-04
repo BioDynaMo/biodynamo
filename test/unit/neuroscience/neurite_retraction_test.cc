@@ -37,7 +37,7 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetAgentPtr<NeuriteElement>();
 
   Double3 neAxis = ne->GetSpringAxis();
 
@@ -57,7 +57,7 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   }
 
   // while there are still neurite elements left
-  while (rm->GetNumSimObjects() != 1) {
+  while (rm->GetNumAgents() != 1) {
     ne->RetractTerminalEnd(50);
     scheduler->Simulate(1);
 
@@ -81,15 +81,15 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   neuron->SetDiameter(10);
   rm->push_back(neuron);
 
-  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetSoPtr<NeuriteElement>();
+  auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(1);
 
   Double3 previous_direction;
   Double3 direction;
 
   for (int i = 0; i < 200; i++) {
-    rm->ApplyOnAllElements([&](SimObject* so) {
-      if (auto* ne = dynamic_cast<NeuriteElement*>(so)) {
+    rm->ApplyOnAllElements([&](Agent* agent) {
+      if (auto* ne = dynamic_cast<NeuriteElement*>(agent)) {
         EXPECT_GT(ne->GetAxis()[2], 0);
 
         if (ne->IsTerminal() && ne->GetDiameter() > 0.5) {
@@ -112,15 +112,15 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   }
 
   // while there are still neurite elements left
-  while (rm->GetNumSimObjects() != 1) {
-    rm->ApplyOnAllElements([&](SimObject* so) {
-      if (auto* ne = dynamic_cast<NeuriteElement*>(so)) {
+  while (rm->GetNumAgents() != 1) {
+    rm->ApplyOnAllElements([&](Agent* agent) {
+      if (auto* ne = dynamic_cast<NeuriteElement*>(agent)) {
         ne->RetractTerminalEnd(50);
       }
     });
     scheduler->Simulate(1);
   }
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 }  // end test
 
 }  // end namespace neuroscience

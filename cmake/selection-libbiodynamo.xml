@@ -5,19 +5,19 @@
   <selection>
     <class name="bdm::neuroscience::NeuronSoma" />
     <class name="bdm::neuroscience::NeuriteElement" />
-    <class name="bdm::SoPointer<bdm::neuroscience::NeuriteElement>" />
-    <class name="bdm::SoPointer<bdm::neuroscience::NeuronOrNeurite>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::Simulation" />
     <class name="bdm::ResourceManager" />
-    <class name="bdm::SimObject" />
-    <class name="bdm::SoHandle" />
-    <class name="bdm::SoUidGenerator" noStreamer="true"/>
-    <class name="bdm::SoUid"/>
+    <class name="bdm::Agent" />
+    <class name="bdm::AgentHandle" />
+    <class name="bdm::AgentUidGenerator" noStreamer="true"/>
+    <class name="bdm::AgentUid"/>
     <class name="bdm::Cell" />
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
-    <class name="std::unordered_map<uint64_t, bdm::SoHandle>" />
+    <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::BaseBiologyModule"/>
     <class name="bdm::GrowDivide"/>

@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/default_force.h"
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "neuroscience/module.h"
 #include "neuroscience/neurite_element.h"
@@ -71,7 +71,7 @@ TEST(DefaultForce, AllNonOverlappingSphere) {
 /// Tests the special case that neighbor and reference cell
 /// are at the same position -> should return random force
 TEST(DefaultForce, AllAtSamePositionSphere) {
-  // simulation object required for random number generator
+  // agent required for random number generator
   Simulation simulation(TEST_NAME);
 
   Cell cell({0, 0, 0});
@@ -156,7 +156,7 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 
 TEST(DefaultForce, CylinderIntersectingAxis) {
   neuroscience::InitModule();
-  // simulation object required for random number generator
+  // agent required for random number generator
   Simulation simulation(TEST_NAME);
 
   NeuriteElement cylinder1;

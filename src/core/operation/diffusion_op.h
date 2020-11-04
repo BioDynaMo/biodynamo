@@ -46,7 +46,7 @@ struct DiffusionOp : public StandaloneOperationImpl {
       // dimensions, because these should not be changing anyway
       if (env->HasGrown() && !param->bound_space_) {
         Log::Info("DiffusionOp",
-                  "Your simulation objects are getting near the edge of the "
+                  "Your agents are getting near the edge of the "
                   "simulation space. Be aware of boundary conditions that may "
                   "come into play!");
         dg->Update(env->GetDimensionThresholds());

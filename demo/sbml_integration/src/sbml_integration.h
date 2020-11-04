@@ -36,14 +36,14 @@ namespace bdm {
 // Define my custom cell, which extends Cell by adding an extra
 // data member s1_.
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+  BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
   explicit MyCell(const Double3& position) : Base(position) {}
 
   /// Default event constructor
-  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
+  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
 
   void SetS1(double s1) { s1_ = s1; }
@@ -92,8 +92,8 @@ struct SbmlModule : public BaseBiologyModule {
     result_.resize(opt.steps, 4);
   }
 
-  void Run(SimObject* so) override {
-    if (auto* cell = static_cast<MyCell*>(so)) {
+  void Run(Agent* agent) override {
+    if (auto* cell = static_cast<MyCell*>(agent)) {
       auto i = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
       rr_->getIntegrator()->integrate(i * dt_, dt_);
       // FIXME model time not the same as
@@ -160,8 +160,8 @@ inline void PlotSbmlModules(const char* filename) {
   mg->SetTitle("Gillespie;Timestep;Concentration");
 
   Simulation::GetActive()->GetResourceManager()->ApplyOnAllElements(
-      [&](SimObject* so) {
-        auto* cell = static_cast<MyCell*>(so);
+      [&](Agent* agent) {
+        auto* cell = static_cast<MyCell*>(agent);
         const auto& bms = cell->GetAllBiologyModules();
         if (bms.size() == 1) {
           AddToPlot(mg, &static_cast<SbmlModule*>(bms[0])->GetResult());

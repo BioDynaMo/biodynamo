@@ -56,9 +56,9 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   auto set_param = [](auto* param) {
     // set-up Param values
     param->export_visualization_ = true;
-    param->visualize_sim_objects_.clear();
-    param->visualize_sim_objects_["Cell"] = {};
-    param->visualize_sim_objects_["NeuriteElement"] = {};
+    param->visualize_agents_.clear();
+    param->visualize_agents_["Cell"] = {};
+    param->visualize_agents_["NeuriteElement"] = {};
     param->visualize_diffusion_.clear();
     param->visualize_diffusion_.push_back({"sodium", true, true});
   };
@@ -67,21 +67,21 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
 
   // create internal objects
   vtkCPDataDescription* data_description = vtkCPDataDescription::New();
-  std::unordered_map<std::string, VtkSimObjects*> vtk_sim_objects;
-  vtk_sim_objects["Cell"] = new VtkSimObjects("Cell", data_description);
-  vtk_sim_objects["Cell"]->shape_ = kSphere;
-  vtk_sim_objects["NeuriteElement"] =
-      new VtkSimObjects("NeuriteElement", data_description);
-  vtk_sim_objects["NeuriteElement"]->shape_ = kCylinder;
+  std::unordered_map<std::string, VtkAgents*> vtk_agents;
+  vtk_agents["Cell"] = new VtkAgents("Cell", data_description);
+  vtk_agents["Cell"]->shape_ = kSphere;
+  vtk_agents["NeuriteElement"] =
+      new VtkAgents("NeuriteElement", data_description);
+  vtk_agents["NeuriteElement"]->shape_ = kCylinder;
 
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids;
   vtk_dgrids["sodium"] = new VtkDiffusionGrid("sodium", data_description);
   vtk_dgrids["sodium"]->used_ = true;
 
-  auto json = GenerateSimulationInfoJson(vtk_sim_objects, vtk_dgrids);
+  auto json = GenerateSimulationInfoJson(vtk_agents, vtk_dgrids);
 
   // free memory
-  for (auto& el : vtk_sim_objects) {
+  for (auto& el : vtk_agents) {
     delete el.second;
   }
   for (auto& el : vtk_dgrids) {
@@ -94,7 +94,7 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
     "name":"MySimulation",
     "result_dir":"output/MySimulation"
   },
-  "sim_objects": [
+  "agents": [
     {
       "name":"Cell",
       "glyph":"Glyph",
@@ -145,7 +145,7 @@ TEST_F(ParaviewAdaptorTest, OmitPvsmAndJsonGeneration) {
 TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
   Simulation simulation("MySimulation");
   // before we can call finalize we need to modify the json object
-  // we need to remove entries for sim_objects and extracellular_substances
+  // we need to remove entries for agents and extracellular_substances
   // because there are no corresponding data files available.
   // Therefore the script would fail.
   const char* empty_json = R"STR({
@@ -153,7 +153,7 @@ TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
     "name":"MySimulation",
     "result_dir":"output/MySimulation"
   },
-  "sim_objects": [],
+  "agents": [],
   "extracellular_substances": []
 }
 )STR";
@@ -180,8 +180,8 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
     param->visualize_diffusion_.push_back(vd);
 
     // We select MyCell for export
-    param->visualize_sim_objects_["MyCell"] = {};
-    param->visualize_sim_objects_["Cell"] = {};
+    param->visualize_agents_["MyCell"] = {};
+    param->visualize_agents_["Cell"] = {};
   };
   auto status = std::system(Concat("rm -f output/", TEST_NAME, "/*").c_str());
   if (status != 0) {

@@ -12,18 +12,18 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/core/sim_object/cell_test.h"
+#include "unit/core/agent/cell_test.h"
 #include <gtest/gtest.h>
 #include <typeinfo>
-#include "core/sim_object/cell.h"
-#include "unit/core/sim_object/sim_object_test.h"
+#include "core/agent/cell.h"
+#include "unit/core/agent/agent_test.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
 namespace cell_test_internal {
 
-using sim_object_test_internal::GrowthModule;
-using sim_object_test_internal::MovementModule;
+using agent_test_internal::GrowthModule;
+using agent_test_internal::MovementModule;
 
 TEST(CellTest, TransformCoordinatesGlobalToPolar) {
   Simulation simulation(TEST_NAME);

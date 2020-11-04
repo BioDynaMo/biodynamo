@@ -22,7 +22,7 @@ namespace bdm {
 // Define my custom cell, which extends Cell by adding an extra
 // data member cell_type.
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+  BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
@@ -30,7 +30,7 @@ class MyCell : public Cell {
       : Base(position), cell_type_(cell_type) {}
 
   /// Default event constructor
-  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
+  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {}
 
   int GetCellType() const { return cell_type_; }

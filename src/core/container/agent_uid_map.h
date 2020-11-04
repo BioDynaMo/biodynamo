@@ -12,55 +12,55 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_CONTAINER_SO_UID_MAP_H_
-#define CORE_CONTAINER_SO_UID_MAP_H_
+#ifndef CORE_CONTAINER_AGENT_UID_MAP_H_
+#define CORE_CONTAINER_AGENT_UID_MAP_H_
 
 #include <limits>
 #include <vector>
 
-#include "core/sim_object/so_uid.h"
+#include "core/agent/agent_uid.h"
 
 namespace bdm {
 
-/// SoUidMap is an associative container that exploits the properties of SoUid
+/// AgentUidMap is an associative container that exploits the properties of AgentUid
 /// to store data in contigous arrays.
 /// Inserting elements and reading elements at the same time is thread-safe
 /// as long as the keys are different.
 /// These operations with distinct keys are lock-free and atomic free, and thus
 /// offer high-performance.
 template <typename TValue>
-class SoUidMap {
+class AgentUidMap {
   struct Iterator {
-    SoUidMap* map_;
+    AgentUidMap* map_;
     uint64_t idx_;
   };
 
  public:
-  SoUidMap() {}
+  AgentUidMap() {}
 
-  SoUidMap(const SoUidMap& other)
-      : data_(other.data_), so_uid_reused_(other.so_uid_reused_) {}
+  AgentUidMap(const AgentUidMap& other)
+      : data_(other.data_), agent_uid_reused_(other.agent_uid_reused_) {}
 
-  explicit SoUidMap(uint64_t initial_size) {
+  explicit AgentUidMap(uint64_t initial_size) {
     data_.resize(initial_size);
-    so_uid_reused_.resize(initial_size, SoUid::kReusedMax);
+    agent_uid_reused_.resize(initial_size, AgentUid::kReusedMax);
   }
 
   void resize(uint64_t new_size) {  // NOLINT
     data_.resize(new_size);
-    so_uid_reused_.resize(new_size, SoUid::kReusedMax);
+    agent_uid_reused_.resize(new_size, AgentUid::kReusedMax);
   }
 
   void clear() {  // NOLINT
-    for (auto& el : so_uid_reused_) {
-      el = SoUid::kReusedMax;
+    for (auto& el : agent_uid_reused_) {
+      el = AgentUid::kReusedMax;
     }
   }
 
   void ParallelClear() {
 #pragma omp parallel for
     for (uint64_t i = 0; i < data_.size(); ++i) {
-      so_uid_reused_[i] = SoUid::kReusedMax;
+      agent_uid_reused_[i] = AgentUid::kReusedMax;
     }
   }
 
@@ -68,40 +68,40 @@ class SoUidMap {
     return data_.size();
   }
 
-  void Remove(const SoUid& key) {
+  void Remove(const AgentUid& key) {
     if (key.GetIndex() >= data_.size()) {
       return;
     }
-    so_uid_reused_[key.GetIndex()] = SoUid::kReusedMax;
+    agent_uid_reused_[key.GetIndex()] = AgentUid::kReusedMax;
   }
 
-  bool Contains(const SoUid& uid) const {
+  bool Contains(const AgentUid& uid) const {
     auto idx = uid.GetIndex();
     if (idx >= data_.size()) {
       return false;
     }
-    return uid.GetReused() == so_uid_reused_[idx];
+    return uid.GetReused() == agent_uid_reused_[idx];
   }
 
-  void Insert(const SoUid& uid, const TValue& value) {
+  void Insert(const AgentUid& uid, const TValue& value) {
     auto idx = uid.GetIndex();
     data_[idx] = value;
-    so_uid_reused_[idx] = uid.GetReused();
+    agent_uid_reused_[idx] = uid.GetReused();
   }
 
-  const TValue& operator[](const SoUid& key) const {
+  const TValue& operator[](const AgentUid& key) const {
     return data_[key.GetIndex()];
   }
 
-  typename SoUid::Reused_t GetReused(uint64_t index) const {
-    return so_uid_reused_[index];
+  typename AgentUid::Reused_t GetReused(uint64_t index) const {
+    return agent_uid_reused_[index];
   }
 
  private:
   std::vector<TValue> data_;
-  std::vector<typename SoUid::Reused_t> so_uid_reused_;
+  std::vector<typename AgentUid::Reused_t> agent_uid_reused_;
 };
 
 }  // namespace bdm
 
-#endif  // CORE_CONTAINER_SO_UID_MAP_H_
+#endif  // CORE_CONTAINER_AGENT_UID_MAP_H_
