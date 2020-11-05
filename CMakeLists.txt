@@ -614,6 +614,17 @@ endif()
 
 # -------------------- benchmarking --------------------------------------------
 if(benchmark)
+  configure_file("cmake/env/version.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/version.sh" @ONLY)
+  file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/version.sh
+        DESTINATION ${CMAKE_BINARY_DIR}
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+  configure_file("cmake/env/gen_benchmark_plots.py" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/gen_benchmark_plots.py" @ONLY)
+  file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/gen_benchmark_plots.py
+              DESTINATION ${CMAKE_BINARY_DIR}
+              FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+              GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+      
   include(Benchmarking)
 endif()
 
