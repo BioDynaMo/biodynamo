@@ -257,7 +257,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     }
     // scaling for integration step
     auto* core_param = Simulation::GetActive()->GetParam();
-    speed *= core_param->simulation_time_step_;
+    speed *= core_param->simulation_time_step;
 
     auto* mother_agentma = dynamic_cast<NeuronSoma*>(mother_.Get());
     auto* mother_neurite = dynamic_cast<NeuriteElement*>(mother_.Get());
@@ -286,7 +286,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
       // if actual_length_ < length and mother is a neurite element with no
       // other daughter : merge with mother
       RemoveProximalNeuriteElement();  // also updates volume_...
-      RetractTerminalEnd(speed / core_param->simulation_time_step_);
+      RetractTerminalEnd(speed / core_param->simulation_time_step);
     } else {
       // if mother is neurite element with other daughter or is not a neurite
       // segment: disappear.
@@ -566,7 +566,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
     // scaling for integration step
     auto* core_param = Simulation::GetActive()->GetParam();
-    double length = speed * core_param->simulation_time_step_;
+    double length = speed * core_param->simulation_time_step;
     auto dir = direction;
     auto displacement = dir.Normalize() * length;
     auto new_mass_location = displacement + mass_location_;
@@ -600,7 +600,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   void ChangeVolume(double speed) {
     // scaling for integration step
     auto* core_param = Simulation::GetActive()->GetParam();
-    double delta = speed * core_param->simulation_time_step_;
+    double delta = speed * core_param->simulation_time_step;
     volume_ += delta;
 
     if (volume_ <
@@ -615,7 +615,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   void ChangeDiameter(double speed) {
     // scaling for integration step
     auto* core_param = Simulation::GetActive()->GetParam();
-    double delta = speed * core_param->simulation_time_step_;
+    double delta = speed * core_param->simulation_time_step;
     diameter_ += delta;
     UpdateVolume();
   }
@@ -760,8 +760,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     double& displacement_norm = force_norm;
 
     //  6.4) There is an upper bound for the movement.
-    if (displacement_norm > core_param->simulation_max_displacement_) {
-      displacement = displacement * (core_param->simulation_max_displacement_ /
+    if (displacement_norm > core_param->simulation_max_displacement) {
+      displacement = displacement * (core_param->simulation_max_displacement /
                                      displacement_norm);
     }
     return displacement;

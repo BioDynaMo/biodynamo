@@ -274,9 +274,9 @@ inline std::vector<uint64_t> GetAgentsPerNuma(uint64_t num_agents) {
   auto max_threads = ti->GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
     auto threads_in_numa = ti->GetThreadsInNumaNode(n);
-    uint64_t num_agents = num_agents * threads_in_numa / max_threads;
-    agent_per_numa[n] = num_agents;
-    cummulative += num_agents;
+    uint64_t num_agents_loc = num_agents * threads_in_numa / max_threads;
+    agent_per_numa[n] = num_agents_loc;
+    cummulative += num_agents_loc;
   }
   agent_per_numa[0] = num_agents - cummulative;
   return agent_per_numa;

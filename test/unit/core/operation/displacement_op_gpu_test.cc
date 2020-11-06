@@ -65,7 +65,7 @@ class DisplacementOpCpuVerify {
       auto search_radius = env->GetLargestObjectSize();
       auto squared_radius_ = search_radius * search_radius;
       const auto& displacement = agent->CalculateDisplacement(
-          squared_radius_, param->simulation_time_step_);
+          squared_radius_, param->simulation_time_step);
       (*displacements_)[ah] = displacement;
     }
   };
@@ -82,8 +82,8 @@ class DisplacementOpCpuVerify {
       auto* param = sim->GetParam();
 
       agent->ApplyDisplacement((*displacements_)[ah]);
-      if (param->bound_space_) {
-        ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
+      if (param->bound_space) {
+        ApplyBoundingBox(agent, param->min_bound, param->max_bound);
       }
     }
   };
@@ -93,10 +93,10 @@ void RunTest(OpComputeTarget mode) {
   auto set_param = [&](Param* param) {
     switch (mode) {
       case kOpenCl:
-        param->compute_target_ = "opencl";
+        param->compute_target = "opencl";
         break;
       case kCuda:
-        param->compute_target_ = "cuda";
+        param->compute_target = "cuda";
         break;
       default:
         return;
@@ -187,10 +187,10 @@ void RunTest2(OpComputeTarget mode) {
   auto set_param = [&](auto* param) {
     switch (mode) {
       case kOpenCl:
-        param->compute_target_ = "opencl";
+        param->compute_target = "opencl";
         break;
       case kCuda:
-        param->compute_target_ = "cuda";
+        param->compute_target = "cuda";
         break;
       default:
         return;

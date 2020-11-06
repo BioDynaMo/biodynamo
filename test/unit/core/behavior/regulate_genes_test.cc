@@ -29,7 +29,7 @@ struct TestScheduler : public Scheduler {
 
 TEST(RegulateGenesTest, EulerTest) {
   auto set_param = [](auto* param) {
-    param->numerical_ode_solver_ = Param::NumericalODESolver::kEuler;
+    param->numerical_ode_solver = Param::NumericalODESolver::kEuler;
   };
   Simulation simulation(TEST_NAME, set_param);
   auto* scheduler = new TestScheduler();
@@ -64,8 +64,8 @@ TEST(RegulateGenesTest, EulerTest) {
 // https://ece.uwaterloo.ca/~dwharder/NumericalAnalysis/14IVPs/rk/examples.html
 TEST(RegulateGenesTest, RK4Test) {
   auto set_param = [](auto* param) {
-    param->numerical_ode_solver_ = Param::NumericalODESolver::kRK4;
-    param->simulation_time_step_ = 1;
+    param->numerical_ode_solver = Param::NumericalODESolver::kRK4;
+    param->simulation_time_step = 1;
   };
   Simulation simulation(TEST_NAME, set_param);
 

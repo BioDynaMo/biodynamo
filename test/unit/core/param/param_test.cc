@@ -36,7 +36,7 @@ TEST(ParamTest, ToJsonString) {
   EXPECT_EQ(42u,
             j_param["bdm::TestModuleParam"]["test_param2"].get<uint64_t>());
   EXPECT_EQ(-1, j_param["bdm::TestModuleParam"]["test_param3"].get<int>());
-  EXPECT_EQ("output", j_param["bdm::Param"]["output_dir_"].get<std::string>());
+  EXPECT_EQ("output", j_param["bdm::Param"]["output_dir"].get<std::string>());
 }
 
 // -----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ TEST(ParamTest, RestoreFromJson) {
   std::string patch1 = R"EOF(
 {
   "bdm::Param": {
-    "visualize_agents_": {
+    "visualize_agents": {
       "Cell": ["type"]
     }
   },
@@ -61,8 +61,8 @@ TEST(ParamTest, RestoreFromJson) {
   std::string patch2 = R"EOF(
 {
   "bdm::Param": {
-    "simulation_time_step_" : 1.0,
-    "visualize_agents_": {
+    "simulation_time_step" : 1.0,
+    "visualize_agents": {
       "Cell": ["type", "some-dm"]
     }
   },
@@ -74,8 +74,8 @@ TEST(ParamTest, RestoreFromJson) {
 
   param.MergeJsonPatch(patch1);
 
-  EXPECT_EQ(1u, param.visualize_agents_.size());
-  auto vis_cell = param.visualize_agents_["Cell"];
+  EXPECT_EQ(1u, param.visualize_agents.size());
+  auto vis_cell = param.visualize_agents["Cell"];
   EXPECT_EQ(1u, vis_cell.size());
   EXPECT_TRUE(vis_cell.find("type") != vis_cell.end());
 
@@ -86,8 +86,8 @@ TEST(ParamTest, RestoreFromJson) {
 
   param.MergeJsonPatch(patch2);
 
-  EXPECT_EQ(1u, param.visualize_agents_.size());
-  vis_cell = param.visualize_agents_["Cell"];
+  EXPECT_EQ(1u, param.visualize_agents.size());
+  vis_cell = param.visualize_agents["Cell"];
   EXPECT_EQ(2u, vis_cell.size());
   EXPECT_TRUE(vis_cell.find("type") != vis_cell.end());
   EXPECT_TRUE(vis_cell.find("some-dm") != vis_cell.end());

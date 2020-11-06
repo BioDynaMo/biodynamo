@@ -175,8 +175,8 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
     collide.setArg(3, adherence_arg);
     collide.setArg(4, box_id_arg);
     collide.setArg(5, mass_arg);
-    collide.setArg(6, param->simulation_time_step_);
-    collide.setArg(7, param->simulation_max_displacement_);
+    collide.setArg(6, param->simulation_time_step);
+    collide.setArg(7, param->simulation_max_displacement);
     collide.setArg(8, squared_radius);
 
     collide.setArg(9, static_cast<cl_int>(num_objects));
@@ -226,8 +226,8 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
       new_pos[1] = cell_movements[idx][1];
       new_pos[2] = cell_movements[idx][2];
       cell->UpdatePosition(new_pos);
-      if (param->bound_space_) {
-        ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
+      if (param->bound_space) {
+        ApplyBoundingBox(agent, param->min_bound, param->max_bound);
       }
     });
   }

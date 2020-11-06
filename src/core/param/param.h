@@ -71,18 +71,18 @@ struct Param {
   /// Set random number seed.\n
   /// The pseudo random number generator (prng) of each thread will be
   /// initialized as follows:
-  /// `prng[tid].SetSeed(random_seed_ * (tid + 1));`\n
+  /// `prng[tid].SetSeed(random_seed * (tid + 1));`\n
   /// Default value: `4357`\n
   /// TOML config file:
   ///
   ///     [simulation]
   ///     random_seed = 4357
-  uint64_t random_seed_ = 4357;
+  uint64_t random_seed = 4357;
 
   /// Variable which specifies method using for solving differential equation
   /// {"Euler", "RK4"}.
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
-  NumericalODESolver numerical_ode_solver_ = NumericalODESolver::kEuler;
+  NumericalODESolver numerical_ode_solver = NumericalODESolver::kEuler;
 
   /// Ouput Directory name used to store visualization and other files.\n
   /// Path is relative to working directory.\n
@@ -90,13 +90,13 @@ struct Param {
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     ouput_dir = "output"
-  std::string output_dir_ = "output";
+  ///     output_dir = "output"
+  std::string output_dir = "output";
 
   /// If set to true, BioDynaMo will automatically delete all contents
-  /// inside `Param::output_dir_` at the beginning of the simulation.
-  /// Use with caution, especially in combination with `Param::output_dir_`
-  bool remove_output_dir_contents_ = false;
+  /// inside `Param::output_dir` at the beginning of the simulation.
+  /// Use with caution, especially in combination with `Param::output_dir`
+  bool remove_output_dir_contents = false;
 
   /// Backup file name for full simulation backups\n
   /// Path is relative to working directory.\n
@@ -106,7 +106,7 @@ struct Param {
   ///     [simulation]
   ///     backup_file = <path>/<filename>.root
   /// Command line argument: `-b, --backup`
-  std::string backup_file_ = "";
+  std::string backup_file = "";
 
   /// File name to restore simulation from\n
   /// Path is relative to working directory.\n
@@ -116,7 +116,7 @@ struct Param {
   ///     [simulation]
   ///     restore_file = <path>/<filename>.root
   /// Command line argument: `-r, --restore`
-  std::string restore_file_ = "";
+  std::string restore_file = "";
 
   /// Specifies the interval (in seconds) in which backups will be performed.\n
   /// Default Value: `1800` (every half an hour)\n
@@ -124,7 +124,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     backup_interval = 1800  # backup every half an hour
-  uint32_t backup_interval_ = 1800;
+  uint32_t backup_interval = 1800;
 
   /// Time between two simulation steps, in hours.
   /// Default value: `0.01`\n
@@ -132,7 +132,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     time_step = 0.0125
-  double simulation_time_step_ = 0.01;
+  double simulation_time_step = 0.01;
 
   /// Maximum jump that a point mass can do in one time step. Useful to
   /// stabilize the simulation\n
@@ -141,7 +141,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     max_displacement = 3.0
-  double simulation_max_displacement_ = 3.0;
+  double simulation_max_displacement = 3.0;
 
   /// Calculate mechanical interactions between agents.\n
   /// Default value: `true`\n
@@ -149,7 +149,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     run_mechanical_interactions = true
-  bool run_mechanical_interactions_ = true;
+  bool run_mechanical_interactions = true;
 
   /// Enforce an artificial cubic bounds around the simulation space.
   /// Simulation objects cannot move outside this cube. Dimensions of this cube
@@ -159,25 +159,25 @@ struct Param {
   ///
   ///     [simulation]
   ///     bound_space = false
-  bool bound_space_ = false;
+  bool bound_space = false;
 
   /// Minimum allowed value for x-, y- and z-position if simulation space is
-  /// bound (@see `bound_space_`).\n
+  /// bound (@see `bound_space`).\n
   /// Default value: `0`\n
   /// TOML config file:
   ///
   ///     [simulation]
   ///     min_bound = 0
-  double min_bound_ = 0;
+  double min_bound = 0;
 
   /// Maximum allowed value for x-, y- and z-position if simulation space is
-  /// bound (@see `bound_space_`).\n
+  /// bound (@see `bound_space`).\n
   /// Default value: `100`\n
   /// TOML config file:
   ///
   ///     [simulation]
   ///     max_bound = 100
-  double max_bound_ = 100;
+  double max_bound = 100;
 
   /// Allow substances to leak out of the simulation space. In this way
   /// the substance concentration will not be blocked by an artificial border\n
@@ -186,7 +186,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     leaking_edges = true
-  bool leaking_edges_ = true;
+  bool leaking_edges = true;
 
   /// A string for determining diffusion type within the simulation space.
   /// current inputs include "Euler" and Runga Kutta ("RK")
@@ -194,10 +194,10 @@ struct Param {
   /// TOML config file:
   ///
   ///        [simulation]
-  ///        diffusion_type_ = <diffusion method>
+  ///        diffusion_type = <diffusion method>
   ///
 
-  std::string diffusion_type_ = "Euler";
+  std::string diffusion_type = "Euler";
 
   /// Calculate the diffusion gradient for each substance.\n
   /// TOML config file:
@@ -205,7 +205,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     calculate_gradients = true
-  bool calculate_gradients_ = true;
+  bool calculate_gradients = true;
 
   /// List of thread-safety mechanisms \n
   /// `kNone`: \n
@@ -220,8 +220,8 @@ struct Param {
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     thread_safety_mechanism_ = "none"
-  ThreadSafetyMechanism thread_safety_mechanism_ =
+  ///     thread_safety_mechanism = "none"
+  ThreadSafetyMechanism thread_safety_mechanism =
       ThreadSafetyMechanism::kUserSpecified;
 
   // visualization values ------------------------------------------------------
@@ -233,7 +233,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     adaptor = <name_of_adaptor>
-  std::string visualization_engine_ = "paraview";
+  std::string visualization_engine = "paraview";
 
   /// Use ParaView Catalyst for insitu visualization.\n
   /// Insitu visualization supports live visualization
@@ -244,7 +244,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     insitu = false
-  bool insitu_visualization_ = false;
+  bool insitu_visualization = false;
 
   /// Write data to file for post-simulation visualization
   /// Default value: `false`\n
@@ -252,7 +252,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     export = false
-  bool export_visualization_ = false;
+  bool export_visualization = false;
 
   /// Use ROOT for enable visualization.\n
   /// Default value: `false`\n
@@ -260,7 +260,7 @@ struct Param {
   ///
   ///     [visualization]
   ///     root = false
-  bool root_visualization_ = false;
+  bool root_visualization = false;
 
   /// Enable insitu visualization with a custom python pipeline
   /// Default value:
@@ -268,12 +268,12 @@ struct Param {
   /// TOML config file:
   ///     [visualization]
   ///     pv_insitu_pipeline = ""
-  std::string pv_insitu_pipeline_ =
+  std::string pv_insitu_pipeline =
       Concat(std::getenv("BDMSYS"),
              "/include/core/visualization/paraview/default_insitu_pipeline.py");
 
   /// Arguments that will be passed to the python ParaView insitu pipeline
-  /// specified in `Param::pv_insitu_pipeline_`.\n
+  /// specified in `Param::pv_insitu_pipeline`.\n
   /// The arguments will be passed to the ExtendDefaultPipeline function
   /// `def ExtendDefaultPipeline(renderview, coprocessor, datadescription,
   /// script_args):`
@@ -282,10 +282,10 @@ struct Param {
   /// TOML config file:
   ///
   ///     [visualization]
-  ///     pv_insitu_pipeline_arguments = ""
-  std::string pv_insitu_pipeline_arguments_ = "";
+  ///     pv_insitu_pipelinearguments = ""
+  std::string pv_insitu_pipelinearguments = "";
 
-  /// If `export_visualization_` is set to true, this parameter specifies
+  /// If `export_visualization` is set to true, this parameter specifies
   /// how often it should be exported. 1 = every timestep, 10: every 10
   /// time steps.\n
   /// Default value: `1`\n
@@ -293,16 +293,16 @@ struct Param {
   ///
   ///     [visualization]
   ///     interval = 1
-  uint32_t visualization_interval_ = 1;
+  uint32_t visualization_interval = 1;
 
-  /// If `export_visualization_` is set to true, this parameter specifies
+  /// If `export_visualization` is set to true, this parameter specifies
   /// if the ParaView pvsm file will be generated!\n
   /// Default value: `true`\n
   /// TOML config file:
   ///
   ///     [visualization]
   ///     export_generate_pvsm = true
-  bool visualization_export_generate_pvsm_ = true;
+  bool visualization_export_generate_pvsm = true;
 
   /// Specifies which agents should be visualized. \n
   /// Every agent defines the minimum set of data members which
@@ -326,7 +326,7 @@ struct Param {
   ///       [[visualize_agent]]
   ///       name = "Neurite"
   std::map<std::string, std::set<std::string>>
-      visualize_agents_;  ///<  JSON_object
+      visualize_agents;  ///<  JSON_object
 
   struct VisualizeDiffusion {
     std::string name_;
@@ -356,7 +356,7 @@ struct Param {
   ///       [[visualize_diffusion]]
   ///       name = "K"
   ///       # default values: concentration = true and gradient = false
-  std::vector<VisualizeDiffusion> visualize_diffusion_;
+  std::vector<VisualizeDiffusion> visualize_diffusion;
 
   /// Specifies if the ParView files that are generated in export mode
   /// should be compressed.\n
@@ -367,7 +367,7 @@ struct Param {
   ///     export = true
   ///     compress_pv_files = true
   ///
-  bool visualization_compress_pv_files_ = true;
+  bool visualization_compress_pv_files = true;
 
   // performance values --------------------------------------------------------
 
@@ -377,7 +377,7 @@ struct Param {
   ///
   ///     [performance]
   ///     scheduling_batch_size = 1000
-  uint64_t scheduling_batch_size_ = 1000;
+  uint64_t scheduling_batch_size = 1000;
 
   /// Calculation of the displacement (mechanical interaction) is an
   /// expensive operation. If agents do not move or grow,
@@ -390,7 +390,7 @@ struct Param {
   ///
   ///     [performance]
   ///     detect_static_agents = false
-  bool detect_static_agents_ = false;
+  bool detect_static_agents = false;
 
   /// Neighbors of a agent can be cached so to avoid consecutive
   /// searches. This of course only makes sense if there is more than one
@@ -400,7 +400,7 @@ struct Param {
   ///
   ///     [performance]
   ///     cache_neighbors = false
-  bool cache_neighbors_ = false;
+  bool cache_neighbors = false;
 
   /// If the utilization in the AgentUidMap inside ResourceManager falls below
   /// this watermark, defragmentation will be turned on.\n
@@ -409,7 +409,7 @@ struct Param {
   ///
   ///     [performance]
   ///     agent_uid_defragmentation_low_watermark = 0.5
-  double agent_uid_defragmentation_low_watermark_ = 0.5;
+  double agent_uid_defragmentation_low_watermark = 0.5;
 
   /// If the utilization in the AgentUidMap inside ResourceManager rises above
   /// this watermark, defragmentation will be turned off.\n
@@ -418,7 +418,7 @@ struct Param {
   ///
   ///     [performance]
   ///     agent_uid_defragmentation_high_watermark = 0.9
-  double agent_uid_defragmentation_high_watermark_ = 0.9;
+  double agent_uid_defragmentation_high_watermark = 0.9;
 
   /// Use the BioDynaMo memory manager.
   /// Default value: `true`\n
@@ -426,7 +426,7 @@ struct Param {
   ///
   ///     [performance]
   ///     use_bdm_mem_mgr = true
-  bool use_bdm_mem_mgr_ = true;
+  bool use_bdm_mem_mgr = true;
 
   /// The BioDynaMo memory manager allocates N page aligned memory blocks.
   /// The bigger N, the lower the memory overhead due to metadata storage
@@ -438,7 +438,7 @@ struct Param {
   ///
   ///     [performance]
   ///     mem_mgr_aligned_pages_shift = 8
-  uint64_t mem_mgr_aligned_pages_shift_ = 8;
+  uint64_t mem_mgr_aligned_pages_shift = 8;
 
   /// The BioDynaMo memory manager allocates memory in increasing sizes using
   /// a geometric series. This parameter specifies the growth rate.
@@ -447,19 +447,19 @@ struct Param {
   ///
   ///     [performance]
   ///     mem_mgr_growth_rate = 1.1
-  double mem_mgr_growth_rate_ = 1.1;
+  double mem_mgr_growth_rate = 1.1;
 
   /// The BioDynaMo memory manager can migrate memory between thread pools
   /// to avoid memory leaks.\n
   /// This parameter specifies the maximum memory size in bytes before
   /// migration happens.\n
-  /// This value must be bigger than `PAGE_SIZE * 2 ^ mem_mgr_growth_rate_`\n
+  /// This value must be bigger than `PAGE_SIZE * 2 ^ mem_mgr_growth_rate`\n
   /// Default value: `10485760` (10 MB)\n
   /// TOML config file:
   ///
   ///     [performance]
   ///     mem_mgr_max_mem_per_thread = 10485760
-  uint64_t mem_mgr_max_mem_per_thread_ = 1024 * 1024 * 10;
+  uint64_t mem_mgr_max_mem_per_thread = 1024 * 1024 * 10;
 
   /// This parameter is used inside `ResourceManager::SortAndBalanceNumaNodes`.
   /// If it is set to true, the function will reuse existing memory to rebalance
@@ -473,7 +473,7 @@ struct Param {
   ///
   ///     [performance]
   ///     minimize_memory_while_rebalancing = true
-  bool minimize_memory_while_rebalancing_ = true;
+  bool minimize_memory_while_rebalancing = true;
 
   /// MappedDataArrayMode options:
   ///   `kZeroCopy`: access agent data directly only if it is
@@ -491,8 +491,8 @@ struct Param {
   /// TOML config file:
   ///
   ///     [performance]
-  ///     mapped_data_array_mode_ = "zero-copy"
-  Param::MappedDataArrayMode mapped_data_array_mode_ =
+  ///     mapped_data_array_mode = "zero-copy"
+  Param::MappedDataArrayMode mapped_data_array_mode =
       MappedDataArrayMode::kZeroCopy;
 
   // development values --------------------------------------------------------
@@ -505,7 +505,7 @@ struct Param {
   ///
   ///     [development]
   ///     statistics = false
-  bool statistics_ = false;
+  bool statistics = false;
 
   /// Output debugging info related to running on NUMA architecture.\n
   /// \see `ThreadInfo`, `ResourceManager::DebugNuma`
@@ -514,22 +514,22 @@ struct Param {
   ///
   ///     [development]
   ///     debug_numa = false
-  bool debug_numa_ = false;
+  bool debug_numa = false;
 
   /// Display the current simulation step in the terminal output
   /// Default value: `true`\n
   /// TOML config file:
   ///     [development]
   ///     show_simulation_step = true
-  bool show_simulation_step_ = true;
+  bool show_simulation_step = true;
 
   /// Sets the frequency at which the current simulation step is displayed.
-  /// Display every `simulation_step_freq_` steps.
+  /// Display every `simulation_step_freq` steps.
   /// Default value: `10`\n
   /// TOML config file:
   ///     [development]
   ///     simulation_step_freq = false
-  uint32_t simulation_step_freq_ = 10;
+  uint32_t simulation_step_freq = 10;
 
   // ---------------------------------------------------------------------------
   // experimental group
@@ -540,22 +540,22 @@ struct Param {
   /// TOML config file:
   ///     [experimental]
   ///     compute_target = false
-  std::string compute_target_ = "cpu";
+  std::string compute_target = "cpu";
 
   /// Compile OpenCL kernels with debugging symbols, for debugging on CPU
   /// targets with GNU gdb.
   /// Default value: `false`\n
   /// TOML config file:
   ///     [experimental]
-  ///     opencl_debug_ = false
-  bool opencl_debug_ = false;
+  ///     opencl_debug = false
+  bool opencl_debug = false;
 
   /// Set the index of the preferred GPU you wish to use.
   /// Default value: `0`\n
   /// TOML config file:
   ///     [experimental]
   ///     preferred_gpu = 0
-  int preferred_gpu_ = 0;
+  int preferred_gpu = 0;
 
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);

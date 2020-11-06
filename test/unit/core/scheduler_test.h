@@ -72,7 +72,7 @@ inline void RunRestoreTest() {
   }
 
   // start restore validation
-  auto set_param = [](auto* param) { param->restore_file_ = ROOTFILE; };
+  auto set_param = [](auto* param) { param->restore_file = ROOTFILE; };
   Simulation simulation("SchedulerTest_RunRestoreTest", set_param);
   auto* rm = simulation.GetResourceManager();
   TestSchedulerRestore scheduler;
@@ -101,8 +101,8 @@ inline void RunRestoreTest() {
 
 inline void RunBackupTest() {
   auto set_param = [](auto* param) {
-    param->backup_file_ = ROOTFILE;
-    param->backup_interval_ = 1;
+    param->backup_file = ROOTFILE;
+    param->backup_interval = 1;
   };
 
   Simulation simulation("SchedulerTest_RunBackupTest", set_param);

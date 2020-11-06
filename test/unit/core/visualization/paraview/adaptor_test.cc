@@ -55,12 +55,12 @@ class ParaviewAdaptorTest : public ::testing::Test {
 TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   auto set_param = [](auto* param) {
     // set-up Param values
-    param->export_visualization_ = true;
-    param->visualize_agents_.clear();
-    param->visualize_agents_["Cell"] = {};
-    param->visualize_agents_["NeuriteElement"] = {};
-    param->visualize_diffusion_.clear();
-    param->visualize_diffusion_.push_back({"sodium", true, true});
+    param->export_visualization = true;
+    param->visualize_agents.clear();
+    param->visualize_agents["Cell"] = {};
+    param->visualize_agents["NeuriteElement"] = {};
+    param->visualize_diffusion.clear();
+    param->visualize_diffusion.push_back({"sodium", true, true});
   };
 
   Simulation simulation(kSimulationName, set_param);
@@ -124,8 +124,8 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
 
 TEST_F(ParaviewAdaptorTest, OmitPvsmAndJsonGeneration) {
   auto set_param = [](Param* param) {
-    param->export_visualization_ = true;
-    param->visualization_export_generate_pvsm_ = false;
+    param->export_visualization = true;
+    param->visualization_export_generate_pvsm = false;
   };
 
   auto* sim = new Simulation(TEST_NAME, set_param);
@@ -172,16 +172,16 @@ TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
 /// the only ones (no more, no less).
 TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   auto set_param = [](auto* param) {
-    param->export_visualization_ = true;
+    param->export_visualization = true;
 
     // We selection Substance_1 for export
     Param::VisualizeDiffusion vd;
     vd.name_ = "Substance_1";
-    param->visualize_diffusion_.push_back(vd);
+    param->visualize_diffusion.push_back(vd);
 
     // We select MyCell for export
-    param->visualize_agents_["MyCell"] = {};
-    param->visualize_agents_["Cell"] = {};
+    param->visualize_agents["MyCell"] = {};
+    param->visualize_agents["Cell"] = {};
   };
   auto status = std::system(Concat("rm -f output/", TEST_NAME, "/*").c_str());
   if (status != 0) {

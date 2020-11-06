@@ -45,7 +45,7 @@ VtkAgents::VtkAgents(const char* type_name,
                              vtkCPDataDescription* data_description) {
   auto* param = Simulation::GetActive()->GetParam();
   auto* tinfo = ThreadInfo::GetInstance();
-  if (param->export_visualization_) {
+  if (param->export_visualization) {
     data_.resize(tinfo->GetMaxThreads());
   } else {
     data_.resize(1);
@@ -56,7 +56,7 @@ VtkAgents::VtkAgents(const char* type_name,
   }
   name_ = type_name;
 
-  if (!param->export_visualization_) {
+  if (!param->export_visualization) {
     data_description->AddInput(type_name);
     data_description->GetInputDescriptionByName(type_name)->SetGrid(data_[0]);
   }
@@ -122,7 +122,7 @@ TClass* VtkAgents::GetTClass() { return tclass_; }
 // -----------------------------------------------------------------------------
 void VtkAgents::Update(const std::vector<Agent*>* agents) {
   auto* param = Simulation::GetActive()->GetParam();
-  if (param->export_visualization_) {
+  if (param->export_visualization) {
 #pragma omp parallel
     {
       auto* tinfo = ThreadInfo::GetInstance();
@@ -192,7 +192,7 @@ void VtkAgents::InitializeDataMembers(
     Agent* agent, std::vector<std::string>* data_members) {
   std::set<std::string> dm_set = agent->GetRequiredVisDataMembers();
   auto* param = Simulation::GetActive()->GetParam();
-  for (auto& dm : param->visualize_agents_.at(name_)) {
+  for (auto& dm : param->visualize_agents.at(name_)) {
     dm_set.insert(dm);
   }
   data_members->resize(dm_set.size());

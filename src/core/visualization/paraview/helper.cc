@@ -28,9 +28,9 @@ std::string GenerateSimulationInfoJson(
   auto* param = sim->GetParam();
   // agents
   std::stringstream agents;
-  uint64_t num_agents = param->visualize_agents_.size();
+  uint64_t num_agents = param->visualize_agents.size();
   uint64_t counter = 0;
-  for (const auto& entry : param->visualize_agents_) {
+  for (const auto& entry : param->visualize_agents) {
     std::string agent_name = entry.first;
 
     auto search = vtk_agents.find(agent_name);
@@ -65,9 +65,9 @@ std::string GenerateSimulationInfoJson(
 
   // extracellular substances
   std::stringstream substances;
-  uint64_t num_substances = param->visualize_diffusion_.size();
+  uint64_t num_substances = param->visualize_diffusion.size();
   for (uint64_t i = 0; i < num_substances; i++) {
-    auto& name = param->visualize_diffusion_[i].name_;
+    auto& name = param->visualize_diffusion[i].name_;
 
     auto search = vtk_dgrids.find(name);
     if (search == vtk_dgrids.end()) {
@@ -88,7 +88,7 @@ std::string GenerateSimulationInfoJson(
     }
     substances << "    { \"name\":\"" << name << "\", ";
     std::string has_gradient =
-        param->visualize_diffusion_[i].gradient_ ? "true" : "false";
+        param->visualize_diffusion[i].gradient_ ? "true" : "false";
     substances << "\"has_gradient\":\"" << has_gradient << "\" }";
 
     if (i != num_substances - 1) {
@@ -108,7 +108,7 @@ std::string GenerateSimulationInfoJson(
       << substances.str() << std::endl
       << "  ]," << std::endl
       << "  \"insitu_script_arguments\": \""
-      << param->pv_insitu_pipeline_arguments_ << "\"" << std::endl
+      << param->pv_insitu_pipelinearguments << "\"" << std::endl
       << "}" << std::endl;
   return str.str();
 }

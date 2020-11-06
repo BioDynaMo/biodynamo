@@ -316,13 +316,13 @@ class UniformGridEnvironment : public Environment {
       AssignToBoxesFunctor functor(this);
       rm->ApplyOnAllElementsParallelDynamic(1000, functor);
       auto* param = Simulation::GetActive()->GetParam();
-      if (param->bound_space_) {
-        int min = param->min_bound_;
-        int max = param->max_bound_;
+      if (param->bound_space) {
+        int min = param->min_bound;
+        int max = param->max_bound;
         threshold_dimensions_ = {min, max};
       }
 
-      if (param->thread_safety_mechanism_ ==
+      if (param->thread_safety_mechanism ==
           Param::ThreadSafetyMechanism::kAutomatic) {
         nb_mutex_builder_->Update();
       }
@@ -331,13 +331,13 @@ class UniformGridEnvironment : public Environment {
       auto* param = Simulation::GetActive()->GetParam();
 
       bool uninitialized = boxes_.size() == 0;
-      if (uninitialized && param->bound_space_) {
+      if (uninitialized && param->bound_space) {
         // Simulation has never had any agents
-        // Initialize grid dimensions with `Param::min_bound_` and
-        // `Param::max_bound_`
+        // Initialize grid dimensions with `Param::min_bound` and
+        // `Param::max_bound`
         // This is required for the DiffusionGrid
-        int min = param->min_bound_;
-        int max = param->max_bound_;
+        int min = param->min_bound;
+        int max = param->max_bound;
         grid_dimensions_ = {min, max, min, max, min, max};
         threshold_dimensions_ = {min, max};
         has_grown_ = true;
@@ -351,8 +351,8 @@ class UniformGridEnvironment : public Environment {
             "UniformGridEnvironment",
             "You tried to initialize an empty simulation without bound space. "
             "Therefore we cannot determine the size of the simulation space. "
-            "Please add agents, or set Param::bound_space_, "
-            "Param::min_bound_, and Param::max_bound_.");
+            "Please add agents, or set Param::bound_space, "
+            "Param::min_bound, and Param::max_bound.");
       }
     }
   }
@@ -742,7 +742,7 @@ class UniformGridEnvironment : public Environment {
   ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
 
   /// Holds instance of NeighborMutexBuilder.
-  /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism_`
+  /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism`
   /// is set to `kAutomatic`
   std::unique_ptr<GridNeighborMutexBuilder> nb_mutex_builder_ =
       std::make_unique<GridNeighborMutexBuilder>();

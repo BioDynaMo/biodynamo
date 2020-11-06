@@ -122,7 +122,7 @@ class Agent {
   /// Subclasses define the critical region by adding the locks of all
   /// agents that must not be processed in parallel. \n
   /// Don't forget to add the lock of the current agent.\n
-  /// \see `Param::thread_safety_mechanism_`
+  /// \see `Param::thread_safety_mechanism`
   virtual void CriticalRegion(std::vector<Spinlock*>* locks) {}
 
   uint32_t GetBoxIdx() const;

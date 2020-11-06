@@ -92,7 +92,7 @@ struct CheckXPosition : public Functor<void, Agent*, double*> {
 TEST(OperationTest, ReductionOp) {
   // Lower the batch size such that multiple threads are working in parallel on
   // the operations (to test if multithreading doesn't cause race conditions)
-  auto set_param = [](Param* param) { param->scheduling_batch_size_ = 3; };
+  auto set_param = [](Param* param) { param->scheduling_batch_size = 3; };
   Simulation simulation("", set_param);
   auto* scheduler = simulation.GetScheduler();
 
@@ -135,7 +135,7 @@ TEST(OperationTest, ReductionOp) {
 TEST(OperationTest, ReductionOpMultiThreading) {
   // Lower the batch size such that multiple threads are working in parallel on
   // the operations (to test if multithreading doesn't cause race conditions)
-  auto set_param = [](Param* param) { param->scheduling_batch_size_ = 3; };
+  auto set_param = [](Param* param) { param->scheduling_batch_size = 3; };
   Simulation simulation("", set_param);
   auto* scheduler = simulation.GetScheduler();
 

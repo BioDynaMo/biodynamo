@@ -65,7 +65,7 @@ struct DisplacementOp : public AgentOperationImpl {
       auto search_radius = grid->GetLargestObjectSize();
       squared_radius_ = search_radius * search_radius;
       auto current_time =
-          (current_iteration + 1) * param->simulation_time_step_;
+          (current_iteration + 1) * param->simulation_time_step;
       delta_time_[tid] = current_time - last_time_run_[tid];
       last_time_run_[tid] = current_time;
     }
@@ -73,8 +73,8 @@ struct DisplacementOp : public AgentOperationImpl {
     const auto& displacement =
         agent->CalculateDisplacement(squared_radius_, delta_time_[tid]);
     agent->ApplyDisplacement(displacement);
-    if (param->bound_space_) {
-      ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
+    if (param->bound_space) {
+      ApplyBoundingBox(agent, param->min_bound, param->max_bound);
     }
   }
 

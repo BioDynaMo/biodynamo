@@ -225,7 +225,7 @@ To access the Runge-Kutta method for diffusion, one simply needs to update the b
 ```
 
 [simulation]
-diffusion_type_ = "RK"
+diffusion_type = "RK"
 
 [visualization]
 export = true

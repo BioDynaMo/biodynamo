@@ -33,7 +33,7 @@ namespace bdm {
 VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
                                    vtkCPDataDescription* data_description) {
   auto* param = Simulation::GetActive()->GetParam();
-  if (param->export_visualization_) {
+  if (param->export_visualization) {
     auto* tinfo = ThreadInfo::GetInstance();
     data_.resize(tinfo->GetMaxThreads());
   } else {
@@ -48,7 +48,7 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
 
   // get visualization config
   const Param::VisualizeDiffusion* vd = nullptr;
-  for (auto& entry : param->visualize_diffusion_) {
+  for (auto& entry : param->visualize_diffusion) {
     if (entry.name_ == name) {
       vd = &entry;
       break;
@@ -72,7 +72,7 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
     }
   }
 
-  if (!param->export_visualization_) {
+  if (!param->export_visualization) {
     data_description->AddInput(name.c_str());
     data_description->GetInputDescriptionByName(name.c_str())
         ->SetGrid(data_[0]);

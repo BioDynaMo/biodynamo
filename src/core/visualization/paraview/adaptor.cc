@@ -75,8 +75,8 @@ ParaviewAdaptor::~ParaviewAdaptor() {
       impl_->g_processor_->Delete();
       impl_->g_processor_ = nullptr;
     }
-    if (param->export_visualization_ &&
-        param->visualization_export_generate_pvsm_) {
+    if (param->export_visualization &&
+        param->visualization_export_generate_pvsm) {
       WriteSimulationInfoJsonFile();
       GenerateParaviewState();
     }
@@ -103,19 +103,19 @@ void ParaviewAdaptor::Visualize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   uint64_t total_steps = sim->GetScheduler()->GetSimulatedSteps();
-  if (total_steps % param->visualization_interval_ != 0) {
+  if (total_steps % param->visualization_interval != 0) {
     return;
   }
 
-  double time = param->simulation_time_step_ * total_steps;
+  double time = param->simulation_time_step * total_steps;
   impl_->data_description_->SetTimeData(time, total_steps);
 
   CreateVtkObjects();
 
-  if (param->insitu_visualization_) {
+  if (param->insitu_visualization) {
     InsituVisualization();
   }
-  if (param->export_visualization_) {
+  if (param->export_visualization) {
     ExportVisualization();
   }
 }
@@ -125,14 +125,14 @@ void ParaviewAdaptor::Initialize() {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
-  if (param->insitu_visualization_ && impl_->g_processor_ == nullptr) {
+  if (param->insitu_visualization && impl_->g_processor_ == nullptr) {
     impl_->g_processor_ = vtkCPProcessor::New();
     impl_->g_processor_->Initialize();
   }
 
-  if (param->insitu_visualization_) {
+  if (param->insitu_visualization) {
     const std::string& script =
-        ParaviewAdaptor::BuildPythonScriptString(param->pv_insitu_pipeline_);
+        ParaviewAdaptor::BuildPythonScriptString(param->pv_insitu_pipeline);
     std::ofstream ofs;
     auto* sim = Simulation::GetActive();
     std::string final_python_script_name =
@@ -153,11 +153,11 @@ void ParaviewAdaptor::Initialize() {
   }
   impl_->data_description_->SetTimeData(0, 0);
 
-  for (auto& pair : param->visualize_agents_) {
+  for (auto& pair : param->visualize_agents) {
     impl_->vtk_agents_[pair.first.c_str()] =
         new VtkAgents(pair.first.c_str(), impl_->data_description_);
   }
-  for (auto& entry : param->visualize_diffusion_) {
+  for (auto& entry : param->visualize_diffusion) {
     impl_->vtk_dgrids_[entry.name_] =
         new VtkDiffusionGrid(entry.name_, impl_->data_description_);
   }

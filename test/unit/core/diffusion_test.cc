@@ -508,7 +508,7 @@ TEST(DiffusionTest, EulerConvergence) {
 }
 
 TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
-  auto set_param = [](Param* param) { param->diffusion_type_ = "RK"; };
+  auto set_param = [](Param* param) { param->diffusion_type = "RK"; };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
@@ -591,8 +591,8 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
     Param::VisualizeDiffusion vd;
     vd.name_ = "Substance_1";
 
-    param->export_visualization_ = true;
-    param->visualize_diffusion_.push_back(vd);
+    param->export_visualization = true;
+    param->visualize_diffusion.push_back(vd);
   };
   Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();

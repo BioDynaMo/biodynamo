@@ -38,7 +38,7 @@ inline int Simulate(int argc, const char** argv) {
   // get a pointer to an instance of SimParam
   auto* sparam = param->GetModuleParam<SimParam>();
 
-  std::cout << "Value of simulation time step " << param->simulation_time_step_
+  std::cout << "Value of simulation time step " << param->simulation_time_step
             << std::endl;
   std::cout << "Value of foo                  " << sparam->foo << std::endl;
   std::cout << "Value of bar                  " << sparam->bar << std::endl;

@@ -32,7 +32,7 @@ struct OpTimer {
   void operator()(Container* cells, uint16_t numa_node, uint16_t type_idx) {
     auto* param = Simulation::GetActive()->GetParam();
     auto* agg = Simulation::GetActive()->GetScheduler()->GetOpTimes();
-    if (param->statistics_) {
+    if (param->statistics) {
       Timing timer(timer_msg_, agg);
       operation_(cells, numa_node, type_idx);
     } else {

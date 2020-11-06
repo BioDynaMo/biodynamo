@@ -334,7 +334,7 @@ MemoryManager::MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
     Log::Fatal(
         "MemoryManager",
         Concat("The parameter mem_mgr_max_mem_per_thread must be greater then "
-               "the size of N pages (PAGE_SIZE * 2 ^ mem_mgr_growth_rate_)! "
+               "the size of N pages (PAGE_SIZE * 2 ^ mem_mgr_growth_rate)! "
                "(max_mem_per_thread_ ",
                max_mem_per_thread_, ", size_n_pages_ ", size_n_pages_, ")"));
   }

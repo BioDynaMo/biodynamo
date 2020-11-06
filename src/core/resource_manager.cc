@@ -27,7 +27,7 @@ ResourceManager::ResourceManager() {
   agents_.resize(numa_num_configured_nodes());
 
   auto* param = Simulation::GetActive()->GetParam();
-  if (param->export_visualization_ || param->insitu_visualization_) {
+  if (param->export_visualization || param->insitu_visualization) {
     type_index_ = new TypeIndex();
   }
 }
@@ -249,7 +249,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   env->IterateZOrder(rearrange);
 
   auto* param = Simulation::GetActive()->GetParam();
-  const bool minimize_memory = param->minimize_memory_while_rebalancing_;
+  const bool minimize_memory = param->minimize_memory_while_rebalancing;
 
 // create new objects
 #pragma omp parallel
@@ -311,7 +311,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   UpdateUidAgentHandleMapFunctor functor(uid_ah_map_);
   ApplyOnAllElementsParallel(functor);
 
-  if (Simulation::GetActive()->GetParam()->debug_numa_) {
+  if (Simulation::GetActive()->GetParam()->debug_numa) {
     std::cout << *this << std::endl;
   }
 }

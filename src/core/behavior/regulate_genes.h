@@ -32,7 +32,7 @@ namespace bdm {
 /// It has the implementation of Euler and Runge-Kutta numerical methods
 /// for solving ODE. Both methods implemented inside the body of method Run().
 /// The user determines which method is picked in particular simulation
-/// through variable `Param::numerical_ode_solver_`.
+/// through variable `Param::numerical_ode_solver`.
 struct RegulateGenes : public BaseBehavior {
   BDM_BEHAVIOR_HEADER(RegulateGenes, BaseBehavior, 1);
 
@@ -78,17 +78,17 @@ struct RegulateGenes : public BaseBehavior {
     auto* param = sim->GetParam();
     auto* scheduler = sim->GetScheduler();
 
-    const auto& timestep = param->simulation_time_step_;
+    const auto& timestep = param->simulation_time_step;
     uint64_t simulated_steps = scheduler->GetSimulatedSteps();
     const auto absolute_time = simulated_steps * timestep;
 
-    if (param->numerical_ode_solver_ == Param::NumericalODESolver::kEuler) {
+    if (param->numerical_ode_solver == Param::NumericalODESolver::kEuler) {
       // Euler
       for (uint64_t i = 0; i < first_derivatives_.size(); i++) {
         double slope = first_derivatives_[i](absolute_time, concentrations_[i]);
         concentrations_[i] += slope * timestep;
       }
-    } else if (param->numerical_ode_solver_ ==
+    } else if (param->numerical_ode_solver ==
                Param::NumericalODESolver::kRK4) {
       // Runge-Kutta 4
       for (uint64_t i = 0; i < first_derivatives_.size(); i++) {

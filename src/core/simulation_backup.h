@@ -59,7 +59,7 @@ class SimulationBackup {
     // create temporary file
     // if application crashes during backup; last backup is not corrupted
     std::stringstream tmp_file;
-    tmp_file << "tmp_" << backup_file_;
+    tmp_file << "tmp_" << backup_file;
 
     // Backup
     {
@@ -74,9 +74,9 @@ class SimulationBackup {
     }
 
     // remove last backup file
-    remove(backup_file_.c_str());
+    remove(backup_file.c_str());
     // rename temporary file
-    rename(tmp_file.str().c_str(), backup_file_.c_str());
+    rename(tmp_file.str().c_str(), backup_file.c_str());
   }
 
   void Restore() {
@@ -86,7 +86,7 @@ class SimulationBackup {
     }
     after_restore_event_.clear();
 
-    TFileRaii file(TFile::Open(restore_file_.c_str()));
+    TFileRaii file(TFile::Open(restore_file.c_str()));
     RuntimeVariables* restored_rv;
     file.Get()->GetObject(kRuntimeVariableName.c_str(), restored_rv);
     // check if runtime variables are the same
@@ -97,7 +97,7 @@ class SimulationBackup {
     Simulation* restored_simulation = nullptr;
     file.Get()->GetObject(kSimulationName.c_str(), restored_simulation);
     Simulation::GetActive()->Restore(std::move(*restored_simulation));
-    Log::Info("Scheduler", "Restored simulation from ", restore_file_);
+    Log::Info("Scheduler", "Restored simulation from ", restore_file);
     delete restored_simulation;
 
     // call all after restore events
@@ -116,8 +116,8 @@ class SimulationBackup {
  private:
   bool backup_ = false;
   bool restore_ = true;
-  std::string backup_file_;
-  std::string restore_file_;
+  std::string backup_file;
+  std::string restore_file;
 };
 
 }  // namespace bdm

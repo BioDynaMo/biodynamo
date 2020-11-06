@@ -160,7 +160,7 @@ class Simulation {
   /// e.g. `name_ = "my-sim"` and `id_ = 0` -> "my-sim"\n
   /// e.g. `name_ = "my-sim"` and `id_ = 4` -> "my-sim4"
   std::string unique_name_;  //!
-  /// cached value where `unique_name_` is appended to `Param::output_dir_`
+  /// cached value where `unique_name_` is appended to `Param::output_dir`
   std::string output_dir_;  //!
   /// Stores command line arguments if (argc,argv) or CommandLineOptions
   /// are passed to the constructor.\n

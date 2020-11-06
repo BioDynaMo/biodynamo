@@ -34,8 +34,8 @@ struct Divide : BaseBehavior {
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
     // Turn on export visualization
-    param->export_visualization_ = true;
-    param->visualize_agents_["Cell"] = {};
+    param->export_visualization = true;
+    param->visualize_agents["Cell"] = {};
   };
 
   // Create two simulations

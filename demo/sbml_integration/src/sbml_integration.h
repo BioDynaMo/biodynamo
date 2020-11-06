@@ -192,7 +192,7 @@ inline int Simulate(int argc, const char** argv) {
   opt.steps = 100;
 
   auto set_param = [&](Param* param) {
-    param->simulation_time_step_ = opt.duration / opt.steps;
+    param->simulation_time_step = opt.duration / opt.steps;
   };
 
   Simulation simulation(&opts, set_param);

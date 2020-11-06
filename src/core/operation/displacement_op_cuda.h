@@ -145,8 +145,8 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     cdo_->LaunchDisplacementKernel(
         i_->cell_positions.data()->data(), i_->cell_diameters.data(),
         i_->cell_tractor_force.data()->data(), i_->cell_adherence.data(),
-        i_->cell_boxid.data(), i_->mass.data(), &(param->simulation_time_step_),
-        &(param->simulation_max_displacement_), &squared_radius,
+        i_->cell_boxid.data(), i_->mass.data(), &(param->simulation_time_step),
+        &(param->simulation_max_displacement), &squared_radius,
         &total_num_objects, i_->starts.data(), i_->lengths.data(),
         i_->timestamps.data(), &(i_->current_timestamp), i_->successors.data(),
         &(i_->box_length), i_->num_boxes_axis.data(),
@@ -185,8 +185,8 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
       new_pos[1] = (*cell_movements)[idx][1];
       new_pos[2] = (*cell_movements)[idx][2];
       cell->UpdatePosition(new_pos);
-      if (param->bound_space_) {
-        ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
+      if (param->bound_space) {
+        ApplyBoundingBox(agent, param->min_bound, param->max_bound);
       }
     }
   };

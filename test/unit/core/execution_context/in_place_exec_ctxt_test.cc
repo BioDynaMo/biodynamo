@@ -285,7 +285,7 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
     Param::ThreadSafetyMechanism mechanism) {
   Simulation sim(
       "RunInPlaceExecutionContextExecuteThreadSafety",
-      [&](Param* param) { param->thread_safety_mechanism_ = mechanism; });
+      [&](Param* param) { param->thread_safety_mechanism = mechanism; });
   auto* rm = sim.GetResourceManager();
 
   // create cells

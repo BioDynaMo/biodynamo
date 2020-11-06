@@ -34,7 +34,7 @@ namespace bdm {
 
 Scheduler::Scheduler() {
   auto* param = Simulation::GetActive()->GetParam();
-  backup_ = new SimulationBackup(param->backup_file_, param->restore_file_);
+  backup_ = new SimulationBackup(param->backup_file, param->restore_file);
   if (backup_->RestoreEnabled()) {
     restore_point_ = backup_->GetSimulationStepsFromBackup();
   }
@@ -231,7 +231,7 @@ void Scheduler::RunScheduledOps() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
-  auto batch_size = param->scheduling_batch_size_;
+  auto batch_size = param->scheduling_batch_size;
 
   SetUpOps();
 
@@ -280,7 +280,7 @@ void Scheduler::Backup() {
   auto* param = Simulation::GetActive()->GetParam();
   if (backup_->BackupEnabled() &&
       duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-          param->backup_interval_) {
+          param->backup_interval) {
     last_backup_ = Clock::now();
     backup_->Backup(total_steps_);
   }
@@ -318,7 +318,7 @@ void Scheduler::Initialize() {
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
-  if (param->bound_space_) {
+  if (param->bound_space) {
     auto* bound_space = NewOperation("bound space");
     rm->ApplyOnAllElementsParallel(*bound_space);
     delete bound_space;
@@ -346,10 +346,10 @@ void Scheduler::ScheduleOps() {
 
     // Enable GPU operation implementations (if available) if CUDA or OpenCL
     // flags are set
-    if (param->compute_target_ == "cuda" &&
+    if (param->compute_target == "cuda" &&
         op->IsComputeTargetSupported(kCuda)) {
       op->SelectComputeTarget(kCuda);
-    } else if (param->compute_target_ == "opencl" &&
+    } else if (param->compute_target == "opencl" &&
                op->IsComputeTargetSupported(kOpenCl)) {
       op->SelectComputeTarget(kOpenCl);
     } else {

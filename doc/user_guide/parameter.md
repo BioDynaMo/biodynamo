@@ -43,7 +43,7 @@ simulation.
 
 ```cpp
 const auto* param = Simulation::GetActive()->GetParam();
-std::cout << param->simulation_time_step_ << std::endl;
+std::cout << param->simulation_time_step << std::endl;
 std::cout << param->GetModuleParam<neuroscience::Param>()->neurite_max_length_ << std::endl;
 
 ```
@@ -79,8 +79,8 @@ in the working directory and add your configuration. You can find a sample below
 ```json
 {
   "bdm::Param": {
-    "export_visualization_": true,
-    "visualize_agents_": {
+    "export_visualization": true,
+    "visualize_agents": {
       "Cell": ["density_"]
     }
   }
@@ -161,10 +161,10 @@ your simulation though.
 ```cpp
 auto set_param = [](Param* param) {
   // Create an artificial bound for the simulation space
-  param->bound_space_ = true;
-  param->min_bound_ = 0;
-  param->max_bound_ = 250;
-  param->run_mechanical_interactions_ = false;
+  param->bound_space = true;
+  param->min_bound = 0;
+  param->max_bound = 250;
+  param->run_mechanical_interactions = false;
 };
 
 Simulation simulation(argc, argv, set_param);

@@ -41,7 +41,7 @@ class Agent;
 /// Subsequent operations observe the changes of earlier operations.\n
 /// In-place updates can lead to race conditions if agents not only
 /// modify themselves, but also neighbors. Therefore, a protection mechanism has
-/// been added. \see `Param::thread_safety_mechanism_`
+/// been added. \see `Param::thread_safety_mechanism`
 /// New agents will only be visible at the next iteration. \n
 /// Also removal of a agent happens at the end of each iteration.
 class InPlaceExecutionContext {

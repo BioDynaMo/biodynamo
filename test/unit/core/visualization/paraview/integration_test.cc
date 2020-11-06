@@ -59,19 +59,19 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
                           bool use_pvsm = true) {
   auto num_diffusion_boxes = std::pow(resolution, 3);
   auto set_param = [&](Param* param) {
-    param->remove_output_dir_contents_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = max_bound;
-    param->export_visualization_ = export_visualization;
-    param->insitu_visualization_ = !export_visualization;
+    param->remove_output_dir_contents = true;
+    param->min_bound = 0;
+    param->max_bound = max_bound;
+    param->export_visualization = export_visualization;
+    param->insitu_visualization = !export_visualization;
     if (!export_visualization) {
-      param->pv_insitu_pipeline_ =
+      param->pv_insitu_pipeline =
           GetPythonScriptPath("validate_diffusion_grid.py");
       auto sim_name = Simulation::GetActive()->GetUniqueName();
-      param->pv_insitu_pipeline_arguments_ = Concat(
+      param->pv_insitu_pipelinearguments = Concat(
           "--sim_name=", sim_name, " --num_elements=", num_diffusion_boxes);
     }
-    param->visualize_diffusion_.push_back({"Substance", true});
+    param->visualize_diffusion.push_back({"Substance", true});
   };
   auto sim_name =
       Concat("ExportDiffusionGridTest_", max_bound, "_", resolution);
@@ -169,21 +169,21 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
 void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
                        bool export_visualization = true, bool use_pvsm = true) {
   auto set_param = [&](Param* param) {
-    param->remove_output_dir_contents_ = true;
-    param->export_visualization_ = export_visualization;
-    param->insitu_visualization_ = !export_visualization;
-    param->visualization_export_generate_pvsm_ = use_pvsm;
+    param->remove_output_dir_contents = true;
+    param->export_visualization = export_visualization;
+    param->insitu_visualization = !export_visualization;
+    param->visualization_export_generate_pvsm = use_pvsm;
     if (!export_visualization) {
-      param->pv_insitu_pipeline_ =
+      param->pv_insitu_pipeline =
           GetPythonScriptPath("validate_agents.py");
       auto sim_name = Simulation::GetActive()->GetUniqueName();
-      param->pv_insitu_pipeline_arguments_ =
+      param->pv_insitu_pipelinearguments =
           Concat("--sim_name=", sim_name, " --num_elements=", num_agents);
     }
-    param->run_mechanical_interactions_ = false;
-    param->visualize_agents_.insert(
+    param->run_mechanical_interactions = false;
+    param->visualize_agents.insert(
         {"NeuriteElement", {"uid_", "daughter_right_"}});
-    param->mapped_data_array_mode_ = mode;
+    param->mapped_data_array_mode = mode;
   };
   neuroscience::InitModule();
   auto sim_name = Concat("ExportAgentsTest_", num_agents, "_", mode);
@@ -281,9 +281,9 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_Cache) {
 // -----------------------------------------------------------------------------
 void RunDefaultInsituPipelineTest() {
   auto set_param = [](Param* param) {
-    param->remove_output_dir_contents_ = true;
-    param->insitu_visualization_ = true;
-    param->visualize_agents_.insert({"Cell", {}});
+    param->remove_output_dir_contents = true;
+    param->insitu_visualization = true;
+    param->visualize_agents.insert({"Cell", {}});
   };
   Simulation simulation("RunDefaultInsituPipelineTest", set_param);
 

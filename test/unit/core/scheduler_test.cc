@@ -56,7 +56,7 @@ class SchedulerTest : public ::testing::Test {
 
 #ifdef USE_DICT
 TEST_F(SchedulerTest, NoRestoreFile) {
-  auto set_param = [](auto* param) { param->restore_file_ = ""; };
+  auto set_param = [](auto* param) { param->restore_file = ""; };
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
@@ -88,9 +88,9 @@ TEST_F(SchedulerTest, Backup) { RunBackupTest(); }
 
 TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
   auto set_param = [](auto* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = -10;
-    param->max_bound_ = 10;
+    param->bound_space = true;
+    param->min_bound = -10;
+    param->max_bound = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
 
@@ -105,9 +105,9 @@ TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
 
 TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
   auto set_param = [](auto* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = -10;
-    param->max_bound_ = 10;
+    param->bound_space = true;
+    param->min_bound = -10;
+    param->max_bound = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
 
@@ -455,7 +455,7 @@ TEST_F(SchedulerTest, ScheduleOrder) {
 // in order to avoid using invalidated AgentHandles in operations that rely
 // AgentHandles
 TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
-  auto set_param = [&](Param* param) { param->scheduling_batch_size_ = 3; };
+  auto set_param = [&](Param* param) { param->scheduling_batch_size = 3; };
   Simulation simulation(TEST_NAME, set_param);
   auto* scheduler = simulation.GetScheduler();
 

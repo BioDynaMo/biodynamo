@@ -303,7 +303,7 @@ void ParaviewExporter::ExportSummary(std::string filename,
   pvd << "<Collection>" << std::endl;
   /// iterate for all (time) steps
   for (uint64_t i = 0; i < num_iterations; i++) {
-    pvd << "<DataSet timestep=\"" << (i * param->simulation_time_step_)
+    pvd << "<DataSet timestep=\"" << (i * param->simulation_time_step)
         << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
         << ".vtu\">";
     pvd << std::endl;

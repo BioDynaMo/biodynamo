@@ -246,9 +246,9 @@ TEST(GridTest, GetBoxCoordinates) {
 
 TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
   auto set_param = [](auto* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = 1;
-    param->max_bound_ = 99;
+    param->bound_space = true;
+    param->min_bound = 1;
+    param->max_bound = 99;
   };
 
   Simulation simulation(TEST_NAME, set_param);

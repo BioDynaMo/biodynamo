@@ -82,8 +82,8 @@ TEST(ResourceManagerTest, DiffusionGrid) {
 
 TEST(ResourceManagerTest, TurnOnOffAgentUidDefragmentation) {
   auto set_param = [](Param* param) {
-    param->agent_uid_defragmentation_low_watermark_ = 0.3;
-    param->agent_uid_defragmentation_high_watermark_ = 0.8;
+    param->agent_uid_defragmentation_low_watermark = 0.3;
+    param->agent_uid_defragmentation_high_watermark = 0.8;
   };
   Simulation simulation(TEST_NAME, set_param);
 

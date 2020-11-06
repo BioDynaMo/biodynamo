@@ -56,9 +56,9 @@ Second, we create a BioDynaMo simulation.
 
 ```cpp
 auto set_param = [](Param* param) {
-  param->bound_space_ = true;
-  param->min_bound_ = 0;
-  param->max_bound_ = 100;  // cube of 100*100*100
+  param->bound_space = true;
+  param->min_bound = 0;
+  param->max_bound = 100;  // cube of 100*100*100
 };
 Simulation simulation(argc, argv, set_param);
 ```
@@ -86,9 +86,9 @@ Then, with a simple loop from 0 to the number of cells, generate uniform distrib
 for (size_t i = 0; i < nb_of_cells; ++i) {
   // our modelling will be a cell cube of 100*100*100
   // random double between 0 and 100
-  x_coord = random->Uniform(param->min_bound_, param->max_bound_);
-  y_coord = random->Uniform(param->min_bound_, param->max_bound_);
-  z_coord = random->Uniform(param->min_bound_, param->max_bound_);
+  x_coord = random->Uniform(param->min_bound, param->max_bound);
+  y_coord = random->Uniform(param->min_bound, param->max_bound);
+  z_coord = random->Uniform(param->min_bound, param->max_bound);
 
   // creating the cell at position x, y, z
   Cell* cell = new Cell({x_coord, y_coord, z_coord});
@@ -170,10 +170,10 @@ Because those visualization parameters are not in the source code, you don’t n
 We can note that instead of creating a configuration file, you can do the same by creating this lambda function and passing it to the constructor of `Simulation`
 ```cpp
 auto set_param = [](auto* param) {
-  param->insitu_visualization_ = true; // allows live visualisation
-  param->export_visualization_ = true; // allows export of visualisation files
-  param->visualization_interval_ = 2; // export visualisation files every 2 steps
-  param->visualize_agents_["Cell"] = std::set<std::string>{ "" };
+  param->insitu_visualization = true; // allows live visualisation
+  param->export_visualization = true; // allows export of visualisation files
+  param->visualization_interval = 2; // export visualisation files every 2 steps
+  param->visualize_agents["Cell"] = std::set<std::string>{ "" };
 }
 Simulation simulation(argc, argv, set_param);
 ```
@@ -280,7 +280,7 @@ cell->SetCellColour(8);
 
 Do the same for the regular cells, setting the value depending on the y axis value. One possibility is to write
 ```cpp
-cell->SetCellColour((int)(y_coord / param->max_bound_ * 6)); // will vary from 0 to 5. so 6 different layers depending on y_coord
+cell->SetCellColour((int)(y_coord / param->max_bound * 6)); // will vary from 0 to 5. so 6 different layers depending on y_coord
 ```
 
 This new simulation is now functional, however before running it, we need to tell BioDynaMo to communicate all `cell_color_` values. Do do that, we will modify the configuration file `bdm.toml` by modifying the `visualize_agent`

@@ -107,9 +107,9 @@ struct GrowthModule : public BaseBehavior {
 
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = 100;  // cube of 100*100*100
+    param->bound_space = true;
+    param->min_bound = 0;
+    param->max_bound = 100;  // cube of 100*100*100
   };
 
   Simulation simulation(argc, argv, set_param);
@@ -123,16 +123,16 @@ inline int Simulate(int argc, const char** argv) {
   for (size_t i = 0; i < nb_of_cells; ++i) {
     // our modelling will be a cell cube of 100*100*100
     // random double between 0 and 100
-    x_coord = myrand->Uniform(param->min_bound_, param->max_bound_);
-    y_coord = myrand->Uniform(param->min_bound_, param->max_bound_);
-    z_coord = myrand->Uniform(param->min_bound_, param->max_bound_);
+    x_coord = myrand->Uniform(param->min_bound, param->max_bound);
+    y_coord = myrand->Uniform(param->min_bound, param->max_bound);
+    z_coord = myrand->Uniform(param->min_bound, param->max_bound);
 
     // creating the cell at position x, y, z
     MyCell* cell = new MyCell({x_coord, y_coord, z_coord});
     // set cell parameters
     cell->SetDiameter(7.5);
     // will vary from 0 to 5. so 6 different layers depending on y_coord
-    cell->SetCellColor(static_cast<int>((y_coord / param->max_bound_ * 6)));
+    cell->SetCellColor(static_cast<int>((y_coord / param->max_bound * 6)));
 
     rm->push_back(cell);  // put the created cell in our cells structure
   }

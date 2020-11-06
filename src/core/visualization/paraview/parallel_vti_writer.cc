@@ -119,7 +119,7 @@ void ParallelVtiWriter::operator()(
     vti->SetWholeExtent(whole_extent.data());
     vti->SetDataModeToBinary();
     vti->SetEncodeAppendedData(false);
-    if (!param->visualization_compress_pv_files_) {
+    if (!param->visualization_compress_pv_files) {
       vti->SetCompressorTypeToNone();
     }
     vti->Write();

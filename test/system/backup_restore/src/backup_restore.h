@@ -32,7 +32,7 @@ struct TestBehaviour : public BaseBehavior {
 };
 
 inline int Simulate(int argc, const char** argv) {
-  auto set_param = [](Param* param) { param->backup_interval_ = 1; };
+  auto set_param = [](Param* param) { param->backup_interval = 1; };
   Simulation simulation(argc, argv, set_param);
   auto* rm = simulation.GetResourceManager();
 

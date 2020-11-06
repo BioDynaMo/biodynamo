@@ -29,9 +29,9 @@ enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
   auto set_param = [](auto* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = 250;
+    param->bound_space = true;
+    param->min_bound = 0;
+    param->max_bound = 250;
   };
   Simulation simulation(TEST_NAME, set_param);
 
@@ -44,7 +44,7 @@ TEST(DiffusionInitTest, GaussianBand) {
     cell->SetDiameter(10);
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
+  ModelInitializer::CreateCellsRandom(param->min_bound, param->max_bound, 1,
                                       construct);
 
   // Define the substances in our simulation
@@ -56,8 +56,8 @@ TEST(DiffusionInitTest, GaussianBand) {
 
   simulation.GetEnvironment()->Update();
 
-  int lbound = param->min_bound_;
-  int rbound = param->max_bound_;
+  int lbound = param->min_bound;
+  int rbound = param->max_bound;
   auto* dgrid = rm->GetDiffusionGrid(0);
 
   // Create data structures, whose size depend on the grid dimensions

@@ -204,7 +204,7 @@ void InPlaceExecutionContext::Execute(
   auto* env = Simulation::GetActive()->GetEnvironment();
   auto* param = Simulation::GetActive()->GetParam();
 
-  if (param->thread_safety_mechanism_ ==
+  if (param->thread_safety_mechanism ==
       Param::ThreadSafetyMechanism::kUserSpecified) {
     agent->CriticalRegion(&locks);
     std::sort(locks.begin(), locks.end());
@@ -219,7 +219,7 @@ void InPlaceExecutionContext::Execute(
       l->unlock();
     }
     locks.clear();
-  } else if (param->thread_safety_mechanism_ ==
+  } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kAutomatic) {
     auto* nb_mutex_builder = env->GetNeighborMutexBuilder();
     auto* mutex = nb_mutex_builder->GetMutex(agent->GetBoxIdx());
@@ -228,7 +228,7 @@ void InPlaceExecutionContext::Execute(
     for (auto* op : operations) {
       (*op)(agent);
     }
-  } else if (param->thread_safety_mechanism_ ==
+  } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kNone) {
     neighbor_cache_.clear();
     for (auto* op : operations) {
@@ -236,8 +236,8 @@ void InPlaceExecutionContext::Execute(
     }
   } else {
     Log::Fatal("InPlaceExecutionContext::Execute",
-               "Invalid value for parameter thread_safety_mechanism_: ",
-               param->thread_safety_mechanism_);
+               "Invalid value for parameter thread_safety_mechanism: ",
+               param->thread_safety_mechanism);
   }
 }
 
@@ -258,7 +258,7 @@ struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {
       : function_(function), neighbor_cache_(neigbor_cache) {}
 
   void operator()(const Agent* agent, double squared_distance) override {
-    if (param->cache_neighbors_) {
+    if (param->cache_neighbors) {
       neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
     function_(agent, squared_distance);
@@ -297,7 +297,7 @@ struct ForEachNeighborWithinRadiusFunctor
         squared_radius_(squared_radius) {}
 
   void operator()(const Agent* agent, double squared_distance) override {
-    if (param->cache_neighbors_) {
+    if (param->cache_neighbors) {
       neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
     if (squared_distance < squared_radius_) {

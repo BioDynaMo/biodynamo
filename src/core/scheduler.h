@@ -158,7 +158,7 @@ class Scheduler {
   /// Tracks operations' execution times
   TimingAggregator op_times_;
 
-  /// Backup the simulation. Backup interval based on `Param::backup_interval_`
+  /// Backup the simulation. Backup interval based on `Param::backup_interval`
   void Backup();
 
   /// Restore the simulation if requested at the right time

@@ -34,7 +34,7 @@ struct VisualizationOp : public StandaloneOperationImpl {
 
   void Initialize() {
     auto* param = Simulation::GetActive()->GetParam();
-    visualization_ = VisualizationAdaptor::Create(param->visualization_engine_);
+    visualization_ = VisualizationAdaptor::Create(param->visualization_engine);
     initialized_ = true;
   }
 

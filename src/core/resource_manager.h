@@ -343,9 +343,9 @@ class ResourceManager {
                          static_cast<double>(GetNumAgents());
     auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
-    if (utilization < param->agent_uid_defragmentation_low_watermark_) {
+    if (utilization < param->agent_uid_defragmentation_low_watermark) {
       sim->GetAgentUidGenerator()->EnableDefragmentation(&uid_ah_map_);
-    } else if (utilization > param->agent_uid_defragmentation_high_watermark_) {
+    } else if (utilization > param->agent_uid_defragmentation_high_watermark) {
       sim->GetAgentUidGenerator()->DisableDefragmentation();
     }
   }

@@ -236,7 +236,7 @@ class Cell : public Agent {
   void ChangeVolume(double speed) {
     // scaling for integration step
     auto* param = Simulation::GetActive()->GetParam();
-    double delta = speed * param->simulation_time_step_;
+    double delta = speed * param->simulation_time_step;
     volume_ += delta;
     if (volume_ < 5.2359877E-7) {
       volume_ = 5.2359877E-7;
@@ -348,9 +348,9 @@ class Cell : public Agent {
       // but we want to avoid huge jumps in the simulation, so there are
       // maximum distances possible
       auto* param = Simulation::GetActive()->GetParam();
-      if (norm_of_force * mh > param->simulation_max_displacement_) {
+      if (norm_of_force * mh > param->simulation_max_displacement) {
         movement_at_next_step.Normalize();
-        movement_at_next_step *= param->simulation_max_displacement_;
+        movement_at_next_step *= param->simulation_max_displacement;
       }
     }
     return movement_at_next_step;

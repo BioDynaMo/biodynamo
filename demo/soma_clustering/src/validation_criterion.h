@@ -47,7 +47,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   std::vector<int> types_sub_vol(n);
 
   // Define the subvolume to be the first octant of a cube
-  double sub_vol_max = param->max_bound_ / 2;
+  double sub_vol_max = param->max_bound / 2;
 
   // The number of cells within the subvolume
   int num_cells_sub_vol = 0;

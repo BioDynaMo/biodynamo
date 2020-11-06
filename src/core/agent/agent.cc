@@ -85,7 +85,7 @@ struct SetRunDisplacementForEachNeighbor
 };
 
 void Agent::DistributeRunDisplacementInfo() {
-  if (!Simulation::GetActive()->GetParam()->detect_static_agents_) {
+  if (!Simulation::GetActive()->GetParam()->detect_static_agents) {
     run_displacement_next_ts_ = true;
     return;
   }

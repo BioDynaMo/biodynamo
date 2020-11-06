@@ -100,7 +100,7 @@ class DiffusionGrid {
     // additional vector, this will be used in estimating the concentration
     // between diffsuion steps.
     auto* param = Simulation::GetActive()->GetParam();
-    if (param->diffusion_type_ == "RK") {
+    if (param->diffusion_type == "RK") {
       r1_.resize(total_num_boxes_);
     }
 
@@ -236,7 +236,7 @@ class DiffusionGrid {
     // additional vector, this will be used in estimating the concentration
     // between diffsuion steps.
     auto* param = Simulation::GetActive()->GetParam();
-    if (param->diffusion_type_ == "RK") {
+    if (param->diffusion_type == "RK") {
       r1_.resize(total_num_boxes_);
     }
   }

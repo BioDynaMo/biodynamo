@@ -50,8 +50,8 @@ struct BoundSpace : public AgentOperationImpl {
 
   void operator()(Agent* agent) override {
     auto* param = Simulation::GetActive()->GetParam();
-    if (param->bound_space_) {
-      ApplyBoundingBox(agent, param->min_bound_, param->max_bound_);
+    if (param->bound_space) {
+      ApplyBoundingBox(agent, param->min_bound, param->max_bound);
     }
   }
 };
