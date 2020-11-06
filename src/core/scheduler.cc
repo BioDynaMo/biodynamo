@@ -86,7 +86,7 @@ Scheduler::Scheduler() {
       "tear down iteration"};
 
   GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
-  // ScheduleOps();
+  ScheduleOps();
 }
 
 Scheduler::~Scheduler() {
