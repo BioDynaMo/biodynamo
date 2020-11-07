@@ -88,7 +88,7 @@ class UniformGridEnvironment : public Environment {
       return grid_timestamp != timestamp_;
     }
 
-    /// @brief      Adds a agent to this box
+    /// @brief      Adds an agent to this box
     ///
     /// @param[in]  agent       The object's identifier
     /// @param   AddObject   successors   The successors
@@ -624,7 +624,7 @@ class UniformGridEnvironment : public Environment {
 
   /// This class ensures thread-safety for the InPlaceExecutionContext for the
   /// case
-  /// that a agent modifies its neighbors.
+  /// that an agent modifies its neighbors.
   class GridNeighborMutexBuilder : public Environment::NeighborMutexBuilder {
    public:
     /// The NeighborMutex class is a synchronization primitive that can be

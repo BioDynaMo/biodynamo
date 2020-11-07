@@ -21,8 +21,8 @@
 
 namespace bdm {
 
-/// Two dimensional vector. Holds one element of type `T` for each simulation
-/// object in the simulation.
+/// Two dimensional vector. Holds one element of type `T` for each agent
+/// in the simulation.
 template <typename T>
 class AgentVector {
   friend struct DisplacementOpCuda;

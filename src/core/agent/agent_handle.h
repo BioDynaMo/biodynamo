@@ -20,9 +20,9 @@
 
 namespace bdm {
 
-/// Unique identifier of a agent. Acts as a type erased pointer.
+/// Unique identifier of an agent. Acts as a type erased pointer.
 /// Has the same type for every agent. \n
-/// Points to the storage location of a agent inside ResourceManager.\n
+/// Points to the storage location of an agent inside ResourceManager.\n
 /// The id is split into two parts: Numa node, element index.
 /// The first one is used to obtain the numa storage, and the second specifies
 /// the element within this vector.

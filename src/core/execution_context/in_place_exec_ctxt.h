@@ -43,7 +43,7 @@ class Agent;
 /// modify themselves, but also neighbors. Therefore, a protection mechanism has
 /// been added. \see `Param::thread_safety_mechanism`
 /// New agents will only be visible at the next iteration. \n
-/// Also removal of a agent happens at the end of each iteration.
+/// Also removal of an agent happens at the end of each iteration.
 class InPlaceExecutionContext {
  public:
   struct ThreadSafeAgentUidMap {
@@ -84,7 +84,7 @@ class InPlaceExecutionContext {
   void TearDownIterationAll(
       const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
 
-  /// Execute a series of operations on a agent in the order given
+  /// Execute a series of operations on an agent in the order given
   /// in the argument
   void Execute(Agent* agent, const std::vector<Operation*>& operations);
 

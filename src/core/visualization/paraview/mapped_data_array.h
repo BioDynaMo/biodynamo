@@ -30,7 +30,7 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-/// Extract the data member value of a Agent given its concrete type, type
+/// Extract the data member value of an Agent given its concrete type, type
 /// of the data member, and data member offset from its concrete pointer.
 template <typename TReturn, typename TClass, typename TDataMember>
 struct GetDataMemberForVis {

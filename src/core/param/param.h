@@ -392,7 +392,7 @@ struct Param {
   ///     detect_static_agents = false
   bool detect_static_agents = false;
 
-  /// Neighbors of a agent can be cached so to avoid consecutive
+  /// Neighbors of an agent can be cached so to avoid consecutive
   /// searches. This of course only makes sense if there is more than one
   /// `ForEachNeighbor*` operation.\n
   /// Default value: `false`\n

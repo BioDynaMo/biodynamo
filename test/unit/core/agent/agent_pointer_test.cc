@@ -63,9 +63,9 @@ TEST(SoPointerTest, Basics) {
 
 TEST(IsAgentPtrTest, All) {
   static_assert(!is_agent_ptr<TestAgent>::value,
-                "TestAgent is not a AgentPointer");
+                "TestAgent is not an AgentPointer");
   static_assert(is_agent_ptr<AgentPointer<TestAgent>>::value,
-                "AgentPointer<TestAgent> is a AgentPointer");
+                "AgentPointer<TestAgent> is an AgentPointer");
 }
 
 #ifdef USE_DICT

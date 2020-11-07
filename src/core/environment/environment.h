@@ -43,7 +43,7 @@ class Environment {
   virtual void IterateZOrder(Functor<void, const AgentHandle&>& callback) = 0;
 
   /// This class ensures thread-safety for the case
-  /// that a agent modifies its neighbors.
+  /// that an agent modifies its neighbors.
   class NeighborMutexBuilder {
    public:
     /// The NeighborMutex class is a synchronization primitive that can be

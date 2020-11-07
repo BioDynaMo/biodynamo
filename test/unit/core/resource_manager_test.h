@@ -453,7 +453,7 @@ struct CheckApplyOnAllElementsDynamicFunctor
   std::atomic<uint64_t> cnt;
   // counts the number of agents in each numa domain
   std::vector<uint64_t> numa_agent_cnts;
-  // If a agent is not stored on the NUMA indicated, it is a memory
+  // If an agent is not stored on the NUMA indicated, it is a memory
   // error.
   std::atomic<uint64_t> numa_memory_errors;
 };
@@ -473,7 +473,7 @@ struct CheckNumaThreadErrors : Functor<void, Agent*, AgentHandle> {
     }
   }
 
-  // If a agent is processed by a thread that doesn't belong to the NUMA
+  // If an agent is processed by a thread that doesn't belong to the NUMA
   // domain the agent is stored on, it is a thread error.
   std::atomic<uint64_t> numa_thread_errors;
   ThreadInfo* ti_;

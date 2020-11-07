@@ -58,7 +58,7 @@ namespace bdm {
 
 /// ResourceManager stores agents and diffusion grids and provides
 /// methods to add, remove, and access them. Agents are uniquely identified
-/// by their AgentUid, and AgentHandle. A AgentHandle might change during the simulation.
+/// by their AgentUid, and AgentHandle. An AgentHandle might change during the simulation.
 class ResourceManager {
  public:
   explicit ResourceManager(TRootIOCtor* r) {}
@@ -281,7 +281,7 @@ class ResourceManager {
     return current;
   }
 
-  /// Returns true if a agent with the given uid is stored in this
+  /// Returns true if an agent with the given uid is stored in this
   /// ResourceManager.
   bool Contains(const AgentUid& uid) const { return uid_ah_map_.Contains(uid); }
 
