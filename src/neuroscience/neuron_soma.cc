@@ -69,7 +69,7 @@ void NeuronSoma::EventHandler(const Event& event, Agent* other1,
 
 NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
                                              NeuriteElement* prototype) {
-  auto dir = direction + Base::position_;
+  auto dir = direction + GetPosition();
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
   auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
   return ExtendNewNeurite(param->neurite_default_diameter_, angles[2],
@@ -103,7 +103,7 @@ void NeuronSoma::RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) {
 Double3 NeuronSoma::OriginOf(const AgentUid& daughter_uid) const {
   Double3 xyz = daughters_coord_.at(daughter_uid);
 
-  double radius = Base::diameter_ * .5;
+  double radius = GetDiameter() * .5;
   xyz = xyz * radius;
 
   Double3 axis_0 = {Base::kXAxis[0], Base::kYAxis[0], Base::kZAxis[0]};
@@ -111,7 +111,7 @@ Double3 NeuronSoma::OriginOf(const AgentUid& daughter_uid) const {
   Double3 axis_2 = {Base::kXAxis[2], Base::kYAxis[2], Base::kZAxis[2]};
 
   Double3 result = {xyz * axis_0, xyz * axis_1, xyz * axis_2};
-  return Base::position_ + result;
+  return GetPosition() + result;
 }
 
 void NeuronSoma::UpdateDependentPhysicalVariables() {}

@@ -370,6 +370,7 @@ class Cell : public Agent {
   /// @return the position in local coordinates
   Double3 TransformCoordinatesGlobalToPolar(const Double3& coord) const;
 
+ private:
   /// NB: Use setter and don't assign values directly
   Double3 position_ = {{0, 0, 0}};
   Double3 tractor_force_ = {{0, 0, 0}};
