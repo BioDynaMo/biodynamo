@@ -31,7 +31,6 @@
 #include "core/shape.h"
 #include "core/agent/agent_pointer.h"
 #include "core/agent/agent_uid.h"
-#include "core/agent/agent_visitor.h"
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"

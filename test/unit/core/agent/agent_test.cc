@@ -131,39 +131,6 @@ TEST(AgentTest, RemoveBehavior) {
   ASSERT_EQ(2u, bms.size());
 }
 
-struct Visitor1 : public AgentVisitor {
-  uint16_t counter_ = 0;
-
-  void Visit(const std::string& dm_name, size_t type_hash_code,
-             const void* data) override {
-    counter_++;
-    if (dm_name != "position_" && dm_name != "run_behavior_loop_idx_" &&
-        dm_name != "diameter_" && dm_name != "behaviors_" &&
-        dm_name != "uid_" && dm_name != "box_idx_") {
-      FAIL() << "Data member " << dm_name << " does not exist" << std::endl;
-    }
-  }
-};
-
-struct VerifyPosition : public AgentVisitor {
-  void Visit(const std::string& dm_name, size_t type_hash_code,
-             const void* data) override {
-    if (dm_name != "position_") {
-      FAIL() << "Functor must not be called for data member " << dm_name
-             << std::endl;
-    }
-    using PosType = Double3;
-    if (type_hash_code == typeid(PosType).hash_code()) {
-      auto* pos = static_cast<const PosType*>(data);
-      EXPECT_EQ(4, (*pos)[0]);
-      EXPECT_EQ(5, (*pos)[1]);
-      EXPECT_EQ(6, (*pos)[2]);
-    } else {
-      FAIL() << "type_hash_code did not match Double3" << std::endl;
-    }
-  }
-};
-
 TEST(AgentTest, GetAgentPtr) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
