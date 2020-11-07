@@ -336,7 +336,7 @@ num threads per numa    : 4
 
 ***********************************************
 
-Simulation objects per numa node
+Agents per numa node
 numa node 0 -> size: 0
 
 ***********************************************

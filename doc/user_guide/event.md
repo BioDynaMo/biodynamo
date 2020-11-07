@@ -62,7 +62,7 @@ the following signature:
 
 <!-- TODO events and behaviors -->
 
-## Extending Simulation Objects
+## Extending Agents
 
 This architecture is important to support extension of agents.
 Let's assume that you extend the Cell class to add a new data member

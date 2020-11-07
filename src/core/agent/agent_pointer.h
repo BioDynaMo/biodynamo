@@ -29,7 +29,7 @@ namespace bdm {
 
 class Agent;
 
-/// Simulation object pointer. Required to point to a agent with
+/// Agent pointer. Required to point to a agent with
 /// throughout the whole simulation. Raw pointers cannot be used, because
 /// a agent might be copied to a different NUMA domain, or if it resides
 /// on a different address space in case of a distributed runtime.

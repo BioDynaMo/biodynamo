@@ -49,7 +49,7 @@ def CreateValidFile(sim_name):
 
 # Entry point for insitu visualization
 def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args):
-    parser = argparse.ArgumentParser(description='Validate Simulation Objects')
+    parser = argparse.ArgumentParser(description='Validate Agents')
     parser.add_argument('--sim_name', action='store', type=str)
     parser.add_argument('--num_elements', action='store', type=int)
     params, other = parser.parse_known_args(script_args)
@@ -70,7 +70,7 @@ def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args)
 
 # Entry point for export visualization
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Validate Simulation Objects')
+    parser = argparse.ArgumentParser(description='Validate Agents')
     parser.add_argument('--sim_name', action='store', type=str)
     parser.add_argument('--use_pvsm', action='store_true', dest="use_pvsm")
     params, args = parser.parse_known_args()

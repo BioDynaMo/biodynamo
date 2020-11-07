@@ -152,7 +152,7 @@ struct Param {
   bool run_mechanical_interactions = true;
 
   /// Enforce an artificial cubic bounds around the simulation space.
-  /// Simulation objects cannot move outside this cube. Dimensions of this cube
+  /// Agents cannot move outside this cube. Dimensions of this cube
   /// are determined by parameter `lbound` and `rbound`.\n
   /// Default value: `false` (simulation space is "infinite")\n
   /// TOML config file:
