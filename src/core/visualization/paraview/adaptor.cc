@@ -218,7 +218,7 @@ void ParaviewAdaptor::BuildAgentsVTKStructures() {
 void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
-  rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* grid) {
+  rm->ForEachDiffusionGrid([&](DiffusionGrid* grid) {
     auto it = impl_->vtk_dgrids_.find(grid->GetSubstanceName());
     if (it != impl_->vtk_dgrids_.end()) {
       it->second->Update(grid);

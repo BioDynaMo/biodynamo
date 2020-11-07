@@ -159,7 +159,7 @@ inline void PlotSbmlModules(const char* filename) {
   TMultiGraph* mg = new TMultiGraph();
   mg->SetTitle("Gillespie;Timestep;Concentration");
 
-  Simulation::GetActive()->GetResourceManager()->ApplyOnAllElements(
+  Simulation::GetActive()->GetResourceManager()->ForEachAgent(
       [&](Agent* agent) {
         auto* cell = static_cast<MyCell*>(agent);
         const auto& bms = cell->GetAllBehaviors();

@@ -40,7 +40,7 @@ struct DiffusionOp : public StandaloneOperationImpl {
     auto* env = sim->GetEnvironment();
     auto* param = sim->GetParam();
 
-    rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dg) {
+    rm->ForEachDiffusionGrid([&](DiffusionGrid* dg) {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway

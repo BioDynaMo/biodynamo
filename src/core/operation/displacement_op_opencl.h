@@ -91,7 +91,7 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
 
     bool is_non_spherical_object = false;
 
-    rm->ApplyOnAllElements([&](Agent* agent, AgentHandle ah) {
+    rm->ForEachAgent([&](Agent* agent, AgentHandle ah) {
       // Check if there are any non-spherical objects in our simulation, because
       // GPU accelerations currently supports only sphere-sphere interactions
       IsNonSphericalObjectPresent(agent, &is_non_spherical_object);
@@ -218,7 +218,7 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
     // set new positions after all updates have been calculated
     // otherwise some cells would see neighbors with already updated positions
     // which would lead to inconsistencies
-    rm->ApplyOnAllElements([&](Agent* agent, AgentHandle ah) {
+    rm->ForEachAgent([&](Agent* agent, AgentHandle ah) {
       auto* cell = dynamic_cast<Cell*>(agent);
       auto idx = ah.GetElementIdx();
       Double3 new_pos;

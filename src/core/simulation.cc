@@ -131,7 +131,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   std::vector<std::array<int32_t, 3>> dg_dimensions;
   std::vector<uint64_t> dg_voxels;
 
-  sim.rm_->ApplyOnAllDiffusionGrids([&](auto* dg) {
+  sim.rm_->ForEachDiffusionGrid([&](auto* dg) {
     dg_names.push_back(dg->GetSubstanceName());
     dg_resolutions.push_back(dg->GetResolution());
     dg_dimensions.push_back(dg->GetGridSize());

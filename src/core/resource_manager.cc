@@ -32,7 +32,7 @@ ResourceManager::ResourceManager() {
   }
 }
 
-void ResourceManager::ApplyOnAllElementsParallel(
+void ResourceManager::ForEachAgentParallel(
     Functor<void, Agent*, AgentHandle>& function) {
 #pragma omp parallel
   {
@@ -55,26 +55,26 @@ void ResourceManager::ApplyOnAllElementsParallel(
 }
 
 template <typename TFunctor>
-struct ApplyOnAllElementsParallelFunctor
+struct ForEachAgentParallelFunctor
     : public Functor<void, Agent*, AgentHandle> {
   TFunctor& functor_;
-  ApplyOnAllElementsParallelFunctor(TFunctor& f) : functor_(f) {}
+  ForEachAgentParallelFunctor(TFunctor& f) : functor_(f) {}
   void operator()(Agent* agent, AgentHandle) { functor_(agent); }
 };
 
-void ResourceManager::ApplyOnAllElementsParallel(
+void ResourceManager::ForEachAgentParallel(
     Functor<void, Agent*>& function) {
-  ApplyOnAllElementsParallelFunctor<Functor<void, Agent*>> functor(
+  ForEachAgentParallelFunctor<Functor<void, Agent*>> functor(
       function);
-  ApplyOnAllElementsParallel(functor);
+  ForEachAgentParallel(functor);
 }
 
-void ResourceManager::ApplyOnAllElementsParallel(Operation& op) {
-  ApplyOnAllElementsParallelFunctor<Operation> functor(op);
-  ApplyOnAllElementsParallel(functor);
+void ResourceManager::ForEachAgentParallel(Operation& op) {
+  ForEachAgentParallelFunctor<Operation> functor(op);
+  ForEachAgentParallel(functor);
 }
 
-void ResourceManager::ApplyOnAllElementsParallelDynamic(
+void ResourceManager::ForEachAgentParallel(
     uint64_t chunk, Functor<void, Agent*, AgentHandle>& function) {
   // adapt chunk size
   auto num_agents = GetNumAgents();
@@ -300,7 +300,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
   // issue.
   if (!minimize_memory) {
     DeleteAgentsFunctor delete_functor;
-    ApplyOnAllElementsParallel(delete_functor);
+    ForEachAgentParallel(delete_functor);
   }
 
   for (int n = 0; n < numa_nodes; n++) {
@@ -309,7 +309,7 @@ void ResourceManager::SortAndBalanceNumaNodes() {
 
   // update uid_ah_map_
   UpdateUidAgentHandleMapFunctor functor(uid_ah_map_);
-  ApplyOnAllElementsParallel(functor);
+  ForEachAgentParallel(functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa) {
     std::cout << *this << std::endl;

@@ -19,12 +19,12 @@
 
 namespace bdm {
 
-TEST(ResourceManagerTest, ApplyOnAllElements) { RunApplyOnAllElementsTest(); }
+TEST(ResourceManagerTest, ForEachAgent) { RunForEachAgentTest(); }
 
 TEST(ResourceManagerTest, GetNumAgents) { RunGetNumAgents(); }
 
-TEST(ResourceManagerTest, ApplyOnAllElementsParallel) {
-  RunApplyOnAllElementsParallelTest();
+TEST(ResourceManagerTest, ForEachAgentParallel) {
+  RunForEachAgentParallelTest();
 }
 
 #ifdef USE_DICT
@@ -39,12 +39,12 @@ TEST(ResourceManagerTest, RemoveAndContains) { RunRemoveAndContainsTest(); }
 
 TEST(ResourceManagerTest, Clear) { RunClearTest(); }
 
-TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
-  RunSortAndApplyOnAllElementsParallel();
+TEST(ResourceManagerTest, SortAndForEachAgentParallel) {
+  RunSortAndForEachAgentParallel();
 }
 
-TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {
-  RunSortAndApplyOnAllElementsParallelDynamic();
+TEST(ResourceManagerTest, SortAndForEachAgentParallelDynamic) {
+  RunSortAndForEachAgentParallelDynamic();
 }
 
 TEST(ResourceManagerTest, DiffusionGrid) {
@@ -61,7 +61,7 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   rm->AddDiffusionGrid(dgrid_2);
   rm->AddDiffusionGrid(dgrid_3);
 
-  rm->ApplyOnAllDiffusionGrids(count);
+  rm->ForEachDiffusionGrid(count);
   ASSERT_EQ(3, counter);
 
   EXPECT_EQ(dgrid_1, rm->GetDiffusionGrid(0));
@@ -76,7 +76,7 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   rm->RemoveDiffusionGrid(dgrid_2->GetSubstanceId());
 
   counter = 0;
-  rm->ApplyOnAllDiffusionGrids(count);
+  rm->ForEachDiffusionGrid(count);
   ASSERT_EQ(2, counter);
 }
 

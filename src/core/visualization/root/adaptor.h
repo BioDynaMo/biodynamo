@@ -58,7 +58,7 @@ class RootAdaptor {
 
     auto *rm = Simulation::GetActive()->GetResourceManager();
 
-    rm->ApplyOnAllElements([&](Agent *agent) {
+    rm->ForEachAgent([&](Agent *agent) {
       auto container = new TGeoVolumeAssembly("A");
       this->AddBranch(agent, container);
       top_->AddNode(container, top_->GetNdaughters());

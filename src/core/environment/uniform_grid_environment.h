@@ -314,7 +314,7 @@ class UniformGridEnvironment : public Environment {
 
       // Assign agents to boxes
       AssignToBoxesFunctor functor(this);
-      rm->ApplyOnAllElementsParallelDynamic(1000, functor);
+      rm->ForEachAgentParallel(1000, functor);
       auto* param = Simulation::GetActive()->GetParam();
       if (param->bound_space) {
         int min = param->min_bound;

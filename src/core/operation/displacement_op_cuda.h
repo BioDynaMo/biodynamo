@@ -71,7 +71,7 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     uint32_t total_num_objects = rm->GetNumAgents();
 
     i_ = new InitializeGPUData(total_num_objects, offset);
-    rm->ApplyOnAllElementsParallelDynamic(1000, *i_);
+    rm->ForEachAgentParallel(1000, *i_);
 
     // Populate successor list
     for (int i = 0; i < num_numa_nodes; i++) {
@@ -157,7 +157,7 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     auto u = UpdateCPUResults(&(i_->cell_movements), i_->offset);
     Simulation::GetActive()
         ->GetResourceManager()
-        ->ApplyOnAllElementsParallelDynamic(1000, u);
+        ->ForEachAgentParallel(1000, u);
   }
 
  private:

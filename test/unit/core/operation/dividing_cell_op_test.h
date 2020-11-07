@@ -45,7 +45,7 @@ inline void RunTest() {
   EXPECT_EQ(2u, rm->GetNumAgents());
 
   auto* op = NewOperation("DividingCellOp");
-  rm->ApplyOnAllElementsParallel(*op);
+  rm->ForEachAgentParallel(*op);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 

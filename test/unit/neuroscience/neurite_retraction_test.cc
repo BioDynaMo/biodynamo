@@ -88,7 +88,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   Double3 direction;
 
   for (int i = 0; i < 200; i++) {
-    rm->ApplyOnAllElements([&](Agent* agent) {
+    rm->ForEachAgent([&](Agent* agent) {
       if (auto* ne = dynamic_cast<NeuriteElement*>(agent)) {
         EXPECT_GT(ne->GetAxis()[2], 0);
 
@@ -113,7 +113,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
 
   // while there are still neurite elements left
   while (rm->GetNumAgents() != 1) {
-    rm->ApplyOnAllElements([&](Agent* agent) {
+    rm->ForEachAgent([&](Agent* agent) {
       if (auto* ne = dynamic_cast<NeuriteElement*>(agent)) {
         ne->RetractTerminalEnd(50);
       }

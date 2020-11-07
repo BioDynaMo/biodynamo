@@ -58,7 +58,7 @@ inline int Simulate(int argc, const char** argv) {
   // check result
   int count = 0;
   bool failed = 0;
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     if (agent->GetDiameter() != 16 + count) {
       std::cerr << "Test failure: result incorrect" << std::endl;
       std::cerr << "   Diameter of cell " << count << " is "

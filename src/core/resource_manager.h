@@ -181,11 +181,11 @@ class ResourceManager {
   }
 
   /// Execute the given functor for all diffusion grids
-  ///     rm->ApplyOnAllDiffusionGrids([](DiffusionGrid* dgrid) {
+  ///     rm->ForEachDiffusionGrid([](DiffusionGrid* dgrid) {
   ///       ...
   ///     });
   template <typename TFunctor>
-  void ApplyOnAllDiffusionGrids(TFunctor&& f) const {
+  void ForEachDiffusionGrid(TFunctor&& f) const {
     for (auto& el : diffusion_grids_) {
       f(el.second);
     }
@@ -208,10 +208,10 @@ class ResourceManager {
   /// Apply a function on all elements in every container
   /// @param function that will be called with each container as a parameter
   ///
-  ///     rm->ApplyOnAllElements([](Agent* element) {
+  ///     rm->ForEachAgent([](Agent* element) {
   ///                              std::cout << *element << std::endl;
   ///                          });
-  virtual void ApplyOnAllElements(
+  virtual void ForEachAgent(
       const std::function<void(Agent*)>& function) {
     for (auto& numa_agents : agents_) {
       for (auto* agent : numa_agents) {
@@ -220,7 +220,7 @@ class ResourceManager {
     }
   }
 
-  virtual void ApplyOnAllElements(
+  virtual void ForEachAgent(
       const std::function<void(Agent*, AgentHandle)>& function) {
     for (uint64_t n = 0; n < agents_.size(); ++n) {
       auto& numa_agents = agents_[n];
@@ -233,16 +233,16 @@ class ResourceManager {
   /// Apply a function on all elements.\n
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
-  /// \see ApplyOnAllElements
-  virtual void ApplyOnAllElementsParallel(Functor<void, Agent*>& function);
+  /// \see ForEachAgent
+  virtual void ForEachAgentParallel(Functor<void, Agent*>& function);
 
   /// Apply an operation on all elements.\n
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
-  /// \see ApplyOnAllElements
-  virtual void ApplyOnAllElementsParallel(Operation& op);
+  /// \see ForEachAgent
+  virtual void ForEachAgentParallel(Operation& op);
 
-  virtual void ApplyOnAllElementsParallel(
+  virtual void ForEachAgentParallel(
       Functor<void, Agent*, AgentHandle>& function);
 
   /// Apply a function on all elements.\n
@@ -251,8 +251,8 @@ class ResourceManager {
   /// `chunk`.
   /// \param chunk number of agents that are assigned to a thread (batch
   /// size)
-  /// \see ApplyOnAllElements
-  virtual void ApplyOnAllElementsParallelDynamic(
+  /// \see ForEachAgent
+  virtual void ForEachAgentParallel(
       uint64_t chunk, Functor<void, Agent*, AgentHandle>& function);
 
   /// Reserves enough memory to hold `capacity` number of agents for

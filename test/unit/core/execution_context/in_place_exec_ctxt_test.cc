@@ -79,7 +79,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationMultithreading) {
     EXPECT_TRUE(rm->Contains(AgentUid(i)));
   }
 
-  rm->ApplyOnAllElements(
+  rm->ForEachAgent(
       [](Agent* agent, AgentHandle) { EXPECT_TRUE(agent->GetUid() % 2 == 1); });
 }
 
@@ -305,11 +305,11 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
   // its neighbors.
   auto* op1 = NewOperation("TestOperation");
   TestFunctor1 functor1(op1);
-  rm->ApplyOnAllElementsParallel(functor1);
+  rm->ForEachAgentParallel(functor1);
 
   auto* op2 = NewOperation("TestOperation");
   TestFunctor2 functor2(op2);
-  rm->ApplyOnAllElements(functor2);
+  rm->ForEachAgent(functor2);
 
   delete op1;
   delete op2;

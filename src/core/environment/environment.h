@@ -147,7 +147,7 @@ class Environment {
 
     SimDimensionAndLargestAgentFunctor functor(xmin, xmax, ymin, ymax, zmin,
                                                    zmax, largest);
-    rm->ApplyOnAllElementsParallelDynamic(1000, functor);
+    rm->ForEachAgentParallel(1000, functor);
 
     // reduce partial results into global one
     double& gxmin = (*ret_grid_dimensions)[0];

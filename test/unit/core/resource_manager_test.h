@@ -59,9 +59,9 @@ class B : public TestAgent {
   double data_;
 };
 
-inline void RunApplyOnAllElementsTest() {
+inline void RunForEachAgentTest() {
   const double kEpsilon = abs_error<double>::value;
-  Simulation simulation("RunApplyOnAllElementsTest");
+  Simulation simulation("RunForEachAgentTest");
   auto* rm = simulation.GetResourceManager();
 
   auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
@@ -72,7 +72,7 @@ inline void RunApplyOnAllElementsTest() {
   rm->push_back(new B(3.14));
   rm->push_back(new B(6.28));
   uint64_t counter = 0;
-  rm->ApplyOnAllElements([&](Agent* element) {  // NOLINT
+  rm->ForEachAgent([&](Agent* element) {  // NOLINT
     counter++;
     switch (element->GetUid() - ref_uid) {
       case 0:
@@ -107,7 +107,7 @@ inline void RunGetNumAgents() {
   EXPECT_EQ(5u, rm->GetNumAgents());
 }
 
-struct ApplyOnAllElementsParallelTestFunctor : Functor<void, Agent*> {
+struct ForEachAgentParallelTestFunctor : Functor<void, Agent*> {
   void operator()(Agent* agent) override {
     const double kEpsilon = abs_error<double>::value;
     B* b = dynamic_cast<B*>(agent);
@@ -126,16 +126,16 @@ struct ApplyOnAllElementsParallelTestFunctor : Functor<void, Agent*> {
 
 // This test uses Cells since A, and B are strippted down agents
 // and are themselves not thread safe.
-inline void RunApplyOnAllElementsParallelTest() {
-  Simulation simulation("RunApplyOnAllElementsParallelTest");
+inline void RunForEachAgentParallelTest() {
+  Simulation simulation("RunForEachAgentParallelTest");
   auto* rm = simulation.GetResourceManager();
 
   rm->push_back(new B(3.14));
   rm->push_back(new B(6.28));
   rm->push_back(new B(9.42));
 
-  ApplyOnAllElementsParallelTestFunctor functor;
-  rm->ApplyOnAllElementsParallel(functor);
+  ForEachAgentParallelTestFunctor functor;
+  rm->ForEachAgentParallel(functor);
 }
 
 inline void RunRemoveAndContainsTest() {
@@ -283,7 +283,7 @@ inline std::vector<uint64_t> GetAgentsPerNuma(uint64_t num_agents) {
 }
 
 // -----------------------------------------------------------------------------
-struct CheckApplyOnAllElementsFunctor : Functor<void, Agent*> {
+struct CheckForEachAgentFunctor : Functor<void, Agent*> {
   bool numa_checks;
   std::vector<bool> found;
   std::atomic<uint64_t> cnt;
@@ -292,7 +292,7 @@ struct CheckApplyOnAllElementsFunctor : Functor<void, Agent*> {
   std::atomic<uint64_t> numa_memory_errors;
   std::atomic<uint64_t> numa_thread_errors;
 
-  CheckApplyOnAllElementsFunctor(uint64_t num_agent_per_type, bool numa_checks)
+  CheckForEachAgentFunctor(uint64_t num_agent_per_type, bool numa_checks)
       : numa_checks(numa_checks),
         cnt(0),
         numa_memory_errors(0),
@@ -335,18 +335,18 @@ struct CheckApplyOnAllElementsFunctor : Functor<void, Agent*> {
   }
 };
 
-inline void CheckApplyOnAllElements(ResourceManager* rm,
+inline void CheckForEachAgent(ResourceManager* rm,
                                     uint64_t num_agent_per_type,
                                     bool numa_checks = false) {
-  CheckApplyOnAllElementsFunctor functor(num_agent_per_type, numa_checks);
-  rm->ApplyOnAllElementsParallel(functor);
+  CheckForEachAgentFunctor functor(num_agent_per_type, numa_checks);
+  rm->ForEachAgentParallel(functor);
 
   EXPECT_EQ(2 * num_agent_per_type, functor.cnt.load());
   ASSERT_EQ(2 * num_agent_per_type, functor.found.size());
   for (uint64_t i = 0; i < functor.found.size(); ++i) {
     if (!functor.found[i]) {
       FAIL()
-          << "ApplyOnAllElementsParallel was not called for element with data_="
+          << "ForEachAgentParallel was not called for element with data_="
           << i;
     }
   }
@@ -362,8 +362,8 @@ inline void CheckApplyOnAllElements(ResourceManager* rm,
   }
 }
 
-inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_agent_per_type) {
-  Simulation simulation("RunSortAndApplyOnAllElementsParallel");
+inline void RunSortAndForEachAgentParallel(uint64_t num_agent_per_type) {
+  Simulation simulation("RunSortAndForEachAgentParallel");
   auto* rm = simulation.GetResourceManager();
 
   std::unordered_map<AgentUid, double> a_x_values;
@@ -384,12 +384,12 @@ inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_agent_per_type) {
     b_x_values[b->GetUid()] = x_pos;
   }
 
-  CheckApplyOnAllElements(rm, num_agent_per_type);
+  CheckForEachAgent(rm, num_agent_per_type);
 
   simulation.GetEnvironment()->Update();
   rm->SortAndBalanceNumaNodes();
 
-  CheckApplyOnAllElements(rm, num_agent_per_type, true);
+  CheckForEachAgent(rm, num_agent_per_type, true);
 
   // check if agent uids still point to the correct object
   for (auto& entry : a_x_values) {
@@ -402,22 +402,22 @@ inline void RunSortAndApplyOnAllElementsParallel(uint64_t num_agent_per_type) {
   }
 }
 
-inline void RunSortAndApplyOnAllElementsParallel() {
+inline void RunSortAndForEachAgentParallel() {
   int num_threads = omp_get_max_threads();
   std::vector<int> num_agent_per_type = {std::max(1, num_threads - 1), num_threads,
                                       3 * num_threads, 3 * num_threads + 1};
 
   for (auto n : num_agent_per_type) {
-    RunSortAndApplyOnAllElementsParallel(n);
+    RunSortAndForEachAgentParallel(n);
   }
 
-  RunSortAndApplyOnAllElementsParallel(1000);
+  RunSortAndForEachAgentParallel(1000);
 }
 
 // -----------------------------------------------------------------------------
-struct CheckApplyOnAllElementsDynamicFunctor
+struct CheckForEachAgentDynamicFunctor
     : Functor<void, Agent*, AgentHandle> {
-  CheckApplyOnAllElementsDynamicFunctor(bool numa_checks,
+  CheckForEachAgentDynamicFunctor(bool numa_checks,
                                         std::vector<bool>& found)
       : numa_checks_(numa_checks),
         found_(found),
@@ -479,7 +479,7 @@ struct CheckNumaThreadErrors : Functor<void, Agent*, AgentHandle> {
   ThreadInfo* ti_;
 };
 
-inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
+inline void CheckForEachAgentDynamic(ResourceManager* rm,
                                            uint64_t num_agent_per_type,
                                            uint64_t batch_size,
                                            bool numa_checks = false) {
@@ -491,13 +491,13 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
 
   auto* ti = ThreadInfo::GetInstance();
 
-  CheckApplyOnAllElementsDynamicFunctor functor(numa_checks, found);
-  rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
+  CheckForEachAgentDynamicFunctor functor(numa_checks, found);
+  rm->ForEachAgentParallel(batch_size, functor);
 
   // critical sections increase the variance of numa_thread_errors.
   // Therefore, there are checked separately.
   CheckNumaThreadErrors check_numa_thread_functor;
-  rm->ApplyOnAllElementsParallelDynamic(batch_size, check_numa_thread_functor);
+  rm->ForEachAgentParallel(batch_size, check_numa_thread_functor);
 
   // verify that the function has been called once for each agent
   EXPECT_EQ(2 * num_agent_per_type, functor.cnt.load());
@@ -505,7 +505,7 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
   for (uint64_t i = 0; i < found.size(); ++i) {
     if (!found[i]) {
       FAIL()
-          << "ApplyOnAllElementsParallel was not called for element with data_="
+          << "ForEachAgentParallel was not called for element with data_="
           << i;
     }
   }
@@ -530,9 +530,9 @@ inline void CheckApplyOnAllElementsDynamic(ResourceManager* rm,
   }
 }
 
-inline void RunSortAndApplyOnAllElementsParallelDynamic(
+inline void RunSortAndForEachAgentParallelDynamic(
     uint64_t num_agent_per_type, uint64_t batch_size) {
-  Simulation simulation("RunSortAndApplyOnAllElementsParallel");
+  Simulation simulation("RunSortAndForEachAgentParallelDynamic");
   auto* rm = simulation.GetResourceManager();
 
   std::unordered_map<AgentUid, double> a_x_values;
@@ -553,12 +553,12 @@ inline void RunSortAndApplyOnAllElementsParallelDynamic(
     b_x_values[b->GetUid()] = x_pos;
   }
 
-  CheckApplyOnAllElementsDynamic(rm, num_agent_per_type, batch_size);
+  CheckForEachAgentDynamic(rm, num_agent_per_type, batch_size);
 
   simulation.GetEnvironment()->Update();
   rm->SortAndBalanceNumaNodes();
 
-  CheckApplyOnAllElementsDynamic(rm, num_agent_per_type, batch_size, true);
+  CheckForEachAgentDynamic(rm, num_agent_per_type, batch_size, true);
 
   // check if agent uids still point to the correct object
   for (auto& entry : a_x_values) {
@@ -571,7 +571,7 @@ inline void RunSortAndApplyOnAllElementsParallelDynamic(
   }
 }
 
-inline void RunSortAndApplyOnAllElementsParallelDynamic() {
+inline void RunSortAndForEachAgentParallelDynamic() {
   int num_threads = omp_get_max_threads();
   std::vector<int> num_agent_per_type = {std::max(1, num_threads - 1), num_threads,
                                       3 * num_threads, 3 * num_threads + 1};
@@ -580,12 +580,12 @@ inline void RunSortAndApplyOnAllElementsParallelDynamic() {
 
   for (auto n : num_agent_per_type) {
     for (auto b : batch_sizes) {
-      RunSortAndApplyOnAllElementsParallelDynamic(n, b);
+      RunSortAndForEachAgentParallelDynamic(n, b);
     }
   }
 
   for (auto b : batch_sizes) {
-    RunSortAndApplyOnAllElementsParallelDynamic(num_threads * 1000, b);
+    RunSortAndForEachAgentParallelDynamic(num_threads * 1000, b);
   }
 }
 

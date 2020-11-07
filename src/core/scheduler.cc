@@ -245,7 +245,7 @@ void Scheduler::RunScheduledOps() {
   RunAllScheduledOps functor(agent_ops);
 
   Timing::Time("agent ops", [&]() {
-    rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
+    rm->ForEachAgentParallel(batch_size, functor);
   });
 
   // Run the column-wise operations
@@ -320,13 +320,13 @@ void Scheduler::Initialize() {
 
   if (param->bound_space) {
     auto* bound_space = NewOperation("bound space");
-    rm->ApplyOnAllElementsParallel(*bound_space);
+    rm->ForEachAgentParallel(*bound_space);
     delete bound_space;
   }
   env->Update();
   int lbound = env->GetDimensionThresholds()[0];
   int rbound = env->GetDimensionThresholds()[1];
-  rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dgrid) {
+  rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
     // Create data structures, whose size depend on the env dimensions
     dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
     // Initialize data structures with user-defined values

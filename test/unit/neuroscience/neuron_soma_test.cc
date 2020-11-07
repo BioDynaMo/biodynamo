@@ -619,7 +619,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 
   // retract all dendrite
   while (rm->GetNumAgents() != 1) {
-    rm->ApplyOnAllElements([&](Agent* agent) {
+    rm->ForEachAgent([&](Agent* agent) {
       if (auto* neurite_segment = dynamic_cast<NeuriteElement*>(agent)) {
         if (neurite_segment->IsTerminal()) {
           neurite_segment->RetractTerminalEnd(10);

@@ -45,9 +45,9 @@ class DisplacementOpCpuVerify {
     AgentVector<Double3> displacements;
 
     CalculateDisplacement cd(&displacements);
-    rm->ApplyOnAllElementsParallelDynamic(1000, cd);
+    rm->ForEachAgentParallel(1000, cd);
     UpdateCells uc(&displacements);
-    rm->ApplyOnAllElementsParallelDynamic(1000, uc);
+    rm->ForEachAgentParallel(1000, uc);
   }
 
   struct CalculateDisplacement : public Functor<void, Agent*, AgentHandle> {

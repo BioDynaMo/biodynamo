@@ -34,7 +34,7 @@ void BasicExporter::ExportIteration(std::string filename, uint64_t iteration) {
   std::ofstream outfile;
   outfile.open(filename);
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     auto curr_pos = agent->GetPosition();
     outfile << "[" << curr_pos[0] << "," << curr_pos[1] << "," << curr_pos[2]
             << "]" << std::endl;
@@ -56,7 +56,7 @@ void MatlabExporter::ExportIteration(std::string filename, uint64_t iteration) {
   outfile << "CellPos = zeros(" << num_cells << "," << 3 << ");" << std::endl;
 
   uint64_t i = 0;
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     auto curr_pos = agent->GetPosition();
     outfile << "CellPos(" << i++ + 1 << ",1:3) = [" << curr_pos[0] << ","
             << curr_pos[1] << "," << curr_pos[2] << "];" << std::endl;
@@ -146,7 +146,7 @@ void NeuroMLExporter::ExportIteration(std::string filename,
   /// TODO(roman): here, the cell populations and connectivity will be
   /// specified and exported, once these are included in the model
   // auto* rm = Simulation::GetActive()->GetResourceManager();
-  // rm->ApplyOnAllElements([&](Agent* agent) { });
+  // rm->ForEachAgent([&](Agent* agent) { });
 
   outfile << std::endl;
   outfile << "</neuroml>" << std::endl;
@@ -177,7 +177,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
   vtu << "            <DataArray type=\"Float64\" NumberOfComponents=\"3\" "
          "format=\"ascii\">"
       << std::endl;
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     auto& coord = agent->GetPosition();
     vtu << ' ' << coord[0] << ' ' << coord[1] << ' ' << coord[2] << std::flush;
   });
@@ -198,7 +198,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     if (auto* cell = dynamic_cast<Cell*>(agent)) {
       auto adhr = cell->GetAdherence();
       vtu << ' ' << adhr << std::flush;
@@ -210,7 +210,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
   vtu << "            <DataArray type=\"Float64\" Name=\"Diameter\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     auto diam = agent->GetDiameter();
     vtu << ' ' << diam << std::flush;
   });
@@ -221,7 +221,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     if (auto* cell = dynamic_cast<Cell*>(agent)) {
       auto mass = cell->GetMass();
       vtu << ' ' << mass << std::flush;
@@ -234,7 +234,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     if (auto* cell = dynamic_cast<Cell*>(agent)) {
       auto v = cell->GetVolume();
       vtu << ' ' << v << std::flush;
@@ -247,7 +247,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
          "NumberOfComponents=\"3\" format=\"ascii\">"
       << std::endl;
 
-  rm->ApplyOnAllElements([&](Agent* agent) {
+  rm->ForEachAgent([&](Agent* agent) {
     if (auto* cell = dynamic_cast<Cell*>(agent)) {
       auto& tracf = cell->GetTractorForce();
       vtu << ' ' << tracf[0] << ' ' << tracf[1] << ' ' << tracf[2]
