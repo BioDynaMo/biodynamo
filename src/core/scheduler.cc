@@ -137,7 +137,7 @@ void Scheduler::UnscheduleOp(Operation* op) {
 
   // Check if the requested operation is even scheduled
   bool not_in_scheduled_ops = true;
-  ForAllOperations([&](Operation* scheduled_op) {
+  ForEachOperation([&](Operation* scheduled_op) {
     if (op == scheduled_op) {
       not_in_scheduled_ops = false;
     }
@@ -204,7 +204,7 @@ struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
 };
 
 void Scheduler::SetUpOps() {
-  ForAllScheduledOperations([&](Operation* op) {
+  ForEachScheduledOperation([&](Operation* op) {
     if (total_steps_ % op->frequency_ == 0) {
       op->SetUp();
     }
@@ -212,7 +212,7 @@ void Scheduler::SetUpOps() {
 }
 
 void Scheduler::TearDownOps() {
-  ForAllScheduledOperations([&](Operation* op) {
+  ForEachScheduledOperation([&](Operation* op) {
     if (total_steps_ % op->frequency_ == 0) {
       op->TearDown();
     }

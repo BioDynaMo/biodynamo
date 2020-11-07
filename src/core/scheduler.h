@@ -49,8 +49,6 @@ class Scheduler {
 
   void Simulate(uint64_t steps);
 
-  Operation* NewOutstandingOperation(const std::string& name);
-
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
@@ -66,52 +64,6 @@ class Scheduler {
   /// If the name is in the list of proected ops, this
   /// function returns an empty vector.
   std::vector<Operation*> GetOps(const std::string& name);
-
-  /// Runs a lambda for each operation in the specified list of operations
-  template <typename Lambda>
-  void ForAllOperationsInList(const std::vector<Operation*>& operations,
-                              Lambda lambda) {
-    for (auto* op : operations) {
-      lambda(op);
-    }
-  }
-
-  /// Runs a lambda for each scheduled operation
-  template <typename Lambda>
-  void ForAllScheduledOperations(Lambda lambda) {
-    ForAllOperationsInList(scheduled_agent_ops_, lambda);
-    ForAllOperationsInList(scheduled_standalone_ops_, lambda);
-  }
-
-  /// Runs a lambda for each operation that is executed in the Execute() call
-  template <typename Lambda>
-  void ForAllOperations(Lambda lambda) {
-    ForAllScheduledOperations(lambda);
-    ForAllOperationsInList(pre_scheduled_ops_, lambda);
-    ForAllOperationsInList(post_scheduled_ops_, lambda);
-  }
-
-  /// Return a list of AgentOperations that are scheduled
-  std::vector<std::string> GetListOfScheduledAgentOps() const;
-
-  /// Return a list of StandAloneOperations that are scheduled
-  std::vector<std::string> GetListOfScheduledStandaloneOps() const;
-
-  // Run the Operation::SetUp() call for each scheduled operation
-  void SetUpOps();
-
-  void TearDownOps();
-
-  // Run the operations in scheduled_*_ops_
-  void RunScheduledOps();
-
-  // Run the operations in pre_scheduled_ops_ (executed before RunScheduledOps)
-  void RunPreScheduledOps();
-
-  // Run the operations in post_scheduled_ops_ (executed after RunScheduledOps)
-  void RunPostScheduledOps();
-
-  void ScheduleOps();
 
   RootAdaptor* GetRootVisualization() { return root_visualization_; }
 
@@ -170,6 +122,52 @@ class Scheduler {
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
   void Initialize();
+  
+  /// Runs a lambda for each operation in the specified list of operations
+  template <typename Lambda>
+  void ForEachOperationInList(const std::vector<Operation*>& operations,
+                              Lambda lambda) {
+    for (auto* op : operations) {
+      lambda(op);
+    }
+  }
+
+  /// Runs a lambda for each scheduled operation
+  template <typename Lambda>
+  void ForEachScheduledOperation(Lambda lambda) {
+    ForEachOperationInList(scheduled_agent_ops_, lambda);
+    ForEachOperationInList(scheduled_standalone_ops_, lambda);
+  }
+
+  /// Runs a lambda for each operation that is executed in the Execute() call
+  template <typename Lambda>
+  void ForEachOperation(Lambda lambda) {
+    ForEachScheduledOperation(lambda);
+    ForEachOperationInList(pre_scheduled_ops_, lambda);
+    ForEachOperationInList(post_scheduled_ops_, lambda);
+  }
+
+  /// Return a list of AgentOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledAgentOps() const;
+
+  /// Return a list of StandAloneOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledStandaloneOps() const;
+
+  // Run the Operation::SetUp() call for each scheduled operation
+  void SetUpOps();
+
+  void TearDownOps();
+
+  // Run the operations in scheduled_*_ops_
+  void RunScheduledOps();
+
+  // Run the operations in pre_scheduled_ops_ (executed before RunScheduledOps)
+  void RunPreScheduledOps();
+
+  // Run the operations in post_scheduled_ops_ (executed after RunScheduledOps)
+  void RunPostScheduledOps();
+
+  void ScheduleOps();
 };
 
 }  // namespace bdm

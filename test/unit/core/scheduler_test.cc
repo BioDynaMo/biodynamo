@@ -35,6 +35,14 @@ class SchedulerTest : public ::testing::Test {
 
   void RunPostScheduledOps() { scheduler_->RunPostScheduledOps(); };
 
+  std::vector<std::string> GetListOfScheduledAgentOps() { 
+    return scheduler_->GetListOfScheduledAgentOps(); 
+  } 
+
+  std::vector<std::string> GetListOfScheduledStandaloneOps() { 
+    return scheduler_->GetListOfScheduledStandaloneOps(); 
+  } 
+
   virtual void SetUp() override {}
 
   void TestBody() override {}
@@ -49,7 +57,7 @@ class SchedulerTest : public ::testing::Test {
 
   AgentVector<AgentHandle>* GetSuccessors() { return &(env_->successors_); }
 
- private:
+ protected:
   Scheduler* scheduler_ = nullptr;
   UniformGridEnvironment* env_ = nullptr;
 };
@@ -428,7 +436,7 @@ TEST_F(SchedulerTest, GetOps) {
 TEST_F(SchedulerTest, ScheduleOrder) {
   Simulation sim(TEST_NAME);
   sim.GetResourceManager()->push_back(new Cell(10));
-  auto* scheduler = sim.GetScheduler();
+  scheduler_ = sim.GetScheduler();
   sim.Simulate(1);
 
   std::vector<std::string> agent_ops = {
@@ -438,14 +446,14 @@ TEST_F(SchedulerTest, ScheduleOrder) {
   std::vector<std::string> sa_ops = {"diffusion"};
 
   int i = 0;
-  ASSERT_EQ(agent_ops.size(), scheduler->GetListOfScheduledAgentOps().size());
-  for (auto& agent_op_name : scheduler->GetListOfScheduledAgentOps()) {
+  ASSERT_EQ(agent_ops.size(), GetListOfScheduledAgentOps().size());
+  for (auto& agent_op_name : GetListOfScheduledAgentOps()) {
     EXPECT_EQ(agent_ops[i], agent_op_name);
     i++;
   }
   i = 0;
-  ASSERT_EQ(sa_ops.size(), scheduler->GetListOfScheduledStandaloneOps().size());
-  for (auto& sa_op_name : scheduler->GetListOfScheduledStandaloneOps()) {
+  ASSERT_EQ(sa_ops.size(), GetListOfScheduledStandaloneOps().size());
+  for (auto& sa_op_name : GetListOfScheduledStandaloneOps()) {
     EXPECT_EQ(sa_ops[i], sa_op_name);
     i++;
   }
