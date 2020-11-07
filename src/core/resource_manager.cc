@@ -205,7 +205,7 @@ struct RearrangeFunctor : public Functor<void, const AgentHandle&> {
   }
 };
 
-void ResourceManager::SortAndBalanceNumaNodes() {
+void ResourceManager::LoadBalance() {
   // balance agents per numa node according to the number of
   // threads associated with each numa domain
   auto numa_nodes = thread_info_->GetNumaNodes();

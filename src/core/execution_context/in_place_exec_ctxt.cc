@@ -162,9 +162,9 @@ void InPlaceExecutionContext::TearDownIterationAll(
   // reserve enough memory in ResourceManager
   std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  rm->ResizeUidAgentMap();
+  rm->ResizeAgentUidMap();
   for (unsigned n = 0; n < new_agent_per_numa.size(); n++) {
-    numa_offsets[n] = rm->GrowSoContainer(new_agent_per_numa[n], n);
+    numa_offsets[n] = rm->GrowAgentContainer(new_agent_per_numa[n], n);
   }
 
 // add new_agents_ to the ResourceManager in parallel
@@ -173,7 +173,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
     auto* ctxt = all_exec_ctxts[i];
     int nid = tinfo_->GetNumaNode(i);
     uint64_t offset = thread_offsets[i] + numa_offsets[nid];
-    rm->AddNewAgents(nid, offset, ctxt->new_agents_);
+    rm->AddAgents(nid, offset, ctxt->new_agents_);
     ctxt->new_agents_.clear();
   }
 
@@ -184,7 +184,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
     // remove them after adding new ones (maybe one has been removed
     // that was in new_agents_)
     for (auto& uid : ctxt->remove_) {
-      rm->Remove(uid);
+      rm->RemoveAgent(uid);
     }
     ctxt->remove_.clear();
   }

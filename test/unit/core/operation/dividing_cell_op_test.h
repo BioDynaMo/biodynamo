@@ -39,8 +39,8 @@ inline void RunTest() {
   Cell* cell_1 = new Cell(19.0);
   double volume_mother = cell_0->GetVolume();
 
-  rm->push_back(cell_0);
-  rm->push_back(cell_1);
+  rm->AddAgent(cell_0);
+  rm->AddAgent(cell_1);
 
   EXPECT_EQ(2u, rm->GetNumAgents());
 

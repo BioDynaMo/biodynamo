@@ -461,7 +461,7 @@ struct Param {
   ///     mem_mgr_max_mem_per_thread = 10485760
   uint64_t mem_mgr_max_mem_per_thread = 1024 * 1024 * 10;
 
-  /// This parameter is used inside `ResourceManager::SortAndBalanceNumaNodes`.
+  /// This parameter is used inside `ResourceManager::LoadBalance`.
   /// If it is set to true, the function will reuse existing memory to rebalance
   /// agents to NUMA nodes. (A small amount of additional memory
   /// is still required.)\n

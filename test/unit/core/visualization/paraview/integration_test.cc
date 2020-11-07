@@ -104,12 +104,12 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   auto* cell = new Cell();
   cell->SetDiameter(10);
   cell->SetPosition({5, 5, 5});
-  sim->GetResourceManager()->push_back(cell);
+  sim->GetResourceManager()->AddAgent(cell);
   auto* cell1 = new Cell();
   cell1->SetDiameter(10);
   double pos = static_cast<double>(max_bound) - 5;
   cell1->SetPosition({pos, pos, pos});
-  sim->GetResourceManager()->push_back(cell1);
+  sim->GetResourceManager()->AddAgent(cell1);
 
   sim->GetScheduler()->Simulate(1);
 
@@ -204,7 +204,7 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
     ne->SetMassLocation({d, d, d});
     ne->SetActualLength(d + 10);
     ne->SetDaughterRight(AgentPointer<NeuriteElement>(AgentUid(i)));
-    rm->push_back(ne);
+    rm->AddAgent(ne);
   };
 
   for (uint64_t i = 0; i < num_agents; ++i) {
@@ -289,7 +289,7 @@ void RunDefaultInsituPipelineTest() {
 
   auto* rm = simulation.GetResourceManager();
   auto* cell = new Cell(30);
-  rm->push_back(cell);
+  rm->AddAgent(cell);
 
   simulation.GetScheduler()->Simulate(1);
   // Test passes if there is no crash

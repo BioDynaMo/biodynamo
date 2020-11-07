@@ -28,7 +28,7 @@ void CellFactory(ResourceManager* rm, size_t cells_per_dim) {
       for (size_t k = 0; k < cells_per_dim; k++) {
         Cell* cell = new Cell({k * space, j * space, i * space});
         cell->SetDiameter(30);
-        rm->push_back(cell);
+        rm->AddAgent(cell);
       }
     }
   }
@@ -148,8 +148,8 @@ TEST(GridTest, UpdateGrid) {
   env->Update();
 
   // Remove cells 1 and 42
-  rm->Remove(AgentUid(1));
-  rm->Remove(AgentUid(42));
+  rm->RemoveAgent(AgentUid(1));
+  rm->RemoveAgent(AgentUid(42));
 
   EXPECT_EQ(62u, rm->GetNumAgents());
 
@@ -169,8 +169,8 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
   env->Update();
 
   // Remove cells 1 and 42
-  rm->Remove(AgentUid(1));
-  rm->Remove(AgentUid(42));
+  rm->RemoveAgent(AgentUid(1));
+  rm->RemoveAgent(AgentUid(42));
 
   // run 100 times to increase possibility of race condition due to different
   // scheduling of threads
@@ -255,7 +255,7 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
   auto* rm = simulation.GetResourceManager();
   auto* env = simulation.GetEnvironment();
 
-  rm->push_back(new Cell(10));
+  rm->AddAgent(new Cell(10));
 
   env->Update();
 
@@ -281,7 +281,7 @@ struct ZOrderCallback : Functor<void, const AgentHandle&> {
         cnt == 24 || cnt == 26) {
       box_cnt++;
     }
-    auto* agent = rm->GetAgentByHandle(ah);
+    auto* agent = rm->GetAgent(ah);
     zorder[box_cnt].insert(agent->GetUid() - ref_uid);
     cnt++;
   }

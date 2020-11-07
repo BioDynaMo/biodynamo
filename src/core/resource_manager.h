@@ -95,7 +95,7 @@ class ResourceManager {
     agents_ = std::move(other.agents_);
     diffusion_grids_ = std::move(other.diffusion_grids_);
 
-    RestoreUidAgentMap();
+    RebuildAgentUidMap();
     // restore type_index_
     if (type_index_) {
       for (auto& numa_agents : agents_) {
@@ -107,7 +107,7 @@ class ResourceManager {
     return *this;
   }
 
-  void RestoreUidAgentMap() {
+  void RebuildAgentUidMap() {
     // rebuild uid_ah_map_
     uid_ah_map_.clear();
     auto* agent_uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
@@ -128,7 +128,7 @@ class ResourceManager {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
-  Agent* GetAgentByHandle(AgentHandle ah) {
+  Agent* GetAgent(AgentHandle ah) {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
@@ -269,7 +269,7 @@ class ResourceManager {
   /// Resize `agents_[numa_node]` such that it holds `current + additional`
   /// elements after this call.
   /// Returns the size after
-  uint64_t GrowSoContainer(size_t additional, size_t numa_node) {
+  uint64_t GrowAgentContainer(size_t additional, size_t numa_node) {
     if (additional == 0) {
       return agents_[numa_node].size();
     }
@@ -283,13 +283,13 @@ class ResourceManager {
 
   /// Returns true if an agent with the given uid is stored in this
   /// ResourceManager.
-  bool Contains(const AgentUid& uid) const { return uid_ah_map_.Contains(uid); }
+  bool ContainsAgent(const AgentUid& uid) const { return uid_ah_map_.Contains(uid); }
 
   /// Remove all agents
   /// NB: This method is not thread-safe! This function invalidates
   /// agent references pointing into the ResourceManager. AgentPointer are
   /// not affected.
-  void Clear() {
+  void ClearAgents() {
     uid_ah_map_.clear();
     for (auto& numa_agents : agents_) {
       for (auto* agent : numa_agents) {
@@ -304,15 +304,15 @@ class ResourceManager {
 
   /// Reorder agents such that, agents are distributed to NUMA
   /// nodes. Nearby agents will be moved to the same NUMA node.
-  virtual void SortAndBalanceNumaNodes();
+  virtual void LoadBalance();
 
   void DebugNuma() const;
 
   /// NB: This method is not thread-safe! This function might invalidate
   /// agent references pointing into the ResourceManager. AgentPointer are
   /// not affected.
-  void push_back(Agent* agent,  // NOLINT
-                 typename AgentHandle::NumaNode_t numa_node = 0) {
+  void AddAgent(Agent* agent,  // NOLINT
+                typename AgentHandle::NumaNode_t numa_node = 0) {
     auto uid = agent->GetUid();
     if (uid.GetIndex() >= uid_ah_map_.size()) {
       uid_ah_map_.resize(uid.GetIndex() + 1);
@@ -325,7 +325,7 @@ class ResourceManager {
     }
   }
 
-  void ResizeUidAgentMap() {
+  void ResizeAgentUidMap() {
     auto* agent_uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
     auto highest_idx = agent_uid_generator->GetHighestIndex();
     auto new_size = highest_idx * 1.5 + 1;
@@ -354,7 +354,7 @@ class ResourceManager {
   /// the index at which the first element is inserted. Agents are inserted
   /// consecutively. This methos is thread safe only if insertion intervals do
   /// not overlap!
-  virtual void AddNewAgents(
+  virtual void AddAgents(
       typename AgentHandle::NumaNode_t numa_node, uint64_t offset,
       const std::vector<Agent*>& new_agents) {
     uint64_t i = 0;
@@ -376,7 +376,7 @@ class ResourceManager {
   /// NB: This method is not thread-safe! This function invalidates
   /// agent references pointing into the ResourceManager. AgentPointer are
   /// not affected.
-  void Remove(const AgentUid& uid) {
+  void RemoveAgent(const AgentUid& uid) {
     // remove from map
     if (uid_ah_map_.Contains(uid)) {
       auto ah = uid_ah_map_[uid];

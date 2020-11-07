@@ -66,11 +66,11 @@ inline void RunForEachAgentTest() {
 
   auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
 
-  rm->push_back(new A(12));
-  rm->push_back(new A(34));
+  rm->AddAgent(new A(12));
+  rm->AddAgent(new A(34));
 
-  rm->push_back(new B(3.14));
-  rm->push_back(new B(6.28));
+  rm->AddAgent(new B(3.14));
+  rm->AddAgent(new B(6.28));
   uint64_t counter = 0;
   rm->ForEachAgent([&](Agent* element) {  // NOLINT
     counter++;
@@ -97,12 +97,12 @@ inline void RunGetNumAgents() {
   Simulation simulation("ResourceManagerTest-RunGetNumAgents");
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(new A(12));
-  rm->push_back(new A(34));
-  rm->push_back(new A(59));
+  rm->AddAgent(new A(12));
+  rm->AddAgent(new A(34));
+  rm->AddAgent(new A(59));
 
-  rm->push_back(new B(3.14));
-  rm->push_back(new B(6.28));
+  rm->AddAgent(new B(3.14));
+  rm->AddAgent(new B(6.28));
 
   EXPECT_EQ(5u, rm->GetNumAgents());
 }
@@ -130,9 +130,9 @@ inline void RunForEachAgentParallelTest() {
   Simulation simulation("RunForEachAgentParallelTest");
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(new B(3.14));
-  rm->push_back(new B(6.28));
-  rm->push_back(new B(9.42));
+  rm->AddAgent(new B(3.14));
+  rm->AddAgent(new B(6.28));
+  rm->AddAgent(new B(9.42));
 
   ForEachAgentParallelTestFunctor functor;
   rm->ForEachAgentParallel(functor);
@@ -144,41 +144,41 @@ inline void RunRemoveAndContainsTest() {
 
   A* a0 = new A(12);
   auto a0_uid = a0->GetUid();
-  rm->push_back(a0);
+  rm->AddAgent(a0);
 
   A* a1 = new A(34);
   auto a1_uid = a1->GetUid();
-  rm->push_back(a1);
+  rm->AddAgent(a1);
 
   A* a2 = new A(59);
   auto a2_uid = a2->GetUid();
-  rm->push_back(a2);
+  rm->AddAgent(a2);
 
   B* b0 = new B(3.14);
   auto b0_uid = b0->GetUid();
-  rm->push_back(b0);
+  rm->AddAgent(b0);
 
   B* b1 = new B(6.28);
   auto b1_uid = b1->GetUid();
-  rm->push_back(b1);
+  rm->AddAgent(b1);
 
-  EXPECT_TRUE(rm->Contains(a0_uid));
-  EXPECT_TRUE(rm->Contains(a1_uid));
-  EXPECT_TRUE(rm->Contains(a2_uid));
-  EXPECT_TRUE(rm->Contains(b0_uid));
-  EXPECT_TRUE(rm->Contains(b1_uid));
+  EXPECT_TRUE(rm->ContainsAgent(a0_uid));
+  EXPECT_TRUE(rm->ContainsAgent(a1_uid));
+  EXPECT_TRUE(rm->ContainsAgent(a2_uid));
+  EXPECT_TRUE(rm->ContainsAgent(b0_uid));
+  EXPECT_TRUE(rm->ContainsAgent(b1_uid));
 
-  rm->Remove(a0_uid);
-  rm->Remove(a1_uid);
-  rm->Remove(a2_uid);
-  rm->Remove(b0_uid);
-  rm->Remove(b1_uid);
+  rm->RemoveAgent(a0_uid);
+  rm->RemoveAgent(a1_uid);
+  rm->RemoveAgent(a2_uid);
+  rm->RemoveAgent(b0_uid);
+  rm->RemoveAgent(b1_uid);
 
-  EXPECT_FALSE(rm->Contains(a0_uid));
-  EXPECT_FALSE(rm->Contains(a1_uid));
-  EXPECT_FALSE(rm->Contains(a2_uid));
-  EXPECT_FALSE(rm->Contains(b0_uid));
-  EXPECT_FALSE(rm->Contains(b1_uid));
+  EXPECT_FALSE(rm->ContainsAgent(a0_uid));
+  EXPECT_FALSE(rm->ContainsAgent(a1_uid));
+  EXPECT_FALSE(rm->ContainsAgent(a2_uid));
+  EXPECT_FALSE(rm->ContainsAgent(b0_uid));
+  EXPECT_FALSE(rm->ContainsAgent(b1_uid));
 
   EXPECT_EQ(0u, rm->GetNumAgents());
 }
@@ -189,37 +189,37 @@ inline void RunClearTest() {
 
   A* a0 = new A(12);
   auto a0_uid = a0->GetUid();
-  rm->push_back(a0);
+  rm->AddAgent(a0);
 
   A* a1 = new A(34);
   auto a1_uid = a1->GetUid();
-  rm->push_back(a1);
+  rm->AddAgent(a1);
 
   A* a2 = new A(59);
   auto a2_uid = a2->GetUid();
-  rm->push_back(a2);
+  rm->AddAgent(a2);
 
   B* b0 = new B(3.14);
   auto b0_uid = b0->GetUid();
-  rm->push_back(b0);
+  rm->AddAgent(b0);
 
   B* b1 = new B(6.28);
   auto b1_uid = b1->GetUid();
-  rm->push_back(b1);
+  rm->AddAgent(b1);
 
-  EXPECT_TRUE(rm->Contains(a0_uid));
-  EXPECT_TRUE(rm->Contains(a1_uid));
-  EXPECT_TRUE(rm->Contains(a2_uid));
-  EXPECT_TRUE(rm->Contains(b0_uid));
-  EXPECT_TRUE(rm->Contains(b1_uid));
+  EXPECT_TRUE(rm->ContainsAgent(a0_uid));
+  EXPECT_TRUE(rm->ContainsAgent(a1_uid));
+  EXPECT_TRUE(rm->ContainsAgent(a2_uid));
+  EXPECT_TRUE(rm->ContainsAgent(b0_uid));
+  EXPECT_TRUE(rm->ContainsAgent(b1_uid));
 
-  rm->Clear();
+  rm->ClearAgents();
 
-  EXPECT_FALSE(rm->Contains(a0_uid));
-  EXPECT_FALSE(rm->Contains(a1_uid));
-  EXPECT_FALSE(rm->Contains(a2_uid));
-  EXPECT_FALSE(rm->Contains(b0_uid));
-  EXPECT_FALSE(rm->Contains(b1_uid));
+  EXPECT_FALSE(rm->ContainsAgent(a0_uid));
+  EXPECT_FALSE(rm->ContainsAgent(a1_uid));
+  EXPECT_FALSE(rm->ContainsAgent(a2_uid));
+  EXPECT_FALSE(rm->ContainsAgent(b0_uid));
+  EXPECT_FALSE(rm->ContainsAgent(b1_uid));
 
   EXPECT_EQ(0u, rm->GetNumAgents());
 }
@@ -231,13 +231,13 @@ inline void RunPushBackAndGetAgentTest() {
 
   auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
 
-  rm->push_back(new A(12));
-  rm->push_back(new A(34));
+  rm->AddAgent(new A(12));
+  rm->AddAgent(new A(34));
 
-  rm->push_back(new B(3.14));
-  rm->push_back(new B(6.28));
+  rm->AddAgent(new B(3.14));
+  rm->AddAgent(new B(6.28));
 
-  rm->push_back(new A(87));
+  rm->AddAgent(new A(87));
 
   EXPECT_EQ(dynamic_cast<A*>(rm->GetAgent(ref_uid))->GetData(), 12);
   EXPECT_EQ(dynamic_cast<A*>(rm->GetAgent(ref_uid + 1))->GetData(), 34);
@@ -374,20 +374,20 @@ inline void RunSortAndForEachAgentParallel(uint64_t num_agent_per_type) {
     A* a = new A(i);
     a->SetDiameter(10);
     a->SetPosition({x_pos, 0, 0});
-    rm->push_back(a);
+    rm->AddAgent(a);
     a_x_values[a->GetUid()] = x_pos;
 
     B* b = new B(i + num_agent_per_type);
     b->SetDiameter(10);
     b->SetPosition({x_pos, 0, 0});
-    rm->push_back(b);
+    rm->AddAgent(b);
     b_x_values[b->GetUid()] = x_pos;
   }
 
   CheckForEachAgent(rm, num_agent_per_type);
 
   simulation.GetEnvironment()->Update();
-  rm->SortAndBalanceNumaNodes();
+  rm->LoadBalance();
 
   CheckForEachAgent(rm, num_agent_per_type, true);
 
@@ -543,20 +543,20 @@ inline void RunSortAndForEachAgentParallelDynamic(
     A* a = new A(i);
     a->SetDiameter(10);
     a->SetPosition({x_pos, 0, 0});
-    rm->push_back(a);
+    rm->AddAgent(a);
     a_x_values[a->GetUid()] = x_pos;
 
     B* b = new B(i + num_agent_per_type);
     b->SetDiameter(10);
     b->SetPosition({x_pos, 0, 0});
-    rm->push_back(b);
+    rm->AddAgent(b);
     b_x_values[b->GetUid()] = x_pos;
   }
 
   CheckForEachAgentDynamic(rm, num_agent_per_type, batch_size);
 
   simulation.GetEnvironment()->Update();
-  rm->SortAndBalanceNumaNodes();
+  rm->LoadBalance();
 
   CheckForEachAgentDynamic(rm, num_agent_per_type, batch_size, true);
 
@@ -598,12 +598,12 @@ inline void RunIOTest() {
   remove(ROOTFILE);
 
   // setup
-  rm->push_back(new A(12));
-  rm->push_back(new A(34));
-  rm->push_back(new A(42));
+  rm->AddAgent(new A(12));
+  rm->AddAgent(new A(34));
+  rm->AddAgent(new A(42));
 
-  rm->push_back(new B(3.14));
-  rm->push_back(new B(6.28));
+  rm->AddAgent(new B(3.14));
+  rm->AddAgent(new B(6.28));
 
   DiffusionGrid* dgrid_1 = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
   DiffusionGrid* dgrid_2 = new DiffusionGrid(1, "Natrium", 0.2, 0.1, 1);
@@ -613,12 +613,12 @@ inline void RunIOTest() {
   // backup
   WritePersistentObject(ROOTFILE, "rm", *rm, "new");
 
-  rm->Clear();
+  rm->ClearAgents();
 
   // restore
   ResourceManager* restored_rm = nullptr;
   GetPersistentObject(ROOTFILE, "rm", restored_rm);
-  restored_rm->RestoreUidAgentMap();
+  restored_rm->RebuildAgentUidMap();
 
   // validate
   EXPECT_EQ(5u, restored_rm->GetNumAgents());

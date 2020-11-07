@@ -26,7 +26,7 @@ TEST(SoPointerTest, Basics) {
 
   TestAgent* agent = new TestAgent();
   agent->SetData(123);
-  simulation.GetResourceManager()->push_back(agent);
+  simulation.GetResourceManager()->AddAgent(agent);
 
   AgentPointer<TestAgent> agent_ptr(agent->GetUid());
 

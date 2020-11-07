@@ -32,15 +32,15 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
 
   Cell* cell_0 = new Cell();
   auto uid_0 = cell_0->GetUid();
-  rm->push_back(cell_0);
+  rm->AddAgent(cell_0);
 
   Cell* cell_1 = new Cell();
   auto uid_1 = cell_1->GetUid();
-  rm->push_back(cell_1);
+  rm->AddAgent(cell_1);
 
   Cell* cell_2 = new Cell();
   auto uid_2 = cell_2->GetUid();
-  rm->push_back(cell_2);
+  rm->AddAgent(cell_2);
 
   ctxt->RemoveFromSimulation(uid_0);
   ctxt->RemoveFromSimulation(uid_2);
@@ -50,9 +50,9 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->GetNumAgents());
-  EXPECT_TRUE(rm->Contains(uid_1));
-  EXPECT_FALSE(rm->Contains(uid_0));
-  EXPECT_FALSE(rm->Contains(uid_2));
+  EXPECT_TRUE(rm->ContainsAgent(uid_1));
+  EXPECT_FALSE(rm->ContainsAgent(uid_0));
+  EXPECT_FALSE(rm->ContainsAgent(uid_2));
 }
 
 TEST(InPlaceExecutionContext, RemoveFromSimulationMultithreading) {
@@ -61,7 +61,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationMultithreading) {
   auto* ctxt = sim.GetExecutionContext();
 
   for (uint64_t i = 0; i < 1000; i++) {
-    rm->push_back(new Cell());
+    rm->AddAgent(new Cell());
   }
 
   EXPECT_EQ(1000u, rm->GetNumAgents());
@@ -76,7 +76,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationMultithreading) {
   EXPECT_EQ(500u, rm->GetNumAgents());
 
   for (uint64_t i = 1; i < 100; i += 2) {
-    EXPECT_TRUE(rm->Contains(AgentUid(i)));
+    EXPECT_TRUE(rm->ContainsAgent(AgentUid(i)));
   }
 
   rm->ForEachAgent(
@@ -92,7 +92,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
 
   Cell* cell_0 = new Cell();
   auto uid_0 = cell_0->GetUid();
-  rm->push_back(cell_0);
+  rm->AddAgent(cell_0);
 
   EXPECT_EQ(1u, rm->GetNumAgents());
 
@@ -109,15 +109,15 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->GetNumAgents());
-  EXPECT_TRUE(rm->Contains(uid_0));
-  EXPECT_FALSE(rm->Contains(uid_1));
+  EXPECT_TRUE(rm->ContainsAgent(uid_0));
+  EXPECT_FALSE(rm->ContainsAgent(uid_1));
 
   // check that the internal caches are properly cleared.
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(1u, rm->GetNumAgents());
-  EXPECT_TRUE(rm->Contains(uid_0));
-  EXPECT_FALSE(rm->Contains(uid_1));
+  EXPECT_TRUE(rm->ContainsAgent(uid_0));
+  EXPECT_FALSE(rm->ContainsAgent(uid_1));
 }
 
 TEST(InPlaceExecutionContext, NewAndGetAgent) {
@@ -128,10 +128,10 @@ TEST(InPlaceExecutionContext, NewAndGetAgent) {
   Cell* cell_0 = new Cell();
   cell_0->SetDiameter(123);
   auto uid_0 = cell_0->GetUid();
-  rm->push_back(cell_0);
+  rm->AddAgent(cell_0);
 
   EXPECT_EQ(1u, rm->GetNumAgents());
-  EXPECT_TRUE(rm->Contains(uid_0));
+  EXPECT_TRUE(rm->ContainsAgent(uid_0));
   EXPECT_EQ(123, ctxt->GetAgent(uid_0)->GetDiameter());
   EXPECT_EQ(123, rm->GetAgent(uid_0)->GetDiameter());
 
@@ -141,8 +141,8 @@ TEST(InPlaceExecutionContext, NewAndGetAgent) {
   ctxt->push_back(cell_1);
 
   EXPECT_EQ(1u, rm->GetNumAgents());
-  EXPECT_TRUE(rm->Contains(uid_0));
-  EXPECT_FALSE(rm->Contains(uid_1));
+  EXPECT_TRUE(rm->ContainsAgent(uid_0));
+  EXPECT_FALSE(rm->ContainsAgent(uid_1));
   EXPECT_EQ(123, ctxt->GetAgent(uid_0)->GetDiameter());
   EXPECT_EQ(123, rm->GetAgent(uid_0)->GetDiameter());
   EXPECT_EQ(456, ctxt->GetAgent(uid_1)->GetDiameter());
@@ -152,8 +152,8 @@ TEST(InPlaceExecutionContext, NewAndGetAgent) {
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
   EXPECT_EQ(2u, rm->GetNumAgents());
-  EXPECT_TRUE(rm->Contains(uid_0));
-  EXPECT_TRUE(rm->Contains(uid_1));
+  EXPECT_TRUE(rm->ContainsAgent(uid_0));
+  EXPECT_TRUE(rm->ContainsAgent(uid_1));
   EXPECT_EQ(123, ctxt->GetAgent(uid_0)->GetDiameter());
   EXPECT_EQ(789, ctxt->GetAgent(uid_1)->GetDiameter());
   EXPECT_EQ(123, rm->GetAgent(uid_0)->GetDiameter());

@@ -451,7 +451,7 @@ class UniformGridEnvironment : public Environment {
 
     NeighborIterator ni(neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
-      auto* agent = rm->GetAgentByHandle(*ni);
+      auto* agent = rm->GetAgent(*ni);
       if (agent != &query) {
         lambda(agent);
       }
@@ -507,7 +507,7 @@ class UniformGridEnvironment : public Environment {
       auto ah = *ni;
       // increment iterator already here to hide memory latency
       ++ni;
-      auto* agent = rm->GetAgentByHandle(ah);
+      auto* agent = rm->GetAgent(ah);
       if (agent != &query) {
         agents[size] = agent;
         const auto& pos = agent->GetPosition();
@@ -547,7 +547,7 @@ class UniformGridEnvironment : public Environment {
     NeighborIterator ni(neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      auto* agent = rm->GetAgentByHandle(*ni);
+      auto* agent = rm->GetAgent(*ni);
       if (agent != &query) {
         const auto& neighbor_position = agent->GetPosition();
         if (this->WithinSquaredEuclideanDistance(squared_radius, position,

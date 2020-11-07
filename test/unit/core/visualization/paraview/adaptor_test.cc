@@ -200,9 +200,9 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   enum Substances { kSubstance0, kSubstance1, kSubstance2 };
 
   // Create two types of cells
-  rm->push_back(new MyCell());
-  rm->push_back(new MyCell());
-  rm->push_back(new MyNeuron());
+  rm->AddAgent(new MyCell());
+  rm->AddAgent(new MyCell());
+  rm->AddAgent(new MyNeuron());
 
   // Define the substances
   ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.05, 0, 5);

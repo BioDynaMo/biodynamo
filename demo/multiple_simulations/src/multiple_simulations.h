@@ -53,7 +53,7 @@ inline int Simulate(int argc, const char** argv) {
     auto* rm = sim->GetResourceManager();
     Cell* cell = new Cell(30);
     cell->AddBehavior(new Divide());
-    rm->push_back(cell);
+    rm->AddAgent(cell);
   }
 
   // For each simulation simulate 5 timesteps

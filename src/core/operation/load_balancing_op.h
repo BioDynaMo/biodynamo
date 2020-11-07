@@ -29,7 +29,7 @@ struct LoadBalancingOp : public StandaloneOperationImpl {
 
   void operator()() override {
     auto* rm = Simulation::GetActive()->GetResourceManager();
-    rm->SortAndBalanceNumaNodes();
+    rm->LoadBalance();
   }
 };
 

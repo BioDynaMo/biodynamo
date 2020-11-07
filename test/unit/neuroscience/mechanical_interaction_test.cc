@@ -34,7 +34,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
@@ -74,7 +74,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
@@ -111,7 +111,7 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({1, 1, 0})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
@@ -145,7 +145,7 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({1, 1, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(1);
@@ -180,7 +180,7 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({1, 1, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
@@ -217,13 +217,13 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   NeuronSoma* neuron = new NeuronSoma();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   NeuronSoma* neuron2 = new NeuronSoma();
   neuron2->SetPosition({0, 0, 30});
   neuron2->SetMass(1);
   neuron2->SetDiameter(10);
-  rm->push_back(neuron2);
+  rm->AddAgent(neuron2);
 
   auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
@@ -262,13 +262,13 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
   neuron->SetMass(1);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   NeuronSoma* neuron2 = new NeuronSoma();
   neuron2->SetPosition({0, 0, 30});
   neuron2->SetDiameter(10);
   neuron2->SetMass(1);
-  rm->push_back(neuron2);
+  rm->AddAgent(neuron2);
 
   auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
 
@@ -305,7 +305,7 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   NeuronSoma* neuron = new NeuronSoma();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
@@ -354,7 +354,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   NeuronSoma* neuron = new NeuronSoma();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(2);
@@ -405,7 +405,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   NeuronSoma* neuron = new NeuronSoma();
   neuron->SetPosition({0, 0, 0});
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
 
@@ -468,12 +468,12 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   NeuronSoma* neuron1 = new NeuronSoma();
   neuron1->SetPosition({0, 0, 0});
   neuron1->SetDiameter(10);
-  rm->push_back(neuron1);
+  rm->AddAgent(neuron1);
 
   NeuronSoma* neuron2 = new NeuronSoma();
   neuron2->SetPosition({20, 0, 0});
   neuron2->SetDiameter(10);
-  rm->push_back(neuron2);
+  rm->AddAgent(neuron2);
 
   auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne1->SetDiameter(2);
@@ -525,17 +525,17 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   NeuronSoma* neuron1 = new NeuronSoma();
   neuron1->SetPosition({0, 0, 0});
   neuron1->SetDiameter(6);
-  rm->push_back(neuron1);
+  rm->AddAgent(neuron1);
 
   NeuronSoma* neuron2 = new NeuronSoma();
   neuron2->SetPosition({5.5, 0, 0});
   neuron2->SetDiameter(5);
-  rm->push_back(neuron2);
+  rm->AddAgent(neuron2);
 
   NeuronSoma* neuron3 = new NeuronSoma();
   neuron3->SetPosition({6, 0, 16});
   neuron3->SetDiameter(10);
-  rm->push_back(neuron3);
+  rm->AddAgent(neuron3);
 
   auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne1->SetDiameter(1);

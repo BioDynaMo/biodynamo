@@ -66,7 +66,7 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
 
   Simulation simulation("cell_division_gpu", set_param);
   auto* rm = simulation.GetResourceManager();
-  rm->Clear();
+  rm->ClearAgents();
 
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers
@@ -89,7 +89,7 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
       double y_pos = y * 20.0;
       for (size_t z = 0; z < cells_per_dim; z++) {
         auto new_simulation_object = construct({x_pos, y_pos, z * 20.0});
-        rm->push_back(new_simulation_object);
+        rm->AddAgent(new_simulation_object);
       }
     }
   }

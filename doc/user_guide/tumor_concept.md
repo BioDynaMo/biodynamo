@@ -95,7 +95,7 @@ for (size_t i = 0; i < nb_of_cells; ++i) {
   // set cell parameters
   cell->SetDiameter(7.5);
 
-  rm->push_back(cell);  // put the created cell in our cells structure
+  rm->AddAgent(cell);  // put the created cell in our cells structure
 }
 ```
 
@@ -141,7 +141,7 @@ Of course, we need to create at least one new cell that contains our `GrowthModu
 Cell* cell = new Cell({20, 50, 50});
 cell->SetDiameter(6);
 cell->AddBehavior(new GrowthModule());
-rm->push_back(cell);  // put the created cell in our cells structure
+rm->AddAgent(cell);  // put the created cell in our cells structure
 ```
 
 Run running it using `biodynamo run`. This code is now able to create and simulate 2 400 normal cells and 1 cancerous cell that will grow and divide! Complete code can be found in `demo/tumor_concept`.

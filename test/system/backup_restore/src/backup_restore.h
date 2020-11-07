@@ -41,7 +41,7 @@ inline int Simulate(int argc, const char** argv) {
         new Cell({100.0 * i, 100.0 * i, 100.0 * i});  // no colliding cells
     cell->SetDiameter(i);
     cell->AddBehavior(new TestBehaviour());
-    rm->push_back(cell);
+    rm->AddAgent(cell);
   }
 
   auto* scheduler = simulation.GetScheduler();

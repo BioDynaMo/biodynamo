@@ -290,7 +290,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical2) {
 
   Cell sphere({0, 0, 0});
   sphere.SetDiameter(50);
-  // rm->push_back(sphere);
+  // rm->AddAgent(sphere);
 
   NeuriteElement cylinder;
   cylinder.SetMassLocation({0, -24, 0});

@@ -28,9 +28,9 @@ namespace agent_pointer_test_internal {
 
 inline void RunIOTest(Simulation* sim) {
   auto* rm = sim->GetResourceManager();
-  rm->push_back(new TestAgent(123));
+  rm->AddAgent(new TestAgent(123));
   TestAgent* so2 = new TestAgent(456);
-  rm->push_back(so2);
+  rm->AddAgent(so2);
 
   AgentPointer<TestAgent> agent_ptr(so2->GetUid());
   AgentPointer<TestAgent>* restored;

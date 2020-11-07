@@ -123,7 +123,7 @@ void RunTest(OpComputeTarget mode) {
     cell->SetDiameter(10);
     cell->SetMass(1.4);
     cell->SetPosition({0, 0, 0});
-    rm->push_back(cell);
+    rm->AddAgent(cell);
 
     // Cell 1
     Cell* cell_1 = new Cell();
@@ -131,7 +131,7 @@ void RunTest(OpComputeTarget mode) {
     cell_1->SetDiameter(10);
     cell_1->SetMass(1.1);
     cell_1->SetPosition({0, 8, 0});
-    rm->push_back(cell_1);
+    rm->AddAgent(cell_1);
 
     env->Update();
 
@@ -219,7 +219,7 @@ void RunTest2(OpComputeTarget mode) {
           cell->SetDiameter(30);
           cell->SetAdherence(0.4);
           cell->SetMass(1.0);
-          rm->push_back(cell);
+          rm->AddAgent(cell);
         }
       }
     }

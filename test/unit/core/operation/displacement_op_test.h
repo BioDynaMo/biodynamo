@@ -34,7 +34,7 @@ inline void RunTest() {
   cell0->SetDiameter(9);
   cell0->SetMass(1.4);
   cell0->SetPosition({0, 0, 0});
-  rm->push_back(cell0);
+  rm->AddAgent(cell0);
 
   // cell 1
   Cell* cell1 = new Cell();
@@ -42,7 +42,7 @@ inline void RunTest() {
   cell1->SetDiameter(11);
   cell1->SetMass(1.1);
   cell1->SetPosition({0, 5, 0});
-  rm->push_back(cell1);
+  rm->AddAgent(cell1);
 
   simulation.GetEnvironment()->Update();
 

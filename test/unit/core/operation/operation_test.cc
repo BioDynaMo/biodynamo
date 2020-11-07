@@ -44,7 +44,7 @@ BDM_REGISTER_OP(OperationTestOp, "OperationTestOp", kCpu);
 
 TEST(OperationTest, SetupTearDown) {
   Simulation simulation("");
-  simulation.GetResourceManager()->push_back(new Cell());
+  simulation.GetResourceManager()->AddAgent(new Cell());
   auto* op = NewOperation("OperationTestOp");
   op->frequency_ = 2;
   simulation.GetScheduler()->ScheduleOp(op);

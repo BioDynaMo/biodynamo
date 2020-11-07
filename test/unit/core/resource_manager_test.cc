@@ -93,25 +93,25 @@ TEST(ResourceManagerTest, TurnOnOffAgentUidDefragmentation) {
   // utilization = 0.5 > low watermark -> don't defragment
   //   create 10 objects
   for (uint64_t i = 0; i < 10; i++) {
-    rm->push_back(new TestAgent());
+    rm->AddAgent(new TestAgent());
   }
   //   remove 5
   for (uint64_t i = 0; i < 5; i++) {
-    rm->Remove(AgentUid(i));
+    rm->RemoveAgent(AgentUid(i));
   }
   rm->EndOfIteration();
   EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
 
   // utilization 0.2 < low watermark -> turn on defragmentation
-  rm->Remove(AgentUid(5));
-  rm->Remove(AgentUid(6));
-  rm->Remove(AgentUid(7));
+  rm->RemoveAgent(AgentUid(5));
+  rm->RemoveAgent(AgentUid(6));
+  rm->RemoveAgent(AgentUid(7));
   rm->EndOfIteration();
   EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
 
   // utilization < low watermark -> turn off defragmentation
   for (uint64_t i = 0; i < 6; i++) {
-    rm->push_back(new TestAgent());
+    rm->AddAgent(new TestAgent());
   }
   rm->EndOfIteration();
   EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());

@@ -72,7 +72,7 @@ TEST_F(SchedulerTest, NoRestoreFile) {
 
   Cell* cell = new Cell();
   cell->SetDiameter(10);  // important for env to determine box size
-  rm->push_back(cell);
+  rm->AddAgent(cell);
 
   // start restore validation
   TestSchedulerRestore scheduler;
@@ -130,12 +130,12 @@ TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
       std::numeric_limits<std::size_t>::max();
 
   Cell* cell = new Cell(10);
-  rm->push_back(cell);
+  rm->AddAgent(cell);
   scheduler->Simulate(1);
 
   auto max_dimensions = env->GetDimensionThresholds();
   auto dimensions = env->GetDimensions();
-  rm->Clear();
+  rm->ClearAgents();
 
   scheduler->Simulate(1);
 
@@ -157,7 +157,7 @@ BDM_REGISTER_OP(TestOp, "test_op", kCpu)
 TEST_F(SchedulerTest, OperationManagement) {
   Simulation simulation(TEST_NAME);
 
-  simulation.GetResourceManager()->push_back(new Cell(10));
+  simulation.GetResourceManager()->AddAgent(new Cell(10));
 
   auto* op1 = NewOperation("test_op");
   auto* op2 = NewOperation("test_op");
@@ -373,13 +373,13 @@ TEST_F(SchedulerTest, MultipleSimulations) {
   Cell* cell2 = new Cell(10);
 
   sim1->Activate();
-  sim1->GetResourceManager()->push_back(cell);
+  sim1->GetResourceManager()->AddAgent(cell);
   auto* op1 = NewOperation("test_op");
   sim1->GetScheduler()->ScheduleOp(op1);
   sim1->Simulate(10);
 
   sim2->Activate();
-  sim2->GetResourceManager()->push_back(cell2);
+  sim2->GetResourceManager()->AddAgent(cell2);
   auto* op2 = NewOperation("test_op");
   sim2->GetScheduler()->ScheduleOp(op2);
 
@@ -407,7 +407,7 @@ TEST_F(SchedulerTest, MultipleSimulations) {
 
 TEST_F(SchedulerTest, GetOps) {
   Simulation sim(TEST_NAME);
-  sim.GetResourceManager()->push_back(new Cell(10));
+  sim.GetResourceManager()->AddAgent(new Cell(10));
   auto* scheduler = sim.GetScheduler();
 
   std::vector<std::string> def_ops = {"displacement", "diffusion"};
@@ -435,7 +435,7 @@ TEST_F(SchedulerTest, GetOps) {
 
 TEST_F(SchedulerTest, ScheduleOrder) {
   Simulation sim(TEST_NAME);
-  sim.GetResourceManager()->push_back(new Cell(10));
+  sim.GetResourceManager()->AddAgent(new Cell(10));
   scheduler_ = sim.GetScheduler();
   sim.Simulate(1);
 

@@ -35,7 +35,7 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetAgentPtr<NeuriteElement>();
 
@@ -79,7 +79,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   neuron->SetPosition({0, 0, 0});
   neuron->SetMass(1);
   neuron->SetDiameter(10);
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(1);

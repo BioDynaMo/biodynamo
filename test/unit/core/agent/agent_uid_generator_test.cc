@@ -23,7 +23,7 @@ namespace bdm {
 
 TEST(AgentUidGeneratorTest, NormalAndDefragmentationMode) {
   Simulation simulation(TEST_NAME);
-  simulation.GetResourceManager()->push_back(new TestAgent(0));
+  simulation.GetResourceManager()->AddAgent(new TestAgent(0));
 
   AgentUidGenerator generator;
 

@@ -38,7 +38,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   // new neurite
   auto neurite = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
@@ -89,7 +89,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   // new neurite
   auto neurite = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
@@ -130,7 +130,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
@@ -201,7 +201,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
@@ -253,7 +253,7 @@ TEST(NeuriteElementTest, TotalRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
@@ -290,7 +290,7 @@ TEST(NeuriteElementTest, Branch) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
@@ -392,7 +392,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
@@ -467,7 +467,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
@@ -519,7 +519,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
@@ -593,7 +593,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto* neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                               ->ExtendNewNeurite({1, 0, 0});
@@ -646,7 +646,7 @@ TEST(NeuriteElementTest, Bifurcate) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   auto* neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                               ->ExtendNewNeurite({0, 0, 1});

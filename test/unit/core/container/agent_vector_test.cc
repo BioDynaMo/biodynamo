@@ -23,9 +23,9 @@ TEST(AgentVectorTest, All) {
   Simulation simulation(sim_name);
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(new TestAgent());
-  rm->push_back(new TestAgent());
-  rm->push_back(new TestAgent());
+  rm->AddAgent(new TestAgent());
+  rm->AddAgent(new TestAgent());
+  rm->AddAgent(new TestAgent());
 
   AgentVector<int> vector;
   EXPECT_EQ(3u, vector.size(0));
@@ -48,9 +48,9 @@ TEST(AgentVectorTest, Equality) {
   Simulation simulation(sim_name);
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(new TestAgent());
-  rm->push_back(new TestAgent());
-  rm->push_back(new TestAgent());
+  rm->AddAgent(new TestAgent());
+  rm->AddAgent(new TestAgent());
+  rm->AddAgent(new TestAgent());
 
   AgentVector<int> vec_a;
   AgentVector<int> vec_b;

@@ -138,7 +138,7 @@ TEST(AgentTest, GetAgentPtr) {
   std::vector<Agent*> agents;
   for (uint64_t i = 0; i < 10; i++) {
     auto* agent = new TestAgent();
-    rm->push_back(agent);
+    rm->AddAgent(agent);
     agents.push_back(agent);
   }
   EXPECT_EQ(10u, rm->GetNumAgents());

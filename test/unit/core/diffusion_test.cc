@@ -41,7 +41,7 @@ void CellFactory(const std::vector<Double3>& positions) {
   for (size_t i = 0; i < positions.size(); i++) {
     Cell* cell = new Cell({positions[i][0], positions[i][1], positions[i][2]});
     cell->SetDiameter(30);
-    rm->push_back(cell);
+    rm->AddAgent(cell);
   }
 }
 

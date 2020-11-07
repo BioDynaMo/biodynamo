@@ -440,8 +440,8 @@ TEST_F(IOTest, Simulation) {
   Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
   auto* param = sim.GetParam();
-  rm->push_back(new Cell());
-  rm->push_back(new Cell());
+  rm->AddAgent(new Cell());
+  rm->AddAgent(new Cell());
 #pragma omp parallel
   {
     auto* r = sim.GetRandom();
@@ -463,7 +463,7 @@ TEST_F(IOTest, Simulation) {
   }
 
   // change state to see if call to Simulation::Restore was successful
-  rm->Clear();
+  rm->ClearAgents();
   const_cast<Param*>(param)->simulation_time_step = 6.28;
   // check if rm is really empty to avoid false positive test results
   EXPECT_EQ(0u, rm->GetNumAgents());

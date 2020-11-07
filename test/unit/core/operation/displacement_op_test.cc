@@ -35,7 +35,7 @@ TEST(DisplacementOpTest, ComputeNew) {
         cell->SetDiameter(30);
         cell->SetAdherence(0.4);
         cell->SetMass(1.0);
-        rm->push_back(cell);
+        rm->AddAgent(cell);
       }
     }
   }

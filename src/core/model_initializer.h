@@ -57,7 +57,7 @@ struct ModelInitializer {
         auto y_pos = y * space;
         for (size_t z = 0; z < cells_per_dim; z++) {
           auto* new_simulation_object = cell_builder({x_pos, y_pos, z * space});
-          rm->push_back(new_simulation_object);
+          rm->AddAgent(new_simulation_object);
         }
       }
     }
@@ -93,7 +93,7 @@ struct ModelInitializer {
         auto y_pos = y * space;
         for (size_t z = 0; z < cells_per_dim[2]; z++) {
           auto* new_simulation_object = cell_builder({x_pos, y_pos, z * space});
-          rm->push_back(new_simulation_object);
+          rm->AddAgent(new_simulation_object);
         }
       }
     }
@@ -117,7 +117,7 @@ struct ModelInitializer {
     for (size_t i = 0; i < positions.size(); i++) {
       auto* new_simulation_object =
           cell_builder({positions[i][0], positions[i][1], positions[i][2]});
-      rm->push_back(new_simulation_object);
+      rm->AddAgent(new_simulation_object);
     }
   }
 
@@ -149,7 +149,7 @@ struct ModelInitializer {
       double y = random->Uniform(min, max);
       double z = random->Uniform(min, max);
       auto* new_simulation_object = cell_builder({x, y, z});
-      rm->push_back(new_simulation_object);
+      rm->AddAgent(new_simulation_object);
     }
   }
 
