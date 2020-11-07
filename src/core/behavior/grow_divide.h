@@ -25,17 +25,17 @@ namespace bdm {
 
 /// This behavior grows the agent until the diameter reaches
 /// the specified threshold and divides the object afterwards.
-struct GrowDivide : public BaseBehavior {
-  BDM_BEHAVIOR_HEADER(GrowDivide, BaseBehavior, 1);
-  GrowDivide() : BaseBehavior(gAllEventIds) {}
+struct GrowDivide : public Behavior {
+  BDM_BEHAVIOR_HEADER(GrowDivide, Behavior, 1);
+  GrowDivide() : Behavior(gAllEventIds) {}
   GrowDivide(double threshold, double growth_rate,
              std::initializer_list<EventId> event_list)
-      : BaseBehavior(event_list),
+      : Behavior(event_list),
         threshold_(threshold),
         growth_rate_(growth_rate) {}
 
-  GrowDivide(const Event& event, BaseBehavior* other, uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {
+  GrowDivide(const Event& event, Behavior* other, uint64_t new_oid = 0)
+      : Behavior(event, other, new_oid) {
     if (GrowDivide* gdbm = dynamic_cast<GrowDivide*>(other)) {
       threshold_ = gdbm->threshold_;
       growth_rate_ = gdbm->growth_rate_;

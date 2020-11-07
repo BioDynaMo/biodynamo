@@ -21,17 +21,17 @@
 
 namespace bdm {
 
-/// BaseBehavior encapsulates logic to decide for which EventIds
+/// Behavior encapsulates logic to decide for which EventIds
 /// a behavior should be copied or removed
-struct BaseBehavior {
+struct Behavior {
   /// Default ctor sets `copy_mask_` and remove_mask_` to 0; meaning that
   /// `Copy` and `Remove` will always return false
-  BaseBehavior() : copy_mask_(0), remove_mask_(0) {}
+  Behavior() : copy_mask_(0), remove_mask_(0) {}
 
-  explicit BaseBehavior(EventId copy_event, EventId remove_event = 0)
+  explicit Behavior(EventId copy_event, EventId remove_event = 0)
       : copy_mask_(copy_event), remove_mask_(remove_event) {}
 
-  BaseBehavior(std::initializer_list<EventId> copy_events,
+  Behavior(std::initializer_list<EventId> copy_events,
                     std::initializer_list<EventId> remove_events = {}) {
     // copy mask
     copy_mask_ = 0;
@@ -45,27 +45,27 @@ struct BaseBehavior {
     }
   }
 
-  BaseBehavior(const Event& event, BaseBehavior* other,
+  Behavior(const Event& event, Behavior* other,
                     uint64_t new_oid = 0) {
     copy_mask_ = other->copy_mask_;
     remove_mask_ = other->remove_mask_;
   }
 
-  BaseBehavior(const BaseBehavior& other)
+  Behavior(const Behavior& other)
       : copy_mask_(other.copy_mask_), remove_mask_(other.remove_mask_) {}
 
-  virtual ~BaseBehavior() {}
+  virtual ~Behavior() {}
 
   /// Create a new instance of this object using the default constructor.
-  virtual BaseBehavior* GetInstance(const Event& event,
-                                         BaseBehavior* other,
+  virtual Behavior* GetInstance(const Event& event,
+                                         Behavior* other,
                                          uint64_t new_oid = 0) const = 0;
 
   /// Create a copy of this behavior.
-  virtual BaseBehavior* GetCopy() const = 0;
+  virtual Behavior* GetCopy() const = 0;
 
-  virtual void EventHandler(const Event& event, BaseBehavior* other1,
-                            BaseBehavior* other2 = nullptr) {}
+  virtual void EventHandler(const Event& event, Behavior* other1,
+                            Behavior* other2 = nullptr) {}
 
   virtual void Run(Agent* agent) = 0;
 
@@ -98,27 +98,27 @@ struct BaseBehavior {
  private:
   EventId copy_mask_;
   EventId remove_mask_;
-  BDM_CLASS_DEF(BaseBehavior, 2);
+  BDM_CLASS_DEF(Behavior, 2);
 };
 
 /// Inserts boilerplate code for stateless behaviors
 #define BDM_STATELESS_BEHAVIOR_HEADER(class_name, base_class, class_version_id)      \
  public:                                                                       \
   /** Empty default event constructor, because module does not have state. */  \
-  class_name(const Event& event, BaseBehavior* other,                     \
+  class_name(const Event& event, Behavior* other,                     \
              uint64_t new_oid = 0)                                             \
       : base_class(event, other, new_oid) {}                                   \
                                                                                \
   /** Event handler not needed, because this module does not have state. */    \
                                                                                \
   /** Create a new instance of this object using the default constructor. */   \
-  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other, \
+  Behavior* GetInstance(const Event& event, Behavior* other, \
                                  uint64_t new_oid = 0) const override {        \
     return new class_name(event, other, new_oid);                              \
   }                                                                            \
                                                                                \
   /** Create a copy of this behavior. */                                 \
-  BaseBehavior* GetCopy() const override {                                \
+  Behavior* GetCopy() const override {                                \
     return new class_name(*this);                                              \
   }                                                                            \
                                                                                \
@@ -131,13 +131,13 @@ struct BaseBehavior {
 #define BDM_BEHAVIOR_HEADER(class_name, base_class, class_version_id)                \
  public:                                                                       \
   /** Create a new instance of this object using the default constructor. */   \
-  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other, \
+  Behavior* GetInstance(const Event& event, Behavior* other, \
                                  uint64_t new_oid = 0) const override {        \
     return new class_name(event, other, new_oid);                              \
   }                                                                            \
                                                                                \
   /** Create a copy of this behavior. */                                 \
-  BaseBehavior* GetCopy() const override {                                \
+  Behavior* GetCopy() const override {                                \
     return new class_name(*this);                                              \
   }                                                                            \
                                                                                \

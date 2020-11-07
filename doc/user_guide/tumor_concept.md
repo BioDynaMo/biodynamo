@@ -108,15 +108,15 @@ simulation.GetScheduler()->Simulate(200);
 
 In the previous chapter, we created a great number of cells. However, those cells don’t do anything! We will here create a cancerous cell that will grow and divide when it reaches a certain diameter. For this, we will define a new behavior structure GrowthModule that will be applied to cell elements, and we will make this GrowthModule copied into the cell daughter (so the daughter will also contain an instance of the behavior GrowthModule)
 ```cpp
-struct GrowthModule : public BaseBehavior {
-  BDM_STATELESS_BEHAVIOR_HEADER(GrowthModule, BaseBehavior, 1);
+struct GrowthModule : public Behavior {
+  BDM_STATELESS_BEHAVIOR_HEADER(GrowthModule, Behavior, 1);
 
-  GrowthModule() : BaseBehavior(gAllEventIds) {}
+  GrowthModule() : Behavior(gAllEventIds) {}
 
   /// Empty default event constructor, because GrowthModule does not have state.
   template <typename TEvent, typename TBm>
   GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {}
+      : Behavior(event, other, new_oid) {}
 
   void Run(Agent* so) override {
     // code to be executed at each simulation step

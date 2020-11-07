@@ -67,15 +67,15 @@ class MyCell : public Cell {  // our object extends the Cell object
 };
 
 // Define growth behaviour
-struct GrowthModule : public BaseBehavior {
-  BDM_STATELESS_BEHAVIOR_HEADER(GrowthModule, BaseBehavior, 1);
+struct GrowthModule : public Behavior {
+  BDM_STATELESS_BEHAVIOR_HEADER(GrowthModule, Behavior, 1);
 
-  GrowthModule() : BaseBehavior(gAllEventIds) {}
+  GrowthModule() : Behavior(gAllEventIds) {}
 
   /// Empty default event constructor, because GrowthModule does not have state.
   template <typename TEvent, typename TBm>
   GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {}
+      : Behavior(event, other, new_oid) {}
 
   /// event handler not needed, because Chemotaxis does not have state.
 

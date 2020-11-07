@@ -75,7 +75,7 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 
 struct Event;
-struct BaseBehavior;
+struct Behavior;
 
 /// Contains code required by all agents
 class Agent {
@@ -160,16 +160,16 @@ class Agent {
   // ---------------------------------------------------------------------------
   // Behaviors
   /// Add a behavior to this agent
-  void AddBehavior(BaseBehavior* module);
+  void AddBehavior(Behavior* module);
 
   /// Remove a behavior from this agent
-  void RemoveBehavior(const BaseBehavior* remove_module);
+  void RemoveBehavior(const Behavior* remove_module);
 
   /// Execute all behaviorsq
   void RunBehaviors();
 
   /// Return all behaviors
-  const InlineVector<BaseBehavior*, 2>& GetAllBehaviors() const;
+  const InlineVector<Behavior*, 2>& GetAllBehaviors() const;
   // ---------------------------------------------------------------------------
 
   virtual Double3 CalculateDisplacement(double squared_radius, double dt) = 0;
@@ -213,7 +213,7 @@ class Agent {
   /// Grid box index
   uint32_t box_idx_ = 0;
   /// collection of behaviors which define the internal behavior
-  InlineVector<BaseBehavior*, 2> behaviors_;
+  InlineVector<Behavior*, 2> behaviors_;
 
  private:
   Spinlock lock_;  //!

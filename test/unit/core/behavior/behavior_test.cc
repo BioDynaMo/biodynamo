@@ -18,33 +18,33 @@
 namespace bdm {
 
 /// Helper class to test run visitor
-struct TestBehavior : public BaseBehavior {
-  TestBehavior() : BaseBehavior(0, 0) {}
+struct TestBehavior : public Behavior {
+  TestBehavior() : Behavior(0, 0) {}
   explicit TestBehavior(EventId copy_event, EventId remove_event = 0)
-      : BaseBehavior(copy_event, remove_event) {}
+      : Behavior(copy_event, remove_event) {}
 
   TestBehavior(std::initializer_list<EventId> copy_events,
                     std::initializer_list<EventId> remove_events = {})
-      : BaseBehavior(copy_events, remove_events) {}
+      : Behavior(copy_events, remove_events) {}
 
-  TestBehavior(const Event& event, BaseBehavior* other,
+  TestBehavior(const Event& event, Behavior* other,
                     uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {}
+      : Behavior(event, other, new_oid) {}
 
   virtual ~TestBehavior() {}
 
   void Run(Agent* agent) override {}
 
-  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other,
+  Behavior* GetInstance(const Event& event, Behavior* other,
                                  uint64_t new_oid = 0) const override {
     return new TestBehavior(event, other, new_oid);
   }
-  BaseBehavior* GetCopy() const override {
+  Behavior* GetCopy() const override {
     return new TestBehavior(*this);
   };
 };
 
-TEST(BaseBehaviorTest, CopyNever) {
+TEST(BehaviorTest, CopyNever) {
   TestBehavior bbm;
 
   for (uint64_t i = 0; i < 64; i++) {
@@ -53,7 +53,7 @@ TEST(BaseBehaviorTest, CopyNever) {
   }
 }
 
-TEST(BaseBehaviorTest, CopyAlways) {
+TEST(BehaviorTest, CopyAlways) {
   TestBehavior bbm(gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
@@ -62,7 +62,7 @@ TEST(BaseBehaviorTest, CopyAlways) {
   }
 }
 
-TEST(BaseBehaviorTest, CopyOnSingleEvent) {
+TEST(BehaviorTest, CopyOnSingleEvent) {
   uint64_t one = 1;
   TestBehavior bbm(one << 5);
 
@@ -76,7 +76,7 @@ TEST(BaseBehaviorTest, CopyOnSingleEvent) {
   }
 }
 
-TEST(BaseBehaviorTest, CopyOnEventList) {
+TEST(BehaviorTest, CopyOnEventList) {
   uint64_t one = 1;
   TestBehavior bbm({one << 5, one << 19, one << 49});
 
@@ -90,7 +90,7 @@ TEST(BaseBehaviorTest, CopyOnEventList) {
   }
 }
 
-TEST(BaseBehaviorTest, RemoveNever) {
+TEST(BehaviorTest, RemoveNever) {
   TestBehavior bbm;
   EventId any = 1;
   TestBehavior bbm1(any, gNullEventId);
@@ -102,7 +102,7 @@ TEST(BaseBehaviorTest, RemoveNever) {
   }
 }
 
-TEST(BaseBehaviorTest, RemoveAlways) {
+TEST(BehaviorTest, RemoveAlways) {
   EventId any = 1;
   TestBehavior bbm(any, gAllEventIds);
 
@@ -112,7 +112,7 @@ TEST(BaseBehaviorTest, RemoveAlways) {
   }
 }
 
-TEST(BaseBehaviorTest, RemoveOnSingleEvent) {
+TEST(BehaviorTest, RemoveOnSingleEvent) {
   uint64_t one = 1;
   EventId any = 1;
   TestBehavior bbm(any, one << 5);
@@ -127,7 +127,7 @@ TEST(BaseBehaviorTest, RemoveOnSingleEvent) {
   }
 }
 
-TEST(BaseBehaviorTest, RemoveOnEventList) {
+TEST(BehaviorTest, RemoveOnEventList) {
   uint64_t one = 1;
   EventId any = 1;
   TestBehavior bbm({any}, {one << 5, one << 19, one << 49});

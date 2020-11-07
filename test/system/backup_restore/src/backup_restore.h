@@ -20,10 +20,10 @@
 
 namespace bdm {
 
-struct TestBehaviour : public BaseBehavior {
-  BDM_STATELESS_BEHAVIOR_HEADER(TestBehaviour, BaseBehavior, 1);
+struct TestBehaviour : public Behavior {
+  BDM_STATELESS_BEHAVIOR_HEADER(TestBehaviour, Behavior, 1);
 
-  TestBehaviour() : BaseBehavior(gAllEventIds) {}
+  TestBehaviour() : Behavior(gAllEventIds) {}
 
   void Run(Agent* agent) override {
     usleep(35000);  // 35 ms -> one iteration will take 350 ms

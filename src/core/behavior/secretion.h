@@ -22,18 +22,18 @@
 namespace bdm {
 
 /// Secrete substance at Agent position
-struct Secretion : public BaseBehavior {
-  BDM_BEHAVIOR_HEADER(Secretion, BaseBehavior, 1);
+struct Secretion : public Behavior {
+  BDM_BEHAVIOR_HEADER(Secretion, Behavior, 1);
 
   Secretion(DiffusionGrid* dgrid, double quantity = 1,
             std::initializer_list<EventId> copy_events = {gAllEventIds},
             std::initializer_list<EventId> remove_events = {})
-      : BaseBehavior(copy_events, remove_events),
+      : Behavior(copy_events, remove_events),
         dgrid_(dgrid),
         quantity_(quantity) {}
 
-  Secretion(const Event& event, BaseBehavior* other, uint64_t new_uid)
-      : BaseBehavior(event, other, new_uid) {
+  Secretion(const Event& event, Behavior* other, uint64_t new_uid)
+      : Behavior(event, other, new_uid) {
     dgrid_ = bdm_static_cast<Secretion*>(other)->dgrid_;
     quantity_ = bdm_static_cast<Secretion*>(other)->quantity_;
   }

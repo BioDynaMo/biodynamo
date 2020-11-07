@@ -115,11 +115,11 @@ void Agent::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 // ---------------------------------------------------------------------------
 // Behaviors
 
-void Agent::AddBehavior(BaseBehavior* module) {
+void Agent::AddBehavior(Behavior* module) {
   behaviors_.push_back(module);
 }
 
-void Agent::RemoveBehavior(const BaseBehavior* remove_module) {
+void Agent::RemoveBehavior(const Behavior* remove_module) {
   for (unsigned int i = 0; i < behaviors_.size(); i++) {
     if (behaviors_[i] == remove_module) {
       delete remove_module;
@@ -139,7 +139,7 @@ void Agent::RunBehaviors() {
   }
 }
 
-const InlineVector<BaseBehavior*, 2>& Agent::GetAllBehaviors()
+const InlineVector<Behavior*, 2>& Agent::GetAllBehaviors()
     const {
   return behaviors_;
 }

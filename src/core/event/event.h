@@ -29,11 +29,11 @@ using EventId = uint64_t;
 
 /// Behavior event representing the union of all events.\n
 /// Used to create a behavior  which is copied for every event.
-/// @see `BaseBehavior`
+/// @see `Behavior`
 const EventId gAllEventIds = std::numeric_limits<uint64_t>::max();
 
 /// Behavior event representing the null element = empty set of events.
-/// @see `BaseBehavior`
+/// @see `Behavior`
 const EventId gNullEventId = 0;
 
 /// This class generates unique ids for behavior events satisfying the

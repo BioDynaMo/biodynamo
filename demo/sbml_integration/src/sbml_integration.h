@@ -54,11 +54,11 @@ class MyCell : public Cell {
 };
 
 // Define SbmlModule to simulate intracellular chemical reaction network.
-struct SbmlModule : public BaseBehavior {
-  BDM_BEHAVIOR_HEADER(SbmlModule, BaseBehavior, 1)
+struct SbmlModule : public Behavior {
+  BDM_BEHAVIOR_HEADER(SbmlModule, Behavior, 1)
 
   SbmlModule(const std::string& sbml_file, const rr::SimulateOptions& opt)
-      : BaseBehavior(gNullEventId, gNullEventId) {
+      : Behavior(gNullEventId, gNullEventId) {
     Initialize(sbml_file, opt);
   }
 
@@ -71,8 +71,8 @@ struct SbmlModule : public BaseBehavior {
   virtual ~SbmlModule() { delete rr_; }
 
   // SbmlModule is not copied for any event in this example
-  SbmlModule(const Event& event, BaseBehavior* other, uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {}
+  SbmlModule(const Event& event, Behavior* other, uint64_t new_oid = 0)
+      : Behavior(event, other, new_oid) {}
 
   void Initialize(const std::string& sbml_file,
                   const rr::SimulateOptions& opt) {

@@ -33,16 +33,16 @@ namespace bdm {
 /// for solving ODE. Both methods implemented inside the body of method Run().
 /// The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver`.
-struct RegulateGenes : public BaseBehavior {
-  BDM_BEHAVIOR_HEADER(RegulateGenes, BaseBehavior, 1);
+struct RegulateGenes : public Behavior {
+  BDM_BEHAVIOR_HEADER(RegulateGenes, Behavior, 1);
 
-  RegulateGenes() : BaseBehavior(gAllEventIds) {}
+  RegulateGenes() : Behavior(gAllEventIds) {}
 
-  explicit RegulateGenes(EventId event) : BaseBehavior(event) {}
+  explicit RegulateGenes(EventId event) : Behavior(event) {}
 
-  RegulateGenes(const Event& event, BaseBehavior* other,
+  RegulateGenes(const Event& event, Behavior* other,
                 uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {
+      : Behavior(event, other, new_oid) {
     if (RegulateGenes* rgbm = dynamic_cast<RegulateGenes*>(other)) {
       concentrations_ = rgbm->concentrations_;
       first_derivatives_ = rgbm->first_derivatives_;

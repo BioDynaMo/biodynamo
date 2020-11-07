@@ -22,18 +22,18 @@
 namespace bdm {
 
 /// Move cells along the diffusion gradient (from low concentration to high)
-struct Chemotaxis : public BaseBehavior {
-  BDM_BEHAVIOR_HEADER(Chemotaxis, BaseBehavior, 1);
+struct Chemotaxis : public Behavior {
+  BDM_BEHAVIOR_HEADER(Chemotaxis, Behavior, 1);
 
   Chemotaxis(DiffusionGrid* dgrid, double speed,
              std::initializer_list<EventId> copy_events = {gAllEventIds},
              std::initializer_list<EventId> remove_events = {})
-      : BaseBehavior(copy_events, remove_events),
+      : Behavior(copy_events, remove_events),
         dgrid_(dgrid),
         speed_(speed) {}
 
-  Chemotaxis(const Event& event, BaseBehavior* other, uint64_t new_uid)
-      : BaseBehavior(event, other, new_uid) {
+  Chemotaxis(const Event& event, Behavior* other, uint64_t new_uid)
+      : Behavior(event, other, new_uid) {
     dgrid_ = bdm_static_cast<Chemotaxis*>(other)->dgrid_;
     speed_ = bdm_static_cast<Chemotaxis*>(other)->speed_;
   }

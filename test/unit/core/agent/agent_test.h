@@ -24,14 +24,14 @@
 namespace bdm {
 namespace agent_test_internal {
 
-struct GrowthModule : public BaseBehavior {
+struct GrowthModule : public Behavior {
   double growth_rate_ = 0.5;
 
-  GrowthModule() : BaseBehavior(CellDivisionEvent::kEventId) {}
+  GrowthModule() : Behavior(CellDivisionEvent::kEventId) {}
 
-  GrowthModule(const Event& event, BaseBehavior* other,
+  GrowthModule(const Event& event, Behavior* other,
                uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {
+      : Behavior(event, other, new_oid) {
     if (GrowthModule* gbm = dynamic_cast<GrowthModule*>(other)) {
       growth_rate_ = gbm->growth_rate_;
     } else {
@@ -42,19 +42,19 @@ struct GrowthModule : public BaseBehavior {
 
   virtual ~GrowthModule() {}
 
-  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other,
+  Behavior* GetInstance(const Event& event, Behavior* other,
                                  uint64_t new_oid = 0) const override {
     return new GrowthModule(event, other, new_oid);
   }
-  BaseBehavior* GetCopy() const override {
+  Behavior* GetCopy() const override {
     return new GrowthModule(*this);
   }
 
   /// Default event handler (exising behavior won't be modified on
   /// any event)
-  void EventHandler(const Event& event, BaseBehavior* other1,
-                    BaseBehavior* other2 = nullptr) override {
-    BaseBehavior::EventHandler(event, other1, other2);
+  void EventHandler(const Event& event, Behavior* other1,
+                    Behavior* other2 = nullptr) override {
+    Behavior::EventHandler(event, other1, other2);
   }
 
   void Run(Agent* t) override {
@@ -64,19 +64,19 @@ struct GrowthModule : public BaseBehavior {
   BDM_CLASS_DEF_OVERRIDE(GrowthModule, 1);
 };
 
-struct MovementModule : public BaseBehavior {
+struct MovementModule : public Behavior {
   Double3 velocity_;
 
   MovementModule()
-      : BaseBehavior(0, CellDivisionEvent::kEventId),
+      : Behavior(0, CellDivisionEvent::kEventId),
         velocity_({{0, 0, 0}}) {}
   explicit MovementModule(const Double3& velocity)
-      : BaseBehavior(0, CellDivisionEvent::kEventId),
+      : Behavior(0, CellDivisionEvent::kEventId),
         velocity_(velocity) {}
 
-  MovementModule(const Event& event, BaseBehavior* other,
+  MovementModule(const Event& event, Behavior* other,
                  uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {
+      : Behavior(event, other, new_oid) {
     if (MovementModule* mbm = dynamic_cast<MovementModule*>(other)) {
       velocity_ = mbm->velocity_;
     } else {
@@ -86,18 +86,18 @@ struct MovementModule : public BaseBehavior {
   }
 
   /// Create a new instance of this object using the default constructor.
-  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other,
+  Behavior* GetInstance(const Event& event, Behavior* other,
                                  uint64_t new_oid = 0) const override {
     return new MovementModule(event, other, new_oid);
   }
-  BaseBehavior* GetCopy() const override {
+  Behavior* GetCopy() const override {
     return new MovementModule(*this);
   }
 
   /// Default event handler
-  void EventHandler(const Event& event, BaseBehavior* other1,
-                    BaseBehavior* other2 = nullptr) override {
-    BaseBehavior::EventHandler(event, other1, other2);
+  void EventHandler(const Event& event, Behavior* other1,
+                    Behavior* other2 = nullptr) override {
+    Behavior::EventHandler(event, other1, other2);
   }
 
   void Run(Agent* agent) override {
@@ -109,17 +109,17 @@ struct MovementModule : public BaseBehavior {
 };
 
 /// This behavior removes itself the first time it is executed
-struct RemoveModule : public BaseBehavior {
+struct RemoveModule : public Behavior {
   RemoveModule() {}
-  RemoveModule(const Event& event, BaseBehavior* other,
+  RemoveModule(const Event& event, Behavior* other,
                uint64_t new_oid = 0)
-      : BaseBehavior(event, other, new_oid) {}
+      : Behavior(event, other, new_oid) {}
 
-  BaseBehavior* GetInstance(const Event& event, BaseBehavior* other,
+  Behavior* GetInstance(const Event& event, Behavior* other,
                                  uint64_t new_oid = 0) const override {
     return new RemoveModule(event, other, new_oid);
   }
-  BaseBehavior* GetCopy() const override {
+  Behavior* GetCopy() const override {
     return new RemoveModule(*this);
   }
 

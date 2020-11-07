@@ -19,7 +19,7 @@
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
     <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
-    <class name="bdm::BaseBehavior"/>
+    <class name="bdm::Behavior"/>
     <class name="bdm::GrowDivide"/>
     <class name="bdm::Chemotaxis"/>
     <class name="bdm::Secretion"/>
@@ -37,7 +37,7 @@
     <class name="bdm::ParallelResizeVector<double>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::UniformGridEnvironment::Box const*>>" />
-    <class name="bdm::InlineVector<bdm::BaseBehavior*, 2>" noStreamer="true" />
-    <class name="bdm::VectorTypeWrapper<bdm::BaseBehavior*>" />
+    <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
+    <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
   </selection>
 </lcgdict>
