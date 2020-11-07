@@ -45,10 +45,7 @@ jobs:
           echo "::set-env name=INSTALL_DIR::${GITHUB_WORKSPACE}/build"
         fi
         if [ "${{ github.event_name }}" = "schedule" ]; then
-          VERSION=`git describe --tags`
-          REGEX='[^-]*'
-          [[ $VERSION =~ $REGEX ]]
-          echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
+          echo "::set-env name=INSTALL_DIR::$(echo ${HOME}/biodynamo-*)"
         fi
         
     - name: Cache pyenv
