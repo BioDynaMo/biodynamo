@@ -36,6 +36,16 @@ jobs:
         VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
         echo "::set-env name=OSVERS::$ID-$VERSION"
 
+    - name: Start Xvfb
+      run: |
+        set -e
+        sudo apt update
+        sudo apt-get -y install xvfb
+        XVFBARGS=":99 -ac -screen 0 2560x1440x24"
+        /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
+        disown -ar
+        sleep 3
+
     - name: Install BioDynaMo
       shell: bash
       run: |
@@ -103,30 +113,21 @@ jobs:
           -Dsbml=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
-        cmake --build build --parallel --config Release
+        cmake --build build --config Release
 
     - name: Run valgrind and system tests
       shell: bash
       working-directory: build
       run: |
-        ps -ef
         . $INSTALL_DIR/bin/thisbdm.sh
         sudo git config --system user.name "Test User"
         sudo git config --system user.email user@test.com
         export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
-        ps -ef
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
-        ps -ef
         make run-valgrind
-        ps -ef
         make run-demos
-        ps -ef
-        ../util/xvfb-initd.sh stop
-        ps -ef
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
