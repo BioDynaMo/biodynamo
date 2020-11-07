@@ -44,6 +44,15 @@ jobs:
         yum install -y http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm
         yum install -y git
 
+    - name: Start Xvfb
+      run: |
+        set -e
+        yum -y install xorg-x11-server-Xvfb
+        XVFBARGS=":99 -ac -screen 0 2560x1440x24"
+        /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
+        disown -ar
+        sleep 3
+
     - name: Install BioDynaMo
       shell: bash
       run: |
@@ -126,13 +135,10 @@ jobs:
         git config --system user.name "Test User"
         git config --system user.email user@test.com
         export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
         make run-demos
-        ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
