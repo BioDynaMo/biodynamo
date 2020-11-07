@@ -119,20 +119,15 @@ jobs:
       shell: bash
       working-directory: build
       run: |
-        ps -ef
         . $INSTALL_DIR/bin/thisbdm.sh
         sudo git config --system user.name "Test User"
         sudo git config --system user.email user@test.com
         export DISPLAY=:99.0
-        ps -ef
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
-        ps -ef
         make run-valgrind
-        ps -ef
         make run-demos
-        ps -ef
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
