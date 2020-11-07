@@ -22,8 +22,7 @@ void HandleFlakyTests(int& failed_cnt, std::stringstream& filter) {
     const auto& test_case = *unit_test->GetTestCase(i);
     for (int j = 0; j < test_case.total_test_count(); ++j) {
       const auto& test_info = *test_case.GetTestInfo(j);
-      // Counts failed tests that were not meant to fail (those without
-      // 'Fails' in the name).
+      // process failed flaky test
       if (test_info.result()->Failed() &&
           strcmp(test_case.name(), "FLAKY_") != 0) {
         failed_cnt--;
@@ -50,7 +49,7 @@ int main(int argc, char **argv) {
     std::stringstream filter;
     HandleFlakyTests(failed_cnt, filter);
     ::testing::GTEST_FLAG(filter) = filter.str().c_str();
-    std::cout << "Rerunning the following failing flaky test(s):" << std::endl;
+    std::cout << "Rerunning the following failed flaky test(s):" << std::endl;
     auto failed_flaky_cnt = RunAllTests();
     if (failed_flaky_cnt == 0) {
       break;
