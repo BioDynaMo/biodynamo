@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_DEFAULT_FORCE_H_
-#define CORE_DEFAULT_FORCE_H_
+#ifndef CORE_FORCE_H_
+#define CORE_FORCE_H_
 
 #include <array>
 
@@ -23,14 +23,13 @@ namespace bdm {
 
 class Agent;
 
-class DefaultForce {
+class Force {
  public:
-  DefaultForce() {}
-  ~DefaultForce() {}
-  DefaultForce(const DefaultForce&) = delete;
-  DefaultForce& operator=(const DefaultForce&) = delete;
+  Force() {}
+  virtual ~Force() {}
 
-  Double4 GetForce(const Agent* lhs, const Agent* rhs);
+  virtual Double4 Calculate(const Agent* lhs, const Agent* rhs) const;
+  virtual Force* GetCopy() const { return new Force(*this); }
 
  private:
   void ForceBetweenSpheres(const Agent* sphere_lhs,
@@ -53,4 +52,4 @@ class DefaultForce {
 
 }  // namespace bdm
 
-#endif  // CORE_DEFAULT_FORCE_H_
+#endif  // CORE_FORCE_H_

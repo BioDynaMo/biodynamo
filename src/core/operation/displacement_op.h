@@ -30,6 +30,7 @@
 #include "core/simulation.h"
 #include "core/util/math.h"
 #include "core/util/thread_info.h"
+#include "core/force.h"
 
 namespace bdm {
 
@@ -37,12 +38,39 @@ namespace bdm {
 struct DisplacementOp : public AgentOperationImpl {
   BDM_OP_HEADER(DisplacementOp);
 
-  DisplacementOp() {
+  DisplacementOp() : force_(new Force()) {
     auto* tinfo = ThreadInfo::GetInstance();
     last_iteration_.resize(tinfo->GetMaxThreads(),
                            std::numeric_limits<uint64_t>::max());
     last_time_run_.resize(tinfo->GetMaxThreads(), 0);
     delta_time_.resize(tinfo->GetMaxThreads(), 0);
+  }
+
+  DisplacementOp(const DisplacementOp& other) 
+    : squared_radius_(other.squared_radius_),
+      last_time_run_(other.last_time_run_),
+      delta_time_(other.delta_time_),
+      last_iteration_(other.last_iteration_)
+  {
+    if (other.force_) {
+      force_ = other.force_->GetCopy();
+    } 
+  }
+
+  virtual ~DisplacementOp() {
+    if (force_) {
+      delete force_;
+    }
+  }
+
+  void SetForce(Force* force) {
+    if (force == force_) {
+      return;
+    }
+    if (force_) {
+      delete force_;
+    }
+    force_ = force;
   }
 
   void operator()(Agent* agent) override {
@@ -71,7 +99,7 @@ struct DisplacementOp : public AgentOperationImpl {
     }
 
     const auto& displacement =
-        agent->CalculateDisplacement(squared_radius_, delta_time_[tid]);
+        agent->CalculateDisplacement(force_, squared_radius_, delta_time_[tid]);
     agent->ApplyDisplacement(displacement);
     if (param->bound_space) {
       ApplyBoundingBox(agent, param->min_bound, param->max_bound);
@@ -79,6 +107,7 @@ struct DisplacementOp : public AgentOperationImpl {
   }
 
  private:
+  Force* force_ = nullptr;
   double squared_radius_ = 0;
   std::vector<double> last_time_run_;
   std::vector<double> delta_time_;

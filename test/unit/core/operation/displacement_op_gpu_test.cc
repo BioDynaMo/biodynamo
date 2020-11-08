@@ -64,8 +64,9 @@ class DisplacementOpCpuVerify {
 
       auto search_radius = env->GetLargestObjectSize();
       auto squared_radius_ = search_radius * search_radius;
+      Force force;
       const auto& displacement = agent->CalculateDisplacement(
-          squared_radius_, param->simulation_time_step);
+          &force, squared_radius_, param->simulation_time_step);
       (*displacements_)[ah] = displacement;
     }
   };

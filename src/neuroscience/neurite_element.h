@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/default_force.h"
+#include "core/force.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
 #include "core/agent/agent.h"
@@ -621,21 +621,22 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   }
 
   struct DisplacementFunctor : public Functor<void, const Agent*, double> {
+    const Force* force;
     NeuriteElement* ne;
     Double3& force_from_neighbors;
     Double3& force_on_my_mothers_point_mass;
     double& h_over_m;
     bool& has_neurite_neighbor;
-    DefaultForce force;
 
-    DisplacementFunctor(NeuriteElement* neurite, Double3& force_from_neighbors_,
-                        Double3& force_on_my_mothers_point_mass_,
-                        double& h_over_m_, bool& has_neurite_neighbor_)
-        : ne(neurite),
-          force_from_neighbors(force_from_neighbors_),
-          force_on_my_mothers_point_mass(force_on_my_mothers_point_mass_),
-          h_over_m(h_over_m_),
-          has_neurite_neighbor(has_neurite_neighbor_) {}
+    DisplacementFunctor(const Force* force, NeuriteElement* neurite, Double3& force_from_neighbors,
+                        Double3& force_on_my_mothers_point_mass,
+                        double& h_over_m, bool& has_neurite_neighbor)
+        : force(force),
+          ne(neurite),
+          force_from_neighbors(force_from_neighbors),
+          force_on_my_mothers_point_mass(force_on_my_mothers_point_mass),
+          h_over_m(h_over_m),
+          has_neurite_neighbor(has_neurite_neighbor) {}
 
     void operator()(const Agent* neighbor,
                     double squared_distance) override {
@@ -661,7 +662,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
         }
       }
 
-      Double4 force_from_neighbor = force.GetForce(ne, neighbor);
+      Double4 force_from_neighbor = force->Calculate(ne, neighbor);
 
       // hack: if the neighbour is a neurite, we need to reduce the force from
       // that neighbour in order to avoid kink behaviour
@@ -696,7 +697,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   //   Physics
   // ***************************************************************************
 
-  Double3 CalculateDisplacement(double squared_radius, double dt) override {
+  Double3 CalculateDisplacement(const Force* force, double squared_radius, double dt) override {
     Double3 force_on_my_point_mass{0, 0, 0};
     Double3 force_on_my_mothers_point_mass{0, 0, 0};
 
@@ -731,7 +732,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     //  (We check for every neighbor object if they touch us, i.e. push us away)
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     DisplacementFunctor calculate_neighbor_forces(
-        this, force_from_neighbors, force_on_my_mothers_point_mass, h_over_m,
+        force, this, force_from_neighbors, force_on_my_mothers_point_mass, h_over_m,
         has_neurite_neighbor);
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);

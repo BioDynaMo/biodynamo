@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/default_force.h"
+#include "core/force.h"
 #include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "neuroscience/module.h"
@@ -26,7 +26,7 @@ using neuroscience::NeuriteElement;
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping neighbors
 /// implementation uses virual bigger radii to have distant interaction
-TEST(DefaultForce, GeneralSphere) {
+TEST(Force, GeneralSphere) {
   Simulation simulation(TEST_NAME);
 
   Cell cell({1.1, 1.0, 0.9});
@@ -34,8 +34,8 @@ TEST(DefaultForce, GeneralSphere) {
   Cell nb({0, 0, 0});
   nb.SetDiameter(5);
 
-  DefaultForce force;
-  auto result = force.GetForce(&cell, &nb);
+  Force force;
+  auto result = force.Calculate(&cell, &nb);
 
   EXPECT_NEAR(7.1429184067241138, result[0], abs_error<double>::value);
   EXPECT_NEAR(6.4935621879310119, result[1], abs_error<double>::value);
@@ -43,7 +43,7 @@ TEST(DefaultForce, GeneralSphere) {
 
   nb.SetDiameter(10);
   nb.SetPosition({5, 5, 0});
-  result = force.GetForce(&cell, &nb);
+  result = force.Calculate(&cell, &nb);
 
   EXPECT_NEAR(-5.7454658831720176, result[0], abs_error<double>::value);
   EXPECT_NEAR(-5.892785521202069, result[1], abs_error<double>::value);
@@ -52,7 +52,7 @@ TEST(DefaultForce, GeneralSphere) {
 
 /// Tests the special case that non of the neighbors overlap
 /// with the reference cell
-TEST(DefaultForce, AllNonOverlappingSphere) {
+TEST(Force, AllNonOverlappingSphere) {
   Simulation simulation(TEST_NAME);
 
   Cell cell({0, 0, 0});
@@ -60,8 +60,8 @@ TEST(DefaultForce, AllNonOverlappingSphere) {
   Cell nb({11.01, 0, 0});
   nb.SetDiameter(8);
 
-  DefaultForce force;
-  auto result = force.GetForce(&cell, &nb);
+  Force force;
+  auto result = force.Calculate(&cell, &nb);
 
   EXPECT_NEAR(0, result[0], abs_error<double>::value);
   EXPECT_NEAR(0, result[1], abs_error<double>::value);
@@ -70,7 +70,7 @@ TEST(DefaultForce, AllNonOverlappingSphere) {
 
 /// Tests the special case that neighbor and reference cell
 /// are at the same position -> should return random force
-TEST(DefaultForce, AllAtSamePositionSphere) {
+TEST(Force, AllAtSamePositionSphere) {
   // agent required for random number generator
   Simulation simulation(TEST_NAME);
 
@@ -79,8 +79,8 @@ TEST(DefaultForce, AllAtSamePositionSphere) {
   Cell nb({0, 0, 0});
   nb.SetDiameter(8);
 
-  DefaultForce force;
-  auto result = force.GetForce(&cell, &nb);
+  Force force;
+  auto result = force.Calculate(&cell, &nb);
 
   // random number must be in interval [-3.0, 3.0]
   EXPECT_NEAR(0, result[0], 3);
@@ -90,7 +90,7 @@ TEST(DefaultForce, AllAtSamePositionSphere) {
 
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping cylinder
-TEST(DISABLED_DefaultForce, GeneralSphereCylinder) {
+TEST(DISABLED_Force, GeneralSphereCylinder) {
   // neuroscience::InitModule();
   // Simulation simulation(TEST_NAME);
 
@@ -106,20 +106,20 @@ TEST(DISABLED_DefaultForce, GeneralSphereCylinder) {
   //
   // EXPECT_ARR_NEAR({7, 1, 3}, cylinder.ProximalEnd());
   //
-  // DefaultForce force;
-  // auto result1 = force.GetForce(&cylinder, &sphere);
+  // Force force;
+  // auto result1 = force.Calculate(&cylinder, &sphere);
   //
   // EXPECT_NEAR(5, result1[0], abs_error<double>::value);
   // EXPECT_NEAR(0, result1[1], abs_error<double>::value);
   // EXPECT_NEAR(0, result1[2], abs_error<double>::value);
   // EXPECT_NEAR(0, result1[3], abs_error<double>::value);
   //
-  // auto result2 = force.GetForce(&sphere, &cylinder);
+  // auto result2 = force.Calculate(&sphere, &cylinder);
   //
   // EXPECT_ARR_NEAR({-5, 0, 0, 0}, result2);
 }
 
-TEST(DISABLED_DefaultForce, GeneralCylinder) {
+TEST(DISABLED_Force, GeneralCylinder) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -137,15 +137,15 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
 
   EXPECT_ARR_NEAR({11, 2, 1.5}, cylinder2.ProximalEnd());
 
-  DefaultForce force;
-  auto result = force.GetForce(&cylinder1, &cylinder2);
+  Force force;
+  auto result = force.Calculate(&cylinder1, &cylinder2);
 
   EXPECT_NEAR(-38.290598290598311, result[0], abs_error<double>::value);
   EXPECT_NEAR(9.5726495726495653, result[1], abs_error<double>::value);
   EXPECT_NEAR(-76.581196581196579, result[2], abs_error<double>::value);
   EXPECT_NEAR(1, result[3], abs_error<double>::value);
 
-  result = force.GetForce(&cylinder2, &cylinder1);
+  result = force.Calculate(&cylinder2, &cylinder1);
 
   EXPECT_NEAR(38.290598290598311, result[0], abs_error<double>::value);
   EXPECT_NEAR(-9.5726495726495653, result[1], abs_error<double>::value);
@@ -154,7 +154,7 @@ TEST(DISABLED_DefaultForce, GeneralCylinder) {
               abs_error<double>::value);  // FIXME not symmetric
 }
 
-TEST(DefaultForce, CylinderIntersectingAxis) {
+TEST(Force, CylinderIntersectingAxis) {
   neuroscience::InitModule();
   // agent required for random number generator
   Simulation simulation(TEST_NAME);
@@ -173,15 +173,15 @@ TEST(DefaultForce, CylinderIntersectingAxis) {
 
   EXPECT_ARR_NEAR({2, 2, 0}, cylinder2.ProximalEnd());
 
-  DefaultForce force;
-  auto result = force.GetForce(&cylinder1, &cylinder2);
+  Force force;
+  auto result = force.Calculate(&cylinder1, &cylinder2);
 
   EXPECT_NEAR(0, result[0], 30);
   EXPECT_NEAR(0, result[1], 30);
   EXPECT_NEAR(0, result[2], 30);
   EXPECT_NEAR(0.4, result[3], abs_error<double>::value);
 
-  result = force.GetForce(&cylinder2, &cylinder1);
+  result = force.Calculate(&cylinder2, &cylinder1);
 
   EXPECT_NEAR(0, result[0], 30);
   EXPECT_NEAR(0, result[1], 30);
@@ -189,7 +189,7 @@ TEST(DefaultForce, CylinderIntersectingAxis) {
   EXPECT_NEAR(0.5, result[3], abs_error<double>::value);
 }
 
-TEST(DefaultForce, NotTouchingParallelCylinders) {
+TEST(Force, NotTouchingParallelCylinders) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -207,15 +207,15 @@ TEST(DefaultForce, NotTouchingParallelCylinders) {
 
   EXPECT_ARR_NEAR({5, -5, 0}, cylinder2.ProximalEnd());
 
-  DefaultForce force;
-  auto result = force.GetForce(&cylinder1, &cylinder2);
+  Force force;
+  auto result = force.Calculate(&cylinder1, &cylinder2);
 
   EXPECT_NEAR(0, result[0], abs_error<double>::value);
   EXPECT_NEAR(0, result[1], abs_error<double>::value);
   EXPECT_NEAR(0, result[2], abs_error<double>::value);
   EXPECT_NEAR(0.5, result[3], abs_error<double>::value);
 
-  result = force.GetForce(&cylinder2, &cylinder1);
+  result = force.Calculate(&cylinder2, &cylinder1);
 
   EXPECT_NEAR(0, result[0], abs_error<double>::value);
   EXPECT_NEAR(0, result[1], abs_error<double>::value);
@@ -227,7 +227,7 @@ TEST(DefaultForce, NotTouchingParallelCylinders) {
 // < sphere radius
 // sphere-cylinder interaction is done at the center and in the horizontal
 // orientation of the cylinder
-TEST(DefaultForce, SphereSmallCylinderHorizontal) {
+TEST(Force, SphereSmallCylinderHorizontal) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -241,14 +241,14 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 
   EXPECT_ARR_NEAR({4, 24.5, 0}, cylinder.ProximalEnd());
 
-  DefaultForce force;
-  auto result1 = force.GetForce(&cylinder, &sphere);
+  Force force;
+  auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(-0.196774255282483, result1[0], abs_error<double>::value);
   EXPECT_NEAR(2.41048462721042, result1[1], abs_error<double>::value);
   EXPECT_NEAR(0, result1[2], abs_error<double>::value);
   EXPECT_NEAR(0, result1[3], abs_error<double>::value);
-  auto result2 = force.GetForce(&sphere, &cylinder);
+  auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0.196774255282483, -2.41048462721042, 0, 0}, result2);
 }
 
@@ -256,7 +256,7 @@ TEST(DefaultForce, SphereSmallCylinderHorizontal) {
 // < sphere radius
 // sphere-cylinder interaction is done vertically at the tip of the cylinder
 // (mass location)
-TEST(DefaultForce, SphereSmallCylinderVertical) {
+TEST(Force, SphereSmallCylinderVertical) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -270,20 +270,20 @@ TEST(DefaultForce, SphereSmallCylinderVertical) {
 
   EXPECT_ARR_NEAR({0, 32, 0}, cylinder.ProximalEnd());
 
-  DefaultForce force;
-  auto result1 = force.GetForce(&cylinder, &sphere);
+  Force force;
+  auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
   EXPECT_NEAR(1, result1[1], abs_error<double>::value);
   EXPECT_NEAR(0, result1[2], abs_error<double>::value);
   EXPECT_NEAR(0, result1[3], abs_error<double>::value);
 
-  auto result2 = force.GetForce(&sphere, &cylinder);
+  auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0, -1, 0, 0}, result2);
 }
 
 // opposit case of Vertical: cylinder is below the cell
-TEST(DefaultForce, SphereSmallCylinderVertical2) {
+TEST(Force, SphereSmallCylinderVertical2) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
   // auto* rm = simulation.GetResourceManager();
@@ -299,15 +299,15 @@ TEST(DefaultForce, SphereSmallCylinderVertical2) {
 
   EXPECT_ARR_NEAR({0, -32, 0}, cylinder.ProximalEnd());
 
-  DefaultForce force;
-  auto result1 = force.GetForce(&cylinder, &sphere);
+  Force force;
+  auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
   EXPECT_NEAR(-1, result1[1], abs_error<double>::value);
   EXPECT_NEAR(0, result1[2], abs_error<double>::value);
   EXPECT_NEAR(0, result1[3], abs_error<double>::value);
 
-  auto result2 = force.GetForce(&sphere, &cylinder);
+  auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0, 1, 0, 0}, result2);
 }
 
@@ -315,7 +315,7 @@ TEST(DefaultForce, SphereSmallCylinderVertical2) {
 // length > sphere radius
 // sphere-cylinder interaction is done at the center and in the horizontal
 // orientation of the cylinder
-TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
+TEST(Force, SphereLongCylinderHorizontalCenter) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -329,8 +329,8 @@ TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
 
   EXPECT_ARR_NEAR({10, 14.5, 0}, cylinder.ProximalEnd());
 
-  DefaultForce force;
-  auto result1 = force.GetForce(&cylinder, &sphere);
+  Force force;
+  auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
   EXPECT_NEAR(0.5, result1[1], abs_error<double>::value);
@@ -339,7 +339,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
       0.5, result1[3],
       abs_error<double>::value);  // 0.5 force is transmited to proximalEnd
 
-  auto result2 = force.GetForce(&sphere, &cylinder);
+  auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0, -0.5, 0, 0}, result2);
 }
 
@@ -347,7 +347,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalCenter) {
 // length > sphere radius
 // sphere-cylinder interaction is done at the proximal end and in the horizontal
 // orientation of the cylinder
-TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
+TEST(Force, SphereLongCylinderHorizontalpP) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -361,8 +361,8 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
 
   EXPECT_ARR_NEAR({0.5, 14.5, 0}, cylinder.ProximalEnd());
 
-  DefaultForce force;
-  auto result1 = force.GetForce(&cylinder, &sphere);
+  Force force;
+  auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
   EXPECT_NEAR(0.5, result1[1], abs_error<double>::value);
@@ -371,7 +371,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
       0.975, result1[3],
       abs_error<double>::value);  // 0.975 force is transmited to proximalEnd
 
-  auto result2 = force.GetForce(&sphere, &cylinder);
+  auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0, -0.5, 0, 0}, result2);
 }
 
@@ -379,7 +379,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpP) {
 // length > sphere radius
 // sphere-cylinder interaction is done at the distal point and in the horizontal
 // orientation of the cylinder
-TEST(DefaultForce, SphereLongCylinderHorizontalpD) {
+TEST(Force, SphereLongCylinderHorizontalpD) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -393,8 +393,8 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpD) {
 
   EXPECT_ARR_NEAR({19.5, 14.5, 0}, cylinder.ProximalEnd());
 
-  DefaultForce force;
-  auto result1 = force.GetForce(&cylinder, &sphere);
+  Force force;
+  auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
   EXPECT_NEAR(0.5, result1[1], abs_error<double>::value);
@@ -403,7 +403,7 @@ TEST(DefaultForce, SphereLongCylinderHorizontalpD) {
       0.025, result1[3],
       abs_error<double>::value);  // 0.025 force is transmited to proximalEnd
 
-  auto result2 = force.GetForce(&sphere, &cylinder);
+  auto result2 = force.Calculate(&sphere, &cylinder);
 
   EXPECT_ARR_NEAR4({0, -0.5, 0, 0}, result2);
 }

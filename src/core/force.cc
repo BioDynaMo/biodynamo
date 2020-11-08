@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/default_force.h"
+#include "core/force.h"
 
 #include <algorithm>
 #include <cmath>
@@ -30,7 +30,7 @@ namespace bdm {
 
 using neuroscience::NeuriteElement;
 
-Double4 DefaultForce::GetForce(const Agent* lhs, const Agent* rhs) {
+Double4 Force::Calculate(const Agent* lhs, const Agent* rhs) const {
   if (lhs->GetShape() == Shape::kSphere && rhs->GetShape() == Shape::kSphere) {
     Double3 result;
     ForceBetweenSpheres(lhs, rhs, &result);
@@ -51,13 +51,13 @@ Double4 DefaultForce::GetForce(const Agent* lhs, const Agent* rhs) {
     ForceBetweenCylinders(lhs, rhs, &result);
     return result;
   } else {
-    Log::Fatal("DefaultForce",
-               "DefaultForce only supports sphere or cylinder shapes");
+    Log::Fatal("Force",
+               "Force only supports sphere or cylinder shapes");
     return {0, 0, 0, 0};
   }
 }
 
-void DefaultForce::ForceBetweenSpheres(const Agent* sphere_lhs,
+void Force::ForceBetweenSpheres(const Agent* sphere_lhs,
                                        const Agent* sphere_rhs,
                                        Double3* result) const {
   const Double3& ref_mass_location = sphere_lhs->GetPosition();
@@ -109,7 +109,7 @@ void DefaultForce::ForceBetweenSpheres(const Agent* sphere_lhs,
   *result = force2on1;
 }
 
-void DefaultForce::ForceOnACylinderFromASphere(const Agent* cylinder,
+void Force::ForceOnACylinderFromASphere(const Agent* cylinder,
                                                const Agent* sphere,
                                                Double4* result) const {
   auto* ne = bdm_static_cast<const NeuriteElement*>(cylinder);
@@ -199,7 +199,7 @@ void DefaultForce::ForceOnACylinderFromASphere(const Agent* cylinder,
   return;
 }
 
-void DefaultForce::ForceOnASphereFromACylinder(const Agent* sphere,
+void Force::ForceOnASphereFromACylinder(const Agent* sphere,
                                                const Agent* cylinder,
                                                Double3* result) const {
   // it is the opposite of force on a cylinder from sphere:
@@ -209,7 +209,7 @@ void DefaultForce::ForceOnASphereFromACylinder(const Agent* sphere,
   *result = {-temp[0], -temp[1], -temp[2]};
 }
 
-void DefaultForce::ForceBetweenCylinders(const Agent* cylinder1,
+void Force::ForceBetweenCylinders(const Agent* cylinder1,
                                          const Agent* cylinder2,
                                          Double4* result) const {
   auto* c1 = bdm_static_cast<const NeuriteElement*>(cylinder1);
@@ -282,7 +282,7 @@ void DefaultForce::ForceBetweenCylinders(const Agent* cylinder1,
   *result = {force[0], force[1], force[2], k};
 }
 
-Double4 DefaultForce::ComputeForceOfASphereOnASphere(const Double3& c1,
+Double4 Force::ComputeForceOfASphereOnASphere(const Double3& c1,
                                                      double r1,
                                                      const Double3& c2,
                                                      double r2) const {

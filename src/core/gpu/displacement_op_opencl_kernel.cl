@@ -19,7 +19,7 @@ int3 get_box_coordinates_2(uint, __constant uint*);
 uint get_box_id_2(int3,__constant uint*);
 uint get_box_id(double3, __constant uint*, __constant int*, uint);
 void compute_force(__global double*, __global double*, uint, uint, double3*);
-void default_force(__global double*, __global double*, uint, uint, ushort, __global uint*, double, double3*);
+void force(__global double*, __global double*, uint, uint, ushort, __global uint*, double, double3*);
 
 double norm(double3 v) {
   return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
@@ -101,7 +101,7 @@ void compute_force(__global double* positions, __global double* diameters, uint 
 }
 
 
-void default_force(__global double* positions,
+void force(__global double* positions,
                    __global double* diameters,
                    uint idx, uint start, ushort length,
                    __global uint* successors, double squared_radius,
@@ -154,7 +154,7 @@ __kernel void collide(__global double* positions,
         for (int x = -1; x <= 1; x++) {
           uint bidx = get_box_id_2(box_coords + (int3)(x, y, z), num_boxes_axis);
           if (lengths[bidx] != 0) {
-            default_force(positions, diameters, tidx, starts[bidx], lengths[bidx], successors, squared_radius, &collision_force);
+            force(positions, diameters, tidx, starts[bidx], lengths[bidx], successors, squared_radius, &collision_force);
           }
         }
       }

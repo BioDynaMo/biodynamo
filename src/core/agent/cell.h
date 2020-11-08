@@ -25,7 +25,7 @@
 
 #include "core/container/inline_vector.h"
 #include "core/container/math_array.h"
-#include "core/default_force.h"
+#include "core/force.h"
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
@@ -264,22 +264,22 @@ class Cell : public Agent {
   }
 
   struct DisplacementFunctor : Functor<void, const Agent*, double> {
-    DefaultForce default_force;
-    Agent* agent_;
+    const Force* force;
+    Agent* agent;
     Double3 translation_force_on_point_mass{0, 0, 0};
 
-    DisplacementFunctor(Agent* agent) : agent_(agent) {}
+    DisplacementFunctor(const Force* force, Agent* agent) : force(force), agent(agent) {}
 
     void operator()(const Agent* neighbor,
                     double squared_distance) override {
-      auto neighbor_force = default_force.GetForce(agent_, neighbor);
+      auto neighbor_force = force->Calculate(agent, neighbor);
       translation_force_on_point_mass[0] += neighbor_force[0];
       translation_force_on_point_mass[1] += neighbor_force[1];
       translation_force_on_point_mass[2] += neighbor_force[2];
     }
   };
 
-  Double3 CalculateDisplacement(double squared_radius, double dt) override {
+  Double3 CalculateDisplacement(const Force* force, double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied
@@ -320,7 +320,7 @@ class Cell : public Agent {
     //  (We check for every neighbor object if they touch us, i.e. push us
     //  away)
 
-    DisplacementFunctor calculate_neighbor_forces(this);
+    DisplacementFunctor calculate_neighbor_forces(force, this);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
