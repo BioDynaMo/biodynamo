@@ -20,11 +20,11 @@
     <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::Behavior"/>
-    <class name="bdm::GrowDivide"/>
+    <class name="bdm::GrowthDivision"/>
     <class name="bdm::Chemotaxis"/>
     <class name="bdm::Secretion"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
-    <class name="bdm::RegulateGenes" />
+    <class name="bdm::GeneRegulation" />
     <class name="bdm::Param" />
     <class name="bdm::ParamGroup" />
     <class name="unordered_map<unsigned long,bdm::ParamGroup*>" />

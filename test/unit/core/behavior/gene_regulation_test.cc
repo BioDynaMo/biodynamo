@@ -12,22 +12,22 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_BEHAVIOR_REGULATE_GENES_TEST
-#define UNIT_BEHAVIOR_REGULATE_GENES_TEST
+#ifndef UNIT_BEHAVIOR_GENE_REGULATION_TEST
+#define UNIT_BEHAVIOR_GENE_REGULATION_TEST
 
-#include "core/behavior/regulate_genes.h"
+#include "core/behavior/gene_regulation.h"
 #include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace regulate_genes_test_internal {
+namespace gene_regulation_test_internal {
 
 struct TestScheduler : public Scheduler {
   void SetSimulationSteps(uint64_t total_steps) { total_steps_ = total_steps; }
 };
 
-TEST(RegulateGenesTest, EulerTest) {
+TEST(GeneRegulationTest, EulerTest) {
   auto set_param = [](auto* param) {
     param->numerical_ode_solver = Param::NumericalODESolver::kEuler;
   };
@@ -47,14 +47,14 @@ TEST(RegulateGenesTest, EulerTest) {
     return curr_time * last_concentration + 2;
   };
 
-  RegulateGenes regulate_genes;
-  regulate_genes.AddGene(func1, 3);
-  regulate_genes.AddGene(func2, 3);
-  regulate_genes.AddGene(func3, 3);
+  GeneRegulation gene_regulation;
+  gene_regulation.AddGene(func1, 3);
+  gene_regulation.AddGene(func2, 3);
+  gene_regulation.AddGene(func3, 3);
   Cell cell;
-  regulate_genes.Run(&cell);
+  gene_regulation.Run(&cell);
 
-  const auto& concentrations = regulate_genes.GetConcentrations();
+  const auto& concentrations = gene_regulation.GetConcentrations();
   EXPECT_NEAR(3.0003000000000002, concentrations[0], 1e-9);
   EXPECT_NEAR(3.0103, concentrations[1], 1e-9);
   EXPECT_NEAR(3.0203000000000002, concentrations[2], 1e-9);
@@ -62,27 +62,27 @@ TEST(RegulateGenesTest, EulerTest) {
 
 // Example 1 from:
 // https://ece.uwaterloo.ca/~dwharder/NumericalAnalysis/14IVPs/rk/examples.html
-TEST(RegulateGenesTest, RK4Test) {
+TEST(GeneRegulationTest, RK4Test) {
   auto set_param = [](auto* param) {
     param->numerical_ode_solver = Param::NumericalODESolver::kRK4;
     param->simulation_time_step = 1;
   };
   Simulation simulation(TEST_NAME, set_param);
 
-  RegulateGenes regulate_genes;
-  regulate_genes.AddGene(
+  GeneRegulation gene_regulation;
+  gene_regulation.AddGene(
       [](double curr_time, double last_concentration) {
         return 1 - curr_time * last_concentration;
       },
       1);
   Cell cell;
-  regulate_genes.Run(&cell);
+  gene_regulation.Run(&cell);
 
-  const auto& concentrations = regulate_genes.GetConcentrations();
+  const auto& concentrations = gene_regulation.GetConcentrations();
   EXPECT_NEAR(1.3229166667, concentrations[0], 1e-9);
 }
 
-}  // namespace regulate_genes_test_internal
+}  // namespace gene_regulation_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_BEHAVIOR_REGULATE_GENES_TEST
+#endif  // UNIT_BEHAVIOR_GENE_REGULATION_TEST

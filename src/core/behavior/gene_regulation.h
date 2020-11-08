@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_BEHAVIOR_REGULATE_GENES_H_
-#define CORE_BEHAVIOR_REGULATE_GENES_H_
+#ifndef CORE_BEHAVIOR_GENE_REGULATION_H_
+#define CORE_BEHAVIOR_GENE_REGULATION_H_
 
 #include <functional>
 #include <vector>
@@ -33,22 +33,22 @@ namespace bdm {
 /// for solving ODE. Both methods implemented inside the body of method Run().
 /// The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver`.
-struct RegulateGenes : public Behavior {
-  BDM_BEHAVIOR_HEADER(RegulateGenes, Behavior, 1);
+struct GeneRegulation : public Behavior {
+  BDM_BEHAVIOR_HEADER(GeneRegulation, Behavior, 1);
 
-  RegulateGenes() : Behavior(gAllEventIds) {}
+  GeneRegulation() : Behavior(gAllEventIds) {}
 
-  explicit RegulateGenes(EventId event) : Behavior(event) {}
+  explicit GeneRegulation(EventId event) : Behavior(event) {}
 
-  RegulateGenes(const Event& event, Behavior* other,
+  GeneRegulation(const Event& event, Behavior* other,
                 uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {
-    if (RegulateGenes* gr = dynamic_cast<RegulateGenes*>(other)) {
+    if (GeneRegulation* gr = dynamic_cast<GeneRegulation*>(other)) {
       concentrations_ = gr->concentrations_;
       first_derivatives_ = gr->first_derivatives_;
     } else {
-      Log::Fatal("RegulateGenes::EventConstructor",
-                 "other was not of type RegulateGenes");
+      Log::Fatal("GeneRegulation::EventConstructor",
+                 "other was not of type GeneRegulation");
     }
   }
 
@@ -120,4 +120,4 @@ struct RegulateGenes : public Behavior {
 
 }  // namespace bdm
 
-#endif  // CORE_BEHAVIOR_REGULATE_GENES_H_
+#endif  // CORE_BEHAVIOR_GENE_REGULATION_H_

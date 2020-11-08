@@ -30,14 +30,14 @@ inline int Simulate(int argc, const char** argv) {
   // Initialize BioDynaMo
   Simulation simulation(argc, argv);
 
-  // Initialize RegulateGenes behavior.
-  // To add functions to the behavior use RegulateGenes::AddGene() function.
+  // Initialize GeneRegulation behavior.
+  // To add functions to the behavior use GeneRegulation::AddGene() function.
   // You should pass to the function two variables.
   // The first is of type  std::function<double(double, double)>.
   // This is the function by which concentration of the protein will be
   // calculated.
   // The second is double. This is the initial value for the protein.
-  RegulateGenes regulate_example;
+  GeneRegulation regulate_example;
   regulate_example.AddGene(
       [](double curr_time, double last_concentration) {
         return curr_time * last_concentration + 0.2f;
@@ -74,8 +74,8 @@ inline int Simulate(int argc, const char** argv) {
   auto* rm = simulation.GetResourceManager();
   auto* agent = rm->GetAgent(AgentUid(0));
   const auto* first_behavior = agent->GetAllBehaviors()[0];
-  auto* regulate_genes = dynamic_cast<const RegulateGenes*>(first_behavior);
-  const auto& concentrations = regulate_genes->GetConcentrations();
+  auto* gene_regulation = dynamic_cast<const GeneRegulation*>(first_behavior);
+  const auto& concentrations = gene_regulation->GetConcentrations();
   std::cout << "Gene concentrations after " << scheduler->GetSimulatedSteps()
             << " time steps" << std::endl;
   for (double concentration : concentrations) {

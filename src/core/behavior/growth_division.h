@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_BEHAVIOR_GROW_DIVIDE_H_
-#define CORE_BEHAVIOR_GROW_DIVIDE_H_
+#ifndef CORE_BEHAVIOR_GROWTH_DIVISION_H_
+#define CORE_BEHAVIOR_GROWTH_DIVISION_H_
 
 #include "core/behavior/behavior.h"
 #include "core/event/cell_division_event.h"
@@ -25,23 +25,23 @@ namespace bdm {
 
 /// This behavior grows the agent until the diameter reaches
 /// the specified threshold and divides the object afterwards.
-struct GrowDivide : public Behavior {
-  BDM_BEHAVIOR_HEADER(GrowDivide, Behavior, 1);
-  GrowDivide() : Behavior(gAllEventIds) {}
-  GrowDivide(double threshold, double growth_rate,
+struct GrowthDivision : public Behavior {
+  BDM_BEHAVIOR_HEADER(GrowthDivision, Behavior, 1);
+  GrowthDivision() : Behavior(gAllEventIds) {}
+  GrowthDivision(double threshold, double growth_rate,
              std::initializer_list<EventId> event_list)
       : Behavior(event_list),
         threshold_(threshold),
         growth_rate_(growth_rate) {}
 
-  GrowDivide(const Event& event, Behavior* other, uint64_t new_oid = 0)
+  GrowthDivision(const Event& event, Behavior* other, uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {
-    if (GrowDivide* gd = dynamic_cast<GrowDivide*>(other)) {
+    if (GrowthDivision* gd = dynamic_cast<GrowthDivision*>(other)) {
       threshold_ = gd->threshold_;
       growth_rate_ = gd->growth_rate_;
     } else {
-      Log::Fatal("GrowDivide::EventConstructor",
-                 "other was not of type GrowDivide");
+      Log::Fatal("GrowthDivision::EventConstructor",
+                 "other was not of type GrowthDivision");
     }
   }
 
@@ -56,7 +56,7 @@ struct GrowDivide : public Behavior {
         cell->Divide();
       }
     } else {
-      Log::Fatal("GrowDivide::Run", "Agent is not a Cell");
+      Log::Fatal("GrowthDivision::Run", "Agent is not a Cell");
     }
   }
 
@@ -67,4 +67,4 @@ struct GrowDivide : public Behavior {
 
 }  // namespace bdm
 
-#endif  // CORE_BEHAVIOR_GROW_DIVIDE_H_
+#endif  // CORE_BEHAVIOR_GROWTH_DIVISION_H_

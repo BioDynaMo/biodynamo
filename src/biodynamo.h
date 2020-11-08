@@ -19,8 +19,8 @@
 
 #include "core/behavior/behavior.h"
 #include "core/behavior/chemotaxis.h"
-#include "core/behavior/grow_divide.h"
-#include "core/behavior/regulate_genes.h"
+#include "core/behavior/growth_division.h"
+#include "core/behavior/gene_regulation.h"
 #include "core/behavior/secretion.h"
 #include "core/environment/environment.h"
 #include "core/event/cell_division_event.h"

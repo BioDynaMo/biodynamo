@@ -14,7 +14,7 @@
 
 #include <array>
 
-#include "core/behavior/grow_divide.h"
+#include "core/behavior/growth_division.h"
 #include "core/container/agent_vector.h"
 #include "core/environment/environment.h"
 #include "core/functor.h"
