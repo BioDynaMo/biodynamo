@@ -60,7 +60,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   NeuriteElement() {
     resting_length_ =
         spring_constant_ * actual_length_ / (tension_ + spring_constant_);
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
     SetActualLength(param->neurite_default_actual_length_);
@@ -376,7 +376,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// neurite element has no daughter and the actual length is bigger than the
   /// minimum required.
   bool BifurcationPermitted() const {
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     return (daughter_left_ == nullptr &&
             actual_length_ > param->neurite_minimial_bifurcation_length_);
   }
@@ -420,7 +420,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   std::array<NeuriteElement*, 2> Bifurcate(const Double3& direction_1,
                                            const Double3& direction_2) {
     // initial default length :
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     double l = param->neurite_default_actual_length_;
     // diameters :
     double d = diameter_;
@@ -432,7 +432,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \see NeuriteBifurcationEvent
   std::array<NeuriteElement*, 2> Bifurcate() {
     // initial default length :
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     double l = param->neurite_default_actual_length_;
     // diameters :
     double d = diameter_;
@@ -521,7 +521,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
       return;
     }
 
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     auto* mother_agentma = dynamic_cast<NeuronSoma*>(mother_.Get());
     auto* mother_neurite = dynamic_cast<NeuriteElement*>(mother_.Get());
     if (actual_length_ > param->neurite_max_length_) {
@@ -1245,7 +1245,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// TODO
   void InitializeNewNeuriteExtension(NeuronSoma* soma, double diameter,
                                      double phi, double theta) {
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
     SetActualLength(param->neurite_default_actual_length_);
@@ -1291,7 +1291,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// TODO
   void InitializeNeuriteBifurcation(NeuriteElement* mother, double length,
                                     double diameter, const Double3& direction) {
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
     SetActualLength(param->neurite_default_actual_length_);
@@ -1340,7 +1340,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \see SplitNeuriteElementEvent, NeuriteBranchingEvent
   void InitializeSplitOrBranching(NeuriteElement* other,
                                   double distal_portion) {
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
     SetActualLength(param->neurite_default_actual_length_);
@@ -1373,7 +1373,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   void InitializeSideExtensionOrBranching(NeuriteElement* mother, double length,
                                           double diameter,
                                           const Double3& direction) {
-    auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     tension_ = param->neurite_default_tension_;
     SetDiameter(param->neurite_default_diameter_);
     SetActualLength(param->neurite_default_actual_length_);

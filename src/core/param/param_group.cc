@@ -12,22 +12,22 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/param/module_param.h"
+#include "core/param/param_group.h"
 #include <memory>
 
 namespace bdm {
 
-ModuleParamUidGenerator* ModuleParamUidGenerator::Get() {
-  static ModuleParamUidGenerator kInstance;
+ParamGroupUidGenerator* ParamGroupUidGenerator::Get() {
+  static ParamGroupUidGenerator kInstance;
   return &kInstance;
 }
 
-ModuleParamUidGenerator::ModuleParamUidGenerator() : counter_(0) {}
+ParamGroupUidGenerator::ParamGroupUidGenerator() : counter_(0) {}
 
-ModuleParamUid ModuleParamUidGenerator::NewUid() { return counter_++; }
+ParamGroupUid ParamGroupUidGenerator::NewUid() { return counter_++; }
 
-ModuleParam::~ModuleParam() {}
+ParamGroup::~ParamGroup() {}
 
-void ModuleParam::AssignFromConfig(const std::shared_ptr<cpptoml::table>&) {}
+void ParamGroup::AssignFromConfig(const std::shared_ptr<cpptoml::table>&) {}
 
 }  // namespace bdm

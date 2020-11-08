@@ -71,7 +71,7 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
                                              NeuriteElement* prototype) {
   auto dir = direction + GetPosition();
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
-  auto* param = Simulation::GetActive()->GetParam()->GetModuleParam<Param>();
+  auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
   return ExtendNewNeurite(param->neurite_default_diameter_, angles[2],
                           angles[1], prototype);
 }

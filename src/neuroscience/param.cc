@@ -18,7 +18,7 @@
 namespace bdm {
 namespace neuroscience {
 
-const ModuleParamUid Param::kUid = ModuleParamUidGenerator::Get()->NewUid();
+const ParamGroupUid Param::kUid = ParamGroupUidGenerator::Get()->NewUid();
 
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(neurite_default_actual_length_,

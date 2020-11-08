@@ -24,68 +24,68 @@ using nlohmann::json;
 
 namespace bdm {
 
-std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
-    Param::registered_modules_;
+std::unordered_map<ParamGroupUid, std::unique_ptr<ParamGroup>>
+    Param::registered_groups_;
 
 // -----------------------------------------------------------------------------
-void Param::RegisterModuleParam(ModuleParam* param) {
-  registered_modules_[param->GetUid()] = std::unique_ptr<ModuleParam>(param);
+void Param::RegisterParamGroup(ParamGroup* param) {
+  registered_groups_[param->GetUid()] = std::unique_ptr<ParamGroup>(param);
 }
 
 // -----------------------------------------------------------------------------
 Param::Param() {
-  for (auto& el : registered_modules_) {
-    modules_[el.first] = el.second->GetCopy();
+  for (auto& el : registered_groups_) {
+    groups_[el.first] = el.second->GetCopy();
   }
 }
 
 // -----------------------------------------------------------------------------
 Param::~Param() {
-  for (auto& el : modules_) {
+  for (auto& el : groups_) {
     delete el.second;
   }
 }
 
 // -----------------------------------------------------------------------------
 void Param::Restore(Param&& other) {
-  for (auto& el : modules_) {
+  for (auto& el : groups_) {
     delete el.second;
   }
   *this = other;
-  other.modules_.clear();
+  other.groups_.clear();
 }
 
 // -----------------------------------------------------------------------------
-json FlattenModules(const json& j_document) {
+json FlattenGroups(const json& j_document) {
   json j_copy = j_document;
-  j_copy.erase("modules_");
+  j_copy.erase("groups_");
 
   json j_new;
   j_new["bdm::Param"] = j_copy;
 
-  // iterator over all module parameters
-  auto j_modules = j_document["modules_"];
-  for (json::iterator it = j_modules.begin(); it != j_modules.end(); ++it) {
+  // iterator over all group parameters
+  auto j_groups = j_document["groups_"];
+  for (json::iterator it = j_groups.begin(); it != j_groups.end(); ++it) {
     j_new[(*it)["second"]["_typename"].get<std::string>()] = (*it)["second"];
   }
   return j_new;
 }
 
 // -----------------------------------------------------------------------------
-json UnflattenModules(const json& j_flattened, const json& j_original) {
+json UnflattenGroups(const json& j_flattened, const json& j_original) {
   json j_return = j_flattened["bdm::Param"];
-  j_return["modules_"] = {};
-  auto& j_modules = j_return["modules_"];
+  j_return["groups_"] = {};
+  auto& j_groups = j_return["groups_"];
 
-  auto j_original_modules = j_original["modules_"];
-  for (json::iterator it = j_original_modules.begin();
-       it != j_original_modules.end(); ++it) {
-    json j_module_param;
-    j_module_param["$pair"] = (*it)["$pair"];
-    j_module_param["first"] = (*it)["first"];
-    j_module_param["second"] =
+  auto j_original_groups = j_original["groups_"];
+  for (json::iterator it = j_original_groups.begin();
+       it != j_original_groups.end(); ++it) {
+    json j_param_group;
+    j_param_group["$pair"] = (*it)["$pair"];
+    j_param_group["first"] = (*it)["first"];
+    j_param_group["second"] =
         j_flattened[(*it)["second"]["_typename"].get<std::string>()];
-    j_modules.push_back(j_module_param);
+    j_groups.push_back(j_param_group);
   }
   return j_return;
 }
@@ -94,9 +94,9 @@ json UnflattenModules(const json& j_flattened, const json& j_original) {
 std::string Param::ToJsonString() const {
   std::string current_json_str(
       TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
-  // Flatten modules_ to simplify json patches in rfc7386 format.
+  // Flatten groups_ to simplify json patches in rfc7386 format.
   json j_document = json::parse(current_json_str);
-  auto j_flattened = FlattenModules(j_document);
+  auto j_flattened = FlattenGroups(j_document);
   return j_flattened.dump(4);
 }
 
@@ -105,7 +105,7 @@ void Param::MergeJsonPatch(const std::string& patch) {
   std::string json_str(
       TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
   json j_param = json::parse(json_str);
-  auto j_flattened = FlattenModules(j_param);
+  auto j_flattened = FlattenGroups(j_param);
 
   try {
     auto j_patch = json::parse(patch);
@@ -116,7 +116,7 @@ void Param::MergeJsonPatch(const std::string& patch) {
                       e.what(), "\n", patch));
   }
 
-  auto j_unflattened = UnflattenModules(j_flattened, j_param);
+  auto j_unflattened = UnflattenGroups(j_flattened, j_param);
   Param* restored = nullptr;
   TBufferJSON::FromJSON(restored, j_unflattened.dump().c_str());
   Restore(std::move(*restored));
@@ -172,8 +172,8 @@ void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
 
 // -----------------------------------------------------------------------------
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
-  // module parameters
-  for (auto& el : modules_) {
+  // group parameters
+  for (auto& el : groups_) {
     el.second->AssignFromConfig(config);
   }
 

@@ -21,7 +21,7 @@ namespace neuroscience {
 
 void InitModule() {
   using NeuroscienceParam = bdm::neuroscience::Param;
-  bdm::Param::RegisterModuleParam(new NeuroscienceParam());
+  bdm::Param::RegisterParamGroup(new NeuroscienceParam());
 }
 
 }  // namespace neuroscience

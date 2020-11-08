@@ -19,8 +19,8 @@
 
 namespace bdm {
 
-struct TestModuleParam : public ModuleParam {
-  BDM_MODULE_PARAM_HEADER(TestModuleParam, 1);
+struct TestParamGroup : public ParamGroup {
+  BDM_PARAM_GROUP_HEADER(TestParamGroup, 1);
 
   double test_param1 = 3.14;
   uint64_t test_param2 = 42;

@@ -26,9 +26,9 @@
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <class name="bdm::RegulateGenes" />
     <class name="bdm::Param" />
-    <class name="bdm::ModuleParam" />
-    <class name="unordered_map<unsigned long,bdm::ModuleParam*>" />
-    <class name="unordered_map<bdm::ModuleParamUid, bdm::ModuleParam*>" />
+    <class name="bdm::ParamGroup" />
+    <class name="unordered_map<unsigned long,bdm::ParamGroup*>" />
+    <class name="unordered_map<bdm::ParamGroupUid, bdm::ParamGroup*>" />
     <class name="unordered_map<std::string, std::set<std::string>>" />
     <class name="map<std::string, std::set<std::string>>" />
     <class name="bdm::Random" />

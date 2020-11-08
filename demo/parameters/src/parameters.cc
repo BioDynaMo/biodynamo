@@ -15,7 +15,7 @@
 
 namespace bdm {
 
-const ModuleParamUid SimParam::kUid = ModuleParamUidGenerator::Get()->NewUid();
+const ParamGroupUid SimParam::kUid = ParamGroupUidGenerator::Get()->NewUid();
 
 }  // namespace bdm
 

@@ -21,15 +21,15 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "core/param/module_param.h"
+#include "core/param/param_group.h"
 #include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {
 namespace neuroscience {
 
-struct Param : public ModuleParam {
-  BDM_MODULE_PARAM_HEADER(Param, 1);
+struct Param : public ParamGroup {
+  BDM_PARAM_GROUP_HEADER(Param, 1);
 
   /// Default actual length value of a neurite.\n
   /// Default value: `1.0`\n

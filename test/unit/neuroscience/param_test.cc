@@ -44,7 +44,7 @@ TEST(neuroscience, Param) {
 
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
-  auto* param = simulation.GetParam()->GetModuleParam<Param>();
+  auto* param = simulation.GetParam()->Get<Param>();
 
   ASSERT_TRUE(param != nullptr);
   EXPECT_EQ(2.0, param->neurite_default_actual_length_);

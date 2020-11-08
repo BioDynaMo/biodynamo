@@ -44,7 +44,7 @@ simulation.
 ```cpp
 const auto* param = Simulation::GetActive()->GetParam();
 std::cout << param->simulation_time_step << std::endl;
-std::cout << param->GetModuleParam<neuroscience::Param>()->neurite_max_length_ << std::endl;
+std::cout << param->Get<neuroscience::Param>()->neurite_max_length_ << std::endl;
 
 ```
 

@@ -22,7 +22,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "core/param/module_param.h"
+#include "core/param/param_group.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
 #include "cpptoml/cpptoml.h"
@@ -32,7 +32,7 @@ namespace bdm {
 class Simulation;
 
 struct Param {
-  static void RegisterModuleParam(ModuleParam* param);
+  static void RegisterParamGroup(ParamGroup* param);
 
   Param();
 
@@ -41,30 +41,30 @@ struct Param {
   void Restore(Param&& other);
 
   /// Returns a Json representation of this parameter and all
-  /// ModuleParameter.
-  /// The modules_ data member has been flattened to simplify
+  /// ParamGroupeter.
+  /// The groups_ data member has been flattened to simplify
   /// JSON merge patches (https://tools.ietf.org/html/rfc7386).
   std::string ToJsonString() const;
 
   /// Applies a JSON merge patch (https://tools.ietf.org/html/rfc7386)
-  /// to this parameter and ModuleParameter.
-  /// The modules_ data member must be flattened. See output of
+  /// to this parameter and ParamGroupeter.
+  /// The groups_ data member must be flattened. See output of
   /// `ToJsonString()`.
   void MergeJsonPatch(const std::string& patch);
 
-  template <typename TModuleParam>
-  const TModuleParam* GetModuleParam() const {
-    assert(modules_.find(TModuleParam::kUid) != modules_.end() &&
-           "Couldn't find the requested module parameter.");
-    return bdm_static_cast<const TModuleParam*>(
-        modules_.at(TModuleParam::kUid));
+  template <typename TParamGroup>
+  const TParamGroup* Get() const {
+    assert(groups_.find(TParamGroup::kUid) != groups_.end() &&
+           "Couldn't find the requested group parameter.");
+    return bdm_static_cast<const TParamGroup*>(
+        groups_.at(TParamGroup::kUid));
   }
 
-  template <typename TModuleParam>
-  TModuleParam* GetModuleParam() {
-    assert(modules_.find(TModuleParam::kUid) != modules_.end() &&
-           "Couldn't find the requested module parameter.");
-    return bdm_static_cast<TModuleParam*>(modules_.at(TModuleParam::kUid));
+  template <typename TParamGroup>
+  TParamGroup* Get() {
+    assert(groups_.find(TParamGroup::kUid) != groups_.end() &&
+           "Couldn't find the requested group parameter.");
+    return bdm_static_cast<TParamGroup*>(groups_.at(TParamGroup::kUid));
   }
 
   // simulation values ---------------------------------------------------------
@@ -561,9 +561,9 @@ struct Param {
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
-  static std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
-      registered_modules_;
-  std::unordered_map<ModuleParamUid, ModuleParam*> modules_;
+  static std::unordered_map<ParamGroupUid, std::unique_ptr<ParamGroup>>
+      registered_groups_;
+  std::unordered_map<ParamGroupUid, ParamGroup*> groups_;
   BDM_CLASS_DEF_NV(Param, 1);
 };
 

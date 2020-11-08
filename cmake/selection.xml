@@ -43,8 +43,8 @@
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
     <class name="bdm::RegulateGenes" />
     <class name="bdm::Param" />
-    <class name="bdm::ModuleParam" />
-    <class name="unordered_map<unsigned long,bdm::ModuleParam*>" />
+    <class name="bdm::ParamGroup" />
+    <class name="unordered_map<unsigned long,bdm::ParamGroup*>" />
     <class name="bdm::Random" />
     <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<double, 4>" />

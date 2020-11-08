@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_PARAM_MODULE_PARAM_H_
-#define CORE_PARAM_MODULE_PARAM_H_
+#ifndef CORE_PARAM_PARAM_GROUP_H_
+#define CORE_PARAM_PARAM_GROUP_H_
 
 #include <memory>
 #include "core/util/root.h"
@@ -23,30 +23,30 @@ namespace bdm {
 
 struct Param;
 
-using ModuleParamUid = uint64_t;
+using ParamGroupUid = uint64_t;
 
 // TODO(lukas) code duplication with `UniqueEventIdFactory`
 /// This class generates unique ids for module parameters. Thread safe.
-class ModuleParamUidGenerator {
+class ParamGroupUidGenerator {
  public:
-  ModuleParamUidGenerator(const ModuleParamUidGenerator&) = delete;
+  ParamGroupUidGenerator(const ParamGroupUidGenerator&) = delete;
 
-  static ModuleParamUidGenerator* Get();
+  static ParamGroupUidGenerator* Get();
 
-  ModuleParamUid NewUid();
+  ParamGroupUid NewUid();
 
  private:
-  ModuleParamUidGenerator();
-  std::atomic<ModuleParamUid> counter_;
+  ParamGroupUidGenerator();
+  std::atomic<ParamGroupUid> counter_;
 };
 
 /// Interface for module parameters.
-struct ModuleParam {
-  virtual ~ModuleParam();
+struct ParamGroup {
+  virtual ~ParamGroup();
 
-  virtual ModuleParam* GetCopy() const = 0;
+  virtual ParamGroup* GetCopy() const = 0;
 
-  virtual ModuleParamUid GetUid() const = 0;
+  virtual ParamGroupUid GetUid() const = 0;
 
  protected:
   /// Assign values from a toml config file.\n
@@ -55,15 +55,15 @@ struct ModuleParam {
 
  private:
   friend struct Param;
-  BDM_CLASS_DEF(ModuleParam, 1);
+  BDM_CLASS_DEF(ParamGroup, 1);
 };
 
-#define BDM_MODULE_PARAM_HEADER(name, version_id)                   \
-  static const ModuleParamUid kUid;                                 \
+#define BDM_PARAM_GROUP_HEADER(name, version_id)                   \
+  static const ParamGroupUid kUid;                                 \
   name() {}                                                         \
   virtual ~name() {}                                                \
-  ModuleParam* GetCopy() const override { return new name(*this); } \
-  ModuleParamUid GetUid() const override { return kUid; }           \
+  ParamGroup* GetCopy() const override { return new name(*this); } \
+  ParamGroupUid GetUid() const override { return kUid; }           \
                                                                     \
  private:                                                           \
   BDM_CLASS_DEF_OVERRIDE(name, version_id);                         \
@@ -72,4 +72,4 @@ struct ModuleParam {
 
 }  // namespace bdm
 
-#endif  // CORE_PARAM_MODULE_PARAM_H_
+#endif  // CORE_PARAM_PARAM_GROUP_H_
