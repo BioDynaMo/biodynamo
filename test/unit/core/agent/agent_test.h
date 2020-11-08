@@ -24,30 +24,30 @@
 namespace bdm {
 namespace agent_test_internal {
 
-struct GrowthModule : public Behavior {
+struct Growth : public Behavior {
   double growth_rate_ = 0.5;
 
-  GrowthModule() : Behavior(CellDivisionEvent::kEventId) {}
+  Growth() : Behavior(CellDivisionEvent::kEventId) {}
 
-  GrowthModule(const Event& event, Behavior* other,
+  Growth(const Event& event, Behavior* other,
                uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {
-    if (GrowthModule* gbm = dynamic_cast<GrowthModule*>(other)) {
-      growth_rate_ = gbm->growth_rate_;
+    if (Growth* g = dynamic_cast<Growth*>(other)) {
+      growth_rate_ = g->growth_rate_;
     } else {
-      Log::Fatal("GrowthModule::EventConstructor",
-                 "other was not of type GrowthModule");
+      Log::Fatal("Growth::EventConstructor",
+                 "other was not of type Growth");
     }
   }
 
-  virtual ~GrowthModule() {}
+  virtual ~Growth() {}
 
   Behavior* GetInstance(const Event& event, Behavior* other,
                                  uint64_t new_oid = 0) const override {
-    return new GrowthModule(event, other, new_oid);
+    return new Growth(event, other, new_oid);
   }
   Behavior* GetCopy() const override {
-    return new GrowthModule(*this);
+    return new Growth(*this);
   }
 
   /// Default event handler (exising behavior won't be modified on
@@ -61,37 +61,37 @@ struct GrowthModule : public Behavior {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
 
-  BDM_CLASS_DEF_OVERRIDE(GrowthModule, 1);
+  BDM_CLASS_DEF_OVERRIDE(Growth, 1);
 };
 
-struct MovementModule : public Behavior {
+struct Movement : public Behavior {
   Double3 velocity_;
 
-  MovementModule()
+  Movement()
       : Behavior(0, CellDivisionEvent::kEventId),
         velocity_({{0, 0, 0}}) {}
-  explicit MovementModule(const Double3& velocity)
+  explicit Movement(const Double3& velocity)
       : Behavior(0, CellDivisionEvent::kEventId),
         velocity_(velocity) {}
 
-  MovementModule(const Event& event, Behavior* other,
+  Movement(const Event& event, Behavior* other,
                  uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {
-    if (MovementModule* mbm = dynamic_cast<MovementModule*>(other)) {
-      velocity_ = mbm->velocity_;
+    if (Movement* m = dynamic_cast<Movement*>(other)) {
+      velocity_ = m->velocity_;
     } else {
-      Log::Fatal("MovementModule::EventConstructor",
-                 "other was not of type MovementModule");
+      Log::Fatal("Movement::EventConstructor",
+                 "other was not of type Movement");
     }
   }
 
   /// Create a new instance of this object using the default constructor.
   Behavior* GetInstance(const Event& event, Behavior* other,
                                  uint64_t new_oid = 0) const override {
-    return new MovementModule(event, other, new_oid);
+    return new Movement(event, other, new_oid);
   }
   Behavior* GetCopy() const override {
-    return new MovementModule(*this);
+    return new Movement(*this);
   }
 
   /// Default event handler
@@ -105,29 +105,29 @@ struct MovementModule : public Behavior {
     agent->SetPosition(position + velocity_);
   }
 
-  BDM_CLASS_DEF_OVERRIDE(MovementModule, 1);
+  BDM_CLASS_DEF_OVERRIDE(Movement, 1);
 };
 
 /// This behavior removes itself the first time it is executed
-struct RemoveModule : public Behavior {
-  RemoveModule() {}
-  RemoveModule(const Event& event, Behavior* other,
+struct Removal : public Behavior {
+  Removal() {}
+  Removal(const Event& event, Behavior* other,
                uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {}
 
   Behavior* GetInstance(const Event& event, Behavior* other,
                                  uint64_t new_oid = 0) const override {
-    return new RemoveModule(event, other, new_oid);
+    return new Removal(event, other, new_oid);
   }
   Behavior* GetCopy() const override {
-    return new RemoveModule(*this);
+    return new Removal(*this);
   }
 
   void Run(Agent* agent) override {
     agent->RemoveBehavior(this);
   }
 
-  BDM_CLASS_DEF_OVERRIDE(RemoveModule, 1);
+  BDM_CLASS_DEF_OVERRIDE(Removal, 1);
 };
 
 }  // namespace agent_test_internal

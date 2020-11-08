@@ -19,8 +19,8 @@
 // according to the extracellular gradient; in this case to the middle.
 //
 
-#ifndef DEMO_DIFFUSION_MODULE_H_
-#define DEMO_DIFFUSION_MODULE_H_
+#ifndef DEMO_DIFFUSION_H_
+#define DEMO_DIFFUSION_H_
 
 #include "biodynamo.h"
 
@@ -71,4 +71,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // DEMO_DIFFUSION_MODULE_H_
+#endif  // DEMO_DIFFUSION_H_

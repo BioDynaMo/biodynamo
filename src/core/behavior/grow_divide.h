@@ -36,9 +36,9 @@ struct GrowDivide : public Behavior {
 
   GrowDivide(const Event& event, Behavior* other, uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {
-    if (GrowDivide* gdbm = dynamic_cast<GrowDivide*>(other)) {
-      threshold_ = gdbm->threshold_;
-      growth_rate_ = gdbm->growth_rate_;
+    if (GrowDivide* gd = dynamic_cast<GrowDivide*>(other)) {
+      threshold_ = gd->threshold_;
+      growth_rate_ = gd->growth_rate_;
     } else {
       Log::Fatal("GrowDivide::EventConstructor",
                  "other was not of type GrowDivide");

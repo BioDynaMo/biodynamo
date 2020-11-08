@@ -26,7 +26,7 @@
 
 namespace bdm {
 
-/// This module simulates expression of genes and contains all required
+/// This behavior simulates expression of genes and contains all required
 /// additional variables for tracking of the concentration of proteins.
 /// Thus, it can work with any type of agent.
 /// It has the implementation of Euler and Runge-Kutta numerical methods
@@ -43,9 +43,9 @@ struct RegulateGenes : public Behavior {
   RegulateGenes(const Event& event, Behavior* other,
                 uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {
-    if (RegulateGenes* rgbm = dynamic_cast<RegulateGenes*>(other)) {
-      concentrations_ = rgbm->concentrations_;
-      first_derivatives_ = rgbm->first_derivatives_;
+    if (RegulateGenes* gr = dynamic_cast<RegulateGenes*>(other)) {
+      concentrations_ = gr->concentrations_;
+      first_derivatives_ = gr->first_derivatives_;
     } else {
       Log::Fatal("RegulateGenes::EventConstructor",
                  "other was not of type RegulateGenes");

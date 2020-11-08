@@ -45,84 +45,84 @@ struct TestBehavior : public Behavior {
 };
 
 TEST(BehaviorTest, CopyNever) {
-  TestBehavior bbm;
+  TestBehavior b;
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
-    EXPECT_FALSE(bbm.Copy(e));
+    EXPECT_FALSE(b.Copy(e));
   }
 }
 
 TEST(BehaviorTest, CopyAlways) {
-  TestBehavior bbm(gAllEventIds);
+  TestBehavior b(gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
-    EXPECT_TRUE(bbm.Copy(e));
+    EXPECT_TRUE(b.Copy(e));
   }
 }
 
 TEST(BehaviorTest, CopyOnSingleEvent) {
   uint64_t one = 1;
-  TestBehavior bbm(one << 5);
+  TestBehavior b(one << 5);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
     if (i != 5) {
-      EXPECT_FALSE(bbm.Copy(e));
+      EXPECT_FALSE(b.Copy(e));
     } else {
-      EXPECT_TRUE(bbm.Copy(e));
+      EXPECT_TRUE(b.Copy(e));
     }
   }
 }
 
 TEST(BehaviorTest, CopyOnEventList) {
   uint64_t one = 1;
-  TestBehavior bbm({one << 5, one << 19, one << 49});
+  TestBehavior b({one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
     if (i != 5 && i != 19 && i != 49) {
-      EXPECT_FALSE(bbm.Copy(e));
+      EXPECT_FALSE(b.Copy(e));
     } else {
-      EXPECT_TRUE(bbm.Copy(e));
+      EXPECT_TRUE(b.Copy(e));
     }
   }
 }
 
 TEST(BehaviorTest, RemoveNever) {
-  TestBehavior bbm;
+  TestBehavior b;
   EventId any = 1;
   TestBehavior bbm1(any, gNullEventId);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
-    EXPECT_FALSE(bbm.Remove(e));
+    EXPECT_FALSE(b.Remove(e));
     EXPECT_FALSE(bbm1.Remove(e));
   }
 }
 
 TEST(BehaviorTest, RemoveAlways) {
   EventId any = 1;
-  TestBehavior bbm(any, gAllEventIds);
+  TestBehavior b(any, gAllEventIds);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = 1 << i;
-    EXPECT_TRUE(bbm.Remove(e));
+    EXPECT_TRUE(b.Remove(e));
   }
 }
 
 TEST(BehaviorTest, RemoveOnSingleEvent) {
   uint64_t one = 1;
   EventId any = 1;
-  TestBehavior bbm(any, one << 5);
+  TestBehavior b(any, one << 5);
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
     if (i != 5) {
-      EXPECT_FALSE(bbm.Remove(e));
+      EXPECT_FALSE(b.Remove(e));
     } else {
-      EXPECT_TRUE(bbm.Remove(e));
+      EXPECT_TRUE(b.Remove(e));
     }
   }
 }
@@ -130,14 +130,14 @@ TEST(BehaviorTest, RemoveOnSingleEvent) {
 TEST(BehaviorTest, RemoveOnEventList) {
   uint64_t one = 1;
   EventId any = 1;
-  TestBehavior bbm({any}, {one << 5, one << 19, one << 49});
+  TestBehavior b({any}, {one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
     EventId e = one << i;
     if (i != 5 && i != 19 && i != 49) {
-      EXPECT_FALSE(bbm.Remove(e));
+      EXPECT_FALSE(b.Remove(e));
     } else {
-      EXPECT_TRUE(bbm.Remove(e));
+      EXPECT_TRUE(b.Remove(e));
     }
   }
 }

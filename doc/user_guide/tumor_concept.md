@@ -19,7 +19,7 @@ keywords:
   -code
   -biology
   -case
-  -module
+  -behavior
 ---
 
 Written by Jean de Montigny
@@ -31,7 +31,7 @@ BioDynaMo is platform for computer simulations of biological dynamics. You can l
 This Tutorial in designed for user with limited knowledge of C++ language and will teach you the basics of BioDynaMo:
 
 * Create, build and run a new project
-* Create cells with a specific behaviour through a biological module
+* Create cells with a specific behaviour
 * Extend an existing structure
 * Visualize a simulation
 
@@ -106,16 +106,16 @@ simulation.GetScheduler()->Simulate(200);
 
 ### Behavior
 
-In the previous chapter, we created a great number of cells. However, those cells don’t do anything! We will here create a cancerous cell that will grow and divide when it reaches a certain diameter. For this, we will define a new behavior structure GrowthModule that will be applied to cell elements, and we will make this GrowthModule copied into the cell daughter (so the daughter will also contain an instance of the behavior GrowthModule)
+In the previous chapter, we created a great number of cells. However, those cells don’t do anything! We will here create a cancerous cell that will grow and divide when it reaches a certain diameter. For this, we will define a new behavior structure Growth that will be applied to cell elements, and we will make this Growth copied into the cell daughter (so the daughter will also contain an instance of the behavior Growth)
 ```cpp
-struct GrowthModule : public Behavior {
-  BDM_STATELESS_BEHAVIOR_HEADER(GrowthModule, Behavior, 1);
+struct Growth : public Behavior {
+  BDM_STATELESS_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
-  GrowthModule() : Behavior(gAllEventIds) {}
+  Growth() : Behavior(gAllEventIds) {}
 
-  /// Empty default event constructor, because GrowthModule does not have state.
+  /// Empty default event constructor, because Growth does not have state.
   template <typename TEvent, typename TBm>
-  GrowthModule(const TEvent& event, TBm* other, uint64_t new_oid = 0)
+  Growth(const TEvent& event, TBm* other, uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {}
 
   void Run(Agent* so) override {
@@ -124,7 +124,7 @@ struct GrowthModule : public Behavior {
 };
 ```
 
-We are now able to add any code in the Run() method, that will be executed at each simulation step for each cell containing this GrowthModule. In our case, it will be a cellular growth, until a certain diameter is reached and then a cell division:
+We are now able to add any code in the Run() method, that will be executed at each simulation step for each cell containing this Growth. In our case, it will be a cellular growth, until a certain diameter is reached and then a cell division:
 ```cpp
 if (auto* cell = dynamic_cast<Cell*>(so)) {
   if (cell->GetDiameter() < 8) {
@@ -136,11 +136,11 @@ if (auto* cell = dynamic_cast<Cell*>(so)) {
 }
 ```
 
-Of course, we need to create at least one new cell that contains our `GrowthModule` in our `Simulate` method
+Of course, we need to create at least one new cell that contains our `Growth` in our `Simulate` method
 ```cpp
 Cell* cell = new Cell({20, 50, 50});
 cell->SetDiameter(6);
-cell->AddBehavior(new GrowthModule());
+cell->AddBehavior(new Growth());
 rm->AddAgent(cell);  // put the created cell in our cells structure
 ```
 
@@ -323,7 +323,7 @@ This is of course just an example of what you can do with the threshold filters.
 ### Adding some complexity
 
 We now have all we want to visualize our modeling in the best conditions, but this modeling itself is a bit limited. We should add some movements to it as well as a new mechanism to complexity cell division.
-To add cell movement, we will modify the `Run()` method of our behavior `GrowthModule`, and use the function `UpdatePosition()`. To generate the direction we will again use a random a random number generator.
+To add cell movement, we will modify the `Run()` method of our behavior `Growth`, and use the function `UpdatePosition()`. To generate the direction we will again use a random a random number generator.
 We choose here to give stochastic movement only to growing cells, so we will write the movement just after the volume change
 
 ```cpp

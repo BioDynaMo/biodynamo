@@ -30,8 +30,8 @@ inline int Simulate(int argc, const char** argv) {
   // Initialize BioDynaMo
   Simulation simulation(argc, argv);
 
-  // Initialize RegulateGenes module.
-  // To add functions to the module use RegulateGenes::AddGene() function.
+  // Initialize RegulateGenes behavior.
+  // To add functions to the behavior use RegulateGenes::AddGene() function.
   // You should pass to the function two variables.
   // The first is of type  std::function<double(double, double)>.
   // This is the function by which concentration of the protein will be

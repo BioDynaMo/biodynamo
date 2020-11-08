@@ -25,18 +25,18 @@ TEST(AgentTest, CopyCtor) {
 
   TestAgent cell;
   cell.SetBoxIdx(123);
-  GrowthModule* gm = new GrowthModule();
-  gm->growth_rate_ = 321;
-  cell.AddBehavior(gm);
+  Growth* g = new Growth();
+  g->growth_rate_ = 321;
+  cell.AddBehavior(g);
 
   TestAgent copy(cell);
   EXPECT_EQ(123u, copy.GetBoxIdx());
   EXPECT_EQ(cell.GetUid(), copy.GetUid());
   ASSERT_EQ(1u, copy.GetAllBehaviors().size());
-  GrowthModule* copy_gm =
-      dynamic_cast<GrowthModule*>(copy.GetAllBehaviors()[0]);
-  EXPECT_TRUE(gm != copy_gm);
-  EXPECT_EQ(321, copy_gm->growth_rate_);
+  Growth* copy_g =
+      dynamic_cast<Growth*>(copy.GetAllBehaviors()[0]);
+  EXPECT_TRUE(g != copy_g);
+  EXPECT_EQ(321, copy_g->growth_rate_);
 }
 
 TEST(AgentTest, Behavior) {
@@ -46,8 +46,8 @@ TEST(AgentTest, Behavior) {
   double diameter = cell.GetDiameter();
   auto position = cell.GetPosition();
 
-  cell.AddBehavior(new MovementModule({1, 2, 3}));
-  cell.AddBehavior(new GrowthModule());
+  cell.AddBehavior(new Movement({1, 2, 3}));
+  cell.AddBehavior(new Growth());
 
   cell.RunBehaviors();
 
@@ -62,23 +62,23 @@ TEST(AgentTest, GetBehaviorsTest) {
 
   // create cell and add behaviors
   TestAgent cell;
-  cell.AddBehavior(new GrowthModule());
-  cell.AddBehavior(new GrowthModule());
-  cell.AddBehavior(new MovementModule({1, 2, 3}));
+  cell.AddBehavior(new Growth());
+  cell.AddBehavior(new Growth());
+  cell.AddBehavior(new Movement({1, 2, 3}));
 
-  uint64_t growth_module_cnt = 0;
-  uint64_t movement_module_cnt = 0;
+  uint64_t growth_cnt = 0;
+  uint64_t movement_cnt = 0;
   for (auto* behavior : cell.GetAllBehaviors()) {
-    if (dynamic_cast<GrowthModule*>(behavior)) {
-      growth_module_cnt++;
-    } else if (MovementModule* mm = dynamic_cast<MovementModule*>(behavior)) {
-      movement_module_cnt++;
-      EXPECT_ARR_NEAR(mm->velocity_, {1, 2, 3});
+    if (dynamic_cast<Growth*>(behavior)) {
+      growth_cnt++;
+    } else if (Movement* m = dynamic_cast<Movement*>(behavior)) {
+      movement_cnt++;
+      EXPECT_ARR_NEAR(m->velocity_, {1, 2, 3});
     }
   }
 
-  EXPECT_EQ(2u, growth_module_cnt);
-  EXPECT_EQ(1u, movement_module_cnt);
+  EXPECT_EQ(2u, growth_cnt);
+  EXPECT_EQ(1u, movement_cnt);
 }
 
 TEST(AgentTest, BehaviorEventHandler) {
@@ -86,20 +86,20 @@ TEST(AgentTest, BehaviorEventHandler) {
 
   TestAgent cell;
 
-  cell.AddBehavior(new MovementModule({1, 2, 3}));
-  cell.AddBehavior(new GrowthModule());
+  cell.AddBehavior(new Movement({1, 2, 3}));
+  cell.AddBehavior(new Growth());
 
   CellDivisionEvent event(1, 2, 3);
   TestAgent copy(event, &cell, 0);
   cell.EventHandler(event, &copy);
 
-  const auto& bms = cell.GetAllBehaviors();
-  ASSERT_EQ(1u, bms.size());
-  EXPECT_TRUE(dynamic_cast<GrowthModule*>(bms[0]) != nullptr);
+  const auto& behaviors = cell.GetAllBehaviors();
+  ASSERT_EQ(1u, behaviors.size());
+  EXPECT_TRUE(dynamic_cast<Growth*>(behaviors[0]) != nullptr);
 
   const auto& copy_behaviors = copy.GetAllBehaviors();
   ASSERT_EQ(1u, copy_behaviors.size());
-  EXPECT_TRUE(dynamic_cast<GrowthModule*>(copy_behaviors[0]) != nullptr);
+  EXPECT_TRUE(dynamic_cast<Growth*>(copy_behaviors[0]) != nullptr);
 }
 
 TEST(AgentTest, RemoveBehavior) {
@@ -107,28 +107,28 @@ TEST(AgentTest, RemoveBehavior) {
 
   TestAgent cell;
 
-  // add RemoveModule as first one! If removal while iterating over it is not
-  // implemented correctly, MovementModule will not be executed.
-  cell.AddBehavior(new RemoveModule());
-  cell.AddBehavior(new MovementModule({1, 2, 3}));
-  cell.AddBehavior(new GrowthModule());
+  // add Removal as first one! If removal while iterating over it is not
+  // implemented correctly, Movement will not be executed.
+  cell.AddBehavior(new Removal());
+  cell.AddBehavior(new Movement({1, 2, 3}));
+  cell.AddBehavior(new Growth());
 
-  // RemoveModule should remove itself
+  // Removal should remove itself
   cell.RunBehaviors();
 
-  const auto& bms = cell.GetAllBehaviors();
-  ASSERT_EQ(2u, bms.size());
-  EXPECT_TRUE(dynamic_cast<MovementModule*>(bms[0]) != nullptr);
-  EXPECT_TRUE(dynamic_cast<GrowthModule*>(bms[1]) != nullptr);
-  // check if MovementModule and GrowthModule have been executed correctly.
+  const auto& behaviors = cell.GetAllBehaviors();
+  ASSERT_EQ(2u, behaviors.size());
+  EXPECT_TRUE(dynamic_cast<Movement*>(behaviors[0]) != nullptr);
+  EXPECT_TRUE(dynamic_cast<Growth*>(behaviors[1]) != nullptr);
+  // check if Movement and Growth have been executed correctly.
   EXPECT_ARR_NEAR({1, 2, 3}, cell.GetPosition());
   EXPECT_NEAR(10.5, cell.GetDiameter(), abs_error<double>::value);
 
-  cell.AddBehavior(new RemoveModule());
-  ASSERT_EQ(3u, bms.size());
-  auto* to_be_removed = dynamic_cast<RemoveModule*>(bms[2]);
+  cell.AddBehavior(new Removal());
+  ASSERT_EQ(3u, behaviors.size());
+  auto* to_be_removed = dynamic_cast<Removal*>(behaviors[2]);
   cell.RemoveBehavior(to_be_removed);
-  ASSERT_EQ(2u, bms.size());
+  ASSERT_EQ(2u, behaviors.size());
 }
 
 TEST(AgentTest, GetAgentPtr) {

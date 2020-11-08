@@ -99,7 +99,7 @@ physical properties (diameter, mass), but also biological properties and behavio
 
 This example uses the predefined behaviors `Chemotaxis` and `Secretion` that
 will govern the behavior of the agents (i.e. cells).
-These two modules are included in the BioDynaMo installation.
+These two behaviors are included in the BioDynaMo installation.
 
 One of the cells (the cell at position `{50, 50, 50}`) will be the one secreting the substance;
 it therefore gets assigned the `Secretion` behavior.
@@ -176,7 +176,7 @@ distance between the grid points, you can determine this value by dividing the
 longest dimension of your space by the resolution, or by calling the corresponding
 function `DiffusionGrid::GetBoxLength()`.
 
-For more information on the inner workings of the diffusion module, please
+For more information on the inner workings of the diffusion behavior, please
 refer to: https://repository.tudelft.nl/islandora/object/uuid%3A2fa2203b-ca26-4aa2-9861-1a4352391e09?collection=education
 
 ### Runge-Kutta method:

@@ -161,10 +161,10 @@ class Agent {
   // ---------------------------------------------------------------------------
   // Behaviors
   /// Add a behavior to this agent
-  void AddBehavior(Behavior* module);
+  void AddBehavior(Behavior* behavior);
 
   /// Remove a behavior from this agent
-  void RemoveBehavior(const Behavior* remove_module);
+  void RemoveBehavior(const Behavior* behavior);
 
   /// Execute all behaviorsq
   void RunBehaviors();

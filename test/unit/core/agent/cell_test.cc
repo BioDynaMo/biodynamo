@@ -22,8 +22,8 @@
 namespace bdm {
 namespace cell_test_internal {
 
-using agent_test_internal::GrowthModule;
-using agent_test_internal::MovementModule;
+using agent_test_internal::Growth;
+using agent_test_internal::Movement;
 
 TEST(CellTest, TransformCoordinatesGlobalToPolar) {
   Simulation simulation(TEST_NAME);
@@ -42,8 +42,8 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   mother.UpdateVolume();
   mother.SetAdherence(1.1);
   mother.SetMass(5);
-  mother.AddBehavior(new GrowthModule());
-  mother.AddBehavior(new MovementModule({1, 2, 3}));
+  mother.AddBehavior(new Growth());
+  mother.AddBehavior(new Movement({1, 2, 3}));
   mother.SetBoxIdx(123);
 
   auto daughter = mother.Divide(0.75, 0.12, 0.34);
@@ -87,9 +87,9 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   // behaviors mother
   EXPECT_EQ(1u, mother.GetAllBehaviors().size());
   EXPECT_EQ(1u, daughter->GetAllBehaviors().size());
-  if (dynamic_cast<GrowthModule*>(daughter->GetAllBehaviors()[0]) ==
+  if (dynamic_cast<Growth*>(daughter->GetAllBehaviors()[0]) ==
       nullptr) {
-    FAIL() << "Variant type at position 0 is not a GrowthModule";
+    FAIL() << "Variant type at position 0 is not a Growth";
   }
 
   EXPECT_EQ(123u, daughter->GetBoxIdx());

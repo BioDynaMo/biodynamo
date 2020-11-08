@@ -60,8 +60,8 @@ Agent::Agent(const Agent& other)
       run_displacement_for_all_next_ts_(
           other.run_displacement_for_all_next_ts_),
       run_displacement_next_ts_(other.run_displacement_next_ts_) {
-  for (auto* module : other.behaviors_) {
-    behaviors_.push_back(module->GetCopy());
+  for (auto* behavior : other.behaviors_) {
+    behaviors_.push_back(behavior->GetCopy());
   }
 }
 
@@ -115,16 +115,16 @@ void Agent::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 // ---------------------------------------------------------------------------
 // Behaviors
 
-void Agent::AddBehavior(Behavior* module) {
-  behaviors_.push_back(module);
+void Agent::AddBehavior(Behavior* behavior) {
+  behaviors_.push_back(behavior);
 }
 
-void Agent::RemoveBehavior(const Behavior* remove_module) {
+void Agent::RemoveBehavior(const Behavior* behavior) {
   for (unsigned int i = 0; i < behaviors_.size(); i++) {
-    if (behaviors_[i] == remove_module) {
-      delete remove_module;
+    if (behaviors_[i] == behavior) {
+      delete behavior;
       behaviors_.erase(behaviors_.begin() + i);
-      // if remove_module was before or at the current run_behavior_loop_idx_,
+      // if behavior was before or at the current run_behavior_loop_idx_,
       // correct it by subtracting one.
       run_behavior_loop_idx_ -= i > run_behavior_loop_idx_ ? 0 : 1;
     }
@@ -134,8 +134,8 @@ void Agent::RemoveBehavior(const Behavior* remove_module) {
 void Agent::RunBehaviors() {
   for (run_behavior_loop_idx_ = 0; run_behavior_loop_idx_ < behaviors_.size();
        ++run_behavior_loop_idx_) {
-    auto* module = behaviors_[run_behavior_loop_idx_];
-    module->Run(this);
+    auto* behavior = behaviors_[run_behavior_loop_idx_];
+    behavior->Run(this);
   }
 }
 

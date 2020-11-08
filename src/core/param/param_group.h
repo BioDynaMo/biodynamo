@@ -26,7 +26,7 @@ struct Param;
 using ParamGroupUid = uint64_t;
 
 // TODO(lukas) code duplication with `UniqueEventIdFactory`
-/// This class generates unique ids for module parameters. Thread safe.
+/// This class generates unique ids for parameter groups. Thread safe.
 class ParamGroupUidGenerator {
  public:
   ParamGroupUidGenerator(const ParamGroupUidGenerator&) = delete;
@@ -40,7 +40,7 @@ class ParamGroupUidGenerator {
   std::atomic<ParamGroupUid> counter_;
 };
 
-/// Interface for module parameters.
+/// Interface for parameter groups.
 struct ParamGroup {
   virtual ~ParamGroup();
 

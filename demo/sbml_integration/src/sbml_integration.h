@@ -53,25 +53,25 @@ class MyCell : public Cell {
   double s1_ = 100;
 };
 
-// Define SbmlModule to simulate intracellular chemical reaction network.
-struct SbmlModule : public Behavior {
-  BDM_BEHAVIOR_HEADER(SbmlModule, Behavior, 1)
+// Define SbmlBehavior to simulate intracellular chemical reaction network.
+struct SbmlBehavior : public Behavior {
+  BDM_BEHAVIOR_HEADER(SbmlBehavior, Behavior, 1)
 
-  SbmlModule(const std::string& sbml_file, const rr::SimulateOptions& opt)
+  SbmlBehavior(const std::string& sbml_file, const rr::SimulateOptions& opt)
       : Behavior(gNullEventId, gNullEventId) {
     Initialize(sbml_file, opt);
   }
 
-  SbmlModule(const SbmlModule& other) {
-    auto other_sbml_behavior = bdm_static_cast<const SbmlModule*>(&other);
+  SbmlBehavior(const SbmlBehavior& other) {
+    auto other_sbml_behavior = bdm_static_cast<const SbmlBehavior*>(&other);
     Initialize(other_sbml_behavior->sbml_file_, other_sbml_behavior->initial_options_);
     result_ = other_sbml_behavior->result_;
   }
 
-  virtual ~SbmlModule() { delete rr_; }
+  virtual ~SbmlBehavior() { delete rr_; }
 
-  // SbmlModule is not copied for any event in this example
-  SbmlModule(const Event& event, Behavior* other, uint64_t new_oid = 0)
+  // SbmlBehavior is not copied for any event in this example
+  SbmlBehavior(const Event& event, Behavior* other, uint64_t new_oid = 0)
       : Behavior(event, other, new_oid) {}
 
   void Initialize(const std::string& sbml_file,
@@ -151,7 +151,7 @@ inline void AddToPlot(TMultiGraph* mg, const ls::Matrix<double>* result) {
   mg->Draw("AL C C");
 }
 
-inline void PlotSbmlModules(const char* filename) {
+inline void PlotSbmlBehaviors(const char* filename) {
   // setup plot
   TCanvas c;
   c.SetGrid();
@@ -162,9 +162,9 @@ inline void PlotSbmlModules(const char* filename) {
   Simulation::GetActive()->GetResourceManager()->ForEachAgent(
       [&](Agent* agent) {
         auto* cell = static_cast<MyCell*>(agent);
-        const auto& bms = cell->GetAllBehaviors();
-        if (bms.size() == 1) {
-          AddToPlot(mg, &static_cast<SbmlModule*>(bms[0])->GetResult());
+        const auto& behaviour = cell->GetAllBehaviors();
+        if (behaviour.size() == 1) {
+          AddToPlot(mg, &static_cast<SbmlBehavior*>(behaviour[0])->GetResult());
         }
       });
 
@@ -210,7 +210,7 @@ inline int Simulate(int argc, const char** argv) {
     auto* cell = new MyCell();
     cell->SetPosition(position);
     cell->SetDiameter(10);
-    cell->AddBehavior(new SbmlModule(sbml_file, opt));
+    cell->AddBehavior(new SbmlBehavior(sbml_file, opt));
     return cell;
   };
   ModelInitializer::CreateCellsRandom(0, 200, num_cells, construct);
@@ -221,7 +221,7 @@ inline int Simulate(int argc, const char** argv) {
   auto stop = Timing::Timestamp();
   std::cout << "RUNTIME " << (stop - start) << std::endl;
 
-  PlotSbmlModules("sbml-modules.svg");
+  PlotSbmlBehaviors("sbml-behaviors.svg");
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;

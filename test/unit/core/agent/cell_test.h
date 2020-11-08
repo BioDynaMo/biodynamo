@@ -75,8 +75,8 @@ namespace cell_test_internal {
 inline void RunIOTest() {
   Simulation simulation("CellTest-RunIOTest");
 
-  using GrowthModule = agent_test_internal::GrowthModule;
-  using MovementModule = agent_test_internal::MovementModule;
+  using Growth = agent_test_internal::Growth;
+  using Movement = agent_test_internal::Movement;
   remove(ROOTFILE);
 
   TestCell cell;
@@ -86,8 +86,8 @@ inline void RunIOTest() {
   cell.UpdateVolume();
   cell.SetAdherence(1.1);
   cell.SetMass(5);
-  cell.AddBehavior(new GrowthModule());
-  cell.AddBehavior(new MovementModule({1, 2, 3}));
+  cell.AddBehavior(new Growth());
+  cell.AddBehavior(new Movement({1, 2, 3}));
   cell.SetBoxIdx(123);
 
   // write to root file
@@ -115,14 +115,14 @@ inline void RunIOTest() {
   EXPECT_NEAR(5, restored_cell->GetMass(), kEpsilon);
 
   EXPECT_EQ(2u, restored_cell->GetAllBehaviors().size());
-  EXPECT_TRUE(dynamic_cast<GrowthModule*>(
+  EXPECT_TRUE(dynamic_cast<Growth*>(
                   restored_cell->GetAllBehaviors()[0]) != nullptr);
   EXPECT_NEAR(
       0.5,
-      dynamic_cast<GrowthModule*>(restored_cell->GetAllBehaviors()[0])
+      dynamic_cast<Growth*>(restored_cell->GetAllBehaviors()[0])
           ->growth_rate_,
       kEpsilon);
-  EXPECT_TRUE(dynamic_cast<MovementModule*>(
+  EXPECT_TRUE(dynamic_cast<Movement*>(
                   restored_cell->GetAllBehaviors()[1]) != nullptr);
 
   EXPECT_EQ(123u, restored_cell->GetBoxIdx());
