@@ -25,15 +25,15 @@ namespace neuroscience {
 /// This event splits a neurite element into two segments.
 /// The neurite element that triggers the event becomes the distal one.
 /// The new neurite element will be the proximal one.
-struct SplitNeuriteElementEvent : public Event {
-  static const EventId kEventId;
+struct SplitNeuriteElementEvent : public NewAgentEvent {
+  static const NewAgentEventUid kUid;
 
   explicit SplitNeuriteElementEvent(double distal_portion)
       : distal_portion_(distal_portion) {}
 
   virtual ~SplitNeuriteElementEvent() {}
 
-  EventId GetId() const override { return kEventId; }
+  NewAgentEventUid GetUid() const override { return kUid; }
 
   /// The fraction of the total old length devoted to the distal half
   /// (should be between 0 and 1).

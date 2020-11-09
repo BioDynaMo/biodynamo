@@ -35,7 +35,7 @@ void Param::RegisterParamGroup(ParamGroup* param) {
 // -----------------------------------------------------------------------------
 Param::Param() {
   for (auto& el : registered_groups_) {
-    groups_[el.first] = el.second->GetCopy();
+    groups_[el.first] = el.second->NewCopy();
   }
 }
 

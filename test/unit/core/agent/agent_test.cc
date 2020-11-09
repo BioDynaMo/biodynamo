@@ -81,7 +81,7 @@ TEST(AgentTest, GetBehaviorsTest) {
   EXPECT_EQ(1u, movement_cnt);
 }
 
-TEST(AgentTest, BehaviorEventHandler) {
+TEST(AgentTest, BehaviorUpdate) {
   Simulation simulation(TEST_NAME);
 
   TestAgent cell;
@@ -90,8 +90,10 @@ TEST(AgentTest, BehaviorEventHandler) {
   cell.AddBehavior(new Growth());
 
   CellDivisionEvent event(1, 2, 3);
-  TestAgent copy(event, &cell, 0);
-  cell.EventHandler(event, &copy);
+  event.existing_agent = &cell;
+  TestAgent copy;
+  copy.Initialize(&event);
+  cell.Update(&event);
 
   const auto& behaviors = cell.GetAllBehaviors();
   ASSERT_EQ(1u, behaviors.size());

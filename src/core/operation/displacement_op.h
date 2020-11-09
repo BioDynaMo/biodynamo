@@ -53,7 +53,7 @@ struct DisplacementOp : public AgentOperationImpl {
       last_iteration_(other.last_iteration_)
   {
     if (other.force_) {
-      force_ = other.force_->GetCopy();
+      force_ = other.force_->NewCopy();
     } 
   }
 

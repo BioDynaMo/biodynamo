@@ -25,7 +25,7 @@ struct Param;
 
 using ParamGroupUid = uint64_t;
 
-// TODO(lukas) code duplication with `UniqueEventIdFactory`
+// TODO(lukas) code duplication with `NewAgentEventUidGenerator`
 /// This class generates unique ids for parameter groups. Thread safe.
 class ParamGroupUidGenerator {
  public:
@@ -44,7 +44,7 @@ class ParamGroupUidGenerator {
 struct ParamGroup {
   virtual ~ParamGroup();
 
-  virtual ParamGroup* GetCopy() const = 0;
+  virtual ParamGroup* NewCopy() const = 0;
 
   virtual ParamGroupUid GetUid() const = 0;
 
@@ -62,7 +62,7 @@ struct ParamGroup {
   static const ParamGroupUid kUid;                                 \
   name() {}                                                         \
   virtual ~name() {}                                                \
-  ParamGroup* GetCopy() const override { return new name(*this); } \
+  ParamGroup* NewCopy() const override { return new name(*this); } \
   ParamGroupUid GetUid() const override { return kUid; }           \
                                                                     \
  private:                                                           \

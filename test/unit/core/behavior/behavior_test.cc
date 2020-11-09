@@ -19,134 +19,125 @@ namespace bdm {
 
 /// Helper class to test run visitor
 struct TestBehavior : public Behavior {
-  TestBehavior() : Behavior(0, 0) {}
-  explicit TestBehavior(EventId copy_event, EventId remove_event = 0)
-      : Behavior(copy_event, remove_event) {}
-
-  TestBehavior(std::initializer_list<EventId> copy_events,
-                    std::initializer_list<EventId> remove_events = {})
-      : Behavior(copy_events, remove_events) {}
-
-  TestBehavior(const Event& event, Behavior* other,
-                    uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {}
+  TestBehavior() {}
 
   virtual ~TestBehavior() {}
 
   void Run(Agent* agent) override {}
 
-  Behavior* GetInstance(const Event& event, Behavior* other,
-                                 uint64_t new_oid = 0) const override {
-    return new TestBehavior(event, other, new_oid);
-  }
-  Behavior* GetCopy() const override {
-    return new TestBehavior(*this);
-  };
+  Behavior* New() const { return new TestBehavior(); }
+  Behavior* NewCopy() const { return new TestBehavior(*this); }
 };
 
 TEST(BehaviorTest, CopyNever) {
   TestBehavior b;
+  TestBehavior b1;
+  b1.CopyToNewAlways();
+  b1.CopyToNewNever();
 
   for (uint64_t i = 0; i < 64; i++) {
-    EventId e = 1 << i;
-    EXPECT_FALSE(b.Copy(e));
+    NewAgentEventUid e = 1 << i;
+    EXPECT_FALSE(b.WillBeCopied(e));
   }
 }
 
 TEST(BehaviorTest, CopyAlways) {
-  TestBehavior b(gAllEventIds);
+  TestBehavior b;
+  b.CopyToNewAlways();
 
   for (uint64_t i = 0; i < 64; i++) {
-    EventId e = 1 << i;
-    EXPECT_TRUE(b.Copy(e));
+    NewAgentEventUid e = 1 << i;
+    EXPECT_TRUE(b.WillBeCopied(e));
   }
 }
 
 TEST(BehaviorTest, CopyOnSingleEvent) {
   uint64_t one = 1;
-  TestBehavior b(one << 5);
+  TestBehavior b;
+  b.CopyToNewIf({one << 5});
 
   for (uint64_t i = 0; i < 64; i++) {
-    EventId e = one << i;
+    NewAgentEventUid e = one << i;
     if (i != 5) {
-      EXPECT_FALSE(b.Copy(e));
+      EXPECT_FALSE(b.WillBeCopied(e));
     } else {
-      EXPECT_TRUE(b.Copy(e));
+      EXPECT_TRUE(b.WillBeCopied(e));
     }
   }
 }
 
 TEST(BehaviorTest, CopyOnEventList) {
   uint64_t one = 1;
-  TestBehavior b({one << 5, one << 19, one << 49});
+  TestBehavior b;
+  b.CopyToNewIf({one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
-    EventId e = one << i;
+    NewAgentEventUid e = one << i;
     if (i != 5 && i != 19 && i != 49) {
-      EXPECT_FALSE(b.Copy(e));
+      EXPECT_FALSE(b.WillBeCopied(e));
     } else {
-      EXPECT_TRUE(b.Copy(e));
+      EXPECT_TRUE(b.WillBeCopied(e));
     }
   }
 }
 
 TEST(BehaviorTest, RemoveNever) {
   TestBehavior b;
-  EventId any = 1;
-  TestBehavior bbm1(any, gNullEventId);
+  TestBehavior b1;
+  b1.RemoveFromExistingNever();
 
   for (uint64_t i = 0; i < 64; i++) {
-    EventId e = 1 << i;
-    EXPECT_FALSE(b.Remove(e));
-    EXPECT_FALSE(bbm1.Remove(e));
+    NewAgentEventUid e = 1 << i;
+    EXPECT_FALSE(b.WillBeRemoved(e));
+    EXPECT_FALSE(b1.WillBeRemoved(e));
   }
 }
 
 TEST(BehaviorTest, RemoveAlways) {
-  EventId any = 1;
-  TestBehavior b(any, gAllEventIds);
+  TestBehavior b;
+  b.RemoveFromExistingAlways();
 
   for (uint64_t i = 0; i < 64; i++) {
-    EventId e = 1 << i;
-    EXPECT_TRUE(b.Remove(e));
+    NewAgentEventUid e = 1 << i;
+    EXPECT_TRUE(b.WillBeRemoved(e));
   }
 }
 
 TEST(BehaviorTest, RemoveOnSingleEvent) {
   uint64_t one = 1;
-  EventId any = 1;
-  TestBehavior b(any, one << 5);
+  TestBehavior b;
+  b.RemoveFromExistingIf({one << 5});
 
   for (uint64_t i = 0; i < 64; i++) {
-    EventId e = one << i;
+    NewAgentEventUid e = one << i;
     if (i != 5) {
-      EXPECT_FALSE(b.Remove(e));
+      EXPECT_FALSE(b.WillBeRemoved(e));
     } else {
-      EXPECT_TRUE(b.Remove(e));
+      EXPECT_TRUE(b.WillBeRemoved(e));
     }
   }
 }
 
 TEST(BehaviorTest, RemoveOnEventList) {
   uint64_t one = 1;
-  EventId any = 1;
-  TestBehavior b({any}, {one << 5, one << 19, one << 49});
+  TestBehavior b;
+  b.RemoveFromExistingIf({one << 5, one << 19, one << 49});
 
   for (uint64_t i = 0; i < 64; i++) {
-    EventId e = one << i;
+    NewAgentEventUid e = one << i;
     if (i != 5 && i != 19 && i != 49) {
-      EXPECT_FALSE(b.Remove(e));
+      EXPECT_FALSE(b.WillBeRemoved(e));
     } else {
-      EXPECT_TRUE(b.Remove(e));
+      EXPECT_TRUE(b.WillBeRemoved(e));
     }
   }
 }
 
-TEST(UniqueEventIdFactoryTest, All) {
-  auto uef = UniqueEventIdFactory::Get();
+TEST(NewAgentEventUidGeneratorTest, All) {
+  auto uef = NewAgentEventUidGenerator::GetInstance();
 
-  auto event_id_1 = uef->NewUniqueEventId();
-  auto event_id_2 = uef->NewUniqueEventId();
+  auto event_id_1 = uef->GenerateUid();
+  auto event_id_2 = uef->GenerateUid();
 
   EXPECT_EQ(event_id_1, event_id_2 >> 1);
 }

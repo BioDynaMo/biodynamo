@@ -111,12 +111,8 @@ In the previous chapter, we created a great number of cells. However, those cell
 struct Growth : public Behavior {
   BDM_STATELESS_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
-  Growth() : Behavior(gAllEventIds) {}
-
-  /// Empty default event constructor, because Growth does not have state.
-  template <typename TEvent, typename TBm>
-  Growth(const TEvent& event, TBm* other, uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {}
+  Growth() { CopyToNewAlways(); }
+  virtual ~Growth() {}
 
   void Run(Agent* so) override {
     // code to be executed at each simulation step
@@ -241,19 +237,7 @@ class MyCell : public Cell {  // our object extends the Cell object
   MyCell() {}
   explicit MyCell(const Double3& position) : Base(position) {}
 
-  /// If MyCell divides, daughter 2 copies the data members from the mother
-  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {
-    if (auto* mother = dynamic_cast<MyCell*>(other)) {
-      cell_color_ = mother->cell_color_;
-    }
-  }
-
-  /// If a cell divides, daughter keeps the same state from its mother.
-  void EventHandler(const Event& event, Agent* other1,
-                    Agent* other2 = nullptr) override {
-    Base::EventHandler(event, other1, other2);
-  }
+  FIXME api
 
   void SetCellColor(int cell_color) { cell_color_ = cell_color; }
   int GetCellColor() const { return cell_color_; }
@@ -365,7 +349,7 @@ bool can_divide_;
 In the event constructor add the following lines to set `can_divide_` to true
 in case of a `CellDivisionEvent`
 ```cpp
-if (event.GetId() == CellDivisionEvent::kEventId) {
+if (event.GetUid() == CellDivisionEvent::kUid) {
   // the daughter will be able to divide
   can_divide_ = true;
 } else {

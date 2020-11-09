@@ -36,14 +36,15 @@ namespace bdm {
 struct GeneRegulation : public Behavior {
   BDM_BEHAVIOR_HEADER(GeneRegulation, Behavior, 1);
 
-  GeneRegulation() : Behavior(gAllEventIds) {}
+  GeneRegulation() { CopyToNewAlways(); }
 
-  explicit GeneRegulation(EventId event) : Behavior(event) {}
+  virtual ~GeneRegulation() {}
 
-  GeneRegulation(const Event& event, Behavior* other,
-                uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {
-    if (GeneRegulation* gr = dynamic_cast<GeneRegulation*>(other)) {
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+
+    auto* other = event->existing_behavior;
+    if (auto* gr = dynamic_cast<GeneRegulation*>(other)) {
       concentrations_ = gr->concentrations_;
       first_derivatives_ = gr->first_derivatives_;
     } else {

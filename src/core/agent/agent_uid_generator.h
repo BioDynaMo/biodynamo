@@ -38,7 +38,7 @@ class AgentUidGenerator {
   /// Generates AgentUid with increasing index.
   /// In defragmentation mode it resuses index values from removed agents
   /// and sets the reused field to the current simulation step.
-  AgentUid NewAgentUid() {
+  AgentUid GenerateUid() {
     if (map_ != nullptr) {
       // defragmentation mode
       std::lock_guard<Spinlock> guard(lock_);

@@ -47,17 +47,4 @@ TEST(SecretionTest, Run) {
   EXPECT_TRUE(dgrid.called);
 }
 
-TEST(SecretionTest, EventCopy) {
-  auto event_id1 = UniqueEventIdFactory::Get()->NewUniqueEventId();
-  auto event_id2 = UniqueEventIdFactory::Get()->NewUniqueEventId();
-  auto event_id3 = UniqueEventIdFactory::Get()->NewUniqueEventId();
-  auto event_id4 = UniqueEventIdFactory::Get()->NewUniqueEventId();
-
-  Secretion s(nullptr, 3.14, {event_id1}, {event_id4});
-  EXPECT_TRUE(s.Copy(event_id1));
-  EXPECT_FALSE(s.Copy(event_id2));
-  EXPECT_FALSE(s.Remove(event_id3));
-  EXPECT_TRUE(s.Remove(event_id4));
-}
-
 }  // namespace bdm

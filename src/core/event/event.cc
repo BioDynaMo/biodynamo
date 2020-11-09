@@ -16,7 +16,7 @@
 
 namespace bdm {
 
-const EventId CellDivisionEvent::kEventId =
-    UniqueEventIdFactory::Get()->NewUniqueEventId();
+const NewAgentEventUid CellDivisionEvent::kUid =
+    NewAgentEventUidGenerator::GetInstance()->GenerateUid();
 
 }  // namespace bdm

@@ -25,20 +25,19 @@ namespace bdm {
 struct Secretion : public Behavior {
   BDM_BEHAVIOR_HEADER(Secretion, Behavior, 1);
 
-  Secretion(DiffusionGrid* dgrid, double quantity = 1,
-            std::initializer_list<EventId> copy_events = {gAllEventIds},
-            std::initializer_list<EventId> remove_events = {})
-      : Behavior(copy_events, remove_events),
-        dgrid_(dgrid),
+  Secretion() {}
+  Secretion(DiffusionGrid* dgrid, double quantity = 1) 
+      : dgrid_(dgrid),
         quantity_(quantity) {}
 
-  Secretion(const Event& event, Behavior* other, uint64_t new_uid)
-      : Behavior(event, other, new_uid) {
-    dgrid_ = bdm_static_cast<Secretion*>(other)->dgrid_;
-    quantity_ = bdm_static_cast<Secretion*>(other)->quantity_;
-  }
-
   virtual ~Secretion() {}
+
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+    auto* other = bdm_static_cast<Secretion*>(event->existing_behavior);
+    dgrid_ = other->dgrid_;
+    quantity_ = other->quantity_;
+  }
 
   void Run(Agent* agent) override {
     auto& secretion_position = agent->GetPosition();

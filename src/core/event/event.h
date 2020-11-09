@@ -18,56 +18,56 @@
 #include <limits>
 #include <mutex>
 #include "core/util/log.h"
+#include "core/container/inline_vector.h"
 
 namespace bdm {
 
-/// EventId is used inside behaviors to determine if a behavior
+/// NewAgentEventUid is used inside behaviors to determine if a behavior
 /// should be copied if a new agent is created.
 /// Possible events are cell division, neurite branching, ...\n
-/// EventId invariant: the number of bits set to 1 must be 1.
-using EventId = uint64_t;
+/// NewAgentEventUid invariant: the number of bits set to 1 must be 1.
+using NewAgentEventUid = uint64_t;
 
-/// Behavior event representing the union of all events.\n
-/// Used to create a behavior  which is copied for every event.
-/// @see `Behavior`
-const EventId gAllEventIds = std::numeric_limits<uint64_t>::max();
-
-/// Behavior event representing the null element = empty set of events.
-/// @see `Behavior`
-const EventId gNullEventId = 0;
+class Agent;
+class Behavior;
 
 /// This class generates unique ids for behavior events satisfying the
-/// EventId invariant. Thread safe.
-class UniqueEventIdFactory {
+/// NewAgentEventUid invariant. Thread safe.
+class NewAgentEventUidGenerator {
  public:
-  UniqueEventIdFactory(const UniqueEventIdFactory&) = delete;
+  NewAgentEventUidGenerator(const NewAgentEventUidGenerator&) = delete;
 
-  static UniqueEventIdFactory* Get() {
-    static UniqueEventIdFactory kInstance;
+  static NewAgentEventUidGenerator* GetInstance() {
+    static NewAgentEventUidGenerator kInstance;
     return &kInstance;
   }
 
-  EventId NewUniqueEventId() {
+  NewAgentEventUid GenerateUid() {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     constexpr uint64_t kOne = 1;
     if (counter_ == 64) {
-      Log::Fatal("UniqueEventIdFactory",
-                 "BioDynaMo only supports 64 unique EventIds."
+      Log::Fatal("NewAgentEventUidGenerator",
+                 "BioDynaMo only supports 64 unique NewAgentEventUids."
                  " You requested a 65th one.");
     }
     return kOne << counter_++;
   }
 
  private:
-  UniqueEventIdFactory() {}
+  NewAgentEventUidGenerator() {}
   std::recursive_mutex mutex_;
   uint64_t counter_ = 0;
 };
 
-struct Event {
-  virtual ~Event() {}
+struct NewAgentEvent {
+  virtual ~NewAgentEvent() {}
 
-  virtual EventId GetId() const = 0;
+  virtual NewAgentEventUid GetUid() const = 0;
+
+  Agent* existing_agent;
+  InlineVector<Agent*, 3> new_agents;
+  Behavior* existing_behavior;
+  InlineVector<Behavior*, 3> new_behaviors;
 };
 
 }  // namespace bdm

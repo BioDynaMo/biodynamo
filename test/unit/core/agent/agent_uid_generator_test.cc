@@ -27,9 +27,9 @@ TEST(AgentUidGeneratorTest, NormalAndDefragmentationMode) {
 
   AgentUidGenerator generator;
 
-  EXPECT_EQ(AgentUid(0), generator.NewAgentUid());
-  EXPECT_EQ(AgentUid(1), generator.NewAgentUid());
-  EXPECT_EQ(AgentUid(2), generator.NewAgentUid());
+  EXPECT_EQ(AgentUid(0), generator.GenerateUid());
+  EXPECT_EQ(AgentUid(1), generator.GenerateUid());
+  EXPECT_EQ(AgentUid(2), generator.GenerateUid());
 
   // increment simulated time steps
   simulation.GetScheduler()->Simulate(1);
@@ -40,25 +40,25 @@ TEST(AgentUidGeneratorTest, NormalAndDefragmentationMode) {
   // slots 0, and 2 are empty
 
   generator.EnableDefragmentation(&map);
-  EXPECT_EQ(AgentUid(0, 1), generator.NewAgentUid());
-  EXPECT_EQ(AgentUid(2, 1), generator.NewAgentUid());
+  EXPECT_EQ(AgentUid(0, 1), generator.GenerateUid());
+  EXPECT_EQ(AgentUid(2, 1), generator.GenerateUid());
   // no more empty slots -> generator should have switched back to normal mode
-  EXPECT_EQ(AgentUid(3, 0), generator.NewAgentUid());
+  EXPECT_EQ(AgentUid(3, 0), generator.GenerateUid());
 }
 
 #ifdef USE_DICT
 TEST_F(IOTest, AgentUidGenerator) {
   AgentUidGenerator test;
-  test.NewAgentUid();
-  test.NewAgentUid();
-  test.NewAgentUid();
+  test.GenerateUid();
+  test.GenerateUid();
+  test.GenerateUid();
 
   AgentUidGenerator* restored = nullptr;
 
   BackupAndRestore(test, &restored);
 
   EXPECT_EQ(restored->GetHighestIndex(), 3u);
-  EXPECT_EQ(restored->NewAgentUid(), AgentUid(3u));
+  EXPECT_EQ(restored->GenerateUid(), AgentUid(3u));
 
   delete restored;
 }

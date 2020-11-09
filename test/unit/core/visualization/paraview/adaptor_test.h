@@ -25,8 +25,6 @@ class MyCell : public Cell {
 
  public:
   MyCell() {}
-  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
 
   int dummmy_;
 };
@@ -36,8 +34,6 @@ class MyNeuron : public Cell {
 
  public:
   MyNeuron() {}
-  MyNeuron(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
 
   int dummmy_;
 };

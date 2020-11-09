@@ -36,29 +36,26 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 
   explicit NeuronSoma(const Double3& position);
 
-  /// \brief This constructor is used to initialise the values of daughter
-  /// 2 for a cell division event.
-  ///
-  /// Please note that  this implementation does not allow division of neuron
-  /// somas with already attached neurite elements.
-  ///
-  /// \see CellDivisionEvent
-  NeuronSoma(const Event& event, Agent* mother_agent, uint64_t new_oid = 0);
-
   NeuronSoma(const NeuronSoma& other)
       : Base(other),
         daughters_(other.daughters_),
         daughters_coord_(other.daughters_coord_) {}
 
-  /// \brief EventHandler to modify the data members of this cell
-  /// after a cell division, or new neurite branching event
+  /// \brief This method is used to initialise the values of daughter
+  /// 2 for a cell division event.
+  ///
+  /// Please note that this implementation does not allow division of neuron
+  /// somas with already attached neurite elements.
+  ///
+  /// \see CellDivisionEvent
+  void Initialize(NewAgentEvent* event) override;
+
+  /// \brief This method is used to update attributes after a cell division.
+  /// or new neurite branching event. 
   ///
   /// Performs the transition mother to daughter 1
-  /// \param event contains parameters for cell division
-  /// \param daughter_2 pointer to new cell (=daughter 2)
   /// \see Event, CellDivisionEvent
-  void EventHandler(const Event& event, Agent* other1,
-                    Agent* other2 = nullptr) override;
+  void Update(NewAgentEvent* event) override;
 
   const AgentUid& GetUid() const override { return Base::GetUid(); }
 

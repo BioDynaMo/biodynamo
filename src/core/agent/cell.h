@@ -59,15 +59,17 @@ class Cell : public Agent {
     UpdateVolume();
   }
 
-  /// \brief This constructor is used to initialise the values of daughter
+  virtual ~Cell() {}
+
+  /// \brief This method is used to initialise the values of daughter
   /// 2 for a cell division event.
   ///
   /// \see CellDivisionEvent
-  Cell(const Event& event, Agent* mother, uint64_t new_oid = 0)
-      : Base(event, mother, new_oid) {
-    const CellDivisionEvent* cdevent =
-        dynamic_cast<const CellDivisionEvent*>(&event);
-    Cell* mother_cell = dynamic_cast<Cell*>(mother);
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+
+    auto* cdevent =  dynamic_cast<const CellDivisionEvent*>(event);
+    auto* mother_cell = dynamic_cast<Cell*>(event->existing_agent);
     if (cdevent && mother_cell) {
       auto* daughter = this;  // FIXME
       // A) Defining some values
@@ -84,9 +86,9 @@ class Cell : public Agent {
       Double3 coords = {x_coord, y_coord, z_coord};
       double total_length_of_displacement = radius / 4.0;
 
-      const auto x_axis = mother_cell->kXAxis;
-      const auto y_axis = mother_cell->kYAxis;
-      const auto z_axis = mother_cell->kZAxis;
+      const auto& x_axis = mother_cell->kXAxis;
+      const auto& y_axis = mother_cell->kYAxis;
+      const auto& z_axis = mother_cell->kZAxis;
 
       Double3 axis_of_division =
           (coords.EntryWiseProduct(x_axis) + coords.EntryWiseProduct(y_axis) +
@@ -112,7 +114,7 @@ class Cell : public Agent {
       // E) This sphere becomes the 1st daughter
       // move these cells on opposite direction
       mother_pos -= axis_of_division * d_1;
-      // update mother here and not in EventHandler to avoid recomputation
+      // update mother here and not in Update method to avoid recomputation
       mother_cell->SetPosition(mother_pos);
       mother_cell->SetVolume(new_volume);
 
@@ -120,20 +122,6 @@ class Cell : public Agent {
       daughter->SetDensity(mother_cell->GetDensity());
       // G) TODO(lukas) Copy the intracellular and membrane bound Substances
     }
-  }
-
-  virtual ~Cell() {}
-
-  /// \brief EventHandler to modify the data members of this cell
-  /// after a cell division.
-  ///
-  /// Performs the transition mother to daughter 1
-  /// \param event contains parameters for cell division
-  /// \param daughter_2 pointer to new cell (=daughter 2)
-  /// \see Event, CellDivisionEvent
-  void EventHandler(const Event& event, Agent* other1,
-                    Agent* other2 = nullptr) override {
-    Base::EventHandler(event, other1, other2);
   }
 
   Shape GetShape() const override { return Shape::kSphere; }
@@ -183,12 +171,9 @@ class Cell : public Agent {
   ///
   /// \see CellDivisionEvent
   virtual Cell* Divide(double volume_ratio, double phi, double theta) {
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     CellDivisionEvent event(volume_ratio, phi, theta);
-    auto* daughter = static_cast<Cell*>(GetInstance(event, this));
-    ctxt->push_back(daughter);
-    EventHandler(event, daughter);
-    return daughter;
+    NewAgents(&event, {this});
+    return bdm_static_cast<Cell*>(event.new_agents[0]);
   }
 
   double GetAdherence() const { return adherence_; }

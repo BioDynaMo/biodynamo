@@ -31,9 +31,6 @@ class TestAgent : public Agent {
 
   explicit TestAgent(const Double3& pos) : position_{pos} {}
 
-  TestAgent(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
-
   virtual ~TestAgent() {}
 
   Shape GetShape() const override { return Shape::kSphere; };

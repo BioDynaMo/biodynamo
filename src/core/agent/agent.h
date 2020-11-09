@@ -35,6 +35,7 @@
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
+#include "core/event/event.h"
 
 namespace bdm {
 
@@ -53,14 +54,10 @@ namespace bdm {
                                                                              \
   explicit class_name(TRootIOCtor* io_ctor) {}                               \
                                                                              \
-  /** Create a new instance of this object using the default constructor. */ \
-  Agent* GetInstance(const Event& event, Agent* other,               \
-                         uint64_t new_oid = 0) const override {              \
-    return new class_name(event, other, new_oid);                            \
-  }                                                                          \
-                                                                             \
-  /** Create a copy of this object. */                                       \
-  Agent* GetCopy() const override { return new class_name(*this); }      \
+  /** Create a new instance of this object using the default constructor. */   \
+  Agent* New() const override { return new class_name(); }             \
+  /** Create a new instance of this object using the copy constructor. */   \
+  Agent* NewCopy() const override { return new class_name(*this); }             \
                                                                              \
   const char* GetTypeName() const override { return #class_name; }           \
                                                                              \
@@ -83,8 +80,6 @@ class Agent {
  public:
   Agent();
 
-  Agent(const Event& event, Agent* other, uint64_t new_oid = 0);
-
   explicit Agent(TRootIOCtor* io_ctor);
 
   Agent(const Agent& other);
@@ -92,11 +87,27 @@ class Agent {
   virtual ~Agent();
 
   /// Create a new instance of this object using the default constructor.
-  virtual Agent* GetInstance(const Event& event, Agent* other,
-                                 uint64_t new_oid = 0) const = 0;
+  virtual Agent* New() const = 0;
 
   /// Create a copy of this object.
-  virtual Agent* GetCopy() const = 0;
+  virtual Agent* NewCopy() const = 0;
+
+  virtual void Initialize(NewAgentEvent* event);
+
+  virtual void Update(NewAgentEvent* event);
+
+  // TODO documentation
+  void NewAgents(NewAgentEvent* event, const std::initializer_list<Agent*>& prototypes) {
+    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    event->existing_agent = this;
+    for (auto* p : prototypes) {
+      auto* new_agent = p->New();
+      new_agent->Initialize(event);
+      event->new_agents.push_back(new_agent);
+      ctxt->push_back(new_agent);
+    }
+    Update(event);
+  }
 
   virtual const char* GetTypeName() const { return "Agent"; }
 
@@ -187,9 +198,6 @@ class Agent {
 
   void RemoveFromSimulation() const;
 
-  virtual void EventHandler(const Event& event, Agent* other1,
-                            Agent* other2 = nullptr);
-
   void* operator new(size_t size) {  // NOLINT
     auto* mem_mgr = Simulation::GetActive()->GetMemoryManager();
     if (mem_mgr) {
@@ -227,20 +235,15 @@ class Agent {
   bool run_displacement_for_all_next_ts_ = false;  //!
   mutable bool run_displacement_next_ts_ = true;   //!
 
-  /// @brief Function to copy behaviors from one structure to another
-  /// @param event event will be passed on to behavior to determine
-  ///        whether it should be copied to destination
-  /// @param src  source vector of behaviors
-  /// @param dest destination vector of behaviors
-  void CopyBehaviors(const Event& event, decltype(behaviors_)* dest);
+  /// @brief Function to copy behaviors from existing Agent to this one
+  /// and to initialize them.
+  void InitializeBehaviors(NewAgentEvent* event);
 
-  /// @brief Function to invoke the EventHandler of the behavior or remove
+  /// @brief Function to invoke the Update method of the behavior or remove
   ///                  it from `current`.
-  /// Forwards the event handler call to each behaviors of the triggered
+  /// Forwards the call to Update to each behavior of the existing
   /// agent and removes behaviors if they are flagged.
-  void BehaviorEventHandler(const Event& event,
-                                 decltype(behaviors_)* other1,
-                                 decltype(behaviors_)* other2);
+  void UpdateBehaviors(NewAgentEvent* event);
 
   BDM_CLASS_DEF(Agent, 1)
 };

@@ -30,29 +30,26 @@ NeuronSoma::~NeuronSoma() {}
 
 NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 
-NeuronSoma::NeuronSoma(const Event& event, Agent* mother_agent,
-                       uint64_t new_oid)
-    : Base(event, mother_agent, new_oid) {
-  const CellDivisionEvent* cdevent =
-      dynamic_cast<const CellDivisionEvent*>(&event);
-  NeuronSoma* mother = dynamic_cast<NeuronSoma*>(mother_agent);
+void NeuronSoma::Initialize(NewAgentEvent* event) {
+  Base::Initialize(event);
+
+  auto* cdevent =  dynamic_cast<const CellDivisionEvent*>(event);
+  auto* mother = dynamic_cast<NeuronSoma*>(event->existing_agent);
   if (cdevent && mother) {
     if (mother->daughters_.size() != 0) {
       Fatal("NeuronSoma",
             "Dividing a neuron soma with attached neurites is not supported "
             "in the default implementation! If you want to change this "
-            "behavior derive from this class and overwrite this constructor.");
+            "behavior derive from this class and overwrite this method.");
     }
   }
 }
 
-void NeuronSoma::EventHandler(const Event& event, Agent* other1,
-                              Agent* other2) {
-  Base::EventHandler(event, other1, other2);
+void NeuronSoma::Update(NewAgentEvent* event) {
+  Base::Update(event);
 
-  const NewNeuriteExtensionEvent* ne_event =
-      dynamic_cast<const NewNeuriteExtensionEvent*>(&event);
-  NeuriteElement* neurite = dynamic_cast<NeuriteElement*>(other1);
+  auto* ne_event = dynamic_cast<const NewNeuriteExtensionEvent*>(event);
+  auto* neurite = dynamic_cast<NeuriteElement*>(event->new_agents[0]);
   if (ne_event && neurite) {
     double theta = ne_event->theta_;
     double phi = ne_event->phi_;
@@ -79,18 +76,13 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
 NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
                                              double theta,
                                              NeuriteElement* prototype) {
-  auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-  NewNeuriteExtensionEvent event(diameter, phi, theta);
-  Agent* neurite = nullptr;
   if (!prototype) {
-    NeuriteElement ne_tmp;
-    neurite = ne_tmp.GetInstance(event, this);
-  } else {
-    neurite = prototype->GetInstance(event, this);
-  }
-  ctxt->push_back(neurite);
-  EventHandler(event, neurite);
-  return bdm_static_cast<NeuriteElement*>(neurite);
+    static NeuriteElement kDefaultNeurite;
+    prototype = &kDefaultNeurite;
+  } 
+  NewNeuriteExtensionEvent event(diameter, phi, theta);
+  NewAgents(&event, {prototype});
+  return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
 }
 
 void NeuronSoma::RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) {

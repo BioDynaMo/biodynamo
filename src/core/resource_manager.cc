@@ -283,7 +283,7 @@ void ResourceManager::LoadBalance() {
       for (uint64_t e = start; e < end; e++) {
         auto& handle = agent_handles[e];
         auto* agent = agents_[handle.GetNumaNode()][handle.GetElementIdx()];
-        dest[e] = agent->GetCopy();
+        dest[e] = agent->NewCopy();
         if (type_index_) {
           type_index_->Update(dest[e]);
         }

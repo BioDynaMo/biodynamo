@@ -38,11 +38,11 @@ class TestCell : public Cell {
 
   virtual ~TestCell() {}
 
-  TestCell(const Event& event, Agent* mother, uint64_t new_oid = 0)
-      : Base(event, mother, new_oid) {
-    const CellDivisionEvent* cdevent =
-        dynamic_cast<const CellDivisionEvent*>(&event);
-    TestCell* mother_cell = dynamic_cast<TestCell*>(mother);
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+
+    auto* cdevent =  dynamic_cast<CellDivisionEvent*>(event);
+    auto* mother_cell = dynamic_cast<TestCell*>(event->existing_agent);
     if (cdevent && mother_cell && mother_cell->capture_input_parameters_) {
       mother_cell->captured_volume_ratio_ = cdevent->volume_ratio_;
       mother_cell->captured_phi_ = cdevent->phi_;

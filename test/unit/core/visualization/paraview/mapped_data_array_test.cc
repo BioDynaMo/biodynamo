@@ -30,7 +30,7 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
   Simulation simulation(TEST_NAME);
   // Discard the first uid to have a non zero uid for the agent
 
-  simulation.GetAgentUidGenerator()->NewAgentUid();
+  simulation.GetAgentUidGenerator()->GenerateUid();
   using NeuriteElement = neuroscience::NeuriteElement;
   using NeuronOrNeurite = neuroscience::NeuronOrNeurite;
   NeuriteElement ne;

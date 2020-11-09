@@ -49,18 +49,5 @@ TEST(ChemotaxisTest, Run) {
   EXPECT_ARR_NEAR(pos + normalized_gradient * 3.14, cell.GetPosition());
 }
 
-TEST(ChemotaxisTest, EventCopy) {
-  auto event_id1 = UniqueEventIdFactory::Get()->NewUniqueEventId();
-  auto event_id2 = UniqueEventIdFactory::Get()->NewUniqueEventId();
-  auto event_id3 = UniqueEventIdFactory::Get()->NewUniqueEventId();
-  auto event_id4 = UniqueEventIdFactory::Get()->NewUniqueEventId();
-
-  Chemotaxis ct(nullptr, 3.14, {event_id1}, {event_id4});
-  EXPECT_TRUE(ct.Copy(event_id1));
-  EXPECT_FALSE(ct.Copy(event_id2));
-  EXPECT_FALSE(ct.Remove(event_id3));
-  EXPECT_TRUE(ct.Remove(event_id4));
-}
-
 }  // namespace chemotaxis_test_ns
 }  // namespace bdm

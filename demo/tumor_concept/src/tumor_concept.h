@@ -33,23 +33,18 @@ class MyCell : public Cell {  // our object extends the Cell object
   explicit MyCell(const Double3& position) : Base(position) {}
 
   /// If MyCell divides, daughter 2 copies the data members from the mother
+  // FIXME
   MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
       : Base(event, other, new_oid) {
     if (auto* mother = dynamic_cast<MyCell*>(other)) {
       cell_color_ = mother->cell_color_;
-      if (event.GetId() == CellDivisionEvent::kEventId) {
+      if (event.GetUid() == CellDivisionEvent::kUid) {
         // the daughter will be able to divide
         can_divide_ = true;
       } else {
         can_divide_ = mother->can_divide_;
       }
     }
-  }
-
-  /// If a cell divides, daughter keeps the same state from its mother.
-  void EventHandler(const Event& event, Agent* other1,
-                    Agent* other2 = nullptr) override {
-    Base::EventHandler(event, other1, other2);
   }
 
   // getter and setter for our new data member
@@ -70,7 +65,7 @@ class MyCell : public Cell {  // our object extends the Cell object
 struct Growth : public Behavior {
   BDM_STATELESS_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
-  Growth() : Behavior(gAllEventIds) {}
+  Growth() { CopyToNewAlways(); }
 
   /// Empty default event constructor, because Growth does not have state.
   template <typename TEvent, typename TBm>

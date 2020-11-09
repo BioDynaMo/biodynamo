@@ -25,14 +25,19 @@ namespace bdm {
 namespace agent_test_internal {
 
 struct Growth : public Behavior {
+  BDM_BEHAVIOR_HEADER(Growth, Behavior, 1);
+
   double growth_rate_ = 0.5;
 
-  Growth() : Behavior(CellDivisionEvent::kEventId) {}
+  Growth() { CopyToNewIf({CellDivisionEvent::kUid}); }
 
-  Growth(const Event& event, Behavior* other,
-               uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {
-    if (Growth* g = dynamic_cast<Growth*>(other)) {
+  virtual ~Growth() {}
+
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+
+    auto* other = event->existing_behavior;
+    if (auto* g = dynamic_cast<Growth*>(other)) {
       growth_rate_ = g->growth_rate_;
     } else {
       Log::Fatal("Growth::EventConstructor",
@@ -40,44 +45,24 @@ struct Growth : public Behavior {
     }
   }
 
-  virtual ~Growth() {}
-
-  Behavior* GetInstance(const Event& event, Behavior* other,
-                                 uint64_t new_oid = 0) const override {
-    return new Growth(event, other, new_oid);
-  }
-  Behavior* GetCopy() const override {
-    return new Growth(*this);
-  }
-
-  /// Default event handler (exising behavior won't be modified on
-  /// any event)
-  void EventHandler(const Event& event, Behavior* other1,
-                    Behavior* other2 = nullptr) override {
-    Behavior::EventHandler(event, other1, other2);
-  }
-
   void Run(Agent* t) override {
     t->SetDiameter(t->GetDiameter() + growth_rate_);
   }
-
-  BDM_CLASS_DEF_OVERRIDE(Growth, 1);
 };
 
 struct Movement : public Behavior {
+  BDM_BEHAVIOR_HEADER(Movement, Behavior, 1);
   Double3 velocity_;
 
-  Movement()
-      : Behavior(0, CellDivisionEvent::kEventId),
-        velocity_({{0, 0, 0}}) {}
+  Movement() : velocity_({{0, 0, 0}}) { RemoveFromExistingIf({CellDivisionEvent::kUid}); }
   explicit Movement(const Double3& velocity)
-      : Behavior(0, CellDivisionEvent::kEventId),
-        velocity_(velocity) {}
+        : velocity_(velocity) { RemoveFromExistingIf({CellDivisionEvent::kUid}); }
 
-  Movement(const Event& event, Behavior* other,
-                 uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {
-    if (Movement* m = dynamic_cast<Movement*>(other)) {
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+
+    auto* other = event->existing_behavior;
+    if (auto* m = dynamic_cast<Movement*>(other)) {
       velocity_ = m->velocity_;
     } else {
       Log::Fatal("Movement::EventConstructor",
@@ -85,49 +70,22 @@ struct Movement : public Behavior {
     }
   }
 
-  /// Create a new instance of this object using the default constructor.
-  Behavior* GetInstance(const Event& event, Behavior* other,
-                                 uint64_t new_oid = 0) const override {
-    return new Movement(event, other, new_oid);
-  }
-  Behavior* GetCopy() const override {
-    return new Movement(*this);
-  }
-
-  /// Default event handler
-  void EventHandler(const Event& event, Behavior* other1,
-                    Behavior* other2 = nullptr) override {
-    Behavior::EventHandler(event, other1, other2);
-  }
-
   void Run(Agent* agent) override {
     const auto& position = agent->GetPosition();
     agent->SetPosition(position + velocity_);
   }
-
-  BDM_CLASS_DEF_OVERRIDE(Movement, 1);
 };
 
 /// This behavior removes itself the first time it is executed
 struct Removal : public Behavior {
-  Removal() {}
-  Removal(const Event& event, Behavior* other,
-               uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {}
+  BDM_BEHAVIOR_HEADER(Removal, Movement, 1);
 
-  Behavior* GetInstance(const Event& event, Behavior* other,
-                                 uint64_t new_oid = 0) const override {
-    return new Removal(event, other, new_oid);
-  }
-  Behavior* GetCopy() const override {
-    return new Removal(*this);
-  }
+  Removal() {}
+  virtual ~Removal() {}
 
   void Run(Agent* agent) override {
     agent->RemoveBehavior(this);
   }
-
-  BDM_CLASS_DEF_OVERRIDE(Removal, 1);
 };
 
 }  // namespace agent_test_internal

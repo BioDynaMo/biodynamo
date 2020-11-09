@@ -25,20 +25,19 @@ namespace bdm {
 struct Chemotaxis : public Behavior {
   BDM_BEHAVIOR_HEADER(Chemotaxis, Behavior, 1);
 
-  Chemotaxis(DiffusionGrid* dgrid, double speed,
-             std::initializer_list<EventId> copy_events = {gAllEventIds},
-             std::initializer_list<EventId> remove_events = {})
-      : Behavior(copy_events, remove_events),
-        dgrid_(dgrid),
+  Chemotaxis() {}
+  Chemotaxis(DiffusionGrid* dgrid, double speed)
+      : dgrid_(dgrid),
         speed_(speed) {}
 
-  Chemotaxis(const Event& event, Behavior* other, uint64_t new_uid)
-      : Behavior(event, other, new_uid) {
-    dgrid_ = bdm_static_cast<Chemotaxis*>(other)->dgrid_;
-    speed_ = bdm_static_cast<Chemotaxis*>(other)->speed_;
-  }
-
   virtual ~Chemotaxis() {}
+
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+    auto* other = bdm_static_cast<Chemotaxis*>(event->existing_behavior);
+    dgrid_ = other->dgrid_;
+    speed_ = other->speed_;
+  }
 
   void Run(Agent* agent) override {
     auto* cell = bdm_static_cast<Cell*>(agent);

@@ -27,21 +27,24 @@ namespace bdm {
 /// the specified threshold and divides the object afterwards.
 struct GrowthDivision : public Behavior {
   BDM_BEHAVIOR_HEADER(GrowthDivision, Behavior, 1);
-  GrowthDivision() : Behavior(gAllEventIds) {}
-  GrowthDivision(double threshold, double growth_rate,
-             std::initializer_list<EventId> event_list)
-      : Behavior(event_list),
+
+  GrowthDivision() { CopyToNewAlways(); }
+  GrowthDivision(double threshold, double growth_rate) : 
         threshold_(threshold),
         growth_rate_(growth_rate) {}
 
-  GrowthDivision(const Event& event, Behavior* other, uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {
-    if (GrowthDivision* gd = dynamic_cast<GrowthDivision*>(other)) {
+  virtual ~GrowthDivision() {}
+
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+
+    auto* other = event->existing_behavior;
+    if (auto* gd = dynamic_cast<GrowthDivision*>(other)) {
       threshold_ = gd->threshold_;
       growth_rate_ = gd->growth_rate_;
     } else {
-      Log::Fatal("GrowthDivision::EventConstructor",
-                 "other was not of type GrowthDivision");
+      Log::Fatal("GrowthDivision::Initialize",
+                 "event->existing_behavior was not of type GrowthDivision");
     }
   }
 
@@ -49,7 +52,7 @@ struct GrowthDivision : public Behavior {
   /// any event)
 
   void Run(Agent* agent) override {
-    if (Cell* cell = dynamic_cast<Cell*>(agent)) {
+    if (auto* cell = dynamic_cast<Cell*>(agent)) {
       if (cell->GetDiameter() <= threshold_) {
         cell->ChangeVolume(growth_rate_);
       } else {

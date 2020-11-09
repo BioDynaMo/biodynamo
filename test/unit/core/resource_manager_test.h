@@ -33,9 +33,7 @@ class A : public TestAgent {
   BDM_AGENT_HEADER(A, TestAgent, 1);
 
  public:
-  A() {}  // for ROOT I/O
-  A(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
+  A() {}
   explicit A(int data) { data_ = data; }
 
   int GetData() const { return data_; }
@@ -48,9 +46,7 @@ class B : public TestAgent {
   BDM_AGENT_HEADER(B, TestAgent, 1);
 
  public:
-  B() {}  // for ROOT I/O
-  B(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
+  B() {}
   explicit B(double data) { data_ = data; }
 
   double GetData() const { return data_; }

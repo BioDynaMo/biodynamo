@@ -28,8 +28,8 @@ namespace neuroscience {
 /// SideNeuriteExtensionEvent. The parameter names must be compatible to the
 /// two mentioned events to enable code reuse.
 /// (This event creates **two** new neurite elements.)
-struct NeuriteBranchingEvent : public Event {
-  static const EventId kEventId;
+struct NeuriteBranchingEvent : public NewAgentEvent {
+  static const NewAgentEventUid kUid;
 
   NeuriteBranchingEvent(double distal_portion, double length, double diameter,
                         const Double3 direction)
@@ -40,7 +40,7 @@ struct NeuriteBranchingEvent : public Event {
 
   virtual ~NeuriteBranchingEvent() {}
 
-  EventId GetId() const override { return kEventId; }
+  NewAgentEventUid GetUid() const override { return kUid; }
 
   /// the fraction of the total old length devoted to the
   /// distal half (should be between 0 and 1).

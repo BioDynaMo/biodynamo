@@ -30,7 +30,7 @@ TEST(GrowthDivisionTest, Grow) {
   Cell cell;
   cell.SetDiameter(40);
 
-  GrowthDivision gd(40, 300, {gAllEventIds});
+  GrowthDivision gd(40, 300);
   gd.Run(&cell);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
@@ -49,7 +49,7 @@ TEST(GrowthDivisionTest, Divide) {
   Cell cell;
   cell.SetDiameter(41);
 
-  GrowthDivision gd(40, 300, {gAllEventIds});
+  GrowthDivision gd(40, 300);
   gd.Run(&cell);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());

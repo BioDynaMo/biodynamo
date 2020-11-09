@@ -24,8 +24,8 @@ namespace neuroscience {
 ///
 /// This event adds a side neurite (daughter right) to the neurite element
 /// that triggered the event.
-struct SideNeuriteExtensionEvent : public Event {
-  static const EventId kEventId;
+struct SideNeuriteExtensionEvent : public NewAgentEvent {
+  static const NewAgentEventUid kUid;
 
   SideNeuriteExtensionEvent(double length, double diameter,
                             const Double3 direction)
@@ -33,7 +33,7 @@ struct SideNeuriteExtensionEvent : public Event {
 
   virtual ~SideNeuriteExtensionEvent() {}
 
-  EventId GetId() const override { return kEventId; }
+  NewAgentEventUid GetUid() const override { return kUid; }
 
   /// length of the new branch
   double length_;

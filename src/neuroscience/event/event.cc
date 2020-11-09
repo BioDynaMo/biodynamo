@@ -21,16 +21,16 @@
 namespace bdm {
 namespace neuroscience {
 
-const EventId NewNeuriteExtensionEvent::kEventId =
-    UniqueEventIdFactory::Get()->NewUniqueEventId();
-const EventId NeuriteBifurcationEvent::kEventId =
-    UniqueEventIdFactory::Get()->NewUniqueEventId();
-const EventId NeuriteBranchingEvent::kEventId =
-    UniqueEventIdFactory::Get()->NewUniqueEventId();
-const EventId SplitNeuriteElementEvent::kEventId =
-    UniqueEventIdFactory::Get()->NewUniqueEventId();
-const EventId SideNeuriteExtensionEvent::kEventId =
-    UniqueEventIdFactory::Get()->NewUniqueEventId();
+const NewAgentEventUid NewNeuriteExtensionEvent::kUid =
+    NewAgentEventUidGenerator::GetInstance()->GenerateUid();
+const NewAgentEventUid NeuriteBifurcationEvent::kUid =
+    NewAgentEventUidGenerator::GetInstance()->GenerateUid();
+const NewAgentEventUid NeuriteBranchingEvent::kUid =
+    NewAgentEventUidGenerator::GetInstance()->GenerateUid();
+const NewAgentEventUid SplitNeuriteElementEvent::kUid =
+    NewAgentEventUidGenerator::GetInstance()->GenerateUid();
+const NewAgentEventUid SideNeuriteExtensionEvent::kUid =
+    NewAgentEventUidGenerator::GetInstance()->GenerateUid();
 
 }  // namespace neuroscience
 }  // namespace bdm

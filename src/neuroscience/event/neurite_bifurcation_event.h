@@ -29,8 +29,8 @@ namespace neuroscience {
 /// It creates **two** new neurite elements and assigns it to daughter left
 /// and daughter right of the neurite element that triggered the event
 /// (=mother).
-struct NeuriteBifurcationEvent : public Event {
-  static const EventId kEventId;
+struct NeuriteBifurcationEvent : public NewAgentEvent {
+  static const NewAgentEventUid kUid;
 
   NeuriteBifurcationEvent(double length, double diameter_l, double diameter_r,
                           const Double3& direction_l,
@@ -43,7 +43,7 @@ struct NeuriteBifurcationEvent : public Event {
 
   virtual ~NeuriteBifurcationEvent() {}
 
-  EventId GetId() const override { return kEventId; }
+  NewAgentEventUid GetUid() const override { return kUid; }
 
   /// length of new branches
   double length_;

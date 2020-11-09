@@ -60,7 +60,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
     cell->SetMass(1.0);
-    cell->AddBehavior(regulate_example.GetCopy());
+    cell->AddBehavior(regulate_example.NewCopy());
     return cell;
   };
   const std::vector<Double3>& positions = {{0, 0, 0}};
