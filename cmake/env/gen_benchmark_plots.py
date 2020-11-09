@@ -126,9 +126,10 @@ def write_memory(j):
             data_benchmark = data["benchmarks"]
             data_demo = data_benchmark[i]
             data_demo.update(x)
-            json.dump(data, w_file)
-            print(i)
             i += 1
+
+        json.dump(data, w_file, indent=1)
+
     w_file.close()
 
 def main():
@@ -153,6 +154,7 @@ if __name__ == "__main__":
     file = sys.argv[1]
     with open(file) as read_file:
         data = json.load(read_file)
+        read_file.close()
     # x = {"memory":10}
     # y = data["benchmarks"]
     # z = y[0]
