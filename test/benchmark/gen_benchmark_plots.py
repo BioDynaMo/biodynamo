@@ -32,14 +32,6 @@ def graph(name_demo, iteration, i):
         tmp = cpu[h] + tmp
         h += 1
     moy = tmp / iteration
-#    fig, ax = plt.subplots()
-#    xlabels = ['str']
-#    ax.plot([1], moy, 'bo-')
-#    ax.set_title(name_demo)
-#    ax.set_xticks([1])
-#    ax.set_xticklabels(xlabels, rotation=40)
-#    plt.savefig(name_demo+'.')
-#    plt.show()
     return name_demo, moy
 
 def name(i):
@@ -77,15 +69,15 @@ def iteration():
             break
     return j+1
 
-def store(cpu, name_demo):
+def store(cpu, name_demo, memory):
     version = sys.argv[2]
-    csvfile = open('benchmark/'+name_demo+'.csv', 'a+')
+    csvfile = open('../../build/benchmark/'+name_demo+'.csv', 'a+')
     writer = csv.writer(csvfile)
-    writer.writerow( (version, cpu) )
+    writer.writerow( (version, cpu, memory) )
     csvfile.close()
 
 def nb_data(name_demo):
-    with open('benchmark/'+name_demo+'.csv') as csv_file:
+    with open('../../build/benchmark/'+name_demo+'.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
@@ -97,22 +89,47 @@ def plot(name_demo):
     nb = nb_data(name_demo)
     v = [0]*nb
     value = [0]*nb
-    fig, ax = plt.subplots()
-    with open('benchmark/'+name_demo+'.csv') as csv_file:
+    value2 = [0]*nb
+    fig, ax = plt.subplots(2, sharex='col', sharey='row')
+    with open('../../build/benchmark/'+name_demo+'.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
             v[line_count] = row[0]
             value[line_count] = float(row[1])/10**9
+            value2[line_count] = float(row[2])
             line_count += 1
     xlabels = v
-    ax.plot(range(nb), value, 'bo-')
-    ax.set_title(name_demo)
-    ax.set_xticks(range(nb))
-    ax.set_xticklabels(xlabels, rotation=10)
-    plt.savefig('benchmark/'+name_demo+'.png')
-#    plt.show()
+    ax[0].plot(range(nb), value, 'bo-')
+    ax[1].plot(range(nb), value2, 'ro-')
+    ax[1].set_title(name_demo)
+    ax[1].set_xticks(range(nb))
+    ax[1].set_xticklabels(xlabels, rotation=10)
+    plt.savefig(name_demo+'.png')
     return
+
+
+# There must be a probelm there
+# If we use the scrit ./version.sh, it will work once, but if you ran it second time or third... there is a crash
+# I think its because of the json file that I broke because the first try it work (maybe) because the json is not broken yet
+# If you use the target, it will work anytime because its always a new json file that is not broken yet
+def write_memory(j):
+    file = sys.argv[1]
+    # Just a random vector of the MemoryUsage
+    GetMemoryUsage = [10]*j
+    i = 0
+    file = sys.argv[1]
+    with open(file, "w") as w_file:
+        while i < j:
+            x = {"memory":GetMemoryUsage[i]}
+            print(x)
+            data_benchmark = data["benchmarks"]
+            data_demo = data_benchmark[i]
+            data_demo.update(x)
+            json.dump(data, w_file)
+            print(i)
+            i += 1
+    w_file.close()
 
 def main():
     i = 0
@@ -120,19 +137,28 @@ def main():
     name_datas, j = names()
     cpu = [0]*j
     name_demo = [0]*j
+    # Add a value to a json file
+    write_memory(j)
+    # There we will take the value of memory and we'll store that in a vector
+    # We suppose its already donne
+    GetMemoryUsage = [10]*j
     while i < j:
         name_demo[i], cpu[i] = graph(name_datas[i], it, j)
-        store(cpu[i], name_demo[i])
+        store(cpu[i], name_demo[i], GetMemoryUsage[i])
         plot(name_demo[i])
         i += 1
     return
 
 if __name__ == "__main__":
-   file = sys.argv[1]
-   with open(file, "r") as read_file:
-       data = json.load(read_file)
-   try:
+    file = sys.argv[1]
+    with open('../../build/benchmark/'+file) as read_file:
+        data = json.load(read_file)
+    # x = {"memory":10}
+    # y = data["benchmarks"]
+    # z = y[0]
+    # z.update(x)
+    # print(y)
+    try:
         main()
-   except:
-       print("ERROR")
-#    main()
+    except:
+        print("ERROR")

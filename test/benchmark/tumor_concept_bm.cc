@@ -30,7 +30,7 @@ static void TumorConcept1(benchmark::State& state) {
   }
 }
 
-BENCHMARK(TumorConcept1)->Range(1, 1<<17)->MeasureProcessCPUTime();
+BENCHMARK(TumorConcept1)/*->Range(1, 1<<17)*/->MeasureProcessCPUTime();
 
 static void TumorConcept0(benchmark::State& state) {
   // FIXME memory leak
@@ -44,7 +44,7 @@ static void TumorConcept0(benchmark::State& state) {
   }
 }
 
-BENCHMARK(TumorConcept0)->Range(1, 1<<17)->MeasureProcessCPUTime();
+BENCHMARK(TumorConcept0)/*->Range(1, 1<<17)*/->MeasureProcessCPUTime();
 
 }  // namespace tumor_concept
 }  // namespace bdm
