@@ -30,7 +30,7 @@
 #include "core/simulation.h"
 #include "core/util/math.h"
 #include "core/util/thread_info.h"
-#include "core/force.h"
+#include "core/interaction_force.h"
 
 namespace bdm {
 
@@ -38,7 +38,7 @@ namespace bdm {
 struct DisplacementOp : public AgentOperationImpl {
   BDM_OP_HEADER(DisplacementOp);
 
-  DisplacementOp() : force_(new Force()) {
+  DisplacementOp() : force_(new InteractionForce()) {
     auto* tinfo = ThreadInfo::GetInstance();
     last_iteration_.resize(tinfo->GetMaxThreads(),
                            std::numeric_limits<uint64_t>::max());
@@ -63,7 +63,7 @@ struct DisplacementOp : public AgentOperationImpl {
     }
   }
 
-  void SetForce(Force* force) {
+  void SetInteractionForce(InteractionForce* force) {
     if (force == force_) {
       return;
     }
@@ -107,7 +107,7 @@ struct DisplacementOp : public AgentOperationImpl {
   }
 
  private:
-  Force* force_ = nullptr;
+  InteractionForce* force_ = nullptr;
   double squared_radius_ = 0;
   std::vector<double> last_time_run_;
   std::vector<double> delta_time_;

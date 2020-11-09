@@ -25,7 +25,7 @@
 
 #include "core/container/inline_vector.h"
 #include "core/container/math_array.h"
-#include "core/force.h"
+#include "core/interaction_force.h"
 #include "core/event/cell_division_event.h"
 #include "core/event/event.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
@@ -264,11 +264,11 @@ class Cell : public Agent {
   }
 
   struct DisplacementFunctor : Functor<void, const Agent*, double> {
-    const Force* force;
+    const InteractionForce* force;
     Agent* agent;
     Double3 translation_force_on_point_mass{0, 0, 0};
 
-    DisplacementFunctor(const Force* force, Agent* agent) : force(force), agent(agent) {}
+    DisplacementFunctor(const InteractionForce* force, Agent* agent) : force(force), agent(agent) {}
 
     void operator()(const Agent* neighbor,
                     double squared_distance) override {
@@ -279,7 +279,7 @@ class Cell : public Agent {
     }
   };
 
-  Double3 CalculateDisplacement(const Force* force, double squared_radius, double dt) override {
+  Double3 CalculateDisplacement(const InteractionForce* force, double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied

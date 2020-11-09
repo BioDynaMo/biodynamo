@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/force.h"
+#include "core/interaction_force.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
 #include "core/agent/agent.h"
@@ -621,14 +621,14 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   }
 
   struct DisplacementFunctor : public Functor<void, const Agent*, double> {
-    const Force* force;
+    const InteractionForce* force;
     NeuriteElement* ne;
     Double3& force_from_neighbors;
     Double3& force_on_my_mothers_point_mass;
     double& h_over_m;
     bool& has_neurite_neighbor;
 
-    DisplacementFunctor(const Force* force, NeuriteElement* neurite, Double3& force_from_neighbors,
+    DisplacementFunctor(const InteractionForce* force, NeuriteElement* neurite, Double3& force_from_neighbors,
                         Double3& force_on_my_mothers_point_mass,
                         double& h_over_m, bool& has_neurite_neighbor)
         : force(force),
@@ -697,7 +697,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   //   Physics
   // ***************************************************************************
 
-  Double3 CalculateDisplacement(const Force* force, double squared_radius, double dt) override {
+  Double3 CalculateDisplacement(const InteractionForce* force, double squared_radius, double dt) override {
     Double3 force_on_my_point_mass{0, 0, 0};
     Double3 force_on_my_mothers_point_mass{0, 0, 0};
 
@@ -709,7 +709,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
                                                  // in the opposite direction
     force_on_my_point_mass = force_on_my_point_mass + (spring_axis_ * factor);
 
-    // 2) Force transmitted by daugthers (if they exist)
+    // 2) InteractionForce transmitted by daugthers (if they exist)
     if (daughter_left_ != nullptr) {
       auto force_from_daughter =
           daughter_left_->ForceTransmittedFromDaugtherToMother(*this);

@@ -23,13 +23,13 @@ namespace bdm {
 
 class Agent;
 
-class Force {
+class InteractionForce {
  public:
-  Force() {}
-  virtual ~Force() {}
+  InteractionForce() {}
+  virtual ~InteractionForce() {}
 
   virtual Double4 Calculate(const Agent* lhs, const Agent* rhs) const;
-  virtual Force* GetCopy() const { return new Force(*this); }
+  virtual InteractionForce* GetCopy() const { return new InteractionForce(*this); }
 
  private:
   void ForceBetweenSpheres(const Agent* sphere_lhs,

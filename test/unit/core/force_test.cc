@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/force.h"
+#include "core/interaction_force.h"
 #include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "neuroscience/module.h"
@@ -26,7 +26,7 @@ using neuroscience::NeuriteElement;
 /// Tests the forces that are created between the reference sphere and its
 /// overlapping neighbors
 /// implementation uses virual bigger radii to have distant interaction
-TEST(Force, GeneralSphere) {
+TEST(InteractionForce, GeneralSphere) {
   Simulation simulation(TEST_NAME);
 
   Cell cell({1.1, 1.0, 0.9});
@@ -34,7 +34,7 @@ TEST(Force, GeneralSphere) {
   Cell nb({0, 0, 0});
   nb.SetDiameter(5);
 
-  Force force;
+  InteractionForce force;
   auto result = force.Calculate(&cell, &nb);
 
   EXPECT_NEAR(7.1429184067241138, result[0], abs_error<double>::value);
@@ -52,7 +52,7 @@ TEST(Force, GeneralSphere) {
 
 /// Tests the special case that non of the neighbors overlap
 /// with the reference cell
-TEST(Force, AllNonOverlappingSphere) {
+TEST(InteractionForce, AllNonOverlappingSphere) {
   Simulation simulation(TEST_NAME);
 
   Cell cell({0, 0, 0});
@@ -60,7 +60,7 @@ TEST(Force, AllNonOverlappingSphere) {
   Cell nb({11.01, 0, 0});
   nb.SetDiameter(8);
 
-  Force force;
+  InteractionForce force;
   auto result = force.Calculate(&cell, &nb);
 
   EXPECT_NEAR(0, result[0], abs_error<double>::value);
@@ -70,7 +70,7 @@ TEST(Force, AllNonOverlappingSphere) {
 
 /// Tests the special case that neighbor and reference cell
 /// are at the same position -> should return random force
-TEST(Force, AllAtSamePositionSphere) {
+TEST(InteractionForce, AllAtSamePositionSphere) {
   // agent required for random number generator
   Simulation simulation(TEST_NAME);
 
@@ -79,7 +79,7 @@ TEST(Force, AllAtSamePositionSphere) {
   Cell nb({0, 0, 0});
   nb.SetDiameter(8);
 
-  Force force;
+  InteractionForce force;
   auto result = force.Calculate(&cell, &nb);
 
   // random number must be in interval [-3.0, 3.0]
@@ -106,7 +106,7 @@ TEST(DISABLED_Force, GeneralSphereCylinder) {
   //
   // EXPECT_ARR_NEAR({7, 1, 3}, cylinder.ProximalEnd());
   //
-  // Force force;
+  // InteractionForce force;
   // auto result1 = force.Calculate(&cylinder, &sphere);
   //
   // EXPECT_NEAR(5, result1[0], abs_error<double>::value);
@@ -137,7 +137,7 @@ TEST(DISABLED_Force, GeneralCylinder) {
 
   EXPECT_ARR_NEAR({11, 2, 1.5}, cylinder2.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result = force.Calculate(&cylinder1, &cylinder2);
 
   EXPECT_NEAR(-38.290598290598311, result[0], abs_error<double>::value);
@@ -154,7 +154,7 @@ TEST(DISABLED_Force, GeneralCylinder) {
               abs_error<double>::value);  // FIXME not symmetric
 }
 
-TEST(Force, CylinderIntersectingAxis) {
+TEST(InteractionForce, CylinderIntersectingAxis) {
   neuroscience::InitModule();
   // agent required for random number generator
   Simulation simulation(TEST_NAME);
@@ -173,7 +173,7 @@ TEST(Force, CylinderIntersectingAxis) {
 
   EXPECT_ARR_NEAR({2, 2, 0}, cylinder2.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result = force.Calculate(&cylinder1, &cylinder2);
 
   EXPECT_NEAR(0, result[0], 30);
@@ -189,7 +189,7 @@ TEST(Force, CylinderIntersectingAxis) {
   EXPECT_NEAR(0.5, result[3], abs_error<double>::value);
 }
 
-TEST(Force, NotTouchingParallelCylinders) {
+TEST(InteractionForce, NotTouchingParallelCylinders) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -207,7 +207,7 @@ TEST(Force, NotTouchingParallelCylinders) {
 
   EXPECT_ARR_NEAR({5, -5, 0}, cylinder2.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result = force.Calculate(&cylinder1, &cylinder2);
 
   EXPECT_NEAR(0, result[0], abs_error<double>::value);
@@ -227,7 +227,7 @@ TEST(Force, NotTouchingParallelCylinders) {
 // < sphere radius
 // sphere-cylinder interaction is done at the center and in the horizontal
 // orientation of the cylinder
-TEST(Force, SphereSmallCylinderHorizontal) {
+TEST(InteractionForce, SphereSmallCylinderHorizontal) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -241,7 +241,7 @@ TEST(Force, SphereSmallCylinderHorizontal) {
 
   EXPECT_ARR_NEAR({4, 24.5, 0}, cylinder.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(-0.196774255282483, result1[0], abs_error<double>::value);
@@ -256,7 +256,7 @@ TEST(Force, SphereSmallCylinderHorizontal) {
 // < sphere radius
 // sphere-cylinder interaction is done vertically at the tip of the cylinder
 // (mass location)
-TEST(Force, SphereSmallCylinderVertical) {
+TEST(InteractionForce, SphereSmallCylinderVertical) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -270,7 +270,7 @@ TEST(Force, SphereSmallCylinderVertical) {
 
   EXPECT_ARR_NEAR({0, 32, 0}, cylinder.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
@@ -283,7 +283,7 @@ TEST(Force, SphereSmallCylinderVertical) {
 }
 
 // opposit case of Vertical: cylinder is below the cell
-TEST(Force, SphereSmallCylinderVertical2) {
+TEST(InteractionForce, SphereSmallCylinderVertical2) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
   // auto* rm = simulation.GetResourceManager();
@@ -299,7 +299,7 @@ TEST(Force, SphereSmallCylinderVertical2) {
 
   EXPECT_ARR_NEAR({0, -32, 0}, cylinder.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
@@ -315,7 +315,7 @@ TEST(Force, SphereSmallCylinderVertical2) {
 // length > sphere radius
 // sphere-cylinder interaction is done at the center and in the horizontal
 // orientation of the cylinder
-TEST(Force, SphereLongCylinderHorizontalCenter) {
+TEST(InteractionForce, SphereLongCylinderHorizontalCenter) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -329,7 +329,7 @@ TEST(Force, SphereLongCylinderHorizontalCenter) {
 
   EXPECT_ARR_NEAR({10, 14.5, 0}, cylinder.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
@@ -347,7 +347,7 @@ TEST(Force, SphereLongCylinderHorizontalCenter) {
 // length > sphere radius
 // sphere-cylinder interaction is done at the proximal end and in the horizontal
 // orientation of the cylinder
-TEST(Force, SphereLongCylinderHorizontalpP) {
+TEST(InteractionForce, SphereLongCylinderHorizontalpP) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -361,7 +361,7 @@ TEST(Force, SphereLongCylinderHorizontalpP) {
 
   EXPECT_ARR_NEAR({0.5, 14.5, 0}, cylinder.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);
@@ -379,7 +379,7 @@ TEST(Force, SphereLongCylinderHorizontalpP) {
 // length > sphere radius
 // sphere-cylinder interaction is done at the distal point and in the horizontal
 // orientation of the cylinder
-TEST(Force, SphereLongCylinderHorizontalpD) {
+TEST(InteractionForce, SphereLongCylinderHorizontalpD) {
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME);
 
@@ -393,7 +393,7 @@ TEST(Force, SphereLongCylinderHorizontalpD) {
 
   EXPECT_ARR_NEAR({19.5, 14.5, 0}, cylinder.ProximalEnd());
 
-  Force force;
+  InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
   EXPECT_NEAR(0, result1[0], abs_error<double>::value);

@@ -31,7 +31,7 @@
 #include "core/shape.h"
 #include "core/agent/agent_pointer.h"
 #include "core/agent/agent_uid.h"
-#include "core/force.h"
+#include "core/interaction_force.h"
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
@@ -173,7 +173,7 @@ class Agent {
   const InlineVector<Behavior*, 2>& GetAllBehaviors() const;
   // ---------------------------------------------------------------------------
 
-  virtual Double3 CalculateDisplacement(const Force* force, double squared_radius, double dt) = 0;
+  virtual Double3 CalculateDisplacement(const InteractionForce* force, double squared_radius, double dt) = 0;
 
   virtual void ApplyDisplacement(const Double3& displacement) = 0;
 
