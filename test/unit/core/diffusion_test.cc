@@ -155,7 +155,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 TEST(DiffusionTest, LeakingEdge) {
   Simulation simulation(TEST_NAME);
 
-  AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0, 5);
+  AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0, 5, 1, "Open");
 
   int lbound = -100;
   int rbound = 100;
@@ -256,6 +256,8 @@ TEST(DiffusionTest, ClosedEdge) {
   double v4 = 2.7287519978558121;
   double v5 = 0.081744730821864647;
 
+  std::cout <<"v1 "<< conc[d_grid->GetBoxIndex(c)] << std::endl;
+
   EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], eps);
   EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], eps);
   EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(w)], eps);
@@ -283,7 +285,7 @@ TEST(DiffusionTest, ClosedEdge) {
 // after the env has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
   Simulation simulation(TEST_NAME);
-  AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0, 5);
+  DiffusionGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
   int rbound = 100;
@@ -437,41 +439,41 @@ TEST(DiffusionTest, CorrectParameters) {
 TEST(DiffusionTest, EulerConvergence) {
   Simulation simulation(TEST_NAME);
   double diff_coef = 0.5;
-  EulerGrid* d_grid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
-  EulerGrid* d_grid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
-  EulerGrid* d_grid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
+  EulerGrid* d_grid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21,1,"Closed");
+  EulerGrid* d_grid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41,1,"Closed");
+  EulerGrid* d_grid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81,1,"Closed");
 
   int l = -100;
   int r = 100;
-  d_grid2->Initialize({l, r, l, r, l, r});
-  d_grid4->Initialize({l, r, l, r, l, r});
-  d_grid8->Initialize({l, r, l, r, l, r});
+  d_grid2->EulerGrid::Initialize({l, r, l, r, l, r});
+  d_grid4->EulerGrid::Initialize({l, r, l, r, l, r});
+  d_grid8->EulerGrid::Initialize({l, r, l, r, l, r});
 
-  d_grid2->SetConcentrationThreshold(1e15);
-  d_grid4->SetConcentrationThreshold(1e15);
-  d_grid8->SetConcentrationThreshold(1e15);
+  d_grid2->EulerGrid::SetConcentrationThreshold(1e15);
+  d_grid4->EulerGrid::SetConcentrationThreshold(1e15);
+  d_grid8->EulerGrid::SetConcentrationThreshold(1e15);
 
   // instantaneous point source
   int init = 1e5;
   Double3 source = {{0, 0, 0}};
-  d_grid2->IncreaseConcentrationBy(source,
+  d_grid2->EulerGrid::IncreaseConcentrationBy(source,
                                    init / pow(d_grid2->GetBoxLength(), 3));
-  d_grid4->IncreaseConcentrationBy(source,
+  d_grid4->EulerGrid::IncreaseConcentrationBy(source,
                                    init / pow(d_grid4->GetBoxLength(), 3));
-  d_grid8->IncreaseConcentrationBy(source,
+  d_grid8->EulerGrid::IncreaseConcentrationBy(source,
                                    init / pow(d_grid8->GetBoxLength(), 3));
 
-  auto conc2 = d_grid2->GetAllConcentrations();
-  auto conc4 = d_grid4->GetAllConcentrations();
-  auto conc8 = d_grid8->GetAllConcentrations();
+  auto conc2 = d_grid2->EulerGrid::GetAllConcentrations();
+  auto conc4 = d_grid4->EulerGrid::GetAllConcentrations();
+  auto conc8 = d_grid8->EulerGrid::GetAllConcentrations();
 
   Double3 marker = {10.0, 10.0, 10.0};
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
-    d_grid2->Diffuse();
-    d_grid4->Diffuse();
-    d_grid8->Diffuse();
+    d_grid2->EulerGrid::Diffuse();
+    d_grid4->EulerGrid::Diffuse();
+    d_grid8->EulerGrid::Diffuse();
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
@@ -490,6 +492,14 @@ TEST(DiffusionTest, EulerConvergence) {
       CalculateAnalyticalSolution(init, rc4[0], rc4[1], rc4[2], diff_coef, tot);
   auto real_val8 =
       CalculateAnalyticalSolution(init, rc8[0], rc8[1], rc8[2], diff_coef, tot);
+
+  std::cout << "Concentration 2 " << conc2[d_grid2->GetBoxIndex(marker)]  << std::endl;
+  std::cout << "Concentration 4 " << conc4[d_grid2->GetBoxIndex(marker)]  << std::endl;
+  std::cout << "Concentration 8 " << conc8[d_grid2->GetBoxIndex(marker)]  << std::endl;
+
+  std::cout << "REAL Concentration 2 " << real_val2  << std::endl;
+  std::cout << "REAL Concentration 4 " << real_val2  << std::endl;
+  std::cout << "REAL Concentration 8 " << real_val2  << std::endl;
 
   auto error2 = std::abs(real_val2 - conc2[d_grid2->GetBoxIndex(marker)]) /
                 std::abs(real_val2);
@@ -507,45 +517,45 @@ TEST(DiffusionTest, EulerConvergence) {
   delete d_grid8;
 }
 
-TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
-  auto set_param = [](Param* param) { param->diffusion_type_ = "RK"; };
+TEST(DiffusionTest, RungeKuttaConvergence) {
+  auto set_param = [](Param* param){ param->diffusion_type_ = "RK"; };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
-  RKGrid* d_grid2 = new RKGrid(0, "Kalium1", diff_coef, 0, 21);
-  RKGrid* d_grid4 = new RKGrid(1, "Kalium4", diff_coef, 0, 41);
-  RKGrid* d_grid8 = new RKGrid(2, "Kalium8", diff_coef, 0, 81);
+  RKGrid* d_grid2 = new RKGrid(0, "Kalium1", diff_coef, 0, 21,1,"Closed");
+  RKGrid* d_grid4 = new RKGrid(1, "Kalium4", diff_coef, 0, 41,1,"Closed");
+  RKGrid* d_grid8 = new RKGrid(2, "Kalium8", diff_coef, 0, 81,1,"Closed");
 
   int l = -100;
   int r = 100;
-  d_grid2->Initialize({l, r, l, r, l, r});
-  d_grid4->Initialize({l, r, l, r, l, r});
-  d_grid8->Initialize({l, r, l, r, l, r});
+  d_grid2->RKGrid::Initialize({l, r, l, r, l, r});
+  d_grid4->RKGrid::Initialize({l, r, l, r, l, r});
+  d_grid8->RKGrid::Initialize({l, r, l, r, l, r});
 
-  d_grid2->SetConcentrationThreshold(1e15);
-  d_grid4->SetConcentrationThreshold(1e15);
-  d_grid8->SetConcentrationThreshold(1e15);
+  d_grid2->RKGrid::SetConcentrationThreshold(1e15);
+  d_grid4->RKGrid::SetConcentrationThreshold(1e15);
+  d_grid8->RKGrid::SetConcentrationThreshold(1e15);
 
-  // instantaneous point source
+  // instantaneous point source.
   int init = 1e5;
   Double3 source = {{0, 0, 0}};
-  d_grid2->IncreaseConcentrationBy(source,
+  d_grid2->RKGrid::IncreaseConcentrationBy(source,
                                    init / pow(d_grid2->GetBoxLength(), 3));
-  d_grid4->IncreaseConcentrationBy(source,
+  d_grid4->RKGrid::IncreaseConcentrationBy(source,
                                    init / pow(d_grid4->GetBoxLength(), 3));
-  d_grid8->IncreaseConcentrationBy(source,
+  d_grid8->RKGrid::IncreaseConcentrationBy(source,
                                    init / pow(d_grid8->GetBoxLength(), 3));
 
-  auto conc2 = d_grid2->GetAllConcentrations();
-  auto conc4 = d_grid4->GetAllConcentrations();
-  auto conc8 = d_grid8->GetAllConcentrations();
+  auto conc2 = d_grid2->RKGrid::GetAllConcentrations();
+  auto conc4 = d_grid4->RKGrid::GetAllConcentrations();
+  auto conc8 = d_grid8->RKGrid::GetAllConcentrations();
 
   Double3 marker = {10.0, 10.0, 10.0};
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
-    d_grid2->Diffuse();
-    d_grid4->Diffuse();
-    d_grid8->Diffuse();
+    d_grid2->RKGrid::Diffuse();
+    d_grid4->RKGrid::Diffuse();
+    d_grid8->RKGrid::Diffuse();
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
@@ -564,6 +574,14 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
       CalculateAnalyticalSolution(init, rc4[0], rc4[1], rc4[2], diff_coef, tot);
   auto real_val8 =
       CalculateAnalyticalSolution(init, rc8[0], rc8[1], rc8[2], diff_coef, tot);
+
+  std::cout << "Concentration 2 " << conc2[d_grid2->GetBoxIndex(marker)]  << std::endl;
+  std::cout << "Concentration 4 " << conc4[d_grid2->GetBoxIndex(marker)]  << std::endl;
+  std::cout << "Concentration 8 " << conc8[d_grid2->GetBoxIndex(marker)]  << std::endl;
+
+  std::cout << "REAL Concentration 2 " << real_val2  << std::endl;
+  std::cout << "REAL Concentration 4 " << real_val2  << std::endl;
+  std::cout << "REAL Concentration 8 " << real_val2  << std::endl;
 
   auto error2 = std::abs(real_val2 - conc2[d_grid2->GetBoxIndex(marker)]) /
                 std::abs(real_val2);
