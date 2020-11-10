@@ -18,10 +18,10 @@
 #include <atomic>
 #include <limits>
 #include <mutex>
-#include "core/container/agent_uid_map.h"
-#include "core/scheduler.h"
 #include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
+#include "core/container/agent_uid_map.h"
+#include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"

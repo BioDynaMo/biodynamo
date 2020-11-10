@@ -20,20 +20,20 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/agent/agent.h"
 #include "core/interaction_force.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
-#include "core/agent/agent.h"
 #include "core/util/log.h"
 #include "core/util/math.h"
 #include "core/util/random.h"
+#include "neuroscience/neuron_or_neurite.h"
+#include "neuroscience/neuron_soma.h"
 #include "neuroscience/new_agent_event/neurite_bifurcation_event.h"
 #include "neuroscience/new_agent_event/neurite_branching_event.h"
 #include "neuroscience/new_agent_event/new_neurite_extension_event.h"
 #include "neuroscience/new_agent_event/side_neurite_extension_event.h"
 #include "neuroscience/new_agent_event/split_neurite_element_event.h"
-#include "neuroscience/neuron_or_neurite.h"
-#include "neuroscience/neuron_soma.h"
 #include "neuroscience/param.h"
 
 namespace bdm {
@@ -330,7 +330,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     // then append a "daughter right" between the two
     NeuriteBranchingEvent event(0.5, length, new_branch_diameter, direction);
     CreateNewAgents(event, {this, this});
-    return bdm_static_cast<NeuriteElement*>(event.new_agents[1]); 
+    return bdm_static_cast<NeuriteElement*>(event.new_agents[1]);
   }
 
   /// \brief Create a branch for this neurite element.
@@ -390,7 +390,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
       Fatal("NeuriteElements",
             "Bifurcation only allowed on a terminal neurite element");
     }
-    NeuriteBifurcationEvent event(length, diameter_1, diameter_2, direction_1, direction_2);
+    NeuriteBifurcationEvent event(length, diameter_1, diameter_2, direction_1,
+                                  direction_2);
     CreateNewAgents(event, {this, this});
     auto* new_branch_l = bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
     auto* new_branch_r = bdm_static_cast<NeuriteElement*>(event.new_agents[1]);
@@ -618,7 +619,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     double& h_over_m;
     bool& has_neurite_neighbor;
 
-    DisplacementFunctor(const InteractionForce* force, NeuriteElement* neurite, Double3& force_from_neighbors,
+    DisplacementFunctor(const InteractionForce* force, NeuriteElement* neurite,
+                        Double3& force_from_neighbors,
                         Double3& force_on_my_mothers_point_mass,
                         double& h_over_m, bool& has_neurite_neighbor)
         : force(force),
@@ -628,8 +630,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
           h_over_m(h_over_m),
           has_neurite_neighbor(has_neurite_neighbor) {}
 
-    void operator()(const Agent* neighbor,
-                    double squared_distance) override {
+    void operator()(const Agent* neighbor, double squared_distance) override {
       // if neighbor is a NeuriteElement
       // use shape to determine if neighbor is a NeuriteElement
       // this is much faster than using a dynamic_cast
@@ -687,7 +688,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   //   Physics
   // ***************************************************************************
 
-  Double3 CalculateDisplacement(const InteractionForce* force, double squared_radius, double dt) override {
+  Double3 CalculateDisplacement(const InteractionForce* force,
+                                double squared_radius, double dt) override {
     Double3 force_on_my_point_mass{0, 0, 0};
     Double3 force_on_my_mothers_point_mass{0, 0, 0};
 
@@ -722,8 +724,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     //  (We check for every neighbor object if they touch us, i.e. push us away)
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     DisplacementFunctor calculate_neighbor_forces(
-        force, this, force_from_neighbors, force_on_my_mothers_point_mass, h_over_m,
-        has_neurite_neighbor);
+        force, this, force_from_neighbors, force_on_my_mothers_point_mass,
+        h_over_m, has_neurite_neighbor);
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);
     // hack: if the neighbour is a neurite, and as we reduced the force from
@@ -927,7 +929,9 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   const AgentPointer<NeuronOrNeurite>& GetMother() const { return mother_; }
 
-  void SetMother(const AgentPointer<NeuronOrNeurite>& mother) { mother_ = mother; }
+  void SetMother(const AgentPointer<NeuronOrNeurite>& mother) {
+    mother_ = mother;
+  }
 
   /// @return the (first) distal neurite element, if it exists,
   /// i.e. if this is not the terminal segment (otherwise returns nullptr).
@@ -1221,7 +1225,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     SideNeuriteExtensionEvent event{length, diameter, direction};
     CreateNewAgents(event, {this});
     return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
-
   }
 
   /// TODO

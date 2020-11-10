@@ -11,8 +11,10 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#ifndef CORE_VISUALIZATION_ROOT_NOTEBOOK_UTIL
-#define CORE_VISUALIZATION_ROOT_NOTEBOOK_UTIL
+#ifndef CORE_VISUALIZATION_ROOT_NOTEBOOK_UTIL_H_
+#define CORE_VISUALIZATION_ROOT_NOTEBOOK_UTIL_H_
+
+#include <string>
 
 #include "core/simulation.h"
 #include "core/visualization/root/adaptor.h"
@@ -32,4 +34,4 @@ inline void VisualizeInNotebook(size_t w = 300, size_t h = 300,
 
 }  // namespace bdm
 
-#endif  // CORE_VISUALIZATION_ROOT_NOTEBOOK_UTIL
+#endif  // CORE_VISUALIZATION_ROOT_NOTEBOOK_UTIL_H_

@@ -89,8 +89,7 @@ struct GeneRegulation : public Behavior {
         double slope = first_derivatives_[i](absolute_time, concentrations_[i]);
         concentrations_[i] += slope * timestep;
       }
-    } else if (param->numerical_ode_solver ==
-               Param::NumericalODESolver::kRK4) {
+    } else if (param->numerical_ode_solver == Param::NumericalODESolver::kRK4) {
       // Runge-Kutta 4
       for (uint64_t i = 0; i < first_derivatives_.size(); i++) {
         double interval_midpoint = absolute_time + timestep / 2.0;

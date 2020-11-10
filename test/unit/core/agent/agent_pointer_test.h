@@ -17,8 +17,8 @@
 
 #include <gtest/gtest.h>
 
-#include "core/resource_manager.h"
 #include "core/agent/agent_pointer.h"
+#include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_agent.h"

@@ -20,8 +20,8 @@
 #include <unordered_map>
 // BioDynaMo
 #include "core/shape.h"
-#include "core/visualization/paraview/vtk_diffusion_grid.h"
 #include "core/visualization/paraview/vtk_agents.h"
+#include "core/visualization/paraview/vtk_diffusion_grid.h"
 
 class TClass;
 

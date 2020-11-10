@@ -98,7 +98,7 @@ struct Operation {
   ///
   /// @param[in]  name  The name of the operation
   ///
-  Operation(const std::string &name);
+  explicit Operation(const std::string &name);
 
   /// Construct an operation
   ///

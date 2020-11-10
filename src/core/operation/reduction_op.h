@@ -18,10 +18,10 @@
 #include <array>
 #include <vector>
 
+#include "core/agent/agent.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
-#include "core/agent/agent.h"
 #include "core/util/thread_info.h"
 
 #define BDM_CACHE_LINE_SIZE 64

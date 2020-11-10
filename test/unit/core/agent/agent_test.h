@@ -16,9 +16,9 @@
 #define UNIT_CORE_AGENT_AGENT_TEST_H_
 
 #include <gtest/gtest.h>
-#include "core/behavior/behavior.h"
-#include "core/agent/cell.h"
 #include "core/agent/agent.h"
+#include "core/agent/cell.h"
+#include "core/behavior/behavior.h"
 #include "unit/test_util/test_agent.h"
 
 namespace bdm {
@@ -40,8 +40,7 @@ struct Growth : public Behavior {
     if (auto* g = dynamic_cast<Growth*>(other)) {
       growth_rate_ = g->growth_rate_;
     } else {
-      Log::Fatal("Growth::EventConstructor",
-                 "other was not of type Growth");
+      Log::Fatal("Growth::EventConstructor", "other was not of type Growth");
     }
   }
 
@@ -54,9 +53,12 @@ struct Movement : public Behavior {
   BDM_BEHAVIOR_HEADER(Movement, Behavior, 1);
   Double3 velocity_;
 
-  Movement() : velocity_({{0, 0, 0}}) { RemoveFromExistingIf({CellDivisionEvent::kUid}); }
-  explicit Movement(const Double3& velocity)
-        : velocity_(velocity) { RemoveFromExistingIf({CellDivisionEvent::kUid}); }
+  Movement() : velocity_({{0, 0, 0}}) {
+    RemoveFromExistingIf({CellDivisionEvent::kUid});
+  }
+  explicit Movement(const Double3& velocity) : velocity_(velocity) {
+    RemoveFromExistingIf({CellDivisionEvent::kUid});
+  }
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
@@ -83,9 +85,7 @@ struct Removal : public Behavior {
   Removal() {}
   virtual ~Removal() {}
 
-  void Run(Agent* agent) override {
-    agent->RemoveBehavior(this);
-  }
+  void Run(Agent* agent) override { agent->RemoveBehavior(this); }
 };
 
 }  // namespace agent_test_internal

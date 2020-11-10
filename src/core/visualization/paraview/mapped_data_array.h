@@ -12,18 +12,21 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_MAPPED_DATA_ARRAY_H_
-#define CORE_VISUALIZATION_MAPPED_DATA_ARRAY_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_MAPPED_DATA_ARRAY_H_
+#define CORE_VISUALIZATION_PARAVIEW_MAPPED_DATA_ARRAY_H_
+
+#include <algorithm>
+#include <string>
 
 #include <vtkMappedDataArray.h>
 #include <vtkObjectFactory.h>
 #include <thread>
 #include <vector>
 
-#include "core/functor.h"
-#include "core/param/param.h"
 #include "core/agent/agent.h"
 #include "core/agent/agent_pointer.h"
+#include "core/functor.h"
+#include "core/param/param.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
 
@@ -61,15 +64,15 @@ struct GetDataMemberForVis {
       return DataType::kSoPointer;
     }
     return DataType::kDefault;
-  };
+  }
 
   template <typename TTDataMember = TDataMember>
   typename std::enable_if<GetDataType<TTDataMember>() == DataType::kDefault,
                           TReturn>::type
   operator()(Agent* agent) const {
     auto* casted_agent = static_cast<TClass*>(agent);
-    return reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_agent) +
-                                          dm_offset_);
+    return reinterpret_cast<TDataMember*>(
+        reinterpret_cast<char*>(casted_agent) + dm_offset_);
   }
 
   template <typename TTDataMember = TDataMember>
@@ -114,8 +117,8 @@ struct GetDataMemberForVis {
 
 // -----------------------------------------------------------------------------
 struct MappedDataArrayInterface {
-  virtual void Update(const std::vector<Agent*>* agents,
-                      uint64_t start, uint64_t end) = 0;
+  virtual void Update(const std::vector<Agent*>* agents, uint64_t start,
+                      uint64_t end) = 0;
 };
 
 // -----------------------------------------------------------------------------
@@ -802,4 +805,4 @@ vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::Lookup(
 
 }  // namespace bdm
 
-#endif  // CORE_VISUALIZATION_MAPPED_DATA_ARRAY_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_MAPPED_DATA_ARRAY_H_

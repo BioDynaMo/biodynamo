@@ -18,6 +18,7 @@
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #include <vector>
 
+#include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/opencl_state.h"
@@ -25,7 +26,6 @@
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/shape.h"
-#include "core/agent/cell.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
 

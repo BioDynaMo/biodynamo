@@ -13,8 +13,8 @@
 // -----------------------------------------------------------------------------
 
 #include "core/exporter.h"
-#include "core/resource_manager.h"
 #include "core/agent/cell.h"
+#include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"

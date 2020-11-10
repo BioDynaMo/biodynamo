@@ -26,9 +26,7 @@ struct Divide : Behavior {
 
   Divide() {}
 
-  void Run(Agent* agent) override {
-    dynamic_cast<Cell*>(agent)->Divide();
-  }
+  void Run(Agent* agent) override { dynamic_cast<Cell*>(agent)->Divide(); }
 };
 
 inline int Simulate(int argc, const char** argv) {

@@ -16,8 +16,8 @@
 #define CORE_TYPE_INDEX_H_
 
 #include <vector>
-#include "core/container/flatmap.h"
 #include "core/agent/agent.h"
+#include "core/container/flatmap.h"
 
 class TClass;
 

@@ -15,9 +15,9 @@
 #ifndef CORE_BEHAVIOR_GROWTH_DIVISION_H_
 #define CORE_BEHAVIOR_GROWTH_DIVISION_H_
 
-#include "core/behavior/behavior.h"
-#include "core/agent/cell_division_event.h"
 #include "core/agent/cell.h"
+#include "core/agent/cell_division_event.h"
+#include "core/behavior/behavior.h"
 #include "core/util/log.h"
 #include "core/util/root.h"
 
@@ -29,9 +29,8 @@ struct GrowthDivision : public Behavior {
   BDM_BEHAVIOR_HEADER(GrowthDivision, Behavior, 1);
 
   GrowthDivision() { AlwaysCopyToNew(); }
-  GrowthDivision(double threshold, double growth_rate) : 
-        threshold_(threshold),
-        growth_rate_(growth_rate) {}
+  GrowthDivision(double threshold, double growth_rate)
+      : threshold_(threshold), growth_rate_(growth_rate) {}
 
   virtual ~GrowthDivision() {}
 

@@ -14,11 +14,11 @@
 
 #include <gtest/gtest.h>
 
+#include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/model_initializer.h"
 #include "core/operation/operation_registry.h"
-#include "core/agent/cell.h"
 #include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
 

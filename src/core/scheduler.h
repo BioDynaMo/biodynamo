@@ -20,6 +20,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "core/operation/operation.h"
@@ -77,8 +78,7 @@ class Scheduler {
   virtual void Execute();
 
  private:
-  friend void RunAgentsTest(Param::MappedDataArrayMode, uint64_t, bool,
-                                bool);
+  friend void RunAgentsTest(Param::MappedDataArrayMode, uint64_t, bool, bool);
   friend SchedulerTest;
 
   SimulationBackup* backup_ = nullptr;
@@ -122,7 +122,7 @@ class Scheduler {
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
   void Initialize();
-  
+
   /// Runs a lambda for each operation in the specified list of operations
   template <typename Lambda>
   void ForEachOperationInList(const std::vector<Operation*>& operations,

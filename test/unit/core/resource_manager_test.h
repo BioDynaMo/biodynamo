@@ -16,10 +16,11 @@
 #define UNIT_CORE_RESOURCE_MANAGER_TEST_H_
 
 #include <algorithm>
+#include <unordered_map>
 #include <vector>
+#include "core/agent/agent.h"
 #include "core/environment/environment.h"
 #include "core/resource_manager.h"
-#include "core/agent/agent.h"
 #include "core/util/io.h"
 #include "core/util/type.h"
 #include "unit/test_util/test_agent.h"
@@ -331,9 +332,8 @@ struct CheckForEachAgentFunctor : Functor<void, Agent*> {
   }
 };
 
-inline void CheckForEachAgent(ResourceManager* rm,
-                                    uint64_t num_agent_per_type,
-                                    bool numa_checks = false) {
+inline void CheckForEachAgent(ResourceManager* rm, uint64_t num_agent_per_type,
+                              bool numa_checks = false) {
   CheckForEachAgentFunctor functor(num_agent_per_type, numa_checks);
   rm->ForEachAgentParallel(functor);
 
@@ -341,9 +341,8 @@ inline void CheckForEachAgent(ResourceManager* rm,
   ASSERT_EQ(2 * num_agent_per_type, functor.found.size());
   for (uint64_t i = 0; i < functor.found.size(); ++i) {
     if (!functor.found[i]) {
-      FAIL()
-          << "ForEachAgentParallel was not called for element with data_="
-          << i;
+      FAIL() << "ForEachAgentParallel was not called for element with data_="
+             << i;
     }
   }
 
@@ -400,8 +399,9 @@ inline void RunSortAndForEachAgentParallel(uint64_t num_agent_per_type) {
 
 inline void RunSortAndForEachAgentParallel() {
   int num_threads = omp_get_max_threads();
-  std::vector<int> num_agent_per_type = {std::max(1, num_threads - 1), num_threads,
-                                      3 * num_threads, 3 * num_threads + 1};
+  std::vector<int> num_agent_per_type = {std::max(1, num_threads - 1),
+                                         num_threads, 3 * num_threads,
+                                         3 * num_threads + 1};
 
   for (auto n : num_agent_per_type) {
     RunSortAndForEachAgentParallel(n);
@@ -411,10 +411,8 @@ inline void RunSortAndForEachAgentParallel() {
 }
 
 // -----------------------------------------------------------------------------
-struct CheckForEachAgentDynamicFunctor
-    : Functor<void, Agent*, AgentHandle> {
-  CheckForEachAgentDynamicFunctor(bool numa_checks,
-                                        std::vector<bool>& found)
+struct CheckForEachAgentDynamicFunctor : Functor<void, Agent*, AgentHandle> {
+  CheckForEachAgentDynamicFunctor(bool numa_checks, std::vector<bool>& found)
       : numa_checks_(numa_checks),
         found_(found),
         cnt(0),
@@ -476,9 +474,9 @@ struct CheckNumaThreadErrors : Functor<void, Agent*, AgentHandle> {
 };
 
 inline void CheckForEachAgentDynamic(ResourceManager* rm,
-                                           uint64_t num_agent_per_type,
-                                           uint64_t batch_size,
-                                           bool numa_checks = false) {
+                                     uint64_t num_agent_per_type,
+                                     uint64_t batch_size,
+                                     bool numa_checks = false) {
   std::vector<bool> found(2 * num_agent_per_type);
   ASSERT_EQ(2 * num_agent_per_type, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
@@ -500,9 +498,8 @@ inline void CheckForEachAgentDynamic(ResourceManager* rm,
   ASSERT_EQ(2 * num_agent_per_type, found.size());
   for (uint64_t i = 0; i < found.size(); ++i) {
     if (!found[i]) {
-      FAIL()
-          << "ForEachAgentParallel was not called for element with data_="
-          << i;
+      FAIL() << "ForEachAgentParallel was not called for element with data_="
+             << i;
     }
   }
 
@@ -515,7 +512,8 @@ inline void CheckForEachAgentDynamic(ResourceManager* rm,
                          (2 * num_agent_per_type));
     // work stealing can cause thread errors. This check ensures that at least
     // 75% of the work is done by the correct CPU-Memory mapping.
-    if (num_agent_per_type > 20 * static_cast<uint64_t>(omp_get_max_threads())) {
+    if (num_agent_per_type >
+        20 * static_cast<uint64_t>(omp_get_max_threads())) {
       EXPECT_GT(num_agent_per_type / 4,
                 check_numa_thread_functor.numa_thread_errors.load());
     }
@@ -526,8 +524,8 @@ inline void CheckForEachAgentDynamic(ResourceManager* rm,
   }
 }
 
-inline void RunSortAndForEachAgentParallelDynamic(
-    uint64_t num_agent_per_type, uint64_t batch_size) {
+inline void RunSortAndForEachAgentParallelDynamic(uint64_t num_agent_per_type,
+                                                  uint64_t batch_size) {
   Simulation simulation("RunSortAndForEachAgentParallelDynamic");
   auto* rm = simulation.GetResourceManager();
 
@@ -569,8 +567,9 @@ inline void RunSortAndForEachAgentParallelDynamic(
 
 inline void RunSortAndForEachAgentParallelDynamic() {
   int num_threads = omp_get_max_threads();
-  std::vector<int> num_agent_per_type = {std::max(1, num_threads - 1), num_threads,
-                                      3 * num_threads, 3 * num_threads + 1};
+  std::vector<int> num_agent_per_type = {std::max(1, num_threads - 1),
+                                         num_threads, 3 * num_threads,
+                                         3 * num_threads + 1};
   std::vector<int> batch_sizes = {std::max(1, num_threads - 1), num_threads,
                                   3 * num_threads, 3 * num_threads + 1};
 
@@ -619,19 +618,18 @@ inline void RunIOTest() {
   // validate
   EXPECT_EQ(5u, restored_rm->GetNumAgents());
 
-  EXPECT_EQ(12,
-            dynamic_cast<A*>(restored_rm->GetAgent(ref_uid))->GetData());
-  EXPECT_EQ(
-      34, dynamic_cast<A*>(restored_rm->GetAgent(ref_uid + 1))->GetData());
-  EXPECT_EQ(
-      42, dynamic_cast<A*>(restored_rm->GetAgent(ref_uid + 2))->GetData());
+  EXPECT_EQ(12, dynamic_cast<A*>(restored_rm->GetAgent(ref_uid))->GetData());
+  EXPECT_EQ(34,
+            dynamic_cast<A*>(restored_rm->GetAgent(ref_uid + 1))->GetData());
+  EXPECT_EQ(42,
+            dynamic_cast<A*>(restored_rm->GetAgent(ref_uid + 2))->GetData());
 
-  EXPECT_NEAR(
-      3.14, dynamic_cast<B*>(restored_rm->GetAgent(ref_uid + 3))->GetData(),
-      kEpsilon);
-  EXPECT_NEAR(
-      6.28, dynamic_cast<B*>(restored_rm->GetAgent(ref_uid + 4))->GetData(),
-      kEpsilon);
+  EXPECT_NEAR(3.14,
+              dynamic_cast<B*>(restored_rm->GetAgent(ref_uid + 3))->GetData(),
+              kEpsilon);
+  EXPECT_NEAR(6.28,
+              dynamic_cast<B*>(restored_rm->GetAgent(ref_uid + 4))->GetData(),
+              kEpsilon);
 
   EXPECT_EQ(0, restored_rm->GetDiffusionGrid(0)->GetSubstanceId());
   EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetSubstanceId());

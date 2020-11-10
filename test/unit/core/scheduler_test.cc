@@ -27,27 +27,27 @@ class SchedulerTest : public ::testing::Test {
     env_ = env;
   }
 
-  void ScheduleOps() { scheduler_->ScheduleOps(); };
+  void ScheduleOps() { scheduler_->ScheduleOps(); }
 
-  void RunPreScheduledOps() { scheduler_->RunPreScheduledOps(); };
+  void RunPreScheduledOps() { scheduler_->RunPreScheduledOps(); }
 
-  void RunScheduledOps() { scheduler_->RunScheduledOps(); };
+  void RunScheduledOps() { scheduler_->RunScheduledOps(); }
 
-  void RunPostScheduledOps() { scheduler_->RunPostScheduledOps(); };
+  void RunPostScheduledOps() { scheduler_->RunPostScheduledOps(); }
 
-  std::vector<std::string> GetListOfScheduledAgentOps() { 
-    return scheduler_->GetListOfScheduledAgentOps(); 
-  } 
+  std::vector<std::string> GetListOfScheduledAgentOps() {
+    return scheduler_->GetListOfScheduledAgentOps();
+  }
 
-  std::vector<std::string> GetListOfScheduledStandaloneOps() { 
-    return scheduler_->GetListOfScheduledStandaloneOps(); 
-  } 
+  std::vector<std::string> GetListOfScheduledStandaloneOps() {
+    return scheduler_->GetListOfScheduledStandaloneOps();
+  }
 
-  virtual void SetUp() override {}
+  void SetUp() override {}
 
   void TestBody() override {}
 
-  virtual void TearDown() override {}
+  void TearDown() override {}
 
   void Initialize() { scheduler_->restore_point_++; }
 
@@ -439,10 +439,12 @@ TEST_F(SchedulerTest, ScheduleOrder) {
   scheduler_ = sim.GetScheduler();
   sim.Simulate(1);
 
-  std::vector<std::string> agent_ops = {
-      "update run displacement", "bound space",
-      "behavior",          "displacement",
-      "discretization",          "distribute run displacement info"};
+  std::vector<std::string> agent_ops = {"update run displacement",
+                                        "bound space",
+                                        "behavior",
+                                        "displacement",
+                                        "discretization",
+                                        "distribute run displacement info"};
   std::vector<std::string> sa_ops = {"diffusion"};
 
   int i = 0;

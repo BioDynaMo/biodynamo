@@ -30,8 +30,8 @@ class Timing {
   typedef std::chrono::high_resolution_clock Clock;
 
   static int64_t Timestamp() {
-    using std::chrono::milliseconds;
     using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
     auto time = Clock::now();
     auto since_epoch = time.time_since_epoch();
     auto millis = duration_cast<milliseconds>(since_epoch);

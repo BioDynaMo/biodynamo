@@ -15,10 +15,11 @@
 #ifndef CORE_ENVIRONMENT_ENVIRONMENT_H_
 #define CORE_ENVIRONMENT_ENVIRONMENT_H_
 
+#include <vector>
+#include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/functor.h"
 #include "core/resource_manager.h"
-#include "core/agent/agent.h"
 
 namespace bdm {
 
@@ -74,8 +75,8 @@ class Environment {
     using Type = std::vector<std::array<double, 8>>;
 
     SimDimensionAndLargestAgentFunctor(Type& xmin, Type& xmax, Type& ymin,
-                                           Type& ymax, Type& zmin, Type& zmax,
-                                           Type& largest)
+                                       Type& ymax, Type& zmin, Type& zmax,
+                                       Type& largest)
         : xmin_(xmin),
           xmax_(xmax),
           ymin_(ymin),
@@ -146,7 +147,7 @@ class Environment {
     std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 
     SimDimensionAndLargestAgentFunctor functor(xmin, xmax, ymin, ymax, zmin,
-                                                   zmax, largest);
+                                               zmax, largest);
     rm->ForEachAgentParallel(1000, functor);
 
     // reduce partial results into global one

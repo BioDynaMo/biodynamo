@@ -87,8 +87,7 @@ TEST(CellTest, DivideVolumeRatioPhiTheta) {
   // behaviors mother
   EXPECT_EQ(1u, mother.GetAllBehaviors().size());
   EXPECT_EQ(1u, daughter->GetAllBehaviors().size());
-  if (dynamic_cast<Growth*>(daughter->GetAllBehaviors()[0]) ==
-      nullptr) {
+  if (dynamic_cast<Growth*>(daughter->GetAllBehaviors()[0]) == nullptr) {
     FAIL() << "Variant type at position 0 is not a Growth";
   }
 

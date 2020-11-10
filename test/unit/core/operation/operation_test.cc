@@ -14,13 +14,13 @@
 
 #include "gtest/gtest.h"
 
+#include "core/agent/cell.h"
 #include "core/model_initializer.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/reduction_op.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/agent/cell.h"
 #include "core/simulation.h"
 
 namespace bdm {

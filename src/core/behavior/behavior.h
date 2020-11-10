@@ -15,15 +15,16 @@
 #ifndef CORE_BEHAVIOR_BEHAVIOR_H_
 #define CORE_BEHAVIOR_BEHAVIOR_H_
 
-#include "core/agent/new_agent_event.h"
+#include <limits>
 #include "core/agent/agent.h"
+#include "core/agent/new_agent_event.h"
 #include "core/util/type.h"
 
 namespace bdm {
 
 /// Behavior encapsulates logic to decide for which NewAgentEventUids
-/// a behavior should be copied to the new agent and/or removed from 
-/// existing one. The default behavior is never copy to new agents, 
+/// a behavior should be copied to the new agent and/or removed from
+/// existing one. The default behavior is never copy to new agents,
 /// and never remove from existing agents.
 class Behavior {
  public:
@@ -38,8 +39,8 @@ class Behavior {
   virtual Behavior* NewCopy() const = 0;
 
   /// This method is called to initialize new behaviors that are created
-  /// during a NewAgentEvent. Override this method to initialize attributes of 
-  /// your own Behavior subclasses. 
+  /// during a NewAgentEvent. Override this method to initialize attributes of
+  /// your own Behavior subclasses.
   /// NB: Don't forget to call the implementation of the base class first.
   /// `Base::Initialize(event);`
   /// Failing to do so will result in errors.
@@ -47,10 +48,10 @@ class Behavior {
     copy_mask_ = event.existing_behavior->copy_mask_;
     remove_mask_ = event.existing_behavior->remove_mask_;
   }
-  
-  /// This method is called to update the existing behavior at the end of 
-  /// a NewAgentEvent. Override this method to update attributes of 
-  /// your own Behavior subclasses. 
+
+  /// This method is called to update the existing behavior at the end of
+  /// a NewAgentEvent. Override this method to update attributes of
+  /// your own Behavior subclasses.
   /// NB: Don't forget to call the implementation of the base class first.
   /// `Base::Update(event);`
   /// Failing to do so will result in errors.
@@ -59,24 +60,31 @@ class Behavior {
   virtual void Run(Agent* agent) = 0;
 
   /// Always copy this behavior to new agents
-  void AlwaysCopyToNew() { copy_mask_ = std::numeric_limits<NewAgentEventUid>::max(); }
+  void AlwaysCopyToNew() {
+    copy_mask_ = std::numeric_limits<NewAgentEventUid>::max();
+  }
   /// Never copy this behavior to new agents
   void NeverCopyToNew() { copy_mask_ = 0; }
-  /// If a new agent will be created with one of 
-  /// these NewAgentEventUids, this behavior will be copied to the new agent. 
-  void CopyToNewIf(const std::initializer_list<NewAgentEventUid>& uids) { 
+  /// If a new agent will be created with one of
+  /// these NewAgentEventUids, this behavior will be copied to the new agent.
+  void CopyToNewIf(const std::initializer_list<NewAgentEventUid>& uids) {
     for (auto& uid : uids) {
       copy_mask_ |= uid;
     }
   }
 
-  /// Always remove this behavior from the existing agent if a new agent is created.
-  void AlwaysRemoveFromExisting() { remove_mask_ = std::numeric_limits<NewAgentEventUid>::max(); }
-  /// Never remove this behavior from the existing agent if a new agent is created.
+  /// Always remove this behavior from the existing agent if a new agent is
+  /// created.
+  void AlwaysRemoveFromExisting() {
+    remove_mask_ = std::numeric_limits<NewAgentEventUid>::max();
+  }
+  /// Never remove this behavior from the existing agent if a new agent is
+  /// created.
   void NeverRemoveFromExisting() { remove_mask_ = 0; }
   /// If a new agent will be created with one of these
-  /// NewAgentEventUids, this behavior will be removed from the existing agent. 
-  void RemoveFromExistingIf(const std::initializer_list<NewAgentEventUid>& uids) { 
+  /// NewAgentEventUids, this behavior will be removed from the existing agent.
+  void RemoveFromExistingIf(
+      const std::initializer_list<NewAgentEventUid>& uids) {
     for (auto& uid : uids) {
       remove_mask_ |= uid;
     }
@@ -84,11 +92,15 @@ class Behavior {
 
   /// Function returns whether the behavior will be copied for the
   /// given event.
-  bool WillBeCopied(NewAgentEventUid event) const { return (event & copy_mask_) != 0; }
+  bool WillBeCopied(NewAgentEventUid event) const {
+    return (event & copy_mask_) != 0;
+  }
 
   /// Function returns whether the behavior will be removed for the
   /// given event.
-  bool WillBeRemoved(NewAgentEventUid event) const { return (event & remove_mask_) != 0; }
+  bool WillBeRemoved(NewAgentEventUid event) const {
+    return (event & remove_mask_) != 0;
+  }
 
   void* operator new(size_t size) {  // NOLINT
     auto* mem_mgr = Simulation::GetActive()->GetMemoryManager();
@@ -115,17 +127,17 @@ class Behavior {
 };
 
 /// Inserts boilerplate code for behaviors with state
-#define BDM_BEHAVIOR_HEADER(class_name, base_class, class_version_id)                \
- public:                                                                       \
-  using Base = base_class; \
-  /** Create a new instance of this object using the default constructor. */   \
-  Behavior* New() const override { return new class_name(); }             \
-  /** Create a new instance of this object using the copy constructor. */   \
-  Behavior* NewCopy() const override { return new class_name(*this);    }          \
-                                                                               \
- private:                                                                      \
-  BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id);                        \
-                                                                               \
+#define BDM_BEHAVIOR_HEADER(class_name, base_class, class_version_id)        \
+ public:                                                                     \
+  using Base = base_class;                                                   \
+  /** Create a new instance of this object using the default constructor. */ \
+  Behavior* New() const override { return new class_name(); }                \
+  /** Create a new instance of this object using the copy constructor. */    \
+  Behavior* NewCopy() const override { return new class_name(*this); }       \
+                                                                             \
+ private:                                                                    \
+  BDM_CLASS_DEF_OVERRIDE(class_name, class_version_id);                      \
+                                                                             \
  public:
 
 }  // namespace bdm

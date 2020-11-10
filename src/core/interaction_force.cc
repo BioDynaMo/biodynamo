@@ -17,8 +17,8 @@
 #include <algorithm>
 #include <cmath>
 
-#include "core/shape.h"
 #include "core/agent/agent.h"
+#include "core/shape.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 #include "core/util/math.h"
@@ -58,8 +58,8 @@ Double4 InteractionForce::Calculate(const Agent* lhs, const Agent* rhs) const {
 }
 
 void InteractionForce::ForceBetweenSpheres(const Agent* sphere_lhs,
-                                       const Agent* sphere_rhs,
-                                       Double3* result) const {
+                                           const Agent* sphere_rhs,
+                                           Double3* result) const {
   const Double3& ref_mass_location = sphere_lhs->GetPosition();
   double ref_diameter = sphere_lhs->GetDiameter();
   double ref_iof_coefficient = 0.15;
@@ -110,8 +110,8 @@ void InteractionForce::ForceBetweenSpheres(const Agent* sphere_lhs,
 }
 
 void InteractionForce::ForceOnACylinderFromASphere(const Agent* cylinder,
-                                               const Agent* sphere,
-                                               Double4* result) const {
+                                                   const Agent* sphere,
+                                                   Double4* result) const {
   auto* ne = bdm_static_cast<const NeuriteElement*>(cylinder);
   auto proximal_end = ne->ProximalEnd();
   auto distal_end = ne->DistalEnd();
@@ -200,8 +200,8 @@ void InteractionForce::ForceOnACylinderFromASphere(const Agent* cylinder,
 }
 
 void InteractionForce::ForceOnASphereFromACylinder(const Agent* sphere,
-                                               const Agent* cylinder,
-                                               Double3* result) const {
+                                                   const Agent* cylinder,
+                                                   Double3* result) const {
   // it is the opposite of force on a cylinder from sphere:
   Double4 temp;
   ForceOnACylinderFromASphere(cylinder, sphere, &temp);
@@ -210,8 +210,8 @@ void InteractionForce::ForceOnASphereFromACylinder(const Agent* sphere,
 }
 
 void InteractionForce::ForceBetweenCylinders(const Agent* cylinder1,
-                                         const Agent* cylinder2,
-                                         Double4* result) const {
+                                             const Agent* cylinder2,
+                                             Double4* result) const {
   auto* c1 = bdm_static_cast<const NeuriteElement*>(cylinder1);
   auto* c2 = bdm_static_cast<const NeuriteElement*>(cylinder2);
   auto a = c1->ProximalEnd();
@@ -283,9 +283,9 @@ void InteractionForce::ForceBetweenCylinders(const Agent* cylinder1,
 }
 
 Double4 InteractionForce::ComputeForceOfASphereOnASphere(const Double3& c1,
-                                                     double r1,
-                                                     const Double3& c2,
-                                                     double r2) const {
+                                                         double r1,
+                                                         const Double3& c2,
+                                                         double r2) const {
   double comp1 = c1[0] - c2[0];
   double comp2 = c1[1] - c2[1];
   double comp3 = c1[2] - c2[2];

@@ -13,9 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "core/visualization/paraview/helper.h"
+#include "core/agent/agent.h"
 #include "core/param/param.h"
 #include "core/shape.h"
-#include "core/agent/agent.h"
 #include "core/simulation.h"
 
 namespace bdm {
@@ -40,20 +40,19 @@ std::string GenerateSimulationInfoJson(
     auto* agent_grid = search->second;
 
     agents << "    {" << std::endl
-                << "      \"name\":\"" << agent_name << "\"," << std::endl;
+           << "      \"name\":\"" << agent_name << "\"," << std::endl;
     if (agent_grid->GetShape() == Shape::kSphere) {
       agents << "      \"glyph\":\"Glyph\"," << std::endl
-                  << "      \"shape\":\"Sphere\"," << std::endl
-                  << "      \"scaling_attribute\":\"diameter_\"" << std::endl;
+             << "      \"shape\":\"Sphere\"," << std::endl
+             << "      \"scaling_attribute\":\"diameter_\"" << std::endl;
     } else if (agent_grid->GetShape() == kCylinder) {
       agents << "      \"glyph\":\"BDMGlyph\"," << std::endl
-                  << "      \"shape\":\"Cylinder\"," << std::endl
-                  << "      \"x_scaling_attribute\":\"diameter_\"," << std::endl
-                  << "      \"y_scaling_attribute\":\"actual_length_\","
-                  << std::endl
-                  << "      \"z_scaling_attribute\":\"diameter_\"," << std::endl
-                  << "      \"Vectors\":\"spring_axis_\"," << std::endl
-                  << "      \"MassLocation\":\"mass_location_\"" << std::endl;
+             << "      \"shape\":\"Cylinder\"," << std::endl
+             << "      \"x_scaling_attribute\":\"diameter_\"," << std::endl
+             << "      \"y_scaling_attribute\":\"actual_length_\"," << std::endl
+             << "      \"z_scaling_attribute\":\"diameter_\"," << std::endl
+             << "      \"Vectors\":\"spring_axis_\"," << std::endl
+             << "      \"MassLocation\":\"mass_location_\"" << std::endl;
     }
     agents << "    }";
     if (counter != num_agents - 1) {

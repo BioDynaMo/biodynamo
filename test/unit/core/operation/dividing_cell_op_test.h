@@ -19,9 +19,9 @@
 
 #include "gtest/gtest.h"
 
+#include "core/agent/cell.h"
 #include "core/operation/dividing_cell_op.h"
 #include "core/resource_manager.h"
-#include "core/agent/cell.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {

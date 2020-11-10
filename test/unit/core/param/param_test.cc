@@ -30,11 +30,9 @@ TEST(ParamTest, ToJsonString) {
   Param param;
   auto j_param = json::parse(param.ToJsonString());
 
-  EXPECT_NEAR(3.14,
-              j_param["bdm::TestParamGroup"]["test_param1"].get<double>(),
+  EXPECT_NEAR(3.14, j_param["bdm::TestParamGroup"]["test_param1"].get<double>(),
               abs_error<double>::value);
-  EXPECT_EQ(42u,
-            j_param["bdm::TestParamGroup"]["test_param2"].get<uint64_t>());
+  EXPECT_EQ(42u, j_param["bdm::TestParamGroup"]["test_param2"].get<uint64_t>());
   EXPECT_EQ(-1, j_param["bdm::TestParamGroup"]["test_param3"].get<int>());
   EXPECT_EQ("output", j_param["bdm::Param"]["output_dir"].get<std::string>());
 }

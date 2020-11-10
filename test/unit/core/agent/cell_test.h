@@ -17,8 +17,8 @@
 
 #include <vector>
 
-#include "core/agent/cell_division_event.h"
 #include "core/agent/cell.h"
+#include "core/agent/cell_division_event.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"
 #include "unit/core/agent/agent_test.h"
@@ -42,7 +42,7 @@ class TestCell : public Cell {
     Base::Initialize(event);
 
     if (event.GetUid() == CellDivisionEvent::kUid) {
-      const auto& cdevent =  static_cast<const CellDivisionEvent&>(event);
+      const auto& cdevent = static_cast<const CellDivisionEvent&>(event);
       auto* mother_cell = bdm_static_cast<TestCell*>(event.existing_agent);
       mother_cell->captured_volume_ratio_ = cdevent.volume_ratio_;
       mother_cell->captured_phi_ = cdevent.phi_;
@@ -115,15 +115,14 @@ inline void RunIOTest() {
   EXPECT_NEAR(5, restored_cell->GetMass(), kEpsilon);
 
   EXPECT_EQ(2u, restored_cell->GetAllBehaviors().size());
-  EXPECT_TRUE(dynamic_cast<Growth*>(
-                  restored_cell->GetAllBehaviors()[0]) != nullptr);
+  EXPECT_TRUE(dynamic_cast<Growth*>(restored_cell->GetAllBehaviors()[0]) !=
+              nullptr);
   EXPECT_NEAR(
       0.5,
-      dynamic_cast<Growth*>(restored_cell->GetAllBehaviors()[0])
-          ->growth_rate_,
+      dynamic_cast<Growth*>(restored_cell->GetAllBehaviors()[0])->growth_rate_,
       kEpsilon);
-  EXPECT_TRUE(dynamic_cast<Movement*>(
-                  restored_cell->GetAllBehaviors()[1]) != nullptr);
+  EXPECT_TRUE(dynamic_cast<Movement*>(restored_cell->GetAllBehaviors()[1]) !=
+              nullptr);
 
   EXPECT_EQ(123u, restored_cell->GetBoxIdx());
 

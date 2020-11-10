@@ -15,10 +15,10 @@
 #ifndef CORE_OPERATION_BOUND_SPACE_OP_H_
 #define CORE_OPERATION_BOUND_SPACE_OP_H_
 
+#include "core/agent/agent.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/param/param.h"
-#include "core/agent/agent.h"
 #include "core/simulation.h"
 
 namespace bdm {

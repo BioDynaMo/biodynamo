@@ -17,8 +17,8 @@
 #include <algorithm>
 
 #include "core/resource_manager.h"
-#include "neuroscience/new_agent_event/new_neurite_extension_event.h"
 #include "neuroscience/neurite_element.h"
+#include "neuroscience/new_agent_event/new_neurite_extension_event.h"
 #include "neuroscience/param.h"
 
 namespace bdm {
@@ -79,7 +79,7 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
   if (!prototype) {
     static NeuriteElement kDefaultNeurite;
     prototype = &kDefaultNeurite;
-  } 
+  }
   NewNeuriteExtensionEvent event(diameter, phi, theta);
   CreateNewAgents(event, {prototype});
   return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
@@ -111,19 +111,20 @@ void NeuronSoma::UpdateDependentPhysicalVariables() {}
 void NeuronSoma::UpdateRelative(const NeuronOrNeurite& old_rel,
                                 const NeuronOrNeurite& new_rel) {
   auto old_rel_agent_ptr = bdm_static_cast<const NeuriteElement*>(&old_rel)
-                           ->GetAgentPtr<NeuriteElement>();
+                               ->GetAgentPtr<NeuriteElement>();
   auto new_rel_agent_ptr = bdm_static_cast<const NeuriteElement*>(&new_rel)
-                           ->GetAgentPtr<NeuriteElement>();
+                               ->GetAgentPtr<NeuriteElement>();
   auto coord = daughters_coord_[old_rel_agent_ptr->GetUid()];
-  auto it =
-      std::find(std::begin(daughters_), std::end(daughters_), old_rel_agent_ptr);
+  auto it = std::find(std::begin(daughters_), std::end(daughters_),
+                      old_rel_agent_ptr);
   assert(it != std::end(daughters_) &&
          "old_element_idx could not be found in daughters_ vector");
   *it = new_rel_agent_ptr;
   daughters_coord_[new_rel_agent_ptr->GetUid()] = coord;
 }
 
-const std::vector<AgentPointer<NeuriteElement>>& NeuronSoma::GetDaughters() const {
+const std::vector<AgentPointer<NeuriteElement>>& NeuronSoma::GetDaughters()
+    const {
   return daughters_;
 }
 

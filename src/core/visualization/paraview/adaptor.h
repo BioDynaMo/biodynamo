@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>

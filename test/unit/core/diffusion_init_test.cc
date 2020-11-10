@@ -12,10 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/agent/cell.h"
 #include "core/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
-#include "core/agent/cell.h"
 #include "core/simulation.h"
 #include "core/substance_initializers.h"
 #include "gtest/gtest.h"

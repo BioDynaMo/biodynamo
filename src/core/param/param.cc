@@ -138,8 +138,7 @@ void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config,
       param->thread_safety_mechanism =
           Param::ThreadSafetyMechanism::kUserSpecified;
     } else if (str_value == "automatic") {
-      param->thread_safety_mechanism =
-          Param::ThreadSafetyMechanism::kAutomatic;
+      param->thread_safety_mechanism = Param::ThreadSafetyMechanism::kAutomatic;
     }
   }
 }
@@ -213,8 +212,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "visualization.compress_pv_files");
 
   //   visualize_agents
-  auto visualize_agentstarr =
-      config->get_table_array("visualize_agent");
+  auto visualize_agentstarr = config->get_table_array("visualize_agent");
   if (visualize_agentstarr) {
     for (const auto& table : *visualize_agentstarr) {
       // We do a 'redundant' check here, because `get_as` on Mac OS does not
@@ -246,8 +244,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   }
 
   //   visualize_diffusion
-  auto visualize_diffusiontarr =
-      config->get_table_array("visualize_diffusion");
+  auto visualize_diffusiontarr = config->get_table_array("visualize_diffusion");
   if (visualize_diffusiontarr) {
     for (const auto& table : *visualize_diffusiontarr) {
       if (table->contains("name")) {
@@ -285,10 +282,12 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(detect_static_agents,
                           "performance.detect_static_agents");
   BDM_ASSIGN_CONFIG_VALUE(cache_neighbors, "performance.cache_neighbors");
-  BDM_ASSIGN_CONFIG_VALUE(agent_uid_defragmentation_low_watermark,
-                          "performance.agent_uid_defragmentation_low_watermark");
-  BDM_ASSIGN_CONFIG_VALUE(agent_uid_defragmentation_high_watermark,
-                          "performance.agent_uid_defragmentation_high_watermark");
+  BDM_ASSIGN_CONFIG_VALUE(
+      agent_uid_defragmentation_low_watermark,
+      "performance.agent_uid_defragmentation_low_watermark");
+  BDM_ASSIGN_CONFIG_VALUE(
+      agent_uid_defragmentation_high_watermark,
+      "performance.agent_uid_defragmentation_high_watermark");
   BDM_ASSIGN_CONFIG_VALUE(use_bdm_mem_mgr, "performance.use_bdm_mem_mgr");
   BDM_ASSIGN_CONFIG_VALUE(mem_mgr_aligned_pages_shift,
                           "performance.mem_mgr_aligned_pages_shift");

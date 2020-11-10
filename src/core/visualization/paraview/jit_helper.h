@@ -15,13 +15,15 @@
 #ifndef CORE_VISUALIZATION_PARAVIEW_JIT_HELPER_H_
 #define CORE_VISUALIZATION_PARAVIEW_JIT_HELPER_H_
 
+#include <string>
+
+#include "core/agent/agent.h"
+#include "core/agent/agent_pointer.h"
+#include "core/agent/agent_uid.h"
 #include "core/container/math_array.h"
 #include "core/functor.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
-#include "core/agent/agent.h"
-#include "core/agent/agent_pointer.h"
-#include "core/agent/agent_uid.h"
 #include "core/simulation.h"
 #include "core/util/type.h"
 #include "core/visualization/paraview/helper.h"

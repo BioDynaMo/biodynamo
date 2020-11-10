@@ -23,16 +23,16 @@
 #include <type_traits>
 #include <vector>
 
-#include "core/container/inline_vector.h"
-#include "core/container/math_array.h"
-#include "core/interaction_force.h"
+#include "core/agent/agent.h"
 #include "core/agent/cell_division_event.h"
 #include "core/agent/new_agent_event.h"
+#include "core/container/inline_vector.h"
+#include "core/container/math_array.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/functor.h"
+#include "core/interaction_force.h"
 #include "core/param/param.h"
 #include "core/shape.h"
-#include "core/agent/agent.h"
 #include "core/util/math.h"
 
 namespace bdm {
@@ -69,7 +69,7 @@ class Cell : public Agent {
     Base::Initialize(event);
 
     if (event.GetUid() == CellDivisionEvent::kUid) {
-      const auto& cdevent =  static_cast<const CellDivisionEvent&>(event);
+      const auto& cdevent = static_cast<const CellDivisionEvent&>(event);
       auto* mother_cell = bdm_static_cast<Cell*>(event.existing_agent);
       auto* daughter = this;  // FIXME
       // A) Defining some values
@@ -253,10 +253,10 @@ class Cell : public Agent {
     Agent* agent;
     Double3 translation_force_on_point_mass{0, 0, 0};
 
-    DisplacementFunctor(const InteractionForce* force, Agent* agent) : force(force), agent(agent) {}
+    DisplacementFunctor(const InteractionForce* force, Agent* agent)
+        : force(force), agent(agent) {}
 
-    void operator()(const Agent* neighbor,
-                    double squared_distance) override {
+    void operator()(const Agent* neighbor, double squared_distance) override {
       auto neighbor_force = force->Calculate(agent, neighbor);
       translation_force_on_point_mass[0] += neighbor_force[0];
       translation_force_on_point_mass[1] += neighbor_force[1];
@@ -264,7 +264,8 @@ class Cell : public Agent {
     }
   };
 
-  Double3 CalculateDisplacement(const InteractionForce* force, double squared_radius, double dt) override {
+  Double3 CalculateDisplacement(const InteractionForce* force,
+                                double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied

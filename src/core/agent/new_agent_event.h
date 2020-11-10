@@ -17,8 +17,8 @@
 
 #include <limits>
 #include <mutex>
-#include "core/util/log.h"
 #include "core/container/inline_vector.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
@@ -66,20 +66,20 @@ struct NewAgentEvent {
 
   /// Pointer to agent that triggered the NewAgentEvent.\n
   /// e.g. for CellDivisionEvent it is the mother cell and
-  /// for NewNeuriteExtensionEvent it is the NeuronSoma. 
+  /// for NewNeuriteExtensionEvent it is the NeuronSoma.
   mutable Agent* existing_agent;
   /// Vector of new agents that have been created during
-  /// this NewAgentEvent. Agents are added to this vector 
+  /// this NewAgentEvent. Agents are added to this vector
   /// aft er the call to `Initialize` completed.
   mutable InlineVector<Agent*, 3> new_agents;
   /// Similarly, to existing_agent, existing_behavior behavior
-  /// points to the currently processed behavior of the 
+  /// points to the currently processed behavior of the
   /// existing agent.
   mutable Behavior* existing_behavior;
   /// Vector of behaviors that have been copied to new agents.
-  /// The index in new_behaviors corresponds to the index in 
-  /// new_agents. That means, that new_behaviors[0] is the 
-  /// copy of existing_behavior for new_agent[0].  
+  /// The index in new_behaviors corresponds to the index in
+  /// new_agents. That means, that new_behaviors[0] is the
+  /// copy of existing_behavior for new_agent[0].
   mutable InlineVector<Behavior*, 3> new_behaviors;
 };
 

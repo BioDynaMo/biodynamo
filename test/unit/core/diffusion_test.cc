@@ -14,10 +14,10 @@
 
 #include <fstream>
 
+#include "core/agent/cell.h"
 #include "core/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
-#include "core/agent/cell.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"

@@ -32,13 +32,13 @@
 #include <utility>
 #include <vector>
 
-#include <morton/morton.h>
+#include <morton/morton.h>  // NOLINT
 
+#include "core/container/agent_vector.h"
 #include "core/container/fixed_size_vector.h"
 #include "core/container/inline_vector.h"
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
-#include "core/container/agent_vector.h"
 #include "core/environment/environment.h"
 #include "core/functor.h"
 #include "core/param/param.h"
@@ -212,7 +212,8 @@ class UniformGridEnvironment : public Environment {
     kHigh    /**< The closest 26  neighboring boxes */
   };
 
-  UniformGridEnvironment(Adjacency adjacency = kHigh) : adjacency_(adjacency) {}
+  explicit UniformGridEnvironment(Adjacency adjacency = kHigh)
+      : adjacency_(adjacency) {}
 
   UniformGridEnvironment(UniformGridEnvironment const&) = delete;
   void operator=(UniformGridEnvironment const&) = delete;
@@ -233,7 +234,7 @@ class UniformGridEnvironment : public Environment {
   }
 
   struct AssignToBoxesFunctor : public Functor<void, Agent*, AgentHandle> {
-    AssignToBoxesFunctor(UniformGridEnvironment* grid) : grid_(grid) {}
+    explicit AssignToBoxesFunctor(UniformGridEnvironment* grid) : grid_(grid) {}
 
     void operator()(Agent* agent, AgentHandle ah) override {
       const auto& position = agent->GetPosition();
@@ -534,8 +535,8 @@ class UniformGridEnvironment : public Environment {
   /// @param[in]  squared_radius  The search radius squared
   ///
   void ForEachNeighborWithinRadius(
-      const std::function<void(const Agent*)>& lambda,
-      const Agent& query, double squared_radius) {
+      const std::function<void(const Agent*)>& lambda, const Agent& query,
+      double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 

@@ -475,9 +475,11 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   neuron2->SetDiameter(10);
   rm->AddAgent(neuron2);
 
-  auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
+  auto ne1 =
+      neuron1->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne1->SetDiameter(2);
-  auto ne2 = neuron2->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
+  auto ne2 =
+      neuron2->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne2->SetDiameter(2);
 
   auto* scheduler = simulation.GetScheduler();
@@ -537,9 +539,11 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   neuron3->SetDiameter(10);
   rm->AddAgent(neuron3);
 
-  auto ne1 = neuron1->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
+  auto ne1 =
+      neuron1->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne1->SetDiameter(1);
-  auto ne2 = neuron2->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
+  auto ne2 =
+      neuron2->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne2->SetDiameter(1);
 
   Double3 direction1 = {0.5, 0, 1};

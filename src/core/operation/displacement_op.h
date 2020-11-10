@@ -20,17 +20,17 @@
 #include <limits>
 #include <vector>
 
+#include "core/agent/agent.h"
 #include "core/environment/environment.h"
+#include "core/interaction_force.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/param/param.h"
 #include "core/scheduler.h"
-#include "core/agent/agent.h"
 #include "core/simulation.h"
 #include "core/util/math.h"
 #include "core/util/thread_info.h"
-#include "core/interaction_force.h"
 
 namespace bdm {
 
@@ -46,15 +46,14 @@ struct DisplacementOp : public AgentOperationImpl {
     delta_time_.resize(tinfo->GetMaxThreads(), 0);
   }
 
-  DisplacementOp(const DisplacementOp& other) 
-    : squared_radius_(other.squared_radius_),
-      last_time_run_(other.last_time_run_),
-      delta_time_(other.delta_time_),
-      last_iteration_(other.last_iteration_)
-  {
+  DisplacementOp(const DisplacementOp& other)
+      : squared_radius_(other.squared_radius_),
+        last_time_run_(other.last_time_run_),
+        delta_time_(other.delta_time_),
+        last_iteration_(other.last_iteration_) {
     if (other.force_) {
       force_ = other.force_->NewCopy();
-    } 
+    }
   }
 
   virtual ~DisplacementOp() {
@@ -92,8 +91,7 @@ struct DisplacementOp : public AgentOperationImpl {
       auto* grid = sim->GetEnvironment();
       auto search_radius = grid->GetLargestObjectSize();
       squared_radius_ = search_radius * search_radius;
-      auto current_time =
-          (current_iteration + 1) * param->simulation_time_step;
+      auto current_time = (current_iteration + 1) * param->simulation_time_step;
       delta_time_[tid] = current_time - last_time_run_[tid];
       last_time_run_[tid] = current_time;
     }

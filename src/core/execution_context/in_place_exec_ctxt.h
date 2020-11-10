@@ -20,10 +20,10 @@
 #include <utility>
 #include <vector>
 
+#include "core/agent/agent_uid.h"
 #include "core/container/agent_uid_map.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
-#include "core/agent/agent_uid.h"
 #include "core/util/spinlock.h"
 #include "core/util/thread_info.h"
 
@@ -94,9 +94,8 @@ class InPlaceExecutionContext {
                        const Agent& query);
 
   /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
-  void ForEachNeighborWithinRadius(
-      Functor<void, const Agent*, double>& lambda, const Agent& query,
-      double squared_radius);
+  void ForEachNeighborWithinRadius(Functor<void, const Agent*, double>& lambda,
+                                   const Agent& query, double squared_radius);
 
   Agent* GetAgent(const AgentUid& uid);
 

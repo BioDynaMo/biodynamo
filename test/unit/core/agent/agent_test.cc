@@ -33,8 +33,7 @@ TEST(AgentTest, CopyCtor) {
   EXPECT_EQ(123u, copy.GetBoxIdx());
   EXPECT_EQ(cell.GetUid(), copy.GetUid());
   ASSERT_EQ(1u, copy.GetAllBehaviors().size());
-  Growth* copy_g =
-      dynamic_cast<Growth*>(copy.GetAllBehaviors()[0]);
+  Growth* copy_g = dynamic_cast<Growth*>(copy.GetAllBehaviors()[0]);
   EXPECT_TRUE(g != copy_g);
   EXPECT_EQ(321, copy_g->growth_rate_);
 }

@@ -270,7 +270,8 @@ TEST(MemoryManagerTest, New) {
     ASSERT_TRUE(agent != nullptr);
 
     // check if we can find the numa pool allocator pointer at the beginning of
-    // the N aligned pages that is used to free the memory once `agent` is deleted
+    // the N aligned pages that is used to free the memory once `agent` is
+    // deleted
     auto addr = reinterpret_cast<uint64_t>(agent);
     auto page_number = addr >> (page_shift + aligned_pages_shift_);
     auto* page_addr = reinterpret_cast<char*>(

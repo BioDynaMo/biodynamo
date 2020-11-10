@@ -60,14 +60,14 @@ struct ParamGroup {
 
 #define BDM_PARAM_GROUP_HEADER(name, version_id)                   \
   static const ParamGroupUid kUid;                                 \
-  name() {}                                                         \
-  virtual ~name() {}                                                \
+  name() {}                                                        \
+  virtual ~name() {}                                               \
   ParamGroup* NewCopy() const override { return new name(*this); } \
   ParamGroupUid GetUid() const override { return kUid; }           \
-                                                                    \
- private:                                                           \
-  BDM_CLASS_DEF_OVERRIDE(name, version_id);                         \
-                                                                    \
+                                                                   \
+ private:                                                          \
+  BDM_CLASS_DEF_OVERRIDE(name, version_id);                        \
+                                                                   \
  public:
 
 }  // namespace bdm

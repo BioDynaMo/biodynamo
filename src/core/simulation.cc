@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/agent/agent_uid_generator.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
@@ -36,7 +37,6 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/agent/agent_uid_generator.h"
 #include "core/util/filesystem.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
@@ -66,15 +66,18 @@ Simulation::Simulation(TRootIOCtor* p) {}
 
 Simulation::Simulation(int argc, const char** argv,
                        const std::vector<std::string>& config_files)
-    : Simulation(argc, argv, [](auto* param) {}, config_files) {}
+    : Simulation(
+          argc, argv, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::vector<std::string>& config_files)
-    : Simulation(simulation_name, [](auto* param) {}, config_files) {}
+    : Simulation(
+          simulation_name, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(CommandLineOptions* clo,
                        const std::vector<std::string>& config_files) {
-  Initialize(clo, [](auto* param) {}, config_files);
+  Initialize(
+      clo, [](auto* param) {}, config_files);
 }
 
 Simulation::Simulation(CommandLineOptions* clo,
@@ -156,8 +159,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << std::endl;
   os << "Number of iterations executed\t: "
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
-  os << "Number of agents\t: " << sim.rm_->GetNumAgents()
-     << std::endl;
+  os << "Number of agents\t: " << sim.rm_->GetNumAgents() << std::endl;
 
   if (dg_names.size() != 0) {
     os << "Diffusion grids" << std::endl;
@@ -256,7 +258,9 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
 /// Returns the simulation parameters
 const Param* Simulation::GetParam() const { return param_; }
 
-AgentUidGenerator* Simulation::GetAgentUidGenerator() { return agent_uid_generator_; }
+AgentUidGenerator* Simulation::GetAgentUidGenerator() {
+  return agent_uid_generator_;
+}
 
 Environment* Simulation::GetGrid() { return environment_; }
 
@@ -326,8 +330,8 @@ void Simulation::InitializeMembers() {
     random_[i]->SetSeed(param_->random_seed * (i + 1));
   }
   exec_ctxt_.resize(omp_get_max_threads());
-  auto map =
-      std::make_shared<typename InPlaceExecutionContext::ThreadSafeAgentUidMap>();
+  auto map = std::make_shared<
+      typename InPlaceExecutionContext::ThreadSafeAgentUidMap>();
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
     exec_ctxt_[i] = new InPlaceExecutionContext(map);

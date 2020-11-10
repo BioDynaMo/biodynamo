@@ -18,16 +18,17 @@
 #include <mutex>
 #include <utility>
 
+#include "core/agent/agent.h"
 #include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/agent/agent.h"
 
 namespace bdm {
 
 InPlaceExecutionContext::ThreadSafeAgentUidMap::ThreadSafeAgentUidMap() {
   map_ = new ThreadSafeAgentUidMap::Map(1000);
-  next_ = new ThreadSafeAgentUidMap::Map(static_cast<uint64_t>(map_->size() * 2));
+  next_ =
+      new ThreadSafeAgentUidMap::Map(static_cast<uint64_t>(map_->size() * 2));
 }
 
 InPlaceExecutionContext::ThreadSafeAgentUidMap::~ThreadSafeAgentUidMap() {
@@ -90,7 +91,8 @@ void InPlaceExecutionContext::ThreadSafeAgentUidMap::Insert(
 /// This iteration happens only in the unlikely event of a race-condition
 /// and is therefore not performance relevant.
 const typename InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type&
-InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](const AgentUid& uid) {
+InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](
+    const AgentUid& uid) {
   static InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type kDefault;
   auto& pair = (*map_)[uid];
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();

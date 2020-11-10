@@ -56,8 +56,7 @@ struct Param {
   const TParamGroup* Get() const {
     assert(groups_.find(TParamGroup::kUid) != groups_.end() &&
            "Couldn't find the requested group parameter.");
-    return bdm_static_cast<const TParamGroup*>(
-        groups_.at(TParamGroup::kUid));
+    return bdm_static_cast<const TParamGroup*>(groups_.at(TParamGroup::kUid));
   }
 
   template <typename TParamGroup>

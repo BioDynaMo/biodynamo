@@ -20,7 +20,7 @@ namespace bdm {
 namespace chemotaxis_test_ns {
 
 struct TestDiffusionGrid : public DiffusionGrid {
-  TestDiffusionGrid(const Double3& normalized_gradient)
+  explicit TestDiffusionGrid(const Double3& normalized_gradient)
       : DiffusionGrid(0, "TestSubstance", 1, 1),
         normalized_gradient_(normalized_gradient) {}
 

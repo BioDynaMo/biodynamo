@@ -167,15 +167,14 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
-                       bool export_visualization = true, bool use_pvsm = true) {
+                   bool export_visualization = true, bool use_pvsm = true) {
   auto set_param = [&](Param* param) {
     param->remove_output_dir_contents = true;
     param->export_visualization = export_visualization;
     param->insitu_visualization = !export_visualization;
     param->visualization_export_generate_pvsm = use_pvsm;
     if (!export_visualization) {
-      param->pv_insitu_pipeline =
-          GetPythonScriptPath("validate_agents.py");
+      param->pv_insitu_pipeline = GetPythonScriptPath("validate_agents.py");
       auto sim_name = Simulation::GetActive()->GetUniqueName();
       param->pv_insitu_pipelinearguments =
           Concat("--sim_name=", sim_name, " --num_elements=", num_agents);

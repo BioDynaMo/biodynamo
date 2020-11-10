@@ -18,8 +18,8 @@
 #include <fstream>
 #include <type_traits>
 
-#include "core/resource_manager.h"
 #include "core/agent/cell.h"
+#include "core/resource_manager.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"
 #include "unit/test_util/io_test.h"
@@ -92,14 +92,14 @@ class SimulationTest : public ::testing::Test {
       "debug_numa = true\n";
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     remove(kTomlFileName);
     remove("restore.root");
     CreateEmptyRestoreFile("restore.root");
     Simulation::counter_ = 0;
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     remove(kTomlFileName);
     remove("restore.root");
   }

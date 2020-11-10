@@ -23,8 +23,8 @@
 namespace bdm {
 
 using std::array;
-using std::vector;
 using std::string;
+using std::vector;
 
 inline int Simulate(int argc, const char** argv) {
   // Initialize BioDynaMo

@@ -16,9 +16,9 @@
 #define NEUROSCIENCE_NEURON_OR_NEURITE_H_
 
 #include <array>
-#include "core/container/math_array.h"
 #include "core/agent/agent.h"
 #include "core/agent/agent_pointer.h"
+#include "core/container/math_array.h"
 
 namespace bdm {
 

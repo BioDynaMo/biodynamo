@@ -12,9 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/scheduler.h"
 #include <chrono>
 #include <string>
-
+#include <utility>
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
@@ -24,7 +25,6 @@
 #include "core/operation/visualization_op.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
-#include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/simulation_backup.h"
 #include "core/util/log.h"
@@ -190,7 +190,7 @@ std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
 }
 
 struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
-  RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
+  explicit RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
     sim_ = Simulation::GetActive();
   }
@@ -244,9 +244,8 @@ void Scheduler::RunScheduledOps() {
   }
   RunAllScheduledOps functor(agent_ops);
 
-  Timing::Time("agent ops", [&]() {
-    rm->ForEachAgentParallel(batch_size, functor);
-  });
+  Timing::Time("agent ops",
+               [&]() { rm->ForEachAgentParallel(batch_size, functor); });
 
   // Run the column-wise operations
   for (auto* op : scheduled_standalone_ops_) {
@@ -382,8 +381,8 @@ void Scheduler::ScheduleOps() {
 
     // Lists of operations that should be considered for unscheduling
     std::vector<std::vector<Operation*>*> op_lists = {
-        &scheduled_agent_ops_, &scheduled_standalone_ops_,
-        &pre_scheduled_ops_, &post_scheduled_ops_};
+        &scheduled_agent_ops_, &scheduled_standalone_ops_, &pre_scheduled_ops_,
+        &post_scheduled_ops_};
 
     for (auto* op_list : op_lists) {
       for (auto it2 = op_list->begin(); it2 != op_list->end(); ++it2) {

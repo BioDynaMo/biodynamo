@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_FORCE_H_
-#define CORE_FORCE_H_
+#ifndef CORE_INTERACTION_FORCE_H_
+#define CORE_INTERACTION_FORCE_H_
 
 #include <array>
 
@@ -29,22 +29,22 @@ class InteractionForce {
   virtual ~InteractionForce() {}
 
   virtual Double4 Calculate(const Agent* lhs, const Agent* rhs) const;
-  virtual InteractionForce* NewCopy() const { return new InteractionForce(*this); }
+  virtual InteractionForce* NewCopy() const {
+    return new InteractionForce(*this);
+  }
 
  private:
-  void ForceBetweenSpheres(const Agent* sphere_lhs,
-                           const Agent* sphere_rhs, Double3* result) const;
+  void ForceBetweenSpheres(const Agent* sphere_lhs, const Agent* sphere_rhs,
+                           Double3* result) const;
 
-  void ForceOnACylinderFromASphere(const Agent* cylinder,
-                                   const Agent* sphere,
+  void ForceOnACylinderFromASphere(const Agent* cylinder, const Agent* sphere,
                                    Double4* result) const;
 
-  void ForceOnASphereFromACylinder(const Agent* sphere,
-                                   const Agent* cylinder,
+  void ForceOnASphereFromACylinder(const Agent* sphere, const Agent* cylinder,
                                    Double3* result) const;
 
-  void ForceBetweenCylinders(const Agent* cylinder1,
-                             const Agent* cylinder2, Double4* result) const;
+  void ForceBetweenCylinders(const Agent* cylinder1, const Agent* cylinder2,
+                             Double4* result) const;
 
   Double4 ComputeForceOfASphereOnASphere(const Double3& c1, double r1,
                                          const Double3& c2, double r2) const;
@@ -52,4 +52,4 @@ class InteractionForce {
 
 }  // namespace bdm
 
-#endif  // CORE_FORCE_H_
+#endif  // CORE_INTERACTION_FORCE_H_

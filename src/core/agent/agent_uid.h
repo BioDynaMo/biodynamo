@@ -89,7 +89,8 @@ class AgentUid {
            static_cast<uint64_t>(index_);
   }
 
-  friend std::ostream& operator<<(std::ostream& stream, const AgentUid& handle) {
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  const AgentUid& handle) {
     stream << handle.index_ << "-" << handle.reused_;
     return stream;
   }

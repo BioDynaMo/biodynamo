@@ -18,8 +18,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/container/math_array.h"
 #include "core/agent/cell.h"
+#include "core/container/math_array.h"
 #include "neuroscience/neuron_or_neurite.h"
 
 namespace bdm {
@@ -51,7 +51,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   void Initialize(const NewAgentEvent& event) override;
 
   /// \brief This method is used to update attributes after a cell division.
-  /// or new neurite branching event. 
+  /// or new neurite branching event.
   ///
   /// Performs the transition mother to daughter 1
   /// \see Event, CellDivisionEvent

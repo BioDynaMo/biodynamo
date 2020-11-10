@@ -20,8 +20,8 @@
 #include <ostream>
 #include <type_traits>
 
-#include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/agent/agent_uid.h"
+#include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/simulation.h"
 #include "core/util/root.h"
 
@@ -49,16 +49,21 @@ class AgentPointer {
 
   uint64_t GetUid() const { return uid_; }
 
-  /// Equals operator that enables the following statement `agent_ptr == nullptr;`
+  /// Equals operator that enables the following statement `agent_ptr ==
+  /// nullptr;`
   bool operator==(std::nullptr_t) const { return uid_ == AgentUid(); }
 
   /// Not equal operator that enables the following statement `agent_ptr !=
   /// nullptr;`
   bool operator!=(std::nullptr_t) const { return !this->operator==(nullptr); }
 
-  bool operator==(const AgentPointer& other) const { return uid_ == other.uid_; }
+  bool operator==(const AgentPointer& other) const {
+    return uid_ == other.uid_;
+  }
 
-  bool operator!=(const AgentPointer& other) const { return uid_ != other.uid_; }
+  bool operator!=(const AgentPointer& other) const {
+    return uid_ != other.uid_;
+  }
 
   template <typename TOtherAgent>
   bool operator==(const TOtherAgent* other) const {
@@ -86,11 +91,11 @@ class AgentPointer {
   const TAgent* operator->() const {
     assert(*this != nullptr);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return Cast<const Agent, const TAgent>(
-        ctxt->GetConstAgent(uid_));
+    return Cast<const Agent, const TAgent>(ctxt->GetConstAgent(uid_));
   }
 
-  friend std::ostream& operator<<(std::ostream& str, const AgentPointer& agent_ptr) {
+  friend std::ostream& operator<<(std::ostream& str,
+                                  const AgentPointer& agent_ptr) {
     str << "{ uid: " << agent_ptr.uid_ << "}";
     return str;
   }
@@ -143,8 +148,8 @@ struct ExtractUid {
   }
 
   template <typename T>
-  static typename std::enable_if<!is_agent_ptr<T>::value, uint64_t>::type GetUid(
-      const T& t) {
+  static typename std::enable_if<!is_agent_ptr<T>::value, uint64_t>::type
+  GetUid(const T& t) {
     return 0;  // std::numeric_limits<uint64_t>::max();
   }
 };

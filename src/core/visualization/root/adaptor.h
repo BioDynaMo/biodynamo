@@ -11,8 +11,10 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#ifndef VISUALIZATION_ROOT_ADAPTOR_H_
-#define VISUALIZATION_ROOT_ADAPTOR_H_
+#ifndef CORE_VISUALIZATION_ROOT_ADAPTOR_H_
+#define CORE_VISUALIZATION_ROOT_ADAPTOR_H_
+
+#include <string>
 
 #include <TCanvas.h>
 #include <TGeoManager.h>
@@ -173,7 +175,7 @@ class RootAdaptor {
       // Compute the Axis-Angle rotation representation
       auto dot_product = dir.Dot(orig);
       auto angle = std::acos(dot_product);
-      // TODO: make sure it is `z x dir, and not `dir x z`
+      // TODO(ahmad): make sure it is `z x dir, and not `dir x z`
       TVector3 n = dir.Cross(orig);
       n = n.Unit();
       auto axis = AxisAngle::AxisVector(n[0], n[1], n[2]);
@@ -213,4 +215,4 @@ class RootAdaptor {
 
 }  // namespace bdm
 
-#endif  // VISUALIZATION_ROOT_ADAPTOR_H_
+#endif  // CORE_VISUALIZATION_ROOT_ADAPTOR_H_

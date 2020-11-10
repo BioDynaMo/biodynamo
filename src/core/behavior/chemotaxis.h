@@ -15,9 +15,9 @@
 #ifndef CORE_BEHAVIOR_CHEMOTAXIS_H_
 #define CORE_BEHAVIOR_CHEMOTAXIS_H_
 
+#include "core/agent/cell.h"
 #include "core/behavior/behavior.h"
 #include "core/diffusion_grid.h"
-#include "core/agent/cell.h"
 
 namespace bdm {
 
@@ -27,8 +27,7 @@ struct Chemotaxis : public Behavior {
 
   Chemotaxis() {}
   Chemotaxis(DiffusionGrid* dgrid, double speed)
-      : dgrid_(dgrid),
-        speed_(speed) {}
+      : dgrid_(dgrid), speed_(speed) {}
 
   virtual ~Chemotaxis() {}
 

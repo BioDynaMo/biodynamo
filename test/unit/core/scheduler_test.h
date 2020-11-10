@@ -21,8 +21,8 @@
 #include <unistd.h>
 #include <string>
 
-#include "core/environment/environment.h"
 #include "core/agent/cell.h"
+#include "core/environment/environment.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"
 #include "unit/test_util/test_util.h"

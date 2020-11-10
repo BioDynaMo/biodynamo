@@ -15,9 +15,9 @@
 #ifndef CORE_BEHAVIOR_SECRETION_H_
 #define CORE_BEHAVIOR_SECRETION_H_
 
+#include "core/agent/cell.h"
 #include "core/behavior/behavior.h"
 #include "core/diffusion_grid.h"
-#include "core/agent/cell.h"
 
 namespace bdm {
 
@@ -26,9 +26,8 @@ struct Secretion : public Behavior {
   BDM_BEHAVIOR_HEADER(Secretion, Behavior, 1);
 
   Secretion() {}
-  Secretion(DiffusionGrid* dgrid, double quantity = 1) 
-      : dgrid_(dgrid),
-        quantity_(quantity) {}
+  explicit Secretion(DiffusionGrid* dgrid, double quantity = 1)
+      : dgrid_(dgrid), quantity_(quantity) {}
 
   virtual ~Secretion() {}
 

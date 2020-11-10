@@ -26,16 +26,16 @@
 #include <unordered_map>
 #include <vector>
 
-#include "core/container/inline_vector.h"
-#include "core/container/math_array.h"
-#include "core/shape.h"
 #include "core/agent/agent_pointer.h"
 #include "core/agent/agent_uid.h"
+#include "core/agent/new_agent_event.h"
+#include "core/container/inline_vector.h"
+#include "core/container/math_array.h"
 #include "core/interaction_force.h"
+#include "core/shape.h"
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
-#include "core/agent/new_agent_event.h"
 #include "core/util/type.h"
 
 namespace bdm {
@@ -49,16 +49,16 @@ namespace bdm {
 ///          must be incremented by one. The class_version_id should be greater
 ///          or equal to 1.
 /// @param  ...: List of all data members of this class
-#define BDM_AGENT_HEADER(class_name, base_class, class_version_id)      \
+#define BDM_AGENT_HEADER(class_name, base_class, class_version_id)           \
  public:                                                                     \
   using Base = base_class;                                                   \
                                                                              \
   explicit class_name(TRootIOCtor* io_ctor) {}                               \
                                                                              \
-  /** Create a new instance of this object using the default constructor. */   \
-  Agent* New() const override { return new class_name(); }             \
-  /** Create a new instance of this object using the copy constructor. */   \
-  Agent* NewCopy() const override { return new class_name(*this); }             \
+  /** Create a new instance of this object using the default constructor. */ \
+  Agent* New() const override { return new class_name(); }                   \
+  /** Create a new instance of this object using the copy constructor. */    \
+  Agent* NewCopy() const override { return new class_name(*this); }          \
                                                                              \
   const char* GetTypeName() const override { return #class_name; }           \
                                                                              \
@@ -94,31 +94,33 @@ class Agent {
   virtual Agent* NewCopy() const = 0;
 
   /// This method is called to initialize new agents that are created
-  /// during a NewAgentEvent. Override this method to initialize attributes of 
-  /// your own Agent subclasses. 
+  /// during a NewAgentEvent. Override this method to initialize attributes of
+  /// your own Agent subclasses.
   /// NB: Don't forget to call the implementation of the base class first.
   /// `Base::Initialize(event);`
   /// Failing to do so will result in errors.
   virtual void Initialize(const NewAgentEvent& event);
 
-  /// This method is called to update the existing agent at the end of 
-  /// a NewAgentEvent. Override this method to update attributes of 
-  /// your own Agent subclasses. 
+  /// This method is called to update the existing agent at the end of
+  /// a NewAgentEvent. Override this method to update attributes of
+  /// your own Agent subclasses.
   /// NB: Don't forget to call the implementation of the base class first.
   /// `Base::Update(event);`
   /// Failing to do so will result in errors.
   virtual void Update(const NewAgentEvent& event);
 
   /// This method creates a new agent for each entry in prototypes.\n
-  /// The prototypes list defines the type of the new agent. 
+  /// The prototypes list defines the type of the new agent.
   /// This function calls `prototype->New()` internally.
-  /// New agents are automatically added to the execution context right after 
+  /// New agents are automatically added to the execution context right after
   /// they are initialized.
   /// This function sets the attributes `NewAgentEvent::existing_agent`
   /// and `NewAgentEvent::new_agents` to their correct values.
   /// Lastly, this function calls  `this->Update(event)`\n
-  /// The newly created and initialized agents can be found in `event.new_agents`.
-  void CreateNewAgents(const NewAgentEvent& event, const std::initializer_list<Agent*>& prototypes) {
+  /// The newly created and initialized agents can be found in
+  /// `event.new_agents`.
+  void CreateNewAgents(const NewAgentEvent& event,
+                       const std::initializer_list<Agent*>& prototypes) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     event.existing_agent = this;
     for (auto* p : prototypes) {
@@ -205,7 +207,8 @@ class Agent {
   const InlineVector<Behavior*, 2>& GetAllBehaviors() const;
   // ---------------------------------------------------------------------------
 
-  virtual Double3 CalculateDisplacement(const InteractionForce* force, double squared_radius, double dt) = 0;
+  virtual Double3 CalculateDisplacement(const InteractionForce* force,
+                                        double squared_radius, double dt) = 0;
 
   virtual void ApplyDisplacement(const Double3& displacement) = 0;
 

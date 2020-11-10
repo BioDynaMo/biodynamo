@@ -22,8 +22,8 @@
 #include <vtkCPDataDescription.h>
 #include <vtkUnstructuredGrid.h>
 // BioDynaMo
-#include "core/shape.h"
 #include "core/agent/agent.h"
+#include "core/shape.h"
 
 class TClass;
 
@@ -54,8 +54,7 @@ class VtkAgents {
   TClass* FindTClass();
   void InitializeDataMembers(Agent* agent,
                              std::vector<std::string>* data_members);
-  void UpdateMappedDataArrays(uint64_t tid,
-                              const std::vector<Agent*>* agents,
+  void UpdateMappedDataArrays(uint64_t tid, const std::vector<Agent*>* agents,
                               uint64_t start, uint64_t end);
 
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;

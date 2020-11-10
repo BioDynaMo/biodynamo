@@ -14,13 +14,13 @@
 
 #include <array>
 
+#include "core/agent/cell.h"
 #include "core/behavior/growth_division.h"
 #include "core/container/agent_vector.h"
 #include "core/environment/environment.h"
 #include "core/functor.h"
 #include "core/gpu/gpu_helper.h"
 #include "core/operation/displacement_op.h"
-#include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
@@ -137,7 +137,7 @@ void RunTest(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      auto *op = NewOperation("displacement");
+      auto* op = NewOperation("displacement");
       op->SelectComputeTarget(mode);
       op->SetUp();
       (*op)();
@@ -228,7 +228,7 @@ void RunTest2(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      auto *op = NewOperation("displacement");
+      auto* op = NewOperation("displacement");
       op->SelectComputeTarget(mode);
       op->SetUp();
       (*op)();

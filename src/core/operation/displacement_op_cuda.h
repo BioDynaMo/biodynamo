@@ -19,6 +19,8 @@
 
 #include <vector>
 
+#include "core/agent/agent_handle.h"
+#include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/displacement_op_cuda_kernel.h"
@@ -26,8 +28,6 @@
 #include "core/operation/operation_registry.h"
 #include "core/resource_manager.h"
 #include "core/shape.h"
-#include "core/agent/cell.h"
-#include "core/agent/agent_handle.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 #include "core/util/thread_info.h"
@@ -155,9 +155,8 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
 
   void TearDown() override {
     auto u = UpdateCPUResults(&(i_->cell_movements), i_->offset);
-    Simulation::GetActive()
-        ->GetResourceManager()
-        ->ForEachAgentParallel(1000, u);
+    Simulation::GetActive()->GetResourceManager()->ForEachAgentParallel(1000,
+                                                                        u);
   }
 
  private:

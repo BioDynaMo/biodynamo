@@ -13,9 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "core/model_initializer.h"
+#include "core/agent/cell.h"
 #include "core/behavior/behavior.h"
 #include "core/resource_manager.h"
-#include "core/agent/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 

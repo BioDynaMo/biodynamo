@@ -25,9 +25,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/agent/new_agent_event.h"
 #include "core/behavior/behavior.h"
 #include "core/environment/environment.h"
-#include "core/agent/new_agent_event.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
@@ -77,7 +77,7 @@ void Agent::Update(const NewAgentEvent& event) {
 struct SetRunDisplacementForEachNeighbor
     : public Functor<void, const Agent*, double> {
   Agent* agent_;
-  SetRunDisplacementForEachNeighbor(Agent* agent) : agent_(agent) {}
+  explicit SetRunDisplacementForEachNeighbor(Agent* agent) : agent_(agent) {}
 
   void operator()(const Agent* neighbor, double squared_distance) override {
     double distance = agent_->GetDiameter() + neighbor->GetDiameter();
@@ -118,9 +118,7 @@ void Agent::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 // ---------------------------------------------------------------------------
 // Behaviors
 
-void Agent::AddBehavior(Behavior* behavior) {
-  behaviors_.push_back(behavior);
-}
+void Agent::AddBehavior(Behavior* behavior) { behaviors_.push_back(behavior); }
 
 void Agent::RemoveBehavior(const Behavior* behavior) {
   for (unsigned int i = 0; i < behaviors_.size(); i++) {
@@ -142,8 +140,7 @@ void Agent::RunBehaviors() {
   }
 }
 
-const InlineVector<Behavior*, 2>& Agent::GetAllBehaviors()
-    const {
+const InlineVector<Behavior*, 2>& Agent::GetAllBehaviors() const {
   return behaviors_;
 }
 // ---------------------------------------------------------------------------
@@ -153,7 +150,7 @@ void Agent::RemoveFromSimulation() const {
 }
 
 void Agent::InitializeBehaviors(const NewAgentEvent& event) {
-  const auto& existing_agent_behaviors = event.existing_agent->behaviors_; 
+  const auto& existing_agent_behaviors = event.existing_agent->behaviors_;
   event.new_behaviors.clear();
   uint64_t cnt = 0;
   for (auto* behavior : existing_agent_behaviors) {
@@ -181,7 +178,7 @@ void Agent::UpdateBehaviors(const NewAgentEvent& event) {
       event.new_behaviors.clear();
       if (copied) {
         for (auto* new_agent : event.new_agents) {
-          auto* new_behavior = new_agent->behaviors_[cnt]; 
+          auto* new_behavior = new_agent->behaviors_[cnt];
           event.new_behaviors.push_back(new_behavior);
         }
       }

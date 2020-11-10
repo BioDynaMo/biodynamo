@@ -61,7 +61,8 @@ struct SbmlBehavior : public Behavior {
 
   SbmlBehavior(const SbmlBehavior& other) {
     auto other_sbml_behavior = bdm_static_cast<const SbmlBehavior*>(&other);
-    Initialize(other_sbml_behavior->sbml_file_, other_sbml_behavior->initial_options_);
+    Initialize(other_sbml_behavior->sbml_file_,
+               other_sbml_behavior->initial_options_);
     result_ = other_sbml_behavior->result_;
   }
 

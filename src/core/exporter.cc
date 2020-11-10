@@ -20,9 +20,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "core/agent/cell.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
-#include "core/agent/cell.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 
@@ -87,8 +87,9 @@ void NeuroMLExporter::ExportIteration(std::string filename,
           << std::endl;
   outfile << space1 << "xmlns:meta = \"http://morphml.org/metadata/schema\" "
           << std::endl;
-  outfile << space1 << "xsi:schemaLocation=\"http://morphml.org/neuroml/"
-                       "schema NeuroML_Level3_v1.7.1.xsd\" "
+  outfile << space1
+          << "xsi:schemaLocation=\"http://morphml.org/neuroml/"
+             "schema NeuroML_Level3_v1.7.1.xsd\" "
           << std::endl;
   outfile << space1 << "lengthUnits=\"micrometer\" " << std::endl;
 

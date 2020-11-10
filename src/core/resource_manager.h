@@ -24,6 +24,7 @@
 #include <ostream>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -40,13 +41,13 @@
 #endif
 #endif
 
-#include "core/container/agent_uid_map.h"
-#include "core/diffusion_grid.h"
-#include "core/operation/operation.h"
 #include "core/agent/agent.h"
 #include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
 #include "core/agent/agent_uid_generator.h"
+#include "core/container/agent_uid_map.h"
+#include "core/diffusion_grid.h"
+#include "core/operation/operation.h"
 #include "core/simulation.h"
 #include "core/type_index.h"
 #include "core/util/numa.h"
@@ -58,7 +59,8 @@ namespace bdm {
 
 /// ResourceManager stores agents and diffusion grids and provides
 /// methods to add, remove, and access them. Agents are uniquely identified
-/// by their AgentUid, and AgentHandle. An AgentHandle might change during the simulation.
+/// by their AgentUid, and AgentHandle. An AgentHandle might change during the
+/// simulation.
 class ResourceManager {
  public:
   explicit ResourceManager(TRootIOCtor* r) {}
@@ -211,8 +213,7 @@ class ResourceManager {
   ///     rm->ForEachAgent([](Agent* element) {
   ///                              std::cout << *element << std::endl;
   ///                          });
-  virtual void ForEachAgent(
-      const std::function<void(Agent*)>& function) {
+  virtual void ForEachAgent(const std::function<void(Agent*)>& function) {
     for (auto& numa_agents : agents_) {
       for (auto* agent : numa_agents) {
         function(agent);
@@ -283,7 +284,9 @@ class ResourceManager {
 
   /// Returns true if an agent with the given uid is stored in this
   /// ResourceManager.
-  bool ContainsAgent(const AgentUid& uid) const { return uid_ah_map_.Contains(uid); }
+  bool ContainsAgent(const AgentUid& uid) const {
+    return uid_ah_map_.Contains(uid);
+  }
 
   /// Remove all agents
   /// NB: This method is not thread-safe! This function invalidates
@@ -318,8 +321,8 @@ class ResourceManager {
       uid_ah_map_.resize(uid.GetIndex() + 1);
     }
     agents_[numa_node].push_back(agent);
-    uid_ah_map_.Insert(
-        uid, AgentHandle(numa_node, agents_[numa_node].size() - 1));
+    uid_ah_map_.Insert(uid,
+                       AgentHandle(numa_node, agents_[numa_node].size() - 1));
     if (type_index_) {
       type_index_->Add(agent);
     }
@@ -354,9 +357,9 @@ class ResourceManager {
   /// the index at which the first element is inserted. Agents are inserted
   /// consecutively. This methos is thread safe only if insertion intervals do
   /// not overlap!
-  virtual void AddAgents(
-      typename AgentHandle::NumaNode_t numa_node, uint64_t offset,
-      const std::vector<Agent*>& new_agents) {
+  virtual void AddAgents(typename AgentHandle::NumaNode_t numa_node,
+                         uint64_t offset,
+                         const std::vector<Agent*>& new_agents) {
     uint64_t i = 0;
     for (auto* agent : new_agents) {
       auto uid = agent->GetUid();
@@ -425,7 +428,8 @@ inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {
   os << "\033[1mAgents per numa node\033[0m" << std::endl;
   uint64_t cnt = 0;
   for (auto& numa_agents : rm.agents_) {
-    os << "numa node " << cnt++ << " -> size: " << numa_agents.size() << std::endl;
+    os << "numa node " << cnt++ << " -> size: " << numa_agents.size()
+       << std::endl;
   }
   return os;
 }

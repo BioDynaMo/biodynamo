@@ -55,17 +55,14 @@ void ResourceManager::ForEachAgentParallel(
 }
 
 template <typename TFunctor>
-struct ForEachAgentParallelFunctor
-    : public Functor<void, Agent*, AgentHandle> {
+struct ForEachAgentParallelFunctor : public Functor<void, Agent*, AgentHandle> {
   TFunctor& functor_;
-  ForEachAgentParallelFunctor(TFunctor& f) : functor_(f) {}
+  explicit ForEachAgentParallelFunctor(TFunctor& f) : functor_(f) {}
   void operator()(Agent* agent, AgentHandle) { functor_(agent); }
 };
 
-void ResourceManager::ForEachAgentParallel(
-    Functor<void, Agent*>& function) {
-  ForEachAgentParallelFunctor<Functor<void, Agent*>> functor(
-      function);
+void ResourceManager::ForEachAgentParallel(Functor<void, Agent*>& function) {
+  ForEachAgentParallelFunctor<Functor<void, Agent*>> functor(function);
   ForEachAgentParallel(functor);
 }
 
@@ -149,8 +146,8 @@ void ResourceManager::ForEachAgentParallel(
         uint64_t old_count = (*(counters[current_tid]))++;
         while (old_count < max_counters[current_tid]) {
           start = old_count * p_chunk;
-          end =
-              std::min(static_cast<uint64_t>(numa_agents.size()), start + p_chunk);
+          end = std::min(static_cast<uint64_t>(numa_agents.size()),
+                         start + p_chunk);
 
           for (uint64_t i = start; i < end; ++i) {
             function(numa_agents[i], AgentHandle(current_nid, i));
@@ -171,9 +168,10 @@ struct DeleteAgentsFunctor : public Functor<void, Agent*> {
   void operator()(Agent* agent) { delete agent; }
 };
 
-struct UpdateUidAgentHandleMapFunctor : public Functor<void, Agent*, AgentHandle> {
+struct UpdateUidAgentHandleMapFunctor
+    : public Functor<void, Agent*, AgentHandle> {
   using Map = AgentUidMap<AgentHandle>;
-  UpdateUidAgentHandleMapFunctor(Map& rm_uid_ah_map)
+  explicit UpdateUidAgentHandleMapFunctor(Map& rm_uid_ah_map)
       : rm_uid_ah_map_(rm_uid_ah_map) {}
 
   void operator()(Agent* agent, AgentHandle ah) {
@@ -192,7 +190,8 @@ struct RearrangeFunctor : public Functor<void, const AgentHandle&> {
 
   RearrangeFunctor(std::vector<std::vector<AgentHandle>>& sorted_agent_handles,
                    const std::vector<uint64_t>& agent_per_numa)
-      : sorted_agent_handles(sorted_agent_handles), agent_per_numa(agent_per_numa) {}
+      : sorted_agent_handles(sorted_agent_handles),
+        agent_per_numa(agent_per_numa) {}
 
   void operator()(const AgentHandle& handle) {
     if (cnt == agent_per_numa[current_numa]) {

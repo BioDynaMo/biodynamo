@@ -28,9 +28,9 @@
 #include <TClassTable.h>
 #include <TDataMember.h>
 // BioDynaMo
+#include "core/agent/agent.h"
 #include "core/param/param.h"
 #include "core/shape.h"
-#include "core/agent/agent.h"
 #include "core/simulation.h"
 #include "core/util/jit.h"
 #include "core/visualization/paraview/jit_helper.h"
@@ -42,7 +42,7 @@ namespace bdm {
 
 // -----------------------------------------------------------------------------
 VtkAgents::VtkAgents(const char* type_name,
-                             vtkCPDataDescription* data_description) {
+                     vtkCPDataDescription* data_description) {
   auto* param = Simulation::GetActive()->GetParam();
   auto* tinfo = ThreadInfo::GetInstance();
   if (param->export_visualization) {
@@ -152,9 +152,9 @@ void VtkAgents::WriteToFile(uint64_t step) const {
 }
 
 // -----------------------------------------------------------------------------
-void VtkAgents::UpdateMappedDataArrays(
-    uint64_t tid, const std::vector<Agent*>* agents, uint64_t start,
-    uint64_t end) {
+void VtkAgents::UpdateMappedDataArrays(uint64_t tid,
+                                       const std::vector<Agent*>* agents,
+                                       uint64_t start, uint64_t end) {
   auto* parray = dynamic_cast<MappedDataArrayInterface*>(
       data_[tid]->GetPoints()->GetData());
   parray->Update(agents, start, end);
@@ -188,8 +188,8 @@ TClass* VtkAgents::FindTClass() {
 }
 
 // -----------------------------------------------------------------------------
-void VtkAgents::InitializeDataMembers(
-    Agent* agent, std::vector<std::string>* data_members) {
+void VtkAgents::InitializeDataMembers(Agent* agent,
+                                      std::vector<std::string>* data_members) {
   std::set<std::string> dm_set = agent->GetRequiredVisDataMembers();
   auto* param = Simulation::GetActive()->GetParam();
   for (auto& dm : param->visualize_agents.at(name_)) {

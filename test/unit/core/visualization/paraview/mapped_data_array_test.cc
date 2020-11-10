@@ -86,7 +86,8 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
     auto dms = FindDataMemberSlow(tclass, "daughter_right_");
     ASSERT_EQ(1u, dms.size());
 
-    GetDataMemberForVis<uint64_t*, NeuriteElement, AgentPointer<NeuronOrNeurite>>
+    GetDataMemberForVis<uint64_t*, NeuriteElement,
+                        AgentPointer<NeuronOrNeurite>>
         get_dm;
     get_dm.dm_offset_ = dms[0]->GetOffset();
     EXPECT_EQ(18446744073709551615ULL, *get_dm(&ne));

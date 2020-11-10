@@ -17,6 +17,7 @@
 
 #include <cassert>
 #include <list>
+#include <utility>
 #include <vector>
 
 #include "core/container/flatmap.h"
