@@ -64,7 +64,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
 TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   auto set_param = [](bdm::Param* param) {
     param->run_mechanical_interactions = false;
-    param->Get<Param>()->neurite_max_length_ = 2;
+    param->Get<Param>()->neurite_max_length = 2;
   };
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME, set_param);
@@ -395,7 +395,7 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
 
 TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   auto set_param = [](bdm::Param* param) {
-    param->Get<Param>()->neurite_max_length_ = 2;
+    param->Get<Param>()->neurite_max_length = 2;
   };
   neuroscience::InitModule();
   Simulation simulation(TEST_NAME, set_param);
@@ -458,7 +458,7 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
 
 TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   auto set_param = [](bdm::Param* param) {
-    param->Get<Param>()->neurite_max_length_ = 2;
+    param->Get<Param>()->neurite_max_length = 2;
   };
 
   neuroscience::InitModule();

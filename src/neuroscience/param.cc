@@ -21,23 +21,23 @@ namespace neuroscience {
 const ParamGroupUid Param::kUid = ParamGroupUidGenerator::Get()->NewUid();
 
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
-  BDM_ASSIGN_CONFIG_VALUE(neurite_default_actual_length_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_default_actual_length,
                           "neuroscience.neurite_default_actual_length");
-  BDM_ASSIGN_CONFIG_VALUE(neurite_default_density_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_default_density,
                           "neuroscience.neurite_default_density");
-  BDM_ASSIGN_CONFIG_VALUE(neurite_default_diameter_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_default_diameter,
                           "neuroscience.neurite_default_diameter");
-  BDM_ASSIGN_CONFIG_VALUE(neurite_default_spring_constant_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_default_spring_constant,
                           "neuroscience.neurite_default_spring_constant");
-  BDM_ASSIGN_CONFIG_VALUE(neurite_default_adherence_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_default_adherence,
                           "neuroscience.neurite_default_adherence");
-  BDM_ASSIGN_CONFIG_VALUE(neurite_default_tension_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_default_tension,
                           "neuroscience.neurite_default_tension");
-  BDM_ASSIGN_CONFIG_VALUE(neurite_min_length_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_min_length,
                           "neuroscience.neurite_min_length");
-  BDM_ASSIGN_CONFIG_VALUE(neurite_max_length_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_max_length,
                           "neuroscience.neurite_max_length");
-  BDM_ASSIGN_CONFIG_VALUE(neurite_minimial_bifurcation_length_,
+  BDM_ASSIGN_CONFIG_VALUE(neurite_minimial_bifurcation_length,
                           "neuroscience.neurite_minimial_bifurcation_length");
 }
 

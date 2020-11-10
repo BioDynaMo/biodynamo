@@ -47,15 +47,15 @@ TEST(neuroscience, Param) {
   auto* param = simulation.GetParam()->Get<Param>();
 
   ASSERT_TRUE(param != nullptr);
-  EXPECT_EQ(2.0, param->neurite_default_actual_length_);
-  EXPECT_EQ(3.0, param->neurite_default_density_);
-  EXPECT_EQ(4.0, param->neurite_default_diameter_);
-  EXPECT_EQ(5.0, param->neurite_default_spring_constant_);
-  EXPECT_EQ(6.0, param->neurite_default_adherence_);
-  EXPECT_EQ(7.0, param->neurite_default_tension_);
-  EXPECT_EQ(8.0, param->neurite_min_length_);
-  EXPECT_EQ(9.0, param->neurite_max_length_);
-  EXPECT_EQ(10.0, param->neurite_minimial_bifurcation_length_);
+  EXPECT_EQ(2.0, param->neurite_default_actual_length);
+  EXPECT_EQ(3.0, param->neurite_default_density);
+  EXPECT_EQ(4.0, param->neurite_default_diameter);
+  EXPECT_EQ(5.0, param->neurite_default_spring_constant);
+  EXPECT_EQ(6.0, param->neurite_default_adherence);
+  EXPECT_EQ(7.0, param->neurite_default_tension);
+  EXPECT_EQ(8.0, param->neurite_min_length);
+  EXPECT_EQ(9.0, param->neurite_max_length);
+  EXPECT_EQ(10.0, param->neurite_minimial_bifurcation_length);
 
   remove(kConfigFileName);
 }
