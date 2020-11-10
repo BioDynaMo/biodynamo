@@ -155,13 +155,19 @@ void Agent::RemoveFromSimulation() const {
 void Agent::InitializeBehaviors(NewAgentEvent* event) {
   const auto& existing_agent_behaviors = event->existing_agent->behaviors_; 
   event->new_behaviors.clear();
+  uint64_t cnt = 0;
   for (auto* behavior : existing_agent_behaviors) {
     if (behavior->WillBeCopied(event->GetUid())) {
+      event->new_behaviors.clear();
+      // collect new behaviors from other new agents
+      for (auto* nagent : event->new_agents) {
+        event->new_behaviors.push_back(nagent->behaviors_[cnt]);
+      }
       event->existing_behavior = behavior;
       auto* new_behavior = behavior->New();
       new_behavior->Initialize(event);
-      event->new_behaviors.push_back(new_behavior);
       behaviors_.push_back(new_behavior);
+      cnt++;
     }
   }
 }
