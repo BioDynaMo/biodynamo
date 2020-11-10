@@ -54,6 +54,7 @@ class MyCell : public Cell {
 struct SbmlBehavior : public Behavior {
   BDM_BEHAVIOR_HEADER(SbmlBehavior, Behavior, 1)
 
+  SbmlBehavior() {}
   SbmlBehavior(const std::string& sbml_file, const rr::SimulateOptions& opt) {
     Initialize(sbml_file, opt);
   }
