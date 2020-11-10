@@ -57,7 +57,7 @@ class DiffusionGrid {
   /// @param[in]  grid_dimensions  The grid dimensions
   /// @param[in]  box_length       The box length
   ///
-  void Initialize(const std::array<int32_t, 6>& grid_dimensions) {
+   void Initialize(const std::array<int32_t, 6>& grid_dimensions) {
     // Get grid properties from neighbor grid
     grid_dimensions_ = grid_dimensions;
     assert(resolution_ > 0 && "The resolution cannot be zero!");
@@ -290,17 +290,327 @@ class DiffusionGrid {
     }
   }
 
-  /// Solves a 5-point stencil diffusion equation, with leaking-edge
-  /// boundary conditions. Substances are allowed to leave the simulation
-  /// space. This prevents building up concentration at the edges
+  virtual void Diffuse() {
+
+  }
+
+  virtual void DiffuseWithLeakingEdge() {
+
+  }
+
+  /// Calculates the gradient for each box in the diffusion grid.
+  /// The gradient is calculated in each direction (x, y, z) as following:
   ///
-  void DiffuseWithLeakingEdge() {
-    int nx = num_boxes_axis_[0];
+  /// c(x + box_length_) - c(x - box_length) / (2 * box_length_),
+  ///
+  /// where c(x) implies the concentration at position x
+  ///
+  /// At the edges the gradient is the same as the box next to it
+  void CalculateGradient() {
+    // check if gradient has been calculated once
+    // and if diffusion coefficient and decay constant are 0
+    // i.e. if we don't need to calculate gradient update
+    if (init_gradient_ && IsFixedSubstance()) {
+      return;
+    }
+
+    double gd = 1 / (box_length_ * 2);
+
+    auto nx = num_boxes_axis_[0];
+    auto ny = num_boxes_axis_[1];
+    auto nz = num_boxes_axis_[2];
+
+#pragma omp parallel for collapse(2)
+    for (size_t z = 0; z < nz; z++) {
+      for (size_t y = 0; y < ny; y++) {
+        for (size_t x = 0; x < nx; x++) {
+          int c, e, w, n, s, b, t;
+          c = x + y * nx + z * nx * ny;
+
+          if (x == 0) {
+            e = c;
+            w = c + 2;
+          } else if (x == nx - 1) {
+            e = c - 2;
+            w = c;
+          } else {
+            e = c - 1;
+            w = c + 1;
+          }
+
+          if (y == 0) {
+            n = c + 2 * nx;
+            s = c;
+          } else if (y == ny - 1) {
+            n = c;
+            s = c - 2 * nx;
+          } else {
+            n = c + nx;
+            s = c - nx;
+          }
+
+          if (z == 0) {
+            t = c + 2 * nx * ny;
+            b = c;
+          } else if (z == nz - 1) {
+            t = c;
+            b = c - 2 * nx * ny;
+          } else {
+            t = c + nx * ny;
+            b = c - nx * ny;
+          }
+
+          // Let the gradient point from low to high concentration
+          gradients_[3 * c + 0] = (c1_[w] - c1_[e]) * gd;
+          gradients_[3 * c + 1] = (c1_[n] - c1_[s]) * gd;
+          gradients_[3 * c + 2] = (c1_[t] - c1_[b]) * gd;
+        }
+      }
+    }
+    if (!init_gradient_) {
+      init_gradient_ = true;
+    }
+  }
+
+  /// Increase the concentration at specified position with specified amount
+  void IncreaseConcentrationBy(const Double3& position, double amount) {
+    auto idx = GetBoxIndex(position);
+    IncreaseConcentrationBy(idx, amount);
+  }
+
+  /// Increase the concentration at specified box with specified amount
+  void IncreaseConcentrationBy(size_t idx, double amount) {
+    assert(idx < total_num_boxes_ &&
+           "Cell position is out of diffusion grid bounds");
+    c1_[idx] += amount;
+    if (c1_[idx] > concentration_threshold_) {
+      c1_[idx] = concentration_threshold_;
+    }
+  }
+
+  /// Get the concentration at specified position
+  double GetConcentration(const Double3& position) const {
+    return c1_[GetBoxIndex(position)];
+  }
+
+  /// Get the (normalized) gradient at specified position
+  void GetGradient(const Double3& position, Double3* gradient) const {
+    auto idx = GetBoxIndex(position);
+    assert(idx < total_num_boxes_ &&
+           "Cell position is out of diffusion grid bounds");
+    (*gradient)[0] = gradients_[3 * idx];
+    (*gradient)[1] = gradients_[3 * idx + 1];
+    (*gradient)[2] = gradients_[3 * idx + 2];
+    auto norm = std::sqrt((*gradient)[0] * (*gradient)[0] +
+                          (*gradient)[1] * (*gradient)[1] +
+                          (*gradient)[2] * (*gradient)[2]);
+    if (norm > 1e-10) {
+      (*gradient)[0] /= norm;
+      (*gradient)[1] /= norm;
+      (*gradient)[2] /= norm;
+    }
+  }
+
+  std::array<uint32_t, 3> GetBoxCoordinates(const Double3& position) const {
+    std::array<uint32_t, 3> box_coord;
+    box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
+    box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
+    box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
+    return box_coord;
+  }
+
+  size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const {
+    size_t ret = box_coord[2] * num_boxes_axis_[0] * num_boxes_axis_[1] +
+                 box_coord[1] * num_boxes_axis_[0] + box_coord[0];
+    return ret;
+  }
+
+  /// Calculates the box index of the substance at specified position
+  size_t GetBoxIndex(const Double3& position) const {
+    auto box_coord = GetBoxCoordinates(position);
+    return GetBoxIndex(box_coord);
+  }
+
+  void SetDiffusionSteps(int diffusion_step) {
+    diffusion_step_ = diffusion_step;
+  }
+
+  void SetDecayConstant(double mu) { mu_ = mu; }
+
+  void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
+
+  double GetConcentrationThreshold() const { return concentration_threshold_; }
+
+  const double* GetAllConcentrations() const { return c1_.data(); }
+
+  const double* GetAllGradients() const { return gradients_.data(); }
+
+  const std::array<size_t, 3>& GetNumBoxesArray() const {
+    return num_boxes_axis_;
+  }
+
+  size_t GetNumBoxes() const { return total_num_boxes_; }
+
+  double GetBoxLength() const { return box_length_; }
+
+  int GetSubstanceId() const { return substance_; }
+
+  const std::string& GetSubstanceName() const { return substance_name_; }
+
+  double GetDecayConstant() const { return mu_; }
+
+  const int32_t* GetDimensionsPtr() const { return grid_dimensions_.data(); }
+
+  const std::array<int32_t, 6>& GetDimensions() const {
+    return grid_dimensions_;
+  }
+
+  const std::array<double, 7>& GetDiffusionCoefficients() const { return dc_; }
+
+  bool IsInitialized() const { return initialized_; }
+
+  int GetResolution() const { return resolution_; }
+
+  double GetBoxVolume() const { return box_volume_; }
+
+  template <typename F>
+  void AddInitializer(F function) {
+    initializers_.push_back(function);
+  }
+
+  // retrun true if substance concentration and gradient don't evolve over time
+  bool IsFixedSubstance() {
+    return (mu_ == 0 && dc_[1] == 0 && dc_[2] == 0 && dc_[3] == 0 &&
+            dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
+  }
+
+ protected:
+  /// The id of the substance of this grid
+  int substance_ = 0;
+  /// The name of the substance of this grid
+  std::string substance_name_ = "";
+  /// The side length of each box
+  double box_length_ = 0;
+  /// the volume of each box
+  double box_volume_ = 0;
+  /// The array of concentration values
+  ParallelResizeVector<double> c1_ = {};
+  /// An extra concentration data buffer for faster value updating
+  ParallelResizeVector<double> c2_ = {};
+  /// Buffers for Runge Kutta
+  ParallelResizeVector<double> r1_ = {};
+  /// k array for runge-kutta.
+  std::array<double, 2> k_ = {};
+  /// The array of gradients (x, y, z)
+  ParallelResizeVector<double> gradients_ = {};
+  /// The maximum concentration value that a box can have
+  double concentration_threshold_ = 1e15;
+  /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
+  std::array<double, 7> dc_ = {{0}};
+  /// The timestep resolution fhe diffusion grid
+  // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
+  double dt_ = 1.0;
+  /// The decay constant
+  double mu_ = 0;
+  /// The grid dimensions of the diffusion grid
+  std::array<int32_t, 6> grid_dimensions_ = {{0}};
+  /// The number of boxes at each axis [x, y, z]
+  std::array<size_t, 3> num_boxes_axis_ = {{0}};
+  /// The total number of boxes in the diffusion grid
+  size_t total_num_boxes_ = 0;
+  /// Flag to determine if this grid has been initialized
+  bool initialized_ = false;
+  /// The resolution of the diffusion grid
+  int resolution_ = 0;
+  /// Number of steps for RK diffusion grid;
+  unsigned int diffusion_step_ = 1;
+  /// If false, grid dimensions are even; if true, they are odd
+  bool parity_ = false;
+  /// A list of functions that initialize this diffusion grid
+  std::vector<std::function<double(double, double, double)>> initializers_ = {};
+  // turn to true after gradient initialization
+  bool init_gradient_ = false;
+
+  BDM_CLASS_DEF_NV(DiffusionGrid, 1);
+};
+
+class AnalyticalGrid: public DiffusionGrid{
+public:
+  AnalyticalGrid(int substance_id, std::string substance_name, double dc,
+                double mu, int resolution = 11, unsigned int diffusion_step = 1)
+   : DiffusionGrid{
+     substance_id,
+     substance_name,
+     dc,
+     mu,
+     resolution,
+     diffusion_step}{}
+
+
+
+
+ // Non-leaking edge diffusion method
+ void Diffuse(){
+ auto nx = num_boxes_axis_[0];
+    auto ny = num_boxes_axis_[1];
+    auto nz = num_boxes_axis_[2];
+
+    #define YBF 16
+    #pragma omp parallel for collapse(2)
+    for (size_t yy = 0; yy < ny; yy += YBF) {
+      for (size_t z = 0; z < nz; z++) {
+        size_t ymax = yy + YBF;
+        if (ymax >= ny) {
+          ymax = ny;
+        }
+        for (size_t y = yy; y < ymax; y++) {
+          size_t x;
+          int c, n, s, b, t;
+          x = 0;
+          c = x + y * nx + z * nx * ny;
+          n = (y == 0) ? c : c - nx;
+          s = (y == ny - 1) ? c : c + nx;
+          b = (z == 0) ? c : c - nx * ny;
+          t = (z == nz - 1) ? c : c + nx * ny;
+          c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c] + dc_[2] * c1_[c + 1] +
+                    dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
+                    dc_[6] * c1_[t]) *
+                   (1 - mu_);
+          #pragma omp simd
+          for (x = 1; x < nx - 1; x++) {
+            ++c;
+            ++n;
+            ++s;
+            ++b;
+            ++t;
+            c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] +
+                      dc_[2] * c1_[c + 1] + dc_[3] * c1_[s] + dc_[4] * c1_[n] +
+                      dc_[5] * c1_[b] + dc_[6] * c1_[t]) *
+                     (1 - mu_);
+          }
+          ++c;
+          ++n;
+          ++s;
+          ++b;
+          ++t;
+          c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] + dc_[2] * c1_[c] +
+                    dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
+                    dc_[6] * c1_[t]) *
+                   (1 - mu_);
+        }  // tile ny
+      }    // tile nz
+    }      // block ny
+    c1_.swap(c2_);
+ }
+
+ // Leaking edge diffusion method
+ void DiffuseWithLeakingEdge(){
+     int nx = num_boxes_axis_[0];
     int ny = num_boxes_axis_[1];
     int nz = num_boxes_axis_[2];
 
-#define YBF 16
-#pragma omp parallel for collapse(2)
+    #define YBF 16
+    #pragma omp parallel for collapse(2)
     for (int yy = 0; yy < ny; yy += YBF) {
       for (int z = 0; z < nz; z++) {
         // To let the edges bleed we set some diffusion coefficients
@@ -345,7 +655,7 @@ class DiffusionGrid {
                     dc_2_[3] * c1_[s] + dc_2_[4] * c1_[n] + dc_2_[5] * c1_[b] +
                     dc_2_[6] * c1_[t]) *
                    (1 - mu_);
-#pragma omp simd
+          #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
@@ -372,66 +682,26 @@ class DiffusionGrid {
       }    // tile nz
     }      // block ny
     c1_.swap(c2_);
-  }
+ }
 
-  /// Solves a 5-point stencil diffusion equation, with closed-edge
-  /// boundary conditions. Substances are not allowed to leave the simulation
-  /// space. Keep in mind that the concentration can build up at the edges
-  ///
-  void DiffuseWithClosedEdge() {
-    auto nx = num_boxes_axis_[0];
-    auto ny = num_boxes_axis_[1];
-    auto nz = num_boxes_axis_[2];
+};
 
-#define YBF 16
-#pragma omp parallel for collapse(2)
-    for (size_t yy = 0; yy < ny; yy += YBF) {
-      for (size_t z = 0; z < nz; z++) {
-        size_t ymax = yy + YBF;
-        if (ymax >= ny) {
-          ymax = ny;
-        }
-        for (size_t y = yy; y < ymax; y++) {
-          size_t x;
-          int c, n, s, b, t;
-          x = 0;
-          c = x + y * nx + z * nx * ny;
-          n = (y == 0) ? c : c - nx;
-          s = (y == ny - 1) ? c : c + nx;
-          b = (z == 0) ? c : c - nx * ny;
-          t = (z == nz - 1) ? c : c + nx * ny;
-          c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c] + dc_[2] * c1_[c + 1] +
-                    dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
-                    dc_[6] * c1_[t]) *
-                   (1 - mu_);
-#pragma omp simd
-          for (x = 1; x < nx - 1; x++) {
-            ++c;
-            ++n;
-            ++s;
-            ++b;
-            ++t;
-            c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] +
-                      dc_[2] * c1_[c + 1] + dc_[3] * c1_[s] + dc_[4] * c1_[n] +
-                      dc_[5] * c1_[b] + dc_[6] * c1_[t]) *
-                     (1 - mu_);
-          }
-          ++c;
-          ++n;
-          ++s;
-          ++b;
-          ++t;
-          c2_[c] = (dc_[0] * c1_[c] + dc_[1] * c1_[c - 1] + dc_[2] * c1_[c] +
-                    dc_[3] * c1_[s] + dc_[4] * c1_[n] + dc_[5] * c1_[b] +
-                    dc_[6] * c1_[t]) *
-                   (1 - mu_);
-        }  // tile ny
-      }    // tile nz
-    }      // block ny
-    c1_.swap(c2_);
-  }
-  void DiffuseEuler() {
-    // check if diffusion coefficient and decay constant are 0
+// Derived Euler class
+class EulerGrid:public DiffusionGrid{
+  public:
+  EulerGrid(int substance_id, std::string substance_name, double dc,
+                double mu, int resolution = 11, unsigned int diffusion_step = 1)
+  : DiffusionGrid{
+     substance_id,
+     substance_name,
+     dc,
+     mu,
+     resolution,
+     diffusion_step}{}
+
+ // Non-leaking edge diffusion method
+ void Diffuse(){
+     // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
       return;
@@ -444,8 +714,8 @@ class DiffusionGrid {
     const double ibl2 = 1 / (box_length_ * box_length_);
     const double d = 1 - dc_[0];
 
-#define YBF 16
-#pragma omp parallel for collapse(2)
+    #define YBF 16
+    #pragma omp parallel for collapse(2)
     for (size_t yy = 0; yy < ny; yy += YBF) {
       for (size_t z = 0; z < nz; z++) {
         size_t ymax = yy + YBF;
@@ -456,7 +726,7 @@ class DiffusionGrid {
           size_t x = 0;
           int c, n, s, b, t;
           c = x + y * nx + z * nx * ny;
-#pragma omp simd
+          #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
@@ -487,10 +757,11 @@ class DiffusionGrid {
       }    // tile nz
     }      // block ny
     c1_.swap(c2_);
-  }
+ }
 
-  void DiffuseEulerLeakingEdge() {
-    // check if diffusion coefficient and decay constant are 0
+ // Leaking edge diffusion method
+ void DiffuseWithLeakingEdge(){
+  // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
       return;
@@ -504,8 +775,8 @@ class DiffusionGrid {
     const double d = 1 - dc_[0];
     std::array<int, 4> l;
 
-#define YBF 16
-#pragma omp parallel for collapse(2)
+    #define YBF 16
+    #pragma omp parallel for collapse(2)
     for (size_t yy = 0; yy < ny; yy += YBF) {
       for (size_t z = 0; z < nz; z++) {
         size_t ymax = yy + YBF;
@@ -551,7 +822,7 @@ class DiffusionGrid {
                     d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
                     d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
                    (1 - mu_);
-#pragma omp simd
+          #pragma omp simd
           for (x = 1; x < nx - 1; x++) {
             ++c;
             ++n;
@@ -579,10 +850,26 @@ class DiffusionGrid {
       }    // tile nz
     }      // block ny
     c1_.swap(c2_);
-  }
+ }
 
-  void RK() {
-    // check if diffusion coefficient and decay constant are 0
+};
+
+// Derived Runge-Kutta class
+class RKGrid: public DiffusionGrid{
+public :
+   RKGrid(int substance_id, std::string substance_name, double dc,
+                double mu, int resolution = 11, unsigned int diffusion_step = 1)
+   : DiffusionGrid{
+     substance_id,
+     substance_name,
+     dc,
+     mu,
+     resolution,
+     diffusion_step}{}
+
+ // Non-leaking edge diffusion method
+ void Diffuse(){
+ // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
       return;
@@ -596,10 +883,10 @@ class DiffusionGrid {
     const double d = 1 - dc_[0];
     double step = diffusion_step_;
     double h = dt_ / step;
-#define YBF 16
+    #define YBF 16
     for (size_t i = 0; i < step; i++) {
       for (size_t order = 0; order < 2; order++) {
-#pragma omp parallel for collapse(2)
+        #pragma omp parallel for collapse(2)
         for (size_t yy = 0; yy < ny; yy += YBF) {
           for (size_t z = 0; z < nz; z++) {
             size_t ymax = yy + YBF;
@@ -610,7 +897,7 @@ class DiffusionGrid {
               size_t x = 0;
               int c, n, s, b, t;
               c = x + y * nx + z * nx * ny;
-#pragma omp simd
+              #pragma omp simd
               for (x = 1; x < nx - 1; x++) {
                 ++c;
                 ++n;
@@ -653,10 +940,12 @@ class DiffusionGrid {
       }
       c1_.swap(c2_);
     }
-  }
+ }
 
-  void RKLeaking() {
-    // check if diffusion coefficient and decay constant are 0
+ // Leaking edge diffusion method
+ void DiffuseWithLeakingEdge(){
+
+ // check if diffusion coefficient and decay constant are 0
     // i.e. if we don't need to calculate diffusion update
     if (IsFixedSubstance()) {
       return;
@@ -672,10 +961,10 @@ class DiffusionGrid {
 
     double step = diffusion_step_;
     double h = dt_ / step;
-#define YBF 16
+    #define YBF 16
     for (size_t i = 0; i < step; i++) {
       for (size_t order = 0; order < 2; order++) {
-#pragma omp parallel for collapse(2)
+        #pragma omp parallel for collapse(2)
         for (size_t yy = 0; yy < ny; yy += YBF) {
           for (size_t z = 0; z < nz; z++) {
             size_t ymax = yy + YBF;
@@ -717,7 +1006,7 @@ class DiffusionGrid {
                 t = c + nx * ny;
               }
 
-#pragma omp simd
+              #pragma omp simd
               for (x = 1; x < nx - 1; x++) {
                 ++c;
                 ++n;
@@ -1014,7 +1303,6 @@ class DiffusionGrid {
   // turn to true after gradient initialization
   bool init_gradient_ = false;
 
-  BDM_CLASS_DEF_NV(DiffusionGrid, 1);
 };
 
 }  // namespace bdm

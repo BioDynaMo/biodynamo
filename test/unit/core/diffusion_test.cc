@@ -155,7 +155,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 TEST(DiffusionTest, LeakingEdge) {
   Simulation simulation(TEST_NAME);
 
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
+  AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
   int rbound = 100;
@@ -219,7 +219,7 @@ TEST(DiffusionTest, LeakingEdge) {
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, ClosedEdge) {
   Simulation simulation(TEST_NAME);
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
+ AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0.0, 5);
 
   int lbound = -100;
   int rbound = 100;
@@ -228,7 +228,7 @@ TEST(DiffusionTest, ClosedEdge) {
 
   for (int i = 0; i < 100; i++) {
     d_grid->IncreaseConcentrationBy({{0, 0, 0}}, 4);
-    d_grid->DiffuseWithClosedEdge();
+    d_grid->Diffuse();
     d_grid->CalculateGradient();
   }
 
@@ -283,7 +283,7 @@ TEST(DiffusionTest, ClosedEdge) {
 // after the env has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
   Simulation simulation(TEST_NAME);
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
+  AnalyticalGrid* d_grid = new AnalyticalGrid(0, "Kalium", 0.4, 0, 5);
 
   int lbound = -100;
   int rbound = 100;
@@ -437,9 +437,9 @@ TEST(DiffusionTest, CorrectParameters) {
 TEST(DiffusionTest, EulerConvergence) {
   Simulation simulation(TEST_NAME);
   double diff_coef = 0.5;
-  DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* d_grid8 = new DiffusionGrid(2, "Kalium8", diff_coef, 0, 81);
+  EulerGrid* d_grid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
+  EulerGrid* d_grid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
+  EulerGrid* d_grid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
 
   int l = -100;
   int r = 100;
@@ -469,9 +469,9 @@ TEST(DiffusionTest, EulerConvergence) {
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
-    d_grid2->DiffuseEuler();
-    d_grid4->DiffuseEuler();
-    d_grid8->DiffuseEuler();
+    d_grid2->Diffuse();
+    d_grid4->Diffuse();
+    d_grid8->Diffuse();
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
@@ -511,9 +511,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   auto set_param = [](Param* param) { param->diffusion_type_ = "RK"; };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
-  DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* d_grid8 = new DiffusionGrid(2, "Kalium8", diff_coef, 0, 81);
+  RKGrid* d_grid2 = new RKGrid(0, "Kalium1", diff_coef, 0, 21);
+  RKGrid* d_grid4 = new RKGrid(1, "Kalium4", diff_coef, 0, 41);
+  RKGrid* d_grid8 = new RKGrid(2, "Kalium8", diff_coef, 0, 81);
 
   int l = -100;
   int r = 100;
@@ -543,9 +543,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
-    d_grid2->RK();
-    d_grid4->RK();
-    d_grid8->RK();
+    d_grid2->Diffuse();
+    d_grid4->Diffuse();
+    d_grid8->Diffuse();
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
