@@ -105,30 +105,23 @@ def plot(name_demo):
     ax[1].set_title(name_demo)
     ax[1].set_xticks(range(nb))
     ax[1].set_xticklabels(xlabels, rotation=10)
-    plt.savefig(name_demo+'.png')
+    plt.savefig('../../build/benchmark/'+name_demo+'.png')
     return
 
-
-# There must be a probelm there
-# If we use the scrit ./version.sh, it will work once, but if you ran it second time or third... there is a crash
-# I think its because of the json file that I broke because the first try it work (maybe) because the json is not broken yet
-# If you use the target, it will work anytime because its always a new json file that is not broken yet
 def write_memory(j):
     file = sys.argv[1]
     # Just a random vector of the MemoryUsage
     GetMemoryUsage = [10]*j
     i = 0
     file = sys.argv[1]
-    with open(file, "w") as w_file:
+    with open('../../build/benchmark/'+file, "w") as w_file:
         while i < j:
             x = {"memory":GetMemoryUsage[i]}
-            print(x)
             data_benchmark = data["benchmarks"]
             data_demo = data_benchmark[i]
             data_demo.update(x)
-            json.dump(data, w_file)
-            print(i)
             i += 1
+        json.dump(data, w_file, indent=1)
     w_file.close()
 
 def main():
@@ -153,11 +146,7 @@ if __name__ == "__main__":
     file = sys.argv[1]
     with open('../../build/benchmark/'+file) as read_file:
         data = json.load(read_file)
-    # x = {"memory":10}
-    # y = data["benchmarks"]
-    # z = y[0]
-    # z.update(x)
-    # print(y)
+        read_file.close()
     try:
         main()
     except:
