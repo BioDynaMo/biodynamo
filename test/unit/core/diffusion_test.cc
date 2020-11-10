@@ -589,7 +589,7 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
 TEST(DISABLED_DiffusionTest, ModelInitializer) {
   auto set_param = [](auto* param) {
     Param::VisualizeDiffusion vd;
-    vd.name_ = "Substance_1";
+    vd.name = "Substance_1";
 
     param->export_visualization = true;
     param->visualize_diffusion.push_back(vd);

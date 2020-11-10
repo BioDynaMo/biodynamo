@@ -256,18 +256,18 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
         }
 
         VisualizeDiffusion vd;
-        vd.name_ = *name;
+        vd.name = *name;
 
         if (table->contains("concentration")) {
           auto concentration = table->get_as<bool>("concentration");
           if (concentration) {
-            vd.concentration_ = *concentration;
+            vd.concentration = *concentration;
           }
         }
         if (table->contains("gradient")) {
           auto gradient = table->get_as<bool>("gradient");
           if (gradient) {
-            vd.gradient_ = *gradient;
+            vd.gradient = *gradient;
           }
         }
 

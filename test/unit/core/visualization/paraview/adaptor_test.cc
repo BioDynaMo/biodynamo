@@ -176,7 +176,7 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
 
     // We selection Substance_1 for export
     Param::VisualizeDiffusion vd;
-    vd.name_ = "Substance_1";
+    vd.name = "Substance_1";
     param->visualize_diffusion.push_back(vd);
 
     // We select MyCell for export

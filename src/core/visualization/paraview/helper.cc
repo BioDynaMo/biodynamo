@@ -66,7 +66,7 @@ std::string GenerateSimulationInfoJson(
   std::stringstream substances;
   uint64_t num_substances = param->visualize_diffusion.size();
   for (uint64_t i = 0; i < num_substances; i++) {
-    auto& name = param->visualize_diffusion[i].name_;
+    auto& name = param->visualize_diffusion[i].name;
 
     auto search = vtk_dgrids.find(name);
     if (search == vtk_dgrids.end()) {
@@ -87,7 +87,7 @@ std::string GenerateSimulationInfoJson(
     }
     substances << "    { \"name\":\"" << name << "\", ";
     std::string has_gradient =
-        param->visualize_diffusion[i].gradient_ ? "true" : "false";
+        param->visualize_diffusion[i].gradient ? "true" : "false";
     substances << "\"has_gradient\":\"" << has_gradient << "\" }";
 
     if (i != num_substances - 1) {

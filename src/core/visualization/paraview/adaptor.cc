@@ -159,8 +159,8 @@ void ParaviewAdaptor::Initialize() {
         new VtkAgents(pair.first.c_str(), impl_->data_description_);
   }
   for (auto& entry : param->visualize_diffusion) {
-    impl_->vtk_dgrids_[entry.name_] =
-        new VtkDiffusionGrid(entry.name_, impl_->data_description_);
+    impl_->vtk_dgrids_[entry.name] =
+        new VtkDiffusionGrid(entry.name, impl_->data_description_);
   }
 }
 

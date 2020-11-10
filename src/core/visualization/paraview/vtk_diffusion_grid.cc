@@ -49,7 +49,7 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
   // get visualization config
   const Param::VisualizeDiffusion* vd = nullptr;
   for (auto& entry : param->visualize_diffusion) {
-    if (entry.name_ == name) {
+    if (entry.name == name) {
       vd = &entry;
       break;
     }
@@ -57,13 +57,13 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
 
   for (uint64_t i = 0; i < data_.size(); ++i) {
     // Add attribute data
-    if (vd->concentration_) {
+    if (vd->concentration) {
       vtkNew<vtkDoubleArray> concentration;
       concentration->SetName("Substance Concentration");
       concentration_array_idx_ =
           data_[i]->GetPointData()->AddArray(concentration.GetPointer());
     }
-    if (vd->gradient_) {
+    if (vd->gradient) {
       vtkNew<vtkDoubleArray> gradient;
       gradient->SetName("Diffusion Gradient");
       gradient->SetNumberOfComponents(3);

@@ -328,9 +328,9 @@ struct Param {
       visualize_agents;  ///<  JSON_object
 
   struct VisualizeDiffusion {
-    std::string name_;
-    bool concentration_ = true;
-    bool gradient_ = false;
+    std::string name;
+    bool concentration = true;
+    bool gradient = false;
   };
 
   /// Specifies for which substances extracellular diffusion should be

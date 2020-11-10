@@ -160,13 +160,13 @@ class SimulationTest : public ::testing::Test {
     for (uint64_t i = 0; i < 2; i++) {
       auto vd = param->visualize_diffusion[i];
       if (i == 0) {
-        EXPECT_EQ("Na", vd.name_);
-        EXPECT_FALSE(vd.concentration_);
-        EXPECT_TRUE(vd.gradient_);
+        EXPECT_EQ("Na", vd.name);
+        EXPECT_FALSE(vd.concentration);
+        EXPECT_TRUE(vd.gradient);
       } else if (i == 1) {
-        EXPECT_EQ("K", vd.name_);
-        EXPECT_TRUE(vd.concentration_);
-        EXPECT_FALSE(vd.gradient_);
+        EXPECT_EQ("K", vd.name);
+        EXPECT_TRUE(vd.concentration);
+        EXPECT_FALSE(vd.gradient);
       }
     }
 
