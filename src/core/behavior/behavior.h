@@ -15,7 +15,7 @@
 #ifndef CORE_BEHAVIOR_BEHAVIOR_H_
 #define CORE_BEHAVIOR_BEHAVIOR_H_
 
-#include "core/event/event.h"
+#include "core/agent/new_agent_event.h"
 #include "core/agent/agent.h"
 #include "core/util/type.h"
 

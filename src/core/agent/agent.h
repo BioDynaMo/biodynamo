@@ -35,7 +35,7 @@
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
-#include "core/event/event.h"
+#include "core/agent/new_agent_event.h"
 #include "core/util/type.h"
 
 namespace bdm {

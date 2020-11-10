@@ -17,7 +17,7 @@
 
 #include <vector>
 
-#include "core/event/cell_division_event.h"
+#include "core/agent/cell_division_event.h"
 #include "core/agent/cell.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"

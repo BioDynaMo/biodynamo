@@ -16,7 +16,7 @@
 #define CORE_BEHAVIOR_GROWTH_DIVISION_H_
 
 #include "core/behavior/behavior.h"
-#include "core/event/cell_division_event.h"
+#include "core/agent/cell_division_event.h"
 #include "core/agent/cell.h"
 #include "core/util/log.h"
 #include "core/util/root.h"

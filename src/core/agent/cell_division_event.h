@@ -12,10 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_EVENT_CELL_DIVISION_EVENT_H_
-#define CORE_EVENT_CELL_DIVISION_EVENT_H_
+#ifndef CORE_AGENT_CELL_DIVISION_EVENT_H_
+#define CORE_AGENT_CELL_DIVISION_EVENT_H_
 
-#include "core/event/event.h"
+#include "core/agent/new_agent_event.h"
 
 namespace bdm {
 
@@ -48,4 +48,4 @@ struct CellDivisionEvent : public NewAgentEvent {
 
 }  // namespace bdm
 
-#endif  // CORE_EVENT_CELL_DIVISION_EVENT_H_
+#endif  // CORE_AGENT_CELL_DIVISION_EVENT_H_

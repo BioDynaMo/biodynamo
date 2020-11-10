@@ -12,11 +12,11 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef NEUROSCIENCE_EVENT_NEURITE_BRANCHING_EVENT_H_
-#define NEUROSCIENCE_EVENT_NEURITE_BRANCHING_EVENT_H_
+#ifndef NEUROSCIENCE_NEW_AGENT_EVENT_NEURITE_BRANCHING_EVENT_H_
+#define NEUROSCIENCE_NEW_AGENT_EVENT_NEURITE_BRANCHING_EVENT_H_
 
 #include <array>
-#include "core/event/event.h"
+#include "core/agent/new_agent_event.h"
 
 namespace bdm {
 namespace neuroscience {
@@ -58,4 +58,4 @@ struct NeuriteBranchingEvent : public NewAgentEvent {
 }  // namespace neuroscience
 }  // namespace bdm
 
-#endif  // NEUROSCIENCE_EVENT_NEURITE_BRANCHING_EVENT_H_
+#endif  // NEUROSCIENCE_NEW_AGENT_EVENT_NEURITE_BRANCHING_EVENT_H_

@@ -27,7 +27,7 @@
 
 #include "core/behavior/behavior.h"
 #include "core/environment/environment.h"
-#include "core/event/event.h"
+#include "core/agent/new_agent_event.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"

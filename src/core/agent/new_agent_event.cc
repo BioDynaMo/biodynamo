@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/event/cell_division_event.h"
+#include "core/agent/cell_division_event.h"
 
 namespace bdm {
 

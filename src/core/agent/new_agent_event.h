@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_EVENT_EVENT_H_
-#define CORE_EVENT_EVENT_H_
+#ifndef CORE_AGENT_NEW_AGENT_EVENT_H_
+#define CORE_AGENT_NEW_AGENT_EVENT_H_
 
 #include <limits>
 #include <mutex>
@@ -85,4 +85,4 @@ struct NewAgentEvent {
 
 }  // namespace bdm
 
-#endif  // CORE_EVENT_EVENT_H_
+#endif  // CORE_AGENT_NEW_AGENT_EVENT_H_

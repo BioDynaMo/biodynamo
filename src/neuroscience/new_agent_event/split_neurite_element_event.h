@@ -12,10 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef NEUROSCIENCE_EVENT_SPLIT_NEURITE_ELEMENT_EVENT_H_
-#define NEUROSCIENCE_EVENT_SPLIT_NEURITE_ELEMENT_EVENT_H_
+#ifndef NEUROSCIENCE_NEW_AGENT_EVENT_SPLIT_NEURITE_ELEMENT_EVENT_H_
+#define NEUROSCIENCE_NEW_AGENT_EVENT_SPLIT_NEURITE_ELEMENT_EVENT_H_
 
-#include "core/event/event.h"
+#include "core/agent/new_agent_event.h"
 
 namespace bdm {
 namespace neuroscience {
@@ -43,4 +43,4 @@ struct SplitNeuriteElementEvent : public NewAgentEvent {
 }  // namespace neuroscience
 }  // namespace bdm
 
-#endif  // NEUROSCIENCE_EVENT_SPLIT_NEURITE_ELEMENT_EVENT_H_
+#endif  // NEUROSCIENCE_NEW_AGENT_EVENT_SPLIT_NEURITE_ELEMENT_EVENT_H_

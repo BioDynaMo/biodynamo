@@ -12,11 +12,11 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "neuroscience/event/neurite_bifurcation_event.h"
-#include "neuroscience/event/neurite_branching_event.h"
-#include "neuroscience/event/new_neurite_extension_event.h"
-#include "neuroscience/event/side_neurite_extension_event.h"
-#include "neuroscience/event/split_neurite_element_event.h"
+#include "neuroscience/new_agent_event/neurite_bifurcation_event.h"
+#include "neuroscience/new_agent_event/neurite_branching_event.h"
+#include "neuroscience/new_agent_event/new_neurite_extension_event.h"
+#include "neuroscience/new_agent_event/side_neurite_extension_event.h"
+#include "neuroscience/new_agent_event/split_neurite_element_event.h"
 
 namespace bdm {
 namespace neuroscience {

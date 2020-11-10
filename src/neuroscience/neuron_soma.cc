@@ -17,7 +17,7 @@
 #include <algorithm>
 
 #include "core/resource_manager.h"
-#include "neuroscience/event/new_neurite_extension_event.h"
+#include "neuroscience/new_agent_event/new_neurite_extension_event.h"
 #include "neuroscience/neurite_element.h"
 #include "neuroscience/param.h"
 
