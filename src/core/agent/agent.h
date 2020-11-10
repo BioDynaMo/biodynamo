@@ -127,7 +127,7 @@ class Agent {
       auto* new_agent = p->New();
       new_agent->Initialize(event);
       event.new_agents.push_back(new_agent);
-      ctxt->push_back(new_agent);
+      ctxt->AddAgent(new_agent);
     }
     Update(event);
   }

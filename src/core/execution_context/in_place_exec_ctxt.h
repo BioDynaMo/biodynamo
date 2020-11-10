@@ -88,7 +88,7 @@ class InPlaceExecutionContext {
   /// in the argument
   void Execute(Agent* agent, const std::vector<Operation*>& operations);
 
-  void push_back(Agent* new_agent);  // NOLINT
+  void AddAgent(Agent* new_agent);
 
   void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
                        const Agent& query);

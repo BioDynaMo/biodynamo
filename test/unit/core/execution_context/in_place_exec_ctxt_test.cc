@@ -98,7 +98,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
 
   Cell* cell_1 = new Cell();
   auto uid_1 = cell_1->GetUid();
-  ctxt->push_back(cell_1);
+  ctxt->AddAgent(cell_1);
 
   EXPECT_EQ(1u, rm->GetNumAgents());
 
@@ -138,7 +138,7 @@ TEST(InPlaceExecutionContext, NewAndGetAgent) {
   Cell* cell_1 = new Cell();
   auto uid_1 = cell_1->GetUid();
   cell_1->SetDiameter(456);
-  ctxt->push_back(cell_1);
+  ctxt->AddAgent(cell_1);
 
   EXPECT_EQ(1u, rm->GetNumAgents());
   EXPECT_TRUE(rm->ContainsAgent(uid_0));
@@ -338,7 +338,7 @@ TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
     new_agent->SetData(new_agent->GetUid().GetIndex());
 
     auto* ctxt = simulation.GetExecutionContext();
-    ctxt->push_back(new_agent);
+    ctxt->AddAgent(new_agent);
 
     auto* random = simulation.GetRandom();
     uint64_t random_number = 0;

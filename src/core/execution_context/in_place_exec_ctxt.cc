@@ -243,7 +243,7 @@ void InPlaceExecutionContext::Execute(
   }
 }
 
-void InPlaceExecutionContext::push_back(Agent* new_agent) {  // NOLINT
+void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
   new_agents_.push_back(new_agent);
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
   new_agent_map_->Insert(new_agent->GetUid(), {new_agent, timesteps});
