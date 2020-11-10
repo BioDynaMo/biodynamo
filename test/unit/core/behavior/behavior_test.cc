@@ -32,8 +32,8 @@ struct TestBehavior : public Behavior {
 TEST(BehaviorTest, CopyNever) {
   TestBehavior b;
   TestBehavior b1;
-  b1.CopyToNewAlways();
-  b1.CopyToNewNever();
+  b1.AlwaysCopyToNew();
+  b1.NeverCopyToNew();
 
   for (uint64_t i = 0; i < 64; i++) {
     NewAgentEventUid e = 1 << i;
@@ -43,7 +43,7 @@ TEST(BehaviorTest, CopyNever) {
 
 TEST(BehaviorTest, CopyAlways) {
   TestBehavior b;
-  b.CopyToNewAlways();
+  b.AlwaysCopyToNew();
 
   for (uint64_t i = 0; i < 64; i++) {
     NewAgentEventUid e = 1 << i;
@@ -84,7 +84,7 @@ TEST(BehaviorTest, CopyOnEventList) {
 TEST(BehaviorTest, RemoveNever) {
   TestBehavior b;
   TestBehavior b1;
-  b1.RemoveFromExistingNever();
+  b1.NeverRemoveFromExisting();
 
   for (uint64_t i = 0; i < 64; i++) {
     NewAgentEventUid e = 1 << i;
@@ -95,7 +95,7 @@ TEST(BehaviorTest, RemoveNever) {
 
 TEST(BehaviorTest, RemoveAlways) {
   TestBehavior b;
-  b.RemoveFromExistingAlways();
+  b.AlwaysRemoveFromExisting();
 
   for (uint64_t i = 0; i < 64; i++) {
     NewAgentEventUid e = 1 << i;

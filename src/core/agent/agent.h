@@ -74,7 +74,7 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 
 struct Event;
-struct Behavior;
+class Behavior;
 
 /// Contains code required by all agents
 class Agent {
@@ -93,12 +93,32 @@ class Agent {
   /// Create a copy of this object.
   virtual Agent* NewCopy() const = 0;
 
+  /// This method is called to initialize new agents that are created
+  /// during a NewAgentEvent. Override this method to initialize attributes of 
+  /// your own Agent subclasses. 
+  /// NB: Don't forget to call the implementation of the base class first.
+  /// `Base::Initialize(event);`
+  /// Failing to do so will result in errors.
   virtual void Initialize(const NewAgentEvent& event);
 
+  /// This method is called to update the existing agent at the end of 
+  /// a NewAgentEvent. Override this method to update attributes of 
+  /// your own Agent subclasses. 
+  /// NB: Don't forget to call the implementation of the base class first.
+  /// `Base::Update(event);`
+  /// Failing to do so will result in errors.
   virtual void Update(const NewAgentEvent& event);
 
-  // TODO documentation
-  void NewAgents(const NewAgentEvent& event, const std::initializer_list<Agent*>& prototypes) {
+  /// This method creates a new agent for each entry in prototypes.\n
+  /// The prototypes list defines the type of the new agent. 
+  /// This function calls `prototype->New()` internally.
+  /// New agents are automatically added to the execution context right after 
+  /// they are initialized.
+  /// This function sets the attributes `NewAgentEvent::existing_agent`
+  /// and `NewAgentEvent::new_agents` to their correct values.
+  /// Lastly, this function calls  `this->Update(event)`\n
+  /// The newly created and initialized agents can be found in `event.new_agents`.
+  void CreateNewAgents(const NewAgentEvent& event, const std::initializer_list<Agent*>& prototypes) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     event.existing_agent = this;
     for (auto* p : prototypes) {
@@ -236,14 +256,18 @@ class Agent {
   bool run_displacement_for_all_next_ts_ = false;  //!
   mutable bool run_displacement_next_ts_ = true;   //!
 
-  /// @brief Function to copy behaviors from existing Agent to this one
+  /// Function to copy behaviors from existing Agent to this one
   /// and to initialize them.
+  /// This function sets the attributes `NewAgentEvent::existing_behavior`
+  /// and `NewAgentEvent::new_behaviors` to their correct value.
   void InitializeBehaviors(const NewAgentEvent& event);
 
   /// @brief Function to invoke the Update method of the behavior or remove
   ///                  it from `current`.
   /// Forwards the call to Update to each behavior of the existing
   /// agent and removes behaviors if they are flagged.
+  /// This function sets the attributes `NewAgentEvent::existing_behavior`
+  /// and `NewAgentEvent::new_behaviors` to their correct value.
   void UpdateBehaviors(const NewAgentEvent& event);
 
   BDM_CLASS_DEF(Agent, 1)

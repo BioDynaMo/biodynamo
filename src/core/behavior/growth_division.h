@@ -28,7 +28,7 @@ namespace bdm {
 struct GrowthDivision : public Behavior {
   BDM_BEHAVIOR_HEADER(GrowthDivision, Behavior, 1);
 
-  GrowthDivision() { CopyToNewAlways(); }
+  GrowthDivision() { AlwaysCopyToNew(); }
   GrowthDivision(double threshold, double growth_rate) : 
         threshold_(threshold),
         growth_rate_(growth_rate) {}

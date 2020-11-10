@@ -81,7 +81,7 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
     prototype = &kDefaultNeurite;
   } 
   NewNeuriteExtensionEvent event(diameter, phi, theta);
-  NewAgents(event, {prototype});
+  CreateNewAgents(event, {prototype});
   return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
 }
 

@@ -23,7 +23,7 @@ namespace bdm {
 struct TestBehaviour : public Behavior {
   BDM_BEHAVIOR_HEADER(TestBehaviour, Behavior, 1);
 
-  TestBehaviour() { CopyToNewAlways(); }
+  TestBehaviour() { AlwaysCopyToNew(); }
 
   void Run(Agent* agent) override {
     usleep(35000);  // 35 ms -> one iteration will take 350 ms

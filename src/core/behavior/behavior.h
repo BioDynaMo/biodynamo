@@ -22,10 +22,11 @@
 namespace bdm {
 
 /// Behavior encapsulates logic to decide for which NewAgentEventUids
-/// a behavior should be copied or removed
-struct Behavior {
-  /// Default ctor sets `copy_mask_` and remove_mask_` to 0; meaning that
-  /// `Copy` and `Remove` will always return false
+/// a behavior should be copied to the new agent and/or removed from 
+/// existing one. The default behavior is never copy to new agents, 
+/// and never remove from existing agents.
+class Behavior {
+ public:
   Behavior() : copy_mask_(0), remove_mask_(0) {}
 
   virtual ~Behavior() {}
@@ -36,19 +37,31 @@ struct Behavior {
   /// Create a new copy of this behavior.
   virtual Behavior* NewCopy() const = 0;
 
+  /// This method is called to initialize new behaviors that are created
+  /// during a NewAgentEvent. Override this method to initialize attributes of 
+  /// your own Behavior subclasses. 
+  /// NB: Don't forget to call the implementation of the base class first.
+  /// `Base::Initialize(event);`
+  /// Failing to do so will result in errors.
   virtual void Initialize(const NewAgentEvent& event) {
     copy_mask_ = event.existing_behavior->copy_mask_;
     remove_mask_ = event.existing_behavior->remove_mask_;
   }
   
+  /// This method is called to update the existing behavior at the end of 
+  /// a NewAgentEvent. Override this method to update attributes of 
+  /// your own Behavior subclasses. 
+  /// NB: Don't forget to call the implementation of the base class first.
+  /// `Base::Update(event);`
+  /// Failing to do so will result in errors.
   virtual void Update(const NewAgentEvent& event) {}
 
   virtual void Run(Agent* agent) = 0;
 
   /// Always copy this behavior to new agents
-  void CopyToNewAlways() { copy_mask_ = std::numeric_limits<NewAgentEventUid>::max(); }
+  void AlwaysCopyToNew() { copy_mask_ = std::numeric_limits<NewAgentEventUid>::max(); }
   /// Never copy this behavior to new agents
-  void CopyToNewNever() { copy_mask_ = 0; }
+  void NeverCopyToNew() { copy_mask_ = 0; }
   /// If a new agent will be created with one of 
   /// these NewAgentEventUids, this behavior will be copied to the new agent. 
   void CopyToNewIf(const std::initializer_list<NewAgentEventUid>& uids) { 
@@ -58,9 +71,9 @@ struct Behavior {
   }
 
   /// Always remove this behavior from the existing agent if a new agent is created.
-  void RemoveFromExistingAlways() { remove_mask_ = std::numeric_limits<NewAgentEventUid>::max(); }
+  void AlwaysRemoveFromExisting() { remove_mask_ = std::numeric_limits<NewAgentEventUid>::max(); }
   /// Never remove this behavior from the existing agent if a new agent is created.
-  void RemoveFromExistingNever() { remove_mask_ = 0; }
+  void NeverRemoveFromExisting() { remove_mask_ = 0; }
   /// If a new agent will be created with one of these
   /// NewAgentEventUids, this behavior will be removed from the existing agent. 
   void RemoveFromExistingIf(const std::initializer_list<NewAgentEventUid>& uids) { 

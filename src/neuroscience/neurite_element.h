@@ -329,7 +329,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     // we first split this neurite element into two pieces
     // then append a "daughter right" between the two
     NeuriteBranchingEvent event(0.5, length, new_branch_diameter, direction);
-    NewAgents(event, {this, this});
+    CreateNewAgents(event, {this, this});
     return bdm_static_cast<NeuriteElement*>(event.new_agents[1]); 
   }
 
@@ -391,7 +391,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
             "Bifurcation only allowed on a terminal neurite element");
     }
     NeuriteBifurcationEvent event(length, diameter_1, diameter_2, direction_1, direction_2);
-    NewAgents(event, {this, this});
+    CreateNewAgents(event, {this, this});
     auto* new_branch_l = bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
     auto* new_branch_r = bdm_static_cast<NeuriteElement*>(event.new_agents[1]);
     return {new_branch_l, new_branch_r};
@@ -1168,7 +1168,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \see SplitNeuriteElementEvent
   NeuriteElement* SplitNeuriteElement(double distal_portion = 0.5) {
     SplitNeuriteElementEvent event(distal_portion);
-    NewAgents(event, {this});
+    CreateNewAgents(event, {this});
     return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
   }
 
@@ -1219,7 +1219,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     }
 
     SideNeuriteExtensionEvent event{length, diameter, direction};
-    NewAgents(event, {this});
+    CreateNewAgents(event, {this});
     return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
 
   }

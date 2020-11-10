@@ -25,8 +25,8 @@
     items:
       - title: Parameter
         link: /docs/userguide/parameter/
-      - title: Event
-        link: /docs/userguide/event/
+      - title: NewAgentEvent
+        link: /docs/userguide/new_agent_event/
       - title: Math Array
         link: /docs/userguide/math_array/
       - title: Operation

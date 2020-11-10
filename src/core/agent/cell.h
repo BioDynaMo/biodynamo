@@ -172,7 +172,7 @@ class Cell : public Agent {
   /// \see CellDivisionEvent
   virtual Cell* Divide(double volume_ratio, double phi, double theta) {
     CellDivisionEvent event(volume_ratio, phi, theta);
-    NewAgents(event, {this});
+    CreateNewAgents(event, {this});
     return bdm_static_cast<Cell*>(event.new_agents[0]);
   }
 

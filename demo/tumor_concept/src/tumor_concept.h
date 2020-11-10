@@ -33,7 +33,7 @@ class MyCell : public Cell {  // our object extends the Cell object
   explicit MyCell(const Double3& position) : Base(position) {}
   virtual ~MyCell() {}
 
-  /// If MyCell divides, daughter 2 copies the data members from the mother
+  /// If MyCell divides, the daughter has to initialize its attributes
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
 
@@ -66,7 +66,7 @@ class MyCell : public Cell {  // our object extends the Cell object
 struct Growth : public Behavior {
   BDM_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
-  Growth() { CopyToNewAlways(); }
+  Growth() { AlwaysCopyToNew(); }
   virtual ~Growth() {}
 
   void Run(Agent* agent) override {

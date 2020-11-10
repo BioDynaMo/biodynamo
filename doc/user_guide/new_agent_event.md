@@ -1,14 +1,17 @@
 ---
 title: "NewAgentEvent"
 date: "2019-01-01"
-path: "/docs/userguide/new_agent_event/"
+path: "/docs/userguide/new-agent-event/"
 meta_title: "BioDynaMo User Guide"
 meta_description: "This page explains NewAgentEvents."
 toc: true
+next:
+    url:  "/docs/userguide/new-agent-event/"
+    title: "Event"
+    description: "This is the event page."
 sidebar: "userguide"
 keywords:
-  -NewAgentEvent
-  -extension
+  -event
 ---
 
 If a new agent (e.g. Cell) is created during a simulation we denote
@@ -48,7 +51,7 @@ The class `CellDivisionEvent` contains the parameters to perform a cell division
 The base class `NewAgentEvent` contains pointers to the existing agent and to 
 all new created agent. 
 This information is sufficient to initialize all attributes of the new daughter cell.
-```
+```cpp
 ...
 if (event.GetUid() == CellDivisionEvent::kUid) {
   auto* mother = bdm_static_cast<Cell*>(event.existing_agent);
@@ -64,7 +67,7 @@ Now, we have to modify it to transform it into daughter 1.
 For instance the original volume must be adjusted such that (`volume_mother = volume_daughter_1 + volume_daughter_2`).
 This is performed in the `Update(const NewAgentEvent& event)` function.
 It could look like the following:
-```
+```cpp
 ...
 if (event.GetUid() == CellDivisionEvent::kUid) {
   auto* daughter_2 = static_cast<Cell*>(event.new_agents[0]);

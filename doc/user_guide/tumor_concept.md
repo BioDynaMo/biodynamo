@@ -111,7 +111,7 @@ In the previous chapter, we created a great number of cells. However, those cell
 struct Growth : public Behavior {
   BDM_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
-  Growth() { CopyToNewAlways(); }
+  Growth() { AlwaysCopyToNew(); }
   virtual ~Growth() {}
 
   void Run(Agent* so) override {
@@ -132,7 +132,7 @@ if (auto* cell = dynamic_cast<Cell*>(so)) {
 }
 ```
 
-Of course, we need to create at least one new cell that contains our `Growth` in our `Simulate` method
+Of course, we need to create at least one new cell that contains our `Growth` behavior in our `Simulate` method
 ```cpp
 Cell* cell = new Cell({20, 50, 50});
 cell->SetDiameter(6);
@@ -237,7 +237,20 @@ class MyCell : public Cell {  // our object extends the Cell object
   MyCell() {}
   explicit MyCell(const Double3& position) : Base(position) {}
 
-  FIXME api
+  /// If MyCell divides, the daughter has to initialize its attributes
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+
+    if (auto* mother = dynamic_cast<MyCell*>(event.existing_agent)) {
+      cell_color_ = mother->cell_color_;
+      if (event.GetUid() == CellDivisionEvent::kUid) {
+        // the daughter will be able to divide
+        can_divide_ = true;
+      } else {
+        can_divide_ = mother->can_divide_;
+      }
+    }
+  }
 
   void SetCellColor(int cell_color) { cell_color_ = cell_color; }
   int GetCellColor() const { return cell_color_; }

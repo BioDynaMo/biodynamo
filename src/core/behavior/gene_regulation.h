@@ -36,7 +36,7 @@ namespace bdm {
 struct GeneRegulation : public Behavior {
   BDM_BEHAVIOR_HEADER(GeneRegulation, Behavior, 1);
 
-  GeneRegulation() { CopyToNewAlways(); }
+  GeneRegulation() { AlwaysCopyToNew(); }
 
   virtual ~GeneRegulation() {}
 

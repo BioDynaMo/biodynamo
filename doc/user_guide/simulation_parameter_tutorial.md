@@ -3,7 +3,7 @@ title: "Simulation Parameter Tutorial"
 date: "2020-09-08"
 path: "/docs/userguide/simulation_parameter_tutorial/"
 meta_title: "BioDynaMo User Guide"
-meta_description: "This is the diffusion page."
+meta_description: "This page explains simulation parameters."
 toc: true
 image: ""
 sidebar: "userguide"
