@@ -22,9 +22,10 @@
 namespace bdm {
 
 /// Move cells along the diffusion gradient (from low concentration to high)
-struct Chemotaxis : public Behavior {
+class Chemotaxis : public Behavior {
   BDM_BEHAVIOR_HEADER(Chemotaxis, Behavior, 1);
 
+ public:
   Chemotaxis() {}
   Chemotaxis(DiffusionGrid* dgrid, double speed)
       : dgrid_(dgrid), speed_(speed) {}

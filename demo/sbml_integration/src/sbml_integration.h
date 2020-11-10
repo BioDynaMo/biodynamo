@@ -51,9 +51,10 @@ class MyCell : public Cell {
 };
 
 // Define SbmlBehavior to simulate intracellular chemical reaction network.
-struct SbmlBehavior : public Behavior {
+class SbmlBehavior : public Behavior {
   BDM_BEHAVIOR_HEADER(SbmlBehavior, Behavior, 1)
 
+ public:
   SbmlBehavior() {}
   SbmlBehavior(const std::string& sbml_file, const rr::SimulateOptions& opt) {
     Initialize(sbml_file, opt);

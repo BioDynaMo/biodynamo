@@ -25,9 +25,10 @@ namespace bdm {
 
 /// This behavior grows the agent until the diameter reaches
 /// the specified threshold and divides the object afterwards.
-struct GrowthDivision : public Behavior {
+class GrowthDivision : public Behavior {
   BDM_BEHAVIOR_HEADER(GrowthDivision, Behavior, 1);
 
+ public:
   GrowthDivision() { AlwaysCopyToNew(); }
   GrowthDivision(double threshold, double growth_rate)
       : threshold_(threshold), growth_rate_(growth_rate) {}

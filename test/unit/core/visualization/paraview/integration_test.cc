@@ -83,22 +83,21 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   // create a sequence 1, 2, 3...
   // since initialization is multithreaded returning in increasing counter
   // does not work. -> calculate and return box id
-  ModelInitializer::InitializeSubstance(
-      0, "Substance", [&](double x, double y, double z) {
-        auto* dg =
-            Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
-        auto grid_dimensions = dg->GetDimensions();
-        auto box_length = dg->GetBoxLength();
+  ModelInitializer::InitializeSubstance(0, [&](double x, double y, double z) {
+    auto* dg =
+        Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
+    auto grid_dimensions = dg->GetDimensions();
+    auto box_length = dg->GetBoxLength();
 
-        std::array<uint32_t, 3> box_coord;
-        box_coord[0] = (floor(x) - grid_dimensions[0]) / box_length;
-        box_coord[1] = (floor(y) - grid_dimensions[2]) / box_length;
-        box_coord[2] = (floor(z) - grid_dimensions[4]) / box_length;
+    std::array<uint32_t, 3> box_coord;
+    box_coord[0] = (floor(x) - grid_dimensions[0]) / box_length;
+    box_coord[1] = (floor(y) - grid_dimensions[2]) / box_length;
+    box_coord[2] = (floor(z) - grid_dimensions[4]) / box_length;
 
-        auto& num_boxes = dg->GetNumBoxesArray();
-        return box_coord[2] * num_boxes[0] * num_boxes[1] +
-               box_coord[1] * num_boxes[0] + box_coord[0];
-      });
+    auto& num_boxes = dg->GetNumBoxesArray();
+    return box_coord[2] * num_boxes[0] * num_boxes[1] +
+           box_coord[1] * num_boxes[0] + box_coord[0];
+  });
 
   // every simulation needs at least one agent
   auto* cell = new Cell();

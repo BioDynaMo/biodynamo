@@ -23,7 +23,8 @@ namespace bdm {
 
 /// \brief Decorator for `Operations` to measure runtime
 template <typename TOp>
-struct OpTimer {
+class OpTimer {
+ public:
   explicit OpTimer(std::string timer_msg) : timer_msg_(timer_msg) {}
   explicit OpTimer(std::string timer_msg, const TOp& op)
       : timer_msg_(timer_msg), operation_(op) {}

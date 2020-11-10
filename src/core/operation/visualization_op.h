@@ -23,10 +23,11 @@
 
 namespace bdm {
 
-struct VisualizationOp : public StandaloneOperationImpl {
+class VisualizationOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(VisualizationOp);
 
-  ~VisualizationOp() {
+ public:
+  virtual ~VisualizationOp() {
     if (visualization_) {
       delete visualization_;
     }
@@ -49,6 +50,7 @@ struct VisualizationOp : public StandaloneOperationImpl {
     }
   }
 
+ private:
   VisualizationAdaptor* visualization_ = nullptr;
   bool initialized_ = false;
 };

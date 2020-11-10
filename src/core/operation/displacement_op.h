@@ -35,9 +35,10 @@
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-struct DisplacementOp : public AgentOperationImpl {
+class DisplacementOp : public AgentOperationImpl {
   BDM_OP_HEADER(DisplacementOp);
 
+ public:
   DisplacementOp() : force_(new InteractionForce()) {
     auto* tinfo = ThreadInfo::GetInstance();
     last_iteration_.resize(tinfo->GetMaxThreads(),

@@ -118,18 +118,12 @@ TEST(OperationTest, ReductionOp) {
   simulation.Simulate(1);
 
   // Check the total number of agents with a diameter greater than 6
-  EXPECT_EQ(9, op_impl->results_[0]);
+  EXPECT_EQ(9, op_impl->GetResults()[0]);
 
   auto num_agents = simulation.GetResourceManager()->GetNumAgents();
 
   // Check the average x position of all agents
-  EXPECT_EQ(50, op_d_impl->results_[0] / num_agents);
-
-  size_t num_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-
-  // Check if the arrays are of the right size (number of threads)
-  EXPECT_EQ(num_threads, op_impl->tl_results_.size());
-  EXPECT_EQ(num_threads, op_d_impl->tl_results_.size());
+  EXPECT_EQ(50, op_d_impl->GetResults()[0] / num_agents);
 }
 
 TEST(OperationTest, ReductionOpMultiThreading) {
@@ -154,7 +148,7 @@ TEST(OperationTest, ReductionOpMultiThreading) {
   simulation.Simulate(1);
 
   // Check the total number of agents with a diameter greater than 6
-  EXPECT_EQ(8000, op_impl->results_[0]);
+  EXPECT_EQ(8000, op_impl->GetResults()[0]);
 }
 
 }  // namespace bdm

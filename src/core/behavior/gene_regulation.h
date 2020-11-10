@@ -33,9 +33,10 @@ namespace bdm {
 /// for solving ODE. Both methods implemented inside the body of method Run().
 /// The user determines which method is picked in particular simulation
 /// through variable `Param::numerical_ode_solver`.
-struct GeneRegulation : public Behavior {
+class GeneRegulation : public Behavior {
   BDM_BEHAVIOR_HEADER(GeneRegulation, Behavior, 1);
 
+ public:
   GeneRegulation() { AlwaysCopyToNew(); }
 
   virtual ~GeneRegulation() {}

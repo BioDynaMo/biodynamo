@@ -79,14 +79,14 @@ class List {
 
 /// Contains metadata for an allocated memory block.
 struct AllocatedBlock {
+  bool IsFullyInitialized() const;
+
+  void GetNextPageBatch(uint64_t size_n_pages, char** start, uint64_t* size);
+
   char* start_pointer_;
   char* end_pointer_;
   /// Memory to the left has been initialized.
   char* initialized_until_;
-
-  bool IsFullyInitialized() const;
-
-  void GetNextPageBatch(uint64_t size_n_pages, char** start, uint64_t* size);
 };
 
 /// Pool allocator for a specific allocation size and numa node. \n

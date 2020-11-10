@@ -37,8 +37,10 @@ using ThreadLocalResults =
 /// implement a reduction operation (e.g. counting, averaging, finding minimum
 /// and maximum values, etc.)
 template <typename T>
-struct ReductionOp : public AgentOperationImpl {
+class ReductionOp : public AgentOperationImpl {
   BDM_OP_HEADER(ReductionOp);
+
+ public:
   ReductionOp() {
     tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
   }
@@ -47,17 +49,6 @@ struct ReductionOp : public AgentOperationImpl {
     delete agent_functor_;
     delete reduce_functor_;
   }
-
-  // One element per timestep
-  std::vector<T> results_;
-  // The thread-local (partial) results
-  ThreadLocalResults<T> tl_results_;
-
-  // The functor containing the logic on what to execute for each agent
-  Functor<void, Agent*, T*>* agent_functor_ = nullptr;
-  // The functor containing the logic on how to reduce the partial results into
-  // a single result value of type T
-  Functor<T, const ThreadLocalResults<T>&>* reduce_functor_ = nullptr;
 
   void SetUp() override {
     for (auto& arr : tl_results_) {
@@ -77,11 +68,25 @@ struct ReductionOp : public AgentOperationImpl {
     (*agent_functor_)(agent, &(tl_results_[tid][0]));
   }
 
+  const std::vector<T>& GetResults() const { return results_; }
+
   // At the end of each timestep we collect the partial result of each thread
   // and reduce it to one single value
   void TearDown() override {
     results_.push_back((*reduce_functor_)(tl_results_));
   }
+
+ private:
+  // One element per timestep
+  std::vector<T> results_;
+  // The thread-local (partial) results
+  ThreadLocalResults<T> tl_results_;
+
+  // The functor containing the logic on what to execute for each agent
+  Functor<void, Agent*, T*>* agent_functor_ = nullptr;
+  // The functor containing the logic on how to reduce the partial results into
+  // a single result value of type T
+  Functor<T, const ThreadLocalResults<T>&>* reduce_functor_ = nullptr;
 };
 
 template <typename T>

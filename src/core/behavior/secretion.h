@@ -22,9 +22,10 @@
 namespace bdm {
 
 /// Secrete substance at Agent position
-struct Secretion : public Behavior {
+class Secretion : public Behavior {
   BDM_BEHAVIOR_HEADER(Secretion, Behavior, 1);
 
+ public:
   Secretion() {}
   explicit Secretion(DiffusionGrid* dgrid, double quantity = 1)
       : dgrid_(dgrid), quantity_(quantity) {}

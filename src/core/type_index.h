@@ -23,7 +23,8 @@ class TClass;
 
 namespace bdm {
 
-struct TypeIndex {
+class TypeIndex {
+ public:
   void Add(Agent* agent);
 
   void Update(Agent* new_agent);

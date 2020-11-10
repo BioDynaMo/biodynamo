@@ -104,7 +104,7 @@ class AgentPointer {
 
   const TAgent& operator*() const { return *(this->operator->()); }
 
-  operator bool() const { return *this != nullptr; }
+  operator bool() const { return *this != nullptr; }  // NOLINT
 
   TAgent* Get() { return this->operator->(); }
 
@@ -129,13 +129,13 @@ class AgentPointer {
 };
 
 template <typename T>
-struct is_agent_ptr {
+struct is_agent_ptr {                   // NOLINT
   static constexpr bool value = false;  // NOLINT
 };
 
 template <typename T>
-struct is_agent_ptr<AgentPointer<T>> {
-  static constexpr bool value = true;  // NOLINT
+struct is_agent_ptr<AgentPointer<T>> {  // NOLINT
+  static constexpr bool value = true;   // NOLINT
 };
 
 namespace detail {
