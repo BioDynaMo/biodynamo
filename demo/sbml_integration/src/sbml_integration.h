@@ -41,10 +41,7 @@ class MyCell : public Cell {
  public:
   MyCell() {}
   explicit MyCell(const Double3& position) : Base(position) {}
-
-  /// Default event constructor
-  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
+  virtual ~MyCell() {}
 
   void SetS1(double s1) { s1_ = s1; }
   int GetS1() const { return s1_; }
@@ -68,10 +65,6 @@ struct SbmlBehavior : public Behavior {
   }
 
   virtual ~SbmlBehavior() { delete rr_; }
-
-  // SbmlBehavior is not copied for any event in this example
-  SbmlBehavior(const Event& event, Behavior* other, uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {}
 
   void Initialize(const std::string& sbml_file,
                   const rr::SimulateOptions& opt) {

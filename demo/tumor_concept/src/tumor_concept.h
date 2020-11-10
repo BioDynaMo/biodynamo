@@ -31,14 +31,15 @@ class MyCell : public Cell {  // our object extends the Cell object
  public:
   MyCell() {}
   explicit MyCell(const Double3& position) : Base(position) {}
+  virtual ~MyCell() {}
 
   /// If MyCell divides, daughter 2 copies the data members from the mother
-  // FIXME
-  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {
-    if (auto* mother = dynamic_cast<MyCell*>(other)) {
+  void Initialize(NewAgentEvent* event) override {
+    Base::Initialize(event);
+
+    if (auto* mother = dynamic_cast<MyCell*>(event->existing_agent)) {
       cell_color_ = mother->cell_color_;
-      if (event.GetUid() == CellDivisionEvent::kUid) {
+      if (event->GetUid() == CellDivisionEvent::kUid) {
         // the daughter will be able to divide
         can_divide_ = true;
       } else {
@@ -63,16 +64,10 @@ class MyCell : public Cell {  // our object extends the Cell object
 
 // Define growth behaviour
 struct Growth : public Behavior {
-  BDM_STATELESS_BEHAVIOR_HEADER(Growth, Behavior, 1);
+  BDM_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
   Growth() { CopyToNewAlways(); }
-
-  /// Empty default event constructor, because Growth does not have state.
-  template <typename TEvent, typename TBm>
-  Growth(const TEvent& event, TBm* other, uint64_t new_oid = 0)
-      : Behavior(event, other, new_oid) {}
-
-  /// event handler not needed, because Chemotaxis does not have state.
+  virtual ~Growth() {}
 
   void Run(Agent* agent) override {
     if (auto* cell = dynamic_cast<MyCell*>(agent)) {

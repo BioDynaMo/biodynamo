@@ -109,7 +109,7 @@ simulation.GetScheduler()->Simulate(200);
 In the previous chapter, we created a great number of cells. However, those cells don’t do anything! We will here create a cancerous cell that will grow and divide when it reaches a certain diameter. For this, we will define a new behavior structure Growth that will be applied to cell elements, and we will make this Growth copied into the cell daughter (so the daughter will also contain an instance of the behavior Growth)
 ```cpp
 struct Growth : public Behavior {
-  BDM_STATELESS_BEHAVIOR_HEADER(Growth, Behavior, 1);
+  BDM_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
   Growth() { CopyToNewAlways(); }
   virtual ~Growth() {}

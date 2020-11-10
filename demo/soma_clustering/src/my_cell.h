@@ -28,10 +28,7 @@ class MyCell : public Cell {
   MyCell() {}
   explicit MyCell(const Double3& position, int cell_type)
       : Base(position), cell_type_(cell_type) {}
-
-  /// Default event constructor
-  MyCell(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
+  virtual ~MyCell() {}
 
   int GetCellType() const { return cell_type_; }
 

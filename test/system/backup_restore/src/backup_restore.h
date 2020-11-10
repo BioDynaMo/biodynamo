@@ -21,7 +21,7 @@
 namespace bdm {
 
 struct TestBehaviour : public Behavior {
-  BDM_STATELESS_BEHAVIOR_HEADER(TestBehaviour, Behavior, 1);
+  BDM_BEHAVIOR_HEADER(TestBehaviour, Behavior, 1);
 
   TestBehaviour() { CopyToNewAlways(); }
 
