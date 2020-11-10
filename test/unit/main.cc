@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include <iostream>
-#include "core/param/param.h"
+#include "core/util/string.h"
 #include "gtest/gtest.h"
 
 void HandleFlakyTests(int& failed_cnt, std::stringstream& filter) {
@@ -24,7 +24,7 @@ void HandleFlakyTests(int& failed_cnt, std::stringstream& filter) {
       const auto& test_info = *test_case.GetTestInfo(j);
       // process failed flaky test
       if (test_info.result()->Failed() &&
-          strcmp(test_case.name(), "FLAKY_") != 0) {
+          bdm::StartsWith(test_case.name(), "FLAKY_")) {
         failed_cnt--;
         filter << test_case.name() << "." << test_info.name() << ":";
       }
@@ -34,27 +34,32 @@ void HandleFlakyTests(int& failed_cnt, std::stringstream& filter) {
 
 int RunAllTests() {
   auto all_passed = RUN_ALL_TESTS();
-  if (all_passed == 0) { return 0; }
+  if (all_passed == 0) {
+    return 0;
+  }
   return ::testing::UnitTest::GetInstance()->failed_test_case_count();
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ::testing::InitGoogleTest(&argc, argv);
-  auto failed_cnt =  RunAllTests();
+  auto failed_cnt = RunAllTests();
 
   int repeat = 2;
   // Repeat failing flaky tests up to `repeat` times
-  while(repeat-- > 0 && failed_cnt != 0) {
+  while (repeat-- > 0 && failed_cnt != 0) {
     std::stringstream filter;
     HandleFlakyTests(failed_cnt, filter);
     ::testing::GTEST_FLAG(filter) = filter.str().c_str();
+    if (filter.str() == "") {
+      break;
+    }
     std::cout << "Rerunning the following failed flaky test(s):" << std::endl;
     auto failed_flaky_cnt = RunAllTests();
     if (failed_flaky_cnt == 0) {
       break;
     }
     failed_cnt += failed_flaky_cnt;
-  } 
+  }
   return failed_cnt;
 }

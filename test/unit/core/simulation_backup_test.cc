@@ -15,8 +15,8 @@
 #include "core/simulation_backup.h"
 
 #include <string>
+#include "core/agent/cell.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/cell.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
@@ -69,7 +69,7 @@ TEST(SimulationBackupTest, Backup) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(new Cell());
+  rm->AddAgent(new Cell());
   size_t iterations = 26;
 
   SimulationBackup backup(ROOTFILE, "");
@@ -95,7 +95,7 @@ TEST(SimulationBackupTest, Backup) {
   Simulation* restored_simulation = nullptr;
   file.Get()->GetObject(SimulationBackup::kSimulationName.c_str(),
                         restored_simulation);
-  EXPECT_EQ(1u, restored_simulation->GetResourceManager()->GetNumSimObjects());
+  EXPECT_EQ(1u, restored_simulation->GetResourceManager()->GetNumAgents());
   // Writing and reading Simulation is tested in simulation_test.cc
 
   remove(ROOTFILE);
@@ -120,7 +120,7 @@ TEST(SimulationBackupTest, BackupAndRestore) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  rm->push_back(new Cell());
+  rm->AddAgent(new Cell());
   size_t iterations = 26;
 
   SimulationBackup backup(ROOTFILE, "");
@@ -138,7 +138,7 @@ TEST(SimulationBackupTest, BackupAndRestore) {
 
   //   get new ResourceManager
   rm = simulation.GetResourceManager();
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 
   remove(ROOTFILE);
 }

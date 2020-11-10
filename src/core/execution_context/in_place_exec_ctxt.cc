@@ -18,19 +18,20 @@
 #include <mutex>
 #include <utility>
 
+#include "core/agent/agent.h"
 #include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/sim_object/sim_object.h"
 
 namespace bdm {
 
-InPlaceExecutionContext::ThreadSafeSoUidMap::ThreadSafeSoUidMap() {
-  map_ = new ThreadSafeSoUidMap::Map(1000);
-  next_ = new ThreadSafeSoUidMap::Map(static_cast<uint64_t>(map_->size() * 2));
+InPlaceExecutionContext::ThreadSafeAgentUidMap::ThreadSafeAgentUidMap() {
+  map_ = new ThreadSafeAgentUidMap::Map(1000);
+  next_ =
+      new ThreadSafeAgentUidMap::Map(static_cast<uint64_t>(map_->size() * 2));
 }
 
-InPlaceExecutionContext::ThreadSafeSoUidMap::~ThreadSafeSoUidMap() {
+InPlaceExecutionContext::ThreadSafeAgentUidMap::~ThreadSafeAgentUidMap() {
   if (map_) {
     delete map_;
   }
@@ -46,10 +47,10 @@ InPlaceExecutionContext::ThreadSafeSoUidMap::~ThreadSafeSoUidMap() {
 // NB: There is small risk of a race condition here if another thread grows
 // the container. In this situation, the element will be inserted in a map
 // that will be moved to previous_maps_.
-// This race-condition can be mitigated in `ThreadSafeSoUidMap::operator[]`.
-void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
-    const SoUid& uid,
-    const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
+// This race-condition can be mitigated in `ThreadSafeAgentUidMap::operator[]`.
+void InPlaceExecutionContext::ThreadSafeAgentUidMap::Insert(
+    const AgentUid& uid,
+    const typename InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type&
         value) {
   auto index = uid.GetIndex();
   if (map_->size() > index + ThreadInfo::GetInstance()->GetMaxThreads()) {
@@ -75,23 +76,24 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::Insert(
       std::lock_guard<Spinlock> guard(next_lock_);
       auto new_size =
           std::max(uid.GetIndex(), static_cast<uint32_t>(map_->size() * 2));
-      next_ = new ThreadSafeSoUidMap::Map(new_size);
+      next_ = new ThreadSafeAgentUidMap::Map(new_size);
     }
     // new map might still be too small.
     Insert(uid, value);
   }
 }
 
-/// NB: This method fixes any race-condition of `ThreadSafeSoUidMap::Insert`
-/// It might happen that a ThreadSafeSoUidMap::Insert inserts the element
+/// NB: This method fixes any race-condition of `ThreadSafeAgentUidMap::Insert`
+/// It might happen that a ThreadSafeAgentUidMap::Insert inserts the element
 /// into one of the `previous_maps_`.
 /// Therefore, if we don't find the element in `map_`, we iterate through
 /// `previous_maps_` to see if we can find it there.
 /// This iteration happens only in the unlikely event of a race-condition
 /// and is therefore not performance relevant.
-const typename InPlaceExecutionContext::ThreadSafeSoUidMap::value_type&
-InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
-  static InPlaceExecutionContext::ThreadSafeSoUidMap::value_type kDefault;
+const typename InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type&
+InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](
+    const AgentUid& uid) {
+  static InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type kDefault;
   auto& pair = (*map_)[uid];
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
 
@@ -114,14 +116,14 @@ InPlaceExecutionContext::ThreadSafeSoUidMap::operator[](const SoUid& uid) {
   return kDefault;
 }
 
-uint64_t InPlaceExecutionContext::ThreadSafeSoUidMap::Size() const {
+uint64_t InPlaceExecutionContext::ThreadSafeAgentUidMap::Size() const {
   return map_->size();
 }
-void InPlaceExecutionContext::ThreadSafeSoUidMap::Resize(uint64_t new_size) {
+void InPlaceExecutionContext::ThreadSafeAgentUidMap::Resize(uint64_t new_size) {
   map_->resize(new_size);
 }
 
-void InPlaceExecutionContext::ThreadSafeSoUidMap::RemoveOldCopies() {
+void InPlaceExecutionContext::ThreadSafeAgentUidMap::RemoveOldCopies() {
   for (auto* map : previous_maps_) {
     delete map;
   }
@@ -129,14 +131,14 @@ void InPlaceExecutionContext::ThreadSafeSoUidMap::RemoveOldCopies() {
 }
 
 InPlaceExecutionContext::InPlaceExecutionContext(
-    const std::shared_ptr<ThreadSafeSoUidMap>& map)
-    : new_so_map_(map), tinfo_(ThreadInfo::GetInstance()) {
-  new_sim_objects_.reserve(1e3);
+    const std::shared_ptr<ThreadSafeAgentUidMap>& map)
+    : new_agent_map_(map), tinfo_(ThreadInfo::GetInstance()) {
+  new_agents_.reserve(1e3);
 }
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
-  for (auto* so : new_sim_objects_) {
-    delete so;
+  for (auto* agent : new_agents_) {
+    delete agent;
   }
 }
 
@@ -149,42 +151,42 @@ void InPlaceExecutionContext::SetupIterationAll(
 void InPlaceExecutionContext::TearDownIterationAll(
     const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
   // group execution contexts by numa domain
-  std::vector<uint64_t> new_so_per_numa(tinfo_->GetNumaNodes());
+  std::vector<uint64_t> new_agent_per_numa(tinfo_->GetNumaNodes());
   std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
 
   for (int tid = 0; tid < tinfo_->GetMaxThreads(); ++tid) {
     auto* ctxt = all_exec_ctxts[tid];
     int nid = tinfo_->GetNumaNode(tid);
-    thread_offsets[tid] = new_so_per_numa[nid];
-    new_so_per_numa[nid] += ctxt->new_sim_objects_.size();
+    thread_offsets[tid] = new_agent_per_numa[nid];
+    new_agent_per_numa[nid] += ctxt->new_agents_.size();
   }
 
   // reserve enough memory in ResourceManager
   std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  rm->ResizeUidSohMap();
-  for (unsigned n = 0; n < new_so_per_numa.size(); n++) {
-    numa_offsets[n] = rm->GrowSoContainer(new_so_per_numa[n], n);
+  rm->ResizeAgentUidMap();
+  for (unsigned n = 0; n < new_agent_per_numa.size(); n++) {
+    numa_offsets[n] = rm->GrowAgentContainer(new_agent_per_numa[n], n);
   }
 
-// add new_sim_objects_ to the ResourceManager in parallel
+// add new_agents_ to the ResourceManager in parallel
 #pragma omp parallel for schedule(static, 1)
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
     int nid = tinfo_->GetNumaNode(i);
     uint64_t offset = thread_offsets[i] + numa_offsets[nid];
-    rm->AddNewSimObjects(nid, offset, ctxt->new_sim_objects_);
-    ctxt->new_sim_objects_.clear();
+    rm->AddAgents(nid, offset, ctxt->new_agents_);
+    ctxt->new_agents_.clear();
   }
 
   // remove
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
-    // removed sim objects
+    // removed agents
     // remove them after adding new ones (maybe one has been removed
-    // that was in new_sim_objects_)
+    // that was in new_agents_)
     for (auto& uid : ctxt->remove_) {
-      rm->Remove(uid);
+      rm->RemoveAgent(uid);
     }
     ctxt->remove_.clear();
   }
@@ -192,81 +194,81 @@ void InPlaceExecutionContext::TearDownIterationAll(
   rm->EndOfIteration();
 
   // FIXME
-  // new_so_map_.SetOffset(SoUidGenerator::Get()->GetLastId());
-  new_so_map_->RemoveOldCopies();
-  if (rm->GetNumSimObjects() > new_so_map_->Size()) {
-    new_so_map_->Resize(rm->GetNumSimObjects() * 1.5);
+  // new_agent_map_.SetOffset(AgentUidGenerator::Get()->GetLastId());
+  new_agent_map_->RemoveOldCopies();
+  if (rm->GetNumAgents() > new_agent_map_->Size()) {
+    new_agent_map_->Resize(rm->GetNumAgents() * 1.5);
   }
 }
 
 void InPlaceExecutionContext::Execute(
-    SimObject* so, const std::vector<Operation*>& operations) {
+    Agent* agent, const std::vector<Operation*>& operations) {
   auto* env = Simulation::GetActive()->GetEnvironment();
   auto* param = Simulation::GetActive()->GetParam();
 
-  if (param->thread_safety_mechanism_ ==
+  if (param->thread_safety_mechanism ==
       Param::ThreadSafetyMechanism::kUserSpecified) {
-    so->CriticalRegion(&locks);
+    agent->CriticalRegion(&locks);
     std::sort(locks.begin(), locks.end());
     for (auto* l : locks) {
       l->lock();
     }
     neighbor_cache_.clear();
     for (auto& op : operations) {
-      (*op)(so);
+      (*op)(agent);
     }
     for (auto* l : locks) {
       l->unlock();
     }
     locks.clear();
-  } else if (param->thread_safety_mechanism_ ==
+  } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kAutomatic) {
     auto* nb_mutex_builder = env->GetNeighborMutexBuilder();
-    auto* mutex = nb_mutex_builder->GetMutex(so->GetBoxIdx());
+    auto* mutex = nb_mutex_builder->GetMutex(agent->GetBoxIdx());
     std::lock_guard<decltype(*mutex)> guard(*mutex);
     neighbor_cache_.clear();
     for (auto* op : operations) {
-      (*op)(so);
+      (*op)(agent);
     }
-  } else if (param->thread_safety_mechanism_ ==
+  } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kNone) {
     neighbor_cache_.clear();
     for (auto* op : operations) {
-      (*op)(so);
+      (*op)(agent);
     }
   } else {
     Log::Fatal("InPlaceExecutionContext::Execute",
-               "Invalid value for parameter thread_safety_mechanism_: ",
-               param->thread_safety_mechanism_);
+               "Invalid value for parameter thread_safety_mechanism: ",
+               param->thread_safety_mechanism);
   }
 }
 
-void InPlaceExecutionContext::push_back(SimObject* new_so) {  // NOLINT
-  new_sim_objects_.push_back(new_so);
+void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
+  new_agents_.push_back(new_agent);
   auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-  new_so_map_->Insert(new_so->GetUid(), {new_so, timesteps});
+  new_agent_map_->Insert(new_agent->GetUid(), {new_agent, timesteps});
 }
 
-struct ForEachNeighborFunctor : public Functor<void, const SimObject*, double> {
+struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
-  Functor<void, const SimObject*, double>& function_;
-  std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
+  Functor<void, const Agent*, double>& function_;
+  std::vector<std::pair<const Agent*, double>>& neighbor_cache_;
 
   ForEachNeighborFunctor(
-      Functor<void, const SimObject*, double>& function,
-      std::vector<std::pair<const SimObject*, double>>& neigbor_cache)
+      Functor<void, const Agent*, double>& function,
+      std::vector<std::pair<const Agent*, double>>& neigbor_cache)
       : function_(function), neighbor_cache_(neigbor_cache) {}
 
-  void operator()(const SimObject* so, double squared_distance) override {
-    if (param->cache_neighbors_) {
-      neighbor_cache_.push_back(std::make_pair(so, squared_distance));
+  void operator()(const Agent* agent, double squared_distance) override {
+    if (param->cache_neighbors) {
+      neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
-    function_(so, squared_distance);
+    function_(agent, squared_distance);
   }
 };
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    Functor<void, const SimObject*, double>& lambda, const SimObject& query) {
+    Functor<void, const Agent*, double>& lambda, const Agent& query) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
@@ -282,32 +284,32 @@ void InPlaceExecutionContext::ForEachNeighbor(
 }
 
 struct ForEachNeighborWithinRadiusFunctor
-    : public Functor<void, const SimObject*, double> {
+    : public Functor<void, const Agent*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
-  Functor<void, const SimObject*, double>& function_;
-  std::vector<std::pair<const SimObject*, double>>& neighbor_cache_;
+  Functor<void, const Agent*, double>& function_;
+  std::vector<std::pair<const Agent*, double>>& neighbor_cache_;
   double squared_radius_ = 0;
 
   ForEachNeighborWithinRadiusFunctor(
-      Functor<void, const SimObject*, double>& function,
-      std::vector<std::pair<const SimObject*, double>>& neigbor_cache,
+      Functor<void, const Agent*, double>& function,
+      std::vector<std::pair<const Agent*, double>>& neigbor_cache,
       double squared_radius)
       : function_(function),
         neighbor_cache_(neigbor_cache),
         squared_radius_(squared_radius) {}
 
-  void operator()(const SimObject* so, double squared_distance) override {
-    if (param->cache_neighbors_) {
-      neighbor_cache_.push_back(std::make_pair(so, squared_distance));
+  void operator()(const Agent* agent, double squared_distance) override {
+    if (param->cache_neighbors) {
+      neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
     if (squared_distance < squared_radius_) {
-      function_(so, 0);
+      function_(agent, 0);
     }
   }
 };
 
 void InPlaceExecutionContext::ForEachNeighborWithinRadius(
-    Functor<void, const SimObject*, double>& lambda, const SimObject& query,
+    Functor<void, const Agent*, double>& lambda, const Agent& query,
     double squared_radius) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
@@ -327,23 +329,23 @@ void InPlaceExecutionContext::ForEachNeighborWithinRadius(
   env->ForEachNeighbor(for_each, query);
 }
 
-SimObject* InPlaceExecutionContext::GetSimObject(const SoUid& uid) {
+Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
-  auto* so = rm->GetSimObject(uid);
-  if (so != nullptr) {
-    return so;
+  auto* agent = rm->GetAgent(uid);
+  if (agent != nullptr) {
+    return agent;
   }
 
   // returns nullptr if the object is not found
-  return (*new_so_map_)[uid].first;
+  return (*new_agent_map_)[uid].first;
 }
 
-const SimObject* InPlaceExecutionContext::GetConstSimObject(const SoUid& uid) {
-  return GetSimObject(uid);
+const Agent* InPlaceExecutionContext::GetConstAgent(const AgentUid& uid) {
+  return GetAgent(uid);
 }
 
-void InPlaceExecutionContext::RemoveFromSimulation(const SoUid& uid) {
+void InPlaceExecutionContext::RemoveFromSimulation(const AgentUid& uid) {
   remove_.push_back(uid);
 }
 

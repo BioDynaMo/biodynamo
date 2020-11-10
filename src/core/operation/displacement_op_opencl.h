@@ -18,6 +18,7 @@
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #include <vector>
 
+#include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/opencl_state.h"
@@ -25,7 +26,6 @@
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/shape.h"
-#include "core/sim_object/cell.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
 
@@ -35,8 +35,8 @@ namespace bdm {
 struct DisplacementOpOpenCL : StandaloneOperationImpl {
   BDM_OP_HEADER(DisplacementOpOpenCL);
 
-  void IsNonSphericalObjectPresent(const SimObject* so, bool* answer) {
-    if (so->GetShape() != Shape::kSphere) {
+  void IsNonSphericalObjectPresent(const Agent* agent, bool* answer) {
+    if (agent->GetShape() != Shape::kSphere) {
       *answer = true;
     }
   }
@@ -63,7 +63,7 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
       return;
     }
 
-    uint32_t num_objects = rm->GetNumSimObjects();
+    uint32_t num_objects = rm->GetNumAgents();
 
     auto context = ocl_state->GetOpenCLContext();
     auto queue = ocl_state->GetOpenCLCommandQueue();
@@ -91,18 +91,18 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
 
     bool is_non_spherical_object = false;
 
-    rm->ApplyOnAllElements([&](SimObject* so, SoHandle soh) {
+    rm->ForEachAgent([&](Agent* agent, AgentHandle ah) {
       // Check if there are any non-spherical objects in our simulation, because
       // GPU accelerations currently supports only sphere-sphere interactions
-      IsNonSphericalObjectPresent(so, &is_non_spherical_object);
+      IsNonSphericalObjectPresent(agent, &is_non_spherical_object);
       if (is_non_spherical_object) {
         Log::Fatal("DisplacementOpOpenCL",
                    "\nWe detected a non-spherical object during the GPU "
                    "execution. This is currently not supported.");
         return;
       }
-      auto* cell = bdm_static_cast<Cell*>(so);
-      auto idx = soh.GetElementIdx();
+      auto* cell = bdm_static_cast<Cell*>(agent);
+      auto idx = ah.GetElementIdx();
       mass[idx] = cell->GetMass();
       cell_diameters[idx] = cell->GetDiameter();
       cell_adherence[idx] = cell->GetAdherence();
@@ -117,7 +117,7 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
 
     uint16_t numa_node = 0;  // GPU code only supports 1 NUMA domain currently
     for (size_t i = 0; i < grid->successors_.size(numa_node); i++) {
-      auto sh = SoHandle(numa_node, i);
+      auto sh = AgentHandle(numa_node, i);
       successors[i] = grid->successors_[sh].GetElementIdx();
     }
 
@@ -175,8 +175,8 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
     collide.setArg(3, adherence_arg);
     collide.setArg(4, box_id_arg);
     collide.setArg(5, mass_arg);
-    collide.setArg(6, param->simulation_time_step_);
-    collide.setArg(7, param->simulation_max_displacement_);
+    collide.setArg(6, param->simulation_time_step);
+    collide.setArg(7, param->simulation_max_displacement);
     collide.setArg(8, squared_radius);
 
     collide.setArg(9, static_cast<cl_int>(num_objects));
@@ -218,16 +218,16 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
     // set new positions after all updates have been calculated
     // otherwise some cells would see neighbors with already updated positions
     // which would lead to inconsistencies
-    rm->ApplyOnAllElements([&](SimObject* so, SoHandle soh) {
-      auto* cell = dynamic_cast<Cell*>(so);
-      auto idx = soh.GetElementIdx();
+    rm->ForEachAgent([&](Agent* agent, AgentHandle ah) {
+      auto* cell = dynamic_cast<Cell*>(agent);
+      auto idx = ah.GetElementIdx();
       Double3 new_pos;
       new_pos[0] = cell_movements[idx][0];
       new_pos[1] = cell_movements[idx][1];
       new_pos[2] = cell_movements[idx][2];
       cell->UpdatePosition(new_pos);
-      if (param->bound_space_) {
-        ApplyBoundingBox(so, param->min_bound_, param->max_bound_);
+      if (param->bound_space) {
+        ApplyBoundingBox(agent, param->min_bound, param->max_bound);
       }
     });
   }

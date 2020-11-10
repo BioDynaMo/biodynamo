@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/agent/agent_uid_generator.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
@@ -36,7 +37,6 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/sim_object/so_uid_generator.h"
 #include "core/util/filesystem.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
@@ -66,15 +66,18 @@ Simulation::Simulation(TRootIOCtor* p) {}
 
 Simulation::Simulation(int argc, const char** argv,
                        const std::vector<std::string>& config_files)
-    : Simulation(argc, argv, [](auto* param) {}, config_files) {}
+    : Simulation(
+          argc, argv, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(const std::string& simulation_name,
                        const std::vector<std::string>& config_files)
-    : Simulation(simulation_name, [](auto* param) {}, config_files) {}
+    : Simulation(
+          simulation_name, [](auto* param) {}, config_files) {}
 
 Simulation::Simulation(CommandLineOptions* clo,
                        const std::vector<std::string>& config_files) {
-  Initialize(clo, [](auto* param) {}, config_files);
+  Initialize(
+      clo, [](auto* param) {}, config_files);
 }
 
 Simulation::Simulation(CommandLineOptions* clo,
@@ -101,7 +104,7 @@ Simulation::Simulation(const std::string& simulation_name,
 void Simulation::Restore(Simulation&& restored) {
   // random_
   if (random_.size() != restored.random_.size()) {
-    Log::Warning("Simulation", "The restore file (", param_->restore_file_,
+    Log::Warning("Simulation", "The restore file (", param_->restore_file,
                  ") was run with a different number of threads. Can't restore "
                  "complete random number generator state.");
     uint64_t min = std::min(random_.size(), restored.random_.size());
@@ -131,7 +134,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   std::vector<std::array<int32_t, 3>> dg_dimensions;
   std::vector<uint64_t> dg_voxels;
 
-  sim.rm_->ApplyOnAllDiffusionGrids([&](auto* dg) {
+  sim.rm_->ForEachDiffusionGrid([&](auto* dg) {
     dg_names.push_back(dg->GetSubstanceName());
     dg_resolutions.push_back(dg->GetResolution());
     dg_dimensions.push_back(dg->GetGridSize());
@@ -156,8 +159,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << std::endl;
   os << "Number of iterations executed\t: "
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
-  os << "Number of simulation objects\t: " << sim.rm_->GetNumSimObjects()
-     << std::endl;
+  os << "Number of agents\t: " << sim.rm_->GetNumAgents() << std::endl;
 
   if (dg_names.size() != 0) {
     os << "Diffusion grids" << std::endl;
@@ -205,7 +207,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
 Simulation::~Simulation() {
   dtor_ts_ = bdm::Timing::Timestamp();
 
-  if (param_ != nullptr && param_->statistics_) {
+  if (param_ != nullptr && param_->statistics) {
     std::stringstream sstr;
     sstr << *this << std::endl;
     std::cout << sstr.str() << std::endl;
@@ -226,8 +228,8 @@ Simulation::~Simulation() {
   delete rm_;
   delete environment_;
   delete scheduler_;
-  if (so_uid_generator_ != nullptr) {
-    delete so_uid_generator_;
+  if (agent_uid_generator_ != nullptr) {
+    delete agent_uid_generator_;
   }
   delete param_;
   for (auto* r : random_) {
@@ -256,7 +258,9 @@ void Simulation::SetResourceManager(ResourceManager* rm) {
 /// Returns the simulation parameters
 const Param* Simulation::GetParam() const { return param_; }
 
-SoUidGenerator* Simulation::GetSoUidGenerator() { return so_uid_generator_; }
+AgentUidGenerator* Simulation::GetAgentUidGenerator() {
+  return agent_uid_generator_;
+}
 
 Environment* Simulation::GetGrid() { return environment_; }
 
@@ -309,13 +313,13 @@ void Simulation::Initialize(CommandLineOptions* clo,
 }
 
 void Simulation::InitializeMembers() {
-  if (param_->use_bdm_mem_mgr_) {
-    mem_mgr_ = new MemoryManager(param_->mem_mgr_aligned_pages_shift_,
-                                 param_->mem_mgr_growth_rate_,
-                                 param_->mem_mgr_max_mem_per_thread_);
+  if (param_->use_bdm_mem_mgr) {
+    mem_mgr_ = new MemoryManager(param_->mem_mgr_aligned_pages_shift,
+                                 param_->mem_mgr_growth_rate,
+                                 param_->mem_mgr_max_mem_per_thread);
   }
-  so_uid_generator_ = new SoUidGenerator();
-  if (param_->debug_numa_) {
+  agent_uid_generator_ = new AgentUidGenerator();
+  if (param_->debug_numa) {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
   }
 
@@ -323,11 +327,11 @@ void Simulation::InitializeMembers() {
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
-    random_[i]->SetSeed(param_->random_seed_ * (i + 1));
+    random_[i]->SetSeed(param_->random_seed * (i + 1));
   }
   exec_ctxt_.resize(omp_get_max_threads());
-  auto map =
-      std::make_shared<typename InPlaceExecutionContext::ThreadSafeSoUidMap>();
+  auto map = std::make_shared<
+      typename InPlaceExecutionContext::ThreadSafeAgentUidMap>();
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < exec_ctxt_.size(); i++) {
     exec_ctxt_[i] = new InPlaceExecutionContext(map);
@@ -378,26 +382,26 @@ void Simulation::InitializeRuntimeParams(
   }
 
   if (clo->Get<std::string>("backup") != "") {
-    param_->backup_file_ = clo->Get<std::string>("backup");
+    param_->backup_file = clo->Get<std::string>("backup");
   }
   if (clo->Get<std::string>("restore") != "") {
-    param_->restore_file_ = clo->Get<std::string>("restore");
+    param_->restore_file = clo->Get<std::string>("restore");
   }
 
   // Handle "cuda" and "opencl" arguments
   if (clo->Get<bool>("cuda")) {
-    param_->compute_target_ = "cuda";
+    param_->compute_target = "cuda";
   }
 
   if (clo->Get<bool>("opencl")) {
-    param_->compute_target_ = "opencl";
+    param_->compute_target = "opencl";
   }
 
   ocl_state_ = new OpenCLState();
 
   set_param(param_);
 
-  if (!is_gpu_environment_initialized_ && param_->compute_target_ != "cpu") {
+  if (!is_gpu_environment_initialized_ && param_->compute_target != "cpu") {
     GpuHelper::GetInstance()->InitializeGPUEnvironment();
     is_gpu_environment_initialized_ = true;
   }
@@ -491,16 +495,16 @@ void Simulation::InitializeUniqueName(const std::string& simulation_name) {
 
 void Simulation::InitializeOutputDir() {
   if (unique_name_ == "") {
-    output_dir_ = param_->output_dir_;
+    output_dir_ = param_->output_dir;
   } else {
-    output_dir_ = Concat(param_->output_dir_, "/", unique_name_);
+    output_dir_ = Concat(param_->output_dir, "/", unique_name_);
   }
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
     Log::Fatal("Simulation::InitializeOutputDir",
                "Failed to make output directory ", output_dir_);
   }
   if (!fs::is_empty(output_dir_)) {
-    if (param_->remove_output_dir_contents_) {
+    if (param_->remove_output_dir_contents) {
       RemoveDirectoryContents(output_dir_);
     } else {
       Log::Warning(
@@ -509,7 +513,7 @@ void Simulation::InitializeOutputDir() {
           "inconsistent state of (e.g. visualization files). Consider removing "
           "all contents "
           "prior to running a simulation. Have a look at "
-          "Param::remove_output_dir_contents_ to remove files automatically.");
+          "Param::remove_output_dir_contents to remove files automatically.");
     }
   }
 }

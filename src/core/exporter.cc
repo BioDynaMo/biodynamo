@@ -20,9 +20,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "core/agent/cell.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/cell.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 
@@ -34,8 +34,8 @@ void BasicExporter::ExportIteration(std::string filename, uint64_t iteration) {
   std::ofstream outfile;
   outfile.open(filename);
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    auto curr_pos = so->GetPosition();
+  rm->ForEachAgent([&](Agent* agent) {
+    auto curr_pos = agent->GetPosition();
     outfile << "[" << curr_pos[0] << "," << curr_pos[1] << "," << curr_pos[2]
             << "]" << std::endl;
   });
@@ -52,12 +52,12 @@ void MatlabExporter::ExportIteration(std::string filename, uint64_t iteration) {
   outfile.open(filename);
 
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  auto num_cells = rm->GetNumSimObjects();
+  auto num_cells = rm->GetNumAgents();
   outfile << "CellPos = zeros(" << num_cells << "," << 3 << ");" << std::endl;
 
   uint64_t i = 0;
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    auto curr_pos = so->GetPosition();
+  rm->ForEachAgent([&](Agent* agent) {
+    auto curr_pos = agent->GetPosition();
     outfile << "CellPos(" << i++ + 1 << ",1:3) = [" << curr_pos[0] << ","
             << curr_pos[1] << "," << curr_pos[2] << "];" << std::endl;
   });
@@ -87,8 +87,9 @@ void NeuroMLExporter::ExportIteration(std::string filename,
           << std::endl;
   outfile << space1 << "xmlns:meta = \"http://morphml.org/metadata/schema\" "
           << std::endl;
-  outfile << space1 << "xsi:schemaLocation=\"http://morphml.org/neuroml/"
-                       "schema NeuroML_Level3_v1.7.1.xsd\" "
+  outfile << space1
+          << "xsi:schemaLocation=\"http://morphml.org/neuroml/"
+             "schema NeuroML_Level3_v1.7.1.xsd\" "
           << std::endl;
   outfile << space1 << "lengthUnits=\"micrometer\" " << std::endl;
 
@@ -146,7 +147,7 @@ void NeuroMLExporter::ExportIteration(std::string filename,
   /// TODO(roman): here, the cell populations and connectivity will be
   /// specified and exported, once these are included in the model
   // auto* rm = Simulation::GetActive()->GetResourceManager();
-  // rm->ApplyOnAllElements([&](SimObject* so) { });
+  // rm->ForEachAgent([&](Agent* agent) { });
 
   outfile << std::endl;
   outfile << "</neuroml>" << std::endl;
@@ -163,7 +164,7 @@ void NeuroMLExporter::ExportSummary(std::string filename,
 void ParaviewExporter::ExportIteration(std::string filename,
                                        uint64_t iteration) {
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  auto num_cells = rm->GetNumSimObjects();
+  auto num_cells = rm->GetNumAgents();
   size_t index = 0;
   std::ofstream vtu(filename + "-" + std::to_string(iteration) + ".vtu");
 
@@ -177,8 +178,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
   vtu << "            <DataArray type=\"Float64\" NumberOfComponents=\"3\" "
          "format=\"ascii\">"
       << std::endl;
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    auto& coord = so->GetPosition();
+  rm->ForEachAgent([&](Agent* agent) {
+    auto& coord = agent->GetPosition();
     vtu << ' ' << coord[0] << ' ' << coord[1] << ' ' << coord[2] << std::flush;
   });
   vtu << std::endl;
@@ -198,8 +199,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = dynamic_cast<Cell*>(so)) {
+  rm->ForEachAgent([&](Agent* agent) {
+    if (auto* cell = dynamic_cast<Cell*>(agent)) {
       auto adhr = cell->GetAdherence();
       vtu << ' ' << adhr << std::flush;
     }
@@ -210,8 +211,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
   vtu << "            <DataArray type=\"Float64\" Name=\"Diameter\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    auto diam = so->GetDiameter();
+  rm->ForEachAgent([&](Agent* agent) {
+    auto diam = agent->GetDiameter();
     vtu << ' ' << diam << std::flush;
   });
 
@@ -221,8 +222,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = dynamic_cast<Cell*>(so)) {
+  rm->ForEachAgent([&](Agent* agent) {
+    if (auto* cell = dynamic_cast<Cell*>(agent)) {
       auto mass = cell->GetMass();
       vtu << ' ' << mass << std::flush;
     }
@@ -234,8 +235,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = dynamic_cast<Cell*>(so)) {
+  rm->ForEachAgent([&](Agent* agent) {
+    if (auto* cell = dynamic_cast<Cell*>(agent)) {
       auto v = cell->GetVolume();
       vtu << ' ' << v << std::flush;
     }
@@ -247,8 +248,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
          "NumberOfComponents=\"3\" format=\"ascii\">"
       << std::endl;
 
-  rm->ApplyOnAllElements([&](SimObject* so) {
-    if (auto* cell = dynamic_cast<Cell*>(so)) {
+  rm->ForEachAgent([&](Agent* agent) {
+    if (auto* cell = dynamic_cast<Cell*>(agent)) {
       auto& tracf = cell->GetTractorForce();
       vtu << ' ' << tracf[0] << ' ' << tracf[1] << ' ' << tracf[2]
           << std::flush;
@@ -303,7 +304,7 @@ void ParaviewExporter::ExportSummary(std::string filename,
   pvd << "<Collection>" << std::endl;
   /// iterate for all (time) steps
   for (uint64_t i = 0; i < num_iterations; i++) {
-    pvd << "<DataSet timestep=\"" << (i * param->simulation_time_step_)
+    pvd << "<DataSet timestep=\"" << (i * param->simulation_time_step)
         << "\" group=\"\" part=\"0\" file=\"" << filename << '-' << i
         << ".vtu\">";
     pvd << std::endl;

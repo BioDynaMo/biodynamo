@@ -13,9 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "core/model_initializer.h"
-#include "core/biology_module/biology_module.h"
+#include "core/agent/cell.h"
+#include "core/behavior/behavior.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/cell.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
@@ -32,15 +32,15 @@ TEST(ModelInitializerTest, Grid3DCube) {
     return cell;
   });
 
-  EXPECT_EQ(8u, rm->GetNumSimObjects());
-  EXPECT_ARR_EQ({0, 0, 0}, rm->GetSimObject(SoUid(0))->GetPosition());
-  EXPECT_ARR_EQ({0, 0, 12}, rm->GetSimObject(SoUid(1))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 0}, rm->GetSimObject(SoUid(2))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 12}, rm->GetSimObject(SoUid(3))->GetPosition());
-  EXPECT_ARR_EQ({12, 0, 0}, rm->GetSimObject(SoUid(4))->GetPosition());
-  EXPECT_ARR_EQ({12, 0, 12}, rm->GetSimObject(SoUid(5))->GetPosition());
-  EXPECT_ARR_EQ({12, 12, 0}, rm->GetSimObject(SoUid(6))->GetPosition());
-  EXPECT_ARR_EQ({12, 12, 12}, rm->GetSimObject(SoUid(7))->GetPosition());
+  EXPECT_EQ(8u, rm->GetNumAgents());
+  EXPECT_ARR_EQ({0, 0, 0}, rm->GetAgent(AgentUid(0))->GetPosition());
+  EXPECT_ARR_EQ({0, 0, 12}, rm->GetAgent(AgentUid(1))->GetPosition());
+  EXPECT_ARR_EQ({0, 12, 0}, rm->GetAgent(AgentUid(2))->GetPosition());
+  EXPECT_ARR_EQ({0, 12, 12}, rm->GetAgent(AgentUid(3))->GetPosition());
+  EXPECT_ARR_EQ({12, 0, 0}, rm->GetAgent(AgentUid(4))->GetPosition());
+  EXPECT_ARR_EQ({12, 0, 12}, rm->GetAgent(AgentUid(5))->GetPosition());
+  EXPECT_ARR_EQ({12, 12, 0}, rm->GetAgent(AgentUid(6))->GetPosition());
+  EXPECT_ARR_EQ({12, 12, 12}, rm->GetAgent(AgentUid(7))->GetPosition());
 }
 
 // Tests if pos_0 cuboid 3D grid of cells is correctly initialized
@@ -55,15 +55,15 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
     return cell;
   });
 
-  EXPECT_EQ(24u, rm->GetNumSimObjects());
-  EXPECT_ARR_EQ({0, 0, 0}, rm->GetSimObject(SoUid(0))->GetPosition());
-  EXPECT_ARR_EQ({0, 0, 12}, rm->GetSimObject(SoUid(1))->GetPosition());
-  EXPECT_ARR_EQ({0, 0, 24}, rm->GetSimObject(SoUid(2))->GetPosition());
-  EXPECT_ARR_EQ({0, 0, 36}, rm->GetSimObject(SoUid(3))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 0}, rm->GetSimObject(SoUid(4))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 12}, rm->GetSimObject(SoUid(5))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 24}, rm->GetSimObject(SoUid(6))->GetPosition());
-  EXPECT_ARR_EQ({12, 24, 36}, rm->GetSimObject(SoUid(23))->GetPosition());
+  EXPECT_EQ(24u, rm->GetNumAgents());
+  EXPECT_ARR_EQ({0, 0, 0}, rm->GetAgent(AgentUid(0))->GetPosition());
+  EXPECT_ARR_EQ({0, 0, 12}, rm->GetAgent(AgentUid(1))->GetPosition());
+  EXPECT_ARR_EQ({0, 0, 24}, rm->GetAgent(AgentUid(2))->GetPosition());
+  EXPECT_ARR_EQ({0, 0, 36}, rm->GetAgent(AgentUid(3))->GetPosition());
+  EXPECT_ARR_EQ({0, 12, 0}, rm->GetAgent(AgentUid(4))->GetPosition());
+  EXPECT_ARR_EQ({0, 12, 12}, rm->GetAgent(AgentUid(5))->GetPosition());
+  EXPECT_ARR_EQ({0, 12, 24}, rm->GetAgent(AgentUid(6))->GetPosition());
+  EXPECT_ARR_EQ({12, 24, 36}, rm->GetAgent(AgentUid(23))->GetPosition());
 }
 
 TEST(ModelInitializerTest, CreateCells) {
@@ -80,10 +80,10 @@ TEST(ModelInitializerTest, CreateCells) {
     return cell;
   });
 
-  EXPECT_EQ(3u, rm->GetNumSimObjects());
-  EXPECT_ARR_EQ({1, 2, 3}, rm->GetSimObject(SoUid(0))->GetPosition());
-  EXPECT_ARR_EQ({101, 202, 303}, rm->GetSimObject(SoUid(1))->GetPosition());
-  EXPECT_ARR_EQ({-12, -32, 4}, rm->GetSimObject(SoUid(2))->GetPosition());
+  EXPECT_EQ(3u, rm->GetNumAgents());
+  EXPECT_ARR_EQ({1, 2, 3}, rm->GetAgent(AgentUid(0))->GetPosition());
+  EXPECT_ARR_EQ({101, 202, 303}, rm->GetAgent(AgentUid(1))->GetPosition());
+  EXPECT_ARR_EQ({-12, -32, 4}, rm->GetAgent(AgentUid(2))->GetPosition());
 }
 
 TEST(ModelInitializerTest, CreateCellsRandom) {
@@ -94,10 +94,10 @@ TEST(ModelInitializerTest, CreateCellsRandom) {
     Cell* cell = new Cell(pos);
     return cell;
   });
-  EXPECT_EQ(10u, rm->GetNumSimObjects());
-  auto& pos_0 = rm->GetSimObject(SoUid(0))->GetPosition();
-  auto& pos_1 = rm->GetSimObject(SoUid(1))->GetPosition();
-  auto& pos_2 = rm->GetSimObject(SoUid(2))->GetPosition();
+  EXPECT_EQ(10u, rm->GetNumAgents());
+  auto& pos_0 = rm->GetAgent(AgentUid(0))->GetPosition();
+  auto& pos_1 = rm->GetAgent(AgentUid(1))->GetPosition();
+  auto& pos_2 = rm->GetAgent(AgentUid(2))->GetPosition();
   EXPECT_TRUE((pos_0[0] >= -100) && (pos_0[0] <= 100));
   EXPECT_TRUE((pos_0[1] >= -100) && (pos_0[1] <= 100));
   EXPECT_TRUE((pos_0[2] >= -100) && (pos_0[2] <= 100));

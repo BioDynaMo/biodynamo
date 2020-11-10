@@ -16,6 +16,7 @@
 #define CORE_VISUALIZATION_PARAVIEW_VTK_DIFFUSION_GRID_H_
 
 // std
+#include <algorithm>
 #include <array>
 #include <string>
 #include <vector>

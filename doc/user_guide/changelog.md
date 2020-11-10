@@ -224,13 +224,13 @@ event.
 
 | Old                             | New                                                                                                                            |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `gAllBmEvents`                  | `gAllEventIds`                                                                                                                 |
-| `gNullEvent`                    | `gNullEventId`                                                                                                                 |
-| `gCellDivision`                 | `CellDivisionEvent::kEventId`                                                                                                  |
-| `gNeuriteElongation`            | `SplitNeuriteElementEvent::kEventId`                                                                                           |
-| `gNeuriteBranching`             | `NeuriteBranchingEvent::kEventId`                                                                                              |
-| `gNeuriteBifurcation`           | `NeuriteBifurcationEvent::kEventId`                                                                                            |
-| `gNeuriteSideCylinderExtension` | `SideNeuriteExtensionEvent::kEventId`                                                                                          |
+| `gAllBmEvents`                  | `gAllNewAgentEventIds`                                                                                                                 |
+| `gNullEvent`                    | `gNullNewAgentEventId`                                                                                                                 |
+| `gCellDivision`                 | `CellDivisionEvent::kNewAgentEventId`                                                                                                  |
+| `gNeuriteElongation`            | `SplitNeuriteElementEvent::kNewAgentEventId`                                                                                           |
+| `gNeuriteBranching`             | `NeuriteBranchingEvent::kNewAgentEventId`                                                                                              |
+| `gNeuriteBifurcation`           | `NeuriteBifurcationEvent::kNewAgentEventId`                                                                                            |
+| `gNeuriteSideCylinderExtension` | `SideNeuriteExtensionEvent::kNewAgentEventId`                                                                                          |
 |                                 | Simulation objects and biology modules must have an event constructor and event handler function in order to support an event. |
 
 ## 16.07.2018 [`3bac827`](https://github.com/BioDynaMo/biodynamo/commit/3bac827b53b5f9f1066867f89bb47e9f69f90b0a)

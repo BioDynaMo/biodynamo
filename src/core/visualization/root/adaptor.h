@@ -11,8 +11,10 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#ifndef VISUALIZATION_ROOT_ADAPTOR_H_
-#define VISUALIZATION_ROOT_ADAPTOR_H_
+#ifndef CORE_VISUALIZATION_ROOT_ADAPTOR_H_
+#define CORE_VISUALIZATION_ROOT_ADAPTOR_H_
+
+#include <string>
 
 #include <TCanvas.h>
 #include <TGeoManager.h>
@@ -50,7 +52,7 @@ class RootAdaptor {
     }
 
     auto *param = Simulation::GetActive()->GetParam();
-    if (total_steps % param->visualization_interval_ != 0) {
+    if (total_steps % param->visualization_interval != 0) {
       return;
     }
 
@@ -58,9 +60,9 @@ class RootAdaptor {
 
     auto *rm = Simulation::GetActive()->GetResourceManager();
 
-    rm->ApplyOnAllElements([&](SimObject *so) {
+    rm->ForEachAgent([&](Agent *agent) {
       auto container = new TGeoVolumeAssembly("A");
-      this->AddBranch(so, container);
+      this->AddBranch(agent, container);
       top_->AddNode(container, top_->GetNdaughters());
     });
 
@@ -118,28 +120,28 @@ class RootAdaptor {
   }
 
   /// Recursively adds sphere and its daughters to the container.
-  void AddBranch(const SimObject *so, TGeoVolume *container) {
-    switch (so->GetShape()) {
+  void AddBranch(const Agent *agent, TGeoVolume *container) {
+    switch (agent->GetShape()) {
       case Shape::kSphere:
-        AddSphere(so, container);
+        AddSphere(agent, container);
         break;
       case Shape::kCylinder:
-        AddCylinder(so, container);
+        AddCylinder(agent, container);
         break;
       default:
         Log::Error("RootAdaptor",
                    "Tried to add a shape to the Root visualization that's not "
                    "one of the supported types : ",
-                   so->GetShape());
+                   agent->GetShape());
     }
     // to be extended for other object
   }
 
   /// Adds a sphere object to the volume
-  void AddSphere(const SimObject *so, TGeoVolume *container) {
-    std::string name = so->GetTypeName() + std::to_string(so->GetUid());
-    auto radius = so->GetDiameter() / 2;
-    auto massLocation = so->GetPosition();
+  void AddSphere(const Agent *agent, TGeoVolume *container) {
+    std::string name = agent->GetTypeName() + std::to_string(agent->GetUid());
+    auto radius = agent->GetDiameter() / 2;
+    auto massLocation = agent->GetPosition();
     auto x = massLocation[0];
     auto y = massLocation[1];
     auto z = massLocation[2];
@@ -150,9 +152,9 @@ class RootAdaptor {
   }
 
   /// Adds a cylinder object to the volume
-  void AddCylinder(const SimObject *so, TGeoVolume *container) {
-    if (auto neurite = dynamic_cast<const NeuriteElement *>(so)) {
-      std::string name = so->GetTypeName() + std::to_string(so->GetUid());
+  void AddCylinder(const Agent *agent, TGeoVolume *container) {
+    if (auto neurite = dynamic_cast<const NeuriteElement *>(agent)) {
+      std::string name = agent->GetTypeName() + std::to_string(agent->GetUid());
       auto radius = neurite->GetDiameter() / 2;
       auto half_length = neurite->GetLength() / 2;
       auto massLocation = neurite->GetPosition();
@@ -173,7 +175,7 @@ class RootAdaptor {
       // Compute the Axis-Angle rotation representation
       auto dot_product = dir.Dot(orig);
       auto angle = std::acos(dot_product);
-      // TODO: make sure it is `z x dir, and not `dir x z`
+      // TODO(ahmad): make sure it is `z x dir, and not `dir x z`
       TVector3 n = dir.Cross(orig);
       n = n.Unit();
       auto axis = AxisAngle::AxisVector(n[0], n[1], n[2]);
@@ -213,4 +215,4 @@ class RootAdaptor {
 
 }  // namespace bdm
 
-#endif  // VISUALIZATION_ROOT_ADAPTOR_H_
+#endif  // CORE_VISUALIZATION_ROOT_ADAPTOR_H_

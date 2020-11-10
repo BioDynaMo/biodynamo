@@ -14,7 +14,7 @@
 
 #include "core/memory/memory_manager.h"
 #include <gtest/gtest.h>
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
@@ -266,12 +266,13 @@ TEST(MemoryManagerTest, New) {
   uint64_t aligned_pages_shift_ = 8;
 
   for (uint64_t i = 0; i < 1000; ++i) {
-    auto* so = new Cell();
-    ASSERT_TRUE(so != nullptr);
+    auto* agent = new Cell();
+    ASSERT_TRUE(agent != nullptr);
 
     // check if we can find the numa pool allocator pointer at the beginning of
-    // the N aligned pages that is used to free the memory once `so` is deleted
-    auto addr = reinterpret_cast<uint64_t>(so);
+    // the N aligned pages that is used to free the memory once `agent` is
+    // deleted
+    auto addr = reinterpret_cast<uint64_t>(agent);
     auto page_number = addr >> (page_shift + aligned_pages_shift_);
     auto* page_addr = reinterpret_cast<char*>(
         page_number << (page_shift + aligned_pages_shift_));
@@ -279,7 +280,7 @@ TEST(MemoryManagerTest, New) {
     auto* npa = *reinterpret_cast<NumaPoolAllocator**>(page_addr);
 
     EXPECT_EQ(sizeof(Cell), npa->GetSize());
-    delete so;
+    delete agent;
   }
 }
 

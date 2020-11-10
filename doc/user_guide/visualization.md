@@ -47,7 +47,7 @@ One way to enable visualization is to export a visualization file every time ste
 export = true
 interval = 1
 
-	[[visualize_sim_object]]
+	[[visualize_agent]]
 	name = "Cell"
 
 ```

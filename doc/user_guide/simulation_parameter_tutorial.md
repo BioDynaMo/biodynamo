@@ -3,7 +3,7 @@ title: "Simulation Parameter Tutorial"
 date: "2020-09-08"
 path: "/docs/userguide/simulation_parameter_tutorial/"
 meta_title: "BioDynaMo User Guide"
-meta_description: "This is the diffusion page."
+meta_description: "This page explains simulation parameters."
 toc: true
 image: ""
 sidebar: "userguide"
@@ -34,27 +34,27 @@ We can note the following things from its content:
 
 We add the simulation specific parameters `foo` and `bar`.
 Therefore, we create a new struct called `SimParam`, which inherits
-from `ModuleParam`.
+from `ParamGroup`.
 To reduce the amount of boilerplate code, BioDynaMo provides the macro
-`BDM_MODULE_PARAM_HEADER`.
+`BDM_PARAM_GROUP_HEADER`.
 
 ```cpp
 // Parameters specific for this simulation
-struct SimParam : public ModuleParam {
-  BDM_MODULE_PARAM_HEADER(SimParam, 1);
+struct SimParam : public ParamGroup {
+  BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
   double foo = 3.14;
   int bar = -42;
 };
 ```
 
-#### 2. Initialize ModuleParamUid
+#### 2. Initialize ParamGroupUid
 
-Every ModuleParam must have a unique identifier.
+Every ParamGroup must have a unique identifier.
 Definition of `SimParam::kUid` must be done in a source file (`src/parameters.cc`).
 
 ```cpp
-const ModuleParamUid SimParam::kUid = ModuleParamUidGenerator::Get()->NewUid();
+const ParamGroupUid SimParam::kUid = ParamGroupUidGenerator::Get()->NewUid();
 ```
 
 #### 3. Register new parameters
@@ -62,7 +62,7 @@ const ModuleParamUid SimParam::kUid = ModuleParamUidGenerator::Get()->NewUid();
 Before we create a simulation, we have to tell BioDynaMo about the new parameters.
 
 ```cpp
-Param::RegisterModuleParam(new SimParam());
+Param::RegisterParamGroup(new SimParam());
 
 ```
 
@@ -84,14 +84,14 @@ and print out a few values.
 // get a pointer to the param object
 auto* param = simulation.GetParam();
 // get a pointer to an instance of SimParam
-auto* sparam = param->GetModuleParam<SimParam>();
+auto* sparam = param->Get<SimParam>();
 
-std::cout << "Value of simulation time step " << param->simulation_time_step_ << std::endl;
+std::cout << "Value of simulation time step " << param->simulation_time_step << std::endl;
 std::cout << "Value of foo                  " << sparam->foo << std::endl;
 std::cout << "Value of bar                  " << sparam->bar << std::endl;
 ```
 
-NB: If you don't have a pointer to `bdm::Simulation` inside e.g. a biology module, you can 
+NB: If you don't have a pointer to `bdm::Simulation` inside e.g. a behavior, you can 
 obtain it by calling `Simulation::GetActive()`.
 
 ### Build the simulation
@@ -134,47 +134,44 @@ Have a look at https://biodynamo.org/bioapi/ for more details about each paramet
 {
     "bdm::Param": {
         "_typename": "bdm::Param",
-        "backup_file_": "",
-        "backup_interval_": 1800,
-        "bound_space_": false,
-        "cache_neighbors_": false,
-        "calculate_gradients_": true,
-        "compute_target_": "cpu",
-        "debug_numa_": false,
-        "detect_static_sim_objects_": false,
-        "diffusion_type_": "Euler",
-        "export_visualization_": false,
-        "leaking_edges_": true,
-        "live_visualization_": false,
-        "max_bound_": 100,
-        "mem_mgr_aligned_pages_shift_": 8,
-        "mem_mgr_growth_rate_": 1.1,
-        "mem_mgr_max_mem_per_thread_": 10485760,
-        "min_bound_": 0,
-        "minimize_memory_while_rebalancing_": true,
-        "numerical_ode_solver_": 1,
-        "opencl_debug_": false,
-        "output_dir_": "output",
-        "preferred_gpu_": 0,
-        "python_paraview_pipeline_": false,
-        "restore_file_": "",
-        "root_visualization_": false,
-        "run_mechanical_interactions_": true,
-        "scheduling_batch_size_": 1000,
-        "show_simulation_step_": true,
-        "simulation_max_displacement_": 3,
-        "simulation_step_freq_": 10,
-        "simulation_time_step_": 0.01,
-        "souid_defragmentation_high_watermark_": 0.9,
-        "souid_defragmentation_low_watermark_": 0.5,
-        "statistics_": false,
-        "thread_safety_mechanism_": 1,
-        "use_bdm_mem_mgr_": true,
-        "visualization_engine_": "paraview",
-        "visualization_export_generate_pvsm_": true,
-        "visualization_export_interval_": 1,
-        "visualize_diffusion_": [],
-        "visualize_sim_objects_": {
+        "backup_file": "",
+        "backup_interval": 1800,
+        "bound_space": false,
+        "cache_neighbors": false,
+        "calculate_gradients": true,
+        "compute_target": "cpu",
+        "debug_numa": false,
+        "detect_static_agents": false,
+        "diffusion_type": "Euler",
+        "export_visualization": false,
+        "leaking_edges": true,
+        "max_bound": 100,
+        "mem_mgr_aligned_pages_shift": 8,
+        "mem_mgr_growth_rate": 1.1,
+        "mem_mgr_max_mem_per_thread": 10485760,
+        "min_bound": 0,
+        "minimize_memory_while_rebalancing": true,
+        "numerical_ode_solver": 1,
+        "opencl_debug": false,
+        "output_dir": "output",
+        "preferred_gpu": 0,
+        "restore_file": "",
+        "root_visualization": false,
+        "run_mechanical_interactions": true,
+        "scheduling_batch_size": 1000,
+        "show_simulation_step": true,
+        "simulation_max_displacement": 3,
+        "simulation_step_freq": 10,
+        "simulation_time_step": 0.01,
+        "agent_uid_defragmentation_high_watermark": 0.9,
+        "agent_uid_defragmentation_low_watermark": 0.5,
+        "statistics": false,
+        "thread_safety_mechanism": 1,
+        "use_bdm_mem_mgr": true,
+        "visualization_engine": "paraview",
+        "visualization_export_generate_pvsm": true,
+        "visualize_diffusion": [],
+        "visualize_agents": {
             "_typename": "map<string,set<string> >"
         }
     },
@@ -199,7 +196,7 @@ Create a new file `bdm.json` in the project root directory with the following co
 ```json
 {
   "bdm::Param": {
-     "simulation_time_step_": 1.0
+     "simulation_time_step": 1.0
   },
   "bdm::SimParam": {
     "bar": 84
@@ -293,8 +290,8 @@ To turn it on update the file `config.json`:
 ```json
 {
   "bdm::Param": {
-     "statistics_": true,
-     "simulation_time_step_": 1.0
+     "statistics": true,
+     "simulation_time_step": 1.0
   },
   "bdm::SimParam": {
     "bar": 84
@@ -320,7 +317,7 @@ General
 Command                       : ./parameters --inline-config { "bdm::SimParam": { "foo": 6.28 } } 
 Simulation name               : parameters
 Number of iterations executed : 0
-Number of simulation objects  : 0
+Number of agents  : 0
 Output directory              : output/parameters
   size                        : 4.0K
 
@@ -339,7 +336,7 @@ num threads per numa    : 4
 
 ***********************************************
 
-Simulation objects per numa node
+Agents per numa node
 numa node 0 -> size: 0
 
 ***********************************************
@@ -348,47 +345,44 @@ Parameters
 {
     "bdm::Param": {
         "_typename": "bdm::Param",
-        "backup_file_": "",
-        "backup_interval_": 1800,
-        "bound_space_": false,
-        "cache_neighbors_": false,
-        "calculate_gradients_": true,
-        "compute_target_": "cpu",
-        "debug_numa_": false,
-        "detect_static_sim_objects_": false,
-        "diffusion_type_": "Euler",
-        "export_visualization_": false,
-        "leaking_edges_": true,
-        "live_visualization_": false,
-        "max_bound_": 100,
-        "mem_mgr_aligned_pages_shift_": 8,
-        "mem_mgr_growth_rate_": 1.1,
-        "mem_mgr_max_mem_per_thread_": 10485760,
-        "min_bound_": 0,
-        "minimize_memory_while_rebalancing_": true,
-        "numerical_ode_solver_": 1,
-        "opencl_debug_": false,
-        "output_dir_": "output",
-        "preferred_gpu_": 0,
-        "python_paraview_pipeline_": false,
-        "restore_file_": "",
-        "root_visualization_": false,
-        "run_mechanical_interactions_": true,
-        "scheduling_batch_size_": 1000,
-        "show_simulation_step_": true,
-        "simulation_max_displacement_": 3,
-        "simulation_step_freq_": 10,
-        "simulation_time_step_": 1,
-        "souid_defragmentation_high_watermark_": 0.9,
-        "souid_defragmentation_low_watermark_": 0.5,
-        "statistics_": true,
-        "thread_safety_mechanism_": 1,
-        "use_bdm_mem_mgr_": true,
-        "visualization_engine_": "paraview",
-        "visualization_export_generate_pvsm_": true,
-        "visualization_export_interval_": 1,
-        "visualize_diffusion_": [],
-        "visualize_sim_objects_": {
+        "backup_file": "",
+        "backup_interval": 1800,
+        "bound_space": false,
+        "cache_neighbors": false,
+        "calculate_gradients": true,
+        "compute_target": "cpu",
+        "debug_numa": false,
+        "detect_static_agents": false,
+        "diffusion_type": "Euler",
+        "export_visualization": false,
+        "leaking_edges": true,
+        "max_bound": 100,
+        "mem_mgr_aligned_pages_shift": 8,
+        "mem_mgr_growth_rate": 1.1,
+        "mem_mgr_max_mem_per_thread": 10485760,
+        "min_bound": 0,
+        "minimize_memory_while_rebalancing": true,
+        "numerical_ode_solver": 1,
+        "opencl_debug": false,
+        "output_dir": "output",
+        "preferred_gpu": 0,
+        "restore_file": "",
+        "root_visualization": false,
+        "run_mechanical_interactions": true,
+        "scheduling_batch_size": 1000,
+        "show_simulation_step": true,
+        "simulation_max_displacement": 3,
+        "simulation_step_freq": 10,
+        "simulation_time_step": 1,
+        "agent_uid_defragmentation_high_watermark": 0.9,
+        "agent_uid_defragmentation_low_watermark": 0.5,
+        "statistics": true,
+        "thread_safety_mechanism": 1,
+        "use_bdm_mem_mgr": true,
+        "visualization_engine": "paraview",
+        "visualization_export_generate_pvsm": true,
+        "visualize_diffusion": [],
+        "visualize_agents": {
             "_typename": "map<string,set<string> >"
         }
     },

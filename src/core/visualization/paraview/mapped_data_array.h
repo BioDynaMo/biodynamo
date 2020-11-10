@@ -12,25 +12,28 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_VISUALIZATION_MAPPED_DATA_ARRAY_H_
-#define CORE_VISUALIZATION_MAPPED_DATA_ARRAY_H_
+#ifndef CORE_VISUALIZATION_PARAVIEW_MAPPED_DATA_ARRAY_H_
+#define CORE_VISUALIZATION_PARAVIEW_MAPPED_DATA_ARRAY_H_
+
+#include <algorithm>
+#include <string>
 
 #include <vtkMappedDataArray.h>
 #include <vtkObjectFactory.h>
 #include <thread>
 #include <vector>
 
+#include "core/agent/agent.h"
+#include "core/agent/agent_pointer.h"
 #include "core/functor.h"
 #include "core/param/param.h"
-#include "core/sim_object/sim_object.h"
-#include "core/sim_object/so_pointer.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
 
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-/// Extract the data member value of a SimObject given its concrete type, type
+/// Extract the data member value of an Agent given its concrete type, type
 /// of the data member, and data member offset from its concrete pointer.
 template <typename TReturn, typename TClass, typename TDataMember>
 struct GetDataMemberForVis {
@@ -49,47 +52,47 @@ struct GetDataMemberForVis {
         std::max(ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256UL));
   }
 
-  enum DataType { kDefault, kArray, kSoUid, kSoPointer };
+  enum DataType { kDefault, kArray, kAgentUid, kSoPointer };
 
   template <typename T>
   static constexpr DataType GetDataType() {
     if (IsArray<T>::value) {
       return DataType::kArray;
-    } else if (std::is_same<T, SoUid>::value) {
-      return DataType::kSoUid;
-    } else if (is_so_ptr<T>::value) {
+    } else if (std::is_same<T, AgentUid>::value) {
+      return DataType::kAgentUid;
+    } else if (is_agent_ptr<T>::value) {
       return DataType::kSoPointer;
     }
     return DataType::kDefault;
-  };
+  }
 
   template <typename TTDataMember = TDataMember>
   typename std::enable_if<GetDataType<TTDataMember>() == DataType::kDefault,
                           TReturn>::type
-  operator()(SimObject* so) const {
-    auto* casted_so = static_cast<TClass*>(so);
-    return reinterpret_cast<TDataMember*>(reinterpret_cast<char*>(casted_so) +
-                                          dm_offset_);
+  operator()(Agent* agent) const {
+    auto* casted_agent = static_cast<TClass*>(agent);
+    return reinterpret_cast<TDataMember*>(
+        reinterpret_cast<char*>(casted_agent) + dm_offset_);
   }
 
   template <typename TTDataMember = TDataMember>
   typename std::enable_if<GetDataType<TTDataMember>() == DataType::kArray,
                           TReturn>::type
-  operator()(SimObject* so) const {
-    auto* casted_so = static_cast<TClass*>(so);
+  operator()(Agent* agent) const {
+    auto* casted_agent = static_cast<TClass*>(agent);
     auto* data = reinterpret_cast<TDataMember*>(
-                     reinterpret_cast<char*>(casted_so) + dm_offset_)
+                     reinterpret_cast<char*>(casted_agent) + dm_offset_)
                      ->data();
     return const_cast<TReturn>(data);
   }
 
   template <typename TTDataMember = TDataMember>
-  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoUid,
+  typename std::enable_if<GetDataType<TTDataMember>() == DataType::kAgentUid,
                           TReturn>::type
-  operator()(SimObject* so) const {
-    auto* casted_so = static_cast<TClass*>(so);
+  operator()(Agent* agent) const {
+    auto* casted_agent = static_cast<TClass*>(agent);
     auto* data = reinterpret_cast<TDataMember*>(
-        reinterpret_cast<char*>(casted_so) + dm_offset_);
+        reinterpret_cast<char*>(casted_agent) + dm_offset_);
     uint64_t uid = *data;
     auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
     assert(temp_values_.size() > tid);
@@ -100,10 +103,10 @@ struct GetDataMemberForVis {
   template <typename TTDataMember = TDataMember>
   typename std::enable_if<GetDataType<TTDataMember>() == DataType::kSoPointer,
                           TReturn>::type
-  operator()(SimObject* so) const {
-    auto* casted_so = static_cast<TClass*>(so);
+  operator()(Agent* agent) const {
+    auto* casted_agent = static_cast<TClass*>(agent);
     auto* data = reinterpret_cast<TDataMember*>(
-        reinterpret_cast<char*>(casted_so) + dm_offset_);
+        reinterpret_cast<char*>(casted_agent) + dm_offset_);
     uint64_t uid = data->GetUid();
     auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
     assert(temp_values_.size() > tid);
@@ -114,8 +117,8 @@ struct GetDataMemberForVis {
 
 // -----------------------------------------------------------------------------
 struct MappedDataArrayInterface {
-  virtual void Update(const std::vector<SimObject*>* sim_objects,
-                      uint64_t start, uint64_t end) = 0;
+  virtual void Update(const std::vector<Agent*>* agents, uint64_t start,
+                      uint64_t end) = 0;
 };
 
 // -----------------------------------------------------------------------------
@@ -130,7 +133,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
 
   void Initialize(Param::MappedDataArrayMode mode, const std::string& name,
                   uint64_t num_components, uint64_t dm_offset);
-  void Update(const std::vector<SimObject*>* sim_objects, uint64_t start,
+  void Update(const std::vector<Agent*>* agents, uint64_t start,
               uint64_t end) final;
 
   // Reimplemented virtuals -- see superclasses for descriptions:
@@ -194,9 +197,9 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   MappedDataArray();
   ~MappedDataArray();
 
-  /// Access sim object data member functor.
+  /// Access agent data member functor.
   GetDataMemberForVis<TScalar*, TClass, TDataMember> get_dm_;
-  const std::vector<SimObject*>* sim_objects_ = nullptr;
+  const std::vector<Agent*>* agents_ = nullptr;
   uint64_t start_ = 0;
   uint64_t end_ = 0;
   double* temp_array_ = nullptr;
@@ -209,7 +212,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   /// Data is valid for one iteration, i.e. as long as match_value_ doesn't
   /// change.
   mutable std::vector<uint64_t> is_matching_;
-  /// If mode_ is kCopy or kCache, data from SimObjects is written to data_
+  /// If mode_ is kCopy or kCache, data from Agents is written to data_
   mutable std::vector<TScalar> data_;
 
  private:
@@ -233,8 +236,8 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Initialize(
 
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::Update(
-    const std::vector<SimObject*>* sim_objects, uint64_t start, uint64_t end) {
-  sim_objects_ = sim_objects;
+    const std::vector<Agent*>* agents, uint64_t start, uint64_t end) {
+  agents_ = agents;
   start_ = start;
   end_ = end;
   get_dm_.Update();
@@ -257,7 +260,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::Update(
     if (mode_ == Param::MappedDataArrayMode::kCopy) {
       uint64_t counter = 0;
       for (uint64_t i = start; i < end; ++i) {
-        auto* data = get_dm_((*sim_objects_)[i]);
+        auto* data = get_dm_((*agents_)[i]);
         for (uint64_t c = 0; c < this->NumberOfComponents; ++c) {
           data_[counter++] = data[c];
         }
@@ -290,7 +293,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::PrintSelf(
     ostream& os, vtkIndent indent) {
   this->MappedDataArray<TScalar, TClass, TDataMember>::Superclass::PrintSelf(
       os, indent);
-  os << indent << "sim_objects_: " << this->sim_objects_ << std::endl;
+  os << indent << "agents_: " << this->agents_ << std::endl;
   os << indent << "start_: " << this->start_ << std::endl;
   os << indent << "end_: " << this->end_ << std::endl;
   os << indent << "temp_array_: " << this->temp_array_ << std::endl;
@@ -432,7 +435,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
       }
     }
     case Param::MappedDataArrayMode::kZeroCopy: {
-      auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]);
+      auto* data = get_dm_((*agents_)[start_ + tuple_id]);
       for (uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents);
            ++i) {
         tuple[i] = static_cast<double>(data[i]);
@@ -484,7 +487,7 @@ MappedDataArray<TScalar, TClass, TDataMember>::GetValue(vtkIdType idx) const {
       }
     case Param::MappedDataArrayMode::kZeroCopy: {
       if (this->NumberOfComponents == 1) {
-        auto* data = get_dm_((*sim_objects_)[start_ + idx]);
+        auto* data = get_dm_((*agents_)[start_ + idx]);
         if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx] = *data;
           is_matching_[idx] = match_value_;
@@ -493,7 +496,7 @@ MappedDataArray<TScalar, TClass, TDataMember>::GetValue(vtkIdType idx) const {
       }
       const vtkIdType tuple = idx / this->NumberOfComponents;
       const vtkIdType comp = idx % this->NumberOfComponents;
-      auto* data = get_dm_((*sim_objects_)[start_ + tuple]);
+      auto* data = get_dm_((*agents_)[start_ + tuple]);
       if (mode_ == Param::MappedDataArrayMode::kCache) {
         data_[idx] = data[comp];
         is_matching_[idx] = match_value_;
@@ -516,7 +519,7 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(
       }
     case Param::MappedDataArrayMode::kZeroCopy: {
       if (this->NumberOfComponents == 1) {
-        auto* data = get_dm_((*sim_objects_)[start_ + idx]);
+        auto* data = get_dm_((*agents_)[start_ + idx]);
         if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx] = *data;
           is_matching_[idx] = match_value_;
@@ -525,7 +528,7 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(
       }
       const vtkIdType tuple = idx / this->NumberOfComponents;
       const vtkIdType comp = idx % this->NumberOfComponents;
-      auto* data = get_dm_((*sim_objects_)[start_ + tuple]);
+      auto* data = get_dm_((*agents_)[start_ + tuple]);
       if (mode_ == Param::MappedDataArrayMode::kCache) {
         data_[idx] = data[comp];
         is_matching_[idx] = match_value_;
@@ -541,7 +544,7 @@ TScalar& MappedDataArray<TScalar, TClass, TDataMember>::GetValueReference(
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::GetTypedTuple(
     vtkIdType tuple_id, TScalar* tuple) const {
-  auto* data = get_dm_((*sim_objects_)[start_ + tuple_id]);
+  auto* data = get_dm_((*agents_)[start_ + tuple_id]);
   for (uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents);
        ++i) {
     tuple[i] = data[i];
@@ -802,4 +805,4 @@ vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::Lookup(
 
 }  // namespace bdm
 
-#endif  // CORE_VISUALIZATION_MAPPED_DATA_ARRAY_H_
+#endif  // CORE_VISUALIZATION_PARAVIEW_MAPPED_DATA_ARRAY_H_

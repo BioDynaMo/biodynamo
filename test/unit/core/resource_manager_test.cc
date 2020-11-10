@@ -15,36 +15,36 @@
 // I/O related code must be in header file
 #include "unit/core/resource_manager_test.h"
 #include "unit/test_util/io_test.h"
-#include "unit/test_util/test_sim_object.h"
+#include "unit/test_util/test_agent.h"
 
 namespace bdm {
 
-TEST(ResourceManagerTest, ApplyOnAllElements) { RunApplyOnAllElementsTest(); }
+TEST(ResourceManagerTest, ForEachAgent) { RunForEachAgentTest(); }
 
-TEST(ResourceManagerTest, GetNumSimObjects) { RunGetNumSimObjects(); }
+TEST(ResourceManagerTest, GetNumAgents) { RunGetNumAgents(); }
 
-TEST(ResourceManagerTest, ApplyOnAllElementsParallel) {
-  RunApplyOnAllElementsParallelTest();
+TEST(ResourceManagerTest, ForEachAgentParallel) {
+  RunForEachAgentParallelTest();
 }
 
 #ifdef USE_DICT
 TEST(ResourceManagerTest, IO) { RunIOTest(); }
 #endif  // USE_DICT
 
-TEST(ResourceManagerTest, PushBackAndGetSimObjectTest) {
-  RunPushBackAndGetSimObjectTest();
+TEST(ResourceManagerTest, PushBackAndGetAgentTest) {
+  RunPushBackAndGetAgentTest();
 }
 
 TEST(ResourceManagerTest, RemoveAndContains) { RunRemoveAndContainsTest(); }
 
 TEST(ResourceManagerTest, Clear) { RunClearTest(); }
 
-TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallel) {
-  RunSortAndApplyOnAllElementsParallel();
+TEST(ResourceManagerTest, SortAndForEachAgentParallel) {
+  RunSortAndForEachAgentParallel();
 }
 
-TEST(ResourceManagerTest, SortAndApplyOnAllElementsParallelDynamic) {
-  RunSortAndApplyOnAllElementsParallelDynamic();
+TEST(ResourceManagerTest, SortAndForEachAgentParallelDynamic) {
+  RunSortAndForEachAgentParallelDynamic();
 }
 
 TEST(ResourceManagerTest, DiffusionGrid) {
@@ -61,7 +61,7 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   rm->AddDiffusionGrid(dgrid_2);
   rm->AddDiffusionGrid(dgrid_3);
 
-  rm->ApplyOnAllDiffusionGrids(count);
+  rm->ForEachDiffusionGrid(count);
   ASSERT_EQ(3, counter);
 
   EXPECT_EQ(dgrid_1, rm->GetDiffusionGrid(0));
@@ -76,45 +76,45 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   rm->RemoveDiffusionGrid(dgrid_2->GetSubstanceId());
 
   counter = 0;
-  rm->ApplyOnAllDiffusionGrids(count);
+  rm->ForEachDiffusionGrid(count);
   ASSERT_EQ(2, counter);
 }
 
-TEST(ResourceManagerTest, TurnOnOffSoUidDefragmentation) {
+TEST(ResourceManagerTest, TurnOnOffAgentUidDefragmentation) {
   auto set_param = [](Param* param) {
-    param->souid_defragmentation_low_watermark_ = 0.3;
-    param->souid_defragmentation_high_watermark_ = 0.8;
+    param->agent_uid_defragmentation_low_watermark = 0.3;
+    param->agent_uid_defragmentation_high_watermark = 0.8;
   };
   Simulation simulation(TEST_NAME, set_param);
 
   auto* rm = simulation.GetResourceManager();
-  auto* so_uid_generator = simulation.GetSoUidGenerator();
+  auto* agent_uid_generator = simulation.GetAgentUidGenerator();
 
   // utilization = 0.5 > low watermark -> don't defragment
   //   create 10 objects
   for (uint64_t i = 0; i < 10; i++) {
-    rm->push_back(new TestSimObject());
+    rm->AddAgent(new TestAgent());
   }
   //   remove 5
   for (uint64_t i = 0; i < 5; i++) {
-    rm->Remove(SoUid(i));
+    rm->RemoveAgent(AgentUid(i));
   }
   rm->EndOfIteration();
-  EXPECT_FALSE(so_uid_generator->IsInDefragmentationMode());
+  EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
 
   // utilization 0.2 < low watermark -> turn on defragmentation
-  rm->Remove(SoUid(5));
-  rm->Remove(SoUid(6));
-  rm->Remove(SoUid(7));
+  rm->RemoveAgent(AgentUid(5));
+  rm->RemoveAgent(AgentUid(6));
+  rm->RemoveAgent(AgentUid(7));
   rm->EndOfIteration();
-  EXPECT_FALSE(so_uid_generator->IsInDefragmentationMode());
+  EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
 
   // utilization < low watermark -> turn off defragmentation
   for (uint64_t i = 0; i < 6; i++) {
-    rm->push_back(new TestSimObject());
+    rm->AddAgent(new TestAgent());
   }
   rm->EndOfIteration();
-  EXPECT_FALSE(so_uid_generator->IsInDefragmentationMode());
+  EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
 }
 
 }  // namespace bdm

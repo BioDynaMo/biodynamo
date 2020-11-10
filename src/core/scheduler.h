@@ -20,6 +20,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "core/operation/operation.h"
@@ -29,7 +30,7 @@
 namespace bdm {
 
 class SchedulerTest;
-class SimObject;
+class Agent;
 class SimulationBackup;
 class VisualizationAdaptor;
 class RootAdaptor;
@@ -49,8 +50,6 @@ class Scheduler {
 
   void Simulate(uint64_t steps);
 
-  Operation* NewOutstandingOperation(const std::string& name);
-
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
@@ -67,9 +66,66 @@ class Scheduler {
   /// function returns an empty vector.
   std::vector<Operation*> GetOps(const std::string& name);
 
+  RootAdaptor* GetRootVisualization() { return root_visualization_; }
+
+  TimingAggregator* GetOpTimes();
+
+ protected:
+  uint64_t total_steps_ = 0;
+
+  /// Executes one step.
+  /// This design makes testing more convenient
+  virtual void Execute();
+
+ private:
+  friend void RunAgentsTest(Param::MappedDataArrayMode, uint64_t, bool, bool);
+  friend SchedulerTest;
+
+  SimulationBackup* backup_ = nullptr;
+  uint64_t restore_point_;
+  std::chrono::time_point<Clock> last_backup_ = Clock::now();
+  RootAdaptor* root_visualization_ = nullptr;  //!
+
+  /// List of all operations that have been add either as default
+  /// or by a call to Scheduler::ScheduleOp.
+  /// Scheduler::UnscheduleOp doesn't remove the operation from this
+  /// list.
+  std::vector<Operation*> all_ops_;  //!
+  /// List of operations that are to be added in the upcoming timestep
+  std::vector<std::pair<OpType, Operation*>> schedule_ops_;  //!
+  /// List of operations that are to be removed in the upcoming timestep
+  std::vector<Operation*> unschedule_ops_;  //!
+  /// List of operations will be executed as a stand-alone operation
+  std::vector<Operation*> scheduled_standalone_ops_;  //!
+  /// List of operations will be executed on all agents
+  std::vector<Operation*> scheduled_agent_ops_;  //!
+  /// List of operations that cannot be affected by the user
+  std::vector<std::string> protected_op_names_;  //!
+  // Operations that are run before setting up, running and tearing down
+  // scheduled operations
+  std::vector<Operation*> pre_scheduled_ops_;
+  // Operations that are run after setting up, running and tearing down
+  // scheduled operations
+  std::vector<Operation*> post_scheduled_ops_;
+  /// Tracks operations' execution times
+  TimingAggregator op_times_;
+
+  /// Backup the simulation. Backup interval based on `Param::backup_interval`
+  void Backup();
+
+  /// Restore the simulation if requested at the right time
+  /// @param steps number of simulation steps for a `Simulate` call
+  /// @return if `Simulate` should return early
+  bool Restore(uint64_t* steps);
+
+  // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved
+  // think about a better solution, because some operations are executed twice
+  // if Simulate is called with one timestep.
+  void Initialize();
+
   /// Runs a lambda for each operation in the specified list of operations
   template <typename Lambda>
-  void ForAllOperationsInList(const std::vector<Operation*>& operations,
+  void ForEachOperationInList(const std::vector<Operation*>& operations,
                               Lambda lambda) {
     for (auto* op : operations) {
       lambda(op);
@@ -78,21 +134,21 @@ class Scheduler {
 
   /// Runs a lambda for each scheduled operation
   template <typename Lambda>
-  void ForAllScheduledOperations(Lambda lambda) {
-    ForAllOperationsInList(scheduled_sim_object_ops_, lambda);
-    ForAllOperationsInList(scheduled_standalone_ops_, lambda);
+  void ForEachScheduledOperation(Lambda lambda) {
+    ForEachOperationInList(scheduled_agent_ops_, lambda);
+    ForEachOperationInList(scheduled_standalone_ops_, lambda);
   }
 
   /// Runs a lambda for each operation that is executed in the Execute() call
   template <typename Lambda>
-  void ForAllOperations(Lambda lambda) {
-    ForAllScheduledOperations(lambda);
-    ForAllOperationsInList(pre_scheduled_ops_, lambda);
-    ForAllOperationsInList(post_scheduled_ops_, lambda);
+  void ForEachOperation(Lambda lambda) {
+    ForEachScheduledOperation(lambda);
+    ForEachOperationInList(pre_scheduled_ops_, lambda);
+    ForEachOperationInList(post_scheduled_ops_, lambda);
   }
 
-  /// Return a list of SimObjectOperations that are scheduled
-  std::vector<std::string> GetListOfScheduledSimObjectOps() const;
+  /// Return a list of AgentOperations that are scheduled
+  std::vector<std::string> GetListOfScheduledAgentOps() const;
 
   /// Return a list of StandAloneOperations that are scheduled
   std::vector<std::string> GetListOfScheduledStandaloneOps() const;
@@ -112,64 +168,6 @@ class Scheduler {
   void RunPostScheduledOps();
 
   void ScheduleOps();
-
-  RootAdaptor* GetRootVisualization() { return root_visualization_; }
-
-  TimingAggregator* GetOpTimes();
-
- protected:
-  uint64_t total_steps_ = 0;
-
-  /// Executes one step.
-  /// This design makes testing more convenient
-  virtual void Execute();
-
- private:
-  friend void RunSimObjectsTest(Param::MappedDataArrayMode, uint64_t, bool,
-                                bool);
-  friend SchedulerTest;
-
-  SimulationBackup* backup_ = nullptr;
-  uint64_t restore_point_;
-  std::chrono::time_point<Clock> last_backup_ = Clock::now();
-  RootAdaptor* root_visualization_ = nullptr;  //!
-
-  /// List of all operations that have been add either as default
-  /// or by a call to Scheduler::ScheduleOp.
-  /// Scheduler::UnscheduleOp doesn't remove the operation from this
-  /// list.
-  std::vector<Operation*> all_ops_;  //!
-  /// List of operations that are to be added in the upcoming timestep
-  std::vector<std::pair<OpType, Operation*>> schedule_ops_;  //!
-  /// List of operations that are to be removed in the upcoming timestep
-  std::vector<Operation*> unschedule_ops_;  //!
-  /// List of operations will be executed as a stand-alone operation
-  std::vector<Operation*> scheduled_standalone_ops_;  //!
-  /// List of operations will be executed on all simulation objects
-  std::vector<Operation*> scheduled_sim_object_ops_;  //!
-  /// List of operations that cannot be affected by the user
-  std::vector<std::string> protected_op_names_;  //!
-  // Operations that are run before setting up, running and tearing down
-  // scheduled operations
-  std::vector<Operation*> pre_scheduled_ops_;
-  // Operations that are run after setting up, running and tearing down
-  // scheduled operations
-  std::vector<Operation*> post_scheduled_ops_;
-  /// Tracks operations' execution times
-  TimingAggregator op_times_;
-
-  /// Backup the simulation. Backup interval based on `Param::backup_interval_`
-  void Backup();
-
-  /// Restore the simulation if requested at the right time
-  /// @param steps number of simulation steps for a `Simulate` call
-  /// @return if `Simulate` should return early
-  bool Restore(uint64_t* steps);
-
-  // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved
-  // think about a better solution, because some operations are executed twice
-  // if Simulate is called with one timestep.
-  void Initialize();
 };
 
 }  // namespace bdm

@@ -148,7 +148,7 @@ __device__ void compute_force(double* positions, double* diameters, uint32_t idx
   // printf("Force between cell (%u) [%f, %f, %f] & cell (%u) [%f, %f, %f] = %f, %f, %f\n", idx, positions[3*idx + 0], positions[3*idx + 1], positions[3*idx + 2], nidx, positions[3*nidx + 0], positions[3*nidx + 1], positions[3*nidx + 2], module * comp1, module * comp2, module * comp3);
 }
 
-__device__ void default_force(double* positions,
+__device__ void force(double* positions,
                    double* diameters,
                    uint32_t idx, uint32_t start, uint16_t length,
                    uint32_t* successors,
@@ -210,7 +210,7 @@ __global__ void collide(
         for (int x = -1; x <= 1; x++) {
           uint32_t bidx = get_box_id_2(box_coords + make_int3(x, y, z), num_boxes_axis);
           if (timestamps[bidx] == current_timestamp[0] && lengths[bidx] != 0) {
-            default_force(positions, diameters, tidx, starts[bidx], lengths[bidx], successors, squared_radius, &collision_force);
+            force(positions, diameters, tidx, starts[bidx], lengths[bidx], successors, squared_radius, &collision_force);
           }
         }
       }

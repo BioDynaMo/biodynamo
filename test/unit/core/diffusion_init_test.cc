@@ -12,10 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/agent/cell.h"
 #include "core/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
-#include "core/sim_object/cell.h"
 #include "core/simulation.h"
 #include "core/substance_initializers.h"
 #include "gtest/gtest.h"
@@ -29,9 +29,9 @@ enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
   auto set_param = [](auto* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = 250;
+    param->bound_space = true;
+    param->min_bound = 0;
+    param->max_bound = 250;
   };
   Simulation simulation(TEST_NAME, set_param);
 
@@ -44,20 +44,20 @@ TEST(DiffusionInitTest, GaussianBand) {
     cell->SetDiameter(10);
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
+  ModelInitializer::CreateCellsRandom(param->min_bound, param->max_bound, 1,
                                       construct);
 
   // Define the substances in our simulation
   ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 26);
 
   // Initialize the substance according to a GaussianBand along the x-axis
-  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
+  ModelInitializer::InitializeSubstance(kSubstance,
                                         GaussianBand(125, 50, Axis::kXAxis));
 
   simulation.GetEnvironment()->Update();
 
-  int lbound = param->min_bound_;
-  int rbound = param->max_bound_;
+  int lbound = param->min_bound;
+  int rbound = param->max_bound;
   auto* dgrid = rm->GetDiffusionGrid(0);
 
   // Create data structures, whose size depend on the grid dimensions

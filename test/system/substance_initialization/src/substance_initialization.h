@@ -34,9 +34,9 @@ enum Substances { kSubstance };
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
     // Create an artificial bounds for the simulation space
-    param->bound_space_ = true;
-    param->min_bound_ = -100;
-    param->max_bound_ = 100;
+    param->bound_space = true;
+    param->min_bound = -100;
+    param->max_bound = 100;
   };
 
   Simulation simulation(argc, argv, set_param);
@@ -49,7 +49,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetDiameter(10);
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
+  ModelInitializer::CreateCellsRandom(param->min_bound, param->max_bound, 1,
                                       construct);
 
   // Define the substances in our simulation
@@ -60,11 +60,11 @@ inline int Simulate(int argc, const char** argv) {
   // Order: substance id, substance name, initialization model, along which axis
   // (0 = x, 1 = y, 2 = z). See the documentation of `GaussianBand` for
   // information about its arguments
-  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
+  ModelInitializer::InitializeSubstance(kSubstance,
                                         GaussianBand(0, 5, Axis::kXAxis));
-  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
+  ModelInitializer::InitializeSubstance(kSubstance,
                                         GaussianBand(0, 5, Axis::kYAxis));
-  ModelInitializer::InitializeSubstance(kSubstance, "Substance",
+  ModelInitializer::InitializeSubstance(kSubstance,
                                         GaussianBand(0, 5, Axis::kZAxis));
 
   // Run simulation for N timesteps

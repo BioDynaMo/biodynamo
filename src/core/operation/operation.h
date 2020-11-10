@@ -23,7 +23,7 @@
 
 namespace bdm {
 
-class SimObject;
+class Agent;
 
 enum OpComputeTarget { kCpu, kCuda, kOpenCl };
 
@@ -51,7 +51,7 @@ struct OperationImpl {
   /// tasks such as data transfer from GPU -> CPU in GPU operations
   virtual void TearDown() {}
 
-  virtual void operator()(SimObject *so) = 0;
+  virtual void operator()(Agent *agent) = 0;
 
   virtual void operator()() = 0;
 
@@ -70,10 +70,10 @@ struct OperationImpl {
 };
 
 /// Interface for implementing an operation
-struct SimObjectOperationImpl : public OperationImpl {
+struct AgentOperationImpl : public OperationImpl {
   void operator()() override {
-    Log::Fatal("SimObjectOperationImpl",
-               "SimObjectOperationImpl do not support this function operator");
+    Log::Fatal("AgentOperationImpl",
+               "AgentOperationImpl do not support this function operator");
   }
 
   bool IsStandalone() override { return false; }
@@ -81,7 +81,7 @@ struct SimObjectOperationImpl : public OperationImpl {
 
 /// Interface for implementing an operation that should run on a GPU
 struct StandaloneOperationImpl : public OperationImpl {
-  void operator()(SimObject *so) override {
+  void operator()(Agent *agent) override {
     Log::Fatal("StandaloneOperationImpl",
                "StandaloneOperationImpl do not support this function operator");
   }
@@ -98,7 +98,7 @@ struct Operation {
   ///
   /// @param[in]  name  The name of the operation
   ///
-  Operation(const std::string &name);
+  explicit Operation(const std::string &name);
 
   /// Construct an operation
   ///
@@ -111,12 +111,12 @@ struct Operation {
 
   Operation *Clone();
 
-  /// Operate on an individual simulation object. Typically this operator is
-  /// called in a loop over all simulation objects
+  /// Operate on an individual agent. Typically this operator is
+  /// called in a loop over all agents
   ///
-  /// @param      so    Handle to the simulation object
+  /// @param      agent    Handle to the agent
   ///
-  void operator()(SimObject *so);
+  void operator()(Agent *agent);
 
   /// Operate in a stand-alone fashion. Typically this operator is called for
   /// GPU operations, or operations that do not need to loop over simulation

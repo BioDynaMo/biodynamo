@@ -22,10 +22,10 @@ import json
 # ------------------------------------------------------------------------------
 is_insitu_pipeline = False
 
-def ProcessSphere(so_info, so_data, render_view):
+def ProcessSphere(agent_info, agent_data, render_view):
     # create a new 'Glyph'
-    glyph_type = str(so_info['shape'])
-    glyph1 = Glyph(Input=so_data, GlyphType=glyph_type)
+    glyph_type = str(agent_info['shape'])
+    glyph1 = Glyph(Input=agent_data, GlyphType=glyph_type)
     glyph1.GlyphTransform = 'Transform2'
 
     glyph1.GlyphType = glyph_type
@@ -63,18 +63,18 @@ def ProcessSphere(so_info, so_data, render_view):
     # Properties modified on glyph1
     # ignored if set earlier
     if paraview.servermanager.vtkSMProxyManager.GetVersionMinor() == 5:
-        glyph1.Scalars = ['POINTS', so_info['scaling_attribute']]
+        glyph1.Scalars = ['POINTS', agent_info['scaling_attribute']]
     else:
-        glyph1.ScaleArray = ['POINTS', so_info['scaling_attribute']]
-    RenameSource('{0}s'.format(so_info['name']), glyph1)
+        glyph1.ScaleArray = ['POINTS', agent_info['scaling_attribute']]
+    RenameSource('{0}s'.format(agent_info['name']), glyph1)
 
     # update the view to ensure updated data information
     render_view.Update()
 
 # ------------------------------------------------------------------------------
-def ProcessCylinder(so_info, so_data, render_view):
-    glyph_type = str(so_info['shape'])
-    bDMGlyph1 = BDMGlyph(Input=so_data, GlyphType=glyph_type)
+def ProcessCylinder(agent_info, agent_data, render_view):
+    glyph_type = str(agent_info['shape'])
+    bDMGlyph1 = BDMGlyph(Input=agent_data, GlyphType=glyph_type)
     bDMGlyph1.Vectors = ['POINTS', 'None']
     bDMGlyph1.XScaling = ['POINTS', 'None']
     bDMGlyph1.YScaling = ['POINTS', 'None']
@@ -161,25 +161,25 @@ def ProcessCylinder(so_info, so_data, render_view):
     render_view.Update()
 
     bDMGlyph1.GlyphMode = 'All Points'
-    RenameSource('{0}s'.format(so_info['name']), bDMGlyph1)
+    RenameSource('{0}s'.format(agent_info['name']), bDMGlyph1)
 
     render_view.Update()
 
 # ------------------------------------------------------------------------------
-def ProcessSimulationObject(so_info, so_data, render_view):
+def ProcessSimulationObject(agent_info, agent_data, render_view):
     # following line was in trace, but seems to be superfluous
-    # so_data.PointArrayStatus = ['diameter_', 'volume_']
+    # agent_data.PointArrayStatus = ['diameter_', 'volume_']
 
     # rename data source
-    so_name = so_info['name']
-    so_data_name = '{0}-data'.format(so_name)
-    RenameSource(so_data_name, so_data)
+    agent_name = agent_info['name']
+    agent_data_name = '{0}-data'.format(agent_name)
+    RenameSource(agent_data_name, agent_data)
 
-    shape = str(so_info['shape'])
+    shape = str(agent_info['shape'])
     if shape == "Sphere":
-        ProcessSphere(so_info, so_data, render_view)
+        ProcessSphere(agent_info, agent_data, render_view)
     elif shape == "Cylinder":
-        ProcessCylinder(so_info, so_data, render_view)
+        ProcessCylinder(agent_info, agent_data, render_view)
 
     # reset view to fit data
     render_view.ResetCamera()
@@ -259,10 +259,10 @@ def CreateCoProcessor():
             global is_insitu_pipeline
             is_insitu_pipeline = True
 
-            # simulation objects
-            for so_info in build_info['sim_objects']:
-                data = coprocessor.CreateProducer(datadescription, so_info['name'])
-                ProcessSimulationObject(so_info, data, renderview)
+            # agents
+            for agent_info in build_info['agents']:
+                data = coprocessor.CreateProducer(datadescription, agent_info['name'])
+                ProcessSimulationObject(agent_info, data, renderview)
             # extracellular substances
             for substance_info in build_info['extracellular_substances']:
                 producer = coprocessor.CreateProducer(datadescription, substance_info['name'])

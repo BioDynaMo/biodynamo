@@ -44,37 +44,37 @@ BDM_REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 BDM_REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCl);
 #endif
 
-struct UpdateRunDisplacementOp : public SimObjectOperationImpl {
+struct UpdateRunDisplacementOp : public AgentOperationImpl {
   BDM_OP_HEADER(UpdateRunDisplacementOp);
 
-  void operator()(SimObject* so) override { so->UpdateRunDisplacement(); }
+  void operator()(Agent* agent) override { agent->UpdateRunDisplacement(); }
 };
 
 BDM_REGISTER_OP(UpdateRunDisplacementOp, "update run displacement", kCpu);
 
-struct DistributeRunDisplacementInfoOp : public SimObjectOperationImpl {
+struct DistributeRunDisplacementInfoOp : public AgentOperationImpl {
   BDM_OP_HEADER(DistributeRunDisplacementInfoOp);
 
-  void operator()(SimObject* so) override {
-    so->DistributeRunDisplacementInfo();
+  void operator()(Agent* agent) override {
+    agent->DistributeRunDisplacementInfo();
   }
 };
 
 BDM_REGISTER_OP(DistributeRunDisplacementInfoOp,
                 "distribute run displacement info", kCpu);
 
-struct BiologyModuleOp : public SimObjectOperationImpl {
-  BDM_OP_HEADER(BiologyModuleOp);
+struct BehaviorOp : public AgentOperationImpl {
+  BDM_OP_HEADER(BehaviorOp);
 
-  void operator()(SimObject* so) override { so->RunBiologyModules(); }
+  void operator()(Agent* agent) override { agent->RunBehaviors(); }
 };
 
-BDM_REGISTER_OP(BiologyModuleOp, "biology module", kCpu);
+BDM_REGISTER_OP(BehaviorOp, "behavior", kCpu);
 
-struct DiscretizationOp : public SimObjectOperationImpl {
+struct DiscretizationOp : public AgentOperationImpl {
   BDM_OP_HEADER(DiscretizationOp);
 
-  void operator()(SimObject* so) override { so->RunDiscretization(); }
+  void operator()(Agent* agent) override { agent->RunDiscretization(); }
 };
 
 BDM_REGISTER_OP(DiscretizationOp, "discretization", kCpu);

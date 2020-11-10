@@ -74,10 +74,10 @@ class GpuHelper {
       Log::Info("", "  [", i, "] ", prop.name);
     }
 
-    cudaSetDevice(param->preferred_gpu_);
+    cudaSetDevice(param->preferred_gpu);
     cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, param->preferred_gpu_);
-    Log::Info("", "Selected GPU [", param->preferred_gpu_, "]: ", prop.name);
+    cudaGetDeviceProperties(&prop, param->preferred_gpu);
+    Log::Info("", "Selected GPU [", param->preferred_gpu, "]: ", prop.name);
   }
 #endif  // USE_CUDA
 
@@ -114,7 +114,7 @@ class GpuHelper {
     Log::Info("", "Compiling OpenCL kernels...");
 
     std::string options;
-    if (param->opencl_debug_) {
+    if (param->opencl_debug) {
       Log::Info("", "Building OpenCL kernels with debugging symbols");
       options = "-g -O0";
     } else {
@@ -199,7 +199,7 @@ class GpuHelper {
         Log::Info("", "  [", i, "] ", (*devices)[i].getInfo<CL_DEVICE_NAME>());
       }
 
-      int selected_gpu = param->preferred_gpu_;
+      int selected_gpu = param->preferred_gpu;
       Log::Info("", "Selected GPU [", selected_gpu,
                 "]: ", (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
 
@@ -221,7 +221,7 @@ class GpuHelper {
   void InitializeGPUEnvironment() {
 #if (defined(USE_CUDA) || defined(USE_OPENCL)) && !defined(__ROOTCLING__)
     auto* param = Simulation::GetActive()->GetParam();
-    if (param->compute_target_ == "opencl") {
+    if (param->compute_target == "opencl") {
 #ifdef USE_OPENCL
       FindGpuDevicesOpenCL();
 #else

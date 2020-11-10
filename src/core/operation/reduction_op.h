@@ -18,10 +18,10 @@
 #include <array>
 #include <vector>
 
+#include "core/agent/agent.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
-#include "core/sim_object/sim_object.h"
 #include "core/util/thread_info.h"
 
 #define BDM_CACHE_LINE_SIZE 64
@@ -37,27 +37,18 @@ using ThreadLocalResults =
 /// implement a reduction operation (e.g. counting, averaging, finding minimum
 /// and maximum values, etc.)
 template <typename T>
-struct ReductionOp : public SimObjectOperationImpl {
+class ReductionOp : public AgentOperationImpl {
   BDM_OP_HEADER(ReductionOp);
+
+ public:
   ReductionOp() {
     tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
   }
 
   ~ReductionOp() {
-    delete so_functor_;
+    delete agent_functor_;
     delete reduce_functor_;
   }
-
-  // One element per timestep
-  std::vector<T> results_;
-  // The thread-local (partial) results
-  ThreadLocalResults<T> tl_results_;
-
-  // The functor containing the logic on what to execute for each sim object
-  Functor<void, SimObject*, T*>* so_functor_ = nullptr;
-  // The functor containing the logic on how to reduce the partial results into
-  // a single result value of type T
-  Functor<T, const ThreadLocalResults<T>&>* reduce_functor_ = nullptr;
 
   void SetUp() override {
     for (auto& arr : tl_results_) {
@@ -65,23 +56,37 @@ struct ReductionOp : public SimObjectOperationImpl {
     }
   }
 
-  void Initialize(Functor<void, SimObject*, T*>* so_functor,
+  void Initialize(Functor<void, Agent*, T*>* agent_functor,
                   Functor<T, const ThreadLocalResults<T>&>* reduce_functor) {
-    so_functor_ = so_functor;
+    agent_functor_ = agent_functor;
     reduce_functor_ = reduce_functor;
   }
 
-  // This operator will be called for each simulation object in a parallel loop
-  void operator()(SimObject* so) override {
+  // This operator will be called for each agent in a parallel loop
+  void operator()(Agent* agent) override {
     auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
-    (*so_functor_)(so, &(tl_results_[tid][0]));
+    (*agent_functor_)(agent, &(tl_results_[tid][0]));
   }
+
+  const std::vector<T>& GetResults() const { return results_; }
 
   // At the end of each timestep we collect the partial result of each thread
   // and reduce it to one single value
   void TearDown() override {
     results_.push_back((*reduce_functor_)(tl_results_));
   }
+
+ private:
+  // One element per timestep
+  std::vector<T> results_;
+  // The thread-local (partial) results
+  ThreadLocalResults<T> tl_results_;
+
+  // The functor containing the logic on what to execute for each agent
+  Functor<void, Agent*, T*>* agent_functor_ = nullptr;
+  // The functor containing the logic on how to reduce the partial results into
+  // a single result value of type T
+  Functor<T, const ThreadLocalResults<T>&>* reduce_functor_ = nullptr;
 };
 
 template <typename T>

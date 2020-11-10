@@ -63,7 +63,7 @@ auto* rm = simulation.GetResourceManager();
 auto* dgrid = rm->GetDiffusionGrid(kKalium);
 ```
 
-Next, we have to create an initial set of simulation objects and set their
+Next, we have to create an initial set of agents and set their
 attributes:
 
 ```cpp
@@ -73,9 +73,9 @@ attributes:
     cell->SetMass(1.0);
     Double3 secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell->AddBiologyModule(new Secretion(dgrid, 4));
+      cell->AddBehavior(new Secretion(dgrid, 4));
     } else {
-      cell->AddBiologyModule(new Chemotaxis(dgrid, 0.5));
+      cell->AddBehavior(new Chemotaxis(dgrid, 0.5));
     }
     return cell;
   };
@@ -97,9 +97,9 @@ The `construct` lambda defines the properties of each cell that we create. These
 physical properties (diameter, mass), but also biological properties and behaviors
 (chemotaxis, substance secretion)
 
-This example uses the predefined biology modules `Chemotaxis` and `Secretion` that
-will govern the behavior of the simulation objects (i.e. cells).
-These two modules are included in the BioDynaMo installation.
+This example uses the predefined behaviors `Chemotaxis` and `Secretion` that
+will govern the behavior of the agents (i.e. cells).
+These two behaviors are included in the BioDynaMo installation.
 
 One of the cells (the cell at position `{50, 50, 50}`) will be the one secreting the substance;
 it therefore gets assigned the `Secretion` behavior.
@@ -121,7 +121,7 @@ into it:
 export = true
 interval = 10
 
-	[[visualize_sim_object]]
+	[[visualize_agent]]
 	name = "Cell"
 	additional_data_members = [ "diameter_" ]
 
@@ -133,7 +133,7 @@ interval = 10
 
 This will enable exporting visualization files, so that we can visualize the
 simulation after it has finished. Furthermore, we enable the output of the diameter
-of our simulation objects (by default named "Cell"), and the gradient data of the
+of our agents (by default named "Cell"), and the gradient data of the
 extracellular diffusion
 
 ### Build and run the simulation
@@ -176,7 +176,7 @@ distance between the grid points, you can determine this value by dividing the
 longest dimension of your space by the resolution, or by calling the corresponding
 function `DiffusionGrid::GetBoxLength()`.
 
-For more information on the inner workings of the diffusion module, please
+For more information on the inner workings of the diffusion behavior, please
 refer to: https://repository.tudelft.nl/islandora/object/uuid%3A2fa2203b-ca26-4aa2-9861-1a4352391e09?collection=education
 
 ### Runge-Kutta method:
@@ -225,14 +225,14 @@ To access the Runge-Kutta method for diffusion, one simply needs to update the b
 ```
 
 [simulation]
-diffusion_type_ = "RK"
+diffusion_type = "RK"
 
 [visualization]
 export = true
 interval = 10
 diffusion_type = "RK"
 
-	[[visualize_sim_object]]
+	[[visualize_agent]]
 	name = "Cell"
 	additional_data_members = [ "diameter_" ]
 

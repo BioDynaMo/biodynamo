@@ -19,8 +19,8 @@
 // according to the extracellular gradient; in this case to the middle.
 //
 
-#ifndef DEMO_DIFFUSION_MODULE_H_
-#define DEMO_DIFFUSION_MODULE_H_
+#ifndef DEMO_DIFFUSION_H_
+#define DEMO_DIFFUSION_H_
 
 #include "biodynamo.h"
 
@@ -44,9 +44,9 @@ inline int Simulate(int argc, const char** argv) {
     cell->SetMass(1.0);
     Double3 secretion_position = {{50, 50, 50}};
     if (position == secretion_position) {
-      cell->AddBiologyModule(new Secretion(dgrid, 4));
+      cell->AddBehavior(new Secretion(dgrid, 4));
     } else {
-      cell->AddBiologyModule(new Chemotaxis(dgrid, 0.5));
+      cell->AddBehavior(new Chemotaxis(dgrid, 0.5));
     }
     return cell;
   };
@@ -71,4 +71,4 @@ inline int Simulate(int argc, const char** argv) {
 
 }  // namespace bdm
 
-#endif  // DEMO_DIFFUSION_MODULE_H_
+#endif  // DEMO_DIFFUSION_H_

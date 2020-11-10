@@ -15,7 +15,7 @@
 #include "core/util/type.h"
 #include <string>
 #include <typeinfo>
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 #include "gtest/gtest.h"
 
 namespace bdm {
