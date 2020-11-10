@@ -175,8 +175,7 @@ struct ModelInitializer {
   }
 
   template <typename F>
-  static void InitializeSubstance(size_t substance_id,
-                                  std::string substance_name, F function) {
+  static void InitializeSubstance(size_t substance_id, F function) {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
