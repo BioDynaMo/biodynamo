@@ -73,7 +73,6 @@ namespace bdm {
 
 // -----------------------------------------------------------------------------
 
-struct Event;
 class Behavior;
 
 /// Contains code required by all agents
