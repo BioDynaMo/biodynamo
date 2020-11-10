@@ -25,8 +25,8 @@ struct TestBehavior : public Behavior {
 
   void Run(Agent* agent) override {}
 
-  Behavior* New() const { return new TestBehavior(); }
-  Behavior* NewCopy() const { return new TestBehavior(*this); }
+  Behavior* New() const override { return new TestBehavior(); }
+  Behavior* NewCopy() const override { return new TestBehavior(*this); }
 };
 
 TEST(BehaviorTest, CopyNever) {
