@@ -108,7 +108,7 @@ TEST(CellTest, Divide) {
   cell.capture_input_parameters_ = true;
   cell.Divide();
 
-  EXPECT_NEAR(cell.captured_volume_ratio_, 1.0, 0.1);             // (0.9 - 1.1)
+  EXPECT_NEAR(cell.captured_volume_ratio, 1.0, 0.1);              // (0.9 - 1.1)
   EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);        // (0 - 2 PI)
   EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2);  // (0 - PI)
 }
@@ -124,7 +124,7 @@ TEST(CellTest, DivideVolumeRatio) {
   cell.Divide(0.59);
 
   const double kEpsilon = abs_error<double>::value;
-  EXPECT_NEAR(cell.captured_volume_ratio_, 0.59, kEpsilon);
+  EXPECT_NEAR(cell.captured_volume_ratio, 0.59, kEpsilon);
   EXPECT_NEAR(cell.captured_theta_, Math::kPi, Math::kPi);        // (0 - 2 PI)
   EXPECT_NEAR(cell.captured_phi_, Math::kPi / 2, Math::kPi / 2);  // (0 - PI)
 }
@@ -142,7 +142,7 @@ TEST(CellTest, DivideAxis) {
   cell.Divide({9, 8, 7});
 
   const double kEpsilon = abs_error<double>::value;
-  EXPECT_NEAR(cell.captured_volume_ratio_, 1.0, 0.1);  // (0.9 - 1.1)
+  EXPECT_NEAR(cell.captured_volume_ratio, 1.0, 0.1);  // (0.9 - 1.1)
   EXPECT_NEAR(cell.captured_phi_, 1.0442265974045177, kEpsilon);
   EXPECT_NEAR(cell.captured_theta_, 0.72664234068172562, kEpsilon);
 }
@@ -160,7 +160,7 @@ TEST(CellTest, DivideVolumeRatioAxis) {
   cell.Divide(0.456, {9, 8, 7});
 
   const double kEpsilon = abs_error<double>::value;
-  EXPECT_NEAR(cell.captured_volume_ratio_, 0.456, kEpsilon);
+  EXPECT_NEAR(cell.captured_volume_ratio, 0.456, kEpsilon);
   EXPECT_NEAR(cell.captured_phi_, 1.0442265974045177, kEpsilon);
   EXPECT_NEAR(cell.captured_theta_, 0.72664234068172562, kEpsilon);
 }

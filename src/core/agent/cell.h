@@ -80,9 +80,9 @@ class Cell : public Agent {
       double radius = mother_cell->GetDiameter() * 0.5;
 
       // define an axis for division (along which the nuclei will move)
-      double x_coord = std::cos(cdevent.theta_) * std::sin(cdevent.phi_);
-      double y_coord = std::sin(cdevent.theta_) * std::sin(cdevent.phi_);
-      double z_coord = std::cos(cdevent.phi_);
+      double x_coord = std::cos(cdevent.theta) * std::sin(cdevent.phi);
+      double y_coord = std::sin(cdevent.theta) * std::sin(cdevent.phi);
+      double z_coord = std::cos(cdevent.phi);
       Double3 coords = {x_coord, y_coord, z_coord};
       double total_length_of_displacement = radius / 4.0;
 
@@ -99,11 +99,11 @@ class Cell : public Agent {
       //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
       //  proportionally to its volume)
       //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
-      double d_2 = total_length_of_displacement / (cdevent.volume_ratio_ + 1);
+      double d_2 = total_length_of_displacement / (cdevent.volume_ratio + 1);
       double d_1 = total_length_of_displacement - d_2;
 
       double mother_volume = mother_cell->GetVolume();
-      double new_volume = mother_volume / (cdevent.volume_ratio_ + 1);
+      double new_volume = mother_volume / (cdevent.volume_ratio + 1);
       daughter->SetVolume(mother_volume - new_volume);
 
       // position
@@ -128,7 +128,7 @@ class Cell : public Agent {
 
   /// \brief Divide this cell.
   ///
-  /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
+  /// CellDivisionEvent::volume_ratio will be between 0.9 and 1.1\n
   /// The axis of division is random.
   /// \see CellDivisionEvent
   virtual Cell* Divide() {
@@ -151,7 +151,7 @@ class Cell : public Agent {
 
   /// \brief Divide this cell.
   ///
-  /// CellDivisionEvent::volume_ratio_ will be between 0.9 and 1.1\n
+  /// CellDivisionEvent::volume_ratio will be between 0.9 and 1.1\n
   /// \see CellDivisionEvent
   virtual Cell* Divide(const Double3& axis) {
     auto* random = Simulation::GetActive()->GetRandom();

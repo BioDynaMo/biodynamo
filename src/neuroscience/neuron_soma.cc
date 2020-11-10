@@ -51,8 +51,8 @@ void NeuronSoma::Update(const NewAgentEvent& event) {
     const auto& ne_event = static_cast<const NewNeuriteExtensionEvent&>(event);
     auto* neurite = bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
 
-    double theta = ne_event.theta_;
-    double phi = ne_event.phi_;
+    double theta = ne_event.theta;
+    double phi = ne_event.phi;
     double x_coord = std::sin(theta) * std::cos(phi);
     double y_coord = std::sin(theta) * std::sin(phi);
     double z_coord = std::cos(theta);

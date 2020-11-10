@@ -31,19 +31,19 @@ struct CellDivisionEvent : public NewAgentEvent {
   static const NewAgentEventUid kUid;
 
   CellDivisionEvent(double volume_ratio, double phi, double theta)
-      : volume_ratio_(volume_ratio), phi_(phi), theta_(theta) {}
+      : volume_ratio(volume_ratio), phi(phi), theta(theta) {}
 
   virtual ~CellDivisionEvent() {}
 
   NewAgentEventUid GetUid() const override { return kUid; }
 
-  /// volume_ratio_ the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives
+  /// volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives
   /// equal cells.
-  double volume_ratio_;
-  /// phi_ azimuthal angle (spherical coordinates)
-  double phi_;
-  /// theta_ polar angle (spherical coordinates)
-  double theta_;
+  double volume_ratio;
+  /// phi azimuthal angle (spherical coordinates)
+  double phi;
+  /// theta polar angle (spherical coordinates)
+  double theta;
 };
 
 }  // namespace bdm

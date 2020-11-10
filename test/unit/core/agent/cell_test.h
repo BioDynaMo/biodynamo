@@ -44,9 +44,9 @@ class TestCell : public Cell {
     if (event.GetUid() == CellDivisionEvent::kUid) {
       const auto& cdevent = static_cast<const CellDivisionEvent&>(event);
       auto* mother_cell = bdm_static_cast<TestCell*>(event.existing_agent);
-      mother_cell->captured_volume_ratio_ = cdevent.volume_ratio_;
-      mother_cell->captured_phi_ = cdevent.phi_;
-      mother_cell->captured_theta_ = cdevent.theta_;
+      mother_cell->captured_volume_ratio = cdevent.volume_ratio;
+      mother_cell->captured_phi_ = cdevent.phi;
+      mother_cell->captured_theta_ = cdevent.theta;
     }
   }
 
@@ -61,7 +61,7 @@ class TestCell : public Cell {
   }
 
   bool capture_input_parameters_ = false;
-  double captured_volume_ratio_ = 0.0;
+  double captured_volume_ratio = 0.0;
   double captured_phi_ = 0.0;
   double captured_theta_ = 0.0;
 

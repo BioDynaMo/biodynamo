@@ -56,7 +56,7 @@ This information is sufficient to initialize all attributes of the new daughter 
 if (event.GetUid() == CellDivisionEvent::kUid) {
   auto* mother = bdm_static_cast<Cell*>(event.existing_agent);
   const auto& cde = static_cast<const CellDivisionEvent&>(event);
-  volume_ = mother->GetVolume() * cde.volume_ratio_`)
+  volume_ = mother->GetVolume() * cde.volume_ratio`)
 }
 ```
 
