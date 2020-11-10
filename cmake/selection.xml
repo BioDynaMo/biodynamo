@@ -48,7 +48,9 @@
     <class name="bdm::Random" />
     <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<double, 4>" />
-    <class name="bdm::InlineVector<bdm::Behavior*, 2>" />
+    <class name="bdm::InlineVector<bdm::Agent*, 3>" noStreamer="true" />
+    <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
+    <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />
