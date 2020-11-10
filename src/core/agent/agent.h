@@ -36,6 +36,7 @@
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
 #include "core/event/event.h"
+#include "core/util/type.h"
 
 namespace bdm {
 
@@ -92,18 +93,18 @@ class Agent {
   /// Create a copy of this object.
   virtual Agent* NewCopy() const = 0;
 
-  virtual void Initialize(NewAgentEvent* event);
+  virtual void Initialize(const NewAgentEvent& event);
 
-  virtual void Update(NewAgentEvent* event);
+  virtual void Update(const NewAgentEvent& event);
 
   // TODO documentation
-  void NewAgents(NewAgentEvent* event, const std::initializer_list<Agent*>& prototypes) {
+  void NewAgents(const NewAgentEvent& event, const std::initializer_list<Agent*>& prototypes) {
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    event->existing_agent = this;
+    event.existing_agent = this;
     for (auto* p : prototypes) {
       auto* new_agent = p->New();
       new_agent->Initialize(event);
-      event->new_agents.push_back(new_agent);
+      event.new_agents.push_back(new_agent);
       ctxt->push_back(new_agent);
     }
     Update(event);
@@ -237,13 +238,13 @@ class Agent {
 
   /// @brief Function to copy behaviors from existing Agent to this one
   /// and to initialize them.
-  void InitializeBehaviors(NewAgentEvent* event);
+  void InitializeBehaviors(const NewAgentEvent& event);
 
   /// @brief Function to invoke the Update method of the behavior or remove
   ///                  it from `current`.
   /// Forwards the call to Update to each behavior of the existing
   /// agent and removes behaviors if they are flagged.
-  void UpdateBehaviors(NewAgentEvent* event);
+  void UpdateBehaviors(const NewAgentEvent& event);
 
   BDM_CLASS_DEF(Agent, 1)
 };

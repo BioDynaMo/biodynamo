@@ -30,12 +30,11 @@ NeuronSoma::~NeuronSoma() {}
 
 NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 
-void NeuronSoma::Initialize(NewAgentEvent* event) {
+void NeuronSoma::Initialize(const NewAgentEvent& event) {
   Base::Initialize(event);
 
-  auto* cdevent =  dynamic_cast<const CellDivisionEvent*>(event);
-  auto* mother = dynamic_cast<NeuronSoma*>(event->existing_agent);
-  if (cdevent && mother) {
+  if (event.GetUid() == CellDivisionEvent::kUid) {
+    auto* mother = bdm_static_cast<NeuronSoma*>(event.existing_agent);
     if (mother->daughters_.size() != 0) {
       Fatal("NeuronSoma",
             "Dividing a neuron soma with attached neurites is not supported "
@@ -45,14 +44,15 @@ void NeuronSoma::Initialize(NewAgentEvent* event) {
   }
 }
 
-void NeuronSoma::Update(NewAgentEvent* event) {
+void NeuronSoma::Update(const NewAgentEvent& event) {
   Base::Update(event);
 
-  auto* ne_event = dynamic_cast<const NewNeuriteExtensionEvent*>(event);
-  auto* neurite = dynamic_cast<NeuriteElement*>(event->new_agents[0]);
-  if (ne_event && neurite) {
-    double theta = ne_event->theta_;
-    double phi = ne_event->phi_;
+  if (event.GetUid() == NewNeuriteExtensionEvent::kUid) {
+    const auto& ne_event = static_cast<const NewNeuriteExtensionEvent&>(event);
+    auto* neurite = bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
+
+    double theta = ne_event.theta_;
+    double phi = ne_event.phi_;
     double x_coord = std::sin(theta) * std::cos(phi);
     double y_coord = std::sin(theta) * std::sin(phi);
     double z_coord = std::cos(theta);
@@ -81,7 +81,7 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
     prototype = &kDefaultNeurite;
   } 
   NewNeuriteExtensionEvent event(diameter, phi, theta);
-  NewAgents(&event, {prototype});
+  NewAgents(event, {prototype});
   return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
 }
 

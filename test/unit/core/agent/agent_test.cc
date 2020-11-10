@@ -92,8 +92,8 @@ TEST(AgentTest, BehaviorUpdate) {
   CellDivisionEvent event(1, 2, 3);
   event.existing_agent = &cell;
   TestAgent copy;
-  copy.Initialize(&event);
-  cell.Update(&event);
+  copy.Initialize(event);
+  cell.Update(event);
 
   const auto& behaviors = cell.GetAllBehaviors();
   ASSERT_EQ(1u, behaviors.size());

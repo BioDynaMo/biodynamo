@@ -32,9 +32,9 @@ struct Chemotaxis : public Behavior {
 
   virtual ~Chemotaxis() {}
 
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
-    auto* other = bdm_static_cast<Chemotaxis*>(event->existing_behavior);
+    auto* other = bdm_static_cast<Chemotaxis*>(event.existing_behavior);
     dgrid_ = other->dgrid_;
     speed_ = other->speed_;
   }

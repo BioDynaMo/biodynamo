@@ -33,10 +33,10 @@ struct Growth : public Behavior {
 
   virtual ~Growth() {}
 
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
 
-    auto* other = event->existing_behavior;
+    auto* other = event.existing_behavior;
     if (auto* g = dynamic_cast<Growth*>(other)) {
       growth_rate_ = g->growth_rate_;
     } else {
@@ -58,10 +58,10 @@ struct Movement : public Behavior {
   explicit Movement(const Double3& velocity)
         : velocity_(velocity) { RemoveFromExistingIf({CellDivisionEvent::kUid}); }
 
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
 
-    auto* other = event->existing_behavior;
+    auto* other = event.existing_behavior;
     if (auto* m = dynamic_cast<Movement*>(other)) {
       velocity_ = m->velocity_;
     } else {

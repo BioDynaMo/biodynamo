@@ -38,15 +38,15 @@ class TestCell : public Cell {
 
   virtual ~TestCell() {}
 
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
 
-    auto* cdevent =  dynamic_cast<CellDivisionEvent*>(event);
-    auto* mother_cell = dynamic_cast<TestCell*>(event->existing_agent);
-    if (cdevent && mother_cell && mother_cell->capture_input_parameters_) {
-      mother_cell->captured_volume_ratio_ = cdevent->volume_ratio_;
-      mother_cell->captured_phi_ = cdevent->phi_;
-      mother_cell->captured_theta_ = cdevent->theta_;
+    if (event.GetUid() == CellDivisionEvent::kUid) {
+      const auto& cdevent =  static_cast<const CellDivisionEvent&>(event);
+      auto* mother_cell = bdm_static_cast<TestCell*>(event.existing_agent);
+      mother_cell->captured_volume_ratio_ = cdevent.volume_ratio_;
+      mother_cell->captured_phi_ = cdevent.phi_;
+      mother_cell->captured_theta_ = cdevent.theta_;
     }
   }
 

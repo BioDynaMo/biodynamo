@@ -32,9 +32,9 @@ struct Secretion : public Behavior {
 
   virtual ~Secretion() {}
 
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
-    auto* other = bdm_static_cast<Secretion*>(event->existing_behavior);
+    auto* other = bdm_static_cast<Secretion*>(event.existing_behavior);
     dgrid_ = other->dgrid_;
     quantity_ = other->quantity_;
   }

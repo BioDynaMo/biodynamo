@@ -34,12 +34,12 @@ class MyCell : public Cell {  // our object extends the Cell object
   virtual ~MyCell() {}
 
   /// If MyCell divides, daughter 2 copies the data members from the mother
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
 
-    if (auto* mother = dynamic_cast<MyCell*>(event->existing_agent)) {
+    if (auto* mother = dynamic_cast<MyCell*>(event.existing_agent)) {
       cell_color_ = mother->cell_color_;
-      if (event->GetUid() == CellDivisionEvent::kUid) {
+      if (event.GetUid() == CellDivisionEvent::kUid) {
         // the daughter will be able to divide
         can_divide_ = true;
       } else {

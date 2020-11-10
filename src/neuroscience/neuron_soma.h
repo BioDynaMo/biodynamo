@@ -48,14 +48,14 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// somas with already attached neurite elements.
   ///
   /// \see CellDivisionEvent
-  void Initialize(NewAgentEvent* event) override;
+  void Initialize(const NewAgentEvent& event) override;
 
   /// \brief This method is used to update attributes after a cell division.
   /// or new neurite branching event. 
   ///
   /// Performs the transition mother to daughter 1
   /// \see Event, CellDivisionEvent
-  void Update(NewAgentEvent* event) override;
+  void Update(const NewAgentEvent& event) override;
 
   const AgentUid& GetUid() const override { return Base::GetUid(); }
 

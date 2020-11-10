@@ -35,16 +35,16 @@ struct GrowthDivision : public Behavior {
 
   virtual ~GrowthDivision() {}
 
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
 
-    auto* other = event->existing_behavior;
+    auto* other = event.existing_behavior;
     if (auto* gd = dynamic_cast<GrowthDivision*>(other)) {
       threshold_ = gd->threshold_;
       growth_rate_ = gd->growth_rate_;
     } else {
       Log::Fatal("GrowthDivision::Initialize",
-                 "event->existing_behavior was not of type GrowthDivision");
+                 "event.existing_behavior was not of type GrowthDivision");
     }
   }
 

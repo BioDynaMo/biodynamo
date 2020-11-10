@@ -62,13 +62,13 @@ Agent::~Agent() {
   }
 }
 
-void Agent::Initialize(NewAgentEvent* event) {
-  box_idx_ = event->existing_agent->GetBoxIdx();
+void Agent::Initialize(const NewAgentEvent& event) {
+  box_idx_ = event.existing_agent->GetBoxIdx();
   // copy behaviors_ to me
   InitializeBehaviors(event);
 }
 
-void Agent::Update(NewAgentEvent* event) {
+void Agent::Update(const NewAgentEvent& event) {
   // Run displacement if a new agent has been created with an event.
   SetRunDisplacementForAllNextTs();
   UpdateBehaviors(event);
@@ -152,18 +152,18 @@ void Agent::RemoveFromSimulation() const {
   Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(uid_);
 }
 
-void Agent::InitializeBehaviors(NewAgentEvent* event) {
-  const auto& existing_agent_behaviors = event->existing_agent->behaviors_; 
-  event->new_behaviors.clear();
+void Agent::InitializeBehaviors(const NewAgentEvent& event) {
+  const auto& existing_agent_behaviors = event.existing_agent->behaviors_; 
+  event.new_behaviors.clear();
   uint64_t cnt = 0;
   for (auto* behavior : existing_agent_behaviors) {
-    if (behavior->WillBeCopied(event->GetUid())) {
-      event->new_behaviors.clear();
+    if (behavior->WillBeCopied(event.GetUid())) {
+      event.new_behaviors.clear();
       // collect new behaviors from other new agents
-      for (auto* nagent : event->new_agents) {
-        event->new_behaviors.push_back(nagent->behaviors_[cnt]);
+      for (auto* nagent : event.new_agents) {
+        event.new_behaviors.push_back(nagent->behaviors_[cnt]);
       }
-      event->existing_behavior = behavior;
+      event.existing_behavior = behavior;
       auto* new_behavior = behavior->New();
       new_behavior->Initialize(event);
       behaviors_.push_back(new_behavior);
@@ -172,17 +172,17 @@ void Agent::InitializeBehaviors(NewAgentEvent* event) {
   }
 }
 
-void Agent::UpdateBehaviors(NewAgentEvent* event) {
+void Agent::UpdateBehaviors(const NewAgentEvent& event) {
   // call event handler for behaviors
   uint64_t cnt = 0;
   for (auto* behavior : behaviors_) {
-    bool copied = behavior->WillBeCopied(event->GetUid());
-    if (!behavior->WillBeRemoved(event->GetUid())) {
-      event->new_behaviors.clear();
+    bool copied = behavior->WillBeCopied(event.GetUid());
+    if (!behavior->WillBeRemoved(event.GetUid())) {
+      event.new_behaviors.clear();
       if (copied) {
-        for (auto* new_agent : event->new_agents) {
+        for (auto* new_agent : event.new_agents) {
           auto* new_behavior = new_agent->behaviors_[cnt]; 
-          event->new_behaviors.push_back(new_behavior);
+          event.new_behaviors.push_back(new_behavior);
         }
       }
       behavior->Update(event);
@@ -193,7 +193,7 @@ void Agent::UpdateBehaviors(NewAgentEvent* event) {
   // remove behaviors from current
   for (auto it = behaviors_.begin(); it != behaviors_.end();) {
     auto* behavior = *it;
-    if (behavior->WillBeRemoved(event->GetUid())) {
+    if (behavior->WillBeRemoved(event.GetUid())) {
       delete *it;
       it = behaviors_.erase(it);
     } else {

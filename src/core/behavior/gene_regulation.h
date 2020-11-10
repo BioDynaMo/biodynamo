@@ -40,10 +40,10 @@ struct GeneRegulation : public Behavior {
 
   virtual ~GeneRegulation() {}
 
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
 
-    auto* other = event->existing_behavior;
+    auto* other = event.existing_behavior;
     if (auto* gr = dynamic_cast<GeneRegulation*>(other)) {
       concentrations_ = gr->concentrations_;
       first_derivatives_ = gr->first_derivatives_;

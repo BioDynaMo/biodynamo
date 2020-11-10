@@ -36,12 +36,12 @@ struct Behavior {
   /// Create a new copy of this behavior.
   virtual Behavior* NewCopy() const = 0;
 
-  virtual void Initialize(NewAgentEvent* event) {
-    copy_mask_ = event->existing_behavior->copy_mask_;
-    remove_mask_ = event->existing_behavior->remove_mask_;
+  virtual void Initialize(const NewAgentEvent& event) {
+    copy_mask_ = event.existing_behavior->copy_mask_;
+    remove_mask_ = event.existing_behavior->remove_mask_;
   }
   
-  virtual void Update(NewAgentEvent* event) {}
+  virtual void Update(const NewAgentEvent& event) {}
 
   virtual void Run(Agent* agent) = 0;
 

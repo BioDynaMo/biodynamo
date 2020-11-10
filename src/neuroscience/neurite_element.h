@@ -71,19 +71,19 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   }
 
   /// TODO
-  void Initialize(NewAgentEvent* event) override {
+  void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
 
-    if (event->GetUid() == NewNeuriteExtensionEvent::kUid) {
-      auto& e = *bdm_static_cast<NewNeuriteExtensionEvent*>(event);
-      auto* soma = bdm_static_cast<NeuronSoma*>(event->existing_agent);
+    if (event.GetUid() == NewNeuriteExtensionEvent::kUid) {
+      const auto& e = static_cast<const NewNeuriteExtensionEvent&>(event);
+      auto* soma = bdm_static_cast<NeuronSoma*>(event.existing_agent);
       InitializeNewNeuriteExtension(soma, e.diameter_, e.phi_, e.theta_);
-    } else if (event->GetUid() == NeuriteBifurcationEvent::kUid) {
-      auto& e = *bdm_static_cast<NeuriteBifurcationEvent*>(event);
-      auto* ne = bdm_static_cast<NeuriteElement*>(event->existing_agent);
+    } else if (event.GetUid() == NeuriteBifurcationEvent::kUid) {
+      const auto& e = static_cast<const NeuriteBifurcationEvent&>(event);
+      auto* ne = bdm_static_cast<NeuriteElement*>(event.existing_agent);
       double diameter;
       Double3 direction;
-      if (event->new_agents.size() == 0) {
+      if (event.new_agents.size() == 0) {
         // left branch
         diameter = e.diameter_left_;
         direction = e.direction_left_;
@@ -93,42 +93,42 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
         direction = e.direction_right_;
       }
       InitializeNeuriteBifurcation(ne, e.length_, diameter, direction);
-    } else if (event->GetUid() == SideNeuriteExtensionEvent::kUid) {
-      auto& e = *bdm_static_cast<SideNeuriteExtensionEvent*>(event);
-      auto* ne = bdm_static_cast<NeuriteElement*>(event->existing_agent);
+    } else if (event.GetUid() == SideNeuriteExtensionEvent::kUid) {
+      const auto& e = static_cast<const SideNeuriteExtensionEvent&>(event);
+      auto* ne = bdm_static_cast<NeuriteElement*>(event.existing_agent);
       InitializeSideExtensionOrBranching(ne, e.length_, e.diameter_,
                                          e.direction_);
-    } else if (event->GetUid() == SplitNeuriteElementEvent::kUid) {
-      auto& e = *bdm_static_cast<SplitNeuriteElementEvent*>(event);
-      auto* ne = bdm_static_cast<NeuriteElement*>(event->existing_agent);
+    } else if (event.GetUid() == SplitNeuriteElementEvent::kUid) {
+      const auto& e = static_cast<const SplitNeuriteElementEvent&>(event);
+      auto* ne = bdm_static_cast<NeuriteElement*>(event.existing_agent);
       InitializeSplitOrBranching(ne, e.distal_portion_);
-    } else if (event->GetUid() == NeuriteBranchingEvent::kUid) {
-      auto& e = *bdm_static_cast<NeuriteBranchingEvent*>(event);
-      if (event->new_agents.size() == 0) {
-        auto* ne = bdm_static_cast<NeuriteElement*>(event->existing_agent);
+    } else if (event.GetUid() == NeuriteBranchingEvent::kUid) {
+      const auto& e = static_cast<const NeuriteBranchingEvent&>(event);
+      if (event.new_agents.size() == 0) {
+        auto* ne = bdm_static_cast<NeuriteElement*>(event.existing_agent);
         InitializeSplitOrBranching(ne, e.distal_portion_);
       } else {
         // new proximal neurite element
-        auto* ne = bdm_static_cast<NeuriteElement*>(event->new_agents[0]);
+        auto* ne = bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
         InitializeSideExtensionOrBranching(ne, e.length_, e.diameter_,
                                            e.direction_);
       }
     }
   }
 
-  void Update(NewAgentEvent* event) override {
+  void Update(const NewAgentEvent& event) override {
     Base::Update(event);
 
-    auto new_agent1 = event->new_agents[0];
-    auto new_agent2 = event->new_agents[1];
+    auto new_agent1 = event.new_agents[0];
+    auto new_agent2 = event.new_agents[1];
 
-    if (event->GetUid() == NeuriteBifurcationEvent::kUid) {
+    if (event.GetUid() == NeuriteBifurcationEvent::kUid) {
       SetDaughterLeft(new_agent1->GetAgentPtr<NeuriteElement>());
       SetDaughterRight(new_agent2->GetAgentPtr<NeuriteElement>());
-    } else if (event->GetUid() == SideNeuriteExtensionEvent::kUid) {
+    } else if (event.GetUid() == SideNeuriteExtensionEvent::kUid) {
       SetDaughterRight(new_agent2->GetAgentPtr<NeuriteElement>());
-    } else if (event->GetUid() == SplitNeuriteElementEvent::kUid) {
-      auto& e = *bdm_static_cast<SplitNeuriteElementEvent*>(event);
+    } else if (event.GetUid() == SplitNeuriteElementEvent::kUid) {
+      const auto& e = static_cast<const SplitNeuriteElementEvent&>(event);
       auto* proximal = bdm_static_cast<NeuriteElement*>(new_agent1);
       resting_length_ *= e.distal_portion_;
 
@@ -140,8 +140,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
       proximal->UpdateDependentPhysicalVariables();
       // UpdateLocalCoordinateAxis has to come after UpdateDepend...
       proximal->UpdateLocalCoordinateAxis();
-    } else if (event->GetUid() == NeuriteBranchingEvent::kUid) {
-      auto& e = *bdm_static_cast<NeuriteBranchingEvent*>(event);
+    } else if (event.GetUid() == NeuriteBranchingEvent::kUid) {
+      const auto& e = static_cast<const NeuriteBranchingEvent&>(event);
       auto* proximal = bdm_static_cast<NeuriteElement*>(new_agent1);
       auto* branch = bdm_static_cast<NeuriteElement*>(new_agent2);
 
@@ -329,7 +329,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     // we first split this neurite element into two pieces
     // then append a "daughter right" between the two
     NeuriteBranchingEvent event(0.5, length, new_branch_diameter, direction);
-    NewAgents(&event, {this, this});
+    NewAgents(event, {this, this});
     return bdm_static_cast<NeuriteElement*>(event.new_agents[1]); 
   }
 
@@ -391,7 +391,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
             "Bifurcation only allowed on a terminal neurite element");
     }
     NeuriteBifurcationEvent event(length, diameter_1, diameter_2, direction_1, direction_2);
-    NewAgents(&event, {this, this});
+    NewAgents(event, {this, this});
     auto* new_branch_l = bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
     auto* new_branch_r = bdm_static_cast<NeuriteElement*>(event.new_agents[1]);
     return {new_branch_l, new_branch_r};
@@ -1168,7 +1168,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \see SplitNeuriteElementEvent
   NeuriteElement* SplitNeuriteElement(double distal_portion = 0.5) {
     SplitNeuriteElementEvent event(distal_portion);
-    NewAgents(&event, {this});
+    NewAgents(event, {this});
     return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
   }
 
@@ -1219,7 +1219,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     }
 
     SideNeuriteExtensionEvent event{length, diameter, direction};
-    NewAgents(&event, {this});
+    NewAgents(event, {this});
     return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
 
   }
