@@ -150,8 +150,8 @@ class DiffusionGrid {
             box_coord[1] = y;
             box_coord[2] = z;
             size_t idx = GetBoxIndex(box_coord);
-            IncreaseConcentrationBy(idx,
-                                    initializers_[f](real_x, real_y, real_z));
+            ChangeConcentrationBy(idx,
+                                  initializers_[f](real_x, real_y, real_z));
           }
         }
       }
@@ -846,13 +846,13 @@ class DiffusionGrid {
   }
 
   /// Increase the concentration at specified position with specified amount
-  virtual void IncreaseConcentrationBy(const Double3& position, double amount) {
+  virtual void ChangeConcentrationBy(const Double3& position, double amount) {
     auto idx = GetBoxIndex(position);
-    IncreaseConcentrationBy(idx, amount);
+    ChangeConcentrationBy(idx, amount);
   }
 
   /// Increase the concentration at specified box with specified amount
-  void IncreaseConcentrationBy(size_t idx, double amount) {
+  void ChangeConcentrationBy(size_t idx, double amount) {
     assert(idx < total_num_boxes_ &&
            "Cell position is out of diffusion grid bounds");
     c1_[idx] += amount;

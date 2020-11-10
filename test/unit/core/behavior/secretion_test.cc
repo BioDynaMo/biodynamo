@@ -21,8 +21,7 @@ namespace bdm {
 struct TestDiffusionGrid : public DiffusionGrid {
   TestDiffusionGrid() : DiffusionGrid(0, "TestSubstance", 1, 1) {}
 
-  void IncreaseConcentrationBy(const Double3& position,
-                               double amount) override {
+  void ChangeConcentrationBy(const Double3& position, double amount) override {
     EXPECT_ARR_NEAR({10, 11, 12}, position);
     EXPECT_NEAR(3.14, amount, abs_error<double>::value);
     called = true;

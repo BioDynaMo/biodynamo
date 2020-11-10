@@ -40,7 +40,7 @@ struct Secretion : public Behavior {
 
   void Run(Agent* agent) override {
     auto& secretion_position = agent->GetPosition();
-    dgrid_->IncreaseConcentrationBy(secretion_position, quantity_);
+    dgrid_->ChangeConcentrationBy(secretion_position, quantity_);
   }
 
  private:

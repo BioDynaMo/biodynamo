@@ -163,7 +163,7 @@ TEST(DiffusionTest, LeakingEdge) {
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
-    d_grid->IncreaseConcentrationBy({{0, 0, 0}}, 4);
+    d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
     d_grid->DiffuseWithLeakingEdge();
     d_grid->CalculateGradient();
   }
@@ -227,7 +227,7 @@ TEST(DiffusionTest, ClosedEdge) {
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
-    d_grid->IncreaseConcentrationBy({{0, 0, 0}}, 4);
+    d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
     d_grid->DiffuseWithClosedEdge();
     d_grid->CalculateGradient();
   }
@@ -291,7 +291,7 @@ TEST(DiffusionTest, CopyOldData) {
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
-    d_grid->IncreaseConcentrationBy({{0, 0, 0}}, 4);
+    d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
     d_grid->DiffuseWithLeakingEdge();
     d_grid->CalculateGradient();
   }
@@ -454,12 +454,12 @@ TEST(DiffusionTest, EulerConvergence) {
   // instantaneous point source
   int init = 1e5;
   Double3 source = {{0, 0, 0}};
-  d_grid2->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid2->GetBoxLength(), 3));
-  d_grid4->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid4->GetBoxLength(), 3));
-  d_grid8->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid8->GetBoxLength(), 3));
+  d_grid2->ChangeConcentrationBy(source,
+                                 init / pow(d_grid2->GetBoxLength(), 3));
+  d_grid4->ChangeConcentrationBy(source,
+                                 init / pow(d_grid4->GetBoxLength(), 3));
+  d_grid8->ChangeConcentrationBy(source,
+                                 init / pow(d_grid8->GetBoxLength(), 3));
 
   auto conc2 = d_grid2->GetAllConcentrations();
   auto conc4 = d_grid4->GetAllConcentrations();
@@ -528,12 +528,12 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   // instantaneous point source
   int init = 1e5;
   Double3 source = {{0, 0, 0}};
-  d_grid2->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid2->GetBoxLength(), 3));
-  d_grid4->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid4->GetBoxLength(), 3));
-  d_grid8->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid8->GetBoxLength(), 3));
+  d_grid2->ChangeConcentrationBy(source,
+                                 init / pow(d_grid2->GetBoxLength(), 3));
+  d_grid4->ChangeConcentrationBy(source,
+                                 init / pow(d_grid4->GetBoxLength(), 3));
+  d_grid8->ChangeConcentrationBy(source,
+                                 init / pow(d_grid8->GetBoxLength(), 3));
 
   auto conc2 = d_grid2->GetAllConcentrations();
   auto conc4 = d_grid4->GetAllConcentrations();
