@@ -1229,12 +1229,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   void InitializeNewNeuriteExtension(NeuronSoma* soma, double diameter,
                                      double phi, double theta) {
     auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
-    tension_ = param->neurite_default_tension;
-    SetDiameter(param->neurite_default_diameter);
-    SetActualLength(param->neurite_default_actual_length);
-    density_ = param->neurite_default_density;
-    spring_constant_ = param->neurite_default_spring_constant;
-    adherence_ = param->neurite_default_adherence;
 
     double radius = 0.5 * soma->GetDiameter();
     double new_length = param->neurite_default_actual_length;
@@ -1275,12 +1269,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   void InitializeNeuriteBifurcation(NeuriteElement* mother, double length,
                                     double diameter, const Double3& direction) {
     auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
-    tension_ = param->neurite_default_tension;
-    SetDiameter(param->neurite_default_diameter);
-    SetActualLength(param->neurite_default_actual_length);
-    density_ = param->neurite_default_density;
-    spring_constant_ = param->neurite_default_spring_constant;
-    adherence_ = param->neurite_default_adherence;
 
     Copy(*mother);
     SetMother(mother->GetAgentPtr<NeuronOrNeurite>());
@@ -1323,14 +1311,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \see SplitNeuriteElementEvent, NeuriteBranchingEvent
   void InitializeSplitOrBranching(NeuriteElement* other,
                                   double distal_portion) {
-    auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
-    tension_ = param->neurite_default_tension;
-    SetDiameter(param->neurite_default_diameter);
-    SetActualLength(param->neurite_default_actual_length);
-    density_ = param->neurite_default_density;
-    spring_constant_ = param->neurite_default_spring_constant;
-    adherence_ = param->neurite_default_adherence;
-
     const auto& other_ml = other->GetMassLocation();
     const auto& other_sa = other->GetSpringAxis();
     const auto& other_rl = other->GetRestingLength();
@@ -1357,12 +1337,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
                                           double diameter,
                                           const Double3& direction) {
     auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
-    tension_ = param->neurite_default_tension;
-    SetDiameter(param->neurite_default_diameter);
-    SetActualLength(param->neurite_default_actual_length);
-    density_ = param->neurite_default_density;
-    spring_constant_ = param->neurite_default_spring_constant;
-    adherence_ = param->neurite_default_adherence;
 
     Copy(*mother);
 
