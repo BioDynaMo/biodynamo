@@ -516,8 +516,6 @@ class DiffusionGrid {
   ParallelResizeVector<double> c2_ = {};
   /// Buffers for Runge Kutta
   ParallelResizeVector<double> r1_ = {};
-  /// k array for runge-kutta.
-  std::array<double, 2> k_ = {};
   /// The array of gradients (x, y, z)
   ParallelResizeVector<double> gradients_ = {};
   /// The maximum concentration value that a box can have
@@ -978,6 +976,8 @@ public :
 
 private:
  std::string boundary_type_ = "";
+ /// k array for runge-kutta.
+ std::array<double, 2> k_ = {};
 };
 
 }  // namespace bdm
