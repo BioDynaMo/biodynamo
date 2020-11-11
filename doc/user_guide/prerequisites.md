@@ -24,7 +24,7 @@ keywords:
 This page lists the prerequisite packages that need to be installed in order to build correctly BioDynaMo.
 BioDynaMo provides also an automated procedure to install all the needed libraries.
 
-## Ubuntu 16.04, 18.04 and 20.04
+## Ubuntu 18.04 and 20.04
 
 ### Required Packages
 
