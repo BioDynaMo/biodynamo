@@ -18,6 +18,33 @@ keywords:
   -track
   -tracking
 ---
+## 11.11.2020 [`PR-#138`](https://github.com/BioDynaMo/biodynamo/pull/138)
+
+With regard to the upcoming v1.0 release, we decided to improve
+the API by integrating user feedback and eliminating inconsistencies
+that have accumulated over time.
+
+This commit helps us to minimize backwards compatibility
+breaking changes in the future.
+
+The major changes are:
+
+    Renaming BaseBiologyModule to Behavior
+    Renaming SimObject to Agent
+    Refactoring the Event mechanism and renaming it to NewAgentEvent
+
+A more detailed list of changes can be found here:
+https://docs.google.com/spreadsheets/d/1peXSsBIhfLDGU3_FYjPkO3qI2zk-1nwScYBOftT12fY/edit#gid=0
+
+## 08.10.2020 [`PR-#110`](https://github.com/BioDynaMo/biodynamo/pull/110)
+
+Complete rewrite of ParaView visualization adaptor.
+
+The most relevant changes from the user perspective are 
+[parameters](https://github.com/BioDynaMo/biodynamo/pull/107/files#diff-061da8cfe54f4853a3b09590e0b31230a813a58b294980734ed2f140440caded)
+and the structure of 
+[paraview python scripts](https://github.com/BioDynaMo/biodynamo/pull/107/files#diff-ec3f83ebb71f407fb7461542fe4d7d20f48c5acefbc508f2e23c364f9df69030)
+
 ## 04.09.2020 [`PR-#110`](https://github.com/BioDynaMo/biodynamo/pull/110)
 
 Rewrite of operations and operation management.
@@ -224,13 +251,13 @@ event.
 
 | Old                             | New                                                                                                                            |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `gAllBmEvents`                  | `gAllNewAgentEventIds`                                                                                                                 |
-| `gNullEvent`                    | `gNullNewAgentEventId`                                                                                                                 |
-| `gCellDivision`                 | `CellDivisionEvent::kNewAgentEventId`                                                                                                  |
-| `gNeuriteElongation`            | `SplitNeuriteElementEvent::kNewAgentEventId`                                                                                           |
-| `gNeuriteBranching`             | `NeuriteBranchingEvent::kNewAgentEventId`                                                                                              |
-| `gNeuriteBifurcation`           | `NeuriteBifurcationEvent::kNewAgentEventId`                                                                                            |
-| `gNeuriteSideCylinderExtension` | `SideNeuriteExtensionEvent::kNewAgentEventId`                                                                                          |
+| `gAllBmEvents`                  | `gAllEventIds`                                                                                                                 |
+| `gNullEvent`                    | `gNullEventId`                                                                                                                 |
+| `gCellDivision`                 | `CellDivisionEvent::kEventId`                                                                                                  |
+| `gNeuriteElongation`            | `SplitNeuriteElementEvent::kEventId`                                                                                           |
+| `gNeuriteBranching`             | `NeuriteBranchingEvent::kEventId`                                                                                              |
+| `gNeuriteBifurcation`           | `NeuriteBifurcationEvent::kEventId`                                                                                            |
+| `gNeuriteSideCylinderExtension` | `SideNeuriteExtensionEvent::kEventId`                                                                                          |
 |                                 | Simulation objects and biology modules must have an event constructor and event handler function in order to support an event. |
 
 ## 16.07.2018 [`3bac827`](https://github.com/BioDynaMo/biodynamo/commit/3bac827b53b5f9f1066867f89bb47e9f69f90b0a)
