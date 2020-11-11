@@ -110,7 +110,7 @@ jobs:
           -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
-        cmake --build build --parallel --config Release
+        cmake --build build --config Release
 
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
     # runners, while waiting for other targets to be compiled
@@ -120,7 +120,7 @@ jobs:
         cmake \
           -Dnotebooks=ON \
           -B build
-        cmake --build build --parallel --config Release --target notebooks
+        cmake --build build --config Release --target notebooks
 
     - name: Run system tests
       shell: bash
