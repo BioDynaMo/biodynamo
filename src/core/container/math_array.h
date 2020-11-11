@@ -34,7 +34,12 @@ template <class T, std::size_t N>
 class MathArray {  // NOLINT
  public:
   /// Default constructor
-  constexpr MathArray() {}
+  MathArray() {
+#pragma omp simd
+    for (size_t i = 0; i < N; i++) {
+      data_[i] = T();
+    }
+  }
 
   /// Constructor which accepts an std::initiliazer_list to set
   /// the array's content.
