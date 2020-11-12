@@ -52,6 +52,8 @@ struct DiffusionOp : public StandaloneOperationImpl {
         dg->Update(env->GetDimensionThresholds());
       }
 
+      dg->Diffuse();
+
       if (param->calculate_gradients_) {
         dg->CalculateGradient();
       }
