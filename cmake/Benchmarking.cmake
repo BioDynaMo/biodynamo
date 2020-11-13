@@ -41,7 +41,7 @@ include_directories("${CMAKE_SOURCE_DIR}/test/benchmark/")
 
 set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
 add_custom_target(run-benchmarks
-                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_format=json --benchmark_out=benchmark/results.json
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_repetitions=1 --benchmark_format=json --benchmark_out=benchmark/results.json
 #                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/../test/benchmark/gen_benchmark_plots.py benchmark/results.json
                   COMMAND ${LAUNCHER} ${CMAKE_BINARY_DIR}/version.sh
                   )
@@ -53,6 +53,7 @@ file(GLOB_RECURSE DEMO_HEADERS ${CMAKE_SOURCE_DIR}/demo/soma_clustering/*.h
 include_directories("${CMAKE_SOURCE_DIR}/demo/tumor_concept/src")
 include_directories("${CMAKE_SOURCE_DIR}/demo/soma_clustering/src")
 include_directories("${CMAKE_SOURCE_DIR}/build/benchmark/src/gbench/include/benchmark")
+include_directories("${CMAKE_SOURCE_DIR}/build/benchmark/src/gbench/src")
 bdm_add_executable(biodynamo-benchmark
                    HEADERS ${DEMO_HEADERS} ${BENCH_HEADERS}
                    SOURCES ${BENCH_SOURCES}

@@ -131,7 +131,7 @@ def main():
     cpu = [0]*j
     name_demo = [0]*j
     # Add a value to a json file
-    write_memory(j)
+    #write_memory(j)
     # There we will take the value of memory and we'll store that in a vector
     # We suppose its already donne
     GetMemoryUsage = [10]*j
