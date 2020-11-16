@@ -20,12 +20,12 @@
 #include "core/environment/environment.h"
 #include "core/functor.h"
 #include "core/gpu/gpu_helper.h"
-#include "core/operation/displacement_op.h"
+#include "core/operation/mechanical_forces_op.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace displacement_op_gpu_test_internal {
+namespace mechanical_forces_op_gpu_test_internal {
 
 // NB: The GPU execution 'context' for the displacement operation differes,
 // from the CPU version. Once the CPU version supports the same execution
@@ -33,9 +33,9 @@ namespace displacement_op_gpu_test_internal {
 
 static constexpr double kEps = 10 * abs_error<double>::value;
 
-class DisplacementOpCpuVerify {
+class MechanicalForcesOpCpuVerify {
  public:
-  struct CalculateDisplacement;
+  struct CalculateMechanicalForces;
   struct UpdateCells;
 
   void operator()() {
@@ -44,16 +44,16 @@ class DisplacementOpCpuVerify {
 
     AgentVector<Double3> displacements;
 
-    CalculateDisplacement cd(&displacements);
+    CalculateMechanicalForces cd(&displacements);
     rm->ForEachAgentParallel(1000, cd);
     UpdateCells uc(&displacements);
     rm->ForEachAgentParallel(1000, uc);
   }
 
-  struct CalculateDisplacement : public Functor<void, Agent*, AgentHandle> {
+  struct CalculateMechanicalForces : public Functor<void, Agent*, AgentHandle> {
     AgentVector<Double3>* displacements_;
 
-    CalculateDisplacement(AgentVector<Double3>* displacements) {
+    CalculateMechanicalForces(AgentVector<Double3>* displacements) {
       displacements_ = displacements;
     }
 
@@ -65,7 +65,7 @@ class DisplacementOpCpuVerify {
       auto search_radius = env->GetLargestObjectSize();
       auto squared_radius_ = search_radius * search_radius;
       InteractionForce force;
-      const auto& displacement = agent->CalculateDisplacement(
+      const auto& displacement = agent->CalculateMechanicalForces(
           &force, squared_radius_, param->simulation_time_step);
       (*displacements_)[ah] = displacement;
     }
@@ -137,14 +137,14 @@ void RunTest(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      auto* op = NewOperation("displacement");
+      auto* op = NewOperation("mechanical forces");
       op->SelectComputeTarget(mode);
       op->SetUp();
       (*op)();
       op->TearDown();
     } else {
       // Run verification on CPU
-      DisplacementOpCpuVerify cpu_op;
+      MechanicalForcesOpCpuVerify cpu_op;
       cpu_op();
     }
   }
@@ -177,11 +177,11 @@ void RunTest(OpComputeTarget mode) {
 }
 
 #ifdef USE_CUDA
-TEST(DisplacementOpGpuTest, ComputeSoaCuda) { RunTest(kCuda); }
+TEST(MechanicalForcesOpGpuTest, ComputeSoaCuda) { RunTest(kCuda); }
 #endif
 
 #ifdef USE_OPENCL
-TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) { RunTest(kOpenCl); }
+TEST(MechanicalForcesOpGpuTest, ComputeSoaOpenCL) { RunTest(kOpenCl); }
 #endif
 
 void RunTest2(OpComputeTarget mode) {
@@ -228,14 +228,14 @@ void RunTest2(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      auto* op = NewOperation("displacement");
+      auto* op = NewOperation("mechanical forces");
       op->SelectComputeTarget(mode);
       op->SetUp();
       (*op)();
       op->TearDown();
     } else {
       // Run verification on CPU
-      DisplacementOpCpuVerify cpu_op;
+      MechanicalForcesOpCpuVerify cpu_op;
       cpu_op();
     }
   }
@@ -276,12 +276,12 @@ void RunTest2(OpComputeTarget mode) {
 }
 
 #ifdef USE_CUDA
-TEST(DisplacementOpGpuTest, ComputeSoaNewCuda) { RunTest2(kCuda); }
+TEST(MechanicalForcesOpGpuTest, ComputeSoaNewCuda) { RunTest2(kCuda); }
 #endif
 
 #ifdef USE_OPENCL
-TEST(DisplacementOpGpuTest, ComputeSoaNewOpenCL) { RunTest2(kOpenCl); }
+TEST(MechanicalForcesOpGpuTest, ComputeSoaNewOpenCL) { RunTest2(kOpenCl); }
 #endif
 
-}  // namespace displacement_op_gpu_test_internal
+}  // namespace mechanical_forces_op_gpu_test_internal
 }  // namespace bdm

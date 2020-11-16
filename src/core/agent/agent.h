@@ -206,8 +206,9 @@ class Agent {
   const InlineVector<Behavior*, 2>& GetAllBehaviors() const;
   // ---------------------------------------------------------------------------
 
-  virtual Double3 CalculateDisplacement(const InteractionForce* force,
-                                        double squared_radius, double dt) = 0;
+  virtual Double3 CalculateMechanicalForces(const InteractionForce* force,
+                                            double squared_radius,
+                                            double dt) = 0;
 
   virtual void ApplyDisplacement(const Double3& displacement) = 0;
 

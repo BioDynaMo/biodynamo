@@ -47,8 +47,8 @@ class TestAgent : public Agent {
 
   void ApplyDisplacement(const Double3&) override {}
 
-  Double3 CalculateDisplacement(const InteractionForce* force,
-                                double squared_radius, double dt) override {
+  Double3 CalculateMechanicalForces(const InteractionForce* force,
+                                    double squared_radius, double dt) override {
     return {0, 0, 0};
   }
 

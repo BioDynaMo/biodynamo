@@ -99,17 +99,17 @@ class GpuHelper {
     // going through a list of header files. Also, create a stringifier that
     // goes from .cl --> .h, since OpenCL kernels must be input as a string here
     std::string bdmsys = std::getenv("BDMSYS");
-    std::ifstream cl_file(bdmsys +
-                          "/include/core/gpu/displacement_op_opencl_kernel.cl");
+    std::ifstream cl_file(
+        bdmsys + "/include/core/gpu/mechanical_forces_op_opencl_kernel.cl");
     if (cl_file.fail()) {
       Log::Error("CompileOpenCLKernels", "Kernel file does not exists!");
     }
     std::stringstream buffer;
     buffer << cl_file.rdbuf();
 
-    cl::Program displacement_op_program(*context, buffer.str());
+    cl::Program mechanical_forces_op_program(*context, buffer.str());
 
-    all_programs->push_back(displacement_op_program);
+    all_programs->push_back(mechanical_forces_op_program);
 
     Log::Info("", "Compiling OpenCL kernels...");
 

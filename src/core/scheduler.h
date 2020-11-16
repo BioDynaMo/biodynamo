@@ -35,7 +35,7 @@ class SimulationBackup;
 class VisualizationAdaptor;
 class RootAdaptor;
 struct BoundSpace;
-struct DisplacementOp;
+struct MechanicalForcesOp;
 struct DiffusionOp;
 
 enum OpType { kSchedule, kPreSchedule, kPostSchedule };

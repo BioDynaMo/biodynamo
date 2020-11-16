@@ -63,7 +63,7 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
 
 TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   auto set_param = [](bdm::Param* param) {
-    param->unschedule_default_operations = { "displacement" };
+    param->unschedule_default_operations = {"mechanical forces"};
     param->Get<Param>()->neurite_max_length = 2;
   };
   neuroscience::InitModule();

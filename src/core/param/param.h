@@ -83,7 +83,8 @@ struct Param {
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     unschedule_default_operations = ["displacement", "load balancing"]
+  ///     unschedule_default_operations = ["mechanical forces", "load
+  ///     balancing"]
   std::vector<std::string> unschedule_default_operations;
 
   /// Variable which specifies method using for solving differential equation

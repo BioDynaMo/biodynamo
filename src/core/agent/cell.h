@@ -248,12 +248,12 @@ class Cell : public Agent {
     SetRunDisplacementForAllNextTs();
   }
 
-  struct DisplacementFunctor : Functor<void, const Agent*, double> {
+  struct MechanicalForcesFunctor : Functor<void, const Agent*, double> {
     const InteractionForce* force;
     Agent* agent;
     Double3 translation_force_on_point_mass{0, 0, 0};
 
-    DisplacementFunctor(const InteractionForce* force, Agent* agent)
+    MechanicalForcesFunctor(const InteractionForce* force, Agent* agent)
         : force(force), agent(agent) {}
 
     void operator()(const Agent* neighbor, double squared_distance) override {
@@ -264,8 +264,8 @@ class Cell : public Agent {
     }
   };
 
-  Double3 CalculateDisplacement(const InteractionForce* force,
-                                double squared_radius, double dt) override {
+  Double3 CalculateMechanicalForces(const InteractionForce* force,
+                                    double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied
@@ -306,7 +306,7 @@ class Cell : public Agent {
     //  (We check for every neighbor object if they touch us, i.e. push us
     //  away)
 
-    DisplacementFunctor calculate_neighbor_forces(force, this);
+    MechanicalForcesFunctor calculate_neighbor_forces(force, this);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);

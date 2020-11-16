@@ -40,7 +40,7 @@ inline int Simulate(int argc, const char** argv) {
     param->bound_space = true;
     param->min_bound = 0;
     param->max_bound = 250;
-    param->unschedule_default_operations_ = { "displacement" };
+    param->unschedule_default_operations_ = {"mechanical forces"};
   };
 
   Simulation simulation(argc, argv, set_param);

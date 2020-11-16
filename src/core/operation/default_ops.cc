@@ -14,11 +14,11 @@
 
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
-#include "core/operation/displacement_op.h"
-#include "core/operation/displacement_op_cuda.h"
-#include "core/operation/displacement_op_opencl.h"
 #include "core/operation/dividing_cell_op.h"
 #include "core/operation/load_balancing_op.h"
+#include "core/operation/mechanical_forces_op.h"
+#include "core/operation/mechanical_forces_op_cuda.h"
+#include "core/operation/mechanical_forces_op_opencl.h"
 #include "core/operation/operation.h"
 #include "core/operation/visualization_op.h"
 
@@ -32,25 +32,26 @@ BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
 BDM_REGISTER_OP_WITH_FREQ(LoadBalancingOp, "load balancing", kCpu,
                           std::numeric_limits<std::size_t>::max());
 
-BDM_REGISTER_OP(DisplacementOp, "displacement", kCpu);
+BDM_REGISTER_OP(MechanicalForcesOp, "mechanical forces", kCpu);
 
 #ifdef USE_CUDA
-BDM_REGISTER_OP(DisplacementOpCuda, "displacement", kCuda);
+BDM_REGISTER_OP(MechanicalForcesOpCuda, "mechanical forces", kCuda);
 #endif
 
 BDM_REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
-BDM_REGISTER_OP(DisplacementOpOpenCL, "displacement", kOpenCl);
+BDM_REGISTER_OP(MechanicalForcesOpOpenCL, "mechanical forces", kOpenCl);
 #endif
 
-struct UpdateRunDisplacementOp : public AgentOperationImpl {
-  BDM_OP_HEADER(UpdateRunDisplacementOp);
+struct UpdateRunMechanicalForcesOp : public AgentOperationImpl {
+  BDM_OP_HEADER(UpdateRunMechanicalForcesOp);
 
   void operator()(Agent* agent) override { agent->UpdateRunDisplacement(); }
 };
 
-BDM_REGISTER_OP(UpdateRunDisplacementOp, "update run displacement", kCpu);
+BDM_REGISTER_OP(UpdateRunMechanicalForcesOp, "update run mechanical forces",
+                kCpu);
 
 struct DistributeRunDisplacementInfoOp : public AgentOperationImpl {
   BDM_OP_HEADER(DistributeRunDisplacementInfoOp);
@@ -61,7 +62,7 @@ struct DistributeRunDisplacementInfoOp : public AgentOperationImpl {
 };
 
 BDM_REGISTER_OP(DistributeRunDisplacementInfoOp,
-                "distribute run displacement info", kCpu);
+                "distribute run mechanical forces info", kCpu);
 
 struct BehaviorOp : public AgentOperationImpl {
   BDM_OP_HEADER(BehaviorOp);

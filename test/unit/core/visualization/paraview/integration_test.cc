@@ -178,7 +178,7 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
       param->pv_insitu_pipelinearguments =
           Concat("--sim_name=", sim_name, " --num_elements=", num_agents);
     }
-    param->unschedule_default_operations = { "displacement" };
+    param->unschedule_default_operations = {"mechanical forces"};
     param->visualize_agents.insert(
         {"NeuriteElement", {"uid_", "daughter_right_"}});
     param->mapped_data_array_mode = mode;

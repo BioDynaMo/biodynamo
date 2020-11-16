@@ -19,7 +19,7 @@
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
-#include "core/operation/displacement_op.h"
+#include "core/operation/mechanical_forces_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/visualization_op.h"
@@ -43,12 +43,12 @@ Scheduler::Scheduler() {
   // Operations are scheduled in the following order (sub categorated by their
   // operation implementation type, so that actual order may vary)
   std::vector<std::string> default_op_names = {
-      "update run displacement",
+      "update run mechanical forces",
       "bound space",
       "behavior",
-      "displacement",
+      "mechanical forces",
       "discretization",
-      "distribute run displacement info",
+      "distribute run mechanical forces info",
       "diffusion"};
 
   std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
@@ -66,11 +66,13 @@ Scheduler::Scheduler() {
   std::vector<std::string> post_scheduled_ops_names = {
       "load balancing", "tear down iteration", "visualize"};
 
-  protected_op_names_ = {
-      "update run displacement", "behavior",
-      "discretization",          "distribute run displacment info",
-      "set up iteration",        "update environment",
-      "tear down iteration"};
+  protected_op_names_ = {"update run mechanical forces",
+                         "behavior",
+                         "discretization",
+                         "distribute run displacment info",
+                         "set up iteration",
+                         "update environment",
+                         "tear down iteration"};
 
   auto disabled_op_names =
       Simulation::GetActive()->GetParam()->unschedule_default_operations;

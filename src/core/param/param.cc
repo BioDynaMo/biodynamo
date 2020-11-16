@@ -276,8 +276,9 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
 
   // unschedule_default_operations
   if (config->get_table("simulation")) {
-    auto disabled_ops = config->get_table("simulation")
-                            ->get_array_of<std::string>("unschedule_default_operations");
+    auto disabled_ops =
+        config->get_table("simulation")
+            ->get_array_of<std::string>("unschedule_default_operations");
     for (const auto& op : *disabled_ops) {
       unschedule_default_operations.push_back(op);
     }

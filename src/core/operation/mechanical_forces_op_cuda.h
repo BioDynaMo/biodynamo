@@ -14,8 +14,8 @@
 // //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
-#define CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
+#ifndef CORE_OPERATION_MECHANICAL_FORCES_OP_CUDA_H_
+#define CORE_OPERATION_MECHANICAL_FORCES_OP_CUDA_H_
 
 #include <vector>
 
@@ -23,7 +23,7 @@
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
-#include "core/gpu/displacement_op_cuda_kernel.h"
+#include "core/gpu/mechanical_forces_op_cuda_kernel.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/operation_registry.h"
 #include "core/resource_manager.h"
@@ -43,8 +43,8 @@ inline void IsNonSphericalObjectPresent(const Agent* agent, bool* answer) {
 }
 
 /// Defines the 3D physical interactions between physical objects
-struct DisplacementOpCuda : public StandaloneOperationImpl {
-  BDM_OP_HEADER(DisplacementOpCuda);
+struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
+  BDM_OP_HEADER(MechanicalForcesOpCuda);
 
  private:
   struct InitializeGPUData;
@@ -57,8 +57,8 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
     auto* rm = sim->GetResourceManager();
 
     if (!grid) {
-      Log::Fatal("DisplacementOpCuda::operator()",
-                 "DisplacementOpCuda only works with UniformGridEnvironement.");
+      Log::Fatal("MechanicalForcesOpCuda::operator()",
+                 "MechanicalForcesOpCuda only works with UniformGridEnvironement.");
     }
 
     auto num_numa_nodes = ThreadInfo::GetInstance()->GetNumaNodes();
@@ -118,11 +118,11 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
       num_boxes_ = static_cast<uint32_t>(1.25 * num_boxes);
 
       // Allocate required GPU memory
-      cdo_ = new DisplacementOpCudaKernel(total_num_objects_, num_boxes_);
+      cdo_ = new MechanicalForcesOpCudaKernel(total_num_objects_, num_boxes_);
     } else {
       // If the number of agents increased
       if (total_num_objects >= total_num_objects_) {
-        Log::Info("DisplacementOpCuda",
+        Log::Info("MechanicalForcesOpCuda",
                   "\nThe number of cells increased signficantly (from ",
                   total_num_objects_, " to ", total_num_objects,
                   "), agent we allocate bigger GPU buffers\n");
@@ -132,7 +132,7 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
 
       // If the neighbor grid size increased
       if (num_boxes >= num_boxes_) {
-        Log::Info("DisplacementOpCuda",
+        Log::Info("MechanicalForcesOpCuda",
                   "\nThe number of boxes increased signficantly (from ",
                   num_boxes_, " to ", "), so we allocate bigger GPU buffers\n");
         num_boxes_ = static_cast<uint32_t>(1.25 * num_boxes);
@@ -142,7 +142,7 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
 
     double squared_radius =
         grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
-    cdo_->LaunchDisplacementKernel(
+    cdo_->LaunchMechanicalForcesKernel(
         i_->cell_positions.data()->data(), i_->cell_diameters.data(),
         i_->cell_tractor_force.data()->data(), i_->cell_adherence.data(),
         i_->cell_boxid.data(), i_->mass.data(), &(param->simulation_time_step),
@@ -160,7 +160,7 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
   }
 
  private:
-  DisplacementOpCudaKernel* cdo_ = nullptr;
+  MechanicalForcesOpCudaKernel* cdo_ = nullptr;
   InitializeGPUData* i_ = nullptr;
   uint32_t num_boxes_ = 0;
   uint32_t total_num_objects_ = 0;
@@ -231,7 +231,7 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
       // GPU accelerations currently supports only sphere-sphere interactions
       IsNonSphericalObjectPresent(agent, &is_non_spherical_object);
       if (is_non_spherical_object) {
-        Log::Fatal("DisplacementOpCuda",
+        Log::Fatal("MechanicalForcesOpCuda",
                    "\nWe detected a non-spherical object during the GPU "
                    "execution. This is currently not supported.");
         return;
@@ -250,4 +250,4 @@ struct DisplacementOpCuda : public StandaloneOperationImpl {
 
 }  // namespace bdm
 
-#endif  // CORE_OPERATION_DISPLACEMENT_OP_CUDA_H_
+#endif  // CORE_OPERATION_MECHANICAL_FORCES_OP_CUDA_H_

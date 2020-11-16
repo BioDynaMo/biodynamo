@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "samples/common/inc/helper_math.h"
-#include "core/gpu/displacement_op_cuda_kernel.h"
+#include "core/gpu/mechanical_forces_op_cuda_kernel.h"
 
 #include <iostream>
 #include <unistd.h>
@@ -237,8 +237,8 @@ __global__ void collide(
   }
 }
 
-bdm::DisplacementOpCudaKernel::DisplacementOpCudaKernel(uint32_t num_objects, uint32_t num_boxes) {
-  // printf("[DisplacementOpCudaKernel] num_objects = %u  |  num_boxes = %u\n", num_objects, num_boxes);
+bdm::MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(uint32_t num_objects, uint32_t num_boxes) {
+  // printf("[MechanicalForcesOpCudaKernel] num_objects = %u  |  num_boxes = %u\n", num_objects, num_boxes);
   GpuErrchk(cudaMalloc(&d_positions_, 3 * num_objects * sizeof(double)));
   GpuErrchk(cudaMalloc(&d_diameters_, num_objects * sizeof(double)));
   GpuErrchk(cudaMalloc(&d_tractor_force_, 3 * num_objects * sizeof(double)));
@@ -260,7 +260,7 @@ bdm::DisplacementOpCudaKernel::DisplacementOpCudaKernel(uint32_t num_objects, ui
   GpuErrchk(cudaMalloc(&d_cell_movements_, 3 * num_objects * sizeof(double)));
 }
 
-void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* positions,
+void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const double* positions,
     const double* diameters, const double* tractor_force, const double* adherence,
     const uint32_t* box_id, const double* mass, const double* timestep, const double* max_displacement,
     const double* squared_radius, const uint32_t* num_objects, uint32_t* starts,
@@ -268,9 +268,9 @@ void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* posit
     uint32_t* num_boxes_axis, int32_t* grid_dimensions,
     double* cell_movements) {
   uint32_t num_boxes = num_boxes_axis[0] * num_boxes_axis[1] * num_boxes_axis[2];
-  // printf("[LaunchDisplacementKernel] num_objects = %u  |  num_boxes = %u\n", num_objects[0], num_boxes);
-  // printf("[LaunchDisplacementKernel] d_positions_ = %p  |  positions = %p\n", d_positions_, positions);
-  // printf("[LaunchDisplacementKernel] positions[0] = %f  |  positions[1] = %f\n", positions[0], positions[1]);
+  // printf("[LaunchMechanicalForcesKernel] num_objects = %u  |  num_boxes = %u\n", num_objects[0], num_boxes);
+  // printf("[LaunchMechanicalForcesKernel] d_positions_ = %p  |  positions = %p\n", d_positions_, positions);
+  // printf("[LaunchMechanicalForcesKernel] positions[0] = %f  |  positions[1] = %f\n", positions[0], positions[1]);
 
   GpuErrchk(cudaMemcpy(d_positions_, 		positions, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_diameters_, 		diameters, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
@@ -313,7 +313,7 @@ void bdm::DisplacementOpCudaKernel::LaunchDisplacementKernel(const double* posit
   cudaMemcpy(cell_movements, d_cell_movements_, 3 * num_objects[0] * sizeof(double), cudaMemcpyDeviceToHost);
 }
 
-void bdm::DisplacementOpCudaKernel::ResizeCellBuffers(uint32_t num_cells) {
+void bdm::MechanicalForcesOpCudaKernel::ResizeCellBuffers(uint32_t num_cells) {
   cudaFree(d_positions_);
   cudaFree(d_diameters_);
   cudaFree(d_tractor_force_);
@@ -333,7 +333,7 @@ void bdm::DisplacementOpCudaKernel::ResizeCellBuffers(uint32_t num_cells) {
   cudaMalloc(&d_cell_movements_, 3 * num_cells * sizeof(double));
 }
 
-void bdm::DisplacementOpCudaKernel::ResizeGridBuffers(uint32_t num_boxes) {
+void bdm::MechanicalForcesOpCudaKernel::ResizeGridBuffers(uint32_t num_boxes) {
   cudaFree(d_starts_);
   cudaFree(d_lengths_);
   cudaFree(d_timestamps_);
@@ -343,7 +343,7 @@ void bdm::DisplacementOpCudaKernel::ResizeGridBuffers(uint32_t num_boxes) {
   cudaMalloc(&d_timestamps_, num_boxes * sizeof(uint64_t));
 }
 
-bdm::DisplacementOpCudaKernel::~DisplacementOpCudaKernel() {
+bdm::MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {
   cudaFree(d_positions_);
   cudaFree(d_diameters_);
   cudaFree(d_tractor_force_);
