@@ -42,7 +42,7 @@ jobs:
       run: |
         ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
         VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
-        echo "::set-env name=OSVERS::$ID-$VERSION"
+        echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
 
     - name: Cache pyenv
       uses: actions/cache@v2
