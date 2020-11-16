@@ -24,17 +24,17 @@ jobs:
     - name: Set GHA_BRANCH_NAME
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          echo "::set-env name=GHA_BRANCH_NAME::${{ github.head_ref }}"
+          echo "GHA_BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
         fi
         if [ "${{ github.event_name }}" = "schedule" ]; then
-          echo "::set-env name=GHA_BRANCH_NAME::${GITHUB_REF#refs/heads/}"
+          echo "GHA_BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
         fi
 
     - name: Set OSVERS
       run: |
         ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
         VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
-        echo "::set-env name=OSVERS::$ID-$VERSION"
+        echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
 
     - name: Start Xvfb
       run: |
@@ -61,10 +61,10 @@ jobs:
     - name: Set INSTALL_DIR
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          echo "::set-env name=INSTALL_DIR::${GITHUB_WORKSPACE}/build"
+          echo "INSTALL_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
         fi
         if [ "${{ github.event_name }}" = "schedule" ]; then
-          echo "::set-env name=INSTALL_DIR::$(echo ${HOME}/biodynamo-*)"
+          echo "INSTALL_DIR=$(echo ${HOME}/biodynamo-*)" >> $GITHUB_ENV
         fi
 
     - name: Cache pyenv
