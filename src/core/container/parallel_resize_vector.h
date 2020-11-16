@@ -84,7 +84,7 @@ class ParallelResizeVector {
     other.data_ = tmp;
   }
 
-  UInt_t capacity() const { return capacity_; }  // NOLINT
+  std::size_t capacity() const { return capacity_; }  // NOLINT
 
   void push_back(const T& element) {  // NOLINT
     if (capacity_ == size_) {
@@ -93,7 +93,7 @@ class ParallelResizeVector {
     new (&(data_[size_++])) T(element);
   }
 
-  void reserve(UInt_t new_capacity) {  // NOLINT
+  void reserve(std::size_t new_capacity) {  // NOLINT
     if (new_capacity > capacity_) {
       T* new_data = static_cast<T*>(malloc(new_capacity * sizeof(T)));
       if (data_ != nullptr) {
@@ -168,7 +168,7 @@ class ParallelResizeVector {
  private:
   static constexpr float kGrowFactor = 1.5;
   std::size_t size_ = 0;
-  UInt_t capacity_ = 0;
+  std::size_t capacity_ = 0;
   T* data_ = nullptr;  //[capacity_]  // NOLINT
   BDM_CLASS_DEF(ParallelResizeVector, 1);  // NOLINT
 };
