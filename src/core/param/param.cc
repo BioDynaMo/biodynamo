@@ -185,8 +185,6 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(simulation_time_step, "simulation.time_step");
   BDM_ASSIGN_CONFIG_VALUE(simulation_max_displacement,
                           "simulation.max_displacement");
-  BDM_ASSIGN_CONFIG_VALUE(run_mechanical_interactions,
-                          "simulation.run_mechanical_interactions");
   BDM_ASSIGN_CONFIG_VALUE(bound_space, "simulation.bound_space");
   BDM_ASSIGN_CONFIG_VALUE(min_bound, "simulation.min_bound");
   BDM_ASSIGN_CONFIG_VALUE(max_bound, "simulation.max_bound");
@@ -273,6 +271,15 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
 
         visualize_diffusion.push_back(vd);
       }
+    }
+  }
+
+  // unschedule_default_operations
+  if (config->get_table("simulation")) {
+    auto disabled_ops = config->get_table("simulation")
+                            ->get_array_of<std::string>("unschedule_default_operations");
+    for (const auto& op : *disabled_ops) {
+      unschedule_default_operations.push_back(op);
     }
   }
 

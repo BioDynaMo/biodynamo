@@ -164,7 +164,6 @@ auto set_param = [](Param* param) {
   param->bound_space = true;
   param->min_bound = 0;
   param->max_bound = 250;
-  param->run_mechanical_interactions = false;
 };
 
 Simulation simulation(argc, argv, set_param);

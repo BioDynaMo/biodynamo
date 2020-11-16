@@ -504,4 +504,23 @@ TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
   }
 }
 
+// Test for Param::unschedule_default_operations
+TEST_F(SchedulerTest, DisableDefaultOperations) {
+  auto set_param = [&](Param* param) {
+    param->unschedule_default_operations = {"displacement", "visualize",
+                                            "discretization"};
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* scheduler = simulation.GetScheduler();
+  SchedulerTest scheduler_wrapper(scheduler, nullptr);
+
+  EXPECT_TRUE(scheduler->GetOps("displacement").empty());
+  EXPECT_TRUE(scheduler->GetOps("visualize").empty());
+  EXPECT_FALSE(scheduler->GetOps("load balancing").empty());
+  // protected ops should be ignored for unscheduling
+  auto scheduled_agent_ops = scheduler_wrapper.GetListOfScheduledAgentOps();
+  EXPECT_TRUE(std::find(scheduled_agent_ops.begin(), scheduled_agent_ops.end(),
+                        "discretization") != scheduled_agent_ops.end());
+}
+
 }  // namespace bdm

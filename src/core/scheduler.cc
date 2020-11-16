@@ -66,6 +66,35 @@ Scheduler::Scheduler() {
   std::vector<std::string> post_scheduled_ops_names = {
       "load balancing", "tear down iteration", "visualize"};
 
+  protected_op_names_ = {
+      "update run displacement", "behavior",
+      "discretization",          "distribute run displacment info",
+      "set up iteration",        "update environment",
+      "tear down iteration"};
+
+  auto disabled_op_names =
+      Simulation::GetActive()->GetParam()->unschedule_default_operations;
+  std::vector<std::vector<std::string>*> all_op_names;
+  all_op_names.push_back(&pre_scheduled_ops_names);
+  all_op_names.push_back(&default_op_names);
+  all_op_names.push_back(&post_scheduled_ops_names);
+
+  // Remove operations listed in `Param::unschedule_default_operations` from the
+  // to-be-scheduled operations, as long as they are non-protected
+  for (auto* op_list : all_op_names) {
+    for (auto op_name_iter = op_list->begin();
+         op_name_iter != op_list->end();) {
+      if (std::find(disabled_op_names.begin(), disabled_op_names.end(),
+                    *op_name_iter) != disabled_op_names.end() &&
+          std::find(protected_op_names_.begin(), protected_op_names_.end(),
+                    *op_name_iter) == protected_op_names_.end()) {
+        op_name_iter = op_list->erase(op_name_iter);
+      } else {
+        op_name_iter++;
+      }
+    }
+  }
+
   // Schedule the default operations
   for (auto& def_op : default_op_names) {
     ScheduleOp(NewOperation(def_op), OpType::kSchedule);
@@ -79,13 +108,9 @@ Scheduler::Scheduler() {
     ScheduleOp(NewOperation(def_op), OpType::kPostSchedule);
   }
 
-  protected_op_names_ = {
-      "update run displacement", "behavior",
-      "discretization",          "distribute run displacment info",
-      "set up iteration",        "update environment",
-      "tear down iteration"};
-
-  GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
+  if (!GetOps("visualize").empty()) {
+    GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
+  }
   ScheduleOps();
 }
 

@@ -34,6 +34,7 @@ class SimulationTest : public ::testing::Test {
   static constexpr const char* kTomlFileName = "bdm.toml";
   static constexpr const char* kTomlContent =
       "[simulation]\n"
+      "unschedule_default_operations = [\"displacement\"]\n"
       "random_seed = 123\n"
       "output_dir = \"result-dir\"\n"
       "backup_file = \"backup.root\"\n"
@@ -41,7 +42,6 @@ class SimulationTest : public ::testing::Test {
       "backup_interval = 3600\n"
       "time_step = 0.0125\n"
       "max_displacement = 2.0\n"
-      "run_mechanical_interactions = false\n"
       "bound_space = true\n"
       "min_bound = -100\n"
       "max_bound =  200\n"
@@ -121,8 +121,9 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ("RK", param->diffusion_type);
     EXPECT_EQ(3600u, param->backup_interval);
     EXPECT_EQ(0.0125, param->simulation_time_step);
+    EXPECT_EQ(1u, param->unschedule_default_operations.size());
+    EXPECT_EQ("displacement", param->unschedule_default_operations[0]);
     EXPECT_EQ(2.0, param->simulation_max_displacement);
-    EXPECT_FALSE(param->run_mechanical_interactions);
     EXPECT_TRUE(param->bound_space);
     EXPECT_EQ(-100, param->min_bound);
     EXPECT_EQ(200, param->max_bound);
