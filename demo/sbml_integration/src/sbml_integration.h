@@ -208,7 +208,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->AddBehavior(new SbmlBehavior(sbml_file, opt));
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(0, 200, num_cells, construct);
+  ModelInitializer::CreateAgentsRandom(0, 200, num_cells, construct);
 
   // Run simulation
   auto start = Timing::Timestamp();

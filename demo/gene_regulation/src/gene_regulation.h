@@ -64,7 +64,7 @@ inline int Simulate(int argc, const char** argv) {
     return cell;
   };
   const std::vector<Double3>& positions = {{0, 0, 0}};
-  ModelInitializer::CreateCells(positions, construct);
+  ModelInitializer::CreateAgents(positions, construct);
 
   // Run simulation
   auto* scheduler = simulation.GetScheduler();

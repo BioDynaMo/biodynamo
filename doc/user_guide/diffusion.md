@@ -90,7 +90,7 @@ attributes:
   positions.push_back({100, 100, 100});
   // The cell responsible for secretion
   positions.push_back({50, 50, 50});
-  ModelInitializer::CreateCells(positions, construct);
+  ModelInitializer::CreateAgents(positions, construct);
 ```
 
 The `construct` lambda defines the properties of each cell that we create. These can be

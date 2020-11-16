@@ -70,13 +70,13 @@ inline int Simulate(int argc, const char** argv) {
   };
 
   // Construct num_cells/2 cells of type 0
-  ModelInitializer::CreateCellsRandom(param->min_bound, param->max_bound,
-                                      num_cells / 2, construct);
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
+                                       num_cells / 2, construct);
   // Construct num_cells/2 cells of type 1
   dg = rm->GetDiffusionGrid(kSubstance1);
   cell_type = -1;
-  ModelInitializer::CreateCellsRandom(param->min_bound, param->max_bound,
-                                      num_cells / 2, construct);
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
+                                       num_cells / 2, construct);
 
   // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(1000);

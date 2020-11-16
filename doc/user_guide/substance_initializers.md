@@ -57,7 +57,7 @@ auto construct = [](const Double3& position) {
   cell->SetDiameter(10);
   return cell;
 };
-ModelInitializer::CreateCellsRandom(param->min_bound, param->max_bound, 1,
+ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
                                     construct);
 ```
 

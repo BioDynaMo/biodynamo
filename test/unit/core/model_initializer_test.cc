@@ -66,7 +66,7 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
   EXPECT_ARR_EQ({12, 24, 36}, rm->GetAgent(AgentUid(23))->GetPosition());
 }
 
-TEST(ModelInitializerTest, CreateCells) {
+TEST(ModelInitializerTest, CreateAgents) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
@@ -75,7 +75,7 @@ TEST(ModelInitializerTest, CreateCells) {
   positions.push_back({101, 202, 303});
   positions.push_back({-12, -32, 4});
 
-  ModelInitializer::CreateCells(positions, [](const Double3& pos) {
+  ModelInitializer::CreateAgents(positions, [](const Double3& pos) {
     Cell* cell = new Cell(pos);
     return cell;
   });
@@ -86,11 +86,11 @@ TEST(ModelInitializerTest, CreateCells) {
   EXPECT_ARR_EQ({-12, -32, 4}, rm->GetAgent(AgentUid(2))->GetPosition());
 }
 
-TEST(ModelInitializerTest, CreateCellsRandom) {
+TEST(ModelInitializerTest, CreateAgentsRandom) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  ModelInitializer::CreateCellsRandom(-100, 100, 10, [](const Double3& pos) {
+  ModelInitializer::CreateAgentsRandom(-100, 100, 10, [](const Double3& pos) {
     Cell* cell = new Cell(pos);
     return cell;
   });

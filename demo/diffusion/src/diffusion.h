@@ -61,7 +61,7 @@ inline int Simulate(int argc, const char** argv) {
   positions.push_back({100, 100, 100});
   // The cell responsible for secretion
   positions.push_back({50, 50, 50});
-  ModelInitializer::CreateCells(positions, construct);
+  ModelInitializer::CreateAgents(positions, construct);
 
   // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(300);

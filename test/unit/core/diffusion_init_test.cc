@@ -44,8 +44,8 @@ TEST(DiffusionInitTest, GaussianBand) {
     cell->SetDiameter(10);
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(param->min_bound, param->max_bound, 1,
-                                      construct);
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
+                                       construct);
 
   // Define the substances in our simulation
   ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 26);
