@@ -11,6 +11,7 @@ import csv
 
 def data_cpu(name_demo, iteration, ii):
     cpu = [0]*iteration
+    memory = [0]*iteration
     i = 0
     j = 0
     a = name_demo
@@ -19,12 +20,13 @@ def data_cpu(name_demo, iteration, ii):
         b = data["benchmarks"][i]["name"]
         if a[:nb] == b[:nb]:
             cpu[j] = data["benchmarks"][i]["cpu_time"]
+            memory = data["benchmarks"][i]["memory"]
             j+=1
         i+=1
-    return cpu
+    return cpu, memory
 
 def graph(name_demo, iteration, i):
-    cpu = data_cpu(name_demo, iteration, i)
+    cpu, memory = data_cpu(name_demo, iteration, i)
     moy = 0
     h = 0
     tmp = 0
@@ -32,7 +34,7 @@ def graph(name_demo, iteration, i):
         tmp = cpu[h] + tmp
         h += 1
     moy = tmp / iteration
-    return name_demo, moy
+    return name_demo, moy, memory
 
 def name(i):
     name_data = data["benchmarks"][i]["name"]
@@ -108,21 +110,21 @@ def plot(name_demo):
     plt.savefig('benchmark/'+name_demo+'.png')
     return
 
-def write_memory(j):
-    file = sys.argv[1]
-    # Just a random vector of the MemoryUsage
-    GetMemoryUsage = [10]*j
-    i = 0
-    file = sys.argv[1]
-    with open(file, "w") as w_file:
-        while i < j:
-            x = {"memory":GetMemoryUsage[i]}
-            data_benchmark = data["benchmarks"]
-            data_demo = data_benchmark[i]
-            data_demo.update(x)
-            i += 1
-        json.dump(data, w_file, indent=1)
-    w_file.close()
+# def write_memory(j):
+#     file = sys.argv[1]
+#     # Just a random vector of the MemoryUsage
+#     GetMemoryUsage = [10]*j
+#     i = 0
+#     file = sys.argv[1]
+#     with open(file, "w") as w_file:
+#         while i < j:
+#             x = {"memory":GetMemoryUsage[i]}
+#             data_benchmark = data["benchmarks"]
+#             data_demo = data_benchmark[i]
+#             data_demo.update(x)
+#             i += 1
+#         json.dump(data, w_file, indent=1)
+#     w_file.close()
 
 def main():
     i = 0
@@ -130,14 +132,10 @@ def main():
     name_datas, j = names()
     cpu = [0]*j
     name_demo = [0]*j
-    # Add a value to a json file
-    #write_memory(j)
-    # There we will take the value of memory and we'll store that in a vector
-    # We suppose its already donne
-    GetMemoryUsage = [10]*j
+    memory = [10]*j
     while i < j:
-        name_demo[i], cpu[i] = graph(name_datas[i], it, j)
-        store(cpu[i], name_demo[i], GetMemoryUsage[i])
+        name_demo[i], cpu[i], memory[i] = graph(name_datas[i], it, j)
+        store(cpu[i], name_demo[i], memory[i])
         plot(name_demo[i])
         i += 1
     return

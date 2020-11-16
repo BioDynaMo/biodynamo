@@ -7,8 +7,12 @@
 namespace benchmark {
 
 class BdmJSONReporter : public JSONReporter {
-    void ReportRuns(std::vector<Run> const& reports);
-    void PrintRunData(Run const& run);
+    public:
+        BdmJSONReporter() : first_report_(true) {}
+        virtual void ReportRuns(std::vector<Run> const& reports);
+    private:
+        virtual void PrintRunData(Run const& run);
+        bool first_report_;
 };
 
 }

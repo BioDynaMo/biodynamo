@@ -106,10 +106,10 @@ void BdmJSONReporter::ReportRuns(std::vector<Run> const& reports) {
   }
   std::string indent(4, ' ');
   std::ostream& out = GetOutputStream();
-  //   if (!first_report_) {
-  //     out << ",\n";
-  //   }
-  //   first_report_ = false;
+     if (!first_report_) {
+       out << ",\n";
+     }
+     first_report_ = false;
 
   for (auto it = reports.begin(); it != reports.end(); ++it) {
     out << indent << "{\n";
@@ -152,11 +152,11 @@ void BdmJSONReporter::PrintRunData(Run const& run) {
   }
   if (!run.report_big_o && !run.report_rms) {
     out << indent << FormatKV("iterations", run.iterations) << ",\n";
+    out << indent << FormatKV("memory", "10000") << ",\n";
     out << indent << FormatKV("real_time", run.GetAdjustedRealTime()) << ",\n";
     out << indent << FormatKV("cpu_time", run.GetAdjustedCPUTime());
     out << ",\n"
-        << indent << FormatKV("time_unit", GetTimeUnitString(run.time_unit)) << ",\n";
-    out << indent << FormatKV("memory", "100000");
+        << indent << FormatKV("time_unit", GetTimeUnitString(run.time_unit));
   } else if (run.report_big_o) {
     out << indent << FormatKV("cpu_coefficient", run.GetAdjustedCPUTime())
         << ",\n";
@@ -182,4 +182,6 @@ void BdmJSONReporter::PrintRunData(Run const& run) {
   }
   out << '\n';
 };
+
+
 }  // namespace benchmark
