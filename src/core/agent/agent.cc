@@ -48,9 +48,9 @@ Agent::Agent(const Agent& other)
     : uid_(other.uid_),
       box_idx_(other.box_idx_),
       run_behavior_loop_idx_(other.run_behavior_loop_idx_),
-      run_displacement_for_all_next_ts_(
-          other.run_displacement_for_all_next_ts_),
-      run_displacement_next_ts_(other.run_displacement_next_ts_) {
+      propagate_staticness_neighborhood_(
+          other.propagate_staticness_neighborhood_),
+      is_static_next_ts_(other.is_static_next_ts_) {
   for (auto* behavior : other.behaviors_) {
     behaviors_.push_back(behavior->NewCopy());
   }
@@ -70,36 +70,36 @@ void Agent::Initialize(const NewAgentEvent& event) {
 
 void Agent::Update(const NewAgentEvent& event) {
   // Run displacement if a new agent has been created with an event.
-  SetRunDisplacementForAllNextTs();
+  SetPropagateStaticness();
   UpdateBehaviors(event);
 }
 
-struct SetRunDisplacementForEachNeighbor
+struct SetStaticnessForEachNeighbor
     : public Functor<void, const Agent*, double> {
   Agent* agent_;
-  explicit SetRunDisplacementForEachNeighbor(Agent* agent) : agent_(agent) {}
+  explicit SetStaticnessForEachNeighbor(Agent* agent) : agent_(agent) {}
 
   void operator()(const Agent* neighbor, double squared_distance) override {
     double distance = agent_->GetDiameter() + neighbor->GetDiameter();
     if (squared_distance < distance * distance) {
-      neighbor->SetRunDisplacementNextTimestep(true);
+      neighbor->SetStaticnessNextTimestep(false);
     }
   }
 };
 
-void Agent::DistributeRunDisplacementInfo() {
+void Agent::PropagateStaticness() {
   if (!Simulation::GetActive()->GetParam()->detect_static_agents) {
-    run_displacement_next_ts_ = true;
+    is_static_next_ts_ = false;
     return;
   }
 
-  if (!run_displacement_for_all_next_ts_) {
+  if (!propagate_staticness_neighborhood_) {
     return;
   }
-  run_displacement_for_all_next_ts_ = false;
-  run_displacement_next_ts_ = true;
+  propagate_staticness_neighborhood_ = false;
+  is_static_next_ts_ = false;
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-  SetRunDisplacementForEachNeighbor for_each(this);
+  SetStaticnessForEachNeighbor for_each(this);
   ctxt->ForEachNeighbor(for_each, *this);
 }
 

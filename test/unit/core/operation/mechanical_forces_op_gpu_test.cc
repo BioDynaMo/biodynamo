@@ -35,7 +35,7 @@ static constexpr double kEps = 10 * abs_error<double>::value;
 
 class MechanicalForcesOpCpuVerify {
  public:
-  struct CalculateMechanicalForces;
+  struct CalculateDisplacement;
   struct UpdateCells;
 
   void operator()() {
@@ -44,16 +44,16 @@ class MechanicalForcesOpCpuVerify {
 
     AgentVector<Double3> displacements;
 
-    CalculateMechanicalForces cd(&displacements);
+    CalculateDisplacement cd(&displacements);
     rm->ForEachAgentParallel(1000, cd);
     UpdateCells uc(&displacements);
     rm->ForEachAgentParallel(1000, uc);
   }
 
-  struct CalculateMechanicalForces : public Functor<void, Agent*, AgentHandle> {
+  struct CalculateDisplacement : public Functor<void, Agent*, AgentHandle> {
     AgentVector<Double3>* displacements_;
 
-    CalculateMechanicalForces(AgentVector<Double3>* displacements) {
+    CalculateDisplacement(AgentVector<Double3>* displacements) {
       displacements_ = displacements;
     }
 
@@ -65,7 +65,7 @@ class MechanicalForcesOpCpuVerify {
       auto search_radius = env->GetLargestObjectSize();
       auto squared_radius_ = search_radius * search_radius;
       InteractionForce force;
-      const auto& displacement = agent->CalculateMechanicalForces(
+      const auto& displacement = agent->CalculateDisplacement(
           &force, squared_radius_, param->simulation_time_step);
       (*displacements_)[ah] = displacement;
     }

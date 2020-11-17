@@ -440,12 +440,12 @@ TEST_F(SchedulerTest, ScheduleOrder) {
   sim.Simulate(1);
 
   std::vector<std::string> agent_ops = {
-      "update run mechanical forces",
+      "update staticness",
       "bound space",
       "behavior",
       "mechanical forces",
       "discretization",
-      "distribute run mechanical forces info"};
+      "propagate staticness"};
   std::vector<std::string> sa_ops = {"diffusion"};
 
   int i = 0;

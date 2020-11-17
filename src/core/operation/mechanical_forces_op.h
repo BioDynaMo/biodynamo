@@ -78,7 +78,7 @@ class MechanicalForcesOp : public AgentOperationImpl {
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
 
-    if (!agent->RunDisplacement()) {
+    if (agent->IsStatic()) {
       return;
     }
 
@@ -98,7 +98,7 @@ class MechanicalForcesOp : public AgentOperationImpl {
     }
 
     const auto& displacement =
-        agent->CalculateMechanicalForces(force_, squared_radius_, delta_time_[tid]);
+        agent->CalculateDisplacement(force_, squared_radius_, delta_time_[tid]);
     agent->ApplyDisplacement(displacement);
     if (param->bound_space) {
       ApplyBoundingBox(agent, param->min_bound, param->max_bound);

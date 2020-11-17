@@ -43,12 +43,12 @@ Scheduler::Scheduler() {
   // Operations are scheduled in the following order (sub categorated by their
   // operation implementation type, so that actual order may vary)
   std::vector<std::string> default_op_names = {
-      "update run mechanical forces",
+      "update staticness",
       "bound space",
       "behavior",
       "mechanical forces",
       "discretization",
-      "distribute run mechanical forces info",
+      "propagate staticness",
       "diffusion"};
 
   std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
@@ -66,7 +66,7 @@ Scheduler::Scheduler() {
   std::vector<std::string> post_scheduled_ops_names = {
       "load balancing", "tear down iteration", "visualize"};
 
-  protected_op_names_ = {"update run mechanical forces",
+  protected_op_names_ = {"update staticness",
                          "behavior",
                          "discretization",
                          "distribute run displacment info",

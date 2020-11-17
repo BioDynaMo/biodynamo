@@ -194,7 +194,7 @@ class Cell : public Agent {
 
   void SetDiameter(double diameter) override {
     if (diameter > diameter_) {
-      SetRunDisplacementForAllNextTs();
+      SetPropagateStaticness();
     }
     diameter_ = diameter;
     UpdateVolume();
@@ -211,7 +211,7 @@ class Cell : public Agent {
 
   void SetPosition(const Double3& position) override {
     position_ = position;
-    SetRunDisplacementForAllNextTs();
+    SetPropagateStaticness();
   }
 
   void SetTractorForce(const Double3& tractor_force) {
@@ -233,7 +233,7 @@ class Cell : public Agent {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
     double diameter = std::cbrt(volume_ * 6 / Math::kPi);
     if (diameter > diameter_) {
-      Base::SetRunDisplacementForAllNextTs();
+      Base::SetPropagateStaticness();
     }
     diameter_ = diameter;
   }
@@ -245,7 +245,7 @@ class Cell : public Agent {
 
   void UpdatePosition(const Double3& delta) {
     position_ += delta;
-    SetRunDisplacementForAllNextTs();
+    SetPropagateStaticness();
   }
 
   struct MechanicalForcesFunctor : Functor<void, const Agent*, double> {
@@ -264,7 +264,7 @@ class Cell : public Agent {
     }
   };
 
-  Double3 CalculateMechanicalForces(const InteractionForce* force,
+  Double3 CalculateDisplacement(const InteractionForce* force,
                                     double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.

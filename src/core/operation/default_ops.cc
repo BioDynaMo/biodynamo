@@ -44,25 +44,22 @@ BDM_REGISTER_OP(DividingCellOp, "DividingCellOp", kCpu);
 BDM_REGISTER_OP(MechanicalForcesOpOpenCL, "mechanical forces", kOpenCl);
 #endif
 
-struct UpdateRunMechanicalForcesOp : public AgentOperationImpl {
-  BDM_OP_HEADER(UpdateRunMechanicalForcesOp);
+struct UpdateStaticnessOp : public AgentOperationImpl {
+  BDM_OP_HEADER(UpdateStaticnessOp);
 
-  void operator()(Agent* agent) override { agent->UpdateRunDisplacement(); }
+  void operator()(Agent* agent) override { agent->UpdateStaticness(); }
 };
 
-BDM_REGISTER_OP(UpdateRunMechanicalForcesOp, "update run mechanical forces",
+BDM_REGISTER_OP(UpdateStaticnessOp, "update staticness",
                 kCpu);
 
-struct DistributeRunDisplacementInfoOp : public AgentOperationImpl {
-  BDM_OP_HEADER(DistributeRunDisplacementInfoOp);
+struct PropagateStaticnessOp : public AgentOperationImpl {
+  BDM_OP_HEADER(PropagateStaticnessOp);
 
-  void operator()(Agent* agent) override {
-    agent->DistributeRunDisplacementInfo();
-  }
+  void operator()(Agent* agent) override { agent->PropagateStaticness(); }
 };
 
-BDM_REGISTER_OP(DistributeRunDisplacementInfoOp,
-                "distribute run mechanical forces info", kCpu);
+BDM_REGISTER_OP(PropagateStaticnessOp, "propagate staticness", kCpu);
 
 struct BehaviorOp : public AgentOperationImpl {
   BDM_OP_HEADER(BehaviorOp);
