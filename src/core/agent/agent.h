@@ -207,8 +207,7 @@ class Agent {
   // ---------------------------------------------------------------------------
 
   virtual Double3 CalculateDisplacement(const InteractionForce* force,
-                                            double squared_radius,
-                                            double dt) = 0;
+                                        double squared_radius, double dt) = 0;
 
   virtual void ApplyDisplacement(const Double3& displacement) = 0;
 

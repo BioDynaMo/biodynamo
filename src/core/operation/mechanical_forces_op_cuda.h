@@ -57,8 +57,9 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
     auto* rm = sim->GetResourceManager();
 
     if (!grid) {
-      Log::Fatal("MechanicalForcesOpCuda::operator()",
-                 "MechanicalForcesOpCuda only works with UniformGridEnvironement.");
+      Log::Fatal(
+          "MechanicalForcesOpCuda::operator()",
+          "MechanicalForcesOpCuda only works with UniformGridEnvironement.");
     }
 
     auto num_numa_nodes = ThreadInfo::GetInstance()->GetNumaNodes();

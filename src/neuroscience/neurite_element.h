@@ -688,7 +688,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   // ***************************************************************************
 
   Double3 CalculateDisplacement(const InteractionForce* force,
-                                    double squared_radius, double dt) override {
+                                double squared_radius, double dt) override {
     Double3 force_on_my_point_mass{0, 0, 0};
     Double3 force_on_my_mothers_point_mass{0, 0, 0};
 

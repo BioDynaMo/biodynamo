@@ -265,7 +265,7 @@ class Cell : public Agent {
   };
 
   Double3 CalculateDisplacement(const InteractionForce* force,
-                                    double squared_radius, double dt) override {
+                                double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied

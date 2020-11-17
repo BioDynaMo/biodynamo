@@ -50,8 +50,7 @@ struct UpdateStaticnessOp : public AgentOperationImpl {
   void operator()(Agent* agent) override { agent->UpdateStaticness(); }
 };
 
-BDM_REGISTER_OP(UpdateStaticnessOp, "update staticness",
-                kCpu);
+BDM_REGISTER_OP(UpdateStaticnessOp, "update staticness", kCpu);
 
 struct PropagateStaticnessOp : public AgentOperationImpl {
   BDM_OP_HEADER(PropagateStaticnessOp);
