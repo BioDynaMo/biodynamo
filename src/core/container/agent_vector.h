@@ -25,7 +25,7 @@ namespace bdm {
 /// in the simulation.
 template <typename T>
 class AgentVector {
-  friend struct DisplacementOpCuda;
+  friend struct MechanicalForcesOpCuda;
 
  public:
   /// NB: Elements will not be initilized.

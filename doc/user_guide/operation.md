@@ -26,7 +26,7 @@ Each implementation can target a different type of hardware (e.g. CPU or GPU) as
 
 This example shows an overview of the displacement operation; one of the default operations in BioDynaMo.
 This operation is implemented for different computing targets, of which two are shown in the image above.
-The `DisplacementOp` implementation targets execution on CPUs, whereas `DisplacementOpCuda` targets execution on GPUs using the CUDA framework.
+The `MechanicalForcesOp` implementation targets execution on CPUs, whereas `MechanicalForcesOpCuda` targets execution on GPUs using the CUDA framework.
 As a user, you can develop new *operation implementations* and append them to an *operation* with a specific name.
 The BioDynaMo core will be able to select the right implementation based on your system (i.e. having a GPU or not).
 
@@ -55,11 +55,11 @@ First, create two files: a header file (.h) and an implementation file (.cc).
 The header file contains the logic of your operation, whereas the implementation file registers the operation.
 
 ```cpp
-// File: displacement_op.h (minimal version)
+// File: mechanical_forces_op.h (minimal version)
 
-struct DisplacementOp : public AgentOperationImpl {
+struct MechanicalForcesOp : public AgentOperationImpl {
   // This macro will generate the boilerplate code. It must be included.
-  BDM_OP_HEADER(DisplacementOp);
+  BDM_OP_HEADER(MechanicalForcesOp);
 
   // Here you define you operation's logic. The `agent` pointer is a handle
   // to each agent in your simulation
@@ -71,19 +71,19 @@ struct DisplacementOp : public AgentOperationImpl {
 ```
 
 ```cpp
-// File: displacement_op.cc (minimal version)
+// File: mechanical_forces_op.cc (minimal version)
 
 #include "core/operation/operation.h"
-#include "core/operation/displacement_op.h"
+#include "core/operation/mechanical_forces_op.h"
 
-// This registers our DisplacementOp in the OperationRegistry under 
-// the name "displacement". Since this operation is targeted to run 
+// This registers our MechanicalForcesOp in the OperationRegistry under 
+// the name "mechanical forces". Since this operation is targeted to run 
 // on a CPU, we specify "kCpu"
-BDM_REGISTER_OP(DisplacementOp, "displacement", kCpu);
+BDM_REGISTER_OP(MechanicalForcesOp, "mechanical forces", kCpu);
 ```
 
 With the above two files you will be able to successfully add the operation implementation
-`DisplacementOp` to the operation named "displacement".
+`MechanicalForcesOp` to the operation named "mechanical forces".
 This operation is now accessible in your simulation code as we will see below.
 By default, any operation is executed once every timestep (i.e. the frequency is 1).
 
@@ -98,14 +98,14 @@ Simulation simulation("my-sim");
 auto* scheduler = simulation.GetScheduler();
 
 // Get the operation by its registered name
-auto* displacement_op = NewOperation("displacement");
+auto* mechanical_forces_op = NewOperation("mechanical forces");
 
 // Change the frequency to the desired number
 // 1 is the default, so we could have skipped this step
-displacement_op->frequency_ = 1;
+mechanical_forces_op->frequency_ = 1;
 
 // Schedule the operation for execution
-scheduler->ScheduleOp(displacement_op);
+scheduler->ScheduleOp(mechanical_forces_op);
 
 // Simulate for 10 timesteps. The displacement operation will be 
 // executed every timestep, because the frequency is 1
@@ -113,7 +113,7 @@ simulation.Simulate(10);
 ```
 
 Once you schedule your operation with `Scheduler::ScheduleOp` you are not longer responsible for the memory management; the `Scheduler` will take care of that.
-If you do not schedule your operation, you should free the created operation to avoid memory leaks. In the above example it would be `delete displacement_op`.
+If you do not schedule your operation, you should free the created operation to avoid memory leaks. In the above example it would be `delete mechanical_forces_op`.
 
 ## Schedule multiple operations with the same name
 
@@ -220,7 +220,7 @@ A default (non protected) operation can be unscheduled in the following way:
 Simulation simulation("test_sim");
 auto* scheduler = simulation.GetScheduler();
 
-auto ops = scheduler->GetOps("displacement");
+auto ops = scheduler->GetOps("mechanical forces");
 scheduler->UnscheduleOp(ops[0]);
 
 // Your simulation will not run the displacement operation

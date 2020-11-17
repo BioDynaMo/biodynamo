@@ -162,26 +162,26 @@ class Agent {
 
   void SetBoxIdx(uint32_t idx);
 
-  void SetRunDisplacementNextTimestep(bool run) const {
-    run_displacement_next_ts_ = run;
+  void SetStaticnessNextTimestep(bool value) const {
+    is_static_next_ts_ = value;
   }
 
-  bool GetRunDisplacementForAllNextTs() const {
-    return run_displacement_for_all_next_ts_;
+  bool GetPropagateStaticness() const {
+    return propagate_staticness_neighborhood_;
   }
 
-  void SetRunDisplacementForAllNextTs(bool value = true) {
-    run_displacement_for_all_next_ts_ = value;
+  void SetPropagateStaticness(bool value = true) {
+    propagate_staticness_neighborhood_ = value;
   }
 
-  void DistributeRunDisplacementInfo();
+  void PropagateStaticness();
 
-  void UpdateRunDisplacement() {
-    run_displacement_ = run_displacement_next_ts_;
-    run_displacement_next_ts_ = false;
+  void UpdateStaticness() {
+    is_static_ = is_static_next_ts_;
+    is_static_next_ts_ = true;
   }
 
-  bool RunDisplacement() const { return run_displacement_; }
+  bool IsStatic() const { return is_static_; }
 
   /// Return agent pointer
   template <typename TAgent = Agent>
@@ -254,9 +254,13 @@ class Agent {
   /// `RunBehaviors` iterates over them.
   uint32_t run_behavior_loop_idx_ = 0;
 
-  bool run_displacement_ = true;                   //!
-  bool run_displacement_for_all_next_ts_ = false;  //!
-  mutable bool run_displacement_next_ts_ = true;   //!
+  /// If an agent is static, we should not compute the mechanical forces
+  bool is_static_ = false;  //!
+  /// If an agent becomes non-static (i.e. it moved or grew), we should set this
+  /// flag to true to also compute mechanical forces on the neighboring agents
+  bool propagate_staticness_neighborhood_ = false;  //!
+  /// Flag to determine of an agent is static in the next timestep
+  mutable bool is_static_next_ts_ = false;  //!
 
   /// Function to copy behaviors from existing Agent to this one
   /// and to initialize them.

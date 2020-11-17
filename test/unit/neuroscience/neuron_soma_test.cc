@@ -749,7 +749,7 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   // simulation.GetEnvironment()->Initialize();
   //
   // execute operation
-  // DisplacementOp<> op;
+  // MechanicalForcesOp<> op;
   // op(neurons, 0);
   // op(neurite_segments, 1);
   //

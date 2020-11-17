@@ -19,7 +19,7 @@
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
-#include "core/operation/displacement_op.h"
+#include "core/operation/mechanical_forces_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/visualization_op.h"
@@ -43,12 +43,8 @@ Scheduler::Scheduler() {
   // Operations are scheduled in the following order (sub categorated by their
   // operation implementation type, so that actual order may vary)
   std::vector<std::string> default_op_names = {
-      "update run displacement",
-      "bound space",
-      "behavior",
-      "displacement",
-      "discretization",
-      "distribute run displacement info",
+      "update staticness", "bound space",    "behavior",
+      "mechanical forces", "discretization", "propagate staticness",
       "diffusion"};
 
   std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
@@ -66,6 +62,35 @@ Scheduler::Scheduler() {
   std::vector<std::string> post_scheduled_ops_names = {
       "load balancing", "tear down iteration", "visualize"};
 
+  protected_op_names_ = {
+      "update staticness",  "behavior",
+      "discretization",     "distribute run displacment info",
+      "set up iteration",   "update environment",
+      "tear down iteration"};
+
+  auto disabled_op_names =
+      Simulation::GetActive()->GetParam()->unschedule_default_operations;
+  std::vector<std::vector<std::string>*> all_op_names;
+  all_op_names.push_back(&pre_scheduled_ops_names);
+  all_op_names.push_back(&default_op_names);
+  all_op_names.push_back(&post_scheduled_ops_names);
+
+  // Remove operations listed in `Param::unschedule_default_operations` from the
+  // to-be-scheduled operations, as long as they are non-protected
+  for (auto* op_list : all_op_names) {
+    for (auto op_name_iter = op_list->begin();
+         op_name_iter != op_list->end();) {
+      if (std::find(disabled_op_names.begin(), disabled_op_names.end(),
+                    *op_name_iter) != disabled_op_names.end() &&
+          std::find(protected_op_names_.begin(), protected_op_names_.end(),
+                    *op_name_iter) == protected_op_names_.end()) {
+        op_name_iter = op_list->erase(op_name_iter);
+      } else {
+        op_name_iter++;
+      }
+    }
+  }
+
   // Schedule the default operations
   for (auto& def_op : default_op_names) {
     ScheduleOp(NewOperation(def_op), OpType::kSchedule);
@@ -79,13 +104,9 @@ Scheduler::Scheduler() {
     ScheduleOp(NewOperation(def_op), OpType::kPostSchedule);
   }
 
-  protected_op_names_ = {
-      "update run displacement", "behavior",
-      "discretization",          "distribute run displacment info",
-      "set up iteration",        "update environment",
-      "tear down iteration"};
-
-  GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
+  if (!GetOps("visualize").empty()) {
+    GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
+  }
   ScheduleOps();
 }
 

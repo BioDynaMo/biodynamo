@@ -78,6 +78,15 @@ struct Param {
   ///     random_seed = 4357
   uint64_t random_seed = 4357;
 
+  /// List of default operation names that should not be scheduled by default
+  /// Default value: `{}`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     unschedule_default_operations = ["mechanical forces", "load
+  ///     balancing"]
+  std::vector<std::string> unschedule_default_operations;
+
   /// Variable which specifies method using for solving differential equation
   /// {"Euler", "RK4"}.
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
@@ -141,14 +150,6 @@ struct Param {
   ///     [simulation]
   ///     max_displacement = 3.0
   double simulation_max_displacement = 3.0;
-
-  /// Calculate mechanical interactions between agents.\n
-  /// Default value: `true`\n
-  /// TOML config file:
-  ///
-  ///     [simulation]
-  ///     run_mechanical_interactions = true
-  bool run_mechanical_interactions = true;
 
   /// Enforce an artificial cubic bounds around the simulation space.
   /// Agents cannot move outside this cube. Dimensions of this cube

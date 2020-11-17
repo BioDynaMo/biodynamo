@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_OPERATION_DISPLACEMENT_OP_H_
-#define CORE_OPERATION_DISPLACEMENT_OP_H_
+#ifndef CORE_OPERATION_MECHANICAL_FORCES_OP_H_
+#define CORE_OPERATION_MECHANICAL_FORCES_OP_H_
 
 #include <array>
 #include <cmath>
@@ -35,11 +35,11 @@
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-class DisplacementOp : public AgentOperationImpl {
-  BDM_OP_HEADER(DisplacementOp);
+class MechanicalForcesOp : public AgentOperationImpl {
+  BDM_OP_HEADER(MechanicalForcesOp);
 
  public:
-  DisplacementOp() : force_(new InteractionForce()) {
+  MechanicalForcesOp() : force_(new InteractionForce()) {
     auto* tinfo = ThreadInfo::GetInstance();
     last_iteration_.resize(tinfo->GetMaxThreads(),
                            std::numeric_limits<uint64_t>::max());
@@ -47,7 +47,7 @@ class DisplacementOp : public AgentOperationImpl {
     delta_time_.resize(tinfo->GetMaxThreads(), 0);
   }
 
-  DisplacementOp(const DisplacementOp& other)
+  MechanicalForcesOp(const MechanicalForcesOp& other)
       : squared_radius_(other.squared_radius_),
         last_time_run_(other.last_time_run_),
         delta_time_(other.delta_time_),
@@ -57,7 +57,7 @@ class DisplacementOp : public AgentOperationImpl {
     }
   }
 
-  virtual ~DisplacementOp() {
+  virtual ~MechanicalForcesOp() {
     if (force_) {
       delete force_;
     }
@@ -78,7 +78,7 @@ class DisplacementOp : public AgentOperationImpl {
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
 
-    if (!agent->RunDisplacement()) {
+    if (agent->IsStatic()) {
       return;
     }
 
@@ -115,4 +115,4 @@ class DisplacementOp : public AgentOperationImpl {
 
 }  // namespace bdm
 
-#endif  // CORE_OPERATION_DISPLACEMENT_OP_H_
+#endif  // CORE_OPERATION_MECHANICAL_FORCES_OP_H_

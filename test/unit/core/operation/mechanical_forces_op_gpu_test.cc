@@ -20,12 +20,12 @@
 #include "core/environment/environment.h"
 #include "core/functor.h"
 #include "core/gpu/gpu_helper.h"
-#include "core/operation/displacement_op.h"
+#include "core/operation/mechanical_forces_op.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace displacement_op_gpu_test_internal {
+namespace mechanical_forces_op_gpu_test_internal {
 
 // NB: The GPU execution 'context' for the displacement operation differes,
 // from the CPU version. Once the CPU version supports the same execution
@@ -33,7 +33,7 @@ namespace displacement_op_gpu_test_internal {
 
 static constexpr double kEps = 10 * abs_error<double>::value;
 
-class DisplacementOpCpuVerify {
+class MechanicalForcesOpCpuVerify {
  public:
   struct CalculateDisplacement;
   struct UpdateCells;
@@ -137,14 +137,14 @@ void RunTest(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      auto* op = NewOperation("displacement");
+      auto* op = NewOperation("mechanical forces");
       op->SelectComputeTarget(mode);
       op->SetUp();
       (*op)();
       op->TearDown();
     } else {
       // Run verification on CPU
-      DisplacementOpCpuVerify cpu_op;
+      MechanicalForcesOpCpuVerify cpu_op;
       cpu_op();
     }
   }
@@ -177,11 +177,11 @@ void RunTest(OpComputeTarget mode) {
 }
 
 #ifdef USE_CUDA
-TEST(DisplacementOpGpuTest, ComputeSoaCuda) { RunTest(kCuda); }
+TEST(MechanicalForcesOpGpuTest, ComputeSoaCuda) { RunTest(kCuda); }
 #endif
 
 #ifdef USE_OPENCL
-TEST(DisplacementOpGpuTest, ComputeSoaOpenCL) { RunTest(kOpenCl); }
+TEST(MechanicalForcesOpGpuTest, ComputeSoaOpenCL) { RunTest(kOpenCl); }
 #endif
 
 void RunTest2(OpComputeTarget mode) {
@@ -228,14 +228,14 @@ void RunTest2(OpComputeTarget mode) {
     env->Update();
 
     if (i == Case::kCompute) {
-      auto* op = NewOperation("displacement");
+      auto* op = NewOperation("mechanical forces");
       op->SelectComputeTarget(mode);
       op->SetUp();
       (*op)();
       op->TearDown();
     } else {
       // Run verification on CPU
-      DisplacementOpCpuVerify cpu_op;
+      MechanicalForcesOpCpuVerify cpu_op;
       cpu_op();
     }
   }
@@ -276,12 +276,12 @@ void RunTest2(OpComputeTarget mode) {
 }
 
 #ifdef USE_CUDA
-TEST(DisplacementOpGpuTest, ComputeSoaNewCuda) { RunTest2(kCuda); }
+TEST(MechanicalForcesOpGpuTest, ComputeSoaNewCuda) { RunTest2(kCuda); }
 #endif
 
 #ifdef USE_OPENCL
-TEST(DisplacementOpGpuTest, ComputeSoaNewOpenCL) { RunTest2(kOpenCl); }
+TEST(MechanicalForcesOpGpuTest, ComputeSoaNewOpenCL) { RunTest2(kOpenCl); }
 #endif
 
-}  // namespace displacement_op_gpu_test_internal
+}  // namespace mechanical_forces_op_gpu_test_internal
 }  // namespace bdm

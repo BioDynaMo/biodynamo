@@ -194,7 +194,7 @@ class Cell : public Agent {
 
   void SetDiameter(double diameter) override {
     if (diameter > diameter_) {
-      SetRunDisplacementForAllNextTs();
+      SetPropagateStaticness();
     }
     diameter_ = diameter;
     UpdateVolume();
@@ -211,7 +211,7 @@ class Cell : public Agent {
 
   void SetPosition(const Double3& position) override {
     position_ = position;
-    SetRunDisplacementForAllNextTs();
+    SetPropagateStaticness();
   }
 
   void SetTractorForce(const Double3& tractor_force) {
@@ -233,7 +233,7 @@ class Cell : public Agent {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
     double diameter = std::cbrt(volume_ * 6 / Math::kPi);
     if (diameter > diameter_) {
-      Base::SetRunDisplacementForAllNextTs();
+      Base::SetPropagateStaticness();
     }
     diameter_ = diameter;
   }
@@ -245,15 +245,15 @@ class Cell : public Agent {
 
   void UpdatePosition(const Double3& delta) {
     position_ += delta;
-    SetRunDisplacementForAllNextTs();
+    SetPropagateStaticness();
   }
 
-  struct DisplacementFunctor : Functor<void, const Agent*, double> {
+  struct MechanicalForcesFunctor : Functor<void, const Agent*, double> {
     const InteractionForce* force;
     Agent* agent;
     Double3 translation_force_on_point_mass{0, 0, 0};
 
-    DisplacementFunctor(const InteractionForce* force, Agent* agent)
+    MechanicalForcesFunctor(const InteractionForce* force, Agent* agent)
         : force(force), agent(agent) {}
 
     void operator()(const Agent* neighbor, double squared_distance) override {
@@ -306,7 +306,7 @@ class Cell : public Agent {
     //  (We check for every neighbor object if they touch us, i.e. push us
     //  away)
 
-    DisplacementFunctor calculate_neighbor_forces(force, this);
+    MechanicalForcesFunctor calculate_neighbor_forces(force, this);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
                                       squared_radius);

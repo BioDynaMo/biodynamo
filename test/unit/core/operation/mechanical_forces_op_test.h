@@ -12,18 +12,18 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef UNIT_CORE_OPERATION_DISPLACEMENT_OP_TEST_H_
-#define UNIT_CORE_OPERATION_DISPLACEMENT_OP_TEST_H_
+#ifndef UNIT_CORE_OPERATION_MECHANICAL_FORCES_OP_TEST_H_
+#define UNIT_CORE_OPERATION_MECHANICAL_FORCES_OP_TEST_H_
 
 #include "core/agent/cell.h"
-#include "core/operation/displacement_op.h"
+#include "core/operation/mechanical_forces_op.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
-namespace displacement_op_test_internal {
+namespace mechanical_forces_op_test_internal {
 
 inline void RunTest() {
-  Simulation simulation("displacement_op_test_RunTest");
+  Simulation simulation("mechanical_forces_op_test_RunTest");
   auto* rm = simulation.GetResourceManager();
 
   auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
@@ -48,7 +48,7 @@ inline void RunTest() {
 
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();
-  auto* op = NewOperation("displacement");
+  auto* op = NewOperation("mechanical forces");
   ctxt->Execute(rm->GetAgent(ref_uid), {op});
   ctxt->Execute(rm->GetAgent(ref_uid + 1), {op});
 
@@ -92,7 +92,7 @@ inline void RunTest() {
   delete op;
 }
 
-}  // namespace displacement_op_test_internal
+}  // namespace mechanical_forces_op_test_internal
 }  // namespace bdm
 
-#endif  // UNIT_CORE_OPERATION_DISPLACEMENT_OP_TEST_H_
+#endif  // UNIT_CORE_OPERATION_MECHANICAL_FORCES_OP_TEST_H_

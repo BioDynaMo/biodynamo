@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_GPU_DISPLACEMENT_OP_CUDA_KERNEL_H_
-#define CORE_GPU_DISPLACEMENT_OP_CUDA_KERNEL_H_
+#ifndef CORE_GPU_MECHANICAL_FORCES_OP_CUDA_KERNEL_H_
+#define CORE_GPU_MECHANICAL_FORCES_OP_CUDA_KERNEL_H_
 
 #include <math.h>
 #include <stdint.h>
@@ -21,12 +21,12 @@
 
 namespace bdm {
 
-class DisplacementOpCudaKernel {
+class MechanicalForcesOpCudaKernel {
  public:
-  DisplacementOpCudaKernel(uint32_t num_objects, uint32_t num_boxes);
-  virtual ~DisplacementOpCudaKernel();
+  MechanicalForcesOpCudaKernel(uint32_t num_objects, uint32_t num_boxes);
+  virtual ~MechanicalForcesOpCudaKernel();
 
-  void LaunchDisplacementKernel(
+  void LaunchMechanicalForcesKernel(
       const double* positions, const double* diameter,
       const double* tractor_force, const double* adherence,
       const uint32_t* box_id, const double* mass, const double* timestep,
@@ -63,4 +63,4 @@ class DisplacementOpCudaKernel {
 
 }  // namespace bdm
 
-#endif  // CORE_GPU_DISPLACEMENT_OP_CUDA_KERNEL_H_
+#endif  // CORE_GPU_MECHANICAL_FORCES_OP_CUDA_KERNEL_H_

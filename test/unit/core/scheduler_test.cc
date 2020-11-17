@@ -410,7 +410,7 @@ TEST_F(SchedulerTest, GetOps) {
   sim.GetResourceManager()->AddAgent(new Cell(10));
   auto* scheduler = sim.GetScheduler();
 
-  std::vector<std::string> def_ops = {"displacement", "diffusion"};
+  std::vector<std::string> def_ops = {"mechanical forces", "diffusion"};
 
   for (auto& def_op : def_ops) {
     auto ops = scheduler->GetOps(def_op);
@@ -439,12 +439,9 @@ TEST_F(SchedulerTest, ScheduleOrder) {
   scheduler_ = sim.GetScheduler();
   sim.Simulate(1);
 
-  std::vector<std::string> agent_ops = {"update run displacement",
-                                        "bound space",
-                                        "behavior",
-                                        "displacement",
-                                        "discretization",
-                                        "distribute run displacement info"};
+  std::vector<std::string> agent_ops = {
+      "update staticness", "bound space",    "behavior",
+      "mechanical forces", "discretization", "propagate staticness"};
   std::vector<std::string> sa_ops = {"diffusion"};
 
   int i = 0;
@@ -502,6 +499,25 @@ TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
     scheduler_wrapper.RunPostScheduledOps();
     EXPECT_EQ(successors, scheduler_wrapper.GetSuccessors());
   }
+}
+
+// Test for Param::unschedule_default_operations
+TEST_F(SchedulerTest, DisableDefaultOperations) {
+  auto set_param = [&](Param* param) {
+    param->unschedule_default_operations = {"mechanical forces", "visualize",
+                                            "discretization"};
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* scheduler = simulation.GetScheduler();
+  SchedulerTest scheduler_wrapper(scheduler, nullptr);
+
+  EXPECT_TRUE(scheduler->GetOps("mechanical forces").empty());
+  EXPECT_TRUE(scheduler->GetOps("visualize").empty());
+  EXPECT_FALSE(scheduler->GetOps("load balancing").empty());
+  // protected ops should be ignored for unscheduling
+  auto scheduled_agent_ops = scheduler_wrapper.GetListOfScheduledAgentOps();
+  EXPECT_TRUE(std::find(scheduled_agent_ops.begin(), scheduled_agent_ops.end(),
+                        "discretization") != scheduled_agent_ops.end());
 }
 
 }  // namespace bdm

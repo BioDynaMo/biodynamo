@@ -12,15 +12,15 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/core/operation/displacement_op_test.h"
+#include "unit/core/operation/mechanical_forces_op_test.h"
 #include "gtest/gtest.h"
 
 namespace bdm {
-namespace displacement_op_test_internal {
+namespace mechanical_forces_op_test_internal {
 
-TEST(DisplacementOpTest, Compute) { RunTest(); }
+TEST(MechanicalForcesOpTest, Compute) { RunTest(); }
 
-TEST(DisplacementOpTest, ComputeNew) {
+TEST(MechanicalForcesOpTest, ComputeNew) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* env = simulation.GetEnvironment();
@@ -44,13 +44,13 @@ TEST(DisplacementOpTest, ComputeNew) {
   env->Update();
 
   // Create operation
-  auto* displacement_op = NewOperation("displacement");
+  auto* mechanical_forces_op = NewOperation("mechanical forces");
 
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();
 
   for (uint64_t i = 0; i < 27; i++) {
-    ctxt->Execute(rm->GetAgent(ref_uid + i), {displacement_op});
+    ctxt->Execute(rm->GetAgent(ref_uid + i), {mechanical_forces_op});
   }
 
   // clang-format off
@@ -83,8 +83,8 @@ TEST(DisplacementOpTest, ComputeNew) {
   EXPECT_ARR_NEAR(rm->GetAgent(ref_uid + 26)->GetPosition(), {40.197616806612238, 40.197607143403182, 40.197597121203316});
   // clang-format on
 
-  delete displacement_op;
+  delete mechanical_forces_op;
 }
 
-}  // namespace displacement_op_test_internal
+}  // namespace mechanical_forces_op_test_internal
 }  // namespace bdm

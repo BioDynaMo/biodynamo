@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
-#define CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
+#ifndef CORE_OPERATION_MECHANICAL_FORCES_OP_OPENCL_H_
+#define CORE_OPERATION_MECHANICAL_FORCES_OP_OPENCL_H_
 
 #if defined(USE_OPENCL) && !defined(__ROOTCLING__)
 #include <vector>
@@ -32,8 +32,8 @@
 namespace bdm {
 
 /// Defines the 3D physical interactions between physical objects
-struct DisplacementOpOpenCL : StandaloneOperationImpl {
-  BDM_OP_HEADER(DisplacementOpOpenCL);
+struct MechanicalForcesOpOpenCL : StandaloneOperationImpl {
+  BDM_OP_HEADER(MechanicalForcesOpOpenCL);
 
   void IsNonSphericalObjectPresent(const Agent* agent, bool* answer) {
     if (agent->GetShape() != Shape::kSphere) {
@@ -50,15 +50,15 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
 
     if (!grid) {
       Log::Fatal(
-          "DisplacementOpOpenCL::operator()",
-          "DisplacementOpOpenCL only works with UniformGridEnvironement.");
+          "MechanicalForcesOpOpenCL::operator()",
+          "MechanicalForcesOpOpenCL only works with UniformGridEnvironement.");
     }
 
     // Check the number of NUMA domains on the system. Currently only 1 is
     // supported for GPU execution.
     if (ThreadInfo::GetInstance()->GetNumaNodes() > 1) {
       Log::Fatal(
-          "DisplacementOpOpenCL",
+          "MechanicalForcesOpOpenCL",
           "\nThe GPU execution only supports systems with 1 NUMA domain.");
       return;
     }
@@ -96,7 +96,7 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
       // GPU accelerations currently supports only sphere-sphere interactions
       IsNonSphericalObjectPresent(agent, &is_non_spherical_object);
       if (is_non_spherical_object) {
-        Log::Fatal("DisplacementOpOpenCL",
+        Log::Fatal("MechanicalForcesOpOpenCL",
                    "\nWe detected a non-spherical object during the GPU "
                    "execution. This is currently not supported.");
         return;
@@ -200,7 +200,7 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
       queue->enqueueNDRangeKernel(collide, cl::NullRange, global_size,
                                   local_size);
     } catch (const cl::Error& err) {
-      Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(),
+      Log::Error("MechanicalForcesOpOpenCL", err.what(), "(", err.err(),
                  ") = ", ocl_state->GetErrorString(err.err()));
       throw;
     }
@@ -210,7 +210,7 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
                                num_objects * 3 * sizeof(cl_double),
                                cell_movements.data()->data());
     } catch (const cl::Error& err) {
-      Log::Error("DisplacementOpOpenCL", err.what(), "(", err.err(),
+      Log::Error("MechanicalForcesOpOpenCL", err.what(), "(", err.err(),
                  ") = ", ocl_state->GetErrorString(err.err()));
       throw;
     }
@@ -237,4 +237,4 @@ struct DisplacementOpOpenCL : StandaloneOperationImpl {
 
 #endif  // defined(USE_OPENCL) && !defined(__ROOTCLING__)
 
-#endif  // CORE_OPERATION_DISPLACEMENT_OP_OPENCL_H_
+#endif  // CORE_OPERATION_MECHANICAL_FORCES_OP_OPENCL_H_

@@ -185,7 +185,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   void SetDiameter(double diameter) override {
     if (diameter > diameter_) {
-      SetRunDisplacementForAllNextTs();
+      SetPropagateStaticness();
     }
     diameter_ = diameter;
     UpdateVolume();
@@ -207,7 +207,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   void SetMassLocation(const Double3& mass_location) {
     mass_location_ = mass_location;
-    SetRunDisplacementForAllNextTs();
+    SetPropagateStaticness();
   }
 
   double GetAdherence() const { return adherence_; }
@@ -609,7 +609,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     UpdateVolume();
   }
 
-  struct DisplacementFunctor : public Functor<void, const Agent*, double> {
+  struct MechanicalForcesFunctor : public Functor<void, const Agent*, double> {
     const InteractionForce* force;
     NeuriteElement* ne;
     Double3& force_from_neighbors;
@@ -617,10 +617,11 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     double& h_over_m;
     bool& has_neurite_neighbor;
 
-    DisplacementFunctor(const InteractionForce* force, NeuriteElement* neurite,
-                        Double3& force_from_neighbors,
-                        Double3& force_on_my_mothers_point_mass,
-                        double& h_over_m, bool& has_neurite_neighbor)
+    MechanicalForcesFunctor(const InteractionForce* force,
+                            NeuriteElement* neurite,
+                            Double3& force_from_neighbors,
+                            Double3& force_on_my_mothers_point_mass,
+                            double& h_over_m, bool& has_neurite_neighbor)
         : force(force),
           ne(neurite),
           force_from_neighbors(force_from_neighbors),
@@ -721,7 +722,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     bool has_neurite_neighbor = false;
     //  (We check for every neighbor object if they touch us, i.e. push us away)
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    DisplacementFunctor calculate_neighbor_forces(
+    MechanicalForcesFunctor calculate_neighbor_forces(
         force, this, force_from_neighbors, force_on_my_mothers_point_mass,
         h_over_m, has_neurite_neighbor);
     ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
@@ -814,7 +815,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   void UpdateDiameter() {
     double diameter = std::sqrt(4 / Math::kPi * volume_ / actual_length_);
     if (diameter > diameter_) {
-      Base::SetRunDisplacementForAllNextTs();
+      Base::SetPropagateStaticness();
     }
     diameter_ = diameter;
   }
@@ -961,7 +962,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// Should not be used, since the actual length depends on the geometry.
   void SetActualLength(double actual_length) {
     if (actual_length > actual_length_) {
-      SetRunDisplacementForAllNextTs();
+      SetPropagateStaticness();
     }
     actual_length_ = actual_length;
   }
@@ -975,7 +976,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   const Double3& GetSpringAxis() const { return spring_axis_; }
 
   void SetSpringAxis(const Double3& axis) {
-    SetRunDisplacementForAllNextTs();
+    SetPropagateStaticness();
     spring_axis_ = axis;
   }
 
