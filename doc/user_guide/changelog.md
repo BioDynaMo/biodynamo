@@ -18,6 +18,21 @@ keywords:
   -track
   -tracking
 ---
+## 17.11.2020 [`PR-#138`](https://github.com/BioDynaMo/biodynamo/pull/140)
+
+-   Disable scheduling of default operations with the new parameter: `Param::unschedule_default_operations`.
+    Any operation name listed in `Param::unschedule_default_operations`
+    shall not be scheduled by default. The name must match the name of the
+    registered operation.
+-   Rename DisplacementOp to MechanicalForcesOp, and accordingly other similar-named parameters
+
+For example, to disable the mechanical forces between agents:
+
+```cpp
+auto* param = Simulation::GetActive()->GetParam();
+param->unschedule_default_operations = { "mechanical forces" };
+```
+
 ## 11.11.2020 [`PR-#138`](https://github.com/BioDynaMo/biodynamo/pull/138)
 
 With regard to the upcoming v1.0 release, we decided to improve
@@ -36,7 +51,7 @@ The major changes are:
 A more detailed list of changes can be found here:
 https://docs.google.com/spreadsheets/d/1peXSsBIhfLDGU3_FYjPkO3qI2zk-1nwScYBOftT12fY/edit#gid=0
 
-## 08.10.2020 [`PR-#110`](https://github.com/BioDynaMo/biodynamo/pull/110)
+## 08.10.2020 [`PR-#110`](https://github.com/BioDynaMo/biodynamo/pull/107)
 
 Complete rewrite of ParaView visualization adaptor.
 
