@@ -14,9 +14,37 @@
 
 #include "samples/common/inc/helper_math.h"
 #include "core/gpu/mechanical_forces_op_cuda_kernel.h"
-
 #include <iostream>
 #include <unistd.h>
+
+struct GpuTimer
+{
+      cudaEvent_t start;
+      cudaEvent_t stop;
+      std::string name;
+      GpuTimer(std::string name) : name(name)
+      {
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
+            cudaEventRecord(start, 0);
+      }
+
+      ~GpuTimer()
+      {
+            cudaEventRecord(stop, 0);
+            std::cout << name << " " << Elapsed() << std::endl;
+            cudaEventDestroy(start);
+            cudaEventDestroy(stop);
+      }
+
+      float Elapsed()
+      {
+            float elapsed;
+            cudaEventSynchronize(stop);
+            cudaEventElapsedTime(&elapsed, start, stop);
+            return elapsed;
+      }
+};
 
 void printMemoryUsage() {
   size_t availableMemory, totalMemory, usedMemory;
@@ -272,6 +300,8 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   // printf("[LaunchMechanicalForcesKernel] d_positions_ = %p  |  positions = %p\n", d_positions_, positions);
   // printf("[LaunchMechanicalForcesKernel] positions[0] = %f  |  positions[1] = %f\n", positions[0], positions[1]);
 
+  {
+    GpuTimer timer("Cuda::CopyToDevice");
   GpuErrchk(cudaMemcpy(d_positions_, 		positions, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_diameters_, 		diameters, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_tractor_force_, 	tractor_force, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
@@ -290,6 +320,7 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   GpuErrchk(cudaMemcpy(d_box_length_, 		box_length, sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_num_boxes_axis_, 	num_boxes_axis, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpy(d_grid_dimensions_, 	grid_dimensions, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
+  }
 
   int blockSize = 128;
   int minGridSize;
@@ -302,6 +333,8 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   // printMemoryUsage();
 
   // printf("gridSize = %d  |  blockSize = %d\n", gridSize, blockSize);
+  {
+    GpuTimer timer("Cuda::Kernel");
   collide<<<gridSize, blockSize>>>(d_positions_, d_diameters_, d_tractor_force_,
     d_adherence_, d_box_id_, d_mass_, d_timestep_, d_max_displacement_,
     d_squared_radius_, d_num_objects_, d_starts_, d_lengths_, d_timestamps_,
@@ -310,6 +343,8 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
 
   // We need to wait for the kernel to finish before reading back the result
   cudaDeviceSynchronize();
+  }
+    GpuTimer timer("Cuda::CopyToHost");
   cudaMemcpy(cell_movements, d_cell_movements_, 3 * num_objects[0] * sizeof(double), cudaMemcpyDeviceToHost);
 }
 
