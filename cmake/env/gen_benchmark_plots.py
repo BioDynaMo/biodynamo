@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -109,22 +109,6 @@ def plot(name_demo):
     ax[1].set_xticklabels(xlabels, rotation=10)
     plt.savefig('benchmark/'+name_demo+'.png')
     return
-
-# def write_memory(j):
-#     file = sys.argv[1]
-#     # Just a random vector of the MemoryUsage
-#     GetMemoryUsage = [10]*j
-#     i = 0
-#     file = sys.argv[1]
-#     with open(file, "w") as w_file:
-#         while i < j:
-#             x = {"memory":GetMemoryUsage[i]}
-#             data_benchmark = data["benchmarks"]
-#             data_demo = data_benchmark[i]
-#             data_demo.update(x)
-#             i += 1
-#         json.dump(data, w_file, indent=1)
-#     w_file.close()
 
 def main():
     i = 0

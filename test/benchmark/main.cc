@@ -5,13 +5,8 @@
 //BENCHMARK_MAIN();
 
 int main(int argc, char** argv) {
-    //typedef std::unique_ptr<benchmark::BenchmarkReporter> PtrType;
-
     ::benchmark::BenchmarkReporter* rep = new ::benchmark::BdmJSONReporter();
-    //PtrType rep = PtrType(new benchmark::BdmJSONReporter);
-
     ::benchmark::Initialize(&argc, argv);
     if (::benchmark::ReportUnrecognizedArguments(argc, argv)) return 1;
     ::benchmark::RunSpecifiedBenchmarks(NULL, rep);
-//    ::benchmark::RunSpecifiedBenchmarks(new ::benchmark::BdmJSONReporter);
 }

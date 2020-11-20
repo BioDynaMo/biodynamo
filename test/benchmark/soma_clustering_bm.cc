@@ -30,7 +30,7 @@ static void SomaClustering1(benchmark::State& state) {
   }
 }
 
-BENCHMARK(SomaClustering1)/*->Range(1, 1<<17)*/->MeasureProcessCPUTime();
+BENCHMARK(SomaClustering1)->MeasureProcessCPUTime();
 
 static void SomaClustering0(benchmark::State& state) {
   // FIXME memory leak
@@ -44,8 +44,7 @@ static void SomaClustering0(benchmark::State& state) {
   }
 }
 
-BENCHMARK(SomaClustering0)/*->Range(1, 1<<17)*/->MeasureProcessCPUTime();
-
+BENCHMARK(SomaClustering0)->MeasureProcessCPUTime();
 
 }  // namespace soma_clustering
 }  // namespace bdm
