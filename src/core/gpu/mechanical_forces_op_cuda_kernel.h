@@ -36,6 +36,7 @@ class MechanicalForcesOpCudaKernel {
       uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
       double* cell_movements);
 
+  void Synch() const;
   void ResizeCellBuffers(uint32_t num_cells);
   void ResizeGridBuffers(uint32_t num_boxes);
 
@@ -60,6 +61,12 @@ class MechanicalForcesOpCudaKernel {
   uint32_t* d_num_boxes_axis_ = nullptr;
   int32_t* d_grid_dimensions_ = nullptr;
 };
+
+void AllocPinned(double** d, uint64_t size);
+void AllocPinned(uint64_t** d, uint64_t size);
+void AllocPinned(uint32_t** d, uint64_t size);
+void AllocPinned(int32_t** d, uint64_t size);
+void AllocPinned(uint16_t** d, uint64_t size);
 
 }  // namespace bdm
 

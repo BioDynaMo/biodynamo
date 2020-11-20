@@ -301,30 +301,31 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   // printf("[LaunchMechanicalForcesKernel] positions[0] = %f  |  positions[1] = %f\n", positions[0], positions[1]);
 
   {
-    GpuTimer timer("Cuda::CopyToDevice");
-  GpuErrchk(cudaMemcpy(d_positions_, 		positions, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_diameters_, 		diameters, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_tractor_force_, 	tractor_force, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_adherence_,     adherence, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_box_id_, 		box_id, num_objects[0] * sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_mass_, 				mass, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_timestep_, 			timestep, sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_max_displacement_,  max_displacement, sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_squared_radius_, 	squared_radius, sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_num_objects_, 				num_objects, sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_starts_, 			starts, num_boxes * sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_lengths_, 			lengths, num_boxes * sizeof(uint16_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_timestamps_, 			timestamps, num_boxes * sizeof(uint64_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_current_timestamp_, 			current_timestamp, sizeof(uint64_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_successors_, 		successors, num_objects[0] * sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_box_length_, 		box_length, sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_num_boxes_axis_, 	num_boxes_axis, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpy(d_grid_dimensions_, 	grid_dimensions, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
+    // GpuTimer timer("Cuda::CopyToDevice");
+  GpuErrchk(cudaMemcpyAsync(d_positions_, 		positions, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_diameters_, 		diameters, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_tractor_force_, 	tractor_force, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_adherence_,     adherence, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_box_id_, 		box_id, num_objects[0] * sizeof(uint32_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_mass_, 				mass, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_timestep_, 			timestep, sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_max_displacement_,  max_displacement, sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_squared_radius_, 	squared_radius, sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_num_objects_, 				num_objects, sizeof(uint32_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_starts_, 			starts, num_boxes * sizeof(uint32_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_lengths_, 			lengths, num_boxes * sizeof(uint16_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_timestamps_, 			timestamps, num_boxes * sizeof(uint64_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_current_timestamp_, 			current_timestamp, sizeof(uint64_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_successors_, 		successors, num_objects[0] * sizeof(uint32_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_box_length_, 		box_length, sizeof(uint32_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_num_boxes_axis_, 	num_boxes_axis, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(d_grid_dimensions_, 	grid_dimensions, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
   }
 
   int blockSize = 128;
   int minGridSize;
   int gridSize;
+  // cudaDeviceSynchronize();
 
   // Get a near-optimal occupancy with the following thread organization
   cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, collide, 0, num_objects[0]);
@@ -334,7 +335,7 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
 
   // printf("gridSize = %d  |  blockSize = %d\n", gridSize, blockSize);
   {
-    GpuTimer timer("Cuda::Kernel");
+    // GpuTimer timer("Cuda::Kernel");
   collide<<<gridSize, blockSize>>>(d_positions_, d_diameters_, d_tractor_force_,
     d_adherence_, d_box_id_, d_mass_, d_timestep_, d_max_displacement_,
     d_squared_radius_, d_num_objects_, d_starts_, d_lengths_, d_timestamps_,
@@ -342,10 +343,14 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
     d_grid_dimensions_, d_cell_movements_);
 
   // We need to wait for the kernel to finish before reading back the result
-  cudaDeviceSynchronize();
+  // cudaDeviceSynchronize();
   }
-    GpuTimer timer("Cuda::CopyToHost");
-  cudaMemcpy(cell_movements, d_cell_movements_, 3 * num_objects[0] * sizeof(double), cudaMemcpyDeviceToHost);
+    // GpuTimer timer("Cuda::CopyToHost");
+  cudaMemcpyAsync(cell_movements, d_cell_movements_, 3 * num_objects[0] * sizeof(double), cudaMemcpyDeviceToHost);
+}
+
+void bdm::MechanicalForcesOpCudaKernel::Synch() const {
+  cudaDeviceSynchronize();
 }
 
 void bdm::MechanicalForcesOpCudaKernel::ResizeCellBuffers(uint32_t num_cells) {
@@ -398,3 +403,25 @@ bdm::MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {
   cudaFree(d_grid_dimensions_);
   cudaFree(d_cell_movements_);
 }
+
+
+void bdm::AllocPinned(double** d, uint64_t size) {
+  cudaMallocHost((void**)d, size * sizeof(double));
+}
+
+void bdm::AllocPinned(uint64_t** d, uint64_t size) {
+  cudaMallocHost((void**)d, size * sizeof(uint64_t));
+}
+
+void bdm::AllocPinned(uint32_t** d, uint64_t size) {
+  cudaMallocHost((void**)d, size * sizeof(uint32_t));
+}
+
+void bdm::AllocPinned(int32_t** d, uint64_t size) {
+  cudaMallocHost((void**)d, size * sizeof(int32_t));
+}
+
+void bdm::AllocPinned(uint16_t** d, uint64_t size) {
+  cudaMallocHost((void**)d, size * sizeof(uint16_t));
+}
+

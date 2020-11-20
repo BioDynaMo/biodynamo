@@ -70,9 +70,10 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
       offset[nn] = offset[nn - 1] + rm->GetNumAgents(nn - 1);
     }
 
-    uint32_t total_num_objects = rm->GetNumAgents();
+    auto total_num_objects = rm->GetNumAgents();
+    auto num_boxes = grid->boxes_.size();
 
-    i_->Initialize(total_num_objects, offset, grid);
+    i_->Initialize(total_num_objects, num_boxes, offset, grid);
     {
     Timing timer("MechanicalForcesOpCuda::toColumnar");
     rm->ForEachAgentParallel(1000, *i_);
@@ -87,24 +88,20 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
     //   }
     // }
 
-    auto num_boxes = grid->boxes_.size();
-    i_->current_timestamp = grid->timestamp_;
-    i_->starts.reserve(num_boxes);
-    i_->lengths.reserve(num_boxes);
-    i_->timestamps.reserve(num_boxes);
+    *i_->current_timestamp = grid->timestamp_;
 #pragma omp parallel for
     for (uint64_t i = 0; i < grid->boxes_.size(); ++i) {
     // for (auto& box : grid->boxes_) {
       auto& box = grid->boxes_[i];
       i_->timestamps[i] = box.timestamp_;
-      if (box.timestamp_ == i_->current_timestamp) {
+      if (box.timestamp_ == *i_->current_timestamp) {
         i_->lengths[i] = box.length_;
         i_->starts[i] =
             offset[box.start_.GetNumaNode()] + box.start_.GetElementIdx();
       }
     }
-    grid->GetGridInfo(&(i_->box_length), &(i_->num_boxes_axis),
-                      &(i_->grid_dimensions));
+    grid->GetGridInfo(i_->box_length, i_->num_boxes_axis,
+                      i_->grid_dimensions);
   }
 
   void operator()() override {
@@ -150,19 +147,20 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
     
     Timing timer("MechanicalForcesOpCuda::Kernel");
     cdo_->LaunchMechanicalForcesKernel(
-        i_->cell_positions.data()->data(), i_->cell_diameters.data(),
-        i_->cell_tractor_force.data()->data(), i_->cell_adherence.data(),
-        i_->cell_boxid.data(), i_->mass.data(), &(param->simulation_time_step),
+        i_->cell_positions, i_->cell_diameters,
+        i_->cell_tractor_force, i_->cell_adherence,
+        i_->cell_boxid, i_->mass, &(param->simulation_time_step),
         &(param->simulation_max_displacement), &squared_radius,
-        &total_num_objects, i_->starts.data(), i_->lengths.data(),
-        i_->timestamps.data(), &(i_->current_timestamp), i_->successors.data(),
-        &(i_->box_length), i_->num_boxes_axis.data(),
-        i_->grid_dimensions.data(), i_->cell_movements.data()->data());
+        &total_num_objects, i_->starts, i_->lengths,
+        i_->timestamps, i_->current_timestamp, i_->successors,
+        i_->box_length, i_->num_boxes_axis,
+        i_->grid_dimensions, i_->cell_movements);
   }
 
   void TearDown() override {
+    cdo_->Synch();
     Timing timer("MechanicalForcesOpCuda::TearDown");
-    auto u = UpdateCPUResults(&(i_->cell_movements), i_->offset);
+    auto u = UpdateCPUResults(i_->cell_movements, i_->offset);
     Simulation::GetActive()->GetResourceManager()->ForEachAgentParallel(1000,
                                                                         u);
   }
@@ -174,10 +172,10 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
   uint32_t total_num_objects_ = 0;
 
   struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
-    std::vector<std::array<double, 3>>* cell_movements = nullptr;
+    double* cell_movements = nullptr;
     std::vector<AgentHandle::ElementIdx_t> offset;
 
-    UpdateCPUResults(std::vector<std::array<double, 3>>* cm,
+    UpdateCPUResults(double* cm,
                      const std::vector<AgentHandle::ElementIdx_t>& offs) {
       cell_movements = cm;
       offset = offs;
@@ -187,10 +185,11 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
       auto* param = Simulation::GetActive()->GetParam();
       auto* cell = bdm_static_cast<Cell*>(agent);
       auto idx = offset[ah.GetNumaNode()] + ah.GetElementIdx();
+      idx *= 3;
       Double3 new_pos = {
-      (*cell_movements)[idx][0],
-      (*cell_movements)[idx][1],
-      (*cell_movements)[idx][2]
+        cell_movements[idx],
+        cell_movements[idx + 1],
+        cell_movements[idx + 2]
       };
       cell->UpdatePosition(new_pos);
       if (param->bound_space) {
@@ -205,36 +204,60 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
     // pointer to the underlying array, whereas the CUDA kernel will cast it to
     // a void pointer. The conversion of `const double *` to `void *` is
     // illegal.
-    std::vector<std::array<double, 3>> cell_movements;
-    std::vector<Double3> cell_positions;
-    std::vector<double> cell_diameters;
-    std::vector<double> cell_adherence;
-    std::vector<Double3> cell_tractor_force;
-    std::vector<uint32_t> cell_boxid;
-    std::vector<double> mass;
+    double* cell_movements;
+    double* cell_positions;
+    double* cell_diameters;
+    double* cell_adherence;
+    double* cell_tractor_force;
+    uint32_t* cell_boxid;
+    double* mass;
+    uint32_t* successors;
+
     std::vector<AgentHandle::ElementIdx_t> offset;
-    std::vector<AgentHandle::ElementIdx_t> successors;
-    std::vector<uint32_t> starts;
-    std::vector<uint16_t> lengths;
-    std::vector<uint64_t> timestamps;
-    uint64_t current_timestamp;
-    uint32_t box_length;
-    std::array<uint32_t, 3> num_boxes_axis;
-    std::array<int32_t, 3> grid_dimensions;
+    
+    uint32_t* starts;
+    uint16_t* lengths;
+    uint64_t* timestamps;
+    uint64_t* current_timestamp;
+    uint32_t* box_length;
+    uint32_t* num_boxes_axis;
+    int32_t* grid_dimensions;
     UniformGridEnvironment* grid = nullptr;
 
-    InitializeGPUData() {}
-    void Initialize(uint32_t num_objects,
+    uint64_t allocated_num_objects = 0;
+    uint64_t allocated_num_boxes = 0;
+
+    InitializeGPUData() {
+      // FIXME memory leak
+      AllocPinned(&current_timestamp, 1);
+      AllocPinned(&box_length, 1);
+      AllocPinned(&num_boxes_axis, 3);
+      AllocPinned(&grid_dimensions, 3);
+    }
+
+    void Initialize(uint64_t num_objects, uint64_t num_boxes,
                       const std::vector<AgentHandle::ElementIdx_t>& offs, 
                       UniformGridEnvironment* g) {
-      cell_movements.reserve(num_objects);
-      cell_positions.reserve(num_objects);
-      successors.reserve(num_objects);
-      cell_diameters.reserve(num_objects);
-      cell_adherence.reserve(num_objects);
-      cell_tractor_force.reserve(num_objects);
-      cell_boxid.reserve(num_objects);
-      mass.reserve(num_objects);
+      // FIXME huge memory leak
+      if (allocated_num_objects < num_objects) {
+        allocated_num_objects = num_objects;
+        AllocPinned(&cell_movements, num_objects * 3);
+        AllocPinned(&cell_positions, num_objects * 3);
+        AllocPinned(&cell_diameters, num_objects);
+        AllocPinned(&cell_adherence, num_objects);
+        AllocPinned(&cell_tractor_force, num_objects * 3);
+        AllocPinned(&cell_boxid, num_objects);
+        AllocPinned(&mass, num_objects);
+        AllocPinned(&successors, num_objects);
+      } 
+
+      if (allocated_num_boxes < num_boxes) {
+        allocated_num_boxes = num_boxes;
+        AllocPinned(&starts, num_boxes);
+        AllocPinned(&lengths, num_boxes);
+        AllocPinned(&timestamps, num_boxes);
+      }
+
       offset = offs;
       grid = g;
     }
@@ -251,11 +274,18 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
       }
       auto* cell = bdm_static_cast<Cell*>(agent);
       auto idx = offset[ah.GetNumaNode()] + ah.GetElementIdx();
+      auto idxt3 = idx * 3;
       mass[idx] = cell->GetMass();
       cell_diameters[idx] = cell->GetDiameter();
       cell_adherence[idx] = cell->GetAdherence();
-      cell_tractor_force[idx] = cell->GetTractorForce();
-      cell_positions[idx] = cell->GetPosition();
+      const auto& tf = cell->GetTractorForce();
+      const auto& pos = cell->GetPosition();
+
+      for (uint64_t i = 0; i < 3; ++i) {
+        cell_tractor_force[idxt3 + i] = tf[i]; 
+        cell_positions[idxt3 + i] = pos[i]; 
+      }
+
       cell_boxid[idx] = cell->GetBoxIdx();
 
       // populate successor list
