@@ -364,24 +364,3 @@ bdm::MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {
   cudaFree(d_cell_movements_);
 }
 
-
-void bdm::AllocPinned(double** d, uint64_t size) {
-  cudaMallocHost((void**)d, size * sizeof(double));
-}
-
-void bdm::AllocPinned(uint64_t** d, uint64_t size) {
-  cudaMallocHost((void**)d, size * sizeof(uint64_t));
-}
-
-void bdm::AllocPinned(uint32_t** d, uint64_t size) {
-  cudaMallocHost((void**)d, size * sizeof(uint32_t));
-}
-
-void bdm::AllocPinned(int32_t** d, uint64_t size) {
-  cudaMallocHost((void**)d, size * sizeof(int32_t));
-}
-
-void bdm::AllocPinned(uint16_t** d, uint64_t size) {
-  cudaMallocHost((void**)d, size * sizeof(uint16_t));
-}
-

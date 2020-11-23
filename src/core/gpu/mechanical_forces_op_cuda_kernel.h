@@ -62,12 +62,6 @@ class MechanicalForcesOpCudaKernel {
   int32_t* d_grid_dimensions_ = nullptr;
 };
 
-void AllocPinned(double** d, uint64_t size);
-void AllocPinned(uint64_t** d, uint64_t size);
-void AllocPinned(uint32_t** d, uint64_t size);
-void AllocPinned(int32_t** d, uint64_t size);
-void AllocPinned(uint16_t** d, uint64_t size);
-
 }  // namespace bdm
 
 #endif  // CORE_GPU_MECHANICAL_FORCES_OP_CUDA_KERNEL_H_
