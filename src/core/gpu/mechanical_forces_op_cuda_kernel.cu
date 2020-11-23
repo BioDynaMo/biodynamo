@@ -256,12 +256,7 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
     uint32_t* num_boxes_axis, int32_t* grid_dimensions,
     double* cell_movements) {
   uint32_t num_boxes = num_boxes_axis[0] * num_boxes_axis[1] * num_boxes_axis[2];
-  // printf("[LaunchMechanicalForcesKernel] num_objects = %u  |  num_boxes = %u\n", num_objects[0], num_boxes);
-  // printf("[LaunchMechanicalForcesKernel] d_positions_ = %p  |  positions = %p\n", d_positions_, positions);
-  // printf("[LaunchMechanicalForcesKernel] positions[0] = %f  |  positions[1] = %f\n", positions[0], positions[1]);
-
-  {
-    // CudaTimer timer("Cuda::CopyToDevice");
+  
   GpuErrchk(cudaMemcpyAsync(d_positions_, 		positions, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_diameters_, 		diameters, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_tractor_force_, 	tractor_force, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
@@ -280,32 +275,22 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   GpuErrchk(cudaMemcpyAsync(d_box_length_, 		box_length, sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_num_boxes_axis_, 	num_boxes_axis, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_grid_dimensions_, 	grid_dimensions, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
-  }
 
   int blockSize = 128;
   int minGridSize;
   int gridSize;
-  // cudaDeviceSynchronize();
 
   // Get a near-optimal occupancy with the following thread organization
   cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, collide, 0, num_objects[0]);
   gridSize = (num_objects[0] + blockSize - 1) / blockSize;
 
-  // printMemoryUsage();
-
   // printf("gridSize = %d  |  blockSize = %d\n", gridSize, blockSize);
-  {
-    // CudaTimer timer("Cuda::Kernel");
   collide<<<gridSize, blockSize>>>(d_positions_, d_diameters_, d_tractor_force_,
     d_adherence_, d_box_id_, d_mass_, d_timestep_, d_max_displacement_,
     d_squared_radius_, d_num_objects_, d_starts_, d_lengths_, d_timestamps_,
     d_current_timestamp_, d_successors_, d_box_length_, d_num_boxes_axis_,
     d_grid_dimensions_, d_cell_movements_);
 
-  // We need to wait for the kernel to finish before reading back the result
-  // cudaDeviceSynchronize();
-  }
-    // CudaTimer timer("Cuda::CopyToHost");
   cudaMemcpyAsync(cell_movements, d_cell_movements_, 3 * num_objects[0] * sizeof(double), cudaMemcpyDeviceToHost);
 }
 
