@@ -17,9 +17,9 @@
 #ifndef CORE_OPERATION_MECHANICAL_FORCES_OP_CUDA_H_
 #define CORE_OPERATION_MECHANICAL_FORCES_OP_CUDA_H_
 
+#include "core/gpu/mechanical_forces_op_cuda_kernel.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
-#include "core/gpu/mechanical_forces_op_cuda_kernel.h"
 
 namespace bdm {
 

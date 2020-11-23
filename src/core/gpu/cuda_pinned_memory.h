@@ -21,7 +21,7 @@ namespace bdm {
 
 #ifdef USE_CUDA
 
-/// Allocate number of element T objects on host pinned memory 
+/// Allocate number of element T objects on host pinned memory
 template <typename T>
 void CudaAllocPinned(T** d, uint64_t elements);
 

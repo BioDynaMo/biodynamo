@@ -40,11 +40,11 @@ void IsNonSphericalObjectPresent(const Agent* agent, bool* answer) {
 }
 
 namespace detail {
-  
+
 // -----------------------------------------------------------------------------
 struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
   bool is_non_spherical_object = false;
-  
+
   double* cell_movements = nullptr;
   double* cell_positions = nullptr;
   double* cell_diameters = nullptr;
@@ -71,19 +71,19 @@ struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
   InitializeGPUData();
 
   virtual ~InitializeGPUData();
-  
+
   void Initialize(uint64_t num_objects, uint64_t num_boxes,
                   const std::vector<AgentHandle::ElementIdx_t>& offs,
                   UniformGridEnvironment* g);
 
   void operator()(Agent* agent, AgentHandle ah) override;
 
-  private:
+ private:
   void FreeAgentBuffers();
 
   void FreeGridBuffers();
 };
-    
+
 // -----------------------------------------------------------------------------
 InitializeGPUData::InitializeGPUData() {}
 
@@ -94,7 +94,7 @@ InitializeGPUData::~InitializeGPUData() {
     CudaFreePinned(box_length);
     CudaFreePinned(num_boxes_axis);
     CudaFreePinned(grid_dimensions);
-  } 
+  }
 
   if (allocated_num_objects != 0) {
     FreeAgentBuffers();
@@ -106,9 +106,10 @@ InitializeGPUData::~InitializeGPUData() {
 }
 
 // -----------------------------------------------------------------------------
-void InitializeGPUData::Initialize(uint64_t num_objects, uint64_t num_boxes,
-                const std::vector<AgentHandle::ElementIdx_t>& offs,
-                UniformGridEnvironment* g) {
+void InitializeGPUData::Initialize(
+    uint64_t num_objects, uint64_t num_boxes,
+    const std::vector<AgentHandle::ElementIdx_t>& offs,
+    UniformGridEnvironment* g) {
   if (current_timestamp == nullptr) {
     CudaAllocPinned(&current_timestamp, 1);
     CudaAllocPinned(&box_length, 1);
@@ -147,21 +148,21 @@ void InitializeGPUData::Initialize(uint64_t num_objects, uint64_t num_boxes,
 
 // -----------------------------------------------------------------------------
 void InitializeGPUData::FreeAgentBuffers() {
-    CudaFreePinned(cell_movements);
-    CudaFreePinned(cell_positions);
-    CudaFreePinned(cell_diameters);
-    CudaFreePinned(cell_adherence);
-    CudaFreePinned(cell_tractor_force);
-    CudaFreePinned(cell_boxid);
-    CudaFreePinned(mass);
-    CudaFreePinned(successors);
+  CudaFreePinned(cell_movements);
+  CudaFreePinned(cell_positions);
+  CudaFreePinned(cell_diameters);
+  CudaFreePinned(cell_adherence);
+  CudaFreePinned(cell_tractor_force);
+  CudaFreePinned(cell_boxid);
+  CudaFreePinned(mass);
+  CudaFreePinned(successors);
 }
 
 // -----------------------------------------------------------------------------
 void InitializeGPUData::FreeGridBuffers() {
-    CudaFreePinned(starts);
-    CudaFreePinned(lengths);
-    CudaFreePinned(timestamps);
+  CudaFreePinned(starts);
+  CudaFreePinned(lengths);
+  CudaFreePinned(timestamps);
 }
 
 // -----------------------------------------------------------------------------
@@ -213,8 +214,8 @@ struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
 };
 
 // -----------------------------------------------------------------------------
-UpdateCPUResults::UpdateCPUResults(double* cm,
-                 const std::vector<AgentHandle::ElementIdx_t>& offs) {
+UpdateCPUResults::UpdateCPUResults(
+    double* cm, const std::vector<AgentHandle::ElementIdx_t>& offs) {
   cell_movements = cm;
   offset = offs;
 }
@@ -339,8 +340,7 @@ void MechanicalForcesOpCuda::TearDown() {
   cdo_->Synch();
   Timing timer("MechanicalForcesOpCuda::TearDown");
   auto u = UpdateCPUResults(i_->cell_movements, i_->offset);
-  Simulation::GetActive()->GetResourceManager()->ForEachAgentParallel(1000,
-                                                                      u);
+  Simulation::GetActive()->GetResourceManager()->ForEachAgentParallel(1000, u);
 }
 
 }  // namespace bdm
