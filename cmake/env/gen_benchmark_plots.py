@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,6 +18,9 @@ def data_cpu(name_demo, iteration, ii):
     nb = len(name_demo)
     while i != iteration*ii:
         b = data["benchmarks"][i]["name"]
+        if b != b[:nb]+"/process_time":
+            i+=1
+            continue
         if a[:nb] == b[:nb]:
             cpu[j] = data["benchmarks"][i]["cpu_time"]
             memory = data["benchmarks"][i]["memory"]
@@ -30,6 +33,8 @@ def graph(name_demo, iteration, i):
     moy = 0
     h = 0
     tmp = 0
+    if iteration != 1:
+        iteration-=3
     while h < iteration:
         tmp = cpu[h] + tmp
         h += 1
@@ -129,7 +134,7 @@ if __name__ == "__main__":
     with open(file) as read_file:
         data = json.load(read_file)
         read_file.close()
-    try:
-        main()
-    except:
-        print("ERROR")
+#    try:
+    main()
+#    except:
+#        print("ERROR")
