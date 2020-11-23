@@ -16,35 +16,7 @@
 #include "core/gpu/mechanical_forces_op_cuda_kernel.h"
 #include <iostream>
 #include <unistd.h>
-
-struct GpuTimer
-{
-      cudaEvent_t start;
-      cudaEvent_t stop;
-      std::string name;
-      GpuTimer(std::string name) : name(name)
-      {
-            cudaEventCreate(&start);
-            cudaEventCreate(&stop);
-            cudaEventRecord(start, 0);
-      }
-
-      ~GpuTimer()
-      {
-            cudaEventRecord(stop, 0);
-            std::cout << name << " " << Elapsed() << std::endl;
-            cudaEventDestroy(start);
-            cudaEventDestroy(stop);
-      }
-
-      float Elapsed()
-      {
-            float elapsed;
-            cudaEventSynchronize(stop);
-            cudaEventElapsedTime(&elapsed, start, stop);
-            return elapsed;
-      }
-};
+#include "core/gpu/cuda_timer.h"
 
 void printMemoryUsage() {
   size_t availableMemory, totalMemory, usedMemory;
@@ -301,7 +273,7 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   // printf("[LaunchMechanicalForcesKernel] positions[0] = %f  |  positions[1] = %f\n", positions[0], positions[1]);
 
   {
-    // GpuTimer timer("Cuda::CopyToDevice");
+    // CudaTimer timer("Cuda::CopyToDevice");
   GpuErrchk(cudaMemcpyAsync(d_positions_, 		positions, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_diameters_, 		diameters, num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_tractor_force_, 	tractor_force, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
@@ -335,7 +307,7 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
 
   // printf("gridSize = %d  |  blockSize = %d\n", gridSize, blockSize);
   {
-    // GpuTimer timer("Cuda::Kernel");
+    // CudaTimer timer("Cuda::Kernel");
   collide<<<gridSize, blockSize>>>(d_positions_, d_diameters_, d_tractor_force_,
     d_adherence_, d_box_id_, d_mass_, d_timestep_, d_max_displacement_,
     d_squared_radius_, d_num_objects_, d_starts_, d_lengths_, d_timestamps_,
@@ -345,7 +317,7 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   // We need to wait for the kernel to finish before reading back the result
   // cudaDeviceSynchronize();
   }
-    // GpuTimer timer("Cuda::CopyToHost");
+    // CudaTimer timer("Cuda::CopyToHost");
   cudaMemcpyAsync(cell_movements, d_cell_movements_, 3 * num_objects[0] * sizeof(double), cudaMemcpyDeviceToHost);
 }
 
