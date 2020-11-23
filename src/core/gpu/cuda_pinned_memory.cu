@@ -13,12 +13,13 @@
 // -----------------------------------------------------------------------------
 
 #include "core/gpu/cuda_pinned_memory.h"
+#include "core/gpu/cuda_error_chk.h"
 
 namespace bdm {
 
 template <typename T>
 void CudaAllocPinned(T** d, uint64_t elements) {
-  cudaMallocHost((void**)d, elements * sizeof(T));
+  GpuErrchk(cudaMallocHost((void**)d, elements * sizeof(T)));
 }
 
 template void CudaAllocPinned<double>(double**, uint64_t);
@@ -31,7 +32,7 @@ template void CudaAllocPinned<uint16_t>(uint16_t**, uint64_t);
 template void CudaAllocPinned<int16_t>(int16_t**, uint64_t);
 
 void CudaFreePinned(void* p) {
-  cudaFreeHost(p);
+  GpuErrchk(cudaFreeHost(p));
 }
 
 }  // namespace bdm
