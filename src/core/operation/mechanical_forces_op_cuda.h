@@ -227,17 +227,16 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
     uint64_t allocated_num_objects = 0;
     uint64_t allocated_num_boxes = 0;
 
-    InitializeGPUData() {
+    InitializeGPUData() {}
+
+    void Initialize(uint64_t num_objects, uint64_t num_boxes,
+                      const std::vector<AgentHandle::ElementIdx_t>& offs, 
+                      UniformGridEnvironment* g) {
       // FIXME memory leak
       AllocPinned(&current_timestamp, 1);
       AllocPinned(&box_length, 1);
       AllocPinned(&num_boxes_axis, 3);
       AllocPinned(&grid_dimensions, 3);
-    }
-
-    void Initialize(uint64_t num_objects, uint64_t num_boxes,
-                      const std::vector<AgentHandle::ElementIdx_t>& offs, 
-                      UniformGridEnvironment* g) {
       // FIXME huge memory leak
       if (allocated_num_objects < num_objects) {
         allocated_num_objects = num_objects;
