@@ -239,7 +239,7 @@ void UpdateCPUResults::operator()(Agent* agent, AgentHandle ah) {
 
 // -----------------------------------------------------------------------------
 void MechanicalForcesOpCuda::SetUp() {
-  Timing timer("MechanicalForcesOpCuda::SetUp");
+  // Timing timer("MechanicalForcesOpCuda::SetUp");
   auto* sim = Simulation::GetActive();
   auto* grid = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
   auto* rm = sim->GetResourceManager();
@@ -265,7 +265,7 @@ void MechanicalForcesOpCuda::SetUp() {
   }
   i_->Initialize(total_num_objects, num_boxes, offset, grid);
   {
-    Timing timer("MechanicalForcesOpCuda::toColumnar");
+    // Timing timer("MechanicalForcesOpCuda::toColumnar");
     rm->ForEachAgentParallel(1000, *i_);
   }
 
@@ -325,7 +325,7 @@ void MechanicalForcesOpCuda::operator()() {
   double squared_radius =
       grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
 
-  Timing timer("MechanicalForcesOpCuda::Kernel");
+  // Timing timer("MechanicalForcesOpCuda::Kernel");
   cdo_->LaunchMechanicalForcesKernel(
       i_->cell_positions, i_->cell_diameters, i_->cell_tractor_force,
       i_->cell_adherence, i_->cell_boxid, i_->mass,
@@ -338,7 +338,7 @@ void MechanicalForcesOpCuda::operator()() {
 // -----------------------------------------------------------------------------
 void MechanicalForcesOpCuda::TearDown() {
   cdo_->Synch();
-  Timing timer("MechanicalForcesOpCuda::TearDown");
+  // Timing timer("MechanicalForcesOpCuda::TearDown");
   auto u = UpdateCPUResults(i_->cell_movements, i_->offset);
   Simulation::GetActive()->GetResourceManager()->ForEachAgentParallel(1000, u);
 }
