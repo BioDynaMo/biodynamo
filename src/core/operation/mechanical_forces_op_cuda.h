@@ -23,8 +23,8 @@
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
-#include "core/gpu/cuda_pinned_memory.h"
 #include "core/gpu/mechanical_forces_op_cuda_kernel.h"
+#include "core/gpu/cuda_pinned_memory.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/operation_registry.h"
 #include "core/resource_manager.h"
@@ -200,24 +200,24 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
     // pointer to the underlying array, whereas the CUDA kernel will cast it to
     // a void pointer. The conversion of `const double *` to `void *` is
     // illegal.
-    double* cell_movements;
-    double* cell_positions;
-    double* cell_diameters;
-    double* cell_adherence;
-    double* cell_tractor_force;
-    uint32_t* cell_boxid;
-    double* mass;
-    uint32_t* successors;
+    double* cell_movements = nullptr;
+    double* cell_positions = nullptr;
+    double* cell_diameters = nullptr;
+    double* cell_adherence = nullptr;
+    double* cell_tractor_force = nullptr;
+    uint32_t* cell_boxid = nullptr;
+    double* mass = nullptr;
+    uint32_t* successors = nullptr;
 
     std::vector<AgentHandle::ElementIdx_t> offset;
 
-    uint32_t* starts;
-    uint16_t* lengths;
-    uint64_t* timestamps;
-    uint64_t* current_timestamp;
-    uint32_t* box_length;
-    uint32_t* num_boxes_axis;
-    int32_t* grid_dimensions;
+    uint32_t* starts = nullptr;
+    uint16_t* lengths = nullptr;
+    uint64_t* timestamps = nullptr;
+    uint64_t* current_timestamp = nullptr;
+    uint32_t* box_length = nullptr;
+    uint32_t* num_boxes_axis = nullptr;
+    int32_t* grid_dimensions = nullptr;
     UniformGridEnvironment* grid = nullptr;
 
     uint64_t allocated_num_objects = 0;
@@ -225,36 +225,77 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
 
     InitializeGPUData() {}
 
+    virtual ~InitializeGPUData() {
+      if (current_timestamp != nullptr) {
+        CudaFreePinned(current_timestamp);
+        CudaFreePinned(box_length);
+        CudaFreePinned(num_boxes_axis);
+        CudaFreePinned(grid_dimensions);
+      } 
+
+      if (allocated_num_objects != 0) {
+        FreeAgentBuffers();
+      }
+
+      if (allocated_num_boxes != 0) {
+        FreeGridBuffers();
+      }
+    }
+
     void Initialize(uint64_t num_objects, uint64_t num_boxes,
                     const std::vector<AgentHandle::ElementIdx_t>& offs,
                     UniformGridEnvironment* g) {
-      // FIXME memory leak
-      AllocPinned(&current_timestamp, 1);
-      AllocPinned(&box_length, 1);
-      AllocPinned(&num_boxes_axis, 3);
-      AllocPinned(&grid_dimensions, 3);
-      // FIXME huge memory leak
+      if (current_timestamp == nullptr) {
+        CudaAllocPinned(&current_timestamp, 1);
+        CudaAllocPinned(&box_length, 1);
+        CudaAllocPinned(&num_boxes_axis, 3);
+        CudaAllocPinned(&grid_dimensions, 3);
+      }
+
       if (allocated_num_objects < num_objects) {
-        allocated_num_objects = num_objects;
-        AllocPinned(&cell_movements, num_objects * 3);
-        AllocPinned(&cell_positions, num_objects * 3);
-        AllocPinned(&cell_diameters, num_objects);
-        AllocPinned(&cell_adherence, num_objects);
-        AllocPinned(&cell_tractor_force, num_objects * 3);
-        AllocPinned(&cell_boxid, num_objects);
-        AllocPinned(&mass, num_objects);
-        AllocPinned(&successors, num_objects);
+        if (allocated_num_objects != 0) {
+          FreeAgentBuffers();
+        }
+        allocated_num_objects = num_objects * 1.25;
+        CudaAllocPinned(&cell_movements, allocated_num_objects * 3);
+        CudaAllocPinned(&cell_positions, allocated_num_objects * 3);
+        CudaAllocPinned(&cell_diameters, allocated_num_objects);
+        CudaAllocPinned(&cell_adherence, allocated_num_objects);
+        CudaAllocPinned(&cell_tractor_force, allocated_num_objects * 3);
+        CudaAllocPinned(&cell_boxid, allocated_num_objects);
+        CudaAllocPinned(&mass, allocated_num_objects);
+        CudaAllocPinned(&successors, allocated_num_objects);
       }
 
       if (allocated_num_boxes < num_boxes) {
-        allocated_num_boxes = num_boxes;
-        AllocPinned(&starts, num_boxes);
-        AllocPinned(&lengths, num_boxes);
-        AllocPinned(&timestamps, num_boxes);
+        if (allocated_num_boxes != 0) {
+          FreeGridBuffers();
+        }
+        allocated_num_boxes = num_boxes * 1.25;
+        CudaAllocPinned(&starts, allocated_num_boxes);
+        CudaAllocPinned(&lengths, allocated_num_boxes);
+        CudaAllocPinned(&timestamps, allocated_num_boxes);
       }
 
       offset = offs;
       grid = g;
+    }
+
+    void FreeAgentBuffers() {
+        CudaFreePinned(cell_movements);
+        CudaFreePinned(cell_positions);
+        CudaFreePinned(cell_diameters);
+        CudaFreePinned(cell_adherence);
+        CudaFreePinned(cell_tractor_force);
+        CudaFreePinned(cell_boxid);
+        CudaFreePinned(mass);
+        CudaFreePinned(successors);
+    }
+
+    void FreeGridBuffers() {
+        CudaFreePinned(starts);
+        CudaFreePinned(lengths);
+        CudaFreePinned(timestamps);
     }
 
     void operator()(Agent* agent, AgentHandle ah) override {

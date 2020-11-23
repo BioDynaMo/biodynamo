@@ -17,18 +17,21 @@
 namespace bdm {
 
 template <typename T>
-void AllocPinned(T** d, uint64_t elements) {
+void CudaAllocPinned(T** d, uint64_t elements) {
   cudaMallocHost((void**)d, elements * sizeof(T));
 }
 
-template void AllocPinned<double>(double**, uint64_t);
-template void AllocPinned<float>(float**, uint64_t);
-template void AllocPinned<uint64_t>(uint64_t**, uint64_t);
-template void AllocPinned<int64_t>(int64_t**, uint64_t);
-template void AllocPinned<uint32_t>(uint32_t**, uint64_t);
-template void AllocPinned<int32_t>(int32_t**, uint64_t);
-template void AllocPinned<uint16_t>(uint16_t**, uint64_t);
-template void AllocPinned<int16_t>(int16_t**, uint64_t);
+template void CudaAllocPinned<double>(double**, uint64_t);
+template void CudaAllocPinned<float>(float**, uint64_t);
+template void CudaAllocPinned<uint64_t>(uint64_t**, uint64_t);
+template void CudaAllocPinned<int64_t>(int64_t**, uint64_t);
+template void CudaAllocPinned<uint32_t>(uint32_t**, uint64_t);
+template void CudaAllocPinned<int32_t>(int32_t**, uint64_t);
+template void CudaAllocPinned<uint16_t>(uint16_t**, uint64_t);
+template void CudaAllocPinned<int16_t>(int16_t**, uint64_t);
+
+void CudaFreePinned(void* p) {
+  cudaFreeHost(p);
+}
 
 }  // namespace bdm
-
