@@ -48,12 +48,17 @@
 
 namespace bdm {
 
+namespace detail {
+struct InitializeGPUData;
+}  // namespace detail
+
 /// A class that represents Cartesian 3D grid
 class UniformGridEnvironment : public Environment {
   // MechanicalForcesOpCuda needs access to some UniformGridEnvironment private
   // members to reconstruct
   // the grid on GPU (same for MechanicalForcesOpOpenCL)
   friend struct MechanicalForcesOpCuda;
+  friend struct ::bdm::detail::InitializeGPUData;
   friend struct MechanicalForcesOpOpenCL;
   friend class SchedulerTest;
 
