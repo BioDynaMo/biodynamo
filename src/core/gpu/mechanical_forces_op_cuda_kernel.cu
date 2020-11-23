@@ -17,6 +17,7 @@
 #include <iostream>
 #include <unistd.h>
 #include "core/gpu/cuda_timer.h"
+#include "core/gpu/cuda_error_chk.h"
 
 void printMemoryUsage() {
   size_t availableMemory, totalMemory, usedMemory;
@@ -27,19 +28,6 @@ void printMemoryUsage() {
             << " total " << totalMemory << std::endl;
 }
 
-
-#define GpuErrchk(ans) { GpuAssert((ans), __FILE__, __LINE__); }
-inline void GpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
-{
-   if (code != cudaSuccess) 
-   {
-      fprintf(stderr,"GPUassert (error code %d): %s %s %d\n", code, cudaGetErrorString(code), file, line);
-      if (code == cudaErrorInsufficientDriver) {
-        printf("This probably means that no CUDA-compatible GPU has been detected. Consider setting the use_opencl flag to \"true\" in the bmd.toml file to use OpenCL instead.\n");
-      }
-      if (abort) exit(code);
-   }
-}
 
 inline __host__ __device__ double norm(double3 &v) {
   return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
