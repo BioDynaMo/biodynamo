@@ -62,6 +62,31 @@ class MechanicalForcesOpCudaKernel {
   int32_t* d_grid_dimensions_ = nullptr;
 };
 
+#ifndef USE_CUDA
+// Empty implementaiton if CUDA is not used to avoid undefined reference linking
+// error.
+//
+MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(uint32_t num_objects,
+                                                           uint32_t num_boxes) {
+}
+MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {}
+
+void MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
+    const double* positions, const double* diameter,
+    const double* tractor_force, const double* adherence,
+    const uint32_t* box_id, const double* mass, const double* timestep,
+    const double* max_displacement, const double* squared_radius,
+    const uint32_t* num_objects, uint32_t* starts, uint16_t* lengths,
+    uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors,
+    uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
+    double* cell_movements) {}
+
+void MechanicalForcesOpCudaKernel::Synch() const {}
+void MechanicalForcesOpCudaKernel::ResizeCellBuffers(uint32_t num_cells) {}
+void MechanicalForcesOpCudaKernel::ResizeGridBuffers(uint32_t num_boxes) {}
+
+#endif  // USE_CUDA
+
 }  // namespace bdm
 
 #endif  // CORE_GPU_MECHANICAL_FORCES_OP_CUDA_KERNEL_H_
