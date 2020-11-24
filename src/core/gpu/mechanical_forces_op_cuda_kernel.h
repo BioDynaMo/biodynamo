@@ -66,12 +66,11 @@ class MechanicalForcesOpCudaKernel {
 // Empty implementaiton if CUDA is not used to avoid undefined reference linking
 // error.
 //
-MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(uint32_t num_objects,
-                                                           uint32_t num_boxes) {
-}
-MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {}
+inline MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(
+    uint32_t num_objects, uint32_t num_boxes) {}
+inline MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {}
 
-void MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
+inline void MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
     const double* positions, const double* diameter,
     const double* tractor_force, const double* adherence,
     const uint32_t* box_id, const double* mass, const double* timestep,
@@ -81,9 +80,11 @@ void MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
     uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
     double* cell_movements) {}
 
-void MechanicalForcesOpCudaKernel::Synch() const {}
-void MechanicalForcesOpCudaKernel::ResizeCellBuffers(uint32_t num_cells) {}
-void MechanicalForcesOpCudaKernel::ResizeGridBuffers(uint32_t num_boxes) {}
+inline void MechanicalForcesOpCudaKernel::Synch() const {}
+inline void MechanicalForcesOpCudaKernel::ResizeCellBuffers(
+    uint32_t num_cells) {}
+inline void MechanicalForcesOpCudaKernel::ResizeGridBuffers(
+    uint32_t num_boxes) {}
 
 #endif  // USE_CUDA
 
