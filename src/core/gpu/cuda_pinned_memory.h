@@ -30,9 +30,9 @@ void CudaFreePinned(void* p);
 #else
 
 template <typename T>
-void CudaAllocPinned(T** d, uint64_t elements) {}
+inline void CudaAllocPinned(T** d, uint64_t elements) {}
 
-void CudaFreePinned(void* p) {}
+inline void CudaFreePinned(void* p) {}
 
 #endif  // USE_CUDA
 
