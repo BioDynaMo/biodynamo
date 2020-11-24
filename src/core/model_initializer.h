@@ -29,7 +29,7 @@ namespace bdm {
 
 struct ModelInitializer {
   /// Creates a 3D cubic grid of agents and adds them to the
-  /// ResourceManager. Type of the agent is determined by the return
+  /// ExecutionContext. Type of the agent is determined by the return
   /// type of parameter agent_builder.
   ///
   ///     ModelInitializer::Grid3D(8, 10, [](const Double3& pos){
@@ -47,24 +47,27 @@ struct ModelInitializer {
   template <typename Function>
   static void Grid3D(size_t agents_per_dim, double space,
                      Function agent_builder) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
 
-    rm->Reserve(agents_per_dim * agents_per_dim * agents_per_dim);
-    for (size_t x = 0; x < agents_per_dim; x++) {
-      auto x_pos = x * space;
-      for (size_t y = 0; y < agents_per_dim; y++) {
-        auto y_pos = y * space;
-        for (size_t z = 0; z < agents_per_dim; z++) {
-          auto* new_agent = agent_builder({x_pos, y_pos, z * space});
-          rm->AddAgent(new_agent);
+#pragma omp for
+      for (size_t x = 0; x < agents_per_dim; x++) {
+        auto x_pos = x * space;
+        for (size_t y = 0; y < agents_per_dim; y++) {
+          auto y_pos = y * space;
+          for (size_t z = 0; z < agents_per_dim; z++) {
+            auto* new_agent = agent_builder({x_pos, y_pos, z * space});
+            ctxt->AddAgent(new_agent);
+          }
         }
       }
     }
   }
 
   /// Creates a 3D grid of agents and adds them to the
-  /// ResourceManager. Type of the agent is determined by the return
+  /// ExecutionContext. Type of the agent is determined by the return
   /// type of parameter agent_builder.
   ///
   ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const Double3&
@@ -83,23 +86,26 @@ struct ModelInitializer {
   template <typename Function>
   static void Grid3D(const std::array<size_t, 3>& agents_per_dim, double space,
                      Function agent_builder) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
 
-    rm->Reserve(agents_per_dim[0] * agents_per_dim[1] * agents_per_dim[2]);
-    for (size_t x = 0; x < agents_per_dim[0]; x++) {
-      auto x_pos = x * space;
-      for (size_t y = 0; y < agents_per_dim[1]; y++) {
-        auto y_pos = y * space;
-        for (size_t z = 0; z < agents_per_dim[2]; z++) {
-          auto* new_agent = agent_builder({x_pos, y_pos, z * space});
-          rm->AddAgent(new_agent);
+#pragma omp for
+      for (size_t x = 0; x < agents_per_dim[0]; x++) {
+        auto x_pos = x * space;
+        for (size_t y = 0; y < agents_per_dim[1]; y++) {
+          auto y_pos = y * space;
+          for (size_t z = 0; z < agents_per_dim[2]; z++) {
+            auto* new_agent = agent_builder({x_pos, y_pos, z * space});
+            ctxt->AddAgent(new_agent);
+          }
         }
       }
     }
   }
 
-  /// Adds agents to the ResourceManager. Type of the simulation
+  /// Adds agents to the ExecutionContext. Type of the simulation
   /// object is determined by the return type of parameter agent_builder.
   ///
   /// @param      positions     positions of the agents to be
@@ -110,18 +116,21 @@ struct ModelInitializer {
   template <typename Function>
   static void CreateAgents(const std::vector<Double3>& positions,
                            Function agent_builder) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
 
-    rm->Reserve(positions.size());
-    for (size_t i = 0; i < positions.size(); i++) {
-      auto* new_agent =
-          agent_builder({positions[i][0], positions[i][1], positions[i][2]});
-      rm->AddAgent(new_agent);
+#pragma omp for
+      for (size_t i = 0; i < positions.size(); i++) {
+        auto* new_agent =
+            agent_builder({positions[i][0], positions[i][1], positions[i][2]});
+        ctxt->AddAgent(new_agent);
+      }
     }
   }
 
-  /// Adds agents with random positions to the ResourceManager.
+  /// Adds agents with random positions to the ExecutionContext.
   /// Type of the agent is determined by the return type of
   /// parameter agent_builder.
   ///
@@ -133,23 +142,19 @@ struct ModelInitializer {
   ///                           Double3&` as input parameter
   ///
   template <typename Function>
-  static void CreateAgentsRandom(double min, double max, int num_agents,
+  static void CreateAgentsRandom(double min, double max, uint64_t num_agents,
                                  Function agent_builder) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
+      auto* random = sim->GetRandom();
 
-    rm->Reserve(num_agents);
-
-    // TODO(ahmad): throughout simulation only one random number generator
-    // should be used, so this should go someplace accessible for other
-    // classes / functions
-    auto* random = sim->GetRandom();
-    for (int i = 0; i < num_agents; i++) {
-      double x = random->Uniform(min, max);
-      double y = random->Uniform(min, max);
-      double z = random->Uniform(min, max);
-      auto* new_agent = agent_builder({x, y, z});
-      rm->AddAgent(new_agent);
+#pragma omp for
+      for (uint64_t i = 0; i < num_agents; i++) {
+        auto* new_agent = agent_builder(random->UniformArray<3>(min, max));
+        ctxt->AddAgent(new_agent);
+      }
     }
   }
 
