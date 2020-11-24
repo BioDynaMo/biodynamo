@@ -18,8 +18,8 @@
 #if !defined(__ROOTCLING__) && !defined(G__DICTIONARY)
 #ifdef USE_CUDA
 
-#include <cstdio>
 #include <unistd.h>
+#include <cstdio>
 
 #define GpuErrchk(ans) \
   { GpuAssert((ans), __FILE__, __LINE__); }
