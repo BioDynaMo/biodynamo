@@ -80,7 +80,7 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   ASSERT_EQ(2, counter);
 }
 
-TEST(ResourceManagerTest, TurnOnOffAgentUidDefragmentation) {
+TEST(ResourceManagerTest, Defragmentation) {
   auto set_param = [](Param* param) {
     param->agent_uid_defragmentation_low_watermark = 0.3;
     param->agent_uid_defragmentation_high_watermark = 0.8;
@@ -90,31 +90,38 @@ TEST(ResourceManagerTest, TurnOnOffAgentUidDefragmentation) {
   auto* rm = simulation.GetResourceManager();
   auto* agent_uid_generator = simulation.GetAgentUidGenerator();
 
-  // utilization = 0.5 > low watermark -> don't defragment
-  //   create 10 objects
-  for (uint64_t i = 0; i < 10; i++) {
+  // we don't know the how big the internal agent uid map is
+  rm->AddAgent(new TestAgent());
+  rm->EndOfIteration();
+  EXPECT_TRUE(agent_uid_generator->IsInDefragmentationMode());
+  // fill it to the max
+  uint64_t cnt = 1;
+  while (agent_uid_generator->IsInDefragmentationMode()) {
     rm->AddAgent(new TestAgent());
+    cnt++;
   }
-  //   remove 5
-  for (uint64_t i = 0; i < 5; i++) {
-    rm->RemoveAgent(AgentUid(i));
-  }
+  // now we know how many agents are 100%
   rm->EndOfIteration();
   EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
 
-  // utilization 0.2 < low watermark -> turn on defragmentation
-  rm->RemoveAgent(AgentUid(5));
-  rm->RemoveAgent(AgentUid(6));
-  rm->RemoveAgent(AgentUid(7));
+  // remove enough agents to drop below the low watermark
+  uint64_t remove = std::ceil(cnt * 0.7) + 1;
+  while (remove-- != 0) {
+    rm->RemoveAgent(AgentUid(remove));
+  }
   rm->EndOfIteration();
-  EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
+  EXPECT_TRUE(agent_uid_generator->IsInDefragmentationMode());
 
-  // utilization < low watermark -> turn off defragmentation
-  for (uint64_t i = 0; i < 6; i++) {
+  // add enough agents to exceed the high watermark
+  uint64_t add = std::ceil(cnt * 0.5) + 1;
+  while (add-- != 0) {
     rm->AddAgent(new TestAgent());
   }
   rm->EndOfIteration();
   EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
+  auto uid = agent_uid_generator->GenerateUid();
+  EXPECT_GE(uid.GetIndex(), cnt);
+  EXPECT_EQ(0u, uid.GetReused());
 }
 
 }  // namespace bdm
