@@ -159,7 +159,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << std::endl;
   os << "Number of iterations executed\t: "
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
-  os << "Number of agents\t: " << sim.rm_->GetNumAgents() << std::endl;
+  os << "Number of agents\t\t: " << sim.rm_->GetNumAgents() << std::endl;
 
   if (dg_names.size() != 0) {
     os << "Diffusion grids" << std::endl;
