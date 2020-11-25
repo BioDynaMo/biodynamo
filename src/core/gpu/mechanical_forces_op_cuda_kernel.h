@@ -40,7 +40,7 @@ class MechanicalForcesOpCudaKernel {
   void ResizeCellBuffers(uint32_t num_cells);
   void ResizeGridBuffers(uint32_t num_boxes);
 
-#ifndef USE_CUDA
+#ifdef USE_CUDA
  private:
   double* d_positions_ = nullptr;
   double* d_diameters_ = nullptr;
