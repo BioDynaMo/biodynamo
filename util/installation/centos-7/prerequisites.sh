@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-# This script installs the required packages for ubuntu 16.04
+# This script installs the required packages
 if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:

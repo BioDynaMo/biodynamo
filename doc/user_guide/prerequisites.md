@@ -190,8 +190,7 @@ sudo yum install -y libxml2-devel
 
 ## MacOS
 
-Currently we only support macOS installations of BioDynaMo using Homebrew.
-But first, before doing anything else, install Xcode (from the App Store) and the command line tools,
+Install Xcode (from the App Store) and the command line tools,
 using the command ``"xcode-select --install"``.
 
 ### Required Packages
