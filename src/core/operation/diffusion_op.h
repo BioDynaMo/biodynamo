@@ -51,20 +51,9 @@ struct DiffusionOp : public StandaloneOperationImpl {
                   "come into play!");
         dg->Update(env->GetDimensionThresholds());
       }
-      if (param->diffusion_type_ == "RK") {
-        if (param->leaking_edges_) {
-          dg->RKLeaking();
-        } else {
-          dg->RK();
-        }
 
-      } else {
-        if (param->leaking_edges_) {
-          dg->DiffuseEulerLeakingEdge();
-        } else {
-          dg->DiffuseEuler();
-        }
-      }
+      dg->Diffuse();
+
       if (param->calculate_gradients_) {
         dg->CalculateGradient();
       }
