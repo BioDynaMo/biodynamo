@@ -103,15 +103,16 @@ def plot(name_demo):
         line_count = 0
         for row in csv_reader:
             v[line_count] = row[0]
+            v[line_count] = v[line_count][:6]
             value[line_count] = float(row[1])/10**9
             value2[line_count] = float(row[2])
             line_count += 1
     xlabels = v
     ax[0].plot(range(nb), value, 'bo-')
     ax[1].plot(range(nb), value2, 'ro-')
-    ax[1].set_title(name_demo)
+    ax[0].set_title(name_demo)
     ax[1].set_xticks(range(nb))
-    ax[1].set_xticklabels(xlabels, rotation=10)
+    ax[1].set_xticklabels(xlabels, rotation=90)
     plt.savefig('benchmark/'+name_demo+'.png')
     return
 

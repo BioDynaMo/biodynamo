@@ -52,6 +52,7 @@ def names():
             name_datas[j] = name(i)
             j+=1
         i+=1
+    print(name_datas)
     name_datas = name_datas[:j]
     return name_datas, j
 
