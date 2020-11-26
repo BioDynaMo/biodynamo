@@ -85,7 +85,7 @@ if [[ "$PWD" != $(readlink -e $BDM_PROJECT_DIR_ABS)* ]]; then
   exit 1
 fi
 
-# Flatten container to avoid openMPI bug inside a docker container (ubuntu 16.04)
+# Flatten container to avoid openMPI bug inside a docker container
 # https://stackoverflow.com/questions/46138549/docker-openmpi-and-unexpected-end-of-proc-mounts-line
 sudo docker run --name $BDM_CONTAINER $BDM_IMAGE /bin/bash
 TMP_CONTAINER_TAR=$(mktemp)
