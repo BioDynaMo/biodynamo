@@ -164,24 +164,14 @@ struct ModelInitializer {
   ///
   static void DefineSubstance(size_t substance_id, std::string substance_name,
                               double diffusion_coeff, double decay_constant,
-                              int resolution = 10, unsigned int diffusion_step = 1,
-                              std::string boundary = "Open") {
+                              int resolution = 10) {
     assert(resolution > 0 && "Resolution needs to be a positive integer value");
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
-    auto* param = sim->GetParam();
-
-    if (param->diffusion_type_ == "RK") {
-       RKGrid* d_grid =
-        new RKGrid(substance_id, substance_name, diffusion_coeff,
-                          decay_constant, resolution, diffusion_step, boundary);
-        rm->AddDiffusionGrid(d_grid);
-    } else {
-       EulerGrid* d_grid =
-        new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                          decay_constant, resolution, diffusion_step, boundary);
-        rm->AddDiffusionGrid(d_grid);
-    }
+    DiffusionGrid* d_grid =
+        new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
+                          decay_constant, resolution);
+    rm->AddDiffusionGrid(d_grid);
   }
 
   template <typename F>
