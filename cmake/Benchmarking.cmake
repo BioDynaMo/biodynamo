@@ -43,12 +43,14 @@ set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
 add_custom_target(run-benchmarks
                   COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_repetitions=1 --benchmark_format=json --benchmark_out=benchmark/results.json
                   COMMAND ${LAUNCHER} ${CMAKE_BINARY_DIR}/version.sh
+                  COMMAND ${LAUNCHER$} ${CMAKE_BINARY_DIR}/bin/generate_html_page
                   )
 
 file(GLOB_RECURSE BENCH_HEADERS ${CMAKE_SOURCE_DIR}/test/benchmark/*.h)
 file(GLOB_RECURSE BENCH_SOURCES ${CMAKE_SOURCE_DIR}/test/benchmark/*.cc)
 file(GLOB_RECURSE DEMO_HEADERS ${CMAKE_SOURCE_DIR}/demo/soma_clustering/*.h 
                                ${CMAKE_SOURCE_DIR}/demo/tumor_concept/*.h)
+set(HTML_SOURCE ${CMAKE_SOURCE_DIR}/test/benchmark/gen_html_page.cpp)
 include_directories("${CMAKE_SOURCE_DIR}/demo/tumor_concept/src")
 include_directories("${CMAKE_SOURCE_DIR}/demo/soma_clustering/src")
 include_directories("${CMAKE_SOURCE_DIR}/build/benchmark/src/gbench/include/benchmark")
@@ -57,4 +59,6 @@ bdm_add_executable(biodynamo-benchmark
                    HEADERS ${DEMO_HEADERS} ${BENCH_HEADERS}
                    SOURCES ${BENCH_SOURCES}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${FS_LIB} biodynamo libbenchmark)
+add_executable(generate_html_page ${HTML_SOURCE})
 add_dependencies(run-benchmarks biodynamo-benchmark)
+add_dependencies(run-benchmarks generate_html_page)
