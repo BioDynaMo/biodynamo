@@ -39,7 +39,7 @@ def graph(name_demo, iteration, i):
         tmp = cpu[h] + tmp
         h += 1
     moy = tmp / iteration
-    return name_demo, moy, memory
+    return name_demo, moy, memory, np.min(cpu[:iteration]), np.max(cpu[:iteration])
 
 def name(i):
     name_data = data["benchmarks"][i]["name"]
@@ -76,11 +76,11 @@ def iteration():
             break
     return j+1
 
-def store(cpu, name_demo, memory):
+def store(cpu, name_demo, memory, min_v, max_v):
     version = sys.argv[2]
     csvfile = open('benchmark/'+name_demo+'.csv', 'a+')
     writer = csv.writer(csvfile)
-    writer.writerow( (version, cpu, memory) )
+    writer.writerow( (version, cpu, memory, min_v, max_v) )
     csvfile.close()
 
 def nb_data(name_demo):
@@ -97,22 +97,32 @@ def plot(name_demo):
     v = [0]*nb
     value = [0]*nb
     value2 = [0]*nb
+    min_v = [0]*nb
+    max_v = [0]*nb
     fig, ax = plt.subplots(2, sharex='col', sharey='row')
     with open('benchmark/'+name_demo+'.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
             v[line_count] = row[0]
-            v[line_count] = v[line_count][:6]
+            v[line_count] = v[line_count][:7]
             value[line_count] = float(row[1])/10**9
             value2[line_count] = float(row[2])
+            min_v[line_count] = float(row[3])/10**9
+            max_v[line_count] = float(row[4])/10**9
             line_count += 1
     xlabels = v
     ax[0].plot(range(nb), value, 'bo-')
+    ax[0].plot(range(nb), min_v, 'b--')
+    ax[0].plot(range(nb), max_v, 'b--')
+    ax[0].set_ylabel("CPU Time in second")
+    ax[0].set_xlabel("Version")
+    ax[1].set_ylabel("Memory")
     ax[1].plot(range(nb), value2, 'ro-')
     ax[0].set_title(name_demo)
     ax[1].set_xticks(range(nb))
     ax[1].set_xticklabels(xlabels, rotation=90)
+    plt.tight_layout()
     plt.savefig('benchmark/'+name_demo+'.png')
     return
 
@@ -123,9 +133,11 @@ def main():
     cpu = [0]*j
     name_demo = [0]*j
     memory = [10]*j
+    min_v = [0]*j
+    max_v = [0]*j
     while i < j:
-        name_demo[i], cpu[i], memory[i] = graph(name_datas[i], it, j)
-        store(cpu[i], name_demo[i], memory[i])
+        name_demo[i], cpu[i], memory[i], min_v[i], max_v[i] = graph(name_datas[i], it, j)
+        store(cpu[i], name_demo[i], memory[i], min_v[i], max_v[i])
         plot(name_demo[i])
         i += 1
     return
