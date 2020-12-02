@@ -14,13 +14,13 @@
 
 #include "gtest/gtest.h"
 
+#include "core/agent/cell.h"
 #include "core/model_initializer.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/reduction_op.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/sim_object/cell.h"
 #include "core/simulation.h"
 
 namespace bdm {
@@ -44,7 +44,7 @@ BDM_REGISTER_OP(OperationTestOp, "OperationTestOp", kCpu);
 
 TEST(OperationTest, SetupTearDown) {
   Simulation simulation("");
-  simulation.GetResourceManager()->push_back(new Cell());
+  simulation.GetResourceManager()->AddAgent(new Cell());
   auto* op = NewOperation("OperationTestOp");
   op->frequency_ = 2;
   simulation.GetScheduler()->ScheduleOp(op);
@@ -57,11 +57,11 @@ TEST(OperationTest, SetupTearDown) {
   EXPECT_EQ(5, op_impl->teardown_counter_);
 }
 
-struct CheckDiameter : public Functor<void, SimObject*, int*> {
+struct CheckDiameter : public Functor<void, Agent*, int*> {
   explicit CheckDiameter(double d) : diameter_(d) {}
 
-  void operator()(SimObject* so, int* tl_result) {
-    if (so->GetDiameter() > diameter_) {
+  void operator()(Agent* agent, int* tl_result) {
+    if (agent->GetDiameter() > diameter_) {
       (*tl_result)++;
     }
   }
@@ -69,14 +69,14 @@ struct CheckDiameter : public Functor<void, SimObject*, int*> {
   double diameter_;
 };
 
-struct CheckXPosition : public Functor<void, SimObject*, double*> {
-  void operator()(SimObject* so, double* tl_result) {
-    (*tl_result) += so->GetPosition()[0];
+struct CheckXPosition : public Functor<void, Agent*, double*> {
+  void operator()(Agent* agent, double* tl_result) {
+    (*tl_result) += agent->GetPosition()[0];
   }
 };
 
 /// 3x3x3 cells are positioned 50 units away from each other.
-/// Each cell's diameter is equal to (1 + x_position / 10), so 1, 6 or 11.
+/// Each cell's diameter is equal to (1 + x_position / 10), agent 1, 6 or 11.
 ///
 ///                                 +----------+
 ///                                 |          |
@@ -92,7 +92,7 @@ struct CheckXPosition : public Functor<void, SimObject*, double*> {
 TEST(OperationTest, ReductionOp) {
   // Lower the batch size such that multiple threads are working in parallel on
   // the operations (to test if multithreading doesn't cause race conditions)
-  auto set_param = [](Param* param) { param->scheduling_batch_size_ = 3; };
+  auto set_param = [](Param* param) { param->scheduling_batch_size = 3; };
   Simulation simulation("", set_param);
   auto* scheduler = simulation.GetScheduler();
 
@@ -103,13 +103,13 @@ TEST(OperationTest, ReductionOp) {
   };
   ModelInitializer::Grid3D(3, 50, construct);
 
-  // Count total number of simulation objects with a diameter greater than 6
+  // Count total number of agents with a diameter greater than 6
   auto* op = NewOperation("ReductionOpInt");
   auto* op_impl = op->GetImplementation<ReductionOp<int>>();
   op_impl->Initialize(new CheckDiameter(6), new SumReduction<int>());
   scheduler->ScheduleOp(op);
 
-  // Check average X position of all simulation objects
+  // Check average X position of all agents
   auto* op_d = NewOperation("ReductionOpDouble");
   auto* op_d_impl = op_d->GetImplementation<ReductionOp<double>>();
   op_d_impl->Initialize(new CheckXPosition(), new SumReduction<double>());
@@ -117,25 +117,19 @@ TEST(OperationTest, ReductionOp) {
 
   simulation.Simulate(1);
 
-  // Check the total number of sim objects with a diameter greater than 6
-  EXPECT_EQ(9, op_impl->results_[0]);
+  // Check the total number of agents with a diameter greater than 6
+  EXPECT_EQ(9, op_impl->GetResults()[0]);
 
-  auto num_so = simulation.GetResourceManager()->GetNumSimObjects();
+  auto num_agents = simulation.GetResourceManager()->GetNumAgents();
 
-  // Check the average x position of all simulation objects
-  EXPECT_EQ(50, op_d_impl->results_[0] / num_so);
-
-  size_t num_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-
-  // Check if the arrays are of the right size (number of threads)
-  EXPECT_EQ(num_threads, op_impl->tl_results_.size());
-  EXPECT_EQ(num_threads, op_d_impl->tl_results_.size());
+  // Check the average x position of all agents
+  EXPECT_EQ(50, op_d_impl->GetResults()[0] / num_agents);
 }
 
 TEST(OperationTest, ReductionOpMultiThreading) {
   // Lower the batch size such that multiple threads are working in parallel on
   // the operations (to test if multithreading doesn't cause race conditions)
-  auto set_param = [](Param* param) { param->scheduling_batch_size_ = 3; };
+  auto set_param = [](Param* param) { param->scheduling_batch_size = 3; };
   Simulation simulation("", set_param);
   auto* scheduler = simulation.GetScheduler();
 
@@ -145,7 +139,7 @@ TEST(OperationTest, ReductionOpMultiThreading) {
   };
   ModelInitializer::Grid3D(20, 3, construct);
 
-  // Count total number of simulation objects with a diameter greater than 0
+  // Count total number of agents with a diameter greater than 0
   auto* op = NewOperation("ReductionOpInt");
   auto* op_impl = op->GetImplementation<ReductionOp<int>>();
   op_impl->Initialize(new CheckDiameter(0), new SumReduction<int>());
@@ -153,8 +147,8 @@ TEST(OperationTest, ReductionOpMultiThreading) {
 
   simulation.Simulate(1);
 
-  // Check the total number of sim objects with a diameter greater than 6
-  EXPECT_EQ(8000, op_impl->results_[0]);
+  // Check the total number of agents with a diameter greater than 6
+  EXPECT_EQ(8000, op_impl->GetResults()[0]);
 }
 
 }  // namespace bdm

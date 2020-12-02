@@ -44,8 +44,8 @@ Operation *Operation::Clone() {
   return clone;
 }
 
-void Operation::operator()(SimObject *so) {
-  (*implementations_[active_target_])(so);
+void Operation::operator()(Agent *agent) {
+  (*implementations_[active_target_])(agent);
 }
 
 void Operation::operator()() { (*implementations_[active_target_])(); }

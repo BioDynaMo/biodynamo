@@ -40,32 +40,32 @@ struct DiffusionOp : public StandaloneOperationImpl {
     auto* env = sim->GetEnvironment();
     auto* param = sim->GetParam();
 
-    rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dg) {
+    rm->ForEachDiffusionGrid([&](DiffusionGrid* dg) {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
-      if (env->HasGrown() && !param->bound_space_) {
+      if (env->HasGrown() && !param->bound_space) {
         Log::Info("DiffusionOp",
-                  "Your simulation objects are getting near the edge of the "
+                  "Your agents are getting near the edge of the "
                   "simulation space. Be aware of boundary conditions that may "
                   "come into play!");
         dg->Update(env->GetDimensionThresholds());
       }
-      if (param->diffusion_type_ == "RK") {
-        if (param->leaking_edges_) {
+      if (param->diffusion_type == "RK") {
+        if (param->leaking_edges) {
           dg->RKLeaking();
         } else {
           dg->RK();
         }
 
       } else {
-        if (param->leaking_edges_) {
+        if (param->leaking_edges) {
           dg->DiffuseEulerLeakingEdge();
         } else {
           dg->DiffuseEuler();
         }
       }
-      if (param->calculate_gradients_) {
+      if (param->calculate_gradients) {
         dg->CalculateGradient();
       }
     });

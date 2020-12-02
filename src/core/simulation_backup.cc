@@ -18,31 +18,31 @@ namespace bdm {
 
 SimulationBackup::SimulationBackup(const std::string& backup_file,
                                    const std::string& restore_file)
-    : backup_file_(backup_file), restore_file_(restore_file) {
+    : backup_file(backup_file), restore_file(restore_file) {
   backup_ = true;
-  if (backup_file_ == "") {
+  if (backup_file == "") {
     backup_ = false;
     Log::Info("SimulationBackup",
               "No backup file name given. No backups will be made!");
-  } else if (backup_file_ == restore_file_) {
+  } else if (backup_file == restore_file) {
     Log::Warning(
         "SimulationBackup",
         "Backup file is identical to restore file. Will be overriden after "
         "restore.");
   }
 
-  if (restore_file_ == "") {
+  if (restore_file == "") {
     restore_ = false;
-  } else if (!FileExists(restore_file_)) {
+  } else if (!FileExists(restore_file)) {
     Log::Fatal("SimulationBackup",
-               "Given restore file does not exist: ", restore_file_);
+               "Given restore file does not exist: ", restore_file);
   }
 }
 
 size_t SimulationBackup::GetSimulationStepsFromBackup() {
   if (restore_) {
     IntegralTypeWrapper<size_t>* wrapper = nullptr;
-    bdm::GetPersistentObject(restore_file_.c_str(), kSimulationStepName.c_str(),
+    bdm::GetPersistentObject(restore_file.c_str(), kSimulationStepName.c_str(),
                              wrapper);
     return wrapper->Get();
   } else {

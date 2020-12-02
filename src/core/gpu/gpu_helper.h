@@ -74,10 +74,10 @@ class GpuHelper {
       Log::Info("", "  [", i, "] ", prop.name);
     }
 
-    cudaSetDevice(param->preferred_gpu_);
+    cudaSetDevice(param->preferred_gpu);
     cudaDeviceProp prop;
-    cudaGetDeviceProperties(&prop, param->preferred_gpu_);
-    Log::Info("", "Selected GPU [", param->preferred_gpu_, "]: ", prop.name);
+    cudaGetDeviceProperties(&prop, param->preferred_gpu);
+    Log::Info("", "Selected GPU [", param->preferred_gpu, "]: ", prop.name);
   }
 #endif  // USE_CUDA
 
@@ -99,22 +99,22 @@ class GpuHelper {
     // going through a list of header files. Also, create a stringifier that
     // goes from .cl --> .h, since OpenCL kernels must be input as a string here
     std::string bdmsys = std::getenv("BDMSYS");
-    std::ifstream cl_file(bdmsys +
-                          "/include/core/gpu/displacement_op_opencl_kernel.cl");
+    std::ifstream cl_file(
+        bdmsys + "/include/core/gpu/mechanical_forces_op_opencl_kernel.cl");
     if (cl_file.fail()) {
       Log::Error("CompileOpenCLKernels", "Kernel file does not exists!");
     }
     std::stringstream buffer;
     buffer << cl_file.rdbuf();
 
-    cl::Program displacement_op_program(*context, buffer.str());
+    cl::Program mechanical_forces_op_program(*context, buffer.str());
 
-    all_programs->push_back(displacement_op_program);
+    all_programs->push_back(mechanical_forces_op_program);
 
     Log::Info("", "Compiling OpenCL kernels...");
 
     std::string options;
-    if (param->opencl_debug_) {
+    if (param->opencl_debug) {
       Log::Info("", "Building OpenCL kernels with debugging symbols");
       options = "-g -O0";
     } else {
@@ -199,7 +199,7 @@ class GpuHelper {
         Log::Info("", "  [", i, "] ", (*devices)[i].getInfo<CL_DEVICE_NAME>());
       }
 
-      int selected_gpu = param->preferred_gpu_;
+      int selected_gpu = param->preferred_gpu;
       Log::Info("", "Selected GPU [", selected_gpu,
                 "]: ", (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
 
@@ -221,7 +221,7 @@ class GpuHelper {
   void InitializeGPUEnvironment() {
 #if (defined(USE_CUDA) || defined(USE_OPENCL)) && !defined(__ROOTCLING__)
     auto* param = Simulation::GetActive()->GetParam();
-    if (param->compute_target_ == "opencl") {
+    if (param->compute_target == "opencl") {
 #ifdef USE_OPENCL
       FindGpuDevicesOpenCL();
 #else

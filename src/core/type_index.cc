@@ -19,27 +19,27 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-void TypeIndex::Add(SimObject* so) {
-  auto& type_vector = data_[so->IsA()];
-  auto uid = so->GetUid();
+void TypeIndex::Add(Agent* agent) {
+  auto& type_vector = data_[agent->IsA()];
+  auto uid = agent->GetUid();
   if (index_.size() <= uid.GetIndex()) {
     Reserve(uid.GetIndex() + 1);
   }
   index_.Insert(uid, type_vector.size());
-  type_vector.push_back(so);
+  type_vector.push_back(agent);
 }
 
 // -----------------------------------------------------------------------------
-void TypeIndex::Update(SimObject* new_so) {
-  auto idx = index_[new_so->GetUid()];
-  auto& type_vector = data_[new_so->IsA()];
-  type_vector[idx] = new_so;
+void TypeIndex::Update(Agent* new_agent) {
+  auto idx = index_[new_agent->GetUid()];
+  auto& type_vector = data_[new_agent->IsA()];
+  type_vector[idx] = new_agent;
 }
 
 // -----------------------------------------------------------------------------
-void TypeIndex::Remove(SimObject* so) {
-  auto idx = index_[so->GetUid()];
-  auto& type_vector = data_[so->IsA()];
+void TypeIndex::Remove(Agent* agent) {
+  auto idx = index_[agent->GetUid()];
+  auto& type_vector = data_[agent->IsA()];
   if (idx == type_vector.size() - 1) {
     type_vector.pop_back();
   } else {
@@ -67,7 +67,7 @@ void TypeIndex::Reserve(uint64_t capacity) {
 }
 
 // -----------------------------------------------------------------------------
-const std::vector<SimObject*>& TypeIndex::GetType(TClass* tclass) const {
+const std::vector<Agent*>& TypeIndex::GetType(TClass* tclass) const {
   return data_[tclass];
 }
 

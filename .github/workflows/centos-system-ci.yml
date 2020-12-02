@@ -23,17 +23,17 @@ jobs:
     - name: Set GHA_BRANCH_NAME
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          echo "::set-env name=GHA_BRANCH_NAME::${{ github.head_ref }}"
+          echo "GHA_BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
         fi
         if [ "${{ github.event_name }}" = "schedule" ]; then
-          echo "::set-env name=GHA_BRANCH_NAME::${GITHUB_REF#refs/heads/}"
+          echo "GHA_BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
         fi
 
     - name: Set OSVERS
       run: |
         ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
         VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
-        echo "::set-env name=OSVERS::$ID-$VERSION"
+        echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
     
       # Do this prior to Checkout BioDynaMo, because the CentOS docker container
       # does not come with git preinstalled. This would mess up later calls to 
@@ -43,6 +43,15 @@ jobs:
       run: |
         yum install -y http://opensource.wandisco.com/centos/7/git/x86_64/wandisco-git-release-7-2.noarch.rpm
         yum install -y git
+
+    - name: Start Xvfb
+      run: |
+        set -e
+        yum -y install xorg-x11-server-Xvfb
+        XVFBARGS=":99 -ac -screen 0 2560x1440x24"
+        /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
+        disown -ar
+        sleep 3
 
     - name: Install BioDynaMo
       shell: bash
@@ -59,13 +68,10 @@ jobs:
     - name: Set INSTALL_DIR
       run: |
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          echo "::set-env name=INSTALL_DIR::${GITHUB_WORKSPACE}/build"
+          echo "INSTALL_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
         fi
         if [ "${{ github.event_name }}" = "schedule" ]; then
-          VERSION=`git describe --tags`
-          REGEX='[^-]*'
-          [[ $VERSION =~ $REGEX ]]
-          echo "::set-env name=INSTALL_DIR::${HOME}/biodynamo-${BASH_REMATCH}"
+          echo "INSTALL_DIR=$(echo ${HOME}/biodynamo-*)" >> $GITHUB_ENV
         fi
 
     - name: Cache pyenv
@@ -104,7 +110,7 @@ jobs:
           -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
-        cmake --build build --parallel --config Release
+        cmake --build build --config Release
 
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
     # runners, while waiting for other targets to be compiled
@@ -114,7 +120,7 @@ jobs:
         cmake \
           -Dnotebooks=ON \
           -B build
-        cmake --build build --parallel --config Release --target notebooks
+        cmake --build build --config Release --target notebooks
 
     - name: Run system tests
       shell: bash
@@ -129,13 +135,10 @@ jobs:
         git config --system user.name "Test User"
         git config --system user.email user@test.com
         export DISPLAY=:99.0
-        ../util/xvfb-initd.sh start
-        sleep 3
         biodynamo new test-sim
         . ../test/util.inc
         run_cmake_simulation test-sim
         make run-demos
-        ../util/xvfb-initd.sh stop
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3

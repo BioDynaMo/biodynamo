@@ -212,7 +212,7 @@ void NumaPoolAllocator::Delete(void* p) {
   auto tid = tinfo_->GetMyThreadId();
   auto& tl_list = free_lists_[tid];
   tl_list.PushFront(node);
-  // migrate too much unused memory to the central list so other threads
+  // migrate too much unused memory to the central list agent other threads
   // can obtain it
   if (tl_list.Size() > max_nodes_per_thread_ && tl_list.CanPopBackN()) {
     Node* head = nullptr;
@@ -334,7 +334,7 @@ MemoryManager::MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
     Log::Fatal(
         "MemoryManager",
         Concat("The parameter mem_mgr_max_mem_per_thread must be greater then "
-               "the size of N pages (PAGE_SIZE * 2 ^ mem_mgr_growth_rate_)! "
+               "the size of N pages (PAGE_SIZE * 2 ^ mem_mgr_growth_rate)! "
                "(max_mem_per_thread_ ",
                max_mem_per_thread_, ", size_n_pages_ ", size_n_pages_, ")"));
   }

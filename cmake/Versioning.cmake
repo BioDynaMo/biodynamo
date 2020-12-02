@@ -23,7 +23,7 @@ execute_process(
      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # Set CMake variable that can be consumed by other build scripts
-execute_process(COMMAND cat version/last_version
+execute_process(COMMAND cat version/version
                 OUTPUT_VARIABLE VERSION
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 

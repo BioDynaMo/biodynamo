@@ -53,7 +53,7 @@ fi
 set -e
 
 # Test overriding the OS detection for one OS
-if [ "${BDM_OS}" = "ubuntu-16.04" ]; then
+if [ "${BDM_OS}" = "ubuntu-18.04" ]; then
   export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
 fi
 
@@ -69,12 +69,8 @@ CleanBuild $BUILD_DIR
 echo
 EchoSuccess "Installation of BioDynaMo finished successfully!"
 
-# Get version name with same regex as in Installation.cmake
-# TOOD(ahmad): needs more portable solution
-VERSION=`git describe --tags`
-REGEX='[^-]*'
-[[ $VERSION =~ $REGEX ]]
-INSTALL_DIR=${HOME}/biodynamo-${BASH_REMATCH}
+BDM_VERSION=$(cat $BUILD_DIR/version/shortversion)
+INSTALL_DIR=${HOME}/biodynamo-v${BDM_VERSION}
 
 EchoFinishInstallation $INSTALL_DIR
 echo

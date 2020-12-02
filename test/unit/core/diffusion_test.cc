@@ -14,10 +14,10 @@
 
 #include <fstream>
 
+#include "core/agent/cell.h"
 #include "core/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
-#include "core/sim_object/cell.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
 #include "gtest/gtest.h"
@@ -41,7 +41,7 @@ void CellFactory(const std::vector<Double3>& positions) {
   for (size_t i = 0; i < positions.size(); i++) {
     Cell* cell = new Cell({positions[i][0], positions[i][1], positions[i][2]});
     cell->SetDiameter(30);
-    rm->push_back(cell);
+    rm->AddAgent(cell);
   }
 }
 
@@ -163,7 +163,7 @@ TEST(DiffusionTest, LeakingEdge) {
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
-    d_grid->IncreaseConcentrationBy({{0, 0, 0}}, 4);
+    d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
     d_grid->DiffuseWithLeakingEdge();
     d_grid->CalculateGradient();
   }
@@ -227,7 +227,7 @@ TEST(DiffusionTest, ClosedEdge) {
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
-    d_grid->IncreaseConcentrationBy({{0, 0, 0}}, 4);
+    d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
     d_grid->DiffuseWithClosedEdge();
     d_grid->CalculateGradient();
   }
@@ -291,7 +291,7 @@ TEST(DiffusionTest, CopyOldData) {
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
-    d_grid->IncreaseConcentrationBy({{0, 0, 0}}, 4);
+    d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
     d_grid->DiffuseWithLeakingEdge();
     d_grid->CalculateGradient();
   }
@@ -454,12 +454,12 @@ TEST(DiffusionTest, EulerConvergence) {
   // instantaneous point source
   int init = 1e5;
   Double3 source = {{0, 0, 0}};
-  d_grid2->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid2->GetBoxLength(), 3));
-  d_grid4->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid4->GetBoxLength(), 3));
-  d_grid8->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid8->GetBoxLength(), 3));
+  d_grid2->ChangeConcentrationBy(source,
+                                 init / pow(d_grid2->GetBoxLength(), 3));
+  d_grid4->ChangeConcentrationBy(source,
+                                 init / pow(d_grid4->GetBoxLength(), 3));
+  d_grid8->ChangeConcentrationBy(source,
+                                 init / pow(d_grid8->GetBoxLength(), 3));
 
   auto conc2 = d_grid2->GetAllConcentrations();
   auto conc4 = d_grid4->GetAllConcentrations();
@@ -508,7 +508,7 @@ TEST(DiffusionTest, EulerConvergence) {
 }
 
 TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
-  auto set_param = [](Param* param) { param->diffusion_type_ = "RK"; };
+  auto set_param = [](Param* param) { param->diffusion_type = "RK"; };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
   DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
@@ -528,12 +528,12 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   // instantaneous point source
   int init = 1e5;
   Double3 source = {{0, 0, 0}};
-  d_grid2->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid2->GetBoxLength(), 3));
-  d_grid4->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid4->GetBoxLength(), 3));
-  d_grid8->IncreaseConcentrationBy(source,
-                                   init / pow(d_grid8->GetBoxLength(), 3));
+  d_grid2->ChangeConcentrationBy(source,
+                                 init / pow(d_grid2->GetBoxLength(), 3));
+  d_grid4->ChangeConcentrationBy(source,
+                                 init / pow(d_grid4->GetBoxLength(), 3));
+  d_grid8->ChangeConcentrationBy(source,
+                                 init / pow(d_grid8->GetBoxLength(), 3));
 
   auto conc2 = d_grid2->GetAllConcentrations();
   auto conc4 = d_grid4->GetAllConcentrations();
@@ -589,10 +589,10 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
 TEST(DISABLED_DiffusionTest, ModelInitializer) {
   auto set_param = [](auto* param) {
     Param::VisualizeDiffusion vd;
-    vd.name_ = "Substance_1";
+    vd.name = "Substance_1";
 
-    param->export_visualization_ = true;
-    param->visualize_diffusion_.push_back(vd);
+    param->export_visualization = true;
+    param->visualize_diffusion.push_back(vd);
   };
   Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
@@ -607,7 +607,7 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   // Initialize one of the substances
   double mean = 0;
   double sigma = 5;
-  ModelInitializer::InitializeSubstance(kSubstance1, "Substance_1",
+  ModelInitializer::InitializeSubstance(kSubstance1,
                                         GaussianBand(mean, sigma, kXAxis));
 
   int l = -100;

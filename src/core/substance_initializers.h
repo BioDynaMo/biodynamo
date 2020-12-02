@@ -34,12 +34,8 @@ enum Axis { kXAxis, kYAxis, kZAxis };
 
 /// An initializer that uniformly initializes the concentration of a diffusion
 /// grid based on the input value and the range (along the specified axis).
-struct Uniform {
-  double min_;
-  double max_;
-  double value_;
-  uint8_t axis_;
-
+class Uniform {
+ public:
   Uniform(double min, double max, double value, uint8_t axis) {
     min_ = min;
     max_ = max;
@@ -72,17 +68,20 @@ struct Uniform {
     }
     return 0;
   }
+
+ private:
+  double min_;
+  double max_;
+  double value_;
+  uint8_t axis_;
 };
 
 /// An initializer that follows a Gaussian (normal) distribution along one axis
 /// We use ROOT's built-in statistics function `normal_pdf(X, sigma, mean)`,
 /// that follows the normal probability density function:
 /// ( 1/( sigma * sqrt(2*pi) ))*e^( (-(x - mean )^2) / (2*sigma^2))
-struct GaussianBand {
-  double mean_;
-  double sigma_;
-  uint8_t axis_;
-
+class GaussianBand {
+ public:
   /// @brief      The constructor
   ///
   /// @param[in]  mean   The mean of the Gaussian distribution (should be a
@@ -116,16 +115,19 @@ struct GaussianBand {
         throw std::logic_error("You have chosen an non-existing axis!");
     }
   }
+
+ private:
+  double mean_;
+  double sigma_;
+  uint8_t axis_;
 };
 
 /// An initializer that follows a Poisson (normal) distribution along one axis
 /// The function ROOT::Math::poisson_pdfd(X, lambda) follows the normal
 /// probability density function:
 /// {e^( - lambda ) * lambda ^x )} / x!
-struct PoissonBand {
-  double lambda_;
-  uint8_t axis_;
-
+class PoissonBand {
+ public:
   /// @brief      The constructor
   ///
   /// @param[in]  lambda The lambda of the Poisson distribution
@@ -156,6 +158,10 @@ struct PoissonBand {
         throw std::logic_error("You have chosen an non-existing axis!");
     }
   }
+
+ private:
+  double lambda_;
+  uint8_t axis_;
 };
 
 }  // namespace bdm

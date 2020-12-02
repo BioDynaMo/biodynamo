@@ -34,8 +34,8 @@ sudo apt-key add llvm-snapshot.gpg.key
 sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main"
 sudo apt update
 
-# use ubuntu-16.04 prerequisites script
-. $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/prerequisites.sh $1
+# use ubuntu-18.04 prerequisites script
+. $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/prerequisites.sh $1
 
 if [ $1 == "all" ]; then
   sudo apt-get install -y kcov

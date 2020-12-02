@@ -19,8 +19,8 @@
 namespace bdm {
 
 // Parameters specific for this simulation
-struct SimParam : public ModuleParam {
-  BDM_MODULE_PARAM_HEADER(SimParam, 1);
+struct SimParam : public ParamGroup {
+  BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
   double foo = 3.14;
   int bar = -42;
@@ -29,16 +29,16 @@ struct SimParam : public ModuleParam {
 inline int Simulate(int argc, const char** argv) {
   // Before we create a simulation we have to tell BioDynaMo about
   // the new parameters.
-  Param::RegisterModuleParam(new SimParam());
+  Param::RegisterParamGroup(new SimParam());
 
   Simulation simulation(argc, argv);
 
   // get a pointer to the param object
   auto* param = simulation.GetParam();
   // get a pointer to an instance of SimParam
-  auto* sparam = param->GetModuleParam<SimParam>();
+  auto* sparam = param->Get<SimParam>();
 
-  std::cout << "Value of simulation time step " << param->simulation_time_step_
+  std::cout << "Value of simulation time step " << param->simulation_time_step
             << std::endl;
   std::cout << "Value of foo                  " << sparam->foo << std::endl;
   std::cout << "Value of bar                  " << sparam->bar << std::endl;

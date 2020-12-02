@@ -41,11 +41,11 @@ def GetGitDescribeString(git_dir, default_version_code):
         return version.strip()
     except subprocess.CalledProcessError as e:
         print("Call to git describe failed (Error code {})".format(e.returncode))
-        version_string = "v{0}-{1}-g{2}".format(default_version_code, 9999, "UNKNOWN")
+        version_string = "v{0}".format(default_version_code)
         print("Falling back to default version value ({})".format(version_string))
         return version_string
 
-def GenerateFile(template_file, dest_file, version, major, minor, patch, additional_commits):
+def GenerateFile(template_file, dest_file, version, major, minor, patch):
     if not os.path.exists(template_file):
         print("Warning: File {0} does not exist".format(template_file))
         return
@@ -54,24 +54,24 @@ def GenerateFile(template_file, dest_file, version, major, minor, patch, additio
         content = f.read()
 
     content = content.replace("@VERSION@", version)
-    content = content.replace("@VERSION_MAJOR@", major)
-    content = content.replace("@VERSION_MINOR@", minor)
-    content = content.replace("@VERSION_PATCH@", patch)
-    content = content.replace("@VERSION_ADDITIONAL_COMMITS@", additional_commits)
+    content = content.replace("@VERSION_MAJOR@", str(major))
+    content = content.replace("@VERSION_MINOR@", str(minor))
+    content = content.replace("@VERSION_PATCH@", str(patch))
+    # for Doxyfile
     content = content.replace("PROJECT_NUMBER         = \"\"", "PROJECT_NUMBER         = \"" + version + "\"")
 
     with open(dest_file, 'w') as f:
         f.write(content)
 
-def UpdateVersionInfo(last_version_file, version_string):
-    """Returns true if the last_version_file does not exist (meaning that the
+def UpdateVersionInfo(version_file, version_string):
+    """Returns true if the version_file does not exist (meaning that the
     script has not been executed yet), or if the last version does not match the
     current version."""
 
-    if not os.path.exists(last_version_file):
+    if not os.path.exists(version_file):
         return True
 
-    with open(last_version_file, 'r') as f:
+    with open(version_file, 'r') as f:
         content = f.read()
 
     return version_string != content.strip()
@@ -82,11 +82,16 @@ if __name__ == '__main__':
     version = GetGitDescribeString(sys.argv[4], sys.argv[3])
 
     # extract information
-    search = re.search('v([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*)', version)
-    major = search.group(1)
-    minor = search.group(2)
-    patch = search.group(3)
-    additional_commits = search.group(4)
+    search = re.search('v([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*)', version)
+    if search != None:
+        major = search.group(1)
+        minor = search.group(2)
+        patch = search.group(3)
+    else:
+        search = re.search('v([0-9]+)\.([0-9]+)', version)
+        major = search.group(1)
+        minor = search.group(2)
+        patch = 0
 
     # Update files
     scriptpath = os.path.dirname(__file__)
@@ -95,11 +100,18 @@ if __name__ == '__main__':
     if not os.path.exists(destdir):
         os.makedirs(destdir)
 
-    if UpdateVersionInfo(destdir+"/last_version", version):
-        GenerateFile(scriptpath+'/version.h', destdir+'/version.h', version, major, minor, patch, additional_commits)
-        GenerateFile(scriptpath+'/version.py', destdir+'/version.py', version, major, minor, patch, additional_commits)
-        GenerateFile(builddir+'/Doxyfile', builddir+'/Doxyfile', version, major, minor, patch, additional_commits)
+    if UpdateVersionInfo(destdir+"/version", version):
+        GenerateFile(scriptpath+'/version.h', destdir+'/version.h', version, major, minor, patch)
+        GenerateFile(scriptpath+'/version.py', destdir+'/version.py', version, major, minor, patch)
+        GenerateFile(builddir+'/Doxyfile', builddir+'/Doxyfile', version, major, minor, patch)
 
         # cache last version
-        with open(destdir+"/last_version", 'w') as f:
+        with open(destdir+"/version", 'w') as f:
             f.write(version)
+        #   shortversion
+        if patch == 0:
+            shortversion = "{}.{}".format(major, minor)
+        else:
+            shortversion = "{}.{}.{}".format(major, minor, patch)
+        with open(destdir+"/shortversion", 'w') as f:
+            f.write(shortversion)

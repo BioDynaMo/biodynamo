@@ -23,16 +23,13 @@ namespace soma_clustering {
 // Define my custom cell, which extends Cell by adding an extra
 // data member cell_type.
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+  BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
   explicit MyCell(const Double3& position, int cell_type)
       : Base(position), cell_type_(cell_type) {}
-
-  /// Default event constructor
-  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
+  virtual ~MyCell() {}
 
   int GetCellType() const { return cell_type_; }
 

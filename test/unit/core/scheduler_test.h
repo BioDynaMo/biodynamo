@@ -21,8 +21,8 @@
 #include <unistd.h>
 #include <string>
 
+#include "core/agent/cell.h"
 #include "core/environment/environment.h"
-#include "core/sim_object/cell.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"
 #include "unit/test_util/test_util.h"
@@ -64,15 +64,15 @@ inline void RunRestoreTest() {
     // create backup that will be restored later on
     Cell* cell = new Cell();
     cell->SetDiameter(10);  // important for grid to determine box size
-    rm->push_back(cell);
+    rm->AddAgent(cell);
     SimulationBackup backup(ROOTFILE, "");
     backup.Backup(149);
-    rm->Clear();
-    EXPECT_EQ(0u, rm->GetNumSimObjects());
+    rm->ClearAgents();
+    EXPECT_EQ(0u, rm->GetNumAgents());
   }
 
   // start restore validation
-  auto set_param = [](auto* param) { param->restore_file_ = ROOTFILE; };
+  auto set_param = [](auto* param) { param->restore_file = ROOTFILE; };
   Simulation simulation("SchedulerTest_RunRestoreTest", set_param);
   auto* rm = simulation.GetResourceManager();
   TestSchedulerRestore scheduler;
@@ -80,29 +80,29 @@ inline void RunRestoreTest() {
   // should be ignored
   scheduler.Simulate(100);
   EXPECT_EQ(0u, scheduler.execute_calls);
-  EXPECT_EQ(0u, rm->GetNumSimObjects());
+  EXPECT_EQ(0u, rm->GetNumAgents());
 
   // Restore should happen within this call
   scheduler.Simulate(100);
   //   only 51 steps should be simulated
   EXPECT_EQ(51u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 
   // add element to see if if restore happens again
-  rm->push_back(new Cell());
+  rm->AddAgent(new Cell());
 
   // normal simulation - no restore
   scheduler.Simulate(100);
   EXPECT_EQ(151u, scheduler.execute_calls);
-  EXPECT_EQ(2u, rm->GetNumSimObjects());
+  EXPECT_EQ(2u, rm->GetNumAgents());
 
   remove(ROOTFILE);
 }
 
 inline void RunBackupTest() {
   auto set_param = [](auto* param) {
-    param->backup_file_ = ROOTFILE;
-    param->backup_interval_ = 1;
+    param->backup_file = ROOTFILE;
+    param->backup_interval = 1;
   };
 
   Simulation simulation("SchedulerTest_RunBackupTest", set_param);
@@ -112,7 +112,7 @@ inline void RunBackupTest() {
 
   Cell* cell = new Cell();
   cell->SetDiameter(10);  // important for grid to determine box size
-  rm->push_back(cell);
+  rm->AddAgent(cell);
 
   TestSchedulerBackup scheduler;
 

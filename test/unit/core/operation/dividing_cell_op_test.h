@@ -19,9 +19,9 @@
 
 #include "gtest/gtest.h"
 
+#include "core/agent/cell.h"
 #include "core/operation/dividing_cell_op.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/cell.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
@@ -33,26 +33,26 @@ inline void RunTest() {
   auto* ctxt = simulation.GetExecutionContext();
   ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
-  auto ref_uid = SoUid(simulation.GetSoUidGenerator()->GetHighestIndex());
+  auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
 
   Cell* cell_0 = new Cell(41.0);
   Cell* cell_1 = new Cell(19.0);
   double volume_mother = cell_0->GetVolume();
 
-  rm->push_back(cell_0);
-  rm->push_back(cell_1);
+  rm->AddAgent(cell_0);
+  rm->AddAgent(cell_1);
 
-  EXPECT_EQ(2u, rm->GetNumSimObjects());
+  EXPECT_EQ(2u, rm->GetNumAgents());
 
   auto* op = NewOperation("DividingCellOp");
-  rm->ApplyOnAllElementsParallel(*op);
+  rm->ForEachAgentParallel(*op);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
-  ASSERT_EQ(3u, rm->GetNumSimObjects());
-  Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 0));
-  Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 1));
-  Cell* final_cell2 = dynamic_cast<Cell*>(rm->GetSimObject(ref_uid + 2));
+  ASSERT_EQ(3u, rm->GetNumAgents());
+  Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 0));
+  Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 1));
+  Cell* final_cell2 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 2));
   EXPECT_NEAR(19.005288996600001, final_cell1->GetDiameter(),
               abs_error<double>::value);
   EXPECT_NEAR(3594.3640018287319, final_cell1->GetVolume(),

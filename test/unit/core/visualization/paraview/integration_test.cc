@@ -59,19 +59,19 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
                           bool use_pvsm = true) {
   auto num_diffusion_boxes = std::pow(resolution, 3);
   auto set_param = [&](Param* param) {
-    param->remove_output_dir_contents_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = max_bound;
-    param->export_visualization_ = export_visualization;
-    param->insitu_visualization_ = !export_visualization;
+    param->remove_output_dir_contents = true;
+    param->min_bound = 0;
+    param->max_bound = max_bound;
+    param->export_visualization = export_visualization;
+    param->insitu_visualization = !export_visualization;
     if (!export_visualization) {
-      param->pv_insitu_pipeline_ =
+      param->pv_insitu_pipeline =
           GetPythonScriptPath("validate_diffusion_grid.py");
       auto sim_name = Simulation::GetActive()->GetUniqueName();
-      param->pv_insitu_pipeline_arguments_ = Concat(
+      param->pv_insitu_pipelinearguments = Concat(
           "--sim_name=", sim_name, " --num_elements=", num_diffusion_boxes);
     }
-    param->visualize_diffusion_.push_back({"Substance", true});
+    param->visualize_diffusion.push_back({"Substance", true});
   };
   auto sim_name =
       Concat("ExportDiffusionGridTest_", max_bound, "_", resolution);
@@ -83,33 +83,32 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   // create a sequence 1, 2, 3...
   // since initialization is multithreaded returning in increasing counter
   // does not work. -> calculate and return box id
-  ModelInitializer::InitializeSubstance(
-      0, "Substance", [&](double x, double y, double z) {
-        auto* dg =
-            Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
-        auto grid_dimensions = dg->GetDimensions();
-        auto box_length = dg->GetBoxLength();
+  ModelInitializer::InitializeSubstance(0, [&](double x, double y, double z) {
+    auto* dg =
+        Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
+    auto grid_dimensions = dg->GetDimensions();
+    auto box_length = dg->GetBoxLength();
 
-        std::array<uint32_t, 3> box_coord;
-        box_coord[0] = (floor(x) - grid_dimensions[0]) / box_length;
-        box_coord[1] = (floor(y) - grid_dimensions[2]) / box_length;
-        box_coord[2] = (floor(z) - grid_dimensions[4]) / box_length;
+    std::array<uint32_t, 3> box_coord;
+    box_coord[0] = (floor(x) - grid_dimensions[0]) / box_length;
+    box_coord[1] = (floor(y) - grid_dimensions[2]) / box_length;
+    box_coord[2] = (floor(z) - grid_dimensions[4]) / box_length;
 
-        auto& num_boxes = dg->GetNumBoxesArray();
-        return box_coord[2] * num_boxes[0] * num_boxes[1] +
-               box_coord[1] * num_boxes[0] + box_coord[0];
-      });
+    auto& num_boxes = dg->GetNumBoxesArray();
+    return box_coord[2] * num_boxes[0] * num_boxes[1] +
+           box_coord[1] * num_boxes[0] + box_coord[0];
+  });
 
-  // every simulation needs at least one sim object
+  // every simulation needs at least one agent
   auto* cell = new Cell();
   cell->SetDiameter(10);
   cell->SetPosition({5, 5, 5});
-  sim->GetResourceManager()->push_back(cell);
+  sim->GetResourceManager()->AddAgent(cell);
   auto* cell1 = new Cell();
   cell1->SetDiameter(10);
   double pos = static_cast<double>(max_bound) - 5;
   cell1->SetPosition({pos, pos, pos});
-  sim->GetResourceManager()->push_back(cell1);
+  sim->GetResourceManager()->AddAgent(cell1);
 
   sim->GetScheduler()->Simulate(1);
 
@@ -131,34 +130,34 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, ExportDiffusionGrid_SlicesLtNumThreads) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunDiffusionGridTest(std::max(max_threads - 1, 1),
                        std::max(max_threads - 1, 1));
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, ExportDiffusionGrid_SlicesGtNumThreads) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunDiffusionGridTest(3 * max_threads + 1, max_threads);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunDiffusionGridTest(std::max(max_threads - 1, 1),
                        std::max(max_threads - 1, 1), true, false);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, InsituDiffusionGrid_SlicesLtNumThreads) {
+TEST(FLAKY_ParaviewIntegrationTest, InsituDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(
       std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), false));
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
+TEST(FLAKY_ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   LAUNCH_IN_NEW_PROCESS(
       RunDiffusionGridTest(3 * max_threads + 1, max_threads, false));
@@ -166,27 +165,26 @@ TEST(ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
-                       bool export_visualization = true, bool use_pvsm = true) {
+void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
+                   bool export_visualization = true, bool use_pvsm = true) {
   auto set_param = [&](Param* param) {
-    param->remove_output_dir_contents_ = true;
-    param->export_visualization_ = export_visualization;
-    param->insitu_visualization_ = !export_visualization;
-    param->visualization_export_generate_pvsm_ = use_pvsm;
+    param->remove_output_dir_contents = true;
+    param->export_visualization = export_visualization;
+    param->insitu_visualization = !export_visualization;
+    param->visualization_export_generate_pvsm = use_pvsm;
     if (!export_visualization) {
-      param->pv_insitu_pipeline_ =
-          GetPythonScriptPath("validate_sim_objects.py");
+      param->pv_insitu_pipeline = GetPythonScriptPath("validate_agents.py");
       auto sim_name = Simulation::GetActive()->GetUniqueName();
-      param->pv_insitu_pipeline_arguments_ =
-          Concat("--sim_name=", sim_name, " --num_elements=", num_so);
+      param->pv_insitu_pipelinearguments =
+          Concat("--sim_name=", sim_name, " --num_elements=", num_agents);
     }
-    param->run_mechanical_interactions_ = false;
-    param->visualize_sim_objects_.insert(
+    param->unschedule_default_operations = {"mechanical forces"};
+    param->visualize_agents.insert(
         {"NeuriteElement", {"uid_", "daughter_right_"}});
-    param->mapped_data_array_mode_ = mode;
+    param->mapped_data_array_mode = mode;
   };
   neuroscience::InitModule();
-  auto sim_name = Concat("ExportSimObjectsTest_", num_so, "_", mode);
+  auto sim_name = Concat("ExportAgentsTest_", num_agents, "_", mode);
   auto* sim = new Simulation(sim_name, set_param);
 
   auto output_dir = sim->GetOutputDir();
@@ -203,11 +201,11 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
     ne->SetDiameter(d + 10);
     ne->SetMassLocation({d, d, d});
     ne->SetActualLength(d + 10);
-    ne->SetDaughterRight(SoPointer<NeuriteElement>(SoUid(i)));
-    rm->push_back(ne);
+    ne->SetDaughterRight(AgentPointer<NeuriteElement>(AgentUid(i)));
+    rm->AddAgent(ne);
   };
 
-  for (uint64_t i = 0; i < num_so; ++i) {
+  for (uint64_t i = 0; i < num_agents; ++i) {
     construct(i);
   }
 
@@ -220,7 +218,7 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
   if (export_visualization) {
     // create pvsm file
     delete sim;
-    Validate("validate_sim_objects.py", sim_name, num_so, use_pvsm);
+    Validate("validate_agents.py", sim_name, num_agents, use_pvsm);
     ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
   } else {
     delete sim;
@@ -230,78 +228,84 @@ void RunSimObjectsTest(Param::MappedDataArrayMode mode, uint64_t num_so,
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, ExportSimObjects_ZeroCopy) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunSimObjectsTest(mode, 10 * max_threads + 1);
+  RunAgentsTest(mode, std::max(1, max_threads - 1));
+  RunAgentsTest(mode, 10 * max_threads + 1);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, ExportSimObjects_Cache) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
-  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunSimObjectsTest(mode, 10 * max_threads + 1);
+  RunAgentsTest(mode, std::max(1, max_threads - 1));
+  RunAgentsTest(mode, 10 * max_threads + 1);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, ExportSimObjects_Copy) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
-  RunSimObjectsTest(mode, std::max(1, max_threads - 1));
-  RunSimObjectsTest(mode, 10 * max_threads + 1);
+  RunAgentsTest(mode, std::max(1, max_threads - 1));
+  RunAgentsTest(mode, 10 * max_threads + 1);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, ExportSimObjectsLoadWithoutPVSM) {
+TEST(FLAKY_ParaviewIntegrationTest, ExportAgentsLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunSimObjectsTest(mode, std::max(1, max_threads - 1), true, false);
+  RunAgentsTest(mode, std::max(1, max_threads - 1), true, false);
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, InsituSimObjects_ZeroCopy) {
+TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
   LAUNCH_IN_NEW_PROCESS(
-      RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
-  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+      RunAgentsTest(mode, std::max(1, max_threads - 1), false));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, InsituSimObjects_Cache) {
+TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
   LAUNCH_IN_NEW_PROCESS(
-      RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
-  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+      RunAgentsTest(mode, std::max(1, max_threads - 1), false));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, DefaultInsituPipeline) {
+void RunDefaultInsituPipelineTest() {
   auto set_param = [](Param* param) {
-    param->remove_output_dir_contents_ = true;
-    param->insitu_visualization_ = true;
-    param->visualize_sim_objects_.insert({"Cell", {}});
+    param->remove_output_dir_contents = true;
+    param->insitu_visualization = true;
+    param->visualize_agents.insert({"Cell", {}});
   };
-  Simulation simulation(TEST_NAME, set_param);
+  Simulation simulation("RunDefaultInsituPipelineTest", set_param);
 
   auto* rm = simulation.GetResourceManager();
   auto* cell = new Cell(30);
-  rm->push_back(cell);
+  rm->AddAgent(cell);
 
   simulation.GetScheduler()->Simulate(1);
   // Test passes if there is no crash
+  // Test will run in separate process.
+  exit(0);
+}
+
+TEST(FLAKY_ParaviewIntegrationTest, DefaultInsituPipeline) {
+  LAUNCH_IN_NEW_PROCESS(RunDefaultInsituPipelineTest());
 }
 
 // -----------------------------------------------------------------------------
-TEST(ParaviewIntegrationTest, InsituSimObjects_Copy) {
+TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
   LAUNCH_IN_NEW_PROCESS(
-      RunSimObjectsTest(mode, std::max(1, max_threads - 1), false));
-  LAUNCH_IN_NEW_PROCESS(RunSimObjectsTest(mode, 10 * max_threads + 1, false));
+      RunAgentsTest(mode, std::max(1, max_threads - 1), false));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
 }  // namespace bdm
 

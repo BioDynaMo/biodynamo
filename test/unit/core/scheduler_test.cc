@@ -27,19 +27,27 @@ class SchedulerTest : public ::testing::Test {
     env_ = env;
   }
 
-  void ScheduleOps() { scheduler_->ScheduleOps(); };
+  void ScheduleOps() { scheduler_->ScheduleOps(); }
 
-  void RunPreScheduledOps() { scheduler_->RunPreScheduledOps(); };
+  void RunPreScheduledOps() { scheduler_->RunPreScheduledOps(); }
 
-  void RunScheduledOps() { scheduler_->RunScheduledOps(); };
+  void RunScheduledOps() { scheduler_->RunScheduledOps(); }
 
-  void RunPostScheduledOps() { scheduler_->RunPostScheduledOps(); };
+  void RunPostScheduledOps() { scheduler_->RunPostScheduledOps(); }
 
-  virtual void SetUp() {}
+  std::vector<std::string> GetListOfScheduledAgentOps() {
+    return scheduler_->GetListOfScheduledAgentOps();
+  }
+
+  std::vector<std::string> GetListOfScheduledStandaloneOps() {
+    return scheduler_->GetListOfScheduledStandaloneOps();
+  }
+
+  void SetUp() override {}
 
   void TestBody() override {}
 
-  virtual void TearDown() {}
+  void TearDown() override {}
 
   void Initialize() { scheduler_->restore_point_++; }
 
@@ -47,16 +55,16 @@ class SchedulerTest : public ::testing::Test {
     return &(env_->boxes_);
   }
 
-  SimObjectVector<SoHandle>* GetSuccessors() { return &(env_->successors_); }
+  AgentVector<AgentHandle>* GetSuccessors() { return &(env_->successors_); }
 
- private:
+ protected:
   Scheduler* scheduler_ = nullptr;
   UniformGridEnvironment* env_ = nullptr;
 };
 
 #ifdef USE_DICT
 TEST_F(SchedulerTest, NoRestoreFile) {
-  auto set_param = [](auto* param) { param->restore_file_ = ""; };
+  auto set_param = [](auto* param) { param->restore_file = ""; };
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
 
@@ -64,21 +72,21 @@ TEST_F(SchedulerTest, NoRestoreFile) {
 
   Cell* cell = new Cell();
   cell->SetDiameter(10);  // important for env to determine box size
-  rm->push_back(cell);
+  rm->AddAgent(cell);
 
   // start restore validation
   TestSchedulerRestore scheduler;
   scheduler.Simulate(100);
   EXPECT_EQ(100u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 
   scheduler.Simulate(100);
   EXPECT_EQ(200u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 
   scheduler.Simulate(100);
   EXPECT_EQ(300u, scheduler.execute_calls);
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 }
 
 TEST_F(SchedulerTest, Restore) { RunRestoreTest(); }
@@ -88,9 +96,9 @@ TEST_F(SchedulerTest, Backup) { RunBackupTest(); }
 
 TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
   auto set_param = [](auto* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = -10;
-    param->max_bound_ = 10;
+    param->bound_space = true;
+    param->min_bound = -10;
+    param->max_bound = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
 
@@ -105,9 +113,9 @@ TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
 
 TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
   auto set_param = [](auto* param) {
-    param->bound_space_ = true;
-    param->min_bound_ = -10;
-    param->max_bound_ = 10;
+    param->bound_space = true;
+    param->min_bound = -10;
+    param->max_bound = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
 
@@ -122,12 +130,12 @@ TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
       std::numeric_limits<std::size_t>::max();
 
   Cell* cell = new Cell(10);
-  rm->push_back(cell);
+  rm->AddAgent(cell);
   scheduler->Simulate(1);
 
   auto max_dimensions = env->GetDimensionThresholds();
   auto dimensions = env->GetDimensions();
-  rm->Clear();
+  rm->ClearAgents();
 
   scheduler->Simulate(1);
 
@@ -136,10 +144,10 @@ TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
   EXPECT_FALSE(env->HasGrown());
 }
 
-struct TestOp : public SimObjectOperationImpl {
+struct TestOp : public AgentOperationImpl {
   BDM_OP_HEADER(TestOp);
 
-  void operator()(SimObject* so) override { counter++; }
+  void operator()(Agent* agent) override { counter++; }
 
   uint64_t counter;
 };
@@ -149,7 +157,7 @@ BDM_REGISTER_OP(TestOp, "test_op", kCpu)
 TEST_F(SchedulerTest, OperationManagement) {
   Simulation simulation(TEST_NAME);
 
-  simulation.GetResourceManager()->push_back(new Cell(10));
+  simulation.GetResourceManager()->AddAgent(new Cell(10));
 
   auto* op1 = NewOperation("test_op");
   auto* op2 = NewOperation("test_op");
@@ -186,9 +194,9 @@ TEST_F(SchedulerTest, OperationManagement) {
   EXPECT_EQ(20u, op2_impl->counter);
 }
 
-struct CpuOp : public SimObjectOperationImpl {
+struct CpuOp : public AgentOperationImpl {
   BDM_OP_HEADER(CpuOp);
-  void operator()(SimObject* so) override {}
+  void operator()(Agent* agent) override {}
 };
 
 BDM_REGISTER_OP(CpuOp, "cpu_op", kCpu)
@@ -300,7 +308,7 @@ TEST_F(SchedulerTest, OperationImpl) {
   delete multi_op;
 }
 
-struct ComplexStateOp : public SimObjectOperationImpl {
+struct ComplexStateOp : public AgentOperationImpl {
   BDM_OP_HEADER(ComplexStateOp);
   class A {
    public:
@@ -320,7 +328,7 @@ struct ComplexStateOp : public SimObjectOperationImpl {
     }
     b_ = other.b_;
   }
-  void operator()(SimObject* so) override {}
+  void operator()(Agent* agent) override {}
 
   bool b_ = false;
   std::vector<A*> a_vec_;
@@ -365,13 +373,13 @@ TEST_F(SchedulerTest, MultipleSimulations) {
   Cell* cell2 = new Cell(10);
 
   sim1->Activate();
-  sim1->GetResourceManager()->push_back(cell);
+  sim1->GetResourceManager()->AddAgent(cell);
   auto* op1 = NewOperation("test_op");
   sim1->GetScheduler()->ScheduleOp(op1);
   sim1->Simulate(10);
 
   sim2->Activate();
-  sim2->GetResourceManager()->push_back(cell2);
+  sim2->GetResourceManager()->AddAgent(cell2);
   auto* op2 = NewOperation("test_op");
   sim2->GetScheduler()->ScheduleOp(op2);
 
@@ -399,10 +407,10 @@ TEST_F(SchedulerTest, MultipleSimulations) {
 
 TEST_F(SchedulerTest, GetOps) {
   Simulation sim(TEST_NAME);
-  sim.GetResourceManager()->push_back(new Cell(10));
+  sim.GetResourceManager()->AddAgent(new Cell(10));
   auto* scheduler = sim.GetScheduler();
 
-  std::vector<std::string> def_ops = {"displacement", "diffusion"};
+  std::vector<std::string> def_ops = {"mechanical forces", "diffusion"};
 
   for (auto& def_op : def_ops) {
     auto ops = scheduler->GetOps(def_op);
@@ -427,35 +435,34 @@ TEST_F(SchedulerTest, GetOps) {
 
 TEST_F(SchedulerTest, ScheduleOrder) {
   Simulation sim(TEST_NAME);
-  sim.GetResourceManager()->push_back(new Cell(10));
-  auto* scheduler = sim.GetScheduler();
+  sim.GetResourceManager()->AddAgent(new Cell(10));
+  scheduler_ = sim.GetScheduler();
   sim.Simulate(1);
 
-  std::vector<std::string> so_ops = {
-      "update run displacement", "bound space",
-      "biology module",          "displacement",
-      "discretization",          "distribute run displacement info"};
+  std::vector<std::string> agent_ops = {
+      "update staticness", "bound space",    "behavior",
+      "mechanical forces", "discretization", "propagate staticness"};
   std::vector<std::string> sa_ops = {"diffusion"};
 
   int i = 0;
-  ASSERT_EQ(so_ops.size(), scheduler->GetListOfScheduledSimObjectOps().size());
-  for (auto& so_op_name : scheduler->GetListOfScheduledSimObjectOps()) {
-    EXPECT_EQ(so_ops[i], so_op_name);
+  ASSERT_EQ(agent_ops.size(), GetListOfScheduledAgentOps().size());
+  for (auto& agent_op_name : GetListOfScheduledAgentOps()) {
+    EXPECT_EQ(agent_ops[i], agent_op_name);
     i++;
   }
   i = 0;
-  ASSERT_EQ(sa_ops.size(), scheduler->GetListOfScheduledStandaloneOps().size());
-  for (auto& sa_op_name : scheduler->GetListOfScheduledStandaloneOps()) {
+  ASSERT_EQ(sa_ops.size(), GetListOfScheduledStandaloneOps().size());
+  for (auto& sa_op_name : GetListOfScheduledStandaloneOps()) {
     EXPECT_EQ(sa_ops[i], sa_op_name);
     i++;
   }
 }
 
 // The load and balance operation must be scheduled at the end of an interation,
-// in order to avoid using invalidated SoHandles in operations that rely
-// SoHandles
+// in order to avoid using invalidated AgentHandles in operations that rely
+// AgentHandles
 TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
-  auto set_param = [&](Param* param) { param->scheduling_batch_size_ = 3; };
+  auto set_param = [&](Param* param) { param->scheduling_batch_size = 3; };
   Simulation simulation(TEST_NAME, set_param);
   auto* scheduler = simulation.GetScheduler();
 
@@ -484,7 +491,7 @@ TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
   // Emulate the Scheduler::Execute() call
   for (int i = 0; i < 5; i++) {
     auto* successors = scheduler_wrapper.GetSuccessors();
-    // The SoHandles must be consistent throughout these steps
+    // The AgentHandles must be consistent throughout these steps
     scheduler_wrapper.RunPreScheduledOps();
     EXPECT_EQ(successors, scheduler_wrapper.GetSuccessors());
     scheduler_wrapper.RunScheduledOps();
@@ -492,6 +499,25 @@ TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
     scheduler_wrapper.RunPostScheduledOps();
     EXPECT_EQ(successors, scheduler_wrapper.GetSuccessors());
   }
+}
+
+// Test for Param::unschedule_default_operations
+TEST_F(SchedulerTest, DisableDefaultOperations) {
+  auto set_param = [&](Param* param) {
+    param->unschedule_default_operations = {"mechanical forces", "visualize",
+                                            "discretization"};
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* scheduler = simulation.GetScheduler();
+  SchedulerTest scheduler_wrapper(scheduler, nullptr);
+
+  EXPECT_TRUE(scheduler->GetOps("mechanical forces").empty());
+  EXPECT_TRUE(scheduler->GetOps("visualize").empty());
+  EXPECT_FALSE(scheduler->GetOps("load balancing").empty());
+  // protected ops should be ignored for unscheduling
+  auto scheduled_agent_ops = scheduler_wrapper.GetListOfScheduledAgentOps();
+  EXPECT_TRUE(std::find(scheduled_agent_ops.begin(), scheduled_agent_ops.end(),
+                        "discretization") != scheduled_agent_ops.end());
 }
 
 }  // namespace bdm

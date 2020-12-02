@@ -24,7 +24,7 @@ inline int Simulate(int argc, const char** argv) {
   // Define initial model - in this example: single cell at origin
   auto* rm = simulation.GetResourceManager();
   auto* cell = new Cell(30);
-  rm->push_back(cell);
+  rm->AddAgent(cell);
 
   // Run simulation for one timestep
   simulation.GetScheduler()->Simulate(1);

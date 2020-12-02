@@ -16,29 +16,30 @@
 #define CORE_TYPE_INDEX_H_
 
 #include <vector>
+#include "core/agent/agent.h"
 #include "core/container/flatmap.h"
-#include "core/sim_object/sim_object.h"
 
 class TClass;
 
 namespace bdm {
 
-struct TypeIndex {
-  void Add(SimObject* so);
+class TypeIndex {
+ public:
+  void Add(Agent* agent);
 
-  void Update(SimObject* new_so);
+  void Update(Agent* new_agent);
 
-  void Remove(SimObject* so);
+  void Remove(Agent* agent);
 
   void Clear();
 
   void Reserve(uint64_t capacity);
 
-  const std::vector<SimObject*>& GetType(TClass* tclass) const;
+  const std::vector<Agent*>& GetType(TClass* tclass) const;
 
  private:
-  UnorderedFlatmap<TClass*, std::vector<SimObject*>> data_;
-  SoUidMap<uint64_t> index_;
+  UnorderedFlatmap<TClass*, std::vector<Agent*>> data_;
+  AgentUidMap<uint64_t> index_;
 };
 
 }  // namespace bdm

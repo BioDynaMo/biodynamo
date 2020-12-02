@@ -5,30 +5,30 @@
   <selection>
     <class name="bdm::neuroscience::NeuronSoma" />
     <class name="bdm::neuroscience::NeuriteElement" />
-    <class name="bdm::SoPointer<bdm::neuroscience::NeuriteElement>" />
-    <class name="bdm::SoPointer<bdm::neuroscience::NeuronOrNeurite>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::Simulation" />
     <class name="bdm::ResourceManager" />
-    <class name="bdm::SimObject" />
-    <class name="bdm::SoHandle" />
-    <class name="bdm::SoUidGenerator" noStreamer="true"/>
-    <class name="bdm::SoUid"/>
+    <class name="bdm::Agent" />
+    <class name="bdm::AgentHandle" />
+    <class name="bdm::AgentUidGenerator" noStreamer="true"/>
+    <class name="bdm::AgentUid"/>
     <class name="bdm::Cell" />
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
-    <class name="std::unordered_map<uint64_t, bdm::SoHandle>" />
+    <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
-    <class name="bdm::BaseBiologyModule"/>
-    <class name="bdm::GrowDivide"/>
+    <class name="bdm::Behavior"/>
+    <class name="bdm::GrowthDivision"/>
     <class name="bdm::Chemotaxis"/>
     <class name="bdm::Secretion"/>
     <class name="bdm::IntegralTypeWrapper<size_t> "/>
-    <class name="bdm::RegulateGenes" />
+    <class name="bdm::GeneRegulation" />
     <class name="bdm::Param" />
-    <class name="bdm::ModuleParam" />
-    <class name="unordered_map<unsigned long,bdm::ModuleParam*>" />
-    <class name="unordered_map<bdm::ModuleParamUid, bdm::ModuleParam*>" />
+    <class name="bdm::ParamGroup" />
+    <class name="unordered_map<unsigned long,bdm::ParamGroup*>" />
+    <class name="unordered_map<bdm::ParamGroupUid, bdm::ParamGroup*>" />
     <class name="unordered_map<std::string, std::set<std::string>>" />
     <class name="map<std::string, std::set<std::string>>" />
     <class name="bdm::Random" />
@@ -37,7 +37,9 @@
     <class name="bdm::ParallelResizeVector<double>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::UniformGridEnvironment::Box const*>>" />
-    <class name="bdm::InlineVector<bdm::BaseBiologyModule*, 2>" noStreamer="true" />
-    <class name="bdm::VectorTypeWrapper<bdm::BaseBiologyModule*>" />
+    <class name="bdm::InlineVector<bdm::Agent*, 3>" noStreamer="true" />
+    <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
+    <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
+    <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
   </selection>
 </lcgdict>

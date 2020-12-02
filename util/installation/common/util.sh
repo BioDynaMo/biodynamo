@@ -62,7 +62,7 @@ function DetectOs {
 # prints an error message, a list of supported systems; and exits the script.
 # Arguments:
 #   $1 path to biodynamo installation src folder (util/installation)
-#   $2 OS identifier e.g. ubuntu-16.04 (see DetectOs)
+#   $2 OS identifier e.g. ubuntu-18.04 (see DetectOs)
 function CheckOsSupported {
   if [[ $# -ne 2 ]]; then
     echo "ERROR in CheckOsSupported: Wrong number of arguments"
@@ -103,14 +103,14 @@ function CheckTypeInstallSupported {
 # Arguments:
 #   $1 installation type ("all" or "required")
 #   $2 path to biodynamo installation src folder (util/installation)
-#   $3 OS identifier e.g. ubuntu-16.04 (see DetectOs)
+#   $3 OS identifier e.g. ubuntu-18.04 (see DetectOs)
 function CompileListOfPackages {
   local BDM_INSTALL_SRC="$2"
   local LOCAL_OS=$3
 
-  # The list of packages on Ubuntu 18.04 and 20.04 are identical to Ubuntu 16.04
-  if [ $LOCAL_OS == "ubuntu-18.04" ] || [ $LOCAL_OS == "ubuntu-20.04" ]; then
-    LOCAL_OS="ubuntu-16.04"
+  # The list of packages on Ubuntu 20.04 is identical to Ubuntu 18.04
+  if [ $LOCAL_OS == "ubuntu-20.04" ]; then
+    LOCAL_OS="ubuntu-18.04"
   fi
 
   local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$LOCAL_OS
@@ -317,7 +317,7 @@ function WarnPossibleBadShellConfigs {
 
   # these regexes are quite naive but we aren't going to parse a shell file for a warning
   local sourcePattern='^\s*[0-9]+\s+(\.|source)\s+.*thisbdm\.(fish|sh).*'
-  local aliasPattern='^\s*[0-9]+\s+alias\s+thisbdm='"'"'\s*(\.|source)\s+.*thisbdm\.(fish|sh)\s*'"'.*"
+  local aliasPattern='^\s*[0-9]+\s+alias\s+thisbdm='"['\"]"'\s*(\.|source)\s+.*thisbdm\.(fish|sh)\s*'"['\"].*"
   local warnFmt="${BDM_ECHO_YELLOW}${BDM_ECHO_BOLD}[WARN] "
 
   local didWarn=false
@@ -380,9 +380,10 @@ function EchoFinishInstallation {
   EchoInfo "For added convenience, run (in your terminal):"
   EchoNewStep "$addToConfigStr"
   EchoInfo "to able to just type 'thisbdm', instead of"
-  EchoInfo "'source $1/bin/thisbdm.[fi]sh'"
+  EchoInfo "'source .../bin/thisbdm.[fi]sh'"
   echo
-  EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator, and silence non-critical output."
+  EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator,"
+  EchoInfo "and silence all non-critical output."
   echo
   EchoNewStep "NOTE: Your login shell appears to be '$SHELL'."
   EchoNewStep "The instructions above are for this shell."

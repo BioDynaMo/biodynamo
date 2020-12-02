@@ -34,7 +34,7 @@ static std::unordered_map<std::string, TPluginHandler *> loaded_;
 
 VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
   auto *param = Simulation::GetActive()->GetParam();
-  if (!(param->insitu_visualization_ || param->export_visualization_)) {
+  if (!(param->insitu_visualization || param->export_visualization)) {
     return nullptr;
   }
   VisualizationAdaptor *va = nullptr;

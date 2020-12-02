@@ -38,10 +38,10 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   // new neurite
-  auto neurite = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                      ->ExtendNewNeurite(10, Math::kPi / 8, Math::kPi / 3);
   neurite->SetDiameter(2);
 
@@ -72,7 +72,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   EXPECT_TRUE(neurite->GetDaughterRight() == nullptr);
   EXPECT_TRUE(dynamic_cast<NeuronSoma*>(neurite->GetMother().Get()) != nullptr);
 
-  EXPECT_EQ(2u, rm->GetNumSimObjects());
+  EXPECT_EQ(2u, rm->GetNumAgents());
 }
 
 TEST(NeuronSomaTest, ExtendNewNeurite) {
@@ -89,10 +89,10 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
   // new neurite
-  auto neurite = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                      ->ExtendNewNeurite({0, 0, 1});
   neurite->SetDiameter(2);
 
@@ -116,7 +116,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   EXPECT_TRUE(neurite->GetDaughterRight() == nullptr);
   EXPECT_TRUE(dynamic_cast<NeuronSoma*>(neurite->GetMother().Get()) != nullptr);
 
-  EXPECT_EQ(2u, rm->GetNumSimObjects());
+  EXPECT_EQ(2u, rm->GetNumAgents());
 }
 
 TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
@@ -130,9 +130,9 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
@@ -187,7 +187,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   EXPECT_TRUE(dynamic_cast<NeuronSoma*>(proximal_element->GetMother().Get()) !=
               nullptr);
 
-  EXPECT_EQ(3u, rm->GetNumSimObjects());
+  EXPECT_EQ(3u, rm->GetNumAgents());
 }
 
 TEST(NeuriteElementTest, PartialRetraction) {
@@ -201,9 +201,9 @@ TEST(NeuriteElementTest, PartialRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
@@ -240,7 +240,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
   EXPECT_TRUE(dynamic_cast<NeuronSoma*>(neurite_element->GetMother().Get()) !=
               nullptr);
 
-  EXPECT_EQ(2u, rm->GetNumSimObjects());
+  EXPECT_EQ(2u, rm->GetNumAgents());
 }
 
 TEST(NeuriteElementTest, TotalRetraction) {
@@ -253,9 +253,9 @@ TEST(NeuriteElementTest, TotalRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
@@ -275,7 +275,7 @@ TEST(NeuriteElementTest, TotalRetraction) {
   }
 
   // verify
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
   EXPECT_EQ(0u, neuron->GetDaughters().size());
 }
 
@@ -290,9 +290,9 @@ TEST(NeuriteElementTest, Branch) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
@@ -378,7 +378,7 @@ TEST(NeuriteElementTest, Branch) {
               nullptr);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
-  EXPECT_EQ(5u, rm->GetNumSimObjects());
+  EXPECT_EQ(5u, rm->GetNumAgents());
 }
 
 TEST(NeuriteElementTest, RightDaughterRetraction) {
@@ -392,9 +392,9 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
@@ -453,7 +453,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
               nullptr);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
-  EXPECT_EQ(5u, rm->GetNumSimObjects());
+  EXPECT_EQ(5u, rm->GetNumAgents());
 }
 
 TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
@@ -467,9 +467,9 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
@@ -505,7 +505,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   EXPECT_NEAR(0.103602332256979, branch->GetLength(), kEpsilon);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
-  EXPECT_EQ(4u, rm->GetNumSimObjects());
+  EXPECT_EQ(4u, rm->GetNumAgents());
 }
 
 TEST(NeuriteElementTest, LeftDaughterRetraction) {
@@ -519,9 +519,9 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                              ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
@@ -580,7 +580,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
               nullptr);
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
-  EXPECT_EQ(5u, rm->GetNumSimObjects());
+  EXPECT_EQ(5u, rm->GetNumAgents());
 }
 
 TEST(NeuriteElementTest, RetractAllDendrites) {
@@ -593,9 +593,9 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto* neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto* neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                               ->ExtendNewNeurite({1, 0, 0});
   neurite_element->SetDiameter(2);
 
@@ -618,9 +618,9 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
   }
 
   // retract all dendrite
-  while (rm->GetNumSimObjects() != 1) {
-    rm->ApplyOnAllElements([&](SimObject* so) {
-      if (auto* neurite_segment = dynamic_cast<NeuriteElement*>(so)) {
+  while (rm->GetNumAgents() != 1) {
+    rm->ForEachAgent([&](Agent* agent) {
+      if (auto* neurite_segment = dynamic_cast<NeuriteElement*>(agent)) {
         if (neurite_segment->IsTerminal()) {
           neurite_segment->RetractTerminalEnd(10);
           neurite_segment->RunDiscretization();
@@ -632,7 +632,7 @@ TEST(NeuriteElementTest, RetractAllDendrites) {
 
   // verify
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
-  EXPECT_EQ(1u, rm->GetNumSimObjects());
+  EXPECT_EQ(1u, rm->GetNumAgents());
 }
 
 TEST(NeuriteElementTest, Bifurcate) {
@@ -646,9 +646,9 @@ TEST(NeuriteElementTest, Bifurcate) {
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
   auto neuron_id = neuron->GetUid();
-  rm->push_back(neuron);
+  rm->AddAgent(neuron);
 
-  auto* neurite_element = dynamic_cast<NeuronSoma*>(rm->GetSimObject(neuron_id))
+  auto* neurite_element = dynamic_cast<NeuronSoma*>(rm->GetAgent(neuron_id))
                               ->ExtendNewNeurite({0, 0, 1});
   neurite_element->SetDiameter(2);
 
@@ -722,7 +722,7 @@ TEST(NeuriteElementTest, Bifurcate) {
   EXPECT_TRUE(branch_r->GetMother()->IsNeuriteElement());
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
-  EXPECT_EQ(4u, rm->GetNumSimObjects());
+  EXPECT_EQ(4u, rm->GetNumAgents());
 }
 
 TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
@@ -749,7 +749,7 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   // simulation.GetEnvironment()->Initialize();
   //
   // execute operation
-  // DisplacementOp<> op;
+  // MechanicalForcesOp<> op;
   // op(neurons, 0);
   // op(neurite_segments, 1);
   //

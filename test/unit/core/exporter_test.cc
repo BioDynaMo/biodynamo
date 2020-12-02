@@ -13,8 +13,8 @@
 // -----------------------------------------------------------------------------
 
 #include "core/exporter.h"
+#include "core/agent/cell.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/cell.h"
 #include "core/simulation.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
@@ -33,8 +33,8 @@ TEST(ExportTest, ExportToFile) {
   cell2->SetPosition({-5, 5, 0.9});
   cell2->SetDiameter(10);
 
-  rm->push_back(cell1);
-  rm->push_back(cell2);
+  rm->AddAgent(cell1);
+  rm->AddAgent(cell2);
 
   /// Test the standard file exporter
   auto exp_basic = ExporterFactory::GenerateExporter(kBasic);
