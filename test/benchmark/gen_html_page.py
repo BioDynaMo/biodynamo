@@ -25,7 +25,6 @@ while i != nb:
     my_file.write("<img src=\""+file[i][10:]+"\"\n")
     my_file.write("alt=\""+file[i][10:]+"\"\n")
     my_file.write("title=\""+file[i][10:]+"\">\n")
-    my_file.write(file[i][10:]+"\n")
     i+=1
 
 my_file.write("</div>\n")
