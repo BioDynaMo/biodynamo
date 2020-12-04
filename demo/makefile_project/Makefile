@@ -29,7 +29,7 @@ all: makefile_project
 # BioDynaMo generate code: pass all headers that contain BioDynaMo code to the
 # code generator
 bdm_generated_code.cc: $(HEADER)
-	bdm-code-generation $@ "$(BDM_CONFIG)" -h $?
+	bdm-code-generation $@ "$(BDM_CONFIG)" -i "$(pwd)/src" -h $?
 
 # Compile all source files
 bdm_generated_code.o: bdm_generated_code.cc

@@ -17,13 +17,14 @@
 
 if [ $# -lt 4 ]; then
     echo "Wrong number of arguments"
-    echo "Usage: bdm-code-generation DICTIONARY BDM_CONFIG [CXX_FLAGS] -h header1.h [header2.h ...]"
-    echo "   DICTIONARY file name of the dictionary that gets generated"
-    echo "              (e.g., my-sim_dict.cc)"
-    echo "   BDM_CONFIG bdm config command. Used to pass optional compiler and build type"
-    echo "              (e.g., \"bdm-config --debug --opt\")"
-    echo "   CXX_FLAGS  additional CXX flags (optional). Add includes or defines only!"
-    echo "   HEADERS    at least one header file containing the biodynamo definitions"
+    echo "Usage: bdm-code-generation DICTIONARY BDM_CONFIG [CXX_FLAGS] -i include-dir1 [include-dir2] -h header1.h [header2.h ...]"
+    echo "   DICTIONARY    file name of the dictionary that gets generated"
+    echo "                 (e.g., my-sim_dict.cc)"
+    echo "   BDM_CONFIG    bdm config command. Used to pass optional compiler and build type"
+    echo "                 (e.g., \"bdm-config --debug --opt\")"
+    echo "   CXX_FLAGS     additional CXX flags (optional). Add includes or defines only!"
+    echo "   INCLUDE_DIRS  at least one include directory containing the headers"
+    echo "   HEADERS       at least one header file containing the biodynamo definitions"
     exit
 fi
 
@@ -31,11 +32,20 @@ DICT=$1
 shift
 BDM_CONFIG=$1
 shift
-if [ $1 != "-h" ]; then
+if [ $1 != "-i" ]; then
   ADDITIONAL_CXX_FLAGS=$1
   shift
-  while [ $1 != "-h" ]; do
+  while [ $1 != "-i" ]; do
     ADDITIONAL_CXX_FLAGS="$ADDITIONAL_CXX_FLAGS $1"
+    shift
+  done
+fi
+shift
+if [ $1 != "-h" ]; then
+  INCLUDE_DIRS=$1
+  shift
+  while [ $1 != "-h" ]; do
+    INCLUDE_DIRS="$INCLUDE_DIRS $1"
     shift
   done
 fi
@@ -48,11 +58,11 @@ CXX_INCLUDES=$(${BDM_CONFIG} --cxxincludes | sed 's|-isystem |-I|g')
 
 CXX_DEFINES=$(${BDM_CONFIG} --cxxdefines)
 
-genreflex ${HEADERS} -o ${DICT} --select=${SELECTIONFILE} ${CXX_DEFINES} ${CXX_INCLUDES} $ADDITIONAL_CXX_FLAGS
+genreflex ${HEADERS} -o ${DICT} --noIncludePaths --select=${SELECTIONFILE} ${CXX_DEFINES} ${CXX_INCLUDES} $ADDITIONAL_CXX_FLAGS
 
 # Generate bdm dictionary and append to DICT
 BDM_DICT=$(mktemp)
-bdm-dictionary $BDM_DICT $HEADERS
+bdm-dictionary --output $BDM_DICT --out-of-source --include-dirs $INCLUDE_DIRS --headers $HEADERS
 echo "" >> $DICT
 echo "// -------------------------------------------------------------------" >> $DICT
 echo "// Start BioDynaMo dictionary" >> $DICT
