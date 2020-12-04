@@ -162,7 +162,6 @@ bool ExistsInIncludePath(const std::string& header) {
   for (auto& dir : include_dirs) {
     fs::path hpath = dir;
     hpath += slash_header;
-    std::cout << "check " << hpath << std::endl;
     if (fs::exists(hpath)) {
       return true;
     }
