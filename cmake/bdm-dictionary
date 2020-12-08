@@ -36,7 +36,7 @@ def ReplaceSpecialPaths(include_dir, environmentals):
         if not path.endswith("/"):
             path = "{}/".format(path)
         if include_dir.startswith(path):
-            return 'bdm::Concat(std::getenv("{0}"), "/{1}").c_str()'.format(e, include_dir[len(path):])
+            return 'std::getenv("{0}") << "/{1}"'.format(e, include_dir[len(path):])
     return '"{}"'.format(include_dir)
 
 if __name__ == '__main__':
@@ -58,14 +58,14 @@ if __name__ == '__main__':
 // Do NOT change it. 
 // Changes will be lost the next time this file is generated.
 
-#include "TInterpreter.h"
 #include "core/util/jit.h"
-#include "core/util/string.h"
-
+#include <cstdlib>
+#include <sstream>
 namespace {
 
 static struct BioDynaMoDictInit {
   BioDynaMoDictInit() {
+    std::stringstream idirs; 
 """)
 
         prefixes = []
@@ -74,7 +74,7 @@ static struct BioDynaMoDictInit {
             include_suffix = ["/include/paraview-5.8", "/include", "/include"]
             cnt = 0
             for e in environmentals: 
-                f.write('    gInterpreter->AddIncludePath(bdm::Concat(std::getenv("{0}"), "{1}").c_str());\n'.format(e, include_suffix[cnt]))
+                f.write('    idirs << std::getenv("{0}") << "{1}" << ":";\n'.format(e, include_suffix[cnt]))
                 cnt = cnt + 1
             for id in args.include_dirs:
                 AppendPrefix(id, prefixes)
@@ -85,12 +85,14 @@ static struct BioDynaMoDictInit {
                 id_processed = ReplaceSpecialPaths(id, environmentals) 
                 if id_processed != "":
                   AppendPrefix(id, prefixes)
-                  f.write('    gInterpreter->AddIncludePath({0});\n'.format(id_processed))
-            
+                  f.write('    idirs << {0} << ":";\n'.format(id_processed))
+        
         for h in args.headers:
             f.write('    bdm::JitHeaders::Register("{0}");\n'.format(RemoveLongestPrefix(h, prefixes)))
 
         f.write("""
+    idirs << std::getenv("ROOT_INCLUDE_PATH");
+    setenv("ROOT_INCLUDE_PATH", idirs.str().c_str(), true);
   }
 } bdm_dict_initializer;
 
