@@ -60,7 +60,11 @@ jobs:
         yum install -y sudo curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
         # remove whole bidynamo repository to catch errors related to paths pointing into the build dir
-        rm -rf $(find /tmp/* -maxdepth 1 -iname biodynamo -type d 2>/dev/null)
+        mktemp -d
+        find /tmp -iname biodynamo -type d || true
+        rm -rf $(find $(mktemp -d)/../* -maxdepth 1 -iname biodynamo -type d 2>/dev/null)
+        echo "Removed"
+        find /tmp -iname biodynamo -type d || true
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
