@@ -111,6 +111,7 @@ option(valgrind  "Enable valgrind tests and make build compatible with valgrind 
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 
 if(APPLE)
+  set(CMAKE_BDM_PVVERSION "5.9")
   find_program(BREW_BIN brew)
   if(BREW_BIN)
     execute_process(COMMAND ${BREW_BIN} --prefix llvm
@@ -123,6 +124,7 @@ if(APPLE)
 endif()
 
 if(UNIX AND NOT APPLE)
+  set(CMAKE_BDM_PVVERSION "5.8")
   set(LINUX TRUE)
   add_definitions("-DLINUX")
 endif()
@@ -189,9 +191,7 @@ if (MPI_NOT_FOUND)
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
-# Disable paraview until we upgrade to v5.8 on macOS, numa is not supported on macOS
 if(APPLE)
-  set(paraview OFF)
   set(numa OFF)
 endif()
 
@@ -286,22 +286,14 @@ if(paraview)
     if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
       set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
     endif()
-
+    message("#### ${CMAKE_BDM_PVVERSION} ${CMAKE_THIRD_PARTY_DIR} ${ParaView_PREFIX_PATH}")
     # Check the first time if ParaView exists in the system.
     # Upgrade to ParaView 5.8 on MacOS will happen as soon as Kitware releases the Python3
     # compatible binaries
-    if(APPLE)
-      find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
-            vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-      if(${ParaView_FOUND})
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
-      endif()
-    else()
-      find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-      if(${ParaView_FOUND})
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
-      endif()
+    find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
+    if(${ParaView_FOUND})
+      include_directories(${ParaView_PREFIX_PATH}/include/paraview-${CMAKE_BDM_PVVERSION})
     endif()
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
@@ -325,15 +317,9 @@ if(paraview)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
-      if(APPLE)
-        find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
-              vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
-      else()
-        find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
-      endif()
+      find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+      include_directories(${ParaView_PREFIX_PATH}/include/paraview-${CMAKE_BDM_PVVERSION})
     endif()
 
     add_definitions("-DUSE_PARAVIEW")
@@ -495,7 +481,13 @@ if(paraview)
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
                     PLUGIN "TRUE")
   set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
+
+  if(LINUX)
   SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+  else()
+    # see: https://github.com/pytorch/pytorch/pull/3439/files
+    SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-dynamic")
+  endif()
 endif()
 
 if(${VTune_FOUND})

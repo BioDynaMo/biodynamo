@@ -28,7 +28,11 @@ git submodule update --init --recursive
 git checkout $PV_SUPERBUILD_VERSION
 git submodule update --init --recursive
 
-git apply "$SCRIPT_DIR/paraview-superbuild-openmp.patch"
+if [ "$(uname)" = "Darwin" ]; then
+  git apply "$SCRIPT_DIR/paraview-superbuild-openmp.apple.patch"
+else
+  git apply "$SCRIPT_DIR/paraview-superbuild-openmp.patch"
+fi
 
 cd ..
 

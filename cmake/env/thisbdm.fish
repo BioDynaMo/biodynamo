@@ -149,9 +149,15 @@ function source_thisbdm
         end
     end
 
+    # paraview versions might be different between OSes
+    set -l bdm_pv_version '5.8'
+    if test (uname) = 'Darwin'
+        set -l bdm_pv_version '5.9'
+    end
+
     # Clear the env from previously set ParaView and Qt paths.
     if test -n "$old_bdmsys"
-        _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-5.8"
+        _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-$bdm_pv_version"
         _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
         _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/biodynamo/lib/pv_plugin"
         _drop_from_var PATH "$old_bdmsys/third_party/paraview/bin"

@@ -49,7 +49,7 @@ struct GetDataMemberForVis {
     // We assume that number of threads won't double within one iteration
     temp_values_.resize(
         2 *
-        std::max(ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256UL));
+        std::max(ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256ULL));
   }
 
   enum DataType { kDefault, kArray, kAgentUid, kSoPointer };

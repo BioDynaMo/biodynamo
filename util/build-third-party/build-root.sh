@@ -94,6 +94,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
      -Dbuiltin_lz4=ON \
      -Dbuiltin_lzma=ON \
      -Dbuiltin_openssl=ON \
+     -Dbuiltin_xrootd=ON \
      -Dbuiltin_pcre=ON \
      -Dbuiltin_tbb=ON \
      -Dbuiltin_unuran=ON \

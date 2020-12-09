@@ -229,10 +229,16 @@ _source_thisbdm()
     fi
   fi
 
+  # paraview versions might be different between OSes
+  local bdm_pv_version='5.8'
+  if [ "$(uname)" = 'Darwin' ]; then
+      bdm_pv_version='5.9'
+  fi
+
   # Clear the env from previously set ParaView and Qt paths.
   if [ -n "${old_bdmsys}" ]; then
      if [ -n "${ParaView_DIR}" ]; then
-      _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys}/third_party/paraview/lib/cmake/paraview-5.8"
+      _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys}/third_party/paraview/lib/cmake/paraview-$bdm_pv_version"
       ParaView_DIR=$_newpath
      fi
      if [ -n "${ParaView_LIB_DIR}" ]; then
@@ -542,7 +548,7 @@ _source_thisbdm()
 
     # completions for zsh
     autoload -Uz __bdm_zsh_completions || return 1
-    compinit || return 1
+    # compinit || return 1 # FIXME zsh completion broken
 
     ### Enable commands in child shells (like in bash) ###
     local ld_root='if [ -d "${BDM_ROOT_DIR}" ]; then autoload -Uz root; fi;'
