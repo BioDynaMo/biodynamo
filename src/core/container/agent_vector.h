@@ -21,10 +21,15 @@
 
 namespace bdm {
 
+namespace detail {
+struct InitializeGPUData;
+}  // namespace detail
+
 /// Two dimensional vector. Holds one element of type `T` for each agent
 /// in the simulation.
 template <typename T>
 class AgentVector {
+  friend struct detail::InitializeGPUData;
   friend struct MechanicalForcesOpCuda;
 
  public:

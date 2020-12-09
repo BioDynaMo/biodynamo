@@ -520,8 +520,8 @@ struct Param {
   /// Default value: `true`\n
   /// TOML config file:
   ///     [development]
-  ///     show_simulation_step = true
-  bool show_simulation_step = true;
+  ///     show_simulation_step = false
+  bool show_simulation_step = false;
 
   /// Sets the frequency at which the current simulation step is displayed.
   /// Display every `simulation_step_freq` steps.

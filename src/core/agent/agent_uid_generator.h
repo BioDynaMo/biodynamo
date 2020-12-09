@@ -42,18 +42,21 @@ class AgentUidGenerator {
     if (map_ != nullptr) {
       // defragmentation mode
       std::lock_guard<Spinlock> guard(lock_);
-      while (search_index_ != map_->size() &&
-             map_->GetReused(search_index_) !=
-                 std::numeric_limits<typename AgentUid::Reused_t>::max()) {
-        search_index_++;
+      // repeat check, another thread might have disabled defragmentation
+      if (map_ != nullptr) {
+        // find unused element in map
+        while (search_index_ < map_->size() &&
+               map_->GetReused(search_index_) !=
+                   std::numeric_limits<typename AgentUid::Reused_t>::max()) {
+          search_index_++;
+        }
+        if (search_index_ < map_->size()) {
+          auto* scheduler = Simulation::GetActive()->GetScheduler();
+          return AgentUid(search_index_++, scheduler->GetSimulatedSteps());
+        }
+        // didn't find any empty slots -> disable defragmentation mode
+        DisableDefragmentation();
       }
-      // find unused element in map
-      if (search_index_ < map_->size()) {
-        auto* scheduler = Simulation::GetActive()->GetScheduler();
-        return AgentUid(search_index_++, scheduler->GetSimulatedSteps());
-      }
-      // didn't find any empty slots -> disable defragmentation mode
-      map_ = nullptr;
     }
     return AgentUid(counter_++);
   }
@@ -62,11 +65,19 @@ class AgentUidGenerator {
   uint64_t GetHighestIndex() const { return counter_; }
 
   void EnableDefragmentation(const AgentUidMap<AgentHandle>* map) {
-    map_ = map;
-    search_index_ = 0;
+    // check if already in defragmentation mode
+    if (map_ == nullptr) {
+      map_ = map;
+      search_index_ = 0;
+    }
   }
 
-  void DisableDefragmentation() { map_ = nullptr; }
+  void DisableDefragmentation() {
+    if (map_ != nullptr) {
+      counter_ = map_->size();
+    }
+    map_ = nullptr;
+  }
 
   bool IsInDefragmentationMode() const { return map_ != nullptr; }
 

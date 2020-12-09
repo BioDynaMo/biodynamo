@@ -53,7 +53,7 @@ fi
 set -e
 
 # Test overriding the OS detection for one OS
-if [ "${BDM_OS}" = "ubuntu-16.04" ]; then
+if [ "${BDM_OS}" = "ubuntu-18.04" ]; then
   export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
 fi
 

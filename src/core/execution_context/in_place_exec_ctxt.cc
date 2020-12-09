@@ -25,109 +25,87 @@
 
 namespace bdm {
 
-InPlaceExecutionContext::ThreadSafeAgentUidMap::ThreadSafeAgentUidMap() {
-  map_ = new ThreadSafeAgentUidMap::Map(1000);
-  next_ =
-      new ThreadSafeAgentUidMap::Map(static_cast<uint64_t>(map_->size() * 2));
+InPlaceExecutionContext::ThreadSafeAgentUidMap::ThreadSafeAgentUidMap()
+    : batches_(nullptr) {
+  Resize(kBatchSize);
 }
 
 InPlaceExecutionContext::ThreadSafeAgentUidMap::~ThreadSafeAgentUidMap() {
-  if (map_) {
-    delete map_;
+  DeleteOldCopies();
+  auto* non_atomic_batches = batches_.load();
+  if (non_atomic_batches != nullptr) {
+    for (uint64_t i = 0; i < num_batches_; ++i) {
+      delete non_atomic_batches[i];
+    }
+    delete[] non_atomic_batches;
   }
-  if (next_) {
-    delete next_;
-  }
-  for (auto* map : previous_maps_) {
-    delete map;
-  }
-  previous_maps_.clear();
 }
 
-// NB: There is small risk of a race condition here if another thread grows
-// the container. In this situation, the element will be inserted in a map
-// that will be moved to previous_maps_.
-// This race-condition can be mitigated in `ThreadSafeAgentUidMap::operator[]`.
 void InPlaceExecutionContext::ThreadSafeAgentUidMap::Insert(
     const AgentUid& uid,
     const typename InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type&
         value) {
   auto index = uid.GetIndex();
-  if (map_->size() > index + ThreadInfo::GetInstance()->GetMaxThreads()) {
-    map_->Insert(uid, value);
-  } else {
-    bool resized = false;
-    {
-      std::lock_guard<Spinlock> guard(lock_);
-      // check again
-      if (map_->size() <= index + ThreadInfo::GetInstance()->GetMaxThreads()) {
-        resized = true;
-        if (next_ == nullptr) {
-          // another thread is still creating a new map
-          // wait until this operation is finished.
-          std::lock_guard<Spinlock> guard(next_lock_);
-        }
-        previous_maps_.emplace_back(map_);
-        map_ = next_;
-        next_ = nullptr;
-      }
-    }
-    if (resized) {
-      std::lock_guard<Spinlock> guard(next_lock_);
-      auto new_size =
-          std::max(uid.GetIndex(), static_cast<uint32_t>(map_->size() * 2));
-      next_ = new ThreadSafeAgentUidMap::Map(new_size);
-    }
-    // new map might still be too small.
-    Insert(uid, value);
+  auto bidx = index / kBatchSize;
+  if (bidx >= num_batches_) {
+    auto new_size =
+        std::max(index, static_cast<uint32_t>(num_batches_ * kBatchSize * 1.1));
+    Resize(new_size);
   }
+
+  auto el_idx = index % kBatchSize;
+  (*batches_.load()[bidx])[el_idx] = value;
 }
 
-/// NB: This method fixes any race-condition of `ThreadSafeAgentUidMap::Insert`
-/// It might happen that a ThreadSafeAgentUidMap::Insert inserts the element
-/// into one of the `previous_maps_`.
-/// Therefore, if we don't find the element in `map_`, we iterate through
-/// `previous_maps_` to see if we can find it there.
-/// This iteration happens only in the unlikely event of a race-condition
-/// and is therefore not performance relevant.
 const typename InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type&
-InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](
-    const AgentUid& uid) {
+InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](const AgentUid& uid) {
   static InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type kDefault;
-  auto& pair = (*map_)[uid];
-  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-
-  if (pair.second == timesteps && pair.first != nullptr) {
-    return pair;
+  auto index = uid.GetIndex();
+  auto bidx = index / kBatchSize;
+  if (bidx >= num_batches_) {
+    Log::Fatal(
+        "ThreadSafeAgentUidMap::operator[]",
+        Concat("AgentUid out of range access: AgentUid: ", uid,
+               ", ThreadSafeAgentUidMap max index ", num_batches_ * kBatchSize));
+    return kDefault;
   }
 
-  std::lock_guard<Spinlock> guard(lock_);
-  for (auto* m : previous_maps_) {
-    if (m->size() <= uid.GetIndex()) {
-      continue;
-    }
-    auto& pair = (*m)[uid];
-    if (pair.second == timesteps && pair.first != nullptr) {
-      map_->Insert(uid, pair);
-      return pair;
-    }
-  }
-
-  return kDefault;
+  auto el_idx = index % kBatchSize;
+  return (*batches_.load()[bidx])[el_idx];
 }
 
 uint64_t InPlaceExecutionContext::ThreadSafeAgentUidMap::Size() const {
-  return map_->size();
-}
-void InPlaceExecutionContext::ThreadSafeAgentUidMap::Resize(uint64_t new_size) {
-  map_->resize(new_size);
+  return num_batches_ * kBatchSize;
 }
 
-void InPlaceExecutionContext::ThreadSafeAgentUidMap::RemoveOldCopies() {
-  for (auto* map : previous_maps_) {
-    delete map;
+void InPlaceExecutionContext::ThreadSafeAgentUidMap::Resize(uint64_t new_size) {
+  using Batch = InPlaceExecutionContext::ThreadSafeAgentUidMap::Batch;
+  auto new_num_batches = new_size / kBatchSize + 1;
+  std::lock_guard<Spinlock> guard(lock_);
+  if (new_num_batches >= num_batches_) {
+    auto bcopy = new Batch*[new_num_batches];
+    auto** non_atomic_batches = batches_.load();
+    for (uint64_t i = 0; i < new_num_batches; ++i) {
+      if (i < num_batches_) {
+        bcopy[i] = non_atomic_batches[i];
+      } else {
+        bcopy[i] = new Batch();
+        bcopy[i]->reserve(kBatchSize);
+      }
+    }
+    batches_.exchange(bcopy);
+    old_copies_.push_back(non_atomic_batches);
+    num_batches_ = new_num_batches;
   }
-  previous_maps_.clear();
+}
+
+void InPlaceExecutionContext::ThreadSafeAgentUidMap::DeleteOldCopies() {
+  for (auto& entry : old_copies_) {
+    if (entry != nullptr) {
+      delete[] entry;
+    }
+  }
+  old_copies_.clear();
 }
 
 InPlaceExecutionContext::InPlaceExecutionContext(
@@ -193,9 +171,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
 
   rm->EndOfIteration();
 
-  // FIXME
-  // new_agent_map_.SetOffset(AgentUidGenerator::Get()->GetLastId());
-  new_agent_map_->RemoveOldCopies();
+  new_agent_map_->DeleteOldCopies();
   if (rm->GetNumAgents() > new_agent_map_->Size()) {
     new_agent_map_->Resize(rm->GetNumAgents() * 1.5);
   }

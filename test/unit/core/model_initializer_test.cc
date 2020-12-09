@@ -22,31 +22,51 @@
 namespace bdm {
 namespace model_initializer_test_internal {
 
+// -----------------------------------------------------------------------------
+// check that the ResourceManager contains one agent with matching
+// each position.
+void Verify(Simulation* sim, uint64_t num_agents,
+            const std::vector<Double3>& positions) {
+  sim->GetExecutionContext()->SetupIterationAll(sim->GetAllExecCtxts());
+  auto* rm = sim->GetResourceManager();
+
+  ASSERT_EQ(num_agents, rm->GetNumAgents());
+
+  for (auto& pos : positions) {
+    uint64_t cnt = 0;
+    rm->ForEachAgent([&](Agent* agent, AgentHandle) {
+      auto diff = pos - agent->GetPosition();
+      if (std::abs(diff.Norm() - 1) < 1e-5) {
+        cnt++;
+      }
+    });
+    EXPECT_EQ(1u, cnt);
+  }
+}
+
 // Tests if pos_0 cubic 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCube) {
   Simulation simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
 
   ModelInitializer::Grid3D(2, 12, [](const Double3& pos) {
     Cell* cell = new Cell(pos);
     return cell;
   });
 
-  EXPECT_EQ(8u, rm->GetNumAgents());
-  EXPECT_ARR_EQ({0, 0, 0}, rm->GetAgent(AgentUid(0))->GetPosition());
-  EXPECT_ARR_EQ({0, 0, 12}, rm->GetAgent(AgentUid(1))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 0}, rm->GetAgent(AgentUid(2))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 12}, rm->GetAgent(AgentUid(3))->GetPosition());
-  EXPECT_ARR_EQ({12, 0, 0}, rm->GetAgent(AgentUid(4))->GetPosition());
-  EXPECT_ARR_EQ({12, 0, 12}, rm->GetAgent(AgentUid(5))->GetPosition());
-  EXPECT_ARR_EQ({12, 12, 0}, rm->GetAgent(AgentUid(6))->GetPosition());
-  EXPECT_ARR_EQ({12, 12, 12}, rm->GetAgent(AgentUid(7))->GetPosition());
+  Verify(&simulation, 8u,
+         {{0, 0, 0},
+          {0, 0, 12},
+          {0, 12, 0},
+          {0, 12, 12},
+          {12, 0, 0},
+          {12, 0, 12},
+          {12, 12, 0},
+          {12, 12, 12}});
 }
 
 // Tests if pos_0 cuboid 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCuboid) {
   Simulation simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
 
   std::array<size_t, 3> grid_dimensions = {2, 3, 4};
 
@@ -55,20 +75,19 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
     return cell;
   });
 
-  EXPECT_EQ(24u, rm->GetNumAgents());
-  EXPECT_ARR_EQ({0, 0, 0}, rm->GetAgent(AgentUid(0))->GetPosition());
-  EXPECT_ARR_EQ({0, 0, 12}, rm->GetAgent(AgentUid(1))->GetPosition());
-  EXPECT_ARR_EQ({0, 0, 24}, rm->GetAgent(AgentUid(2))->GetPosition());
-  EXPECT_ARR_EQ({0, 0, 36}, rm->GetAgent(AgentUid(3))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 0}, rm->GetAgent(AgentUid(4))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 12}, rm->GetAgent(AgentUid(5))->GetPosition());
-  EXPECT_ARR_EQ({0, 12, 24}, rm->GetAgent(AgentUid(6))->GetPosition());
-  EXPECT_ARR_EQ({12, 24, 36}, rm->GetAgent(AgentUid(23))->GetPosition());
+  Verify(&simulation, 24u,
+         {{0, 0, 0},
+          {0, 0, 12},
+          {0, 0, 24},
+          {0, 0, 36},
+          {0, 12, 0},
+          {0, 12, 12},
+          {0, 12, 24},
+          {12, 24, 36}});
 }
 
 TEST(ModelInitializerTest, CreateAgents) {
   Simulation simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
 
   std::vector<Double3> positions;
   positions.push_back({1, 2, 3});
@@ -80,10 +99,7 @@ TEST(ModelInitializerTest, CreateAgents) {
     return cell;
   });
 
-  EXPECT_EQ(3u, rm->GetNumAgents());
-  EXPECT_ARR_EQ({1, 2, 3}, rm->GetAgent(AgentUid(0))->GetPosition());
-  EXPECT_ARR_EQ({101, 202, 303}, rm->GetAgent(AgentUid(1))->GetPosition());
-  EXPECT_ARR_EQ({-12, -32, 4}, rm->GetAgent(AgentUid(2))->GetPosition());
+  Verify(&simulation, 3u, {{1, 2, 3}, {101, 202, 303}, {-12, -32, 4}});
 }
 
 TEST(ModelInitializerTest, CreateAgentsRandom) {
@@ -94,6 +110,10 @@ TEST(ModelInitializerTest, CreateAgentsRandom) {
     Cell* cell = new Cell(pos);
     return cell;
   });
+
+  simulation.GetExecutionContext()->SetupIterationAll(
+      simulation.GetAllExecCtxts());
+
   EXPECT_EQ(10u, rm->GetNumAgents());
   auto& pos_0 = rm->GetAgent(AgentUid(0))->GetPosition();
   auto& pos_1 = rm->GetAgent(AgentUid(1))->GetPosition();

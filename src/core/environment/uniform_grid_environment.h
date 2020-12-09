@@ -48,12 +48,17 @@
 
 namespace bdm {
 
+namespace detail {
+struct InitializeGPUData;
+}  // namespace detail
+
 /// A class that represents Cartesian 3D grid
 class UniformGridEnvironment : public Environment {
   // MechanicalForcesOpCuda needs access to some UniformGridEnvironment private
   // members to reconstruct
   // the grid on GPU (same for MechanicalForcesOpOpenCL)
   friend struct MechanicalForcesOpCuda;
+  friend struct ::bdm::detail::InitializeGPUData;
   friend struct MechanicalForcesOpOpenCL;
   friend class SchedulerTest;
 
@@ -609,16 +614,15 @@ class UniformGridEnvironment : public Environment {
   /// @tparam     TUint32          A uint32 type (could also be cl_uint)
   /// @tparam     TInt32           A int32 type (could be cl_int)
   ///
-  template <typename TUint32, typename TInt32>
-  void GetGridInfo(TUint32* box_length, std::array<TUint32, 3>* num_boxes_axis,
-                   std::array<TInt32, 3>* grid_dimensions) {
-    box_length[0] = box_length_;
-    (*num_boxes_axis)[0] = num_boxes_axis_[0];
-    (*num_boxes_axis)[1] = num_boxes_axis_[1];
-    (*num_boxes_axis)[2] = num_boxes_axis_[2];
-    (*grid_dimensions)[0] = grid_dimensions_[0];
-    (*grid_dimensions)[1] = grid_dimensions_[2];
-    (*grid_dimensions)[2] = grid_dimensions_[4];
+  void GetGridInfo(uint32_t* box_length, uint32_t* num_boxes_axis,
+                   int32_t* grid_dimensions) {
+    *box_length = box_length_;
+    num_boxes_axis[0] = num_boxes_axis_[0];
+    num_boxes_axis[1] = num_boxes_axis_[1];
+    num_boxes_axis[2] = num_boxes_axis_[2];
+    grid_dimensions[0] = grid_dimensions_[0];
+    grid_dimensions[1] = grid_dimensions_[2];
+    grid_dimensions[2] = grid_dimensions_[4];
   }
 
   // NeighborMutex ---------------------------------------------------------
