@@ -590,11 +590,11 @@ _source_thisbdm()
 if _source_thisbdm; then
   _bdm_ok "[OK] You have successfully sourced BioDynaMo's environment."
   _thisbdm_cleanup
-  return 0
+  exit 0
 else
   _bdm_err "[ERR] BioDynaMo's environment could not be sourced."
   # traps don't particularly work well (for this use-case)
   # in zsh, so we'll repeat ourselves just this once
   _thisbdm_cleanup
-  return 1
+  exit 1
 fi
