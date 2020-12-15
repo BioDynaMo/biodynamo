@@ -109,7 +109,7 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
-option(multi_simulation "Enable multi simulation framework" ON)
+option(mpi "Link simulations with MPI (e.g. for multi-simulation mode)" ON)
 
 if(APPLE)
   find_program(BREW_BIN brew)

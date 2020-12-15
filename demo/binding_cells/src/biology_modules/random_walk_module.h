@@ -14,17 +14,20 @@
 #ifndef RANDOM_WALK_MODULE_H_
 #define RANDOM_WALK_MODULE_H_
 
-#include "biodynamo.h"
+#include "core/behavior/behavior.h"
 
 namespace bdm {
 
 /// Make a simulation object move at a constant velocity towards the direction
-struct RandomWalk : public BaseBiologyModule {
- public:
-  RandomWalk(double v = 1) : BaseBiologyModule(gAllEventIds), velocity_(v) {}
+struct RandomWalk : public Behavior {
+  BDM_BEHAVIOR_HEADER(RandomWalk, Behavior, 1);
 
-  RandomWalk(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+ public:
+  RandomWalk(double v = 1) : velocity_(v) { AlwaysCopyToNew(); }
+
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+    auto* other = event.existing_behavior;
     if (RandomWalk* gdbm = dynamic_cast<RandomWalk*>(other)) {
       velocity_ = gdbm->velocity_;
     } else {
@@ -32,15 +35,6 @@ struct RandomWalk : public BaseBiologyModule {
                  "other was not of type RandomWalk");
     }
   }
-
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new RandomWalk(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override { return new RandomWalk(*this); }
 
   Double3 GetRandomDirection() {
     auto* r = Simulation::GetActive()->GetRandom();
@@ -57,7 +51,7 @@ struct RandomWalk : public BaseBiologyModule {
     if (auto* cell = dynamic_cast<Cell*>(agent)) {
       Double3 direction = GetRandomDirection();
       Double3 vel = direction * velocity_;
-      auto dt = Simulation::GetActive()->GetParam()->simulation_time_step_;
+      auto dt = Simulation::GetActive()->GetParam()->simulation_time_step;
       cell->UpdatePosition(vel * dt);
     }
   }
@@ -67,30 +61,21 @@ struct RandomWalk : public BaseBiologyModule {
 };
 
 /// Make a simulation object move at a constant velocity towards the direction
-struct RandomWalkXY : public BaseBiologyModule {
- public:
-  RandomWalkXY(double v = 1) : BaseBiologyModule(gAllEventIds), velocity_(v) {}
+struct RandomWalkXY : public Behavior {
+  BDM_BEHAVIOR_HEADER(RandomWalkXY, Behavior, 1);
 
-  RandomWalkXY(const Event& event, BaseBiologyModule* other,
-               uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+ public:
+  RandomWalkXY(double v = 1) : velocity_(v) { AlwaysCopyToNew(); }
+
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+    auto* other = event.existing_behavior;
     if (RandomWalkXY* gdbm = dynamic_cast<RandomWalkXY*>(other)) {
       velocity_ = gdbm->velocity_;
     } else {
       Log::Fatal("RandomWalkXY::EventConstructor",
                  "other was not of type RandomWalkXY");
     }
-  }
-
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new RandomWalkXY(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override {
-    return new RandomWalkXY(*this);
   }
 
   Double3 GetRandomDirection() {
@@ -106,7 +91,7 @@ struct RandomWalkXY : public BaseBiologyModule {
     if (auto* cell = dynamic_cast<Cell*>(agent)) {
       Double3 direction = GetRandomDirection();
       Double3 vel = direction * velocity_;
-      auto dt = Simulation::GetActive()->GetParam()->simulation_time_step_;
+      auto dt = Simulation::GetActive()->GetParam()->simulation_time_step;
       cell->UpdatePosition(vel * dt);
     }
   }

@@ -14,8 +14,8 @@
 #ifndef CONSTANT_DISPLACEMENT_MODULE_H_
 #define CONSTANT_DISPLACEMENT_MODULE_H_
 
-#include "biodynamo.h"
-#include "simulation_objects/monocyte.h"
+#include "agents/monocyte.h"
+#include "core/behavior/behavior.h"
 
 namespace bdm {
 
@@ -36,33 +36,24 @@ inline double SquaredEuclideanDistance(const Double3& pos1,
 }
 
 /// Make a simulation object move at a constant velocity towards the direction
-struct ConstantDisplace : public BaseBiologyModule {
+struct ConstantDisplace : public Behavior {
+  BDM_BEHAVIOR_HEADER(ConstantDisplace, Behavior, 1);
+
  public:
   ConstantDisplace(double v = 1, Double3 goal_position = {0, 0, 0})
-      : BaseBiologyModule(gAllEventIds),
-        velocity_(v),
-        goal_position_(goal_position) {}
+      : velocity_(v), goal_position_(goal_position) {
+    AlwaysCopyToNew();
+  }
 
-  ConstantDisplace(const Event& event, BaseBiologyModule* other,
-                   uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+    auto* other = event.existing_behavior;
     if (ConstantDisplace* gdbm = dynamic_cast<ConstantDisplace*>(other)) {
       velocity_ = gdbm->velocity_;
     } else {
       Log::Fatal("ConstantDisplace::EventConstructor",
                  "other was not of type ConstantDisplace");
     }
-  }
-
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new ConstantDisplace(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override {
-    return new ConstantDisplace(*this);
   }
 
   void SetGoalPosition(Double3 new_goal) {

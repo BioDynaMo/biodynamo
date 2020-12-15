@@ -14,28 +14,30 @@
 #ifndef STOKES_VELOCITY_MODULE_H_
 #define STOKES_VELOCITY_MODULE_H_
 
-#include "biodynamo.h"
-#include "simulation_objects/t_cell.h"
+#include "agents/t_cell.h"
+#include "core/behavior/behavior.h"
 
 namespace bdm {
 
 /// Modeling of Stokes' law of terminal velocity of sphere falling in a fluid
 /// Source: https://en.wikipedia.org/wiki/Stokes%27_law
-struct StokesVelocity : public BaseBiologyModule {
- public:
-  StokesVelocity() : BaseBiologyModule(gAllEventIds) {}
+struct StokesVelocity : public Behavior {
+  BDM_BEHAVIOR_HEADER(StokesVelocity, Behavior, 1);
 
-  StokesVelocity(double u, double pf)
-      : BaseBiologyModule(gAllEventIds), u_(u), pf_(pf) {
+ public:
+  StokesVelocity() { AlwaysCopyToNew(); }
+
+  StokesVelocity(double u, double pf) : u_(u), pf_(pf) {
+    AlwaysCopyToNew();
     if (std::abs(u) < 1e-9) {
       Log::Fatal("StokesVelocity::Run()",
                  "u_ was found to be (very close to) zero!");
     }
   }
 
-  StokesVelocity(const Event& event, BaseBiologyModule* other,
-                 uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+    auto* other = event.existing_behavior;
     if (StokesVelocity* gdbm = dynamic_cast<StokesVelocity*>(other)) {
       u_ = gdbm->u_;
       pf_ = gdbm->pf_;
@@ -45,24 +47,13 @@ struct StokesVelocity : public BaseBiologyModule {
     }
   }
 
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new StokesVelocity(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override {
-    return new StokesVelocity(*this);
-  }
-
   static constexpr double kG = -9.81;
 
   template <typename T>
   double CalculateStokesDisplacement(T* cell) {
     auto R = cell->GetDiameter() / 2;
     auto pp = cell->GetDensity();
-    auto dt = Simulation::GetActive()->GetParam()->simulation_time_step_;
+    auto dt = Simulation::GetActive()->GetParam()->simulation_time_step;
     auto vel = (4.5) * ((pp - pf_) / u_) * kG * (R * R);
     return vel * dt;
   }
@@ -80,7 +71,7 @@ struct StokesVelocity : public BaseBiologyModule {
         return;
       }
       // If a monocyte reaches the bottom of the well, we make it stick to there
-      auto min = Simulation::GetActive()->GetParam()->min_bound_;
+      auto min = Simulation::GetActive()->GetParam()->min_bound;
       if (monocyte->GetPosition()[2] < (min + 1)) {
         monocyte->StickToWellBottom();
       } else {

@@ -14,24 +14,25 @@
 #ifndef INHIBITATION_MODULE_H_
 #define INHIBITATION_MODULE_H_
 
-#include "biodynamo.h"
-#include "simulation_objects/t_cell.h"
+#include "agents/t_cell.h"
+#include "core/behavior/behavior.h"
 
 #include "Math/DistFunc.h"
 
 namespace bdm {
 
 /// Inhibits Monocytes from forming an immune synapse with T-Cells
-struct Inhibitation : public BaseBiologyModule {
+struct Inhibitation : public Behavior {
+  BDM_BEHAVIOR_HEADER(Inhibitation, Behavior, 1);
+
  public:
-  Inhibitation() : BaseBiologyModule(gAllEventIds) {}
+  Inhibitation() { AlwaysCopyToNew(); }
 
-  Inhibitation(double s, double m)
-      : BaseBiologyModule(gAllEventIds), sigma_(s), mu_(m) {}
+  Inhibitation(double s, double m) : sigma_(s), mu_(m) { AlwaysCopyToNew(); }
 
-  Inhibitation(const Event& event, BaseBiologyModule* other,
-               uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+    auto* other = event.existing_behavior;
     if (Inhibitation* gdbm = dynamic_cast<Inhibitation*>(other)) {
       sigma_ = gdbm->sigma_;
       mu_ = gdbm->mu_;
@@ -39,17 +40,6 @@ struct Inhibitation : public BaseBiologyModule {
       Log::Fatal("Inhibitation::EventConstructor",
                  "other was not of type Inhibitation");
     }
-  }
-
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new Inhibitation(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override {
-    return new Inhibitation(*this);
   }
 
   void Run(Agent* agent) override {

@@ -1,6 +1,6 @@
 {
   "bdm::Param": {
-    "simulation_time_step_" : 1.0,
+    "simulation_time_step" : 1.0,
     "visualize_sim_objects_": {
       "Cell": ["type", "some-dm"]
     }

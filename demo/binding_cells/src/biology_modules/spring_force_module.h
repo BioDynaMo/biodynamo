@@ -14,23 +14,25 @@
 #ifndef SPRING_FORCE_MODULE_H_
 #define SPRING_FORCE_MODULE_H_
 
-#include "biodynamo.h"
-#include "simulation_objects/t_cell.h"
-#include "simulation_objects/monocyte.h"
+#include "agents/monocyte.h"
+#include "agents/t_cell.h"
+#include "core/behavior/behavior.h"
 
 namespace bdm {
 
 // Define displacement behavior:
 // Cells move along the diffusion gradient (from low concentration to high)
-struct SpringForce : public BaseBiologyModule {
- public:
-  SpringForce() : BaseBiologyModule(gAllEventIds) {}
-  SpringForce(double spring_constant = 1)
-      : BaseBiologyModule(gAllEventIds), spring_constant_(spring_constant) {}
+struct SpringForce : public Behavior {
+  BDM_BEHAVIOR_HEADER(SpringForce, Behavior, 1);
 
-  SpringForce(const Event& event, BaseBiologyModule* other,
-              uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+ public:
+  SpringForce(double spring_constant = 1) : spring_constant_(spring_constant) {
+    AlwaysCopyToNew();
+  }
+
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+    auto* other = event.existing_behavior;
     if (SpringForce* gdbm = dynamic_cast<SpringForce*>(other)) {
       spring_constant_ = gdbm->spring_constant_;
     } else {
@@ -39,22 +41,13 @@ struct SpringForce : public BaseBiologyModule {
     }
   }
 
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new SpringForce(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override { return new SpringForce(*this); }
-
-  // Displacement calculated in the direction of so2
-  Double3 CalculateSpringForceDisplacement(TCell* so1,
-                                           AgentPointer<Monocyte> so2) {
-    Double3 pos1 = so1->GetPosition();
-    Double3 pos2 = so2->GetPosition();
+  // Displacement calculated in the direction of ap2
+  Double3 CalculateSpringForceDisplacement(TCell* ap1,
+                                           AgentPointer<Monocyte> ap2) {
+    Double3 pos1 = ap1->GetPosition();
+    Double3 pos2 = ap2->GetPosition();
     Double3 force = (pos1 - pos2) * (-spring_constant_);
-    auto dt = Simulation::GetActive()->GetParam()->simulation_time_step_;
+    auto dt = Simulation::GetActive()->GetParam()->simulation_time_step;
     Double3 displacement = force * dt * dt;
     return displacement;
   }

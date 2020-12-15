@@ -54,7 +54,7 @@ option(sbml      "Enable SBML support" @sbml@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
 option(tcmalloc  "Use tcmalloc." @tcmalloc@)
 option(jemalloc  "Use jemalloc." @jemalloc@)
-option(multi_simulation "Enable multi simulation framework" ON)
+option(mpi "Link simulations with MPI (e.g. for multi-simulation mode)" ON)
 
 if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \

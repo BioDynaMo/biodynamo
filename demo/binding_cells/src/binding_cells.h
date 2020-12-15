@@ -16,6 +16,8 @@
 
 #include <atomic>
 
+#include "agents/monocyte.h"
+#include "agents/t_cell.h"
 #include "biodynamo.h"
 #include "biology_modules/connect_within_radius_module.h"
 #include "biology_modules/constant_displacement_module.h"
@@ -24,15 +26,13 @@
 #include "biology_modules/random_walk_module.h"
 #include "biology_modules/spring_force_module.h"
 #include "biology_modules/stokes_velocity_module.h"
+#include "core/multi_simulation/util.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/reduction_op.h"
-#include "core/multi_simulation/util.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
 #include "my_results.h"
-#include "simulation_objects/monocyte.h"
-#include "simulation_objects/t_cell.h"
 
 #include "TH2I.h"
 #include "TROOT.h"
@@ -43,7 +43,7 @@ enum CellType { kMonocyte, kTCell };
 enum Substances { kAntibody };
 
 // Parameters specific for this simulation
-struct SimParam : public ModuleParam {
+struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
   // World parameters
@@ -101,14 +101,14 @@ inline int Simulate(int argc, const char** argv,
         new Monocyte(pos, sparam->monocyte_diameter, CellType::kMonocyte);
     mc->SetDensity(sparam->monocyte_density);
     mc->SetMaximumNumberOfSynapses(3);
-    mc->AddBiologyModule(new RandomWalk(sparam->monocyte_diameter / 2));
-    mc->AddBiologyModule(
+    mc->AddBehavior(new RandomWalk(sparam->monocyte_diameter / 2));
+    mc->AddBehavior(
         new StokesVelocity(sparam->stokes_u, sparam->stokes_pf));
-    mc->AddBiologyModule(
+    mc->AddBehavior(
         new Inhibitation(sparam->inhib_sigma, sparam->inhib_mu));
     return mc;
   };
-  ModelInitializer::CreateCellsRandom(sparam->min_space, sparam->max_space,
+  ModelInitializer::CreateAgentsRandom(sparam->min_space, sparam->max_space,
                                       sparam->monocyte_population, mc_builder);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -120,15 +120,15 @@ inline int Simulate(int argc, const char** argv,
     tc->SetDensity(sparam->t_cell_density);
     tc->SetInitialActivationIntensity(sparam->t_cell_init_mean,
                                       sparam->t_cell_init_sigma);
-    tc->AddBiologyModule(new RandomWalk(sparam->t_cell_walkspeed));
-    tc->AddBiologyModule(
+    tc->AddBehavior(new RandomWalk(sparam->t_cell_walkspeed));
+    tc->AddBehavior(
         new StokesVelocity(sparam->stokes_u, sparam->stokes_pf));
-    tc->AddBiologyModule(new ConnectWithinRadius(
+    tc->AddBehavior(new ConnectWithinRadius(
         (0.75 * (sparam->t_cell_diameter + sparam->monocyte_diameter))));
-    tc->AddBiologyModule(new PhysicalBond());
+    tc->AddBehavior(new PhysicalBond());
     return tc;
   };
-  ModelInitializer::CreateCellsRandom(sparam->min_space, sparam->max_space,
+  ModelInitializer::CreateAgentsRandom(sparam->min_space, sparam->max_space,
                                       sparam->t_cell_population, tc_builder);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -138,9 +138,8 @@ inline int Simulate(int argc, const char** argv,
                                     sparam->diff_rate, sparam->decay_rate,
                                     sparam->res);
   ModelInitializer::InitializeSubstance(
-      Substances::kAntibody, "Antibody",
-      Uniform(sparam->min_space, sparam->max_space, sparam->apd_amount,
-              Axis::kZAxis));
+      Substances::kAntibody, Uniform(sparam->min_space, sparam->max_space,
+                                     sparam->apd_amount, Axis::kZAxis));
 
   //////////////////////////////////////////////////////////////////////////////
   // Schedule operation to obtain results of interest over time
@@ -170,7 +169,7 @@ inline int Simulate(int argc, const char** argv,
   TH2I* merged_histo = nullptr;
   auto* rm = simulation.GetResourceManager();
   bool init = true;
-  rm->ApplyOnAllElements([&](Agent* agent, AgentHandle ah) {
+  rm->ForEachAgent([&](Agent* agent, AgentHandle ah) {
     if (auto* tcell = dynamic_cast<TCell*>(agent)) {
       if (init) {
         merged_histo = tcell->GetActivationHistogram();
@@ -188,7 +187,7 @@ inline int Simulate(int argc, const char** argv,
   MyResults ex(name, brief);
   ex.initial_concentration = sparam->apd_amount;
   ex.activation_intensity = *merged_histo;
-  ex.activity = op_impl->results_;
+  ex.activity = op_impl->GetResults();
   ex.WriteResultToROOT();
 
   return 0;

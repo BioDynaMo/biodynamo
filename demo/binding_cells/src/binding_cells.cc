@@ -15,8 +15,8 @@
 #include "binding_cells.h"
 #include "core/multi_simulation/multi_simulation.h"
 
-const bdm::ModuleParamUid bdm::SimParam::kUid =
-    bdm::ModuleParamUidGenerator::Get()->NewUid();
+const bdm::ParamGroupUid bdm::SimParam::kUid =
+    bdm::ParamGroupUidGenerator::Get()->NewUid();
 
 int main(int argc, const char** argv) {
   bdm::Param::RegisterParamGroup(new bdm::SimParam());

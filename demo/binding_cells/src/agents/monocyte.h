@@ -15,14 +15,14 @@
 #ifndef MONOCYTE_H_
 #define MONOCYTE_H_
 
-#include "core/sim_object/cell.h"
-#include "simulation_objects/t_cell.h"
+#include "agents/t_cell.h"
+#include "core/agent/cell.h"
 
 namespace bdm {
 
 /// Define Monocyte cell type
 class Monocyte : public Cell {
-  BDM_SIM_OBJECT_HEADER(Monocyte, Cell, 1);
+  BDM_AGENT_HEADER(Monocyte, Cell, 1);
 
  public:
   Monocyte() {}
@@ -30,10 +30,6 @@ class Monocyte : public Cell {
       : Base(position), color_(color) {
     this->SetDiameter(diameter);
   }
-
-  /// Default event constructor
-  Monocyte(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
 
   void ConnectTo(AgentPointer<TCell> agent) {
     if (connected_cells_.empty()) {
@@ -58,12 +54,6 @@ class Monocyte : public Cell {
 
   bool IsOccupied() const {
     return connected_cells_.size() == max_connections_;
-  }
-
-  /// Default event handler
-  void EventHandler(const Event& event, Agent* other1,
-                    Agent* other2 = nullptr) override {
-    Base::EventHandler(event, other1, other2);
   }
 
  private:

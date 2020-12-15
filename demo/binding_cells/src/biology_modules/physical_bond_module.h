@@ -14,8 +14,8 @@
 #ifndef PHYSICAL_BOND_MODULE_H_
 #define PHYSICAL_BOND_MODULE_H_
 
-#include "biodynamo.h"
-#include "simulation_objects/monocyte.h"
+#include "agents/monocyte.h"
+#include "core/behavior/behavior.h"
 
 namespace bdm {
 
@@ -23,11 +23,11 @@ namespace bdm {
 /// attaches itself to B. Any displacement of cell B will result in cell A
 /// moving next to cell B. This effectively disables cell A from being able to
 /// move by itself.
-struct PhysicalBond : public BaseBiologyModule {
-  BDM_STATELESS_BM_HEADER(PhysicalBond, BaseBiologyModule, 1);
+struct PhysicalBond : public Behavior {
+  BDM_BEHAVIOR_HEADER(PhysicalBond, Behavior, 1);
 
  public:
-  PhysicalBond() : BaseBiologyModule(gAllEventIds) {}
+  PhysicalBond() { AlwaysCopyToNew(); }
 
   // NB: works only for spherical shaped cells
   // Simple implementation of connecting `cell_a` to `cell_b`. We displace

@@ -402,6 +402,7 @@ function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(tcmalloc tcmalloc "Use tcmalloc for memory allocations.")
     ADD_FEATURE_INFO(jemalloc jemalloc "Use jemalloc for memory allocations.")
     ADD_FEATURE_INFO(notebooks notebooks "Generate ROOT notebooks")
+    ADD_FEATURE_INFO(mpi mpi "Link simulations with MPI (e.g. for multi-simulation mode)")
 endfunction()
 
 # Method used to give execution permissions to a file

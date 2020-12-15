@@ -49,7 +49,7 @@ struct Container {
   virtual void Validate() const {};
 
   // Return the substring before the last "::", which should be
-  // bdm::<ModuleParam>
+  // bdm::<ParamGroup>
   std::string GetGroupName() {
     size_t found = param_name_.find_last_of("::");
     return param_name_.substr(0, found - 1);
@@ -61,7 +61,7 @@ struct Container {
     return param_name_.substr(found + 1);
   }
 
-  // Must be in format bdm::<ModuleParam>::<param_name>
+  // Must be in format bdm::<ParamGroup>::<param_name>
   std::string param_name_;
   BDM_CLASS_DEF(Container, 1);
 };

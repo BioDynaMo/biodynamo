@@ -17,7 +17,8 @@
 
 #include "TH2I.h"
 
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
+#include "core/scheduler.h"
 
 namespace bdm {
 
@@ -25,7 +26,7 @@ class Monocyte;
 
 /// Define T-Cell type
 class TCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(TCell, Cell, 1);
+  BDM_AGENT_HEADER(TCell, Cell, 1);
 
  public:
   TCell() {}
@@ -33,16 +34,6 @@ class TCell : public Cell {
       : Base(position), color_(color) {
     activation_histo_ = TH2I("", "", 30, 0, 49, 30, 0, t - 1);
     this->SetDiameter(diameter);
-  }
-
-  /// Default event constructor
-  TCell(const Event& event, Agent* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
-
-  /// Default event handler
-  void EventHandler(const Event& event, Agent* other1,
-                    Agent* other2 = nullptr) override {
-    Base::EventHandler(event, other1, other2);
   }
 
   void IncreaseActivationIntensity(double val) {

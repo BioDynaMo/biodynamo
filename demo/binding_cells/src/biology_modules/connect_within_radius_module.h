@@ -14,41 +14,31 @@
 #ifndef CONNECT_WITHIN_RADIUS_MODULE_H_
 #define CONNECT_WITHIN_RADIUS_MODULE_H_
 
-#include "biodynamo.h"
-#include "core/environment/uniform_grid_environment.h"
+#include "agents/monocyte.h"
+#include "agents/t_cell.h"
 #include "biology_modules/constant_displacement_module.h"
-#include "simulation_objects/monocyte.h"
-#include "simulation_objects/t_cell.h"
+#include "core/behavior/behavior.h"
+#include "core/environment/uniform_grid_environment.h"
 
 namespace bdm {
 
-struct ConnectWithinRadius : public BaseBiologyModule {
+struct ConnectWithinRadius : public Behavior {
+  BDM_BEHAVIOR_HEADER(ConnectWithinRadius, Behavior, 1);
+
  public:
-  ConnectWithinRadius() : BaseBiologyModule(gAllEventIds) {}
+  ConnectWithinRadius(double radius = 1) : squared_radius_(radius * radius) {
+    AlwaysCopyToNew();
+  }
 
-  ConnectWithinRadius(double radius = 1)
-      : BaseBiologyModule(gAllEventIds), squared_radius_(radius * radius) {}
-
-  ConnectWithinRadius(const Event& event, BaseBiologyModule* other,
-                      uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+    auto* other = event.existing_behavior;
     if (ConnectWithinRadius* gdbm = dynamic_cast<ConnectWithinRadius*>(other)) {
       squared_radius_ = gdbm->squared_radius_;
     } else {
       Log::Fatal("ConnectWithinRadius::EventConstructor",
                  "other was not of type ConnectWithinRadius");
     }
-  }
-
-  /// Create a new instance of this object using the default constructor.
-  BaseBiologyModule* GetInstance(const Event& event, BaseBiologyModule* other,
-                                 uint64_t new_oid = 0) const override {
-    return new ConnectWithinRadius(event, other, new_oid);
-  }
-
-  /// Create a copy of this biology module.
-  BaseBiologyModule* GetCopy() const override {
-    return new ConnectWithinRadius(*this);
   }
 
   void Run(Agent* agent) override {
@@ -74,7 +64,8 @@ struct ConnectWithinRadius : public BaseBiologyModule {
                 neighbor_cell->GetPosition(), this_cell->GetPosition());
             if (distance < smallest_distance) {
               smallest_distance = distance;
-              cell_to_connect_to = AgentPointer<Monocyte>(neighbor_cell->GetUid());
+              cell_to_connect_to =
+                  AgentPointer<Monocyte>(neighbor_cell->GetUid());
             }
           }
         }
