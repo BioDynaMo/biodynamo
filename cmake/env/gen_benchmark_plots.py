@@ -102,6 +102,12 @@ def plot(name_demo):
     fig, ax = plt.subplots(2, sharex='col', sharey='row')
     with open('benchmark/'+name_demo+'.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count_marks = 0
+        for row in csv_reader:
+            line_count_marks += 1
+    BDM_marks = [0] * line_count_marks
+    with open('benchmark/'+name_demo+'.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
             v[line_count] = row[0]
@@ -110,7 +116,10 @@ def plot(name_demo):
             value2[line_count] = float(row[2])
             min_v[line_count] = float(row[3])/10**9
             max_v[line_count] = float(row[4])/10**9
+            BDM_marks[line_count] = (value[0] / value[line_count]) *1000
             line_count += 1
+    average = np.average(BDM_marks)
+    print("BDM_marks", name_demo, ':', average)
     xlabels = v
     ax[0].plot(range(nb), value, 'bo-')
     ax[0].plot(range(nb), min_v, 'b--')
