@@ -133,7 +133,7 @@ def plot(name_demo):
     ax[1].set_xticklabels(xlabels, rotation=90)
     plt.tight_layout()
     plt.savefig('benchmark/'+name_demo+'.png')
-    return
+    return average
 
 def main():
     i = 0
@@ -144,11 +144,13 @@ def main():
     memory = [10]*j
     min_v = [0]*j
     max_v = [0]*j
+    average = [0] * j
     while i < j:
         name_demo[i], cpu[i], memory[i], min_v[i], max_v[i] = graph(name_datas[i], it, j)
         store(cpu[i], name_demo[i], memory[i], min_v[i], max_v[i])
-        plot(name_demo[i])
+        average[i] = plot(name_demo[i])
         i += 1
+    print("AVERAGE", np.average(average))
     return
 
 if __name__ == "__main__":
