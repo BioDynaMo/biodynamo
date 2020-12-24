@@ -129,7 +129,8 @@ struct MechanicalForcesOpOpenCL : StandaloneOperationImpl {
       lengths[i] = box.length_;
       i++;
     }
-    grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
+    grid->GetGridInfo(&box_length, num_boxes_axis.data(),
+                      grid_dimensions.data());
 
     // Allocate GPU buffers
     cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,

@@ -137,30 +137,36 @@ function source_thisbdm
     end
 
     # Clear the env from previously set PyEnv paths.
-    if test -n "$old_bdmsys"
-        if test -n "$PATH"
-            _drop_from_var PATH "$PYENV_ROOT/bin"
-            _drop_from_var PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
-            _drop_from_var PATH "$PYENV_ROOT/shims"
-        end
+    set -l with_pyenv @with_pyenv@
+    if test "$with_pyenv" = 'ON'
+        if test -n "$old_bdmsys"
+            if test -n "$PATH"
+                _drop_from_var PATH "$PYENV_ROOT/bin"
+                _drop_from_var PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
+                _drop_from_var PATH "$PYENV_ROOT/shims"
+            end
 
-        if test -n "$LD_LIBRARY_PATH"
-            _drop_from_var LD_LIBRARY_PATH "$PYENV_ROOT/versions/$PYENV_VERSION/lib"
+            if test -n "$LD_LIBRARY_PATH"
+                _drop_from_var LD_LIBRARY_PATH "$PYENV_ROOT/versions/$PYENV_VERSION/lib"
+            end
         end
     end
 
     # Clear the env from previously set ParaView and Qt paths.
-    if test -n "$old_bdmsys"
-        _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-5.8"
-        _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
-        _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/biodynamo/lib/pv_plugin"
-        _drop_from_var PATH "$old_bdmsys/third_party/paraview/bin"
-        _drop_from_var Qt5_DIR "$old_bdmsys/third_party/qt/lib/cmake/Qt5"
-        _drop_from_var QT_QPA_PLATFORM_PLUGIN_PATH "$old_bdmsys/third_party/qt/plugins"
-        _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
-        _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
-        _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
-        _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
+    set -l with_paraview @with_paraview@
+    if test "$with_paraview" = 'ON'
+        if test -n "$old_bdmsys"
+            _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-5.8"
+            _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
+            _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/biodynamo/lib/pv_plugin"
+            _drop_from_var PATH "$old_bdmsys/third_party/paraview/bin"
+            _drop_from_var Qt5_DIR "$old_bdmsys/third_party/qt/lib/cmake/Qt5"
+            _drop_from_var QT_QPA_PLATFORM_PLUGIN_PATH "$old_bdmsys/third_party/qt/plugins"
+            _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
+            _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
+            _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
+            _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
+        end
     end
     #########
 
@@ -211,19 +217,21 @@ function source_thisbdm
     end
 
     ##### Python Specific Configurations #####
-    set -gx PYENV_ROOT @pyenvroot@
-    if test -z "$PYENV_ROOT"
-        set -gx PYENV_ROOT "$HOME/.pyenv"
+    if test "$with_pyenv" = 'ON'
+        set -gx PYENV_ROOT @pyenvroot@
+        if test -z "$PYENV_ROOT"
+            set -gx PYENV_ROOT "$HOME/.pyenv"
+        end
+
+        set -pgx PATH "$PYENV_ROOT/bin"
+
+        pyenv init - | source; or return 1
+        pyenv shell @pythonvers@; or return 1
+
+        # Location of jupyter executable (installed with `pip install` command)
+        set -pgx PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
+        set -pgx LD_LIBRARY_PATH "$PYENV_ROOT/versions/@pythonvers@/lib"
     end
-
-    set -pgx PATH "$PYENV_ROOT/bin"
-
-    pyenv init - | source; or return 1
-    pyenv shell @pythonvers@; or return 1
-
-    # Location of jupyter executable (installed with `pip install` command)
-    set -pgx PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
-    set -pgx LD_LIBRARY_PATH "$PYENV_ROOT/versions/@pythonvers@/lib"
     ########
 
     ##### CMake Specific Configurations #####
@@ -279,7 +287,6 @@ function source_thisbdm
     ########
 
     #### ParaView Specific Configurations ####
-    set -l with_paraview @with_paraview@
     if test "$with_paraview" = 'ON'
         if test -z "$BDM_CUSTOM_PV"
             if test -z "$ParaView_DIR"
