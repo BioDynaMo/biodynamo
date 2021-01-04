@@ -1,6 +1,7 @@
 doxygen
 graphviz
 libxml2-devel
+fontconfig-devel
 llvm-toolset-7
 llvm-toolset-7-clang-tools-extra
 valgrind
