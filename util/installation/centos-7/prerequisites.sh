@@ -76,6 +76,9 @@ gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
   sudo yum install -y \
     $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_extra)
+
+  # Workaround for: GPG key retrieval failed: [Errno 14]
+  sudo yum install -y --nogpgcheck llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
 fi
 
 # Set up cmake alias such to be able to use it

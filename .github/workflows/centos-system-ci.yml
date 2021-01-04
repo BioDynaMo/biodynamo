@@ -53,13 +53,6 @@ jobs:
         disown -ar
         sleep 3
 
-    - name: Install sudo
-      shell: bash
-      run: yum install -y sudo
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v2
-
     - name: Install BioDynaMo
       shell: bash
       run: |

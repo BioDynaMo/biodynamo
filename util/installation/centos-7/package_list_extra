@@ -1,8 +1,6 @@
 doxygen
 graphviz
 libxml2-devel
-llvm-toolset-6.0-llvm-devel
-llvm-toolset-6.0-llvm-static
 llvm-toolset-7
 llvm-toolset-7-clang-tools-extra
 valgrind
