@@ -74,7 +74,7 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
-  sudo yum install -y \
+  sudo yum install -y --nogpgcheck\
     $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_extra)
 
   # Workaround for: GPG key retrieval failed: [Errno 14]
