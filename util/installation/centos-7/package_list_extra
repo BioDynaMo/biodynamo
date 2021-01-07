@@ -7,4 +7,6 @@ freetype
 freetype-devel
 llvm-toolset-7
 llvm-toolset-7-clang-tools-extra
+llvm-toolset-6.0-llvm-devel
+llvm-toolset-6.0-llvm-static
 valgrind

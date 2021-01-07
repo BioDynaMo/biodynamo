@@ -58,7 +58,6 @@ jobs:
       run: |
         yum update -y
         yum install -y sudo curl
-        export QT_DEBUG_PLUGINS=1
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
 
     - name: Checkout BioDynaMo
