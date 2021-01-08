@@ -65,15 +65,7 @@ __device__ double squared_euclidian_distance(double* positions, uint32_t idx, ui
   return (dx * dx + dy * dy + dz * dz);
 }
 
-__device__ int3 get_box_coordinates(double3 pos, int32_t* grid_dimensions, uint32_t box_length) {
-  int3 box_coords;
-  box_coords.x = (floor(pos.x) - grid_dimensions[0]) / box_length;
-  box_coords.y = (floor(pos.y) - grid_dimensions[1]) / box_length;
-  box_coords.z = (floor(pos.z) - grid_dimensions[2]) / box_length;
-  return box_coords;
-}
-
-__device__ int3 get_box_coordinates_2(uint32_t box_idx, uint32_t* num_boxes_axis_) {
+__device__ int3 get_box_coordinates(uint32_t box_idx, uint32_t* num_boxes_axis_) {
   int3 box_coord;
   box_coord.z = box_idx / (num_boxes_axis_[0]*num_boxes_axis_[1]);
   uint32_t remainder = box_idx % (num_boxes_axis_[0]*num_boxes_axis_[1]);
@@ -82,13 +74,8 @@ __device__ int3 get_box_coordinates_2(uint32_t box_idx, uint32_t* num_boxes_axis
   return box_coord;
 }
 
-__device__ uint32_t get_box_id_2(int3 bc, uint32_t* num_boxes_axis) {
+__device__ uint32_t get_box_id(int3 bc, uint32_t* num_boxes_axis) {
   return bc.z * num_boxes_axis[0]*num_boxes_axis[1] + bc.y * num_boxes_axis[0] + bc.x;
-}
-
-__device__ uint32_t get_box_id(double3 pos, uint32_t* num_boxes_axis, int32_t* grid_dimensions, uint32_t box_length) {
-  int3 box_coords = get_box_coordinates(pos, grid_dimensions, box_length);
-  return get_box_id_2(box_coords, num_boxes_axis);
 }
 
 __device__ void compute_force(double* positions, double* diameters, uint32_t idx, uint32_t nidx, double3* result) {
@@ -170,9 +157,7 @@ __global__ void collide(
        uint64_t* timestamps,
        uint64_t* current_timestamp,
        uint32_t* successors,
-       uint32_t* box_length,
        uint32_t* num_boxes_axis,
-       int32_t* grid_dimensions,
        double* result) {
   uint32_t tidx = blockIdx.x * blockDim.x + threadIdx.x;
   // printf("[Kernel] box_id[tidx] = %d\n", box_id[tidx]);
@@ -192,11 +177,11 @@ __global__ void collide(
     double3 movement_at_next_step = make_double3(0, 0, 0);
 
     // Moore neighborhood
-    int3 box_coords = get_box_coordinates_2(box_id[tidx], num_boxes_axis);
+    int3 box_coords = get_box_coordinates(box_id[tidx], num_boxes_axis);
     for (int z = -1; z <= 1; z++) {
       for (int y = -1; y <= 1; y++) {
         for (int x = -1; x <= 1; x++) {
-          uint32_t bidx = get_box_id_2(box_coords + make_int3(x, y, z), num_boxes_axis);
+          uint32_t bidx = get_box_id(box_coords + make_int3(x, y, z), num_boxes_axis);
           if (timestamps[bidx] == current_timestamp[0] && lengths[bidx] != 0) {
             force(positions, diameters, tidx, starts[bidx], lengths[bidx], successors, squared_radius, &collision_force);
           }
@@ -242,9 +227,7 @@ bdm::MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(uint32_t num_obj
   GpuErrchk(cudaMalloc(&d_timestamps_, num_boxes * sizeof(uint64_t)));
   GpuErrchk(cudaMalloc(&d_current_timestamp_, sizeof(uint64_t)));
   GpuErrchk(cudaMalloc(&d_successors_, num_objects * sizeof(uint32_t)));
-  GpuErrchk(cudaMalloc(&d_box_length_, sizeof(uint32_t)));
   GpuErrchk(cudaMalloc(&d_num_boxes_axis_, 3 * sizeof(uint32_t)));
-  GpuErrchk(cudaMalloc(&d_grid_dimensions_, 3 * sizeof(int32_t)));
   GpuErrchk(cudaMalloc(&d_cell_movements_, 3 * num_objects * sizeof(double)));
 }
 
@@ -252,9 +235,8 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
     const double* diameters, const double* tractor_force, const double* adherence,
     const uint32_t* box_id, const double* mass, const double* timestep, const double* max_displacement,
     const double* squared_radius, const uint32_t* num_objects, uint32_t* starts,
-    uint16_t* lengths, uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors, uint32_t* box_length,
-    uint32_t* num_boxes_axis, int32_t* grid_dimensions,
-    double* cell_movements) {
+    uint16_t* lengths, uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors,
+    uint32_t* num_boxes_axis, double* cell_movements) {
   uint32_t num_boxes = num_boxes_axis[0] * num_boxes_axis[1] * num_boxes_axis[2];
   
   GpuErrchk(cudaMemcpyAsync(d_positions_, 		positions, 3 * num_objects[0] * sizeof(double), cudaMemcpyHostToDevice));
@@ -272,9 +254,7 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   GpuErrchk(cudaMemcpyAsync(d_timestamps_, 			timestamps, num_boxes * sizeof(uint64_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_current_timestamp_, 			current_timestamp, sizeof(uint64_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_successors_, 		successors, num_objects[0] * sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpyAsync(d_box_length_, 		box_length, sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(d_num_boxes_axis_, 	num_boxes_axis, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpyAsync(d_grid_dimensions_, 	grid_dimensions, 3 * sizeof(uint32_t), cudaMemcpyHostToDevice));
 
   int blockSize = 128;
   int minGridSize;
@@ -288,13 +268,12 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(const doubl
   collide<<<gridSize, blockSize>>>(d_positions_, d_diameters_, d_tractor_force_,
     d_adherence_, d_box_id_, d_mass_, d_timestep_, d_max_displacement_,
     d_squared_radius_, d_num_objects_, d_starts_, d_lengths_, d_timestamps_,
-    d_current_timestamp_, d_successors_, d_box_length_, d_num_boxes_axis_,
-    d_grid_dimensions_, d_cell_movements_);
+    d_current_timestamp_, d_successors_, d_num_boxes_axis_, d_cell_movements_);
 
   cudaMemcpyAsync(cell_movements, d_cell_movements_, 3 * num_objects[0] * sizeof(double), cudaMemcpyDeviceToHost);
 }
 
-void bdm::MechanicalForcesOpCudaKernel::Synch() const {
+void bdm::MechanicalForcesOpCudaKernel::Sync() const {
   cudaDeviceSynchronize();
 }
 
@@ -345,7 +324,6 @@ bdm::MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {
   cudaFree(d_current_timestamp_);
   cudaFree(d_successors_);
   cudaFree(d_num_boxes_axis_);
-  cudaFree(d_grid_dimensions_);
   cudaFree(d_cell_movements_);
 }
 

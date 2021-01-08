@@ -60,9 +60,7 @@ struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
   uint16_t* lengths = nullptr;
   uint64_t* timestamps = nullptr;
   uint64_t* current_timestamp = nullptr;
-  uint32_t* box_length = nullptr;
   uint32_t* num_boxes_axis = nullptr;
-  int32_t* grid_dimensions = nullptr;
   UniformGridEnvironment* grid = nullptr;
 
   uint64_t allocated_num_objects = 0;
@@ -91,9 +89,7 @@ InitializeGPUData::InitializeGPUData() {}
 InitializeGPUData::~InitializeGPUData() {
   if (current_timestamp != nullptr) {
     CudaFreePinned(current_timestamp);
-    CudaFreePinned(box_length);
     CudaFreePinned(num_boxes_axis);
-    CudaFreePinned(grid_dimensions);
   }
 
   if (allocated_num_objects != 0) {
@@ -112,9 +108,7 @@ void InitializeGPUData::Initialize(
     UniformGridEnvironment* g) {
   if (current_timestamp == nullptr) {
     CudaAllocPinned(&current_timestamp, 1);
-    CudaAllocPinned(&box_length, 1);
     CudaAllocPinned(&num_boxes_axis, 3);
-    CudaAllocPinned(&grid_dimensions, 3);
   }
 
   if (allocated_num_objects < num_objects) {
@@ -280,7 +274,7 @@ void MechanicalForcesOpCuda::SetUp() {
           offset[box.start_.GetNumaNode()] + box.start_.GetElementIdx();
     }
   }
-  grid->GetGridInfo(i_->box_length, i_->num_boxes_axis, i_->grid_dimensions);
+  grid->GetNumBoxesAxis(i_->num_boxes_axis);
 }
 
 // -----------------------------------------------------------------------------
@@ -331,13 +325,13 @@ void MechanicalForcesOpCuda::operator()() {
       i_->cell_adherence, i_->cell_boxid, i_->mass,
       &(param->simulation_time_step), &(param->simulation_max_displacement),
       &squared_radius, &total_num_objects, i_->starts, i_->lengths,
-      i_->timestamps, i_->current_timestamp, i_->successors, i_->box_length,
-      i_->num_boxes_axis, i_->grid_dimensions, i_->cell_movements);
+      i_->timestamps, i_->current_timestamp, i_->successors, i_->num_boxes_axis,
+      i_->cell_movements);
 }
 
 // -----------------------------------------------------------------------------
 void MechanicalForcesOpCuda::TearDown() {
-  cdo_->Synch();
+  cdo_->Sync();
   // Timing timer("MechanicalForcesOpCuda::TearDown");
   auto u = UpdateCPUResults(i_->cell_movements, i_->offset);
   Simulation::GetActive()->GetResourceManager()->ForEachAgentParallel(1000, u);

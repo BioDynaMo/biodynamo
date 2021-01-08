@@ -33,10 +33,9 @@ class MechanicalForcesOpCudaKernel {
       const double* max_displacement, const double* squared_radius,
       const uint32_t* num_objects, uint32_t* starts, uint16_t* lengths,
       uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors,
-      uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
-      double* cell_movements);
+      uint32_t* num_boxes_axis, double* cell_movements);
 
-  void Synch() const;
+  void Sync() const;
   void ResizeCellBuffers(uint32_t num_cells);
   void ResizeGridBuffers(uint32_t num_boxes);
 
@@ -58,9 +57,7 @@ class MechanicalForcesOpCudaKernel {
   uint64_t* d_timestamps_ = nullptr;
   uint64_t* d_current_timestamp_ = nullptr;
   uint32_t* d_successors_ = nullptr;
-  uint32_t* d_box_length_ = nullptr;
   uint32_t* d_num_boxes_axis_ = nullptr;
-  int32_t* d_grid_dimensions_ = nullptr;
 #endif  // USE_CUDA
 };
 
@@ -79,10 +76,9 @@ inline void MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
     const double* max_displacement, const double* squared_radius,
     const uint32_t* num_objects, uint32_t* starts, uint16_t* lengths,
     uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors,
-    uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
-    double* cell_movements) {}
+    uint32_t* num_boxes_axis, double* cell_movements) {}
 
-inline void MechanicalForcesOpCudaKernel::Synch() const {}
+inline void MechanicalForcesOpCudaKernel::Sync() const {}
 inline void MechanicalForcesOpCudaKernel::ResizeCellBuffers(
     uint32_t num_cells) {}
 inline void MechanicalForcesOpCudaKernel::ResizeGridBuffers(
