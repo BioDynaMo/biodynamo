@@ -12,7 +12,6 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/operation/mechanical_forces_op_cuda.h"
 #include <vector>
 
 #include "core/agent/agent_handle.h"
@@ -21,6 +20,7 @@
 #include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/cuda_pinned_memory.h"
 #include "core/operation/bound_space_op.h"
+#include "core/operation/mechanical_forces_op_cuda.h"
 #include "core/resource_manager.h"
 #include "core/shape.h"
 #include "core/simulation.h"
@@ -63,14 +63,14 @@ struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
   uint32_t* num_boxes_axis = nullptr;
   UniformGridEnvironment* grid = nullptr;
 
-  uint64_t allocated_num_objects = 0;
+  uint64_t allocated_num_agents = 0;
   uint64_t allocated_num_boxes = 0;
 
   InitializeGPUData();
 
   virtual ~InitializeGPUData();
 
-  void Initialize(uint64_t num_objects, uint64_t num_boxes,
+  void Initialize(uint64_t num_agents, uint64_t num_boxes,
                   const std::vector<AgentHandle::ElementIdx_t>& offs,
                   UniformGridEnvironment* g);
 
@@ -92,7 +92,7 @@ InitializeGPUData::~InitializeGPUData() {
     CudaFreePinned(num_boxes_axis);
   }
 
-  if (allocated_num_objects != 0) {
+  if (allocated_num_agents != 0) {
     FreeAgentBuffers();
   }
 
@@ -103,7 +103,7 @@ InitializeGPUData::~InitializeGPUData() {
 
 // -----------------------------------------------------------------------------
 void InitializeGPUData::Initialize(
-    uint64_t num_objects, uint64_t num_boxes,
+    uint64_t num_agents, uint64_t num_boxes,
     const std::vector<AgentHandle::ElementIdx_t>& offs,
     UniformGridEnvironment* g) {
   if (current_timestamp == nullptr) {
@@ -111,19 +111,19 @@ void InitializeGPUData::Initialize(
     CudaAllocPinned(&num_boxes_axis, 3);
   }
 
-  if (allocated_num_objects < num_objects) {
-    if (allocated_num_objects != 0) {
+  if (allocated_num_agents < num_agents) {
+    if (allocated_num_agents != 0) {
       FreeAgentBuffers();
     }
-    allocated_num_objects = num_objects * 1.25;
-    CudaAllocPinned(&cell_movements, allocated_num_objects * 3);
-    CudaAllocPinned(&cell_positions, allocated_num_objects * 3);
-    CudaAllocPinned(&cell_diameters, allocated_num_objects);
-    CudaAllocPinned(&cell_adherence, allocated_num_objects);
-    CudaAllocPinned(&cell_tractor_force, allocated_num_objects * 3);
-    CudaAllocPinned(&cell_boxid, allocated_num_objects);
-    CudaAllocPinned(&mass, allocated_num_objects);
-    CudaAllocPinned(&successors, allocated_num_objects);
+    allocated_num_agents = num_agents * 1.25;
+    CudaAllocPinned(&cell_movements, allocated_num_agents * 3);
+    CudaAllocPinned(&cell_positions, allocated_num_agents * 3);
+    CudaAllocPinned(&cell_diameters, allocated_num_agents);
+    CudaAllocPinned(&cell_adherence, allocated_num_agents);
+    CudaAllocPinned(&cell_tractor_force, allocated_num_agents * 3);
+    CudaAllocPinned(&cell_boxid, allocated_num_agents);
+    CudaAllocPinned(&mass, allocated_num_agents);
+    CudaAllocPinned(&successors, allocated_num_agents);
   }
 
   if (allocated_num_boxes < num_boxes) {
@@ -251,13 +251,13 @@ void MechanicalForcesOpCuda::SetUp() {
     offset[nn] = offset[nn - 1] + rm->GetNumAgents(nn - 1);
   }
 
-  auto total_num_objects = rm->GetNumAgents();
+  auto total_num_agents = rm->GetNumAgents();
   auto num_boxes = grid->boxes_.size();
 
   if (i_ == nullptr) {
     i_ = new detail::InitializeGPUData();
   }
-  i_->Initialize(total_num_objects, num_boxes, offset, grid);
+  i_->Initialize(total_num_agents, num_boxes, offset, grid);
   {
     // Timing timer("MechanicalForcesOpCuda::toColumnar");
     rm->ForEachAgentParallel(1000, *i_);
@@ -284,26 +284,26 @@ void MechanicalForcesOpCuda::operator()() {
   auto* param = sim->GetParam();
   auto* rm = sim->GetResourceManager();
 
-  uint32_t total_num_objects = rm->GetNumAgents();
+  uint32_t total_num_agents = rm->GetNumAgents();
   auto num_boxes = grid->boxes_.size();
   // If this is the first time we perform physics on GPU using CUDA
   if (cdo_ == nullptr) {
     // Allocate 25% more memory so we don't need to reallocate GPU memory
     // for every (small) change
-    total_num_objects_ = static_cast<uint32_t>(1.25 * total_num_objects);
+    total_num_agents_ = static_cast<uint32_t>(1.25 * total_num_agents);
     num_boxes_ = static_cast<uint32_t>(1.25 * num_boxes);
 
     // Allocate required GPU memory
-    cdo_ = new MechanicalForcesOpCudaKernel(total_num_objects_, num_boxes_);
+    cdo_ = new MechanicalForcesOpCudaKernel(total_num_agents_, num_boxes_);
   } else {
     // If the number of agents increased
-    if (total_num_objects >= total_num_objects_) {
+    if (total_num_agents >= total_num_agents_) {
       Log::Info("MechanicalForcesOpCuda",
                 "\nThe number of cells increased signficantly (from ",
-                total_num_objects_, " to ", total_num_objects,
+                total_num_agents_, " to ", total_num_agents,
                 "), agent we allocate bigger GPU buffers\n");
-      total_num_objects_ = static_cast<uint32_t>(1.25 * total_num_objects);
-      cdo_->ResizeCellBuffers(total_num_objects_);
+      total_num_agents_ = static_cast<uint32_t>(1.25 * total_num_agents);
+      cdo_->ResizeCellBuffers(total_num_agents_);
     }
 
     // If the neighbor grid size increased
@@ -322,11 +322,10 @@ void MechanicalForcesOpCuda::operator()() {
   // Timing timer("MechanicalForcesOpCuda::Kernel");
   cdo_->LaunchMechanicalForcesKernel(
       i_->cell_positions, i_->cell_diameters, i_->cell_tractor_force,
-      i_->cell_adherence, i_->cell_boxid, i_->mass,
-      &(param->simulation_time_step), &(param->simulation_max_displacement),
-      &squared_radius, &total_num_objects, i_->starts, i_->lengths,
-      i_->timestamps, i_->current_timestamp, i_->successors, i_->num_boxes_axis,
-      i_->cell_movements);
+      i_->cell_adherence, i_->cell_boxid, i_->mass, param->simulation_time_step,
+      param->simulation_max_displacement, squared_radius, total_num_agents,
+      i_->starts, i_->lengths, i_->timestamps, *(i_->current_timestamp),
+      i_->successors, i_->num_boxes_axis, i_->cell_movements);
 }
 
 // -----------------------------------------------------------------------------

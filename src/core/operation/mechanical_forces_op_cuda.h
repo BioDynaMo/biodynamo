@@ -44,7 +44,7 @@ struct MechanicalForcesOpCuda : public StandaloneOperationImpl {
   MechanicalForcesOpCudaKernel* cdo_ = nullptr;
   detail::InitializeGPUData* i_ = nullptr;
   uint32_t num_boxes_ = 0;
-  uint32_t total_num_objects_ = 0;
+  uint32_t total_num_agents_ = 0;
 };
 
 }  // namespace bdm
