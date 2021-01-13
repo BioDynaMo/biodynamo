@@ -22,7 +22,7 @@
 #              "name":"cancergrowth",
 #              "result_dir":"/tmp/simulation-templates/diffusion"
 #          },
-#          "sim_objects": [
+#          "agents": [
 #            { "name":"cell", "glyph":"Glyph", "shape":"Sphere", "scaling_attribute":"diameter_" }
 #          ],
 #          "extracellular_substances": [
@@ -41,12 +41,12 @@ from default_insitu_pipeline import *
 def ExtractIterationFromFilename(x): return int(x.split('-')[-1].split('.')[0])
 
 # ------------------------------------------------------------------------------
-def LoadSimulationObjectData(result_dir, so_info):
-    so_name = so_info['name']
+def LoadSimulationObjectData(result_dir, agent_info):
+    agent_name = agent_info['name']
     # determine pvtu files
-    files = glob.glob('{0}/{1}-*.pvtu'.format(result_dir, so_name))
+    files = glob.glob('{0}/{1}-*.pvtu'.format(result_dir, agent_name))
     if len(files) == 0:
-        print('No data files found for simulation object {0}'.format(so_name))
+        print('No data files found for agent {0}'.format(agent_name))
         sys.exit(1)
 
     files = sorted(files, key=functools.cmp_to_key(lambda x, y: ExtractIterationFromFilename(x) - ExtractIterationFromFilename(y)))
@@ -91,10 +91,10 @@ def BuildDefaultPipeline(json_filename):
     render_view = GetActiveViewOrCreate('RenderView')
     render_view.InteractionMode = '3D'
 
-    # simulation objects
-    for so_info in build_info['sim_objects']:
-        data = LoadSimulationObjectData(result_dir, so_info)
-        ProcessSimulationObject(so_info, data, render_view)
+    # agents
+    for agent_info in build_info['agents']:
+        data = LoadSimulationObjectData(result_dir, agent_info)
+        ProcessSimulationObject(agent_info, data, render_view)
     # extracellular substances
     for substance_info in build_info['extracellular_substances']:
         data = LoadExtracellularSubstanceData(result_dir, substance_info)

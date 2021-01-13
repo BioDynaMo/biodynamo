@@ -38,6 +38,7 @@ By default the installation directory is set to `$HOME/biodynamo-vX.Y.Z`, where 
 
 ## Supported platforms
 
-*  Ubuntu 16.04, 18.04, 20.04
+*  Ubuntu 18.04, 20.04
 *  CentOS 7
-*  Mac OSX
+*  macOS 10.15 and macOS 11.00
+

@@ -18,8 +18,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/agent/cell.h"
 #include "core/container/math_array.h"
-#include "core/sim_object/cell.h"
 #include "neuroscience/neuron_or_neurite.h"
 
 namespace bdm {
@@ -28,7 +28,7 @@ namespace neuroscience {
 class NeuriteElement;
 
 class NeuronSoma : public Cell, public NeuronOrNeurite {
-  BDM_SIM_OBJECT_HEADER(NeuronSoma, Cell, 1);
+  BDM_AGENT_HEADER(NeuronSoma, Cell, 1);
 
  public:
   NeuronSoma();
@@ -36,31 +36,28 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 
   explicit NeuronSoma(const Double3& position);
 
-  /// \brief This constructor is used to initialise the values of daughter
-  /// 2 for a cell division event.
-  ///
-  /// Please note that  this implementation does not allow division of neuron
-  /// somas with already attached neurite elements.
-  ///
-  /// \see CellDivisionEvent
-  NeuronSoma(const Event& event, SimObject* mother_so, uint64_t new_oid = 0);
-
   NeuronSoma(const NeuronSoma& other)
       : Base(other),
         daughters_(other.daughters_),
         daughters_coord_(other.daughters_coord_) {}
 
-  /// \brief EventHandler to modify the data members of this cell
-  /// after a cell division, or new neurite branching event
+  /// \brief This method is used to initialise the values of daughter
+  /// 2 for a cell division event.
+  ///
+  /// Please note that this implementation does not allow division of neuron
+  /// somas with already attached neurite elements.
+  ///
+  /// \see CellDivisionEvent
+  void Initialize(const NewAgentEvent& event) override;
+
+  /// \brief This method is used to update attributes after a cell division.
+  /// or new neurite branching event.
   ///
   /// Performs the transition mother to daughter 1
-  /// \param event contains parameters for cell division
-  /// \param daughter_2 pointer to new cell (=daughter 2)
   /// \see Event, CellDivisionEvent
-  void EventHandler(const Event& event, SimObject* other1,
-                    SimObject* other2 = nullptr) override;
+  void Update(const NewAgentEvent& event) override;
 
-  const SoUid& GetUid() const override { return Base::GetUid(); }
+  const AgentUid& GetUid() const override { return Base::GetUid(); }
 
   Spinlock* GetLock() override { return Base::GetLock(); }
 
@@ -83,28 +80,28 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   NeuriteElement* ExtendNewNeurite(double diameter, double phi, double theta,
                                    NeuriteElement* prototype = nullptr);
 
-  void RemoveDaughter(const SoPointer<NeuriteElement>& daughter) override;
+  void RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) override;
 
   /// Returns the absolute coordinates of the location where the daughter is
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  Double3 OriginOf(const SoUid& daughter_uid) const override;
+  Double3 OriginOf(const AgentUid& daughter_uid) const override;
 
   void UpdateDependentPhysicalVariables() override;
 
   void UpdateRelative(const NeuronOrNeurite& old_rel,
                       const NeuronOrNeurite& new_rel) override;
 
-  const std::vector<SoPointer<NeuriteElement>>& GetDaughters() const;
+  const std::vector<AgentPointer<NeuriteElement>>& GetDaughters() const;
 
  protected:
-  std::vector<SoPointer<NeuriteElement>> daughters_;
+  std::vector<AgentPointer<NeuriteElement>> daughters_;
 
   /// Daughter attachment points in local coordinates
   /// Key: neurite segment uid
   /// Value: position
-  std::unordered_map<SoUid, Double3> daughters_coord_;
+  std::unordered_map<AgentUid, Double3> daughters_coord_;
 };
 
 }  // namespace neuroscience

@@ -30,8 +30,8 @@ class Timing {
   typedef std::chrono::high_resolution_clock Clock;
 
   static int64_t Timestamp() {
-    using std::chrono::milliseconds;
     using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
     auto time = Clock::now();
     auto since_epoch = time.time_since_epoch();
     auto millis = duration_cast<milliseconds>(since_epoch);
@@ -40,7 +40,7 @@ class Timing {
 
   template <typename TFunctor>
   static void Time(const std::string& description, TFunctor&& f) {
-    static bool kUseTimer = Simulation::GetActive()->GetParam()->statistics_;
+    static bool kUseTimer = Simulation::GetActive()->GetParam()->statistics;
     if (kUseTimer) {
       auto* agg = Simulation::GetActive()->GetScheduler()->GetOpTimes();
       Timing timing(description, agg);

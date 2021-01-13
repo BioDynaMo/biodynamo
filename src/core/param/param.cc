@@ -24,68 +24,68 @@ using nlohmann::json;
 
 namespace bdm {
 
-std::unordered_map<ModuleParamUid, std::unique_ptr<ModuleParam>>
-    Param::registered_modules_;
+std::unordered_map<ParamGroupUid, std::unique_ptr<ParamGroup>>
+    Param::registered_groups_;
 
 // -----------------------------------------------------------------------------
-void Param::RegisterModuleParam(ModuleParam* param) {
-  registered_modules_[param->GetUid()] = std::unique_ptr<ModuleParam>(param);
+void Param::RegisterParamGroup(ParamGroup* param) {
+  registered_groups_[param->GetUid()] = std::unique_ptr<ParamGroup>(param);
 }
 
 // -----------------------------------------------------------------------------
 Param::Param() {
-  for (auto& el : registered_modules_) {
-    modules_[el.first] = el.second->GetCopy();
+  for (auto& el : registered_groups_) {
+    groups_[el.first] = el.second->NewCopy();
   }
 }
 
 // -----------------------------------------------------------------------------
 Param::~Param() {
-  for (auto& el : modules_) {
+  for (auto& el : groups_) {
     delete el.second;
   }
 }
 
 // -----------------------------------------------------------------------------
 void Param::Restore(Param&& other) {
-  for (auto& el : modules_) {
+  for (auto& el : groups_) {
     delete el.second;
   }
   *this = other;
-  other.modules_.clear();
+  other.groups_.clear();
 }
 
 // -----------------------------------------------------------------------------
-json FlattenModules(const json& j_document) {
+json FlattenGroups(const json& j_document) {
   json j_copy = j_document;
-  j_copy.erase("modules_");
+  j_copy.erase("groups_");
 
   json j_new;
   j_new["bdm::Param"] = j_copy;
 
-  // iterator over all module parameters
-  auto j_modules = j_document["modules_"];
-  for (json::iterator it = j_modules.begin(); it != j_modules.end(); ++it) {
+  // iterator over all group parameters
+  auto j_groups = j_document["groups_"];
+  for (json::iterator it = j_groups.begin(); it != j_groups.end(); ++it) {
     j_new[(*it)["second"]["_typename"].get<std::string>()] = (*it)["second"];
   }
   return j_new;
 }
 
 // -----------------------------------------------------------------------------
-json UnflattenModules(const json& j_flattened, const json& j_original) {
+json UnflattenGroups(const json& j_flattened, const json& j_original) {
   json j_return = j_flattened["bdm::Param"];
-  j_return["modules_"] = {};
-  auto& j_modules = j_return["modules_"];
+  j_return["groups_"] = {};
+  auto& j_groups = j_return["groups_"];
 
-  auto j_original_modules = j_original["modules_"];
-  for (json::iterator it = j_original_modules.begin();
-       it != j_original_modules.end(); ++it) {
-    json j_module_param;
-    j_module_param["$pair"] = (*it)["$pair"];
-    j_module_param["first"] = (*it)["first"];
-    j_module_param["second"] =
+  auto j_original_groups = j_original["groups_"];
+  for (json::iterator it = j_original_groups.begin();
+       it != j_original_groups.end(); ++it) {
+    json j_param_group;
+    j_param_group["$pair"] = (*it)["$pair"];
+    j_param_group["first"] = (*it)["first"];
+    j_param_group["second"] =
         j_flattened[(*it)["second"]["_typename"].get<std::string>()];
-    j_modules.push_back(j_module_param);
+    j_groups.push_back(j_param_group);
   }
   return j_return;
 }
@@ -94,9 +94,9 @@ json UnflattenModules(const json& j_flattened, const json& j_original) {
 std::string Param::ToJsonString() const {
   std::string current_json_str(
       TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
-  // Flatten modules_ to simplify json patches in rfc7386 format.
+  // Flatten groups_ to simplify json patches in rfc7386 format.
   json j_document = json::parse(current_json_str);
-  auto j_flattened = FlattenModules(j_document);
+  auto j_flattened = FlattenGroups(j_document);
   return j_flattened.dump(4);
 }
 
@@ -105,7 +105,7 @@ void Param::MergeJsonPatch(const std::string& patch) {
   std::string json_str(
       TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
   json j_param = json::parse(json_str);
-  auto j_flattened = FlattenModules(j_param);
+  auto j_flattened = FlattenGroups(j_param);
 
   try {
     auto j_patch = json::parse(patch);
@@ -116,7 +116,7 @@ void Param::MergeJsonPatch(const std::string& patch) {
                       e.what(), "\n", patch));
   }
 
-  auto j_unflattened = UnflattenModules(j_flattened, j_param);
+  auto j_unflattened = UnflattenGroups(j_flattened, j_param);
   Param* restored = nullptr;
   TBufferJSON::FromJSON(restored, j_unflattened.dump().c_str());
   Restore(std::move(*restored));
@@ -133,13 +133,12 @@ void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config,
     }
     auto str_value = *value;
     if (str_value == "none") {
-      param->thread_safety_mechanism_ = Param::ThreadSafetyMechanism::kNone;
+      param->thread_safety_mechanism = Param::ThreadSafetyMechanism::kNone;
     } else if (str_value == "user-specified") {
-      param->thread_safety_mechanism_ =
+      param->thread_safety_mechanism =
           Param::ThreadSafetyMechanism::kUserSpecified;
     } else if (str_value == "automatic") {
-      param->thread_safety_mechanism_ =
-          Param::ThreadSafetyMechanism::kAutomatic;
+      param->thread_safety_mechanism = Param::ThreadSafetyMechanism::kAutomatic;
     }
   }
 }
@@ -155,11 +154,11 @@ void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
     }
     auto str_value = *value;
     if (str_value == "zero-copy") {
-      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kZeroCopy;
+      param->mapped_data_array_mode = Param::MappedDataArrayMode::kZeroCopy;
     } else if (str_value == "cache") {
-      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCache;
+      param->mapped_data_array_mode = Param::MappedDataArrayMode::kCache;
     } else if (str_value == "copy") {
-      param->mapped_data_array_mode_ = Param::MappedDataArrayMode::kCopy;
+      param->mapped_data_array_mode = Param::MappedDataArrayMode::kCopy;
     } else {
       Log::Fatal(
           "Param",
@@ -172,51 +171,48 @@ void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
 
 // -----------------------------------------------------------------------------
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
-  // module parameters
-  for (auto& el : modules_) {
+  // group parameters
+  for (auto& el : groups_) {
     el.second->AssignFromConfig(config);
   }
 
   // simulation group
-  BDM_ASSIGN_CONFIG_VALUE(random_seed_, "simulation.random_seed");
-  BDM_ASSIGN_CONFIG_VALUE(output_dir_, "simulation.output_dir");
-  BDM_ASSIGN_CONFIG_VALUE(backup_file_, "simulation.backup_file");
-  BDM_ASSIGN_CONFIG_VALUE(restore_file_, "simulation.restore_file");
-  BDM_ASSIGN_CONFIG_VALUE(backup_interval_, "simulation.backup_interval");
-  BDM_ASSIGN_CONFIG_VALUE(simulation_time_step_, "simulation.time_step");
-  BDM_ASSIGN_CONFIG_VALUE(simulation_max_displacement_,
+  BDM_ASSIGN_CONFIG_VALUE(random_seed, "simulation.random_seed");
+  BDM_ASSIGN_CONFIG_VALUE(output_dir, "simulation.output_dir");
+  BDM_ASSIGN_CONFIG_VALUE(backup_file, "simulation.backup_file");
+  BDM_ASSIGN_CONFIG_VALUE(restore_file, "simulation.restore_file");
+  BDM_ASSIGN_CONFIG_VALUE(backup_interval, "simulation.backup_interval");
+  BDM_ASSIGN_CONFIG_VALUE(simulation_time_step, "simulation.time_step");
+  BDM_ASSIGN_CONFIG_VALUE(simulation_max_displacement,
                           "simulation.max_displacement");
-  BDM_ASSIGN_CONFIG_VALUE(run_mechanical_interactions_,
-                          "simulation.run_mechanical_interactions");
-  BDM_ASSIGN_CONFIG_VALUE(bound_space_, "simulation.bound_space");
-  BDM_ASSIGN_CONFIG_VALUE(min_bound_, "simulation.min_bound");
-  BDM_ASSIGN_CONFIG_VALUE(max_bound_, "simulation.max_bound");
-  BDM_ASSIGN_CONFIG_VALUE(leaking_edges_, "simulation.leaking_edges");
-  BDM_ASSIGN_CONFIG_VALUE(diffusion_type_, "simulation.diffusion_type");
-  BDM_ASSIGN_CONFIG_VALUE(calculate_gradients_,
+  BDM_ASSIGN_CONFIG_VALUE(bound_space, "simulation.bound_space");
+  BDM_ASSIGN_CONFIG_VALUE(min_bound, "simulation.min_bound");
+  BDM_ASSIGN_CONFIG_VALUE(max_bound, "simulation.max_bound");
+  BDM_ASSIGN_CONFIG_VALUE(leaking_edges, "simulation.leaking_edges");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_type, "simulation.diffusion_type");
+  BDM_ASSIGN_CONFIG_VALUE(calculate_gradients,
                           "simulation.calculate_gradients");
   AssignThreadSafetyMechanism(config, this);
 
   // visualization group
-  BDM_ASSIGN_CONFIG_VALUE(visualization_engine_, "visualization.adaptor");
-  BDM_ASSIGN_CONFIG_VALUE(insitu_visualization_, "visualization.insitu");
-  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline_,
+  BDM_ASSIGN_CONFIG_VALUE(visualization_engine, "visualization.adaptor");
+  BDM_ASSIGN_CONFIG_VALUE(insitu_visualization, "visualization.insitu");
+  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline,
                           "visualization.pv_insitu_pipeline");
-  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline_arguments_,
-                          "visualization.pv_insitu_pipeline_arguments");
-  BDM_ASSIGN_CONFIG_VALUE(root_visualization_, "visualization.root");
-  BDM_ASSIGN_CONFIG_VALUE(export_visualization_, "visualization.export");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_interval_, "visualization.interval");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm_,
+  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipelinearguments,
+                          "visualization.pv_insitu_pipelinearguments");
+  BDM_ASSIGN_CONFIG_VALUE(root_visualization, "visualization.root");
+  BDM_ASSIGN_CONFIG_VALUE(export_visualization, "visualization.export");
+  BDM_ASSIGN_CONFIG_VALUE(visualization_interval, "visualization.interval");
+  BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm,
                           "visualization.export_generate_pvsm");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files_,
+  BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files,
                           "visualization.compress_pv_files");
 
-  //   visualize_sim_objects_
-  auto visualize_sim_objects_tarr =
-      config->get_table_array("visualize_sim_object");
-  if (visualize_sim_objects_tarr) {
-    for (const auto& table : *visualize_sim_objects_tarr) {
+  //   visualize_agents
+  auto visualize_agentstarr = config->get_table_array("visualize_agent");
+  if (visualize_agentstarr) {
+    for (const auto& table : *visualize_agentstarr) {
       // We do a 'redundant' check here, because `get_as` on Mac OS does not
       // catch the exception when the "name" is not defined in the bdm.toml
       // Same goes for all the other redundant checks
@@ -224,7 +220,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
         auto name = table->get_as<std::string>("name");
         if (!name) {
           Log::Warning("AssignFromConfig",
-                       "Missing name for attribute visualize_sim_object");
+                       "Missing name for attribute visualize_agent");
           continue;
         }
 
@@ -236,20 +232,19 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
           for (const auto& val : *dm_option) {
             data_members.insert(val);
           }
-          visualize_sim_objects_[*name] = data_members;
+          visualize_agents[*name] = data_members;
         } else {
           std::set<std::string> data_members;
-          visualize_sim_objects_[*name] = data_members;
+          visualize_agents[*name] = data_members;
         }
       }
     }
   }
 
-  //   visualize_diffusion_
-  auto visualize_diffusion_tarr =
-      config->get_table_array("visualize_diffusion");
-  if (visualize_diffusion_tarr) {
-    for (const auto& table : *visualize_diffusion_tarr) {
+  //   visualize_diffusion
+  auto visualize_diffusiontarr = config->get_table_array("visualize_diffusion");
+  if (visualize_diffusiontarr) {
+    for (const auto& table : *visualize_diffusiontarr) {
       if (table->contains("name")) {
         auto name = table->get_as<std::string>("name");
         if (!name) {
@@ -259,59 +254,71 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
         }
 
         VisualizeDiffusion vd;
-        vd.name_ = *name;
+        vd.name = *name;
 
         if (table->contains("concentration")) {
           auto concentration = table->get_as<bool>("concentration");
           if (concentration) {
-            vd.concentration_ = *concentration;
+            vd.concentration = *concentration;
           }
         }
         if (table->contains("gradient")) {
           auto gradient = table->get_as<bool>("gradient");
           if (gradient) {
-            vd.gradient_ = *gradient;
+            vd.gradient = *gradient;
           }
         }
 
-        visualize_diffusion_.push_back(vd);
+        visualize_diffusion.push_back(vd);
       }
     }
   }
 
+  // unschedule_default_operations
+  if (config->get_table("simulation")) {
+    auto disabled_ops =
+        config->get_table("simulation")
+            ->get_array_of<std::string>("unschedule_default_operations");
+    for (const auto& op : *disabled_ops) {
+      unschedule_default_operations.push_back(op);
+    }
+  }
+
   // performance group
-  BDM_ASSIGN_CONFIG_VALUE(scheduling_batch_size_,
+  BDM_ASSIGN_CONFIG_VALUE(scheduling_batch_size,
                           "performance.scheduling_batch_size");
-  BDM_ASSIGN_CONFIG_VALUE(detect_static_sim_objects_,
-                          "performance.detect_static_sim_objects");
-  BDM_ASSIGN_CONFIG_VALUE(cache_neighbors_, "performance.cache_neighbors");
-  BDM_ASSIGN_CONFIG_VALUE(souid_defragmentation_low_watermark_,
-                          "performance.souid_defragmentation_low_watermark");
-  BDM_ASSIGN_CONFIG_VALUE(souid_defragmentation_high_watermark_,
-                          "performance.souid_defragmentation_high_watermark");
-  BDM_ASSIGN_CONFIG_VALUE(use_bdm_mem_mgr_, "performance.use_bdm_mem_mgr");
-  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_aligned_pages_shift_,
+  BDM_ASSIGN_CONFIG_VALUE(detect_static_agents,
+                          "performance.detect_static_agents");
+  BDM_ASSIGN_CONFIG_VALUE(cache_neighbors, "performance.cache_neighbors");
+  BDM_ASSIGN_CONFIG_VALUE(
+      agent_uid_defragmentation_low_watermark,
+      "performance.agent_uid_defragmentation_low_watermark");
+  BDM_ASSIGN_CONFIG_VALUE(
+      agent_uid_defragmentation_high_watermark,
+      "performance.agent_uid_defragmentation_high_watermark");
+  BDM_ASSIGN_CONFIG_VALUE(use_bdm_mem_mgr, "performance.use_bdm_mem_mgr");
+  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_aligned_pages_shift,
                           "performance.mem_mgr_aligned_pages_shift");
-  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_growth_rate_,
+  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_growth_rate,
                           "performance.mem_mgr_growth_rate");
-  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_max_mem_per_thread_,
+  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_max_mem_per_thread,
                           "performance.mem_mgr_max_mem_per_thread");
-  BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing_,
+  BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing,
                           "performance.minimize_memory_while_rebalancing");
   AssignMappedDataArrayMode(config, this);
 
   // development group
-  BDM_ASSIGN_CONFIG_VALUE(statistics_, "development.statistics");
-  BDM_ASSIGN_CONFIG_VALUE(debug_numa_, "development.debug_numa");
-  BDM_ASSIGN_CONFIG_VALUE(show_simulation_step_,
+  BDM_ASSIGN_CONFIG_VALUE(statistics, "development.statistics");
+  BDM_ASSIGN_CONFIG_VALUE(debug_numa, "development.debug_numa");
+  BDM_ASSIGN_CONFIG_VALUE(show_simulation_step,
                           "development.show_simulation_step");
-  BDM_ASSIGN_CONFIG_VALUE(simulation_step_freq_,
+  BDM_ASSIGN_CONFIG_VALUE(simulation_step_freq,
                           "development.simulation_step_freq");
 
   // experimental group
-  BDM_ASSIGN_CONFIG_VALUE(compute_target_, "experimental.compute_target");
-  BDM_ASSIGN_CONFIG_VALUE(opencl_debug_, "experimental.opencl_debug");
-  BDM_ASSIGN_CONFIG_VALUE(preferred_gpu_, "experimental.preferred_gpu");
+  BDM_ASSIGN_CONFIG_VALUE(compute_target, "experimental.compute_target");
+  BDM_ASSIGN_CONFIG_VALUE(opencl_debug, "experimental.opencl_debug");
+  BDM_ASSIGN_CONFIG_VALUE(preferred_gpu, "experimental.preferred_gpu");
 }
 
 }  // namespace bdm

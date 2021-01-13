@@ -24,7 +24,8 @@ namespace bdm {
 /// A registry of operation implementations that can be scheduled for a
 /// simulation. Since an operation can have multiple implementation (e.g. for
 /// execution on CPU, CUDA, OpenCL), we need to register them separately.
-struct OperationRegistry {
+class OperationRegistry {
+ public:
   /// Singleton class - returns the static instance
   static OperationRegistry *GetInstance();
 

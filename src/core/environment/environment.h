@@ -15,10 +15,11 @@
 #ifndef CORE_ENVIRONMENT_ENVIRONMENT_H_
 #define CORE_ENVIRONMENT_ENVIRONMENT_H_
 
+#include <vector>
+#include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/functor.h"
 #include "core/resource_manager.h"
-#include "core/sim_object/sim_object.h"
 
 namespace bdm {
 
@@ -28,8 +29,8 @@ class Environment {
 
   virtual void Update() = 0;
 
-  virtual void ForEachNeighbor(Functor<void, const SimObject*, double>& lambda,
-                               const SimObject& query) = 0;
+  virtual void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
+                               const Agent& query) = 0;
 
   virtual void Clear() = 0;
 
@@ -37,17 +38,17 @@ class Environment {
 
   virtual const std::array<int32_t, 2>& GetDimensionThresholds() const = 0;
 
-  /// Return the size of the largest sim object
+  /// Return the size of the largest agent
   virtual double GetLargestObjectSize() const = 0;
 
-  virtual void IterateZOrder(Functor<void, const SoHandle&>& callback) = 0;
+  virtual void IterateZOrder(Functor<void, const AgentHandle&>& callback) = 0;
 
   /// This class ensures thread-safety for the case
-  /// that a simulation object modifies its neighbors.
+  /// that an agent modifies its neighbors.
   class NeighborMutexBuilder {
    public:
     /// The NeighborMutex class is a synchronization primitive that can be
-    /// used to protect sim_objects data from being simultaneously accessed by
+    /// used to protect agents data from being simultaneously accessed by
     /// multiple threads.
     class NeighborMutex {
      public:
@@ -69,13 +70,13 @@ class Environment {
  protected:
   bool has_grown_ = false;
 
-  struct SimDimensionAndLargestSimObjectFunctor
-      : public Functor<void, SimObject*, SoHandle> {
+  struct SimDimensionAndLargestAgentFunctor
+      : public Functor<void, Agent*, AgentHandle> {
     using Type = std::vector<std::array<double, 8>>;
 
-    SimDimensionAndLargestSimObjectFunctor(Type& xmin, Type& xmax, Type& ymin,
-                                           Type& ymax, Type& zmin, Type& zmax,
-                                           Type& largest)
+    SimDimensionAndLargestAgentFunctor(Type& xmin, Type& xmax, Type& ymin,
+                                       Type& ymax, Type& zmin, Type& zmax,
+                                       Type& largest)
         : xmin_(xmin),
           xmax_(xmax),
           ymin_(ymin),
@@ -84,9 +85,9 @@ class Environment {
           zmax_(zmax),
           largest_(largest) {}
 
-    void operator()(SimObject* so, SoHandle) override {
+    void operator()(Agent* agent, AgentHandle) override {
       auto tid = omp_get_thread_num();
-      const auto& position = so->GetPosition();
+      const auto& position = agent->GetPosition();
       // x
       if (position[0] < xmin_[tid][0]) {
         xmin_[tid][0] = position[0];
@@ -109,7 +110,7 @@ class Environment {
         zmax_[tid][0] = position[2];
       }
       // largest object
-      auto diameter = so->GetDiameter();
+      auto diameter = agent->GetDiameter();
       if (diameter > largest_[tid][0]) {
         largest_[tid][0] = diameter;
       }
@@ -126,9 +127,9 @@ class Environment {
   };
 
   /// Calculates what the grid dimensions need to be in order to contain all the
-  /// simulation objects
-  void CalcSimDimensionsAndLargestSimObject(
-      std::array<double, 6>* ret_grid_dimensions, double* largest_so) {
+  /// agents
+  void CalcSimDimensionsAndLargestAgent(
+      std::array<double, 6>* ret_grid_dimensions, double* largest_agent) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
@@ -145,9 +146,9 @@ class Environment {
 
     std::vector<std::array<double, 8>> largest(max_threads, {{0}});
 
-    SimDimensionAndLargestSimObjectFunctor functor(xmin, xmax, ymin, ymax, zmin,
-                                                   zmax, largest);
-    rm->ApplyOnAllElementsParallelDynamic(1000, functor);
+    SimDimensionAndLargestAgentFunctor functor(xmin, xmax, ymin, ymax, zmin,
+                                               zmax, largest);
+    rm->ForEachAgentParallel(1000, functor);
 
     // reduce partial results into global one
     double& gxmin = (*ret_grid_dimensions)[0];
@@ -179,8 +180,8 @@ class Environment {
         gzmax = zmax[tid][0];
       }
       // larget object
-      if (largest[tid][0] > (*largest_so)) {
-        (*largest_so) = largest[tid][0];
+      if (largest[tid][0] > (*largest_agent)) {
+        (*largest_agent) = largest[tid][0];
       }
     }
   }

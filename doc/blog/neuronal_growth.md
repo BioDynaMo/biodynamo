@@ -14,7 +14,7 @@ Therefore, it is possible to investigate various aspects of neural development, 
 
 Moreover, BioDynaMo is able to take into account interactions between neurons during development. This is particularly important as neuron-neuron interactions are known to play a crucial role during the development of the nervous system, and particularly during the development of neurites. Simulations can recapitulate contact mediated interactions and chemical communication between numerous cells and their neurites. This allow for instance the modelling of dendritic competition for space, a phenomenon observed notably in the retina, where dendritic arbours of the same cell type tend not to overlap.
 
-Precisely simulating the development and interactions of a large number of neurons and their dendritic arbours (i.e. millions or billions of simulation objects) can be extremely computationally intensive. However, BioDynaMo's high performance execution engine allows us to conduct such large scale simulations by taking advantage of modern computing techniques.
+Precisely simulating the development and interactions of a large number of neurons and their dendritic arbours (i.e. millions or billions of agents) can be extremely computationally intensive. However, BioDynaMo's high performance execution engine allows us to conduct such large scale simulations by taking advantage of modern computing techniques.
 
 All in all, we expect BioDynaMo to be applied to various research topics in neuroscience.
 

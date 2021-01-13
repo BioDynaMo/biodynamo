@@ -28,132 +28,137 @@
 namespace bdm {
 
 struct ModelInitializer {
-  /// Creates a 3D cubic grid of simulation objects and adds them to the
-  /// ResourceManager. Type of the simulation object is determined by the return
-  /// type of parameter cell_builder.
+  /// Creates a 3D cubic grid of agents and adds them to the
+  /// ExecutionContext. Type of the agent is determined by the return
+  /// type of parameter agent_builder.
   ///
   ///     ModelInitializer::Grid3D(8, 10, [](const Double3& pos){
   ///     return Cell(pos); });
-  /// @param      cells_per_dim  number of simulation objects on each axis.
-  ///                            Number of generated simulation objects =
-  ///                            `cells_per_dim ^ 3`
+  /// @param      agents_per_dim  number of agents on each axis.
+  ///                            Number of generated agents =
+  ///                            `agents_per_dim ^ 3`
   /// @param      space          space between the positions - e.g space = 10:
   ///                            positions = `{(0, 0, 0), (0, 0, 10), (0, 0,
   ///                            20), ... }`
-  /// @param      cell_builder   function containing the logic to instantiate a
-  ///                            new simulation object. Takes `const
+  /// @param      agent_builder   function containing the logic to instantiate a
+  ///                            new agent. Takes `const
   ///                            Double3&` as input parameter
   ///
   template <typename Function>
-  static void Grid3D(size_t cells_per_dim, double space,
-                     Function cell_builder) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+  static void Grid3D(size_t agents_per_dim, double space,
+                     Function agent_builder) {
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
 
-    rm->Reserve(cells_per_dim * cells_per_dim * cells_per_dim);
-    for (size_t x = 0; x < cells_per_dim; x++) {
-      auto x_pos = x * space;
-      for (size_t y = 0; y < cells_per_dim; y++) {
-        auto y_pos = y * space;
-        for (size_t z = 0; z < cells_per_dim; z++) {
-          auto* new_simulation_object = cell_builder({x_pos, y_pos, z * space});
-          rm->push_back(new_simulation_object);
+#pragma omp for
+      for (size_t x = 0; x < agents_per_dim; x++) {
+        auto x_pos = x * space;
+        for (size_t y = 0; y < agents_per_dim; y++) {
+          auto y_pos = y * space;
+          for (size_t z = 0; z < agents_per_dim; z++) {
+            auto* new_agent = agent_builder({x_pos, y_pos, z * space});
+            ctxt->AddAgent(new_agent);
+          }
         }
       }
     }
   }
 
-  /// Creates a 3D grid of simulation objects and adds them to the
-  /// ResourceManager. Type of the simulation object is determined by the return
-  /// type of parameter cell_builder.
+  /// Creates a 3D grid of agents and adds them to the
+  /// ExecutionContext. Type of the agent is determined by the return
+  /// type of parameter agent_builder.
   ///
   ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const Double3&
   ///     pos){ return Cell(pos); });
-  /// @param      cells_per_dim  number of simulation objects on each axis.
-  ///                            Number of generated simulation objects =
-  ///                            `cells_per_dim[0] * cells_per_dim[1] *
-  ///                            cells_per_dim[2]`
+  /// @param      agents_per_dim  number of agents on each axis.
+  ///                            Number of generated agents =
+  ///                            `agents_per_dim[0] * agents_per_dim[1] *
+  ///                            agents_per_dim[2]`
   /// @param      space          space between the positions - e.g space = 10:
   ///                            positions = `{(0, 0, 0), (0, 0, 10), (0, 0,
   ///                            20), ... }`
-  /// @param      cell_builder   function containing the logic to instantiate a
-  ///                            new simulation object. Takes `const
+  /// @param      agent_builder   function containing the logic to instantiate a
+  ///                            new agent. Takes `const
   ///                            Double3&` as input parameter
   ///
   template <typename Function>
-  static void Grid3D(const std::array<size_t, 3>& cells_per_dim, double space,
-                     Function cell_builder) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+  static void Grid3D(const std::array<size_t, 3>& agents_per_dim, double space,
+                     Function agent_builder) {
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
 
-    rm->Reserve(cells_per_dim[0] * cells_per_dim[1] * cells_per_dim[2]);
-    for (size_t x = 0; x < cells_per_dim[0]; x++) {
-      auto x_pos = x * space;
-      for (size_t y = 0; y < cells_per_dim[1]; y++) {
-        auto y_pos = y * space;
-        for (size_t z = 0; z < cells_per_dim[2]; z++) {
-          auto* new_simulation_object = cell_builder({x_pos, y_pos, z * space});
-          rm->push_back(new_simulation_object);
+#pragma omp for
+      for (size_t x = 0; x < agents_per_dim[0]; x++) {
+        auto x_pos = x * space;
+        for (size_t y = 0; y < agents_per_dim[1]; y++) {
+          auto y_pos = y * space;
+          for (size_t z = 0; z < agents_per_dim[2]; z++) {
+            auto* new_agent = agent_builder({x_pos, y_pos, z * space});
+            ctxt->AddAgent(new_agent);
+          }
         }
       }
     }
   }
 
-  /// Adds simulation objects to the ResourceManager. Type of the simulation
-  /// object is determined by the return type of parameter cell_builder.
+  /// Adds agents to the ExecutionContext. Type of the simulation
+  /// object is determined by the return type of parameter agent_builder.
   ///
-  /// @param      positions     positions of the simulation objects to be
-  /// @param      cell_builder  function containing the logic to instantiate a
-  ///                           new simulation object. Takes `const
+  /// @param      positions     positions of the agents to be
+  /// @param      agent_builder  function containing the logic to instantiate a
+  ///                           new agent. Takes `const
   ///                           Double3&` as input parameter
   ///
   template <typename Function>
-  static void CreateCells(const std::vector<Double3>& positions,
-                          Function cell_builder) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+  static void CreateAgents(const std::vector<Double3>& positions,
+                           Function agent_builder) {
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
 
-    rm->Reserve(positions.size());
-    for (size_t i = 0; i < positions.size(); i++) {
-      auto* new_simulation_object =
-          cell_builder({positions[i][0], positions[i][1], positions[i][2]});
-      rm->push_back(new_simulation_object);
+#pragma omp for
+      for (size_t i = 0; i < positions.size(); i++) {
+        auto* new_agent =
+            agent_builder({positions[i][0], positions[i][1], positions[i][2]});
+        ctxt->AddAgent(new_agent);
+      }
     }
   }
 
-  /// Adds simulation objects with random positions to the ResourceManager.
-  /// Type of the simulation object is determined by the return type of
-  /// parameter cell_builder.
+  /// Adds agents with random positions to the ExecutionContext.
+  /// Type of the agent is determined by the return type of
+  /// parameter agent_builder.
   ///
   /// @param[in]  min           The minimum position value
   /// @param[in]  max           The maximum position value
-  /// @param[in]  num_cells     The number cells
-  /// @param[in]  cell_builder  function containing the logic to instantiate a
-  ///                           new simulation object. Takes `const
+  /// @param[in]  num_agents     The number agents
+  /// @param[in]  agent_builder  function containing the logic to instantiate a
+  ///                           new agent. Takes `const
   ///                           Double3&` as input parameter
   ///
   template <typename Function>
-  static void CreateCellsRandom(double min, double max, int num_cells,
-                                Function cell_builder) {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+  static void CreateAgentsRandom(double min, double max, uint64_t num_agents,
+                                 Function agent_builder) {
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
+      auto* random = sim->GetRandom();
 
-    rm->Reserve(num_cells);
-
-    // TODO(ahmad): throughout simulation only one random number generator
-    // should be used, so this should go someplace accessible for other
-    // classes / functions
-    auto* random = sim->GetRandom();
-    for (int i = 0; i < num_cells; i++) {
-      double x = random->Uniform(min, max);
-      double y = random->Uniform(min, max);
-      double z = random->Uniform(min, max);
-      auto* new_simulation_object = cell_builder({x, y, z});
-      rm->push_back(new_simulation_object);
+#pragma omp for
+      for (uint64_t i = 0; i < num_agents; i++) {
+        auto* new_agent = agent_builder(random->UniformArray<3>(min, max));
+        ctxt->AddAgent(new_agent);
+      }
     }
   }
 
-  /// Allows cells to secrete the specified substance. Diffusion throughout the
+  /// Allows agents to secrete the specified substance. Diffusion throughout the
   /// simulation space is automatically taken care of by the DiffusionGrid class
   ///
   /// @param[in]  substance_id     The substance identifier
@@ -175,8 +180,7 @@ struct ModelInitializer {
   }
 
   template <typename F>
-  static void InitializeSubstance(size_t substance_id,
-                                  std::string substance_name, F function) {
+  static void InitializeSubstance(size_t substance_id, F function) {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);

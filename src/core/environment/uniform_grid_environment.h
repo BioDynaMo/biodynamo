@@ -32,13 +32,13 @@
 #include <utility>
 #include <vector>
 
-#include <morton/morton.h>
+#include <morton/morton.h>  // NOLINT
 
+#include "core/container/agent_vector.h"
 #include "core/container/fixed_size_vector.h"
 #include "core/container/inline_vector.h"
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
-#include "core/container/sim_object_vector.h"
 #include "core/environment/environment.h"
 #include "core/functor.h"
 #include "core/param/param.h"
@@ -48,13 +48,18 @@
 
 namespace bdm {
 
+namespace detail {
+struct InitializeGPUData;
+}  // namespace detail
+
 /// A class that represents Cartesian 3D grid
 class UniformGridEnvironment : public Environment {
-  // DisplacementOpCuda needs access to some UniformGridEnvironment private
+  // MechanicalForcesOpCuda needs access to some UniformGridEnvironment private
   // members to reconstruct
-  // the grid on GPU (same for DisplacementOpOpenCL)
-  friend struct DisplacementOpCuda;
-  friend struct DisplacementOpOpenCL;
+  // the grid on GPU (same for MechanicalForcesOpOpenCL)
+  friend struct MechanicalForcesOpCuda;
+  friend struct ::bdm::detail::InitializeGPUData;
+  friend struct MechanicalForcesOpOpenCL;
   friend class SchedulerTest;
 
  public:
@@ -63,14 +68,14 @@ class UniformGridEnvironment : public Environment {
     Spinlock lock_;
     // std::atomic<bool> timestamp_;
     uint32_t timestamp_;
-    /// start value of the linked list of simulation objects inside this box.
+    /// start value of the linked list of agents inside this box.
     /// Next element can be found at `successors_[start_]`
-    SoHandle start_;
-    /// length of the linked list (i.e. number of simulation objects)
+    AgentHandle start_;
+    /// length of the linked list (i.e. number of agents)
     /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
     uint16_t length_;
 
-    Box() : timestamp_(0), start_(SoHandle()), length_(0) {}
+    Box() : timestamp_(0), start_(AgentHandle()), length_(0) {}
     /// Copy Constructor required for boxes_.resize()
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
@@ -88,22 +93,22 @@ class UniformGridEnvironment : public Environment {
       return grid_timestamp != timestamp_;
     }
 
-    /// @brief      Adds a simulation object to this box
+    /// @brief      Adds an agent to this box
     ///
-    /// @param[in]  so       The object's identifier
+    /// @param[in]  agent       The object's identifier
     /// @param   AddObject   successors   The successors
-    void AddObject(SoHandle soh, SimObjectVector<SoHandle>* successors,
+    void AddObject(AgentHandle ah, AgentVector<AgentHandle>* successors,
                    UniformGridEnvironment* grid) {
       std::lock_guard<Spinlock> lock_guard(lock_);
 
       if (timestamp_ != grid->timestamp_) {
         timestamp_ = grid->timestamp_;
         length_ = 1;
-        start_ = soh;
+        start_ = ah;
       } else {
         length_++;
-        (*successors)[soh] = start_;
-        start_ = soh;
+        (*successors)[ah] = start_;
+        start_ = ah;
       }
     }
 
@@ -126,13 +131,13 @@ class UniformGridEnvironment : public Environment {
         return *this;
       }
 
-      SoHandle operator*() const { return current_value_; }
+      AgentHandle operator*() const { return current_value_; }
 
       /// Pointer to the neighbor grid; for accessing the successor_ list
       UniformGridEnvironment* grid_;
-      /// The current simulation object to be considered
-      SoHandle current_value_;
-      /// The remain number of simulation objects to consider
+      /// The current agent to be considered
+      AgentHandle current_value_;
+      /// The remain number of agents to consider
       int countdown_ = 0;
     };
 
@@ -160,7 +165,7 @@ class UniformGridEnvironment : public Environment {
 
     bool IsAtEnd() const { return is_end_; }
 
-    SoHandle operator*() const { return *box_iterator_; }
+    AgentHandle operator*() const { return *box_iterator_; }
 
     /// Version where empty neighbor boxes are allowed
     NeighborIterator& operator++() {
@@ -173,7 +178,7 @@ class UniformGridEnvironment : public Environment {
     }
 
    private:
-    /// The 27 neighbor boxes that will be searched for simulation objects
+    /// The 27 neighbor boxes that will be searched for agents
     const FixedSizeVector<const Box*, 27>& neighbor_boxes_;
     /// The box that shall be considered to iterate over for finding simulation
     /// objects
@@ -212,7 +217,8 @@ class UniformGridEnvironment : public Environment {
     kHigh    /**< The closest 26  neighboring boxes */
   };
 
-  UniformGridEnvironment(Adjacency adjacency = kHigh) : adjacency_(adjacency) {}
+  explicit UniformGridEnvironment(Adjacency adjacency = kHigh)
+      : adjacency_(adjacency) {}
 
   UniformGridEnvironment(UniformGridEnvironment const&) = delete;
   void operator=(UniformGridEnvironment const&) = delete;
@@ -232,32 +238,32 @@ class UniformGridEnvironment : public Environment {
     has_grown_ = false;
   }
 
-  struct AssignToBoxesFunctor : public Functor<void, SimObject*, SoHandle> {
-    AssignToBoxesFunctor(UniformGridEnvironment* grid) : grid_(grid) {}
+  struct AssignToBoxesFunctor : public Functor<void, Agent*, AgentHandle> {
+    explicit AssignToBoxesFunctor(UniformGridEnvironment* grid) : grid_(grid) {}
 
-    void operator()(SimObject* sim_object, SoHandle soh) override {
-      const auto& position = sim_object->GetPosition();
+    void operator()(Agent* agent, AgentHandle ah) override {
+      const auto& position = agent->GetPosition();
       auto idx = grid_->GetBoxIndex(position);
       auto box = grid_->GetBoxPointer(idx);
-      box->AddObject(soh, &(grid_->successors_), grid_);
-      sim_object->SetBoxIdx(idx);
+      box->AddObject(ah, &(grid_->successors_), grid_);
+      agent->SetBoxIdx(idx);
     }
 
    private:
     UniformGridEnvironment* grid_ = nullptr;
   };
 
-  /// Updates the grid, as simulation objects may have moved, added or deleted
+  /// Updates the grid, as agents may have moved, added or deleted
   void Update() override {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    if (rm->GetNumSimObjects() != 0) {
+    if (rm->GetNumAgents() != 0) {
       Clear();
       timestamp_++;
 
       auto inf = Math::kInfinity;
       std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-      CalcSimDimensionsAndLargestSimObject(&tmp_dim, &largest_object_size_);
+      CalcSimDimensionsAndLargestAgent(&tmp_dim, &largest_object_size_);
       RoundOffGridDimensions(tmp_dim);
 
       auto los = ceil(largest_object_size_);
@@ -312,37 +318,37 @@ class UniformGridEnvironment : public Environment {
 
       successors_.reserve();
 
-      // Assign simulation objects to boxes
+      // Assign agents to boxes
       AssignToBoxesFunctor functor(this);
-      rm->ApplyOnAllElementsParallelDynamic(1000, functor);
+      rm->ForEachAgentParallel(1000, functor);
       auto* param = Simulation::GetActive()->GetParam();
-      if (param->bound_space_) {
-        int min = param->min_bound_;
-        int max = param->max_bound_;
+      if (param->bound_space) {
+        int min = param->min_bound;
+        int max = param->max_bound;
         threshold_dimensions_ = {min, max};
       }
 
-      if (param->thread_safety_mechanism_ ==
+      if (param->thread_safety_mechanism ==
           Param::ThreadSafetyMechanism::kAutomatic) {
         nb_mutex_builder_->Update();
       }
     } else {
-      // There are no sim objects in this simulation
+      // There are no agents in this simulation
       auto* param = Simulation::GetActive()->GetParam();
 
       bool uninitialized = boxes_.size() == 0;
-      if (uninitialized && param->bound_space_) {
-        // Simulation has never had any simulation objects
-        // Initialize grid dimensions with `Param::min_bound_` and
-        // `Param::max_bound_`
+      if (uninitialized && param->bound_space) {
+        // Simulation has never had any agents
+        // Initialize grid dimensions with `Param::min_bound` and
+        // `Param::max_bound`
         // This is required for the DiffusionGrid
-        int min = param->min_bound_;
-        int max = param->max_bound_;
+        int min = param->min_bound;
+        int max = param->max_bound;
         grid_dimensions_ = {min, max, min, max, min, max};
         threshold_dimensions_ = {min, max};
         has_grown_ = true;
       } else if (!uninitialized) {
-        // all simulation objects have been removed in the last iteration
+        // all agents have been removed in the last iteration
         // grid state remains the same, but we have to set has_grown_ to false
         // otherwise the DiffusionGrid will attempt to resize
         has_grown_ = false;
@@ -351,8 +357,8 @@ class UniformGridEnvironment : public Environment {
             "UniformGridEnvironment",
             "You tried to initialize an empty simulation without bound space. "
             "Therefore we cannot determine the size of the simulation space. "
-            "Please add simulation objects, or set Param::bound_space_, "
-            "Param::min_bound_, and Param::max_bound_.");
+            "Please add agents, or set Param::bound_space, "
+            "Param::min_bound, and Param::max_bound.");
       }
     }
   }
@@ -425,7 +431,7 @@ class UniformGridEnvironment : public Environment {
 
   /// This method iterates over all elements. Iteration is performed in
   /// Z-order of boxes. There is no particular order for elements inside a box.
-  void IterateZOrder(Functor<void, const SoHandle&>& callback) override {
+  void IterateZOrder(Functor<void, const AgentHandle&>& callback) override {
     UpdateBoxZOrder();
     for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
       auto it = zorder_sorted_boxes_[i].second->begin();
@@ -440,8 +446,8 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
-  void ForEachNeighbor(const std::function<void(const SimObject*)>& lambda,
-                       const SimObject& query) const {
+  void ForEachNeighbor(const std::function<void(const Agent*)>& lambda,
+                       const Agent& query) const {
     auto idx = query.GetBoxIdx();
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
@@ -451,16 +457,16 @@ class UniformGridEnvironment : public Environment {
 
     NeighborIterator ni(neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
-      auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
-      if (sim_object != &query) {
-        lambda(sim_object);
+      auto* agent = rm->GetAgent(*ni);
+      if (agent != &query) {
+        lambda(agent);
       }
       ++ni;
     }
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
-  ///             simulation object.
+  ///             agent.
   ///
   /// In simulation code do not use this function directly. Use the same
   /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
@@ -468,8 +474,8 @@ class UniformGridEnvironment : public Environment {
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
   ///
-  void ForEachNeighbor(Functor<void, const SimObject*, double>& lambda,
-                       const SimObject& query) override {
+  void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
+                       const Agent& query) override {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -481,7 +487,7 @@ class UniformGridEnvironment : public Environment {
     NeighborIterator ni(neighbor_boxes, timestamp_);
     const unsigned batch_size = 64;
     uint64_t size = 0;
-    SimObject* sim_objects[batch_size] __attribute__((aligned(64)));
+    Agent* agents[batch_size] __attribute__((aligned(64)));
     double x[batch_size] __attribute__((aligned(64)));
     double y[batch_size] __attribute__((aligned(64)));
     double z[batch_size] __attribute__((aligned(64)));
@@ -498,19 +504,19 @@ class UniformGridEnvironment : public Environment {
       }
 
       for (uint64_t i = 0; i < size; ++i) {
-        lambda(sim_objects[i], squared_distance[i]);
+        lambda(agents[i], squared_distance[i]);
       }
       size = 0;
     };
 
     while (!ni.IsAtEnd()) {
-      auto soh = *ni;
+      auto ah = *ni;
       // increment iterator already here to hide memory latency
       ++ni;
-      auto* sim_object = rm->GetSimObjectWithSoHandle(soh);
-      if (sim_object != &query) {
-        sim_objects[size] = sim_object;
-        const auto& pos = sim_object->GetPosition();
+      auto* agent = rm->GetAgent(ah);
+      if (agent != &query) {
+        agents[size] = agent;
+        const auto& pos = agent->GetPosition();
         x[size] = pos[0];
         y[size] = pos[1];
         z[size] = pos[2];
@@ -524,7 +530,7 @@ class UniformGridEnvironment : public Environment {
   }
 
   /// @brief      Applies the given lambda to each neighbor or the specified
-  ///             simulation object.
+  ///             agent.
   ///
   /// In simulation code do not use this function directly. Use the same
   /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
@@ -534,8 +540,8 @@ class UniformGridEnvironment : public Environment {
   /// @param[in]  squared_radius  The search radius squared
   ///
   void ForEachNeighborWithinRadius(
-      const std::function<void(const SimObject*)>& lambda,
-      const SimObject& query, double squared_radius) {
+      const std::function<void(const Agent*)>& lambda, const Agent& query,
+      double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -547,12 +553,12 @@ class UniformGridEnvironment : public Environment {
     NeighborIterator ni(neighbor_boxes, timestamp_);
     while (!ni.IsAtEnd()) {
       // Do something with neighbor object
-      auto* sim_object = rm->GetSimObjectWithSoHandle(*ni);
-      if (sim_object != &query) {
-        const auto& neighbor_position = sim_object->GetPosition();
+      auto* agent = rm->GetAgent(*ni);
+      if (agent != &query) {
+        const auto& neighbor_position = agent->GetPosition();
         if (this->WithinSquaredEuclideanDistance(squared_radius, position,
                                                  neighbor_position)) {
-          lambda(sim_object);
+          lambda(agent);
         }
       }
       ++ni;
@@ -608,27 +614,26 @@ class UniformGridEnvironment : public Environment {
   /// @tparam     TUint32          A uint32 type (could also be cl_uint)
   /// @tparam     TInt32           A int32 type (could be cl_int)
   ///
-  template <typename TUint32, typename TInt32>
-  void GetGridInfo(TUint32* box_length, std::array<TUint32, 3>* num_boxes_axis,
-                   std::array<TInt32, 3>* grid_dimensions) {
-    box_length[0] = box_length_;
-    (*num_boxes_axis)[0] = num_boxes_axis_[0];
-    (*num_boxes_axis)[1] = num_boxes_axis_[1];
-    (*num_boxes_axis)[2] = num_boxes_axis_[2];
-    (*grid_dimensions)[0] = grid_dimensions_[0];
-    (*grid_dimensions)[1] = grid_dimensions_[2];
-    (*grid_dimensions)[2] = grid_dimensions_[4];
+  void GetGridInfo(uint32_t* box_length, uint32_t* num_boxes_axis,
+                   int32_t* grid_dimensions) {
+    *box_length = box_length_;
+    num_boxes_axis[0] = num_boxes_axis_[0];
+    num_boxes_axis[1] = num_boxes_axis_[1];
+    num_boxes_axis[2] = num_boxes_axis_[2];
+    grid_dimensions[0] = grid_dimensions_[0];
+    grid_dimensions[1] = grid_dimensions_[2];
+    grid_dimensions[2] = grid_dimensions_[4];
   }
 
   // NeighborMutex ---------------------------------------------------------
 
   /// This class ensures thread-safety for the InPlaceExecutionContext for the
   /// case
-  /// that a simulation object modifies its neighbors.
+  /// that an agent modifies its neighbors.
   class GridNeighborMutexBuilder : public Environment::NeighborMutexBuilder {
    public:
     /// The NeighborMutex class is a synchronization primitive that can be
-    /// used to protect sim_objects data from being simultaneously accessed by
+    /// used to protect agents data from being simultaneously accessed by
     /// multiple threads.
     class GridNeighborMutex
         : public Environment::NeighborMutexBuilder::NeighborMutex {
@@ -725,14 +730,14 @@ class UniformGridEnvironment : public Environment {
   /// Implements linked list - array index = key, value: next element
   ///
   ///     // Usage
-  ///     SoHandle current_element = ...;
-  ///     SoHandle next_element = successors_[current_element];
-  SimObjectVector<SoHandle> successors_;
+  ///     AgentHandle current_element = ...;
+  ///     AgentHandle next_element = successors_[current_element];
+  AgentVector<AgentHandle> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
   /// The size of the largest object in the simulation
   double largest_object_size_ = 0;
-  /// Cube which contains all simulation objects
+  /// Cube which contains all agents
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
   std::array<int32_t, 6> grid_dimensions_;
   /// Stores the min / max dimension value that need to be surpassed in order
@@ -742,7 +747,7 @@ class UniformGridEnvironment : public Environment {
   ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
 
   /// Holds instance of NeighborMutexBuilder.
-  /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism_`
+  /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism`
   /// is set to `kAutomatic`
   std::unique_ptr<GridNeighborMutexBuilder> nb_mutex_builder_ =
       std::make_unique<GridNeighborMutexBuilder>();
@@ -760,7 +765,7 @@ class UniformGridEnvironment : public Environment {
     }
     if (max_gd > threshold_dimensions_[1]) {
       Log::Info("UniformGridEnvironment",
-                "Your simulation objects are getting near the edge of "
+                "Your agents are getting near the edge of "
                 "the simulation space. Be aware of boundary conditions that "
                 "may come into play!");
       threshold_dimensions_[1] = max_gd;

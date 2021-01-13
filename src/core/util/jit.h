@@ -24,7 +24,7 @@
 
 namespace bdm {
 
-class SimObject;
+class Agent;
 
 /// Iterates over all entries in `TClassTable` and returns a vector of candidate
 /// TClass* that match the given class name.

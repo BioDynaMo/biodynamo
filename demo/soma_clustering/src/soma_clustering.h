@@ -37,10 +37,10 @@ enum Substances { kSubstance0, kSubstance1 };
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
     // Create an artificial bound for the simulation space
-    param->bound_space_ = true;
-    param->min_bound_ = 0;
-    param->max_bound_ = 250;
-    param->run_mechanical_interactions_ = false;
+    param->bound_space = true;
+    param->min_bound = 0;
+    param->max_bound = 250;
+    param->unschedule_default_operations = {"mechanical forces"};
   };
 
   Simulation simulation(argc, argv, set_param);
@@ -64,19 +64,19 @@ inline int Simulate(int argc, const char** argv) {
   auto construct = [&dg, &cell_type](const Double3& position) {
     auto* cell = new MyCell(position, cell_type);
     cell->SetDiameter(10);
-    cell->AddBiologyModule(new Secretion(dg));
-    cell->AddBiologyModule(new Chemotaxis(dg, 5));
+    cell->AddBehavior(new Secretion(dg));
+    cell->AddBehavior(new Chemotaxis(dg, 5));
     return cell;
   };
 
   // Construct num_cells/2 cells of type 0
-  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
-                                      num_cells / 2, construct);
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
+                                       num_cells / 2, construct);
   // Construct num_cells/2 cells of type 1
   dg = rm->GetDiffusionGrid(kSubstance1);
   cell_type = -1;
-  ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_,
-                                      num_cells / 2, construct);
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
+                                       num_cells / 2, construct);
 
   // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(1000);

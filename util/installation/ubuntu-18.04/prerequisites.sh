@@ -13,7 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-# This script installs the required packages for ubuntu 18.04
+#This script installs the required packages
 if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
@@ -25,11 +25,55 @@ Arguments:
   exit 1
 fi
 
-set -e
-
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
-# use ubuntu-16.04 prerequisites script
-. $BDM_PROJECT_DIR/util/installation/ubuntu-16.04/prerequisites.sh $1
+# Required to add Kitware ppa below
+sudo apt-get update
+sudo apt-get install apt-transport-https
+
+# Add ppa for newer CMake version
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+CODENAME=$(grep -oP '(?<=^UBUNTU_CODENAME=).+' /etc/os-release | tr -d '"')
+REPO="deb https://apt.kitware.com/ubuntu/ ${CODENAME} main"
+sudo apt-add-repository "$REPO"
+
+# Update
+sudo apt-get update
+
+# Install required packages
+sudo apt-get install -y \
+  $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/package_list_required)
+
+if [ -n "${PYENV_ROOT}" ]; then
+  unset PYENV_ROOT
+fi
+
+# If PyEnv is not installed, install it
+if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+  echo "PyEnv was not found. Installing now..."
+  curl https://pyenv.run | bash
+fi
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+
+PYVERS=3.8.0
+
+# If Python $PYVERS is not installed, install it
+if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
+  echo "Python $PYVERS was not found. Installing now..."
+  /usr/bin/env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
+fi
+pyenv shell $PYVERS
+
+# Install optional packages
+if [ $1 == "all" ]; then
+  # this updates pip, but installs the updated version in $HOME/.local/bin
+  PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
+  # Don't install --user: the packages should end up in the PYENV_ROOT directory
+  python -m pip install $PIP_PACKAGES
+
+  sudo apt-get install -y \
+    $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/package_list_extra)
+fi
 
 exit 0

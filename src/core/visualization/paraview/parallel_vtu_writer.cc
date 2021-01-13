@@ -43,7 +43,7 @@ void FixPvtu(const std::string& filename, const std::string& file_prefix,
   std::stringstream new_file;
   auto pos = buffer.find(find);
   if (pos == std::string::npos) {
-    // No sim objects in of this type in this timestep
+    // No agents in of this type in this timestep
     return;
   }
   new_file << buffer.substr(0, pos);
@@ -73,7 +73,7 @@ void ParallelVtuWriter::operator()(
       pvtu_writer->SetInputData(grids[0]);
       pvtu_writer->SetDataModeToBinary();
       pvtu_writer->SetEncodeAppendedData(false);
-      if (!param->visualization_compress_pv_files_) {
+      if (!param->visualization_compress_pv_files) {
         pvtu_writer->SetCompressorTypeToNone();
       }
       pvtu_writer->Write();
@@ -86,7 +86,7 @@ void ParallelVtuWriter::operator()(
       vtu_writer->SetInputData(grids[i]);
       vtu_writer->SetDataModeToBinary();
       vtu_writer->SetEncodeAppendedData(false);
-      if (!param->visualization_compress_pv_files_) {
+      if (!param->visualization_compress_pv_files) {
         vtu_writer->SetCompressorTypeToNone();
       }
       vtu_writer->Write();

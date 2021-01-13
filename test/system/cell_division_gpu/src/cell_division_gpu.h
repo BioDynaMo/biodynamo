@@ -44,7 +44,6 @@ inline void ExpectArrayNear(const Double3& actual, const Double3& expected,
   }
 }
 
-
 inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
                     uint64_t cells_per_dim) {
   std::cout << "Running simulation on ";
@@ -55,18 +54,18 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
         break;
       case kOpenCl:
         std::cout << "GPU (OpenCL)\n";
-        param->compute_target_ = "opencl";
+        param->compute_target = "opencl";
         break;
       case kCuda:
         std::cout << "GPU (CUDA)\n";
-        param->compute_target_ = "cuda";
+        param->compute_target = "cuda";
         break;
     }
   };
 
   Simulation simulation("cell_division_gpu", set_param);
   auto* rm = simulation.GetResourceManager();
-  rm->Clear();
+  rm->ClearAgents();
 
 // We need to give every test the same seed for the RNG, because in the cell
 // division, random numbers are used. Within a single executable these numbers
@@ -79,7 +78,7 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
     cell->SetMass(1.0);
-    cell->AddBiologyModule(new GrowDivide(30.05, 5000, {gAllEventIds}));
+    cell->AddBehavior(new GrowthDivision(30.05, 5000));
     return cell;
   };
 
@@ -89,7 +88,7 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
       double y_pos = y * 20.0;
       for (size_t z = 0; z < cells_per_dim; z++) {
         auto new_simulation_object = construct({x_pos, y_pos, z * 20.0});
-        rm->push_back(new_simulation_object);
+        rm->AddAgent(new_simulation_object);
       }
     }
   }

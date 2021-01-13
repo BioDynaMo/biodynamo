@@ -42,9 +42,9 @@ enum Substances { kSubstance };
 We bound our space to keep things simple.
 
 ```cpp
-param->bound_space_ = true;
-param->min_bound_ = -100;
-param->max_bound_ = 100;
+param->bound_space = true;
+param->min_bound = -100;
+param->max_bound = 100;
 ```
 
 ### 3. Create a cell
@@ -57,7 +57,7 @@ auto construct = [](const Double3& position) {
   cell->SetDiameter(10);
   return cell;
 };
-ModelInitializer::CreateCellsRandom(param->min_bound_, param->max_bound_, 1,
+ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
                                     construct);
 ```
 

@@ -19,6 +19,15 @@
 
 namespace bdm {
 
+TEST(MathArray, DefaultConstructor) {
+  MathArray<double, 3> a = {1, 2, 3};
+  a = MathArray<double, 3>();
+
+  EXPECT_NEAR(0.0, a[0], abs_error<double>::value);
+  EXPECT_NEAR(0.0, a[1], abs_error<double>::value);
+  EXPECT_NEAR(0.0, a[2], abs_error<double>::value);
+}
+
 TEST(MathArray, element_access) {
   MathArray<double, 4> real_vector{0, 1, 2, 3};
 

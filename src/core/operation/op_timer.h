@@ -23,7 +23,8 @@ namespace bdm {
 
 /// \brief Decorator for `Operations` to measure runtime
 template <typename TOp>
-struct OpTimer {
+class OpTimer {
+ public:
   explicit OpTimer(std::string timer_msg) : timer_msg_(timer_msg) {}
   explicit OpTimer(std::string timer_msg, const TOp& op)
       : timer_msg_(timer_msg), operation_(op) {}
@@ -32,7 +33,7 @@ struct OpTimer {
   void operator()(Container* cells, uint16_t numa_node, uint16_t type_idx) {
     auto* param = Simulation::GetActive()->GetParam();
     auto* agg = Simulation::GetActive()->GetScheduler()->GetOpTimes();
-    if (param->statistics_) {
+    if (param->statistics) {
       Timing timer(timer_msg_, agg);
       operation_(cells, numa_node, type_idx);
     } else {

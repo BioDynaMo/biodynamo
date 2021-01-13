@@ -42,7 +42,7 @@ inline int Simulate(int argc, const char** argv) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(diameter);
     // Add the "grow and divide" behavior to each cell
-    cell->AddBiologyModule(new GrowDivide());
+    cell->AddBehavior(new GrowthDivision());
     return cell;
   };
   ModelInitializer::Grid3D(cells_per_dim, spacing, construct);

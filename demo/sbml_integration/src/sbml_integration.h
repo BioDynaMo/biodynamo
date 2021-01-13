@@ -36,15 +36,12 @@ namespace bdm {
 // Define my custom cell, which extends Cell by adding an extra
 // data member s1_.
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+  BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
   explicit MyCell(const Double3& position) : Base(position) {}
-
-  /// Default event constructor
-  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
+  virtual ~MyCell() {}
 
   void SetS1(double s1) { s1_ = s1; }
   int GetS1() const { return s1_; }
@@ -53,26 +50,24 @@ class MyCell : public Cell {
   double s1_ = 100;
 };
 
-// Define SbmlModule to simulate intracellular chemical reaction network.
-struct SbmlModule : public BaseBiologyModule {
-  BDM_BM_HEADER(SbmlModule, BaseBiologyModule, 1)
+// Define SbmlBehavior to simulate intracellular chemical reaction network.
+class SbmlBehavior : public Behavior {
+  BDM_BEHAVIOR_HEADER(SbmlBehavior, Behavior, 1)
 
-  SbmlModule(const std::string& sbml_file, const rr::SimulateOptions& opt)
-      : BaseBiologyModule(gNullEventId, gNullEventId) {
+ public:
+  SbmlBehavior() {}
+  SbmlBehavior(const std::string& sbml_file, const rr::SimulateOptions& opt) {
     Initialize(sbml_file, opt);
   }
 
-  SbmlModule(const SbmlModule& other) {
-    auto other_sbml_bm = bdm_static_cast<const SbmlModule*>(&other);
-    Initialize(other_sbml_bm->sbml_file_, other_sbml_bm->initial_options_);
-    result_ = other_sbml_bm->result_;
+  SbmlBehavior(const SbmlBehavior& other) {
+    auto other_sbml_behavior = bdm_static_cast<const SbmlBehavior*>(&other);
+    Initialize(other_sbml_behavior->sbml_file_,
+               other_sbml_behavior->initial_options_);
+    result_ = other_sbml_behavior->result_;
   }
 
-  virtual ~SbmlModule() { delete rr_; }
-
-  // SbmlModule is not copied for any event in this example
-  SbmlModule(const Event& event, BaseBiologyModule* other, uint64_t new_oid = 0)
-      : BaseBiologyModule(event, other, new_oid) {}
+  virtual ~SbmlBehavior() { delete rr_; }
 
   void Initialize(const std::string& sbml_file,
                   const rr::SimulateOptions& opt) {
@@ -92,8 +87,8 @@ struct SbmlModule : public BaseBiologyModule {
     result_.resize(opt.steps, 4);
   }
 
-  void Run(SimObject* so) override {
-    if (auto* cell = static_cast<MyCell*>(so)) {
+  void Run(Agent* agent) override {
+    if (auto* cell = static_cast<MyCell*>(agent)) {
       auto i = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
       rr_->getIntegrator()->integrate(i * dt_, dt_);
       // FIXME model time not the same as
@@ -151,7 +146,7 @@ inline void AddToPlot(TMultiGraph* mg, const ls::Matrix<double>* result) {
   mg->Draw("AL C C");
 }
 
-inline void PlotSbmlModules(const char* filename) {
+inline void PlotSbmlBehaviors(const char* filename) {
   // setup plot
   TCanvas c;
   c.SetGrid();
@@ -159,12 +154,12 @@ inline void PlotSbmlModules(const char* filename) {
   TMultiGraph* mg = new TMultiGraph();
   mg->SetTitle("Gillespie;Timestep;Concentration");
 
-  Simulation::GetActive()->GetResourceManager()->ApplyOnAllElements(
-      [&](SimObject* so) {
-        auto* cell = static_cast<MyCell*>(so);
-        const auto& bms = cell->GetAllBiologyModules();
-        if (bms.size() == 1) {
-          AddToPlot(mg, &static_cast<SbmlModule*>(bms[0])->GetResult());
+  Simulation::GetActive()->GetResourceManager()->ForEachAgent(
+      [&](Agent* agent) {
+        auto* cell = static_cast<MyCell*>(agent);
+        const auto& behaviour = cell->GetAllBehaviors();
+        if (behaviour.size() == 1) {
+          AddToPlot(mg, &static_cast<SbmlBehavior*>(behaviour[0])->GetResult());
         }
       });
 
@@ -192,7 +187,7 @@ inline int Simulate(int argc, const char** argv) {
   opt.steps = 100;
 
   auto set_param = [&](Param* param) {
-    param->simulation_time_step_ = opt.duration / opt.steps;
+    param->simulation_time_step = opt.duration / opt.steps;
   };
 
   Simulation simulation(&opts, set_param);
@@ -210,10 +205,10 @@ inline int Simulate(int argc, const char** argv) {
     auto* cell = new MyCell();
     cell->SetPosition(position);
     cell->SetDiameter(10);
-    cell->AddBiologyModule(new SbmlModule(sbml_file, opt));
+    cell->AddBehavior(new SbmlBehavior(sbml_file, opt));
     return cell;
   };
-  ModelInitializer::CreateCellsRandom(0, 200, num_cells, construct);
+  ModelInitializer::CreateAgentsRandom(0, 200, num_cells, construct);
 
   // Run simulation
   auto start = Timing::Timestamp();
@@ -221,7 +216,7 @@ inline int Simulate(int argc, const char** argv) {
   auto stop = Timing::Timestamp();
   std::cout << "RUNTIME " << (stop - start) << std::endl;
 
-  PlotSbmlModules("sbml-modules.svg");
+  PlotSbmlBehaviors("sbml-behaviors.svg");
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;

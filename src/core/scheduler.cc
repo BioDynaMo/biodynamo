@@ -12,19 +12,19 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/scheduler.h"
 #include <chrono>
 #include <string>
-
+#include <utility>
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
-#include "core/operation/displacement_op.h"
+#include "core/operation/mechanical_forces_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/visualization_op.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
-#include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/simulation_backup.h"
 #include "core/util/log.h"
@@ -34,7 +34,7 @@ namespace bdm {
 
 Scheduler::Scheduler() {
   auto* param = Simulation::GetActive()->GetParam();
-  backup_ = new SimulationBackup(param->backup_file_, param->restore_file_);
+  backup_ = new SimulationBackup(param->backup_file, param->restore_file);
   if (backup_->RestoreEnabled()) {
     restore_point_ = backup_->GetSimulationStepsFromBackup();
   }
@@ -43,12 +43,8 @@ Scheduler::Scheduler() {
   // Operations are scheduled in the following order (sub categorated by their
   // operation implementation type, so that actual order may vary)
   std::vector<std::string> default_op_names = {
-      "update run displacement",
-      "bound space",
-      "biology module",
-      "displacement",
-      "discretization",
-      "distribute run displacement info",
+      "update staticness", "bound space",    "behavior",
+      "mechanical forces", "discretization", "propagate staticness",
       "diffusion"};
 
   std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
@@ -58,13 +54,42 @@ Scheduler::Scheduler() {
   // ```
   //  SetUpOps() <-- (1)
   //  RunScheduledOps() <-- rebalance numa domains
-  //  TearDownOps() <-- indexing with SoHandles is different than at (1)
+  //  TearDownOps() <-- indexing with AgentHandles is different than at (1)
   // ```
   // Also, must be done before TearDownIteration, because that introduces new
-  // sim objects that are not yet in the environment (which load balancing
+  // agents that are not yet in the environment (which load balancing
   // relies on)
   std::vector<std::string> post_scheduled_ops_names = {
       "load balancing", "tear down iteration", "visualize"};
+
+  protected_op_names_ = {
+      "update staticness",  "behavior",
+      "discretization",     "distribute run displacment info",
+      "set up iteration",   "update environment",
+      "tear down iteration"};
+
+  auto disabled_op_names =
+      Simulation::GetActive()->GetParam()->unschedule_default_operations;
+  std::vector<std::vector<std::string>*> all_op_names;
+  all_op_names.push_back(&pre_scheduled_ops_names);
+  all_op_names.push_back(&default_op_names);
+  all_op_names.push_back(&post_scheduled_ops_names);
+
+  // Remove operations listed in `Param::unschedule_default_operations` from the
+  // to-be-scheduled operations, as long as they are non-protected
+  for (auto* op_list : all_op_names) {
+    for (auto op_name_iter = op_list->begin();
+         op_name_iter != op_list->end();) {
+      if (std::find(disabled_op_names.begin(), disabled_op_names.end(),
+                    *op_name_iter) != disabled_op_names.end() &&
+          std::find(protected_op_names_.begin(), protected_op_names_.end(),
+                    *op_name_iter) == protected_op_names_.end()) {
+        op_name_iter = op_list->erase(op_name_iter);
+      } else {
+        op_name_iter++;
+      }
+    }
+  }
 
   // Schedule the default operations
   for (auto& def_op : default_op_names) {
@@ -79,13 +104,9 @@ Scheduler::Scheduler() {
     ScheduleOp(NewOperation(def_op), OpType::kPostSchedule);
   }
 
-  protected_op_names_ = {
-      "update run displacement", "biology module",
-      "discretization",          "distribute run displacment info",
-      "set up iteration",        "update environment",
-      "tear down iteration"};
-
-  GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
+  if (!GetOps("visualize").empty()) {
+    GetOps("visualize")[0]->GetImplementation<VisualizationOp>()->Initialize();
+  }
   ScheduleOps();
 }
 
@@ -137,7 +158,7 @@ void Scheduler::UnscheduleOp(Operation* op) {
 
   // Check if the requested operation is even scheduled
   bool not_in_scheduled_ops = true;
-  ForAllOperations([&](Operation* scheduled_op) {
+  ForEachOperation([&](Operation* scheduled_op) {
     if (op == scheduled_op) {
       not_in_scheduled_ops = false;
     }
@@ -153,9 +174,9 @@ void Scheduler::UnscheduleOp(Operation* op) {
   unschedule_ops_.push_back(op);
 }
 
-std::vector<std::string> Scheduler::GetListOfScheduledSimObjectOps() const {
+std::vector<std::string> Scheduler::GetListOfScheduledAgentOps() const {
   std::vector<std::string> list;
-  for (auto* op : scheduled_sim_object_ops_) {
+  for (auto* op : scheduled_agent_ops_) {
     list.push_back(op->name_);
   }
   return list;
@@ -189,14 +210,14 @@ std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
   return ret;
 }
 
-struct RunAllScheduledOps : Functor<void, SimObject*, SoHandle> {
-  RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
+struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
+  explicit RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
     sim_ = Simulation::GetActive();
   }
 
-  void operator()(SimObject* so, SoHandle) override {
-    sim_->GetExecutionContext()->Execute(so, scheduled_ops_);
+  void operator()(Agent* agent, AgentHandle) override {
+    sim_->GetExecutionContext()->Execute(agent, scheduled_ops_);
   }
 
   Simulation* sim_;
@@ -204,7 +225,7 @@ struct RunAllScheduledOps : Functor<void, SimObject*, SoHandle> {
 };
 
 void Scheduler::SetUpOps() {
-  ForAllScheduledOperations([&](Operation* op) {
+  ForEachScheduledOperation([&](Operation* op) {
     if (total_steps_ % op->frequency_ == 0) {
       op->SetUp();
     }
@@ -212,7 +233,7 @@ void Scheduler::SetUpOps() {
 }
 
 void Scheduler::TearDownOps() {
-  ForAllScheduledOperations([&](Operation* op) {
+  ForEachScheduledOperation([&](Operation* op) {
     if (total_steps_ % op->frequency_ == 0) {
       op->TearDown();
     }
@@ -231,22 +252,21 @@ void Scheduler::RunScheduledOps() {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
-  auto batch_size = param->scheduling_batch_size_;
+  auto batch_size = param->scheduling_batch_size;
 
   SetUpOps();
 
-  // Run the sim object operations
-  std::vector<Operation*> sim_object_ops;
-  for (auto* op : scheduled_sim_object_ops_) {
+  // Run the agent operations
+  std::vector<Operation*> agent_ops;
+  for (auto* op : scheduled_agent_ops_) {
     if (total_steps_ % op->frequency_ == 0) {
-      sim_object_ops.push_back(op);
+      agent_ops.push_back(op);
     }
   }
-  RunAllScheduledOps functor(sim_object_ops);
+  RunAllScheduledOps functor(agent_ops);
 
-  Timing::Time("sim object ops", [&]() {
-    rm->ApplyOnAllElementsParallelDynamic(batch_size, functor);
-  });
+  Timing::Time("agent ops",
+               [&]() { rm->ForEachAgentParallel(batch_size, functor); });
 
   // Run the column-wise operations
   for (auto* op : scheduled_standalone_ops_) {
@@ -267,6 +287,10 @@ void Scheduler::RunPostScheduledOps() {
 }
 
 void Scheduler::Execute() {
+  auto* param = Simulation::GetActive()->GetParam();
+  if (param->show_simulation_step) {
+    std::cout << "Time step: " << total_steps_ << std::endl;
+  }
   ScheduleOps();
 
   RunPreScheduledOps();
@@ -280,7 +304,7 @@ void Scheduler::Backup() {
   auto* param = Simulation::GetActive()->GetParam();
   if (backup_->BackupEnabled() &&
       duration_cast<seconds>(Clock::now() - last_backup_).count() >=
-          param->backup_interval_) {
+          param->backup_interval) {
     last_backup_ = Clock::now();
     backup_->Backup(total_steps_);
   }
@@ -318,15 +342,15 @@ void Scheduler::Initialize() {
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
-  if (param->bound_space_) {
+  if (param->bound_space) {
     auto* bound_space = NewOperation("bound space");
-    rm->ApplyOnAllElementsParallel(*bound_space);
+    rm->ForEachAgentParallel(*bound_space);
     delete bound_space;
   }
   env->Update();
   int lbound = env->GetDimensionThresholds()[0];
   int rbound = env->GetDimensionThresholds()[1];
-  rm->ApplyOnAllDiffusionGrids([&](DiffusionGrid* dgrid) {
+  rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
     // Create data structures, whose size depend on the env dimensions
     dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
     // Initialize data structures with user-defined values
@@ -346,10 +370,10 @@ void Scheduler::ScheduleOps() {
 
     // Enable GPU operation implementations (if available) if CUDA or OpenCL
     // flags are set
-    if (param->compute_target_ == "cuda" &&
+    if (param->compute_target == "cuda" &&
         op->IsComputeTargetSupported(kCuda)) {
       op->SelectComputeTarget(kCuda);
-    } else if (param->compute_target_ == "opencl" &&
+    } else if (param->compute_target == "opencl" &&
                op->IsComputeTargetSupported(kOpenCl)) {
       op->SelectComputeTarget(kOpenCl);
     } else {
@@ -368,7 +392,7 @@ void Scheduler::ScheduleOps() {
         if (op->IsStandalone()) {
           scheduled_standalone_ops_.push_back(op);
         } else {
-          scheduled_sim_object_ops_.push_back(op);
+          scheduled_agent_ops_.push_back(op);
         }
     }
 
@@ -382,8 +406,8 @@ void Scheduler::ScheduleOps() {
 
     // Lists of operations that should be considered for unscheduling
     std::vector<std::vector<Operation*>*> op_lists = {
-        &scheduled_sim_object_ops_, &scheduled_standalone_ops_,
-        &pre_scheduled_ops_, &post_scheduled_ops_};
+        &scheduled_agent_ops_, &scheduled_standalone_ops_, &pre_scheduled_ops_,
+        &post_scheduled_ops_};
 
     for (auto* op_list : op_lists) {
       for (auto it2 = op_list->begin(); it2 != op_list->end(); ++it2) {

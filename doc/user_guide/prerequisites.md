@@ -24,7 +24,7 @@ keywords:
 This page lists the prerequisite packages that need to be installed in order to build correctly BioDynaMo.
 BioDynaMo provides also an automated procedure to install all the needed libraries.
 
-## Ubuntu 16.04, 18.04 and 20.04
+## Ubuntu 18.04 and 20.04
 
 ### Required Packages
 
@@ -190,8 +190,7 @@ sudo yum install -y libxml2-devel
 
 ## MacOS
 
-Currently we only support macOS installations of BioDynaMo using Homebrew.
-But first, before doing anything else, install Xcode (from the App Store) and the command line tools,
+Install Xcode (from the App Store) and the command line tools,
 using the command ``"xcode-select --install"``.
 
 ### Required Packages

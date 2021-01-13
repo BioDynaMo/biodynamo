@@ -15,29 +15,25 @@
 #ifndef UNIT_CORE_VISUALIZATION_PARAVIEW_ADAPTOR_TEST_H_
 #define UNIT_CORE_VISUALIZATION_PARAVIEW_ADAPTOR_TEST_H_
 
-#include "core/sim_object/cell.h"
+#include "core/agent/cell.h"
 
 namespace bdm {
 namespace paraview_adaptor_test_internal {
 
 class MyCell : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyCell, Cell, 1);
+  BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
   MyCell() {}
-  MyCell(const Event& event, SimObject* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
 
   int dummmy_;
 };
 
 class MyNeuron : public Cell {
-  BDM_SIM_OBJECT_HEADER(MyNeuron, Cell, 1);
+  BDM_AGENT_HEADER(MyNeuron, Cell, 1);
 
  public:
   MyNeuron() {}
-  MyNeuron(const Event& event, SimObject* other, uint64_t new_oid = 0)
-      : Base(event, other, new_oid) {}
 
   int dummmy_;
 };

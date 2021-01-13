@@ -62,7 +62,7 @@ function DetectOs {
 # prints an error message, a list of supported systems; and exits the script.
 # Arguments:
 #   $1 path to biodynamo installation src folder (util/installation)
-#   $2 OS identifier e.g. ubuntu-16.04 (see DetectOs)
+#   $2 OS identifier e.g. ubuntu-18.04 (see DetectOs)
 function CheckOsSupported {
   if [[ $# -ne 2 ]]; then
     echo "ERROR in CheckOsSupported: Wrong number of arguments"
@@ -103,14 +103,14 @@ function CheckTypeInstallSupported {
 # Arguments:
 #   $1 installation type ("all" or "required")
 #   $2 path to biodynamo installation src folder (util/installation)
-#   $3 OS identifier e.g. ubuntu-16.04 (see DetectOs)
+#   $3 OS identifier e.g. ubuntu-18.04 (see DetectOs)
 function CompileListOfPackages {
   local BDM_INSTALL_SRC="$2"
   local LOCAL_OS=$3
 
-  # The list of packages on Ubuntu 18.04 and 20.04 are identical to Ubuntu 16.04
-  if [ $LOCAL_OS == "ubuntu-18.04" ] || [ $LOCAL_OS == "ubuntu-20.04" ]; then
-    LOCAL_OS="ubuntu-16.04"
+  # The list of packages on Ubuntu 20.04 is identical to Ubuntu 18.04
+  if [ $LOCAL_OS == "ubuntu-20.04" ]; then
+    LOCAL_OS="ubuntu-18.04"
   fi
 
   local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$LOCAL_OS

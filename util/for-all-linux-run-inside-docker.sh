@@ -35,7 +35,7 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.."
 
 LOG=$(mktemp)
 
-for system in "ubuntu-16.04" "ubuntu-18.04" "centos-7"; do
+for system in "ubuntu-20.04" "ubuntu-18.04" "centos-7"; do
   $BDM_PROJECT_DIR/util/run-inside-docker.sh $system $@ 2>&1 | tee  -a $LOG
 done
 echo "Log was written to $LOG"

@@ -20,8 +20,8 @@
 #include <unordered_map>
 // BioDynaMo
 #include "core/shape.h"
+#include "core/visualization/paraview/vtk_agents.h"
 #include "core/visualization/paraview/vtk_diffusion_grid.h"
-#include "core/visualization/paraview/vtk_sim_objects.h"
 
 class TClass;
 
@@ -34,7 +34,7 @@ static constexpr char const* kSimulationInfoJson = "simulation_info.json";
 /// ParaView state file. The Json file is generated inside this function
 /// \see GenerateParaviewState
 std::string GenerateSimulationInfoJson(
-    const std::unordered_map<std::string, VtkSimObjects*>& vtk_sim_objects,
+    const std::unordered_map<std::string, VtkAgents*>& vtk_agents,
     const std::unordered_map<std::string, VtkDiffusionGrid*>& vtk_dgrids);
 
 }  // namespace bdm
