@@ -226,7 +226,7 @@ struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
 
 void Scheduler::SetUpOps() {
   ForEachScheduledOperation([&](Operation* op) {
-    if (total_steps_ % op->frequency_ == 0) {
+    if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0) {
       op->SetUp();
     }
   });
@@ -234,7 +234,7 @@ void Scheduler::SetUpOps() {
 
 void Scheduler::TearDownOps() {
   ForEachScheduledOperation([&](Operation* op) {
-    if (total_steps_ % op->frequency_ == 0) {
+    if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0) {
       op->TearDown();
     }
   });
@@ -242,7 +242,7 @@ void Scheduler::TearDownOps() {
 
 void Scheduler::RunPreScheduledOps() {
   for (auto* pre_op : pre_scheduled_ops_) {
-    if (total_steps_ % pre_op->frequency_ == 0) {
+    if (pre_op->frequency_ != 0 && total_steps_ % pre_op->frequency_ == 0) {
       Timing::Time(pre_op->name_, [&]() { (*pre_op)(); });
     }
   }
@@ -259,7 +259,7 @@ void Scheduler::RunScheduledOps() {
   // Run the agent operations
   std::vector<Operation*> agent_ops;
   for (auto* op : scheduled_agent_ops_) {
-    if (total_steps_ % op->frequency_ == 0) {
+    if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0) {
       agent_ops.push_back(op);
     }
   }
@@ -270,7 +270,7 @@ void Scheduler::RunScheduledOps() {
 
   // Run the column-wise operations
   for (auto* op : scheduled_standalone_ops_) {
-    if (total_steps_ % op->frequency_ == 0) {
+    if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0) {
       Timing::Time(op->name_, [&]() { (*op)(); });
     }
   }
@@ -280,7 +280,7 @@ void Scheduler::RunScheduledOps() {
 
 void Scheduler::RunPostScheduledOps() {
   for (auto* post_op : post_scheduled_ops_) {
-    if (total_steps_ % post_op->frequency_ == 0) {
+    if (post_op->frequency_ != 0 && total_steps_ % post_op->frequency_ == 0) {
       Timing::Time(post_op->name_, [&]() { (*post_op)(); });
     }
   }

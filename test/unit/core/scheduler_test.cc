@@ -149,7 +149,7 @@ struct TestOp : public AgentOperationImpl {
 
   void operator()(Agent* agent) override { counter++; }
 
-  uint64_t counter;
+  uint64_t counter = 0;
 };
 
 BDM_REGISTER_OP(TestOp, "test_op", kCpu)
@@ -161,10 +161,14 @@ TEST_F(SchedulerTest, OperationManagement) {
 
   auto* op1 = NewOperation("test_op");
   auto* op2 = NewOperation("test_op");
+  auto* op3 = NewOperation("test_op");
 
   auto* op1_impl = op1->GetImplementation<TestOp>();
   auto* op2_impl = op2->GetImplementation<TestOp>();
+  auto* op3_impl = op3->GetImplementation<TestOp>();
 
+  // op3 must not be executed, because frequency_ is set to 0
+  op3->frequency_ = 0;
   // Change the state of one of the operations
   op1_impl->counter = 1;
 
@@ -172,26 +176,30 @@ TEST_F(SchedulerTest, OperationManagement) {
   auto* scheduler = simulation.GetScheduler();
   scheduler->ScheduleOp(op1);
   scheduler->ScheduleOp(op2);
+  scheduler->ScheduleOp(op3);
   scheduler->Simulate(10);
   EXPECT_EQ(11u, op1_impl->counter);
   EXPECT_EQ(10u, op2_impl->counter);
+  EXPECT_EQ(0u, op3_impl->counter);
 
   // change frequency of operation
   op1->frequency_ = 3;
   scheduler->Simulate(10);
   EXPECT_EQ(14u, op1_impl->counter);
   EXPECT_EQ(20u, op2_impl->counter);
+  EXPECT_EQ(0u, op3_impl->counter);
 
   // remove operation
   scheduler->UnscheduleOp(op2);
   scheduler->Simulate(10);
   EXPECT_EQ(17u, op1_impl->counter);
   EXPECT_EQ(20u, op2_impl->counter);
+  EXPECT_EQ(0u, op3_impl->counter);
 
-  // get non existing and protected operations
   scheduler->Simulate(10);
   EXPECT_EQ(21u, op1_impl->counter);
   EXPECT_EQ(20u, op2_impl->counter);
+  EXPECT_EQ(0u, op3_impl->counter);
 }
 
 struct CpuOp : public AgentOperationImpl {

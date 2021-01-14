@@ -41,7 +41,7 @@ function(GenerateNotebookTarget DEMO_NAME)
       COMMAND mkdir -p ${DEST_DIR}
       COMMAND cp ${DEMO_DIR}/src/*.h ${DEST_DIR}
       COMMAND cp ${DEMO_DIR}/thumbnail.* ${DEST_DIR}
-      COMMAND bash -c "${LAUNCHER} python -E ${SCRIPT} --tutpath=${DEMO_DIR}/src/${DEMO_NAME}.h --outdir=${DEST_DIR}")
+      COMMAND bash -c "${LAUNCHER} ${Python_EXECUTABLE} -E ${SCRIPT} --tutpath=${DEMO_DIR}/src/${DEMO_NAME}.h --outdir=${DEST_DIR}")
   add_dependencies(notebook-${DEMO_NAME} biodynamo)
 endfunction(GenerateNotebookTarget)
 

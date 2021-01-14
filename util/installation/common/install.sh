@@ -57,10 +57,6 @@ if [ "${BDM_OS}" = "ubuntu-18.04" ]; then
   export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
 fi
 
-if [ "${BDM_OS}" = "osx" ]; then
-  export PYENV_ROOT=/usr/local/opt/.pyenv
-fi
-
 # perform a clean release build
 BUILD_DIR=$BDM_PROJECT_DIR/build
 CleanBuild $BUILD_DIR

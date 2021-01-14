@@ -1,6 +1,6 @@
 include(utils)
 
-# Directory in which root will be downloaded first (the path
+# Directory in which ROOT will be downloaded first (the path
 # should be something like <build_dir>/third_party/...).
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
 
@@ -8,11 +8,13 @@ if (APPLE)
   EXECUTE_PROCESS(COMMAND sw_vers "-productVersion"
                   COMMAND cut -d . -f 1-2
                   OUTPUT_VARIABLE MACOS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(DETECTED_OS_VERS ${DETECTED_OS}-${MACOS_VERSION})
+  EXECUTE_PROCESS(COMMAND arch
+                  OUTPUT_VARIABLE MACOS_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(DETECTED_OS_VERS ${DETECTED_OS}-${MACOS_VERSION}-${MACOS_ARCH})
 else()
   set(DETECTED_OS_VERS ${DETECTED_OS})
 endif()
-set(ROOT_TAR_FILE root_v6.22.00_python3_${DETECTED_OS_VERS}.tar.gz)
+set(ROOT_TAR_FILE root_v6.22.06_python3_${DETECTED_OS_VERS}.tar.gz)
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}
   ${ROOT_SOURCE_DIR}/root

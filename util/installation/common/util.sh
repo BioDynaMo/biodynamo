@@ -379,7 +379,7 @@ function EchoFinishInstallation {
 
   EchoInfo "For added convenience, run (in your terminal):"
   EchoNewStep "$addToConfigStr"
-  EchoInfo "to able to just type 'thisbdm', instead of"
+  EchoInfo "to be able to just type 'thisbdm', instead of"
   EchoInfo "'source .../bin/thisbdm.[fi]sh'"
   echo
   EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator,"

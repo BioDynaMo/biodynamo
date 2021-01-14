@@ -8,27 +8,22 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [macos-10.15, macos-11.0]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
+    - name: Select correct xcode for ${{ matrix.os }}
+      if: ${{ matrix.os == 'macos-10.15' }}
+      shell: bash
+      run: |
+        sudo xcode-select -s /Applications/Xcode_11.7.app/Contents/Developer
+ 
     - name: Install dependencies
       run: |
-        brew install libomp open-mpi pyenv wget cmake ninja
-
-    - name: Cache pyenv
-      uses: actions/cache@v2
-      id: pyenv-cache
-      with:
-        path: /usr/local/opt/.pyenv
-        key: ${{ runner.os }}-pyenv-3.8.0
-
-    - name: Install pyenv dependency
-      if: steps.pyenv-cache.outputs.cache-hit != 'true'
-      run: |
-        export PYENV_ROOT=/usr/local/opt/.pyenv
-        eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-        pyenv shell 3.8.0
+        brew install libomp open-mpi python@3.9 wget cmake ninja
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
@@ -75,6 +70,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        MATRIX_CONTEXT: ${{ toJson(matrix) }} # Required when using matrix
       # Notify Slack step should run when the following holds true:
       #   * One of the previous steps 1) succeeded, 2) failed, or 3) was cancelled
       #   * This workflow is triggered from our base repository (i.e. forked PRs don't
