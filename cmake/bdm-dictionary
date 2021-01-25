@@ -63,6 +63,14 @@ if __name__ == '__main__':
 #include <sstream>
 namespace {
 
+void AppendEnvVar(std::stringstream& s, const char* var_name,
+                  const char* suffix) {
+  auto val = std::getenv(var_name);
+  if (val) {
+    s << val << suffix << ":";
+  }
+}
+
 static struct BioDynaMoDictInit {
   BioDynaMoDictInit() {
     std::stringstream idirs; 
@@ -74,7 +82,7 @@ static struct BioDynaMoDictInit {
             include_suffix = ["/include/paraview-5.8", "/include", "/include"]
             cnt = 0
             for e in environmentals: 
-                f.write('    idirs << std::getenv("{0}") << "{1}" << ":";\n'.format(e, include_suffix[cnt]))
+                f.write('    AppendEnvVar(idirs, "{0}", "{1}");\n'.format(e, include_suffix[cnt]))
                 cnt = cnt + 1
             for id in args.include_dirs:
                 AppendPrefix(id, prefixes)
@@ -91,7 +99,7 @@ static struct BioDynaMoDictInit {
             f.write('    bdm::JitHeaders::Register("{0}");\n'.format(RemoveLongestPrefix(h, prefixes)))
 
         f.write("""
-    idirs << std::getenv("ROOT_INCLUDE_PATH");
+    AppendEnvVar(idirs, "ROOT_INCLUDE_PATH", "");
     setenv("ROOT_INCLUDE_PATH", idirs.str().c_str(), true);
   }
 } bdm_dict_initializer;
