@@ -88,7 +88,9 @@ static struct BioDynaMoDictInit {
                 AppendPrefix(id, prefixes)
         else:
             for e in environmentals: 
-              AppendPrefix(os.getenv(e), prefixes)
+                env = os.getenv(e)
+                if env != None:
+                    AppendPrefix(env, prefixes)
             for id in args.include_dirs:
                 id_processed = ReplaceSpecialPaths(id, environmentals) 
                 if id_processed != "":
