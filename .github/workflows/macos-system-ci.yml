@@ -21,12 +21,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Select correct xcode for ${{ matrix.os }}
-      if: ${{ matrix.os == 'macos-10.15' }}
-      shell: bash
-      run: |
-        sudo xcode-select -s /Applications/Xcode_11.7.app/Contents/Developer
-
     - name: Set GHA_BRANCH_NAME
       run: |
         if [ "${{ github.event_name }}" = "push" ]; then

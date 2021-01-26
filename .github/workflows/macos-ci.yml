@@ -15,12 +15,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Select correct xcode for ${{ matrix.os }}
-      if: ${{ matrix.os == 'macos-10.15' }}
-      shell: bash
-      run: |
-        sudo xcode-select -s /Applications/Xcode_12.3.app/Contents/Developer
- 
     - name: Install dependencies
       run: |
         brew install libomp open-mpi python@3.9 wget cmake ninja
