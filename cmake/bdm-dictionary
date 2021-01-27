@@ -33,6 +33,8 @@ def RemoveLongestPrefix(search, prefixes):
 def ReplaceSpecialPaths(include_dir, environmentals):
     for e in environmentals:
         path = os.getenv(e)
+        if path == None:
+            continue
         if not path.endswith("/"):
             path = "{}/".format(path)
         if include_dir.startswith(path):
