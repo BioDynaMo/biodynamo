@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -129,7 +129,8 @@ struct MechanicalForcesOpOpenCL : StandaloneOperationImpl {
       lengths[i] = box.length_;
       i++;
     }
-    grid->GetGridInfo(&box_length, &num_boxes_axis, &grid_dimensions);
+    grid->GetGridInfo(&box_length, num_boxes_axis.data(),
+                      grid_dimensions.data());
 
     // Allocate GPU buffers
     cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,

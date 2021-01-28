@@ -198,7 +198,7 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
   #set(rootmapopts --rootmap=${rootmapname} --rootmap-lib=${libprefix}${dictionary}Dict)
   #---Actual command----------------------------------------
   add_custom_command(OUTPUT ${gensrcdict} ${rootmapname} ${dictionary}_rdict.pcm
-                     COMMAND ${LAUNCHER} ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${gensrcdict} ${rootmapopts} --select=${selectionfile}
+                     COMMAND ${LAUNCHER} ${GENREFLEX_EXECUTABLE} ${headerfiles} -o ${gensrcdict} ${rootmapopts} --select=${selectionfile} --noIncludePaths
                             ${ARG_OPTIONS} ${includedirs} ${definitions}
                      DEPENDS ${headerfiles} ${selectionfile})
 endfunction()

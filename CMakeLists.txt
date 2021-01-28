@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -153,35 +153,50 @@ if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
 endif()
 
-# Check if Python 3.8.0 from PyEnv is installed
-set(pythonvers "3.8.0")
-string(REPLACE "." ";" pythonvers_list ${pythonvers})
-list(GET pythonvers_list 0 pythonvers_major)
-list(GET pythonvers_list 1 pythonvers_minor)
-list(GET pythonvers_list 2 pythonvers_patch)
-if(APPLE)
-  set(ENV{PYENV_ROOT} /usr/local/opt/.pyenv)
+if (APPLE)
+   set(NOPYENV YES)
 endif()
-if (DEFINED ENV{PYENV_ROOT})
-  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
+
+if(NOPYENV)
+   find_package(Python COMPONENTS Interpreter Development)
+   set(pythonvers ${Python_VERSION})
+   if (NOT Python_FOUND)
+      message(FATAL_ERROR "We did not find the Python 3 interpreter. "
+         "Please run ./prerequisites.sh (or \"brew install python@3\") "
+         "again before calling cmake. The Python 3 interpreter "
+         "is required in order to successfully use BioDynaMo.")      
+   endif()
 else()
-  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
-endif()
-set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-if(NOT EXISTS ${Python_LIB_PATH})
-  set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
-endif()
-if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
-  set(PYTHON_FOUND TRUE)
-  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
-  set(Python_LIBRARIES ${Python_LIB_PATH})
-  message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")
-else()
-  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
-    "Please run ./prerequisites.sh again before calling cmake. The Python ${pythonvers} "
-    "interpreter is required in order to successfully use BioDynaMo. "
-    "If you installed PyEnv somewhere other than in your home directory, please "
-    "rerun cmake with -DPython_ROOT_DIR=</path/to/pyenv>/versions/${pythonvers}")
+   # Check if Python 3.8.0 from PyEnv is installed
+   set(pythonvers "3.8.0")
+   string(REPLACE "." ";" pythonvers_list ${pythonvers})
+   list(GET pythonvers_list 0 pythonvers_major)
+   list(GET pythonvers_list 1 pythonvers_minor)
+   list(GET pythonvers_list 2 pythonvers_patch)
+   if(APPLE)
+      set(ENV{PYENV_ROOT} /usr/local/opt/.pyenv)
+   endif()
+   if (DEFINED ENV{PYENV_ROOT})
+      set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
+   else()
+      set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
+   endif()
+   set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+   if(NOT EXISTS ${Python_LIB_PATH})
+      set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
+   endif()
+   if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
+      set(PYTHON_FOUND TRUE)
+      set(Python_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
+      set(Python_LIBRARIES ${Python_LIB_PATH})
+      message(STATUS "Python executable found at: ${Python_EXECUTABLE}")
+   else()
+      message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
+         "Please run ./prerequisites.sh again before calling cmake. The Python ${pythonvers} "
+         "interpreter is required in order to successfully use BioDynaMo. "
+         "If you installed PyEnv somewhere other than in your home directory, please "
+         "rerun cmake with -DPython_ROOT_DIR=</path/to/pyenv>/versions/${pythonvers}.")
+   endif()
 endif()
 
 # Check if OpenMPI is present
@@ -677,6 +692,10 @@ set(cmakedir "$BDMSYS/share/cmake")
 set(configargs ${BDM_CONFIGARGS})
 set(cmakeinvoke "${CMAKE_INVOKE} -G ${CMAKE_GENERATOR}")
 set(omplibs ${OpenMP_CXX_LIBRARIES})
+set(with_pyenv ON)
+if (NOPYENV)
+   set(with_pyenv OFF)
+endif()
 if (DEFINED ENV{PYENV_ROOT})
   set(pyenvroot "$ENV{PYENV_ROOT}")
 else()

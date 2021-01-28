@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,10 +55,6 @@ set -e
 # Test overriding the OS detection for one OS
 if [ "${BDM_OS}" = "ubuntu-18.04" ]; then
   export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
-fi
-
-if [ "${BDM_OS}" = "osx" ]; then
-  export PYENV_ROOT=/usr/local/opt/.pyenv
 fi
 
 # perform a clean release build

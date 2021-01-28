@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -379,7 +379,7 @@ function EchoFinishInstallation {
 
   EchoInfo "For added convenience, run (in your terminal):"
   EchoNewStep "$addToConfigStr"
-  EchoInfo "to able to just type 'thisbdm', instead of"
+  EchoInfo "to be able to just type 'thisbdm', instead of"
   EchoInfo "'source .../bin/thisbdm.[fi]sh'"
   echo
   EchoInfo "${setQuietEnvVarStr} will disable the prompt indicator,"

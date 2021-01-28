@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,10 @@ fi
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
-if [ ! -x "/usr/local/bin/brew" ]; then
+if [ `arch` == "i386" -a ! -x "/usr/local/bin/brew" ]; then
+   echo "First install the Homebrew macOS package manager from https://brew.sh"
+   exit 1
+elif [ `arch` == "arm64" -a ! -x "/opt/homebrew/bin/brew" ]; then
    echo "First install the Homebrew macOS package manager from https://brew.sh"
    exit 1
 fi
@@ -37,30 +40,15 @@ if [ ! -x "/usr/bin/git" ]; then
    exit 1
 fi
 
-brew update
-brew style
-brew update-reset
-
 # Install and upgrade required packages
 brew install \
   $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_required) || true
-brew upgrade cmake || true
-
-# Install Python 3.8.0 environment
-PYVERS=3.8.0
-export PYENV_ROOT=/usr/local/opt/.pyenv
-eval "$(pyenv init -)"
-if [ ! -f  "$PYENV_ROOT/versions/$PYVERS/lib/libpython3.8.dylib" ]; then
-   echo "Python $PYVERS was not found. Installing now..."
-   /usr/bin/env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
-fi
-pyenv shell $PYVERS
 
 # Install the optional packages
 if [ $1 == "all" ]; then
     PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
     # Don't install --user: the packages should end up in the PYENV_ROOT directory
-    python -m pip install $PIP_PACKAGES
+    python3.9 -m pip install $PIP_PACKAGES
     brew install \
       $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_extra) || true
 fi

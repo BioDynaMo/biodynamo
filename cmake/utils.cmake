@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -164,6 +164,10 @@ function(install_inside_build)
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             GLOB "*.h" "*.cl" "*.py"
             )
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            ${CMAKE_SOURCE_DIR}/third_party/omp/omp.h
+            )
 
     # Copy cli files
     add_copy_directory(copy_files_bdm
@@ -290,8 +294,13 @@ function(install_inside_build)
     endif()
 
     if (test)
-      message("-------------------------")
-      message(              ${CMAKE_SOURCE_DIR}/test/unit)
+      add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/test/unit
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/unit
+            GLOB "*.h"
+            )
+      # gtest includes cannot be copied using this methiod, because the files
+      # don't exist yet. See install step of gtest
       add_copy_directory(copy_files_bdm
               ${CMAKE_SOURCE_DIR}/test/unit/
               DESTINATION ${CMAKE_INSTALL_ROOT}/share/test

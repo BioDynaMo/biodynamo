@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ be done statically. In order to enable the automatic detection, please run prere
 endif()
 
 execute_process(
-     COMMAND ${PYTHON_EXECUTABLE} util/version/generate_version_files.py ${GIT_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}
+     COMMAND ${Python_EXECUTABLE} util/version/generate_version_files.py ${GIT_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}
              ${PROJECT_VERSION} ${CMAKE_SOURCE_DIR}/.git
      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 

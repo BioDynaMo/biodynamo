@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env python3
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,44 +14,102 @@
 # -----------------------------------------------------------------------------
 
 # This script generates BioDynaMo dictionaries
+import argparse
+import os
 
-if [ $# -lt 2 ]; then
-    echo "Wrong number of arguments"
-    echo "Usage: bdm-code-generation DICTIONARY BDM_CONFIG [CXX_FLAGS] -h header1.h [header2.h ...]"
-    echo "   DICTIONARY file name of the biodynamo dictionary that gets generated"
-    echo "              (e.g., my-sim_bdm_dict.cc)"
-    echo "   HEADERS    at least one header file containing the biodynamo definitions"
-    exit
-fi
+def AppendPrefix(prefix, prefixes):
+    if prefix.endswith("/"):
+        prefixes.append(prefix)
+    else:
+        prefixes.append("{}/".format(prefix))
 
-DICT=$1
-shift
-HEADERS=$@
+def RemoveLongestPrefix(search, prefixes):
+    lengths = [len(prefix) for prefix in prefixes if search.startswith(prefix)]
+    if lengths:
+        return search[max(lengths):] 
+    else:
+        return search
 
-cat <<- EOF > $DICT
+def ReplaceSpecialPaths(include_dir, environmentals):
+    for e in environmentals:
+        path = os.getenv(e)
+        if path == None:
+            continue
+        if not path.endswith("/"):
+            path = "{}/".format(path)
+        if include_dir.startswith(path):
+            return 'std::getenv("{0}") << "/{1}"'.format(e, include_dir[len(path):])
+    return '"{}"'.format(include_dir)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='bdm-dictionary',
+        description='This script generates the biodynamo c++ dictionary file.',
+        epilog='')
+    
+    parser.add_argument('--output', action='store', type=str, required=True, help='Filename of the bdm dictionary that will be generated.')
+    parser.add_argument('--out-of-source', action='store_true', help='Generate bdm dictionary for an out-of-source build. e.g. a simulation.')
+    parser.add_argument('--include-dirs', nargs='+', type=str, required=True, help='At least one directory that contains the header files.')
+    parser.add_argument('--headers', nargs='+', type=str, required=True, help='At least one header file containing biodynamo definitions.')
+
+    args = parser.parse_args()
+
+    with open(args.output, "w") as f:
+        f.write("""
 // BioDynaMo dictionary.
 // This file was generated.
 // Do NOT change it. 
 // Changes will be lost the next time this file is generated.
 
 #include "core/util/jit.h"
-
+#include <cstdlib>
+#include <sstream>
 namespace {
+
+void AppendEnvVar(std::stringstream& s, const char* var_name,
+                  const char* suffix) {
+  auto val = std::getenv(var_name);
+  if (val) {
+    s << val << suffix << ":";
+  }
+}
 
 static struct BioDynaMoDictInit {
   BioDynaMoDictInit() {
-EOF
+    std::stringstream idirs; 
+""")
 
-for header in "$@"; do
-  echo "    bdm::JitHeaders::Register(\"${header}\");" >> $DICT
-done
+        prefixes = []
+        environmentals = ["ParaView_DIR", "ROOTSYS", "BDMSYS"]
+        if not args.out_of_source:
+            include_suffix = ["/include/paraview-5.8", "/include", "/include"]
+            cnt = 0
+            for e in environmentals: 
+                f.write('    AppendEnvVar(idirs, "{0}", "{1}");\n'.format(e, include_suffix[cnt]))
+                cnt = cnt + 1
+            for id in args.include_dirs:
+                AppendPrefix(id, prefixes)
+        else:
+            for e in environmentals: 
+                env = os.getenv(e)
+                if env != None:
+                    AppendPrefix(env, prefixes)
+            for id in args.include_dirs:
+                id_processed = ReplaceSpecialPaths(id, environmentals) 
+                if id_processed != "":
+                  AppendPrefix(id, prefixes)
+                  f.write('    idirs << {0} << ":";\n'.format(id_processed))
+        
+        for h in args.headers:
+            f.write('    bdm::JitHeaders::Register("{0}");\n'.format(RemoveLongestPrefix(h, prefixes)))
 
-
-cat <<- EOF >> $DICT
+        f.write("""
+    AppendEnvVar(idirs, "ROOT_INCLUDE_PATH", "");
+    setenv("ROOT_INCLUDE_PATH", idirs.str().c_str(), true);
   }
 } bdm_dict_initializer;
 
 }
 
-EOF
+  
+""")
 

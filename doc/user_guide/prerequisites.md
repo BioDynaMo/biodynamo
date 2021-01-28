@@ -188,16 +188,22 @@ sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
 sudo yum install -y libxml2-devel
 ```
 
-## MacOS
+## macOS
 
-Install Xcode (from the App Store) and the command line tools,
-using the command ``"xcode-select --install"``.
+Requirements to build on macOS are:
+
+ * A 64-bit Intel CPU or Apple Silicon CPU
+ * macOS Catalina (10.15) or higher
+ * Command Line Tools (CLT) for Xcode: `xcode-select --install`,  
+    [developer.apple.com/downloads](https://developer.apple.com/downloads) or [Xcode](https://itunes.apple.com/us/app/xcode/id497799835)
+ * An up to date [Homebrew](https://brew.sh) instalation (MacPorts and Fink are not officially supported)
+ * A Bourne-compatible shell for installation (e.g. `bash` or `zsh`)
 
 ### Required Packages
 
  * **libomp**: Development files for OpenMP (API for multiprocessor programming)
  * **open-mpi**: Development files for OpenMP (API for multiprocessor programming)
- * **pyenv**: Virtual Python environment
+ * **python@3.9**: Python interpreter
  * **wget**: Retrieves files from the web
  * **cmake**: Set of tools for automate building, testing of software
  * **ninja**: Ninja is a small build system with a focus on speed
@@ -215,18 +221,12 @@ using the command ``"xcode-select --install"``.
 
 ```bash
 brew update; brew upgrade
-brew install libomp open-mpi pyenv wget cmake ninja bash
-
-# Install Python 3.8.0 environment
-export PYENV_ROOT=/usr/local/opt/.pyenv
-eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+brew install libomp open-mpi python@3.9 wget cmake ninja bash
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.8.0
-python -m pip install nbformat jupyter metakernel jupyterlab
-brew install doxygen graphviz kcov 
+brew install doxygen graphviz kcov
+python3 -m pip install nbformat jupyter metakernel jupyterlab 
 ```

@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -162,7 +162,6 @@ bool ExistsInIncludePath(const std::string& header) {
   for (auto& dir : include_dirs) {
     fs::path hpath = dir;
     hpath += slash_header;
-    std::cout << "check " << hpath << std::endl;
     if (fs::exists(hpath)) {
       return true;
     }
