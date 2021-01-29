@@ -227,7 +227,7 @@ struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
 void Scheduler::SetUpOps() {
   ForEachScheduledOperation([&](Operation* op) {
     if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0) {
-      op->SetUp();
+      Timing::Time(op->name_, [&]() { op->SetUp(); });
     }
   });
 }
@@ -235,7 +235,7 @@ void Scheduler::SetUpOps() {
 void Scheduler::TearDownOps() {
   ForEachScheduledOperation([&](Operation* op) {
     if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0) {
-      op->TearDown();
+      Timing::Time(op->name_, [&]() { op->TearDown(); });
     }
   });
 }
