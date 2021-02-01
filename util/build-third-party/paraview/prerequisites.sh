@@ -97,16 +97,15 @@ fi
 
 # qt
 if [ -z "$SKIP_QT" ]; then
-  QT_TAR="qt-5-12-10.tar.gz"
+  QT_TAR=qt-$QT_VERSION-$BDM_OS.tar.gz
   mkdir -p $QT_INSTALL_DIR
   QT_TAR_FILE="${QT_INSTALL_DIR}/${QT_TAR}"
-  QT_TAR_FILE_URL="$(DetectOs)/${QT_TAR}"
 
   if [ -n "$BDM_LOCAL_LFS" ]; then
-    tar -zxf "${BDM_LOCAL_LFS}third-party/${QT_TAR_FILE_URL}" -C "$QT_INSTALL_DIR"
+    tar -zxf "${BDM_LOCAL_LFS}third-party/${QT_TAR}" -C "$QT_INSTALL_DIR"
     cd ${QT_INSTALL_DIR}
   else
-    QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE_URL}
+    QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR}
     wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
     cd ${QT_INSTALL_DIR}
     tar -zxf $QT_TAR

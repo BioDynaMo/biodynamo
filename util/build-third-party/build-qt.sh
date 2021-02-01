@@ -13,14 +13,13 @@
 #
 # -----------------------------------------------------------------------------
 
-QT_TAR="qt-5-12-10.tar.gz"
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 
 if [[ $# -ne 0 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
-  This script creates $QT_TAR file.
-  The archive will be stored in $BDM_PROJECT_DIR/build/$QT_TAR
+  This script creates qt.tar.gz file.
+  The archive will be stored in $BDM_PROJECT_DIR/build/
 No Arguments"
   exit 1
 fi
@@ -84,17 +83,17 @@ fi
 
 # # package
 # cd $QT_LIB_PLUGINS_PARENT
-# tar -zcf qt.tar.gz *
+# tar -zcf qt-v5.11.0-$(DetectOs).tar.gz *
 
 # # mv to destination directory
-# mv qt.tar.gz $DEST_DIR
+# mv qt-v5.11.0-$(DetectOs).tar.gz $DEST_DIR
 
 ################################################################################
 
 mkdir -p $QT_INSTALL_DIR
+QT_TAR="qt-v5.12.10-$(DetectOs).tar.gz"
 QT_TAR_FILE="${QT_INSTALL_DIR}/${QT_TAR}"
-QT_TAR_FILE_URL="$(DetectOs)/${QT_TAR}"
-QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE_URL}
+QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR}
 wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
 cd ${QT_INSTALL_DIR}
 tar -zxf $QT_TAR
