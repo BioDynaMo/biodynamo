@@ -12,7 +12,7 @@ the upstream developers. This script essentially avoids modifying SB
 cmake files by replicating multiple macro calls to ``fixup_bundle.apple.py``.
 
 Large portions of this script are adapted from:
-https://gitlab.kitware.com/paraview/common-superbuild/-/blob/master/cmake/scripts/fixup_bundle.apple.py
+https://gitlab.kitware.com/paraview/common-superbuild/cmake/scripts/fixup_bundle.apple.py
 
 Example usage:
 ```
@@ -562,8 +562,7 @@ class Library(object):
             # provide this library instead.
             if loader.executable_path is None:
                 return None
-            paths.append(ref.replace(
-                '@executable_path', loader.executable_path))
+            paths.append(ref.replace('@executable_path', loader.executable_path))
         elif ref.startswith('@loader_path/'):
             paths.append(ref.replace('@loader_path', loader.loader_path))
         elif ref.startswith('@rpath/'):
@@ -577,6 +576,11 @@ class Library(object):
             for ignore in loader.ignores:
                 if ignore.match(ref):
                     return None
+        if ref.startswith('/System/Library/Frameworks/') or \
+           ref.startswith('/usr/lib/'):
+            # These files do not exist on-disk as of macOS 11. This is Apple
+            # magic and assumed to be a system library.
+            return None
         search_path = loader._find_library(ref)
         if os.path.exists(search_path):
             return cls.from_path(os.path.realpath(search_path), parent=loader)
@@ -915,6 +919,8 @@ def _is_excluded(path):
     if path.startswith('/usr/local/lib'):
         return True
     if path.startswith('/usr/local/Cellar'):
+        return True
+    if path.startswith('/opt/homebrew/lib'):
         return True
 
     ## Macports
