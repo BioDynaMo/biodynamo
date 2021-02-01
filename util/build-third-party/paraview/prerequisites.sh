@@ -73,37 +73,34 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
     fi
 
     # update cmake
-    URL="https://cmake.org/files/v3.17/cmake-3.17.0-Linux-x86_64.tar.gz"
-    DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.17.0 1
+    URL="https://cmake.org/files/v3.19/cmake-3.19.3-Linux-x86_64.tar.gz"
+    DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.19.3 1
+    export PATH=$WORKING_DIR/cmake-3.19.3/bin:$PATH
+
+    # pyenv
+    if [ -z "$SKIP_PYENV" ]; then
+      # Install pyenv and python 3.8.0
+      curl https://pyenv.run | bash
+      export PATH="$HOME/.pyenv/bin:$PATH"
+      eval "$(pyenv init -)"
+      env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+    else
+      eval "$(pyenv init -)"
+    fi
+    pyenv shell 3.8.0
 
   else
     brew update --preinstall
-    # We're on Xcode's clang 12 which uses llvm 11, so we'll get the tooling for that version.
-    # On Catalina, when you install Xcode 12 you'll lose SDK 10.15, add that back in manually
-    # using https://github.com/phracker/MacOSX-SDKs. Place it in /Applications/Xcode.app/Contents.
-    # For a map of Xcode to llvm versions, see:
-    # https://en.wikipedia.org/wiki/Xcode#Xcode_7.0_-_12.x_(since_Free_On-Device_Development)
-    brew install bash git cmake ninja swig llvm@11 libomp open-mpi
+    brew install bash git cmake ninja swig python@3.9 libomp open-mpi git-lfs
   fi
 fi
 
-# pyenv
-if [ -z "$SKIP_PYENV" ]; then
-  # Install pyenv and python 3.8.0
-  curl https://pyenv.run | bash
-  export PATH="$HOME/.pyenv/bin:$PATH"
-  eval "$(pyenv init -)"
-  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-else
-  eval "$(pyenv init -)"
-fi
-pyenv shell 3.8.0
-
 # qt
 if [ -z "$SKIP_QT" ]; then
+  QT_TAR="qt-5-12-10.tar.gz"
   mkdir -p $QT_INSTALL_DIR
-  QT_TAR_FILE="${QT_INSTALL_DIR}/qt.tar.gz"
-  QT_TAR_FILE_URL="$(DetectOs)/qt.tar.gz"
+  QT_TAR_FILE="${QT_INSTALL_DIR}/${QT_TAR}"
+  QT_TAR_FILE_URL="$(DetectOs)/${QT_TAR}"
 
   if [ -n "$BDM_LOCAL_LFS" ]; then
     tar -zxf "${BDM_LOCAL_LFS}third-party/${QT_TAR_FILE_URL}" -C "$QT_INSTALL_DIR"
@@ -112,6 +109,6 @@ if [ -z "$SKIP_QT" ]; then
     QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE_URL}
     wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
     cd ${QT_INSTALL_DIR}
-    tar -zxf qt.tar.gz
+    tar -zxf $QT_TAR
   fi
 fi

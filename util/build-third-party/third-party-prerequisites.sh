@@ -112,9 +112,9 @@ EOF'
     export LLVM_CONFIG="/usr/bin/llvm-config-6.0"
   fi
   # update cmake to build ROOT
-  URL="https://cmake.org/files/v3.17/cmake-3.17.3-Linux-x86_64.tar.gz"
-  DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.17.3 1
-  export PATH=$WORKING_DIR/cmake-3.17.3/bin:$PATH
+  URL="https://cmake.org/files/v3.19/cmake-3.19.3-Linux-x86_64.tar.gz"
+  DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.19.3 1
+  export PATH=$WORKING_DIR/cmake-3.19.3/bin:$PATH
 
   # Install pyenv and python 3.8.0
   curl https://pyenv.run | bash
@@ -124,23 +124,7 @@ EOF'
   pyenv shell 3.8.0
 
 else
-  brew install llvm@6
-  brew install swig
-  brew install git
-  brew install ninja
-
-  export CXX=/usr/local/opt/llvm@6/bin/clang++
-  export CC=/usr/local/opt/llvm@6/bin/clang
-
-  export LLVM_CONFIG="/usr/bin/llvm-config-6"
-
   xcode-select --install || true
-  brew install cmake
-
-  # Install pyenv and python 3.6.9
-  curl https://pyenv.run | bash
-  export PATH="$HOME/.pyenv/bin:$PATH"
-  eval "$(pyenv init -)"
-  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.6.9
-  pyenv shell 3.6.9
+  brew update --preinstall
+  brew install bash git cmake ninja swig python@3.9 libomp open-mpi git-lfs
 fi
