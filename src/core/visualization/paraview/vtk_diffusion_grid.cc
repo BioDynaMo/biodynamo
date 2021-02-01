@@ -197,7 +197,7 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
   } else if (boxes_z <= num_pieces_target) {
     piece_boxes_z_last_ = 2;
     piece_boxes_z_ = 1;
-    num_pieces_ = std::max(1ULL, boxes_z - 1);
+    num_pieces_ = std::max<unsigned long long>(1ULL, boxes_z - 1);
   } else {
     auto boxes_per_piece = static_cast<double>(boxes_z) / num_pieces_target;
     piece_boxes_z_ = static_cast<uint64_t>(std::ceil(boxes_per_piece));
