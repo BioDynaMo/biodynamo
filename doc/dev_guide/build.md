@@ -22,8 +22,8 @@ To build BioDynaMo from source execute the following commands:
 <a class="sbox" href= "/docs/userguide/installation/" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Note</b></h4>
-    	<p>If you are a user please follow the installation instructions in our <font color="blue"><u>user guide</u></font>.
-		</p>
+        <p>If you are a user please follow the installation instructions in our <font color="blue"><u>user guide</u></font>.
+        </p>
     </div>
 </a>
 <br>
@@ -56,7 +56,7 @@ Run `./prerequisites.sh --help` to see how to use it.
     	<h4><b>Note</b></h4>
     	<p>On macOS the prerequisites script will use `brew` to install the needed packages.
     If you do not have `brew` on your system, do yourself a favour and install it.
-    Please have a look to the prerequisites page for more details.
+    Please have a look to the <font color="blue"><u>prerequisites</u></font> page for more details.
         </p>
     </div>
 </a>

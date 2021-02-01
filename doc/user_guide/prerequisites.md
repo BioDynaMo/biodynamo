@@ -194,9 +194,9 @@ Requirements to build on macOS are:
 
  * A 64-bit Intel CPU or Apple Silicon CPU
  * macOS Catalina (10.15) or higher
- * Command Line Tools (CLT) for Xcode: `xcode-select --install`,  
-    [developer.apple.com/downloads](https://developer.apple.com/downloads) or [Xcode](https://itunes.apple.com/us/app/xcode/id497799835)
- * An up to date [Homebrew](https://brew.sh) instalation (MacPorts and Fink are not officially supported)
+ * [Xcode](https://itunes.apple.com/us/app/xcode/id497799835) and the Command Line Tools (CLT) for Xcode: `xcode-select --install`  
+    (or from [developer.apple.com/downloads](https://developer.apple.com/downloads))
+ * An up to date [Homebrew](https://brew.sh) instalation (MacPorts and Fink are not supported)
  * A Bourne-compatible shell for installation (e.g. `bash` or `zsh`)
 
 ### Required Packages
