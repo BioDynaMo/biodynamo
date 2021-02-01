@@ -34,31 +34,26 @@ if [ "$(uname)" = "Linux" ]; then
     module load mpi
     . scl_source enable devtoolset-7
     set -e
-  elif [ "$BDM_OS" = "travis-linux" ]; then
-      CC=gcc-5
-      CXX=g++-5
   fi
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+  pyenv shell 3.8.0
 else
   export Qt5_DIR=$WORKING_DIR/qt
   export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
-  export LD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$LD_LIBRARY_PATH
+  export DYLD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$DYLD_LIBRARY_PATH
   # XCode compilers work fine now
-  export CXX=clang++
   export CC=clang
-  export LLVM_CONFIG="/usr/local/opt/llvm@11/bin/llvm-config"
+  export CXX=clang++
 fi
-
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-pyenv shell 3.8.0
 
 # The CMAKE_INSTALL_RPATH will put all the specified paths in all the installed
 # targets (libraries and binaries) (upon make install). Since the relative paths
 # from the ParaView targets are always the same we can set the rpaths to be
 # relative from the ParaView targets (which are located at @loader_path). This
 # makes the ParaView installation portable (as long as we copy Qt with it)
-# DPARAVIEW_DO_UNIX_STYLE_INSTALLS forces CMake to install OSX build similarly
+# -DPARAVIEW_DO_UNIX_STYLE_INSTALLS forces CMake to install OSX build similarly
 # to Linux, and enforces the RPATH (instead of @executable_path/../).
 # The three RPATHS are respectively as follows:
 # 1. ParaView binaries  -> Qt libraries
@@ -72,7 +67,6 @@ BDM_PV_BUILD_CMAKE_ARGS="-GNinja
   -DENABLE_ospray:BOOL=ON
   -DENABLE_ospraymaterials:BOOL=ON
   -DENABLE_paraviewsdk:BOOL=ON
-  -DENABLE_python:BOOL=ON
   -DENABLE_python3:BOOL=ON
   -DENABLE_qt5:BOOL=ON
   -DUSE_SYSTEM_qt5:BOOL=ON
@@ -81,11 +75,9 @@ BDM_PV_BUILD_CMAKE_ARGS="-GNinja
   -DUSE_SYSTEM_python3:BOOL=ON"
 
 if [ "$(uname)" = "Darwin" ]; then
-  BDM_MACOS_PY="$PYENV_ROOT/versions/3.8.0"
+  BDM_MACOS_PY="$(brew --prefix)/bin/python3"
   BDM_PV_BUILD_CMAKE_ARGS="$BDM_PV_BUILD_CMAKE_ARGS
-  -DPYTHON_LIBRARY=$BDM_MACOS_PY/lib/libpython3.8.dylib
-  -DPYTHON_EXECUTABLE=$BDM_MACOS_PY/bin/python3
-  -DPYTHON_INCLUDE_DIR=$BDM_MACOS_PY/include/python3.8
+  -DPYTHON_EXECUTABLE=$BDM_MACOS_PY
   -DPARAVIEW_DO_UNIX_STYLE_INSTALLS:BOOL=ON
   -DCMAKE_MACOSX_RPATH:BOOL=ON
   -DCMAKE_INSTALL_RPATH:STRING=@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib"

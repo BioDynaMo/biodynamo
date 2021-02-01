@@ -36,7 +36,7 @@ if [ "$(uname)" = "Darwin" ]; then
   rm Applications/paraview.app/Contents/MacOS/paraview
   cp bin/paraview Applications/paraview.app/Contents/MacOS
 else
-    cd "$SCRIPT_DIR/build/install"
+  cd "$SCRIPT_DIR/build/install"
 fi
 
 ## tar the install directory

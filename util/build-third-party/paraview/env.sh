@@ -19,14 +19,13 @@
 . "$BDM_PROJECT_DIR/util/installation/common/util.sh"
 
 if [ "$(uname)" = "Darwin" ]; then
-    export PV_SUPERBUILD_VERSION="v5.9.0-RC1"
-    export PV_VERSION="v5.9.0-RC1"
+    export PV_SUPERBUILD_VERSION="v5.9.0"
+    export PV_VERSION="v5.9.0"
 else
-    export PV_SUPERBUILD_VERSION="v5.8.1"
-    export PV_VERSION="v5.8.1"
+    export PV_SUPERBUILD_VERSION="v5.9.0"
+    export PV_VERSION="v5.9.0"
 fi
 export PV_GIT_REPO="https://gitlab.kitware.com/paraview/paraview.git"
-
 
 export BDM_OS=$(DetectOs)
 export QT_INSTALL_DIR="$WORKING_DIR/qt"
