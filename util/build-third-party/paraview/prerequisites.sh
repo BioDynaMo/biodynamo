@@ -89,7 +89,14 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
     fi
     pyenv shell 3.8.0
 
+    BDM_OS_VERS=${BDM_OS}
+    QT_TAR=${BDM_OS_VERS}/qt.tar.gz
+
   else
+    MACOS_VERS=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1-2 | sed -e 's/^[[:space:]]*//'`
+    MACOS_ARCH=`arch`
+    BDM_OS_VERS=${BDM_OS}-${MACOS_VERS}-${MACOS_ARCH}
+    QT_TAR=qt_${QT_VERSION}_${BDM_OS_VERS}.tar.gz
     brew update --preinstall
     brew install bash git cmake ninja swig python@3.9 libomp open-mpi git-lfs
   fi
@@ -97,7 +104,6 @@ fi
 
 # qt
 if [ -z "$SKIP_QT" ]; then
-  QT_TAR=qt-$QT_VERSION-$BDM_OS.tar.gz
   mkdir -p $QT_INSTALL_DIR
   QT_TAR_FILE="${QT_INSTALL_DIR}/${QT_TAR}"
 
