@@ -19,5 +19,5 @@ ENDIF()
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${PARAVIEW_TAR_FILE}
   ${PARAVIEW_SOURCE_DIR}
-  ${${DETECTED_OS}-ParaView}
+  ${${DETECTED_OS_VERS}-ParaView}
 )

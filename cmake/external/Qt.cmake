@@ -18,7 +18,7 @@ ENDIF()
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE}
   ${QT_SOURCE_DIR}
-  ${${DETECTED_OS}-Qt}
+  ${${DETECTED_OS_VERS}-Qt}
 )
 
 # temporal workaround to avoid libprotobuf error for paraview
