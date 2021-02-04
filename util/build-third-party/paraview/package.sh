@@ -35,14 +35,23 @@ if [ "$(uname)" = "Darwin" ]; then
   # It still won't work, it just won't contain any refereces to the source dir.
   rm Applications/paraview.app/Contents/MacOS/paraview
   cp bin/paraview Applications/paraview.app/Contents/MacOS
+
+   MACOS_VERS=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1-2 | sed -e 's/^[[:space:]]*//'`
+   MACOS_ARCH=`arch`
+   BDM_OS_VERS=${BDM_OS}-${MACOS_VERS}-${MACOS_ARCH}
+   PV_TAR=paraview_${PV_VERSION}_${BDM_OS_VERS}_${PV_FLAVOR}.tar.gz
+
 else
   cd "$SCRIPT_DIR/build/install"
+
+  BDM_OS_VERS=${BDM_OS}
+  PV_TAR=paraview_${PV_VERSION}_${BDM_OS_VERS}_${PV_FLAVOR}.tar.gz
 fi
 
 ## tar the install directory
 RESULT_FILE=paraview-$PV_VERSION-$BDM_OS-$PV_FLAVOR.tar.gz
-tar -zcf $RESULT_FILE *
-shasum -a256 ${RESULT_FILE} > ${RESULT_FILE}.sha256
+tar -zcf $PV_TAR *
+shasum -a256 ${PV_TAR} > ${PV_TAR}.sha256
 
 # After untarring the directory tree should like like this:
 # paraview
@@ -52,6 +61,6 @@ shasum -a256 ${RESULT_FILE} > ${RESULT_FILE}.sha256
 #   |-- share
 
 # Step 5: cp to destination directory
-cp $RESULT_FILE $BDM_PROJECT_DIR/build
-cp ${RESULT_FILE}.sha256 $BDM_PROJECT_DIR/build
+cp ${PV_TAR} $BDM_PROJECT_DIR/build
+cp ${PV_TAR}.sha256 $BDM_PROJECT_DIR/build
 
