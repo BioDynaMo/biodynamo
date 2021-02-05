@@ -233,7 +233,7 @@ _source_thisbdm()
   fi    
 
   # paraview versions might be different between OSes
-  local bdm_pv_version='5.8'
+  local bdm_pv_version='5.9'
   if [ "$(uname)" = 'Darwin' ]; then
       bdm_pv_version='5.9'
   fi

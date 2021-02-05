@@ -43,7 +43,7 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.8.0
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
@@ -53,8 +53,8 @@ jobs:
         fi
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-        pyenv shell 3.8.0
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        pyenv shell 3.9.1
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2

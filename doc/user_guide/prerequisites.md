@@ -86,13 +86,13 @@ sudo apt-get install -y curl libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.8.0
+pyenv shell 3.9.1
 python -m pip install nbformat jupyter metakernel jupyterlab
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
@@ -164,13 +164,13 @@ sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sql
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.8.0
+pyenv shell 3.9.1
 python -m pip install nbformat jupyter metakernel jupyterlab
 sudo yum -y install llvm-toolset-7 \
    llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel

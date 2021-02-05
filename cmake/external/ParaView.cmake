@@ -10,11 +10,10 @@ if (APPLE)
    EXECUTE_PROCESS(COMMAND arch
                    OUTPUT_VARIABLE MACOS_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
    SET(DETECTED_OS_VERS ${DETECTED_OS}-${MACOS_VERSION}-${MACOS_ARCH})
-   SET(PARAVIEW_TAR_FILE paraview_v5.9.0_${DETECTED_OS_VERS}_default.tar.gz)
 ELSE()
    SET(DETECTED_OS_VERS ${DETECTED_OS})
-   SET(PARAVIEW_TAR_FILE ${DETECTED_OS_VERS}/paraview-v5.8.0.tar.gz)
 ENDIF()
+SET(PARAVIEW_TAR_FILE paraview_v5.9.0_${DETECTED_OS_VERS}_default.tar.gz)
 
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${PARAVIEW_TAR_FILE}

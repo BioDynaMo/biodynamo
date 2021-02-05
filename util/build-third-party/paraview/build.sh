@@ -23,6 +23,7 @@ cd "$SCRIPT_DIR/build"
 
 # set build environement variables
 if [ "$(uname)" = "Linux" ]; then
+  export Qt5_DIR=$WORKING_DIR/qt
   export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
   export LD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$LD_LIBRARY_PATH
   CC=gcc
@@ -38,7 +39,7 @@ if [ "$(uname)" = "Linux" ]; then
   export PYENV_ROOT="$HOME/.pyenv"
   export PATH="$PYENV_ROOT/bin:$PATH"
   eval "$(pyenv init -)"
-  pyenv shell 3.8.0
+  pyenv shell 3.9.1
 else
   export Qt5_DIR=$WORKING_DIR/qt
   export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
@@ -95,7 +96,6 @@ elif [ "$PV_FLAVOR" = "nvidia-headless" ] && ! [ "$(uname)" = "Darwin" ]; then
     -DENABLE_ospraymaterials:BOOL=OFF \
     -DENABLE_tbb:BOOL=OFF \
     -DENABLE_paraviewsdk:BOOL=ON \
-    -DENABLE_python:BOOL=ON \
     -DENABLE_python3:BOOL=ON \
     -DENABLE_egl:BOOL=ON  \
     -DUSE_SYSTEM_egl:BOOL=ON \
@@ -121,7 +121,7 @@ if ! [ "$(uname)" = "Darwin" ]; then
   cd install
   # For some reason this path is hardcoded in this file, which causes CMake to
   # panic. We just remove it.
-  sed -i "s|${PYENV_ROOT}|\$ENV{USER}/.pyenv|g" lib/cmake/paraview-5.8/vtk/VTK-targets.cmake || true
+  sed -i "s|${PYENV_ROOT}|\$ENV{USER}/.pyenv|g" lib/cmake/paraview-5.9/vtk/VTK-targets.cmake || true
   # Some dependencies could be put into lib64 (e.g. OpenImageDenoise), so we copy
   # it into the lib directory (don't delete lib64, because some CMake files will
   # be referring to that directory)

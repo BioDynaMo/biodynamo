@@ -288,7 +288,7 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/NOTICE
             )
 
-    # BioDynaMo paraview plugin (Apple support when we upgrade to v5.8 on macos)
+    # BioDynaMo paraview plugin
     if(paraview)
       BuildParaViewPlugin()
     endif()

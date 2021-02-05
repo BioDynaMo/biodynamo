@@ -79,15 +79,15 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
 
     # pyenv
     if [ -z "$SKIP_PYENV" ]; then
-      # Install pyenv and python 3.8.0
+      # Install pyenv and python 3.9.1
       curl https://pyenv.run | bash
       export PATH="$HOME/.pyenv/bin:$PATH"
       eval "$(pyenv init -)"
-      env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+      env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
     else
       eval "$(pyenv init -)"
     fi
-    pyenv shell 3.8.0
+    pyenv shell 3.9.1
 
     BDM_OS_VERS=${BDM_OS}
   else

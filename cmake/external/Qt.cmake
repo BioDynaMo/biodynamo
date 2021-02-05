@@ -9,11 +9,10 @@ IF (APPLE)
    EXECUTE_PROCESS(COMMAND arch
                    OUTPUT_VARIABLE MACOS_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
    set(DETECTED_OS_VERS ${DETECTED_OS}-${MACOS_VERSION}-${MACOS_ARCH})
-   set(QT_TAR_FILE qt_v5.12.10_${DETECTED_OS_VERS}.tar.gz)
 ELSE()
    set(DETECTED_OS_VERS ${DETECTED_OS})
-   set(QT_TAR_FILE ${DETECTED_OS_VERS}/qt.tar.gz)
 ENDIF()
+set(QT_TAR_FILE qt_v5.12.10_${DETECTED_OS_VERS}.tar.gz)
 
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE}

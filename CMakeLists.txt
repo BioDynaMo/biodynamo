@@ -124,7 +124,7 @@ if(APPLE)
 endif()
 
 if(UNIX AND NOT APPLE)
-  set(CMAKE_BDM_PVVERSION "5.8")
+  set(CMAKE_BDM_PVVERSION "5.9")
   set(LINUX TRUE)
   add_definitions("-DLINUX")
 endif()
@@ -167,8 +167,8 @@ if(NOPYENV)
          "is required in order to successfully use BioDynaMo.")      
    endif()
 else()
-   # Check if Python 3.8.0 from PyEnv is installed
-   set(pythonvers "3.8.0")
+   # Check if Python 3.9.1 from PyEnv is installed
+   set(pythonvers "3.9.1")
    string(REPLACE "." ";" pythonvers_list ${pythonvers})
    list(GET pythonvers_list 0 pythonvers_major)
    list(GET pythonvers_list 1 pythonvers_minor)
@@ -301,10 +301,8 @@ if(paraview)
     if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
       set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
     endif()
-    message("#### ${CMAKE_BDM_PVVERSION} ${CMAKE_THIRD_PARTY_DIR} ${ParaView_PREFIX_PATH}")
+    ##message("#### ${CMAKE_BDM_PVVERSION} ${CMAKE_THIRD_PARTY_DIR} ${ParaView_PREFIX_PATH}")
     # Check the first time if ParaView exists in the system.
-    # Upgrade to ParaView 5.8 on MacOS will happen as soon as Kitware releases the Python3
-    # compatible binaries
     find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
             PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
     if(${ParaView_FOUND})

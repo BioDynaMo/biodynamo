@@ -153,7 +153,7 @@ function source_thisbdm
     end
 
     # paraview versions might be different between OSes
-    set -l bdm_pv_version '5.8'
+    set -l bdm_pv_version '5.9'
     if test (uname) = 'Darwin'
         set -l bdm_pv_version '5.9'
     end
