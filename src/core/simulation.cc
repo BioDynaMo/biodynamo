@@ -508,7 +508,7 @@ void Simulation::InitializeOutputDir() {
       RemoveDirectoryContents(output_dir_);
     } else {
       Log::Warning(
-          "Simulation::InitializeOutputDir", "Ouput dir (", output_dir_,
+          "Simulation::InitializeOutputDir", "Output dir (", output_dir_,
           ") is not empty. Files will be overriden. This could cause "
           "inconsistent state of (e.g. visualization files). Consider removing "
           "all contents "

@@ -15,7 +15,10 @@
 #include <fstream>
 
 #include "core/agent/cell.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
+#include "core/diffusion/euler_grid.h"
+#include "core/diffusion/runga_kutta_grid.h"
+#include "core/diffusion/stencil_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
 #include "core/substance_initializers.h"
@@ -56,10 +59,10 @@ TEST(DiffusionTest, GridDimensions) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
+  DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 2);
 
   env->Update();
-  d_grid->Initialize(env->GetDimensions());
+  d_grid->Initialize();
 
   auto dims = d_grid->GetDimensions();
 
@@ -84,10 +87,10 @@ TEST(DiffusionTest, UpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 7);
+  DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 7);
 
   env->Update();
-  d_grid->Initialize(env->GetDimensions());
+  d_grid->Initialize();
 
   std::vector<Double3> positions_2;
   positions_2.push_back({-30, -10, -10});
@@ -96,7 +99,7 @@ TEST(DiffusionTest, UpdateGrid) {
 
   env->Update();
 
-  d_grid->Update(env->GetDimensionThresholds());
+  d_grid->Update();
 
   auto d_dims = d_grid->GetDimensions();
 
@@ -121,11 +124,11 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 1);
+  DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 1);
 
   env->Update();
-  d_grid->Initialize(env->GetDimensions());
-  d_grid->Update(env->GetDimensionThresholds());
+  d_grid->Initialize();
+  d_grid->Update();
 
   auto dims = d_grid->GetDimensions();
 
@@ -136,7 +139,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   EXPECT_EQ(140, dims[3]);
   EXPECT_EQ(140, dims[5]);
 
-  d_grid->Update(env->GetDimensionThresholds());
+  d_grid->Update();
 
   dims = d_grid->GetDimensions();
 
@@ -153,18 +156,22 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 // Create a 5x5x5 diffusion grid, with a substance being
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, LeakingEdge) {
-  Simulation simulation(TEST_NAME);
+  auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
 
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
+  DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
-  int lbound = -100;
-  int rbound = 100;
-  d_grid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
+  d_grid->Initialize();
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
     d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
-    d_grid->DiffuseWithLeakingEdge();
+    d_grid->DiffuseWithOpenEdge();
     d_grid->CalculateGradient();
   }
 
@@ -218,12 +225,15 @@ TEST(DiffusionTest, LeakingEdge) {
 // Create a 5x5x5 diffusion grid, with a substance being
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, ClosedEdge) {
-  Simulation simulation(TEST_NAME);
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
+  auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
-  int lbound = -100;
-  int rbound = 100;
-  d_grid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
+  d_grid->Initialize();
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
@@ -282,23 +292,29 @@ TEST(DiffusionTest, ClosedEdge) {
 // Tests if the concentration / gradient values are correctly copied
 // after the env has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
-  Simulation simulation(TEST_NAME);
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.4, 0, 5);
+  auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* param = simulation.param_;
+  DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
-  int lbound = -100;
-  int rbound = 100;
-  d_grid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
+  d_grid->Initialize();
   d_grid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
     d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
-    d_grid->DiffuseWithLeakingEdge();
+    d_grid->DiffuseWithOpenEdge();
     d_grid->CalculateGradient();
   }
 
-  int n_lbound = -140;
-  int n_rbound = 140;
-  d_grid->Update({n_lbound, n_rbound});
+  // Grow grid artificially
+  param->min_bound = -140;
+  param->max_bound = 140;
+  simulation.GetEnvironment()->Update();
+  d_grid->Update();
 
   // Get concentrations and gradients after 100 time steps
   auto conc = d_grid->GetAllConcentrations();
@@ -352,14 +368,19 @@ TEST(DiffusionTest, CopyOldData) {
 // Test if all the data members of the diffusion grid are correctly serialized
 // and deserialzed with I/O
 TEST(DiffusionTest, IOTest) {
-  Simulation simulation(TEST_NAME);
+  auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = -50;
+    param->max_bound = 50;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
   remove(ROOTFILE);
 
-  DiffusionGrid* d_grid = new DiffusionGrid(0, "Kalium", 0.6, 0);
+  StencilGrid* d_grid = new StencilGrid(0, "Kalium", 0.6, 0);
 
   // Create a 100x100x100 diffusion grid with 20 boxes per dimension
-  std::array<int32_t, 6> dimensions = {{-50, 50, -50, 50, -50, 50}};
-  d_grid->Initialize(dimensions);
+  d_grid->Initialize();
   d_grid->SetConcentrationThreshold(42);
   d_grid->SetDecayConstant(0.01);
 
@@ -367,7 +388,7 @@ TEST(DiffusionTest, IOTest) {
   WritePersistentObject(ROOTFILE, "dgrid", *d_grid, "new");
 
   // read back
-  DiffusionGrid* restored_d_grid = nullptr;
+  StencilGrid* restored_d_grid = nullptr;
   GetPersistentObject(ROOTFILE, "dgrid", restored_d_grid);
 
   auto eps = abs_error<double>::value;
@@ -393,7 +414,6 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(11u, restored_d_grid->GetNumBoxesArray()[1]);
   EXPECT_EQ(11u, restored_d_grid->GetNumBoxesArray()[2]);
   EXPECT_EQ(1331u, restored_d_grid->GetNumBoxes());
-  EXPECT_EQ(true, restored_d_grid->IsInitialized());
   EXPECT_EQ(11, restored_d_grid->GetResolution());
 
   remove(ROOTFILE);
@@ -422,30 +442,41 @@ double CalculateAnalyticalSolution(double init, double x, double y, double z,
 TEST(DISABLED_DiffusionTest, WrongParameters) {
   ASSERT_DEATH(
       {
-        DiffusionGrid d_grid(0, "Kalium", 1, 0.5, 51);
-        d_grid.Initialize({{0, 100, 0, 100, 0, 100}});
+        StencilGrid d_grid(0, "Kalium", 1, 0.5, 51);
+        d_grid.Initialize();
       },
       ".*unphysical behavior*");
-}
+}  // namespace bdm
 
 TEST(DiffusionTest, CorrectParameters) {
-  Simulation simulation(TEST_NAME);
-  DiffusionGrid d_grid(0, "Kalium", 1, 0.5, 6);
-  d_grid.Initialize({{0, 100, 0, 100, 0, 100}});
+  auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = 0;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  StencilGrid d_grid(0, "Kalium", 1, 0.5, 6);
+  d_grid.Initialize();
 }
 
 TEST(DiffusionTest, EulerConvergence) {
-  Simulation simulation(TEST_NAME);
-  double diff_coef = 0.5;
-  DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* d_grid8 = new DiffusionGrid(2, "Kalium8", diff_coef, 0, 81);
+  auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
 
-  int l = -100;
-  int r = 100;
-  d_grid2->Initialize({l, r, l, r, l, r});
-  d_grid4->Initialize({l, r, l, r, l, r});
-  d_grid8->Initialize({l, r, l, r, l, r});
+  double diff_coef = 0.5;
+  DiffusionGrid* d_grid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
+  DiffusionGrid* d_grid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
+  DiffusionGrid* d_grid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
+
+  d_grid2->Initialize();
+  d_grid4->Initialize();
+  d_grid8->Initialize();
 
   d_grid2->SetConcentrationThreshold(1e15);
   d_grid4->SetConcentrationThreshold(1e15);
@@ -469,9 +500,9 @@ TEST(DiffusionTest, EulerConvergence) {
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
-    d_grid2->DiffuseEuler();
-    d_grid4->DiffuseEuler();
-    d_grid8->DiffuseEuler();
+    d_grid2->DiffuseWithClosedEdge();
+    d_grid4->DiffuseWithClosedEdge();
+    d_grid8->DiffuseWithClosedEdge();
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
@@ -508,18 +539,21 @@ TEST(DiffusionTest, EulerConvergence) {
 }
 
 TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
-  auto set_param = [](Param* param) { param->diffusion_type = "RK"; };
+  auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_method = "runga-kutta";
+  };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
-  DiffusionGrid* d_grid2 = new DiffusionGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* d_grid4 = new DiffusionGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* d_grid8 = new DiffusionGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* d_grid2 = new RungaKuttaGrid(0, "Kalium1", diff_coef, 0, 21);
+  DiffusionGrid* d_grid4 = new RungaKuttaGrid(1, "Kalium4", diff_coef, 0, 41);
+  DiffusionGrid* d_grid8 = new RungaKuttaGrid(2, "Kalium8", diff_coef, 0, 81);
 
-  int l = -100;
-  int r = 100;
-  d_grid2->Initialize({l, r, l, r, l, r});
-  d_grid4->Initialize({l, r, l, r, l, r});
-  d_grid8->Initialize({l, r, l, r, l, r});
+  d_grid2->Initialize();
+  d_grid4->Initialize();
+  d_grid8->Initialize();
 
   d_grid2->SetConcentrationThreshold(1e15);
   d_grid4->SetConcentrationThreshold(1e15);
@@ -543,9 +577,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
-    d_grid2->RK();
-    d_grid4->RK();
-    d_grid8->RK();
+    d_grid2->DiffuseWithClosedEdge();
+    d_grid4->DiffuseWithClosedEdge();
+    d_grid8->DiffuseWithClosedEdge();
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
@@ -588,6 +622,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
 // Renable this test after this issue has been resolved.
 TEST(DISABLED_DiffusionTest, ModelInitializer) {
   auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = -100;
+    param->max_bound = 100;
     Param::VisualizeDiffusion vd;
     vd.name = "Substance_1";
 
@@ -610,11 +647,9 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   ModelInitializer::InitializeSubstance(kSubstance1,
                                         GaussianBand(mean, sigma, kXAxis));
 
-  int l = -100;
-  int r = 100;
-  rm->GetDiffusionGrid(kSubstance0)->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrid(kSubstance1)->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance0)->Initialize();
+  rm->GetDiffusionGrid(kSubstance1)->Initialize();
+  rm->GetDiffusionGrid(kSubstance2)->Initialize();
   rm->GetDiffusionGrid(kSubstance0)->RunInitializers();
   rm->GetDiffusionGrid(kSubstance1)->RunInitializers();
   rm->GetDiffusionGrid(kSubstance2)->RunInitializers();

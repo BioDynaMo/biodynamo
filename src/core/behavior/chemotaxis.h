@@ -17,7 +17,7 @@
 
 #include "core/agent/cell.h"
 #include "core/behavior/behavior.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {
 

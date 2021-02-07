@@ -92,7 +92,7 @@ struct Param {
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
   NumericalODESolver numerical_ode_solver = NumericalODESolver::kEuler;
 
-  /// Ouput Directory name used to store visualization and other files.\n
+  /// Output Directory name used to store visualization and other files.\n
   /// Path is relative to working directory.\n
   /// Default value: `"output"`\n
   /// TOML config file:
@@ -179,25 +179,24 @@ struct Param {
   ///     max_bound = 100
   double max_bound = 100;
 
-  /// Allow substances to leak out of the simulation space. In this way
-  /// the substance concentration will not be blocked by an artificial border\n
-  /// Default value: `true`\n
+  /// Define the boundary condition of the diffusion grid [open, closed]\n
+  /// Default value: `"open"`\n
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     leaking_edges = true
-  bool leaking_edges = true;
+  ///     diffusion_boundary_condition = "open"
+  std::string diffusion_boundary_condition = "open";
 
   /// A string for determining diffusion type within the simulation space.
-  /// current inputs include "Euler" and Runga Kutta ("RK")
+  /// current inputs include "euler", "stencil" and Runga Kutta ("runga-kutta")
   /// Default value: `"Euler"`\n
   /// TOML config file:
   ///
   ///        [simulation]
-  ///        diffusion_type = <diffusion method>
+  ///        diffusion_method = <diffusion method>
   ///
 
-  std::string diffusion_type = "Euler";
+  std::string diffusion_method = "euler";
 
   /// Calculate the diffusion gradient for each substance.\n
   /// TOML config file:
@@ -561,6 +560,7 @@ struct Param {
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
+  friend class DiffusionTest_CopyOldData_Test;
   static std::unordered_map<ParamGroupUid, std::unique_ptr<ParamGroup>>
       registered_groups_;
   std::unordered_map<ParamGroupUid, ParamGroup*> groups_;

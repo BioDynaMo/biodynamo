@@ -46,7 +46,7 @@
 #include "core/agent/agent_uid.h"
 #include "core/agent/agent_uid_generator.h"
 #include "core/container/agent_uid_map.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/operation/operation.h"
 #include "core/simulation.h"
 #include "core/type_index.h"

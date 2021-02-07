@@ -94,7 +94,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
     box_coord[1] = (floor(y) - grid_dimensions[2]) / box_length;
     box_coord[2] = (floor(z) - grid_dimensions[4]) / box_length;
 
-    auto& num_boxes = dg->GetNumBoxesArray();
+    auto num_boxes = dg->GetNumBoxesArray();
     return box_coord[2] * num_boxes[0] * num_boxes[1] +
            box_coord[1] * num_boxes[0] + box_coord[0];
   });

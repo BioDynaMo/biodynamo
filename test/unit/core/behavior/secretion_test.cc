@@ -13,13 +13,14 @@
 // -----------------------------------------------------------------------------
 
 #include "core/behavior/secretion.h"
+#include "core/diffusion/euler_grid.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
 
-struct TestDiffusionGrid : public DiffusionGrid {
-  TestDiffusionGrid() : DiffusionGrid(0, "TestSubstance", 1, 1) {}
+struct TestDiffusionGrid : public EulerGrid {
+  TestDiffusionGrid() : EulerGrid(0, "TestSubstance", 1, 1) {}
 
   void ChangeConcentrationBy(const Double3& position, double amount) override {
     EXPECT_ARR_NEAR({10, 11, 12}, position);

@@ -54,9 +54,9 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   int counter = 0;
   auto count = [&](DiffusionGrid* dg) { counter++; };
 
-  DiffusionGrid* dgrid_1 = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
-  DiffusionGrid* dgrid_2 = new DiffusionGrid(1, "Natrium", 0.2, 0.1, 1);
-  DiffusionGrid* dgrid_3 = new DiffusionGrid(2, "Calcium", 0.5, 0.1, 1);
+  DiffusionGrid* dgrid_1 = new EulerGrid(0, "Kalium", 0.4, 0, 2);
+  DiffusionGrid* dgrid_2 = new EulerGrid(1, "Natrium", 0.2, 0.1, 1);
+  DiffusionGrid* dgrid_3 = new EulerGrid(2, "Calcium", 0.5, 0.1, 1);
   rm->AddDiffusionGrid(dgrid_1);
   rm->AddDiffusionGrid(dgrid_2);
   rm->AddDiffusionGrid(dgrid_3);
