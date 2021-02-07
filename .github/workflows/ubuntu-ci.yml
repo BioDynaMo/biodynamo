@@ -90,6 +90,9 @@ jobs:
     - name: Style guide checks
       shell: bash
       run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
         wget https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo apt-key add llvm-snapshot.gpg.key
         sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main"

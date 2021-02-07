@@ -102,6 +102,9 @@ jobs:
     - name: Run notebooks
       shell: bash
       run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
         cmake \
           -Dnotebooks=ON \
           -Dsbml=ON \
