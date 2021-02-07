@@ -111,7 +111,7 @@ sudo apt-get install -y kcov
  * **cmake3**: Set of tools for automate building, testing of software
  * **libXt-devel**: Basic library for developing X11
  * **libXext-devel**: Library which contains a handful of X11 extensions
- * **devtoolset-7-gcc**: Compiler suite for C and C++
+ * **devtoolset-8-gcc**: Compiler suite for C and C++
  * **numactl-devel**: Development files for NUMA (simple programming interface to the policy supported by the Linux kernel)
  * **freeglut-devel**: Development files for GLUT (OpenGL Utility Toolkit)
  * **openmpi3-devel**: Development files for OpenMP (API for multiprocessor programming)
@@ -134,10 +134,10 @@ sudo apt-get install -y kcov
 
  * **llvm-toolset-7**: software collection that provides software from the LLVM suite
  * **llvm-toolset-7-clang-tools-extra**: software collection that provides `clang-format` and `clang-tidy`
+ * **llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static**: Modular compiler and toolchain
  * **valgrind**: A suite of tools for debugging and profiling
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
- * **llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static**: Modular compiler and toolchain
  * **libxml2-devel**: Development files for the GNOME XML library
 
 ### Installation
@@ -149,7 +149,7 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install wget cmake3 libXt-devel libXext-devel \
-  devtoolset-7-gcc* numactl-devel \
+  devtoolset-8-gcc* numactl-devel \
   openmpi3-devel freeglut-devel git
 ```
 
@@ -184,7 +184,7 @@ gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
 sudo yum update -y
-sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
+sudo yum install -y llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static
 sudo yum install -y libxml2-devel
 ```
 

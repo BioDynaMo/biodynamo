@@ -85,7 +85,7 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.8.0
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
@@ -95,8 +95,8 @@ jobs:
         fi
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-        pyenv shell 3.8.0
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        pyenv shell 3.9.1
 
     - name: Cache Third Party Packages
       uses: actions/cache@v2
@@ -107,7 +107,7 @@ jobs:
     - name: Build BioDynaMo
       shell: bash
       run: |
-        . scl_source enable devtoolset-7 || true
+        . scl_source enable devtoolset-8 || true
         . /etc/profile.d/modules.sh || true
         module load mpi
         cmake \
@@ -133,8 +133,8 @@ jobs:
       working-directory: build
       run: |
         yum install -y xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
-        . scl_source enable devtoolset-7 || true
-        . scl_source enable llvm-toolset-6.0 || true
+        . scl_source enable devtoolset-8 || true
+        . scl_source enable llvm-toolset-7 || true
         . /etc/profile.d/modules.sh || true
         module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh

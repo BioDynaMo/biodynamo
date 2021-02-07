@@ -70,8 +70,7 @@ order to run the program.
 
 ```bash
 export MESA_GL_VERSION_OVERRIDE=3.3
-. scl_source enable rh-python36
-. scl_source enable devtoolset-7
+. scl_source enable devtoolset-8
 
 . /etc/profile.d/modules.sh
 module load mpi

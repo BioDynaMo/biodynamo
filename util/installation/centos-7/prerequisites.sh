@@ -51,7 +51,7 @@ fi
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
 
-PYVERS=3.8.0
+PYVERS=3.9.1
 
 # If Python $PYVERS is not installed, install it
 if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then

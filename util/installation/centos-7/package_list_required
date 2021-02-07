@@ -1,6 +1,6 @@
 bzip2-devel
 cmake3
-devtoolset-7-gcc*
+devtoolset-8-gcc*
 freeglut-devel
 git
 libXext-devel

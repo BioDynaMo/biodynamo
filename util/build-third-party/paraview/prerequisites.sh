@@ -35,7 +35,7 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
 
       sudo yum install -y centos-release-scl epel-release
       sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm || true
-      sudo yum install -y devtoolset-7-gcc*
+      sudo yum install -y devtoolset-8-gcc*
       sudo yum install -y ninja-build
       sudo yum install -y rsync
 
