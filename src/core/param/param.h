@@ -189,7 +189,7 @@ struct Param {
 
   /// A string for determining diffusion type within the simulation space.
   /// current inputs include "euler", "stencil" and Runga Kutta ("runga-kutta")
-  /// Default value: `"Euler"`\n
+  /// Default value: `"euler"`\n
   /// TOML config file:
   ///
   ///        [simulation]

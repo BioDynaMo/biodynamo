@@ -15,7 +15,10 @@
 #ifndef CORE_DIFFUSION_DIFFUSION_GRID_H_
 #define CORE_DIFFUSION_DIFFUSION_GRID_H_
 
+#include <array>
 #include <functional>
+#include <string>
+#include <vector>
 
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
