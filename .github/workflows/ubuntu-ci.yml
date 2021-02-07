@@ -70,6 +70,7 @@ jobs:
     - name: Build BioDynaMo
       shell: bash
       run: |
+        pyenv shell 3.9.1
         cmake -G Ninja \
           -Dparaview=ON \
           -DCMAKE_BUILD_TYPE=Release \
