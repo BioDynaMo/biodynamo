@@ -76,6 +76,9 @@ jobs:
     - name: Build BioDynaMo
       shell: bash
       run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
         . scl_source enable devtoolset-8 || true
         . /etc/profile.d/modules.sh || true
         module load mpi
