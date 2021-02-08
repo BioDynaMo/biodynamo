@@ -40,8 +40,9 @@ void DiffusionGrid::Initialize() {
   // With adjustment
   //   box_length_: 13.3
   //   data points: {0, 13.3, 26.6, 39.9}
+  auto adjusted_res = resolution_ == 1 ? 2 : resolution_; // avoid division by 0
   box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
-                static_cast<double>(resolution_ - 1);
+                static_cast<double>(adjusted_res - 1);
   // TODO(ahmad): parametrize the minimum box_length
   if (box_length_ <= 1e-15) {
     Log::Fatal("DiffusionGrid::Initialize",
