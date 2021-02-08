@@ -231,6 +231,7 @@ TEST(DiffusionTest, ClosedEdge) {
     param->max_bound = 100;
   };
   Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
   DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
   d_grid->Initialize();
@@ -299,6 +300,7 @@ TEST(DiffusionTest, CopyOldData) {
   };
   Simulation simulation(TEST_NAME, set_param);
   auto* param = simulation.param_;
+  simulation.GetEnvironment()->Update();
   DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
   d_grid->Initialize();
