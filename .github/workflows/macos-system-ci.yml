@@ -81,7 +81,7 @@ jobs:
       run: |
         cmake \
           -Dopencl=OFF \
-          -Dparaview=OFF \
+          -Dparaview=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release
