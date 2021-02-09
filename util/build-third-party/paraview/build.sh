@@ -28,12 +28,12 @@ if [ "$(uname)" = "Linux" ]; then
   export LD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$LD_LIBRARY_PATH
   CC=gcc
   CXX=g++
-  export PATH=$WORKING_DIR/cmake-3.17.0/bin:$PATH
+  export PATH=$WORKING_DIR/cmake-3.19.3/bin:$PATH
   if [ "$BDM_OS" = "centos-7" ]; then
     set +e
     . /etc/profile.d/modules.sh
     module load mpi
-    . scl_source enable devtoolset-7
+    . scl_source enable devtoolset-8
     set -e
   fi
   export PYENV_ROOT="$HOME/.pyenv"

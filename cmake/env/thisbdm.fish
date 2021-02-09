@@ -405,7 +405,7 @@ function source_thisbdm
         if test "$os_id" = 'centos'
             set -gx MESA_GL_VERSION_OVERRIDE "3.3"
             if test -z "$CXX"; and test -z "$CC"
-                . scl_source enable devtoolset-7; or return 1
+                . scl_source enable devtoolset-8; or return 1
             end
 
             . /etc/profile.d/modules.sh; or return 1
@@ -413,7 +413,7 @@ function source_thisbdm
 
             # load llvm 6 required for libroadrunner
             if test -d "$BDMSYS"/third_party/libroadrunner
-                . scl_source enable llvm-toolset-6.0; or return 1
+                . scl_source enable llvm-toolset-7; or return 1
             end
         end
     end

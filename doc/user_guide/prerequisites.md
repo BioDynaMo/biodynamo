@@ -134,7 +134,8 @@ sudo apt-get install -y kcov
 
  * **llvm-toolset-7**: software collection that provides software from the LLVM suite
  * **llvm-toolset-7-clang-tools-extra**: software collection that provides `clang-format` and `clang-tidy`
- * **llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static**: Modular compiler and toolchain
+ * **llvm-toolset-7-llvm-devel**: LLVM developer libraries
+ * **llvm-toolset-7-llvm-static**: LLVM static libraries
  * **valgrind**: A suite of tools for debugging and profiling
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
@@ -172,8 +173,6 @@ PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 ```bash
 pyenv shell 3.9.1
 python -m pip install nbformat jupyter metakernel jupyterlab
-sudo yum -y install llvm-toolset-7 \
-   llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 # SBML integration
 sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
@@ -184,8 +183,9 @@ gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
 sudo yum update -y
-sudo yum install -y llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static
-sudo yum install -y libxml2-devel
+sudo yum install -y doxygen graphviz valgrind freeglut-devel libxml2-devel
+sudo yum install -y llvm-toolset-7 llvm-toolset-7-clang-tools-extra \
+   llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static
 ```
 
 ## macOS
