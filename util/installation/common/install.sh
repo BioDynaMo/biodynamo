@@ -50,6 +50,12 @@ if [ $BDM_OS = "centos-7" ]; then
   . /etc/profile.d/modules.sh
   module load mpi
 fi
+
+if [ "$BDM_OS" != "osx" ]; then
+  export PATH="$HOME/.pyenv/bin:$PATH"
+  eval "$(pyenv init -)"
+  pyenv shell 3.9.1
+fi
 set -e
 
 # Test overriding the OS detection for one OS
