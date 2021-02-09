@@ -163,15 +163,15 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   Spinlock* GetLock() override { return Base::GetLock(); }
 
-  void CriticalRegion(std::vector<Spinlock*>* locks) override {
-    locks->reserve(4);
-    locks->push_back(Agent::GetLock());
-    locks->push_back(mother_->GetLock());
+  void CriticalRegion(std::vector<AgentUid>* uids) override {
+    uids->reserve(4);
+    uids->push_back(GetUid());
+    uids->push_back(mother_.GetUid());
     if (daughter_left_ != nullptr) {
-      locks->push_back(daughter_left_->GetLock());
+      uids->push_back(daughter_left_.GetUid());
     }
     if (daughter_right_ != nullptr) {
-      locks->push_back(daughter_right_->GetLock());
+      uids->push_back(daughter_right_.GetUid());
     }
   }
 

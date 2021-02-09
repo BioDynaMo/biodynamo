@@ -113,7 +113,9 @@ class InPlaceExecutionContext {
   /// Contains unique ids of agents that will be removed at the end of each
   /// iteration.
   std::vector<AgentUid> remove_;
-  std::vector<Spinlock*> locks;
+  std::vector<AgentUid> critical_region_;
+  std::vector<AgentUid> critical_region_2_;
+  std::vector<Spinlock*> locks_;
 
   /// Pointer to new agents
   std::vector<Agent*> new_agents_;

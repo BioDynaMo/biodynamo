@@ -47,7 +47,9 @@ class AgentPointer {
 
   virtual ~AgentPointer() {}
 
-  uint64_t GetUid() const { return uid_; }
+  uint64_t GetUidAsUint64() const { return uid_; }
+
+  AgentUid GetUid() const { return uid_; }
 
   /// Equals operator that enables the following statement `agent_ptr ==
   /// nullptr;`

@@ -61,7 +61,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 
   Spinlock* GetLock() override { return Base::GetLock(); }
 
-  void CriticalRegion(std::vector<Spinlock*>* locks) override;
+  void CriticalRegion(std::vector<AgentUid>* uids) override;
 
   // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *

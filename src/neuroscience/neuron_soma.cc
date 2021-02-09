@@ -128,11 +128,11 @@ const std::vector<AgentPointer<NeuriteElement>>& NeuronSoma::GetDaughters()
   return daughters_;
 }
 
-void NeuronSoma::CriticalRegion(std::vector<Spinlock*>* locks) {
-  locks->reserve(daughters_.size() + 1);
-  locks->push_back(Agent::GetLock());
+void NeuronSoma::CriticalRegion(std::vector<AgentUid>* uids) {
+  uids->reserve(daughters_.size() + 1);
+  uids->push_back(Agent::GetUid());
   for (auto& daughter : daughters_) {
-    locks->push_back(daughter->GetLock());
+    uids->push_back(daughter.GetUid());
   }
 }
 

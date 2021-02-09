@@ -58,15 +58,16 @@ void InPlaceExecutionContext::ThreadSafeAgentUidMap::Insert(
 }
 
 const typename InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type&
-InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](const AgentUid& uid) {
+InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](
+    const AgentUid& uid) {
   static InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type kDefault;
   auto index = uid.GetIndex();
   auto bidx = index / kBatchSize;
   if (bidx >= num_batches_) {
-    Log::Fatal(
-        "ThreadSafeAgentUidMap::operator[]",
-        Concat("AgentUid out of range access: AgentUid: ", uid,
-               ", ThreadSafeAgentUidMap max index ", num_batches_ * kBatchSize));
+    Log::Fatal("ThreadSafeAgentUidMap::operator[]",
+               Concat("AgentUid out of range access: AgentUid: ", uid,
+                      ", ThreadSafeAgentUidMap max index ",
+                      num_batches_ * kBatchSize));
     return kDefault;
   }
 
@@ -184,19 +185,45 @@ void InPlaceExecutionContext::Execute(
 
   if (param->thread_safety_mechanism ==
       Param::ThreadSafetyMechanism::kUserSpecified) {
-    agent->CriticalRegion(&locks);
-    std::sort(locks.begin(), locks.end());
-    for (auto* l : locks) {
-      l->lock();
+    while (true) {
+      critical_region_.clear();
+      critical_region_2_.clear();
+      locks_.clear();
+      agent->CriticalRegion(&critical_region_);
+      std::sort(critical_region_.begin(), critical_region_.end());
+      for (auto uid : critical_region_) {
+        locks_.push_back(GetAgent(uid)->GetLock());
+      }
+      for (auto* l : locks_) {
+        l->lock();
+      }
+      agent->CriticalRegion(&critical_region_2_);
+      std::sort(critical_region_2_.begin(), critical_region_2_.end());
+      bool same = true;
+      if (critical_region_.size() == critical_region_2_.size()) {
+        for (int i = 0; i < critical_region_.size(); ++i) {
+          if (critical_region_[i] != critical_region_2_[i]) {
+            same = false;
+            break;
+          }
+        }
+      } else {
+        same = false;
+      }
+      if (same) {
+        break;
+      }
+      for (auto* l : locks_) {
+        l->unlock();
+      }
     }
     neighbor_cache_.clear();
     for (auto& op : operations) {
       (*op)(agent);
     }
-    for (auto* l : locks) {
+    for (auto* l : locks_) {
       l->unlock();
     }
-    locks.clear();
   } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kAutomatic) {
     auto* nb_mutex_builder = env->GetNeighborMutexBuilder();

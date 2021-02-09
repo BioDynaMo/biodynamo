@@ -150,13 +150,12 @@ class Agent {
   Spinlock* GetLock() { return &lock_; }
 
   /// If the thread-safety mechanism is set to user-specified this function
-  /// will be called before the operations are executed for this simulation
-  /// object.\n
-  /// Subclasses define the critical region by adding the locks of all
+  /// will be called before the operations are executed for this agent.\n
+  /// Subclasses define the critical region by adding the uids of all
   /// agents that must not be processed in parallel. \n
-  /// Don't forget to add the lock of the current agent.\n
+  /// Don't forget to add the uid of the current agent.\n
   /// \see `Param::thread_safety_mechanism`
-  virtual void CriticalRegion(std::vector<Spinlock*>* locks) {}
+  virtual void CriticalRegion(std::vector<AgentUid>* uids) {}
 
   uint32_t GetBoxIdx() const;
 
