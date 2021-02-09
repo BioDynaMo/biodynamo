@@ -4,7 +4,7 @@ clang-tidy
 doxygen
 graphviz
 libxml2-dev
-llvm-6.0
-llvm-6.0-dev
-llvm-6.0-runtime
+llvm-7
+llvm-7-dev
+llvm-7-runtime
 valgrind

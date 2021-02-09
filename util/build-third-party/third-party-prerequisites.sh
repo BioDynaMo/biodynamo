@@ -32,7 +32,7 @@ if [ `uname` = "Linux" ]; then
   BDM_OS=$(DetectOs)
   if [ $BDM_OS = "centos-7" ]; then
 
-    # Add custom repository for llvm-toolset-6.0
+    # Add custom repository for llvm-toolset-7
     sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
 name=Springdale SCL Base 7.6 - x86_64
@@ -57,11 +57,11 @@ EOF'
 
     sudo yum install -y centos-release-scl epel-release
     sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm || true
-    sudo yum install -y devtoolset-7-gcc*
+    sudo yum install -y devtoolset-8-gcc*
     sudo yum install -y ninja-build
 
     # libroadrunner
-    sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
+    sudo yum install -y llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static
     sudo yum install -y ncurses-devel
     sudo yum install -y libxml2-devel
     sudo yum install -y bzip2 bzip2-devel
@@ -71,10 +71,10 @@ EOF'
     sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
       sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 
-    export LLVM_CONFIG="/opt/rh/llvm-toolset-6.0/root/usr/bin/llvm-config"
+    export LLVM_CONFIG="/opt/rh/llvm-toolset-7/root/usr/bin/llvm-config"
     set +e
-    . scl_source enable devtoolset-7
-    . scl_source enable llvm-toolset-6.0
+    . scl_source enable devtoolset-8
+    . scl_source enable llvm-toolset-7
     set -e
     CC=gcc
     CXX=g++
@@ -105,23 +105,23 @@ EOF'
     sudo apt install -y libxt-dev freeglut3-dev
 
     # libroadrunner
-    sudo apt-get install -y llvm-6.0 llvm-6.0-dev llvm-6.0-runtime
+    sudo apt-get install -y llvm-7 llvm-7-dev llvm-7-runtime
     sudo apt-get install -y libbz2-1.0 libbz2-dev zlibc libxml2-dev libz-dev
     sudo apt-get install -y libncurses5-dev
 
-    export LLVM_CONFIG="/usr/bin/llvm-config-6.0"
+    export LLVM_CONFIG="/usr/bin/llvm-config-7"
   fi
   # update cmake to build ROOT
   URL="https://cmake.org/files/v3.19/cmake-3.19.3-Linux-x86_64.tar.gz"
   DownloadTarAndExtract $URL $WORKING_DIR/cmake-3.19.3 1
   export PATH=$WORKING_DIR/cmake-3.19.3/bin:$PATH
 
-  # Install pyenv and python 3.8.0
+  # Install pyenv and python 3.9.1
   curl https://pyenv.run | bash
   export PATH="$HOME/.pyenv/bin:$PATH"
   eval "$(pyenv init -)"
-  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-  pyenv shell 3.8.0
+  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+  pyenv shell 3.9.1
 
 else
   xcode-select --install || true

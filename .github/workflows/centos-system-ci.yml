@@ -59,7 +59,7 @@ jobs:
         yum update -y
         yum install -y sudo curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
-        # remove whole bidynamo repository to catch errors related to paths pointing into the build dir
+        # remove whole BioDynaMo repository to catch errors related to paths pointing into the build dir
         mktemp -d
         find /tmp -iname biodynamo -type d || true
         rm -rf $(find $(mktemp -d)/../* -maxdepth 1 -iname biodynamo -type d 2>/dev/null)
@@ -129,6 +129,9 @@ jobs:
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init -)"
         pyenv shell 3.9.1
+        . scl_source enable devtoolset-8 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
         cmake \
           -Dnotebooks=ON \
           -B build
@@ -139,10 +142,6 @@ jobs:
       working-directory: build
       run: |
         yum install -y xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
-        . scl_source enable devtoolset-8 || true
-        . scl_source enable llvm-toolset-7 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh
         git config --system user.name "Test User"
         git config --system user.email user@test.com
