@@ -18,6 +18,7 @@
 #include "core/agent/cell.h"
 #include "core/behavior/behavior.h"
 #include "core/diffusion/diffusion_grid.h"
+#include "core/resource_manager.h"
 
 namespace bdm {
 
@@ -27,14 +28,18 @@ class Chemotaxis : public Behavior {
 
  public:
   Chemotaxis() {}
-  Chemotaxis(DiffusionGrid* dgrid, double speed)
-      : dgrid_(dgrid), speed_(speed) {}
+  Chemotaxis(std::string substance, double speed)
+      : substance_(substance), speed_(speed) {
+    dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
+        substance);
+  }
 
   virtual ~Chemotaxis() {}
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
     auto* other = bdm_static_cast<Chemotaxis*>(event.existing_behavior);
+    substance_ = other->substance_;
     dgrid_ = other->dgrid_;
     speed_ = other->speed_;
   }
@@ -48,6 +53,7 @@ class Chemotaxis : public Behavior {
   }
 
  private:
+  std::string substance_ = 0;
   DiffusionGrid* dgrid_ = nullptr;
   double speed_;
 };

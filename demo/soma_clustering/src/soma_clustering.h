@@ -58,14 +58,13 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0.1, 20);
   ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0.1, 20);
 
-  auto* dg = rm->GetDiffusionGrid(kSubstance0);
   int cell_type = 1;
 
-  auto construct = [&dg, &cell_type](const Double3& position) {
+  auto construct = [&cell_type](const Double3& position) {
     auto* cell = new MyCell(position, cell_type);
     cell->SetDiameter(10);
-    cell->AddBehavior(new Secretion(dg));
-    cell->AddBehavior(new Chemotaxis(dg, 5));
+    cell->AddBehavior(new Secretion("Substance_0"));
+    cell->AddBehavior(new Chemotaxis("Substance_0", 5));
     return cell;
   };
 
