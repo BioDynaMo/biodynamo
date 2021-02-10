@@ -59,6 +59,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0.1, 20);
 
   int cell_type = 1;
+  std::string substance_name = "Substance_0";
 
   auto construct = [&cell_type](const Double3& position) {
     auto* cell = new MyCell(position, cell_type);
@@ -72,8 +73,8 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
                                        num_cells / 2, construct);
   // Construct num_cells/2 cells of type 1
-  dg = rm->GetDiffusionGrid(kSubstance1);
   cell_type = -1;
+  substance_name = "Substance_1";
   ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
                                        num_cells / 2, construct);
 
