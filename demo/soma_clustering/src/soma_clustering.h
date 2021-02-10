@@ -44,7 +44,6 @@ inline int Simulate(int argc, const char** argv) {
   };
 
   Simulation simulation(argc, argv, set_param);
-  auto* rm = simulation.GetResourceManager();
 
   // Define initial model
   auto* param = simulation.GetParam();
@@ -61,11 +60,11 @@ inline int Simulate(int argc, const char** argv) {
   int cell_type = 1;
   std::string substance_name = "Substance_0";
 
-  auto construct = [&cell_type](const Double3& position) {
+  auto construct = [&cell_type, &substance_name](const Double3& position) {
     auto* cell = new MyCell(position, cell_type);
     cell->SetDiameter(10);
-    cell->AddBehavior(new Secretion("Substance_0"));
-    cell->AddBehavior(new Chemotaxis("Substance_0", 5));
+    cell->AddBehavior(new Secretion(substance_name));
+    cell->AddBehavior(new Chemotaxis(substance_name, 5));
     return cell;
   };
 
