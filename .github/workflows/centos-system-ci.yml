@@ -115,7 +115,7 @@ jobs:
         module load mpi
         cmake \
           -Dparaview=ON \
-          -Dsbml=ON \
+          -Dsbml=OFF \
           -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build

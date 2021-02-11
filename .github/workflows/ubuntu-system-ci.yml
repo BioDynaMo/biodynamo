@@ -81,7 +81,7 @@ jobs:
         key: ${{ env.OSVERS }}-pyenv-3.9.1
 
     - name: Install pyenv dependency
-      #if: steps.pyenv-cache.outputs.cache-hit != 'true'
+      if: steps.pyenv-cache.outputs.cache-hit != 'true'
       run: |
         if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
           curl https://pyenv.run | bash
@@ -107,7 +107,7 @@ jobs:
         pyenv shell 3.9.1
         cmake \
           -Dnotebooks=ON \
-          -Dsbml=ON \
+          -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release --target notebooks
@@ -122,7 +122,7 @@ jobs:
         cmake \
           -Dnotebooks=OFF \
           -Dparaview=ON \
-          -Dsbml=ON \
+          -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --config Release
