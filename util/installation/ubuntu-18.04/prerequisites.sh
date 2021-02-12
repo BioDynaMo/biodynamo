@@ -55,6 +55,7 @@ if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
 fi
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
+pyenv update
 
 PYVERS=3.9.1
 

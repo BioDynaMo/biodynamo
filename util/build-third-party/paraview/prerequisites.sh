@@ -86,6 +86,7 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
       env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
     else
       eval "$(pyenv init -)"
+      pyenv update
     fi
     pyenv shell 3.9.1
 
