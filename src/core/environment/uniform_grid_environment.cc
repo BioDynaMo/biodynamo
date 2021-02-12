@@ -12,15 +12,23 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/util/thread_info.h"
+#include "core/environment/uniform_grid_environment.h"
 
 namespace bdm {
 
-std::atomic<uint64_t> ThreadInfo::thread_counter_;
+using NeighborMutex = Environment::NeighborMutexBuilder::NeighborMutex;
+using GridNeighborMutexBuilder =
+    UniformGridEnvironment::GridNeighborMutexBuilder;
 
-uint64_t ThreadInfo::GetUniversalThreadId() const {
-  thread_local uint64_t kTid = thread_counter_++;
-  return kTid;
+NeighborMutex* GridNeighborMutexBuilder::GetMutex(uint64_t box_idx) {
+  auto* grid = static_cast<UniformGridEnvironment*>(
+      Simulation::GetActive()->GetEnvironment());
+  FixedSizeVector<uint64_t, 27> box_indices;
+  grid->GetMooreBoxIndices(&box_indices, box_idx);
+  thread_local GridNeighborMutex* mutex =
+      new GridNeighborMutex(box_indices, this);
+  mutex->SetMutexIndices(box_indices);
+  return mutex;
 }
 
 }  // namespace bdm
