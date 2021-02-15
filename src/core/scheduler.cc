@@ -348,11 +348,9 @@ void Scheduler::Initialize() {
     delete bound_space;
   }
   env->Update();
-  int lbound = env->GetDimensionThresholds()[0];
-  int rbound = env->GetDimensionThresholds()[1];
   rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
     // Create data structures, whose size depend on the env dimensions
-    dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
+    dgrid->Initialize();
     // Initialize data structures with user-defined values
     dgrid->RunInitializers();
   });

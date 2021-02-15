@@ -20,7 +20,7 @@
 
 #include "Math/DistFunc.h"
 
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {
 

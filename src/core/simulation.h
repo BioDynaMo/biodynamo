@@ -196,6 +196,7 @@ class Simulation {
 
   friend SimulationTest;
   friend ParaviewAdaptorTest;
+  friend class DiffusionTest_CopyOldData_Test;
   friend std::ostream& operator<<(std::ostream& os, Simulation& sim);
 
   BDM_CLASS_DEF_NV(Simulation, 1);

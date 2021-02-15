@@ -205,8 +205,9 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
     piece_boxes_z_last_ = boxes_z - (num_pieces_ - 1) * piece_boxes_z_;
   }
   assert(num_pieces_ > 0);
-  assert(piece_boxes_z_last_ >= 2);
-  assert((num_pieces_ - 1) * piece_boxes_z_ + piece_boxes_z_last_ == boxes_z);
+  // TODO(lukas): revisit assertions, as they cannot hold if running with 1 thread
+  // assert(piece_boxes_z_last_ >= 2);
+  // assert((num_pieces_ - 1) * piece_boxes_z_ + piece_boxes_z_last_ == boxes_z);
 }
 
 // -----------------------------------------------------------------------------

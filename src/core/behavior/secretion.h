@@ -15,26 +15,38 @@
 #ifndef CORE_BEHAVIOR_SECRETION_H_
 #define CORE_BEHAVIOR_SECRETION_H_
 
+#include <string>
+
 #include "core/agent/cell.h"
 #include "core/behavior/behavior.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
+#include "core/resource_manager.h"
 
 namespace bdm {
 
 /// Secrete substance at Agent position
 class Secretion : public Behavior {
-  BDM_BEHAVIOR_HEADER(Secretion, Behavior, 1);
+  BDM_BEHAVIOR_HEADER(Secretion, Behavior, 2);
 
  public:
   Secretion() {}
+  explicit Secretion(std::string substance, double quantity = 1)
+      : substance_(substance), quantity_(quantity) {
+    dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
+        substance);
+  }
+
   explicit Secretion(DiffusionGrid* dgrid, double quantity = 1)
-      : dgrid_(dgrid), quantity_(quantity) {}
+      : dgrid_(dgrid), quantity_(quantity) {
+    substance_ = dgrid->GetSubstanceName();
+  }
 
   virtual ~Secretion() {}
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
     auto* other = bdm_static_cast<Secretion*>(event.existing_behavior);
+    substance_ = other->substance_;
     dgrid_ = other->dgrid_;
     quantity_ = other->quantity_;
   }
@@ -45,6 +57,7 @@ class Secretion : public Behavior {
   }
 
  private:
+  std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
   double quantity_ = 1;
 };

@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/agent/cell.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
 #include "core/simulation.h"
@@ -56,12 +56,10 @@ TEST(DiffusionInitTest, GaussianBand) {
 
   simulation.GetEnvironment()->Update();
 
-  int lbound = param->min_bound;
-  int rbound = param->max_bound;
   auto* dgrid = rm->GetDiffusionGrid(0);
 
   // Create data structures, whose size depend on the grid dimensions
-  dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
+  dgrid->Initialize();
   // Initialize data structures with user-defined values
   dgrid->RunInitializers();
 

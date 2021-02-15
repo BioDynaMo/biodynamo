@@ -24,7 +24,7 @@
 #include <vtkCPDataDescription.h>
 #include <vtkImageData.h>
 // BioDynaMo
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {
 
