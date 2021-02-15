@@ -39,7 +39,7 @@ def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args)
     data = substance.GetPointData().GetArray('Substance Concentration')
     
     if data.GetNumberOfTuples() != params.num_elements:
-        print("ERROR number of diffusion grid elements wrong: expected:", param.num_elements, 
+        print("ERROR number of diffusion grid elements wrong: expected:", params.num_elements, 
                 "actual:", data.GetNumberOfTuples())
         return
     

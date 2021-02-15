@@ -25,6 +25,7 @@
 #include "core/util/type.h"
 #include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
+#include "core/diffusion/euler_grid.h"
 
 #define ROOTFILE "bdmFile.root"
 
@@ -600,8 +601,8 @@ inline void RunIOTest() {
   rm->AddAgent(new B(3.14));
   rm->AddAgent(new B(6.28));
 
-  DiffusionGrid* dgrid_1 = new DiffusionGrid(0, "Kalium", 0.4, 0, 2);
-  DiffusionGrid* dgrid_2 = new DiffusionGrid(1, "Natrium", 0.2, 0.1, 1);
+  DiffusionGrid* dgrid_1 = new EulerGrid(0, "Kalium", 0.4, 0, 2);
+  DiffusionGrid* dgrid_2 = new EulerGrid(1, "Natrium", 0.2, 0.1, 1);
   rm->AddDiffusionGrid(dgrid_1);
   rm->AddDiffusionGrid(dgrid_2);
 

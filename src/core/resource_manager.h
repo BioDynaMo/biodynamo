@@ -46,7 +46,7 @@
 #include "core/agent/agent_uid.h"
 #include "core/agent/agent_uid_generator.h"
 #include "core/container/agent_uid_map.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/operation/operation.h"
 #include "core/simulation.h"
 #include "core/type_index.h"
@@ -154,15 +154,20 @@ class ResourceManager {
       delete search->second;
       diffusion_grids_.erase(search);
     } else {
-      Log::Fatal("ResourceManager::AddDiffusionGrid",
+      Log::Error("ResourceManager::RemoveDiffusionGrid",
                  "You tried to remove a diffusion grid that does not exist.");
     }
   }
 
   /// Return the diffusion grid which holds the substance of specified id
   DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
-    assert(substance_id < diffusion_grids_.size() &&
-           "You tried to access a diffusion grid that does not exist!");
+    if(substance_id >= diffusion_grids_.size()) {
+      Log::Error("DiffusionGrid::GetDiffusionGrid",
+                 "You tried to request diffusion grid '", substance_id,
+                 "', but it does not exist! Make sure that it's the correct id "
+                 "correctly and that the diffusion grid is registered.");
+      return nullptr;
+    }
     return diffusion_grids_.at(substance_id);
   }
 
@@ -176,9 +181,10 @@ class ResourceManager {
         return dg;
       }
     }
-    assert(false &&
-           "You tried to access a diffusion grid that does not exist! "
-           "Did you specify the correct substance name?");
+    Log::Error("DiffusionGrid::GetDiffusionGrid",
+               "You tried to request a diffusion grid named '", substance_name,
+               "', but it does not exist! Make sure that it's spelled "
+               "correctly and that the diffusion grid is registered.");
     return nullptr;
   }
 

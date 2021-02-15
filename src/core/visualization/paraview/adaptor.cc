@@ -137,7 +137,7 @@ void ParaviewAdaptor::Initialize() {
     std::ofstream ofs;
     auto* sim = Simulation::GetActive();
     std::string final_python_script_name =
-        Concat(sim->GetOutputDir(), "/insitu_pipline.py");
+        Concat(sim->GetOutputDir(), "/insitu_pipeline.py");
     ofs.open(final_python_script_name);
     ofs << script;
     ofs.close();

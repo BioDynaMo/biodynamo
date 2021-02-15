@@ -44,7 +44,6 @@ inline int Simulate(int argc, const char** argv) {
   };
 
   Simulation simulation(argc, argv, set_param);
-  auto* rm = simulation.GetResourceManager();
 
   // Define initial model
   auto* param = simulation.GetParam();
@@ -58,14 +57,14 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0.1, 20);
   ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0.1, 20);
 
-  auto* dg = rm->GetDiffusionGrid(kSubstance0);
   int cell_type = 1;
+  std::string substance_name = "Substance_0";
 
-  auto construct = [&dg, &cell_type](const Double3& position) {
+  auto construct = [&cell_type, &substance_name](const Double3& position) {
     auto* cell = new MyCell(position, cell_type);
     cell->SetDiameter(10);
-    cell->AddBehavior(new Secretion(dg));
-    cell->AddBehavior(new Chemotaxis(dg, 5));
+    cell->AddBehavior(new Secretion(substance_name));
+    cell->AddBehavior(new Chemotaxis(substance_name, 5));
     return cell;
   };
 
@@ -73,8 +72,8 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
                                        num_cells / 2, construct);
   // Construct num_cells/2 cells of type 1
-  dg = rm->GetDiffusionGrid(kSubstance1);
   cell_type = -1;
+  substance_name = "Substance_1";
   ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
                                        num_cells / 2, construct);
 

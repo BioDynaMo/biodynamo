@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "core/container/inline_vector.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
@@ -45,26 +45,9 @@ struct DiffusionOp : public StandaloneOperationImpl {
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
       if (env->HasGrown() && !param->bound_space) {
-        Log::Info("DiffusionOp",
-                  "Your agents are getting near the edge of the "
-                  "simulation space. Be aware of boundary conditions that may "
-                  "come into play!");
-        dg->Update(env->GetDimensionThresholds());
+        dg->Update();
       }
-      if (param->diffusion_type == "RK") {
-        if (param->leaking_edges) {
-          dg->RKLeaking();
-        } else {
-          dg->RK();
-        }
-
-      } else {
-        if (param->leaking_edges) {
-          dg->DiffuseEulerLeakingEdge();
-        } else {
-          dg->DiffuseEuler();
-        }
-      }
+      dg->Diffuse();
       if (param->calculate_gradients) {
         dg->CalculateGradient();
       }

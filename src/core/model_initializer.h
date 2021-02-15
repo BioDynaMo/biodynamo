@@ -20,10 +20,14 @@
 #include <vector>
 
 #include "core/container/math_array.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "core/util/random.h"
+
+class EulerGrid;
+class StencilGrid;
+class RungaKuttaGrid;
 
 namespace bdm {
 
@@ -169,15 +173,7 @@ struct ModelInitializer {
   ///
   static void DefineSubstance(size_t substance_id, std::string substance_name,
                               double diffusion_coeff, double decay_constant,
-                              int resolution = 10) {
-    assert(resolution > 0 && "Resolution needs to be a positive integer value");
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    DiffusionGrid* d_grid =
-        new DiffusionGrid(substance_id, substance_name, diffusion_coeff,
-                          decay_constant, resolution);
-    rm->AddDiffusionGrid(d_grid);
-  }
+                              int resolution = 10);
 
   template <typename F>
   static void InitializeSubstance(size_t substance_id, F function) {

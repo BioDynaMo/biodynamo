@@ -35,33 +35,21 @@ inline int Simulate(int argc, const char** argv) {
 
   // Define the substances that cells may secrete
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
-  auto* rm = simulation.GetResourceManager();
-  auto* dgrid = rm->GetDiffusionGrid(kKalium);
 
+  // Create 8 cells in a 2x2x2 grid setup
   auto construct = [&](const Double3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetMass(1.0);
-    Double3 secretion_position = {{50, 50, 50}};
-    if (position == secretion_position) {
-      cell->AddBehavior(new Secretion(dgrid, 4));
-    } else {
-      cell->AddBehavior(new Chemotaxis(dgrid, 0.5));
-    }
+    cell->AddBehavior(new Chemotaxis("Kalium", 0.5));
     return cell;
   };
-  std::vector<Double3> positions;
-  positions.push_back({0, 0, 0});
-  positions.push_back({100, 0, 0});
-  positions.push_back({0, 100, 0});
-  positions.push_back({0, 0, 100});
-  positions.push_back({0, 100, 100});
-  positions.push_back({100, 0, 100});
-  positions.push_back({100, 100, 0});
-  positions.push_back({100, 100, 100});
+  ModelInitializer::Grid3D(2, 100, construct);
+
   // The cell responsible for secretion
-  positions.push_back({50, 50, 50});
-  ModelInitializer::CreateAgents(positions, construct);
+  auto* secreting_cell = new Cell({50, 50, 50});
+  secreting_cell->AddBehavior(new Secretion("Kalium", 4));
+  simulation.GetResourceManager()->AddAgent(secreting_cell);
 
   // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(300);

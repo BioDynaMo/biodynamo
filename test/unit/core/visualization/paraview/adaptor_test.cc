@@ -172,6 +172,9 @@ TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
 /// the only ones (no more, no less).
 TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   auto set_param = [](auto* param) {
+    param->bound_space = true;
+    param->min_bound = -100;
+    param->max_bound = 100;
     param->export_visualization = true;
 
     // We selection Substance_1 for export
@@ -191,6 +194,7 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   }
 
   Simulation sim(TEST_NAME, set_param);
+  sim.GetEnvironment()->Update();
   auto output_dir = sim.GetOutputDir();
   fs::remove_all(output_dir);
   fs::create_directory(output_dir);
@@ -209,11 +213,9 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   ModelInitializer::DefineSubstance(kSubstance2, "Substance_2", 0.05, 0, 5);
   ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.05, 0, 5);
 
-  int l = -100;
-  int r = 100;
-  rm->GetDiffusionGrid(kSubstance0)->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrid(kSubstance1)->Initialize({l, r, l, r, l, r});
-  rm->GetDiffusionGrid(kSubstance2)->Initialize({l, r, l, r, l, r});
+  rm->GetDiffusionGrid(kSubstance0)->Initialize();
+  rm->GetDiffusionGrid(kSubstance1)->Initialize();
+  rm->GetDiffusionGrid(kSubstance2)->Initialize();
 
   // Write diffusion visualization to file
   sim.Simulate(3);
