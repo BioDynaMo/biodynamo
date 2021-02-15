@@ -36,6 +36,11 @@ class Secretion : public Behavior {
         substance);
   }
 
+  explicit Secretion(DiffusionGrid* dgrid, double quantity = 1)
+      : dgrid_(dgrid), quantity_(quantity) {
+    substance_ = dgrid->GetSubstanceName();
+  }
+
   virtual ~Secretion() {}
 
   void Initialize(const NewAgentEvent& event) override {
@@ -52,7 +57,7 @@ class Secretion : public Behavior {
   }
 
  private:
-  std::string substance_ = 0;
+  std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
   double quantity_ = 1;
 };

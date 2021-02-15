@@ -34,6 +34,11 @@ class Chemotaxis : public Behavior {
         substance);
   }
 
+  explicit Chemotaxis(DiffusionGrid* dgrid, double speed)
+      : dgrid_(dgrid), speed_(speed) {
+    substance_ = dgrid->GetSubstanceName();
+  }
+
   virtual ~Chemotaxis() {}
 
   void Initialize(const NewAgentEvent& event) override {
@@ -53,7 +58,7 @@ class Chemotaxis : public Behavior {
   }
 
  private:
-  std::string substance_ = 0;
+  std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
   double speed_;
 };
