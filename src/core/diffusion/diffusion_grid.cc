@@ -31,18 +31,8 @@ void DiffusionGrid::Initialize() {
 
   grid_dimensions_ = {bounds[0], bounds[1]};
 
-  // Example: diffusion grid dimensions from 0-40 and resolution
-  // of 4. Resolution must be adjusted otherwise one data pointer will be
-  // missing.
-  // Without adjustment:
-  //   box_length_: 10
-  //   data points {0, 10, 20, 30} - 40 will be misssing!
-  // With adjustment
-  //   box_length_: 13.3
-  //   data points: {0, 13.3, 26.6, 39.9}
-  auto adjusted_res = resolution_ == 1 ? 2 : resolution_; // avoid division by 0
   box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
-                static_cast<double>(adjusted_res - 1);
+                static_cast<double>(resolution_);
   // TODO(ahmad): parametrize the minimum box_length
   if (box_length_ <= 1e-15) {
     Log::Fatal("DiffusionGrid::Initialize",
@@ -309,12 +299,36 @@ void DiffusionGrid::GetGradient(const Double3& position,
   }
 }
 
+// Compute box coordinates in the range (0,0,0) - (resolution_-1,resolution_-1,resolution_-1)
 std::array<uint32_t, 3> DiffusionGrid::GetBoxCoordinates(
     const Double3& position) const {
   std::array<uint32_t, 3> box_coord;
-  box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
-  box_coord[1] = (floor(position[1]) - grid_dimensions_[0]) / box_length_;
-  box_coord[2] = (floor(position[2]) - grid_dimensions_[0]) / box_length_;
+  Double3 position_ = position;
+  if (((position_[0] - grid_dimensions_[1]) >= 1e-9) ||
+      ((position_[1] - grid_dimensions_[1]) >= 1e-9) ||
+      ((position_[2] - grid_dimensions_[1]) >= 1e-9)) {
+      Log::Error("DiffusionGrid::GetBoxCoordinates",
+                 "You tried to get the box coordinates outside the bounds of "
+                 "the diffusion grid! Using grid_dimensions_[1] as position.");
+     position_[0] = ((position_[0] - grid_dimensions_[1]) >= 1e-9) ? grid_dimensions_[1] : position_[0];
+     position_[1] = ((position_[1] - grid_dimensions_[1]) >= 1e-9) ? grid_dimensions_[1] : position_[1];
+     position_[2] = ((position_[2] - grid_dimensions_[1]) >= 1e-9) ? grid_dimensions_[1] : position_[2];
+    }
+  if (std::abs(position_[0] - grid_dimensions_[1]) < 1e-9) {
+    box_coord[0] = resolution_ - 1;
+  } else {
+    box_coord[0] = (floor(position_[0]) - grid_dimensions_[0]) / box_length_;
+  }
+  if (std::abs(position_[1] - grid_dimensions_[1]) < 1e-9) {
+    box_coord[1] = resolution_ - 1;
+  } else {
+    box_coord[1] = (floor(position_[1]) - grid_dimensions_[0]) / box_length_;
+  }
+  if (std::abs(position_[2] - grid_dimensions_[1]) < 1e-9) {
+    box_coord[2] = resolution_ - 1;
+  } else {
+    box_coord[2] = (floor(position_[2]) - grid_dimensions_[0]) / box_length_;
+  }
   return box_coord;
 }
 
