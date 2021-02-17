@@ -592,6 +592,12 @@ class UniformGridEnvironment : public Environment {
     return threshold_dimensions_;
   }
 
+  void GetNumBoxesAxis(uint32_t* nba) {
+    nba[0] = num_boxes_axis_[0];
+    nba[1] = num_boxes_axis_[1];
+    nba[2] = num_boxes_axis_[2];
+  }
+
   uint64_t GetNumBoxes() const { return boxes_.size(); }
 
   uint32_t GetBoxLength() { return box_length_; }
@@ -603,26 +609,6 @@ class UniformGridEnvironment : public Environment {
     box_coord[1] = remainder / num_boxes_axis_[0];
     box_coord[0] = remainder % num_boxes_axis_[0];
     return box_coord;
-  }
-
-  /// @brief      Gets the information about the grid
-  ///
-  /// @param      box_length       The grid's box length
-  /// @param      num_boxes_axis   The number boxes along each axis of the grid
-  /// @param      grid_dimensions  The grid's dimensions
-  ///
-  /// @tparam     TUint32          A uint32 type (could also be cl_uint)
-  /// @tparam     TInt32           A int32 type (could be cl_int)
-  ///
-  void GetGridInfo(uint32_t* box_length, uint32_t* num_boxes_axis,
-                   int32_t* grid_dimensions) {
-    *box_length = box_length_;
-    num_boxes_axis[0] = num_boxes_axis_[0];
-    num_boxes_axis[1] = num_boxes_axis_[1];
-    num_boxes_axis[2] = num_boxes_axis_[2];
-    grid_dimensions[0] = grid_dimensions_[0];
-    grid_dimensions[1] = grid_dimensions_[2];
-    grid_dimensions[2] = grid_dimensions_[4];
   }
 
   // NeighborMutex ---------------------------------------------------------
