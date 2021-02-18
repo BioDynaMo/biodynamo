@@ -201,7 +201,7 @@ void InPlaceExecutionContext::Execute(
       std::sort(critical_region_2_.begin(), critical_region_2_.end());
       bool same = true;
       if (critical_region_.size() == critical_region_2_.size()) {
-        for (int i = 0; i < critical_region_.size(); ++i) {
+        for (size_t i = 0; i < critical_region_.size(); ++i) {
           if (critical_region_[i] != critical_region_2_[i]) {
             same = false;
             break;
