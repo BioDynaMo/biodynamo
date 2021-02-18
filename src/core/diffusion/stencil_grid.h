@@ -23,7 +23,7 @@ class StencilGrid : public DiffusionGrid {
  public:
   StencilGrid() {}
   StencilGrid(int substance_id, std::string substance_name, double dc,
-              double mu, int resolution = 11)
+              double mu, int resolution = 10)
       : DiffusionGrid(substance_id, substance_name, dc, mu, resolution) {}
 
   void DiffuseWithClosedEdge() override;

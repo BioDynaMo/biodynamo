@@ -87,7 +87,7 @@ TEST(DiffusionTest, UpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 7);
+  DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 6);
 
   env->Update();
   d_grid->Initialize();
@@ -103,9 +103,9 @@ TEST(DiffusionTest, UpdateGrid) {
 
   auto d_dims = d_grid->GetDimensions();
 
-  EXPECT_EQ(-60, d_dims[0]);
-  EXPECT_EQ(-60, d_dims[2]);
-  EXPECT_EQ(-60, d_dims[4]);
+  EXPECT_EQ(-90, d_dims[0]);
+  EXPECT_EQ(-90, d_dims[2]);
+  EXPECT_EQ(-90, d_dims[4]);
   EXPECT_EQ(210, d_dims[1]);
   EXPECT_EQ(210, d_dims[3]);
   EXPECT_EQ(210, d_dims[5]);
@@ -197,7 +197,7 @@ TEST(DiffusionTest, LeakingEdge) {
   double v2 = 3.7281869469803648;
   double v3 = 0.12493663388071227;
   double v4 = 0.32563083857294983;
-  double v5 = 0.08620958617166545;
+  double v5 = 0.10776198271458182;
 
   EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], eps);
   EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], eps);
@@ -265,7 +265,7 @@ TEST(DiffusionTest, ClosedEdge) {
   double v2 = 5.7977258086605303;
   double v3 = 2.4379152740053867;
   double v4 = 2.7287519978558121;
-  double v5 = 0.081744730821864647;
+  double v5 = 0.10218091352733083;
 
   EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], eps);
   EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], eps);
@@ -340,7 +340,7 @@ TEST(DiffusionTest, CopyOldData) {
   double v2 = 3.7281869469803648;
   double v3 = 0.12493663388071227;
   double v4 = 0.32563083857294983;
-  double v5 = 0.08620958617166545;
+  double v5 = 0.10776198271458182;
 
   EXPECT_NEAR(v1, conc[d_grid->GetBoxIndex(c)], eps);
   EXPECT_NEAR(v2, conc[d_grid->GetBoxIndex(e)], eps);
@@ -412,11 +412,11 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(50, restored_d_grid->GetDimensions()[1]);
   EXPECT_EQ(50, restored_d_grid->GetDimensions()[3]);
   EXPECT_EQ(50, restored_d_grid->GetDimensions()[5]);
-  EXPECT_EQ(11u, restored_d_grid->GetNumBoxesArray()[0]);
-  EXPECT_EQ(11u, restored_d_grid->GetNumBoxesArray()[1]);
-  EXPECT_EQ(11u, restored_d_grid->GetNumBoxesArray()[2]);
-  EXPECT_EQ(1331u, restored_d_grid->GetNumBoxes());
-  EXPECT_EQ(11, restored_d_grid->GetResolution());
+  EXPECT_EQ(10u, restored_d_grid->GetNumBoxesArray()[0]);
+  EXPECT_EQ(10u, restored_d_grid->GetNumBoxesArray()[1]);
+  EXPECT_EQ(10u, restored_d_grid->GetNumBoxesArray()[2]);
+  EXPECT_EQ(1000u, restored_d_grid->GetNumBoxes());
+  EXPECT_EQ(10, restored_d_grid->GetResolution());
 
   remove(ROOTFILE);
   delete d_grid;
@@ -472,9 +472,9 @@ TEST(DiffusionTest, EulerConvergence) {
   simulation.GetEnvironment()->Update();
 
   double diff_coef = 0.5;
-  DiffusionGrid* d_grid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* d_grid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* d_grid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* d_grid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 20);
+  DiffusionGrid* d_grid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 40);
+  DiffusionGrid* d_grid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 80);
 
   d_grid2->Initialize();
   d_grid4->Initialize();
@@ -549,9 +549,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
-  DiffusionGrid* d_grid2 = new RungaKuttaGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* d_grid4 = new RungaKuttaGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* d_grid8 = new RungaKuttaGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* d_grid2 = new RungaKuttaGrid(0, "Kalium1", diff_coef, 0, 20);
+  DiffusionGrid* d_grid4 = new RungaKuttaGrid(1, "Kalium4", diff_coef, 0, 40);
+  DiffusionGrid* d_grid8 = new RungaKuttaGrid(2, "Kalium8", diff_coef, 0, 80);
 
   d_grid2->Initialize();
   d_grid4->Initialize();
