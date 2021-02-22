@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''
-Make macOS Unix-like ParaView SDK bundles relocatable.
+Make macOS UNIX-like ParaView SDK bundles relocatable (using rpaths).
 
 Kludgy, but necessary at the moment. As of Dec. 2020,
 ParaView-Superbuild (SB) can only generate macOS ``.app``-style
@@ -14,6 +14,8 @@ cmake files by replicating multiple macro calls to ``fixup_bundle.apple.py``.
 Large portions of this script are adapted from:
 https://gitlab.kitware.com/paraview/common-superbuild/cmake/scripts/fixup_bundle.apple.py
 
+Unused bits of the script above are still kept in case we end up needing them.
+
 Example usage:
 ```
 python3 make_macos_pvsdk_relocatable.py \
@@ -26,8 +28,8 @@ python3 make_macos_pvsdk_relocatable.py \
 Prerequisites:
   * Python 3.8+
   * The build output of 'util/build-third-party/build-paraview.sh'.
-    The directory structure should resemble a unix build, with the
-    exception of '<source>/Applications/paraview.app'
+    The directory structure should resemble a UNIX build, with the
+    exception of '<source>/Applications/paraview.app'.
   * Any non-system third-party libraries to link against this bundle should
     be placed in ``--third-party``. This is to facilitate bundles distributed
     in the manner below:
@@ -36,9 +38,10 @@ Prerequisites:
     ├── paraview (--dest)
     │   ├── bin
     │   │   └── paraview
-    │   │         $ otool -L paraview
-    │   │             @executable_path/../../qt/lib/some_qt_lib.dylib
-    │   │             ...
+    │   │         $ otool -l paraview
+    │   │             @rpath/some_qt_lib.dylib ...
+    │   │             @rpath/some_pv_lib.dylib ...
+    │   │         where @rpath="@loader_path/../lib;@loader_path/../../qt/lib"
     │   ├── lib
     │   └── ...
     └── qt
@@ -52,25 +55,27 @@ import os
 import re
 import shutil
 import subprocess
-import pprint
+import operator
+from functools import reduce
 
 dry_run: bool = True
 is_verbose: bool = False
 install_source: str = None
 install_dest: str = None
 third_party_path: str = None
-third_party_libs: str = None
+third_party_libs: list[str] = None
 
 python_v: str = '3.9'
 paraview_v: str = '5.9'
 
 
-def vprint(obj):
+def vprint(*args, **kwargs):
+    '''print if ``is_verbose`` global is true'''
     if is_verbose:
-        pprint.pprint(obj)
+        print(*args, *kwargs)
 
 
-def startswith_any(_str, _list):
+def startswith_any(_str: str, _list: list[str]):
     for prefix in _list:
         if _str.startswith(prefix):
             return True
@@ -79,8 +84,8 @@ def startswith_any(_str, _list):
 
 def os_makedirs(path):
     '''
-    A function to fix up the fact that os.makedirs chokes if the path already
-    exists.
+    A function to fix up the fact that os.makedirs
+    chokes if the path already exists.
     '''
     if os.path.exists(path):
         return
@@ -90,9 +95,9 @@ def os_makedirs(path):
 def copy_tree(src, dst, symlinks=False, ignore=None, copy_function=shutil.copy2,
               ignore_dangling_symlinks=False, dirs_exist_ok=True, skip_symlinks=False):
     '''
-    Modified version of shutil.copytree for copying directory trees and symlinks *without*
-    overwriting or raising exceptions on existing files, dirs and symlinks in ``dst``.
-    You may skip all actions on symlinks using ``skip_symlinks=True``.
+    Modified version of ``shutil.copytree`` for copying directory trees and symlinks 
+    *without* overwriting or raising exceptions on existing files, dirs and symlinks
+    in ``dst``. You may skip all actions on symlinks using ``skip_symlinks=True``.
     '''
     with os.scandir(src) as itr:
         entries = list(itr)
@@ -130,14 +135,14 @@ def _copy_tree(entries, src, dst, symlinks, ignore, copy_function,
             if is_symlink:
                 linkto = os.readlink(srcname)
                 if skip_symlinks:
-                    vprint(f"skip symlink {linkto}")
+                    vprint(f"<symlink> skip {linkto}")
                 else:
                     if symlinks:
                         # We can't just leave it to `copy_function` because legacy
                         # code with a custom `copy_function` may rely on copytree
                         # doing the right thing.
                         if not os.path.exists(dstname):
-                            vprint(f"symlinking {linkto} -> {dstname}")
+                            vprint(f"<symlink> {linkto} -> {dstname}")
                             os.symlink(linkto, dstname)
                             shutil.copystat(srcobj, dstname, follow_symlinks=not symlinks)
                     else:
@@ -146,19 +151,19 @@ def _copy_tree(entries, src, dst, symlinks, ignore, copy_function,
                             continue
                         # otherwise let the copy occur. copy2 will raise an error
                         if srcentry.is_dir():
-                            vprint((srcname, dstname))
+                            vprint(srcname, dstname)
                             copy_tree(srcobj, dstname, symlinks, ignore,
                                       copy_function, dirs_exist_ok=dirs_exist_ok)
                         else:
                             if not os.path.exists(dstname):
-                                vprint((srcname, dstname))
+                                vprint(srcname, dstname)
                                 copy_function(srcobj, dstname)
             elif srcentry.is_dir():
-                vprint((srcname, dstname))
+                vprint(srcname, dstname)
                 copy_tree(srcobj, dstname, symlinks, ignore, copy_function,
                           dirs_exist_ok=dirs_exist_ok)
             else:
-                vprint((srcname, dstname))
+                vprint(srcname, dstname)
                 # Will raise a SpecialFileError for unsupported file types
                 if not os.path.exists(dstname):
                     copy_function(srcobj, dstname)
@@ -181,8 +186,8 @@ def _copy_tree(entries, src, dst, symlinks, ignore, copy_function,
 
 class Pipeline(object):
     '''
-    A simple class to handle a list of shell commands which need to pass input
-    to each other.
+    A simple class to handle a list of shell commands
+    which need to pass input to each other.
     '''
 
     def __init__(self, *commands):
@@ -205,6 +210,15 @@ class Pipeline(object):
         if command.returncode:
             raise RuntimeError('failed to execute pipeline:\n%s' % stderr)
         return stdout.decode('utf-8')
+    
+    def call_non_dry(self, fatal=True):
+        try:
+            return self.__call__() if not dry_run else ''
+        except RuntimeError as e:
+            if fatal:
+                raise e
+            else:
+                vprint(f'<pipe-fail> {e}')
 
 
 class Library(object):
@@ -246,6 +260,7 @@ class Library(object):
             self._ignores = []
         else:
             self._ignores = ignores
+    
         self._parent = parent
         self._symlinks = None
         self._framework_info = None
@@ -253,6 +268,8 @@ class Library(object):
         self._dependencies = None
         self._rpaths = None
         self._raw_rpaths = None
+        self._raw_trans_rpaths = None
+        self._pending_rpaths: set[str] = set()
         self._installed_id = None
 
     def __hash__(self):
@@ -296,9 +313,16 @@ class Library(object):
         '''
         return self._installed_id
 
+    @property
+    def pending_rpaths(self):
+        return self._pending_rpaths
+        
     def set_installed_id(self, installed_id):
         '''Set the ID of the library as it is installed as.'''
         self._installed_id = installed_id
+
+    def extend_pending_rpaths(self, pending_rpaths: set[str]):
+        self._pending_rpaths = self._pending_rpaths.union(pending_rpaths)
 
     @property
     def dependent_reference(self):
@@ -328,15 +352,11 @@ class Library(object):
         if self._symlinks is None:
             realpath = os.path.realpath(self.path)
             dirname = os.path.dirname(realpath)
-            symlinks = Pipeline([
-                'find',
-                '-L',
-                dirname,
+            symlinks = set(Pipeline([
+                'find', '-L', dirname,
                 '-depth', '1',
                 '-samefile', realpath,
-            ])
-
-            symlinks = set(symlinks().split())
+            ])().split())
 
             symlink_bases = []
             for symlink in symlinks:
@@ -442,20 +462,11 @@ class Library(object):
         ``None`` if the library is not a framework.
         '''
         return self.framework_info[2]
-
-    @property
-    def raw_rpaths(self):
-        '''
-        Unresolved ``LC_RPATH`` load commands of ``self`` and parents.
-
-        In addition to the ``LC_RPATH`` load commands contained within the
-        library, rpaths in the binaries which loaded the library are
-        referenced. These are included in the property.
-        '''
+    
+    @property 
+    def raw_rpaths(self) -> set[str]:
+        '''Unresolved ``LC_RPATH`` load commands of ``self``.'''
         if self._raw_rpaths is None:
-            rpaths = []
-            if self._parent is not None:
-                rpaths.extend(self._parent.rpaths)
             get_rpaths = Pipeline([
                 'otool',
                 '-l',
@@ -472,11 +483,28 @@ class Library(object):
                             print $2
                         }
                     }
-                    ''',
+                ''',
             ])
-            rpaths.extend(get_rpaths().split('\n'))
-            self._raw_rpaths = set(rpaths)
+            self._raw_rpaths = set(get_rpaths().split('\n'))
+            self._raw_rpaths.discard('')
+
         return self._raw_rpaths
+
+    @property
+    def raw_trans_rpaths(self) -> set[str]:
+        '''
+        Unresolved ``LC_RPATH`` load commands of ``self`` *and parents*.
+
+        In addition to the ``LC_RPATH`` load commands contained within the
+        library, rpaths in the binaries which loaded the library are
+        referenced. These are included in the property.
+        '''
+        if self._raw_trans_rpaths is None:
+            self._raw_trans_rpaths = self.raw_rpaths \
+                if self._parent is None \
+                else self._parent.raw_rpaths.union(self.raw_rpaths)
+            self._raw_trans_rpaths.discard('')
+        return self._raw_trans_rpaths
 
     @property
     def rpaths(self):
@@ -492,7 +520,7 @@ class Library(object):
             # rpaths may contain magic ``@`` references. This property only
             # contains full paths, so we resolve them now.
             resolved_rpaths = []
-            for rpath in self.raw_rpaths:
+            for rpath in self.raw_trans_rpaths:
                 if rpath.startswith('@executable_path'):
                     # If the loader does not have an executable path, it is a plugin or
                     # a framework and we trust the executable which loads the plugin to
@@ -530,8 +558,8 @@ class Library(object):
             collection = {}
             for dep in self._get_dependencies():
                 deplib = Library.from_reference(dep, self)
-                if deplib is not None and \
-                        not deplib.path == self.path:
+                if deplib is not None \
+                    and not deplib.path == self.path:
                     collection[dep] = deplib
             self._dependencies = collection
         return self._dependencies
@@ -690,7 +718,7 @@ class Module(Library):
         # return self._dependent_reference
 
 
-def copy_library(root_dest, library, sub_dest='lib'):
+def copy_library(root_dest: str, library: Library, sub_dest: str='lib'):
     '''Copy a library into the ``.app`` bundle.'''
     if library.is_framework:
         # Frameworks go into Contents/<framework_dest>.
@@ -699,11 +727,13 @@ def copy_library(root_dest, library, sub_dest='lib'):
         binary = os.path.join(
             app_dest, library.framework_name, library.framework_library)
 
-        print('Copying %s/%s ==> %s' % (library.framework_path, library.framework_name,
-                                        os.path.join(sub_dest, library.framework_name, library.framework_library)))
+        print('<copy> %s/%s -> %s' % (library.framework_path, library.framework_name,
+                                      os.path.join(sub_dest, library.framework_name, 
+                                      library.framework_library)))
 
         library.set_installed_id(os.path.join(
-            '@executable_path', '..', sub_dest, library.framework_name, library.framework_library))
+            '@executable_path', '..', sub_dest, 
+            library.framework_name, library.framework_library))
         root_dest = os.path.join(app_dest, library.framework_name)
 
         if not dry_run:
@@ -722,18 +752,15 @@ def copy_library(root_dest, library, sub_dest='lib'):
                 root_dest,
             ])
             chmod()
-
     else:
-        # Libraries go into Contents/<library_dest>.
         app_dest = os.path.join(root_dest, sub_dest)
         binary = os.path.join(app_dest, library.name)
-        print('Copying %s ==> %s' %
+        print('<copy> %s -> %s' %
               (library.path, os.path.join(sub_dest, library.name)))
 
         # FIXME(plugins, frameworks): fix the installed id of the library based
         # on what drags it in.
-        library.set_installed_id(os.path.join(
-            '@executable_path', '..', sub_dest, library.name))
+        library.set_installed_id(os.path.join('@rpath', library.name))
         root_dest = app_dest
 
         if not dry_run:
@@ -750,7 +777,7 @@ def copy_library(root_dest, library, sub_dest='lib'):
 
         # Create any symlinks we found for the library as well.
         for symlink in library.symlinks:
-            print('Creating symlink to %s/%s ==> %s' %
+            print('<symlink> %s/%s -> %s' %
                   (sub_dest, library.name, os.path.join(sub_dest, symlink)))
             if not dry_run:
                 symlink_path = os.path.join(app_dest, symlink)
@@ -784,7 +811,7 @@ def _arg_parser():
         return RequiredLength
 
     parser = argparse.ArgumentParser(
-        description='Install a macOS ELF binary into a bundle')
+        description='Make macOS UNIX-like ParaView SDK bundles relocatable')
     parser.add_argument('-S', '--source', metavar='SOURCE', required=True,
                         help='location of the PV SDK superbuild install'),
     parser.add_argument('-O', '--dest', metavar='DEST', required=True,
@@ -805,10 +832,67 @@ def _arg_parser():
     return parser
 
 
-def install_binary(binary, is_excluded, bundle_dest, installed, manifest, sub_dest='lib'):
-    '''Install the main binary into the package.'''
-    print(f"Installing {os.path.basename(binary.path)}")
+def update_manifest(manifest, installed):
+    '''Update the manifest file with a set of newly installed binaries.'''
+    for input_path, binary_info in installed.items():
+        binary, _ = binary_info
+        manifest[input_path] = binary.installed_id
 
+
+def path_in_dest(path: str):
+    subdir = os.path.relpath(path, install_source)
+    return os.path.join(install_dest, subdir)
+
+
+def pend_rpaths_from_deps(binary: Library, is_excluded, rpath_suffixes):
+    '''
+    Build rpath entries of the form ``@loader_path ['/' <suffix>]``
+    using rpath_suffixes. Mark them to be added by fix_installed_binaries.
+    '''
+    deps: list[Library] = list(binary.dependencies.values())
+    loader_to_dep_relpaths: set[str] = set()
+
+    for dep in deps:
+        if is_excluded(dep.path):
+            continue
+        dep_relpath = ''
+        
+        if dep.path.startswith(install_source):
+                dep_relpath = \
+                os.path.relpath(dep.path, binary.loader_path)
+        elif startswith_any(dep.path, third_party_libs):
+            # 3rd party deps need to be viewed relative 
+            # to the current binaries final destination
+            dep_relpath = \
+                os.path.relpath(dep.path, path_in_dest(binary.loader_path))
+
+        loader_to_dep_relpaths.add(os.path.split(dep_relpath)[0])
+    
+    vprint(f'<dep-relpath> {loader_to_dep_relpaths}')
+    if len(loader_to_dep_relpaths) > 0:
+        pend_rpaths = set()
+        # dependency in one of the suffixes
+        for dep_relp in loader_to_dep_relpaths:
+            for suffix in rpath_suffixes:
+                if dep_relp == suffix or dep_relp.startswith(suffix):
+                    to_add = os.path.join('@loader_path', suffix)
+                    # make all suffixes end with trailing slash
+                    to_add = to_add if to_add.endswith('/') else f'{to_add}/'
+                    pend_rpaths.add(to_add)
+                    break
+        # dependency in @loader_path
+        if '' in loader_to_dep_relpaths:
+            pend_rpaths.add('@loader_path')
+
+        vprint(f"<rpath-pend> {binary.path}\n\t<-{pend_rpaths}")
+        binary.extend_pending_rpaths(pend_rpaths)
+
+
+def install_binary(binary: Library, is_excluded, bundle_dest, 
+                   installed, manifest, rpath_suffixes, sub_dest='lib'):
+    '''Install the main binary into the package.'''
+    print(f"<install> {os.path.basename(binary.path)}")
+    pend_rpaths_from_deps(binary, is_excluded, rpath_suffixes)
     # Start looking at our main executable's dependencies.
     deps = list(binary.dependencies.values())
     while deps:
@@ -820,47 +904,47 @@ def install_binary(binary, is_excluded, bundle_dest, installed, manifest, sub_de
 
         # Ignore dependencies we don't care about.
         if is_excluded(dep.path):
+            vprint(f"<dep-abs> {dep.path}")
             continue
 
-        # If we've already installed this dependency for some other library,
-        # skip it.
+        # If we've already installed this dependency
+        # for some other library, skip it.
         if dep.path in installed:
             continue
-
+        
         # Add this dependency's dependencies to the pile.
         deps.extend(dep.dependencies.values())
         if dep.path.startswith(install_source):
             dep_sub_dest = os.path.normpath(
                 os.path.dirname(os.path.relpath(dep.path, install_source)))
-            vprint(f"<dep> {dep_sub_dest}")
+            vprint(f"<dep> {dep.path}")
+            pend_rpaths_from_deps(dep, is_excluded, rpath_suffixes)
             # Remember what we installed and where.
-            installed[dep.path] = (dep, copy_library(
-                bundle_dest, dep, sub_dest=dep_sub_dest))
-        elif startswith_any(dep.path, third_party_libs):
-            vprint(
-                f"<third-party> {dep.path} {os.path.relpath(dep.path, install_source)}")
-            installed[dep.path] = (dep, os.path.relpath(
-                dep.path, install_source))
+            installed[dep.path] = \
+                (dep, copy_library(bundle_dest, dep, sub_dest=dep_sub_dest))
+        elif startswith_any(dep.path, third_party_libs): 
+            vprint(f"<dep-third-party> {dep.path}")
+            installed[dep.path] = \
+                (dep, os.path.relpath(dep.path, install_source))
+        else:
+            vprint(f"<?> {dep.paths}")
 
     # Install the main executable itself.
     app_dest = os.path.join(bundle_dest, sub_dest)
     binary_destination = os.path.join(app_dest, os.path.basename(binary.path))
     installed[binary.path] = (binary, binary_destination)
-    binary.set_installed_id(binary_destination)
-    print('Copying %s ==> %s' % (binary.path, sub_dest))
+    binary.set_installed_id(os.path.join(sub_dest, binary.name))
+    
+    print('<copy> %s -> %s' % (binary.path, sub_dest))
     if not dry_run:
         os_makedirs(app_dest)
         shutil.copy2(binary.path, app_dest)
 
 
-def update_manifest(manifest, installed):
-    '''Update the manifest file with a set of newly installed binaries.'''
-    for input_path, binary_info in installed.items():
-        binary, _ = binary_info
-        manifest[input_path] = binary.installed_id
+_fin_rpaths: dict[str, list[str]] = dict()
 
 
-def fix_installed_binaries(installed):
+def fix_installed_binaries(installed: dict[str, (Library, str)]):
     '''
     This function updates all of the installed binaries to use consistent
     library IDs when referring to each other.
@@ -868,23 +952,22 @@ def fix_installed_binaries(installed):
     # Go through all of the binaries installed and fix up references to other things.
     for binary_info in installed.values():
         binary, installed_path = binary_info
-        print('Fixing binary references in %s' % binary.path)
+        print(f'<fix> {binary.path}')
         if binary.path.endswith('.a'):
             # nothing to fix
             continue
 
+        vprint(f'\t<rpath-pend>\n\t\t{binary.pending_rpaths.difference(binary.raw_rpaths)}')
+
         if binary.installed_id:
             # Set the ID on the binary.
             vprint(
-                f"<set-id> {os.path.join(binary.installed_id, os.path.basename(installed_path))}")
-            if not dry_run:
-                install_name_tool = Pipeline([
-                    'install_name_tool',
-                    '-id', os.path.join(binary.installed_id,
-                                        os.path.basename(installed_path)),
-                    installed_path,
-                ])
-                install_name_tool()
+                f"<set-id> {binary.installed_id}")
+            Pipeline([
+                'install_name_tool',
+                '-id', binary.installed_id,
+                installed_path,
+            ]).call_non_dry()
 
         changes = []
         for old_name, library in binary.dependencies.items():
@@ -894,17 +977,27 @@ def fix_installed_binaries(installed):
                     pass
                 else:
                     changes.extend(['-change', old_name, library.installed_id])
-
+            
         # Fix up the library names.
         if changes:
-            install_name_tool = [
-                                    'install_name_tool',
-                                ] + changes + [
-                                    installed_path,
-                                ]
-            vprint(install_name_tool)
-            if not dry_run:
-                Pipeline(install_name_tool)()
+            install_name_tool = \
+                ['install_name_tool'] + changes + [installed_path]
+            vprint(' '.join(install_name_tool))
+            Pipeline(install_name_tool).call_non_dry()
+        
+        # Add pending rpaths to binary.
+        if not installed_path in _fin_rpaths:
+            rp_diff = binary.pending_rpaths.difference(binary.raw_rpaths)
+            rp_isect = binary.pending_rpaths.intersection(binary.raw_rpaths)
+            _fin_rpaths[installed_path] = list(rp_diff.union(rp_isect))
+            rpaths_to_add = []
+            for pending in rp_diff:
+                rpaths_to_add.extend(['-add_rpath', pending])
+            if rpaths_to_add:
+                install_name_tool = \
+                    ['install_name_tool'] + rpaths_to_add + [installed_path]
+                vprint(' '.join(install_name_tool))
+                Pipeline(install_name_tool).call_non_dry()
 
 
 def _is_excluded(path):
@@ -935,8 +1028,8 @@ def is_binary(fpath):
     return re.match(r"application/(x-mach-binary|x-archive).*", finfo) is not None
 
 
-def find_bins_in(path,
-                 pred='( -type f ) -and ( -perm +111 -or -name *.dylib -or -name *.so -or -name *.a )'):
+def find_bins_in(path):
+    pred='( -type f ) -and ( -perm +111 -or -name *.dylib -or -name *.so -or -name *.a )'
     bin_candidates = Pipeline(f'find {path} {pred}'.split())().split()
     return [cand for cand in bin_candidates if is_binary(cand)]
 
@@ -948,6 +1041,7 @@ _installed = {}
 class BinaryGroup(object):
     def __init__(self,
                  path_or_bins,
+                 rpath_suffixes,
                  search_paths=None,
                  preproc_fn=lambda x: x,
                  exclude_fn=_is_excluded,
@@ -956,40 +1050,55 @@ class BinaryGroup(object):
                  installed_map=None,
                  bin_manifest=None):
         '''
-        A ``BinaryGroup`` contains a collection of binaries
-        along with instructions for how to copy over and install
-        them from ``--source`` to ``--dest``.
+        A ``BinaryGroup`` contains a collection of binaries along
+        with instructions for how to copy over and install them 
+        from ``--source`` to ``--dest``.
 
-        :param path_or_bins: Path containing binaries (will be recursively searched by ``find``)
-                             or a list of paths to each binary in this group.
-                             NB: All paths passed in must be relative to ``--source``.
-        :param search_paths: List of paths (default ``install_source/{bin,lib}``)
-                             to search for dependent libraries.
-        :param preproc_fn: Callback (``(path) -> Any``) called just before the
-                           creation of the path's corresponding ``Library`` (sub)class.
-                           This callback will be applied to the binary in ``--dest``,
-                           so make sure its side-effect is idempotent, or that it
-                           at least doesn't break anything.
-        :param exclude_fn: Callback (``(path) -> bool``) to determine  binary files to exclude.
-        :param typ: One of {'lib', 'module', 'plugin'} (default 'lib').
-                    Determines which subclass of ``Library`` the binaries in this group will be.
-                    The behavior of ``self.install()`` depends on this type.
-        :param rpath_map: Map of string key-value pairs determining, for each binary
-                          in this group, which corresponding value to replace an rpathx
-                          entry matching a key in ``rpath_map`` with.
-        :return: ``BinaryGroup`` ready to be ``self.install()``ed.
+        Args:
+        path_or_bins (Union[str, list[str]]): 
+            Path containing binaries (will be recursively searched by 
+            ``find``) or a list of paths to each binary in this group.
+            NB: All paths passed in must be relative to ``--source``.
+        rpath_suffixes (list[str]):
+            List of suffixes to match against each binaries' relative paths 
+            to its dependencies . Matches will be used to build rpath entries 
+            of the form ``@loader_path ['/' <suffix>]``.
+        search_paths (Optional[list[str]]): 
+            List of paths (default ``install_source/{bin,lib}``)
+            to search for dependent libraries.
+        preproc_fn (Callable[[str], Any]):
+            Callback called just before the creation of the path's corresponding
+            ``Library`` (sub)class. This callback will be applied to the binary 
+            in ``--dest``, so make sure its side-effect is idempotent, or that 
+            it at least doesn't break anything.
+        exclude_fn (Callable[[str], bool]): 
+            Callback to determine which binary files to exclude.
+        typ (str): 
+            One of {'lib', 'module', 'plugin'} (default 'lib'). Determines
+            which subclass of ``Library`` the binaries in this group will be.
+            The behavior of ``self.install()`` depends on this type.
+        rpath_map (Optional[dict[str, str]]): 
+            For each binary 'b' in this group, and each key-value pair 
+            'k', 'v' in `rpath_map`; if 'k' matches an rpath entry in 'b',
+            replace it with 'v', or if 'v' is None, then delete the entry.
+
+        Returns:
+        ``BinaryGroup`` ready to be ``self.install()``ed.
         '''
         _default_searchpaths = \
             [os.path.join(install_source, _dir) for _dir in ['bin', 'lib']]
 
-        self.installed_map = _installed if installed_map is None else installed_map
-        self.bin_manifest = _manifest if bin_manifest is None else bin_manifest
-
+        self.installed_map = \
+            _installed if installed_map is None else installed_map
+        self.bin_manifest = \
+            _manifest if bin_manifest is None else bin_manifest
+        self.rpath_suffixes = rpath_suffixes
         vprint(path_or_bins)
         if isinstance(path_or_bins, str):
             self.bin_relpaths = find_bins_in(path_or_bins)
         elif isinstance(path_or_bins, list):
-            self.bin_relpaths = [cand for cand in path_or_bins if is_binary(cand)]
+            self.bin_relpaths = \
+                [cand for cand in path_or_bins if is_binary(cand)]
         else:
             raise RuntimeError('path_or_bins is either list[str] or str')
 
@@ -1016,7 +1125,8 @@ class BinaryGroup(object):
                 self.bin_preproc_fn(bin_path)
             except RuntimeError:
                 pass
-
+            
+            _bin: Library = None
             if typ == 'plugin':
                 _bin = Plugin.from_path(bin_path,
                                         _search_paths=search_paths)
@@ -1029,27 +1139,33 @@ class BinaryGroup(object):
 
             _sub_dest = os.path.normpath(os.path.dirname(bin_relpath))
             install_binary(_bin, self.exclude_fn, install_dest,
-                           self.installed_map, self.bin_manifest, sub_dest=_sub_dest)
+                           self.installed_map, self.bin_manifest,
+                           self.rpath_suffixes, sub_dest=_sub_dest)
 
-            # Remap rpaths from any maching keys to their values using rpath_map
-            bin_abs_dest = os.path.join(os.path.join(install_dest, _sub_dest), os.path.basename(_bin.path))
+            # Remap rpaths from any maching keys in rpath_map to 
+            # their values, if the value is not None, delete otherwise.
+            bin_abs_dest = os.path.join(
+                os.path.join(install_dest, _sub_dest), 
+                os.path.basename(_bin.path))
             for key, value in self.rpath_map.items():
-                if key in _bin.raw_rpaths:
-                    vprint(f"<rpath-remap> {key} => {value}")
-                    if not dry_run:
+                if key in _bin.raw_trans_rpaths:
+                    if value is not None:
+                        vprint(f"<rpath-remap> {key} -> {value}")
                         Pipeline([
                             'install_name_tool',
                             '-rpath', key, value, bin_abs_dest
-                        ])()
+                        ]).call_non_dry(fatal=False)
+                    else:
+                        vprint(f"<rpath-del> {key}")
+                        Pipeline([
+                            'install_name_tool',
+                            '-delete_rpath', key, bin_abs_dest
+                        ]).call_non_dry(fatal=False)
 
-            # Modules are assumed to only be loaded by binaries in install_dest/bin
             if typ == 'module':
-                _bin.set_installed_id(os.path.join(
-                    '@executable_path', '..', os.path.normpath(bin_relpath)))
+                _bin.set_installed_id(os.path.join('@rpath', _bin.name))
 
         update_manifest(_manifest, _installed)
-        fix_installed_binaries(_installed)
-
         self._is_installed = True
 
 
@@ -1058,22 +1174,36 @@ def main(args):
     parser = _arg_parser()
     opts = parser.parse_args(args)
 
-    global dry_run, is_verbose, \
-        install_source, install_dest, \
-        third_party_path, third_party_libs, \
-        paraview_v, python_v
+    global dry_run, is_verbose, install_source, install_dest, \
+        third_party_path, third_party_libs, paraview_v, python_v
 
     install_source, install_dest = (opts.source, opts.dest)
     third_party_path = opts.third_party[0]
     third_party_libs = \
         [os.path.join(third_party_path, ldir) for ldir in set(opts.third_party[1:])]
-    dry_run, is_verbose = (opts.dry_run,opts.verbose)
+    dry_run, is_verbose = (opts.dry_run, opts.verbose)
     paraview_v, python_v = (opts.pv, opts.py)
 
+    # Shell commands will be run relative to install_source.
     os.chdir(install_source)
+    
     # Copy paraview binary from dummy .app to bin.
     os_makedirs(os.path.dirname(f'{install_dest}/bin'))
     shutil.copy2(f'{install_source}/Applications/paraview.app/Contents/MacOS/paraview', f'{install_dest}/bin')
+    
+    # The order is important. Match longest first.
+    # Some paths may have higher precedence than others.
+    # E.g., ../qt/lib < ../root/lib
+    rp_suffixes = [
+        '../../../../../qt/lib',
+        '../../../..',
+        '../../qt/lib',
+        '../../..',
+        '../lib'
+    ]
+    # Add variants with unnecessary trailing slash.
+    rp_suffixes = \
+        reduce(operator.concat, [[s+'/', s] for s in rp_suffixes])
 
     # Remove the old bundle.
     if os.path.exists(install_dest):
@@ -1083,52 +1213,66 @@ def main(args):
 
     def _preprocess_uni_bin(bin_path):
         # libs in lib/universal require special treatment
-        # where their @loader_path is added as an rpath entry.
-        if not dry_run:
-            Pipeline([
-                'install_name_tool',
-                '-add_rpath', '@loader_path',
-                bin_path,
-            ])()
+        # where their @loader_path is added as an rpath
+        # entry *before* creating their Library objects
+        Pipeline([
+            'install_name_tool',
+            '-add_rpath', '@loader_path',
+            bin_path,
+        ]).call_non_dry()
 
-    # Qt is always a dependency. Make sure its in --third-party.
+    # Qt is always a dependency. Make sure it's in --third-party.
     qt_lib_dir = os.path.join(third_party_path, 'qt', 'lib')
+
     if not os.path.isdir(qt_lib_dir):
         raise RuntimeError(f"./qt/lib directory does not exist in {third_party_path}")
+    
+    # Mark undesirable for deletion with None.
+    rpath_map = { qt_lib_dir: None, '@executable_path/': None, '@executable_path/../lib': None }
 
-    print("Install binary groups")
+    print("==> Install binary groups")
     bin_groups = \
         [
-            BinaryGroup("./bin", rpath_map={qt_lib_dir: "@executable_path/../../qt/lib"}),
-            BinaryGroup(f"./lib/python{python_v}"),
-            BinaryGroup(f"./lib/paraview-{paraview_v}"),
-            BinaryGroup("./lib/universal", preproc_fn=_preprocess_uni_bin),
+            BinaryGroup("./bin", rp_suffixes, rpath_map=rpath_map),
+            BinaryGroup(f"./lib/python{python_v}", rp_suffixes, rpath_map=rpath_map),
+            BinaryGroup(f"./lib/paraview-{paraview_v}", rp_suffixes, rpath_map=rpath_map),
+            BinaryGroup("./lib/universal", rp_suffixes, preproc_fn=_preprocess_uni_bin, rpath_map=rpath_map),
         ]
 
     for bin_group in bin_groups:
         bin_group.install()
 
-    print("Installing remaining (likely runtime loaded) binaries as modules")
+    print("==> Installing remaining (likely runtime loaded) binaries as modules")
     rem_set = set(find_bins_in('./lib')).difference(_installed.keys())
-    remaining = BinaryGroup(list(rem_set), typ='module')
+    
+    remaining = BinaryGroup(list(rem_set), rp_suffixes, typ='module', rpath_map=rpath_map)
     remaining.install()
+    
+    print("==> Fixing installed binary groups")
+    fix_installed_binaries(_installed)
 
-    print("Dump manifest.json to --source")
+    print("==> Dump manifest.json to --source")
     # Dump manifest to --source, like a sort of receipt.
     with open('manifest.json', 'w') as fout:
         json.dump(_manifest, fout)
+    
+    print("==> Dump final_rpaths.json to --source")
+    # For manually checking if any crazy rpaths are generated.
+    with open('final_rpaths.json', 'w') as fout:
+        json.dump(_fin_rpaths, fout)
 
     # Copy dummy .app too, just to keep 'clever' cmake files happy.
-    print("Copying remaining files in --source to --dest")
-    for _path in ['Applications', 'bin', 'include', 'lib', 'materials', 'share']:
-        # first copy over tree without symlinks, then just the symlinks
-        # to make sure everything is copied over correctly
-        for symlinks, skip_symlinks in [(False, True), (True, False)]:
-            copy_tree(os.path.join(install_source, _path),
-                      os.path.join(install_dest, _path),
-                      symlinks=symlinks,
-                      skip_symlinks=skip_symlinks,
-                      dirs_exist_ok=True)
+    print("==> Copying remaining files in --source to --dest")
+    if not dry_run:
+        for _path in ['Applications', 'bin', 'include', 'lib', 'materials', 'share']:
+            # First copy over tree without symlinks, then just the 
+            # symlinks to make sure everything is copied correctly.
+            for symlinks, skip_symlinks in [(False, True), (True, False)]:
+                copy_tree(os.path.join(install_source, _path),
+                        os.path.join(install_dest, _path),
+                        symlinks=symlinks,
+                        skip_symlinks=skip_symlinks,
+                        dirs_exist_ok=True)
 
     # Clean references to source install path in misc. files.
     # This is all manual, I'm afraid. When upgrading, whoever
@@ -1138,38 +1282,39 @@ def main(args):
     if not dry_run:
         os.chdir(install_dest)
 
-        print("Cleaning references to --source in --dest")
+        print("==> Cleaning references to --source in --dest")
 
-        print("=> include/ospray/SDK/**/*_ispc.h")
+        print("<clean> include/ospray/SDK/**/*_ispc.h")
         os.system("find ./include/ospray/SDK -name '*_ispc.h' -exec sed -i '' 2d {} \\;")
 
-        print(f"=> include/paraview-{paraview_v}/vtkCPConfig.h")
+        print(f"<clean> include/paraview-{paraview_v}/vtkCPConfig.h")
         os.system("sed -i '' "
                   "'s|#define PARAVIEW_BINARY_DIR.*|#define PARAVIEW_BINARY_DIR \"./bin\"|g; "
                   "s|#define PARAVIEW_INSTALL_DIR.*|#define PARAVIEW_INSTALL_DIR \"./\"|g;' "
                   f'include/paraview-{paraview_v}/vtkCPConfig.h'
                   )
 
-        print("=> lib/cmake/**/*.cmake")
+        print("<clean> lib/cmake/**/*.cmake")
         os.system(f"find {install_dest}/lib/cmake -name '*.cmake' -exec sed -E -i '' "
                   f'\'s|([[:space:]]*)(IMPORTED_SONAME_RELEASE)([[:space:]]*)"{install_source}/(.*)"|\\1\\2\\3"\\4"|g\''
                   ' {} +'
                   )
 
-        print("=> lib/pkgconfig/nlohmann_json.pc")
+        print("<clean> lib/pkgconfig/nlohmann_json.pc")
         os.system(f"sed -i '' 's|Cflags:.*|Cflags: |g;' lib/pkgconfig/nlohmann_json.pc")
-
-    print('Looking for broken or circular symlinks')
-    broken_links = \
-        Pipeline((f'find {install_dest} -type l -exec test  ! -e' + ' {} ; -print').split())().split()
-    if len(broken_links) > 0:
-        print('WARNING: Found broken or circular links:')
-        for link in broken_links:
-            print(link)
-    else:
-        print('None found')
-
-    print('Done.')
+    
+    print('==> Looking for broken or circular symlinks')
+    if not dry_run:
+        broken_links = \
+            Pipeline((f'find {install_dest} -type l -exec test ! -e' + ' {} ; -print').split())().split()
+        if len(broken_links) > 0:
+            print('WARNING: Found broken or circular links:')
+            for link in broken_links:
+                print(link)
+        else:
+            print('==> None found')
+    
+    print('==> Done.')
 
 
 if __name__ == '__main__':
