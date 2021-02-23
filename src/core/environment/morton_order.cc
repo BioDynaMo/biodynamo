@@ -167,10 +167,13 @@ std::pair<uint64_t, uint64_t> BinarySearch(uint64_t search_val,
 
 // -----------------------------------------------------------------------------
 uint64_t MortonOrder::GetIndex(
-    const std::array<uint64_t, 3>& box_coordinates) const {
+    const std::array<uint64_t, 3>& box_coordinates, uint64_t* morton_code) const {
   auto morton = libmorton::morton3D_64_encode(
       box_coordinates[0], box_coordinates[1], box_coordinates[2]);
   // std::cout << "Morton " << morton << std::endl;
+  if (morton_code != nullptr) {
+    *morton_code = morton;
+  }
   auto result =
       BinarySearch(morton, offset_index_, 0, offset_index_.size() - 1);
   // std::cout << result.first << " - " << result.second << std::endl;

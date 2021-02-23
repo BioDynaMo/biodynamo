@@ -23,7 +23,7 @@ namespace morton_order_test_internal {
 void VerifyPositionToOffsetCalc(const MortonOrder& mo,
                                 const std::array<uint64_t, 3>& num_boxes_axis) {
   auto num_elements = num_boxes_axis[0] * num_boxes_axis[1] * num_boxes_axis[2];
-  std::vector<int> v(num_elements);
+  std::vector<uint64_t> v(num_elements);
 
   // check first and last
   EXPECT_EQ(0u, mo.GetIndex({0, 0, 0}));
