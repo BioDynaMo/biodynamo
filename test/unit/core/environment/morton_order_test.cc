@@ -49,19 +49,28 @@ void VerifyPositionToOffsetCalc(const MortonOrder& mo,
 void VerifyBatchedQueries(const MortonOrder& mo,
                           const MathArray<uint64_t, 3>& center) {
   FixedSizeVector<MathArray<uint64_t, 3>, 27> positions;
-  for (uint64_t z = -1; z < 2; ++z) {
-    for (uint64_t y = -1; y < 2; ++y) {
-      for (uint64_t x = -1; x < 2; ++x) {
-        MathArray<uint64_t, 3> delta({x, y, z});
-        positions.push_back(center + delta);
+  for (int64_t z = -1; z < 2; ++z) {
+    for (int64_t y = -1; y < 2; ++y) {
+      for (int64_t x = -1; x < 2; ++x) {
+        positions.push_back({center[0] + x, center[1] + y, center[2] + z});
       }
     }
   }
 
-  auto result = mo.GetIndex(positions);
+  // expected
+  FixedSizeVector<uint64_t, 27> expected;
   for (uint64_t i = 0; i < 27; ++i) {
-    EXPECT_EQ(mo.GetIndex({positions[i][0], positions[i][1], positions[i][2]}),
-              result[i]);
+    expected.push_back(mo.GetIndex({positions[i][0], positions[i][1], positions[i][2]}));
+  }
+  std::sort(expected.begin(), expected.end());
+
+  // actual
+  FixedSizeVector<uint64_t, 27> result;
+  mo.GetIndex(positions, &result);
+  
+  // compare
+  for (uint64_t i = 0; i < 27; ++i) {
+    EXPECT_EQ(expected[i], result[i]);
   }
 }
 
@@ -146,7 +155,7 @@ TEST(MortonOrder, 537) {
 
   // Index calculation
   VerifyPositionToOffsetCalc(mo, {5, 3, 7});
-  VerifyBatchedQueries(mo, {2, 1, 6});
+  VerifyBatchedQueries(mo, {2, 1, 5});
 }
 
 }  // namespace morton_order_test_internal

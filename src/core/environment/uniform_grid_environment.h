@@ -769,62 +769,68 @@ class UniformGridEnvironment : public Environment {
   /// @param[in]  box_idx         The query box
   ///
   void GetMooreBoxes(FixedSizeVector<const Box*, 27>* neighbor_boxes,
-                     size_t box_idx) const {
-    neighbor_boxes->push_back(GetBoxPointer(box_idx));
-
-    // Adjacent 6 (top, down, left, right, front and back)
-    if (adjacency_ >= kLow) {
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - 1));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + 1));
+                     size_t morton_code) const {
+    FixedSizeVector<uint64_t, 27> box_indices;
+    GetMooreBoxIndices(&box_indices, morton_code);
+    for(uint64_t i = 0; i < box_indices.size(); ++i) {
+      neighbor_boxes->push_back(GetBoxPointer(box_indices[i]));
     }
 
-    // Adjacent 12
-    if (adjacency_ >= kMedium) {
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_axis_[0] + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0]));
-      neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_axis_[0] + 1));
-    }
-
-    // Adjacent 8
-    if (adjacency_ >= kHigh) {
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1));
-      neighbor_boxes->push_back(
-          GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1));
-    }
+    // neighbor_boxes->push_back(GetBoxPointer(box_idx));
+    // 
+    // // Adjacent 6 (top, down, left, right, front and back)
+    // if (adjacency_ >= kLow) {
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_axis_[0]));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_axis_[0]));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx - 1));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx + 1));
+    // }
+    // 
+    // // Adjacent 12
+    // if (adjacency_ >= kMedium) {
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0]));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ - 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx - num_boxes_axis_[0] - 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0]));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ - 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx + num_boxes_axis_[0] - 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0]));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx - num_boxes_xy_ + 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx - num_boxes_axis_[0] + 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0]));
+    //   neighbor_boxes->push_back(GetBoxPointer(box_idx + num_boxes_xy_ + 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx + num_boxes_axis_[0] + 1));
+    // }
+    // 
+    // // Adjacent 8
+    // if (adjacency_ >= kHigh) {
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1));
+    //   neighbor_boxes->push_back(
+    //       GetBoxPointer(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1));
+    // }
   }
 
   /// @brief      Gets the box indices of all adjacent boxes. Also adds the
@@ -834,48 +840,64 @@ class UniformGridEnvironment : public Environment {
   /// @param[in]  box_idx         The query box
   ///
   void GetMooreBoxIndices(FixedSizeVector<uint64_t, 27>* box_indices,
-                          size_t box_idx) const {
-    box_indices->push_back(box_idx);
+                          uint64_t morton_code) const {
 
-    // Adjacent 6 (top, down, left, right, front and back)
-    if (adjacency_ >= kLow) {
-      box_indices->push_back(box_idx - num_boxes_xy_);
-      box_indices->push_back(box_idx + num_boxes_xy_);
-      box_indices->push_back(box_idx - num_boxes_axis_[0]);
-      box_indices->push_back(box_idx + num_boxes_axis_[0]);
-      box_indices->push_back(box_idx - 1);
-      box_indices->push_back(box_idx + 1);
+    MathArray<uint64_t, 3> center;
+    libmorton::morton3D_64_decode(morton_code, center[0], center[1], center[2]);
+    FixedSizeVector<MathArray<uint64_t, 3>, 27> positions;
+    // FIXME take adjacency into account
+    for (int64_t z = -1; z < 2; ++z) {
+      for (int64_t y = -1; y < 2; ++y) {
+        for (int64_t x = -1; x < 2; ++x) {
+          positions.push_back({center[0] + x, center[1] + y, center[2] + z});
+        }
+      }
     }
+    morton_.GetIndex(positions, box_indices);
 
-    // Adjacent 12
-    if (adjacency_ >= kMedium) {
-      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0]);
-      box_indices->push_back(box_idx - num_boxes_xy_ - 1);
-      box_indices->push_back(box_idx - num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0]);
-      box_indices->push_back(box_idx + num_boxes_xy_ - 1);
-      box_indices->push_back(box_idx + num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0]);
-      box_indices->push_back(box_idx - num_boxes_xy_ + 1);
-      box_indices->push_back(box_idx - num_boxes_axis_[0] + 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0]);
-      box_indices->push_back(box_idx + num_boxes_xy_ + 1);
-      box_indices->push_back(box_idx + num_boxes_axis_[0] + 1);
-    }
-
-    // Adjacent 8
-    if (adjacency_ >= kHigh) {
-      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1);
-      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1);
-      box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1);
-    }
+    // FIXME delete
+    // box_indices->push_back(box_idx);
+    // 
+    // // Adjacent 6 (top, down, left, right, front and back)
+    // if (adjacency_ >= kLow) {
+    //   box_indices->push_back(box_idx - num_boxes_xy_);
+    //   box_indices->push_back(box_idx + num_boxes_xy_);
+    //   box_indices->push_back(box_idx - num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx + num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx - 1);
+    //   box_indices->push_back(box_idx + 1);
+    // }
+    // 
+    // // Adjacent 12
+    // if (adjacency_ >= kMedium) {
+    //   box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ - 1);
+    //   box_indices->push_back(box_idx - num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ - 1);
+    //   box_indices->push_back(box_idx + num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ + 1);
+    //   box_indices->push_back(box_idx - num_boxes_axis_[0] + 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0]);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ + 1);
+    //   box_indices->push_back(box_idx + num_boxes_axis_[0] + 1);
+    // }
+    // 
+    // // Adjacent 8
+    // if (adjacency_ >= kHigh) {
+    //   box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ - num_boxes_axis_[0] + 1);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx - num_boxes_xy_ + num_boxes_axis_[0] + 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ - num_boxes_axis_[0] + 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] - 1);
+    //   box_indices->push_back(box_idx + num_boxes_xy_ + num_boxes_axis_[0] + 1);
+    // }
   }
 
+  /// FIXME delete dead code - move docuementation of layers to GetMooreBoxIndices
   /// Determines current box based on parameter box_idx and adds it together
   /// with half of the surrounding boxes to the vector.
   /// Legend: C = center, N = north, E = east, S = south, W = west, F = front,

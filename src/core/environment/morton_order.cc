@@ -181,15 +181,14 @@ uint64_t MortonOrder::GetIndex(
 }
 
 // -----------------------------------------------------------------------------
-FixedSizeVector<uint64_t, 27> MortonOrder::GetIndex(
-    const FixedSizeVector<MathArray<uint64_t, 3>, 27>& box_positions) const {
-  FixedSizeVector<uint64_t, 27> result;
-  for (uint64_t i = 0; i < 27; ++i) {
+void MortonOrder::GetIndex(const FixedSizeVector<MathArray<uint64_t, 3>, 27>& box_positions, 
+                          FixedSizeVector<uint64_t, 27>* result) const {
+  for (uint64_t i = 0; i < box_positions.size(); ++i) {
     const auto& p = box_positions[i];
-    result[i] = libmorton::morton3D_64_encode(p[0], p[1], p[2]);
+    result->push_back(libmorton::morton3D_64_encode(p[0], p[1], p[2]));
   }
 
-  std::sort(result.begin(), result.end());
+  std::sort(result->begin(), result->end());
 
   // Use result index as start value for next binary search
   // exploiting the fact that the values are sorted.
@@ -197,13 +196,12 @@ FixedSizeVector<uint64_t, 27> MortonOrder::GetIndex(
   // where n is the number of box_positions and o the size of
   // the offset_index_ vector
   std::pair<uint64_t, uint64_t> partial_result = {0, 0};
-  for (uint64_t i = 0; i < 27; ++i) {
+  for (uint64_t i = 0; i < box_positions.size(); ++i) {
     partial_result =
-        BinarySearch(result[i], offset_index_, partial_result.second,
+        BinarySearch((*result)[i], offset_index_, partial_result.second,
                      offset_index_.size() - 1);
-    result[1] = partial_result.first;
+    (*result)[i] -= partial_result.first;
   }
-  return result;
 }
 
 }  // namespace bdm
