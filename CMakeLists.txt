@@ -576,6 +576,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/behavior/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/environment/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
@@ -590,6 +591,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/behavior/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/environment/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h

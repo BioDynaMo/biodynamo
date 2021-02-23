@@ -18,6 +18,7 @@
 #include <array>
 #include <vector>
 #include "core/container/fixed_size_vector.h"
+#include "core/container/math_array.h"
 
 namespace bdm {
 
@@ -26,7 +27,7 @@ class MortonOrder {
   void Update(const std::array<uint64_t, 3>& num_boxes_axis);
   uint64_t GetIndex(const std::array<uint64_t, 3>& box_coordinates) const;
   FixedSizeVector<uint64_t, 27> GetIndex(
-      const FixedSizeVector<std::array<uint64_t, 3>, 27>& boxes) const;
+      const FixedSizeVector<MathArray<uint64_t, 3>, 27>& box_positions) const;
   // private:
   std::vector<std::pair<uint64_t, uint64_t>> offset_index_;
 };
