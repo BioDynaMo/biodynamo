@@ -251,7 +251,7 @@ _source_thisbdm()
         ParaView_LIB_DIR=$_newpath
       fi
       if [ -n "${PV_PLUGIN_PATH}" ]; then
-        _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys}/biodynamo/lib/pv_plugin"
+        _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys}/lib/pv_plugin"
         PV_PLUGIN_PATH=$_newpath
       fi
       if [ -n "${PATH}" ]; then
