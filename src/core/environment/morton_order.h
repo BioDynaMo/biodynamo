@@ -25,10 +25,9 @@ namespace bdm {
 class MortonOrder {
  public:
   void Update(const std::array<uint64_t, 3>& num_boxes_axis);
-  uint64_t GetIndex(const std::array<uint64_t, 3>& box_coordinates, uint64_t* morton_code = nullptr) const;
-  void GetIndex(const FixedSizeVector<MathArray<uint64_t, 3>, 27>& box_positions,
-                FixedSizeVector<uint64_t, 27>* indices) const;
-  // private:
+  uint64_t GetMortonCode(uint64_t box_index) const;
+  
+ private:
   std::vector<std::pair<uint64_t, uint64_t>> offset_index_;
 };
 
