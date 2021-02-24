@@ -19,6 +19,18 @@
 namespace bdm {
 namespace morton_order_test_internal {
 
+struct VerifyIteratorFunctor : public Functor<void, Iterator<uint64_t>*> {
+  std::vector<uint64_t>& actual;
+  VerifyIteratorFunctor(std::vector<uint64_t>& actual) : actual(actual) {}
+  virtual ~VerifyIteratorFunctor(){};
+
+  void operator()(Iterator<uint64_t>* it) {
+    while (it->HasNext()) {
+      actual.push_back(it->Next());
+    }
+  }
+};
+
 // -----------------------------------------------------------------------------
 void VerifyMortonOrder(const MortonOrder& mo,
                        const MathArray<uint64_t, 3>& num_boxes_axis) {
@@ -35,12 +47,29 @@ void VerifyMortonOrder(const MortonOrder& mo,
     }
   }
   std::sort(expected.begin(), expected.end());
-  
-  std::vector<uint64_t> actual(num_elements);
-  for(uint64_t i = 0; i < num_elements; ++i) {
-    actual[i] = mo.GetMortonCode(i);
+
+  {
+    std::vector<uint64_t> actual(num_elements);
+    for (uint64_t i = 0; i < num_elements; ++i) {
+      actual[i] = mo.GetMortonCode(i);
+    }
+    EXPECT_EQ(expected, actual);
   }
-  EXPECT_EQ(expected, actual);
+
+  // using iterator
+  if (num_elements <= 5) {
+    return;
+  }
+  {
+    std::vector<uint64_t> actual;
+    auto start = num_elements / 2;
+    auto end = num_elements - 2;
+    VerifyIteratorFunctor f{actual};
+    mo.CallMortonIteratorConsumer(start, end, f);
+    for (uint64_t i = start; i <= end; ++i) {
+      EXPECT_EQ(expected[i], actual[i - start]);
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------

@@ -47,6 +47,7 @@ struct Aux {
 
 // -----------------------------------------------------------------------------
 void MortonOrder::Update(const std::array<uint64_t, 3>& num_boxes_axis) {
+  num_boxes_ = num_boxes_axis[0] * num_boxes_axis[1] * num_boxes_axis[2];
   std::array<uint64_t, 3> max_dimensions{
       num_boxes_axis[0] - 1, num_boxes_axis[1] - 1, num_boxes_axis[2] - 1};
   auto max_dim = std::max(num_boxes_axis[0],
@@ -143,7 +144,8 @@ template <typename T>
 std::pair<uint64_t, uint64_t> BinarySearch(uint64_t search_val,
                                            const T& container, uint64_t from,
                                            uint64_t to) {
-  // std::cout << " sv " << search_val << " from " << from << " to " << to <<  std::endl;
+  // std::cout << " sv " << search_val << " from " << from << " to " << to <<
+  // std::endl;
 
   if (container.size() == 0) {
     return {0, 0};
@@ -157,7 +159,8 @@ std::pair<uint64_t, uint64_t> BinarySearch(uint64_t search_val,
   }
 
   auto m = (from + to) / 2;
-  // std::cout << " sv " << search_val << " from " << from << " to " << to << " m "
+  // std::cout << " sv " << search_val << " from " << from << " to " << to << "
+  // m "
   //           << m << " val[m] " << container[m].first << std::endl;
   if (container[m].first == search_val) {
     // std::cout << "  found " << container[m].second << std::endl;
@@ -171,7 +174,59 @@ std::pair<uint64_t, uint64_t> BinarySearch(uint64_t search_val,
 
 // -----------------------------------------------------------------------------
 uint64_t MortonOrder::GetMortonCode(uint64_t box_index) const {
-  return BinarySearch(box_index, offset_index_, 0, offset_index_.size() - 1).first + box_index;
+  return BinarySearch(box_index, offset_index_, 0, offset_index_.size() - 1)
+             .first +
+         box_index;
+}
+
+// -----------------------------------------------------------------------------
+class MortonIterator : public Iterator<uint64_t> {
+ public:
+  MortonIterator(uint64_t start_index, uint64_t last_index,
+                 uint64_t start_morton_code, uint64_t offset_pos,
+                 const std::vector<std::pair<uint64_t, uint64_t>>& offset_index)
+      : next_index_(start_index),
+        last_index_(last_index),
+        next_morton_code_(start_morton_code),
+        offset_pos_(offset_pos),
+        offset_index_(offset_index) {}
+  virtual ~MortonIterator() {}
+
+  bool HasNext() const override { return next_index_ <= last_index_; }
+
+  uint64_t Next() override {
+    if (!HasNext()) {
+      return 0;
+    }
+    auto ret = next_morton_code_;
+    next_index_++;
+    if (HasNext()) {
+      if (offset_pos_ + 1 < offset_index_.size() &&
+          offset_index_[offset_pos_ + 1].first == next_index_) {
+        offset_pos_++;
+      }
+      next_morton_code_ = next_index_ + offset_index_[offset_pos_].second;
+    }
+    return ret;
+  }
+
+ private:
+  uint64_t next_index_;
+  uint64_t last_index_;
+  uint64_t next_morton_code_ = 0;
+  uint64_t offset_pos_ = 0;
+  const std::vector<std::pair<uint64_t, uint64_t>>& offset_index_;
+};
+
+// -----------------------------------------------------------------------------
+void MortonOrder::CallMortonIteratorConsumer(
+    uint64_t start_index, uint64_t end_index,
+    Functor<void, Iterator<uint64_t>*>& f) const {
+  auto result =
+      BinarySearch(start_index, offset_index_, 0, offset_index_.size() - 1);
+  MortonIterator it(start_index, end_index, start_index + result.first,
+                    result.second, offset_index_);
+  f(&it);
 }
 
 }  // namespace bdm

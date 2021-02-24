@@ -19,15 +19,21 @@
 #include <vector>
 #include "core/container/fixed_size_vector.h"
 #include "core/container/math_array.h"
+#include "core/functor.h"
+#include "core/util/iterator.h"
 
 namespace bdm {
 
 class MortonOrder {
  public:
   void Update(const std::array<uint64_t, 3>& num_boxes_axis);
+  /// Runtime O(log(num_boxes))
   uint64_t GetMortonCode(uint64_t box_index) const;
-  
+  void CallMortonIteratorConsumer(uint64_t start_index, uint64_t end_index,
+                                  Functor<void, Iterator<uint64_t>*>& f) const;
+
  private:
+  uint64_t num_boxes_;
   std::vector<std::pair<uint64_t, uint64_t>> offset_index_;
 };
 
