@@ -65,10 +65,13 @@
     <class name="bdm::Environment" />
     <class name="bdm::Environment::SimDimensionAndLargestAgentFunctor" />
     <class name="bdm::UniformGridEnvironment" />
+    <class name="bdm::UniformGridEnvironment::LoadBalanceInfoUG" />
     <class name="bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper" />
     <class name="bdm::ParallelResizeVector<double>" />
+    <class name="bdm::ParallelResizeVector<uint64_t>" />
     <class name="bdm::ParallelResizeVector<bdm::MathArray<double, 3ul>>" />
-    <class name="bdm::ParallelResizeVector<bdm::Grid::Box>" />
+    <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
+    <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::Grid::Box const*>>" />
   </exclusion>
 </lcgdict>
