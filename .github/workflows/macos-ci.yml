@@ -52,9 +52,7 @@ jobs:
       working-directory: build
       run: |
         . bin/thisbdm.sh
-        # does not work as DYLD_LIBRARY_PATH needed for PV will be unset on exec()
-        #ninja run-unit-tests
-        bin/biodynamo-unit-tests
+        ninja run-unit-tests
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
