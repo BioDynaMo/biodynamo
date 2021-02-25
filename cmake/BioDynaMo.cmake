@@ -149,6 +149,7 @@ function(generate_rootlogon)
   # the one-definition rule
   if (dict)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define USE_DICT\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_INCLUDE_PATH($BDMSYS/include)\")\;")
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_LIBRARY_PATH($BDMSYS/lib)\")\;")
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;")
     # We add this one because the ROOT visualization require it, and it's not one
