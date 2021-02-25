@@ -151,7 +151,7 @@ std::pair<uint64_t, uint64_t> BinarySearch(uint64_t search_val,
     return {0, 0};
   }
   if (to <= from) {
-    if (container[from].first != search_val && from > 0) {
+    if (container[from].first > search_val && from > 0) {
       from--;
     }
     // std::cout << "  found2 " << container[from].second << std::endl;

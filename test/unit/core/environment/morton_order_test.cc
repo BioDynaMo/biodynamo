@@ -95,6 +95,14 @@ TEST(MortonOrder, Cube3) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(MortonOrder, Cube12) {
+  MortonOrder mo;
+  mo.Update({12, 12, 12});
+  EXPECT_EQ(3588u, mo.GetMortonCode(1668));
+  VerifyMortonOrder(mo, {12, 12, 12});
+}
+
+// -----------------------------------------------------------------------------
 TEST(MortonOrder, 135) {
   MortonOrder mo;
   mo.Update({1, 3, 5});

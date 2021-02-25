@@ -50,8 +50,20 @@ void UniformGridEnvironment::LoadBalanceInfoUG::AllocateMemory() {
 
 // -----------------------------------------------------------------------------
 void UniformGridEnvironment::LoadBalanceInfoUG::InitializeVectors() {
-  InitializeVectorFunctor f(grid_, 0, sorted_boxes_, cummulated_agents_);
-  mo_.CallMortonIteratorConsumer(0, grid_->total_num_boxes_, f);
+#pragma omp parallel
+  {
+    auto* ti = ThreadInfo::GetInstance();
+    auto num_threads = ti->GetMaxThreads();
+    auto tid = ti->GetMyThreadId();
+    // use static scheduling
+    auto correction = grid_->total_num_boxes_ % num_threads == 0 ? 0 : 1;
+    auto chunk = grid_->total_num_boxes_ / num_threads + correction;
+    auto start = tid * chunk;
+    auto end = std::min(grid_->total_num_boxes_, start + chunk);
+
+    InitializeVectorFunctor f(grid_, start, sorted_boxes_, cummulated_agents_);
+    mo_.CallMortonIteratorConsumer(start, end - 1, f);
+  }
 }
 
 // -----------------------------------------------------------------------------
