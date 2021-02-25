@@ -168,36 +168,24 @@ struct DeleteAgentsFunctor : public Functor<void, Agent*> {
   void operator()(Agent* agent) { delete agent; }
 };
 
-struct UpdateUidAgentHandleMapFunctor
-    : public Functor<void, Agent*, AgentHandle> {
-  using Map = AgentUidMap<AgentHandle>;
-  explicit UpdateUidAgentHandleMapFunctor(Map& rm_uid_ah_map)
-      : rm_uid_ah_map_(rm_uid_ah_map) {}
-
-  void operator()(Agent* agent, AgentHandle ah) {
-    rm_uid_ah_map_.Insert(agent->GetUid(), ah);
-  }
-
- private:
-  Map& rm_uid_ah_map_;
-};
-
 struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
   bool minimize_memory;
   uint64_t start;
   uint64_t nid;
   std::vector<std::vector<Agent*>>& agents;
   std::vector<Agent*>& dest;
+  AgentUidMap<AgentHandle>& uid_ah_map;
   TypeIndex* type_index;
 
   LoadBalanceFunctor(bool minimize_memory, uint64_t start, uint64_t nid,
                      decltype(agents) agents, decltype(dest) dest,
-                     TypeIndex* type_index)
+                     decltype(uid_ah_map) uid_ah_map, TypeIndex* type_index)
       : minimize_memory(minimize_memory),
         start(start),
         nid(nid),
         agents(agents),
         dest(dest),
+        uid_ah_map(uid_ah_map),
         type_index(type_index) {}
 
   void operator()(Iterator<AgentHandle>* it) {
@@ -210,7 +198,9 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
       // FIXME skip if numa nodes match and minimize_memory is on
       auto* agent = agents[handle.GetNumaNode()][handle.GetElementIdx()];
       auto* copy = agent->NewCopy();
-      dest[start++] = copy;
+      auto el_idx = start++;
+      dest[el_idx] = copy;
+      uid_ah_map.Insert(copy->GetUid(), AgentHandle(nid, el_idx));
       if (type_index) {
         type_index->Update(copy);
       }
@@ -287,7 +277,7 @@ void ResourceManager::LoadBalance() {
       auto end = std::min(agent_per_numa[n], start + chunk);
 
       LoadBalanceFunctor f(minimize_memory, start, nid, agents_, dest,
-                           type_index_);
+                           uid_ah_map_, type_index_);
       lbi->CallHandleIteratorConsumer(start, end, f);
       // for (uint64_t e = start; e < end; e++) {
       //   auto& handle = agent_handles[e];
@@ -315,11 +305,6 @@ void ResourceManager::LoadBalance() {
   for (int n = 0; n < numa_nodes; n++) {
     agents_[n].swap(agent_rearranged[n]);
   }
-
-  // update uid_ah_map_
-  // FIXME do this during update
-  UpdateUidAgentHandleMapFunctor functor(uid_ah_map_);
-  ForEachAgentParallel(functor);
 
   if (Simulation::GetActive()->GetParam()->debug_numa) {
     std::cout << *this << std::endl;
