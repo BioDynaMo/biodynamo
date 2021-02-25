@@ -158,9 +158,10 @@ void UniformGridEnvironment::LoadBalanceInfoUG::CallHandleIteratorConsumer(
       BinarySearch(start, cummulated_agents_, 0, grid_->total_num_boxes_ - 1) +
       1;
   // #pragma omp critical
-  //   std::cout << "start " << start << " end " << end << " index " << index <<
-  //   " ca[index] " << cummulated_agents_[index] << " ca[index  - 1] " <<
-  //   cummulated_agents_[index - 1] << std::endl;
+  //   std::cout << ThreadInfo::GetInstance()->GetMyThreadId() << " start " <<
+  //   start << " end " << end << " index " << index << " ca[index] " <<
+  //   cummulated_agents_[index] << " ca[index  - 1] " <<
+  // cummulated_agents_[index - 1] << std::endl;
   AgentHandleIterator it(start, end, index,
                          start - cummulated_agents_[index - 1], sorted_boxes_);
   f(&it);

@@ -171,18 +171,19 @@ struct DeleteAgentsFunctor : public Functor<void, Agent*> {
 
 struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
   bool minimize_memory;
-  uint64_t start;
+  uint64_t offset;
+  uint64_t offset_in_numa;
   uint64_t nid;
   std::vector<std::vector<Agent*>>& agents;
   std::vector<Agent*>& dest;
   AgentUidMap<AgentHandle>& uid_ah_map;
   TypeIndex* type_index;
 
-  LoadBalanceFunctor(bool minimize_memory, uint64_t start, uint64_t nid,
+  LoadBalanceFunctor(bool minimize_memory, uint64_t offset, uint64_t nid,
                      decltype(agents) agents, decltype(dest) dest,
                      decltype(uid_ah_map) uid_ah_map, TypeIndex* type_index)
       : minimize_memory(minimize_memory),
-        start(start),
+        offset(offset),
         nid(nid),
         agents(agents),
         dest(dest),
@@ -192,14 +193,10 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
   void operator()(Iterator<AgentHandle>* it) {
     while (it->HasNext()) {
       auto handle = it->Next();
-      // #pragma omp critical
-      //       std::cout << "                        " <<
-      //       ThreadInfo::GetInstance()->GetMyThreadId() << " Process " <<
-      //       handle << std::endl;
       // FIXME skip if numa nodes match and minimize_memory is on
       auto* agent = agents[handle.GetNumaNode()][handle.GetElementIdx()];
       auto* copy = agent->NewCopy();
-      auto el_idx = start++;
+      auto el_idx = offset++;
       dest[el_idx] = copy;
       uid_ah_map.Insert(copy->GetUid(), AgentHandle(nid, el_idx));
       if (type_index) {
@@ -217,6 +214,7 @@ void ResourceManager::LoadBalance() {
   // threads associated with each numa domain
   auto numa_nodes = thread_info_->GetNumaNodes();
   std::vector<uint64_t> agent_per_numa(numa_nodes);
+  std::vector<uint64_t> agent_per_numa_cumm(numa_nodes);
   uint64_t cummulative = 0;
   auto max_threads = thread_info_->GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
@@ -226,6 +224,10 @@ void ResourceManager::LoadBalance() {
     cummulative += num_agents;
   }
   agent_per_numa[0] = GetNumAgents() - cummulative;
+  agent_per_numa_cumm[0] = 0;
+  for (int n = 1; n < numa_nodes; ++n) {
+    agent_per_numa_cumm[n] = agent_per_numa_cumm[n - 1] + agent_per_numa[n - 1];
+  }
 
   // using first touch policy - page will be allocated to the numa domain of
   // the thread that accesses it first.
@@ -242,53 +244,36 @@ void ResourceManager::LoadBalance() {
   auto* param = Simulation::GetActive()->GetParam();
   const bool minimize_memory = param->minimize_memory_while_rebalancing;
 
-// create new objects
+// create new agents
 #pragma omp parallel
   {
     auto tid = thread_info_->GetMyThreadId();
     auto nid = thread_info_->GetNumaNode(tid);
 
-    // FIXME remove this for-loop - all threads should work at the same time
-    for (int n = 0; n < numa_nodes; n++) {
-      if (nid != n) {
-        continue;
+    auto& dest = agents_lb_[nid];
+    if (thread_info_->GetNumaThreadId(tid) == 0) {
+      if (dest.capacity() < agent_per_numa[nid]) {
+        dest.reserve(agent_per_numa[nid] * 1.5);
       }
-      auto& dest = agents_lb_[n];
-
-      if (thread_info_->GetNumaThreadId(tid) == 0) {
-        if (dest.capacity() < agent_per_numa[n]) {
-          dest.reserve(agent_per_numa[n] * 1.5);
-        }
-        dest.resize(agent_per_numa[n]);
-      }
+      dest.resize(agent_per_numa[nid]);
+    }
 
 #pragma omp barrier
 
-      auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-      assert(thread_info_->GetNumaNode(tid) ==
-             numa_node_of_cpu(sched_getcpu()));
+    auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
+    assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
-      // use static scheduling
-      auto correction = agent_per_numa[n] % threads_in_numa == 0 ? 0 : 1;
-      auto chunk = agent_per_numa[n] / threads_in_numa + correction;
-      auto start = thread_info_->GetNumaThreadId(tid) * chunk;
-      auto end = std::min(agent_per_numa[n], start + chunk);
+    // use static scheduling
+    auto correction = agent_per_numa[nid] % threads_in_numa == 0 ? 0 : 1;
+    auto chunk = agent_per_numa[nid] / threads_in_numa + correction;
+    auto start =
+        thread_info_->GetNumaThreadId(tid) * chunk + agent_per_numa_cumm[nid];
+    auto end =
+        std::min(agent_per_numa_cumm[nid] + agent_per_numa[nid], start + chunk);
 
-      LoadBalanceFunctor f(minimize_memory, start, nid, agents_, dest,
-                           uid_ah_map_, type_index_);
-      lbi->CallHandleIteratorConsumer(start, end, f);
-      // for (uint64_t e = start; e < end; e++) {
-      //   auto& handle = agent_handles[e];
-      //   auto* agent = agents_[handle.GetNumaNode()][handle.GetElementIdx()];
-      //   dest[e] = agent->NewCopy();
-      //   if (type_index_) {
-      //     type_index_->Update(dest[e]);
-      //   }
-      //   if (minimize_memory) {
-      //     delete agent;
-      //   }
-      // }
-    }
+    LoadBalanceFunctor f(minimize_memory, start - agent_per_numa_cumm[nid], nid,
+                         agents_, dest, uid_ah_map_, type_index_);
+    lbi->CallHandleIteratorConsumer(start, end, f);
   }
 
   // delete old objects. This approach has a high chance that a thread
