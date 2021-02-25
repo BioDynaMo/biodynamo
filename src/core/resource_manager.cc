@@ -25,6 +25,7 @@ ResourceManager::ResourceManager() {
                "Call to numa_available failed with return code: ", ret);
   }
   agents_.resize(numa_num_configured_nodes());
+  agents_lb_.resize(numa_num_configured_nodes());
 
   auto* param = Simulation::GetActive()->GetParam();
   if (param->export_visualization || param->insitu_visualization) {
@@ -235,11 +236,6 @@ void ResourceManager::LoadBalance() {
                "Run on numa node failed. Return code: ", ret);
   }
 
-  // new data structure for rearranged Agent*
-  // FIXME make this a member of Rm
-  decltype(agents_) agent_rearranged;
-  agent_rearranged.resize(numa_nodes);
-
   auto* env = Simulation::GetActive()->GetEnvironment();
   auto lbi = env->GetLoadBalanceInfo();
 
@@ -257,10 +253,12 @@ void ResourceManager::LoadBalance() {
       if (nid != n) {
         continue;
       }
-      auto& dest = agent_rearranged[n];
+      auto& dest = agents_lb_[n];
 
       if (thread_info_->GetNumaThreadId(tid) == 0) {
-        // FIXME reserve more than needed if too small
+        if (dest.capacity() < agent_per_numa[n]) {
+          dest.reserve(agent_per_numa[n] * 1.5);
+        }
         dest.resize(agent_per_numa[n]);
       }
 
@@ -303,7 +301,7 @@ void ResourceManager::LoadBalance() {
   }
 
   for (int n = 0; n < numa_nodes; n++) {
-    agents_[n].swap(agent_rearranged[n]);
+    agents_[n].swap(agents_lb_[n]);
   }
 
   if (Simulation::GetActive()->GetParam()->debug_numa) {

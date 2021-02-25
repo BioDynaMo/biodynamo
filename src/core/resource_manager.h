@@ -405,6 +405,8 @@ class ResourceManager {
   AgentUidMap<AgentHandle> uid_ah_map_ = AgentUidMap<AgentHandle>(100u);  //!
   /// Pointer container for all agents
   std::vector<std::vector<Agent*>> agents_;
+  /// Container used during load balancing
+  std::vector<std::vector<Agent*>> agents_lb_;
   /// Maps a diffusion grid ID to the pointer to the diffusion grid
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
