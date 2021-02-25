@@ -438,11 +438,18 @@ class UniformGridEnvironment : public Environment {
 #endif  // LINUX
   }
 
+  LoadBalanceInfo* GetLoadBalanceInfo() override {
+    lbi_.Update();
+    return &lbi_;
+  }
+
+  // FIXME delete
   /// This method iterates over all elements. Iteration is performed in
   /// Z-order of boxes. There is no particular order for elements inside a box.
   void IterateZOrder(Functor<void, const AgentHandle&>& callback) override {
     lbi_.Update();
     lbi_.Iterate(callback);
+    // FIXME remove
     // UpdateBoxZOrder();
     // for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
     //   // if (lbi_.sorted_boxes_[i] != zorder_sorted_boxes_[i].second) {
@@ -719,8 +726,9 @@ class UniformGridEnvironment : public Environment {
     LoadBalanceInfoUG(UniformGridEnvironment* grid);
     virtual ~LoadBalanceInfoUG();
     void Update();
-    void CallAHIteratorConsumer(
-        uint64_t start, Functor<void, Iterator<AgentHandle>>& f) const override;
+    void CallHandleIteratorConsumer(
+        uint64_t start, uint64_t end,
+        Functor<void, Iterator<AgentHandle>*>& f) const override;
     // FIXME delete
     void Iterate(Functor<void, const AgentHandle&>& callback);
     // private:

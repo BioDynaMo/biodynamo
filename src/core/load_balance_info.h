@@ -24,8 +24,9 @@ namespace bdm {
 class LoadBalanceInfo {
  public:
   virtual ~LoadBalanceInfo() {}
-  virtual void CallAHIteratorConsumer(
-      uint64_t start, Functor<void, Iterator<AgentHandle>>& f) const = 0;
+  virtual void CallHandleIteratorConsumer(
+      uint64_t start, uint64_t end,
+      Functor<void, Iterator<AgentHandle>*>& f) const = 0;
 };
 
 }  // namespace bdm

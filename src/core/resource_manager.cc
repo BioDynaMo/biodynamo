@@ -182,25 +182,42 @@ struct UpdateUidAgentHandleMapFunctor
   Map& rm_uid_ah_map_;
 };
 
-struct RearrangeFunctor : public Functor<void, const AgentHandle&> {
-  std::vector<std::vector<AgentHandle>>& sorted_agent_handles;
-  const std::vector<uint64_t>& agent_per_numa;
-  uint64_t cnt = 0;
-  uint64_t current_numa = 0;
+struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
+  bool minimize_memory;
+  uint64_t start;
+  uint64_t nid;
+  std::vector<std::vector<Agent*>>& agents;
+  std::vector<Agent*>& dest;
+  TypeIndex* type_index;
 
-  RearrangeFunctor(std::vector<std::vector<AgentHandle>>& sorted_agent_handles,
-                   const std::vector<uint64_t>& agent_per_numa)
-      : sorted_agent_handles(sorted_agent_handles),
-        agent_per_numa(agent_per_numa) {}
+  LoadBalanceFunctor(bool minimize_memory, uint64_t start, uint64_t nid,
+                     decltype(agents) agents, decltype(dest) dest,
+                     TypeIndex* type_index)
+      : minimize_memory(minimize_memory),
+        start(start),
+        nid(nid),
+        agents(agents),
+        dest(dest),
+        type_index(type_index) {}
 
-  void operator()(const AgentHandle& handle) {
-    if (cnt == agent_per_numa[current_numa]) {
-      cnt = 0;
-      current_numa++;
+  void operator()(Iterator<AgentHandle>* it) {
+    while (it->HasNext()) {
+      auto handle = it->Next();
+      // #pragma omp critical
+      //       std::cout << "                        " <<
+      //       ThreadInfo::GetInstance()->GetMyThreadId() << " Process " <<
+      //       handle << std::endl;
+      // FIXME skip if numa nodes match and minimize_memory is on
+      auto* agent = agents[handle.GetNumaNode()][handle.GetElementIdx()];
+      auto* copy = agent->NewCopy();
+      dest[start++] = copy;
+      if (type_index) {
+        type_index->Update(copy);
+      }
+      if (minimize_memory) {
+        delete agent;
+      }
     }
-
-    sorted_agent_handles[current_numa].push_back(handle);
-    cnt++;
   }
 };
 
@@ -229,23 +246,12 @@ void ResourceManager::LoadBalance() {
   }
 
   // new data structure for rearranged Agent*
+  // FIXME make this a member of Rm
   decltype(agents_) agent_rearranged;
   agent_rearranged.resize(numa_nodes);
 
-  // numa node -> vector of AgentHandles
-  std::vector<std::vector<AgentHandle>> sorted_agent_handles;
-  sorted_agent_handles.resize(numa_nodes);
-#pragma omp parallel for
-  for (int n = 0; n < numa_nodes; ++n) {
-    if (thread_info_->GetMyNumaNode() == n &&
-        thread_info_->GetMyNumaThreadId() == 0) {
-      sorted_agent_handles[n].reserve(agent_per_numa[n]);
-    }
-  }
-
   auto* env = Simulation::GetActive()->GetEnvironment();
-  RearrangeFunctor rearrange(sorted_agent_handles, agent_per_numa);
-  env->IterateZOrder(rearrange);
+  auto lbi = env->GetLoadBalanceInfo();
 
   auto* param = Simulation::GetActive()->GetParam();
   const bool minimize_memory = param->minimize_memory_while_rebalancing;
@@ -256,6 +262,7 @@ void ResourceManager::LoadBalance() {
     auto tid = thread_info_->GetMyThreadId();
     auto nid = thread_info_->GetNumaNode(tid);
 
+    // FIXME remove this for-loop - all threads should work at the same time
     for (int n = 0; n < numa_nodes; n++) {
       if (nid != n) {
         continue;
@@ -263,33 +270,36 @@ void ResourceManager::LoadBalance() {
       auto& dest = agent_rearranged[n];
 
       if (thread_info_->GetNumaThreadId(tid) == 0) {
-        dest.resize(sorted_agent_handles[n].size());
+        // FIXME reserve more than needed if too small
+        dest.resize(agent_per_numa[n]);
       }
 
 #pragma omp barrier
 
       auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-      auto& agent_handles = sorted_agent_handles[n];
       assert(thread_info_->GetNumaNode(tid) ==
              numa_node_of_cpu(sched_getcpu()));
 
       // use static scheduling
-      auto correction = agent_handles.size() % threads_in_numa == 0 ? 0 : 1;
-      auto chunk = agent_handles.size() / threads_in_numa + correction;
+      auto correction = agent_per_numa[n] % threads_in_numa == 0 ? 0 : 1;
+      auto chunk = agent_per_numa[n] / threads_in_numa + correction;
       auto start = thread_info_->GetNumaThreadId(tid) * chunk;
-      auto end = std::min(agent_handles.size(), start + chunk);
+      auto end = std::min(agent_per_numa[n], start + chunk);
 
-      for (uint64_t e = start; e < end; e++) {
-        auto& handle = agent_handles[e];
-        auto* agent = agents_[handle.GetNumaNode()][handle.GetElementIdx()];
-        dest[e] = agent->NewCopy();
-        if (type_index_) {
-          type_index_->Update(dest[e]);
-        }
-        if (minimize_memory) {
-          delete agent;
-        }
-      }
+      LoadBalanceFunctor f(minimize_memory, start, nid, agents_, dest,
+                           type_index_);
+      lbi->CallHandleIteratorConsumer(start, end, f);
+      // for (uint64_t e = start; e < end; e++) {
+      //   auto& handle = agent_handles[e];
+      //   auto* agent = agents_[handle.GetNumaNode()][handle.GetElementIdx()];
+      //   dest[e] = agent->NewCopy();
+      //   if (type_index_) {
+      //     type_index_->Update(dest[e]);
+      //   }
+      //   if (minimize_memory) {
+      //     delete agent;
+      //   }
+      // }
     }
   }
 
@@ -307,6 +317,7 @@ void ResourceManager::LoadBalance() {
   }
 
   // update uid_ah_map_
+  // FIXME do this during update
   UpdateUidAgentHandleMapFunctor functor(uid_ah_map_);
   ForEachAgentParallel(functor);
 
