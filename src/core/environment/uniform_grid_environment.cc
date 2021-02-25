@@ -14,6 +14,7 @@
 
 #include "core/environment/uniform_grid_environment.h"
 #include <morton/morton.h>  // NOLINT
+#include "core/algorithm.h"
 
 namespace bdm {
 
@@ -35,7 +36,7 @@ void UniformGridEnvironment::LoadBalanceInfoUG::Update() {
 
   AllocateMemory();
   InitializeVectors();
-  CalcPrefixSum();
+  InPlaceParallelPrefixSum(cummulated_agents_, grid_->total_num_boxes_);
 }
 
 // -----------------------------------------------------------------------------
@@ -63,14 +64,6 @@ void UniformGridEnvironment::LoadBalanceInfoUG::InitializeVectors() {
 
     InitializeVectorFunctor f(grid_, start, sorted_boxes_, cummulated_agents_);
     mo_.CallMortonIteratorConsumer(start, end - 1, f);
-  }
-}
-
-// -----------------------------------------------------------------------------
-void UniformGridEnvironment::LoadBalanceInfoUG::CalcPrefixSum() {
-  for (uint64_t i = 1; i < grid_->total_num_boxes_; ++i) {
-    cummulated_agents_[i] += cummulated_agents_[i - 1];
-    // std::cout << i << " - " << cummulated_agents_[i] << std::endl;
   }
 }
 

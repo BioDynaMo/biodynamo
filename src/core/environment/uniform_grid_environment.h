@@ -753,7 +753,6 @@ class UniformGridEnvironment : public Environment {
 
     void AllocateMemory();
     void InitializeVectors();
-    void CalcPrefixSum();
   };
 
   /// The vector containing all the boxes in the grid
