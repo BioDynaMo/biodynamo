@@ -5,6 +5,7 @@
     <class pattern="std::vector<bdm::*>" />
   </selection>
   <exclusion>
+    <class pattern="bdm::OpenCLState*"/>
     <class name="bdm::OperationImpl" />
     <class pattern="cl::*" />
     <class name="cl::CommandQueue" />
