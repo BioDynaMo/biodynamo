@@ -15,7 +15,6 @@
 #include "core/environment/morton_order.h"
 #include <morton/morton.h>  // NOLINT
 #include <cmath>
-#include <iostream>  // FIXME remove
 
 namespace bdm {
 
@@ -74,9 +73,6 @@ void MortonOrder::Update(const std::array<uint64_t, 3>& num_boxes_axis) {
 
   while (s.Size() != 0) {
     auto& c = s.Top();
-    // std::cout << " -----  index " << c.index << "  stack size " << s.Size()
-    //           << "  length " << c.length << " xpos " << c.xpos << " ypos "
-    //           << c.ypos << " zpos " << c.zpos << std::endl;
     // determine borders
     auto xmax = c.xpos;
     if (c.index == 1 || c.index == 3 || c.index == 5 || c.index == 7) {
@@ -94,33 +90,22 @@ void MortonOrder::Update(const std::array<uint64_t, 3>& num_boxes_axis) {
     auto ymin = ymax - c.length;
     auto zmin = zmax - c.length;
 
-    // std::cout << "  " << xmin << ", " << xmax << "  -  " << ymin << ", " <<
-    // ymax
-    //           << "  -  " << zmin << ", " << zmax << std::endl;
     if (max_dimensions[0] >= xmax - 1 && max_dimensions[1] >= ymax - 1 &&
         max_dimensions[2] >= zmax - 1) {
       // full
       if (record) {
-        // std::cout << "      record " << box_cnt << " " << offset <<
-        // std::endl;
         offset_index_.push_back({box_cnt, offset});
         record = false;
       }
       box_cnt += c.length * c.length * c.length;
-      // std::cout << "    full" << std::endl;
     } else if (max_dimensions[0] < xmin || max_dimensions[1] < ymin ||
                max_dimensions[2] < zmin) {
       // empty
       record = true;
       auto elements = c.length * c.length * c.length;
-      // box_cnt += elements;
       offset += elements;
-      // std::cout << "    empty " << c.length << " " << elements << std::endl;
     } else {
       auto next_length = c.length >> 1;
-      // std::cout << "    " << next_length << std::endl;
-      // std::cout << "    " << xmin << " , " << ymin << ", " << zmin <<
-      // std::endl;
       s.Push({0, next_length, xmin + next_length, ymin + next_length,
               zmin + next_length});
       continue;
@@ -128,15 +113,9 @@ void MortonOrder::Update(const std::array<uint64_t, 3>& num_boxes_axis) {
 
     // evaluation was full or empty
     while (s.Size() > 0 && ++(s.Top().index) == 8) {
-      // std::cout << "  ------------------------- POP" << std::endl;
       s.Pop();
     }
   }
-
-  // for (auto& el : offset_index_) {
-  //   std::cout << el.first << " - " << el.second << std::endl;
-  // }
-  // std::cout << "offset_index_ length " << offset_index_.size() << std::endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -144,9 +123,6 @@ template <typename T>
 std::pair<uint64_t, uint64_t> BinarySearch(uint64_t search_val,
                                            const T& container, uint64_t from,
                                            uint64_t to) {
-  // std::cout << " sv " << search_val << " from " << from << " to " << to <<
-  // std::endl;
-
   if (container.size() == 0) {
     return {0, 0};
   }
@@ -154,16 +130,11 @@ std::pair<uint64_t, uint64_t> BinarySearch(uint64_t search_val,
     if (container[from].first > search_val && from > 0) {
       from--;
     }
-    // std::cout << "  found2 " << container[from].second << std::endl;
     return {container[from].second, from};
   }
 
   auto m = (from + to) / 2;
-  // std::cout << " sv " << search_val << " from " << from << " to " << to << "
-  // m "
-  //           << m << " val[m] " << container[m].first << std::endl;
   if (container[m].first == search_val) {
-    // std::cout << "  found " << container[m].second << std::endl;
     return {container[m].second, m};
   } else if (container[m].first > search_val) {
     return BinarySearch(search_val, container, from, m);

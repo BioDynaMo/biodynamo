@@ -193,7 +193,6 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
   void operator()(Iterator<AgentHandle>* it) {
     while (it->HasNext()) {
       auto handle = it->Next();
-      // FIXME skip if numa nodes match and minimize_memory is on
       auto* agent = agents[handle.GetNumaNode()][handle.GetElementIdx()];
       auto* copy = agent->NewCopy();
       auto el_idx = offset++;

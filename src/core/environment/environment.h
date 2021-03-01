@@ -44,9 +44,6 @@ class Environment {
 
   virtual LoadBalanceInfo* GetLoadBalanceInfo() = 0;
 
-  // FIXME remove
-  virtual void IterateZOrder(Functor<void, const AgentHandle&>& callback) = 0;
-
   /// This class ensures thread-safety for the case
   /// that an agent modifies its neighbors.
   class NeighborMutexBuilder {

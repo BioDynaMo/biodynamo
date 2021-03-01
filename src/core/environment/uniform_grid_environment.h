@@ -408,59 +408,9 @@ class UniformGridEnvironment : public Environment {
     return distance < squared_radius;
   }
 
-  void UpdateBoxZOrder() {
-    // iterate boxes in Z-order / morton order
-    // TODO(lukas) this is a very quick attempt to test an idea
-    // improve performance of this brute force solution
-    zorder_sorted_boxes_.resize(boxes_.size());
-    const uint32_t nx = num_boxes_axis_[0];
-    const uint32_t ny = num_boxes_axis_[1];
-    const uint32_t nz = num_boxes_axis_[2];
-#pragma omp parallel for collapse(3)
-    for (uint32_t x = 0; x < nx; x++) {
-      for (uint32_t y = 0; y < ny; y++) {
-        for (uint32_t z = 0; z < nz; z++) {
-          auto box_idx = GetBoxIndex(std::array<uint64_t, 3>{x, y, z});
-          auto morton = libmorton::morton3D_64_encode(x, y, z);
-          zorder_sorted_boxes_[box_idx] =
-              std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
-        }
-      }
-    }
-#ifdef LINUX
-    __gnu_parallel::sort(
-        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-#else
-    std::sort(
-        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-#endif  // LINUX
-  }
-
   LoadBalanceInfo* GetLoadBalanceInfo() override {
     lbi_.Update();
     return &lbi_;
-  }
-
-  // FIXME delete
-  /// This method iterates over all elements. Iteration is performed in
-  /// Z-order of boxes. There is no particular order for elements inside a box.
-  void IterateZOrder(Functor<void, const AgentHandle&>& callback) override {
-    lbi_.Update();
-    lbi_.Iterate(callback);
-    // FIXME remove
-    // UpdateBoxZOrder();
-    // for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
-    //   // if (lbi_.sorted_boxes_[i] != zorder_sorted_boxes_[i].second) {
-    //   //   std::cout << "Difference at " << i << std::endl;
-    //   // }
-    //   auto it = zorder_sorted_boxes_[i].second->begin();
-    //   while (!it.IsAtEnd()) {
-    //     callback(*it);
-    //     ++it;
-    //   }
-    // }
   }
 
   /// @brief      Applies the given lambda to each neighbor
@@ -729,9 +679,8 @@ class UniformGridEnvironment : public Environment {
     void CallHandleIteratorConsumer(
         uint64_t start, uint64_t end,
         Functor<void, Iterator<AgentHandle>*>& f) const override;
-    // FIXME delete
-    void Iterate(Functor<void, const AgentHandle&>& callback);
-    // private:
+
+   private:
     UniformGridEnvironment* grid_;
     MortonOrder mo_;
     ParallelResizeVector<Box*> sorted_boxes_;
@@ -787,9 +736,6 @@ class UniformGridEnvironment : public Environment {
   std::array<int32_t, 2> threshold_dimensions_;
 
   LoadBalanceInfoUG lbi_;  //!
-  /// FIXME delete
-  /// stores pairs of <box morton code,  box pointer> sorted by morton code.
-  ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
 
   /// Holds instance of NeighborMutexBuilder.
   /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism`
