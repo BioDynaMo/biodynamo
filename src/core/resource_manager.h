@@ -28,19 +28,6 @@
 #include <utility>
 #include <vector>
 
-#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
-#ifdef __APPLE__
-#define CL_HPP_ENABLE_EXCEPTIONS
-#define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
-#define CL_HPP_MINIMUM_OPENCL_VERSION 120
-#define CL_HPP_TARGET_OPENCL_VERSION 120
-#include "cl2.hpp"
-#else
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl2.hpp>
-#endif
-#endif
-
 #include "core/agent/agent.h"
 #include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
