@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#if defined(USE_OPENCL) && !defined(__ROOTCLING__)
+#ifdef USE_OPENCL
 #include <vector>
 
 #ifdef __APPLE__
@@ -237,4 +237,4 @@ void MechanicalForcesOpOpenCL::operator()() {
 
 }  // namespace bdm
 
-#endif  // defined(USE_OPENCL) && !defined(__ROOTCLING__)
+#endif  // USE_OPENCL

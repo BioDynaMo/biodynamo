@@ -14,6 +14,8 @@
 
 #include "core/gpu/opencl_state.h"
 
+#ifdef USE_OPENCL
+
 #ifdef __APPLE__
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_ENABLE_PROGRAM_CONSTRUCTION_FROM_ARRAY_COMPATIBILITY
@@ -25,10 +27,13 @@
 #define CL_HPP_MINIMUM_OPENCL_VERSION 210
 #define CL_HPP_TARGET_OPENCL_VERSION 210
 #include <CL/cl2.hpp>
-#endif
+#endif  // __APPLE__
+
+#endif  // USE_OPENCL
 
 namespace bdm {
 
+#ifdef USE_OPENCL
 struct OpenCLState::OpenCLImpl {
   cl::Context opencl_context_;
   cl::CommandQueue opencl_command_queue_;
@@ -221,5 +226,24 @@ int OpenCLState::ClAssert(int const code, char const* const file,
 }
 
 void OpenCLState::OpenCLImplDestructor::operator()(OpenCLImpl* p) { delete p; }
+
+#else
+
+// Empty implementation to avoid linking errors
+struct OpenCLState::OpenCLImpl {};
+OpenCLState::OpenCLState() {}
+cl::Context* OpenCLState::GetOpenCLContext() { return nullptr; }
+cl::CommandQueue* OpenCLState::GetOpenCLCommandQueue() { return nullptr; }
+std::vector<cl::Device>* OpenCLState::GetOpenCLDeviceList() { return nullptr; }
+std::vector<cl::Program>* OpenCLState::GetOpenCLProgramList() {
+  return nullptr;
+}
+const char* OpenCLState::GetErrorString(int error) { return nullptr; }
+int OpenCLState::ClAssert(int const code, char const* const file,
+                          int const line, bool const abort) {
+  return 0;
+}
+
+#endif  // USE_OPENCL
 
 }  // namespace bdm
