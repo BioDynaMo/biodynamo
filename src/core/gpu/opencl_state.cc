@@ -225,8 +225,6 @@ int OpenCLState::ClAssert(int const code, char const* const file,
   return code;
 }
 
-void OpenCLState::OpenCLImplDestructor::operator()(OpenCLImpl* p) { delete p; }
-
 #else
 
 // Empty implementation to avoid linking errors
@@ -245,5 +243,7 @@ int OpenCLState::ClAssert(int const code, char const* const file,
 }
 
 #endif  // USE_OPENCL
+
+void OpenCLState::OpenCLImplDestructor::operator()(OpenCLImpl* p) { delete p; }
 
 }  // namespace bdm
