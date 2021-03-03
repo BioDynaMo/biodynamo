@@ -14,10 +14,8 @@
 
 double norm(double3);
 double squared_euclidian_distance(__global double*, uint, uint);
-int3 get_box_coordinates(double3, __constant int*, uint);
-int3 get_box_coordinates_2(uint, __constant uint*);
-uint get_box_id_2(int3,__constant uint*);
-uint get_box_id(double3, __constant uint*, __constant int*, uint);
+int3 get_box_coordinates(uint, __constant uint*);
+uint get_box_id(int3,__constant uint*);
 void compute_force(__global double*, __global double*, uint, uint, double3*);
 void force(__global double*, __global double*, uint, uint, ushort, __global uint*, double, double3*);
 
@@ -32,15 +30,7 @@ double squared_euclidian_distance(__global double* positions, uint idx, uint nid
   return (dx * dx + dy * dy + dz * dz);
 }
 
-int3 get_box_coordinates(double3 pos, __constant int* grid_dimensions, uint box_length) {
-  int3 box_coords;
-  box_coords.x = (floor(pos.x) - grid_dimensions[0]) / box_length;
-  box_coords.y = (floor(pos.y) - grid_dimensions[1]) / box_length;
-  box_coords.z = (floor(pos.z) - grid_dimensions[2]) / box_length;
-  return box_coords;
-}
-
-int3 get_box_coordinates_2(uint box_idx, __constant uint* num_boxes_axis_) {
+int3 get_box_coordinates(uint box_idx, __constant uint* num_boxes_axis_) {
   int3 box_coord;
   box_coord.z = box_idx / (num_boxes_axis_[0]*num_boxes_axis_[1]);
   uint remainder = box_idx % (num_boxes_axis_[0]*num_boxes_axis_[1]);
@@ -49,13 +39,8 @@ int3 get_box_coordinates_2(uint box_idx, __constant uint* num_boxes_axis_) {
   return box_coord;
 }
 
-uint get_box_id_2(int3 bc,__constant uint* num_boxes_axis) {
+uint get_box_id(int3 bc,__constant uint* num_boxes_axis) {
   return bc.z * num_boxes_axis[0]*num_boxes_axis[1] + bc.y * num_boxes_axis[0] + bc.x;
-}
-
-uint get_box_id(double3 pos, __constant uint* num_boxes_axis, __constant int* grid_dimensions, uint box_length) {
-  int3 box_coords = get_box_coordinates(pos, grid_dimensions, box_length);
-  return get_box_id_2(box_coords, num_boxes_axis);
 }
 
 void compute_force(__global double* positions, __global double* diameters, uint idx, uint nidx, double3* collision_force) {
@@ -133,9 +118,7 @@ __kernel void collide(__global double* positions,
                       __global uint* starts,
                       __global ushort* lengths,
                       __global uint* successors,
-                      uint box_length,
                       __constant uint* num_boxes_axis,
-                      __constant int* grid_dimensions,
                       __global double* result) {
   uint tidx = get_global_id(0);
   if (tidx < N) {
@@ -148,11 +131,11 @@ __kernel void collide(__global double* positions,
     double3 collision_force = (double3)(0, 0, 0);
 
     // Moore neighborhood
-    int3 box_coords = get_box_coordinates_2(box_id[tidx], num_boxes_axis);
+    int3 box_coords = get_box_coordinates(box_id[tidx], num_boxes_axis);
     for (int z = -1; z <= 1; z++) {
       for (int y = -1; y <= 1; y++) {
         for (int x = -1; x <= 1; x++) {
-          uint bidx = get_box_id_2(box_coords + (int3)(x, y, z), num_boxes_axis);
+          uint bidx = get_box_id(box_coords + (int3)(x, y, z), num_boxes_axis);
           if (lengths[bidx] != 0) {
             force(positions, diameters, tidx, starts[bidx], lengths[bidx], successors, squared_radius, &collision_force);
           }

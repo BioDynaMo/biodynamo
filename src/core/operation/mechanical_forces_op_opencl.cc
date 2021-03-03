@@ -86,9 +86,7 @@ void MechanicalForcesOpOpenCL::operator()() {
   std::vector<cl_uint> starts;
   std::vector<cl_ushort> lengths;
   std::vector<cl_uint> successors(num_objects);
-  cl_uint box_length;
   std::array<cl_uint, 3> num_boxes_axis;
-  std::array<cl_int, 3> grid_dimensions;
   cl_double squared_radius =
       grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
 
@@ -132,7 +130,7 @@ void MechanicalForcesOpOpenCL::operator()() {
     lengths[i] = box.length_;
     i++;
   }
-  grid->GetGridInfo(&box_length, num_boxes_axis.data(), grid_dimensions.data());
+  grid->GetNumBoxesAxis(num_boxes_axis.data());
 
   // Allocate GPU buffers
   cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
@@ -163,8 +161,6 @@ void MechanicalForcesOpOpenCL::operator()() {
                             successors.data());
   cl::Buffer nba_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                      3 * sizeof(cl_uint), num_boxes_axis.data());
-  cl::Buffer gd_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                    3 * sizeof(cl_int), grid_dimensions.data());
 
   // Create the kernel object from our program
   // TODO(ahmad): generalize the program selection, in case we have more than
@@ -186,10 +182,8 @@ void MechanicalForcesOpOpenCL::operator()() {
   collide.setArg(10, starts_arg);
   collide.setArg(11, lengths_arg);
   collide.setArg(12, successors_arg);
-  collide.setArg(13, box_length);
-  collide.setArg(14, nba_arg);
-  collide.setArg(15, gd_arg);
-  collide.setArg(16, cell_movements_arg);
+  collide.setArg(13, nba_arg);
+  collide.setArg(14, cell_movements_arg);
 
   // The amount of threads for each work group (similar to CUDA thread block)
   int block_size = 256;
