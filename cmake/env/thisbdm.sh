@@ -341,9 +341,10 @@ _source_thisbdm()
     eval "$(pyenv init -)" || return 1
     pyenv shell @pythonvers@ || return 1
 
-  # Expose multi simulation dashboard, so that we can do in notebooks:
-  # from dashboard import *
-  export PYTHONPATH=$BDMSYS/python/dashboard:$PYTHONPATH
+    # Expose multi simulation dashboard, so that we can do in notebooks:
+    # from dashboard import *
+    export PYTHONPATH=$BDMSYS/python/dashboard:$PYTHONPATH
+  fi
 
   # Location of jupyter executable (installed with `pip install` command)
   export PATH="$PYENV_ROOT/versions/@pythonvers@/bin:$PATH"
@@ -444,6 +445,10 @@ _source_thisbdm()
      _bdm_define_command paraview || return 1
      _bdm_define_command pvpython || return 1
      _bdm_define_command pvbatch || return 1
+
+     # Disable OMP_PROC_BIND by default for mpirun to allow each mpi rank to run on a separate process
+     # Also, use hwthreads as default granularity for running mpi processes
+     _bdm_define_command mpirun || return 1
 
      if [ -z "${LD_LIBRARY_PATH}" ]; then
        LD_LIBRARY_PATH="${ParaView_LIB_DIR}"

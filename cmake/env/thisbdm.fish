@@ -228,6 +228,10 @@ function source_thisbdm
         pyenv init - | source; or return 1
         pyenv shell @pythonvers@; or return 1
 
+        # Expose multi simulation dashboard, so that we can do in notebooks:
+        # from dashboard import *
+        set -pgx PYTHONPATH "$BDMSYS/python/dashboard"
+
         # Location of jupyter executable (installed with `pip install` command)
         set -pgx PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
         set -pgx LD_LIBRARY_PATH "$PYENV_ROOT/versions/@pythonvers@/lib"
@@ -328,6 +332,7 @@ function source_thisbdm
         # aliases are just wrapped functions in fish, so they have the desired behavior
         alias __bdm_pvpython='$ParaView_DIR/bin/pvpython'; funcsave __bdm_pvpython
         alias __bdm_pvbatch='$ParaView_DIR/bin/pvbatch'; funcsave __bdm_pvbatch
+        alias __bdm_mpirun='mpirun -x "OMP_PROC_BIND=false" --use-hwthread-cpus --bind-to none'; funcsave __bdm_mpirun
 
         if test -z "$LD_LIBRARY_PATH"
             set -gx LD_LIBRARY_PATH "$ParaView_LIB_DIR"
@@ -424,6 +429,9 @@ function source_thisbdm
                 alias pvpython='__bdm_pvpython'
                 alias pvbatch='__bdm_pvbatch'
             end
+        end
+        if command -s mpirun > /dev/null
+            alias mpirun='__bdm_mpirun'
         end
     end
     funcsave __bdm_fish_functions
