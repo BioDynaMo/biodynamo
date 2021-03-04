@@ -232,12 +232,18 @@ _source_thisbdm()
     fi
   fi    
 
+  # paraview versions might be different between OSes
+  local bdm_pv_version='5.9'
+  if [ "$(uname)" = 'Darwin' ]; then
+      bdm_pv_version='5.9'
+  fi
+
   # Clear the env from previously set ParaView and Qt paths.
   local with_paraview=@with_paraview@
   if [ "$with_paraview" = 'ON' ]; then
     if [ -n "${old_bdmsys}" ]; then
       if [ -n "${ParaView_DIR}" ]; then
-        _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys}/third_party/paraview/lib/cmake/paraview-5.8"
+        _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys}/third_party/paraview/lib/cmake/paraview-$bdm_pv_version"
         ParaView_DIR=$_newpath
       fi
       if [ -n "${ParaView_LIB_DIR}" ]; then
@@ -245,7 +251,7 @@ _source_thisbdm()
         ParaView_LIB_DIR=$_newpath
       fi
       if [ -n "${PV_PLUGIN_PATH}" ]; then
-        _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys}/biodynamo/lib/pv_plugin"
+        _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys}/lib/pv_plugin"
         PV_PLUGIN_PATH=$_newpath
       fi
       if [ -n "${PATH}" ]; then
@@ -518,14 +524,14 @@ _source_thisbdm()
     if [ "$os_id" = 'centos' ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
         if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
-            . scl_source enable devtoolset-7 || return 1
+            . scl_source enable devtoolset-8 || return 1
         fi
         . /etc/profile.d/modules.sh || return 1
         module load mpi || return 1
 
         # load llvm 6 required for libroadrunner
         if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then
-          . scl_source enable llvm-toolset-6.0 || return 1
+          . scl_source enable llvm-toolset-7 || return 1
         fi
     fi
   fi
@@ -549,7 +555,7 @@ _source_thisbdm()
 
     # completions for zsh
     autoload -Uz __bdm_zsh_completions || return 1
-    compinit || return 1
+    # compinit || return 1 # FIXME zsh completion broken
 
     ### Enable commands in child shells (like in bash) ###
     local ld_root='if [ -d "${BDM_ROOT_DIR}" ]; then autoload -Uz root; fi;'

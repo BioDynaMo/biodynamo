@@ -94,12 +94,19 @@ endfunction(ListToString)
 function(BuildParaViewPlugin)
   file(MAKE_DIRECTORY ${CMAKE_INSTALL_PVPLUGINDIR})
   set(BDM_PVPLUGIN_BUILDDIR ${CMAKE_BINARY_DIR}/pv-plugin-build)
+
+  if(APPLE)
+    set(PLUG_LIB_XTENSION "a")
+  else()
+    set(PLUG_LIB_XTENSION "so")
+  endif()
+
   add_custom_target(BDMGlyphFilter
     WORKING_DIRECTORY ${CMAKE_BDM_PVPLUGINDIR}
     COMMAND ${LAUNCHER} ${CMAKE_COMMAND} -B "${BDM_PVPLUGIN_BUILDDIR}"
     COMMAND ${LAUNCHER} ${CMAKE_COMMAND} --build "${BDM_PVPLUGIN_BUILDDIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-5.8/plugins/BDMGlyphFilter/BDMGlyphFilter.so" "${CMAKE_INSTALL_PVPLUGINDIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-5.8/plugins/BDMGlyphFilter/libBDM.so" "${CMAKE_INSTALL_ROOT}/lib"
+    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-${CMAKE_BDM_PVVERSION}/plugins/BDMGlyphFilter/BDMGlyphFilter.so" "${CMAKE_INSTALL_PVPLUGINDIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-${CMAKE_BDM_PVVERSION}/plugins/BDMGlyphFilter/libBDM.${PLUG_LIB_XTENSION}" "${CMAKE_INSTALL_ROOT}/lib"
   )
 endfunction(BuildParaViewPlugin)
 
@@ -281,8 +288,8 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/NOTICE
             )
 
-    # BioDynaMo paraview plugin (Apple support when we upgrade to v5.8 on macos)
-    if(paraview AND NOT APPLE)
+    # BioDynaMo paraview plugin
+    if(paraview)
       BuildParaViewPlugin()
     endif()
 
@@ -302,7 +309,7 @@ function(install_inside_build)
     endif()
 
     add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})
-    if(paraview AND NOT APPLE)
+    if(paraview)
       add_dependencies(copy_files_bdm BDMGlyphFilter)
     endif()
     add_dependencies(copy_files_bdm biodynamo)

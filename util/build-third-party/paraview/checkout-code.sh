@@ -28,7 +28,7 @@ git submodule update --init --recursive
 git checkout $PV_SUPERBUILD_VERSION
 git submodule update --init --recursive
 
-git apply "$SCRIPT_DIR/paraview-superbuild-openmp.patch"
+git apply "$SCRIPT_DIR/paraview-superbuild-openmp.${PV_SUPERBUILD_VERSION}.patch"
 
 cd ..
 
@@ -37,4 +37,3 @@ cd src
 git fetch origin
 git checkout $PV_VERSION
 git submodule update --init --recursive
-

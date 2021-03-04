@@ -677,16 +677,7 @@ class UniformGridEnvironment : public Environment {
       mutexes_.resize(grid->GetNumBoxes());
     }
 
-    NeighborMutex* GetMutex(uint64_t box_idx) override {
-      auto* grid = static_cast<UniformGridEnvironment*>(
-          Simulation::GetActive()->GetEnvironment());
-      FixedSizeVector<uint64_t, 27> box_indices;
-      grid->GetMooreBoxIndices(&box_indices, box_idx);
-      thread_local GridNeighborMutex* mutex =
-          new GridNeighborMutex(box_indices, this);
-      mutex->SetMutexIndices(box_indices);
-      return mutex;
-    }
+    NeighborMutex* GetMutex(uint64_t box_idx) override;
 
    private:
     /// one mutex for each box in `UniformGridEnvironment::boxes_`

@@ -1,0 +1,19 @@
+--- a/projects/paraview.cmake	2020-11-10 23:48:48.000000000 +0100
++++ b/projects/paraview.cmake	2020-11-10 23:48:55.000000000 +0100
+@@ -22,7 +22,7 @@
+ 
+ set(paraview_all_plugins)
+ 
+-set(paraview_smp_backend "Sequential")
++set(paraview_smp_backend "OpenMP")
+ if (tbb_enabled)
+   set(paraview_smp_backend "TBB")
+ endif ()
+@@ -30,6 +30,7 @@
+ set(paraview_enable_cuda "OFF")
+ if(vtkm_enabled AND cuda_enabled)
+   set(paraview_enable_cuda "ON")
++  message("ENABLE CUDA ---------------------------------------------------------------")
+ endif()
+ 
+ set(PARAVIEW_EXTERNAL_PROJECTS ""

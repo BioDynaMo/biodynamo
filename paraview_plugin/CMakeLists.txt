@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.8)
 project(BDMGlyphFilter)
 
-find_package(ParaView REQUIRED)
-
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-
 include(GNUInstallDirs)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+
+find_package(MPI REQUIRED)
+find_package(ParaView REQUIRED)
 
 set("_paraview_plugin_default_${CMAKE_PROJECT_NAME}" ON)
 paraview_plugin_scan(

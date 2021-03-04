@@ -14,7 +14,7 @@ if (APPLE)
 else()
   set(DETECTED_OS_VERS ${DETECTED_OS})
 endif()
-set(ROOT_TAR_FILE root_v6.22.06_python3_${DETECTED_OS_VERS}.tar.gz)
+set(ROOT_TAR_FILE root_v6.22.06_python3.9_${DETECTED_OS_VERS}.tar.gz)
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}
   ${ROOT_SOURCE_DIR}/root
