@@ -12,7 +12,7 @@
 #
 # -----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19.3 FATAL_ERROR)
 
 set(policy_new CMP0072 CMP0077)
 foreach(policy ${policy_new})
@@ -158,44 +158,23 @@ if (APPLE)
 endif()
 
 if(NOPYENV)
-   find_package(Python COMPONENTS Interpreter Development)
+   find_package(Python 3.9.1...<3.10 COMPONENTS Interpreter Development)
    set(pythonvers ${Python_VERSION})
    if (NOT Python_FOUND)
-      message(FATAL_ERROR "We did not find the Python 3 interpreter. "
-         "Please run ./prerequisites.sh (or \"brew install python@3\") "
-         "again before calling cmake. The Python 3 interpreter "
+      message(FATAL_ERROR "We did not find the Python 3.9 interpreter. "
+         "Please run ./prerequisites.sh (or \"brew install python@3.9\") "
+         "again before calling cmake. The Python 3.9 interpreter "
          "is required in order to successfully use BioDynaMo.")      
    endif()
 else()
    # Check if Python 3.9.1 from PyEnv is installed
    set(pythonvers "3.9.1")
-   string(REPLACE "." ";" pythonvers_list ${pythonvers})
-   list(GET pythonvers_list 0 pythonvers_major)
-   list(GET pythonvers_list 1 pythonvers_minor)
-   list(GET pythonvers_list 2 pythonvers_patch)
-   if(APPLE)
-      set(ENV{PYENV_ROOT} /usr/local/opt/.pyenv)
-   endif()
-   if (DEFINED ENV{PYENV_ROOT})
-      set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
-   else()
-      set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
-   endif()
-   set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-   if(NOT EXISTS ${Python_LIB_PATH})
-      set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
-   endif()
-   if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
-      set(PYTHON_FOUND TRUE)
-      set(Python_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
-      set(Python_LIBRARIES ${Python_LIB_PATH})
-      message(STATUS "Python executable found at: ${Python_EXECUTABLE}")
-   else()
-      message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
-         "Please run ./prerequisites.sh again before calling cmake. The Python ${pythonvers} "
-         "interpreter is required in order to successfully use BioDynaMo. "
-         "If you installed PyEnv somewhere other than in your home directory, please "
-         "rerun cmake with -DPython_ROOT_DIR=</path/to/pyenv>/versions/${pythonvers}.")
+   find_package(Python ${pythonvers} EXACT COMPONENTS Interpreter Development)
+   if (NOT Python_FOUND)
+      message(FATAL_ERROR "We did not find the Python ${pythonvers} interpreter from PyEnv. "
+         "Make sure you executed \"pyenv shell ${pythonvers}\" before running cmake. "
+         "If that doesn't work, run ./prerequisites.sh again. The Python ${pythonvers} "
+         "interpreter is required in order to successfully use BioDynaMo.")
    endif()
 endif()
 
