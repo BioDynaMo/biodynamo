@@ -88,7 +88,9 @@ jobs:
         fi
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        if [ ! -f  "$HOME/.pyenv/versions/3.9.1/lib/libpython3.so" ]; then
+          PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        fi
         pyenv shell 3.9.1
 
     - name: Cache Third Party Packages
