@@ -39,6 +39,10 @@ sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm \
 sudo yum install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_required)
 
+curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+chmod +x cmake-3.19.3-Linux-x86_64.sh
+./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
 fi
@@ -78,13 +82,5 @@ EOF'
   sudo yum install -y --nogpgcheck \
     $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_extra)
 fi
-
-# Set up cmake alias such to be able to use it
-# FIXME: this is will basically change permanently the system of the user
-sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
-  --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
-  --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
-  --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
-  --family cmake
 
 exit 0
