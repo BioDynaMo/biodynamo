@@ -44,11 +44,9 @@ fi
 # Clone BioDynaMo
 Checkout "${GITHUB}/BioDynaMo/biodynamo.git" "${BDM_SRC}"
 
-# SBML is currently not supported on macOS
+# SBML is currently not supported anywhere
 # See: https://trello.com/c/vKPbh4iG
-if [[ $(uname -s) != "Darwin"* ]]; then
-  SBML="-Dsbml=ON"
-fi
+SBML="-Dsbml=OFF"
 
 # Log the installation process and print error message upon failure
 log=${BDM_SRC}/installation.log
