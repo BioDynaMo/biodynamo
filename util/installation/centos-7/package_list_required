@@ -1,5 +1,4 @@
 bzip2-devel
-cmake3
 devtoolset-8-gcc*
 freeglut-devel
 git
