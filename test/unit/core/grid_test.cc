@@ -292,39 +292,4 @@ struct ZOrderCallback : Functor<void, const AgentHandle&> {
   }
 };
 
-TEST(GridTest, IterateZOrder) {
-  Simulation simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
-  auto* env = simulation.GetEnvironment();
-
-  auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
-  CellFactory(rm, 3);
-
-  // expecting a 4 * 4 * 4 grid
-  env->Update();
-
-  ZOrderCallback callback(rm, ref_uid);
-  env->IterateZOrder(callback);
-
-  ASSERT_EQ(27u, callback.cnt);
-  // check each box; no order within a box
-  std::vector<std::set<AgentUid>> expected(8);
-  expected[0] =
-      std::set<AgentUid>{AgentUid(0), AgentUid(1),  AgentUid(3),  AgentUid(4),
-                         AgentUid(9), AgentUid(10), AgentUid(12), AgentUid(13)};
-  expected[1] =
-      std::set<AgentUid>{AgentUid(2), AgentUid(5), AgentUid(11), AgentUid(14)};
-  expected[2] =
-      std::set<AgentUid>{AgentUid(6), AgentUid(7), AgentUid(15), AgentUid(16)};
-  expected[3] = std::set<AgentUid>{AgentUid(8), AgentUid(17)};
-  expected[4] = std::set<AgentUid>{AgentUid(18), AgentUid(19), AgentUid(21),
-                                   AgentUid(22)};
-  expected[5] = std::set<AgentUid>{AgentUid(20), AgentUid(23)};
-  expected[6] = std::set<AgentUid>{AgentUid(24), AgentUid(25)};
-  expected[7] = std::set<AgentUid>{AgentUid(26)};
-  for (int i = 0; i < 8; i++) {
-    EXPECT_EQ(expected[i], callback.zorder[i]);
-  }
-}
-
 }  // namespace bdm

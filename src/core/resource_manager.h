@@ -82,6 +82,7 @@ class ResourceManager {
       }
     }
     agents_ = std::move(other.agents_);
+    agents_lb_.resize(agents_.size());
     diffusion_grids_ = std::move(other.diffusion_grids_);
 
     RebuildAgentUidMap();
@@ -148,7 +149,7 @@ class ResourceManager {
 
   /// Return the diffusion grid which holds the substance of specified id
   DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
-    if(substance_id >= diffusion_grids_.size()) {
+    if (substance_id >= diffusion_grids_.size()) {
       Log::Error("DiffusionGrid::GetDiffusionGrid",
                  "You tried to request diffusion grid '", substance_id,
                  "', but it does not exist! Make sure that it's the correct id "
@@ -405,6 +406,8 @@ class ResourceManager {
   AgentUidMap<AgentHandle> uid_ah_map_ = AgentUidMap<AgentHandle>(100u);  //!
   /// Pointer container for all agents
   std::vector<std::vector<Agent*>> agents_;
+  /// Container used during load balancing
+  std::vector<std::vector<Agent*>> agents_lb_;  //!
   /// Maps a diffusion grid ID to the pointer to the diffusion grid
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
@@ -414,7 +417,7 @@ class ResourceManager {
 
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
-  BDM_CLASS_DEF_NV(ResourceManager, 1);
+  BDM_CLASS_DEF_NV(ResourceManager, 2);
 };
 
 inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {

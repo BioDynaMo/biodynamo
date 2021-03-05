@@ -40,7 +40,9 @@
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/environment/environment.h"
+#include "core/environment/morton_order.h"
 #include "core/functor.h"
+#include "core/load_balance_info.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/util/log.h"
@@ -91,6 +93,13 @@ class UniformGridEnvironment : public Environment {
 
     bool IsEmpty(uint64_t grid_timestamp) const {
       return grid_timestamp != timestamp_;
+    }
+
+    uint16_t Size(uint64_t grid_timestamp) const {
+      if (IsEmpty(grid_timestamp)) {
+        return 0;
+      }
+      return length_;
     }
 
     /// @brief      Adds an agent to this box
@@ -218,7 +227,7 @@ class UniformGridEnvironment : public Environment {
   };
 
   explicit UniformGridEnvironment(Adjacency adjacency = kHigh)
-      : adjacency_(adjacency) {}
+      : adjacency_(adjacency), lbi_(this) {}
 
   UniformGridEnvironment(UniformGridEnvironment const&) = delete;
   void operator=(UniformGridEnvironment const&) = delete;
@@ -304,16 +313,16 @@ class UniformGridEnvironment : public Environment {
       }
 
       num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
-      auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
+      total_num_boxes_ = num_boxes_xy_ * num_boxes_axis_[2];
 
       CheckGridGrowth();
 
       // resize boxes_
-      if (boxes_.size() != total_num_boxes) {
-        if (boxes_.capacity() < total_num_boxes) {
-          boxes_.reserve(total_num_boxes * 2);
+      if (boxes_.size() != total_num_boxes_) {
+        if (boxes_.capacity() < total_num_boxes_) {
+          boxes_.reserve(total_num_boxes_ * 2);
         }
-        boxes_.resize(total_num_boxes);
+        boxes_.resize(total_num_boxes_);
       }
 
       successors_.reserve();
@@ -399,47 +408,9 @@ class UniformGridEnvironment : public Environment {
     return distance < squared_radius;
   }
 
-  void UpdateBoxZOrder() {
-    // iterate boxes in Z-order / morton order
-    // TODO(lukas) this is a very quick attempt to test an idea
-    // improve performance of this brute force solution
-    zorder_sorted_boxes_.resize(boxes_.size());
-    const uint32_t nx = num_boxes_axis_[0];
-    const uint32_t ny = num_boxes_axis_[1];
-    const uint32_t nz = num_boxes_axis_[2];
-#pragma omp parallel for collapse(3)
-    for (uint32_t x = 0; x < nx; x++) {
-      for (uint32_t y = 0; y < ny; y++) {
-        for (uint32_t z = 0; z < nz; z++) {
-          auto box_idx = GetBoxIndex(std::array<uint32_t, 3>{x, y, z});
-          auto morton = libmorton::morton3D_64_encode(x, y, z);
-          zorder_sorted_boxes_[box_idx] =
-              std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
-        }
-      }
-    }
-#ifdef LINUX
-    __gnu_parallel::sort(
-        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-#else
-    std::sort(
-        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-#endif  // LINUX
-  }
-
-  /// This method iterates over all elements. Iteration is performed in
-  /// Z-order of boxes. There is no particular order for elements inside a box.
-  void IterateZOrder(Functor<void, const AgentHandle&>& callback) override {
-    UpdateBoxZOrder();
-    for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
-      auto it = zorder_sorted_boxes_[i].second->begin();
-      while (!it.IsAtEnd()) {
-        callback(*it);
-        ++it;
-      }
-    }
+  LoadBalanceInfo* GetLoadBalanceInfo() override {
+    lbi_.Update();
+    return &lbi_;
   }
 
   /// @brief      Applies the given lambda to each neighbor
@@ -573,7 +544,7 @@ class UniformGridEnvironment : public Environment {
   /// @return     The box index.
   ///
   size_t GetBoxIndex(const Double3& position) const {
-    std::array<uint32_t, 3> box_coord;
+    std::array<uint64_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
     box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
@@ -602,8 +573,8 @@ class UniformGridEnvironment : public Environment {
 
   uint32_t GetBoxLength() { return box_length_; }
 
-  std::array<uint32_t, 3> GetBoxCoordinates(size_t box_idx) const {
-    std::array<uint32_t, 3> box_coord;
+  std::array<uint64_t, 3> GetBoxCoordinates(size_t box_idx) const {
+    std::array<uint64_t, 3> box_coord;
     box_coord[2] = box_idx / num_boxes_xy_;
     auto remainder = box_idx % num_boxes_xy_;
     box_coord[1] = remainder / num_boxes_axis_[0];
@@ -691,6 +662,39 @@ class UniformGridEnvironment : public Environment {
   }
 
  private:
+  class LoadBalanceInfoUG : public LoadBalanceInfo {
+   public:
+    LoadBalanceInfoUG(UniformGridEnvironment* grid);
+    virtual ~LoadBalanceInfoUG();
+    void Update();
+    void CallHandleIteratorConsumer(
+        uint64_t start, uint64_t end,
+        Functor<void, Iterator<AgentHandle>*>& f) const override;
+
+   private:
+    UniformGridEnvironment* grid_;
+    MortonOrder mo_;
+    ParallelResizeVector<Box*> sorted_boxes_;
+    ParallelResizeVector<uint64_t> cummulated_agents_;
+
+    struct InitializeVectorFunctor : public Functor<void, Iterator<uint64_t>*> {
+      UniformGridEnvironment* grid;
+      uint64_t start;
+      ParallelResizeVector<Box*>& sorted_boxes;
+      ParallelResizeVector<uint64_t>& cummulated_agents;
+
+      InitializeVectorFunctor(UniformGridEnvironment* grid, uint64_t start,
+                              decltype(sorted_boxes) sorted_boxes,
+                              decltype(cummulated_agents) cummulated_agents);
+      virtual ~InitializeVectorFunctor();
+
+      void operator()(Iterator<uint64_t>* it) override;
+    };
+
+    void AllocateMemory();
+    void InitializeVectors();
+  };
+
   /// The vector containing all the boxes in the grid
   /// Using parallel resize vector to enable parallel initialization and thus
   /// better scalability.
@@ -701,9 +705,10 @@ class UniformGridEnvironment : public Environment {
   /// Length of a Box
   uint32_t box_length_ = 1;
   /// Stores the number of boxes for each axis
-  std::array<uint32_t, 3> num_boxes_axis_ = {{0}};
+  std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_ = 0;
+  uint64_t total_num_boxes_ = 0;
   /// Implements linked list - array index = key, value: next element
   ///
   ///     // Usage
@@ -720,8 +725,8 @@ class UniformGridEnvironment : public Environment {
   /// Stores the min / max dimension value that need to be surpassed in order
   /// to trigger a diffusion grid change
   std::array<int32_t, 2> threshold_dimensions_;
-  /// stores pairs of <box morton code,  box pointer> sorted by morton code.
-  ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
+
+  LoadBalanceInfoUG lbi_;  //!
 
   /// Holds instance of NeighborMutexBuilder.
   /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism`
@@ -964,7 +969,7 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @return     The box index.
   ///
-  size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const {
+  size_t GetBoxIndex(const std::array<uint64_t, 3>& box_coord) const {
     return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
            box_coord[0];
   }

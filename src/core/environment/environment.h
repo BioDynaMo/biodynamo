@@ -19,6 +19,7 @@
 #include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/functor.h"
+#include "core/load_balance_info.h"
 #include "core/resource_manager.h"
 
 namespace bdm {
@@ -41,7 +42,7 @@ class Environment {
   /// Return the size of the largest agent
   virtual double GetLargestObjectSize() const = 0;
 
-  virtual void IterateZOrder(Functor<void, const AgentHandle&>& callback) = 0;
+  virtual LoadBalanceInfo* GetLoadBalanceInfo() = 0;
 
   /// This class ensures thread-safety for the case
   /// that an agent modifies its neighbors.
