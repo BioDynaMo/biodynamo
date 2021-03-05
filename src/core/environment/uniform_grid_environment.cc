@@ -164,10 +164,11 @@ void UniformGridEnvironment::LoadBalanceInfoUG::InitializeVectorFunctor::
 operator()(Iterator<uint64_t>* it) {
   while (it->HasNext()) {
     auto morton_code = it->Next();
-    std::array<uint64_t, 3> box_coord;
-    libmorton::morton3D_64_decode(morton_code, box_coord[0], box_coord[1],
-                                  box_coord[2]);
-    auto* box = grid->GetBoxPointer(grid->GetBoxIndex(box_coord));
+    uint_fast32_t x, y, z;
+    libmorton::morton3D_64_decode(morton_code, x, y, z);
+    auto* box = grid->GetBoxPointer(grid->GetBoxIndex(std::array<uint64_t, 3>{
+        static_cast<uint64_t>(x), static_cast<uint64_t>(y),
+        static_cast<uint64_t>(z)}));
     sorted_boxes[start] = box;
     cummulated_agents[start] = box->Size(grid->timestamp_);
     start++;
