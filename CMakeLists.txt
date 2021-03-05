@@ -12,7 +12,7 @@
 #
 # -----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19.3 FATAL_ERROR)
 
 set(policy_new CMP0072 CMP0077)
 foreach(policy ${policy_new})
@@ -111,6 +111,7 @@ option(valgrind  "Enable valgrind tests and make build compatible with valgrind 
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 
 if(APPLE)
+  set(CMAKE_BDM_PVVERSION "5.9")
   find_program(BREW_BIN brew)
   if(BREW_BIN)
     execute_process(COMMAND ${BREW_BIN} --prefix llvm
@@ -123,6 +124,7 @@ if(APPLE)
 endif()
 
 if(UNIX AND NOT APPLE)
+  set(CMAKE_BDM_PVVERSION "5.9")
   set(LINUX TRUE)
   add_definitions("-DLINUX")
 endif()
@@ -156,44 +158,23 @@ if (APPLE)
 endif()
 
 if(NOPYENV)
-   find_package(Python COMPONENTS Interpreter Development)
+   find_package(Python 3.9.1...<3.10 COMPONENTS Interpreter Development)
    set(pythonvers ${Python_VERSION})
    if (NOT Python_FOUND)
-      message(FATAL_ERROR "We did not find the Python 3 interpreter. "
-         "Please run ./prerequisites.sh (or \"brew install python@3\") "
-         "again before calling cmake. The Python 3 interpreter "
+      message(FATAL_ERROR "We did not find the Python 3.9 interpreter. "
+         "Please run ./prerequisites.sh (or \"brew install python@3.9\") "
+         "again before calling cmake. The Python 3.9 interpreter "
          "is required in order to successfully use BioDynaMo.")      
    endif()
 else()
-   # Check if Python 3.8.0 from PyEnv is installed
-   set(pythonvers "3.8.0")
-   string(REPLACE "." ";" pythonvers_list ${pythonvers})
-   list(GET pythonvers_list 0 pythonvers_major)
-   list(GET pythonvers_list 1 pythonvers_minor)
-   list(GET pythonvers_list 2 pythonvers_patch)
-   if(APPLE)
-      set(ENV{PYENV_ROOT} /usr/local/opt/.pyenv)
-   endif()
-   if (DEFINED ENV{PYENV_ROOT})
-      set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
-   else()
-      set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
-   endif()
-   set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-   if(NOT EXISTS ${Python_LIB_PATH})
-      set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
-   endif()
-   if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
-      set(PYTHON_FOUND TRUE)
-      set(Python_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
-      set(Python_LIBRARIES ${Python_LIB_PATH})
-      message(STATUS "Python executable found at: ${Python_EXECUTABLE}")
-   else()
-      message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
-         "Please run ./prerequisites.sh again before calling cmake. The Python ${pythonvers} "
-         "interpreter is required in order to successfully use BioDynaMo. "
-         "If you installed PyEnv somewhere other than in your home directory, please "
-         "rerun cmake with -DPython_ROOT_DIR=</path/to/pyenv>/versions/${pythonvers}.")
+   # Check if Python 3.9.1 from PyEnv is installed
+   set(pythonvers "3.9.1")
+   find_package(Python ${pythonvers} EXACT COMPONENTS Interpreter Development)
+   if (NOT Python_FOUND)
+      message(FATAL_ERROR "We did not find the Python ${pythonvers} interpreter from PyEnv. "
+         "Make sure you executed \"pyenv shell ${pythonvers}\" before running cmake. "
+         "If that doesn't work, run ./prerequisites.sh again. The Python ${pythonvers} "
+         "interpreter is required in order to successfully use BioDynaMo.")
    endif()
 endif()
 
@@ -204,9 +185,7 @@ if (MPI_NOT_FOUND)
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
-# Disable paraview until we upgrade to v5.8 on macOS, numa is not supported on macOS
 if(APPLE)
-  set(paraview OFF)
   set(numa OFF)
 endif()
 
@@ -301,22 +280,12 @@ if(paraview)
     if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
       set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
     endif()
-
+    ##message("#### ${CMAKE_BDM_PVVERSION} ${CMAKE_THIRD_PARTY_DIR} ${ParaView_PREFIX_PATH}")
     # Check the first time if ParaView exists in the system.
-    # Upgrade to ParaView 5.8 on MacOS will happen as soon as Kitware releases the Python3
-    # compatible binaries
-    if(APPLE)
-      find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
-            vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-      if(${ParaView_FOUND})
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
-      endif()
-    else()
-      find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-      if(${ParaView_FOUND})
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
-      endif()
+    find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
+    if(${ParaView_FOUND})
+      include_directories(${ParaView_PREFIX_PATH}/include/paraview-${CMAKE_BDM_PVVERSION})
     endif()
 
     # Check if ParaView was found in the system. If that's not the case then we will proceed
@@ -340,15 +309,9 @@ if(paraview)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
-      if(APPLE)
-        find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
-              vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
-      else()
-        find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
-      endif()
+      find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
+      include_directories(${ParaView_PREFIX_PATH}/include/paraview-${CMAKE_BDM_PVVERSION})
     endif()
 
     add_definitions("-DUSE_PARAVIEW")
@@ -510,7 +473,13 @@ if(paraview)
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
                     PLUGIN "TRUE")
   set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
+
+  if(LINUX)
   SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+  else()
+    # see: https://github.com/pytorch/pytorch/pull/3439/files
+    SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-dynamic")
+  endif()
 endif()
 
 if(${VTune_FOUND})

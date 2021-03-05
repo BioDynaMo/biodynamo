@@ -19,9 +19,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
           libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build
-        curl -L -O https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.sh
-        chmod +x cmake-3.17.3-Linux-x86_64.sh
-        sudo ./cmake-3.17.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+        curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+        chmod +x cmake-3.19.3-Linux-x86_64.sh
+        sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
     - name: Start Xvfb
       run: |
@@ -43,7 +43,7 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.8.0
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
@@ -53,8 +53,8 @@ jobs:
         fi
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-        pyenv shell 3.8.0
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        pyenv shell 3.9.1
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
@@ -70,6 +70,9 @@ jobs:
     - name: Build BioDynaMo
       shell: bash
       run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
         cmake -G Ninja \
           -Dparaview=ON \
           -DCMAKE_BUILD_TYPE=Release \
@@ -87,6 +90,9 @@ jobs:
     - name: Style guide checks
       shell: bash
       run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
         wget https://apt.llvm.org/llvm-snapshot.gpg.key
         sudo apt-key add llvm-snapshot.gpg.key
         sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main"

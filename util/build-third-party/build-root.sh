@@ -26,7 +26,7 @@ fi
 set -e -x
 
 ROOT_VERSION=$1
-PYVERS=3.8.0
+PYVERS=3.9.1
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 cd $BDM_PROJECT_DIR
@@ -145,6 +145,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
          $ROOTSRC
    fi
 else
+  # -Droot7=OFF only because centos7 fails on one contruct.
   cmake -G Ninja \
     -Dbuiltin_fftw3=ON \
     -Dbuiltin_freetype=ON \
@@ -160,6 +161,7 @@ else
     -Dbuiltin_xxhash=ON \
     -Dbuiltin_zlib=ON \
     -Dbuiltin_zstd=ON \
+    -Droot7=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER=$CC \
     -DCMAKE_CXX_COMPILER=$CXX \
@@ -173,9 +175,9 @@ ninja install
 
 cd $ROOT_INSTALL_DIR
 if [[ $(uname -s) == "Darwin" ]]; then
-   RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}-${OSXARCH}.tar.gz
+   RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}-${OSXARCH}.tar.gz
 else
-   RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
+   RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
 fi
 tar -zcf ${RESULT_FILE} *
 
@@ -183,4 +185,3 @@ tar -zcf ${RESULT_FILE} *
 mv ${RESULT_FILE} $DEST_DIR
 cd $DEST_DIR
 shasum -a256 ${RESULT_FILE} > ${RESULT_FILE}.sha256
-

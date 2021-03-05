@@ -30,7 +30,7 @@ SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . ${SCRIPTPATH}/util/build-third-party/third-party-prerequisites.sh
 
 # Software versions
-ROOT_VERSION=v6-20-06
+ROOT_VERSION=6.22.06
 ROADRUNNER_VERSION=release
 
 # root

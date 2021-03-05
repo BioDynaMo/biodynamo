@@ -22,11 +22,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Make sure Xcode 12.3 is the default /Application/Xcode.app
-      shell: bash
+    - name: Make sure Xcode 12.4 is the default /Application/Xcode.app
+      shell: zsh {0}
       run: |
         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_12.3.app /Applications/Xcode.app
+        sudo ln -s /Applications/Xcode_12.4.app /Applications/Xcode.app
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
        
     - name: Set GHA_BRANCH_NAME
@@ -81,7 +81,7 @@ jobs:
       run: |
         cmake \
           -Dopencl=OFF \
-          -Dparaview=OFF \
+          -Dparaview=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release

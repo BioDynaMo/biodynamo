@@ -18,4 +18,9 @@ namespace bdm {
 
 std::atomic<uint64_t> ThreadInfo::thread_counter_;
 
+uint64_t ThreadInfo::GetUniversalThreadId() const {
+  thread_local uint64_t kTid = thread_counter_++;
+  return kTid;
+}
+
 }  // namespace bdm

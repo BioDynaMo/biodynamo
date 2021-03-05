@@ -23,20 +23,21 @@
 
 set -e
 
-if [ $# -ge 3 ] || [ $# -le 0 ]; then
-  echo "ERROR: Wrong number of arguments.
+if [ $# -ge 3 ] || [ $# -le 0 ] || \
+   [ $1 == "--help" ] || [ $1 == "-h" ]; then
+  echo "
 Description:
-  This script installs the prerequisites of BioDynaMo, but not BioDynaMo
-  itself.
-Usage:
-  prerequisites.sh <type_of_prerequisites> [<os>]
+  This script installs the prerequisites for BioDynaMo,
+  but not BioDynaMo itself.
 
-  <type_of_prerequistes>    It refers to the type of prerequistes that it is possible to
-                            install. You can specify two options:
-                            - required: install only the packages needed to build/run
-                              BioDynaMo;
-                            - all: install all the packages (required and optional).
-  <os>                      Specify which OS we are targeting (optional).
+Usage:
+  ./prerequisites.sh <type> [<os>]
+
+  <type>  It refers to the type of prerequistes that it is possible to
+          install. You can specify two options:
+          - required: install only the packages needed to build/run BioDynaMo
+          - all: install all the packages (required and optional)
+  <os>    Specify which OS we are targeting (optional and expert only)
 "
   exit 1
 fi
