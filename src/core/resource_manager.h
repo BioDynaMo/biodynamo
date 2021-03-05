@@ -82,6 +82,7 @@ class ResourceManager {
       }
     }
     agents_ = std::move(other.agents_);
+    agents_lb_.resize(agents_.size());
     diffusion_grids_ = std::move(other.diffusion_grids_);
 
     RebuildAgentUidMap();
@@ -406,7 +407,7 @@ class ResourceManager {
   /// Pointer container for all agents
   std::vector<std::vector<Agent*>> agents_;
   /// Container used during load balancing
-  std::vector<std::vector<Agent*>> agents_lb_;
+  std::vector<std::vector<Agent*>> agents_lb_;  //!
   /// Maps a diffusion grid ID to the pointer to the diffusion grid
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
@@ -416,7 +417,7 @@ class ResourceManager {
 
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
-  BDM_CLASS_DEF_NV(ResourceManager, 1);
+  BDM_CLASS_DEF_NV(ResourceManager, 2);
 };
 
 inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {
