@@ -22,14 +22,10 @@
 #include <vector>
 
 #include "TFile.h"
-#include "TSystem.h"
 #include "TTree.h"
+#include "TSystem.h"
 
-#include "core/util/log.h"
-
-#ifndef __ROOTCLING__
 #include "mpi.h"
-#endif  // __ROOTCLING__
 
 namespace bdm {
 
@@ -42,7 +38,6 @@ class Results {
   virtual ~Results() {}
 
   /// Write experimental results as an Event within a TTree to ROOT file
-#ifndef __ROOTCLING__
   template <typename TResults>
   void WriteResultToROOTBase(TResults *res) {
     // Get the name of the processor
@@ -55,8 +50,7 @@ class Results {
 
     std::string result_dir = gSystem->GetWorkingDirectory();
     std::stringstream ss;
-    ss << result_dir << "/" << name << "_results." << processor_name << "-"
-       << world_rank << ".root";
+    ss << result_dir << "/" << name << "_results." << processor_name << "-" << world_rank << ".root";
 
     // Open a ROOT file specific to this MPI process (might not exist yet)
     TFile tfile(ss.str().c_str(), "UPDATE");
@@ -83,12 +77,6 @@ class Results {
     }
     tfile.Write();
   }
-#else
-  template <typename TResults>
-  void WriteResultToROOTBase(TResults *res) {
-    Log::Error("Results::WriteResultsToROOTBase", "No MPI support in ROOT!");
-  }
-#endif  // __ROOTCLING__
 
  private:
   BDM_CLASS_DEF(Results, 1);

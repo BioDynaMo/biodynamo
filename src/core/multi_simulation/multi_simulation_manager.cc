@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
 // -----------------------------------------------------------------------------
 
 #ifdef USE_MPI
+
+#include "mpi.h"
 
 #include "core/multi_simulation/multi_simulation_manager.h"
 #include "core/multi_simulation/optimization_param.h"

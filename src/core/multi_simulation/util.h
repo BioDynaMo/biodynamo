@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@
 
 #include <TMessage.h>
 
+#ifndef __ROOTCLING__
 #include "mpi.h"
+#endif  // __ROOTCLING__
 
 #include "core/util/log.h"
 #include "core/util/root.h"
@@ -180,6 +182,7 @@ class MPIObject : public TMessage {
   BDM_CLASS_DEF(MPIObject, 1);
 };
 
+#ifndef __ROOTCLING__
 /// Send object to worker using ROOT Serialization
 template <typename T>
 int MPI_Send_Obj_ROOT(T* obj, int dest, int tag,
@@ -205,6 +208,8 @@ T* MPI_Recv_Obj_ROOT(int size, int source, int tag,
   free(buf);
   return obj;
 }
+
+#endif  // __ROOTCLING__
 
 }  // namespace bdm
 
