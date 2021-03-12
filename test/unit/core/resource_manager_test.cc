@@ -16,6 +16,7 @@
 #include "unit/core/resource_manager_test.h"
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_agent.h"
+#include "core/model_initializer.h"
 
 namespace bdm {
 
@@ -122,6 +123,58 @@ TEST(ResourceManagerTest, Defragmentation) {
   auto uid = agent_uid_generator->GenerateUid();
   EXPECT_GE(uid.GetIndex(), cnt);
   EXPECT_EQ(0u, uid.GetReused());
+}
+
+// -----------------------------------------------------------------------------
+struct DeleteFunctor : public Functor<void, Agent*, AgentHandle> {
+  std::vector<bool>& remove;
+
+  DeleteFunctor(std::vector<bool>& remove) : remove(remove) {}
+  virtual ~DeleteFunctor() {}
+
+  void operator()(Agent* agent, AgentHandle ah) override {
+    if (remove[agent->GetUid().GetIndex()]) {
+      agent->RemoveFromSimulation();
+    }
+  }
+};
+
+// -----------------------------------------------------------------------------
+TEST(ResourceManagerTest, ParallelAgentRemoval) {
+  Simulation simulation(TEST_NAME);
+
+  auto construct = [](const Double3& pos) {
+    auto* agent =  new TestAgent(pos);
+    agent->SetDiameter(10);
+    return agent;
+  };
+  ModelInitializer::Grid3D(32, 20, construct);
+  
+  auto* rm = simulation.GetResourceManager();
+  
+  simulation.GetScheduler()->Simulate(1);
+ 
+  std::vector<bool> remove(rm->GetNumAgents());
+
+  for (uint64_t i = 0; i < remove.size(); ++i) {
+    remove[i] = simulation.GetRandom()->Uniform() > 0.5;
+  }
+
+  DeleteFunctor f(remove);
+  rm->ForEachAgentParallel(f);
+
+  simulation.GetScheduler()->Simulate(1);
+
+  for(uint64_t i = 0; i < remove.size(); ++i) {
+    auto uid = AgentUid(i);
+    EXPECT_EQ(!remove[i], rm->ContainsAgent(uid));
+    if (!remove[i]) {
+      // access data member to check that remaining agents
+      // are still valid and haven't been deleted erroneously.
+      EXPECT_EQ(uid, rm->GetAgent(uid)->GetUid());
+    }
+  }
+
 }
 
 }  // namespace bdm

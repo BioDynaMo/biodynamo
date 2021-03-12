@@ -293,4 +293,76 @@ void ResourceManager::LoadBalance() {
   }
 }
 
+// -----------------------------------------------------------------------------
+void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uids) {
+  // TODO split into different numa nodes
+  std::vector<std::pair<uint64_t, uint64_t>> regions(uids.size());
+  // cumulative numbers of to be removed agents
+  std::vector<uint64_t> tbr_cum(uids.size());  
+ 
+  tbr_cum[0] = uids[0]->size();
+  for (uint64_t i = 1; i < regions.size(); ++i) {
+    tbr_cum[i] = tbr_cum[i - 1] + uids[i]->size();
+  } 
+  // for(auto& el : tbr_cum) { std::cout << "cum " << el << std::endl; }
+
+  auto num_agents = agents_[0].size();
+  for (uint64_t i = 0; i < regions.size(); ++i) {
+    auto low = num_agents - tbr_cum[i];
+    regions[i] = {low, low + uids[i]->size()};
+    // std::cout << regions[i].first << " - " << regions[i].second << std::endl;
+  }
+  auto lowest = regions.back().first;
+  // std::cout << "lowest " << lowest << std::endl;
+  
+  for (uint64_t rotation = 0; rotation < thread_info_->GetMaxThreads(); ++rotation) {
+#pragma omp parallel 
+    {
+      auto tid = thread_info_->GetMyThreadId();
+      auto idx = (tid + rotation) % thread_info_->GetMaxThreads();
+      auto* tbr = uids[idx]; 
+      auto& reg = regions[idx];
+
+// #pragma omp critical
+      for (uint64_t i = tbr->size() - 1; i <= tbr->size(); --i) {
+        auto uid = (*tbr)[i];
+        auto ah = uid_ah_map_[uid];
+        auto eidx = ah.GetElementIdx();
+        auto nidx = ah.GetNumaNode();
+        // std::cout << "tid " << tid << " rot " << rotation << std::endl;
+        // check if to be removed agent falls in region without potential conflicts;
+        // otherwise delay to later stage.
+        if (eidx < lowest || (eidx >= reg.first && eidx < reg.second)) {
+          if (i != tbr->size() - 1) {
+            (*tbr)[i] = tbr->back();
+          }
+          tbr->pop_back();
+// #pragma omp critical
+          // std::cout << tid << " remove " << uid << " with eidx "<< eidx << " and reg.second " << reg.second << std::endl;
+          uid_ah_map_.Remove(uid);
+          Agent* agent = agents_[nidx][eidx];
+          if (eidx != reg.second - 1) {
+            auto* reordered = agents_[nidx][reg.second - 1];
+// #pragma omp critical
+            // std::cout << "  swap with " << reordered->GetUid() << std::endl;
+            agents_[nidx][eidx] = reordered;
+            uid_ah_map_.Insert(reordered->GetUid(), ah);
+          }
+          reg.second--;
+          if (type_index_) {
+            // TODO parallelize type_index removal
+            #pragma omp critical
+            type_index_->Remove(agent); 
+          }
+          delete agent;
+        }
+      }
+    } 
+  }
+  agents_[0].resize(lowest);
+  // for (auto* a : agents_[0]) {
+  //   std::cout << "still here " << a->GetUid() << std::endl;
+  // }
+}
+
 }  // namespace bdm

@@ -159,14 +159,17 @@ void InPlaceExecutionContext::TearDownIterationAll(
   }
 
   // remove
+  std::vector<std::vector<AgentUid>*> all_remove(tinfo_->GetMaxThreads());
+
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
-    // removed agents
-    // remove them after adding new ones (maybe one has been removed
-    // that was in new_agents_)
-    for (auto& uid : ctxt->remove_) {
-      rm->RemoveAgent(uid);
-    }
+    all_remove[i] = &ctxt->remove_;
+  }
+  
+  rm->RemoveAgents(all_remove);
+
+  for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+    auto* ctxt = all_exec_ctxts[i];
     ctxt->remove_.clear();
   }
 
