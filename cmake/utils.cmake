@@ -12,38 +12,70 @@
 #
 # -----------------------------------------------------------------------------
 
-# Detect the system flavour and version. Generate a variable
-# called BDM_OS which will have as content <OS>-<version>.
+# Detect the system flavour and version. Generate variables
+# called DETECTED_OS (ubuntu-18.04, ubuntu-20.04, centos-7, osx) 
+# and DETECTED_OS_VERS (ubuntu-18.04, ubuntu-20.04, centos-7 or osx-11.2-i386).
 function(detect_os)
     if(APPLE)
-        SET(DETECTED_OS "osx" PARENT_SCOPE)
+        EXECUTE_PROCESS(COMMAND sw_vers "-productVersion"
+                        COMMAND cut -d . -f 1-2
+                        OUTPUT_VARIABLE MACOS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+        EXECUTE_PROCESS(COMMAND arch
+                        OUTPUT_VARIABLE MACOS_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
+        set(BDM_OS "osx")
+        set(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
+        set(DETECTED_OS_VERS "${BDM_OS}-${MACOS_VERSION}-${MACOS_ARCH}" PARENT_SCOPE)
     else()
         set(GET_OS_ID "echo $(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '\"')")
         set(GET_OS_VERSION "echo $(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '\"')")
         execute_process(COMMAND bash -c "${GET_OS_ID}"
-                OUTPUT_VARIABLE DISTRO_NAME
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                )
+                        OUTPUT_VARIABLE DISTRO_NAME
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
         execute_process(COMMAND bash -c "${GET_OS_VERSION}"
-                OUTPUT_VARIABLE DISTRO_VERSION
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                )
-        SET(BDM_OS "${DISTRO_NAME}-${DISTRO_VERSION}")
+                        OUTPUT_VARIABLE DISTRO_VERSION
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+        set(BDM_OS "${DISTRO_NAME}-${DISTRO_VERSION}")
         SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
-        SET(DETECTED_OS_VERSION ${DISTRO_VERSION} PARENT_SCOPE)
+        SET(DETECTED_OS_VERS "${BDM_OS}" PARENT_SCOPE)
     endif()
 endfunction()
 
 # Try to find the ROOT package. It is an hard requirement
-# for the project. If ROOT is not found in the system, it
-# will be downloaded during the make step. Moreover, this
-# will also check if ROOT was compiled using c++14 and if
-# its environment was sourced.
+# for the project. If ROOT is not found on the system, it
+# will be downloaded. If the found cached ROOT is not the right
+# version (SHA256 check with builtin expected SHA256) then
+# a new version will be downloaded.
+# If a user installed ROOT is found we will check if ROOT
+# was compiled using c++14.
 function(verify_ROOT)
+    if(ROOT_FOUND)
+        # check if found ROOT is BDM installed (match > -1)
+        string(FIND ${ROOT_INCLUDE_DIRS} ${CMAKE_THIRD_PARTY_DIR} matchres)
+        if (${matchres} GREATER -1)
+            # check SHA256 of ROOT to see if it matches currently supported ROOT
+            if (IS_DIRECTORY ${CMAKE_THIRD_PARTY_DIR}/root)
+                if (EXISTS ${CMAKE_THIRD_PARTY_DIR}/root/tar-sha256)
+                    # check if SHA256 of installed ROOT is the same as the expected one
+                    file(READ ${CMAKE_THIRD_PARTY_DIR}/root/tar-sha256 TAR_SHA256)
+                    if(NOT "${TAR_SHA256}" STREQUAL "${${DETECTED_OS_VERS}-ROOT}")
+                        # BDM installed ROOT has wrong SHA256... deleting it
+                        message(WARNING "The found ROOT version is not compatible... deleting it...")
+                        file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/root)
+                        unset(ROOT_FOUND)
+                    endif()
+                else()
+                    # BDM installed ROOT exists but no SHA256 file... deleting it
+                    message(WARNING "The found ROOT version cannot be determined... deleting it...")
+                    file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/root)
+                    unset(ROOT_FOUND)
+                endif()
+            endif()
+        endif()
+    endif()
     if(NOT ROOT_FOUND)
         print_warning()
-        message("We did not find any ROOT installed in the system. We will proceed to download it "
-        "once the build process has started. ROOT will be then installed to the location ${CMAKE_THIRD_PARTY_DIR}/root.")
+        message("We did not find any ROOT installed on the system. We will proceed to download it. "
+        "ROOT will be installed in the location ${CMAKE_THIRD_PARTY_DIR}/root.")
         print_line()
         include(external/ROOT)
 
@@ -450,8 +482,15 @@ Unset the environment variable BDM_LOCAL_LFS to download the file.")
     endif()
   else()
     # Download the file
-    execute_process(COMMAND ${WGET_BIN} --progress=dot:giga -O ${FULL_TAR_PATH} ${URL}
-                    RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
+    if (${DETECTED_OS} MATCHES "centos.*")
+        execute_process(COMMAND ${WGET_BIN} --progress=bar:force
+                        -O ${FULL_TAR_PATH} ${URL}
+                        RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
+    else()
+        execute_process(COMMAND ${WGET_BIN} -nv --show-progress --progress=bar:force:noscroll
+                        -O ${FULL_TAR_PATH} ${URL}
+                        RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
+    endif()
     if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
       message( FATAL_ERROR "\nERROR: We were unable to download:\
     ${URL}\n\
@@ -475,6 +514,8 @@ the contents of the build directory and by issuing again the 'cmake' command.\n"
   if (NOT ${EXTRACT_STATUS_CODE} EQUAL 0)
     message(FATAL_ERROR "ERROR: Extraction of file ${FULL_TAR_PATH} to ${DEST} failed.")
   endif()
+
+  file(WRITE ${DEST}/tar-sha256 "${HASH}")
 
   # remove tar file
   file(REMOVE ${FULL_TAR_PATH})

@@ -23,14 +23,15 @@ fi
 cd $1
 
 # safety check:
-# only accept directories that contain CMakeCache.txt and third_party
-if ! [ -f "CMakeCache.txt" ] || ! [ -d "third_party" ] ; then
+# only accept directories that contain CMakeCache.txt and cmakefiles
+if ! [ -f "CMakeCache.txt" ] || ! [ -d "cmakefiles" ] ; then
   echo "ERROR: The given directory ($1) does not contain a CMakeCache.txt file"
-  echo "       nor a third_party directory. Therefore, this is likely not a"
+  echo "       nor a cmakefiles directory. Therefore, this is likely not a"
   echo "       build directory. Aborting operation..."
   exit 1
 fi
 
+# don't delete any third party downloads
 for f in *; do
   if [[ "$f" != "third_party" ]]; then
     rm -rf $f
