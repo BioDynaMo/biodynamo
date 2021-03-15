@@ -317,7 +317,8 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
   if (lowest == agents_[0].size()) { return ; }
  
   // vector<bool> is not thread-safe
-  std::vector<uint64_t> to_left(remove);
+  // FIXME change to ParallelResizeVector
+  std::vector<uint64_t> to_left(remove, std::numeric_limits<uint64_t>::max());
   std::vector<uint64_t> not_to_right(to_left.size());
   
   std::cout << "to_left size " << to_left.size() << std::endl;
@@ -329,20 +330,23 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
     for(auto& uid : *uids[i]) {
       auto ah = uid_ah_map_[uid];
       auto eidx = ah.GetElementIdx();
+#pragma omp critical
+      std::cout << "tid " << i << " uid " << uid << " ah " << ah << " edix" << eidx << std::endl;
       if (eidx < lowest) {
-        to_left[tbr_cum[i] + cnt] = 1;
-        // std::cout << "to left " << ah  << " cnt " << cnt << std::endl;
+        to_left[tbr_cum[i] + cnt] = eidx;
+#pragma omp critical
+        std::cout << "   to left uid " << uid << " ah "<< ah  << " cnt " << cnt << std::endl;
       } else {
         not_to_right[eidx - lowest] = 1;
 #pragma omp critical
-        std::cout << "not to right " << ah  << " eidx " << (eidx - lowest) << std::endl;
+        std::cout << "   not to right " << ah  << " eidx " << (eidx - lowest) << std::endl;
       } 
       cnt++;
     } 
   } 
- 
+
   for (auto* a : agents_[0]) {
-    std::cout << "here " << a->GetUid() << std::endl;
+    std::cout << "here " << a->GetUid() << " " << uid_ah_map_[a->GetUid()] << std::endl;
   }
   for (uint64_t i = 0; i < to_left.size(); ++i) {
     std::cout << "swap arrays " << to_left[i] << " - " << not_to_right[i] << std::endl;     
@@ -364,10 +368,10 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
     for (uint64_t i = start[tid]; i < end; ++i) {
 #pragma omp critical
       std::cout << tid << " - " << i << std::endl;
-      if (to_left[i]) {
+      if (to_left[i] != std::numeric_limits<uint64_t>::max()) {
 #pragma omp critical
-      std::cout << tid << " to_left " << start[tid] + swap_cnt_to_left[tid] << ":" << i << std::endl;
-        to_left[start[tid] + swap_cnt_to_left[tid]++] = i;
+      std::cout << tid << " to_left " << start[tid] + swap_cnt_to_left[tid] << ":" << to_left[i] << std::endl;
+        to_left[start[tid] + swap_cnt_to_left[tid]++] = to_left[i];
       } 
       if (!not_to_right[i]) {
         // here the interpretation of not_to_right changes to to_right
@@ -395,18 +399,14 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
   uint64_t tmp_tr = swap_cnt_to_right[0];
   swap_cnt_to_left[0] = 0;  
   swap_cnt_to_right[0] = 0;  
-  for(uint64_t i = 0; i < thread_info_->GetMaxThreads(); ++i) {
-    if (i > 0) {
-      auto left_res = tmp_tl + swap_cnt_to_left[i - 1];
-      auto right_res = tmp_tr + swap_cnt_to_right[i - 1];
-      tmp_tl =  swap_cnt_to_left[i];
-      tmp_tr =  swap_cnt_to_right[i];
-      swap_cnt_to_left[i] = left_res;
-      swap_cnt_to_right[i] = right_res;
-    }
+  for(uint64_t i = 1; i < thread_info_->GetMaxThreads() + 1; ++i) {
+    auto left_res = tmp_tl + swap_cnt_to_left[i - 1];
+    auto right_res = tmp_tr + swap_cnt_to_right[i - 1];
+    tmp_tl =  swap_cnt_to_left[i];
+    tmp_tr =  swap_cnt_to_right[i];
+    swap_cnt_to_left[i] = left_res;
+    swap_cnt_to_right[i] = right_res;
   }
-  swap_cnt_to_left[thread_info_->GetMaxThreads()] = swap_cnt_to_left[thread_info_->GetMaxThreads() - 1];  
-  swap_cnt_to_right[thread_info_->GetMaxThreads()] = swap_cnt_to_right[thread_info_->GetMaxThreads() - 1];  
   uint64_t num_swaps = swap_cnt_to_left[thread_info_->GetMaxThreads()];
   
   for (uint64_t i = 0; i < swap_cnt_to_left.size(); ++i) {
@@ -425,8 +425,8 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
     auto left_batch = BinarySearch(swap_start, swap_cnt_to_left, 0, swap_cnt_to_left.size() - 1);
     auto right_batch = BinarySearch(swap_start, swap_cnt_to_right, 0, swap_cnt_to_right.size() - 1);
 
-    auto left_batch_swaps = swap_cnt_to_left[left_batch] - swap_cnt_to_left[std::max(1ul, left_batch) - 1];  
-    auto right_batch_swaps = swap_cnt_to_right[right_batch] - swap_cnt_to_right[std::max(1ul, right_batch) - 1];  
+    auto left_batch_swaps = swap_cnt_to_left[left_batch + 1] - swap_cnt_to_left[left_batch];  
+    auto right_batch_swaps = swap_cnt_to_right[right_batch + 1] - swap_cnt_to_right[right_batch];  
 
     // not 0 but the number of elements to discard in the beginning
     auto left_batch_idx = swap_start - swap_cnt_to_left[left_batch];
@@ -442,9 +442,9 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
       // swap
 #pragma omp critical
       {
-      std::cout << "swap #" << s << " tid " << tid << " " << right_eidx << " <-> " << left_idx << std::endl;
-      std::cout << "  li " << " left batch  " << left_batch << " start[left_batch]  " << start[left_batch] << " left batch index  " << left_batch_idx << std::endl;
-      std::cout << "  ri " << " right batch " << right_batch << " start[right_batch] " << start[right_batch] << " right batch index " << right_batch_idx << std::endl;
+      std::cout << "swap #" << s << " tid " << tid << " " << right_eidx << " <-> " << left_eidx << std::endl;
+      std::cout << "  li " << " left_index " << left_idx  << " left batch  " << left_batch << " start[left_batch]  " << start[left_batch] << " left batch index  " << left_batch_idx << std::endl;
+      std::cout << "  ri " << " right_index " << right_idx << " right batch " << right_batch << " start[right_batch] " << start[right_batch] << " right batch index " << right_batch_idx << std::endl;
       }
       auto* reordered = agents_[0][right_eidx];
       agents_[0][right_eidx] = agents_[0][left_eidx];
@@ -455,22 +455,26 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
       if (swap_end - s > 1) {
         // left
         left_batch_idx++; 
+#pragma omp critical
+        std::cout << "proceeed " << tid << " lbi " << left_batch_idx << " lbs " << left_batch_swaps << std::endl;
         if (left_batch_idx >= left_batch_swaps) {
           left_batch_idx = 0;
           left_batch_swaps = 0;
           while(!left_batch_swaps) {
             left_batch++;
-            left_batch_swaps = swap_cnt_to_left[left_batch] - swap_cnt_to_left[std::max(1ul, left_batch) - 1];  
+            left_batch_swaps = swap_cnt_to_left[left_batch + 1] - swap_cnt_to_left[left_batch];  
           }
         } 
         // right
         right_batch_idx++; 
+#pragma omp critical
+        std::cout << "proceeed " << tid << " rbi " << right_batch_idx << " rbs " << right_batch_swaps << std::endl;
         if (right_batch_idx >= right_batch_swaps) {
           right_batch_idx = 0;
           right_batch_swaps = 0;
           while(!right_batch_swaps) {
             right_batch++;
-            right_batch_swaps = swap_cnt_to_right[right_batch] - swap_cnt_to_right[std::max(1ul, right_batch) - 1];  
+            right_batch_swaps = swap_cnt_to_right[right_batch + 1] - swap_cnt_to_right[right_batch];  
           }
         } 
       } 

@@ -148,7 +148,7 @@ TEST(ResourceManagerTest, ParallelAgentRemoval) {
     agent->SetDiameter(10);
     return agent;
   };
-  ModelInitializer::Grid3D(2, 20, construct);
+  ModelInitializer::Grid3D(3, 20, construct);
   
   auto* rm = simulation.GetResourceManager();
   
@@ -157,7 +157,10 @@ TEST(ResourceManagerTest, ParallelAgentRemoval) {
   std::vector<bool> remove(rm->GetNumAgents());
 
   for (uint64_t i = 0; i < remove.size(); ++i) {
-    remove[i] = i != 1 && i != 7;
+    // remove[i] = simulation.GetRandom()->Uniform() > 0.5;
+    // remove[i] = i == 0 || i == 3 || i == 6 || i == 7;
+    remove[i] = i == 0 || i == 3 || (i >= 6 && i <= 11) || i == 13 || i == 14 || (i >=23 && i <=26);
+    if (remove[i]) { std::cout << "remove " << i << std::endl; }
   }
 
   DeleteFunctor f(remove);
