@@ -53,6 +53,33 @@ void InPlaceParallelPrefixSum(T& v, uint64_t n) {
   }
 }
 
+// -----------------------------------------------------------------------------
+// if search_val is found in container, return right-most occurence.
+// If not return the index of the right-most element that is smaller.
+// If no smaller element exists, return element at index 0
+template <typename TSearch, typename TContainer>
+uint64_t BinarySearch(const TSearch& search_val, const TContainer& container, uint64_t from,
+                      uint64_t to) {
+  if (to <= from) {
+    if (container[from] != search_val && from > 0) {
+      from--;
+    }
+    return from;
+  }
+
+  auto m = (from + to) / 2;
+  if (container[m] == search_val) {
+    if (m + 1 <= to && container[m + 1] == search_val) {
+      return BinarySearch(search_val, container, m + 1, to);
+    }
+    return m;
+  } else if (container[m] > search_val) {
+    return BinarySearch(search_val, container, from, m);
+  } else {
+    return BinarySearch(search_val, container, m + 1, to);
+  }
+}
+
 }  // namespace bdm
 
 #endif  // CORE_ALGORITHM_H_

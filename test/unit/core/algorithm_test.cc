@@ -62,4 +62,33 @@ TEST(InPlaceParallelPrefixSum, Size9) {
   EXPECT_EQ(expected, v);
 }
 
+// -----------------------------------------------------------------------------
+TEST(BinarySearch, Exact) {
+  std::vector<uint64_t> v = {0, 1, 2, 3, 4, 5};
+  
+  for(uint64_t i = 0; i< v.size(); ++i) {
+    EXPECT_EQ(i, BinarySearch(i, v, 0, v.size() - 1));
+  }
+}
+
+// -----------------------------------------------------------------------------
+TEST(BinarySearch, NoExactMatch) {
+  std::vector<uint64_t> v = {2, 4, 6};
+  
+  EXPECT_EQ(0u, BinarySearch(1u, v, 0, v.size() - 1));
+  EXPECT_EQ(0u, BinarySearch(3u, v, 0, v.size() - 1));
+  EXPECT_EQ(1u, BinarySearch(5u, v, 0, v.size() - 1));
+}
+
+// -----------------------------------------------------------------------------
+TEST(BinarySearch, Duplicates) {
+  std::vector<uint64_t> v = {1, 1, 1, 1, 2, 2, 2, 3, 3, 4};
+  
+  EXPECT_EQ(0u, BinarySearch(0u, v, 0, v.size() - 1));
+  EXPECT_EQ(3u, BinarySearch(1u, v, 0, v.size() - 1));
+  EXPECT_EQ(6u, BinarySearch(2u, v, 0, v.size() - 1));
+  EXPECT_EQ(8u, BinarySearch(3u, v, 0, v.size() - 1));
+  EXPECT_EQ(9u, BinarySearch(4u, v, 0, v.size() - 1));
+}
+
 }  // namespace bdm
