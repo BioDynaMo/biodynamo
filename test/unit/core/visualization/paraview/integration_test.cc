@@ -123,29 +123,28 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
              use_pvsm);
   }
   ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
-  if (!export_visualization) {
-    exit(0);
-  }
+  // Test will run in separate process.
+  exit(0);
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(std::max(max_threads - 1, 1),
-                       std::max(max_threads - 1, 1));
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(std::max(max_threads - 1, 1),
+                                             std::max(max_threads - 1, 1)));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(3 * max_threads + 1, max_threads);
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, max_threads));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(std::max(max_threads - 1, 1),
-                       std::max(max_threads - 1, 1), true, false);
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(
+      std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), true, false));
 }
 
 // -----------------------------------------------------------------------------
@@ -222,39 +221,41 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
   } else {
     delete sim;
     ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
-    exit(0);
   }
+  // Test will run in separate process.
+  exit(0);
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunAgentsTest(mode, std::max(1, max_threads - 1));
-  RunAgentsTest(mode, 10 * max_threads + 1);
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, std::max(1, max_threads - 1)));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
-  RunAgentsTest(mode, std::max(1, max_threads - 1));
-  RunAgentsTest(mode, 10 * max_threads + 1);
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, std::max(1, max_threads - 1)));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
-  RunAgentsTest(mode, std::max(1, max_threads - 1));
-  RunAgentsTest(mode, 10 * max_threads + 1);
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, std::max(1, max_threads - 1)));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportAgentsLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunAgentsTest(mode, std::max(1, max_threads - 1), true, false);
+  LAUNCH_IN_NEW_PROCESS(
+      RunAgentsTest(mode, std::max(1, max_threads - 1), true, false));
 }
 
 // -----------------------------------------------------------------------------
