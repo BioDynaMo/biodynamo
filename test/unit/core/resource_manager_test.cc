@@ -140,15 +140,15 @@ struct DeleteFunctor : public Functor<void, Agent*, AgentHandle> {
 };
 
 // -----------------------------------------------------------------------------
-TEST(ResourceManagerTest, ParallelAgentRemoval) {
-  Simulation simulation(TEST_NAME);
+void RunParallelAgentRemovalTest(uint64_t agents_per_dim, const std::function<bool(uint64_t index)>& remove_functor) {
+  Simulation simulation("RunForEachAgentTest_ParallelAgentRemoval");
 
   auto construct = [](const Double3& pos) {
     auto* agent =  new TestAgent(pos);
     agent->SetDiameter(10);
     return agent;
   };
-  ModelInitializer::Grid3D(3, 20, construct);
+  ModelInitializer::Grid3D(agents_per_dim, 20, construct);
   
   auto* rm = simulation.GetResourceManager();
   
@@ -158,9 +158,10 @@ TEST(ResourceManagerTest, ParallelAgentRemoval) {
 
   for (uint64_t i = 0; i < remove.size(); ++i) {
     // remove[i] = simulation.GetRandom()->Uniform() > 0.5;
+    remove[i] = remove_functor(i);
     // remove[i] = i == 0 || i == 3 || i == 6 || i == 7;
-    remove[i] = i == 0 || i == 3 || (i >= 6 && i <= 11) || i == 13 || i == 14 || (i >=23 && i <=26);
-    if (remove[i]) { std::cout << "remove " << i << std::endl; }
+    // remove[i] = i == 0 || i == 3 || (i >= 6 && i <= 11) || i == 13 || i == 14 || (i >=23 && i <=26);
+    // if (remove[i]) { std::cout << "remove " << i << std::endl; }
   }
 
   DeleteFunctor f(remove);
@@ -178,6 +179,55 @@ TEST(ResourceManagerTest, ParallelAgentRemoval) {
     }
   }
 
+}
+
+// -----------------------------------------------------------------------------
+TEST(ResourceManagerTest, ParallelAgentRemoval_SmallScale) {
+  RunParallelAgentRemovalTest(2, [](uint64_t i){
+    return i == 0 || i == 3 || i == 6 || i == 7;
+      });
+}
+
+// -----------------------------------------------------------------------------
+TEST(ResourceManagerTest, ParallelAgentRemoval_SmallScale_All) {
+  RunParallelAgentRemovalTest(2, [](uint64_t i){
+    return true;
+      });
+}
+
+// -----------------------------------------------------------------------------
+TEST(ResourceManagerTest, ParallelAgentRemoval_SmallScale_None) {
+  RunParallelAgentRemovalTest(2, [](uint64_t i){
+    return false;
+      });
+}
+
+// -----------------------------------------------------------------------------
+TEST(ResourceManagerTest, ParallelAgentRemoval_SmallScale1) {
+  RunParallelAgentRemovalTest(2, [](uint64_t i){
+    return i == 0 || i == 3 || (i >= 6 && i <= 11) || i == 13 || i == 14 || (i >=23 && i <=26);
+      });
+}
+
+// -----------------------------------------------------------------------------
+TEST(ResourceManagerTest, ParallelAgentRemoval_LargeScale25) {
+  RunParallelAgentRemovalTest(32, [](uint64_t i){
+    return Simulation::GetActive()->GetRandom()->Uniform() > 0.25;
+      });
+}
+
+// -----------------------------------------------------------------------------
+TEST(ResourceManagerTest, ParallelAgentRemoval_LargeScale50) {
+  RunParallelAgentRemovalTest(32, [](uint64_t i){
+    return Simulation::GetActive()->GetRandom()->Uniform() > 0.5;
+      });
+}
+
+// -----------------------------------------------------------------------------
+TEST(ResourceManagerTest, ParallelAgentRemoval_LargeScale75) {
+  RunParallelAgentRemovalTest(32, [](uint64_t i){
+    return Simulation::GetActive()->GetRandom()->Uniform() > 0.75;
+      });
 }
 
 }  // namespace bdm

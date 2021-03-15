@@ -301,12 +301,12 @@ void ResourceManager::LoadBalance() {
 void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uids) {
   // TODO split into different numa nodes
   // cumulative numbers of to be removed agents
-  std::vector<uint64_t> tbr_cum(uids.size());  
+  std::vector<uint64_t> tbr_cum(uids.size() + 1);  
  
-  uint64_t remove = uids[0]->size();
-  for (uint64_t i = 1; i < uids.size(); ++i) {
-    remove += uids[i]->size();
-    tbr_cum[i] = tbr_cum[i - 1] + uids[i]->size();
+  uint64_t remove = 0;
+  for (uint64_t i = 1; i < tbr_cum.size(); ++i) {
+    remove += uids[i - 1]->size();
+    tbr_cum[i] = tbr_cum[i - 1] + uids[i - 1]->size();
   } 
   for(auto& el : tbr_cum) { std::cout << "cum " << el << std::endl; }
   uint64_t lowest = agents_[0].size() - remove;
@@ -316,7 +316,6 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
 
   if (lowest == agents_[0].size()) { return ; }
  
-  // vector<bool> is not thread-safe
   // FIXME change to ParallelResizeVector
   std::vector<uint64_t> to_left(remove, std::numeric_limits<uint64_t>::max());
   std::vector<uint64_t> not_to_right(to_left.size());
@@ -327,19 +326,17 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
 #pragma omp parallel for schedule(static, 1)
   for(uint64_t i = 0; i < uids.size(); ++i) {
     uint64_t cnt = 0;
+// #pragma omp critical
     for(auto& uid : *uids[i]) {
       auto ah = uid_ah_map_[uid];
       auto eidx = ah.GetElementIdx();
-#pragma omp critical
-      std::cout << "tid " << i << " uid " << uid << " ah " << ah << " edix" << eidx << std::endl;
+      // std::cout << "tid " << i << " uid " << uid << " ah " << ah << " edix" << eidx << std::endl;
       if (eidx < lowest) {
         to_left[tbr_cum[i] + cnt] = eidx;
-#pragma omp critical
-        std::cout << "   to left uid " << uid << " ah "<< ah  << " cnt " << cnt << std::endl;
+        // std::cout << "   to left uid " << uid << " ah "<< ah  << " || i " << i << " tbr_cum[i] " << tbr_cum[i] << " cnt " << cnt << std::endl;
       } else {
         not_to_right[eidx - lowest] = 1;
-#pragma omp critical
-        std::cout << "   not to right " << ah  << " eidx " << (eidx - lowest) << std::endl;
+        // std::cout << "   not to right " << ah  << " eidx " << (eidx - lowest) << std::endl;
       } 
       cnt++;
     } 
@@ -365,19 +362,17 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
     uint64_t end = 0;
     Partition(remove, max_threads, tid, &start[tid], &end);
 
+// #pragma omp critical
     for (uint64_t i = start[tid]; i < end; ++i) {
-#pragma omp critical
       std::cout << tid << " - " << i << std::endl;
       if (to_left[i] != std::numeric_limits<uint64_t>::max()) {
-#pragma omp critical
-      std::cout << tid << " to_left " << start[tid] + swap_cnt_to_left[tid] << ":" << to_left[i] << std::endl;
         to_left[start[tid] + swap_cnt_to_left[tid]++] = to_left[i];
+        // std::cout << tid << " to_left " << start[tid] + swap_cnt_to_left[tid] << ":" << to_left[i] << std::endl;
       } 
       if (!not_to_right[i]) {
         // here the interpretation of not_to_right changes to to_right
         // just to reuse memory
-#pragma omp critical
-      std::cout << tid << " to_right " << start[tid] + swap_cnt_to_right[tid] << ":" << i << std::endl;
+      // std::cout << tid << " to_right " << start[tid] + swap_cnt_to_right[tid] << ":" << i << std::endl;
         not_to_right[start[tid] + swap_cnt_to_right[tid]++] = i;
       } 
     }
