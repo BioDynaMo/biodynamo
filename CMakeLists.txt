@@ -294,7 +294,7 @@ if(paraview)
                  PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
 
     if(ParaView_FOUND)
-        # Check if found ParaView is BDM installed (match > -1)
+        # Check if found ParaView is BDM installed (matchres > -1)
         string(FIND ${ParaView_PREFIX_PATH} ${CMAKE_THIRD_PARTY_DIR} matchres)
         if (${matchres} GREATER -1)
             # check SHA256 of ParaView to see if it matches currently supported ParaView

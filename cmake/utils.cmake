@@ -48,8 +48,8 @@ endfunction()
 # If a user installed ROOT is found we will check if ROOT
 # was compiled using c++14.
 function(verify_ROOT)
-    if(ROOT_FOUND)
-        # check if found ROOT is BDM installed (match > -1)
+    if(ROOT_FOUND AND CMAKE_THIRD_PARTY_DIR)
+        # check if found ROOT is BDM installed (matchres > -1)
         string(FIND ${ROOT_INCLUDE_DIRS} ${CMAKE_THIRD_PARTY_DIR} matchres)
         if (${matchres} GREATER -1)
             # check SHA256 of ROOT to see if it matches currently supported ROOT
@@ -105,9 +105,9 @@ function(verify_ROOT)
         endif()
     endif()
 
-    # Fixes bug: https://sft.its.cern.ch/jira/browse/ROOT-10916
-    if("${ROOT_VERSION}" STREQUAL "6.20/00")
-      execute_process(COMMAND sed -i -e "s/JSROOT.gStyle, style/JSROOT.gStyle, obj/g" ${ROOTSYS}/js/scripts/JSRootPainter.v6.js)
+    # ROOT must be 6.22 or newer
+    if("${ROOT_VERSION}" VERSION_LESS "6.22/00")
+      message(FATAL_ERROR "The ROOT version must be 6.22 or newer, current version is ${ROOT_VERSION}")
     endif()
 endfunction()
 
