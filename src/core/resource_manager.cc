@@ -319,9 +319,9 @@ void ResourceManager::RemoveAgents(
     return;
   }
 
-  // FIXME change to ParallelResizeVector
-  std::vector<uint64_t> to_right(remove, std::numeric_limits<uint64_t>::max());
-  std::vector<uint64_t> not_to_left(to_right.size());
+  ParallelResizeVector<uint64_t> to_right(remove,
+                                          std::numeric_limits<uint64_t>::max());
+  ParallelResizeVector<uint64_t> not_to_left(to_right.size());
 
   std::cout << "to_right size " << to_right.size() << std::endl;
   std::cout << "not_to_left size " << not_to_left.size() << std::endl;
