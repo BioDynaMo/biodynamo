@@ -19,7 +19,8 @@
 
 namespace bdm {
 
-inline void Partition(uint64_t elements, uint64_t batches, uint64_t batch_num, uint64_t* start, uint64_t* end) {
+inline void Partition(uint64_t elements, uint64_t batches, uint64_t batch_num,
+                      uint64_t* start, uint64_t* end) {
   auto correction = elements % batches == 0 ? 0 : 1;
   auto chunk = elements / batches + correction;
   *start = batch_num * chunk;

@@ -165,7 +165,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
     auto* ctxt = all_exec_ctxts[i];
     all_remove[i] = &ctxt->remove_;
   }
-  
+
   rm->RemoveAgents(all_remove);
 
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {

@@ -298,149 +298,173 @@ void ResourceManager::LoadBalance() {
 }
 
 // -----------------------------------------------------------------------------
-void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*>& uids) {
+void ResourceManager::RemoveAgents(
+    const std::vector<std::vector<AgentUid>*>& uids) {
   // TODO split into different numa nodes
   // cumulative numbers of to be removed agents
-  std::vector<uint64_t> tbr_cum(uids.size() + 1);  
- 
+  std::vector<uint64_t> tbr_cum(uids.size() + 1);
+
   uint64_t remove = 0;
   for (uint64_t i = 1; i < tbr_cum.size(); ++i) {
     remove += uids[i - 1]->size();
     tbr_cum[i] = tbr_cum[i - 1] + uids[i - 1]->size();
-  } 
-  for(auto& el : tbr_cum) { std::cout << "cum " << el << std::endl; }
+  }
+  for (auto& el : tbr_cum) {
+    std::cout << "cum " << el << std::endl;
+  }
   uint64_t lowest = agents_[0].size() - remove;
   std::cout << "lowest " << lowest << std::endl;
 
-  if (lowest == agents_[0].size()) { return ; }
- 
+  if (lowest == agents_[0].size()) {
+    return;
+  }
+
   // FIXME change to ParallelResizeVector
   std::vector<uint64_t> to_right(remove, std::numeric_limits<uint64_t>::max());
   std::vector<uint64_t> not_to_left(to_right.size());
-  
+
   std::cout << "to_right size " << to_right.size() << std::endl;
   std::cout << "not_to_left size " << not_to_left.size() << std::endl;
   // find agents that must be swapped
 #pragma omp parallel for schedule(static, 1)
-  for(uint64_t i = 0; i < uids.size(); ++i) {
+  for (uint64_t i = 0; i < uids.size(); ++i) {
     uint64_t cnt = 0;
-// #pragma omp critical
-    for(auto& uid : *uids[i]) {
+    // #pragma omp critical
+    for (auto& uid : *uids[i]) {
       auto ah = uid_ah_map_[uid];
       auto eidx = ah.GetElementIdx();
-      // std::cout << "tid " << i << " uid " << uid << " ah " << ah << " edix" << eidx << std::endl;
+      // std::cout << "tid " << i << " uid " << uid << " ah " << ah << " edix"
+      // << eidx << std::endl;
       if (eidx < lowest) {
         to_right[tbr_cum[i] + cnt] = eidx;
-        // std::cout << "   to right uid " << uid << " ah "<< ah  << " || i " << i << " tbr_cum[i] " << tbr_cum[i] << " cnt " << cnt << std::endl;
+        // std::cout << "   to right uid " << uid << " ah "<< ah  << " || i " <<
+        // i << " tbr_cum[i] " << tbr_cum[i] << " cnt " << cnt << std::endl;
       } else {
         not_to_left[eidx - lowest] = 1;
-        // std::cout << "   not to left " << ah  << " eidx " << (eidx - lowest) << std::endl;
-      } 
+        // std::cout << "   not to left " << ah  << " eidx " << (eidx - lowest)
+        // << std::endl;
+      }
       cnt++;
-    } 
-  } 
+    }
+  }
 
   for (auto* a : agents_[0]) {
-    std::cout << "here " << a->GetUid() << " " << uid_ah_map_[a->GetUid()] << std::endl;
+    std::cout << "here " << a->GetUid() << " " << uid_ah_map_[a->GetUid()]
+              << std::endl;
   }
   for (uint64_t i = 0; i < to_right.size(); ++i) {
-    std::cout << "swap arrays " << to_right[i] << " - " << not_to_left[i] << std::endl;     
+    std::cout << "swap arrays " << to_right[i] << " - " << not_to_left[i]
+              << std::endl;
   }
 
   // thread offsets into to_right and not_to_left
   SharedData<uint64_t> start(thread_info_->GetMaxThreads());
   // number of swaps in each block
-  // add one more element to have enough space for exclusive prefix sum 
+  // add one more element to have enough space for exclusive prefix sum
   SharedData<uint64_t> swaps_to_right(thread_info_->GetMaxThreads() + 1);
   SharedData<uint64_t> swaps_to_left(thread_info_->GetMaxThreads() + 1);
 
-#pragma omp parallel 
+#pragma omp parallel
   {
-    auto tid = thread_info_->GetMyThreadId(); 
-    auto max_threads = thread_info_->GetMaxThreads(); 
+    auto tid = thread_info_->GetMyThreadId();
+    auto max_threads = thread_info_->GetMaxThreads();
     // use static scheduling for now
     uint64_t end = 0;
     Partition(remove, max_threads, tid, &start[tid], &end);
 
-// #pragma omp critical
+    // #pragma omp critical
     for (uint64_t i = start[tid]; i < end; ++i) {
       std::cout << tid << " - " << i << std::endl;
       if (to_right[i] != std::numeric_limits<uint64_t>::max()) {
         to_right[start[tid] + swaps_to_right[tid]++] = to_right[i];
-        // std::cout << tid << " to_right " << start[tid] + swaps_to_right[tid] << ":" << to_right[i] << std::endl;
-      } 
+        // std::cout << tid << " to_right " << start[tid] + swaps_to_right[tid]
+        // << ":" << to_right[i] << std::endl;
+      }
       if (!not_to_left[i]) {
         // here the interpretation of not_to_left changes to to_left
         // just to reuse memory
-      // std::cout << tid << " to_left " << start[tid] + swaps_to_left[tid] << ":" << i << std::endl;
+        // std::cout << tid << " to_left " << start[tid] + swaps_to_left[tid] <<
+        // ":" << i << std::endl;
         not_to_left[start[tid] + swaps_to_left[tid]++] = i;
-      } 
+      }
     }
-
   }
-  
+
   for (uint64_t i = 0; i < to_right.size(); ++i) {
-    std::cout << " cum swap arrays " << to_right[i] << " - " << not_to_left[i] << std::endl;     
+    std::cout << " cum swap arrays " << to_right[i] << " - " << not_to_left[i]
+              << std::endl;
   }
   for (uint64_t i = 0; i < swaps_to_right.size(); ++i) {
-    std::cout << "thread swap cnts " << swaps_to_right[i] << " - " << swaps_to_left[i] << std::endl;     
+    std::cout << "thread swap cnts " << swaps_to_right[i] << " - "
+              << swaps_to_left[i] << std::endl;
   }
   for (uint64_t i = 0; i < start.size(); ++i) {
-    std::cout << "thread start cnts " << start[i] << std::endl;     
+    std::cout << "thread start cnts " << start[i] << std::endl;
   }
 
   // calculate exclusive prefix sum for number of swaps in each block
   uint64_t tmp_tr = swaps_to_right[0];
   uint64_t tmp_tl = swaps_to_left[0];
-  swaps_to_right[0] = 0;  
-  swaps_to_left[0] = 0;  
-  for(uint64_t i = 1; i < thread_info_->GetMaxThreads() + 1; ++i) {
+  swaps_to_right[0] = 0;
+  swaps_to_left[0] = 0;
+  for (uint64_t i = 1; i < thread_info_->GetMaxThreads() + 1; ++i) {
     auto right_res = tmp_tr + swaps_to_right[i - 1];
     auto left_res = tmp_tl + swaps_to_left[i - 1];
-    tmp_tr =  swaps_to_right[i];
-    tmp_tl =  swaps_to_left[i];
+    tmp_tr = swaps_to_right[i];
+    tmp_tl = swaps_to_left[i];
     swaps_to_right[i] = right_res;
     swaps_to_left[i] = left_res;
   }
   uint64_t num_swaps = swaps_to_right[thread_info_->GetMaxThreads()];
-  
+
   for (uint64_t i = 0; i < swaps_to_right.size(); ++i) {
-    std::cout << "thread swap cnts cum " << swaps_to_right[i] << " - " << swaps_to_left[i] << std::endl;     
+    std::cout << "thread swap cnts cum " << swaps_to_right[i] << " - "
+              << swaps_to_left[i] << std::endl;
   }
   std::cout << "num swapts " << num_swaps << std::endl;
- 
-  // perform swaps 
-#pragma omp parallel
-  { 
-    auto tid = thread_info_->GetMyThreadId(); 
-    auto max_threads = thread_info_->GetMaxThreads(); 
-    uint64_t swap_start = 0; 
-    uint64_t swap_end = 0; 
-    Partition(num_swaps, max_threads, tid, &swap_start, &swap_end);
-   
-    auto tr_block = BinarySearch(swap_start, swaps_to_right, 0, swaps_to_right.size() - 1);
-    auto tl_block = BinarySearch(swap_start, swaps_to_left, 0, swaps_to_left.size() - 1);
 
-    auto tr_block_swaps = swaps_to_right[tr_block + 1] - swaps_to_right[tr_block];  
-    auto tl_block_swaps = swaps_to_left[tl_block + 1] - swaps_to_left[tl_block];  
+  // perform swaps
+#pragma omp parallel
+  {
+    auto tid = thread_info_->GetMyThreadId();
+    auto max_threads = thread_info_->GetMaxThreads();
+    uint64_t swap_start = 0;
+    uint64_t swap_end = 0;
+    Partition(num_swaps, max_threads, tid, &swap_start, &swap_end);
+
+    auto tr_block =
+        BinarySearch(swap_start, swaps_to_right, 0, swaps_to_right.size() - 1);
+    auto tl_block =
+        BinarySearch(swap_start, swaps_to_left, 0, swaps_to_left.size() - 1);
+
+    auto tr_block_swaps =
+        swaps_to_right[tr_block + 1] - swaps_to_right[tr_block];
+    auto tl_block_swaps = swaps_to_left[tl_block + 1] - swaps_to_left[tl_block];
 
     // number of elements to discard in the beginning
     auto tr_block_idx = swap_start - swaps_to_right[tr_block];
     auto tl_block_idx = swap_start - swaps_to_left[tl_block];
 
-    for(uint64_t s = swap_start; s < swap_end; ++s) {
+    for (uint64_t s = swap_start; s < swap_end; ++s) {
       // calculate element indices that should be swapped
       auto tr_idx = start[tr_block] + tr_block_idx;
       auto tl_idx = start[tl_block] + tl_block_idx;
       auto tr_eidx = to_right[tr_idx];
       auto tl_eidx = not_to_left[tl_idx] + lowest;
-      
+
       // swap
 #pragma omp critical
       {
-      std::cout << "swap #" << s << " tid " << tid << " " << tl_eidx << " <-> " << tr_eidx << std::endl;
-      std::cout << "  li " << " right_index " << tr_idx  << " right block  " << tr_block << " start[tr_block]  " << start[tr_block] << " right block index  " << tr_block_idx << std::endl;
-      std::cout << "  ri " << " left_index " << tl_idx << " left block " << tl_block << " start[tl_block] " << start[tl_block] << " left block index " << tl_block_idx << std::endl;
+        std::cout << "swap #" << s << " tid " << tid << " " << tl_eidx
+                  << " <-> " << tr_eidx << std::endl;
+        std::cout << "  li "
+                  << " right_index " << tr_idx << " right block  " << tr_block
+                  << " start[tr_block]  " << start[tr_block]
+                  << " right block index  " << tr_block_idx << std::endl;
+        std::cout << "  ri "
+                  << " left_index " << tl_idx << " left block " << tl_block
+                  << " start[tl_block] " << start[tl_block]
+                  << " left block index " << tl_block_idx << std::endl;
       }
       auto* reordered = agents_[0][tl_eidx];
       agents_[0][tl_eidx] = agents_[0][tr_eidx];
@@ -450,30 +474,34 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*>& ui
       // find next pair
       if (swap_end - s > 1) {
         // right
-        tr_block_idx++; 
+        tr_block_idx++;
 #pragma omp critical
-        std::cout << "proceeed " << tid << " lbi " << tr_block_idx << " lbs " << tr_block_swaps << std::endl;
+        std::cout << "proceeed " << tid << " lbi " << tr_block_idx << " lbs "
+                  << tr_block_swaps << std::endl;
         if (tr_block_idx >= tr_block_swaps) {
           tr_block_idx = 0;
           tr_block_swaps = 0;
-          while(!tr_block_swaps) {
+          while (!tr_block_swaps) {
             tr_block++;
-            tr_block_swaps = swaps_to_right[tr_block + 1] - swaps_to_right[tr_block];  
+            tr_block_swaps =
+                swaps_to_right[tr_block + 1] - swaps_to_right[tr_block];
           }
-        } 
+        }
         // left
-        tl_block_idx++; 
+        tl_block_idx++;
 #pragma omp critical
-        std::cout << "proceeed " << tid << " rbi " << tl_block_idx << " rbs " << tl_block_swaps << std::endl;
+        std::cout << "proceeed " << tid << " rbi " << tl_block_idx << " rbs "
+                  << tl_block_swaps << std::endl;
         if (tl_block_idx >= tl_block_swaps) {
           tl_block_idx = 0;
           tl_block_swaps = 0;
-          while(!tl_block_swaps) {
+          while (!tl_block_swaps) {
             tl_block++;
-            tl_block_swaps = swaps_to_left[tl_block + 1] - swaps_to_left[tl_block];  
+            tl_block_swaps =
+                swaps_to_left[tl_block + 1] - swaps_to_left[tl_block];
           }
-        } 
-      } 
+        }
+      }
     }
   }
 
@@ -484,14 +512,14 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*>& ui
   // delete agents
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = lowest; i < agents_[0].size(); ++i) {
-      Agent* agent = agents_[0][i];
-      uid_ah_map_.Remove(agent->GetUid());
-      if (type_index_) {
-        // TODO parallelize type_index removal
-        #pragma omp critical
-        type_index_->Remove(agent); 
-      }
-      delete agent;
+    Agent* agent = agents_[0][i];
+    uid_ah_map_.Remove(agent->GetUid());
+    if (type_index_) {
+// TODO parallelize type_index removal
+#pragma omp critical
+      type_index_->Remove(agent);
+    }
+    delete agent;
   }
 
   // shrink container
