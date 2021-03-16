@@ -389,7 +389,7 @@ void ResourceManager::RemoveAgents(
     auto ntid = thread_info_->GetMyNumaThreadId();
     auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
 
-    if (remove[nid] != 0) {
+    // if (remove[nid] != 0) {
       if (ntid == 0) {
         start[nid].resize(threads_in_numa);
         swaps_to_left[nid].resize(threads_in_numa + 1);
@@ -407,7 +407,7 @@ void ResourceManager::RemoveAgents(
       for (uint64_t i = start[nid][ntid]; i < end; ++i) {
         // std::cout << ntid << " - " << i << std::endl;
         if (to_right[nid][i] != std::numeric_limits<uint64_t>::max()) {
-          to_right[nid][start[nid][tid] + swaps_to_right[nid][tid]++] =
+          to_right[nid][start[nid][ntid] + swaps_to_right[nid][ntid]++] =
               to_right[nid][i];
           // std::cout << tid << " to_right " << start[tid] +
           // swaps_to_right[tid]
@@ -419,7 +419,7 @@ void ResourceManager::RemoveAgents(
           // std::cout << tid << " to_left " << start[tid] + swaps_to_left[tid]
           // <<
           // ":" << i << std::endl;
-          not_to_left[nid][start[nid][tid] + swaps_to_left[nid][tid]++] = i;
+          not_to_left[nid][start[nid][ntid] + swaps_to_left[nid][ntid]++] = i;
         }
       }
 
@@ -574,7 +574,7 @@ void ResourceManager::RemoveAgents(
         }
         delete agent;
       }
-    }
+    // }
   }
   // shrink container
   for (uint64_t n = 0; n < agents_.size(); ++n) {
