@@ -399,8 +399,7 @@ class ResourceManager {
     }
   }
 
-  void RemoveAgents(const std::vector<std::vector<AgentUid>*> uids);
-
+  void RemoveAgents(const std::vector<std::vector<AgentUid>*>& uids);
   const TypeIndex* GetTypeIndex() const { return type_index_; }
 
  protected:

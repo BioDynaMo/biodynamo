@@ -298,7 +298,7 @@ void ResourceManager::LoadBalance() {
 }
 
 // -----------------------------------------------------------------------------
-void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uids) {
+void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*>& uids) {
   // TODO split into different numa nodes
   // cumulative numbers of to be removed agents
   std::vector<uint64_t> tbr_cum(uids.size() + 1);  
@@ -310,8 +310,6 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
   } 
   for(auto& el : tbr_cum) { std::cout << "cum " << el << std::endl; }
   uint64_t lowest = agents_[0].size() - remove;
-
-  auto num_agents = agents_[0].size();
   std::cout << "lowest " << lowest << std::endl;
 
   if (lowest == agents_[0].size()) { return ; }
@@ -479,24 +477,6 @@ void ResourceManager::RemoveAgents(const std::vector<std::vector<AgentUid>*> uid
   for (auto* a : agents_[0]) {
     std::cout << "after swap " << a->GetUid() << std::endl;
   }
-
-  // // swap agents 
-  // uint64_t tli = 0;
-  // uint64_t tri = 0;
-  // while(tli < to_left.size() - 1) {
-  //   while(!to_left[tli++]);
-  //   while(not_to_right[tri++]);
-  //   std::cout << "tli " << tli << " tri " << tri << std::endl;
-  //   if (tli < to_left.size() - 1) {
-  //     // std::cout << "swap " << (tri - 1 + lowest) << " <-> " << to_left[tli - 1].GetElementIdx() << std::endl; 
-  //     auto* reordered = agents_[0][tri  - 1 + lowest];
-  //     agents_[0][tri - 1+lowest] = agents_[0][tli - 1];
-  //     agents_[0][tli - 1] = reordered;
-  //     uid_ah_map_.Insert(reordered->GetUid(), AgentHandle(0, tli - 1));
-  //   }
-  //   tli++;
-  //   tri++;
-  // }
 
   // delete agents
 #pragma omp parallel for schedule(static, 1)

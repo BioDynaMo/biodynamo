@@ -151,17 +151,11 @@ void RunParallelAgentRemovalTest(uint64_t agents_per_dim, const std::function<bo
   ModelInitializer::Grid3D(agents_per_dim, 20, construct);
   
   auto* rm = simulation.GetResourceManager();
-  
   simulation.GetScheduler()->Simulate(1);
  
   std::vector<bool> remove(rm->GetNumAgents());
-
   for (uint64_t i = 0; i < remove.size(); ++i) {
-    // remove[i] = simulation.GetRandom()->Uniform() > 0.5;
     remove[i] = remove_functor(i);
-    // remove[i] = i == 0 || i == 3 || i == 6 || i == 7;
-    // remove[i] = i == 0 || i == 3 || (i >= 6 && i <= 11) || i == 13 || i == 14 || (i >=23 && i <=26);
-    // if (remove[i]) { std::cout << "remove " << i << std::endl; }
   }
 
   DeleteFunctor f(remove);
