@@ -113,6 +113,7 @@ InPlaceExecutionContext::InPlaceExecutionContext(
     const std::shared_ptr<ThreadSafeAgentUidMap>& map)
     : new_agent_map_(map), tinfo_(ThreadInfo::GetInstance()) {
   new_agents_.reserve(1e3);
+  remove_.resize(tinfo_->GetNumaNodes());
 }
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
@@ -159,7 +160,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
   }
 
   // remove
-  std::vector<std::vector<AgentUid>*> all_remove(tinfo_->GetMaxThreads());
+  std::vector<decltype(remove_)*> all_remove(tinfo_->GetMaxThreads());
 
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
@@ -170,7 +171,9 @@ void InPlaceExecutionContext::TearDownIterationAll(
 
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
-    ctxt->remove_.clear();
+    for (auto& el : ctxt->remove_) {
+      el.clear();
+    }
   }
 
   rm->EndOfIteration();
@@ -251,8 +254,8 @@ void InPlaceExecutionContext::Execute(
 
 void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
   new_agents_.push_back(new_agent);
-  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-  new_agent_map_->Insert(new_agent->GetUid(), {new_agent, timesteps});
+  auto nid = tinfo_->GetMyNumaNode();
+  new_agent_map_->Insert(new_agent->GetUid(), {new_agent, nid});
 }
 
 struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {
@@ -344,7 +347,7 @@ Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {
   }
 
   // returns nullptr if the object is not found
-  return (*new_agent_map_)[uid].first;
+  return (*new_agent_map_)[uid].agent;
 }
 
 const Agent* InPlaceExecutionContext::GetConstAgent(const AgentUid& uid) {
@@ -352,7 +355,15 @@ const Agent* InPlaceExecutionContext::GetConstAgent(const AgentUid& uid) {
 }
 
 void InPlaceExecutionContext::RemoveFromSimulation(const AgentUid& uid) {
-  remove_.push_back(uid);
+  auto* sim = Simulation::GetActive();
+  auto* rm = sim->GetResourceManager();
+  uint64_t nid = 0;
+  if (rm->ContainsAgent(uid)) {
+    nid = rm->GetAgentHandle(uid).GetNumaNode();
+  } else {
+    nid = (*new_agent_map_)[uid].numa_node;
+  }
+  remove_[nid].push_back(uid);
 }
 
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*

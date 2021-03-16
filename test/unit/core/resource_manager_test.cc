@@ -194,7 +194,7 @@ TEST(ResourceManagerTest, ParallelAgentRemoval_SmallScale_None) {
 
 // -----------------------------------------------------------------------------
 TEST(ResourceManagerTest, ParallelAgentRemoval_SmallScale1) {
-  RunParallelAgentRemovalTest(2, [](uint64_t i) {
+  RunParallelAgentRemovalTest(3, [](uint64_t i) {
     return i == 0 || i == 3 || (i >= 6 && i <= 11) || i == 13 || i == 14 ||
            (i >= 23 && i <= 26);
   });

@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
 #include "core/container/agent_uid_map.h"
 #include "core/functor.h"
@@ -47,8 +48,13 @@ class Agent;
 /// Also removal of an agent happens at the end of each iteration.
 class InPlaceExecutionContext {
  public:
+  struct NewAgentData {
+    Agent* agent;
+    AgentHandle::NumaNode_t numa_node;
+  };
+
   struct ThreadSafeAgentUidMap {
-    using value_type = std::pair<Agent*, uint64_t>;
+    using value_type = NewAgentData;
     using Batch = std::vector<value_type>;
     ThreadSafeAgentUidMap();
     ~ThreadSafeAgentUidMap();
@@ -111,8 +117,8 @@ class InPlaceExecutionContext {
   ThreadInfo* tinfo_;
 
   /// Contains unique ids of agents that will be removed at the end of each
-  /// iteration.
-  std::vector<AgentUid> remove_;
+  /// iteration. AgentUids are separated by numa node.
+  std::vector<std::vector<AgentUid>> remove_;
   std::vector<AgentUid> critical_region_;
   std::vector<AgentUid> critical_region_2_;
   std::vector<Spinlock*> locks_;
