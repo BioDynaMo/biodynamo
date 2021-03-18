@@ -258,6 +258,8 @@ TEST(FLAKY_ParaviewIntegrationTest, ExportAgentsLoadWithoutPVSM) {
       RunAgentsTest(mode, std::max(1, max_threads - 1), true, false));
 }
 
+// Disable insitu tests until ROOT cling crash on MacOS has been resolved
+#ifndef __APPLE__
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
@@ -307,6 +309,8 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_Copy) {
       RunAgentsTest(mode, std::max(1, max_threads - 1), false));
   LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
+#endif  // __APPLE__
+
 }  // namespace bdm
 
 #endif  // USE_PARAVIEW
