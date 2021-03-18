@@ -53,7 +53,7 @@ if (NOT DEFINED OS)
     detect_os()
 else()
     SET(DETECTED_OS ${OS})
-    SET(DETECTED_OS_VERS ${OS_VERS})
+    SET(DETECTED_OS_VERS ${OS})
     check_detected_os(${DETECTED_OS})
 endif()
 
