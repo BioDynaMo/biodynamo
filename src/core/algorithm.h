@@ -54,6 +54,21 @@ void InPlaceParallelPrefixSum(T& v, uint64_t n) {
 }
 
 // -----------------------------------------------------------------------------
+/// Calculate exclusive prefix sum in-place.
+/// n must be <= t->size() - 1 
+/// This means that there must be an additional element in the vector at v[n+1]
+template <typename T>
+void ExclusivePrefixSum(T* v, uint64_t n) {
+  auto tmp = (*v)[0];
+  (*v)[0] = 0;
+  for (uint64_t i = 1; i < n; ++i) {
+    auto result = (*v)[i - 1] + tmp;
+    tmp = (*v)[i];
+    (*v)[i] = result;
+  }
+}
+
+// -----------------------------------------------------------------------------
 // if search_val is found in container, return right-most occurence.
 // If not return the index of the right-most element that is smaller.
 // If no smaller element exists, return element at index 0

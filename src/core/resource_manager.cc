@@ -347,6 +347,8 @@ void ResourceManager::RemoveAgents(
         tmp = tbr_cum[nid][i];
         tbr_cum[nid][i] = result;
       }
+      // ExclusivePrefixSum(&tbr_cum[nid], tbr_cum[nid].size() - 1);
+      // remove[nid] = tbr_cum[nid].back();
       // for (auto& el : tbr_cum) {
       //   std::cout << "cum " << el << std::endl;
       // }
