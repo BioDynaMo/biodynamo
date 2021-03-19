@@ -338,17 +338,8 @@ void ResourceManager::RemoveAgents(
     auto nid = thread_info_->GetMyNumaNode();
     auto ntid = thread_info_->GetMyNumaThreadId();
     if (thread_info_->GetMyNumaThreadId() == 0) {
-      // calculate exclusive prefix sum for tbr_cum
-      auto tmp = tbr_cum[nid][0];
-      tbr_cum[nid][0] = 0;
-      for (uint64_t i = 1; i < tbr_cum[nid].size(); ++i) {
-        remove[nid] += tmp;
-        auto result = tbr_cum[nid][i - 1] + tmp;
-        tmp = tbr_cum[nid][i];
-        tbr_cum[nid][i] = result;
-      }
-      // ExclusivePrefixSum(&tbr_cum[nid], tbr_cum[nid].size() - 1);
-      // remove[nid] = tbr_cum[nid].back();
+      ExclusivePrefixSum(&tbr_cum[nid], tbr_cum[nid].size() - 1);
+      remove[nid] = tbr_cum[nid].back();
       // for (auto& el : tbr_cum) {
       //   std::cout << "cum " << el << std::endl;
       // }
@@ -490,18 +481,8 @@ void ResourceManager::RemoveAgents(
 
       // calculate exclusive prefix sum for number of swaps in each block
       if (ntid == 0) {
-        uint64_t tmp_tr = swaps_to_right[nid][0];
-        uint64_t tmp_tl = swaps_to_left[nid][0];
-        swaps_to_right[nid][0] = 0;
-        swaps_to_left[nid][0] = 0;
-        for (uint64_t i = 1; i < threads_in_numa + 1; ++i) {
-          auto right_res = tmp_tr + swaps_to_right[nid][i - 1];
-          auto left_res = tmp_tl + swaps_to_left[nid][i - 1];
-          tmp_tr = swaps_to_right[nid][i];
-          tmp_tl = swaps_to_left[nid][i];
-          swaps_to_right[nid][i] = right_res;
-          swaps_to_left[nid][i] = left_res;
-        }
+        ExclusivePrefixSum(&swaps_to_right[nid], swaps_to_right[nid].size());
+        ExclusivePrefixSum(&swaps_to_left[nid], swaps_to_left[nid].size());
       }
     }
 #pragma omp barrier

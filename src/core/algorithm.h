@@ -61,7 +61,7 @@ template <typename T>
 void ExclusivePrefixSum(T* v, uint64_t n) {
   auto tmp = (*v)[0];
   (*v)[0] = 0;
-  for (uint64_t i = 1; i < n; ++i) {
+  for (uint64_t i = 1; i <= n; ++i) {
     auto result = (*v)[i - 1] + tmp;
     tmp = (*v)[i];
     (*v)[i] = result;

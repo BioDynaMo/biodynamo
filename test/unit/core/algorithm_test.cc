@@ -63,6 +63,22 @@ TEST(InPlaceParallelPrefixSum, Size9) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(ExclusivePrefixSum, Size1) {
+  std::vector<uint64_t> v{3};
+  decltype(v) expected {0};
+  ExclusivePrefixSum(&v, v.size() - 1);
+  EXPECT_EQ(expected, v);
+}
+
+// -----------------------------------------------------------------------------
+TEST(ExclusivePrefixSum, Size9) {
+  std::vector<uint64_t> v{1, 2, 3, 4, 5, 6, 7, 0};
+  decltype(v) expected {0, 1, 3, 6, 10, 15, 21, 28};
+  ExclusivePrefixSum(&v, v.size() - 1);
+  EXPECT_EQ(expected, v);
+}
+
+// -----------------------------------------------------------------------------
 TEST(BinarySearch, Exact) {
   std::vector<uint64_t> v = {0, 1, 2, 3, 4, 5};
 
