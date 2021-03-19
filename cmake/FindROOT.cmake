@@ -99,7 +99,7 @@ find_program(ROOTCLING_EXECUTABLE rootcling
   HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
 find_program(GENREFLEX_EXECUTABLE genreflex
   HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
-find_package(GCCXML)
+#find_package(GCCXML)
 
 # We use the launcher script to emulate a `source thisbdm.sh` call
 if(NOT BDM_OUT_OF_SOURCE)
