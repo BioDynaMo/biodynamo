@@ -427,8 +427,9 @@ void ResourceManager::RemoveAgents(
     if (remove[nid] != 0) {
       // calculate exclusive prefix sum for number of swaps in each block
       if (ntid == 0) {
-        ExclusivePrefixSum(&swaps_to_right[nid], swaps_to_right[nid].size());
-        ExclusivePrefixSum(&swaps_to_left[nid], swaps_to_left[nid].size());
+        ExclusivePrefixSum(&swaps_to_right[nid],
+                           swaps_to_right[nid].size() - 1);
+        ExclusivePrefixSum(&swaps_to_left[nid], swaps_to_left[nid].size() - 1);
       }
     }
 #pragma omp barrier
