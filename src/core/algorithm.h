@@ -55,7 +55,7 @@ void InPlaceParallelPrefixSum(T& v, uint64_t n) {
 
 // -----------------------------------------------------------------------------
 /// Calculate exclusive prefix sum in-place.
-/// n must be <= t->size() - 1 
+/// n must be <= t->size() - 1
 /// This means that there must be an additional element in the vector at v[n+1]
 template <typename T>
 void ExclusivePrefixSum(T* v, uint64_t n) {
@@ -77,7 +77,8 @@ uint64_t BinarySearch(const TSearch& search_val, const TContainer& container,
                       uint64_t from, uint64_t to) {
   if (to <= from) {
     if (container[from] != search_val && from > 0) {
-    // if (from < container.size() && container[from] != search_val && from > 0) {
+      // if (from < container.size() && container[from] != search_val && from >
+      // 0) {
       from--;
     }
     return from;

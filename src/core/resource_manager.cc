@@ -332,7 +332,7 @@ void ResourceManager::RemoveAgents(
   for (uint64_t i = 0; i < uids.size(); ++i) {
     for (auto& uid : *uids[i]) {
       auto ah = uid_ah_map_[uid];
-      tbr_cum[ah.GetNumaNode()][i]++;  
+      tbr_cum[ah.GetNumaNode()][i]++;
     }
   }
 
@@ -368,24 +368,24 @@ void ResourceManager::RemoveAgents(
   // find agents that must be swapped
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < uids.size(); ++i) {
-      uint64_t cnt = 0;
-      for (auto& uid : *uids[i]) {
-        assert(ContainsAgent(uid));
-        auto ah = uid_ah_map_[uid];
-        auto nid = ah.GetNumaNode();
-        auto eidx = ah.GetElementIdx();
+    uint64_t cnt = 0;
+    for (auto& uid : *uids[i]) {
+      assert(ContainsAgent(uid));
+      auto ah = uid_ah_map_[uid];
+      auto nid = ah.GetNumaNode();
+      auto eidx = ah.GetElementIdx();
 #ifndef NDEBUG
 #pragma omp critical
-        toberemoved.insert(uid);
+      toberemoved.insert(uid);
 #endif  // NDEBUG
-        
-        if (eidx < lowest[nid]) {
-          parallel_remove_.to_right[nid][tbr_cum[nid][i] + cnt] = eidx;
-        } else {
-          parallel_remove_.not_to_left[nid][eidx - lowest[nid]] = 1;
-        }
-        cnt++;
+
+      if (eidx < lowest[nid]) {
+        parallel_remove_.to_right[nid][tbr_cum[nid][i] + cnt] = eidx;
+      } else {
+        parallel_remove_.not_to_left[nid][eidx - lowest[nid]] = 1;
       }
+      cnt++;
+    }
   }
 
   // reorder
@@ -408,14 +408,18 @@ void ResourceManager::RemoveAgents(
       Partition(remove[nid], threads_in_numa, ntid, &start[nid][ntid], &end);
 
       for (uint64_t i = start[nid][ntid]; i < end; ++i) {
-        if (parallel_remove_.to_right[nid][i] != std::numeric_limits<uint64_t>::max()) {
-          parallel_remove_.to_right[nid][start[nid][ntid] + swaps_to_right[nid][ntid]++] =
+        if (parallel_remove_.to_right[nid][i] !=
+            std::numeric_limits<uint64_t>::max()) {
+          parallel_remove_
+              .to_right[nid][start[nid][ntid] + swaps_to_right[nid][ntid]++] =
               parallel_remove_.to_right[nid][i];
         }
         if (!parallel_remove_.not_to_left[nid][i]) {
           // here the interpretation of not_to_left changes to to_left
           // just to reuse memory
-          parallel_remove_.not_to_left[nid][start[nid][ntid] + swaps_to_left[nid][ntid]++] = i;
+          parallel_remove_
+              .not_to_left[nid][start[nid][ntid] + swaps_to_left[nid][ntid]++] =
+              i;
         }
       }
     }
@@ -431,78 +435,79 @@ void ResourceManager::RemoveAgents(
     if (remove[nid] != 0) {
       uint64_t num_swaps = swaps_to_right[nid][threads_in_numa];
       if (num_swaps != 0) {
-      
-      // perform swaps
-      uint64_t swap_start = 0;
-      uint64_t swap_end = 0;
-      Partition(num_swaps, threads_in_numa, ntid, &swap_start, &swap_end);
+        // perform swaps
+        uint64_t swap_start = 0;
+        uint64_t swap_end = 0;
+        Partition(num_swaps, threads_in_numa, ntid, &swap_start, &swap_end);
 
-      if (swap_start < swap_end) {
-      auto tr_block = BinarySearch(swap_start, swaps_to_right[nid], 0,
-                                   swaps_to_right[nid].size() - 1);
-      auto tl_block = BinarySearch(swap_start, swaps_to_left[nid], 0,
-                                   swaps_to_left[nid].size() - 1);
+        if (swap_start < swap_end) {
+          auto tr_block = BinarySearch(swap_start, swaps_to_right[nid], 0,
+                                       swaps_to_right[nid].size() - 1);
+          auto tl_block = BinarySearch(swap_start, swaps_to_left[nid], 0,
+                                       swaps_to_left[nid].size() - 1);
 
-      auto tr_block_swaps =
-          swaps_to_right[nid][tr_block + 1] - swaps_to_right[nid][tr_block];
-      auto tl_block_swaps =
-          swaps_to_left[nid][tl_block + 1] - swaps_to_left[nid][tl_block];
+          auto tr_block_swaps =
+              swaps_to_right[nid][tr_block + 1] - swaps_to_right[nid][tr_block];
+          auto tl_block_swaps =
+              swaps_to_left[nid][tl_block + 1] - swaps_to_left[nid][tl_block];
 
-      // number of elements to discard in the beginning
-      auto tr_block_idx = swap_start - swaps_to_right[nid][tr_block];
-      auto tl_block_idx = swap_start - swaps_to_left[nid][tl_block];
+          // number of elements to discard in the beginning
+          auto tr_block_idx = swap_start - swaps_to_right[nid][tr_block];
+          auto tl_block_idx = swap_start - swaps_to_left[nid][tl_block];
 
-      for (uint64_t s = swap_start; s < swap_end; ++s) {
-        // calculate element indices that should be swapped
-        auto tr_idx = start[nid][tr_block] + tr_block_idx;
-        auto tl_idx = start[nid][tl_block] + tl_block_idx;
-        auto tr_eidx = parallel_remove_.to_right[nid][tr_idx];
-        auto tl_eidx = parallel_remove_.not_to_left[nid][tl_idx] + lowest[nid];
+          for (uint64_t s = swap_start; s < swap_end; ++s) {
+            // calculate element indices that should be swapped
+            auto tr_idx = start[nid][tr_block] + tr_block_idx;
+            auto tl_idx = start[nid][tl_block] + tl_block_idx;
+            auto tr_eidx = parallel_remove_.to_right[nid][tr_idx];
+            auto tl_eidx =
+                parallel_remove_.not_to_left[nid][tl_idx] + lowest[nid];
 
-        // swap
-        assert(tl_eidx < agents_[nid].size());
-        assert(tr_eidx < agents_[nid].size());
-        auto* reordered = agents_[nid][tl_eidx];
+            // swap
+            assert(tl_eidx < agents_[nid].size());
+            assert(tr_eidx < agents_[nid].size());
+            auto* reordered = agents_[nid][tl_eidx];
 #ifndef NDEBUG
-        assert(toberemoved.find(agents_[nid][tl_eidx]->GetUid()) == toberemoved.end());
-        assert(toberemoved.find(agents_[nid][tr_eidx]->GetUid()) != toberemoved.end());
+            assert(toberemoved.find(agents_[nid][tl_eidx]->GetUid()) ==
+                   toberemoved.end());
+            assert(toberemoved.find(agents_[nid][tr_eidx]->GetUid()) !=
+                   toberemoved.end());
 #endif  // NDBUG
-        agents_[nid][tl_eidx] = agents_[nid][tr_eidx];
-        agents_[nid][tr_eidx] = reordered;
-        uid_ah_map_.Insert(reordered->GetUid(), AgentHandle(nid, tr_eidx));
-        
-        // find next pair
-        if (swap_end - s > 1) {
-          // right
-          tr_block_idx++;
-          if (tr_block_idx >= tr_block_swaps) {
-            tr_block_idx = 0;
-            tr_block_swaps = 0;
-            while (!tr_block_swaps) {
-              tr_block++;
-              tr_block_swaps = swaps_to_right[nid][tr_block + 1] -
-                               swaps_to_right[nid][tr_block];
-            }
-          }
-          // left
-          tl_block_idx++;
-          if (tl_block_idx >= tl_block_swaps) {
-            tl_block_idx = 0;
-            tl_block_swaps = 0;
-            while (!tl_block_swaps) {
-              tl_block++;
-              tl_block_swaps = swaps_to_left[nid][tl_block + 1] -
-                               swaps_to_left[nid][tl_block];
+            agents_[nid][tl_eidx] = agents_[nid][tr_eidx];
+            agents_[nid][tr_eidx] = reordered;
+            uid_ah_map_.Insert(reordered->GetUid(), AgentHandle(nid, tr_eidx));
+
+            // find next pair
+            if (swap_end - s > 1) {
+              // right
+              tr_block_idx++;
+              if (tr_block_idx >= tr_block_swaps) {
+                tr_block_idx = 0;
+                tr_block_swaps = 0;
+                while (!tr_block_swaps) {
+                  tr_block++;
+                  tr_block_swaps = swaps_to_right[nid][tr_block + 1] -
+                                   swaps_to_right[nid][tr_block];
+                }
+              }
+              // left
+              tl_block_idx++;
+              if (tl_block_idx >= tl_block_swaps) {
+                tl_block_idx = 0;
+                tl_block_swaps = 0;
+                while (!tl_block_swaps) {
+                  tl_block++;
+                  tl_block_swaps = swaps_to_left[nid][tl_block + 1] -
+                                   swaps_to_left[nid][tl_block];
+                }
+              }
             }
           }
         }
       }
     }
-    }
-    }
 #pragma omp barrier
     if (remove[nid] != 0) {
-
       // delete agents
       uint64_t start_del = 0;
       uint64_t end_del = 0;
