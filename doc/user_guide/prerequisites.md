@@ -29,6 +29,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 ### Required Packages
 
   * **wget**: Retrieves files from the web
+  * **curl**: Command line tool for transferring data with URL syntax
   * **cmake**: Set of tools for automate building, testing of software
   * **make**: Build automation tool
   * **gcc**: GNU C compiler
@@ -42,7 +43,6 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 
 ### Required package for custom Python installation with pyenv
 
-  * **curl**: Command line tool for transferring data with URL syntax
   * **libssl-dev**: Secure Sockets Layer toolkit - development files
   * **zlib1g-dev**: Compression library - development
   * **libbz2-dev**: High-quality block-sorting file compressor library - development
@@ -70,9 +70,13 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y wget cmake make gcc g++ \
+sudo apt-get install -y wget curl make gcc g++ \
 libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
 libpthread-stubs0-dev
+
+curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+chmod +x cmake-3.19.3-Linux-x86_64.sh
+sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 ```
 
 We install pyenv as the Python Version Management tool to be able to switch
@@ -80,7 +84,7 @@ to a supported Python environment for BioDynaMo. This will not interfere with
 your system's Python installation.
 
 ```bash
-sudo apt-get install -y curl libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
+sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
   libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
 
 curl https://pyenv.run | bash
@@ -108,7 +112,7 @@ sudo apt-get install -y kcov
  * **epel-release**: Provides a set of additional packages for Enterprise Linux
  * **ius-release**: Provides RPM packages for newer software versions for for Enterprise Linux distributions
  * **wget**: Retrieves files from the web
- * **cmake3**: Set of tools for automate building, testing of software
+ * **cmake**: Set of tools for automate building, testing of software
  * **libXt-devel**: Basic library for developing X11
  * **libXext-devel**: Library which contains a handful of X11 extensions
  * **devtoolset-8-gcc**: Compiler suite for C and C++
@@ -149,9 +153,13 @@ sudo apt-get install -y kcov
 sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-sudo yum -y install wget cmake3 libXt-devel libXext-devel \
+sudo yum -y install wget libXt-devel libXext-devel \
   devtoolset-8-gcc* numactl-devel \
   openmpi3-devel freeglut-devel git
+
+curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+chmod +x cmake-3.19.3-Linux-x86_64.sh
+./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 ```
 
 We install pyenv as the Python Version Management tool to be able to switch
@@ -159,8 +167,8 @@ to a supported Python environment for BioDynaMo. This will not interfere with
 your system's Python installation.
 
 ```bash
-sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-  sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel \
+  sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
