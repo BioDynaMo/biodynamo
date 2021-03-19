@@ -420,8 +420,12 @@ class ResourceManager {
 
   TypeIndex* type_index_ = nullptr;
 
-  std::vector<std::vector<uint64_t>> to_right;  //!
-  std::vector<std::vector<uint64_t>> not_to_left;  //!
+  struct ParallelRemovalAuxData {
+    std::vector<std::vector<uint64_t>> to_right;
+    std::vector<std::vector<uint64_t>> not_to_left;
+  };
+
+  ParallelRemovalAuxData parallel_remove_;  //!
 
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);

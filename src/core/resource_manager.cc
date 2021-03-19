@@ -313,8 +313,8 @@ void ResourceManager::RemoveAgents(
 
   std::vector<uint64_t> remove(numa_nodes);
   std::vector<uint64_t> lowest(numa_nodes);
-  to_right.resize(numa_nodes);
-  not_to_left.resize(numa_nodes);
+  parallel_remove_.to_right.resize(numa_nodes);
+  parallel_remove_.not_to_left.resize(numa_nodes);
   // thread offsets into to_right and not_to_left
   std::vector<SharedData<uint64_t>> start(numa_nodes);
   // number of swaps in each block
@@ -354,14 +354,14 @@ void ResourceManager::RemoveAgents(
       // std::cout << "lowest " << lowest[nid] << std::endl;
 
       if (remove[nid] != 0) {
-        if (to_right[nid].capacity() < remove[nid]) {
-          to_right[nid].reserve(remove[nid] * 1.5);
+        if (parallel_remove_.to_right[nid].capacity() < remove[nid]) {
+          parallel_remove_.to_right[nid].reserve(remove[nid] * 1.5);
         }
         // to_right[nid].resize(remove[nid], std::numeric_limits<uint64_t>::max());
-        if (not_to_left[nid].capacity() < remove[nid]) {
-          not_to_left[nid].reserve(remove[nid] * 1.5);
+        if (parallel_remove_.not_to_left[nid].capacity() < remove[nid]) {
+          parallel_remove_.not_to_left[nid].reserve(remove[nid] * 1.5);
         }
-        // not_to_left[nid].resize(remove[nid]);
+        // parallel_remove_.not_to_left[nid].resize(remove[nid]);
       }
       // std::cout << "to_right size " << to_right[nid].size() << std::endl;
       // std::cout << "not_to_left size " << not_to_left[nid].size() <<
@@ -373,8 +373,8 @@ void ResourceManager::RemoveAgents(
     uint64_t end_init = 0;
     Partition(remove[nid], threads_in_numa, ntid, &start_init, &end_init);
     for (uint64_t i = start_init; i < end_init; ++i) {
-      to_right[nid][i] = std::numeric_limits<uint64_t>::max();
-      not_to_left[nid][i] = 0;
+      parallel_remove_.to_right[nid][i] = std::numeric_limits<uint64_t>::max();
+      parallel_remove_.not_to_left[nid][i] = 0;
     }
   }
 
@@ -398,12 +398,12 @@ void ResourceManager::RemoveAgents(
         // std::cout << "tid " << i << " uid " << uid << " ah " << ah << " edix"
         // << eidx << std::endl;
         if (eidx < lowest[nid]) {
-          to_right[nid][tbr_cum[nid][i] + cnt] = eidx;
+          parallel_remove_.to_right[nid][tbr_cum[nid][i] + cnt] = eidx;
           // std::cout << "   to right uid " << uid << " ah "<< ah  << " || i "
           // << i << " tbr_cum[i] " << tbr_cum[i] << " cnt " << cnt <<
           // std::endl;
         } else {
-          not_to_left[nid][eidx - lowest[nid]] = 1;
+          parallel_remove_.not_to_left[nid][eidx - lowest[nid]] = 1;
           // std::cout << "   not to left " << ah  << " eidx " << (eidx -
           // lowest)
           // << std::endl;
@@ -418,7 +418,7 @@ void ResourceManager::RemoveAgents(
   // }
   // for (uint64_t i = 0; i < to_right[0].size(); ++i) {
   //   std::cout << "swap arrays " << to_right[0][i] << " - " <<
-  //   not_to_left[0][i]
+  //   parallel_remove_.not_to_left[0][i]
   //             << std::endl;
   // }
 
@@ -448,20 +448,20 @@ void ResourceManager::RemoveAgents(
       // #pragma omp critical
       for (uint64_t i = start[nid][ntid]; i < end; ++i) {
         // std::cout << ntid << " - " << i << std::endl;
-        if (to_right[nid][i] != std::numeric_limits<uint64_t>::max()) {
-          to_right[nid][start[nid][ntid] + swaps_to_right[nid][ntid]++] =
-              to_right[nid][i];
+        if (parallel_remove_.to_right[nid][i] != std::numeric_limits<uint64_t>::max()) {
+          parallel_remove_.to_right[nid][start[nid][ntid] + swaps_to_right[nid][ntid]++] =
+              parallel_remove_.to_right[nid][i];
           // std::cout << tid << " to_right " << start[tid] +
           // swaps_to_right[tid]
           // << ":" << to_right[i] << std::endl;
         }
-        if (!not_to_left[nid][i]) {
+        if (!parallel_remove_.not_to_left[nid][i]) {
           // here the interpretation of not_to_left changes to to_left
           // just to reuse memory
           // std::cout << tid << " to_left " << start[tid] + swaps_to_left[tid]
           // <<
           // ":" << i << std::endl;
-          not_to_left[nid][start[nid][ntid] + swaps_to_left[nid][ntid]++] = i;
+          parallel_remove_.not_to_left[nid][start[nid][ntid] + swaps_to_left[nid][ntid]++] = i;
         }
       }
     }
@@ -556,8 +556,8 @@ void ResourceManager::RemoveAgents(
         // calculate element indices that should be swapped
         auto tr_idx = start[nid][tr_block] + tr_block_idx;
         auto tl_idx = start[nid][tl_block] + tl_block_idx;
-        auto tr_eidx = to_right[nid][tr_idx];
-        auto tl_eidx = not_to_left[nid][tl_idx] + lowest[nid];
+        auto tr_eidx = parallel_remove_.to_right[nid][tr_idx];
+        auto tl_eidx = parallel_remove_.not_to_left[nid][tl_idx] + lowest[nid];
 
         // swap
         // #pragma omp critical
