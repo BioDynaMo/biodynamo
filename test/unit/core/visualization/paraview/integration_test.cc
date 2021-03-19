@@ -223,7 +223,6 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
     ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
   }
   // Test will run in separate process.
-  exit(0);
 }
 
 // -----------------------------------------------------------------------------
@@ -258,15 +257,11 @@ TEST(FLAKY_ParaviewIntegrationTest, ExportAgentsLoadWithoutPVSM) {
       RunAgentsTest(mode, std::max(1, max_threads - 1), true, false));
 }
 
-// Disable insitu tests until ROOT cling crash on MacOS has been resolved
-#ifndef __APPLE__
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  LAUNCH_IN_NEW_PROCESS(
-      RunAgentsTest(mode, std::max(1, max_threads - 1), false));
-  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
+  RunAgentsTest(mode, 10 * max_threads + 1, false);
 }
 
 // -----------------------------------------------------------------------------
@@ -309,7 +304,6 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_Copy) {
       RunAgentsTest(mode, std::max(1, max_threads - 1), false));
   LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
-#endif  // __APPLE__
 
 }  // namespace bdm
 
