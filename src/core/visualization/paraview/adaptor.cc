@@ -127,6 +127,11 @@ void ParaviewAdaptor::Initialize() {
   auto* param = sim->GetParam();
 
   if (param->insitu_visualization && impl_->g_processor_ == nullptr) {
+#ifdef __APPLE__
+    Log::Warning("ParaviewAdaptor",
+                 "Insitu visualization is currently not supported on MacOS. "
+                 "Please use export visualization.");
+#endif  // __APPLE__
     impl_->g_processor_ = vtkCPProcessor::New();
     impl_->g_processor_->Initialize();
   }

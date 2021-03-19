@@ -111,7 +111,7 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
   double origin_y = grid_dimensions[2];
   double origin_z = grid_dimensions[4];
 
-  // do not partition data for insit visualization
+  // do not partition data for insitu visualization
   if (data_.size() == 1) {
     data_[0]->SetOrigin(origin_x, origin_y, origin_z);
     data_[0]->SetDimensions(num_boxes[0], num_boxes[1], num_boxes[2]);
@@ -149,7 +149,7 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
       data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
                           e[4] + piece_boxes_z_last_ - 1);
     }
-    int piece_origin_z = origin_z + box_length * piece_boxes_z_ * i;
+    double piece_origin_z = origin_z + box_length * piece_boxes_z_ * i;
     data_[i]->SetOrigin(origin_x, origin_y, piece_origin_z);
     data_[i]->SetSpacing(box_length, box_length, box_length);
 
@@ -191,7 +191,7 @@ void VtkDiffusionGrid::WriteToFile(uint64_t step) const {
 // -----------------------------------------------------------------------------
 void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
   if (num_pieces_target == 1) {
-    piece_boxes_z_last_ = 1;
+    piece_boxes_z_last_ = boxes_z;
     piece_boxes_z_ = 1;
     num_pieces_ = 1;
   } else if (boxes_z <= num_pieces_target) {
@@ -205,9 +205,8 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
     piece_boxes_z_last_ = boxes_z - (num_pieces_ - 1) * piece_boxes_z_;
   }
   assert(num_pieces_ > 0);
-  // TODO(lukas): revisit assertions, as they cannot hold if running with 1 thread
-  // assert(piece_boxes_z_last_ >= 2);
-  // assert((num_pieces_ - 1) * piece_boxes_z_ + piece_boxes_z_last_ == boxes_z);
+  assert(piece_boxes_z_last_ >= 1);
+  assert((num_pieces_ - 1) * piece_boxes_z_ + piece_boxes_z_last_ == boxes_z);
 }
 
 // -----------------------------------------------------------------------------

@@ -49,11 +49,14 @@ include(utils)
 # Detect os type and version
 if (NOT DEFINED OS)
     SET(DETECTED_OS "none")
+    SET(DETECTED_OS_VERS "none")
     detect_os()
 else()
     SET(DETECTED_OS ${OS})
+    SET(DETECTED_OS_VERS ${OS})
     check_detected_os(${DETECTED_OS})
 endif()
+
 
 # Find a suitable compiler
 include(CheckCompiler)
@@ -118,6 +121,13 @@ if(APPLE)
                     OUTPUT_VARIABLE LLVM_BREW_PREFIX
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
+  
+  # Ignore Fink (/sw) and MacPorts (/opt/local) packages, only consider Brew
+  set(CMAKE_IGNORE_PATH)
+  foreach(_prefix /sw /opt/local)
+    list(APPEND CMAKE_IGNORE_PATH ${_prefix}/bin ${_prefix}/include ${_prefix}/lib)
+  endforeach()
+  
   # Silence std::experimental::filesystem warning on MacOS.
   # Remove after update to c++17
   add_definitions("-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM")
@@ -266,8 +276,7 @@ if(numa)
 endif()
 
 if(paraview)
-    # If we specify a custom location for ParaView then we need to specify also a custom location
-    # for Qt.
+    # If we specify a custom location for ParaView then we need to specify also a custom location for Qt.
     if ((DEFINED ENV{ParaView_DIR} AND NOT DEFINED ENV{Qt5_DIR}) OR (NOT DEFINED ENV{ParaView_DIR} AND DEFINED ENV{Qt5_DIR}))
         MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build "
                 "BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.")
@@ -280,24 +289,44 @@ if(paraview)
     if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
       set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
     endif()
-    ##message("#### ${CMAKE_BDM_PVVERSION} ${CMAKE_THIRD_PARTY_DIR} ${ParaView_PREFIX_PATH}")
     # Check the first time if ParaView exists in the system.
     find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-    if(${ParaView_FOUND})
-      include_directories(${ParaView_PREFIX_PATH}/include/paraview-${CMAKE_BDM_PVVERSION})
+                 PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
+
+    if(ParaView_FOUND)
+        # Check if found ParaView is BDM installed (matchres > -1)
+        string(FIND ${ParaView_PREFIX_PATH} ${CMAKE_THIRD_PARTY_DIR} matchres)
+        if (${matchres} GREATER -1)
+            # check SHA256 of ParaView to see if it matches currently supported ParaView
+            if (IS_DIRECTORY ${CMAKE_THIRD_PARTY_DIR}/paraview)
+                if (EXISTS ${CMAKE_THIRD_PARTY_DIR}/paraview/tar-sha256)
+                    # check if SHA256 of installed ParaView is the same as the expected one
+                    file(READ ${CMAKE_THIRD_PARTY_DIR}/paraview/tar-sha256 TAR_SHA256)
+                    if(NOT "${TAR_SHA256}" STREQUAL "${${DETECTED_OS_VERS}-ParaView}")
+                        # BDM installed ParaView has wrong SHA256... deleting it
+                        message(WARNING "The found ParaView version is not compatible... deleting it...")
+                        file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/paraview)
+                        file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/qt)
+                        unset(ParaView_FOUND)
+                    endif()
+                else()
+                    # BDM installed ParaView exists but no SHA256 file... deleting it
+                    message(WARNING "The found ParaView version cannot be determined... deleting it...")
+                    file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/paraview)
+                    file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/qt)
+                    unset(ParaView_FOUND)
+                endif()
+            endif()
+        endif()
     endif()
 
-    # Check if ParaView was found in the system. If that's not the case then we will proceed
-    # to download it.
-    if(NOT ${ParaView_FOUND})
+    if(NOT ParaView_FOUND)
       PRINT_WARNING()
-      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now "
-              "together with Qt5.")
+      MESSAGE("We did not find any ParaView installed on the system. We will proceed to download it "
+              "together with Qt5. ParaView will be installed in the location ${CMAKE_THIRD_PARTY_DIR}/paraview.")
       PRINT_LINE()
 
-      # If we did not found paraview then we will install it automatically
-      # with the Qt package.
+      # If we did not found paraview then we will install it automatically with the Qt package.
       include(external/Qt)
       PRINT_LINE()
       MESSAGE("Qt5 was successfully downloaded and installed. We will proceed now with ParaView.")
@@ -310,10 +339,10 @@ if(paraview)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
       find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-            PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
-      include_directories(${ParaView_PREFIX_PATH}/include/paraview-${CMAKE_BDM_PVVERSION})
+                   PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
     endif()
 
+    include_directories(${ParaView_PREFIX_PATH}/include/paraview-${CMAKE_BDM_PVVERSION})
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
