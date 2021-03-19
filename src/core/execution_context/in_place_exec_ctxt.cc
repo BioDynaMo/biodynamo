@@ -113,7 +113,6 @@ InPlaceExecutionContext::InPlaceExecutionContext(
     const std::shared_ptr<ThreadSafeAgentUidMap>& map)
     : new_agent_map_(map), tinfo_(ThreadInfo::GetInstance()) {
   new_agents_.reserve(1e3);
-  remove_.resize(tinfo_->GetNumaNodes());
 }
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
@@ -170,10 +169,7 @@ void InPlaceExecutionContext::TearDownIterationAll(
   rm->RemoveAgents(all_remove);
 
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
-    auto* ctxt = all_exec_ctxts[i];
-    for (auto& el : ctxt->remove_) {
-      el.clear();
-    }
+    all_exec_ctxts[i]->remove_.clear();
   }
 
   rm->EndOfIteration();
@@ -255,7 +251,7 @@ void InPlaceExecutionContext::Execute(
 void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
   new_agents_.push_back(new_agent);
   auto nid = tinfo_->GetMyNumaNode();
-  new_agent_map_->Insert(new_agent->GetUid(), {new_agent, nid});
+  new_agent_map_->Insert(new_agent->GetUid(), new_agent);
 }
 
 struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {
@@ -346,8 +342,7 @@ Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {
     return agent;
   }
 
-  // returns nullptr if the object is not found
-  return (*new_agent_map_)[uid].agent;
+  return (*new_agent_map_)[uid];
 }
 
 const Agent* InPlaceExecutionContext::GetConstAgent(const AgentUid& uid) {
@@ -355,15 +350,7 @@ const Agent* InPlaceExecutionContext::GetConstAgent(const AgentUid& uid) {
 }
 
 void InPlaceExecutionContext::RemoveFromSimulation(const AgentUid& uid) {
-  auto* sim = Simulation::GetActive();
-  auto* rm = sim->GetResourceManager();
-  uint64_t nid = 0;
-  if (rm->ContainsAgent(uid)) {
-    nid = rm->GetAgentHandle(uid).GetNumaNode();
-  } else {
-    nid = (*new_agent_map_)[uid].numa_node;
-  }
-  remove_[nid].push_back(uid);
+  remove_.push_back(uid);
 }
 
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*

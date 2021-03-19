@@ -19,7 +19,7 @@
 #include "core/environment/environment.h"
 #include "core/simulation.h"
 #include "core/util/partition.h"
-
+#include <set> // FIXME remove
 namespace bdm {
 
 ResourceManager::ResourceManager() {
@@ -299,7 +299,7 @@ void ResourceManager::LoadBalance() {
 
 // -----------------------------------------------------------------------------
 void ResourceManager::RemoveAgents(
-    const std::vector<std::vector<std::vector<AgentUid>>*>& uids) {
+    const std::vector<std::vector<AgentUid>*>& uids) {
   // initialization
   // cumulative numbers of to be removed agents
   auto numa_nodes = thread_info_->GetNumaNodes();
@@ -310,22 +310,38 @@ void ResourceManager::RemoveAgents(
 
   std::vector<uint64_t> remove(numa_nodes);
   std::vector<uint64_t> lowest(numa_nodes);
-  std::vector<ParallelResizeVector<uint64_t>> to_right(numa_nodes);
-  std::vector<ParallelResizeVector<uint64_t>> not_to_left(numa_nodes);
+  std::vector<std::vector<uint64_t>> to_right(numa_nodes);
+  std::vector<std::vector<uint64_t>> not_to_left(numa_nodes);
   // thread offsets into to_right and not_to_left
-  std::vector<std::vector<uint64_t>> start(numa_nodes);
+  std::vector<SharedData<uint64_t>> start(numa_nodes);
   // number of swaps in each block
   // add one more element to have enough space for exclusive prefix sum
-  std::vector<std::vector<uint64_t>> swaps_to_right(numa_nodes);
-  std::vector<std::vector<uint64_t>> swaps_to_left(numa_nodes);
+  std::vector<SharedData<uint64_t>> swaps_to_right(numa_nodes);
+  std::vector<SharedData<uint64_t>> swaps_to_left(numa_nodes);
+
+  // std::set<AgentUid> toberemoved;
+
+  // determine how many agents will be removed in each numa domain
+#pragma omp parallel for schedule(static, 1)
+  for (uint64_t i = 0; i < uids.size(); ++i) {
+    for (auto& uid : *uids[i]) {
+      auto ah = uid_ah_map_[uid];
+      tbr_cum[ah.GetNumaNode()][i]++;  
+    }
+  }
 
 #pragma omp parallel
   {
     auto nid = thread_info_->GetMyNumaNode();
     if (thread_info_->GetMyNumaThreadId() == 0) {
+      // calculate exclusive prefix sum for tbr_cum
+      auto tmp = tbr_cum[nid][0];
+      tbr_cum[nid][0] = 0;
       for (uint64_t i = 1; i < tbr_cum[nid].size(); ++i) {
-        remove[nid] += (*uids[i - 1])[nid].size();
-        tbr_cum[nid][i] = tbr_cum[nid][i - 1] + (*uids[i - 1])[nid].size();
+        remove[nid] += tmp;
+        auto result = tbr_cum[nid][i - 1] + tmp;
+        tmp = tbr_cum[nid][i];
+        tbr_cum[nid][i] = result;
       }
       // for (auto& el : tbr_cum) {
       //   std::cout << "cum " << el << std::endl;
@@ -333,9 +349,9 @@ void ResourceManager::RemoveAgents(
       lowest[nid] = agents_[nid].size() - remove[nid];
       // std::cout << "lowest " << lowest[nid] << std::endl;
 
-      to_right[nid].clear();
+      // to_right[nid].clear();
       to_right[nid].resize(remove[nid], std::numeric_limits<uint64_t>::max());
-      not_to_left[nid].clear();
+      // not_to_left[nid].clear();
       not_to_left[nid].resize(remove[nid]);
 
       // std::cout << "to_right size " << to_right[nid].size() << std::endl;
@@ -343,33 +359,38 @@ void ResourceManager::RemoveAgents(
       // std::endl;
     }
   }
-
+ 
+ // for(uint64_t nid = 0; nid < numa_nodes; ++nid) {
+ // } 
+ 
   // find agents that must be swapped
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < uids.size(); ++i) {
-    for (uint64_t n = 0; n < numa_nodes; ++n) {
       uint64_t cnt = 0;
       // #pragma omp critical
-      for (auto& uid : (*uids[i])[n]) {
+      for (auto& uid : *uids[i]) {
         assert(ContainsAgent(uid));
         auto ah = uid_ah_map_[uid];
+        auto nid = ah.GetNumaNode();
         auto eidx = ah.GetElementIdx();
+// #pragma omp critical
+//         toberemoved.insert(uid);
+        // std::cout << "toberemoved " << uid << std::endl;
         // std::cout << "tid " << i << " uid " << uid << " ah " << ah << " edix"
         // << eidx << std::endl;
-        if (eidx < lowest[n]) {
-          to_right[n][tbr_cum[n][i] + cnt] = eidx;
+        if (eidx < lowest[nid]) {
+          to_right[nid][tbr_cum[nid][i] + cnt] = eidx;
           // std::cout << "   to right uid " << uid << " ah "<< ah  << " || i "
           // << i << " tbr_cum[i] " << tbr_cum[i] << " cnt " << cnt <<
           // std::endl;
         } else {
-          not_to_left[n][eidx - lowest[n]] = 1;
+          not_to_left[nid][eidx - lowest[nid]] = 1;
           // std::cout << "   not to left " << ah  << " eidx " << (eidx -
           // lowest)
           // << std::endl;
         }
         cnt++;
       }
-    }
   }
 
   // for (auto* a : agents_[0]) {
@@ -397,7 +418,7 @@ void ResourceManager::RemoveAgents(
       }
     }
 #pragma omp barrier
-
+// #pragma omp critical
     if (remove[nid] != 0) {
       uint64_t end = 0;
       // #pragma omp critical
@@ -426,6 +447,7 @@ void ResourceManager::RemoveAgents(
       }
     }
 #pragma omp barrier
+// #pragma omp critical
     if (remove[nid] != 0) {
       // #pragma omp critical
       //       if (ntid == 0) {
@@ -468,6 +490,7 @@ void ResourceManager::RemoveAgents(
     //   std::cout << "threads_in_numa " << threads_in_numa << std::endl;
     //   std::cout << "swaps_to_right[nid].size() " << swaps_to_right[nid].size() << std::endl;
     //   std::cout << "num_swaps " << num_swaps << std::endl;
+// #pragma omp critical
     if (remove[nid] != 0) {
       uint64_t num_swaps = swaps_to_right[nid][threads_in_numa];
       if (num_swaps != 0) {
@@ -539,9 +562,18 @@ void ResourceManager::RemoveAgents(
         assert(tl_eidx < agents_[nid].size());
         assert(tr_eidx < agents_[nid].size());
         auto* reordered = agents_[nid][tl_eidx];
+// #pragma omp critical
+//         {
+//         if (toberemoved.find(agents_[nid][tl_eidx]->GetUid()) != toberemoved.end())
+//           std::cout << "shouldntbemovedtoleft " << agents_[nid][tl_eidx]->GetUid() << std::endl;
+//         if (toberemoved.find(agents_[nid][tr_eidx]->GetUid()) == toberemoved.end())
+//           std::cout << "shouldntbemovedtoright " << agents_[nid][tr_eidx]->GetUid() << std::endl;
+        // }
         agents_[nid][tl_eidx] = agents_[nid][tr_eidx];
         agents_[nid][tr_eidx] = reordered;
         uid_ah_map_.Insert(reordered->GetUid(), AgentHandle(nid, tr_eidx));
+// #pragma omp critical
+//         std::cout << "swap tid " << thread_info_->GetMyThreadId() << " nid " << nid << " ntid " << ntid << " " << tr_eidx << " " <<tl_eidx << std::endl;
 
         // find next pair
         if (swap_end - s > 1) {
@@ -581,6 +613,7 @@ void ResourceManager::RemoveAgents(
     }
     }
 #pragma omp barrier
+// #pragma omp critical
     if (remove[nid] != 0) {
       // for (auto* a : agents_[0]) {
       //   std::cout << "after swap " << a->GetUid() << std::endl;
@@ -596,6 +629,11 @@ void ResourceManager::RemoveAgents(
 
       for (uint64_t i = start_del; i < end_del; ++i) {
         Agent* agent = agents_[nid][i];
+// #pragma omp critical
+//         {
+//         if (toberemoved.find(agent->GetUid()) == toberemoved.end())
+//           std::cout << "shouldntberemoved " << agent->GetUid() << std::endl;
+//         }
         uid_ah_map_.Remove(agent->GetUid());
         if (type_index_) {
           // TODO parallelize type_index removal
@@ -609,10 +647,10 @@ void ResourceManager::RemoveAgents(
   // shrink container
   for (uint64_t n = 0; n < agents_.size(); ++n) {
     agents_[n].resize(lowest[n]);
+    // for (auto* a : agents_[n]) {
+    //   std::cout << "still here " << n << " - " << a->GetUid() << std::endl;
+    // }
   }
-  // for (auto* a : agents_[0]) {
-  //   std::cout << "still here " << a->GetUid() << std::endl;
-  // }
 }
 
 }  // namespace bdm

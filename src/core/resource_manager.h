@@ -402,7 +402,7 @@ class ResourceManager {
   // \param uids: one vector for each thread containing one vector for each numa
   //              node
   void RemoveAgents(
-      const std::vector<std::vector<std::vector<AgentUid>>*>& uids);
+      const std::vector<std::vector<AgentUid>*>& uids);
 
   const TypeIndex* GetTypeIndex() const { return type_index_; }
 

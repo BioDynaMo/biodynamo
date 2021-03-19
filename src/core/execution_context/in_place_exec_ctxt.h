@@ -48,13 +48,8 @@ class Agent;
 /// Also removal of an agent happens at the end of each iteration.
 class InPlaceExecutionContext {
  public:
-  struct NewAgentData {
-    Agent* agent;
-    AgentHandle::NumaNode_t numa_node;
-  };
-
   struct ThreadSafeAgentUidMap {
-    using value_type = NewAgentData;
+    using value_type = Agent*;
     using Batch = std::vector<value_type>;
     ThreadSafeAgentUidMap();
     ~ThreadSafeAgentUidMap();
@@ -118,7 +113,7 @@ class InPlaceExecutionContext {
 
   /// Contains unique ids of agents that will be removed at the end of each
   /// iteration. AgentUids are separated by numa node.
-  std::vector<std::vector<AgentUid>> remove_;
+  std::vector<AgentUid> remove_;
   std::vector<AgentUid> critical_region_;
   std::vector<AgentUid> critical_region_2_;
   std::vector<Spinlock*> locks_;

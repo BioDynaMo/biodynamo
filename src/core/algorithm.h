@@ -61,7 +61,8 @@ template <typename TSearch, typename TContainer>
 uint64_t BinarySearch(const TSearch& search_val, const TContainer& container,
                       uint64_t from, uint64_t to) {
   if (to <= from) {
-    if (from < container.size() && container[from] != search_val && from > 0) {
+    if (container[from] != search_val && from > 0) {
+    // if (from < container.size() && container[from] != search_val && from > 0) {
       from--;
     }
     return from;
