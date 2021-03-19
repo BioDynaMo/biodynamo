@@ -14,12 +14,14 @@
 
 #include "core/resource_manager.h"
 #include <cmath>
+#ifndef NDEBUG
+#include <set>
+#endif  // NDEBUG
 #include "core/algorithm.h"
 #include "core/container/shared_data.h"
 #include "core/environment/environment.h"
 #include "core/simulation.h"
 #include "core/util/partition.h"
-#include <set> // FIXME remove
 #include "core/util/timing.h"
 
 namespace bdm {
@@ -322,7 +324,9 @@ void ResourceManager::RemoveAgents(
   std::vector<SharedData<uint64_t>> swaps_to_right(numa_nodes);
   std::vector<SharedData<uint64_t>> swaps_to_left(numa_nodes);
 
-  // std::set<AgentUid> toberemoved;
+#ifndef NDEBUG
+  std::set<AgentUid> toberemoved;
+#endif  // NDEBUG
 
   // determine how many agents will be removed in each numa domain
 #pragma omp parallel for schedule(static, 1)
@@ -385,8 +389,10 @@ void ResourceManager::RemoveAgents(
         auto ah = uid_ah_map_[uid];
         auto nid = ah.GetNumaNode();
         auto eidx = ah.GetElementIdx();
-// #pragma omp critical
-//         toberemoved.insert(uid);
+#ifndef NDEBUG
+#pragma omp critical
+        toberemoved.insert(uid);
+#endif  // NDEBUG
         // std::cout << "toberemoved " << uid << std::endl;
         // std::cout << "tid " << i << " uid " << uid << " ah " << ah << " edix"
         // << eidx << std::endl;
@@ -564,13 +570,10 @@ void ResourceManager::RemoveAgents(
         assert(tl_eidx < agents_[nid].size());
         assert(tr_eidx < agents_[nid].size());
         auto* reordered = agents_[nid][tl_eidx];
-// #pragma omp critical
-//         {
-//         if (toberemoved.find(agents_[nid][tl_eidx]->GetUid()) != toberemoved.end())
-//           std::cout << "shouldntbemovedtoleft " << agents_[nid][tl_eidx]->GetUid() << std::endl;
-//         if (toberemoved.find(agents_[nid][tr_eidx]->GetUid()) == toberemoved.end())
-//           std::cout << "shouldntbemovedtoright " << agents_[nid][tr_eidx]->GetUid() << std::endl;
-        // }
+#ifndef NDEBUG
+        assert(toberemoved.find(agents_[nid][tl_eidx]->GetUid()) == toberemoved.end());
+        assert(toberemoved.find(agents_[nid][tr_eidx]->GetUid()) != toberemoved.end());
+#endif  // NDBUG
         agents_[nid][tl_eidx] = agents_[nid][tr_eidx];
         agents_[nid][tr_eidx] = reordered;
         uid_ah_map_.Insert(reordered->GetUid(), AgentHandle(nid, tr_eidx));
@@ -631,11 +634,7 @@ void ResourceManager::RemoveAgents(
 
       for (uint64_t i = start_del; i < end_del; ++i) {
         Agent* agent = agents_[nid][i];
-// #pragma omp critical
-//         {
-//         if (toberemoved.find(agent->GetUid()) == toberemoved.end())
-//           std::cout << "shouldntberemoved " << agent->GetUid() << std::endl;
-//         }
+        assert(toberemoved.find(agent->GetUid()) != toberemoved.end());
         uid_ah_map_.Remove(agent->GetUid());
         if (type_index_) {
           // TODO parallelize type_index removal
