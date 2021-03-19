@@ -425,6 +425,7 @@ class ResourceManager {
     std::vector<std::vector<uint64_t>> not_to_left;
   };
 
+  /// auxiliary data required for parallel agent removal
   ParallelRemovalAuxData parallel_remove_;  //!
 
   friend class SimulationBackup;
