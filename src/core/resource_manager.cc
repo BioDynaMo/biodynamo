@@ -20,6 +20,8 @@
 #include "core/simulation.h"
 #include "core/util/partition.h"
 #include <set> // FIXME remove
+#include "core/util/timing.h"
+
 namespace bdm {
 
 ResourceManager::ResourceManager() {
@@ -300,6 +302,7 @@ void ResourceManager::LoadBalance() {
 // -----------------------------------------------------------------------------
 void ResourceManager::RemoveAgents(
     const std::vector<std::vector<AgentUid>*>& uids) {
+  auto startts = Timing::Timestamp();
   // initialization
   // cumulative numbers of to be removed agents
   auto numa_nodes = thread_info_->GetNumaNodes();
@@ -310,8 +313,8 @@ void ResourceManager::RemoveAgents(
 
   std::vector<uint64_t> remove(numa_nodes);
   std::vector<uint64_t> lowest(numa_nodes);
-  std::vector<std::vector<uint64_t>> to_right(numa_nodes);
-  std::vector<std::vector<uint64_t>> not_to_left(numa_nodes);
+  to_right.resize(numa_nodes);
+  not_to_left.resize(numa_nodes);
   // thread offsets into to_right and not_to_left
   std::vector<SharedData<uint64_t>> start(numa_nodes);
   // number of swaps in each block
@@ -333,6 +336,7 @@ void ResourceManager::RemoveAgents(
 #pragma omp parallel
   {
     auto nid = thread_info_->GetMyNumaNode();
+    auto ntid = thread_info_->GetMyNumaThreadId();
     if (thread_info_->GetMyNumaThreadId() == 0) {
       // calculate exclusive prefix sum for tbr_cum
       auto tmp = tbr_cum[nid][0];
@@ -349,17 +353,32 @@ void ResourceManager::RemoveAgents(
       lowest[nid] = agents_[nid].size() - remove[nid];
       // std::cout << "lowest " << lowest[nid] << std::endl;
 
-      // to_right[nid].clear();
-      to_right[nid].resize(remove[nid], std::numeric_limits<uint64_t>::max());
-      // not_to_left[nid].clear();
-      not_to_left[nid].resize(remove[nid]);
-
+      if (remove[nid] != 0) {
+        if (to_right[nid].capacity() < remove[nid]) {
+          to_right[nid].reserve(remove[nid] * 1.5);
+        }
+        // to_right[nid].resize(remove[nid], std::numeric_limits<uint64_t>::max());
+        if (not_to_left[nid].capacity() < remove[nid]) {
+          not_to_left[nid].reserve(remove[nid] * 1.5);
+        }
+        // not_to_left[nid].resize(remove[nid]);
+      }
       // std::cout << "to_right size " << to_right[nid].size() << std::endl;
       // std::cout << "not_to_left size " << not_to_left[nid].size() <<
       // std::endl;
     }
+#pragma omp barrier
+    auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
+    uint64_t start_init = 0;
+    uint64_t end_init = 0;
+    Partition(remove[nid], threads_in_numa, ntid, &start_init, &end_init);
+    for (uint64_t i = start_init; i < end_init; ++i) {
+      to_right[nid][i] = std::numeric_limits<uint64_t>::max();
+      not_to_left[nid][i] = 0;
+    }
   }
- 
+
+  // std::cout << "Init " << (Timing::Timestamp() - startts) << std::endl; 
  // for(uint64_t nid = 0; nid < numa_nodes; ++nid) {
  // } 
  

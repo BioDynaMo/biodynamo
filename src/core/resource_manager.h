@@ -420,6 +420,9 @@ class ResourceManager {
 
   TypeIndex* type_index_ = nullptr;
 
+  std::vector<std::vector<uint64_t>> to_right;  //!
+  std::vector<std::vector<uint64_t>> not_to_left;  //!
+
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
   BDM_CLASS_DEF_NV(ResourceManager, 2);

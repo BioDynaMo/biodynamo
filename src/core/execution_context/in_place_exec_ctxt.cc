@@ -161,15 +161,19 @@ void InPlaceExecutionContext::TearDownIterationAll(
   // remove
   std::vector<decltype(remove_)*> all_remove(tinfo_->GetMaxThreads());
 
+  auto num_removals = 0;
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
     all_remove[i] = &ctxt->remove_;
+    num_removals += ctxt->remove_.size();
   }
 
-  rm->RemoveAgents(all_remove);
+  if (num_removals != 0) {
+    rm->RemoveAgents(all_remove);
 
-  for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
-    all_exec_ctxts[i]->remove_.clear();
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      all_exec_ctxts[i]->remove_.clear();
+    }
   }
 
   rm->EndOfIteration();
