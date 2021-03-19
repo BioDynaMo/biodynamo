@@ -23,8 +23,8 @@ fi
 cd $1
 
 # safety check:
-# only accept directories that contain CMakeCache.txt and cmakefiles
-if ! [ -f "CMakeCache.txt" ] || ! [ -d "cmakefiles" ] ; then
+# only accept directories that contain CMakeCache.txt and CMakeFiles
+if ! [ -f "CMakeCache.txt" ] || ! [ -d "CMakeFiles" ] ; then
   echo "ERROR: The given directory ($1) does not contain a CMakeCache.txt file"
   echo "       nor a cmakefiles directory. Therefore, this is likely not a"
   echo "       build directory. Aborting operation..."
