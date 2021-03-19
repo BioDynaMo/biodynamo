@@ -254,7 +254,6 @@ void InPlaceExecutionContext::Execute(
 
 void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
   new_agents_.push_back(new_agent);
-  auto nid = tinfo_->GetMyNumaNode();
   new_agent_map_->Insert(new_agent->GetUid(), new_agent);
 }
 
