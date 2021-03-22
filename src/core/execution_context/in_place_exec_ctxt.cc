@@ -159,15 +159,21 @@ void InPlaceExecutionContext::TearDownIterationAll(
   }
 
   // remove
+  std::vector<decltype(remove_)*> all_remove(tinfo_->GetMaxThreads());
+
+  auto num_removals = 0;
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
-    // removed agents
-    // remove them after adding new ones (maybe one has been removed
-    // that was in new_agents_)
-    for (auto& uid : ctxt->remove_) {
-      rm->RemoveAgent(uid);
+    all_remove[i] = &ctxt->remove_;
+    num_removals += ctxt->remove_.size();
+  }
+
+  if (num_removals != 0) {
+    rm->RemoveAgents(all_remove);
+
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      all_exec_ctxts[i]->remove_.clear();
     }
-    ctxt->remove_.clear();
   }
 
   rm->EndOfIteration();
@@ -248,8 +254,7 @@ void InPlaceExecutionContext::Execute(
 
 void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
   new_agents_.push_back(new_agent);
-  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-  new_agent_map_->Insert(new_agent->GetUid(), {new_agent, timesteps});
+  new_agent_map_->Insert(new_agent->GetUid(), new_agent);
 }
 
 struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {
@@ -340,8 +345,7 @@ Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {
     return agent;
   }
 
-  // returns nullptr if the object is not found
-  return (*new_agent_map_)[uid].first;
+  return (*new_agent_map_)[uid];
 }
 
 const Agent* InPlaceExecutionContext::GetConstAgent(const AgentUid& uid) {

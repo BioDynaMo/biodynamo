@@ -53,6 +53,50 @@ void InPlaceParallelPrefixSum(T& v, uint64_t n) {
   }
 }
 
+// -----------------------------------------------------------------------------
+/// Calculate exclusive prefix sum in-place.
+/// n must be <= t->size() - 1
+/// This means that there must be an additional element in the vector at v[n+1]
+template <typename T>
+void ExclusivePrefixSum(T* v, uint64_t n) {
+  auto tmp = (*v)[0];
+  (*v)[0] = 0;
+  for (uint64_t i = 1; i <= n; ++i) {
+    auto result = (*v)[i - 1] + tmp;
+    tmp = (*v)[i];
+    (*v)[i] = result;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// if search_val is found in container, return right-most occurence.
+// If not return the index of the right-most element that is smaller.
+// If no smaller element exists, return element at index 0
+template <typename TSearch, typename TContainer>
+uint64_t BinarySearch(const TSearch& search_val, const TContainer& container,
+                      uint64_t from, uint64_t to) {
+  if (to <= from) {
+    if (container[from] != search_val && from > 0) {
+      // if (from < container.size() && container[from] != search_val && from >
+      // 0) {
+      from--;
+    }
+    return from;
+  }
+
+  auto m = (from + to) / 2;
+  if (container[m] == search_val) {
+    if (m + 1 <= to && container[m + 1] == search_val) {
+      return BinarySearch(search_val, container, m + 1, to);
+    }
+    return m;
+  } else if (container[m] > search_val) {
+    return BinarySearch(search_val, container, from, m);
+  } else {
+    return BinarySearch(search_val, container, m + 1, to);
+  }
+}
+
 }  // namespace bdm
 
 #endif  // CORE_ALGORITHM_H_

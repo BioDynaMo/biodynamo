@@ -49,6 +49,14 @@ TEST(ParallelResizeVectorTest, Basics) {
   }
 }
 
+TEST(ParallelResizeVectorTest, SizeAndDefaultValueCtor) {
+  ParallelResizeVector<int> v(9, 3);
+  EXPECT_EQ(9u, v.size());
+  for (uint64_t i = 0; i < 9; ++i) {
+    EXPECT_EQ(3, v[i]);
+  }
+}
+
 TEST(ParallelResizeVector, Reserve) {
   ParallelResizeVector<int> v;
   EXPECT_EQ(0u, v.size());

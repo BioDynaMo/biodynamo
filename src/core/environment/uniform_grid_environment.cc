@@ -105,32 +105,6 @@ struct AgentHandleIterator : public Iterator<AgentHandle> {
 };
 
 // -----------------------------------------------------------------------------
-// if search_val is found in container, return right-most occurence.
-// If not return the index of the right-most element that is smaller.
-template <typename T>
-uint64_t BinarySearch(uint64_t search_val, const T& container, uint64_t from,
-                      uint64_t to) {
-  if (to <= from) {
-    if (container[from] != search_val && from > 0) {
-      from--;
-    }
-    return from;
-  }
-
-  auto m = (from + to) / 2;
-  if (container[m] == search_val) {
-    if (m + 1 <= to && container[m + 1] == search_val) {
-      return BinarySearch(search_val, container, m + 1, to);
-    }
-    return m;
-  } else if (container[m] > search_val) {
-    return BinarySearch(search_val, container, from, m);
-  } else {
-    return BinarySearch(search_val, container, m + 1, to);
-  }
-}
-
-// -----------------------------------------------------------------------------
 void UniformGridEnvironment::LoadBalanceInfoUG::CallHandleIteratorConsumer(
     uint64_t start, uint64_t end,
     Functor<void, Iterator<AgentHandle>*>& f) const {

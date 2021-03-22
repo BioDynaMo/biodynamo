@@ -399,6 +399,10 @@ class ResourceManager {
     }
   }
 
+  // \param uids: one vector for each thread containing one vector for each numa
+  //              node
+  void RemoveAgents(const std::vector<std::vector<AgentUid>*>& uids);
+
   const TypeIndex* GetTypeIndex() const { return type_index_; }
 
  protected:
@@ -414,6 +418,14 @@ class ResourceManager {
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
   TypeIndex* type_index_ = nullptr;
+
+  struct ParallelRemovalAuxData {
+    std::vector<std::vector<uint64_t>> to_right;
+    std::vector<std::vector<uint64_t>> not_to_left;
+  };
+
+  /// auxiliary data required for parallel agent removal
+  ParallelRemovalAuxData parallel_remove_;  //!
 
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
