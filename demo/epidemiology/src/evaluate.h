@@ -133,7 +133,8 @@ inline void FinalizePlot(TCanvas* c, TMultiGraph* mg,
   gPad->Update();
   c->Modified();
   c->cd(0);
-  std::cout << "Result plot created at: " << Concat(std::string(filename), ".svg") << std::endl; 
+  std::cout << "Result plot created at: "
+            << Concat(std::string(filename), ".svg") << std::endl;
   c->SaveAs(Concat(std::string(filename), ".svg").c_str());
   c->SaveAs(Concat(std::string(filename), ".C").c_str());
 }

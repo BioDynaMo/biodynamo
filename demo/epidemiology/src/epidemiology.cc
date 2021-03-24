@@ -79,8 +79,7 @@ ResultData GetAnalyticalResults(CommandLineOptions* clo) {
   ResultData analytical;
   CalculateAnalyticalSolution(
       &analytical, beta, gamma, sparam->initial_population_susceptible,
-      sparam->initial_population_infected, 0, sparam->number_of_iterations,
-      1);
+      sparam->initial_population_infected, 0, sparam->number_of_iterations, 1);
   return analytical;
 }
 
@@ -158,7 +157,7 @@ int main(int argc, const char** argv) {
   } else if (mode == "fit-simulation") {
     bdm::ExperimentFitSimulation(&clo, seeds);
   }
-  
+
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
 }
