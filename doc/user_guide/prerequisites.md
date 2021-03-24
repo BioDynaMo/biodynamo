@@ -63,6 +63,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **graphviz**: Graph Visualization Software used optionally by Doxygen
   * **kcov**: Code coverage testing tool (only on Ubuntu 20.04)
   * **libxml2-dev**: Development files for the GNOME XML library
+  * **libgsl-dev**: GNU Scientific Library (GSL) -- development package  
 
 ### Installation
 
@@ -100,7 +101,7 @@ pyenv shell 3.9.1
 python -m pip install nbformat jupyter metakernel jupyterlab
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
-  doxygen graphviz libxml2-dev
+  doxygen graphviz libxml2-dev libgsl-dev
 # on Ubuntu 20.04
 sudo apt-get install -y kcov
 ```
@@ -144,6 +145,10 @@ sudo apt-get install -y kcov
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
  * **libxml2-devel**: Development files for the GNOME XML library
+ * **gsl-devel**: GNU Scientific Library (GSL) -- development package
+ * **atlas-devel**: Automatically Tuned Linear Algebra Software -- development package
+ * **blas-devel**: The Basic Linear Algebra Subprograms library -- development package
+ * **lapack-devel**: Numerical linear algebra package libraries -- development package
 
 ### Installation
 
@@ -193,7 +198,8 @@ EOF'
 sudo yum update -y
 sudo yum install -y doxygen graphviz valgrind freeglut-devel libxml2-devel
 sudo yum install -y llvm-toolset-7 llvm-toolset-7-clang-tools-extra \
-   llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static
+   llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static \
+   gdl-devel atlas-devel blas-devel lapack-devel
 ```
 
 ## macOS
@@ -222,6 +228,7 @@ Requirements to build on macOS are:
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
  * **kcov**: Code coverage testing tool
+ * **gsl**: GNU Scientific Library (GSL) -- development package  
 
 ### Installation
 
@@ -235,6 +242,6 @@ brew install libomp open-mpi python@3.9 wget cmake ninja bash
 #### Optional Packages
 
 ```bash
-brew install doxygen graphviz kcov
+brew install doxygen graphviz kcov gsl
 python3 -m pip install nbformat jupyter metakernel jupyterlab 
 ```

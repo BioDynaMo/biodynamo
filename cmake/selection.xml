@@ -73,5 +73,6 @@
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::Grid::Box const*>>" />
+    <class name="bdm::ResourceManager::ParallelRemovalAuxData" />
   </exclusion>
 </lcgdict>

@@ -8,3 +8,4 @@ llvm-7
 llvm-7-dev
 llvm-7-runtime
 valgrind
+libgsl-dev
