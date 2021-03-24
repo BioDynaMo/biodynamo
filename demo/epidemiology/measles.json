@@ -1,0 +1,24 @@
+{
+    "bdm::Param": {
+        "statistics": true,
+        "simulation_time_step": 1,
+        "bound_space": true,
+        "min_bound": 0,
+        "max_bound": 100,
+        "visualization_export_generate_pvsm":false,
+        "visualize_agents": {
+            "Person": [ "state_" ]
+        }
+    },
+    "bdm::SimParam": {
+        "agent_diameter": 2,
+        "agent_speed": 5.7859,
+        "infection_probablity": 0.2850,
+        "infection_radius": 10.5092,
+        "initial_population_infected": 10,
+        "initial_population_susceptible": 2000,
+        "moving_agents_ratio": 1,
+        "number_of_iterations": 1000,
+        "recovery_probability": 0.00521
+    }
+}

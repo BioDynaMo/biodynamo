@@ -63,6 +63,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **graphviz**: Graph Visualization Software used optionally by Doxygen
   * **kcov**: Code coverage testing tool (only on Ubuntu 20.04)
   * **libxml2-dev**: Development files for the GNOME XML library
+  * **libgsl-dev**: GNU Scientific Library (GSL) -- development package  
 
 ### Installation
 
@@ -144,6 +145,7 @@ sudo apt-get install -y kcov
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
  * **libxml2-devel**: Development files for the GNOME XML library
+ * **gsl-dev**: GNU Scientific Library (GSL) -- development package  
 
 ### Installation
 
@@ -222,6 +224,7 @@ Requirements to build on macOS are:
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
  * **kcov**: Code coverage testing tool
+ * **gsl**: GNU Scientific Library (GSL) -- development package  
 
 ### Installation
 
