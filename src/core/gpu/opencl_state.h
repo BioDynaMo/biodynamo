@@ -37,6 +37,10 @@ class OpenCLState {
   /// Returns the OpenCL Context
   cl::Context* GetOpenCLContext();
 
+  void SetInitialization(bool b);
+
+  bool IsInitialized();
+
   /// Returns the OpenCL command queue
   cl::CommandQueue* GetOpenCLCommandQueue();
 
@@ -58,6 +62,8 @@ class OpenCLState {
     void operator()(OpenCLImpl* p);
   };
   std::unique_ptr<OpenCLImpl, OpenCLImplDestructor> impl_;  //!
+  // Flag to check if OpenCL was initialized correctly
+  bool initialized_ = false;
 };
 
 }  // namespace bdm

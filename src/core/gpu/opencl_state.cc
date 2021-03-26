@@ -48,6 +48,10 @@ OpenCLState::OpenCLState() {
       new OpenCLState::OpenCLImpl());
 }
 
+void OpenCLState::SetInitialization(bool b) { initialized_ = b; }
+
+bool OpenCLState::IsInitialized() { return initialized_; }
+
 /// Returns the OpenCL Context
 cl::Context* OpenCLState::GetOpenCLContext() { return &impl_->opencl_context_; }
 
@@ -230,6 +234,7 @@ int OpenCLState::ClAssert(int const code, char const* const file,
 // Empty implementation to avoid linking errors
 struct OpenCLState::OpenCLImpl {};
 OpenCLState::OpenCLState() {}
+bool OpenCLState::IsInitialized() { return false; }
 cl::Context* OpenCLState::GetOpenCLContext() { return nullptr; }
 cl::CommandQueue* OpenCLState::GetOpenCLCommandQueue() { return nullptr; }
 std::vector<cl::Device>* OpenCLState::GetOpenCLDeviceList() { return nullptr; }

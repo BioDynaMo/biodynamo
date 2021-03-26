@@ -64,6 +64,10 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
   };
 
   Simulation simulation("cell_division_gpu", set_param);
+  if (mode == kOpenCl && !simulation.GetOpenCLState()->IsInitialized()) {
+    std::cout << "ERROR: OpenCL was not initialized properly..." << std::endl;
+    return;
+  }
   auto* rm = simulation.GetResourceManager();
   rm->ClearAgents();
 

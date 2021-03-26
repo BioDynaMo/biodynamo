@@ -114,6 +114,10 @@ void RunTest(OpComputeTarget mode) {
   for (size_t i = 0; i < sims.size(); i++) {
     auto& sim = sims[i];
     sim->Activate();
+    if (mode == kOpenCl && !sim->GetOpenCLState()->IsInitialized()) {
+      std::cout << "Skipping OpenCL test..." << std::endl;
+      return;
+    }
     auto* rm = sim->GetResourceManager();
     auto* env = sim->GetEnvironment();
     uid_ref[i] = AgentUid(sim->GetAgentUidGenerator()->GetHighestIndex());
@@ -208,6 +212,10 @@ void RunTest2(OpComputeTarget mode) {
   for (size_t i = 0; i < sims.size(); i++) {
     auto& sim = sims[i];
     sim->Activate();
+    if (mode == kOpenCl && !sim->GetOpenCLState()->IsInitialized()) {
+      std::cout << "Skipping OpenCL test..." << std::endl;
+      return;
+    }
     auto* rm = sim->GetResourceManager();
     auto* env = sim->GetEnvironment();
     uid_ref[i] = AgentUid(sim->GetAgentUidGenerator()->GetHighestIndex());

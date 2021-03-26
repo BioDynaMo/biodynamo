@@ -361,6 +361,7 @@ void Scheduler::Initialize() {
 // Schedule the operations
 void Scheduler::ScheduleOps() {
   auto* param = Simulation::GetActive()->GetParam();
+  auto* ocl_state = Simulation::GetActive()->GetOpenCLState();
   // Add requested operations
   for (auto it = schedule_ops_.begin(); it != schedule_ops_.end();) {
     auto op_type = it->first;
@@ -372,6 +373,7 @@ void Scheduler::ScheduleOps() {
         op->IsComputeTargetSupported(kCuda)) {
       op->SelectComputeTarget(kCuda);
     } else if (param->compute_target == "opencl" &&
+               ocl_state->IsInitialized() &&
                op->IsComputeTargetSupported(kOpenCl)) {
       op->SelectComputeTarget(kOpenCl);
     } else {
