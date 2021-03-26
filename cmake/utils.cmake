@@ -17,13 +17,14 @@
 # and DETECTED_OS_VERS (ubuntu-18.04, ubuntu-20.04, centos-7 or osx-11.2-i386).
 function(detect_os)
     if(APPLE)
-        EXECUTE_PROCESS(COMMAND sw_vers "-productVersion"
+        execute_process(COMMAND sw_vers "-productVersion"
                         COMMAND cut -d . -f 1-2
                         OUTPUT_VARIABLE MACOS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-        EXECUTE_PROCESS(COMMAND arch
+        execute_process(COMMAND arch
                         OUTPUT_VARIABLE MACOS_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
         set(BDM_OS "osx")
         set(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
+        set(DETECTED_ARCH "${MACOS_ARCH}" PARENT_SCOPE)
         set(DETECTED_OS_VERS "${BDM_OS}-${MACOS_VERSION}-${MACOS_ARCH}" PARENT_SCOPE)
     else()
         set(GET_OS_ID "echo $(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '\"')")
@@ -34,9 +35,12 @@ function(detect_os)
         execute_process(COMMAND bash -c "${GET_OS_VERSION}"
                         OUTPUT_VARIABLE DISTRO_VERSION
                         OUTPUT_STRIP_TRAILING_WHITESPACE)
+        execute_process(COMMAND arch
+                        OUTPUT_VARIABLE DISTRO_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
         set(BDM_OS "${DISTRO_NAME}-${DISTRO_VERSION}")
-        SET(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
-        SET(DETECTED_OS_VERS "${BDM_OS}" PARENT_SCOPE)
+        set(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
+        set(DETECTED_ARCH "${DISTRO_ARCH}" PARENT_SCOPE)
+        set(DETECTED_OS_VERS "${BDM_OS}" PARENT_SCOPE)
     endif()
 endfunction()
 
