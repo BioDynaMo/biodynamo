@@ -49,10 +49,12 @@ include(utils)
 # Detect os type and version
 if (NOT DEFINED OS)
     SET(DETECTED_OS "none")
+    SET(DETECTED_ARCH "none")
     SET(DETECTED_OS_VERS "none")
     detect_os()
 else()
     SET(DETECTED_OS ${OS})
+    SET(DETECTED_ARCH "x86_64")
     SET(DETECTED_OS_VERS ${OS})
     check_detected_os(${DETECTED_OS})
 endif()
@@ -120,6 +122,11 @@ if(APPLE)
     execute_process(COMMAND ${BREW_BIN} --prefix llvm
                     OUTPUT_VARIABLE LLVM_BREW_PREFIX
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
+  endif()
+  
+  # ParaView not yet supported on Apple arm64
+  if("${DETECTED_ARCH}" STREQUAL "arm64")
+    set(paraview OFF)
   endif()
   
   # Ignore Fink (/sw) and MacPorts (/opt/local) packages, only consider Brew
