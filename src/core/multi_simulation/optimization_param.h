@@ -34,6 +34,7 @@ struct OptimizationParam : public ParamGroup {
   }
 
   std::string algorithm_;
+  double expected_val = 0;
   std::vector<Container*> params_;
 };
 

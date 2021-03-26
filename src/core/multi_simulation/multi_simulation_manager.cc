@@ -34,7 +34,7 @@ void MultiSimulationManager::Log(string s) {
 }
 
 MultiSimulationManager::MultiSimulationManager(
-    int ws, Param *default_params, std::function<void(Param *)> simulate)
+    int ws, Param *default_params, std::function<double(Param *)> simulate)
     : worldsize_(ws), default_params_(default_params), simulate_(simulate) {
   Log("Started Master process");
   availability_.resize(ws);
@@ -58,6 +58,10 @@ void MultiSimulationManager::WriteTimingsToFile() {
 
 MultiSimulationManager::~MultiSimulationManager() {
   Log("Completed all tasks");
+}
+
+void MultiSimulationManager::IngestData(const std::string& data_file) {
+  data_ = new ExperimentalData(data_file);
 }
 
 // Copy the timing results of the specified worker
@@ -124,9 +128,11 @@ int MultiSimulationManager::Start() {
         if (worker == -1) {
           MPI_Status status;
           {
+            double error = 0;
             Timing t_mpi("MPI_CALL", &ta_);
-            MPI_Recv(nullptr, 0, MPI_INT, MPI_ANY_SOURCE, Tag::kReady,
+            MPI_Recv(&error, 0, MPI_DOUBLE, MPI_ANY_SOURCE, Tag::kResult,
                      MPI_COMM_WORLD, &status);
+            error_matrix_.RegisterError(error);
           }
           ChangeStatusWorker(status.MPI_SOURCE, Status::kAvail);
           worker = GetFirstAvailableWorker();
@@ -198,7 +204,7 @@ void MultiSimulationManager::ForAllWorkers(
 }
 
 /// The Worker class in a Master-Worker design pattern.
-Worker::Worker(int myrank, std::function<void(Param *)> simulate)
+Worker::Worker(int myrank, std::function<double(Param *)> simulate)
     : myrank_(myrank), simulate_(simulate) {
   Log("Started");
 }
@@ -231,6 +237,7 @@ int Worker::Start() {
     switch (status.MPI_TAG) {
       case Tag::kTask: {
         Param *params = nullptr;
+        double error = 0;
         {
           Timing t("MPI_CALL", &ta_);
           params = MPI_Recv_Obj_ROOT<Param>(size, kMaster, Tag::kTask);
@@ -240,12 +247,12 @@ int Worker::Start() {
         // Log(msg.str());
         {
           Timing sim("SIMULATE", &ta_);
-          simulate_(params);
+          error = simulate_(params);
         }
         IncrementTaskCount();
         {
           Timing t("MPI_CALL", &ta_);
-          MPI_Send(nullptr, 0, MPI_INT, kMaster, Tag::kReady, MPI_COMM_WORLD);
+          MPI_Send(&error, 0, MPI_DOUBLE, kMaster, Tag::kResult, MPI_COMM_WORLD);
         }
         break;
       }

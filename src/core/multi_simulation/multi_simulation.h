@@ -25,7 +25,7 @@
 namespace bdm {
 
 // Signature of the Simulate() call
-using TSimulate = std::function<int(int, const char**, Param*)>;
+using TSimulate = std::function<double(int, const char**, Param*)>;
 
 class MultiSimulation {
  public:

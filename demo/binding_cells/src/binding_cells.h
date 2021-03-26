@@ -14,8 +14,6 @@
 #ifndef SPRING_FORCE_H_
 #define SPRING_FORCE_H_
 
-#include <atomic>
-
 #include "agents/monocyte.h"
 #include "agents/t_cell.h"
 #include "biodynamo.h"
@@ -27,6 +25,7 @@
 #include "biology_modules/spring_force_module.h"
 #include "biology_modules/stokes_velocity_module.h"
 #include "core/multi_simulation/util.h"
+#include "core/multi_simulation/error_matrix.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/reduction_op.h"
@@ -79,8 +78,8 @@ struct SimParam : public ParamGroup {
   double stokes_pf = .997;
 };
 
-inline int Simulate(int argc, const char** argv,
-                    Param* final_params = nullptr) {
+inline double Simulate(int argc, const char** argv,
+                       Param* final_params = nullptr) {
   auto set_param = [&](Param* param) {
     param->Restore(std::move(*final_params));
   };
@@ -102,14 +101,12 @@ inline int Simulate(int argc, const char** argv,
     mc->SetDensity(sparam->monocyte_density);
     mc->SetMaximumNumberOfSynapses(3);
     mc->AddBehavior(new RandomWalk(sparam->monocyte_diameter / 2));
-    mc->AddBehavior(
-        new StokesVelocity(sparam->stokes_u, sparam->stokes_pf));
-    mc->AddBehavior(
-        new Inhibitation(sparam->inhib_sigma, sparam->inhib_mu));
+    mc->AddBehavior(new StokesVelocity(sparam->stokes_u, sparam->stokes_pf));
+    mc->AddBehavior(new Inhibitation(sparam->inhib_sigma, sparam->inhib_mu));
     return mc;
   };
   ModelInitializer::CreateAgentsRandom(sparam->min_space, sparam->max_space,
-                                      sparam->monocyte_population, mc_builder);
+                                       sparam->monocyte_population, mc_builder);
 
   //////////////////////////////////////////////////////////////////////////////
   // Create and initialize T-Cells
@@ -121,15 +118,14 @@ inline int Simulate(int argc, const char** argv,
     tc->SetInitialActivationIntensity(sparam->t_cell_init_mean,
                                       sparam->t_cell_init_sigma);
     tc->AddBehavior(new RandomWalk(sparam->t_cell_walkspeed));
-    tc->AddBehavior(
-        new StokesVelocity(sparam->stokes_u, sparam->stokes_pf));
+    tc->AddBehavior(new StokesVelocity(sparam->stokes_u, sparam->stokes_pf));
     tc->AddBehavior(new ConnectWithinRadius(
         (0.75 * (sparam->t_cell_diameter + sparam->monocyte_diameter))));
     tc->AddBehavior(new PhysicalBond());
     return tc;
   };
   ModelInitializer::CreateAgentsRandom(sparam->min_space, sparam->max_space,
-                                      sparam->t_cell_population, tc_builder);
+                                       sparam->t_cell_population, tc_builder);
 
   //////////////////////////////////////////////////////////////////////////////
   // Create and initialize Anti-PD-1 substance
@@ -190,7 +186,17 @@ inline int Simulate(int argc, const char** argv,
   ex.activity = op_impl->GetResults();
   ex.WriteResultToROOT();
 
-  return 0;
+  //////////////////////////////////////////////////////////////////////////////
+  // Compute error for optimization feedback
+  //////////////////////////////////////////////////////////////////////////////
+  auto final_activity = *(ex.activity.end());
+  auto expected_val =
+      simulation.GetParam()->Get<OptimizationParam>()->expected_val;
+
+  SquaredError se;
+  auto error = se.Compute(final_activity, expected_val);
+
+  return error;
 }
 
 }  // namespace bdm

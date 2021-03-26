@@ -37,7 +37,7 @@ namespace bdm {
 static const unsigned int kMaster = 0;
 
 enum Status { kBusy, kAvail };
-enum Tag { kReady, kTask, kKill };
+enum Tag { kReady, kResult, kTask, kKill };
 
 struct Container {
   Container() {}

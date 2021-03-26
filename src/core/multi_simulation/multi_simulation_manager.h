@@ -26,7 +26,9 @@
 #include <vector>
 
 #include "core/multi_simulation/algorithm/algorithm_registry.h"
+#include "core/multi_simulation/error_matrix.h"
 #include "core/multi_simulation/dynamic_loop.h"
+#include "core/multi_simulation/experimental_data.h"
 #include "core/multi_simulation/util.h"
 #include "core/scheduler.h"
 #include "core/util/log.h"
@@ -48,9 +50,11 @@ class MultiSimulationManager {
   void Log(string s);
 
   explicit MultiSimulationManager(int ws, Param *default_params,
-                                    std::function<void(Param *)> simulate);
+                                  std::function<double(Param *)> simulate);
 
   void WriteTimingsToFile();
+
+  void IngestData(const std::string& data_file);
 
   ~MultiSimulationManager();
 
@@ -84,14 +88,16 @@ class MultiSimulationManager {
   int worldsize_;
   TimingAggregator ta_;
   Param *default_params_;
-  std::function<void(Param *)> simulate_;
+  std::function<double(Param *)> simulate_;
   std::vector<TimingAggregator> timings_;
+  ExperimentalData* data_ = nullptr;
+  SquaredError error_matrix_;
 };
 
 /// The Worker class in a Master-Worker design pattern.
 class Worker {
  public:
-  explicit Worker(int myrank, std::function<void(Param *)> simulate);
+  explicit Worker(int myrank, std::function<double(Param *)> simulate);
 
   template <typename T>
   void Log(T s) {
@@ -107,7 +113,7 @@ class Worker {
 
   int myrank_;
   unsigned int task_count_ = 0;
-  std::function<void(Param *)> simulate_;
+  std::function<double(Param *)> simulate_;
   TimingAggregator ta_;
 };
 

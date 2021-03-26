@@ -99,6 +99,7 @@ void CommandLineOptions::AddCoreOptions() {
   options_.add_options("Core")
     ("h, help", "Print this help message.")
     ("version", "Print version number of BioDynaMo.")
+    ("data", "Data file to drive optimization feedback loop with (csv supported only).", value<std::vector<string>>()->default_value(""), "FILE.csv")
     ("opencl", "Enable GPU acceleration through OpenCL.")
     ("cuda", "Enable GPU acceleration through CUDA.")
     ("visualize", "Enable exporting of visualization.")

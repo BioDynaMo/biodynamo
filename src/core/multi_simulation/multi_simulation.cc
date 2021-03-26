@@ -91,8 +91,15 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
 
     // Start the Master routine
     MultiSimulationManager pem(worldsize, &default_params, [&](Param* params) {
-      simulate_call(argc_, argv_, params);
+      return simulate_call(argc_, argv_, params);
     });
+
+    // Read in the experimental data file
+    CommandLineOptions clo(argc_, argv_);
+    if (clo.Get<std::string>("data") != "") {
+      pem.IngestData(clo.Get<std::string>("data"));
+    }
+
     status = pem.Start();
 
     // Merge result files of all workers into single ROOT file
