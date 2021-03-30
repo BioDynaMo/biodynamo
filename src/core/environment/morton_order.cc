@@ -22,13 +22,23 @@ namespace bdm {
 template <typename T>
 class Stack {
  public:
-  Stack(uint64_t max_elements) { data_.resize(max_elements); }
+  Stack(uint64_t max_elements) {
+    data_.resize(max_elements);
+    top_--;
+  }
 
-  void Push(const T& el) { data_[++top_] = el; }
+  void Push(const T& el) {
+    data_[++top_] = el;
+    assert(top_ < data_.size());
+  }
+
+  const T& Pop() {
+    assert(top_ < data_.size());
+    return data_[top_--];
+  }
 
   T& Top() { return data_[top_]; }
-  const T& Pop() { return data_[top_--]; }
-  uint64_t Size() const { return top_; }
+  uint64_t Size() const { return top_ + 1; }
 
  private:
   std::vector<T> data_;
@@ -64,7 +74,7 @@ void MortonOrder::Update(const std::array<uint64_t, 3>& num_boxes_axis) {
 
   auto length = static_cast<uint64_t>(std::pow(2, max_depth - 1));
 
-  Stack<Aux> s(max_depth + 1);
+  Stack<Aux> s(max_depth);
   s.Push({0, length, length, length, length});
 
   uint64_t box_cnt = 0;
