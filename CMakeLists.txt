@@ -198,7 +198,7 @@ endif()
 # Check if OpenMPI is present
 find_package(MPI)
 if (MPI_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
+  MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
@@ -511,7 +511,7 @@ if(paraview)
   set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
 
   if(LINUX)
-  SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+    SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
   else()
     # see: https://github.com/pytorch/pytorch/pull/3439/files
     SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-dynamic")
