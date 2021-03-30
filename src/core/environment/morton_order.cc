@@ -58,11 +58,11 @@ void MortonOrder::Update(const std::array<uint64_t, 3>& num_boxes_axis) {
   offset_index_.reserve(2048);
   offset_index_.push_back({0, 0});
 
-  auto length = static_cast<uint64_t>(std::pow(2, max_depth - 1));
-
-  if (length == 0) {
+  if (max_depth == 0) {
     return;
   }
+
+  auto length = static_cast<uint64_t>(std::pow(2, max_depth - 1));
 
   Stack<Aux> s(max_depth + 1);
   s.Push({0, length, length, length, length});
