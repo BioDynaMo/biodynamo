@@ -13,7 +13,7 @@
 # -----------------------------------------------------------------------------
 
 # Detect the system flavour and version. Generate variables
-# called DETECTED_OS (ubuntu-18.04, ubuntu-20.04, centos-7, osx) 
+# called DETECTED_OS (ubuntu-18.04, ubuntu-20.04, centos-7, osx)
 # and DETECTED_OS_VERS (ubuntu-18.04, ubuntu-20.04, centos-7 or osx-11.2-i386).
 function(detect_os)
     if(APPLE)
@@ -137,13 +137,16 @@ function(BuildParaViewPlugin)
     set(PLUG_LIB_XTENSION "so")
   endif()
 
-  add_custom_target(BDMGlyphFilter
+  add_custom_command(
+    OUTPUT ${CMAKE_INSTALL_PVPLUGINDIR}/BDMGlyphFilter.so ${CMAKE_INSTALL_ROOT}/lib/libBDM.${PLUG_LIB_XTENSION}
     WORKING_DIRECTORY ${CMAKE_BDM_PVPLUGINDIR}
     COMMAND ${LAUNCHER} ${CMAKE_COMMAND} -B "${BDM_PVPLUGIN_BUILDDIR}"
     COMMAND ${LAUNCHER} ${CMAKE_COMMAND} --build "${BDM_PVPLUGIN_BUILDDIR}"
     COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-${CMAKE_BDM_PVVERSION}/plugins/BDMGlyphFilter/BDMGlyphFilter.so" "${CMAKE_INSTALL_PVPLUGINDIR}"
     COMMAND ${CMAKE_COMMAND} -E copy "${BDM_PVPLUGIN_BUILDDIR}/lib/paraview-${CMAKE_BDM_PVVERSION}/plugins/BDMGlyphFilter/libBDM.${PLUG_LIB_XTENSION}" "${CMAKE_INSTALL_ROOT}/lib"
   )
+  list(APPEND artifact_files_builddir ${CMAKE_INSTALL_PVPLUGINDIR}/BDMGlyphFilter.so ${CMAKE_INSTALL_ROOT}/lib/libBDM.${PLUG_LIB_XTENSION})
+  set(artifact_files_builddir ${artifact_files_builddir} PARENT_SCOPE)
 endfunction(BuildParaViewPlugin)
 
 # Check if the OS given by the user is supported by the current BioDynaMo release.
@@ -345,9 +348,6 @@ function(install_inside_build)
     endif()
 
     add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})
-    if(paraview)
-      add_dependencies(copy_files_bdm BDMGlyphFilter)
-    endif()
     add_dependencies(copy_files_bdm biodynamo)
 endfunction()
 
