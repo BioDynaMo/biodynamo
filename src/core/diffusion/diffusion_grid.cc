@@ -15,6 +15,7 @@
 #include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/simulation.h"
+#include <iostream>
 
 namespace bdm {
 
@@ -101,17 +102,16 @@ void DiffusionGrid::Update() {
     }
   }
 
-  // Calculate by how many boxes each dimension has grown
+  // Calculate new_dimension_length and new_resolution
   int new_dimension_length = grid_dimensions_[1] - grid_dimensions_[0];
-  int new_resolution = std::ceil(new_dimension_length / box_length_);
-  int growth = new_resolution - resolution_;
+  int new_resolution = std::ceil(new_dimension_length / box_length_);  
 
-  if (growth > 0) {
+  if (new_resolution > resolution_) {
     // Store the old number of boxes along each axis for comparison
     size_t tmp_resolution = resolution_;
 
-    // Increase number of boxes along axis accordingly
-    resolution_ += growth;
+    // Set new resolution
+    resolution_ = new_resolution;
 
     // We need to maintain the parity of the number of boxes along each
     // dimension, otherwise copying of the substances to the increases grid
@@ -135,7 +135,9 @@ void DiffusionGrid::Update() {
     total_num_boxes_ = resolution_ * resolution_ * resolution_;
 
     CopyOldData(tmp_c1, tmp_gradients, tmp_resolution);
-
+    
+    // This code will never evaluate to true since it contradicts the if clause.
+    // Consider to remove to keep it tidy.
     assert(total_num_boxes_ >=
                (tmp_resolution * tmp_resolution * tmp_resolution) &&
            "The diffusion grid tried to shrink! It can only become larger");
