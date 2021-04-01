@@ -15,7 +15,6 @@
 #include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/simulation.h"
-#include <iostream>
 
 namespace bdm {
 
