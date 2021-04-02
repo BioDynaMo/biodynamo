@@ -113,7 +113,11 @@ namespace std {
 template <>
 struct hash<bdm::AgentUid> {
   std::size_t operator()(const bdm::AgentUid& uid) const noexcept {
-    return (uid.index_) << uid.reused_;
+    // at any given time in a simulation there exists only one
+    // agent with a specific index_ value.
+    // Therefore it is sufficient as a hash.
+    // This might change for the distributed runtime.
+    return uid.index_;
   }
 };
 
