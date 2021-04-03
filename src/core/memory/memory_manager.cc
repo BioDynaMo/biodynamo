@@ -281,7 +281,8 @@ void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block,
 uint64_t NumaPoolAllocator::RoundUpTo(uint64_t number, uint64_t multiple) {
   assert((multiple & (multiple - 1)) == 0 && multiple &&
          "multiple must be a power of two and non-zero");
-  return (number + multiple - 1) & -multiple;
+  return (number + multiple - 1) & 
+         (std::numeric_limits<uint64_t>::max() - (multiple - 1));
 }
 
 // -----------------------------------------------------------------------------
