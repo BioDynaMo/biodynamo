@@ -73,6 +73,7 @@ class MultiSimulationManager {
   int Start();
 
  private:
+  friend struct ParticleSwarm;
   // Returns the ID of the first available worker in the list. Returns -1 if
   // there is no available worker.
   int GetFirstAvailableWorker();

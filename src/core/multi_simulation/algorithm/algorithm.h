@@ -23,6 +23,8 @@
 
 namespace bdm {
 
+class MultiSimulationManager;
+
 struct Algorithm {
   virtual ~Algorithm() {}
 
@@ -31,6 +33,7 @@ struct Algorithm {
 
   OptimizationParam* opt_params_;
   Param* default_params_;
+  MultiSimulationManager* msm_ = nullptr;
 };
 
 }  // namespace bdm

@@ -22,6 +22,8 @@
 
 namespace bdm {
 
+class MultiSimulationManager;
+
 struct AlgorithmRegistry {
   /// Singleton class - returns the static instance
   static AlgorithmRegistry *GetInstance();
@@ -63,7 +65,8 @@ struct AlgorithmRegistry {
   static bool registered_;
 
 // Get Optimization Algorithm from registry
-inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params) {
+inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params,
+                                              MultiSimulationManager *msm) {
   // Check if the parameters are initialized correctly
   for (auto param : opt_params->params_) {
     param->Validate();
@@ -74,6 +77,7 @@ inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params) {
     return ret;
   }
   ret->opt_params_ = opt_params;
+  ret->msm_ = msm;
   return ret;
 }
 

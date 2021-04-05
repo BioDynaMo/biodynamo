@@ -154,7 +154,7 @@ int MultiSimulationManager::Start() {
     // Evolution, Particle Swarm Optimization
     OptimizationParam *opt_params =
         default_params_->Get<OptimizationParam>();
-    auto algorithm = CreateOptimizationAlgorithm(opt_params);
+    auto algorithm = CreateOptimizationAlgorithm(opt_params, this);
 
     if (algorithm) {
       algorithm->default_params_ = default_params_;

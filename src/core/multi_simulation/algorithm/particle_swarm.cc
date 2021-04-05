@@ -17,10 +17,15 @@
 #include "core/multi_simulation/algorithm/algorithm.h"
 #include "core/multi_simulation/algorithm/algorithm_registry.h"
 #include "core/multi_simulation/dynamic_loop.h"
+#include "core/multi_simulation/multi_simulation_manager.h"
 
 using nlohmann::json;
 
 namespace bdm {
+
+double GetExperimentalValue(const Param& final_params) {
+  return 0.0;
+}
 
 /// TODO: currently ParameterSweep implementation
 struct ParticleSwarm : public Algorithm {
@@ -33,7 +38,7 @@ struct ParticleSwarm : public Algorithm {
 
       for (size_t c = 0; c < msm_->data_->GetColumnCount(); c++) {
         j_patch["bdm::SimParam"][msm_->data_->GetColumnName(c)] =
-            msm_->data_->GetCell(c, r);
+            msm_->data_->GetCell<double>(c, r);
       }
 
       Param final_params = *default_params_;
@@ -47,7 +52,7 @@ struct ParticleSwarm : public Algorithm {
 
       final_params.MergeJsonPatch(exp_data_patch.dump());
       send_params_to_worker(&final_params);
-    });
+    }
   };
 };
 

@@ -91,6 +91,9 @@ void CommandLineOptions::Parse() {
 }
 
 bool CommandLineOptions::IsSet(std::string option) {
+  if (parser_ == nullptr) {
+    this->Parse();
+  }
   return parser_->count(option) == 0 ? false : true;
 }
 

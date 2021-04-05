@@ -96,8 +96,12 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
 
     // Read in the experimental data file
     CommandLineOptions clo(argc_, argv_);
-    if (clo.Get<std::string>("data") != "") {
-      pem.IngestData(clo.Get<std::string>("data"));
+    if (clo.IsSet("data")) {
+      if (clo.Get<std::string>("data") != "") {
+        pem.IngestData(clo.Get<std::string>("data"));
+      }
+    } else{
+      Log::Warning("MultiSimulation", "No data file set!");
     }
 
     status = pem.Start();
