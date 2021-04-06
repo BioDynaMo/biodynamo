@@ -12,6 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <unordered_map>
+#include <vector>
+
 #include "core/gpu/opencl_state.h"
 
 #ifdef USE_OPENCL
@@ -40,12 +43,21 @@ struct OpenCLState::OpenCLImpl {
   // Currently only support for one GPU device
   std::vector<cl::Device> opencl_devices_;
   std::vector<cl::Program> opencl_programs_;
+  std::unordered_map<std::string, cl::Kernel> kernel_map_;
 };
 
 OpenCLState::OpenCLState() {
   impl_ = std::unique_ptr<OpenCLState::OpenCLImpl,
                           OpenCLState::OpenCLImplDestructor>(
       new OpenCLState::OpenCLImpl());
+}
+
+void OpenCLState::AddKernel(std::string name, cl::Kernel kernel) {
+  impl_->kernel_map_[name] = kernel;
+}
+
+cl::Kernel OpenCLState::GetKernel(std::string name) {
+  return impl_->kernel_map_[name];
 }
 
 void OpenCLState::SetInitialization(bool b) { initialized_ = b; }

@@ -15,6 +15,7 @@
 #ifndef PIMPL_HELPERS_OPENCL_
 #define PIMPL_HELPERS_OPENCL_
 namespace cl {
+class Kernel;
 class Context;
 class CommandQueue;
 class Device;
@@ -36,6 +37,10 @@ class OpenCLState {
 
   /// Returns the OpenCL Context
   cl::Context* GetOpenCLContext();
+
+  void AddKernel(std::string, cl::Kernel);
+
+  cl::Kernel GetKernel(std::string);
 
   void SetInitialization(bool b);
 

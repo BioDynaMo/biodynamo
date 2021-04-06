@@ -118,12 +118,10 @@ void GpuHelper::CompileOpenCLKernels() {
   }
 
   for (auto& prog : *all_programs) {
-    try {
-      prog.build(*devices, options.c_str());
-    } catch (const cl::Error&) {
-      Log::Error("CompileOpenCLKernels", "OpenCL compilation error: ",
-                 prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>((*devices)[0]));
-    }
+    prog.build(*devices, options.c_str());
+    // TODO(ahmad): generalize when we have more OCL kernels
+    std::string kernel_name = "mechanical_forces_op_opencl_kernel";
+    ocl_state->AddKernel(kernel_name, cl::Kernel(prog, "collide"));
   }
 }
 

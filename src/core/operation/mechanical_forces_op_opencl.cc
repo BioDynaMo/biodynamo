@@ -73,7 +73,6 @@ void MechanicalForcesOpOpenCL::operator()() {
 
   auto context = ocl_state->GetOpenCLContext();
   auto queue = ocl_state->GetOpenCLCommandQueue();
-  auto programs = ocl_state->GetOpenCLProgramList();
 
   // Cannot use Double3 here, because the `data()` function returns a const
   // pointer to the underlying array, whereas the CUDA kernal will cast it to
@@ -165,10 +164,8 @@ void MechanicalForcesOpOpenCL::operator()() {
   cl::Buffer nba_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                      3 * sizeof(cl_uint), num_boxes_axis.data());
 
-  // Create the kernel object from our program
-  // TODO(ahmad): generalize the program selection, in case we have more than
-  // one. We can maintain an unordered map of programs maybe
-  cl::Kernel collide((*programs)[0], "collide");
+  // Get the kernel
+  auto collide = ocl_state->GetKernel("mechanical_forces_op_opencl_kernel");
 
   // Set kernel parameters
   collide.setArg(0, positions_arg);
