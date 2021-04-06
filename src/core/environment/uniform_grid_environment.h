@@ -703,7 +703,8 @@ class UniformGridEnvironment : public Environment {
   /// This is used to decide if boxes should be reinitialized
   uint32_t timestamp_ = 0;
   /// Length of a Box
-  uint32_t box_length_ = 1;
+  //uint32_t box_length_ = 1;
+  int32_t box_length_ = 1;
   /// Stores the number of boxes for each axis
   std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
