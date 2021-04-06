@@ -40,7 +40,8 @@ void DiffusionGrid::Initialize() {
   // With adjustment
   //   box_length_: 13.3
   //   data points: {0, 13.3, 26.6, 39.9}
-  auto adjusted_res = resolution_ == 1 ? 2 : resolution_; // avoid division by 0
+  auto adjusted_res =
+      resolution_ == 1 ? 2 : resolution_;  // avoid division by 0
   box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
                 static_cast<double>(adjusted_res - 1);
   // TODO(ahmad): parametrize the minimum box_length
@@ -93,7 +94,7 @@ void DiffusionGrid::Update() {
   // If the grid is not perfectly divisible along each dimension by the
   // box length, extend the grid so that it is
   int dimension_length = bounds[1] - bounds[0];
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 1; i++) {
     int r = fmod(dimension_length, box_length_);
     if (r > 1e-9) {
       // std::abs for the case that box_length_ > dimension_length

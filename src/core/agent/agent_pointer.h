@@ -45,7 +45,7 @@ class AgentPointer {
   /// constructs an AgentPointer object representing a nullptr
   AgentPointer() {}
 
-  virtual ~AgentPointer() {}
+  ~AgentPointer() {}
 
   uint64_t GetUidAsUint64() const { return uid_; }
 
@@ -127,7 +127,7 @@ class AgentPointer {
     return dynamic_cast<TTo*>(agent);
   }
 
-  BDM_CLASS_DEF(AgentPointer, 2);
+  BDM_CLASS_DEF_NV(AgentPointer, 2);
 };
 
 template <typename T>

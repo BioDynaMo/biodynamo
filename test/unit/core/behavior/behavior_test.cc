@@ -36,7 +36,7 @@ TEST(BehaviorTest, CopyNever) {
   b1.NeverCopyToNew();
 
   for (uint64_t i = 0; i < 64; i++) {
-    NewAgentEventUid e = 1 << i;
+    NewAgentEventUid e = 1ull << i;
     EXPECT_FALSE(b.WillBeCopied(e));
   }
 }
@@ -46,7 +46,7 @@ TEST(BehaviorTest, CopyAlways) {
   b.AlwaysCopyToNew();
 
   for (uint64_t i = 0; i < 64; i++) {
-    NewAgentEventUid e = 1 << i;
+    NewAgentEventUid e = 1ull << i;
     EXPECT_TRUE(b.WillBeCopied(e));
   }
 }
@@ -87,7 +87,7 @@ TEST(BehaviorTest, RemoveNever) {
   b1.NeverRemoveFromExisting();
 
   for (uint64_t i = 0; i < 64; i++) {
-    NewAgentEventUid e = 1 << i;
+    NewAgentEventUid e = 1ull << i;
     EXPECT_FALSE(b.WillBeRemoved(e));
     EXPECT_FALSE(b1.WillBeRemoved(e));
   }
@@ -98,7 +98,7 @@ TEST(BehaviorTest, RemoveAlways) {
   b.AlwaysRemoveFromExisting();
 
   for (uint64_t i = 0; i < 64; i++) {
-    NewAgentEventUid e = 1 << i;
+    NewAgentEventUid e = 1ull << i;
     EXPECT_TRUE(b.WillBeRemoved(e));
   }
 }
