@@ -120,7 +120,8 @@ int MultiSimulationManager::Start() {
     auto dispatch_params = [&](Param *final_params) {
       // If there is only one MPI process, the master performs the simulation
       if (worldsize_ == 1) {
-        simulate_(final_params);
+        auto error = simulate_(final_params);
+        Log(std::to_string(error));
       } else {  // Otherwise we dispatch the work to the worker(s)
         auto worker = GetFirstAvailableWorker();
 

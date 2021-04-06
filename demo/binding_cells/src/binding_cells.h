@@ -189,12 +189,15 @@ inline double Simulate(int argc, const char** argv,
   //////////////////////////////////////////////////////////////////////////////
   // Compute error for optimization feedback
   //////////////////////////////////////////////////////////////////////////////
-  auto final_activity = *(ex.activity.end());
+  auto final_activity = ex.activity.back();
   auto expected_val =
       simulation.GetParam()->Get<OptimizationParam>()->expected_val;
 
+  std::cout << "expected val = " << expected_val << std::endl;
+  std::cout << "computed val = " << final_activity << std::endl;
   SquaredError se;
   auto error = se.Compute(final_activity, expected_val);
+  std::cout << "error = " << error << std::endl << std::endl;
 
   return error;
 }
