@@ -24,7 +24,7 @@ using nlohmann::json;
 namespace bdm {
 
 double GetExperimentalValue(const Param& final_params) {
-  return 0.0;
+  return 42.0;
 }
 
 /// TODO: currently ParameterSweep implementation
@@ -42,6 +42,7 @@ struct ParticleSwarm : public Algorithm {
       }
 
       Param final_params = *default_params_;
+      // std::cout << j_patch.dump() << std::endl;
       final_params.MergeJsonPatch(j_patch.dump());
 
       // Extract the appropriate expected experimental value based on the

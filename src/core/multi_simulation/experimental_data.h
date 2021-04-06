@@ -16,7 +16,6 @@
 #define CORE_MULTI_SIMULATION_EXPERIMENTAL_DATA_H_
 
 #include <cmath>
-#include <experimental/filesystem>
 #include <functional>
 #include <numeric>
 #include <string>
@@ -24,13 +23,17 @@
 
 #include "csv.h"
 
+#include "core/util/io.h"
+
+namespace bdm {
+
 const static std::string kNA = "N/A";
 
 class ExperimentalData {
  public:
   explicit ExperimentalData(const std::string& file, int skip = 0)
       : filename_(file) {
-    if (!std::experimental::filesystem::exists(file)) {
+    if (!FileExists(file)) {
       std::cout << "Error: " << file << " does not exist!" << std::endl;
       exit(1);
     };
@@ -105,5 +108,7 @@ class ExperimentalData {
   // Flags if a row has a bad entry
   std::vector<bool> bad_entries_;
 };
+
+}  // namespace bdm
 
 #endif  // CORE_MULTI_SIMULATION_EXPERIMENTAL_DATA_H_

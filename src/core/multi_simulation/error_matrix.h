@@ -19,15 +19,17 @@
 #include <iostream>
 #include <vector>
 
+namespace bdm {
+
 class ErrorMatrix {
  public:
+  virtual ~ErrorMatrix() {}
+
   /// Compute the error between `real` and `simulated`
   virtual float Compute(float real, float simulated) = 0;
 
   /// Register the raw values that lead to the computed error value
-  void RegisterError(float error) {
-    error_history_.push_back(error);
-  }
+  void RegisterError(float error) { error_history_.push_back(error); }
 
   void Print() {
     std::cout << "Error history:" << std::endl;
@@ -57,5 +59,7 @@ class AbsoluteError : public ErrorMatrix {
     return error;
   }
 };
+
+}  // namespace bdm
 
 #endif  // CORE_MULTI_SIMULATION_ERROR_MATRIX_H_

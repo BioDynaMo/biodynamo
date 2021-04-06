@@ -107,6 +107,7 @@ json UnflattenGroups(const json& j_flattened, const json& j_original) {
 
 // -----------------------------------------------------------------------------
 std::string Param::ToJsonString() const {
+  // If you segfault here, try running the unit tests to find the root cause
   std::string current_json_str(
       TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
   // Flatten groups_ to simplify json patches in rfc7386 format.
@@ -124,6 +125,7 @@ std::string Param::ToJsonString() const {
 
 // -----------------------------------------------------------------------------
 void Param::MergeJsonPatch(const std::string& patch) {
+  // If you segfault here, try running the unit tests to find the root cause
   std::string json_str(
       TBufferJSON::ToJSON(this, TBufferJSON::kMapAsObject).Data());
   json j_param = json::parse(json_str);

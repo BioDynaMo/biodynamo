@@ -248,6 +248,7 @@ int Worker::Start() {
         {
           Timing sim("SIMULATE", &ta_);
           error = simulate_(params);
+          Log(error);
         }
         IncrementTaskCount();
         {

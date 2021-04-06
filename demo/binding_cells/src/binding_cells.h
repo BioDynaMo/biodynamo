@@ -46,12 +46,12 @@ struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
   // World parameters
-  int timesteps = 4000;
+  int timesteps = 40;
   double min_space = 0;
-  double max_space = 200;
+  double max_space = 20;
 
   // T-Cell parameters
-  int t_cell_population = 2727;
+  int t_cell_population = 272;
   double t_cell_diameter = 0.9;
   double t_cell_walkspeed = 5;
   double t_cell_density = 1.077;
@@ -59,7 +59,7 @@ struct SimParam : public ParamGroup {
   double t_cell_init_sigma = 1;
 
   // Monocyte parameters
-  int monocyte_population = 7272;
+  int monocyte_population = 727;
   double monocyte_diameter = 1.5;
   double monocyte_density = 1.067;
 

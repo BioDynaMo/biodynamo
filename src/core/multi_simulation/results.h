@@ -27,7 +27,7 @@
 
 #include "core/util/log.h"
 
-#ifndef __ROOTCLING__
+#if (!defined(__CLING__) || defined(__ROOTCLING__)) 
 #include "mpi.h"
 #endif  // __ROOTCLING__
 
@@ -42,7 +42,7 @@ class Results {
   virtual ~Results() {}
 
   /// Write experimental results as an Event within a TTree to ROOT file
-#ifndef __ROOTCLING__
+#if (!defined(__CLING__) || defined(__ROOTCLING__)) 
   template <typename TResults>
   void WriteResultToROOTBase(TResults *res) {
     // Get the name of the processor
