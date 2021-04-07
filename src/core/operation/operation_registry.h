@@ -48,7 +48,7 @@ class OperationRegistry {
   ///             registry
   ///
   bool AddOperationImpl(const std::string &op_name, OpComputeTarget target,
-                        OperationImpl *impl, size_t frequency = 1);
+                        OperationImpl *impl, uint32_t frequency = 1);
 
  private:
   /// The map containing the operations; accessible by their name

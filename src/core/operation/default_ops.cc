@@ -30,7 +30,7 @@ BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
 
 // By default run load balancing only in the first iteration.
 BDM_REGISTER_OP_WITH_FREQ(LoadBalancingOp, "load balancing", kCpu,
-                          std::numeric_limits<std::size_t>::max());
+                          std::numeric_limits<uint32_t>::max());
 
 BDM_REGISTER_OP(MechanicalForcesOp, "mechanical forces", kCpu);
 
