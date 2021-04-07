@@ -17,12 +17,37 @@
 
 namespace bdm {
 
-template <typename TReturn, typename... TParameter>
+// -----------------------------------------------------------------------------
+template <typename TReturn, typename... TArgs>
 class Functor {
  public:
   virtual ~Functor() {}
-  virtual TReturn operator()(TParameter... parameter) = 0;
+  virtual TReturn operator()(TArgs... args) = 0;
 };
+
+// -----------------------------------------------------------------------------
+template <typename TLambda>
+struct LambdaFunctor {};
+
+template <typename TLambda, typename TReturn, typename... TArgs>
+struct LambdaFunctor<TReturn (TLambda::*)(TArgs...) const> final
+    : public Functor<TReturn, TArgs...> {
+  TLambda lambda;
+
+  LambdaFunctor(TLambda&& lambda) : lambda(lambda) {}
+  LambdaFunctor(TLambda lambda) : lambda(lambda) {}
+  LambdaFunctor(LambdaFunctor&& other) : lambda(std::move(other.lambda)) {}
+
+  TReturn operator()(TArgs... args) override { return lambda(args...); }
+};
+
+// -----------------------------------------------------------------------------
+template <typename TLambda>
+LambdaFunctor<decltype(&TLambda::operator())> MakeFunctor(
+    const TLambda& lambda) {
+  LambdaFunctor<decltype(&TLambda::operator())> f(lambda);
+  return f;
+}
 
 }  // namespace bdm
 
