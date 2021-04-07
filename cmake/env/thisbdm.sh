@@ -539,7 +539,6 @@ _source_thisbdm()
 
   # completions for bash: really primitive (but useful nonetheless) 
   if [ -n "$BASH_VERSION" ]; then
-    # not including assist which is on the chopping block
     complete -W "new build clean run demo" biodynamo
   fi
 
