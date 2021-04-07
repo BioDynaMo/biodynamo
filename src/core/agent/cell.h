@@ -281,7 +281,7 @@ class Cell : public Agent {
 
     // the physics force to rotate the cell
     // Double3 rotation_force { 0, 0, 0 };
-    
+
     // 1) "artificial force" to maintain the sphere in the ecm simulation
     // boundaries--------
     // 2) Spring force from my neurites (translation and
@@ -292,19 +292,19 @@ class Cell : public Agent {
     //  away)
 
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    auto calculate_neighbor_forces = MakeFunctor([&](Agent* neighbor, double squared_distance) {
-      auto neighbor_force = force->Calculate(this, neighbor);
-      translation_force_on_point_mass[0] += neighbor_force[0];
-      translation_force_on_point_mass[1] += neighbor_force[1];
-      translation_force_on_point_mass[2] += neighbor_force[2];
-    });
+    auto calculate_neighbor_forces =
+        MakeFunctor([&](Agent* neighbor, double squared_distance) {
+          auto neighbor_force = force->Calculate(this, neighbor);
+          translation_force_on_point_mass[0] += neighbor_force[0];
+          translation_force_on_point_mass[1] += neighbor_force[1];
+          translation_force_on_point_mass[2] += neighbor_force[2];
+        });
     ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
-    double norm_of_force =
-        std::sqrt(translation_force_on_point_mass *
-                  translation_force_on_point_mass);
+    double norm_of_force = std::sqrt(translation_force_on_point_mass *
+                                     translation_force_on_point_mass);
 
     // is there enough force to :
     //  - make us biologically move (Tractor) :
@@ -316,8 +316,7 @@ class Cell : public Agent {
     // adding the physics translation (scale by weight) if important enough
     if (physical_translation) {
       // We scale the move with mass and time step
-      movement_at_next_step +=
-          translation_force_on_point_mass * mh;
+      movement_at_next_step += translation_force_on_point_mass * mh;
 
       // Performing the translation itself :
       // but we want to avoid huge jumps in the simulation, so there are

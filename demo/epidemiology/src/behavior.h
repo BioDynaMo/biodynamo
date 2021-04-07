@@ -16,22 +16,6 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-struct CheckSurrounding : public Functor<void, Agent*, double> {
-  Person* self_;
-
-  CheckSurrounding(Person* self) : self_(self) {}
-
-  // This function operator will be called for every other person within
-  // `infection_radius`
-  void operator()(Agent* neighbor, double squared_distance) override {
-    auto* other = bdm_static_cast<const Person*>(neighbor);
-    if (other->state_ == State::kInfected) {
-      self_->state_ = State::kInfected;
-    }
-  }
-};
-
-// -----------------------------------------------------------------------------
 struct Infection : public Behavior {
   BDM_BEHAVIOR_HEADER(Infection, Behavior, 1);
 
@@ -47,8 +31,15 @@ struct Infection : public Behavior {
     if (person->state_ == kSusceptible &&
         random->Uniform(0, 1) <= sparam->infection_probablity) {
       auto* ctxt = sim->GetExecutionContext();
-      CheckSurrounding check(person);
-      ctxt->ForEachNeighbor(check, *person, sparam->infection_radius);
+      auto check_surrounding =
+          MakeFunctor([&](Agent* neighbor, double squared_distance) {
+            auto* other = bdm_static_cast<const Person*>(neighbor);
+            if (other->state_ == State::kInfected) {
+              person->state_ = State::kInfected;
+            }
+          });
+      ctxt->ForEachNeighbor(check_surrounding, *person,
+                            sparam->infection_radius);
     }
   }
 };
