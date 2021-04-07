@@ -248,7 +248,7 @@ class Cell : public Agent {
     SetPropagateStaticness();
   }
 
-  struct MechanicalForcesFunctor : Functor<void, const Agent*, double> {
+  struct MechanicalForcesFunctor : Functor<void, Agent*, double> {
     const InteractionForce* force;
     Agent* agent;
     Double3 translation_force_on_point_mass{0, 0, 0};
@@ -256,7 +256,7 @@ class Cell : public Agent {
     MechanicalForcesFunctor(const InteractionForce* force, Agent* agent)
         : force(force), agent(agent) {}
 
-    void operator()(const Agent* neighbor, double squared_distance) override {
+    void operator()(Agent* neighbor, double squared_distance) override {
       auto neighbor_force = force->Calculate(agent, neighbor);
       translation_force_on_point_mass[0] += neighbor_force[0];
       translation_force_on_point_mass[1] += neighbor_force[1];

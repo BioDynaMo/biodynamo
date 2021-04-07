@@ -16,14 +16,14 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-struct CheckSurrounding : public Functor<void, const Agent*, double> {
+struct CheckSurrounding : public Functor<void, Agent*, double> {
   Person* self_;
 
   CheckSurrounding(Person* self) : self_(self) {}
 
   // This function operator will be called for every other person within
   // `infection_radius`
-  void operator()(const Agent* neighbor, double squared_distance) override {
+  void operator()(Agent* neighbor, double squared_distance) override {
     auto* other = bdm_static_cast<const Person*>(neighbor);
     if (other->state_ == State::kInfected) {
       self_->state_ = State::kInfected;

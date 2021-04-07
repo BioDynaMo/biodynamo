@@ -30,7 +30,7 @@ class Environment {
 
   virtual void Update() = 0;
 
-  virtual void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
+  virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                                const Agent& query) = 0;
 
   virtual void Clear() = 0;

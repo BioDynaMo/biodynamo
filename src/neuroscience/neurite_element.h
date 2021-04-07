@@ -609,7 +609,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     UpdateVolume();
   }
 
-  struct MechanicalForcesFunctor : public Functor<void, const Agent*, double> {
+  struct MechanicalForcesFunctor : public Functor<void, Agent*, double> {
     const InteractionForce* force;
     NeuriteElement* ne;
     Double3& force_from_neighbors;
@@ -629,7 +629,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
           h_over_m(h_over_m),
           has_neurite_neighbor(has_neurite_neighbor) {}
 
-    void operator()(const Agent* neighbor, double squared_distance) override {
+    void operator()(Agent* neighbor, double squared_distance) override {
       // if neighbor is a NeuriteElement
       // use shape to determine if neighbor is a NeuriteElement
       // this is much faster than using a dynamic_cast
