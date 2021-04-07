@@ -107,7 +107,8 @@ TEST(ResourceManagerTest, Defragmentation) {
 
   // remove enough agents to drop below the low watermark
   uint64_t remove = std::ceil(cnt * 0.7) + 1;
-  while (remove-- != 0) {
+  while (remove != 0) {
+    remove--;
     rm->RemoveAgent(AgentUid(remove));
   }
   rm->EndOfIteration();
@@ -115,7 +116,8 @@ TEST(ResourceManagerTest, Defragmentation) {
 
   // add enough agents to exceed the high watermark
   uint64_t add = std::ceil(cnt * 0.5) + 1;
-  while (add-- != 0) {
+  while (add != 0) {
+    add--;
     rm->AddAgent(new TestAgent());
   }
   rm->EndOfIteration();

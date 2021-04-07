@@ -58,8 +58,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
  public:
   NeuriteElement() {
-    resting_length_ =
-        spring_constant_ * actual_length_ / (tension_ + spring_constant_);
     auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     tension_ = param->neurite_default_tension;
     SetDiameter(param->neurite_default_diameter);
@@ -67,6 +65,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     density_ = param->neurite_default_density;
     spring_constant_ = param->neurite_default_spring_constant;
     adherence_ = param->neurite_default_adherence;
+    resting_length_ =
+        spring_constant_ * actual_length_ / (tension_ + spring_constant_);
     UpdateVolume();
   }
 
