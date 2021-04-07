@@ -48,8 +48,7 @@ struct Infection : public Behavior {
         random->Uniform(0, 1) <= sparam->infection_probablity) {
       auto* ctxt = sim->GetExecutionContext();
       CheckSurrounding check(person);
-      ctxt->ForEachNeighborWithinRadius(check, *person,
-                                        sparam->infection_radius);
+      ctxt->ForEachNeighbor(check, *person, sparam->infection_radius);
     }
   }
 };

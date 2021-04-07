@@ -725,8 +725,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     MechanicalForcesFunctor calculate_neighbor_forces(
         force, this, force_from_neighbors, force_on_my_mothers_point_mass,
         h_over_m, has_neurite_neighbor);
-    ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                      squared_radius);
+    ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal
     // tension and daughters)

@@ -93,9 +93,10 @@ class InPlaceExecutionContext {
   void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
                        const Agent& query);
 
-  /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
-  void ForEachNeighborWithinRadius(Functor<void, const Agent*, double>& lambda,
-                                   const Agent& query, double squared_radius);
+  /// calls lambdas with agents that are within sqrt(squared_radius)
+  /// from query
+  void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
+                       const Agent& query, double squared_radius);
 
   void AddAgent(Agent* new_agent);
 

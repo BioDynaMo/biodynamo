@@ -510,9 +510,8 @@ class UniformGridEnvironment : public Environment {
   /// @param      query   The query object
   /// @param[in]  squared_radius  The search radius squared
   ///
-  void ForEachNeighborWithinRadius(
-      const std::function<void(const Agent*)>& lambda, const Agent& query,
-      double squared_radius) {
+  void ForEachNeighbor(const std::function<void(const Agent*)>& lambda,
+                       const Agent& query, double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
