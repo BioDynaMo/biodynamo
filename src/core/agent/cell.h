@@ -308,8 +308,7 @@ class Cell : public Agent {
 
     MechanicalForcesFunctor calculate_neighbor_forces(force, this);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                      squared_radius);
+    ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement

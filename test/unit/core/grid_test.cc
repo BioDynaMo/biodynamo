@@ -57,7 +57,7 @@ TEST(GridTest, SetupGrid) {
       }
     };
 
-    grid->ForEachNeighborWithinRadius(fill_neighbor_list, *agent, 1201);
+    grid->ForEachNeighbor(fill_neighbor_list, *agent, 1201);
   });
 
   std::vector<AgentUid> expected_0 = {AgentUid(1),  AgentUid(4),  AgentUid(5),
@@ -110,7 +110,7 @@ void RunUpdateGridTest(Simulation* simulation) {
       }
     };
 
-    grid->ForEachNeighborWithinRadius(fill_neighbor_list, *agent, 1201);
+    grid->ForEachNeighbor(fill_neighbor_list, *agent, 1201);
   });
 
   std::vector<AgentUid> expected_0 = {AgentUid(4),  AgentUid(5),  AgentUid(16),

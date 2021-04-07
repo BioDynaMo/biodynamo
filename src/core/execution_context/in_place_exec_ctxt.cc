@@ -316,7 +316,7 @@ struct ForEachNeighborWithinRadiusFunctor
   }
 };
 
-void InPlaceExecutionContext::ForEachNeighborWithinRadius(
+void InPlaceExecutionContext::ForEachNeighbor(
     Functor<void, const Agent*, double>& lambda, const Agent& query,
     double squared_radius) {
   // use values in cache
