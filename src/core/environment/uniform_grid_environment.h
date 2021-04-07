@@ -465,6 +465,7 @@ class UniformGridEnvironment : public Environment {
     double squared_distance[batch_size] __attribute__((aligned(64)));
 
     auto process_batch = [&]() {
+#pragma omp simd
       for (uint64_t i = 0; i < size; ++i) {
         const double dx = x[i] - position[0];
         const double dy = y[i] - position[1];
