@@ -249,10 +249,6 @@ class Agent {
  private:
   Spinlock lock_;  //!
 
-  /// Helper variable used to support removal of behaviors while
-  /// `RunBehaviors` iterates over them.
-  uint32_t run_behavior_loop_idx_ = 0;
-
   /// If an agent is static, we should not compute the mechanical forces
   bool is_static_ = false;  //!
   /// If an agent becomes non-static (i.e. it moved or grew), we should set this
