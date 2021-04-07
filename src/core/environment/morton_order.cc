@@ -22,27 +22,24 @@ namespace bdm {
 template <typename T>
 class Stack {
  public:
-  Stack(uint64_t max_elements) {
-    data_.resize(max_elements);
-    top_--;
-  }
+  Stack(uint64_t max_elements) { data_.resize(max_elements); }
 
   void Push(const T& el) {
     data_[++top_] = el;
-    assert(top_ < data_.size());
+    assert(top_ < static_cast<int64_t>(data_.size()));
   }
 
   const T& Pop() {
-    assert(top_ < data_.size());
+    assert(top_ < static_cast<int64_t>(data_.size()));
     return data_[top_--];
   }
 
   T& Top() { return data_[top_]; }
-  uint64_t Size() const { return top_ + 1; }
+  uint64_t Size() const { return static_cast<uint64_t>(top_ + 1); }
 
  private:
   std::vector<T> data_;
-  uint64_t top_ = 0;
+  int64_t top_ = -1;
 };
 
 // -----------------------------------------------------------------------------
