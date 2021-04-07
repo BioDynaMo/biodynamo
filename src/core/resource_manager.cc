@@ -24,6 +24,19 @@
 #include "core/util/partition.h"
 #include "core/util/timing.h"
 
+#include <TAxis.h>
+#include <TCanvas.h>
+#include <TFrame.h>
+#include <TGraph.h>
+#include <TH1F.h>
+#include <TGraphAsymmErrors.h>
+#include <TGraphErrors.h>
+#include <TLegend.h>
+#include <TMath.h>
+#include <TMultiGraph.h>
+#include <TPad.h>
+#include <TStyle.h>
+
 namespace bdm {
 
 ResourceManager::ResourceManager() {
@@ -236,7 +249,164 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
   }
 };
 
+void PlotMemoryHistogram(const std::vector<Agent*> agents, int numa_node) {
+  TCanvas c;
+  c.SetCanvasSize(1920, 1200);
+  
+  // uint64_t max = std::numeric_limits<uint64_t>::min();
+  // for(uint64_t i = 1; i < agents.size(); ++i) {
+  //    auto t = reinterpret_cast<uint64_t>(agents[i]);
+  //    auto l = reinterpret_cast<uint64_t>(agents[i - 1]);
+  //    uint64_t val = 0;
+  //    if (t > l) {
+  //      val = t - l;
+  //    } else  {
+  //      val = l - t;
+  //    }
+  //     if (val > max) {
+  //       max = val;
+  //     }
+  // }
+
+  // TH1F hist("h1", "", max/ 100, 1, max);
+  TH1F hist("h1", "", 100, 1, 10000);
+  for(uint64_t i = 1; i < agents.size(); ++i) {
+     float val = 0;
+     auto t = reinterpret_cast<uint64_t>(agents[i]);
+     auto l = reinterpret_cast<uint64_t>(agents[i - 1]);
+     if (t > l) {
+       val = t - l;
+     } else  {
+       val = l - t;
+     }
+     val = std::min(val, 10000.f - 1);
+     // std::cout << val << " - " << agents[i] << " - " << agents[i - 1] << std::endl;
+     hist.Fill(val);
+  }
+  // std::cout << std::endl;
+  hist.Draw();
+  
+  c.Update();
+  // c.GetFrame()->SetBorderSize(12);
+  gPad->SetLogy();
+  gPad->Modified();
+  gPad->Update();
+  c.Modified();
+  c.cd(0);
+  auto steps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+  auto dir = Simulation::GetActive()->GetOutputDir();
+  c.SaveAs(Concat(dir, "/mem-layout-hist-", steps, "-", numa_node, ".png").c_str());
+}
+
+struct Fen : public Functor<void, const Agent*, double> {
+  std::vector<int64_t>& diffs;
+  Agent* query;
+  Fen(std::vector<int64_t>& diffs, Agent* query) : diffs(diffs), query(query) {}
+  
+  void operator()(const Agent* neighbor, double) { 
+     if (neighbor == query) {
+       return;
+     }
+     auto t = reinterpret_cast<int64_t>(query);
+     auto l = reinterpret_cast<int64_t>(neighbor);
+     diffs.push_back(t - l);
+  }
+};
+
+struct Fea : public Functor<void, Agent*, AgentHandle> {
+  std::vector<int64_t>& diffs;
+  Fea(std::vector<int64_t>& diffs) : diffs(diffs) {}
+
+  void operator()(Agent* agent, AgentHandle) { 
+    Fen fen(diffs, agent);
+    Simulation::GetActive()->GetExecutionContext()->ForEachNeighbor(fen, *agent);
+  }
+}; 
+
+void PlotNeighborMemoryHistogram(bool before = false) {
+  TCanvas c;
+  c.SetCanvasSize(1920, 1200);
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+  std::vector<int64_t> diffs(rm->GetNumAgents()*3);
+  if (!before) {
+    Simulation::GetActive()->GetEnvironment()->Update();
+  }
+  Fea fea(diffs);
+  rm->ForEachAgent(fea); 
+  // uint64_t max = std::numeric_limits<uint64_t>::min();
+  // for(uint64_t i = 1; i < agents.size(); ++i) {
+  //    auto t = reinterpret_cast<uint64_t>(agents[i]);
+  //    auto l = reinterpret_cast<uint64_t>(agents[i - 1]);
+  //    uint64_t val = 0;
+  //    if (t > l) {
+  //      val = t - l;
+  //    } else  {
+  //      val = l - t;
+  //    }
+  //     if (val > max) {
+  //       max = val;
+  //     }
+  // }
+
+  // TH1F hist("h1", "", max/ 100, 1, max);
+  TH1F hist("h1", "", 100, -10000, 10000);
+  for(uint64_t i = 0; i < diffs.size(); ++i) {
+     auto val = std::max(std::min(static_cast<float>(diffs[i]), 10000.f - 1), -10000.f+1);
+     // std::cout << val << " - " << agents[i] << " - " << agents[i - 1] << std::endl;
+     hist.Fill(val);
+  }
+  // std::cout << std::endl;
+  hist.Draw();
+  
+  c.Update();
+  // c.GetFrame()->SetBorderSize(12);
+  gPad->SetLogy();
+  gPad->Modified();
+  gPad->Update();
+  c.Modified();
+  c.cd(0);
+  auto steps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+  auto dir = Simulation::GetActive()->GetOutputDir();
+  std::string suffix = "";
+  if (before) {
+    suffix = "-before";
+  }
+  c.SaveAs(Concat(dir, "/mem-layout-neighbor-hist-", steps, suffix, ".png").c_str());
+}
+
+void PlotMemoryLayout(const std::vector<Agent*> agents, int numa_node) {
+  TCanvas c;
+  c.SetCanvasSize(3500, 2500);
+  std::vector<double> x(agents.size());  
+  std::vector<double> y(agents.size());  
+
+  uint64_t min = std::numeric_limits<uint64_t>::max();
+  for(uint64_t i = 0; i < agents.size(); ++i) {
+     auto val = reinterpret_cast<uint64_t>(agents[i]);
+      if (val < min) {
+        min = val;
+      }
+  }
+  for(uint64_t i = 1; i < agents.size(); ++i) {
+    x[i] = i;
+    y[i] = reinterpret_cast<uint64_t>(agents[i]) - min;
+  }
+  TGraph graph(agents.size(), x.data(), y.data());
+  graph.Draw("ap");
+  
+  c.Update();
+  // c.GetFrame()->SetBorderSize(12);
+  gPad->Modified();
+  gPad->Update();
+  c.Modified();
+  c.cd(0);
+  auto steps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
+  auto dir = Simulation::GetActive()->GetOutputDir();
+  c.SaveAs(Concat(dir, "/mem-layout-", steps, "-", numa_node, ".png").c_str());
+}
+
 void ResourceManager::LoadBalance() {
+  PlotNeighborMemoryHistogram(true);
   // balance agents per numa node according to the number of
   // threads associated with each numa domain
   auto numa_nodes = thread_info_->GetNumaNodes();
@@ -314,7 +484,10 @@ void ResourceManager::LoadBalance() {
 
   for (int n = 0; n < numa_nodes; n++) {
     agents_[n].swap(agents_lb_[n]);
+    PlotMemoryLayout(agents_[n], n);
+    PlotMemoryHistogram(agents_[n], n);
   }
+  PlotNeighborMemoryHistogram();
 
   if (Simulation::GetActive()->GetParam()->debug_numa) {
     std::cout << *this << std::endl;
