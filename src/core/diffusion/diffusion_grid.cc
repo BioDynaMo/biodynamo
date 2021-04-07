@@ -104,7 +104,7 @@ void DiffusionGrid::Update() {
 
   // Calculate new_dimension_length and new_resolution
   int new_dimension_length = grid_dimensions_[1] - grid_dimensions_[0];
-  int new_resolution = std::ceil(new_dimension_length / box_length_);
+  size_t new_resolution = std::ceil(new_dimension_length / box_length_);
 
   if (new_resolution > resolution_) {
     // Store the old number of boxes along each axis for comparison
