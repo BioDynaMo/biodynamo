@@ -44,11 +44,12 @@ Node* List::PopFront() {
       tail_ = nullptr;
     }
     --size_;
+    if (size_ != 0) {
+      --nodes_before_skip_list_;
+    }
     if (skip_list_.back() == ret) {
       skip_list_.pop_back();
       nodes_before_skip_list_ = n_;
-    } else {
-      --nodes_before_skip_list_;
     }
     return ret;
   }
@@ -282,7 +283,7 @@ void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block,
 uint64_t NumaPoolAllocator::RoundUpTo(uint64_t number, uint64_t multiple) {
   assert((multiple & (multiple - 1)) == 0 && multiple &&
          "multiple must be a power of two and non-zero");
-  return (number + multiple - 1) & 
+  return (number + multiple - 1) &
          (std::numeric_limits<uint64_t>::max() - (multiple - 1));
 }
 
