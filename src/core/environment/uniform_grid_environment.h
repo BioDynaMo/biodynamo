@@ -570,7 +570,7 @@ class UniformGridEnvironment : public Environment {
   }
 
   uint64_t GetNumBoxes() const { return boxes_.size(); }
-  
+
   std::array<uint64_t, 3> GetBoxCoordinates(size_t box_idx) const {
     std::array<uint64_t, 3> box_coord;
     box_coord[2] = box_idx / num_boxes_xy_;
