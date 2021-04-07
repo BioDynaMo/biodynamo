@@ -134,12 +134,6 @@ void DiffusionGrid::Update() {
     total_num_boxes_ = resolution_ * resolution_ * resolution_;
 
     CopyOldData(tmp_c1, tmp_gradients, tmp_resolution);
-    
-    // This code will never evaluate to true since it contradicts the if clause.
-    // Consider to remove to keep it tidy.
-    assert(total_num_boxes_ >=
-               (tmp_resolution * tmp_resolution * tmp_resolution) &&
-           "The diffusion grid tried to shrink! It can only become larger");
   }
 }
 
