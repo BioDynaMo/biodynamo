@@ -46,7 +46,7 @@ name, containing some template files to get you started.
     <div class="sbox-content">
     	<h4><b>Tip</b></h4>
     	<p>If you wish to have your Github account linked to your project you can
-	append the <code>--github</code> option to the command. <code>biodynamo assist</code> command requires <code>--github</code>
+	append the <code>--github</code> option to the command. 
 		</p>
     </div>
 </a>
@@ -94,16 +94,3 @@ cd /tmp/cell_division
 biodynamo run
 ```
 
-## Request assistance
-
-It can happen that you encounter an error or issue that you cannot solve on your own.
-Or you might be convinced that there is a bug in BioDynaMo.
-For such occasions we have provided you with BioDynaMo assistance:
-
-```bash
-biodynamo assist
-```
-
-This command will create a folder called `debug` in which debug information will be collected.
-A git branch will be created and uploaded to Github. Send the link to this branch to us,
-so we can take a look at the issue. Check out [Contact](/docs/userguide/contact) on how to contact us.
