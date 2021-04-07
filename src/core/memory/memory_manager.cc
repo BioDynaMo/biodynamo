@@ -44,12 +44,11 @@ Node* List::PopFront() {
       tail_ = nullptr;
     }
     --size_;
-    if (size_ != 0) {
-      --nodes_before_skip_list_;
-    }
     if (skip_list_.back() == ret) {
       skip_list_.pop_back();
       nodes_before_skip_list_ = n_;
+    } else if (size_ != 0) {
+      --nodes_before_skip_list_;
     }
     return ret;
   }
