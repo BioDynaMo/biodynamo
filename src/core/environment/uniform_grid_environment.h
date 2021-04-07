@@ -417,8 +417,8 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
-  void ForEachNeighbor(const std::function<void(const Agent*)>& lambda,
-                       const Agent& query) const {
+  void ForEachNeighbor(const std::function<void(Agent*)>& lambda,
+                       Agent& query) const {
     auto idx = query.GetBoxIdx();
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
@@ -445,7 +445,7 @@ class UniformGridEnvironment : public Environment {
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
   ///
-  void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query) override {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
@@ -510,7 +510,7 @@ class UniformGridEnvironment : public Environment {
   /// @param      query   The query object
   /// @param[in]  squared_radius  The search radius squared
   ///
-  void ForEachNeighbor(const std::function<void(const Agent*)>& lambda,
+  void ForEachNeighbor(const std::function<void(Agent*)>& lambda,
                        const Agent& query, double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();

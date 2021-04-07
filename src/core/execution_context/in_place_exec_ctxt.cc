@@ -257,17 +257,16 @@ void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
   new_agent_map_->Insert(new_agent->GetUid(), new_agent);
 }
 
-struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {
+struct ForEachNeighborFunctor : public Functor<void, Agent*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
-  Functor<void, const Agent*, double>& function_;
-  std::vector<std::pair<const Agent*, double>>& neighbor_cache_;
+  Functor<void, Agent*, double>& function_;
+  std::vector<std::pair<Agent*, double>>& neighbor_cache_;
 
-  ForEachNeighborFunctor(
-      Functor<void, const Agent*, double>& function,
-      std::vector<std::pair<const Agent*, double>>& neigbor_cache)
+  ForEachNeighborFunctor(Functor<void, Agent*, double>& function,
+                         std::vector<std::pair<Agent*, double>>& neigbor_cache)
       : function_(function), neighbor_cache_(neigbor_cache) {}
 
-  void operator()(const Agent* agent, double squared_distance) override {
+  void operator()(Agent* agent, double squared_distance) override {
     if (param->cache_neighbors) {
       neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
@@ -276,7 +275,7 @@ struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {
 };
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    Functor<void, const Agent*, double>& lambda, const Agent& query) {
+    Functor<void, Agent*, double>& lambda, const Agent& query) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {
     for (auto& pair : neighbor_cache_) {
@@ -292,21 +291,21 @@ void InPlaceExecutionContext::ForEachNeighbor(
 }
 
 struct ForEachNeighborWithinRadiusFunctor
-    : public Functor<void, const Agent*, double> {
+    : public Functor<void, Agent*, double> {
   const Param* param = Simulation::GetActive()->GetParam();
-  Functor<void, const Agent*, double>& function_;
-  std::vector<std::pair<const Agent*, double>>& neighbor_cache_;
+  Functor<void, Agent*, double>& function_;
+  std::vector<std::pair<Agent*, double>>& neighbor_cache_;
   double squared_radius_ = 0;
 
   ForEachNeighborWithinRadiusFunctor(
-      Functor<void, const Agent*, double>& function,
-      std::vector<std::pair<const Agent*, double>>& neigbor_cache,
+      Functor<void, Agent*, double>& function,
+      std::vector<std::pair<Agent*, double>>& neigbor_cache,
       double squared_radius)
       : function_(function),
         neighbor_cache_(neigbor_cache),
         squared_radius_(squared_radius) {}
 
-  void operator()(const Agent* agent, double squared_distance) override {
+  void operator()(Agent* agent, double squared_distance) override {
     if (param->cache_neighbors) {
       neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
@@ -317,7 +316,7 @@ struct ForEachNeighborWithinRadiusFunctor
 };
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    Functor<void, const Agent*, double>& lambda, const Agent& query,
+    Functor<void, Agent*, double>& lambda, const Agent& query,
     double squared_radius) {
   // use values in cache
   if (neighbor_cache_.size() != 0) {

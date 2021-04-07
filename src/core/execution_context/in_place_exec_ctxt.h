@@ -90,12 +90,12 @@ class InPlaceExecutionContext {
   /// in the argument
   void Execute(Agent* agent, const std::vector<Operation*>& operations);
 
-  void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query);
 
   /// calls lambdas with agents that are within sqrt(squared_radius)
   /// from query
-  void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query, double squared_radius);
 
   void AddAgent(Agent* new_agent);
@@ -125,7 +125,7 @@ class InPlaceExecutionContext {
   /// prevent race conditions for cached Agents
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
-  std::vector<std::pair<const Agent*, double>> neighbor_cache_;
+  std::vector<std::pair<Agent*, double>> neighbor_cache_;
 };
 
 }  // namespace bdm

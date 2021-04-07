@@ -50,7 +50,7 @@ TEST(GridTest, SetupGrid) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ForEachAgent([&](Agent* agent) {
     auto uid = agent->GetUid();
-    auto fill_neighbor_list = [&](const Agent* neighbor) {
+    auto fill_neighbor_list = [&](Agent* neighbor) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
@@ -103,7 +103,7 @@ void RunUpdateGridTest(Simulation* simulation) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ForEachAgent([&](Agent* agent) {
     auto uid = agent->GetUid();
-    auto fill_neighbor_list = [&](const Agent* neighbor) {
+    auto fill_neighbor_list = [&](Agent* neighbor) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);

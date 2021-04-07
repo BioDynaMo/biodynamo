@@ -220,11 +220,11 @@ TEST(InPlaceExecutionContext, Execute) {
   delete op2;
 }
 
-struct NeighborFunctor : public Functor<void, const Agent*, double> {
+struct NeighborFunctor : public Functor<void, Agent*, double> {
   NeighborFunctor(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
   virtual ~NeighborFunctor() {}
 
-  void operator()(const Agent* neighbor, double squared_distance) override {
+  void operator()(Agent* neighbor, double squared_distance) override {
     auto* non_const_nb = const_cast<Agent*>(neighbor);
     auto d1 = non_const_nb->GetDiameter();
     non_const_nb->SetDiameter(d1 + 1);
