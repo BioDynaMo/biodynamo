@@ -352,7 +352,7 @@ const Agent* InPlaceExecutionContext::GetConstAgent(const AgentUid& uid) {
   return GetAgent(uid);
 }
 
-void InPlaceExecutionContext::RemoveFromSimulation(const AgentUid& uid) {
+void InPlaceExecutionContext::RemoveAgent(const AgentUid& uid) {
   remove_.push_back(uid);
 }
 

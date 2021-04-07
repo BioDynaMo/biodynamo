@@ -146,7 +146,7 @@ const InlineVector<Behavior*, 2>& Agent::GetAllBehaviors() const {
 // ---------------------------------------------------------------------------
 
 void Agent::RemoveFromSimulation() const {
-  Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(uid_);
+  Simulation::GetActive()->GetExecutionContext()->RemoveAgent(uid_);
 }
 
 void Agent::InitializeBehaviors(const NewAgentEvent& event) {
