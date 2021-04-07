@@ -570,9 +570,7 @@ class UniformGridEnvironment : public Environment {
   }
 
   uint64_t GetNumBoxes() const { return boxes_.size(); }
-
-  uint32_t GetBoxLength() { return box_length_; }
-
+  
   std::array<uint64_t, 3> GetBoxCoordinates(size_t box_idx) const {
     std::array<uint64_t, 3> box_coord;
     box_coord[2] = box_idx / num_boxes_xy_;
@@ -703,7 +701,6 @@ class UniformGridEnvironment : public Environment {
   /// This is used to decide if boxes should be reinitialized
   uint32_t timestamp_ = 0;
   /// Length of a Box
-  //uint32_t box_length_ = 1;
   int32_t box_length_ = 1;
   /// Stores the number of boxes for each axis
   std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
