@@ -187,10 +187,6 @@ void ResourceManager::ForEachAgentParallel(
   }
 }
 
-struct DeleteAgentsFunctor : public Functor<void, Agent*> {
-  void operator()(Agent* agent) { delete agent; }
-};
-
 struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
   bool minimize_memory;
   uint64_t offset;
@@ -302,7 +298,9 @@ void ResourceManager::LoadBalance() {
   // synchronization overheads. The bdm memory allocator does not have this
   // issue.
   if (!minimize_memory) {
-    DeleteAgentsFunctor delete_functor;
+    auto delete_functor = MakeFunctor([](Agent* agent){
+      delete agent;     
+    });
     ForEachAgentParallel(delete_functor);
   }
 
