@@ -90,8 +90,6 @@ class InPlaceExecutionContext {
   /// in the argument
   void Execute(Agent* agent, const std::vector<Operation*>& operations);
 
-  void AddAgent(Agent* new_agent);
-
   void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
                        const Agent& query);
 
@@ -99,11 +97,13 @@ class InPlaceExecutionContext {
   void ForEachNeighborWithinRadius(Functor<void, const Agent*, double>& lambda,
                                    const Agent& query, double squared_radius);
 
+  void AddAgent(Agent* new_agent);
+
+  void RemoveAgent(const AgentUid& uid);
+
   Agent* GetAgent(const AgentUid& uid);
 
   const Agent* GetConstAgent(const AgentUid& uid);
-
-  void RemoveFromSimulation(const AgentUid& uid);
 
  private:
   /// Lookup table AgentUid -> AgentPointer for new created agents
