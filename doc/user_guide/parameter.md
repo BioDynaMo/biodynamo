@@ -17,7 +17,7 @@ keywords:
 Parameters are used to tailor BioDynaMo to your specific simulation.
 
 The majority of parameters are defined in the [core engine](/api/structbdm_1_1Param.html).
-Each simulation or module can define its own [`Param` class](/api/structbdm_1_1experimental_1_1neuroscience_1_1Param.html) to add additional parameters.
+Each simulation or module can define its own [`Param` class](/api/structbdm_1_1neuroscience_1_1Param.html) to add additional parameters.
 
 There are three ways to set the value of a parameter:
 
