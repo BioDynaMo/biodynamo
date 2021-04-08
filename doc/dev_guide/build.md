@@ -22,7 +22,7 @@ To build BioDynaMo from source execute the following commands:
 <a class="sbox" href= "/docs/userguide/installation/" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Note</b></h4>
-        <p>If you are a user please follow the installation instructions in our <font color="blue"><u>user guide</u></font>.
+        <p>If you are a user please follow the installation instructions in our <font color="blue"><u>User Guide</u></font>.
         </p>
     </div>
 </a>
@@ -61,12 +61,40 @@ Run `./prerequisites.sh --help` to see how to use it.
     </div>
 </a>
 
+## Rebuilding BioDynaMo
+
+If you make developments in the BioDynaMo code you will typically create a new branch and recompile after making your code changes:
+
+```bash
+cd biodynamo
+git pull
+git checkout -b <new-branch>
+
+[edit the files]
+
+# clean the previous build but keep the third party libraries, typically ROOT and ParaView
+cd build
+ninja cleanbuild
+
+# Build BioDynaMo
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ..
+ninja
+```
+
+When developing `ninja` is preferred as it is slightly faster than `make`.
+
+Also we advice you to put the following lines in your `.bashrc` or `.zshrc` file on Linux platforms where we use `pyenv` to manage the different python versions:
+
+```bash
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+``` 
+
+Once finished, we hope that you want to contribute your code changes back to the BioDynaMo project. For more on how to contribute see the page on [Contributing your code](/docs/devguide/contribute).
+
 ## CentOS 7
 
-In case of CentOS 7, you will need to run the following commands before actually calling `cmake`. This is because
-CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to
-load the OpenMPI module. You will need to run these instructions only before building BioDynaMo. You will not need them in
-order to run the program.
+In case of CentOS 7, you will need to run the following commands before actually calling `cmake`. This is because CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to load the OpenMPI module. You will need to run these instructions only before building BioDynaMo. You will not need them in order to run the program.
 
 ```bash
 export MESA_GL_VERSION_OVERRIDE=3.3
@@ -201,8 +229,8 @@ export Qt5_DIR=<qt5_installation_dir>/lib/cmake/Qt5
 
 #### Speed Up Installation Tests with a Local BioDynaMo-LFS Copy
 
-The installation scripts fetch large precompiled dependencies like paraview
-or root from biodynamo's large file storage (LFS). To enable faster builds you can download the whole
+The installation scripts fetch large precompiled dependencies like ROOT or ParaView
+from biodynamo's large file storage (LFS). To enable faster builds you can download the whole
 LFS and tell BioDynaMo to access the local version instead. This is done with the
 environmental flag `BDM_LOCAL_LFS`. Use an absolute path to the directory
 that contains the local copy.
@@ -220,7 +248,7 @@ unset BDM_LOCAL_LFS
 <br>
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Warning<b><h4>
+    	<h4><b>Warning</b><h4>
     	<p>At the moment there is no check if the local copy is in synch with
     remote. You have to ensure that yourself!
         </p>
