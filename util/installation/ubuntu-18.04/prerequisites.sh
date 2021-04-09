@@ -72,7 +72,7 @@ pyenv shell $PYVERS
 # Install optional packages
 if [ $1 == "all" ]; then
   # this updates pip, but installs the updated version in $HOME/.local/bin
-  PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
+  PIP_PACKAGES="nbformat jupyter metakernel jupyterlab yapf"
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
   python -m pip install $PIP_PACKAGES
 
