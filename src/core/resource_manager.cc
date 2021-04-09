@@ -309,6 +309,9 @@ struct Fen : public Functor<void, const Agent*, double> {
      }
      auto t = reinterpret_cast<int64_t>(query);
      auto l = reinterpret_cast<int64_t>(neighbor);
+     if (t - l == 0) {
+      std::cout << "AAAAAA " << query << "_ " << neighbor << std::endl;
+     }
      diffs.push_back(t - l);
   }
 };
@@ -327,33 +330,35 @@ void PlotNeighborMemoryHistogram(bool before = false) {
   TCanvas c;
   c.SetCanvasSize(1920, 1200);
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  std::vector<int64_t> diffs(rm->GetNumAgents()*3);
+  std::vector<int64_t> diffs;
+  diffs.reserve(rm->GetNumAgents()*3);
   if (!before) {
     Simulation::GetActive()->GetEnvironment()->Update();
   }
   Fea fea(diffs);
   rm->ForEachAgent(fea); 
-  // uint64_t max = std::numeric_limits<uint64_t>::min();
-  // for(uint64_t i = 1; i < agents.size(); ++i) {
-  //    auto t = reinterpret_cast<uint64_t>(agents[i]);
-  //    auto l = reinterpret_cast<uint64_t>(agents[i - 1]);
-  //    uint64_t val = 0;
-  //    if (t > l) {
-  //      val = t - l;
-  //    } else  {
-  //      val = l - t;
-  //    }
-  //     if (val > max) {
-  //       max = val;
-  //     }
-  // }
-
-  // TH1F hist("h1", "", max/ 100, 1, max);
-  TH1F hist("h1", "", 100, -10000, 10000);
+  auto min = std::numeric_limits<float>::max();
+  auto max = std::numeric_limits<float>::min();
   for(uint64_t i = 0; i < diffs.size(); ++i) {
-     auto val = std::max(std::min(static_cast<float>(diffs[i]), 10000.f - 1), -10000.f+1);
+    if (diffs[i] < min) {
+      min = diffs[i];
+    }
+    if (diffs[i] > max) {
+      max = diffs[i];
+    }
+  }
+  min--;
+  max++;
+  // TH1F hist("h1", "", max/ 100, 1, max);
+  // float min = -5000000;
+  // float min = -10000000000;
+  // float max = 10000000000;
+  uint64_t nbins = (max - min) / 20000;
+  TH1F hist("h1", "", nbins, min, max);
+  for(uint64_t i = 0; i < diffs.size(); ++i) {
+     // auto val = std::max(std::min(static_cast<float>(diffs[i]), max - 1), min+1);
      // std::cout << val << " - " << agents[i] << " - " << agents[i - 1] << std::endl;
-     hist.Fill(val);
+     hist.Fill(diffs[i]);
   }
   // std::cout << std::endl;
   hist.Draw();
@@ -372,6 +377,7 @@ void PlotNeighborMemoryHistogram(bool before = false) {
     suffix = "-before";
   }
   c.SaveAs(Concat(dir, "/mem-layout-neighbor-hist-", steps, suffix, ".png").c_str());
+  c.SaveAs(Concat(dir, "/mem-layout-neighbor-hist-", steps, suffix, ".C").c_str());
 }
 
 void PlotMemoryLayout(const std::vector<Agent*> agents, int numa_node) {
@@ -484,9 +490,10 @@ void ResourceManager::LoadBalance() {
 
   for (int n = 0; n < numa_nodes; n++) {
     agents_[n].swap(agents_lb_[n]);
-    PlotMemoryLayout(agents_[n], n);
-    PlotMemoryHistogram(agents_[n], n);
+    // PlotMemoryLayout(agents_[n], n);
+    // PlotMemoryHistogram(agents_[n], n);
   }
+  PlotMemoryHistogram(agents_[0], 0);
   PlotNeighborMemoryHistogram();
 
   if (Simulation::GetActive()->GetParam()->debug_numa) {
