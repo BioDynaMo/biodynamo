@@ -490,10 +490,10 @@ void ResourceManager::LoadBalance() {
 
   for (int n = 0; n < numa_nodes; n++) {
     agents_[n].swap(agents_lb_[n]);
-    // PlotMemoryLayout(agents_[n], n);
-    // PlotMemoryHistogram(agents_[n], n);
+    PlotMemoryLayout(agents_[n], n);
+    PlotMemoryHistogram(agents_[n], n);
   }
-  PlotMemoryHistogram(agents_[0], 0);
+  // PlotMemoryHistogram(agents_[0], 0);
   PlotNeighborMemoryHistogram();
 
   if (Simulation::GetActive()->GetParam()->debug_numa) {
