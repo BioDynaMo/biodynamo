@@ -298,12 +298,12 @@ void PlotMemoryHistogram(const std::vector<Agent*> agents, int numa_node) {
   c.SaveAs(Concat(dir, "/mem-layout-hist-", steps, "-", numa_node, ".png").c_str());
 }
 
-struct Fen : public Functor<void, const Agent*, double> {
+struct Fen : public Functor<void, Agent*, double> {
   std::vector<int64_t>& diffs;
   Agent* query;
   Fen(std::vector<int64_t>& diffs, Agent* query) : diffs(diffs), query(query) {}
   
-  void operator()(const Agent* neighbor, double) { 
+  void operator()(Agent* neighbor, double) { 
      if (neighbor == query) {
        return;
      }
