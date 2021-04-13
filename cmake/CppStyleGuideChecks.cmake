@@ -69,28 +69,27 @@ function(add_clang_tidy_target make_target_id file_filter)
   endif()
 endfunction(add_clang_tidy_target)
 
-# # -------------------- "make yapf*", "make show-yapf*" and "make check-yapf*" targets ------------
-# function(add_yapf_target make_target_id file_filter)
-#   if (${YAPF_FOUND})
-#     add_custom_target(${make_target_id}
-#       COMMAND ${BUILD_SUPPORT_DIR}/run-yapf.sh ${YAPF_BIN} ${yapf_header_helper}  ${CMAKE_BINARY_DIR}/compile_commands.json 1
-#               `${GET_SRC_FILES} ${PROJECT_SOURCE_DIR} ${file_filter} py | grep -v -F -f ${PROJECT_SOURCE_DIR}/.yapf-ignore`
-#       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-#       COMMENT "Run yapf on selected files and attempt to fix any warning automatically")
-# 
-#     add_custom_target(show-${make_target_id}
-#       COMMAND ${BUILD_SUPPORT_DIR}/run-yapf.sh ${YAPF_BIN} ${yapf_header_helper} ${CMAKE_BINARY_DIR}/compile_commands.json 2
-#               `${GET_SRC_FILES} ${PROJECT_SOURCE_DIR} ${file_filter} py | grep -v -F -f ${PROJECT_SOURCE_DIR}/.yapf-ignore`
-#       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-#       COMMENT "Run yapf on selected files and display errors.")
-# 
-#     add_custom_target(check-${make_target_id}
-#       COMMAND ${BUILD_SUPPORT_DIR}/run-yapf.sh ${YAPF_BIN} ${yapf_header_helper} ${CMAKE_BINARY_DIR}/compile_commands.json 0
-#               `${GET_SRC_FILES} ${PROJECT_SOURCE_DIR} ${file_filter} py | grep -v -F -f ${PROJECT_SOURCE_DIR}/.yapf-ignore`
-#       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-#       COMMENT "Run yapf on selected files. Fails if errors are found.")
-#   endif()
-# endfunction(add_yapf_target)
+# -------------------- "make yapf*", "make show-yapf*" and "make check-yapf*" targets ------------
+# @param file_filter: Filter that is passed to get-src-files scirpt (all|staged|changed)
+function(add_yapf_target make_target_id file_filter)
+  add_custom_target(${make_target_id}
+    COMMAND ${BUILD_SUPPORT_DIR}/run-yapf.sh ${PROJECT_SOURCE_DIR} 1
+            `${GET_SRC_FILES} ${PROJECT_SOURCE_DIR} ${file_filter} py`
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Run yapf on selected files and attempt to fix any warning automatically")
+
+  add_custom_target(show-${make_target_id}
+    COMMAND ${BUILD_SUPPORT_DIR}/run-yapf.sh ${PROJECT_SOURCE_DIR} 2
+            `${GET_SRC_FILES} ${PROJECT_SOURCE_DIR} ${file_filter} py`
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Run yapf on selected files and display errors.")
+
+  add_custom_target(check-${make_target_id}
+    COMMAND ${BUILD_SUPPORT_DIR}/run-yapf.sh ${PROJECT_SOURCE_DIR} 0
+            `${GET_SRC_FILES} ${PROJECT_SOURCE_DIR} ${file_filter} py`
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMENT "Run yapf on selected files. Fails if errors are found.")
+endfunction(add_yapf_target)
 
 # ------------------------------------------------------------------------------------------------
 
@@ -121,6 +120,7 @@ if (GIT_FOUND)
   if ("${HAVE_ORIGIN_REPOSITORY}" EQUAL "1")
     add_clang_format_target(format "changed")
     add_clang_tidy_target(tidy "changed")
+    add_yapf_target(yapf "changed")
     add_cpplint_target(check-cpplint "changed")
   else()
     MESSAGE(WARNING "\nWe did not detect any remote origin/master branch. Therefore, targets \
@@ -130,6 +130,7 @@ If you wish to use 'make format'/'make tidy'/'make check-cpplint' try to add an 
 
   add_clang_format_target(format-staged "staged")
   add_clang_tidy_target(tidy-staged "staged")
+  add_yapf_target(yapf-staged "staged")
   add_cpplint_target(check-cpplint-staged "staged")
 
   # check submission
@@ -146,4 +147,5 @@ endif()
 
 add_clang_format_target(format-all "all")
 add_clang_tidy_target(tidy-all "all")
+add_yapf_target(yapf-all "all")
 add_cpplint_target(check-cpplint-all "all")

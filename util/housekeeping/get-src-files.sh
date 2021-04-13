@@ -18,7 +18,7 @@
 # Arguments:
 #   $1      - Path to the project root directory
 #   $2      - Mode (either all, changed, staged)
-#   $3...$N - Listing of file endings (e.g cc, h, py)
+#   $ARGN - Listing of file endings (e.g cc, h, py)
 #
 
 # Test if script receives the correct input of arguments
