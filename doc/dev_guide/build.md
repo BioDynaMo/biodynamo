@@ -169,9 +169,12 @@ Build targets indicated with `*` always come in three different flavors.
 | `check-tidy*` | run clang-tidy on selected files. Fails if errors are found |
 | `show-tidy*` | run clang-tidy on selected files and display errors. |
 | `tidy*` | run clang-tidy on selected files and attempt to fix any warning automatically |
+| `check-yapf*` | run YAPF on selected files (.py). Fails if errors are found |
+| `show-yapf*` | run YAPF on selected files (.py) and display suggested changes. |
+| `yapf*` | run YAPF on selected files (.py) and update them inplace as suggested by `show-yapf*`. |
 | `check-cpplint*` | run cpplint on selected files. Fails if errors are found and displays them. |
 | `check-submission` | will build, run all tests, check formatting, code style, and generate documentation and coverage report |
-| `fix-submission` | will attempt to fix the reported issues using `clang-format` and `clang-tidy`. Failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically |
+| `fix-submission` | will attempt to fix the reported issues using `clang-format`, `clang-tidy`, and `yapf`. Failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically |
 
 ### Website Related Build Targets
 

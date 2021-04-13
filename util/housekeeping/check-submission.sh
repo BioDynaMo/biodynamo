@@ -34,6 +34,7 @@ fi
 cmake --build $BINARY_DIR --target fetch-master
 cmake --build $BINARY_DIR --target show-format
 cmake --build $BINARY_DIR --target show-tidy
+cmake --build $BINARY_DIR --target show-yapf
 cmake --build $BINARY_DIR --target check-cpplint
 cmake --build $BINARY_DIR --target doc
 cmake --build $BINARY_DIR --target coverage-build
