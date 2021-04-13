@@ -645,7 +645,7 @@ include(Notebooks)
 include(Installation)
 
 # -------------------- add targets for code style and submission checks --------
-include(CppStyleGuideChecks)
+include(StyleGuideChecks)
 
 # ------ cleanbuild command ------ #
 add_custom_target(cleanbuild

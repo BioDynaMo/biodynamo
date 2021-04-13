@@ -233,7 +233,7 @@ else()
     # It is used by format/style checks. It needs to be defined here such
     # to enable relocation of the scripts.
     set(BUILD_SUPPORT_DIR "${BDMSYS}/share/util")
-    include(CppStyleGuideChecks)
+    include(StyleGuideChecks)
 endif()
 
 # -------------------- set default build type and compiler flags ---------------

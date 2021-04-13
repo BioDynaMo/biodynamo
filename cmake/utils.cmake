@@ -250,7 +250,7 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/cmake/Findtcmalloc.cmake
             ${CMAKE_SOURCE_DIR}/cmake/Findjemalloc.cmake
             ${CMAKE_SOURCE_DIR}/cmake/RootUseFile.cmake
-            ${CMAKE_SOURCE_DIR}/cmake/CppStyleGuideChecks.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/StyleGuideChecks.cmake
             ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/UseBioDynaMo.cmake
             ${CMAKE_SOURCE_DIR}/cmake/utils.cmake
             )
