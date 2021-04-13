@@ -23,8 +23,12 @@ using nlohmann::json;
 
 namespace bdm {
 
-double GetExperimentalValue(const Param& final_params) {
-  return 42.0;
+double GetExperimentalValue(const json& j_patch) {
+  if (j_patch["bdm::SimParam"]["1E-07"].is_null()) {
+    return std::numeric_limits<long double>::signaling_NaN();
+  } else {
+    return j_patch["bdm::SimParam"]["1E-07"];
+  }
 }
 
 /// TODO: currently ParameterSweep implementation
@@ -37,22 +41,32 @@ struct ParticleSwarm : public Algorithm {
       json j_patch;
 
       for (size_t c = 0; c < msm_->data_->GetColumnCount(); c++) {
-        j_patch["bdm::SimParam"][msm_->data_->GetColumnName(c)] =
-            msm_->data_->GetCell<double>(c, r);
+        // We have to check for NaN values ourselves. nlohmann::json does not
+        // convert NaN float values from csv.h to null json objects
+        if (!std::isnan(msm_->data_->GetCell<double>(c, r))) {
+          j_patch["bdm::SimParam"][msm_->data_->GetColumnName(c)] =
+              msm_->data_->GetCell<double>(c, r);
+        } else {
+          j_patch["bdm::SimParam"][msm_->data_->GetColumnName(c)] = json();
+        }
       }
 
       Param final_params = *default_params_;
-      // std::cout << j_patch.dump() << std::endl;
       final_params.MergeJsonPatch(j_patch.dump());
 
       // Extract the appropriate expected experimental value based on the
       // initial parameters
       json exp_data_patch;
-      exp_data_patch["bdm::OptimizationParam"]["expected_val"] =
-          GetExperimentalValue(final_params);
 
-      final_params.MergeJsonPatch(exp_data_patch.dump());
-      send_params_to_worker(&final_params);
+      // Only send out parameters of which we have valid experimental expected
+      // values
+      if (!std::isnan(GetExperimentalValue(j_patch))) {
+        exp_data_patch["bdm::OptimizationParam"]["expected_val"] =
+            GetExperimentalValue(j_patch);
+
+        final_params.MergeJsonPatch(exp_data_patch.dump());
+        send_params_to_worker(&final_params);
+      }
     }
   };
 };

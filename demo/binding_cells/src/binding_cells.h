@@ -189,7 +189,7 @@ inline double Simulate(int argc, const char** argv,
   //////////////////////////////////////////////////////////////////////////////
   // Compute error for optimization feedback
   //////////////////////////////////////////////////////////////////////////////
-  auto final_activity = ex.activity.back();
+  auto final_activity = 100 * (static_cast<float>(ex.activity.back()) / rm->GetNumAgents());
   auto expected_val =
       simulation.GetParam()->Get<OptimizationParam>()->expected_val;
 
