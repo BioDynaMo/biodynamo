@@ -27,8 +27,6 @@
 
 namespace bdm {
 
-const static std::string kNA = "N/A";
-
 class ExperimentalData {
  public:
   explicit ExperimentalData(const std::string& file, int skip = 0)
@@ -44,7 +42,6 @@ class ExperimentalData {
     num_rows_ = GetRowCount();
     num_cols_ = GetColumnCount();
     bad_entries_.resize(num_rows_, false);
-    FindBadEntries();
   };
 
   template <typename T>
@@ -55,18 +52,6 @@ class ExperimentalData {
   template <typename T>
   T GetCell(size_t col, size_t row) {
     return doc_.GetCell<T>(col, row);
-  }
-
-  // For each row we check each column value for kNA values
-  void FindBadEntries() {
-    for (size_t r = 0; r < num_rows_; r++) {
-      std::vector<std::string> row = doc_.GetRow<std::string>(r);
-      for (size_t c = 0; c < num_cols_; c++) {
-        if (row[c] == kNA) {
-          bad_entries_[r] = true;
-        }
-      }
-    }
   }
 
   std::string GetColumnName(size_t idx) { return doc_.GetColumnName(idx); }
