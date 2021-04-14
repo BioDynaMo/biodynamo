@@ -19,13 +19,13 @@
 #include <unordered_map>
 #include <vector>
 #include "core/agent/agent.h"
-#include "core/diffusion/euler_grid.h"
 #include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/util/io.h"
 #include "core/util/type.h"
 #include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
+#include "core/diffusion/euler_grid.h"
 
 #define ROOTFILE "bdmFile.root"
 

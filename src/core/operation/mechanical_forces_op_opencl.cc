@@ -27,12 +27,12 @@
 #include <CL/cl2.hpp>
 #endif
 
+#include "core/operation/mechanical_forces_op_opencl.h"
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/opencl_state.h"
 #include "core/operation/bound_space_op.h"
-#include "core/operation/mechanical_forces_op_opencl.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/shape.h"

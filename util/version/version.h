@@ -29,7 +29,6 @@
 ///    #else
 ///       #include <oldheader.h>
 ///    #endif
-// clang-format off
 #define BDM_VERSION(major, minor, patch) \
   (static_cast<uint64_t>(major) << 32) +                     \
   (static_cast<uint64_t>(minor) << 16) +                     \
@@ -37,7 +36,6 @@
 
 #define BDM_VERSION_CODE                                         \
   BDM_VERSION(@VERSION_MAJOR@, @VERSION_MINOR@, @VERSION_PATCH@)
-// clang-format on
 
 namespace bdm {
 

@@ -14,7 +14,9 @@ inline __device__ double rsqrtf(double x) { return 1.0f / sqrtf(x); }
 // constructors
 ////////////////////////////////////////////////////////////////////////////////
 
-inline __device__ double2 make_double2(double s) { return make_double2(s, s); }
+inline __device__ double2 make_double2(double s) {
+  return make_double2(s, s);
+}
 inline __device__ double2 make_double2(double3 a) {
   return make_double2(a.x, a.y);
 }
@@ -476,6 +478,6 @@ inline __device__ double3 cross(double3 a, double3 b) {
                       a.x * b.y - a.y * b.x);
 }
 
-#endif  // __CUDACC__
+#endif // __CUDACC__
 
 #endif  // CORE_GPU_HELPER_MATH_DOUBLE_H_
