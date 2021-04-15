@@ -15,6 +15,8 @@
 #include <iostream>
 #include "core/util/string.h"
 #include "gtest/gtest.h"
+#include <cstdlib>
+#include "TROOT.h"
 
 void HandleFlakyTests(int& failed_cnt, std::stringstream& filter) {
   auto unit_test = ::testing::UnitTest::GetInstance();
@@ -41,6 +43,9 @@ int RunAllTests() {
 }
 
 int main(int argc, char** argv) {
+  std::cout << "ROOT initialized " << TROOT::Initialized() << std::endl;
+  std::cout << "value of ROOT_INCLUDE_PATH env " << std::getenv("ROOT_INCLUDE_PATH") << std::endl;
+
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ::testing::InitGoogleTest(&argc, argv);
   auto failed_cnt = RunAllTests();

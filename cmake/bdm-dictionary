@@ -63,6 +63,7 @@ if __name__ == '__main__':
 #include "core/util/jit.h"
 #include <cstdlib>
 #include <sstream>
+#include <iostream>
 namespace {
 
 void AppendEnvVar(std::stringstream& s, const char* var_name,
@@ -105,6 +106,8 @@ static struct BioDynaMoDictInit {
         f.write("""
     AppendEnvVar(idirs, "ROOT_INCLUDE_PATH", "");
     setenv("ROOT_INCLUDE_PATH", idirs.str().c_str(), true);
+    std::cout << "bdm dictionary initialized "<< __FILE__ << std::endl;
+    std::cout << "  set include path to " << idirs.str() << std::endl;
   }
 } bdm_dict_initializer;
 
