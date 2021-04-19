@@ -1,5 +1,5 @@
 ---
-title: "Modelling Thermodynamics in BioDynamo"
+title: "Modelling Thermodynamics in BioDynaMo"
 date: "2019-10-01"
 path: "/blog/thermodynamics/"
 meta_description: ""

@@ -58,8 +58,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
  public:
   NeuriteElement() {
-    resting_length_ =
-        spring_constant_ * actual_length_ / (tension_ + spring_constant_);
     auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
     tension_ = param->neurite_default_tension;
     SetDiameter(param->neurite_default_diameter);
@@ -67,6 +65,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     density_ = param->neurite_default_density;
     spring_constant_ = param->neurite_default_spring_constant;
     adherence_ = param->neurite_default_adherence;
+    resting_length_ =
+        spring_constant_ * actual_length_ / (tension_ + spring_constant_);
     UpdateVolume();
   }
 
@@ -609,7 +609,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     UpdateVolume();
   }
 
-  struct MechanicalForcesFunctor : public Functor<void, const Agent*, double> {
+  struct MechanicalForcesFunctor : public Functor<void, Agent*, double> {
     const InteractionForce* force;
     NeuriteElement* ne;
     Double3& force_from_neighbors;
@@ -629,7 +629,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
           h_over_m(h_over_m),
           has_neurite_neighbor(has_neurite_neighbor) {}
 
-    void operator()(const Agent* neighbor, double squared_distance) override {
+    void operator()(Agent* neighbor, double squared_distance) override {
       // if neighbor is a NeuriteElement
       // use shape to determine if neighbor is a NeuriteElement
       // this is much faster than using a dynamic_cast
@@ -725,8 +725,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     MechanicalForcesFunctor calculate_neighbor_forces(
         force, this, force_from_neighbors, force_on_my_mothers_point_mass,
         h_over_m, has_neurite_neighbor);
-    ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                      squared_radius);
+    ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal
     // tension and daughters)

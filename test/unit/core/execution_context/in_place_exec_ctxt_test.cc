@@ -25,7 +25,7 @@
 namespace bdm {
 namespace in_place_exec_ctxt_detail {
 
-TEST(InPlaceExecutionContext, RemoveFromSimulation) {
+TEST(InPlaceExecutionContext, RemoveAgent) {
   Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
@@ -42,8 +42,8 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
   auto uid_2 = cell_2->GetUid();
   rm->AddAgent(cell_2);
 
-  ctxt->RemoveFromSimulation(uid_0);
-  ctxt->RemoveFromSimulation(uid_2);
+  ctxt->RemoveAgent(uid_0);
+  ctxt->RemoveAgent(uid_2);
 
   EXPECT_EQ(3u, rm->GetNumAgents());
 
@@ -55,7 +55,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulation) {
   EXPECT_FALSE(rm->ContainsAgent(uid_2));
 }
 
-TEST(InPlaceExecutionContext, RemoveFromSimulationMultithreading) {
+TEST(InPlaceExecutionContext, RemoveAgentMultithreading) {
   Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
@@ -68,7 +68,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationMultithreading) {
 
 #pragma omp parallel for
   for (uint64_t i = 0; i < 1000; i += 2) {
-    sim.GetExecutionContext()->RemoveFromSimulation(AgentUid(i));
+    sim.GetExecutionContext()->RemoveAgent(AgentUid(i));
   }
 
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
@@ -85,7 +85,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationMultithreading) {
 
 // Remove object that has been created in the same iteration. Thus it has not
 // been added to the ResourceManager yet.
-TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
+TEST(InPlaceExecutionContext, RemoveAgentThatDoesNotExistInRm) {
   Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
@@ -102,7 +102,7 @@ TEST(InPlaceExecutionContext, RemoveFromSimulationThatDoesNotExistInRm) {
 
   EXPECT_EQ(1u, rm->GetNumAgents());
 
-  ctxt->RemoveFromSimulation(uid_1);
+  ctxt->RemoveAgent(uid_1);
 
   EXPECT_EQ(1u, rm->GetNumAgents());
 
@@ -220,11 +220,11 @@ TEST(InPlaceExecutionContext, Execute) {
   delete op2;
 }
 
-struct NeighborFunctor : public Functor<void, const Agent*, double> {
+struct NeighborFunctor : public Functor<void, Agent*, double> {
   NeighborFunctor(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
   virtual ~NeighborFunctor() {}
 
-  void operator()(const Agent* neighbor, double squared_distance) override {
+  void operator()(Agent* neighbor, double squared_distance) override {
     auto* non_const_nb = const_cast<Agent*>(neighbor);
     auto d1 = non_const_nb->GetDiameter();
     non_const_nb->SetDiameter(d1 + 1);
@@ -273,7 +273,7 @@ struct TestOperation : public AgentOperationImpl {
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighborWithinRadius(nb_functor, *agent, 101);
+    ctxt->ForEachNeighbor(nb_functor, *agent, 101);
 #pragma omp critical
     num_neighbors[agent->GetUid()] = nb_counter;
   }

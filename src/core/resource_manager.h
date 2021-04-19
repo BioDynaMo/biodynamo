@@ -82,6 +82,7 @@ class ResourceManager {
       }
     }
     agents_ = std::move(other.agents_);
+    agents_lb_.resize(agents_.size());
     diffusion_grids_ = std::move(other.diffusion_grids_);
 
     RebuildAgentUidMap();
@@ -148,7 +149,7 @@ class ResourceManager {
 
   /// Return the diffusion grid which holds the substance of specified id
   DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
-    if(substance_id >= diffusion_grids_.size()) {
+    if (substance_id >= diffusion_grids_.size()) {
       Log::Error("DiffusionGrid::GetDiffusionGrid",
                  "You tried to request diffusion grid '", substance_id,
                  "', but it does not exist! Make sure that it's the correct id "
@@ -398,6 +399,10 @@ class ResourceManager {
     }
   }
 
+  // \param uids: one vector for each thread containing one vector for each numa
+  //              node
+  void RemoveAgents(const std::vector<std::vector<AgentUid>*>& uids);
+
   const TypeIndex* GetTypeIndex() const { return type_index_; }
 
  protected:
@@ -405,6 +410,8 @@ class ResourceManager {
   AgentUidMap<AgentHandle> uid_ah_map_ = AgentUidMap<AgentHandle>(100u);  //!
   /// Pointer container for all agents
   std::vector<std::vector<Agent*>> agents_;
+  /// Container used during load balancing
+  std::vector<std::vector<Agent*>> agents_lb_;  //!
   /// Maps a diffusion grid ID to the pointer to the diffusion grid
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
@@ -412,9 +419,17 @@ class ResourceManager {
 
   TypeIndex* type_index_ = nullptr;
 
+  struct ParallelRemovalAuxData {
+    std::vector<std::vector<uint64_t>> to_right;
+    std::vector<std::vector<uint64_t>> not_to_left;
+  };
+
+  /// auxiliary data required for parallel agent removal
+  ParallelRemovalAuxData parallel_remove_;  //!
+
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
-  BDM_CLASS_DEF_NV(ResourceManager, 1);
+  BDM_CLASS_DEF_NV(ResourceManager, 2);
 };
 
 inline std::ostream& operator<<(std::ostream& os, const ResourceManager& rm) {

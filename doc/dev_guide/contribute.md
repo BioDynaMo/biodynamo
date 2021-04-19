@@ -31,7 +31,7 @@ Consequently, it will ensure that your code is accepted sooner :)
 #### 1. Get familiar with our coding convention
 
 Carefully read the [C++ style guide](https://google.github.io/styleguide/cppguide.html)
-and our page about [Code Quality](/docs/devguide/code_quality)
+and our page about [Code Quality](/docs/devguide/code_quality).
 
 #### 2. Clone the repository
 

@@ -251,7 +251,7 @@ class Agent {
 
   /// Helper variable used to support removal of behaviors while
   /// `RunBehaviors` iterates over them.
-  uint32_t run_behavior_loop_idx_ = 0;
+  uint16_t run_behavior_loop_idx_ = 0;
 
   /// If an agent is static, we should not compute the mechanical forces
   bool is_static_ = false;  //!

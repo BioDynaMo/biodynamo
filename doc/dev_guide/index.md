@@ -26,12 +26,13 @@ The target audience for this document is anyone who wants to build, contribute o
 
 <a class="sbox" href= "/docs/userguide/" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Info<b><h4>
-    	<p>If you are a user who wants to build simulations, please head over to our <font color="blue"><u>user guide</u></font>.
-		</p>
+    	<h4><b>Info</b><h4>
+    	<p>If you are a user who wants to build simulations, please head over to our <font color="blue"><u>User Guide</u></font>.
+	</p>
     </div>
 </a>
 
 ## Feedback
 
-This guide is an evolving resource. If you have difficulties in some steps and feel that parts could be described better or any other kind of comment please reach out to `lukas.johannes.breitwieser@cern.ch`.  Thank you for your feedback!
+This guide is an evolving resource. If you have difficulties with some steps or feel that parts could be explained better or any other kind of comment please reach out to `contact@biodynamo.org`. 
+Thank you for your feedback!

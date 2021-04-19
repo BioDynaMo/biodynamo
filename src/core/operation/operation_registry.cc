@@ -39,7 +39,7 @@ Operation *OperationRegistry::GetOperation(const std::string &op_name) {
 bool OperationRegistry::AddOperationImpl(const std::string &op_name,
                                          OpComputeTarget target,
                                          OperationImpl *impl,
-                                         size_t frequency) {
+                                         uint32_t frequency) {
   auto op = operations_.find(op_name);
   // If operation doesn't exist yet, make a new operation under given name
   if (op == operations_.end()) {

@@ -74,12 +74,11 @@ void Agent::Update(const NewAgentEvent& event) {
   UpdateBehaviors(event);
 }
 
-struct SetStaticnessForEachNeighbor
-    : public Functor<void, const Agent*, double> {
+struct SetStaticnessForEachNeighbor : public Functor<void, Agent*, double> {
   Agent* agent_;
   explicit SetStaticnessForEachNeighbor(Agent* agent) : agent_(agent) {}
 
-  void operator()(const Agent* neighbor, double squared_distance) override {
+  void operator()(Agent* neighbor, double squared_distance) override {
     double distance = agent_->GetDiameter() + neighbor->GetDiameter();
     if (squared_distance < distance * distance) {
       neighbor->SetStaticnessNextTimestep(false);
@@ -146,7 +145,7 @@ const InlineVector<Behavior*, 2>& Agent::GetAllBehaviors() const {
 // ---------------------------------------------------------------------------
 
 void Agent::RemoveFromSimulation() const {
-  Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(uid_);
+  Simulation::GetActive()->GetExecutionContext()->RemoveAgent(uid_);
 }
 
 void Agent::InitializeBehaviors(const NewAgentEvent& event) {

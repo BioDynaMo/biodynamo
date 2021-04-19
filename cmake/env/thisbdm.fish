@@ -152,13 +152,19 @@ function source_thisbdm
         end
     end
 
+    # paraview versions might be different between OSes
+    set -l bdm_pv_version '5.9'
+    if test (uname) = 'Darwin'
+        set -l bdm_pv_version '5.9'
+    end
+
     # Clear the env from previously set ParaView and Qt paths.
     set -l with_paraview @with_paraview@
     if test "$with_paraview" = 'ON'
         if test -n "$old_bdmsys"
-            _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-5.8"
+            _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-$bdm_pv_version"
             _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
-            _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/biodynamo/lib/pv_plugin"
+            _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/lib/pv_plugin"
             _drop_from_var PATH "$old_bdmsys/third_party/paraview/bin"
             _drop_from_var Qt5_DIR "$old_bdmsys/third_party/qt/lib/cmake/Qt5"
             _drop_from_var QT_QPA_PLATFORM_PLUGIN_PATH "$old_bdmsys/third_party/qt/plugins"
@@ -404,7 +410,7 @@ function source_thisbdm
         if test "$os_id" = 'centos'
             set -gx MESA_GL_VERSION_OVERRIDE "3.3"
             if test -z "$CXX"; and test -z "$CC"
-                . scl_source enable devtoolset-7; or return 1
+                . scl_source enable devtoolset-8; or return 1
             end
 
             . /etc/profile.d/modules.sh; or return 1
@@ -412,7 +418,7 @@ function source_thisbdm
 
             # load llvm 6 required for libroadrunner
             if test -d "$BDMSYS"/third_party/libroadrunner
-                . scl_source enable llvm-toolset-6.0; or return 1
+                . scl_source enable llvm-toolset-7; or return 1
             end
         end
     end

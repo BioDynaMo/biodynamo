@@ -248,7 +248,7 @@ class Cell : public Agent {
     SetPropagateStaticness();
   }
 
-  struct MechanicalForcesFunctor : Functor<void, const Agent*, double> {
+  struct MechanicalForcesFunctor : Functor<void, Agent*, double> {
     const InteractionForce* force;
     Agent* agent;
     Double3 translation_force_on_point_mass{0, 0, 0};
@@ -256,7 +256,7 @@ class Cell : public Agent {
     MechanicalForcesFunctor(const InteractionForce* force, Agent* agent)
         : force(force), agent(agent) {}
 
-    void operator()(const Agent* neighbor, double squared_distance) override {
+    void operator()(Agent* neighbor, double squared_distance) override {
       auto neighbor_force = force->Calculate(agent, neighbor);
       translation_force_on_point_mass[0] += neighbor_force[0];
       translation_force_on_point_mass[1] += neighbor_force[1];
@@ -308,8 +308,7 @@ class Cell : public Agent {
 
     MechanicalForcesFunctor calculate_neighbor_forces(force, this);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                      squared_radius);
+    ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement

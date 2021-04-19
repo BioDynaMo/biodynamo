@@ -81,6 +81,7 @@ void ParallelVtuWriter::operator()(
       FixPvtu(filename, file_prefix, max_threads);
     } else {
       vtkNew<vtkXMLUnstructuredGridWriter> vtu_writer;
+      vtu_writer->SetGlobalWarningDisplay(false);
       auto filename = Concat(folder, "/", file_prefix, "_", i, ".vtu");
       vtu_writer->SetFileName(filename.c_str());
       vtu_writer->SetInputData(grids[i]);

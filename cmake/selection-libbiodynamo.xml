@@ -43,8 +43,10 @@
     <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<double, 4>" />
     <class name="bdm::ParallelResizeVector<double>" />
+    <class name="bdm::ParallelResizeVector<uint64_t>" />
     <class name="bdm::ParallelResizeVector<bdm::MathArray<double, 3ul>>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
+    <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::UniformGridEnvironment::Box const*>>" />
     <class name="bdm::InlineVector<bdm::Agent*, 3>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />

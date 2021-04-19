@@ -2,10 +2,12 @@ include(utils)
 
 SET(QT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/qt")
 
+set(QT_TAR_FILE qt_v5.12.10_${DETECTED_OS_VERS}.tar.gz)
+
 download_verify_extract(
-  http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/qt.tar.gz
+  http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE}
   ${QT_SOURCE_DIR}
-  ${${DETECTED_OS}-Qt}
+  ${${DETECTED_OS_VERS}-Qt}
 )
 
 # temporal workaround to avoid libprotobuf error for paraview

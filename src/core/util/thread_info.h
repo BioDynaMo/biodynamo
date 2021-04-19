@@ -67,10 +67,7 @@ class ThreadInfo {
 
   /// Returns a unique thread id even for parallel regions that
   /// don't use OpenMP.
-  uint64_t GetUniversalThreadId() const {
-    thread_local uint64_t kTid = thread_counter_++;
-    return kTid;
-  }
+  uint64_t GetUniversalThreadId() const;
 
   uint64_t GetMaxUniversalThreadId() const { return thread_counter_; }
 

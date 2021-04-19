@@ -18,7 +18,7 @@ if [[ $# -ne 1 ]]; then
 Description:
   This script builds roadrunner.
 Arguments:
-  \$1 Roadrunner version that should be build. Use a commit from branch llvm-6"
+  \$1 Roadrunner version that should be build. Use a commit from branch llvm-7"
   exit 1
 fi
 
@@ -57,7 +57,7 @@ make -j`CPUCount` install
 
 cd ../../roadrunner/
 
-# Checkout to the branch compatible with llvm-6
+# Checkout to the branch compatible with llvm-7
 git checkout $1
 
 mkdir build && cd build

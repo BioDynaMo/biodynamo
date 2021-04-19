@@ -1,7 +1,7 @@
 
-# llvm-6
-find_package(LLVM 6 REQUIRED CONFIG
-             HINTS "/opt/rh/llvm-toolset-6.0/root/usr/lib64/cmake/llvm")
+# llvm-7
+find_package(LLVM 7 REQUIRED CONFIG
+             HINTS "/opt/rh/llvm-toolset-7/root/usr/lib64/cmake/llvm")
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 # Find the libraries that correspond to the LLVM components
