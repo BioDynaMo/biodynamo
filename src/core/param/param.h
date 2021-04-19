@@ -474,12 +474,12 @@ struct Param {
   /// if a lot of memory is used.\n
   /// N must be a number of two.\n
   /// Therefore, this parameter specifies the shift for N. `N = 2 ^ shift`\n
-  /// Default value: `8` `-> N = 256`\n
+  /// Default value: `5` `-> N = 32`\n
   /// TOML config file:
   ///
   ///     [performance]
-  ///     mem_mgr_aligned_pages_shift = 8
-  uint64_t mem_mgr_aligned_pages_shift = 8;
+  ///     mem_mgr_aligned_pages_shift = 5
+  uint64_t mem_mgr_aligned_pages_shift = 5;
 
   /// The BioDynaMo memory manager allocates memory in increasing sizes using
   /// a geometric series. This parameter specifies the growth rate.
@@ -495,12 +495,12 @@ struct Param {
   /// This parameter specifies the maximum memory size in bytes before
   /// migration happens.\n
   /// This value must be bigger than `PAGE_SIZE * 2 ^ mem_mgr_growth_rate`\n
-  /// Default value: `10485760` (10 MB)\n
+  /// Default value: `131073` (100 kB)\n
   /// TOML config file:
   ///
   ///     [performance]
-  ///     mem_mgr_max_mem_per_thread = 10485760
-  uint64_t mem_mgr_max_mem_per_thread = 1024 * 1024 * 10;
+  ///     mem_mgr_max_mem_per_thread = 131073
+  uint64_t mem_mgr_max_mem_per_thread = 131073;
 
   /// This parameter is used inside `ResourceManager::LoadBalance`.
   /// If it is set to true, the function will reuse existing memory to rebalance

@@ -19,7 +19,7 @@
 #include <mutex>
 #include "core/util/log.h"
 #include "core/util/string.h"
-
+#include <iostream>
 namespace bdm {
 namespace memory_manager_detail {
 
@@ -162,7 +162,7 @@ NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid,
     free_lists_.emplace_back(num_elements_per_n_pages_);
   }
   // To get one block of N aligned pages, at least 2 N pages must be allocated
-  AllocNewMemoryBlock(size_n_pages_ * 2);
+  // AllocNewMemoryBlock(size_n_pages_ * 2);
 }
 
 NumaPoolAllocator::~NumaPoolAllocator() {
@@ -191,8 +191,8 @@ void* NumaPoolAllocator::New(int tid) {
     return ret;
   } else {
     lock_.lock();
-    if (memory_blocks_.back().IsFullyInitialized()) {
-      auto size = total_size_ * (growth_rate_ - 1.0);
+    if (memory_blocks_.size() == 0 || memory_blocks_.back().IsFullyInitialized()) {
+      auto size = std::max(total_size_ * (growth_rate_ - 1.0), size_n_pages_ * 2.0);
       size = RoundUpTo(size, size_n_pages_);
       AllocNewMemoryBlock(size);
     }
@@ -240,6 +240,8 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
   char* end = start + size;
   memory_blocks_.push_back(
       {start, end, reinterpret_cast<char*>(n_pages_aligned)});
+// #pragma omp critical
+//   std::cout << "alloc " << size << " " <<  total_size_ / 1024/1024 << " " << nid_ << " " << size_ << " " << tinfo_->GetMyThreadId() << " " << (n_pages_aligned - reinterpret_cast<uint64_t>(block)) << std::endl;
 }
 
 void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block,
