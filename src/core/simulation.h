@@ -16,7 +16,6 @@
 
 #include <functional>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "core/agent/agent_uid.h"

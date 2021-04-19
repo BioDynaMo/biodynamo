@@ -200,7 +200,7 @@ endif()
 # you need to set CMAKE_[CXX|C]_COMPILER to [mpic++|mpicc]
 # We still however need to explicitely add the mpi.h include path to our include_directories
 # because rootcling will complaing about missing mpi.h
-find_package(MPI COMPONENTS CXX)
+find_package(MPI COMPONENTS C CXX)
 if(MPI_FOUND)
   include_directories(${MPI_CXX_COMPILER_INCLUDE_DIRS})
   add_definitions("-DUSE_MPI")

@@ -15,15 +15,13 @@
 #ifndef CORE_MULTI_SIMULATION_UTIL_H_
 #define CORE_MULTI_SIMULATION_UTIL_H_
 
-#ifdef USE_MPI
-
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include <TMessage.h>
 
-#ifndef __ROOTCLING__
+#if (!defined(__CLING__) && !defined(__ROOTCLING__)) 
 #include "mpi.h"
 #endif  // __ROOTCLING__
 
@@ -171,6 +169,8 @@ struct Set : public Container {
   BDM_CLASS_DEF_OVERRIDE(Set, 1);
 };
 
+#ifdef USE_MPI
+
 /// Need this class to assign a buffer to TMessage. TMessage constructor
 /// is protected. TMessage::SetBuffer doesn't do what we want. So we use this.
 class MPIObject : public TMessage {
@@ -182,7 +182,7 @@ class MPIObject : public TMessage {
   BDM_CLASS_DEF(MPIObject, 1);
 };
 
-#ifndef __ROOTCLING__
+#if (!defined(__CLING__) && !defined(__ROOTCLING__)) 
 /// Send object to worker using ROOT Serialization
 template <typename T>
 int MPI_Send_Obj_ROOT(T* obj, int dest, int tag,

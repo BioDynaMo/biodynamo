@@ -31,3 +31,4 @@ export PV_GIT_REPO="https://gitlab.kitware.com/paraview/paraview.git"
 
 export BDM_OS=$(DetectOs)
 export QT_INSTALL_DIR="$WORKING_DIR/qt"
+

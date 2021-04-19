@@ -114,6 +114,8 @@ Scheduler::~Scheduler() {
   for (auto* op : all_ops_) {
     delete op;
   }
+  delete backup_;
+  delete root_visualization_;
 }
 
 void Scheduler::Simulate(uint64_t steps) {

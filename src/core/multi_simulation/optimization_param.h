@@ -17,6 +17,7 @@
 
 #include "core/multi_simulation/util.h"
 #include "core/param/param_group.h"
+#include "core/param/param.h"
 
 namespace bdm {
 

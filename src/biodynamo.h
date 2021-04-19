@@ -28,8 +28,6 @@
 #include "core/behavior/secretion.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
-#include "core/multi_simulation/multi_simulation_manager.h"
-#include "core/multi_simulation/util.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
