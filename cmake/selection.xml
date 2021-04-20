@@ -6,7 +6,6 @@
   </selection>
   <exclusion>
     <class pattern="bdm::OpenCLState*"/>
-    <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<pair<unsigned int,const bdm::UniformGridEnvironment::Box*> >" />
     <class name="bdm::OptimizationParam" />
     <class name="bdm::Container"/>
@@ -77,7 +76,6 @@
     <class name="bdm::ParallelResizeVector<double>" />
     <class name="bdm::ParallelResizeVector<uint64_t>" />
     <class name="bdm::ParallelResizeVector<bdm::MathArray<double, 3ul>>" />
-    <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::Grid::Box const*>>" />
     <class name="bdm::ResourceManager::ParallelRemovalAuxData" />
