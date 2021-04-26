@@ -30,6 +30,8 @@
 
 #include "core/agent/agent_uid_generator.h"
 #include "core/environment/environment.h"
+#include "core/environment/kd_tree_environment.h"
+#include "core/environment/octree_environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/gpu/gpu_helper.h"
@@ -337,7 +339,19 @@ void Simulation::InitializeMembers() {
     exec_ctxt_[i] = new InPlaceExecutionContext(map);
   }
   rm_ = new ResourceManager();
-  environment_ = new UniformGridEnvironment();
+
+  // Set the specified neighborhood search method
+  if (param_->environment == "kd_tree") {
+    environment_ = new KDTreeEnvironment();
+  } else if (param_->environment == "octree") {
+    environment_ = new OctreeEnvironment();
+  } else if (param_->environment == "uniform_grid") {
+    environment_ = new UniformGridEnvironment();
+  } else {
+    Log::Error("Simulation::Initialize", "No such neighboring method '",
+               param_->environment, "'. Defaulting to 'uniform_grid'");
+    environment_ = new UniformGridEnvironment();
+  }
   scheduler_ = new Scheduler();
 }
 
