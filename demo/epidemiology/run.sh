@@ -8,3 +8,4 @@ cd build
 
 ./epidemiology --config ../measles.json --beta 0.06719 --gamma 0.00521
 cp output/result.svg output/measles.svg
+

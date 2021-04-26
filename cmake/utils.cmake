@@ -305,16 +305,6 @@ function(install_inside_build)
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mpark
             GLOB "*"
             )
-    add_copy_directory(copy_files_bdm
-            ${CMAKE_SOURCE_DIR}/third_party/optim
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/optim
-            GLOB "*"
-            )
-    add_copy_directory(copy_files_bdm
-            ${CMAKE_SOURCE_DIR}/third_party/armadillo
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/armadillo
-            GLOB "*"
-            )
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1/cxxopts.h
