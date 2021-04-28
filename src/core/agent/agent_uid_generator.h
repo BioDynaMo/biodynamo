@@ -62,7 +62,7 @@ class AgentUidGenerator {
   }
 
   // Returns the highest index that was used for an AgentUid
-  uint64_t GetHighestIndex() const { return counter_; }
+  AgentUid::Index_t GetHighestIndex() const { return counter_; }
 
   void EnableDefragmentation(const AgentUidMap<AgentHandle>* map) {
     // check if already in defragmentation mode
