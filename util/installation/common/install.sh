@@ -71,7 +71,7 @@ CleanBuild $BUILD_DIR
 echo
 EchoSuccess "Installation of BioDynaMo finished successfully!"
 
-BDM_VERSION=$(cat $BUILD_DIR/version/shortversion)
+BDM_VERSION=$(cat $BUILD_DIR/version/bdm_shortversion)
 INSTALL_DIR=${HOME}/biodynamo-v${BDM_VERSION}
 
 EchoFinishInstallation $INSTALL_DIR
