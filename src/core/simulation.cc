@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include "bdm_version.h"
 #include "core/agent/agent_uid_generator.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
@@ -45,7 +46,6 @@
 #include "core/util/timing.h"
 #include "core/visualization/root/adaptor.h"
 #include "memory_usage.h"
-#include "version.h"
 
 #include <TEnv.h>
 
