@@ -31,7 +31,10 @@ OctreeEnvironment::OctreeEnvironment() {
   container_ = new AgentContainer();
 }
 
-OctreeEnvironment::~OctreeEnvironment() { delete impl_->octree_; }
+OctreeEnvironment::~OctreeEnvironment() {
+  delete impl_->octree_;
+  delete container_;
+}
 
 void OctreeEnvironment::Update() {
   container_->rm_ = Simulation::GetActive()->GetResourceManager();
