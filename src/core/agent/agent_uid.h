@@ -42,8 +42,8 @@ class AgentUid {
   Index_t GetIndex() const { return index_; }
 
   // Copy constructors needed for nanoflann kd-tree implementation
-  AgentUid(size_t idx) : index_(idx), reused_(0) {}
-  AgentUid(int idx) : index_(idx), reused_(0) {}
+  explicit AgentUid(size_t idx) : index_(idx), reused_(0) {}
+  explicit AgentUid(int idx) : index_(idx), reused_(0) {}
 
   // Operators needed for nanoflann kd-tree implementation
   void operator++() { ++index_; }
