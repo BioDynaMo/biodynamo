@@ -201,6 +201,10 @@ void* NumaPoolAllocator::New(int tid) {
     memory_blocks_.back().GetNextPageBatch(size_n_pages_, &start_pointer,
                                            &size);
     lock_.unlock();
+    // remaining memory not enough to store one element
+    if ((size - kMetadataSize) < size_) {
+      return New(tid);
+    }
     InitializeNPages(&tl_list, start_pointer, size);
     auto* ret = tl_list.PopFront();
     assert(ret != nullptr);
