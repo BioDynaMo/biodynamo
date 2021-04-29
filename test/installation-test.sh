@@ -50,7 +50,7 @@ export BDM_CMAKE_FLAGS="-Dtest=off ${NOTEBOOK_FLAG} ${SBML_FLAG}"
 # Build BioDynaMo
 SILENT_INSTALL=1 $BDM_PROJECT_DIR/install.sh
 
-BDM_VERSION=$(cat $BUILD_DIR/version/shortversion)
+BDM_VERSION=$(cat $BUILD_DIR/version/bdm_shortversion)
 INSTALL_DIR=${HOME}/biodynamo-v${BDM_VERSION}
 
 # reload shell and source biodynamo
