@@ -24,7 +24,7 @@ endforeach()
 # Project name and current version. We do not specify any language for
 # this project. Therefore, we will be able to check manually which compiler
 # is detected on the system.
-project(BioDynaMo LANGUAGES VERSION "1.0.0")
+project(BioDynaMo LANGUAGES VERSION "1.01.0")
 
 #---Set the locale to default C to prevent issued due to localization of commands---------------
 # This is necessary as we for example call `clang -v` and parse its output. But on a localized
