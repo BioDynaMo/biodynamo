@@ -18,6 +18,8 @@
 #include <array>
 #include <vector>
 
+// This is BioDynaMo's default cachline size. If you system has a different
+// cacheline size, consider changing the value appropriately.
 #define BDM_CACHE_LINE_SIZE 64
 
 namespace bdm {
@@ -26,20 +28,35 @@ namespace bdm {
 template <typename T>
 class SharedData {
  public:
-  using Data = std::vector<std::array<T, BDM_CACHE_LINE_SIZE / sizeof(T)>>;
+  // Wrapper for a chacheline-size aligned T
+  struct alignas(BDM_CACHE_LINE_SIZE) AlignedT {
+    T local_data;
+  };
+
+  // Data type definition. A vector whose components' size are multiple of the
+  // cachline size, e.g sizeof(Data[0]) = N*BDM_CACHE_LINE_SIZE.
+  using Data = std::vector<AlignedT>;
+
   SharedData() {}
   SharedData(size_t size, const T& value = T()) {
     data_.resize(size);
-    for (auto& arr : data_) {
-      arr[0] = value;
+    for (auto& info : data_) {
+      info.local_data = value;
     }
   }
-  T& operator[](size_t index) { return data_[index][0]; }
-  const T& operator[](size_t index) const { return data_[index][0]; }
+  T& operator[](size_t index) { return data_[index].local_data; }
+  const T& operator[](size_t index) const { return data_[index].local_data; }
+
+  // Get the size of the SharedData.data_ vector
   size_t size() const { return data_.size(); }  // NOLINT
-  void resize(size_t new_size) {                // NOTLINT
+
+  // Resize the SharedData.data_ vector
+  void resize(size_t new_size) {  // NOTLINT
     data_.resize(new_size);
   }
+
+  // Get the byte size of the individual vector components in SharedData.data_
+  size_t component_byte_size() const { return sizeof(data_[0]); }
 
   struct Iterator {
     uint64_t index;
@@ -52,8 +69,8 @@ class SharedData {
       return index == other.index && data == other.data;
     }
     bool operator!=(const Iterator& other) { return !operator==(other); }
-    T& operator*() { return (*data)[index][0]; }
-    const T& operator*() const { return (*data)[index][0]; }
+    T& operator*() { return (*data)[index].local_data; }
+    const T& operator*() const { return (*data)[index].local_data; }
   };
 
   Iterator begin() { return Iterator{0, &data_}; }
