@@ -4,6 +4,7 @@
 
 set -e
 
+BDM_BRANCH=v1.0-patches
 temp_dir=$(mktemp -d)
 BDM_SRC="${temp_dir}/biodynamo"
 
@@ -24,7 +25,7 @@ Checkout() {
   if [ ! -z ${GITHUB_ACTIONS+x} ]; then
     [ -d "$2" ] || git clone --branch ${GHA_BRANCH_NAME} "$1" "$2" || FailedCheckout "$1"
   else
-    [ -d "$2" ] || git clone --branch master "$1" "$2" || FailedCheckout "$1"
+    [ -d "$2" ] || git clone --branch $BDM_BRANCH "$1" "$2" || FailedCheckout "$1"
   fi
 }
 
