@@ -19,7 +19,9 @@
 #include <vector>
 
 // This is BioDynaMo's default cachline size. If you system has a different
-// cacheline size, consider changing the value appropriately.
+// cacheline size, consider changing the value accordingly. Note that the
+// unit tests test "shared_data_test.cc" tests for 64 and will fail if you
+// change this value.
 #define BDM_CACHE_LINE_SIZE 64
 
 namespace bdm {
@@ -54,9 +56,6 @@ class SharedData {
   void resize(size_t new_size) {  // NOTLINT
     data_.resize(new_size);
   }
-
-  // Get the byte size of the individual vector components in SharedData.data_
-  size_t component_byte_size() const { return sizeof(data_[0]); }
 
   struct Iterator {
     uint64_t index;
