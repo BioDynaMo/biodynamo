@@ -43,6 +43,7 @@
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::UniformGridEnvironment::Box const*>>" />
+    <class name="bdm::ParallelResizeVector<bdm::Spinlock>" />
     <class name="bdm::InlineVector<bdm::Agent*, 3>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />

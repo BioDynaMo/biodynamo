@@ -23,6 +23,10 @@ class Spinlock {
  public:
   Spinlock() {}
 
+  /// Used to store mutexes in a std::vector.
+  /// Always creates a new mutex (even for the copy constructor)
+  Spinlock(const Spinlock& other) {}
+
   void lock() {  // NOLINT
     while (flag_.test_and_set()) {
       // spin

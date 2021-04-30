@@ -24,6 +24,7 @@
 #include "core/container/parallel_resize_vector.h"
 #include "core/util/log.h"
 #include "core/util/root.h"
+#include "core/util/spinlock.h"
 
 namespace bdm {
 
@@ -183,6 +184,9 @@ class DiffusionGrid {
   double box_length_ = 0;
   /// the volume of each box
   double box_volume_ = 0;
+  /// Lock for each voxel used to prevent race conditions between
+  /// multiple threads
+  ParallelResizeVector<Spinlock> locks_ = {};
   /// The array of concentration values
   ParallelResizeVector<double> c1_ = {};
   /// An extra concentration data buffer for faster value updating
