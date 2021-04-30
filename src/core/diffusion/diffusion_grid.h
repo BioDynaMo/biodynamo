@@ -69,8 +69,7 @@ class DiffusionGrid {
   void RunInitializers();
 
   /// Increase the concentration at specified box with specified amount
-  // TODO: virtual because of test
-  virtual void ChangeConcentrationBy(const Double3& position, double amount);
+  void ChangeConcentrationBy(const Double3& position, double amount);
   void ChangeConcentrationBy(size_t idx, double amount);
 
   /// Get the concentration at specified position
