@@ -18,41 +18,42 @@
 #include <array>
 #include <vector>
 
-// This is BioDynaMo's default cachline size. If you system has a different
-// cacheline size, consider changing the value accordingly. Note that the
-// unit tests test "shared_data_test.cc" tests for 64 and will fail if you
-// change this value.
+/// This is BioDynaMo's default cachline size. If you system has a different
+/// cacheline size, consider changing the value accordingly. When BioDynaMo
+/// moves to the C++17 standard, this choice will be automated. See :
+/// en.cppreference.com/w/cpp/thread/hardware_destructive_interference_size
 #define BDM_CACHE_LINE_SIZE 64
 
 namespace bdm {
 
-// This class avoids false sharing between threads
+/// The SharedData class avoids false sharing between threads.
 template <typename T>
 class SharedData {
  public:
-  // Wrapper for a chacheline-size aligned T
+  /// Wrapper for a chacheline-size aligned T.
   struct alignas(BDM_CACHE_LINE_SIZE) AlignedT {
-    T local_data;
+    T data;
   };
 
-  // Data type definition. A vector whose components' size are multiple of the
-  // cachline size, e.g sizeof(Data[0]) = N*BDM_CACHE_LINE_SIZE.
+  /// Data type definition for a vector whose entries fill full cache lines.
+  /// A vector whose components' sizes are a multiple of the cachline size,
+  /// e.g sizeof(Data[i]) = N*BDM_CACHE_LINE_SIZE.
   using Data = std::vector<AlignedT>;
 
   SharedData() {}
   SharedData(size_t size, const T& value = T()) {
     data_.resize(size);
     for (auto& info : data_) {
-      info.local_data = value;
+      info.data = value;
     }
   }
-  T& operator[](size_t index) { return data_[index].local_data; }
-  const T& operator[](size_t index) const { return data_[index].local_data; }
+  T& operator[](size_t index) { return data_[index].data; }
+  const T& operator[](size_t index) const { return data_[index].data; }
 
-  // Get the size of the SharedData.data_ vector
+  /// Get the size of the SharedData.data_ vector.
   size_t size() const { return data_.size(); }  // NOLINT
 
-  // Resize the SharedData.data_ vector
+  /// Resize the SharedData.data_ vector
   void resize(size_t new_size) {  // NOTLINT
     data_.resize(new_size);
   }
@@ -68,8 +69,8 @@ class SharedData {
       return index == other.index && data == other.data;
     }
     bool operator!=(const Iterator& other) { return !operator==(other); }
-    T& operator*() { return (*data)[index].local_data; }
-    const T& operator*() const { return (*data)[index].local_data; }
+    T& operator*() { return (*data)[index].data; }
+    const T& operator*() const { return (*data)[index].data; }
   };
 
   Iterator begin() { return Iterator{0, &data_}; }

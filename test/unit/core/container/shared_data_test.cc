@@ -12,51 +12,72 @@ TEST(SharedDataTest, ReSize) {
   EXPECT_EQ(sdata.size(), 20);
 }
 
-// Test if underlying data type has changed, e.g. if it is a standard vector.
-// A std::vector is usually (ond 64bit systems) 24 bytes, independet of the
-// data type stored in the vector.
-TEST(SharedDataTest, DataType) {
-  EXPECT_EQ(sizeof(typename SharedData<char>::Data),
-            sizeof(typename std::vector<char>));
-}
-
 // Test if shared data is occupying full cache lines.
 TEST(SharedDataTest, CacheLineAlignment) {
+  // Test standard data tyes int, float, double
   // Test alignment of int
   EXPECT_EQ(
-      std::alignment_of<typename SharedData<int>::Data::value_type>::value, 64);
+      std::alignment_of<typename SharedData<int>::Data::value_type>::value,
+      BDM_CACHE_LINE_SIZE);
   // Test alignment of float
   EXPECT_EQ(
       std::alignment_of<typename SharedData<float>::Data::value_type>::value,
-      64);
+      BDM_CACHE_LINE_SIZE);
   // Test alignment of double
   EXPECT_EQ(
       std::alignment_of<typename SharedData<double>::Data::value_type>::value,
-      64);
-  // Test alignment of double[8], e.g. max cache line capacity
-  EXPECT_EQ(std::alignment_of<
-                typename SharedData<double[8]>::Data::value_type>::value,
-            64);
-  // Test alignment of 70 byte struct
-  EXPECT_EQ(
-      std::alignment_of<typename SharedData<char[70]>::Data::value_type>::value,
-      64);
-  // Test alignment of 130 byte struct
-  EXPECT_EQ(std::alignment_of<
-                typename SharedData<char[130]>::Data::value_type>::value,
-            64);
+      BDM_CACHE_LINE_SIZE);
   // Test size of vector components int
-  EXPECT_EQ(sizeof(typename SharedData<int>::Data::value_type), 64);
+  EXPECT_EQ(sizeof(typename SharedData<int>::Data::value_type),
+            BDM_CACHE_LINE_SIZE);
   // Test size of vector components float
-  EXPECT_EQ(sizeof(typename SharedData<float>::Data::value_type), 64);
+  EXPECT_EQ(sizeof(typename SharedData<float>::Data::value_type),
+            BDM_CACHE_LINE_SIZE);
   // Test size of vector components double
-  EXPECT_EQ(sizeof(typename SharedData<double>::Data::value_type), 64);
-  // Test size of vector components double, e.g. max cache line capacity
-  EXPECT_EQ(sizeof(typename SharedData<double[8]>::Data::value_type), 64);
-  // Test size of vector components for 70 byte strct
-  EXPECT_EQ(sizeof(typename SharedData<char[70]>::Data::value_type), 128);
-  // Test size of vector components for 130 byte struct
-  EXPECT_EQ(sizeof(typename SharedData<char[130]>::Data::value_type), 192);
+  EXPECT_EQ(sizeof(typename SharedData<double>::Data::value_type),
+            BDM_CACHE_LINE_SIZE);
+
+  // Test a chache line fully filled with doubles.
+  // Test alignment of double[max_double], e.g. max cache line capacity
+  EXPECT_EQ(
+      std::alignment_of<
+          typename SharedData<double[BDM_CACHE_LINE_SIZE /
+                                     sizeof(double)]>::Data::value_type>::value,
+      BDM_CACHE_LINE_SIZE);
+  // Test size of vector components double[max_double], e.g. max cache line 
+  // capacity
+  EXPECT_EQ(
+      sizeof(typename SharedData<
+             double[BDM_CACHE_LINE_SIZE / sizeof(double)]>::Data::value_type),
+      BDM_CACHE_LINE_SIZE);
+
+  // Test some custom data structures
+  // Test alignment of data that fills 1 cache line
+  EXPECT_EQ(std::alignment_of<typename SharedData<
+                char[BDM_CACHE_LINE_SIZE - 1]>::Data::value_type>::value,
+            BDM_CACHE_LINE_SIZE);
+  // Test alignment of data that fills 2 cache lines
+  EXPECT_EQ(std::alignment_of<typename SharedData<
+                char[BDM_CACHE_LINE_SIZE + 1]>::Data::value_type>::value,
+            BDM_CACHE_LINE_SIZE);
+  // Test alignment of data that fills 3 cache lines
+  EXPECT_EQ(std::alignment_of<typename SharedData<
+                char[2 * BDM_CACHE_LINE_SIZE + 1]>::Data::value_type>::value,
+            BDM_CACHE_LINE_SIZE);
+  // Test size of data that fills 1 cache line
+  EXPECT_EQ(
+      sizeof(
+          typename SharedData<char[BDM_CACHE_LINE_SIZE - 1]>::Data::value_type),
+      BDM_CACHE_LINE_SIZE);
+  // Test size of data that fills 2 cache lines
+  EXPECT_EQ(
+      sizeof(
+          typename SharedData<char[BDM_CACHE_LINE_SIZE + 1]>::Data::value_type),
+      2 * BDM_CACHE_LINE_SIZE);
+  // Test size of data that fills 3 cache lines
+  EXPECT_EQ(sizeof(typename SharedData<
+                   char[2 * BDM_CACHE_LINE_SIZE + 1]>::Data::value_type),
+            3 * BDM_CACHE_LINE_SIZE);
 }
 
 }  // namespace bdm
