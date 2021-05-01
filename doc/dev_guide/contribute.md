@@ -100,7 +100,7 @@ Check if
 
 Please pay attention to warnings from doxygen generation. Here an example of an inconsistent documentation:
 ```
-# make doc ouput:
+# make doc output:
 ...
 kd_tree_node.h:132: warning: argument 'axis' of command @param is not found in the argument list of bdm::spatial_organization::KdTreeNode< T >::GetSAHSplitPoint()
 kd_tree_node.h:132: warning: argument 'num' of command @param is not found in the argument list of bdm::spatial_organization::KdTreeNode< T >::GetSAHSplitPoint()

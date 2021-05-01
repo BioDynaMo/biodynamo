@@ -273,7 +273,7 @@ struct TestOperation : public AgentOperationImpl {
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighbor(nb_functor, *agent, 101);
+    ctxt->ForEachNeighbor(nb_functor, *agent);
 #pragma omp critical
     num_neighbors[agent->GetUid()] = nb_counter;
   }
@@ -358,6 +358,84 @@ TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
         static_cast<TestAgent*>(ctxt->GetAgent(AgentUid(read_index)));
     EXPECT_EQ(static_cast<uint64_t>(tagent->GetData()), read_index);
   }
+}
+
+TEST(InPlaceExecutionContext, DefaultSearchRadius) {
+  Simulation sim(TEST_NAME);
+  auto* env = sim.GetEnvironment();
+  auto* rm = sim.GetResourceManager();
+  auto* ctxt = sim.GetExecutionContext();
+
+  Cell* cell_0 = new Cell();
+  cell_0->SetDiameter(42);
+  rm->AddAgent(cell_0);
+
+  EXPECT_EQ(1u, rm->GetNumAgents());
+  EXPECT_EQ(env->GetLargestObjectSizeSquared(), 0.0);
+
+  env->Update();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+  EXPECT_EQ(42 * 42, env->GetLargestObjectSizeSquared());
+
+  // Add agent with new largest object size
+  Cell* cell_1 = new Cell();
+  cell_1->SetDiameter(43);
+  rm->AddAgent(cell_1);
+
+  env->Update();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+  EXPECT_EQ(43 * 43, env->GetLargestObjectSizeSquared());
+}
+
+struct TestNeighborFunctor : public Functor<void, Agent*, double> {
+  void operator()(Agent* neighbor, double squared_distance) override {}
+};
+
+TEST(InPlaceExecutionContext, NeighborCacheValidity) {
+  auto set_param = [](Param* param) { param->cache_neighbors = true; };
+  Simulation sim(TEST_NAME, set_param);
+  auto* env = sim.GetEnvironment();
+  auto* rm = sim.GetResourceManager();
+  auto* ctxt = sim.GetExecutionContext();
+
+  for (int i = 0; i < 10; i++) {
+    Cell* cell = new Cell();
+    cell->SetDiameter(5);
+    rm->AddAgent(cell);
+  }
+
+  EXPECT_EQ(10u, rm->GetNumAgents());
+  EXPECT_EQ(env->GetLargestObjectSizeSquared(), 0.0);
+
+  env->Update();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+  EXPECT_EQ(5 * 5, env->GetLargestObjectSizeSquared());
+
+  Cell* cell_1 = new Cell();
+  cell_1->SetDiameter(6);
+  rm->AddAgent(cell_1);
+
+  env->Update();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+  EXPECT_EQ(6 * 6, env->GetLargestObjectSizeSquared());
+  EXPECT_TRUE(ctxt->cache_neighbors_);
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(env->GetLargestObjectSizeSquared()));
+
+  // Since we didn't run a ForEachNeighbor operation, the cached squared radius
+  // is still its default value of 0.0
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(4 * 4));
+
+  TestNeighborFunctor test_functor;
+  ctxt->ForEachNeighbor(test_functor, *cell_1, 3 * 3);
+  EXPECT_EQ(3 * 3, ctxt->cached_squared_search_radius_);
+  EXPECT_TRUE(ctxt->IsNeighborCacheValid(3 * 3));
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(4 * 4));
+
+  // Request larger neighborhood and invalidate existing cache
+  ctxt->ForEachNeighbor(test_functor, *cell_1, 4 * 4);
+  EXPECT_EQ(4 * 4, ctxt->cached_squared_search_radius_);
+  EXPECT_TRUE(ctxt->IsNeighborCacheValid(4 * 4 - 1));
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(4 * 4 + 1));
 }
 
 }  // namespace in_place_exec_ctxt_detail

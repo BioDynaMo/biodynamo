@@ -113,6 +113,7 @@ InPlaceExecutionContext::InPlaceExecutionContext(
     const std::shared_ptr<ThreadSafeAgentUidMap>& map)
     : new_agent_map_(map), tinfo_(ThreadInfo::GetInstance()) {
   new_agents_.reserve(1e3);
+  cache_neighbors_ = Simulation::GetActive()->GetParam()->cache_neighbors;
 }
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
@@ -122,13 +123,13 @@ InPlaceExecutionContext::~InPlaceExecutionContext() {
 }
 
 void InPlaceExecutionContext::SetupIterationAll(
-    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) {
   // first iteration might have uncommited changes
   TearDownIterationAll(all_exec_ctxts);
 }
 
 void InPlaceExecutionContext::TearDownIterationAll(
-    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) {
   // group execution contexts by numa domain
   std::vector<uint64_t> new_agent_per_numa(tinfo_->GetNumaNodes());
   std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
@@ -224,6 +225,7 @@ void InPlaceExecutionContext::Execute(
       }
     }
     neighbor_cache_.clear();
+    cached_squared_search_radius_ = 0;
     for (auto& op : operations) {
       (*op)(agent);
     }
@@ -236,12 +238,14 @@ void InPlaceExecutionContext::Execute(
     auto* mutex = nb_mutex_builder->GetMutex(agent->GetBoxIdx());
     std::lock_guard<decltype(*mutex)> guard(*mutex);
     neighbor_cache_.clear();
+    cached_squared_search_radius_ = 0;
     for (auto* op : operations) {
       (*op)(agent);
     }
   } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kNone) {
     neighbor_cache_.clear();
+    cached_squared_search_radius_ = 0;
     for (auto* op : operations) {
       (*op)(agent);
     }
@@ -274,20 +278,42 @@ struct ForEachNeighborFunctor : public Functor<void, Agent*, double> {
   }
 };
 
+double InPlaceExecutionContext::GetDefaultSquaredRadius() const {
+  return default_squared_search_radius_;
+}
+
+bool InPlaceExecutionContext::IsNeighborCacheValid(
+    double query_squared_radius) {
+  if (!cache_neighbors_) {
+    return false;
+  }
+
+  // A neighbor cache is valid when the cached search radius was greater or
+  // equal than the current search radius (i.e. all the agents within the
+  // current neighbor cache are at least in the cache).
+  // The agents that are between the cached and the current search radius must
+  // be filtered out hereafter
+  return query_squared_radius <= cached_squared_search_radius_;
+}
+
 void InPlaceExecutionContext::ForEachNeighbor(
     Functor<void, Agent*, double>& lambda, const Agent& query) {
   // use values in cache
-  if (neighbor_cache_.size() != 0) {
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  auto default_squared_search_radius = env->GetLargestObjectSizeSquared();
+  if (IsNeighborCacheValid(default_squared_search_radius)) {
     for (auto& pair : neighbor_cache_) {
-      lambda(pair.first, pair.second);
+      if (pair.second < default_squared_search_radius) {
+        lambda(pair.first, pair.second);
+      }
     }
     return;
   }
 
   // forward call to env and populate cache
-  auto* env = Simulation::GetActive()->GetEnvironment();
+  cached_squared_search_radius_ = default_squared_search_radius;
   ForEachNeighborFunctor for_each(lambda, neighbor_cache_);
-  env->ForEachNeighbor(for_each, query);
+  env->ForEachNeighbor(for_each, query, default_squared_search_radius);
 }
 
 struct ForEachNeighborWithinRadiusFunctor
@@ -319,7 +345,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
     Functor<void, Agent*, double>& lambda, const Agent& query,
     double squared_radius) {
   // use values in cache
-  if (neighbor_cache_.size() != 0) {
+  if (IsNeighborCacheValid(squared_radius)) {
     for (auto& pair : neighbor_cache_) {
       if (pair.second < squared_radius) {
         lambda(pair.first, 0);
@@ -331,9 +357,10 @@ void InPlaceExecutionContext::ForEachNeighbor(
   // forward call to env and populate cache
   auto* env = Simulation::GetActive()->GetEnvironment();
 
+  cached_squared_search_radius_ = squared_radius;
   ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
                                               squared_radius);
-  env->ForEachNeighbor(for_each, query);
+  env->ForEachNeighbor(for_each, query, squared_radius);
 }
 
 Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {

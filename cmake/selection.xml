@@ -64,6 +64,8 @@
     <class name="bdm::SoVisitor" />
     <class name="bdm::Environment" />
     <class name="bdm::Environment::SimDimensionAndLargestAgentFunctor" />
+    <class name="bdm::OctreeEnvironment" />
+    <class name="bdm::KDTreeEnvironment" />
     <class name="bdm::UniformGridEnvironment" />
     <class name="bdm::UniformGridEnvironment::LoadBalanceInfoUG" />
     <class name="bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper" />
