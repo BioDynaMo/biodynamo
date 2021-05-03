@@ -132,6 +132,15 @@ void Scheduler::Simulate(uint64_t steps) {
   }
 }
 
+void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
+  Initialize();
+  while (!exit_condition()) {
+    Execute();
+
+    total_steps_++;
+  }
+}
+
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 
 TimingAggregator* Scheduler::GetOpTimes() { return &op_times_; }

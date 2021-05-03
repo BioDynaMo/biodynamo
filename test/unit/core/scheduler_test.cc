@@ -16,6 +16,7 @@
 #include "core/environment/uniform_grid_environment.h"
 #include "core/model_initializer.h"
 #include "core/operation/operation_registry.h"
+#include "unit/test_util/test_agent.h"
 
 namespace bdm {
 
@@ -526,6 +527,15 @@ TEST_F(SchedulerTest, DisableDefaultOperations) {
   auto scheduled_agent_ops = scheduler_wrapper.GetListOfScheduledAgentOps();
   EXPECT_TRUE(std::find(scheduled_agent_ops.begin(), scheduled_agent_ops.end(),
                         "discretization") != scheduled_agent_ops.end());
+}
+
+TEST(Scheduler, SimulateUntil) {
+  Simulation simulation(TEST_NAME);
+  simulation.GetResourceManager()->AddAgent(new TestAgent());
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->SimulateUntil(
+      [&]() { return scheduler->GetSimulatedSteps() >= 3; });
+  EXPECT_EQ(3u, scheduler->GetSimulatedSteps());
 }
 
 }  // namespace bdm
