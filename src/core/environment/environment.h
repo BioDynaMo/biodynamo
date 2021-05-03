@@ -31,7 +31,7 @@ class Environment {
   virtual void Update() = 0;
 
   virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                               const Agent& query) = 0;
+                               const Agent& query, double squared_radius) = 0;
 
   virtual void Clear() = 0;
 
@@ -40,7 +40,11 @@ class Environment {
   virtual const std::array<int32_t, 2>& GetDimensionThresholds() const = 0;
 
   /// Return the size of the largest agent
-  virtual double GetLargestObjectSize() const = 0;
+  void ResetLargestObjectSize() { largest_object_size_ = 0; };
+  double GetLargestObjectSize() const { return largest_object_size_; };
+  double GetLargestObjectSizeSquared() const {
+    return largest_object_size_squared_;
+  };
 
   virtual LoadBalanceInfo* GetLoadBalanceInfo() = 0;
 
@@ -70,6 +74,9 @@ class Environment {
 
  protected:
   bool has_grown_ = false;
+  /// The size of the largest object in the simulation
+  double largest_object_size_ = 0.0;
+  double largest_object_size_squared_ = 0.0;
 
   struct SimDimensionAndLargestAgentFunctor
       : public Functor<void, Agent*, AgentHandle> {
@@ -130,7 +137,7 @@ class Environment {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// agents
   void CalcSimDimensionsAndLargestAgent(
-      std::array<double, 6>* ret_grid_dimensions, double* largest_agent) {
+      std::array<double, 6>* ret_grid_dimensions) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
@@ -180,11 +187,13 @@ class Environment {
       if (zmax[tid][0] > gzmax) {
         gzmax = zmax[tid][0];
       }
-      // larget object
-      if (largest[tid][0] > (*largest_agent)) {
-        (*largest_agent) = largest[tid][0];
+      // largest object
+      if (largest[tid][0] > largest_object_size_) {
+        largest_object_size_ = largest[tid][0];
       }
     }
+
+    largest_object_size_squared_ = largest_object_size_ * largest_object_size_;
   }
 };
 

@@ -101,6 +101,33 @@ struct Param {
   ///     output_dir = "output"
   std::string output_dir = "output";
 
+  /// The method used to query the environment of a simulation object.
+  /// Default value: `"uniform_grid"`\n
+  /// Other allowed values: `"kd_tree"`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     environment = "uniform_grid"
+  std::string environment = "uniform_grid";
+
+  /// The depth of the kd tree if it's set as the environment (see
+  /// Param::environment). For more information see:
+  /// https://github.com/jlblancoc/nanoflann\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     nanoflann_depth = 10
+  uint32_t nanoflann_depth = 10;
+
+  /// The bucket size of the octree if it's set as the environment (see
+  /// Param::environment). For more information see:
+  /// https://github.com/jbehley/octree
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     unibn_bucketsize = 16
+  uint32_t unibn_bucketsize = 16;
+
   /// If set to true, BioDynaMo will automatically delete all contents
   /// inside `Param::output_dir` at the beginning of the simulation.
   /// Use with caution, especially in combination with `Param::output_dir`

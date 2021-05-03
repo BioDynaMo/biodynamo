@@ -137,10 +137,10 @@ while test $# -gt 0; do
       ;;
     --version)
       ### Output the version number.  If RVersion.h can not be found, give up.
-      if test -r ${incdir}/version.h; then
-         out="$out `sed -n 's,.*BDM_RELEASE *\"\(.*\)\".*,\1,p' < ${incdir}/version.h`"
+      if test -r ${incdir}/bdm_version.h; then
+         out="$out `sed -n 's,.*BDM_RELEASE *\"\(.*\)\".*,\1,p' < ${incdir}/bdm_version.h`"
       else
-         echo "cannot read ${incdir}/version.h"
+         echo "cannot read ${incdir}/bdm_version.h"
          exit 1
       fi
       ;;

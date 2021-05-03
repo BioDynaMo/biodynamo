@@ -20,7 +20,7 @@ from build_command import BuildCommand
 from demo_command import DemoCommand
 from new_command import NewCommand
 from run_command import RunCommand
-from version import Version
+from bdm_version import Version
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='biodynamo',

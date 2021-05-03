@@ -19,9 +19,11 @@ class Version:
 
     @staticmethod
     def shortstring():
-        major = @VERSION_MAJOR@
-        minor = @VERSION_MINOR@
-        patch = @VERSION_PATCH@
+        # python doesn't allow leading zeros in decimal numbers
+        # -> use string to int conversion
+        major = int('@VERSION_MAJOR@')
+        minor = int('@VERSION_MINOR@')
+        patch = int('@VERSION_PATCH@')
         if patch == 0:
             return "{}.{}".format(major, minor)
         else:

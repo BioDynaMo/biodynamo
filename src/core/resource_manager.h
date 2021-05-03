@@ -54,19 +54,7 @@ class ResourceManager {
 
   ResourceManager();
 
-  virtual ~ResourceManager() {
-    for (auto& el : diffusion_grids_) {
-      delete el.second;
-    }
-    for (auto& numa_agents : agents_) {
-      for (auto* agent : numa_agents) {
-        delete agent;
-      }
-    }
-    if (type_index_) {
-      delete type_index_;
-    }
-  }
+  virtual ~ResourceManager();
 
   ResourceManager& operator=(ResourceManager&& other) {
     if (agents_.size() != other.agents_.size()) {

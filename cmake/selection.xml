@@ -64,6 +64,8 @@
     <class name="bdm::SoVisitor" />
     <class name="bdm::Environment" />
     <class name="bdm::Environment::SimDimensionAndLargestAgentFunctor" />
+    <class name="bdm::OctreeEnvironment" />
+    <class name="bdm::KDTreeEnvironment" />
     <class name="bdm::UniformGridEnvironment" />
     <class name="bdm::UniformGridEnvironment::LoadBalanceInfoUG" />
     <class name="bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper" />
@@ -73,6 +75,7 @@
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::Grid::Box const*>>" />
+    <class name="bdm::ParallelResizeVector<bdm::Spinlock>" />
     <class name="bdm::ResourceManager::ParallelRemovalAuxData" />
   </exclusion>
 </lcgdict>

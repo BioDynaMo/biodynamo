@@ -47,6 +47,7 @@ Agent::Agent(TRootIOCtor* io_ctor) {}
 Agent::Agent(const Agent& other)
     : uid_(other.uid_),
       box_idx_(other.box_idx_),
+      run_behavior_loop_idx_(other.run_behavior_loop_idx_),
       propagate_staticness_neighborhood_(
           other.propagate_staticness_neighborhood_),
       is_static_next_ts_(other.is_static_next_ts_) {
@@ -116,43 +117,26 @@ void Agent::SetBoxIdx(uint32_t idx) { box_idx_ = idx; }
 // ---------------------------------------------------------------------------
 // Behaviors
 
-/// Contains helper variables used to support removal of behaviors while
-/// `RunBehaviors` iterates over them.
-/// Iteration and removal must be performed by the *same* thread.
-struct RemoveBehaviorHelper {
-  thread_local static int idx;
-  thread_local static const Agent* agent;
-};
-thread_local int RemoveBehaviorHelper::idx = 0;
-thread_local const Agent* RemoveBehaviorHelper::agent = nullptr;
-
 void Agent::AddBehavior(Behavior* behavior) { behaviors_.push_back(behavior); }
 
 void Agent::RemoveBehavior(const Behavior* behavior) {
-  for (int i = 0; i < behaviors_.size(); i++) {
+  for (unsigned int i = 0; i < behaviors_.size(); i++) {
     if (behaviors_[i] == behavior) {
       delete behavior;
       behaviors_.erase(behaviors_.begin() + i);
-      // only modify RemoveBehaviorHelper::idx if RemoveBehaviorHelper::agent
-      // matches
-      if (RemoveBehaviorHelper::agent == this) {
-        // if behavior was before or at the current RemoveBehaviorHelper::idx,
-        // correct it by subtracting one.
-        RemoveBehaviorHelper::idx -= i > RemoveBehaviorHelper::idx ? 0 : 1;
-      }
+      // if behavior was before or at the current run_behavior_loop_idx_,
+      // correct it by subtracting one.
+      run_behavior_loop_idx_ -= i > run_behavior_loop_idx_ ? 0 : 1;
     }
   }
 }
 
 void Agent::RunBehaviors() {
-  RemoveBehaviorHelper::agent = this;
-  for (RemoveBehaviorHelper::idx = 0;
-       RemoveBehaviorHelper::idx < behaviors_.size();
-       ++RemoveBehaviorHelper::idx) {
-    auto* behavior = behaviors_[RemoveBehaviorHelper::idx];
+  for (run_behavior_loop_idx_ = 0; run_behavior_loop_idx_ < behaviors_.size();
+       ++run_behavior_loop_idx_) {
+    auto* behavior = behaviors_[run_behavior_loop_idx_];
     behavior->Run(this);
   }
-  RemoveBehaviorHelper::agent = nullptr;
 }
 
 const InlineVector<Behavior*, 2>& Agent::GetAllBehaviors() const {

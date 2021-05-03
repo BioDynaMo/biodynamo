@@ -42,7 +42,7 @@ set_target_properties(libgtest PROPERTIES
 # add include directories for gtest
 include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/include")
 
-# create target that shows the test ouput on failure
+# create target that shows the test output on failure
 add_custom_target(run-check COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure)
 
 # create target for running biodynamo-unit-tests

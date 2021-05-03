@@ -179,6 +179,9 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // simulation group
   BDM_ASSIGN_CONFIG_VALUE(random_seed, "simulation.random_seed");
   BDM_ASSIGN_CONFIG_VALUE(output_dir, "simulation.output_dir");
+  BDM_ASSIGN_CONFIG_VALUE(environment, "simulation.environment");
+  BDM_ASSIGN_CONFIG_VALUE(nanoflann_depth, "simulation.nanoflann_depth");
+  BDM_ASSIGN_CONFIG_VALUE(unibn_bucketsize, "simulation.unibn_bucketsize");
   BDM_ASSIGN_CONFIG_VALUE(backup_file, "simulation.backup_file");
   BDM_ASSIGN_CONFIG_VALUE(restore_file, "simulation.restore_file");
   BDM_ASSIGN_CONFIG_VALUE(backup_interval, "simulation.backup_interval");

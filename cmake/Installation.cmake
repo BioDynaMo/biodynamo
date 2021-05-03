@@ -25,7 +25,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}" CACHE PATH "The BioDynaMo installation path" FORCE)
 endif()
 
-execute_process(COMMAND cat version/shortversion OUTPUT_VARIABLE SHORT_VERSION WORKING_DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT})
+execute_process(COMMAND cat version/bdm_shortversion OUTPUT_VARIABLE SHORT_VERSION WORKING_DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT})
 
 # Remember to also update the install directory in the installation tests
 set(DIRNAME "biodynamo-v${SHORT_VERSION}")
@@ -73,7 +73,7 @@ install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/third_party
         PATTERN "*.tar.gz" EXCLUDE)
 install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
               ${CMAKE_BIODYNAMO_BUILD_ROOT}/NOTICE
-              ${CMAKE_BIODYNAMO_BUILD_ROOT}/version/version
+              ${CMAKE_BIODYNAMO_BUILD_ROOT}/version/bdm_version
         DESTINATION ${DIRNAME})
 install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/omp/omp.h
         DESTINATION ${DIRNAME}/include)
