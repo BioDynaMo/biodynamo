@@ -128,6 +128,9 @@ if(APPLE)
   if("${DETECTED_ARCH}" STREQUAL "arm64")
     set(paraview OFF)
   endif()
+
+  # valgrind not supported on macOS
+  set(valgrind OFF)
   
   # Ignore Fink (/sw) and MacPorts (/opt/local) packages, only consider Brew
   set(CMAKE_IGNORE_PATH)
@@ -135,7 +138,7 @@ if(APPLE)
     list(APPEND CMAKE_IGNORE_PATH ${_prefix}/bin ${_prefix}/include ${_prefix}/lib)
   endforeach()
   
-  # Silence std::experimental::filesystem warning on MacOS.
+  # Silence std::experimental::filesystem warning on macOS.
   # Remove after update to c++17
   add_definitions("-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM")
 endif()
@@ -258,7 +261,7 @@ endif()
 find_package(Git)
 
 # Find ROOT and check its installation
-find_package(ROOT COMPONENTS Geom Gui GenVector)
+find_package(ROOT COMPONENTS Geom Gui Eve GenVector)
 verify_ROOT()
 
 if (dict)
@@ -355,7 +358,7 @@ endif()
 
 if(sbml)
   if(APPLE)
-    message(FATAL_ERROR "Currently SBML is not supported on MacOS (see https://trello.com/c/vKPbh4iG).")
+    message(FATAL_ERROR "Currently SBML is not supported on macOS (see https://trello.com/c/vKPbh4iG).")
   endif()
   find_package(Libroadrunner)
   if(NOT Libroadrunner_FOUND)
@@ -379,6 +382,9 @@ endif()
 
 # Check if we can find the valgrind executable
 if (valgrind)
+    if(APPLE)
+      message(FATAL_ERROR "Currently valgrind is not supported on macOS.")
+    endif()
     find_package(Valgrind)
     if (NOT VALGRIND_FOUND)
         MESSAGE("valgrind was not found in your system, therefore it was disabled. You will not be able to run the memory
@@ -430,7 +436,7 @@ include(SetCompilerFlags)
 #  When building, don't use the install RPATH already (but later on when installing)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)         # don't skip the full RPATH for the build tree
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) # use always the build RPATH for the build tree
-set(CMAKE_MACOSX_RPATH TRUE)              # use RPATH for MacOSX
+set(CMAKE_MACOSX_RPATH TRUE)              # use RPATH for macOS
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) # point to directories outside the build tree to the install RPATH
 
 # Check whether to add RPATH to the installation (the build tree always has the RPATH enabled)
@@ -478,10 +484,15 @@ file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/src/*.h")
 file(GLOB_RECURSE LIB_SOURCES "${CMAKE_SOURCE_DIR}/src/*.cc")
 file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 
-# Exclude paraview-related source files, which will be loaded dynamically as a
+# Exclude paraview related source files, which will be loaded dynamically as a
 # plugin upon request
 filter_list(LIB_SOURCES "${LIB_SOURCES}" "paraview/*")
 filter_list(HEADERS "${HEADERS}" "paraview/*")
+
+# Exclude rooteve related source files, which will be loaded dynamically as a
+# plugin upon request
+filter_list(LIB_SOURCES "${LIB_SOURCES}" "rooteve/*")
+filter_list(HEADERS "${HEADERS}" "rooteve/*")
 
 # NB: Remove stdc++fs after switching to c++17  
 if (LINUX)
@@ -493,17 +504,17 @@ build_shared_library(biodynamo
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} ${FS_LIB})
 
-# Build plugin
+# Build paraview visualization plugin
 if(paraview)
-  # Find paraview-related sources and headers for plugin generation
+  # Find paraview related sources and headers for plugin generation
   file(GLOB_RECURSE PV_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.h")
   file(GLOB_RECURSE PV_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/paraview/*.cc")
 
   # We link against python3 libraries, so that the paraview libraries can
   # resolve missing python symbols when creating binaries
   set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
-  build_shared_library(VisualizationAdaptor
-                    SELECTION selection-libVisualizationAdaptor.xml
+  build_shared_library(ParaviewAdaptor
+                    SELECTION selection-libParaviewAdaptor.xml
                     SOURCES ${PV_SOURCES}
                     HEADERS ${PV_HEADERS}
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
@@ -511,10 +522,29 @@ if(paraview)
   set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
 
   if(LINUX)
-    SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+    SET_TARGET_PROPERTIES(ParaviewAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
   else()
-    # see: https://github.com/pytorch/pytorch/pull/3439/files
-    SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-dynamic")
+    SET_TARGET_PROPERTIES(ParaviewAdaptor PROPERTIES LINK_FLAGS "-dynamic")
+  endif()
+endif()
+
+# Build rooteve visualization plugin
+if(paraview)
+  # Find rooteve related sources and headers for plugin generation
+  file(GLOB_RECURSE RE_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/rooteve/*.h")
+  file(GLOB_RECURSE RE_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/rooteve/*.cc")
+
+  build_shared_library(RootEveAdaptor
+                    SELECTION selection-libRootEveAdaptor.xml
+                    SOURCES ${RE_SOURCES}
+                    HEADERS ${RE_HEADERS}
+                    LIBRARIES biodynamo ${ROOT_LIBRARIES}
+                    PLUGIN "TRUE")
+
+  if(LINUX)
+    SET_TARGET_PROPERTIES(RootEveAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+  else()
+    SET_TARGET_PROPERTIES(RootEveAdaptor PROPERTIES LINK_FLAGS "-dynamic")
   endif()
 endif()
 

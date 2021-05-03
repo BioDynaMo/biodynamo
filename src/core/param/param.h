@@ -226,7 +226,7 @@ struct Param {
   // visualization values ------------------------------------------------------
 
   /// Name of the visualization engine to use for visualizaing BioDynaMo
-  /// simulations\n
+  /// simulations, either `paraview` or `rooteve`.\n
   /// Default value: `"paraview"`\n
   /// TOML config file:
   ///
@@ -302,6 +302,16 @@ struct Param {
   ///     [visualization]
   ///     export_generate_pvsm = true
   bool visualization_export_generate_pvsm = true;
+
+  /// If `visualization_engine` is set to "root" and if
+  /// `export_visualization` is set to true,\n
+  /// this parameter specifies if the ROOT TTree file will be generated!\n
+  /// Default value: `true`\n
+  /// TOML config file:
+  ///
+  ///     [visualization]
+  ///     export_generate_tree = true
+  bool visualization_export_generate_tree = true;
 
   /// Specifies which agents should be visualized. \n
   /// Every agent defines the minimum set of data members which

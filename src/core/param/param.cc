@@ -209,6 +209,9 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "visualization.export_generate_pvsm");
   BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files,
                           "visualization.compress_pv_files");
+  BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_tree,
+                          "visualization.export_generate_tree");
+
 
   //   visualize_agents
   auto visualize_agentstarr = config->get_table_array("visualize_agent");
