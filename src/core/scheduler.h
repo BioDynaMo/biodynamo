@@ -48,7 +48,21 @@ class Scheduler {
 
   virtual ~Scheduler();
 
+  /// Simulate `steps` number of iterations.
   void Simulate(uint64_t steps);
+
+  /// Simulate until `exit_condition` evaluates to true. \n
+  /// The condition will be tested at the beginning of an iteration.\n
+  /// e.g. simulate until there are 1000 agents in the simulation
+  ///
+  ///     scheduler->Simulate([](){
+  ///        auto* rm = Simulation::GetActive()->GetResourceManager();
+  ///        return rm->GetNumAgents() >= 1000;
+  ///     });
+  ///
+  /// NB: Automated backups and restores are not yet supported
+  /// if the simulation uses this simulate function. TODO(lukas)
+  void SimulateUntil(const std::function<bool()>& exit_condition);
 
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
