@@ -35,6 +35,17 @@
     <class name="unordered_map<std::string, std::set<std::string>>" />
     <class name="map<std::string, std::set<std::string>>" />
     <class name="bdm::Random" />
+    <class name="bdm::DistributionRng<double>" />
+    <class name="bdm::DistributionRng<int>" />
+    <class name="bdm::UniformRng" />
+    <class name="bdm::GausRng" />
+    <class name="bdm::ExpRng" />
+    <class name="bdm::LandauRng" />
+    <class name="bdm::PoissonDRng" />
+    <class name="bdm::BreitWignerRng" />
+    <class name="bdm::UserDefinedDistRng" />
+    <class name="bdm::BinomialRng" />
+    <class name="bdm::PoissonRng" />
     <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<double, 4>" />
     <class name="bdm::ParallelResizeVector<double>" />
