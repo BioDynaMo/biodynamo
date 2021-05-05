@@ -32,7 +32,7 @@ struct Infection : public Behavior {
         random->Uniform(0, 1) <= sparam->infection_probablity) {
       auto* ctxt = sim->GetExecutionContext();
       auto check_surrounding =
-          MakeFunctor([&](Agent* neighbor, double squared_distance) {
+          L2F([&](Agent* neighbor, double squared_distance) {
             auto* other = bdm_static_cast<const Person*>(neighbor);
             if (other->state_ == State::kInfected) {
               person->state_ = State::kInfected;

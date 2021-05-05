@@ -293,7 +293,7 @@ class Cell : public Agent {
 
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     auto calculate_neighbor_forces =
-        MakeFunctor([&](Agent* neighbor, double squared_distance) {
+        L2F([&](Agent* neighbor, double squared_distance) {
           auto neighbor_force = force->Calculate(this, neighbor);
           translation_force_on_point_mass[0] += neighbor_force[0];
           translation_force_on_point_mass[1] += neighbor_force[1];

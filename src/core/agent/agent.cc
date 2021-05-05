@@ -86,13 +86,12 @@ void Agent::PropagateStaticness() {
   propagate_staticness_neighborhood_ = false;
   is_static_next_ts_ = false;
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-  auto set_staticness =
-      MakeFunctor([this](Agent* neighbor, double squared_distance) {
-        double distance = this->GetDiameter() + neighbor->GetDiameter();
-        if (squared_distance < distance * distance) {
-          neighbor->SetStaticnessNextTimestep(false);
-        }
-      });
+  auto set_staticness = L2F([this](Agent* neighbor, double squared_distance) {
+    double distance = this->GetDiameter() + neighbor->GetDiameter();
+    if (squared_distance < distance * distance) {
+      neighbor->SetStaticnessNextTimestep(false);
+    }
+  });
   ctxt->ForEachNeighbor(set_staticness, *this);
 }
 

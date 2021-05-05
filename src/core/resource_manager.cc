@@ -298,7 +298,7 @@ void ResourceManager::LoadBalance() {
   // synchronization overheads. The bdm memory allocator does not have this
   // issue.
   if (!minimize_memory) {
-    auto delete_functor = MakeFunctor([](Agent* agent) { delete agent; });
+    auto delete_functor = L2F([](Agent* agent) { delete agent; });
     ForEachAgentParallel(delete_functor);
   }
 
