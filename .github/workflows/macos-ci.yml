@@ -15,13 +15,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Make sure Xcode 12.5 is the default /Application/Xcode.app
-      shell: bash
-      run: |
-        sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_12.5.app /Applications/Xcode.app
-        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
- 
     - name: Install dependencies
       run: |
         brew install libomp open-mpi python@3.9 wget cmake ninja
