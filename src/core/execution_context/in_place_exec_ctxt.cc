@@ -300,7 +300,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
     Functor<void, Agent*, double>& lambda, const Agent& query) {
   // use values in cache
   auto* env = Simulation::GetActive()->GetEnvironment();
-  auto default_squared_search_radius = env->GetLargestObjectSizeSquared();
+  auto default_squared_search_radius = env->GetLargestAgentSizeSquared();
   if (IsNeighborCacheValid(default_squared_search_radius)) {
     for (auto& pair : neighbor_cache_) {
       if (pair.second < default_squared_search_radius) {

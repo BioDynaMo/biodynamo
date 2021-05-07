@@ -41,8 +41,8 @@ class Environment {
 
   /// Return the size of the largest agent
   void ResetLargestObjectSize() { largest_object_size_ = 0; };
-  double GetLargestObjectSize() const { return largest_object_size_; };
-  double GetLargestObjectSizeSquared() const {
+  double GetLargestAgentSize() const { return largest_object_size_; };
+  double GetLargestAgentSizeSquared() const {
     return largest_object_size_squared_;
   };
 
