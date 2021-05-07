@@ -355,7 +355,7 @@ void Simulation::InitializeMembers() {
   scheduler_ = new Scheduler();
 }
 
-void Simulation::SetEnvironement(Environment* env) {
+void Simulation::SetEnvironment(Environment* env) {
   if (environment_ != nullptr) {
     delete environment_;
   }

@@ -101,4 +101,13 @@ TEST(OctreeTest, Setup) {
   EXPECT_EQ(expected_63, neighbors[AgentUid(63)]);
 }
 
+// Test if SetEnvironment method works correctly for OctreeEnvironment.
+TEST(OctreeTest, SetEnvironment) {
+  Simulation simulation(TEST_NAME);
+  auto* env = new OctreeEnvironment();
+  EXPECT_NE(env, simulation.GetEnvironment());
+  simulation.SetEnvironment(env);
+  EXPECT_EQ(env, simulation.GetEnvironment());
+}
+
 }  // namespace bdm

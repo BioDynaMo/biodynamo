@@ -102,7 +102,7 @@ class Simulation {
 
   /// Set a specific environment for the simulation. *env must point to an
   /// object instance of a subclass of Environment.
-  void SetEnvironement(Environment* env);
+  void SetEnvironment(Environment* env);
 
   Scheduler* GetScheduler();
 
