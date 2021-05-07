@@ -355,6 +355,13 @@ void Simulation::InitializeMembers() {
   scheduler_ = new Scheduler();
 }
 
+void Simulation::SetEnvironement(Environment* env) {
+  if (environment_ != nullptr) {
+    delete environment_;
+  }
+  environment_ = env;
+}
+
 void Simulation::InitializeRuntimeParams(
     CommandLineOptions* clo, const std::function<void(Param*)>& set_param,
     const std::vector<std::string>& ctor_config_files) {
