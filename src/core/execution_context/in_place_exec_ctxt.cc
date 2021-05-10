@@ -313,7 +313,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
   // forward call to env and populate cache
   cached_squared_search_radius_ = default_squared_search_radius;
   ForEachNeighborFunctor for_each(lambda, neighbor_cache_);
-  env->ForEachNeighbor(for_each, query, default_squared_search_radius);
+  env->ForEachNeighbor(for_each, query, &default_squared_search_radius);
 }
 
 struct ForEachNeighborWithinRadiusFunctor
@@ -360,7 +360,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
   cached_squared_search_radius_ = squared_radius;
   ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
                                               squared_radius);
-  env->ForEachNeighbor(for_each, query, squared_radius);
+  env->ForEachNeighbor(for_each, query, &squared_radius);
 }
 
 Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {

@@ -91,8 +91,8 @@ void KDTreeEnvironment::Update() {
 }
 
 void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                                        const Agent& query,
-                                        double squared_radius) {
+                                        const Agent& query, void* criteria) {
+  double squared_radius = *static_cast<double*>(criteria);
   std::vector<std::pair<uint64_t, double>> neighbors;
 
   nanoflann::SearchParams params;
@@ -101,8 +101,7 @@ void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
   const auto& position = query.GetPosition();
 
   // calculate neighbors
-  impl_->index_->radiusSearch(&position[0], squared_radius, neighbors,
-                              params);
+  impl_->index_->radiusSearch(&position[0], squared_radius, neighbors, params);
 
   auto* rm = Simulation::GetActive()->GetResourceManager();
   for (auto& n : neighbors) {
@@ -114,12 +113,11 @@ void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
   }
 }
 
-const std::array<int32_t, 6>& KDTreeEnvironment::GetDimensions() const {
+std::array<int32_t, 6> KDTreeEnvironment::GetDimensions() const {
   return grid_dimensions_;
 }
 
-const std::array<int32_t, 2>& KDTreeEnvironment::GetDimensionThresholds()
-    const {
+std::array<int32_t, 2> KDTreeEnvironment::GetDimensionThresholds() const {
   return threshold_dimensions_;
 }
 
@@ -139,7 +137,7 @@ void KDTreeEnvironment::Clear() {
   int32_t inf = std::numeric_limits<int32_t>::max();
   grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
   threshold_dimensions_ = {inf, -inf};
-  ResetLargestObjectSize();
+  ResetLargestAgentSize();
 }
 
 void KDTreeEnvironment::RoundOffGridDimensions(

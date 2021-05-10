@@ -223,14 +223,14 @@ TEST(UniformGridEnvironmentTest, GridDimensions) {
   env->Update();
 
   std::array<int32_t, 6> expected_dim_0 = {{-30, 90, -30, 90, -30, 90}};
-  auto& dim_0 = env->GetDimensions();
+  auto dim_0 = env->GetDimensions();
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
   rm->GetAgent(AgentUid(0))->SetPosition({{100, 0, 0}});
   env->Update();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
-  auto& dim_1 = env->GetDimensions();
+  auto dim_1 = env->GetDimensions();
 
   EXPECT_EQ(expected_dim_1, dim_1);
 }

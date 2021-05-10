@@ -451,17 +451,19 @@ class UniformGridEnvironment : public Environment {
     }
   }
 
-  /// @brief      Applies the given lambda to each neighbor or the specified
-  ///             agent.
+  /// @brief      Applies the given lambda to each neighbor of the specified
+  ///             agent is within the squared radius (i.e. the criteria)
   ///
   /// In simulation code do not use this function directly. Use the same
-  /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
   ///
-  /// @param[in]  lambda  The operation as a lambda
-  /// @param      query   The query object
+  /// @param[in]  lambda    The operation as a lambda
+  /// @param      query     The query object
+  /// @param      criteria  The squared search radius (type: double*)
   ///
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius) override {
+                       const Agent& query, void* criteria) override {
+    double squared_radius = *static_cast<double*>(criteria);
     if (squared_radius > box_length_squared_) {
       Log::Fatal(
           "UniformGridEnvironment::ForEachNeighbor",
@@ -575,11 +577,11 @@ class UniformGridEnvironment : public Environment {
     return GetBoxIndex(box_coord);
   }
 
-  const std::array<int32_t, 6>& GetDimensions() const override {
+  std::array<int32_t, 6> GetDimensions() const override {
     return grid_dimensions_;
   }
 
-  const std::array<int32_t, 2>& GetDimensionThresholds() const override {
+  std::array<int32_t, 2> GetDimensionThresholds() const override {
     return threshold_dimensions_;
   }
 

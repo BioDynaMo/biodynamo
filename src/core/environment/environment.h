@@ -30,17 +30,21 @@ class Environment {
 
   virtual void Update() = 0;
 
+  /// Iterates over all neighbors in an environment that suffices the given
+  /// `criteria`. The `criteria` is type-erased to facilitate for different
+  /// criteria for different environments. Check the documentation of an
+  /// environment to know the criteria data type
   virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                               const Agent& query, double squared_radius) = 0;
+                               const Agent& query, void* criteria) = 0;
 
   virtual void Clear() = 0;
 
-  virtual const std::array<int32_t, 6>& GetDimensions() const = 0;
+  virtual std::array<int32_t, 6> GetDimensions() const = 0;
 
-  virtual const std::array<int32_t, 2>& GetDimensionThresholds() const = 0;
+  virtual std::array<int32_t, 2> GetDimensionThresholds() const = 0;
 
+  void ResetLargestAgentSize() { largest_object_size_ = 0; };
   /// Return the size of the largest agent
-  void ResetLargestObjectSize() { largest_object_size_ = 0; };
   double GetLargestAgentSize() const { return largest_object_size_; };
   double GetLargestAgentSizeSquared() const {
     return largest_object_size_squared_;

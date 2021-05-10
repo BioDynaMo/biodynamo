@@ -66,10 +66,11 @@ TEST(OctreeTest, Setup) {
   neighbors.reserve(rm->GetNumAgents());
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
+  double search_radius_squared = 1201;
   rm->ForEachAgent([&](Agent* so) {
     auto uid = so->GetUid();
     FillNeighborList fill_neighbor_list(&neighbors, uid);
-    grid->ForEachNeighbor(fill_neighbor_list, *so, 1201);
+    grid->ForEachNeighbor(fill_neighbor_list, *so, &search_radius_squared);
   });
 
   std::vector<AgentUid> expected_0 = {AgentUid(1),  AgentUid(4),  AgentUid(5),
