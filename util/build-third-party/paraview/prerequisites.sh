@@ -81,11 +81,16 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
     if [ -z "$SKIP_PYENV" ]; then
       # Install pyenv and python 3.9.1
       curl https://pyenv.run | bash
-      export PATH="$HOME/.pyenv/bin:$PATH"
+      export PYENV_ROOT="$HOME/.pyenv"
+      export PATH="$PYENV_ROOT/bin:$PATH"
+      eval "$(pyenv init --path)"
       eval "$(pyenv init -)"
       env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
     else
-      eval "$(pyenv init -)"
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init --path)"
+    eval "$(pyenv init -)"
       pyenv update
     fi
     pyenv shell 3.9.1
