@@ -90,6 +90,7 @@ sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
 PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 ```
@@ -177,6 +178,7 @@ sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel \
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
 PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 ```
