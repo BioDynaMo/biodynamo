@@ -52,6 +52,7 @@ jobs:
           curl https://pyenv.run | bash
         fi
         export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
         pyenv shell 3.9.1
@@ -71,6 +72,7 @@ jobs:
       shell: bash
       run: |
         export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         pyenv shell 3.9.1
         cmake -G Ninja \
@@ -91,6 +93,7 @@ jobs:
       shell: bash
       run: |
         export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         pyenv shell 3.9.1
         wget https://apt.llvm.org/llvm-snapshot.gpg.key
