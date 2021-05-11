@@ -42,6 +42,7 @@
     <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::Behavior"/>
+    <class name="bdm::StatelessBehavior" />
     <class name="bdm::GrowthDivision"/>
     <class name="bdm::Chemotaxis"/>
     <class name="bdm::Secretion"/>
@@ -70,6 +71,7 @@
     <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
+    <class name="bdm::TimeSeries" />
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />
     <class pattern="std::vector<bdm::memory_manager_detail::*>" />

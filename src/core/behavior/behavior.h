@@ -140,6 +140,23 @@ class Behavior {
                                                                              \
  public:
 
+// TODO documentation
+class StatelessBehavior : public Behavior {
+  BDM_BEHAVIOR_HEADER(StatelessBehavior, Behavior, 1);
+
+ public:
+  using FPtr = void (*)(Agent*);
+  StatelessBehavior() : fptr_(nullptr) {}
+  StatelessBehavior(const FPtr fptr) : fptr_(fptr) {}
+  StatelessBehavior(const StatelessBehavior& other) : fptr_(other.fptr_) {}
+  virtual ~StatelessBehavior() {}
+
+  void Run(Agent* agent) override { fptr_(agent); }
+
+ private:
+  const FPtr fptr_;
+};
+
 }  // namespace bdm
 
 #endif  // CORE_BEHAVIOR_BEHAVIOR_H_
