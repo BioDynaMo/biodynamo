@@ -194,7 +194,7 @@ TEST(RandomTest, BreitWigner) {
   }
 }
 
-TEST(RandomTest, UserDefinedDistRng) {
+TEST(RandomTest, UserDefinedDistRng1D) {
   Simulation simulation(TEST_NAME);
   auto* random = simulation.GetRandom();
   auto function = [](const double* x, const double* params) {
@@ -213,7 +213,8 @@ TEST(RandomTest, UserDefinedDistRng) {
   }
 
   gRandom->SetSeed(42);
-  auto distrng = random->GetUserDefinedDistRng(function, {1.1, 1.2}, min, max);
+  auto distrng =
+      random->GetUserDefinedDistRng1D(function, {1.1, 1.2}, min, max);
   std::vector<double> actual;
   for (uint64_t i = 0; i < 10; i++) {
     actual.push_back(distrng.Sample());
@@ -336,12 +337,12 @@ TEST_F(IOTest, Random) {
   }
 }
 
-TEST_F(IOTest, UserDefinedDistRng) {
+TEST_F(IOTest, UserDefinedDistRng1D) {
   Simulation simulation(TEST_NAME);
   auto* random = simulation.GetRandom();
 
   auto ud_dist = [](const double* x, const double* param) { return sin(*x); };
-  auto udd_rng = random->GetUserDefinedDistRng(ud_dist, {}, 0, 3);
+  auto udd_rng = random->GetUserDefinedDistRng1D(ud_dist, {}, 0, 3);
 
   gRandom->SetSeed(42);
   std::vector<double> expected;
@@ -349,7 +350,7 @@ TEST_F(IOTest, UserDefinedDistRng) {
     expected.push_back(udd_rng.Sample());
   }
 
-  UserDefinedDistRng* restored;
+  UserDefinedDistRng1D* restored;
   BackupAndRestore(udd_rng, &restored);
 
   gRandom->SetSeed(42);

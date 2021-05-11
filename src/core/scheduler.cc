@@ -141,6 +141,11 @@ void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
   }
 }
 
+void Scheduler::FinalizeInitialization() {
+  auto* sim = Simulation::GetActive();
+  sim->GetExecutionContext()->SetupIterationAll(sim->GetAllExecCtxts());
+}
+
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 
 TimingAggregator* Scheduler::GetOpTimes() { return &op_times_; }
