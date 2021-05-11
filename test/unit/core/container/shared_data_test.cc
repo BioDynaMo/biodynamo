@@ -21,9 +21,9 @@ namespace bdm {
 // Test if resize and size method work correctly.
 TEST(SharedDataTest, ReSize) {
   SharedData<int> sdata(10);
-  EXPECT_EQ(sdata.size(), 10);
+  EXPECT_EQ(10u, sdata.size());
   sdata.resize(20);
-  EXPECT_EQ(sdata.size(), 20);
+  EXPECT_EQ(20u, sdata.size());
 }
 
 // Test if shared data is occupying full cache lines.
