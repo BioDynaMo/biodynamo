@@ -100,6 +100,10 @@ class Simulation {
 
   Environment* GetEnvironment();
 
+  /// Set a specific environment for the simulation. *env must point to an
+  /// object instance of a subclass of Environment.
+  void SetEnvironment(Environment* env);
+
   Scheduler* GetScheduler();
 
   void Simulate(uint64_t steps);
