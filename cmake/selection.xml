@@ -59,7 +59,9 @@
     <class name="bdm::LandauRng" />
     <class name="bdm::PoissonDRng" />
     <class name="bdm::BreitWignerRng" />
-    <class name="bdm::UserDefinedDistRng" />
+    <class name="bdm::UserDefinedDistRng1D" />
+    <class name="bdm::UserDefinedDistRng2D" />
+    <class name="bdm::UserDefinedDistRng3D" />
     <class name="bdm::BinomialRng" />
     <class name="bdm::PoissonRng" />
     <class name="bdm::MathArray<double, 3>" />

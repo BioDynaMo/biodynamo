@@ -64,6 +64,12 @@ class Scheduler {
   /// if the simulation uses this simulate function. TODO(lukas)
   void SimulateUntil(const std::function<bool()>& exit_condition);
 
+  /// Finalize simulation initialization or manual changes between
+  /// `Simulate` calls.\n
+  /// All `Simulate` calls do this automatically, but sometimes
+  /// it is useful to do it manually (e.g.for tutorials).
+  void FinalizeInitialization();
+
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
