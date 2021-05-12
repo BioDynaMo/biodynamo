@@ -148,13 +148,19 @@ class StatelessBehavior : public Behavior {
   using FPtr = void (*)(Agent*);
   StatelessBehavior() : fptr_(nullptr) {}
   StatelessBehavior(const FPtr fptr) : fptr_(fptr) {}
-  StatelessBehavior(const StatelessBehavior& other) : fptr_(other.fptr_) {}
+  StatelessBehavior(const StatelessBehavior& other)
+      : Behavior(other), fptr_(other.fptr_) {}
   virtual ~StatelessBehavior() {}
+
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
+    fptr_ = static_cast<StatelessBehavior*>(event.existing_behavior)->fptr_;
+  }
 
   void Run(Agent* agent) override { fptr_(agent); }
 
  private:
-  const FPtr fptr_;
+  FPtr fptr_;
 };
 
 }  // namespace bdm
