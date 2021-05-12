@@ -17,8 +17,8 @@
 #include <TFrame.h>
 #include <TGraph.h>
 #include <TLegend.h>
-#include <TStyle.h>
 #include <TMultiGraph.h>
+#include <TStyle.h>
 #include "core/analysis/time_series.h"
 #include "core/util/log.h"
 #include "core/util/string.h"
@@ -29,12 +29,10 @@ namespace experimental {
 // -----------------------------------------------------------------------------
 LineGraph::LineGraph(TimeSeries* ts, const std::string& title,
                      const std::string& xaxis_title,
-                     const std::string& yaxis_title, bool legend, 
-                     TStyle* style,
-                     int width,
-                     int height)
+                     const std::string& yaxis_title, bool legend, TStyle* style,
+                     int width, int height)
     : ts_(ts), c_(new TCanvas()), mg_(new TMultiGraph()), s_(style) {
-  if(s_) {
+  if (s_) {
     s_->cd();
   }
   c_->SetCanvasSize(width, height);
@@ -56,16 +54,21 @@ TGraph* LineGraph::Add(const std::string& ts_name,
                        float fill_color_alpha, short fill_style) {
   auto it = id_tgraph_map_.find(ts_name);
   if (it != id_tgraph_map_.end()) {
-    Log::Warning("LineGraph::Add",
-                 Concat("Graph with id (", ts_name,
-                        ") has already been added. Operation aborted.")
-                     .c_str());
+    Log::Warning("LineGraph::Add", "Graph with id (", ts_name,
+                 ") has already been added. Operation aborted.");
     return nullptr;
   }
-  if(s_) {
+  if (s_) {
     s_->cd();
   }
 
+  if (!ts_->Contains(ts_name)) {
+    Log::Warning("LineGraph::Add",
+                 "The time series stored in this line graph does not contain "
+                 "an entry for (",
+                 ts_name, "). Operation aborted.");
+    return nullptr;
+  }
   const auto& xvals = ts_->GetXValues(ts_name);
   const auto& yvals = ts_->GetYValues(ts_name);
   TGraph* gr = new TGraph(xvals.size(), xvals.data(), yvals.data());
@@ -118,7 +121,8 @@ void LineGraph::SaveAs(const std::string& filenpath_wo_extension,
   Finalize(mg_draw_option);
   for (auto& ext : extensions) {
     auto full_path = Concat(filenpath_wo_extension, ext);
-    Log::Info("LineGraph::SaveAs", Concat("Saved LineGraph at: ", full_path).c_str());
+    Log::Info("LineGraph::SaveAs",
+              Concat("Saved LineGraph at: ", full_path).c_str());
     c_->SaveAs(full_path.c_str());
   }
 }
@@ -146,7 +150,7 @@ TStyle* LineGraph::GetTStyle() { return s_; }
 
 // -----------------------------------------------------------------------------
 void LineGraph::Finalize(const char* mg_draw_option) {
-  if(s_) {
+  if (s_) {
     s_->cd();
   }
   mg_->Draw(mg_draw_option);
