@@ -33,6 +33,12 @@ void TimeSeries::Merge(
     TimeSeries* merged, const std::vector<TimeSeries>& time_series,
     const std::function<void(const std::vector<double>&, double*, double*,
                              double*)>& merger) {
+  if (!merged) {
+    Log::Warning("TimeSeries::Merge",
+                 "Parameter 'merged' is a nullptr. Operation aborted.");
+    return;
+  }
+
   // check that merged is empty
   if (merged->data_.size() != 0) {
     Log::Warning("TimeSeries::Merge",
@@ -102,6 +108,7 @@ void TimeSeries::Merge(
 
 #pragma omp parallel for
     for (uint64_t i = 0; i < xref.size(); ++i) {
+      mdata.x_values[i] = xref[i];
       std::vector<double> all_y_values(time_series.size());
       for (uint64_t j = 0; j < time_series.size(); ++j) {
         all_y_values[j] = time_series[j].data_.at(key).y_values[i];
@@ -142,9 +149,11 @@ void TimeSeries::Update() {
   auto* param = sim->GetParam();
   for (auto& entry : data_) {
     auto& result_data = entry.second;
-    result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
-                                   param->simulation_time_step);
-    result_data.y_values.push_back(result_data.collector(sim));
+    if (result_data.collector != nullptr) {
+      result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
+                                     param->simulation_time_step);
+      result_data.y_values.push_back(result_data.collector(sim));
+    }
   }
 }
 
@@ -226,9 +235,9 @@ void TimeSeries::Save(const std::string& full_filepath) const {
 }
 
 // -----------------------------------------------------------------------------
-void TimeSeries::SaveAsJson(const std::string& full_filepath) const {
+void TimeSeries::SaveJson(const std::string& full_filepath) const {
   TBufferJSON::ExportToFile(full_filepath.c_str(), this, Class());
 }
-    
+
 }  // namespace experimental
 }  // namespace bdm

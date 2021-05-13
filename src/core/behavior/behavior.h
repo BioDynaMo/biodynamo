@@ -140,29 +140,6 @@ class Behavior {
                                                                              \
  public:
 
-// TODO documentation
-class StatelessBehavior : public Behavior {
-  BDM_BEHAVIOR_HEADER(StatelessBehavior, Behavior, 1);
-
- public:
-  using FPtr = void (*)(Agent*);
-  StatelessBehavior() : fptr_(nullptr) {}
-  StatelessBehavior(const FPtr fptr) : fptr_(fptr) {}
-  StatelessBehavior(const StatelessBehavior& other)
-      : Behavior(other), fptr_(other.fptr_) {}
-  virtual ~StatelessBehavior() {}
-
-  void Initialize(const NewAgentEvent& event) override {
-    Base::Initialize(event);
-    fptr_ = static_cast<StatelessBehavior*>(event.existing_behavior)->fptr_;
-  }
-
-  void Run(Agent* agent) override { fptr_(agent); }
-
- private:
-  FPtr fptr_;
-};
-
 }  // namespace bdm
 
 #endif  // CORE_BEHAVIOR_BEHAVIOR_H_

@@ -74,7 +74,7 @@ class TimeSeries {
 
   void Save(const std::string& full_filepath) const;
 
-  void SaveAsJson(const std::string& full_filepath) const;
+  void SaveJson(const std::string& full_filepath) const;
 
  private:
   std::unordered_map<std::string, Data> data_;
@@ -93,7 +93,7 @@ inline void TimeSeries::Data::Streamer(TBuffer& R__b) {
     R__b.ReadClassBuffer(TimeSeries::Data::Class(), this);
     Long64_t l;
     R__b.ReadLong64(l);
-    this->collector = reinterpret_cast<double(*)(Simulation*)>(l);
+    this->collector = reinterpret_cast<double (*)(Simulation*)>(l);
   } else {
     R__b.WriteClassBuffer(TimeSeries::Data::Class(), this);
     Long64_t l = reinterpret_cast<Long64_t>(this->collector);

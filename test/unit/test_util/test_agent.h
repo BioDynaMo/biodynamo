@@ -56,7 +56,7 @@ class TestAgent : public Agent {
   void SetDiameter(const double diameter) override { diameter_ = diameter; }
 
   int GetData() const { return data_; }
-  void SetData(double data) { data_ = data; }
+  void SetData(int data) { data_ = data; }
 
  protected:
   Double3 position_ = {{0, 0, 0}};

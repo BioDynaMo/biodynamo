@@ -13,9 +13,11 @@
 // -----------------------------------------------------------------------------
 
 #include "core/analysis/time_series.h"
+#include <TMath.h>
 #include <gtest/gtest.h>
 #include "core/agent/cell.h"
 #include "core/behavior/behavior.h"
+#include "core/behavior/stateless_behavior.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "unit/test_util/test_util.h"
@@ -125,9 +127,10 @@ TEST(TimeSeries, AddCollectorAndUpdate) {
   // check entries for my-entry
   const auto& xvals = ts->GetXValues("num-agents");
   EXPECT_EQ(3u, xvals.size());
-  for(uint64_t i = 0; i < 3; ++i) {
-    EXPECT_NEAR(i * param->simulation_time_step, xvals[i], abs_error<double>::value);
-  }  
+  for (uint64_t i = 0; i < 3; ++i) {
+    EXPECT_NEAR(i * param->simulation_time_step, xvals[i],
+                abs_error<double>::value);
+  }
   const auto& yvals = ts->GetYValues("num-agents");
   EXPECT_EQ(3u, yvals.size());
   EXPECT_NEAR(2.0, yvals[0], abs_error<double>::value);
@@ -137,7 +140,12 @@ TEST(TimeSeries, AddCollectorAndUpdate) {
 
 // -----------------------------------------------------------------------------
 TEST(TimeSeries, StoreAndLoad) {
+  Simulation sim(TEST_NAME);
   TimeSeries ts;
+
+  auto collect_function = [](Simulation* sim) { return 4.0; };
+  ts.AddCollector("collect", collect_function);
+
   ts.Add("my-entry", {1, 2}, {3, 4});
   ts.Save("ts.root");
 
@@ -146,8 +154,10 @@ TEST(TimeSeries, StoreAndLoad) {
   TimeSeries::Load("ts.root", &restored);
   ASSERT_TRUE(restored != nullptr);
 
-  EXPECT_EQ(1u, restored->Size());
+  EXPECT_EQ(2u, restored->Size());
   EXPECT_TRUE(restored->Contains("my-entry"));
+  EXPECT_TRUE(restored->Contains("collect"));
+
   const auto& xvals = restored->GetXValues("my-entry");
   EXPECT_EQ(2u, xvals.size());
   EXPECT_NEAR(1.0, xvals[0], abs_error<double>::value);
@@ -156,6 +166,143 @@ TEST(TimeSeries, StoreAndLoad) {
   EXPECT_EQ(2u, yvals.size());
   EXPECT_NEAR(3.0, yvals[0], abs_error<double>::value);
   EXPECT_NEAR(4.0, yvals[1], abs_error<double>::value);
+
+  // check if collector has been restored correctly.
+  restored->Update();
+  const auto& xvals1 = restored->GetXValues("collect");
+  EXPECT_EQ(1u, xvals1.size());
+  EXPECT_NEAR(0.0, xvals1[0], abs_error<double>::value);
+  const auto& yvals1 = restored->GetYValues("collect");
+  EXPECT_EQ(1u, yvals1.size());
+  EXPECT_NEAR(4.0, yvals1[0], abs_error<double>::value);
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, StoreJson) {
+  TimeSeries ts;
+
+  auto collect_function = [](Simulation* sim) { return 4.0; };
+  ts.AddCollector("collect", collect_function);
+
+  ts.Add("my-entry", {1, 2}, {3, 4});
+  ts.SaveJson("ts.json");
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, MergeNullptr) {
+  std::vector<TimeSeries> tss(2);
+  tss[0].Add("entry-0", {}, {});
+  tss[1].Add("entry-0", {}, {});
+
+  TimeSeries::Merge(nullptr, tss,
+                    [](const std::vector<double>& all_y_values, double* y,
+                       double* el, double* eh) {});
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, MergeMissingEntries) {
+  std::vector<TimeSeries> tss(2);
+  tss[0].Add("entry-0", {}, {});
+  tss[1].Add("entry-0", {}, {});
+  tss[1].Add("entry-1", {}, {});
+
+  TimeSeries merged;
+  TimeSeries::Merge(&merged, tss,
+                    [](const std::vector<double>& all_y_values, double* y,
+                       double* el, double* eh) {});
+
+  EXPECT_EQ(0u, merged.Size());
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, MergeDifferentNumberOfDataEntries) {
+  std::vector<TimeSeries> tss(2);
+  tss[0].Add("entry-0", {1, 2}, {3, 4});
+  tss[1].Add("entry-0", {1, 2, 3}, {5, 6, 7});
+
+  TimeSeries merged;
+  TimeSeries::Merge(&merged, tss,
+                    [](const std::vector<double>& all_y_values, double* y,
+                       double* el, double* eh) {});
+
+  EXPECT_EQ(0u, merged.Size());
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, MergeDifferentNumberOfXValues) {
+  std::vector<TimeSeries> tss(2);
+  tss[0].Add("entry-0", {1, 3}, {3, 4});
+  tss[1].Add("entry-0", {1, 2}, {6, 7});
+
+  TimeSeries merged;
+  TimeSeries::Merge(&merged, tss,
+                    [](const std::vector<double>& all_y_values, double* y,
+                       double* el, double* eh) {});
+
+  EXPECT_EQ(0u, merged.Size());
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, Merge) {
+  std::vector<TimeSeries> tss(3);
+  tss[0].Add("entry-0", {1, 2}, {2, 5});
+  tss[1].Add("entry-0", {1, 2}, {4, 8});
+  tss[2].Add("entry-0", {1, 2}, {1, 13});
+
+  TimeSeries merged;
+  TimeSeries::Merge(
+      &merged, tss,
+      [](const std::vector<double>& all_y_values, double* y, double* el,
+         double* eh) {
+        *y = TMath::Median(all_y_values.size(), all_y_values.data());
+        *el = *y - *TMath::LocMin(all_y_values.begin(), all_y_values.end());
+        *eh = *TMath::LocMax(all_y_values.begin(), all_y_values.end()) - *y;
+      });
+
+  EXPECT_EQ(1u, merged.Size());
+  const auto& xvals = merged.GetXValues("entry-0");
+  EXPECT_EQ(2u, xvals.size());
+  EXPECT_NEAR(1.0, xvals[0], abs_error<double>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<double>::value);
+  const auto& yvals = merged.GetYValues("entry-0");
+  EXPECT_EQ(2u, yvals.size());
+  EXPECT_NEAR(2.0, yvals[0], abs_error<double>::value);
+  EXPECT_NEAR(8.0, yvals[1], abs_error<double>::value);
+  const auto& el = merged.GetYErrorLow("entry-0");
+  EXPECT_EQ(2u, el.size());
+  EXPECT_NEAR(1.0, el[0], abs_error<double>::value);
+  EXPECT_NEAR(3.0, el[1], abs_error<double>::value);
+  const auto& eh = merged.GetYErrorHigh("entry-0");
+  EXPECT_EQ(2u, eh.size());
+  EXPECT_NEAR(2.0, eh[0], abs_error<double>::value);
+  EXPECT_NEAR(5.0, eh[1], abs_error<double>::value);
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, AssignmentOperator) {
+  TimeSeries ts;
+  EXPECT_EQ(0u, ts.Size());
+  ts.Add("my-entry", {1, 2}, {3, 4});
+
+  TimeSeries ts2;
+  ts2 = ts;
+  EXPECT_EQ(1u, ts.Size());
+  EXPECT_TRUE(ts.Contains("my-entry"));
+  EXPECT_EQ(1u, ts2.Size());
+  EXPECT_TRUE(ts2.Contains("my-entry"));
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, MoveAssignmentOperator) {
+  TimeSeries ts;
+  EXPECT_EQ(0u, ts.Size());
+  ts.Add("my-entry", {1, 2}, {3, 4});
+
+  TimeSeries ts2;
+  ts2 = std::move(ts);
+  EXPECT_EQ(0u, ts.Size());
+  EXPECT_EQ(1u, ts2.Size());
+  EXPECT_TRUE(ts2.Contains("my-entry"));
 }
 
 }  // namespace experimental

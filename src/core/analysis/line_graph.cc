@@ -16,6 +16,7 @@
 #include <TCanvas.h>
 #include <TFrame.h>
 #include <TGraph.h>
+#include <TGraphAsymmErrors.h>
 #include <TLegend.h>
 #include <TMultiGraph.h>
 #include <TStyle.h>
@@ -40,6 +41,15 @@ LineGraph::LineGraph(TimeSeries* ts, const std::string& title,
   mg_->SetTitle(Concat(title, ";", xaxis_title, ";", yaxis_title).c_str());
   if (legend) {
     l_ = new TLegend();
+  }
+}
+
+// -----------------------------------------------------------------------------
+LineGraph::~LineGraph() {
+  delete c_;
+  delete mg_;
+  if (l_) { 
+    delete l_;
   }
 }
 
@@ -71,7 +81,14 @@ TGraph* LineGraph::Add(const std::string& ts_name,
   }
   const auto& xvals = ts_->GetXValues(ts_name);
   const auto& yvals = ts_->GetYValues(ts_name);
-  TGraph* gr = new TGraph(xvals.size(), xvals.data(), yvals.data());
+  const auto& el = ts_->GetYErrorLow(ts_name);
+  const auto& eh = ts_->GetYErrorHigh(ts_name);
+  TGraph* gr = nullptr;
+  if (el.size() == 0) {
+    gr = new TGraph(xvals.size(), xvals.data(), yvals.data());
+  } else {
+    gr = new TGraphAsymmErrors(xvals.size(), xvals.data(), yvals.data(), nullptr, nullptr, el.data(), eh.data());
+  }
   gr->SetTitle(legend_label.c_str());
   gr->InvertBit(TGraph::EStatusBits::kNotEditable);
   gr->SetLineColorAlpha(line_color, line_color_alpha);
@@ -122,7 +139,7 @@ void LineGraph::SaveAs(const std::string& filenpath_wo_extension,
   for (auto& ext : extensions) {
     auto full_path = Concat(filenpath_wo_extension, ext);
     Log::Info("LineGraph::SaveAs",
-              Concat("Saved LineGraph at: ", full_path).c_str());
+              "Saved LineGraph at: ", full_path);
     c_->SaveAs(full_path.c_str());
   }
 }
@@ -156,7 +173,6 @@ void LineGraph::Finalize(const char* mg_draw_option) {
   mg_->Draw(mg_draw_option);
   l_->Draw();
   c_->Update();
-  c_->GetFrame()->SetBorderSize(12);
   gPad->Modified();
   gPad->Update();
   c_->Modified();
