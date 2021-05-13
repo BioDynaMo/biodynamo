@@ -36,11 +36,11 @@ class StatelessBehavior : public Behavior {
     fptr_ = static_cast<StatelessBehavior*>(event.existing_behavior)->fptr_;
   }
 
-  void Run(Agent* agent) override { 
+  void Run(Agent* agent) override {
     if (!fptr_) {
       return;
     }
-    fptr_(agent); 
+    fptr_(agent);
   }
 
  private:
@@ -67,7 +67,6 @@ inline void StatelessBehavior::Streamer(TBuffer& R__b) {
 }
 
 #endif  // !defined(__CLING__) || defined(__ROOTCLING__)
-
 
 }  // namespace bdm
 

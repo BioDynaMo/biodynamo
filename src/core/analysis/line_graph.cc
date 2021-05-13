@@ -48,7 +48,7 @@ LineGraph::LineGraph(TimeSeries* ts, const std::string& title,
 LineGraph::~LineGraph() {
   delete c_;
   delete mg_;
-  if (l_) { 
+  if (l_) {
     delete l_;
   }
 }
@@ -87,7 +87,8 @@ TGraph* LineGraph::Add(const std::string& ts_name,
   if (el.size() == 0) {
     gr = new TGraph(xvals.size(), xvals.data(), yvals.data());
   } else {
-    gr = new TGraphAsymmErrors(xvals.size(), xvals.data(), yvals.data(), nullptr, nullptr, el.data(), eh.data());
+    gr = new TGraphAsymmErrors(xvals.size(), xvals.data(), yvals.data(),
+                               nullptr, nullptr, el.data(), eh.data());
   }
   gr->SetTitle(legend_label.c_str());
   gr->InvertBit(TGraph::EStatusBits::kNotEditable);
@@ -138,8 +139,7 @@ void LineGraph::SaveAs(const std::string& filenpath_wo_extension,
   Finalize(mg_draw_option);
   for (auto& ext : extensions) {
     auto full_path = Concat(filenpath_wo_extension, ext);
-    Log::Info("LineGraph::SaveAs",
-              "Saved LineGraph at: ", full_path);
+    Log::Info("LineGraph::SaveAs", "Saved LineGraph at: ", full_path);
     c_->SaveAs(full_path.c_str());
   }
 }
