@@ -182,7 +182,7 @@ class Simulation {
   /// Timestep when destructor was called
   int64_t dtor_ts_ = 0;  //!
   /// Collects time series information during the simulation
-  experimental::TimeSeries* time_series_;
+  experimental::TimeSeries* time_series_ = nullptr;
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,

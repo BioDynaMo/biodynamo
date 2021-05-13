@@ -62,6 +62,8 @@
     <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
-    <class name="bdm::TimeSeries" />
+    <class name="bdm::experimental::TimeSeries" />
+    <class name="bdm::experimental::TimeSeries::Data" noStreamer="true" />
+    <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
   </selection>
 </lcgdict>

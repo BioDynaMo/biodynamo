@@ -28,11 +28,12 @@ namespace experimental {
 class TimeSeries {
  public:
   struct Data {
-    double (*collector)(Simulation*) = nullptr;
+    double (*collector)(Simulation*) = nullptr;  //!
     std::vector<double> x_values;
     std::vector<double> y_values;
     std::vector<double> y_error_low;
     std::vector<double> y_error_high;
+    BDM_CLASS_DEF_NV(Data, 1);
   };
 
   ///  Restore a saved TimeSeries object.
@@ -80,6 +81,27 @@ class TimeSeries {
 
   BDM_CLASS_DEF_NV(TimeSeries, 1);
 };
+
+// The following custom streamer should be visible to rootcling for dictionary
+// generation, but not to the interpreter!
+#if (!defined(__CLING__) || defined(__ROOTCLING__)) && defined(USE_DICT)
+
+// The custom streamer is needed because ROOT can't stream function pointers
+// by default.
+inline void TimeSeries::Data::Streamer(TBuffer& R__b) {
+  if (R__b.IsReading()) {
+    R__b.ReadClassBuffer(TimeSeries::Data::Class(), this);
+    Long64_t l;
+    R__b.ReadLong64(l);
+    this->collector = reinterpret_cast<double(*)(Simulation*)>(l);
+  } else {
+    R__b.WriteClassBuffer(TimeSeries::Data::Class(), this);
+    Long64_t l = reinterpret_cast<Long64_t>(this->collector);
+    R__b.WriteLong64(l);
+  }
+}
+
+#endif  // !defined(__CLING__) || defined(__ROOTCLING__)
 
 }  // namespace experimental
 }  // namespace bdm

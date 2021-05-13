@@ -135,5 +135,28 @@ TEST(TimeSeries, AddCollectorAndUpdate) {
   EXPECT_NEAR(8.0, yvals[2], abs_error<double>::value);
 }
 
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, StoreAndLoad) {
+  TimeSeries ts;
+  ts.Add("my-entry", {1, 2}, {3, 4});
+  ts.Save("ts.root");
+
+  TimeSeries* restored = nullptr;
+
+  TimeSeries::Load("ts.root", &restored);
+  ASSERT_TRUE(restored != nullptr);
+
+  EXPECT_EQ(1u, restored->Size());
+  EXPECT_TRUE(restored->Contains("my-entry"));
+  const auto& xvals = restored->GetXValues("my-entry");
+  EXPECT_EQ(2u, xvals.size());
+  EXPECT_NEAR(1.0, xvals[0], abs_error<double>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<double>::value);
+  const auto& yvals = restored->GetYValues("my-entry");
+  EXPECT_EQ(2u, yvals.size());
+  EXPECT_NEAR(3.0, yvals[0], abs_error<double>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<double>::value);
+}
+
 }  // namespace experimental
 }  // namespace bdm

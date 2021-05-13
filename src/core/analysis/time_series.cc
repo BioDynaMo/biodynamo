@@ -222,13 +222,13 @@ void TimeSeries::ListEntries() const {
 
 // -----------------------------------------------------------------------------
 void TimeSeries::Save(const std::string& full_filepath) const {
-  WritePersistentObject(full_filepath.c_str(), "TimeSeries", *this, "new");
+  WritePersistentObject(full_filepath.c_str(), "TimeSeries", *this, "recreate");
 }
 
 // -----------------------------------------------------------------------------
 void TimeSeries::SaveAsJson(const std::string& full_filepath) const {
   TBufferJSON::ExportToFile(full_filepath.c_str(), this, Class());
 }
-
+    
 }  // namespace experimental
 }  // namespace bdm
