@@ -21,31 +21,31 @@
 #include "core/agent/agent.h"
 #include "core/container/shared_data.h"
 #include "core/functor.h"
-#include "core/util/thread_info.h"
 #include "core/operation/reduction_op.h"
 #include "core/resource_manager.h"
+#include "core/util/thread_info.h"
 
 namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
 template <typename T>
-T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
+inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
          Functor<T, const SharedData<T>&>& reduce_partial_results) {
   // The thread-local (partial) results
   SharedData<T> tl_results;
-  // initialize thread local data 
+  // initialize thread local data
   tl_results.resize(ThreadInfo::GetInstance()->GetMaxThreads());
   for (auto& el : tl_results) {
     el = T();
   }
-  
+
   // reduce
-  //   execute agent functor in parallel  
-  auto actual_agent_func = L2F([&](Agent* agent, AgentHandle){
+  //   execute agent functor in parallel
+  auto actual_agent_func = L2F([&](Agent* agent, AgentHandle) {
     auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
     agent_functor(agent, &(tl_results[tid]));
-      });
+  });
   auto* rm = sim->GetResourceManager();
   rm->ForEachAgentParallel(actual_agent_func);
   //   combine thread-local results
@@ -53,18 +53,18 @@ T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
 }
 
 // -----------------------------------------------------------------------------
-uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition) {
+inline uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition) {
   // The thread-local (partial) results
   SharedData<uint64_t> tl_results;
-  // initialize thread local data 
+  // initialize thread local data
   tl_results.resize(ThreadInfo::GetInstance()->GetMaxThreads());
   for (auto& el : tl_results) {
     el = 0;
   }
-  
+
   // reduce
-  //   execute agent functor in parallel  
-  auto actual_agent_func = L2F([&](Agent* agent, AgentHandle){
+  //   execute agent functor in parallel
+  auto actual_agent_func = L2F([&](Agent* agent, AgentHandle) {
     auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
     if (condition(agent)) {
       tl_results[tid]++;
@@ -73,7 +73,7 @@ uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition) {
   auto* rm = sim->GetResourceManager();
   rm->ForEachAgentParallel(actual_agent_func);
   //   combine thread-local results
-  SumReduction<uint64_t> sum; 
+  SumReduction<uint64_t> sum;
   return sum(tl_results);
 }
 

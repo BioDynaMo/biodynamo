@@ -23,6 +23,7 @@
 #include "core/agent/new_agent_event.h"
 #include "core/analysis/line_graph.h"
 #include "core/analysis/time_series.h"
+#include "core/analysis/reduce.h"
 #include "core/behavior/behavior.h"
 #include "core/behavior/chemotaxis.h"
 #include "core/behavior/gene_regulation.h"
