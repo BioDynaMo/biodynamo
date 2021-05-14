@@ -67,7 +67,7 @@ class LineGraph {
 
   void SaveAs(const std::string& filenpath_wo_extension,
               const std::vector<std::string>& extensions);
-  
+
   void Update();
 
   TCanvas* GetTCanvas();

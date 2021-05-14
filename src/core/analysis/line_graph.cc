@@ -145,7 +145,7 @@ void LineGraph::SaveAs(const std::string& filenpath_wo_extension,
     c_->SaveAs(full_path.c_str());
   }
 }
-  
+
 // -----------------------------------------------------------------------------
 void LineGraph::SetMultiGraphDrawOption(const std::string& s) {
   mg_draw_option_ = s;

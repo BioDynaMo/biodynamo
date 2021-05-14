@@ -31,7 +31,7 @@ namespace experimental {
 // -----------------------------------------------------------------------------
 template <typename T>
 inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
-         Functor<T, const SharedData<T>&>& reduce_partial_results) {
+                Functor<T, const SharedData<T>&>& reduce_partial_results) {
   // The thread-local (partial) results
   SharedData<T> tl_results;
   // initialize thread local data
