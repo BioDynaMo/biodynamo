@@ -61,12 +61,14 @@ class LineGraph {
   /// https://root-forum.cern.ch/t/how-to-imagine-ndc-normalized-coord/24202
   void SetLegendPosNDC(double x1, double y1, double x2, double y2);
 
-  void Draw(const char* mg_draw_option = "A",
-            const char* canvas_draw_option = "");
+  void SetMultiGraphDrawOption(const std::string& s);
+
+  void Draw(const char* canvas_draw_option = "");
 
   void SaveAs(const std::string& filenpath_wo_extension,
-              const std::vector<std::string>& extensions,
-              const char* mg_draw_option = "A");
+              const std::vector<std::string>& extensions);
+  
+  void Update();
 
   TCanvas* GetTCanvas();
   TMultiGraph* GetTMultiGraph();
@@ -76,13 +78,12 @@ class LineGraph {
 
  private:
   const TimeSeries* ts_ = nullptr;
+  std::string mg_draw_option_ = "A";
   TCanvas* c_ = nullptr;
   TMultiGraph* mg_ = nullptr;
   TLegend* l_ = nullptr;
   TStyle* s_ = nullptr;
   std::unordered_map<std::string, TGraph*> id_tgraph_map_;
-
-  void Finalize(const char* mg_draw_option = "A");
 };
 
 }  // namespace experimental

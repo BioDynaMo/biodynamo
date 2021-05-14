@@ -32,10 +32,12 @@ LineGraph::LineGraph(const TimeSeries* ts, const std::string& title,
                      const std::string& xaxis_title,
                      const std::string& yaxis_title, bool legend, TStyle* style,
                      int width, int height)
-    : ts_(ts), c_(new TCanvas()), mg_(new TMultiGraph()), s_(style) {
+    : ts_(ts), s_(style) {
   if (s_) {
     s_->cd();
   }
+  c_ = new TCanvas();
+  mg_ = new TMultiGraph();
   c_->SetCanvasSize(width, height);
   c_->SetGrid();
   mg_->SetTitle(Concat(title, ";", xaxis_title, ";", yaxis_title).c_str());
@@ -110,14 +112,14 @@ TGraph* LineGraph::Add(const std::string& ts_name,
 }
 
 // -----------------------------------------------------------------------------
-void LineGraph::Draw(const char* mg_draw_option,
-                     const char* canvas_draw_option) {
-  Finalize(mg_draw_option);
+void LineGraph::Draw(const char* canvas_draw_option) {
+  Update();
   c_->Draw(canvas_draw_option);
 }
 
 // -----------------------------------------------------------------------------
 void LineGraph::SetLegendPos(double x1, double y1, double x2, double y2) {
+  Update();
   l_->SetX1(x1);
   l_->SetY1(y1);
   l_->SetX2(x2);
@@ -126,6 +128,7 @@ void LineGraph::SetLegendPos(double x1, double y1, double x2, double y2) {
 
 // -----------------------------------------------------------------------------
 void LineGraph::SetLegendPosNDC(double x1, double y1, double x2, double y2) {
+  Update();
   l_->SetX1NDC(x1);
   l_->SetY1NDC(y1);
   l_->SetX2NDC(x2);
@@ -134,14 +137,18 @@ void LineGraph::SetLegendPosNDC(double x1, double y1, double x2, double y2) {
 
 // -----------------------------------------------------------------------------
 void LineGraph::SaveAs(const std::string& filenpath_wo_extension,
-                       const std::vector<std::string>& extensions,
-                       const char* mg_draw_option) {
-  Finalize(mg_draw_option);
+                       const std::vector<std::string>& extensions) {
+  Update();
   for (auto& ext : extensions) {
     auto full_path = Concat(filenpath_wo_extension, ext);
     Log::Info("LineGraph::SaveAs", "Saved LineGraph at: ", full_path);
     c_->SaveAs(full_path.c_str());
   }
+}
+  
+// -----------------------------------------------------------------------------
+void LineGraph::SetMultiGraphDrawOption(const std::string& s) {
+  mg_draw_option_ = s;
 }
 
 // -----------------------------------------------------------------------------
@@ -166,11 +173,11 @@ TGraph* LineGraph::GetTGraph(const std::string& ts_name) {
 TStyle* LineGraph::GetTStyle() { return s_; }
 
 // -----------------------------------------------------------------------------
-void LineGraph::Finalize(const char* mg_draw_option) {
+void LineGraph::Update() {
   if (s_) {
     s_->cd();
   }
-  mg_->Draw(mg_draw_option);
+  mg_->Draw(mg_draw_option_.c_str());
   l_->Draw();
   c_->Update();
   gPad->Modified();

@@ -13,29 +13,13 @@
 // -----------------------------------------------------------------------------
 
 #include "core/analysis/style.h"
-#include <iostream> // TODO remove
-#include <TBufferJSON.h> // TODO remove
+
 namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
-Style::Style(TRootIOCtor*) : tstyle_(new TStyle(*gStyle)) {
-  ToTStyle();
-  std::cout << "Style trootioctor" << std::endl;
-  std::cout << TBufferJSON::ToJSON(tstyle_, TBufferJSON::kMapAsObject).Data() << std::endl;
-  std::cout << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-Style::Style() : tstyle_(new TStyle(*gStyle)) {
-  std::cout << "Style ctor" << std::endl;
-  ToTStyle();
-}
-
-// -----------------------------------------------------------------------------
-Style::Style(TStyle* tstyle) : tstyle_(new TStyle(*tstyle)) {
-  std::cout << "Style tstyle ctor" << std::endl;
-  FromTStyle();
+Style::Style() {
+  FromTStyle(gStyle);
 }
 
 // -----------------------------------------------------------------------------
@@ -46,15 +30,21 @@ Style::~Style() {
 }
 
 // -----------------------------------------------------------------------------
-const TStyle* Style::GetTStyle() const {
+TStyle* Style::GetTStyle() const {
+  if (!tstyle_) {
+    tstyle_ = new TStyle();
+    ToTStyle();
+  }
   return tstyle_;
 }
 
 // -----------------------------------------------------------------------------
-void Style::ToTStyle() {
+Style::operator TStyle*() const { return GetTStyle(); }
+
+// -----------------------------------------------------------------------------
+void Style::ToTStyle() const {
    // delete gROOT->GetStyle("Modern");
-   //
-   auto set_axis = [this](TAttAxis& axis, Option_t* o) {
+   auto set_axis = [this](const TAttAxis& axis, Option_t* o) {
      this->tstyle_->SetNdivisions(axis.GetNdivisions(), o);
      this->tstyle_->SetAxisColor(axis.GetAxisColor(), o);
      this->tstyle_->SetLabelColor(axis.GetLabelColor(), o);
@@ -151,8 +141,6 @@ void Style::ToTStyle() {
    tstyle_->SetStatH(fStatH);
    tstyle_->SetStripDecimals(fStripDecimals);
    tstyle_->SetTitleAlign(fTitleAlign);
-   // FIXME
-   // tstyle_->SetTitleFillColor(GetTitleFillColor());
    tstyle_->SetTitleTextColor(fTitleTextColor);
    tstyle_->SetTitleBorderSize(fTitleBorderSize);
    tstyle_->SetTitleFont(fTitleFont);
@@ -190,139 +178,137 @@ void Style::ToTStyle() {
 }
 
 // -----------------------------------------------------------------------------
-void Style::FromTStyle() {
-   auto set_axis = [this](TAttAxis& axis, Option_t* o) {
-     axis.SetNdivisions(this->tstyle_->GetNdivisions(o));
-     axis.SetAxisColor(this->tstyle_->GetAxisColor(o));
-     axis.SetLabelColor(this->tstyle_->GetLabelColor(o));
-     axis.SetLabelFont(this->tstyle_->GetLabelFont(o));
-     axis.SetLabelOffset(this->tstyle_->GetLabelOffset(o));
-     axis.SetTickLength(this->tstyle_->GetTickLength(o));
-     axis.SetTitleOffset(this->tstyle_->GetTitleOffset(o));
-     axis.SetTitleSize(this->tstyle_->GetTitleSize(o));
-     axis.SetTitleColor(this->tstyle_->GetTitleColor(o));
-     axis.SetTitleFont(this->tstyle_->GetTitleFont(o));
+void Style::FromTStyle(TStyle* style) {
+   auto set_axis = [style](TAttAxis& axis, Option_t* o) {
+     axis.SetNdivisions(style->GetNdivisions(o));
+     axis.SetAxisColor(style->GetAxisColor(o));
+     axis.SetLabelColor(style->GetLabelColor(o));
+     axis.SetLabelFont(style->GetLabelFont(o));
+     axis.SetLabelOffset(style->GetLabelOffset(o));
+     axis.SetTickLength(style->GetTickLength(o));
+     axis.SetTitleOffset(style->GetTitleOffset(o));
+     axis.SetTitleSize(style->GetTitleSize(o));
+     axis.SetTitleColor(style->GetTitleColor(o));
+     axis.SetTitleFont(style->GetTitleFont(o));
    };
    set_axis(fXaxis, "x"); 
    set_axis(fYaxis, "y"); 
    set_axis(fZaxis, "z"); 
 
-   fBarWidth = tstyle_->GetBarWidth();
-   fBarOffset = tstyle_->GetBarOffset();
-   fColorModelPS = tstyle_->GetColorModelPS();
-   fDrawBorder = tstyle_->GetDrawBorder();
-   fOptLogx = tstyle_->GetOptLogx();
-   fOptLogy = tstyle_->GetOptLogy();
-   fOptLogz = tstyle_->GetOptLogz();
-   fOptDate = tstyle_->GetOptDate();
-   fOptStat = tstyle_->GetOptStat();
-   fOptTitle = tstyle_->GetOptTitle();
-   fOptFit = tstyle_->GetOptFit();
-   fNumberContours = tstyle_->GetNumberContours();
-   fAttDate.SetTextFont(tstyle_->GetAttDate()->GetTextFont());
-   fAttDate.SetTextSize(tstyle_->GetAttDate()->GetTextSize());
-   fAttDate.SetTextAngle(tstyle_->GetAttDate()->GetTextAngle());
-   fAttDate.SetTextAlign(tstyle_->GetAttDate()->GetTextAlign());
-   fAttDate.SetTextColor(tstyle_->GetAttDate()->GetTextColor());
-   fDateX = tstyle_->GetDateX();
-   fDateY= tstyle_->GetDateY();
-   fEndErrorSize = tstyle_->GetEndErrorSize();
-   fErrorX = tstyle_->GetErrorX();
-   fFuncColor= tstyle_->GetFuncColor();
-   fFuncStyle= tstyle_->GetFuncStyle();
-   fFuncWidth = tstyle_->GetFuncWidth();
-   fGridColor= tstyle_->GetGridColor();
-   fGridStyle=tstyle_->GetGridStyle();
-   fGridWidth=tstyle_->GetGridWidth();
-   fLegendBorderSize=tstyle_->GetLegendBorderSize();
-   fLegendFillColor=tstyle_->GetLegendFillColor();
-   fLegendFont=tstyle_->GetLegendFont();
-   fLegendTextSize=tstyle_->GetLegendTextSize();
-   fHatchesLineWidth=tstyle_->GetHatchesLineWidth();
-   fHatchesSpacing=tstyle_->GetHatchesSpacing();
-   fFrameFillColor=tstyle_->GetFrameFillColor();
-   fFrameLineColor=tstyle_->GetFrameLineColor();
-   fFrameFillStyle=tstyle_->GetFrameFillStyle();
-   fFrameLineStyle=tstyle_->GetFrameLineStyle();
-   fFrameLineWidth=tstyle_->GetFrameLineWidth();
-   fFrameBorderSize=tstyle_->GetFrameBorderSize();
-   fFrameBorderMode=tstyle_->GetFrameBorderMode();
-   fHistFillColor=tstyle_->GetHistFillColor();
-   fHistLineColor=tstyle_->GetHistLineColor();
-   fHistFillColor=tstyle_->GetHistFillStyle();
-   fHistLineColor=tstyle_->GetHistLineStyle();
-   fHistLineWidth=tstyle_->GetHistLineWidth();
-   fHistMinimumZero=tstyle_->GetHistMinimumZero();
-   fCanvasPreferGL=tstyle_->GetCanvasPreferGL();
-   fCanvasColor=tstyle_->GetCanvasColor();
-   fCanvasBorderSize=tstyle_->GetCanvasBorderSize();
-   fCanvasBorderMode=tstyle_->GetCanvasBorderMode();
-   fCanvasDefH=tstyle_->GetCanvasDefH();
-   fCanvasDefW=tstyle_->GetCanvasDefW();
-   fCanvasDefX=tstyle_->GetCanvasDefX();
-   fCanvasDefY=tstyle_->GetCanvasDefY();
-   fPadColor=tstyle_->GetPadColor();
-   fPadBorderSize=tstyle_->GetPadBorderSize();
-   fPadBorderMode=tstyle_->GetPadBorderMode();
-   fPadBottomMargin=tstyle_->GetPadBottomMargin();
-   fPadTopMargin=tstyle_->GetPadTopMargin();
-   fPadLeftMargin=tstyle_->GetPadLeftMargin();
-   fPadRightMargin=tstyle_->GetPadRightMargin();
-   fPadGridX=tstyle_->GetPadGridX();
-   fPadGridY=tstyle_->GetPadGridY();
-   fPadTickX=tstyle_->GetPadTickX();
-   fPadTickY=tstyle_->GetPadTickY();
-   tstyle_->GetPaperSize(fPaperSizeX, fPaperSizeY);
-   fScreenFactor=tstyle_->GetScreenFactor();
-   fStatColor=tstyle_->GetStatColor();
-   fStatTextColor=tstyle_->GetStatTextColor();
-   fStatBorderSize=tstyle_->GetStatBorderSize();
-   fStatFont=tstyle_->GetStatFont();
-   fStatFontSize=tstyle_->GetStatFontSize();
-   fStatStyle=tstyle_->GetStatStyle();
-   fStatFormat=tstyle_->GetStatFormat();
-   fStatX=tstyle_->GetStatX();
-   fStatY=tstyle_->GetStatY();
-   fStatW=tstyle_->GetStatW();
-   fStatH=tstyle_->GetStatH();
-   fStripDecimals=tstyle_->GetStripDecimals();
-   fTitleAlign=tstyle_->GetTitleAlign();
-   // FIXME
-   // tstyle_->SetTitleFillColor(GetTitleFillColor());
-   fTitleTextColor = tstyle_->GetTitleTextColor();
-   fTitleBorderSize=tstyle_->GetTitleBorderSize();
-   fTitleFont=tstyle_->GetTitleFont();
-   fTitleFontSize=tstyle_->GetTitleFontSize();
-   fTitleStyle=tstyle_->GetTitleStyle();
-   fTitleX=tstyle_->GetTitleX();
-   fTitleY=tstyle_->GetTitleY();
-   fTitleW=tstyle_->GetTitleW();
-   fTitleH=tstyle_->GetTitleH();
-   fLegoInnerR=tstyle_->GetLegoInnerR();
+   fBarWidth = style->GetBarWidth();
+   fBarOffset = style->GetBarOffset();
+   fColorModelPS = style->GetColorModelPS();
+   fDrawBorder = style->GetDrawBorder();
+   fOptLogx = style->GetOptLogx();
+   fOptLogy = style->GetOptLogy();
+   fOptLogz = style->GetOptLogz();
+   fOptDate = style->GetOptDate();
+   fOptStat = style->GetOptStat();
+   fOptTitle = style->GetOptTitle();
+   fOptFit = style->GetOptFit();
+   fNumberContours = style->GetNumberContours();
+   fAttDate.SetTextFont(style->GetAttDate()->GetTextFont());
+   fAttDate.SetTextSize(style->GetAttDate()->GetTextSize());
+   fAttDate.SetTextAngle(style->GetAttDate()->GetTextAngle());
+   fAttDate.SetTextAlign(style->GetAttDate()->GetTextAlign());
+   fAttDate.SetTextColor(style->GetAttDate()->GetTextColor());
+   fDateX = style->GetDateX();
+   fDateY= style->GetDateY();
+   fEndErrorSize = style->GetEndErrorSize();
+   fErrorX = style->GetErrorX();
+   fFuncColor= style->GetFuncColor();
+   fFuncStyle= style->GetFuncStyle();
+   fFuncWidth = style->GetFuncWidth();
+   fGridColor= style->GetGridColor();
+   fGridStyle=style->GetGridStyle();
+   fGridWidth=style->GetGridWidth();
+   fLegendBorderSize=style->GetLegendBorderSize();
+   fLegendFillColor=style->GetLegendFillColor();
+   fLegendFont=style->GetLegendFont();
+   fLegendTextSize=style->GetLegendTextSize();
+   fHatchesLineWidth=style->GetHatchesLineWidth();
+   fHatchesSpacing=style->GetHatchesSpacing();
+   fFrameFillColor=style->GetFrameFillColor();
+   fFrameLineColor=style->GetFrameLineColor();
+   fFrameFillStyle=style->GetFrameFillStyle();
+   fFrameLineStyle=style->GetFrameLineStyle();
+   fFrameLineWidth=style->GetFrameLineWidth();
+   fFrameBorderSize=style->GetFrameBorderSize();
+   fFrameBorderMode=style->GetFrameBorderMode();
+   fHistFillColor=style->GetHistFillColor();
+   fHistLineColor=style->GetHistLineColor();
+   fHistFillColor=style->GetHistFillStyle();
+   fHistLineColor=style->GetHistLineStyle();
+   fHistLineWidth=style->GetHistLineWidth();
+   fHistMinimumZero=style->GetHistMinimumZero();
+   fCanvasPreferGL=style->GetCanvasPreferGL();
+   fCanvasColor=style->GetCanvasColor();
+   fCanvasBorderSize=style->GetCanvasBorderSize();
+   fCanvasBorderMode=style->GetCanvasBorderMode();
+   fCanvasDefH=style->GetCanvasDefH();
+   fCanvasDefW=style->GetCanvasDefW();
+   fCanvasDefX=style->GetCanvasDefX();
+   fCanvasDefY=style->GetCanvasDefY();
+   fPadColor=style->GetPadColor();
+   fPadBorderSize=style->GetPadBorderSize();
+   fPadBorderMode=style->GetPadBorderMode();
+   fPadBottomMargin=style->GetPadBottomMargin();
+   fPadTopMargin=style->GetPadTopMargin();
+   fPadLeftMargin=style->GetPadLeftMargin();
+   fPadRightMargin=style->GetPadRightMargin();
+   fPadGridX=style->GetPadGridX();
+   fPadGridY=style->GetPadGridY();
+   fPadTickX=style->GetPadTickX();
+   fPadTickY=style->GetPadTickY();
+   style->GetPaperSize(fPaperSizeX, fPaperSizeY);
+   fScreenFactor=style->GetScreenFactor();
+   fStatColor=style->GetStatColor();
+   fStatTextColor=style->GetStatTextColor();
+   fStatBorderSize=style->GetStatBorderSize();
+   fStatFont=style->GetStatFont();
+   fStatFontSize=style->GetStatFontSize();
+   fStatStyle=style->GetStatStyle();
+   fStatFormat=style->GetStatFormat();
+   fStatX=style->GetStatX();
+   fStatY=style->GetStatY();
+   fStatW=style->GetStatW();
+   fStatH=style->GetStatH();
+   fStripDecimals=style->GetStripDecimals();
+   fTitleAlign=style->GetTitleAlign();
+   fTitleTextColor = style->GetTitleTextColor();
+   fTitleBorderSize=style->GetTitleBorderSize();
+   fTitleFont=style->GetTitleFont();
+   fTitleFontSize=style->GetTitleFontSize();
+   fTitleStyle=style->GetTitleStyle();
+   fTitleX=style->GetTitleX();
+   fTitleY=style->GetTitleY();
+   fTitleW=style->GetTitleW();
+   fTitleH=style->GetTitleH();
+   fLegoInnerR=style->GetLegoInnerR();
 
-   fHeaderPS=tstyle_->GetHeaderPS();
-   fTitlePS=tstyle_->GetTitlePS();
-   fFitFormat=tstyle_->GetFitFormat();
-   fPaintTextFormat=tstyle_->GetPaintTextFormat();
-   fLineScalePS=tstyle_->GetLineScalePS();
-   fJoinLinePS=tstyle_->GetJoinLinePS();
-   fCapLinePS=tstyle_->GetCapLinePS();
-   fColorModelPS=tstyle_->GetColorModelPS();
-   fTimeOffset=tstyle_->GetTimeOffset();
+   fHeaderPS=style->GetHeaderPS();
+   fTitlePS=style->GetTitlePS();
+   fFitFormat=style->GetFitFormat();
+   fPaintTextFormat=style->GetPaintTextFormat();
+   fLineScalePS=style->GetLineScalePS();
+   fJoinLinePS=style->GetJoinLinePS();
+   fCapLinePS=style->GetCapLinePS();
+   fColorModelPS=style->GetColorModelPS();
+   fTimeOffset=style->GetTimeOffset();
 
-   fLineColor=tstyle_->GetLineColor();
-   fLineStyle=tstyle_->GetLineStyle();
-   SetLineWidth(tstyle_->GetLineWidth());
-   SetFillColor(tstyle_->GetFillColor());
-   SetFillStyle(tstyle_->GetFillStyle());
-   SetMarkerColor(tstyle_->GetMarkerColor());
-   SetMarkerSize(tstyle_->GetMarkerSize());
-   SetMarkerStyle(tstyle_->GetMarkerStyle());
-   SetTextAlign(tstyle_->GetTextAlign());
-   SetTextAngle(tstyle_->GetTextAngle());
-   SetTextColor(tstyle_->GetTextColor());
-   SetTextFont(tstyle_->GetTextFont());
-   SetTextSize(tstyle_->GetTextSize());
+   fLineColor=style->GetLineColor();
+   fLineStyle=style->GetLineStyle();
+   SetLineWidth(style->GetLineWidth());
+   SetFillColor(style->GetFillColor());
+   SetFillStyle(style->GetFillStyle());
+   SetMarkerColor(style->GetMarkerColor());
+   SetMarkerSize(style->GetMarkerSize());
+   SetMarkerStyle(style->GetMarkerStyle());
+   SetTextAlign(style->GetTextAlign());
+   SetTextAngle(style->GetTextAngle());
+   SetTextColor(style->GetTextColor());
+   SetTextFont(style->GetTextFont());
+   SetTextSize(style->GetTextSize());
 }
 
 }  // namespace experimental

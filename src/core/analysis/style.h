@@ -24,14 +24,13 @@ namespace experimental {
 class Style : public TNamed, public TAttLine, public TAttFill, public TAttMarker, public TAttText {
 
  public:
-    Style(TRootIOCtor*);
     Style();
-    Style(TStyle* tstyle);
     ~Style();
-    const TStyle* GetTStyle() const;
+    operator TStyle*() const;
+    TStyle* GetTStyle() const;
 
 private:
-   TStyle* tstyle_ = nullptr;  //!
+   mutable TStyle* tstyle_ = nullptr;  //!
 
    TAttAxis      fXaxis;             ///< X axis attributes
    TAttAxis      fYaxis;             ///< Y axis attributes
@@ -143,8 +142,8 @@ private:
    Bool_t        fIsReading;         ///<! Set to FALSE when userclass::UseCurrentStyle is called by the style manager
    Float_t       fImageScaling;      ///< Image scaling to produce high definition bitmap images
 
-   void ToTStyle();
-   void FromTStyle();
+   void ToTStyle() const;
+   void FromTStyle(TStyle* style);
 
    ClassDefNV(Style, 1);
 };
