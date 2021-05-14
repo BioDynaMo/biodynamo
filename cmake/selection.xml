@@ -19,6 +19,7 @@
     <class name="__gnu_cxx::__normal_iterator<double*,vector<double> >"/>
     <class name="__gnu_cxx::__normal_iterator<const double*,vector<double> >"/>
     <class name="std::function<void(bdm::Agent*)>"/>
+    <class pattern="bdm::LambdaFunctor*"/>
     <!-- list of classes with dictionary in libbiodynamo
          -> all selected classes from libbiodynamo-selection.xml -->
     <class name="bdm::neuroscience::NeuronSoma" />
