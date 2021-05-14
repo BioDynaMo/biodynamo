@@ -33,7 +33,7 @@ class TimeSeries;
 class LineGraph {
  public:
   /// \param style   This class does not take ownership of style
-  LineGraph(TimeSeries* ts, const std::string& title = "",
+  LineGraph(const TimeSeries* ts, const std::string& title = "",
             const std::string& xaxis_title = "",
             const std::string& yaxis_title = "", bool legend = true,
             TStyle* style = nullptr, int width = 700, int height = 500);
@@ -75,7 +75,7 @@ class LineGraph {
   TStyle* GetTStyle();
 
  private:
-  TimeSeries* ts_ = nullptr;
+  const TimeSeries* ts_ = nullptr;
   TCanvas* c_ = nullptr;
   TMultiGraph* mg_ = nullptr;
   TLegend* l_ = nullptr;

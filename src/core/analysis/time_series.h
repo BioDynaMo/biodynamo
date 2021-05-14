@@ -49,6 +49,10 @@ class TimeSeries {
       const std::function<void(const std::vector<double>&, double*, double*,
                                double*)>& merger);
 
+  TimeSeries();
+  TimeSeries(const TimeSeries& other);
+  TimeSeries(TimeSeries&& other);
+
   TimeSeries& operator=(TimeSeries&& other);
   TimeSeries& operator=(const TimeSeries& other);
 

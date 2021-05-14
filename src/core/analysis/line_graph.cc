@@ -28,7 +28,7 @@ namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
-LineGraph::LineGraph(TimeSeries* ts, const std::string& title,
+LineGraph::LineGraph(const TimeSeries* ts, const std::string& title,
                      const std::string& xaxis_title,
                      const std::string& yaxis_title, bool legend, TStyle* style,
                      int width, int height)

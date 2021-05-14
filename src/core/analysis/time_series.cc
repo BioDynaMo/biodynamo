@@ -120,6 +120,15 @@ void TimeSeries::Merge(
 }
 
 // -----------------------------------------------------------------------------
+TimeSeries::TimeSeries() {}
+
+// -----------------------------------------------------------------------------
+TimeSeries::TimeSeries(const TimeSeries& other) : data_(other.data_) {}
+
+// -----------------------------------------------------------------------------
+TimeSeries::TimeSeries(TimeSeries&& other) : data_(std::move(other.data_)) {}
+
+// -----------------------------------------------------------------------------
 TimeSeries& TimeSeries::operator=(TimeSeries&& other) {
   data_ = std::move(other.data_);
   return *this;

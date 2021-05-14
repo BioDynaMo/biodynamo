@@ -74,9 +74,11 @@
     <class name="bdm::experimental::TimeSeries" />
     <class name="bdm::experimental::TimeSeries::Data" />
     <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
+    <class name="bdm::experimental::Style" />
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />
     <class pattern="std::vector<bdm::memory_manager_detail::*>" />
+    <class pattern="bdm::SharedData*" />
     <class name="bdm::MemoryManager" />
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />

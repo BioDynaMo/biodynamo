@@ -26,6 +26,7 @@
 #include "core/util/root.h"
 #include "core/util/type.h"
 #include "cpptoml/cpptoml.h"
+#include "core/analysis/style.h"
 
 namespace bdm {
 
@@ -582,6 +583,9 @@ struct Param {
   ///     [experimental]
   ///     preferred_gpu = 0
   int preferred_gpu = 0;
+
+  // TODO
+  experimental::Style root_style;
 
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
