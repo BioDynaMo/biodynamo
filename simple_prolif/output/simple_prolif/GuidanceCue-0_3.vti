@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-10 -10 50" Spacing="10 10 10">
+  <Piece Extent="0 9 0 9 6 7">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="1.057453694164771e-8" RangeMax="0.0000019195892059242954">
+        AQAAAACAAABABgAAPwAAAA==eJxj8eA6mrnVzY6FyvRrzV0aQXvJp0fNGzWPEvOoRW9jffZ9EtsBqtOZXC3BnlLk06PmjZpHiXnUogGbNoYr
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="9.551976440450632e-8" RangeMax="0.000006279127083588088">
+        AQAAAACAAADAEgAAzgAAAA==eJxjYEAFUe8TygWXVNrB+Gdrcs5w+2XaDlVxdH/B1OESh9G1Gl8XzT6Maf5Ai0P5e3GJk+pfmDi6vYNFHN1fo/4d9e+of0f9O9D+opd/Yfpw1AsDLo5WH2GIo/sLPdxw1ON7h6o4If8+D7m2OE3+FsKcFnYDna7/tkNVHN1fMHW4xGF0qRS3r2YYpvkDLQ7l78UlTqp/YeLo9g4WcXR/jfp31L+j/h3170D7i17+henDUS8MuDhafYQhju4v9HDDUY/vHari6P4CAOwTrZE=
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            9.5519764405e-08
+          </Value>
+          <Value index="1">
+            6.2791270836e-06
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>

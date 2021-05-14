@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-15 -15 19.666666666666664" Spacing="17.333333333333332 17.333333333333332 17.333333333333332">
+  <Piece Extent="0 9 0 9 2 3">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="1.0458835305467278e-26" RangeMax="3.4165048999322256e-20">
+        AQAAAACAAABABgAAOwIAAA==eJzb1LS6Y3bdCrvwtG+JhSKL7P4eWrhq25p5dnNDZv36FD7H7tZhVTvDmtlwGiYOUxcB1bcZas7t7ZzVJfc220XIWAqv6Npv5///vNZ5jsN2xWmXwjTnHbHL+rTgLJfFUTgNE4epi4Tqg5mTGjLf42HMLrvjggvf/Pl6zC5PafeZn8/P2K1mU/5z5/l5u8Nbnoryd16A0zBxmDqYPpg5X3i/h51T32cnrXX0gdbFU3aJZmI5qyQv2rXKny+tYLxs996DvebgQQQNE4epg+mDmfPRRjTX9OB+u707Kn33p5yxU1gl89RB75LdfQamXYccr9gpTRbw3CByFU7DxGHqYPpg5lDbPGr7l9rxgSu9lEDTRTY0ncDoEgLpBZYOI6iUntVYo54dOHDQbnV+n+YUjV126YKrDuwX3Gb3aLaJpqrXFrvAmr8W2+ZvhtMwcZg6mD6YOQnxT9/83HXGLuDdky3Be6/ZhW8T8zwUfdvOrOdNucnEu3Ye/buEYlLvwWmYOEwdTB/MnJQnT31vcF22O+q0IaK++4Fdm8uL3xLHnthVWx+xuP3omR3jmVVxlpufw2mYOEwdTB/MHM6k7d8mHrtqd2ve6964oMd2E/zfLH425YVd78l5ov9dX9utWVU581LwGzgNE4epg+mDmRPQpl947e01O/YIbyej0id2rPo3t0sov7K7cV+6d6/QW7s3sz7mGVq/g9MwcZg6mD6YOdQ2j9r+pXZ84Eov5jjSizmB9ELt9AwAmU8yVA==
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="1.708251927024383e-21" RangeMax="1.3530772305378545e-16">
+        AQAAAACAAADAEgAAhgYAAA==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
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            1.708251927e-21
+          </Value>
+          <Value index="1">
+            1.3530772305e-16
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>

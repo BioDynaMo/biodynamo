@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-11 -11 67.22222222222223" Spacing="9.777777777777779 9.777777777777779 9.777777777777779">
+  <Piece Extent="0 9 0 9 8 9">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="0.0001245731237081245" RangeMax="0.0025121074927580947">
+        AQAAAACAAABABgAABQEAAA==eJx758W6ioNTzZ5t6T3bw+9U7V9orxaZTAIN0/cOak611/550Vxq9m+5DAK/tKrZx0zcJiPermY/e4aMkAQeGqYOpg9mzs+I7s5YIL1DMMDaAyi/dNmijzkdavZP1nI8z8VDw9TB9MHMgdE/JLYZeLYj1CtvzbuTh4eGqYPpG+nmUSs+qJ1e3lE5PTvcTc9J35dsz2dYYfdWOdleWZ3nu4dSsn1U96FSdzw0TB1MH8wcoRUNl7gPJNvv9flsUQ3kC1/jCa0ggYbpg5mz5L7wVT4gPUGcZ748kK64sWMvKTRMH8wcGB25OVRBEUg7ljDZk0LD9I1086gVH9ROL9ROzwCm8oz3
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="5.229417652733639e-28" RangeMax="1.3530772305378545e-16">
+        AQAAAACAAADAEgAAgAIAAA==eJztlj9oE2EYxiMFO9TN4RCtODk4nAhKSdpIl8wudbB6QqhoS7UIZhFBsC5iqoOIFt0iDmaQUpDz+4oExILgFCp2ihr6h1CKVYo6CX539z3x8iQfkZhghrvl+H68eZ/nuVzeN7FYcE08Wxu5u1EcjNHVKrdlJZe1H7n1/O2Dx9dmBHh2cbUxX/vwI/2Hx5vyah9fd+Bf/Ud5o7z/I6+TKaYsZ87lvNBnn53iONfzIFe9z8Z5Lee+nyvok3eZp6xf/ufmyit+H9134EzmyEOPoz/6doojD3PtU7BPcM5V+zzz7vMdtRx9mEO3W7jJpymXgvKW+j7drdX3By/NDoHL8S/p3sPriXnillNa6iZu8sm5iqnY152qDnzkXX45zNHH2vekcOPy7JD3uKZUHXRf/Bx/7XH2I9vMta5gXe1Tsk9wzmUntvw66JwljnzQ9X5Gr9QZ9/SSvRj2CX6+zVyfBetqn5J9gptyNeMFygvOPnFNtpkjL+tyrkKUN8ob5eV5JQzzShjmlTDMn5Y5zSthmFei2byifSQM+0ga9pE07CNp2C8tc9pH0rCPpGEfVXOhP7jh/4Y07P2u4SafnMs7V3JXhLonSvZ6Yu/Te1Ol70eT4PLl8IGLyxuD2xMBRx9ns//EdAOe272/o5x1tc84+wTnXNnrY99OqjrwyZW+1McQR5/NNxfufOo9lrSczB6vDrrJnvLYZ8Wr/bXPc8cDzv6b8erzJ651JetqnwvsE5xzVW4HdYHOzbg4tauGKzzs1UNXVY16Z1U/7d17tkcT5XBezQ/Zp30eeq/+iofetxqudSXrap8L7BOcc9nzQS7oM0eO7NW6vD4nn/HflTfi6g==
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            5.2294176527e-28
+          </Value>
+          <Value index="1">
+            1.3530772305e-16
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>

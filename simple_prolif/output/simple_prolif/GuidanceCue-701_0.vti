@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-15 -15 -15" Spacing="17.333333333333332 17.333333333333332 17.333333333333332">
+  <Piece Extent="0 9 0 9 0 1">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="0" RangeMax="7.381103127025527e-36">
+        AQAAAACAAABABgAAfwIAAA==eJytUmtIk2EYRUtjaTg27YfEJuEllNokKmH4qIniQLbKSwlDjCgrrC1aSGBESepiVIKajsJCs6w5d3G3Ym5dGHYzLcTNzK11xTYIdTlcRX/e5wsGYxH7deBwzuF93nM+p5TuULnbQDDr2ZXEOQ08j9hXWXQC5OLLU1kvGoDBLpk+6DxKIfKoExLfF5LjcXerYuu7YMTBUbXKrwM349DYuZ83QTnnfy+g9cNJ/kNrUvAvIo869H0gOfJBd2YL+wbUfV0lKT52GzzL9iNjk0OgLqc/SvCpoSXIEjx2aihEHnXow5xYb8aEpKkPmLOqM96PSlDROxc/9WohMXW4bKFMD6NX2/OZzQYKkR8iOvRhzmDunvlA6i1426Rfqzg1DFnSgYJs0Qi8vDhl4FUYIW2bq0OhNVGIPOrQhzmIM/+ZNxOSh+9khNy7jtxlI3ciIo86Rsi94frQkH9vJT0gaiL0gT0bSO+5ZAdDZBdSshNE5FFnCNkL7lAYpT1Xbop7kLjlGghpvvO7C9tBYg1stfFkUOL67blUdwEc4nu9xwPNFCKPOvRVkZy49gVd8MBdmLPJBq5U64HJip8v1d6HnALzyg+HBdLixZY1xVYKkUcd+jCnh7+6k5WjA1366BvnLxuM+/n8DZl24Ow9PM3Jewoy/87C9YpnFCKPOvRhzjepqW17nhHufIcE2coTOBvT2NGlfA4KEXvJZHwF+zS8in77BIXIow59mNOQ3ricnG0GkaV246LDDuXdNHVt0Tj0pHhj8vdPwhK9z/yu/jWFyKMOfZgT7bxI99aQO2v+8d5wfXDD9MGN0Af27CK9J5MdbI6wF9S5QvZSFeU9/wHnchLf
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="5.229417652733639e-28" RangeMax="5.229417656424191e-28">
+        AQAAAACAAADAEgAAgwYAAA==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
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            5.2294176527e-28
+          </Value>
+          <Value index="1">
+            5.2294176564e-28
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>

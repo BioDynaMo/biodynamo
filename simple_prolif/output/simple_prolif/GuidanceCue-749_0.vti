@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-15 -15 -15" Spacing="17.333333333333332 17.333333333333332 17.333333333333332">
+  <Piece Extent="0 9 0 9 0 1">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="0" RangeMax="7.381103127025527e-36">
+        AQAAAACAAABABgAAawIAAA==eJz7nVpmFSHfbSfjktd+eFeVXbPNkz7fk4V2R9scboTL5NpNXFMk+fF5FpyGicPUyUL1/YGas+JT1IVZp2bYBew1L2UOXWDXqnGY/9CHxXYRi/8K7PBcZjeNq+LPhaTlcBomDlMH0wczh+tmLNMPlkV2gvOLu+LVVtlVz1wUq7Bhg11A6PEn1oyb7Y70nJv8T2QLnIaJV0HVwfTBzHmybHfB7NdL7XZ3KKtGWG2w+6dw7Z3Gzy12qhkF5be4dtj92Hez+2/lTjgNE/8LVQfTBzPn1bKNPE2Xlttllxif5du10U7xIdPSKIbtdjKfHMtM83bZXTh60ekw5x44DROHqYPpg5kDo7PINC8LzTxc/lWD+usn1J8wGib+D4d/ccVHIDTcj0LjAUbDxKtxxAeu9BIJTRfToekERkcSSC+wdChLpfTMfuYlu9j6uXZm/8QsQ7ZNtDs3wdbviWOn3b7V3db87K128UVRHNY1zXAaJg5TZw7VBzPnw/nc/XUea+zCspeEC7zdZucWbZWy9MweO+2t9tyLNA7YPf7mXHDrK4KGicPUwfTBzLFlKRPKP7jFzvTOQS37gkN2/1+6zlskf8Lu3Y/py771n7Z70Kf9eJfiWTgNE4epg+mDmZNwOWMiv/9Ou/or3z7tenHM7t3POK6o4HN2TkH6jzvyL9qJtYltfFZ1CU7DxGHqYPpg5mS8YOJZ2LrbTmRzt7Udx0m7aKnuE7ELL9hZGqhtl9K+bGe3dGPYhbArcBomHgNVJwrVBzOH2uYR8q841J/iRPqX2vEBi+dwaLy7k5hewtHSCywdmlMpPQMA95QFjA==
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="5.229417652733639e-28" RangeMax="5.229417656424191e-28">
+        AQAAAACAAADAEgAAbwYAAA==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
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            5.2294176527e-28
+          </Value>
+          <Value index="1">
+            5.2294176564e-28
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>

@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-11 -11 47.66666666666667" Spacing="9.777777777777779 9.777777777777779 9.777777777777779">
+  <Piece Extent="0 9 0 9 6 7">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="1.057453694164771e-8" RangeMax="0.0000019195892059242954">
+        AQAAAACAAABABgAAhAAAAA==eJx70Pf8oZxVgt0DKtFzWYR1VYC0Gw/TpMyIBDvmJt27eSTQMH0wc2A0TP7A9wiNEhJomL5R8wa3edRKL9RKxzC6Z3rlfruSU1SjvWI4O4qBdJf83pNfTpyy83jiM0nzJPE0TB/MHBgNk2dbeScqjgQapm/UvMFtHrXSC7XTMwAxN87f
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="9.551976440450632e-8" RangeMax="0.000006279127083588088">
+        AQAAAACAAADAEgAAywEAAA==eJztljtLA1EQhVewERRBwUcZsY5gYbfrP9BiO0VTpDBaKaaxjgFBiEUQ24giwd74gLk2ooEQQRDBQg1YCFuIgohgoYJ3NuEswzY3sMWmCXwMmfPdYk4s6/+zt7n0OOx22PW1YvpoP+9obA2+Xi7018sBfrbhJDM30eFSTvTKutO7qlq2mT8PTBUbLZx/56Tyner08g7P8d5rt7I15gXzmOZ6LyHXOQlzMkcvnuM9yHke9jbf5235fMYLvqdpzr7IdU7CnMwlrzCOvv485GwXZ1/k6BX7xr6xb+BekXCvSLgzxjncKxLuFYX5Qh+R0Eck9BEJPWKcQx+R0Eck9JHvhe8p9HiA896ocCmn5DWXnTh92Nm2jydHrFzuyefJ3ov74nzC+amVVC3b5JnDUjW1GB0u5USvj9UX78pNOMy7v24/h9abnH8nfbfSN2s1/DneWxiv9Rz8ccxjmuu9hFznVJiTOXrxHO9BzvOw1+bv08Jo13tLznZx9kWucyrMyVzyCuPoyxxztouzL3L0in1j39g3cK9IuFck3BnjHO4VCfeKwnyhj0joIyX0kRJ6xDiHPlJCHymhj3wvfE/h/4YSej8yXMqJXr+5e37/
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            9.5519764405e-08
+          </Value>
+          <Value index="1">
+            6.2791270836e-06
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>

@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-12 -12 -12" Spacing="10.666666666666666 10.666666666666666 10.666666666666666">
+  <Piece Extent="0 9 0 9 0 1">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="0" RangeMax="7.381103127025527e-36">
+        AQAAAACAAABABgAAFAIAAA==eJyb0S2vfCo917b8ZfuGC7w5toICyaWXP2bbnljJ+OzJu2zb/P+bNJYg0TBxmDqYvhlQcx6wPdW+3Jhne+vbvC8zbYpsTZ/tXiS/vcj2ivVnhdjDRbYdN89LOh9B0DBxmDqYPpg5D8TXnLqyI8829c4B4aprRbYZVqVWTzKLbVfu1S19WVFsy884X4C9CkHDxGHqYPpg5vipbbV6sy/P9tTyWocjT4tsjzz7rvewutjWY+VcT/PuYtup8/4HRfcgaJg4TB1MH8ycJ4Wl/qn782y9DfWFnj8rsrW9K6BvWVts+3zer3lTgfr/tLhq7upF0DBxmDqYPpg51DaP2v6ldnxQO73MoHJ6VmKf8b89ZattYbvF4i7hrbanio9Nq2XYamt4fea6m3+32H7o3JI/C4mGicPUwfTBzImTusc92Wab7S2XRGbpibttJ1htOvsyZI9t3jne0viMPbZXNDasvpSJoGHiMHUwfTBzLFpsU06mb7M1e2q+3qJlj+0cwdNc+gV7bQUt+w/Zd+y1/bzjyiXBLgQNE4epg+mDmfM8aHHb1pxttmG3vPZyzt1ju/XK2mmVvXttf0V/cxBZtte2RvDQvI/LETRMHKYOpg9mTlRKQrhU7jbbG0VT49/P22P7rkSAdVf/XtuMJ02X4lfstV0o7yZltwpBw8Rh6mD6YOZQ2zxq+5fa8UHt9ELt9AwAetgWyg==
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="5.229417652733639e-28" RangeMax="5.229417656424191e-28">
+        AQAAAACAAADAEgAAtwUAAA==eJx1VntQ1GUU/YVIIqg7aYpjEaYg2q6hqYP5fbYq4DSYIGITE05bCRmoMeJkmQ4rmq8RRQtlpgImNVcHdUweyd5bIKPjA4UMH1jKw1eaYdOKoiK2tb/fB128/54/7jlnvvude+KPnxmavboRykMsxY9z60WE19+P7JeKZLyO35//55yUi/4yNtqZVphRJK2V+66cC9sJgQOiM27HmWS3sebc8LlFUqt6P6hqUDrElK3ySVppkqvaL1Q1znHjtsaMR1Hh4LOy5k7gGpOcMhfPbuzARRfcM0fQOTqvoLy6TkF1Gjj1lRf7w7SIw97SwN9x1cWOKCtWuDHnZnD5T4PvlcmG5qqY3Ig6xatF+tauPeiU9rZb34wu3qZ0nhhkOhl80im1hqN74zcmKV/XZ1af+PaUwoHi+hygc3ReoLy6TqQ6DZz6qunvbL8Q20Naj/ltSLpRIrbOz1s7/noHrlkqxjeX1ou78y4uH37bKctFSkTToktibq+C4OCFTWLM7jPXpv8K0v5g18RJYxyiYfKD6nRoEqcWRD+qdYHUsmfkbT6SIsI/XZIYeahJwNkF/mUtCgeK63OAztF5gfLqOpHqNHDqa2/Lvg8zd7t9+fdO3LB/hXj1x8BfMm51whMydizb5hB7QwP/CPEFWTBVK9nUvV7YX1t0Y8HjQjElv2Br3wdunQe/8BtX6hDaxRkHJmbuEWOXWkJG9UWphT8e2WhLFfbLh+9vX79HnEisbXvxWYUDxfU5QOfovEB5dZ1IdSqc+DpU520ett/tK8jc+8qBKJH95cyHzZ3xgCvbHVNSxe7UqeWj/EBas4Yml5nqhVaY9dJTQWmiZmGLJbPN7Tfv4fTFFW6/i1a8rc1LEz0avptV+K+v1k3d781LFVptVZTfwjQBlWaZP0DhQHF9DtA5Oi9QXl0nUp0K53x5cGD8AuMXGL/A+AXGLzB+gfELjF9g/CpfZJ+B2Wdg9hmYfQZmn4HZZ2D2GZh9Bmafgdln5YvkFTB5BUxewbgn5xUweQVMXgGTV8DkleIleQVMXilf5B4Bc4+QuUfo9eR7hMw9QuYeIXOPkLlHipfcI2TukfIV//++AUzfQKZvINM3kOkbyPQNZPoGMn0Dmb6BTN9QvuwF0TtdFc+gqWzFR4Onh0qKxwxsH9Iz7k3VW7Qw78WlEX/Bx3W9EvvFJHT0q+c+S70ZVwEFwQ0TRucndOpXrW05pavBN8s2PHlHQqd+9R8uuuCeOaLLHA+voLy6Tkl1Gjj1tcW2NNL79TiFG+9u4MYctc9XzY6UkUOlwWv0HC35atu02beVTrXPR8XXG5P3K19qnz04dME9c4DO0XmR8uo6keo0cOrL7HC4wgbOkrZXWnyb/b2k8a8NvKDbtfnvBg6XRg6s+e3lml22UPlJ+pZzS96wSKPnWJfLp/unuERQ5MnnXUctUuVVbvukyvPForx6z7Frpy1S5ZUHB4rrc4DO0XmR8uo6keo0cOor5fMXwqa9N8v9b6w/f3+1WvUQA7ePHxHl7XtH9RbbsH5vtZ0PlfZlPYsmOO6pnmPNsfTxueAS1uXld/0CWjv6VUDm+iRbibB79coZO7i1o195cKC4PgfoHJ0XKa+uE6lOA6e+YJTJt/4Dt9/syPQh1zerHqLwgJCMrypLVG+x75h8ZF1TqNQKM/PN3Z2q51h9rL/3uewSWmjSltPrnB39qvBIyOzUEqHBrrDjOc6OfuXBgeL6HKBzdF6kvLpOpDoVzvny4MD4BcYvMH6B8QuMX2D8AuMXGL/A+FW+yD4Ds8/A7DMw+wzMPgOzz8DsMzD7DMw+A7PPyhfJK2TyCpm8wnFPzitk8gqZvEImr5DJK8VL8gqZvFK+yD1C5h4hc49UzyH3CJl7hMw9QuYeIXOPFC+5R8jcI+WL9A1k+gYyfQOZvoFM30CmbyDTN5DpG8j0DWT6hvL1D6WzAbA=
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            5.2294176527e-28
+          </Value>
+          <Value index="1">
+            5.2294176564e-28
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>

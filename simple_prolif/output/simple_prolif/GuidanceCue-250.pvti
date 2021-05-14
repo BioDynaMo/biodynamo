@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<VTKFile type="PImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+<PImageData WholeExtent="0 9 0 9 0 9" GhostLevel="0" Origin="-15 -15 -15" Spacing="14.4444 14.4444 14.4444">
+  <PPointData>
+      <PDataArray type="Float64" Name="Substance Concentration" NumberOfComponents="1"/>
+      <PDataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3"/>
+  </PPointData>
+    <Piece Extent="0 9 0 9 0 2" Source="GuidanceCue-250_0.vti"/>
+    <Piece Extent="0 9 0 9 2 4" Source="GuidanceCue-250_1.vti"/>
+    <Piece Extent="0 9 0 9 4 6" Source="GuidanceCue-250_2.vti"/>
+    <Piece Extent="0 9 0 9 6 8" Source="GuidanceCue-250_3.vti"/>
+    <Piece Extent="0 9 0 9 8 9" Source="GuidanceCue-250_4.vti"/>
+  </PImageData>
+</VTKFile>

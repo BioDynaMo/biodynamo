@@ -1,0 +1,10 @@
+[visualization]
+export = true
+interval = 1
+
+	[[visualize_agent]]
+	name = "MyCell"
+
+	[[visualize_diffusion]]
+		name = "GuidanceCue"
+		gradient = true

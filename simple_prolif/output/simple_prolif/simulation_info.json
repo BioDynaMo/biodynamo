@@ -1,0 +1,18 @@
+{
+  "simulation": {
+    "name":"simple_prolif",
+    "result_dir":"output/simple_prolif"
+  },
+  "agents": [
+    {
+      "name":"MyCell",
+      "glyph":"Glyph",
+      "shape":"Sphere",
+      "scaling_attribute":"diameter_"
+    }
+  ],
+  "extracellular_substances": [
+    { "name":"GuidanceCue", "has_gradient":"true" }
+  ],
+  "insitu_script_arguments": ""
+}

@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-15 -15 89" Spacing="17.333333333333332 17.333333333333332 17.333333333333332">
+  <Piece Extent="0 9 0 9 6 7">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="1.057453694164771e-8" RangeMax="0.0000019195892059242954">
+        AQAAAACAAABABgAAbQIAAA==eJwLO8ncZK320o6H7+s7l7j7du/NjWtWt1+z8y3jTkmuuGQ3Uea89ZJHF+A0TBymDqYvDGrOnyeFbo/+f7MzanRfeLOMyX5yjce86+vY7D0zxDWT/nLYf/m4Xuv3T044DROHqYPpg5kTcMtlp0IHg/01s7N/7+vw2r/gu1GruFvIPrzcKJ9dUNT+ddK69QEiYnAaJg5TdxWqD2YO/5KE6j3vmO3XnyrgUfksaL83OlDJJVrcPliJ/+qjcin7zHcyF6ZflYbTMHGYug1QfTBzPO7KfP7Zz2r/Nftd6O5WYfuNWm+iFjVL2ls9YSg4+k/GPinfqjemQw5Ow8Rh6mD6PKHmuEPpL1DxDWSaB3MXun/3oPk3C+rPLAL+FYCaAwvHq2TGByweA6HmkJpevAiklzAqp2efAua59fkf7FTjYnbfCHliN2Nz2r3m9jt2tj84JaY8vWbXJyxllr75il0/lLaDisPUwfTBzHFZ2hI5P/+v3ctHH/oeiLHbG+/rEn/zgdteZ9P1FIFOPnvVK5LrnBfxw2mYuBFU3QuoPpg5eUG201/9Y7E35FYUKFQTsp+86/orHxZxe1ajuSxu2yXtL/Nt+VL7QApOw8QnQdXB9MHM4Zzy1+SiLaf97qfCUw94idlrvrrpULdGxj7tuJA8l5qCvfzrnW+cPiBomDhMHUwfzJxDQVemsrlz28+N+ck/2UrCviNO4t8Zf3l7lkJrb64NivasZ4wXRk9RgtMwcZi6eVB9MHOobR61/YseH7BwZoGG+0VoPFyC0iwE4gM9vRhC04EWNF0oQ9OJClp6gaWrl2jphdrpGQD0CLTC
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="9.551976440450632e-8" RangeMax="0.000006279127083588088">
+        AQAAAACAAADAEgAAPQcAAA==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
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            9.5519764405e-08
+          </Value>
+          <Value index="1">
+            6.2791270836e-06
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>

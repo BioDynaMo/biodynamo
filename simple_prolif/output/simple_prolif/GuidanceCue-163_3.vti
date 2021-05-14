@@ -1,0 +1,24 @@
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 9 0 9 0 9" Origin="-15 -15 55" Spacing="11.666666666666666 11.666666666666666 11.666666666666666">
+  <Piece Extent="0 9 0 9 6 7">
+    <PointData>
+      <DataArray type="Float64" Name="Substance Concentration" format="binary" RangeMin="1.057453694164771e-8" RangeMax="0.0000019195892059242954">
+        AQAAAACAAABABgAAKwIAAA==eJyTfS8S8sWUxf7wicn2imqM9pV/krm8jP7bCexuMGt5+9cu5bCS05EOBA0Th6mD6ZOFmqN+YPNmJi4u+x2Xe/iilwnZ1+opslpNFbGv2ya1wUxW1L649/SdV1YIGiYOUwfTBzNHJ1Ji9a5VvPYz2m7amWqI2+d8mX2arVXK/sO5rQKeU6Xt9yznaXO+iaBh4jB1MH0wc37yFv5JV+K3b3G5tWTOCQn7g1PbfJ6sl7G3VglaqvpT1v5MpcgDWz85OA0TPwRVB9MHM6cro8z7+0R++9nfbzd62knaz7A/9TnQV9Y+TmdG4LPlcvb2c93Espjk4TRMHKYOpg9mDrXNo7Z/yY2PXBzxgZ5e6qDpoB5HeoGJ1+FIL7JUTs9NRQ4T7j0Xt09ep7qtfKmw/YuNuh5Z2YL2mQefWEu2C9hv7NSQ+uOIoGHiz6HqYPpg5tzILN8m0iRn7++5qcBfTdX+nZo0Z9pnNftEoViV28nq9t0Kz9emVyJomDhMHUwfzBxTXQGJ7wGK9jsmnD1Vaqplb30+LGHiJF17j59WT72m6dkfuHzZ6NMVBA0Tt4Kqg+mDmXOLddqdWnUl+9Ctkk+2curYPw9b+kL2v749h/iJp0sXGNiflZ6zI/wkgoaJv4SqC4Pqg5kToPhhb3W6kn2y0/F3uX069lOTb2veCzewXy63ZX4rk6G9xDX9iWZ6CBomDlOXBNUHM4fa5lHbv9SOD2qnF2qnZwBqPZtC
+      </DataArray>
+      <DataArray type="Float64" Name="Diffusion Gradient" NumberOfComponents="3" format="binary" RangeMin="9.551976440450632e-8" RangeMax="0.000006279127083588088">
+        AQAAAACAAADAEgAAnQYAAA==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
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            9.5519764405e-08
+          </Value>
+          <Value index="1">
+            6.2791270836e-06
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>
