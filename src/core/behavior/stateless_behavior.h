@@ -19,7 +19,30 @@
 
 namespace bdm {
 
-// TODO documentation
+/// \brief Simplifies the creation of behaviors without attributes.
+/// Let's assume that we want to create a behavior that divides a
+/// cell agent in each iteration. The following code example
+/// uses the StatelessBehavior:
+/// \code
+/// StatelessBehavior rapid_division([](Agent* agent) {
+///    bdm_static_cast<Cell*>(agent)->Divide(0.5);
+/// });
+/// \endcode
+/// NB: The lambda expression is not allowed to use captures,
+/// because StatelessBehavior casts it to a function pointer.
+/// Without StatelessBehavior the following code would be required.
+/// \code
+/// struct RapidDivision : public Behavior {
+///   BDM_BEHAVIOR_HEADER(RapidDivision, Behavior, 1);
+///
+///   RapidDivision() {}
+///   virtual ~RapidDivision() {}
+///
+///   void Run(Agent* agent) override {
+///     bdm_static_cast<Cell*>(agent)->Divide(0.5);
+///   }
+/// };
+/// \endcode
 class StatelessBehavior : public Behavior {
   BDM_BEHAVIOR_HEADER(StatelessBehavior, Behavior, 1);
 

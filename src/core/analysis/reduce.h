@@ -29,6 +29,18 @@ namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
+/// Iterates over all agents executing the `agent_functor` and updating a
+/// a thread-local and therefore partial result.
+/// The second parameter specifies how these partial results should be combined
+/// into a single value.
+/// Let's assume we want to sum up the `data` attribute of all agents.
+/// \code
+/// auto sum_data = L2F([](Agent* agent, uint64_t* tl_result) {
+///   *tl_result += bdm_static_cast<TestAgent*>(agent)->GetData();
+/// });
+/// SumReduction<uint64_t> combine_tl_results;
+/// auto result = Reduce(sim, sum_data, combine_tl_results);
+/// \endcode
 template <typename T>
 inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
                 Functor<T, const SharedData<T>&>& reduce_partial_results) {
@@ -53,6 +65,15 @@ inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
 }
 
 // -----------------------------------------------------------------------------
+/// Counts the number of agents for which `condition` evaluates to true.
+/// Let's assume we want to count all infected agents in a virus spreading
+/// simulation.
+/// \code
+/// auto is_infected = L2F([](Agent* a) {
+///   return bdm_static_cast<Person*>(a)->state_ == State::kInfected;
+/// });
+/// auto num_infected = Count(sim, is_infected));
+/// \endcode
 inline uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition) {
   // The thread-local (partial) results
   SharedData<uint64_t> tl_results;

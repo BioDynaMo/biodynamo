@@ -21,7 +21,8 @@ namespace bdm {
 namespace experimental {
 
 /// This is just a replacement for TStyle until a bug related to JSON
-/// serialization is resolved.
+/// deserialization is resolved.
+/// \see https://root-forum.cern.ch/t/error-restoring-tstyle-from-json/44879
 class Style : public TNamed,
               public TAttLine,
               public TAttFill,
@@ -35,6 +36,8 @@ class Style : public TNamed,
 
  private:
   mutable TStyle* tstyle_ = nullptr;  //!
+
+  // The following attributes were copied from TStyle
 
   TAttAxis fXaxis;         ///< X axis attributes
   TAttAxis fYaxis;         ///< Y axis attributes
@@ -152,7 +155,7 @@ class Style : public TNamed,
                      ///< PDF and SVG
   Double_t fTimeOffset;   ///< Time offset to the beginning of an axis
   Bool_t fIsReading;      ///<! Set to FALSE when userclass::UseCurrentStyle is
-                          ///<called by the style manager
+                          ///< called by the style manager
   Float_t fImageScaling;  ///< Image scaling to produce high definition bitmap
                           ///< images
 

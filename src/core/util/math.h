@@ -23,8 +23,8 @@
 #include <TMath.h>
 
 #include "core/container/math_array.h"
-#include "core/util/random.h"
 #include "core/util/log.h"
+#include "core/util/random.h"
 
 namespace bdm {
 

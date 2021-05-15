@@ -30,6 +30,8 @@ namespace experimental {
 
 class TimeSeries;
 
+/// This class simplifies the creation of line graphs using data from
+/// `TimeSeries`.
 class LineGraph {
  public:
   /// \param style   This class does not take ownership of style
@@ -40,7 +42,7 @@ class LineGraph {
 
   ~LineGraph();
 
-  // TODO
+  /// Add a new graph to the plot
   /// The following links provide further information for line, marker, and fill
   /// parameters: \see https://root.cern/doc/master/classTAttLine.html \see
   /// https://root.cern/doc/master/classTAttMarker.html \see
