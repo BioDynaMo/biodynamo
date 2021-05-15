@@ -8,6 +8,7 @@
 #ifndef SIM_PARAM_H_
 #define SIM_PARAM_H_
 
+#include <TStyle.h>
 #include "core/param/param_group.h"
 
 namespace bdm {
@@ -27,6 +28,7 @@ struct SimParam : public ParamGroup {
   double agent_diameter = 2.0;
   double agent_speed = 5.78594372145249;
   double infection_probablity = 0.285097276954021;
+  // TStyle* style = new TStyle(*gStyle);
 };
 
 }  // namespace bdm

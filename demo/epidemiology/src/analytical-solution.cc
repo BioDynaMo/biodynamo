@@ -30,7 +30,7 @@ int Odes(double t, const double y[], double f[], void* params) {
   return GSL_SUCCESS;
 }
 
-void CalculateAnalyticalSolution(ResultData* result, double beta, double gamma,
+void CalculateAnalyticalSolution(TimeSeries* result, double beta, double gamma,
                                  double susceptible, double infected,
                                  double tstart, double tend, double step_size) {
   double n = susceptible + infected;
@@ -41,11 +41,10 @@ void CalculateAnalyticalSolution(ResultData* result, double beta, double gamma,
       gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk2, 1e-6, 1e-6, 0.0);
   double y[3] = {susceptible, infected, 0.0};
 
-  auto num_steps = (tend - tstart) / step_size;
-  result->time_.reserve(num_steps);
-  result->susceptible_.reserve(num_steps);
-  result->infected_.reserve(num_steps);
-  result->recovered_.reserve(num_steps);
+  std::vector<double> timevec;
+  std::vector<double> susceptiblevec;
+  std::vector<double> infectedvec;
+  std::vector<double> recoveredvec;
 
   for (double t = tstart; t < tend; t += step_size) {
     int status = gsl_odeiv2_driver_apply(d, &tstart, t, y);
@@ -55,13 +54,17 @@ void CalculateAnalyticalSolution(ResultData* result, double beta, double gamma,
       break;
     }
 
-    result->time_.push_back(t);
-    result->susceptible_.push_back(y[0] / n);
-    result->infected_.push_back(y[1] / n);
-    result->recovered_.push_back(y[2] / n);
+    timevec.push_back(t);
+    susceptiblevec.push_back(y[0] / n);
+    infectedvec.push_back(y[1] / n);
+    recoveredvec.push_back(y[2] / n);
   }
 
   gsl_odeiv2_driver_free(d);
+
+  result->Add("susceptible", timevec, susceptiblevec);
+  result->Add("infected", timevec, infectedvec);
+  result->Add("recovered", timevec, recoveredvec);
 }
 
 }  // namespace bdm
