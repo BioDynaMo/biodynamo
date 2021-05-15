@@ -18,7 +18,7 @@ namespace bdm {
     virtual ~MyGrowth() {}
 
     //int growth_counter=0
-    int diffstate_switch_counter=200;
+    int diffstate_switch_counter=500;
     int currAge;
     double speed_=2.0;
 
@@ -54,8 +54,9 @@ namespace bdm {
 
               std::cout << "conc: " << currConc << " " << std::endl;
 
-              if (currConc>0.1) {
+              if (currConc>0.01) {
                 std::cout << "stopped cell" << std::endl;
+                cell->RemoveBehavior(this);
               }
               else {
                 Double3 gradient;
@@ -67,15 +68,34 @@ namespace bdm {
               }
 
             }
+          }
 
 
+          if (cell->GetCellType()==3) {
+            if (currAge>diffstate_switch_counter) {
+              auto& position = cell->GetPosition();
 
+              double currConc = dgrid_->GetConcentration(position);
+
+              std::cout << "conc: " << currConc << " " << std::endl;
+
+              if (currConc>0.005) {
+                std::cout << "stopped cell" << std::endl;
+                cell->RemoveBehavior(this);
+              }
+              else {
+                Double3 gradient;
+                dgrid_->GetGradient(position, &gradient);  // returns normalized gradient
+                #pragma omp critical
+                std::cout << "an age from a cell: " << cell->GetAge() << std::endl;
+                std::cout << "grad: " << gradient[0] << "/" << gradient[1] << "/" << gradient[2] << std::endl;
+                cell->UpdatePosition(gradient * speed_);
+              }
+
+            }
           }
 
         }
-
-
-
       }
 
       // void Run(Agent* agent) override {

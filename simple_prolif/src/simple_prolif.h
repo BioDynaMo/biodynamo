@@ -38,14 +38,15 @@ inline int Simulate(int argc, const char** argv) {
     param->unschedule_default_operations = {"mechanical forces"};
   };
 
-  Simulation simulation(argc, argv);
+  Simulation simulation(argc, argv, set_param);
 
   auto* param = simulation.GetParam();
 
   // Define the substances that cells may secrete
   ModelInitializer::DefineSubstance(GuidanceCue, "GuidanceCue", 1., 0, 10);
   //ModelInitializer::InitializeSubstance(GuidanceCue, PoissonBand(1, Axis::kZAxis));
-  Double3 gradPos = {0.,0.,3.};
+  //Double3 gradPos = {0.,0.,3.};
+  std::array<double, 3> gradPos = {0., 0., 3.};
   ModelInitializer::InitializeSubstance(GuidanceCue, PoissonBandAtPos(100, Axis::kZAxis, gradPos));
 
   // Let's define the number of cells we wish to create along each dimension,

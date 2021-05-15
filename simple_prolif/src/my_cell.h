@@ -56,7 +56,18 @@ public:
             cell_type_=1;
           }
           else {
-            cell_type_ = mother->cell_type_;
+            //cell_type_ = mother->cell_type_;
+            cell_type_ =2;
+          }
+        }
+
+        if (mother->cell_type_==2) {
+          if (random->Uniform(0, 1) < GetP2()) {
+            cell_type_=3;
+          }
+          else {
+            //cell_type_ = mother->cell_type_;
+            cell_type_ =2;
           }
         }
 
@@ -84,12 +95,14 @@ public:
   std::string GetGuidanceCue() const { return guidance_cue_; }
 
   double GetP1() const { return p1_; }
+  double GetP2() const { return p2_; }
 
 private:
   int cell_type_;
   //int phenotype_ = 0;
   int age_;
   double p1_=0.5;
+  double p2_=0.5;
   std::string guidance_cue_;
 };
 
