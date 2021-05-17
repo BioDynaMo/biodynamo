@@ -175,6 +175,7 @@ TEST(TimeSeries, StoreAndLoad) {
   const auto& yvals1 = restored->GetYValues("collect");
   EXPECT_EQ(1u, yvals1.size());
   EXPECT_NEAR(4.0, yvals1[0], abs_error<double>::value);
+  delete restored;
 }
 
 // -----------------------------------------------------------------------------

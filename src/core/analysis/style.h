@@ -154,8 +154,6 @@ class Style : public TNamed,
   Int_t fCapLinePS;  ///< Determines the appearance of line caps on PostScript,
                      ///< PDF and SVG
   Double_t fTimeOffset;   ///< Time offset to the beginning of an axis
-  Bool_t fIsReading;      ///<! Set to FALSE when userclass::UseCurrentStyle is
-                          ///< called by the style manager
   Float_t fImageScaling;  ///< Image scaling to produce high definition bitmap
                           ///< images
 

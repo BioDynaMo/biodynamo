@@ -584,7 +584,7 @@ struct Param {
   ///     preferred_gpu = 0
   int preferred_gpu = 0;
 
-  // TODO
+  /// ROOT graphics style definition
   experimental::Style root_style;
 
   /// Assign values from config file to variables

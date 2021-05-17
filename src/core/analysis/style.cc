@@ -18,7 +18,9 @@ namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
-Style::Style() { FromTStyle(gStyle); }
+Style::Style() : TNamed(), TAttLine(), TAttFill(), TAttMarker(), TAttText() {
+  FromTStyle(gStyle);
+}
 
 // -----------------------------------------------------------------------------
 Style::~Style() {
@@ -69,8 +71,18 @@ void Style::ToTStyle() const {
   tstyle_->SetOptDate(fOptDate);
   tstyle_->SetOptStat(fOptStat);
   tstyle_->SetOptTitle(fOptTitle);
+  tstyle_->SetOptFile(fOptFile);
   tstyle_->SetOptFit(fOptFit);
   tstyle_->SetNumberContours(fNumberContours);
+  if (fShowEventStatus != tstyle_->GetShowEventStatus()) {
+    tstyle_->ToggleEventStatus();
+  }
+  if (fShowEditor != tstyle_->GetShowEditor()) {
+    tstyle_->ToggleEditor();
+  }
+  if (fShowToolBar != tstyle_->GetShowToolBar()) {
+    tstyle_->ToggleToolBar();
+  }
   tstyle_->GetAttDate()->SetTextFont(fAttDate.GetTextFont());
   tstyle_->GetAttDate()->SetTextSize(fAttDate.GetTextSize());
   tstyle_->GetAttDate()->SetTextAngle(fAttDate.GetTextAngle());
@@ -101,10 +113,11 @@ void Style::ToTStyle() const {
   tstyle_->SetFrameBorderMode(fFrameBorderMode);
   tstyle_->SetHistFillColor(fHistFillColor);
   tstyle_->SetHistLineColor(fHistLineColor);
-  tstyle_->SetHistFillStyle(fHistFillColor);
-  tstyle_->SetHistLineStyle(fHistLineColor);
+  tstyle_->SetHistFillStyle(fHistFillStyle);
+  tstyle_->SetHistLineStyle(fHistLineStyle);
   tstyle_->SetHistLineWidth(fHistLineWidth);
   tstyle_->SetHistMinimumZero(fHistMinimumZero);
+  tstyle_->SetHistTopMargin(fHistTopMargin);
   tstyle_->SetCanvasPreferGL(fCanvasPreferGL);
   tstyle_->SetCanvasColor(fCanvasColor);
   tstyle_->SetCanvasBorderSize(fCanvasBorderSize);
@@ -139,6 +152,7 @@ void Style::ToTStyle() const {
   tstyle_->SetStatH(fStatH);
   tstyle_->SetStripDecimals(fStripDecimals);
   tstyle_->SetTitleAlign(fTitleAlign);
+  tstyle_->SetTitleColor(fTitleColor);
   tstyle_->SetTitleTextColor(fTitleTextColor);
   tstyle_->SetTitleBorderSize(fTitleBorderSize);
   tstyle_->SetTitleFont(fTitleFont);
@@ -159,6 +173,7 @@ void Style::ToTStyle() const {
   tstyle_->SetCapLinePS(fCapLinePS);
   tstyle_->SetColorModelPS(fColorModelPS);
   tstyle_->SetTimeOffset(fTimeOffset);
+  tstyle_->SetImageScaling(fImageScaling);
 
   tstyle_->SetLineColor(fLineColor);
   tstyle_->SetLineStyle(fLineStyle);
@@ -203,7 +218,11 @@ void Style::FromTStyle(TStyle* style) {
   fOptDate = style->GetOptDate();
   fOptStat = style->GetOptStat();
   fOptTitle = style->GetOptTitle();
+  fOptFile = style->GetOptFile();
   fOptFit = style->GetOptFit();
+  fShowEventStatus = style->GetShowEventStatus();
+  fShowEditor = style->GetShowEditor();
+  fShowToolBar = style->GetShowToolBar();
   fNumberContours = style->GetNumberContours();
   fAttDate.SetTextFont(style->GetAttDate()->GetTextFont());
   fAttDate.SetTextSize(style->GetAttDate()->GetTextSize());
@@ -235,10 +254,11 @@ void Style::FromTStyle(TStyle* style) {
   fFrameBorderMode = style->GetFrameBorderMode();
   fHistFillColor = style->GetHistFillColor();
   fHistLineColor = style->GetHistLineColor();
-  fHistFillColor = style->GetHistFillStyle();
-  fHistLineColor = style->GetHistLineStyle();
+  fHistFillStyle = style->GetHistFillStyle();
+  fHistLineStyle = style->GetHistLineStyle();
   fHistLineWidth = style->GetHistLineWidth();
   fHistMinimumZero = style->GetHistMinimumZero();
+  fHistTopMargin = style->GetHistTopMargin();
   fCanvasPreferGL = style->GetCanvasPreferGL();
   fCanvasColor = style->GetCanvasColor();
   fCanvasBorderSize = style->GetCanvasBorderSize();
@@ -273,6 +293,7 @@ void Style::FromTStyle(TStyle* style) {
   fStatH = style->GetStatH();
   fStripDecimals = style->GetStripDecimals();
   fTitleAlign = style->GetTitleAlign();
+  fTitleColor = style->GetTitleColor();
   fTitleTextColor = style->GetTitleTextColor();
   fTitleBorderSize = style->GetTitleBorderSize();
   fTitleFont = style->GetTitleFont();
@@ -293,6 +314,7 @@ void Style::FromTStyle(TStyle* style) {
   fCapLinePS = style->GetCapLinePS();
   fColorModelPS = style->GetColorModelPS();
   fTimeOffset = style->GetTimeOffset();
+  fImageScaling = style->GetImageScaling();
 
   fLineColor = style->GetLineColor();
   fLineStyle = style->GetLineStyle();
