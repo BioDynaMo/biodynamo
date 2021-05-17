@@ -225,6 +225,12 @@ std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
   return ret;
 }
 
+// -----------------------------------------------------------------------------
+void Scheduler::SetAgentFilters(
+    const std::set<Functor<bool, Agent*>*>& agent_filters) {
+  agent_filters_ = agent_filters;
+}
+
 struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
   explicit RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
@@ -263,25 +269,39 @@ void Scheduler::RunPreScheduledOps() {
   }
 }
 
-void Scheduler::RunScheduledOps() {
+// -----------------------------------------------------------------------------
+void Scheduler::RunAgentOps(Functor<bool, Agent*>* filter) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
   auto batch_size = param->scheduling_batch_size;
 
-  SetUpOps();
-
-  // Run the agent operations
   std::vector<Operation*> agent_ops;
   for (auto* op : scheduled_agent_ops_) {
-    if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0) {
+    if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0 &&
+        !op->IsExcluded(filter)) {
       agent_ops.push_back(op);
     }
   }
   RunAllScheduledOps functor(agent_ops);
 
-  Timing::Time("agent ops",
-               [&]() { rm->ForEachAgentParallel(batch_size, functor); });
+  Timing::Time("agent ops", [&]() {
+    rm->ForEachAgentParallel(batch_size, functor, filter);
+  });
+}
+
+// -----------------------------------------------------------------------------
+void Scheduler::RunScheduledOps() {
+  SetUpOps();
+
+  // Run the agent operations
+  if (agent_filters_.size() == 0) {
+    RunAgentOps(nullptr);
+  } else {
+    for (auto* filter : agent_filters_) {
+      RunAgentOps(filter);
+    }
+  }
 
   // Run the column-wise operations
   for (auto* op : scheduled_standalone_ops_) {
