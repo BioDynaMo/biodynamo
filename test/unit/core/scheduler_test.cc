@@ -538,4 +538,38 @@ TEST(Scheduler, SimulateUntil) {
   EXPECT_EQ(3u, scheduler->GetSimulatedSteps());
 }
 
+TEST_F(SchedulerTest, Filters) {
+  Simulation simulation(TEST_NAME);
+
+  simulation.GetResourceManager()->AddAgent(new Cell(10));
+  simulation.GetResourceManager()->AddAgent(new Cell(20));
+
+  auto small_filter = L2F([](Agent* a) { return a->GetDiameter() < 15; });
+  auto large_filter = L2F([](Agent* a) { return a->GetDiameter() >= 15; });
+
+  auto* op1 = NewOperation("test_op");
+  auto* op2 = NewOperation("test_op");
+  auto* op3 = NewOperation("test_op");
+
+  op2->SetExcludeFilters({&small_filter});
+  op3->SetExcludeFilters({&large_filter});
+
+  auto* op1_impl = op1->GetImplementation<TestOp>();
+  auto* op2_impl = op2->GetImplementation<TestOp>();
+  auto* op3_impl = op3->GetImplementation<TestOp>();
+
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->SetAgentFilters({&large_filter, &small_filter});
+
+  scheduler->ScheduleOp(op1);
+  scheduler->ScheduleOp(op2);
+  scheduler->ScheduleOp(op3);
+
+  scheduler->Simulate(1);
+
+  EXPECT_EQ(2u, op1_impl->counter);
+  EXPECT_EQ(1u, op2_impl->counter);
+  EXPECT_EQ(1u, op3_impl->counter);
+}
+
 }  // namespace bdm
