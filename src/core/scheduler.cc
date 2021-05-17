@@ -60,7 +60,8 @@ Scheduler::Scheduler() {
   // agents that are not yet in the environment (which load balancing
   // relies on)
   std::vector<std::string> post_scheduled_ops_names = {
-      "load balancing", "tear down iteration", "visualize"};
+      "load balancing", "tear down iteration", "visualize",
+      "update time series"};
 
   protected_op_names_ = {
       "update staticness",  "behavior",

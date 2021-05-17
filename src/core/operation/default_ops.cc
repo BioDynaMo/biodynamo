@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/analysis/time_series.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
 #include "core/operation/dividing_cell_op.h"
@@ -99,6 +100,16 @@ struct TearDownIterationOp : public StandaloneOperationImpl {
 };
 
 BDM_REGISTER_OP(TearDownIterationOp, "tear down iteration", kCpu);
+
+struct UpdateTimeSeriesOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(UpdateTimeSeriesOp);
+
+  void operator()() override {
+    Simulation::GetActive()->GetTimeSeries()->Update();
+  }
+};
+
+BDM_REGISTER_OP(UpdateTimeSeriesOp, "update time series", kCpu);
 
 struct UpdateEnvironmentOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(UpdateEnvironmentOp);

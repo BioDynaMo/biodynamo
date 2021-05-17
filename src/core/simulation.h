@@ -39,6 +39,10 @@ class AgentUidGenerator;
 class SimulationTest;
 class ParaviewAdaptorTest;
 
+namespace experimental {
+class TimeSeries;
+}  // namespace experimental
+
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
 /// It is possible to create multiple simulations, but only one can be active at
@@ -131,6 +135,8 @@ class Simulation {
   /// Returns the output directory for this specific simulation
   const std::string& GetOutputDir() const;
 
+  experimental::TimeSeries* GetTimeSeries();
+
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old
   /// scheduler (obtained with `GetScheduler()`) will be invalidated. \n
@@ -175,6 +181,8 @@ class Simulation {
   int64_t ctor_ts_ = 0;  //!
   /// Timestep when destructor was called
   int64_t dtor_ts_ = 0;  //!
+  /// Collects time series information during the simulation
+  experimental::TimeSeries* time_series_ = nullptr;
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,

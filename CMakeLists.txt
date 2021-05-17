@@ -581,6 +581,7 @@ if (test)
   file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/analysis/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/behavior/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/environment/*.cc
@@ -596,6 +597,7 @@ if (test)
   file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/analysis/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/behavior/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/environment/*.h

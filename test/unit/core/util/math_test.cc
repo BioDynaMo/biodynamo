@@ -71,4 +71,11 @@ TEST(MathUtilTest, ProjectionOnto) {
       result, {{2.134020618556701, 1.8969072164948453, 1.6597938144329896}});
 }
 
+TEST(MathUtilTest, MSE) {
+  std::vector<double> v1 = {1, 2};
+  std::vector<double> v2 = {4, 9};
+  auto result = Math::MSE(v1, v2);
+  EXPECT_NEAR(29.0, result, abs_error<double>::value);
+}
+
 }  // namespace bdm
