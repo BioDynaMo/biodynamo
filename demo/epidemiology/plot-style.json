@@ -1,5 +1,5 @@
 {
-  "bdm::Param": {
+  "bdm::SimParam": {
       "root_style": {
           "fFrameBorderSize": 12,
           "fLegendTextSize": 0.06,

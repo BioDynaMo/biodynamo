@@ -28,7 +28,7 @@ struct SimParam : public ParamGroup {
   double agent_diameter = 2.0;
   double agent_speed = 5.78594372145249;
   double infection_probablity = 0.285097276954021;
-  // TStyle* style = new TStyle(*gStyle);
+  experimental::Style root_style;
 };
 
 }  // namespace bdm

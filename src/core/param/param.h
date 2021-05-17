@@ -584,9 +584,6 @@ struct Param {
   ///     preferred_gpu = 0
   int preferred_gpu = 0;
 
-  /// ROOT graphics style definition
-  experimental::Style root_style;
-
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 

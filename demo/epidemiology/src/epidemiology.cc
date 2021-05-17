@@ -38,8 +38,8 @@ double Experiment(CommandLineOptions* clo, const std::vector<double>& seeds,
   if (plot) {
     // Create simulation object just to obtain parameter values
     Simulation sim(clo, [](Param* param) { param->statistics = false; });
-    auto* param = sim.GetParam();
-    PlotResults(&analytical, &mean, results, param->root_style, "output",
+    auto* sparam = sim.GetParam()->Get<SimParam>();
+    PlotResults(&analytical, &mean, results, sparam->root_style, "output",
                 !clo->Get<bool>("no-legend"));
   }
   return mse;
