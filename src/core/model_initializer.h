@@ -219,7 +219,6 @@ struct ModelInitializer {
     {
       auto* sim = Simulation::GetActive();
       auto* ctxt = sim->GetExecutionContext();
-      auto* random = sim->GetRandom();
 
       auto xiterations =
           static_cast<uint64_t>(std::floor((xmax - xmin) / deltax));
