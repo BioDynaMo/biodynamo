@@ -27,7 +27,7 @@ inline int Simulate(CommandLineOptions* clo, double seed, TimeSeries* result,
   auto set_param = [&](Param* param) {
     param->random_seed = seed;
     param->simulation_time_step = 1;
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kTorus;
     if (overwrite) {
       auto* sparam = param->Get<SimParam>();
       sparam->infection_probablity = infection_probablity;

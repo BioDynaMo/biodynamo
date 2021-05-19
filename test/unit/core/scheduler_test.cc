@@ -97,7 +97,7 @@ TEST_F(SchedulerTest, Backup) { RunBackupTest(); }
 
 TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -10;
     param->max_bound = 10;
   };
@@ -114,7 +114,7 @@ TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
 
 TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -10;
     param->max_bound = 10;
   };
