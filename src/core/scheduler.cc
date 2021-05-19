@@ -377,7 +377,7 @@ void Scheduler::Initialize() {
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
-  if (param->bound_space) {
+  if (param->bound_space != Param::BoundSpaceMode::kOpen) {
     auto* bound_space = NewOperation("bound space");
     rm->ForEachAgentParallel(*bound_space);
     delete bound_space;

@@ -34,7 +34,7 @@ enum Substances { kSubstance };
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
     // Create an artificial bounds for the simulation space
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
   };

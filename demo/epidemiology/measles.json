@@ -2,7 +2,7 @@
     "bdm::Param": {
         "statistics": true,
         "simulation_time_step": 1,
-        "bound_space": true,
+        "bound_space": 2,
         "min_bound": 0,
         "max_bound": 100,
         "visualization_export_generate_pvsm":false,

@@ -84,7 +84,8 @@ class MechanicalForcesOpCpuVerify {
 
       agent->ApplyDisplacement((*displacements_)[ah]);
       if (param->bound_space) {
-        ApplyBoundingBox(agent, param->min_bound, param->max_bound);
+        ApplyBoundingBox(agent, param->bound_space, param->min_bound,
+                         param->max_bound);
       }
     }
   };
