@@ -521,7 +521,7 @@ if(paraview)
                     HEADERS ${PV_HEADERS}
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
                     PLUGIN "TRUE")
-  set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
+  set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};ParaviewAdaptor")
 
   if(LINUX)
     SET_TARGET_PROPERTIES(ParaviewAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
@@ -531,23 +531,21 @@ if(paraview)
 endif()
 
 # Build rooteve visualization plugin
-if(paraview)
-  # Find rooteve related sources and headers for plugin generation
-  file(GLOB_RECURSE RE_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/rooteve/*.h")
-  file(GLOB_RECURSE RE_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/rooteve/*.cc")
+# Find rooteve related sources and headers for plugin generation
+file(GLOB_RECURSE RE_HEADERS "${CMAKE_SOURCE_DIR}/src/core/visualization/rooteve/*.h")
+file(GLOB_RECURSE RE_SOURCES "${CMAKE_SOURCE_DIR}/src/core/visualization/rooteve/*.cc")
 
-  build_shared_library(RootEveAdaptor
-                    SELECTION selection-libRootEveAdaptor.xml
-                    SOURCES ${RE_SOURCES}
-                    HEADERS ${RE_HEADERS}
-                    LIBRARIES biodynamo ${ROOT_LIBRARIES}
-                    PLUGIN "TRUE")
+build_shared_library(RootEveAdaptor
+                     SELECTION selection-libRootEveAdaptor.xml
+                     SOURCES ${RE_SOURCES}
+                     HEADERS ${RE_HEADERS}
+                     LIBRARIES biodynamo ${ROOT_LIBRARIES}
+                     PLUGIN "TRUE")
 
-  if(LINUX)
-    SET_TARGET_PROPERTIES(RootEveAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
-  else()
-    SET_TARGET_PROPERTIES(RootEveAdaptor PROPERTIES LINK_FLAGS "-dynamic")
-  endif()
+if(LINUX)
+  SET_TARGET_PROPERTIES(RootEveAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+else()
+  SET_TARGET_PROPERTIES(RootEveAdaptor PROPERTIES LINK_FLAGS "-dynamic")
 endif()
 
 if(${VTune_FOUND})

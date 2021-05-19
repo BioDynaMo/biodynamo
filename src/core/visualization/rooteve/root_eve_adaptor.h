@@ -25,6 +25,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include <TFile.h>
+#include <TTree.h>
+
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
@@ -36,7 +39,7 @@
 namespace bdm {
 
 /// The class that bridges the simulation code with ParaView.
-class RootEveAdaptor : VisualizationAdaptor {
+class RootEveAdaptor : public VisualizationAdaptor {
  public:
   /// Initializes Catalyst with the predefined pipeline and allocates memory
   /// for the VTK grid structures
@@ -50,9 +53,23 @@ class RootEveAdaptor : VisualizationAdaptor {
   struct RootEveImpl;
 
  private:
-  bool initialized_ = false;  //!
-  std::unique_ptr<RootEveImpl> impl_;    //!
-  static std::atomic<uint64_t> counter_;  //!
+  bool initialized_ = false;
+
+  // output file name
+  TString outfile_;
+
+  // ROOT objects
+  TFile *file_ = nullptr;
+  TTree *tree_ = nullptr;
+
+  /// Max visualized agents
+  int max_vis_agents_;
+
+  /// Visualization time
+  double vis_time_;
+
+  /// Structure to be stored in the tree
+  std::unique_ptr<RootEveImpl> impl_;
 
   /// Parameters might be set after the constructor has been called.
   /// Therefore, we defer initialization to the first invocation of
@@ -66,16 +83,13 @@ class RootEveAdaptor : VisualizationAdaptor {
   /// visualized in ParaView at a later point in time
   void ExportVisualization();
 
-  /// Create the required ROOT objects to visualize agents.
-  void BuildAgentsRootStructures();
-
   // ---------------------------------------------------------------------------
   // generate files
 
   void WriteSimulationInfo();
-  void WritePointsTree();
+  void WriteTree();
 
-  ClassDefNV(RootEveAdaptor, 1);
+  ClassDefNV(RootEveAdaptor, 0);
 };
 
 }  // namespace bdm

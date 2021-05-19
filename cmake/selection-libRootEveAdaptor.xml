@@ -1,8 +1,8 @@
 <!-- All types for which the dictionary can be prebuilt (non templated classes)
-     are listed here and included into libParaviewAdaptor.so.
+     are listed here and included into libRootEveAdaptor.so.
      Classes from directory test are not included. -->
 <lcgdict>
   <selection>
-    <class name="bdm::ParaviewAdaptor" />
+    <class name="bdm::RootEveAdaptor" />
   </selection>
 </lcgdict>
