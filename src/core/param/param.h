@@ -22,6 +22,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/analysis/style.h"
 #include "core/param/param_group.h"
 #include "core/util/root.h"
 #include "core/util/type.h"

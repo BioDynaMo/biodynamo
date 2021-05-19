@@ -19,7 +19,7 @@
 namespace bdm {
 
 // This is the main simulation function
-inline int Simulate(CommandLineOptions* clo, double seed, ResultData* result,
+inline int Simulate(CommandLineOptions* clo, double seed, TimeSeries* result,
                     bool overwrite = false, double infection_probablity = 1,
                     double infection_radius = 1, double speed = 1) {
   // Overwrite the parameters in the config file with the value from
@@ -73,6 +73,8 @@ inline int Simulate(CommandLineOptions* clo, double seed, ResultData* result,
                                        sparam->initial_population_infected,
                                        person_creator);
 
+  SetupResultCollection(&sim);
+
   // workaround for bug -> ignore
   auto* cell = new Person();
   cell->SetDiameter(sparam->infection_radius);
@@ -81,13 +83,7 @@ inline int Simulate(CommandLineOptions* clo, double seed, ResultData* result,
 
   // Now we finished defining the initial simulation state.
 
-  // Setup counting operation
-  auto* count_op = NewOperation("ReductionOpDouble4");
-  auto* count_op_impl = count_op->GetImplementation<ReductionOp<Double4>>();
-  count_op_impl->Initialize(new CountSIR(), new CalcRates());
   auto* scheduler = sim.GetScheduler();
-  scheduler->ScheduleOp(count_op);
-
   scheduler->UnscheduleOp(scheduler->GetOps("mechanical forces")[0]);
 
   // Simulate for SimParam::number_of_iterations steps
@@ -95,7 +91,8 @@ inline int Simulate(CommandLineOptions* clo, double seed, ResultData* result,
     Timing timer("RUNTIME");
     scheduler->Simulate(sparam->number_of_iterations);
   }
-  TransferResult(result, count_op_impl->GetResults());
+  // move time series data from simulation to result
+  *result = std::move(*sim.GetTimeSeries());
 
   return 0;
 }

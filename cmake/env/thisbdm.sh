@@ -344,6 +344,7 @@ _source_thisbdm()
     fi
     export PATH="$PYENV_ROOT/bin:$PATH"
 
+    eval "$(pyenv init --path)" || return 1
     eval "$(pyenv init -)" || return 1
     pyenv shell @pythonvers@ || return 1
 

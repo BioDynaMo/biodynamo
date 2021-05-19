@@ -52,7 +52,9 @@ if [ $BDM_OS = "centos-7" ]; then
 fi
 
 if [ "$BDM_OS" != "osx" ]; then
-  export PATH="$HOME/.pyenv/bin:$PATH"
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init --path)"
   eval "$(pyenv init -)"
   pyenv shell 3.9.1
 fi

@@ -60,7 +60,8 @@ Scheduler::Scheduler() {
   // agents that are not yet in the environment (which load balancing
   // relies on)
   std::vector<std::string> post_scheduled_ops_names = {
-      "load balancing", "tear down iteration", "visualize"};
+      "load balancing", "tear down iteration", "visualize",
+      "update time series"};
 
   protected_op_names_ = {
       "update staticness",  "behavior",
@@ -130,6 +131,20 @@ void Scheduler::Simulate(uint64_t steps) {
     total_steps_++;
     Backup();
   }
+}
+
+void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
+  Initialize();
+  while (!exit_condition()) {
+    Execute();
+
+    total_steps_++;
+  }
+}
+
+void Scheduler::FinalizeInitialization() {
+  auto* sim = Simulation::GetActive();
+  sim->GetExecutionContext()->SetupIterationAll(sim->GetAllExecCtxts());
 }
 
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }

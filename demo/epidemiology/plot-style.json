@@ -1,0 +1,31 @@
+{
+  "bdm::SimParam": {
+      "root_style": {
+          "fFrameBorderSize": 12,
+          "fLegendTextSize": 0.06,
+          "fTitleFontSize": 0.1,
+          "fPadLeftMargin": 0.2,
+          "fPadRightMargin": 0.05,
+          "fPadTopMargin": 0.04,
+          "fPadBottomMargin": 0.2,
+          "fXaxis": {
+              "_typename": "TAttAxis",
+              "fNdivisions": 8,
+              "fLabelOffset": 0.005,
+              "fLabelSize": 0.09,
+              "fTickLength": 0.02,
+              "fTitleOffset": 1,
+              "fTitleSize": 0.09
+          },
+          "fYaxis": {
+              "_typename": "TAttAxis",
+              "fNdivisions": 5,
+              "fLabelOffset": 0.005,
+              "fLabelSize": 0.09,
+              "fTickLength": 0.02,
+              "fTitleOffset": 1,
+              "fTitleSize": 0.09
+          }
+      }
+  }
+}

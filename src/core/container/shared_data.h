@@ -22,7 +22,7 @@
 /// cacheline size, consider changing the value accordingly. When BioDynaMo
 /// moves to the C++17 standard, this choice will be automated. See :
 /// en.cppreference.com/w/cpp/thread/hardware_destructive_interference_size
-#define BDM_CACHE_LINE_SIZE 64
+#define BDM_CACHE_LINE_SIZE 64u
 
 namespace bdm {
 

@@ -1,3 +1,17 @@
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+
 #include "core/container/shared_data.h"
 #include <gtest/gtest.h>
 #include <vector>
@@ -7,9 +21,9 @@ namespace bdm {
 // Test if resize and size method work correctly.
 TEST(SharedDataTest, ReSize) {
   SharedData<int> sdata(10);
-  EXPECT_EQ(sdata.size(), 10);
+  EXPECT_EQ(10u, sdata.size());
   sdata.resize(20);
-  EXPECT_EQ(sdata.size(), 20);
+  EXPECT_EQ(20u, sdata.size());
 }
 
 // Test if shared data is occupying full cache lines.
@@ -44,7 +58,7 @@ TEST(SharedDataTest, CacheLineAlignment) {
           typename SharedData<double[BDM_CACHE_LINE_SIZE /
                                      sizeof(double)]>::Data::value_type>::value,
       BDM_CACHE_LINE_SIZE);
-  // Test size of vector components double[max_double], e.g. max cache line 
+  // Test size of vector components double[max_double], e.g. max cache line
   // capacity
   EXPECT_EQ(
       sizeof(typename SharedData<

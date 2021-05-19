@@ -14,69 +14,47 @@ namespace bdm {
 
 const ParamGroupUid SimParam::kUid = ParamGroupUidGenerator::Get()->NewUid();
 
-void CalcMean(const std::vector<ResultData>& results, ResultData* rmean) {
-  rmean->time_ = results[0].time_;
-  std::vector<double> tmp(results.size());
-
-  // susceptible
-  for (uint64_t i = 0; i < rmean->time_.size(); ++i) {
-    for (uint64_t j = 0; j < results.size(); ++j) {
-      tmp[j] = results[j].susceptible_[i];
-    }
-    rmean->susceptible_.push_back(TMath::Mean(tmp.begin(), tmp.end()));
-  }
-
-  // infected
-  for (uint64_t i = 0; i < rmean->time_.size(); ++i) {
-    for (uint64_t j = 0; j < results.size(); ++j) {
-      tmp[j] = results[j].infected_[i];
-    }
-    rmean->infected_.push_back(TMath::Mean(tmp.begin(), tmp.end()));
-  }
-
-  // recovered
-  for (uint64_t i = 0; i < rmean->time_.size(); ++i) {
-    for (uint64_t j = 0; j < results.size(); ++j) {
-      tmp[j] = results[j].recovered_[i];
-    }
-    rmean->recovered_.push_back(TMath::Mean(tmp.begin(), tmp.end()));
-  }
-}
-
 double Experiment(CommandLineOptions* clo, const std::vector<double>& seeds,
-                  const ResultData& analytical, bool plot = false,
+                  const TimeSeries& analytical, bool plot = false,
                   bool overwrite = false, double infection_probablity = 1,
                   double infection_radius = 1, double speed = 1) {
-  std::vector<bdm::ResultData> results(seeds.size());
+  std::vector<TimeSeries> results(seeds.size());
   for (uint64_t i = 0; i < seeds.size(); ++i) {
     Simulate(clo, seeds[i], &results[i], overwrite, infection_probablity,
              infection_radius, speed);
   }
 
-  ResultData mean;
-  CalcMean(results, &mean);
-  double mse = MSE(analytical.susceptible_, mean.susceptible_) +
-               MSE(analytical.infected_, mean.infected_);
+  TimeSeries mean;
+  TimeSeries::Merge(&mean, results,
+                    [](const std::vector<double> all_y_values, double* y,
+                       double* eh, double* el) {
+                      *y =
+                          TMath::Mean(all_y_values.begin(), all_y_values.end());
+                    });
+  double mse =
+      Math::MSE(analytical.GetYValues("susceptible"),
+                mean.GetYValues("susceptible")) +
+      Math::MSE(analytical.GetYValues("infected"), mean.GetYValues("infected"));
   if (plot) {
-    double beta = clo->Get<double>("beta");
-    double gamma = clo->Get<double>("gamma");
-    PlotResults(&analytical, &mean, results, "output",
-                Concat(" ( #beta=", beta, ", #gamma=", gamma, ")"),
+    // Create simulation object just to obtain parameter values
+    Simulation sim(clo, [](Param* param) { param->statistics = false; });
+    auto* sparam = sim.GetParam()->Get<SimParam>();
+    PlotResults(&analytical, &mean, results, sparam->root_style, "output",
                 !clo->Get<bool>("no-legend"));
   }
   return mse;
 }
 
-ResultData GetAnalyticalResults(CommandLineOptions* clo) {
+TimeSeries GetAnalyticalResults(CommandLineOptions* clo) {
   // Create simulation object just to obtain parameter values
-  Simulation sim(clo);
+  Simulation sim(clo, [](Param* param) { param->statistics = false; });
   auto* param = sim.GetParam();
   auto* sparam = param->Get<SimParam>();
 
   // analytical solution
   double beta = clo->Get<double>("beta");
   double gamma = clo->Get<double>("gamma");
-  ResultData analytical;
+  TimeSeries analytical;
   CalculateAnalyticalSolution(
       &analytical, beta, gamma, sparam->initial_population_susceptible,
       sparam->initial_population_infected, 0, sparam->number_of_iterations, 1);
@@ -104,7 +82,7 @@ void ExperimentFitSimulation(CommandLineOptions* clo,
   };
 
   // Create simulation object just to obtain parameter values
-  Simulation sim(clo);
+  Simulation sim(clo, [](Param* param) { param->statistics = false; });
   auto* param = sim.GetParam();
   auto* sparam = param->Get<SimParam>();
 
