@@ -756,5 +756,5 @@ endif()
 PRINT_LINE()
 MESSAGE("You have just finished to configure the BioDynaMo source.\n\
 Compile it by running \"${buildcmd}\".\n\
-Before using it do \". ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/thisbdm.sh.\"")
+Before using it do \". ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/thisbdm.sh\".")
 PRINT_LINE()
