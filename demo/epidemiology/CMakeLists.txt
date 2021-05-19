@@ -21,6 +21,7 @@ ExternalProject_Add(
   # CONFIGURE_COMMAND ./configure --header-only-version
   # BUILD_COMMAND ""
   INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_CURRENT_BINARY_DIR}
+  BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so
   )
 
 add_library(liboptim SHARED IMPORTED)
