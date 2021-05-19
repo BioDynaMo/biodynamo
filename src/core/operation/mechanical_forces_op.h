@@ -101,7 +101,8 @@ class MechanicalForcesOp : public AgentOperationImpl {
         agent->CalculateDisplacement(force_, squared_radius_, delta_time_[tid]);
     agent->ApplyDisplacement(displacement);
     if (param->bound_space) {
-      ApplyBoundingBox(agent, param->min_bound, param->max_bound);
+      ApplyBoundingBox(agent, param->bound_space, param->min_bound,
+                       param->max_bound);
     }
   }
 

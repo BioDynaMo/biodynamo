@@ -56,7 +56,8 @@ ResourceManager::~ResourceManager() {
 }
 
 void ResourceManager::ForEachAgentParallel(
-    Functor<void, Agent*, AgentHandle>& function) {
+    Functor<void, Agent*, AgentHandle>& function,
+    Functor<bool, Agent*>* filter) {
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
@@ -72,7 +73,10 @@ void ResourceManager::ForEachAgentParallel(
     auto end = std::min(numa_agents.size(), start + chunk);
 
     for (uint64_t i = start; i < end; ++i) {
-      function(numa_agents[i], AgentHandle(nid, i));
+      auto* a = numa_agents[i];
+      if (!filter || (filter && (*filter)(a))) {
+        function(a, AgentHandle(nid, i));
+      }
     }
   }
 }
@@ -84,18 +88,21 @@ struct ForEachAgentParallelFunctor : public Functor<void, Agent*, AgentHandle> {
   void operator()(Agent* agent, AgentHandle) { functor_(agent); }
 };
 
-void ResourceManager::ForEachAgentParallel(Functor<void, Agent*>& function) {
+void ResourceManager::ForEachAgentParallel(Functor<void, Agent*>& function,
+                                           Functor<bool, Agent*>* filter) {
   ForEachAgentParallelFunctor<Functor<void, Agent*>> functor(function);
-  ForEachAgentParallel(functor);
+  ForEachAgentParallel(functor, filter);
 }
 
-void ResourceManager::ForEachAgentParallel(Operation& op) {
+void ResourceManager::ForEachAgentParallel(Operation& op,
+                                           Functor<bool, Agent*>* filter) {
   ForEachAgentParallelFunctor<Operation> functor(op);
-  ForEachAgentParallel(functor);
+  ForEachAgentParallel(functor, filter);
 }
 
 void ResourceManager::ForEachAgentParallel(
-    uint64_t chunk, Functor<void, Agent*, AgentHandle>& function) {
+    uint64_t chunk, Functor<void, Agent*, AgentHandle>& function,
+    Functor<bool, Agent*>* filter) {
   // adapt chunk size
   auto num_agents = GetNumAgents();
   uint64_t factor = (num_agents / thread_info_->GetMaxThreads()) / chunk;
@@ -173,7 +180,10 @@ void ResourceManager::ForEachAgentParallel(
                          start + p_chunk);
 
           for (uint64_t i = start; i < end; ++i) {
-            function(numa_agents[i], AgentHandle(current_nid, i));
+            auto* a = numa_agents[i];
+            if (!filter || (filter && (*filter)(a))) {
+              function(a, AgentHandle(current_nid, i));
+            }
           }
 
           old_count = (*(counters[current_tid]))++;

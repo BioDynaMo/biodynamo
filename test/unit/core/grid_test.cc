@@ -251,7 +251,7 @@ TEST(GridTest, GetBoxCoordinates) {
 
 TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 1;
     param->max_bound = 99;
   };

@@ -20,6 +20,7 @@ struct Infection : public Behavior {
   BDM_BEHAVIOR_HEADER(Infection, Behavior, 1);
 
   Infection() {}
+  virtual ~Infection() {}
 
   void Run(Agent* a) override {
     auto* sim = Simulation::GetActive();
@@ -49,6 +50,7 @@ struct Recovery : public Behavior {
   BDM_BEHAVIOR_HEADER(Recovery, Behavior, 1);
 
   Recovery() {}
+  virtual ~Recovery() {}
 
   void Run(Agent* a) override {
     auto* person = bdm_static_cast<Person*>(a);
@@ -68,20 +70,16 @@ struct RandomMovement : public Behavior {
   BDM_BEHAVIOR_HEADER(RandomMovement, Behavior, 1);
 
   RandomMovement() {}
+  virtual ~RandomMovement() {}
 
   void Run(Agent* agent) override {
     auto* sim = Simulation::GetActive();
     auto* random = sim->GetRandom();
-    auto* param = sim->GetParam();
-    auto* sparam = param->Get<SimParam>();
+    auto* sparam = sim->GetParam()->Get<SimParam>();
 
     const auto& position = agent->GetPosition();
     auto rand_movement = random->UniformArray<3>(-1, 1).Normalize();
     auto new_pos = position + rand_movement * sparam->agent_speed;
-    for (auto& el : new_pos) {
-      el = std::fmod(el, param->max_bound);
-      el = el < 0 ? param->max_bound + el : el;
-    }
     agent->SetPosition(new_pos);
   }
 };

@@ -41,9 +41,12 @@ namespace experimental {
 /// SumReduction<uint64_t> combine_tl_results;
 /// auto result = Reduce(sim, sum_data, combine_tl_results);
 /// \endcode
+/// The optional argument `filter` allows to reduce only a subset of
+/// all agents.
 template <typename T>
 inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
-                Functor<T, const SharedData<T>&>& reduce_partial_results) {
+                Functor<T, const SharedData<T>&>& reduce_partial_results,
+                Functor<bool, Agent*>* filter = nullptr) {
   // The thread-local (partial) results
   SharedData<T> tl_results;
   // initialize thread local data
@@ -59,7 +62,7 @@ inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
     agent_functor(agent, &(tl_results[tid]));
   });
   auto* rm = sim->GetResourceManager();
-  rm->ForEachAgentParallel(actual_agent_func);
+  rm->ForEachAgentParallel(actual_agent_func, filter);
   //   combine thread-local results
   return reduce_partial_results(tl_results);
 }
@@ -74,7 +77,10 @@ inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
 /// });
 /// auto num_infected = Count(sim, is_infected));
 /// \endcode
-inline uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition) {
+/// The optional argument `filter` allows to count only a subset of
+/// all agents.
+inline uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition,
+                      Functor<bool, Agent*>* filter = nullptr) {
   // The thread-local (partial) results
   SharedData<uint64_t> tl_results;
   // initialize thread local data
@@ -92,7 +98,7 @@ inline uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition) {
     }
   });
   auto* rm = sim->GetResourceManager();
-  rm->ForEachAgentParallel(actual_agent_func);
+  rm->ForEachAgentParallel(actual_agent_func, filter);
   //   combine thread-local results
   SumReduction<uint64_t> sum;
   return sum(tl_results);

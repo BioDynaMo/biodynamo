@@ -179,15 +179,29 @@ struct Param {
   ///     max_displacement = 3.0
   double simulation_max_displacement = 3.0;
 
-  /// Enforce an artificial cubic bounds around the simulation space.
-  /// Agents cannot move outside this cube. Dimensions of this cube
-  /// are determined by parameter `lbound` and `rbound`.\n
-  /// Default value: `false` (simulation space is "infinite")\n
+  enum BoundSpaceMode {
+    /// The simulation space grows to encapsulate all agents.
+    kOpen = 0,
+    /// Enforce an artificial cubic bound around the simulation space.
+    /// The dimensions of this cube are determined by parameter
+    /// `min_bound` and `max_bound`.\n
+    /// If agents move outside the cube they are moved back inside.
+    kClosed,
+    /// Enforce an artificial cubic bound around the simulation space.
+    /// The dimensions of this cube are determined by parameter
+    /// `min_bound` and `max_bound`.\n
+    /// Agents that move outside the cube are moved back in on the opposite
+    /// side.
+    kTorus
+  };
+
+  /// Default value: `open` (simulation space is "infinite")\n
+  /// \see BoundSpaceMode
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     bound_space = false
-  bool bound_space = false;
+  ///     bound_space = "open"
+  BoundSpaceMode bound_space = kOpen;
 
   /// Minimum allowed value for x-, y- and z-position if simulation space is
   /// bound (@see `bound_space`).\n

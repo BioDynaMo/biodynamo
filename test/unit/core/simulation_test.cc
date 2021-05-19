@@ -42,7 +42,7 @@ class SimulationTest : public ::testing::Test {
       "backup_interval = 3600\n"
       "time_step = 0.0125\n"
       "max_displacement = 2.0\n"
-      "bound_space = true\n"
+      "bound_space = 0\n"
       "min_bound = -100\n"
       "max_bound =  200\n"
       "diffusion_method = \"runga-kutta\"\n"
@@ -124,7 +124,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(1u, param->unschedule_default_operations.size());
     EXPECT_EQ("mechanical forces", param->unschedule_default_operations[0]);
     EXPECT_EQ(2.0, param->simulation_max_displacement);
-    EXPECT_TRUE(param->bound_space);
+    EXPECT_EQ(0, param->bound_space);
     EXPECT_EQ(-100, param->min_bound);
     EXPECT_EQ(200, param->max_bound);
     EXPECT_EQ(Param::ThreadSafetyMechanism::kAutomatic,

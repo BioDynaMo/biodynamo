@@ -157,7 +157,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, LeakingEdge) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
   };
@@ -226,7 +226,7 @@ TEST(DiffusionTest, LeakingEdge) {
 // added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, ClosedEdge) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
   };
@@ -294,7 +294,7 @@ TEST(DiffusionTest, ClosedEdge) {
 // after the env has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
   };
@@ -371,7 +371,7 @@ TEST(DiffusionTest, CopyOldData) {
 // and deserialzed with I/O
 TEST(DiffusionTest, IOTest) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -50;
     param->max_bound = 50;
   };
@@ -452,7 +452,7 @@ TEST(DISABLED_DiffusionTest, WrongParameters) {
 
 TEST(DiffusionTest, CorrectParameters) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 0;
     param->max_bound = 100;
   };
@@ -464,7 +464,7 @@ TEST(DiffusionTest, CorrectParameters) {
 
 TEST(DiffusionTest, EulerConvergence) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
   };
@@ -542,7 +542,7 @@ TEST(DiffusionTest, EulerConvergence) {
 
 TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
     param->diffusion_method = "runga-kutta";
@@ -624,7 +624,7 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
 // Renable this test after this issue has been resolved.
 TEST(DISABLED_DiffusionTest, ModelInitializer) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
     Param::VisualizeDiffusion vd;
