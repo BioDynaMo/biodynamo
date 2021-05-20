@@ -57,7 +57,7 @@ class Scheduler {
   /// The condition will be tested at the beginning of an iteration.\n
   /// e.g. simulate until there are 1000 agents in the simulation
   ///
-  ///     scheduler->Simulate([](){
+  ///     scheduler->SimulateUntil([](){
   ///        auto* rm = Simulation::GetActive()->GetResourceManager();
   ///        return rm->GetNumAgents() >= 1000;
   ///     });
