@@ -41,6 +41,19 @@ RandomizedRm<TBaseRm>::RandomizedRm() {}
 template <typename TBaseRm>
 RandomizedRm<TBaseRm>::~RandomizedRm() {}
 
+struct Ubrng {
+  using result_type = uint32_t;
+  Random* random;
+  Ubrng(Random* random) : random(random) {}
+  static constexpr result_type min() { return 0; }
+  static constexpr result_type max() {
+    return std::numeric_limits<result_type>::max();
+  }
+  result_type operator()() {
+    return random->Integer(std::numeric_limits<result_type>::max());
+  }
+};
+
 // -----------------------------------------------------------------------------
 template <typename TBaseRm>
 void RandomizedRm<TBaseRm>::EndOfIteration() {
@@ -50,7 +63,9 @@ void RandomizedRm<TBaseRm>::EndOfIteration() {
   for (uint64_t n = 0; n < this->agents_.size(); ++n) {
     // TODO(all) parallelize shuffling
     // see for example: https://arxiv.org/abs/1508.03167
-    std::random_shuffle(this->agents_[n].begin(), this->agents_[n].end());
+    auto* random = Simulation::GetActive()->GetRandom();
+    std::shuffle(this->agents_[n].begin(), this->agents_[n].end(),
+                 Ubrng(random));
   }
   // update uid_ah_map_
   auto update_agent_map = L2F([this](Agent* a, AgentHandle ah) {
