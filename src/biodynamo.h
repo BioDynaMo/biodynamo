@@ -21,6 +21,7 @@
 #include "core/agent/cell.h"
 #include "core/agent/cell_division_event.h"
 #include "core/agent/new_agent_event.h"
+#include "core/agent/spherical_agent.h"
 #include "core/analysis/line_graph.h"
 #include "core/analysis/reduce.h"
 #include "core/analysis/style.h"
