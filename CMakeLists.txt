@@ -141,7 +141,7 @@ if(APPLE)
 endif()
 
 if(UNIX AND NOT APPLE)
-  set(CMAKE_BDM_PVVERSION "5.9")
+  set(CMAKE_BDM_PVVERSION "5.8")
   set(LINUX TRUE)
   add_definitions("-DLINUX")
 endif()

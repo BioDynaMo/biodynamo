@@ -81,7 +81,7 @@ static struct BioDynaMoDictInit {
         prefixes = []
         environmentals = ["ParaView_DIR", "ROOTSYS", "BDMSYS"]
         if not args.out_of_source:
-            include_suffix = ["/include/paraview-5.9", "/include", "/include"]
+            include_suffix = ["/include/paraview-5.8", "/include", "/include"]
             cnt = 0
             for e in environmentals: 
                 f.write('    AppendEnvVar(idirs, "{0}", "{1}");\n'.format(e, include_suffix[cnt]))
