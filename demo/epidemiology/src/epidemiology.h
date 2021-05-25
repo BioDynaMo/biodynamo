@@ -12,6 +12,7 @@
 
 #include "analytical-solution.h"
 #include "behavior.h"
+#include "core/environment/uniform_grid_environment.h"
 #include "evaluate.h"
 #include "person.h"
 #include "sim-param.h"
@@ -43,6 +44,7 @@ inline int Simulate(CommandLineOptions* clo, double seed, TimeSeries* result,
   auto* param = sim.GetParam();
   auto* sparam = param->Get<SimParam>();
   auto* random = sim.GetRandom();
+  auto* env = dynamic_cast<UniformGridEnvironment*>(sim.GetEnvironment());
 
   auto state = State::kSusceptible;
   // Lambda that creates a new person at specific position in space
@@ -75,11 +77,8 @@ inline int Simulate(CommandLineOptions* clo, double seed, TimeSeries* result,
 
   SetupResultCollection(&sim);
 
-  // workaround for bug -> ignore
-  auto* cell = new Person();
-  cell->SetDiameter(sparam->infection_radius);
-  sim.GetResourceManager()->AddAgent(cell);
-  // end of workaround
+  // Set the box length to the infection radius
+  env->SetBoxLength(sparam->infection_radius);
 
   // Now we finished defining the initial simulation state.
 
