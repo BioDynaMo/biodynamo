@@ -119,20 +119,32 @@ void LineGraph::Draw(const char* canvas_draw_option) {
 
 // -----------------------------------------------------------------------------
 void LineGraph::SetLegendPos(double x1, double y1, double x2, double y2) {
-  Update();
-  l_->SetX1(x1);
-  l_->SetY1(y1);
-  l_->SetX2(x2);
-  l_->SetY2(y2);
+  if (l_) {
+    Update();
+    l_->SetX1(x1);
+    l_->SetY1(y1);
+    l_->SetX2(x2);
+    l_->SetY2(y2);
+  } else {
+    Log::Warning(
+        "LineGraph::SetLegendPos",
+        "This LineGraph was created without legend. Operation aborted.");
+  }
 }
 
 // -----------------------------------------------------------------------------
 void LineGraph::SetLegendPosNDC(double x1, double y1, double x2, double y2) {
-  Update();
-  l_->SetX1NDC(x1);
-  l_->SetY1NDC(y1);
-  l_->SetX2NDC(x2);
-  l_->SetY2NDC(y2);
+  if (l_) {
+    Update();
+    l_->SetX1NDC(x1);
+    l_->SetY1NDC(y1);
+    l_->SetX2NDC(x2);
+    l_->SetY2NDC(y2);
+  } else {
+    Log::Warning(
+        "LineGraph::SetLegendPosNDC",
+        "This LineGraph was created without legend. Operation aborted.");
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -178,7 +190,9 @@ void LineGraph::Update() {
     s_->cd();
   }
   mg_->Draw(mg_draw_option_.c_str());
-  l_->Draw();
+  if (l_) {
+    l_->Draw();
+  }
   c_->Update();
   gPad->Modified();
   gPad->Update();
