@@ -176,6 +176,7 @@ struct Set : public Container {
 class MPIObject : public TMessage {
  public:
   MPIObject() = default;
+  ~MPIObject() {}
   MPIObject(void* buf, Int_t len) : TMessage(buf, len) {}
 
  private:

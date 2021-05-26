@@ -17,6 +17,7 @@
 #include "core/multi_simulation/algorithm/algorithm.h"
 #include "core/multi_simulation/algorithm/algorithm_registry.h"
 #include "core/multi_simulation/dynamic_loop.h"
+#include "core/multi_simulation/result_data.h"
 #include "core/multi_simulation/optimization_param.h"
 #include "core/multi_simulation/util.h"
 #include "core/simulation.h"
@@ -29,8 +30,8 @@ namespace bdm {
 struct ParameterSweep : public Algorithm {
   BDM_ALGO_HEADER();
 
-  void operator()(
-      const std::function<void(Param*)>& send_params_to_worker) override {
+  void operator()(const std::function<void(Param*, ResultData*)>&
+                      send_params_to_worker) override {
     auto sweeping_params = opt_params_->params_;
 
     if (sweeping_params.empty()) {
@@ -51,7 +52,7 @@ struct ParameterSweep : public Algorithm {
       Param final_params = *default_params_;
       final_params.MergeJsonPatch(j_patch.dump());
 
-      send_params_to_worker(&final_params);
+      send_params_to_worker(&final_params, nullptr);
     });
   };
 };

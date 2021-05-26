@@ -54,7 +54,6 @@ option(sbml      "Enable SBML support" @sbml@)
 option(vtune     "Enable VTune performance analysis" @vtune@)
 option(tcmalloc  "Use tcmalloc." @tcmalloc@)
 option(jemalloc  "Use jemalloc." @jemalloc@)
-option(mpi "Link simulations with MPI (e.g. for multi-simulation mode)" ON)
 
 if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
@@ -145,6 +144,7 @@ endif()
 # because rootcling will complaing about missing mpi.h
 find_package(MPI COMPONENTS CXX)
 if(MPI_FOUND)
+  set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
   include_directories(${MPI_CXX_COMPILER_INCLUDE_DIRS})
   add_definitions("-DUSE_MPI")
 else(MPI_FOUND)
@@ -266,4 +266,6 @@ list(REMOVE_ITEM ROOT_LIBRARIES "$ENV{BDMSYS}/third_party/root/lib/libEve.so")
 set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES})
 
 include_directories("$ENV{BDMSYS}/include")
+# armadillo is added as a subdirectory in optimlib
+include_directories("$ENV{BDMSYS}/include/optim")
 link_directories("$ENV{BDMSYS}/lib")

@@ -18,6 +18,7 @@
 #include <functional>
 #include <string>
 
+#include "core/multi_simulation/result_data.h"
 #include "core/multi_simulation/optimization_param.h"
 #include "core/param/param.h"
 
@@ -28,8 +29,8 @@ class MultiSimulationManager;
 struct Algorithm {
   virtual ~Algorithm() {}
 
-  virtual void operator()(
-      const std::function<void(Param*)>& send_params_to_worker) = 0;
+  virtual void operator()(const std::function<void(Param*, ResultData*)>&
+                              send_params_to_worker) = 0;
 
   OptimizationParam* opt_params_;
   Param* default_params_;

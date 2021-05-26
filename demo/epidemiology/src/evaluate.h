@@ -27,17 +27,11 @@
 #include "core/resource_manager.h"
 #include "core/simulation.h"
 
+#include "core/multi_simulation/result_data.h"
+
 #include "person.h"
 
 namespace bdm {
-
-// ---------------------------------------------------------------------------
-struct ResultData {
-  std::vector<double> time_;
-  std::vector<double> susceptible_;
-  std::vector<double> infected_;
-  std::vector<double> recovered_;
-};
 
 // ---------------------------------------------------------------------------
 struct CountSIR : public Functor<void, Agent*, Double4*> {

@@ -19,25 +19,24 @@
 namespace bdm {
 
 // This is the main simulation function
-inline int Simulate(CommandLineOptions* clo, double seed, ResultData* result,
-                    bool overwrite = false, double infection_probablity = 1,
-                    double infection_radius = 1, double speed = 1) {
+inline int Simulate(int argc, const char** argv, ResultData* result,
+                    Param* final_params = nullptr) {
   // Overwrite the parameters in the config file with the value from
   // the command line options
   auto set_param = [&](Param* param) {
-    param->random_seed = seed;
+    param->random_seed = 0;
     param->simulation_time_step = 1;
     param->bound_space = true;
-    if (overwrite) {
-      auto* sparam = param->Get<SimParam>();
-      sparam->infection_probablity = infection_probablity;
-      sparam->infection_radius = infection_radius;
-      sparam->agent_speed = speed;
-    }
+    // if (overwrite) {
+    //   auto* sparam = param->Get<SimParam>();
+    //   sparam->infection_probablity = infection_probablity;
+    //   sparam->infection_radius = infection_radius;
+    //   sparam->agent_speed = speed;
+    // }
   };
 
   // Create simulation object
-  Simulation sim(clo, set_param);
+  Simulation sim(argc, argv, set_param);
 
   // Get pointers to important objects
   auto* param = sim.GetParam();

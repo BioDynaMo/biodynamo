@@ -20,12 +20,13 @@
 #include <functional>
 #include <string>
 
+#include "core/multi_simulation/result_data.h"
 #include "core/param/param.h"
 
 namespace bdm {
 
 // Signature of the Simulate() call
-using TSimulate = std::function<double(int, const char**, Param*)>;
+using TSimulate = std::function<int(int, const char**, ResultData*, Param*)>;
 
 class MultiSimulation {
  public:

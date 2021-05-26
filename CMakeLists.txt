@@ -114,7 +114,6 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
-option(mpi "Link simulations with MPI (e.g. for multi-simulation mode)" ON)
 
 if(APPLE)
   set(CMAKE_BDM_PVVERSION "5.9")
@@ -196,12 +195,9 @@ else()
    endif()
 endif()
 
-# In order to correctly compile and link the multi simulation manager with MPI,
-# you need to set CMAKE_[CXX|C]_COMPILER to [mpic++|mpicc]
-# We still however need to explicitely add the mpi.h include path to our include_directories
-# because rootcling will complaing about missing mpi.h
 find_package(MPI COMPONENTS C CXX)
 if(MPI_FOUND)
+  set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
   include_directories(${MPI_CXX_COMPILER_INCLUDE_DIRS})
   add_definitions("-DUSE_MPI")
 else(MPI_FOUND)
@@ -500,6 +496,19 @@ build_shared_library(biodynamo
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} ${FS_LIB})
 
+include(ExternalProject)
+ExternalProject_Add(
+  optim
+  URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
+  BINARY_DIR "optim-prefix/src/optim"
+  CONFIGURE_COMMAND ./configure
+  INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_INSTALL_LIBDIR}
+)
+add_library(liboptim SHARED IMPORTED)
+set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include)
+add_dependencies(biodynamo liboptim)
+                   
 # Build plugin
 if(paraview)
   # Find paraview-related sources and headers for plugin generation

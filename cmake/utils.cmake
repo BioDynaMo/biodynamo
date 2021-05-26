@@ -305,6 +305,11 @@ function(install_inside_build)
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mpark
             GLOB "*"
             )
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/optim
+            GLOB "*"
+            )
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             ${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1/cxxopts.h
@@ -449,7 +454,6 @@ function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(tcmalloc tcmalloc "Use tcmalloc for memory allocations.")
     ADD_FEATURE_INFO(jemalloc jemalloc "Use jemalloc for memory allocations.")
     ADD_FEATURE_INFO(notebooks notebooks "Generate ROOT notebooks")
-    ADD_FEATURE_INFO(mpi mpi "Link simulations with MPI (e.g. for multi-simulation mode)")
 endfunction()
 
 # Method used to give execution permissions to a file

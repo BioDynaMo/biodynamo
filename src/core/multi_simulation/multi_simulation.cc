@@ -90,9 +90,10 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
     Param default_params = *(simulation.GetParam());
 
     // Start the Master routine
-    MultiSimulationManager pem(worldsize, &default_params, [&](Param* params) {
-      return simulate_call(argc_, argv_, params);
-    });
+    MultiSimulationManager pem(
+        worldsize, &default_params, [&](Param* params, ResultData* result) {
+          return simulate_call(argc_, argv_, result, params);
+        });
 
     // Read in the experimental data file
     CommandLineOptions clo(argc_, argv_);
@@ -100,7 +101,7 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
       if (clo.Get<std::string>("data") != "") {
         pem.IngestData(clo.Get<std::string>("data"));
       }
-    } else{
+    } else {
       Log::Warning("MultiSimulation", "No data file set!");
     }
 
@@ -110,8 +111,8 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
     MergeResultFiles(result_dir);
   } else {
     // Start the Worker routine (`params` to be received by Master)
-    Worker w(myrank, [&](Param* params) {
-      return simulate_call(argc_, argv_, params);
+    Worker w(myrank, [&](Param* params, ResultData* result) {
+      return simulate_call(argc_, argv_, result, params);
     });
     status = w.Start();
   }

@@ -14,6 +14,8 @@
 
 #ifdef USE_MPI
 
+#include <thread>
+
 #include "mpi.h"
 
 #include "core/multi_simulation/multi_simulation_manager.h"
@@ -34,7 +36,8 @@ void MultiSimulationManager::Log(string s) {
 }
 
 MultiSimulationManager::MultiSimulationManager(
-    int ws, Param *default_params, std::function<double(Param *)> simulate)
+    int ws, Param *default_params,
+    std::function<void(Param *, ResultData *)> simulate)
     : worldsize_(ws), default_params_(default_params), simulate_(simulate) {
   Log("Started Master process");
   availability_.resize(ws);
@@ -60,7 +63,7 @@ MultiSimulationManager::~MultiSimulationManager() {
   Log("Completed all tasks");
 }
 
-void MultiSimulationManager::IngestData(const std::string& data_file) {
+void MultiSimulationManager::IngestData(const std::string &data_file) {
   data_ = new ExperimentalData(data_file);
 }
 
@@ -117,25 +120,16 @@ int MultiSimulationManager::Start() {
 
     // `patch` is a JSON snippet that updates the values of specified
     // parameters according to the optimization algorithm
-    auto dispatch_params = [&](Param *final_params) {
+    auto dispatch_params = [&](Param *final_params, ResultData *result) {
       // If there is only one MPI process, the master performs the simulation
       if (worldsize_ == 1) {
-        auto error = simulate_(final_params);
-        Log(std::to_string(error));
+        simulate_(final_params, result);
       } else {  // Otherwise we dispatch the work to the worker(s)
         auto worker = GetFirstAvailableWorker();
 
         // If there is no available worker, wait for one to finish
-        if (worker == -1) {
-          MPI_Status status;
-          {
-            double error = 0;
-            Timing t_mpi("MPI_CALL", &ta_);
-            MPI_Recv(&error, 0, MPI_DOUBLE, MPI_ANY_SOURCE, Tag::kResult,
-                     MPI_COMM_WORLD, &status);
-            error_matrix_.RegisterError(error);
-          }
-          ChangeStatusWorker(status.MPI_SOURCE, Status::kAvail);
+        while (worker == -1) {
+          std::this_thread::sleep_for(std::chrono::milliseconds(100));
           worker = GetFirstAvailableWorker();
         }
 
@@ -147,21 +141,30 @@ int MultiSimulationManager::Start() {
 
         // Change status of worker to kBusy
         ChangeStatusWorker(worker, Status::kBusy);
+
+        // Wait for results
+        {
+          int size;
+          MPI_Recv(&size, 1, MPI_INT, worker, Tag::kResult, MPI_COMM_WORLD,
+                   MPI_STATUS_IGNORE);
+          Timing t_mpi("MPI_CALL", &ta_);
+          *result = *MPI_Recv_Obj_ROOT<ResultData>(size, worker, Tag::kResult);
+        }
+        ChangeStatusWorker(worker, Status::kAvail);
       }
     };
 
     // From default_params read out the OptimizationParam section to
     // determine the algorithm type: e.g. ParameterSweep, Differential
     // Evolution, Particle Swarm Optimization
-    OptimizationParam *opt_params =
-        default_params_->Get<OptimizationParam>();
+    OptimizationParam *opt_params = default_params_->Get<OptimizationParam>();
     auto algorithm = CreateOptimizationAlgorithm(opt_params, this);
 
     if (algorithm) {
       algorithm->default_params_ = default_params_;
       (*algorithm)(dispatch_params);
     } else {
-      dispatch_params(default_params_);
+      dispatch_params(default_params_, new ResultData());
     }
 
     KillAllWorkers();
@@ -187,7 +190,8 @@ int MultiSimulationManager::GetFirstAvailableWorker() {
   return std::distance(begin(availability_), it);
 }
 
-// Changes the status
+// Changes the status of a worker
+// TODO: make thread-safe
 void MultiSimulationManager::ChangeStatusWorker(int worker, Status s) {
   std::stringstream msg;
   msg << "Changing status of [W" << worker << "] to " << s;
@@ -205,7 +209,7 @@ void MultiSimulationManager::ForAllWorkers(
 }
 
 /// The Worker class in a Master-Worker design pattern.
-Worker::Worker(int myrank, std::function<double(Param *)> simulate)
+Worker::Worker(int myrank, std::function<void(Param *, ResultData *)> simulate)
     : myrank_(myrank), simulate_(simulate) {
   Log("Started");
 }
@@ -238,7 +242,6 @@ int Worker::Start() {
     switch (status.MPI_TAG) {
       case Tag::kTask: {
         Param *params = nullptr;
-        double error = 0;
         {
           Timing t("MPI_CALL", &ta_);
           params = MPI_Recv_Obj_ROOT<Param>(size, kMaster, Tag::kTask);
@@ -246,15 +249,15 @@ int Worker::Start() {
         // std::stringstream msg;
         // msg << "Now working on parameters: " << *params;
         // Log(msg.str());
+        ResultData result;
         {
           Timing sim("SIMULATE", &ta_);
-          error = simulate_(params);
-          Log(error);
+          simulate_(params, &result);
         }
         IncrementTaskCount();
         {
           Timing t("MPI_CALL", &ta_);
-          MPI_Send(&error, 0, MPI_DOUBLE, kMaster, Tag::kResult, MPI_COMM_WORLD);
+          MPI_Send_Obj_ROOT(&result, kMaster, Tag::kResult);
         }
         break;
       }
