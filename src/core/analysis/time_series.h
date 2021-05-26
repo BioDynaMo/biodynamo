@@ -102,7 +102,7 @@ class TimeSeries {
   /// ts->AddCollector("num-agents", get_num_agents);
   /// \endcode
   /// The optional x-value collector allows to modify the x-values.
-  /// If no x-value collector is given, x-values will correspond to the 
+  /// If no x-value collector is given, x-values will correspond to the
   /// simulation time.
   void AddCollector(const std::string& id, double (*ycollector)(Simulation*),
                     double (*xcollector)(Simulation*) = nullptr);
@@ -116,6 +116,15 @@ class TimeSeries {
   /// \endcode
   void Add(const std::string& id, const std::vector<double>& x_values,
            const std::vector<double>& y_values);
+
+  void Add(const std::string& id, const std::vector<double>& x_values,
+           const std::vector<double>& y_values,
+           const std::vector<double>& y_error);
+
+  void Add(const std::string& id, const std::vector<double>& x_values,
+           const std::vector<double>& y_values,
+           const std::vector<double>& y_error_low,
+           const std::vector<double>& y_error_high);
 
   /// Add the entries of another TimeSeries instance to this one.
   /// Let's assume that `ts` contains the entries:

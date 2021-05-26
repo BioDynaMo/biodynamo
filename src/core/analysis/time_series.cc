@@ -207,6 +207,34 @@ void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
 }
 
 // -----------------------------------------------------------------------------
+void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
+                     const std::vector<double>& y_values,
+                     const std::vector<double>& y_error_low,
+                     const std::vector<double>& y_error_high) {
+  if (data_.find(id) != data_.end()) {
+    Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
+                 ") exists already. Consider changing the suffix parameter to "
+                 "make it unique. Operation aborted.");
+    return;
+  }
+
+  data_[id] = {nullptr, nullptr, x_values, y_values, y_error_low, y_error_high};
+}
+
+// -----------------------------------------------------------------------------
+void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
+                     const std::vector<double>& y_values,
+                     const std::vector<double>& y_error) {
+  if (data_.find(id) != data_.end()) {
+    Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
+                 ") exists already. Consider changing the suffix parameter to "
+                 "make it unique. Operation aborted.");
+    return;
+  }
+  data_[id] = {nullptr, nullptr, x_values, y_values, y_error, y_error};
+}
+
+// -----------------------------------------------------------------------------
 bool TimeSeries::Contains(const std::string& id) const {
   return data_.find(id) != data_.end();
 }

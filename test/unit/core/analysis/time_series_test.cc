@@ -43,6 +43,56 @@ TEST(TimeSeries, AddExistingData) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(TimeSeries, AddExistingDataWithError) {
+  TimeSeries ts;
+  EXPECT_EQ(0u, ts.Size());
+  ts.Add("my-entry", {1, 2}, {3, 4}, {0.1, 0.2});
+  EXPECT_EQ(1u, ts.Size());
+  EXPECT_TRUE(ts.Contains("my-entry"));
+  const auto& xvals = ts.GetXValues("my-entry");
+  EXPECT_EQ(2u, xvals.size());
+  EXPECT_NEAR(1.0, xvals[0], abs_error<double>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<double>::value);
+  const auto& yvals = ts.GetYValues("my-entry");
+  EXPECT_EQ(2u, yvals.size());
+  EXPECT_NEAR(3.0, yvals[0], abs_error<double>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<double>::value);
+  const auto& yel = ts.GetYErrorLow("my-entry");
+  EXPECT_EQ(2u, yel.size());
+  EXPECT_NEAR(0.1, yel[0], abs_error<double>::value);
+  EXPECT_NEAR(0.2, yel[1], abs_error<double>::value);
+  const auto& yeh = ts.GetYErrorHigh("my-entry");
+  EXPECT_EQ(2u, yeh.size());
+  EXPECT_NEAR(0.1, yeh[0], abs_error<double>::value);
+  EXPECT_NEAR(0.2, yeh[1], abs_error<double>::value);
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, AddExistingDataWithErrorAsym) {
+  TimeSeries ts;
+  EXPECT_EQ(0u, ts.Size());
+  ts.Add("my-entry", {1, 2}, {3, 4}, {0.1, 0.2}, {0.3, 0.4});
+  EXPECT_EQ(1u, ts.Size());
+  EXPECT_TRUE(ts.Contains("my-entry"));
+  const auto& xvals = ts.GetXValues("my-entry");
+  EXPECT_EQ(2u, xvals.size());
+  EXPECT_NEAR(1.0, xvals[0], abs_error<double>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<double>::value);
+  const auto& yvals = ts.GetYValues("my-entry");
+  EXPECT_EQ(2u, yvals.size());
+  EXPECT_NEAR(3.0, yvals[0], abs_error<double>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<double>::value);
+  const auto& yel = ts.GetYErrorLow("my-entry");
+  EXPECT_EQ(2u, yel.size());
+  EXPECT_NEAR(0.1, yel[0], abs_error<double>::value);
+  EXPECT_NEAR(0.2, yel[1], abs_error<double>::value);
+  const auto& yeh = ts.GetYErrorHigh("my-entry");
+  EXPECT_EQ(2u, yeh.size());
+  EXPECT_NEAR(0.3, yeh[0], abs_error<double>::value);
+  EXPECT_NEAR(0.4, yeh[1], abs_error<double>::value);
+}
+
+// -----------------------------------------------------------------------------
 TEST(TimeSeries, AddExistingTwice) {
   TimeSeries ts;
   ts.Add("my-entry", {1, 2}, {3, 4});
