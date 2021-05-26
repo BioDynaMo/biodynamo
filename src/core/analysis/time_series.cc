@@ -142,13 +142,14 @@ TimeSeries& TimeSeries::operator=(const TimeSeries& other) {
 
 // -----------------------------------------------------------------------------
 void TimeSeries::AddCollector(const std::string& id,
-                              double (*collector)(Simulation*)) {
+                              double (*ycollector)(Simulation*),
+                              double (*xcollector)(Simulation*)) {
   auto it = data_.find(id);
   if (it != data_.end()) {
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
                  ") exists already. Operation aborted.");
   }
-  data_[id] = {collector};
+  data_[id] = {ycollector, xcollector};
 }
 
 // -----------------------------------------------------------------------------
@@ -158,10 +159,14 @@ void TimeSeries::Update() {
   auto* param = sim->GetParam();
   for (auto& entry : data_) {
     auto& result_data = entry.second;
-    if (result_data.collector != nullptr) {
-      result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
-                                     param->simulation_time_step);
-      result_data.y_values.push_back(result_data.collector(sim));
+    if (result_data.ycollector != nullptr) {
+      if (result_data.xcollector == nullptr) {
+        result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
+                                       param->simulation_time_step);
+      } else {
+        result_data.x_values.push_back(result_data.xcollector(sim));
+      }
+      result_data.y_values.push_back(result_data.ycollector(sim));
     }
   }
 }
@@ -198,7 +203,7 @@ void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
     return;
   }
 
-  data_[id] = {nullptr, x_values, y_values};
+  data_[id] = {nullptr, nullptr, x_values, y_values};
 }
 
 // -----------------------------------------------------------------------------

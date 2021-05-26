@@ -31,7 +31,8 @@ namespace experimental {
 class TimeSeries {
  public:
   struct Data {
-    double (*collector)(Simulation*) = nullptr;  //!
+    double (*ycollector)(Simulation*) = nullptr;  //!
+    double (*xcollector)(Simulation*) = nullptr;  //!
     std::vector<double> x_values;
     std::vector<double> y_values;
     std::vector<double> y_error_low;
@@ -100,7 +101,11 @@ class TimeSeries {
   /// };
   /// ts->AddCollector("num-agents", get_num_agents);
   /// \endcode
-  void AddCollector(const std::string& id, double (*collector)(Simulation*));
+  /// The optional x-value collector allows to modify the x-values.
+  /// If no x-value collector is given, x-values will correspond to the 
+  /// simulation time.
+  void AddCollector(const std::string& id, double (*ycollector)(Simulation*),
+                    double (*xcollector)(Simulation*) = nullptr);
 
   /// Add new entry with data that is not collected during a simulation.
   /// This function can for example be used to add experimental data
@@ -156,10 +161,14 @@ inline void TimeSeries::Data::Streamer(TBuffer& R__b) {
     R__b.ReadClassBuffer(TimeSeries::Data::Class(), this);
     Long64_t l;
     R__b.ReadLong64(l);
-    this->collector = reinterpret_cast<double (*)(Simulation*)>(l);
+    this->ycollector = reinterpret_cast<double (*)(Simulation*)>(l);
+    R__b.ReadLong64(l);
+    this->xcollector = reinterpret_cast<double (*)(Simulation*)>(l);
   } else {
     R__b.WriteClassBuffer(TimeSeries::Data::Class(), this);
-    Long64_t l = reinterpret_cast<Long64_t>(this->collector);
+    Long64_t l = reinterpret_cast<Long64_t>(this->ycollector);
+    R__b.WriteLong64(l);
+    l = reinterpret_cast<Long64_t>(this->xcollector);
     R__b.WriteLong64(l);
   }
 }
