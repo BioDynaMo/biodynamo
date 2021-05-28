@@ -75,7 +75,7 @@ class LineGraph {
   TCanvas* GetTCanvas();
   TMultiGraph* GetTMultiGraph();
   TLegend* GetTLegend();
-  TGraph* GetTGraph(const std::string& ts_name);
+  const std::vector<TGraph*>& GetTGraphs(const std::string& ts_name) const;
   TStyle* GetTStyle();
 
  private:
@@ -85,7 +85,7 @@ class LineGraph {
   TMultiGraph* mg_ = nullptr;
   TLegend* l_ = nullptr;
   TStyle* s_ = nullptr;
-  std::unordered_map<std::string, TGraph*> id_tgraph_map_;
+  std::unordered_map<std::string, std::vector<TGraph*>> id_tgraphs_map_;
 };
 
 }  // namespace experimental

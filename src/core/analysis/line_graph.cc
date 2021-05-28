@@ -64,12 +64,6 @@ TGraph* LineGraph::Add(const std::string& ts_name,
                        float marker_color_alpha, short marker_style,
                        float marker_size, short fill_color,
                        float fill_color_alpha, short fill_style) {
-  auto it = id_tgraph_map_.find(ts_name);
-  if (it != id_tgraph_map_.end()) {
-    Log::Warning("LineGraph::Add", "Graph with id (", ts_name,
-                 ") has already been added. Operation aborted.");
-    return nullptr;
-  }
   if (s_) {
     s_->cd();
   }
@@ -107,7 +101,7 @@ TGraph* LineGraph::Add(const std::string& ts_name,
   if (l_ && legend_label != "") {
     l_->AddEntry(gr, legend_label.c_str());
   }
-  id_tgraph_map_[ts_name] = gr;
+  id_tgraphs_map_[ts_name].push_back(gr);
   return gr;
 }
 
@@ -173,10 +167,12 @@ TMultiGraph* LineGraph::GetTMultiGraph() { return mg_; }
 TLegend* LineGraph::GetTLegend() { return l_; }
 
 // -----------------------------------------------------------------------------
-TGraph* LineGraph::GetTGraph(const std::string& ts_name) {
-  auto it = id_tgraph_map_.find(ts_name);
-  if (it == id_tgraph_map_.end()) {
-    return nullptr;
+const std::vector<TGraph*>& LineGraph::GetTGraphs(
+    const std::string& ts_name) const {
+  auto it = id_tgraphs_map_.find(ts_name);
+  if (it == id_tgraphs_map_.end()) {
+    static std::vector<TGraph*> kEmpty;
+    return kEmpty;
   }
   return it->second;
 }
