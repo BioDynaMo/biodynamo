@@ -86,8 +86,8 @@ void OctreeEnvironment::Update() {
 }
 
 void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                                        const Agent& query,
-                                        double squared_radius) {
+                                        const Agent& query, void* criteria) {
+  double squared_radius = *static_cast<double*>(criteria);
   std::vector<uint32_t> neighbors;
   std::vector<double> distances;
 
@@ -108,17 +108,16 @@ void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
   }
 }
 
-const std::array<int32_t, 6>& OctreeEnvironment::GetDimensions() const {
+std::array<int32_t, 6> OctreeEnvironment::GetDimensions() const {
   return grid_dimensions_;
 }
 
-const std::array<int32_t, 2>& OctreeEnvironment::GetDimensionThresholds()
-    const {
+std::array<int32_t, 2> OctreeEnvironment::GetDimensionThresholds() const {
   return threshold_dimensions_;
 }
 
 LoadBalanceInfo* OctreeEnvironment::GetLoadBalanceInfo() {
-  Log::Fatal("KDTreeEnvironment::GetLoadBalanceInfo",
+  Log::Fatal("OctreeEnvironment::GetLoadBalanceInfo",
              "You tried to call GetLoadBalanceInfo in an environment that does "
              "not support it.");
   return nullptr;
@@ -133,7 +132,6 @@ void OctreeEnvironment::Clear() {
   int32_t inf = std::numeric_limits<int32_t>::max();
   grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
   threshold_dimensions_ = {inf, -inf};
-  ResetLargestObjectSize();
 }
 
 void OctreeEnvironment::RoundOffGridDimensions(

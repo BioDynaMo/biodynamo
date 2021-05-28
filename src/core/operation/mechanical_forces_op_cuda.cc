@@ -318,7 +318,7 @@ void MechanicalForcesOpCuda::operator()() {
   }
 
   double squared_radius =
-      grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
+      grid->GetLargestAgentSize() * grid->GetLargestAgentSize();
 
   // Timing timer("MechanicalForcesOpCuda::Kernel");
   cdo_->LaunchMechanicalForcesKernel(

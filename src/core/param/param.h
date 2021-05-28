@@ -104,7 +104,7 @@ struct Param {
 
   /// The method used to query the environment of a simulation object.
   /// Default value: `"uniform_grid"`\n
-  /// Other allowed values: `"kd_tree"`\n
+  /// Other allowed values: `"kd_tree", "octree"`\n
   /// TOML config file:
   ///
   ///     [simulation]

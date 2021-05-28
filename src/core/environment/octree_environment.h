@@ -51,11 +51,11 @@ class OctreeEnvironment : public Environment {
   void Update() override;
 
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius) override;
+                       const Agent& query, void* criteria) override;
 
-  const std::array<int32_t, 6>& GetDimensions() const override;
+  std::array<int32_t, 6> GetDimensions() const override;
 
-  const std::array<int32_t, 2>& GetDimensionThresholds() const override;
+  std::array<int32_t, 2> GetDimensionThresholds() const override;
 
   LoadBalanceInfo* GetLoadBalanceInfo() override;
 

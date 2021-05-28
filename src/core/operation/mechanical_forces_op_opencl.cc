@@ -91,7 +91,7 @@ void MechanicalForcesOpOpenCL::operator()() {
   std::vector<cl_uint> successors(num_objects);
   std::array<cl_uint, 3> num_boxes_axis;
   cl_double squared_radius =
-      grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
+      grid->GetLargestAgentSize() * grid->GetLargestAgentSize();
 
   bool is_non_spherical_object = false;
 

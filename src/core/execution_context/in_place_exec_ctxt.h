@@ -94,16 +94,13 @@ class InPlaceExecutionContext {
   /// in the argument
   void Execute(Agent* agent, const std::vector<Operation*>& operations);
 
-  double GetDefaultSquaredRadius() const;
-  void SetDefaultSquaredRadius(double sq_radius);
+  /// Applies the lambda `lambda` for each neighbor of the given `query`
+  /// agent within the given `criteria`. Does not support caching.
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria);
 
-  /// Applies the lambda `lambda` for each neighbor of the given `query` agent
-  /// within the default search radius `default_squared_search_radius_`
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query);
-
-  /// Applies the lambda `lambda` for each neighbor of the given `query` agent
-  /// within the given search radius `squared_radius`
+  /// Applies the lambda `lambda` for each neighbor of the given `query`
+  /// agent within the given search radius `squared_radius`
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query, double squared_radius);
 
@@ -145,9 +142,6 @@ class InPlaceExecutionContext {
   std::vector<std::pair<Agent*, double>> neighbor_cache_;
   /// The radius that was used to cache neighbors in `neighbor_cache_`
   double cached_squared_search_radius_ = 0.0;
-  /// The default search radius for radial neighborhood searches
-  /// Set in `Environment::CalcSimDimensionsAndLargestAgent`
-  double default_squared_search_radius_ = 0.0;
   /// Cache the value of Param::cache_neighbors
   bool cache_neighbors_ = false;
 };
