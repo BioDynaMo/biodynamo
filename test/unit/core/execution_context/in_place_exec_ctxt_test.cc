@@ -273,7 +273,9 @@ struct TestOperation : public AgentOperationImpl {
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighbor(nb_functor, *agent);
+    auto* env = Simulation::GetActive()->GetEnvironment();
+    ctxt->ForEachNeighbor(nb_functor, *agent,
+                          env->GetLargestAgentSizeSquared());
 #pragma omp critical
     num_neighbors[agent->GetUid()] = nb_counter;
   }

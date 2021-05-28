@@ -326,7 +326,7 @@ TEST(UniformGridEnvironmentDeathTest, CustomBoxLength) {
         auto tf = TestFunctor();
         // This call should fail because the default search radius is set to the
         // largest object (20), which is larger than the custom box length (15)
-        ctxt->ForEachNeighbor(tf, *cell);
+        ctxt->ForEachNeighbor(tf, *cell, env->GetLargestAgentSizeSquared());
       },
       "");
 }

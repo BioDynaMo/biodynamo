@@ -38,16 +38,14 @@ class MyEnvironment : public Environment {
 
   // In this environment a neighboring agent is an agent who is from the same
   // `city` as the query agent
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+  void ForEachNeighbor(Functor<void, Agent*>& lambda,
                        const Agent& query, void* criteria) override {
     // Even though the criteria could have been typed as a std::string, this
     // example shows that you can wrap any number of criteria in a struct
     auto casted_criteria = static_cast<Criteria*>(criteria);
     for (auto neighbor : agents_per_city_[casted_criteria->city]) {
       if (neighbor != &query) {
-        lambda(neighbor,
-               0);  // TODO: need to generalize the functor arguments...
-                    // doesn't make sense to return a double here
+        lambda(neighbor);
       }
     }
   }
@@ -67,7 +65,7 @@ class MyEnvironment : public Environment {
   std::unordered_map<std::string, std::vector<Agent*>> agents_per_city_;
 };
 
-struct FindNeighborsInCity : public Functor<void, Agent*, double> {
+struct FindNeighborsInCity : public Functor<void, Agent*> {
   std::unordered_map<AgentUid, std::vector<AgentUid>>* neighbors_;
   APerson* query_;
   FindNeighborsInCity(
@@ -75,7 +73,7 @@ struct FindNeighborsInCity : public Functor<void, Agent*, double> {
       APerson* person)
       : neighbors_(neighbors), query_(person) {}
 
-  void operator()(Agent* neighbor, double) override {
+  void operator()(Agent* neighbor) override {
     auto nuid = neighbor->GetUid();
     auto uid = query_->GetUid();
     auto neighbor_person = dynamic_cast<APerson*>(neighbor);
