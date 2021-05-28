@@ -288,7 +288,9 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
 
 /// Get the concentration at specified position
 double DiffusionGrid::GetConcentration(const Double3& position) const {
-  return c1_[GetBoxIndex(position)];
+  auto idx = GetBoxIndex(position);
+  std::lock_guard<Spinlock> guard(locks_[idx]);
+  return c1_[idx];
 }
 
 /// Get the (normalized) gradient at specified position
