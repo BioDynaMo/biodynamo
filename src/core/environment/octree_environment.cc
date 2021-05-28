@@ -132,7 +132,6 @@ void OctreeEnvironment::Clear() {
   int32_t inf = std::numeric_limits<int32_t>::max();
   grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
   threshold_dimensions_ = {inf, -inf};
-  ResetLargestAgentSize();
 }
 
 void OctreeEnvironment::RoundOffGridDimensions(

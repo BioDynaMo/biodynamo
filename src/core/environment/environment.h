@@ -46,7 +46,6 @@ class Environment {
 
   virtual std::array<int32_t, 2> GetDimensionThresholds() const = 0;
 
-  void ResetLargestAgentSize() { largest_object_size_ = 0; };
   /// Return the size of the largest agent
   double GetLargestAgentSize() const { return largest_object_size_; };
   double GetLargestAgentSizeSquared() const {

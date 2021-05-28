@@ -20,6 +20,7 @@
 
 #include "core/agent/agent.h"
 #include "core/environment/environment.h"
+#include "core/functor.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 
@@ -261,18 +262,6 @@ void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
   new_agent_map_->Insert(new_agent->GetUid(), new_agent);
 }
 
-struct ForEachNeighborFunctor : public Functor<void, Agent*> {
-  const Param* param = Simulation::GetActive()->GetParam();
-  Functor<void, Agent*>& function_;
-
-  ForEachNeighborFunctor(Functor<void, Agent*>& function)
-      : function_(function) {}
-
-  void operator()(Agent* agent) override {
-    function_(agent);
-  }
-};
-
 bool InPlaceExecutionContext::IsNeighborCacheValid(
     double query_squared_radius) {
   if (!cache_neighbors_) {
@@ -287,36 +276,13 @@ bool InPlaceExecutionContext::IsNeighborCacheValid(
   return query_squared_radius <= cached_squared_search_radius_;
 }
 
-struct ForEachNeighborWithinRadiusFunctor
-    : public Functor<void, Agent*, double> {
-  const Param* param = Simulation::GetActive()->GetParam();
-  Functor<void, Agent*, double>& function_;
-  std::vector<std::pair<Agent*, double>>& neighbor_cache_;
-  double squared_radius_ = 0;
-
-  ForEachNeighborWithinRadiusFunctor(
-      Functor<void, Agent*, double>& function,
-      std::vector<std::pair<Agent*, double>>& neigbor_cache,
-      double squared_radius)
-      : function_(function),
-        neighbor_cache_(neigbor_cache),
-        squared_radius_(squared_radius) {}
-
-  void operator()(Agent* agent, double squared_distance) override {
-    if (param->cache_neighbors) {
-      neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
-    }
-    if (squared_distance < squared_radius_) {
-      function_(agent, 0);
-    }
-  }
-};
-
-void InPlaceExecutionContext::ForEachNeighbor(
-    Functor<void, Agent*>& lambda, const Agent& query, void* criteria) {
+void InPlaceExecutionContext::ForEachNeighbor(Functor<void, Agent*>& lambda,
+                                              const Agent& query,
+                                              void* criteria) {
   // forward call to env and populate cache
   auto* env = Simulation::GetActive()->GetEnvironment();
-  ForEachNeighborFunctor for_each(lambda);
+  auto for_each =
+      L2F([&](Agent* agent, double squared_distance) { lambda(agent); });
   env->ForEachNeighbor(for_each, query, criteria);
 }
 
@@ -333,12 +299,22 @@ void InPlaceExecutionContext::ForEachNeighbor(
     return;
   }
 
-  // forward call to env and populate cache
+  auto* param = Simulation::GetActive()->GetParam();
   auto* env = Simulation::GetActive()->GetEnvironment();
 
+  // Store the search radius to check validity of cache in consecutive use of
+  // ForEachNeighbor
   cached_squared_search_radius_ = squared_radius;
-  ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
-                                              squared_radius);
+
+  // Populate the cache and execute the lambda for each neighbor
+  auto for_each = L2F([&](Agent* agent, double squared_distance) {
+    if (param->cache_neighbors) {
+      neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
+    }
+    if (squared_distance < squared_radius) {
+      lambda(agent, 0);
+    }
+  });
   env->ForEachNeighbor(for_each, query, &squared_radius);
 }
 

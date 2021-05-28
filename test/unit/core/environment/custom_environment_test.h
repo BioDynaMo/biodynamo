@@ -12,6 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
+#ifndef TEST_UNIT_CORE_ENVIRONMENT_CUSTOM_ENVIRONMENT_TEST_H_
+#define TEST_UNIT_CORE_ENVIRONMENT_CUSTOM_ENVIRONMENT_TEST_H_
+
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "gtest/gtest.h"
@@ -37,3 +40,5 @@ class APerson : public Cell {
 };
 
 }  // namespace bdm
+
+#endif  // TEST_UNIT_CORE_ENVIRONMENT_CUSTOM_ENVIRONMENT_TEST_H_
