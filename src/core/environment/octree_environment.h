@@ -51,7 +51,7 @@ class OctreeEnvironment : public Environment {
   void Update() override;
 
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, void* criteria) override;
+                       const Agent& query, double squared_radus) override;
 
   std::array<int32_t, 6> GetDimensions() const override;
 

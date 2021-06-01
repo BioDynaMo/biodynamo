@@ -91,8 +91,8 @@ void KDTreeEnvironment::Update() {
 }
 
 void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                                        const Agent& query, void* criteria) {
-  double squared_radius = *static_cast<double*>(criteria);
+                                        const Agent& query,
+                                        double squared_radius) {
   std::vector<std::pair<uint64_t, double>> neighbors;
 
   nanoflann::SearchParams params;

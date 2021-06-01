@@ -86,8 +86,8 @@ void OctreeEnvironment::Update() {
 }
 
 void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                                        const Agent& query, void* criteria) {
-  double squared_radius = *static_cast<double*>(criteria);
+                                        const Agent& query,
+                                        double squared_radius) {
   std::vector<uint32_t> neighbors;
   std::vector<double> distances;
 

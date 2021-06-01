@@ -35,7 +35,7 @@ class Environment {
   /// criteria for different environments. Check the documentation of an
   /// environment to know the criteria data type
   virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                               const Agent& query, void* criteria) {}
+                               const Agent& query, double squared_radius) {}
 
   virtual void ForEachNeighbor(Functor<void, Agent*>& lambda,
                                const Agent& query, void* criteria) {}

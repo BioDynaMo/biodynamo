@@ -70,7 +70,7 @@ TEST(OctreeTest, Setup) {
   rm->ForEachAgent([&](Agent* so) {
     auto uid = so->GetUid();
     FillNeighborList fill_neighbor_list(&neighbors, uid);
-    grid->ForEachNeighbor(fill_neighbor_list, *so, &search_radius_squared);
+    grid->ForEachNeighbor(fill_neighbor_list, *so, search_radius_squared);
   });
 
   std::vector<AgentUid> expected_0 = {AgentUid(1),  AgentUid(4),  AgentUid(5),
