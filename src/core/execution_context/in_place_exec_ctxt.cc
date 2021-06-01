@@ -293,7 +293,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
   if (IsNeighborCacheValid(squared_radius)) {
     for (auto& pair : neighbor_cache_) {
       if (pair.second < squared_radius) {
-        lambda(pair.first, 0);
+        lambda(pair.first, pair.second);
       }
     }
     return;
@@ -312,7 +312,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
       neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
     if (squared_distance < squared_radius) {
-      lambda(agent, 0);
+      lambda(agent, squared_distance);
     }
   });
   env->ForEachNeighbor(for_each, query, &squared_radius);

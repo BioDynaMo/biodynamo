@@ -440,5 +440,35 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
   EXPECT_FALSE(ctxt->IsNeighborCacheValid(4 * 4 + 1));
 }
 
+TEST(InPlaceExecutionContext, ForEachNeighbor) {
+  Simulation sim("ForEachNeighbor", [&](Param* param) {
+    param->cache_neighbors = true; });
+  auto* rm = sim.GetResourceManager();
+
+  // create cells
+  auto construct = [](const Double3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(20);
+    return cell;
+  };
+  ModelInitializer::Grid3D(3, 10, construct);
+
+  // initialize
+  const auto& all_exec_ctxts = sim.GetAllExecCtxts();
+  all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
+  sim.GetEnvironment()->Update();
+
+  auto agent0 = rm->GetAgent(AgentHandle(0, 0));
+
+  auto for_each = L2F([&](Agent* agent, double squared_distance) {
+    EXPECT_NE(0, squared_distance);
+  });
+
+  all_exec_ctxts[0]->ForEachNeighbor(for_each, *agent0, 400);
+
+  // Once more to check the cached values
+  all_exec_ctxts[0]->ForEachNeighbor(for_each, *agent0, 400);
+}
+
 }  // namespace in_place_exec_ctxt_detail
 }  // namespace bdm
