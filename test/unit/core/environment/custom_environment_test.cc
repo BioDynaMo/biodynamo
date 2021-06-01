@@ -32,14 +32,18 @@ class MyEnvironment : public Environment {
   void Clear() override {}
   void Update() override {}
 
-  std::array<int32_t, 6> GetDimensions() const { return {0, 0, 0, 0, 0, 0}; }
+  std::array<int32_t, 6> GetDimensions() const override {
+    return {0, 0, 0, 0, 0, 0};
+  }
 
-  std::array<int32_t, 2> GetDimensionThresholds() const { return {0, 0}; }
+  std::array<int32_t, 2> GetDimensionThresholds() const override {
+    return {0, 0};
+  }
 
   // In this environment a neighboring agent is an agent who is from the same
   // `city` as the query agent
-  void ForEachNeighbor(Functor<void, Agent*>& lambda,
-                       const Agent& query, void* criteria) override {
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria) override {
     // Even though the criteria could have been typed as a std::string, this
     // example shows that you can wrap any number of criteria in a struct
     auto casted_criteria = static_cast<Criteria*>(criteria);
@@ -50,7 +54,7 @@ class MyEnvironment : public Environment {
     }
   }
 
-  LoadBalanceInfo* GetLoadBalanceInfo() {
+  LoadBalanceInfo* GetLoadBalanceInfo() override {
     Log::Fatal(
         "MyEnvironment::GetLoadBalanceInfo",
         "You tried to call GetLoadBalanceInfo in an environment that does "
@@ -58,7 +62,7 @@ class MyEnvironment : public Environment {
     return nullptr;
   }
 
-  Environment::NeighborMutexBuilder* GetNeighborMutexBuilder() {
+  Environment::NeighborMutexBuilder* GetNeighborMutexBuilder() override {
     return nullptr;
   };
 

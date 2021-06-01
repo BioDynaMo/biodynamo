@@ -462,8 +462,7 @@ class UniformGridEnvironment : public Environment {
   /// @param      criteria  The squared search radius (type: double*)
   ///
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, void* criteria) override {
-    double squared_radius = *static_cast<double*>(criteria);
+                       const Agent& query, double squared_radius) override {
     if (squared_radius > box_length_squared_) {
       Log::Fatal(
           "UniformGridEnvironment::ForEachNeighbor",

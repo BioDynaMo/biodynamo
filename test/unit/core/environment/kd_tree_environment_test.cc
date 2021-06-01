@@ -70,7 +70,7 @@ TEST(KDTreeTest, Setup) {
   rm->ForEachAgent([&](Agent* so) {
     auto uid = so->GetUid();
     FillNeighborList fill_neighbor_list(&neighbors, uid);
-    kdtree->ForEachNeighbor(fill_neighbor_list, *so, &search_radius_squared);
+    kdtree->ForEachNeighbor(fill_neighbor_list, *so, search_radius_squared);
   });
 
   std::vector<AgentUid> expected_0 = {AgentUid(1),  AgentUid(4),  AgentUid(5),
