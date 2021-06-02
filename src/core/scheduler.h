@@ -18,7 +18,6 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -91,7 +90,7 @@ class Scheduler {
   /// Agent operations are executed for each filter in agent_filters_.\n
   /// By default no filter is specified which means that all
   /// agent operations will be executed for each agents in the simulation.
-  void SetAgentFilters(const std::set<Functor<bool, Agent*>*>& filters);
+  void SetAgentFilters(const std::vector<Functor<bool, Agent*>*>& filters);
 
   RootAdaptor* GetRootVisualization() { return root_visualization_; }
 
@@ -140,7 +139,7 @@ class Scheduler {
   /// Agent operations are executed for each filter in agent_filters_.\n
   /// By default no filter is specified which means that all
   /// agent operations will be executed for each agents in the simulation.
-  std::set<Functor<bool, Agent*>*> agent_filters_;  //!
+  std::vector<Functor<bool, Agent*>*> agent_filters_;  //!
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval`
   void Backup();

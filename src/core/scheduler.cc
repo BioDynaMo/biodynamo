@@ -227,7 +227,7 @@ std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
 
 // -----------------------------------------------------------------------------
 void Scheduler::SetAgentFilters(
-    const std::set<Functor<bool, Agent*>*>& agent_filters) {
+    const std::vector<Functor<bool, Agent*>*>& agent_filters) {
   agent_filters_ = agent_filters;
 }
 
