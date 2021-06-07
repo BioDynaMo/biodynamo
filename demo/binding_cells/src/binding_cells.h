@@ -11,8 +11,8 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#ifndef SPRING_FORCE_H_
-#define SPRING_FORCE_H_
+#ifndef BINDING_CELLS_H_
+#define BINDING_CELLS_H_
 
 #include "agents/monocyte.h"
 #include "agents/t_cell.h"
@@ -24,8 +24,8 @@
 #include "biology_modules/random_walk_module.h"
 #include "biology_modules/spring_force_module.h"
 #include "biology_modules/stokes_velocity_module.h"
-#include "core/multi_simulation/util.h"
 #include "core/multi_simulation/error_matrix.h"
+#include "core/multi_simulation/util.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/reduction_op.h"
@@ -189,7 +189,8 @@ inline double Simulate(int argc, const char** argv,
   //////////////////////////////////////////////////////////////////////////////
   // Compute error for optimization feedback
   //////////////////////////////////////////////////////////////////////////////
-  auto final_activity = 100 * (static_cast<float>(ex.activity.back()) / rm->GetNumAgents());
+  auto final_activity =
+      100 * (static_cast<float>(ex.activity.back()) / rm->GetNumAgents());
   auto expected_val =
       simulation.GetParam()->Get<OptimizationParam>()->expected_val;
 
@@ -204,4 +205,4 @@ inline double Simulate(int argc, const char** argv,
 
 }  // namespace bdm
 
-#endif  // SPRING_FORCE_H_
+#endif  // BINDING_CELLS_H_

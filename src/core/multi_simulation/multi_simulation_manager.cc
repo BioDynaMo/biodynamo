@@ -20,6 +20,8 @@
 
 #include "core/multi_simulation/multi_simulation_manager.h"
 #include "core/multi_simulation/optimization_param.h"
+#include "core/scheduler.h"
+#include "core/util/timing.h"
 
 using std::cout;
 using std::endl;
@@ -37,7 +39,7 @@ void MultiSimulationManager::Log(string s) {
 
 MultiSimulationManager::MultiSimulationManager(
     int ws, Param *default_params,
-    std::function<void(Param *, ResultData *)> simulate)
+    std::function<void(Param *, TimeSeries *)> simulate)
     : worldsize_(ws), default_params_(default_params), simulate_(simulate) {
   Log("Started Master process");
   availability_.resize(ws);
@@ -63,27 +65,11 @@ MultiSimulationManager::~MultiSimulationManager() {
   Log("Completed all tasks");
 }
 
-void MultiSimulationManager::IngestData(const std::string &data_file) {
-  data_ = new ExperimentalData(data_file);
-}
+void MultiSimulationManager::IngestData(const std::string &data_file) {}
 
 // Copy the timing results of the specified worker
 void MultiSimulationManager::RecordTiming(int worker, TimingAggregator *agg) {
   timings_[worker] = *agg;
-}
-
-// Register all workers' availability
-void MultiSimulationManager::WaitForAllWorkers() {
-  Log("Waiting for workers to register themselves...");
-  ForAllWorkers([&](int worker) {
-    {
-      Timing t_mpi("MPI_CALL", &ta_);
-      MPI_Recv(nullptr, 0, MPI_INT, worker, Tag::kReady, MPI_COMM_WORLD,
-               MPI_STATUS_IGNORE);
-    }
-    ChangeStatusWorker(worker, Status::kAvail);
-  });
-  Log("All workers ready\n");
 }
 
 // Send kill message to all workers
@@ -116,11 +102,15 @@ int MultiSimulationManager::Start() {
   {
     Timing t_tot("TOTAL", &ta_);
 
-    WaitForAllWorkers();
+    // Wait for all workers to reach this barrier
+    MPI_Barrier(MPI_COMM_WORLD);
 
-    // `patch` is a JSON snippet that updates the values of specified
-    // parameters according to the optimization algorithm
-    auto dispatch_params = [&](Param *final_params, ResultData *result) {
+    // Change status of all workers to 'available' after barrier has been
+    // reached
+    ForAllWorkers(
+        [&](int worker) { ChangeStatusWorker(worker, Status::kAvail); });
+
+    auto dispatch_experiment = [&](Param *final_params, TimeSeries *result) {
       // If there is only one MPI process, the master performs the simulation
       if (worldsize_ == 1) {
         simulate_(final_params, result);
@@ -148,8 +138,9 @@ int MultiSimulationManager::Start() {
           MPI_Recv(&size, 1, MPI_INT, worker, Tag::kResult, MPI_COMM_WORLD,
                    MPI_STATUS_IGNORE);
           Timing t_mpi("MPI_CALL", &ta_);
-          *result = *MPI_Recv_Obj_ROOT<ResultData>(size, worker, Tag::kResult);
+          *result = *MPI_Recv_Obj_ROOT<TimeSeries>(size, worker, Tag::kResult);
         }
+
         ChangeStatusWorker(worker, Status::kAvail);
       }
     };
@@ -158,13 +149,12 @@ int MultiSimulationManager::Start() {
     // determine the algorithm type: e.g. ParameterSweep, Differential
     // Evolution, Particle Swarm Optimization
     OptimizationParam *opt_params = default_params_->Get<OptimizationParam>();
-    auto algorithm = CreateOptimizationAlgorithm(opt_params, this);
+    auto algorithm = CreateOptimizationAlgorithm(opt_params);
 
     if (algorithm) {
-      algorithm->default_params_ = default_params_;
-      (*algorithm)(dispatch_params);
+      (*algorithm)(dispatch_experiment, default_params_);
     } else {
-      dispatch_params(default_params_, new ResultData());
+      dispatch_experiment(default_params_, new TimeSeries());
     }
 
     KillAllWorkers();
@@ -209,7 +199,7 @@ void MultiSimulationManager::ForAllWorkers(
 }
 
 /// The Worker class in a Master-Worker design pattern.
-Worker::Worker(int myrank, std::function<void(Param *, ResultData *)> simulate)
+Worker::Worker(int myrank, std::function<void(Param *, TimeSeries *)> simulate)
     : myrank_(myrank), simulate_(simulate) {
   Log("Started");
 }
@@ -221,11 +211,9 @@ Worker::~Worker() {
 
 int Worker::Start() {
   Timing tot("TOTAL", &ta_);
-  // Inform Master that I'm ready for work
-  {
-    Timing t("MPI_CALL", &ta_);
-    MPI_Send(nullptr, 0, MPI_INT, kMaster, Tag::kReady, MPI_COMM_WORLD);
-  }
+
+  // Wait for all MPI processes to reach this barrier
+  MPI_Barrier(MPI_COMM_WORLD);
 
   while (true) {
     MPI_Status status;
@@ -249,7 +237,7 @@ int Worker::Start() {
         // std::stringstream msg;
         // msg << "Now working on parameters: " << *params;
         // Log(msg.str());
-        ResultData result;
+        TimeSeries result;
         {
           Timing sim("SIMULATE", &ta_);
           simulate_(params, &result);

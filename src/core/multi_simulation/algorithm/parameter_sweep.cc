@@ -30,9 +30,9 @@ namespace bdm {
 struct ParameterSweep : public Algorithm {
   BDM_ALGO_HEADER();
 
-  void operator()(const std::function<void(Param*, ResultData*)>&
-                      send_params_to_worker) override {
-    auto sweeping_params = opt_params_->params_;
+  void operator()(const std::function<void(Param*, TimeSeries*)>&
+                      send_params_to_worker, Param* default_params) override {
+    auto sweeping_params = default_params->Get<OptimizationParam>()->params_;
 
     if (sweeping_params.empty()) {
       Log::Error("ParameterSweep", "No sweeping parameters found!");
@@ -49,7 +49,7 @@ struct ParameterSweep : public Algorithm {
         i++;
       }
 
-      Param final_params = *default_params_;
+      Param final_params = *default_params;
       final_params.MergeJsonPatch(j_patch.dump());
 
       send_params_to_worker(&final_params, nullptr);

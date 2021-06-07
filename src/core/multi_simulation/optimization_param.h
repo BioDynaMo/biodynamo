@@ -32,11 +32,13 @@ struct OptimizationParam : public ParamGroup {
       i++;
     }
     this->algorithm_ = other.algorithm_;
+    this->repetition_ = other.repetition_;
   }
 
   std::string algorithm_;
-  double expected_val = 0;
   std::vector<Container*> params_;
+  // Number of times to repeat an experiment
+  int repetition_ = 1;
 };
 
 }  // namespace bdm

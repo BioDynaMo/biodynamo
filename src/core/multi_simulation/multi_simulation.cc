@@ -21,12 +21,15 @@
 #include <cstdlib>
 #include <fstream>
 
+#include "core/analysis/time_series.h"
 #include "core/multi_simulation/multi_simulation.h"
 #include "core/multi_simulation/multi_simulation_manager.h"
 #include "core/multi_simulation/optimization_param.h"
 #include "core/param/command_line_options.h"
 
 namespace bdm {
+
+using experimental::TimeSeries;
 
 MultiSimulation::MultiSimulation(int argc, const char** argv)
     : argc_(argc), argv_(argv) {
@@ -81,9 +84,9 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
 
   int status;
   if (myrank == 0) {
-    // Delete existing root files
-    std::string result_dir = gSystem->GetWorkingDirectory();
-    DeleteResultFiles(result_dir);
+    // // Delete existing root files
+    // std::string result_dir = gSystem->GetWorkingDirectory();
+    // DeleteResultFiles(result_dir);
 
     // Make a copy of the default parameters
     Simulation simulation(argc_, argv_);
@@ -91,27 +94,27 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
 
     // Start the Master routine
     MultiSimulationManager pem(
-        worldsize, &default_params, [&](Param* params, ResultData* result) {
+        worldsize, &default_params, [&](Param* params, TimeSeries* result) {
           return simulate_call(argc_, argv_, result, params);
         });
 
-    // Read in the experimental data file
-    CommandLineOptions clo(argc_, argv_);
-    if (clo.IsSet("data")) {
-      if (clo.Get<std::string>("data") != "") {
-        pem.IngestData(clo.Get<std::string>("data"));
-      }
-    } else {
-      Log::Warning("MultiSimulation", "No data file set!");
-    }
+    // // Read in the experimental data file
+    // CommandLineOptions clo(argc_, argv_);
+    // if (clo.IsSet("data")) {
+    //   if (clo.Get<std::string>("data") != "") {
+    //     pem.IngestData(clo.Get<std::string>("data"));
+    //   }
+    // } else {
+    //   Log::Warning("MultiSimulation", "No data file set!");
+    // }
 
     status = pem.Start();
 
-    // Merge result files of all workers into single ROOT file
-    MergeResultFiles(result_dir);
+    // // Merge result files of all workers into single ROOT file
+    // MergeResultFiles(result_dir);
   } else {
     // Start the Worker routine (`params` to be received by Master)
-    Worker w(myrank, [&](Param* params, ResultData* result) {
+    Worker w(myrank, [&](Param* params, TimeSeries* result) {
       return simulate_call(argc_, argv_, result, params);
     });
     status = w.Start();

@@ -18,6 +18,7 @@
 #include <unordered_map>
 
 #include "core/multi_simulation/algorithm/algorithm.h"
+#include "core/multi_simulation/optimization_param.h"
 #include "core/param/param.h"
 
 namespace bdm {
@@ -65,8 +66,7 @@ struct AlgorithmRegistry {
   static bool registered_;
 
 // Get Optimization Algorithm from registry
-inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params,
-                                              MultiSimulationManager *msm) {
+inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params) {
   // Check if the parameters are initialized correctly
   for (auto param : opt_params->params_) {
     param->Validate();
@@ -76,8 +76,6 @@ inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params,
   if (ret == nullptr) {
     return ret;
   }
-  ret->opt_params_ = opt_params;
-  ret->msm_ = msm;
   return ret;
 }
 

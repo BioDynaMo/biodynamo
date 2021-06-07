@@ -25,15 +25,10 @@
 #include <string>
 #include <vector>
 
+#include "core/analysis/time_series.h"
 #include "core/multi_simulation/algorithm/algorithm_registry.h"
 #include "core/multi_simulation/dynamic_loop.h"
-#include "core/multi_simulation/error_matrix.h"
-#include "core/multi_simulation/experimental_data.h"
 #include "core/multi_simulation/result_data.h"
-#include "core/multi_simulation/util.h"
-#include "core/scheduler.h"
-#include "core/util/log.h"
-#include "core/util/timing.h"
 #include "core/util/timing_aggregator.h"
 
 using std::cout;
@@ -52,7 +47,7 @@ class MultiSimulationManager {
 
   explicit MultiSimulationManager(
       int ws, Param *default_params,
-      std::function<void(Param *, ResultData *)> simulate);
+      std::function<void(Param *, TimeSeries *)> simulate);
 
   void WriteTimingsToFile();
 
@@ -62,9 +57,6 @@ class MultiSimulationManager {
 
   // Copy the timing results of the specified worker
   void RecordTiming(int worker, TimingAggregator *agg);
-
-  // Register all workers' availability
-  void WaitForAllWorkers();
 
   // Send kill message to all workers
   void KillAllWorkers();
@@ -91,17 +83,15 @@ class MultiSimulationManager {
   int worldsize_;
   TimingAggregator ta_;
   Param *default_params_;
-  std::function<void(Param *, ResultData *)> simulate_;
+  std::function<void(Param *, TimeSeries *)> simulate_;
   std::vector<TimingAggregator> timings_;
-  ExperimentalData *data_ = nullptr;
-  SquaredError error_matrix_;
 };
 
 /// The Worker class in a Master-Worker design pattern.
 class Worker {
  public:
   explicit Worker(int myrank,
-                  std::function<void(Param *, ResultData *)> simulate);
+                  std::function<void(Param *, TimeSeries *)> simulate);
 
   template <typename T>
   void Log(T s) {
@@ -117,7 +107,7 @@ class Worker {
 
   int myrank_;
   unsigned int task_count_ = 0;
-  std::function<void(Param *, ResultData *)> simulate_;
+  std::function<void(Param *, TimeSeries *)> simulate_;
   TimingAggregator ta_;
 };
 

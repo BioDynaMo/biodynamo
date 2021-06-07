@@ -5,9 +5,11 @@
         "bound_space": true,
         "min_bound": 0,
         "max_bound": 100,
-        "visualization_export_generate_pvsm":false,
+        "visualization_export_generate_pvsm": false,
         "visualize_agents": {
-            "Person": [ "state_" ]
+            "Person": [
+                "state_"
+            ]
         }
     },
     "bdm::SimParam": {
@@ -20,5 +22,33 @@
         "moving_agents_ratio": 1,
         "number_of_iterations": 1000,
         "recovery_probability": 0.00521
+    },
+    "bdm::OptimizationParam": {
+        "algorithm_": "ParameterSweep",
+        "params_": [
+            {
+                "_typename": "bdm::Range",
+                "param_name_": "bdm::SimParam::t_cell_walkspeed",
+                "lower_bound_": 2,
+                "upper_bound_": 6,
+                "stride_": 2
+            },
+            {
+                "_typename": "bdm::Set",
+                "param_name_": "bdm::SimParam::monocyte_density",
+                "values_": [
+                    1.067,
+                    1.057
+                ]
+            },
+            {
+                "_typename": "bdm::LogRange",
+                "param_name_": "bdm::SimParam::apd_amount",
+                "base_": 10,
+                "lower_bound_": -15.0,
+                "upper_bound_": -14.0,
+                "stride_": 1
+            }
+        ]
     }
 }

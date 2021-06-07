@@ -21,7 +21,7 @@
 
 #include <TMessage.h>
 
-#if (!defined(__CLING__) && !defined(__ROOTCLING__)) 
+#if (!defined(__CLING__) && !defined(__ROOTCLING__))
 #include "mpi.h"
 #endif  // __ROOTCLING__
 
@@ -39,7 +39,7 @@ enum Tag { kReady, kResult, kTask, kKill };
 
 struct Container {
   Container() {}
-  explicit Container(const std::string& name) : param_name_(name) {}
+  explicit Container(const std::string& name) : param_name(name) {}
   virtual ~Container() {}
 
   virtual Container* GetCopy() const = 0;
@@ -51,34 +51,66 @@ struct Container {
   // Return the substring before the last "::", which should be
   // bdm::<ParamGroup>
   std::string GetGroupName() {
-    size_t found = param_name_.find_last_of("::");
-    return param_name_.substr(0, found - 1);
+    size_t found = param_name.find_last_of("::");
+    return param_name.substr(0, found - 1);
   }
 
   // Return the substring after the last "::", which should be <param_name>
   std::string GetParamName() {
-    size_t found = param_name_.find_last_of("::");
-    return param_name_.substr(found + 1);
+    size_t found = param_name.find_last_of("::");
+    return param_name.substr(found + 1);
   }
 
   // Must be in format bdm::<ParamGroup>::<param_name>
-  std::string param_name_;
+  std::string param_name;
   BDM_CLASS_DEF(Container, 1);
+};
+
+/// A range of values
+struct ParticleSwarmParam : public Container {
+  ParticleSwarmParam() {}
+  ParticleSwarmParam(const std::string& n, double min, double max, double iv)
+      : Container(n), lower_bound(min), upper_bound(max), initial_value(iv) {
+    Validate();
+  };
+
+  void Validate() const override {
+    if (lower_bound > upper_bound) {
+      Log::Fatal(
+          "ParticleSwarmParam", "Tried to initialize parameter '", param_name,
+          "' with a lower_bound value higher than upper_bound: ", lower_bound,
+          " > ", upper_bound);
+    }
+  }
+
+  Container* GetCopy() const override { return new ParticleSwarmParam(*this); }
+
+  double GetValue(int n) const override { return 0.0; }
+
+  int GetNumElements() const override { return 0.0; }
+
+  // The minimum value
+  double lower_bound = 0;
+  // THe maximum value
+  double upper_bound = 0;
+  // The stride
+  double initial_value = 0;
+  BDM_CLASS_DEF_OVERRIDE(ParticleSwarmParam, 1);
 };
 
 /// A range of values
 struct Range : public Container {
   Range() {}
   Range(const std::string& n, double min, double max, double stride)
-      : Container(n), lower_bound_(min), upper_bound_(max), stride_(stride) {
+      : Container(n), lower_bound(min), upper_bound(max), stride(stride) {
     Validate();
   };
 
   void Validate() const override {
-    if (lower_bound_ > upper_bound_) {
-      Log::Fatal("Range", "Tried to initialize parameter '", param_name_,
-                 "' with a lower_bound_ value higher than upper_bound_: ",
-                 lower_bound_, " > ", upper_bound_);
+    if (lower_bound > upper_bound) {
+      Log::Fatal("Range", "Tried to initialize parameter '", param_name,
+                 "' with a lower_bound value higher than upper_bound: ",
+                 lower_bound, " > ", upper_bound);
     }
   }
 
@@ -86,22 +118,22 @@ struct Range : public Container {
 
   // Get the nth value
   double GetValue(int n) const override {
-    double curr = lower_bound_ + n * stride_;
-    return curr > upper_bound_ ? upper_bound_ : curr;
+    double curr = lower_bound + n * stride;
+    return curr > upper_bound ? upper_bound : curr;
   }
 
   // Returns the number of discrete values that this range contains (including
-  // the `lower_bound_` and `upper_bound_` values)
+  // the `lower_bound` and `upper_bound` values)
   int GetNumElements() const override {
-    return std::round(((upper_bound_ - lower_bound_) + stride_) / stride_);
+    return std::round(((upper_bound - lower_bound) + stride) / stride);
   }
 
   // The minimum value
-  double lower_bound_ = 0;
+  double lower_bound = 0;
   // THe maximum value
-  double upper_bound_ = 0;
+  double upper_bound = 0;
   // The stride
-  double stride_ = 1;
+  double stride = 1;
   BDM_CLASS_DEF_OVERRIDE(Range, 1);
 };
 
@@ -112,17 +144,17 @@ struct LogRange : public Container {
            double stride)
       : Container(n),
         base_(base),
-        lower_bound_(min),
-        upper_bound_(max),
-        stride_(stride) {
+        lower_bound(min),
+        upper_bound(max),
+        stride(stride) {
     Validate();
   };
 
   void Validate() const override {
-    if (lower_bound_ > upper_bound_) {
-      Log::Fatal("LogRange", "Tried to initialize parameter '", param_name_,
-                 "' with a lower_bound_ value higher than upper_bound_: ",
-                 lower_bound_, " > ", upper_bound_);
+    if (lower_bound > upper_bound) {
+      Log::Fatal("LogRange", "Tried to initialize parameter '", param_name,
+                 "' with a lower_bound value higher than upper_bound: ",
+                 lower_bound, " > ", upper_bound);
     }
   }
 
@@ -130,25 +162,25 @@ struct LogRange : public Container {
 
   // Get the nth value
   double GetValue(int n) const override {
-    double exp = lower_bound_ + n * stride_;
-    return exp > upper_bound_ ? std::pow(base_, upper_bound_)
-                              : std::pow(base_, exp);
+    double exp = lower_bound + n * stride;
+    return exp > upper_bound ? std::pow(base_, upper_bound)
+                             : std::pow(base_, exp);
   }
 
   // Returns the number of discrete values that this range contains (including
-  // the `lower_bound_` and `upper_bound_` values)
+  // the `lower_bound` and `upper_bound` values)
   int GetNumElements() const override {
-    return std::round(((upper_bound_ - lower_bound_) + stride_) / stride_);
+    return std::round(((upper_bound - lower_bound) + stride) / stride);
   }
 
   // The base value
   double base_ = 10;
   // The minimum value
-  double lower_bound_ = 0;
+  double lower_bound = 0;
   // THe maximum value
-  double upper_bound_ = 0;
+  double upper_bound = 0;
   // The stride
-  double stride_ = 1;
+  double stride = 1;
   BDM_CLASS_DEF_OVERRIDE(LogRange, 1);
 };
 
@@ -183,7 +215,7 @@ class MPIObject : public TMessage {
   BDM_CLASS_DEF(MPIObject, 1);
 };
 
-#if (!defined(__CLING__) && !defined(__ROOTCLING__)) 
+#if (!defined(__CLING__) && !defined(__ROOTCLING__))
 /// Send object to worker using ROOT Serialization
 template <typename T>
 int MPI_Send_Obj_ROOT(T* obj, int dest, int tag,

@@ -12,26 +12,23 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_MULTI_SIMULATION_ALGORITHM_ALGORITHM_H_
-#define CORE_MULTI_SIMULATION_ALGORITHM_ALGORITHM_H_
+#ifndef CORE_ANALYSIS_ERROR_COMPUTATION_H_
+#define CORE_ANALYSIS_ERROR_COMPUTATION_H_
 
-#include <functional>
-
-#include "core/analysis/time_series.h"
-#include "core/param/param.h"
+#include <vector>
 
 namespace bdm {
 
-using experimental::TimeSeries;
+/// Base class that represents the results of a single experiment
+struct ErrorComputation {
+  ErrorComputation() {}
 
-struct Algorithm {
-  virtual ~Algorithm() {}
+  virtual ~ErrorComputation() {}
 
-  virtual void operator()(
-      const std::function<void(Param*, TimeSeries*)>& send_params_to_worker,
-      Param* default_param) = 0;
+  virtual double operator()(const std::vector<double>& a,
+                            const std::vector<double>& b);
 };
 
 }  // namespace bdm
 
-#endif  // CORE_MULTI_SIMULATION_ALGORITHM_ALGORITHM_H_
+#endif  // CORE_ANALYSIS_ERROR_COMPUTATION_H_
