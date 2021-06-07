@@ -500,7 +500,9 @@ class UniformGridEnvironment : public Environment {
       }
 
       for (uint64_t i = 0; i < size; ++i) {
-        lambda(agents[i], squared_distance[i]);
+        if (squared_distance[i] < squared_radius) {
+          lambda(agents[i], squared_distance[i]);
+        }
       }
       size = 0;
     };

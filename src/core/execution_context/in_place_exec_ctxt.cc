@@ -281,8 +281,7 @@ void InPlaceExecutionContext::ForEachNeighbor(Functor<void, Agent*>& lambda,
                                               void* criteria) {
   // forward call to env and populate cache
   auto* env = Simulation::GetActive()->GetEnvironment();
-  auto for_each =
-      L2F([&](Agent* agent) { lambda(agent); });
+  auto for_each = L2F([&](Agent* agent) { lambda(agent); });
   env->ForEachNeighbor(for_each, query, criteria);
 }
 

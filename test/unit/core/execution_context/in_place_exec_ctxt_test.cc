@@ -441,8 +441,8 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
 }
 
 TEST(InPlaceExecutionContext, ForEachNeighbor) {
-  Simulation sim("ForEachNeighbor", [&](Param* param) {
-    param->cache_neighbors = true; });
+  Simulation sim("ForEachNeighbor",
+                 [&](Param* param) { param->cache_neighbors = true; });
   auto* rm = sim.GetResourceManager();
 
   // create cells
@@ -468,6 +468,49 @@ TEST(InPlaceExecutionContext, ForEachNeighbor) {
 
   // Once more to check the cached values
   all_exec_ctxts[0]->ForEachNeighbor(for_each, *agent0, 400);
+}
+
+// Test if the execution context gives us the same neighborhood as the
+// environment
+TEST(InPlaceExecutionContext, EnvironmentNeighborhoodCheck) {
+  Simulation simulation("EnvironmentNeighborhoodCheck");
+  auto* ctxt = simulation.GetExecutionContext();
+  auto* a0 = new Cell({0, 10.0, 0});
+  auto* a1 = new Cell({0, 20.0, 0});
+  auto* a2 = new Cell({0, 30.0, 0});
+  a0->SetDiameter(11);
+  a1->SetDiameter(11);
+  a2->SetDiameter(11);
+  ctxt->AddAgent(a0);
+  ctxt->AddAgent(a1);
+  ctxt->AddAgent(a2);
+  simulation.GetScheduler()->FinalizeInitialization();
+  simulation.GetEnvironment()->Update();
+
+  std::vector<std::pair<Agent*, double>> neighbor_list;
+  auto print_id_distance = L2F([&](Agent* a, double squared_distance) {
+    neighbor_list.push_back(std::make_pair<Agent*, double>(
+        std::move(a), std::move(squared_distance)));
+  });
+
+  // Neighborhood via Environment
+  simulation.GetEnvironment()->ForEachNeighbor(print_id_distance, *a0, 101);
+  auto environment_neighborhood = neighbor_list;
+
+  // Empty neighbor list
+  neighbor_list.clear();
+
+  // Neighborhood via Context
+  ctxt->ForEachNeighbor(print_id_distance, *a0, 101);
+  auto context_neighborhood = neighbor_list;
+
+  EXPECT_EQ(environment_neighborhood.size(), context_neighborhood.size());
+
+  int i = 0;
+  for (auto pair : environment_neighborhood) {
+    EXPECT_EQ(pair.first, context_neighborhood[i].first);
+    EXPECT_EQ(pair.second, context_neighborhood[i].second);
+  }
 }
 
 }  // namespace in_place_exec_ctxt_detail
