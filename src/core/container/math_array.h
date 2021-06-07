@@ -45,10 +45,13 @@ class MathArray {  // NOLINT
   /// the array's content.
   /// \param l an initializer list
   constexpr MathArray(std::initializer_list<T> l) {
-    assert(l.size() == N);
+    assert(l.size() <= N);
     auto it = l.begin();
     for (uint64_t i = 0; i < N; i++) {
       data_[i] = *(it++);
+    }
+    for (uint64_t i = l.size(); i < N; i++) {
+      data_[i] = T();
     }
   }
 

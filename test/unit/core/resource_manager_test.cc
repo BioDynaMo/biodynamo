@@ -22,6 +22,118 @@ namespace bdm {
 
 TEST(ResourceManagerTest, ForEachAgent) { RunForEachAgentTest(); }
 
+TEST(ResourceManagerTest, ForEachAgentFilter) {
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
+  auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
+
+  rm->AddAgent(new TestAgent(0));
+  rm->AddAgent(new TestAgent(1));
+  rm->AddAgent(new TestAgent(2));
+  rm->AddAgent(new TestAgent(3));
+
+  auto evenf = L2F([](Agent* a) {
+    return bdm_static_cast<TestAgent*>(a)->GetData() % 2 == 0;
+  });
+
+  uint64_t counter = 0;
+  rm->ForEachAgent(
+      [&](Agent* a) {  // NOLINT
+        counter++;
+        switch (a->GetUid() - ref_uid) {
+          case 0:
+            EXPECT_EQ(0, dynamic_cast<TestAgent*>(a)->GetData());
+            break;
+          case 2:
+            EXPECT_EQ(2, dynamic_cast<TestAgent*>(a)->GetData());
+            break;
+          default:
+            FAIL() << "Must not happen";
+        }
+      },
+      &evenf);
+  EXPECT_EQ(2u, counter);
+
+  auto oddf = L2F([](Agent* a) {
+    return bdm_static_cast<TestAgent*>(a)->GetData() % 2 == 1;
+  });
+
+  counter = 0;
+  rm->ForEachAgent(
+      [&](Agent* a) {  // NOLINT
+        counter++;
+        switch (a->GetUid() - ref_uid) {
+          case 1:
+            EXPECT_EQ(1, dynamic_cast<TestAgent*>(a)->GetData());
+            break;
+          case 3:
+            EXPECT_EQ(3, dynamic_cast<TestAgent*>(a)->GetData());
+            break;
+          default:
+            FAIL() << "Must not happen";
+        }
+      },
+      &oddf);
+  EXPECT_EQ(2u, counter);
+}
+
+TEST(ResourceManagerTest, ForEachAgentParallelFilter) {
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+
+  for (uint64_t i = 0; i < 10000; i++) {
+    rm->AddAgent(new TestAgent(i));
+  }
+
+  auto evenf = L2F([](Agent* a) {
+    return bdm_static_cast<TestAgent*>(a)->GetData() % 2 == 0;
+  });
+
+  uint64_t counter = 0;
+  std::set<TestAgent*> called;
+  auto functor = L2F([&](Agent* a, AgentHandle) {
+#pragma omp critical
+    {
+      counter++;
+      called.insert(bdm_static_cast<TestAgent*>(a));
+    }
+  });
+  rm->ForEachAgentParallel(functor, &evenf);
+  EXPECT_EQ(5000u, counter);
+  for (auto* a : called) {
+    EXPECT_TRUE(a->GetData() % 2 == 0);
+  }
+
+  counter = 0;
+  called.clear();
+  rm->ForEachAgentParallel(10, functor, &evenf);
+  EXPECT_EQ(5000u, counter);
+  for (auto* a : called) {
+    EXPECT_TRUE(a->GetData() % 2 == 0);
+  }
+
+  auto oddf = L2F([](Agent* a) {
+    return bdm_static_cast<TestAgent*>(a)->GetData() % 2 == 1;
+  });
+
+  counter = 0;
+  called.clear();
+  rm->ForEachAgentParallel(functor, &oddf);
+  EXPECT_EQ(5000u, counter);
+  for (auto* a : called) {
+    EXPECT_TRUE(a->GetData() % 2 == 1);
+  }
+
+  counter = 0;
+  called.clear();
+  rm->ForEachAgentParallel(10, functor, &oddf);
+  EXPECT_EQ(5000u, counter);
+  for (auto* a : called) {
+    EXPECT_TRUE(a->GetData() % 2 == 1);
+  }
+}
+
 TEST(ResourceManagerTest, GetNumAgents) { RunGetNumAgents(); }
 
 TEST(ResourceManagerTest, ForEachAgentParallel) {

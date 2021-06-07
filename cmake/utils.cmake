@@ -237,7 +237,7 @@ function(install_inside_build)
 
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ${CMAKE_BINARY_DIR}/version/version.py
+            ${CMAKE_BINARY_DIR}/version/bdm_version.py
             ${CMAKE_SOURCE_DIR}/util/makefile-build/bdm-code-generation
             ${CMAKE_SOURCE_DIR}/cmake/bdm-dictionary
             )
@@ -286,7 +286,7 @@ function(install_inside_build)
     # Other headers
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            ${CMAKE_BINARY_DIR}/version/version.h
+            ${CMAKE_BINARY_DIR}/version/bdm_version.h
             )
 
     # libbdmcuda.a

@@ -22,6 +22,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/analysis/style.h"
 #include "core/param/param_group.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
@@ -102,6 +103,33 @@ struct Param {
   ///     output_dir = "output"
   std::string output_dir = "output";
 
+  /// The method used to query the environment of a simulation object.
+  /// Default value: `"uniform_grid"`\n
+  /// Other allowed values: `"kd_tree", "octree"`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     environment = "uniform_grid"
+  std::string environment = "uniform_grid";
+
+  /// The depth of the kd tree if it's set as the environment (see
+  /// Param::environment). For more information see:
+  /// https://github.com/jlblancoc/nanoflann\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     nanoflann_depth = 10
+  uint32_t nanoflann_depth = 10;
+
+  /// The bucket size of the octree if it's set as the environment (see
+  /// Param::environment). For more information see:
+  /// https://github.com/jbehley/octree
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     unibn_bucketsize = 16
+  uint32_t unibn_bucketsize = 16;
+
   /// If set to true, BioDynaMo will automatically delete all contents
   /// inside `Param::output_dir` at the beginning of the simulation.
   /// Use with caution, especially in combination with `Param::output_dir`
@@ -152,15 +180,29 @@ struct Param {
   ///     max_displacement = 3.0
   double simulation_max_displacement = 3.0;
 
-  /// Enforce an artificial cubic bounds around the simulation space.
-  /// Agents cannot move outside this cube. Dimensions of this cube
-  /// are determined by parameter `lbound` and `rbound`.\n
-  /// Default value: `false` (simulation space is "infinite")\n
+  enum BoundSpaceMode {
+    /// The simulation space grows to encapsulate all agents.
+    kOpen = 0,
+    /// Enforce an artificial cubic bound around the simulation space.
+    /// The dimensions of this cube are determined by parameter
+    /// `min_bound` and `max_bound`.\n
+    /// If agents move outside the cube they are moved back inside.
+    kClosed,
+    /// Enforce an artificial cubic bound around the simulation space.
+    /// The dimensions of this cube are determined by parameter
+    /// `min_bound` and `max_bound`.\n
+    /// Agents that move outside the cube are moved back in on the opposite
+    /// side.
+    kTorus
+  };
+
+  /// Default value: `open` (simulation space is "infinite")\n
+  /// \see BoundSpaceMode
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     bound_space = false
-  bool bound_space = false;
+  ///     bound_space = "open"
+  BoundSpaceMode bound_space = kOpen;
 
   /// Minimum allowed value for x-, y- and z-position if simulation space is
   /// bound (@see `bound_space`).\n

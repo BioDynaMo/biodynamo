@@ -14,12 +14,16 @@
 
 #include "binding_cells.h"
 #include "core/multi_simulation/multi_simulation.h"
+#include "core/param/param_group.h"
 
-const bdm::ParamGroupUid bdm::SimParam::kUid =
-    bdm::ParamGroupUidGenerator::Get()->NewUid();
+using namespace bdm;
+
+const ParamGroupUid SimParam::kUid =
+    ParamGroupUidGenerator::Get()->NewUid();
+
 
 int main(int argc, const char** argv) {
-  bdm::Param::RegisterParamGroup(new bdm::SimParam());
-  bdm::MultiSimulation pe(argc, argv);
-  return pe.Execute(bdm::Simulate);
+  Param::RegisterParamGroup(new SimParam());
+  MultiSimulation pe(argc, argv);
+  return pe.Execute(Simulate);
 }

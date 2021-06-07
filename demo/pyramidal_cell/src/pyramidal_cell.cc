@@ -11,28 +11,6 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
+#include "pyramidal_cell.h"
 
-#ifndef CORE_MULTI_SIMULATION_RESULT_DATA_H_
-#define CORE_MULTI_SIMULATION_RESULT_DATA_H_
-
-namespace bdm {
-
-#include "core/analysis/error_computation/error_computation.h"
-
-/// Base class that represents the results of a single experiment
-struct ResultData {
-  ResultData() {}
-
-  virtual ~ResultData() {}
-
-  virtual double ComputeError(ResultData* other);
-
- private:
-  BDM_CLASS_DEF(ResultData, 1);
-  /// The unique id for this result
-  uint64_t result_id;
-};
-
-}  // namespace bdm
-
-#endif  // CORE_MULTI_SIMULATION_RESULT_DATA_H_
+int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }

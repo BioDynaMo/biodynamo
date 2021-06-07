@@ -28,7 +28,6 @@
 #include "core/analysis/time_series.h"
 #include "core/multi_simulation/algorithm/algorithm_registry.h"
 #include "core/multi_simulation/dynamic_loop.h"
-#include "core/multi_simulation/result_data.h"
 #include "core/util/timing_aggregator.h"
 
 using std::cout;

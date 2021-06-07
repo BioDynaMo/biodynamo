@@ -24,7 +24,7 @@ endforeach()
 # Project name and current version. We do not specify any language for
 # this project. Therefore, we will be able to check manually which compiler
 # is detected on the system.
-project(BioDynaMo LANGUAGES VERSION "1.0.0")
+project(BioDynaMo LANGUAGES VERSION "1.01.0")
 
 #---Set the locale to default C to prevent issued due to localization of commands---------------
 # This is necessary as we for example call `clang -v` and parse its output. But on a localized
@@ -407,6 +407,20 @@ if (OPENCL_FOUND)
   endif()
 endif()
 
+# Link optimlib
+include(ExternalProject)
+ExternalProject_Add(
+  optim
+  URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
+  BINARY_DIR "optim-prefix/src/optim"
+  CONFIGURE_COMMAND ./configure
+  INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_CURRENT_BINARY_DIR}
+)
+add_library(liboptim SHARED IMPORTED)
+set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_SHARED_LIBRARY_PREFIX}optim.so)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include)
+set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} liboptim)
+
 # --------------------Copy the launcher script ---------------------------------
 configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
 file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
@@ -466,6 +480,8 @@ include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/omp")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/opencl")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/unibn")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/nanoflann")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1")
 include_directories("${EXTRACTED_THIRD_PARTY_LIBS}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
@@ -496,19 +512,7 @@ build_shared_library(biodynamo
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} ${FS_LIB})
 
-include(ExternalProject)
-ExternalProject_Add(
-  optim
-  URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
-  BINARY_DIR "optim-prefix/src/optim"
-  CONFIGURE_COMMAND ./configure
-  INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_INSTALL_LIBDIR}
-)
-add_library(liboptim SHARED IMPORTED)
-set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include)
-add_dependencies(biodynamo liboptim)
-                   
+                  
 # Build plugin
 if(paraview)
   # Find paraview-related sources and headers for plugin generation
@@ -595,6 +599,7 @@ if (test)
   file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/analysis/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/behavior/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/environment/*.cc
@@ -611,6 +616,7 @@ if (test)
   file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/analysis/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/behavior/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/environment/*.h
@@ -769,5 +775,5 @@ endif()
 PRINT_LINE()
 MESSAGE("You have just finished to configure the BioDynaMo source.\n\
 Compile it by running \"${buildcmd}\".\n\
-Before using it do \". ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/thisbdm.sh.\"")
+Before using it do \". ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/thisbdm.sh\".")
 PRINT_LINE()

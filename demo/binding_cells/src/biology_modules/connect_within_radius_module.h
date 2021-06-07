@@ -72,8 +72,7 @@ struct ConnectWithinRadius : public Behavior {
       };
       auto* grid = static_cast<UniformGridEnvironment*>(
           Simulation::GetActive()->GetEnvironment());
-      grid->ForEachNeighborWithinRadius(find_closest_cell, *this_cell,
-                                        squared_radius_);
+      grid->ForEachNeighbor(find_closest_cell, *this_cell, squared_radius_);
 
       // If we found an available monocyte then we connect this cell and the
       // monocyte with each other, forming an immune synapse

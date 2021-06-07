@@ -15,13 +15,22 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Make sure Xcode 12.4 is the default /Application/Xcode.app
+    - name: Make sure Xcode 12.4 is used on macOS 10.15 as the default /Application/Xcode.app
       shell: bash
       run: |
         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
         sudo ln -s /Applications/Xcode_12.4.app /Applications/Xcode.app
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
- 
+      if: matrix.os == 'macos-10.15'
+
+    - name: Make sure Xcode 12.5 is used on macOS 11.3 as the default /Application/Xcode.app
+      shell: bash
+      run: |
+        sudo mv /Applications/Xcode.app /Applications/Xcode.app-
+        sudo ln -s /Applications/Xcode_12.5.app /Applications/Xcode.app
+        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+      if: matrix.os == 'macos-11.0'
+
     - name: Install dependencies
       run: |
         brew install libomp open-mpi python@3.9 wget cmake ninja

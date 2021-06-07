@@ -27,8 +27,8 @@
 #include <ostream>
 #include <string>
 
+#include "bdm_version.h"
 #include "core/simulation.h"
-#include "version.h"
 
 namespace bdm {
 

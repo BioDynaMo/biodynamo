@@ -172,7 +172,7 @@ TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
 /// the only ones (no more, no less).
 TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
     param->export_visualization = true;

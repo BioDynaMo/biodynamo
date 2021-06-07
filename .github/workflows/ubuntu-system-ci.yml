@@ -87,6 +87,7 @@ jobs:
           curl https://pyenv.run | bash
         fi
         export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         if [ ! -f  "$HOME/.pyenv/versions/3.9.1/lib/libpython3.so" ]; then
           PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
@@ -105,6 +106,7 @@ jobs:
       shell: bash
       run: |
         export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         pyenv shell 3.9.1
         cmake \
@@ -119,6 +121,7 @@ jobs:
       shell: bash
       run: |
         export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         pyenv shell 3.9.1
         cmake \

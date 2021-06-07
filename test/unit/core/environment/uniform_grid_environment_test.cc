@@ -12,13 +12,15 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/environment/uniform_grid_environment.h"
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
-#include "core/environment/uniform_grid_environment.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
+
+class UniformGridEnvironmentDeathTest : public ::testing::Test {};
 
 void CellFactory(ResourceManager* rm, size_t cells_per_dim) {
   const double space = 20;
@@ -34,7 +36,7 @@ void CellFactory(ResourceManager* rm, size_t cells_per_dim) {
   }
 }
 
-TEST(GridTest, SetupGrid) {
+TEST(UniformGridEnvironmentTest, SetupGrid) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid =
@@ -143,7 +145,7 @@ void RunUpdateGridTest(Simulation* simulation) {
 
 // TODO(lukas) Add tests for UniformGridEnvironment::ForEachNeighbor
 
-TEST(GridTest, UpdateGrid) {
+TEST(UniformGridEnvironmentTest, UpdateGrid) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* env = simulation.GetEnvironment();
@@ -161,7 +163,7 @@ TEST(GridTest, UpdateGrid) {
   RunUpdateGridTest(&simulation);
 }
 
-TEST(GridTest, NoRaceConditionDuringUpdate) {
+TEST(UniformGridEnvironmentTest, NoRaceConditionDuringUpdate) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* env = simulation.GetEnvironment();
@@ -184,7 +186,7 @@ TEST(GridTest, NoRaceConditionDuringUpdate) {
   }
 }
 
-TEST(GridTest, GetBoxIndex) {
+TEST(UniformGridEnvironmentTest, GetBoxIndex) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid =
@@ -211,7 +213,7 @@ TEST(GridTest, GetBoxIndex) {
   EXPECT_EQ(expected_idx_2, idx_2);
 }
 
-TEST(GridTest, GridDimensions) {
+TEST(UniformGridEnvironmentTest, GridDimensions) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* env = simulation.GetEnvironment();
@@ -221,19 +223,19 @@ TEST(GridTest, GridDimensions) {
   env->Update();
 
   std::array<int32_t, 6> expected_dim_0 = {{-30, 90, -30, 90, -30, 90}};
-  auto& dim_0 = env->GetDimensions();
+  auto dim_0 = env->GetDimensions();
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
   rm->GetAgent(AgentUid(0))->SetPosition({{100, 0, 0}});
   env->Update();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
-  auto& dim_1 = env->GetDimensions();
+  auto dim_1 = env->GetDimensions();
 
   EXPECT_EQ(expected_dim_1, dim_1);
 }
 
-TEST(GridTest, GetBoxCoordinates) {
+TEST(UniformGridEnvironmentTest, GetBoxCoordinates) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* grid =
@@ -249,9 +251,9 @@ TEST(GridTest, GetBoxCoordinates) {
   EXPECT_ARR_EQ({1, 2, 3}, grid->GetBoxCoordinates(57));
 }
 
-TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
+TEST(UniformGridEnvironmentTest, NonEmptyBoundedTestThresholdDimensions) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 1;
     param->max_bound = 99;
   };
@@ -267,6 +269,66 @@ TEST(GridTest, NonEmptyBoundedTestThresholdDimensions) {
   auto max_dimensions = env->GetDimensionThresholds();
   EXPECT_EQ(1, max_dimensions[0]);
   EXPECT_EQ(99, max_dimensions[1]);
+}
+
+struct TestFunctor : public Functor<void, Agent*, double> {
+  void operator()(Agent* neighbor, double squared_distance) override {}
+};
+
+TEST(UniformGridEnvironment, CustomBoxLength) {
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  auto* env =
+      dynamic_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
+
+  auto cell = new Cell(10);
+  rm->AddAgent(cell);
+
+  env->Update();
+  EXPECT_EQ(10, env->GetBoxLength());
+
+  env->SetBoxLength(15);
+  EXPECT_EQ(15, env->GetBoxLength());
+
+  env->Update();
+  EXPECT_EQ(15, env->GetBoxLength());
+
+  rm->AddAgent(new Cell(20));
+  env->Update();
+  EXPECT_EQ(15, env->GetBoxLength());
+}
+
+TEST(UniformGridEnvironmentDeathTest, CustomBoxLength) {
+  ASSERT_DEATH(
+      {
+        Simulation simulation(TEST_NAME);
+        auto* rm = simulation.GetResourceManager();
+        auto* ctxt = simulation.GetExecutionContext();
+        auto* env =
+            dynamic_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
+
+        auto cell = new Cell(10);
+        rm->AddAgent(cell);
+
+        env->Update();
+        EXPECT_EQ(10, env->GetBoxLength());
+
+        env->SetBoxLength(15);
+        EXPECT_EQ(15, env->GetBoxLength());
+
+        env->Update();
+        EXPECT_EQ(15, env->GetBoxLength());
+
+        rm->AddAgent(new Cell(20));
+        env->Update();
+        EXPECT_EQ(15, env->GetBoxLength());
+
+        auto tf = TestFunctor();
+        // This call should fail because the default search radius is set to the
+        // largest object (20), which is larger than the custom box length (15)
+        ctxt->ForEachNeighbor(tf, *cell, env->GetLargestAgentSizeSquared());
+      },
+      "");
 }
 
 struct ZOrderCallback : Functor<void, const AgentHandle&> {

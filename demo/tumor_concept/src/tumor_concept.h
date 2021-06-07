@@ -97,7 +97,7 @@ struct Growth : public Behavior {
 
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 0;
     param->max_bound = 100;  // cube of 100*100*100
   };

@@ -273,7 +273,9 @@ struct TestOperation : public AgentOperationImpl {
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighbor(nb_functor, *agent, 101);
+    auto* env = Simulation::GetActive()->GetEnvironment();
+    ctxt->ForEachNeighbor(nb_functor, *agent,
+                          env->GetLargestAgentSizeSquared());
 #pragma omp critical
     num_neighbors[agent->GetUid()] = nb_counter;
   }
@@ -358,6 +360,114 @@ TEST(InPlaceExecutionContext, PushBackMultithreadingTest) {
         static_cast<TestAgent*>(ctxt->GetAgent(AgentUid(read_index)));
     EXPECT_EQ(static_cast<uint64_t>(tagent->GetData()), read_index);
   }
+}
+
+TEST(InPlaceExecutionContext, DefaultSearchRadius) {
+  Simulation sim(TEST_NAME);
+  auto* env = sim.GetEnvironment();
+  auto* rm = sim.GetResourceManager();
+  auto* ctxt = sim.GetExecutionContext();
+
+  Cell* cell_0 = new Cell();
+  cell_0->SetDiameter(42);
+  rm->AddAgent(cell_0);
+
+  EXPECT_EQ(1u, rm->GetNumAgents());
+  EXPECT_EQ(env->GetLargestAgentSizeSquared(), 0.0);
+
+  env->Update();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+  EXPECT_EQ(42 * 42, env->GetLargestAgentSizeSquared());
+
+  // Add agent with new largest object size
+  Cell* cell_1 = new Cell();
+  cell_1->SetDiameter(43);
+  rm->AddAgent(cell_1);
+
+  env->Update();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+  EXPECT_EQ(43 * 43, env->GetLargestAgentSizeSquared());
+}
+
+struct TestNeighborFunctor : public Functor<void, Agent*, double> {
+  void operator()(Agent* neighbor, double squared_distance) override {}
+};
+
+TEST(InPlaceExecutionContext, NeighborCacheValidity) {
+  auto set_param = [](Param* param) { param->cache_neighbors = true; };
+  Simulation sim(TEST_NAME, set_param);
+  auto* env = sim.GetEnvironment();
+  auto* rm = sim.GetResourceManager();
+  auto* ctxt = sim.GetExecutionContext();
+
+  for (int i = 0; i < 10; i++) {
+    Cell* cell = new Cell();
+    cell->SetDiameter(5);
+    rm->AddAgent(cell);
+  }
+
+  EXPECT_EQ(10u, rm->GetNumAgents());
+  EXPECT_EQ(env->GetLargestAgentSizeSquared(), 0.0);
+
+  env->Update();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+  EXPECT_EQ(5 * 5, env->GetLargestAgentSizeSquared());
+
+  Cell* cell_1 = new Cell();
+  cell_1->SetDiameter(6);
+  rm->AddAgent(cell_1);
+
+  env->Update();
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
+  EXPECT_EQ(6 * 6, env->GetLargestAgentSizeSquared());
+  EXPECT_TRUE(ctxt->cache_neighbors_);
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(env->GetLargestAgentSizeSquared()));
+
+  // Since we didn't run a ForEachNeighbor operation, the cached squared radius
+  // is still its default value of 0.0
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(4 * 4));
+
+  TestNeighborFunctor test_functor;
+  ctxt->ForEachNeighbor(test_functor, *cell_1, 3 * 3);
+  EXPECT_EQ(3 * 3, ctxt->cached_squared_search_radius_);
+  EXPECT_TRUE(ctxt->IsNeighborCacheValid(3 * 3));
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(4 * 4));
+
+  // Request larger neighborhood and invalidate existing cache
+  ctxt->ForEachNeighbor(test_functor, *cell_1, 4 * 4);
+  EXPECT_EQ(4 * 4, ctxt->cached_squared_search_radius_);
+  EXPECT_TRUE(ctxt->IsNeighborCacheValid(4 * 4 - 1));
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(4 * 4 + 1));
+}
+
+TEST(InPlaceExecutionContext, ForEachNeighbor) {
+  Simulation sim("ForEachNeighbor", [&](Param* param) {
+    param->cache_neighbors = true; });
+  auto* rm = sim.GetResourceManager();
+
+  // create cells
+  auto construct = [](const Double3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(20);
+    return cell;
+  };
+  ModelInitializer::Grid3D(3, 10, construct);
+
+  // initialize
+  const auto& all_exec_ctxts = sim.GetAllExecCtxts();
+  all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
+  sim.GetEnvironment()->Update();
+
+  auto agent0 = rm->GetAgent(AgentHandle(0, 0));
+
+  auto for_each = L2F([&](Agent* agent, double squared_distance) {
+    EXPECT_NE(0, squared_distance);
+  });
+
+  all_exec_ctxts[0]->ForEachNeighbor(for_each, *agent0, 400);
+
+  // Once more to check the cached values
+  all_exec_ctxts[0]->ForEachNeighbor(for_each, *agent0, 400);
 }
 
 }  // namespace in_place_exec_ctxt_detail

@@ -20,7 +20,6 @@
 #include "core/multi_simulation/dynamic_loop.h"
 #include "core/multi_simulation/experiment.h"
 #include "core/multi_simulation/multi_simulation_manager.h"
-#include "core/multi_simulation/result_data.h"
 
 using nlohmann::json;
 

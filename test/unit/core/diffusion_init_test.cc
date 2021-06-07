@@ -29,7 +29,7 @@ enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 0;
     param->max_bound = 250;
   };

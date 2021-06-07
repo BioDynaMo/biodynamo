@@ -30,17 +30,27 @@ class Environment {
 
   virtual void Update() = 0;
 
+  /// Iterates over all neighbors in an environment that suffices the given
+  /// `criteria`. The `criteria` is type-erased to facilitate for different
+  /// criteria for different environments. Check the documentation of an
+  /// environment to know the criteria data type
   virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                               const Agent& query) = 0;
+                               const Agent& query, double squared_radius) {}
+
+  virtual void ForEachNeighbor(Functor<void, Agent*>& lambda,
+                               const Agent& query, void* criteria) {}
 
   virtual void Clear() = 0;
 
-  virtual const std::array<int32_t, 6>& GetDimensions() const = 0;
+  virtual std::array<int32_t, 6> GetDimensions() const = 0;
 
-  virtual const std::array<int32_t, 2>& GetDimensionThresholds() const = 0;
+  virtual std::array<int32_t, 2> GetDimensionThresholds() const = 0;
 
   /// Return the size of the largest agent
-  virtual double GetLargestObjectSize() const = 0;
+  double GetLargestAgentSize() const { return largest_object_size_; };
+  double GetLargestAgentSizeSquared() const {
+    return largest_object_size_squared_;
+  };
 
   virtual LoadBalanceInfo* GetLoadBalanceInfo() = 0;
 
@@ -70,6 +80,9 @@ class Environment {
 
  protected:
   bool has_grown_ = false;
+  /// The size of the largest object in the simulation
+  double largest_object_size_ = 0.0;
+  double largest_object_size_squared_ = 0.0;
 
   struct SimDimensionAndLargestAgentFunctor
       : public Functor<void, Agent*, AgentHandle> {
@@ -130,7 +143,7 @@ class Environment {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// agents
   void CalcSimDimensionsAndLargestAgent(
-      std::array<double, 6>* ret_grid_dimensions, double* largest_agent) {
+      std::array<double, 6>* ret_grid_dimensions) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
@@ -180,11 +193,13 @@ class Environment {
       if (zmax[tid][0] > gzmax) {
         gzmax = zmax[tid][0];
       }
-      // larget object
-      if (largest[tid][0] > (*largest_agent)) {
-        (*largest_agent) = largest[tid][0];
+      // largest object
+      if (largest[tid][0] > largest_object_size_) {
+        largest_object_size_ = largest[tid][0];
       }
     }
+
+    largest_object_size_squared_ = largest_object_size_ * largest_object_size_;
   }
 };
 

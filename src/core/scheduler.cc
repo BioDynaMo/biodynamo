@@ -60,7 +60,8 @@ Scheduler::Scheduler() {
   // agents that are not yet in the environment (which load balancing
   // relies on)
   std::vector<std::string> post_scheduled_ops_names = {
-      "load balancing", "tear down iteration", "visualize"};
+      "load balancing", "tear down iteration", "visualize",
+      "update time series"};
 
   protected_op_names_ = {
       "update staticness",  "behavior",
@@ -130,6 +131,20 @@ void Scheduler::Simulate(uint64_t steps) {
     total_steps_++;
     Backup();
   }
+}
+
+void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
+  Initialize();
+  while (!exit_condition()) {
+    Execute();
+
+    total_steps_++;
+  }
+}
+
+void Scheduler::FinalizeInitialization() {
+  auto* sim = Simulation::GetActive();
+  sim->GetExecutionContext()->SetupIterationAll(sim->GetAllExecCtxts());
 }
 
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
@@ -210,6 +225,12 @@ std::vector<Operation*> Scheduler::GetOps(const std::string& name) {
   return ret;
 }
 
+// -----------------------------------------------------------------------------
+void Scheduler::SetAgentFilters(
+    const std::vector<Functor<bool, Agent*>*>& agent_filters) {
+  agent_filters_ = agent_filters;
+}
+
 struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
   explicit RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
@@ -248,25 +269,39 @@ void Scheduler::RunPreScheduledOps() {
   }
 }
 
-void Scheduler::RunScheduledOps() {
+// -----------------------------------------------------------------------------
+void Scheduler::RunAgentOps(Functor<bool, Agent*>* filter) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
   auto batch_size = param->scheduling_batch_size;
 
-  SetUpOps();
-
-  // Run the agent operations
   std::vector<Operation*> agent_ops;
   for (auto* op : scheduled_agent_ops_) {
-    if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0) {
+    if (op->frequency_ != 0 && total_steps_ % op->frequency_ == 0 &&
+        !op->IsExcluded(filter)) {
       agent_ops.push_back(op);
     }
   }
   RunAllScheduledOps functor(agent_ops);
 
-  Timing::Time("agent ops",
-               [&]() { rm->ForEachAgentParallel(batch_size, functor); });
+  Timing::Time("agent ops", [&]() {
+    rm->ForEachAgentParallel(batch_size, functor, filter);
+  });
+}
+
+// -----------------------------------------------------------------------------
+void Scheduler::RunScheduledOps() {
+  SetUpOps();
+
+  // Run the agent operations
+  if (agent_filters_.size() == 0) {
+    RunAgentOps(nullptr);
+  } else {
+    for (auto* filter : agent_filters_) {
+      RunAgentOps(filter);
+    }
+  }
 
   // Run the column-wise operations
   for (auto* op : scheduled_standalone_ops_) {
@@ -342,7 +377,7 @@ void Scheduler::Initialize() {
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
   all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
 
-  if (param->bound_space) {
+  if (param->bound_space != Param::BoundSpaceMode::kOpen) {
     auto* bound_space = NewOperation("bound space");
     rm->ForEachAgentParallel(*bound_space);
     delete bound_space;

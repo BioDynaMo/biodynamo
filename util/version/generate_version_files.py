@@ -101,17 +101,17 @@ if __name__ == '__main__':
         os.makedirs(destdir)
 
     if UpdateVersionInfo(destdir+"/version", version):
-        GenerateFile(scriptpath+'/version.h', destdir+'/version.h', version, major, minor, patch)
-        GenerateFile(scriptpath+'/version.py', destdir+'/version.py', version, major, minor, patch)
+        GenerateFile(scriptpath+'/version.h', destdir+'/bdm_version.h', version, major, minor, patch)
+        GenerateFile(scriptpath+'/version.py', destdir+'/bdm_version.py', version, major, minor, patch)
         GenerateFile(builddir+'/Doxyfile', builddir+'/Doxyfile', version, major, minor, patch)
 
         # cache last version
-        with open(destdir+"/version", 'w') as f:
+        with open(destdir+"/bdm_version", 'w') as f:
             f.write(version)
         #   shortversion
         if patch == 0:
             shortversion = "{}.{}".format(major, minor)
         else:
             shortversion = "{}.{}.{}".format(major, minor, patch)
-        with open(destdir+"/shortversion", 'w') as f:
+        with open(destdir+"/bdm_shortversion", 'w') as f:
             f.write(shortversion)

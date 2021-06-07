@@ -90,7 +90,7 @@ class MechanicalForcesOp : public AgentOperationImpl {
       last_iteration_[tid] = current_iteration;
 
       auto* grid = sim->GetEnvironment();
-      auto search_radius = grid->GetLargestObjectSize();
+      auto search_radius = grid->GetLargestAgentSize();
       squared_radius_ = search_radius * search_radius;
       auto current_time = (current_iteration + 1) * param->simulation_time_step;
       delta_time_[tid] = current_time - last_time_run_[tid];
@@ -101,7 +101,8 @@ class MechanicalForcesOp : public AgentOperationImpl {
         agent->CalculateDisplacement(force_, squared_radius_, delta_time_[tid]);
     agent->ApplyDisplacement(displacement);
     if (param->bound_space) {
-      ApplyBoundingBox(agent, param->min_bound, param->max_bound);
+      ApplyBoundingBox(agent, param->bound_space, param->min_bound,
+                       param->max_bound);
     }
   }
 

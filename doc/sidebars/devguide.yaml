@@ -5,6 +5,8 @@
         link: /docs/devguide/
       - title: Build BioDynaMo
         link: /docs/devguide/build/
+      - title: Release
+        link: /docs/devguide/release/
   - group: Code
     items:
       - title: Code Quality

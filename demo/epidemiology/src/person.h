@@ -15,8 +15,8 @@ namespace bdm {
 /// Possible Person states.
 enum State { kSusceptible, kInfected, kRecovered };
 
-class Person : public Cell {
-  BDM_AGENT_HEADER(Person, Cell, 1);
+class Person : public SphericalAgent {
+  BDM_AGENT_HEADER(Person, SphericalAgent, 1);
 
  public:
   Person() {}

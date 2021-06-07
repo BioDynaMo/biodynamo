@@ -24,19 +24,19 @@
 #include "biology_modules/random_walk_module.h"
 #include "biology_modules/spring_force_module.h"
 #include "biology_modules/stokes_velocity_module.h"
-#include "core/multi_simulation/error_matrix.h"
-#include "core/multi_simulation/util.h"
+#include "core/analysis/time_series.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/operation/reduction_op.h"
 #include "core/substance_initializers.h"
 #include "core/util/io.h"
-#include "my_results.h"
 
 #include "TH2I.h"
 #include "TROOT.h"
 
 namespace bdm {
+
+using experimental::TimeSeries;
 
 enum CellType { kMonocyte, kTCell };
 enum Substances { kAntibody };
@@ -78,8 +78,8 @@ struct SimParam : public ParamGroup {
   double stokes_pf = .997;
 };
 
-inline double Simulate(int argc, const char** argv,
-                       Param* final_params = nullptr) {
+inline void Simulate(int argc, const char** argv, TimeSeries* result,
+                     Param* final_params = nullptr) {
   auto set_param = [&](Param* param) {
     param->Restore(std::move(*final_params));
   };
@@ -180,27 +180,17 @@ inline double Simulate(int argc, const char** argv,
   //////////////////////////////////////////////////////////////////////////////
   std::string name = "binding_cells";
   std::string brief = "Effect of Anti-PD-1 Concentration on T-Cell Activation";
-  MyResults ex(name, brief);
-  ex.initial_concentration = sparam->apd_amount;
-  ex.activation_intensity = *merged_histo;
-  ex.activity = op_impl->GetResults();
-  ex.WriteResultToROOT();
+  // MyResults ex(name, brief);
+  // ex.initial_concentration = sparam->apd_amount;
+  // ex.activation_intensity = *merged_histo;
+  // ex.activity = op_impl->GetResults();
+  // ex.WriteResultToROOT();
 
   //////////////////////////////////////////////////////////////////////////////
   // Compute error for optimization feedback
   //////////////////////////////////////////////////////////////////////////////
-  auto final_activity =
-      100 * (static_cast<float>(ex.activity.back()) / rm->GetNumAgents());
-  auto expected_val =
-      simulation.GetParam()->Get<OptimizationParam>()->expected_val;
-
-  std::cout << "expected val = " << expected_val << std::endl;
-  std::cout << "computed val = " << final_activity << std::endl;
-  SquaredError se;
-  auto error = se.Compute(final_activity, expected_val);
-  std::cout << "error = " << error << std::endl << std::endl;
-
-  return error;
+  // auto final_activity =
+  //     100 * (static_cast<float>(ex.activity.back()) / rm->GetNumAgents());
 }
 
 }  // namespace bdm

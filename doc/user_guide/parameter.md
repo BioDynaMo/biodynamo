@@ -161,7 +161,7 @@ your simulation though.
 ```cpp
 auto set_param = [](Param* param) {
   // Create an artificial bound for the simulation space
-  param->bound_space = true;
+  param->bound_space = Param::BoundSpaceMode::kClosed;
   param->min_bound = 0;
   param->max_bound = 250;
 };

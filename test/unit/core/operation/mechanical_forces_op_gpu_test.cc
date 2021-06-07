@@ -62,7 +62,7 @@ class MechanicalForcesOpCpuVerify {
       auto* env = sim->GetEnvironment();
       auto* param = sim->GetParam();
 
-      auto search_radius = env->GetLargestObjectSize();
+      auto search_radius = env->GetLargestAgentSize();
       auto squared_radius_ = search_radius * search_radius;
       InteractionForce force;
       const auto& displacement = agent->CalculateDisplacement(
@@ -84,7 +84,8 @@ class MechanicalForcesOpCpuVerify {
 
       agent->ApplyDisplacement((*displacements_)[ah]);
       if (param->bound_space) {
-        ApplyBoundingBox(agent, param->min_bound, param->max_bound);
+        ApplyBoundingBox(agent, param->bound_space, param->min_bound,
+                         param->max_bound);
       }
     }
   };

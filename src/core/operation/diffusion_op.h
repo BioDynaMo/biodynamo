@@ -44,7 +44,8 @@ struct DiffusionOp : public StandaloneOperationImpl {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
-      if (env->HasGrown() && !param->bound_space) {
+      if (env->HasGrown() &&
+          param->bound_space == Param::BoundSpaceMode::kOpen) {
         dg->Update();
       }
       dg->Diffuse();

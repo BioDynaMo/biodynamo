@@ -231,6 +231,7 @@ function source_thisbdm
 
         set -pgx PATH "$PYENV_ROOT/bin"
 
+        pyenv init --path | source; or return 1
         pyenv init - | source; or return 1
         pyenv shell @pythonvers@; or return 1
 

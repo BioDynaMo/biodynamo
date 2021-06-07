@@ -236,8 +236,10 @@ class UniformGridEnvironment : public Environment {
 
   /// Clears the grid
   void Clear() override {
-    box_length_ = 1;
-    largest_object_size_ = 0;
+    if (!is_custom_box_length_) {
+      box_length_ = 1;
+    }
+    box_length_squared_ = 1;
     num_boxes_axis_ = {{0}};
     num_boxes_xy_ = 0;
     int32_t inf = std::numeric_limits<int32_t>::max();
@@ -262,6 +264,13 @@ class UniformGridEnvironment : public Environment {
     UniformGridEnvironment* grid_ = nullptr;
   };
 
+  void SetBoxLength(int32_t bl) {
+    box_length_ = bl;
+    is_custom_box_length_ = true;
+  }
+
+  int32_t GetBoxLength() { return box_length_; }
+
   /// Updates the grid, as agents may have moved, added or deleted
   void Update() override {
     auto* rm = Simulation::GetActive()->GetResourceManager();
@@ -272,14 +281,20 @@ class UniformGridEnvironment : public Environment {
 
       auto inf = Math::kInfinity;
       std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-      CalcSimDimensionsAndLargestAgent(&tmp_dim, &largest_object_size_);
+      CalcSimDimensionsAndLargestAgent(&tmp_dim);
       RoundOffGridDimensions(tmp_dim);
 
-      auto los = ceil(largest_object_size_);
-      assert(los > 0 &&
-             "The largest object size was found to be 0. Please check if your "
-             "cells are correctly initialized.");
-      box_length_ = los;
+      // If the box_length_ is not set manually, we set it to the largest agent
+      // size
+      if (!is_custom_box_length_) {
+        auto los = ceil(GetLargestAgentSize());
+        assert(
+            los > 0 &&
+            "The largest object size was found to be 0. Please check if your "
+            "cells are correctly initialized.");
+        box_length_ = los;
+      }
+      box_length_squared_ = box_length_ * box_length_;
 
       for (int i = 0; i < 3; i++) {
         int dimension_length =
@@ -328,9 +343,9 @@ class UniformGridEnvironment : public Environment {
       successors_.reserve();
 
       // Assign agents to boxes
-      AssignToBoxesFunctor functor(this);
-      rm->ForEachAgentParallel(1000, functor);
       auto* param = Simulation::GetActive()->GetParam();
+      AssignToBoxesFunctor functor(this);
+      rm->ForEachAgentParallel(param->scheduling_batch_size, functor);
       if (param->bound_space) {
         int min = param->min_bound;
         int max = param->max_bound;
@@ -436,17 +451,27 @@ class UniformGridEnvironment : public Environment {
     }
   }
 
-  /// @brief      Applies the given lambda to each neighbor or the specified
-  ///             agent.
+  /// @brief      Applies the given lambda to each neighbor of the specified
+  ///             agent is within the squared radius (i.e. the criteria)
   ///
   /// In simulation code do not use this function directly. Use the same
-  /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
   ///
-  /// @param[in]  lambda  The operation as a lambda
-  /// @param      query   The query object
+  /// @param[in]  lambda    The operation as a lambda
+  /// @param      query     The query object
+  /// @param      criteria  The squared search radius (type: double*)
   ///
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query) override {
+                       const Agent& query, double squared_radius) override {
+    if (squared_radius > box_length_squared_) {
+      Log::Fatal(
+          "UniformGridEnvironment::ForEachNeighbor",
+          "The requested search radius (", std::sqrt(squared_radius), ")",
+          " of the neighborhood search exceeds the "
+          "box length (",
+          box_length_, "). The resulting neighborhood would be incomplete.");
+    }
+
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -551,14 +576,11 @@ class UniformGridEnvironment : public Environment {
     return GetBoxIndex(box_coord);
   }
 
-  /// Gets the size of the largest object in the grid
-  double GetLargestObjectSize() const override { return largest_object_size_; }
-
-  const std::array<int32_t, 6>& GetDimensions() const override {
+  std::array<int32_t, 6> GetDimensions() const override {
     return grid_dimensions_;
   }
 
-  const std::array<int32_t, 2>& GetDimensionThresholds() const override {
+  std::array<int32_t, 2> GetDimensionThresholds() const override {
     return threshold_dimensions_;
   }
 
@@ -701,10 +723,15 @@ class UniformGridEnvironment : public Environment {
   uint32_t timestamp_ = 0;
   /// Length of a Box
   int32_t box_length_ = 1;
-  /// Stores the number of boxes for each axis
+  /// Length of a Box squared
+  int32_t box_length_squared_ = 1;
+  /// True when the box length was set manually
+  bool is_custom_box_length_ = false;
+  /// Stores the number of Boxes for each axis
   std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_ = 0;
+  /// The total number of boxes in the uniform grid
   uint64_t total_num_boxes_ = 0;
   /// Implements linked list - array index = key, value: next element
   ///
@@ -714,8 +741,6 @@ class UniformGridEnvironment : public Environment {
   AgentVector<AgentHandle> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
-  /// The size of the largest object in the simulation
-  double largest_object_size_ = 0;
   /// Cube which contains all agents
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
   std::array<int32_t, 6> grid_dimensions_;

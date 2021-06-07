@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/diffusion/diffusion_grid.h"
+#include <mutex>
 #include "core/environment/environment.h"
 #include "core/simulation.h"
 
@@ -58,6 +59,7 @@ void DiffusionGrid::Initialize() {
   total_num_boxes_ = resolution_ * resolution_ * resolution_;
 
   // Allocate memory for the concentration and gradient arrays
+  locks_.resize(total_num_boxes_);
   c1_.resize(total_num_boxes_);
   c2_.resize(total_num_boxes_);
   gradients_.resize(total_num_boxes_);
@@ -277,6 +279,7 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
                "the diffusion grid! The change was ignored.");
     return;
   }
+  std::lock_guard<Spinlock> guard(locks_[idx]);
   c1_[idx] += amount;
   if (c1_[idx] > concentration_threshold_) {
     c1_[idx] = concentration_threshold_;
@@ -285,7 +288,9 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
 
 /// Get the concentration at specified position
 double DiffusionGrid::GetConcentration(const Double3& position) const {
-  return c1_[GetBoxIndex(position)];
+  auto idx = GetBoxIndex(position);
+  std::lock_guard<Spinlock> guard(locks_[idx]);
+  return c1_[idx];
 }
 
 /// Get the (normalized) gradient at specified position

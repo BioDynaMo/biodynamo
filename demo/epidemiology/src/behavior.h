@@ -16,26 +16,11 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-struct CheckSurrounding : public Functor<void, Agent*, double> {
-  Person* self_;
-
-  CheckSurrounding(Person* self) : self_(self) {}
-
-  // This function operator will be called for every other person within
-  // `infection_radius`
-  void operator()(Agent* neighbor, double squared_distance) override {
-    auto* other = bdm_static_cast<const Person*>(neighbor);
-    if (other->state_ == State::kInfected) {
-      self_->state_ = State::kInfected;
-    }
-  }
-};
-
-// -----------------------------------------------------------------------------
 struct Infection : public Behavior {
   BDM_BEHAVIOR_HEADER(Infection, Behavior, 1);
 
   Infection() {}
+  virtual ~Infection() {}
 
   void Run(Agent* a) override {
     auto* sim = Simulation::GetActive();
@@ -47,8 +32,15 @@ struct Infection : public Behavior {
     if (person->state_ == kSusceptible &&
         random->Uniform(0, 1) <= sparam->infection_probablity) {
       auto* ctxt = sim->GetExecutionContext();
-      CheckSurrounding check(person);
-      ctxt->ForEachNeighbor(check, *person, sparam->infection_radius);
+      auto check_surrounding =
+          L2F([&](Agent* neighbor, double squared_distance) {
+            auto* other = bdm_static_cast<const Person*>(neighbor);
+            if (other->state_ == State::kInfected) {
+              person->state_ = State::kInfected;
+            }
+          });
+      ctxt->ForEachNeighbor(check_surrounding, *person,
+                            sparam->infection_radius);
     }
   }
 };
@@ -58,6 +50,7 @@ struct Recovery : public Behavior {
   BDM_BEHAVIOR_HEADER(Recovery, Behavior, 1);
 
   Recovery() {}
+  virtual ~Recovery() {}
 
   void Run(Agent* a) override {
     auto* person = bdm_static_cast<Person*>(a);
@@ -77,20 +70,16 @@ struct RandomMovement : public Behavior {
   BDM_BEHAVIOR_HEADER(RandomMovement, Behavior, 1);
 
   RandomMovement() {}
+  virtual ~RandomMovement() {}
 
   void Run(Agent* agent) override {
     auto* sim = Simulation::GetActive();
     auto* random = sim->GetRandom();
-    auto* param = sim->GetParam();
-    auto* sparam = param->Get<SimParam>();
+    auto* sparam = sim->GetParam()->Get<SimParam>();
 
     const auto& position = agent->GetPosition();
     auto rand_movement = random->UniformArray<3>(-1, 1).Normalize();
     auto new_pos = position + rand_movement * sparam->agent_speed;
-    for (auto& el : new_pos) {
-      el = std::fmod(el, param->max_bound);
-      el = el < 0 ? param->max_bound + el : el;
-    }
     agent->SetPosition(new_pos);
   }
 };

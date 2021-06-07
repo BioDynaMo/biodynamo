@@ -18,26 +18,43 @@
 #include <array>
 #include <vector>
 
-#define BDM_CACHE_LINE_SIZE 64
+/// This is BioDynaMo's default cachline size. If you system has a different
+/// cacheline size, consider changing the value accordingly. When BioDynaMo
+/// moves to the C++17 standard, this choice will be automated. See :
+/// en.cppreference.com/w/cpp/thread/hardware_destructive_interference_size
+#define BDM_CACHE_LINE_SIZE 64u
 
 namespace bdm {
 
-// This class avoids false sharing between threads
+/// The SharedData class avoids false sharing between threads.
 template <typename T>
 class SharedData {
  public:
-  using Data = std::vector<std::array<T, BDM_CACHE_LINE_SIZE / sizeof(T)>>;
+  /// Wrapper for a chacheline-size aligned T.
+  struct alignas(BDM_CACHE_LINE_SIZE) AlignedT {
+    T data;
+  };
+
+  /// Data type definition for a vector whose entries fill full cache lines.
+  /// A vector whose components' sizes are a multiple of the cachline size,
+  /// e.g sizeof(Data[i]) = N*BDM_CACHE_LINE_SIZE.
+  using Data = std::vector<AlignedT>;
+
   SharedData() {}
   SharedData(size_t size, const T& value = T()) {
     data_.resize(size);
-    for (auto& arr : data_) {
-      arr[0] = value;
+    for (auto& info : data_) {
+      info.data = value;
     }
   }
-  T& operator[](size_t index) { return data_[index][0]; }
-  const T& operator[](size_t index) const { return data_[index][0]; }
+  T& operator[](size_t index) { return data_[index].data; }
+  const T& operator[](size_t index) const { return data_[index].data; }
+
+  /// Get the size of the SharedData.data_ vector.
   size_t size() const { return data_.size(); }  // NOLINT
-  void resize(size_t new_size) {                // NOTLINT
+
+  /// Resize the SharedData.data_ vector
+  void resize(size_t new_size) {  // NOTLINT
     data_.resize(new_size);
   }
 
@@ -52,8 +69,8 @@ class SharedData {
       return index == other.index && data == other.data;
     }
     bool operator!=(const Iterator& other) { return !operator==(other); }
-    T& operator*() { return (*data)[index][0]; }
-    const T& operator*() const { return (*data)[index][0]; }
+    T& operator*() { return (*data)[index].data; }
+    const T& operator*() const { return (*data)[index].data; }
   };
 
   Iterator begin() { return Iterator{0, &data_}; }

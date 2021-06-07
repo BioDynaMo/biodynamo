@@ -17,7 +17,6 @@
 #include "core/multi_simulation/algorithm/algorithm.h"
 #include "core/multi_simulation/algorithm/algorithm_registry.h"
 #include "core/multi_simulation/dynamic_loop.h"
-#include "core/multi_simulation/result_data.h"
 #include "core/multi_simulation/optimization_param.h"
 #include "core/multi_simulation/util.h"
 #include "core/simulation.h"

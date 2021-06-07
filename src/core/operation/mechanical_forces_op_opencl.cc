@@ -27,12 +27,12 @@
 #include <CL/cl2.hpp>
 #endif
 
-#include "core/operation/mechanical_forces_op_opencl.h"
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/gpu/opencl_state.h"
 #include "core/operation/bound_space_op.h"
+#include "core/operation/mechanical_forces_op_opencl.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
 #include "core/shape.h"
@@ -91,7 +91,7 @@ void MechanicalForcesOpOpenCL::operator()() {
   std::vector<cl_uint> successors(num_objects);
   std::array<cl_uint, 3> num_boxes_axis;
   cl_double squared_radius =
-      grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
+      grid->GetLargestAgentSize() * grid->GetLargestAgentSize();
 
   bool is_non_spherical_object = false;
 
@@ -227,7 +227,8 @@ void MechanicalForcesOpOpenCL::operator()() {
     new_pos[2] = cell_movements[idx][2];
     cell->UpdatePosition(new_pos);
     if (param->bound_space) {
-      ApplyBoundingBox(agent, param->min_bound, param->max_bound);
+      ApplyBoundingBox(agent, param->bound_space, param->min_bound,
+                       param->max_bound);
     }
   });
 }

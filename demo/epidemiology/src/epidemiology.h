@@ -12,6 +12,7 @@
 
 #include "analytical-solution.h"
 #include "behavior.h"
+#include "core/environment/uniform_grid_environment.h"
 #include "evaluate.h"
 #include "person.h"
 #include "sim-param.h"
@@ -19,7 +20,7 @@
 namespace bdm {
 
 // This is the main simulation function
-inline int Simulate(int argc, const char** argv, ResultData* result,
+inline int Simulate(int argc, const char** argv, TimeSeries* result,
                     Param* final_params = nullptr) {
   // Overwrite the parameters in the config file with the value from
   // the command line options
@@ -42,6 +43,7 @@ inline int Simulate(int argc, const char** argv, ResultData* result,
   auto* param = sim.GetParam();
   auto* sparam = param->Get<SimParam>();
   auto* random = sim.GetRandom();
+  auto* env = dynamic_cast<UniformGridEnvironment*>(sim.GetEnvironment());
 
   auto state = State::kSusceptible;
   // Lambda that creates a new person at specific position in space
@@ -72,21 +74,14 @@ inline int Simulate(int argc, const char** argv, ResultData* result,
                                        sparam->initial_population_infected,
                                        person_creator);
 
-  // workaround for bug -> ignore
-  auto* cell = new Person();
-  cell->SetDiameter(sparam->infection_radius);
-  sim.GetResourceManager()->AddAgent(cell);
-  // end of workaround
+  SetupResultCollection(&sim);
+
+  // Set the box length to the infection radius
+  env->SetBoxLength(sparam->infection_radius);
 
   // Now we finished defining the initial simulation state.
 
-  // Setup counting operation
-  auto* count_op = NewOperation("ReductionOpDouble4");
-  auto* count_op_impl = count_op->GetImplementation<ReductionOp<Double4>>();
-  count_op_impl->Initialize(new CountSIR(), new CalcRates());
   auto* scheduler = sim.GetScheduler();
-  scheduler->ScheduleOp(count_op);
-
   scheduler->UnscheduleOp(scheduler->GetOps("mechanical forces")[0]);
 
   // Simulate for SimParam::number_of_iterations steps
@@ -94,7 +89,8 @@ inline int Simulate(int argc, const char** argv, ResultData* result,
     Timing timer("RUNTIME");
     scheduler->Simulate(sparam->number_of_iterations);
   }
-  TransferResult(result, count_op_impl->GetResults());
+  // move time series data from simulation to result
+  *result = std::move(*sim.GetTimeSeries());
 
   return 0;
 }

@@ -34,6 +34,7 @@
 #include "core/agent/agent_uid_generator.h"
 #include "core/container/agent_uid_map.h"
 #include "core/diffusion/diffusion_grid.h"
+#include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/simulation.h"
 #include "core/type_index.h"
@@ -54,19 +55,7 @@ class ResourceManager {
 
   ResourceManager();
 
-  virtual ~ResourceManager() {
-    for (auto& el : diffusion_grids_) {
-      delete el.second;
-    }
-    for (auto& numa_agents : agents_) {
-      for (auto* agent : numa_agents) {
-        delete agent;
-      }
-    }
-    if (type_index_) {
-      delete type_index_;
-    }
-  }
+  virtual ~ResourceManager();
 
   ResourceManager& operator=(ResourceManager&& other) {
     if (agents_.size() != other.agents_.size()) {
@@ -201,46 +190,61 @@ class ResourceManager {
     }
   }
 
-  /// Apply a function on all elements in every container
-  /// @param function that will be called with each container as a parameter
+  /// Call a function for all or a subset of agents in the simulation.
+  /// @param function that will be called for each agent
+  /// @param filter if specified, `function` will only be called for agents
+  ///               for which `filter(agent)` evaluates to true.
   ///
-  ///     rm->ForEachAgent([](Agent* element) {
-  ///                              std::cout << *element << std::endl;
+  ///     rm->ForEachAgent([](Agent* a) {
+  ///                              std::cout << a->GetUid() << std::endl;
   ///                          });
-  virtual void ForEachAgent(const std::function<void(Agent*)>& function) {
+  virtual void ForEachAgent(const std::function<void(Agent*)>& function,
+                            Functor<bool, Agent*>* filter = nullptr) {
     for (auto& numa_agents : agents_) {
       for (auto* agent : numa_agents) {
-        function(agent);
+        if (!filter || (filter && (*filter)(agent))) {
+          function(agent);
+        }
       }
     }
   }
 
   virtual void ForEachAgent(
-      const std::function<void(Agent*, AgentHandle)>& function) {
+      const std::function<void(Agent*, AgentHandle)>& function,
+      Functor<bool, Agent*>* filter = nullptr) {
     for (uint64_t n = 0; n < agents_.size(); ++n) {
       auto& numa_agents = agents_[n];
       for (uint64_t i = 0; i < numa_agents.size(); ++i) {
-        function(numa_agents[i], AgentHandle(n, i));
+        auto* a = numa_agents[i];
+        if (!filter || (filter && (*filter)(a))) {
+          function(a, AgentHandle(n, i));
+        }
       }
     }
   }
 
-  /// Apply a function on all elements.\n
+  /// Call a function for all or a subset of agents in the simulation.
+  /// @param function that will be called for each agent
+  /// @param filter if specified, `function` will only be called for agents
+  ///               for which `filter(agent)` evaluates to true.
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
   /// \see ForEachAgent
-  virtual void ForEachAgentParallel(Functor<void, Agent*>& function);
+  virtual void ForEachAgentParallel(Functor<void, Agent*>& function,
+                                    Functor<bool, Agent*>* filter = nullptr);
 
-  /// Apply an operation on all elements.\n
+  /// Call an operation for all or a subset of agents in the simulation.
   /// Function invocations are parallelized.\n
   /// Uses static scheduling.
   /// \see ForEachAgent
-  virtual void ForEachAgentParallel(Operation& op);
+  virtual void ForEachAgentParallel(Operation& op,
+                                    Functor<bool, Agent*>* filter = nullptr);
 
   virtual void ForEachAgentParallel(
-      Functor<void, Agent*, AgentHandle>& function);
+      Functor<void, Agent*, AgentHandle>& function,
+      Functor<bool, Agent*>* filter = nullptr);
 
-  /// Apply a function on all elements.\n
+  /// Call a function for all or a subset of agents in the simulation.
   /// Function invocations are parallelized.\n
   /// Uses dynamic scheduling and work stealing. Batch size controlled by
   /// `chunk`.
@@ -248,7 +252,8 @@ class ResourceManager {
   /// size)
   /// \see ForEachAgent
   virtual void ForEachAgentParallel(
-      uint64_t chunk, Functor<void, Agent*, AgentHandle>& function);
+      uint64_t chunk, Functor<void, Agent*, AgentHandle>& function,
+      Functor<bool, Agent*>* filter = nullptr);
 
   /// Reserves enough memory to hold `capacity` number of agents for
   /// each numa domain.
@@ -334,7 +339,7 @@ class ResourceManager {
     }
   }
 
-  void EndOfIteration() {
+  virtual void EndOfIteration() {
     // Check if SoUiD defragmentation should be turned on or off
     double utilization = static_cast<double>(GetNumAgents()) /
                          static_cast<double>(uid_ah_map_.size());

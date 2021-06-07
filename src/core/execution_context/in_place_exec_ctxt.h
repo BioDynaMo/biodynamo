@@ -31,6 +31,10 @@
 
 namespace bdm {
 
+namespace in_place_exec_ctxt_detail {
+class InPlaceExecutionContext_NeighborCacheValidity_Test;
+}
+
 class Agent;
 
 /// This execution context updates agents in place. \n
@@ -77,26 +81,33 @@ class InPlaceExecutionContext {
   /// This function is not thread-safe.
   /// NB: Invalidates references and pointers to agents.
   void SetupIterationAll(
-      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts);
 
   /// This function is called at the end of each iteration to tear down all
   /// execution contexts.
   /// This function is not thread-safe. \n
   /// NB: Invalidates references and pointers to agents.
   void TearDownIterationAll(
-      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts);
 
   /// Execute a series of operations on an agent in the order given
   /// in the argument
   void Execute(Agent* agent, const std::vector<Operation*>& operations);
 
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query);
+  /// Applies the lambda `lambda` for each neighbor of the given `query`
+  /// agent within the given `criteria`. Does not support caching.
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria);
 
-  /// calls lambdas with agents that are within sqrt(squared_radius)
-  /// from query
+  /// Applies the lambda `lambda` for each neighbor of the given `query`
+  /// agent within the given search radius `squared_radius`
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query, double squared_radius);
+
+  /// Check whether or not the neighbors in `neighbor_cache_` were queried with
+  /// the same squared radius (`cached_squared_search_radius_`) as currently
+  /// being queried with (`query_squared_radius_`)
+  bool IsNeighborCacheValid(double query_squared_radius);
 
   void AddAgent(Agent* new_agent);
 
@@ -107,6 +118,9 @@ class InPlaceExecutionContext {
   const Agent* GetConstAgent(const AgentUid& uid);
 
  private:
+  friend class Environment;
+  friend class in_place_exec_ctxt_detail::
+      InPlaceExecutionContext_NeighborCacheValidity_Test;
   /// Lookup table AgentUid -> AgentPointer for new created agents
   std::shared_ptr<ThreadSafeAgentUidMap> new_agent_map_;
 
@@ -126,6 +140,10 @@ class InPlaceExecutionContext {
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
   std::vector<std::pair<Agent*, double>> neighbor_cache_;
+  /// The radius that was used to cache neighbors in `neighbor_cache_`
+  double cached_squared_search_radius_ = 0.0;
+  /// Cache the value of Param::cache_neighbors
+  bool cache_neighbors_ = false;
 };
 
 }  // namespace bdm

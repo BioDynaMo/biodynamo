@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/param/param.h"
 #include "core/util/timing_aggregator.h"
@@ -48,7 +49,27 @@ class Scheduler {
 
   virtual ~Scheduler();
 
+  /// Simulate `steps` number of iterations.
   void Simulate(uint64_t steps);
+
+  /// Simulate until `exit_condition` evaluates to true. \n
+  /// The condition will be tested at the beginning of an iteration.\n
+  /// e.g. simulate until there are 1000 agents in the simulation
+  ///
+  ///     scheduler->SimulateUntil([](){
+  ///        auto* rm = Simulation::GetActive()->GetResourceManager();
+  ///        return rm->GetNumAgents() >= 1000;
+  ///     });
+  ///
+  /// NB: Automated backups and restores are not yet supported
+  /// if the simulation uses this simulate function. TODO(lukas)
+  void SimulateUntil(const std::function<bool()>& exit_condition);
+
+  /// Finalize simulation initialization or manual changes between
+  /// `Simulate` calls.\n
+  /// All `Simulate` calls do this automatically, but sometimes
+  /// it is useful to do it manually (e.g.for tutorials).
+  void FinalizeInitialization();
 
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
@@ -65,6 +86,11 @@ class Scheduler {
   /// If the name is in the list of proected ops, this
   /// function returns an empty vector.
   std::vector<Operation*> GetOps(const std::string& name);
+
+  /// Agent operations are executed for each filter in agent_filters_.\n
+  /// By default no filter is specified which means that all
+  /// agent operations will be executed for each agents in the simulation.
+  void SetAgentFilters(const std::vector<Functor<bool, Agent*>*>& filters);
 
   RootAdaptor* GetRootVisualization() { return root_visualization_; }
 
@@ -109,6 +135,11 @@ class Scheduler {
   std::vector<Operation*> post_scheduled_ops_;
   /// Tracks operations' execution times
   TimingAggregator op_times_;
+
+  /// Agent operations are executed for each filter in agent_filters_.\n
+  /// By default no filter is specified which means that all
+  /// agent operations will be executed for each agents in the simulation.
+  std::vector<Functor<bool, Agent*>*> agent_filters_;  //!
 
   /// Backup the simulation. Backup interval based on `Param::backup_interval`
   void Backup();
@@ -163,6 +194,8 @@ class Scheduler {
 
   // Run the operations in pre_scheduled_ops_ (executed before RunScheduledOps)
   void RunPreScheduledOps();
+
+  void RunAgentOps(Functor<bool, Agent*>* filter);
 
   // Run the operations in post_scheduled_ops_ (executed after RunScheduledOps)
   void RunPostScheduledOps();

@@ -20,7 +20,6 @@
 #include <functional>
 #include <string>
 
-#include "core/multi_simulation/result_data.h"
 #include "core/param/param.h"
 #include "core/analysis/time_series.h"
 
@@ -29,7 +28,7 @@ namespace bdm {
 using experimental::TimeSeries;
 
 // Signature of the Simulate() call
-using TSimulate = std::function<int(int, const char**, TimeSeries*, Param*)>;
+using TSimulate = std::function<void(int, const char**, TimeSeries*, Param*)>;
 
 class MultiSimulation {
  public:

@@ -227,7 +227,8 @@ void UpdateCPUResults::operator()(Agent* agent, AgentHandle ah) {
                      cell_movements[idx + 2]};
   cell->UpdatePosition(new_pos);
   if (param->bound_space) {
-    ApplyBoundingBox(agent, param->min_bound, param->max_bound);
+    ApplyBoundingBox(agent, param->bound_space, param->min_bound,
+                     param->max_bound);
   }
 }
 
@@ -317,7 +318,7 @@ void MechanicalForcesOpCuda::operator()() {
   }
 
   double squared_radius =
-      grid->GetLargestObjectSize() * grid->GetLargestObjectSize();
+      grid->GetLargestAgentSize() * grid->GetLargestAgentSize();
 
   // Timing timer("MechanicalForcesOpCuda::Kernel");
   cdo_->LaunchMechanicalForcesKernel(

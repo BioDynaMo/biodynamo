@@ -42,7 +42,7 @@ enum Substances { kSubstance };
 We bound our space to keep things simple.
 
 ```cpp
-param->bound_space = true;
+param->bound_space = kClosed;
 param->min_bound = -100;
 param->max_bound = 100;
 ```

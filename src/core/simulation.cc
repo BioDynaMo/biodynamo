@@ -28,8 +28,12 @@
 #include <utility>
 #include <vector>
 
+#include "bdm_version.h"
 #include "core/agent/agent_uid_generator.h"
+#include "core/analysis/time_series.h"
 #include "core/environment/environment.h"
+#include "core/environment/kd_tree_environment.h"
+#include "core/environment/octree_environment.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/gpu/gpu_helper.h"
@@ -45,7 +49,6 @@
 #include "core/util/timing.h"
 #include "core/visualization/root/adaptor.h"
 #include "memory_usage.h"
-#include "version.h"
 
 #include <TEnv.h>
 
@@ -122,6 +125,8 @@ void Simulation::Restore(Simulation&& restored) {
   restored.param_ = nullptr;
   *rm_ = std::move(*restored.rm_);
   restored.rm_ = nullptr;
+
+  *time_series_ = std::move(*restored.time_series_);
 
   // name_ and unique_name_
   InitializeUniqueName(restored.name_);
@@ -242,6 +247,9 @@ Simulation::~Simulation() {
     delete mem_mgr_;
   }
   delete ocl_state_;
+  if (time_series_) {
+    delete time_series_;
+  }
   active_ = tmp;
 }
 
@@ -291,6 +299,8 @@ const std::string& Simulation::GetUniqueName() const { return unique_name_; }
 /// Returns the path to the simulation's output directory
 const std::string& Simulation::GetOutputDir() const { return output_dir_; }
 
+experimental::TimeSeries* Simulation::GetTimeSeries() { return time_series_; }
+
 void Simulation::ReplaceScheduler(Scheduler* scheduler) {
   delete scheduler_;
   scheduler_ = scheduler;
@@ -337,8 +347,28 @@ void Simulation::InitializeMembers() {
     exec_ctxt_[i] = new InPlaceExecutionContext(map);
   }
   rm_ = new ResourceManager();
-  environment_ = new UniformGridEnvironment();
+
+  // Set the specified neighborhood search method
+  if (param_->environment == "kd_tree") {
+    environment_ = new KDTreeEnvironment();
+  } else if (param_->environment == "octree") {
+    environment_ = new OctreeEnvironment();
+  } else if (param_->environment == "uniform_grid") {
+    environment_ = new UniformGridEnvironment();
+  } else {
+    Log::Error("Simulation::Initialize", "No such neighboring method '",
+               param_->environment, "'. Defaulting to 'uniform_grid'");
+    environment_ = new UniformGridEnvironment();
+  }
   scheduler_ = new Scheduler();
+  time_series_ = new experimental::TimeSeries();
+}
+
+void Simulation::SetEnvironment(Environment* env) {
+  if (environment_ != nullptr) {
+    delete environment_;
+  }
+  environment_ = env;
 }
 
 void Simulation::InitializeRuntimeParams(
