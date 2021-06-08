@@ -25,20 +25,20 @@ struct OptimizationParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(OptimizationParam, 1);
 
   OptimizationParam(const OptimizationParam& other) {
-    this->params_.resize(other.params_.size());
+    this->params.resize(other.params.size());
     int i = 0;
-    for (auto* param : other.params_) {
-      this->params_[i] = param->GetCopy();
+    for (auto* param : other.params) {
+      this->params[i] = param->GetCopy();
       i++;
     }
-    this->algorithm_ = other.algorithm_;
-    this->repetition_ = other.repetition_;
+    this->algorithm = other.algorithm;
+    this->repetition = other.repetition;
   }
 
-  std::string algorithm_;
-  std::vector<Container*> params_;
+  std::string algorithm;
+  std::vector<Container*> params;
   // Number of times to repeat an experiment
-  int repetition_ = 1;
+  int repetition = 1;
 };
 
 }  // namespace bdm

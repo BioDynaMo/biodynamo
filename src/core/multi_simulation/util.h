@@ -143,7 +143,7 @@ struct LogRange : public Container {
   LogRange(const std::string& n, double base, double min, double max,
            double stride)
       : Container(n),
-        base_(base),
+        base(base),
         lower_bound(min),
         upper_bound(max),
         stride(stride) {
@@ -163,8 +163,8 @@ struct LogRange : public Container {
   // Get the nth value
   double GetValue(int n) const override {
     double exp = lower_bound + n * stride;
-    return exp > upper_bound ? std::pow(base_, upper_bound)
-                             : std::pow(base_, exp);
+    return exp > upper_bound ? std::pow(base, upper_bound)
+                             : std::pow(base, exp);
   }
 
   // Returns the number of discrete values that this range contains (including
@@ -174,7 +174,7 @@ struct LogRange : public Container {
   }
 
   // The base value
-  double base_ = 10;
+  double base = 10;
   // The minimum value
   double lower_bound = 0;
   // THe maximum value
@@ -187,17 +187,17 @@ struct LogRange : public Container {
 struct Set : public Container {
   Set() {}
   Set(const std::string& n, const std::vector<double> v)
-      : Container(n), values_(v) {}
+      : Container(n), values(v) {}
 
   Container* GetCopy() const override { return new Set(*this); }
 
-  size_t size() const { return values_.size(); }
-  double at(size_t n) const { return values_.at(n); }
+  size_t size() const { return values.size(); }
+  double at(size_t n) const { return values.at(n); }
 
   int GetNumElements() const override { return this->size(); }
   double GetValue(int n) const override { return this->at(n); }
 
-  std::vector<double> values_;
+  std::vector<double> values;
   BDM_CLASS_DEF_OVERRIDE(Set, 1);
 };
 

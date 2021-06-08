@@ -6,7 +6,7 @@
     }
   },
   "bdm::OptimizationParam": {
-    "algorithm_" : "ParameterSweep",
+    "algorithm" : "ParameterSweep",
     "opt_params_" : [
       {
         "_typename": "bdm::Range",

@@ -138,59 +138,33 @@ inline void Simulate(int argc, const char** argv, TimeSeries* result,
                                      sparam->apd_amount, Axis::kZAxis));
 
   //////////////////////////////////////////////////////////////////////////////
-  // Schedule operation to obtain results of interest over time
+  // Collect results of interest
   //////////////////////////////////////////////////////////////////////////////
-  struct CheckActivity : public Functor<void, Agent*, int*> {
-    void operator()(Agent* agent, int* tl_result) {
-      if (auto* tcell = dynamic_cast<TCell*>(agent)) {
-        if (tcell->IsActivated()) {
-          (*tl_result)++;
-        }
+  auto* ts = simulation.GetTimeSeries();
+  auto activated = [](Simulation* sim) {
+    auto condition = L2F([](Agent* a) {
+      if (auto tcell = dynamic_cast<TCell*>(a)) {
+        return tcell->IsActivated();
       }
-    }
+      return false;
+    });
+    auto result = static_cast<double>(bdm::experimental::Count(sim, condition));
+    auto num_agents = sim->GetResourceManager()->GetNumAgents();
+    return result / static_cast<double>(num_agents);
   };
-
-  auto* scheduler = simulation.GetScheduler();
-  auto* op = NewOperation("ReductionOpInt");
-  auto* op_impl = op->GetImplementation<ReductionOp<int>>();
-  op_impl->Initialize(new CheckActivity(), new SumReduction<int>());
-  scheduler->ScheduleOp(op);
+  ts->AddCollector("activated", activated);
 
   //////////////////////////////////////////////////////////////////////////////
   // Run the simulation
   //////////////////////////////////////////////////////////////////////////////
-  scheduler->Simulate(sparam->timesteps);
+  simulation.Simulate(sparam->timesteps);
 
-  // Collect histograms
-  TH2I* merged_histo = nullptr;
-  auto* rm = simulation.GetResourceManager();
-  bool init = true;
-  rm->ForEachAgent([&](Agent* agent, AgentHandle ah) {
-    if (auto* tcell = dynamic_cast<TCell*>(agent)) {
-      if (init) {
-        merged_histo = tcell->GetActivationHistogram();
-        init = false;
-      }
-      merged_histo->Add(tcell->GetActivationHistogram());
-    }
-  });
+  std::cout << "Finished simulation" << std::endl;
 
   //////////////////////////////////////////////////////////////////////////////
-  // Write my simulation results to file
+  // Return simulation results
   //////////////////////////////////////////////////////////////////////////////
-  std::string name = "binding_cells";
-  std::string brief = "Effect of Anti-PD-1 Concentration on T-Cell Activation";
-  // MyResults ex(name, brief);
-  // ex.initial_concentration = sparam->apd_amount;
-  // ex.activation_intensity = *merged_histo;
-  // ex.activity = op_impl->GetResults();
-  // ex.WriteResultToROOT();
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Compute error for optimization feedback
-  //////////////////////////////////////////////////////////////////////////////
-  // auto final_activity =
-  //     100 * (static_cast<float>(ex.activity.back()) / rm->GetNumAgents());
+  *result = *simulation.GetTimeSeries();
 }
 
 }  // namespace bdm

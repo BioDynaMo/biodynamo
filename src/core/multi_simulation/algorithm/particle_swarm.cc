@@ -31,11 +31,10 @@ struct ParticleSwarm : public Algorithm {
   void operator()(
       const std::function<void(Param*, TimeSeries*)>& dispatch_to_worker,
       Param* default_params) override {
-    Param new_param = *default_params;
-    OptimizationParam* opt_params = new_param.Get<OptimizationParam>();
+    OptimizationParam* opt_params = default_params->Get<OptimizationParam>();
 
     // The number of times to run an experiment
-    int repetition = opt_params->repetition_;
+    int repetition = opt_params->repetition;
 
     // Initial values and the bounds of the free parameters that we want to
     // optimize
@@ -43,7 +42,14 @@ struct ParticleSwarm : public Algorithm {
     std::vector<double> init_vals;
     std::vector<double> lower_bounds;
     std::vector<double> upper_bounds;
-    for (auto* el : opt_params->params_) {
+
+    if (opt_params->params.empty()) {
+      Log::Fatal("ParticleSwarm::operator()",
+                 "No optimization parameters were selected. Please check your "
+                 "parameter configuration.");
+    }
+
+    for (auto* el : opt_params->params) {
       auto* opt_param = dynamic_cast<ParticleSwarmParam*>(el);
       if (!opt_param) {
         Log::Error(
@@ -64,17 +70,22 @@ struct ParticleSwarm : public Algorithm {
     settings.upper_bounds = arma::vec(upper_bounds);
 
     // The fitting function (i.e. calling a simulation with a paramset)
-    auto fit = [&](const arma::vec& free_params, arma::vec* grad_out,
+    auto fit = [=](const arma::vec& free_params, arma::vec* grad_out,
                    void* opt_data) {
+      Param new_param = *default_params;
+
       // Merge the free param values into the Param object that will be sent to
       // the worker
       json j_patch;
       int i = 0;
-      for (auto* opt_param : opt_params->params_) {
+      for (auto* opt_param : opt_params->params) {
         j_patch[opt_param->GetGroupName()][opt_param->GetParamName()] =
             free_params[i];
         i++;
       }
+
+      std::cout << j_patch << std::endl;
+
       new_param.MergeJsonPatch(j_patch.dump());
 
       double mse = Experiment(dispatch_to_worker, &new_param, repetition);

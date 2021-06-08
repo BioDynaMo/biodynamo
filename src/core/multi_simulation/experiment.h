@@ -18,15 +18,14 @@
 #include <functional>
 #include <vector>
 
-#include "core/param/param.h"
 #include "core/analysis/time_series.h"
+#include "core/param/param.h"
 
 namespace bdm {
 
 inline double Experiment(
     const std::function<void(Param*, TimeSeries*)>& dispatch_to_worker,
     Param* param, size_t iterations) {
-
   // Run the simulation with the input parameters for N iterations
   std::vector<TimeSeries> results(iterations);
   for (size_t i = 0; i < iterations; i++) {
@@ -35,7 +34,12 @@ inline double Experiment(
 
   // Compute the mean result values of the N iterations
   TimeSeries simulated;
-  // CalcMean(results, &simulated);
+  TimeSeries::Merge(&simulated, results,
+                    [](const std::vector<double> all_y_values, double* y,
+                       double* eh, double* el) {
+                      *y =
+                          TMath::Mean(all_y_values.begin(), all_y_values.end());
+                    });
 
   // Extract analytical / experimental values from the database
   // TODO

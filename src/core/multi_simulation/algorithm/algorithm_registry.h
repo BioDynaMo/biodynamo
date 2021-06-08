@@ -68,11 +68,11 @@ struct AlgorithmRegistry {
 // Get Optimization Algorithm from registry
 inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params) {
   // Check if the parameters are initialized correctly
-  for (auto param : opt_params->params_) {
+  for (auto param : opt_params->params) {
     param->Validate();
   }
   auto ret =
-      AlgorithmRegistry::GetInstance()->GetAlgorithm(opt_params->algorithm_);
+      AlgorithmRegistry::GetInstance()->GetAlgorithm(opt_params->algorithm);
   if (ret == nullptr) {
     return ret;
   }
