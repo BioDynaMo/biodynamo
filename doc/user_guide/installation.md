@@ -41,6 +41,8 @@ By default the installation directory is set to `$HOME/biodynamo-vX.Y.Z`, where 
 *  CentOS 7
 *  macOS 10.15 and macOS 11.1
 
+Currently, we do **not** support Windows or Windows subsystem for Linux.
+
 <br/>
 <a class="sbox" href= "/docs/devguide/build/" target="_blank" rel="noopener">
     <div class="sbox-content">
