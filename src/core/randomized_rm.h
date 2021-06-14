@@ -17,6 +17,9 @@
 
 #include <algorithm>
 #include "core/resource_manager.h"
+#ifdef LINUX
+#include <parallel/algorithm>
+#endif  // LINUX
 
 namespace bdm {
 
@@ -61,12 +64,16 @@ void RandomizedRm<TBaseRm>::EndOfIteration() {
   // shuffle
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t n = 0; n < this->agents_.size(); ++n) {
-    // TODO(all) parallelize shuffling
-    // see for example: https://arxiv.org/abs/1508.03167
+#ifdef LINUX
+    __gnu_parallel::random_shuffle(this->agents_[n].begin(),
+                                   this->agents_[n].end());
+#else
     auto* random = Simulation::GetActive()->GetRandom();
     std::shuffle(this->agents_[n].begin(), this->agents_[n].end(),
                  Ubrng(random));
+#endif  // LINUX
   }
+
   // update uid_ah_map_
   auto update_agent_map = L2F([this](Agent* a, AgentHandle ah) {
     this->uid_ah_map_.Insert(a->GetUid(), ah);
