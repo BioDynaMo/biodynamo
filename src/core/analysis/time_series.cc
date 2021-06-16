@@ -14,11 +14,15 @@
 
 #include "core/analysis/time_series.h"
 #include <TBufferJSON.h>
+
 #include <iostream>
+#include <limits>
+
 #include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
+#include "core/util/math.h"
 
 namespace bdm {
 namespace experimental {
@@ -26,6 +30,55 @@ namespace experimental {
 // -----------------------------------------------------------------------------
 void TimeSeries::Load(const std::string& full_filepath, TimeSeries** restored) {
   GetPersistentObject(full_filepath.c_str(), "TimeSeries", *restored);
+}
+
+// -----------------------------------------------------------------------------
+double TimeSeries::ComputeError(const TimeSeries& ts1, const TimeSeries& ts2) {
+  // verify that all TimeSeries contain the same entries
+  if (ts1.data_.size() != ts2.data_.size()) {
+    Log::Warning("TimeSeries::Merge",
+                 "The time series objects that should be merged do not "
+                 "contain the same entries. Operation aborted.");
+    return std::numeric_limits<double>::infinity();
+  }
+  for (auto& p : ts1.data_) {
+    if (ts2.data_.find(p.first) == ts2.data_.end()) {
+      Log::Warning("TimeSeries::Merge",
+                   "The time series objects that should be merged do not "
+                   "contain the same entries. Operation aborted");
+      return std::numeric_limits<double>::infinity();
+    }
+  }
+
+  for (auto& pair : ts1.data_) {
+    auto& key = pair.first;
+    // check that all time series objects have the same x values
+    auto& xref = ts1.data_.at(key).x_values;
+    auto& xcurrent = ts2.data_.at(key).x_values;
+    if (xref.size() != xcurrent.size()) {
+      Log::Warning("TimeSeries::Merge", "The time series objects for entry (",
+                   key, ") have different x_values. Operation aborted.");
+      return std::numeric_limits<double>::infinity();
+    } else {
+      for (uint64_t j = 0; j < xref.size(); ++j) {
+        if (std::abs(xref[j] - xcurrent[j]) > 1e-5) {
+          Log::Warning("TimeSeries::Merge",
+                       "The time series objects for entry (", key,
+                       ") have different x_values. Operation aborted.");
+          return std::numeric_limits<double>::infinity();
+        }
+      }
+    }
+  }
+
+  double error = 0.0;
+  for (auto& pair : ts1.data_) {
+    auto& key = pair.first;
+    auto& yref = ts1.data_.at(key).y_values;
+    auto& ycurrent = ts2.data_.at(key).y_values;
+    error += Math::MSE(yref, ycurrent);
+  }
+  return error;
 }
 
 // -----------------------------------------------------------------------------

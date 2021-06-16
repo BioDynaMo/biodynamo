@@ -21,6 +21,7 @@
 namespace bdm {
 
 using experimental::TimeSeries;
+using experimental::LineGraph;
 
 // ---------------------------------------------------------------------------
 inline void SetupResultCollection(Simulation* sim) {

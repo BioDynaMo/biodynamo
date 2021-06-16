@@ -18,7 +18,10 @@
 #include <functional>
 #include <vector>
 
+#include "TMath.h"
+
 #include "core/analysis/time_series.h"
+#include "core/multi_simulation/database.h"
 #include "core/param/param.h"
 
 namespace bdm {
@@ -29,7 +32,8 @@ inline double Experiment(
   // Run the simulation with the input parameters for N iterations
   std::vector<TimeSeries> results(iterations);
   for (size_t i = 0; i < iterations; i++) {
-    dispatch_to_worker(param, &results[i]);
+    Param param_copy = *param;
+    dispatch_to_worker(&param_copy, &results[i]);
   }
 
   // Compute the mean result values of the N iterations
@@ -42,13 +46,12 @@ inline double Experiment(
                     });
 
   // Extract analytical / experimental values from the database
-  // TODO
-  TimeSeries real;
+  TimeSeries real = Database::GetInstance()->data_;
 
   // Compute and return the error between the real and simulated data
-  // double err = simulated.ComputeError(real);
+  double err = TimeSeries::ComputeError(real, simulated);
 
-  return 0.0;
+  return err;
 }
 
 }  // namespace bdm

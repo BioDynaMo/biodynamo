@@ -25,15 +25,8 @@ inline int Simulate(int argc, const char** argv, TimeSeries* result,
   // Overwrite the parameters in the config file with the value from
   // the command line options
   auto set_param = [&](Param* param) {
+    param->Restore(std::move(*final_params));
     param->random_seed = 0;
-    param->simulation_time_step = 1;
-    param->bound_space = true;
-    // if (overwrite) {
-    //   auto* sparam = param->Get<SimParam>();
-    //   sparam->infection_probablity = infection_probablity;
-    //   sparam->infection_radius = infection_radius;
-    //   sparam->agent_speed = speed;
-    // }
   };
 
   // Create simulation object

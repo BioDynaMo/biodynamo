@@ -17,6 +17,7 @@
 #include <functional>
 #include <unordered_map>
 #include <vector>
+
 #include "core/util/root.h"
 
 namespace bdm {
@@ -47,6 +48,8 @@ class TimeSeries {
   /// TimeSeries::Load("path/ts.root", &ts_restored);
   /// \endcode
   static void Load(const std::string& full_filepath, TimeSeries** restored);
+
+  static double ComputeError(const TimeSeries& ts1, const TimeSeries& ts2);
 
   /// This function combines several time series into one.
   /// All time series in parameter `time_series` must have the same entries.

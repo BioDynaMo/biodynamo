@@ -69,15 +69,27 @@ struct ParticleSwarm : public Algorithm {
     settings.lower_bounds = arma::vec(lower_bounds);
     settings.upper_bounds = arma::vec(upper_bounds);
 
+    int iteration = 0;
+    auto max_it = settings.iter_max;
+
     // The fitting function (i.e. calling a simulation with a paramset)
-    auto fit = [=](const arma::vec& free_params, arma::vec* grad_out,
-                   void* opt_data) {
+    auto fit = [=, &iteration](const arma::vec& free_params,
+                               arma::vec* grad_out, void* opt_data) {
       Param new_param = *default_params;
+
+      std::cout << "iteration (" << iteration << "/" << max_it << ")"
+                << std::endl;
+
+      if (std::isnan(free_params[0])) {
+        Log::Warning("Nan value detected!");
+        return 1000.0;
+      }
 
       // Merge the free param values into the Param object that will be sent to
       // the worker
       json j_patch;
       int i = 0;
+      std::cout << "FP: " << free_params << std::endl;
       for (auto* opt_param : opt_params->params) {
         j_patch[opt_param->GetGroupName()][opt_param->GetParamName()] =
             free_params[i];
@@ -90,6 +102,7 @@ struct ParticleSwarm : public Algorithm {
 
       double mse = Experiment(dispatch_to_worker, &new_param, repetition);
       std::cout << " MSE " << mse << " inout " << free_params << std::endl;
+      iteration++;
       return mse;
     };
 
