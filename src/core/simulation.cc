@@ -259,7 +259,9 @@ void Simulation::Activate() { active_ = this; }
 ResourceManager* Simulation::GetResourceManager() { return rm_; }
 
 void Simulation::SetResourceManager(ResourceManager* rm) {
-  delete rm_;
+  if (rm != rm_) {
+    delete rm_;
+  }
   rm_ = rm;
 }
 
@@ -365,7 +367,7 @@ void Simulation::InitializeMembers() {
 }
 
 void Simulation::SetEnvironment(Environment* env) {
-  if (environment_ != nullptr) {
+  if (environment_ != nullptr && env != environment_) {
     delete environment_;
   }
   environment_ = env;

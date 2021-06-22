@@ -19,6 +19,7 @@
 #include <type_traits>
 
 #include "core/agent/cell.h"
+#include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"
@@ -515,5 +516,21 @@ TEST_F(SimulationTest, ParamIOTest) {
 }
 
 #endif  // USE_DICT
+
+TEST(Simulation, SetResourceManagerSame) {
+  Simulation sim(TEST_NAME);
+  auto* rm = sim.GetResourceManager();
+  sim.SetResourceManager(rm);
+  EXPECT_EQ(0u, rm->GetNumAgents());
+}
+
+TEST(Simulation, SetEnvironmentSame) {
+  Simulation sim(TEST_NAME);
+  auto* env = sim.GetEnvironment();
+  sim.SetEnvironment(env);
+  // will segfault if env has been deleted inside
+  // SetEnvironment
+  env->Clear();
+}
 
 }  // namespace bdm
