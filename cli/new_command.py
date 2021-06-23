@@ -29,6 +29,13 @@ def ValidateSimName(sim_name):
         Print.error("       Allowed characters are a-z A-Z 0-9 - and _")
         Print.error("       Must start with a-z or A-Z")
         sys.exit(1)
+    if os.path.isdir(sim_name):
+        Print.error("The directory '{}' already exists.".format(sim_name))
+        Print.error("Do you want to overwrite it? [y/n]")
+        if input().lower() == "y":
+            sp.check_output(["rm", "-rf", sim_name])
+        else:
+            sys.exit(0)
 
 ## Removes any created files during NewCommand and exits the program
 def CleanupOnError(sim_name):
