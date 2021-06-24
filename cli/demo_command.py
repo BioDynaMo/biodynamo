@@ -41,6 +41,8 @@ def DemoCommand(demo_name, destination=None):
         destination = os.path.join(destination, demo_name)
     if os.path.exists(destination):
         Print.error('Destination directory "{}" exists.'.format(destination))
+        Print.error("Please remove it or create the demo in a different place.")
+        Print.error("Abort 'biodynamo demo {}'.".format(demo_name))
         sys.exit(2)
 
     src_dir = os.path.join(DEMO_DIR, demo_name)

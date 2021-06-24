@@ -31,11 +31,9 @@ def ValidateSimName(sim_name):
         sys.exit(1)
     if os.path.isdir(sim_name):
         Print.error("The directory '{}' already exists.".format(sim_name))
-        Print.error("Do you want to overwrite it? [y/n]")
-        if input().lower() == "y":
-            sp.check_output(["rm", "-rf", sim_name])
-        else:
-            sys.exit(0)
+        Print.error("Please remove it or choose a different name.")
+        Print.error("Abort 'biodynamo new {}'.".format(sim_name))
+        sys.exit(1)
 
 ## Removes any created files during NewCommand and exits the program
 def CleanupOnError(sim_name):
