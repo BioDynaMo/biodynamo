@@ -22,6 +22,7 @@
 #include "core/environment/environment.h"
 #include "core/simulation.h"
 #include "core/util/partition.h"
+#include "core/util/plot_memory_layout.h"
 #include "core/util/timing.h"
 
 namespace bdm {
@@ -237,6 +238,11 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
 };
 
 void ResourceManager::LoadBalance() {
+  auto* param = Simulation::GetActive()->GetParam();
+  if (param->plot_memory_layout) {
+    PlotNeighborMemoryHistogram(true);
+  }
+
   // balance agents per numa node according to the number of
   // threads associated with each numa domain
   auto numa_nodes = thread_info_->GetNumaNodes();
@@ -268,7 +274,6 @@ void ResourceManager::LoadBalance() {
   auto* env = Simulation::GetActive()->GetEnvironment();
   auto lbi = env->GetLoadBalanceInfo();
 
-  auto* param = Simulation::GetActive()->GetParam();
   const bool minimize_memory = param->minimize_memory_while_rebalancing;
 
 // create new agents
@@ -314,6 +319,13 @@ void ResourceManager::LoadBalance() {
 
   for (int n = 0; n < numa_nodes; n++) {
     agents_[n].swap(agents_lb_[n]);
+    if (param->plot_memory_layout) {
+      PlotMemoryLayout(agents_[n], n);
+      PlotMemoryHistogram(agents_[n], n);
+    }
+  }
+  if (param->plot_memory_layout) {
+    PlotNeighborMemoryHistogram();
   }
 
   if (Simulation::GetActive()->GetParam()->debug_numa) {
