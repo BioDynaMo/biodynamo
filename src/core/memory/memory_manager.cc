@@ -14,8 +14,10 @@
 
 #include "core/memory/memory_manager.h"
 #include <unistd.h>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <limits>
 #include <mutex>
 #include "core/util/log.h"
 #include "core/util/string.h"
@@ -161,8 +163,6 @@ NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid,
   for (int i = 0; i < tinfo_->GetMaxThreads(); ++i) {
     free_lists_.emplace_back(num_elements_per_n_pages_);
   }
-  // To get one block of N aligned pages, at least 2 N pages must be allocated
-  AllocNewMemoryBlock(size_n_pages_ * 2);
 }
 
 NumaPoolAllocator::~NumaPoolAllocator() {
@@ -191,8 +191,10 @@ void* NumaPoolAllocator::New(int tid) {
     return ret;
   } else {
     lock_.lock();
-    if (memory_blocks_.back().IsFullyInitialized()) {
-      auto size = total_size_ * (growth_rate_ - 1.0);
+    if (memory_blocks_.size() == 0 ||
+        memory_blocks_.back().IsFullyInitialized()) {
+      auto size =
+          std::max(total_size_ * (growth_rate_ - 1.0), size_n_pages_ * 2.0);
       size = RoundUpTo(size, size_n_pages_);
       AllocNewMemoryBlock(size);
     }
@@ -201,6 +203,10 @@ void* NumaPoolAllocator::New(int tid) {
     memory_blocks_.back().GetNextPageBatch(size_n_pages_, &start_pointer,
                                            &size);
     lock_.unlock();
+    // remaining memory not enough to store one element
+    if ((size - kMetadataSize) < size_) {
+      return New(tid);
+    }
     InitializeNPages(&tl_list, start_pointer, size);
     auto* ret = tl_list.PopFront();
     assert(ret != nullptr);
