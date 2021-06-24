@@ -598,6 +598,10 @@ struct Param {
   ///     preferred_gpu = 0
   int preferred_gpu = 0;
 
+  /// Determines if agents' memory layout plots should be generated
+  /// during load balancing.
+  bool plot_memory_layout = false;
+
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
