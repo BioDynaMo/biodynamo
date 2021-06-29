@@ -492,15 +492,17 @@ struct Param {
 
   /// The BioDynaMo memory manager can migrate memory between thread pools
   /// to avoid memory leaks.\n
-  /// This parameter specifies the maximum memory size in bytes before
+  /// This parameter influences the maximum memory size in bytes before
   /// migration happens.\n
-  /// This value must be bigger than `PAGE_SIZE * 2 ^ mem_mgr_growth_rate`\n
-  /// Default value: `131073` (100 kB)\n
-  /// TOML config file:
+  /// The size in bytes depends on the system's page size and the parameter
+  /// `mem_mgr_aligned_pages_shift` and is calculated as follows:
+  /// `PAGE_SIZE * 2 ^ mem_mgr_aligned_pages_shift *
+  /// mem_mgr_max_mem_per_thread_factor`\n Default value: `1`\n TOML config
+  /// file:
   ///
   ///     [performance]
-  ///     mem_mgr_max_mem_per_thread = 131073
-  uint64_t mem_mgr_max_mem_per_thread = 131073;
+  ///     mem_mgr_max_mem_per_thread_factor = 1
+  uint64_t mem_mgr_max_mem_per_thread_factor = 1;
 
   /// This parameter is used inside `ResourceManager::LoadBalance`.
   /// If it is set to true, the function will reuse existing memory to rebalance

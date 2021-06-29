@@ -83,7 +83,7 @@ class SimulationTest : public ::testing::Test {
       "use_bdm_mem_mgr = false\n"
       "mem_mgr_aligned_pages_shift = 7\n"
       "mem_mgr_growth_rate = 1.123\n"
-      "mem_mgr_max_mem_per_thread = 987654\n"
+      "mem_mgr_max_mem_per_thread_factor = 3\n"
       "minimize_memory_while_rebalancing = false\n"
       "mapped_data_array_mode = \"cache\"\n"
       "\n"
@@ -183,7 +183,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_FALSE(param->use_bdm_mem_mgr);
     EXPECT_EQ(7u, param->mem_mgr_aligned_pages_shift);
     EXPECT_NEAR(1.123, param->mem_mgr_growth_rate, abs_error<double>::value);
-    EXPECT_EQ(987654u, param->mem_mgr_max_mem_per_thread);
+    EXPECT_EQ(3u, param->mem_mgr_max_mem_per_thread_factor);
     EXPECT_FALSE(param->minimize_memory_while_rebalancing);
     EXPECT_EQ(Param::MappedDataArrayMode::kCache,
               param->mapped_data_array_mode);

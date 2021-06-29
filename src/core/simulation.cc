@@ -328,7 +328,7 @@ void Simulation::InitializeMembers() {
   if (param_->use_bdm_mem_mgr) {
     mem_mgr_ = new MemoryManager(param_->mem_mgr_aligned_pages_shift,
                                  param_->mem_mgr_growth_rate,
-                                 param_->mem_mgr_max_mem_per_thread);
+                                 param_->mem_mgr_max_mem_per_thread_factor);
   }
   agent_uid_generator_ = new AgentUidGenerator();
   if (param_->debug_numa) {
