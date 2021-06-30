@@ -32,14 +32,15 @@ TEST(AgentTest, AddAgentsToSimulation) {
 
   // Add some cells to the simulation
   auto* rm = simulation.GetResourceManager();
-  for (int i = 0; i < 20; i++) {
+  uint8_t expected_no_cells{20};
+  for (int i = 0; i < expected_no_cells; i++) {
     auto* cell = new Cell(30);
     rm->AddAgent(cell);
   }
 
   // Test if all 20 cells are in the simulation
   auto no_cells = rm->GetNumAgents();
-  EXPECT_EQ(20, no_cells);
+  EXPECT_EQ(expected_no_cells, no_cells);
 }
 
 // Test if our GrothDevision behaviour increases the cell volume as expected
