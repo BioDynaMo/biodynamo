@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ class TestAgent : public Agent {
   void SetDiameter(const double diameter) override { diameter_ = diameter; }
 
   int GetData() const { return data_; }
-  void SetData(double data) { data_ = data; }
+  void SetData(int data) { data_ = data; }
 
  protected:
   Double3 position_ = {{0, 0, 0}};

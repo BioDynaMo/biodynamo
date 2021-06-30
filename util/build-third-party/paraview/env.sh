@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,15 @@
 # import util functions
 . "$BDM_PROJECT_DIR/util/installation/common/util.sh"
 
-export PV_SUPERBUILD_VERSION="v5.8.1"
-export PV_VERSION="v5.8.1"
+if [ "$(uname)" = "Darwin" ]; then
+    export PV_SUPERBUILD_VERSION="v5.9.0"
+    export PV_VERSION="v5.9.0"
+    export QT_VERSION="v5.12.10"
+else
+    export PV_SUPERBUILD_VERSION="v5.9.0"
+    export PV_VERSION="v5.9.0"
+    export QT_VERSION="v5.12.10"
+fi
 export PV_GIT_REPO="https://gitlab.kitware.com/paraview/paraview.git"
 
 export BDM_OS=$(DetectOs)

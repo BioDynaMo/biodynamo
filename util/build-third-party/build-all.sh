@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . ${SCRIPTPATH}/util/build-third-party/third-party-prerequisites.sh
 
 # Software versions
-ROOT_VERSION=v6-20-06
+ROOT_VERSION=6.22.06
 ROADRUNNER_VERSION=release
 
 # root

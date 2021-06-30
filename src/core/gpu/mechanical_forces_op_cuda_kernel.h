@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,70 +19,66 @@
 #include <stdint.h>
 #include "stdio.h"
 
+#ifdef USE_CUDA
+#include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
+#endif
+
 namespace bdm {
 
 class MechanicalForcesOpCudaKernel {
  public:
-  MechanicalForcesOpCudaKernel(uint32_t num_objects, uint32_t num_boxes);
+  MechanicalForcesOpCudaKernel(uint32_t num_agents, uint32_t num_boxes);
   virtual ~MechanicalForcesOpCudaKernel();
 
   void LaunchMechanicalForcesKernel(
       const double* positions, const double* diameter,
       const double* tractor_force, const double* adherence,
-      const uint32_t* box_id, const double* mass, const double* timestep,
-      const double* max_displacement, const double* squared_radius,
-      const uint32_t* num_objects, uint32_t* starts, uint16_t* lengths,
-      uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors,
-      uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
-      double* cell_movements);
+      const uint32_t* box_id, const double* mass, const double timestep,
+      const double max_displacement, const double squared_radius,
+      const uint32_t num_agents, uint32_t* starts, uint16_t* lengths,
+      uint64_t* timestamps, uint64_t current_timestamp, uint32_t* successors,
+      uint32_t* num_boxes_axis, double* cell_movements);
 
-  void Synch() const;
+  void Sync() const;
   void ResizeCellBuffers(uint32_t num_cells);
   void ResizeGridBuffers(uint32_t num_boxes);
 
 #ifdef USE_CUDA
  private:
-  double* d_positions_ = nullptr;
-  double* d_diameters_ = nullptr;
-  double* d_mass_ = nullptr;
-  double* d_timestep_ = nullptr;
-  double* d_max_displacement_ = nullptr;
-  double* d_squared_radius_ = nullptr;
-  uint32_t* d_num_objects_ = nullptr;
-  double* d_cell_movements_ = nullptr;
-  double* d_tractor_force_ = nullptr;
-  double* d_adherence_ = nullptr;
-  uint32_t* d_box_id_ = nullptr;
-  uint32_t* d_starts_ = nullptr;
-  uint16_t* d_lengths_ = nullptr;
-  uint64_t* d_timestamps_ = nullptr;
-  uint64_t* d_current_timestamp_ = nullptr;
-  uint32_t* d_successors_ = nullptr;
-  uint32_t* d_box_length_ = nullptr;
-  uint32_t* d_num_boxes_axis_ = nullptr;
-  int32_t* d_grid_dimensions_ = nullptr;
+  thrust::device_vector<double3> d_positions_;
+  thrust::device_vector<double3> d_tractor_force_;
+  thrust::device_vector<double> d_adherence_;
+  thrust::device_vector<double> d_diameters_;
+  thrust::device_vector<double> d_mass_;
+  thrust::device_vector<double3> d_cell_movements_;
+  thrust::device_vector<uint32_t> d_box_id_;
+  thrust::device_vector<uint32_t> d_starts_;
+  thrust::device_vector<uint16_t> d_lengths_;
+  thrust::device_vector<uint32_t> d_successors_;
+  thrust::device_vector<uint64_t> d_timestamps_;
+  thrust::device_ptr<uint3> d_num_boxes_axis_;
 #endif  // USE_CUDA
 };
 
 #ifndef USE_CUDA
-// Empty implementaiton if CUDA is not used to avoid undefined reference linking
+// Empty implementation if CUDA is not used to avoid undefined reference linking
 // error.
 //
 inline MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(
-    uint32_t num_objects, uint32_t num_boxes) {}
+    uint32_t num_agents, uint32_t num_boxes) {}
 inline MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {}
 
 inline void MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
     const double* positions, const double* diameter,
     const double* tractor_force, const double* adherence,
-    const uint32_t* box_id, const double* mass, const double* timestep,
-    const double* max_displacement, const double* squared_radius,
-    const uint32_t* num_objects, uint32_t* starts, uint16_t* lengths,
-    uint64_t* timestamps, uint64_t* current_timestamp, uint32_t* successors,
-    uint32_t* box_length, uint32_t* num_boxes_axis, int32_t* grid_dimensions,
-    double* cell_movements) {}
+    const uint32_t* box_id, const double* mass, const double timestep,
+    const double max_displacement, const double squared_radius,
+    const uint32_t num_agents, uint32_t* starts, uint16_t* lengths,
+    uint64_t* timestamps, uint64_t current_timestamp, uint32_t* successors,
+    uint32_t* num_boxes_axis, double* cell_movements) {}
 
-inline void MechanicalForcesOpCudaKernel::Synch() const {}
+inline void MechanicalForcesOpCudaKernel::Sync() const {}
 inline void MechanicalForcesOpCudaKernel::ResizeCellBuffers(
     uint32_t num_cells) {}
 inline void MechanicalForcesOpCudaKernel::ResizeGridBuffers(

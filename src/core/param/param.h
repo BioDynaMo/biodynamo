@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/analysis/style.h"
 #include "core/param/param_group.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
@@ -92,7 +93,7 @@ struct Param {
   enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
   NumericalODESolver numerical_ode_solver = NumericalODESolver::kEuler;
 
-  /// Ouput Directory name used to store visualization and other files.\n
+  /// Output Directory name used to store visualization and other files.\n
   /// Path is relative to working directory.\n
   /// Default value: `"output"`\n
   /// TOML config file:
@@ -100,6 +101,33 @@ struct Param {
   ///     [simulation]
   ///     output_dir = "output"
   std::string output_dir = "output";
+
+  /// The method used to query the environment of a simulation object.
+  /// Default value: `"uniform_grid"`\n
+  /// Other allowed values: `"kd_tree", "octree"`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     environment = "uniform_grid"
+  std::string environment = "uniform_grid";
+
+  /// The depth of the kd tree if it's set as the environment (see
+  /// Param::environment). For more information see:
+  /// https://github.com/jlblancoc/nanoflann\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     nanoflann_depth = 10
+  uint32_t nanoflann_depth = 10;
+
+  /// The bucket size of the octree if it's set as the environment (see
+  /// Param::environment). For more information see:
+  /// https://github.com/jbehley/octree
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     unibn_bucketsize = 16
+  uint32_t unibn_bucketsize = 16;
 
   /// If set to true, BioDynaMo will automatically delete all contents
   /// inside `Param::output_dir` at the beginning of the simulation.
@@ -151,15 +179,29 @@ struct Param {
   ///     max_displacement = 3.0
   double simulation_max_displacement = 3.0;
 
-  /// Enforce an artificial cubic bounds around the simulation space.
-  /// Agents cannot move outside this cube. Dimensions of this cube
-  /// are determined by parameter `lbound` and `rbound`.\n
-  /// Default value: `false` (simulation space is "infinite")\n
+  enum BoundSpaceMode {
+    /// The simulation space grows to encapsulate all agents.
+    kOpen = 0,
+    /// Enforce an artificial cubic bound around the simulation space.
+    /// The dimensions of this cube are determined by parameter
+    /// `min_bound` and `max_bound`.\n
+    /// If agents move outside the cube they are moved back inside.
+    kClosed,
+    /// Enforce an artificial cubic bound around the simulation space.
+    /// The dimensions of this cube are determined by parameter
+    /// `min_bound` and `max_bound`.\n
+    /// Agents that move outside the cube are moved back in on the opposite
+    /// side.
+    kTorus
+  };
+
+  /// Default value: `open` (simulation space is "infinite")\n
+  /// \see BoundSpaceMode
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     bound_space = false
-  bool bound_space = false;
+  ///     bound_space = "open"
+  BoundSpaceMode bound_space = kOpen;
 
   /// Minimum allowed value for x-, y- and z-position if simulation space is
   /// bound (@see `bound_space`).\n
@@ -179,25 +221,24 @@ struct Param {
   ///     max_bound = 100
   double max_bound = 100;
 
-  /// Allow substances to leak out of the simulation space. In this way
-  /// the substance concentration will not be blocked by an artificial border\n
-  /// Default value: `true`\n
+  /// Define the boundary condition of the diffusion grid [open, closed]\n
+  /// Default value: `"open"`\n
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     leaking_edges = true
-  bool leaking_edges = true;
+  ///     diffusion_boundary_condition = "open"
+  std::string diffusion_boundary_condition = "open";
 
   /// A string for determining diffusion type within the simulation space.
-  /// current inputs include "Euler" and Runga Kutta ("RK")
-  /// Default value: `"Euler"`\n
+  /// current inputs include "euler", "stencil" and Runga Kutta ("runga-kutta")
+  /// Default value: `"euler"`\n
   /// TOML config file:
   ///
   ///        [simulation]
-  ///        diffusion_type = <diffusion method>
+  ///        diffusion_method = <diffusion method>
   ///
 
-  std::string diffusion_type = "Euler";
+  std::string diffusion_method = "euler";
 
   /// Calculate the diffusion gradient for each substance.\n
   /// TOML config file:
@@ -433,12 +474,12 @@ struct Param {
   /// if a lot of memory is used.\n
   /// N must be a number of two.\n
   /// Therefore, this parameter specifies the shift for N. `N = 2 ^ shift`\n
-  /// Default value: `8` `-> N = 256`\n
+  /// Default value: `5` `-> N = 32`\n
   /// TOML config file:
   ///
   ///     [performance]
-  ///     mem_mgr_aligned_pages_shift = 8
-  uint64_t mem_mgr_aligned_pages_shift = 8;
+  ///     mem_mgr_aligned_pages_shift = 5
+  uint64_t mem_mgr_aligned_pages_shift = 5;
 
   /// The BioDynaMo memory manager allocates memory in increasing sizes using
   /// a geometric series. This parameter specifies the growth rate.
@@ -451,15 +492,17 @@ struct Param {
 
   /// The BioDynaMo memory manager can migrate memory between thread pools
   /// to avoid memory leaks.\n
-  /// This parameter specifies the maximum memory size in bytes before
+  /// This parameter influences the maximum memory size in bytes before
   /// migration happens.\n
-  /// This value must be bigger than `PAGE_SIZE * 2 ^ mem_mgr_growth_rate`\n
-  /// Default value: `10485760` (10 MB)\n
-  /// TOML config file:
+  /// The size in bytes depends on the system's page size and the parameter
+  /// `mem_mgr_aligned_pages_shift` and is calculated as follows:
+  /// `PAGE_SIZE * 2 ^ mem_mgr_aligned_pages_shift *
+  /// mem_mgr_max_mem_per_thread_factor`\n Default value: `1`\n TOML config
+  /// file:
   ///
   ///     [performance]
-  ///     mem_mgr_max_mem_per_thread = 10485760
-  uint64_t mem_mgr_max_mem_per_thread = 1024 * 1024 * 10;
+  ///     mem_mgr_max_mem_per_thread_factor = 1
+  uint64_t mem_mgr_max_mem_per_thread_factor = 1;
 
   /// This parameter is used inside `ResourceManager::LoadBalance`.
   /// If it is set to true, the function will reuse existing memory to rebalance
@@ -557,10 +600,15 @@ struct Param {
   ///     preferred_gpu = 0
   int preferred_gpu = 0;
 
+  /// Determines if agents' memory layout plots should be generated
+  /// during load balancing.
+  bool plot_memory_layout = false;
+
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:
+  friend class DiffusionTest_CopyOldData_Test;
   static std::unordered_map<ParamGroupUid, std::unique_ptr<ParamGroup>>
       registered_groups_;
   std::unordered_map<ParamGroupUid, ParamGroup*> groups_;

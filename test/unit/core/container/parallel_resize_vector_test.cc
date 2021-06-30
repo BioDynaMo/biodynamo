@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,6 +46,14 @@ TEST(ParallelResizeVectorTest, Basics) {
   ASSERT_EQ(10u, v.size());
   for (unsigned i = 0; i < v.size(); i++) {
     EXPECT_EQ(0u, v[i]);
+  }
+}
+
+TEST(ParallelResizeVectorTest, SizeAndDefaultValueCtor) {
+  ParallelResizeVector<int> v(9, 3);
+  EXPECT_EQ(9u, v.size());
+  for (uint64_t i = 0; i < 9; ++i) {
+    EXPECT_EQ(3, v[i]);
   }
 }
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,10 +53,14 @@ if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
   echo "PyEnv was not found. Installing now..."
   curl https://pyenv.run | bash
 fi
-export PATH="$HOME/.pyenv/bin:$PATH"
-eval "$(pyenv init -)"
 
-PYVERS=3.8.0
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+pyenv update
+
+PYVERS=3.9.1
 
 # If Python $PYVERS is not installed, install it
 if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then

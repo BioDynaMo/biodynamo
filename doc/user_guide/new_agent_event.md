@@ -1,7 +1,7 @@
 ---
 title: "NewAgentEvent"
 date: "2019-01-01"
-path: "/docs/userguide/new-agent-event/"
+path: "/docs/userguide/new_agent_event/"
 meta_title: "BioDynaMo User Guide"
 meta_description: "This page explains NewAgentEvents."
 toc: true

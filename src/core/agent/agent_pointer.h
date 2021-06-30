@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,9 +45,11 @@ class AgentPointer {
   /// constructs an AgentPointer object representing a nullptr
   AgentPointer() {}
 
-  virtual ~AgentPointer() {}
+  ~AgentPointer() {}
 
-  uint64_t GetUid() const { return uid_; }
+  uint64_t GetUidAsUint64() const { return uid_; }
+
+  AgentUid GetUid() const { return uid_; }
 
   /// Equals operator that enables the following statement `agent_ptr ==
   /// nullptr;`
@@ -125,7 +127,7 @@ class AgentPointer {
     return dynamic_cast<TTo*>(agent);
   }
 
-  BDM_CLASS_DEF(AgentPointer, 2);
+  BDM_CLASS_DEF_NV(AgentPointer, 2);
 };
 
 template <typename T>

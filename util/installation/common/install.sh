@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,21 +44,25 @@ if [ $BDM_OS = "centos-7" ]; then
   fi
 
   if [ -z ${CXX} ] && [ -z ${CC} ] ; then
-    . scl_source enable devtoolset-7
+    . scl_source enable devtoolset-8
   fi
 
   . /etc/profile.d/modules.sh
   module load mpi
+fi
+
+if [ "$BDM_OS" != "osx" ]; then
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init --path)"
+  eval "$(pyenv init -)"
+  pyenv shell 3.9.1
 fi
 set -e
 
 # Test overriding the OS detection for one OS
 if [ "${BDM_OS}" = "ubuntu-18.04" ]; then
   export BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -DOS=${BDM_OS}"
-fi
-
-if [ "${BDM_OS}" = "osx" ]; then
-  export PYENV_ROOT=/usr/local/opt/.pyenv
 fi
 
 # perform a clean release build
@@ -69,7 +73,7 @@ CleanBuild $BUILD_DIR
 echo
 EchoSuccess "Installation of BioDynaMo finished successfully!"
 
-BDM_VERSION=$(cat $BUILD_DIR/version/shortversion)
+BDM_VERSION=$(cat $BUILD_DIR/version/bdm_shortversion)
 INSTALL_DIR=${HOME}/biodynamo-v${BDM_VERSION}
 
 EchoFinishInstallation $INSTALL_DIR

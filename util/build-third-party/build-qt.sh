@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,19 @@
 #
 # -----------------------------------------------------------------------------
 
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
+
 if [[ $# -ne 0 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
   This script creates qt.tar.gz file.
-  The archive will be stored in BDM_PROJECT_DIR/build/qt.tar.gz
+  The archive will be stored in $BDM_PROJECT_DIR/build/
 No Arguments"
   exit 1
 fi
 
 set -e -x
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 cd $BDM_PROJECT_DIR
 
 # import util functions
@@ -35,7 +36,7 @@ DEST_DIR=$BDM_PROJECT_DIR/build
 mkdir -p $DEST_DIR
 EchoNewStep "Start building QT. Result will be stored in $DEST_DIR"
 # working dir
-WORKING_DIR=~/bdm-build-third-party
+WORKING_DIR=$HOME/bdm-build-third-party
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 
@@ -82,18 +83,19 @@ fi
 
 # # package
 # cd $QT_LIB_PLUGINS_PARENT
-# tar -zcf qt.tar.gz *
+# tar -zcf qt-v5.11.0-$(DetectOs).tar.gz *
 
 # # mv to destination directory
-# mv qt.tar.gz $DEST_DIR
+# mv qt-v5.11.0-$(DetectOs).tar.gz $DEST_DIR
 
 ################################################################################
 
 mkdir -p $QT_INSTALL_DIR
-QT_TAR_FILE="${QT_INSTALL_DIR}/qt.tar.gz"
-QT_TAR_FILE_URL="$(DetectOs)/qt.tar.gz"
-QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE_URL}
+QT_TAR="qt-v5.12.10-$(DetectOs).tar.gz"
+QT_TAR_FILE="${QT_INSTALL_DIR}/${QT_TAR}"
+QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR}
 wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
 cd ${QT_INSTALL_DIR}
-tar -zxf qt.tar.gz
-mv $QT_TAR_FILE $DEST_DIR
+tar -zxf $QT_TAR
+shasum -a256 ${QT_TAR} > ${QT_TAR}.sha256
+mv $QT_TAR $QT_TAR.sha256 $DEST_DIR

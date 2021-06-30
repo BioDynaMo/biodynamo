@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ fi
 set -e -x
 
 ROOT_VERSION=$1
-PYVERS=3.8.0
+PYVERS=3.9.1
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
 cd $BDM_PROJECT_DIR
@@ -54,21 +54,33 @@ mkdir -p $ROOT_INSTALL_DIR
 # install prerequisites
 . $BDM_PROJECT_DIR/util/build-third-party/third-party-prerequisites.sh
 
-git clone https://github.com/root-project/root.git
-
-cd root
-git checkout $ROOT_VERSION
-git status
+# Get the right ROOT source version, untar creates "root-$ROOT_VERSION"
+wget https://root.cern.ch/download/root_v$ROOT_VERSION.source.tar.gz
+tar -zxf root_v$ROOT_VERSION.source.tar.gz
+cd root-$ROOT_VERSION
 ROOTSRC=`pwd`
 cd ..
 
-# Set Python to $PYVERS
+# On macOS use brew's python
+brewpy=no
 if [[ $(uname -s) == "Darwin" ]]; then
-  export PYENV_ROOT=/usr/local/opt/.pyenv
+  brewpy=yes
 fi
-eval "$(pyenv init -)"
-pyenv shell $PYVERS
-python -m pip install numpy
+
+if [ $brewpy == "yes" ]; then
+   pyth="$(brew --prefix)/bin/python3"
+else
+   # Set Python to $PYVERS
+   if [[ $(uname -s) == "Darwin" ]]; then
+      export PYENV_ROOT=/usr/local/opt/.pyenv
+   fi
+   eval "$(pyenv init -)"
+   pyenv shell $PYVERS
+   pyth="`pyenv which python`"
+fi
+
+# Make sure numpy is installed for python
+#$pyth -m pip install numpy
 
 # unset any env var to local installed libraries
 unset XRDSYS
@@ -85,27 +97,55 @@ mkdir build
 cd build
 
 if [[ $(uname -s) == "Darwin" ]]; then
-  cmake -G Ninja -Dmacos_native=YES \
-     -Dbuiltin_fftw3=ON \
-     -Dbuiltin_freetype=ON \
-     -Dbuiltin_ftgl=ON \
-     -Dbuiltin_glew=ON \
-     -Dbuiltin_gsl=ON \
-     -Dbuiltin_lz4=ON \
-     -Dbuiltin_lzma=ON \
-     -Dbuiltin_openssl=ON \
-     -Dbuiltin_pcre=ON \
-     -Dbuiltin_tbb=ON \
-     -Dbuiltin_unuran=ON \
-     -Dbuiltin_xxhash=ON \
-     -Dbuiltin_zlib=ON \
-     -Dbuiltin_zstd=ON \
-     -DCMAKE_BUILD_TYPE=Release \
-     -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
-     -DCMAKE_CXX_STANDARD=14 \
-     -DPYTHON_EXECUTABLE=`pyenv which python` \
-     $ROOTSRC
+   OSXARCH=`arch`
+   if [ $OSXARCH == "arm64" ]; then
+      cmake -G Ninja \
+         -Dmacos_native=YES \
+         -Dbuiltin_fftw3=OFF \
+         -Dbuiltin_freetype=ON \
+         -Dbuiltin_ftgl=ON \
+         -Dbuiltin_glew=ON \
+         -Dbuiltin_gsl=ON \
+         -Dbuiltin_lz4=ON \
+         -Dbuiltin_lzma=ON \
+         -Dbuiltin_openssl=ON \
+         -Dbuiltin_pcre=ON \
+         -Dbuiltin_tbb=OFF \
+         -Dbuiltin_unuran=ON \
+         -Dbuiltin_xxhash=ON \
+         -Dbuiltin_zlib=ON \
+         -Dbuiltin_zstd=ON \
+         -DCMAKE_BUILD_TYPE=Release \
+         -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
+         -DCMAKE_CXX_STANDARD=14 \
+         -DTBB_ROOT_DIR=$(brew --prefix)
+         -DPYTHON_EXECUTABLE="$pyth" \
+         $ROOTSRC
+   else
+      cmake -G Ninja \
+         -Dmacos_native=YES \
+         -Dbuiltin_fftw3=ON \
+         -Dbuiltin_freetype=ON \
+         -Dbuiltin_ftgl=ON \
+         -Dbuiltin_glew=ON \
+         -Dbuiltin_gsl=ON \
+         -Dbuiltin_lz4=ON \
+         -Dbuiltin_lzma=ON \
+         -Dbuiltin_openssl=ON \
+         -Dbuiltin_pcre=ON \
+         -Dbuiltin_tbb=ON \
+         -Dbuiltin_unuran=ON \
+         -Dbuiltin_xxhash=ON \
+         -Dbuiltin_zlib=ON \
+         -Dbuiltin_zstd=ON \
+         -DCMAKE_BUILD_TYPE=Release \
+         -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
+         -DCMAKE_CXX_STANDARD=14 \
+         -DPYTHON_EXECUTABLE="$pyth" \
+         $ROOTSRC
+   fi
 else
+  # -Droot7=OFF only because centos7 fails on one contruct.
   cmake -G Ninja \
     -Dbuiltin_fftw3=ON \
     -Dbuiltin_freetype=ON \
@@ -121,23 +161,27 @@ else
     -Dbuiltin_xxhash=ON \
     -Dbuiltin_zlib=ON \
     -Dbuiltin_zstd=ON \
+    -Droot7=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER=$CC \
     -DCMAKE_CXX_COMPILER=$CXX \
     -DCMAKE_INSTALL_PREFIX=$ROOT_INSTALL_DIR \
     -DCMAKE_CXX_STANDARD=14 \
-    -DPYTHON_EXECUTABLE=`pyenv which python` \
+    -DPYTHON_EXECUTABLE="$pyth" \
     $ROOTSRC
 fi
 
 ninja install
 
 cd $ROOT_INSTALL_DIR
-RESULT_FILE=root_${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
+if [[ $(uname -s) == "Darwin" ]]; then
+   RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}-${OSXARCH}.tar.gz
+else
+   RESULT_FILE=root_v${ROOT_VERSION}_python3_${BDM_OS}.tar.gz
+fi
 tar -zcf ${RESULT_FILE} *
 
 # mv to destination directory
 mv ${RESULT_FILE} $DEST_DIR
 cd $DEST_DIR
 shasum -a256 ${RESULT_FILE} > ${RESULT_FILE}.sha256
-

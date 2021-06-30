@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,12 +41,12 @@ function(GenerateNotebookTarget DEMO_NAME)
       COMMAND mkdir -p ${DEST_DIR}
       COMMAND cp ${DEMO_DIR}/src/*.h ${DEST_DIR}
       COMMAND cp ${DEMO_DIR}/thumbnail.* ${DEST_DIR}
-      COMMAND bash -c "${LAUNCHER} python -E ${SCRIPT} --tutpath=${DEMO_DIR}/src/${DEMO_NAME}.h --outdir=${DEST_DIR}")
+      COMMAND bash -c "${LAUNCHER} ${Python_EXECUTABLE} -E ${SCRIPT} --tutpath=${DEMO_DIR}/src/${DEMO_NAME}.h --outdir=${DEST_DIR}")
   add_dependencies(notebook-${DEMO_NAME} biodynamo)
 endfunction(GenerateNotebookTarget)
 
 # Demos to skip over
-set(SKIPLIST "soma_clustering" "tumor_concept" "multiple_simulations" "gene_regulation" "sbml_integration" "makefile_project" "parameters")
+set(SKIPLIST "soma_clustering" "tumor_concept" "multiple_simulations" "gene_regulation" "sbml_integration" "makefile_project" "parameters" "epidemiology" "pyramidal_cell")
 
 # We chain the targets of the demos to each other, because of a race conditions
 # that occurs when invoking jupyter-notebook with multiple processes:

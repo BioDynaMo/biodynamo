@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 #
 # -----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19.3 FATAL_ERROR)
 
 set(policy_new CMP0072 CMP0077)
 foreach(policy ${policy_new})
@@ -24,7 +24,7 @@ endforeach()
 # Project name and current version. We do not specify any language for
 # this project. Therefore, we will be able to check manually which compiler
 # is detected on the system.
-project(BioDynaMo LANGUAGES VERSION "0.1.0")
+project(BioDynaMo LANGUAGES VERSION "1.01.0")
 
 #---Set the locale to default C to prevent issued due to localization of commands---------------
 # This is necessary as we for example call `clang -v` and parse its output. But on a localized
@@ -49,11 +49,16 @@ include(utils)
 # Detect os type and version
 if (NOT DEFINED OS)
     SET(DETECTED_OS "none")
+    SET(DETECTED_ARCH "none")
+    SET(DETECTED_OS_VERS "none")
     detect_os()
 else()
     SET(DETECTED_OS ${OS})
+    SET(DETECTED_ARCH "x86_64")
+    SET(DETECTED_OS_VERS ${OS})
     check_detected_os(${DETECTED_OS})
 endif()
+
 
 # Find a suitable compiler
 include(CheckCompiler)
@@ -112,18 +117,32 @@ option(rpath     "Link libraries with built-in RPATH (run-time search path)." OF
 option(benchmark "Build a Benchmark." ON)
 
 if(APPLE)
+  set(CMAKE_BDM_PVVERSION "5.9")
   find_program(BREW_BIN brew)
   if(BREW_BIN)
     execute_process(COMMAND ${BREW_BIN} --prefix llvm
                     OUTPUT_VARIABLE LLVM_BREW_PREFIX
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
+  
+  # ParaView not yet supported on Apple arm64
+  if("${DETECTED_ARCH}" STREQUAL "arm64")
+    set(paraview OFF)
+  endif()
+  
+  # Ignore Fink (/sw) and MacPorts (/opt/local) packages, only consider Brew
+  set(CMAKE_IGNORE_PATH)
+  foreach(_prefix /sw /opt/local)
+    list(APPEND CMAKE_IGNORE_PATH ${_prefix}/bin ${_prefix}/include ${_prefix}/lib)
+  endforeach()
+  
   # Silence std::experimental::filesystem warning on MacOS.
   # Remove after update to c++17
   add_definitions("-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM")
 endif()
 
 if(UNIX AND NOT APPLE)
+  set(CMAKE_BDM_PVVERSION "5.9")
   set(LINUX TRUE)
   add_definitions("-DLINUX")
 endif()
@@ -152,47 +171,46 @@ if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
 endif()
 
-# Check if Python 3.8.0 from PyEnv is installed
-set(pythonvers "3.8.0")
-string(REPLACE "." ";" pythonvers_list ${pythonvers})
-list(GET pythonvers_list 0 pythonvers_major)
-list(GET pythonvers_list 1 pythonvers_minor)
-list(GET pythonvers_list 2 pythonvers_patch)
-if(APPLE)
-  set(ENV{PYENV_ROOT} /usr/local/opt/.pyenv)
+if (APPLE)
+   set(NOPYENV YES)
 endif()
-if (DEFINED ENV{PYENV_ROOT})
-  set(Python_ROOT_DIR "$ENV{PYENV_ROOT}/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
+
+
+if(NOPYENV)
+   find_package(Python 3.9.1...<3.10 COMPONENTS Interpreter Development)
+   set(pythonvers ${Python_VERSION})
+   if (NOT Python_FOUND)
+      message(FATAL_ERROR "We did not find the Python 3.9 interpreter. "
+         "Please run ./prerequisites.sh (or \"brew install python@3.9\") "
+         "again before calling cmake. The Python 3.9 interpreter "
+         "is required in order to successfully use BioDynaMo.")      
+   endif()
 else()
-  set(Python_ROOT_DIR "$ENV{HOME}/.pyenv/versions/${pythonvers}" CACHE PATH "The path to the Python ${pythonvers} installation of PyEnv.")
-endif()
-set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-if(NOT EXISTS ${Python_LIB_PATH})
-  set(Python_LIB_PATH "${Python_ROOT_DIR}/lib/libpython${pythonvers_major}.${pythonvers_minor}m${CMAKE_SHARED_LIBRARY_SUFFIX}")
-endif()
-if(EXISTS "${Python_ROOT_DIR}/bin/python" AND EXISTS ${Python_LIB_PATH})
-  set(PYTHON_FOUND TRUE)
-  set(PYTHON_EXECUTABLE "${Python_ROOT_DIR}/bin/python")
-  set(Python_LIBRARIES ${Python_LIB_PATH})
-  message(STATUS "Python executable found at: ${PYTHON_EXECUTABLE}")
-else()
-  message(FATAL_ERROR "We did not find the Python 3 interpreter from PyEnv. "
-    "Please run ./prerequisites.sh again before calling cmake. The Python ${pythonvers} "
-    "interpreter is required in order to successfully use BioDynaMo. "
-    "If you installed PyEnv somewhere other than in your home directory, please "
-    "rerun cmake with -DPython_ROOT_DIR=</path/to/pyenv>/versions/${pythonvers}")
+   # Check if Python 3.9.1 from PyEnv is installed
+   set(pythonvers "3.9.1")
+   find_package(Python ${pythonvers} EXACT COMPONENTS Interpreter Development)
+   if (NOT Python_FOUND)
+      message(FATAL_ERROR "We did not find the Python ${pythonvers} interpreter from PyEnv. "
+         "Make sure you executed \"pyenv shell ${pythonvers}\" before running cmake. "
+         "If that doesn't work, run ./prerequisites.sh again. The Python ${pythonvers} "
+         "interpreter is required in order to successfully use BioDynaMo."
+         "You may also try the following sequence of commands that has often resolved"
+         "the problem: \n"
+         "export PATH=\"$HOME/.pyenv/bin:$PATH\" \n"
+         "eval \"$(pyenv init --path)\" \n"
+         "eval \"$(pyenv init -)\" \n"
+         "pyenv shell ${pythonvers}")
+   endif()
 endif()
 
 # Check if OpenMPI is present
 find_package(MPI)
 if (MPI_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
+  MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
 calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif()
 
-# Disable paraview until we upgrade to v5.8 on macOS, numa is not supported on macOS
 if(APPLE)
-  set(paraview OFF)
   set(numa OFF)
 endif()
 
@@ -273,8 +291,7 @@ if(numa)
 endif()
 
 if(paraview)
-    # If we specify a custom location for ParaView then we need to specify also a custom location
-    # for Qt.
+    # If we specify a custom location for ParaView then we need to specify also a custom location for Qt.
     if ((DEFINED ENV{ParaView_DIR} AND NOT DEFINED ENV{Qt5_DIR}) OR (NOT DEFINED ENV{ParaView_DIR} AND DEFINED ENV{Qt5_DIR}))
         MESSAGE(FATAL_ERROR "\nFATAL ERROR \nYou need to specify both ParaView_DIR and Qt5_DIR in order to build "
                 "BioDynaMo. This is needed only if you want to use your own versions of ParaView and Qt.")
@@ -287,34 +304,44 @@ if(paraview)
     if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
       set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
     endif()
-
     # Check the first time if ParaView exists in the system.
-    # Upgrade to ParaView 5.8 on MacOS will happen as soon as Kitware releases the Python3
-    # compatible binaries
-    if(APPLE)
-      find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
-            vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-      if(${ParaView_FOUND})
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
-      endif()
-    else()
-      find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
-      if(${ParaView_FOUND})
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
-      endif()
+    find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+                 PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview ENV{ParaView_DIR})
+
+    if(ParaView_FOUND)
+        # Check if found ParaView is BDM installed (matchres > -1)
+        string(FIND ${ParaView_PREFIX_PATH} ${CMAKE_THIRD_PARTY_DIR} matchres)
+        if (${matchres} GREATER -1)
+            # check SHA256 of ParaView to see if it matches currently supported ParaView
+            if (IS_DIRECTORY ${CMAKE_THIRD_PARTY_DIR}/paraview)
+                if (EXISTS ${CMAKE_THIRD_PARTY_DIR}/paraview/tar-sha256)
+                    # check if SHA256 of installed ParaView is the same as the expected one
+                    file(READ ${CMAKE_THIRD_PARTY_DIR}/paraview/tar-sha256 TAR_SHA256)
+                    if(NOT "${TAR_SHA256}" STREQUAL "${${DETECTED_OS_VERS}-ParaView}")
+                        # BDM installed ParaView has wrong SHA256... deleting it
+                        message(WARNING "The found ParaView version is not compatible... deleting it...")
+                        file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/paraview)
+                        file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/qt)
+                        unset(ParaView_FOUND)
+                    endif()
+                else()
+                    # BDM installed ParaView exists but no SHA256 file... deleting it
+                    message(WARNING "The found ParaView version cannot be determined... deleting it...")
+                    file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/paraview)
+                    file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/qt)
+                    unset(ParaView_FOUND)
+                endif()
+            endif()
+        endif()
     endif()
 
-    # Check if ParaView was found in the system. If that's not the case then we will proceed
-    # to download it.
-    if(NOT ${ParaView_FOUND})
+    if(NOT ParaView_FOUND)
       PRINT_WARNING()
-      MESSAGE("ParaView was not found in the system. Therefore it will be installed automatically now "
-              "together with Qt5.")
+      MESSAGE("We did not find any ParaView installed on the system. We will proceed to download it "
+              "together with Qt5. ParaView will be installed in the location ${CMAKE_THIRD_PARTY_DIR}/paraview.")
       PRINT_LINE()
 
-      # If we did not found paraview then we will install it automatically
-      # with the Qt package.
+      # If we did not found paraview then we will install it automatically with the Qt package.
       include(external/Qt)
       PRINT_LINE()
       MESSAGE("Qt5 was successfully downloaded and installed. We will proceed now with ParaView.")
@@ -326,17 +353,11 @@ if(paraview)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
-      if(APPLE)
-        find_package(ParaView 5.5 CONFIG COMPONENTS vtkPVPythonCatalyst vtkPVVTKExtensionsDefault
-              vtkPVServerManagerRendering PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.5)
-      else()
-        find_package(ParaView 5.8 CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
-              PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
-        include_directories(${ParaView_PREFIX_PATH}/include/paraview-5.8)
-      endif()
+      find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
+                   PATHS ${CMAKE_THIRD_PARTY_DIR}/paraview)
     endif()
 
+    include_directories(${ParaView_PREFIX_PATH}/include/paraview-${CMAKE_BDM_PVVERSION})
     add_definitions("-DUSE_PARAVIEW")
 endif()
 
@@ -450,6 +471,8 @@ include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/omp")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/opencl")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/unibn")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/nanoflann")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/cxxopts-v2.2.1")
 include_directories("${EXTRACTED_THIRD_PARTY_LIBS}")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
@@ -496,7 +519,13 @@ if(paraview)
                     LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} biodynamo
                     PLUGIN "TRUE")
   set(REQUIRED_PARAVIEW_LIBRARIES "${REQUIRED_PARAVIEW_LIBRARIES};VisualizationAdaptor")
-  SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+
+  if(LINUX)
+    SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+  else()
+    # see: https://github.com/pytorch/pytorch/pull/3439/files
+    SET_TARGET_PROPERTIES(VisualizationAdaptor PROPERTIES LINK_FLAGS "-dynamic")
+  endif()
 endif()
 
 if(${VTune_FOUND})
@@ -525,6 +554,7 @@ if (CUDA_FOUND)
     set(CUDA_HOST_COMPILER "/usr/bin/")
     set(NVCCFLAGS "--compiler-bindir ${CUDA_HOST_COMPILER}")
     if(CMAKE_BUILD_TYPE MATCHES "Debug")
+      message("CUDA Debug mode")
       set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -g -G -O0" )
     endif()
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
@@ -559,8 +589,10 @@ if (test)
   file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/analysis/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/behavior/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/environment/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
@@ -573,8 +605,10 @@ if (test)
   file(GLOB TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/unit/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/analysis/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/behavior/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/container/*.h
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/environment/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.h
@@ -702,6 +736,10 @@ set(cmakedir "$BDMSYS/share/cmake")
 set(configargs ${BDM_CONFIGARGS})
 set(cmakeinvoke "${CMAKE_INVOKE} -G ${CMAKE_GENERATOR}")
 set(omplibs ${OpenMP_CXX_LIBRARIES})
+set(with_pyenv ON)
+if (NOPYENV)
+   set(with_pyenv OFF)
+endif()
 if (DEFINED ENV{PYENV_ROOT})
   set(pyenvroot "$ENV{PYENV_ROOT}")
 else()
@@ -742,5 +780,5 @@ endif()
 PRINT_LINE()
 MESSAGE("You have just finished to configure the BioDynaMo source.\n\
 Compile it by running \"${buildcmd}\".\n\
-Before using it do \". ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/thisbdm.sh.\"")
+Before using it do \". ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/thisbdm.sh\".")
 PRINT_LINE()

@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
 #include "core/environment/environment.h"
+#include "core/environment/morton_order.h"
 #include "core/functor.h"
+#include "core/load_balance_info.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/util/log.h"
@@ -91,6 +93,13 @@ class UniformGridEnvironment : public Environment {
 
     bool IsEmpty(uint64_t grid_timestamp) const {
       return grid_timestamp != timestamp_;
+    }
+
+    uint16_t Size(uint64_t grid_timestamp) const {
+      if (IsEmpty(grid_timestamp)) {
+        return 0;
+      }
+      return length_;
     }
 
     /// @brief      Adds an agent to this box
@@ -218,7 +227,7 @@ class UniformGridEnvironment : public Environment {
   };
 
   explicit UniformGridEnvironment(Adjacency adjacency = kHigh)
-      : adjacency_(adjacency) {}
+      : adjacency_(adjacency), lbi_(this) {}
 
   UniformGridEnvironment(UniformGridEnvironment const&) = delete;
   void operator=(UniformGridEnvironment const&) = delete;
@@ -227,8 +236,10 @@ class UniformGridEnvironment : public Environment {
 
   /// Clears the grid
   void Clear() override {
-    box_length_ = 1;
-    largest_object_size_ = 0;
+    if (!is_custom_box_length_) {
+      box_length_ = 1;
+    }
+    box_length_squared_ = 1;
     num_boxes_axis_ = {{0}};
     num_boxes_xy_ = 0;
     int32_t inf = std::numeric_limits<int32_t>::max();
@@ -253,6 +264,13 @@ class UniformGridEnvironment : public Environment {
     UniformGridEnvironment* grid_ = nullptr;
   };
 
+  void SetBoxLength(int32_t bl) {
+    box_length_ = bl;
+    is_custom_box_length_ = true;
+  }
+
+  int32_t GetBoxLength() { return box_length_; }
+
   /// Updates the grid, as agents may have moved, added or deleted
   void Update() override {
     auto* rm = Simulation::GetActive()->GetResourceManager();
@@ -263,14 +281,20 @@ class UniformGridEnvironment : public Environment {
 
       auto inf = Math::kInfinity;
       std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-      CalcSimDimensionsAndLargestAgent(&tmp_dim, &largest_object_size_);
+      CalcSimDimensionsAndLargestAgent(&tmp_dim);
       RoundOffGridDimensions(tmp_dim);
 
-      auto los = ceil(largest_object_size_);
-      assert(los > 0 &&
-             "The largest object size was found to be 0. Please check if your "
-             "cells are correctly initialized.");
-      box_length_ = los;
+      // If the box_length_ is not set manually, we set it to the largest agent
+      // size
+      if (!is_custom_box_length_) {
+        auto los = ceil(GetLargestAgentSize());
+        assert(
+            los > 0 &&
+            "The largest object size was found to be 0. Please check if your "
+            "cells are correctly initialized.");
+        box_length_ = los;
+      }
+      box_length_squared_ = box_length_ * box_length_;
 
       for (int i = 0; i < 3; i++) {
         int dimension_length =
@@ -304,24 +328,24 @@ class UniformGridEnvironment : public Environment {
       }
 
       num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
-      auto total_num_boxes = num_boxes_xy_ * num_boxes_axis_[2];
+      total_num_boxes_ = num_boxes_xy_ * num_boxes_axis_[2];
 
       CheckGridGrowth();
 
       // resize boxes_
-      if (boxes_.size() != total_num_boxes) {
-        if (boxes_.capacity() < total_num_boxes) {
-          boxes_.reserve(total_num_boxes * 2);
+      if (boxes_.size() != total_num_boxes_) {
+        if (boxes_.capacity() < total_num_boxes_) {
+          boxes_.reserve(total_num_boxes_ * 2);
         }
-        boxes_.resize(total_num_boxes);
+        boxes_.resize(total_num_boxes_);
       }
 
       successors_.reserve();
 
       // Assign agents to boxes
-      AssignToBoxesFunctor functor(this);
-      rm->ForEachAgentParallel(1000, functor);
       auto* param = Simulation::GetActive()->GetParam();
+      AssignToBoxesFunctor functor(this);
+      rm->ForEachAgentParallel(param->scheduling_batch_size, functor);
       if (param->bound_space) {
         int min = param->min_bound;
         int max = param->max_bound;
@@ -399,55 +423,17 @@ class UniformGridEnvironment : public Environment {
     return distance < squared_radius;
   }
 
-  void UpdateBoxZOrder() {
-    // iterate boxes in Z-order / morton order
-    // TODO(lukas) this is a very quick attempt to test an idea
-    // improve performance of this brute force solution
-    zorder_sorted_boxes_.resize(boxes_.size());
-    const uint32_t nx = num_boxes_axis_[0];
-    const uint32_t ny = num_boxes_axis_[1];
-    const uint32_t nz = num_boxes_axis_[2];
-#pragma omp parallel for collapse(3)
-    for (uint32_t x = 0; x < nx; x++) {
-      for (uint32_t y = 0; y < ny; y++) {
-        for (uint32_t z = 0; z < nz; z++) {
-          auto box_idx = GetBoxIndex(std::array<uint32_t, 3>{x, y, z});
-          auto morton = libmorton::morton3D_64_encode(x, y, z);
-          zorder_sorted_boxes_[box_idx] =
-              std::pair<uint32_t, const Box*>{morton, &boxes_[box_idx]};
-        }
-      }
-    }
-#ifdef LINUX
-    __gnu_parallel::sort(
-        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-#else
-    std::sort(
-        zorder_sorted_boxes_.begin(), zorder_sorted_boxes_.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
-#endif  // LINUX
-  }
-
-  /// This method iterates over all elements. Iteration is performed in
-  /// Z-order of boxes. There is no particular order for elements inside a box.
-  void IterateZOrder(Functor<void, const AgentHandle&>& callback) override {
-    UpdateBoxZOrder();
-    for (uint64_t i = 0; i < zorder_sorted_boxes_.size(); i++) {
-      auto it = zorder_sorted_boxes_[i].second->begin();
-      while (!it.IsAtEnd()) {
-        callback(*it);
-        ++it;
-      }
-    }
+  LoadBalanceInfo* GetLoadBalanceInfo() override {
+    lbi_.Update();
+    return &lbi_;
   }
 
   /// @brief      Applies the given lambda to each neighbor
   ///
   /// @param[in]  lambda  The operation as a lambda
   /// @param      query   The query object
-  void ForEachNeighbor(const std::function<void(const Agent*)>& lambda,
-                       const Agent& query) const {
+  void ForEachNeighbor(const std::function<void(Agent*)>& lambda,
+                       Agent& query) const {
     auto idx = query.GetBoxIdx();
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
@@ -465,17 +451,27 @@ class UniformGridEnvironment : public Environment {
     }
   }
 
-  /// @brief      Applies the given lambda to each neighbor or the specified
-  ///             agent.
+  /// @brief      Applies the given lambda to each neighbor of the specified
+  ///             agent is within the squared radius (i.e. the criteria)
   ///
   /// In simulation code do not use this function directly. Use the same
-  /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
   ///
-  /// @param[in]  lambda  The operation as a lambda
-  /// @param      query   The query object
+  /// @param[in]  lambda    The operation as a lambda
+  /// @param      query     The query object
+  /// @param      criteria  The squared search radius (type: double*)
   ///
-  void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
-                       const Agent& query) override {
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Agent& query, double squared_radius) override {
+    if (squared_radius > box_length_squared_) {
+      Log::Fatal(
+          "UniformGridEnvironment::ForEachNeighbor",
+          "The requested search radius (", std::sqrt(squared_radius), ")",
+          " of the neighborhood search exceeds the "
+          "box length (",
+          box_length_, "). The resulting neighborhood would be incomplete.");
+    }
+
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -539,9 +535,8 @@ class UniformGridEnvironment : public Environment {
   /// @param      query   The query object
   /// @param[in]  squared_radius  The search radius squared
   ///
-  void ForEachNeighborWithinRadius(
-      const std::function<void(const Agent*)>& lambda, const Agent& query,
-      double squared_radius) {
+  void ForEachNeighbor(const std::function<void(Agent*)>& lambda,
+                       const Agent& query, double squared_radius) {
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
 
@@ -573,7 +568,7 @@ class UniformGridEnvironment : public Environment {
   /// @return     The box index.
   ///
   size_t GetBoxIndex(const Double3& position) const {
-    std::array<uint32_t, 3> box_coord;
+    std::array<uint64_t, 3> box_coord;
     box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
     box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
     box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
@@ -581,48 +576,29 @@ class UniformGridEnvironment : public Environment {
     return GetBoxIndex(box_coord);
   }
 
-  /// Gets the size of the largest object in the grid
-  double GetLargestObjectSize() const override { return largest_object_size_; }
-
-  const std::array<int32_t, 6>& GetDimensions() const override {
+  std::array<int32_t, 6> GetDimensions() const override {
     return grid_dimensions_;
   }
 
-  const std::array<int32_t, 2>& GetDimensionThresholds() const override {
+  std::array<int32_t, 2> GetDimensionThresholds() const override {
     return threshold_dimensions_;
+  }
+
+  void GetNumBoxesAxis(uint32_t* nba) {
+    nba[0] = num_boxes_axis_[0];
+    nba[1] = num_boxes_axis_[1];
+    nba[2] = num_boxes_axis_[2];
   }
 
   uint64_t GetNumBoxes() const { return boxes_.size(); }
 
-  uint32_t GetBoxLength() { return box_length_; }
-
-  std::array<uint32_t, 3> GetBoxCoordinates(size_t box_idx) const {
-    std::array<uint32_t, 3> box_coord;
+  std::array<uint64_t, 3> GetBoxCoordinates(size_t box_idx) const {
+    std::array<uint64_t, 3> box_coord;
     box_coord[2] = box_idx / num_boxes_xy_;
     auto remainder = box_idx % num_boxes_xy_;
     box_coord[1] = remainder / num_boxes_axis_[0];
     box_coord[0] = remainder % num_boxes_axis_[0];
     return box_coord;
-  }
-
-  /// @brief      Gets the information about the grid
-  ///
-  /// @param      box_length       The grid's box length
-  /// @param      num_boxes_axis   The number boxes along each axis of the grid
-  /// @param      grid_dimensions  The grid's dimensions
-  ///
-  /// @tparam     TUint32          A uint32 type (could also be cl_uint)
-  /// @tparam     TInt32           A int32 type (could be cl_int)
-  ///
-  void GetGridInfo(uint32_t* box_length, uint32_t* num_boxes_axis,
-                   int32_t* grid_dimensions) {
-    *box_length = box_length_;
-    num_boxes_axis[0] = num_boxes_axis_[0];
-    num_boxes_axis[1] = num_boxes_axis_[1];
-    num_boxes_axis[2] = num_boxes_axis_[2];
-    grid_dimensions[0] = grid_dimensions_[0];
-    grid_dimensions[1] = grid_dimensions_[2];
-    grid_dimensions[2] = grid_dimensions_[4];
   }
 
   // NeighborMutex ---------------------------------------------------------
@@ -691,16 +667,7 @@ class UniformGridEnvironment : public Environment {
       mutexes_.resize(grid->GetNumBoxes());
     }
 
-    NeighborMutex* GetMutex(uint64_t box_idx) override {
-      auto* grid = static_cast<UniformGridEnvironment*>(
-          Simulation::GetActive()->GetEnvironment());
-      FixedSizeVector<uint64_t, 27> box_indices;
-      grid->GetMooreBoxIndices(&box_indices, box_idx);
-      thread_local GridNeighborMutex* mutex =
-          new GridNeighborMutex(box_indices, this);
-      mutex->SetMutexIndices(box_indices);
-      return mutex;
-    }
+    NeighborMutex* GetMutex(uint64_t box_idx) override;
 
    private:
     /// one mutex for each box in `UniformGridEnvironment::boxes_`
@@ -714,6 +681,39 @@ class UniformGridEnvironment : public Environment {
   }
 
  private:
+  class LoadBalanceInfoUG : public LoadBalanceInfo {
+   public:
+    LoadBalanceInfoUG(UniformGridEnvironment* grid);
+    virtual ~LoadBalanceInfoUG();
+    void Update();
+    void CallHandleIteratorConsumer(
+        uint64_t start, uint64_t end,
+        Functor<void, Iterator<AgentHandle>*>& f) const override;
+
+   private:
+    UniformGridEnvironment* grid_;
+    MortonOrder mo_;
+    ParallelResizeVector<Box*> sorted_boxes_;
+    ParallelResizeVector<uint64_t> cummulated_agents_;
+
+    struct InitializeVectorFunctor : public Functor<void, Iterator<uint64_t>*> {
+      UniformGridEnvironment* grid;
+      uint64_t start;
+      ParallelResizeVector<Box*>& sorted_boxes;
+      ParallelResizeVector<uint64_t>& cummulated_agents;
+
+      InitializeVectorFunctor(UniformGridEnvironment* grid, uint64_t start,
+                              decltype(sorted_boxes) sorted_boxes,
+                              decltype(cummulated_agents) cummulated_agents);
+      virtual ~InitializeVectorFunctor();
+
+      void operator()(Iterator<uint64_t>* it) override;
+    };
+
+    void AllocateMemory();
+    void InitializeVectors();
+  };
+
   /// The vector containing all the boxes in the grid
   /// Using parallel resize vector to enable parallel initialization and thus
   /// better scalability.
@@ -722,11 +722,17 @@ class UniformGridEnvironment : public Environment {
   /// This is used to decide if boxes should be reinitialized
   uint32_t timestamp_ = 0;
   /// Length of a Box
-  uint32_t box_length_ = 1;
-  /// Stores the number of boxes for each axis
-  std::array<uint32_t, 3> num_boxes_axis_ = {{0}};
+  int32_t box_length_ = 1;
+  /// Length of a Box squared
+  int32_t box_length_squared_ = 1;
+  /// True when the box length was set manually
+  bool is_custom_box_length_ = false;
+  /// Stores the number of Boxes for each axis
+  std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
   size_t num_boxes_xy_ = 0;
+  /// The total number of boxes in the uniform grid
+  uint64_t total_num_boxes_ = 0;
   /// Implements linked list - array index = key, value: next element
   ///
   ///     // Usage
@@ -735,16 +741,14 @@ class UniformGridEnvironment : public Environment {
   AgentVector<AgentHandle> successors_;
   /// Determines which boxes to search neighbors in (see enum Adjacency)
   Adjacency adjacency_;
-  /// The size of the largest object in the simulation
-  double largest_object_size_ = 0;
   /// Cube which contains all agents
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
   std::array<int32_t, 6> grid_dimensions_;
   /// Stores the min / max dimension value that need to be surpassed in order
   /// to trigger a diffusion grid change
   std::array<int32_t, 2> threshold_dimensions_;
-  /// stores pairs of <box morton code,  box pointer> sorted by morton code.
-  ParallelResizeVector<std::pair<uint32_t, const Box*>> zorder_sorted_boxes_;
+
+  LoadBalanceInfoUG lbi_;  //!
 
   /// Holds instance of NeighborMutexBuilder.
   /// NeighborMutexBuilder is updated if `Param::thread_safety_mechanism`
@@ -987,7 +991,7 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @return     The box index.
   ///
-  size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const {
+  size_t GetBoxIndex(const std::array<uint64_t, 3>& box_coord) const {
     return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
            box_coord[0];
   }

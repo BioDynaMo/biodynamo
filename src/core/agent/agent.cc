@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -74,19 +74,6 @@ void Agent::Update(const NewAgentEvent& event) {
   UpdateBehaviors(event);
 }
 
-struct SetStaticnessForEachNeighbor
-    : public Functor<void, const Agent*, double> {
-  Agent* agent_;
-  explicit SetStaticnessForEachNeighbor(Agent* agent) : agent_(agent) {}
-
-  void operator()(const Agent* neighbor, double squared_distance) override {
-    double distance = agent_->GetDiameter() + neighbor->GetDiameter();
-    if (squared_distance < distance * distance) {
-      neighbor->SetStaticnessNextTimestep(false);
-    }
-  }
-};
-
 void Agent::PropagateStaticness() {
   if (!Simulation::GetActive()->GetParam()->detect_static_agents) {
     is_static_next_ts_ = false;
@@ -99,8 +86,15 @@ void Agent::PropagateStaticness() {
   propagate_staticness_neighborhood_ = false;
   is_static_next_ts_ = false;
   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-  SetStaticnessForEachNeighbor for_each(this);
-  ctxt->ForEachNeighbor(for_each, *this);
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  auto set_staticness = L2F([this](Agent* neighbor, double squared_distance) {
+    double distance = this->GetDiameter() + neighbor->GetDiameter();
+    if (squared_distance < distance * distance) {
+      neighbor->SetStaticnessNextTimestep(false);
+    }
+  });
+  ctxt->ForEachNeighbor(set_staticness, *this,
+                        env->GetLargestAgentSizeSquared());
 }
 
 void Agent::RunDiscretization() {}
@@ -146,7 +140,7 @@ const InlineVector<Behavior*, 2>& Agent::GetAllBehaviors() const {
 // ---------------------------------------------------------------------------
 
 void Agent::RemoveFromSimulation() const {
-  Simulation::GetActive()->GetExecutionContext()->RemoveFromSimulation(uid_);
+  Simulation::GetActive()->GetExecutionContext()->RemoveAgent(uid_);
 }
 
 void Agent::InitializeBehaviors(const NewAgentEvent& event) {

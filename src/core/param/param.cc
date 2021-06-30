@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -170,6 +170,30 @@ void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
 }
 
 // -----------------------------------------------------------------------------
+void AssignBoundSpaceMode(const std::shared_ptr<cpptoml::table>& config,
+                          Param* param) {
+  const std::string config_key = "simulation.bound_space";
+  if (config->contains_qualified(config_key)) {
+    auto value = config->get_qualified_as<std::string>(config_key);
+    if (!value) {
+      return;
+    }
+    auto str_value = *value;
+    if (str_value == "open") {
+      param->mapped_data_array_mode = Param::MappedDataArrayMode::kZeroCopy;
+    } else if (str_value == "closed") {
+      param->mapped_data_array_mode = Param::MappedDataArrayMode::kCache;
+    } else if (str_value == "torus") {
+      param->mapped_data_array_mode = Param::MappedDataArrayMode::kCopy;
+    } else {
+      Log::Fatal("Param",
+                 Concat("Parameter bound_space was set to an invalid value (",
+                        str_value, ")."));
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
 void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // group parameters
   for (auto& el : groups_) {
@@ -179,19 +203,23 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // simulation group
   BDM_ASSIGN_CONFIG_VALUE(random_seed, "simulation.random_seed");
   BDM_ASSIGN_CONFIG_VALUE(output_dir, "simulation.output_dir");
+  BDM_ASSIGN_CONFIG_VALUE(environment, "simulation.environment");
+  BDM_ASSIGN_CONFIG_VALUE(nanoflann_depth, "simulation.nanoflann_depth");
+  BDM_ASSIGN_CONFIG_VALUE(unibn_bucketsize, "simulation.unibn_bucketsize");
   BDM_ASSIGN_CONFIG_VALUE(backup_file, "simulation.backup_file");
   BDM_ASSIGN_CONFIG_VALUE(restore_file, "simulation.restore_file");
   BDM_ASSIGN_CONFIG_VALUE(backup_interval, "simulation.backup_interval");
   BDM_ASSIGN_CONFIG_VALUE(simulation_time_step, "simulation.time_step");
   BDM_ASSIGN_CONFIG_VALUE(simulation_max_displacement,
                           "simulation.max_displacement");
-  BDM_ASSIGN_CONFIG_VALUE(bound_space, "simulation.bound_space");
   BDM_ASSIGN_CONFIG_VALUE(min_bound, "simulation.min_bound");
   BDM_ASSIGN_CONFIG_VALUE(max_bound, "simulation.max_bound");
-  BDM_ASSIGN_CONFIG_VALUE(leaking_edges, "simulation.leaking_edges");
-  BDM_ASSIGN_CONFIG_VALUE(diffusion_type, "simulation.diffusion_type");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_boundary_condition,
+                          "simulation.diffusion_boundary_condition");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_method, "simulation.diffusion_method");
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients,
                           "simulation.calculate_gradients");
+  AssignBoundSpaceMode(config, this);
   AssignThreadSafetyMechanism(config, this);
 
   // visualization group
@@ -301,8 +329,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "performance.mem_mgr_aligned_pages_shift");
   BDM_ASSIGN_CONFIG_VALUE(mem_mgr_growth_rate,
                           "performance.mem_mgr_growth_rate");
-  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_max_mem_per_thread,
-                          "performance.mem_mgr_max_mem_per_thread");
+  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_max_mem_per_thread_factor,
+                          "performance.mem_mgr_max_mem_per_thread_factor");
   BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing,
                           "performance.minimize_memory_while_rebalancing");
   AssignMappedDataArrayMode(config, this);

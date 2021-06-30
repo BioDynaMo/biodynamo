@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ class AgentUidGenerator {
   }
 
   // Returns the highest index that was used for an AgentUid
-  uint64_t GetHighestIndex() const { return counter_; }
+  AgentUid::Index_t GetHighestIndex() const { return counter_; }
 
   void EnableDefragmentation(const AgentUidMap<AgentHandle>* map) {
     // check if already in defragmentation mode

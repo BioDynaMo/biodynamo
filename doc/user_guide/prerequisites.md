@@ -29,6 +29,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 ### Required Packages
 
   * **wget**: Retrieves files from the web
+  * **curl**: Command line tool for transferring data with URL syntax
   * **cmake**: Set of tools for automate building, testing of software
   * **make**: Build automation tool
   * **gcc**: GNU C compiler
@@ -42,7 +43,6 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 
 ### Required package for custom Python installation with pyenv
 
-  * **curl**: Command line tool for transferring data with URL syntax
   * **libssl-dev**: Secure Sockets Layer toolkit - development files
   * **zlib1g-dev**: Compression library - development
   * **libbz2-dev**: High-quality block-sorting file compressor library - development
@@ -63,6 +63,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **graphviz**: Graph Visualization Software used optionally by Doxygen
   * **kcov**: Code coverage testing tool (only on Ubuntu 20.04)
   * **libxml2-dev**: Development files for the GNOME XML library
+  * **libgsl-dev**: GNU Scientific Library (GSL) -- development package  
 
 ### Installation
 
@@ -70,9 +71,13 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y wget cmake make gcc g++ \
+sudo apt-get install -y wget curl make gcc g++ \
 libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
 libpthread-stubs0-dev
+
+curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+chmod +x cmake-3.19.3-Linux-x86_64.sh
+sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 ```
 
 We install pyenv as the Python Version Management tool to be able to switch
@@ -80,23 +85,24 @@ to a supported Python environment for BioDynaMo. This will not interfere with
 your system's Python installation.
 
 ```bash
-sudo apt-get install -y curl libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
+sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
   libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.8.0
+pyenv shell 3.9.1
 python -m pip install nbformat jupyter metakernel jupyterlab
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
-  doxygen graphviz libxml2-dev
+  doxygen graphviz libxml2-dev libgsl-dev
 # on Ubuntu 20.04
 sudo apt-get install -y kcov
 ```
@@ -108,10 +114,10 @@ sudo apt-get install -y kcov
  * **epel-release**: Provides a set of additional packages for Enterprise Linux
  * **ius-release**: Provides RPM packages for newer software versions for for Enterprise Linux distributions
  * **wget**: Retrieves files from the web
- * **cmake3**: Set of tools for automate building, testing of software
+ * **cmake**: Set of tools for automate building, testing of software
  * **libXt-devel**: Basic library for developing X11
  * **libXext-devel**: Library which contains a handful of X11 extensions
- * **devtoolset-7-gcc**: Compiler suite for C and C++
+ * **devtoolset-8-gcc**: Compiler suite for C and C++
  * **numactl-devel**: Development files for NUMA (simple programming interface to the policy supported by the Linux kernel)
  * **freeglut-devel**: Development files for GLUT (OpenGL Utility Toolkit)
  * **openmpi3-devel**: Development files for OpenMP (API for multiprocessor programming)
@@ -134,11 +140,16 @@ sudo apt-get install -y kcov
 
  * **llvm-toolset-7**: software collection that provides software from the LLVM suite
  * **llvm-toolset-7-clang-tools-extra**: software collection that provides `clang-format` and `clang-tidy`
+ * **llvm-toolset-7-llvm-devel**: LLVM developer libraries
+ * **llvm-toolset-7-llvm-static**: LLVM static libraries
  * **valgrind**: A suite of tools for debugging and profiling
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
- * **llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static**: Modular compiler and toolchain
  * **libxml2-devel**: Development files for the GNOME XML library
+ * **gsl-devel**: GNU Scientific Library (GSL) -- development package
+ * **atlas-devel**: Automatically Tuned Linear Algebra Software -- development package
+ * **blas-devel**: The Basic Linear Algebra Subprograms library -- development package
+ * **lapack-devel**: Numerical linear algebra package libraries -- development package
 
 ### Installation
 
@@ -148,9 +159,13 @@ sudo apt-get install -y kcov
 sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-sudo yum -y install wget cmake3 libXt-devel libXext-devel \
-  devtoolset-7-gcc* numactl-devel \
+sudo yum -y install wget libXt-devel libXext-devel \
+  devtoolset-8-gcc* numactl-devel \
   openmpi3-devel freeglut-devel git
+
+curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+chmod +x cmake-3.19.3-Linux-x86_64.sh
+./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 ```
 
 We install pyenv as the Python Version Management tool to be able to switch
@@ -158,22 +173,21 @@ to a supported Python environment for BioDynaMo. This will not interfere with
 your system's Python installation.
 
 ```bash
-sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-  sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+sudo yum install -y @development zlib-devel bzip2 bzip2-devel readline-devel \
+  sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.8.0
+pyenv shell 3.9.1
 python -m pip install nbformat jupyter metakernel jupyterlab
-sudo yum -y install llvm-toolset-7 \
-   llvm-toolset-7-clang-tools-extra doxygen graphviz valgrind freeglut-devel
 # SBML integration
 sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
@@ -184,30 +198,40 @@ gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
 sudo yum update -y
-sudo yum install -y llvm-toolset-6.0-llvm-devel llvm-toolset-6.0-llvm-static
-sudo yum install -y libxml2-devel
+sudo yum install -y doxygen graphviz valgrind freeglut-devel libxml2-devel
+sudo yum install -y llvm-toolset-7 llvm-toolset-7-clang-tools-extra \
+   llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static \
+   gdl-devel atlas-devel blas-devel lapack-devel
 ```
 
-## MacOS
+## macOS
 
-Install Xcode (from the App Store) and the command line tools,
-using the command ``"xcode-select --install"``.
+Requirements to build on macOS are:
+
+ * A 64-bit Intel CPU or Apple Silicon CPU
+ * macOS Catalina (10.15) or higher
+ * [Xcode](https://itunes.apple.com/us/app/xcode/id497799835) and the Command Line Tools (CLT) for Xcode: `xcode-select --install`  
+    (or from [developer.apple.com/downloads](https://developer.apple.com/downloads))
+ * An up to date [Homebrew](https://brew.sh) instalation (MacPorts and Fink are not supported)
+ * A Bourne-compatible shell for installation (e.g. `bash` or `zsh`)
 
 ### Required Packages
 
  * **libomp**: Development files for OpenMP (API for multiprocessor programming)
  * **open-mpi**: Development files for OpenMP (API for multiprocessor programming)
- * **pyenv**: Virtual Python environment
+ * **python@3.9**: Python interpreter
  * **wget**: Retrieves files from the web
  * **cmake**: Set of tools for automate building, testing of software
  * **ninja**: Ninja is a small build system with a focus on speed
  * **bash**: Recent version of bash shell
+ * **tbb**: Rich and complete approach to parallelism in C++ (needed by ROOT on Apple M1)
 
 ### Optional Packages
 
  * **doxygen**: Tool for generating documentation from annotated C++ sources
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
  * **kcov**: Code coverage testing tool
+ * **gsl**: GNU Scientific Library (GSL) -- development package  
 
 ### Installation
 
@@ -215,18 +239,12 @@ using the command ``"xcode-select --install"``.
 
 ```bash
 brew update; brew upgrade
-brew install libomp open-mpi pyenv wget cmake ninja bash
-
-# Install Python 3.8.0 environment
-export PYENV_ROOT=/usr/local/opt/.pyenv
-eval "$(pyenv init -)"
-PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
+brew install libomp open-mpi python@3.9 wget cmake ninja bash tbb
 ```
 
 #### Optional Packages
 
 ```bash
-pyenv shell 3.8.0
-python -m pip install nbformat jupyter metakernel jupyterlab
-brew install doxygen graphviz kcov 
+brew install doxygen graphviz kcov gsl
+python3 -m pip install nbformat jupyter metakernel jupyterlab 
 ```

@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,6 +39,10 @@ sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm \
 sudo yum install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_required)
 
+curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+chmod +x cmake-3.19.3-Linux-x86_64.sh
+./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
 fi
@@ -48,10 +52,13 @@ if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
   echo "PyEnv was not found. Installing now..."
   curl https://pyenv.run | bash
 fi
-export PATH="$HOME/.pyenv/bin:$PATH"
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
+pyenv update
 
-PYVERS=3.8.0
+PYVERS=3.9.1
 
 # If Python $PYVERS is not installed, install it
 if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
@@ -74,16 +81,8 @@ mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirror
 gpgcheck=1
 gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 EOF'
-  sudo yum install -y \
+  sudo yum install -y --nogpgcheck \
     $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_extra)
 fi
-
-# Set up cmake alias such to be able to use it
-# FIXME: this is will basically change permanently the system of the user
-sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
-  --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
-  --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
-  --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
-  --family cmake
 
 exit 0

@@ -1,8 +1,8 @@
+tbb
 libomp
 open-mpi
-pyenv
+python@3.9
 wget
 cmake
 ninja
 bash
-

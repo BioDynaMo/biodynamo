@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,8 +13,17 @@
 // -----------------------------------------------------------------------------
 
 #include "core/resource_manager.h"
+#include <cmath>
+#ifndef NDEBUG
+#include <set>
+#endif  // NDEBUG
+#include "core/algorithm.h"
+#include "core/container/shared_data.h"
 #include "core/environment/environment.h"
 #include "core/simulation.h"
+#include "core/util/partition.h"
+#include "core/util/plot_memory_layout.h"
+#include "core/util/timing.h"
 
 namespace bdm {
 
@@ -25,6 +34,7 @@ ResourceManager::ResourceManager() {
                "Call to numa_available failed with return code: ", ret);
   }
   agents_.resize(numa_num_configured_nodes());
+  agents_lb_.resize(numa_num_configured_nodes());
 
   auto* param = Simulation::GetActive()->GetParam();
   if (param->export_visualization || param->insitu_visualization) {
@@ -32,8 +42,23 @@ ResourceManager::ResourceManager() {
   }
 }
 
+ResourceManager::~ResourceManager() {
+  for (auto& el : diffusion_grids_) {
+    delete el.second;
+  }
+  for (auto& numa_agents : agents_) {
+    for (auto* agent : numa_agents) {
+      delete agent;
+    }
+  }
+  if (type_index_) {
+    delete type_index_;
+  }
+}
+
 void ResourceManager::ForEachAgentParallel(
-    Functor<void, Agent*, AgentHandle>& function) {
+    Functor<void, Agent*, AgentHandle>& function,
+    Functor<bool, Agent*>* filter) {
 #pragma omp parallel
   {
     auto tid = omp_get_thread_num();
@@ -49,7 +74,10 @@ void ResourceManager::ForEachAgentParallel(
     auto end = std::min(numa_agents.size(), start + chunk);
 
     for (uint64_t i = start; i < end; ++i) {
-      function(numa_agents[i], AgentHandle(nid, i));
+      auto* a = numa_agents[i];
+      if (!filter || (filter && (*filter)(a))) {
+        function(a, AgentHandle(nid, i));
+      }
     }
   }
 }
@@ -61,18 +89,21 @@ struct ForEachAgentParallelFunctor : public Functor<void, Agent*, AgentHandle> {
   void operator()(Agent* agent, AgentHandle) { functor_(agent); }
 };
 
-void ResourceManager::ForEachAgentParallel(Functor<void, Agent*>& function) {
+void ResourceManager::ForEachAgentParallel(Functor<void, Agent*>& function,
+                                           Functor<bool, Agent*>* filter) {
   ForEachAgentParallelFunctor<Functor<void, Agent*>> functor(function);
-  ForEachAgentParallel(functor);
+  ForEachAgentParallel(functor, filter);
 }
 
-void ResourceManager::ForEachAgentParallel(Operation& op) {
+void ResourceManager::ForEachAgentParallel(Operation& op,
+                                           Functor<bool, Agent*>* filter) {
   ForEachAgentParallelFunctor<Operation> functor(op);
-  ForEachAgentParallel(functor);
+  ForEachAgentParallel(functor, filter);
 }
 
 void ResourceManager::ForEachAgentParallel(
-    uint64_t chunk, Functor<void, Agent*, AgentHandle>& function) {
+    uint64_t chunk, Functor<void, Agent*, AgentHandle>& function,
+    Functor<bool, Agent*>* filter) {
   // adapt chunk size
   auto num_agents = GetNumAgents();
   uint64_t factor = (num_agents / thread_info_->GetMaxThreads()) / chunk;
@@ -150,7 +181,10 @@ void ResourceManager::ForEachAgentParallel(
                          start + p_chunk);
 
           for (uint64_t i = start; i < end; ++i) {
-            function(numa_agents[i], AgentHandle(current_nid, i));
+            auto* a = numa_agents[i];
+            if (!filter || (filter && (*filter)(a))) {
+              function(a, AgentHandle(current_nid, i));
+            }
           }
 
           old_count = (*(counters[current_tid]))++;
@@ -164,51 +198,56 @@ void ResourceManager::ForEachAgentParallel(
   }
 }
 
-struct DeleteAgentsFunctor : public Functor<void, Agent*> {
-  void operator()(Agent* agent) { delete agent; }
-};
+struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
+  bool minimize_memory;
+  uint64_t offset;
+  uint64_t offset_in_numa;
+  uint64_t nid;
+  std::vector<std::vector<Agent*>>& agents;
+  std::vector<Agent*>& dest;
+  AgentUidMap<AgentHandle>& uid_ah_map;
+  TypeIndex* type_index;
 
-struct UpdateUidAgentHandleMapFunctor
-    : public Functor<void, Agent*, AgentHandle> {
-  using Map = AgentUidMap<AgentHandle>;
-  explicit UpdateUidAgentHandleMapFunctor(Map& rm_uid_ah_map)
-      : rm_uid_ah_map_(rm_uid_ah_map) {}
+  LoadBalanceFunctor(bool minimize_memory, uint64_t offset, uint64_t nid,
+                     decltype(agents) agents, decltype(dest) dest,
+                     decltype(uid_ah_map) uid_ah_map, TypeIndex* type_index)
+      : minimize_memory(minimize_memory),
+        offset(offset),
+        nid(nid),
+        agents(agents),
+        dest(dest),
+        uid_ah_map(uid_ah_map),
+        type_index(type_index) {}
 
-  void operator()(Agent* agent, AgentHandle ah) {
-    rm_uid_ah_map_.Insert(agent->GetUid(), ah);
-  }
-
- private:
-  Map& rm_uid_ah_map_;
-};
-
-struct RearrangeFunctor : public Functor<void, const AgentHandle&> {
-  std::vector<std::vector<AgentHandle>>& sorted_agent_handles;
-  const std::vector<uint64_t>& agent_per_numa;
-  uint64_t cnt = 0;
-  uint64_t current_numa = 0;
-
-  RearrangeFunctor(std::vector<std::vector<AgentHandle>>& sorted_agent_handles,
-                   const std::vector<uint64_t>& agent_per_numa)
-      : sorted_agent_handles(sorted_agent_handles),
-        agent_per_numa(agent_per_numa) {}
-
-  void operator()(const AgentHandle& handle) {
-    if (cnt == agent_per_numa[current_numa]) {
-      cnt = 0;
-      current_numa++;
+  void operator()(Iterator<AgentHandle>* it) {
+    while (it->HasNext()) {
+      auto handle = it->Next();
+      auto* agent = agents[handle.GetNumaNode()][handle.GetElementIdx()];
+      auto* copy = agent->NewCopy();
+      auto el_idx = offset++;
+      dest[el_idx] = copy;
+      uid_ah_map.Insert(copy->GetUid(), AgentHandle(nid, el_idx));
+      if (type_index) {
+        type_index->Update(copy);
+      }
+      if (minimize_memory) {
+        delete agent;
+      }
     }
-
-    sorted_agent_handles[current_numa].push_back(handle);
-    cnt++;
   }
 };
 
 void ResourceManager::LoadBalance() {
+  auto* param = Simulation::GetActive()->GetParam();
+  if (param->plot_memory_layout) {
+    PlotNeighborMemoryHistogram(true);
+  }
+
   // balance agents per numa node according to the number of
   // threads associated with each numa domain
   auto numa_nodes = thread_info_->GetNumaNodes();
   std::vector<uint64_t> agent_per_numa(numa_nodes);
+  std::vector<uint64_t> agent_per_numa_cumm(numa_nodes);
   uint64_t cummulative = 0;
   auto max_threads = thread_info_->GetMaxThreads();
   for (int n = 1; n < numa_nodes; ++n) {
@@ -218,6 +257,10 @@ void ResourceManager::LoadBalance() {
     cummulative += num_agents;
   }
   agent_per_numa[0] = GetNumAgents() - cummulative;
+  agent_per_numa_cumm[0] = 0;
+  for (int n = 1; n < numa_nodes; ++n) {
+    agent_per_numa_cumm[n] = agent_per_numa_cumm[n - 1] + agent_per_numa[n - 1];
+  }
 
   // using first touch policy - page will be allocated to the numa domain of
   // the thread that accesses it first.
@@ -228,69 +271,41 @@ void ResourceManager::LoadBalance() {
                "Run on numa node failed. Return code: ", ret);
   }
 
-  // new data structure for rearranged Agent*
-  decltype(agents_) agent_rearranged;
-  agent_rearranged.resize(numa_nodes);
-
-  // numa node -> vector of AgentHandles
-  std::vector<std::vector<AgentHandle>> sorted_agent_handles;
-  sorted_agent_handles.resize(numa_nodes);
-#pragma omp parallel for
-  for (int n = 0; n < numa_nodes; ++n) {
-    if (thread_info_->GetMyNumaNode() == n &&
-        thread_info_->GetMyNumaThreadId() == 0) {
-      sorted_agent_handles[n].reserve(agent_per_numa[n]);
-    }
-  }
-
   auto* env = Simulation::GetActive()->GetEnvironment();
-  RearrangeFunctor rearrange(sorted_agent_handles, agent_per_numa);
-  env->IterateZOrder(rearrange);
+  auto lbi = env->GetLoadBalanceInfo();
 
-  auto* param = Simulation::GetActive()->GetParam();
   const bool minimize_memory = param->minimize_memory_while_rebalancing;
 
-// create new objects
+// create new agents
 #pragma omp parallel
   {
     auto tid = thread_info_->GetMyThreadId();
     auto nid = thread_info_->GetNumaNode(tid);
 
-    for (int n = 0; n < numa_nodes; n++) {
-      if (nid != n) {
-        continue;
+    auto& dest = agents_lb_[nid];
+    if (thread_info_->GetNumaThreadId(tid) == 0) {
+      if (dest.capacity() < agent_per_numa[nid]) {
+        dest.reserve(agent_per_numa[nid] * 1.5);
       }
-      auto& dest = agent_rearranged[n];
-
-      if (thread_info_->GetNumaThreadId(tid) == 0) {
-        dest.resize(sorted_agent_handles[n].size());
-      }
+      dest.resize(agent_per_numa[nid]);
+    }
 
 #pragma omp barrier
 
-      auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
-      auto& agent_handles = sorted_agent_handles[n];
-      assert(thread_info_->GetNumaNode(tid) ==
-             numa_node_of_cpu(sched_getcpu()));
+    auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
+    assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
-      // use static scheduling
-      auto correction = agent_handles.size() % threads_in_numa == 0 ? 0 : 1;
-      auto chunk = agent_handles.size() / threads_in_numa + correction;
-      auto start = thread_info_->GetNumaThreadId(tid) * chunk;
-      auto end = std::min(agent_handles.size(), start + chunk);
+    // use static scheduling
+    auto correction = agent_per_numa[nid] % threads_in_numa == 0 ? 0 : 1;
+    auto chunk = agent_per_numa[nid] / threads_in_numa + correction;
+    auto start =
+        thread_info_->GetNumaThreadId(tid) * chunk + agent_per_numa_cumm[nid];
+    auto end =
+        std::min(agent_per_numa_cumm[nid] + agent_per_numa[nid], start + chunk);
 
-      for (uint64_t e = start; e < end; e++) {
-        auto& handle = agent_handles[e];
-        auto* agent = agents_[handle.GetNumaNode()][handle.GetElementIdx()];
-        dest[e] = agent->NewCopy();
-        if (type_index_) {
-          type_index_->Update(dest[e]);
-        }
-        if (minimize_memory) {
-          delete agent;
-        }
-      }
-    }
+    LoadBalanceFunctor f(minimize_memory, start - agent_per_numa_cumm[nid], nid,
+                         agents_, dest, uid_ah_map_, type_index_);
+    lbi->CallHandleIteratorConsumer(start, end, f);
   }
 
   // delete old objects. This approach has a high chance that a thread
@@ -298,20 +313,258 @@ void ResourceManager::LoadBalance() {
   // synchronization overheads. The bdm memory allocator does not have this
   // issue.
   if (!minimize_memory) {
-    DeleteAgentsFunctor delete_functor;
+    auto delete_functor = L2F([](Agent* agent) { delete agent; });
     ForEachAgentParallel(delete_functor);
   }
 
   for (int n = 0; n < numa_nodes; n++) {
-    agents_[n].swap(agent_rearranged[n]);
+    agents_[n].swap(agents_lb_[n]);
+    if (param->plot_memory_layout) {
+      PlotMemoryLayout(agents_[n], n);
+      PlotMemoryHistogram(agents_[n], n);
+    }
   }
-
-  // update uid_ah_map_
-  UpdateUidAgentHandleMapFunctor functor(uid_ah_map_);
-  ForEachAgentParallel(functor);
+  if (param->plot_memory_layout) {
+    PlotNeighborMemoryHistogram();
+  }
 
   if (Simulation::GetActive()->GetParam()->debug_numa) {
     std::cout << *this << std::endl;
+  }
+}
+
+// -----------------------------------------------------------------------------
+void ResourceManager::RemoveAgents(
+    const std::vector<std::vector<AgentUid>*>& uids) {
+  // initialization
+  // cumulative numbers of to be removed agents
+  auto numa_nodes = thread_info_->GetNumaNodes();
+  std::vector<std::vector<uint64_t>> tbr_cum(numa_nodes);
+  for (auto& el : tbr_cum) {
+    el.resize(uids.size() + 1);
+  }
+
+  std::vector<uint64_t> remove(numa_nodes);
+  std::vector<uint64_t> lowest(numa_nodes);
+  parallel_remove_.to_right.resize(numa_nodes);
+  parallel_remove_.not_to_left.resize(numa_nodes);
+  // thread offsets into to_right and not_to_left
+  std::vector<SharedData<uint64_t>> start(numa_nodes);
+  // number of swaps in each block
+  // add one more element to have enough space for exclusive prefix sum
+  std::vector<SharedData<uint64_t>> swaps_to_right(numa_nodes);
+  std::vector<SharedData<uint64_t>> swaps_to_left(numa_nodes);
+
+#ifndef NDEBUG
+  std::set<AgentUid> toberemoved;
+#endif  // NDEBUG
+
+  // determine how many agents will be removed in each numa domain
+#pragma omp parallel for schedule(static, 1)
+  for (uint64_t i = 0; i < uids.size(); ++i) {
+    for (auto& uid : *uids[i]) {
+      auto ah = uid_ah_map_[uid];
+      tbr_cum[ah.GetNumaNode()][i]++;
+    }
+  }
+
+#pragma omp parallel
+  {
+    auto nid = thread_info_->GetMyNumaNode();
+    auto ntid = thread_info_->GetMyNumaThreadId();
+    if (thread_info_->GetMyNumaThreadId() == 0) {
+      ExclusivePrefixSum(&tbr_cum[nid], tbr_cum[nid].size() - 1);
+      remove[nid] = tbr_cum[nid].back();
+      lowest[nid] = agents_[nid].size() - remove[nid];
+
+      if (remove[nid] != 0) {
+        if (parallel_remove_.to_right[nid].capacity() < remove[nid]) {
+          parallel_remove_.to_right[nid].reserve(remove[nid] * 1.5);
+        }
+        if (parallel_remove_.not_to_left[nid].capacity() < remove[nid]) {
+          parallel_remove_.not_to_left[nid].reserve(remove[nid] * 1.5);
+        }
+      }
+    }
+#pragma omp barrier
+    auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
+    uint64_t start_init = 0;
+    uint64_t end_init = 0;
+    Partition(remove[nid], threads_in_numa, ntid, &start_init, &end_init);
+    for (uint64_t i = start_init; i < end_init; ++i) {
+      parallel_remove_.to_right[nid][i] = std::numeric_limits<uint64_t>::max();
+      parallel_remove_.not_to_left[nid][i] = 0;
+    }
+  }
+
+  // find agents that must be swapped
+#pragma omp parallel for schedule(static, 1)
+  for (uint64_t i = 0; i < uids.size(); ++i) {
+    uint64_t cnt = 0;
+    for (auto& uid : *uids[i]) {
+      assert(ContainsAgent(uid));
+      auto ah = uid_ah_map_[uid];
+      auto nid = ah.GetNumaNode();
+      auto eidx = ah.GetElementIdx();
+#ifndef NDEBUG
+#pragma omp critical
+      toberemoved.insert(uid);
+#endif  // NDEBUG
+
+      if (eidx < lowest[nid]) {
+        parallel_remove_.to_right[nid][tbr_cum[nid][i] + cnt] = eidx;
+      } else {
+        parallel_remove_.not_to_left[nid][eidx - lowest[nid]] = 1;
+      }
+      cnt++;
+    }
+  }
+
+  // reorder
+#pragma omp parallel
+  {
+    auto nid = thread_info_->GetMyNumaNode();
+    auto ntid = thread_info_->GetMyNumaThreadId();
+    auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
+
+    if (remove[nid] != 0) {
+      if (ntid == 0) {
+        start[nid].resize(threads_in_numa);
+        swaps_to_left[nid].resize(threads_in_numa + 1);
+        swaps_to_right[nid].resize(threads_in_numa + 1);
+      }
+    }
+#pragma omp barrier
+    if (remove[nid] != 0) {
+      uint64_t end = 0;
+      Partition(remove[nid], threads_in_numa, ntid, &start[nid][ntid], &end);
+
+      for (uint64_t i = start[nid][ntid]; i < end; ++i) {
+        if (parallel_remove_.to_right[nid][i] !=
+            std::numeric_limits<uint64_t>::max()) {
+          parallel_remove_
+              .to_right[nid][start[nid][ntid] + swaps_to_right[nid][ntid]++] =
+              parallel_remove_.to_right[nid][i];
+        }
+        if (!parallel_remove_.not_to_left[nid][i]) {
+          // here the interpretation of not_to_left changes to to_left
+          // just to reuse memory
+          parallel_remove_
+              .not_to_left[nid][start[nid][ntid] + swaps_to_left[nid][ntid]++] =
+              i;
+        }
+      }
+    }
+#pragma omp barrier
+    if (remove[nid] != 0) {
+      // calculate exclusive prefix sum for number of swaps in each block
+      if (ntid == 0) {
+        ExclusivePrefixSum(&swaps_to_right[nid],
+                           swaps_to_right[nid].size() - 1);
+        ExclusivePrefixSum(&swaps_to_left[nid], swaps_to_left[nid].size() - 1);
+      }
+    }
+#pragma omp barrier
+    if (remove[nid] != 0) {
+      uint64_t num_swaps = swaps_to_right[nid][threads_in_numa];
+      if (num_swaps != 0) {
+        // perform swaps
+        uint64_t swap_start = 0;
+        uint64_t swap_end = 0;
+        Partition(num_swaps, threads_in_numa, ntid, &swap_start, &swap_end);
+
+        if (swap_start < swap_end) {
+          auto tr_block = BinarySearch(swap_start, swaps_to_right[nid], 0,
+                                       swaps_to_right[nid].size() - 1);
+          auto tl_block = BinarySearch(swap_start, swaps_to_left[nid], 0,
+                                       swaps_to_left[nid].size() - 1);
+
+          auto tr_block_swaps =
+              swaps_to_right[nid][tr_block + 1] - swaps_to_right[nid][tr_block];
+          auto tl_block_swaps =
+              swaps_to_left[nid][tl_block + 1] - swaps_to_left[nid][tl_block];
+
+          // number of elements to discard in the beginning
+          auto tr_block_idx = swap_start - swaps_to_right[nid][tr_block];
+          auto tl_block_idx = swap_start - swaps_to_left[nid][tl_block];
+
+          for (uint64_t s = swap_start; s < swap_end; ++s) {
+            // calculate element indices that should be swapped
+            auto tr_idx = start[nid][tr_block] + tr_block_idx;
+            auto tl_idx = start[nid][tl_block] + tl_block_idx;
+            auto tr_eidx = parallel_remove_.to_right[nid][tr_idx];
+            auto tl_eidx =
+                parallel_remove_.not_to_left[nid][tl_idx] + lowest[nid];
+
+            // swap
+            assert(tl_eidx < agents_[nid].size());
+            assert(tr_eidx < agents_[nid].size());
+            auto* reordered = agents_[nid][tl_eidx];
+#ifndef NDEBUG
+            assert(toberemoved.find(agents_[nid][tl_eidx]->GetUid()) ==
+                   toberemoved.end());
+            assert(toberemoved.find(agents_[nid][tr_eidx]->GetUid()) !=
+                   toberemoved.end());
+#endif  // NDBUG
+            agents_[nid][tl_eidx] = agents_[nid][tr_eidx];
+            agents_[nid][tr_eidx] = reordered;
+            uid_ah_map_.Insert(reordered->GetUid(), AgentHandle(nid, tr_eidx));
+
+            // find next pair
+            if (swap_end - s > 1) {
+              // right
+              tr_block_idx++;
+              if (tr_block_idx >= tr_block_swaps) {
+                tr_block_idx = 0;
+                tr_block_swaps = 0;
+                while (!tr_block_swaps) {
+                  tr_block++;
+                  tr_block_swaps = swaps_to_right[nid][tr_block + 1] -
+                                   swaps_to_right[nid][tr_block];
+                }
+              }
+              // left
+              tl_block_idx++;
+              if (tl_block_idx >= tl_block_swaps) {
+                tl_block_idx = 0;
+                tl_block_swaps = 0;
+                while (!tl_block_swaps) {
+                  tl_block++;
+                  tl_block_swaps = swaps_to_left[nid][tl_block + 1] -
+                                   swaps_to_left[nid][tl_block];
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+#pragma omp barrier
+    if (remove[nid] != 0) {
+      // delete agents
+      uint64_t start_del = 0;
+      uint64_t end_del = 0;
+      Partition(remove[nid], threads_in_numa, ntid, &start_del, &end_del);
+
+      start_del += lowest[nid];
+      end_del += lowest[nid];
+
+      for (uint64_t i = start_del; i < end_del; ++i) {
+        Agent* agent = agents_[nid][i];
+        assert(toberemoved.find(agent->GetUid()) != toberemoved.end());
+        uid_ah_map_.Remove(agent->GetUid());
+        if (type_index_) {
+          // TODO parallelize type_index removal
+#pragma omp critical
+          type_index_->Remove(agent);
+        }
+        delete agent;
+      }
+    }
+  }
+  // shrink container
+  for (uint64_t n = 0; n < agents_.size(); ++n) {
+    agents_[n].resize(lowest[n]);
   }
 }
 

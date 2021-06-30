@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 #include "core/agent/agent.h"
 #include "core/environment/environment.h"
+#include "core/functor.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 
@@ -58,15 +59,16 @@ void InPlaceExecutionContext::ThreadSafeAgentUidMap::Insert(
 }
 
 const typename InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type&
-InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](const AgentUid& uid) {
+InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](
+    const AgentUid& uid) {
   static InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type kDefault;
   auto index = uid.GetIndex();
   auto bidx = index / kBatchSize;
   if (bidx >= num_batches_) {
-    Log::Fatal(
-        "ThreadSafeAgentUidMap::operator[]",
-        Concat("AgentUid out of range access: AgentUid: ", uid,
-               ", ThreadSafeAgentUidMap max index ", num_batches_ * kBatchSize));
+    Log::Fatal("ThreadSafeAgentUidMap::operator[]",
+               Concat("AgentUid out of range access: AgentUid: ", uid,
+                      ", ThreadSafeAgentUidMap max index ",
+                      num_batches_ * kBatchSize));
     return kDefault;
   }
 
@@ -112,6 +114,7 @@ InPlaceExecutionContext::InPlaceExecutionContext(
     const std::shared_ptr<ThreadSafeAgentUidMap>& map)
     : new_agent_map_(map), tinfo_(ThreadInfo::GetInstance()) {
   new_agents_.reserve(1e3);
+  cache_neighbors_ = Simulation::GetActive()->GetParam()->cache_neighbors;
 }
 
 InPlaceExecutionContext::~InPlaceExecutionContext() {
@@ -121,13 +124,13 @@ InPlaceExecutionContext::~InPlaceExecutionContext() {
 }
 
 void InPlaceExecutionContext::SetupIterationAll(
-    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) {
   // first iteration might have uncommited changes
   TearDownIterationAll(all_exec_ctxts);
 }
 
 void InPlaceExecutionContext::TearDownIterationAll(
-    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const {
+    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) {
   // group execution contexts by numa domain
   std::vector<uint64_t> new_agent_per_numa(tinfo_->GetNumaNodes());
   std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
@@ -158,15 +161,21 @@ void InPlaceExecutionContext::TearDownIterationAll(
   }
 
   // remove
+  std::vector<decltype(remove_)*> all_remove(tinfo_->GetMaxThreads());
+
+  auto num_removals = 0;
   for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
     auto* ctxt = all_exec_ctxts[i];
-    // removed agents
-    // remove them after adding new ones (maybe one has been removed
-    // that was in new_agents_)
-    for (auto& uid : ctxt->remove_) {
-      rm->RemoveAgent(uid);
+    all_remove[i] = &ctxt->remove_;
+    num_removals += ctxt->remove_.size();
+  }
+
+  if (num_removals != 0) {
+    rm->RemoveAgents(all_remove);
+
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      all_exec_ctxts[i]->remove_.clear();
     }
-    ctxt->remove_.clear();
   }
 
   rm->EndOfIteration();
@@ -184,31 +193,60 @@ void InPlaceExecutionContext::Execute(
 
   if (param->thread_safety_mechanism ==
       Param::ThreadSafetyMechanism::kUserSpecified) {
-    agent->CriticalRegion(&locks);
-    std::sort(locks.begin(), locks.end());
-    for (auto* l : locks) {
-      l->lock();
+    while (true) {
+      critical_region_.clear();
+      critical_region_2_.clear();
+      locks_.clear();
+      agent->CriticalRegion(&critical_region_);
+      std::sort(critical_region_.begin(), critical_region_.end());
+      for (auto uid : critical_region_) {
+        locks_.push_back(GetAgent(uid)->GetLock());
+      }
+      for (auto* l : locks_) {
+        l->lock();
+      }
+      agent->CriticalRegion(&critical_region_2_);
+      std::sort(critical_region_2_.begin(), critical_region_2_.end());
+      bool same = true;
+      if (critical_region_.size() == critical_region_2_.size()) {
+        for (size_t i = 0; i < critical_region_.size(); ++i) {
+          if (critical_region_[i] != critical_region_2_[i]) {
+            same = false;
+            break;
+          }
+        }
+      } else {
+        same = false;
+      }
+      if (same) {
+        break;
+      }
+      for (auto* l : locks_) {
+        l->unlock();
+      }
     }
     neighbor_cache_.clear();
+    cached_squared_search_radius_ = 0;
     for (auto& op : operations) {
       (*op)(agent);
     }
-    for (auto* l : locks) {
+    for (auto* l : locks_) {
       l->unlock();
     }
-    locks.clear();
   } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kAutomatic) {
     auto* nb_mutex_builder = env->GetNeighborMutexBuilder();
     auto* mutex = nb_mutex_builder->GetMutex(agent->GetBoxIdx());
     std::lock_guard<decltype(*mutex)> guard(*mutex);
     neighbor_cache_.clear();
+    cached_squared_search_radius_ = 0;
     for (auto* op : operations) {
       (*op)(agent);
     }
   } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kNone) {
     neighbor_cache_.clear();
+    cached_squared_search_radius_ = 0;
     for (auto* op : operations) {
       (*op)(agent);
     }
@@ -221,88 +259,63 @@ void InPlaceExecutionContext::Execute(
 
 void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
   new_agents_.push_back(new_agent);
-  auto timesteps = Simulation::GetActive()->GetScheduler()->GetSimulatedSteps();
-  new_agent_map_->Insert(new_agent->GetUid(), {new_agent, timesteps});
+  new_agent_map_->Insert(new_agent->GetUid(), new_agent);
 }
 
-struct ForEachNeighborFunctor : public Functor<void, const Agent*, double> {
-  const Param* param = Simulation::GetActive()->GetParam();
-  Functor<void, const Agent*, double>& function_;
-  std::vector<std::pair<const Agent*, double>>& neighbor_cache_;
-
-  ForEachNeighborFunctor(
-      Functor<void, const Agent*, double>& function,
-      std::vector<std::pair<const Agent*, double>>& neigbor_cache)
-      : function_(function), neighbor_cache_(neigbor_cache) {}
-
-  void operator()(const Agent* agent, double squared_distance) override {
-    if (param->cache_neighbors) {
-      neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
-    }
-    function_(agent, squared_distance);
-  }
-};
-
-void InPlaceExecutionContext::ForEachNeighbor(
-    Functor<void, const Agent*, double>& lambda, const Agent& query) {
-  // use values in cache
-  if (neighbor_cache_.size() != 0) {
-    for (auto& pair : neighbor_cache_) {
-      lambda(pair.first, pair.second);
-    }
-    return;
+bool InPlaceExecutionContext::IsNeighborCacheValid(
+    double query_squared_radius) {
+  if (!cache_neighbors_) {
+    return false;
   }
 
+  // A neighbor cache is valid when the cached search radius was greater or
+  // equal than the current search radius (i.e. all the agents within the
+  // current neighbor cache are at least in the cache).
+  // The agents that are between the cached and the current search radius must
+  // be filtered out hereafter
+  return query_squared_radius <= cached_squared_search_radius_;
+}
+
+void InPlaceExecutionContext::ForEachNeighbor(Functor<void, Agent*>& lambda,
+                                              const Agent& query,
+                                              void* criteria) {
   // forward call to env and populate cache
   auto* env = Simulation::GetActive()->GetEnvironment();
-  ForEachNeighborFunctor for_each(lambda, neighbor_cache_);
-  env->ForEachNeighbor(for_each, query);
+  auto for_each =
+      L2F([&](Agent* agent) { lambda(agent); });
+  env->ForEachNeighbor(for_each, query, criteria);
 }
 
-struct ForEachNeighborWithinRadiusFunctor
-    : public Functor<void, const Agent*, double> {
-  const Param* param = Simulation::GetActive()->GetParam();
-  Functor<void, const Agent*, double>& function_;
-  std::vector<std::pair<const Agent*, double>>& neighbor_cache_;
-  double squared_radius_ = 0;
-
-  ForEachNeighborWithinRadiusFunctor(
-      Functor<void, const Agent*, double>& function,
-      std::vector<std::pair<const Agent*, double>>& neigbor_cache,
-      double squared_radius)
-      : function_(function),
-        neighbor_cache_(neigbor_cache),
-        squared_radius_(squared_radius) {}
-
-  void operator()(const Agent* agent, double squared_distance) override {
-    if (param->cache_neighbors) {
-      neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
-    }
-    if (squared_distance < squared_radius_) {
-      function_(agent, 0);
-    }
-  }
-};
-
-void InPlaceExecutionContext::ForEachNeighborWithinRadius(
-    Functor<void, const Agent*, double>& lambda, const Agent& query,
+void InPlaceExecutionContext::ForEachNeighbor(
+    Functor<void, Agent*, double>& lambda, const Agent& query,
     double squared_radius) {
   // use values in cache
-  if (neighbor_cache_.size() != 0) {
+  if (IsNeighborCacheValid(squared_radius)) {
     for (auto& pair : neighbor_cache_) {
       if (pair.second < squared_radius) {
-        lambda(pair.first, 0);
+        lambda(pair.first, pair.second);
       }
     }
     return;
   }
 
-  // forward call to env and populate cache
+  auto* param = Simulation::GetActive()->GetParam();
   auto* env = Simulation::GetActive()->GetEnvironment();
 
-  ForEachNeighborWithinRadiusFunctor for_each(lambda, neighbor_cache_,
-                                              squared_radius);
-  env->ForEachNeighbor(for_each, query);
+  // Store the search radius to check validity of cache in consecutive use of
+  // ForEachNeighbor
+  cached_squared_search_radius_ = squared_radius;
+
+  // Populate the cache and execute the lambda for each neighbor
+  auto for_each = L2F([&](Agent* agent, double squared_distance) {
+    if (param->cache_neighbors) {
+      neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
+    }
+    if (squared_distance < squared_radius) {
+      lambda(agent, squared_distance);
+    }
+  });
+  env->ForEachNeighbor(for_each, query, squared_radius);
 }
 
 Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {
@@ -313,15 +326,14 @@ Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {
     return agent;
   }
 
-  // returns nullptr if the object is not found
-  return (*new_agent_map_)[uid].first;
+  return (*new_agent_map_)[uid];
 }
 
 const Agent* InPlaceExecutionContext::GetConstAgent(const AgentUid& uid) {
   return GetAgent(uid);
 }
 
-void InPlaceExecutionContext::RemoveFromSimulation(const AgentUid& uid) {
+void InPlaceExecutionContext::RemoveAgent(const AgentUid& uid) {
   remove_.push_back(uid);
 }
 

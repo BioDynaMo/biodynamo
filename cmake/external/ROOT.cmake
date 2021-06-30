@@ -1,21 +1,20 @@
 include(utils)
 
-# Directory in which root will be downloaded first (the path
-# should be something like <build_dir>/third_party/...).
-SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}")
+# Directory in which ROOT will be downloaded
+SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/root")
 
-if (APPLE)
-  EXECUTE_PROCESS(COMMAND sw_vers "-productVersion"
-                  COMMAND cut -d . -f 1-2
-                  OUTPUT_VARIABLE MACOS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-  set(DETECTED_OS_VERS ${DETECTED_OS}-${MACOS_VERSION})
-else()
-  set(DETECTED_OS_VERS ${DETECTED_OS})
+set(ROOT_TAR_FILE root_v6.22.06_python3.9_${DETECTED_OS_VERS}.tar.gz)
+if(APPLE)
+  # On Apple macOS 11.4 arm64 need ROOT v6.24 which has TBB for M1
+  # (remove later when upgrading other platforms to ROOT v6.24)
+  if("${DETECTED_OS_VERS}" STREQUAL "osx-11.4-arm64")
+    set(ROOT_TAR_FILE root_v6.24.00_python3.9_${DETECTED_OS_VERS}.tar.gz)
+  endif()
 endif()
-set(ROOT_TAR_FILE root_v6.22.00_python3_${DETECTED_OS_VERS}.tar.gz)
+
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}
-  ${ROOT_SOURCE_DIR}/root
+  ${ROOT_SOURCE_DIR}
   ${${DETECTED_OS_VERS}-ROOT}
 )
 

@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,28 +37,25 @@ def BuildCommand(clean=False, debug=False, build=True):
         if not os.path.exists(debug_dir):
             sp.check_output(["mkdir", debug_dir])
 
-        with open(debug_dir + '/cmake_output.log', "w") as file:
+        with open(debug_dir + "/cmake_output.log", "w") as file:
             try:
-                sp.check_call(
-                    ["cmake", "-B./" + build_dir, "-H."],
-                    stdout=file,
-                    stderr=file)
+                sp.check_call(["cmake", "-B./" + build_dir, "-H."],
+                              stdout=file,
+                              stderr=file)
             except sp.CalledProcessError as err:
                 Print.error(
-                "Failed to run CMake. Generating debug/cmake_output.log..."
+                    "Failed to run CMake. Generating debug/cmake_output.log..."
                 )
                 return
 
-        with open(debug_dir + '/make_output.log', "w") as file:
+        with open(debug_dir + "/make_output.log", "w") as file:
             try:
-                sp.check_call(
-                    ["make", "-C", build_dir],
-                    stdout=file,
-                    stderr=file)
+                sp.check_call(["make", "-C", build_dir],
+                              stdout=file,
+                              stderr=file)
             except sp.CalledProcessError as err:
                 Print.error(
-                "Compilation failed. Generating debug/make_output.log..."
-                )
+                    "Compilation failed. Generating debug/make_output.log...")
                 return
 
     elif build:
@@ -67,7 +64,8 @@ def BuildCommand(clean=False, debug=False, build=True):
             try:
                 sp.check_output(["cmake", "-B./" + build_dir, "-H."])
             except sp.CalledProcessError as err:
-                Print.error("Failed to run CMake. Check the debug output above.")
+                Print.error(
+                    "Failed to run CMake. Check the debug output above.")
                 sys.exit(1)
 
         try:

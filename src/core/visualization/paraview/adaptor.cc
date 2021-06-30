@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -127,6 +127,11 @@ void ParaviewAdaptor::Initialize() {
   auto* param = sim->GetParam();
 
   if (param->insitu_visualization && impl_->g_processor_ == nullptr) {
+#ifdef __APPLE__
+    Log::Warning("ParaviewAdaptor",
+                 "Insitu visualization is currently not supported on MacOS. "
+                 "Please use export visualization.");
+#endif  // __APPLE__
     impl_->g_processor_ = vtkCPProcessor::New();
     impl_->g_processor_->Initialize();
   }
@@ -137,7 +142,7 @@ void ParaviewAdaptor::Initialize() {
     std::ofstream ofs;
     auto* sim = Simulation::GetActive();
     std::string final_python_script_name =
-        Concat(sim->GetOutputDir(), "/insitu_pipline.py");
+        Concat(sim->GetOutputDir(), "/insitu_pipeline.py");
     ofs.open(final_python_script_name);
     ofs << script;
     ofs.close();

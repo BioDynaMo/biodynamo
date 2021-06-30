@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,13 +30,18 @@ class ParallelResizeVector {
   using const_iterator = const T*;
   using value_type = T;
 
-  explicit ParallelResizeVector(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
+  explicit ParallelResizeVector(TRootIOCtor* io_ctor) {
+  }  // Constructor for ROOT I/O
   ParallelResizeVector() {}
   ParallelResizeVector(std::initializer_list<T> init) {
     reserve(init.size());
     for (auto& el : init) {
       push_back(el);
     }
+  }
+
+  ParallelResizeVector(std::size_t new_size, const T& t = T()) {
+    resize(new_size, t);
   }
 
   ParallelResizeVector(const ParallelResizeVector& other) {
@@ -168,8 +173,8 @@ class ParallelResizeVector {
  private:
   static constexpr float kGrowFactor = 1.5;
   std::size_t size_ = 0;
-  std::size_t capacity_ = 0;
-  T* data_ = nullptr;  //[capacity_]  // NOLINT
+  UInt_t capacity_ = 0;
+  T* data_ = nullptr;                      //[capacity_]  // NOLINT
   BDM_CLASS_DEF(ParallelResizeVector, 1);  // NOLINT
 };
 

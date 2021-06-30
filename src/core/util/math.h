@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include <TMath.h>
 
 #include "core/container/math_array.h"
+#include "core/util/log.h"
 #include "core/util/random.h"
 
 namespace bdm {
@@ -115,6 +116,20 @@ struct Math {
   static Double3 ProjectionOnto(const Double3& a, const Double3& b) {
     double k = (a * b) / (b * b);
     return b * k;
+  }
+
+  /// Returns the mean squared error between two vectors
+  static double MSE(const std::vector<double>& v1,
+                    const std::vector<double>& v2) {
+    if (v1.size() != v2.size()) {
+      Log::Fatal("Math::MSE", "vectors must have same length");
+    }
+    double error = 0;
+    for (size_t i = 0; i < v1.size(); ++i) {
+      auto diff = v2[i] - v1[i];
+      error += diff * diff;
+    }
+    return error / v1.size();
   }
 };
 

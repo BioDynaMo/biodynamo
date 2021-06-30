@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -116,8 +116,12 @@ function(build_shared_library TARGET)
     else()
       set(BDM_DICT_BIN_PATH "${PROJECT_SOURCE_DIR}/cmake")
     endif()
+    get_property(INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+    if (BDM_OUT_OF_SOURCE) 
+      set(BDM_OUT_OF_SRC_ARG "--out-of-source")
+    endif()
     add_custom_command(OUTPUT "${BDM_DICT_FILE}"
-                       COMMAND ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_DICT_FILE} ${ARG_HEADERS}
+                       COMMAND ${Python_EXECUTABLE} ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_OUT_OF_SRC_ARG} --output ${BDM_DICT_FILE} --include-dirs ${INCLUDE_DIRS} --headers ${ARG_HEADERS}
                        DEPENDS ${ARG_HEADERS} ${BDM_DICT_BIN_PATH}/bdm-dictionary)
     # generate shared library
     add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc ${BDM_DICT_FILE})
@@ -145,6 +149,7 @@ function(generate_rootlogon)
   # the one-definition rule
   if (dict)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define USE_DICT\")\;")
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_INCLUDE_PATH($BDMSYS/include)\")\;")
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_LIBRARY_PATH($BDMSYS/lib)\")\;")
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__LOAD_LIBRARY(libbiodynamo)\")\;")
     # We add this one because the ROOT visualization require it, and it's not one

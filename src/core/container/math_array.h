@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -45,10 +45,13 @@ class MathArray {  // NOLINT
   /// the array's content.
   /// \param l an initializer list
   constexpr MathArray(std::initializer_list<T> l) {
-    assert(l.size() == N);
+    assert(l.size() <= N);
     auto it = l.begin();
     for (uint64_t i = 0; i < N; i++) {
       data_[i] = *(it++);
+    }
+    for (uint64_t i = l.size(); i < N; i++) {
+      data_[i] = T();
     }
   }
 

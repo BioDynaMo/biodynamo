@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -213,60 +213,72 @@ _source_thisbdm()
   fi
 
   # Clear the env from previously set PyEnv paths.
-  if [ -n "${old_bdmsys}" ] ; then
-    if [ -n "${PATH}" ]; then
-      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/bin"
-      PATH=$_newpath
-      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/versions/@pythonvers@/bin"
-      PATH=$_newpath
-      _drop_bdm_from_path "$PATH" "$PYENV_ROOT/shims"
-      PATH=$_newpath
-    fi
+  local with_pyenv=@with_pyenv@
+  if [ "$with_pyenv" = 'ON' ]; then
+    if [ -n "${old_bdmsys}" ] ; then
+      if [ -n "${PATH}" ]; then
+        _drop_bdm_from_path "$PATH" "$PYENV_ROOT/bin"
+        PATH=$_newpath
+        _drop_bdm_from_path "$PATH" "$PYENV_ROOT/versions/@pythonvers@/bin"
+        PATH=$_newpath
+        _drop_bdm_from_path "$PATH" "$PYENV_ROOT/shims"
+        PATH=$_newpath
+      fi
 
-    if [ -n "${LD_LIBRARY_PATH}" ]; then
-      _drop_bdm_from_path "$LD_LIBRARY_PATH" "$PYENV_ROOT/versions/$PYENV_VERSION/lib"
-      LD_LIBRARY_PATH=$_newpath
+      if [ -n "${LD_LIBRARY_PATH}" ]; then
+        _drop_bdm_from_path "$LD_LIBRARY_PATH" "$PYENV_ROOT/versions/$PYENV_VERSION/lib"
+        LD_LIBRARY_PATH=$_newpath
+      fi
     fi
+  fi    
+
+  # paraview versions might be different between OSes
+  local bdm_pv_version='5.9'
+  if [ "$(uname)" = 'Darwin' ]; then
+      bdm_pv_version='5.9'
   fi
 
   # Clear the env from previously set ParaView and Qt paths.
-  if [ -n "${old_bdmsys}" ]; then
-     if [ -n "${ParaView_DIR}" ]; then
-      _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys}/third_party/paraview/lib/cmake/paraview-5.8"
-      ParaView_DIR=$_newpath
-     fi
-     if [ -n "${ParaView_LIB_DIR}" ]; then
-      _drop_bdm_from_path "$ParaView_LIB_DIR" "${old_bdmsys}/third_party/paraview/lib"
-      ParaView_LIB_DIR=$_newpath
-     fi
-     if [ -n "${PV_PLUGIN_PATH}" ]; then
-      _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys}/biodynamo/lib/pv_plugin"
-      PV_PLUGIN_PATH=$_newpath
-     fi
-     if [ -n "${PATH}" ]; then
-      _drop_bdm_from_path "$PATH" "${old_bdmsys}/third_party/paraview/bin"
-      PATH=$_newpath
-     fi
-     if [ -n "${Qt5_DIR}" ]; then
-      _drop_bdm_from_path "$Qt5_DIR" "${old_bdmsys}/third_party/qt/lib/cmake/Qt5"
-      Qt5_DIR=$_newpath
-     fi
-     if [ -n "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
-      _drop_bdm_from_path "$QT_QPA_PLATFORM_PLUGIN_PATH" "${old_bdmsys}/third_party/qt/plugins"
-      QT_QPA_PLATFORM_PLUGIN_PATH=$_newpath
-     fi
-     if [ -n "${DYLD_LIBRARY_PATH}" ]; then
-      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/third_party/paraview/lib"
-      DYLD_LIBRARY_PATH=$_newpath
-      _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/third_party/qt/lib"
-      DYLD_LIBRARY_PATH=$_newpath
-     fi
-     if [ -n "${LD_LIBRARY_PATH}" ]; then
-      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/third_party/paraview/lib"
-      LD_LIBRARY_PATH=$_newpath
-      _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/third_party/qt/lib"
-      LD_LIBRARY_PATH=$_newpath
-     fi
+  local with_paraview=@with_paraview@
+  if [ "$with_paraview" = 'ON' ]; then
+    if [ -n "${old_bdmsys}" ]; then
+      if [ -n "${ParaView_DIR}" ]; then
+        _drop_bdm_from_path "$ParaView_DIR" "${old_bdmsys}/third_party/paraview/lib/cmake/paraview-$bdm_pv_version"
+        ParaView_DIR=$_newpath
+      fi
+      if [ -n "${ParaView_LIB_DIR}" ]; then
+        _drop_bdm_from_path "$ParaView_LIB_DIR" "${old_bdmsys}/third_party/paraview/lib"
+        ParaView_LIB_DIR=$_newpath
+      fi
+      if [ -n "${PV_PLUGIN_PATH}" ]; then
+        _drop_bdm_from_path "$PV_PLUGIN_PATH" "${old_bdmsys}/lib/pv_plugin"
+        PV_PLUGIN_PATH=$_newpath
+      fi
+      if [ -n "${PATH}" ]; then
+        _drop_bdm_from_path "$PATH" "${old_bdmsys}/third_party/paraview/bin"
+        PATH=$_newpath
+      fi
+      if [ -n "${Qt5_DIR}" ]; then
+        _drop_bdm_from_path "$Qt5_DIR" "${old_bdmsys}/third_party/qt/lib/cmake/Qt5"
+        Qt5_DIR=$_newpath
+      fi
+      if [ -n "${QT_QPA_PLATFORM_PLUGIN_PATH}" ]; then
+        _drop_bdm_from_path "$QT_QPA_PLATFORM_PLUGIN_PATH" "${old_bdmsys}/third_party/qt/plugins"
+        QT_QPA_PLATFORM_PLUGIN_PATH=$_newpath
+      fi
+      if [ -n "${DYLD_LIBRARY_PATH}" ]; then
+        _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/third_party/paraview/lib"
+        DYLD_LIBRARY_PATH=$_newpath
+        _drop_bdm_from_path "$DYLD_LIBRARY_PATH" "${old_bdmsys}/third_party/qt/lib"
+        DYLD_LIBRARY_PATH=$_newpath
+      fi
+      if [ -n "${LD_LIBRARY_PATH}" ]; then
+        _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/third_party/paraview/lib"
+        LD_LIBRARY_PATH=$_newpath
+        _drop_bdm_from_path "$LD_LIBRARY_PATH" "${old_bdmsys}/third_party/qt/lib"
+        LD_LIBRARY_PATH=$_newpath
+      fi
+    fi
   fi
   #########
 
@@ -325,18 +337,21 @@ _source_thisbdm()
   export MANPATH
 
   ##### Python Specific Configurations #####
-  export PYENV_ROOT=@pyenvroot@
-  if [ -z "${PYENV_ROOT}" ]; then
-    export PYENV_ROOT="$HOME/.pyenv"
+  if [ "$with_pyenv" = 'ON' ]; then
+    export PYENV_ROOT=@pyenvroot@
+    if [ -z "${PYENV_ROOT}" ]; then
+      export PYENV_ROOT="$HOME/.pyenv"
+    fi
+    export PATH="$PYENV_ROOT/bin:$PATH"
+
+    eval "$(pyenv init --path)" || return 1
+    eval "$(pyenv init -)" || return 1
+    pyenv shell @pythonvers@ || return 1
+
+    # Location of jupyter executable (installed with `pip install` command)
+    export PATH="$PYENV_ROOT/versions/@pythonvers@/bin:$PATH"
+    export LD_LIBRARY_PATH="$PYENV_ROOT/versions/@pythonvers@/lib":$LD_LIBRARY_PATH
   fi
-  export PATH="$PYENV_ROOT/bin:$PATH"
-
-  eval "$(pyenv init -)" || return 1
-  pyenv shell @pythonvers@ || return 1
-
-  # Location of jupyter executable (installed with `pip install` command)
-  export PATH="$PYENV_ROOT/versions/@pythonvers@/bin:$PATH"
-  export LD_LIBRARY_PATH="$PYENV_ROOT/versions/@pythonvers@/lib":$LD_LIBRARY_PATH
   ########
 
   ##### CMake Specific Configurations #####
@@ -391,7 +406,6 @@ _source_thisbdm()
   ########
 
   #### ParaView Specific Configurations ####
-  local with_paraview=@with_paraview@
   if [ "$with_paraview" = 'ON' ]; then
      if [ -z "$BDM_CUSTOM_PV" ]; then
        if [ -z "${ParaView_DIR}" ]; then
@@ -511,14 +525,14 @@ _source_thisbdm()
     if [ "$os_id" = 'centos' ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
         if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
-            . scl_source enable devtoolset-7 || return 1
+            . scl_source enable devtoolset-8 || return 1
         fi
         . /etc/profile.d/modules.sh || return 1
         module load mpi || return 1
 
         # load llvm 6 required for libroadrunner
         if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then
-          . scl_source enable llvm-toolset-6.0 || return 1
+          . scl_source enable llvm-toolset-7 || return 1
         fi
     fi
   fi
@@ -526,7 +540,6 @@ _source_thisbdm()
 
   # completions for bash: really primitive (but useful nonetheless) 
   if [ -n "$BASH_VERSION" ]; then
-    # not including assist which is on the chopping block
     complete -W "new build clean run demo" biodynamo
   fi
 
@@ -542,7 +555,7 @@ _source_thisbdm()
 
     # completions for zsh
     autoload -Uz __bdm_zsh_completions || return 1
-    compinit || return 1
+    # compinit || return 1 # FIXME zsh completion broken
 
     ### Enable commands in child shells (like in bash) ###
     local ld_root='if [ -d "${BDM_ROOT_DIR}" ]; then autoload -Uz root; fi;'

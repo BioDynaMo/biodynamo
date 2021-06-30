@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ git submodule update --init --recursive
 git checkout $PV_SUPERBUILD_VERSION
 git submodule update --init --recursive
 
-git apply "$SCRIPT_DIR/paraview-superbuild-openmp.patch"
+git apply "$SCRIPT_DIR/paraview-superbuild-openmp.${PV_SUPERBUILD_VERSION}.patch"
 
 cd ..
 
@@ -37,4 +37,3 @@ cd src
 git fetch origin
 git checkout $PV_VERSION
 git submodule update --init --recursive
-

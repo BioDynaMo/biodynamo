@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/analysis/time_series.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/diffusion_op.h"
 #include "core/operation/dividing_cell_op.h"
@@ -30,7 +31,7 @@ BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
 
 // By default run load balancing only in the first iteration.
 BDM_REGISTER_OP_WITH_FREQ(LoadBalancingOp, "load balancing", kCpu,
-                          std::numeric_limits<std::size_t>::max());
+                          std::numeric_limits<uint32_t>::max());
 
 BDM_REGISTER_OP(MechanicalForcesOp, "mechanical forces", kCpu);
 
@@ -99,6 +100,16 @@ struct TearDownIterationOp : public StandaloneOperationImpl {
 };
 
 BDM_REGISTER_OP(TearDownIterationOp, "tear down iteration", kCpu);
+
+struct UpdateTimeSeriesOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(UpdateTimeSeriesOp);
+
+  void operator()() override {
+    Simulation::GetActive()->GetTimeSeries()->Update();
+  }
+};
+
+BDM_REGISTER_OP(UpdateTimeSeriesOp, "update time series", kCpu);
 
 struct UpdateEnvironmentOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(UpdateEnvironmentOp);

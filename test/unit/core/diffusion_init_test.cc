@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/agent/cell.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
 #include "core/simulation.h"
@@ -29,7 +29,7 @@ enum Substances { kSubstance };
 
 TEST(DiffusionInitTest, GaussianBand) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 0;
     param->max_bound = 250;
   };
@@ -56,12 +56,10 @@ TEST(DiffusionInitTest, GaussianBand) {
 
   simulation.GetEnvironment()->Update();
 
-  int lbound = param->min_bound;
-  int rbound = param->max_bound;
   auto* dgrid = rm->GetDiffusionGrid(0);
 
   // Create data structures, whose size depend on the grid dimensions
-  dgrid->Initialize({lbound, rbound, lbound, rbound, lbound, rbound});
+  dgrid->Initialize();
   // Initialize data structures with user-defined values
   dgrid->RunInitializers();
 

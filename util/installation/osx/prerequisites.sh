@@ -1,8 +1,8 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,10 @@ fi
 
 BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
-if [ ! -x "/usr/local/bin/brew" ]; then
+if [ `arch` == "i386" -a ! -x "/usr/local/bin/brew" ]; then
+   echo "First install the Homebrew macOS package manager from https://brew.sh"
+   exit 1
+elif [ `arch` == "arm64" -a ! -x "/opt/homebrew/bin/brew" ]; then
    echo "First install the Homebrew macOS package manager from https://brew.sh"
    exit 1
 fi
@@ -37,32 +40,72 @@ if [ ! -x "/usr/bin/git" ]; then
    exit 1
 fi
 
-brew update
-brew style
-brew update-reset
+# Test if Xcode is installed
+# https://www.kindacode.com/article/check-if-xcode-is-installed-on-mac-via-command-line/
+if [ ! "xcode-select -p" ]; then
+  echo "Please make sure that Xcode and the command line tools are installed."
+  echo "Our checks indicate that they are not yet on your system."
+  echo "For more information regarding BioDynamo's prerequisites, please check"
+  echo "https://biodynamo.org/docs/userguide/prerequisites/#macos"
+  exit 1
+fi 
 
 # Install and upgrade required packages
 brew install \
   $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_required) || true
-brew upgrade cmake || true
-
-# Install Python 3.8.0 environment
-PYVERS=3.8.0
-export PYENV_ROOT=/usr/local/opt/.pyenv
-eval "$(pyenv init -)"
-if [ ! -f  "$PYENV_ROOT/versions/$PYVERS/lib/libpython3.8.dylib" ]; then
-   echo "Python $PYVERS was not found. Installing now..."
-   /usr/bin/env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
-fi
-pyenv shell $PYVERS
 
 # Install the optional packages
 if [ $1 == "all" ]; then
     PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
     # Don't install --user: the packages should end up in the PYENV_ROOT directory
-    python -m pip install $PIP_PACKAGES
+    python3.9 -m pip install $PIP_PACKAGES
     brew install \
       $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_extra) || true
 fi
+
+# Test installation of brew formulae such that the user gets feedback if 
+# his/her brew installation did not work as expected.
+brew_required=0
+for package in $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_required)
+do
+  brew list $package &> /dev/null
+  if [ $? -eq 1 ]; then
+    brew_required=1
+    echo "Warning: required brew formula $package was not installed."
+  fi
+done
+echo ""
+if [ $brew_required -eq 0 ]; then
+  echo "All required brew fomulae were installed successfully."
+else
+  echo "Some required brew formulae could not be installed. Please check your"
+  echo "log and make sure your homebrew works properly."
+fi
+
+# Test installation of optional brew formulae.
+if [ $1 == "all" ]; then
+  # Test if all extra  packages were really successfully installed.
+  brew_extra=0
+  for package in $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_extra)
+  do
+    brew list $package &> /dev/null
+    if [ $? -eq 1 ]; then
+      brew_extra=1
+      echo "Warning: optional brew formula $package was not installed."
+    fi
+  done
+  if [ $brew_extra -eq 0 ]; then
+    echo "All optional brew fomulae were installed successfully."
+  else
+    echo "Some optional brew formulae could not be installed. Please check your"
+    echo "log and make sure your homebrew works properly."
+  fi
+fi
+
+# Recommend user to upgrade to the latest package versions
+echo ""
+echo "Maybe you have seen errors of the type 'Error: <package> is already" 
+echo "installed'. If such an error occured in the context of one of the packages"
+echo "listed on top, consider upgrading with 'brew upgrade <package>'."
 
 exit 0

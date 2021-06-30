@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <type_traits>
 
 #include "core/agent/cell.h"
+#include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/simulation_backup.h"
 #include "core/util/io.h"
@@ -42,10 +43,10 @@ class SimulationTest : public ::testing::Test {
       "backup_interval = 3600\n"
       "time_step = 0.0125\n"
       "max_displacement = 2.0\n"
-      "bound_space = true\n"
+      "bound_space = 0\n"
       "min_bound = -100\n"
       "max_bound =  200\n"
-      "diffusion_type = \"RK\"\n"
+      "diffusion_method = \"runga-kutta\"\n"
       "thread_safety_mechanism = \"automatic\"\n"
       "\n"
       "[visualization]\n"
@@ -82,7 +83,7 @@ class SimulationTest : public ::testing::Test {
       "use_bdm_mem_mgr = false\n"
       "mem_mgr_aligned_pages_shift = 7\n"
       "mem_mgr_growth_rate = 1.123\n"
-      "mem_mgr_max_mem_per_thread = 987654\n"
+      "mem_mgr_max_mem_per_thread_factor = 3\n"
       "minimize_memory_while_rebalancing = false\n"
       "mapped_data_array_mode = \"cache\"\n"
       "\n"
@@ -118,13 +119,13 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(123u, param->random_seed);
     EXPECT_EQ("paraview", param->visualization_engine);
     EXPECT_EQ("result-dir", param->output_dir);
-    EXPECT_EQ("RK", param->diffusion_type);
+    EXPECT_EQ("runga-kutta", param->diffusion_method);
     EXPECT_EQ(3600u, param->backup_interval);
     EXPECT_EQ(0.0125, param->simulation_time_step);
     EXPECT_EQ(1u, param->unschedule_default_operations.size());
     EXPECT_EQ("mechanical forces", param->unschedule_default_operations[0]);
     EXPECT_EQ(2.0, param->simulation_max_displacement);
-    EXPECT_TRUE(param->bound_space);
+    EXPECT_EQ(0, param->bound_space);
     EXPECT_EQ(-100, param->min_bound);
     EXPECT_EQ(200, param->max_bound);
     EXPECT_EQ(Param::ThreadSafetyMechanism::kAutomatic,
@@ -182,7 +183,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_FALSE(param->use_bdm_mem_mgr);
     EXPECT_EQ(7u, param->mem_mgr_aligned_pages_shift);
     EXPECT_NEAR(1.123, param->mem_mgr_growth_rate, abs_error<double>::value);
-    EXPECT_EQ(987654u, param->mem_mgr_max_mem_per_thread);
+    EXPECT_EQ(3u, param->mem_mgr_max_mem_per_thread_factor);
     EXPECT_FALSE(param->minimize_memory_while_rebalancing);
     EXPECT_EQ(Param::MappedDataArrayMode::kCache,
               param->mapped_data_array_mode);
@@ -515,5 +516,21 @@ TEST_F(SimulationTest, ParamIOTest) {
 }
 
 #endif  // USE_DICT
+
+TEST(Simulation, SetResourceManagerSame) {
+  Simulation sim(TEST_NAME);
+  auto* rm = sim.GetResourceManager();
+  sim.SetResourceManager(rm);
+  EXPECT_EQ(0u, rm->GetNumAgents());
+}
+
+TEST(Simulation, SetEnvironmentSame) {
+  Simulation sim(TEST_NAME);
+  auto* env = sim.GetEnvironment();
+  sim.SetEnvironment(env);
+  // will segfault if env has been deleted inside
+  // SetEnvironment
+  env->Clear();
+}
 
 }  // namespace bdm

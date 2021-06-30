@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,6 +38,10 @@ class AgentUidGenerator;
 
 class SimulationTest;
 class ParaviewAdaptorTest;
+
+namespace experimental {
+class TimeSeries;
+}  // namespace experimental
 
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
@@ -100,6 +104,10 @@ class Simulation {
 
   Environment* GetEnvironment();
 
+  /// Set a specific environment for the simulation. *env must point to an
+  /// object instance of a subclass of Environment.
+  void SetEnvironment(Environment* env);
+
   Scheduler* GetScheduler();
 
   void Simulate(uint64_t steps);
@@ -126,6 +134,8 @@ class Simulation {
 
   /// Returns the output directory for this specific simulation
   const std::string& GetOutputDir() const;
+
+  experimental::TimeSeries* GetTimeSeries();
 
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old
@@ -171,6 +181,8 @@ class Simulation {
   int64_t ctor_ts_ = 0;  //!
   /// Timestep when destructor was called
   int64_t dtor_ts_ = 0;  //!
+  /// Collects time series information during the simulation
+  experimental::TimeSeries* time_series_ = nullptr;
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,
@@ -196,6 +208,7 @@ class Simulation {
 
   friend SimulationTest;
   friend ParaviewAdaptorTest;
+  friend class DiffusionTest_CopyOldData_Test;
   friend std::ostream& operator<<(std::ostream& os, Simulation& sim);
 
   BDM_CLASS_DEF_NV(Simulation, 1);

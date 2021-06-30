@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,6 +69,13 @@ TEST(MathUtilTest, ProjectionOnto) {
   auto result = Math::ProjectionOnto(a, b);
   EXPECT_ARR_NEAR(
       result, {{2.134020618556701, 1.8969072164948453, 1.6597938144329896}});
+}
+
+TEST(MathUtilTest, MSE) {
+  std::vector<double> v1 = {1, 2};
+  std::vector<double> v2 = {4, 9};
+  auto result = Math::MSE(v1, v2);
+  EXPECT_NEAR(29.0, result, abs_error<double>::value);
 }
 
 }  // namespace bdm

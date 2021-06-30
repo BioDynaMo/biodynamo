@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 
   Spinlock* GetLock() override { return Base::GetLock(); }
 
-  void CriticalRegion(std::vector<Spinlock*>* locks) override;
+  void CriticalRegion(std::vector<AgentUid>* uids) override;
 
   // ***************************************************************************
   //      METHODS FOR NEURON TREE STRUCTURE *

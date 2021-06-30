@@ -34,9 +34,9 @@ jobs:
         ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
         VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
         echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
-    
+
       # Do this prior to Checkout BioDynaMo, because the CentOS docker container
-      # does not come with git preinstalled. This would mess up later calls to 
+      # does not come with git preinstalled. This would mess up later calls to
       # `git describe --tags`
     - name: Install latest version of git
       shell: bash
@@ -59,6 +59,12 @@ jobs:
         yum update -y
         yum install -y sudo curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
+        # remove whole BioDynaMo repository to catch errors related to paths pointing into the build dir
+        mktemp -d
+        find /tmp -iname biodynamo -type d || true
+        rm -rf $(find $(mktemp -d)/../* -maxdepth 1 -iname biodynamo -type d 2>/dev/null)
+        echo "Removed"
+        find /tmp -iname biodynamo -type d || true
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
@@ -79,7 +85,7 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.8.0
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
@@ -88,9 +94,12 @@ jobs:
           curl https://pyenv.run | bash
         fi
         export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-        pyenv shell 3.8.0
+        if [ ! -f  "$HOME/.pyenv/versions/3.9.1/lib/libpython3.so" ]; then
+          PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        fi
+        pyenv shell 3.9.1
 
     - name: Cache Third Party Packages
       uses: actions/cache@v2
@@ -101,12 +110,16 @@ jobs:
     - name: Build BioDynaMo
       shell: bash
       run: |
-        . scl_source enable devtoolset-7 || true
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
+        . scl_source enable devtoolset-8 || true
         . /etc/profile.d/modules.sh || true
         module load mpi
         cmake \
           -Dparaview=ON \
-          -Dsbml=ON \
+          -Dsbml=OFF \
           -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
@@ -117,6 +130,13 @@ jobs:
     - name: Run notebooks
       shell: bash
       run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
+        . scl_source enable devtoolset-8 || true
+        . /etc/profile.d/modules.sh || true
+        module load mpi
         cmake \
           -Dnotebooks=ON \
           -B build
@@ -127,10 +147,6 @@ jobs:
       working-directory: build
       run: |
         yum install -y xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
-        . scl_source enable devtoolset-7 || true
-        . scl_source enable llvm-toolset-6.0 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
         . $INSTALL_DIR/bin/thisbdm.sh
         git config --system user.name "Test User"
         git config --system user.email user@test.com

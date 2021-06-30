@@ -19,11 +19,11 @@ keywords:
 
 To build BioDynaMo from source execute the following commands:
 
-<a class="sbox" href= "/docs/userguide/" target="_blank" rel="noopener">
+<a class="sbox" href= "/docs/userguide/installation/" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Note</b></h4>
-    	<p>If you are a user please follow the installation instructions in our <font color="blue"><u>user guide</u></font>.
-		</p>
+        <p>If you are a user please follow the installation instructions in our <font color="blue"><u>User Guide</u></font>.
+        </p>
     </div>
 </a>
 <br>
@@ -32,78 +32,76 @@ To build BioDynaMo from source execute the following commands:
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
 
-# Install the prerequisites for the project
+# Install the prerequisites
 ./prerequisites.sh all
 
 # Create the build directory
 mkdir build
 cd build
 
-# Build the project
-cmake ../
+# Build BioDynaMo
+cmake ..
 make
 
-# (Optional) Installs the library
+# (Optional) Installs the libraries
 make install
 ```
 
 The script `prerequisites.sh` is used to install all the dependencies needed by BioDynaMo. You will need
-to run it before actually calling `cmake` and `make`. It will also choose the specific dependencies given the operating systems.
+to run it once before actually calling `cmake`. It will choose the specific dependencies depending on the used operating system.
 Run `./prerequisites.sh --help` to see how to use it.
 
-<a class="sbox" target="_blank" rel="noopener">
+<a class="sbox" href= "/docs/userguide/prerequisites/" target="_blank" rel="noopener">
     <div class="sbox-content">
     	<h4><b>Note</b></h4>
-    	<p>When trying to install the prerequisites on MacOS the script will user `brew` as a default install method.
-    If you do not have `brew` on your system, or you are using a different package manager, you will need to
-    manually install all the required packages. Please have a look to the prerequisites page.
-		</p>
+    	<p>On macOS the prerequisites script will use `brew` to install the needed packages.
+    If you do not have `brew` on your system, do yourself a favour and install it.
+    Please have a look to the <font color="blue"><u>prerequisites</u></font> page for more details.
+        </p>
     </div>
 </a>
 
-## CentOS 7
+## Rebuilding BioDynaMo
 
-In case of CentOS, you will need to run some additional commands before actually calling `cmake` and `make`. This is because
-CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to
-load the OpenMPI module. You will need to run these instructions only before building BioDynaMo. You will not need them in
-order to run the library.
+If you make developments in the BioDynaMo code you will typically create a new branch and recompile after making your code changes:
 
 ```bash
-git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
-./prerequisites.sh all centos-7
+git pull
+git checkout -b <new-branch>
 
+[edit the files]
+
+# clean the previous build but keep the third party libraries, typically ROOT and ParaView
+cd build
+ninja cleanbuild
+
+# Build BioDynaMo
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ..
+ninja
+```
+
+When developing `ninja` is preferred as it is slightly faster than `make`.
+
+Also we advice you to put the following lines in your `.bashrc` or `.zshrc` file on Linux platforms where we use `pyenv` to manage the different python versions:
+
+```bash
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+``` 
+
+Once finished, we hope that you want to contribute your code changes back to the BioDynaMo project. For more on how to contribute see the page on [Contributing your code](/docs/devguide/contribute).
+
+## CentOS 7
+
+In case of CentOS 7, you will need to run the following commands before actually calling `cmake`. This is because CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to load the OpenMPI module. You will need to run these instructions only before building BioDynaMo. You will not need them in order to run the program.
+
+```bash
 export MESA_GL_VERSION_OVERRIDE=3.3
-. scl_source enable rh-python36
-. scl_source enable devtoolset-7
+. scl_source enable devtoolset-8
 
 . /etc/profile.d/modules.sh
 module load mpi
-
-mkdir build && cd build && cmake ../ && make
-make install
-```
-
-## MacOS
-
-Before building BioDynaMo on MacOS you will need to provide to `cmake` a C++14 and OpenMP compatible compiler. This can
-be done by setting the environmental variables `CXX` and `C` for the C++ and C compilers.
-Here as example we show the procedure using `clang` compiler installed using `brew`.
-
-```bash
-git clone https://github.com/BioDynaMo/biodynamo.git
-cd biodynamo
-./prerequisites.sh all osx
-
-export LLVMDIR="/usr/local/opt/llvm"
-export CC=$LLVMDIR/bin/clang
-export CXX=$LLVMDIR/bin/clang++
-export CXXFLAGS=-I$LLVMDIR/include
-export LDFLAGS=-L$LLVMDIR/lib
-export PATH=$LLVMDIR/bin:$PATH
-
-mkdir build && cd build && cmake ../ && make
-make install
 ```
 
 ## CMake Build Options
@@ -223,7 +221,7 @@ export Qt5_DIR=<qt5_installation_dir>/lib/cmake/Qt5
     	<h4><b>Note</b></h4>
     	<p>If you specify ParaView_DIR, then you will need to provide also the Qt5_DIR variable.
     This is because ParaView implicitly relies on the Qt5 installation.
-		</p>
+        </p>
     </div>
 </a>
 <br>
@@ -231,8 +229,8 @@ export Qt5_DIR=<qt5_installation_dir>/lib/cmake/Qt5
 
 #### Speed Up Installation Tests with a Local BioDynaMo-LFS Copy
 
-The installation scripts fetch large precompiled dependencies like paraview
-or root from biodynamo's large file storage (LFS). To enable faster builds you can download the whole
+The installation scripts fetch large precompiled dependencies like ROOT or ParaView
+from biodynamo's large file storage (LFS). To enable faster builds you can download the whole
 LFS and tell BioDynaMo to access the local version instead. This is done with the
 environmental flag `BDM_LOCAL_LFS`. Use an absolute path to the directory
 that contains the local copy.
@@ -250,9 +248,9 @@ unset BDM_LOCAL_LFS
 <br>
 <a class="sbox" target="_blank" rel="noopener">
     <div class="sbox-content">
-    	<h4><b>Warning<b><h4>
+    	<h4><b>Warning</b><h4>
     	<p>At the moment there is no check if the local copy is in synch with
     remote. You have to ensure that yourself!
-		</p>
+        </p>
     </div>
 </a>

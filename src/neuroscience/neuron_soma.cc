@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -128,11 +128,11 @@ const std::vector<AgentPointer<NeuriteElement>>& NeuronSoma::GetDaughters()
   return daughters_;
 }
 
-void NeuronSoma::CriticalRegion(std::vector<Spinlock*>* locks) {
-  locks->reserve(daughters_.size() + 1);
-  locks->push_back(Agent::GetLock());
+void NeuronSoma::CriticalRegion(std::vector<AgentUid>* uids) {
+  uids->reserve(daughters_.size() + 1);
+  uids->push_back(Agent::GetUid());
   for (auto& daughter : daughters_) {
-    locks->push_back(daughter->GetLock());
+    uids->push_back(daughter.GetUid());
   }
 }
 

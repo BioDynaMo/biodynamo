@@ -17,7 +17,7 @@ keywords:
 Parameters are used to tailor BioDynaMo to your specific simulation.
 
 The majority of parameters are defined in the [core engine](/api/structbdm_1_1Param.html).
-Each simulation or module can define its own [`Param` class](/api/structbdm_1_1experimental_1_1neuroscience_1_1Param.html) to add additional parameters.
+Each simulation or module can define its own [`Param` class](/api/structbdm_1_1neuroscience_1_1Param.html) to add additional parameters.
 
 There are three ways to set the value of a parameter:
 
@@ -161,7 +161,7 @@ your simulation though.
 ```cpp
 auto set_param = [](Param* param) {
   // Create an artificial bound for the simulation space
-  param->bound_space = true;
+  param->bound_space = Param::BoundSpaceMode::kClosed;
   param->min_bound = 0;
   param->max_bound = 250;
 };

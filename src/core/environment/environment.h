@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/functor.h"
+#include "core/load_balance_info.h"
 #include "core/resource_manager.h"
 
 namespace bdm {
@@ -29,19 +30,29 @@ class Environment {
 
   virtual void Update() = 0;
 
-  virtual void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
-                               const Agent& query) = 0;
+  /// Iterates over all neighbors in an environment that suffices the given
+  /// `criteria`. The `criteria` is type-erased to facilitate for different
+  /// criteria for different environments. Check the documentation of an
+  /// environment to know the criteria data type
+  virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                               const Agent& query, double squared_radius) {}
+
+  virtual void ForEachNeighbor(Functor<void, Agent*>& lambda,
+                               const Agent& query, void* criteria) {}
 
   virtual void Clear() = 0;
 
-  virtual const std::array<int32_t, 6>& GetDimensions() const = 0;
+  virtual std::array<int32_t, 6> GetDimensions() const = 0;
 
-  virtual const std::array<int32_t, 2>& GetDimensionThresholds() const = 0;
+  virtual std::array<int32_t, 2> GetDimensionThresholds() const = 0;
 
   /// Return the size of the largest agent
-  virtual double GetLargestObjectSize() const = 0;
+  double GetLargestAgentSize() const { return largest_object_size_; };
+  double GetLargestAgentSizeSquared() const {
+    return largest_object_size_squared_;
+  };
 
-  virtual void IterateZOrder(Functor<void, const AgentHandle&>& callback) = 0;
+  virtual LoadBalanceInfo* GetLoadBalanceInfo() = 0;
 
   /// This class ensures thread-safety for the case
   /// that an agent modifies its neighbors.
@@ -69,6 +80,9 @@ class Environment {
 
  protected:
   bool has_grown_ = false;
+  /// The size of the largest object in the simulation
+  double largest_object_size_ = 0.0;
+  double largest_object_size_squared_ = 0.0;
 
   struct SimDimensionAndLargestAgentFunctor
       : public Functor<void, Agent*, AgentHandle> {
@@ -129,7 +143,7 @@ class Environment {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// agents
   void CalcSimDimensionsAndLargestAgent(
-      std::array<double, 6>* ret_grid_dimensions, double* largest_agent) {
+      std::array<double, 6>* ret_grid_dimensions) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
@@ -179,11 +193,13 @@ class Environment {
       if (zmax[tid][0] > gzmax) {
         gzmax = zmax[tid][0];
       }
-      // larget object
-      if (largest[tid][0] > (*largest_agent)) {
-        (*largest_agent) = largest[tid][0];
+      // largest object
+      if (largest[tid][0] > largest_object_size_) {
+        largest_object_size_ = largest[tid][0];
       }
     }
+
+    largest_object_size_squared_ = largest_object_size_ * largest_object_size_;
   }
 };
 

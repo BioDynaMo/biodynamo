@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
 
 #include "core/memory/memory_manager.h"
 #include <unistd.h>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <limits>
 #include <mutex>
 #include "core/util/log.h"
 #include "core/util/string.h"
@@ -44,10 +46,11 @@ Node* List::PopFront() {
       tail_ = nullptr;
     }
     --size_;
-    --nodes_before_skip_list_;
     if (skip_list_.back() == ret) {
       skip_list_.pop_back();
       nodes_before_skip_list_ = n_;
+    } else if (size_ != 0) {
+      --nodes_before_skip_list_;
     }
     return ret;
   }
@@ -147,10 +150,11 @@ void AllocatedBlock::GetNextPageBatch(uint64_t size_n_pages, char** start,
 // -----------------------------------------------------------------------------
 NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid,
                                      uint64_t size_n_pages, double growth_rate,
-                                     uint64_t max_mem_per_thread)
+                                     uint64_t max_mem_per_thread_factor)
     : size_n_pages_(size_n_pages),
       growth_rate_(growth_rate),
-      max_nodes_per_thread_(max_mem_per_thread / size),
+      max_nodes_per_thread_((size_n_pages_ - kMetadataSize) / size *
+                            max_mem_per_thread_factor),
       num_elements_per_n_pages_((size_n_pages_ - kMetadataSize) / size),
       size_(size),
       nid_(nid),
@@ -160,8 +164,6 @@ NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid,
   for (int i = 0; i < tinfo_->GetMaxThreads(); ++i) {
     free_lists_.emplace_back(num_elements_per_n_pages_);
   }
-  // To get one block of N aligned pages, at least 2 N pages must be allocated
-  AllocNewMemoryBlock(size_n_pages_ * 2);
 }
 
 NumaPoolAllocator::~NumaPoolAllocator() {
@@ -190,8 +192,10 @@ void* NumaPoolAllocator::New(int tid) {
     return ret;
   } else {
     lock_.lock();
-    if (memory_blocks_.back().IsFullyInitialized()) {
-      auto size = total_size_ * (growth_rate_ - 1.0);
+    if (memory_blocks_.size() == 0 ||
+        memory_blocks_.back().IsFullyInitialized()) {
+      auto size =
+          std::max(total_size_ * (growth_rate_ - 1.0), size_n_pages_ * 2.0);
       size = RoundUpTo(size, size_n_pages_);
       AllocNewMemoryBlock(size);
     }
@@ -200,6 +204,10 @@ void* NumaPoolAllocator::New(int tid) {
     memory_blocks_.back().GetNextPageBatch(size_n_pages_, &start_pointer,
                                            &size);
     lock_.unlock();
+    // remaining memory not enough to store one element
+    if ((size - kMetadataSize) < size_) {
+      return New(tid);
+    }
     InitializeNPages(&tl_list, start_pointer, size);
     auto* ret = tl_list.PopFront();
     assert(ret != nullptr);
@@ -214,7 +222,7 @@ void NumaPoolAllocator::Delete(void* p) {
   tl_list.PushFront(node);
   // migrate too much unused memory to the central list agent other threads
   // can obtain it
-  if (tl_list.Size() > max_nodes_per_thread_ && tl_list.CanPopBackN()) {
+  while (tl_list.Size() > max_nodes_per_thread_ && tl_list.CanPopBackN()) {
     Node* head = nullptr;
     Node* tail = nullptr;
     tl_list.PopBackN(&head, &tail);
@@ -281,17 +289,19 @@ void NumaPoolAllocator::InitializeNPages(List* tl_list, char* block,
 uint64_t NumaPoolAllocator::RoundUpTo(uint64_t number, uint64_t multiple) {
   assert((multiple & (multiple - 1)) == 0 && multiple &&
          "multiple must be a power of two and non-zero");
-  return (number + multiple - 1) & -multiple;
+  return (number + multiple - 1) &
+         (std::numeric_limits<uint64_t>::max() - (multiple - 1));
 }
 
 // -----------------------------------------------------------------------------
 PoolAllocator::PoolAllocator(std::size_t size, uint64_t size_n_pages,
-                             double growth_rate, uint64_t max_mem_per_thread)
+                             double growth_rate,
+                             uint64_t max_mem_per_thread_factor)
     : size_(size), tinfo_(ThreadInfo::GetInstance()) {
   for (int nid = 0; nid < tinfo_->GetNumaNodes(); ++nid) {
     void* ptr = numa_alloc_onnode(sizeof(NumaPoolAllocator), nid);
     numa_allocators_.push_back(new (ptr) NumaPoolAllocator(
-        size, nid, size_n_pages, growth_rate, max_mem_per_thread));
+        size, nid, size_n_pages, growth_rate, max_mem_per_thread_factor));
   }
 }
 
@@ -320,9 +330,9 @@ void* PoolAllocator::New(std::size_t size) {
 
 // -----------------------------------------------------------------------------
 MemoryManager::MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
-                             uint64_t max_mem_per_thread)
+                             uint64_t max_mem_per_thread_factor)
     : growth_rate_(growth_rate),
-      max_mem_per_thread_(max_mem_per_thread),
+      max_mem_per_thread_factor_(max_mem_per_thread_factor),
       page_size_(sysconf(_SC_PAGESIZE)),
       page_shift_(static_cast<uint64_t>(std::log2(page_size_))),
       num_threads_(ThreadInfo::GetInstance()->GetMaxThreads()) {
@@ -330,13 +340,10 @@ MemoryManager::MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
   aligned_pages_ = (1 << aligned_pages_shift_);
   size_n_pages_ = (1 << (page_shift_ + aligned_pages_shift_));
 
-  if (max_mem_per_thread_ <= size_n_pages_) {
-    Log::Fatal(
-        "MemoryManager",
-        Concat("The parameter mem_mgr_max_mem_per_thread must be greater then "
-               "the size of N pages (PAGE_SIZE * 2 ^ mem_mgr_growth_rate)! "
-               "(max_mem_per_thread_ ",
-               max_mem_per_thread_, ", size_n_pages_ ", size_n_pages_, ")"));
+  if (max_mem_per_thread_factor_ < 1) {
+    Log::Fatal("MemoryManager",
+               "The parameter mem_mgr_max_mem_per_thread_factor must be "
+               "greater than 0");
   }
 
   allocators_.reserve(num_threads_ * 2 + 100);
@@ -357,9 +364,10 @@ void* MemoryManager::New(std::size_t size) {
       std::lock_guard<Spinlock> guard(lock_);
       // check again, another thread might have created it in between
       if (allocators_.find(size) == allocators_.end()) {
-        allocators_.insert(std::make_pair(
-            size, new memory_manager_detail::PoolAllocator(
-                      size, size_n_pages_, growth_rate_, max_mem_per_thread_)));
+        allocators_.insert(
+            std::make_pair(size, new memory_manager_detail::PoolAllocator(
+                                     size, size_n_pages_, growth_rate_,
+                                     max_mem_per_thread_factor_)));
       }
       return New(size);
     }
@@ -370,8 +378,9 @@ void* MemoryManager::New(std::size_t size) {
       return it->second->New(size);
     } else {
       allocators_.insert(std::make_pair(
-          size, new memory_manager_detail::PoolAllocator(
-                    size, size_n_pages_, growth_rate_, max_mem_per_thread_)));
+          size,
+          new memory_manager_detail::PoolAllocator(
+              size, size_n_pages_, growth_rate_, max_mem_per_thread_factor_)));
       return allocators_.find(size)->second;
     }
   }

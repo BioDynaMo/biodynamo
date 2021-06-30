@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -261,9 +261,9 @@ TEST(NumaPoolAllocatorTest, RoundUpTo) {
 // -----------------------------------------------------------------------------
 TEST(MemoryManagerTest, New) {
   Simulation simulation(TEST_NAME);
+  auto* param = simulation.GetParam();
 
   uint64_t page_shift = static_cast<uint64_t>(std::log2(sysconf(_SC_PAGESIZE)));
-  uint64_t aligned_pages_shift_ = 8;
 
   for (uint64_t i = 0; i < 1000; ++i) {
     auto* agent = new Cell();
@@ -273,9 +273,10 @@ TEST(MemoryManagerTest, New) {
     // the N aligned pages that is used to free the memory once `agent` is
     // deleted
     auto addr = reinterpret_cast<uint64_t>(agent);
-    auto page_number = addr >> (page_shift + aligned_pages_shift_);
+    auto page_number =
+        addr >> (page_shift + param->mem_mgr_aligned_pages_shift);
     auto* page_addr = reinterpret_cast<char*>(
-        page_number << (page_shift + aligned_pages_shift_));
+        page_number << (page_shift + param->mem_mgr_aligned_pages_shift));
 
     auto* npa = *reinterpret_cast<NumaPoolAllocator**>(page_addr);
 

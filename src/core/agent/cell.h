@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -248,22 +248,6 @@ class Cell : public Agent {
     SetPropagateStaticness();
   }
 
-  struct MechanicalForcesFunctor : Functor<void, const Agent*, double> {
-    const InteractionForce* force;
-    Agent* agent;
-    Double3 translation_force_on_point_mass{0, 0, 0};
-
-    MechanicalForcesFunctor(const InteractionForce* force, Agent* agent)
-        : force(force), agent(agent) {}
-
-    void operator()(const Agent* neighbor, double squared_distance) override {
-      auto neighbor_force = force->Calculate(agent, neighbor);
-      translation_force_on_point_mass[0] += neighbor_force[0];
-      translation_force_on_point_mass[1] += neighbor_force[1];
-      translation_force_on_point_mass[2] += neighbor_force[2];
-    }
-  };
-
   Double3 CalculateDisplacement(const InteractionForce* force,
                                 double squared_radius, double dt) override {
     // Basically, the idea is to make the sum of all the forces acting
@@ -293,6 +277,7 @@ class Cell : public Agent {
 
     // PHYSICS
     // the physics force to move the point mass
+    Double3 translation_force_on_point_mass{0, 0, 0};
 
     // the physics force to rotate the cell
     // Double3 rotation_force { 0, 0, 0 };
@@ -306,16 +291,20 @@ class Cell : public Agent {
     //  (We check for every neighbor object if they touch us, i.e. push us
     //  away)
 
-    MechanicalForcesFunctor calculate_neighbor_forces(force, this);
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->ForEachNeighborWithinRadius(calculate_neighbor_forces, *this,
-                                      squared_radius);
+    auto calculate_neighbor_forces =
+        L2F([&](Agent* neighbor, double squared_distance) {
+          auto neighbor_force = force->Calculate(this, neighbor);
+          translation_force_on_point_mass[0] += neighbor_force[0];
+          translation_force_on_point_mass[1] += neighbor_force[1];
+          translation_force_on_point_mass[2] += neighbor_force[2];
+        });
+    ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
-    double norm_of_force =
-        std::sqrt(calculate_neighbor_forces.translation_force_on_point_mass *
-                  calculate_neighbor_forces.translation_force_on_point_mass);
+    double norm_of_force = std::sqrt(translation_force_on_point_mass *
+                                     translation_force_on_point_mass);
 
     // is there enough force to :
     //  - make us biologically move (Tractor) :
@@ -327,8 +316,7 @@ class Cell : public Agent {
     // adding the physics translation (scale by weight) if important enough
     if (physical_translation) {
       // We scale the move with mass and time step
-      movement_at_next_step +=
-          calculate_neighbor_forces.translation_force_on_point_mass * mh;
+      movement_at_next_step += translation_force_on_point_mass * mh;
 
       // Performing the translation itself :
       // but we want to avoid huge jumps in the simulation, so there are

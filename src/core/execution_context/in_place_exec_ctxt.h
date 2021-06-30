@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
 #include "core/container/agent_uid_map.h"
 #include "core/functor.h"
@@ -29,6 +30,10 @@
 #include "core/util/thread_info.h"
 
 namespace bdm {
+
+namespace in_place_exec_ctxt_detail {
+class InPlaceExecutionContext_NeighborCacheValidity_Test;
+}
 
 class Agent;
 
@@ -48,7 +53,7 @@ class Agent;
 class InPlaceExecutionContext {
  public:
   struct ThreadSafeAgentUidMap {
-    using value_type = std::pair<Agent*, uint64_t>;
+    using value_type = Agent*;
     using Batch = std::vector<value_type>;
     ThreadSafeAgentUidMap();
     ~ThreadSafeAgentUidMap();
@@ -76,44 +81,57 @@ class InPlaceExecutionContext {
   /// This function is not thread-safe.
   /// NB: Invalidates references and pointers to agents.
   void SetupIterationAll(
-      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts);
 
   /// This function is called at the end of each iteration to tear down all
   /// execution contexts.
   /// This function is not thread-safe. \n
   /// NB: Invalidates references and pointers to agents.
   void TearDownIterationAll(
-      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) const;
+      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts);
 
   /// Execute a series of operations on an agent in the order given
   /// in the argument
   void Execute(Agent* agent, const std::vector<Operation*>& operations);
 
+  /// Applies the lambda `lambda` for each neighbor of the given `query`
+  /// agent within the given `criteria`. Does not support caching.
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria);
+
+  /// Applies the lambda `lambda` for each neighbor of the given `query`
+  /// agent within the given search radius `squared_radius`
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Agent& query, double squared_radius);
+
+  /// Check whether or not the neighbors in `neighbor_cache_` were queried with
+  /// the same squared radius (`cached_squared_search_radius_`) as currently
+  /// being queried with (`query_squared_radius_`)
+  bool IsNeighborCacheValid(double query_squared_radius);
+
   void AddAgent(Agent* new_agent);
 
-  void ForEachNeighbor(Functor<void, const Agent*, double>& lambda,
-                       const Agent& query);
-
-  /// Forwards the call to `Grid::ForEachNeighborWithinRadius`
-  void ForEachNeighborWithinRadius(Functor<void, const Agent*, double>& lambda,
-                                   const Agent& query, double squared_radius);
+  void RemoveAgent(const AgentUid& uid);
 
   Agent* GetAgent(const AgentUid& uid);
 
   const Agent* GetConstAgent(const AgentUid& uid);
 
-  void RemoveFromSimulation(const AgentUid& uid);
-
  private:
+  friend class Environment;
+  friend class in_place_exec_ctxt_detail::
+      InPlaceExecutionContext_NeighborCacheValidity_Test;
   /// Lookup table AgentUid -> AgentPointer for new created agents
   std::shared_ptr<ThreadSafeAgentUidMap> new_agent_map_;
 
   ThreadInfo* tinfo_;
 
   /// Contains unique ids of agents that will be removed at the end of each
-  /// iteration.
+  /// iteration. AgentUids are separated by numa node.
   std::vector<AgentUid> remove_;
-  std::vector<Spinlock*> locks;
+  std::vector<AgentUid> critical_region_;
+  std::vector<AgentUid> critical_region_2_;
+  std::vector<Spinlock*> locks_;
 
   /// Pointer to new agents
   std::vector<Agent*> new_agents_;
@@ -121,7 +139,11 @@ class InPlaceExecutionContext {
   /// prevent race conditions for cached Agents
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
-  std::vector<std::pair<const Agent*, double>> neighbor_cache_;
+  std::vector<std::pair<Agent*, double>> neighbor_cache_;
+  /// The radius that was used to cache neighbors in `neighbor_cache_`
+  double cached_squared_search_radius_ = 0.0;
+  /// Cache the value of Param::cache_neighbors
+  bool cache_neighbors_ = false;
 };
 
 }  // namespace bdm

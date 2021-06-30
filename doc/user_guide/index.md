@@ -41,8 +41,8 @@ Please head over to our [installation/update instructions](/docs/userguide/insta
 BioDynaMo yet, or the installation is outdated.
 
 Execute `biodynamo -v` to check which version is installed on your system.
-The version string will look like: `v0.1.0-84-g4ed0045`. This is how you can interpret
-it: `vMAJOR.MINOR.PATCH-ADDITIONAL_COMMITS-gCOMMIT_ID`
+The version string will look like: `v0.9-82-g4c00f117`. This is how you can interpret
+it: `vMAJOR.MINOR-ADDITIONAL_COMMITS-gCOMMIT_ID`
 
 ### Unstable API
 

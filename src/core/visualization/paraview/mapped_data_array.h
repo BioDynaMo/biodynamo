@@ -1,7 +1,7 @@
 //  -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ struct GetDataMemberForVis {
   void Update() {
     // We assume that number of threads won't double within one iteration
     temp_values_.resize(
-        2 *
-        std::max(ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256UL));
+        2 * std::max<unsigned long long>(
+                ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256ULL));
   }
 
   enum DataType { kDefault, kArray, kAgentUid, kSoPointer };
@@ -107,7 +107,7 @@ struct GetDataMemberForVis {
     auto* casted_agent = static_cast<TClass*>(agent);
     auto* data = reinterpret_cast<TDataMember*>(
         reinterpret_cast<char*>(casted_agent) + dm_offset_);
-    uint64_t uid = data->GetUid();
+    uint64_t uid = data->GetUidAsUint64();
     auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
     assert(temp_values_.size() > tid);
     temp_values_[tid][0] = uid;

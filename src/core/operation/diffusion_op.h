@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "core/container/inline_vector.h"
-#include "core/diffusion_grid.h"
+#include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
@@ -44,27 +44,11 @@ struct DiffusionOp : public StandaloneOperationImpl {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
-      if (env->HasGrown() && !param->bound_space) {
-        Log::Info("DiffusionOp",
-                  "Your agents are getting near the edge of the "
-                  "simulation space. Be aware of boundary conditions that may "
-                  "come into play!");
-        dg->Update(env->GetDimensionThresholds());
+      if (env->HasGrown() &&
+          param->bound_space == Param::BoundSpaceMode::kOpen) {
+        dg->Update();
       }
-      if (param->diffusion_type == "RK") {
-        if (param->leaking_edges) {
-          dg->RKLeaking();
-        } else {
-          dg->RK();
-        }
-
-      } else {
-        if (param->leaking_edges) {
-          dg->DiffuseEulerLeakingEdge();
-        } else {
-          dg->DiffuseEuler();
-        }
-      }
+      dg->Diffuse();
       if (param->calculate_gradients) {
         dg->CalculateGradient();
       }

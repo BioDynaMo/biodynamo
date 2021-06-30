@@ -31,7 +31,7 @@ Consequently, it will ensure that your code is accepted sooner :)
 #### 1. Get familiar with our coding convention
 
 Carefully read the [C++ style guide](https://google.github.io/styleguide/cppguide.html)
-and our page about [Code Quality](/docs/devguide/code_quality)
+and our page about [Code Quality](/docs/devguide/code_quality).
 
 #### 2. Clone the repository
 
@@ -100,7 +100,7 @@ Check if
 
 Please pay attention to warnings from doxygen generation. Here an example of an inconsistent documentation:
 ```
-# make doc ouput:
+# make doc output:
 ...
 kd_tree_node.h:132: warning: argument 'axis' of command @param is not found in the argument list of bdm::spatial_organization::KdTreeNode< T >::GetSAHSplitPoint()
 kd_tree_node.h:132: warning: argument 'num' of command @param is not found in the argument list of bdm::spatial_organization::KdTreeNode< T >::GetSAHSplitPoint()

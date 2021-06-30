@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,6 +41,10 @@ class AgentUid {
   Reused_t GetReused() const { return reused_; }
   Index_t GetIndex() const { return index_; }
 
+  // Operators needed for nanoflann kd-tree implementation
+  void operator++() { ++index_; }
+  void operator--() { --index_; }
+
   bool operator==(const AgentUid& other) const {
     return index_ == other.index_ && reused_ == other.reused_;
   }
@@ -54,6 +58,8 @@ class AgentUid {
       return reused_ < other.reused_;
     }
   }
+
+  bool operator<(size_t other) const { return index_ < other; }
 
   AgentUid operator+(int i) const {
     AgentUid uid(*this);
@@ -113,7 +119,11 @@ namespace std {
 template <>
 struct hash<bdm::AgentUid> {
   std::size_t operator()(const bdm::AgentUid& uid) const noexcept {
-    return (uid.index_) << uid.reused_;
+    // at any given time in a simulation there exists only one
+    // agent with a specific index_ value.
+    // Therefore it is sufficient as a hash.
+    // This might change for the distributed runtime.
+    return uid.index_;
   }
 };
 

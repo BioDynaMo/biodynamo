@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class OperationRegistry {
   ///             registry
   ///
   bool AddOperationImpl(const std::string &op_name, OpComputeTarget target,
-                        OperationImpl *impl, size_t frequency = 1);
+                        OperationImpl *impl, uint32_t frequency = 1);
 
  private:
   /// The map containing the operations; accessible by their name

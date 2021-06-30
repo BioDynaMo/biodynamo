@@ -52,6 +52,12 @@ jobs:
         sudo apt update
         sudo apt install -y curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
+        # remove whole bidynamo repository to catch errors related to paths pointing into the build dir
+        mktemp -d
+        find /tmp -iname biodynamo -type d || true
+        rm -rf $(find $(mktemp -d)/../* -maxdepth 1 -iname biodynamo -type d 2>/dev/null)
+        echo "Removed"
+        find /tmp -iname biodynamo -type d || true
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
@@ -72,7 +78,7 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.8.0
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
@@ -81,9 +87,12 @@ jobs:
           curl https://pyenv.run | bash
         fi
         export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.8.0
-        pyenv shell 3.8.0
+        if [ ! -f  "$HOME/.pyenv/versions/3.9.1/lib/libpython3.so" ]; then
+          PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        fi
+        pyenv shell 3.9.1
 
     - name: Cache Third Party Packages
       uses: actions/cache@v2
@@ -96,9 +105,13 @@ jobs:
     - name: Run notebooks
       shell: bash
       run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
         cmake \
           -Dnotebooks=ON \
-          -Dsbml=ON \
+          -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release --target notebooks
@@ -107,10 +120,14 @@ jobs:
     - name: Build BioDynaMo
       shell: bash
       run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
         cmake \
           -Dnotebooks=OFF \
           -Dparaview=ON \
-          -Dsbml=ON \
+          -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --config Release

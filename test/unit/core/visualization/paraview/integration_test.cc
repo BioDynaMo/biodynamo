@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -90,11 +90,10 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
     auto box_length = dg->GetBoxLength();
 
     std::array<uint32_t, 3> box_coord;
-    box_coord[0] = (floor(x) - grid_dimensions[0]) / box_length;
-    box_coord[1] = (floor(y) - grid_dimensions[2]) / box_length;
-    box_coord[2] = (floor(z) - grid_dimensions[4]) / box_length;
-
-    auto& num_boxes = dg->GetNumBoxesArray();
+    box_coord[0] = round((x - grid_dimensions[0]) / box_length);
+    box_coord[1] = round((y - grid_dimensions[2]) / box_length);
+    box_coord[2] = round((z - grid_dimensions[4]) / box_length);
+    const auto& num_boxes = dg->GetNumBoxesArray();
     return box_coord[2] * num_boxes[0] * num_boxes[1] +
            box_coord[1] * num_boxes[0] + box_coord[0];
   });
@@ -124,29 +123,28 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
              use_pvsm);
   }
   ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
-  if (!export_visualization) {
-    exit(0);
-  }
+  // Test will run in separate process.
+  exit(0);
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(std::max(max_threads - 1, 1),
-                       std::max(max_threads - 1, 1));
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(std::max(max_threads - 1, 1),
+                                             std::max(max_threads - 1, 1)));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(3 * max_threads + 1, max_threads);
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, max_threads));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(std::max(max_threads - 1, 1),
-                       std::max(max_threads - 1, 1), true, false);
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(
+      std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), true, false));
 }
 
 // -----------------------------------------------------------------------------
@@ -223,41 +221,45 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
   } else {
     delete sim;
     ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
-    exit(0);
   }
+  // Test will run in separate process.
+  exit(0);
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunAgentsTest(mode, std::max(1, max_threads - 1));
-  RunAgentsTest(mode, 10 * max_threads + 1);
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, std::max(1, max_threads - 1)));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_Cache) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCache;
-  RunAgentsTest(mode, std::max(1, max_threads - 1));
-  RunAgentsTest(mode, 10 * max_threads + 1);
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, std::max(1, max_threads - 1)));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportAgents_Copy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kCopy;
-  RunAgentsTest(mode, std::max(1, max_threads - 1));
-  RunAgentsTest(mode, 10 * max_threads + 1);
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, std::max(1, max_threads - 1)));
+  LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportAgentsLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   auto mode = Param::MappedDataArrayMode::kZeroCopy;
-  RunAgentsTest(mode, std::max(1, max_threads - 1), true, false);
+  LAUNCH_IN_NEW_PROCESS(
+      RunAgentsTest(mode, std::max(1, max_threads - 1), true, false));
 }
 
+// Disable insitu tests until ROOT cling crash on MacOS has been resolved
+#ifndef __APPLE__
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_ZeroCopy) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
@@ -307,6 +309,8 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituAgents_Copy) {
       RunAgentsTest(mode, std::max(1, max_threads - 1), false));
   LAUNCH_IN_NEW_PROCESS(RunAgentsTest(mode, 10 * max_threads + 1, false));
 }
+#endif  // __APPLE__
+
 }  // namespace bdm
 
 #endif  // USE_PARAVIEW

@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -137,30 +137,42 @@ function source_thisbdm
     end
 
     # Clear the env from previously set PyEnv paths.
-    if test -n "$old_bdmsys"
-        if test -n "$PATH"
-            _drop_from_var PATH "$PYENV_ROOT/bin"
-            _drop_from_var PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
-            _drop_from_var PATH "$PYENV_ROOT/shims"
-        end
+    set -l with_pyenv @with_pyenv@
+    if test "$with_pyenv" = 'ON'
+        if test -n "$old_bdmsys"
+            if test -n "$PATH"
+                _drop_from_var PATH "$PYENV_ROOT/bin"
+                _drop_from_var PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
+                _drop_from_var PATH "$PYENV_ROOT/shims"
+            end
 
-        if test -n "$LD_LIBRARY_PATH"
-            _drop_from_var LD_LIBRARY_PATH "$PYENV_ROOT/versions/$PYENV_VERSION/lib"
+            if test -n "$LD_LIBRARY_PATH"
+                _drop_from_var LD_LIBRARY_PATH "$PYENV_ROOT/versions/$PYENV_VERSION/lib"
+            end
         end
     end
 
+    # paraview versions might be different between OSes
+    set -l bdm_pv_version '5.9'
+    if test (uname) = 'Darwin'
+        set -l bdm_pv_version '5.9'
+    end
+
     # Clear the env from previously set ParaView and Qt paths.
-    if test -n "$old_bdmsys"
-        _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-5.8"
-        _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
-        _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/biodynamo/lib/pv_plugin"
-        _drop_from_var PATH "$old_bdmsys/third_party/paraview/bin"
-        _drop_from_var Qt5_DIR "$old_bdmsys/third_party/qt/lib/cmake/Qt5"
-        _drop_from_var QT_QPA_PLATFORM_PLUGIN_PATH "$old_bdmsys/third_party/qt/plugins"
-        _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
-        _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
-        _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
-        _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
+    set -l with_paraview @with_paraview@
+    if test "$with_paraview" = 'ON'
+        if test -n "$old_bdmsys"
+            _drop_from_var ParaView_DIR "$old_bdmsys/third_party/paraview/lib/cmake/paraview-$bdm_pv_version"
+            _drop_from_var ParaView_LIB_DIR "$old_bdmsys/third_party/paraview/lib"
+            _drop_from_var PV_PLUGIN_PATH "$old_bdmsys/lib/pv_plugin"
+            _drop_from_var PATH "$old_bdmsys/third_party/paraview/bin"
+            _drop_from_var Qt5_DIR "$old_bdmsys/third_party/qt/lib/cmake/Qt5"
+            _drop_from_var QT_QPA_PLATFORM_PLUGIN_PATH "$old_bdmsys/third_party/qt/plugins"
+            _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
+            _drop_from_var DYLD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
+            _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/paraview/lib"
+            _drop_from_var LD_LIBRARY_PATH "$old_bdmsys/third_party/qt/lib"
+        end
     end
     #########
 
@@ -211,19 +223,22 @@ function source_thisbdm
     end
 
     ##### Python Specific Configurations #####
-    set -gx PYENV_ROOT @pyenvroot@
-    if test -z "$PYENV_ROOT"
-        set -gx PYENV_ROOT "$HOME/.pyenv"
+    if test "$with_pyenv" = 'ON'
+        set -gx PYENV_ROOT @pyenvroot@
+        if test -z "$PYENV_ROOT"
+            set -gx PYENV_ROOT "$HOME/.pyenv"
+        end
+
+        set -pgx PATH "$PYENV_ROOT/bin"
+
+        pyenv init --path | source; or return 1
+        pyenv init - | source; or return 1
+        pyenv shell @pythonvers@; or return 1
+
+        # Location of jupyter executable (installed with `pip install` command)
+        set -pgx PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
+        set -pgx LD_LIBRARY_PATH "$PYENV_ROOT/versions/@pythonvers@/lib"
     end
-
-    set -pgx PATH "$PYENV_ROOT/bin"
-
-    pyenv init - | source; or return 1
-    pyenv shell @pythonvers@; or return 1
-
-    # Location of jupyter executable (installed with `pip install` command)
-    set -pgx PATH "$PYENV_ROOT/versions/@pythonvers@/bin"
-    set -pgx LD_LIBRARY_PATH "$PYENV_ROOT/versions/@pythonvers@/lib"
     ########
 
     ##### CMake Specific Configurations #####
@@ -279,7 +294,6 @@ function source_thisbdm
     ########
 
     #### ParaView Specific Configurations ####
-    set -l with_paraview @with_paraview@
     if test "$with_paraview" = 'ON'
         if test -z "$BDM_CUSTOM_PV"
             if test -z "$ParaView_DIR"
@@ -392,7 +406,7 @@ function source_thisbdm
         if test "$os_id" = 'centos'
             set -gx MESA_GL_VERSION_OVERRIDE "3.3"
             if test -z "$CXX"; and test -z "$CC"
-                . scl_source enable devtoolset-7; or return 1
+                . scl_source enable devtoolset-8; or return 1
             end
 
             . /etc/profile.d/modules.sh; or return 1
@@ -400,7 +414,7 @@ function source_thisbdm
 
             # load llvm 6 required for libroadrunner
             if test -d "$BDMSYS"/third_party/libroadrunner
-                . scl_source enable llvm-toolset-6.0; or return 1
+                . scl_source enable llvm-toolset-7; or return 1
             end
         end
     end

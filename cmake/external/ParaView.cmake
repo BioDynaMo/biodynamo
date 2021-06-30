@@ -2,15 +2,10 @@ include(utils)
 
 SET(PARAVIEW_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/paraview")
 
-# Quickfix until the file on the CERN's repository is not renamed correctly
-if (APPLE)
-    SET(PARAVIEW_DOWNLOAD_NAME paraview.tar.gz)
-ELSE()
-    SET(PARAVIEW_DOWNLOAD_NAME paraview-v5.8.0.tar.gz)
-ENDIF()
+SET(PARAVIEW_TAR_FILE paraview_v5.9.0_${DETECTED_OS_VERS}_default.tar.gz)
 
 download_verify_extract(
-  http://cern.ch/biodynamo-lfs/third-party/${DETECTED_OS}/${PARAVIEW_DOWNLOAD_NAME}
+  http://cern.ch/biodynamo-lfs/third-party/${PARAVIEW_TAR_FILE}
   ${PARAVIEW_SOURCE_DIR}
-  ${${DETECTED_OS}-ParaView}
+  ${${DETECTED_OS_VERS}-ParaView}
 )

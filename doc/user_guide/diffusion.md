@@ -54,13 +54,10 @@ Simulation simulation(argc, argv);
 ```
 
 Next up is creating the initial model of our simulation.
-
-We start by defining the substance that cells may secreate
+We start by defining the substance that cells may secrete
 
 ```cpp
 ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
-auto* rm = simulation.GetResourceManager();
-auto* dgrid = rm->GetDiffusionGrid(kKalium);
 ```
 
 Next, we have to create an initial set of agents and set their
@@ -71,26 +68,15 @@ attributes:
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetMass(1.0);
-    Double3 secretion_position = {{50, 50, 50}};
-    if (position == secretion_position) {
-      cell->AddBehavior(new Secretion(dgrid, 4));
-    } else {
-      cell->AddBehavior(new Chemotaxis(dgrid, 0.5));
-    }
+    cell->AddBehavior(new Chemotaxis("Kalium", 0.5));
     return cell;
   };
-  std::vector<Double3> positions;
-  positions.push_back({0, 0, 0});
-  positions.push_back({100, 0, 0});
-  positions.push_back({0, 100, 0});
-  positions.push_back({0, 0, 100});
-  positions.push_back({0, 100, 100});
-  positions.push_back({100, 0, 100});
-  positions.push_back({100, 100, 0});
-  positions.push_back({100, 100, 100});
-  // The cell responsible for secretion
-  positions.push_back({50, 50, 50});
-  ModelInitializer::CreateAgents(positions, construct);
+  ModelInitializer::Grid3D(2, 100, construct);
+
+   // The cell responsible for secretion
+  Cell secreting_cell({50, 50, 50});
+  secreting_cell.AddBehavior(new Secretion("Kalium", 4));
+  simulation.GetResourceManager()->AddAgent(&secreting_cell);
 ```
 
 The `construct` lambda defines the properties of each cell that we create. These can be
@@ -99,17 +85,14 @@ physical properties (diameter, mass), but also biological properties and behavio
 
 This example uses the predefined behaviors `Chemotaxis` and `Secretion` that
 will govern the behavior of the agents (i.e. cells).
-These two behaviors are included in the BioDynaMo installation.
+These two behaviors are included by default in BioDynaMo.
 
 One of the cells (the cell at position `{50, 50, 50}`) will be the one secreting the substance;
 it therefore gets assigned the `Secretion` behavior.
 All other cells are assigned the `Chemotaxis` behavior. 
 Basically it makes cells move according to the gradient,
-caused by a concentration difference of the substance. 
+caused by a spatial concentration difference of the substance. 
 
-Furthermore, we define the initial positions of the cells. In this example it is
-done explicitly, but one could also generate a grid of cells, or a random distribution
-of cells.
 
 ### Simulation Parameters
 
@@ -213,7 +196,7 @@ Within BioDynaMo the number of intervals for the Runge-Kutta method to iterate o
 
 ```
 
-DiffusionGrid* dgrid = new DiffusionGrid(substance_id, "substance_name", diffusion_coefficient,
+DiffusionGrid* dgrid = new RungaKuttaGrid(substance_id, "substance_name", diffusion_coefficient,
                 decay_constant, resolution, diffusion_step)
                 
 ```
@@ -225,12 +208,12 @@ To access the Runge-Kutta method for diffusion, one simply needs to update the b
 ```
 
 [simulation]
-diffusion_type = "RK"
+diffusion_method = "runga-kutta"
 
 [visualization]
 export = true
 interval = 10
-diffusion_type = "RK"
+diffusion_method = "runga-kutta"
 
 	[[visualize_agent]]
 	name = "Cell"

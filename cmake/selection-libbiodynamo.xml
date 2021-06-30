@@ -8,6 +8,9 @@
     <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" />
     <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" />
     <class name="bdm::neuroscience::Param" />
+    <class name="bdm::EulerGrid" />
+    <class name="bdm::StencilGrid" />
+    <class name="bdm::RungaKuttaGrid" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::Simulation" />
     <class name="bdm::ResourceManager" />
@@ -20,6 +23,7 @@
     <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::Behavior"/>
+    <class name="bdm::StatelessBehavior" noStreamer="true" />
     <class name="bdm::GrowthDivision"/>
     <class name="bdm::Chemotaxis"/>
     <class name="bdm::Secretion"/>
@@ -32,14 +36,35 @@
     <class name="unordered_map<std::string, std::set<std::string>>" />
     <class name="map<std::string, std::set<std::string>>" />
     <class name="bdm::Random" />
+    <class name="bdm::DistributionRng<double>" />
+    <class name="bdm::DistributionRng<int>" />
+    <class name="bdm::UniformRng" />
+    <class name="bdm::GausRng" />
+    <class name="bdm::ExpRng" />
+    <class name="bdm::LandauRng" />
+    <class name="bdm::PoissonDRng" />
+    <class name="bdm::BreitWignerRng" />
+    <class name="bdm::UserDefinedDistRng1D" />
+    <class name="bdm::UserDefinedDistRng2D" />
+    <class name="bdm::UserDefinedDistRng3D" />
+    <class name="bdm::BinomialRng" />
+    <class name="bdm::PoissonRng" />
     <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<double, 4>" />
     <class name="bdm::ParallelResizeVector<double>" />
+    <class name="bdm::ParallelResizeVector<uint64_t>" />
+    <class name="bdm::ParallelResizeVector<bdm::MathArray<double, 3ul>>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
+    <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::UniformGridEnvironment::Box const*>>" />
+    <class name="bdm::ParallelResizeVector<bdm::Spinlock>" />
     <class name="bdm::InlineVector<bdm::Agent*, 3>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
+    <class name="bdm::experimental::TimeSeries" />
+    <class name="bdm::experimental::TimeSeries::Data" noStreamer="true" />
+    <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
+    <class name="bdm::experimental::Style" />
   </selection>
 </lcgdict>

@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #include "core/environment/uniform_grid_environment.h"
 #include "core/model_initializer.h"
 #include "core/operation/operation_registry.h"
+#include "unit/test_util/test_agent.h"
 
 namespace bdm {
 
@@ -96,7 +97,7 @@ TEST_F(SchedulerTest, Backup) { RunBackupTest(); }
 
 TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -10;
     param->max_bound = 10;
   };
@@ -113,7 +114,7 @@ TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
 
 TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
   auto set_param = [](auto* param) {
-    param->bound_space = true;
+    param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -10;
     param->max_bound = 10;
   };
@@ -526,6 +527,49 @@ TEST_F(SchedulerTest, DisableDefaultOperations) {
   auto scheduled_agent_ops = scheduler_wrapper.GetListOfScheduledAgentOps();
   EXPECT_TRUE(std::find(scheduled_agent_ops.begin(), scheduled_agent_ops.end(),
                         "discretization") != scheduled_agent_ops.end());
+}
+
+TEST(Scheduler, SimulateUntil) {
+  Simulation simulation(TEST_NAME);
+  simulation.GetResourceManager()->AddAgent(new TestAgent());
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->SimulateUntil(
+      [&]() { return scheduler->GetSimulatedSteps() >= 3; });
+  EXPECT_EQ(3u, scheduler->GetSimulatedSteps());
+}
+
+TEST_F(SchedulerTest, Filters) {
+  Simulation simulation(TEST_NAME);
+
+  simulation.GetResourceManager()->AddAgent(new Cell(10));
+  simulation.GetResourceManager()->AddAgent(new Cell(20));
+
+  auto small_filter = L2F([](Agent* a) { return a->GetDiameter() < 15; });
+  auto large_filter = L2F([](Agent* a) { return a->GetDiameter() >= 15; });
+
+  auto* op1 = NewOperation("test_op");
+  auto* op2 = NewOperation("test_op");
+  auto* op3 = NewOperation("test_op");
+
+  op2->SetExcludeFilters({&small_filter});
+  op3->SetExcludeFilters({&large_filter});
+
+  auto* op1_impl = op1->GetImplementation<TestOp>();
+  auto* op2_impl = op2->GetImplementation<TestOp>();
+  auto* op3_impl = op3->GetImplementation<TestOp>();
+
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->SetAgentFilters({&large_filter, &small_filter});
+
+  scheduler->ScheduleOp(op1);
+  scheduler->ScheduleOp(op2);
+  scheduler->ScheduleOp(op3);
+
+  scheduler->Simulate(1);
+
+  EXPECT_EQ(2u, op1_impl->counter);
+  EXPECT_EQ(1u, op2_impl->counter);
+  EXPECT_EQ(1u, op3_impl->counter);
 }
 
 }  // namespace bdm

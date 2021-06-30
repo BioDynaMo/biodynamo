@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) The BioDynaMo Project.
-# All Rights Reserved.
+# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args)
     data = substance.GetPointData().GetArray('Substance Concentration')
     
     if data.GetNumberOfTuples() != params.num_elements:
-        print("ERROR number of diffusion grid elements wrong: expected:", param.num_elements, 
+        print("ERROR number of diffusion grid elements wrong: expected:", params.num_elements, 
                 "actual:", data.GetNumberOfTuples())
         return
     

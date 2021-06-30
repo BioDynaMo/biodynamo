@@ -1,0 +1,20 @@
+{
+    "bdm::Param": {
+        "bound_space": true,
+        "cache_neighbors": true,
+        "detect_static_agents": true,
+        "min_bound": -250,
+        "max_bound": 450,
+        "remove_output_dir_contents": true,
+        "random_seed": 2688649975,
+        "visualization_interval": 499,
+        "visualize_agents": {
+            "NeuriteElement": [],
+            "NeuronSoma": []
+        }
+    },
+    "bdm::neuroscience::Param": {
+        "neurite_max_length": 2
+    }
+}
+

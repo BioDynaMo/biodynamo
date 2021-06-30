@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 #define CORE_OPERATION_OPERATION_H_
 
 #include <functional>
+#include <set>
 #include <string>
 #include <vector>
 
+#include "core/functor.h"
 #include "core/util/log.h"
 
 namespace bdm {
@@ -170,6 +172,22 @@ struct Operation {
   /// Forwards call to implementation's TearDown function
   void TearDown();
 
+  /// Returns if this operation should be excluded for this filters
+  /// Only used for agent operations.
+  bool IsExcluded(Functor<bool, Agent *> *filter) {
+    if (filter == nullptr) {
+      return false;
+    }
+    return exclude_filters_.find(filter) != exclude_filters_.end();
+  }
+
+  /// Agent operations will not be executed for filters that are
+  /// contained in exclude_filters.
+  void SetExcludeFilters(
+      const std::set<Functor<bool, Agent *> *> &exclude_filters) {
+    exclude_filters_ = exclude_filters;
+  }
+
   /// Specifies how often this operation will be executed.\n
   /// 1: every timestep\n
   /// 2: every second timestep\n
@@ -181,6 +199,9 @@ struct Operation {
   OpComputeTarget active_target_ = kCpu;
   /// The different operation implementations for each supported compute target
   std::vector<OperationImpl *> implementations_;
+
+  /// If this is an agent operation don't run it for this list of filters
+  std::set<Functor<bool, Agent *> *> exclude_filters_;
 };
 
 }  // namespace bdm

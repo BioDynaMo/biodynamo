@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -150,13 +150,12 @@ class Agent {
   Spinlock* GetLock() { return &lock_; }
 
   /// If the thread-safety mechanism is set to user-specified this function
-  /// will be called before the operations are executed for this simulation
-  /// object.\n
-  /// Subclasses define the critical region by adding the locks of all
+  /// will be called before the operations are executed for this agent.\n
+  /// Subclasses define the critical region by adding the uids of all
   /// agents that must not be processed in parallel. \n
-  /// Don't forget to add the lock of the current agent.\n
+  /// Don't forget to add the uid of the current agent.\n
   /// \see `Param::thread_safety_mechanism`
-  virtual void CriticalRegion(std::vector<Spinlock*>* locks) {}
+  virtual void CriticalRegion(std::vector<AgentUid>* uids) {}
 
   uint32_t GetBoxIdx() const;
 
@@ -252,7 +251,7 @@ class Agent {
 
   /// Helper variable used to support removal of behaviors while
   /// `RunBehaviors` iterates over them.
-  uint32_t run_behavior_loop_idx_ = 0;
+  uint16_t run_behavior_loop_idx_ = 0;
 
   /// If an agent is static, we should not compute the mechanical forces
   bool is_static_ = false;  //!
