@@ -428,29 +428,6 @@ class UniformGridEnvironment : public Environment {
     return &lbi_;
   }
 
-  /// @brief      Applies the given lambda to each neighbor
-  ///
-  /// @param[in]  lambda  The operation as a lambda
-  /// @param      query   The query object
-  void ForEachNeighbor(const std::function<void(Agent*)>& lambda,
-                       Agent& query) const {
-    auto idx = query.GetBoxIdx();
-
-    FixedSizeVector<const Box*, 27> neighbor_boxes;
-    GetMooreBoxes(&neighbor_boxes, idx);
-
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
-    NeighborIterator ni(neighbor_boxes, timestamp_);
-    while (!ni.IsAtEnd()) {
-      auto* agent = rm->GetAgent(*ni);
-      if (agent != &query) {
-        lambda(agent);
-      }
-      ++ni;
-    }
-  }
-
   /// @brief      Applies the given lambda to each neighbor of the specified
   ///             agent is within the squared radius (i.e. the criteria)
   ///
@@ -459,7 +436,7 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @param[in]  lambda    The operation as a lambda
   /// @param      query     The query object
-  /// @param      criteria  The squared search radius (type: double*)
+  /// @param      squared_radius  The squared search radius (type: double*)
   ///
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query, double squared_radius) override {
@@ -500,7 +477,9 @@ class UniformGridEnvironment : public Environment {
       }
 
       for (uint64_t i = 0; i < size; ++i) {
-        lambda(agents[i], squared_distance[i]);
+        if (squared_distance[i] < squared_radius) {
+          lambda(agents[i], squared_distance[i]);
+        }
       }
       size = 0;
     };
@@ -523,41 +502,6 @@ class UniformGridEnvironment : public Environment {
       }
     }
     process_batch();
-  }
-
-  /// @brief      Applies the given lambda to each neighbor or the specified
-  ///             agent.
-  ///
-  /// In simulation code do not use this function directly. Use the same
-  /// function from the exeuction context (e.g. `InPlaceExecutionContext`)
-  ///
-  /// @param[in]  lambda  The operation as a lambda
-  /// @param      query   The query object
-  /// @param[in]  squared_radius  The search radius squared
-  ///
-  void ForEachNeighbor(const std::function<void(Agent*)>& lambda,
-                       const Agent& query, double squared_radius) {
-    const auto& position = query.GetPosition();
-    auto idx = query.GetBoxIdx();
-
-    FixedSizeVector<const Box*, 27> neighbor_boxes;
-    GetMooreBoxes(&neighbor_boxes, idx);
-
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
-    NeighborIterator ni(neighbor_boxes, timestamp_);
-    while (!ni.IsAtEnd()) {
-      // Do something with neighbor object
-      auto* agent = rm->GetAgent(*ni);
-      if (agent != &query) {
-        const auto& neighbor_position = agent->GetPosition();
-        if (this->WithinSquaredEuclideanDistance(squared_radius, position,
-                                                 neighbor_position)) {
-          lambda(agent);
-        }
-      }
-      ++ni;
-    }
   }
 
   /// @brief      Return the box index in the one dimensional array of the box
