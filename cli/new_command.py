@@ -31,6 +31,11 @@ def ValidateSimName(sim_name):
         Print.error("       Allowed characters are a-z A-Z 0-9 - and _")
         Print.error("       Must start with a-z or A-Z")
         sys.exit(1)
+    if sim_name.lower() == "test":
+        Print.error("The directory name \"test\" is not allowed because it")
+        Print.error("causes problems with the unit-test compilation.")
+        Print.error("Please choose a different name.")
+        sys.exit(1)
     if os.path.isdir(sim_name):
         Print.error("The directory \"{}\" already exists.".format(sim_name))
         Print.error("Please remove it or choose a different name.")
@@ -74,8 +79,10 @@ def CustomizeFiles(sim_name):
     Print.new_step("Customize files")
     try:
         # README.md
-        ModifyFileContent(sim_name + "/README.md",
-                          lambda content: "# " + sim_name + "\n")
+        ModifyFileContent(
+            sim_name + "/README.md",
+            lambda content: content.replace("my-simulation", sim_name),
+        )
 
         # CMakelists.txt
         ModifyFileContent(

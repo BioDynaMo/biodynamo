@@ -19,6 +19,7 @@ from build_command import BuildCommand
 from demo_command import DemoCommand
 from new_command import NewCommand
 from run_command import RunCommand
+from test_command import TestCommand
 from bdm_version import Version
 
 if __name__ == "__main__":
@@ -59,6 +60,9 @@ if __name__ == "__main__":
 
     run_sp = sp.add_parser("run", help="Executes the simulation")
 
+    test_sp = sp.add_parser("test",
+                            help="Executes the unit-tests of a BioDynaMo sim.")
+
     args, unknown = parser.parse_known_args()
 
     if args.cmd == "new":
@@ -86,6 +90,8 @@ if __name__ == "__main__":
         DemoCommand(demo_name, destination)
     elif args.cmd == "run":
         RunCommand(args=unknown)
+    elif args.cmd == "test":
+        TestCommand()
     elif args.version:
         print(Version.string())
         sys.exit()
