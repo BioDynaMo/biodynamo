@@ -11,18 +11,38 @@
 # regarding copyright ownership.
 #
 # -----------------------------------------------------------------------------
-cmake_minimum_required(VERSION 3.2.0)
-
+cmake_minimum_required(VERSION 3.19.3)
 project(my-simulation)
 
-find_package(BioDynaMo REQUIRED)
-include(${BDM_USE_FILE})
-include_directories("src")
+# BioDynaMo curretly uses the C++14 standard.
+set(CMAKE_CXX_STANDARD 14)
 
-file(GLOB_RECURSE HEADERS src/*.h)
-file(GLOB_RECURSE SOURCES src/*.cc)
+# Use BioDynaMo in this project.
+find_package(BioDynaMo REQUIRED)
+
+# See UseBioDynaMo.cmake in your BioDynaMo build folder for details.
+# Note that BioDynaMo provides gtest header/libraries in its include/lib dir.
+include(${BDM_USE_FILE})
+
+# Consider all files in src/ for BioDynaMo simulation.
+include_directories("src")
+file(GLOB_RECURSE PROJECT_HEADERS src/*.h)
+file(GLOB_RECURSE PROJECT_SOURCES src/*.cc)
 
 bdm_add_executable(my-simulation
-                   HEADERS ${HEADERS}
-                   SOURCES ${SOURCES}
+                   HEADERS ${PROJECT_HEADERS}
+                   SOURCES ${PROJECT_SOURCES}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES})
+
+# Consider all files in test/ for GoogleTests.
+include_directories("test")
+file(GLOB_RECURSE TEST_SOURCES test/*.cc)
+
+bdm_add_test(my-simulation-test
+             SOURCES ${TEST_SOURCES}
+             LIBRARIES ${BDM_REQUIRED_LIBRARIES})
+
+# Instructions for GoogleTest
+enable_testing()
+include(GoogleTest)
+gtest_discover_tests(my-simulation-test)
