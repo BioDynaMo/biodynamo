@@ -414,7 +414,7 @@ ExternalProject_Add(
   URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
   BINARY_DIR "optim-prefix/src/optim"
   CONFIGURE_COMMAND ./configure
-  INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_CURRENT_BINARY_DIR}
+  INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_INSTALL_LIBDIR}
 )
 add_library(liboptim SHARED IMPORTED)
 set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_SHARED_LIBRARY_PREFIX}optim.so)

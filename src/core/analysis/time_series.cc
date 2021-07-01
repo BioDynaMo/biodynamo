@@ -36,14 +36,14 @@ void TimeSeries::Load(const std::string& full_filepath, TimeSeries** restored) {
 double TimeSeries::ComputeError(const TimeSeries& ts1, const TimeSeries& ts2) {
   // verify that all TimeSeries contain the same entries
   if (ts1.data_.size() != ts2.data_.size()) {
-    Log::Warning("TimeSeries::Merge",
+    Log::Warning("TimeSeries::ComputeError",
                  "The time series objects that should be merged do not "
                  "contain the same entries. Operation aborted.");
     return std::numeric_limits<double>::infinity();
   }
   for (auto& p : ts1.data_) {
     if (ts2.data_.find(p.first) == ts2.data_.end()) {
-      Log::Warning("TimeSeries::Merge",
+      Log::Warning("TimeSeries::ComputeError",
                    "The time series objects that should be merged do not "
                    "contain the same entries. Operation aborted");
       return std::numeric_limits<double>::infinity();
@@ -56,13 +56,14 @@ double TimeSeries::ComputeError(const TimeSeries& ts1, const TimeSeries& ts2) {
     auto& xref = ts1.data_.at(key).x_values;
     auto& xcurrent = ts2.data_.at(key).x_values;
     if (xref.size() != xcurrent.size()) {
-      Log::Warning("TimeSeries::Merge", "The time series objects for entry (",
-                   key, ") have different x_values. Operation aborted.");
+      Log::Warning("TimeSeries::ComputeError",
+                   "The time series objects for entry (", key,
+                   ") have different x_values. Operation aborted.");
       return std::numeric_limits<double>::infinity();
     } else {
       for (uint64_t j = 0; j < xref.size(); ++j) {
         if (std::abs(xref[j] - xcurrent[j]) > 1e-5) {
-          Log::Warning("TimeSeries::Merge",
+          Log::Warning("TimeSeries::ComputeError",
                        "The time series objects for entry (", key,
                        ") have different x_values. Operation aborted.");
           return std::numeric_limits<double>::infinity();

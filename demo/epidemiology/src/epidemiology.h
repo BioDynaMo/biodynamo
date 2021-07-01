@@ -27,6 +27,8 @@ inline int Simulate(int argc, const char** argv, TimeSeries* result,
   auto set_param = [&](Param* param) {
     param->Restore(std::move(*final_params));
     param->random_seed = 0;
+    param->simulation_time_step = 1;
+    param->bound_space = Param::BoundSpaceMode::kTorus;
   };
 
   // Create simulation object

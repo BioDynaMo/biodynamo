@@ -172,6 +172,7 @@ int MultiSimulationManager::Start() {
 
 // Returns the ID of the first available worker in the list. Returns -1 if
 // there is no available worker.
+// TODO: make thread-safe
 int MultiSimulationManager::GetFirstAvailableWorker() {
   auto it = std::find(begin(availability_), end(availability_), true);
   if (it == end(availability_)) {

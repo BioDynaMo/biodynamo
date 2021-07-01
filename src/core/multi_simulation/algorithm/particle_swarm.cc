@@ -23,6 +23,9 @@
 
 using nlohmann::json;
 
+// Enable multi-threaded execution of optimlib
+#define OPTIM_USE_OMP 1
+
 namespace bdm {
 
 struct ParticleSwarm : public Algorithm {
@@ -71,18 +74,22 @@ struct ParticleSwarm : public Algorithm {
 
     int iteration = 0;
     auto max_it = settings.iter_max;
+    double prev_mse = 0.0;
 
     // The fitting function (i.e. calling a simulation with a paramset)
-    auto fit = [=, &iteration](const arma::vec& free_params,
-                               arma::vec* grad_out, void* opt_data) {
+    auto fit = [=, &iteration, &prev_mse](const arma::vec& free_params,
+                                          arma::vec* grad_out, void* opt_data) {
       Param new_param = *default_params;
 
       std::cout << "iteration (" << iteration << "/" << max_it << ")"
                 << std::endl;
 
-      if (std::isnan(free_params[0])) {
-        Log::Warning("Nan value detected!");
-        return 1000.0;
+      // Bug: on the rare occasion that we get NaN values back from optim:pso,
+      // we should ignore it and return the previously obtained error
+      for (auto& p : inout) {
+        if (std::isnan(p)) {
+          return prev_mse + 0.005;
+        }
       }
 
       // Merge the free param values into the Param object that will be sent to
@@ -103,6 +110,7 @@ struct ParticleSwarm : public Algorithm {
       double mse = Experiment(dispatch_to_worker, &new_param, repetition);
       std::cout << " MSE " << mse << " inout " << free_params << std::endl;
       iteration++;
+      prev_mse = mse;
       return mse;
     };
 
