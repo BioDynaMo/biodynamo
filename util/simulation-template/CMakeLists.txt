@@ -37,7 +37,9 @@ bdm_add_executable(my-simulation
 # Consider all files in test/ for GoogleTests.
 include_directories("test")
 file(GLOB_RECURSE TEST_SOURCES test/*.cc)
+file(GLOB_RECURSE TEST_HEADERS test/*.h)
 
 bdm_add_test(my-simulation-test
              SOURCES ${TEST_SOURCES}
+             HEADERS ${TEST_HEADERS}
              LIBRARIES ${BDM_REQUIRED_LIBRARIES})

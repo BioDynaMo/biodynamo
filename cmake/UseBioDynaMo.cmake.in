@@ -244,23 +244,37 @@ include("${BDMSYS}/share/cmake/SetCompilerFlags.cmake")
 
 # -------------- function to compile tests in derived work ---------------------
 function(bdm_add_test TARGET)
-  cmake_parse_arguments(ARG "" "" "SOURCES;LIBRARIES" ${ARGN} )
-  # Create a libgtest target to be used as a dependency by test program
+  # Parse arguments from function call
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
+  
+  # Create a libgtest_main target to be used as a dependency by test program
   add_library(libgtest_main IMPORTED STATIC GLOBAL)
   add_dependencies(libgtest_main gtest_main)
   set_target_properties(libgtest_main PROPERTIES
       IMPORTED_LOCATION "$ENV{BDMSYS}/lib/libgtest_main.a"
       IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
   )
+  # Create a libgtest target to be used as a dependency by test program
   add_library(libgtest IMPORTED STATIC GLOBAL)
   add_dependencies(libgtest gtest_main)
   set_target_properties(libgtest PROPERTIES
       IMPORTED_LOCATION "$ENV{BDMSYS}/lib/libgtest.a"
       IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
   )
-  add_executable(${TARGET} ${ARG_SOURCES})
-  target_link_libraries(${TARGET} ${ARG_LIBRARIES}  libgtest libgtest_main)
-  gtest_discover_tests(${TARGET})
+  # If there are no headers, we use a simplified build procedure. If there are 
+  # headers present, we use `bdm_add_executable` using a more sophisticated
+  # build procedure via shared libararies.
+  if("${ARG_HEADERS}" STREQUAL "")
+    add_executable(${TARGET} ${ARG_SOURCES})
+    target_link_libraries(${TARGET} ${ARG_LIBRARIES}  libgtest libgtest_main)
+    gtest_discover_tests(${TARGET})
+  else()
+    bdm_add_executable(${TARGET}
+                       SOURCES ${ARG_SOURCES}
+                       HEADERS ${ARG_HEADERS}
+                       LIBRARIES biodynamo libgtest libgtest_main ${ARG_LIBRARIES})
+    gtest_discover_tests(${TARGET}-bin)
+  endif()
 endfunction(bdm_add_test)
 
 # -------------------- includes -----------------------------------------------
