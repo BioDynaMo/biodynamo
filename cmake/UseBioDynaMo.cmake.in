@@ -260,6 +260,7 @@ function(bdm_add_test TARGET)
   )
   add_executable(${TARGET} ${ARG_SOURCES})
   target_link_libraries(${TARGET} ${ARG_LIBRARIES}  libgtest libgtest_main)
+  gtest_discover_tests(${TARGET})
 endfunction(bdm_add_test)
 
 # -------------------- includes -----------------------------------------------
@@ -275,3 +276,7 @@ set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES}
 
 include_directories("$ENV{BDMSYS}/include")
 link_directories("$ENV{BDMSYS}/lib")
+
+# -------------------- Instructions for GoogleTest -----------------------------
+enable_testing()
+include(GoogleTest)

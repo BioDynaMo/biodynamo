@@ -41,8 +41,3 @@ file(GLOB_RECURSE TEST_SOURCES test/*.cc)
 bdm_add_test(my-simulation-test
              SOURCES ${TEST_SOURCES}
              LIBRARIES ${BDM_REQUIRED_LIBRARIES})
-
-# Instructions for GoogleTest
-enable_testing()
-include(GoogleTest)
-gtest_discover_tests(my-simulation-test)
