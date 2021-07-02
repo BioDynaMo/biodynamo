@@ -99,6 +99,7 @@ mark_as_advanced(${CMAKE_BIODYNAMO_BUILD_ROOT}
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test      "Build all tests." ON) # Makes boolean 'test' available.
+option(benchmark "Build benchmark suite." ON)
 option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
@@ -114,7 +115,6 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
-option(benchmark "Build a Benchmark." ON)
 
 if(APPLE)
   set(CMAKE_BDM_PVVERSION "5.9")
@@ -648,17 +648,18 @@ endif()
 
 # -------------------- benchmarking --------------------------------------------
 if(benchmark)
-  configure_file("cmake/env/version.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/version.sh" @ONLY)
-  file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/version.sh
-        DESTINATION ${CMAKE_BINARY_DIR}
-        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-  configure_file("cmake/env/gen_benchmark_plots.py" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/gen_benchmark_plots.py" @ONLY)
-  file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/gen_benchmark_plots.py
-              DESTINATION ${CMAKE_BINARY_DIR}
-              FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-              GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-      
+  file(COPY ${CMAKE_SOURCE_DIR}/test/benchmark/bench_version.sh
+       DESTINATION ${CMAKE_BINARY_DIR}
+       FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+       GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+  file(COPY ${CMAKE_SOURCE_DIR}/test/benchmark/bench_gen_plots.py
+       DESTINATION ${CMAKE_BINARY_DIR}
+       FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+       GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+  file(COPY ${CMAKE_SOURCE_DIR}/test/benchmark/bench_gen_html_page.py
+       DESTINATION ${CMAKE_BINARY_DIR}
+       FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+       GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
   include(Benchmarking)
 endif()
 

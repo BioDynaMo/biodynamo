@@ -426,6 +426,7 @@ endfunction()
 # information about the build system.
 function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(test test "Build BioDynaMo's test suite.")
+    ADD_FEATURE_INFO(benchmark benchmark "Build BioDynaMo's benchmark suite.")
     ADD_FEATURE_INFO(cuda cuda "Enable CUDA code generation for GPU acceleration.")
     ADD_FEATURE_INFO(opencl opencl "Enable OpenCL code generation for GPU acceleration.")
     ADD_FEATURE_INFO(dict dict "Build with ROOT dictionaries.")

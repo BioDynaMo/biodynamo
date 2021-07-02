@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <benchmark.h>
+#include <benchmark/benchmark.h>
 #include "soma_clustering.h"
 
 namespace bdm {

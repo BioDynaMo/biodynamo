@@ -1,4 +1,4 @@
-#include <benchmark.h>
+#include <benchmark/benchmark.h>
 #include <memory>
 #include "bdm_benchmark.h"
 

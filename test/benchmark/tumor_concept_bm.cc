@@ -12,7 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <benchmark.h>
+#include <benchmark/benchmark.h>
 #include "tumor_concept.h"
 
 namespace bdm {

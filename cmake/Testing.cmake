@@ -23,7 +23,7 @@ ExternalProject_Add(
   CMAKE_CACHE_ARGS
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND cp -r "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
+  INSTALL_COMMAND cp -r "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
   # Ugly but necessary, in future versions one can use ${binary_dir}
   # in BUILD_BYPRODUCTS
   #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
@@ -35,8 +35,8 @@ ExternalProject_Get_Property(gtest source_dir binary_dir)
 add_library(libgtest IMPORTED STATIC GLOBAL)
 add_dependencies(libgtest gtest)
 set_target_properties(libgtest PROPERTIES
-    IMPORTED_LOCATION "${binary_dir}/libgtest.a"
-    IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
+  IMPORTED_LOCATION "${binary_dir}/libgtest.a"
+  IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
 )
 
 # add include directories for gtest
@@ -65,7 +65,8 @@ endif()
 add_custom_target(coverage-build
   COMMAND "${CMAKE_SOURCE_DIR}/util/housekeeping/create-coverage-report.sh" ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR}
   COMMENT "Generate coverage report in separate directory
-     Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html")
+     Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html"
+)
 
 
 function(bdm_add_test_executable TEST_TARGET)
