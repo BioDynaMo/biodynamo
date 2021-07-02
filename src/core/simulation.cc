@@ -285,11 +285,11 @@ Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
 std::vector<Random*>& Simulation::GetAllRandom() { return random_; }
 
-InPlaceExecutionContext* Simulation::GetExecutionContext() {
+ExecutionContext* Simulation::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
 }
 
-std::vector<InPlaceExecutionContext*>& Simulation::GetAllExecCtxts() {
+std::vector<ExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
