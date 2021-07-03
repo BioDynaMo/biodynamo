@@ -398,7 +398,7 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
   Simulation sim(TEST_NAME, set_param);
   auto* env = sim.GetEnvironment();
   auto* rm = sim.GetResourceManager();
-  auto* ctxt = sim.GetExecutionContext();
+  auto* ctxt = dynamic_cast<InPlaceExecutionContext*>(sim.GetExecutionContext());
 
   for (int i = 0; i < 10; i++) {
     Cell* cell = new Cell();
