@@ -373,9 +373,12 @@ void Simulation::SetEnvironment(Environment* env) {
   environment_ = env;
 }
 
-void Simulation::SetAllExecCtxts(const std::vector<ExecutionContext*>& exec_ctxts) {
+void Simulation::SetAllExecCtxts(
+    const std::vector<ExecutionContext*>& exec_ctxts) {
   if (exec_ctxts.size() != exec_ctxt_.size()) {
-    Log::Error("Simulation::SetAllExecCtxts", "Size of exec_ctxts (", exec_ctxts.size(), ") does not match the expected size (", exec_ctxt_.size(), "). Operation aborted");
+    Log::Error("Simulation::SetAllExecCtxts", "Size of exec_ctxts (",
+               exec_ctxts.size(), ") does not match the expected size (",
+               exec_ctxt_.size(), "). Operation aborted");
     return;
   }
   for (uint64_t i = 0; i < exec_ctxt_.size(); ++i) {

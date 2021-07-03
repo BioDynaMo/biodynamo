@@ -21,10 +21,10 @@
 #include <utility>
 #include <vector>
 
-#include "core/execution_context/execution_context.h"
 #include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
 #include "core/container/agent_uid_map.h"
+#include "core/execution_context/execution_context.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/util/spinlock.h"
@@ -139,7 +139,7 @@ class InPlaceExecutionContext : public ExecutionContext {
   double cached_squared_search_radius_ = 0.0;
   /// Cache the value of Param::cache_neighbors
   bool cache_neighbors_ = false;
-  
+
   /// Check whether or not the neighbors in `neighbor_cache_` were queried with
   /// the same squared radius (`cached_squared_search_radius_`) as currently
   /// being queried with (`query_squared_radius_`)
