@@ -112,7 +112,7 @@ class InPlaceExecutionContext : public ExecutionContext {
 
   const Agent* GetConstAgent(const AgentUid& uid) override;
 
- private:
+ protected:
   friend class Environment;
   friend class in_place_exec_ctxt_detail::
       InPlaceExecutionContext_NeighborCacheValidity_Test;
@@ -144,6 +144,12 @@ class InPlaceExecutionContext : public ExecutionContext {
   /// the same squared radius (`cached_squared_search_radius_`) as currently
   /// being queried with (`query_squared_radius_`)
   bool IsNeighborCacheValid(double query_squared_radius);
+
+  virtual void AddAgentsToRm(
+      const std::vector<ExecutionContext*>& all_exec_ctxts);
+
+  virtual void RemoveAgentsFromRm(
+      const std::vector<ExecutionContext*>& all_exec_ctxts);
 };
 
 }  // namespace bdm
