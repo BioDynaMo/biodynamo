@@ -59,11 +59,6 @@ class ExecutionContext {
   virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                                const Agent& query, double squared_radius) = 0;
 
-  /// Check whether or not the neighbors in `neighbor_cache_` were queried with
-  /// the same squared radius (`cached_squared_search_radius_`) as currently
-  /// being queried with (`query_squared_radius_`)
-  virtual bool IsNeighborCacheValid(double query_squared_radius) = 0;
-
   virtual void AddAgent(Agent* new_agent) = 0;
 
   virtual void RemoveAgent(const AgentUid& uid) = 0;

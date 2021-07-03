@@ -104,11 +104,6 @@ class InPlaceExecutionContext : public ExecutionContext {
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query, double squared_radius) override;
 
-  /// Check whether or not the neighbors in `neighbor_cache_` were queried with
-  /// the same squared radius (`cached_squared_search_radius_`) as currently
-  /// being queried with (`query_squared_radius_`)
-  bool IsNeighborCacheValid(double query_squared_radius) override;
-
   void AddAgent(Agent* new_agent) override;
 
   void RemoveAgent(const AgentUid& uid) override;
@@ -144,6 +139,11 @@ class InPlaceExecutionContext : public ExecutionContext {
   double cached_squared_search_radius_ = 0.0;
   /// Cache the value of Param::cache_neighbors
   bool cache_neighbors_ = false;
+  
+  /// Check whether or not the neighbors in `neighbor_cache_` were queried with
+  /// the same squared radius (`cached_squared_search_radius_`) as currently
+  /// being queried with (`query_squared_radius_`)
+  bool IsNeighborCacheValid(double query_squared_radius);
 };
 
 }  // namespace bdm

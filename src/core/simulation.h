@@ -124,6 +124,8 @@ class Simulation {
   /// Returns all thread local execution contexts.
   std::vector<ExecutionContext*>& GetAllExecCtxts();
 
+  void SetAllExecCtxts(const std::vector<ExecutionContext*>& exec_ctxts);
+
   MemoryManager* GetMemoryManager() { return mem_mgr_; }
 
   /// Return helper class for OpenCL environment
