@@ -18,11 +18,11 @@ ExternalProject_Add(
   URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
   CMAKE_ARGS
-    -DCMAKE_CXX_FLAGS="-fPIC"
     -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
   CMAKE_CACHE_ARGS
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+    -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=true
   INSTALL_COMMAND cp -r "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/include" "${CMAKE_CURRENT_BINARY_DIR}/include"
   # Ugly but necessary, in future versions one can use ${binary_dir}
   # in BUILD_BYPRODUCTS
@@ -76,7 +76,6 @@ function(bdm_add_test_executable TEST_TARGET)
                      SOURCES ${ARG_SOURCES}
                      HEADERS ${ARG_HEADERS}
                      LIBRARIES biodynamo libgtest ${ARG_LIBRARIES})
-  add_dependencies(${TEST_TARGET} gtest)
   SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}" PARENT_SCOPE)
 
   # execute all tests with command: make test

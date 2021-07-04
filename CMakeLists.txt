@@ -648,15 +648,15 @@ endif()
 
 # -------------------- benchmarking --------------------------------------------
 if(benchmark)
-  file(COPY ${CMAKE_SOURCE_DIR}/test/benchmark/bench_version.sh
+  file(COPY ${CMAKE_SOURCE_DIR}/benchmark/bench_version.sh
        DESTINATION ${CMAKE_BINARY_DIR}
        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-  file(COPY ${CMAKE_SOURCE_DIR}/test/benchmark/bench_gen_plots.py
+  file(COPY ${CMAKE_SOURCE_DIR}/benchmark/bench_gen_plots.py
        DESTINATION ${CMAKE_BINARY_DIR}
        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-  file(COPY ${CMAKE_SOURCE_DIR}/test/benchmark/bench_gen_html_page.py
+  file(COPY ${CMAKE_SOURCE_DIR}/benchmark/bench_gen_html_page.py
        DESTINATION ${CMAKE_BINARY_DIR}
        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
