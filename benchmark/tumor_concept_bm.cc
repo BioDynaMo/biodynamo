@@ -23,7 +23,7 @@ static void TumorConcept1(benchmark::State& state) {
  const char* argv[3] = {
     "./tumor_concept1",
     "--inline-config",
-    "{ \"bdm::Param\":{ \"export_visualization_\": true } }"
+    "{ \"bdm::Param\":{ \"export_visualization\": true } }"
   };
   for (auto _ : state) {
     Simulate(3, argv);
@@ -37,7 +37,7 @@ static void TumorConcept0(benchmark::State& state) {
   const char* argv[3] = {
     "./tumor_concept0",
     "--inline-config",
-    "{ \"bdm::Param\":{ \"export_visualization_\": false } }"
+    "{ \"bdm::Param\":{ \"export_visualization\": false } }"
   };
   for (auto _ : state) {
     Simulate(3, argv);
