@@ -19,7 +19,6 @@ namespace bdm {
 namespace soma_clustering {
 
 static void SomaClustering1(benchmark::State& state) {
-  // FIXME memory leak
   const char* argv[3] = {
     "./soma_clustering1",
     "--inline-config",
@@ -33,7 +32,6 @@ static void SomaClustering1(benchmark::State& state) {
 BENCHMARK(SomaClustering1)->MeasureProcessCPUTime();
 
 static void SomaClustering0(benchmark::State& state) {
-  // FIXME memory leak
   const char* argv[3] = {
     "./soma_clustering0",
     "--inline-config",
