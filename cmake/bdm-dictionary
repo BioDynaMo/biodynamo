@@ -87,9 +87,7 @@ static struct BioDynaMoDictInit {
                 f.write('    AppendEnvVar(idirs, "{0}", "{1}");\n'.format(e, include_suffix[cnt]))
                 cnt = cnt + 1
             for id in args.include_dirs:
-                f.write("// {}\n".format(id))
                 AppendPrefix(id, prefixes)
-            f.write("// PREFIXES {}\n".format(prefixes))
         else:
             for e in environmentals: 
                 env = os.getenv(e)
