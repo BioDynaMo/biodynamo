@@ -2,9 +2,10 @@
 #define BDM_BENCHMARK_H
 
 #include <benchmark/benchmark.h>
-#include "complexity.h"
 
 namespace benchmark {
+
+std::string GetBigOString(BigO complexity);
 
 class BdmJSONReporter : public JSONReporter {
     public:
