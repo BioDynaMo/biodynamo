@@ -320,6 +320,13 @@ function(install_inside_build)
             EXCLUDE "build*"
             )
 
+    # benchmark dir
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/benchmark
+            DESTINATION ${CMAKE_INSTALL_ROOT}/benchmark
+            GLOB "*.py" "*.sh" "*.h"
+            )
+
     # Copy legal stuff
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_ROOT}
