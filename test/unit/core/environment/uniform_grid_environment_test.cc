@@ -15,6 +15,7 @@
 #include "core/environment/uniform_grid_environment.h"
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
+#include "core/functor.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
@@ -52,33 +53,29 @@ TEST(UniformGridEnvironmentTest, SetupGrid) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ForEachAgent([&](Agent* agent) {
     auto uid = agent->GetUid();
-    auto fill_neighbor_list = [&](Agent* neighbor) {
+    auto fill_neighbor_list = L2F([&](Agent* neighbor, double) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
       }
-    };
+    });
 
-    grid->ForEachNeighbor(fill_neighbor_list, *agent, 1201);
+    grid->ForEachNeighbor(fill_neighbor_list, *agent, 900);
   });
 
   std::vector<AgentUid> expected_0 = {AgentUid(1),  AgentUid(4),  AgentUid(5),
-                                      AgentUid(16), AgentUid(17), AgentUid(20),
-                                      AgentUid(21)};
+                                      AgentUid(16), AgentUid(17), AgentUid(20)};
   std::vector<AgentUid> expected_4 = {AgentUid(0),  AgentUid(1),  AgentUid(5),
                                       AgentUid(8),  AgentUid(9),  AgentUid(16),
-                                      AgentUid(17), AgentUid(20), AgentUid(21),
-                                      AgentUid(24), AgentUid(25)};
+                                      AgentUid(20), AgentUid(21), AgentUid(24)};
   std::vector<AgentUid> expected_42 = {
-      AgentUid(21), AgentUid(22), AgentUid(23), AgentUid(25), AgentUid(26),
-      AgentUid(27), AgentUid(29), AgentUid(30), AgentUid(31), AgentUid(37),
-      AgentUid(38), AgentUid(39), AgentUid(41), AgentUid(43), AgentUid(45),
-      AgentUid(46), AgentUid(47), AgentUid(53), AgentUid(54), AgentUid(55),
-      AgentUid(57), AgentUid(58), AgentUid(59), AgentUid(61), AgentUid(62),
-      AgentUid(63)};
-  std::vector<AgentUid> expected_63 = {AgentUid(42), AgentUid(43), AgentUid(46),
-                                       AgentUid(47), AgentUid(58), AgentUid(59),
-                                       AgentUid(62)};
+      AgentUid(22), AgentUid(25), AgentUid(26), AgentUid(27), AgentUid(30),
+      AgentUid(37), AgentUid(38), AgentUid(39), AgentUid(41), AgentUid(43),
+      AgentUid(45), AgentUid(46), AgentUid(47), AgentUid(54), AgentUid(57),
+      AgentUid(58), AgentUid(59), AgentUid(62)};
+  std::vector<AgentUid> expected_63 = {AgentUid(43), AgentUid(46),
+                                       AgentUid(47), AgentUid(58),
+                                       AgentUid(59), AgentUid(62)};
 
   std::sort(neighbors[AgentUid(0)].begin(), neighbors[AgentUid(0)].end());
   std::sort(neighbors[AgentUid(4)].begin(), neighbors[AgentUid(4)].end());
@@ -105,32 +102,30 @@ void RunUpdateGridTest(Simulation* simulation) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ForEachAgent([&](Agent* agent) {
     auto uid = agent->GetUid();
-    auto fill_neighbor_list = [&](Agent* neighbor) {
+    auto fill_neighbor_list = L2F([&](Agent* neighbor, double) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
       }
-    };
+    });
 
-    grid->ForEachNeighbor(fill_neighbor_list, *agent, 1201);
+    grid->ForEachNeighbor(fill_neighbor_list, *agent, 900);
   });
 
-  std::vector<AgentUid> expected_0 = {AgentUid(4),  AgentUid(5),  AgentUid(16),
-                                      AgentUid(17), AgentUid(20), AgentUid(21)};
+  std::vector<AgentUid> expected_0 = {AgentUid(4), AgentUid(5), AgentUid(16),
+                                      AgentUid(17), AgentUid(20)};
   std::vector<AgentUid> expected_5 = {
-      AgentUid(0),  AgentUid(2),  AgentUid(4),  AgentUid(6),
-      AgentUid(8),  AgentUid(9),  AgentUid(10), AgentUid(16),
-      AgentUid(17), AgentUid(18), AgentUid(20), AgentUid(21),
-      AgentUid(22), AgentUid(24), AgentUid(25), AgentUid(26)};
+      AgentUid(0),  AgentUid(2),  AgentUid(4),  AgentUid(6),  AgentUid(8),
+      AgentUid(9),  AgentUid(10), AgentUid(17), AgentUid(20), AgentUid(21),
+      AgentUid(22), AgentUid(25)};
   std::vector<AgentUid> expected_41 = {
-      AgentUid(20), AgentUid(21), AgentUid(22), AgentUid(24), AgentUid(25),
-      AgentUid(26), AgentUid(28), AgentUid(29), AgentUid(30), AgentUid(36),
-      AgentUid(37), AgentUid(38), AgentUid(40), AgentUid(44), AgentUid(45),
-      AgentUid(46), AgentUid(52), AgentUid(53), AgentUid(54), AgentUid(56),
-      AgentUid(57), AgentUid(58), AgentUid(60), AgentUid(61), AgentUid(62)};
+      AgentUid(21), AgentUid(24), AgentUid(25), AgentUid(26), AgentUid(29),
+      AgentUid(36), AgentUid(37), AgentUid(38), AgentUid(40), AgentUid(44),
+      AgentUid(45), AgentUid(46), AgentUid(53), AgentUid(56), AgentUid(57),
+      AgentUid(58), AgentUid(61)};
   std::vector<AgentUid> expected_61 = {
-      AgentUid(40), AgentUid(41), AgentUid(44), AgentUid(45), AgentUid(46),
-      AgentUid(56), AgentUid(57), AgentUid(58), AgentUid(60), AgentUid(62)};
+      AgentUid(41), AgentUid(44), AgentUid(45), AgentUid(46), AgentUid(56),
+      AgentUid(57), AgentUid(58), AgentUid(60), AgentUid(62)};
 
   std::sort(neighbors[AgentUid(0)].begin(), neighbors[AgentUid(0)].end());
   std::sort(neighbors[AgentUid(5)].begin(), neighbors[AgentUid(5)].end());

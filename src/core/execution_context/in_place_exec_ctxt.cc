@@ -281,8 +281,7 @@ void InPlaceExecutionContext::ForEachNeighbor(Functor<void, Agent*>& lambda,
                                               void* criteria) {
   // forward call to env and populate cache
   auto* env = Simulation::GetActive()->GetEnvironment();
-  auto for_each =
-      L2F([&](Agent* agent) { lambda(agent); });
+  auto for_each = L2F([&](Agent* agent) { lambda(agent); });
   env->ForEachNeighbor(for_each, query, criteria);
 }
 
@@ -311,9 +310,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
     if (param->cache_neighbors) {
       neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
-    if (squared_distance < squared_radius) {
-      lambda(agent, squared_distance);
-    }
+    lambda(agent, squared_distance);
   });
   env->ForEachNeighbor(for_each, query, squared_radius);
 }
