@@ -46,7 +46,7 @@ include_directories("${CMAKE_BINARY_DIR}/gbench/src/gbench/include")
 # create target that runs the benchmarks
 set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
 add_custom_target(run-benchmarks
-                  COMMAND ${LAUNCHER} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_repetitions=1 --benchmark_format=json --benchmark_out=benchmark/results.json
+                  COMMAND ${LAUNCHER} ${CMAKE_BINARY_DIR}/bin/biodynamo-benchmark --benchmark_repetitions=1 --benchmark_format=json --benchmark_out=gbench/results.json
                   COMMAND ${LAUNCHER} ${CMAKE_BINARY_DIR}/bench_version.sh
                   COMMAND ${LAUNCHER} ${CMAKE_BINARY_DIR}/bench_gen_html_page.py
 )
