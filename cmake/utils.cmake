@@ -320,13 +320,6 @@ function(install_inside_build)
             EXCLUDE "build*"
             )
 
-    # benchmark dir
-    add_copy_directory(copy_files_bdm
-            ${CMAKE_SOURCE_DIR}/benchmark
-            DESTINATION ${CMAKE_INSTALL_ROOT}/benchmark
-            GLOB "*.py" "*.sh" "*.h"
-            )
-
     # Copy legal stuff
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_ROOT}
@@ -340,17 +333,27 @@ function(install_inside_build)
     endif()
 
     if (test)
+      # Copy unit test files
       add_copy_directory(copy_files_bdm
-            ${CMAKE_SOURCE_DIR}/test/unit
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/unit
-            GLOB "*.h"
-            )
+              ${CMAKE_SOURCE_DIR}/test/unit
+              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/unit
+              GLOB "*.h"
+              )
       # gtest includes cannot be copied using this methiod, because the files
       # don't exist yet. See install step of gtest
       add_copy_directory(copy_files_bdm
               ${CMAKE_SOURCE_DIR}/test/unit/
               DESTINATION ${CMAKE_INSTALL_ROOT}/share/test
               GLOB "**/*.py"
+              )
+    endif()
+
+    if (benchmark)
+      # Copy benchmark files
+      add_copy_directory(copy_files_bdm
+              ${CMAKE_SOURCE_DIR}/benchmark
+              DESTINATION ${CMAKE_INSTALL_ROOT}/benchmark
+              GLOB "*.py" "*.sh"
               )
     endif()
 

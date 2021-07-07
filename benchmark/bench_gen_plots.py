@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -78,13 +78,13 @@ def iteration():
 
 def store(cpu, name_demo, memory, min_v, max_v):
     version = sys.argv[2]
-    csvfile = open('gbench/'+name_demo+'.csv', 'a+')
+    csvfile = open('benchmark/'+name_demo+'.csv', 'a+')
     writer = csv.writer(csvfile)
     writer.writerow( (version, cpu, memory, min_v, max_v) )
     csvfile.close()
 
 def nb_data(name_demo):
-    with open('gbench/'+name_demo+'.csv') as csv_file:
+    with open('benchmark/'+name_demo+'.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
@@ -100,13 +100,13 @@ def plot(name_demo):
     min_v = [0]*nb
     max_v = [0]*nb
     fig, ax = plt.subplots(2, sharex='col', sharey='row')
-    with open('gbench/'+name_demo+'.csv') as csv_file:
+    with open('benchmark/'+name_demo+'.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count_marks = 0
         for row in csv_reader:
             line_count_marks += 1
     BDM_marks = [0] * line_count_marks
-    with open('gbench/'+name_demo+'.csv') as csv_file:
+    with open('benchmark/'+name_demo+'.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
@@ -132,7 +132,7 @@ def plot(name_demo):
     ax[1].set_xticks(range(nb))
     ax[1].set_xticklabels(xlabels, rotation=90)
     plt.tight_layout()
-    plt.savefig('gbench/'+name_demo+'.png')
+    plt.savefig('benchmark/'+name_demo+'.png')
     return average
 
 def main():

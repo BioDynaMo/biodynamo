@@ -1,13 +1,13 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import sys
 import os
 import glob
 
-file = glob.glob("gbench/*.png")
+file = glob.glob("benchmark/*.png")
 nb = len(file)
 i = 0
-my_file = open("gbench/my_web.html", "w")
+my_file = open("benchmark/my_web.html", "w")
 my_file.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n")
 my_file.write("<html>\n")
 my_file.write("<head>\n")
