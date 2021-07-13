@@ -23,36 +23,24 @@ namespace bdm {
 // ---------------------------------------------------------------------------
 inline void SetupResultCollection(Simulation* sim) {
   auto* ts = sim->GetTimeSeries();
-  // susceptible
-  auto susceptible = [](Simulation* sim) {
-    auto condition = L2F([](Agent* a) {
-      return bdm_static_cast<Person*>(a)->state_ == State::kSusceptible;
-    });
-    auto result = static_cast<double>(bdm::experimental::Count(sim, condition));
-    auto num_agents = sim->GetResourceManager()->GetNumAgents() - 1;
-    return result / static_cast<double>(num_agents);
+  auto susceptible = [](Agent* a) {
+    return bdm_static_cast<Person*>(a)->state_ == State::kSusceptible;
   };
-  ts->AddCollector("susceptible", susceptible);
-  // infected
-  auto infected = [](Simulation* sim) {
-    auto condition = L2F([](Agent* a) {
-      return bdm_static_cast<Person*>(a)->state_ == State::kInfected;
-    });
-    auto result = static_cast<double>(bdm::experimental::Count(sim, condition));
-    auto num_agents = sim->GetResourceManager()->GetNumAgents() - 1;
-    return result / static_cast<double>(num_agents);
+  auto infected = [](Agent* a) {
+    return bdm_static_cast<Person*>(a)->state_ == State::kInfected;
   };
-  ts->AddCollector("infected", infected);
-  // recovered
-  auto recovered = [](Simulation* sim) {
-    auto condition = L2F([](Agent* a) {
-      return bdm_static_cast<Person*>(a)->state_ == State::kRecovered;
-    });
-    auto result = static_cast<double>(bdm::experimental::Count(sim, condition));
-    auto num_agents = sim->GetResourceManager()->GetNumAgents() - 1;
-    return result / static_cast<double>(num_agents);
+  auto recovered = [](Agent* a) {
+    return bdm_static_cast<Person*>(a)->state_ == State::kRecovered;
   };
-  ts->AddCollector("recovered", recovered);
+  auto post_process = [](double count) {
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    auto num_agents = rm->GetNumAgents();
+    return count / static_cast<double>(num_agents);
+  };
+  ts->AddCollector("susceptible",
+                   new Counter<double>(susceptible, post_process));
+  ts->AddCollector("infected", new Counter<double>(infected, post_process));
+  ts->AddCollector("recovered", new Counter<double>(recovered, post_process));
 }
 
 // ---------------------------------------------------------------------------
