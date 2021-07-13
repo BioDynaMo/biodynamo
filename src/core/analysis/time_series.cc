@@ -46,16 +46,13 @@ TimeSeries::Data::Data(const Data& other)
       y_error_low(other.y_error_low),
       y_error_high(other.y_error_high) {
   if (other.y_reducer_collector) {
-    std::cout << "copy " << other.y_reducer_collector << std::endl;
     y_reducer_collector = other.y_reducer_collector->NewCopy();
-    std::cout << "   " << y_reducer_collector << std::endl;
   }
 }
 
 // -----------------------------------------------------------------------------
 TimeSeries::Data::~Data() {
   if (y_reducer_collector) {
-    std::cout << "delete " << y_reducer_collector << std::endl;
     delete y_reducer_collector;
   }
 }
