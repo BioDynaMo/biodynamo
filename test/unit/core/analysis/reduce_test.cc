@@ -66,33 +66,30 @@ TEST(Reduce, Reducer) {
 
   // without post processing
   {
-  Reducer<uint64_t> reducer(sum_data, combine_tl_results);
-  rm->ForEachAgentParallel(reducer);
-  auto result = reducer.GetResult();
-  EXPECT_EQ(1999000u, result);
+    Reducer<uint64_t> reducer(sum_data, combine_tl_results);
+    rm->ForEachAgentParallel(reducer);
+    auto result = reducer.GetResult();
+    EXPECT_EQ(1999000u, result);
   }
-  
+
   // with post processing
   {
-    auto post_process = [](uint64_t result) {
-      return result / 2;
-    };
-  Reducer<uint64_t> reducer(sum_data, combine_tl_results, post_process);
-  rm->ForEachAgentParallel(reducer);
-  auto result = reducer.GetResult();
-  EXPECT_EQ(999500u, result);
+    auto post_process = [](uint64_t result) { return result / 2; };
+    Reducer<uint64_t> reducer(sum_data, combine_tl_results, post_process);
+    rm->ForEachAgentParallel(reducer);
+    auto result = reducer.GetResult();
+    EXPECT_EQ(999500u, result);
   }
 
   // with different result data type and post processing
   {
-    auto post_process = [](double result) {
-      return result / 2.3;
-    };
-  Reducer<uint64_t, double> reducer(sum_data, combine_tl_results, post_process);
-  rm->ForEachAgentParallel(reducer);
-  auto result = reducer.GetResult();
-  EXPECT_EQ(typeid(result), typeid(double));
-  EXPECT_NEAR(869130.434782609, result, abs_error<double>::value);
+    auto post_process = [](double result) { return result / 2.3; };
+    Reducer<uint64_t, double> reducer(sum_data, combine_tl_results,
+                                      post_process);
+    rm->ForEachAgentParallel(reducer);
+    auto result = reducer.GetResult();
+    EXPECT_EQ(typeid(result), typeid(double));
+    EXPECT_NEAR(869130.434782609, result, abs_error<double>::value);
   }
 }
 
@@ -136,12 +133,10 @@ TEST(Reduce, Counter) {
     auto result = counter.GetResult();
     EXPECT_EQ(1000u, result);
   }
-  
+
   // with post processing
   {
-    auto post_process = [](uint64_t result) {
-      return result / 2;
-    };
+    auto post_process = [](uint64_t result) { return result / 2; };
     Counter<> counter(data_lt_1000, post_process);
     rm->ForEachAgentParallel(counter);
     auto result = counter.GetResult();
@@ -150,9 +145,7 @@ TEST(Reduce, Counter) {
 
   // with different result data type and post processing
   {
-    auto post_process = [](double result) {
-      return result / 2.3;
-    };
+    auto post_process = [](double result) { return result / 2.3; };
     Counter<double> counter(data_lt_1000, post_process);
     rm->ForEachAgentParallel(counter);
     auto result = counter.GetResult();

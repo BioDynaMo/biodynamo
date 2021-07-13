@@ -15,24 +15,27 @@
 #include "core/analysis/time_series.h"
 #include <TBufferJSON.h>
 #include <iostream>
+#include "core/analysis/reduce.h"
 #include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
-#include "core/analysis/reduce.h"
 
 namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
-  TimeSeries::Data::Data() {}
+TimeSeries::Data::Data() {}
 
 // -----------------------------------------------------------------------------
-  TimeSeries::Data::Data(double (*ycollector)(Simulation*), double (*xcollector)(Simulation*)) 
-  : ycollector(ycollector), xcollector(xcollector) {}
+TimeSeries::Data::Data(double (*ycollector)(Simulation*),
+                       double (*xcollector)(Simulation*))
+    : ycollector(ycollector), xcollector(xcollector) {}
 
 // -----------------------------------------------------------------------------
-  TimeSeries::Data::Data(Reducer<double>* y_reducer_collector, double (*xcollector)(Simulation*)) : y_reducer_collector(y_reducer_collector), xcollector(xcollector) {}
+TimeSeries::Data::Data(Reducer<double>* y_reducer_collector,
+                       double (*xcollector)(Simulation*))
+    : y_reducer_collector(y_reducer_collector), xcollector(xcollector) {}
 
 // -----------------------------------------------------------------------------
 TimeSeries::Data::~Data() {
@@ -192,9 +195,10 @@ void TimeSeries::Update() {
     auto& result_data = entry.second;
     if (result_data.ycollector != nullptr) {
       result_data.y_values.push_back(result_data.ycollector(sim));
-    } 
+    }
     if (result_data.y_reducer_collector != nullptr) {
-      reducers.push_back(std::make_pair(result_data.y_reducer_collector, entry.first));
+      reducers.push_back(
+          std::make_pair(result_data.y_reducer_collector, entry.first));
     }
     if (result_data.xcollector == nullptr) {
       result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
@@ -206,12 +210,12 @@ void TimeSeries::Update() {
 
   // execute reducers
   auto execute_reducers = L2F([&](Agent* agent) {
-    for(auto& el : reducers) {
+    for (auto& el : reducers) {
       (*el.first)(agent);
     }
   });
   sim->GetResourceManager()->ForEachAgentParallel(execute_reducers);
-  for(auto& el : reducers) {
+  for (auto& el : reducers) {
     data_[el.second].y_values.push_back(el.first->GetResult());
   }
 }

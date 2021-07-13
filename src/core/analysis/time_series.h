@@ -17,8 +17,8 @@
 #include <functional>
 #include <unordered_map>
 #include <vector>
-#include "core/util/root.h"
 #include "core/analysis/reduce.h"
+#include "core/util/root.h"
 
 namespace bdm {
 
@@ -36,7 +36,8 @@ class TimeSeries {
     /// TODO
     Data(double (*ycollector)(Simulation*), double (*xcollector)(Simulation*));
     /// TODO
-    Data(Reducer<double>* y_reducer_collector, double (*xcollector)(Simulation*));
+    Data(Reducer<double>* y_reducer_collector,
+         double (*xcollector)(Simulation*));
     ~Data();
 
     Reducer<double>* y_reducer_collector = nullptr;
@@ -116,8 +117,8 @@ class TimeSeries {
   void AddCollector(const std::string& id, double (*ycollector)(Simulation*),
                     double (*xcollector)(Simulation*) = nullptr);
 
-  /// TODO 
-  void AddCollector(const std::string& id, Reducer<double>* y_reducer_collector, 
+  /// TODO
+  void AddCollector(const std::string& id, Reducer<double>* y_reducer_collector,
                     double (*xcollector)(Simulation*) = nullptr);
 
   /// Add new entry with data that is not collected during a simulation.

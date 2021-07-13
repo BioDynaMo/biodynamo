@@ -30,9 +30,8 @@ inline void SetupResultCollection(Simulation* sim) {
   auto post_process = [](uint64_t count, Simulation* sim) {
     auto num_agents = sim->GetResourceManager()->GetNumAgents();
     return result / static_cast<double>(num_agents);
-  }
-  ts->AddCollector("susceptible", Counter(susceptible, post_process));
-  
+  } ts->AddCollector("susceptible", Counter(susceptible, post_process));
+
   auto susceptible = [](Simulation* sim) {
     auto result = static_cast<double>(bdm::experimental::Count(sim, condition));
     auto num_agents = sim->GetResourceManager()->GetNumAgents() - 1;
