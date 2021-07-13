@@ -34,6 +34,7 @@ struct Reducer : public Functor<void, Agent*> {
   virtual ~Reducer() {}
   virtual TResult GetResult() = 0;
   virtual void Reset() = 0;
+  virtual Reducer* NewCopy() const = 0;
   BDM_CLASS_DEF(Reducer, 1)
 };
 
@@ -77,6 +78,10 @@ class GenericReducer : public Reducer<TResult> {
       return post_process_(combined);
     }
     return combined;
+  }
+
+  Reducer<TResult>* NewCopy() const override {
+    return new GenericReducer(*this);
   }
 
  private:
@@ -193,6 +198,8 @@ struct Counter : public Reducer<TResult> {
     }
     return combined;
   }
+
+  Reducer<TResult>* NewCopy() const override { return new Counter(*this); }
 
  private:
   SharedData<uint64_t> tl_results_;             //!

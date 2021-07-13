@@ -38,9 +38,25 @@ TimeSeries::Data::Data(Reducer<double>* y_reducer_collector,
     : y_reducer_collector(y_reducer_collector), xcollector(xcollector) {}
 
 // -----------------------------------------------------------------------------
+TimeSeries::Data::Data(const Data& other)
+    : ycollector(other.ycollector),
+      xcollector(other.xcollector),
+      x_values(other.x_values),
+      y_values(other.y_values),
+      y_error_low(other.y_error_low),
+      y_error_high(other.y_error_high) {
+  if (other.y_reducer_collector) {
+    std::cout << "copy " << other.y_reducer_collector << std::endl;
+    y_reducer_collector = other.y_reducer_collector->NewCopy();
+    std::cout << "   " << y_reducer_collector << std::endl;
+  }
+}
+
+// -----------------------------------------------------------------------------
 TimeSeries::Data::~Data() {
   if (y_reducer_collector) {
-    // delete y_reducer_collector;
+    std::cout << "delete " << y_reducer_collector << std::endl;
+    delete y_reducer_collector;
   }
 }
 
@@ -120,7 +136,7 @@ void TimeSeries::Merge(
 
     // merge
     //  initialize
-    merged->data_[key] = {};
+    merged->data_.emplace(key, Data());
     auto& mdata = merged->data_[key];
     mdata.x_values.resize(xref.size());
     mdata.y_values.resize(xref.size());
@@ -170,7 +186,7 @@ void TimeSeries::AddCollector(const std::string& id,
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
                  ") exists already. Operation aborted.");
   }
-  data_[id] = Data(ycollector, xcollector);
+  data_.emplace(id, Data(ycollector, xcollector));
 }
 
 // -----------------------------------------------------------------------------
@@ -182,7 +198,7 @@ void TimeSeries::AddCollector(const std::string& id,
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
                  ") exists already. Operation aborted.");
   }
-  data_[id] = Data(y_reducer_collector, xcollector);
+  data_.emplace(id, Data(y_reducer_collector, xcollector));
 }
 
 // -----------------------------------------------------------------------------
@@ -239,7 +255,7 @@ void TimeSeries::Add(const TimeSeries& ts, const std::string& suffix) {
       return;
     }
 
-    data_[id] = p.second;
+    data_.emplace(id, p.second);
   }
 }
 
@@ -256,7 +272,7 @@ void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
   Data data;
   data.x_values = x_values;
   data.y_values = y_values;
-  data_[id] = data;
+  data_.emplace(id, data);
 }
 
 // -----------------------------------------------------------------------------
@@ -276,7 +292,7 @@ void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
   data.y_values = y_values;
   data.y_error_low = y_error_low;
   data.y_error_high = y_error_high;
-  data_[id] = data;
+  data_.emplace(id, data);
 }
 
 // -----------------------------------------------------------------------------
@@ -294,7 +310,7 @@ void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
   data.y_values = y_values;
   data.y_error_low = y_error;
   data.y_error_high = y_error;
-  data_[id] = data;
+  data_.emplace(id, data);
 }
 
 // -----------------------------------------------------------------------------
