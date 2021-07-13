@@ -41,7 +41,7 @@ class TimeSeries {
     Data(const Data&);
     ~Data();
 
-    Data& operator=(const Data& other) = delete;
+    Data& operator=(const Data& other);
 
     Reducer<double>* y_reducer_collector = nullptr;
     double (*ycollector)(Simulation*) = nullptr;  //!

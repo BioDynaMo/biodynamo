@@ -51,6 +51,23 @@ TimeSeries::Data::Data(const Data& other)
 }
 
 // -----------------------------------------------------------------------------
+TimeSeries::Data& TimeSeries::Data::operator=(const Data& other) {
+  if (this == &other) {
+    return *this;
+  }
+  if (other.y_reducer_collector) {
+    y_reducer_collector = other.y_reducer_collector->NewCopy();
+  }
+  ycollector = other.ycollector;
+  xcollector = other.xcollector;
+  x_values = other.x_values;
+  y_values = other.y_values;
+  y_error_low = other.y_error_low;
+  y_error_high = other.y_error_high;
+  return *this;
+}
+
+// -----------------------------------------------------------------------------
 TimeSeries::Data::~Data() {
   if (y_reducer_collector) {
     delete y_reducer_collector;
