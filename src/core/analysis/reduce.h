@@ -29,17 +29,47 @@ namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
+/// An interface for any type of implementation that wishes to
+/// calculate a reduction over all agents
+/// (e.g. counting, averaging, finding minimum and maximum values, etc.).\n
+/// The benefit of this interface is that multiple reduction operations
+/// can be combined to avoid iterating over all agents multiple times.\n
 template <typename TResult>
 struct Reducer : public Functor<void, Agent*> {
   virtual ~Reducer() {}
   virtual TResult GetResult() = 0;
+  /// Resets the internal state between calculations.
   virtual void Reset() = 0;
   virtual Reducer* NewCopy() const = 0;
   BDM_CLASS_DEF(Reducer, 1)
 };
 
 // -----------------------------------------------------------------------------
-/// TODO
+/// Generic implementation of a reduction.\n
+/// Provides the functions to iterates over all agents executing the
+/// `agent_function_` and updating a thread-local and therefore partial result.
+/// The `reduce_partial_results_` attribute specifies how these partial results
+/// should be combined into a single value.
+/// Let's assume we want to sum up the `data` attribute of all agents.
+/// \code
+/// auto sum_data = [](Agent* agent, uint64_t* tl_result) {
+///   *tl_result += bdm_static_cast<TestAgent*>(agent)->GetData();
+/// };
+/// auto combine_tl_results = [](const SharedData<uint64_t>& tl_results) {
+///   uint64_t result = 0;
+///   for (auto& el : tl_results) {
+///     result += el;
+///   }
+///   return result;
+/// };
+/// GenericReducer<uint64_t> reducer(sum_data, combine_tl_results);
+/// rm->ForEachAgentParallel(reducer);
+/// auto result = reducer.GetResult();
+/// \endcode
+/// The benefit in comparison with `bdm::experimental::Reduce` is that
+/// multiple counters can be combined and processed in one sweep over
+/// all agents.
+/// \see bdm::experimental::Reducer`
 template <typename T, typename TResult = T>
 class GenericReducer : public Reducer<TResult> {
  public:
@@ -162,7 +192,33 @@ inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
 }
 
 // -----------------------------------------------------------------------------
-// TODO
+/// Provides functions to count the number of agents for which the given
+/// condition is true.\n
+/// The following code example demonstrates how to count all agents
+/// with `diameter < 5`.
+/// \code
+/// auto diam_lt_5 = [](Agent* agent) {
+///   return agent->GetDiameter() < 5;
+/// };
+/// Counter<> counter(diam_lt_5);
+/// rm->ForEachAgentParallel(counter);
+/// auto result = counter.GetResult();
+/// \endcode
+/// The counting result can be post processed. Let's assume we want
+/// to divide the counting result by two:
+/// \code
+/// auto diam_lt_5 = [](Agent* agent) {
+///   return agent->GetDiameter() < 5;
+/// };
+/// auto post_process = [](uint64_t result) { return result / 2; };
+/// Counter<> counter(diam_lt_5, post_process);
+/// rm->ForEachAgentParallel(counter);
+/// auto result = counter.GetResult();
+/// \endcode
+/// The benefit in comparison with `bdm::experimental::Count` is that
+/// multiple counters can be combined and processed in one sweep over
+/// all agents.
+/// \see bdm::experimental::Reducer`
 template <typename TResult = uint64_t>
 struct Counter : public Reducer<TResult> {
  public:

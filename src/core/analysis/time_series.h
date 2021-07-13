@@ -33,9 +33,7 @@ class TimeSeries {
  public:
   struct Data {
     Data();
-    /// TODO
     Data(double (*ycollector)(Simulation*), double (*xcollector)(Simulation*));
-    /// TODO
     Data(Reducer<double>* y_reducer_collector,
          double (*xcollector)(Simulation*));
     Data(const Data&);
@@ -120,7 +118,24 @@ class TimeSeries {
   void AddCollector(const std::string& id, double (*ycollector)(Simulation*),
                     double (*xcollector)(Simulation*) = nullptr);
 
-  /// TODO
+  /// Adds a reducer collector which is executed at each iteration.\n
+  /// The benefit (in comparison with `AddCollector` using a function pointer
+  /// to collect y-values) is that multiple reducers can be combined.
+  /// Thus the result can be calculated faster.\n
+  /// Let's assume we want to track the fraction of infected agents in an
+  /// epidemiological simulation.
+  /// \code
+  /// auto is_infected = [](Agent* a) {
+  ///   return bdm_static_cast<Person*>(a)->state_ == State::kInfected;
+  /// };
+  /// auto post_process = [](double count) {
+  ///   auto* rm = Simulation::GetActive()->GetResourceManager();
+  ///   auto num_agents = rm->GetNumAgents();
+  ///   return count / static_cast<double>(num_agents);
+  /// };
+  /// ts->AddCollector("infected", new Counter<double>(is_infected,
+  ///                                                  post_process));
+  /// \endcode
   void AddCollector(const std::string& id, Reducer<double>* y_reducer_collector,
                     double (*xcollector)(Simulation*) = nullptr);
 
