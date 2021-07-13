@@ -44,7 +44,7 @@ TEST(Reduce, Reduce) {
 }
 
 // -----------------------------------------------------------------------------
-TEST(Reduce, Reducer) {
+TEST(Reduce, GenericReducer) {
   Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
 
@@ -67,26 +67,33 @@ TEST(Reduce, Reducer) {
 
   // without post processing
   {
-    Reducer<uint64_t> reducer(sum_data, combine_tl_results);
+    GenericReducer<uint64_t> reducer(sum_data, combine_tl_results);
     rm->ForEachAgentParallel(reducer);
     auto result = reducer.GetResult();
     EXPECT_EQ(1999000u, result);
   }
 
-  // with post processing
+  // with post processing and reset
   {
     auto post_process = [](uint64_t result) { return result / 2; };
-    Reducer<uint64_t> reducer(sum_data, combine_tl_results, post_process);
+    GenericReducer<uint64_t> reducer(sum_data, combine_tl_results,
+                                     post_process);
     rm->ForEachAgentParallel(reducer);
     auto result = reducer.GetResult();
+    EXPECT_EQ(999500u, result);
+
+    // calculate again
+    reducer.Reset();
+    rm->ForEachAgentParallel(reducer);
+    result = reducer.GetResult();
     EXPECT_EQ(999500u, result);
   }
 
   // with different result data type and post processing
   {
     auto post_process = [](double result) { return result / 2.3; };
-    Reducer<uint64_t, double> reducer(sum_data, combine_tl_results,
-                                      post_process);
+    GenericReducer<uint64_t, double> reducer(sum_data, combine_tl_results,
+                                             post_process);
     rm->ForEachAgentParallel(reducer);
     auto result = reducer.GetResult();
     EXPECT_EQ(typeid(result), typeid(double));
@@ -135,12 +142,18 @@ TEST(Reduce, Counter) {
     EXPECT_EQ(1000u, result);
   }
 
-  // with post processing
+  // with post processing and reset
   {
     auto post_process = [](uint64_t result) { return result / 2; };
     Counter<> counter(data_lt_1000, post_process);
     rm->ForEachAgentParallel(counter);
     auto result = counter.GetResult();
+    EXPECT_EQ(500u, result);
+
+    // calculate again
+    counter.Reset();
+    rm->ForEachAgentParallel(counter);
+    result = counter.GetResult();
     EXPECT_EQ(500u, result);
   }
 
@@ -157,7 +170,7 @@ TEST(Reduce, Counter) {
 
 #ifdef USE_DICT
 // -----------------------------------------------------------------------------
-TEST_F(IOTest, Reducer) {
+TEST_F(IOTest, GenericReducer) {
   Simulation sim(TEST_NAME);
   auto* rm = sim.GetResourceManager();
 
@@ -178,9 +191,9 @@ TEST_F(IOTest, Reducer) {
     return result;
   };
   auto post_process = [](uint64_t result) { return result / 2; };
-  Reducer<uint64_t> reducer(sum_data, combine_tl_results, post_process);
+  GenericReducer<uint64_t> reducer(sum_data, combine_tl_results, post_process);
 
-  Reducer<uint64_t>* restored;
+  GenericReducer<uint64_t>* restored;
   BackupAndRestore(reducer, &restored);
 
   rm->ForEachAgentParallel(*restored);

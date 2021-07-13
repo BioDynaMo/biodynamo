@@ -29,37 +29,49 @@ namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
+template <typename TResult>
+struct Reducer : public Functor<void, Agent*> {
+  virtual ~Reducer() {}
+  virtual TResult GetResult() = 0;
+  virtual void Reset() = 0;
+  BDM_CLASS_DEF(Reducer, 1)
+};
+
+// -----------------------------------------------------------------------------
 /// TODO
 template <typename T, typename TResult = T>
-class Reducer : public Functor<void, Agent*> {
+class GenericReducer : public Reducer<TResult> {
  public:
-  Reducer() {
-    tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
-    for (auto& el : tl_results_) {
-      el = T();
-    }
-  }
+  GenericReducer() { Reset(); }
 
-  Reducer(void(agent_function)(Agent*, T*),
-          T (*reduce_partial_results)(const SharedData<T>&),
-          TResult (*post_process)(TResult) = nullptr)
+  GenericReducer(void(agent_function)(Agent*, T*),
+                 T (*reduce_partial_results)(const SharedData<T>&),
+                 TResult (*post_process)(TResult) = nullptr)
       : agent_function_(agent_function),
         reduce_partial_results_(reduce_partial_results),
         post_process_(post_process) {
+    Reset();
     tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
     for (auto& el : tl_results_) {
       el = T();
     }
   }
 
-  virtual ~Reducer() {}
+  virtual ~GenericReducer() {}
 
   void operator()(Agent* agent) override {
     auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
     agent_function_(agent, &(tl_results_[tid]));
   }
 
-  virtual TResult GetResult() {
+  void Reset() override {
+    tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
+    for (auto& el : tl_results_) {
+      el = T();
+    }
+  }
+
+  TResult GetResult() override {
     auto combined = static_cast<TResult>(reduce_partial_results_(tl_results_));
     if (post_process_) {
       return post_process_(combined);
@@ -67,14 +79,12 @@ class Reducer : public Functor<void, Agent*> {
     return combined;
   }
 
- protected:
-  SharedData<T> tl_results_;  //!
-
  private:
+  SharedData<T> tl_results_;                                     //!
   void (*agent_function_)(Agent*, T*) = nullptr;                 //!
   T (*reduce_partial_results_)(const SharedData<T>&) = nullptr;  //!
   TResult (*post_process_)(TResult) = nullptr;                   //!
-  BDM_CLASS_DEF(Reducer, 1)
+  BDM_CLASS_DEF_OVERRIDE(GenericReducer, 1)
 };
 
 // The following custom streamer should be visible to rootcling for dictionary
@@ -84,9 +94,9 @@ class Reducer : public Functor<void, Agent*> {
 // The custom streamer is needed because ROOT can't stream function pointers
 // by default.
 template <typename T, typename TResult>
-inline void Reducer<T, TResult>::Streamer(TBuffer& R__b) {
+inline void GenericReducer<T, TResult>::Streamer(TBuffer& R__b) {
   if (R__b.IsReading()) {
-    R__b.ReadClassBuffer(Reducer::Class(), this);
+    R__b.ReadClassBuffer(GenericReducer::Class(), this);
     Long64_t l;
     R__b.ReadLong64(l);
     this->agent_function_ = reinterpret_cast<void (*)(Agent*, T*)>(l);
@@ -96,7 +106,7 @@ inline void Reducer<T, TResult>::Streamer(TBuffer& R__b) {
     R__b.ReadLong64(l);
     this->post_process_ = reinterpret_cast<TResult (*)(TResult)>(l);
   } else {
-    R__b.WriteClassBuffer(Reducer::Class(), this);
+    R__b.WriteClassBuffer(GenericReducer::Class(), this);
     Long64_t l = reinterpret_cast<Long64_t>(this->agent_function_);
     R__b.WriteLong64(l);
     l = reinterpret_cast<Long64_t>(this->reduce_partial_results_);
@@ -149,16 +159,24 @@ inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
 // -----------------------------------------------------------------------------
 // TODO
 template <typename TResult = uint64_t>
-struct Counter : public Reducer<uint64_t, TResult> {
+struct Counter : public Reducer<TResult> {
  public:
   /// Required for IO
-  Counter() {}
+  Counter() { Reset(); }
 
   Counter(bool (*condition)(Agent*), TResult (*post_process)(TResult) = nullptr)
-      : Reducer<uint64_t, TResult>(),
-        condition_(condition),
-        post_process_(post_process) {}
+      : condition_(condition), post_process_(post_process) {
+    Reset();
+  }
+
   virtual ~Counter() {}
+
+  void Reset() override {
+    tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
+    for (auto& el : tl_results_) {
+      el = 0u;
+    }
+  }
 
   void operator()(Agent* agent) override {
     if (condition_(agent)) {
@@ -177,6 +195,7 @@ struct Counter : public Reducer<uint64_t, TResult> {
   }
 
  private:
+  SharedData<uint64_t> tl_results_;             //!
   bool (*condition_)(Agent*) = nullptr;         //!
   TResult (*post_process_)(TResult) = nullptr;  //!
   BDM_CLASS_DEF_OVERRIDE(Counter, 1)

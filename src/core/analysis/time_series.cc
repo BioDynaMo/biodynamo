@@ -40,7 +40,7 @@ TimeSeries::Data::Data(Reducer<double>* y_reducer_collector,
 // -----------------------------------------------------------------------------
 TimeSeries::Data::~Data() {
   if (y_reducer_collector) {
-    delete y_reducer_collector;
+    // delete y_reducer_collector;
   }
 }
 
@@ -197,6 +197,7 @@ void TimeSeries::Update() {
       result_data.y_values.push_back(result_data.ycollector(sim));
     }
     if (result_data.y_reducer_collector != nullptr) {
+      result_data.y_reducer_collector->Reset();
       reducers.push_back(
           std::make_pair(result_data.y_reducer_collector, entry.first));
     }

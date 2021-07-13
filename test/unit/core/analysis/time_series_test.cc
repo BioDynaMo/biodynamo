@@ -228,13 +228,57 @@ TEST(TimeSeries, AddCollectorXYAndUpdate) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(TimeSeries, AddCollectorReducerAndUpdate) {
+  Simulation sim(TEST_NAME);
+
+  // cells will divide in every step -> the number of agents will double
+  // each iteration
+  StatelessBehavior rapid_division(
+      [](Agent* agent) { bdm_static_cast<Cell*>(agent)->Divide(0.5); });
+  rapid_division.AlwaysCopyToNew();
+  auto* cell = new Cell();
+  cell->AddBehavior(rapid_division.NewCopy());
+  sim.GetResourceManager()->AddAgent(cell);
+
+  auto* ts = sim.GetTimeSeries();
+  auto agent_diam_gt_0 = [](Agent* a) { return a->GetDiameter() > 0.; };
+  auto xcollector = [](Simulation* sim) {
+    return sim->GetScheduler()->GetSimulatedSteps() + 3.0;
+  };
+  auto* counter = new Counter<double>(agent_diam_gt_0);
+  ts->AddCollector("agents-diam-gt-0", counter, xcollector);
+  EXPECT_EQ(1u, ts->Size());
+  EXPECT_TRUE(ts->Contains("agents-diam-gt-0"));
+
+  sim.GetScheduler()->Simulate(3);
+
+  // check entries for my-entry
+  const auto& xvals = ts->GetXValues("agents-diam-gt-0");
+  EXPECT_EQ(3u, xvals.size());
+  for (uint64_t i = 0; i < 3; ++i) {
+    EXPECT_NEAR(i + 3, xvals[i], abs_error<double>::value);
+  }
+  const auto& yvals = ts->GetYValues("agents-diam-gt-0");
+  EXPECT_EQ(3u, yvals.size());
+  EXPECT_NEAR(2.0, yvals[0], abs_error<double>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<double>::value);
+  EXPECT_NEAR(8.0, yvals[2], abs_error<double>::value);
+}
+
+// -----------------------------------------------------------------------------
 TEST(TimeSeries, StoreAndLoad) {
   Simulation sim(TEST_NAME);
-  TimeSeries ts;
+  sim.GetResourceManager()->AddAgent(new Cell());
+  sim.GetResourceManager()->AddAgent(new Cell());
 
+  TimeSeries ts;
   auto ycollector = [](Simulation* sim) { return 4.0; };
   auto xcollector = [](Simulation* sim) { return 5.0; };
   ts.AddCollector("collect", ycollector, xcollector);
+
+  auto d_gt_0 = [](Agent* a) { return a->GetDiameter() > 0; };
+  auto* counter = new Counter<double>(d_gt_0);
+  ts.AddCollector("collect1", counter, xcollector);
 
   ts.Add("my-entry", {1, 2}, {3, 4});
   ts.Save("ts.root");
@@ -244,9 +288,10 @@ TEST(TimeSeries, StoreAndLoad) {
   TimeSeries::Load("ts.root", &restored);
   ASSERT_TRUE(restored != nullptr);
 
-  EXPECT_EQ(2u, restored->Size());
+  EXPECT_EQ(3u, restored->Size());
   EXPECT_TRUE(restored->Contains("my-entry"));
   EXPECT_TRUE(restored->Contains("collect"));
+  EXPECT_TRUE(restored->Contains("collect1"));
 
   const auto& xvals = restored->GetXValues("my-entry");
   EXPECT_EQ(2u, xvals.size());
@@ -259,12 +304,22 @@ TEST(TimeSeries, StoreAndLoad) {
 
   // check if collector has been restored correctly.
   restored->Update();
-  const auto& xvals1 = restored->GetXValues("collect");
-  EXPECT_EQ(1u, xvals1.size());
-  EXPECT_NEAR(5.0, xvals1[0], abs_error<double>::value);
-  const auto& yvals1 = restored->GetYValues("collect");
-  EXPECT_EQ(1u, yvals1.size());
-  EXPECT_NEAR(4.0, yvals1[0], abs_error<double>::value);
+  {
+    const auto& xvals1 = restored->GetXValues("collect");
+    EXPECT_EQ(1u, xvals1.size());
+    EXPECT_NEAR(5.0, xvals1[0], abs_error<double>::value);
+    const auto& yvals1 = restored->GetYValues("collect");
+    EXPECT_EQ(1u, yvals1.size());
+    EXPECT_NEAR(4.0, yvals1[0], abs_error<double>::value);
+  }
+  {
+    const auto& xvals1 = restored->GetXValues("collect1");
+    EXPECT_EQ(1u, xvals1.size());
+    EXPECT_NEAR(5.0, xvals1[0], abs_error<double>::value);
+    const auto& yvals1 = restored->GetYValues("collect1");
+    EXPECT_EQ(1u, yvals1.size());
+    EXPECT_NEAR(2.0, yvals1[0], abs_error<double>::value);
+  }
   delete restored;
 }
 
