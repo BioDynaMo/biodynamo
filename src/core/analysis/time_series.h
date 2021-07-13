@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <vector>
 #include "core/util/root.h"
+#include "core/analysis/reduce.h"
 
 namespace bdm {
 
@@ -31,6 +32,14 @@ namespace experimental {
 class TimeSeries {
  public:
   struct Data {
+    Data();
+    /// TODO
+    Data(double (*ycollector)(Simulation*), double (*xcollector)(Simulation*));
+    /// TODO
+    Data(Reducer<double>* y_reducer_collector, double (*xcollector)(Simulation*));
+    ~Data();
+
+    Reducer<double>* y_reducer_collector = nullptr;
     double (*ycollector)(Simulation*) = nullptr;  //!
     double (*xcollector)(Simulation*) = nullptr;  //!
     std::vector<double> x_values;
@@ -105,6 +114,10 @@ class TimeSeries {
   /// If no x-value collector is given, x-values will correspond to the
   /// simulation time.
   void AddCollector(const std::string& id, double (*ycollector)(Simulation*),
+                    double (*xcollector)(Simulation*) = nullptr);
+
+  /// TODO 
+  void AddCollector(const std::string& id, Reducer<double>* y_reducer_collector, 
                     double (*xcollector)(Simulation*) = nullptr);
 
   /// Add new entry with data that is not collected during a simulation.

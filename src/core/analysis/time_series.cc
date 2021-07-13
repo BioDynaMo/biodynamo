@@ -19,9 +19,27 @@
 #include "core/simulation.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
+#include "core/analysis/reduce.h"
 
 namespace bdm {
 namespace experimental {
+
+// -----------------------------------------------------------------------------
+  TimeSeries::Data::Data() {}
+
+// -----------------------------------------------------------------------------
+  TimeSeries::Data::Data(double (*ycollector)(Simulation*), double (*xcollector)(Simulation*)) 
+  : ycollector(ycollector), xcollector(xcollector) {}
+
+// -----------------------------------------------------------------------------
+  TimeSeries::Data::Data(Reducer<double>* y_reducer_collector, double (*xcollector)(Simulation*)) : y_reducer_collector(y_reducer_collector), xcollector(xcollector) {}
+
+// -----------------------------------------------------------------------------
+TimeSeries::Data::~Data() {
+  if (y_reducer_collector) {
+    delete y_reducer_collector;
+  }
+}
 
 // -----------------------------------------------------------------------------
 void TimeSeries::Load(const std::string& full_filepath, TimeSeries** restored) {
@@ -149,7 +167,19 @@ void TimeSeries::AddCollector(const std::string& id,
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
                  ") exists already. Operation aborted.");
   }
-  data_[id] = {ycollector, xcollector};
+  data_[id] = Data(ycollector, xcollector);
+}
+
+// -----------------------------------------------------------------------------
+void TimeSeries::AddCollector(const std::string& id,
+                              Reducer<double>* y_reducer_collector,
+                              double (*xcollector)(Simulation*)) {
+  auto it = data_.find(id);
+  if (it != data_.end()) {
+    Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
+                 ") exists already. Operation aborted.");
+  }
+  data_[id] = Data(y_reducer_collector, xcollector);
 }
 
 // -----------------------------------------------------------------------------
@@ -157,17 +187,32 @@ void TimeSeries::Update() {
   auto* sim = Simulation::GetActive();
   auto* scheduler = sim->GetScheduler();
   auto* param = sim->GetParam();
+  std::vector<std::pair<Reducer<double>*, const std::string>> reducers;
   for (auto& entry : data_) {
     auto& result_data = entry.second;
     if (result_data.ycollector != nullptr) {
-      if (result_data.xcollector == nullptr) {
-        result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
-                                       param->simulation_time_step);
-      } else {
-        result_data.x_values.push_back(result_data.xcollector(sim));
-      }
       result_data.y_values.push_back(result_data.ycollector(sim));
+    } 
+    if (result_data.y_reducer_collector != nullptr) {
+      reducers.push_back(std::make_pair(result_data.y_reducer_collector, entry.first));
     }
+    if (result_data.xcollector == nullptr) {
+      result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
+                                     param->simulation_time_step);
+    } else {
+      result_data.x_values.push_back(result_data.xcollector(sim));
+    }
+  }
+
+  // execute reducers
+  auto execute_reducers = L2F([&](Agent* agent) {
+    for(auto& el : reducers) {
+      (*el.first)(agent);
+    }
+  });
+  sim->GetResourceManager()->ForEachAgentParallel(execute_reducers);
+  for(auto& el : reducers) {
+    data_[el.second].y_values.push_back(el.first->GetResult());
   }
 }
 
@@ -203,7 +248,10 @@ void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
     return;
   }
 
-  data_[id] = {nullptr, nullptr, x_values, y_values};
+  Data data;
+  data.x_values = x_values;
+  data.y_values = y_values;
+  data_[id] = data;
 }
 
 // -----------------------------------------------------------------------------
@@ -218,7 +266,12 @@ void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
     return;
   }
 
-  data_[id] = {nullptr, nullptr, x_values, y_values, y_error_low, y_error_high};
+  Data data;
+  data.x_values = x_values;
+  data.y_values = y_values;
+  data.y_error_low = y_error_low;
+  data.y_error_high = y_error_high;
+  data_[id] = data;
 }
 
 // -----------------------------------------------------------------------------
@@ -231,7 +284,12 @@ void TimeSeries::Add(const std::string& id, const std::vector<double>& x_values,
                  "make it unique. Operation aborted.");
     return;
   }
-  data_[id] = {nullptr, nullptr, x_values, y_values, y_error, y_error};
+  Data data;
+  data.x_values = x_values;
+  data.y_values = y_values;
+  data.y_error_low = y_error;
+  data.y_error_high = y_error;
+  data_[id] = data;
 }
 
 // -----------------------------------------------------------------------------

@@ -24,10 +24,16 @@ namespace bdm {
 inline void SetupResultCollection(Simulation* sim) {
   auto* ts = sim->GetTimeSeries();
   // susceptible
+  auto susceptible = [](Agent* a) {
+    return bdm_static_cast<Person*>(a)->state_ == State::kSusceptible;
+  };
+  auto post_process = [](uint64_t count, Simulation* sim) {
+    auto num_agents = sim->GetResourceManager()->GetNumAgents();
+    return result / static_cast<double>(num_agents);
+  }
+  ts->AddCollector("susceptible", Counter(susceptible, post_process));
+  
   auto susceptible = [](Simulation* sim) {
-    auto condition = L2F([](Agent* a) {
-      return bdm_static_cast<Person*>(a)->state_ == State::kSusceptible;
-    });
     auto result = static_cast<double>(bdm::experimental::Count(sim, condition));
     auto num_agents = sim->GetResourceManager()->GetNumAgents() - 1;
     return result / static_cast<double>(num_agents);

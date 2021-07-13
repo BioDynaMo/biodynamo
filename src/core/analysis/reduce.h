@@ -29,6 +29,48 @@ namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
+/// TODO
+template <typename T, typename TResult = T>
+class Reducer : public Functor<void, Agent*> {
+ public:
+   Reducer() {
+      tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
+      for (auto& el : tl_results_) {
+        el = T();
+      }
+   }
+
+   Reducer(T (agent_function)(Agent*, T*), T (*reduce_partial_results)(const SharedData<T>*)) :
+           agent_function_(agent_function), reduce_partial_results_(reduce_partial_results) {
+      tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
+      for (auto& el : tl_results_) {
+        el = T();
+      }
+           }
+   
+   virtual ~Reducer() {}
+
+   void operator()(Agent* agent) override {
+    auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
+    agent_function_(agent, &(tl_results_[tid]));
+   }
+
+   TResult GetResult() {
+    auto combined =  static_cast<TResult>(reduce_partial_results_(&tl_results_));
+    if (post_process_) {
+      return post_process_(combined); 
+    }
+    return combined;
+   }
+
+ private:
+   SharedData<T> tl_results_;  //!
+   T (*agent_function_)(Agent*, T*) = nullptr;  //!
+   T (*reduce_partial_results_)(const SharedData<T>*) = nullptr;  //!
+   TResult (*post_process_)(TResult) = nullptr;  //!
+   BDM_CLASS_DEF(Reducer, 1)
+};
+  
 /// Iterates over all agents executing the `agent_functor` and updating a
 /// a thread-local and therefore partial result.
 /// The second parameter specifies how these partial results should be combined
@@ -68,6 +110,31 @@ inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
 }
 
 // -----------------------------------------------------------------------------
+// TODO
+template <typename TResult = uint64_t>
+struct Counter: public Reducer<uint64_t, TResult> {
+  public:
+    Counter(bool (*condition)(Agent*)) : Reducer<uint64_t, TResult>() {}
+    virtual ~Counter() {}
+    
+    void operator()(Agent* agent) override {
+      if (condition_(agent)) {
+        auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
+        this->tl_results_[tid]++;
+      }
+    }
+
+   uint64_t GetResult() override {
+     SumReduction<uint64_t> sum;
+     auto* combined = sum(this->tl_results_);
+     return this->post_process_(combined); 
+   }
+
+  private:
+    bool (*condition_)(Agent*) = nullptr;  //!
+    BDM_CLASS_DEF_OVERRIDE(Counter, 1)
+};
+
 /// Counts the number of agents for which `condition` evaluates to true.
 /// Let's assume we want to count all infected agents in a virus spreading
 /// simulation.
