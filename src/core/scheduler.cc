@@ -44,11 +44,10 @@ Scheduler::Scheduler() {
   // operation implementation type, so that actual order may vary)
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
-      "mechanical forces", "discretization", "propagate staticness",
-      "diffusion"};
+      "mechanical forces", "discretization", "diffusion"};
 
-  std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
-                                                      "update environment"};
+  std::vector<std::string> pre_scheduled_ops_names = {
+      "set up iteration", "update environment", "propagate staticness"};
   // We cannot put sort and balance in the list of scheduled_standalone_ops_,
   // because numa-aware data structures would be invalidated:
   // ```

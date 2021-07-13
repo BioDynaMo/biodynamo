@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/core/agent/agent_test.h"
+#include "core/behavior/stateless_behavior.h"
 #include "core/resource_manager.h"
 #include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
@@ -103,6 +104,17 @@ TEST(AgentTest, BehaviorUpdate) {
   EXPECT_TRUE(dynamic_cast<Growth*>(copy_behaviors[0]) != nullptr);
 }
 
+TEST(AgentTest, RemoveSingleBehavior) {
+  Simulation simulation(TEST_NAME);
+
+  TestAgent cell;
+
+  cell.AddBehavior(new Growth());
+  ASSERT_EQ(1u, cell.GetAllBehaviors().size());
+  cell.RemoveBehavior(cell.GetAllBehaviors()[0]);
+  ASSERT_EQ(0u, cell.GetAllBehaviors().size());
+}
+
 TEST(AgentTest, RemoveBehavior) {
   Simulation simulation(TEST_NAME);
 
@@ -151,6 +163,72 @@ TEST(AgentTest, GetAgentPtr) {
     AgentPointer<Agent> expected1(agents[i]->GetUid());
     EXPECT_EQ(expected1, agents[i]->GetAgentPtr());
   }
+}
+
+// -----------------------------------------------------------------------------
+TEST(AgentTest, StaticnessBasic) {
+  auto set_param = [](Param* param) {
+    param->detect_static_agents = true;
+    param->show_simulation_step = true;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* rm = simulation.GetResourceManager();
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->GetOps("load balancing")[0]->frequency_ = 0;
+
+  std::unordered_map<AgentUid, bool> static_agents_map;
+
+  auto* agent = new Cell();
+  agent->SetDiameter(10);
+  agent->AddBehavior(new CaptureStaticness(&static_agents_map));
+  auto aptr = agent->GetAgentPtr<TestAgent>();
+  auto auid = agent->GetUid();
+
+  // should be false right after creation
+  EXPECT_FALSE(agent->IsStatic());
+
+  rm->AddAgent(agent);
+
+  // should be false in its first two iterations
+  // the default value of is_static_ is true and
+  // also propagate_staticness_neighborhood_ is true
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  // should be true in its third iteration since it hasn't been moved
+  scheduler->Simulate(1);
+  EXPECT_TRUE(static_agents_map[auid]);
+
+  StatelessBehavior grow(
+      [](Agent* agent) { agent->SetDiameter(agent->GetDiameter() + 5); });
+  aptr->AddBehavior(grow.NewCopy());
+
+  // should be true because the diameter is growing in the same iteration
+  scheduler->Simulate(1);
+  EXPECT_TRUE(static_agents_map[auid]);
+
+  aptr->RemoveBehavior(aptr->GetAllBehaviors()[1]);
+  // should be false because the diameter was growing in the previous iteration
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  // should be true because the diameter was not growing in the previous
+  // iteration
+  scheduler->Simulate(1);
+  EXPECT_TRUE(static_agents_map[auid]);
+
+  // simulate modification from neighbor -> should be false
+  agent->SetDiameter(20);
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  StatelessBehavior shrink(
+      [](Agent* agent) { agent->SetDiameter(agent->GetDiameter() - 1); });
+  aptr->AddBehavior(shrink.NewCopy());
+
+  // should be true because the diameter was not growing
+  scheduler->Simulate(2);
+  EXPECT_TRUE(static_agents_map[auid]);
 }
 
 }  // namespace agent_test_internal

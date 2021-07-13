@@ -90,6 +90,24 @@ struct Removal : public Behavior {
 
 }  // namespace agent_test_internal
 
+// -----------------------------------------------------------------------------
+struct CaptureStaticness : public Behavior {
+  BDM_BEHAVIOR_HEADER(CaptureStaticness, Behavior, 1);
+
+  CaptureStaticness() {}
+  CaptureStaticness(std::unordered_map<AgentUid, bool>* static_agents_map)
+      : static_agents_map_(static_agents_map) {}
+  virtual ~CaptureStaticness() {}
+
+  void Run(Agent* agent) override {
+    std::cout << "  CaptureStaticness " << agent->IsStatic() << std::endl;
+    (*static_agents_map_)[agent->GetUid()] = agent->IsStatic();
+  }
+
+ private:
+  std::unordered_map<AgentUid, bool>* static_agents_map_;
+};
+
 #ifdef __ROOTCLING__
 static AgentPointer<Agent> dummy_ptr;
 #endif
