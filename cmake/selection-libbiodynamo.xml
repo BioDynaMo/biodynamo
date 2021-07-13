@@ -64,11 +64,11 @@
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
     <class name="bdm::experimental::TimeSeries" />
     <class name="bdm::experimental::TimeSeries::Data" noStreamer="true" />
-    <class name="bdm::experimental::Reducer<uint64_t>" />
-    <class name="bdm::experimental::Reducer<double>" />
-    <class name="bdm::experimental::Reducer<uint64_t, double>" />
-    <class name="bdm::experimental::Counter<>" />
-    <class name="bdm::experimental::Counter<double>" />
+    <class name="bdm::experimental::Reducer<uint64_t>" noStreamer="true" />
+    <class name="bdm::experimental::Reducer<double>" noStreamer="true" />
+    <class name="bdm::experimental::Reducer<uint64_t, double>" noStreamer="true" />
+    <class name="bdm::experimental::Counter<>" noStreamer="true" />
+    <class name="bdm::experimental::Counter<double>" noStreamer="true" />
     <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
     <class name="bdm::experimental::Style" />
   </selection>

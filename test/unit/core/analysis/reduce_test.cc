@@ -17,6 +17,7 @@
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/simulation.h"
+#include "unit/test_util/io_test.h"
 #include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
 
@@ -153,6 +154,66 @@ TEST(Reduce, Counter) {
     EXPECT_NEAR(434.782608696, result, abs_error<double>::value);
   }
 }
+
+#ifdef USE_DICT
+// -----------------------------------------------------------------------------
+TEST_F(IOTest, Reducer) {
+  Simulation sim(TEST_NAME);
+  auto* rm = sim.GetResourceManager();
+
+  for (uint64_t i = 0; i < 2000; ++i) {
+    auto* a = new TestAgent();
+    a->SetData(i);
+    rm->AddAgent(a);
+  }
+
+  auto sum_data = [](Agent* agent, uint64_t* tl_result) {
+    *tl_result += bdm_static_cast<TestAgent*>(agent)->GetData();
+  };
+  auto combine_tl_results = [](const SharedData<uint64_t>& tl_results) {
+    uint64_t result = 0;
+    for (auto& el : tl_results) {
+      result += el;
+    }
+    return result;
+  };
+  auto post_process = [](uint64_t result) { return result / 2; };
+  Reducer<uint64_t> reducer(sum_data, combine_tl_results, post_process);
+
+  Reducer<uint64_t>* restored;
+  BackupAndRestore(reducer, &restored);
+
+  rm->ForEachAgentParallel(*restored);
+  auto result = restored->GetResult();
+  EXPECT_EQ(999500u, result);
+}
+
+// -----------------------------------------------------------------------------
+TEST_F(IOTest, Counter) {
+  Simulation sim(TEST_NAME);
+  auto* rm = sim.GetResourceManager();
+
+  for (uint64_t i = 0; i < 2000; ++i) {
+    auto* a = new TestAgent();
+    a->SetData(i);
+    rm->AddAgent(a);
+  }
+
+  auto data_lt_1000 = [](Agent* agent) {
+    return bdm_static_cast<TestAgent*>(agent)->GetData() < 1000;
+  };
+  auto post_process = [](uint64_t result) { return result / 2; };
+  Counter<> counter(data_lt_1000, post_process);
+
+  Counter<>* restored;
+  BackupAndRestore(counter, &restored);
+
+  rm->ForEachAgentParallel(*restored);
+  auto result = restored->GetResult();
+  EXPECT_EQ(500u, result);
+}
+
+#endif  // USE_DICT
 
 }  // namespace experimental
 }  // namespace bdm
