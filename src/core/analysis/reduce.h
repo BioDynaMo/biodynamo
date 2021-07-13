@@ -40,8 +40,10 @@ class Reducer : public Functor<void, Agent*> {
       }
    }
 
-   Reducer(T (agent_function)(Agent*, T*), T (*reduce_partial_results)(const SharedData<T>*)) :
-           agent_function_(agent_function), reduce_partial_results_(reduce_partial_results) {
+   Reducer(void (agent_function)(Agent*, T*), T (*reduce_partial_results)(const SharedData<T>&),
+       TResult (*post_process)(TResult) = nullptr) :
+           agent_function_(agent_function), reduce_partial_results_(reduce_partial_results),
+           post_process_(post_process) {
       tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
       for (auto& el : tl_results_) {
         el = T();
@@ -55,18 +57,20 @@ class Reducer : public Functor<void, Agent*> {
     agent_function_(agent, &(tl_results_[tid]));
    }
 
-   TResult GetResult() {
-    auto combined =  static_cast<TResult>(reduce_partial_results_(&tl_results_));
+   virtual TResult GetResult() {
+    auto combined =  static_cast<TResult>(reduce_partial_results_(tl_results_));
     if (post_process_) {
       return post_process_(combined); 
     }
     return combined;
    }
+  
+ protected: 
+   SharedData<T> tl_results_;  //!
 
  private:
-   SharedData<T> tl_results_;  //!
-   T (*agent_function_)(Agent*, T*) = nullptr;  //!
-   T (*reduce_partial_results_)(const SharedData<T>*) = nullptr;  //!
+   void (*agent_function_)(Agent*, T*) = nullptr;  //!
+   T (*reduce_partial_results_)(const SharedData<T>&) = nullptr;  //!
    TResult (*post_process_)(TResult) = nullptr;  //!
    BDM_CLASS_DEF(Reducer, 1)
 };
@@ -114,7 +118,8 @@ inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
 template <typename TResult = uint64_t>
 struct Counter: public Reducer<uint64_t, TResult> {
   public:
-    Counter(bool (*condition)(Agent*)) : Reducer<uint64_t, TResult>() {}
+    Counter(bool (*condition)(Agent*), TResult (*post_process)(TResult) = nullptr) : Reducer<uint64_t, TResult>(), 
+ condition_(condition), post_process_(post_process) {}
     virtual ~Counter() {}
     
     void operator()(Agent* agent) override {
@@ -124,14 +129,18 @@ struct Counter: public Reducer<uint64_t, TResult> {
       }
     }
 
-   uint64_t GetResult() override {
+   TResult GetResult() override {
      SumReduction<uint64_t> sum;
-     auto* combined = sum(this->tl_results_);
-     return this->post_process_(combined); 
+     auto combined = static_cast<TResult>(sum(this->tl_results_));
+     if(post_process_) {
+       return post_process_(combined); 
+      }
+     return combined;
    }
 
   private:
     bool (*condition_)(Agent*) = nullptr;  //!
+    TResult (*post_process_)(TResult) = nullptr;  //!
     BDM_CLASS_DEF_OVERRIDE(Counter, 1)
 };
 
