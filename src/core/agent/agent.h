@@ -175,10 +175,7 @@ class Agent {
 
   void PropagateStaticness();
 
-  void UpdateStaticness() {
-    is_static_ = is_static_next_ts_;
-    is_static_next_ts_ = true;
-  }
+  void UpdateStaticness();
 
   bool IsStatic() const { return is_static_; }
 

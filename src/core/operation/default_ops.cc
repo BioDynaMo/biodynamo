@@ -53,14 +53,6 @@ struct UpdateStaticnessOp : public AgentOperationImpl {
 
 BDM_REGISTER_OP(UpdateStaticnessOp, "update staticness", kCpu);
 
-struct PropagateStaticnessOp : public AgentOperationImpl {
-  BDM_OP_HEADER(PropagateStaticnessOp);
-
-  void operator()(Agent* agent) override { agent->PropagateStaticness(); }
-};
-
-BDM_REGISTER_OP(PropagateStaticnessOp, "propagate staticness", kCpu);
-
 struct BehaviorOp : public AgentOperationImpl {
   BDM_OP_HEADER(BehaviorOp);
 
@@ -124,5 +116,20 @@ struct UpdateEnvironmentOp : public StandaloneOperationImpl {
 BDM_REGISTER_OP(UpdateEnvironmentOp, "update environment", kCpu);
 
 BDM_REGISTER_OP(VisualizationOp, "visualize", kCpu);
+
+struct PropagateStaticnessOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(PropagateStaticnessOp);
+
+  void operator()() override {
+    if (!Simulation::GetActive()->GetParam()->detect_static_agents) {
+      return;
+    }
+    auto function = L2F([](Agent* agent) { agent->PropagateStaticness(); });
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    rm->ForEachAgentParallel(function);
+  }
+};
+
+BDM_REGISTER_OP(PropagateStaticnessOp, "propagate staticness", kCpu);
 
 }  // namespace bdm

@@ -200,7 +200,10 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     SetMassLocation(position + spring_axis_ * 0.5);
   }
 
-  void UpdatePosition() { position_ = mass_location_ - (spring_axis_ * 0.5); }
+  void UpdatePosition() {
+    position_ = mass_location_ - (spring_axis_ * 0.5);
+    SetPropagateStaticness();
+  }
 
   /// return end of neurite element position
   const Double3& GetMassLocation() const { return mass_location_; }
