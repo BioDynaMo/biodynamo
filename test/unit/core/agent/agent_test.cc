@@ -168,9 +168,7 @@ TEST(AgentTest, GetAgentPtr) {
 // -----------------------------------------------------------------------------
 TEST(AgentTest, StaticnessOff) {
   // Agent::IsStatic should always be false
-  auto set_param = [](Param* param) {
-    param->detect_static_agents = false;
-  };
+  auto set_param = [](Param* param) { param->detect_static_agents = false; };
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
@@ -222,9 +220,7 @@ TEST(AgentTest, StaticnessOff) {
 
 // -----------------------------------------------------------------------------
 TEST(AgentTest, StaticnessBasic) {
-  auto set_param = [](Param* param) {
-    param->detect_static_agents = true;
-  };
+  auto set_param = [](Param* param) { param->detect_static_agents = true; };
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
