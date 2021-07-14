@@ -450,7 +450,7 @@ TEST_F(SchedulerTest, ScheduleOrder) {
 
   std::vector<std::string> agent_ops = {
       "update staticness", "bound space",    "behavior",
-      "mechanical forces", "discretization", "propagate staticness"};
+      "mechanical forces", "discretization"};
   std::vector<std::string> sa_ops = {"diffusion"};
 
   int i = 0;

@@ -97,6 +97,12 @@ void Agent::PropagateStaticness() {
                        env->GetLargestAgentSizeSquared());
 }
 
+void Agent::UpdateStaticness() {
+  auto* param = Simulation::GetActive()->GetParam();
+  is_static_ = is_static_next_ts_;
+  is_static_next_ts_ = param->detect_static_agents;
+}
+
 void Agent::RunDiscretization() {}
 
 void Agent::AssignNewUid() {

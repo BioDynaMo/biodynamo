@@ -166,6 +166,61 @@ TEST(AgentTest, GetAgentPtr) {
 }
 
 // -----------------------------------------------------------------------------
+TEST(AgentTest, StaticnessOff) {
+  // Agent::IsStatic should always be false
+  auto set_param = [](Param* param) {
+    param->detect_static_agents = false;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* rm = simulation.GetResourceManager();
+  auto* scheduler = simulation.GetScheduler();
+
+  std::unordered_map<AgentUid, bool> static_agents_map;
+
+  auto* agent = new Cell();
+  agent->SetDiameter(10);
+  agent->AddBehavior(new CaptureStaticness(&static_agents_map));
+  auto aptr = agent->GetAgentPtr<Cell>();
+  auto auid = agent->GetUid();
+
+  EXPECT_FALSE(agent->IsStatic());
+
+  rm->AddAgent(agent);
+
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  StatelessBehavior grow(
+      [](Agent* agent) { agent->SetDiameter(agent->GetDiameter() + 5); });
+  aptr->AddBehavior(grow.NewCopy());
+
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  aptr->RemoveBehavior(aptr->GetAllBehaviors()[1]);
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  aptr->SetDiameter(20);
+  scheduler->Simulate(1);
+  EXPECT_FALSE(static_agents_map[auid]);
+
+  StatelessBehavior shrink(
+      [](Agent* agent) { agent->SetDiameter(agent->GetDiameter() - 1); });
+  aptr->AddBehavior(shrink.NewCopy());
+
+  // should be true because the diameter was not growing
+  scheduler->Simulate(2);
+  EXPECT_FALSE(static_agents_map[auid]);
+}
+
+// -----------------------------------------------------------------------------
 TEST(AgentTest, StaticnessBasic) {
   auto set_param = [](Param* param) {
     param->detect_static_agents = true;
