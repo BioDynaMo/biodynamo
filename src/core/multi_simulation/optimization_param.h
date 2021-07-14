@@ -38,7 +38,9 @@ struct OptimizationParam : public ParamGroup {
   std::string algorithm;
   std::vector<Container*> params;
   // Number of times to repeat an experiment
-  int repetition = 1;
+  size_t repetition = 1;
+  // Maximum number of optimization iterations
+  size_t max_iterations = 100;
 };
 
 }  // namespace bdm

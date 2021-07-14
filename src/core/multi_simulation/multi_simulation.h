@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_PARALLEL_EXECUTOR_H_
-#define CORE_PARALLEL_EXECUTOR_H_
+#ifndef CORE_MULTI_SIMULATION_MULTI_SIMULATION_H_
+#define CORE_MULTI_SIMULATION_MULTI_SIMULATION_H_
 
 #ifdef USE_MPI
 
@@ -34,6 +34,8 @@ class MultiSimulation {
  public:
   MultiSimulation(int argc, const char** argv);
 
+  MultiSimulation(int argc, const char** argv, const TimeSeries& real);
+
   ~MultiSimulation();
 
   void DeleteResultFiles(const std::string& dir);
@@ -52,4 +54,4 @@ class MultiSimulation {
 
 #endif  // USE_MPI
 
-#endif  // CORE_PARALLEL_EXECUTOR_H_
+#endif  // CORE_MULTI_SIMULATION_MULTI_SIMULATION_H_

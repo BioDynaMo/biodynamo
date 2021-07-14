@@ -413,11 +413,13 @@ ExternalProject_Add(
   optim
   URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
   BINARY_DIR "optim-prefix/src/optim"
-  CONFIGURE_COMMAND ./configure
+  CONFIGURE_COMMAND ./configure -p -o "-O3 -march=native -ffp-contract=fast -flto -DARMA_NO_DEBUG -DOPTIM_USE_OMP"
   INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_INSTALL_LIBDIR}
 )
 add_library(liboptim SHARED IMPORTED)
-set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_SHARED_LIBRARY_PREFIX}optim.so)
+set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_INSTALL_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so)
+# this links liboptim to libbiodynamo as "liboptim.so" instead of "lib/liboptim.so"
+set_property(TARGET liboptim PROPERTY IMPORTED_NO_SONAME 1)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include)
 set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} liboptim)
 

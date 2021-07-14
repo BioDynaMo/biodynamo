@@ -16,12 +16,14 @@
 
 #include "mpi.h"
 
+#include "TROOT.h"
 #include "TSystem.h"
 
 #include <cstdlib>
 #include <fstream>
 
 #include "core/analysis/time_series.h"
+#include "core/multi_simulation/database.h"
 #include "core/multi_simulation/multi_simulation.h"
 #include "core/multi_simulation/multi_simulation_manager.h"
 #include "core/multi_simulation/optimization_param.h"
@@ -41,6 +43,16 @@ MultiSimulation::MultiSimulation(int argc, const char** argv)
     memcpy(argv_copy_[i], argv_[i], length);
   }
   argv_copy_[argc_] = nullptr;
+}
+
+MultiSimulation::MultiSimulation(int argc, const char** argv,
+                                 const TimeSeries& real)
+    : argc_(argc), argv_(argv) {
+  MultiSimulation(argc, argv);
+
+  // Register the real data to the database
+  auto* db = Database::GetInstance();
+  db->data_ = real;
 }
 
 MultiSimulation::~MultiSimulation() {
@@ -82,6 +94,8 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
   MPI_Comm_size(MPI_COMM_WORLD, &worldsize);
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
+  ROOT::EnableThreadSafety();
+
   int status;
   if (myrank == 0) {
     // // Delete existing root files
@@ -98,21 +112,12 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
           return simulate_call(argc_, argv_, result, params);
         });
 
-    // // Read in the experimental data file
-    // CommandLineOptions clo(argc_, argv_);
-    // if (clo.IsSet("data")) {
-    //   if (clo.Get<std::string>("data") != "") {
-    //     pem.IngestData(clo.Get<std::string>("data"));
-    //   }
-    // } else {
-    //   Log::Warning("MultiSimulation", "No data file set!");
-    // }
-
     status = pem.Start();
 
     // // Merge result files of all workers into single ROOT file
     // MergeResultFiles(result_dir);
   } else {
+    omp_set_num_threads(2);
     // Start the Worker routine (`params` to be received by Master)
     Worker w(myrank, [&](Param* params, TimeSeries* result) {
       return simulate_call(argc_, argv_, result, params);

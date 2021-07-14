@@ -129,19 +129,26 @@ int MultiSimulationManager::Start() {
           MPI_Send_Obj_ROOT(final_params, worker, Tag::kTask);
         }
 
-        // Change status of worker to kBusy
-        ChangeStatusWorker(worker, Status::kBusy);
-
         // Wait for results
+        MPI_Status status;
         {
           int size;
           MPI_Recv(&size, 1, MPI_INT, worker, Tag::kResult, MPI_COMM_WORLD,
-                   MPI_STATUS_IGNORE);
+                   &status);
+          string msg =
+              "Receiving results from worker " + to_string(status.MPI_SOURCE);
+          Log(msg);
           Timing t_mpi("MPI_CALL", &ta_);
-          *result = *MPI_Recv_Obj_ROOT<TimeSeries>(size, worker, Tag::kResult);
+          TimeSeries *tmp_result =
+              MPI_Recv_Obj_ROOT<TimeSeries>(size, worker, Tag::kResult);
+          msg = "Successfully received results from worker " +
+                to_string(status.MPI_SOURCE);
+          Log(msg);
+          *result = *tmp_result;
+          delete tmp_result;
         }
 
-        ChangeStatusWorker(worker, Status::kAvail);
+        ChangeStatusWorker(status.MPI_SOURCE, Status::kAvail);
       }
     };
 
@@ -172,17 +179,20 @@ int MultiSimulationManager::Start() {
 
 // Returns the ID of the first available worker in the list. Returns -1 if
 // there is no available worker.
-// TODO: make thread-safe
 int MultiSimulationManager::GetFirstAvailableWorker() {
-  auto it = std::find(begin(availability_), end(availability_), true);
-  if (it == end(availability_)) {
-    return -1;
+  int ret = -1;
+#pragma omp critical
+  {
+    auto it = std::find(begin(availability_), end(availability_), true);
+    if (it != end(availability_)) {
+      ret = std::distance(begin(availability_), it);
+      ChangeStatusWorker(ret, Status::kBusy);
+    }
   }
-  return std::distance(begin(availability_), it);
+  return ret;
 }
 
 // Changes the status of a worker
-// TODO: make thread-safe
 void MultiSimulationManager::ChangeStatusWorker(int worker, Status s) {
   std::stringstream msg;
   msg << "Changing status of [W" << worker << "] to " << s;
@@ -246,6 +256,7 @@ int Worker::Start() {
         IncrementTaskCount();
         {
           Timing t("MPI_CALL", &ta_);
+          Log("Sending back results");
           MPI_Send_Obj_ROOT(&result, kMaster, Tag::kResult);
         }
         break;

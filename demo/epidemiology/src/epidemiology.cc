@@ -43,9 +43,8 @@ int main(int argc, const char** argv) {
   clo.AddOption<bool>("no-legend", "false");
 
   // Generate the analytical data
-  auto* db = Database::GetInstance();
-  db->data_ = GetAnalyticalResults(&clo);
+  auto analytical = GetAnalyticalResults(&clo);
 
-  MultiSimulation pe(argc, argv);
+  MultiSimulation pe(argc, argv, analytical);
   return pe.Execute(Simulate);
 }

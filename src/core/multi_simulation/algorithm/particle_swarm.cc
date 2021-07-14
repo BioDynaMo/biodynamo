@@ -23,9 +23,6 @@
 
 using nlohmann::json;
 
-// Enable multi-threaded execution of optimlib
-#define OPTIM_USE_OMP 1
-
 namespace bdm {
 
 struct ParticleSwarm : public Algorithm {
@@ -71,14 +68,19 @@ struct ParticleSwarm : public Algorithm {
     settings.vals_bound = true;
     settings.lower_bounds = arma::vec(lower_bounds);
     settings.upper_bounds = arma::vec(upper_bounds);
+    settings.pso_n_gen = opt_params->max_iterations;
 
+    auto max_it = settings.pso_n_gen;
     int iteration = 0;
-    auto max_it = settings.iter_max;
-    double prev_mse = 0.0;
+    double min_mse = 1e9;
+    json best_params;
+    double prev_mse = 1.0;
 
     // The fitting function (i.e. calling a simulation with a paramset)
-    auto fit = [=, &iteration, &prev_mse](const arma::vec& free_params,
-                                          arma::vec* grad_out, void* opt_data) {
+    // Anything inside this function should be thread-safe
+    auto fit = [=, &iteration, &prev_mse, &min_mse, &best_params](
+                   const arma::vec& free_params, arma::vec* grad_out,
+                   void* opt_data) {
       Param new_param = *default_params;
 
       std::cout << "iteration (" << iteration << "/" << max_it << ")"
@@ -86,7 +88,7 @@ struct ParticleSwarm : public Algorithm {
 
       // Bug: on the rare occasion that we get NaN values back from optim:pso,
       // we should ignore it and return the previously obtained error
-      for (auto& p : inout) {
+      for (auto& p : free_params) {
         if (std::isnan(p)) {
           return prev_mse + 0.005;
         }
@@ -109,8 +111,15 @@ struct ParticleSwarm : public Algorithm {
 
       double mse = Experiment(dispatch_to_worker, &new_param, repetition);
       std::cout << " MSE " << mse << " inout " << free_params << std::endl;
-      iteration++;
-      prev_mse = mse;
+#pragma omp critical
+      {
+        iteration++;
+        prev_mse = mse;
+        if (mse < min_mse) {
+          min_mse = mse;
+          best_params = j_patch;
+        }
+      }
       return mse;
     };
 
@@ -118,8 +127,10 @@ struct ParticleSwarm : public Algorithm {
     if (!optim::pso(inout, fit, nullptr, settings)) {
       Log::Fatal("", "Optimization algorithm didn't complete successfully.");
     }
+
+    std::cout << "Best params = " << best_params << std::endl;
   };
-};
+};  // namespace bdm
 
 BDM_REGISTER_ALGO(ParticleSwarm);
 
