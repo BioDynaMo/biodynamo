@@ -100,7 +100,7 @@ struct CaptureStaticness : public Behavior {
   virtual ~CaptureStaticness() {}
 
   void Run(Agent* agent) override {
-    std::cout << "  CaptureStaticness " << agent->IsStatic() << std::endl;
+#pragma omp critical
     (*static_agents_map_)[agent->GetUid()] = agent->IsStatic();
   }
 

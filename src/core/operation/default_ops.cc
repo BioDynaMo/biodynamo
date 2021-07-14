@@ -121,6 +121,9 @@ struct PropagateStaticnessOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(PropagateStaticnessOp);
 
   void operator()() override {
+    if (!Simulation::GetActive()->GetParam()->detect_static_agents) {
+      return;
+    }
     auto function = L2F([](Agent* agent) { agent->PropagateStaticness(); });
     auto* rm = Simulation::GetActive()->GetResourceManager();
     rm->ForEachAgentParallel(function);
