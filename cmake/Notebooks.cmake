@@ -39,9 +39,6 @@ function(GenerateNotebookTarget NB_NAME)
   add_dependencies(notebook-${NB_NAME} copy_files_bdm)
 endfunction(GenerateNotebookTarget)
 
-# We chain the targets of the demos to each other, because of a race conditions
-# that occurs when invoking jupyter-notebook with multiple processes:
-# ".ipython/metakernel/history already exists"
 if(notebooks)
   add_custom_target(notebooks ALL COMMENT "Execute BioDynaMo Notebooks and generate HTML output")
   add_dependencies(notebooks biodynamo)
@@ -57,4 +54,4 @@ if(notebooks)
     GenerateNotebookTarget(${NB_NAME})
     add_dependencies(notebooks notebook-${NB_NAME})
   endforeach()
-  endif()
+endif()
