@@ -173,7 +173,19 @@ class Agent {
     propagate_staticness_neighborhood_ = value;
   }
 
-  void PropagateStaticness();
+  /// If the agent is not static, a call to this method
+  /// sets all neighbors to 'not static'. \n
+  /// This method will be called twice:
+  /// 1) At the end of the iteration using an agent op (`beginning=false`).\n
+  /// 2) At the beginning of the iteration as pre_scheduled op
+  /// (`beginning=true`).\n
+  ///
+  /// 1 is faster because it can use cached neighbors, but it might miss some
+  ///   conditions. (Neighbors modifying an agent after PropagateStaticness
+  ///   has been called. Agent which is larger than the largest agent.)
+  /// 2 is slower but able to process all conditions.
+  /// Therefore, we use 1 whenever possible and 2 for the remaining conditions.
+  void PropagateStaticness(bool beginning = false);
 
   void UpdateStaticness();
 
@@ -254,7 +266,7 @@ class Agent {
   bool is_static_ = false;  //!
   /// If an agent becomes non-static (i.e. it moved or grew), we should set this
   /// flag to true to also compute mechanical forces on the neighboring agents
-  bool propagate_staticness_neighborhood_ = false;  //!
+  bool propagate_staticness_neighborhood_ = true;  //!
   /// Flag to determine of an agent is static in the next timestep
   mutable bool is_static_next_ts_ = false;  //!
 

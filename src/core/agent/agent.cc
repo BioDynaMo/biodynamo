@@ -74,18 +74,29 @@ void Agent::Update(const NewAgentEvent& event) {
   UpdateBehaviors(event);
 }
 
-void Agent::PropagateStaticness() {
+void Agent::PropagateStaticness(bool beginning) {
+  if (!propagate_staticness_neighborhood_) {
+    return;
+  }
+
   if (!Simulation::GetActive()->GetParam()->detect_static_agents) {
     is_static_next_ts_ = false;
     return;
   }
 
-  if (!propagate_staticness_neighborhood_) {
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  // TODO(all) generalize to axis-aligned bounding box
+  if (!beginning && GetDiameter() > env->GetLargestAgentSize()) {
+    // If the agent is bigger than all other agents,
+    // the uniform grid implementation is not able to inform
+    // all necessary neighbors.
+    // Therefore, we delay the propagation of the staticness info
+    // to the beginning of the next iteration.
     return;
   }
+
   propagate_staticness_neighborhood_ = false;
   is_static_next_ts_ = false;
-  auto* env = Simulation::GetActive()->GetEnvironment();
   auto set_staticness = L2F([this](Agent* neighbor, double squared_distance) {
     // TODO(all) generalize to axis-aligned bounding box
     double distance = this->GetDiameter() + neighbor->GetDiameter();
