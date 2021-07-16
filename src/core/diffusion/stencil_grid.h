@@ -15,6 +15,8 @@
 #ifndef CORE_DIFFUSION_STENCIL_GRID_H_
 #define CORE_DIFFUSION_STENCIL_GRID_H_
 
+#include <utility>
+
 #include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {
@@ -24,7 +26,8 @@ class StencilGrid : public DiffusionGrid {
   StencilGrid() {}
   StencilGrid(int substance_id, std::string substance_name, double dc,
               double mu, int resolution = 11)
-      : DiffusionGrid(substance_id, substance_name, dc, mu, resolution) {}
+      : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
+                      resolution) {}
 
   void DiffuseWithClosedEdge() override;
 
