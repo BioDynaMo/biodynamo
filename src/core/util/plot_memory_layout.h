@@ -22,10 +22,10 @@ namespace bdm {
 class Agent;
 
 // -----------------------------------------------------------------------------
-void PlotMemoryLayout(const std::vector<Agent*> agents, int numa_node);
+void PlotMemoryLayout(const std::vector<Agent*>& agents, int numa_node);
 
 // -----------------------------------------------------------------------------
-void PlotMemoryHistogram(const std::vector<Agent*> agents, int numa_node);
+void PlotMemoryHistogram(const std::vector<Agent*>& agents, int numa_node);
 
 // -----------------------------------------------------------------------------
 void PlotNeighborMemoryHistogram(bool before = false);
