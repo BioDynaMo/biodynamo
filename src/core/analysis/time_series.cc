@@ -177,10 +177,11 @@ TimeSeries::TimeSeries() {}
 TimeSeries::TimeSeries(const TimeSeries& other) : data_(other.data_) {}
 
 // -----------------------------------------------------------------------------
-TimeSeries::TimeSeries(TimeSeries&& other) : data_(std::move(other.data_)) {}
+TimeSeries::TimeSeries(TimeSeries&& other) noexcept
+    : data_(std::move(other.data_)) {}
 
 // -----------------------------------------------------------------------------
-TimeSeries& TimeSeries::operator=(TimeSeries&& other) {
+TimeSeries& TimeSeries::operator=(TimeSeries&& other) noexcept {
   data_ = std::move(other.data_);
   return *this;
 }
