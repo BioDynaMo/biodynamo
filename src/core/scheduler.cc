@@ -44,7 +44,8 @@ Scheduler::Scheduler() {
   // operation implementation type, so that actual order may vary)
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
-      "mechanical forces", "discretization", "diffusion"};
+      "mechanical forces", "discretization", "propagate staticness agentop",
+      "diffusion"};
 
   std::vector<std::string> pre_scheduled_ops_names = {
       "set up iteration", "update environment", "propagate staticness"};
@@ -70,6 +71,11 @@ Scheduler::Scheduler() {
 
   auto disabled_op_names =
       Simulation::GetActive()->GetParam()->unschedule_default_operations;
+  if (!param->detect_static_agents) {
+    disabled_op_names.push_back("propagate staticness");
+    disabled_op_names.push_back("propagate staticness agentop");
+  }
+
   std::vector<std::vector<std::string>*> all_op_names;
   all_op_names.push_back(&pre_scheduled_ops_names);
   all_op_names.push_back(&default_op_names);

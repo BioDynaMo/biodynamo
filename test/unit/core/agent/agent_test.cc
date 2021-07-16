@@ -172,6 +172,8 @@ TEST(AgentTest, StaticnessOff) {
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
+  // no interference from mechanical forces operation
+  scheduler->UnscheduleOp(scheduler->GetOps("mechanical forces")[0]);
 
   std::unordered_map<AgentUid, bool> static_agents_map;
 
@@ -224,6 +226,8 @@ TEST(AgentTest, StaticnessBasic) {
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
+  // no interference from mechanical forces operation
+  scheduler->UnscheduleOp(scheduler->GetOps("mechanical forces")[0]);
 
   std::unordered_map<AgentUid, bool> static_agents_map;
 
@@ -284,6 +288,8 @@ TEST(AgentTest, StaticnessNeighbors) {
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
+  // no interference from mechanical forces operation
+  scheduler->UnscheduleOp(scheduler->GetOps("mechanical forces")[0]);
 
   std::unordered_map<AgentUid, bool> static_agents_map;
 
@@ -329,6 +335,8 @@ TEST(AgentTest, StaticnessNewAgent) {
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
+  // no interference from mechanical forces operation
+  scheduler->UnscheduleOp(scheduler->GetOps("mechanical forces")[0]);
 
   std::unordered_map<AgentUid, bool> static_agents_map;
 
@@ -407,6 +415,8 @@ TEST(AgentTest, StaticnessNewAgentLargetThanAllOthers) {
   Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();
+  // no interference from mechanical forces operation
+  scheduler->UnscheduleOp(scheduler->GetOps("mechanical forces")[0]);
 
   std::unordered_map<AgentUid, bool> static_agents_map;
 

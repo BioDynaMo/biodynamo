@@ -53,6 +53,15 @@ struct UpdateStaticnessOp : public AgentOperationImpl {
 
 BDM_REGISTER_OP(UpdateStaticnessOp, "update staticness", kCpu);
 
+struct PropagateStaticnessAgentOp : public AgentOperationImpl {
+  BDM_OP_HEADER(PropagateStaticnessAgentOp);
+
+  void operator()(Agent* agent) override { agent->PropagateStaticness(); }
+};
+
+BDM_REGISTER_OP(PropagateStaticnessAgentOp, "propagate staticness agentop",
+                kCpu);
+
 struct BehaviorOp : public AgentOperationImpl {
   BDM_OP_HEADER(BehaviorOp);
 
@@ -124,9 +133,11 @@ struct PropagateStaticnessOp : public StandaloneOperationImpl {
     if (!Simulation::GetActive()->GetParam()->detect_static_agents) {
       return;
     }
-    auto function = L2F([](Agent* agent) { agent->PropagateStaticness(); });
+    auto function = L2F(
+        [](Agent* agent, AgentHandle) { agent->PropagateStaticness(true); });
     auto* rm = Simulation::GetActive()->GetResourceManager();
-    rm->ForEachAgentParallel(function);
+    auto* param = Simulation::GetActive()->GetParam();
+    rm->ForEachAgentParallel(param->scheduling_batch_size, function);
   }
 };
 
