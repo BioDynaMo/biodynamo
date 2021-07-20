@@ -110,7 +110,7 @@ TEST(MathArray, complex_operations) {
   EXPECT_NEAR(0.5345224838248488374, a[1], abs_error<double>::value);
   EXPECT_NEAR(0.8017837257372732561, a[2], abs_error<double>::value);
 
-  ASSERT_EQ(b.Norm(), 1);
+  ASSERT_EQ(b.Norm(), 0.0);
 
   ASSERT_EQ(c.EntryWiseProduct(c), entrywise_result);
 }
