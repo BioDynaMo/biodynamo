@@ -115,6 +115,15 @@ TEST(MathArray, complex_operations) {
   ASSERT_EQ(c.EntryWiseProduct(c), entrywise_result);
 }
 
+TEST(MathArray, NomalizeZeroVectorDeath) {
+  EXPECT_DEATH_IF_SUPPORTED(
+      {
+        Double3 x({0.0, 0.0, 0.0});
+        x.Normalize();
+      },
+      ".*You tried to normalize a zero vector..*");
+}
+
 #ifdef USE_DICT
 TEST_F(IOTest, MathArray) {
   MathArray<double, 4> test{0.5, -1, 10, 500};
