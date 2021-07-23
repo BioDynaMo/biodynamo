@@ -9,10 +9,11 @@
     <class name="bdm::ParallelResizeVector<pair<unsigned int,const bdm::UniformGridEnvironment::Box*> >" />
     <class name="bdm::ErrorComputation" />
     <class name="bdm::OptimizationParam" />
-    <class name="bdm::Container"/>
-    <class name="bdm::Set"/>
-    <class name="bdm::LogRange"/>
-    <class name="bdm::Range"/>
+    <class name="bdm::OptimizationParamType"/>
+    <class name="bdm::SetParam"/>
+    <class name="bdm::ParticleSwarmParam"/>
+    <class name="bdm::LogRangeParam"/>
+    <class name="bdm::RangeParam"/>
     <class name="bdm::OperationImpl" />
     <class pattern="cl::*" />
     <class name="cl::CommandQueue" />

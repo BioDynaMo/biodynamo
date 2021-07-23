@@ -9,19 +9,19 @@
     "algorithm" : "ParameterSweep",
     "opt_params_" : [
       {
-        "_typename": "bdm::Range",
+        "_typename": "bdm::RangeParam",
         "param_name_" : "bdm::SimParam::monocyte_diameter",
         "lower_bound_" : 1.0,
         "upper_bound_" : 10.0,
         "stride_" : 1
       },
       {
-        "_typename": "bdm::Set",
+        "_typename": "bdm::SetParam",
         "param_name_" : "bdm::SimParam::t_cell_walkspeed",
         "values_" : [0, 8, 13, 42]
       },
       {
-        "_typename": "bdm::LogRange",
+        "_typename": "bdm::LogRangeParam",
         "param_name_" : "bdm::SimParam::stokes_u",
         "base_" : 10,
         "lower_bound_" : -10.0,

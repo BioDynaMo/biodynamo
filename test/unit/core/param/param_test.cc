@@ -16,6 +16,7 @@
 #include <json.hpp>
 
 #include "core/multi_simulation/optimization_param.h"
+#include "core/multi_simulation/optimization_param_type/particle_swarm_param.h"
 #include "unit/core/param/param_test.h"
 #include "unit/test_util/test_util.h"
 
@@ -142,6 +143,7 @@ TEST(ParamTest, OptimizationParam) {
 )EOF";
 
   param.MergeJsonPatch(patch);
+  opt_param = param.Get<OptimizationParam>();
   EXPECT_EQ("ParticleSwarm", opt_param->algorithm);
   EXPECT_EQ(3u, opt_param->params.size());
   auto* swarm_param = static_cast<ParticleSwarmParam*>(opt_param->params[0]);

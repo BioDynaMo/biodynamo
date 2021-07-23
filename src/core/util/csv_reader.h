@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_MULTI_SIMULATION_EXPERIMENTAL_DATA_H_
-#define CORE_MULTI_SIMULATION_EXPERIMENTAL_DATA_H_
+#ifndef CORE_UTIL_CSV_READER_H_
+#define CORE_UTIL_CSV_READER_H_
 
 #include <cmath>
 #include <functional>
@@ -27,9 +27,10 @@
 
 namespace bdm {
 
-class ExperimentalData {
+/// Reads in a CSV file using rapidcsv
+class CSVReader {
  public:
-  explicit ExperimentalData(const std::string& file, int skip = 0)
+  explicit CSVReader(const std::string& file, int skip = 0)
       : filename_(file) {
     if (!FileExists(file)) {
       std::cout << "Error: " << file << " does not exist!" << std::endl;
@@ -96,4 +97,4 @@ class ExperimentalData {
 
 }  // namespace bdm
 
-#endif  // CORE_MULTI_SIMULATION_EXPERIMENTAL_DATA_H_
+#endif  // CORE_UTIL_CSV_READER_H_

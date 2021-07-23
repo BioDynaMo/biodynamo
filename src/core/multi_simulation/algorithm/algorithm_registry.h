@@ -25,6 +25,7 @@ namespace bdm {
 
 class MultiSimulationManager;
 
+/// Registry of all optimization algorithms
 struct AlgorithmRegistry {
   /// Singleton class - returns the static instance
   static AlgorithmRegistry *GetInstance();

@@ -8,7 +8,7 @@
     "algorithm" : "ParticleSwarm",
     "params" : [
       {
-        "_typename": "bdm::ParticleSwarmParam",
+        "_typename": "bdm::RangeParam",
         "param_name" : "bdm::SimParam::t_cell_walkspeed",
         "lower_bound" : 2,
         "upper_bound" : 6,

@@ -19,20 +19,22 @@
 #include <functional>
 #include <vector>
 
-#include "core/multi_simulation/util.h"
+#include "core/multi_simulation/optimization_param_type/optimization_param_type.h"
 
 namespace bdm {
 
-// Emulates dynamic nested loops
+// Emulates dynamic nested loops. The `action` gets back a vector of integers
+// that represent the iteration of each respective `OptimizationParamType`
 template <typename Lambda>
-inline void DynamicNestedLoop(const std::vector<Container*>& containers,
-                              const Lambda& action) {
+inline void DynamicNestedLoop(
+    const std::vector<OptimizationParamType*>& containers,
+    const Lambda& action) {
   // Initialize the slots to hold the iterator value for each depth
   auto depth = containers.size();
   if (depth == 0) {
     return;
   }
-  std::vector<int> slots(depth, 0);
+  std::vector<uint32_t> slots(depth, 0);
 
   // The depth index
   size_t index = 0;

@@ -20,6 +20,7 @@
 #include "core/multi_simulation/dynamic_loop.h"
 #include "core/multi_simulation/experiment.h"
 #include "core/multi_simulation/multi_simulation_manager.h"
+#include "core/multi_simulation/optimization_param_type/particle_swarm_param.h"
 
 using nlohmann::json;
 

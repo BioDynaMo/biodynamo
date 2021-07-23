@@ -38,7 +38,7 @@ struct ParameterSweep : public Algorithm {
       return;
     }
 
-    DynamicNestedLoop(sweeping_params, [&](const std::vector<int>& slots) {
+    DynamicNestedLoop(sweeping_params, [&](const std::vector<uint32_t>& slots) {
       json j_patch;
 
       int i = 0;

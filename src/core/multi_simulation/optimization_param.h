@@ -15,9 +15,9 @@
 #ifndef CORE_MULTI_SIMULATION_OPTIMIZATION_PARAM_H_
 #define CORE_MULTI_SIMULATION_OPTIMIZATION_PARAM_H_
 
-#include "core/multi_simulation/util.h"
-#include "core/param/param_group.h"
+#include "core/multi_simulation/optimization_param_type/optimization_param_type.h"
 #include "core/param/param.h"
+#include "core/param/param_group.h"
 
 namespace bdm {
 
@@ -36,7 +36,7 @@ struct OptimizationParam : public ParamGroup {
   }
 
   std::string algorithm;
-  std::vector<Container*> params;
+  std::vector<OptimizationParamType*> params;
   // Number of times to repeat an experiment
   size_t repetition = 1;
   // Maximum number of optimization iterations

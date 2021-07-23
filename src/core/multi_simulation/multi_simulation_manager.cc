@@ -50,10 +50,11 @@ void MultiSimulationManager::WriteTimingsToFile() {
   std::ofstream myfile;
   myfile.open("timing_results.csv");
   int worker = 0;
+  myfile << "worker_id,simulation_runtime,mpi_runtime" << std::endl;
   for (auto &t : timings_) {
     myfile << worker << ",";
     myfile << t["SIMULATE"] << ",";
-    myfile << t["MPI_CALL"] << "\n";
+    myfile << t["MPI_CALL"] << std::endl;
     worker++;
   }
   myfile.close();

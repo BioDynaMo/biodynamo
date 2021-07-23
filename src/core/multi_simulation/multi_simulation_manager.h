@@ -38,6 +38,11 @@ using std::vector;
 
 namespace bdm {
 
+static const unsigned int kMaster = 0;
+
+enum Status { kBusy, kAvail };
+enum Tag { kReady, kResult, kTask, kKill };
+
 /// The Master in a Master-Worker design pattern. Maintains the status of all
 /// the workers in the MPI runtime.
 class MultiSimulationManager {
