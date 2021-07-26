@@ -126,7 +126,8 @@ InPlaceExecutionContext::~InPlaceExecutionContext() {
 void InPlaceExecutionContext::SetupIterationAll(
     const std::vector<ExecutionContext*>& all_exec_ctxts) {
   // first iteration might have uncommited changes
-  TearDownIterationAll(all_exec_ctxts);
+  AddAgentsToRm(all_exec_ctxts);
+  RemoveAgentsFromRm(all_exec_ctxts);
 }
 
 void InPlaceExecutionContext::TearDownIterationAll(
