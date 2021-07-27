@@ -288,11 +288,20 @@ void Scheduler::RunAgentOps(Functor<bool, Agent*>* filter) {
       agent_ops.push_back(op);
     }
   }
-  RunAllScheduledOps functor(agent_ops);
-
-  Timing::Time("agent ops", [&]() {
-    rm->ForEachAgentParallel(batch_size, functor, filter);
-  });
+  if (param->execution_order == Param::ExecutionOrder::kForEachAgentForEachOp) {
+    RunAllScheduledOps functor(agent_ops);
+    Timing::Time("agent ops", [&]() {
+      rm->ForEachAgentParallel(batch_size, functor, filter);
+    });
+  } else {
+    for (auto* op : agent_ops) {
+      decltype(agent_ops) ops = {op};
+      RunAllScheduledOps functor(ops);
+      Timing::Time(op->name_, [&]() {
+        rm->ForEachAgentParallel(batch_size, functor, filter);
+      });
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------
