@@ -420,6 +420,26 @@ struct Param {
   ///     scheduling_batch_size = 1000
   uint64_t scheduling_batch_size = 1000;
 
+  enum ExecutionOrder { kForEachAgentForEachOp = 0, kForEachOpForEachAgent };
+
+  /// This parameter determines whether to execute  `kForEachAgentForEachOp`
+  /// \code
+  /// for (auto* agent : agents) {
+  ///   for (auto* op : agent_ops) {
+  ///     (*op)(agent);
+  ///   }
+  /// }
+  /// \endcode
+  /// or `kForEachOpForEachAgent`
+  /// \code
+  /// for (auto* op : agent_ops) {
+  ///   for (auto* agent : agents) {
+  ///     (*op)(agent);
+  ///   }
+  /// }
+  /// \endcode
+  ExecutionOrder execution_order = ExecutionOrder::kForEachAgentForEachOp;
+
   /// Calculation of the displacement (mechanical interaction) is an
   /// expensive operation. If agents do not move or grow,
   /// displacement calculation is ommited if detect_static_agents is turned

@@ -572,4 +572,98 @@ TEST_F(SchedulerTest, Filters) {
   EXPECT_EQ(1u, op3_impl->counter);
 }
 
+// -----------------------------------------------------------------------------
+struct ExecutionOrderTestOp : public AgentOperationImpl {
+  BDM_OP_HEADER(ExecutionOrderTestOp);
+
+  void operator()(Agent* agent) override {
+    if (execution_order) {
+      execution_order->emplace_back(id, agent->GetUid());
+    }
+  }
+
+  uint64_t counter = 0;
+  uint64_t id = 0;
+  std::vector<std::pair<uint64_t, AgentUid>>* execution_order = nullptr;
+};
+
+BDM_REGISTER_OP(ExecutionOrderTestOp, "em_test_op", kCpu)
+
+// -----------------------------------------------------------------------------
+void RunExecutionOrderTest(
+    const char* test_name, Param::ExecutionOrder eo,
+    std::vector<std::pair<uint64_t, AgentUid>>* execution_order) {
+  auto set_param = [&](Param* param) { param->execution_order = eo; };
+  Simulation simulation(test_name, set_param);
+
+  // Turn off load balancing and multi-threading to avoid any interference
+  omp_set_num_threads(1);
+  ThreadInfo::GetInstance()->Renew();
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->UnscheduleOp(scheduler->GetOps("load balancing")[0]);
+
+  simulation.GetResourceManager()->AddAgent(new Cell(10));
+  simulation.GetResourceManager()->AddAgent(new Cell(10));
+
+  auto* op1 = NewOperation("em_test_op");
+  auto* op2 = NewOperation("em_test_op");
+
+  scheduler->ScheduleOp(op1);
+  scheduler->ScheduleOp(op2);
+
+  auto* op1_impl = op1->GetImplementation<ExecutionOrderTestOp>();
+  auto* op2_impl = op2->GetImplementation<ExecutionOrderTestOp>();
+
+  op1_impl->id = 0;
+  op2_impl->id = 1;
+  op1_impl->execution_order = execution_order;
+  op2_impl->execution_order = execution_order;
+
+  scheduler->Simulate(1);
+
+  // reset to max number of threads
+  omp_set_num_threads(omp_get_max_threads());
+  ThreadInfo::GetInstance()->Renew();
+}
+
+// -----------------------------------------------------------------------------
+TEST(Scheduler, ForEachAgentForEachOp_ExecutionOrder) {
+  std::vector<std::pair<uint64_t, AgentUid>> execution_order;
+  RunExecutionOrderTest(TEST_NAME,
+                        Param::ExecutionOrder::kForEachAgentForEachOp,
+                        &execution_order);
+
+  ASSERT_EQ(4u, execution_order.size());
+
+  EXPECT_EQ(0u, execution_order[0].first);
+  EXPECT_EQ(1u, execution_order[1].first);
+  EXPECT_EQ(0u, execution_order[2].first);
+  EXPECT_EQ(1u, execution_order[3].first);
+
+  EXPECT_EQ(AgentUid(0), execution_order[0].second);
+  EXPECT_EQ(AgentUid(0), execution_order[1].second);
+  EXPECT_EQ(AgentUid(1), execution_order[2].second);
+  EXPECT_EQ(AgentUid(1), execution_order[3].second);
+}
+
+// -----------------------------------------------------------------------------
+TEST(Scheduler, ForEachOpForEachAgent_ExecutionOrder) {
+  std::vector<std::pair<uint64_t, AgentUid>> execution_order;
+  RunExecutionOrderTest(TEST_NAME,
+                        Param::ExecutionOrder::kForEachOpForEachAgent,
+                        &execution_order);
+
+  ASSERT_EQ(4u, execution_order.size());
+
+  EXPECT_EQ(0u, execution_order[0].first);
+  EXPECT_EQ(0u, execution_order[1].first);
+  EXPECT_EQ(1u, execution_order[2].first);
+  EXPECT_EQ(1u, execution_order[3].first);
+
+  EXPECT_EQ(AgentUid(0), execution_order[0].second);
+  EXPECT_EQ(AgentUid(1), execution_order[1].second);
+  EXPECT_EQ(AgentUid(0), execution_order[2].second);
+  EXPECT_EQ(AgentUid(1), execution_order[3].second);
+}
+
 }  // namespace bdm
