@@ -92,6 +92,8 @@ class Scheduler {
   /// agent operations will be executed for each agents in the simulation.
   void SetAgentFilters(const std::vector<Functor<bool, Agent*>*>& filters);
 
+  const std::vector<Functor<bool, Agent*>*>& GetAgentFilters() const;
+
   RootAdaptor* GetRootVisualization() { return root_visualization_; }
 
   TimingAggregator* GetOpTimes();

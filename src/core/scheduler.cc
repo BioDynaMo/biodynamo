@@ -236,14 +236,19 @@ void Scheduler::SetAgentFilters(
   agent_filters_ = agent_filters;
 }
 
+// -----------------------------------------------------------------------------
+const std::vector<Functor<bool, Agent*>*>& Scheduler::GetAgentFilters() const {
+  return agent_filters_;
+}
+
 struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
   explicit RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
     sim_ = Simulation::GetActive();
   }
 
-  void operator()(Agent* agent, AgentHandle) override {
-    sim_->GetExecutionContext()->Execute(agent, scheduled_ops_);
+  void operator()(Agent* agent, AgentHandle ah) override {
+    sim_->GetExecutionContext()->Execute(agent, ah, scheduled_ops_);
   }
 
   Simulation* sim_;
@@ -288,6 +293,10 @@ void Scheduler::RunAgentOps(Functor<bool, Agent*>* filter) {
       agent_ops.push_back(op);
     }
   }
+
+  const auto& all_exec_ctxts = sim->GetAllExecCtxts();
+  all_exec_ctxts[0]->SetupAgentOpsAll(all_exec_ctxts);
+
   if (param->execution_order == Param::ExecutionOrder::kForEachAgentForEachOp) {
     RunAllScheduledOps functor(agent_ops);
     Timing::Time("agent ops", [&]() {
@@ -302,6 +311,8 @@ void Scheduler::RunAgentOps(Functor<bool, Agent*>* filter) {
       });
     }
   }
+
+  all_exec_ctxts[0]->TearDownAgentOpsAll(all_exec_ctxts);
 }
 
 // -----------------------------------------------------------------------------
@@ -389,7 +400,7 @@ void Scheduler::Initialize() {
 
   // commit all changes
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
-  all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
+  all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
 
   if (param->bound_space != Param::BoundSpaceMode::kOpen) {
     auto* bound_space = NewOperation("bound space");

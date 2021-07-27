@@ -89,9 +89,21 @@ class InPlaceExecutionContext : public ExecutionContext {
   void TearDownIterationAll(
       const std::vector<ExecutionContext*>& all_exec_ctxts) override;
 
+  /// This function is called before all agent operations are executed.\n
+  /// This function is not thread-safe.
+  /// NB: Invalidates references and pointers to agents.
+  void SetupAgentOpsAll(
+      const std::vector<ExecutionContext*>& all_exec_ctxts) override;
+
+  /// This function is called after all agent operations were executed.\n
+  /// This function is not thread-safe. \n
+  /// NB: Invalidates references and pointers to agents.
+  void TearDownAgentOpsAll(
+      const std::vector<ExecutionContext*>& all_exec_ctxts) override;
+
   /// Execute a series of operations on an agent in the order given
   /// in the argument
-  void Execute(Agent* agent,
+  void Execute(Agent* agent, AgentHandle ah,
                const std::vector<Operation*>& operations) override;
 
   /// Applies the lambda `lambda` for each neighbor of the given `query`
