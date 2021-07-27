@@ -139,8 +139,14 @@ void InPlaceExecutionContext::TearDownIterationAll(
   rm->EndOfIteration();
 }
 
+void InPlaceExecutionContext::SetupAgentOpsAll(
+    const std::vector<ExecutionContext*>& all_exec_ctxts) {}
+
+void InPlaceExecutionContext::TearDownAgentOpsAll(
+    const std::vector<ExecutionContext*>& all_exec_ctxts) {}
+
 void InPlaceExecutionContext::Execute(
-    Agent* agent, const std::vector<Operation*>& operations) {
+    Agent* agent, AgentHandle ah, const std::vector<Operation*>& operations) {
   auto* env = Simulation::GetActive()->GetEnvironment();
   auto* param = Simulation::GetActive()->GetParam();
 

@@ -30,6 +30,18 @@ class ExecutionContext {
  public:
   virtual ~ExecutionContext() {}
 
+  /// This function is called before all agent operations are executed.\n
+  /// This function is not thread-safe.
+  /// NB: Invalidates references and pointers to agents.
+  virtual void SetupAgentOpsAll(
+      const std::vector<ExecutionContext*>& all_exec_ctxts) = 0;
+
+  /// This function is called after all agent operations were executed.\n
+  /// This function is not thread-safe. \n
+  /// NB: Invalidates references and pointers to agents.
+  virtual void TearDownAgentOpsAll(
+      const std::vector<ExecutionContext*>& all_exec_ctxts) = 0;
+
   /// This function is called at the beginning of each iteration to setup all
   /// execution contexts.
   /// This function is not thread-safe.
@@ -46,7 +58,7 @@ class ExecutionContext {
 
   /// Execute a series of operations on an agent in the order given
   /// in the argument
-  virtual void Execute(Agent* agent,
+  virtual void Execute(Agent* agent, AgentHandle ah,
                        const std::vector<Operation*>& operations) = 0;
 
   /// Applies the lambda `lambda` for each neighbor of the given `query`
