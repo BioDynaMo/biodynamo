@@ -217,37 +217,39 @@ void TimeSeries::AddCollector(const std::string& id,
 
 // -----------------------------------------------------------------------------
 void TimeSeries::Update() {
-  auto* sim = Simulation::GetActive();
-  auto* scheduler = sim->GetScheduler();
-  auto* param = sim->GetParam();
-  std::vector<std::pair<Reducer<double>*, const std::string>> reducers;
-  for (auto& entry : data_) {
-    auto& result_data = entry.second;
-    if (result_data.ycollector != nullptr) {
-      result_data.y_values.push_back(result_data.ycollector(sim));
+  if (!data_.empty()) {
+    auto* sim = Simulation::GetActive();
+    auto* scheduler = sim->GetScheduler();
+    auto* param = sim->GetParam();
+    std::vector<std::pair<Reducer<double>*, const std::string>> reducers;
+    for (auto& entry : data_) {
+      auto& result_data = entry.second;
+      if (result_data.ycollector != nullptr) {
+        result_data.y_values.push_back(result_data.ycollector(sim));
+      }
+      if (result_data.y_reducer_collector != nullptr) {
+        result_data.y_reducer_collector->Reset();
+        reducers.push_back(
+            std::make_pair(result_data.y_reducer_collector, entry.first));
+      }
+      if (result_data.xcollector == nullptr) {
+        result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
+                                       param->simulation_time_step);
+      } else {
+        result_data.x_values.push_back(result_data.xcollector(sim));
+      }
     }
-    if (result_data.y_reducer_collector != nullptr) {
-      result_data.y_reducer_collector->Reset();
-      reducers.push_back(
-          std::make_pair(result_data.y_reducer_collector, entry.first));
-    }
-    if (result_data.xcollector == nullptr) {
-      result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
-                                     param->simulation_time_step);
-    } else {
-      result_data.x_values.push_back(result_data.xcollector(sim));
-    }
-  }
 
-  // execute reducers
-  auto execute_reducers = L2F([&](Agent* agent) {
+    // execute reducers
+    auto execute_reducers = L2F([&](Agent* agent) {
+      for (auto& el : reducers) {
+        (*el.first)(agent);
+      }
+    });
+    sim->GetResourceManager()->ForEachAgentParallel(execute_reducers);
     for (auto& el : reducers) {
-      (*el.first)(agent);
+      data_[el.second].y_values.push_back(el.first->GetResult());
     }
-  });
-  sim->GetResourceManager()->ForEachAgentParallel(execute_reducers);
-  for (auto& el : reducers) {
-    data_[el.second].y_values.push_back(el.first->GetResult());
   }
 }
 
