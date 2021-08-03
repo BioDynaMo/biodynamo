@@ -188,7 +188,10 @@ void DiffusionGrid::RunInitializers() {
           double real_z = grid_dimensions_[0] + z * box_length_;
           std::array<uint32_t, 3> box_coord = {x, y, z};
           size_t idx = GetBoxIndex(box_coord);
-          ChangeConcentrationBy(idx, initializers_[f](real_x, real_y, real_z));
+          double value = initializers_[f](real_x, real_y, real_z);
+          ChangeConcentrationBy(idx, value);
+          c1_.swap(c2_);
+          ChangeConcentrationBy(idx, value);
         }
       }
     }
