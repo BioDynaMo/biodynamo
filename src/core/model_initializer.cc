@@ -29,20 +29,24 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
   auto* rm = sim->GetResourceManager();
   DiffusionGrid* d_grid = nullptr;
   if (param->diffusion_method == "euler") {
-    d_grid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                           decay_constant, resolution);
+    d_grid =
+        new EulerGrid(substance_id, substance_name, diffusion_coeff,
+                      decay_constant, resolution, param->simulation_time_step);
   } else if (param->diffusion_method == "stencil") {
     d_grid = new StencilGrid(substance_id, substance_name, diffusion_coeff,
-                             decay_constant, resolution);
+                             decay_constant, resolution,
+                             param->simulation_time_step);
   } else if (param->diffusion_method == "runga-kutta") {
     d_grid = new RungaKuttaGrid(substance_id, substance_name, diffusion_coeff,
-                                decay_constant, resolution);
+                                decay_constant, resolution,
+                                param->simulation_time_step);
   } else {
     Log::Error("ModelInitializer::DefineSubstance", "Diffusion method '",
                param->diffusion_method,
                "' does not exist. Defaulting to 'euler'");
-    d_grid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                           decay_constant, resolution);
+    d_grid =
+        new EulerGrid(substance_id, substance_name, diffusion_coeff,
+                      decay_constant, resolution, param->simulation_time_step);
   }
 
   rm->AddDiffusionGrid(d_grid);

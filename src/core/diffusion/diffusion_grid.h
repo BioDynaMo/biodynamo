@@ -34,12 +34,13 @@ class DiffusionGrid {
   DiffusionGrid() {}
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 11)
+                double mu, int resolution = 11, double dt = 1.0)
       : substance_(substance_id),
         substance_name_(std::move(substance_name)),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
-        resolution_(resolution) {}
+        resolution_(resolution),
+        dt_{dt} {}
 
   virtual ~DiffusionGrid() {}
 
@@ -198,9 +199,6 @@ class DiffusionGrid {
   double concentration_threshold_ = 1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   std::array<double, 7> dc_ = {{0}};
-  /// The timestep resolution fhe diffusion grid
-  // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
-  double dt_ = 1.0;
   /// The decay constant
   double mu_ = 0;
   /// The grid dimensions of the diffusion grid (cubic shaped)
@@ -212,6 +210,8 @@ class DiffusionGrid {
   /// The resolution of the diffusion grid (i.e. number of boxes along each
   /// axis)
   size_t resolution_ = 0;
+  /// The timestep resolution fhe diffusion grid
+  double dt_ = 1.0;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
