@@ -92,6 +92,10 @@ class DiffusionGrid {
 
   void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
 
+  void SetTimestep(double dt) { dt_ = dt; }
+
+  double GetTimestep() { return dt_; }
+
   double GetConcentrationThreshold() const { return concentration_threshold_; }
 
   const double* GetAllConcentrations() const { return c1_.data(); }
