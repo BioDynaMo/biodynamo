@@ -190,12 +190,12 @@ void DiffusionGrid::RunInitializers() {
           size_t idx = GetBoxIndex(box_coord);
           double value = initializers_[f](real_x, real_y, real_z);
           ChangeConcentrationBy(idx, value);
-          c1_.swap(c2_);
-          ChangeConcentrationBy(idx, value);
         }
       }
     }
   }
+  // Copy data to second array to ensure valid Dirichlet Boundary Conditions
+  c2_ = c1_;
 
   // Clear the initializer to free up space
   initializers_.clear();
