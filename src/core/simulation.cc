@@ -547,17 +547,17 @@ void Simulation::InitializeOutputDir() {
     output_dir_ = param_->output_dir;
   } else {
     output_dir_ = Concat(param_->output_dir, "/", unique_name_);
-    // If we do not remove the output directory, we add a timestamp to the
-    // output directory to avoid overriding previous results.
-    if (!param_->remove_output_dir_contents) {
-      time_t rawtime;
-      struct tm* timeinfo;
-      char buffer[80];
-      time(&rawtime);
-      timeinfo = localtime(&rawtime);
-      strftime(buffer, sizeof(buffer), "/%Y-%m-%d-%H:%M:%S", timeinfo);
-      output_dir_ += buffer;
-    }
+  }
+  // If we do not remove the output directory, we add a timestamp to the
+  // output directory to avoid overriding previous results.
+  if (!param_->remove_output_dir_contents) {
+    time_t rawtime;
+    struct tm* timeinfo;
+    char buffer[80];
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "/%Y-%m-%d-%H:%M:%S", timeinfo);
+    output_dir_ += buffer;
   }
 
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {

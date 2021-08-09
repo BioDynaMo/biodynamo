@@ -16,6 +16,8 @@
 #include <omp.h>
 #include <experimental/filesystem>
 #include <fstream>
+#include <regex>
+#include <string>
 #include <type_traits>
 
 #include "core/agent/cell.h"
@@ -388,8 +390,11 @@ TEST_F(SimulationTest, MultipleJsonConfigsAndPrecedence) {
 #endif  // USE_DICT
 
 TEST_F(SimulationTest, SimulationId_OutputDir) {
-  Simulation simulation("my-simulation");
-  Simulation simulation1("my-simulation");
+  auto SetParam = [](Param* param) {
+    param->remove_output_dir_contents = true;
+  };
+  Simulation simulation("my-simulation", SetParam);
+  Simulation simulation1("my-simulation", SetParam);
 
   EXPECT_EQ("my-simulation", simulation.GetUniqueName());
   EXPECT_EQ("output/my-simulation", simulation.GetOutputDir());
@@ -398,11 +403,56 @@ TEST_F(SimulationTest, SimulationId_OutputDir) {
   EXPECT_EQ("output/my-simulation1", simulation1.GetOutputDir());
 }
 
-TEST_F(SimulationTest, SimulationId_OutputDir2) {
-  Simulation simulation("");
+TEST_F(SimulationTest, SimulationId_OutputDir_TimeStamp) {
+  auto SetParam = [](Param* param) {
+    param->remove_output_dir_contents = false;
+  };
+  Simulation simulation("my-simulation", SetParam);
+  Simulation simulation1("my-simulation", SetParam);
+
+  // The regex below, is supposed to catch the following example structure
+  // output[D+]/my-simulation[D+]/2021[d{4}]-08[d{2}]-09[d{2}]-
+  // 12[d{2}]:24[d{2}]:51[d{2}]
+  // For timestamp2, we add an additional [d] after the second [D+] to capture
+  // my-simulation1 [D+d].
+  std::regex timestamp1{
+      "\\D+\\/\\D+\\/\\d{4}-\\d{2}-\\d{2}-\\d{2}:\\d{2}:\\d{2}"};
+  std::regex timestamp2{
+      "\\D+\\/\\D+\\d\\/\\d{4}-\\d{2}-\\d{2}-\\d{2}:\\d{2}:\\d{2}"};
+
+  std::string out1 = simulation.GetOutputDir();
+  std::string out2 = simulation1.GetOutputDir();
+
+  EXPECT_EQ("my-simulation", simulation.GetUniqueName());
+  EXPECT_TRUE(regex_match(out1, timestamp1));
+  // EXPECT_TRUE( )
+
+  EXPECT_EQ("my-simulation1", simulation1.GetUniqueName());
+  EXPECT_TRUE(regex_match(out2, timestamp2));
+}
+
+TEST_F(SimulationTest, SimulationId_OutputDir_NoSimName) {
+  auto SetParam = [](Param* param) {
+    param->remove_output_dir_contents = true;
+  };
+  Simulation simulation("", SetParam);
 
   EXPECT_EQ("", simulation.GetUniqueName());
   EXPECT_EQ("output", simulation.GetOutputDir());
+}
+
+TEST_F(SimulationTest, SimulationId_OutputDir_NoSimName_TimeStamp) {
+  auto SetParam = [](Param* param) {
+    param->remove_output_dir_contents = false;
+  };
+  Simulation simulation("", SetParam);
+
+  // The regex below, is supposed to catch the following example structure
+  // output[D+]/2021[d{4}]-08[d{2}]-09[d{2}]-12[d{2}]:24[d{2}]:51[d{2}]
+  std::regex timestamp{"\\D+\\/\\d{4}-\\d{2}-\\d{2}-\\d{2}:\\d{2}:\\d{2}"};
+
+  EXPECT_EQ("", simulation.GetUniqueName());
+  EXPECT_TRUE(regex_match(simulation.GetOutputDir(), timestamp));
 }
 
 TEST_F(SimulationTest, InlineConfig) {
