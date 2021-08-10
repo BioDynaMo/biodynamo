@@ -77,36 +77,27 @@ def ModifyFileContent(filename, fn):
 def CustomizeFiles(sim_name):
     Print.new_step("Customize files")
     try:
-        # README.md
-        ModifyFileContent(
-            sim_name + "/README.md",
-            lambda content: content.replace("my-simulation", sim_name),
-        )
-
-        # CMakelists.txt
-        ModifyFileContent(
-            sim_name + "/CMakeLists.txt",
-            lambda content: content.replace("my-simulation", sim_name),
-        )
-
-        # source files
+        # include files
         include_guard = sim_name.upper().replace("-", "_") + "_H_"
         ModifyFileContent(
             sim_name + "/src/my-simulation.h",
             lambda c: c.replace("MY_SIMULATION_H_", include_guard),
         )
-        ModifyFileContent(
-            sim_name + "/src/my-simulation.cc",
-            lambda c: c.replace("my-simulation", sim_name),
-        )
-        ModifyFileContent(
-            sim_name + "/src/main.cc",
-            lambda c: c.replace("my-simulation", sim_name),
-        )
-        ModifyFileContent(
-            sim_name + "/test/test-suit-util.cc",
-            lambda c: c.replace("my-simulation", sim_name),
-        )
+
+        # files whose content needs to be modified
+        content_files = [
+            "/README.md",
+            "/CMakeLists.txt",
+            "/src/my-simulation.cc",
+            "/src/main.cc",
+            "/test/test-suit-util.cc",
+        ]
+        for file in content_files:
+            ModifyFileContent(
+                sim_name + file,
+                lambda c: c.replace("my-simulation", sim_name),
+            )
+
         #   rename
         os.rename(
             sim_name + "/src/my-simulation.h", sim_name + "/src/" + sim_name + ".h"
