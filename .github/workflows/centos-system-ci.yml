@@ -140,7 +140,7 @@ jobs:
         cmake \
           -Dnotebooks=ON \
           -B build
-        cmake --build build --config Release --target notebooks
+        cmake --build build --config Release --target notebooks -- -j1
 
     - name: Run system tests
       shell: bash

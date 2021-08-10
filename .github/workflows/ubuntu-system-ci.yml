@@ -114,7 +114,7 @@ jobs:
           -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
-        cmake --build build --parallel --config Release --target notebooks
+        cmake --build build --parallel --config Release --target notebooks  -- -j1
       if: github.event_name == 'pull_request'
 
     - name: Build BioDynaMo
