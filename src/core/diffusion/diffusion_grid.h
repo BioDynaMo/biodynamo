@@ -156,6 +156,7 @@ class DiffusionGrid {
   friend class RungaKuttaGrid;
   friend class EulerGrid;
   friend class StencilGrid;
+  friend class TestGrid;  // class used for testing (e.g. initialization)
 
   void ParametersCheck();
 
