@@ -27,50 +27,31 @@ MACRO(SUBDIRLIST result curdir)
   SET(${result} ${dirlist})
 ENDMACRO()
 
-# Generate notebook from demo DEMO_NAME
-function(GenerateNotebookTarget DEMO_NAME)
-  set(DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/notebooks/${DEMO_NAME})
-  set(DEMO_DIR ${PROJECT_SOURCE_DIR}/demo/${DEMO_NAME})
-  set(SCRIPT   ${PROJECT_SOURCE_DIR}/util/demo_to_notebook.py)
+# Generate notebook from demo NB_NAME
+function(GenerateNotebookTarget NB_NAME)
   set(ENV{PYTHONPATH} "${ROOTSYS}/lib")
   if(NOT BDM_OUT_OF_SOURCE)
     set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
   endif()
-  add_custom_target(notebook-${DEMO_NAME}
-      COMMAND rm -rf ${DEST_DIR}
-      COMMAND mkdir -p ${DEST_DIR}
-      COMMAND cp ${DEMO_DIR}/src/*.h ${DEST_DIR}
-      COMMAND cp ${DEMO_DIR}/thumbnail.* ${DEST_DIR}
-      COMMAND bash -c "${LAUNCHER} ${Python_EXECUTABLE} -E ${SCRIPT} --tutpath=${DEMO_DIR}/src/${DEMO_NAME}.h --outdir=${DEST_DIR}")
-  add_dependencies(notebook-${DEMO_NAME} biodynamo)
+  add_custom_target(notebook-${NB_NAME}
+      COMMAND bash -c "${LAUNCHER} jupyter nbconvert --to=html --ExecutePreprocessor.timeout=60 --execute ${CMAKE_BINARY_DIR}/notebook/${NB_NAME}.ipynb")
+  add_dependencies(notebook-${NB_NAME} biodynamo)
+  add_dependencies(notebook-${NB_NAME} copy_files_bdm)
 endfunction(GenerateNotebookTarget)
 
-# Demos to skip over
-set(SKIPLIST "soma_clustering" "tumor_concept" "multiple_simulations" "gene_regulation" "sbml_integration" "makefile_project" "parameters" "epidemiology" "pyramidal_cell")
-
-# We chain the targets of the demos to each other, because of a race conditions
-# that occurs when invoking jupyter-notebook with multiple processes:
-# ".ipython/metakernel/history already exists"
 if(notebooks)
-  add_custom_target(notebooks ALL COMMENT "Generate notebooks")
+  add_custom_target(notebooks ALL COMMENT "Execute BioDynaMo Notebooks and generate HTML output")
   add_dependencies(notebooks biodynamo)
-  SUBDIRLIST(DEMOS ${PROJECT_SOURCE_DIR}/demo)
-  foreach(DEMO ${DEMOS})
-    if(${DEMO} IN_LIST SKIPLIST)
-      list(REMOVE_ITEM DEMOS ${DEMO})
-    endif()
+  add_dependencies(notebooks copy_files_bdm)
+  file(GLOB NOTEBOOKS_PATHS LIST_DIRECTORIES false CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/notebook/*.ipynb")
+  set(NOTEBOOKS "")
+  foreach(FILE ${NOTEBOOKS_PATHS})
+    get_filename_component(NB_NAME ${FILE} NAME_WE)
+    list(APPEND NOTEBOOKS ${NB_NAME})
   endforeach()
-  list(LENGTH DEMOS NUM_DEMOS)
-  math(EXPR NUM_DEMOS "${NUM_DEMOS} - 1")
-  foreach(IT RANGE ${NUM_DEMOS})
-    list(GET DEMOS ${IT} DEMO)
-    GenerateNotebookTarget(${DEMO})
-    if(IT EQUAL 0)
-      add_dependencies(notebooks notebook-${DEMO})
-    else()
-      math(EXPR ITD "${IT} - 1")
-      list(GET DEMOS ${ITD} PREVIOUS_DEMO)
-      add_dependencies(notebook-${PREVIOUS_DEMO} notebook-${DEMO})
-    endif()
+  message("NOTEBOOKS = ${NOTEBOOKS}")
+  foreach(NB_NAME ${NOTEBOOKS})
+    GenerateNotebookTarget(${NB_NAME})
+    add_dependencies(notebooks notebook-${NB_NAME})
   endforeach()
 endif()

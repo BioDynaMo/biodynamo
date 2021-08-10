@@ -103,7 +103,7 @@ jobs:
         cmake \
           -Dnotebooks=ON \
           -B build
-        cmake --build build --parallel --config Release --target notebooks
+        cmake --build build --parallel --config Release --target notebooks  -- -j1
 
     # - name: Setup tmate session
     #   uses: mxschmitt/action-tmate@v2
