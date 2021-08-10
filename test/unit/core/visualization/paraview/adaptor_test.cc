@@ -36,8 +36,6 @@ class ParaviewAdaptorTest : public ::testing::Test {
   static constexpr char const* kSimulationName = "MySimulation";
   static constexpr char const* kSimulationInfoJson =
       "output/MySimulation/simulation_info.json";
-  static constexpr char const* kSimulationInfoJsonFileName =
-      "simulation_info.json";
   static constexpr char const* kParaviewState =
       "output/MySimulation/MySimulation.pvsm";
 
@@ -163,7 +161,7 @@ TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
 
   std::ofstream ofs;
   std::string json_fn =
-      Concat(simulation.GetOutputDir(), "/", kSimulationInfoJsonFileName);
+      Concat(simulation.GetOutputDir(), "/simulation_info.json");
   ofs.open(json_fn);
   ofs << empty_json;
   ofs.close();
