@@ -16,6 +16,7 @@
 #include <mutex>
 #include "core/environment/environment.h"
 #include "core/simulation.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
@@ -165,6 +166,16 @@ void DiffusionGrid::CopyOldData(
   c2_.resize(total_num_boxes_);
   gradients_.resize(total_num_boxes_);
 
+  Log::Warning(
+      "DiffusionGrid::CopyOldData",
+      "The size of the diffusion grid "
+      "increased. BioDynaMo adds a halo around the domain filled with zeros. "
+      "Depending your use-case, this might or might not be what you want. If "
+      "you have non-zero concentrations / temperatures in the surrounding, "
+      "this is likely to cause unphysical effects at the boudary. But if your "
+      "grid values are mostly zero this is likely to work fine. Evaluate your "
+      "results carefully.");
+
   auto incr_num_boxes = resolution_ - old_resolution;
   int off_dim = incr_num_boxes / 2;
 
@@ -184,6 +195,8 @@ void DiffusionGrid::CopyOldData(
       }
     }
   }
+  // TODO: here we also need to copy c1_ into c2_ such that the boundaries are
+  // equivalent once we introduce non-zero halos.
 }
 
 void DiffusionGrid::RunInitializers() {
