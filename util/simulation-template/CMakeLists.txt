@@ -29,7 +29,7 @@ include_directories("src")
 file(GLOB_RECURSE PROJECT_HEADERS src/*.h)
 file(GLOB_RECURSE PROJECT_SOURCES src/*.cc)
 
-bdm_add_executable(my-simulation
+bdm_add_executable(${CMAKE_PROJECT_NAME}
                    HEADERS ${PROJECT_HEADERS}
                    SOURCES ${PROJECT_SOURCES}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES})
@@ -39,7 +39,7 @@ include_directories("test")
 file(GLOB_RECURSE TEST_SOURCES test/*.cc)
 file(GLOB_RECURSE TEST_HEADERS test/*.h)
 
-bdm_add_test(my-simulation-test
+bdm_add_test(${CMAKE_PROJECT_NAME}-test
              SOURCES ${TEST_SOURCES}
              HEADERS ${TEST_HEADERS}
-             LIBRARIES ${BDM_REQUIRED_LIBRARIES})
+             LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${CMAKE_PROJECT_NAME})

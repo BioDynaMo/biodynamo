@@ -13,4 +13,30 @@
 // -----------------------------------------------------------------------------
 #include "my-simulation.h"
 
-int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }
+namespace bdm {
+
+double SquareMaxTemplate(double to_square, double upper_bound) {
+  double square = to_square * to_square;
+  if (square < upper_bound) {
+    return square;
+  } else {
+    return upper_bound;
+  }
+}
+
+int Simulate(int argc, const char** argv) {
+  Simulation simulation(argc, argv);
+
+  // Define initial model - in this example: single cell at origin
+  auto* rm = simulation.GetResourceManager();
+  auto* cell = new Cell(30);
+  rm->AddAgent(cell);
+
+  // Run simulation for one timestep
+  simulation.GetScheduler()->Simulate(1);
+
+  std::cout << "Simulation completed successfully!" << std::endl;
+  return 0;
+}
+
+}  // namespace bdm

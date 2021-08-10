@@ -11,23 +11,6 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#ifndef MY_SIMULATION_H_
-#define MY_SIMULATION_H_
+#include "my-simulation.h"
 
-#include "biodynamo.h"
-
-namespace bdm {
-
-// Example function `SquareMaxTemplate`:
-// Computes the square of `to_square` but output is bounded by `upper_bound`.
-// This function is not important for the simulation, but introduced to
-// illustrate how to test functions occuring in the simulation context.
-// See test-suit-util for more info.
-double SquareMaxTemplate(double to_square, double upper_bound);
-
-// This function executes the BioDynaMo simulation.
-int Simulate(int argc, const char** argv);
-
-}  // namespace bdm
-
-#endif  // MY_SIMULATION_H_
+int main(int argc, const char** argv) { return bdm::Simulate(argc, argv); }

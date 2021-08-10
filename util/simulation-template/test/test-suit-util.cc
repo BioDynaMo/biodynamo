@@ -13,23 +13,11 @@
 // -----------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
+#include "my-simulation.h"
 
 // Googletest in combination with the provided CMakeLists.txt allows you to
 // define tests in arbitrary .cc files in the `test/` folder. We propose
 // this file to test some general utilities.
-
-// Example function `SquareMax`:
-// Computes the square of `to_square` but output is bounded by `upper_bound`.
-// Typically this function would occur somewhere in `src/` and we would include
-// it here. For simplicity, we now define it here.
-double SquareMax(double to_square, double upper_bound) {
-  double square = to_square * to_square;
-  if (square < upper_bound) {
-    return square;
-  } else {
-    return upper_bound;
-  }
-}
 
 // Show how to compare two stings
 TEST(UtilTest, StringTest) {
@@ -43,12 +31,12 @@ TEST(UtilTest, NumberTest) {
   EXPECT_EQ(7 * 6, 42);
 }
 
-// Test if our function SquareMax behaves as expected
-TEST(UtilTest, SquareMaxTest) {
+// Test if our function SquareMaxTemplate behaves as expected
+TEST(UtilTest, SquareMaxTemplateTest) {
   // Expect equality for the following
-  EXPECT_EQ(1.0, SquareMax(1.0, 10.0));
-  EXPECT_EQ(4.0, SquareMax(2.0, 10.0));
-  EXPECT_EQ(9.0, SquareMax(3.0, 10.0));
-  EXPECT_EQ(10.0, SquareMax(4.0, 10.0));
-  EXPECT_EQ(10.0, SquareMax(5.0, 10.0));
+  EXPECT_EQ(1.0, bdm::SquareMaxTemplate(1.0, 10.0));
+  EXPECT_EQ(4.0, bdm::SquareMaxTemplate(2.0, 10.0));
+  EXPECT_EQ(9.0, bdm::SquareMaxTemplate(3.0, 10.0));
+  EXPECT_EQ(10.0, bdm::SquareMaxTemplate(4.0, 10.0));
+  EXPECT_EQ(10.0, bdm::SquareMaxTemplate(5.0, 10.0));
 }
