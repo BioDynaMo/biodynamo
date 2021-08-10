@@ -544,6 +544,52 @@ TEST(DiffusionTest, EulerConvergence) {
   delete d_grid8;
 }
 
+TEST(DiffusionTest, AutomaticTimeStep) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.1;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+  auto* scheduler = simulation.GetScheduler();
+  auto diff_op = scheduler->GetOps("diffusion")[0];
+  diff_op->frequency_ = 2;
+
+  // Create one cell at a random position
+  auto construct = [](const Double3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
+                                       construct);
+
+  // Define the substances in our simulation
+  ModelInitializer::DefineSubstance(0, "Substance", 0.5, 0.1, 26);
+
+  // Initialize the substance according to a GaussianBand along the x-axis
+  ModelInitializer::InitializeSubstance(0, GaussianBand(125, 50, Axis::kXAxis));
+
+  // Simulate for one timestep
+  simulation.GetEnvironment()->Update();
+  scheduler->Simulate(1);
+
+  // Test if the timestep is set correctly and if updates work.
+  auto* dgrid = rm->GetDiffusionGrid(0);
+  EXPECT_DOUBLE_EQ(0.2, dgrid->GetTimestep());
+  diff_op->frequency_ = 5;
+  dgrid->Update();
+  EXPECT_DOUBLE_EQ(0.5, dgrid->GetTimestep());
+  diff_op->frequency_ = 3;
+  dgrid->Update();
+  EXPECT_DOUBLE_EQ(0.3, dgrid->GetTimestep());
+}
+
 TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
