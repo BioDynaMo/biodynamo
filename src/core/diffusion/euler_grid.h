@@ -25,8 +25,8 @@ class EulerGrid : public DiffusionGrid {
  public:
   EulerGrid() {}
   EulerGrid(int substance_id, std::string substance_name, double dc, double mu,
-            int resolution = 11, double dt = 1.0)
-      : DiffusionGrid(substance_id, substance_name, dc, mu, resolution, dt) {}
+            int resolution = 11)
+      : DiffusionGrid(substance_id, substance_name, dc, mu, resolution) {}
 
   void DiffuseWithClosedEdge() override;
 

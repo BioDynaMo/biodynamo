@@ -476,6 +476,10 @@ TEST(DiffusionTest, EulerConvergence) {
   DiffusionGrid* d_grid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
   DiffusionGrid* d_grid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
 
+  d_grid2->SetTimestep(1.0);
+  d_grid4->SetTimestep(1.0);
+  d_grid8->SetTimestep(1.0);
+
   d_grid2->Initialize();
   d_grid4->Initialize();
   d_grid8->Initialize();

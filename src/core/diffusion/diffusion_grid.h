@@ -34,13 +34,14 @@ class DiffusionGrid {
   DiffusionGrid() {}
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 11, double dt = 1.0)
+                double mu, int resolution = 11)
       : substance_(substance_id),
         substance_name_(std::move(substance_name)),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
-        resolution_(resolution),
-        dt_{dt} {}
+        resolution_(resolution) {
+    SetTimestepFromSimulation();
+  }
 
   virtual ~DiffusionGrid() {}
 
@@ -92,7 +93,15 @@ class DiffusionGrid {
 
   void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
 
-  void SetTimestep(double dt) { dt_ = dt; }
+  /// Manually set the timestep dt_, use with caution! We recommend to use the
+  /// default way, e.g. let BioDynaMo compute dt_ from the simulation_time_step
+  /// and the frequency_ of the diffusion operation to keept the time scales
+  /// consistent. Both of these variables can be modified by the user and
+  /// usually allow to set the value dt_ to the desired value.
+  void SetTimestep(double dt) {
+    dt_ = dt;
+    auto_dt_ = false;
+  }
 
   double GetTimestep() { return dt_; }
 
@@ -166,6 +175,8 @@ class DiffusionGrid {
 
   void ParametersCheck();
 
+  void SetTimestepFromSimulation();
+
   /// Copies the concentration and gradients values to the new
   /// (larger) grid. In the 2D case it looks like the following:
   ///
@@ -215,7 +226,10 @@ class DiffusionGrid {
   /// axis)
   size_t resolution_ = 0;
   /// The timestep resolution fhe diffusion grid
-  double dt_ = 1.0;
+  double dt_ = 0.01;
+  /// If the timestep is computed from the simulation (true) or set manually
+  /// (false).
+  bool auto_dt_ = true;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
