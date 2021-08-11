@@ -23,7 +23,13 @@ ExternalProject_Add(
   CMAKE_CACHE_ARGS
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND cp -a "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/include/." "${CMAKE_CURRENT_BINARY_DIR}/include"
+    INSTALL_COMMAND 
+     cp -a "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/include/."
+        "${CMAKE_CURRENT_BINARY_DIR}/include"
+     && cp "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest-build/libgtest.a" 
+        "${CMAKE_CURRENT_BINARY_DIR}/lib"
+     && cp "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest-build/libgtest_main.a" 
+        "${CMAKE_CURRENT_BINARY_DIR}/lib"
   # Ugly but necessary, in future versions one can use ${binary_dir}
   # in BUILD_BYPRODUCTS
   #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
