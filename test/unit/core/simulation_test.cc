@@ -390,11 +390,8 @@ TEST_F(SimulationTest, MultipleJsonConfigsAndPrecedence) {
 #endif  // USE_DICT
 
 TEST_F(SimulationTest, SimulationId_OutputDir) {
-  auto SetParam = [](Param* param) {
-    param->remove_output_dir_contents = true;
-  };
-  Simulation simulation("my-simulation", SetParam);
-  Simulation simulation1("my-simulation", SetParam);
+  Simulation simulation("my-simulation");
+  Simulation simulation1("my-simulation");
 
   EXPECT_EQ("my-simulation", simulation.GetUniqueName());
   EXPECT_EQ("output/my-simulation", simulation.GetOutputDir());
@@ -432,10 +429,7 @@ TEST_F(SimulationTest, SimulationId_OutputDir_TimeStamp) {
 }
 
 TEST_F(SimulationTest, SimulationId_OutputDir_NoSimName) {
-  auto SetParam = [](Param* param) {
-    param->remove_output_dir_contents = true;
-  };
-  Simulation simulation("", SetParam);
+  Simulation simulation("");
 
   EXPECT_EQ("", simulation.GetUniqueName());
   EXPECT_EQ("output", simulation.GetOutputDir());
@@ -468,7 +462,10 @@ TEST_F(SimulationTest, DontRemoveOutputDirContents) {
   fs::create_directory(Concat("output/", TEST_NAME, "/subdir"));
   EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
 
-  Simulation sim(TEST_NAME);
+  auto SetParam = [](Param* param) {
+    param->remove_output_dir_contents = false;
+  };
+  Simulation sim(TEST_NAME, SetParam);
   EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
 }
 

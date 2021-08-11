@@ -129,10 +129,14 @@ struct Param {
   ///     unibn_bucketsize = 16
   uint32_t unibn_bucketsize = 16;
 
-  /// If set to true, BioDynaMo will automatically delete all contents
+  /// If set to true (default), BioDynaMo will automatically delete all contents
   /// inside `Param::output_dir` at the beginning of the simulation.
-  /// Use with caution, especially in combination with `Param::output_dir`
-  bool remove_output_dir_contents = false;
+  /// Use with caution in combination with `Param::output_dir`. If you do not
+  /// want to delete the content, set this parameter to false. BioDynaMo then
+  /// organizes your simulation outputs in additional subfolders labelled with
+  /// the date-time of your simulation `YYYY-MM-DD-HH:MM:SS`. Note that you will
+  /// inevitably use more disk space with this option.
+  bool remove_output_dir_contents = true;
 
   /// Backup file name for full simulation backups\n
   /// Path is relative to working directory.\n

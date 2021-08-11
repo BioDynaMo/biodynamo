@@ -55,7 +55,6 @@ class ParaviewAdaptorTest : public ::testing::Test {
 TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   auto set_param = [](auto* param) {
     // set-up Param values
-    param->remove_output_dir_contents = true;
     param->export_visualization = true;
     param->visualize_agents.clear();
     param->visualize_agents["Cell"] = {};
