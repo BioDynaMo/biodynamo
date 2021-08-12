@@ -155,9 +155,9 @@ class ResourceManager {
   /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
   DiffusionGrid* GetDiffusionGrid(const std::string& substance_name) const {
     for (auto& el : diffusion_grids_) {
-      auto& dg = el.second;
-      if (dg->GetSubstanceName() == substance_name) {
-        return dg;
+      auto& dgrid = el.second;
+      if (dgrid->GetSubstanceName() == substance_name) {
+        return dgrid;
       }
     }
     Log::Error("DiffusionGrid::GetDiffusionGrid",
