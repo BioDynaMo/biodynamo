@@ -147,6 +147,8 @@ if(UNIX AND NOT APPLE)
   add_definitions("-DLINUX")
 endif()
 
+set(CMAKE_VISIBILITY_INLINES_HIDDEN "ON")
+
 # -------------------- find packages ------------------------------------------
 if (tcmalloc)
   find_package(tcmalloc)
