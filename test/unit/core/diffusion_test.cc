@@ -463,10 +463,12 @@ TEST(DiffusionTest, CorrectParameters) {
 }
 
 TEST(DiffusionTest, EulerConvergence) {
+  double simulation_time_step{1.0};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
+    param->diffusion_boundary_condition = "closed";
   };
   Simulation simulation(TEST_NAME, set_param);
   simulation.GetEnvironment()->Update();
@@ -475,10 +477,6 @@ TEST(DiffusionTest, EulerConvergence) {
   DiffusionGrid* d_grid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
   DiffusionGrid* d_grid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
   DiffusionGrid* d_grid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
-
-  d_grid2->SetTimestep(1.0);
-  d_grid4->SetTimestep(1.0);
-  d_grid8->SetTimestep(1.0);
 
   d_grid2->Initialize();
   d_grid4->Initialize();
@@ -506,9 +504,9 @@ TEST(DiffusionTest, EulerConvergence) {
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
-    d_grid2->DiffuseWithClosedEdge();
-    d_grid4->DiffuseWithClosedEdge();
-    d_grid8->DiffuseWithClosedEdge();
+    d_grid2->Diffuse(simulation_time_step);
+    d_grid4->Diffuse(simulation_time_step);
+    d_grid8->Diffuse(simulation_time_step);
   }
 
   auto rc2 = GetRealCoordinates(d_grid2->GetBoxCoordinates(source),
@@ -544,7 +542,7 @@ TEST(DiffusionTest, EulerConvergence) {
   delete d_grid8;
 }
 
-TEST(DiffusionTest, AutomaticTimeStep) {
+TEST(DiffusionTest, DynamicTimeStepping) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
@@ -570,24 +568,41 @@ TEST(DiffusionTest, AutomaticTimeStep) {
                                        construct);
 
   // Define the substances in our simulation
-  ModelInitializer::DefineSubstance(0, "Substance", 0.5, 0.1, 26);
+  ModelInitializer::DefineSubstance(0, "Substance", 0.5, 0.1, 10);
 
   // Initialize the substance according to a GaussianBand along the x-axis
   ModelInitializer::InitializeSubstance(0, GaussianBand(125, 50, Axis::kXAxis));
 
   // Simulate for one timestep
   simulation.GetEnvironment()->Update();
-  scheduler->Simulate(1);
+  scheduler->Simulate(3);
 
-  // Test if the timestep is set correctly and if updates work.
+  // Test if the timestep is set correctly and if the updates occur at the right
+  // Time. Note that the frequency_ is set with GetSimulatedSteps()%frequency_.
+  // The following illustrates what happens below.
+  // Timestep      |0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|
+  // %2            |Y| |Y| |Y| |Y| |Y| | Y|  | Y|  | Y|  | Y|
+  // %3            |Y| | |Y| | |Y| | |Y|  |  | Y|  |  | Y|  |
+  // %5            |Y| | | | |Y| | | | | Y|  |  |  |  | Y|  |
+  // grid updates  |Y| |Y| | |Y| | | | | Y|  | Y|  |  | Y|  |
+  // set frequq    |2| | |5| | | | | | |  | 3|  |  |  |  |  |
+  // The function get LastTimeStep must return the (#no_spaces+1)*timestep,
+  // where #no_spaces counts the empty boxes in between the Y's in grid updates.
+  // The colum grid updates always has Y according to the last set frequency.
+  // We chose our measurement points such that they occur one timestep after
+  // the update.
   auto* dgrid = rm->GetDiffusionGrid(0);
-  EXPECT_DOUBLE_EQ(0.2, dgrid->GetTimestep());
+  EXPECT_FLOAT_EQ(0.2, dgrid->GetLastTimestep());
   diff_op->frequency_ = 5;
-  dgrid->Update();
-  EXPECT_DOUBLE_EQ(0.5, dgrid->GetTimestep());
+  scheduler->Simulate(3);
+  EXPECT_FLOAT_EQ(0.3, dgrid->GetLastTimestep());
+  scheduler->Simulate(5);
+  EXPECT_FLOAT_EQ(0.5, dgrid->GetLastTimestep());
   diff_op->frequency_ = 3;
-  dgrid->Update();
-  EXPECT_DOUBLE_EQ(0.3, dgrid->GetTimestep());
+  scheduler->Simulate(2);
+  EXPECT_FLOAT_EQ(0.2, dgrid->GetLastTimestep());
+  scheduler->Simulate(3);
+  EXPECT_FLOAT_EQ(0.3, dgrid->GetLastTimestep());
 }
 
 TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {

@@ -66,12 +66,16 @@ void DiffusionGrid::Initialize() {
   gradients_.resize(total_num_boxes_);
 }
 
-void DiffusionGrid::Diffuse() {
+void DiffusionGrid::Diffuse(double dt) {
   // check if diffusion coefficient and decay constant are 0
   // i.e. if we don't need to calculate diffusion update
   if (IsFixedSubstance()) {
     return;
   }
+
+  // Set timestep for this iteration.
+  dt_ = dt;
+  ParametersCheck();
 
   auto* param = Simulation::GetActive()->GetParam();
   if (param->diffusion_boundary_condition == "closed") {
@@ -103,11 +107,6 @@ void DiffusionGrid::Update() {
       // std::abs for the case that box_length_ > dimension_length
       grid_dimensions_[2 * i + 1] += (box_length_ - r);
     }
-  }
-
-  // Update timestep in case frequency of diffusion operation changes.
-  if (auto_dt_) {
-    SetTimestepFromSimulation();
   }
 
   // Calculate new_dimension_length and new_resolution
@@ -145,18 +144,6 @@ void DiffusionGrid::Update() {
     CopyOldData(tmp_c1, tmp_gradients, tmp_resolution);
   }
 }
-
-void DiffusionGrid::SetTimestepFromSimulation() {
-  auto* sim = Simulation::GetActive();
-  auto* param = sim->GetParam();
-  auto* scheduler = sim->GetScheduler();
-  auto diff_op = scheduler->GetOps("diffusion")[0];
-  // Automatically set timestep to be compatible with simulation. E.g if the
-  // simulation time step is 0.01 and we update the grid with a frequence of
-  // 5, this expression sets the diffusion time step to 0.05.
-  dt_ = param->simulation_time_step * diff_op->frequency_;
-  auto_dt_ = true;
-};
 
 void DiffusionGrid::CopyOldData(
     const ParallelResizeVector<double>& old_c1,
