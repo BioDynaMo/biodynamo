@@ -33,6 +33,7 @@
 #include "core/behavior/secretion.h"
 #include "core/behavior/stateless_behavior.h"
 #include "core/environment/environment.h"
+#include "core/execution_context/copy_execution_context.h"
 #include "core/model_initializer.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"

@@ -36,7 +36,7 @@ void Verify(Simulation* sim, uint64_t num_agents,
     uint64_t cnt = 0;
     rm->ForEachAgent([&](Agent* agent, AgentHandle) {
       auto diff = pos - agent->GetPosition();
-      if (std::abs(diff.Norm() - 1) < 1e-5) {
+      if (diff.Norm() < 1e-5) {
         cnt++;
       }
     });

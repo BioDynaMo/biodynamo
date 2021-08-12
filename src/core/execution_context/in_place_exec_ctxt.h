@@ -24,6 +24,7 @@
 #include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
 #include "core/container/agent_uid_map.h"
+#include "core/execution_context/execution_context.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/util/spinlock.h"
@@ -34,8 +35,6 @@ namespace bdm {
 namespace in_place_exec_ctxt_detail {
 class InPlaceExecutionContext_NeighborCacheValidity_Test;
 }
-
-class Agent;
 
 /// This execution context updates agents in place. \n
 /// Let's assume we have two agents `A, B` in our simulation that we want
@@ -50,7 +49,7 @@ class Agent;
 /// been added. \see `Param::thread_safety_mechanism`
 /// New agents will only be visible at the next iteration. \n
 /// Also removal of an agent happens at the end of each iteration.
-class InPlaceExecutionContext {
+class InPlaceExecutionContext : public ExecutionContext {
  public:
   struct ThreadSafeAgentUidMap {
     using value_type = Agent*;
@@ -81,43 +80,51 @@ class InPlaceExecutionContext {
   /// This function is not thread-safe.
   /// NB: Invalidates references and pointers to agents.
   void SetupIterationAll(
-      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts);
+      const std::vector<ExecutionContext*>& all_exec_ctxts) override;
 
   /// This function is called at the end of each iteration to tear down all
   /// execution contexts.
   /// This function is not thread-safe. \n
   /// NB: Invalidates references and pointers to agents.
   void TearDownIterationAll(
-      const std::vector<InPlaceExecutionContext*>& all_exec_ctxts);
+      const std::vector<ExecutionContext*>& all_exec_ctxts) override;
+
+  /// This function is called before all agent operations are executed.\n
+  /// This function is not thread-safe.
+  /// NB: Invalidates references and pointers to agents.
+  void SetupAgentOpsAll(
+      const std::vector<ExecutionContext*>& all_exec_ctxts) override;
+
+  /// This function is called after all agent operations were executed.\n
+  /// This function is not thread-safe. \n
+  /// NB: Invalidates references and pointers to agents.
+  void TearDownAgentOpsAll(
+      const std::vector<ExecutionContext*>& all_exec_ctxts) override;
 
   /// Execute a series of operations on an agent in the order given
   /// in the argument
-  void Execute(Agent* agent, const std::vector<Operation*>& operations);
+  void Execute(Agent* agent, AgentHandle ah,
+               const std::vector<Operation*>& operations) override;
 
   /// Applies the lambda `lambda` for each neighbor of the given `query`
   /// agent within the given `criteria`. Does not support caching.
   void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
-                       void* criteria);
+                       void* criteria) override;
 
   /// Applies the lambda `lambda` for each neighbor of the given `query`
   /// agent within the given search radius `squared_radius`
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius);
+                       const Agent& query, double squared_radius) override;
 
-  /// Check whether or not the neighbors in `neighbor_cache_` were queried with
-  /// the same squared radius (`cached_squared_search_radius_`) as currently
-  /// being queried with (`query_squared_radius_`)
-  bool IsNeighborCacheValid(double query_squared_radius);
+  void AddAgent(Agent* new_agent) override;
 
-  void AddAgent(Agent* new_agent);
+  void RemoveAgent(const AgentUid& uid) override;
 
-  void RemoveAgent(const AgentUid& uid);
+  Agent* GetAgent(const AgentUid& uid) override;
 
-  Agent* GetAgent(const AgentUid& uid);
+  const Agent* GetConstAgent(const AgentUid& uid) override;
 
-  const Agent* GetConstAgent(const AgentUid& uid);
-
- private:
+ protected:
   friend class Environment;
   friend class in_place_exec_ctxt_detail::
       InPlaceExecutionContext_NeighborCacheValidity_Test;
@@ -144,6 +151,17 @@ class InPlaceExecutionContext {
   double cached_squared_search_radius_ = 0.0;
   /// Cache the value of Param::cache_neighbors
   bool cache_neighbors_ = false;
+
+  /// Check whether or not the neighbors in `neighbor_cache_` were queried with
+  /// the same squared radius (`cached_squared_search_radius_`) as currently
+  /// being queried with (`query_squared_radius_`)
+  bool IsNeighborCacheValid(double query_squared_radius);
+
+  virtual void AddAgentsToRm(
+      const std::vector<ExecutionContext*>& all_exec_ctxts);
+
+  virtual void RemoveAgentsFromRm(
+      const std::vector<ExecutionContext*>& all_exec_ctxts);
 };
 
 }  // namespace bdm

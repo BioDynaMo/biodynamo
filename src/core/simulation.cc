@@ -285,11 +285,11 @@ Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
 std::vector<Random*>& Simulation::GetAllRandom() { return random_; }
 
-InPlaceExecutionContext* Simulation::GetExecutionContext() {
+ExecutionContext* Simulation::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
 }
 
-std::vector<InPlaceExecutionContext*>& Simulation::GetAllExecCtxts() {
+std::vector<ExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
@@ -371,6 +371,23 @@ void Simulation::SetEnvironment(Environment* env) {
     delete environment_;
   }
   environment_ = env;
+}
+
+void Simulation::SetAllExecCtxts(
+    const std::vector<ExecutionContext*>& exec_ctxts) {
+  if (exec_ctxts.size() != exec_ctxt_.size()) {
+    Log::Error("Simulation::SetAllExecCtxts", "Size of exec_ctxts (",
+               exec_ctxts.size(), ") does not match the expected size (",
+               exec_ctxt_.size(), "). Operation aborted");
+    return;
+  }
+  for (uint64_t i = 0; i < exec_ctxt_.size(); ++i) {
+    auto* ctxt = exec_ctxt_[i];
+    if (ctxt != nullptr && ctxt != exec_ctxts[i]) {
+      delete ctxt;
+    }
+    exec_ctxt_[i] = exec_ctxts[i];
+  }
 }
 
 void Simulation::InitializeRuntimeParams(

@@ -568,4 +568,14 @@ void ResourceManager::RemoveAgents(
   }
 }
 
+// -----------------------------------------------------------------------------
+size_t ResourceManager::GetAgentVectorCapacity(int numa_node) {
+  return agents_[numa_node].capacity();
+}
+
+// -----------------------------------------------------------------------------
+void ResourceManager::SwapAgents(std::vector<std::vector<Agent*>>* agents) {
+  agents_.swap(*agents);
+}
+
 }  // namespace bdm

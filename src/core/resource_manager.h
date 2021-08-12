@@ -113,6 +113,8 @@ class ResourceManager {
 
   AgentHandle GetAgentHandle(const AgentUid& uid) { return uid_ah_map_[uid]; }
 
+  void SwapAgents(std::vector<std::vector<Agent*>>* agents);
+
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
     uint64_t substance_id = dgrid->GetSubstanceId();
     auto search = diffusion_grids_.find(substance_id);
@@ -189,6 +191,8 @@ class ResourceManager {
       return agents_[numa_node].size();
     }
   }
+
+  size_t GetAgentVectorCapacity(int numa_node);
 
   /// Call a function for all or a subset of agents in the simulation.
   /// @param function that will be called for each agent

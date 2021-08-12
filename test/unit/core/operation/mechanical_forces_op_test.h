@@ -49,8 +49,9 @@ inline void RunTest(const std::string& environment) {
   // execute operation
   auto* ctxt = simulation.GetExecutionContext();
   auto* op = NewOperation("mechanical forces");
-  ctxt->Execute(rm->GetAgent(ref_uid), {op});
-  ctxt->Execute(rm->GetAgent(ref_uid + 1), {op});
+  ctxt->Execute(rm->GetAgent(ref_uid), rm->GetAgentHandle(ref_uid), {op});
+  ctxt->Execute(rm->GetAgent(ref_uid + 1), rm->GetAgentHandle(ref_uid + 1),
+                {op});
 
   // check results
   // cell 0
@@ -123,7 +124,8 @@ inline void RunTest2(const std::string& environment) {
   auto* ctxt = simulation.GetExecutionContext();
 
   for (uint64_t i = 0; i < 27; i++) {
-    ctxt->Execute(rm->GetAgent(ref_uid + i), {mechanical_forces_op});
+    ctxt->Execute(rm->GetAgent(ref_uid + i), rm->GetAgentHandle(ref_uid + 1),
+                  {mechanical_forces_op});
   }
 
   // clang-format off
@@ -158,7 +160,6 @@ inline void RunTest2(const std::string& environment) {
 
   delete mechanical_forces_op;
 }
-
 
 }  // namespace mechanical_forces_op_test_internal
 }  // namespace bdm

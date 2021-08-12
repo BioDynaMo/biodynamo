@@ -124,70 +124,29 @@ InPlaceExecutionContext::~InPlaceExecutionContext() {
 }
 
 void InPlaceExecutionContext::SetupIterationAll(
-    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) {
+    const std::vector<ExecutionContext*>& all_exec_ctxts) {
   // first iteration might have uncommited changes
-  TearDownIterationAll(all_exec_ctxts);
+  AddAgentsToRm(all_exec_ctxts);
+  RemoveAgentsFromRm(all_exec_ctxts);
 }
 
 void InPlaceExecutionContext::TearDownIterationAll(
-    const std::vector<InPlaceExecutionContext*>& all_exec_ctxts) {
-  // group execution contexts by numa domain
-  std::vector<uint64_t> new_agent_per_numa(tinfo_->GetNumaNodes());
-  std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
+    const std::vector<ExecutionContext*>& all_exec_ctxts) {
+  AddAgentsToRm(all_exec_ctxts);
+  RemoveAgentsFromRm(all_exec_ctxts);
 
-  for (int tid = 0; tid < tinfo_->GetMaxThreads(); ++tid) {
-    auto* ctxt = all_exec_ctxts[tid];
-    int nid = tinfo_->GetNumaNode(tid);
-    thread_offsets[tid] = new_agent_per_numa[nid];
-    new_agent_per_numa[nid] += ctxt->new_agents_.size();
-  }
-
-  // reserve enough memory in ResourceManager
-  std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
   auto* rm = Simulation::GetActive()->GetResourceManager();
-  rm->ResizeAgentUidMap();
-  for (unsigned n = 0; n < new_agent_per_numa.size(); n++) {
-    numa_offsets[n] = rm->GrowAgentContainer(new_agent_per_numa[n], n);
-  }
-
-// add new_agents_ to the ResourceManager in parallel
-#pragma omp parallel for schedule(static, 1)
-  for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
-    auto* ctxt = all_exec_ctxts[i];
-    int nid = tinfo_->GetNumaNode(i);
-    uint64_t offset = thread_offsets[i] + numa_offsets[nid];
-    rm->AddAgents(nid, offset, ctxt->new_agents_);
-    ctxt->new_agents_.clear();
-  }
-
-  // remove
-  std::vector<decltype(remove_)*> all_remove(tinfo_->GetMaxThreads());
-
-  auto num_removals = 0;
-  for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
-    auto* ctxt = all_exec_ctxts[i];
-    all_remove[i] = &ctxt->remove_;
-    num_removals += ctxt->remove_.size();
-  }
-
-  if (num_removals != 0) {
-    rm->RemoveAgents(all_remove);
-
-    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
-      all_exec_ctxts[i]->remove_.clear();
-    }
-  }
-
   rm->EndOfIteration();
-
-  new_agent_map_->DeleteOldCopies();
-  if (rm->GetNumAgents() > new_agent_map_->Size()) {
-    new_agent_map_->Resize(rm->GetNumAgents() * 1.5);
-  }
 }
 
+void InPlaceExecutionContext::SetupAgentOpsAll(
+    const std::vector<ExecutionContext*>& all_exec_ctxts) {}
+
+void InPlaceExecutionContext::TearDownAgentOpsAll(
+    const std::vector<ExecutionContext*>& all_exec_ctxts) {}
+
 void InPlaceExecutionContext::Execute(
-    Agent* agent, const std::vector<Operation*>& operations) {
+    Agent* agent, AgentHandle ah, const std::vector<Operation*>& operations) {
   auto* env = Simulation::GetActive()->GetEnvironment();
   auto* param = Simulation::GetActive()->GetParam();
 
@@ -334,6 +293,64 @@ void InPlaceExecutionContext::RemoveAgent(const AgentUid& uid) {
   remove_.push_back(uid);
 }
 
+void InPlaceExecutionContext::AddAgentsToRm(
+    const std::vector<ExecutionContext*>& all_exec_ctxts) {
+  // group execution contexts by numa domain
+  std::vector<uint64_t> new_agent_per_numa(tinfo_->GetNumaNodes());
+  std::vector<uint64_t> thread_offsets(tinfo_->GetMaxThreads());
+
+  for (int tid = 0; tid < tinfo_->GetMaxThreads(); ++tid) {
+    auto* ctxt = bdm_static_cast<InPlaceExecutionContext*>(all_exec_ctxts[tid]);
+    int nid = tinfo_->GetNumaNode(tid);
+    thread_offsets[tid] = new_agent_per_numa[nid];
+    new_agent_per_numa[nid] += ctxt->new_agents_.size();
+  }
+
+  // reserve enough memory in ResourceManager
+  std::vector<uint64_t> numa_offsets(tinfo_->GetNumaNodes());
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+  rm->ResizeAgentUidMap();
+  for (unsigned n = 0; n < new_agent_per_numa.size(); n++) {
+    numa_offsets[n] = rm->GrowAgentContainer(new_agent_per_numa[n], n);
+  }
+
+// add new_agents_ to the ResourceManager in parallel
+#pragma omp parallel for schedule(static, 1)
+  for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+    auto* ctxt = bdm_static_cast<InPlaceExecutionContext*>(all_exec_ctxts[i]);
+    int nid = tinfo_->GetNumaNode(i);
+    uint64_t offset = thread_offsets[i] + numa_offsets[nid];
+    rm->AddAgents(nid, offset, ctxt->new_agents_);
+    ctxt->new_agents_.clear();
+  }
+
+  new_agent_map_->DeleteOldCopies();
+  if (rm->GetNumAgents() > new_agent_map_->Size()) {
+    new_agent_map_->Resize(rm->GetNumAgents() * 1.5);
+  }
+}
+
+void InPlaceExecutionContext::RemoveAgentsFromRm(
+    const std::vector<ExecutionContext*>& all_exec_ctxts) {
+  std::vector<decltype(remove_)*> all_remove(tinfo_->GetMaxThreads());
+
+  auto num_removals = 0;
+  for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+    auto* ctxt = bdm_static_cast<InPlaceExecutionContext*>(all_exec_ctxts[i]);
+    all_remove[i] = &ctxt->remove_;
+    num_removals += ctxt->remove_.size();
+  }
+
+  if (num_removals != 0) {
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    rm->RemoveAgents(all_remove);
+
+    for (int i = 0; i < tinfo_->GetMaxThreads(); i++) {
+      auto* ctxt = bdm_static_cast<InPlaceExecutionContext*>(all_exec_ctxts[i]);
+      ctxt->remove_.clear();
+    }
+  }
+}
 // TODO(lukas) Add tests for caching mechanism in ForEachNeighbor*
 
 }  // namespace bdm

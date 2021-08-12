@@ -24,10 +24,16 @@
 
 namespace bdm {
 namespace neuroscience {
+namespace mechanical_interaction_test_detail {
 
-TEST(MechanicalInteraction, StraightxCylinderGrowth) {
+// -----------------------------------------------------------------------------
+void RunStraightCylinderGrowthTest(const char* test_name,
+                                   bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -61,13 +67,25 @@ TEST(MechanicalInteraction, StraightxCylinderGrowth) {
   }
 }
 
-TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
-  auto set_param = [](bdm::Param* param) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, StraightxCylinderGrowth) {
+  RunStraightCylinderGrowthTest(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, StraightxCylinderGrowth_Static) {
+  RunStraightCylinderGrowthTest(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest2(const char* test_name, bool detect_static_agents) {
+  auto set_param = [&](bdm::Param* param) {
     param->unschedule_default_operations = {"mechanical forces"};
     param->Get<Param>()->neurite_max_length = 2;
+    param->detect_static_agents = detect_static_agents;
   };
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME, set_param);
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -102,9 +120,23 @@ TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
   }
 }
 
-TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical) {
+  RunTest2(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, StraightxCylinderGrowthNoMechanical_Static) {
+  RunTest2(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest3(const char* test_name, bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -136,9 +168,23 @@ TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
   }
 }
 
-TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, DiagonalxyCylinderGrowth) {
+  RunTest3(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, DiagonalxyCylinderGrowth_Static) {
+  RunTest3(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest4(const char* test_name, bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -171,9 +217,23 @@ TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
   }
 }
 
-TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth) {
+  RunTest4(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, DiagonalxyzCylinderGrowth_Static) {
+  RunTest4(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest5(const char* test_name, bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -206,12 +266,26 @@ TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
   }
 }
 
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth) {
+  RunTest5(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, DiagonalSpecialDirectionCylinderGrowth_Static) {
+  RunTest5(TEST_NAME, true);
+}
+
 // as the dendrite grows exactly at the center of the second cells
 // growth force/direction and repulsive force/direction are equal
 // so the dendrite stop growing
-TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
+// -----------------------------------------------------------------------------
+void RunTest6(const char* test_name, bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -253,9 +327,24 @@ TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
   }
 }
 
-TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, StraightCylinderGrowthObstacle) {
+  RunTest6(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, StraightCylinderGrowthObstacle_Static) {
+  RunTest6(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunNotStraightCylinderGrowthObstacleTest(const char* test_name,
+                                              bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -297,9 +386,23 @@ TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
   EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
 }
 
-TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle) {
+  RunNotStraightCylinderGrowthObstacleTest(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, NotStraightCylinderGrowthObstacle_Static) {
+  RunNotStraightCylinderGrowthObstacleTest(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest7(const char* test_name, bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -346,9 +449,23 @@ TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
   EXPECT_NEAR(ne_axis[2], ne_axis_2[2], abs_error<double>::value);
 }
 
-TEST(MechanicalInteraction, BranchCylinderGrowth) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, BifurcationCylinderGrowth) {
+  RunTest7(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, BifurcationCylinderGrowth_Static) {
+  RunTest7(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest8(const char* test_name, bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron = new NeuronSoma();
@@ -393,12 +510,24 @@ TEST(MechanicalInteraction, BranchCylinderGrowth) {
   EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
 }
 
-TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
-  auto set_param = [](bdm::Param* param) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, BranchCylinderGrowth) {
+  RunTest8(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, BranchCylinderGrowth_Static) {
+  RunTest8(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest9(const char* test_name, bool detect_static_agents) {
+  auto set_param = [&](bdm::Param* param) {
     param->Get<Param>()->neurite_max_length = 2;
+    param->detect_static_agents = detect_static_agents;
   };
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME, set_param);
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* random = simulation.GetRandom();
 
@@ -456,13 +585,25 @@ TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
   EXPECT_GT(ne2->GetMassLocation()[2], 15);
 }
 
-TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
-  auto set_param = [](bdm::Param* param) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth) {
+  RunTest9(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, BifurcateCylinderRandomGrowth_Static) {
+  RunTest9(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest10(const char* test_name, bool detect_static_agents) {
+  auto set_param = [&](bdm::Param* param) {
     param->Get<Param>()->neurite_max_length = 2;
+    param->detect_static_agents = detect_static_agents;
   };
 
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME, set_param);
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron1 = new NeuronSoma();
@@ -519,9 +660,23 @@ TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
   }
 }
 
-TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, TwoDistinctCylinderEncounter) {
+  RunTest10(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, TwoDistinctCylinderEncounter_Static) {
+  RunTest10(TEST_NAME, true);
+}
+
+// -----------------------------------------------------------------------------
+void RunTest11(const char* test_name, bool detect_static_agents) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->detect_static_agents = detect_static_agents;
+  };
+  Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
 
   NeuronSoma* neuron1 = new NeuronSoma();
@@ -574,5 +729,16 @@ TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
   EXPECT_GT(ne2_position[2], 11);
 }
 
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, TwoCylinderGrowthObstacle) {
+  RunTest11(TEST_NAME, false);
+}
+
+// -----------------------------------------------------------------------------
+TEST(MechanicalInteraction, TwoCylinderGrowthObstacle_Static) {
+  RunTest11(TEST_NAME, true);
+}
+
+}  // end namespace mechanical_interaction_test_detail
 }  // end namespace neuroscience
 }  // end namespace bdm

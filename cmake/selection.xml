@@ -74,6 +74,13 @@
     <class name="bdm::experimental::TimeSeries" />
     <class name="bdm::experimental::TimeSeries::Data" />
     <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
+    <class name="bdm::experimental::Reducer<uint64_t>" />
+    <class name="bdm::experimental::Reducer<double>" />
+    <class name="bdm::experimental::GenericReducer<uint64_t>" />
+    <class name="bdm::experimental::GenericReducer<double>" />
+    <class name="bdm::experimental::GenericReducer<uint64_t, double>" />
+    <class name="bdm::experimental::Counter<>" />
+    <class name="bdm::experimental::Counter<double>" />
     <class name="bdm::experimental::Style" />
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />

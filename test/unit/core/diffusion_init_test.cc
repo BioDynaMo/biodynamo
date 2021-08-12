@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "diffusion_init_test.h"
 #include "core/agent/cell.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
@@ -88,4 +89,44 @@ TEST(DiffusionInitTest, GaussianBand) {
               eps);
 }
 
+// Both internal arrays (c1_ and c2_) need to be initialized to avoid unphysical
+// effects at the boundary after the first internal swap. See PR #199.
+TEST(DiffusionInitTest, InitBothArrays) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = 0;
+    param->max_bound = 250;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+
+  // Create one cell at a random position
+  auto construct = [](const Double3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
+                                       construct);
+
+  // Define the substances in our simulation
+  DiffusionGrid* d_grid = nullptr;
+  d_grid = new TestGrid(kSubstance, "Substance", 0.0, 0.0, 26);
+  rm->AddDiffusionGrid(d_grid);
+
+  // Initialize the substance according to a GaussianBand along the x-axis
+  auto SetValues = [&](double x, double y, double z) { return 0.5; };
+  ModelInitializer::InitializeSubstance(kSubstance, SetValues);
+
+  simulation.GetEnvironment()->Update();
+  simulation.GetScheduler()->Simulate(1);
+
+  // Test if all values in c1_ are 0.5 and if all values in c2_ are the same as
+  // in c1_.
+  auto* test_grid = bdm_static_cast<TestGrid*>(d_grid);
+  EXPECT_TRUE(test_grid->ComapareArrayWithValue(0.5));
+  EXPECT_TRUE(test_grid->CompareArrays());
+}
 }  // namespace bdm

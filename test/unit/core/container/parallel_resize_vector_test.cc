@@ -102,4 +102,48 @@ TEST(ParallelResizeVector, AssignmentOperator) {
   }
 }
 
+TEST(ParallelResizeVector, AssignmentOperator2) {
+  ParallelResizeVector<int> v;
+  EXPECT_EQ(0u, v.size());
+  EXPECT_EQ(0u, v.capacity());
+
+  v.resize(17576, 123);
+
+  ParallelResizeVector<int> copy{};
+  copy = v;
+
+  EXPECT_EQ(17576u, copy.size());
+  EXPECT_EQ(17576u, copy.capacity());
+
+  for (auto el : copy) {
+    EXPECT_EQ(123, el);
+  }
+
+  v.clear();
+  v.resize(10, 124);
+  copy = v;
+
+  EXPECT_EQ(10u, copy.size());
+
+  for (auto el : copy) {
+    EXPECT_EQ(124, el);
+  }
+}
+
+TEST(ParallelResizeVector, AssignmentOperator_Self) {
+  ParallelResizeVector<int> v;
+  EXPECT_EQ(0u, v.size());
+  EXPECT_EQ(0u, v.capacity());
+
+  v.resize(17576, 123);
+  v = v;
+
+  EXPECT_EQ(17576u, v.size());
+  EXPECT_EQ(17576u, v.capacity());
+
+  for (auto el : v) {
+    EXPECT_EQ(123, el);
+  }
+}
+
 }  // namespace bdm
