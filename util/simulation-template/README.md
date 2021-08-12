@@ -13,14 +13,16 @@ the GoogleTest framework. For more information, please consult the appropriate
 [Googletest primer](https://google.github.io/googletest/primer.html).
 
 Whenever you interact with this repository, make sure you have sourced BioDynaMo
-correctly. If it's sourced, you'll see a `[bdm-1.X.YY]` in your terminal. 
+correctly. If it's sourced, you'll see a `[bdm-1.X.YY]` in your terminal 
+(be aware that some terminals might not show it explicityly). 
 Anytime that you open a new terminal, you have to source it again. 
 ```bash
 . <path_to_biodynamo>/build/bin/thisbdm.sh
 ```
 
-In the following, we want to explain how to build, run, and test your 
-simulation.
+You can verify that BioDynaMo has been sourced correctly by running 
+`biodynamo demo`. In the following, we want to explain how to build, run, and 
+test your simulation.
 
 ## 1. Building the simulation and the tests
 
@@ -68,5 +70,5 @@ Option 2:
 
 Option 2:
 ```bash
-cd build && ctest
+cd build && ctest && cd ..
 ```

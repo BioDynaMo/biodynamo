@@ -19,7 +19,10 @@
 // define tests in arbitrary .cc files in the `test/` folder. We propose
 // this file to test the agent. The examples below are not necessary because
 // they are tested in BioDynaMo itself. It should serve as an inspiration for
-// testing user-defined, customn behaviours or similar things.
+// testing user-defined, customn behaviours or similar things. If you wish to
+// add tests for other aspects, you can either add them to the existing
+// test-*.cc files or create a new test-*.cc file in the test/folder. CMake will
+// handle it automatically.
 
 #define TEST_NAME typeid(*this).name()
 
