@@ -22,22 +22,32 @@ from build_command import BuildCommand
 ## the simulation template.
 def TestCommand():
     cwd = os.getcwd()
+    # 1. attempt to change into project director if we are in build
     if cwd.split("/")[-1] == "build":
-        sp.run("ctest", shell=True)
-    else:
-        # If there is no build, we first build the simulation and tests
-        if "build" not in os.listdir(cwd):
-            try:
-                BuildCommand()
-                Print.new_step("Testing")
-            except:
-                Print.error("No build directory found and \"biodynamo build\"")
-                Print.error("failed. Please build project first.")
-                # Clean up if BuildCommand() fails.
-                if "build" in os.listdir(cwd):
-                    shutil.rmtree("build")
-                sys.exit(1)
-        # As soon as there is a build, we use it
+        os.chdir("..")
+    # 2. Call build command to include latest changes of the repository
+    try:
+        BuildCommand()
+    except:
+        Print.error(
+            "The build command failed. Make sure you're in the project folder"
+        )
+        sys.exit(1)
+
+    # 3. Start testing
+    Print.new_step("Testing")
+    # 3.1 change into build directory
+    try:
         os.chdir("build")
+    except:
+        Print.error("Failed to find build directory.")
+        sys.exit(1)
+    # 3.2 call "ctest"
+    try:
         sp.run("ctest", shell=True)
-        os.chdir(cwd)
+    except:
+        Print.error("Calling the ctest test command failed.")
+        sys.exit(1)
+
+    # 4. go back to initial folder.
+    os.chdir(cwd)
