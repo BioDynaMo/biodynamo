@@ -115,6 +115,7 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
+option(mfem      "Build MFEM for PDE support." ON)
 
 if(APPLE)
   set(CMAKE_BDM_PVVERSION "5.9")
@@ -443,6 +444,40 @@ set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_INSTALL_LIBDIR}/
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include)
 link_directories(${CMAKE_INSTALL_LIBDIR})
 set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${OPTIM_LIBNAME})
+
+## -------------------------- USE MFEM -----------------------------------------
+if (mfem)
+  # Use MFEM in this project.
+  # Import MFEM. The following variables can be used to help CMake find MFEM:
+  #  * MFEM_DIR - absolute path to the MFEM build or install prefix.
+  #  * mfem_DIR - absolute path to where MFEMConfig.cmake is.
+  message(NOTICE "MFEM option active. MFEM support is experimental at this " 
+                  "stage.")
+  message(STATUS "Looking for MFEM ...")
+  #set(MFEM_DIR "" CACHE PATH "Path to the MFEM build or install prefix.")
+  if (MFEM_DIR)
+    find_package(mfem REQUIRED NAMES MFEM HINTS "${MFEM_DIR}"
+    "${MFEM_DIR}/lib/cmake/mfem" NO_DEFAULT_PATH)
+  else()
+    find_package(mfem REQUIRED NAMES MFEM)
+  endif()
+  message(STATUS "Found MFEM config in: ${mfem_DIR} (version ${MFEM_VERSION})")
+  # Use the same C++ compiler as MFEM. This is needed when MFEM was built using
+  # an MPI wrapper and we do not have explicitly the MPI compile and link flags.
+  if (NOT CMAKE_CXX_COMPILER AND MFEM_CXX_COMPILER)
+    message(WARNING "MFEM is changing default compiler.")
+    message(STATUS "MFEM compiler is: ${MFEM_CXX_COMPILER}")
+    message(STATUS "BioDynaMo compiler is: ${CMAKE_CXX_COMPILER}")
+    message(STATUS "Setting BioDynaMo to MFEM compiler")
+    set(CMAKE_CXX_COMPILER "${MFEM_CXX_COMPILER}")
+  endif()
+
+  message(STATUS "MFEM include dir is: ${MFEM_INCLUDE_DIRS}")
+  include_directories(${MFEM_INCLUDE_DIRS})
+  message(STATUS "MFEM library is: ${MFEM_LIBRARIES}")
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${MFEM_LIBRARIES})
+
+endif(mfem)
 
 # --------------------Copy the launcher script ---------------------------------
 configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
