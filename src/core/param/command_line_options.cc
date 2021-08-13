@@ -112,7 +112,7 @@ void CommandLineOptions::AddCoreOptions() {
 
 void CommandLineOptions::ExtractSimulationName(const char* path) {
   string s(path);
-  auto pos = s.find_last_of("/");
+  auto pos = s.find_last_of('/');
   if (pos == std::string::npos) {
     sim_name_ = s;
   } else {

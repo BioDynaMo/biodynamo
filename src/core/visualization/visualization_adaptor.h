@@ -23,7 +23,7 @@ class VisualizationAdaptor {
  public:
   VisualizationAdaptor() {}
 
-  static VisualizationAdaptor* Create(std::string adaptor);
+  static VisualizationAdaptor* Create(const std::string& adaptor);
 
   virtual ~VisualizationAdaptor() {}
 

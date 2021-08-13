@@ -16,6 +16,7 @@
 #define CORE_OPERATION_OP_TIMER_H_
 
 #include <string>
+#include <utility>
 #include "core/simulation.h"
 #include "core/util/timing.h"
 
@@ -25,9 +26,9 @@ namespace bdm {
 template <typename TOp>
 class OpTimer {
  public:
-  explicit OpTimer(std::string timer_msg) : timer_msg_(timer_msg) {}
+  explicit OpTimer(std::string timer_msg) : timer_msg_(std::move(timer_msg)) {}
   explicit OpTimer(std::string timer_msg, const TOp& op)
-      : timer_msg_(timer_msg), operation_(op) {}
+      : timer_msg_(std::move(timer_msg)), operation_(op) {}
 
   template <typename Container>
   void operator()(Container* cells, uint16_t numa_node, uint16_t type_idx) {

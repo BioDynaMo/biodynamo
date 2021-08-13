@@ -30,7 +30,7 @@ class Secretion : public Behavior {
 
  public:
   Secretion() {}
-  explicit Secretion(std::string substance, double quantity = 1)
+  explicit Secretion(const std::string& substance, double quantity = 1)
       : substance_(substance), quantity_(quantity) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
         substance);

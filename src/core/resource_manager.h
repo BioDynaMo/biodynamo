@@ -57,7 +57,7 @@ class ResourceManager {
 
   virtual ~ResourceManager();
 
-  ResourceManager& operator=(ResourceManager&& other) {
+  ResourceManager& operator=(ResourceManager&& other) noexcept {
     if (agents_.size() != other.agents_.size()) {
       Log::Fatal(
           "Restored ResourceManager has different number of NUMA nodes.");
@@ -153,7 +153,7 @@ class ResourceManager {
   /// Return the diffusion grid which holds the substance of specified name
   /// Caution: using this function in a tight loop will result in a slow
   /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
-  DiffusionGrid* GetDiffusionGrid(std::string substance_name) const {
+  DiffusionGrid* GetDiffusionGrid(const std::string& substance_name) const {
     for (auto& el : diffusion_grids_) {
       auto& dg = el.second;
       if (dg->GetSubstanceName() == substance_name) {
