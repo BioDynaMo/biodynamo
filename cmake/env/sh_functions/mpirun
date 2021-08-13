@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 mpirun() {
-  /usr/bin/mpirun -x "OMP_PROC_BIND=false" --use-hwthread-cpus --bind-to none "$@"
+  mpirun -x "OMP_PROC_BIND=false" --use-hwthread-cpus --bind-to none "$@"
 }

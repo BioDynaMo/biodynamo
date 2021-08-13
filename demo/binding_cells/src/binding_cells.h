@@ -85,7 +85,7 @@ inline void Simulate(int argc, const char** argv, TimeSeries* result,
   };
   Simulation simulation(argc, argv, set_param);
 
-  // get a pointer to an instance of SimParam
+  // Get a pointer to an instance of SimParam
   auto* sparam = simulation.GetParam()->Get<SimParam>();
 
   // T-Cells contain a TH2I histogram object that is not thread-safe by default,

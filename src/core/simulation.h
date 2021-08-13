@@ -21,8 +21,7 @@
 #include "core/agent/agent_uid.h"
 #include "core/gpu/opencl_state.h"
 #include "core/memory/memory_manager.h"
-#include "core/multi_simulation/util.h"
-#include "core/agent/agent_uid.h"
+#include "core/multi_simulation/mpi_helper.h"
 #include "core/util/random.h"
 #include "core/util/root.h"
 

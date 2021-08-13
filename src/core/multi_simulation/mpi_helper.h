@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_MULTI_SIMULATION_UTIL_H_
-#define CORE_MULTI_SIMULATION_UTIL_H_
+#ifndef CORE_MULTI_SIMULATION_MPI_HELPER_H_
+#define CORE_MULTI_SIMULATION_MPI_HELPER_H_
 
 #include <sstream>
 #include <string>
@@ -79,4 +79,4 @@ T* MPI_Recv_Obj_ROOT(int size, int source, int tag,
 
 #endif  // USE_MPI
 
-#endif  // CORE_MULTI_SIMULATION_UTIL_H_
+#endif  // CORE_MULTI_SIMULATION_MPI_HELPER_H_

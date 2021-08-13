@@ -1,32 +1,32 @@
 {
   "bdm::Param": {
     "simulation_time_step" : 1.0,
-    "visualize_sim_objects_": {
+    "visualize_sim_objects": {
       "Cell": ["type", "some-dm"]
     }
   },
   "bdm::OptimizationParam": {
     "algorithm" : "ParameterSweep",
-    "opt_params_" : [
+    "params" : [
       {
         "_typename": "bdm::RangeParam",
-        "param_name_" : "bdm::SimParam::monocyte_diameter",
-        "lower_bound_" : 1.0,
-        "upper_bound_" : 10.0,
-        "stride_" : 1
+        "param_name" : "bdm::SimParam::monocyte_diameter",
+        "lower_bound" : 1.0,
+        "upper_bound" : 10.0,
+        "stride" : 1
       },
       {
         "_typename": "bdm::SetParam",
-        "param_name_" : "bdm::SimParam::t_cell_walkspeed",
-        "values_" : [0, 8, 13, 42]
+        "param_name" : "bdm::SimParam::t_cell_walkspeed",
+        "values" : [0, 8, 13, 42]
       },
       {
         "_typename": "bdm::LogRangeParam",
-        "param_name_" : "bdm::SimParam::stokes_u",
-        "base_" : 10,
-        "lower_bound_" : -10.0,
-        "upper_bound_" : 1.0,
-        "stride_" : 1
+        "param_name" : "bdm::SimParam::stokes_u",
+        "base" : 10,
+        "lower_bound" : -10.0,
+        "upper_bound" : 1.0,
+        "stride" : 1
       }
     ]
   }

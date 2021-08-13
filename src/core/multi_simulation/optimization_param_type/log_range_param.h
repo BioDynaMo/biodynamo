@@ -33,7 +33,6 @@ struct LogRangeParam : public OptimizationParamType {
         upper_bound(max),
         stride(stride) {
     Validate();
-    num_elements = std::round(((upper_bound - lower_bound) + stride) / stride);
   };
 
   void Validate() const override {
@@ -57,7 +56,9 @@ struct LogRangeParam : public OptimizationParamType {
 
   // Returns the number of discrete values that this range contains (including
   // the `lower_bound` and `upper_bound` values)
-  uint32_t GetNumElements() const override { return num_elements; }
+  uint32_t GetNumElements() const override {
+    return std::round(((upper_bound - lower_bound) + stride) / stride);
+  }
 
   // The base value
   double base = 10;
@@ -67,8 +68,6 @@ struct LogRangeParam : public OptimizationParamType {
   double upper_bound = 0;
   // The stride
   double stride = 1;
-  // The number of elements covered by this range
-  uint32_t num_elements;
   BDM_CLASS_DEF_OVERRIDE(LogRangeParam, 1);
 };
 

@@ -246,9 +246,6 @@ int Worker::Start() {
           Timing t("MPI_CALL", &ta_);
           params = MPI_Recv_Obj_ROOT<Param>(size, kMaster, Tag::kTask);
         }
-        // std::stringstream msg;
-        // msg << "Now working on parameters: " << *params;
-        // Log(msg.str());
         TimeSeries result;
         {
           Timing sim("SIMULATE", &ta_);
@@ -267,7 +264,6 @@ int Worker::Start() {
         MPI_Send_Obj_ROOT<TimingAggregator>(&ta_, kMaster, Tag::kKill);
         return 0;
       default:
-        // TODO(ahmad): Should we stop or do something else?
         Log("Received unknown message tag. Stopping...");
         return 1;
     }

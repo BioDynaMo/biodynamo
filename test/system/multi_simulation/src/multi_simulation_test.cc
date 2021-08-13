@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) The BioDynaMo Project.
-// All Rights Reserved.
+// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,9 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "binding_cells.h"
+#include <omp.h>
+
+#include "multi_simulation_test.h"
 #include "core/multi_simulation/multi_simulation.h"
-#include "core/param/param_group.h"
 
 using namespace bdm;
 
