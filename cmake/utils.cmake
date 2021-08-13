@@ -454,6 +454,10 @@ function(add_bdm_packages_properties)
             DESCRIPTION "Open Source widget toolkit for creating user interfaces. It is needed by Paraview. (OPTIONAL)"
             TYPE REQUIRED
             )
+    SET_PACKAGE_PROPERTIES(mfem PROPERTIES
+            DESCRIPTION "Open Source C++ software for finite element methods (OPTIONAL, EXPERIMENTAL)"
+            TYPE REQUIRED
+            )
 
 endfunction()
 
