@@ -159,7 +159,9 @@ TEST_F(ParaviewAdaptorTest, GenerateParaviewState) {
 )STR";
 
   std::ofstream ofs;
-  ofs.open(kSimulationInfoJson);
+  std::string json_fn =
+      Concat(simulation.GetOutputDir(), "/simulation_info.json");
+  ofs.open(json_fn);
   ofs << empty_json;
   ofs.close();
 

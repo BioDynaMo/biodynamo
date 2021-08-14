@@ -31,18 +31,14 @@ namespace bdm {
 /// with "my_task_name"
 class VTuneTask {
  public:
-  explicit VTuneTask(std::string task_name) {
+  explicit VTuneTask(const std::string& task_name) {
     domain_ = __itt_domain_create("BDMTraces.MyDomain");
     task_ = __itt_string_handle_create(task_name.c_str());
   }
 
-  void Start() {
-    __itt_task_begin(domain_, __itt_null, __itt_null, task_);
-  }
+  void Start() { __itt_task_begin(domain_, __itt_null, __itt_null, task_); }
 
-  void Stop() {
-    __itt_task_end(domain_);
-  }
+  void Stop() { __itt_task_end(domain_); }
 
  private:
   __itt_domain* domain_;

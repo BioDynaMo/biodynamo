@@ -548,6 +548,18 @@ void Simulation::InitializeOutputDir() {
   } else {
     output_dir_ = Concat(param_->output_dir, "/", unique_name_);
   }
+  // If we do not remove the output directory, we add a timestamp to the
+  // output directory to avoid overriding previous results.
+  if (!param_->remove_output_dir_contents) {
+    time_t rawtime;
+    struct tm* timeinfo;
+    char buffer[80];
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "/%Y-%m-%d-%H:%M:%S", timeinfo);
+    output_dir_ += buffer;
+  }
+
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
     Log::Fatal("Simulation::InitializeOutputDir",
                "Failed to make output directory ", output_dir_);
@@ -556,13 +568,13 @@ void Simulation::InitializeOutputDir() {
     if (param_->remove_output_dir_contents) {
       RemoveDirectoryContents(output_dir_);
     } else {
-      Log::Warning(
+      // We throw a fatal because it will override previous results from a
+      // possibly expensive simulation. This should not happen unintentionally.
+      Log::Fatal(
           "Simulation::InitializeOutputDir", "Output dir (", output_dir_,
-          ") is not empty. Files will be overriden. This could cause "
-          "inconsistent state of (e.g. visualization files). Consider removing "
-          "all contents "
-          "prior to running a simulation. Have a look at "
-          "Param::remove_output_dir_contents to remove files automatically.");
+          ") is not empty. Previous result files would be overriden. Abort."
+          "Please set Param::remove_output_dir_contents to true to remove files"
+          " automatically or clear the output directory by hand.");
     }
   }
 }

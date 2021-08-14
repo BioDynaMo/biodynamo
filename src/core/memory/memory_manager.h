@@ -130,7 +130,7 @@ class PoolAllocator {
   PoolAllocator(std::size_t size, uint64_t size_n_pages, double growth_rate,
                 uint64_t max_mem_per_thread_factor);
 
-  PoolAllocator(PoolAllocator&& other);
+  PoolAllocator(PoolAllocator&& other) noexcept;
   PoolAllocator(const PoolAllocator& other) = delete;
 
   ~PoolAllocator();

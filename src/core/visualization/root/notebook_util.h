@@ -15,6 +15,7 @@
 #define CORE_VISUALIZATION_ROOT_NOTEBOOK_UTIL_H_
 
 #include <string>
+#include <utility>
 
 #include "core/simulation.h"
 #include "core/visualization/root/adaptor.h"
@@ -29,7 +30,8 @@ inline void VisualizeInNotebook(size_t w = 300, size_t h = 300,
   // Force an update of the visualization engine
   sim->GetScheduler()->GetRootVisualization()->Visualize(
       param->visualization_interval);
-  sim->GetScheduler()->GetRootVisualization()->DrawInCanvas(w, h, opt);
+  sim->GetScheduler()->GetRootVisualization()->DrawInCanvas(w, h,
+                                                            std::move(opt));
 }
 
 }  // namespace bdm

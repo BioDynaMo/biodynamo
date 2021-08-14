@@ -63,7 +63,7 @@ class GeneRegulation : public Behavior {
   ///              }
   ///
   /// \param initial_concentration
-  void AddGene(std::function<double(double, double)> first_derivative,
+  void AddGene(const std::function<double(double, double)>& first_derivative,
                double initial_concentration) {
     first_derivatives_.push_back(first_derivative);
     concentrations_.push_back(initial_concentration);

@@ -98,9 +98,9 @@ class TimeSeries {
 
   TimeSeries();
   TimeSeries(const TimeSeries& other);
-  TimeSeries(TimeSeries&& other);
+  TimeSeries(TimeSeries&& other) noexcept;
 
-  TimeSeries& operator=(TimeSeries&& other);
+  TimeSeries& operator=(TimeSeries&& other) noexcept;
   TimeSeries& operator=(const TimeSeries& other);
 
   /// Adds a new collector which is executed at each iteration.
