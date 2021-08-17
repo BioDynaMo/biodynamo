@@ -1,34 +1,75 @@
 #ifndef MFEM_MOL_H_
 #define MFEM_MOL_H_
 
+#include <vector>
+#include "core/pde/timedependent_operators/conduction_operator.h"
+#include "core/pde/timedependent_operators/diffusion_operator.h"
 #include "mfem.hpp"
 
 namespace bdm {
 namespace experimental {
 
+enum MFEMODESolver {
+  kBackwardEulerSolver,
+  kSDIRK23Solver2,
+  kSDIRK33Solver,
+  kForwardEulerSolver,
+  kRK2Solver,
+  kRK3SSPSolver,
+  kRK4Solver,
+  kGeneralizedAlphaSolver,
+  kImplicitMidpointSolver,
+  kSDIRK23Solver1,
+  kSDIRK34Solver
+};
+
+enum PDEOperator { kDiffusion, kDiffusionWithFunction, kConduction };
+
 class MethodOfLineSolver {
  protected:
-  /// The underlying mesh on which we solve the PDE
-  mfem::Mesh* mesh_;
-  /// The ODE solver used to integrate in time.
-  mfem::ODESolver* ode_solver_;
   /// Arbitrary order H1-conforming (continuous) finite elements. (quote MFEM)
   mfem::H1_FECollection fe_coll_;
+  /// The underlying mesh on which we solve the PDE
+  mfem::Mesh* mesh_;
   /// Class FiniteElementSpace - responsible for providing FEM view of the
   /// mesh, mainly managing the set of degrees of freedom. (quote MFEM)
   mfem::FiniteElementSpace fespace_;
   /// The solution computed from the PDE.
   mfem::GridFunction u_gf_;
+  /// The ODE solver used to integrate in time.
+  mfem::ODESolver* ode_solver_;
   /// Vector representation of the PDE solution.
   mfem::Vector u_;
+  /// Operator descibing the FE discretization of the MOL method.
+  MolOperator* operator_;
+  /// Function to initialize Grid values
+  std::function<double(const mfem::Vector&)> InitialGridValues_;
+  /// Vector for numeric constants that we feed to the constructor of the
+  /// operators.
+  std::vector<double> numeric_operator_parameters_;
+  /// Vector for functions that we feed to the constructor of the
+  /// operators.
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions_;
+  /// Value to store the current time
+  double t_;
 
   /// Internally used function for initilization.
   void Initialize();
   /// Function used to set the boundaries conditions.
   void SetBoundaryConditions();
+  /// Function to set the ODESolver. See enum MFEMODESolver for options.
+  void SetODESolver(int solver_id);
+  /// Set the operator, e.g. define the PDE to solve.
+  void SetOperator(int operator_id);
 
  public:
-  MethodOfLineSolver(int order, int dimension);
+  MethodOfLineSolver(
+      mfem::Mesh* mesh, int order, int dimension, int ode_solver_id,
+      int pde_oper_id,
+      std::function<double(const mfem::Vector&)> InitialGridValues,
+      std::vector<double> numeric_operator_parameters,
+      std::vector<std::function<double(const mfem::Vector&)>>
+          operator_functions);
   ~MethodOfLineSolver();
   // No copy (assignment) as of now.
   MethodOfLineSolver(const MethodOfLineSolver&) = delete;
@@ -42,8 +83,19 @@ class MethodOfLineSolver {
   /// Export the continuum model to paraview.
   void Visualize();
 
+  /// Update the grid function. The ODE procedure operates on the coefficient
+  /// vector `u_` and updates it. Before making calls to `u_gf_`, this routine
+  /// must be called to update it.
+  void UpdateGridFunction();
+
   /// Get the value of the GridFunction solution at a certain position.
   double GetSolutionAtPosition();
+
+  /// Set the operator for MOL, e.g. define the equation.
+  void SetOperator(MolOperator* oper);
+
+  /// Get reference to fespace_, needed for custom operator
+  mfem::FiniteElementSpace& GetFESpace() { return fespace_; }
 };
 
 }  // namespace experimental
