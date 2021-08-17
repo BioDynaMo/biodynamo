@@ -117,9 +117,12 @@ void MethodOfLineSolver::SetODESolver(int solver_id) {
 }
 
 void MethodOfLineSolver::SetOperator(int operator_id) {
+  if (operator_ != nullptr) {
+    delete operator_;
+  }
   switch (operator_id) {
     case PDEOperator::kDiffusion:
-      if (numeric_operator_parameters_.size() != 1) {
+      if (numeric_operator_parameters_.size() < 1) {
         Log::Fatal(
             "MethodOfLineSolver::SetOperator",
             "Wrong number of numerical parameters for DiffusionOperator.",
@@ -129,7 +132,7 @@ void MethodOfLineSolver::SetOperator(int operator_id) {
           new DiffusionOperator(fespace_, numeric_operator_parameters_[0]);
       break;
     case PDEOperator::kDiffusionWithFunction:
-      if (operator_functions_.size() != 1) {
+      if (operator_functions_.size() < 1) {
         Log::Fatal("MethodOfLineSolver::SetOperator",
                    "Wrong number of functions for DiffusionOperator.",
                    "\nExpected: 1, Acutal: ", operator_functions_.size());
@@ -137,7 +140,7 @@ void MethodOfLineSolver::SetOperator(int operator_id) {
       operator_ = new DiffusionOperator(fespace_, operator_functions_[0]);
       break;
     case PDEOperator::kConduction:
-      if (numeric_operator_parameters_.size() != 2) {
+      if (numeric_operator_parameters_.size() < 2) {
         Log::Fatal(
             "MethodOfLineSolver::SetOperator",
             "Wrong number of numerical parameters for ConductionOperator.",

@@ -72,10 +72,6 @@ class MethodOfLineSolver {
   void Initialize();
   /// Function used to set the boundaries conditions.
   void SetBoundaryConditions();
-  /// Function to set the ODESolver. See enum MFEMODESolver for options.
-  void SetODESolver(int solver_id);
-  /// Set the operator, e.g. define the PDE to solve.
-  void SetOperator(int operator_id);
 
  public:
   MethodOfLineSolver(
@@ -91,6 +87,11 @@ class MethodOfLineSolver {
   MethodOfLineSolver& operator=(const MethodOfLineSolver&) = delete;
   MethodOfLineSolver(MethodOfLineSolver&&) = delete;
   MethodOfLineSolver& operator=(MethodOfLineSolver&&) = delete;
+
+  /// Function to set the ODESolver. See enum MFEMODESolver for options.
+  void SetODESolver(int solver_id);
+  /// Set the operator, e.g. define the PDE to solve.
+  void SetOperator(int operator_id);
 
   /// Execute one ODE timestep `dt`, e.g. compute `u(t+dt)` from `u(t)`.
   void Step(double dt);
@@ -111,6 +112,12 @@ class MethodOfLineSolver {
 
   /// Get reference to fespace_, needed for custom operator
   mfem::FiniteElementSpace& GetFESpace() { return fespace_; }
+
+  // Get the ODESolver associated to the MOL solver
+  mfem::ODESolver* GetODESolver() { return ode_solver_; }
+
+  // Get the MOLOperator associated to the MOL solver
+  MolOperator* GetMolOperator() { return operator_; }
 };
 
 }  // namespace experimental
