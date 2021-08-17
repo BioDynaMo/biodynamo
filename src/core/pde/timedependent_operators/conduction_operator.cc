@@ -1,3 +1,4 @@
+#ifdef USE_MFEM
 #include "conduction_operator.h"
 
 namespace bdm {
@@ -28,3 +29,5 @@ void ConductionOperator::SetParameters(const mfem::Vector &u) {
 
 }  // namespace experimental
 }  // namespace bdm
+
+#endif  // USE_MFEM

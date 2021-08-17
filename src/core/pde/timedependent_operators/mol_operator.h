@@ -1,3 +1,4 @@
+#ifdef USE_MFEM
 #ifndef MOL_OPERATOR_H
 #define MOL_OPERATOR_H
 
@@ -102,3 +103,4 @@ class MolOperator : public mfem::TimeDependentOperator {
 }  // namespace bdm
 
 #endif  // MOL_OPERATOR_H
+#endif  // MFEM

@@ -1,3 +1,4 @@
+#ifdef USE_MFEM
 #ifndef MFEM_MOL_H_
 #define MFEM_MOL_H_
 
@@ -102,3 +103,4 @@ class MethodOfLineSolver {
 }  // namespace bdm
 
 #endif  // MFEM_MOL_H_
+#endif  // USE_MFEM

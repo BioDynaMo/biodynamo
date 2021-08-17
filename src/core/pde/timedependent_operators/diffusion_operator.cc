@@ -1,3 +1,4 @@
+#ifdef USE_MFEM
 #include "diffusion_operator.h"
 #include <stdexcept>
 
@@ -51,3 +52,5 @@ void DiffusionOperator::SetParameters(const mfem::Vector &u) {
 
 }  // namespace experimental
 }  // namespace bdm
+
+#endif  // USE_MFEM
