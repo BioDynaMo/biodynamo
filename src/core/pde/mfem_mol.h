@@ -118,6 +118,9 @@ class MethodOfLineSolver {
 
   // Get the MOLOperator associated to the MOL solver
   MolOperator* GetMolOperator() { return operator_; }
+
+  // Get simulated time
+  double GetSimTime() { return t_; }
 };
 
 }  // namespace experimental
