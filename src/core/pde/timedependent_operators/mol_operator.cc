@@ -1,4 +1,5 @@
 #include "mol_operator.h"
+#include "core/util/log.h"
 
 namespace bdm {
 namespace experimental {
@@ -27,6 +28,11 @@ void MolOperator::ImplicitSolve(const double dt, const mfem::Vector &u,
   Kmat_.Mult(u, z_);
   z_.Neg();
   T_solver_.Mult(z_, du_dt);
+}
+
+void MolOperator::SetParameters(const mfem::Vector &u) {
+  Log::Fatal("SetParameters", "Function is only defined in derived classes. ",
+             "Please consider using them.");
 }
 
 MolOperator::~MolOperator() {

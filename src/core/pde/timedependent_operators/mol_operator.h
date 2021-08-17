@@ -93,7 +93,7 @@ class MolOperator : public mfem::TimeDependentOperator {
   /// Here you must sepcify how to compute the matrix `K` for each timestep. If
   /// the matrix `K` does not change over time, add an additional check to your
   /// derived class such that it only computes K in the first step.
-  virtual void SetParameters(const mfem::Vector &u) = 0;
+  virtual void SetParameters(const mfem::Vector &u);
 
   ~MolOperator() override;
 };
