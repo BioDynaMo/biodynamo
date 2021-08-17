@@ -1,3 +1,4 @@
+#ifdef USE_MFEM
 #include "mol_operator.h"
 #include "core/util/log.h"
 
@@ -43,3 +44,5 @@ MolOperator::~MolOperator() {
 
 }  // namespace experimental
 }  // namespace bdm
+
+#endif  // USE_MFEM

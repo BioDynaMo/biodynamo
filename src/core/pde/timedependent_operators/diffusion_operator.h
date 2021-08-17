@@ -1,3 +1,4 @@
+#ifdef USE_MFEM
 #ifndef DIFFUSION_OPERATOR_H
 #define DIFFUSION_OPERATOR_H
 
@@ -50,3 +51,4 @@ class DiffusionOperator : public MolOperator {
 }  // namespace bdm
 
 #endif  // DIFFUSION_OPERATOR_H
+#endif  // USE_MFEM

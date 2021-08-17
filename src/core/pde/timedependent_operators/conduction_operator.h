@@ -1,3 +1,4 @@
+#ifdef USE_MFEM
 #ifndef CONDUCTION_OPERATOR_H
 #define CONDUCTION_OPERATOR_H
 
@@ -35,3 +36,4 @@ class ConductionOperator : public MolOperator {
 }  // namespace bdm
 
 #endif  // CONDUCTION_OPERATOR_H
+#endif  // USE_MFEM

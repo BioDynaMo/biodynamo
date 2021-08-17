@@ -476,7 +476,7 @@ if (mfem)
   include_directories(${MFEM_INCLUDE_DIRS})
   message(STATUS "MFEM library is: ${MFEM_LIBRARIES}")
   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${MFEM_LIBRARIES})
-
+  add_definitions("-DUSE_MFEM")
 endif(mfem)
 
 # --------------------Copy the launcher script ---------------------------------

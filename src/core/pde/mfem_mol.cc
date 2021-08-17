@@ -1,3 +1,4 @@
+#ifdef USE_MFEM
 #include "mfem_mol.h"
 #include "core/util/log.h"
 #include "mfem.hpp"
@@ -173,3 +174,5 @@ double MethodOfLineSolver::GetSolutionAtPosition() { return 0.0; }
 
 }  // namespace experimental
 }  // namespace bdm
+
+#endif  // USE_MFEM
