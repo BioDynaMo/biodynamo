@@ -42,7 +42,6 @@ MethodOfLineSolver::MethodOfLineSolver(
 }
 
 MethodOfLineSolver::~MethodOfLineSolver() {
-  delete mesh_;
   delete ode_solver_;
   delete operator_;
 }
