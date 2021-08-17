@@ -32,10 +32,6 @@ mfem::Mesh* CreateMesh() {
   mesh->AddVertex(mfem::Vertex(1., 0., 1.)());
   mesh->AddVertex(mfem::Vertex(1., 1., 1.)());
   mesh->AddVertex(mfem::Vertex(0., 1., 1.)());
-  // mfem::Mesh mesh =
-  //     mfem::Mesh::MakeCartesian3D(10, 10, 10,
-  //     mfem::Element::Type::TETRAHEDRON);
-  // mfem::Mesh* mesh_ptr = &mesh;
   return mesh;
 }
 
