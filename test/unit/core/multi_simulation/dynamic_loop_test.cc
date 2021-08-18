@@ -21,6 +21,7 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
+namespace experimental {
 
 TEST(DynamicLoopTest, DynamicLoop) {
   std::vector<OptimizationParamType*> ranges = {
@@ -54,4 +55,5 @@ TEST(DynamicLoopTest, DynamicLoop) {
   DynamicNestedLoop(ranges, lambda);
 }
 
+}  // namespace experimental
 }  // namespace bdm

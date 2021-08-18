@@ -37,6 +37,7 @@ using std::to_string;
 using std::vector;
 
 namespace bdm {
+namespace experimental {
 
 static const unsigned int kMaster = 0;
 
@@ -115,6 +116,7 @@ class Worker {
   TimingAggregator ta_;
 };
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // USE_MPI

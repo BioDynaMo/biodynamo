@@ -23,6 +23,7 @@
 using nlohmann::json;
 
 namespace bdm {
+namespace experimental {
 
 /// Perform an exhaustive sweep across specified parameters
 struct TestAlgorithm : public Algorithm {
@@ -82,4 +83,5 @@ struct TestAlgorithm : public Algorithm {
 
 BDM_REGISTER_ALGO(TestAlgorithm);
 
+}  // namespace experimental
 }  // namespace bdm

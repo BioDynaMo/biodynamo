@@ -19,6 +19,7 @@
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
+namespace experimental {
 
 // -----------------------------------------------------------------------------
 TEST(AlgorithmTest, Registry) {
@@ -58,4 +59,5 @@ TEST(AlgorithmTest, UnregisteredAlgorithm) {
       ".*Algorithm not found in registry*");
 }
 
+}  // namespace experimental
 }  // namespace bdm

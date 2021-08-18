@@ -30,6 +30,7 @@ using std::to_string;
 using std::vector;
 
 namespace bdm {
+namespace experimental {
 
 /// The Master in a Master-Worker design pattern. Maintains the status of all
 /// the workers in the MPI runtime.
@@ -272,6 +273,7 @@ int Worker::Start() {
 
 void Worker::IncrementTaskCount() { task_count_++; }
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // USE_MPI

@@ -7,7 +7,6 @@
   <exclusion>
     <class pattern="bdm::OpenCLState*"/>
     <class name="bdm::ParallelResizeVector<pair<unsigned int,const bdm::UniformGridEnvironment::Box*> >" />
-    <class name="bdm::ErrorComputation" />
     <class name="bdm::OptimizationParam" />
     <class name="bdm::OptimizationParamType"/>
     <class name="bdm::SetParam"/>

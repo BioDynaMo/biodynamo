@@ -22,6 +22,7 @@
 #include "core/param/param.h"
 
 namespace bdm {
+namespace experimental {
 
 class MultiSimulationManager;
 
@@ -80,6 +81,7 @@ inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params) {
   return ret;
 }
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // CORE_MULTI_SIMULATION_ALGORITHM_ALGORITHM_REGISTRY_H_

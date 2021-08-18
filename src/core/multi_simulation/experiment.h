@@ -25,6 +25,7 @@
 #include "core/param/param.h"
 
 namespace bdm {
+namespace experimental {
 
 inline double Experiment(
     const std::function<void(Param*, TimeSeries*)>& dispatch_to_worker,
@@ -54,6 +55,7 @@ inline double Experiment(
   return err;
 }
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // CORE_MULTI_SIMULATION_EXPERIMENT_H_

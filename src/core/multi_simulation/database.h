@@ -18,6 +18,7 @@
 #include "core/analysis/time_series.h"
 
 namespace bdm {
+namespace experimental {
 
 using experimental::TimeSeries;
 
@@ -34,6 +35,7 @@ class Database {
   Database() {}
 };
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // CORE_MULTI_SIMULATION_DATABASE_H_

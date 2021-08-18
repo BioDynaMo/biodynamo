@@ -22,6 +22,7 @@
 #include "core/multi_simulation/optimization_param_type/optimization_param_type.h"
 
 namespace bdm {
+namespace experimental {
 
 // Emulates dynamic nested loops. The `action` gets back a vector of integers
 // that represent the iteration of each respective `OptimizationParamType`
@@ -59,6 +60,7 @@ inline void DynamicNestedLoop(
   }
 }
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // CORE_MULTI_SIMULATION_DYNAMIC_LOOP_H_

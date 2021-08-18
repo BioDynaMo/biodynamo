@@ -25,6 +25,7 @@
 using nlohmann::json;
 
 namespace bdm {
+namespace experimental {
 
 struct ParticleSwarm : public Algorithm {
   BDM_ALGO_HEADER();
@@ -131,8 +132,9 @@ struct ParticleSwarm : public Algorithm {
 
     std::cout << "Best params = " << best_params << std::endl;
   };
-};  // namespace bdm
+};
 
 BDM_REGISTER_ALGO(ParticleSwarm);
 
+}  // namespace experimental
 }  // namespace bdm

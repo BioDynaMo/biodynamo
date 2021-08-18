@@ -16,6 +16,7 @@
 #include "core/util/log.h"
 
 namespace bdm {
+namespace experimental {
 
 AlgorithmRegistry::~AlgorithmRegistry() {
   for (auto &pair : algorithms_) {
@@ -31,7 +32,7 @@ AlgorithmRegistry *AlgorithmRegistry::GetInstance() {
 Algorithm *AlgorithmRegistry::GetAlgorithm(const std::string &algo_name) {
   if (algo_name.empty()) {
     Log::Warning("AlgorithmRegistry::GetAlgorithm",
-               "No algorithm name defined in parameter configuration.");
+                 "No algorithm name defined in parameter configuration.");
     return nullptr;
   }
   auto search = algorithms_.find(algo_name);
@@ -54,4 +55,5 @@ bool AlgorithmRegistry::AddAlgorithm(const std::string &algo_name,
 
 AlgorithmRegistry::AlgorithmRegistry() {}
 
+}  // namespace experimental
 }  // namespace bdm

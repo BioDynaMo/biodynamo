@@ -45,6 +45,6 @@ int main(int argc, const char** argv) {
   // Generate the analytical data
   auto analytical = GetAnalyticalResults(&clo);
 
-  MultiSimulation pe(argc, argv, analytical);
+  experimental::MultiSimulation pe(argc, argv, analytical);
   return pe.Execute(Simulate);
 }

@@ -30,6 +30,7 @@
 #include "core/util/root.h"
 
 namespace bdm {
+namespace experimental {
 
 #ifdef USE_MPI
 
@@ -75,6 +76,7 @@ T* MPI_Recv_Obj_ROOT(int size, int source, int tag,
 
 #endif  // __ROOTCLING__
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // USE_MPI

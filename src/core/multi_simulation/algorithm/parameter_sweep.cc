@@ -24,6 +24,7 @@
 using nlohmann::json;
 
 namespace bdm {
+namespace experimental {
 
 /// Perform an exhaustive sweep across specified parameters
 struct ParameterSweep : public Algorithm {
@@ -59,4 +60,5 @@ struct ParameterSweep : public Algorithm {
 
 BDM_REGISTER_ALGO(ParameterSweep);
 
+}  // namespace experimental
 }  // namespace bdm

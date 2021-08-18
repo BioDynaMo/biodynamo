@@ -30,8 +30,7 @@
 #include "core/param/command_line_options.h"
 
 namespace bdm {
-
-using experimental::TimeSeries;
+namespace experimental {
 
 MultiSimulation::MultiSimulation(int argc, const char** argv)
     : argc_(argc), argv_(argv) {
@@ -129,6 +128,7 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
   return status;
 }
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // USE_MPI

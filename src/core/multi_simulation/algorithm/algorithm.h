@@ -21,6 +21,7 @@
 #include "core/param/param.h"
 
 namespace bdm {
+namespace experimental {
 
 using experimental::TimeSeries;
 
@@ -32,6 +33,7 @@ struct Algorithm {
       Param* default_param) = 0;
 };
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // CORE_MULTI_SIMULATION_ALGORITHM_ALGORITHM_H_

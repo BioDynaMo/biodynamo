@@ -20,10 +20,11 @@
 #include <functional>
 #include <string>
 
-#include "core/param/param.h"
 #include "core/analysis/time_series.h"
+#include "core/param/param.h"
 
 namespace bdm {
+namespace experimental {
 
 using experimental::TimeSeries;
 
@@ -50,6 +51,7 @@ class MultiSimulation {
   char** argv_copy_ = nullptr;
 };
 
+}  // namespace experimental
 }  // namespace bdm
 
 #endif  // USE_MPI
