@@ -130,10 +130,14 @@ struct Param {
   ///     unibn_bucketsize = 16
   uint32_t unibn_bucketsize = 16;
 
-  /// If set to true, BioDynaMo will automatically delete all contents
+  /// If set to true (default), BioDynaMo will automatically delete all contents
   /// inside `Param::output_dir` at the beginning of the simulation.
-  /// Use with caution, especially in combination with `Param::output_dir`
-  bool remove_output_dir_contents = false;
+  /// Use with caution in combination with `Param::output_dir`. If you do not
+  /// want to delete the content, set this parameter to false. BioDynaMo then
+  /// organizes your simulation outputs in additional subfolders labelled with
+  /// the date-time of your simulation `YYYY-MM-DD-HH:MM:SS`. Note that you will
+  /// inevitably use more disk space with this option.
+  bool remove_output_dir_contents = true;
 
   /// Backup file name for full simulation backups\n
   /// Path is relative to working directory.\n
@@ -421,6 +425,26 @@ struct Param {
   ///     scheduling_batch_size = 1000
   uint64_t scheduling_batch_size = 1000;
 
+  enum ExecutionOrder { kForEachAgentForEachOp = 0, kForEachOpForEachAgent };
+
+  /// This parameter determines whether to execute  `kForEachAgentForEachOp`
+  /// \code
+  /// for (auto* agent : agents) {
+  ///   for (auto* op : agent_ops) {
+  ///     (*op)(agent);
+  ///   }
+  /// }
+  /// \endcode
+  /// or `kForEachOpForEachAgent`
+  /// \code
+  /// for (auto* op : agent_ops) {
+  ///   for (auto* agent : agents) {
+  ///     (*op)(agent);
+  ///   }
+  /// }
+  /// \endcode
+  ExecutionOrder execution_order = ExecutionOrder::kForEachAgentForEachOp;
+
   /// Calculation of the displacement (mechanical interaction) is an
   /// expensive operation. If agents do not move or grow,
   /// displacement calculation is ommited if detect_static_agents is turned
@@ -475,12 +499,12 @@ struct Param {
   /// if a lot of memory is used.\n
   /// N must be a number of two.\n
   /// Therefore, this parameter specifies the shift for N. `N = 2 ^ shift`\n
-  /// Default value: `8` `-> N = 256`\n
+  /// Default value: `5` `-> N = 32`\n
   /// TOML config file:
   ///
   ///     [performance]
-  ///     mem_mgr_aligned_pages_shift = 8
-  uint64_t mem_mgr_aligned_pages_shift = 8;
+  ///     mem_mgr_aligned_pages_shift = 5
+  uint64_t mem_mgr_aligned_pages_shift = 5;
 
   /// The BioDynaMo memory manager allocates memory in increasing sizes using
   /// a geometric series. This parameter specifies the growth rate.
@@ -493,15 +517,17 @@ struct Param {
 
   /// The BioDynaMo memory manager can migrate memory between thread pools
   /// to avoid memory leaks.\n
-  /// This parameter specifies the maximum memory size in bytes before
+  /// This parameter influences the maximum memory size in bytes before
   /// migration happens.\n
-  /// This value must be bigger than `PAGE_SIZE * 2 ^ mem_mgr_growth_rate`\n
-  /// Default value: `10485760` (10 MB)\n
-  /// TOML config file:
+  /// The size in bytes depends on the system's page size and the parameter
+  /// `mem_mgr_aligned_pages_shift` and is calculated as follows:
+  /// `PAGE_SIZE * 2 ^ mem_mgr_aligned_pages_shift *
+  /// mem_mgr_max_mem_per_thread_factor`\n Default value: `1`\n TOML config
+  /// file:
   ///
   ///     [performance]
-  ///     mem_mgr_max_mem_per_thread = 10485760
-  uint64_t mem_mgr_max_mem_per_thread = 1024 * 1024 * 10;
+  ///     mem_mgr_max_mem_per_thread_factor = 1
+  uint64_t mem_mgr_max_mem_per_thread_factor = 1;
 
   /// This parameter is used inside `ResourceManager::LoadBalance`.
   /// If it is set to true, the function will reuse existing memory to rebalance
@@ -598,6 +624,10 @@ struct Param {
   ///     [experimental]
   ///     preferred_gpu = 0
   int preferred_gpu = 0;
+
+  /// Determines if agents' memory layout plots should be generated
+  /// during load balancing.
+  bool plot_memory_layout = false;
 
   /// Assign values from config file to variables
   void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);

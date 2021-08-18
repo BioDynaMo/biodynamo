@@ -145,15 +145,20 @@ class ParallelResizeVector {
   }
 
   ParallelResizeVector& operator=(const ParallelResizeVector& other) {
-    free(data_);
-    data_ = nullptr;
+    if (&other == this) {
+      return *this;
+    }
+
+    clear();
+    // the following function call ensures that at least other.capacity_
+    // elements can be stored. If capacity_ > other.capacity_
+    // the container is NOT shrank.
     reserve(other.capacity_);
     size_ = other.size_;
-    capacity_ = other.capacity_;
 
 #pragma omp parallel for
     for (std::size_t i = 0; i < size_; i++) {
-      data_[i] = other.data_[i];
+      new (&(data_[i])) T(other.data_[i]);
     }
     return *this;
   }

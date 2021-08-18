@@ -211,7 +211,7 @@ TEST(InPlaceExecutionContext, Execute) {
   op2->GetImplementation<Op2>()->op1_called_ = &op1_called;
   op2->GetImplementation<Op2>()->op2_called_ = &op2_called;
   std::vector<Operation*> operations = {op1, op2};
-  ctxt->Execute(&cell_0, operations);
+  ctxt->Execute(&cell_0, AgentHandle(0, 0), operations);
 
   EXPECT_TRUE(op1_called);
   EXPECT_TRUE(op2_called);
@@ -243,7 +243,7 @@ struct TestFunctor1 : public Functor<void, Agent*> {
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->Execute(agent, {op});
+    ctxt->Execute(agent, AgentHandle(0, 0), {op});
   }
 };
 
@@ -255,7 +255,7 @@ struct TestFunctor2 : public Functor<void, Agent*> {
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    ctxt->Execute(agent, {op});
+    ctxt->Execute(agent, AgentHandle(0, 0), {op});
   }
 };
 
@@ -398,7 +398,8 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
   Simulation sim(TEST_NAME, set_param);
   auto* env = sim.GetEnvironment();
   auto* rm = sim.GetResourceManager();
-  auto* ctxt = sim.GetExecutionContext();
+  auto* ctxt =
+      dynamic_cast<InPlaceExecutionContext*>(sim.GetExecutionContext());
 
   for (int i = 0; i < 10; i++) {
     Cell* cell = new Cell();
@@ -441,8 +442,8 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
 }
 
 TEST(InPlaceExecutionContext, ForEachNeighbor) {
-  Simulation sim("ForEachNeighbor", [&](Param* param) {
-    param->cache_neighbors = true; });
+  Simulation sim("ForEachNeighbor",
+                 [&](Param* param) { param->cache_neighbors = true; });
   auto* rm = sim.GetResourceManager();
 
   // create cells

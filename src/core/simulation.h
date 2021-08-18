@@ -33,7 +33,7 @@ class Environment;
 class Grid;
 class Scheduler;
 struct Param;
-class InPlaceExecutionContext;
+class ExecutionContext;
 class CommandLineOptions;
 class AgentUidGenerator;
 
@@ -120,10 +120,12 @@ class Simulation {
   std::vector<Random*>& GetAllRandom();
 
   /// Returns a thread local execution context.
-  InPlaceExecutionContext* GetExecutionContext();
+  ExecutionContext* GetExecutionContext();
 
   /// Returns all thread local execution contexts.
-  std::vector<InPlaceExecutionContext*>& GetAllExecCtxts();
+  std::vector<ExecutionContext*>& GetAllExecCtxts();
+
+  void SetAllExecCtxts(const std::vector<ExecutionContext*>& exec_ctxts);
 
   MemoryManager* GetMemoryManager() { return mem_mgr_; }
 
@@ -154,7 +156,7 @@ class Simulation {
   std::vector<Random*> random_;
 
   /// Execution Context for each thread
-  std::vector<InPlaceExecutionContext*> exec_ctxt_;  //!
+  std::vector<ExecutionContext*> exec_ctxt_;  //!
 
   ResourceManager* rm_ = nullptr;
   Param* param_ = nullptr;

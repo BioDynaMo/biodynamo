@@ -53,13 +53,14 @@ struct UpdateStaticnessOp : public AgentOperationImpl {
 
 BDM_REGISTER_OP(UpdateStaticnessOp, "update staticness", kCpu);
 
-struct PropagateStaticnessOp : public AgentOperationImpl {
-  BDM_OP_HEADER(PropagateStaticnessOp);
+struct PropagateStaticnessAgentOp : public AgentOperationImpl {
+  BDM_OP_HEADER(PropagateStaticnessAgentOp);
 
   void operator()(Agent* agent) override { agent->PropagateStaticness(); }
 };
 
-BDM_REGISTER_OP(PropagateStaticnessOp, "propagate staticness", kCpu);
+BDM_REGISTER_OP(PropagateStaticnessAgentOp, "propagate staticness agentop",
+                kCpu);
 
 struct BehaviorOp : public AgentOperationImpl {
   BDM_OP_HEADER(BehaviorOp);
@@ -124,5 +125,22 @@ struct UpdateEnvironmentOp : public StandaloneOperationImpl {
 BDM_REGISTER_OP(UpdateEnvironmentOp, "update environment", kCpu);
 
 BDM_REGISTER_OP(VisualizationOp, "visualize", kCpu);
+
+struct PropagateStaticnessOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(PropagateStaticnessOp);
+
+  void operator()() override {
+    if (!Simulation::GetActive()->GetParam()->detect_static_agents) {
+      return;
+    }
+    auto function = L2F(
+        [](Agent* agent, AgentHandle) { agent->PropagateStaticness(true); });
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+    auto* param = Simulation::GetActive()->GetParam();
+    rm->ForEachAgentParallel(param->scheduling_batch_size, function);
+  }
+};
+
+BDM_REGISTER_OP(PropagateStaticnessOp, "propagate staticness", kCpu);
 
 }  // namespace bdm

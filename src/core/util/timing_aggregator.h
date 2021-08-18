@@ -42,7 +42,9 @@ class TimingAggregator {
     }
   }
 
-  void AddDescription(const std::string text) { descriptions_.push_back(text); }
+  void AddDescription(const std::string& text) {
+    descriptions_.push_back(text);
+  }
 
   int operator[](std::string idx) {
     auto sum = std::accumulate(timings_[idx].begin(), timings_[idx].end(), 0);

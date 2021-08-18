@@ -283,7 +283,7 @@ class InlineVector {
     return *this;
   }
 
-  InlineVector<T, N>& operator=(InlineVector<T, N>&& other) {
+  InlineVector<T, N>& operator=(InlineVector<T, N>&& other) noexcept {
     if (this != &other) {
       data_ = std::move(other.data_);
       size_ = other.size_;

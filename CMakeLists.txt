@@ -174,6 +174,7 @@ if (APPLE)
    set(NOPYENV YES)
 endif()
 
+
 if(NOPYENV)
    find_package(Python 3.9.1...<3.10 COMPONENTS Interpreter Development)
    set(pythonvers ${Python_VERSION})
@@ -191,10 +192,17 @@ else()
       message(FATAL_ERROR "We did not find the Python ${pythonvers} interpreter from PyEnv. "
          "Make sure you executed \"pyenv shell ${pythonvers}\" before running cmake. "
          "If that doesn't work, run ./prerequisites.sh again. The Python ${pythonvers} "
-         "interpreter is required in order to successfully use BioDynaMo.")
+         "interpreter is required in order to successfully use BioDynaMo."
+         "You may also try the following sequence of commands that has often resolved"
+         "the problem: \n"
+         "export PATH=\"$HOME/.pyenv/bin:$PATH\" \n"
+         "eval \"$(pyenv init --path)\" \n"
+         "eval \"$(pyenv init -)\" \n"
+         "pyenv shell ${pythonvers}")
    endif()
 endif()
 
+# Check if OpenMPI is present
 find_package(MPI COMPONENTS C CXX)
 if(MPI_FOUND)
   set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})

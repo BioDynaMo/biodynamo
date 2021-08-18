@@ -353,8 +353,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "performance.mem_mgr_aligned_pages_shift");
   BDM_ASSIGN_CONFIG_VALUE(mem_mgr_growth_rate,
                           "performance.mem_mgr_growth_rate");
-  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_max_mem_per_thread,
-                          "performance.mem_mgr_max_mem_per_thread");
+  BDM_ASSIGN_CONFIG_VALUE(mem_mgr_max_mem_per_thread_factor,
+                          "performance.mem_mgr_max_mem_per_thread_factor");
   BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing,
                           "performance.minimize_memory_while_rebalancing");
   AssignMappedDataArrayMode(config, this);

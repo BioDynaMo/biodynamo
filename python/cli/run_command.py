@@ -18,27 +18,31 @@ from print_command import Print
 from build_command import BuildCommand
 from util import GetBinaryName
 
+
 ## The BioDynaMo CLI command to run a simulation
 ##
 ## @param      sim_name  The simulation name
 ##
 def RunCommand(args, debug=False):
     sim_name = GetBinaryName()
-    args_str = ' '.join(args)
+    args_str = " ".join(args)
     cmd = "./build/" + sim_name
-    if platform.system() == 'Darwin':
-      launcher = os.environ['BDMSYS'] + '/bin/launcher.sh'
+    if platform.system() == "Darwin":
+        launcher = os.environ["BDMSYS"] + "/bin/launcher.sh"
     else:
-      launcher = ""
+        launcher = ""
 
     try:
         BuildCommand()
-        Print.new_step("Run " + sim_name + ' ' + args_str)
+        Print.new_step("Run " + sim_name + " " + args_str)
         if debug:
-            sp.check_output([launcher + " " + cmd, "&>", "debug/runtime_output.log"])
+            sp.check_output(
+                [launcher + " " + cmd, "&>", "debug/runtime_output.log"])
         else:
-            print(sp.check_output([launcher + " " + cmd, args_str],
-                                stderr=sp.STDOUT, shell=True).decode('utf-8'))
+            print(
+                sp.check_output([launcher + " " + cmd, args_str],
+                                stderr=sp.STDOUT,
+                                shell=True).decode("utf-8"))
             Print.success("Finished successfully")
     except sp.CalledProcessError as err:
         print(err.output.decode("utf-8"))

@@ -259,7 +259,9 @@ void Simulation::Activate() { active_ = this; }
 ResourceManager* Simulation::GetResourceManager() { return rm_; }
 
 void Simulation::SetResourceManager(ResourceManager* rm) {
-  delete rm_;
+  if (rm != rm_) {
+    delete rm_;
+  }
   rm_ = rm;
 }
 
@@ -283,11 +285,11 @@ Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
 
 std::vector<Random*>& Simulation::GetAllRandom() { return random_; }
 
-InPlaceExecutionContext* Simulation::GetExecutionContext() {
+ExecutionContext* Simulation::GetExecutionContext() {
   return exec_ctxt_[omp_get_thread_num()];
 }
 
-std::vector<InPlaceExecutionContext*>& Simulation::GetAllExecCtxts() {
+std::vector<ExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
 }
 
@@ -326,7 +328,7 @@ void Simulation::InitializeMembers() {
   if (param_->use_bdm_mem_mgr) {
     mem_mgr_ = new MemoryManager(param_->mem_mgr_aligned_pages_shift,
                                  param_->mem_mgr_growth_rate,
-                                 param_->mem_mgr_max_mem_per_thread);
+                                 param_->mem_mgr_max_mem_per_thread_factor);
   }
   agent_uid_generator_ = new AgentUidGenerator();
   if (param_->debug_numa) {
@@ -365,10 +367,27 @@ void Simulation::InitializeMembers() {
 }
 
 void Simulation::SetEnvironment(Environment* env) {
-  if (environment_ != nullptr) {
+  if (environment_ != nullptr && env != environment_) {
     delete environment_;
   }
   environment_ = env;
+}
+
+void Simulation::SetAllExecCtxts(
+    const std::vector<ExecutionContext*>& exec_ctxts) {
+  if (exec_ctxts.size() != exec_ctxt_.size()) {
+    Log::Error("Simulation::SetAllExecCtxts", "Size of exec_ctxts (",
+               exec_ctxts.size(), ") does not match the expected size (",
+               exec_ctxt_.size(), "). Operation aborted");
+    return;
+  }
+  for (uint64_t i = 0; i < exec_ctxt_.size(); ++i) {
+    auto* ctxt = exec_ctxt_[i];
+    if (ctxt != nullptr && ctxt != exec_ctxts[i]) {
+      delete ctxt;
+    }
+    exec_ctxt_[i] = exec_ctxts[i];
+  }
 }
 
 void Simulation::InitializeRuntimeParams(
@@ -538,6 +557,18 @@ void Simulation::InitializeOutputDir() {
   } else {
     output_dir_ = Concat(param_->output_dir, "/", unique_name_);
   }
+  // If we do not remove the output directory, we add a timestamp to the
+  // output directory to avoid overriding previous results.
+  if (!param_->remove_output_dir_contents) {
+    time_t rawtime;
+    struct tm* timeinfo;
+    char buffer[80];
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "/%Y-%m-%d-%H:%M:%S", timeinfo);
+    output_dir_ += buffer;
+  }
+
   if (system(Concat("mkdir -p ", output_dir_).c_str())) {
     Log::Fatal("Simulation::InitializeOutputDir",
                "Failed to make output directory ", output_dir_);
@@ -546,13 +577,13 @@ void Simulation::InitializeOutputDir() {
     if (param_->remove_output_dir_contents) {
       RemoveDirectoryContents(output_dir_);
     } else {
-      Log::Warning(
+      // We throw a fatal because it will override previous results from a
+      // possibly expensive simulation. This should not happen unintentionally.
+      Log::Fatal(
           "Simulation::InitializeOutputDir", "Output dir (", output_dir_,
-          ") is not empty. Files will be overriden. This could cause "
-          "inconsistent state of (e.g. visualization files). Consider removing "
-          "all contents "
-          "prior to running a simulation. Have a look at "
-          "Param::remove_output_dir_contents to remove files automatically.");
+          ") is not empty. Previous result files would be overriden. Abort."
+          "Please set Param::remove_output_dir_contents to true to remove files"
+          " automatically or clear the output directory by hand.");
     }
   }
 }

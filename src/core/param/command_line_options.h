@@ -26,6 +26,7 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <utility>
 
 #include "bdm_version.h"
 #include "core/simulation.h"
@@ -41,11 +42,11 @@ class CommandLineOptions {
 
   /// Add an extra command line option
   template <typename T>
-  void AddOption(const std::string& opt, const std::string& default_value,
+  void AddOption(const std::string& opt, std::string def,
                  const std::string& description = "",
-                 const std::string& group = "Simulation") {
-    AddOption(group)(opt, description,
-                     cxxopts::value<T>()->default_value(default_value));
+                 std::string group = "Simulation") {
+    AddOption(std::move(group))(opt, description,
+                                cxxopts::value<T>()->default_value(def));
   }
 
   /// Return the simulation name that was parsed from argv[0]
@@ -55,7 +56,7 @@ class CommandLineOptions {
   bool IsSet(std::string option);
 
   template <typename T>
-  T Get(std::string val) {
+  T Get(const std::string& val) {
     if (parser_ == nullptr) {
       this->Parse();
     }

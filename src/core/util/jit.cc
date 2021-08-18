@@ -106,8 +106,8 @@ std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
 
 // -----------------------------------------------------------------------------
 JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
-    TClass* tclass, const std::vector<std::string> dm_names,
-    const std::string functor_name,
+    TClass* tclass, const std::vector<std::string>& dm_names,
+    const std::string& functor_name,
     const std::function<std::string(
         const std::string&, const std::vector<TDataMember*>&)>& code_generator)
     : functor_name_(Concat(functor_name, counter_++)),

@@ -44,11 +44,11 @@ Scheduler::Scheduler() {
   // operation implementation type, so that actual order may vary)
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
-      "mechanical forces", "discretization", "propagate staticness",
+      "mechanical forces", "discretization", "propagate staticness agentop",
       "diffusion"};
 
-  std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
-                                                      "update environment"};
+  std::vector<std::string> pre_scheduled_ops_names = {
+      "set up iteration", "update environment", "propagate staticness"};
   // We cannot put sort and balance in the list of scheduled_standalone_ops_,
   // because numa-aware data structures would be invalidated:
   // ```
@@ -71,6 +71,11 @@ Scheduler::Scheduler() {
 
   auto disabled_op_names =
       Simulation::GetActive()->GetParam()->unschedule_default_operations;
+  if (!param->detect_static_agents) {
+    disabled_op_names.push_back("propagate staticness");
+    disabled_op_names.push_back("propagate staticness agentop");
+  }
+
   std::vector<std::vector<std::string>*> all_op_names;
   all_op_names.push_back(&pre_scheduled_ops_names);
   all_op_names.push_back(&default_op_names);
@@ -231,14 +236,19 @@ void Scheduler::SetAgentFilters(
   agent_filters_ = agent_filters;
 }
 
+// -----------------------------------------------------------------------------
+const std::vector<Functor<bool, Agent*>*>& Scheduler::GetAgentFilters() const {
+  return agent_filters_;
+}
+
 struct RunAllScheduledOps : Functor<void, Agent*, AgentHandle> {
   explicit RunAllScheduledOps(std::vector<Operation*>& scheduled_ops)
       : scheduled_ops_(scheduled_ops) {
     sim_ = Simulation::GetActive();
   }
 
-  void operator()(Agent* agent, AgentHandle) override {
-    sim_->GetExecutionContext()->Execute(agent, scheduled_ops_);
+  void operator()(Agent* agent, AgentHandle ah) override {
+    sim_->GetExecutionContext()->Execute(agent, ah, scheduled_ops_);
   }
 
   Simulation* sim_;
@@ -283,11 +293,26 @@ void Scheduler::RunAgentOps(Functor<bool, Agent*>* filter) {
       agent_ops.push_back(op);
     }
   }
-  RunAllScheduledOps functor(agent_ops);
 
-  Timing::Time("agent ops", [&]() {
-    rm->ForEachAgentParallel(batch_size, functor, filter);
-  });
+  const auto& all_exec_ctxts = sim->GetAllExecCtxts();
+  all_exec_ctxts[0]->SetupAgentOpsAll(all_exec_ctxts);
+
+  if (param->execution_order == Param::ExecutionOrder::kForEachAgentForEachOp) {
+    RunAllScheduledOps functor(agent_ops);
+    Timing::Time("agent ops", [&]() {
+      rm->ForEachAgentParallel(batch_size, functor, filter);
+    });
+  } else {
+    for (auto* op : agent_ops) {
+      decltype(agent_ops) ops = {op};
+      RunAllScheduledOps functor(ops);
+      Timing::Time(op->name_, [&]() {
+        rm->ForEachAgentParallel(batch_size, functor, filter);
+      });
+    }
+  }
+
+  all_exec_ctxts[0]->TearDownAgentOpsAll(all_exec_ctxts);
 }
 
 // -----------------------------------------------------------------------------
@@ -375,7 +400,7 @@ void Scheduler::Initialize() {
 
   // commit all changes
   const auto& all_exec_ctxts = sim->GetAllExecCtxts();
-  all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
+  all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
 
   if (param->bound_space != Param::BoundSpaceMode::kOpen) {
     auto* bound_space = NewOperation("bound space");

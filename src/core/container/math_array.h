@@ -24,6 +24,7 @@
 #include <utility>
 
 #include "core/util/root.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
@@ -343,13 +344,17 @@ class MathArray {  // NOLINT
     }
     result = std::sqrt(result);
 
-    return result == 0 ? 1.0 : result;
+    return result;
   }
 
   /// Normalize the array. It will be done in-place.
   /// \return the normalized array.
   MathArray& Normalize() {
     T norm = Norm();
+    if (norm == 0){
+      Log::Fatal("MathArray::Normalize","You tried to normalize a zero vector. " 
+      "This cannot be done. Exiting.");
+    }
 #pragma omp simd
     for (size_t i = 0; i < N; i++) {
       data_[i] /= norm;

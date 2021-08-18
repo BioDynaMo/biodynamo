@@ -327,7 +327,8 @@ struct ModelInitializer {
   /// @param[in]  decay_constant   The decay constant
   /// @param[in]  resolution       The resolution of the diffusion grid
   ///
-  static void DefineSubstance(size_t substance_id, std::string substance_name,
+  static void DefineSubstance(size_t substance_id,
+                              const std::string& substance_name,
                               double diffusion_coeff, double decay_constant,
                               int resolution = 10);
 

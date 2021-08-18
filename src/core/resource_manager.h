@@ -57,7 +57,7 @@ class ResourceManager {
 
   virtual ~ResourceManager();
 
-  ResourceManager& operator=(ResourceManager&& other) {
+  ResourceManager& operator=(ResourceManager&& other) noexcept {
     if (agents_.size() != other.agents_.size()) {
       Log::Fatal(
           "Restored ResourceManager has different number of NUMA nodes.");
@@ -113,6 +113,8 @@ class ResourceManager {
 
   AgentHandle GetAgentHandle(const AgentUid& uid) { return uid_ah_map_[uid]; }
 
+  void SwapAgents(std::vector<std::vector<Agent*>>* agents);
+
   void AddDiffusionGrid(DiffusionGrid* dgrid) {
     uint64_t substance_id = dgrid->GetSubstanceId();
     auto search = diffusion_grids_.find(substance_id);
@@ -151,7 +153,7 @@ class ResourceManager {
   /// Return the diffusion grid which holds the substance of specified name
   /// Caution: using this function in a tight loop will result in a slow
   /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
-  DiffusionGrid* GetDiffusionGrid(std::string substance_name) const {
+  DiffusionGrid* GetDiffusionGrid(const std::string& substance_name) const {
     for (auto& el : diffusion_grids_) {
       auto& dg = el.second;
       if (dg->GetSubstanceName() == substance_name) {
@@ -189,6 +191,8 @@ class ResourceManager {
       return agents_[numa_node].size();
     }
   }
+
+  size_t GetAgentVectorCapacity(int numa_node);
 
   /// Call a function for all or a subset of agents in the simulation.
   /// @param function that will be called for each agent

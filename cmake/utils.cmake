@@ -230,6 +230,13 @@ function(install_inside_build)
             GLOB "*" ".*"
             )
 
+    # Copy notebook files
+    add_copy_directory(copy_files_bdm
+            ${CMAKE_SOURCE_DIR}/notebook
+            DESTINATION ${CMAKE_INSTALL_ROOT}/notebook
+            GLOB "*" ".*"
+            )
+
     add_copy_files(copy_files_bdm
             ${CMAKE_BINARY_DIR}/rootlogon.C
             DESTINATION ${CMAKE_INSTALL_ROOT}/etc

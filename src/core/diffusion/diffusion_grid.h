@@ -18,6 +18,7 @@
 #include <array>
 #include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/container/math_array.h"
@@ -35,7 +36,7 @@ class DiffusionGrid {
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
                 double mu, int resolution = 11)
       : substance_(substance_id),
-        substance_name_(substance_name),
+        substance_name_(std::move(substance_name)),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
         resolution_(resolution) {}
@@ -156,6 +157,7 @@ class DiffusionGrid {
   friend class RungaKuttaGrid;
   friend class EulerGrid;
   friend class StencilGrid;
+  friend class TestGrid;  // class used for testing (e.g. initialization)
 
   void ParametersCheck();
 
