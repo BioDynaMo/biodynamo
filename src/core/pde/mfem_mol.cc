@@ -186,7 +186,16 @@ void MethodOfLineSolver::SetOperator(MolOperator* oper) {
   }
 }
 
-double MethodOfLineSolver::GetSolutionAtPosition() { return 0.0; }
+double MethodOfLineSolver::GetSolutionAtPosition(Double3& position) {
+  mfem::DenseMatrix mfem_position(mesh_->Dimension(), 1);
+  for (int i = 0; i < mesh_->Dimension(); i++) {
+    mfem_position(i, 0) = position[i];
+  }
+  mfem::Array<int> element_id;
+  mfem::Array<mfem::IntegrationPoint> integration_points;
+  mesh_->FindPoints(mfem_position, element_id, integration_points);
+  return u_gf_.GetValue(element_id[0], integration_points[0]);
+}
 
 }  // namespace experimental
 }  // namespace bdm

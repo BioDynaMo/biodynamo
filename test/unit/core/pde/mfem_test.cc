@@ -183,9 +183,62 @@ TEST(MethodOfLineTest, Step) {
   for (size_t i = 0; i < num_steps; i++) {
     solver.Step(time_steps[i]);
     EXPECT_EQ(sim_time[i], solver.GetSimTime());
-    std::cout << time_steps[i] << " " << sim_time[i] << " "
-              << solver.GetSimTime() << std::endl;
   }
+}
+
+TEST(MethodOfLineTest, GetSolutionAtPosition) {
+  // Create a simple one element hex mesh
+  mfem::Mesh mesh =
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+  mesh.UniformRefinement();
+  mesh.UniformRefinement();
+
+  // Define function to set inital values of the Mesh
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
+
+  // Define numeric parameters
+  std::vector<double> parameters{0.1};
+
+  // Define empty functions vector for constructor
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+
+  // Create MethodOfLineSolver
+  MethodOfLineSolver solver(&mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver,
+                            PDEOperator::kDiffusion, InitializeGridValues,
+                            parameters, operator_functions);
+
+  // Check the Function initialization at a few points
+  Double3 bdm_position;
+  double grid_value;
+
+  // Case 1 (On nodes by construction)
+  bdm_position[0] = 0.1;
+  bdm_position[1] = 0.2;
+  bdm_position[2] = 0.3;
+  grid_value = solver.GetSolutionAtPosition(bdm_position);
+  EXPECT_EQ(bdm_position.Norm(), grid_value);
+
+  // Case  (On nodes by construction - after first refinement)
+  bdm_position[0] = 0.75;
+  bdm_position[1] = 0.6;
+  bdm_position[2] = 0.85;
+  grid_value = solver.GetSolutionAtPosition(bdm_position);
+  EXPECT_EQ(bdm_position.Norm(), grid_value);
+
+  // Case  (On nodes by construction - after second refinement)
+  bdm_position[0] = 0.325;
+  bdm_position[1] = 0.175;
+  bdm_position[2] = 0.550;
+  grid_value = solver.GetSolutionAtPosition(bdm_position);
+  EXPECT_EQ(bdm_position.Norm(), grid_value);
+
+  // Case  (Not on nodes by construction - after second refinement)
+  bdm_position[0] = 0.43291034;
+  bdm_position[1] = 0.54829203;
+  bdm_position[2] = 0.92717444;
+  grid_value = solver.GetSolutionAtPosition(bdm_position);
+  EXPECT_NE(bdm_position.Norm(), grid_value);
+  EXPECT_LT(abs(bdm_position.Norm() - grid_value), grid_value * 0.001);
 }
 
 }  // namespace experimental
