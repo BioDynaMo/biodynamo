@@ -419,9 +419,9 @@ ExternalProject_Add(
 add_library(liboptim SHARED IMPORTED)
 set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_INSTALL_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so)
 # this links liboptim to libbiodynamo as "liboptim.so" instead of "lib/liboptim.so"
-set_property(TARGET liboptim PROPERTY IMPORTED_NO_SONAME 1)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include)
-set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} liboptim)
+link_directories(${CMAKE_INSTALL_LIBDIR})
+set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} liboptim.so)
 
 # --------------------Copy the launcher script ---------------------------------
 configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
