@@ -17,6 +17,7 @@
 #define MFEM_MOL_H_
 
 #include <vector>
+#include "core/container/math_array.h"
 #include "core/pde/timedependent_operators/conduction_operator.h"
 #include "core/pde/timedependent_operators/diffusion_operator.h"
 #include "mfem.hpp"
@@ -105,7 +106,7 @@ class MethodOfLineSolver {
   void UpdateGridFunction();
 
   /// Get the value of the GridFunction solution at a certain position.
-  double GetSolutionAtPosition();
+  double GetSolutionAtPosition(Double3& position);
 
   /// Set the operator for MOL, e.g. define the equation.
   void SetOperator(MolOperator* oper);
