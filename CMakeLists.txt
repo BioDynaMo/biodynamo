@@ -668,6 +668,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/multi_simulation/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/pde/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/agent/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.cc
