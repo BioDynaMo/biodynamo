@@ -13,6 +13,7 @@
     <class name="bdm::ParticleSwarmParam"/>
     <class name="bdm::LogRangeParam"/>
     <class name="bdm::RangeParam"/>
+    <class name="bdm::experimental::MPIObject" />
     <class name="bdm::OperationImpl" />
     <class pattern="cl::*" />
     <class name="cl::CommandQueue" />

@@ -531,7 +531,9 @@ build_shared_library(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} ${FS_LIB})
-
+# libbiodynamo must be built before optimlib; otherwise optimlib could be missing during
+# the linking stage of libbiodynamo
+add_dependencies(biodynamo optim)
                   
 # Build plugin
 if(paraview)
