@@ -417,13 +417,14 @@ endif()
 
 # Link optimlib
 include(ExternalProject)
+set(OPTIM_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}optim${CMAKE_SHARED_MODULE_SUFFIX})
 if(APPLE)
   ExternalProject_Add(
     optim
     URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
     BINARY_DIR "optim-prefix/src/optim"
     CONFIGURE_COMMAND ./configure -o "-O3 -march=native -ffp-contract=fast -flto -DARMA_NO_DEBUG"
-    INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_INSTALL_LIBDIR}
+    INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${OPTIM_LIBNAME} ${CMAKE_INSTALL_LIBDIR}
   )
 else()
   ExternalProject_Add(
@@ -431,14 +432,14 @@ else()
     URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
     BINARY_DIR "optim-prefix/src/optim"
     CONFIGURE_COMMAND ./configure -p -o "-O3 -march=native -ffp-contract=fast -flto -DARMA_NO_DEBUG -DOPTIM_USE_OMP"
-    INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so ${CMAKE_INSTALL_LIBDIR}
+    INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${OPTIM_LIBNAME} ${CMAKE_INSTALL_LIBDIR}
   )
 endif()
 add_library(liboptim SHARED IMPORTED)
-set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_INSTALL_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}optim.so)
+set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_INSTALL_LIBDIR}/${OPTIM_LIBNAME})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include)
 link_directories(${CMAKE_INSTALL_LIBDIR})
-set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} liboptim.so)
+set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${OPTIM_LIBNAME})
 
 # --------------------Copy the launcher script ---------------------------------
 configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
