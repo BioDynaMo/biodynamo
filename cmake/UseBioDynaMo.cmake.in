@@ -140,7 +140,19 @@ if (NOT WGET_BIN)
   message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
 endif()
 
-find_package(MPI)
+# In order to correctly compile and link the multi simulation manager with MPI,
+# you need to set CMAKE_[CXX|C]_COMPILER to [mpic++|mpicc]
+# We still however need to explicitely add the mpi.h include path to our include_directories
+# because rootcling will complaing about missing mpi.h
+find_package(MPI COMPONENTS CXX)
+if(MPI_FOUND)
+  set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
+  include_directories(${MPI_CXX_COMPILER_INCLUDE_DIRS})
+  add_definitions("-DUSE_MPI")
+else(MPI_FOUND)
+  MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
+  calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
+endif(MPI_FOUND)
 
 find_package(OpenMP REQUIRED)
 
@@ -293,6 +305,8 @@ list(REMOVE_ITEM ROOT_LIBRARIES "$ENV{BDMSYS}/third_party/root/lib/libEve.so")
 set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES})
 
 include_directories("$ENV{BDMSYS}/include")
+# armadillo is added as a subdirectory in optimlib
+include_directories("$ENV{BDMSYS}/include/optim")
 link_directories("$ENV{BDMSYS}/lib")
 
 # -------------------- Instructions for GoogleTest -----------------------------

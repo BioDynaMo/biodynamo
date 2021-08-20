@@ -426,8 +426,11 @@ void Simulation::InitializeRuntimeParams(
     read_env = true;
   }
 
+  // Process `--config` arguments
   LoadConfigFiles(ctor_config_files,
                   clo->Get<std::vector<std::string>>("config"));
+
+  // Process `--inline-config` arguments
   auto inline_configs = clo->Get<std::vector<std::string>>("inline-config");
   if (inline_configs.size()) {
     for (auto& inline_config : inline_configs) {
@@ -452,6 +455,12 @@ void Simulation::InitializeRuntimeParams(
   }
 
   ocl_state_ = new OpenCLState();
+
+  if (clo->Get<bool>("visualize")) {
+    param_->export_visualization = true;
+    param_->visualization_interval =
+        clo->Get<uint32_t>("vis-frequency");
+  }
 
   set_param(param_);
 

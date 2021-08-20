@@ -21,7 +21,7 @@ jobs:
           devtoolset-8-gcc* numactl-devel openmpi3-devel freeglut-devel \
           scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         yum -y install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
-          sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
+          sqlite-devel openssl-devel xz xz-devel libffi-devel findutils lapack-devel blas-devel
         yum -y remove git*
         yum -y install https://packages.endpoint.com/rhel/7/os/x86_64/endpoint-repo-1.7-1.x86_64.rpm
         yum -y install git

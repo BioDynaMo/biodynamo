@@ -16,7 +16,14 @@
     <class name="bdm::Agent" />
     <class name="bdm::AgentHandle" />
     <class name="bdm::AgentUidGenerator" noStreamer="true"/>
+    <class name="bdm::OptimizationParam" />
     <class name="bdm::AgentUid"/>
+    <class name="bdm::LogRangeParam"/>
+    <class name="bdm::RangeParam"/>
+    <class name="bdm::SetParam"/>
+    <class name="bdm::ParticleSwarmParam"/>
+    <class name="bdm::OptimizationParamType"/>
+    <class name="bdm::experimental::MPIObject" />
     <class name="bdm::Cell" />
     <class name="std::unordered_map<uint64_t, bdm::DiffusionGrid*>" />
     <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />

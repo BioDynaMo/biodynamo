@@ -12,9 +12,12 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/core/param/param_test.h"
 #include <gtest/gtest.h>
 #include <json.hpp>
+
+#include "core/multi_simulation/optimization_param.h"
+#include "core/multi_simulation/optimization_param_type/particle_swarm_param.h"
+#include "unit/core/param/param_test.h"
 #include "unit/test_util/test_util.h"
 
 using nlohmann::json;
@@ -94,6 +97,63 @@ TEST(ParamTest, RestoreFromJson) {
   EXPECT_NEAR(6.28, test_param->test_param1, abs_error<double>::value);
   EXPECT_EQ(123u, test_param->test_param2);
   EXPECT_EQ(-10, test_param->test_param3);
+}
+
+TEST(ParamTest, OptimizationParam) {
+  Param param;
+  auto* opt_param = param.Get<OptimizationParam>();
+
+  EXPECT_TRUE(opt_param != nullptr);
+  EXPECT_EQ("", opt_param->algorithm);
+  EXPECT_EQ(0u, opt_param->params.size());
+  EXPECT_EQ(1u, opt_param->repetition);
+  EXPECT_EQ(100u, opt_param->max_iterations);
+
+  std::string patch = R"EOF(
+{
+  "bdm::OptimizationParam": {
+    "algorithm" : "ParticleSwarm",
+    "repetition" : 10,
+    "max_iterations" : 1000,
+    "params" : [
+      {
+        "_typename": "bdm::ParticleSwarmParam",
+        "param_name" : "bdm::SimParam::infection_probablity",
+        "lower_bound" : 0.001,
+        "upper_bound" : 1,
+        "initial_value" : 0.005
+      },
+      {
+        "_typename": "bdm::ParticleSwarmParam",
+        "param_name" : "bdm::SimParam::infection_radius",
+        "lower_bound" : 5,
+        "upper_bound" : 50,
+        "initial_value" : 5
+      },
+      {
+        "_typename": "bdm::ParticleSwarmParam",
+        "param_name" : "bdm::SimParam::agent_speed",
+        "lower_bound" : 2,
+        "upper_bound" : 50,
+        "initial_value" : 2
+      }
+    ]
+  }
+}
+)EOF";
+
+  param.MergeJsonPatch(patch);
+  opt_param = param.Get<OptimizationParam>();
+  EXPECT_EQ("ParticleSwarm", opt_param->algorithm);
+  EXPECT_EQ(3u, opt_param->params.size());
+  auto* swarm_param = static_cast<ParticleSwarmParam*>(opt_param->params[0]);
+  EXPECT_EQ("bdm::SimParam::infection_probablity",
+            swarm_param->param_name);
+  EXPECT_EQ(0.001, swarm_param->lower_bound);
+  EXPECT_EQ(1, swarm_param->upper_bound);
+  EXPECT_EQ(0.005, swarm_param->initial_value);
+  EXPECT_EQ(10u, opt_param->repetition);
+  EXPECT_EQ(1000u, opt_param->max_iterations);
 }
 
 }  // namespace bdm
