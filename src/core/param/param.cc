@@ -13,7 +13,6 @@
 // -----------------------------------------------------------------------------
 
 #include <TBufferJSON.h>
-#include <TSystem.h>
 #include <json.hpp>
 
 #include <utility>

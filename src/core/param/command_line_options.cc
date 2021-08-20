@@ -102,7 +102,6 @@ void CommandLineOptions::AddCoreOptions() {
   options_.add_options("Core")
     ("h, help", "Print this help message.")
     ("version", "Print version number of BioDynaMo.")
-    ("data", "Data file to drive optimization feedback loop with (csv supported only).", value<string>()->default_value(""), "FILE.csv")
     ("opencl", "Enable GPU acceleration through OpenCL.")
     ("cuda", "Enable GPU acceleration through CUDA.")
     ("visualize", "Enable exporting of visualization.")
@@ -185,20 +184,6 @@ void CommandLineOptions::HandleCoreOptions() {
   }
   // Global variable of ROOT that determines verbosity of logging functions
   gErrorIgnoreLevel = ll;
-
-// Handle "cuda" and "opencl" arguments
-#ifdef USE_CUDA
-  if (IsSet("cuda")) {
-    param->use_gpu_ = true;
-  }
-#endif  // USE_CUDA
-
-#ifdef USE_OPENCL
-  if (IsSet("opencl")) {
-    param->use_gpu_ = true;
-    param->use_opencl_ = true;
-  }
-#endif  // USE_OPENCL
 
   if (parser_->count("output-default-json")) {
     Param param;

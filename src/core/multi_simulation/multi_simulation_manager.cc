@@ -18,6 +18,7 @@
 
 #include "mpi.h"
 
+#include "core/multi_simulation/mpi_helper.h"
 #include "core/multi_simulation/multi_simulation_manager.h"
 #include "core/multi_simulation/optimization_param.h"
 #include "core/scheduler.h"

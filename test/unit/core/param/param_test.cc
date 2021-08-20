@@ -24,8 +24,6 @@ using nlohmann::json;
 
 namespace bdm {
 
-using namespace experimental;
-
 const ParamGroupUid TestParamGroup::kUid =
     ParamGroupUidGenerator::Get()->NewUid();
 

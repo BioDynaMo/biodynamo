@@ -35,7 +35,7 @@ $CWD/system-info.sh &> $logfile
 
 # Record BioDynaMo-specific metadata
 log biodynamo -v
-log python3 $CWD/../../python/cli/util.py commit-id
+log python3 $CWD/../../cli/util.py commit-id
 log echo $OMP_NUM_THREADS
 
 log ./$binary_name
