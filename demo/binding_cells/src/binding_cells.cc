@@ -22,6 +22,6 @@ const ParamGroupUid SimParam::kUid = ParamGroupUidGenerator::Get()->NewUid();
 
 int main(int argc, const char** argv) {
   Param::RegisterParamGroup(new SimParam());
-  experimental::MultiSimulation pe(argc, argv);
+  bdm::experimental::MultiSimulation pe(argc, argv);
   return pe.Execute(Simulate);
 }

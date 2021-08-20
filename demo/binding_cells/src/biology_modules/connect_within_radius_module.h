@@ -50,7 +50,8 @@ struct ConnectWithinRadius : public Behavior {
 
       AgentPointer<Monocyte> cell_to_connect_to;  // nullptr initially
       double smallest_distance = Math::kInfinity;
-      auto find_closest_cell = [&](const Agent* neighbor) {
+      auto find_closest_cell = L2F([&](Agent* neighbor,
+                                       double squared_distance) {
         if (auto* neighbor_cell = dynamic_cast<const Monocyte*>(neighbor)) {
           // T-Cells are activated if they are in close vicinity of monocytes
           if (!this_cell->IsActivated() || !this_cell->IsConnected()) {
@@ -69,10 +70,9 @@ struct ConnectWithinRadius : public Behavior {
             }
           }
         }
-      };
-      auto* grid = static_cast<UniformGridEnvironment*>(
-          Simulation::GetActive()->GetEnvironment());
-      grid->ForEachNeighbor(find_closest_cell, *this_cell, squared_radius_);
+      });
+      auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+      ctxt->ForEachNeighbor(find_closest_cell, *this_cell, squared_radius_);
 
       // If we found an available monocyte then we connect this cell and the
       // monocyte with each other, forming an immune synapse

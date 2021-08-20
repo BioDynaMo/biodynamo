@@ -12,6 +12,7 @@
 #include "sim-param.h"
 
 using namespace bdm;
+using bdm::experimental::MultiSimulation;
 
 const ParamGroupUid SimParam::kUid = ParamGroupUidGenerator::Get()->NewUid();
 
@@ -45,6 +46,6 @@ int main(int argc, const char** argv) {
   // Generate the analytical data
   auto analytical = GetAnalyticalResults(&clo);
 
-  experimental::MultiSimulation pe(argc, argv, analytical);
+  MultiSimulation pe(argc, argv, analytical);
   return pe.Execute(Simulate);
 }
