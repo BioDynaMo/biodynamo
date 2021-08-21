@@ -14,7 +14,7 @@
 # -----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.2.0)
 
-project(binding-cells)
+project(binding_cells)
 
 find_package(BioDynaMo REQUIRED)
 include(${BDM_USE_FILE})
