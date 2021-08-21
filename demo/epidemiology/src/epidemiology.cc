@@ -60,17 +60,19 @@ int main(int argc, const char** argv) {
 
   auto repeat = sparam->repeat;
 
+  std::cout << "Mode: " << sparam->mode << std::endl;
+
   // Run the simulation once and compute the error against the analytical
   // solution
-  std::cout << sparam->mode << std::endl;
   if (sparam->mode == "sim-and-analytical") {
     ExperimentSimAndAnalytical(argc, argv, param, repeat);
+    std::cout << "Simulation completed successfully!" << std::endl;
     return 0;
   } else {  // Run the multi-simulation fitting routine
     // Generate the analytical data
     auto analytical = GetAnalyticalResults(param);
-
     MultiSimulation pe(argc, argv, analytical);
+    std::cout << "Simulation completed successfully!" << std::endl;
     return pe.Execute(Simulate);
   }
 }

@@ -53,6 +53,10 @@ TEST(DynamicLoopTest, DynamicLoop) {
   };
 
   DynamicNestedLoop(ranges, lambda);
+
+  delete ranges[0];
+  delete ranges[1];
+  delete ranges[2];
 }
 
 }  // namespace experimental
