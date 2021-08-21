@@ -56,16 +56,24 @@ struct Param {
 
   template <typename TParamGroup>
   const TParamGroup* Get() const {
-    assert(groups_.find(TParamGroup::kUid) != groups_.end() &&
-           "Couldn't find the requested group parameter.");
-    return bdm_static_cast<const TParamGroup*>(groups_.at(TParamGroup::kUid));
+    if (groups_.find(TParamGroup::kUid) != groups_.end()) {
+      return bdm_static_cast<const TParamGroup*>(groups_.at(TParamGroup::kUid));
+    } else {
+      Log::Error("TParamGroup::Get",
+                 "Couldn't find the requested group parameter.");
+      return nullptr;
+    }
   }
 
   template <typename TParamGroup>
   TParamGroup* Get() {
-    assert(groups_.find(TParamGroup::kUid) != groups_.end() &&
-           "Couldn't find the requested group parameter.");
-    return bdm_static_cast<TParamGroup*>(groups_.at(TParamGroup::kUid));
+    if (groups_.find(TParamGroup::kUid) != groups_.end()) {
+      return bdm_static_cast<TParamGroup*>(groups_.at(TParamGroup::kUid));
+    } else {
+      Log::Error("TParamGroup::Get",
+                 "Couldn't find the requested group parameter.");
+      return nullptr;
+    }
   }
 
   // simulation values ---------------------------------------------------------

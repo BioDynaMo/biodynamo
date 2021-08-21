@@ -36,9 +36,8 @@ TEST(AlgorithmTest, Registry) {
 // -----------------------------------------------------------------------------
 struct MyAlgorithm : public Algorithm {
   BDM_ALGO_HEADER();
-  void operator()(
-      const std::function<void(Param*, TimeSeries*)>& send_params_to_worker,
-      Param* default_param) {}
+  void operator()(Functor<void, Param*, TimeSeries*>& dispatch_experiment,
+                  Param* default_param) {}
 };
 BDM_REGISTER_ALGO(MyAlgorithm)
 

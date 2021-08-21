@@ -30,9 +30,8 @@ namespace experimental {
 struct ParameterSweep : public Algorithm {
   BDM_ALGO_HEADER();
 
-  void operator()(
-      const std::function<void(Param*, TimeSeries*)>& send_params_to_worker,
-      Param* default_params) override {
+  void operator()(Functor<void, Param*, TimeSeries*>& dispatch_experiment,
+                  Param* default_params) override {
     auto sweeping_params = default_params->Get<OptimizationParam>()->params;
 
     if (sweeping_params.empty()) {
@@ -53,7 +52,7 @@ struct ParameterSweep : public Algorithm {
       Param final_params = *default_params;
       final_params.MergeJsonPatch(j_patch.dump());
 
-      send_params_to_worker(&final_params, nullptr);
+      dispatch_experiment(&final_params, nullptr);
     });
   };
 };

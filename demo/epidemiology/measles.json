@@ -12,6 +12,8 @@
         }
     },
     "bdm::SimParam": {
+        "beta" : 0.06719,
+        "gamma" : 0.00521,
         "agent_diameter": 2,
         "agent_speed": 5.7859,
         "infection_probablity": 0.2850,

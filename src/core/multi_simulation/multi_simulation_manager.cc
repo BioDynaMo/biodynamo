@@ -18,6 +18,7 @@
 
 #include "mpi.h"
 
+#include "core/functor.h"
 #include "core/multi_simulation/mpi_helper.h"
 #include "core/multi_simulation/multi_simulation_manager.h"
 #include "core/multi_simulation/optimization_param.h"
@@ -113,47 +114,49 @@ int MultiSimulationManager::Start() {
     ForAllWorkers(
         [&](int worker) { ChangeStatusWorker(worker, Status::kAvail); });
 
-    auto dispatch_experiment = [&](Param *final_params, TimeSeries *result) {
-      // If there is only one MPI process, the master performs the simulation
-      if (worldsize_ == 1) {
-        simulate_(final_params, result);
-      } else {  // Otherwise we dispatch the work to the worker(s)
-        auto worker = GetFirstAvailableWorker();
+    auto dispatch_experiment =
+        L2F([&](Param *final_params, TimeSeries *result) {
+          // If there is only one MPI process, the master performs the
+          // simulation
+          if (worldsize_ == 1) {
+            simulate_(final_params, result);
+          } else {  // Otherwise we dispatch the work to the worker(s)
+            auto worker = GetFirstAvailableWorker();
 
-        // If there is no available worker, wait for one to finish
-        while (worker == -1) {
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
-          worker = GetFirstAvailableWorker();
-        }
+            // If there is no available worker, wait for one to finish
+            while (worker == -1) {
+              std::this_thread::sleep_for(std::chrono::milliseconds(100));
+              worker = GetFirstAvailableWorker();
+            }
 
-        // Send parameters to worker
-        {
-          Timing t_mpi("MPI_CALL", &ta_);
-          MPI_Send_Obj_ROOT(final_params, worker, Tag::kTask);
-        }
+            // Send parameters to worker
+            {
+              Timing t_mpi("MPI_CALL", &ta_);
+              MPI_Send_Obj_ROOT(final_params, worker, Tag::kTask);
+            }
 
-        // Wait for results
-        MPI_Status status;
-        {
-          int size;
-          MPI_Recv(&size, 1, MPI_INT, worker, Tag::kResult, MPI_COMM_WORLD,
-                   &status);
-          string msg =
-              "Receiving results from worker " + to_string(status.MPI_SOURCE);
-          Log(msg);
-          Timing t_mpi("MPI_CALL", &ta_);
-          TimeSeries *tmp_result =
-              MPI_Recv_Obj_ROOT<TimeSeries>(size, worker, Tag::kResult);
-          msg = "Successfully received results from worker " +
-                to_string(status.MPI_SOURCE);
-          Log(msg);
-          *result = *tmp_result;
-          delete tmp_result;
-        }
+            // Wait for results
+            MPI_Status status;
+            {
+              int size;
+              MPI_Recv(&size, 1, MPI_INT, worker, Tag::kResult, MPI_COMM_WORLD,
+                       &status);
+              string msg = "Receiving results from worker " +
+                           to_string(status.MPI_SOURCE);
+              Log(msg);
+              Timing t_mpi("MPI_CALL", &ta_);
+              TimeSeries *tmp_result =
+                  MPI_Recv_Obj_ROOT<TimeSeries>(size, worker, Tag::kResult);
+              msg = "Successfully received results from worker " +
+                    to_string(status.MPI_SOURCE);
+              Log(msg);
+              *result = *tmp_result;
+              delete tmp_result;
+            }
 
-        ChangeStatusWorker(status.MPI_SOURCE, Status::kAvail);
-      }
-    };
+            ChangeStatusWorker(status.MPI_SOURCE, Status::kAvail);
+          }
+        });
 
     // From default_params read out the OptimizationParam section to
     // determine the algorithm type: e.g. ParameterSweep, Differential

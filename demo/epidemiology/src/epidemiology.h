@@ -9,10 +9,10 @@
 #define EPIDEMIOLOGY_H_
 
 #include "biodynamo.h"
+#include "core/environment/uniform_grid_environment.h"
 
 #include "analytical-solution.h"
 #include "behavior.h"
-#include "core/environment/uniform_grid_environment.h"
 #include "evaluate.h"
 #include "person.h"
 #include "sim-param.h"
@@ -22,8 +22,8 @@ namespace bdm {
 // This is the main simulation function
 inline int Simulate(int argc, const char** argv, TimeSeries* result,
                     Param* final_params = nullptr) {
-  // Overwrite the parameters in the config file with the value from
-  // the command line options
+  // Overwrite the parameters with the `final_params` we obtain from the obtain
+  // from `bdm::Experiment`
   auto set_param = [&](Param* param) {
     param->Restore(std::move(*final_params));
     param->random_seed = 0;

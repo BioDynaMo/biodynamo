@@ -46,9 +46,7 @@ MultiSimulation::MultiSimulation(int argc, const char** argv)
 
 MultiSimulation::MultiSimulation(int argc, const char** argv,
                                  const TimeSeries& real)
-    : argc_(argc), argv_(argv) {
-  MultiSimulation(argc, argv);
-
+    : MultiSimulation(argc, argv) {
   // Register the real data to the database
   auto* db = Database::GetInstance();
   db->data_ = real;
@@ -61,31 +59,10 @@ MultiSimulation::~MultiSimulation() {
   free(argv_copy_);
 }
 
-void MultiSimulation::DeleteResultFiles(const std::string& dir) {
-  std::stringstream ss;
-  ss << "rm -rf " << dir << "/*.root";
-  if (system(ss.str().c_str()) != 0) {
-    Log::Error("main", "Non zero return code with with command '", ss.str(),
-               "'");
-  }
-}
-
-void MultiSimulation::MergeResultFiles(const std::string& dir) {
-  std::stringstream ss;
-  ss << "hadd " << dir << "/results.root " << dir << "/*.root > /dev/null";
-  if (system(ss.str().c_str())) {
-    Log::Error("main", "An error occured when trying to merge .root files");
-  } else {
-    std::cout << "Simulation finished successfully. Results are written "
-                 "to "
-              << dir << "/results.root" << std::endl;
-  }
-}
-
 int MultiSimulation::Execute(const TSimulate& simulate_call) {
   int worldsize, provided, myrank;
-  MPI_Init_thread(&argc_, &argv_copy_, MPI_THREAD_SERIALIZED, &provided);
-  if (provided < MPI_THREAD_SERIALIZED) {
+  MPI_Init_thread(&argc_, &argv_copy_, MPI_THREAD_MULTIPLE, &provided);
+  if (provided < MPI_THREAD_MULTIPLE) {
     Log::Error("MPI_Init_thread",
                "The threading support level is lesser than that demanded.");
     MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
@@ -97,10 +74,6 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
 
   int status;
   if (myrank == 0) {
-    // // Delete existing root files
-    // std::string result_dir = gSystem->GetWorkingDirectory();
-    // DeleteResultFiles(result_dir);
-
     // Make a copy of the default parameters
     Simulation simulation(argc_, argv_);
     Param default_params = *(simulation.GetParam());
@@ -112,9 +85,6 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
         });
 
     status = pem.Start();
-
-    // // Merge result files of all workers into single ROOT file
-    // MergeResultFiles(result_dir);
   } else {
     omp_set_num_threads(2);
     // Start the Worker routine (`params` to be received by Master)

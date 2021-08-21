@@ -18,6 +18,7 @@
 #include <functional>
 
 #include "core/analysis/time_series.h"
+#include "core/functor.h"
 #include "core/param/param.h"
 
 namespace bdm {
@@ -29,7 +30,7 @@ struct Algorithm {
   virtual ~Algorithm() {}
 
   virtual void operator()(
-      const std::function<void(Param*, TimeSeries*)>& send_params_to_worker,
+      Functor<void, Param*, TimeSeries*>& dispatch_experiment,
       Param* default_param) = 0;
 };
 

@@ -18,6 +18,12 @@ namespace bdm {
 struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
+  std::string mode = "sim-and-analytical";
+  double beta = 0.06719;
+  double gamma = 0.00521;
+  uint64_t repeat = 10;
+  bool no_legend = false;
+
   std::string result_plot = "result";
   uint64_t number_of_iterations = 1000;
   uint64_t initial_population_susceptible = 2000;

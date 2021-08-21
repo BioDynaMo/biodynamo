@@ -30,9 +30,8 @@ namespace experimental {
 struct ParticleSwarm : public Algorithm {
   BDM_ALGO_HEADER();
 
-  void operator()(
-      const std::function<void(Param*, TimeSeries*)>& dispatch_to_worker,
-      Param* default_params) override {
+  void operator()(Functor<void, Param*, TimeSeries*>& dispatch_experiment,
+                  Param* default_params) override {
     OptimizationParam* opt_params = default_params->Get<OptimizationParam>();
 
     // The number of times to run an experiment
@@ -80,9 +79,9 @@ struct ParticleSwarm : public Algorithm {
 
     // The fitting function (i.e. calling a simulation with a paramset)
     // Anything inside this function should be thread-safe
-    auto fit = [=, &iteration, &prev_mse, &min_mse, &best_params](
-                   const arma::vec& free_params, arma::vec* grad_out,
-                   void* opt_data) {
+    auto fit = [=, &dispatch_experiment, &iteration, &prev_mse, &min_mse,
+                &best_params](const arma::vec& free_params, arma::vec* grad_out,
+                              void* opt_data) {
       Param new_param = *default_params;
 
       std::cout << "iteration (" << iteration << "/" << max_it << ")"
@@ -111,7 +110,7 @@ struct ParticleSwarm : public Algorithm {
 
       new_param.MergeJsonPatch(j_patch.dump());
 
-      double mse = Experiment(dispatch_to_worker, &new_param, repetition);
+      double mse = Experiment(dispatch_experiment, repetition, &new_param);
       std::cout << " MSE " << mse << " inout " << free_params << std::endl;
 #pragma omp critical
       {

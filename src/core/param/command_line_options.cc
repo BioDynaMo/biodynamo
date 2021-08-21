@@ -70,11 +70,10 @@ void CommandLineOptions::Parse() {
 
   try {
     parser_ = new cxxopts::ParseResult(options_.parse(argc_copy, argv_copy));
-  } catch (const cxxopts::option_not_exists_exception&) {
-    Log::Fatal("CommandLineOptions::ParseResult",
-               "Please add all your command line options before:\n  1) Using "
-               "the CommandLineOptions::Get() method.\n  2) Creating a "
-               "Simulation object.");
+  } catch (const cxxopts::option_not_exists_exception& option) {
+    Log::Fatal("CommandLineOptions::ParseResult", option.what(),
+               " Perhaps you are constructing multiple Simulation objects with "
+               "different CommandLineOptions.");
   }
 
   if (first_parse_) {
