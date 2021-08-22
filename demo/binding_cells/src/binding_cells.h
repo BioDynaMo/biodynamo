@@ -159,7 +159,7 @@ inline void Simulate(int argc, const char** argv, TimeSeries* result,
   //////////////////////////////////////////////////////////////////////////////
   simulation.Simulate(sparam->timesteps);
 
-  std::cout << "Finished simulation" << std::endl;
+  std::cout << "Simulation completed successfully!" << std::endl;
 
   //////////////////////////////////////////////////////////////////////////////
   // Return simulation results
