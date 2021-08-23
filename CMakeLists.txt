@@ -453,30 +453,63 @@ if (mfem)
   #  * mfem_DIR - absolute path to where MFEMConfig.cmake is.
   message(NOTICE "MFEM option active. MFEM support is experimental at this " 
                   "stage.")
-  message(STATUS "Looking for MFEM ...")
-  #set(MFEM_DIR "" CACHE PATH "Path to the MFEM build or install prefix.")
+  message(STATUS "Looking for MFEM ...") 
   if (MFEM_DIR)
-    find_package(mfem REQUIRED NAMES MFEM HINTS "${MFEM_DIR}"
+    message(STATUS "... in ${MFEM_DIR} ...")
+    find_package(mfem NAMES MFEM HINTS "${MFEM_DIR}"
     "${MFEM_DIR}/lib/cmake/mfem" NO_DEFAULT_PATH)
   else()
-    find_package(mfem REQUIRED NAMES MFEM)
-  endif()
-  message(STATUS "Found MFEM config in: ${mfem_DIR} (version ${MFEM_VERSION})")
-  # Use the same C++ compiler as MFEM. This is needed when MFEM was built using
-  # an MPI wrapper and we do not have explicitly the MPI compile and link flags.
-  if (NOT CMAKE_CXX_COMPILER AND MFEM_CXX_COMPILER)
-    message(WARNING "MFEM is changing default compiler.")
-    message(STATUS "MFEM compiler is: ${MFEM_CXX_COMPILER}")
-    message(STATUS "BioDynaMo compiler is: ${CMAKE_CXX_COMPILER}")
-    message(STATUS "Setting BioDynaMo to MFEM compiler")
-    set(CMAKE_CXX_COMPILER "${MFEM_CXX_COMPILER}")
+    message(STATUS "MFEM_DIR not specified, searching without hints...")
+    find_package(mfem NAMES MFEM)
   endif()
 
+  if (${mfem_FOUND})
+    message(STATUS "MFEM found on your system, we use your local installation.")
+    message(STATUS "Found MFEM config in: ${mfem_DIR} (vers. ${MFEM_VERSION})")
+    if ("${MFEM_VERSION}" VERSION_LESS "4.3")
+      message(FATAL_ERROR "BioDynaMo requrires MFEM version 4.3 or newer. Terminate.")
+    endif ("${MFEM_VERSION}" VERSION_LESS "4.3")
+  else(${mfem_FOUND})
+    message(STATUS "MFEM not found on your system, we attempt to install it.")
+    include(ExternalProject)
+    ExternalProject_Add(
+      mfem
+      GIT_REPOSITORY https://github.com/mfem/mfem.git
+      GIT_TAG        9d8043b9e78dcdcd86639bbb28d3bd7b514fb5e2 # version 4.3
+      PREFIX "${CMAKE_CURRENT_BINARY_DIR}/mfem"
+      CMAKE_ARGS
+        -DCMAKE_CXX_FLAGS="-fPIC"
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/mfem/build
+      CMAKE_CACHE_ARGS
+        -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+      INSTALL_COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/mfem/build" && 
+        make install
+      BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/mfem/build/lib/libmfem.a"
+    )
+    ExternalProject_Get_Property(mfem source_dir binary_dir)
+
+    # add include directories for mfem
+    set(MFEM_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/mfem/build/include")
+    set(MFEM_LIBRARIES "${CMAKE_BINARY_DIR}/mfem/build/lib/libmfem.a")
+    set(MFEM_INSTALLED true)
+  endif(${mfem_FOUND})
   message(STATUS "MFEM include dir is: ${MFEM_INCLUDE_DIRS}")
   include_directories(${MFEM_INCLUDE_DIRS})
   message(STATUS "MFEM library is: ${MFEM_LIBRARIES}")
   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${MFEM_LIBRARIES})
   add_definitions("-DUSE_MFEM")
+
+  # Use the same C++ compiler as MFEM. This is needed when MFEM was built using
+  # an MPI wrapper and we do not have explicitly the MPI compile and link flags.
+  if (NOT CMAKE_CXX_COMPILER AND MFEM_CXX_COMPILER)
+    message(WARNING "MFEM is changing default compiler. Be careful. This has "
+            "not been tested.")
+    message(STATUS "MFEM compiler is: ${MFEM_CXX_COMPILER}")
+    message(STATUS "BioDynaMo compiler is: ${CMAKE_CXX_COMPILER}")
+    message(STATUS "Setting BioDynaMo's to MFEM's compiler")
+    set(CMAKE_CXX_COMPILER "${MFEM_CXX_COMPILER}")
+  endif(NOT CMAKE_CXX_COMPILER AND MFEM_CXX_COMPILER)
 endif(mfem)
 
 # --------------------Copy the launcher script ---------------------------------
@@ -573,6 +606,11 @@ build_shared_library(biodynamo
 # the linking stage of libbiodynamo
 add_dependencies(biodynamo optim)
                   
+if (MFEM_INSTALLED)
+  message(STATUS "Added MFEM dependency to BioDynaMo shared library.")
+  add_dependencies(biodynamo mfem)
+endif (MFEM_INSTALLED)
+
 # Build plugin
 if(paraview)
   # Find paraview-related sources and headers for plugin generation
