@@ -29,7 +29,7 @@ function(GenerateAPIDocTarget)
 
   configure_file(${doxyfile_in} ${doxyfile} @ONLY)
   set(DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/doc/api)
-  add_custom_command(
+  add_custom_target(bdm_doc
       OUTPUT "${DEST_DIR}/index.html" 
       DEPENDS biodynamo ${doxyfile}
       COMMAND rm -rf ${DEST_DIR}
