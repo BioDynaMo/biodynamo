@@ -31,6 +31,7 @@
 #include "validation_criterion.h"
 
 namespace bdm {
+namespace soma_clustering {
 
 enum Substances { kSubstance0, kSubstance1 };
 
@@ -89,6 +90,7 @@ inline int Simulate(int argc, const char** argv) {
   return !crit;
 }
 
+}  // namespace soma_clustering
 }  // namespace bdm
 
 #endif  // DEMO_SOMA_CLUSTERING_H_

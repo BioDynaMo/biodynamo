@@ -48,6 +48,7 @@ if __name__ == '__main__':
     
     parser.add_argument('--output', action='store', type=str, required=True, help='Filename of the bdm dictionary that will be generated.')
     parser.add_argument('--out-of-source', action='store_true', help='Generate bdm dictionary for an out-of-source build. e.g. a simulation.')
+    parser.add_argument('--bdm-source', action='store', type=str, required=False, help='Source directory of BioDynaMo for bdm build.')
     parser.add_argument('--include-dirs', nargs='+', type=str, required=True, help='At least one directory that contains the header files.')
     parser.add_argument('--headers', nargs='+', type=str, required=True, help='At least one header file containing biodynamo definitions.')
 
@@ -83,10 +84,16 @@ static struct BioDynaMoDictInit {
         if not args.out_of_source:
             include_suffix = ["/include/paraview-5.9", "/include", "/include"]
             cnt = 0
+            # default includes
             for e in environmentals: 
                 f.write('    AppendEnvVar(idirs, "{0}", "{1}");\n'.format(e, include_suffix[cnt]))
                 cnt = cnt + 1
             for id in args.include_dirs:
+                if id.startswith("{}/{}".format(args.bdm_source, "demo")):
+                    bdmsys_subdir = id.replace(args.bdm_source, "")
+                    f.write('    AppendEnvVar(idirs, "{0}", "{1}");\n'.format("BDMSYS", bdmsys_subdir))
+                elif id.startswith("{}/{}".format(args.bdm_source, "benchmark")):
+                    f.write('    AppendEnvVar(idirs, "{0}", "{1}");\n'.format("BDMSYS", "/benchmark"))
                 AppendPrefix(id, prefixes)
         else:
             for e in environmentals: 

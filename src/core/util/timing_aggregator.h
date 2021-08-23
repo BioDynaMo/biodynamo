@@ -42,7 +42,9 @@ class TimingAggregator {
     }
   }
 
-  void AddDescription(const std::string text) { descriptions_.push_back(text); }
+  void AddDescription(const std::string& text) {
+    descriptions_.push_back(text);
+  }
 
  private:
   std::map<std::string, std::vector<int64_t>> timings_;

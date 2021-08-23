@@ -32,7 +32,7 @@ namespace bdm {
 // library more than once
 static std::unordered_map<std::string, TPluginHandler *> loaded_;
 
-VisualizationAdaptor *VisualizationAdaptor::Create(std::string adaptor) {
+VisualizationAdaptor *VisualizationAdaptor::Create(const std::string &adaptor) {
   auto *param = Simulation::GetActive()->GetParam();
   if (!(param->insitu_visualization || param->export_visualization)) {
     return nullptr;

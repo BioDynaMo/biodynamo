@@ -39,7 +39,7 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-void PlotMemoryLayout(const std::vector<Agent*> agents, int numa_node) {
+void PlotMemoryLayout(const std::vector<Agent*>& agents, int numa_node) {
   TCanvas c;
   c.SetCanvasSize(1920, 1200);
   std::vector<double> x(agents.size());
@@ -71,7 +71,7 @@ void PlotMemoryLayout(const std::vector<Agent*> agents, int numa_node) {
 }
 
 // -----------------------------------------------------------------------------
-void PlotMemoryHistogram(const std::vector<Agent*> agents, int numa_node) {
+void PlotMemoryHistogram(const std::vector<Agent*>& agents, int numa_node) {
   TCanvas c;
   c.SetCanvasSize(1920, 1200);
 

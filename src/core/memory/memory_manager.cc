@@ -305,7 +305,7 @@ PoolAllocator::PoolAllocator(std::size_t size, uint64_t size_n_pages,
   }
 }
 
-PoolAllocator::PoolAllocator(PoolAllocator&& other)
+PoolAllocator::PoolAllocator(PoolAllocator&& other) noexcept
     : size_(other.size_),
       tinfo_(other.tinfo_),
       numa_allocators_(std::move(other.numa_allocators_)) {}

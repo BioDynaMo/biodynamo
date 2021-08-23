@@ -28,7 +28,7 @@ class Chemotaxis : public Behavior {
 
  public:
   Chemotaxis() {}
-  Chemotaxis(std::string substance, double speed)
+  Chemotaxis(const std::string& substance, double speed)
       : substance_(substance), speed_(speed) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
         substance);

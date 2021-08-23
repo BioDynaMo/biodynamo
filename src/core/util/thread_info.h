@@ -30,10 +30,10 @@ namespace bdm {
 /// NB: Threads **must** be bound to CPUs using `OMP_PROC_BIND=true`.
 class ThreadInfo {
  public:
-  static ThreadInfo* GetInstance() {
-    static ThreadInfo kInstance;
-    return &kInstance;
-  }
+  static ThreadInfo* GetInstance();
+
+  ThreadInfo(const ThreadInfo&) = delete;
+  ThreadInfo& operator=(const ThreadInfo&) = delete;
 
   // FIXME add test
   int GetMyThreadId() const { return omp_get_thread_num(); }

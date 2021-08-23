@@ -30,6 +30,7 @@ using ParamGroupUid = uint64_t;
 class ParamGroupUidGenerator {
  public:
   ParamGroupUidGenerator(const ParamGroupUidGenerator&) = delete;
+  ParamGroupUidGenerator& operator=(const ParamGroupUidGenerator&) = delete;
 
   static ParamGroupUidGenerator* Get();
 
