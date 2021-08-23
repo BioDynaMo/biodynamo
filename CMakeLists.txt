@@ -117,6 +117,16 @@ option(valgrind  "Enable valgrind tests and make build compatible with valgrind 
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 option(mfem      "Build MFEM for PDE support." ON)
 
+# Define the command to build with. This needs to happen before loading MFEM,
+# because it makes use of `buildcmd`.
+if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
+  set(buildcmd "make -j ${ncpu}")
+elseif (${CMAKE_GENERATOR} STREQUAL "Ninja")
+  set(buildcmd "ninja")
+else()
+  set(buildcmd "cmake --build . -j ${ncpu}")
+endif()
+
 if(APPLE)
   set(CMAKE_BDM_PVVERSION "5.9")
   find_program(BREW_BIN brew)
@@ -484,7 +494,7 @@ if (mfem)
         -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       INSTALL_COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/mfem/build" && 
-        make install
+        ${buildcmd} install
       BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/mfem/build/lib/libmfem.a"
     )
     ExternalProject_Get_Property(mfem source_dir binary_dir)
@@ -867,14 +877,6 @@ file(COPY ${_SHELL_FNS} DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sh_functi
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ GROUP_EXECUTE
         WORLD_READ WORLD_EXECUTE)
-        
-if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
-  set(buildcmd "make -j ${ncpu}")
-elseif (${CMAKE_GENERATOR} STREQUAL "Ninja")
-  set(buildcmd "ninja")
-else()
-  set(buildcmd "cmake --build . -j ${ncpu}")
-endif()
 
 PRINT_LINE()
 MESSAGE("You have just finished to configure the BioDynaMo source.\n\
