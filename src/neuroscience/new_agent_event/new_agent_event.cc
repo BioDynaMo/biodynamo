@@ -19,6 +19,12 @@
 #include "neuroscience/new_agent_event/split_neurite_element_event.h"
 
 namespace bdm {
+
+NewAgentEventUidGenerator* NewAgentEventUidGenerator::GetInstance() {
+  static NewAgentEventUidGenerator kInstance;
+  return &kInstance;
+}
+
 namespace neuroscience {
 
 const NewAgentEventUid NewNeuriteExtensionEvent::kUid =

@@ -340,17 +340,27 @@ function(install_inside_build)
     endif()
 
     if (test)
+      # Copy unit test files
       add_copy_directory(copy_files_bdm
-            ${CMAKE_SOURCE_DIR}/test/unit
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/unit
-            GLOB "*.h"
-            )
+              ${CMAKE_SOURCE_DIR}/test/unit
+              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/unit
+              GLOB "*.h"
+              )
       # gtest includes cannot be copied using this methiod, because the files
       # don't exist yet. See install step of gtest
       add_copy_directory(copy_files_bdm
               ${CMAKE_SOURCE_DIR}/test/unit/
               DESTINATION ${CMAKE_INSTALL_ROOT}/share/test
               GLOB "**/*.py"
+              )
+    endif()
+
+    if (benchmark)
+      # Copy benchmark files
+      add_copy_directory(copy_files_bdm
+              ${CMAKE_SOURCE_DIR}/benchmark
+              DESTINATION ${CMAKE_INSTALL_ROOT}/benchmark
+              GLOB "*.py" "*.sh"
               )
     endif()
 
@@ -433,6 +443,7 @@ endfunction()
 # information about the build system.
 function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(test test "Build BioDynaMo's test suite.")
+    ADD_FEATURE_INFO(benchmark benchmark "Build BioDynaMo's benchmark suite.")
     ADD_FEATURE_INFO(cuda cuda "Enable CUDA code generation for GPU acceleration.")
     ADD_FEATURE_INFO(opencl opencl "Enable OpenCL code generation for GPU acceleration.")
     ADD_FEATURE_INFO(dict dict "Build with ROOT dictionaries.")

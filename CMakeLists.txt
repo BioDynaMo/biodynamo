@@ -99,6 +99,7 @@ mark_as_advanced(${CMAKE_BIODYNAMO_BUILD_ROOT}
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test      "Build all tests." ON) # Makes boolean 'test' available.
+option(benchmark "Build benchmark suite." ON)
 option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
@@ -145,6 +146,8 @@ if(UNIX AND NOT APPLE)
   set(LINUX TRUE)
   add_definitions("-DLINUX")
 endif()
+
+set(CMAKE_VISIBILITY_INLINES_HIDDEN "ON")
 
 # -------------------- find packages ------------------------------------------
 if (tcmalloc)
@@ -643,6 +646,11 @@ if(OPENCL_FOUND OR CUDA_FOUND)
                       SOURCES test/system/cell_division_gpu/src/cell_division_gpu.cc
                       HEADERS test/system/cell_division_gpu/src/cell_division_gpu.h
                       LIBRARIES biodynamo)
+endif()
+
+# -------------------- benchmarking --------------------------------------------
+if(benchmark)
+  include(Benchmarking)
 endif()
 
 # -------------------- Generate notebooks --------------------------------------

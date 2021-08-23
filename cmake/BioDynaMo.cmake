@@ -119,6 +119,8 @@ function(build_shared_library TARGET)
     get_property(INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
     if (BDM_OUT_OF_SOURCE) 
       set(BDM_OUT_OF_SRC_ARG "--out-of-source")
+    else()
+      set(BDM_OUT_OF_SRC_ARG --bdm-source ${CMAKE_SOURCE_DIR})
     endif()
     add_custom_command(OUTPUT "${BDM_DICT_FILE}"
                        COMMAND ${Python_EXECUTABLE} ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_OUT_OF_SRC_ARG} --output ${BDM_DICT_FILE} --include-dirs ${INCLUDE_DIRS} --headers ${ARG_HEADERS}

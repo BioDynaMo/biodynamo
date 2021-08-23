@@ -20,6 +20,7 @@
 #include "my_cell.h"
 
 namespace bdm {
+namespace soma_clustering {
 
 // Returns 0 if the cell locations within a subvolume of the total system,
 // comprising approximately target_n cells, are arranged as clusters, and 1
@@ -136,6 +137,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   return true;
 }
 
+}  // namespace soma_clustering
 }  // namespace bdm
 
 #endif  // VALIDATION_CRITERION_H_

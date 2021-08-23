@@ -18,12 +18,14 @@ ExternalProject_Add(
   URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.7.0.zip"
   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
   CMAKE_ARGS
-    -DCMAKE_CXX_FLAGS="-fPIC"
     -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
+    -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
+    -DCMAKE_VISIBILITY_INLINES_HIDDEN:BOOL=ON
+    -DCMAKE_POLICY_DEFAULT_CMP0063=NEW
   CMAKE_CACHE_ARGS
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-    INSTALL_COMMAND cp -a "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/include/." "${CMAKE_CURRENT_BINARY_DIR}/include"
+  INSTALL_COMMAND cp -a "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/include/." "${CMAKE_CURRENT_BINARY_DIR}/include"
   # Ugly but necessary, in future versions one can use ${binary_dir}
   # in BUILD_BYPRODUCTS
   #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
@@ -35,8 +37,8 @@ ExternalProject_Get_Property(gtest source_dir binary_dir)
 add_library(libgtest IMPORTED STATIC GLOBAL)
 add_dependencies(libgtest gtest)
 set_target_properties(libgtest PROPERTIES
-    IMPORTED_LOCATION "${binary_dir}/libgtest.a"
-    IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
+  IMPORTED_LOCATION "${binary_dir}/libgtest.a"
+  IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
 )
 
 # add include directories for gtest
@@ -65,7 +67,8 @@ endif()
 add_custom_target(coverage-build
   COMMAND "${CMAKE_SOURCE_DIR}/util/housekeeping/create-coverage-report.sh" ${PROJECT_SOURCE_DIR} ${CMAKE_BINARY_DIR}
   COMMENT "Generate coverage report in separate directory
-     Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html")
+     Open the following file in your browser: ${CMAKE_BINARY_DIR}/coverage/coverage/index.html"
+)
 
 
 function(bdm_add_test_executable TEST_TARGET)
@@ -75,7 +78,6 @@ function(bdm_add_test_executable TEST_TARGET)
                      SOURCES ${ARG_SOURCES}
                      HEADERS ${ARG_HEADERS}
                      LIBRARIES biodynamo libgtest ${ARG_LIBRARIES})
-  add_dependencies(${TEST_TARGET} gtest)
   SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}" PARENT_SCOPE)
 
   # execute all tests with command: make test

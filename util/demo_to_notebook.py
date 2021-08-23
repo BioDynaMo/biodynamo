@@ -334,7 +334,7 @@ def RemoveIncludeGuardsAndNamespace(text):
 	for line in lines:
 		if line.startswith("#ifndef DEMO_") or line.startswith("#define DEMO_") or line.startswith("#endif  // DEMO_"):
 			continue
-		elif line.startswith("namespace bdm") or line.startswith("}  // namespace bdm"):
+		elif line.startswith("namespace") or line.startswith("}  // namespace"):
 			continue
 		else:
 			new_text += line + "\n"
@@ -368,7 +368,7 @@ def mainfunction(text, visualize):
 	# Command for loading rootlogon.C
 	libloading_macro = '%jsroot on\ngROOT->LoadMacro("${BDMSYS}/etc/rootlogon.C");\n\n'
 
-	c_macro = headers + libloading_macro + rest + main_macro
+	c_macro = headers + rest + main_macro
 	with open(outPathNameMacro, 'w') as fout:
 		fout.write(c_macro)
 

@@ -36,11 +36,10 @@ class Behavior;
 class NewAgentEventUidGenerator {
  public:
   NewAgentEventUidGenerator(const NewAgentEventUidGenerator&) = delete;
+  NewAgentEventUidGenerator& operator=(const NewAgentEventUidGenerator&) =
+      delete;
 
-  static NewAgentEventUidGenerator* GetInstance() {
-    static NewAgentEventUidGenerator kInstance;
-    return &kInstance;
-  }
+  static NewAgentEventUidGenerator* GetInstance();
 
   NewAgentEventUid GenerateUid() {
     std::lock_guard<std::recursive_mutex> lock(mutex_);

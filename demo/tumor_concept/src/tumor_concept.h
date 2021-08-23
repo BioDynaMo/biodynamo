@@ -21,6 +21,7 @@
 #include "biodynamo.h"
 
 namespace bdm {
+namespace tumor_concept {
 
 // Define my custom cell MyCell, which extends Cell by adding extra data
 // members: cell_color and can_divide
@@ -142,6 +143,7 @@ inline int Simulate(int argc, const char** argv) {
   return 0;
 }
 
+}  // namespace tumor_concept
 }  // namespace bdm
 
 #endif  // DEMO_TUMOR_CONCEPT_H_
