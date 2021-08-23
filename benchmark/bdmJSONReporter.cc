@@ -10,9 +10,9 @@
 #include <tuple>
 #include <vector>
 
+#include "bdm_benchmark.h"
 #include "string_util.h"
 #include "timers.h"
-#include "bdm_benchmark.h"
 
 namespace benchmark {
 
@@ -105,10 +105,10 @@ void BdmJSONReporter::ReportRuns(std::vector<Run> const& reports) {
   }
   std::string indent(4, ' ');
   std::ostream& out = GetOutputStream();
-     if (!first_report_) {
-       out << ",\n";
-     }
-     first_report_ = false;
+  if (!first_report_) {
+    out << ",\n";
+  }
+  first_report_ = false;
 
   for (auto it = reports.begin(); it != reports.end(); ++it) {
     out << indent << "{\n";
@@ -125,7 +125,7 @@ void BdmJSONReporter::PrintRunData(Run const& run) {
   std::string indent(6, ' ');
   std::ostream& out = GetOutputStream();
   out << indent << FormatKV("name", run.benchmark_name()) << ",\n";
-//  out << indent << FormatKV("memory", "100000") << ",\n";
+  //  out << indent << FormatKV("memory", "100000") << ",\n";
   out << indent << FormatKV("run_name", run.run_name.str()) << ",\n";
   out << indent << FormatKV("run_type", [&run]() -> const char* {
     switch (run.run_type) {
@@ -181,6 +181,5 @@ void BdmJSONReporter::PrintRunData(Run const& run) {
   }
   out << '\n';
 };
-
 
 }  // namespace benchmark

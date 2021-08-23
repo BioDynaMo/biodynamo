@@ -20,11 +20,9 @@ namespace tumor_concept {
 
 static void TumorConcept1(benchmark::State& state) {
   // FIXME memory leak
- const char* argv[3] = {
-    "./tumor_concept1",
-    "--inline-config",
-    "{ \"bdm::Param\":{ \"export_visualization\": true } }"
-  };
+  const char* argv[3] = {
+      "./tumor_concept1", "--inline-config",
+      "{ \"bdm::Param\":{ \"export_visualization\": true } }"};
   for (auto _ : state) {
     Simulate(3, argv);
   }
@@ -35,10 +33,8 @@ BENCHMARK(TumorConcept1)->MeasureProcessCPUTime();
 static void TumorConcept0(benchmark::State& state) {
   // FIXME memory leak
   const char* argv[3] = {
-    "./tumor_concept0",
-    "--inline-config",
-    "{ \"bdm::Param\":{ \"export_visualization\": false } }"
-  };
+      "./tumor_concept0", "--inline-config",
+      "{ \"bdm::Param\":{ \"export_visualization\": false } }"};
   for (auto _ : state) {
     Simulate(3, argv);
   }

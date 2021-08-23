@@ -20,10 +20,8 @@ namespace soma_clustering {
 
 static void SomaClustering1(benchmark::State& state) {
   const char* argv[3] = {
-    "./soma_clustering1",
-    "--inline-config",
-    "{ \"bdm::Param\":{ \"export_visualization\": true } }"
-  };
+      "./soma_clustering1", "--inline-config",
+      "{ \"bdm::Param\":{ \"export_visualization\": true } }"};
   for (auto _ : state) {
     Simulate(3, argv);
   }
@@ -33,10 +31,8 @@ BENCHMARK(SomaClustering1)->MeasureProcessCPUTime();
 
 static void SomaClustering0(benchmark::State& state) {
   const char* argv[3] = {
-    "./soma_clustering0",
-    "--inline-config",
-    "{ \"bdm::Param\":{ \"export_visualization\": false } }"
-  };
+      "./soma_clustering0", "--inline-config",
+      "{ \"bdm::Param\":{ \"export_visualization\": false } }"};
   for (auto _ : state) {
     Simulate(3, argv);
   }
