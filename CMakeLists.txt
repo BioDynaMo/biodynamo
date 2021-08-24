@@ -117,16 +117,6 @@ option(valgrind  "Enable valgrind tests and make build compatible with valgrind 
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 option(mfem      "Build MFEM for PDE support." ON)
 
-# Define the command to build with. This needs to happen before loading MFEM,
-# because it makes use of `buildcmd`.
-if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
-  set(buildcmd "make -j ${ncpu}")
-elseif (${CMAKE_GENERATOR} STREQUAL "Ninja")
-  set(buildcmd "ninja")
-else()
-  set(buildcmd "cmake --build . -j ${ncpu}")
-endif()
-
 if(APPLE)
   set(CMAKE_BDM_PVVERSION "5.9")
   find_program(BREW_BIN brew)
@@ -477,10 +467,19 @@ if (mfem)
     message(STATUS "MFEM found on your system, we use your local installation.")
     message(STATUS "Found MFEM config in: ${mfem_DIR} (vers. ${MFEM_VERSION})")
     if ("${MFEM_VERSION}" VERSION_LESS "4.3")
-      message(FATAL_ERROR "BioDynaMo requrires MFEM version 4.3 or newer. Terminate.")
+      message(FATAL_ERROR "BioDynaMo requrires MFEM vers. 4.3 or newer. Exit.")
     endif ("${MFEM_VERSION}" VERSION_LESS "4.3")
   else(${mfem_FOUND})
     message(STATUS "MFEM not found on your system, we attempt to install it.")
+    
+    # Use either make or ninja depending on the CMAKE_GENERATOR
+    if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
+      set(mfem_install_cmd "make")
+    else ()
+      set(mfem_install_cmd "ninja")
+    endif()
+
+    # Download MFEM from GitHub and install
     include(ExternalProject)
     ExternalProject_Add(
       mfem
@@ -493,8 +492,15 @@ if (mfem)
       CMAKE_CACHE_ARGS
         -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
+      # ToDo (tobias): the last two commands are executed to allow cling to find
+      # the mfem.hpp include. Find more elegant way to use original include dir.
+      # Also, make check if we really want to expose libmfem.a in /lib.
       INSTALL_COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/mfem/build" && 
-        ${buildcmd} install
+        ${mfem_install_cmd} install &&
+        cp -f "${CMAKE_BINARY_DIR}/mfem/build/lib/libmfem.a" 
+              "${CMAKE_BINARY_DIR}/lib" &&
+        cp -r -f "${CMAKE_BINARY_DIR}/mfem/build/include/." 
+                 "${CMAKE_BINARY_DIR}/include/"
       BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/mfem/build/lib/libmfem.a"
     )
     ExternalProject_Get_Property(mfem source_dir binary_dir)
@@ -504,6 +510,7 @@ if (mfem)
     set(MFEM_LIBRARIES "${CMAKE_BINARY_DIR}/mfem/build/lib/libmfem.a")
     set(MFEM_INSTALLED true)
   endif(${mfem_FOUND})
+
   message(STATUS "MFEM include dir is: ${MFEM_INCLUDE_DIRS}")
   include_directories(${MFEM_INCLUDE_DIRS})
   message(STATUS "MFEM library is: ${MFEM_LIBRARIES}")
@@ -877,6 +884,14 @@ file(COPY ${_SHELL_FNS} DESTINATION  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/sh_functi
         OWNER_READ OWNER_WRITE OWNER_EXECUTE
         GROUP_READ GROUP_EXECUTE
         WORLD_READ WORLD_EXECUTE)
+
+if (${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
+  set(buildcmd "make -j ${ncpu}")
+elseif (${CMAKE_GENERATOR} STREQUAL "Ninja")
+  set(buildcmd "ninja")
+else()
+  set(buildcmd "cmake --build . -j ${ncpu}")
+endif()
 
 PRINT_LINE()
 MESSAGE("You have just finished to configure the BioDynaMo source.\n\
