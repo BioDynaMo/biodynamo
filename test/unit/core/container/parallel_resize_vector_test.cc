@@ -136,7 +136,7 @@ TEST(ParallelResizeVector, AssignmentOperator_Self) {
   EXPECT_EQ(0u, v.capacity());
 
   v.resize(17576, 123);
-  v = v;
+  v = static_cast<ParallelResizeVector<int>&>(v);
 
   EXPECT_EQ(17576u, v.size());
   EXPECT_EQ(17576u, v.capacity());
