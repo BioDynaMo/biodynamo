@@ -76,8 +76,8 @@ class MethodOfLineSolver {
 
  public:
   MethodOfLineSolver(
-      mfem::Mesh* mesh, int order, int dimension, int ode_solver_id,
-      int pde_oper_id,
+      mfem::Mesh* mesh, int order, int dimension, MFEMODESolver ode_solver_id,
+      PDEOperator pde_oper_id,
       std::function<double(const mfem::Vector&)> InitialGridValues,
       std::vector<double> numeric_operator_parameters,
       std::vector<std::function<double(const mfem::Vector&)>>
