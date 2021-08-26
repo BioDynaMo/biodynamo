@@ -26,6 +26,9 @@
 #include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "core/util/random.h"
+#ifdef USE_MFEM
+#include "core/pde/mfem_mol.h"
+#endif  // USE_MFEM
 
 class EulerGrid;
 class RungeKuttaGrid;
@@ -399,6 +402,71 @@ struct ModelInitializer {
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
     diffusion_grid->AddInitializer(function);
   }
+
+#ifdef USE_MFEM
+  /// Herewith, we add a `mfem::Mesh*` and a `MethodOfLineSolver*` to the
+  /// resource manager. The `MethodOfLineSolver` will be initialized with the
+  /// function arguments. Make sure that the destructor of the `mfem::Mesh*`
+  /// object is not called outside, since the resource manager will call `delete
+  /// mesh` (use for example `new` to achieve this). In brief:
+  ///
+  /// @param[in]  mesh             The mesh discretization of the domain (MEFM)
+  /// @param[in]  substance_id     The substance identifier
+  /// @param[in]  substance_name   The substance name
+  /// @param[in]  order            Polynomial order for FE method
+  /// @param[in]  dimension        Dimension of the Problem (only `3` supported)
+  /// @param[in]  ode_solver_id    ID to specify the ODE solver
+  /// @param[in]  pde_oper_id      Specify the operator / the PDE problem
+  /// @param[in]  InitialGridValues Function to set the initial conditions
+  /// @param[in]  numeric_operator_parameters  Numeric constants for PDE problem
+  /// @param[in]  operator_functions Functions occuring in the PDE
+  ///
+  /// For more details please take a look at the `MethodOfLineSolver` itself.
+  ///
+  static void DefineMFEMSubstanceOnMesh(
+      mfem::Mesh* mesh, size_t substance_id, const std::string& substance_name,
+      int order, int dimension, bdm::experimental::MFEMODESolver ode_solver_id,
+      bdm::experimental::PDEOperator pde_oper_id,
+      std::function<double(const mfem::Vector&)> InitialGridValues,
+      std::vector<double> numeric_operator_parameters,
+      std::vector<std::function<double(const mfem::Vector&)>>
+          operator_functions);
+
+  /// Herewith, we add a `mfem::Mesh*` and a `MethodOfLineSolver*` to the
+  /// resource manager. The `mfem::Mesh*` and the `MethodOfLineSolver` will be
+  /// initialized with the function arguments. In brief:
+  ///
+  /// @param[in]  resolution_x     Resolution in x direction
+  /// @param[in]  resolution_y     Resolution in y direction
+  /// @param[in]  resolution_z     Resolution in z direction
+  /// @param[in]  x_max            Uper limit of the domain in along x [0,x_max]
+  /// @param[in]  y_max            Uper limit of the domain in along y [0,y_max]
+  /// @param[in]  z_max            Uper limit of the domain in along z [0,z_max]
+  /// @param[in]  element_type     Elements used by MFEM
+  /// @param[in]  substance_id     The substance identifier
+  /// @param[in]  substance_name   The substance name
+  /// @param[in]  order            Polynomial order for FE method
+  /// @param[in]  dimension        Dimension of the Problem (only `3` supported)
+  /// @param[in]  ode_solver_id    ID to specify the ODE solver
+  /// @param[in]  pde_oper_id      Specify the operator / the PDE problem
+  /// @param[in]  InitialGridValues Function to set the initial conditions
+  /// @param[in]  numeric_operator_parameters  Numeric constants for PDE problem
+  /// @param[in]  operator_functions Functions occuring in the PDE
+  ///
+  /// For more details please take a look at the `MethodOfLineSolver` itself and
+  /// `mfem::Grid::MakeCartesian3D`.
+  ///
+  static void DefineMFEMSubstanceAndMesh(
+      int resolution_x, int resolution_y, int resolution_z, double x_max,
+      double y_max, double z_max, mfem::Element::Type element_type,
+      size_t substance_id, const std::string& substance_name, int order,
+      int dimension, bdm::experimental::MFEMODESolver ode_solver_id,
+      bdm::experimental::PDEOperator pde_oper_id,
+      std::function<double(const mfem::Vector&)> InitialGridValues,
+      std::vector<double> numeric_operator_parameters,
+      std::vector<std::function<double(const mfem::Vector&)>>
+          operator_functions);
+#endif  // USE_MFEM
 };
 
 }  // namespace bdm
