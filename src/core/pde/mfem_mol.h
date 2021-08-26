@@ -68,6 +68,10 @@ class MethodOfLineSolver {
   std::vector<std::function<double(const mfem::Vector&)>> operator_functions_;
   /// Value to store the current time
   double t_;
+  /// ID for substance that it considers
+  uint64_t substance_id_;
+  /// Substance name
+  std::string substance_name_;
 
   /// Internally used function for initilization.
   void Initialize();
@@ -122,6 +126,18 @@ class MethodOfLineSolver {
 
   // Get simulated time
   double GetSimTime() { return t_; }
+
+  // Get SubstanceID
+  uint64_t GetSubstanceId() { return substance_id_; }
+
+  // Set SubstanceID
+  void SetSubstanceId(uint64_t id) { substance_id_ = id; }
+
+  // Get substance name
+  std::string GetSubstanceName() { return substance_name_; }
+
+  // Set substance name
+  void SetSubstanceName(std::string name) { substance_name_ = name; }
 };
 
 }  // namespace experimental
