@@ -73,6 +73,7 @@
     <class name="bdm::experimental::MolOperator" />
     <class name="bdm::experimental::DiffusionOperator" />
     <class name="bdm::experimental::ConductionOperator" />
+    <class name="std::unordered_map<uint64_t, std::pair<mfem::Mesh*, bdm::experimental::MethodOfLineSolver*>>" />
     <class name="bdm::experimental::TimeSeries::Data" noStreamer="true" />
     <class name="bdm::experimental::Reducer<uint64_t>" />
     <class name="bdm::experimental::Reducer<double>" />
