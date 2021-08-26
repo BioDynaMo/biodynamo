@@ -29,6 +29,10 @@ BDM_REGISTER_OP(BoundSpace, "bound space", kCpu);
 
 BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
 
+#ifdef USE_MFEM
+BDM_REGISTER_OP(MFEMPDEOp, "mfem pde", kCpu);
+#endif  // USE_MFEM
+
 // By default run load balancing only in the first iteration.
 BDM_REGISTER_OP_WITH_FREQ(LoadBalancingOp, "load balancing", kCpu,
                           std::numeric_limits<uint32_t>::max());

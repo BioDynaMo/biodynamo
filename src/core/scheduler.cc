@@ -43,10 +43,18 @@ Scheduler::Scheduler() {
 
   // Operations are scheduled in the following order (sub categorated by their
   // operation implementation type, so that actual order may vary)
+
+#ifndef USE_MFEM
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
       "mechanical forces", "discretization", "propagate staticness agentop",
       "diffusion"};
+#else
+  std::vector<std::string> default_op_names = {
+      "update staticness", "bound space",    "behavior",
+      "mechanical forces", "discretization", "propagate staticness agentop",
+      "diffusion", "mfem pde"};
+#endif  // USE_MFEM
 
   std::vector<std::string> pre_scheduled_ops_names = {
       "set up iteration", "update environment", "propagate staticness"};
