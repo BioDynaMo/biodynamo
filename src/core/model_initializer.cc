@@ -44,4 +44,47 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
   rm->AddDiffusionGrid(dgrid);
 }
 
+#ifdef USE_MFEM
+
+void ModelInitializer::DefineMFEMSubstanceOnMesh(
+    mfem::Mesh* mesh, size_t substance_id, const std::string& substance_name,
+    int order, int dimension, bdm::experimental::MFEMODESolver ode_solver_id,
+    bdm::experimental::PDEOperator pde_oper_id,
+    std::function<double(const mfem::Vector&)> InitialGridValues,
+    std::vector<double> numeric_operator_parameters,
+    std::vector<std::function<double(const mfem::Vector&)>>
+        operator_functions) {
+  auto* sim = Simulation::GetActive();
+  auto* rm = sim->GetResourceManager();
+  // ToDo(tobias): can this be conde without new?
+  auto* solver = new bdm::experimental::MethodOfLineSolver(
+      mesh, order, dimension, ode_solver_id, pde_oper_id, InitialGridValues,
+      numeric_operator_parameters, operator_functions);
+  solver->SetSubstanceId(substance_id);
+  solver->SetSubstanceName(substance_name);
+  auto mfem_grid = std::make_pair(mesh, solver);
+  rm->AddMFEMMesh(mfem_grid);
+}
+
+void ModelInitializer::DefineMFEMSubstanceAndMesh(
+    int resolution_x, int resolution_y, int resolution_z, double x_max,
+    double y_max, double z_max, mfem::Element::Type element_type,
+    size_t substance_id, const std::string& substance_name, int order,
+    int dimension, bdm::experimental::MFEMODESolver ode_solver_id,
+    bdm::experimental::PDEOperator pde_oper_id,
+    std::function<double(const mfem::Vector&)> InitialGridValues,
+    std::vector<double> numeric_operator_parameters,
+    std::vector<std::function<double(const mfem::Vector&)>>
+        operator_functions) {
+  mfem::Mesh* mesh = new mfem::Mesh();
+  *mesh = mfem::Mesh::MakeCartesian3D(resolution_x, resolution_y, resolution_z,
+                                      element_type, x_max, y_max, z_max);
+  DefineMFEMSubstanceOnMesh(mesh, substance_id, substance_name, order,
+                            dimension, ode_solver_id, pde_oper_id,
+                            InitialGridValues, numeric_operator_parameters,
+                            operator_functions);
+}
+
+#endif
+
 }  // namespace bdm
