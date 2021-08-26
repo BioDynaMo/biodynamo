@@ -54,6 +54,15 @@ ResourceManager::~ResourceManager() {
   if (type_index_) {
     delete type_index_;
   }
+#ifdef USE_MFEM
+  for (auto& el : mfem_meshes_) {
+    // delete the MethodOfLinesSolver pointer since it is created with new in
+    // the model initializer. Same goes for Mesh.
+    // ToDo(tobias): come up with more robust solution with shared_ptr?
+    delete el.second.first;
+    delete el.second.second;
+  }
+#endif  // USE_MFEM
 }
 
 void ResourceManager::ForEachAgentParallel(
