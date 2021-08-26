@@ -251,6 +251,7 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 0;
     param->max_bound = 250;
+    param->calculate_gradients = false;
   };
   Simulation simulation(TEST_NAME, set_param);
 
@@ -346,6 +347,15 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
   EXPECT_EQ(solver2, solver_2);
   EXPECT_EQ(solver3, solver_3);
 
+  // Test scheduled default operation. Implicit test ForEachMFEMGrid.
+  auto* scheduler = simulation.GetScheduler();
+  scheduler->Simulate(2);
+  EXPECT_EQ(0.01, solver1->GetSimTime());
+  scheduler->Simulate(1);
+  EXPECT_EQ(0.02, solver2->GetSimTime());
+  scheduler->Simulate(1);
+  EXPECT_EQ(0.03, solver3->GetSimTime());
+
   // Remove grids
   rm->RemoveMFEMMesh(0);
   EXPECT_EQ(rm->GetNumMFEMMeshes(), 2);
@@ -353,8 +363,6 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
   EXPECT_EQ(rm->GetNumMFEMMeshes(), 1);
   rm->RemoveMFEMMesh(2);
   EXPECT_EQ(rm->GetNumMFEMMeshes(), 0);
-
-  // ToDo(tobias) Test scheduled default operation. Test ForEachMFEMGrid.
 }
 
 }  // namespace experimental
