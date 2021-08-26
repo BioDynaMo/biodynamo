@@ -141,7 +141,7 @@ class ResourceManager {
   /// Return the diffusion grid which holds the substance of specified id
   DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
     if (substance_id >= diffusion_grids_.size()) {
-      Log::Error("DiffusionGrid::GetDiffusionGrid",
+      Log::Error("ResourceManager::GetDiffusionGrid",
                  "You tried to request diffusion grid '", substance_id,
                  "', but it does not exist! Make sure that it's the correct id "
                  "correctly and that the diffusion grid is registered.");
@@ -160,7 +160,7 @@ class ResourceManager {
         return dgrid;
       }
     }
-    Log::Error("DiffusionGrid::GetDiffusionGrid",
+    Log::Error("ResourceManager::GetDiffusionGrid",
                "You tried to request a diffusion grid named '", substance_name,
                "', but it does not exist! Make sure that it's spelled "
                "correctly and that the diffusion grid is registered.");
