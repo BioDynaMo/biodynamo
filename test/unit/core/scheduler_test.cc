@@ -454,7 +454,11 @@ TEST_F(SchedulerTest, ScheduleOrder) {
   std::vector<std::string> agent_ops = {"update staticness", "bound space",
                                         "behavior", "mechanical forces",
                                         "discretization"};
+#ifndef USE_MFEM
   std::vector<std::string> sa_ops = {"diffusion"};
+#else
+  std::vector<std::string> sa_ops = {"diffusion", "mfem pde"};
+#endif  // USE_MFEM
 
   int i = 0;
   ASSERT_EQ(agent_ops.size(), GetListOfScheduledAgentOps().size());
