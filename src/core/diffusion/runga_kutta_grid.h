@@ -27,7 +27,8 @@ class RungaKuttaGrid : public DiffusionGrid {
   RungaKuttaGrid() {}
   RungaKuttaGrid(int substance_id, std::string substance_name, double dc,
                  double mu, int resolution = 11)
-      : DiffusionGrid(substance_id, substance_name, dc, mu, resolution) {}
+      : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
+                      resolution) {}
 
   void Initialize() override {
     DiffusionGrid::Initialize();
