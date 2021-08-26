@@ -42,6 +42,9 @@
 #include "core/util/root.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
+#ifdef USE_MFEM
+#include "core/pde/mfem_mol.h"
+#endif  // USE_MFEM
 
 namespace bdm {
 
@@ -178,6 +181,87 @@ class ResourceManager {
       f(el.second);
     }
   }
+
+#ifdef USE_MFEM
+  /// Return the number of registered MFEM Meshes
+  size_t GetNumMFEMMeshes() { return mfem_meshes_.size(); }
+
+  /// Add an MFEMMesh + solver to the ResourceManager. Try avoiding to call this
+  /// function directly and use the ModelInitializer. If you call this directly,
+  /// make sure that neither the destructor of the mesh nor the one of the
+  /// solver is called outside the ResourceManager since it calls delete on all
+  /// the involved pointers.
+  void AddMFEMMesh(
+      std::pair<mfem::Mesh*, bdm::experimental::MethodOfLineSolver*>
+          mfem_mesh) {
+    uint64_t substance_id = mfem_mesh.second->GetSubstanceId();
+    auto search = mfem_meshes_.find(substance_id);
+    if (search != mfem_meshes_.end()) {
+      Log::Fatal("ResourceManager::AddMFEMMesh",
+                 "You tried to add a MFEM mesh with an already existing"
+                 " substance id. Please choose a different substance id.");
+    } else {
+      mfem_meshes_[substance_id] = mfem_mesh;
+    }
+  }
+
+  /// Remove an MFEM mesh from the resource manager.
+  void RemoveMFEMMesh(uint64_t substance_id) {
+    auto search = mfem_meshes_.find(substance_id);
+    if (search != mfem_meshes_.end()) {
+      delete search->second.first;
+      delete search->second.second;
+      mfem_meshes_.erase(search);
+    } else {
+      Log::Error("ResourceManager::RemoveDiffusionGrid",
+                 "You tried to remove a MFEM mesh that does not exist.");
+    }
+  }
+
+  /// Return the MFEM mesh which holds the substance of the specified ID.
+  auto GetMFEMGrid(uint64_t substance_id) const {
+    if (substance_id >= mfem_meshes_.size()) {
+      Log::Error("ResourceManager::GetMFEMGrid",
+                 "You tried to request MFEM mesh '", substance_id,
+                 "', but it does not exist! Make sure that it's the correct id "
+                 "correctly and that the MFEM mesh is registered.");
+      return std::make_pair<mfem::Mesh*,
+                            bdm::experimental::MethodOfLineSolver*>(nullptr,
+                                                                    nullptr);
+    }
+    return mfem_meshes_.at(substance_id);
+  }
+
+  /// Return the MFEM mesh which holds the substance of specified name
+  /// Caution: using this function in a tight loop will result in a slow
+  /// simulation. Use `GetMFEMGrid(size_t)` in those cases.
+  auto GetMFEMGrid(const std::string& substance_name) const {
+    for (auto& el : mfem_meshes_) {
+      auto& mfem_mesh = el.second;
+      if (mfem_mesh.second->GetSubstanceName() == substance_name) {
+        return mfem_mesh;
+      }
+    }
+    Log::Error("ResourceManager::GetMFEMGrid",
+               "You tried to request a MFEM mesh named '", substance_name,
+               "', but it does not exist! Make sure that it's spelled "
+               "correctly and that the MFEM mesh is registered.");
+    return std::make_pair<mfem::Mesh*, bdm::experimental::MethodOfLineSolver*>(
+        nullptr, nullptr);
+  }
+
+  /// Execute the given functor for all MFEM mesh
+  ///     rm->ForEachMFEMGrid([](std::pair<mfem::Mesh*,
+  ///     bdm::experimental::MethodOfLineSolver*>) {
+  ///       ...
+  ///     });
+  template <typename TFunctor>
+  void ForEachMFEMGrid(TFunctor&& f) const {
+    for (auto& el : mfem_meshes_) {
+      f(el.second);
+    }
+  }
+#endif  // USE_MFEM
 
   /// Returns the total number of agents if numa_node == -1
   /// Otherwise the number of agents in the specific numa node
@@ -435,6 +519,12 @@ class ResourceManager {
   std::vector<std::vector<Agent*>> agents_lb_;  //!
   /// Maps a diffusion grid ID to the pointer to the diffusion grid
   std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
+#ifdef USE_MFEM
+  /// Maps a diffusion grid ID to the pointer to the diffusion grid
+  std::unordered_map<
+      uint64_t, std::pair<mfem::Mesh*, bdm::experimental::MethodOfLineSolver*>>
+      mfem_meshes_;
+#endif  // USE_MFEM
 
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
