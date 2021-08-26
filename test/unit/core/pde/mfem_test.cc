@@ -16,7 +16,10 @@
 
 #include <gtest/gtest.h>
 #include <numeric>
+#include "biodynamo.h"
 #include "core/pde/mfem_mol.h"
+
+#define TEST_NAME typeid(*this).name()
 
 namespace bdm {
 namespace experimental {
@@ -47,6 +50,8 @@ struct TimeStepGenerator {
     return current;
   }
 };
+
+enum Substances { kSubstance1, kSubstance2, kSubstance3 };
 
 TEST(MethodOfLineTest, SetODESolver) {
   // Create a simple one element hex mesh
@@ -239,6 +244,117 @@ TEST(MethodOfLineTest, GetSolutionAtPosition) {
   grid_value = solver.GetSolutionAtPosition(bdm_position);
   EXPECT_NE(bdm_position.Norm(), grid_value);
   EXPECT_LT(abs(bdm_position.Norm() - grid_value), grid_value * 0.001);
+}
+
+TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = 0;
+    param->max_bound = 250;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+
+  // Create one cell at a random position
+  auto construct = [](const Double3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
+                                       construct);
+
+  // Create a simple one element hex mesh
+  mfem::Mesh* mesh = new mfem::Mesh();
+  *mesh =
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+  mesh->UniformRefinement();
+  mesh->UniformRefinement();
+
+  // Define function to set inital values of the Mesh
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
+
+  // Define numeric parameters
+  std::vector<double> parameters{0.1};
+
+  // Define empty functions vector for constructor
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+
+  // Define the first substances in our simulation
+  ModelInitializer::DefineMFEMSubstanceOnMesh(
+      mesh, kSubstance1, "kSubstance1", 1, 3,
+      MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
+      InitializeGridValues, parameters, operator_functions);
+
+  // Define the second substances in our simulation
+  ModelInitializer::DefineMFEMSubstanceAndMesh(
+      10, 10, 10, 1.0, 1.0, 1.0, mfem::Element::TETRAHEDRON, kSubstance2,
+      "kSubstance2", 1, 3, MFEMODESolver::kBackwardEulerSolver,
+      PDEOperator::kDiffusion, InitializeGridValues, parameters,
+      operator_functions);
+
+  // Define the third substances in our simulation
+  ModelInitializer::DefineMFEMSubstanceAndMesh(
+      15, 15, 15, 1.3, 1.3, 1.3, mfem::Element::TETRAHEDRON, kSubstance3,
+      "kSubstance3", 2, 3, MFEMODESolver::kBackwardEulerSolver,
+      PDEOperator::kDiffusion, InitializeGridValues, parameters,
+      operator_functions);
+
+  simulation.GetEnvironment()->Update();
+
+  // Test if we have 3 registered MFEM Meshes
+  EXPECT_EQ(rm->GetNumMFEMMeshes(), 3);
+
+  // Get registered meshes and solvers
+  auto* mesh1 = rm->GetMFEMGrid(0).first;
+  auto* mesh2 = rm->GetMFEMGrid(1).first;
+  auto* mesh3 = rm->GetMFEMGrid(2).first;
+  auto* solver1 = rm->GetMFEMGrid(0).second;
+  auto* solver2 = rm->GetMFEMGrid(1).second;
+  auto* solver3 = rm->GetMFEMGrid(2).second;
+
+  // Test if all pointers (mesh and solver) are not nullptr and we have a unique
+  // address for each of them.
+  EXPECT_NE(nullptr, mesh1);
+  EXPECT_NE(nullptr, mesh2);
+  EXPECT_NE(nullptr, mesh3);
+  EXPECT_NE(nullptr, solver1);
+  EXPECT_NE(nullptr, solver2);
+  EXPECT_NE(nullptr, solver3);
+  EXPECT_NE(mesh1, mesh2);
+  EXPECT_NE(mesh1, mesh3);
+  EXPECT_NE(mesh2, mesh3);
+  EXPECT_NE(solver1, solver2);
+  EXPECT_NE(solver1, solver3);
+  EXPECT_NE(solver2, solver3);
+
+  // Get the same pointers but from string search
+  auto* mesh_1 = rm->GetMFEMGrid("kSubstance1").first;
+  auto* mesh_2 = rm->GetMFEMGrid("kSubstance2").first;
+  auto* mesh_3 = rm->GetMFEMGrid("kSubstance3").first;
+  auto* solver_1 = rm->GetMFEMGrid("kSubstance1").second;
+  auto* solver_2 = rm->GetMFEMGrid("kSubstance2").second;
+  auto* solver_3 = rm->GetMFEMGrid("kSubstance3").second;
+
+  // Test if string and id search result in the same references
+  EXPECT_EQ(mesh1, mesh_1);
+  EXPECT_EQ(mesh2, mesh_2);
+  EXPECT_EQ(mesh3, mesh_3);
+  EXPECT_EQ(solver1, solver_1);
+  EXPECT_EQ(solver2, solver_2);
+  EXPECT_EQ(solver3, solver_3);
+
+  // Remove grids
+  rm->RemoveMFEMMesh(0);
+  EXPECT_EQ(rm->GetNumMFEMMeshes(), 2);
+  rm->RemoveMFEMMesh(1);
+  EXPECT_EQ(rm->GetNumMFEMMeshes(), 1);
+  rm->RemoveMFEMMesh(2);
+  EXPECT_EQ(rm->GetNumMFEMMeshes(), 0);
+
+  // ToDo(tobias) Test scheduled default operation. Test ForEachMFEMGrid.
 }
 
 }  // namespace experimental
