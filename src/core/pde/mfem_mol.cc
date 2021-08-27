@@ -35,7 +35,8 @@ MethodOfLineSolver::MethodOfLineSolver(
       InitialGridValues_(std::move(InitialGridValues)),
       numeric_operator_parameters_(std::move(numeric_operator_parameters)),
       operator_functions_(std::move(operator_functions)),
-      t_(0.0) {
+      t_(0.0),
+      ode_steps_(0) {
   Initialize();
   SetOperator(pde_oper_id);
   SetODESolver(ode_solver_id);
@@ -166,11 +167,30 @@ void MethodOfLineSolver::Step(double dt) {
                  "Time step: ", dt, " / ", dt_ref, "\nTarget time: ", t_, " / ",
                  t_target, "\n(is / expected)");
   }
+  ode_steps_++;
 }
 
 void MethodOfLineSolver::Visualize() { return; }
 
 void MethodOfLineSolver::UpdateGridFunction() { u_gf_.SetFromTrueDofs(u_); }
+
+void MethodOfLineSolver::PrintInfo(std::ostream& out) {
+  out << std::string(80, '_') << "\n";
+  out << "\nSubstance ID\t\t\t: " << substance_id_ << "\n";
+  out << "Substance name\t\t\t: " << substance_name_ << "\n";
+  std::string object_name;
+  object_name = typeid(*ode_solver_).name();
+  out << "ODE Solver\t\t\t: " << object_name << "\n";
+  object_name = typeid(*operator_).name();
+  out << "PDE Operator\t\t\t: " << object_name << "\n";
+  out << "Finite Element Collection\t: " << fe_coll_.Name() << "\n";
+  out << "Polynamial degree (FE)\t\t: " << fe_coll_.GetOrder() << "\n";
+  out << "ODE dimension\t\t\t: " << u_.Size() << "\n";
+  out << "ODE steps executed\t\t: " << ode_steps_ << "\n";
+  out << "ODE simulated time\t\t: " << t_ << "\n";
+  mesh_->PrintInfo(out);
+  out << std::string(80, '_') << "\n";
+}
 
 void MethodOfLineSolver::SetOperator(MolOperator* oper) {
   if (operator_ != nullptr && operator_ != oper) {
