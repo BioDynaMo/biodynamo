@@ -72,6 +72,8 @@ class MethodOfLineSolver {
   uint64_t substance_id_;
   /// Substance name
   std::string substance_name_;
+  /// Number of calls to function Step
+  uint64_t ode_steps_;
 
   /// Internally used function for initilization.
   void Initialize();
@@ -108,6 +110,9 @@ class MethodOfLineSolver {
   /// vector `u_` and updates it. Before making calls to `u_gf_`, this routine
   /// must be called to update it.
   void UpdateGridFunction();
+
+  /// Print information about the PDE / Continuum model
+  void PrintInfo(std::ostream& out);
 
   /// Get the value of the GridFunction solution at a certain position.
   double GetSolutionAtPosition(Double3& position);

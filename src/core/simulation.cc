@@ -149,10 +149,10 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
 
   os << std::endl;
 
-  os << "***********************************************" << std::endl;
-  os << "***********************************************" << std::endl;
+  os << std::string(80, '*') << std::endl;
+  os << std::string(80, '*') << std::endl;
   os << "\033[1mSimulation Metadata:\033[0m" << std::endl;
-  os << "***********************************************" << std::endl;
+  os << std::string(80, '*') << std::endl;
   os << std::endl;
   os << "\033[1mGeneral\033[0m" << std::endl;
   if (sim.command_line_parameter_str_ != "") {
@@ -165,6 +165,8 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << std::endl;
   os << "Number of iterations executed\t: "
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
+  os << "Total simulated time \t\t: " << sim.scheduler_->GetSimulatedTime()
+     << std::endl;
   os << "Number of agents\t\t: " << sim.rm_->GetNumAgents() << std::endl;
 
   if (dgrid_names.size() != 0) {
@@ -181,6 +183,18 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
     }
   }
 
+#ifdef USE_MFEM
+  if (sim.rm_->GetNumMFEMMeshes() != 0) {
+    os << "\n"
+       << std::string(80, '*') << "\n"
+       << "\033[1mMFEM meshes / PDEs\033[0m"
+       << "\n(Found a total of " << sim.rm_->GetNumMFEMMeshes() << ")\n";
+    sim.rm_->ForEachMFEMGrid(
+        [&](auto mfem_grid) { mfem_grid.second->PrintInfo(os); });
+    os << "\n" << std::string(80, '*') << std::endl;
+  }
+#endif  // USE_MFEM
+
   os << "Output directory\t\t: " << sim.GetOutputDir() << std::endl;
   os << "  size\t\t\t\t: "
      << gSystem->GetFromPipe(
@@ -188,24 +202,24 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << std::endl;
   os << "BioDynaMo version:\t\t: " << Version::String() << std::endl;
   os << std::endl;
-  os << "***********************************************" << std::endl;
+  os << std::string(80, '*') << std::endl;
   os << *(sim.scheduler_->GetOpTimes()) << std::endl;
-  os << "***********************************************" << std::endl;
+  os << std::string(80, '*') << std::endl;
   os << std::endl;
   os << "\033[1mThread Info\033[0m" << std::endl;
   os << *ThreadInfo::GetInstance();
   os << std::endl;
-  os << "***********************************************" << std::endl;
+  os << std::string(80, '*') << std::endl;
   os << std::endl;
   os << *(sim.rm_);
   os << std::endl;
-  os << "***********************************************" << std::endl;
+  os << std::string(80, '*') << std::endl;
   os << std::endl;
   os << "\033[1mParameters\033[0m" << std::endl;
   os << sim.param_->ToJsonString();
   os << std::endl;
-  os << "***********************************************" << std::endl;
-  os << "***********************************************" << std::endl;
+  os << std::string(80, '*') << std::endl;
+  os << std::string(80, '*') << std::endl;
 
   return os;
 }
