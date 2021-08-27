@@ -192,6 +192,12 @@ void MethodOfLineSolver::PrintInfo(std::ostream& out) {
   out << std::string(80, '_') << "\n";
 }
 
+void ExportVTK() {
+  // ToDo(tobias): Export mesh + values to paraview and integrate into BDM
+  // Paraview adaptor.
+  return;
+}
+
 void MethodOfLineSolver::SetOperator(MolOperator* oper) {
   if (operator_ != nullptr && operator_ != oper) {
     delete operator_;
