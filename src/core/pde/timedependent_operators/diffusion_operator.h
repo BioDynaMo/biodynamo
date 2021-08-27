@@ -34,7 +34,7 @@ namespace experimental {
 ///
 /// After spatial discretization, the diffusion model can be written as:
 ///
-///   $f[ du/dt = M^{-1}(Ku) $f]
+///   \f[ du/dt = M^{-1}(Ku) \f]
 ///
 /// where \f$ u \f$ is the vector representing the concentration, \f$ M \f$ is
 /// the mass matrix, and \f$ K \f$ is the diffusion operator with diffusivity
@@ -49,16 +49,20 @@ class DiffusionOperator : public MolOperator {
   bool fuction_coefficient_;
 
  public:
+  /// Constructor for full PDE
+  /// \f$ \frac{du}{dt} = \nabla (D \nabla u) + \Gamma u \f$
   DiffusionOperator(
       mfem::FiniteElementSpace &f, double diffusion_coefficient,
       std::function<double(const mfem::Vector &)> diffusion_func_);
+  /// Constructor for simplified PDE \f$ \frac{du}{dt} = \nabla (D \nabla u) \f$
   DiffusionOperator(mfem::FiniteElementSpace &f, double diffusion_coefficient);
+  /// Constructor for simplified PDE \f$ \frac{du}{dt} = \Gamma u \f$
   DiffusionOperator(
       mfem::FiniteElementSpace &f,
       std::function<double(const mfem::Vector &)> diffusion_func_);
 
   /// Update the diffusion BilinearForm K using the given true-dof vector `u`.
-  void SetParameters(const mfem::Vector &u);
+  void SetParameters(const mfem::Vector &u) override;
 };
 
 }  // namespace experimental
