@@ -46,6 +46,7 @@ void MolOperator::ImplicitSolve(const double dt, const mfem::Vector &u,
 }
 
 void MolOperator::SetParameters(const mfem::Vector &u) {
+  // Workaround because pure virtual classes are a little bit limiting.
   Log::Fatal("SetParameters", "Function is only defined in derived classes. ",
              "Please consider using them.");
 }

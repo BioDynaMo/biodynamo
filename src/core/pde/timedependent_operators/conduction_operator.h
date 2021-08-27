@@ -23,16 +23,16 @@
 namespace bdm {
 namespace experimental {
 
-/// This operator is taken from MFEM EX16.
+/// This operator is generalized from MFEM EX16.
 /// It corresponds to the equation:
-/// \frac{du}{dt} = \nabla \cdot (\kappa + \alpha u) \nabla u
+/// \f[ \frac{du}{dt} = \nabla \cdot (\kappa + \alpha u) \nabla u \f]
 /// After spatial discretization, the conduction model can be written as:
 ///
-///    du/dt = M^{-1}(-Ku)
+///   \f[ du/dt = M^{-1}(-Ku) \f]
 ///
 /// where u is the vector representing the temperature, M is the mass matrix,
 /// and K is the diffusion operator with diffusivity depending on u:
-/// (\kappa + \alpha u).
+/// \f$ D = \kappa + \alpha u \f$.
 ///
 /// The Class ConductionOperator represents the right-hand side of the above
 /// ODE.
@@ -41,9 +41,12 @@ class ConductionOperator : public MolOperator {
   double alpha_, kappa_;
 
  public:
+  /// Constructor for full PDE
+  /// \f$ \frac{du}{dt} = \nabla \cdot (\kappa + \alpha u) \nabla u \f$
   ConductionOperator(mfem::FiniteElementSpace &f, double alpha, double kappa);
 
-  void SetParameters(const mfem::Vector &u);
+  /// Update the BilinearForm K using the given true-dof vector `u`.
+  void SetParameters(const mfem::Vector &u) override;
 };
 
 }  // namespace experimental

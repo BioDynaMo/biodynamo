@@ -30,15 +30,15 @@ namespace experimental {
 /// decide to implement it or if his/her use case is close enough to the
 /// follwoing.
 ///
-/// The class is designed such that it handles MOLsystems that take an ODE shape
-/// as:
-/// \f[ M \cdot \frac{du(t)}{dt} = - K u(t) \f]
-/// where \f$ u \f$ is vector of time dependent coefficients and \f$ M \f$ is
-/// the mass matrix. The class can be modified and extended but for all cases
-/// that deviate strongly from this form, some additional work is necessary.
-/// Idealy, the user should only worry about the SetParameters() function to
-/// update K. If K is time-independent, consider building K once in the
-/// constructor and define SetParameters(){return;}.
+/// The class is designed such that it handles MOL systems that take an ODE
+/// shape as:
+/// \f[ M \cdot \frac{du(t)}{dt} = - K(t) u(t) \ , \f]
+/// where \f$ u \f$ is vector of the time dependent FE-expansion coefficients
+/// and \f$ M \f$ is the mass matrix. The class can be modified and extended but
+/// for all cases that deviate strongly from this form, some additional work is
+/// necessary. Ideally, the user should only worry about the SetParameters()
+/// function to update K. If K is time-independent, consider building K once in
+/// the constructor and define SetParameters(){return;}.
 class MolOperator : public mfem::TimeDependentOperator {
  protected:
   // this list remains empty for pure Neumann b.c.
@@ -56,7 +56,7 @@ class MolOperator : public mfem::TimeDependentOperator {
   mfem::CGSolver T_solver_;  // Implicit solver for T = M + dt K
   mfem::DSmoother T_prec_;   // Preconditioner for the implicit solver
 
-  mutable mfem::Vector z_;  // auxiliary vector
+  mutable mfem::Vector z_;  // auxiliary vector for internal calculations
 
   double last_dt_;
 
@@ -68,12 +68,13 @@ class MolOperator : public mfem::TimeDependentOperator {
         K_(nullptr),
         T_(nullptr),
         z_(height) {
+    // Generate Mass Matrix
     M_ = new mfem::BilinearForm(&fespace_);
     M_->AddDomainIntegrator(new mfem::MassIntegrator());
     M_->Assemble();
     M_->FormSystemMatrix(ess_tdof_list_, Mmat_);
 
-    // For explicit solution
+    // Define solver for inverting the mass matrix for explicit solution
     const double rel_tol = 1e-8;
     M_solver_.iterative_mode = false;
     M_solver_.SetRelTol(rel_tol);
@@ -83,7 +84,7 @@ class MolOperator : public mfem::TimeDependentOperator {
     M_solver_.SetPreconditioner(M_prec_);
     M_solver_.SetOperator(Mmat_);
 
-    // For implicit solution
+    // Define another solver for matrix inversion for implicit solution
     T_solver_.iterative_mode = false;
     T_solver_.SetRelTol(rel_tol);
     T_solver_.SetAbsTol(0.0);
@@ -91,26 +92,33 @@ class MolOperator : public mfem::TimeDependentOperator {
     T_solver_.SetPrintLevel(0);
     T_solver_.SetPreconditioner(T_prec_);
   }
+  /// Destructor deltes instances created with `new` in the member functions and
+  /// the constructor to avoid memory leaks.
+  virtual ~MolOperator() override;
 
-  /// This function will be called by explicit solvers. You will have to modify
-  /// this function if you are not able to represent your system as in the class
-  /// descrition.
+  /// This function is called by explicit solvers. You have to modify
+  /// is if you are not able to represent your system as in the class
+  /// descrition. Consult the documentation of mfem::ODESolver to see how the
+  /// member function mfem::TimeDependentOperator::Mult() is used by an
+  /// mfem::ODESolver.
   virtual void Mult(const mfem::Vector &u, mfem::Vector &du_dt) const override;
 
   /// Solve the Backward-Euler equation: k = f(u + dt*k, t), for the unknown k.
   /// This is the only requirement for high-order SDIRK implicit integration.
   /// You will have to modify this function if you are not able to represent
-  /// your system as in the class descrition.
+  /// your system as in the class descrition. Consult the documentation of
+  /// mfem::ODESolver to see how the member function
+  /// mfem::TimeDependentOperator::ImplicitSolve() is used by an
+  /// mfem::ODESolver.
   virtual void ImplicitSolve(double dt, const mfem::Vector &u,
                              mfem::Vector &du_dt) override;
 
-  /// Update the diffusion BilinearForm K using the given true-dof vector `u`.
-  /// Here you must sepcify how to compute the matrix `K` for each timestep. If
-  /// the matrix `K` does not change over time, add an additional check to your
-  /// derived class such that it only computes K in the first step.
+  /// Update the diffusion BilinearForm K(t) using the given true-dof vector
+  /// `u`. Here you must sepcify how to compute the matrix K_ for each
+  /// timestep. If the matrix K_ does not change over time, add an additional
+  /// check to your derived class such that it only computes K in the first
+  /// step.
   virtual void SetParameters(const mfem::Vector &u);
-
-  ~MolOperator() override;
 };
 
 }  // namespace experimental

@@ -43,11 +43,17 @@ MethodOfLineSolver::MethodOfLineSolver(
 }
 
 MethodOfLineSolver::~MethodOfLineSolver() {
+  // ODE operator and ODE solver are generated withing this class with new so
+  // we call the delete operator for them. Note that the mesh is typically
+  // generated in the ModelInitializer or in the user defined code and the
+  // delete operator is called for all registed meshes in Simulation.
   delete ode_solver_;
   delete operator_;
 }
 
 void MethodOfLineSolver::Initialize() {
+  // The vector u_ basically represents the coefficients in the finite element
+  // expansion. These coefficients form the ODE system in the method of lines.
   mfem::FunctionCoefficient u_0(InitialGridValues_);
   u_gf_.ProjectCoefficient(u_0);
   u_gf_.GetTrueDofs(u_);
@@ -156,6 +162,7 @@ void MethodOfLineSolver::SetOperator(int operator_id) {
   }
 }
 
+// Possibly this method should be based on mfem::ODESolver::Run().
 void MethodOfLineSolver::Step(double dt) {
   operator_->SetParameters(u_);
   const double dt_ref = dt;
@@ -169,8 +176,6 @@ void MethodOfLineSolver::Step(double dt) {
   }
   ode_steps_++;
 }
-
-void MethodOfLineSolver::Visualize() { return; }
 
 void MethodOfLineSolver::UpdateGridFunction() { u_gf_.SetFromTrueDofs(u_); }
 
@@ -213,12 +218,16 @@ void MethodOfLineSolver::SetOperator(MolOperator* oper) {
 }
 
 double MethodOfLineSolver::GetSolutionAtPosition(Double3& position) {
+  // This is not the most efficient way to transfer the information but
+  // currently necessary.
   mfem::DenseMatrix mfem_position(mesh_->Dimension(), 1);
   for (int i = 0; i < mesh_->Dimension(); i++) {
     mfem_position(i, 0) = position[i];
   }
   mfem::Array<int> element_id;
   mfem::Array<mfem::IntegrationPoint> integration_points;
+  // This function is particulary slow since it searches the space rather
+  // inefficiently. It would be good to have something more efficient.
   mesh_->FindPoints(mfem_position, element_id, integration_points);
   return u_gf_.GetValue(element_id[0], integration_points[0]);
 }
