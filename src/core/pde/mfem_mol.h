@@ -12,6 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
+// ToDo(tobias): add agent properties or environment properties such that we
+// have a quick mapping from agent to mesh element / integration point. That
+// we only update if necessary.
+
 #ifdef USE_MFEM
 #ifndef MFEM_MOL_H_
 #define MFEM_MOL_H_
@@ -113,6 +117,9 @@ class MethodOfLineSolver {
 
   /// Print information about the PDE / Continuum model
   void PrintInfo(std::ostream& out);
+
+  /// Export the current continuum solution to the vtk format for ParaView.
+  void ExportVTK();
 
   /// Get the value of the GridFunction solution at a certain position.
   double GetSolutionAtPosition(Double3& position);
