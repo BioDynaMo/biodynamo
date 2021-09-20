@@ -32,8 +32,18 @@ cd multi_simulation
 cmake .
 make -j4
 
+# CentOS Github Action runner uses a root user to execute the mpirun command 
+# below, giving a fatal warning. We understand this warning and allow mpirun to
+# be executed as root
+OS_ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+if [ ! -z ${GITHUB_ACTIONS+x} ]; then
+  if [ ${OS_ID} = "centos" ]; then
+    GHA_CENTOS_ALLOW_ROOT="--allow-run-as-root"
+  fi
+fi
+
 # start simulation
-mpirun -np 2 ./multi_simulation_test --config=optim.json
+mpirun -np 2 $GHA_CENTOS_ALLOW_ROOT ./multi_simulation_test --config=optim.json
 
 RETURN_CODE=$?
 exit $RETURN_CODE
