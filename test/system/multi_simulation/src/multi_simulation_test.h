@@ -22,8 +22,8 @@
 #include "biodynamo.h"
 
 namespace bdm {
-namespace experimental {
 
+using namespace bdm::experimental;
 using namespace std::chrono_literals;
 
 // Parameters specific for this simulation
@@ -57,7 +57,6 @@ inline int Simulate(int argc, const char** argv, TimeSeries* result,
   return 0;
 }
 
-}  // namespace experimental
 }  // namespace bdm
 
 #endif  // SYSTEM_MULTI_SIMULATION_MULTI_SIMULATION_TEST_H_

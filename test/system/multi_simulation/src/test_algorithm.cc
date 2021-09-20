@@ -29,9 +29,8 @@ namespace experimental {
 struct TestAlgorithm : public Algorithm {
   BDM_ALGO_HEADER();
 
-  void operator()(
-      const std::function<void(Param*, TimeSeries*)>& send_params_to_worker,
-      Param* default_params) override {
+  void operator()(Functor<void, Param*, TimeSeries*>& send_params_to_worker,
+                  Param* default_params) override {
     auto sweeping_params = default_params->Get<OptimizationParam>()->params;
 
     if (sweeping_params.empty()) {
