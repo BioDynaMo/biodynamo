@@ -8,7 +8,8 @@ if(APPLE)
   # On Apple macOS 11.4 and 11.5 arm64 need ROOT v6.24 which has TBB for M1
   # (remove later when upgrading other platforms to ROOT v6.24)
   if("${DETECTED_OS_VERS}" STREQUAL "osx-11.4-arm64" OR
-     "${DETECTED_OS_VERS}" STREQUAL "osx-11.5-arm64")
+     "${DETECTED_OS_VERS}" STREQUAL "osx-11.5-arm64" OR
+     "${DETECTED_OS_VERS}" STREQUAL "osx-11.6-arm64")
     set(ROOT_TAR_FILE root_v6.24.00_python3.9_${DETECTED_OS_VERS}.tar.gz)
   endif()
 endif()
