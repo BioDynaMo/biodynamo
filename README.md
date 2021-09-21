@@ -55,7 +55,7 @@ The main purpose of this repository is to evolve BioDynaMo, making it faster and
 easier to use. Development of BioDynaMo happens in the open on Github, and we are
 grateful to the community for contributing bugfixes and improvements. Please read our [contribution guide](https://biodynamo.org/docs/devguide/contribute/) and learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
 
-We expect contributors to adhere to our [Contributor Covenant](./CODE_OF_CONDUCT.md).
+We expect contributors to adhere to our [Contributor Covenant](https://github.com/BioDynaMo/biodynamo/blob/master/CODE_OF_CONDUCT.md).
 
 ### License
 
