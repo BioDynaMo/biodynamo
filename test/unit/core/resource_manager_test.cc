@@ -78,6 +78,12 @@ TEST(ResourceManagerTest, ForEachAgentFilter) {
   EXPECT_EQ(2u, counter);
 }
 
+// This test currently produces a segmentation fault with clang 13 on macOS 11.6
+// during the build and is therefore disabled for the specific combination of
+// OS, architecture, and compiler version. Submitted bug to Apple on 2021-09-22.
+// The issue arises with the `#pragma omp critical` statement.
+// Todo(tobias): revisit this bug asap.
+#if !(defined(__APPLE__) && defined(__arm64__) && __clang_major__ == 13)
 TEST(ResourceManagerTest, ForEachAgentParallelFilter) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
@@ -133,6 +139,7 @@ TEST(ResourceManagerTest, ForEachAgentParallelFilter) {
     EXPECT_TRUE(a->GetData() % 2 == 1);
   }
 }
+#endif  // APPLE ARM64 CLANG==13
 
 TEST(ResourceManagerTest, GetNumAgents) { RunGetNumAgents(); }
 
