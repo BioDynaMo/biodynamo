@@ -171,7 +171,7 @@ TEST(DiffusionTest, LeakingEdge) {
 
   for (int i = 0; i < 100; i++) {
     dgrid->ChangeConcentrationBy({{0, 0, 0}}, 4);
-    dgrid->DiffuseWithOpenEdge();
+    dgrid->DiffuseWithOpenEdge(1.0);
     dgrid->CalculateGradient();
   }
 
@@ -239,7 +239,9 @@ TEST(DiffusionTest, ClosedEdge) {
 
   for (int i = 0; i < 100; i++) {
     dgrid->ChangeConcentrationBy({{0, 0, 0}}, 4);
-    dgrid->DiffuseWithClosedEdge();
+    // Note: the argument in Diffuse Edge is basically ignored because
+    // StencilGrid does not allow specific time steps.
+    dgrid->DiffuseWithClosedEdge(1.0);
     dgrid->CalculateGradient();
   }
 
@@ -308,7 +310,9 @@ TEST(DiffusionTest, CopyOldData) {
 
   for (int i = 0; i < 100; i++) {
     dgrid->ChangeConcentrationBy({{0, 0, 0}}, 4);
-    dgrid->DiffuseWithOpenEdge();
+    // Note: the argument in Diffuse Edge is basically ignored because
+    // StencilGrid does not allow specific time steps.
+    dgrid->DiffuseWithOpenEdge(1.0);
     dgrid->CalculateGradient();
   }
 
@@ -638,9 +642,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
 
   int tot = 100;
   for (int t = 0; t < tot; t++) {
-    dgrid2->DiffuseWithClosedEdge();
-    dgrid4->DiffuseWithClosedEdge();
-    dgrid8->DiffuseWithClosedEdge();
+    dgrid2->DiffuseWithClosedEdge(1.0);
+    dgrid4->DiffuseWithClosedEdge(1.0);
+    dgrid8->DiffuseWithClosedEdge(1.0);
   }
 
   auto rc2 = GetRealCoordinates(dgrid2->GetBoxCoordinates(source),

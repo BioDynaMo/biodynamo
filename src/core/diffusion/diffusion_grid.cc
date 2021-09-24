@@ -54,7 +54,6 @@ void DiffusionGrid::Initialize() {
                substance_name_, "'");
   }
 
-  ParametersCheck();
   box_volume_ = box_length_ * box_length_ * box_length_;
   parity_ = resolution_ % 2;
   total_num_boxes_ = resolution_ * resolution_ * resolution_;
@@ -73,15 +72,16 @@ void DiffusionGrid::Diffuse(double dt) {
     return;
   }
 
+  // Note down last timestep
+  last_dt_ = dt;
   // Set timestep for this iteration.
-  dt_ = dt;
-  ParametersCheck();
+  ParametersCheck(dt);
 
   auto* param = Simulation::GetActive()->GetParam();
   if (param->diffusion_boundary_condition == "closed") {
-    DiffuseWithClosedEdge();
+    DiffuseWithClosedEdge(dt);
   } else if (param->diffusion_boundary_condition == "open") {
-    DiffuseWithOpenEdge();
+    DiffuseWithOpenEdge(dt);
   } else {
     Log::Error(
         "EulerGrid::Diffuse", "Boundary condition of type '",
@@ -352,8 +352,8 @@ size_t DiffusionGrid::GetBoxIndex(const Double3& position) const {
   return GetBoxIndex(box_coord);
 }
 
-void DiffusionGrid::ParametersCheck() {
-  if (((1 - dc_[0]) * dt_) / (box_length_ * box_length_) >= (1.0 / 6)) {
+void DiffusionGrid::ParametersCheck(double dt) {
+  if (((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) {
     Log::Fatal(
         "DiffusionGrid",
         "The specified parameters of the diffusion grid with substance [",

@@ -16,7 +16,7 @@
 
 namespace bdm {
 
-void StencilGrid::DiffuseWithClosedEdge() {
+void StencilGrid::DiffuseWithClosedEdge(double dt) {
   auto nx = resolution_;
   auto ny = resolution_;
   auto nz = resolution_;
@@ -69,7 +69,7 @@ void StencilGrid::DiffuseWithClosedEdge() {
   c1_.swap(c2_);
 }
 
-void StencilGrid::DiffuseWithOpenEdge() {
+void StencilGrid::DiffuseWithOpenEdge(double dt) {
   int nx = resolution_;
   int ny = resolution_;
   int nz = resolution_;

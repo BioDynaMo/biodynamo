@@ -16,7 +16,7 @@
 
 namespace bdm {
 
-void RungaKuttaGrid::DiffuseWithClosedEdge() {
+void RungaKuttaGrid::DiffuseWithClosedEdge(double dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
@@ -24,7 +24,7 @@ void RungaKuttaGrid::DiffuseWithClosedEdge() {
   const double ibl2 = 1 / (box_length_ * box_length_);
   const double d = 1 - dc_[0];
   double step = diffusion_step_;
-  double h = dt_ / step;
+  double h = dt / step;
 #define YBF 16
   for (size_t i = 0; i < step; i++) {
     for (size_t order = 0; order < 2; order++) {
@@ -84,7 +84,7 @@ void RungaKuttaGrid::DiffuseWithClosedEdge() {
   }
 }
 
-void RungaKuttaGrid::DiffuseWithOpenEdge() {
+void RungaKuttaGrid::DiffuseWithOpenEdge(double dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
@@ -136,9 +136,9 @@ void RungaKuttaGrid::DiffuseWithOpenEdge() {
           t = c + nx * ny;
         }
 
-        c2_[c] = (c1_[c] + d * dt_ * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                  d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                  d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+        c2_[c] = (c1_[c] + d * dt * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                  d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                  d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
                  (1 - mu_);
 #pragma omp simd
         for (x = 1; x < nx - 1; x++) {
@@ -148,10 +148,9 @@ void RungaKuttaGrid::DiffuseWithOpenEdge() {
           ++b;
           ++t;
           c2_[c] =
-              (c1_[c] +
-               d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-               d * dt_ * (l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n]) * ibl2 +
-               d * dt_ * (l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]) * ibl2) *
+              (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+               d * dt * (l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n]) * ibl2 +
+               d * dt * (l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]) * ibl2) *
               (1 - mu_);
         }
         ++c;
@@ -159,9 +158,9 @@ void RungaKuttaGrid::DiffuseWithOpenEdge() {
         ++s;
         ++b;
         ++t;
-        c2_[c] = (c1_[c] + d * dt_ * (c1_[c - 1] - 2 * c1_[c] + 0) * ibl2 +
-                  d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                  d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+        c2_[c] = (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + 0) * ibl2 +
+                  d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                  d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
                  (1 - mu_);
       }  // tile ny
     }    // tile nz

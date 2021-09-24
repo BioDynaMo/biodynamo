@@ -29,9 +29,9 @@ class StencilGrid : public DiffusionGrid {
       : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
                       resolution) {}
 
-  void DiffuseWithClosedEdge() override;
+  void DiffuseWithClosedEdge(double dt) override;
 
-  void DiffuseWithOpenEdge() override;
+  void DiffuseWithOpenEdge(double dt) override;
 
  private:
   BDM_CLASS_DEF_OVERRIDE(StencilGrid, 1);

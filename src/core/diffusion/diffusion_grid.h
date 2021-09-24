@@ -53,8 +53,8 @@ class DiffusionGrid {
 
   void Diffuse(double dt);
 
-  virtual void DiffuseWithClosedEdge() = 0;
-  virtual void DiffuseWithOpenEdge() = 0;
+  virtual void DiffuseWithClosedEdge(double dt) = 0;
+  virtual void DiffuseWithOpenEdge(double dt) = 0;
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -92,7 +92,7 @@ class DiffusionGrid {
   void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
 
   /// Return the last timestep `dt` that was used to run `Diffuse(dt)`
-  double GetLastTimestep() { return dt_; }
+  double GetLastTimestep() { return last_dt_; }
 
   double GetConcentrationThreshold() const { return concentration_threshold_; }
 
@@ -162,7 +162,7 @@ class DiffusionGrid {
   friend class StencilGrid;
   friend class TestGrid;  // class used for testing (e.g. initialization)
 
-  void ParametersCheck();
+  void ParametersCheck(double dt);
 
   /// Copies the concentration and gradients values to the new
   /// (larger) grid. In the 2D case it looks like the following:
@@ -213,7 +213,7 @@ class DiffusionGrid {
   /// axis)
   size_t resolution_ = 0;
   /// The last timestep `dt` used for the diffusion grid update `Diffuse(dt)`
-  double dt_ = 0.0;
+  double last_dt_ = 0.0;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid

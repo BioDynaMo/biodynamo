@@ -43,8 +43,8 @@ class RungaKuttaGrid : public DiffusionGrid {
     r1_.resize(total_num_boxes_);
   }
 
-  void DiffuseWithClosedEdge() override;
-  void DiffuseWithOpenEdge() override;
+  void DiffuseWithClosedEdge(double dt) override;
+  void DiffuseWithOpenEdge(double dt) override;
 
  private:
   /// Buffers for Runge Kutta
