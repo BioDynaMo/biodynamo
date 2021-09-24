@@ -619,18 +619,21 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     Double3& force_on_my_mothers_point_mass;
     double& h_over_m;
     bool& has_neurite_neighbor;
+    bool& non_zero_neighbor_force;
 
     MechanicalForcesFunctor(const InteractionForce* force,
                             NeuriteElement* neurite,
                             Double3& force_from_neighbors,
                             Double3& force_on_my_mothers_point_mass,
-                            double& h_over_m, bool& has_neurite_neighbor)
+                            double& h_over_m, bool& has_neurite_neighbor,
+                            bool& non_zero_neighbor_force)
         : force(force),
           ne(neurite),
           force_from_neighbors(force_from_neighbors),
           force_on_my_mothers_point_mass(force_on_my_mothers_point_mass),
           h_over_m(h_over_m),
-          has_neurite_neighbor(has_neurite_neighbor) {}
+          has_neurite_neighbor(has_neurite_neighbor),
+          non_zero_neighbor_force(non_zero_neighbor_force) {}
 
     void operator()(Agent* neighbor, double squared_distance) override {
       // if neighbor is a NeuriteElement
@@ -662,6 +665,10 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
       if (neighbor->GetShape() == Shape::kCylinder) {
         force_from_neighbor = force_from_neighbor * h_over_m;
         has_neurite_neighbor = true;
+      }
+          
+      if (force_from_neighbor[0] != 0 || force_from_neighbor[1] != 0 || force_from_neighbor[2] != 0) {
+        non_zero_neighbor_force = true;
       }
 
       if (std::abs(force_from_neighbor[3]) <
@@ -723,17 +730,22 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
     // 3) Object avoidance force
     bool has_neurite_neighbor = false;
+    bool non_zero_neighbor_force = false;
     //  (We check for every neighbor object if they touch us, i.e. push us away)
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
     MechanicalForcesFunctor calculate_neighbor_forces(
         force, this, force_from_neighbors, force_on_my_mothers_point_mass,
-        h_over_m, has_neurite_neighbor);
+        h_over_m, has_neurite_neighbor, non_zero_neighbor_force);
     ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal
     // tension and daughters)
     if (has_neurite_neighbor) {
       force_on_my_point_mass = force_on_my_point_mass * h_over_m;
+    }
+
+    if(non_zero_neighbor_force) {
+      SetStaticnessNextTimestep(false);
     }
 
     force_on_my_point_mass = force_on_my_point_mass + force_from_neighbors;

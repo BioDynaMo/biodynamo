@@ -292,14 +292,22 @@ class Cell : public Agent {
     //  away)
 
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+    bool non_zero_neighbor_force = false;
     auto calculate_neighbor_forces =
         L2F([&](Agent* neighbor, double squared_distance) {
           auto neighbor_force = force->Calculate(this, neighbor);
-          translation_force_on_point_mass[0] += neighbor_force[0];
-          translation_force_on_point_mass[1] += neighbor_force[1];
-          translation_force_on_point_mass[2] += neighbor_force[2];
+          if (neighbor_force[0] != 0 || neighbor_force[1] != 0 || neighbor_force[2] != 0) {
+            non_zero_neighbor_force = true;
+            translation_force_on_point_mass[0] += neighbor_force[0];
+            translation_force_on_point_mass[1] += neighbor_force[1];
+            translation_force_on_point_mass[2] += neighbor_force[2];
+          }
         });
     ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
+
+    if (non_zero_neighbor_force) {
+      SetPropagateStaticness();
+    }
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
