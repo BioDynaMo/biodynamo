@@ -234,7 +234,7 @@ struct Param {
   std::string diffusion_boundary_condition = "open";
 
   /// A string for determining diffusion type within the simulation space.
-  /// current inputs include "euler", "stencil" and Runga Kutta ("runga-kutta")
+  /// current inputs include "euler", "stencil" and Runge-Kutta ("runge-kutta")
   /// Default value: `"euler"`\n
   /// TOML config file:
   ///

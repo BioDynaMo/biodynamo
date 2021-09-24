@@ -12,11 +12,11 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/diffusion/runga_kutta_grid.h"
+#include "core/diffusion/runge_kutta_grid.h"
 
 namespace bdm {
 
-void RungaKuttaGrid::DiffuseWithClosedEdge(double dt) {
+void RungeKuttaGrid::DiffuseWithClosedEdge(double dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
@@ -84,7 +84,7 @@ void RungaKuttaGrid::DiffuseWithClosedEdge(double dt) {
   }
 }
 
-void RungaKuttaGrid::DiffuseWithOpenEdge(double dt) {
+void RungeKuttaGrid::DiffuseWithOpenEdge(double dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;

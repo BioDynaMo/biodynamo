@@ -27,7 +27,7 @@
 
 class EulerGrid;
 class StencilGrid;
-class RungaKuttaGrid;
+class RungeKuttaGrid;
 
 namespace bdm {
 

@@ -15,7 +15,7 @@
 #include "core/model_initializer.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/diffusion/euler_grid.h"
-#include "core/diffusion/runga_kutta_grid.h"
+#include "core/diffusion/runge_kutta_grid.h"
 #include "core/diffusion/stencil_grid.h"
 
 namespace bdm {
@@ -34,8 +34,8 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
   } else if (param->diffusion_method == "stencil") {
     dgrid = new StencilGrid(substance_id, substance_name, diffusion_coeff,
                             decay_constant, resolution);
-  } else if (param->diffusion_method == "runga-kutta") {
-    dgrid = new RungaKuttaGrid(substance_id, substance_name, diffusion_coeff,
+  } else if (param->diffusion_method == "runge-kutta") {
+    dgrid = new RungeKuttaGrid(substance_id, substance_name, diffusion_coeff,
                                decay_constant, resolution);
   } else {
     Log::Error("ModelInitializer::DefineSubstance", "Diffusion method '",

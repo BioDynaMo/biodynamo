@@ -17,7 +17,7 @@
 #include "core/agent/cell.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/diffusion/euler_grid.h"
-#include "core/diffusion/runga_kutta_grid.h"
+#include "core/diffusion/runge_kutta_grid.h"
 #include "core/diffusion/stencil_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
@@ -611,13 +611,13 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
-    param->diffusion_method = "runga-kutta";
+    param->diffusion_method = "runge-kutta";
   };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new RungaKuttaGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* dgrid4 = new RungaKuttaGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* dgrid8 = new RungaKuttaGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 0, 21);
+  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 0, 41);
+  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 0, 81);
 
   dgrid2->Initialize();
   dgrid4->Initialize();
