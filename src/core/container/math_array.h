@@ -23,8 +23,8 @@
 #include <stdexcept>
 #include <utility>
 
-#include "core/util/root.h"
 #include "core/util/log.h"
+#include "core/util/root.h"
 
 namespace bdm {
 
@@ -137,9 +137,7 @@ class MathArray {  // NOLINT
     return true;
   }
 
-  bool operator!=(const MathArray& other) const {
-    return !operator==(other); 
-  }
+  bool operator!=(const MathArray& other) const { return !operator==(other); }
 
   MathArray& operator++() {
 #pragma omp simd
@@ -355,9 +353,10 @@ class MathArray {  // NOLINT
   /// \return the normalized array.
   MathArray& Normalize() {
     T norm = Norm();
-    if (norm == 0){
-      Log::Fatal("MathArray::Normalize","You tried to normalize a zero vector. " 
-      "This cannot be done. Exiting.");
+    if (norm == 0) {
+      Log::Fatal("MathArray::Normalize",
+                 "You tried to normalize a zero vector. "
+                 "This cannot be done. Exiting.");
     }
 #pragma omp simd
     for (size_t i = 0; i < N; i++) {

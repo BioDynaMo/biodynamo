@@ -191,7 +191,12 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     UpdateVolume();
   }
 
-  void SetDensity(double density) { density_ = density; }
+  void SetDensity(double density) {
+    if (density > density_) {
+      SetPropagateStaticness();
+    }
+    density_ = density;
+  }
 
   const Double3& GetPosition() const override { return position_; }
 
@@ -215,11 +220,11 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   double GetAdherence() const { return adherence_; }
 
-  void SetAdherence(double adherence) { 
+  void SetAdherence(double adherence) {
     if (adherence < adherence_) {
       SetStaticnessNextTimestep(false);
     }
-    adherence_ = adherence; 
+    adherence_ = adherence;
   }
 
   const Double3& GetXAxis() const { return x_axis_; }
@@ -654,32 +659,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
             (ne->GetMother() == neighbor)) {
           return;
         }
-        // // if (ne->GetMother()->IsNeuriteElement()) {
-        //   auto* mother = dynamic_cast<NeuriteElement*>(ne->GetMother().Get());
-        //   // if (mother)
-        //   //   std::cout << "FOO " << mother->GetMother() << "  " << neighbor->GetUid() << std::endl;
-        //   if (mother && mother->GetMother() == neighbor) {
-        //     return;
-        //   }
-        // // }
-        // if (auto* neighbor_neurite = dynamic_cast<NeuriteElement*>(neighbor)) {
-        //   // if (neighbor_neurite->GetDaughterLeft() == ne ||
-        //   //     neighbor_neurite->GetDaughterRight() == ne ||
-        //   //     neighbor_neurite->GetMother() ==
-        //   //         bdm_static_cast<const NeuriteElement*>(ne)->GetMother() ||
-        //   //     (neighbor_neurite->GetMother() == ne)) {
-        //   //   return;
-        //   // }
-        //   // if (neighbor_neurite->GetMother()->IsNeuriteElement()) {
-        //     auto* mother = dynamic_cast<NeuriteElement*>(neighbor_neurite->GetMother().Get());
-        //     // if (mother)
-        //     //   std::cout << "BAR " << mother->GetMother() << "  " << ne->GetUid() << std::endl;
-        //     if (mother && mother->GetMother() == ne) {
-        //       return;
-        //     }
-        //   // } 
-        //   }
-
       } else if (auto* neighbor_soma =
                      dynamic_cast<const NeuronSoma*>(neighbor)) {
         // if neighbor is NeuronSoma
@@ -687,7 +666,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
         if (ne->GetMother() == neighbor_soma) {
           return;
         }
-      } 
+      }
 
       Double4 force_from_neighbor = force->Calculate(ne, neighbor);
 
@@ -697,45 +676,10 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
         force_from_neighbor = force_from_neighbor * h_over_m;
         has_neurite_neighbor = true;
       }
-          
-      if (force_from_neighbor[0] != 0 || force_from_neighbor[1] != 0 || force_from_neighbor[2] != 0) {
+
+      if (force_from_neighbor[0] != 0 || force_from_neighbor[1] != 0 ||
+          force_from_neighbor[2] != 0) {
         non_zero_neighbor_force++;
-        // std::cout << std::setw(10) <<  ne->GetUid() << " " << neighbor->GetUid() << "   " << ne->GetDiameter() << "   " << neighbor->GetDiameter() <<  "   " << ne->GetPosition() << "     " << neighbor->GetPosition() << std::endl;
-        // NeuriteElement* c = ne;
-        // std::cout << "    " << ne->GetUid() << "    " ;
-        // for (int i = 0; i < 5; ++i) {
-        //   std::cout << c->GetMother()->GetUid() << "    ";
-        //   c = dynamic_cast<NeuriteElement*>(c->GetMother().Get());
-        //   if (!c) {
-        //     break;
-        //   }
-        // }
-        // std::cout << std::endl;
-        // auto* neighbor_neurite = dynamic_cast<NeuriteElement*>(neighbor);
-        // if (neighbor_neurite) {
-        // c = neighbor_neurite;
-        // std::cout << "    " << neighbor_neurite->GetUid() << "    " ;
-        // for (int i = 0; i < 5; ++i) {
-        //   std::cout << c->GetMother()->GetUid() << "    ";
-        //   c = dynamic_cast<NeuriteElement*>(c->GetMother().Get());
-        //   if (!c) {
-        //     break;
-        //   }
-        // }
-        // std::cout << std::endl;
-        // {
-        //   auto* mother = dynamic_cast<NeuriteElement*>(ne->GetMother().Get());
-        //   if (mother) {
-        //     std::cout << "    " << mother->GetMother() << "   " << ne->GetUid() << std::endl;
-        //   }
-        // }
-        // {
-        //   auto* mother = dynamic_cast<NeuriteElement*>(neighbor_neurite->GetMother().Get());
-        //   if (mother) {
-        //     std::cout << "    " << mother->GetMother() << "  " << neighbor << std::endl;;
-        //   }
-        // }
-        // }
       }
 
       if (std::abs(force_from_neighbor[3]) <
@@ -803,11 +747,11 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
       auto* ctxt = Simulation::GetActive()->GetExecutionContext();
       ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
 
-      if(non_zero_neighbor_force > 1) {
+      if (non_zero_neighbor_force > 1) {
         SetStaticnessNextTimestep(false);
       }
     }
-    
+
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal
     // tension and daughters)
@@ -819,11 +763,14 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
     // 5) define the force that will be transmitted to the mother
     force_to_transmit_to_proximal_mass_ = force_on_my_mothers_point_mass;
-    if (!IsStatic() && force_to_transmit_to_proximal_mass_ != Double3{0, 0, 0}) {
+    if (!IsStatic() &&
+        force_to_transmit_to_proximal_mass_ != Double3{0, 0, 0}) {
       if (mother_->IsNeuriteElement()) {
-        bdm_static_cast<NeuriteElement*>(mother_.Get())->SetStaticnessNextTimestep(false);
+        bdm_static_cast<NeuriteElement*>(mother_.Get())
+            ->SetStaticnessNextTimestep(false);
       } else {
-        bdm_static_cast<NeuronSoma*>(mother_.Get())->SetStaticnessNextTimestep(false);
+        bdm_static_cast<NeuronSoma*>(mother_.Get())
+            ->SetStaticnessNextTimestep(false);
       }
     }
     //  6.1) Define movement scale
@@ -1082,11 +1029,12 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   double GetTension() const { return tension_; }
 
-  void SetTension(double tension) { 
+  void SetTension(double tension) {
     if (tension > tension_) {
       SetStaticnessNextTimestep(false);
     }
-    tension_ = tension; }
+    tension_ = tension;
+  }
 
   /// NOT A "REAL" GETTER
   /// Gets a vector of length 1, with the same direction as the SpringAxis.
@@ -1215,6 +1163,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   double volume_;
   /// NB: Use setter and don't assign values directly
   double diameter_ = 1;
+  /// NB: Use setter and don't assign values directly
   double density_;
   /// NB: Use setter and don't assign values directly
   double adherence_;
