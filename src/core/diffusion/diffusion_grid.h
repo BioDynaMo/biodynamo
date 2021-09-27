@@ -159,7 +159,6 @@ class DiffusionGrid {
  private:
   friend class RungeKuttaGrid;
   friend class EulerGrid;
-  friend class StencilGrid;
   friend class TestGrid;  // class used for testing (e.g. initialization)
 
   void ParametersCheck(double dt);

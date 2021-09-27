@@ -18,7 +18,6 @@
 #include "core/diffusion/diffusion_grid.h"
 #include "core/diffusion/euler_grid.h"
 #include "core/diffusion/runge_kutta_grid.h"
-#include "core/diffusion/stencil_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
 #include "core/substance_initializers.h"
@@ -48,6 +47,14 @@ void CellFactory(const std::vector<Double3>& positions) {
   }
 }
 
+// Adds a displacement to a (grid) position.
+void AddDisplacement(std::array<uint32_t, 3>& position,
+                     const std::array<uint32_t, 3>& displacement) {
+  position[0] += displacement[0];
+  position[1] += displacement[1];
+  position[2] += displacement[2];
+}
+
 // Test if the dimensions of the diffusion grid are corresponding to the
 // neighbor env dimensions
 TEST(DiffusionTest, GridDimensions) {
@@ -59,7 +66,7 @@ TEST(DiffusionTest, GridDimensions) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* dgrid = new StencilGrid(0, "Kalium", 0.4, 0, 2);
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 2);
 
   env->Update();
   dgrid->Initialize();
@@ -87,7 +94,7 @@ TEST(DiffusionTest, UpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* dgrid = new StencilGrid(0, "Kalium", 0.4, 0, 7);
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 7);
 
   env->Update();
   dgrid->Initialize();
@@ -124,7 +131,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* dgrid = new StencilGrid(0, "Kalium", 0.4, 1);
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 1);
 
   env->Update();
   dgrid->Initialize();
@@ -153,144 +160,7 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   delete dgrid;
 }
 
-// Create a 5x5x5 diffusion grid, with a substance being
-// added at center box 2,2,2, causing a symmetrical diffusion
-TEST(DiffusionTest, LeakingEdge) {
-  auto set_param = [](auto* param) {
-    param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -100;
-    param->max_bound = 100;
-  };
-  Simulation simulation(TEST_NAME, set_param);
-  simulation.GetEnvironment()->Update();
-
-  DiffusionGrid* dgrid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
-
-  dgrid->Initialize();
-  dgrid->SetConcentrationThreshold(1e15);
-
-  for (int i = 0; i < 100; i++) {
-    dgrid->ChangeConcentrationBy({{0, 0, 0}}, 4);
-    dgrid->DiffuseWithOpenEdge(1.0);
-    dgrid->CalculateGradient();
-  }
-
-  // Get concentrations and gradients after 100 time steps
-  auto conc = dgrid->GetAllConcentrations();
-  auto grad = dgrid->GetAllGradients();
-
-  std::array<uint32_t, 3> c = {2, 2, 2};
-  std::array<uint32_t, 3> w = {1, 2, 2};
-  std::array<uint32_t, 3> e = {3, 2, 2};
-  std::array<uint32_t, 3> n = {2, 1, 2};
-  std::array<uint32_t, 3> s = {2, 3, 2};
-  std::array<uint32_t, 3> t = {2, 2, 1};
-  std::array<uint32_t, 3> b = {2, 2, 3};
-  std::array<uint32_t, 3> rand1_a = {0, 0, 0};
-  std::array<uint32_t, 3> rand1_b = {4, 4, 4};
-  std::array<uint32_t, 3> rand2_a = {4, 4, 2};
-  std::array<uint32_t, 3> rand2_b = {0, 0, 2};
-
-  auto eps = abs_error<double>::value;
-
-  double v1 = 9.7267657389657938;
-  double v2 = 3.7281869469803648;
-  double v3 = 0.12493663388071227;
-  double v4 = 0.32563083857294983;
-  double v5 = 0.08620958617166545;
-
-  EXPECT_NEAR(v1, conc[dgrid->GetBoxIndex(c)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(e)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(w)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(n)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(s)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(t)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(b)], eps);
-  EXPECT_NEAR(v3, conc[dgrid->GetBoxIndex(rand1_a)], eps);
-  EXPECT_NEAR(v3, conc[dgrid->GetBoxIndex(rand1_b)], eps);
-  EXPECT_NEAR(v4, conc[dgrid->GetBoxIndex(rand2_a)], eps);
-  EXPECT_NEAR(v4, conc[dgrid->GetBoxIndex(rand2_b)], eps);
-
-  EXPECT_NEAR(0.0, grad[3 * (dgrid->GetBoxIndex(c)) + 1], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(e)) + 0], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(w)) + 0], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(n)) + 1], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(s)) + 1], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(t)) + 2], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(b)) + 2], eps);
-
-  delete dgrid;
-}
-
-// Create a 5x5x5 diffusion grid, with a substance being
-// added at center box 2,2,2, causing a symmetrical diffusion
-TEST(DiffusionTest, ClosedEdge) {
-  auto set_param = [](auto* param) {
-    param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -100;
-    param->max_bound = 100;
-  };
-  Simulation simulation(TEST_NAME, set_param);
-  simulation.GetEnvironment()->Update();
-  DiffusionGrid* dgrid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
-
-  dgrid->Initialize();
-  dgrid->SetConcentrationThreshold(1e15);
-
-  for (int i = 0; i < 100; i++) {
-    dgrid->ChangeConcentrationBy({{0, 0, 0}}, 4);
-    // Note: the argument in Diffuse Edge is basically ignored because
-    // StencilGrid does not allow specific time steps.
-    dgrid->DiffuseWithClosedEdge(1.0);
-    dgrid->CalculateGradient();
-  }
-
-  // Get concentrations and gradients after 100 time steps
-  auto conc = dgrid->GetAllConcentrations();
-  auto grad = dgrid->GetAllGradients();
-
-  std::array<uint32_t, 3> c = {2, 2, 2};
-  std::array<uint32_t, 3> w = {1, 2, 2};
-  std::array<uint32_t, 3> e = {3, 2, 2};
-  std::array<uint32_t, 3> n = {2, 1, 2};
-  std::array<uint32_t, 3> s = {2, 3, 2};
-  std::array<uint32_t, 3> t = {2, 2, 1};
-  std::array<uint32_t, 3> b = {2, 2, 3};
-  std::array<uint32_t, 3> rand1_a = {0, 0, 0};
-  std::array<uint32_t, 3> rand1_b = {4, 4, 4};
-  std::array<uint32_t, 3> rand2_a = {4, 4, 2};
-  std::array<uint32_t, 3> rand2_b = {0, 0, 2};
-
-  auto eps = abs_error<double>::value;
-
-  double v1 = 11.717698164878922;
-  double v2 = 5.7977258086605303;
-  double v3 = 2.4379152740053867;
-  double v4 = 2.7287519978558121;
-  double v5 = 0.081744730821864647;
-
-  EXPECT_NEAR(v1, conc[dgrid->GetBoxIndex(c)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(e)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(w)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(n)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(s)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(t)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(b)], eps);
-  EXPECT_NEAR(v3, conc[dgrid->GetBoxIndex(rand1_a)], eps);
-  EXPECT_NEAR(v3, conc[dgrid->GetBoxIndex(rand1_b)], eps);
-  EXPECT_NEAR(v4, conc[dgrid->GetBoxIndex(rand2_a)], eps);
-  EXPECT_NEAR(v4, conc[dgrid->GetBoxIndex(rand2_b)], eps);
-
-  EXPECT_NEAR(0.0, grad[3 * (dgrid->GetBoxIndex(c)) + 1], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(e)) + 0], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(w)) + 0], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(n)) + 1], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(s)) + 1], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(t)) + 2], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(b)) + 2], eps);
-
-  delete dgrid;
-}
+// Todo(tobias): add test for EulerGrid with open and closed edges.
 
 // Tests if the concentration / gradient values are correctly copied
 // after the env has grown and DiffusionGrid::CopyOldData is called
@@ -303,18 +173,74 @@ TEST(DiffusionTest, CopyOldData) {
   Simulation simulation(TEST_NAME, set_param);
   auto* param = simulation.param_;
   simulation.GetEnvironment()->Update();
-  DiffusionGrid* dgrid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 5);
 
   dgrid->Initialize();
   dgrid->SetConcentrationThreshold(1e15);
 
   for (int i = 0; i < 100; i++) {
     dgrid->ChangeConcentrationBy({{0, 0, 0}}, 4);
-    // Note: the argument in Diffuse Edge is basically ignored because
-    // StencilGrid does not allow specific time steps.
+    dgrid->DiffuseWithOpenEdge(1.0);
+    dgrid->DiffuseWithOpenEdge(1.0);
     dgrid->DiffuseWithOpenEdge(1.0);
     dgrid->CalculateGradient();
   }
+
+  // Get number of boxes before rescaling
+  size_t grid_size_1 = dgrid->GetNumBoxes();
+
+  // Define grid positions that we want to analyze
+  std::array<uint32_t, 3> center = {2, 2, 2};
+  std::array<uint32_t, 3> west = {1, 2, 3};
+  std::array<uint32_t, 3> east = {3, 2, 2};
+  std::array<uint32_t, 3> north = {2, 1, 2};
+  std::array<uint32_t, 3> south = {2, 3, 2};
+  std::array<uint32_t, 3> bottom = {2, 2, 1};
+  std::array<uint32_t, 3> top = {2, 2, 3};
+  std::array<uint32_t, 3> rand1_a = {0, 0, 0};
+  std::array<uint32_t, 3> rand1_b = {4, 4, 4};
+  std::array<uint32_t, 3> rand2_a = {4, 4, 2};
+  std::array<uint32_t, 3> rand2_b = {0, 0, 2};
+
+  // Get concentrations and gradients after 100 time steps
+  auto conc_1 = dgrid->GetAllConcentrations();
+  auto grad_1 = dgrid->GetAllGradients();
+
+  // Readout concentration values
+  double concentration_center = conc_1[dgrid->GetBoxIndex(center)];
+  double concentration_west = conc_1[dgrid->GetBoxIndex(west)];
+  double concentration_east = conc_1[dgrid->GetBoxIndex(east)];
+  double concentration_north = conc_1[dgrid->GetBoxIndex(north)];
+  double concentration_south = conc_1[dgrid->GetBoxIndex(south)];
+  double concentration_bottom = conc_1[dgrid->GetBoxIndex(bottom)];
+  double concentration_top = conc_1[dgrid->GetBoxIndex(top)];
+  double concentration_rand1_a = conc_1[dgrid->GetBoxIndex(rand1_a)];
+  double concentration_rand1_b = conc_1[dgrid->GetBoxIndex(rand1_b)];
+  double concentration_rand2_a = conc_1[dgrid->GetBoxIndex(rand2_a)];
+  double concentration_rand2_b = conc_1[dgrid->GetBoxIndex(rand2_b)];
+
+  // Readout gradient values
+  double gradient_x_center = grad_1[3 * dgrid->GetBoxIndex(center) + 0];
+  double gradient_y_center = grad_1[3 * dgrid->GetBoxIndex(center) + 1];
+  double gradient_z_center = grad_1[3 * dgrid->GetBoxIndex(center) + 2];
+  double gradient_x_west = grad_1[3 * dgrid->GetBoxIndex(west) + 0];
+  double gradient_y_west = grad_1[3 * dgrid->GetBoxIndex(west) + 1];
+  double gradient_z_west = grad_1[3 * dgrid->GetBoxIndex(west) + 2];
+  double gradient_x_east = grad_1[3 * dgrid->GetBoxIndex(east) + 0];
+  double gradient_y_east = grad_1[3 * dgrid->GetBoxIndex(east) + 1];
+  double gradient_z_east = grad_1[3 * dgrid->GetBoxIndex(east) + 2];
+  double gradient_x_north = grad_1[3 * dgrid->GetBoxIndex(north) + 0];
+  double gradient_y_north = grad_1[3 * dgrid->GetBoxIndex(north) + 1];
+  double gradient_z_north = grad_1[3 * dgrid->GetBoxIndex(north) + 2];
+  double gradient_x_south = grad_1[3 * dgrid->GetBoxIndex(south) + 0];
+  double gradient_y_south = grad_1[3 * dgrid->GetBoxIndex(south) + 1];
+  double gradient_z_south = grad_1[3 * dgrid->GetBoxIndex(south) + 2];
+  double gradient_x_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 0];
+  double gradient_y_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 1];
+  double gradient_z_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 2];
+  double gradient_x_top = grad_1[3 * dgrid->GetBoxIndex(top) + 0];
+  double gradient_y_top = grad_1[3 * dgrid->GetBoxIndex(top) + 1];
+  double gradient_z_top = grad_1[3 * dgrid->GetBoxIndex(top) + 2];
 
   // Grow grid artificially
   param->min_bound = -140;
@@ -322,49 +248,71 @@ TEST(DiffusionTest, CopyOldData) {
   simulation.GetEnvironment()->Update();
   dgrid->Update();
 
+  // Get number of boxes after rescaling
+  size_t grid_size_2 = dgrid->GetNumBoxes();
+
   // Get concentrations and gradients after 100 time steps
-  auto conc = dgrid->GetAllConcentrations();
-  auto grad = dgrid->GetAllGradients();
+  auto conc_2 = dgrid->GetAllConcentrations();
+  auto grad_2 = dgrid->GetAllGradients();
 
-  std::array<uint32_t, 3> c = {3, 3, 3};
-  std::array<uint32_t, 3> w = {2, 3, 3};
-  std::array<uint32_t, 3> e = {4, 3, 3};
-  std::array<uint32_t, 3> n = {3, 2, 3};
-  std::array<uint32_t, 3> s = {3, 4, 3};
-  std::array<uint32_t, 3> t = {3, 3, 2};
-  std::array<uint32_t, 3> b = {3, 3, 4};
-  std::array<uint32_t, 3> rand1_a = {1, 1, 1};
-  std::array<uint32_t, 3> rand1_b = {5, 5, 5};
-  std::array<uint32_t, 3> rand2_a = {5, 5, 3};
-  std::array<uint32_t, 3> rand2_b = {1, 1, 3};
+  // Compute new grid position resulting from the halo introduced by CopyOldData
+  std::array<uint32_t, 3> displacement = {1, 1, 1};
+  AddDisplacement(center, displacement);
+  AddDisplacement(west, displacement);
+  AddDisplacement(east, displacement);
+  AddDisplacement(north, displacement);
+  AddDisplacement(south, displacement);
+  AddDisplacement(bottom, displacement);
+  AddDisplacement(top, displacement);
+  AddDisplacement(rand1_a, displacement);
+  AddDisplacement(rand1_b, displacement);
+  AddDisplacement(rand2_a, displacement);
+  AddDisplacement(rand2_b, displacement);
 
-  auto eps = abs_error<double>::value;
+  // Test if diffusion grid was rescaled
+  EXPECT_NE(grid_size_1, grid_size_2);
 
-  double v1 = 9.7267657389657938;
-  double v2 = 3.7281869469803648;
-  double v3 = 0.12493663388071227;
-  double v4 = 0.32563083857294983;
-  double v5 = 0.08620958617166545;
+  // Test if values are copied correctly
+  EXPECT_DOUBLE_EQ(concentration_center, conc_2[dgrid->GetBoxIndex(center)]);
+  EXPECT_DOUBLE_EQ(concentration_west, conc_2[dgrid->GetBoxIndex(west)]);
+  EXPECT_DOUBLE_EQ(concentration_east, conc_2[dgrid->GetBoxIndex(east)]);
+  EXPECT_DOUBLE_EQ(concentration_north, conc_2[dgrid->GetBoxIndex(north)]);
+  EXPECT_DOUBLE_EQ(concentration_south, conc_2[dgrid->GetBoxIndex(south)]);
+  EXPECT_DOUBLE_EQ(concentration_bottom, conc_2[dgrid->GetBoxIndex(bottom)]);
+  EXPECT_DOUBLE_EQ(concentration_top, conc_2[dgrid->GetBoxIndex(top)]);
+  EXPECT_DOUBLE_EQ(concentration_rand1_a, conc_2[dgrid->GetBoxIndex(rand1_a)]);
+  EXPECT_DOUBLE_EQ(concentration_rand1_b, conc_2[dgrid->GetBoxIndex(rand1_b)]);
+  EXPECT_DOUBLE_EQ(concentration_rand2_a, conc_2[dgrid->GetBoxIndex(rand2_a)]);
+  EXPECT_DOUBLE_EQ(concentration_rand2_b, conc_2[dgrid->GetBoxIndex(rand2_b)]);
 
-  EXPECT_NEAR(v1, conc[dgrid->GetBoxIndex(c)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(e)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(w)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(n)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(s)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(t)], eps);
-  EXPECT_NEAR(v2, conc[dgrid->GetBoxIndex(b)], eps);
-  EXPECT_NEAR(v3, conc[dgrid->GetBoxIndex(rand1_a)], eps);
-  EXPECT_NEAR(v3, conc[dgrid->GetBoxIndex(rand1_b)], eps);
-  EXPECT_NEAR(v4, conc[dgrid->GetBoxIndex(rand2_a)], eps);
-  EXPECT_NEAR(v4, conc[dgrid->GetBoxIndex(rand2_b)], eps);
-
-  EXPECT_NEAR(0.0, grad[3 * (dgrid->GetBoxIndex(c)) + 1], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(e)) + 0], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(w)) + 0], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(n)) + 1], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(s)) + 1], eps);
-  EXPECT_NEAR(v5, grad[3 * (dgrid->GetBoxIndex(t)) + 2], eps);
-  EXPECT_NEAR(-v5, grad[3 * (dgrid->GetBoxIndex(b)) + 2], eps);
+  // Test if gradients are copied correctly
+  EXPECT_DOUBLE_EQ(gradient_x_center,
+                   grad_2[3 * dgrid->GetBoxIndex(center) + 0]);
+  EXPECT_DOUBLE_EQ(gradient_y_center,
+                   grad_2[3 * dgrid->GetBoxIndex(center) + 1]);
+  EXPECT_DOUBLE_EQ(gradient_z_center,
+                   grad_2[3 * dgrid->GetBoxIndex(center) + 2]);
+  EXPECT_DOUBLE_EQ(gradient_x_west, grad_2[3 * dgrid->GetBoxIndex(west) + 0]);
+  EXPECT_DOUBLE_EQ(gradient_y_west, grad_2[3 * dgrid->GetBoxIndex(west) + 1]);
+  EXPECT_DOUBLE_EQ(gradient_z_west, grad_2[3 * dgrid->GetBoxIndex(west) + 2]);
+  EXPECT_DOUBLE_EQ(gradient_x_east, grad_2[3 * dgrid->GetBoxIndex(east) + 0]);
+  EXPECT_DOUBLE_EQ(gradient_y_east, grad_2[3 * dgrid->GetBoxIndex(east) + 1]);
+  EXPECT_DOUBLE_EQ(gradient_z_east, grad_2[3 * dgrid->GetBoxIndex(east) + 2]);
+  EXPECT_DOUBLE_EQ(gradient_x_north, grad_2[3 * dgrid->GetBoxIndex(north) + 0]);
+  EXPECT_DOUBLE_EQ(gradient_y_north, grad_2[3 * dgrid->GetBoxIndex(north) + 1]);
+  EXPECT_DOUBLE_EQ(gradient_z_north, grad_2[3 * dgrid->GetBoxIndex(north) + 2]);
+  EXPECT_DOUBLE_EQ(gradient_x_south, grad_2[3 * dgrid->GetBoxIndex(south) + 0]);
+  EXPECT_DOUBLE_EQ(gradient_y_south, grad_2[3 * dgrid->GetBoxIndex(south) + 1]);
+  EXPECT_DOUBLE_EQ(gradient_z_south, grad_2[3 * dgrid->GetBoxIndex(south) + 2]);
+  EXPECT_DOUBLE_EQ(gradient_x_bottom,
+                   grad_2[3 * dgrid->GetBoxIndex(bottom) + 0]);
+  EXPECT_DOUBLE_EQ(gradient_y_bottom,
+                   grad_2[3 * dgrid->GetBoxIndex(bottom) + 1]);
+  EXPECT_DOUBLE_EQ(gradient_z_bottom,
+                   grad_2[3 * dgrid->GetBoxIndex(bottom) + 2]);
+  EXPECT_DOUBLE_EQ(gradient_x_top, grad_2[3 * dgrid->GetBoxIndex(top) + 0]);
+  EXPECT_DOUBLE_EQ(gradient_y_top, grad_2[3 * dgrid->GetBoxIndex(top) + 1]);
+  EXPECT_DOUBLE_EQ(gradient_z_top, grad_2[3 * dgrid->GetBoxIndex(top) + 2]);
 
   delete dgrid;
 }
@@ -372,7 +320,7 @@ TEST(DiffusionTest, CopyOldData) {
 #ifdef USE_DICT
 
 // Test if all the data members of the diffusion grid are correctly serialized
-// and deserialzed with I/O
+// and deserialized with I/O
 TEST(DiffusionTest, IOTest) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
@@ -383,7 +331,7 @@ TEST(DiffusionTest, IOTest) {
   simulation.GetEnvironment()->Update();
   remove(ROOTFILE);
 
-  StencilGrid* dgrid = new StencilGrid(0, "Kalium", 0.6, 0);
+  EulerGrid* dgrid = new EulerGrid(0, "Kalium", 0.6, 0);
 
   // Create a 100x100x100 diffusion grid with 20 boxes per dimension
   dgrid->Initialize();
@@ -394,7 +342,7 @@ TEST(DiffusionTest, IOTest) {
   WritePersistentObject(ROOTFILE, "dgrid", *dgrid, "new");
 
   // read back
-  StencilGrid* restored_dgrid = nullptr;
+  EulerGrid* restored_dgrid = nullptr;
   GetPersistentObject(ROOTFILE, "dgrid", restored_dgrid);
 
   auto eps = abs_error<double>::value;
@@ -448,8 +396,9 @@ double CalculateAnalyticalSolution(double init, double x, double y, double z,
 TEST(DISABLED_DiffusionTest, WrongParameters) {
   ASSERT_DEATH(
       {
-        StencilGrid dgrid(0, "Kalium", 1, 0.5, 51);
+        EulerGrid dgrid(0, "Kalium", 1, 0.5, 51);
         dgrid.Initialize();
+        dgrid.Diffuse(1.0);
       },
       ".*unphysical behavior*");
 }  // namespace bdm
@@ -462,8 +411,9 @@ TEST(DiffusionTest, CorrectParameters) {
   };
   Simulation simulation(TEST_NAME, set_param);
   simulation.GetEnvironment()->Update();
-  StencilGrid dgrid(0, "Kalium", 1, 0.5, 6);
+  EulerGrid dgrid(0, "Kalium", 1, 0.5, 6);
   dgrid.Initialize();
+  dgrid.Diffuse(1.0);
 }
 
 TEST(DiffusionTest, EulerConvergence) {
@@ -586,7 +536,7 @@ TEST(DiffusionTest, DynamicTimeStepping) {
   // %3            |Y| | |Y| | |Y| | |Y|  |  | Y|  |  | Y|  |
   // %5            |Y| | | | |Y| | | | | Y|  |  |  |  | Y|  |
   // grid updates  |Y| |Y| | |Y| | | | | Y|  | Y|  |  | Y|  |
-  // set frequq    |2| | |5| | | | | | |  | 3|  |  |  |  |  |
+  // set freq      |2| | |5| | | | | | |  | 3|  |  |  |  |  |
   // The function get LastTimeStep must return the (#no_spaces+1)*timestep,
   // where #no_spaces counts the empty boxes in between the Y's in grid updates.
   // The colum grid updates always has Y according to the last set frequency.

@@ -9,7 +9,6 @@
     <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::EulerGrid" />
-    <class name="bdm::StencilGrid" />
     <class name="bdm::RungeKuttaGrid" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::Simulation" />

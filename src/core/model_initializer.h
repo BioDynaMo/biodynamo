@@ -26,7 +26,6 @@
 #include "core/util/random.h"
 
 class EulerGrid;
-class StencilGrid;
 class RungeKuttaGrid;
 
 namespace bdm {
