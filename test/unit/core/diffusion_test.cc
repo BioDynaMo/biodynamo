@@ -181,8 +181,6 @@ TEST(DiffusionTest, CopyOldData) {
   for (int i = 0; i < 100; i++) {
     dgrid->ChangeConcentrationBy({{0, 0, 0}}, 4);
     dgrid->DiffuseWithOpenEdge(1.0);
-    dgrid->DiffuseWithOpenEdge(1.0);
-    dgrid->DiffuseWithOpenEdge(1.0);
     dgrid->CalculateGradient();
   }
 
