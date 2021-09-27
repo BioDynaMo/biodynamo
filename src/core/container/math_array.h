@@ -137,6 +137,10 @@ class MathArray {  // NOLINT
     return true;
   }
 
+  bool operator!=(const MathArray& other) const {
+    return !operator==(other); 
+  }
+
   MathArray& operator++() {
 #pragma omp simd
     for (size_t i = 0; i < N; i++) {
