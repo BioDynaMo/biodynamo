@@ -190,7 +190,12 @@ class Cell : public Agent {
 
   double GetVolume() const { return volume_; }
 
-  void SetAdherence(double adherence) { adherence_ = adherence; }
+  void SetAdherence(double adherence) {
+    if (adherence < adherence_) {
+      SetStaticnessNextTimestep(false);
+    }
+    adherence_ = adherence;
+  }
 
   void SetDiameter(double diameter) override {
     if (diameter > diameter_) {
@@ -205,9 +210,14 @@ class Cell : public Agent {
     UpdateDiameter();
   }
 
-  void SetMass(double mass) { density_ = mass / volume_; }
+  void SetMass(double mass) { SetDensity(mass / volume_); }
 
-  void SetDensity(double density) { density_ = density; }
+  void SetDensity(double density) {
+    if (density > density_) {
+      SetPropagateStaticness();
+    }
+    density_ = density;
+  }
 
   void SetPosition(const Double3& position) override {
     position_ = position;
@@ -291,15 +301,26 @@ class Cell : public Agent {
     //  (We check for every neighbor object if they touch us, i.e. push us
     //  away)
 
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    auto calculate_neighbor_forces =
-        L2F([&](Agent* neighbor, double squared_distance) {
-          auto neighbor_force = force->Calculate(this, neighbor);
-          translation_force_on_point_mass[0] += neighbor_force[0];
-          translation_force_on_point_mass[1] += neighbor_force[1];
-          translation_force_on_point_mass[2] += neighbor_force[2];
-        });
-    ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
+    uint64_t non_zero_neighbor_forces = 0;
+    if (!IsStatic()) {
+      auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+      auto calculate_neighbor_forces =
+          L2F([&](Agent* neighbor, double squared_distance) {
+            auto neighbor_force = force->Calculate(this, neighbor);
+            if (neighbor_force[0] != 0 || neighbor_force[1] != 0 ||
+                neighbor_force[2] != 0) {
+              non_zero_neighbor_forces++;
+              translation_force_on_point_mass[0] += neighbor_force[0];
+              translation_force_on_point_mass[1] += neighbor_force[1];
+              translation_force_on_point_mass[2] += neighbor_force[2];
+            }
+          });
+      ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
+
+      if (non_zero_neighbor_forces > 1) {
+        SetStaticnessNextTimestep(false);
+      }
+    }
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
@@ -351,7 +372,9 @@ class Cell : public Agent {
   /// NB: Use setter and don't assign values directly
   double diameter_ = 0;
   double volume_ = 0;
+  /// NB: Use setter and don't assign values directly
   double adherence_ = 0;
+  /// NB: Use setter and don't assign values directly
   double density_ = 0;
 };
 

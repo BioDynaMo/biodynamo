@@ -191,7 +191,12 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     UpdateVolume();
   }
 
-  void SetDensity(double density) { density_ = density; }
+  void SetDensity(double density) {
+    if (density > density_) {
+      SetPropagateStaticness();
+    }
+    density_ = density;
+  }
 
   const Double3& GetPosition() const override { return position_; }
 
@@ -215,7 +220,12 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   double GetAdherence() const { return adherence_; }
 
-  void SetAdherence(double adherence) { adherence_ = adherence; }
+  void SetAdherence(double adherence) {
+    if (adherence < adherence_) {
+      SetStaticnessNextTimestep(false);
+    }
+    adherence_ = adherence;
+  }
 
   const Double3& GetXAxis() const { return x_axis_; }
   const Double3& GetYAxis() const { return y_axis_; }
@@ -577,7 +587,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   }
 
   void SetRestingLengthForDesiredTension(double tension) {
-    tension_ = tension;
+    SetTension(tension);
     if (tension == 0.0) {
       resting_length_ = actual_length_;
     } else {
@@ -619,18 +629,21 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     Double3& force_on_my_mothers_point_mass;
     double& h_over_m;
     bool& has_neurite_neighbor;
+    uint64_t& non_zero_neighbor_force;
 
     MechanicalForcesFunctor(const InteractionForce* force,
                             NeuriteElement* neurite,
                             Double3& force_from_neighbors,
                             Double3& force_on_my_mothers_point_mass,
-                            double& h_over_m, bool& has_neurite_neighbor)
+                            double& h_over_m, bool& has_neurite_neighbor,
+                            uint64_t& non_zero_neighbor_force)
         : force(force),
           ne(neurite),
           force_from_neighbors(force_from_neighbors),
           force_on_my_mothers_point_mass(force_on_my_mothers_point_mass),
           h_over_m(h_over_m),
-          has_neurite_neighbor(has_neurite_neighbor) {}
+          has_neurite_neighbor(has_neurite_neighbor),
+          non_zero_neighbor_force(non_zero_neighbor_force) {}
 
     void operator()(Agent* neighbor, double squared_distance) override {
       // if neighbor is a NeuriteElement
@@ -664,6 +677,11 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
         has_neurite_neighbor = true;
       }
 
+      if (force_from_neighbor[0] != 0 || force_from_neighbor[1] != 0 ||
+          force_from_neighbor[2] != 0) {
+        non_zero_neighbor_force++;
+      }
+
       if (std::abs(force_from_neighbor[3]) <
           1E-10) {  // TODO(neurites) hard coded value
         // (if all the force is transmitted to the (distal end) point mass)
@@ -692,7 +710,6 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   Double3 CalculateDisplacement(const InteractionForce* force,
                                 double squared_radius, double dt) override {
-    Double3 force_on_my_point_mass{0, 0, 0};
     Double3 force_on_my_mothers_point_mass{0, 0, 0};
 
     // 1) Spring force
@@ -701,18 +718,16 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     double factor = -tension_ / actual_length_;  // the minus sign is important
                                                  // because the spring axis goes
                                                  // in the opposite direction
-    force_on_my_point_mass = force_on_my_point_mass + (spring_axis_ * factor);
+    Double3 force_on_my_point_mass = spring_axis_ * factor;
 
     // 2) InteractionForce transmitted by daugthers (if they exist)
     if (daughter_left_ != nullptr) {
-      auto force_from_daughter =
+      force_on_my_point_mass +=
           daughter_left_->ForceTransmittedFromDaugtherToMother(*this);
-      force_on_my_point_mass = force_on_my_point_mass + force_from_daughter;
     }
     if (daughter_right_ != nullptr) {
-      auto force_from_daughter =
+      force_on_my_point_mass +=
           daughter_right_->ForceTransmittedFromDaugtherToMother(*this);
-      force_on_my_point_mass = force_on_my_point_mass + force_from_daughter;
     }
 
     Double3 force_from_neighbors = {0, 0, 0};
@@ -722,27 +737,50 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     double h_over_m = 0.01;
 
     // 3) Object avoidance force
-    bool has_neurite_neighbor = false;
+    uint64_t non_zero_neighbor_force = 0;
     //  (We check for every neighbor object if they touch us, i.e. push us away)
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    MechanicalForcesFunctor calculate_neighbor_forces(
-        force, this, force_from_neighbors, force_on_my_mothers_point_mass,
-        h_over_m, has_neurite_neighbor);
-    ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
+    if (!IsStatic()) {
+      has_neurite_neighbor_ = false;
+      MechanicalForcesFunctor calculate_neighbor_forces(
+          force, this, force_from_neighbors, force_on_my_mothers_point_mass,
+          h_over_m, has_neurite_neighbor_, non_zero_neighbor_force);
+      auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+      ctxt->ForEachNeighbor(calculate_neighbor_forces, *this, squared_radius);
+
+      if (non_zero_neighbor_force > 1) {
+        SetStaticnessNextTimestep(false);
+      }
+    }
+
     // hack: if the neighbour is a neurite, and as we reduced the force from
     // that neighbour, we also need to reduce my internal force (from internal
     // tension and daughters)
-    if (has_neurite_neighbor) {
-      force_on_my_point_mass = force_on_my_point_mass * h_over_m;
+    if (has_neurite_neighbor_) {
+      force_on_my_point_mass *= h_over_m;
     }
 
-    force_on_my_point_mass = force_on_my_point_mass + force_from_neighbors;
+    force_on_my_point_mass += force_from_neighbors;
 
     // 5) define the force that will be transmitted to the mother
     force_to_transmit_to_proximal_mass_ = force_on_my_mothers_point_mass;
+    if (!IsStatic() &&
+        force_to_transmit_to_proximal_mass_ != Double3{0, 0, 0}) {
+      if (mother_->IsNeuriteElement()) {
+        bdm_static_cast<NeuriteElement*>(mother_.Get())
+            ->SetStaticnessNextTimestep(false);
+      } else {
+        bdm_static_cast<NeuronSoma*>(mother_.Get())
+            ->SetStaticnessNextTimestep(false);
+      }
+    }
     //  6.1) Define movement scale
-    double force_norm = force_on_my_point_mass.Norm();
+
     //  6.2) If is F not strong enough -> no movements
+    if (force_on_my_point_mass == Double3{0, 0, 0}) {
+      return {0, 0, 0};
+    }
+
+    double force_norm = force_on_my_point_mass.Norm();
     if (force_norm < adherence_) {
       return {0, 0, 0};
     }
@@ -758,6 +796,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
       displacement = displacement * (core_param->simulation_max_displacement /
                                      displacement_norm);
     }
+
     return displacement;
   }
 
@@ -990,7 +1029,12 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   double GetTension() const { return tension_; }
 
-  void SetTension(double tension) { tension_ = tension; }
+  void SetTension(double tension) {
+    if (tension > tension_) {
+      SetStaticnessNextTimestep(false);
+    }
+    tension_ = tension;
+  }
 
   /// NOT A "REAL" GETTER
   /// Gets a vector of length 1, with the same direction as the SpringAxis.
@@ -1047,11 +1091,11 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     SetActualLength(std::sqrt(spring_axis_ * spring_axis_));
     UpdatePosition();
     if (std::abs(actual_length_ - resting_length_) > 1e-13) {
-      tension_ = spring_constant_ * (actual_length_ - resting_length_) /
-                 resting_length_;
+      SetTension(spring_constant_ * (actual_length_ - resting_length_) /
+                 resting_length_);
     } else {
       // avoid floating point rounding effects that increase the tension
-      tension_ = 0.0;
+      SetTension(0.0);
     }
     UpdateVolume();
   }
@@ -1119,7 +1163,9 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   double volume_;
   /// NB: Use setter and don't assign values directly
   double diameter_ = 1;
+  /// NB: Use setter and don't assign values directly
   double density_;
+  /// NB: Use setter and don't assign values directly
   double adherence_;
   /// First axis of the local coordinate system equal to cylinder axis
   Double3 x_axis_ = {{1.0, 0.0, 0.0}};
@@ -1158,6 +1204,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   double actual_length_ = 1;
 
   /// Tension in the cylinder spring.
+  /// NB: Use setter and don't assign values directly
   double tension_;
 
   /// Spring constant per distance unit (springConstant restingLength  = "real"
@@ -1167,6 +1214,9 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// The length of the internal spring where tension would be zero.
   /// T = k*(A-R)/R --> R = k*A/(T+K)
   double resting_length_;
+
+  /// Helper variable needed in CalculateDisplacement
+  bool has_neurite_neighbor_ = false;
 
   /// \brief Split this neurite element into two segments.
   ///
