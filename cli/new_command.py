@@ -89,8 +89,7 @@ def CustomizeFiles(sim_name):
             "/README.md",
             "/CMakeLists.txt",
             "/src/my-simulation.cc",
-            "/src/main.cc",
-            "/test/test-suit-util.cc",
+            "/test/test-suite.cc",
         ]
         for file in content_files:
             ModifyFileContent(

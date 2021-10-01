@@ -18,15 +18,20 @@
 
 namespace bdm {
 
-// Example function `SquareMaxTemplate`:
-// Computes the square of `to_square` but output is bounded by `upper_bound`.
-// This function is not important for the simulation, but introduced to
-// illustrate how to test functions occuring in the simulation context.
-// See test-suit-util for more info.
-double SquareMaxTemplate(double to_square, double upper_bound);
+inline int Simulate(int argc, const char** argv) {
+  Simulation simulation(argc, argv);
 
-// This function executes the BioDynaMo simulation.
-int Simulate(int argc, const char** argv);
+  // Define initial model - in this example: single cell at origin
+  auto* rm = simulation.GetResourceManager();
+  auto* cell = new Cell(30);
+  rm->AddAgent(cell);
+
+  // Run simulation for one timestep
+  simulation.GetScheduler()->Simulate(1);
+
+  std::cout << "Simulation completed successfully!" << std::endl;
+  return 0;
+}
 
 }  // namespace bdm
 
