@@ -5,7 +5,7 @@ the two folders `src/` and `test/`. The `src/` folder contains the simulation.
 All custom classes and functions that users create to simulate a system 
 should ideally end up here. The `test/` folder contains examples for unit tests.
 We strongly encourage our users to follow a test driven development process, 
-i.e. create unit tests for all fundamental building blocks of your simulation.
+i.e. create unit tests for all fundamental building blocks of their simulation.
 By doing so, you can always be sure that a certain function or a class behaves 
 as you expect it to. The `.cc` files in `test/` are automatically linked against 
 the GoogleTest framework. For more information, please consult the appropriate
@@ -14,7 +14,7 @@ the GoogleTest framework. For more information, please consult the appropriate
 
 Whenever you interact with this repository, make sure you have sourced BioDynaMo
 correctly. If it's sourced, you'll see a `[bdm-1.X.YY]` in your terminal 
-(be aware that some terminals might not show it explicityly). 
+(be aware that some terminals might not show it explicitly). 
 Anytime that you open a new terminal, you have to source it again. 
 ```bash
 . <path_to_biodynamo>/build/bin/thisbdm.sh
