@@ -17,6 +17,7 @@
 #include <TF1.h>
 #include <TRandom3.h>
 #include <gtest/gtest.h>
+#include <limits>
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_util.h"
 
@@ -222,6 +223,81 @@ TEST(RandomTest, UserDefinedDistRng1D) {
   for (size_t i = 0; i < actual.size(); i++) {
     EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value);
   }
+}
+
+// This test is neither a proper death test nor a proper function test. We run
+// this test, to see if it is possible to initialize the UserDefinedDistRng1D
+// in a parallel region because the generator is based on ROOT's TF1 class which
+// seems to have trouble when the constructor is called in parallel. Before the
+// fix provided in PR #208, this test would fail roughly 2/3 times.
+TEST(RandomTest, UserDefinedDistRng1DParallel) {
+  Simulation simulation(TEST_NAME);
+  std::vector<double> results;
+#pragma omp parallel shared(simulation, results)
+  {
+    auto* random = simulation.GetRandom();
+    auto function = [](const double* x, const double* params) {
+      return ROOT::Math::lognormal_pdf(*x, params[0], params[1]);
+    };
+    double min = 1;
+    double max = 4;
+    auto distrng =
+        random->GetUserDefinedDistRng1D(function, {1.1, 1.2}, min, max);
+#pragma omp critical
+    { results.push_back(distrng.Sample()); }
+  }
+  double sum = std::accumulate(results.begin(), results.end(), 0.0);
+  EXPECT_LT(sum, std::numeric_limits<double>::max());
+}
+
+// This test is neither a proper death test nor a proper function test. We run
+// this test, to see if it is possible to initialize the UserDefinedDistRng2D
+// in a parallel region because the generator is based on ROOT's TF2 class which
+// seems to have trouble when the constructor is called in parallel. Before the
+// fix provided in PR #208, this test would fail roughly 2/3 times.
+TEST(RandomTest, UserDefinedDistRng2DParallel) {
+  Simulation simulation(TEST_NAME);
+  std::vector<double> results;
+#pragma omp parallel shared(simulation, results)
+  {
+    auto* random = simulation.GetRandom();
+    auto function = [](const double* x, const double* params) {
+      return ROOT::Math::lognormal_pdf(*x, params[0], params[1]);
+    };
+    double min = 1;
+    double max = 4;
+    auto distrng = random->GetUserDefinedDistRng2D(function, {1.1, 1.2}, min,
+                                                   max, min, max);
+#pragma omp critical
+    { results.push_back(distrng.Sample2().Norm()); }
+  }
+  double sum = std::accumulate(results.begin(), results.end(), 0.0);
+  EXPECT_LT(sum, std::numeric_limits<double>::max());
+}
+
+// This test is neither a proper death test nor a proper function test. We run
+// this test, to see if it is possible to initialize the UserDefinedDistRng3D
+// in a parallel region because the generator is based on ROOT's TF3 class which
+// seems to have trouble when the constructor is called in parallel. Before the
+// fix provided in PR #208, this test would fail roughly 2/3 times.
+TEST(RandomTest, UserDefinedDistRng3DParallel) {
+  Simulation simulation(TEST_NAME);
+  std::vector<double> results;
+#pragma omp parallel shared(simulation, results)
+  {
+    auto* random = simulation.GetRandom();
+    auto function = [](const double* x, const double* params) {
+      return ROOT::Math::lognormal_pdf(*x, params[0], params[1]);
+    };
+    double min = 1;
+    double max = 4;
+    auto distrng = random->GetUserDefinedDistRng3D(function, {1.1, 1.2}, min,
+                                                   max, min, max, min, max);
+#pragma omp critical
+    { results.push_back(distrng.Sample3().Norm()); }
+  }
+  double sum = std::accumulate(results.begin(), results.end(), 0.0);
+  EXPECT_LT(sum, std::numeric_limits<double>::max());
 }
 
 TEST(RandomTest, Binomial) {
