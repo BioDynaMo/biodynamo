@@ -15,6 +15,8 @@
 #ifndef CORE_MODEL_INITIALIZER_H_
 #define CORE_MODEL_INITIALIZER_H_
 
+#include <Math/DistFunc.h>
+#include <omp.h>
 #include <ctime>
 #include <string>
 #include <vector>
@@ -291,7 +293,9 @@ struct ModelInitializer {
   }
 
   /// Creates agents with random positions on a sphere and adds them to the
-  /// ExecutionContext. Agent creation is parallelized.
+  /// ExecutionContext. The agents' positions are uniformly distributed accross
+  /// the surface. Agent creation is parallelized.
+  /// Algorithm: Knop, 1970, 10.1145/362349.362377 (doi).
   ///
   /// \param[in]  center        Center of the sphere
   /// \param[in]  radius        Radius of the sphere
@@ -312,6 +316,55 @@ struct ModelInitializer {
 #pragma omp for
       for (uint64_t i = 0; i < num_agents; i++) {
         auto pos = random->Sphere(radius) + center;
+        auto* new_agent = agent_builder(pos);
+        ctxt->AddAgent(new_agent);
+      }
+    }
+  }
+
+  /// Creates agents with random positions in a sphere and adds them to the
+  /// ExecutionContext. Agents are distributed uniformly inside the sphere.
+  /// Agent creation is parallelized. Algorithm: Knop,
+  /// 1970, 10.1145/362349.362377 (doi).
+  ///
+  /// \param[in]  center        Center of the sphere
+  /// \param[in]  radius        Radius of the sphere
+  /// @param[in]  num_agents    The number of agents
+  /// @param[in]  agent_builder function containing the logic to instantiate a
+  ///                           new agent. Takes `const
+  ///                           Double3&` as input parameter
+  template <typename Function>
+  static void CreateAgentsInSphereRndm(const Double3& center, double radius,
+                                       uint64_t num_agents,
+                                       Function agent_builder) {
+#pragma omp parallel
+    {
+      auto* sim = Simulation::GetActive();
+      auto* ctxt = sim->GetExecutionContext();
+      auto* random = sim->GetRandom();
+      // We use a probability density function (PDF) to model the probability of
+      // an agent to occur at a distance `r>=0` of the center. As the surface of
+      // a sphere scales as `r^2`, the PDF does as well. Thus
+      // `p(r)=a*r^2*\Theta(R-r)`, where `\Theta` is a heavyside function
+      // (interpretation: no agents outside the sphere). We can fix `a` by
+      // requiring `\int_0^\inf p(r') dr' = 1` and obtain `a=3/R^3`.
+      auto radial_pdf_sphere = [](const double* x, const double* params) {
+        double R{params[0]};
+        double x0{x[0]};
+        double ret{0.0};
+        if (x0 > 0.0 && x0 <= R) {
+          return ret = 3.0 * std::pow(x0, 2.0) / std::pow(R, 3.0);
+        } else {
+          return 0.0;
+        }
+      };
+      // Get a random number generator to sample from our PDF.
+      auto rng = random->GetUserDefinedDistRng1D(radial_pdf_sphere, {radius}, 0,
+                                                 radius);
+#pragma omp for
+      for (uint64_t i = 0; i < num_agents; i++) {
+        auto rad = rng.Sample();
+        auto pos = random->Sphere(rad) + center;
         auto* new_agent = agent_builder(pos);
         ctxt->AddAgent(new_agent);
       }
