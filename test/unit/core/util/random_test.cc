@@ -241,10 +241,15 @@ TEST(RandomTest, UserDefinedDistRng1DParallel) {
     };
     double min = 1;
     double max = 4;
+    size_t n_samples = 10000;
+    double result = 0.0;
     auto distrng =
         random->GetUserDefinedDistRng1D(function, {1.1, 1.2}, min, max);
+    for (size_t i = 0; i < n_samples; i++) {
+      result += distrng.Sample();
+    }
 #pragma omp critical
-    { results.push_back(distrng.Sample()); }
+    { results.push_back(result / n_samples); }
   }
   double sum = std::accumulate(results.begin(), results.end(), 0.0);
   EXPECT_LT(sum, std::numeric_limits<double>::max());
@@ -266,10 +271,15 @@ TEST(RandomTest, UserDefinedDistRng2DParallel) {
     };
     double min = 1;
     double max = 4;
+    size_t n_samples = 10000;
+    double result = 0.0;
     auto distrng = random->GetUserDefinedDistRng2D(function, {1.1, 1.2}, min,
                                                    max, min, max);
+    for (size_t i = 0; i < n_samples; i++) {
+      result += distrng.Sample2().Norm();
+    }
 #pragma omp critical
-    { results.push_back(distrng.Sample2().Norm()); }
+    { results.push_back(result / n_samples); }
   }
   double sum = std::accumulate(results.begin(), results.end(), 0.0);
   EXPECT_LT(sum, std::numeric_limits<double>::max());
@@ -291,10 +301,15 @@ TEST(RandomTest, UserDefinedDistRng3DParallel) {
     };
     double min = 1;
     double max = 4;
+    size_t n_samples = 10000;
+    double result = 0.0;
     auto distrng = random->GetUserDefinedDistRng3D(function, {1.1, 1.2}, min,
                                                    max, min, max, min, max);
+    for (size_t i = 0; i < n_samples; i++) {
+      result += distrng.Sample3().Norm();
+    }
 #pragma omp critical
-    { results.push_back(distrng.Sample3().Norm()); }
+    { results.push_back(result / n_samples); }
   }
   double sum = std::accumulate(results.begin(), results.end(), 0.0);
   EXPECT_LT(sum, std::numeric_limits<double>::max());
