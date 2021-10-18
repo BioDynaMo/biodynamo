@@ -22,7 +22,9 @@
 #ifndef MFEM_MOL_H_
 #define MFEM_MOL_H_
 
+#include <limits.h>
 #include <vector>
+#include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/pde/timedependent_operators/conduction_operator.h"
 #include "core/pde/timedependent_operators/diffusion_operator.h"
@@ -58,6 +60,9 @@ enum MFEMODESolver {
 /// \f[ \frac{du}{dt} = \nabla \cdot (\kappa + \alpha u) \nabla u \f]
 enum PDEOperator { kDiffusion, kDiffusionWithFunction, kConduction };
 
+/// Converts a bdm::Double3 to a mfem::Vector.
+mfem::Vector ConvertToMFEMVector(const Double3& position);
+
 /// This class implements a modular interface for the method of lines based on
 /// the `MFEM` finite element library. We use a finite element discretization
 /// in space to derive a high dimensional ODE system which we integrate over
@@ -76,6 +81,9 @@ class MethodOfLineSolver {
   mfem::H1_FECollection fe_coll_;
   /// The underlying mesh on which we solve the PDE
   mfem::Mesh* mesh_;
+  /// Vertex to Element Table from mfem mesh. This is likely expensive to
+  /// construct and therefore saved at the first call.
+  mfem::Table* table_of_elements_;
   /// Class FiniteElementSpace - responsible for providing FEM view of the
   /// mesh, mainly managing the set of degrees of freedom. (quote MFEM)
   mfem::FiniteElementSpace fespace_;
@@ -110,6 +118,22 @@ class MethodOfLineSolver {
   void Initialize();
   /// Function used to set the boundaries conditions.
   void SetBoundaryConditions();
+
+  /// Wrapper to mfem::Mesh::FindPoints(). First iterates over all elements
+  /// to find the closest center. Afterwards, it checks if the position is
+  /// either in the respective element or in it's neighbouring elements. This
+  /// member function is protected since it is expensive to call and should
+  /// therefore be used with caution. To obtain the value of the solution at a
+  /// specific point, please use the GetSolutionAtPosition. It also returns the
+  /// element belonging to that specific location.
+  std::pair<int, mfem::IntegrationPoint> FindPointInMesh(
+      const Double3& position);
+
+  // ToDo(tobias): remove from api once benchmark script has changed.
+  /// Given an element_id and a matching integration point, this function
+  /// returns the solution value.
+  double GetSolutionInElementAndIntegrationPoint(
+      int element_id, const mfem::IntegrationPoint& integration_point);
 
  public:
   /// Implementation of the Method of Lines based on MFEM.
@@ -160,9 +184,42 @@ class MethodOfLineSolver {
   /// Export the current continuum solution to the vtk format for ParaView.
   void ExportVTK();
 
-  /// Get the value of the GridFunction solution at a certain position. Warning:
-  /// This is currently not very performant.
-  double GetSolutionAtPosition(Double3& position);
+  /// Forgets the previous table_of_elements_ and creates an up-to-date version.
+  /// Use with caution as this call is expensive and you're likely to not have
+  /// to use it.
+  void UpdateElementToVertexTable();
+
+  /// Returns true if position is contained in the element labeled with
+  /// finite_element_id in the mesh_. You must also supply an
+  /// mfem::IntegrationPoint in which the function stores the appropriate
+  /// IntegrationPoint associated to the element to evaluate the GridFunction.
+  bool ContainedInElement(const Double3& position, int finite_element_id,
+                          mfem::IntegrationPoint& ip);
+
+  /// Returns the id of the neighbor if position is contained in on of the
+  /// neighbor elements of finite_element_id in the mesh_. If not, it returns
+  /// INT_MAX.You must also supply an mfem::IntegrationPoint in which the
+  /// function stores the appropriate IntegrationPoint associated to the element
+  /// to evaluate the GridFunction.
+  int ContainedInNeighbors(const Double3& position, int finite_element_id,
+                           mfem::IntegrationPoint& ip);
+
+  /// Returns a pair, where the integer is the finite element index in which the
+  /// position was located and the double is the value of the GridFunction at
+  /// the specified position. We recommend to store the finite element index
+  /// since computing this index is expensive. If the index has been computed
+  /// once, you can supply in via the finite_element_id variable to this
+  /// function which makes it significantly faster.
+  /// Warning: This is currently not very performant. If no position is
+  /// provide, we have to search all elements.
+  std::pair<int, double> GetSolutionAtPosition(
+      const Double3& position,
+      int finite_element_id = std::numeric_limits<int>::max());
+
+  /// Get the value of the solution at the agents position. The function calls
+  /// back to GetSolutionAtPosition and updates the Agent's member fe_id
+  /// appropriately.
+  double GetSolutionAtAgentPosition(Agent* agent);
 
   /// Set the PDE operator for the method of lines, e.g. define the equation.
   void SetOperator(MolOperator* oper);
