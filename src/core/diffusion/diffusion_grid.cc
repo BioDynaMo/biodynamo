@@ -104,6 +104,9 @@ void DiffusionGrid::Update() {
     }
   }
 
+  // Apply upper and lower threshold to bound values in Diffusion Grid.
+  ApplyThreshold();
+
   // Calculate new_dimension_length and new_resolution
   int new_dimension_length = grid_dimensions_[1] - grid_dimensions_[0];
   size_t new_resolution = std::ceil(new_dimension_length / box_length_);
@@ -166,6 +169,18 @@ void DiffusionGrid::CopyOldData(
         gradients_[offset + i] = old_gradients[idx];
       }
     }
+  }
+}
+
+void DiffusionGrid::ApplyThreshold() {
+  // C++17: replace with std::clamp(v,low,high). Tried different combinations
+  // of `#pragma omp (parallel for) / (simd)` but on macOS arm64 this had rather
+  // negative performance implications measured against BDM's statistics output
+  // `update environment`.
+  for (size_t i = 0; i < total_num_boxes_; i++) {
+    c1_[i] = (c1_[i] > max_concentration_)   ? max_concentration_
+             : (c1_[i] < min_concentration_) ? min_concentration_
+                                             : c1_[i];
   }
 }
 
@@ -282,18 +297,17 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
                "the diffusion grid! The change was ignored.");
     return;
   }
-  std::lock_guard<Spinlock> guard(locks_[idx]);
+#pragma omp atomic update
   c1_[idx] += amount;
-  if (c1_[idx] > concentration_threshold_) {
-    c1_[idx] = concentration_threshold_;
-  }
 }
 
 /// Get the concentration at specified position
 double DiffusionGrid::GetConcentration(const Double3& position) const {
   auto idx = GetBoxIndex(position);
-  std::lock_guard<Spinlock> guard(locks_[idx]);
-  return c1_[idx];
+  double value;
+#pragma omp atomic read
+  value = c1_[idx];
+  return value;
 }
 
 /// Get the (normalized) gradient at specified position

@@ -167,7 +167,8 @@ TEST(DiffusionTest, LeakingEdge) {
   DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
   d_grid->Initialize();
-  d_grid->SetConcentrationThreshold(1e15);
+  d_grid->SetMaxConcentration(1e15);
+  d_grid->SetMinConcentration(-1e15);
 
   for (int i = 0; i < 100; i++) {
     d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
@@ -235,7 +236,8 @@ TEST(DiffusionTest, ClosedEdge) {
   DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
   d_grid->Initialize();
-  d_grid->SetConcentrationThreshold(1e15);
+  d_grid->SetMaxConcentration(1e15);
+  d_grid->SetMinConcentration(-1e15);
 
   for (int i = 0; i < 100; i++) {
     d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
@@ -304,7 +306,8 @@ TEST(DiffusionTest, CopyOldData) {
   DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
   d_grid->Initialize();
-  d_grid->SetConcentrationThreshold(1e15);
+  d_grid->SetMaxConcentration(1e15);
+  d_grid->SetMinConcentration(-1e15);
 
   for (int i = 0; i < 100; i++) {
     d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
@@ -383,7 +386,8 @@ TEST(DiffusionTest, IOTest) {
 
   // Create a 100x100x100 diffusion grid with 20 boxes per dimension
   d_grid->Initialize();
-  d_grid->SetConcentrationThreshold(42);
+  d_grid->SetMaxConcentration(42);
+  d_grid->SetMinConcentration(-42);
   d_grid->SetDecayConstant(0.01);
 
   // write to root file
@@ -397,7 +401,8 @@ TEST(DiffusionTest, IOTest) {
 
   EXPECT_EQ("Kalium", restored_d_grid->GetSubstanceName());
   EXPECT_EQ(10, restored_d_grid->GetBoxLength());
-  EXPECT_EQ(42, restored_d_grid->GetConcentrationThreshold());
+  EXPECT_EQ(42, restored_d_grid->GetMaxConcentration());
+  EXPECT_EQ(-42, restored_d_grid->GetMinConcentration());
   EXPECT_NEAR(0.4, restored_d_grid->GetDiffusionCoefficients()[0], eps);
   EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[1], eps);
   EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[2], eps);
@@ -480,9 +485,12 @@ TEST(DiffusionTest, EulerConvergence) {
   d_grid4->Initialize();
   d_grid8->Initialize();
 
-  d_grid2->SetConcentrationThreshold(1e15);
-  d_grid4->SetConcentrationThreshold(1e15);
-  d_grid8->SetConcentrationThreshold(1e15);
+  d_grid2->SetMaxConcentration(1e15);
+  d_grid2->SetMinConcentration(-1e15);
+  d_grid4->SetMaxConcentration(1e15);
+  d_grid4->SetMinConcentration(-1e15);
+  d_grid8->SetMaxConcentration(1e15);
+  d_grid8->SetMinConcentration(-1e15);
 
   // instantaneous point source
   int init = 1e5;
@@ -557,9 +565,12 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   d_grid4->Initialize();
   d_grid8->Initialize();
 
-  d_grid2->SetConcentrationThreshold(1e15);
-  d_grid4->SetConcentrationThreshold(1e15);
-  d_grid8->SetConcentrationThreshold(1e15);
+  d_grid2->SetMaxConcentration(1e15);
+  d_grid2->SetMinConcentration(-1e15);
+  d_grid4->SetMaxConcentration(1e15);
+  d_grid4->SetMinConcentration(-1e15);
+  d_grid8->SetMaxConcentration(1e15);
+  d_grid8->SetMinConcentration(-1e15);
 
   // instantaneous point source
   int init = 1e5;
