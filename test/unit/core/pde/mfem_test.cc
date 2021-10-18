@@ -15,8 +15,10 @@
 #ifdef USE_MFEM
 
 #include <gtest/gtest.h>
+#include <chrono>
 #include <numeric>
 #include "biodynamo.h"
+#include "core/agent/cell.h"
 #include "core/pde/mfem_mol.h"
 
 #define TEST_NAME typeid(*this).name()
@@ -53,6 +55,8 @@ struct TimeStepGenerator {
 
 enum Substances { kSubstance1, kSubstance2, kSubstance3 };
 
+// We test if the SetODESolver member function works correctly. Especially, we
+// test if the mapping between the enum MFEMODESolver and the member is correct.
 TEST(MethodOfLineTest, SetODESolver) {
   // Create a simple one element hex mesh
   mfem::Mesh* mesh = CreateMesh();
@@ -122,6 +126,9 @@ TEST(MethodOfLineTest, SetODESolver) {
   delete mesh;
 }
 
+// We test if the SetOperator and GetMolOperator member function work
+// correctly. Moreover, we test if the mapping between the enum PDEOperator
+// and the members are correct.
 TEST(MethodOfLineTest, SetOperator) {
   // Create a simple one element hex mesh
   mfem::Mesh* mesh = CreateMesh();
@@ -156,6 +163,8 @@ TEST(MethodOfLineTest, SetOperator) {
   delete mesh;
 }
 
+// Here, we test if the solver actually takes the correct time steps and
+// simulates the right amount of time.
 TEST(MethodOfLineTest, Step) {
   // Create a simple one element hex mesh
   mfem::Mesh mesh =
@@ -191,6 +200,99 @@ TEST(MethodOfLineTest, Step) {
   }
 }
 
+// We test if we correctly copy from a bdm Double3 to a mfem::Vector.
+TEST(MethodOfLineTest, ConvertToMFEMVector) {
+  // Create a simple one element hex mesh
+  mfem::Mesh mesh =
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
+
+  // Define function to set inital values of the Mesh
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x[0]; };
+
+  // Define numeric parameters
+  std::vector<double> parameters{0.1};
+
+  // Define empty functions vector for constructor
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+
+  // Create MethodOfLineSolver
+  MethodOfLineSolver solver(&mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver,
+                            PDEOperator::kDiffusion, InitializeGridValues,
+                            parameters, operator_functions);
+
+  // Test the conversion
+  Double3 bdm{0.1, 0.2, 0.3};
+  mfem::Vector mfem_vec = ConvertToMFEMVector(bdm);
+  EXPECT_EQ(bdm.size(), mfem_vec.Size());
+  EXPECT_EQ(bdm.Norm(), mfem_vec.Norml2());
+  EXPECT_EQ(0.1, mfem_vec.Min());
+  EXPECT_EQ(0.3, mfem_vec.Max());
+}
+
+// Here, we test if we can read of the solution of the grid at specific
+// postions by providing the agent itself.
+TEST(MethodOfLineTest, ContainedInElementOrNeighbour) {
+  // Create a simple one element hex mesh
+  mfem::Mesh mesh =
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+
+  // Define function to set inital values of the Mesh
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
+
+  // Define numeric parameters
+  std::vector<double> parameters{0.1};
+
+  // Define empty functions vector for constructor
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+
+  // Create MethodOfLineSolver
+  MethodOfLineSolver solver(&mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver,
+                            PDEOperator::kDiffusion, InitializeGridValues,
+                            parameters, operator_functions);
+
+  // Check the Function initialization at a few points
+  Double3 bdm_position;
+  bdm_position[0] = 0.43291034;
+  bdm_position[1] = 0.54829203;
+  bdm_position[2] = 0.72717444;
+
+  // Locate Agent
+  auto res = solver.GetSolutionAtPosition(bdm_position);
+  int fe_id = res.first;
+  double grid_value = res.second;
+  EXPECT_LT(abs(bdm_position.Norm() - grid_value), 0.1);
+
+  // Test if contained in element
+  mfem::IntegrationPoint ip;
+  EXPECT_TRUE(solver.ContainedInElement(bdm_position, fe_id, ip));
+  EXPECT_FALSE(solver.ContainedInElement(bdm_position, fe_id + 1, ip));
+  EXPECT_FALSE(solver.ContainedInElement(bdm_position, fe_id - 1, ip));
+
+  // Move to Neighboring boxes and see if we find the neighbour boxes
+  for (int dimension = 0; dimension < 3; dimension++) {
+    auto new_position_1 = bdm_position;
+    auto new_position_2 = bdm_position;
+    new_position_1[dimension] += 0.1;
+    new_position_2[dimension] -= 0.1;
+    auto res1 = solver.ContainedInNeighbors(new_position_1, fe_id, ip);
+    auto res2 = solver.ContainedInNeighbors(new_position_2, fe_id, ip);
+    EXPECT_NE(res1, fe_id);
+    EXPECT_NE(res2, fe_id);
+    EXPECT_NE(res1, res2);
+    EXPECT_NE(res1, std::numeric_limits<int>::max());
+    EXPECT_NE(res2, std::numeric_limits<int>::max());
+    // move further and expect not to find it in neighbors
+    new_position_1[dimension] += 0.1;
+    new_position_2[dimension] -= 0.1;
+    res1 = solver.ContainedInNeighbors(new_position_1, fe_id, ip);
+    res2 = solver.ContainedInNeighbors(new_position_2, fe_id, ip);
+    EXPECT_EQ(res1, std::numeric_limits<int>::max());
+    EXPECT_EQ(res2, std::numeric_limits<int>::max());
+  }
+}
+
+// Here, we test if we can read of the solution of the grid at specific
+// postions by providing the postion directly.
 TEST(MethodOfLineTest, GetSolutionAtPosition) {
   // Create a simple one element hex mesh
   mfem::Mesh mesh =
@@ -220,32 +322,230 @@ TEST(MethodOfLineTest, GetSolutionAtPosition) {
   bdm_position[0] = 0.1;
   bdm_position[1] = 0.2;
   bdm_position[2] = 0.3;
-  grid_value = solver.GetSolutionAtPosition(bdm_position);
+  grid_value = solver.GetSolutionAtPosition(bdm_position).second;
   EXPECT_EQ(bdm_position.Norm(), grid_value);
 
   // Case  (On nodes by construction - after first refinement)
   bdm_position[0] = 0.75;
   bdm_position[1] = 0.6;
   bdm_position[2] = 0.85;
-  grid_value = solver.GetSolutionAtPosition(bdm_position);
+  grid_value = solver.GetSolutionAtPosition(bdm_position).second;
   EXPECT_EQ(bdm_position.Norm(), grid_value);
 
   // Case  (On nodes by construction - after second refinement)
   bdm_position[0] = 0.325;
   bdm_position[1] = 0.175;
   bdm_position[2] = 0.550;
-  grid_value = solver.GetSolutionAtPosition(bdm_position);
+  grid_value = solver.GetSolutionAtPosition(bdm_position).second;
   EXPECT_EQ(bdm_position.Norm(), grid_value);
 
   // Case  (Not on nodes by construction - after second refinement)
   bdm_position[0] = 0.43291034;
   bdm_position[1] = 0.54829203;
   bdm_position[2] = 0.92717444;
-  grid_value = solver.GetSolutionAtPosition(bdm_position);
+  grid_value = solver.GetSolutionAtPosition(bdm_position).second;
   EXPECT_NE(bdm_position.Norm(), grid_value);
   EXPECT_LT(abs(bdm_position.Norm() - grid_value), grid_value * 0.001);
 }
 
+// Here, we test if we can read of the solution of the grid at specific
+// postions by providing the agent itself.
+TEST(MethodOfLineTest, GetSolutionAtAgentPosition) {
+  // Create a simple one element hex mesh
+  mfem::Mesh mesh =
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+  mesh.UniformRefinement();
+  mesh.UniformRefinement();
+
+  // Define function to set inital values of the Mesh
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
+
+  // Define numeric parameters
+  std::vector<double> parameters{0.1};
+
+  // Define empty functions vector for constructor
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+
+  // Create MethodOfLineSolver
+  MethodOfLineSolver solver(&mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver,
+                            PDEOperator::kDiffusion, InitializeGridValues,
+                            parameters, operator_functions);
+
+  // Dummy simulation
+  Simulation simulation("MethodOfLineTest-GetSolutionAtAgentPosition");
+  auto* rm = simulation.GetResourceManager();
+  auto* scheduler = simulation.GetScheduler();
+  auto* cell = new Cell(1.0);
+  rm->AddAgent(cell);
+  scheduler->FinalizeInitialization();
+
+  // Check the Function initialization at a few points
+  Double3 bdm_position;
+  double grid_value;
+
+  // Check if finite element id of the agent is initalized correctly. After
+  // checking the value at the agent position, the agents should remember the
+  // element id & therefore this should change.
+  EXPECT_EQ(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+
+  // Case 1 (On nodes by construction)
+  bdm_position[0] = 0.1;
+  bdm_position[1] = 0.2;
+  bdm_position[2] = 0.3;
+  cell->SetPosition(bdm_position);
+  grid_value = solver.GetSolutionAtAgentPosition(cell);
+  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+
+  // Case  (On nodes by construction - after first refinement)
+  bdm_position[0] = 0.75;
+  bdm_position[1] = 0.6;
+  bdm_position[2] = 0.85;
+  cell->SetPosition(bdm_position);
+  grid_value = solver.GetSolutionAtAgentPosition(cell);
+  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+
+  // Case  (On nodes by construction - after second refinement)
+  bdm_position[0] = 0.325;
+  bdm_position[1] = 0.175;
+  bdm_position[2] = 0.550;
+  cell->SetPosition(bdm_position);
+  grid_value = solver.GetSolutionAtAgentPosition(cell);
+  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+
+  // Case  (Not on nodes by construction - after second refinement)
+  bdm_position[0] = 0.43291034;
+  bdm_position[1] = 0.54829203;
+  bdm_position[2] = 0.92717444;
+  cell->SetPosition(bdm_position);
+  grid_value = solver.GetSolutionAtAgentPosition(cell);
+  EXPECT_NE(bdm_position.Norm(), grid_value);
+  EXPECT_LT(abs(bdm_position.Norm() - grid_value), grid_value * 0.001);
+  EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+}
+
+// Here, we test if we can read of the solution of the grid at specific
+// postions by providing the agent itself. The main reason for this test is to
+// see if our accelerated search (first previous element, then neighbors, then
+// checking all elements) accelerates the application as expected.
+TEST(MethodOfLineTest, StepByStepLocalization) {
+  // Create a simple one element hex mesh
+  mfem::Mesh mesh = mfem::Mesh::MakeCartesian3D(
+      100, 100, 100, mfem::Element::Type::HEXAHEDRON);
+
+  // Define function to set inital values of the Mesh
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
+
+  // Define numeric parameters
+  std::vector<double> parameters{0.1};
+
+  // Define empty functions vector for constructor
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+
+  // Create MethodOfLineSolver
+  MethodOfLineSolver solver(&mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver,
+                            PDEOperator::kDiffusion, InitializeGridValues,
+                            parameters, operator_functions);
+
+  // Dummy simulation
+  int num_agents = 10;
+  Simulation simulation("MethodOfLineTest-GetSolutionAtAgentPosition");
+  auto* rm = simulation.GetResourceManager();
+  auto* scheduler = simulation.GetScheduler();
+  auto* random = simulation.GetRandom();
+  for (int i = 0; i < num_agents; i++) {
+    auto* cell = new Cell(1.0);
+    // don't go all the way to 1.0 because of case 3.
+    auto pos = random->UniformArray<3>(0.98);
+    cell->SetPosition(pos);
+    rm->AddAgent(cell);
+  }
+  scheduler->FinalizeInitialization();
+
+  // Check the Function initialization at a few points. For the specific setup
+  // of element size, type, and the InitialGridValues, the values within one
+  // element vary at most abs_error. We therefore execpt results that are
+  // within this tolerance.
+  double abs_error = 0.01;
+
+  // Check if finite element id of the agent is initalized correctly. After
+  // checking the value at the agent position, the agents should remember the
+  // element id & therefore this should change.
+  rm->ForEachAgent([&](Agent* agent) {
+    EXPECT_EQ(agent->GetFiniteElementID(), std::numeric_limits<int>::max());
+  });
+
+  // Case 1 (Locate agents with linear search in mesh)
+  std::chrono::steady_clock::time_point begin_linear_search =
+      std::chrono::steady_clock::now();
+  rm->ForEachAgent([&](Agent* agent) {
+    double grid_value = solver.GetSolutionAtAgentPosition(agent);
+    EXPECT_LT(abs(agent->GetPosition().Norm() - grid_value), abs_error);
+  });
+  std::chrono::steady_clock::time_point end_linear_search =
+      std::chrono::steady_clock::now();
+  rm->ForEachAgent([&](Agent* agent) {
+    EXPECT_NE(agent->GetFiniteElementID(), std::numeric_limits<int>::max());
+  });
+
+  // Case 2 (Repeat exercise, this time agents should already know their
+  // position and the search should be significantly faster.)
+  mfem::IntegrationPoint dummy;
+  rm->ForEachAgent([&](Agent* agent) {
+    EXPECT_EQ(true,
+              solver.ContainedInElement(agent->GetPosition(),
+                                        agent->GetFiniteElementID(), dummy));
+  });
+  std::chrono::steady_clock::time_point begin_no_search =
+      std::chrono::steady_clock::now();
+  rm->ForEachAgent([&](Agent* agent) {
+    double grid_value = solver.GetSolutionAtAgentPosition(agent);
+    EXPECT_LT(abs(agent->GetPosition().Norm() - grid_value), abs_error);
+  });
+  std::chrono::steady_clock::time_point end_no_search =
+      std::chrono::steady_clock::now();
+
+  // Case 3 (Repeat exercise, this time agents should already know their
+  // position but we move it into a neighbor element. The search should be
+  // slightly slower than in case 2 but still significantly faster than in
+  // case 1)
+  rm->ForEachAgent([&](Agent* agent) {
+    agent->SetPosition(agent->GetPosition() + random->UniformArray<3>(0.01));
+  });
+  solver.UpdateElementToVertexTable();
+  std::chrono::steady_clock::time_point begin_neighbor_search =
+      std::chrono::steady_clock::now();
+  rm->ForEachAgent([&](Agent* agent) {
+    double grid_value = solver.GetSolutionAtAgentPosition(agent);
+    EXPECT_LT(abs(agent->GetPosition().Norm() - grid_value), abs_error);
+  });
+  std::chrono::steady_clock::time_point end_neighbor_search =
+      std::chrono::steady_clock::now();
+
+  // Compute search times
+  auto duration_linear_search =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(end_linear_search -
+                                                           begin_linear_search)
+          .count();
+  auto duration_no_search =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(end_no_search -
+                                                           begin_no_search)
+          .count();
+  auto duration_neighbor_search =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+          end_neighbor_search - begin_neighbor_search)
+          .count();
+
+  // Test if our search acceleration matches our expectation.
+  EXPECT_LT(duration_no_search, duration_neighbor_search);
+  EXPECT_LT(duration_no_search, duration_linear_search);
+  EXPECT_LT(duration_neighbor_search, duration_linear_search);
+}
+
+// Test the integration of MFEM into BioDynaMo via the Model Initializer and the
+// Resource Manager.
 TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
@@ -316,8 +616,8 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
   auto* solver2 = rm->GetMFEMGrid(1).second;
   auto* solver3 = rm->GetMFEMGrid(2).second;
 
-  // Test if all pointers (mesh and solver) are not nullptr and we have a unique
-  // address for each of them.
+  // Test if all pointers (mesh and solver) are not nullptr and we have a
+  // unique address for each of them.
   EXPECT_NE(nullptr, mesh1);
   EXPECT_NE(nullptr, mesh2);
   EXPECT_NE(nullptr, mesh3);
