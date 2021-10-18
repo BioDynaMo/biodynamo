@@ -45,6 +45,7 @@ SET(vtune_default @vtune@)
 SET(tcmalloc_default @tcmalloc@)
 SET(jemalloc_default @jemalloc@)
 SET(test_default @test@)
+SET(mfem_default @mfem@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
@@ -56,6 +57,7 @@ option(vtune     "Enable VTune performance analysis" @vtune@)
 option(tcmalloc  "Use tcmalloc." @tcmalloc@)
 option(jemalloc  "Use jemalloc." @jemalloc@)
 option(test      "Build all tests for your simulation." @test@)
+option(mfem      "Use mfem." @mfem@)
 
 if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
@@ -92,6 +94,10 @@ string(TOLOWER "${jemalloc_default}" jemalloc_default_lower )
 if (NOT "${jemalloc_lower}" STREQUAL "${jemalloc_default_lower}")
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Djemalloc=${jemalloc}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Djemalloc to ${jemalloc_default}. Please change -Djemalloc to -Djemalloc=${jemalloc_default}.")
+endif()
+if (mfem AND NOT mfem_default)
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dmfem=${mfem}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dmfem to ${mfem_default}. Please change -Dmfem to -Dmfem=${mfem_default}.")
 endif()
 
 # This file contains the build setup for simulation projects outside the
@@ -171,6 +177,22 @@ endif()
 if(opencl)
   find_package(OpenCL)
 endif()
+
+if(mfem)
+  find_package(mfem NAMES MFEM REQUIRED)
+  if (${mfem_FOUND})
+    message(STATUS "MFEM found on your system, we use your local installation.")
+    message(STATUS "Found MFEM config in: ${mfem_DIR} (vers. ${MFEM_VERSION})")
+    if ("${MFEM_VERSION}" VERSION_LESS "4.3")
+      message(FATAL_ERROR "BioDynaMo requrires MFEM vers. 4.3 or newer. Exit.")
+    endif ("${MFEM_VERSION}" VERSION_LESS "4.3")
+  endif(${mfem_FOUND})
+  message(STATUS "MFEM include dir is: ${MFEM_INCLUDE_DIRS}")
+  include_directories(${MFEM_INCLUDE_DIRS})
+  message(STATUS "MFEM library is: ${MFEM_LIBRARIES}")
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${MFEM_LIBRARIES})
+  add_definitions("-DUSE_MFEM")
+endif(mfem)
 
 if(numa)
   find_package(Numa REQUIRED)

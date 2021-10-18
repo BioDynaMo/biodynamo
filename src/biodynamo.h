@@ -37,6 +37,7 @@
 #include "core/model_initializer.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"
+#include "core/pde/mfem_mol.h"
 #include "core/randomized_rm.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
