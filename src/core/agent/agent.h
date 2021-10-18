@@ -25,6 +25,9 @@
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
+#ifdef USE_MFEM
+#include <limits.h>
+#endif  // USE_MFEM
 
 #include "core/agent/agent_pointer.h"
 #include "core/agent/agent_uid.h"
@@ -227,6 +230,12 @@ class Agent {
 
   virtual void SetDiameter(double diameter) = 0;
 
+#ifdef USE_MFEM
+  // ToDo(tobias): extend to multiple meshes, e.g. to std::vector<int>.
+  int GetFiniteElementID() { return fe_id_; }
+  void SetFiniteElementID(int fe_id) { fe_id_ = fe_id; }
+#endif  // USE_MFEM
+
   void RemoveFromSimulation() const;
 
   void* operator new(size_t size) {  // NOLINT
@@ -261,6 +270,15 @@ class Agent {
   /// Helper variable used to support removal of behaviors while
   /// `RunBehaviors` iterates over them.
   uint16_t run_behavior_loop_idx_ = 0;
+
+#ifdef USE_MFEM
+  // ToDo(tobias): extend to multiple meshes, e.g. to std::vector<int>.
+  /// If the MFEM option is active, this variable saves the element index of the
+  /// mfem::Mesh in which it is located. By default, we set it to the maximum
+  /// value an integer can take. If the Agent calls to the grid for a first
+  /// time, this variable is updated.
+  int fe_id_ = std::numeric_limits<int>::max();
+#endif  // USE_MFEM
 
   /// If an agent is static, we should not compute the mechanical forces
   bool is_static_ = false;  //!
