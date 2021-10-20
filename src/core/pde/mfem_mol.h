@@ -93,7 +93,7 @@ class MethodOfLineSolver {
   mfem::ODESolver* ode_solver_;
   /// Vector representation of the PDE solution.
   mfem::Vector u_;
-  /// Operator descibing the FE discretization of the MOL method.
+  /// Operator describing the FE discretization of the MOL method.
   MolOperator* operator_;
   /// Function to initialize Grid values
   std::function<double(const mfem::Vector&)> InitialGridValues_;
@@ -114,7 +114,7 @@ class MethodOfLineSolver {
   /// Number of calls to Step()
   uint64_t ode_steps_;
 
-  /// Internally used function for initilization of the ODE system.
+  /// Internally used function for initialization of the ODE system.
   void Initialize();
   /// Function used to set the boundaries conditions.
   void SetBoundaryConditions();
@@ -235,6 +235,9 @@ class MethodOfLineSolver {
 
   // Get simulated time
   double GetSimTime() { return t_; }
+
+  // Get a pointer to the GridFunction u_gf_
+  mfem::GridFunction* GetGridFunction() { return &u_gf_; }
 
   // Get substance_id_
   uint64_t GetSubstanceId() { return substance_id_; }
