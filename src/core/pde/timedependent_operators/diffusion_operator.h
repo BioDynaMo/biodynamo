@@ -24,13 +24,12 @@
 namespace bdm {
 namespace experimental {
 
-/// This Operator descibes the following PDE system:
+/// This Operator describes the following PDE system:
 /// \f[ \frac{du}{dt} = \nabla (D \nabla u) + \Gamma u, \ \f]
 /// where \f$ u = u(x,t) \f$, \f$ \Gamma = \Gamma (x,t)\f$, \f$ D = const \f$,
 /// \f$ x \in R^n \f$. In the code, \f$ D \f$  is the variable
-/// `diffusion_coefficient` and \f$\Gamma(x,t) = \Gamma(x)\f$ is called
-/// `diffusion_func_`. Note that the implemenation currently does not support
-/// the time-dependence in \f$ \Gamma \f$.
+/// `diffusion_coefficient` and \f$\Gamma(x)\f$ is called
+/// `diffusion_func_`.
 ///
 /// After spatial discretization, the diffusion model can be written as:
 ///
@@ -51,15 +50,13 @@ class DiffusionOperator : public MolOperator {
  public:
   /// Constructor for full PDE
   /// \f$ \frac{du}{dt} = \nabla (D \nabla u) + \Gamma u \f$
-  DiffusionOperator(
-      mfem::FiniteElementSpace &f, double diffusion_coefficient,
-      std::function<double(const mfem::Vector &)> diffusion_func_);
+  DiffusionOperator(mfem::FiniteElementSpace &f, double diffusion_coefficient,
+                    std::function<double(const mfem::Vector &)> diffusion_func);
   /// Constructor for simplified PDE \f$ \frac{du}{dt} = \nabla (D \nabla u) \f$
   DiffusionOperator(mfem::FiniteElementSpace &f, double diffusion_coefficient);
   /// Constructor for simplified PDE \f$ \frac{du}{dt} = \Gamma u \f$
-  DiffusionOperator(
-      mfem::FiniteElementSpace &f,
-      std::function<double(const mfem::Vector &)> diffusion_func_);
+  DiffusionOperator(mfem::FiniteElementSpace &f,
+                    std::function<double(const mfem::Vector &)> diffusion_func);
 
   /// Update the diffusion BilinearForm K using the given true-dof vector `u`.
   void SetParameters(const mfem::Vector &u) override;
