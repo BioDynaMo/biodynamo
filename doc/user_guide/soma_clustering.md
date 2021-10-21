@@ -1,6 +1,6 @@
 ---
 title: "Soma Clustering"
-date: "2019-01-01"
+date: "2020-08-01"
 path: "/docs/userguide/soma_clustering/"
 meta_title: "BioDynaMo User Guide"
 meta_description: "This is the soma clustering page."
@@ -35,12 +35,12 @@ biodynamo demo soma_clustering .
 
 ## Inspect the code
 
-Go into the `soma_clustering` directory and open the source file `src/soma_clustering.h` in your favorite editor.
+Firstly, change to the new `soma_clustering` directory that you have just copied.
 We can note the following things from its content:
 
 ### 1. Creating a custom agent
 
-In `src/my_cell.h` we can find the following code:
+Begin by opening `src/my_cell.h` in your favourite text editor. We can find the following code:
 
 ```cpp
 class MyCell : public Cell {
@@ -59,22 +59,47 @@ class MyCell : public Cell {
 
 We create a new type of cell called "MyCell" that extends the default Cell.
 It contains a new data member called `cell_type_` that makes it possible to assign
-a type to a cell.
+an integer value of type to a cell.
 
 ### 2. Define substances and behaviors
 
-In `src/soma_clustering_behaviors.h` we can find the listing of the two substances
-that are used in this simulation:
+In `src/soma_clustering.h` we can find the set-up for the soma clustering simulation.
+We begin by listing of the two substances that are used in this simulation:
 
 ```cpp
 enum Substances { kSubstance_0, kSubstance_1 };
 ```
+The properties of these substances are later defined, with their substance_name,
+diffusion_coefficient, decay_constant, resolution.
 
+```cpp
+ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0.1, 20);
+ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0.1, 20);
+```
 We can also find the behaviors that were used in the Diffusion exercise.
+These are added when constructing the agents in the simulation:
+
+```cpp
+cell->AddBehavior(new Secretion(substance_name));
+cell->AddBehavior(new Chemotaxis(substance_name, 5));
+```
+The initial number of cells is set via the ```int num_cells``` variable (set to 20,000).
+The environment (simulation space) settings are also set to create a cube of 250x250x250.
+
+```cpp
+auto set_param = [](Param* param) {
+  // Create an artificial bound for the simulation space
+  param->bound_space = Param::BoundSpaceMode::kClosed;
+  param->min_bound = 0;
+  param->max_bound = 250;
+  param->unschedule_default_operations = {"mechanical forces"};
+};
+```
+
 
 ## Configure the simulation
 
-Create a `bdm.toml` file in the `diffusion` directory, and create the following
+Create a `bdm.toml` file in the `soma_clustering` directory, and create the following
 configuration file:
 
 ```
@@ -97,12 +122,13 @@ interval = 10
 This will enable exporting visualization files, so that we can visualize the
 simulation after it has finished. Furthermore, we enable the output of the diameter
 and the cell type of our agents (named "MyCell"), and the two substances
-that are secreted.
+that are secreted ("Substance_0" and "Substance_1"). 
+We may also add the diffusion gradient by adding the setting `gradient = true`.
 
 ## Build and run the simulation
 
 Run the following commands to build and run the simulation (do not forget to
-`biodynamo source` if you haven't already in your terminal):
+`source` BioDynaMo if you haven't already in your terminal, i.e. `source <installation-directory>/bin/thisbdm.sh`):
 
 ```bash
 biodynamo build
@@ -111,20 +137,23 @@ biodynamo run
 
 ## Visualize the simulation
 
-Open ParaView and navigate to the `diffusion` directory. Open the `cells_data_*`
-and `Kalium_*` files as Group (see the Visualization exercise as a reference).
+To visualize the simulation, consult the Visualization tutorial (https://biodynamo.org/docs/userguide/visualization/).
+Open ParaView (`paraview &`) and go to File -> Load State. Locate the soma_clustering directory and select the `soma_clustering.pvsm` file within output directory.
+In the next window keep the default ('Use File Names From State').
 
-Click on the `cells_data_` entry in the Pipeline Browser. From "Filters", select
-"Search" (or do Ctrl + Space). Search for the "Glyph" filter, Apply it, and set
-the following properties:
+Now that simulation can be visualized by hitting the Play button on the top of the interface.
+This will play the simulation over time.
 
-```Python
+By clicking on `MyCells` in the Pipeline Browser, the Properties window will be shown.
+Under 'Coloring', click the drop-down to change 'Solid Color' to 'cell_type_' to view cells of each type using a different colour.
+
+To ensure best results, in the Properties window for "MyCells", search "Glyph" and set the following properties:
+  ```Python
 Glyph Type 		= 'Sphere'
 Scalars 		  = 'Diameters'
 Scale Mode 		= 'Scalar'
 Scale Factor 	= 1
 Glyph Mode 		= 'All Points'
 ```
-
-And hit Apply. You might need to 'Zoom to Fit'. Hit the Play button on the top of
-the interface to play the simulation over time.
+Don't forget to press "Apply" in the Properties window after making changes and pressing "Zoom to Fit" if required.
+A visualization of soma clustering using BioDynaMo can also be found here: https://youtu.be/jlOk_Y3SUHo
