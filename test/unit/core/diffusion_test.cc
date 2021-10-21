@@ -160,8 +160,6 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   delete dgrid;
 }
 
-// Todo(tobias): add test for EulerGrid with open and closed edges.
-
 // Tests if the concentration / gradient values are correctly copied
 // after the env has grown and DiffusionGrid::CopyOldData is called
 TEST(DiffusionTest, CopyOldData) {
