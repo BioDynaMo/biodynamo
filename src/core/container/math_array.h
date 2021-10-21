@@ -23,8 +23,8 @@
 #include <stdexcept>
 #include <utility>
 
-#include "core/util/root.h"
 #include "core/util/log.h"
+#include "core/util/root.h"
 
 namespace bdm {
 
@@ -42,7 +42,7 @@ class MathArray {  // NOLINT
     }
   }
 
-  /// Constructor which accepts an std::initiliazer_list to set
+  /// Constructor which accepts an std::initializer_list to set
   /// the array's content.
   /// \param l an initializer list
   constexpr MathArray(std::initializer_list<T> l) {
@@ -136,6 +136,8 @@ class MathArray {  // NOLINT
     }
     return true;
   }
+
+  bool operator!=(const MathArray& other) const { return !operator==(other); }
 
   MathArray& operator++() {
 #pragma omp simd
@@ -347,26 +349,32 @@ class MathArray {  // NOLINT
     return result;
   }
 
-  /// Normalize the array. It will be done in-place.
-  /// \return the normalized array.
-  MathArray& Normalize() {
+  /// Normalize the array in-place.
+  void Normalize() {
     T norm = Norm();
-    if (norm == 0){
-      Log::Fatal("MathArray::Normalize","You tried to normalize a zero vector. " 
-      "This cannot be done. Exiting.");
+    if (norm == 0) {
+      Log::Fatal("MathArray::Normalize",
+                 "You tried to normalize a zero vector. "
+                 "This cannot be done. Exiting.");
     }
 #pragma omp simd
     for (size_t i = 0; i < N; i++) {
       data_[i] /= norm;
     }
-    return *this;
+  }
+
+  /// Get a nomalized copy of the MathArray.
+  MathArray GetNormalizedArray() const {
+    MathArray normalized_array(*this);
+    normalized_array.Normalize();
+    return normalized_array;
   }
 
   /// Compute the entry wise product given another array
   /// of the same size.
   /// \param rhs the other array
   /// \return a new array with the result
-  MathArray EntryWiseProduct(const MathArray& rhs) {
+  MathArray EntryWiseProduct(const MathArray& rhs) const {
     assert(rhs.size() == N);
     MathArray tmp;
 #pragma omp simd

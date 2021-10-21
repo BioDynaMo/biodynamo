@@ -78,7 +78,8 @@ struct RandomMovement : public Behavior {
     auto* sparam = sim->GetParam()->Get<SimParam>();
 
     const auto& position = agent->GetPosition();
-    auto rand_movement = random->UniformArray<3>(-1, 1).Normalize();
+    auto rand_movement = random->UniformArray<3>(-1, 1);
+    rand_movement.Normalize();
     auto new_pos = position + rand_movement * sparam->agent_speed;
     agent->SetPosition(new_pos);
   }

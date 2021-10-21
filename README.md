@@ -31,8 +31,8 @@
 
 ## What is BioDynaMo?
 
-BioDynaMo is a software platform to easily create, run, and visualise 3D agent-based biological simulations.
-* **Blazing fast:** The core of the platform is writen in C++ and is highly optimized to harness the computational power of modern hardware.
+BioDynaMo is a software platform to easily create, run, and visualise 3D agent-based simulations.
+* **Blazing fast:** The core of the platform is written in C++ and is highly optimized to harness the computational power of modern hardware.
 * **Modular:** Reuse, adapt, or create modules that represents a specific biological behavior or entity. With BioDynaMo you don't need to start from scratch anymore!
 * **Visual:** Effortlessly create astonishing images and animations of your simulations. Your publications and presentations will stand out even more!
 
@@ -55,8 +55,18 @@ The main purpose of this repository is to evolve BioDynaMo, making it faster and
 easier to use. Development of BioDynaMo happens in the open on Github, and we are
 grateful to the community for contributing bugfixes and improvements. Please read our [contribution guide](https://biodynamo.org/docs/devguide/contribute/) and learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
 
-We expect contributors to adhere to our [Contributor Covenant](./CODE_OF_CONDUCT.md).
+We expect contributors to adhere to our [Contributor Covenant](https://github.com/BioDynaMo/biodynamo/blob/master/CODE_OF_CONDUCT.md).
 
-### License
+## Cite
+
+When citing BioDynaMo, please use this reference:
+
+```
+Lukas Breitwieser et al. BioDynaMo: a modular platform for high-performance agent-based simulation.
+In: Bioinformatics, 2021. DOI: https://doi.org/10.1093/bioinformatics/btab649.
+See also "BioDynaMo" [software], release vX.YY.ZZ-gSHA (where SHA is the git version hash).
+```
+
+## License
 
 BioDynaMo is [Apache 2.0 licensed](./LICENSE).

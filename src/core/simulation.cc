@@ -51,6 +51,7 @@
 #include "memory_usage.h"
 
 #include <TEnv.h>
+#include <TROOT.h>
 
 namespace fs = std::experimental::filesystem;
 
@@ -311,6 +312,10 @@ void Simulation::ReplaceScheduler(Scheduler* scheduler) {
 void Simulation::Initialize(CommandLineOptions* clo,
                             const std::function<void(Param*)>& set_param,
                             const std::vector<std::string>& config_files) {
+  // Initialize a thread-safe ROOT instance
+  TROOT(name_.c_str(), "BioDynaMo");
+  ROOT::EnableThreadSafety();
+
   ctor_ts_ = bdm::Timing::Timestamp();
   id_ = counter_++;
   Activate();
