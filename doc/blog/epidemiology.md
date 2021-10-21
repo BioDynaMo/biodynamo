@@ -11,7 +11,7 @@ In one of these types of simulation, BioDynaMo is used to study the spreading of
 
 We are working closely together with the epidemiological department of the University of Geneva to make sure that our simulations reflect correctly the many observed cases of virus outbreaks in closed spaces.
 
-This work is sponsored by a grant from the European [Open Science Cloud]( https://www.eoscsecretariat.eu) (EOSC).
+This work is sponsored by a grant from the [European Open Science Cloud](https://www.eoscsecretariat.eu) (EOSC).
 
 Follow the progress of this research in a future blog post.
 
