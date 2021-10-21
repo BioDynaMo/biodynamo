@@ -83,7 +83,7 @@ TEST(ResourceManagerTest, ForEachAgentFilter) {
 // OS, architecture, and compiler version. Submitted bug to Apple on 2021-09-22.
 // The issue arises with the `#pragma omp critical` statement.
 // Todo(tobias): revisit this bug asap.
-#if !(defined(__APPLE__) && defined(__arm64__) && __clang_major__ == 13)
+#if !(defined(__APPLE__) && __clang_major__ == 13)
 TEST(ResourceManagerTest, ForEachAgentParallelFilter) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
