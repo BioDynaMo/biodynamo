@@ -144,6 +144,7 @@ void DiffusionGrid::CopyOldData(
     const ParallelResizeVector<double>& old_c1,
     const ParallelResizeVector<Double3>& old_gradients, size_t old_resolution) {
   // Allocate more memory for the grid data arrays
+  locks_.resize(total_num_boxes_);
   c1_.resize(total_num_boxes_);
   c2_.resize(total_num_boxes_);
   gradients_.resize(total_num_boxes_);
@@ -292,6 +293,12 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
 /// Get the concentration at specified position
 double DiffusionGrid::GetConcentration(const Double3& position) const {
   auto idx = GetBoxIndex(position);
+  if (idx >= total_num_boxes_) {
+    Log::Error("DiffusionGrid::ChangeConcentrationBy",
+               "You tried to get the concentration outside the bounds of "
+               "the diffusion grid!");
+    return 0;
+  }
   std::lock_guard<Spinlock> guard(locks_[idx]);
   return c1_[idx];
 }
