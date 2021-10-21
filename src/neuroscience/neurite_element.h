@@ -569,8 +569,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     // scaling for integration step
     auto* core_param = Simulation::GetActive()->GetParam();
     double length = speed * core_param->simulation_time_step;
-    auto dir = direction;
-    auto displacement = dir.Normalize() * length;
+    auto displacement = direction.GetNormalizedArray() * length;
     auto new_mass_location = displacement + mass_location_;
     // here I have to define the actual length ..........
     auto relative_ml = mother_->OriginOf(Base::GetUid());  //  change to auto&&
@@ -836,8 +835,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     // x (new) = something new
     // z (new) = x (new) cross y(old)
     // y (new) = z(new) cross x(new)
-    auto spring_axis_normalized = spring_axis_;
-    x_axis_ = spring_axis_normalized.Normalize();
+    x_axis_ = spring_axis_.GetNormalizedArray();
     z_axis_ = Math::CrossProduct(x_axis_, y_axis_);
     double norm_of_z = z_axis_.Norm();
     if (norm_of_z < 1E-10) {  // TODO(neurites) use parameter
@@ -1394,8 +1392,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
     Copy(*mother);
 
     auto dir = direction;
-    auto direction_normalized = direction;
-    direction_normalized.Normalize();
+    auto direction_normalized = direction.GetNormalizedArray();
     const auto& mother_spring_axis = mother->GetSpringAxis();
     double angle_with_side_branch =
         Math::AngleRadian(mother_spring_axis, direction);
@@ -1403,7 +1400,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
         angle_with_side_branch > 2.35) {  // 45-135 degrees
       auto p = Math::CrossProduct(mother_spring_axis, direction);
       p = Math::CrossProduct(p, mother_spring_axis);
-      dir = direction_normalized + p.Normalize();
+      p.Normalize();
+      dir = direction_normalized + p;
     }
     // location of mass and computation center
     auto new_spring_axis = direction_normalized * length;
