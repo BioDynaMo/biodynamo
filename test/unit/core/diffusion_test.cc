@@ -167,7 +167,8 @@ TEST(DiffusionTest, LeakingEdge) {
   DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
   d_grid->Initialize();
-  d_grid->SetConcentrationThreshold(1e15);
+  d_grid->SetUpperThreshold(1e15);
+  d_grid->SetLowerThreshold(-1e15);
 
   for (int i = 0; i < 100; i++) {
     d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
@@ -224,6 +225,38 @@ TEST(DiffusionTest, LeakingEdge) {
 
 // Create a 5x5x5 diffusion grid, with a substance being
 // added at center box 2,2,2, causing a symmetrical diffusion
+TEST(DiffusionTest, Thresholds) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  DiffusionGrid* dgrid = new StencilGrid(0, "Kalium", 0.4, 0, 50);
+
+  Double3 pos_upper({{0, 0, 0}});
+  Double3 pos_lower({{10, 10, 10}});
+  double upper_threshold = 3;
+  double lower_threshold = -2;
+  dgrid->Initialize();
+  dgrid->SetUpperThreshold(upper_threshold);
+  dgrid->SetLowerThreshold(lower_threshold);
+
+  EXPECT_EQ(upper_threshold, dgrid->GetUpperThreshold());
+  EXPECT_EQ(lower_threshold, dgrid->GetLowerThreshold());
+
+  for (int i = 0; i < 10; i++) {
+    dgrid->ChangeConcentrationBy(pos_upper, 1.0);
+    dgrid->ChangeConcentrationBy(pos_lower, -1.0);
+  }
+
+  EXPECT_DOUBLE_EQ(upper_threshold, dgrid->GetConcentration(pos_upper));
+  EXPECT_DOUBLE_EQ(lower_threshold, dgrid->GetConcentration(pos_lower));
+}
+
+// Create a 5x5x5 diffusion grid, with a substance being
+// added at center box 2,2,2, causing a symmetrical diffusion
 TEST(DiffusionTest, ClosedEdge) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
@@ -235,7 +268,8 @@ TEST(DiffusionTest, ClosedEdge) {
   DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
   d_grid->Initialize();
-  d_grid->SetConcentrationThreshold(1e15);
+  d_grid->SetUpperThreshold(1e15);
+  d_grid->SetLowerThreshold(-1e15);
 
   for (int i = 0; i < 100; i++) {
     d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
@@ -304,7 +338,8 @@ TEST(DiffusionTest, CopyOldData) {
   DiffusionGrid* d_grid = new StencilGrid(0, "Kalium", 0.4, 0, 5);
 
   d_grid->Initialize();
-  d_grid->SetConcentrationThreshold(1e15);
+  d_grid->SetUpperThreshold(1e15);
+  d_grid->SetLowerThreshold(-1e15);
 
   for (int i = 0; i < 100; i++) {
     d_grid->ChangeConcentrationBy({{0, 0, 0}}, 4);
@@ -383,7 +418,8 @@ TEST(DiffusionTest, IOTest) {
 
   // Create a 100x100x100 diffusion grid with 20 boxes per dimension
   d_grid->Initialize();
-  d_grid->SetConcentrationThreshold(42);
+  d_grid->SetUpperThreshold(42);
+  d_grid->SetLowerThreshold(-42);
   d_grid->SetDecayConstant(0.01);
 
   // write to root file
@@ -397,7 +433,8 @@ TEST(DiffusionTest, IOTest) {
 
   EXPECT_EQ("Kalium", restored_d_grid->GetSubstanceName());
   EXPECT_EQ(10, restored_d_grid->GetBoxLength());
-  EXPECT_EQ(42, restored_d_grid->GetConcentrationThreshold());
+  EXPECT_EQ(42, restored_d_grid->GetUpperThreshold());
+  EXPECT_EQ(-42, restored_d_grid->GetLowerThreshold());
   EXPECT_NEAR(0.4, restored_d_grid->GetDiffusionCoefficients()[0], eps);
   EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[1], eps);
   EXPECT_NEAR(0.1, restored_d_grid->GetDiffusionCoefficients()[2], eps);
@@ -480,9 +517,9 @@ TEST(DiffusionTest, EulerConvergence) {
   d_grid4->Initialize();
   d_grid8->Initialize();
 
-  d_grid2->SetConcentrationThreshold(1e15);
-  d_grid4->SetConcentrationThreshold(1e15);
-  d_grid8->SetConcentrationThreshold(1e15);
+  d_grid2->SetUpperThreshold(1e15);
+  d_grid4->SetUpperThreshold(1e15);
+  d_grid8->SetUpperThreshold(1e15);
 
   // instantaneous point source
   int init = 1e5;
@@ -557,9 +594,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   d_grid4->Initialize();
   d_grid8->Initialize();
 
-  d_grid2->SetConcentrationThreshold(1e15);
-  d_grid4->SetConcentrationThreshold(1e15);
-  d_grid8->SetConcentrationThreshold(1e15);
+  d_grid2->SetUpperThreshold(1e15);
+  d_grid4->SetUpperThreshold(1e15);
+  d_grid8->SetUpperThreshold(1e15);
 
   // instantaneous point source
   int init = 1e5;
