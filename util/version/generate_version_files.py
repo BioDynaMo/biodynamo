@@ -37,7 +37,9 @@ USAGE: generate_version_files.py git_executable build_dir default_version git_di
 
 def GetGitDescribeString(git_dir, default_version_code):
     try:
-        version = subprocess.check_output('{0} --git-dir={1} describe --tags'.format(sys.argv[1], git_dir), stderr=subprocess.DEVNULL, shell=True).decode('utf-8')
+        version = subprocess.check_output('{0} --git-dir={1} describe --tags --long'.format(sys.argv[1], git_dir), stderr=subprocess.DEVNULL, shell=True).decode('utf-8')
+        version = version.replace('-', '.', 1)
+        version = version.replace('g', '', 1)
         return version.strip()
     except subprocess.CalledProcessError as e:
         print("Call to git describe failed (Error code {})".format(e.returncode))
@@ -82,7 +84,7 @@ if __name__ == '__main__':
     version = GetGitDescribeString(sys.argv[4], sys.argv[3])
 
     # extract information
-    search = re.search('v([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*)', version)
+    search = re.search('v([0-9]+)\.([0-9]+)\.([0-9]+)\-(.*)', version)
     if search != None:
         major = search.group(1)
         minor = search.group(2)

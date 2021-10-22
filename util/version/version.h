@@ -17,9 +17,9 @@
 
 #include <cstdint>
 
-/// Version string as obtained from `git describe --tags`
-/// e.g.: v1.0.123-g1234abc
-/// vMAJOR.MINOR.PATH-ADDITIONAL_COMMITS-gCOMMIT_ID
+/// Version string in the following format: 
+/// vMAJOR.MINOR.ADDITIONAL_COMMITS-COMMIT_ID
+/// e.g.: v1.0.123-1234abc
 #define BDM_RELEASE "@VERSION@"
 
 /// These macros can be used in the following way:
@@ -41,9 +41,9 @@ namespace bdm {
 
 class Version {
  public:
-  /// Returns version string as obtained from `git describe --tags`
-  /// e.g.: v1.0.123-g1234abc
-  /// vMAJOR.MINOR-PATCH-gCOMMIT_ID
+  /// Returns version string in the following format: 
+  /// vMAJOR.MINOR.ADDITIONAL_COMMITS-COMMIT_ID
+  /// e.g.: v1.0.123-1234abc
   static const char *String() { return BDM_RELEASE; }
   static uint64_t Code() { return BDM_VERSION_CODE; }
 };
