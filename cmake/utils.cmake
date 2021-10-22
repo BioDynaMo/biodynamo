@@ -196,6 +196,13 @@ function(install_inside_build)
             DEPENDS ${CMAKE_SOURCE_DIR}/cli/biodynamo.py
     )
     list(APPEND artifact_files_builddir ${CMAKE_INSTALL_BINDIR}/biodynamo)
+    # Copy bdm.py and make it executable.
+    add_custom_command(
+            OUTPUT ${CMAKE_INSTALL_BINDIR}/bdm
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/cli/bdm.py ${CMAKE_INSTALL_BINDIR}/bdm
+            DEPENDS ${CMAKE_SOURCE_DIR}/cli/bdm.py
+    )
+    list(APPEND artifact_files_builddir ${CMAKE_INSTALL_BINDIR}/bdm)
 
     # Copy header files
     add_copy_directory(copy_files_bdm
