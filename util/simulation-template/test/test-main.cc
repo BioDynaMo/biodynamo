@@ -12,6 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
+// IMPORTANT: Do not change this file or its name / path. This may lead the
+//            issues with the provided CMake files.
+
 #include <gtest/gtest.h>
 
 int main(int argc, char** argv) {
