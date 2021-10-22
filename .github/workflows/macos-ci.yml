@@ -44,9 +44,9 @@ jobs:
         cmake -G Ninja \
           -Dopencl=OFF \
           -Dparaview=ON \
-          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_BUILD_TYPE=Debug \
           -B build
-        cmake --build build --parallel --config Release
+        cmake --build build --parallel --config Debug
 
     - name: Unit tests BioDynaMo
       shell: bash
