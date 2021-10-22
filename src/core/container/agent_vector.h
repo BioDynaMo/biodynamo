@@ -15,6 +15,7 @@
 #ifndef CORE_CONTAINER_AGENT_VECTOR_H_
 #define CORE_CONTAINER_AGENT_VECTOR_H_
 
+#include <cassert>
 #include <vector>
 #include "core/resource_manager.h"  // AgentHandle
 #include "core/simulation.h"
@@ -72,10 +73,16 @@ class AgentVector {
   size_t size(uint16_t numa_node) { return size_[numa_node]; }  // NOLINT
 
   const T& operator[](const AgentHandle& handle) const {
+    assert(handle.GetNumaNode() < data_.size() && "Out of bounds access.");
+    assert(handle.GetElementIdx() < data_[handle.GetNumaNode()].size() &&
+           "Out of bounds access.");
     return data_[handle.GetNumaNode()][handle.GetElementIdx()];
   }
 
   T& operator[](const AgentHandle& handle) {
+    assert(handle.GetNumaNode() < data_.size() && "Out of bounds access.");
+    assert(handle.GetElementIdx() < data_[handle.GetNumaNode()].size() &&
+           "Out of bounds access.");
     return data_[handle.GetNumaNode()][handle.GetElementIdx()];
   }
 

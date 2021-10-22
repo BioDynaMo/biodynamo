@@ -60,9 +60,13 @@ class UnorderedFlatmap {
     data_[size_++] = pair;
   }
 
-  TValue& operator[](const TKey& key) { return data_[FindIndex(key)].second; }
+  TValue& operator[](const TKey& key) {
+    assert(FindIndexConst(key) < data_.size() && "Out of bounds access.");
+    return data_[FindIndex(key)].second;
+  }
 
   const TValue& operator[](const TKey& key) const {
+    assert(FindIndexConst(key) < data_.size() && "Out of bounds access.");
     return data_[FindIndexConst(key)].second;
   }
 

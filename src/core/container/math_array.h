@@ -72,12 +72,18 @@ class MathArray {  // NOLINT
   /// any boundary checks.
   /// \param idx element's index.
   /// \return the requested element.
-  T& operator[](size_t idx) { return data_[idx]; }
+  T& operator[](size_t idx) {
+    assert(idx < size() && "Out of bounds access.");
+    return data_[idx];
+  }
 
   /// Const overloaded array subscript operator.
   /// \param idx element's index.
   /// \return the requested element.
-  const T& operator[](size_t idx) const { return data_[idx]; }
+  const T& operator[](size_t idx) const {
+    assert(idx < size() && "Out of bounds access.");
+    return data_[idx];
+  }
 
   /// Returns the element at the given position. It will throw
   /// an std::out_of_range exception if the given index is out

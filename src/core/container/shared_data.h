@@ -16,6 +16,7 @@
 #define CORE_CONTAINER_SHARED_DATA_H_
 
 #include <array>
+#include <cassert>
 #include <vector>
 
 /// This is BioDynaMo's default cachline size. If you system has a different
@@ -47,8 +48,14 @@ class SharedData {
       info.data = value;
     }
   }
-  T& operator[](size_t index) { return data_[index].data; }
-  const T& operator[](size_t index) const { return data_[index].data; }
+  T& operator[](size_t index) {
+    assert(index < data_.size() && "Out of bounds access.");
+    return data_[index].data;
+  }
+  const T& operator[](size_t index) const {
+    assert(index < data_.size() && "Out of bounds access.");
+    return data_[index].data;
+  }
 
   /// Get the size of the SharedData.data_ vector.
   size_t size() const { return data_.size(); }  // NOLINT

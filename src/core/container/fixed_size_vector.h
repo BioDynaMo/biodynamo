@@ -45,9 +45,15 @@ class FixedSizeVector {
 
   size_t size() const { return size_; }  // NOLINT
 
-  const T& operator[](size_t idx) const { return data_[idx]; }
+  const T& operator[](size_t idx) const {
+    assert(idx < N && "Out of bounds access.");
+    return data_[idx];
+  }
 
-  T& operator[](size_t idx) { return data_[idx]; }
+  T& operator[](size_t idx) {
+    assert(idx < N && "Out of bounds access.");
+    return data_[idx];
+  }
 
   bool operator==(const FixedSizeVector& other) const {
     if (size_ != other.size_) {

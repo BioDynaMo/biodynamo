@@ -15,6 +15,7 @@
 #ifndef CORE_CONTAINER_AGENT_UID_MAP_H_
 #define CORE_CONTAINER_AGENT_UID_MAP_H_
 
+#include <cassert>
 #include <limits>
 #include <vector>
 
@@ -89,6 +90,7 @@ class AgentUidMap {
   }
 
   const TValue& operator[](const AgentUid& key) const {
+    assert(key.GetIndex() < data_.size() && "Out of bounds access.");
     return data_[key.GetIndex()];
   }
 

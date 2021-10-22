@@ -15,6 +15,7 @@
 #ifndef CORE_CONTAINER_PARALLEL_RESIZE_VECTOR_H_
 #define CORE_CONTAINER_PARALLEL_RESIZE_VECTOR_H_
 
+#include <cassert>
 #include <cstdlib>
 #include <vector>
 
@@ -163,9 +164,15 @@ class ParallelResizeVector {
     return *this;
   }
 
-  T& operator[](std::size_t index) { return data_[index]; }
+  T& operator[](std::size_t index) {
+    assert(index < size_ && "Out of bounds access.");
+    return data_[index];
+  }
 
-  const T& operator[](std::size_t index) const { return data_[index]; }
+  const T& operator[](std::size_t index) const {
+    assert(index < size_ && "Out of bounds access.");
+    return data_[index];
+  }
 
   iterator begin() { return &(data_[0]); }  // NOLINT
 
