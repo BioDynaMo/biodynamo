@@ -253,6 +253,8 @@ TEST(DiffusionTest, Thresholds) {
 
   EXPECT_DOUBLE_EQ(upper_threshold, dgrid->GetConcentration(pos_upper));
   EXPECT_DOUBLE_EQ(lower_threshold, dgrid->GetConcentration(pos_lower));
+
+  delete dgrid;
 }
 
 // Create a 5x5x5 diffusion grid, with a substance being
