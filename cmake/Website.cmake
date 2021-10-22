@@ -21,7 +21,7 @@ function(GenerateStaticFiles TARGET FLAGS)
       WORKING_DIRECTORY "${WEB_DIR}"
       COMMAND rm -rf ${WEB_DIR} && mkdir ${WEB_DIR}
       COMMAND git clone https://github.com/BioDynaMo/website.git .
-      COMMAND git checkout master
+      COMMAND git checkout add-new-notebooks-in-tutorial
       COMMENT "Generate website"
       COMMAND ./build_website.sh --dir ${CMAKE_CURRENT_SOURCE_DIR} ${FLAGS}
       VERBATIM)
