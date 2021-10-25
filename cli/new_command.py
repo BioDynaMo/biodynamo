@@ -108,6 +108,8 @@ def CustomizeFiles(sim_name):
         Print.error("Error: File customizations failed")
         CleanupOnError(sim_name)
 
+def CreateBuildDir(build_dir):
+    sp.check_output(["mkdir", build_dir])
 
 def NewCommand(sim_name, github):
     if github:
@@ -120,6 +122,7 @@ def NewCommand(sim_name, github):
     CopySupportFiles(sim_name)
     CustomizeFiles(sim_name)
     InitializeNewGitRepo(sim_name)
+    CreateBuildDir("{}/build".format(sim_name))
     if github:
         CreateNewGithubRepository(sim_name)
 
