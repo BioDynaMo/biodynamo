@@ -30,8 +30,6 @@ ExternalProject_Add(
         "${CMAKE_CURRENT_BINARY_DIR}/include"
      && cp "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest-build/lib/libgtest.a" 
         "${CMAKE_CURRENT_BINARY_DIR}/lib"
-     && cp "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest-build/lib/libgtest_main.a" 
-        "${CMAKE_CURRENT_BINARY_DIR}/lib"
   # Ugly but necessary, in future versions one can use ${binary_dir}
   # in BUILD_BYPRODUCTS
   #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"

@@ -249,8 +249,6 @@ function(bdm_add_test TARGET)
   # Parse arguments from function call
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
 
-  # Tests are only built if it's supported by the BioDynaMo bulit and requested
-  # (or not denied) by the user.
   if (NOT test OR NOT test_default)
     MESSAGE(NOTICE "<bdm_add_test>: No tests will be built. Testing (-Dtest) " 
                     "must be enabled in BioDynamo and in your project. \n "
@@ -259,38 +257,25 @@ function(bdm_add_test TARGET)
     MESSAGE(NOTICE "   Your project ${CMAKE_PROJECT_NAME} was built with "
                    "-Dtest=${test}.")
   else()
-    # Add the libgtest library as a dependency for the tests
+    # Create a libgtest target to be used as a dependency by test program
     add_library(libgtest IMPORTED STATIC GLOBAL)
+    add_dependencies(libgtest gtest_main)
     set_target_properties(libgtest PROPERTIES
         IMPORTED_LOCATION "$ENV{BDMSYS}/lib/libgtest.a"
         IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
     )
-    # If there are no headers, we use a simple, staight forward build procedure.
+    # If there are no headers, we use a simplified build procedure. If there are 
+    # headers present, we use `bdm_add_executable` using a more sophisticated
+    # build procedure via shared libararies.
     if("${ARG_HEADERS}" STREQUAL "")
       add_executable(${TARGET} ${ARG_SOURCES})
       target_link_libraries(${TARGET} ${ARG_LIBRARIES}  libgtest)
       gtest_discover_tests(${TARGET})
     else()
-      # If there are headeres present, we use `bdm_add_executable` using a more 
-      # sophisticated build procedure via shared libararies and dictionaries. We
-      # further link againt libgtest_main and remove "/test/test-main.cc" (the 
-      # main definition) from the sources.
-      # If we don't do this, the build process still works but we obtain 
-      # warnings with genreflex (dictionary), which we would like to avoid.
-      add_library(libgtest_main IMPORTED STATIC GLOBAL)
-      set_target_properties(libgtest_main PROPERTIES
-          IMPORTED_LOCATION "$ENV{BDMSYS}/lib/libgtest_main.a"
-          IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
-      )
-      add_dependencies(libgtest gtest_main)
-      # Ignore the main definition, otherwise there are two mains in 
-      # libgtest_main & test/test-main.cc which leads to linker errors.
-      list(REMOVE_ITEM ARG_SOURCES "${CMAKE_SOURCE_DIR}/test/test-main.cc")
-      # Call back to bdm_add_executable.
       bdm_add_executable(${TARGET}
                         SOURCES ${ARG_SOURCES}
                         HEADERS ${ARG_HEADERS}
-                         LIBRARIES libgtest libgtest_main ${ARG_LIBRARIES})
+                         LIBRARIES biodynamo libgtest ${ARG_LIBRARIES})
       gtest_discover_tests(${TARGET}-bin)
     endif("${ARG_HEADERS}" STREQUAL "")
   endif(NOT test OR NOT test_default)
