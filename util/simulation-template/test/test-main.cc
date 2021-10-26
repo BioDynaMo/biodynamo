@@ -11,29 +11,11 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#ifndef MY_SIMULATION_H_
-#define MY_SIMULATION_H_
 
-#include "biodynamo.h"
+#include <gtest/gtest.h>
 
-namespace bdm {
-
-inline int Simulate(int argc, const char** argv) {
-  Simulation simulation(argc, argv);
-
-  // Define initial model - in this example: single cell at origin with a
-  // diameter of 30.0 (no unit associated).
-  auto* rm = simulation.GetResourceManager();
-  auto* cell = new Cell(30.0);
-  rm->AddAgent(cell);
-
-  // Run simulation for one timestep
-  simulation.GetScheduler()->Simulate(1);
-
-  std::cout << "Simulation completed successfully!" << std::endl;
-  return 0;
+int main(int argc, char** argv) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
-
-}  // namespace bdm
-
-#endif  // MY_SIMULATION_H_

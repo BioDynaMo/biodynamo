@@ -277,7 +277,6 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/.clang-format
             ${CMAKE_SOURCE_DIR}/.clang-tidy
             ${CMAKE_SOURCE_DIR}/.clang-tidy-ignore
-            ${CMAKE_SOURCE_DIR}/.gitignore
             )
 
     add_copy_directory(copy_files_bdm

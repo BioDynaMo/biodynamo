@@ -19,7 +19,9 @@ from build_command import BuildCommand
 from demo_command import DemoCommand
 from new_command import NewCommand
 from run_command import RunCommand
+from test_command import TestCommand
 from bdm_version import Version
+
 
 def Main():
     parser = argparse.ArgumentParser(
@@ -31,13 +33,14 @@ def Main():
     )
 
     sp = parser.add_subparsers(dest="cmd")
-    parser.add_argument("-v",
-                        "--version",
-                        action="store_true",
-                        help="Display BioDynaMo version")
-    parser.add_argument("--shortversion",
-                        action="store_true",
-                        help="Display BioDynaMo short version")
+    parser.add_argument(
+        "-v", "--version", action="store_true", help="Display BioDynaMo version"
+    )
+    parser.add_argument(
+        "--shortversion",
+        action="store_true",
+        help="Display BioDynaMo short version",
+    )
 
     build_sp = sp.add_parser("build", help="Builds the simulation binary")
 
@@ -50,14 +53,18 @@ def Main():
         help="Creates a new simulation project. Creates a template project, "
         "renames it to the given simulation name, configures git.",
     )
-    new_sp.add_argument("SIMULATION_NAME",
-                        type=str,
-                        help="simulation name help")
-    new_sp.add_argument("--github",
-                        action="store_true",
-                        help="Create a Github repository.")
+    new_sp.add_argument(
+        "SIMULATION_NAME", type=str, help="simulation name help"
+    )
+    new_sp.add_argument(
+        "--github", action="store_true", help="Create a Github repository."
+    )
 
     run_sp = sp.add_parser("run", help="Executes the simulation")
+
+    test_sp = sp.add_parser(
+        "test", help="Executes the unit-tests of a BioDynaMo sim."
+    )
 
     args, unknown = parser.parse_known_args()
 
@@ -86,6 +93,8 @@ def Main():
         DemoCommand(demo_name, destination)
     elif args.cmd == "run":
         RunCommand(args=unknown)
+    elif args.cmd == "test":
+        TestCommand()
     elif args.version:
         print(Version.string())
         sys.exit()
@@ -94,4 +103,3 @@ def Main():
         sys.exit()
     else:
         parser.print_help()
-
