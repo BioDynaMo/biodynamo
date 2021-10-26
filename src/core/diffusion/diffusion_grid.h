@@ -187,7 +187,7 @@ class DiffusionGrid {
   double box_volume_ = 0;
   /// Lock for each voxel used to prevent race conditions between
   /// multiple threads
-  mutable ParallelResizeVector<Spinlock> locks_ = {};
+  mutable ParallelResizeVector<Spinlock> locks_ = {};  //!
   /// The array of concentration values
   ParallelResizeVector<double> c1_ = {};
   /// An extra concentration data buffer for faster value updating
