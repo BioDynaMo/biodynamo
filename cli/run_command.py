@@ -17,8 +17,6 @@ import subprocess as sp
 from print_command import Print
 from build_command import BuildCommand
 from util import GetBinaryName
-from util import RunProcessAndWriteToStdOut
-
 
 ## The BioDynaMo CLI command to run a simulation
 ##
@@ -34,9 +32,9 @@ def RunCommand(args):
         Print.new_step("Run " + sim_name + " " + args_str)
         if platform.system() == "Darwin":
             launcher = os.environ["BDMSYS"] + "/bin/launcher.sh"
-            RunProcessAndWriteToStdOut([launcher, cmd, args_str])
+            sp.run([launcher, cmd, args_str])
         else:
-            RunProcessAndWriteToStdOut([cmd, args_str])
+            sp.run([cmd, args_str])
         Print.success("Finished successfully")
     except sp.CalledProcessError as err:
         print(err.output.decode("utf-8"))

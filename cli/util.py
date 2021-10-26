@@ -25,15 +25,3 @@ def GetBinaryName():
         content = f.read()
         return re.search("project\((.*)\)", content).group(1)
 
-def RunProcessAndWriteToStdOut(cmd_args):
-    p = sp.Popen(cmd_args, stdout=sp.PIPE, stderr=sp.PIPE)
-
-    poll = select.poll()
-    poll.register(p.stdout)
-    poll.register(p.stderr)
-
-    while p.poll() is None:
-        rlist = poll.poll()
-        for fd, event in rlist:
-            sys.stdout.write(os.read(fd, 1024).decode('utf-8'))
-
