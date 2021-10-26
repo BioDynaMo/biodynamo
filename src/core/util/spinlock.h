@@ -39,7 +39,7 @@ class Spinlock {
   }
 
  private:
-  std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
+  std::atomic_flag flag_ = ATOMIC_FLAG_INIT;  //!
 };
 
 }  // namespace bdm

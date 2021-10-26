@@ -124,5 +124,6 @@
     <class name="bdm::neuroscience::SideNeuriteExtensionEvent" />
     <class name="bdm::neuroscience::SplitNeuriteElementEvent" />
     <class name="bdm::neuroscience::NeuriteElement::MechanicalForcesFunctor" />
+    <class name="bdm::Spinlock" />
   </selection>
 </lcgdict>
