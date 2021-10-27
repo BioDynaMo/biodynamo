@@ -16,8 +16,6 @@ import os, sys
 import subprocess as sp
 from pathlib import Path
 from print_command import Print
-from util import RunProcessAndWriteToStdOut
-
 
 # The BioDynaMo CLI command to build a simulation binary.
 def BuildCommand(clean=False, build=True):
@@ -37,14 +35,14 @@ def BuildCommand(clean=False, build=True):
         # if CMakeCache.txt does not exist, run cmake
         if not Path(build_dir + "/CMakeCache.txt").is_file():
             try:
-                RunProcessAndWriteToStdOut(["cmake", "-B./" + build_dir, "-H."])
+                sp.run(["cmake", "-B./" + build_dir, "-H."])
             except sp.CalledProcessError as err:
                 Print.error(
                     "Failed to run CMake. Check the debug output above.")
                 sys.exit(1)
 
         try:
-            RunProcessAndWriteToStdOut(["make", "-j4", "-C", build_dir])
+            sp.run(["make", "-j4", "-C", build_dir])
         except:
             Print.error("Compilation failed. Check the debug output above.")
             sys.exit(1)
