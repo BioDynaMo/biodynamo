@@ -42,9 +42,7 @@ function run_cmake_simulation() {
     # was built, if not it does not test the test command.
     if [ -f "build/test-sim-test" ]; then
       echo "GHA tests the 'bdm test' command."
-      # We test both ways because biodynamo test returns the ctest return value.
-      # The return value is 0 even if a test fails. This is not the case for 
-      # the second option.
+      # Test `bdm test` command as well as direct execution of test executable.
       biodynamo test
       SIM_RET_VAL+=$?
       ./build/test-sim-test
