@@ -37,13 +37,22 @@ function run_cmake_simulation() {
   # If we are running the system tests with template `test-sim`, we also test
   # the `biodynamo test` command
   if [ "$ISTEST" = "true" ]; then
-    # We test both ways because biodynamo test returns the ctest return value.
-    # The return value is 0 even if a test fails. This is not the case for 
-    # the second option.
-    biodynamo test 
-    SIM_RET_VAL+=$?
-    ./build/test-sim-test
-    SIM_RET_VAL+=$?
+    # The scheduled GHA are usually configured with -Dtest=off in which case there
+    # will not be a test executable. The following checks if a test executable 
+    # was built, if not it does not test the test command.
+    if [ -f "build/test-sim-test" ]; then
+      echo "GHA tests the 'bdm test' command."
+      # We test both ways because biodynamo test returns the ctest return value.
+      # The return value is 0 even if a test fails. This is not the case for 
+      # the second option.
+      biodynamo test
+      SIM_RET_VAL+=$?
+      ./build/test-sim-test
+      SIM_RET_VAL+=$?
+    else
+      echo "GHA does not test the 'bdm test' command."
+      ISTEST=false
+    fi
   fi
 
   # return to original dictionary
