@@ -26,28 +26,33 @@ def TestCommand():
     if cwd.split("/")[-1] == "build":
         os.chdir("..")
     # 2. Call build command to include latest changes of the repository
-    try:
-        BuildCommand()
-    except:
-        Print.error(
-            "The build command failed. Make sure you're in the project folder"
-        )
-        sys.exit(1)
+    BuildCommand()
 
     # 3. Start testing
-    Print.new_step("Testing")
+    Print.new_step("<bdm test> Running ctest ...")
     # 3.1 change into build directory
     try:
         os.chdir("build")
     except:
-        Print.error("Failed to find build directory.")
+        Print.error("<bdm test> Failed to find build directory.")
         sys.exit(1)
     # 3.2 call "ctest"
     try:
-        sp.run("ctest", shell=True)
+        result = sp.run("ctest", shell=True)
     except:
-        Print.error("Calling the ctest test command failed.")
+        Print.error("<bdm test> Calling the ctest test command failed.")
         sys.exit(1)
 
     # 4. go back to initial folder.
     os.chdir(cwd)
+
+    # 5. return the return code of the ctest command:
+    if result.returncode != 0:
+        Print.error(
+            "<bdm test> Received the ctest return code {}.".format(
+                result.returncode
+            )
+        )
+        exit(result.returncode)
+
+    Print.success("<bdm test> Finished successfully.")
