@@ -564,6 +564,7 @@ the contents of the build directory and by issuing again the 'cmake' command.\n"
     file(RENAME ${CMAKE_THIRD_PARTY_DIR}/root/root/ ${CMAKE_THIRD_PARTY_DIR}/root-build)
     execute_process(COMMAND rm -rf ${CMAKE_THIRD_PARTY_DIR}/root/)
     file(RENAME ${CMAKE_THIRD_PARTY_DIR}/root-build ${CMAKE_THIRD_PARTY_DIR}/root)
+    set(ROOT_NIGHTLY FALSE)
   endif(ROOT_NIGHTLY)
 
   if (VERIFY_DOWNLOAD)
