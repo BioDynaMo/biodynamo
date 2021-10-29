@@ -37,7 +37,7 @@ class VisualizationAdaptor;
 class RootAdaptor;
 struct BoundSpace;
 class MechanicalForcesOp;
-struct DiffusionOp;
+class DiffusionOp;
 
 enum OpType { kSchedule, kPreSchedule, kPostSchedule };
 
@@ -74,6 +74,10 @@ class Scheduler {
   /// This function returns the numer of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
+  /// This function returns the time that has been simulated until this
+  /// point of the simulation.
+  double GetSimulatedTime() const;
+
   /// Adds the given operation to the list of to be scheduled
   /// operations.
   /// Scheduler takes over ownership of the object `op`.
@@ -100,6 +104,7 @@ class Scheduler {
 
  protected:
   uint64_t total_steps_ = 0;
+  double simulated_time_ = 0.0;
 
   /// Executes one step.
   /// This design makes testing more convenient
@@ -150,6 +155,8 @@ class Scheduler {
   /// @param steps number of simulation steps for a `Simulate` call
   /// @return if `Simulate` should return early
   bool Restore(uint64_t* steps);
+
+  void UpdateSimulatedTime();
 
   // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved
   // think about a better solution, because some operations are executed twice

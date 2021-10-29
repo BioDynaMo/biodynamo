@@ -16,7 +16,7 @@
 
 namespace bdm {
 
-void EulerGrid::DiffuseWithClosedEdge() {
+void EulerGrid::DiffuseWithClosedEdge(double dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
@@ -52,11 +52,11 @@ void EulerGrid::DiffuseWithClosedEdge() {
           s = c + nx;
           b = c - nx * ny;
           t = c + nx * ny;
-          c2_[c] = (c1_[c] +
-                    d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                    d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                    d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
-                   (1 - mu_);
+          c2_[c] =
+              (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+               d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+               d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+              (1 - mu_);
         }
         ++c;
         ++n;
@@ -69,7 +69,7 @@ void EulerGrid::DiffuseWithClosedEdge() {
   c1_.swap(c2_);
 }
 
-void EulerGrid::DiffuseWithOpenEdge() {
+void EulerGrid::DiffuseWithOpenEdge(double dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
@@ -121,9 +121,9 @@ void EulerGrid::DiffuseWithOpenEdge() {
           t = c + nx * ny;
         }
 
-        c2_[c] = (c1_[c] + d * dt_ * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                  d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                  d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+        c2_[c] = (c1_[c] + d * dt * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+                  d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                  d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
                  (1 - mu_);
 #pragma omp simd
         for (x = 1; x < nx - 1; x++) {
@@ -133,10 +133,9 @@ void EulerGrid::DiffuseWithOpenEdge() {
           ++b;
           ++t;
           c2_[c] =
-              (c1_[c] +
-               d * dt_ * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-               d * dt_ * (l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n]) * ibl2 +
-               d * dt_ * (l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]) * ibl2) *
+              (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
+               d * dt * (l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n]) * ibl2 +
+               d * dt * (l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]) * ibl2) *
               (1 - mu_);
         }
         ++c;
@@ -144,9 +143,9 @@ void EulerGrid::DiffuseWithOpenEdge() {
         ++s;
         ++b;
         ++t;
-        c2_[c] = (c1_[c] + d * dt_ * (c1_[c - 1] - 2 * c1_[c] + 0) * ibl2 +
-                  d * dt_ * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                  d * dt_ * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
+        c2_[c] = (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + 0) * ibl2 +
+                  d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
+                  d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
                  (1 - mu_);
       }  // tile ny
     }    // tile nz

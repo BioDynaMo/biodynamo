@@ -84,16 +84,16 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   // since initialization is multithreaded returning in increasing counter
   // does not work. -> calculate and return box id
   ModelInitializer::InitializeSubstance(0, [&](double x, double y, double z) {
-    auto* dg =
+    auto* dgrid =
         Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
-    auto grid_dimensions = dg->GetDimensions();
-    auto box_length = dg->GetBoxLength();
+    auto grid_dimensions = dgrid->GetDimensions();
+    auto box_length = dgrid->GetBoxLength();
 
     std::array<uint32_t, 3> box_coord;
     box_coord[0] = round((x - grid_dimensions[0]) / box_length);
     box_coord[1] = round((y - grid_dimensions[2]) / box_length);
     box_coord[2] = round((z - grid_dimensions[4]) / box_length);
-    const auto& num_boxes = dg->GetNumBoxesArray();
+    const auto& num_boxes = dgrid->GetNumBoxesArray();
     return box_coord[2] * num_boxes[0] * num_boxes[1] +
            box_coord[1] * num_boxes[0] + box_coord[0];
   });
@@ -111,8 +111,9 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
 
   sim->GetScheduler()->Simulate(1);
 
-  auto* dg = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
-  EXPECT_EQ(num_diffusion_boxes, dg->GetNumBoxes());
+  auto* dgrid =
+      Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
+  EXPECT_EQ(num_diffusion_boxes, dgrid->GetNumBoxes());
   sim_name = sim->GetUniqueName();
   // create pvsm file
   delete sim;

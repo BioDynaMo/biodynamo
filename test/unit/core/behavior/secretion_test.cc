@@ -38,8 +38,8 @@ TEST(SecretionTest, Run) {
 
   simulation.Simulate(1);
 
-  auto* dg = rm->GetDiffusionGrid(0);
-  auto conc = dg->GetConcentration(pos);
+  auto* dgrid = rm->GetDiffusionGrid(0);
+  auto conc = dgrid->GetConcentration(pos);
 
   EXPECT_NEAR(conc, 3.14, 1e-9);
 }

@@ -13,9 +13,9 @@ class TestGrid : public DiffusionGrid {
            int resolution = 11)
       : DiffusionGrid(substance_id, substance_name, dc, mu, resolution) {}
 
-  void DiffuseWithClosedEdge() override { return; };
+  void DiffuseWithClosedEdge(double dt) override { return; };
 
-  void DiffuseWithOpenEdge() override { return; };
+  void DiffuseWithOpenEdge(double dt) override { return; };
 
   void Swap() { c1_.swap(c2_); }
 

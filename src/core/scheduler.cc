@@ -134,6 +134,7 @@ void Scheduler::Simulate(uint64_t steps) {
     Execute();
 
     total_steps_++;
+    UpdateSimulatedTime();
     Backup();
   }
 }
@@ -144,6 +145,7 @@ void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
     Execute();
 
     total_steps_++;
+    UpdateSimulatedTime();
   }
 }
 
@@ -153,6 +155,8 @@ void Scheduler::FinalizeInitialization() {
 }
 
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
+
+double Scheduler::GetSimulatedTime() const { return simulated_time_; }
 
 TimingAggregator* Scheduler::GetOpTimes() { return &op_times_; }
 
@@ -387,6 +391,10 @@ bool Scheduler::Restore(uint64_t* steps) {
     total_steps_ = restore_point_;
   }
   return false;
+}
+
+void Scheduler::UpdateSimulatedTime() {
+  simulated_time_ += Simulation::GetActive()->GetParam()->simulation_time_step;
 }
 
 // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved

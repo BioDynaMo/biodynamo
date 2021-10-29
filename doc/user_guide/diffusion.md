@@ -196,7 +196,7 @@ Within BioDynaMo the number of intervals for the Runge-Kutta method to iterate o
 
 ```
 
-DiffusionGrid* dgrid = new RungaKuttaGrid(substance_id, "substance_name", diffusion_coefficient,
+DiffusionGrid* dgrid = new RungeKuttaGrid(substance_id, "substance_name", diffusion_coefficient,
                 decay_constant, resolution, diffusion_step)
                 
 ```
@@ -208,12 +208,12 @@ To access the Runge-Kutta method for diffusion, one simply needs to update the b
 ```
 
 [simulation]
-diffusion_method = "runga-kutta"
+diffusion_method = "runge-kutta"
 
 [visualization]
 export = true
 interval = 10
-diffusion_method = "runga-kutta"
+diffusion_method = "runge-kutta"
 
 	[[visualize_agent]]
 	name = "Cell"
