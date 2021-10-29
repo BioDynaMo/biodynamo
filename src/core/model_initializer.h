@@ -337,37 +337,44 @@ struct ModelInitializer {
   static void CreateAgentsInSphereRndm(const Double3& center, double radius,
                                        uint64_t num_agents,
                                        Function agent_builder) {
-#pragma omp parallel
+    // We use a probability density function (PDF) to model the probability of
+    // an agent to occur at a distance `r>=0` of the center. As the surface of
+    // a sphere scales as `r^2`, the PDF does as well. Thus
+    // `p(r)=a*r^2*\Theta(R-r)`, where `\Theta` is a heavyside function and R is
+    // largest allowed radius (interpretation: no agents outside the sphere). We
+    // can fix `a` by requiring `\int_0^\inf p(r') dr' = 1` and obtain
+    // `a=3/R^3`.
+    auto radial_pdf_sphere = [](const double* x, const double* params) {
+      double R{params[0]};
+      double r{x[0]};
+      if (r > 0.0 && r <= R) {
+        return 3.0 * std::pow(r, 2.0) / std::pow(R, 3.0);
+      } else {
+        return 0.0;
+      }
+    };
+
+    // Get a random number generator to sample from our PDF.
+    auto* random = Simulation::GetActive()->GetRandom();
+    auto rng =
+        random->GetUserDefinedDistRng1D(radial_pdf_sphere, {radius}, 0, radius);
+
+    // Create a random radius for each of the agents. Note: this is done
+    // serially because we GetUserDefinedDistRng1D does not work in parallel
+    // regions at the moment.
+    std::vector<double> random_radius;
+    random_radius.resize(num_agents);
+    for (size_t i = 0; i < num_agents; i++) {
+      random_radius[i] = rng.Sample();
+    }
+#pragma omp parallel shared(random_radius)
     {
-      // We use a probability density function (PDF) to model the probability of
-      // an agent to occur at a distance `r>=0` of the center. As the surface of
-      // a sphere scales as `r^2`, the PDF does as well. Thus
-      // `p(r)=a*r^2*\Theta(R-r)`, where `\Theta` is a heavyside function and R
-      // is largest allowed radius (interpretation: no agents outside the
-      // sphere). We can fix `a` by requiring `\int_0^\inf p(r') dr' = 1` and
-      // obtain `a=3/R^3`.
-      auto radial_pdf_sphere = [](const double* x, const double* params) {
-        double R{params[0]};
-        double r{x[0]};
-        if (r > 0.0 && r <= R) {
-          return 3.0 * std::pow(r, 2.0) / std::pow(R, 3.0);
-        } else {
-          return 0.0;
-        }
-      };
-
-      // Get a random number generator to sample from our PDF.
-      auto* random = Simulation::GetActive()->GetRandom();
-      auto rng = random->GetUserDefinedDistRng1D(radial_pdf_sphere, {radius}, 0,
-                                                 radius);
-      auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-
+      auto* ctxt_tl = Simulation::GetActive()->GetExecutionContext();
 #pragma omp for schedule(static)
       for (uint64_t i = 0; i < num_agents; i++) {
-        // Random position in sphere around center
-        auto pos = random->Sphere(rng.Sample()) + center;
+        auto pos = random->Sphere(random_radius[i]) + center;
         auto* new_agent = agent_builder(pos);
-        ctxt->AddAgent(new_agent);
+        ctxt_tl->AddAgent(new_agent);
       }
     }
   }
