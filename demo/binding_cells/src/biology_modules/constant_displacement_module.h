@@ -68,7 +68,8 @@ struct ConstantDisplace : public Behavior {
             SquaredEuclideanDistance(agent->GetPosition(), goal_position_);
         if (sq_distance > eps_) {
           Double3 direction = goal_position_ - cell->GetPosition();
-          Double3 vel = direction.Normalize() * velocity_;
+          direction.Normalize();
+          Double3 vel = direction * velocity_;
           Double3 movement = vel * dt_;
           cell->UpdatePosition(movement);
         } else {  // move the last remaining bit

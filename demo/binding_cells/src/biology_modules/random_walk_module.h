@@ -39,7 +39,8 @@ struct RandomWalk : public Behavior {
   Double3 GetRandomDirection() {
     auto* r = Simulation::GetActive()->GetRandom();
     Double3 random_vector = r->UniformArray<3>(-1, 1);
-    return random_vector.Normalize();
+    random_vector.Normalize();
+    return random_vector;
   }
 
   void Run(Agent* agent) override {
@@ -84,7 +85,8 @@ struct RandomWalkXY : public Behavior {
     random_vector[0] = r->Uniform(-1, 1);
     random_vector[1] = r->Uniform(-1, 1);
     random_vector[2] = 0;
-    return random_vector.Normalize();
+    random_vector.Normalize();
+    return random_vector;
   }
 
   void Run(Agent* agent) override {
