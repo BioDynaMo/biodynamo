@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -174,7 +174,8 @@ TEST(DiffusionTest, CopyOldData) {
   DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 5);
 
   dgrid->Initialize();
-  dgrid->SetConcentrationThreshold(1e15);
+  dgrid->SetUpperThreshold(1e15);
+  dgrid->SetLowerThreshold(-1e15);
 
   for (int i = 0; i < 100; i++) {
     dgrid->ChangeConcentrationBy({{0, 0, 0}}, 4);
@@ -313,6 +314,40 @@ TEST(DiffusionTest, CopyOldData) {
   delete dgrid;
 }
 
+// Create a 5x5x5 diffusion grid, with a substance being
+// added at center box 2,2,2, causing a symmetrical diffusion
+TEST(DiffusionTest, Thresholds) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 50);
+
+  Double3 pos_upper({{0, 0, 0}});
+  Double3 pos_lower({{10, 10, 10}});
+  double upper_threshold = 3;
+  double lower_threshold = -2;
+  dgrid->Initialize();
+  dgrid->SetUpperThreshold(upper_threshold);
+  dgrid->SetLowerThreshold(lower_threshold);
+
+  EXPECT_EQ(upper_threshold, dgrid->GetUpperThreshold());
+  EXPECT_EQ(lower_threshold, dgrid->GetLowerThreshold());
+
+  for (int i = 0; i < 10; i++) {
+    dgrid->ChangeConcentrationBy(pos_upper, 1.0);
+    dgrid->ChangeConcentrationBy(pos_lower, -1.0);
+  }
+
+  EXPECT_DOUBLE_EQ(upper_threshold, dgrid->GetConcentration(pos_upper));
+  EXPECT_DOUBLE_EQ(lower_threshold, dgrid->GetConcentration(pos_lower));
+
+  delete dgrid;
+}
+
 #ifdef USE_DICT
 
 // Test if all the data members of the diffusion grid are correctly serialized
@@ -331,7 +366,8 @@ TEST(DiffusionTest, IOTest) {
 
   // Create a 100x100x100 diffusion grid with 20 boxes per dimension
   dgrid->Initialize();
-  dgrid->SetConcentrationThreshold(42);
+  dgrid->SetUpperThreshold(42);
+  dgrid->SetLowerThreshold(-42);
   dgrid->SetDecayConstant(0.01);
 
   // write to root file
@@ -345,7 +381,8 @@ TEST(DiffusionTest, IOTest) {
 
   EXPECT_EQ("Kalium", restored_dgrid->GetSubstanceName());
   EXPECT_EQ(10, restored_dgrid->GetBoxLength());
-  EXPECT_EQ(42, restored_dgrid->GetConcentrationThreshold());
+  EXPECT_EQ(42, restored_dgrid->GetUpperThreshold());
+  EXPECT_EQ(-42, restored_dgrid->GetLowerThreshold());
   EXPECT_NEAR(0.4, restored_dgrid->GetDiffusionCoefficients()[0], eps);
   EXPECT_NEAR(0.1, restored_dgrid->GetDiffusionCoefficients()[1], eps);
   EXPECT_NEAR(0.1, restored_dgrid->GetDiffusionCoefficients()[2], eps);
@@ -432,9 +469,9 @@ TEST(DiffusionTest, EulerConvergence) {
   dgrid4->Initialize();
   dgrid8->Initialize();
 
-  dgrid2->SetConcentrationThreshold(1e15);
-  dgrid4->SetConcentrationThreshold(1e15);
-  dgrid8->SetConcentrationThreshold(1e15);
+  dgrid2->SetUpperThreshold(1e15);
+  dgrid4->SetUpperThreshold(1e15);
+  dgrid8->SetUpperThreshold(1e15);
 
   // instantaneous point source
   int init = 1e5;
@@ -569,9 +606,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   dgrid4->Initialize();
   dgrid8->Initialize();
 
-  dgrid2->SetConcentrationThreshold(1e15);
-  dgrid4->SetConcentrationThreshold(1e15);
-  dgrid8->SetConcentrationThreshold(1e15);
+  dgrid2->SetUpperThreshold(1e15);
+  dgrid4->SetUpperThreshold(1e15);
+  dgrid8->SetUpperThreshold(1e15);
 
   // instantaneous point source
   int init = 1e5;

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,6 +129,33 @@ TEST(ModelInitializerTest, CreateAgentsRandom) {
   EXPECT_TRUE((pos_2[0] >= -100) && (pos_2[0] <= 100));
   EXPECT_TRUE((pos_2[1] >= -100) && (pos_2[1] <= 100));
   EXPECT_TRUE((pos_2[2] >= -100) && (pos_2[2] <= 100));
+}
+
+// This test checks if CreateAgentsInSphereRndm creates the correct amount of
+// agents in a distance no further than `r` from a specified center. It does not
+// test if the points are uniformly distributed.
+TEST(ModelInitializerTest, CreateAgentsInSphereRndm) {
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  Double3 center{1.0, 2.0, 3.0};
+  double radius{10.0};
+  uint64_t no_agents{100};
+
+  ModelInitializer::CreateAgentsInSphereRndm(center, radius, no_agents,
+                                             [](const Double3& pos) {
+                                               Cell* cell = new Cell(pos);
+                                               return cell;
+                                             });
+
+  simulation.GetExecutionContext()->SetupIterationAll(
+      simulation.GetAllExecCtxts());
+
+  EXPECT_EQ(100u, rm->GetNumAgents());
+  rm->ForEachAgent([&](Agent* agent) {
+    Cell* cell = bdm_static_cast<Cell*>(agent);
+    auto shift = cell->GetPosition() - center;
+    EXPECT_LE(shift.Norm(), radius);
+  });
 }
 
 }  // namespace model_initializer_test_internal

@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 # BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,60 +16,56 @@ import os, sys
 import subprocess as sp
 from pathlib import Path
 from print_command import Print
-
+import multiprocessing as mp
 
 # The BioDynaMo CLI command to build a simulation binary.
-def BuildCommand(clean=False, debug=False, build=True):
+def BuildCommand(clean=False, build=True):
     build_dir = "build"
-    debug_dir = "debug"
 
-    Print.new_step("Build")
+    Print.new_step("<bdm build> Building project ...")
 
-    if clean or debug:
+    if clean:
         Print.new_step("Clean build directory")
         sp.check_output(["rm", "-rf", build_dir])
         sp.check_output(["mkdir", build_dir])
-    else:
+
+    elif build:
         if not os.path.exists(build_dir):
             sp.check_output(["mkdir", build_dir])
 
-    if debug:
-        if not os.path.exists(debug_dir):
-            sp.check_output(["mkdir", debug_dir])
-
-        with open(debug_dir + "/cmake_output.log", "w") as file:
-            try:
-                sp.check_call(["cmake", "-B./" + build_dir, "-H."],
-                              stdout=file,
-                              stderr=file)
-            except sp.CalledProcessError as err:
-                Print.error(
-                    "Failed to run CMake. Generating debug/cmake_output.log..."
-                )
-                return
-
-        with open(debug_dir + "/make_output.log", "w") as file:
-            try:
-                sp.check_call(["make", "-C", build_dir],
-                              stdout=file,
-                              stderr=file)
-            except sp.CalledProcessError as err:
-                Print.error(
-                    "Compilation failed. Generating debug/make_output.log...")
-                return
-
-    elif build:
         # if CMakeCache.txt does not exist, run cmake
         if not Path(build_dir + "/CMakeCache.txt").is_file():
             try:
-                sp.check_output(["cmake", "-B./" + build_dir, "-H."])
+                result = sp.run(["cmake", "-B./" + build_dir, "-H."])
+                if result.returncode != 0:
+                    Print.error(
+                        "<bdm build> Received the CMake return code {}.".format(
+                            result.returncode
+                        )
+                    )
+                    exit(result.returncode)
             except sp.CalledProcessError as err:
                 Print.error(
-                    "Failed to run CMake. Check the debug output above.")
+                    "<bdm build> Failed to run CMake. Check debug output above."
+                )
                 sys.exit(1)
 
         try:
-            sp.check_output(["make", "-j4", "-C", build_dir])
+            result = sp.run(
+                ["make", "-j{}".format(mp.cpu_count()), "-C", build_dir]
+            )
+            if result.returncode != 0:
+                Print.error(
+                    "<bdm build> Received the make return code {}.".format(
+                        result.returncode
+                    )
+                )
+                exit(result.returncode)
         except:
-            Print.error("Compilation failed. Check the debug output above.")
+            Print.error(
+                "<bdm build> Compilation failed. "
+                + "Check the debug output above."
+            )
             sys.exit(1)
+
+    Print.success("<bdm build> Finished successfully.")

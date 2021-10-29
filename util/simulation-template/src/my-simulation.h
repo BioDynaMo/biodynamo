@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,9 +21,10 @@ namespace bdm {
 inline int Simulate(int argc, const char** argv) {
   Simulation simulation(argc, argv);
 
-  // Define initial model - in this example: single cell at origin
+  // Define initial model - in this example: single cell at origin with a
+  // diameter of 30.0 (no unit associated).
   auto* rm = simulation.GetResourceManager();
-  auto* cell = new Cell(30);
+  auto* cell = new Cell(30.0);
   rm->AddAgent(cell);
 
   // Run simulation for one timestep

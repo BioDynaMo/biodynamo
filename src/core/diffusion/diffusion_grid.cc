@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -149,6 +149,7 @@ void DiffusionGrid::CopyOldData(
     const ParallelResizeVector<double>& old_c1,
     const ParallelResizeVector<Double3>& old_gradients, size_t old_resolution) {
   // Allocate more memory for the grid data arrays
+  locks_.resize(total_num_boxes_);
   c1_.resize(total_num_boxes_);
   c2_.resize(total_num_boxes_);
   gradients_.resize(total_num_boxes_);
@@ -300,15 +301,23 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
     return;
   }
   std::lock_guard<Spinlock> guard(locks_[idx]);
+  assert(idx < locks_.size());
   c1_[idx] += amount;
-  if (c1_[idx] > concentration_threshold_) {
-    c1_[idx] = concentration_threshold_;
-  }
+  c1_[idx] = (c1_[idx] > upper_threshold_)   ? upper_threshold_
+             : (c1_[idx] < lower_threshold_) ? lower_threshold_
+                                             : c1_[idx];
 }
 
 /// Get the concentration at specified position
 double DiffusionGrid::GetConcentration(const Double3& position) const {
   auto idx = GetBoxIndex(position);
+  if (idx >= total_num_boxes_) {
+    Log::Error("DiffusionGrid::ChangeConcentrationBy",
+               "You tried to get the concentration outside the bounds of "
+               "the diffusion grid!");
+    return 0;
+  }
+  assert(idx < locks_.size());
   std::lock_guard<Spinlock> guard(locks_[idx]);
   return c1_[idx];
 }
