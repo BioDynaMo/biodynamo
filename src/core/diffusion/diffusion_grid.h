@@ -89,9 +89,17 @@ class DiffusionGrid {
 
   void SetDecayConstant(double mu) { mu_ = mu; }
 
-  void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
+  // Sets an upper threshold for allowed values in the diffusion grid.
+  void SetUpperThreshold(double t) { upper_threshold_ = t; }
 
-  double GetConcentrationThreshold() const { return concentration_threshold_; }
+  // Returns the upper threshold for allowed values in the diffusion grid.
+  double GetUpperThreshold() const { return upper_threshold_; }
+
+  // Sets a lower threshold for allowed values in the diffusion grid.
+  void SetLowerThreshold(double t) { lower_threshold_ = t; }
+
+  // Returns the lower threshold for allowed values in the diffusion grid.
+  double GetLowerThreshold() const { return lower_threshold_; }
 
   const double* GetAllConcentrations() const { return c1_.data(); }
 
@@ -195,7 +203,9 @@ class DiffusionGrid {
   /// The array of gradients (x, y, z)
   ParallelResizeVector<Double3> gradients_ = {};
   /// The maximum concentration value that a box can have
-  double concentration_threshold_ = 1e15;
+  double upper_threshold_ = 1e15;
+  /// The minimum concentration value that a box can have
+  double lower_threshold_ = -1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   std::array<double, 7> dc_ = {{0}};
   /// The timestep resolution fhe diffusion grid
