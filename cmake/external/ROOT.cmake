@@ -12,6 +12,9 @@ if(APPLE)
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.6-arm64")
     set(ROOT_TAR_FILE root_v6.24.00_python3.9_${DETECTED_OS_VERS}.tar.gz)
   endif()
+  if("${DETECTED_OS_VERS}" MATCHES "^osx-12")
+    set(ROOT_TAR_FILE root_v6.25.01_cxx14_python3.9_${DETECTED_OS_VERS}.tar.gz)
+  endif()
 endif()
 
 download_verify_extract(
