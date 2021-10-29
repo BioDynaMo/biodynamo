@@ -21,6 +21,9 @@ foreach(policy ${policy_new})
   endif()
 endforeach()
 
+set(VERIFY_DOWNLOAD TRUE)
+set(ROOT_NIGHTLY FALSE)
+
 # Project name and current version. We do not specify any language for
 # this project. Therefore, we will be able to check manually which compiler
 # is detected on the system.

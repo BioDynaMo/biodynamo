@@ -542,12 +542,15 @@ the contents of the build directory and by issuing again the 'cmake' command.\n"
   endif()
 
   # Verify download
-  file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
-  if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
-    message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
-    Expected: ${HASH}\n\
-    Actual:   ${ACTUAL_SHA256}\n")
-  endif()
+  if (VERIFY_DOWNLOAD)
+    file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
+    if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
+      message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
+      Expected: ${HASH}\n\
+      Actual:   ${ACTUAL_SHA256}\n")
+    endif()
+  endif(VERIFY_DOWNLOAD)
+
   # Extract
   execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${FULL_TAR_PATH}
                   WORKING_DIRECTORY ${DEST}
@@ -555,8 +558,21 @@ the contents of the build directory and by issuing again the 'cmake' command.\n"
   if (NOT ${EXTRACT_STATUS_CODE} EQUAL 0)
     message(FATAL_ERROR "ERROR: Extraction of file ${FULL_TAR_PATH} to ${DEST} failed.")
   endif()
+  
+  if(ROOT_NIGHTLY)
+        message(STATUS "Restructuring ROOT Nightly build ..")
+    file(RENAME ${CMAKE_THIRD_PARTY_DIR}/root/root/ ${CMAKE_THIRD_PARTY_DIR}/root-build)
+    execute_process(COMMAND rm -rf ${CMAKE_THIRD_PARTY_DIR}/root/)
+    file(RENAME ${CMAKE_THIRD_PARTY_DIR}/root-build ${CMAKE_THIRD_PARTY_DIR}/root)
+  endif(ROOT_NIGHTLY)
 
-  file(WRITE ${DEST}/tar-sha256 "${HASH}")
+  if (VERIFY_DOWNLOAD)
+    file(WRITE ${DEST}/tar-sha256 "${HASH}")
+  else()
+    # The verification is only deactivated for the root nightlies and we 
+    # and activated right afterwards again.
+    set(VERIFY_DOWNLOAD TRUE)
+  endif(VERIFY_DOWNLOAD)
 
   # remove tar file
   file(REMOVE ${FULL_TAR_PATH})
