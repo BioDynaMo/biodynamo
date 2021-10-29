@@ -4,55 +4,107 @@ With BioDynaMo it is possible to run multiple simulations in parallel, as
 separate processes. We refer to this as "Multi Simulation". This can be a
 useful feature when you want to repeat a certain simulation multiple times;
 possibly with different runtime parameters. Instead of running the simulations
-one-by-one, with Multi Simulation it is possible to run multiple instances at
-the same time, on one or more machines. This allows you to explore a parameter
+consecutively, with Multi Simulation it is possible to run multiple instances simultaneously, on one or more machines. This allows you to explore a parameter
 space and obtain results at a much faster pace. The more computing resources are
-available, the faster the simulations are completed. The parameter space that
-should be explore can be expressed in an XML file.
+available, the faster the simulations are completed.
+BioDynaMo offers a couple of default algorithms on exploring a parameter space (e.g. parameter sweep, particle swarm).
+The algorithms benefit from Multi Simulation by running each iteration in a separate process.
 
-<p align="center">
-  <img src="../images/multi_simulation_manager.png" alt="multi simulation" width="500">
-</p>
-
-## Requirements
+## MPI
 Multi Simulation uses MPI to spawn different processes and schedule the
-simulations on your system(s). We therefore recommend you to install OpenMPI
-(recommended v3 or higher) on the system(s) you plan to use.
+simulations on your system(s).
+    
+    If you work with more than one machine, you are required to have the
+    same OpenMPI versions installed on all the machines in order for Multi Simulation to work properly.
 
-!!! Note If you work with more than one machine, you are required to have the
-    same OpenMPI versions installed on all the machines in order for Parallel
-    Execution to work properly.
+    Furthermore, MPI requires you to have a passwordless SSH login to the other machines.
 
-    Furthermore, MPI requires you to have a passwordless SSH login to the other
-    machines.
+## How to use Multi Simulation
 
-## Usage
+In order to run a simulation in Multi Simulation mode, you need to make a few changes.
 
-### Single-machine command
-There is little difference between creating and running a simulation as a single
-process, or as multiple processes through Multi Simulation. You can simply
-launch your simulations as follows:
+### Main function
+In the `main` function of your simulation you need to call the `MultiSimulation` wrapper
+around your regular `Simulate` call:
 
-``` sh
-mpirun -np <N> <your_simulation_binary> --xml=<path/to/xml/file>
+```c++
+int main(int argc, const char** argv) {
+  bdm::experimental::MultiSimulation pe(argc, argv);
+  return pe.Execute(Simulate);
+}
 ```
 
-This command spawns `N - 1` number of processes that each will start a
-simulation. The number of simulations that will eventually be performed depends
-on the contents of your XML file: the more parameters you would like to explore,
+### Simulate function
+
+Your `Simulate` function also should conform to the following signature in order to use Multi Simulation:
+
+```c++
+void Simulate(int argc, const char** argv, TimeSeries* result,
+                     Param* final_params = nullptr) {
+auto set_param = [&](Param* param) {
+    param->Restore(std::move(*final_params));
+};
+Simulation simulation(argc, argv, set_param);
+
+// Your simulation code...
+}
+```
+
+`result ` is a `TimeSeries` object that can be populated with results that are of interest in your simulation.
+For some optimization algorithms, like ParticleSwarm, this *must* be populated with such results to be able to minimize the error between simulated data and real-life data.
+
+`final_params` are the unique set of parameters that a simulation instance receives from the Multi Simulation runtime. You must therefore configure your simulation with these parameters *before* you define your simulation using the `Restore` functionality.
+
+### Optimization parameters
+
+The Multi Simulation runtime expects you to define which parameter space exploration algorithm you want to use.
+This can be done by defining a `OptimizationParam` in your parameter configuration:
+
+```json
+{
+  "bdm::OptimizationParam": {
+    "algorithm" : "<algorithm name>",
+    "params" : [
+      {
+        "_typename": "<parameter type>",
+        "param_name" : "<parameter name>",
+        ...
+      }
+    ]
+  }
+}
+
+```
+* The `algorithm` should be the name of the algorithm you wish to use (e.g. "ParameterSweep", "ParticleSwarm")
+* The `params` should be a list of simulation parameters you wish to explore. In the code block above, there is only one parameter block, but this can be a comma-separated list of multiple parameter blocks.
+  * The `_typename` should be the type of parameter it concerns (e.g. a uniform range of parameters, a set of parameters). See "core/multi\_simulation/optimization\_param_type" for a list of available parameter types
+  * The `param_name` should be the name of the parameter in your simulation, including any namespace identifiers (e.g. "bdm::SimParam::my_param")
+  * Each parameter type has a number of extra fields that need to be filled in. For example, for a RangeParam (a uniform range of values), you would also need to specify the `lower_bound`, `upper_bound` and `stride` in its parameter block.
+
+### Command line execution
+Since Multi Simulation relies on MPI, we must use the `mpirun` binary to run the simulation with
+
+``` sh
+$ mpirun -np <N> <your_simulation_binary> --config=param.json
+```
+
+`param.json` contains the optimization parameter information as described earlier (this can also instead be inlined with the `inline-config` command line argument).
+
+This command spawns `N-1` number of processes that each will start a
+simulation (`N-1` because one process is always reserved as the managing process). The number of simulations that will eventually be performed depends
+on your optimization algorithm: the more parameters you would like to explore,
 the higher the number of simulations that need to be executed.
 
-It is very likely that the number of simulations will be greater than `N`. Since
-there can only be at most `N -1` simulation running at any given point in time,
+It is very likely that the total number of simulations will be greater than `N-1`. Since
+there can only be at most `N-1` simulation running at any given point in time,
 the other simulations are queued, and scheduled to be executed whenever
 computing resources become available.
 
-### Multi-machine command
-If you wish to include other machines (e.g. a cluster, or cloud instances), it
+If you wish to run your simulations on multiple machines (e.g. a cluster, or cloud instances), it
 can simply be done as follows:
 
 ``` sh
-mpirun -np <N> --hostfile <path/to/hostfile> <your_simulation_binary> --xml=<path/to/xml/file>
+$ mpirun -np <N> --hostfile <path/to/hostfile> <your_simulation_binary> --config=param.json
 ```
 
 The `hostfile` should contain the names (e.g. IP addresses) of the machines in
@@ -61,103 +113,7 @@ out the OpenMPI docs [^1].
 
   [^1]: https://www.open-mpi.org/faq/?category=running#mpirun-hostfile
 
-### XML File
-The XML file that is required for Multi Simulation describes the parameters
-over which you would like to run your simulations with. Your XML file should
-adhere to the following structure:
-
-``` xml
-<?xml version="1.0" encoding="utf-8"?>
-<model>
-  <simulation_objects>
-    <object>
-      <property1>Value1</property1>
-      <property2>Value2</property2>
-      ...
-      <property3>Value3</property3>
-    </object>
-  </simulation_objects>
-  <biology_modules>
-    <module>
-      <property1>Value1</property1>
-      <property2>Value2</property2>
-      ...
-      <property3>Value3</property3>
-    </module>
-  </biology_modules>
-</model>
-```
-
-With in the `simulation_objects` XML node, you can specify the parameters you
-would like to set certain properties of you simulation objects with. For each
-simulation object you are required to create a `object` XML node, and therein
-list the desired properties. The same principle is used to list the parameters
-for the biology modules in your simulation.
-
-Each property can be of the following three value types:
-
-|  Value type  |      Description      | 
-| -------- |-------------|
-| scalar | A single-valued parameter (e.g. 42, 3.14) |
-| range |  A range of values with a constant stride (e.g. [1, 2, 3, 4] or [0.2, 0.4, 0.6]) |
-| set |  A set of values (e.g. [0, -21, 0.4]) |
-
-All values are currently expected to be numerical values.
-
-#### Scalar example
-The following example sets the value of `property1` to 42.
-``` xml
-<property1 value_type="scalar">42</property1>
-```
-
-#### Range example
-The following example sets the value of `property2` to one of the six values in
-the range of [0, 1, 2, 3, 4, 5]. This will result in six different simulations
-being run; each with a different value for `property2`.
-``` xml
-<property2 value_type="range">
-  <min>0</min>
-  <max>5</max>
-  <stride>1</stride>
-</property2>
-```
-
-#### Set example
-The following example sets the value of `property3` to one of the three values
-in the set of values [0, -21, 0.4]
-``` xml
-<property3 value_type="set">
-  <value>0</value>
-  <value>-21</value>
-  <value>0.4</value>
-</property3>
-```
-
-### How does it work?
-
-A schematic overview of how the Multi Simulation engine works is shown in the
-figure below.
-
-![Multi Simulation Overview](images/multi_simulation_overview.png)
-
-In short, we parse the XML file with a 'master process' that determines the
-entire parameter space that should be explored. Each valid set of parameters is
-then dispatched to a 'worker process' that runs on either the same machine as
-the master, or on a different machine. The number of worker processes is equal
-to the `N - 1` number of processes with which the `mpirun` command was invoked
-with. Upon receipt of the parameter set, the worker then executes the simulation
-binary and saves the user-defined results to disk.
-
-We use an XML parsers that is part of the ROOT library. We also use ROOT to
-perform the serialization of the parameters that are dispatched using MPI.
-Furthermore, the output files are saved in ROOT format, and can easily be merged
-into a single file using ROOT's `hadd` executable. The ROOT file format is used
-primarily in high-energy physics to store experimental and simulation data, and
-fits rather nicely in BioDynaMo to store simulation results. Post processing and
-analysis of data can be done with ROOT in a straightforward manner, and many
-examples and tutorials can be found online [^2].
-
-  [^2]: https://root.cern/doc/master/group__Tutorials.html
+### Performance tuning
 
 Since we rely on MPI to distribute the simulation workloads over a specified
 number of processes, we are able to finetune the performance through the many

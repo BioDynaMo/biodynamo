@@ -22,7 +22,8 @@
 
 namespace bdm {
 
-/// A set of values
+/// A set of values (e.g. [-12, 3.2, 43, 98])
+/// All values are interpreted as double precision floating point types
 struct SetParam : public OptimizationParamType {
   SetParam() {}
   SetParam(const std::string& name, const std::vector<double> v)

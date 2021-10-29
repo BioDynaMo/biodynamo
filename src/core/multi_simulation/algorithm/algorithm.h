@@ -26,6 +26,7 @@ namespace experimental {
 
 using experimental::TimeSeries;
 
+/// An interface for creating new optimization algorithms
 struct Algorithm {
   virtual ~Algorithm() {}
 

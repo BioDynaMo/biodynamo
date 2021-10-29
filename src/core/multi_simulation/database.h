@@ -22,6 +22,8 @@ namespace experimental {
 
 using experimental::TimeSeries;
 
+/// A singleton for storing real-life data in the form of a `TimeSeries` object
+/// for the purpose of parameter optimization
 class Database {
  public:
   TimeSeries data_;

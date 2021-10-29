@@ -45,7 +45,7 @@ enum Status { kBusy, kAvail };
 enum Tag { kReady, kResult, kTask, kKill };
 
 /// The Master in a Master-Worker design pattern. Maintains the status of all
-/// the workers in the MPI runtime.
+/// the workers in the multi-simulation runtime.
 class MultiSimulationManager {
  public:
   void Log(string s);
@@ -92,7 +92,8 @@ class MultiSimulationManager {
   std::vector<TimingAggregator> timings_;
 };
 
-/// The Worker class in a Master-Worker design pattern.
+/// The Worker class in a Master-Worker design pattern of the multi-simulation
+/// runtime
 class Worker {
  public:
   explicit Worker(int myrank,

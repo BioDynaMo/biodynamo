@@ -27,6 +27,8 @@ using nlohmann::json;
 namespace bdm {
 namespace experimental {
 
+/// Implements the particle swarm optimization algorithm
+/// For more info: https://www.kthohr.com/optimlib_docs_pso.html
 struct ParticleSwarm : public Algorithm {
   BDM_ALGO_HEADER();
 
