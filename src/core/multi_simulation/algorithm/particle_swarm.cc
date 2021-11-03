@@ -14,6 +14,7 @@
 
 #include <json.hpp>
 #include "optim.hpp"
+#include <omp.h>
 
 #include "core/multi_simulation/algorithm/algorithm.h"
 #include "core/multi_simulation/algorithm/algorithm_registry.h"
@@ -114,7 +115,7 @@ struct ParticleSwarm : public Algorithm {
 
       double mse = Experiment(dispatch_experiment, repetition, &new_param);
       std::cout << " MSE " << mse << " inout " << free_params << std::endl;
-#pragma omp critical
+// #pragma omp critical
       {
         iteration++;
         prev_mse = mse;
