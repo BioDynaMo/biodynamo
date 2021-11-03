@@ -234,7 +234,7 @@ TEST(MethodOfLineTest, ConvertToMFEMVector) {
 TEST(MethodOfLineTest, ContainedInElementOrNeighbour) {
   // Create a simple one element hex mesh
   mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
 
   // Define function to set inital values of the Mesh
   auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
@@ -296,7 +296,7 @@ TEST(MethodOfLineTest, ContainedInElementOrNeighbour) {
 TEST(MethodOfLineTest, GetSolutionAtPosition) {
   // Create a simple one element hex mesh
   mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
   mesh.UniformRefinement();
   mesh.UniformRefinement();
 
@@ -323,21 +323,21 @@ TEST(MethodOfLineTest, GetSolutionAtPosition) {
   bdm_position[1] = 0.2;
   bdm_position[2] = 0.3;
   grid_value = solver.GetSolutionAtPosition(bdm_position).second;
-  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
 
   // Case  (On nodes by construction - after first refinement)
   bdm_position[0] = 0.75;
   bdm_position[1] = 0.6;
   bdm_position[2] = 0.85;
   grid_value = solver.GetSolutionAtPosition(bdm_position).second;
-  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
 
   // Case  (On nodes by construction - after second refinement)
   bdm_position[0] = 0.325;
   bdm_position[1] = 0.175;
   bdm_position[2] = 0.550;
   grid_value = solver.GetSolutionAtPosition(bdm_position).second;
-  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
 
   // Case  (Not on nodes by construction - after second refinement)
   bdm_position[0] = 0.43291034;
@@ -353,7 +353,7 @@ TEST(MethodOfLineTest, GetSolutionAtPosition) {
 TEST(MethodOfLineTest, GetSolutionAtAgentPosition) {
   // Create a simple one element hex mesh
   mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
   mesh.UniformRefinement();
   mesh.UniformRefinement();
 
@@ -394,7 +394,7 @@ TEST(MethodOfLineTest, GetSolutionAtAgentPosition) {
   bdm_position[2] = 0.3;
   cell->SetPosition(bdm_position);
   grid_value = solver.GetSolutionAtAgentPosition(cell);
-  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
   EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
 
   // Case  (On nodes by construction - after first refinement)
@@ -403,7 +403,7 @@ TEST(MethodOfLineTest, GetSolutionAtAgentPosition) {
   bdm_position[2] = 0.85;
   cell->SetPosition(bdm_position);
   grid_value = solver.GetSolutionAtAgentPosition(cell);
-  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
   EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
 
   // Case  (On nodes by construction - after second refinement)
@@ -412,7 +412,7 @@ TEST(MethodOfLineTest, GetSolutionAtAgentPosition) {
   bdm_position[2] = 0.550;
   cell->SetPosition(bdm_position);
   grid_value = solver.GetSolutionAtAgentPosition(cell);
-  EXPECT_EQ(bdm_position.Norm(), grid_value);
+  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
   EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
 
   // Case  (Not on nodes by construction - after second refinement)
@@ -432,8 +432,8 @@ TEST(MethodOfLineTest, GetSolutionAtAgentPosition) {
 // checking all elements) accelerates the application as expected.
 TEST(MethodOfLineTest, StepByStepLocalization) {
   // Create a simple one element hex mesh
-  mfem::Mesh mesh = mfem::Mesh::MakeCartesian3D(
-      100, 100, 100, mfem::Element::Type::HEXAHEDRON);
+  mfem::Mesh mesh =
+      mfem::Mesh::MakeCartesian3D(20, 20, 20, mfem::Element::Type::TETRAHEDRON);
 
   // Define function to set inital values of the Mesh
   auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
@@ -570,7 +570,7 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
   // Create a simple one element hex mesh
   mfem::Mesh* mesh = new mfem::Mesh();
   *mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
   mesh->UniformRefinement();
   mesh->UniformRefinement();
 
