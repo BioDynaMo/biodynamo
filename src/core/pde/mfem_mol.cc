@@ -176,6 +176,7 @@ void MethodOfLineSolver::Step(double dt) {
                  "Time step: ", dt, " / ", dt_ref, "\nTarget time: ", t_, " / ",
                  t_target, "\n(is / expected)");
   }
+  u_gf_.SetFromTrueDofs(u_);
   ode_steps_++;
 }
 
