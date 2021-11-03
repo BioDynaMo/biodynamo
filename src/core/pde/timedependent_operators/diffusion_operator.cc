@@ -21,11 +21,11 @@ namespace experimental {
 
 DiffusionOperator::DiffusionOperator(
     mfem::FiniteElementSpace &f, double diffusion_coefficient,
-    std::function<double(const mfem::Vector &)> diff_function)
+    std::function<double(const mfem::Vector &)> diffusion_func)
     : MolOperator(f),
       diff_coef_(diffusion_coefficient),
       scalar_coefficient_(true),
-      diffusion_func_(std::move(diff_function)),
+      diffusion_func_(std::move(diffusion_func)),
       fuction_coefficient_(true) {}
 
 DiffusionOperator::DiffusionOperator(mfem::FiniteElementSpace &f,
@@ -37,10 +37,10 @@ DiffusionOperator::DiffusionOperator(mfem::FiniteElementSpace &f,
 
 DiffusionOperator::DiffusionOperator(
     mfem::FiniteElementSpace &f,
-    std::function<double(const mfem::Vector &)> diff_function)
+    std::function<double(const mfem::Vector &)> diffusion_func)
     : MolOperator(f),
       scalar_coefficient_(false),
-      diffusion_func_(std::move(diff_function)),
+      diffusion_func_(std::move(diffusion_func)),
       fuction_coefficient_(true) {}
 
 void DiffusionOperator::SetParameters(const mfem::Vector &u) {
