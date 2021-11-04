@@ -19,9 +19,8 @@ function(GenerateStaticFiles TARGET FLAGS)
   file(MAKE_DIRECTORY "${WEB_DIR}")
   add_custom_target(${TARGET}
       WORKING_DIRECTORY "${WEB_DIR}"
-      COMMAND rm -rf ${WEB_DIR} && mkdir ${WEB_DIR}
-      COMMAND git clone https://github.com/BioDynaMo/website.git .
-      COMMAND git checkout add-new-notebooks-in-tutorial
+      COMMAND [ -f build_website.sh ] || git clone https://github.com/BioDynaMo/website.git .
+      COMMAND git pull
       COMMENT "Generate website"
       COMMAND ./build_website.sh --dir ${CMAKE_CURRENT_SOURCE_DIR} ${FLAGS}
       VERBATIM)
