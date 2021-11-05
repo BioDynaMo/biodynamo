@@ -13,7 +13,6 @@
 // -----------------------------------------------------------------------------
 
 #include <json.hpp>
-#include <omp.h>
 #include "optim.hpp"
 
 #include "core/multi_simulation/algorithm/algorithm.h"
@@ -22,6 +21,7 @@
 #include "core/multi_simulation/experiment.h"
 #include "core/multi_simulation/multi_simulation_manager.h"
 #include "core/multi_simulation/optimization_param_type/particle_swarm_param.h"
+#include "core/util/spinlock.h"
 
 using nlohmann::json;
 
@@ -79,12 +79,13 @@ struct ParticleSwarm : public Algorithm {
     double min_mse = 1e9;
     json best_params;
     double prev_mse = 1.0;
+    Spinlock lock;
 
     // The fitting function (i.e. calling a simulation with a paramset)
     // Anything inside this function should be thread-safe
     auto fit = [=, &dispatch_experiment, &iteration, &prev_mse, &min_mse,
-                &best_params](const arma::vec& free_params, arma::vec* grad_out,
-                              void* opt_data) {
+                &best_params, &lock](const arma::vec& free_params,
+                                     arma::vec* grad_out, void* opt_data) {
       Param new_param = *default_params;
 
       std::cout << "iteration (" << iteration << "/" << max_it << ")"
@@ -115,8 +116,8 @@ struct ParticleSwarm : public Algorithm {
 
       double mse = Experiment(dispatch_experiment, repetition, &new_param);
       std::cout << " MSE " << mse << " inout " << free_params << std::endl;
-      // #pragma omp critical
       {
+        std::lock_guard<Spinlock> lock_guard(lock);
         iteration++;
         prev_mse = mse;
         // Check if the current error is smaller than the previously smallest
