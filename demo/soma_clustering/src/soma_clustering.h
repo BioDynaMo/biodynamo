@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,9 +54,10 @@ inline int Simulate(int argc, const char** argv) {
   simulation.GetRandom()->SetSeed(4357);
 
   // Define the substances that cells may secrete
-  // Order: substance_name, diffusion_coefficient, decay_constant, resolution
-  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.5, 0.1, 20);
-  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0.1, 20);
+  // Order: substance id, substance_name, diffusion_coefficient, decay_constant,
+  // and the resolution of the (finite difference) diffusion grid.
+  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 50.0, 0.1, 20);
+  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 50.0, 0.1, 20);
 
   int cell_type = 1;
   std::string substance_name = "Substance_0";

@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,30 +27,50 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
+#include "core/util/log.h"
 
 namespace bdm {
 
 /// A class that sets up diffusion grids of the substances in this simulation
-struct DiffusionOp : public StandaloneOperationImpl {
+class DiffusionOp : public StandaloneOperationImpl {
+ protected:
+  /// Last time when the operation was executed
+  double last_time_run_ = 0.0;
+  /// Timestep that is useded for `Diffuse(delta_t)` and computed from this and
+  /// the last time the grid was updated.
+  double delta_t_ = 0.0;
+
+ public:
   BDM_OP_HEADER(DiffusionOp);
 
   void operator()() override {
+    // Get active simulation and related pointers
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto* env = sim->GetEnvironment();
     auto* param = sim->GetParam();
 
-    rm->ForEachDiffusionGrid([&](DiffusionGrid* dg) {
+    // Compute the passed time to update the diffusion grid accordingly.
+    double current_time = sim->GetScheduler()->GetSimulatedTime();
+    delta_t_ = current_time - last_time_run_;
+    last_time_run_ = current_time;
+
+    // Avoid computation if delta_t_ is zero
+    if (delta_t_ == 0.0) {
+      return;
+    }
+
+    rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
       if (env->HasGrown() &&
           param->bound_space == Param::BoundSpaceMode::kOpen) {
-        dg->Update();
+        dgrid->Update();
       }
-      dg->Diffuse();
+      dgrid->Diffuse(delta_t_);
       if (param->calculate_gradients) {
-        dg->CalculateGradient();
+        dgrid->CalculateGradient();
       }
     });
   }

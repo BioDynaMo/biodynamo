@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,7 @@
 #include "core/model_initializer.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/diffusion/euler_grid.h"
-#include "core/diffusion/runga_kutta_grid.h"
-#include "core/diffusion/stencil_grid.h"
+#include "core/diffusion/runge_kutta_grid.h"
 
 namespace bdm {
 
@@ -27,25 +26,22 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   auto* rm = sim->GetResourceManager();
-  DiffusionGrid* d_grid = nullptr;
+  DiffusionGrid* dgrid = nullptr;
   if (param->diffusion_method == "euler") {
-    d_grid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                           decay_constant, resolution);
-  } else if (param->diffusion_method == "stencil") {
-    d_grid = new StencilGrid(substance_id, substance_name, diffusion_coeff,
-                             decay_constant, resolution);
-  } else if (param->diffusion_method == "runga-kutta") {
-    d_grid = new RungaKuttaGrid(substance_id, substance_name, diffusion_coeff,
-                                decay_constant, resolution);
+    dgrid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
+                          decay_constant, resolution);
+  } else if (param->diffusion_method == "runge-kutta") {
+    dgrid = new RungeKuttaGrid(substance_id, substance_name, diffusion_coeff,
+                               decay_constant, resolution);
   } else {
     Log::Error("ModelInitializer::DefineSubstance", "Diffusion method '",
                param->diffusion_method,
                "' does not exist. Defaulting to 'euler'");
-    d_grid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                           decay_constant, resolution);
+    dgrid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
+                          decay_constant, resolution);
   }
 
-  rm->AddDiffusionGrid(d_grid);
+  rm->AddDiffusionGrid(dgrid);
 }
 
 }  // namespace bdm

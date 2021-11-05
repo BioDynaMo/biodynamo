@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -389,6 +389,10 @@ class Random {
   /// For param `option` have a look at ROOT's `TF1::GetRandom` documentation.\n
   /// \see https://root.cern/doc/master/group__PdfFunc.html
   /// \see https://root.cern/doc/master/classTF1.html
+  ///
+  /// Warning: At the moment, the use of UserDefinedDistRng1 in parallel
+  /// regions such as behaviors is likely to have a serious performance impact
+  /// and we advise to only use it in serial regions.
   UserDefinedDistRng1D GetUserDefinedDistRng1D(
       double (*f)(const double*, const double*),
       const FixedSizeVector<double, 10>& params, double min, double max,

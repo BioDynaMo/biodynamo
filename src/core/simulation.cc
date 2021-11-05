@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -135,16 +135,16 @@ void Simulation::Restore(Simulation&& restored) {
 }
 
 std::ostream& operator<<(std::ostream& os, Simulation& sim) {
-  std::vector<std::string> dg_names;
-  std::vector<int> dg_resolutions;
-  std::vector<std::array<int32_t, 3>> dg_dimensions;
-  std::vector<uint64_t> dg_voxels;
+  std::vector<std::string> dgrid_names;
+  std::vector<int> dgrid_resolutions;
+  std::vector<std::array<int32_t, 3>> dgrid_dimensions;
+  std::vector<uint64_t> dgrid_voxels;
 
-  sim.rm_->ForEachDiffusionGrid([&](auto* dg) {
-    dg_names.push_back(dg->GetSubstanceName());
-    dg_resolutions.push_back(dg->GetResolution());
-    dg_dimensions.push_back(dg->GetGridSize());
-    dg_voxels.push_back(dg->GetNumBoxes());
+  sim.rm_->ForEachDiffusionGrid([&](auto* dgrid) {
+    dgrid_names.push_back(dgrid->GetSubstanceName());
+    dgrid_resolutions.push_back(dgrid->GetResolution());
+    dgrid_dimensions.push_back(dgrid->GetGridSize());
+    dgrid_voxels.push_back(dgrid->GetNumBoxes());
   });
 
   os << std::endl;
@@ -167,17 +167,17 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
   os << "Number of agents\t\t: " << sim.rm_->GetNumAgents() << std::endl;
 
-  if (dg_names.size() != 0) {
+  if (dgrid_names.size() != 0) {
     os << "Diffusion grids" << std::endl;
-    for (size_t i = 0; i < dg_names.size(); ++i) {
-      os << "  " << dg_names[i] << ":" << std::endl;
-      auto& dim = dg_dimensions[i];
+    for (size_t i = 0; i < dgrid_names.size(); ++i) {
+      os << "  " << dgrid_names[i] << ":" << std::endl;
+      auto& dim = dgrid_dimensions[i];
       os << "\t"
-         << "Resolution\t\t: " << dg_resolutions[i] << std::endl;
+         << "Resolution\t\t: " << dgrid_resolutions[i] << std::endl;
       os << "\t"
          << "Size\t\t\t: " << dim[0] << " x " << dim[1] << " x " << dim[2]
          << std::endl
-         << "\tVoxels\t\t\t: " << dg_voxels[i] << std::endl;
+         << "\tVoxels\t\t\t: " << dgrid_voxels[i] << std::endl;
     }
   }
 

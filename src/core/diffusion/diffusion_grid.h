@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -51,10 +51,10 @@ class DiffusionGrid {
   /// concentration / gradient
   virtual void Update();
 
-  void Diffuse();
+  void Diffuse(double dt);
 
-  virtual void DiffuseWithClosedEdge() = 0;
-  virtual void DiffuseWithOpenEdge() = 0;
+  virtual void DiffuseWithClosedEdge(double dt) = 0;
+  virtual void DiffuseWithOpenEdge(double dt) = 0;
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -89,9 +89,20 @@ class DiffusionGrid {
 
   void SetDecayConstant(double mu) { mu_ = mu; }
 
-  void SetConcentrationThreshold(double t) { concentration_threshold_ = t; }
+  /// Return the last timestep `dt` that was used to run `Diffuse(dt)`
+  double GetLastTimestep() { return last_dt_; }
 
-  double GetConcentrationThreshold() const { return concentration_threshold_; }
+  // Sets an upper threshold for allowed values in the diffusion grid.
+  void SetUpperThreshold(double t) { upper_threshold_ = t; }
+
+  // Returns the upper threshold for allowed values in the diffusion grid.
+  double GetUpperThreshold() const { return upper_threshold_; }
+
+  // Sets a lower threshold for allowed values in the diffusion grid.
+  void SetLowerThreshold(double t) { lower_threshold_ = t; }
+
+  // Returns the lower threshold for allowed values in the diffusion grid.
+  double GetLowerThreshold() const { return lower_threshold_; }
 
   const double* GetAllConcentrations() const { return c1_.data(); }
 
@@ -154,12 +165,11 @@ class DiffusionGrid {
   }
 
  private:
-  friend class RungaKuttaGrid;
+  friend class RungeKuttaGrid;
   friend class EulerGrid;
-  friend class StencilGrid;
   friend class TestGrid;  // class used for testing (e.g. initialization)
 
-  void ParametersCheck();
+  void ParametersCheck(double dt);
 
   /// Copies the concentration and gradients values to the new
   /// (larger) grid. In the 2D case it looks like the following:
@@ -187,7 +197,7 @@ class DiffusionGrid {
   double box_volume_ = 0;
   /// Lock for each voxel used to prevent race conditions between
   /// multiple threads
-  mutable ParallelResizeVector<Spinlock> locks_ = {};
+  mutable ParallelResizeVector<Spinlock> locks_ = {};  //!
   /// The array of concentration values
   ParallelResizeVector<double> c1_ = {};
   /// An extra concentration data buffer for faster value updating
@@ -195,12 +205,11 @@ class DiffusionGrid {
   /// The array of gradients (x, y, z)
   ParallelResizeVector<Double3> gradients_ = {};
   /// The maximum concentration value that a box can have
-  double concentration_threshold_ = 1e15;
+  double upper_threshold_ = 1e15;
+  /// The minimum concentration value that a box can have
+  double lower_threshold_ = -1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   std::array<double, 7> dc_ = {{0}};
-  /// The timestep resolution fhe diffusion grid
-  // TODO(ahmad): this probably needs to scale with Param::simulation_timestep
-  double dt_ = 1.0;
   /// The decay constant
   double mu_ = 0;
   /// The grid dimensions of the diffusion grid (cubic shaped)
@@ -212,6 +221,8 @@ class DiffusionGrid {
   /// The resolution of the diffusion grid (i.e. number of boxes along each
   /// axis)
   size_t resolution_ = 0;
+  /// The last timestep `dt` used for the diffusion grid update `Diffuse(dt)`
+  double last_dt_ = 0.0;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid

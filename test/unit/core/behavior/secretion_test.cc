@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,8 +38,8 @@ TEST(SecretionTest, Run) {
 
   simulation.Simulate(1);
 
-  auto* dg = rm->GetDiffusionGrid(0);
-  auto conc = dg->GetConcentration(pos);
+  auto* dgrid = rm->GetDiffusionGrid(0);
+  auto conc = dgrid->GetConcentration(pos);
 
   EXPECT_NEAR(conc, 3.14, 1e-9);
 }

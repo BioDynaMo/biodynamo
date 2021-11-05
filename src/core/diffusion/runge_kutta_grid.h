@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_DIFFUSION_RUNGA_KUTTA_GRID_H_
-#define CORE_DIFFUSION_RUNGA_KUTTA_GRID_H_
+#ifndef CORE_DIFFUSION_RUNGE_KUTTA_GRID_H_
+#define CORE_DIFFUSION_RUNGE_KUTTA_GRID_H_
 
 #include <utility>
 
@@ -22,10 +22,10 @@
 
 namespace bdm {
 
-class RungaKuttaGrid : public DiffusionGrid {
+class RungeKuttaGrid : public DiffusionGrid {
  public:
-  RungaKuttaGrid() {}
-  RungaKuttaGrid(int substance_id, std::string substance_name, double dc,
+  RungeKuttaGrid() {}
+  RungeKuttaGrid(int substance_id, std::string substance_name, double dc,
                  double mu, int resolution = 11)
       : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
                       resolution) {}
@@ -34,7 +34,7 @@ class RungaKuttaGrid : public DiffusionGrid {
     DiffusionGrid::Initialize();
     // If we are utilising the Runge-Kutta method we need to resize an
     // additional vector, this will be used in estimating the concentration
-    // between diffsuion steps.
+    // between diffusion steps.
     r1_.resize(total_num_boxes_);
   }
 
@@ -43,8 +43,8 @@ class RungaKuttaGrid : public DiffusionGrid {
     r1_.resize(total_num_boxes_);
   }
 
-  void DiffuseWithClosedEdge() override;
-  void DiffuseWithOpenEdge() override;
+  void DiffuseWithClosedEdge(double dt) override;
+  void DiffuseWithOpenEdge(double dt) override;
 
  private:
   /// Buffers for Runge Kutta
@@ -53,9 +53,9 @@ class RungaKuttaGrid : public DiffusionGrid {
   std::array<double, 2> k_ = {};
   /// Number of steps for RK diffusion grid;
   unsigned int diffusion_step_ = 1;
-  BDM_CLASS_DEF_OVERRIDE(RungaKuttaGrid, 1);
+  BDM_CLASS_DEF_OVERRIDE(RungeKuttaGrid, 1);
 };
 
 }  // namespace bdm
 
-#endif  // CORE_DIFFUSION_RUNGA_KUTTA_GRID_H_
+#endif  // CORE_DIFFUSION_RUNGE_KUTTA_GRID_H_

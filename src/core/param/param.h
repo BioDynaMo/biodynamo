@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -234,7 +234,7 @@ struct Param {
   std::string diffusion_boundary_condition = "open";
 
   /// A string for determining diffusion type within the simulation space.
-  /// current inputs include "euler", "stencil" and Runga Kutta ("runga-kutta")
+  /// current inputs include "euler" and "runge-kutta".
   /// Default value: `"euler"`\n
   /// TOML config file:
   ///

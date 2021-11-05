@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,7 +48,7 @@ class SimulationTest : public ::testing::Test {
       "bound_space = 0\n"
       "min_bound = -100\n"
       "max_bound =  200\n"
-      "diffusion_method = \"runga-kutta\"\n"
+      "diffusion_method = \"runge-kutta\"\n"
       "thread_safety_mechanism = \"automatic\"\n"
       "\n"
       "[visualization]\n"
@@ -121,7 +121,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(123u, param->random_seed);
     EXPECT_EQ("paraview", param->visualization_engine);
     EXPECT_EQ("result-dir", param->output_dir);
-    EXPECT_EQ("runga-kutta", param->diffusion_method);
+    EXPECT_EQ("runge-kutta", param->diffusion_method);
     EXPECT_EQ(3600u, param->backup_interval);
     EXPECT_EQ(0.0125, param->simulation_time_step);
     EXPECT_EQ(1u, param->unschedule_default_operations.size());

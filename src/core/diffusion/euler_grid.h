@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,9 +29,9 @@ class EulerGrid : public DiffusionGrid {
       : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
                       resolution) {}
 
-  void DiffuseWithClosedEdge() override;
+  void DiffuseWithClosedEdge(double dt) override;
 
-  void DiffuseWithOpenEdge() override;
+  void DiffuseWithOpenEdge(double dt) override;
 
  private:
   BDM_CLASS_DEF_OVERRIDE(EulerGrid, 1);

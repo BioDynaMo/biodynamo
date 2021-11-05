@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 #
-# Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+# Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 # BioDynaMo collaboration. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +17,11 @@ import os
 import re
 import subprocess as sp
 import sys
+import select
 
 
 def GetBinaryName():
     with open("CMakeLists.txt") as f:
         content = f.read()
         return re.search("project\((.*)\)", content).group(1)
+

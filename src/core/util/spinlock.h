@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 //
-// Copyright (C) 2021 CERN & Newcastle University for the benefit of the
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +39,7 @@ class Spinlock {
   }
 
  private:
-  std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
+  std::atomic_flag flag_ = ATOMIC_FLAG_INIT;  //!
 };
 
 }  // namespace bdm
