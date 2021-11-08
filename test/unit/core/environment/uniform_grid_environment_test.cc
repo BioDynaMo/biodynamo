@@ -114,10 +114,10 @@ void RunUpdateGridTest(Simulation* simulation) {
 
   std::vector<AgentUid> expected_0 = {AgentUid(4), AgentUid(5), AgentUid(16),
                                       AgentUid(17), AgentUid(20)};
-  std::vector<AgentUid> expected_5 = {
-      AgentUid(0),  AgentUid(2),  AgentUid(4),  AgentUid(6),  AgentUid(8),
-      AgentUid(9),  AgentUid(10), AgentUid(17), AgentUid(20), AgentUid(21),
-      AgentUid(22), AgentUid(25)};
+  std::vector<AgentUid> expected_5 = {AgentUid(0),  AgentUid(2),  AgentUid(4),
+                                      AgentUid(6),  AgentUid(8),  AgentUid(9),
+                                      AgentUid(10), AgentUid(17), AgentUid(20),
+                                      AgentUid(21), AgentUid(22), AgentUid(25)};
   std::vector<AgentUid> expected_41 = {
       AgentUid(21), AgentUid(24), AgentUid(25), AgentUid(26), AgentUid(29),
       AgentUid(36), AgentUid(37), AgentUid(38), AgentUid(40), AgentUid(44),
