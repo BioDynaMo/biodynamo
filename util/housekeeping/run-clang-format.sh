@@ -44,10 +44,19 @@ MODE=$1
 shift
 
 echo "Process files: "
+NUM_FILES=0
 for f in $@; do
     echo $f
+    NUM_FILES+=1
 done
 echo ""
+
+# Test if files have been changed, if not there's nothing to do. This check is 
+# necessary since the script froze when no files had been modified.
+if [ "$NUM_FILES" == "0" ]; then
+  echo "No files have been modified. Test successful."
+  exit 0
+fi
 
 # clang-format will only find its configuration if we are in
 # the source tree or in a path relative to the source tree
