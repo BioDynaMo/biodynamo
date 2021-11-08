@@ -12,13 +12,14 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install git-all clang-format
+        sudo apt install clang-format
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
 
     - name: Run clang-format code style check
       run: |
+        git fetch . origin/master:master
         ./util/housekeeping/run-clang-format.sh $(pwd) clang-format 0 $(./util/housekeeping/get-changed-src-files-origin-master.sh .)
 
     - name: Notify Slack
