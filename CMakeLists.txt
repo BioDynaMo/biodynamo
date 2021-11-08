@@ -484,7 +484,9 @@ if (mfem)
     ExternalProject_Add(
       mfem
       GIT_REPOSITORY https://github.com/mfem/mfem.git
-      GIT_TAG        9d8043b9e78dcdcd86639bbb28d3bd7b514fb5e2 # version 4.3
+      # Use GitTag newer than 4.3 release because otherwise it does not build 
+      # correctly on macOS with OpenMP. See MFEM issue #2642.
+      GIT_TAG        0ccc63af049ee06acd2173ce5a5d13f2ffcd9937
       PREFIX "${CMAKE_CURRENT_BINARY_DIR}/mfem"
       CMAKE_ARGS
         -DCMAKE_CXX_FLAGS="-fPIC"
