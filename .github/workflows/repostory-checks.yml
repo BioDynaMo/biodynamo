@@ -8,22 +8,19 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - name: Checkout BioDynaMo
-      uses: actions/checkout@v2
 
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install cmake clang-format
+        sudo apt install git-all clang-format
 
-    - name: Run style check
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v2
+
+    - name: Run clang-format code style check
       run: |
-        cmake -B build
-        cd build
-        cmake --build . --target fetch-master
-        cmake --build . --target check-format
+        ./util/housekeeping/run-clang-format.sh $(pwd) clang-format 0 $(./util/housekeeping/get-changed-src-files-origin-master.sh .)
 
-    
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
       with:
