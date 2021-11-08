@@ -78,12 +78,6 @@ TEST(ResourceManagerTest, ForEachAgentFilter) {
   EXPECT_EQ(2u, counter);
 }
 
-// This test currently produces a segmentation fault with clang 13 on macOS 11.6
-// during the build and is therefore disabled for the specific combination of
-// OS, architecture, and compiler version. Submitted bug to Apple on 2021-09-22.
-// The issue arises with the `#pragma omp critical` statement.
-// Todo(tobias): revisit this bug asap.
-#if !(defined(__APPLE__) && __clang_major__ == 13)
 TEST(ResourceManagerTest, ForEachAgentParallelFilter) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
@@ -98,12 +92,15 @@ TEST(ResourceManagerTest, ForEachAgentParallelFilter) {
 
   uint64_t counter = 0;
   std::set<TestAgent*> called;
+  // Instead of using a critical region in the functor, we use a spinlock to
+  // overcome a compiler segmentation fault with clang 13.0. For more details,
+  // see the corresponding PR.
+  Spinlock lock;
+
   auto functor = L2F([&](Agent* a, AgentHandle) {
-#pragma omp critical
-    {
-      counter++;
-      called.insert(bdm_static_cast<TestAgent*>(a));
-    }
+    std::lock_guard<Spinlock> lock_guard(lock);
+    counter++;
+    called.insert(bdm_static_cast<TestAgent*>(a));
   });
   rm->ForEachAgentParallel(functor, &evenf);
   EXPECT_EQ(5000u, counter);
@@ -139,7 +136,7 @@ TEST(ResourceManagerTest, ForEachAgentParallelFilter) {
     EXPECT_TRUE(a->GetData() % 2 == 1);
   }
 }
-#endif  // APPLE ARM64 CLANG==13
+// #endif  // APPLE ARM64 CLANG==13
 
 TEST(ResourceManagerTest, GetNumAgents) { RunGetNumAgents(); }
 
