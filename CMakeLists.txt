@@ -495,15 +495,8 @@ if (mfem)
       CMAKE_CACHE_ARGS
         -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
         -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-      # ToDo (tobias): the last two commands are executed to allow cling to find
-      # the mfem.hpp include. Find more elegant way to use original include dir.
-      # Also, make check if we really want to expose libmfem.a in /lib.
       INSTALL_COMMAND mkdir -p "${CMAKE_CURRENT_BINARY_DIR}/mfem/build" && 
-        ${mfem_install_cmd} install &&
-        cp -f "${CMAKE_BINARY_DIR}/mfem/build/lib/libmfem.a" 
-              "${CMAKE_BINARY_DIR}/lib" &&
-        cp -r -f "${CMAKE_BINARY_DIR}/mfem/build/include/." 
-                 "${CMAKE_BINARY_DIR}/include/"
+        ${mfem_install_cmd} install
       BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/mfem/build/lib/libmfem.a"
     )
     ExternalProject_Get_Property(mfem source_dir binary_dir)
