@@ -19,8 +19,7 @@ jobs:
 
     - name: Run clang-format code style check
       run: |
-        git fetch . origin/master:master
-        ./util/housekeeping/run-clang-format.sh $(pwd) clang-format 0 $(./util/housekeeping/get-changed-src-files-origin-master.sh .)
+        ./util/housekeeping/run-clang-format.sh $(pwd) clang-format 0 $(./util/housekeeping/get-all-src-files.sh .)
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
