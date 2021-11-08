@@ -25,13 +25,13 @@ struct ApicalDendriteGrowth : public Behavior {
   BDM_BEHAVIOR_HEADER(ApicalDendriteGrowth, Behavior, 1);
   ApicalDendriteGrowth() { AlwaysCopyToNew(); }
   virtual ~ApicalDendriteGrowth() {}
-  
+
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
     can_branch_ = false;
   }
- 
-  void Run(Agent* agent) override { 
+
+  void Run(Agent* agent) override {
     auto* sim = Simulation::GetActive();
     auto* random = sim->GetRandom();
     auto* rm = sim->GetResourceManager();
@@ -84,7 +84,7 @@ struct BasalDendriteGrowth : public Behavior {
   BDM_BEHAVIOR_HEADER(BasalDendriteGrowth, Behavior, 1);
   BasalDendriteGrowth() { AlwaysCopyToNew(); }
   virtual ~BasalDendriteGrowth() {}
- 
+
   void Run(Agent* agent) override {
     auto* sim = Simulation::GetActive();
     auto* random = sim->GetRandom();
@@ -135,7 +135,7 @@ inline void AddInitialNeuron(const Double3& position) {
   auto* basal_dendrite1 = soma->ExtendNewNeurite({0, 0, -1});
   auto* basal_dendrite2 = soma->ExtendNewNeurite({0, 0.6, -0.8});
   auto* basal_dendrite3 = soma->ExtendNewNeurite({0.3, -0.6, -0.8});
-  
+
   apical_dendrite->AddBehavior(new ApicalDendriteGrowth());
   basal_dendrite1->AddBehavior(new BasalDendriteGrowth());
   basal_dendrite2->AddBehavior(new BasalDendriteGrowth());
@@ -145,13 +145,11 @@ inline void AddInitialNeuron(const Double3& position) {
 /// Create and initialize substances for neurite attraction
 inline void CreateExtracellularSubstances(const Param* p) {
   using MI = ModelInitializer;
-  MI::DefineSubstance(kApical, "substance_apical", 0, 0,
-                        p->max_bound / 80);
-  MI::DefineSubstance(kBasal, "substance_basal", 0, 0,
-                        p->max_bound / 80);
+  MI::DefineSubstance(kApical, "substance_apical", 0, 0, p->max_bound / 80);
+  MI::DefineSubstance(kBasal, "substance_basal", 0, 0, p->max_bound / 80);
   // initialize substance with gaussian distribution
-  auto a_initializer = GaussianBand(p->max_bound, 200, Axis::kZAxis); 
-  auto b_initializer = GaussianBand(p->min_bound, 200, Axis::kZAxis); 
+  auto a_initializer = GaussianBand(p->max_bound, 200, Axis::kZAxis);
+  auto b_initializer = GaussianBand(p->min_bound, 200, Axis::kZAxis);
   MI::InitializeSubstance(kApical, a_initializer);
   MI::InitializeSubstance(kBasal, b_initializer);
 }

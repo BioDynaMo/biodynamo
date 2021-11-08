@@ -12,8 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/container/math_array.h"
 #include "core/operation/reduction_op.h"
+#include "core/container/math_array.h"
 #include "core/operation/operation_registry.h"
 
 namespace bdm {
