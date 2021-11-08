@@ -104,7 +104,7 @@ jobs:
       shell: zsh {0}
       working-directory: build
       run: |
-        . $INSTALL_DIR/bin/thisbdm.sh
+        source $(find /Users -path "*/bin/*" -name "*thisbdm.sh")
         git config --system user.name "Test User"
         git config --system user.email user@test.com
         make run-demos
