@@ -271,7 +271,7 @@ struct TestFunctor : public Functor<void, Agent*, double> {
   void operator()(Agent* neighbor, double squared_distance) override {}
 };
 
-TEST(UniformGridEnvironment, CustomBoxLength) {
+TEST(UniformGridEnvironmentTest, CustomBoxLength) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   auto* env =
