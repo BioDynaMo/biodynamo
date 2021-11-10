@@ -18,10 +18,60 @@
 
 #include <fstream>
 #include <iostream>
+#include "core/agent/cell.h"
 #include "mfem.hpp"
 
 namespace bdm {
 namespace experimental {
+
+class AccumulateDoubleFunctor : public Functor<void, Agent *, double> {
+ private:
+  Cell *query_;
+  double accumulated_value_;
+  double norm_;
+  std::function<double(double, double)> density_from_distance_;
+
+ public:
+  AccumulateDoubleFunctor(
+      double norm, std::function<double(double, double)> density_from_distance =
+                       [](double distance, double query_radius) {
+                         return (distance < query_radius) ? 1 : 0;
+                       })
+      : accumulated_value_(0.0),
+        norm_(norm),
+        density_from_distance_(std::move(density_from_distance)) {}
+
+  void operator()(Agent *neighbor, double squared_distance) {
+    auto *neighbor_cell = bdm_static_cast<Cell *>(neighbor);
+    if (neighbor_cell == query_) {
+      return;
+    }
+    auto squared_cell_radius = pow(neighbor_cell->GetDiameter() / 2, 2);
+    auto agent_contribution_to_density =
+        density_from_distance_(squared_distance, squared_cell_radius);
+#pragma omp atomic
+    accumulated_value_ += agent_contribution_to_density;
+  }
+
+  double GetAccumulatedValue() { return accumulated_value_ * norm_; }
+
+  void Reset() {
+    accumulated_value_ = 0.0;
+    query_ = nullptr;
+  }
+
+  void SetNorm(double norm) { norm_ = norm; }
+  double GetNorm() { return norm_; }
+
+  void SetQueryAgent(Cell *query) {
+    Reset();
+    query_ = query;
+  }
+
+  void SetDensityFunction(std::function<double(double, double)> df) {
+    density_from_distance_ = std::move(df);
+  }
+};
 
 /// The Mol in MolOperator stands for Methods of Lines. Many reactio-diffusion
 /// systems can be described with such an approach. This operator isolates the
@@ -60,6 +110,8 @@ class MolOperator : public mfem::TimeDependentOperator {
 
   double last_dt_;
 
+  AccumulateDoubleFunctor compute_agent_pdf_functor_;
+
  public:
   MolOperator(mfem::FiniteElementSpace &f)
       : TimeDependentOperator(f.GetTrueVSize(), 0.0),
@@ -67,7 +119,8 @@ class MolOperator : public mfem::TimeDependentOperator {
         M_(nullptr),
         K_(nullptr),
         T_(nullptr),
-        z_(height) {
+        z_(height),
+        compute_agent_pdf_functor_(1.0) {
     // Generate Mass Matrix
     M_ = new mfem::BilinearForm(&fespace_);
     M_->AddDomainIntegrator(new mfem::MassIntegrator());
@@ -119,6 +172,25 @@ class MolOperator : public mfem::TimeDependentOperator {
   /// check to your derived class such that it only computes K in the first
   /// step.
   virtual void SetParameters(const mfem::Vector &u);
+
+  /// Evaluates the AgentPDF at postion x. The AgentPDF is here defined as
+  /// \[f p(x) = \left( /sum_i V_i \right)^{-1} \f]
+  /// if x is inside of an agent and zero else. \f$ V_i \f$ is the volume of
+  /// agent-i and, thus, the volume integral over the entire domain
+  /// \[f \int_\Omega p(y) dy = 1 \f]
+  /// if we assume agents that do not overlap.
+  double EvaluateAgentPDF(const mfem::Vector &x);
+
+  /// Get pointer to the internal AccumulateDoubleFunctor responsible for
+  /// computing the AgentPDF. This can be used to create your custom PDF via
+  /// auto* f = MolOperator::GetAgentPDFFunctor();
+  /// f->SetDensityFunction(MyFunction);
+  AccumulateDoubleFunctor *GetAgentPDFFunctor() {
+    return &compute_agent_pdf_functor_;
+  }
+
+  /// Update the normalization.
+  void UpdatePDFNorm();
 };
 
 }  // namespace experimental

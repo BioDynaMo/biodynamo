@@ -544,6 +544,70 @@ TEST(MethodOfLineTest, StepByStepLocalization) {
   EXPECT_LT(duration_neighbor_search, duration_linear_search);
 }
 
+TEST(MethodOfLineTest, AgentProbabilityDensity) {
+  // Dummy simulation; todo(tobias) switch back to uniform gird after fix.
+  auto set_param = [](auto* param) {
+    param->environment = "octree";
+    param->unschedule_default_operations = {"load balancing"};
+  };
+  Simulation simulation("MethodOfLineTest-AgentProbabilityDensity", set_param);
+  auto* rm = simulation.GetResourceManager();
+  auto* scheduler = simulation.GetScheduler();
+  auto* cell1 = new Cell(2.0);
+  auto* cell2 = new Cell(4.0);
+  auto* cell3 = new Cell(2.0);
+  cell1->SetPosition({0.0, 0.0, 0.});
+  cell2->SetPosition({5, 0, 0});
+  cell3->SetPosition({0, -1.5, 0});
+  double norm =
+      1 / (cell1->GetVolume() + cell2->GetVolume() + cell3->GetVolume());
+  rm->AddAgent(cell1);
+  rm->AddAgent(cell2);
+  rm->AddAgent(cell3);
+
+  // Boilerplate definitions
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
+  std::vector<double> parameters{0.1};
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+
+  // Define a MethodOfLine Solver
+  ModelInitializer::DefineMFEMSubstanceAndMesh(
+      10, 10, 10, 1.0, 1.0, 1.0, mfem::Element::TETRAHEDRON, kSubstance1,
+      "kSubstance1", 1, 3, MFEMODESolver::kBackwardEulerSolver,
+      PDEOperator::kDiffusion, InitializeGridValues, parameters,
+      operator_functions);
+
+  // Get MethodOfLine solver
+  auto ops = scheduler->GetOps("mechanical forces");
+  scheduler->UnscheduleOp(ops[0]);
+  scheduler->FinalizeInitialization();
+  scheduler->Simulate(1);
+  auto* op = rm->GetMFEMGrid(kSubstance1).second->GetMolOperator();
+  auto* pdf_functor = op->GetAgentPDFFunctor();
+
+  // Test if there are three agents in simulation
+  EXPECT_EQ(3, rm->GetNumAgents());
+
+  // Test pdf_functor norm
+  EXPECT_NE(norm, pdf_functor->GetNorm());
+  op->UpdatePDFNorm();
+  EXPECT_DOUBLE_EQ(norm, pdf_functor->GetNorm());
+
+  // // Define dummy integration points to evaluate the density function
+  mfem::Vector ip1 = ConvertToMFEMVector({-0.1, 0.0, 0.0});  // In Cell 1
+  mfem::Vector ip2 = ConvertToMFEMVector({5.5, 0.0, 0.0});   // In Cell 2
+  mfem::Vector ip3 = ConvertToMFEMVector({0.0, -2.0, 0.0});  // In Cell 3
+  mfem::Vector ip4 = ConvertToMFEMVector({0.0, -0.8, 0.0});  // In Cell 1 & 2
+  mfem::Vector ip5 = ConvertToMFEMVector({-2.0, 0.0, 0.0});  // In no cell
+
+  // Test if values are correct
+  EXPECT_DOUBLE_EQ(norm, op->EvaluateAgentPDF(ip1));
+  EXPECT_DOUBLE_EQ(norm, op->EvaluateAgentPDF(ip2));
+  EXPECT_DOUBLE_EQ(norm, op->EvaluateAgentPDF(ip3));
+  EXPECT_DOUBLE_EQ(2 * norm, op->EvaluateAgentPDF(ip4));
+  EXPECT_DOUBLE_EQ(0.0, op->EvaluateAgentPDF(ip5));
+}
+
 // Test the integration of MFEM into BioDynaMo via the Model Initializer and the
 // Resource Manager.
 TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
