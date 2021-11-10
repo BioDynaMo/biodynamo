@@ -30,8 +30,7 @@ namespace bdm {
 /// Reads in a CSV file using rapidcsv
 class CSVReader {
  public:
-  explicit CSVReader(const std::string& file, int skip = 0)
-      : filename_(file) {
+  explicit CSVReader(const std::string& file, int skip = 0) : filename_(file) {
     if (!FileExists(file)) {
       std::cout << "Error: " << file << " does not exist!" << std::endl;
       exit(1);

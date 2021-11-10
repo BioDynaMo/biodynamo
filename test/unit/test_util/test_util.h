@@ -71,11 +71,11 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
     }                                                                \
   }(__VA_ARGS__);
 
-#define EXPECT_VEC_NEAR(...)                                         \
-  [](const std::vector<double>& actual, const std::vector<double>& expected) {               \
-    for (size_t i = 0; i < actual.size(); i++) {                     \
-      EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value); \
-    }                                                                \
+#define EXPECT_VEC_NEAR(...)                                                   \
+  [](const std::vector<double>& actual, const std::vector<double>& expected) { \
+    for (size_t i = 0; i < actual.size(); i++) {                               \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value);           \
+    }                                                                          \
   }(__VA_ARGS__);
 
 #define EXPECT_ARR_NEAR_GPU(...)                       \

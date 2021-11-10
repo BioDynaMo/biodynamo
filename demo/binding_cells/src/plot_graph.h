@@ -10,8 +10,7 @@
 #include <vector>
 
 template <typename T>
-static void PlotGraph(std::vector<T> x, std::vector<T> y,
-                      std::string name) {
+static void PlotGraph(std::vector<T> x, std::vector<T> y, std::string name) {
   assert(x.size() == y.size());
   int n = x.size();
 

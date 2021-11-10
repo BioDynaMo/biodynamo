@@ -38,8 +38,7 @@ struct PhysicalBond : public Behavior {
     distance_copy.Normalize();
     auto radius_a = cell_a->GetDiameter() / 2;
     auto radius_b = cell_b->GetDiameter() / 2;
-    Double3 displacement =
-        distance - (distance_copy * (radius_a + radius_b));
+    Double3 displacement = distance - (distance_copy * (radius_a + radius_b));
     cell_a->UpdatePosition(displacement);
     // if (Simulation::GetActive()->GetScheduler()->GetSimulatedSteps() == 1) {
     //   Log::Error("PhysicalBond", "Displacement: ", displacement);

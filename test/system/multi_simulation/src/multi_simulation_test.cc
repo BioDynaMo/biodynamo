@@ -14,8 +14,8 @@
 
 #include <omp.h>
 
-#include "multi_simulation_test.h"
 #include "core/multi_simulation/multi_simulation.h"
+#include "multi_simulation_test.h"
 
 using namespace bdm;
 

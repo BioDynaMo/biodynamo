@@ -458,8 +458,7 @@ void Simulation::InitializeRuntimeParams(
 
   if (clo->Get<bool>("visualize")) {
     param_->export_visualization = true;
-    param_->visualization_interval =
-        clo->Get<uint32_t>("vis-frequency");
+    param_->visualization_interval = clo->Get<uint32_t>("vis-frequency");
   }
 
   set_param(param_);
