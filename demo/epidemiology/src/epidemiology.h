@@ -9,10 +9,10 @@
 #define EPIDEMIOLOGY_H_
 
 #include "biodynamo.h"
+#include "core/environment/uniform_grid_environment.h"
 
 #include "analytical-solution.h"
 #include "behavior.h"
-#include "core/environment/uniform_grid_environment.h"
 #include "evaluate.h"
 #include "person.h"
 #include "sim-param.h"
@@ -20,25 +20,19 @@
 namespace bdm {
 
 // This is the main simulation function
-inline int Simulate(CommandLineOptions* clo, double seed, TimeSeries* result,
-                    bool overwrite = false, double infection_probablity = 1,
-                    double infection_radius = 1, double speed = 1) {
-  // Overwrite the parameters in the config file with the value from
-  // the command line options
+inline int Simulate(int argc, const char** argv, TimeSeries* result,
+                    Param* final_params = nullptr) {
+  // Overwrite the parameters with the `final_params` we obtain from the obtain
+  // from `bdm::Experiment`
   auto set_param = [&](Param* param) {
-    param->random_seed = seed;
+    param->Restore(std::move(*final_params));
+    param->random_seed = 0;
     param->simulation_time_step = 1;
     param->bound_space = Param::BoundSpaceMode::kTorus;
-    if (overwrite) {
-      auto* sparam = param->Get<SimParam>();
-      sparam->infection_probablity = infection_probablity;
-      sparam->infection_radius = infection_radius;
-      sparam->agent_speed = speed;
-    }
   };
 
   // Create simulation object
-  Simulation sim(clo, set_param);
+  Simulation sim(argc, argv, set_param);
 
   // Get pointers to important objects
   auto* param = sim.GetParam();

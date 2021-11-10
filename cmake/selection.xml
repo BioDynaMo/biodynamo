@@ -6,6 +6,14 @@
   </selection>
   <exclusion>
     <class pattern="bdm::OpenCLState*"/>
+    <class name="bdm::ParallelResizeVector<pair<unsigned int,const bdm::UniformGridEnvironment::Box*> >" />
+    <class name="bdm::OptimizationParam" />
+    <class name="bdm::OptimizationParamType"/>
+    <class name="bdm::SetParam"/>
+    <class name="bdm::ParticleSwarmParam"/>
+    <class name="bdm::LogRangeParam"/>
+    <class name="bdm::RangeParam"/>
+    <class name="bdm::experimental::MPIObject" />
     <class name="bdm::OperationImpl" />
     <class pattern="cl::*" />
     <class name="cl::CommandQueue" />

@@ -96,6 +96,9 @@ class TimeSeries {
       const std::function<void(const std::vector<double>&, double*, double*,
                                double*)>& merger);
 
+  /// Computes the mean squared error between `ts1` and `ts2`
+  static double ComputeError(const TimeSeries& ts1, const TimeSeries& ts2);
+
   TimeSeries();
   TimeSeries(const TimeSeries& other);
   TimeSeries(TimeSeries&& other) noexcept;

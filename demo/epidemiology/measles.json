@@ -1,6 +1,7 @@
 {
     "bdm::Param": {
-        "statistics": true,
+        "remove_output_dir_contents": true,
+        "statistics": false,
         "simulation_time_step": 1,
         "bound_space": 2,
         "min_bound": 0,
@@ -11,6 +12,8 @@
         }
     },
     "bdm::SimParam": {
+        "beta" : 0.06719,
+        "gamma" : 0.00521,
         "agent_diameter": 2,
         "agent_speed": 5.7859,
         "infection_probablity": 0.2850,

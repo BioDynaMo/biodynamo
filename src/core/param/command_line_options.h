@@ -41,9 +41,6 @@ class CommandLineOptions {
   ~CommandLineOptions();
 
   /// Add an extra command line option
-  cxxopts::OptionAdder AddOption(std::string group = "Simulation");
-
-  /// Add an extra command line option
   template <typename T>
   void AddOption(const std::string& opt, std::string def,
                  const std::string& description = "",
@@ -54,6 +51,9 @@ class CommandLineOptions {
 
   /// Return the simulation name that was parsed from argv[0]
   std::string GetSimulationName();
+
+  /// Check if the argument for the specified option was set
+  bool IsSet(std::string option);
 
   template <typename T>
   T Get(const std::string& val) {
@@ -68,6 +68,9 @@ class CommandLineOptions {
                                   const CommandLineOptions& clo);
 
   void AddCoreOptions();
+
+  /// Add an extra command line option
+  cxxopts::OptionAdder AddOption(std::string group = "Simulation");
 
   /// Parse the options with the given command line arguments
   void Parse();

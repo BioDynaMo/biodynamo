@@ -1,0 +1,29 @@
+{
+  "bdm::OptimizationParam": {
+    "algorithm" : "ParticleSwarm",
+    "repetition" : 10,
+    "params" : [
+      {
+        "_typename": "bdm::ParticleSwarmParam",
+        "param_name" : "bdm::SimParam::infection_probablity",
+        "lower_bound" : 0.001,
+        "upper_bound" : 1,
+        "initial_value" : 0.001
+      },
+      {
+        "_typename": "bdm::ParticleSwarmParam",
+        "param_name" : "bdm::SimParam::infection_radius",
+        "lower_bound" : 5,
+        "upper_bound" : 50,
+        "initial_value" : 5
+      },
+      {
+        "_typename": "bdm::ParticleSwarmParam",
+        "param_name" : "bdm::SimParam::agent_speed",
+        "lower_bound" : 2,
+        "upper_bound" : 50,
+        "initial_value" : 2
+      }
+    ]
+  }
+}

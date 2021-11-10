@@ -21,3 +21,5 @@ xz
 xz-devel
 libffi-devel
 findutils
+lapack-devel
+blas-devel

@@ -97,9 +97,6 @@ jobs:
           -B build
         cmake --build build --parallel --config Release --target notebooks  -- -j1
 
-    # - name: Setup tmate session
-    #   uses: mxschmitt/action-tmate@v2
-
     - name: System tests BioDynaMo
       shell: zsh {0}
       working-directory: build

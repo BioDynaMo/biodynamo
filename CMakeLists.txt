@@ -206,11 +206,15 @@ else()
 endif()
 
 # Check if OpenMPI is present
-find_package(MPI)
-if (MPI_NOT_FOUND)
+find_package(MPI COMPONENTS C CXX)
+if(MPI_FOUND)
+  set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
+  include_directories(${MPI_CXX_COMPILER_INCLUDE_DIRS})
+  add_definitions("-DUSE_MPI")
+else(MPI_FOUND)
   MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
-calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
-endif()
+  calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
+endif(MPI_FOUND)
 
 if(APPLE)
   set(numa OFF)
@@ -414,6 +418,32 @@ if (OPENCL_FOUND)
   endif()
 endif()
 
+# Link optimlib
+include(ExternalProject)
+set(OPTIM_LIBNAME ${CMAKE_SHARED_LIBRARY_PREFIX}optim${CMAKE_SHARED_MODULE_SUFFIX})
+if(APPLE)
+  ExternalProject_Add(
+    optim
+    URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
+    BINARY_DIR "optim-prefix/src/optim"
+    CONFIGURE_COMMAND ./configure -o "-O3 -march=native -ffp-contract=fast -flto -DARMA_NO_DEBUG"
+    INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${OPTIM_LIBNAME} ${CMAKE_INSTALL_LIBDIR}
+  )
+else()
+  ExternalProject_Add(
+    optim
+    URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
+    BINARY_DIR "optim-prefix/src/optim"
+    CONFIGURE_COMMAND ./configure -p -o "-O3 -march=native -ffp-contract=fast -flto -DARMA_NO_DEBUG -DOPTIM_USE_OMP"
+    INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${OPTIM_LIBNAME} ${CMAKE_INSTALL_LIBDIR}
+  )
+endif()
+add_library(liboptim SHARED IMPORTED)
+set_property(TARGET liboptim PROPERTY IMPORTED_LOCATION ${CMAKE_INSTALL_LIBDIR}/${OPTIM_LIBNAME})
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/include)
+link_directories(${CMAKE_INSTALL_LIBDIR})
+set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${OPTIM_LIBNAME})
+
 # --------------------Copy the launcher script ---------------------------------
 configure_file("cmake/env/launcher.sh" "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh" @ONLY)
 file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
@@ -504,7 +534,10 @@ build_shared_library(biodynamo
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
                    LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} ${FS_LIB})
-
+# libbiodynamo must be built before optimlib; otherwise optimlib could be missing during
+# the linking stage of libbiodynamo
+add_dependencies(biodynamo optim)
+                  
 # Build plugin
 if(paraview)
   # Find paraview-related sources and headers for plugin generation
@@ -598,6 +631,7 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/execution_context/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/memory/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/operation/*.cc
+                         ${CMAKE_SOURCE_DIR}/test/unit/core/multi_simulation/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/param/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/agent/*.cc
                          ${CMAKE_SOURCE_DIR}/test/unit/core/util/*.cc
