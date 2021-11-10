@@ -251,7 +251,7 @@ class Agent {
   /// unique id
   AgentUid uid_;
   /// Grid box index
-  uint32_t box_idx_ = 0;
+  uint32_t box_idx_ = std::numeric_limits<uint32_t>::max();
   /// collection of behaviors which define the internal behavior
   InlineVector<Behavior*, 2> behaviors_;
 

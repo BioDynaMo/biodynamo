@@ -573,6 +573,13 @@ class UniformGridEnvironment : public Environment {
 
     const auto& position = query.GetPosition();
     auto idx = query.GetBoxIdx();
+    // Freshly created agents are initialized with the largest uint32_t number
+    // available. The above line assumes that the agent has already been located
+    // in the grid, but this assumption does not hold for new agents. Hence, for
+    // new agents, we manually compute the box index.
+    if (idx == std::numeric_limits<uint32_t>::max()) {
+      idx = GetBoxIndex(position);
+    }
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
     GetMooreBoxes(&neighbor_boxes, idx);
