@@ -15,6 +15,7 @@
 #include "core/environment/kd_tree_environment.h"
 #include "core/agent/cell.h"
 #include "gtest/gtest.h"
+#include "unit/core/count_neighbor_functor.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {
@@ -109,6 +110,57 @@ TEST(KDTreeTest, SetEnvironment) {
   EXPECT_NE(env, simulation.GetEnvironment());
   simulation.SetEnvironment(env);
   EXPECT_EQ(env, simulation.GetEnvironment());
+}
+
+// Tests if ForEachNeighbor of the respective environment finds the correct
+// number of neighbors. The same test is implemented for octree and unifrom grid
+// environments.
+TEST(KDTreeTest, FindAllNeighbors) {
+  // Create simulation with kd_tree environment
+  auto set_param = [](auto* param) {
+    param->environment = "kd_tree";
+    param->unschedule_default_operations = {"load balancing",
+                                            "mechanical forces"};
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  // Add three cells at specific positions
+  auto* rm = simulation.GetResourceManager();
+  auto* scheduler = simulation.GetScheduler();
+  auto* cell1 = new Cell(2.0);
+  auto* cell2 = new Cell(4.0);
+  auto* cell3 = new Cell(2.0);
+  cell1->SetPosition({0.0, 0.0, 0.});
+  cell2->SetPosition({5, 0, 0});
+  cell3->SetPosition({0, -2.5, 0});
+  rm->AddAgent(cell1);
+  rm->AddAgent(cell2);
+  rm->AddAgent(cell3);
+  scheduler->Simulate(1);
+
+  // Test if there are three agents in simulation
+  EXPECT_EQ(3, rm->GetNumAgents());
+
+  // Define dummy test points to check how many neighbors they find. Distances
+  // to cells 1, 2, 3 listed as (d1, d2, d3).
+  Double3 test_point_1({-0.1, 0.0, 0.0});  // (0.1, 5.1, 2.502)
+  Double3 test_point_2({3.5, 0.0, 0.0});   // (3.5, 1.5, 4.30116)
+  Double3 test_point_3({0.0, -2.0, 0.0});  // (2, 5.28516, 0.5)
+  Double3 test_point_4({0.0, -0.8, 0.0});  // (0.8, 5.0626, 1.7)
+  Double3 test_point_5({-2.1, 0.0, 0.0});  // (2.1, 7.1, 3.26497)
+
+  // Test if we find the correct number of agents. The reference solution can
+  // be determined by substracting the search_radius from the bracket behind
+  // the respective test point and counting the values that are strictly smaller
+  // than 0. E.g.:
+  // (0.1, 5.1, 2.502) - 2 =  (-1.9, 3.1, 0.502)
+  // (-1.9, 3.1, 0.502) < 0 = (1 , 0 , 0) -> result = 1
+  double search_radius = 2;
+  EXPECT_EQ(1, GetNeighbors(test_point_1, search_radius));
+  EXPECT_EQ(1, GetNeighbors(test_point_2, search_radius));
+  EXPECT_EQ(1, GetNeighbors(test_point_3, search_radius));
+  EXPECT_EQ(2, GetNeighbors(test_point_4, search_radius));
+  EXPECT_EQ(0, GetNeighbors(test_point_5, search_radius));
 }
 
 }  // namespace bdm
