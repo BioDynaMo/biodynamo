@@ -30,7 +30,6 @@ class MyEnvironment : public Environment {
   };
 
   void Clear() override {}
-  void Update() override {}
 
   std::array<int32_t, 6> GetDimensions() const override {
     return {0, 0, 0, 0, 0, 0};
@@ -38,20 +37,6 @@ class MyEnvironment : public Environment {
 
   std::array<int32_t, 2> GetDimensionThresholds() const override {
     return {0, 0};
-  }
-
-  // In this environment a neighboring agent is an agent who is from the same
-  // `city` as the query agent
-  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
-                       void* criteria) override {
-    // Even though the criteria could have been typed as a std::string, this
-    // example shows that you can wrap any number of criteria in a struct
-    auto casted_criteria = static_cast<Criteria*>(criteria);
-    for (auto neighbor : agents_per_city_[casted_criteria->city]) {
-      if (neighbor != &query) {
-        lambda(neighbor);
-      }
-    }
   }
 
   LoadBalanceInfo* GetLoadBalanceInfo() override {
@@ -67,6 +52,26 @@ class MyEnvironment : public Environment {
   };
 
   std::unordered_map<std::string, std::vector<Agent*>> agents_per_city_;
+
+ protected:
+  void UpdateImplementation() override {}
+  // In this environment a neighboring agent is an agent who is from the same
+  // `city` as the query agent
+  void ForEachNeighborImplementation(Functor<void, Agent*>& lambda,
+                                     const Agent& query,
+                                     void* criteria) override {
+    // Even though the criteria could have been typed as a std::string, this
+    // example shows that you can wrap any number of criteria in a struct
+    auto casted_criteria = static_cast<Criteria*>(criteria);
+    for (auto neighbor : agents_per_city_[casted_criteria->city]) {
+      if (neighbor != &query) {
+        lambda(neighbor);
+      }
+    }
+  }
+  void ForEachNeighborImplementation(Functor<void, Agent*, double>& lambda,
+                                     const Agent& query,
+                                     double squared_radius) override{};
 };
 
 struct FindNeighborsInCity : public Functor<void, Agent*> {

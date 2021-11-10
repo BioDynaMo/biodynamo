@@ -75,11 +75,6 @@ class KDTreeEnvironment : public Environment {
 
   ~KDTreeEnvironment();
 
-  void Update() override;
-
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius) override;
-
   std::array<int32_t, 6> GetDimensions() const override;
 
   std::array<int32_t, 2> GetDimensionThresholds() const override;
@@ -89,6 +84,17 @@ class KDTreeEnvironment : public Environment {
   NeighborMutexBuilder* GetNeighborMutexBuilder() override;
 
   void Clear() override;
+
+ protected:
+  void UpdateImplementation() override;
+
+  void ForEachNeighborImplementation(Functor<void, Agent*, double>& lambda,
+                                     const Agent& query,
+                                     double squared_radius) override;
+
+  void ForEachNeighborImplementation(Functor<void, Agent*>& lambda,
+                                     const Agent& query,
+                                     void* criteria) override;
 
  private:
   // Hide nanoflann-specific types from header (pimpl idiom)

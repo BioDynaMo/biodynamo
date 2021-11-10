@@ -96,7 +96,7 @@ TEST(DiffusionTest, UpdateGrid) {
 
   DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 7);
 
-  env->Update();
+  env->ForceUpdate();
   dgrid->Initialize();
 
   std::vector<Double3> positions_2;
@@ -104,7 +104,7 @@ TEST(DiffusionTest, UpdateGrid) {
   positions_2.push_back({90, 150, 90});
   CellFactory(positions_2);
 
-  env->Update();
+  env->ForceUpdate();
 
   dgrid->Update();
 
@@ -242,7 +242,7 @@ TEST(DiffusionTest, CopyOldData) {
   // Grow grid artificially
   param->min_bound = -140;
   param->max_bound = 140;
-  simulation.GetEnvironment()->Update();
+  simulation.GetEnvironment()->ForceUpdate();
   dgrid->Update();
 
   // Get number of boxes after rescaling

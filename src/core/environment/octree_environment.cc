@@ -36,7 +36,7 @@ OctreeEnvironment::~OctreeEnvironment() {
   delete container_;
 }
 
-void OctreeEnvironment::Update() {
+void OctreeEnvironment::UpdateImplementation() {
   container_->rm_ = Simulation::GetActive()->GetResourceManager();
   auto* param = Simulation::GetActive()->GetParam();
 
@@ -85,9 +85,9 @@ void OctreeEnvironment::Update() {
   }
 }
 
-void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                                        const Agent& query,
-                                        double squared_radius) {
+void OctreeEnvironment::ForEachNeighborImplementation(
+    Functor<void, Agent*, double>& lambda, const Agent& query,
+    double squared_radius) {
   std::vector<uint32_t> neighbors;
   std::vector<double> distances;
 
@@ -106,6 +106,13 @@ void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
     }
     i++;
   }
+}
+
+void OctreeEnvironment::ForEachNeighborImplementation(
+    Functor<void, Agent*>& lambda, const Agent& query, void* criteria) {
+  Log::Fatal("OctreeEnvironment::ForEachNeighborImplementation",
+             "You tried to call a specific ForEachNeighborImplementation in an "
+             "environment that does not yet support it.");
 }
 
 std::array<int32_t, 6> OctreeEnvironment::GetDimensions() const {

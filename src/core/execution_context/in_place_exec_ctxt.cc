@@ -125,6 +125,11 @@ InPlaceExecutionContext::~InPlaceExecutionContext() {
 
 void InPlaceExecutionContext::SetupIterationAll(
     const std::vector<ExecutionContext*>& all_exec_ctxts) {
+  // SetupIterationAll destroys the synchronization between the simulation and
+  // the environment. We mark the environment aus OutOfSync such that we can
+  // update the environment before acessing it again.
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  env->MarkAsOutOfSync();
   // first iteration might have uncommited changes
   AddAgentsToRm(all_exec_ctxts);
   RemoveAgentsFromRm(all_exec_ctxts);
@@ -137,6 +142,13 @@ void InPlaceExecutionContext::TearDownIterationAll(
 
   auto* rm = Simulation::GetActive()->GetResourceManager();
   rm->EndOfIteration();
+  // Load balancing destroys the synchronization between the simulation and the
+  // environment. We mark the environment aus OutOfSync such that we can update
+  // the environment before acessing it again.
+  // ToDiscuss(Lukas): better place that function to rm->AddAgent,
+  // rm->RemoveAgent?
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  env->MarkAsOutOfSync();
 }
 
 void InPlaceExecutionContext::SetupAgentOpsAll(

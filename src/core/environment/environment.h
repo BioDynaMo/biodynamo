@@ -15,6 +15,7 @@
 #ifndef CORE_ENVIRONMENT_ENVIRONMENT_H_
 #define CORE_ENVIRONMENT_ENVIRONMENT_H_
 
+#include <mutex>
 #include <vector>
 #include "core/agent/agent.h"
 #include "core/container/math_array.h"
@@ -25,20 +26,64 @@
 namespace bdm {
 
 class Environment {
+ private:
+  // Flag that indicates if the environment is up to date with the simulation.
+  // E.g. load balancing can result in an environment that does no longer
+  // describe the actual state of the simulation.
+  bool out_of_sync_ = true;
+  Spinlock lock_;
+
  public:
   virtual ~Environment() {}
 
-  virtual void Update() = 0;
+  /// This function informs the environment that it is no longer up to date and
+  /// that the state of the simulation might not be reflected correctly in the
+  /// current environment. For instance, the load balancing operation causes
+  /// such a synchronization issue and therefore calls this member function.
+  void MarkAsOutOfSync() {
+#pragma omp single
+    out_of_sync_ = true;
+  }
+
+  // ToDiscuss(lukas): perfomance implication: what happens if
+  // UpdateImplementation contains a parallel region?
+  /// Updates the environment if it is marked as out of sync.
+  void Update() {
+    if (!out_of_sync_) {
+      return;
+    }
+    std::lock_guard<Spinlock> guard(lock_);
+    if (out_of_sync_) {
+      UpdateImplementation();
+      out_of_sync_ = false;
+    }
+  }
+
+  /// Updates the environment. Prefer Update() for implementations.
+  void ForceUpdate() {
+    MarkAsOutOfSync();
+    Update();
+  }
 
   /// Iterates over all neighbors in an environment that suffices the given
   /// `criteria`. The `criteria` is type-erased to facilitate for different
   /// criteria for different environments. Check the documentation of an
   /// environment to know the criteria data type
-  virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                               const Agent& query, double squared_radius) {}
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Agent& query, double squared_radius) {
+    if (out_of_sync_) {
+      Update();
+    }
+    ForEachNeighborImplementation(lambda, query, squared_radius);
+  }
 
-  virtual void ForEachNeighbor(Functor<void, Agent*>& lambda,
-                               const Agent& query, void* criteria) {}
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria) {
+    if (out_of_sync_) {
+      Update();
+    }
+    ForEachNeighborImplementation(lambda, query, criteria);
+  }
 
   virtual void Clear() = 0;
 
@@ -83,6 +128,22 @@ class Environment {
   /// The size of the largest object in the simulation
   double largest_object_size_ = 0.0;
   double largest_object_size_squared_ = 0.0;
+
+  /// Actual member function that is called by Update() and ForceUpdate(). Pure
+  /// virtual.
+  virtual void UpdateImplementation() = 0;
+
+  /// Actual member function that is called by ForEachNeighbor(). Pure
+  /// virtual.
+  virtual void ForEachNeighborImplementation(
+      Functor<void, Agent*, double>& lambda, const Agent& query,
+      double squared_radius) = 0;
+
+  /// Actual member function that is called by ForEachNeighbor(). Pure
+  /// virtual.
+  virtual void ForEachNeighborImplementation(Functor<void, Agent*>& lambda,
+                                             const Agent& query,
+                                             void* criteria) = 0;
 
   struct SimDimensionAndLargestAgentFunctor
       : public Functor<void, Agent*, AgentHandle> {

@@ -46,7 +46,7 @@ KDTreeEnvironment::~KDTreeEnvironment() {
   delete nf_adapter_;
 }
 
-void KDTreeEnvironment::Update() {
+void KDTreeEnvironment::UpdateImplementation() {
   nf_adapter_->rm_ = Simulation::GetActive()->GetResourceManager();
 
   // Update the flattened indices map
@@ -90,9 +90,9 @@ void KDTreeEnvironment::Update() {
   }
 }
 
-void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                                        const Agent& query,
-                                        double squared_radius) {
+void KDTreeEnvironment::ForEachNeighborImplementation(
+    Functor<void, Agent*, double>& lambda, const Agent& query,
+    double squared_radius) {
   std::vector<std::pair<uint64_t, double>> neighbors;
 
   nanoflann::SearchParams params;
@@ -111,6 +111,13 @@ void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
       lambda(nb_so, n.second);
     }
   }
+}
+
+void KDTreeEnvironment::ForEachNeighborImplementation(
+    Functor<void, Agent*>& lambda, const Agent& query, void* criteria) {
+  Log::Fatal("KDTreeEnvironment::ForEachNeighborImplementation",
+             "You tried to call a specific ForEachNeighborImplementation in an "
+             "environment that does not yet support it.");
 }
 
 std::array<int32_t, 6> KDTreeEnvironment::GetDimensions() const {

@@ -238,6 +238,11 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
 };
 
 void ResourceManager::LoadBalance() {
+  // Load balancing destroys the synchronization between the simulation and the
+  // environment. We mark the environment aus OutOfSync such that we can update
+  // the environment before acessing it again.
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  env->MarkAsOutOfSync();
   auto* param = Simulation::GetActive()->GetParam();
   if (param->plot_memory_layout) {
     PlotNeighborMemoryHistogram(true);
@@ -271,7 +276,6 @@ void ResourceManager::LoadBalance() {
                "Run on numa node failed. Return code: ", ret);
   }
 
-  auto* env = Simulation::GetActive()->GetEnvironment();
   auto lbi = env->GetLoadBalanceInfo();
 
   const bool minimize_memory = param->minimize_memory_while_rebalancing;
