@@ -14,10 +14,20 @@
 
 #ifdef USE_MFEM
 #include "mol_operator.h"
+#include "core/agent/cell.h"
+#include "core/analysis/reduce.h"
+#include "core/environment/uniform_grid_environment.h"
+#include "core/simulation.h"
 #include "core/util/log.h"
 
 namespace bdm {
 namespace experimental {
+
+MolOperator::~MolOperator() {
+  delete T_;
+  delete M_;
+  delete K_;
+}
 
 void MolOperator::Mult(const mfem::Vector &u, mfem::Vector &du_dt) const {
   // This function is called by explicit ODE solver and therefore has to
@@ -51,10 +61,35 @@ void MolOperator::SetParameters(const mfem::Vector &u) {
              "Please consider using them.");
 }
 
-MolOperator::~MolOperator() {
-  delete T_;
-  delete M_;
-  delete K_;
+double MolOperator::EvaluateAgentPDF(const mfem::Vector &x) {
+  // Get execution context
+  auto *simulation = Simulation::GetActive();
+  auto *env = simulation->GetEnvironment();
+  auto *ctxt = simulation->GetExecutionContext();
+
+  // ToDo(tobias): adapt BDM API to call a function for each neighbor without
+  // having to use an agent as an intermediate step.
+  Cell virtual_cell({x[0], x[1], x[2]});
+
+  compute_agent_pdf_functor_.Reset();
+  compute_agent_pdf_functor_.SetQueryAgent(&virtual_cell);
+
+  double max_agent_size = env->GetLargestAgentSizeSquared();
+  ctxt->ForEachNeighbor(compute_agent_pdf_functor_, virtual_cell,
+                        max_agent_size);
+  return compute_agent_pdf_functor_.GetAccumulatedValue();
+}
+
+void MolOperator::UpdatePDFNorm() {
+  double total_agent_volume{0.0};
+  auto *rm = Simulation::GetActive()->GetResourceManager();
+  rm->ForEachAgent([&](Agent *a) {
+    auto *cell = bdm_static_cast<Cell *>(a);
+    double volume = cell->GetVolume();
+#pragma omp atomic
+    total_agent_volume += volume;
+  });
+  compute_agent_pdf_functor_.SetNorm(1 / total_agent_volume);
 }
 
 }  // namespace experimental
