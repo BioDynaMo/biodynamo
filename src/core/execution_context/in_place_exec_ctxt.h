@@ -24,6 +24,7 @@
 #include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
 #include "core/container/agent_uid_map.h"
+#include "core/container/math_array.h"
 #include "core/execution_context/execution_context.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
@@ -115,6 +116,12 @@ class InPlaceExecutionContext : public ExecutionContext {
   /// agent within the given search radius `squared_radius`
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query, double squared_radius) override;
+
+  /// Applies the lambda `lambda` for each neighbor of the given
+  /// `query_position` within the given search radius `sqrt(squared_radius)`
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Double3& query_position,
+                       double squared_radius) override;
 
   void AddAgent(Agent* new_agent) override;
 
