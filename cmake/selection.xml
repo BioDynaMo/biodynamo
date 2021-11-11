@@ -81,7 +81,7 @@
     <class name="bdm::experimental::TimeSeries" />
     <class name="bdm::experimental::TimeSeries::Data" />
     <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
-    <class name="bdm::experimental::MethodOfLineSolver" />
+    <class name="bdm::experimental::TimeDependentScalarField3d" />
     <class name="bdm::experimental::MolOperator" />
     <class name="bdm::experimental::DiffusionOperator" />
     <class name="bdm::experimental::ConductionOperator" />

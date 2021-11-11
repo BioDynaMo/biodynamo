@@ -192,7 +192,7 @@ class ResourceManager {
   /// solver is called outside the ResourceManager since it calls delete on all
   /// the involved pointers.
   void AddMFEMMesh(
-      std::pair<mfem::Mesh*, bdm::experimental::MethodOfLineSolver*>
+      std::pair<mfem::Mesh*, bdm::experimental::TimeDependentScalarField3d*>
           mfem_mesh) {
     uint64_t substance_id = mfem_mesh.second->GetSubstanceId();
     auto search = mfem_meshes_.find(substance_id);
@@ -226,8 +226,8 @@ class ResourceManager {
                  "', but it does not exist! Make sure that it's the correct id "
                  "correctly and that the MFEM mesh is registered.");
       return std::make_pair<mfem::Mesh*,
-                            bdm::experimental::MethodOfLineSolver*>(nullptr,
-                                                                    nullptr);
+                            bdm::experimental::TimeDependentScalarField3d*>(
+          nullptr, nullptr);
     }
     return mfem_meshes_.at(substance_id);
   }
@@ -246,13 +246,14 @@ class ResourceManager {
                "You tried to request a MFEM mesh named '", substance_name,
                "', but it does not exist! Make sure that it's spelled "
                "correctly and that the MFEM mesh is registered.");
-    return std::make_pair<mfem::Mesh*, bdm::experimental::MethodOfLineSolver*>(
+    return std::make_pair<mfem::Mesh*,
+                          bdm::experimental::TimeDependentScalarField3d*>(
         nullptr, nullptr);
   }
 
   /// Execute the given functor for all MFEM mesh
   ///     rm->ForEachMFEMGrid([](std::pair<mfem::Mesh*,
-  ///     bdm::experimental::MethodOfLineSolver*>) {
+  ///     bdm::experimental::TimeDependentScalarField3d*>) {
   ///       ...
   ///     });
   template <typename TFunctor>
@@ -522,7 +523,8 @@ class ResourceManager {
 #ifdef USE_MFEM
   /// Maps a diffusion grid ID to the pointer to the diffusion grid
   std::unordered_map<
-      uint64_t, std::pair<mfem::Mesh*, bdm::experimental::MethodOfLineSolver*>>
+      uint64_t,
+      std::pair<mfem::Mesh*, bdm::experimental::TimeDependentScalarField3d*>>
       mfem_meshes_;
 #endif  // USE_MFEM
 

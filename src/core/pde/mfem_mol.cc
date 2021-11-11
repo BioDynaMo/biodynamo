@@ -20,7 +20,7 @@
 namespace bdm {
 namespace experimental {
 
-MethodOfLineSolver::MethodOfLineSolver(
+TimeDependentScalarField3d::TimeDependentScalarField3d(
     mfem::Mesh* mesh, int order, int dimension, MFEMODESolver ode_solver_id,
     PDEOperator pde_oper_id,
     std::function<double(const mfem::Vector&)> InitialGridValues,
@@ -43,7 +43,7 @@ MethodOfLineSolver::MethodOfLineSolver(
   SetODESolver(ode_solver_id);
 }
 
-MethodOfLineSolver::~MethodOfLineSolver() {
+TimeDependentScalarField3d::~TimeDependentScalarField3d() {
   // ODE operator and ODE solver are generated withing this class with new so
   // we call the delete operator for them. Note that the mesh is typically
   // generated in the ModelInitializer or in the user defined code and the
@@ -53,7 +53,7 @@ MethodOfLineSolver::~MethodOfLineSolver() {
   delete table_of_elements_;
 }
 
-void MethodOfLineSolver::Initialize() {
+void TimeDependentScalarField3d::Initialize() {
   // The vector u_ basically represents the coefficients in the finite element
   // expansion. These coefficients form the ODE system in the method of lines.
   mfem::FunctionCoefficient u_0(InitialGridValues_);
@@ -62,13 +62,13 @@ void MethodOfLineSolver::Initialize() {
   u_gf_.SetFromTrueDofs(u_);
 }
 
-void MethodOfLineSolver::SetBoundaryConditions() {
+void TimeDependentScalarField3d::SetBoundaryConditions() {
   // ToDo(tobias): Implement Interface for Neuman and Dirichlet Boundary
   // conditions.
   return;
 }
 
-void MethodOfLineSolver::SetODESolver(int solver_id) {
+void TimeDependentScalarField3d::SetODESolver(int solver_id) {
   if (ode_solver_ != nullptr) {
     delete ode_solver_;
   }
@@ -112,19 +112,19 @@ void MethodOfLineSolver::SetODESolver(int solver_id) {
     // In case the user provides a faulty solver_id, we terminate the program
     // in the following way.
     default:
-      Log::Fatal("MethodOfLineSolver::SetODESolver",
+      Log::Fatal("TimeDependentScalarField3d::SetODESolver",
                  "Unknown ODE solver type: ", solver_id);
   }
   // Initialize the ODE solver with the operator.
   if (operator_ != nullptr && ode_solver_ != nullptr) {
     ode_solver_->Init(*operator_);
   } else {
-    Log::Fatal("MethodOfLineSolver::SetODESolver",
+    Log::Fatal("TimeDependentScalarField3d::SetODESolver",
                "Cannot initialize ode_solver wiht nullptr as operator.");
   }
 }
 
-void MethodOfLineSolver::SetOperator(int operator_id) {
+void TimeDependentScalarField3d::SetOperator(int operator_id) {
   if (operator_ != nullptr) {
     delete operator_;
   }
@@ -132,7 +132,7 @@ void MethodOfLineSolver::SetOperator(int operator_id) {
     case PDEOperator::kDiffusion:
       if (numeric_operator_parameters_.size() < 1) {
         Log::Fatal(
-            "MethodOfLineSolver::SetOperator",
+            "TimeDependentScalarField3d::SetOperator",
             "Wrong number of numerical parameters for DiffusionOperator.",
             "\nExpected: 1, Acutal: ", numeric_operator_parameters_.size());
       }
@@ -141,7 +141,7 @@ void MethodOfLineSolver::SetOperator(int operator_id) {
       break;
     case PDEOperator::kDiffusionWithFunction:
       if (operator_functions_.size() < 1) {
-        Log::Fatal("MethodOfLineSolver::SetOperator",
+        Log::Fatal("TimeDependentScalarField3d::SetOperator",
                    "Wrong number of functions for DiffusionOperator.",
                    "\nExpected: 1, Acutal: ", operator_functions_.size());
       }
@@ -150,7 +150,7 @@ void MethodOfLineSolver::SetOperator(int operator_id) {
     case PDEOperator::kConduction:
       if (numeric_operator_parameters_.size() < 2) {
         Log::Fatal(
-            "MethodOfLineSolver::SetOperator",
+            "TimeDependentScalarField3d::SetOperator",
             "Wrong number of numerical parameters for ConductionOperator.",
             "\nExpected: 2, Acutal: ", numeric_operator_parameters_.size());
       }
@@ -159,19 +159,19 @@ void MethodOfLineSolver::SetOperator(int operator_id) {
                                  numeric_operator_parameters_[1]);
       break;
     default:
-      Log::Fatal("MethodOfLineSolver::SetOperator",
+      Log::Fatal("TimeDependentScalarField3d::SetOperator",
                  "Unknown ODE solver type: ", operator_id);
   }
 }
 
 // Possibly this method should be based on mfem::ODESolver::Run().
-void MethodOfLineSolver::Step(double dt) {
+void TimeDependentScalarField3d::Step(double dt) {
   operator_->SetParameters(u_);
   const double dt_ref = dt;
   const double t_target = t_ + dt;
   ode_solver_->Step(u_, t_, dt);
   if (dt_ref != dt || t_target != t_) {
-    Log::Warning("MethodOfLineSolver::Step",
+    Log::Warning("TimeDependentScalarField3d::Step",
                  "Call to MFEM::ODESolver behaved not as expected.\n",
                  "Time step: ", dt, " / ", dt_ref, "\nTarget time: ", t_, " / ",
                  t_target, "\n(is / expected)");
@@ -180,9 +180,11 @@ void MethodOfLineSolver::Step(double dt) {
   ode_steps_++;
 }
 
-void MethodOfLineSolver::UpdateGridFunction() { u_gf_.SetFromTrueDofs(u_); }
+void TimeDependentScalarField3d::UpdateGridFunction() {
+  u_gf_.SetFromTrueDofs(u_);
+}
 
-void MethodOfLineSolver::PrintInfo(std::ostream& out) {
+void TimeDependentScalarField3d::PrintInfo(std::ostream& out) {
   out << std::string(80, '_') << "\n";
   out << "\nSubstance ID\t\t\t: " << substance_id_ << "\n";
   out << "Substance name\t\t\t: " << substance_name_ << "\n";
@@ -206,7 +208,7 @@ void ExportVTK() {
   return;
 }
 
-void MethodOfLineSolver::SetOperator(MolOperator* oper) {
+void TimeDependentScalarField3d::SetOperator(MolOperator* oper) {
   if (operator_ != nullptr && operator_ != oper) {
     delete operator_;
   }
@@ -215,12 +217,12 @@ void MethodOfLineSolver::SetOperator(MolOperator* oper) {
   if (operator_ != nullptr && ode_solver_ != nullptr) {
     ode_solver_->Init(*operator_);
   } else {
-    Log::Fatal("MethodOfLineSolver::SetOperator",
+    Log::Fatal("TimeDependentScalarField3d::SetOperator",
                "Cannot initialize ode_solver wiht nullptr as operator.");
   }
 }
 
-void MethodOfLineSolver::UpdateElementToVertexTable() {
+void TimeDependentScalarField3d::UpdateElementToVertexTable() {
   if (table_of_elements_ != nullptr) {
     delete table_of_elements_;
     table_of_elements_ = nullptr;
@@ -233,9 +235,9 @@ mfem::Vector ConvertToMFEMVector(const Double3& position) {
   return vec;
 }
 
-bool MethodOfLineSolver::ContainedInElement(const Double3& position,
-                                            int finite_element_id,
-                                            mfem::IntegrationPoint& ip) {
+bool TimeDependentScalarField3d::ContainedInElement(
+    const Double3& position, int finite_element_id,
+    mfem::IntegrationPoint& ip) {
   mfem::Vector vec = ConvertToMFEMVector(position);
   mfem::InverseElementTransformation inv_tr;
   auto trans = mesh_->GetElementTransformation(finite_element_id);
@@ -244,9 +246,9 @@ bool MethodOfLineSolver::ContainedInElement(const Double3& position,
           mfem::InverseElementTransformation::Inside);
 }
 
-int MethodOfLineSolver::ContainedInNeighbors(const Double3& position,
-                                             int finite_element_id,
-                                             mfem::IntegrationPoint& ip) {
+int TimeDependentScalarField3d::ContainedInNeighbors(
+    const Double3& position, int finite_element_id,
+    mfem::IntegrationPoint& ip) {
   // If the search in the neighboring elements is not successful, we return
   // INT_MAX.
   int containing_neighbor_element = std::numeric_limits<int>::max();
@@ -284,7 +286,7 @@ int MethodOfLineSolver::ContainedInNeighbors(const Double3& position,
   if (mesh_->ncmesh &&
       containing_neighbor_element == std::numeric_limits<int>::max()) {
     Log::Warning(
-        "MethodOfLineSolver::ContainedInNeighbors",
+        "TimeDependentScalarField3d::ContainedInNeighbors",
         "You seem to use a non-conforming mesh. Iterating over neighbors in ",
         "non-conforming meshes is currently not supported since it requires "
         "access",
@@ -293,8 +295,8 @@ int MethodOfLineSolver::ContainedInNeighbors(const Double3& position,
   return containing_neighbor_element;
 }
 
-std::pair<int, mfem::IntegrationPoint> MethodOfLineSolver::FindPointInMesh(
-    const Double3& position) {
+std::pair<int, mfem::IntegrationPoint>
+TimeDependentScalarField3d::FindPointInMesh(const Double3& position) {
   // This is not the most efficient way to transfer the information but
   // currently necessary.
   mfem::DenseMatrix mfem_position(mesh_->Dimension(), 1);
@@ -312,12 +314,12 @@ std::pair<int, mfem::IntegrationPoint> MethodOfLineSolver::FindPointInMesh(
   return std::make_pair(element_id[0], integration_points[0]);
 }
 
-double MethodOfLineSolver::GetSolutionInElementAndIntegrationPoint(
+double TimeDependentScalarField3d::GetSolutionInElementAndIntegrationPoint(
     int element_id, const mfem::IntegrationPoint& integration_point) {
   return u_gf_.GetValue(element_id, integration_point);
 }
 
-std::pair<int, double> MethodOfLineSolver::GetSolutionAtPosition(
+std::pair<int, double> TimeDependentScalarField3d::GetSolutionAtPosition(
     const Double3& position, int finite_element_id) {
   mfem::IntegrationPoint integration_point;
   // 1. By default, each agent has its element set to INT_MAX. If the agent had
@@ -345,7 +347,7 @@ std::pair<int, double> MethodOfLineSolver::GetSolutionAtPosition(
   return std::make_pair(finite_element_id, grid_value);
 }
 
-double MethodOfLineSolver::GetSolutionAtAgentPosition(Agent* agent) {
+double TimeDependentScalarField3d::GetSolutionAtAgentPosition(Agent* agent) {
   auto result =
       GetSolutionAtPosition(agent->GetPosition(), agent->GetFiniteElementID());
   agent->SetFiniteElementID(result.first);
