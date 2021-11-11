@@ -13,32 +13,20 @@ namespace bdm {
 // function GetNeighbors below.
 class CountNeighborsFunctor : public Functor<void, Agent*, double> {
  private:
-  Agent* query_;
   size_t num_neighbors_;
-
-  void Reset() {
-    num_neighbors_ = 0;
-    query_ = nullptr;
-  }
 
  public:
   CountNeighborsFunctor() : num_neighbors_(0) {}
 
   // This is called once for each neighbor that is found
   void operator()(Agent* neighbor, double squared_distance) {
-    if (neighbor == query_) {
-      return;
-    }
 #pragma omp atomic
     num_neighbors_ += 1;
   }
 
   double GetNumNeighbors() { return num_neighbors_; }
 
-  void SetQueryAgent(Agent* query) {
-    Reset();
-    query_ = query;
-  }
+  void Reset() { num_neighbors_ = 0; }
 };
 
 // Returns the number of agents that are found by the execution context /
@@ -52,16 +40,26 @@ inline size_t GetNeighbors(Double3& search_center, double search_radius) {
   // Initialize Functor
   CountNeighborsFunctor cnf;
 
-  // Get execution context
-  auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-
-  // Create virtual agent for search
+  // Create virtual agent for agent based neighbor search
   Cell virtual_agent(2.0);
   virtual_agent.SetPosition(search_center);
 
-  // Get all neighbors
+  // Get execution context
+  auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+
+  // Get all neighbors around search center
+  ctxt->ForEachNeighbor(cnf, search_center, search_radius);
+  size_t vector_based_result = cnf.GetNumNeighbors();
+  cnf.Reset();
+
+  // Get all neighbors around virtual agent
   ctxt->ForEachNeighbor(cnf, virtual_agent, search_radius);
-  return cnf.GetNumNeighbors();
+  size_t agent_based_result = cnf.GetNumNeighbors();
+
+  // Check if both results are equal:
+  EXPECT_EQ(vector_based_result, agent_based_result);
+
+  return agent_based_result;
 }
 
 // This tests the neighbor search and is called in the tests for octree, kdtree,
