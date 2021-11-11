@@ -178,6 +178,13 @@ class TimeDependentScalarField3d {
   TimeDependentScalarField3d(TimeDependentScalarField3d&&) = delete;
   TimeDependentScalarField3d& operator=(TimeDependentScalarField3d&&) = delete;
 
+  /// Verify the compatibility with the BioDynaMo core. To obtain a meaningful
+  /// model, we require the entire agent-based model to lie inside the continuum
+  /// model. This function checks if this is the case. If not, it throws a
+  /// fatal. Furthermore, we don't accept growing environments, e.g. require a
+  /// closed cube for the agent model.
+  void VerifyBDMCompatibility();
+
   /// Function to set the ODESolver. See enum MFEMODESolver for options.
   void SetODESolver(int solver_id);
   /// Set the operator, e.g. define the PDE to solve.

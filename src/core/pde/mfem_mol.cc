@@ -181,6 +181,26 @@ void TimeDependentScalarField3d::Step(double dt) {
   ode_steps_++;
 }
 
+void TimeDependentScalarField3d::VerifyBDMCompatibility() {
+  auto* param = Simulation::GetActive()->GetParam();
+  // Check if the parameter space is bounded.
+  if (param->bound_space != Param::BoundSpaceMode::kClosed) {
+    Log::Fatal("TimeDependentScalarField3d::VerifyBDMCompatibility",
+               "Please make sure to use Param::BoundSpaceMode::kClosed.");
+  }
+  // Check if the MFEM::Grid contains all corners of the BDM simulation cube.
+  double min = param->min_bound;
+  double max = param->max_bound;
+  std::vector<Double3> bdm_cube_corners{
+      {min, min, min}, {min, min, max}, {min, max, min}, {max, min, min},
+      {min, max, max}, {max, min, max}, {max, max, min}, {max, max, max}};
+  for (auto& pos : bdm_cube_corners) {
+    // This function throws a fatal itself if the point `pos` is not found
+    // inside the MFEM mesh.
+    auto res = FindPointInMesh(pos);
+  }
+}
+
 void TimeDependentScalarField3d::UpdateGridFunction() {
   u_gf_.SetFromTrueDofs(u_);
 }

@@ -14,17 +14,20 @@
 
 #ifdef USE_MFEM
 
-#include <gtest/gtest.h>
 #include <chrono>
 #include <numeric>
 #include "biodynamo.h"
 #include "core/agent/cell.h"
 #include "core/pde/mfem_mol.h"
+#include "gtest/gtest.h"
+// #include "unit/test_util/test_util.h"
 
 #define TEST_NAME typeid(*this).name()
 
 namespace bdm {
 namespace experimental {
+
+enum Substances { kSubstance1, kSubstance2, kSubstance3 };
 
 mfem::Mesh* CreateMesh() {
   int dim = 3, nv = 8, ne = 1, nb = 0, sdim = 3;
@@ -53,7 +56,42 @@ struct TimeStepGenerator {
   }
 };
 
-enum Substances { kSubstance1, kSubstance2, kSubstance3 };
+// Function to set up a simulation and a TimeDependentScalarField3d.
+inline void InitializeSimulation(std::string sim_name,
+                                 std::function<void(Param*)> set_param) {
+  Simulation simulation(sim_name, set_param);
+
+  auto* param = simulation.GetParam();
+
+  // Create one cell at a random position
+  auto construct = [](const Double3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
+                                       construct);
+
+  // Create a simple one element hex mesh
+  mfem::Mesh* mesh = new mfem::Mesh();
+  *mesh =
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
+
+  // Define function to set inital values of the Mesh
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
+
+  // Define numeric parameters
+  std::vector<double> parameters{0.1};
+
+  // Define empty functions vector for constructor
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+
+  // Define the first substances in our simulation
+  ModelInitializer::DefineMFEMSubstanceOnMesh(
+      mesh, kSubstance1, "kSubstance1", 1, 3,
+      MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
+      InitializeGridValues, parameters, operator_functions);
+}
 
 // We test if the SetODESolver member function works correctly. Especially, we
 // test if the mapping between the enum MFEMODESolver and the member is correct.
@@ -550,9 +588,14 @@ TEST(TimeDependentScalarField3dTest, StepByStepLocalization) {
   EXPECT_LT(duration_neighbor_search, duration_linear_search);
 }
 
+// This test tests if we correctly compute the AgentProbabilityDistribution
+// Function (1 if in agent, 0 else).
 TEST(TimeDependentScalarField3dTest, AgentProbabilityDensity) {
   // Dummy simulation; todo(tobias) switch back to uniform gird after fix.
   auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = 0;
+    param->max_bound = 9;
     param->environment = "octree";
     param->unschedule_default_operations = {"load balancing"};
   };
@@ -565,7 +608,7 @@ TEST(TimeDependentScalarField3dTest, AgentProbabilityDensity) {
   auto* cell3 = new Cell(2.0);
   cell1->SetPosition({0.0, 0.0, 0.});
   cell2->SetPosition({5, 0, 0});
-  cell3->SetPosition({0, -1.5, 0});
+  cell3->SetPosition({0, 1.5, 0});
   double norm =
       1 / (cell1->GetVolume() + cell2->GetVolume() + cell3->GetVolume());
   rm->AddAgent(cell1);
@@ -579,7 +622,7 @@ TEST(TimeDependentScalarField3dTest, AgentProbabilityDensity) {
 
   // Define a MethodOfLine Solver
   ModelInitializer::DefineMFEMSubstanceAndMesh(
-      10, 10, 10, 1.0, 1.0, 1.0, mfem::Element::TETRAHEDRON, kSubstance1,
+      10, 10, 10, 10., 10., 10., mfem::Element::TETRAHEDRON, kSubstance1,
       "kSubstance1", 1, 3, MFEMODESolver::kBackwardEulerSolver,
       PDEOperator::kDiffusion, InitializeGridValues, parameters,
       operator_functions);
@@ -601,11 +644,11 @@ TEST(TimeDependentScalarField3dTest, AgentProbabilityDensity) {
   EXPECT_DOUBLE_EQ(norm, pdf_functor->GetNorm());
 
   // // Define dummy integration points to evaluate the density function
-  mfem::Vector ip1 = ConvertToMFEMVector({-0.1, 0.0, 0.0});  // In Cell 1
-  mfem::Vector ip2 = ConvertToMFEMVector({5.5, 0.0, 0.0});   // In Cell 2
-  mfem::Vector ip3 = ConvertToMFEMVector({0.0, -2.0, 0.0});  // In Cell 3
-  mfem::Vector ip4 = ConvertToMFEMVector({0.0, -0.8, 0.0});  // In Cell 1 & 2
-  mfem::Vector ip5 = ConvertToMFEMVector({-2.0, 0.0, 0.0});  // In no cell
+  mfem::Vector ip1 = ConvertToMFEMVector({0.1, 0.0, 0.0});  // In Cell 1
+  mfem::Vector ip2 = ConvertToMFEMVector({5.5, 0.0, 0.0});  // In Cell 2
+  mfem::Vector ip3 = ConvertToMFEMVector({0.0, 2.0, 0.0});  // In Cell 3
+  mfem::Vector ip4 = ConvertToMFEMVector({0.0, 0.8, 0.0});  // In Cell 1 & 3
+  mfem::Vector ip5 = ConvertToMFEMVector({8.0, 0.0, 0.0});  // In no cell
 
   // Test if values are correct
   EXPECT_DOUBLE_EQ(norm, op->EvaluateAgentPDF(ip1));
@@ -620,8 +663,8 @@ TEST(TimeDependentScalarField3dTest, AgentProbabilityDensity) {
 TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = 0;
-    param->max_bound = 250;
+    param->min_bound = 1;
+    param->max_bound = 9;
     param->calculate_gradients = false;
   };
   Simulation simulation(TEST_NAME, set_param);
@@ -640,8 +683,8 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
 
   // Create a simple one element hex mesh
   mfem::Mesh* mesh = new mfem::Mesh();
-  *mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
+  *mesh = mfem::Mesh::MakeCartesian3D(
+      10, 10, 10, mfem::Element::Type::TETRAHEDRON, 15, 15, 15);
   mesh->UniformRefinement();
   mesh->UniformRefinement();
 
@@ -662,14 +705,14 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
 
   // Define the second substances in our simulation
   ModelInitializer::DefineMFEMSubstanceAndMesh(
-      10, 10, 10, 1.0, 1.0, 1.0, mfem::Element::TETRAHEDRON, kSubstance2,
+      10, 10, 10, 10.0, 10.0, 10.0, mfem::Element::TETRAHEDRON, kSubstance2,
       "kSubstance2", 1, 3, MFEMODESolver::kBackwardEulerSolver,
       PDEOperator::kDiffusion, InitializeGridValues, parameters,
       operator_functions);
 
   // Define the third substances in our simulation
   ModelInitializer::DefineMFEMSubstanceAndMesh(
-      15, 15, 15, 1.3, 1.3, 1.3, mfem::Element::TETRAHEDRON, kSubstance3,
+      15, 15, 15, 13.0, 13.0, 13.0, mfem::Element::TETRAHEDRON, kSubstance3,
       "kSubstance3", 2, 3, MFEMODESolver::kBackwardEulerSolver,
       PDEOperator::kDiffusion, InitializeGridValues, parameters,
       operator_functions);
@@ -734,6 +777,44 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
   EXPECT_EQ(rm->GetNumMFEMMeshes(), 1);
   rm->RemoveMFEMMesh(2);
   EXPECT_EQ(rm->GetNumMFEMMeshes(), 0);
+}
+
+// This test is supposed to not throw an exception.
+TEST(MFEMIntegration, VerifyCompatibilityBoundAndCorners) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = 0.1;
+    param->max_bound = 0.9;
+  };
+  InitializeSimulation(TEST_NAME, set_param);
+}
+
+// Here we initialize an open boundary that we do not accept for modelling at
+// at the moment. Hence, we expect a fatal.
+TEST(MFEMIntegrationDeathTest, VerifyCompatibilityBound) {
+  EXPECT_DEATH_IF_SUPPORTED(
+      {
+        auto set_param = [](auto* param) {
+          param->bound_space = Param::BoundSpaceMode::kOpen;
+        };
+        InitializeSimulation(TEST_NAME, set_param);
+      },
+      ".*Please make sure to use Param::BoundSpaceMode::kClosed*");
+}
+
+// Here we initialize boundaries that are not contained in the continuum. We do
+// not accept such agent boundaries for modelling. Hence, we expect a fatal.
+TEST(MFEMIntegrationDeathTest, VerifyCornersInMesh) {
+  EXPECT_DEATH_IF_SUPPORTED(
+      {
+        auto set_param = [](auto* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -1;
+          param->max_bound = 100;
+        };
+        InitializeSimulation(TEST_NAME, set_param);
+      },
+      ".*Point could not be located in Mesh*");
 }
 
 }  // namespace experimental

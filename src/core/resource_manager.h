@@ -194,6 +194,7 @@ class ResourceManager {
   void AddMFEMMesh(
       std::pair<mfem::Mesh*, bdm::experimental::TimeDependentScalarField3d*>
           mfem_mesh) {
+    mfem_mesh.second->VerifyBDMCompatibility();
     uint64_t substance_id = mfem_mesh.second->GetSubstanceId();
     auto search = mfem_meshes_.find(substance_id);
     if (search != mfem_meshes_.end()) {
