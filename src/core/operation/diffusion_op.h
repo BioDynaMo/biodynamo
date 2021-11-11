@@ -109,8 +109,9 @@ class MFEMPDEOp : public StandaloneOperationImpl {
       return;
     }
 
-    rm->ForEachMFEMGrid([&](std::pair<mfem::Mesh*,
-                                      bdm::experimental::MethodOfLineSolver*>
+    rm->ForEachMFEMGrid([&](std::pair<
+                            mfem::Mesh*,
+                            bdm::experimental::TimeDependentScalarField3d*>
                                 mfem_mesh) {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the

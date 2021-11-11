@@ -69,11 +69,11 @@
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
     <class name="bdm::experimental::TimeSeries" />
-    <class name="bdm::experimental::MethodOfLineSolver" noStreamer="true" />
+    <class name="bdm::experimental::TimeDependentScalarField3d" noStreamer="true" />
     <class name="bdm::experimental::MolOperator" noStreamer="true" />
     <class name="bdm::experimental::DiffusionOperator" noStreamer="true" />
     <class name="bdm::experimental::ConductionOperator" noStreamer="true" />
-    <class name="std::unordered_map<uint64_t, std::pair<mfem::Mesh*, bdm::experimental::MethodOfLineSolver*>>" />
+    <class name="std::unordered_map<uint64_t, std::pair<mfem::Mesh*, bdm::experimental::TimeDependentScalarField3d*>>" />
     <class name="bdm::experimental::TimeSeries::Data" noStreamer="true" />
     <class name="bdm::experimental::Reducer<uint64_t>" />
     <class name="bdm::experimental::Reducer<double>" />

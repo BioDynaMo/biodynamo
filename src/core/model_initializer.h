@@ -404,11 +404,11 @@ struct ModelInitializer {
   }
 
 #ifdef USE_MFEM
-  /// Herewith, we add a `mfem::Mesh*` and a `MethodOfLineSolver*` to the
-  /// resource manager. The `MethodOfLineSolver` will be initialized with the
-  /// function arguments. Make sure that the destructor of the `mfem::Mesh*`
-  /// object is not called outside, since the resource manager will call `delete
-  /// mesh` (use for example `new` to achieve this). In brief:
+  /// Herewith, we add a `mfem::Mesh*` and a `TimeDependentScalarField3d*` to
+  /// the resource manager. The `TimeDependentScalarField3d` will be initialized
+  /// with the function arguments. Make sure that the destructor of the
+  /// `mfem::Mesh*` object is not called outside, since the resource manager
+  /// will call `delete mesh` (use for example `new` to achieve this). In brief:
   ///
   /// @param[in]  mesh             The mesh discretization of the domain (MEFM)
   /// @param[in]  substance_id     The substance identifier
@@ -421,7 +421,8 @@ struct ModelInitializer {
   /// @param[in]  numeric_operator_parameters  Numeric constants for PDE problem
   /// @param[in]  operator_functions Functions occuring in the PDE
   ///
-  /// For more details please take a look at the `MethodOfLineSolver` itself.
+  /// For more details please take a look at the `TimeDependentScalarField3d`
+  /// itself.
   ///
   static void DefineMFEMSubstanceOnMesh(
       mfem::Mesh* mesh, size_t substance_id, const std::string& substance_name,
@@ -432,9 +433,10 @@ struct ModelInitializer {
       std::vector<std::function<double(const mfem::Vector&)>>
           operator_functions);
 
-  /// Herewith, we add a `mfem::Mesh*` and a `MethodOfLineSolver*` to the
-  /// resource manager. The `mfem::Mesh*` and the `MethodOfLineSolver` will be
-  /// initialized with the function arguments. In brief:
+  /// Herewith, we add a `mfem::Mesh*` and a `TimeDependentScalarField3d*` to
+  /// the resource manager. The `mfem::Mesh*` and the
+  /// `TimeDependentScalarField3d` will be initialized with the function
+  /// arguments. In brief:
   ///
   /// @param[in]  resolution_x     Resolution in x direction
   /// @param[in]  resolution_y     Resolution in y direction
@@ -453,8 +455,8 @@ struct ModelInitializer {
   /// @param[in]  numeric_operator_parameters  Numeric constants for PDE problem
   /// @param[in]  operator_functions Functions occuring in the PDE
   ///
-  /// For more details please take a look at the `MethodOfLineSolver` itself and
-  /// `mfem::Grid::MakeCartesian3D`.
+  /// For more details please take a look at the `TimeDependentScalarField3d`
+  /// itself and `mfem::Grid::MakeCartesian3D`.
   ///
   static void DefineMFEMSubstanceAndMesh(
       int resolution_x, int resolution_y, int resolution_z, double x_max,

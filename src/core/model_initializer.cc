@@ -57,7 +57,7 @@ void ModelInitializer::DefineMFEMSubstanceOnMesh(
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   // ToDo(tobias): can this be conde without new?
-  auto* solver = new bdm::experimental::MethodOfLineSolver(
+  auto* solver = new bdm::experimental::TimeDependentScalarField3d(
       mesh, order, dimension, ode_solver_id, pde_oper_id, InitialGridValues,
       numeric_operator_parameters, operator_functions);
   solver->SetSubstanceId(substance_id);

@@ -33,8 +33,8 @@
 namespace bdm {
 namespace experimental {
 
-/// Enum to specify the ODE solver for the MethodOfLineSolver. For a detailed
-/// explanation of the different solvers, please consult the `MFEM`
+/// Enum to specify the ODE solver for the TimeDependentScalarField3d. For a
+/// detailed explanation of the different solvers, please consult the `MFEM`
 /// documentation.
 /// API: http://mfem.github.io/doxygen/html/classmfem_1_1ODESolver.html
 enum MFEMODESolver {
@@ -51,7 +51,7 @@ enum MFEMODESolver {
   kSDIRK34Solver
 };
 
-/// Enum to specify the type of PDE for the MethodOfLineSolver.
+/// Enum to specify the type of PDE for the TimeDependentScalarField3d.
 /// kDiffusion:
 /// \f[ \frac{du}{dt} = \nabla (D \nabla u), \ \f]
 /// kDiffusionWithFunction:
@@ -63,26 +63,32 @@ enum PDEOperator { kDiffusion, kDiffusionWithFunction, kConduction };
 /// Converts a bdm::Double3 to a mfem::Vector.
 mfem::Vector ConvertToMFEMVector(const Double3& position);
 
-/// This class implements a modular interface for the method of lines based on
-/// the `MFEM` finite element library. We use a finite element discretization
-/// in space to derive a high dimensional ODE system which we integrate over
-/// time with established numerical methods (see MFEMODESolver). For more
-/// details regarding the method of lines, one may consult the following
-/// sources:
+/// This class models a time dependent scalar field \f$ \phi \f$ in real, three
+/// dimensional space \f$ \mathbb{R}^3 \f$, i.e. \f$ \phi (x,t): \mathbb{R}^3
+/// \times \mathbb{R} \rightarrow \mathbb{R}\f$. The user must describe the time
+/// dependent scalar field with a partial differential equation. Technically,
+/// this is done by specifying a suitable (spatial) PDEOperator. This class
+/// represents a modular interface to the `MFEM` finite element library and is
+/// conceptually implementing the method of lines. We use a finite element
+/// discretization in space to derive a high dimensional ODE system, which we
+/// integrate over time with established numerical methods (see MFEMODESolver).
+/// For more details regarding the method of lines, one may consult the
+/// following sources:
 ///  - <a
 ///    href="http://www.scholarpedia.org/article/Method_of_lines">Scholarpedia</a>
 ///  - <a href="https://en.wikipedia.org/wiki/Method_of_lines">Wikipedia</a>
 ///  - <a
 ///    href="https://github.com/mfem/mfem/blob/master/examples/ex16.cpp">MFEM
 ///    Examples</a>
-class MethodOfLineSolver {
+class TimeDependentScalarField3d {
  protected:
   /// Arbitrary order H1-conforming (continuous) finite elements. (quote MFEM)
   mfem::H1_FECollection fe_coll_;
   /// The underlying mesh on which we solve the PDE
   mfem::Mesh* mesh_;
   /// Vertex to Element Table from mfem mesh. This is likely expensive to
-  /// construct and therefore saved at the first call.
+  /// construct and therefore saved during the first call to optimize
+  /// performance.
   mfem::Table* table_of_elements_;
   /// Class FiniteElementSpace - responsible for providing FEM view of the
   /// mesh, mainly managing the set of degrees of freedom. (quote MFEM)
@@ -91,7 +97,8 @@ class MethodOfLineSolver {
   mfem::GridFunction u_gf_;
   /// The ODE solver used to integrate in time.
   mfem::ODESolver* ode_solver_;
-  /// Vector representation of the PDE solution.
+  /// Vector representation of the PDE solution, i.e. the actual degrees of
+  /// freedom or
   mfem::Vector u_;
   /// Operator describing the FE discretization of the MOL method.
   MolOperator* operator_;
@@ -150,7 +157,7 @@ class MethodOfLineSolver {
   /// @param[in]  operator_functions Functions occuring in the PDE
   ///
   /// For more details please take a look at the implemenation.
-  MethodOfLineSolver(
+  TimeDependentScalarField3d(
       mfem::Mesh* mesh, int order, int dimension, MFEMODESolver ode_solver_id,
       PDEOperator pde_oper_id,
       std::function<double(const mfem::Vector&)> InitialGridValues,
@@ -158,12 +165,13 @@ class MethodOfLineSolver {
       std::vector<std::function<double(const mfem::Vector&)>>
           operator_functions);
   /// Destructor calls delete for the ODE solver and the operator.
-  ~MethodOfLineSolver();
+  ~TimeDependentScalarField3d();
   // No copy (assignment) as of now.
-  MethodOfLineSolver(const MethodOfLineSolver&) = delete;
-  MethodOfLineSolver& operator=(const MethodOfLineSolver&) = delete;
-  MethodOfLineSolver(MethodOfLineSolver&&) = delete;
-  MethodOfLineSolver& operator=(MethodOfLineSolver&&) = delete;
+  TimeDependentScalarField3d(const TimeDependentScalarField3d&) = delete;
+  TimeDependentScalarField3d& operator=(const TimeDependentScalarField3d&) =
+      delete;
+  TimeDependentScalarField3d(TimeDependentScalarField3d&&) = delete;
+  TimeDependentScalarField3d& operator=(TimeDependentScalarField3d&&) = delete;
 
   /// Function to set the ODESolver. See enum MFEMODESolver for options.
   void SetODESolver(int solver_id);
