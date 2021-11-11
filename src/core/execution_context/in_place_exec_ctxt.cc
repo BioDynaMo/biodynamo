@@ -289,30 +289,11 @@ void InPlaceExecutionContext::ForEachNeighbor(
 void InPlaceExecutionContext::ForEachNeighbor(
     Functor<void, Agent*, double>& lambda, const Double3& query_position,
     double squared_radius) {
-  // use values in cache
-  if (IsNeighborCacheValid(squared_radius)) {
-    for (auto& pair : neighbor_cache_) {
-      if (pair.second < squared_radius) {
-        lambda(pair.first, pair.second);
-      }
-    }
-    return;
-  }
-
-  auto* param = Simulation::GetActive()->GetParam();
-  auto* env = Simulation::GetActive()->GetEnvironment();
-
-  // Store the search radius to check validity of cache in consecutive use of
-  // ForEachNeighbor
-  cached_squared_search_radius_ = squared_radius;
-
   // Populate the cache and execute the lambda for each neighbor
   auto for_each = L2F([&](Agent* agent, double squared_distance) {
-    if (param->cache_neighbors) {
-      neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
-    }
     lambda(agent, squared_distance);
   });
+  auto* env = Simulation::GetActive()->GetEnvironment();
   env->ForEachNeighbor(for_each, query_position, squared_radius);
 }
 
