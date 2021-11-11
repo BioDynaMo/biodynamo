@@ -37,6 +37,7 @@ TimeDependentScalarField3d::TimeDependentScalarField3d(
       numeric_operator_parameters_(std::move(numeric_operator_parameters)),
       operator_functions_(std::move(operator_functions)),
       t_(0.0),
+      dt_max_(std::numeric_limits<double>::max()),
       ode_steps_(0) {
   Initialize();
   SetOperator(pde_oper_id);
@@ -167,14 +168,14 @@ void TimeDependentScalarField3d::SetOperator(int operator_id) {
 // Possibly this method should be based on mfem::ODESolver::Run().
 void TimeDependentScalarField3d::Step(double dt) {
   operator_->SetParameters(u_);
-  const double dt_ref = dt;
   const double t_target = t_ + dt;
-  ode_solver_->Step(u_, t_, dt);
-  if (dt_ref != dt || t_target != t_) {
+  double time_step = std::min(dt, dt_max_);
+  // Run() uses automatic time stepping.
+  ode_solver_->Run(u_, t_, time_step, t_target);
+  if (t_target != t_) {
     Log::Warning("TimeDependentScalarField3d::Step",
                  "Call to MFEM::ODESolver behaved not as expected.\n",
-                 "Time step: ", dt, " / ", dt_ref, "\nTarget time: ", t_, " / ",
-                 t_target, "\n(is / expected)");
+                 "\nTarget time: ", t_, " / ", t_target, "\n(is / expected)");
   }
   u_gf_.SetFromTrueDofs(u_);
   ode_steps_++;
@@ -194,7 +195,7 @@ void TimeDependentScalarField3d::PrintInfo(std::ostream& out) {
   object_name = typeid(*operator_).name();
   out << "PDE Operator\t\t\t: " << object_name << "\n";
   out << "Finite Element Collection\t: " << fe_coll_.Name() << "\n";
-  out << "Polynamial degree (FE)\t\t: " << fe_coll_.GetOrder() << "\n";
+  out << "Polynomial degree (FE)\t\t: " << fe_coll_.GetOrder() << "\n";
   out << "ODE dimension\t\t\t: " << u_.Size() << "\n";
   out << "ODE steps executed\t\t: " << ode_steps_ << "\n";
   out << "ODE simulated time\t\t: " << t_ << "\n";

@@ -114,6 +114,11 @@ class TimeDependentScalarField3d {
   std::vector<std::function<double(const mfem::Vector&)>> operator_functions_;
   /// Value to store the current time / simulated time.
   double t_;
+  /// Largest single time step allowed to be taken by the ODE solver. If Step()
+  /// is called with a value larger than dt_max_, mutiple smaller steps are
+  /// executed for stability. By default, this parameter is set to
+  /// double::max().
+  double dt_max_;
   /// ID of substance / continuum variable considered by an object instance.
   uint64_t substance_id_;
   /// ID of substance / continuum variable considered by an object instance.
@@ -235,29 +240,35 @@ class TimeDependentScalarField3d {
   /// Get reference to fespace_, needed for custom operator
   mfem::FiniteElementSpace& GetFESpace() { return fespace_; }
 
-  // Get the ODESolver associated to the MOL solver
+  /// Get the ODESolver associated to the MOL solver
   mfem::ODESolver* GetODESolver() { return ode_solver_; }
 
-  // Get the MOLOperator associated to the MOL solver
+  /// Get the MOLOperator associated to the MOL solver
   MolOperator* GetMolOperator() { return operator_; }
 
-  // Get simulated time
+  /// Get simulated time
   double GetSimTime() { return t_; }
 
-  // Get a pointer to the GridFunction u_gf_
+  /// Get a pointer to the GridFunction u_gf_
   mfem::GridFunction* GetGridFunction() { return &u_gf_; }
 
-  // Get substance_id_
+  /// Get substance_id_
   uint64_t GetSubstanceId() { return substance_id_; }
 
-  // Set substance_id_
+  /// Set substance_id_
   void SetSubstanceId(uint64_t id) { substance_id_ = id; }
 
-  // Get substance_name_
+  /// Get substance_name_
   std::string GetSubstanceName() { return substance_name_; }
 
-  // Set substance_name_
+  /// Set substance_name_
   void SetSubstanceName(std::string name) { substance_name_ = name; }
+
+  /// Define upper boundary for allowed time step for ODE solution
+  void SetTimestepMax(double dt_max) { dt_max_ = dt_max; }
+
+  /// Get upper boundary for allowed time step for ODE solution
+  double GetTimestepMax(double dt_max) { return dt_max_; }
 };
 
 }  // namespace experimental
