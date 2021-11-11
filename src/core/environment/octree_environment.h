@@ -69,6 +69,10 @@ class OctreeEnvironment : public Environment {
                                      const Agent& query,
                                      void* criteria) override;
 
+  void ForEachNeighborImplementation(
+      Functor<void, Agent*, double>& lambda, const Double3& query_position,
+      double squared_radius, const Agent* query_agent = nullptr) override;
+
  private:
   // Hide unibn-specific types from header (pimpl idiom)
   std::unique_ptr<UnibnImpl> impl_;

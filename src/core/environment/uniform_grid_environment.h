@@ -562,6 +562,13 @@ class UniformGridEnvironment : public Environment {
   void ForEachNeighborImplementation(Functor<void, Agent*, double>& lambda,
                                      const Agent& query,
                                      double squared_radius) override {
+    ForEachNeighborImplementation(lambda, query.GetPosition(), squared_radius,
+                                  &query);
+  }
+
+  void ForEachNeighborImplementation(
+      Functor<void, Agent*, double>& lambda, const Double3& query_position,
+      double squared_radius, const Agent* query_agent = nullptr) override {
     if (squared_radius > box_length_squared_) {
       Log::Fatal(
           "UniformGridEnvironment::ForEachNeighbor",
@@ -571,12 +578,17 @@ class UniformGridEnvironment : public Environment {
           box_length_, "). The resulting neighborhood would be incomplete.");
     }
 
-    const auto& position = query.GetPosition();
-    auto idx = query.GetBoxIdx();
+    const auto& position = query_position;
+    uint32_t idx{std::numeric_limits<uint32_t>::max()};
+    if (query_agent != nullptr) {
+      idx = query_agent->GetBoxIdx();
+    }
     // Freshly created agents are initialized with the largest uint32_t number
     // available. The above line assumes that the agent has already been located
     // in the grid, but this assumption does not hold for new agents. Hence, for
-    // new agents, we manually compute the box index.
+    // new agents, we manually compute the box index. This is also necessary if
+    // we want to find the neighbors of a arbitrary 3D coordinate rather than
+    // the neighbors of an agent.
     if (idx == std::numeric_limits<uint32_t>::max()) {
       idx = GetBoxIndex(position);
     }
@@ -618,7 +630,7 @@ class UniformGridEnvironment : public Environment {
       // increment iterator already here to hide memory latency
       ++ni;
       auto* agent = rm->GetAgent(ah);
-      if (agent != &query) {
+      if (agent != query_agent) {
         agents[size] = agent;
         const auto& pos = agent->GetPosition();
         x[size] = pos[0];
@@ -631,7 +643,7 @@ class UniformGridEnvironment : public Environment {
       }
     }
     process_batch();
-  }
+  };
 
   void ForEachNeighborImplementation(Functor<void, Agent*>& lambda,
                                      const Agent& query,

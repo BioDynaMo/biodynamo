@@ -72,6 +72,10 @@ class MyEnvironment : public Environment {
   void ForEachNeighborImplementation(Functor<void, Agent*, double>& lambda,
                                      const Agent& query,
                                      double squared_radius) override{};
+
+  void ForEachNeighborImplementation(
+      Functor<void, Agent*, double>& lambda, const Double3& query_position,
+      double squared_radius, const Agent* query_agent = nullptr) override{};
 };
 
 struct FindNeighborsInCity : public Functor<void, Agent*> {

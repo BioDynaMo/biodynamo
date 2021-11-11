@@ -93,21 +93,27 @@ void KDTreeEnvironment::UpdateImplementation() {
 void KDTreeEnvironment::ForEachNeighborImplementation(
     Functor<void, Agent*, double>& lambda, const Agent& query,
     double squared_radius) {
+  ForEachNeighborImplementation(lambda, query.GetPosition(), squared_radius,
+                                &query);
+}
+
+void KDTreeEnvironment::ForEachNeighborImplementation(
+    Functor<void, Agent*, double>& lambda, const Double3& query_position,
+    double squared_radius, const Agent* query_agent) {
   std::vector<std::pair<uint64_t, double>> neighbors;
 
   nanoflann::SearchParams params;
   params.sorted = false;
 
-  const auto& position = query.GetPosition();
-
   // calculate neighbors
-  impl_->index_->radiusSearch(&position[0], squared_radius, neighbors, params);
+  impl_->index_->radiusSearch(&query_position[0], squared_radius, neighbors,
+                              params);
 
   auto* rm = Simulation::GetActive()->GetResourceManager();
   for (auto& n : neighbors) {
     Agent* nb_so =
         rm->GetAgent(nf_adapter_->flat_idx_map_.GetAgentHandle(n.first));
-    if (nb_so != &query) {
+    if (nb_so != query_agent) {
       lambda(nb_so, n.second);
     }
   }
