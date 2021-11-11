@@ -426,7 +426,7 @@ if(APPLE)
     optim
     URL "${CMAKE_SOURCE_DIR}/third_party/optim-18ae71.zip"
     BINARY_DIR "optim-prefix/src/optim"
-    CONFIGURE_COMMAND ./configure -o "-O3 -march=native -ffp-contract=fast -flto -DARMA_NO_DEBUG"
+    CONFIGURE_COMMAND ./configure -o "-O3 -ffp-contract=fast -flto -DARMA_NO_DEBUG"
     INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/optim-prefix/src/optim/${OPTIM_LIBNAME} ${CMAKE_INSTALL_LIBDIR}
   )
 else()
