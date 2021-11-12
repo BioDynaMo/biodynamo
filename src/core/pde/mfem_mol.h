@@ -276,6 +276,9 @@ class TimeDependentScalarField3d {
 
   /// Get upper boundary for allowed time step for ODE solution
   double GetTimestepMax(double dt_max) { return dt_max_; }
+
+  // Get the underlying mesh
+  mfem::Mesh* GetMesh() { return mesh_; }
 };
 
 }  // namespace experimental

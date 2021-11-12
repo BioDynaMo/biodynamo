@@ -20,7 +20,6 @@
 #include "core/agent/cell.h"
 #include "core/pde/mfem_mol.h"
 #include "gtest/gtest.h"
-// #include "unit/test_util/test_util.h"
 
 #define TEST_NAME typeid(*this).name()
 
@@ -28,20 +27,6 @@ namespace bdm {
 namespace experimental {
 
 enum Substances { kSubstance1, kSubstance2, kSubstance3 };
-
-mfem::Mesh* CreateMesh() {
-  int dim = 3, nv = 8, ne = 1, nb = 0, sdim = 3;
-  mfem::Mesh* mesh = new mfem::Mesh(dim, nv, ne, nb, sdim);
-  mesh->AddVertex(mfem::Vertex(0., 0., 0.)());
-  mesh->AddVertex(mfem::Vertex(1., 0., 0.)());
-  mesh->AddVertex(mfem::Vertex(1., 1., 0.)());
-  mesh->AddVertex(mfem::Vertex(0., 1., 0.)());
-  mesh->AddVertex(mfem::Vertex(0., 0., 1.)());
-  mesh->AddVertex(mfem::Vertex(1., 0., 1.)());
-  mesh->AddVertex(mfem::Vertex(1., 1., 1.)());
-  mesh->AddVertex(mfem::Vertex(0., 1., 1.)());
-  return mesh;
-}
 
 struct TimeStepGenerator {
   double current;
@@ -55,6 +40,33 @@ struct TimeStepGenerator {
     return current;
   }
 };
+
+TimeDependentScalarField3d* InitializeScalarField(
+    size_t num_mesh_refinements = 0) {
+  // Create a simple
+  mfem::Mesh* mesh = new mfem::Mesh();
+  *mesh =
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
+  for (size_t i = 0; i < num_mesh_refinements; i++) {
+    mesh->UniformRefinement();
+  }
+  // Define function to set inital values of the Mesh
+  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
+
+  // Define numeric parameters
+  std::vector<double> parameters{0.1, 0.2};
+
+  // Define functions vector for constructor
+  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
+  operator_functions.push_back(InitializeGridValues);
+
+  // Create TimeDependentScalarField3d
+  TimeDependentScalarField3d* scalar_field = new TimeDependentScalarField3d(
+      mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
+      InitializeGridValues, parameters, operator_functions);
+
+  return scalar_field;
+}
 
 // Function to set up a simulation and a TimeDependentScalarField3d.
 inline void InitializeSimulation(std::string sim_name,
@@ -93,138 +105,133 @@ inline void InitializeSimulation(std::string sim_name,
       InitializeGridValues, parameters, operator_functions);
 }
 
+// Tests if scalar_field retrieves the correct values at bdm_position via
+// GetSolutionAtAgentPosition and GetSolutionAtPosition.
+void TestGridValues(TimeDependentScalarField3d* scalar_field,
+                    Double3& bdm_position, Cell* cell,
+                    double tol = std::numeric_limits<double>::max()) {
+  cell->SetPosition(bdm_position);
+  double grid_value_from_agent = scalar_field->GetSolutionAtAgentPosition(cell);
+  double grid_value_from_position =
+      scalar_field->GetSolutionAtPosition(bdm_position).second;
+  double computed_fe_index_from_position =
+      scalar_field->GetSolutionAtPosition(bdm_position).first;
+  double computed_fe_index_from_agent = cell->GetFiniteElementID();
+  if (tol == std::numeric_limits<double>::max()) {
+    EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value_from_position);
+    EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value_from_agent);
+  } else {
+    EXPECT_NE(bdm_position.Norm(), grid_value_from_position);
+    EXPECT_LT(abs(bdm_position.Norm() - grid_value_from_position),
+              grid_value_from_position * tol);
+    EXPECT_NE(bdm_position.Norm(), grid_value_from_agent);
+    EXPECT_LT(abs(bdm_position.Norm() - grid_value_from_agent),
+              grid_value_from_agent * tol);
+  }
+  EXPECT_NE(std::numeric_limits<int>::max(), computed_fe_index_from_position);
+  EXPECT_NE(std::numeric_limits<int>::max(), computed_fe_index_from_agent);
+}
+
+// Get the current value of steady clock from chrono library.
+std::chrono::steady_clock::time_point GetChronoTime() {
+  return std::chrono::steady_clock::now();
+}
+
+// Compute the duration that passed between two time points in
+// nanoseconds.
+int64_t ComputeDuration(std::chrono::steady_clock::time_point& end,
+                        std::chrono::steady_clock::time_point& start) {
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start)
+      .count();
+}
+
 // We test if the SetODESolver member function works correctly. Especially, we
 // test if the mapping between the enum MFEMODESolver and the member is correct.
 TEST(TimeDependentScalarField3dTest, SetODESolver) {
-  // Create a simple one element hex mesh
-  mfem::Mesh* mesh = CreateMesh();
-
-  // Define function to set inital values of the Mesh
-  auto InitializeGridValues = [&](const mfem::Vector& x) { return 0.0; };
-
-  // Define numeric parameters
-  std::vector<double> parameters{0.1};
-
-  // Define empty functions vector for constructor
-  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
-
-  // Create TimeDependentScalarField3d
-  TimeDependentScalarField3d scalar_field(
-      mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
-      InitializeGridValues, parameters, operator_functions);
+  auto* scalar_field = InitializeScalarField();
 
   std::string scalar_field_name;
-  auto* tmp = scalar_field.GetODESolver();
+  auto* tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("BackwardEuler") != std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kBackwardEulerSolver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kBackwardEulerSolver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("BackwardEulerSolver") !=
               std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kSDIRK23Solver2);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kSDIRK23Solver2);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("SDIRK23Solver") != std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kSDIRK33Solver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kSDIRK33Solver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("SDIRK33Solver") != std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kForwardEulerSolver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kForwardEulerSolver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("ForwardEulerSolver") !=
               std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kRK2Solver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kRK2Solver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("RK2Solver") != std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kRK3SSPSolver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kRK3SSPSolver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("RK3SSPSolver") != std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kRK4Solver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kRK4Solver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("RK4Solver") != std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kGeneralizedAlphaSolver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kGeneralizedAlphaSolver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("GeneralizedAlphaSolver") !=
               std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kImplicitMidpointSolver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kImplicitMidpointSolver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("ImplicitMidpointSolver") !=
               std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kSDIRK23Solver1);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kSDIRK23Solver1);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("SDIRK23Solver") != std::string::npos);
-  scalar_field.SetODESolver(MFEMODESolver::kSDIRK34Solver);
-  tmp = scalar_field.GetODESolver();
+  scalar_field->SetODESolver(MFEMODESolver::kSDIRK34Solver);
+  tmp = scalar_field->GetODESolver();
   scalar_field_name = typeid(*tmp).name();
   EXPECT_TRUE(scalar_field_name.find("SDIRK34Solver") != std::string::npos);
-  delete mesh;
+  delete scalar_field->GetMesh();
+  delete scalar_field;
 }
 
 // We test if the SetOperator and GetMolOperator member function work
 // correctly. Moreover, we test if the mapping between the enum PDEOperator
 // and the members are correct.
 TEST(TimeDependentScalarField3dTest, SetOperator) {
-  // Create a simple one element hex mesh
-  mfem::Mesh* mesh = CreateMesh();
-
-  // Define function to set inital values of the Mesh
-  auto InitializeGridValues = [&](const mfem::Vector& x) { return 0.0; };
-
-  // Define numeric parameters
-  std::vector<double> parameters{0.1, 0.2};
-
-  // Define empty functions vector for constructor
-  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
-  operator_functions.push_back(InitializeGridValues);
-
-  // Create TimeDependentScalarField3d
-  TimeDependentScalarField3d scalar_field(
-      mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
-      InitializeGridValues, parameters, operator_functions);
+  auto* scalar_field = InitializeScalarField();
 
   std::string operator_name;
-  auto* tmp = scalar_field.GetMolOperator();
+  auto* tmp = scalar_field->GetMolOperator();
   operator_name = typeid(*tmp).name();
   EXPECT_TRUE(operator_name.find("DiffusionOperator") != std::string::npos);
-  scalar_field.SetOperator(PDEOperator::kDiffusionWithFunction);
-  tmp = scalar_field.GetMolOperator();
+  scalar_field->SetOperator(PDEOperator::kDiffusionWithFunction);
+  tmp = scalar_field->GetMolOperator();
   operator_name = typeid(*tmp).name();
   EXPECT_TRUE(operator_name.find("DiffusionOperator") != std::string::npos);
-  scalar_field.SetOperator(PDEOperator::kConduction);
-  tmp = scalar_field.GetMolOperator();
+  scalar_field->SetOperator(PDEOperator::kConduction);
+  tmp = scalar_field->GetMolOperator();
   operator_name = typeid(*tmp).name();
   EXPECT_TRUE(operator_name.find("ConductionOperator") != std::string::npos);
-  delete mesh;
+  delete scalar_field->GetMesh();
+  delete scalar_field;
 }
 
 // Here, we test if the scalar_field actually takes the correct time steps and
 // simulates the right amount of time.
 TEST(TimeDependentScalarField3dTest, Step) {
-  // Create a simple one element hex mesh
-  mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
-
-  // Define function to set inital values of the Mesh
-  auto InitializeGridValues = [&](const mfem::Vector& x) { return x[0]; };
-
-  // Define numeric parameters
-  std::vector<double> parameters{0.1};
-
-  // Define empty functions vector for constructor
-  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
-
-  // Create TimeDependentScalarField3d
-  TimeDependentScalarField3d scalar_field(
-      &mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
-      InitializeGridValues, parameters, operator_functions);
+  auto* scalar_field = InitializeScalarField();
 
   // Define time steps
   size_t num_steps{200};
@@ -237,31 +244,15 @@ TEST(TimeDependentScalarField3dTest, Step) {
 
   // Check if steps are simulated correctly.
   for (size_t i = 0; i < num_steps; i++) {
-    scalar_field.Step(time_steps[i]);
-    EXPECT_EQ(sim_time[i], scalar_field.GetSimTime());
+    scalar_field->Step(time_steps[i]);
+    EXPECT_EQ(sim_time[i], scalar_field->GetSimTime());
   }
+  delete scalar_field->GetMesh();
+  delete scalar_field;
 }
 
 // We test if we correctly copy from a bdm Double3 to a mfem::Vector.
 TEST(TimeDependentScalarField3dTest, ConvertToMFEMVector) {
-  // Create a simple one element hex mesh
-  mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
-
-  // Define function to set inital values of the Mesh
-  auto InitializeGridValues = [&](const mfem::Vector& x) { return x[0]; };
-
-  // Define numeric parameters
-  std::vector<double> parameters{0.1};
-
-  // Define empty functions vector for constructor
-  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
-
-  // Create TimeDependentScalarField3d
-  TimeDependentScalarField3d scalar_field(
-      &mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
-      InitializeGridValues, parameters, operator_functions);
-
   // Test the conversion
   Double3 bdm{0.1, 0.2, 0.3};
   mfem::Vector mfem_vec = ConvertToMFEMVector(bdm);
@@ -274,23 +265,7 @@ TEST(TimeDependentScalarField3dTest, ConvertToMFEMVector) {
 // Here, we test if we can read of the solution of the grid at specific
 // postions by providing the agent itself.
 TEST(TimeDependentScalarField3dTest, ContainedInElementOrNeighbour) {
-  // Create a simple one element hex mesh
-  mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
-
-  // Define function to set inital values of the Mesh
-  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
-
-  // Define numeric parameters
-  std::vector<double> parameters{0.1};
-
-  // Define empty functions vector for constructor
-  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
-
-  // Create TimeDependentScalarField3d
-  TimeDependentScalarField3d scalar_field(
-      &mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
-      InitializeGridValues, parameters, operator_functions);
+  auto* scalar_field = InitializeScalarField();
 
   // Check the Function initialization at a few points
   Double3 bdm_position;
@@ -299,16 +274,16 @@ TEST(TimeDependentScalarField3dTest, ContainedInElementOrNeighbour) {
   bdm_position[2] = 0.72717444;
 
   // Locate Agent
-  auto res = scalar_field.GetSolutionAtPosition(bdm_position);
+  auto res = scalar_field->GetSolutionAtPosition(bdm_position);
   int fe_id = res.first;
   double grid_value = res.second;
   EXPECT_LT(abs(bdm_position.Norm() - grid_value), 0.1);
 
   // Test if contained in element
   mfem::IntegrationPoint ip;
-  EXPECT_TRUE(scalar_field.ContainedInElement(bdm_position, fe_id, ip));
-  EXPECT_FALSE(scalar_field.ContainedInElement(bdm_position, fe_id + 1, ip));
-  EXPECT_FALSE(scalar_field.ContainedInElement(bdm_position, fe_id - 1, ip));
+  EXPECT_TRUE(scalar_field->ContainedInElement(bdm_position, fe_id, ip));
+  EXPECT_FALSE(scalar_field->ContainedInElement(bdm_position, fe_id + 1, ip));
+  EXPECT_FALSE(scalar_field->ContainedInElement(bdm_position, fe_id - 1, ip));
 
   // Move to Neighboring boxes and see if we find the neighbour boxes
   for (int dimension = 0; dimension < 3; dimension++) {
@@ -316,8 +291,8 @@ TEST(TimeDependentScalarField3dTest, ContainedInElementOrNeighbour) {
     auto new_position_2 = bdm_position;
     new_position_1[dimension] += 0.1;
     new_position_2[dimension] -= 0.1;
-    auto res1 = scalar_field.ContainedInNeighbors(new_position_1, fe_id, ip);
-    auto res2 = scalar_field.ContainedInNeighbors(new_position_2, fe_id, ip);
+    auto res1 = scalar_field->ContainedInNeighbors(new_position_1, fe_id, ip);
+    auto res2 = scalar_field->ContainedInNeighbors(new_position_2, fe_id, ip);
     EXPECT_NE(res1, fe_id);
     EXPECT_NE(res2, fe_id);
     EXPECT_NE(res1, res2);
@@ -326,105 +301,28 @@ TEST(TimeDependentScalarField3dTest, ContainedInElementOrNeighbour) {
     // move further and expect not to find it in neighbors
     new_position_1[dimension] += 0.1;
     new_position_2[dimension] -= 0.1;
-    res1 = scalar_field.ContainedInNeighbors(new_position_1, fe_id, ip);
-    res2 = scalar_field.ContainedInNeighbors(new_position_2, fe_id, ip);
+    res1 = scalar_field->ContainedInNeighbors(new_position_1, fe_id, ip);
+    res2 = scalar_field->ContainedInNeighbors(new_position_2, fe_id, ip);
     EXPECT_EQ(res1, std::numeric_limits<int>::max());
     EXPECT_EQ(res2, std::numeric_limits<int>::max());
   }
+
+  delete scalar_field->GetMesh();
+  delete scalar_field;
 }
 
 // Here, we test if we can read of the solution of the grid at specific
-// postions by providing the postion directly.
-TEST(TimeDependentScalarField3dTest, GetSolutionAtPosition) {
-  // Create a simple one element hex mesh
-  mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
-  mesh.UniformRefinement();
-  mesh.UniformRefinement();
-
-  // Define function to set inital values of the Mesh
-  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
-
-  // Define numeric parameters
-  std::vector<double> parameters{0.1};
-
-  // Define empty functions vector for constructor
-  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
-
-  // Create TimeDependentScalarField3d
-  TimeDependentScalarField3d scalar_field(
-      &mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
-      InitializeGridValues, parameters, operator_functions);
-
-  // Check the Function initialization at a few points
-  Double3 bdm_position;
-  double grid_value;
-
-  // Case 1 (On nodes by construction)
-  bdm_position[0] = 0.1;
-  bdm_position[1] = 0.2;
-  bdm_position[2] = 0.3;
-  grid_value = scalar_field.GetSolutionAtPosition(bdm_position).second;
-  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
-
-  // Case  (On nodes by construction - after first refinement)
-  bdm_position[0] = 0.75;
-  bdm_position[1] = 0.6;
-  bdm_position[2] = 0.85;
-  grid_value = scalar_field.GetSolutionAtPosition(bdm_position).second;
-  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
-
-  // Case  (On nodes by construction - after second refinement)
-  bdm_position[0] = 0.325;
-  bdm_position[1] = 0.175;
-  bdm_position[2] = 0.550;
-  grid_value = scalar_field.GetSolutionAtPosition(bdm_position).second;
-  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
-
-  // Case  (Not on nodes by construction - after second refinement)
-  bdm_position[0] = 0.43291034;
-  bdm_position[1] = 0.54829203;
-  bdm_position[2] = 0.92717444;
-  grid_value = scalar_field.GetSolutionAtPosition(bdm_position).second;
-  EXPECT_NE(bdm_position.Norm(), grid_value);
-  EXPECT_LT(abs(bdm_position.Norm() - grid_value), grid_value * 0.001);
-}
-
-// Here, we test if we can read of the solution of the grid at specific
-// postions by providing the agent itself.
-TEST(TimeDependentScalarField3dTest, GetSolutionAtAgentPosition) {
-  // Create a simple one element hex mesh
-  mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::TETRAHEDRON);
-  mesh.UniformRefinement();
-  mesh.UniformRefinement();
-
-  // Define function to set inital values of the Mesh
-  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
-
-  // Define numeric parameters
-  std::vector<double> parameters{0.1};
-
-  // Define empty functions vector for constructor
-  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
-
-  // Create TimeDependentScalarField3d
-  TimeDependentScalarField3d scalar_field(
-      &mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
-      InitializeGridValues, parameters, operator_functions);
+// postions by providing the agent or the position.
+TEST(TimeDependentScalarField3dTest, GetSolutionAtAgentAndPosition) {
+  auto* scalar_field = InitializeScalarField(2);
 
   // Dummy simulation
   Simulation simulation(
       "TimeDependentScalarField3dTest-GetSolutionAtAgentPosition");
-  auto* rm = simulation.GetResourceManager();
-  auto* scheduler = simulation.GetScheduler();
   auto* cell = new Cell(1.0);
-  rm->AddAgent(cell);
-  scheduler->FinalizeInitialization();
 
   // Check the Function initialization at a few points
   Double3 bdm_position;
-  double grid_value;
 
   // Check if finite element id of the agent is initalized correctly. After
   // checking the value at the agent position, the agents should remember the
@@ -435,38 +333,29 @@ TEST(TimeDependentScalarField3dTest, GetSolutionAtAgentPosition) {
   bdm_position[0] = 0.1;
   bdm_position[1] = 0.2;
   bdm_position[2] = 0.3;
-  cell->SetPosition(bdm_position);
-  grid_value = scalar_field.GetSolutionAtAgentPosition(cell);
-  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
-  EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+  TestGridValues(scalar_field, bdm_position, cell);
 
   // Case  (On nodes by construction - after first refinement)
   bdm_position[0] = 0.75;
   bdm_position[1] = 0.6;
   bdm_position[2] = 0.85;
-  cell->SetPosition(bdm_position);
-  grid_value = scalar_field.GetSolutionAtAgentPosition(cell);
-  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
-  EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+  TestGridValues(scalar_field, bdm_position, cell);
 
   // Case  (On nodes by construction - after second refinement)
   bdm_position[0] = 0.325;
   bdm_position[1] = 0.175;
   bdm_position[2] = 0.550;
-  cell->SetPosition(bdm_position);
-  grid_value = scalar_field.GetSolutionAtAgentPosition(cell);
-  EXPECT_DOUBLE_EQ(bdm_position.Norm(), grid_value);
-  EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+  TestGridValues(scalar_field, bdm_position, cell);
 
   // Case  (Not on nodes by construction - after second refinement)
   bdm_position[0] = 0.43291034;
   bdm_position[1] = 0.54829203;
   bdm_position[2] = 0.92717444;
-  cell->SetPosition(bdm_position);
-  grid_value = scalar_field.GetSolutionAtAgentPosition(cell);
-  EXPECT_NE(bdm_position.Norm(), grid_value);
-  EXPECT_LT(abs(bdm_position.Norm() - grid_value), grid_value * 0.001);
-  EXPECT_NE(cell->GetFiniteElementID(), std::numeric_limits<int>::max());
+  TestGridValues(scalar_field, bdm_position, cell, 0.001);
+
+  delete cell;
+  delete scalar_field->GetMesh();
+  delete scalar_field;
 }
 
 // Here, we test if we can read of the solution of the grid at specific
@@ -474,23 +363,7 @@ TEST(TimeDependentScalarField3dTest, GetSolutionAtAgentPosition) {
 // see if our accelerated search (first previous element, then neighbors, then
 // checking all elements) accelerates the application as expected.
 TEST(TimeDependentScalarField3dTest, StepByStepLocalization) {
-  // Create a simple one element hex mesh
-  mfem::Mesh mesh =
-      mfem::Mesh::MakeCartesian3D(20, 20, 20, mfem::Element::Type::TETRAHEDRON);
-
-  // Define function to set inital values of the Mesh
-  auto InitializeGridValues = [&](const mfem::Vector& x) { return x.Norml2(); };
-
-  // Define numeric parameters
-  std::vector<double> parameters{0.1};
-
-  // Define empty functions vector for constructor
-  std::vector<std::function<double(const mfem::Vector&)>> operator_functions;
-
-  // Create TimeDependentScalarField3d
-  TimeDependentScalarField3d scalar_field(
-      &mesh, 1, 3, MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
-      InitializeGridValues, parameters, operator_functions);
+  auto* scalar_field = InitializeScalarField(1);
 
   // Dummy simulation
   int num_agents = 10;
@@ -522,14 +395,12 @@ TEST(TimeDependentScalarField3dTest, StepByStepLocalization) {
   });
 
   // Case 1 (Locate agents with linear search in mesh)
-  std::chrono::steady_clock::time_point begin_linear_search =
-      std::chrono::steady_clock::now();
+  auto begin_linear_search = GetChronoTime();
   rm->ForEachAgent([&](Agent* agent) {
-    double grid_value = scalar_field.GetSolutionAtAgentPosition(agent);
+    double grid_value = scalar_field->GetSolutionAtAgentPosition(agent);
     EXPECT_LT(abs(agent->GetPosition().Norm() - grid_value), abs_error);
   });
-  std::chrono::steady_clock::time_point end_linear_search =
-      std::chrono::steady_clock::now();
+  auto end_linear_search = GetChronoTime();
   rm->ForEachAgent([&](Agent* agent) {
     EXPECT_NE(agent->GetFiniteElementID(), std::numeric_limits<int>::max());
   });
@@ -539,17 +410,15 @@ TEST(TimeDependentScalarField3dTest, StepByStepLocalization) {
   mfem::IntegrationPoint dummy;
   rm->ForEachAgent([&](Agent* agent) {
     EXPECT_EQ(true,
-              scalar_field.ContainedInElement(
+              scalar_field->ContainedInElement(
                   agent->GetPosition(), agent->GetFiniteElementID(), dummy));
   });
-  std::chrono::steady_clock::time_point begin_no_search =
-      std::chrono::steady_clock::now();
+  auto begin_no_search = GetChronoTime();
   rm->ForEachAgent([&](Agent* agent) {
-    double grid_value = scalar_field.GetSolutionAtAgentPosition(agent);
+    double grid_value = scalar_field->GetSolutionAtAgentPosition(agent);
     EXPECT_LT(abs(agent->GetPosition().Norm() - grid_value), abs_error);
   });
-  std::chrono::steady_clock::time_point end_no_search =
-      std::chrono::steady_clock::now();
+  auto end_no_search = GetChronoTime();
 
   // Case 3 (Repeat exercise, this time agents should already know their
   // position but we move it into a neighbor element. The search should be
@@ -558,34 +427,28 @@ TEST(TimeDependentScalarField3dTest, StepByStepLocalization) {
   rm->ForEachAgent([&](Agent* agent) {
     agent->SetPosition(agent->GetPosition() + random->UniformArray<3>(0.01));
   });
-  scalar_field.UpdateElementToVertexTable();
-  std::chrono::steady_clock::time_point begin_neighbor_search =
-      std::chrono::steady_clock::now();
+  scalar_field->UpdateElementToVertexTable();
+  auto begin_neighbor_search = GetChronoTime();
   rm->ForEachAgent([&](Agent* agent) {
-    double grid_value = scalar_field.GetSolutionAtAgentPosition(agent);
+    double grid_value = scalar_field->GetSolutionAtAgentPosition(agent);
     EXPECT_LT(abs(agent->GetPosition().Norm() - grid_value), abs_error);
   });
-  std::chrono::steady_clock::time_point end_neighbor_search =
-      std::chrono::steady_clock::now();
+  auto end_neighbor_search = GetChronoTime();
 
   // Compute search times
   auto duration_linear_search =
-      std::chrono::duration_cast<std::chrono::nanoseconds>(end_linear_search -
-                                                           begin_linear_search)
-          .count();
-  auto duration_no_search =
-      std::chrono::duration_cast<std::chrono::nanoseconds>(end_no_search -
-                                                           begin_no_search)
-          .count();
+      ComputeDuration(end_linear_search, begin_linear_search);
+  auto duration_no_search = ComputeDuration(end_no_search, begin_no_search);
   auto duration_neighbor_search =
-      std::chrono::duration_cast<std::chrono::nanoseconds>(
-          end_neighbor_search - begin_neighbor_search)
-          .count();
+      ComputeDuration(end_neighbor_search, begin_neighbor_search);
 
   // Test if our search acceleration matches our expectation.
   EXPECT_LT(duration_no_search, duration_neighbor_search);
   EXPECT_LT(duration_no_search, duration_linear_search);
   EXPECT_LT(duration_neighbor_search, duration_linear_search);
+
+  delete scalar_field->GetMesh();
+  delete scalar_field;
 }
 
 // This test tests if we correctly compute the AgentProbabilityDistribution
@@ -814,7 +677,7 @@ TEST(MFEMIntegrationDeathTest, VerifyCornersInMesh) {
         };
         InitializeSimulation(TEST_NAME, set_param);
       },
-      ".*Point could not be located in Mesh*");
+      ".*Your agent simulation is not fully contained in the FE mesh*");
 }
 
 }  // namespace experimental
