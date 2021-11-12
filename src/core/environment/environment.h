@@ -15,6 +15,8 @@
 #ifndef CORE_ENVIRONMENT_ENVIRONMENT_H_
 #define CORE_ENVIRONMENT_ENVIRONMENT_H_
 
+#include <omp.h>
+#include <cassert>
 #include <mutex>
 #include <vector>
 #include "core/agent/agent.h"
@@ -31,7 +33,6 @@ class Environment {
   // E.g. load balancing can result in an environment that does no longer
   // describe the actual state of the simulation.
   bool out_of_sync_ = true;
-  Spinlock lock_;
 
  public:
   virtual ~Environment() {}
@@ -45,14 +46,13 @@ class Environment {
     out_of_sync_ = true;
   }
 
-  // ToDiscuss(lukas): perfomance implication: what happens if
-  // UpdateImplementation contains a parallel region?
-  /// Updates the environment if it is marked as out of sync.
+  /// Updates the environment if it is marked as out_of_sync_. This function
+  /// should not be called in parallel regions for performance reasons.
   void Update() {
+    assert(!omp_in_parallel() && "Update called in parallel region.");
     if (!out_of_sync_) {
       return;
     }
-    std::lock_guard<Spinlock> guard(lock_);
     if (out_of_sync_) {
       UpdateImplementation();
       out_of_sync_ = false;
