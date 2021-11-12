@@ -85,16 +85,16 @@ void OctreeEnvironment::UpdateImplementation() {
   }
 }
 
-void OctreeEnvironment::ForEachNeighborImplementation(
-    Functor<void, Agent*, double>& lambda, const Agent& query,
-    double squared_radius) {
-  ForEachNeighborImplementation(lambda, query.GetPosition(), squared_radius,
-                                &query);
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                                        const Agent& query,
+                                        double squared_radius) {
+  ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
 }
 
-void OctreeEnvironment::ForEachNeighborImplementation(
-    Functor<void, Agent*, double>& lambda, const Double3& query_position,
-    double squared_radius, const Agent* query_agent) {
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                                        const Double3& query_position,
+                                        double squared_radius,
+                                        const Agent* query_agent) {
   std::vector<uint32_t> neighbors;
   std::vector<double> distances;
 
@@ -113,10 +113,10 @@ void OctreeEnvironment::ForEachNeighborImplementation(
   }
 }
 
-void OctreeEnvironment::ForEachNeighborImplementation(
-    Functor<void, Agent*>& lambda, const Agent& query, void* criteria) {
-  Log::Fatal("OctreeEnvironment::ForEachNeighborImplementation",
-             "You tried to call a specific ForEachNeighborImplementation in an "
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*>& lambda,
+                                        const Agent& query, void* criteria) {
+  Log::Fatal("OctreeEnvironment::ForEachNeighbor",
+             "You tried to call a specific ForEachNeighbor in an "
              "environment that does not yet support it.");
 }
 

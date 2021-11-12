@@ -53,13 +53,10 @@ class MyEnvironment : public Environment {
 
   std::unordered_map<std::string, std::vector<Agent*>> agents_per_city_;
 
- protected:
-  void UpdateImplementation() override {}
   // In this environment a neighboring agent is an agent who is from the same
   // `city` as the query agent
-  void ForEachNeighborImplementation(Functor<void, Agent*>& lambda,
-                                     const Agent& query,
-                                     void* criteria) override {
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria) override {
     // Even though the criteria could have been typed as a std::string, this
     // example shows that you can wrap any number of criteria in a struct
     auto casted_criteria = static_cast<Criteria*>(criteria);
@@ -69,13 +66,15 @@ class MyEnvironment : public Environment {
       }
     }
   }
-  void ForEachNeighborImplementation(Functor<void, Agent*, double>& lambda,
-                                     const Agent& query,
-                                     double squared_radius) override{};
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Agent& query, double squared_radius) override{};
 
-  void ForEachNeighborImplementation(
-      Functor<void, Agent*, double>& lambda, const Double3& query_position,
-      double squared_radius, const Agent* query_agent = nullptr) override{};
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Double3& query_position, double squared_radius,
+                       const Agent* query_agent = nullptr) override{};
+
+ protected:
+  void UpdateImplementation() override {}
 };
 
 struct FindNeighborsInCity : public Functor<void, Agent*> {

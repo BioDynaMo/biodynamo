@@ -353,6 +353,117 @@ class UniformGridEnvironment : public Environment {
     return box_coord;
   }
 
+  /// @brief      Applies the given lambda to each neighbor of the specified
+  ///             agent is within the squared radius.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
+  ///
+  /// @param[in]  lambda    The operation as a lambda
+  /// @param      query     The query object
+  /// @param      squared_radius  The squared search radius (type: double*)
+  ///
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Agent& query, double squared_radius) override {
+    ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
+  }
+
+  /// @brief      Applies the given lambda to each neighbor of the specified
+  ///             position within the squared radius.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
+  ///
+  /// @param[in]  lambda    The operation as a lambda
+  /// @param      query_position  The query position
+  /// @param      squared_radius  The squared search radius (type: double*)
+  ///
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Double3& query_position, double squared_radius,
+                       const Agent* query_agent = nullptr) override {
+    if (squared_radius > box_length_squared_) {
+      Log::Fatal(
+          "UniformGridEnvironment::ForEachNeighbor",
+          "The requested search radius (", std::sqrt(squared_radius), ")",
+          " of the neighborhood search exceeds the "
+          "box length (",
+          box_length_, "). The resulting neighborhood would be incomplete.");
+    }
+
+    const auto& position = query_position;
+    uint32_t idx{std::numeric_limits<uint32_t>::max()};
+    if (query_agent != nullptr) {
+      idx = query_agent->GetBoxIdx();
+    }
+    // Freshly created agents are initialized with the largest uint32_t number
+    // available. The above line assumes that the agent has already been located
+    // in the grid, but this assumption does not hold for new agents. Hence, for
+    // new agents, we manually compute the box index. This is also necessary if
+    // we want to find the neighbors of a arbitrary 3D coordinate rather than
+    // the neighbors of an agent.
+    if (idx == std::numeric_limits<uint32_t>::max()) {
+      idx = GetBoxIndex(position);
+    }
+
+    FixedSizeVector<const Box*, 27> neighbor_boxes;
+    GetMooreBoxes(&neighbor_boxes, idx);
+
+    auto* rm = Simulation::GetActive()->GetResourceManager();
+
+    NeighborIterator ni(neighbor_boxes, timestamp_);
+    const unsigned batch_size = 64;
+    uint64_t size = 0;
+    Agent* agents[batch_size] __attribute__((aligned(64)));
+    double x[batch_size] __attribute__((aligned(64)));
+    double y[batch_size] __attribute__((aligned(64)));
+    double z[batch_size] __attribute__((aligned(64)));
+    double squared_distance[batch_size] __attribute__((aligned(64)));
+
+    auto process_batch = [&]() {
+#pragma omp simd
+      for (uint64_t i = 0; i < size; ++i) {
+        const double dx = x[i] - position[0];
+        const double dy = y[i] - position[1];
+        const double dz = z[i] - position[2];
+
+        squared_distance[i] = dx * dx + dy * dy + dz * dz;
+      }
+
+      for (uint64_t i = 0; i < size; ++i) {
+        if (squared_distance[i] < squared_radius) {
+          lambda(agents[i], squared_distance[i]);
+        }
+      }
+      size = 0;
+    };
+
+    while (!ni.IsAtEnd()) {
+      auto ah = *ni;
+      // increment iterator already here to hide memory latency
+      ++ni;
+      auto* agent = rm->GetAgent(ah);
+      if (agent != query_agent) {
+        agents[size] = agent;
+        const auto& pos = agent->GetPosition();
+        x[size] = pos[0];
+        y[size] = pos[1];
+        z[size] = pos[2];
+        size++;
+        if (size == batch_size) {
+          process_batch();
+        }
+      }
+    }
+    process_batch();
+  };
+
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria) override {
+    Log::Fatal("UniformGridEnvironment::ForEachNeighbor",
+               "You tried to call a specific ForEachNeighbor in an "
+               "environment that does not yet support it.");
+  }
+
   // NeighborMutex ---------------------------------------------------------
 
   /// This class ensures thread-safety for the InPlaceExecutionContext for the
@@ -547,111 +658,6 @@ class UniformGridEnvironment : public Environment {
             "Param::min_bound, and Param::max_bound.");
       }
     }
-  }
-
-  /// @brief      Applies the given lambda to each neighbor of the specified
-  ///             agent is within the squared radius (i.e. the criteria)
-  ///
-  /// In simulation code do not use this function directly. Use the same
-  /// function from the execution context (e.g. `InPlaceExecutionContext`)
-  ///
-  /// @param[in]  lambda    The operation as a lambda
-  /// @param      query     The query object
-  /// @param      squared_radius  The squared search radius (type: double*)
-  ///
-  void ForEachNeighborImplementation(Functor<void, Agent*, double>& lambda,
-                                     const Agent& query,
-                                     double squared_radius) override {
-    ForEachNeighborImplementation(lambda, query.GetPosition(), squared_radius,
-                                  &query);
-  }
-
-  void ForEachNeighborImplementation(
-      Functor<void, Agent*, double>& lambda, const Double3& query_position,
-      double squared_radius, const Agent* query_agent = nullptr) override {
-    if (squared_radius > box_length_squared_) {
-      Log::Fatal(
-          "UniformGridEnvironment::ForEachNeighbor",
-          "The requested search radius (", std::sqrt(squared_radius), ")",
-          " of the neighborhood search exceeds the "
-          "box length (",
-          box_length_, "). The resulting neighborhood would be incomplete.");
-    }
-
-    const auto& position = query_position;
-    uint32_t idx{std::numeric_limits<uint32_t>::max()};
-    if (query_agent != nullptr) {
-      idx = query_agent->GetBoxIdx();
-    }
-    // Freshly created agents are initialized with the largest uint32_t number
-    // available. The above line assumes that the agent has already been located
-    // in the grid, but this assumption does not hold for new agents. Hence, for
-    // new agents, we manually compute the box index. This is also necessary if
-    // we want to find the neighbors of a arbitrary 3D coordinate rather than
-    // the neighbors of an agent.
-    if (idx == std::numeric_limits<uint32_t>::max()) {
-      idx = GetBoxIndex(position);
-    }
-
-    FixedSizeVector<const Box*, 27> neighbor_boxes;
-    GetMooreBoxes(&neighbor_boxes, idx);
-
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
-    NeighborIterator ni(neighbor_boxes, timestamp_);
-    const unsigned batch_size = 64;
-    uint64_t size = 0;
-    Agent* agents[batch_size] __attribute__((aligned(64)));
-    double x[batch_size] __attribute__((aligned(64)));
-    double y[batch_size] __attribute__((aligned(64)));
-    double z[batch_size] __attribute__((aligned(64)));
-    double squared_distance[batch_size] __attribute__((aligned(64)));
-
-    auto process_batch = [&]() {
-#pragma omp simd
-      for (uint64_t i = 0; i < size; ++i) {
-        const double dx = x[i] - position[0];
-        const double dy = y[i] - position[1];
-        const double dz = z[i] - position[2];
-
-        squared_distance[i] = dx * dx + dy * dy + dz * dz;
-      }
-
-      for (uint64_t i = 0; i < size; ++i) {
-        if (squared_distance[i] < squared_radius) {
-          lambda(agents[i], squared_distance[i]);
-        }
-      }
-      size = 0;
-    };
-
-    while (!ni.IsAtEnd()) {
-      auto ah = *ni;
-      // increment iterator already here to hide memory latency
-      ++ni;
-      auto* agent = rm->GetAgent(ah);
-      if (agent != query_agent) {
-        agents[size] = agent;
-        const auto& pos = agent->GetPosition();
-        x[size] = pos[0];
-        y[size] = pos[1];
-        z[size] = pos[2];
-        size++;
-        if (size == batch_size) {
-          process_batch();
-        }
-      }
-    }
-    process_batch();
-  };
-
-  void ForEachNeighborImplementation(Functor<void, Agent*>& lambda,
-                                     const Agent& query,
-                                     void* criteria) override {
-    Log::Fatal(
-        "UniformGridEnvironment::ForEachNeighborImplementation",
-        "You tried to call a specific ForEachNeighborImplementation in an "
-        "environment that does not yet support it.");
   }
 
  private:

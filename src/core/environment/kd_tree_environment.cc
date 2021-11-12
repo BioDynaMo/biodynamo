@@ -90,16 +90,16 @@ void KDTreeEnvironment::UpdateImplementation() {
   }
 }
 
-void KDTreeEnvironment::ForEachNeighborImplementation(
-    Functor<void, Agent*, double>& lambda, const Agent& query,
-    double squared_radius) {
-  ForEachNeighborImplementation(lambda, query.GetPosition(), squared_radius,
-                                &query);
+void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                                        const Agent& query,
+                                        double squared_radius) {
+  ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
 }
 
-void KDTreeEnvironment::ForEachNeighborImplementation(
-    Functor<void, Agent*, double>& lambda, const Double3& query_position,
-    double squared_radius, const Agent* query_agent) {
+void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                                        const Double3& query_position,
+                                        double squared_radius,
+                                        const Agent* query_agent) {
   std::vector<std::pair<uint64_t, double>> neighbors;
 
   nanoflann::SearchParams params;
@@ -119,10 +119,10 @@ void KDTreeEnvironment::ForEachNeighborImplementation(
   }
 }
 
-void KDTreeEnvironment::ForEachNeighborImplementation(
-    Functor<void, Agent*>& lambda, const Agent& query, void* criteria) {
-  Log::Fatal("KDTreeEnvironment::ForEachNeighborImplementation",
-             "You tried to call a specific ForEachNeighborImplementation in an "
+void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*>& lambda,
+                                        const Agent& query, void* criteria) {
+  Log::Fatal("KDTreeEnvironment::ForEachNeighbor",
+             "You tried to call a specific ForEachNeighbor in an "
              "environment that does not yet support it.");
 }
 

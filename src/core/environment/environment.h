@@ -68,36 +68,27 @@ class Environment {
   /// Iterates over all neighbors of a query agent that appear in a distance of
   /// less than sqrt(squared_radius). Typically, the distance is computed as the
   /// Euclidean distance in 3D environments.
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius) {
-    if (out_of_sync_) {
-      Update();
-    }
-    ForEachNeighborImplementation(lambda, query, squared_radius);
-  }
+  virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                               const Agent& query, double squared_radius) = 0;
 
   /// Iterates over all neighbors in an environment that suffices the given
   /// `criteria`. The `criteria` is type-erased to facilitate for different
   /// criteria for different environments. Check the documentation of an
   /// environment to know the criteria data type
-  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
-                       void* criteria) {
-    if (out_of_sync_) {
-      Update();
-    }
-    ForEachNeighborImplementation(lambda, query, criteria);
-  }
+  virtual void ForEachNeighbor(Functor<void, Agent*>& lambda,
+                               const Agent& query, void* criteria) = 0;
 
-  /// Iterates over all neighbors of a query position that appear in a distance
-  /// of less than sqrt(squared_radius). Typically, the distance is computed as
-  /// the Euclidean distance in 3D environments.
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Double3& query_position, double squared_radius) {
-    if (out_of_sync_) {
-      Update();
-    }
-    ForEachNeighborImplementation(lambda, query_position, squared_radius);
-  }
+  /// Iterates over all neighbors of a query position that appear in a
+  /// distance of less than sqrt(squared_radius). Typically, the distance is
+  /// computed as the Euclidean distance in 3D environments. Typically iterating
+  /// over the neighbors of a certain agent or a certain position are fairly
+  /// similar tasks. If you implement an environment, the optional argument
+  /// agent_query can be used to to treat both cases in the same function, keep
+  /// the implementation lean, and avoid redundant code.
+  virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                               const Double3& query_position,
+                               double squared_radius,
+                               const Agent* query_agent = nullptr) = 0;
 
   virtual void Clear() = 0;
 
@@ -146,27 +137,6 @@ class Environment {
   /// Member function that is called by Update() and ForceUpdate(). Pure
   /// virtual.
   virtual void UpdateImplementation() = 0;
-
-  /// Member function that is called by ForEachNeighbor(). Pure
-  /// virtual.
-  virtual void ForEachNeighborImplementation(
-      Functor<void, Agent*, double>& lambda, const Agent& query,
-      double squared_radius) = 0;
-
-  /// Member function that is called by ForEachNeighbor(). Pure
-  /// virtual.
-  virtual void ForEachNeighborImplementation(Functor<void, Agent*>& lambda,
-                                             const Agent& query,
-                                             void* criteria) = 0;
-
-  /// Member function that is called by ForEachNeighbor(). Pure
-  /// virtual. Typically iterating over the neighbors of a certain agent or a
-  /// certain position are fairly similar tasks. The optional argument
-  /// agent_query can be used to to treat both cases in the same function, keep
-  /// the implementation lean, and avoid redundant code.
-  virtual void ForEachNeighborImplementation(
-      Functor<void, Agent*, double>& lambda, const Double3& query_position,
-      double squared_radius, const Agent* query_agent = nullptr) = 0;
 
   struct SimDimensionAndLargestAgentFunctor
       : public Functor<void, Agent*, AgentHandle> {
