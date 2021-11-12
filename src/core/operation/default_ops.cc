@@ -97,6 +97,8 @@ struct TearDownIterationOp : public StandaloneOperationImpl {
     auto* sim = Simulation::GetActive();
     const auto& all_exec_ctxts = sim->GetAllExecCtxts();
     all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
+    auto* env = sim->GetEnvironment();
+    env->ForcedUpdate();
   }
 };
 
