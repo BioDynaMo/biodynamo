@@ -197,7 +197,7 @@ void TimeDependentScalarField3d::VerifyBDMCompatibility() {
   for (auto& pos : bdm_cube_corners) {
     // This function throws a fatal itself if the point `pos` is not found
     // inside the MFEM mesh.
-    auto res = FindPointInMesh(pos);
+    FindPointInMesh(pos);
   }
 }
 
@@ -330,7 +330,18 @@ TimeDependentScalarField3d::FindPointInMesh(const Double3& position) {
   // inefficiently. It would be good to have something more efficient.
   auto found = mesh_->FindPoints(mfem_position, element_id, integration_points);
   if (found == 0) {
-    Log::Fatal("FindPoints", "Point could not be located in Mesh.", position);
+    Log::Fatal("FindPoints", "Point could not be located in Mesh. Point: (",
+               position,
+               ")\nIf you see this error message, this can be for either of "
+               "some reasons:\n",
+               "1) You manually called this function for a point that is not "
+               "in the FE mesh\n"
+               "2) Your agent simulation is not fully contained in the FE mesh "
+               "- see VerifyBDMCompatibility()\n",
+               "3) An Agent tried to request a value from the continuum in the",
+               " syncronization phase but was not located inside the FE Mesh\n",
+               "4) MFEM's internal methods failed to find the point for any ",
+               "other reason.\n(This list may not be exhaustive.)");
   }
   return std::make_pair(element_id[0], integration_points[0]);
 }
