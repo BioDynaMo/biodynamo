@@ -95,7 +95,7 @@ void RunUpdateGridTest(Simulation* simulation) {
       static_cast<UniformGridEnvironment*>(simulation->GetEnvironment());
 
   // Update the grid
-  grid->ForceUpdate();
+  grid->ForcedUpdate();
 
   std::unordered_map<AgentUid, std::vector<AgentUid>> neighbors;
   neighbors.reserve(rm->GetNumAgents());
@@ -148,7 +148,7 @@ TEST(UniformGridEnvironmentTest, UpdateGrid) {
 
   CellFactory(rm, 4);
 
-  env->ForceUpdate();
+  env->ForcedUpdate();
 
   // Remove cells 1 and 42
   rm->RemoveAgent(AgentUid(1));
@@ -169,7 +169,7 @@ TEST(UniformGridEnvironmentTest, NoRaceConditionDuringUpdate) {
   // make sure that there are multiple cells per box
   rm->GetAgent(AgentUid(0))->SetDiameter(60);
 
-  env->ForceUpdate();
+  env->ForcedUpdate();
 
   // Remove cells 1 and 42
   rm->RemoveAgent(AgentUid(1));
@@ -216,7 +216,7 @@ TEST(UniformGridEnvironmentTest, GridDimensions) {
 
   CellFactory(rm, 3);
 
-  env->ForceUpdate();
+  env->ForcedUpdate();
 
   std::array<int32_t, 6> expected_dim_0 = {{-30, 90, -30, 90, -30, 90}};
   auto dim_0 = env->GetDimensions();
@@ -224,7 +224,7 @@ TEST(UniformGridEnvironmentTest, GridDimensions) {
   EXPECT_EQ(expected_dim_0, dim_0);
 
   rm->GetAgent(AgentUid(0))->SetPosition({{100, 0, 0}});
-  env->ForceUpdate();
+  env->ForcedUpdate();
   std::array<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
   auto dim_1 = env->GetDimensions();
 
@@ -260,7 +260,7 @@ TEST(UniformGridEnvironmentTest, NonEmptyBoundedTestThresholdDimensions) {
 
   rm->AddAgent(new Cell(10));
 
-  env->ForceUpdate();
+  env->ForcedUpdate();
 
   auto max_dimensions = env->GetDimensionThresholds();
   EXPECT_EQ(1, max_dimensions[0]);
@@ -280,17 +280,17 @@ TEST(UniformGridEnvironmentTest, CustomBoxLength) {
   auto cell = new Cell(10);
   rm->AddAgent(cell);
 
-  env->ForceUpdate();
+  env->ForcedUpdate();
   EXPECT_EQ(10, env->GetBoxLength());
 
   env->SetBoxLength(15);
   EXPECT_EQ(15, env->GetBoxLength());
 
-  env->ForceUpdate();
+  env->ForcedUpdate();
   EXPECT_EQ(15, env->GetBoxLength());
 
   rm->AddAgent(new Cell(20));
-  env->ForceUpdate();
+  env->ForcedUpdate();
   EXPECT_EQ(15, env->GetBoxLength());
 }
 
@@ -306,17 +306,17 @@ TEST(UniformGridEnvironmentDeathTest, CustomBoxLength) {
         auto cell = new Cell(10);
         rm->AddAgent(cell);
 
-        env->ForceUpdate();
+        env->ForcedUpdate();
         EXPECT_EQ(10, env->GetBoxLength());
 
         env->SetBoxLength(15);
         EXPECT_EQ(15, env->GetBoxLength());
 
-        env->ForceUpdate();
+        env->ForcedUpdate();
         EXPECT_EQ(15, env->GetBoxLength());
 
         rm->AddAgent(new Cell(20));
-        env->ForceUpdate();
+        env->ForcedUpdate();
         EXPECT_EQ(15, env->GetBoxLength());
 
         auto tf = TestFunctor();

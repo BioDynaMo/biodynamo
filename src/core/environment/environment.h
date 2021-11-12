@@ -60,7 +60,7 @@ class Environment {
   }
 
   /// Updates the environment. Prefer Update() for implementations.
-  void ForceUpdate() {
+  void ForcedUpdate() {
     MarkAsOutOfSync();
     Update();
   }
@@ -134,7 +134,7 @@ class Environment {
   double largest_object_size_ = 0.0;
   double largest_object_size_squared_ = 0.0;
 
-  /// Member function that is called by Update() and ForceUpdate(). Pure
+  /// Member function that is called by Update() and ForcedUpdate(). Pure
   /// virtual.
   virtual void UpdateImplementation() = 0;
 
