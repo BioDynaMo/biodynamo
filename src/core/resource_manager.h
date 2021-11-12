@@ -125,6 +125,7 @@ class ResourceManager {
     } else {
       diffusion_grids_[substance_id] = dgrid;
     }
+    MarkEnvironmentOutOfSync();
   }
 
   void RemoveDiffusionGrid(size_t substance_id) {
@@ -377,7 +378,10 @@ class ResourceManager {
         type_index_->Add(agent);
       }
     }
-    MarkEnvironmentOutOfSync();
+#pragma omp single
+    if (new_agents.size() != 0) {
+      MarkEnvironmentOutOfSync();
+    }
   }
 
   /// Removes the agent with the given uid.\n

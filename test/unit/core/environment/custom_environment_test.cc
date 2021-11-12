@@ -73,8 +73,11 @@ class MyEnvironment : public Environment {
                        const Double3& query_position, double squared_radius,
                        const Agent* query_agent = nullptr) override{};
 
+  int GetNumUpdates() { return num_updates_; }
+
  protected:
-  void UpdateImplementation() override {}
+  void UpdateImplementation() override { num_updates_ += 1; }
+  int num_updates_ = 0;
 };
 
 struct FindNeighborsInCity : public Functor<void, Agent*> {
@@ -127,6 +130,41 @@ TEST(CustomEnvironmentTest, CustomCriteria) {
   EXPECT_EQ(neighbors[person0->GetUid()].size(), 1u);
   EXPECT_EQ(neighbors[person0->GetUid()][0], person2->GetUid());
   EXPECT_EQ(neighbors[person1->GetUid()].size(), 1u);
+}
+
+TEST(CustomEnvironmentTest, NumberOfUpdates) {
+  Simulation simulation(TEST_NAME);
+
+  // Populate the environment with agents (would normally be done in the
+  // Environment::Update() call)
+  auto set_param = [&](Param* param) {
+    param->unschedule_default_operations = {"load balancing"};
+  };
+  Simulation sim(TEST_NAME, set_param);
+  // Simulation sim(TEST_NAME);
+
+  auto* rm = sim.GetResourceManager();
+  auto* scheduler = sim.GetScheduler();
+  MyEnvironment* env_ptr = new MyEnvironment();
+  sim.SetEnvironment(env_ptr);
+
+  EXPECT_EQ(env_ptr, sim.GetEnvironment());
+
+  Cell* cell = new Cell(1.0);
+  rm->AddAgent(cell);
+  // scheduler->FinalizeInitialization();
+  scheduler->Simulate(1);
+  EXPECT_EQ(2, env_ptr->GetNumUpdates());
+
+  scheduler->Simulate(1);
+  EXPECT_EQ(3, env_ptr->GetNumUpdates());
+
+  scheduler->Simulate(2);
+  EXPECT_EQ(5, env_ptr->GetNumUpdates());
+
+  rm->AddAgent(new Cell(1.0));
+  scheduler->Simulate(1);
+  EXPECT_EQ(7, env_ptr->GetNumUpdates());
 }
 
 }  // namespace bdm

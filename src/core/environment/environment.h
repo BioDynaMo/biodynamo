@@ -41,18 +41,12 @@ class Environment {
   /// that the state of the simulation might not be reflected correctly in the
   /// current environment. For instance, the load balancing operation causes
   /// such a synchronization issue and therefore calls this member function.
-  void MarkAsOutOfSync() {
-#pragma omp single
-    out_of_sync_ = true;
-  }
+  void MarkAsOutOfSync() { out_of_sync_ = true; }
 
   /// Updates the environment if it is marked as out_of_sync_. This function
   /// should not be called in parallel regions for performance reasons.
   void Update() {
     assert(!omp_in_parallel() && "Update called in parallel region.");
-    if (!out_of_sync_) {
-      return;
-    }
     if (out_of_sync_) {
       UpdateImplementation();
       out_of_sync_ = false;
