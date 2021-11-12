@@ -14,6 +14,7 @@
 
 #include "unit/core/agent/agent_test.h"
 #include "core/behavior/stateless_behavior.h"
+#include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
@@ -324,6 +325,9 @@ TEST(AgentTest, StaticnessNeighbors) {
 
   // simulate modification from neighbor -> should be false
   aptr->SetDiameter(20);
+
+  auto* env = simulation.GetEnvironment();
+  env->ForcedUpdate();
   scheduler->Simulate(1);
   EXPECT_FALSE(static_agents_map[auid]);
   EXPECT_FALSE(static_agents_map[nuid]);
