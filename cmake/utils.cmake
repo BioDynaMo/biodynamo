@@ -277,7 +277,7 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/.clang-format
             ${CMAKE_SOURCE_DIR}/.clang-tidy
             ${CMAKE_SOURCE_DIR}/.clang-tidy-ignore
-            )
+            ${CMAKE_SOURCE_DIR}/util/simulation-template/.gitignore)
 
     add_copy_directory(copy_files_bdm
             ${CMAKE_SOURCE_DIR}/third_party/cpplint
