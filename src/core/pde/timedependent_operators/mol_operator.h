@@ -145,8 +145,8 @@ class MolOperator : public mfem::TimeDependentOperator {
     T_solver_.SetPrintLevel(0);
     T_solver_.SetPreconditioner(T_prec_);
   }
-  /// Destructor deltes instances created with `new` in the member functions and
-  /// the constructor to avoid memory leaks.
+  /// Destructor deletes instances created with `new` in the member functions
+  /// and the constructor to avoid memory leaks.
   virtual ~MolOperator() override;
 
   /// This function is called by explicit solvers. You have to modify

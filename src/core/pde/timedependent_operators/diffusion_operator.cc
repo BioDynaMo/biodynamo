@@ -64,6 +64,50 @@ void DiffusionOperator::SetParameters(const mfem::Vector &u) {
   T_ = nullptr;  // re-compute T on the next ImplicitSolve
 }
 
+DiffusionOperatorPerformance::DiffusionOperatorPerformance(
+    mfem::FiniteElementSpace &f, double diffusion_coefficient)
+    : MolOperator(f),
+      diffusion_coefficient_(diffusion_coefficient),
+      assembled_(false),
+      diffusion_function_(nullptr) {}
+
+DiffusionOperatorPerformance::DiffusionOperatorPerformance(
+    mfem::FiniteElementSpace &f, double diffusion_coefficient,
+    std::function<double(const mfem::Vector &)> diffusion_func)
+    : DiffusionOperatorPerformance(f, diffusion_coefficient) {
+  mfem::FunctionCoefficient *mfem_diffusion_func =
+      new mfem::FunctionCoefficient(diffusion_func);
+  diffusion_function_ = mfem_diffusion_func;
+}
+
+DiffusionOperatorPerformance::~DiffusionOperatorPerformance() {
+  if (diffusion_function_ != nullptr) {
+    delete diffusion_function_;
+  }
+};
+
+void DiffusionOperatorPerformance::SetParameters(const mfem::Vector &u) {
+  // We only construct the Bilinear Form K (and also T_) once
+  if (!assembled_) {
+    // Define BilinearForm K_
+    delete K_;
+    K_ = new mfem::BilinearForm(&fespace_);
+    K_->SetAssemblyLevel(mfem::AssemblyLevel::LEGACY);
+    mfem::ConstantCoefficient diff_coeff(diffusion_coefficient_);
+    K_->AddDomainIntegrator(new mfem::DiffusionIntegrator(diff_coeff));
+    if (diffusion_function_ != nullptr) {
+      K_->AddDomainIntegrator(new mfem::MassIntegrator(*diffusion_function_));
+    }
+    K_->Assemble();
+    K_->FormSystemMatrix(ess_tdof_list_, Kmat_);
+    // Compute T on the next ImplicitSolve
+    delete T_;
+    T_ = nullptr;
+    // Don't repeat assembly again
+    assembled_ = true;
+  }
+}
+
 }  // namespace experimental
 }  // namespace bdm
 
