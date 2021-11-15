@@ -141,13 +141,41 @@ void TimeDependentScalarField3d::SetOperator(int operator_id) {
       operator_ =
           new DiffusionOperator(fespace_, numeric_operator_parameters_[0]);
       break;
-    case PDEOperator::kDiffusionWithFunction:
-      if (operator_functions_.size() < 1) {
-        Log::Fatal("TimeDependentScalarField3d::SetOperator",
-                   "Wrong number of functions for DiffusionOperator.",
-                   "\nExpected: 1, Acutal: ", operator_functions_.size());
+    case PDEOperator::kDiffusionPerformance:
+      if (numeric_operator_parameters_.size() < 1) {
+        Log::Fatal(
+            "TimeDependentScalarField3d::SetOperator",
+            "Wrong number of numerical parameters for kDiffusionPerformance.",
+            "\nExpected: 1, Acutal: ", numeric_operator_parameters_.size());
       }
-      operator_ = new DiffusionOperator(fespace_, operator_functions_[0]);
+      operator_ = new DiffusionOperatorPerformance(
+          fespace_, numeric_operator_parameters_[0]);
+      break;
+    case PDEOperator::kDiffusionWithFunction:
+      if (operator_functions_.size() < 1 ||
+          numeric_operator_parameters_.size() < 1) {
+        Log::Fatal(
+            "TimeDependentScalarField3d::SetOperator",
+            "Wrong number of functions for DiffusionOperator:",
+            "\nExpected: 1, Acutal: ", operator_functions_.size(),
+            "\nor wrong number of numerical parameters:",
+            "\nExpected: 1, Acutal: ", numeric_operator_parameters_.size());
+      }
+      operator_ = new DiffusionOperator(
+          fespace_, numeric_operator_parameters_[0], operator_functions_[0]);
+      break;
+    case PDEOperator::kDiffusionWithFunctionPerformance:
+      if (operator_functions_.size() < 1 ||
+          numeric_operator_parameters_.size() < 1) {
+        Log::Fatal(
+            "TimeDependentScalarField3d::SetOperator",
+            "Wrong number of functions for DiffusionOperator:",
+            "\nExpected: 1, Acutal: ", operator_functions_.size(),
+            "\nor wrong number of numerical parameters:",
+            "\nExpected: 1, Acutal: ", numeric_operator_parameters_.size());
+      }
+      operator_ = new DiffusionOperatorPerformance(
+          fespace_, numeric_operator_parameters_[0], operator_functions_[0]);
       break;
     case PDEOperator::kConduction:
       if (numeric_operator_parameters_.size() < 2) {

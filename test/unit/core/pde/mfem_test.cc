@@ -101,7 +101,7 @@ inline void InitializeSimulation(std::string sim_name,
   // Define the first substances in our simulation
   ModelInitializer::DefineMFEMSubstanceOnMesh(
       mesh, kSubstance1, "kSubstance1", 1, 3,
-      MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusion,
+      MFEMODESolver::kBackwardEulerSolver, PDEOperator::kDiffusionPerformance,
       InitializeGridValues, parameters, operator_functions);
 }
 
@@ -220,6 +220,16 @@ TEST(TimeDependentScalarField3dTest, SetOperator) {
   tmp = scalar_field->GetMolOperator();
   operator_name = typeid(*tmp).name();
   EXPECT_TRUE(operator_name.find("DiffusionOperator") != std::string::npos);
+  scalar_field->SetOperator(PDEOperator::kDiffusionPerformance);
+  tmp = scalar_field->GetMolOperator();
+  operator_name = typeid(*tmp).name();
+  EXPECT_TRUE(operator_name.find("DiffusionOperatorPerformance") !=
+              std::string::npos);
+  scalar_field->SetOperator(PDEOperator::kDiffusionWithFunctionPerformance);
+  tmp = scalar_field->GetMolOperator();
+  operator_name = typeid(*tmp).name();
+  EXPECT_TRUE(operator_name.find("DiffusionOperatorPerformance") !=
+              std::string::npos);
   scalar_field->SetOperator(PDEOperator::kConduction);
   tmp = scalar_field->GetMolOperator();
   operator_name = typeid(*tmp).name();

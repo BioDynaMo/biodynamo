@@ -54,11 +54,27 @@ enum MFEMODESolver {
 /// Enum to specify the type of PDE for the TimeDependentScalarField3d.
 /// kDiffusion:
 /// \f[ \frac{du}{dt} = \nabla (D \nabla u), \ \f]
+/// kDiffusionPerformance:
+/// \f[ \frac{du}{dt} = \nabla (D \nabla u), \ \f]
+/// (In contrast to kDiffusion, the matrices for the ODE are constructed only
+/// once at the first time step and kept throughout the updates. This saves
+/// significant overhead.)
 /// kDiffusionWithFunction:
 /// \f[ \frac{du}{dt} = \nabla (D \nabla u) + \Gamma u, \ \f]
+/// kDiffusionWithFunctionPerformance:
+/// \f[ \frac{du}{dt} = \nabla (D \nabla u) + \Gamma u, \ \f]
+/// (In contrast to kDiffusionWithFunction the matrices for the ODE are
+/// constructed only once at the first time step and kept throughout the
+/// updates. This saves significant overhead.)
 /// kConduction:
 /// \f[ \frac{du}{dt} = \nabla \cdot (\kappa + \alpha u) \nabla u \f]
-enum PDEOperator { kDiffusion, kDiffusionWithFunction, kConduction };
+enum PDEOperator {
+  kDiffusion,
+  kDiffusionPerformance,
+  kDiffusionWithFunction,
+  kDiffusionWithFunctionPerformance,
+  kConduction
+};
 
 /// Converts a bdm::Double3 to a mfem::Vector.
 mfem::Vector ConvertToMFEMVector(const Double3& position);
@@ -149,11 +165,6 @@ class TimeDependentScalarField3d {
   double GetSolutionInElementAndIntegrationPoint(
       int element_id, const mfem::IntegrationPoint& integration_point);
 
-  /// Update the grid function. The ODE procedure operates on the coefficient
-  /// vector u_ and updates it. Before making calls to u_gf_, this routine
-  /// must be called to update it.
-  void UpdateGridFunction();
-
  public:
   /// Implementation of the Method of Lines based on MFEM.
   ///
@@ -242,6 +253,11 @@ class TimeDependentScalarField3d {
   /// back to GetSolutionAtPosition and updates the Agent's member fe_id
   /// appropriately.
   double GetSolutionAtAgentPosition(Agent* agent);
+
+  /// Update the grid function. The ODE procedure operates on the coefficient
+  /// vector u_ and updates it. Before making calls to u_gf_, this routine
+  /// must be called to update it.
+  void UpdateGridFunction();
 
   /// Set the PDE operator for the method of lines, e.g. define the equation.
   void SetOperator(MolOperator* oper);
