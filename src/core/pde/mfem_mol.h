@@ -125,6 +125,9 @@ class TimeDependentScalarField3d {
   std::string substance_name_;
   /// Number of calls to Step()
   uint64_t ode_steps_;
+  /// Parameter to track if the grid function u_gf_ and the true degrees of
+  /// freedom vector u_ are synchronized
+  bool gf_tdof_in_sync_;
 
   /// Internally used function for initialization of the ODE system.
   void Initialize();
@@ -141,11 +144,15 @@ class TimeDependentScalarField3d {
   std::pair<int, mfem::IntegrationPoint> FindPointInMesh(
       const Double3& position);
 
-  // ToDo(tobias): remove from api once benchmark script has changed.
   /// Given an element_id and a matching integration point, this function
   /// returns the solution value.
   double GetSolutionInElementAndIntegrationPoint(
       int element_id, const mfem::IntegrationPoint& integration_point);
+
+  /// Update the grid function. The ODE procedure operates on the coefficient
+  /// vector u_ and updates it. Before making calls to u_gf_, this routine
+  /// must be called to update it.
+  void UpdateGridFunction();
 
  public:
   /// Implementation of the Method of Lines based on MFEM.
@@ -192,11 +199,6 @@ class TimeDependentScalarField3d {
 
   /// Execute one ODE timestep `dt`, e.g. compute `u(t+dt)` from `u(t)`.
   void Step(double dt);
-
-  /// Update the grid function. The ODE procedure operates on the coefficient
-  /// vector u_ and updates it. Before making calls to u_gf_, this routine
-  /// must be called to update it.
-  void UpdateGridFunction();
 
   /// Print information about the PDE / Continuum model
   void PrintInfo(std::ostream& out);
