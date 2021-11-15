@@ -558,7 +558,6 @@ TEST(DiffusionTest, DynamicTimeStepping) {
   ModelInitializer::InitializeSubstance(0, GaussianBand(125, 50, Axis::kXAxis));
 
   // Simulate for one timestep
-  simulation.GetEnvironment()->Update();
   scheduler->Simulate(3);
 
   // Test if the timestep is set correctly and if the updates occur at the right

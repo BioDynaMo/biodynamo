@@ -120,7 +120,6 @@ TEST(DiffusionInitTest, InitBothArrays) {
   auto SetValues = [&](double x, double y, double z) { return 0.5; };
   ModelInitializer::InitializeSubstance(kSubstance, SetValues);
 
-  simulation.GetEnvironment()->Update();
   simulation.GetScheduler()->Simulate(1);
 
   // Test if all values in c1_ are 0.5 and if all values in c2_ are the same as
