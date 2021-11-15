@@ -34,7 +34,7 @@ function(GenerateNotebookTarget NB_NAME)
     set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
   endif()
   add_custom_target(notebook-${NB_NAME}
-      COMMAND bash -c "${LAUNCHER} jupyter nbconvert --to=html --ExecutePreprocessor.timeout=60 --execute ${CMAKE_BINARY_DIR}/notebook/${NB_NAME}.ipynb")
+      COMMAND bash -c "${LAUNCHER} jupyter nbconvert --to=html --ExecutePreprocessor.timeout=180 --execute ${CMAKE_BINARY_DIR}/notebook/${NB_NAME}.ipynb")
   add_dependencies(notebook-${NB_NAME} biodynamo)
   add_dependencies(notebook-${NB_NAME} copy_files_bdm)
 endfunction(GenerateNotebookTarget)
