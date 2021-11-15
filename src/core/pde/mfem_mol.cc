@@ -38,7 +38,8 @@ TimeDependentScalarField3d::TimeDependentScalarField3d(
       operator_functions_(std::move(operator_functions)),
       t_(0.0),
       dt_max_(std::numeric_limits<double>::max()),
-      ode_steps_(0) {
+      ode_steps_(0),
+      gf_tdof_in_sync_(true) {
   Initialize();
   SetOperator(pde_oper_id);
   SetODESolver(ode_solver_id);
@@ -177,7 +178,11 @@ void TimeDependentScalarField3d::Step(double dt) {
                  "Call to MFEM::ODESolver behaved not as expected.\n",
                  "\nTarget time: ", t_, " / ", t_target, "\n(is / expected)");
   }
-  u_gf_.SetFromTrueDofs(u_);
+  // The step function updates the tdof vector u_, thus, u_gf_ does not contain
+  // the latest information of the Simulation any longer. Once we start reading
+  // off values from the u_gf_ again, we need to update it. Here, we set a flag
+  // such that we know that we have to update it.
+  gf_tdof_in_sync_ = false;
   ode_steps_++;
 }
 
@@ -202,7 +207,10 @@ void TimeDependentScalarField3d::VerifyBDMCompatibility() {
 }
 
 void TimeDependentScalarField3d::UpdateGridFunction() {
-  u_gf_.SetFromTrueDofs(u_);
+  if (!gf_tdof_in_sync_) {
+    u_gf_.SetFromTrueDofs(u_);
+    gf_tdof_in_sync_ = true;
+  }
 }
 
 void TimeDependentScalarField3d::PrintInfo(std::ostream& out) {
@@ -354,6 +362,10 @@ double TimeDependentScalarField3d::GetSolutionInElementAndIntegrationPoint(
 std::pair<int, double> TimeDependentScalarField3d::GetSolutionAtPosition(
     const Double3& position, int finite_element_id) {
   mfem::IntegrationPoint integration_point;
+  // To read off the values, the grid function must be up to date with the tdof
+  // vector used to solve the ODE.
+  UpdateGridFunction();
+
   // 1. By default, each agent has its element set to INT_MAX. If the agent had
   // been treated before, the agent carries his previous element id. We first
   // check if the agent is still in the element.
