@@ -83,7 +83,7 @@ inline void TestNeighborSearch(Simulation& simulation) {
   scheduler->Simulate(1);
 
   // Test if there are three agents in simulation
-  EXPECT_EQ(3, rm->GetNumAgents());
+  EXPECT_EQ(3u, rm->GetNumAgents());
 
   // Define test points to check how many neighbors we find around them.
   // The distances to cells 1, 2, 3 listed as (d1, d2, d3).
@@ -100,11 +100,11 @@ inline void TestNeighborSearch(Simulation& simulation) {
   // (0.1, 5.1, 2.502) - 2 =  (-1.9, 3.1, 0.502)
   // (-1.9, 3.1, 0.502) < 0 = (1 , 0 , 0) -> result = 1
   double search_radius = 2;
-  EXPECT_EQ(1, GetNeighbors(test_point_1, search_radius));
-  EXPECT_EQ(1, GetNeighbors(test_point_2, search_radius));
-  EXPECT_EQ(1, GetNeighbors(test_point_3, search_radius));
-  EXPECT_EQ(2, GetNeighbors(test_point_4, search_radius));
-  EXPECT_EQ(0, GetNeighbors(test_point_5, search_radius));
+  EXPECT_EQ(1u, GetNeighbors(test_point_1, search_radius));
+  EXPECT_EQ(1u, GetNeighbors(test_point_2, search_radius));
+  EXPECT_EQ(1u, GetNeighbors(test_point_3, search_radius));
+  EXPECT_EQ(2u, GetNeighbors(test_point_4, search_radius));
+  EXPECT_EQ(0u, GetNeighbors(test_point_5, search_radius));
 }
 
 }  // namespace bdm
