@@ -64,6 +64,15 @@ myNeuritesDisplay.Luminosity = 10.0
 # get the material library
 materialLibrary1 = GetMaterialLibrary()
 
+# current camera placement for renderView1
+renderView1.CameraPosition = [-1024.8891945362295, 161.76612091064453, 154.97137451171875]
+renderView1.CameraFocalPoint = [149.75026893615723, 161.76612091064453, 154.97137451171875]
+renderView1.CameraViewUp = [0.0, 0.0, 1.0]
+renderView1.CameraParallelScale = 304.0190642756604
+
+# update the view to ensure updated data information
+renderView1.Update()
+
 if params.raytracing:
     pm = paraview.servermanager.vtkSMProxyManager
     if pm.GetVersionMajor() == 5 and pm.GetVersionMinor() < 7:
@@ -80,26 +89,15 @@ if params.raytracing:
     # Properties modified on renderView1
     renderView1.SamplesPerPixel = 20
 
-#### saving camera placements for all active views
-
-# current camera placement for renderView1
-renderView1.CameraPosition = [-1024.8891945362295, 161.76612091064453, 154.97137451171875]
-renderView1.CameraFocalPoint = [149.75026893615723, 161.76612091064453, 154.97137451171875]
-renderView1.CameraViewUp = [0.0, 0.0, 1.0]
-renderView1.CameraParallelScale = 304.0190642756604
-
-# update the view to ensure updated data information
-renderView1.Update()
-
 if params.screenshots:
-    SaveScreenshot('pyramidal-cell-single.png', renderView1, ImageResolution=[1200, 4000], FontScaling='Scale fonts proportionally')
-    print("Rendered image pyramidal-cell-single.png")
+    SaveScreenshot('output/pyramidal-cell-single.png', renderView1, ImageResolution=[1200, 4000], FontScaling='Scale fonts proportionally')
+    print("Created image at: output/pyramidal-cell-single.png")
 
 if params.animation:
     timesteps = GetAnimationScene().TimeKeeper.TimestepValues
     print(int(timesteps[-1]))
 
-    SaveAnimation("animation.png", renderView1, ImageResolution=[1000, 2160],
+    SaveAnimation("output/animation.png", renderView1, ImageResolution=[1000, 2160],
         FontScaling='Scale fonts proportionally',
         OverrideColorPalette='',
         StereoMode='No change',

@@ -2,10 +2,33 @@
 
 This demo simulates the growth of a pyramidal cell. 
 
-Call `./visualize.sh` to build and run the simulation and to render an image of the final neuron.
+To compile and run the simulation, execute `bdm run` in the terminal.
+The simulation will use the `bdm.json` parameter file and will create
+visualization files in directory `output/pyramidal_cell`.
 
-For more information have a look at the following publication:
+To render an image of the final neuron, execute:
 
-Breitwieser Lukas et al., "BioDynaMo: a general platform for scalable agent-based simulation" 
-bioRxiv 2020.06.08.139949; doi: https://doi.org/10.1101/2020.06.08.139949
+```
+pvbatch ./pv_script.py --screenshots
+```
 
+The `pv_script.py` loads the visualization files and adjusts the default settings (e.g. camera, background color, iteration step, and more).
+The additional parameter `--screenshots`, tells the script to render an image.
+`pvbatch` executes this script without opening a window.
+
+To interactively explore the simulation output with the default visualization settings, execute: 
+
+```
+paraview output/pyramidal_cell/pyramidal_cell.pvsm
+```
+
+To use the same settings as in the `pvbatch` step, execute:
+
+```
+paraview --script=./pv_script.py
+```
+
+For more information about the simulation itself have a look at the following publication:
+
+Lukas Breitwieser et al. BioDynaMo: a modular platform for high-performance agent-based simulation.
+Bioinformatics, 2021. DOI: https://doi.org/10.1093/bioinformatics/btab649.
