@@ -53,7 +53,7 @@ Scheduler::Scheduler() {
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
       "mechanical forces", "discretization", "propagate staticness agentop",
-      "diffusion", "mfem pde"};
+      "diffusion",         "mfem pde"};
 #endif  // USE_MFEM
 
   std::vector<std::string> pre_scheduled_ops_names = {
