@@ -21,7 +21,9 @@ function run_cmake_simulation() {
   trap "rm -rf \"${log}\"" RETURN
 
   pushd "$1"
-  biodynamo run | tee "${log}"
+  # Execute BioDynaMo simlation and save output to temporary file
+  biodynamo run 2>&1 | tee "${log}"
+  # Get return value of simulation (zero if successful)
   SIM_RET_VAL=$?
   popd
 
