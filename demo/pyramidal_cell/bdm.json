@@ -8,6 +8,7 @@
         "remove_output_dir_contents": true,
         "random_seed": 2688649975,
         "export_visualization": true,
+        "visualization_interval": 10,
         "visualize_agents": {
             "NeuriteElement": [],
             "NeuronSoma": []
