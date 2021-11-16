@@ -30,7 +30,7 @@ function run_cmake_simulation() {
   # Navigate to folder provided to the script `run_cmake_simulation <folder>`
   pushd "$1"
   # Execute BioDynaMo simlation and save output to temporary file
-  biodynamo run | tee "${log}"
+  biodynamo run 2>&1 | tee "${log}"
   # Get return value of simulation (zero if successful)
   SIM_RET_VAL=$?
 

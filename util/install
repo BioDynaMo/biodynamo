@@ -67,6 +67,6 @@ else
 fi
 
 # Run ./install.sh
-BDM_CMAKE_FLAGS="-Dtest=off $BDM_NOTEBOOKS $SBML" ${BDM_SRC}/install.sh | tee "$log"
+BDM_CMAKE_FLAGS="-Dtest=off $BDM_NOTEBOOKS $SBML" ${BDM_SRC}/install.sh 2>&1 | tee "$log"
 
 set +o pipefail
