@@ -268,7 +268,7 @@ TEST(TimeDependentScalarField3dTest, ConvertToMFEMVector) {
   // Test the conversion
   Double3 bdm{0.1, 0.2, 0.3};
   mfem::Vector mfem_vec = ConvertToMFEMVector(bdm);
-  EXPECT_EQ(bdm.size(), mfem_vec.Size());
+  EXPECT_EQ(bdm.size(), static_cast<size_t>(mfem_vec.Size()));
   EXPECT_EQ(bdm.Norm(), mfem_vec.Norml2());
   EXPECT_EQ(0.1, mfem_vec.Min());
   EXPECT_EQ(0.3, mfem_vec.Max());
@@ -521,7 +521,7 @@ TEST(TimeDependentScalarField3dTest, AgentProbabilityDensity) {
   auto* pdf_functor = op->GetAgentPDFFunctor();
 
   // Test if there are three agents in simulation
-  EXPECT_EQ(3, rm->GetNumAgents());
+  EXPECT_EQ(3u, rm->GetNumAgents());
 
   // Test pdf_functor norm
   EXPECT_NE(norm, pdf_functor->GetNorm());
@@ -605,7 +605,7 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
   simulation.GetEnvironment()->Update();
 
   // Test if we have 3 registered MFEM Meshes
-  EXPECT_EQ(rm->GetNumMFEMMeshes(), 3);
+  EXPECT_EQ(3u, rm->GetNumMFEMMeshes());
 
   // Get registered meshes and scalar_fields
   auto* mesh1 = rm->GetMFEMGrid(0).first;
@@ -657,11 +657,11 @@ TEST(MFEMIntegration, ModelInitializerAndRessourceManagerTest) {
 
   // Remove grids
   rm->RemoveMFEMMesh(0);
-  EXPECT_EQ(rm->GetNumMFEMMeshes(), 2);
+  EXPECT_EQ(2u, rm->GetNumMFEMMeshes());
   rm->RemoveMFEMMesh(1);
-  EXPECT_EQ(rm->GetNumMFEMMeshes(), 1);
+  EXPECT_EQ(1u, rm->GetNumMFEMMeshes());
   rm->RemoveMFEMMesh(2);
-  EXPECT_EQ(rm->GetNumMFEMMeshes(), 0);
+  EXPECT_EQ(0u, rm->GetNumMFEMMeshes());
 }
 
 // This test is supposed to not throw an exception.
