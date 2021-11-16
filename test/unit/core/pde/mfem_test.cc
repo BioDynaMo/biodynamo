@@ -289,13 +289,17 @@ TEST(TimeDependentScalarField3dTest, ContainedInElementOrNeighbour) {
   auto res = scalar_field->GetSolutionAtPosition(bdm_position);
   int fe_id = res.first;
   double grid_value = res.second;
+  ASSERT_NE(fe_id, std::numeric_limits<int>::max());
   EXPECT_LT(abs(bdm_position.Norm() - grid_value), 0.1);
+
+  // Get element finder
+  auto* element_finder = scalar_field->GetElementFinder();
 
   // Test if contained in element
   mfem::IntegrationPoint ip;
-  EXPECT_TRUE(scalar_field->ContainedInElement(bdm_position, fe_id, ip));
-  EXPECT_FALSE(scalar_field->ContainedInElement(bdm_position, fe_id + 1, ip));
-  EXPECT_FALSE(scalar_field->ContainedInElement(bdm_position, fe_id - 1, ip));
+  EXPECT_TRUE(element_finder->IsInElement(bdm_position, fe_id, &ip));
+  EXPECT_FALSE(element_finder->IsInElement(bdm_position, fe_id + 1, &ip));
+  EXPECT_FALSE(element_finder->IsInElement(bdm_position, fe_id - 1, &ip));
 
   // Move to Neighboring boxes and see if we find the neighbour boxes
   for (int dimension = 0; dimension < 3; dimension++) {
@@ -303,8 +307,10 @@ TEST(TimeDependentScalarField3dTest, ContainedInElementOrNeighbour) {
     auto new_position_2 = bdm_position;
     new_position_1[dimension] += 0.1;
     new_position_2[dimension] -= 0.1;
-    auto res1 = scalar_field->ContainedInNeighbors(new_position_1, fe_id, ip);
-    auto res2 = scalar_field->ContainedInNeighbors(new_position_2, fe_id, ip);
+    auto res1 = fe_id;
+    auto res2 = fe_id;
+    element_finder->IsInNeighborElements(new_position_1, res1, &ip);
+    element_finder->IsInNeighborElements(new_position_2, res2, &ip);
     EXPECT_NE(res1, fe_id);
     EXPECT_NE(res2, fe_id);
     EXPECT_NE(res1, res2);
@@ -313,8 +319,12 @@ TEST(TimeDependentScalarField3dTest, ContainedInElementOrNeighbour) {
     // move further and expect not to find it in neighbors
     new_position_1[dimension] += 0.1;
     new_position_2[dimension] -= 0.1;
-    res1 = scalar_field->ContainedInNeighbors(new_position_1, fe_id, ip);
-    res2 = scalar_field->ContainedInNeighbors(new_position_2, fe_id, ip);
+    res1 = fe_id;
+    res2 = fe_id;
+    EXPECT_FALSE(
+        element_finder->IsInNeighborElements(new_position_1, res1, &ip));
+    EXPECT_FALSE(
+        element_finder->IsInNeighborElements(new_position_2, res2, &ip));
     EXPECT_EQ(res1, std::numeric_limits<int>::max());
     EXPECT_EQ(res2, std::numeric_limits<int>::max());
   }
@@ -375,7 +385,7 @@ TEST(TimeDependentScalarField3dTest, GetSolutionAtAgentAndPosition) {
 // see if our accelerated search (first previous element, then neighbors, then
 // checking all elements) accelerates the application as expected.
 TEST(TimeDependentScalarField3dTest, StepByStepLocalization) {
-  auto* scalar_field = InitializeScalarField(1);
+  auto* scalar_field = InitializeScalarField(2);
 
   // Dummy simulation
   int num_agents = 10;
@@ -420,10 +430,11 @@ TEST(TimeDependentScalarField3dTest, StepByStepLocalization) {
   // Case 2 (Repeat exercise, this time agents should already know their
   // position and the search should be significantly faster.)
   mfem::IntegrationPoint dummy;
+  auto* element_finder = scalar_field->GetElementFinder();
   rm->ForEachAgent([&](Agent* agent) {
     EXPECT_EQ(true,
-              scalar_field->ContainedInElement(
-                  agent->GetPosition(), agent->GetFiniteElementID(), dummy));
+              element_finder->IsInElement(agent->GetPosition(),
+                                          agent->GetFiniteElementID(), &dummy));
   });
   auto begin_no_search = GetChronoTime();
   rm->ForEachAgent([&](Agent* agent) {
@@ -437,9 +448,8 @@ TEST(TimeDependentScalarField3dTest, StepByStepLocalization) {
   // slightly slower than in case 2 but still significantly faster than in
   // case 1)
   rm->ForEachAgent([&](Agent* agent) {
-    agent->SetPosition(agent->GetPosition() + random->UniformArray<3>(0.01));
+    agent->SetPosition(agent->GetPosition() + random->UniformArray<3>(0.001));
   });
-  scalar_field->UpdateElementToVertexTable();
   auto begin_neighbor_search = GetChronoTime();
   rm->ForEachAgent([&](Agent* agent) {
     double grid_value = scalar_field->GetSolutionAtAgentPosition(agent);
