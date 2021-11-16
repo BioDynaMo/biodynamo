@@ -20,7 +20,7 @@ function(GenerateStaticFiles TARGET FLAGS)
   add_custom_target(${TARGET}
       WORKING_DIRECTORY "${WEB_DIR}"
       COMMAND [ -f build_website.sh ] || git clone https://github.com/BioDynaMo/website.git .
-      COMMAND git pull
+      COMMAND git pull || true
       COMMENT "Generate website"
       COMMAND ./build_website.sh --dir ${CMAKE_CURRENT_SOURCE_DIR} ${FLAGS}
       VERBATIM)
