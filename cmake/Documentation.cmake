@@ -29,13 +29,17 @@ function(GenerateAPIDocTarget)
 
   configure_file(${doxyfile_in} ${doxyfile} @ONLY)
   set(DEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/doc/api)
-  add_custom_target(doc
+  add_custom_command(
+      OUTPUT "${DEST_DIR}/index.html" 
+      DEPENDS biodynamo ${doxyfile}
       COMMAND rm -rf ${DEST_DIR}
       COMMAND mkdir -p ${DEST_DIR}
       COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
       COMMENT "Generate documentation"
       VERBATIM)
+
+  add_custom_target(doc DEPENDS "${DEST_DIR}/index.html")
 
   # Issue with long file names when building deb pacakages
   # https://gitlab.kitware.com/cmake/cmake/issues/14332
