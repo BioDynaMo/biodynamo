@@ -16,8 +16,10 @@
 
 #include <chrono>
 #include <numeric>
+#include "TRandom3.h"
 #include "biodynamo.h"
 #include "core/agent/cell.h"
+#include "core/pde/element_finder/element_finder.h"
 #include "core/pde/mfem_mol.h"
 #include "gtest/gtest.h"
 
@@ -688,6 +690,50 @@ TEST(MFEMIntegrationDeathTest, VerifyCornersInMesh) {
         InitializeSimulation(TEST_NAME, set_param);
       },
       ".*Your agent simulation is not fully contained in the FE mesh*");
+}
+
+// Test if the element finder is able to find the closest center among the
+// elements. Note that the closest element center is not necessarily the element
+// containing the point. E.g. if one switches from HEXAHEDRON to TETRAHEDRON,
+// then this test will fail. Once the closest center is known, we have to
+// preceed as in mfem::Mesh::FindPoints().
+TEST(ElementFinderTest, FindPoints) {
+  mfem::Mesh mesh =
+      mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::Type::HEXAHEDRON);
+  ElementFinder element_finder(&mesh);
+
+  size_t num_queries{10};
+  TRandom3 rng;
+
+  mfem::DenseMatrix mfem_positions(mesh.Dimension(), num_queries);
+  mfem::Array<int> reference_element_ids;
+  mfem::Array<mfem::IntegrationPoint> integration_points;
+  std::vector<mfem::Vector> search_queries;
+  std::vector<int> finder_element_ids;
+
+  for (size_t query_id = 0; query_id < num_queries; query_id++) {
+    mfem::Vector search_query(3);
+    for (int i = 0; i < mesh.Dimension(); i++) {
+      double coordinate_value = rng.Uniform();
+      search_query[i] = coordinate_value;
+      mfem_positions(i, query_id) = coordinate_value;
+    }
+    search_queries.push_back(search_query);
+  }
+
+  // Compute reference solution
+  mesh.FindPoints(mfem_positions, reference_element_ids, integration_points);
+
+  // Compute solution with Finder
+  for (size_t query_id = 0; query_id < num_queries; query_id++) {
+    finder_element_ids.push_back(
+        element_finder.FindClosestElement(search_queries[query_id]));
+  }
+
+  // Compare results
+  for (size_t query_id = 0; query_id < num_queries; query_id++) {
+    EXPECT_EQ(reference_element_ids[query_id], finder_element_ids[query_id]);
+  }
 }
 
 }  // namespace experimental
