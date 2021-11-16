@@ -20,6 +20,11 @@
 namespace bdm {
 namespace experimental {
 
+mfem::Vector ConvertToMFEMVector(const Double3& position) {
+  mfem::Vector vec({position[0], position[1], position[2]});
+  return vec;
+}
+
 TimeDependentScalarField3d::TimeDependentScalarField3d(
     mfem::Mesh* mesh, int order, int dimension, MFEMODESolver ode_solver_id,
     PDEOperator pde_oper_id,
@@ -28,10 +33,10 @@ TimeDependentScalarField3d::TimeDependentScalarField3d(
     std::vector<std::function<double(const mfem::Vector&)>> operator_functions)
     : fe_coll_(order, dimension),
       mesh_(mesh),
-      table_of_elements_(nullptr),
       fespace_(mesh_, &fe_coll_),
       u_gf_(&fespace_),
       ode_solver_(nullptr),
+      element_finder_(mesh),
       operator_(nullptr),
       InitialGridValues_(std::move(InitialGridValues)),
       numeric_operator_parameters_(std::move(numeric_operator_parameters)),
@@ -52,7 +57,6 @@ TimeDependentScalarField3d::~TimeDependentScalarField3d() {
   // delete operator is called for all registed meshes in Simulation.
   delete ode_solver_;
   delete operator_;
-  delete table_of_elements_;
 }
 
 void TimeDependentScalarField3d::Initialize() {
@@ -230,7 +234,7 @@ void TimeDependentScalarField3d::VerifyBDMCompatibility() {
   for (auto& pos : bdm_cube_corners) {
     // This function throws a fatal itself if the point `pos` is not found
     // inside the MFEM mesh.
-    FindPointInMesh(pos);
+    element_finder_.FindPointWithOctree(pos);
   }
 }
 
@@ -279,109 +283,6 @@ void TimeDependentScalarField3d::SetOperator(MolOperator* oper) {
   }
 }
 
-void TimeDependentScalarField3d::UpdateElementToVertexTable() {
-  if (table_of_elements_ != nullptr) {
-    delete table_of_elements_;
-    table_of_elements_ = nullptr;
-  }
-  table_of_elements_ = mesh_->GetVertexToElementTable();
-};
-
-mfem::Vector ConvertToMFEMVector(const Double3& position) {
-  mfem::Vector vec({position[0], position[1], position[2]});
-  return vec;
-}
-
-bool TimeDependentScalarField3d::ContainedInElement(
-    const Double3& position, int finite_element_id,
-    mfem::IntegrationPoint& ip) {
-  mfem::Vector vec = ConvertToMFEMVector(position);
-  mfem::InverseElementTransformation inv_tr;
-  auto trans = mesh_->GetElementTransformation(finite_element_id);
-  inv_tr.SetTransformation(*trans);
-  return (inv_tr.Transform(vec, ip) ==
-          mfem::InverseElementTransformation::Inside);
-}
-
-int TimeDependentScalarField3d::ContainedInNeighbors(
-    const Double3& position, int finite_element_id,
-    mfem::IntegrationPoint& ip) {
-  // If the search in the neighboring elements is not successful, we return
-  // INT_MAX.
-  int containing_neighbor_element = std::numeric_limits<int>::max();
-  // This large table stores a mapping between Elements and Vertices. We only
-  // want to construct it once and store it.
-  if (table_of_elements_ == nullptr) {
-    table_of_elements_ = mesh_->GetVertexToElementTable();
-  }
-
-  // Integer array in which we store the vertices of the element
-  // finite_element_id. We iterate over all vertices.
-  mfem::Array<int> vertices;
-  mesh_->GetElementVertices(finite_element_id, vertices);
-  for (int v = 0; v < vertices.Size(); v++) {
-    // For each vertex, we get all elements that touch it / are connected
-    // through it.
-    int vertex = vertices[v];
-    int number_of_elements = table_of_elements_->RowSize(vertex);
-    const int* element_ids = table_of_elements_->GetRow(vertex);
-    for (int e = 0; e < number_of_elements; e++) {
-      // We don't want to check the original element as we want to scan the
-      // neighbors.
-      if (element_ids[e] == finite_element_id) {
-        continue;
-      }
-      // For each element, we test if if it contains the position.
-      bool is_inside = ContainedInElement(position, element_ids[e], ip);
-      if (is_inside) {
-        containing_neighbor_element = element_ids[e];
-        break;
-      }
-    }
-  }
-  // Warning for non-conforming meshes
-  if (mesh_->ncmesh &&
-      containing_neighbor_element == std::numeric_limits<int>::max()) {
-    Log::Warning(
-        "TimeDependentScalarField3d::ContainedInNeighbors",
-        "You seem to use a non-conforming mesh. Iterating over neighbors in ",
-        "non-conforming meshes is currently not supported since it requires "
-        "access",
-        " to private / protected members of mfem::Mesh.");
-  }
-  return containing_neighbor_element;
-}
-
-std::pair<int, mfem::IntegrationPoint>
-TimeDependentScalarField3d::FindPointInMesh(const Double3& position) {
-  // This is not the most efficient way to transfer the information but
-  // currently necessary.
-  mfem::DenseMatrix mfem_position(mesh_->Dimension(), 1);
-  for (int i = 0; i < mesh_->Dimension(); i++) {
-    mfem_position(i, 0) = position[i];
-  }
-  mfem::Array<int> element_id;
-  mfem::Array<mfem::IntegrationPoint> integration_points;
-  // This function is particularly slow since it searches the space rather
-  // inefficiently. It would be good to have something more efficient.
-  auto found = mesh_->FindPoints(mfem_position, element_id, integration_points);
-  if (found == 0) {
-    Log::Fatal("FindPoints", "Point could not be located in Mesh. Point: (",
-               position,
-               ")\nIf you see this error message, this can be for either of "
-               "some reasons:\n",
-               "1) You manually called this function for a point that is not "
-               "in the FE mesh\n"
-               "2) Your agent simulation is not fully contained in the FE mesh "
-               "- see VerifyBDMCompatibility()\n",
-               "3) An Agent tried to request a value from the continuum in the",
-               " syncronization phase but was not located inside the FE Mesh\n",
-               "4) MFEM's internal methods failed to find the point for any ",
-               "other reason.\n(This list may not be exhaustive.)");
-  }
-  return std::make_pair(element_id[0], integration_points[0]);
-}
-
 double TimeDependentScalarField3d::GetSolutionInElementAndIntegrationPoint(
     int element_id, const mfem::IntegrationPoint& integration_point) {
   return u_gf_.GetValue(element_id, integration_point);
@@ -394,26 +295,15 @@ std::pair<int, double> TimeDependentScalarField3d::GetSolutionAtPosition(
   // vector used to solve the ODE.
   UpdateGridFunction();
 
-  // 1. By default, each agent has its element set to INT_MAX. If the agent had
-  // been treated before, the agent carries his previous element id. We first
-  // check if the agent is still in the element.
-  if (finite_element_id != std::numeric_limits<int>::max()) {
-    bool in_element =
-        ContainedInElement(position, finite_element_id, integration_point);
-    // 2. In case the agent is no longer in the element, we check if
-    // the agent ends up in one of the neighbouring elements
-    if (!in_element) {
-      finite_element_id =
-          ContainedInNeighbors(position, finite_element_id, integration_point);
-    }
-  }
-  // 3. If the position is neither in the expected nor in the neighboring
-  // elements, we trigger a linear search over all elements.
-  if (finite_element_id == std::numeric_limits<int>::max()) {
-    auto search = FindPointInMesh(position);
-    finite_element_id = search.first;
-    integration_point = search.second;
-  }
+  // We initiate a search with the an octree implementation to identify the
+  // containing element and the closest integration point to the position. The
+  // search is biased in the sense that we first check the provided
+  // finite_element_id and its neighbors. Only if these checks fail, we start a
+  // search based on the octree.
+  auto search =
+      element_finder_.FindPointWithOctree(position, finite_element_id);
+  finite_element_id = search.first;
+  integration_point = search.second;
   double grid_value = GetSolutionInElementAndIntegrationPoint(
       finite_element_id, integration_point);
   return std::make_pair(finite_element_id, grid_value);
