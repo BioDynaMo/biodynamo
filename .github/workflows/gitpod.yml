@@ -30,7 +30,7 @@ jobs:
           destination_repo: 'LukasBreitwieser/gitpod-vnc'
           destination_branch: 'master'
           user_email: 'lukas.breitwieser@cern.ch'
-          user_name: 'LukasBreitwieser'
+          user_name: 'Lukas Breitwieser'
           commit_message: 'Update BioDynaMo commit id'
 
       - name: Notify Slack
