@@ -1,4 +1,4 @@
-// i----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.

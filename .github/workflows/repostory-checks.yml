@@ -21,6 +21,10 @@ jobs:
       run: |
         ./util/housekeeping/run-clang-format.sh $(pwd) clang-format 0 $(./util/housekeeping/get-all-src-files.sh .)
 
+    - name: Check if Copyright information is correct
+      run: |
+        ./util/housekeeping/check-copyright.sh util/housekeeping/copyright_cpp.txt $(util/housekeeping/get-all-src-files.sh .)
+
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
       with:

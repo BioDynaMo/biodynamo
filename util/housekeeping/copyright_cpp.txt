@@ -11,17 +11,3 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-
-#include "binding_cells.h"
-#include "core/multi_simulation/multi_simulation.h"
-#include "core/param/param_group.h"
-
-using namespace bdm;
-
-const ParamGroupUid SimParam::kUid = ParamGroupUidGenerator::Get()->NewUid();
-
-int main(int argc, const char** argv) {
-  Param::RegisterParamGroup(new SimParam());
-  bdm::experimental::MultiSimulation pe(argc, argv);
-  return pe.Execute(Simulate);
-}
