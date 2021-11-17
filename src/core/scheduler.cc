@@ -14,6 +14,7 @@
 
 #include "core/scheduler.h"
 #include <chrono>
+#include <iomanip>
 #include <string>
 #include <utility>
 #include "core/execution_context/in_place_exec_ctxt.h"
@@ -360,6 +361,38 @@ void Scheduler::Execute() {
   RunPreScheduledOps();
   RunScheduledOps();
   RunPostScheduledOps();
+}
+
+void Scheduler::PrintInfo(std::ostream& out) {
+  out << "\n" << std::string(80, '-') << "\n\n";
+  out << "Scheduler information:\n";
+  out << std::setw(80) << "frequency"
+      << "\n";
+  out << "Pre-scheduled operations:\n";
+  // pre-scheduled ops
+  for (auto* pre_op : pre_scheduled_ops_) {
+    out << std::setw(60) << pre_op->name_ << std::setw(20) << pre_op->frequency_
+        << "\n";
+  }
+  // agent-operations
+  out << "\nAgent operations:\n";
+  for (auto* op : scheduled_agent_ops_) {
+    out << std::setw(60) << op->name_ << std::setw(20) << op->frequency_
+        << "\n";
+  }
+  out << "\nStandalone operations:\n";
+  for (auto* op : scheduled_standalone_ops_) {
+    out << std::setw(60) << op->name_ << std::setw(20) << op->frequency_
+        << "\n";
+  }
+  // post-scheduled ops
+  out << "\nPost-scheduled operations:\n";
+  for (auto* post_op : post_scheduled_ops_) {
+    out << std::setw(60) << post_op->name_ << std::setw(20)
+        << post_op->frequency_ << "\n";
+  }
+
+  out << "\n" << std::string(80, '-') << "\n";
 }
 
 void Scheduler::Backup() {

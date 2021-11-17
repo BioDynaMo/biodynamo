@@ -102,6 +102,14 @@ class Scheduler {
 
   TimingAggregator* GetOpTimes();
 
+  /// Prints an overview of all pre-scheduled, agent, standalone, and
+  /// post-scheduled operations. For each iteration, the scheduler executes
+  /// these operations in the order that they appear in the output.
+  /// Additionally, the output shows a column "frequency" with values \f$n_i\f$
+  /// indicating that a certain operation \f$i\f$ is only executed every
+  /// \f$n_i\f$-th time.
+  void PrintInfo(std::ostream& out);
+
  protected:
   uint64_t total_steps_ = 0;
   double simulated_time_ = 0.0;
