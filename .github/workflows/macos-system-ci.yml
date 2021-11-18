@@ -111,6 +111,8 @@ jobs:
       working-directory: build
       run: |
         source $(find /Users -path "*/bin/*" -name "*thisbdm.sh")
+        root --version
+        root -config
         git config --system user.name "Test User"
         git config --system user.email user@test.com
         make run-demos
