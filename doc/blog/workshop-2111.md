@@ -9,4 +9,4 @@ meta_description: ""
 
 We are hosting a free online workshop on agent-based modeling on 19 November: https://indico.cern.ch/event/1095422/
 
-The event is open to all! Make sure to register by noon CET on 18 November:
+The event is open to all!
