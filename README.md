@@ -70,7 +70,7 @@ We recommend specifying the exact BioDynaMo version used in the methods section.
 For example: 
 
 ```
-We use BioDynaMo v1.01.86-6e7b5441 (Breitwieser el al., 2021) for all simulations in this article. 
+We use BioDynaMo v1.01.115-e1088d4a (Breitwieser el al., 2021) for all simulations in this article. 
 ```
 
 The version can be obtained by executing `biodynamo --version` and can be interpreted as follows: `vMAJOR.MINOR.PATCH-SHA` 
