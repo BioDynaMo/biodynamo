@@ -3,10 +3,12 @@ include(utils)
 # Directory in which ROOT will be downloaded
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/root")
 
-set(ROOT_TAR_FILE root_v6.22.06_python3.9_${DETECTED_OS_VERS}.tar.gz)
+# Default ROOT to download
+set(ROOT_TAR_FILE "http://cern.ch/biodynamo-lfs/third-party/root_v6.22.06_python3.9_${DETECTED_OS_VERS}.tar.gz")
+
 if(APPLE)
   # Redirect macOS versions 11.X to ROOT nightlies because after the recent 
-  # XCode 13.1 update our pre-built versions became effectively useless.
+  # XCode 13.1 update our pre-built versions became effectively useless. ARM64
   if("${DETECTED_OS_VERS}" STREQUAL "osx-11.1-arm64" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.2-arm64" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.3-arm64" OR
@@ -20,6 +22,8 @@ if(APPLE)
     set(VERIFY_DOWNLOAD FALSE)
     set(ROOT_NIGHTLY TRUE)
   endif()
+  # Redirect macOS versions 11.X to ROOT nightlies because after the recent 
+  # XCode 13.1 update our pre-built versions became effectively useless. i383
   if("${DETECTED_OS_VERS}" STREQUAL "osx-11.0-i386" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.2-i386" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.3-i386" OR
@@ -32,17 +36,20 @@ if(APPLE)
     set(VERIFY_DOWNLOAD FALSE)
     set(ROOT_NIGHTLY TRUE)
   endif()
+  # List of macos versions that are not yet supported.
   if("${DETECTED_OS_VERS}" STREQUAL "osx-11.6.1-arm64" OR 
+     "${DETECTED_OS_VERS}" STREQUAL "osx-11.7-arm64" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-12.1-arm64" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.1-i386" OR
-     "${DETECTED_OS_VERS}" STREQUAL "osx-12.1-i386" OR
+     "${DETECTED_OS_VERS}" STREQUAL "osx-11.7-i386" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.6.1-i386")
     message(FATAL_ERROR "Your macOS version is currently not supported. Please contact the developers.")
   endif()
   if("${DETECTED_OS_VERS}" MATCHES "^osx-12")
-    set(ROOT_TAR_FILE root_v6.25.01_cxx14_python3.9_${DETECTED_OS_VERS}.tar.gz)
+    set(ROOT_TAR_FILE "http://cern.ch/biodynamo-lfs/third-party/root_v6.25.01_cxx14_python3.9_${DETECTED_OS_VERS}.tar.gz")
   endif()
 endif()
+message(STATUS "Downloading ROOT via ${ROOT_TAR_FILE}.")
 
 download_verify_extract(
   ${ROOT_TAR_FILE}
