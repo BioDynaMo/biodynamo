@@ -2,7 +2,12 @@
 
 This demo simulates the growth of a pyramidal cell. 
 
-To compile and run the simulation, execute `bdm run` in the terminal.
+To compile and run the simulation, execute the following command in the terminal.
+
+```
+bdm run
+```
+
 The simulation will use the `bdm.json` parameter file and will create
 visualization files in directory `output/pyramidal_cell`.
 
