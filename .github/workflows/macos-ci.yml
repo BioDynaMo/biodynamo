@@ -32,11 +32,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Cache Third Party Packages
-      uses: actions/cache@v2
-      with:
-        path: build/third_party
-        key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+    # - name: Cache Third Party Packages
+    #   uses: actions/cache@v2
+    #   with:
+    #     path: build/third_party
+    #     key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
     - name: Build BioDynaMo
       shell: bash
