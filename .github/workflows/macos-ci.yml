@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-10.15, macos-11.0]
+        os: [macos-10.15, macos-11.6]
 
     runs-on: ${{ matrix.os }}
 
@@ -23,6 +23,15 @@ jobs:
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       if: matrix.os == 'macos-10.15'
 
+    steps:
+    - name: Make sure Xcode 13.1 is used on macOS 11.6 as the default /Application/Xcode.app
+      shell: bash
+      run: |
+        sudo mv /Applications/Xcode.app /Applications/Xcode.app-
+        sudo ln -s /Applications/Xcode_13.1.app /Applications/Xcode.app
+        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+      if: matrix.os == 'macos-11.6'
+
     - name: Install dependencies
       run: |
         brew install libomp open-mpi python@3.9 wget cmake ninja
@@ -32,11 +41,11 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Cache Third Party Packages
-      uses: actions/cache@v2
-      with:
-        path: build/third_party
-        key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+    # - name: Cache Third Party Packages
+    #   uses: actions/cache@v2
+    #   with:
+    #     path: build/third_party
+    #     key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
     - name: Build BioDynaMo
       shell: bash
