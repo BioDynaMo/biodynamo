@@ -33,10 +33,8 @@ if(APPLE)
     set(ROOT_NIGHTLY TRUE)
   endif()
   if("${DETECTED_OS_VERS}" STREQUAL "osx-11.6.1-arm64" OR 
-     "${DETECTED_OS_VERS}" STREQUAL "osx-12.0-arm64" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-12.1-arm64" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.1-i386" OR
-     "${DETECTED_OS_VERS}" STREQUAL "osx-12.0-i386" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-12.1-i386" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.6.1-i386")
     message(FATAL_ERROR "Your macOS version is currently not supported. Please contact the developers.")
