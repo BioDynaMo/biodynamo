@@ -5,15 +5,13 @@ SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/root")
 
 set(ROOT_TAR_FILE root_v6.22.06_python3.9_${DETECTED_OS_VERS}.tar.gz)
 if(APPLE)
-  # On Apple macOS 11.4 and 11.5 arm64 need ROOT v6.24 which has TBB for M1
-  # (remove later when upgrading other platforms to ROOT v6.24)
-  if("${DETECTED_OS_VERS}" STREQUAL "osx-11.4-arm64" OR
-     "${DETECTED_OS_VERS}" STREQUAL "osx-11.5-arm64" OR
+  if("${DETECTED_OS_VERS}" MATCHES "^osx-12" OR
      "${DETECTED_OS_VERS}" STREQUAL "osx-11.6-arm64")
-    set(ROOT_TAR_FILE root_v6.24.00_python3.9_${DETECTED_OS_VERS}.tar.gz)
-  endif()
-  if("${DETECTED_OS_VERS}" MATCHES "^osx-12")
     set(ROOT_TAR_FILE root_v6.25.01_cxx14_python3.9_${DETECTED_OS_VERS}.tar.gz)
+  elseif("${DETECTED_OS_VERS}" STREQUAL "osx-11.6-i386")
+    set(ROOT_TAR_FILE root_v6.22.06_python3.9_${DETECTED_OS_VERS}.tar.gz)
+  elseif("${DETECTED_OS_VERS}" MATCHES "^osx-11")
+    message(FATAL_ERROR "We officialy only support the latest macOS 11 version: 11.6.")
   endif()
 endif()
 
