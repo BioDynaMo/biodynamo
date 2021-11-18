@@ -31,7 +31,9 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-
+        
+    # Currently we deactivate the Cache Third Party packages on macOS to 
+    # immediately detect issues with ROOT and Xcode version.
     # - name: Cache Third Party Packages
     #   uses: actions/cache@v2
     #   with:

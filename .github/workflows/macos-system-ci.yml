@@ -71,11 +71,13 @@ jobs:
           echo "INSTALL_DIR=$(echo ${HOME}/biodynamo-*)" >> $GITHUB_ENV
         fi
 
-    - name: Cache Third Party Packages
-      uses: actions/cache@v2
-      with:
-        path: build/third_party
-        key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+    # Currently we deactivate the Cache Third Party packages on macOS to 
+    # immediately detect issues with ROOT and Xcode version.
+    # - name: Cache Third Party Packages
+    #   uses: actions/cache@v2
+    #   with:
+    #     path: build/third_party
+    #     key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
     - name: Build BioDynaMo
       shell: zsh {0}
