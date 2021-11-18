@@ -1,3 +1,18 @@
+---
+title: "BioDynaMo Multi Simulation"
+date: "2021-11-18"
+path: "/docs/userguide/multi_simulation/"
+meta_title: "BioDynaMo User Guide"
+meta_description: "Information about BioDynaMo Multi Simulation runtime"
+toc: true
+image: ""
+sidebar: "userguide"
+keywords:
+  -multi
+  -simulation
+  -multi-simulation
+---
+
 # Multi Simulation: What and Why?
 
 With BioDynaMo it is possible to run multiple simulations in parallel, as

@@ -39,6 +39,8 @@
         link: /docs/userguide/notebook/
       - title: Adding documentation webpage
         link: /docs/userguide/add_page/
+      - title: Multi simulation runtime
+        link: /docs/userguide/multi_simulation
   - group: Troubleshooting
     items:
       - title: OpenGL
