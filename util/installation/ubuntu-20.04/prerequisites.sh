@@ -35,6 +35,12 @@ sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 
 sudo apt update
 
 # Temporary fix for broken cmake repository
+#   Add ppa for newer CMake version
+wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+CODENAME=$(grep -oP '(?<=^UBUNTU_CODENAME=).+' /etc/os-release | tr -d '"')
+REPO="deb https://apt.kitware.com/ubuntu/ ${CODENAME} main"
+sudo apt-add-repository "$REPO"
+sudo apt update
 sudo apt install -y cmake-data=3.21.3-0kitware1ubuntu20.04.1
 
 # use ubuntu-18.04 prerequisites script
