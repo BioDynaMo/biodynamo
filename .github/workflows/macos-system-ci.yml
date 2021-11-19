@@ -17,7 +17,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-10.15, macos-11.0]
+        os: [macos-10.15, macos-11]
 
     runs-on: ${{ matrix.os }}
 
@@ -29,6 +29,15 @@ jobs:
         sudo ln -s /Applications/Xcode_12.4.app /Applications/Xcode.app
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       if: matrix.os == 'macos-10.15'
+
+    # It's not possible to specify 11.6 but we hope that this remains the latest.
+    - name: Make sure Xcode 13.1 is used on macOS 11.6 as the default /Application/Xcode.app
+      shell: bash
+      run: |
+        sudo mv /Applications/Xcode.app /Applications/Xcode.app-
+        sudo ln -s /Applications/Xcode_13.1.app /Applications/Xcode.app
+        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+      if: matrix.os == 'macos-11'
 
     - name: Set GHA_BRANCH_NAME
       run: |
@@ -71,11 +80,11 @@ jobs:
           echo "INSTALL_DIR=$(echo ${HOME}/biodynamo-*)" >> $GITHUB_ENV
         fi
 
-    - name: Cache Third Party Packages
-      uses: actions/cache@v2
-      with:
-        path: build/third_party
-        key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+    # - name: Cache Third Party Packages
+    #   uses: actions/cache@v2
+    #   with:
+    #     path: build/third_party
+    #     key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
     - name: Build BioDynaMo
       shell: zsh {0}
@@ -88,7 +97,8 @@ jobs:
         cmake --build build --parallel --config Release
 
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
-    # runners, while waiting for other targets to be compiled
+    # runners, while waiting for other targets to be compiled. Run notebooks only on 
+    # macOS 10.15 until we managed to compile ROOT for 11.6 again.
     - name: Run notebooks
       shell: zsh {0}
       run: |
@@ -96,12 +106,15 @@ jobs:
           -Dnotebooks=ON \
           -B build
         cmake --build build --parallel --config Release --target notebooks  -- -j1
+      if: matrix.os == 'macos-10.15'
 
     - name: System tests BioDynaMo
       shell: zsh {0}
       working-directory: build
       run: |
         source $(find /Users -path "*/bin/*" -name "*thisbdm.sh")
+        root --version
+        root -config
         git config --system user.name "Test User"
         git config --system user.email user@test.com
         make run-demos
