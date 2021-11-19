@@ -34,6 +34,9 @@ sudo apt-key add llvm-snapshot.gpg.key
 sudo add-apt-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main"
 sudo apt update
 
+# Temporary fix for broken cmake repository
+sudo apt install -y cmake-data=3.21.3-0kitware1ubuntu20.04.1
+
 # use ubuntu-18.04 prerequisites script
 . $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/prerequisites.sh $1
 
