@@ -97,7 +97,8 @@ jobs:
         cmake --build build --parallel --config Release
 
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
-    # runners, while waiting for other targets to be compiled
+    # runners, while waiting for other targets to be compiled. Run notebooks only on 
+    # macOS 10.15 until we managed to compile ROOT for 11.6 again.
     - name: Run notebooks
       shell: zsh {0}
       run: |
@@ -105,6 +106,7 @@ jobs:
           -Dnotebooks=ON \
           -B build
         cmake --build build --parallel --config Release --target notebooks  -- -j1
+      if: matrix.os == 'macos-10.15'
 
     - name: System tests BioDynaMo
       shell: zsh {0}
