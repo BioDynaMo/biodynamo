@@ -332,6 +332,24 @@ class UniformGridEnvironment : public Environment {
     return grid_dimensions_;
   }
 
+  /// Returns true if the provided point is inside the simulation domain.
+  /// Compares the points coordinates against grid_dimensions_ (without bounding
+  /// boxes).
+  bool ContainedInGrid(const Double3& point) const {
+    double xmin = static_cast<double>(grid_dimensions_[0]) + box_length_;
+    double xmax = static_cast<double>(grid_dimensions_[1]) - box_length_;
+    double ymin = static_cast<double>(grid_dimensions_[2]) + box_length_;
+    double ymax = static_cast<double>(grid_dimensions_[3]) - box_length_;
+    double zmin = static_cast<double>(grid_dimensions_[4]) + box_length_;
+    double zmax = static_cast<double>(grid_dimensions_[5]) - box_length_;
+    if (point[0] >= xmin && point[0] <= xmax && point[1] >= ymin &&
+        point[1] <= ymax && point[2] >= zmin && point[2] <= zmax) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   std::array<int32_t, 2> GetDimensionThresholds() const override {
     return threshold_dimensions_;
   }
@@ -389,11 +407,28 @@ class UniformGridEnvironment : public Environment {
           "box length (",
           box_length_, "). The resulting neighborhood would be incomplete.");
     }
-
     const auto& position = query_position;
     uint32_t idx{std::numeric_limits<uint32_t>::max()};
     if (query_agent != nullptr) {
       idx = query_agent->GetBoxIdx();
+    }
+    // If the point is not inside the inner grid (excluding the bounding boxes)
+    // as well as there was no previous box index assigned to the agent, we
+    // cannot reliably detect the neighbors and warn the user.
+    if (!ContainedInGrid(query_position) &&
+        idx == std::numeric_limits<uint32_t>::max()) {
+      Log::Warning(
+          "UniformGridEnvironment::ForEachNeighbor",
+          "You provided a query_position that is outside of the environment. ",
+          "Neighbor search is not supported in this case. \n",
+          "query_position: ", query_position,
+          "\ngrid_dimensions: ", grid_dimensions_[0] + box_length_, ", ",
+          grid_dimensions_[1] - box_length_, ", ",
+          grid_dimensions_[2] + box_length_, ", ",
+          grid_dimensions_[3] - box_length_, ", ",
+          grid_dimensions_[4] + box_length_, ", ",
+          grid_dimensions_[5] - box_length_);
+      return;
     }
     // Freshly created agents are initialized with the largest uint32_t number
     // available. The above line assumes that the agent has already been located
@@ -954,7 +989,10 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @return     The pointer to the box
   ///
-  const Box* GetBoxPointer(size_t index) const { return &(boxes_[index]); }
+  const Box* GetBoxPointer(size_t index) const {
+    assert(index < boxes_.size());
+    return &(boxes_[index]);
+  }
 
   /// @brief      Gets the pointer to the box with the given index
   ///
@@ -962,7 +1000,10 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @return     The pointer to the box
   ///
-  Box* GetBoxPointer(size_t index) { return &(boxes_[index]); }
+  Box* GetBoxPointer(size_t index) {
+    assert(index < boxes_.size());
+    return &(boxes_[index]);
+  }
 
   /// Returns the box index in the one dimensional array based on box
   /// coordinates in space
@@ -972,8 +1013,10 @@ class UniformGridEnvironment : public Environment {
   /// @return     The box index.
   ///
   size_t GetBoxIndex(const std::array<uint64_t, 3>& box_coord) const {
-    return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
-           box_coord[0];
+    size_t box_idx = box_coord[2] * num_boxes_xy_ +
+                     box_coord[1] * num_boxes_axis_[0] + box_coord[0];
+    assert(box_idx < boxes_.size());
+    return box_idx;
   }
 };
 

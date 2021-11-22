@@ -87,11 +87,11 @@ inline void TestNeighborSearch(Simulation& simulation) {
 
   // Define test points to check how many neighbors we find around them.
   // The distances to cells 1, 2, 3 listed as (d1, d2, d3).
-  Double3 test_point_1({-0.1, 0.0, 0.0});  // (0.1, 5.1, 2.502)
-  Double3 test_point_2({3.5, 0.0, 0.0});   // (3.5, 1.5, 4.30116)
-  Double3 test_point_3({0.0, -2.0, 0.0});  // (2, 5.28516, 0.5)
-  Double3 test_point_4({0.0, -0.8, 0.0});  // (0.8, 5.0626, 1.7)
-  Double3 test_point_5({-2.1, 0.0, 0.0});  // (2.1, 7.1, 3.26497)
+  Double3 test_point_1({0.1, 0.0, 0.0});    // (0.1, 4.9, 2.502)
+  Double3 test_point_2({3.5, 0.0, 0.0});    // (3.5, 1.5, 4.30116)
+  Double3 test_point_3({0.0, -2.0, 0.0});   // (2, 5.28516, 0.5)
+  Double3 test_point_4({0.0, -0.8, 0.0});   // (0.8, 5.0626, 1.7)
+  Double3 test_point_5({2.5, 0.99, 3.99});  // (4.82, 4.82, 5.87)
 
   // Test if we find the correct number of agents. The reference solution can
   // be determined by substracting the search_radius from the bracket behind
