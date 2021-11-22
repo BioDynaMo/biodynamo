@@ -35,6 +35,28 @@ By default the installation directory is set to `$HOME/biodynamo-vX.Y.Z`, where 
     </div>
 </a>
 
+## Install development version
+
+The command shown at the top of the page installs the [latest BioDynaMo release](https://github.com/BioDynaMo/biodynamo/releases/latest) including all patches for this release.
+
+If you want to install the latest development version with all experimental features, use:
+
+```bash
+export BDM_INSTALL=master
+curl https://biodynamo.org/install | bash
+```
+
+## Install specific version
+
+It is also possible to install a specific BioDynaMo version.
+Let's assume that in a publication you read that the authors used BioDynaMo version `v1.01.115-e1088d4a`.
+To install the exact same version on your system, use the following commands.
+
+```bash
+export BDM_INSTALL=e1088d4a
+curl https://biodynamo.org/install | bash
+```
+
 ## Supported platforms
 
 *  Ubuntu 18.04, 20.04
