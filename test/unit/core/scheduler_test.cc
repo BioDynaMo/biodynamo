@@ -440,6 +440,9 @@ TEST_F(SchedulerTest, GetOps) {
 
   // check if empty vector is returned for protected ops
   EXPECT_EQ(0u, scheduler->GetOps("first op").size());
+
+  // check that behavior op is returned
+  EXPECT_EQ(1u, scheduler->GetOps("behavior").size());
 }
 
 TEST_F(SchedulerTest, ScheduleOrder) {

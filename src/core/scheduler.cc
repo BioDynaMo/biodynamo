@@ -64,11 +64,12 @@ Scheduler::Scheduler() {
       "load balancing", "tear down iteration", "visualize",
       "update time series"};
 
-  protected_op_names_ = {
-      "update staticness",  "behavior",
-      "discretization",     "distribute run displacment info",
-      "set up iteration",   "update environment",
-      "tear down iteration"};
+  protected_op_names_ = {"update staticness",
+                         "discretization",
+                         "distribute run displacment info",
+                         "set up iteration",
+                         "update environment",
+                         "tear down iteration"};
 
   auto disabled_op_names =
       Simulation::GetActive()->GetParam()->unschedule_default_operations;
