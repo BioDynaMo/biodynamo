@@ -133,15 +133,10 @@ TEST(CustomEnvironmentTest, CustomCriteria) {
 }
 
 TEST(CustomEnvironmentTest, NumberOfUpdates) {
-  Simulation simulation(TEST_NAME);
-
-  // Populate the environment with agents (would normally be done in the
-  // Environment::Update() call)
   auto set_param = [&](Param* param) {
     param->unschedule_default_operations = {"load balancing"};
   };
   Simulation sim(TEST_NAME, set_param);
-  // Simulation sim(TEST_NAME);
 
   auto* rm = sim.GetResourceManager();
   auto* scheduler = sim.GetScheduler();
@@ -152,19 +147,22 @@ TEST(CustomEnvironmentTest, NumberOfUpdates) {
 
   Cell* cell = new Cell(1.0);
   rm->AddAgent(cell);
-  // scheduler->FinalizeInitialization();
   scheduler->Simulate(1);
+  // Updates: Schduler::Initialize(), Tear down op
   EXPECT_EQ(2, env_ptr->GetNumUpdates());
 
   scheduler->Simulate(1);
-  EXPECT_EQ(3, env_ptr->GetNumUpdates());
+  // Updates: Schduler::Initialize(), Tear down op
+  EXPECT_EQ(4, env_ptr->GetNumUpdates());
 
   scheduler->Simulate(2);
-  EXPECT_EQ(5, env_ptr->GetNumUpdates());
+  // Updates: Schduler::Initialize(), Tear down op, Tear down op
+  EXPECT_EQ(7, env_ptr->GetNumUpdates());
 
   rm->AddAgent(new Cell(1.0));
-  scheduler->Simulate(1);
-  EXPECT_EQ(7, env_ptr->GetNumUpdates());
+  scheduler->Simulate(2);
+  // Updates: Schduler::Initialize(), Tear down op, Tear down op
+  EXPECT_EQ(10, env_ptr->GetNumUpdates());
 }
 
 }  // namespace bdm

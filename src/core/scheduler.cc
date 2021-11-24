@@ -448,7 +448,12 @@ void Scheduler::Initialize() {
     rm->ForEachAgentParallel(*bound_space);
     delete bound_space;
   }
-  env->Update();
+  // We force-update the environment in this function because users may apply
+  // certain operations such as shifting them in space in between two Simulate()
+  // or SimulateUntil() calls. In contrast to adding or removing agents, such
+  // an operation would not mark the environment as OutOfSync and hence the
+  // forced update at this place.
+  env->ForcedUpdate();
   rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
     // Create data structures, whose size depend on the env dimensions
     dgrid->Initialize();

@@ -137,13 +137,6 @@ void InPlaceExecutionContext::TearDownIterationAll(
 
   auto* rm = Simulation::GetActive()->GetResourceManager();
   rm->EndOfIteration();
-  // Load balancing destroys the synchronization between the simulation and the
-  // environment. We mark the environment aus OutOfSync such that we can update
-  // the environment before acessing it again.
-  // ToDiscuss(Lukas): better place that function to rm->AddAgent,
-  // rm->RemoveAgent?
-  auto* env = Simulation::GetActive()->GetEnvironment();
-  env->MarkAsOutOfSync();
 }
 
 void InPlaceExecutionContext::SetupAgentOpsAll(
@@ -284,7 +277,6 @@ void InPlaceExecutionContext::ForEachNeighbor(
 void InPlaceExecutionContext::ForEachNeighbor(
     Functor<void, Agent*, double>& lambda, const Double3& query_position,
     double squared_radius) {
-  // Populate the cache and execute the lambda for each neighbor
   auto for_each = L2F([&](Agent* agent, double squared_distance) {
     lambda(agent, squared_distance);
   });

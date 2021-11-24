@@ -13,6 +13,8 @@
 // -----------------------------------------------------------------------------
 
 #include "core/environment/uniform_grid_environment.h"
+#include <sstream>
+#include <string>
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/functor.h"
@@ -378,7 +380,10 @@ TEST(UniformGridEnvironmentTest, FindAllNeighborsLoadBalanced) {
   };
   Simulation simulation(TEST_NAME, set_param);
 
-  // todo(tobias, lukas): Add check if load balancing is active.
+  // Check if load balancing is active.
+  std::stringstream buffer;
+  simulation.GetScheduler()->PrintInfo(buffer);
+  EXPECT_TRUE(buffer.str().find("load balancing") != std::string::npos);
 
   // Please consult the definition of the fuction for more information.
   TestNeighborSearch(simulation);
