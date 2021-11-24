@@ -48,11 +48,6 @@ class OctreeEnvironment : public Environment {
 
   ~OctreeEnvironment();
 
-  void Update() override;
-
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radus) override;
-
   std::array<int32_t, 6> GetDimensions() const override;
 
   std::array<int32_t, 2> GetDimensionThresholds() const override;
@@ -62,6 +57,19 @@ class OctreeEnvironment : public Environment {
   NeighborMutexBuilder* GetNeighborMutexBuilder() override;
 
   void Clear() override;
+
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Agent& query, double squared_radius) override;
+
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria) override;
+
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Double3& query_position, double squared_radius,
+                       const Agent* query_agent = nullptr) override;
+
+ protected:
+  void UpdateImplementation() override;
 
  private:
   // Hide unibn-specific types from header (pimpl idiom)

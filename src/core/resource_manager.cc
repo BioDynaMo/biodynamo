@@ -238,6 +238,10 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
 };
 
 void ResourceManager::LoadBalance() {
+  // Load balancing destroys the synchronization between the simulation and the
+  // environment. We mark the environment aus OutOfSync such that we can update
+  // the environment before acessing it again.
+  MarkEnvironmentOutOfSync();
   auto* param = Simulation::GetActive()->GetParam();
   if (param->plot_memory_layout) {
     PlotNeighborMemoryHistogram(true);
@@ -270,7 +274,6 @@ void ResourceManager::LoadBalance() {
     Log::Fatal("ResourceManager",
                "Run on numa node failed. Return code: ", ret);
   }
-
   auto* env = Simulation::GetActive()->GetEnvironment();
   auto lbi = env->GetLoadBalanceInfo();
 
@@ -566,6 +569,7 @@ void ResourceManager::RemoveAgents(
   for (uint64_t n = 0; n < agents_.size(); ++n) {
     agents_[n].resize(lowest[n]);
   }
+  MarkEnvironmentOutOfSync();
 }
 
 // -----------------------------------------------------------------------------
@@ -576,6 +580,11 @@ size_t ResourceManager::GetAgentVectorCapacity(int numa_node) {
 // -----------------------------------------------------------------------------
 void ResourceManager::SwapAgents(std::vector<std::vector<Agent*>>* agents) {
   agents_.swap(*agents);
+}
+
+void ResourceManager::MarkEnvironmentOutOfSync() {
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  env->MarkAsOutOfSync();
 }
 
 }  // namespace bdm

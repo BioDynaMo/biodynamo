@@ -14,6 +14,7 @@
 
 #include "core/environment/octree_environment.h"
 #include "core/agent/cell.h"
+#include "unit/core/count_neighbor_functor.h"
 #include "unit/test_util/test_util.h"
 
 #include "gtest/gtest.h"
@@ -109,6 +110,22 @@ TEST(OctreeTest, SetEnvironment) {
   EXPECT_NE(env, simulation.GetEnvironment());
   simulation.SetEnvironment(env);
   EXPECT_EQ(env, simulation.GetEnvironment());
+}
+
+// Tests if ForEachNeighbor of the respective environment finds the correct
+// number of neighbors. The same test is implemented for kdtree and unifrom grid
+// environments.
+TEST(OctreeTest, FindAllNeighbors) {
+  // Create simulation with octree environment
+  auto set_param = [](auto* param) {
+    param->environment = "octree";
+    param->unschedule_default_operations = {"load balancing",
+                                            "mechanical forces"};
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  // Please consult the definition of the fuction for more information.
+  TestNeighborSearch(simulation);
 }
 
 }  // namespace bdm

@@ -30,7 +30,6 @@ class MyEnvironment : public Environment {
   };
 
   void Clear() override {}
-  void Update() override {}
 
   std::array<int32_t, 6> GetDimensions() const override {
     return {0, 0, 0, 0, 0, 0};
@@ -38,20 +37,6 @@ class MyEnvironment : public Environment {
 
   std::array<int32_t, 2> GetDimensionThresholds() const override {
     return {0, 0};
-  }
-
-  // In this environment a neighboring agent is an agent who is from the same
-  // `city` as the query agent
-  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
-                       void* criteria) override {
-    // Even though the criteria could have been typed as a std::string, this
-    // example shows that you can wrap any number of criteria in a struct
-    auto casted_criteria = static_cast<Criteria*>(criteria);
-    for (auto neighbor : agents_per_city_[casted_criteria->city]) {
-      if (neighbor != &query) {
-        lambda(neighbor);
-      }
-    }
   }
 
   LoadBalanceInfo* GetLoadBalanceInfo() override {
@@ -67,6 +52,32 @@ class MyEnvironment : public Environment {
   };
 
   std::unordered_map<std::string, std::vector<Agent*>> agents_per_city_;
+
+  // In this environment a neighboring agent is an agent who is from the same
+  // `city` as the query agent
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria) override {
+    // Even though the criteria could have been typed as a std::string, this
+    // example shows that you can wrap any number of criteria in a struct
+    auto casted_criteria = static_cast<Criteria*>(criteria);
+    for (auto neighbor : agents_per_city_[casted_criteria->city]) {
+      if (neighbor != &query) {
+        lambda(neighbor);
+      }
+    }
+  }
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Agent& query, double squared_radius) override{};
+
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Double3& query_position, double squared_radius,
+                       const Agent* query_agent = nullptr) override{};
+
+  int GetNumUpdates() { return num_updates_; }
+
+ protected:
+  void UpdateImplementation() override { num_updates_ += 1; }
+  int num_updates_ = 0;
 };
 
 struct FindNeighborsInCity : public Functor<void, Agent*> {
@@ -119,6 +130,39 @@ TEST(CustomEnvironmentTest, CustomCriteria) {
   EXPECT_EQ(neighbors[person0->GetUid()].size(), 1u);
   EXPECT_EQ(neighbors[person0->GetUid()][0], person2->GetUid());
   EXPECT_EQ(neighbors[person1->GetUid()].size(), 1u);
+}
+
+TEST(CustomEnvironmentTest, NumberOfUpdates) {
+  auto set_param = [&](Param* param) {
+    param->unschedule_default_operations = {"load balancing"};
+  };
+  Simulation sim(TEST_NAME, set_param);
+
+  auto* rm = sim.GetResourceManager();
+  auto* scheduler = sim.GetScheduler();
+  MyEnvironment* env_ptr = new MyEnvironment();
+  sim.SetEnvironment(env_ptr);
+
+  EXPECT_EQ(env_ptr, sim.GetEnvironment());
+
+  Cell* cell = new Cell(1.0);
+  rm->AddAgent(cell);
+  scheduler->Simulate(1);
+  // Updates: Schduler::Initialize(), Tear down op
+  EXPECT_EQ(2, env_ptr->GetNumUpdates());
+
+  scheduler->Simulate(1);
+  // Updates: Schduler::Initialize(), Tear down op
+  EXPECT_EQ(4, env_ptr->GetNumUpdates());
+
+  scheduler->Simulate(2);
+  // Updates: Schduler::Initialize(), Tear down op, Tear down op
+  EXPECT_EQ(7, env_ptr->GetNumUpdates());
+
+  rm->AddAgent(new Cell(1.0));
+  scheduler->Simulate(2);
+  // Updates: Schduler::Initialize(), Tear down op, Tear down op
+  EXPECT_EQ(10, env_ptr->GetNumUpdates());
 }
 
 }  // namespace bdm

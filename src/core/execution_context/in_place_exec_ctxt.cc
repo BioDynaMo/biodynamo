@@ -274,6 +274,16 @@ void InPlaceExecutionContext::ForEachNeighbor(
   env->ForEachNeighbor(for_each, query, squared_radius);
 }
 
+void InPlaceExecutionContext::ForEachNeighbor(
+    Functor<void, Agent*, double>& lambda, const Double3& query_position,
+    double squared_radius) {
+  auto for_each = L2F([&](Agent* agent, double squared_distance) {
+    lambda(agent, squared_distance);
+  });
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  env->ForEachNeighbor(for_each, query_position, squared_radius);
+}
+
 Agent* InPlaceExecutionContext::GetAgent(const AgentUid& uid) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();

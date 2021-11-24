@@ -46,7 +46,7 @@ KDTreeEnvironment::~KDTreeEnvironment() {
   delete nf_adapter_;
 }
 
-void KDTreeEnvironment::Update() {
+void KDTreeEnvironment::UpdateImplementation() {
   nf_adapter_->rm_ = Simulation::GetActive()->GetResourceManager();
 
   // Update the flattened indices map
@@ -93,24 +93,37 @@ void KDTreeEnvironment::Update() {
 void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                                         const Agent& query,
                                         double squared_radius) {
+  ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
+}
+
+void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                                        const Double3& query_position,
+                                        double squared_radius,
+                                        const Agent* query_agent) {
   std::vector<std::pair<uint64_t, double>> neighbors;
 
   nanoflann::SearchParams params;
   params.sorted = false;
 
-  const auto& position = query.GetPosition();
-
   // calculate neighbors
-  impl_->index_->radiusSearch(&position[0], squared_radius, neighbors, params);
+  impl_->index_->radiusSearch(&query_position[0], squared_radius, neighbors,
+                              params);
 
   auto* rm = Simulation::GetActive()->GetResourceManager();
   for (auto& n : neighbors) {
     Agent* nb_so =
         rm->GetAgent(nf_adapter_->flat_idx_map_.GetAgentHandle(n.first));
-    if (nb_so != &query) {
+    if (nb_so != query_agent) {
       lambda(nb_so, n.second);
     }
   }
+}
+
+void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*>& lambda,
+                                        const Agent& query, void* criteria) {
+  Log::Fatal("KDTreeEnvironment::ForEachNeighbor",
+             "You tried to call a specific ForEachNeighbor in an "
+             "environment that does not yet support it.");
 }
 
 std::array<int32_t, 6> KDTreeEnvironment::GetDimensions() const {

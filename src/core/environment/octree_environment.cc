@@ -36,7 +36,7 @@ OctreeEnvironment::~OctreeEnvironment() {
   delete container_;
 }
 
-void OctreeEnvironment::Update() {
+void OctreeEnvironment::UpdateImplementation() {
   container_->rm_ = Simulation::GetActive()->GetResourceManager();
   auto* param = Simulation::GetActive()->GetParam();
 
@@ -88,24 +88,36 @@ void OctreeEnvironment::Update() {
 void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                                         const Agent& query,
                                         double squared_radius) {
+  ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
+}
+
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                                        const Double3& query_position,
+                                        double squared_radius,
+                                        const Agent* query_agent) {
   std::vector<uint32_t> neighbors;
   std::vector<double> distances;
 
-  const auto& position = query.GetPosition();
-
   // Find neighbors
   impl_->octree_->radiusNeighbors<unibn::L2Distance<Double3>>(
-      position, std::sqrt(squared_radius), neighbors, distances);
+      query_position, std::sqrt(squared_radius), neighbors, distances);
 
   auto* rm = Simulation::GetActive()->GetResourceManager();
   int i = 0;
   for (auto& n : neighbors) {
     Agent* nb_so = rm->GetAgent(container_->flat_idx_map_.GetAgentHandle(n));
-    if (nb_so != &query) {
+    if (nb_so != query_agent) {
       lambda(nb_so, distances[i]);
     }
     i++;
   }
+}
+
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*>& lambda,
+                                        const Agent& query, void* criteria) {
+  Log::Fatal("OctreeEnvironment::ForEachNeighbor",
+             "You tried to call a specific ForEachNeighbor in an "
+             "environment that does not yet support it.");
 }
 
 std::array<int32_t, 6> OctreeEnvironment::GetDimensions() const {

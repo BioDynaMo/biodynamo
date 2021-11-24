@@ -125,6 +125,7 @@ class ResourceManager {
     } else {
       diffusion_grids_[substance_id] = dgrid;
     }
+    MarkEnvironmentOutOfSync();
   }
 
   void RemoveDiffusionGrid(size_t substance_id) {
@@ -329,6 +330,7 @@ class ResourceManager {
     if (type_index_) {
       type_index_->Add(agent);
     }
+    MarkEnvironmentOutOfSync();
   }
 
   void ResizeAgentUidMap() {
@@ -376,6 +378,10 @@ class ResourceManager {
         type_index_->Add(agent);
       }
     }
+#pragma omp single
+    if (new_agents.size() != 0) {
+      MarkEnvironmentOutOfSync();
+    }
   }
 
   /// Removes the agent with the given uid.\n
@@ -405,6 +411,7 @@ class ResourceManager {
         type_index_->Remove(agent);
       }
       delete agent;
+      MarkEnvironmentOutOfSync();
     }
   }
 
@@ -415,6 +422,11 @@ class ResourceManager {
   const TypeIndex* GetTypeIndex() const { return type_index_; }
 
  protected:
+  /// Adding and removing agents does not immediately reflect in the state of
+  /// the environment. This function sets a flag in the envrionment such that
+  /// it is aware of the changes.
+  void MarkEnvironmentOutOfSync();
+
   /// Maps an AgentUid to its storage location in `agents_` \n
   AgentUidMap<AgentHandle> uid_ah_map_ = AgentUidMap<AgentHandle>(100u);  //!
   /// Pointer container for all agents

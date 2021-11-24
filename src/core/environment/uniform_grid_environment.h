@@ -271,122 +271,6 @@ class UniformGridEnvironment : public Environment {
 
   int32_t GetBoxLength() { return box_length_; }
 
-  /// Updates the grid, as agents may have moved, added or deleted
-  void Update() override {
-    auto* rm = Simulation::GetActive()->GetResourceManager();
-
-    if (rm->GetNumAgents() != 0) {
-      Clear();
-      timestamp_++;
-
-      auto inf = Math::kInfinity;
-      std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-      CalcSimDimensionsAndLargestAgent(&tmp_dim);
-      RoundOffGridDimensions(tmp_dim);
-
-      // If the box_length_ is not set manually, we set it to the largest agent
-      // size
-      if (!is_custom_box_length_) {
-        auto los = ceil(GetLargestAgentSize());
-        assert(
-            los > 0 &&
-            "The largest object size was found to be 0. Please check if your "
-            "cells are correctly initialized.");
-        box_length_ = los;
-      }
-      box_length_squared_ = box_length_ * box_length_;
-
-      for (int i = 0; i < 3; i++) {
-        int dimension_length =
-            grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-        int r = dimension_length % box_length_;
-        // If the grid is not perfectly divisible along each dimension by the
-        // resolution, extend the grid so that it is
-        if (r != 0) {
-          // std::abs for the case that box_length_ > dimension_length
-          grid_dimensions_[2 * i + 1] += (box_length_ - r);
-        } else {
-          // Else extend the grid dimension with one row, because the outmost
-          // object lies exactly on the border
-          grid_dimensions_[2 * i + 1] += box_length_;
-        }
-      }
-
-      // Pad the grid to avoid out of bounds check when search neighbors
-      for (int i = 0; i < 3; i++) {
-        grid_dimensions_[2 * i] -= box_length_;
-        grid_dimensions_[2 * i + 1] += box_length_;
-      }
-
-      // Calculate how many boxes fit along each dimension
-      for (int i = 0; i < 3; i++) {
-        int dimension_length =
-            grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
-        assert((dimension_length % box_length_ == 0) &&
-               "The grid dimensions are not a multiple of its box length");
-        num_boxes_axis_[i] = dimension_length / box_length_;
-      }
-
-      num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
-      total_num_boxes_ = num_boxes_xy_ * num_boxes_axis_[2];
-
-      CheckGridGrowth();
-
-      // resize boxes_
-      if (boxes_.size() != total_num_boxes_) {
-        if (boxes_.capacity() < total_num_boxes_) {
-          boxes_.reserve(total_num_boxes_ * 2);
-        }
-        boxes_.resize(total_num_boxes_);
-      }
-
-      successors_.reserve();
-
-      // Assign agents to boxes
-      auto* param = Simulation::GetActive()->GetParam();
-      AssignToBoxesFunctor functor(this);
-      rm->ForEachAgentParallel(param->scheduling_batch_size, functor);
-      if (param->bound_space) {
-        int min = param->min_bound;
-        int max = param->max_bound;
-        threshold_dimensions_ = {min, max};
-      }
-
-      if (param->thread_safety_mechanism ==
-          Param::ThreadSafetyMechanism::kAutomatic) {
-        nb_mutex_builder_->Update();
-      }
-    } else {
-      // There are no agents in this simulation
-      auto* param = Simulation::GetActive()->GetParam();
-
-      bool uninitialized = boxes_.size() == 0;
-      if (uninitialized && param->bound_space) {
-        // Simulation has never had any agents
-        // Initialize grid dimensions with `Param::min_bound` and
-        // `Param::max_bound`
-        // This is required for the DiffusionGrid
-        int min = param->min_bound;
-        int max = param->max_bound;
-        grid_dimensions_ = {min, max, min, max, min, max};
-        threshold_dimensions_ = {min, max};
-        has_grown_ = true;
-      } else if (!uninitialized) {
-        // all agents have been removed in the last iteration
-        // grid state remains the same, but we have to set has_grown_ to false
-        // otherwise the DiffusionGrid will attempt to resize
-        has_grown_ = false;
-      } else {
-        Log::Fatal(
-            "UniformGridEnvironment",
-            "You tried to initialize an empty simulation without bound space. "
-            "Therefore we cannot determine the size of the simulation space. "
-            "Please add agents, or set Param::bound_space, "
-            "Param::min_bound, and Param::max_bound.");
-      }
-    }
-  }
-
   /// @brief      Calculates the squared euclidian distance between two points
   ///             in 3D
   ///
@@ -428,8 +312,67 @@ class UniformGridEnvironment : public Environment {
     return &lbi_;
   }
 
+  /// @brief      Return the box index in the one dimensional array of the box
+  ///             that contains the position
+  ///
+  /// @param[in]  position  The position of the object
+  ///
+  /// @return     The box index.
+  ///
+  size_t GetBoxIndex(const Double3& position) const {
+    std::array<uint64_t, 3> box_coord;
+    box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
+    box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
+    box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
+
+    return GetBoxIndex(box_coord);
+  }
+
+  std::array<int32_t, 6> GetDimensions() const override {
+    return grid_dimensions_;
+  }
+
+  /// Returns true if the provided point is inside the simulation domain.
+  /// Compares the points coordinates against grid_dimensions_ (without bounding
+  /// boxes).
+  bool ContainedInGrid(const Double3& point) const {
+    double xmin = static_cast<double>(grid_dimensions_[0]) + box_length_;
+    double xmax = static_cast<double>(grid_dimensions_[1]) - box_length_;
+    double ymin = static_cast<double>(grid_dimensions_[2]) + box_length_;
+    double ymax = static_cast<double>(grid_dimensions_[3]) - box_length_;
+    double zmin = static_cast<double>(grid_dimensions_[4]) + box_length_;
+    double zmax = static_cast<double>(grid_dimensions_[5]) - box_length_;
+    if (point[0] >= xmin && point[0] <= xmax && point[1] >= ymin &&
+        point[1] <= ymax && point[2] >= zmin && point[2] <= zmax) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  std::array<int32_t, 2> GetDimensionThresholds() const override {
+    return threshold_dimensions_;
+  }
+
+  void GetNumBoxesAxis(uint32_t* nba) {
+    nba[0] = num_boxes_axis_[0];
+    nba[1] = num_boxes_axis_[1];
+    nba[2] = num_boxes_axis_[2];
+  }
+
+  uint64_t GetNumBoxes() const { return boxes_.size(); }
+
+  std::array<uint64_t, 3> GetBoxCoordinates(size_t box_idx) const {
+    std::array<uint64_t, 3> box_coord;
+    box_coord[2] = box_idx / num_boxes_xy_;
+    auto remainder = box_idx % num_boxes_xy_;
+    box_coord[1] = remainder / num_boxes_axis_[0];
+    box_coord[0] = remainder % num_boxes_axis_[0];
+    return box_coord;
+  }
+
   /// @brief      Applies the given lambda to each neighbor of the specified
-  ///             agent is within the squared radius (i.e. the criteria)
+  ///             agent is within the squared radius.
   ///
   /// In simulation code do not use this function directly. Use the same
   /// function from the execution context (e.g. `InPlaceExecutionContext`)
@@ -440,6 +383,22 @@ class UniformGridEnvironment : public Environment {
   ///
   void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
                        const Agent& query, double squared_radius) override {
+    ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
+  }
+
+  /// @brief      Applies the given lambda to each neighbor of the specified
+  ///             position within the squared radius.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
+  ///
+  /// @param[in]  lambda    The operation as a lambda
+  /// @param      query_position  The query position
+  /// @param      squared_radius  The squared search radius (type: double*)
+  ///
+  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+                       const Double3& query_position, double squared_radius,
+                       const Agent* query_agent = nullptr) override {
     if (squared_radius > box_length_squared_) {
       Log::Fatal(
           "UniformGridEnvironment::ForEachNeighbor",
@@ -448,9 +407,38 @@ class UniformGridEnvironment : public Environment {
           "box length (",
           box_length_, "). The resulting neighborhood would be incomplete.");
     }
-
-    const auto& position = query.GetPosition();
-    auto idx = query.GetBoxIdx();
+    const auto& position = query_position;
+    uint32_t idx{std::numeric_limits<uint32_t>::max()};
+    if (query_agent != nullptr) {
+      idx = query_agent->GetBoxIdx();
+    }
+    // If the point is not inside the inner grid (excluding the bounding boxes)
+    // as well as there was no previous box index assigned to the agent, we
+    // cannot reliably detect the neighbors and warn the user.
+    if (!ContainedInGrid(query_position) &&
+        idx == std::numeric_limits<uint32_t>::max()) {
+      Log::Warning(
+          "UniformGridEnvironment::ForEachNeighbor",
+          "You provided a query_position that is outside of the environment. ",
+          "Neighbor search is not supported in this case. \n",
+          "query_position: ", query_position,
+          "\ngrid_dimensions: ", grid_dimensions_[0] + box_length_, ", ",
+          grid_dimensions_[1] - box_length_, ", ",
+          grid_dimensions_[2] + box_length_, ", ",
+          grid_dimensions_[3] - box_length_, ", ",
+          grid_dimensions_[4] + box_length_, ", ",
+          grid_dimensions_[5] - box_length_);
+      return;
+    }
+    // Freshly created agents are initialized with the largest uint32_t number
+    // available. The above line assumes that the agent has already been located
+    // in the grid, but this assumption does not hold for new agents. Hence, for
+    // new agents, we manually compute the box index. This is also necessary if
+    // we want to find the neighbors of a arbitrary 3D coordinate rather than
+    // the neighbors of an agent.
+    if (idx == std::numeric_limits<uint32_t>::max()) {
+      idx = GetBoxIndex(position);
+    }
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
     GetMooreBoxes(&neighbor_boxes, idx);
@@ -489,7 +477,7 @@ class UniformGridEnvironment : public Environment {
       // increment iterator already here to hide memory latency
       ++ni;
       auto* agent = rm->GetAgent(ah);
-      if (agent != &query) {
+      if (agent != query_agent) {
         agents[size] = agent;
         const auto& pos = agent->GetPosition();
         x[size] = pos[0];
@@ -502,47 +490,13 @@ class UniformGridEnvironment : public Environment {
       }
     }
     process_batch();
-  }
+  };
 
-  /// @brief      Return the box index in the one dimensional array of the box
-  ///             that contains the position
-  ///
-  /// @param[in]  position  The position of the object
-  ///
-  /// @return     The box index.
-  ///
-  size_t GetBoxIndex(const Double3& position) const {
-    std::array<uint64_t, 3> box_coord;
-    box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
-    box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
-    box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
-
-    return GetBoxIndex(box_coord);
-  }
-
-  std::array<int32_t, 6> GetDimensions() const override {
-    return grid_dimensions_;
-  }
-
-  std::array<int32_t, 2> GetDimensionThresholds() const override {
-    return threshold_dimensions_;
-  }
-
-  void GetNumBoxesAxis(uint32_t* nba) {
-    nba[0] = num_boxes_axis_[0];
-    nba[1] = num_boxes_axis_[1];
-    nba[2] = num_boxes_axis_[2];
-  }
-
-  uint64_t GetNumBoxes() const { return boxes_.size(); }
-
-  std::array<uint64_t, 3> GetBoxCoordinates(size_t box_idx) const {
-    std::array<uint64_t, 3> box_coord;
-    box_coord[2] = box_idx / num_boxes_xy_;
-    auto remainder = box_idx % num_boxes_xy_;
-    box_coord[1] = remainder / num_boxes_axis_[0];
-    box_coord[0] = remainder % num_boxes_axis_[0];
-    return box_coord;
+  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
+                       void* criteria) override {
+    Log::Fatal("UniformGridEnvironment::ForEachNeighbor",
+               "You tried to call a specific ForEachNeighbor in an "
+               "environment that does not yet support it.");
   }
 
   // NeighborMutex ---------------------------------------------------------
@@ -623,6 +577,10 @@ class UniformGridEnvironment : public Environment {
   NeighborMutexBuilder* GetNeighborMutexBuilder() override {
     return nb_mutex_builder_.get();
   }
+
+ protected:
+  /// Updates the grid, as agents may have moved, added or deleted
+  void UpdateImplementation() override;
 
  private:
   class LoadBalanceInfoUG : public LoadBalanceInfo {
@@ -918,7 +876,10 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @return     The pointer to the box
   ///
-  const Box* GetBoxPointer(size_t index) const { return &(boxes_[index]); }
+  const Box* GetBoxPointer(size_t index) const {
+    assert(index < boxes_.size());
+    return &(boxes_[index]);
+  }
 
   /// @brief      Gets the pointer to the box with the given index
   ///
@@ -926,7 +887,10 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @return     The pointer to the box
   ///
-  Box* GetBoxPointer(size_t index) { return &(boxes_[index]); }
+  Box* GetBoxPointer(size_t index) {
+    assert(index < boxes_.size());
+    return &(boxes_[index]);
+  }
 
   /// Returns the box index in the one dimensional array based on box
   /// coordinates in space
@@ -936,8 +900,10 @@ class UniformGridEnvironment : public Environment {
   /// @return     The box index.
   ///
   size_t GetBoxIndex(const std::array<uint64_t, 3>& box_coord) const {
-    return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
-           box_coord[0];
+    size_t box_idx = box_coord[2] * num_boxes_xy_ +
+                     box_coord[1] * num_boxes_axis_[0] + box_coord[0];
+    assert(box_idx < boxes_.size());
+    return box_idx;
   }
 };
 
