@@ -34,6 +34,8 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **make**: Build automation tool
   * **gcc**: GNU C compiler
   * **g++**: GNU C++ compiler
+  * **libblas-dev**: Development files for BLAS library (Basic Linear Algebra Subprograms)
+  * **liblapack-dev**: Development files for LAPACK library (Linear Algebra PACKage)
   * **libopenmpi-dev**: Development files for OpenMPI (Open Source Message Passing Interface)
   * **libomp5**: OpenMP library
   * **libomp-dev**: Development files for OpenMP (API for multiprocessor programming)
@@ -72,8 +74,8 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 ```bash
 sudo apt-get update
 sudo apt-get install -y wget curl make gcc g++ \
-libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-libpthread-stubs0-dev
+libblas-dev liblapack-dev libopenmpi-dev libomp5 libomp-dev \ 
+libnuma-dev freeglut3-dev libpthread-stubs0-dev
 
 curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
 chmod +x cmake-3.19.3-Linux-x86_64.sh

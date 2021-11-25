@@ -18,7 +18,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-          libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build
+          libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build libblas-dev liblapack-dev
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
         chmod +x cmake-3.19.3-Linux-x86_64.sh
         sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local

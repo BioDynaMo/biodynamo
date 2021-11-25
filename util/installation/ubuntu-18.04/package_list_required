@@ -4,7 +4,9 @@ freeglut3-dev
 g++
 gcc
 git
+libblas-dev
 libbz2-dev
+liblapack-dev
 libnuma-dev
 libomp5
 libomp-dev
