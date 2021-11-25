@@ -16,6 +16,7 @@
 #define CORE_CONTAINER_SHARED_DATA_H_
 
 #include <array>
+#include <cstdint>
 #include <vector>
 
 /// This is BioDynaMo's default cachline size. If you system has a different
