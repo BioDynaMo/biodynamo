@@ -14,14 +14,18 @@
 
 #ifdef USE_MFEM
 #include "core/pde/element_finder/element_finder.h"
+#include <cassert>
+#include <chrono>
+#include <iostream>
 #include "core/util/log.h"
+#include "omp.h"
 #include "unibn_octree.h"
 
 namespace bdm {
 
 struct ElementFinder::OctreeImplementation {
   ~OctreeImplementation() { delete tree; };
-  unibn::Octree<mfem::Vector, ElementContainer>* tree = nullptr;
+  unibn::Octree<Double3, ElementContainer>* tree = nullptr;
 };
 
 ElementFinder::ElementFinder(mfem::Mesh* mesh)
@@ -40,31 +44,50 @@ ElementFinder::ElementFinder(mfem::Mesh* mesh)
   // Initialize wrapper for unibn::Octree
   octree_ = std::unique_ptr<ElementFinder::OctreeImplementation>(
       new ElementFinder::OctreeImplementation());
-  octree_->tree = new unibn::Octree<mfem::Vector, ElementContainer>();
+  octree_->tree = new unibn::Octree<Double3, ElementContainer>();
   unibn::OctreeParams params;
   // Build the Octree
   octree_->tree->initialize(element_container_, params);
+  // Optimization: for each thread, we create one IsoparametricTransformation
+  // and one InverseTransformation object. These objects are needed to retrieve
+  // values of the grid function at specific positions. To do this in a thread
+  // safe manner, we need to provide an 'external' isometric transformation to
+  // the mfem::Mesh (see more details in respective member function). We save
+  // one object per thread and reuse it in order not to constantly create and
+  // destroy theses objects which helps to reduce overhead.
+#pragma omp parallel
+  {
+#pragma omp master
+    {
+      isoparametric_transformations.resize(omp_get_num_threads());
+      inverse_transformations.resize(omp_get_num_threads());
+    }
+  }
 }
 
 ElementFinder::~ElementFinder() { delete vertex_to_element_; }
 
 int ElementFinder::FindClosestElement(mfem::Vector& x) {
-  return static_cast<int>(
-      octree_->tree->findNeighbor<unibn::L2Distance<mfem::Vector>>(x));
+  Double3 bdm_x = ConvertToDouble3(x);
+  return FindClosestElement(bdm_x);
 }
 
 int ElementFinder::FindClosestElement(const Double3& x) {
-  mfem::Vector mfem_x = ConvertToMFEMVector(x);
-  return FindClosestElement(mfem_x);
+  return static_cast<int>(
+      octree_->tree->findNeighbor<unibn::L2Distance<Double3>>(x));
 }
 
-mfem::Vector ElementFinder::GetElementCenter(int element_id) {
-  mfem::Vector center = element_container_[element_id];
-  return center;
+Double3 ElementFinder::GetElementCenter(int element_id) {
+  return element_container_[element_id];
 }
 
 mfem::Vector ElementFinder::ConvertToMFEMVector(const Double3& point) {
   mfem::Vector vec({point[0], point[1], point[2]});
+  return vec;
+}
+
+Double3 ElementFinder::ConvertToDouble3(const mfem::Vector& point) {
+  Double3 vec{point[0], point[1], point[2]};
   return vec;
 }
 
@@ -80,11 +103,23 @@ bool ElementFinder::IsInElement(const Double3& point, int element_id,
     ip_allocated = true;
   }
   mfem::Vector vec = ConvertToMFEMVector(point);
-  mfem::InverseElementTransformation inv_tr;
-  auto trans = mesh_->GetElementTransformation(element_id);
-  inv_tr.SetTransformation(*trans);
-  bool is_inside = (inv_tr.Transform(vec, *ip) ==
-                    mfem::InverseElementTransformation::Inside);
+  // ThreadSafety: The call mesh_->GetElementTransformation(int) is inherently
+  // thread unsafe. We bypass this limitation by additionally providing a
+  // local IsoparametricTransformation. While the individual threads don't have
+  // a strictly thread local object for this purpose, each thread only accesses
+  // the transformation at the vector position corresponding to its thread id.
+  assert(omp_get_thread_num() < inverse_transformations.size() &&
+         "Out of bounds access.");
+  assert(omp_get_thread_num() < isoparametric_transformations.size() &&
+         "Out of bounds access.");
+  mfem::InverseElementTransformation* inv =
+      &inverse_transformations[omp_get_thread_num()];
+  mfem::IsoparametricTransformation* iso =
+      &isoparametric_transformations[omp_get_thread_num()];
+  mesh_->GetElementTransformation(element_id, iso);
+  inv->SetTransformation(*iso);
+  bool is_inside =
+      (inv->Transform(vec, *ip) == mfem::InverseElementTransformation::Inside);
   if (ip_allocated) {
     delete ip;
   }

@@ -135,14 +135,14 @@ void TestGridValues(TimeDependentScalarField3d* scalar_field,
 }
 
 // Get the current value of steady clock from chrono library.
-std::chrono::steady_clock::time_point GetChronoTime() {
-  return std::chrono::steady_clock::now();
+std::chrono::high_resolution_clock::time_point GetChronoTime() {
+  return std::chrono::high_resolution_clock::now();
 }
 
 // Compute the duration that passed between two time points in
 // nanoseconds.
-int64_t ComputeDuration(std::chrono::steady_clock::time_point& end,
-                        std::chrono::steady_clock::time_point& start) {
+int64_t ComputeDuration(std::chrono::high_resolution_clock::time_point& end,
+                        std::chrono::high_resolution_clock::time_point& start) {
   return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start)
       .count();
 }
@@ -376,6 +376,143 @@ TEST(TimeDependentScalarField3dTest, GetSolutionAtAgentAndPosition) {
   TestGridValues(scalar_field, bdm_position, cell, 0.001);
 
   delete cell;
+  delete scalar_field->GetMesh();
+  delete scalar_field;
+}
+
+// Here, we test if we can read of the solution of the grid function at specific
+// postions in parallel the position. This tests the thread safetyness of the
+// implementation.
+TEST(TimeDependentScalarField3dTest, GetSolutionParallel) {
+  auto* scalar_field = InitializeScalarField(1);
+  auto* elf = scalar_field->GetElementFinder();
+
+  // Generate some random points inside the mesh
+  size_t num_points{8000};
+  std::vector<Double3> points;
+  points.reserve(num_points);
+  TRandom3 rng;
+  for (size_t i = 0; i < num_points; i++) {
+    Double3 point{rng.Uniform(), rng.Uniform(), rng.Uniform()};
+    points.push_back(point);
+  }
+
+  // ------------------------------------------------
+  // 1. Test FindClosestElement in parallel
+  // ------------------------------------------------
+
+  // Serial search (1)
+  std::vector<double> closest_element_serial(num_points);
+  for (size_t i = 0; i < num_points; i++) {
+    closest_element_serial[i] = elf->FindClosestElement(points[i]);
+  }
+
+  // Serial search (2) - to test deterministicness
+  std::vector<double> closest_element_serial_2(num_points);
+  for (size_t i = 0; i < num_points; i++) {
+    closest_element_serial_2[i] = elf->FindClosestElement(points[i]);
+  }
+
+  // Parallel search
+  std::vector<double> closest_element_parallel(num_points);
+#pragma omp parallel for shared(points, closest_element_parallel)
+  for (size_t i = 0; i < num_points; i++) {
+    closest_element_parallel[i] = elf->FindClosestElement(points[i]);
+  }
+
+  // Compare results (deterministicness and parallel access)
+  int cntr{0};
+  for (size_t i = 0; i < num_points; i++) {
+    if (closest_element_serial[i] != closest_element_serial_2[i]) {
+      cntr += 1;
+    }
+  }
+  ASSERT_EQ(0, cntr);
+  cntr = 0;
+  for (size_t i = 0; i < num_points; i++) {
+    if (closest_element_serial[i] != closest_element_parallel[i]) {
+      cntr += 1;
+    }
+  }
+  ASSERT_EQ(0, cntr);
+
+  // ------------------------------------------------
+  // 2. Check if we are in element (IsInElement)
+  // ------------------------------------------------
+
+  // Serial search
+  std::vector<bool> in_element_serial(num_points);
+  for (size_t i = 0; i < num_points; i++) {
+    in_element_serial[i] =
+        elf->IsInElement(points[i], closest_element_serial[i]);
+  }
+
+  // Parallel search
+  std::vector<bool> in_element_parallel(num_points);
+#pragma omp parallel for shared(points, in_element_parallel, \
+                                closest_element_serial)
+  for (size_t i = 0; i < num_points; i++) {
+    in_element_parallel[i] =
+        elf->IsInElement(points[i], closest_element_serial[i]);
+  }
+
+  // Compare results
+  cntr = 0;
+  for (size_t i = 0; i < num_points; i++) {
+    if (in_element_serial[i] != in_element_parallel[i]) {
+      cntr += 1;
+    }
+  }
+  ASSERT_EQ(0, cntr);
+
+  // ---------------------------------------------------
+  // 3. Full pipeline check with GetSolutionAtPosition
+  // ---------------------------------------------------
+
+  // Checking at all points and averageing the function values corresponds to
+  // a monte carlo integration. Hence we use the reference value computed as
+  // \int_0^1 dx \int_0^1 dy int_0^1 dz \sqrt(x^2 + y^2 + z^2)
+  double integral{0.960592};
+
+  // Serial complete pipeline
+  std::vector<double> result_serial(num_points);
+  auto start_serial = GetChronoTime();
+  for (size_t i = 0; i < num_points; i++) {
+    result_serial[i] = scalar_field->GetSolutionAtPosition(points[i]).second;
+  }
+  auto end_serial = GetChronoTime();
+  double avg_serial =
+      std::accumulate(result_serial.begin(), result_serial.end(), 0.0) /
+      result_serial.size();
+  EXPECT_NEAR(integral, avg_serial, 0.01);
+
+  // Parallel complet Pipeline
+  std::vector<double> result_parallel(num_points);
+  auto start_parallel = GetChronoTime();
+#pragma omp parallel for shared(result_parallel, points)
+  for (size_t i = 0; i < num_points; i++) {
+    result_parallel[i] = scalar_field->GetSolutionAtPosition(points[i]).second;
+  }
+  auto end_parallel = GetChronoTime();
+  double avg_parallel =
+      std::accumulate(result_parallel.begin(), result_parallel.end(), 0.0) /
+      result_parallel.size();
+  EXPECT_NEAR(integral, avg_parallel, 0.01);
+
+  // Compare serial and parallel results
+  EXPECT_DOUBLE_EQ(avg_serial, avg_parallel);
+  for (size_t i = 0; i < num_points; i++) {
+    EXPECT_DOUBLE_EQ(result_serial[i], result_parallel[i]);
+  }
+
+  auto duration_serial = ComputeDuration(end_serial, start_serial) / 1000000;
+  auto duration_parallel =
+      ComputeDuration(end_parallel, start_parallel) / 1000000;
+
+  // Test if parallel retrival is faster than serial retrival
+  EXPECT_LT(duration_parallel, duration_serial);
+
+  // Clean up
   delete scalar_field->GetMesh();
   delete scalar_field;
 }
