@@ -15,15 +15,23 @@
 #ifdef USE_MFEM
 #ifndef ELEMENT_CONTAINER_H_
 #define ELEMENT_CONTAINER_H_
+#include <vector>
+#include "core/container/math_array.h"
 #include "mfem.hpp"
 
 namespace bdm {
 
 /// This class wraps the access to a mfem::Mesh for a unibn::Octree to enable
-/// faster searching.
+/// faster searching. This object may get large since it copies the center
+/// elements to a vector. This vector will require
+/// 3 x NumberOfElements x 8 bytes.
 class ElementContainer {
  private:
-  mfem::Mesh* mesh_;
+  std::vector<Double3> element_center_points_;
+
+  /// Copies the element center points of the mesh to element_center_points via
+  /// std::vector<>.push_back(). Copies in serial.
+  void Initialize(mfem::Mesh* mesh);
 
  public:
   ElementContainer(mfem::Mesh* mesh);
@@ -32,7 +40,7 @@ class ElementContainer {
   size_t size() const;
 
   /// Retuns the center coordinate of a element in mesh_ labeled by idx.
-  const mfem::Vector operator[](size_t idx) const;
+  const Double3& operator[](size_t idx) const;
 };
 
 }  // namespace bdm

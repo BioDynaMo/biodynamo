@@ -49,7 +49,8 @@ void MolOperator::ImplicitSolve(const double dt, const mfem::Vector &u,
     last_dt_ = dt;
     T_solver_.SetOperator(*T_);
   }
-  MFEM_VERIFY(dt == last_dt_, "");  // SDIRK methods use the same dt
+  // SDIRK methods use the same dt but we accept some tolerance.
+  MFEM_VERIFY(abs(dt - last_dt_) / last_dt_ < 1e-9, "");
   Kmat_.Mult(u, z_);
   z_.Neg();
   T_solver_.Mult(z_, du_dt);

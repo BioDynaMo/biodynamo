@@ -47,7 +47,7 @@ class ElementFinder {
   int FindClosestElement(const Double3& x);
 
   /// Get the center coordinates of a given element labeled by element_id.
-  mfem::Vector GetElementCenter(int element_id);
+  Double3 GetElementCenter(int element_id);
 
   /// Function to retrieve the element containing a point as well as the closest
   /// integration point. First, this function uses a octree to find the closest
@@ -81,15 +81,29 @@ class ElementFinder {
  private:
   /// Octree for spatial searches
   std::unique_ptr<OctreeImplementation> octree_;
+
   /// mfem::Mesh
   mfem::Mesh* mesh_;
+
   /// Wraps the access to a mfem::Mesh for octree search
   ElementContainer element_container_;
+
+  /// Vector of Isoparametric Transformations. Needed to verify if a position is
+  /// inside of an element.
+  std::vector<mfem::IsoparametricTransformation> isoparametric_transformations;
+
+  /// Vector of Inverse Transformations. Needed to verify if a position is
+  /// inside of an element.
+  std::vector<mfem::InverseElementTransformation> inverse_transformations;
+
   /// Vertex to Element Table from mfem mesh.
   mfem::Table* vertex_to_element_;
 
   /// Converts a Double3 to a corresponding MFEM vector.
   mfem::Vector ConvertToMFEMVector(const Double3& point);
+
+  /// Converts a MFEM vector to the corresponding Double3.
+  Double3 ConvertToDouble3(const mfem::Vector& point);
 };
 
 }  // namespace bdm
