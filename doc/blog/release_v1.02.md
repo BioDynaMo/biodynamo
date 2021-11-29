@@ -15,7 +15,7 @@ The following publication gives a good overview about BioDynaMo's features and c
 
 **BioDynaMo: a modular platform for high-performance agent-based simulation** </br>
 *Lukas Breitwieser, Ahmad Hesam, Jean de Montigny, Vasileios Vavourakis, Alexandros Iosif, Jack Jennings, Marcus Kaiser, Marco Manca, Alberto Di Meglio, Zaid Al-Ars, Fons Rademakers, Onur Mutlu, Roman Bauer* </br>
-Bioinformatics, 2021, doi: (https://doi.org/10.1093/bioinformatics/btab649)[https://doi.org/10.1093/bioinformatics/btab649]
+Bioinformatics, 2021, doi: [https://doi.org/10.1093/bioinformatics/btab649](https://doi.org/10.1093/bioinformatics/btab649)
 
 Thanks and enjoy! </br>
 Lukas Breitwieser for the BioDynaMo team
