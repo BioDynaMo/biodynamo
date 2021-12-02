@@ -155,6 +155,16 @@ void TimeDependentScalarField3d::SetOperator(int operator_id) {
       operator_ = new DiffusionOperatorPerformance(
           fespace_, numeric_operator_parameters_[0]);
       break;
+    case PDEOperator::kDiffusionMassLumping:
+      if (numeric_operator_parameters_.size() < 1) {
+        Log::Fatal(
+            "TimeDependentScalarField3d::SetOperator",
+            "Wrong number of numerical parameters for kDiffusionMassLumping.",
+            "\nExpected: 1, Acutal: ", numeric_operator_parameters_.size());
+      }
+      operator_ = new DiffusionOperatorInverseLumped(
+          fespace_, numeric_operator_parameters_[0]);
+      break;
     case PDEOperator::kDiffusionWithFunction:
       if (operator_functions_.size() < 1 ||
           numeric_operator_parameters_.size() < 1) {

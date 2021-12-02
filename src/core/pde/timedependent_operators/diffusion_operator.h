@@ -107,6 +107,55 @@ class DiffusionOperatorPerformance : public MolOperator {
   void SetParameters(const mfem::Vector &u) override;
 };
 
+/// This Operator describes the following PDE system:
+/// \f[ \frac{du}{dt} = \nabla (D \nabla u) + \Gamma u, \ \f]
+/// where \f$ u = u(x,t) \f$, \f$ D = const \f$, and
+/// \f$ x \in R^3 \f$. In the code, \f$ D \f$  is the variable
+/// `diffusion_coefficient`.
+///
+/// After spatial discretization, the diffusion model can be written as:
+///
+///   \f[ du/dt = M^{-1}(Ku) \f]
+///
+/// where \f$ u \f$ is the vector representing the concentration, \f$ M \f$ is
+/// the mass matrix, and \f$ K \f$ is the diffusion operator with diffusivity
+/// depending on `diffusion_coefficient` and a function `diffusion_func_`. For
+/// this particular operator, the matrix \f$ M^{-1} \f$ is computed directly
+/// via mass lumping. Thus, explicit time integration does not require a CG
+/// solver for the matrix \f$ M \f$.
+///
+/// The Class DiffusionOperatorInverseLumped represents the right-hand side of
+/// the above ODE.
+class DiffusionOperatorInverseLumped : public MolOperator {
+ protected:
+  double diffusion_coefficient_;
+  bool assembled_;
+  mfem::FunctionCoefficient *diffusion_function_;
+  mfem::SparseMatrix inverse_mass_;
+  mfem::BilinearForm *M_inverse_ = nullptr;
+
+ public:
+  /// Constructor for simplified PDE \f$ \frac{du}{dt} = \nabla (D \nabla u) \f$
+  DiffusionOperatorInverseLumped(mfem::FiniteElementSpace &f,
+                                 double diffusion_coefficient);
+
+  /// Constructor for the full PDE \f$ \frac{du}{dt} = \nabla (D \nabla u) +
+  /// \Gamma u\f$
+  DiffusionOperatorInverseLumped(
+      mfem::FiniteElementSpace &f, double diffusion_coefficient,
+      std::function<double(const mfem::Vector &)> diffusion_func);
+
+  /// Destructor definition because of possible new call for diffusion_function_
+  ~DiffusionOperatorInverseLumped();
+
+  /// Compute explicit time integration with lumped mass.
+  void Mult(const mfem::Vector &u, mfem::Vector &du_dt) const override;
+
+  /// Update the diffusion BilinearForm K using the given true-dof vector
+  /// `u`.
+  void SetParameters(const mfem::Vector &u) override;
+};
+
 }  // namespace experimental
 }  // namespace bdm
 

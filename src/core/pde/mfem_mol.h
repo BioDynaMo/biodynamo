@@ -60,6 +60,9 @@ enum MFEMODESolver {
 /// (In contrast to kDiffusion, the matrices for the ODE are constructed only
 /// once at the first time step and kept throughout the updates. This saves
 /// significant overhead.)
+/// kDiffusionMassLumping:
+/// As before but \f$ M^{-1} \f$ is computed via mass lumping for the
+/// explicit scheme.
 /// kDiffusionWithFunction:
 /// \f[ \frac{du}{dt} = \nabla (D \nabla u) + \Gamma u, \ \f]
 /// kDiffusionWithFunctionPerformance:
@@ -72,6 +75,7 @@ enum MFEMODESolver {
 enum PDEOperator {
   kDiffusion,
   kDiffusionPerformance,
+  kDiffusionMassLumping,
   kDiffusionWithFunction,
   kDiffusionWithFunctionPerformance,
   kConduction
