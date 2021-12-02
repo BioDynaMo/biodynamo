@@ -108,6 +108,70 @@ void DiffusionOperatorPerformance::SetParameters(const mfem::Vector &u) {
   }
 }
 
+DiffusionOperatorInverseLumped::DiffusionOperatorInverseLumped(
+    mfem::FiniteElementSpace &f, double diffusion_coefficient)
+    : MolOperator(f),
+      diffusion_coefficient_(diffusion_coefficient),
+      assembled_(false),
+      diffusion_function_(nullptr),
+      M_inverse_(nullptr) {}
+
+DiffusionOperatorInverseLumped::DiffusionOperatorInverseLumped(
+    mfem::FiniteElementSpace &f, double diffusion_coefficient,
+    std::function<double(const mfem::Vector &)> diffusion_func)
+    : DiffusionOperatorInverseLumped(f, diffusion_coefficient) {
+  mfem::FunctionCoefficient *mfem_diffusion_func =
+      new mfem::FunctionCoefficient(diffusion_func);
+  diffusion_function_ = mfem_diffusion_func;
+}
+
+DiffusionOperatorInverseLumped::~DiffusionOperatorInverseLumped() {
+  if (diffusion_function_ != nullptr) {
+    delete diffusion_function_;
+  }
+  delete M_inverse_;
+};
+
+void DiffusionOperatorInverseLumped::Mult(const mfem::Vector &u,
+                                          mfem::Vector &du_dt) const {
+  // This function is called by explicit ODE solver and therefore has to
+  // compute:
+  //    du_dt = M^{-1}*-K(u)
+  // Input: u, Output du_dt
+  Kmat_.Mult(u, z_);              // z = K*u
+  z_.Neg();                       // z = -z
+  inverse_mass_.Mult(z_, du_dt);  // Finds du_dt: M du_dt = z -> du_dt=M^{-1} z
+}
+
+void DiffusionOperatorInverseLumped::SetParameters(const mfem::Vector &u) {
+  // We only construct the Bilinear Form K (and also T_) once
+  if (!assembled_) {
+    // Define BilinearForm K_
+    delete K_;
+    K_ = new mfem::BilinearForm(&fespace_);
+    K_->SetAssemblyLevel(mfem::AssemblyLevel::LEGACY);
+    mfem::ConstantCoefficient diff_coeff(diffusion_coefficient_);
+    K_->AddDomainIntegrator(new mfem::DiffusionIntegrator(diff_coeff));
+    if (diffusion_function_ != nullptr) {
+      K_->AddDomainIntegrator(new mfem::MassIntegrator(*diffusion_function_));
+    }
+    K_->Assemble();
+    K_->FormSystemMatrix(ess_tdof_list_, Kmat_);
+    // Compute inverse lumped mass matrix
+    M_inverse_ = new mfem::BilinearForm(&fespace_);
+    M_inverse_->AddDomainIntegrator(new mfem::InverseIntegrator(
+        new mfem::LumpedIntegrator(new mfem::MassIntegrator())));
+    M_inverse_->SetAssemblyLevel(mfem::AssemblyLevel::LEGACY);
+    M_inverse_->Assemble();
+    M_inverse_->FormSystemMatrix(ess_tdof_list_, inverse_mass_);
+    // Compute T on the next ImplicitSolve
+    delete T_;
+    T_ = nullptr;
+    // Don't repeat assembly again
+    assembled_ = true;
+  }
+}
+
 }  // namespace experimental
 }  // namespace bdm
 
