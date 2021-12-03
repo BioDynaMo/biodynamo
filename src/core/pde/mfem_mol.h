@@ -272,7 +272,10 @@ class TimeDependentScalarField3d {
   /// Get upper boundary for allowed time step for ODE solution
   double GetTimestepMax(double dt_max) { return dt_max_; }
 
-  // Get the underlying mesh
+  /// Get the polynomial degree of the approximation
+  int GetPolynomialDegree() { return fe_coll_.GetOrder(); }
+
+  /// Get the underlying mesh
   mfem::Mesh* GetMesh() { return mesh_; }
 };
 
