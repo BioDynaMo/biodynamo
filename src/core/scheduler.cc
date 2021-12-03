@@ -68,9 +68,15 @@ Scheduler::Scheduler() {
   // Also, must be done before TearDownIteration, because that introduces new
   // agents that are not yet in the environment (which load balancing
   // relies on)
+#ifndef USE_MFEM
   std::vector<std::string> post_scheduled_ops_names = {
       "load balancing", "tear down iteration", "visualize",
       "update time series"};
+#else
+  std::vector<std::string> post_scheduled_ops_names = {
+      "load balancing", "tear down iteration", "visualize", "visualize mfem",
+      "update time series"};
+#endif  // USE_MFEM
 
   protected_op_names_ = {"update staticness",
                          "discretization",

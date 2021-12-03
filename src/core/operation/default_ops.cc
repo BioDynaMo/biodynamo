@@ -21,6 +21,7 @@
 #include "core/operation/mechanical_forces_op_cuda.h"
 #include "core/operation/mechanical_forces_op_opencl.h"
 #include "core/operation/operation.h"
+#include "core/operation/visualization_mfem_op.h"
 #include "core/operation/visualization_op.h"
 
 namespace bdm {
@@ -131,6 +132,10 @@ struct UpdateEnvironmentOp : public StandaloneOperationImpl {
 BDM_REGISTER_OP(UpdateEnvironmentOp, "update environment", kCpu);
 
 BDM_REGISTER_OP(VisualizationOp, "visualize", kCpu);
+
+#ifdef USE_MFEM
+BDM_REGISTER_OP(VisualizationMFEMOp, "visualize mfem", kCpu);
+#endif  // USE_MFEM
 
 struct PropagateStaticnessOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(PropagateStaticnessOp);
