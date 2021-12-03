@@ -655,15 +655,14 @@ TEST(TimeDependentScalarField3dTest, AgentProbabilityDensity) {
   scheduler->FinalizeInitialization();
   scheduler->Simulate(1);
   auto* op = rm->GetMFEMGrid(kSubstance1).second->GetMolOperator();
-  auto* pdf_functor = op->GetAgentPDFFunctor();
 
   // Test if there are three agents in simulation
   EXPECT_EQ(3u, rm->GetNumAgents());
 
   // Test pdf_functor norm
-  EXPECT_NE(norm, pdf_functor->GetNorm());
+  EXPECT_NE(norm, op->GetNorm());
   op->UpdatePDFNorm();
-  EXPECT_DOUBLE_EQ(norm, pdf_functor->GetNorm());
+  EXPECT_DOUBLE_EQ(norm, op->GetNorm());
 
   // // Define dummy integration points to evaluate the density function
   mfem::Vector ip1 = ConvertToMFEMVector({0.1, 0.0, 0.0});  // In Cell 1

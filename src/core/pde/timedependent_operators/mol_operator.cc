@@ -68,17 +68,15 @@ double MolOperator::EvaluateAgentPDF(const mfem::Vector &x) {
   auto *env = simulation->GetEnvironment();
   auto *ctxt = simulation->GetExecutionContext();
 
-  // ToDo(tobias): adapt BDM API to call a function for each neighbor without
-  // having to use an agent as an intermediate step.
-  Cell virtual_cell({x[0], x[1], x[2]});
+  // Construct the object in function for thread safety rather than storing it
+  // as a member.
+  AccumulateDoubleFunctor compute_agent_pdf_functor(norm_);
 
-  compute_agent_pdf_functor_.Reset();
-  compute_agent_pdf_functor_.SetQueryAgent(&virtual_cell);
-
+  Double3 search_position({x[0], x[1], x[2]});
   double max_agent_size = env->GetLargestAgentSizeSquared();
-  ctxt->ForEachNeighbor(compute_agent_pdf_functor_, virtual_cell,
+  ctxt->ForEachNeighbor(compute_agent_pdf_functor, search_position,
                         max_agent_size);
-  return compute_agent_pdf_functor_.GetAccumulatedValue();
+  return compute_agent_pdf_functor.GetAccumulatedValue();
 }
 
 void MolOperator::UpdatePDFNorm() {
@@ -90,7 +88,7 @@ void MolOperator::UpdatePDFNorm() {
 #pragma omp atomic
     total_agent_volume += volume;
   });
-  compute_agent_pdf_functor_.SetNorm(1 / total_agent_volume);
+  norm_ = 1 / total_agent_volume;
 }
 
 }  // namespace experimental

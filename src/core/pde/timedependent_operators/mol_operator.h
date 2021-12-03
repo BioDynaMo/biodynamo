@@ -24,14 +24,26 @@
 namespace bdm {
 namespace experimental {
 
+/// This functor can be used to accumulate double values in a neighborhood
+/// around a given point.
 class AccumulateDoubleFunctor : public Functor<void, Agent *, double> {
  private:
-  Cell *query_;
+  /// Accumulated value (basically the result)
   double accumulated_value_;
+  /// Optional normalization constant, then the result is norm *
+  /// accumulated_value_.
   double norm_;
+  /// Function to model the contribution of each agent to the
+  /// accumulated_value_. The first argument provided to the function is the
+  /// squared_distance between the agent and some query_position / query_agent
+  /// (see ForEachNeighbor). The second argument is the squared radius
+  /// ((diameter/2)^2). Based on these two values, the function computes the
+  /// contribution. By default, the contribution is 1 if the query_position is
+  /// inside the agent and zero else.
   std::function<double(double, double)> density_from_distance_;
 
  public:
+  /// See member definition for explantion.
   AccumulateDoubleFunctor(
       double norm, std::function<double(double, double)> density_from_distance =
                        [](double distance, double query_radius) {
@@ -42,32 +54,27 @@ class AccumulateDoubleFunctor : public Functor<void, Agent *, double> {
         density_from_distance_(std::move(density_from_distance)) {}
 
   void operator()(Agent *neighbor, double squared_distance) {
-    auto *neighbor_cell = bdm_static_cast<Cell *>(neighbor);
-    if (neighbor_cell == query_) {
-      return;
-    }
-    auto squared_cell_radius = pow(neighbor_cell->GetDiameter() / 2, 2);
+    auto squared_cell_radius = pow(neighbor->GetDiameter() / 2, 2);
     auto agent_contribution_to_density =
         density_from_distance_(squared_distance, squared_cell_radius);
 #pragma omp atomic
     accumulated_value_ += agent_contribution_to_density;
   }
 
+  /// Returns the normalized accumulated value (i.e. the result)
   double GetAccumulatedValue() { return accumulated_value_ * norm_; }
 
-  void Reset() {
-    accumulated_value_ = 0.0;
-    query_ = nullptr;
-  }
+  /// Resets the object. Start accumulating from zero again.
+  void Reset() { accumulated_value_ = 0.0; }
 
+  /// Defines the normalization.
   void SetNorm(double norm) { norm_ = norm; }
+
+  /// Returns the normalization constant
   double GetNorm() { return norm_; }
 
-  void SetQueryAgent(Cell *query) {
-    Reset();
-    query_ = query;
-  }
-
+  /// Define a function that is used to compute the contribution of each agent
+  /// in the search query to the accumulated_value_.
   void SetDensityFunction(std::function<double(double, double)> df) {
     density_from_distance_ = std::move(df);
   }
@@ -78,7 +85,7 @@ class AccumulateDoubleFunctor : public Functor<void, Agent *, double> {
 /// the FE part of the Method of Lines and creates the matrices for the ODE
 /// problem. It can supports explicit and implicit time integration if the user
 /// decide to implement it or if his/her use case is close enough to the
-/// follwoing.
+/// following.
 ///
 /// The class is designed such that it handles MOL systems that take an ODE
 /// shape as:
@@ -110,7 +117,8 @@ class MolOperator : public mfem::TimeDependentOperator {
 
   double last_dt_;
 
-  AccumulateDoubleFunctor compute_agent_pdf_functor_;
+  /// Normalization constant for AgentPDF.
+  double norm_;
 
  public:
   MolOperator(mfem::FiniteElementSpace &f)
@@ -120,7 +128,7 @@ class MolOperator : public mfem::TimeDependentOperator {
         K_(nullptr),
         T_(nullptr),
         z_(height),
-        compute_agent_pdf_functor_(1.0) {
+        norm_(1.0) {
     // Generate Mass Matrix
     M_ = new mfem::BilinearForm(&fespace_);
     M_->AddDomainIntegrator(new mfem::MassIntegrator());
@@ -181,13 +189,7 @@ class MolOperator : public mfem::TimeDependentOperator {
   /// if we assume agents that do not overlap.
   double EvaluateAgentPDF(const mfem::Vector &x);
 
-  /// Get pointer to the internal AccumulateDoubleFunctor responsible for
-  /// computing the AgentPDF. This can be used to create your custom PDF via
-  /// auto* f = MolOperator::GetAgentPDFFunctor();
-  /// f->SetDensityFunction(MyFunction);
-  AccumulateDoubleFunctor *GetAgentPDFFunctor() {
-    return &compute_agent_pdf_functor_;
-  }
+  double GetNorm() { return norm_; }
 
   /// Update the normalization.
   void UpdatePDFNorm();
