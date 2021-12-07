@@ -604,8 +604,8 @@ struct Param {
   /// Default value: `10`\n
   /// TOML config file:
   ///     [development]
-  ///     simulation_step_freq = false
-  uint32_t simulation_step_freq = 10;
+  ///     simulation_step_freq = 1
+  uint32_t simulation_step_freq = 1;
 
   // ---------------------------------------------------------------------------
   // experimental group
