@@ -592,12 +592,14 @@ struct Param {
   ///     debug_numa = false
   bool debug_numa = false;
 
-  /// Display the current simulation step in the terminal output
-  /// Default value: `true`\n
+  /// Display the simulation step in the terminal output with a defined
+  /// frequency.\nThe value `0` shows no output, a value of `1` prints all
+  /// steps, a value of `2` prints every second step, and so on.\n
+  /// Default value: `0`\n
   /// TOML config file:
   ///     [development]
-  ///     show_simulation_step = false
-  bool show_simulation_step = false;
+  ///     show_simulation_step = 0
+  uint64_t show_simulation_step = 0;
 
   // ---------------------------------------------------------------------------
   // experimental group
