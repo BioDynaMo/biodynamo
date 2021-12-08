@@ -599,14 +599,6 @@ struct Param {
   ///     show_simulation_step = false
   bool show_simulation_step = false;
 
-  /// Sets the frequency at which the current simulation step is displayed.
-  /// Display every `simulation_step_freq` steps.
-  /// Default value: `10`\n
-  /// TOML config file:
-  ///     [development]
-  ///     simulation_step_freq = 1
-  uint32_t simulation_step_freq = 1;
-
   // ---------------------------------------------------------------------------
   // experimental group
 

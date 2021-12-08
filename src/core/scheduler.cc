@@ -354,8 +354,7 @@ void Scheduler::RunPostScheduledOps() {
 
 void Scheduler::Execute() {
   auto* param = Simulation::GetActive()->GetParam();
-  if (param->show_simulation_step &&
-      total_steps_ % param->simulation_step_freq == 0) {
+  if (param->show_simulation_step) {
     std::cout << "Time step: " << total_steps_ << std::endl;
   }
   ScheduleOps();
