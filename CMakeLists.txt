@@ -117,7 +117,6 @@ option(valgrind  "Enable valgrind tests and make build compatible with valgrind 
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 
 if(APPLE)
-  set(CMAKE_BDM_PVVERSION "5.9")
   find_program(BREW_BIN brew)
   if(BREW_BIN)
     execute_process(COMMAND ${BREW_BIN} --prefix llvm
@@ -125,9 +124,10 @@ if(APPLE)
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
   
-  # ParaView not yet supported on Apple arm64
+  # ParaView on Apple devices
+  set(CMAKE_BDM_PVVERSION "5.9")
   if("${DETECTED_ARCH}" STREQUAL "arm64")
-    set(paraview OFF)
+    set(CMAKE_BDM_PVVERSION "5.10")
   endif()
   
   # Ignore Fink (/sw) and MacPorts (/opt/local) packages, only consider Brew
@@ -308,7 +308,11 @@ if(paraview)
     # after which the find_package(ParaView) might complain that it can't find
     # a compatible Qt5 installation
     if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
-      set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+      if(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
+        set(Qt5_DIR /opt/homebrew/opt/qt@5/lib/cmake/Qt5)
+      else()
+        set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
+      endif(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
     endif()
     # Check the first time if ParaView exists in the system.
     find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
@@ -348,14 +352,19 @@ if(paraview)
       PRINT_LINE()
 
       # If we did not found paraview then we will install it automatically with the Qt package.
-      include(external/Qt)
-      PRINT_LINE()
-      MESSAGE("Qt5 was successfully downloaded and installed. We will proceed now with ParaView.")
+      if(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
+        PRINT_LINE()
+        MESSAGE("Using system Qt5 in ${Qt5_DIR}.")
+      else()
+        include(external/Qt)
+        PRINT_LINE()
+        MESSAGE("Qt5 was successfully downloaded and installed. We will proceed now with ParaView.")
+      endif(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
       PRINT_LINE()
       include(external/ParaView)
 
       # We run again the find_package command such to find correctly the location of Qt and ParaView
-      find_package(Qt5 COMPONENTS Widgets HINTS ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5 NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH)
+      find_package(Qt5 COMPONENTS Widgets HINTS ${Qt5_DIR} NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
