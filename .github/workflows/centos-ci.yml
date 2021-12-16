@@ -86,6 +86,7 @@ jobs:
         module load mpi
         cmake -G Ninja \
           -Dparaview=ON \
+          -Dbenchmark=ON \
           -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build

@@ -53,6 +53,7 @@ jobs:
         cmake -G Ninja \
           -Dopencl=OFF \
           -Dparaview=ON \
+          -Dbenchmark=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release
