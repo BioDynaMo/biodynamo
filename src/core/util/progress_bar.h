@@ -34,6 +34,9 @@ class ProgressBar {
   /// Keep track of space that is needed for printing elapsed and remaining time
   /// for nicer output.
   int n_digits_time_;
+  /// Variable to detect if we write to a file or not. ProgressBar is not
+  /// visible if we write to file.
+  bool write_to_file_;
 
  public:
   ProgressBar();

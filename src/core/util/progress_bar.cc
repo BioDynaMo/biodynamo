@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/util/progress_bar.h"
+#include <unistd.h>
 #include <cassert>
 #include <iomanip>
 #include <string>
@@ -27,16 +28,29 @@ ProgressBar::ProgressBar(int total_steps)
       executed_steps_(0),
       start_time_(Timing::Timestamp()),
       first_iter_(true),
-      n_digits_time_(0) {}
+      n_digits_time_(0),
+      write_to_file_(false) {}
 
 void ProgressBar::Step(uint64_t steps) { executed_steps_ += steps; }
 
 void ProgressBar::PrintProgressBar(std::ostream &out) {
+  // Do not write to file because it does not handle "\r" well.
+  if (write_to_file_) {
+    return;
+  }
+
   // Print empty line at first iteration to compensate for "\r" below.
   if (first_iter_) {
-    out << std::endl;
-    first_iter_ = false;
+    // Determine if we write to file or terminal.
+    if (!isatty(fileno(stdout))) {
+      std::cout << "<ProgressBar::PrintProgressBar> omits output because you "
+                   "write to file."
+                << std::endl;
+      write_to_file_ = true;
+      return;
+    }
     out << "ET = Elapsed Time; TR = Time Remaining" << std::endl;
+    first_iter_ = false;
   }
 
   // If total_steps_ is not set, we fall back to simple step printing. This can
