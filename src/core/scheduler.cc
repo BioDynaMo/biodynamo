@@ -124,6 +124,7 @@ Scheduler::~Scheduler() {
   }
   delete backup_;
   delete root_visualization_;
+  delete progress_bar_;
 }
 
 void Scheduler::Simulate(uint64_t steps) {
@@ -131,7 +132,7 @@ void Scheduler::Simulate(uint64_t steps) {
     return;
   }
 
-  Initialize();
+  Initialize(steps);
   for (unsigned step = 0; step < steps; step++) {
     Execute();
 
@@ -354,8 +355,12 @@ void Scheduler::RunPostScheduledOps() {
 
 void Scheduler::Execute() {
   auto* param = Simulation::GetActive()->GetParam();
-  if (param->show_simulation_step != 0 &&
-      total_steps_ % param->show_simulation_step == 0) {
+  if (param->use_progress_bar) {
+    assert(progress_bar_ != nullptr);
+    progress_bar_->Step();
+    progress_bar_->PrintProgressBar();
+  } else if (param->show_simulation_step != 0 &&
+             total_steps_ % param->show_simulation_step == 0) {
     std::cout << "Time step: " << total_steps_ << std::endl;
   }
   ScheduleOps();
@@ -435,7 +440,7 @@ void Scheduler::UpdateSimulatedTime() {
 // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved
 // think about a better solution, because some operations are executed twice
 // if Simulate is called with one timestep.
-void Scheduler::Initialize() {
+void Scheduler::Initialize(uint64_t steps) {
   auto* sim = Simulation::GetActive();
   auto* env = sim->GetEnvironment();
   auto* rm = sim->GetResourceManager();
@@ -450,6 +455,14 @@ void Scheduler::Initialize() {
     rm->ForEachAgentParallel(*bound_space);
     delete bound_space;
   }
+
+  // If users select the progress bar, we create the appropriate object.
+  if (param->use_progress_bar) {
+    delete progress_bar_;
+    progress_bar_ = nullptr;
+    progress_bar_ = new ProgressBar(steps);
+  }
+
   // We force-update the environment in this function because users may apply
   // certain operations such as shifting them in space in between two Simulate()
   // or SimulateUntil() calls. In contrast to adding or removing agents, such

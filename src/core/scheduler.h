@@ -26,6 +26,7 @@
 #include "core/functor.h"
 #include "core/operation/operation.h"
 #include "core/param/param.h"
+#include "core/util/progress_bar.h"
 #include "core/util/timing_aggregator.h"
 
 namespace bdm {
@@ -126,6 +127,7 @@ class Scheduler {
   uint64_t restore_point_;
   std::chrono::time_point<Clock> last_backup_ = Clock::now();
   RootAdaptor* root_visualization_ = nullptr;  //!
+  ProgressBar* progress_bar_ = nullptr;
 
   /// List of all operations that have been add either as default
   /// or by a call to Scheduler::ScheduleOp.
@@ -169,7 +171,7 @@ class Scheduler {
   // TODO(lukas, ahmad) After https://trello.com/c/0D6sHCK4 has been resolved
   // think about a better solution, because some operations are executed twice
   // if Simulate is called with one timestep.
-  void Initialize();
+  void Initialize(uint64_t steps = 0);
 
   /// Runs a lambda for each operation in the specified list of operations
   template <typename Lambda>
