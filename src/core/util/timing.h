@@ -20,6 +20,7 @@
 #include <string>
 
 #include "core/param/param.h"
+#include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/util/timing_aggregator.h"
 

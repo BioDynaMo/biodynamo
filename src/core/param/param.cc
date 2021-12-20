@@ -363,6 +363,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(debug_numa, "development.debug_numa");
   BDM_ASSIGN_CONFIG_VALUE(show_simulation_step,
                           "development.show_simulation_step");
+  BDM_ASSIGN_CONFIG_VALUE(use_progress_bar, "development.use_progress_bar");
 
   // experimental group
   BDM_ASSIGN_CONFIG_VALUE(compute_target, "experimental.compute_target");
