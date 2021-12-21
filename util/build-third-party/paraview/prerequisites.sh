@@ -107,6 +107,8 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
 fi
 
 # qt
+# If you're running on an ARM based Apple machine and you see an error in this 
+# section of the script, please note that we use the brew version of qt5.
 if [ -z "$SKIP_QT" ]; then
   QT_TAR=qt_${QT_VERSION}_${BDM_OS_VERS}.tar.gz
   mkdir -p $QT_INSTALL_DIR

@@ -17,6 +17,7 @@
 
 import argparse
 import os
+import platform
 
 # This header starts the BioDynaMo dictionary files.
 bdm_dictionary_header = """
@@ -183,7 +184,18 @@ if __name__ == "__main__":
         prefixes = []
         environmentals = ["ParaView_DIR", "ROOTSYS", "BDMSYS"]
         if not args.out_of_source:
-            include_suffix = ["/include/paraview-5.9", "/include", "/include"]
+            # For ARM based Apple machines, ParaView is only supported from 
+            # version 5.10 on. 
+            system_config = platform.uname()
+            if (system_config.system == "Darwin" and 
+                system_config.machine == "arm64"):
+                include_suffix = ["/include/paraview-5.10", 
+                                  "/include", 
+                                  "/include"]
+            else:
+                include_suffix = ["/include/paraview-5.9", 
+                                  "/include", 
+                                  "/include"]
             cnt = 0
             # default includes
             for e in environmentals:
