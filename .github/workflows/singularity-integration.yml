@@ -1,0 +1,16 @@
+name: Singularity Integration
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/singularity/singularity:v3.8.5
+      options: "--privileged --workdir /data"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build singularity image...
+        run: |
+          singularity build Singularity.sif Singularity
