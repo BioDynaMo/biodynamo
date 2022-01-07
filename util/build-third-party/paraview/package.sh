@@ -26,7 +26,7 @@ if [ "$(uname)" = "Darwin" ]; then
   mkdir $SCRIPT_DIR/paraview
   # run the fix. Note the different calls on arm and i386 based machines.
   if [ "$(uname -p)" = 'arm' ]; then
-    python $SCRIPT_DIR/make_macos_pvsdk_relocatable.py \
+    python3 $SCRIPT_DIR/make_macos_pvsdk_relocatable.py \
       --source $__BDM_INSTALL_SOURCE \
       --dest $SCRIPT_DIR/paraview \
       --third-party $SCRIPT_DIR qt \
