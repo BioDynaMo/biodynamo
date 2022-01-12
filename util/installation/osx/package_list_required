@@ -6,3 +6,4 @@ wget
 cmake
 ninja
 bash
+qt@5

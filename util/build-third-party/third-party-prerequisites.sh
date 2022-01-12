@@ -129,9 +129,5 @@ EOF'
 else
   xcode-select --install || true
   brew update --preinstall
-  brew install bash git cmake ninja swig python@3.9 libomp open-mpi git-lfs
-  # On ARM based macOS systems we used the brew version of qt5
-  if [ "$(uname -p)" = 'arm' ]; then
-    brew install qt@5
-  fi
+  brew install bash git cmake ninja swig python@3.9 libomp open-mpi git-lfs qt@5
 fi

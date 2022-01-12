@@ -83,11 +83,9 @@ static struct BioDynaMoDictInit {
         prefixes = []
         environmentals = ["ParaView_DIR", "ROOTSYS", "BDMSYS"]
         if not args.out_of_source:
-            # For ARM based Apple machines, ParaView is only supported from 
-            # version 5.10 on. 
+            # For Apple machines, ParaView is version 5.10 
             system_config = platform.uname()
-            if (system_config.system == "Darwin" and 
-                system_config.machine == "arm64"):
+            if (system_config.system == "Darwin"):
                 include_suffix = ["/include/paraview-5.10", 
                                   "/include", 
                                   "/include"]

@@ -98,7 +98,7 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
     BDM_OS_VERS=${BDM_OS}
   else
     brew update --preinstall
-    brew install bash git cmake ninja swig python@3.9 libomp open-mpi git-lfs
+    brew install bash git cmake ninja swig python@3.9 libomp open-mpi git-lfs qt@5
 
     MACOS_VERS=`sw_vers | sed -n 's/ProductVersion://p' | cut -d . -f 1-2 | sed -e 's/^[[:space:]]*//'`
     MACOS_ARCH=`arch`
@@ -107,20 +107,21 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
 fi
 
 # qt
-# If you're running on an ARM based Apple machine and you see an error in this 
-# section of the script, please note that we use the brew version of qt5.
 if [ -z "$SKIP_QT" ]; then
-  QT_TAR=qt_${QT_VERSION}_${BDM_OS_VERS}.tar.gz
-  mkdir -p $QT_INSTALL_DIR
-  QT_TAR_FILE="${QT_INSTALL_DIR}/${QT_TAR}"
+  # The QT5 download is only executed on linux because we use brew qt@5 on macOS
+  if [ $(uname) = "Linux" ]; then
+    QT_TAR=qt_${QT_VERSION}_${BDM_OS_VERS}.tar.gz
+    mkdir -p $QT_INSTALL_DIR
+    QT_TAR_FILE="${QT_INSTALL_DIR}/${QT_TAR}"
 
-  if [ -n "$BDM_LOCAL_LFS" ]; then
-    tar -zxf "${BDM_LOCAL_LFS}third-party/${QT_TAR}" -C "$QT_INSTALL_DIR"
-    cd ${QT_INSTALL_DIR}
-  else
-    QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR}
-    wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
-    cd ${QT_INSTALL_DIR}
-    tar -zxf $QT_TAR
+    if [ -n "$BDM_LOCAL_LFS" ]; then
+      tar -zxf "${BDM_LOCAL_LFS}third-party/${QT_TAR}" -C "$QT_INSTALL_DIR"
+      cd ${QT_INSTALL_DIR}
+    else
+      QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR}
+      wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
+      cd ${QT_INSTALL_DIR}
+      tar -zxf $QT_TAR
+    fi
   fi
 fi

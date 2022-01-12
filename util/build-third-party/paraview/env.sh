@@ -19,16 +19,9 @@
 . "$BDM_PROJECT_DIR/util/installation/common/util.sh"
 
 if [ "$(uname)" = "Darwin" ]; then
-    # ARM based Apple devices are only supported as of ParaView 5.10
-    if [ "$(uname -p)" = 'arm' ]; then
-        export PV_SUPERBUILD_VERSION="v5.10.0"
-        export PV_VERSION="v5.10.0"
-        export QT_VERSION="USE_BREW_qt@5"
-    else
-        export PV_SUPERBUILD_VERSION="v5.9.0"
-        export PV_VERSION="v5.9.0"
-        export QT_VERSION="v5.12.10"
-    fi
+    export PV_SUPERBUILD_VERSION="v5.10.0"
+    export PV_VERSION="v5.10.0"
+    export QT_VERSION="USE_BREW_qt@5"
 else
     export PV_SUPERBUILD_VERSION="v5.9.0"
     export PV_VERSION="v5.9.0"

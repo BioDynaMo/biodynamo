@@ -45,8 +45,8 @@ else
   # XCode compilers work fine now
   export CC=clang
   export CXX=clang++
-  # ARM based Apple devices use brew qt@5
-  if [ "$(uname -p)" = 'arm' ]; then
+  # From ParaView 5.10 on, we use brew qt@5.
+  if [ "$PV_VERSION" = "v5.10.0" ]; then
     export QT_CMAKE_DIR=/opt/homebrew/opt/qt@5/lib/cmake/Qt5
     export DYLD_LIBRARY_PATH=/opt/homebrew/opt/qt@5/lib:$DYLD_LIBRARY_PATH
   else
@@ -86,11 +86,10 @@ if [ "$(uname)" = "Darwin" ]; then
   BDM_MACOS_PY="$(brew --prefix)/bin/python3"
   BDM_PV_BUILD_CMAKE_ARGS="$BDM_PV_BUILD_CMAKE_ARGS
   -DPYTHON_EXECUTABLE=$BDM_MACOS_PY
-  -DPARAVIEW_EXTRA_CMAKE_ARGUMENTS='-DVTK_QT_VERSION=5'
   -DPARAVIEW_DO_UNIX_STYLE_INSTALLS:BOOL=ON
   -DCMAKE_MACOSX_RPATH:BOOL=ON
   -DCMAKE_INSTALL_RPATH:STRING=@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib"
-  if [ "$(uname -p)" = 'arm' ]; then
+  if [ "$PV_VERSION" = "v5.10.0" ]; then
     # For ParaView-5.10 we need to specify the Qt version used for VTK files. 
     # If we do not fix this to 5, the build will fail in the configuration phase
     # because it is incompatible with other options. Possibly, consider moving 

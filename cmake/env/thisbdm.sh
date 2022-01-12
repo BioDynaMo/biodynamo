@@ -235,11 +235,7 @@ _source_thisbdm()
   # paraview versions might be different between OSes
   local bdm_pv_version='5.9'
   if [ "$(uname)" = 'Darwin' ]; then
-    bdm_pv_version='5.9'
-    # ARM based Apple devices are only supported as of ParaView 5.10
-    if [ "$(uname -p)" = 'arm' ]; then
-      bdm_pv_version='5.10'
-    fi
+    bdm_pv_version='5.10'
   fi
 
   # Clear the env from previously set ParaView and Qt paths.
@@ -478,8 +474,8 @@ _source_thisbdm()
      fi
 
      if [ "$BDM_CUSTOM_QT" = false ] || [ -z "${Qt5_DIR}" ]; then
-       # On ARM based Apple devices we use the brew install of Qt5
-       if [ "$(uname)" = 'Darwin' ] && [ "$(uname -p)" = 'arm' ];then
+       # On Apple devices we use the brew install of Qt5
+       if [ "$(uname)" = 'Darwin' ];then
           Qt5_DIR=/opt/homebrew/opt/qt@5
        else
           Qt5_DIR=${BDMSYS}/third_party/qt

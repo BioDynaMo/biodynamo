@@ -53,11 +53,6 @@ fi
 # Install and upgrade required packages
 brew install \
   $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_required) || true
-# ARM based Apple systems require additional packages such as for instance qt@5
-if [ "$(uname -p)" = 'arm' ]; then
-  brew install \
-    $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_required_arm) || true
-fi
 
 # Install the optional packages
 if [ $1 == "all" ]; then

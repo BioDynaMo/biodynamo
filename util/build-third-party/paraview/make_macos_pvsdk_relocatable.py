@@ -1239,8 +1239,8 @@ def main(args):
     # Qt is always a dependency. Make sure it's in --third-party.
     qt_lib_dir = os.path.join(third_party_path, 'qt', 'lib')
 
-    # Qt is installed via brew on arm based systems.
-    if not is_arm_based:
+    # For 5.9, Qt5 is not installed via brew, thus, the explicit check.
+    if paraview_v == '5.9':
         if not os.path.isdir(qt_lib_dir):
             raise RuntimeError(f"./qt/lib directory does not exist in {third_party_path}")
     
@@ -1255,9 +1255,9 @@ def main(args):
             BinaryGroup(f"./lib/paraview-{paraview_v}", rp_suffixes, rpath_map=rpath_map),
         ]
     # The following BinaryGroup was not found on the tested M1 machine and
-    # caused problems. We therefore only use it if we're not running on an arm-
-    # based system.
-    if not is_arm_based:
+    # caused problems. We therefore remove it if we're not building the outdated
+    # ParaView 5.9
+    if paraview_v == '5.9':
         bin_groups.append(BinaryGroup("./lib/universal", 
                           rp_suffixes, 
                           preproc_fn=_preprocess_uni_bin, 

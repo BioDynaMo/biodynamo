@@ -29,7 +29,7 @@ git checkout $PV_SUPERBUILD_VERSION
 git submodule update --init --recursive
 
 # Currently we only have an OpenMP patch for v5.9.0 and for all others we do not
-# applay a patch.
+# apply a patch.
 if [ "${PV_SUPERBUILD_VERSION}" = "v5.9.0" ]; then
   git apply "$SCRIPT_DIR/paraview-superbuild-openmp.${PV_SUPERBUILD_VERSION}.patch"
 fi

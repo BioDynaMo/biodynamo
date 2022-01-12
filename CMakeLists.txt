@@ -125,10 +125,7 @@ if(APPLE)
   endif()
   
   # ParaView on Apple devices
-  set(CMAKE_BDM_PVVERSION "5.9")
-  if("${DETECTED_ARCH}" STREQUAL "arm64")
-    set(CMAKE_BDM_PVVERSION "5.10")
-  endif()
+  set(CMAKE_BDM_PVVERSION "5.10")
   
   # Ignore Fink (/sw) and MacPorts (/opt/local) packages, only consider Brew
   set(CMAKE_IGNORE_PATH)
@@ -308,11 +305,11 @@ if(paraview)
     # after which the find_package(ParaView) might complain that it can't find
     # a compatible Qt5 installation
     if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
-      if(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
+      if(APPLE)
         set(Qt5_DIR /opt/homebrew/opt/qt@5/lib/cmake/Qt5)
       else()
         set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
-      endif(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
+      endif(APPLE)
     endif()
     # Check the first time if ParaView exists in the system.
     find_package(ParaView ${CMAKE_BDM_PVVERSION} CONFIG COMPONENTS Catalyst PythonCatalyst VTKExtensionsIOCore
@@ -352,14 +349,14 @@ if(paraview)
       PRINT_LINE()
 
       # If we did not found paraview then we will install it automatically with the Qt package.
-      if(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
+      if(APPLE)
         PRINT_LINE()
         MESSAGE("Using system Qt5 in ${Qt5_DIR}.")
       else()
         include(external/Qt)
         PRINT_LINE()
         MESSAGE("Qt5 was successfully downloaded and installed. We will proceed now with ParaView.")
-      endif(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
+      endif(APPLE)
       PRINT_LINE()
       include(external/ParaView)
 
