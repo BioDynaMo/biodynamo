@@ -1,11 +1,9 @@
 Bootstrap:docker
 From:ubuntu:18.04
-
 %environment
-
-
 %post -c /bin/bash
-
+  export DEBIAN_FRONTEND=noninteractive 
+  export TZ=Etc/UTC
   apt-get -y update &&
   apt-get -y install python &&
   apt-get -y install python3 &&
@@ -25,8 +23,10 @@ From:ubuntu:18.04
   apt-get -y install aptitude &&
   aptitude -y install libreadline-dev &&
   apt-get -y install libssl-dev &&
-  apt-get install libsqlite3-dev &&
-  apt-get install apt-utils &&
+  # Add -y to the following line
+  apt-get -y install libsqlite3-dev &&
+  # Add -y to the following line
+  apt-get -y install apt-utils &&
   apt-get -y install openmpi-bin &&
   apt-get -y install libopenmpi-dev &&
   apt-get -y install libxkbcommon-x11-dev &&
@@ -63,28 +63,25 @@ From:ubuntu:18.04
   apt-get -y install sudo &&
   apt-get -y install software-properties-common
   
-
   wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
   bash Miniconda3-latest-Linux-x86_64.sh -b -f -p /miniconda3/
   rm Miniconda3-latest-Linux-x86_64.sh
-
   export PATH="/miniconda3/bin:$PATH"
   conda install -y -c conda-forge pip numpy 
   conda update -y --all
   apt -y install git
   apt -y install curl
-  rm -rf ~/.pyenv
+  sudo rm -rf ~/.pyenv
   curl https://pyenv.run | bash
   export PATH="$HOME/.pyenv/bin:$PATH"
   eval "$(pyenv init -)"
-
   export PYENV_ROOT=/opt/pyenv
   export PATH="/opt/pyenv/bin:$PATH" 
   curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
-  PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv -y install 3.9.1
+  ## Remove -y from following line
+  PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
   export PATH=/opt/pyenv/versions/3.9.1/bin:$PATH
   export PATH=/opt/pyenv/versions/3.9.1/bin/:$PATH
-
   wget https://bootstrap.pypa.io/get-pip.py
   python3 get-pip.py
   python3 -m pip install -U pip
@@ -92,21 +89,18 @@ From:ubuntu:18.04
   python3 -m pip install numpy
   apt-get install -y python3-pip
   apt-get install -y freeglut3-dev valgrind
-
   pip install cmake --upgrade
   pyenv global 3.9.1
+  pyenv versions
   
   apt-get -y dist-upgrade   
-
   git clone https://github.com/BioDynaMo/biodynamo.git
   cd biodynamo 
   export SILENT_INSTALL=1
-  ./prerequisites.sh all 
+  ./prerequisites.sh all
   mkdir build 
   cd build 
   cmake ..  
   make -j8
-  cd build
-
-
+  ## cd build
 %runscript
