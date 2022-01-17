@@ -91,7 +91,6 @@ From:ubuntu:18.04
   apt-get install -y freeglut3-dev valgrind
   pip install cmake --upgrade
   pyenv global 3.9.1
-  pyenv versions
   
   apt-get -y dist-upgrade   
   git clone https://github.com/BioDynaMo/biodynamo.git
