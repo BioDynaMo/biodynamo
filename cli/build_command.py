@@ -25,7 +25,7 @@ def BuildCommand(clean=False, build=True):
     Print.new_step("<bdm build> Building project ...")
 
     if clean:
-        Print.new_step("Clean build directory")
+        Print.new_step("<bdm build> Clean build directory")
         sp.check_output(["rm", "-rf", build_dir])
         sp.check_output(["mkdir", build_dir])
 

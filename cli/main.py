@@ -20,6 +20,7 @@ from demo_command import DemoCommand
 from new_command import NewCommand
 from run_command import RunCommand
 from test_command import TestCommand
+from config_command import ConfigCommand
 from bdm_version import Version
 
 
@@ -46,6 +47,8 @@ def Main():
 
     clean_sp = sp.add_parser("clean", help="Removes all build files")
 
+    config_sp = sp.add_parser("config", help="Prints the configuration of BDM.")
+
     demo_sp = sp.add_parser("demo", help="Creates pre-built demos.")
 
     new_sp = sp.add_parser(
@@ -63,7 +66,7 @@ def Main():
     run_sp = sp.add_parser("run", help="Executes the simulation")
 
     test_sp = sp.add_parser(
-        "test", help="Executes the unit-tests of a BioDynaMo sim."
+        "test", help="Executes the unit-tests of a BioDynaMo simulation."
     )
 
     args, unknown = parser.parse_known_args()
@@ -83,6 +86,8 @@ def Main():
             clean_sp.print_help()
             sys.exit()
         BuildCommand(clean=True, build=False)
+    elif args.cmd == "config":
+        ConfigCommand()
     elif args.cmd == "demo":
         demo_name = None
         destination = None
