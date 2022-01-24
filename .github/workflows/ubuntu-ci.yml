@@ -87,6 +87,7 @@ jobs:
       working-directory: build
       run: |
         . bin/thisbdm.sh
+        bdm config
         export DISPLAY=:99.0
         ninja run-unit-tests
 

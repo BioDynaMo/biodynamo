@@ -65,6 +65,7 @@ jobs:
         . bin/thisbdm.sh
         root --version
         root -config
+        bdm config
         ninja run-unit-tests
 
     - name: Notify Slack

@@ -40,3 +40,16 @@ class Print:
     @staticmethod
     def new_step(message):
         print("\n" + Print.BOLD + Print.BLUE + str(message) + Print.END)
+
+    @staticmethod
+    def new_step_in_config(message1, message2):
+        print(
+            "\n"
+            + Print.BOLD
+            + Print.GREEN
+            + str(message1)
+            + Print.END
+            + " ("
+            + str(message2)
+            + ")"
+        )
