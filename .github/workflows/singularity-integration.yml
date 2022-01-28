@@ -7,10 +7,11 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     container:
-      image: quay.io/singularity/singularity:v3.8.5
       options: "--privileged --workdir /data"
     steps:
       - uses: actions/checkout@v2
+        with:
+         singularity-version: 3.8.3
       - name: Build singularity image...
         run: |
           singularity build Singularity.sif Singularity
