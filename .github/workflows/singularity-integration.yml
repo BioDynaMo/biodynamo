@@ -3,69 +3,14 @@ name: Singularity Integration
 on: [push, pull_request]
 
 jobs:
-  changes:
-    name: "Changed Singularity Recipes"
+  build:
+    name: Build
     runs-on: ubuntu-latest
-    outputs:
-      changed_file: ${{ steps.files.outputs.added_modified }}
-    steps:
-      - id: files
-        uses: jitterbit/get-changed-files@v1
-        with:
-          format: 'json'
-  
-  build-test-containers:
-    needs:
-      - changes
-    runs-on: ubuntu-latest
-    strategy:
-      # Keep going on other deployments if anything bloops
-      fail-fast: false
-      matrix:
-        changed_file: ${{ fromJson(needs.changes.outputs.changed_file) }}
-        singularity-version: 3.8.3
-
     container:
-      image: quay.io/singularity/singularity:v${{ matrix.singularity_version }}
-      options: "--privileged" 
-
+      image: quay.io/singularity/singularity:v3.8.5
+      options: "--privileged --workdir /data"
     steps:
-
-      - name: Check out code for the container builds
-        uses: actions/checkout@v2
-
-      - name: Continue if Singularity Recipe
+      - uses: actions/checkout@v2
+      - name: Build singularity image...
         run: |
-          # Continue if we have a changed Singularity recipe
-          if [[ "${{ matrix.changed_file }}" = *Singularity* ]]; then
-            echo "keepgoing=true" >> $GITHUB_ENV
-          fi          
-      - name: Build Container
-        if: ${{ env.keepgoing == 'true' }}
-        env:
-          recipe: ${{ matrix.changed_file }}
-        run: |
-         ls 
-         if [ -f "${{ matrix.changed_file }}" ]; then
-            sudo -E singularity build container.sif ${{ matrix.changed_file }}
-            tag=$(echo "${recipe/Singularity\./}")
-            if [ "$tag" == "Singularity" ]; then
-                tag=latest
-            fi
-            # Build the container and name by tag
-            echo "Tag is $tag."
-            echo "tag=$tag" >> $GITHUB_ENV
-         else
-           echo "${{ matrix.changed_file }} is not found."
-           echo "Present working directory: $PWD"
-           ls
-         fi
-      - name: Login and Deploy Container
-        if: (github.event_name != 'pull_request')
-        env:
-          keepgoing: ${{ env.keepgoing }}
-        run: |         
-            if [[ "${keepgoing}" == "true" ]]; then
-                echo ${{ secrets.GITHUB_TOKEN }} | singularity remote login -u ${{ secrets.GHCR_USERNAME }} --password-stdin oras://ghcr.io
-                singularity push container.sif oras://ghcr.io/${GITHUB_REPOSITORY}:${tag}
-            fi
+          singularity build Singularity.sif Singularity
