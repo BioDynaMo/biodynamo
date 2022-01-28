@@ -10,6 +10,7 @@ jobs:
       options: "--privileged --workdir /data"
     steps:
       - uses: actions/checkout@v2
+      - uses: eWaterCycle/setup-singularity@v7
         with:
          singularity-version: 3.8.3
       - name: Build singularity image...
