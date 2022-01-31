@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-    name: Build
     runs-on: ubuntu-latest
     container:
       options: "--privileged --workdir /data"
@@ -17,6 +16,50 @@ jobs:
       - uses: eWaterCycle/setup-singularity@v3.8.3
         with:
          singularity-version: 3.8.3
-      - name: Build singularity image...
+         
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
+            libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build libblas-dev liblapack-dev
+          curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+          chmod +x cmake-3.19.3-Linux-x86_64.sh
+          sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+      - name: Start Xvfb
+        run: |
+          set -e
+          sudo apt-get -y install xvfb
+          XVFBARGS=":99 -ac -screen 0 2560x1440x24"
+          /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
+          disown -ar
+          sleep 3
+      - name: Set OSVERS
+        run: |
+          ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+          VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+          echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
+      - name: Cache pyenv
+        uses: actions/cache@v2
+        id: pyenv-cache
+        with:
+          path: ~/.pyenv
+          key: ${{ env.OSVERS }}-pyenv-3.9.1
+
+      - name: Install pyenv dependency
+        if: steps.pyenv-cache.outputs.cache-hit != 'true'
+        run: |
+          if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+            curl https://pyenv.run | bash
+          fi
+          export PATH="$HOME/.pyenv/bin:$PATH"
+          eval "$(pyenv init --path)"
+          eval "$(pyenv init -)"
+          PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+          pyenv shell 3.9.1  
+          
+         
+      - name: Build singularity image
+        env:
+          SINGULARITY_VERSION: 3.8.1
         run: |
           singularity build Singularity.sif Singularity
