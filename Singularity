@@ -116,6 +116,6 @@ From:ubuntu:18.04
   -DCMAKE_BUILD_TYPE=Release \
   -B build
   
-  cmake --build build --parallel -config Release
+  cmake --build build --parallel 
 
 %runscript
