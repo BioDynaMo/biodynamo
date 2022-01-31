@@ -1,2 +1,22 @@
 name: Singularity Integration
 
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container:
+      options: "--privileged --workdir /data"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: eWaterCycle/setup-singularity@v3.8.3
+        with:
+         singularity-version: 3.8.3
+      - name: Build singularity image...
+        run: |
+          singularity build Singularity.sif Singularity
