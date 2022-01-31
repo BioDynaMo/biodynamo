@@ -1,7 +1,7 @@
 // -----------------------------------------------------------------------------
 //
 //
-// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
+// Copyright (C) 2022 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
