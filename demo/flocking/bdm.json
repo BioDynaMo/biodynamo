@@ -19,7 +19,7 @@
     "computational_steps": 8000,
     "n_boids": 250,
     "starting_sphere_radius": 200,
-    "actual_diameter": 10,
+    "double actual_diameter": 10,
     "boid_perception_radius": 250,
     "boid_interaction_radius": 70,
     "perception_angle_deg": 300,
