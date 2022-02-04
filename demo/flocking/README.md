@@ -8,7 +8,7 @@ At each computational step an internal acceleration for each boid is computed an
  - a term that improves the overall flock cohesion 
 
 ## Simulation
-At the start of the simulation, all boids spawn uniformly distributed at random inside a starting sphere centered at the domain's origin. All boids have no initial velocity and a random heading direction. By default the domain is an open torus.  
+At the start of the simulation, all boids spawn uniformly at random inside a starting sphere centered at the domain's origin. All boids have no initial velocity and a random heading direction. By default the domain is an open torus.  
 To visualize the simulation, import the output in paraview and set the boids' scale array to ```actual_diameter```.
 
 ## Simulation Specific Parameters
