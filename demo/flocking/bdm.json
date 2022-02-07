@@ -8,6 +8,10 @@
     "min_bound": -1000,
     "visualization_interval": 20,
     "export_visualization": true,
+    "unschedule_default_operations": [
+      "mechanical forces"
+    ],
+    "use_progress_bar": true,
     "visualize_agents": {
       "Boid": [
         "actual_diameter_"

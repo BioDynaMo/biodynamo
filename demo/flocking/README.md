@@ -11,6 +11,28 @@ At each computational step an internal acceleration for each boid is computed an
 At the start of the simulation, all boids spawn uniformly at random inside a starting sphere centered at the domain's origin. All boids have no initial velocity and a random heading direction. By default the domain is an open torus.  
 To visualize the simulation, import the output in paraview and set the boids' scale array to ```actual_diameter```.
 
+## Running the Simulation
+
+To start the simulation, simply execute 
+```
+bdm run
+```
+in the shell in your project folder. To visualize the results, type 
+```
+paraview
+```
+in your terminal (again while being in the project folder). One may then load
+the results via 
+```
+File > Load State > "output/flocking_simulation/flocking_simulation.pvsm" 
+> "Use File Names form States"
+```
+By default, the boid's vision radius (`diameter`) is shown. The overlapping 
+illustrates that the boids can sense each other. For a more classical 
+visualization of the flocking behavior, click `Boids` in the `pipeline browser` 
+and select `actual_diameter` (scale array) in the tab `properties (Boids)` 
+(left). The `Play` button on the top right shows the results over time.
+
 ## Simulation Specific Parameters
 ```n_boids:```  
  number of boids that are spawned in the simulation  
