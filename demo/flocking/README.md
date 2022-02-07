@@ -13,11 +13,25 @@ To visualize the simulation, import the output in paraview and set the boids' sc
 
 ## Running the Simulation
 
-To start the simulation, simply execute 
+Before running the simulation, increase the number of simulation steps in 
+`bdm.json` to a larger number, we suggest 
+```json
+{
+ ... ,
+ "bdm::SimParam": {
+    ...
+    "computational_steps": 8000,
+    ...
+  }
+}
+```
+Instead of the default value `200`. To start the simulation, simply execute 
 ```
 bdm run
 ```
-in the shell in your project folder. To visualize the results, type 
+in the shell in your project folder. Note that you can change the parameters to 
+explore the parameter space in `bdm.json` without the need to recompile the 
+simulation. To visualize the results, type 
 ```
 paraview
 ```

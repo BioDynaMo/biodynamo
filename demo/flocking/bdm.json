@@ -20,7 +20,7 @@
   },
   "bdm::SimParam": {
     "_typename": "bdm::SimParam",
-    "computational_steps": 8000,
+    "computational_steps": 200,
     "n_boids": 250,
     "starting_sphere_radius": 200,
     "double actual_diameter": 10,
