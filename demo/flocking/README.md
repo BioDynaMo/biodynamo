@@ -76,3 +76,9 @@ time between two computational steps. A smaller d_t corresponds to a higher upda
 ```pos_gamma:```                  
 location of the common group objective  
 
+## Extensions to this project
+
+The original implementation of the demo can be found in this 
+(GitHub repository)[https://github.com/mhoghrab/biodynamo-flocking-simulation].
+It contains further extensions to the project such as obstacle avoidance and 
+perturbations via a random field.

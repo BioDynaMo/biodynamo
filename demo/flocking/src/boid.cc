@@ -6,6 +6,7 @@
 // -----------------------------------------------------------------------------
 
 #include "boid.h"
+#include <cmath>
 #include "sim_param.h"
 
 namespace bdm {
@@ -318,14 +319,14 @@ void CalculateNeighborData::operator()(Agent* neighbor,
                                        double squared_distance) {
   auto* neighbor_boid = bdm_static_cast<const Boid*>(neighbor);
 
-  double dist = (boid_->GetPosition() - neighbor_boid->GetPosition()).Norm();
+  double distance = std::sqrt(squared_distance);
   bool is_visible = boid_->CheckIfVisible(neighbor_boid->GetPosition());
 
-  if (is_visible && dist <= boid_->GetBoidInteractionRadius()) {
+  if (is_visible && distance <= boid_->GetBoidInteractionRadius()) {
     u_a += boid_->GetBoidInteractionTerm(neighbor_boid);
   }
 
-  if (is_visible && dist <= boid_->GetBoidPerceptionRadius()) {
+  if (is_visible && distance <= boid_->GetBoidPerceptionRadius()) {
     sum_pos += neighbor_boid->GetPosition();
     n++;
   }

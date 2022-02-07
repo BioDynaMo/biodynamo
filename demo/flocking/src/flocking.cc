@@ -19,8 +19,7 @@ int Simulate(int argc, const char** argv) {
   // ---------------------------------------------------------------------------
   // Set references
   Param::RegisterParamGroup(new SimParam());
-  auto set_param = [&](Param* param) {};
-  Simulation simulation(argc, argv, set_param);
+  Simulation simulation(argc, argv);
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   auto* sparam = param->Get<SimParam>();

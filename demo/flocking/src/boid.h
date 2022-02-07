@@ -100,7 +100,7 @@ class Boid : public Agent {
   // ---------------------------------------------------------------------------
   // Flocking Algorithm
 
-  // iterates over all neightbor boids and adds the interaction terms;
+  // iterates over all neighbor boids and adds the interaction terms;
   // returns a flocking force that produces an a-latice structure
   Double3 GetFlockingForce();
 
