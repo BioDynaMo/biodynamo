@@ -20,7 +20,7 @@ struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
   uint64_t computational_steps = 8000;
-  size_t n_boids ;
+  size_t n_boids;
   double starting_sphere_radius;
 
   double actual_diameter = 10;

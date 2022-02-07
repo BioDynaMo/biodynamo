@@ -75,7 +75,9 @@ else
   NUM_CORRECTIONS=`$CLANG_FORMAT -output-replacements-xml $@ | grep offset | wc -l`
 
   if [ "$NUM_CORRECTIONS" -gt "0" ]; then
-    echo "Error: clang-format suggested changes, please fix them!"
+    echo "Error: clang-format suggested $NUM_CORRECTIONS changes." 
+    echo "Please fix them, i.e. run `make format` in the build directory."
+
     popd >/dev/null
     exit 1
   fi
