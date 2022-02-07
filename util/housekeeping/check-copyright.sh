@@ -29,8 +29,11 @@ shift
 set -e 
 
 for file in $@; do
-  # Ingore copyrights of demo/epidemiology because of Lukas private copyright
+  # Ingore some files because of private copyright in demos
   if [[ $file == *"demo/epidemiology/"* ]];then
+    continue
+  fi
+  if [[ $file == *"demo/flocking/"* ]];then
     continue
   fi
   if [ "$(uname)" = 'Darwin' ]; then
