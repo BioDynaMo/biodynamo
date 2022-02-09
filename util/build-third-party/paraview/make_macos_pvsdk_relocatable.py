@@ -1021,7 +1021,7 @@ def _is_excluded(path):
         return True
     if path.startswith('/usr/local/Cellar'):
         return True
-    if path.startswith('/opt/homebrew/lib'):
+    if path.startswith('/opt/homebrew'):
         return True
 
     ## Macports

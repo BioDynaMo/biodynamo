@@ -47,8 +47,9 @@ else
   export CXX=clang++
   # From ParaView 5.10 on, we use brew qt@5.
   if [ "$PV_VERSION" = "v5.10.0" ]; then
-    export QT_CMAKE_DIR=/opt/homebrew/opt/qt@5/lib/cmake/Qt5
-    export DYLD_LIBRARY_PATH=/opt/homebrew/opt/qt@5/lib:$DYLD_LIBRARY_PATH
+    export Qt5_DIR=$(brew --prefix)/opt/qt@5
+    export QT_CMAKE_DIR=$(brew --prefix)/opt/qt@5/lib/cmake/Qt5
+    export DYLD_LIBRARY_PATH=$(brew --prefix)/opt/qt@5/lib:$DYLD_LIBRARY_PATH
   else
     export Qt5_DIR=$WORKING_DIR/qt
     export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
