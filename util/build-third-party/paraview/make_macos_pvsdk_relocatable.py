@@ -1257,7 +1257,7 @@ def main(args):
     # The following BinaryGroup was not found on the tested M1 machine and
     # caused problems. We therefore remove it if we're not building the outdated
     # ParaView 5.9
-    if paraview_v == '5.9':
+    if not is_arm_based:
         bin_groups.append(BinaryGroup("./lib/universal", 
                           rp_suffixes, 
                           preproc_fn=_preprocess_uni_bin, 
