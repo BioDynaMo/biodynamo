@@ -122,6 +122,9 @@ if(APPLE)
     execute_process(COMMAND ${BREW_BIN} --prefix llvm
                     OUTPUT_VARIABLE LLVM_BREW_PREFIX
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${BREW_BIN} --prefix
+                        OUTPUT_VARIABLE BREW_PREFIX
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
   
   # ParaView on Apple devices
@@ -306,7 +309,9 @@ if(paraview)
     # a compatible Qt5 installation
     if(NOT DEFINED Qt5_DIR OR NOT DEFINED ${Qt5_DIR})
       if(APPLE)
-        set(Qt5_DIR /opt/homebrew/opt/qt@5/lib/cmake/Qt5)
+         set(Qt5_DIR ${BREW_PREFIX}/opt/qt@5/lib/cmake/Qt5) 
+         set(QT_CMAKE_DIR ${BREW_PREFIX}/opt/qt@5/lib/cmake/Qt5)
+         set(DYLD_LIBRARY_PATH ${DYLD_LIBRARY_PATH} ${BREW_PREFIX}/opt/qt@5/lib)
       else()
         set(Qt5_DIR ${CMAKE_THIRD_PARTY_DIR}/qt/lib/cmake/Qt5)
       endif(APPLE)

@@ -476,7 +476,7 @@ _source_thisbdm()
      if [ "$BDM_CUSTOM_QT" = false ] || [ -z "${Qt5_DIR}" ]; then
        # On Apple devices we use the brew install of Qt5
        if [ "$(uname)" = 'Darwin' ];then
-          Qt5_DIR=/opt/homebrew/opt/qt@5
+          Qt5_DIR=$(brew --prefix)/opt/qt@5
        else
           Qt5_DIR=${BDMSYS}/third_party/qt
        fi
