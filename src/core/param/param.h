@@ -601,6 +601,18 @@ struct Param {
   ///     show_simulation_step = 0
   uint64_t show_simulation_step = 0;
 
+  /// Use a progress bar to visualize the simulation progress. The progress bar
+  /// also gives an estimate of the remaining simulation time assuming that the
+  /// following simulations steps are as computationally expensive as the
+  /// previous ones. It is not recommended to use the ProgressBar when you
+  /// write information to std::cout in Simulate() because the ProgressBar uses
+  /// '\r' in its print statements.
+  /// Default value: `false`\n
+  /// TOML config file:
+  ///     [development]
+  ///     use_progress_bar = false
+  bool use_progress_bar = false;
+
   // ---------------------------------------------------------------------------
   // experimental group
 

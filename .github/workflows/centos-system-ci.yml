@@ -119,6 +119,7 @@ jobs:
         module load mpi
         cmake \
           -Dparaview=ON \
+          -Dbenchmark=ON \
           -Dsbml=OFF \
           -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \

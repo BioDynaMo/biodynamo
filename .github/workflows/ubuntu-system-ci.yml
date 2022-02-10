@@ -127,6 +127,7 @@ jobs:
         cmake \
           -Dnotebooks=OFF \
           -Dparaview=ON \
+          -Dbenchmark=ON \
           -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
