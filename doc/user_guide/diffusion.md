@@ -199,12 +199,9 @@ Within BioDynaMo the number of intervals for the Runge-Kutta method to iterate o
 
 ```
 
-DiffusionGrid* dgrid = new RungeKuttaGrid(substance_id, "substance_name", diffusion_coefficient,
-                decay_constant, resolution, diffusion_step)
+DiffusionGrid* dgrid = new RungeKuttaGrid(substance_id, "substance_name", diffusion_coefficient, resolution)
                 
 ```
-Note: 
-* The entered value for the diffusion_step is required to be a positive integer value of greater than 0.
 
 To access the Runge-Kutta method for diffusion, one simply needs to update the bdm.toml file as follows :
 

@@ -643,9 +643,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 21);
+  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 41);
+  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 81);
 
   dgrid2->Initialize();
   dgrid4->Initialize();
