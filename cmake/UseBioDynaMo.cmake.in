@@ -307,7 +307,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDMSYS}/share/cmake")
 include("${BDMSYS}/share/cmake/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
-fix_rootcling_omp_issue()
+if(openmp)
+  fix_rootcling_omp_issue()
+endif(openmp)
 fix_macos_opencl_header_issue()
 
 list(REMOVE_ITEM ROOT_LIBRARIES "$ENV{BDMSYS}/third_party/root/lib/libEve.so")
