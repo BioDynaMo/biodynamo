@@ -36,6 +36,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "$ENV{BDMSYS}/biodynamo/cmake/")
 include(utils)
 
 # Option set when biodynamo was built
+SET(openmp_default @openmp@)
 SET(cuda_default @cuda@)
 SET(opencl_default @opencl@)
 SET(dict_default @dict@)
@@ -47,6 +48,7 @@ SET(jemalloc_default @jemalloc@)
 SET(test_default @test@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
+option(openmp    "Use OpenMP acceleration" @openmp@)
 option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" @opencl@)
 option(dict      "Build with ROOT dictionaries" @dict@)
@@ -57,6 +59,10 @@ option(tcmalloc  "Use tcmalloc." @tcmalloc@)
 option(jemalloc  "Use jemalloc." @jemalloc@)
 option(test      "Build all tests for your simulation." @test@)
 
+if (opemmp AND NOT openmp_default)
+    MESSAGE(FATAL_ERROR "One of the option which you provided (-Dopenmp=${openmp}) is not compatible with \
+BioDynaMo. BioDynaMo was built by setting -Dopenmp to ${openmp_default}. Please change -Dopenmp to -Dopenmp=${openmp_default}.")
+endif()
 if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
 BioDynaMo. BioDynaMo was built by setting -Dcuda to ${cuda_default}. Please change -Dcuda to -Dcuda=${cuda_default}.")
@@ -154,13 +160,16 @@ else(MPI_FOUND)
   calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif(MPI_FOUND)
 
-find_package(OpenMP REQUIRED)
 
-if (OpenMP_CXX_FOUND)
-  get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
-  link_directories(${OpenMP_CXX_LIB_DIR})
-  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} OpenMP::OpenMP_CXX)
-endif()
+if(openmp)
+find_package(OpenMP REQUIRED)
+  if (OpenMP_CXX_FOUND)
+    get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
+    link_directories(${OpenMP_CXX_LIB_DIR})
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} OpenMP::OpenMP_CXX)
+    add_definitions("-DBDM_USE_OMP")
+  endif()
+endif(openmp)
 
 find_package(Git)
 
