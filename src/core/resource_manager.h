@@ -15,7 +15,9 @@
 #ifndef CORE_RESOURCE_MANAGER_H_
 #define CORE_RESOURCE_MANAGER_H_
 
-#include <omp.h>
+// #ifdef BDM_USE_OMP
+// #include <omp.h>
+// #endif // BDM_USE_OMP
 #include <sched.h>
 #include <algorithm>
 #include <cmath>

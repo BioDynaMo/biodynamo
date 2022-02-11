@@ -600,7 +600,9 @@ void RunExecutionOrderTest(
   Simulation simulation(test_name, set_param);
 
   // Turn off load balancing and multi-threading to avoid any interference
+#ifdef BDM_USE_OMP
   omp_set_num_threads(1);
+#endif  // BDM_USE_OMP
   ThreadInfo::GetInstance()->Renew();
   auto* scheduler = simulation.GetScheduler();
   scheduler->UnscheduleOp(scheduler->GetOps("load balancing")[0]);
@@ -625,7 +627,9 @@ void RunExecutionOrderTest(
   scheduler->Simulate(1);
 
   // reset to max number of threads
+#ifdef BDM_USE_OMP
   omp_set_num_threads(omp_get_max_threads());
+#endif  // BDM_USE_OMP
   ThreadInfo::GetInstance()->Renew();
 }
 

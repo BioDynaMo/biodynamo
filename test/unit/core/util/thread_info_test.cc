@@ -20,7 +20,11 @@
 namespace bdm {
 
 void RunAllChecks(const ThreadInfo& ti) {
+#ifdef BDM_USE_OMP
   EXPECT_EQ(omp_get_max_threads(), ti.GetMaxThreads());
+#else
+  EXPECT_EQ(1, ti.GetMaxThreads());
+#endif  // BDM_USE_OMP
   EXPECT_EQ(numa_num_configured_nodes(), ti.GetNumaNodes());
 
   std::vector<int> threads_per_numa(ti.GetNumaNodes());
@@ -29,7 +33,11 @@ void RunAllChecks(const ThreadInfo& ti) {
   {
 #pragma omp critical
     {
+#ifdef BDM_USE_OMP
       int tid = omp_get_thread_num();
+#else
+      int tid = 0;
+#endif  // BDM_USE_OMP
       auto nid = numa_node_of_cpu(sched_getcpu());
       // check if mappting openmp thread id to numa node is correct
       EXPECT_EQ(nid, ti.GetNumaNode(tid));
@@ -77,14 +85,18 @@ TEST(ThreadInfoTest, Renew) {
   RunAllChecks(*ti);
 
   // reduce number of threads to one
+#ifdef BDM_USE_OMP
   auto omp_max_threads = omp_get_max_threads();
   omp_set_num_threads(1);
+#endif  // BDM_USE_OMP
   ThreadInfo::GetInstance()->Renew();
 
   RunAllChecks(*ti);
 
   // Reset to previous condition
+#ifdef BDM_USE_OMP
   omp_set_num_threads(omp_max_threads);
+#endif  // BDM_USE_OMP
   ThreadInfo::GetInstance()->Renew();
 }
 

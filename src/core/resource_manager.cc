@@ -61,7 +61,11 @@ void ResourceManager::ForEachAgentParallel(
     Functor<bool, Agent*>* filter) {
 #pragma omp parallel
   {
-    auto tid = omp_get_thread_num();
+#ifdef BDM_USE_OMP
+    int tid = omp_get_thread_num();
+#else
+    int tid = 0;
+#endif  // BDM_USE_OMP
     auto nid = thread_info_->GetNumaNode(tid);
     auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
     auto& numa_agents = agents_[nid];
@@ -115,7 +119,11 @@ void ResourceManager::ForEachAgentParallel(
   // threads belong to different numa domains and thus operate on
   // different containers
   auto numa_nodes = thread_info_->GetNumaNodes();
-  auto max_threads = omp_get_max_threads();
+#ifdef BDM_USE_OMP
+  int max_threads = omp_get_max_threads();
+#else
+  int max_threads = 1;
+#endif  // BDM_USE_OMP
   std::vector<uint64_t> num_chunks_per_numa(numa_nodes);
   for (int n = 0; n < numa_nodes; n++) {
     auto correction = agents_[n].size() % chunk == 0 ? 0 : 1;
@@ -148,13 +156,17 @@ void ResourceManager::ForEachAgentParallel(
 
 #pragma omp parallel
   {
-    auto tid = omp_get_thread_num();
+#ifdef BDM_USE_OMP
+    int tid = omp_get_thread_num();
+#else
+    int tid = 0;
+#endif  // BDM_USE_OMP
     auto nid = thread_info_->GetNumaNode(tid);
 
     // thread private variables (compilation error with
     // firstprivate(chunk, numa_node_) with some openmp versions clause)
     auto p_numa_nodes = thread_info_->GetNumaNodes();
-    auto p_max_threads = omp_get_max_threads();
+    auto p_max_threads = thread_info_->GetMaxThreads();
     auto p_chunk = chunk;
     assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 

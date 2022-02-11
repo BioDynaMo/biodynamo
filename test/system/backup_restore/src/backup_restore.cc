@@ -13,9 +13,13 @@
 // -----------------------------------------------------------------------------
 
 #include "backup_restore.h"
+#ifdef BDM_USE_OMP
 #include <omp.h>
+#endif  // BDM_USE_OMP
 
 int main(int argc, const char** argv) {
+#ifdef BDM_USE_OMP
   omp_set_num_threads(1);
+#endif  // BDM_USE_OMP
   return bdm::Simulate(argc, argv);
 }

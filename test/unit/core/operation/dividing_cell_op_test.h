@@ -15,7 +15,9 @@
 #ifndef UNIT_CORE_OPERATION_DIVIDING_CELL_OP_TEST_H_
 #define UNIT_CORE_OPERATION_DIVIDING_CELL_OP_TEST_H_
 
-#include <omp.h>
+// #ifdef BDM_USE_OMP
+// #include <omp.h>
+// #endif  // BDM_USE_OMP
 
 #include "gtest/gtest.h"
 

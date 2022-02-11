@@ -12,7 +12,9 @@
 //
 // -----------------------------------------------------------------------------
 
+#ifdef BDM_USE_OMP
 #include <omp.h>
+#endif  // BDM_USE_OMP
 
 #include "core/multi_simulation/multi_simulation.h"
 #include "multi_simulation_test.h"

@@ -86,7 +86,9 @@ int MultiSimulation::Execute(const TSimulate& simulate_call) {
 
     status = pem.Start();
   } else {
+#ifdef BDM_USE_OMP
     omp_set_num_threads(2);
+#endif  // BDM_USE_OMP
     // Start the Worker routine (`params` to be received by Master)
     Worker w(myrank, [&](Param* params, TimeSeries* result) {
       return simulate_call(argc_, argv_, result, params);

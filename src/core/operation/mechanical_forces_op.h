@@ -81,7 +81,12 @@ class MechanicalForcesOp : public AgentOperationImpl {
     // Update search radius and delta_time_ at beginning of each iteration, and
     // avoid updating them within an iteration
     auto current_iteration = scheduler->GetSimulatedSteps();
-    auto tid = omp_get_thread_num();
+#ifdef BDM_USE_OMP
+    int tid = omp_get_thread_num();
+#else
+    int tid = 0;
+#endif  // BDM_USE_OMP
+
     if (last_iteration_[tid] != current_iteration) {
       last_iteration_[tid] = current_iteration;
 

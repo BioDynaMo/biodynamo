@@ -13,7 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include <gtest/gtest.h>
+#ifdef BDM_USE_OMP
 #include <omp.h>
+#endif  // BDM_USE_OMP
 #include <experimental/filesystem>
 #include <fstream>
 #include <regex>
@@ -498,11 +500,19 @@ TEST_F(IOTest, Simulation) {
 
   // store next random number for later comparison
   std::vector<double> next_rand;
+#ifdef BDM_USE_OMP
   next_rand.resize(omp_get_max_threads());
+#else
+  next_rand.resize(1);
+#endif  // BDM_USE_OMP
 #pragma omp parallel
   {
     auto* r = sim.GetRandom();
+#ifdef BDM_USE_OMP
     next_rand[omp_get_thread_num()] = r->Uniform(12, 34);
+#else
+    next_rand[0] = r->Uniform(12, 34);
+#endif  // BDM_USE_OMP
   }
 
   // change state to see if call to Simulation::Restore was successful
@@ -525,7 +535,11 @@ TEST_F(IOTest, Simulation) {
 #pragma omp parallel
   {
     auto* r = sim.GetRandom();
+#ifdef BDM_USE_OMP
     EXPECT_NEAR(next_rand[omp_get_thread_num()], r->Uniform(12, 34), kEpsilon);
+#else
+    EXPECT_NEAR(next_rand[0], r->Uniform(12, 34), kEpsilon);
+#endif  // BDM_USE_OMP
   }
 }
 

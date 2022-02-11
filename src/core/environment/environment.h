@@ -15,7 +15,9 @@
 #ifndef CORE_ENVIRONMENT_ENVIRONMENT_H_
 #define CORE_ENVIRONMENT_ENVIRONMENT_H_
 
+#ifdef BDM_USE_OMP
 #include <omp.h>
+#endif  // BDM_USE_OMP
 #include <cassert>
 #include <mutex>
 #include <vector>
@@ -46,7 +48,9 @@ class Environment {
   /// Updates the environment if it is marked as out_of_sync_. This function
   /// should not be called in parallel regions for performance reasons.
   void Update() {
+#ifdef BDM_USE_OMP
     assert(!omp_in_parallel() && "Update called in parallel region.");
+#endif  // BDM_USE_OMP
     if (out_of_sync_) {
       UpdateImplementation();
       out_of_sync_ = false;
@@ -148,7 +152,11 @@ class Environment {
           largest_(largest) {}
 
     void operator()(Agent* agent, AgentHandle) override {
-      auto tid = omp_get_thread_num();
+#ifdef BDM_USE_OMP
+      int tid = omp_get_thread_num();
+#else
+      int tid = 0;
+#endif  // BDM_USE_OMP
       const auto& position = agent->GetPosition();
       // x
       if (position[0] < xmin_[tid][0]) {
@@ -194,7 +202,11 @@ class Environment {
       std::array<double, 6>* ret_grid_dimensions) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
+#ifdef BDM_USE_OMP
     const auto max_threads = omp_get_max_threads();
+#else
+    const auto max_threads = 1;
+#endif  // BDM_USE_OMP
     // allocate version for each thread - avoid false sharing by padding them
     // assumes 64 byte cache lines (8 * sizeof(double))
     std::vector<std::array<double, 8>> xmin(max_threads, {{Math::kInfinity}});

@@ -15,7 +15,9 @@
 #ifndef CORE_UTIL_THREAD_INFO_H_
 #define CORE_UTIL_THREAD_INFO_H_
 
+#ifdef BDM_USE_OMP
 #include <omp.h>
+#endif  // BDM_USE_OMP
 #include <sched.h>
 #include <atomic>
 #include <vector>
@@ -36,7 +38,11 @@ class ThreadInfo {
   ThreadInfo& operator=(const ThreadInfo&) = delete;
 
   // FIXME add test
+#ifdef BDM_USE_OMP
   int GetMyThreadId() const { return omp_get_thread_num(); }
+#else
+  int GetMyThreadId() const { return 0; }
+#endif  // BDM_USE_OMP
 
   // FIXME add test
   int GetMyNumaNode() const { return GetNumaNode(GetMyThreadId()); }
@@ -76,7 +82,11 @@ class ThreadInfo {
   /// `numa_run_on_node`, `Renew()` must be called to update the thread
   /// metadata.
   void Renew() {
+#ifdef BDM_USE_OMP
     max_threads_ = omp_get_max_threads();
+#else
+    max_threads_ = 1;
+#endif  // BDM_USE_OMP
     numa_nodes_ = static_cast<uint16_t>(numa_num_configured_nodes());
 
     thread_numa_mapping_.clear();
@@ -90,7 +100,11 @@ class ThreadInfo {
 // (openmp thread id -> numa node)
 #pragma omp parallel
     {
+#ifdef BDM_USE_OMP
       int tid = omp_get_thread_num();
+#else
+      int tid = 0;
+#endif  // BDM_USE_OMP
       thread_numa_mapping_[tid] = numa_node_of_cpu(sched_getcpu());
     }
 
@@ -156,6 +170,7 @@ class ThreadInfo {
   std::vector<int> threads_in_numa_;
 
   ThreadInfo() {
+#ifdef BDM_USE_OMP
     auto proc_bind = omp_get_proc_bind();
     if (proc_bind != 1 && proc_bind != 4) {
       // 4 corresponds to OMP_PROC_BIND=spread
@@ -168,6 +183,7 @@ class ThreadInfo {
           "The environment variable OMP_PROC_BIND must be set to "
           "true prior to running BioDynaMo ('export OMP_PROC_BIND=true')");
     }
+#endif  // BDM_USE_OMP
     Renew();
   }
 };
