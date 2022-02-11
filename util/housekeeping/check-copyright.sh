@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # -----------------------------------------------------------------------------
 #
 # Copyright (C) 2021 CERN & University of Surrey for the benefit of the
@@ -26,12 +26,19 @@ NUM_FALSE_FILES=0
 COPYRIGHT_FILE=$1
 shift
 
+set -e 
+
 for file in $@; do
   # Ingore copyrights of demo/epidemiology because of Lukas private copyright
   if [[ $file == *"demo/epidemiology/"* ]];then
     continue
   fi
-  if [[ $(comm -23 $COPYRIGHT_FILE $file) ]]; then
+  if [ "$(uname)" = 'Darwin' ]; then
+    COMM_OPTIONS="-23"
+  else
+    COMM_OPTIONS="--nocheck-order -23"
+  fi
+  if [[ $(comm $COMM_OPTIONS $COPYRIGHT_FILE $file) ]]; then
     echo "$file : Licence is not correct."
     # # Uncomment this to get diff output between desired copyright and current 
     # # state.

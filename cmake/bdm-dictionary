@@ -17,6 +17,61 @@
 
 import argparse
 import os
+import platform
+
+# This header starts the BioDynaMo dictionary files.
+bdm_dictionary_header = """
+// -----------------------------------------------------------------------------
+//
+// Copyright (C) 2021 CERN & University of Surrey for the benefit of the
+// BioDynaMo collaboration. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+//
+// See the LICENSE file distributed with this work for details.
+// See the NOTICE file distributed with this work for additional information
+// regarding copyright ownership.
+//
+// -----------------------------------------------------------------------------
+//
+// BioDynaMo dictionary.
+// This file was generated.
+// Do NOT change it. 
+// Changes will be lost the next time this file is generated.
+//
+// -----------------------------------------------------------------------------
+
+#include "core/util/jit.h"
+#include <cstdlib>
+#include <sstream>
+namespace {
+
+void AppendEnvVar(std::stringstream& s, const char* var_name,
+                  const char* suffix) {
+  auto val = std::getenv(var_name);
+  if (val) {
+    s << val << suffix << ":";
+  }
+}
+
+static struct BioDynaMoDictInit {
+  BioDynaMoDictInit() {
+    std::stringstream idirs; 
+"""
+
+# This footer concludes the BioDynaMo dictionary files.
+bdm_dictionary_footer = """
+    AppendEnvVar(idirs, "ROOT_INCLUDE_PATH", "");
+    setenv("ROOT_INCLUDE_PATH", idirs.str().c_str(), true);
+  }
+} bdm_dict_initializer;
+
+}
+
+  
+"""
+
 
 # This header starts the BioDynaMo dictionary files.
 bdm_dictionary_header = """
@@ -183,7 +238,18 @@ if __name__ == "__main__":
         prefixes = []
         environmentals = ["ParaView_DIR", "ROOTSYS", "BDMSYS"]
         if not args.out_of_source:
-            include_suffix = ["/include/paraview-5.9", "/include", "/include"]
+            # For ARM based Apple machines, ParaView is only supported from 
+            # version 5.10 on. 
+            system_config = platform.uname()
+            if (system_config.system == "Darwin" and 
+                system_config.machine == "arm64"):
+                include_suffix = ["/include/paraview-5.10", 
+                                  "/include", 
+                                  "/include"]
+            else:
+                include_suffix = ["/include/paraview-5.9", 
+                                  "/include", 
+                                  "/include"]
             cnt = 0
             # default includes
             for e in environmentals:
