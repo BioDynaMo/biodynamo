@@ -59,13 +59,10 @@ ResourceManager::~ResourceManager() {
 void ResourceManager::ForEachAgentParallel(
     Functor<void, Agent*, AgentHandle>& function,
     Functor<bool, Agent*>* filter) {
+#ifdef BDM_USE_OMP
 #pragma omp parallel
   {
-#ifdef BDM_USE_OMP
     int tid = omp_get_thread_num();
-#else
-    int tid = 0;
-#endif  // BDM_USE_OMP
     auto nid = thread_info_->GetNumaNode(tid);
     auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
     auto& numa_agents = agents_[nid];
@@ -84,6 +81,9 @@ void ResourceManager::ForEachAgentParallel(
       }
     }
   }
+#else
+  ForEachAgent([&](Agent* a, AgentHandle ah) { function(a, ah); }, filter);
+#endif  // BDM_USE_OMP
 }
 
 template <typename TFunctor>
@@ -108,6 +108,7 @@ void ResourceManager::ForEachAgentParallel(Operation& op,
 void ResourceManager::ForEachAgentParallel(
     uint64_t chunk, Functor<void, Agent*, AgentHandle>& function,
     Functor<bool, Agent*>* filter) {
+#ifdef BDM_USE_OMP
   // adapt chunk size
   auto num_agents = GetNumAgents();
   uint64_t factor = (num_agents / thread_info_->GetMaxThreads()) / chunk;
@@ -119,11 +120,7 @@ void ResourceManager::ForEachAgentParallel(
   // threads belong to different numa domains and thus operate on
   // different containers
   auto numa_nodes = thread_info_->GetNumaNodes();
-#ifdef BDM_USE_OMP
   int max_threads = omp_get_max_threads();
-#else
-  int max_threads = 1;
-#endif  // BDM_USE_OMP
   std::vector<uint64_t> num_chunks_per_numa(numa_nodes);
   for (int n = 0; n < numa_nodes; n++) {
     auto correction = agents_[n].size() % chunk == 0 ? 0 : 1;
@@ -156,11 +153,7 @@ void ResourceManager::ForEachAgentParallel(
 
 #pragma omp parallel
   {
-#ifdef BDM_USE_OMP
     int tid = omp_get_thread_num();
-#else
-    int tid = 0;
-#endif  // BDM_USE_OMP
     auto nid = thread_info_->GetNumaNode(tid);
 
     // thread private variables (compilation error with
@@ -208,6 +201,9 @@ void ResourceManager::ForEachAgentParallel(
   for (auto* counter : counters) {
     delete counter;
   }
+#else
+  ForEachAgent([&](Agent* a, AgentHandle ah) { function(a, ah); }, filter);
+#endif  // BDM_USE_OMP
 }
 
 struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
