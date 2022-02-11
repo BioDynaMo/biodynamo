@@ -24,9 +24,6 @@
 #include <limits>
 #include <memory>
 #include <mutex>
-#ifdef LINUX
-#include <parallel/algorithm>
-#endif  // LINUX
 #include <utility>
 #include <vector>
 
