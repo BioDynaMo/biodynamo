@@ -485,6 +485,7 @@ TEST_F(IOTest, Simulation) {
   Simulation sim(TEST_NAME, set_param);
   auto* rm = sim.GetResourceManager();
   auto* param = sim.GetParam();
+  auto* ti = ThreadInfo::GetInstance();
   rm->AddAgent(new Cell());
   rm->AddAgent(new Cell());
 #pragma omp parallel
@@ -500,19 +501,11 @@ TEST_F(IOTest, Simulation) {
 
   // store next random number for later comparison
   std::vector<double> next_rand;
-#ifdef BDM_USE_OMP
-  next_rand.resize(omp_get_max_threads());
-#else
-  next_rand.resize(1);
-#endif  // BDM_USE_OMP
+  next_rand.resize(ti->GetMaxThreads());
 #pragma omp parallel
   {
     auto* r = sim.GetRandom();
-#ifdef BDM_USE_OMP
-    next_rand[omp_get_thread_num()] = r->Uniform(12, 34);
-#else
-    next_rand[0] = r->Uniform(12, 34);
-#endif  // BDM_USE_OMP
+    next_rand[ti->GetMyThreadId()] = r->Uniform(12, 34);
   }
 
   // change state to see if call to Simulation::Restore was successful
@@ -535,11 +528,7 @@ TEST_F(IOTest, Simulation) {
 #pragma omp parallel
   {
     auto* r = sim.GetRandom();
-#ifdef BDM_USE_OMP
-    EXPECT_NEAR(next_rand[omp_get_thread_num()], r->Uniform(12, 34), kEpsilon);
-#else
-    EXPECT_NEAR(next_rand[0], r->Uniform(12, 34), kEpsilon);
-#endif  // BDM_USE_OMP
+    EXPECT_NEAR(next_rand[ti->GetMyThreadId()], r->Uniform(12, 34), kEpsilon);
   }
 }
 

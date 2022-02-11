@@ -16,9 +16,6 @@
 #define CORE_MODEL_INITIALIZER_H_
 
 #include <Math/DistFunc.h>
-// #ifdef BDM_USE_OMP
-// #include <omp.h>
-// #endif // BDM_USE_OMP
 #include <ctime>
 #include <string>
 #include <vector>

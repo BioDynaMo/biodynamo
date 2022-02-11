@@ -23,15 +23,13 @@
 
 #ifdef BDM_USE_OMP
 #include <omp.h>
-#endif  // BDM_USE_OMP
-
-inline int numa_available() { return 0; }
-inline int numa_num_configured_nodes() { return 1; }
-#ifdef BDM_USE_OMP
 inline int numa_num_configured_cpus() { return omp_get_max_threads(); }
 #else
 inline int numa_num_configured_cpus() { return 1; }
 #endif  // BDM_USE_OMP
+
+inline int numa_available() { return 0; }
+inline int numa_num_configured_nodes() { return 1; }
 inline int numa_run_on_node(int) { return 0; }
 inline int numa_node_of_cpu(int) { return 0; }
 inline int numa_move_pages(int pid, unsigned long count, void **pages,

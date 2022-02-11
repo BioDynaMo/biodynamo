@@ -38,6 +38,7 @@ void RunAllChecks(const ThreadInfo& ti) {
 #else
       int tid = 0;
 #endif  // BDM_USE_OMP
+      EXPECT_EQ(tid, ti.GetMyThreadId());
       auto nid = numa_node_of_cpu(sched_getcpu());
       // check if mappting openmp thread id to numa node is correct
       EXPECT_EQ(nid, ti.GetNumaNode(tid));

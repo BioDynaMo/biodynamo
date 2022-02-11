@@ -15,9 +15,6 @@
 #include "core/simulation.h"
 
 #include <cpptoml/cpptoml.h>
-#ifdef BDM_USE_OMP
-#include <omp.h>
-#endif  // BDM_USE_OMP
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -282,21 +279,17 @@ Scheduler* Simulation::GetScheduler() { return scheduler_; }
 void Simulation::Simulate(uint64_t steps) { scheduler_->Simulate(steps); }
 
 /// Returns a random number generator (thread-specific)
-#ifdef BDM_USE_OMP
-Random* Simulation::GetRandom() { return random_[omp_get_thread_num()]; }
-#else
-Random* Simulation::GetRandom() { return random_[0]; }
-#endif  // BDM_USE_OMP
+Random* Simulation::GetRandom() {
+  auto* ti = ThreadInfo::GetInstance();
+  return random_[ti->GetMyThreadId()];
+}
 
 std::vector<Random*>& Simulation::GetAllRandom() { return random_; }
 
-#ifdef BDM_USE_OMP
 ExecutionContext* Simulation::GetExecutionContext() {
-  return exec_ctxt_[omp_get_thread_num()];
+  auto* ti = ThreadInfo::GetInstance();
+  return exec_ctxt_[ti->GetMyThreadId()];
 }
-#else
-ExecutionContext* Simulation::GetExecutionContext() { return exec_ctxt_[0]; }
-#endif  // BDM_USE_OMP
 
 std::vector<ExecutionContext*>& Simulation::GetAllExecCtxts() {
   return exec_ctxt_;
@@ -348,21 +341,15 @@ void Simulation::InitializeMembers() {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
   }
 
-#ifdef BDM_USE_OMP
-  random_.resize(omp_get_max_threads());
-#else
-  random_.resize(1);
-#endif  // BDM_USE_OMP
+  auto* ti = ThreadInfo::GetInstance();
+  random_.resize(ti->GetMaxThreads());
+
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < random_.size(); i++) {
     random_[i] = new Random();
     random_[i]->SetSeed(param_->random_seed * (i + 1));
   }
-#ifdef BDM_USE_OMP
-  exec_ctxt_.resize(omp_get_max_threads());
-#else
-  exec_ctxt_.resize(1);
-#endif  // BDM_USE_OMP
+  exec_ctxt_.resize(ti->GetMaxThreads());
   auto map = std::make_shared<
       typename InPlaceExecutionContext::ThreadSafeAgentUidMap>();
 #pragma omp parallel for schedule(static, 1)

@@ -399,11 +399,8 @@ inline void RunSortAndForEachAgentParallel(uint64_t num_agent_per_type) {
 }
 
 inline void RunSortAndForEachAgentParallel() {
-#ifdef BDM_USE_OMP
-  int num_threads = omp_get_max_threads();
-#else
-  int num_threads = 1;
-#endif  // BDM_USE_OMP
+  auto* ti = ThreadInfo::GetInstance();
+  auto num_threads = ti->GetMaxThreads();
   std::vector<int> num_agent_per_type = {std::max(1, num_threads - 1),
                                          num_threads, 3 * num_threads,
                                          3 * num_threads + 1};
@@ -573,11 +570,8 @@ inline void RunSortAndForEachAgentParallelDynamic(uint64_t num_agent_per_type,
 }
 
 inline void RunSortAndForEachAgentParallelDynamic() {
-#ifdef BDM_USE_OMP
-  int num_threads = omp_get_max_threads();
-#else
-  int num_threads = 1;
-#endif  // BDM_USE_OMP
+  auto* ti = ThreadInfo::GetInstance();
+  auto num_threads = ti->GetMaxThreads();
   std::vector<int> num_agent_per_type = {std::max(1, num_threads - 1),
                                          num_threads, 3 * num_threads,
                                          3 * num_threads + 1};

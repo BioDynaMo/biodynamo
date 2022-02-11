@@ -15,15 +15,10 @@
 #ifndef UNIT_CORE_OPERATION_DIVIDING_CELL_OP_TEST_H_
 #define UNIT_CORE_OPERATION_DIVIDING_CELL_OP_TEST_H_
 
-// #ifdef BDM_USE_OMP
-// #include <omp.h>
-// #endif  // BDM_USE_OMP
-
-#include "gtest/gtest.h"
-
 #include "core/agent/cell.h"
 #include "core/operation/dividing_cell_op.h"
 #include "core/resource_manager.h"
+#include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
 
 namespace bdm {

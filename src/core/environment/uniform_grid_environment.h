@@ -16,10 +16,6 @@
 #define CORE_ENVIRONMENT_UNIFORM_GRID_ENVIRONMENT_H_
 
 #include <assert.h>
-// #ifdef BDM_USE_OMP
-// #include <omp.h>
-// #endif  // BDM_USE_OMP
-
 #include <algorithm>
 #include <array>
 #include <atomic>

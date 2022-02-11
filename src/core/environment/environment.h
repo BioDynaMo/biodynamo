@@ -26,6 +26,7 @@
 #include "core/functor.h"
 #include "core/load_balance_info.h"
 #include "core/resource_manager.h"
+#include "core/util/thread_info.h"
 
 namespace bdm {
 
@@ -152,11 +153,8 @@ class Environment {
           largest_(largest) {}
 
     void operator()(Agent* agent, AgentHandle) override {
-#ifdef BDM_USE_OMP
-      int tid = omp_get_thread_num();
-#else
-      int tid = 0;
-#endif  // BDM_USE_OMP
+      auto* ti = ThreadInfo::GetInstance();
+      auto tid = ti->GetMyThreadId();
       const auto& position = agent->GetPosition();
       // x
       if (position[0] < xmin_[tid][0]) {
@@ -201,12 +199,8 @@ class Environment {
   void CalcSimDimensionsAndLargestAgent(
       std::array<double, 6>* ret_grid_dimensions) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
-
-#ifdef BDM_USE_OMP
-    const auto max_threads = omp_get_max_threads();
-#else
-    const auto max_threads = 1;
-#endif  // BDM_USE_OMP
+    auto* ti = ThreadInfo::GetInstance();
+    const auto max_threads = ti->GetMaxThreads();
     // allocate version for each thread - avoid false sharing by padding them
     // assumes 64 byte cache lines (8 * sizeof(double))
     std::vector<std::array<double, 8>> xmin(max_threads, {{Math::kInfinity}});

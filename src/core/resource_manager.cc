@@ -24,6 +24,9 @@
 #include "core/util/partition.h"
 #include "core/util/plot_memory_layout.h"
 #include "core/util/timing.h"
+#ifdef BDM_USE_OMP
+#include <omp.h>
+#endif  // BDM_USE_OMP
 
 namespace bdm {
 
@@ -62,7 +65,7 @@ void ResourceManager::ForEachAgentParallel(
 #ifdef BDM_USE_OMP
 #pragma omp parallel
   {
-    int tid = omp_get_thread_num();
+    auto tid = omp_get_thread_num();
     auto nid = thread_info_->GetNumaNode(tid);
     auto threads_in_numa = thread_info_->GetThreadsInNumaNode(nid);
     auto& numa_agents = agents_[nid];
@@ -153,13 +156,13 @@ void ResourceManager::ForEachAgentParallel(
 
 #pragma omp parallel
   {
-    int tid = omp_get_thread_num();
+    auto tid = omp_get_thread_num();
     auto nid = thread_info_->GetNumaNode(tid);
 
     // thread private variables (compilation error with
     // firstprivate(chunk, numa_node_) with some openmp versions clause)
     auto p_numa_nodes = thread_info_->GetNumaNodes();
-    auto p_max_threads = thread_info_->GetMaxThreads();
+    auto p_max_threads = omp_get_max_threads();
     auto p_chunk = chunk;
     assert(thread_info_->GetNumaNode(tid) == numa_node_of_cpu(sched_getcpu()));
 
