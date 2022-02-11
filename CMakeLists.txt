@@ -100,7 +100,7 @@ mark_as_advanced(${CMAKE_BIODYNAMO_BUILD_ROOT}
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test      "Build all tests." ON) # Makes boolean 'test' available.
 option(benchmark "Build benchmark suite." OFF)
-option(openmp    "Use OpenMP acceleration" ON)
+option(openmp    "Use OpenMP acceleration" OFF)
 option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
