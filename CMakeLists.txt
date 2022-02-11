@@ -100,6 +100,7 @@ mark_as_advanced(${CMAKE_BIODYNAMO_BUILD_ROOT}
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(test      "Build all tests." ON) # Makes boolean 'test' available.
 option(benchmark "Build benchmark suite." OFF)
+option(openmp    "Use OpenMP acceleration" ON)
 option(cuda      "Enable CUDA code generation for GPU acceleration" OFF)
 option(opencl    "Enable OpenCL code generation for GPU acceleration" OFF)
 option(dict      "Build with ROOT dictionaries" ON)
@@ -233,15 +234,18 @@ if(paraview)
 endif()
 
 # Check if we have a compatible openmp compiler
-find_package(OpenMP)
-if (OpenMP_CXX_FOUND)
-  get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
-  link_directories(${OpenMP_CXX_LIB_DIR})
-  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} OpenMP::OpenMP_CXX)
-else()
-  MESSAGE(FATAL_ERROR "OpenMP support was not found. Please run ./prerequisites.sh before
-calling cmake.")
-endif()
+if(openmp)
+  find_package(OpenMP)
+  if (OpenMP_CXX_FOUND)
+    get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
+    link_directories(${OpenMP_CXX_LIB_DIR})
+    set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} OpenMP::OpenMP_CXX)
+    add_definitions("-DBDM_USE_OMP")
+  else()
+    MESSAGE(FATAL_ERROR "OpenMP support was not found. Please run ./prerequisites.sh before
+  calling cmake.")
+  endif()
+endif(openmp)
 
 if (test)
   # must be before include(${ROOT_USE_FILE}) otherwise test compile fails
@@ -515,7 +519,9 @@ include(${ROOT_USE_FILE})
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/test")
 include_directories("${CMAKE_SOURCE_DIR}/third_party")
-include_directories("${CMAKE_SOURCE_DIR}/third_party/omp")
+if(openmp)
+  include_directories("${CMAKE_SOURCE_DIR}/third_party/omp")
+endif(openmp)
 include_directories("${CMAKE_SOURCE_DIR}/third_party/opencl")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/unibn")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/nanoflann")
@@ -526,7 +532,9 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/version")
 # Since including the directory where omp.h resides can cause rootcling to
 # search for system / C++ standard headers in that same directory, we instead
 # copy omp.h to our local build directory and include that
-fix_rootcling_omp_issue()
+if(openmp)
+  fix_rootcling_omp_issue()
+endif(openmp)
 fix_macos_opencl_header_issue()
 
 # build libbiodynamo
@@ -774,7 +782,9 @@ set(incdir "$BDMSYS/include")
 set(cmakedir "$BDMSYS/share/cmake")
 set(configargs ${BDM_CONFIGARGS})
 set(cmakeinvoke "${CMAKE_INVOKE} -G ${CMAKE_GENERATOR}")
-set(omplibs ${OpenMP_CXX_LIBRARIES})
+if(openmp)
+  set(omplibs ${OpenMP_CXX_LIBRARIES})
+endif(openmp)
 set(with_pyenv ON)
 if (NOPYENV)
    set(with_pyenv OFF)
