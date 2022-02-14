@@ -78,11 +78,11 @@ install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
 if(openmp)
   install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/omp/omp.h
           DESTINATION ${DIRNAME}/include)
+  install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/omp
+          DESTINATION ${DIRNAME}/third_party
+          USE_SOURCE_PERMISSIONS
+          FILES_MATCHING PATTERN "*")
 endif(openmp)
-install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/omp
-        DESTINATION ${DIRNAME}/third_party
-        USE_SOURCE_PERMISSIONS
-        FILES_MATCHING PATTERN "*")
 if (APPLE)
   install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/opencl/cl2.hpp
           DESTINATION ${DIRNAME}/include)
