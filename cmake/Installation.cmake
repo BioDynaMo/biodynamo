@@ -75,8 +75,10 @@ install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/LICENSE
               ${CMAKE_BIODYNAMO_BUILD_ROOT}/NOTICE
               ${CMAKE_BIODYNAMO_BUILD_ROOT}/version/bdm_version
         DESTINATION ${DIRNAME})
-install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/omp/omp.h
-        DESTINATION ${DIRNAME}/include)
+if(openmp)
+  install(FILES ${CMAKE_BIODYNAMO_BUILD_ROOT}/omp/omp.h
+          DESTINATION ${DIRNAME}/include)
+endif(openmp)
 install(DIRECTORY ${CMAKE_BIODYNAMO_BUILD_ROOT}/omp
         DESTINATION ${DIRNAME}/third_party
         USE_SOURCE_PERMISSIONS
