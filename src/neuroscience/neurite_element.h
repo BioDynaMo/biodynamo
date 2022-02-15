@@ -112,6 +112,10 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// @return the coord
   Double3 OriginOf(const AgentUid& daughter_uid) const override;
 
+  /// Returns StructureIdentifierSWC:kAxon if NeuriteElement is an Axon and
+  /// StructureIdentifierSWC::kApicalDendrite for all other cases.
+  virtual StructureIdentifierSWC GetIdentifierSWC() const override;
+
   // TODO(neurites) arrange in order end
 
   /// Retracts the neurite element, if it is a terminal one.

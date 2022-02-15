@@ -175,6 +175,14 @@ Double3 NeuriteElement::OriginOf(const AgentUid& daughter_uid) const {
   return mass_location_;
 }
 
+StructureIdentifierSWC NeuriteElement::GetIdentifierSWC() const {
+  if (IsAxon()) {
+    return StructureIdentifierSWC::kAxon;
+  } else {
+    return StructureIdentifierSWC::kApicalDendrite;
+  }
+};
+
 void NeuriteElement::RetractTerminalEnd(double speed) {
   // check if is a terminal branch
   if (daughter_left_ != nullptr) {
@@ -292,7 +300,9 @@ std::array<NeuriteElement*, 2> NeuriteElement::Bifurcate(
 std::array<NeuriteElement*, 2> NeuriteElement::Bifurcate(
     double diameter_1, double diameter_2, const Double3& direction_1,
     const Double3& direction_2) {
-  Log::Warning("NeuriteElement::Bifurcate", "Not Implemented");
+  Log::Fatal("NeuriteElement::Bifurcate", "Not Implemented");
+  std::array<NeuriteElement*, 2> dummy;
+  return dummy;
 }
 
 std::array<NeuriteElement*, 2> NeuriteElement::Bifurcate(

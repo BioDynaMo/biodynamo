@@ -95,6 +95,30 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 
   const std::vector<AgentPointer<NeuriteElement>>& GetDaughters() const;
 
+  /// \brief Exports the soma and the attached neurite elements to the SWC file
+  ///        format.
+  ///
+  /// Exports neuron as an SWC file following the conventions of
+  /// neuromorpho.org. Unfortunately, the file format is not defined without
+  /// ambiguities in the scientific community. The export follows the following
+  /// convention: for each element, we export a line containing the information
+  /// <element id> <type id> <pos x> <pos y> <pos z> <radius> <prev element id>.
+  /// The <prev element id> resembles the connectivity of the neuron.
+  ///
+  /// Usage:
+  /// \code
+  /// std::ofstream myfile;
+  /// myfile.open(simulation.GetOutputDir() + "/neuron.swc");
+  /// soma->PrintSWC(myfile);
+  /// \endcode
+  /// \see pyramidal_cell.h example.
+  /// Exports can be visualized with various tools, for instance
+  /// https://neuroinformatics.nl/HBP/morphology-viewer/#, although we recommend
+  /// the built-in ParaView visualization for this case. SWC files can be used
+  /// to extract meaningful descriptive features of the morphology with third
+  /// party software packages.
+  void PrintSWC(std::ostream& out) const;
+
  protected:
   std::vector<AgentPointer<NeuriteElement>> daughters_;
 
