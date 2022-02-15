@@ -24,14 +24,14 @@ namespace bdm {
 /** @brief Continuum model for the 3D heat equation with exponential decay
            \f$ \partial_t u = \nabla D \nabla u - \mu u \f$.
 
-  The solution is based on the finite difference method, more precisely, a
-  forward difference in time and a central difference in space. Thus, the
-  employed scheme is referred to as FTCS scheme. Time time integration is
-  explicit resulting in a stability condition
-  \f$ \frac{D \Delta t}{\Delta x^2} < \frac{1}{6} \f$. The error of the scheme
-  scales linearly with time (forward difference of first order) and quadratic
-  with the spatial discretization (central difference of second order). The
-  time integration corresponds to the forward Euler, thus the name of the class.
+  The model discretizes space and time with the finite difference method, more
+  precisely, the forward difference in time and the central difference in space.
+  Thus, the employed scheme is called the FTCS scheme. Time integration is
+  explicit resulting in a stability condition \f$ \frac{D \Delta t}{\Delta x^2}
+  < \frac{1}{6} \f$. The error of the scheme scales linearly with time (forward
+  difference of first-order) and quadratic with the spatial discretization
+  (central difference of second-order). The time integration corresponds to the
+  forward Euler, thus the name of the class.
 
   Further infomation:
     - <a href="https://biodynamo.org/docs/userguide/diffusion/">

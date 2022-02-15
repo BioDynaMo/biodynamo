@@ -26,9 +26,9 @@ namespace bdm {
            \f$ \partial_t u = \nabla D \nabla u \f$.
 
   The solution is based on the finite difference method, more precisely, on a
-  second order explicit Runge-Kutta scheme in time and a central difference in
+  second-order explicit Runge-Kutta scheme in time and the central difference in
   space. Due to the more sophisticated time integration, the solution converges
-  better than the EulerGrid - but it is also requires more computational effort.
+  better than the EulerGrid, but it requires increased computational effort.
 */
 class RungeKuttaGrid : public DiffusionGrid {
  public:
