@@ -29,6 +29,14 @@ namespace neuroscience {
 class NeuriteElement;
 class NeuronSoma;
 
+enum StructureIdentifierSWC {
+  kUndefined,
+  kSoma,
+  kAxon,
+  kBasalDendrite,
+  kApicalDendrite
+};
+
 /// The mother of a neurite element can either be a neuron or a neurite.
 /// This class declares this interface.
 class NeuronOrNeurite {
@@ -39,6 +47,13 @@ class NeuronOrNeurite {
   virtual Spinlock* GetLock() = 0;
 
   AgentPointer<NeuronOrNeurite> GetNeuronOrNeuriteAgentPtr() const;
+
+  /// \brief Returns the SWC classification of the object.
+  ///
+  /// \see StructureIdentifierSWC. Returns StructureIdentifierSWC:kSoma for the
+  /// Soma and StructureIdentifierSWC::kApicalDendrite for all other objects.
+  /// May be modified in child classes.
+  virtual StructureIdentifierSWC GetIdentifierSWC() const;
 
   bool IsNeuronSoma() const;
 
