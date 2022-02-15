@@ -12,8 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "neuroscience/neuron_soma.h"
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+
 #include "gtest/gtest.h"
+#include "neuroscience/neuron_soma.h"
 
 #include "core/resource_manager.h"
 #include "neuroscience/module.h"
@@ -723,6 +728,117 @@ TEST(NeuriteElementTest, Bifurcate) {
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   EXPECT_EQ(4u, rm->GetNumAgents());
+}
+
+TEST(NeuronSomaTest, SWCExport) {
+  // Define the desired export of the neuron morphology. Lower number at the
+  // bifurcation indicates the left daughter.
+  //           __7__                                   __5__
+  //                 \ __6__ x __1__ x __2__ x __3__ /
+  // ___9__          /        |soma |                \ __4__
+  //         \ __8__/
+  //  __10__ /
+  //
+  // Reference for constructing the desired export:
+  // http://www.neuronland.org/NLMorphologyConverter/MorphologyFormats/..
+  //    ../SWC/Spec.html
+  std::string desired_export =
+      "1 1 0 0 0 3 -1\n"
+      "2 4 1 0 0 1 1\n"
+      "3 4 2 0 0 1 2\n"
+      "4 4 3 1 0 1 3\n"
+      "5 4 3 -1 0 1 3\n"
+      "6 4 0 0 1 2 1\n"
+      "7 4 0.5 0 2 2 6\n"
+      "8 4 -0.5 0 2 2 6\n"
+      "9 4 -1 0 3 2 8\n"
+      "10 4 0 0 3 2 8\n";
+
+  neuroscience::InitModule();
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  auto* ctxt = simulation.GetExecutionContext();
+
+  ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
+
+  // Create neuron (soma)
+  Double3 origin = {0, 0, 0};
+  NeuronSoma* neuron = new NeuronSoma(origin);
+  neuron->SetDiameter(6);
+
+  // Manually create neurites that match the desired output above
+  Double3 p2{1.0, 0.0, 0.0};
+  Double3 p3{2.0, 0.0, 0.0};
+  Double3 p4{3.0, 1.0, 0.0};
+  Double3 p5{3.0, -1.0, 0.0};
+  Double3 p6{0.0, 0.0, 1.0};
+  Double3 p7{0.5, 0.0, 2.0};
+  Double3 p8{-0.5, 0.0, 2.0};
+  Double3 p9{-1.0, 0.0, 3.0};
+  Double3 p10{0.0, 0.0, 3.0};
+  NeuriteElement* n2 = neuron->ExtendNewNeurite({1.0, 0.0, 0.0});
+  NeuriteElement* n3 = new NeuriteElement();
+  NeuriteElement* n4 = new NeuriteElement();
+  NeuriteElement* n5 = new NeuriteElement();
+  NeuriteElement* n6 = neuron->ExtendNewNeurite({0.0, 0.0, 1.0});
+  NeuriteElement* n7 = new NeuriteElement();
+  NeuriteElement* n8 = new NeuriteElement();
+  NeuriteElement* n9 = new NeuriteElement();
+  NeuriteElement* n10 = new NeuriteElement();
+  n2->SetDiameter(2);
+  n3->SetDiameter(2);
+  n4->SetDiameter(2);
+  n5->SetDiameter(2);
+  n6->SetDiameter(4);
+  n7->SetDiameter(4);
+  n8->SetDiameter(4);
+  n9->SetDiameter(4);
+  n10->SetDiameter(4);
+  n2->SetPosition(p2);
+  n3->SetPosition(p3);
+  n4->SetPosition(p4);
+  n5->SetPosition(p5);
+  n6->SetPosition(p6);
+  n7->SetPosition(p7);
+  n8->SetPosition(p8);
+  n9->SetPosition(p9);
+  n10->SetPosition(p10);
+
+  // Establish connectivity between neurites
+  n3->SetDaughterLeft(n4->GetAgentPtr<NeuriteElement>());
+  n3->SetDaughterRight(n5->GetAgentPtr<NeuriteElement>());
+  n2->SetDaughterLeft(n3->GetAgentPtr<NeuriteElement>());
+  n8->SetDaughterLeft(n9->GetAgentPtr<NeuriteElement>());
+  n8->SetDaughterRight(n10->GetAgentPtr<NeuriteElement>());
+  n6->SetDaughterLeft(n7->GetAgentPtr<NeuriteElement>());
+  n6->SetDaughterRight(n8->GetAgentPtr<NeuriteElement>());
+
+  // Add to resource manager (Note do not add n2 and n6 because they are already
+  // assigned to `neuron`)
+  rm->AddAgent(neuron);
+  rm->AddAgent(n3);
+  rm->AddAgent(n4);
+  rm->AddAgent(n5);
+  rm->AddAgent(n7);
+  rm->AddAgent(n8);
+  rm->AddAgent(n9);
+  rm->AddAgent(n10);
+  ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
+
+  // Get SWC export
+  std::stringstream swc;
+  neuron->PrintSWC(swc);
+
+  // Check if export is correct
+  bool correct_output{false};
+  if (swc.str().find(desired_export) != std::string::npos) {
+    correct_output = true;
+  } else {
+    std::cout << "SWC export does not match expectation. \n\nExport:\n"
+              << swc.str() << "\n\nExpectation:\n"
+              << desired_export << std::endl;
+  }
+  EXPECT_TRUE(correct_output);
 }
 
 TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
