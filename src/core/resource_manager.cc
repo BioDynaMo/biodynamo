@@ -201,7 +201,6 @@ void ResourceManager::ForEachAgentParallel(
 struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
   bool minimize_memory;
   uint64_t offset;
-  uint64_t offset_in_numa;
   uint64_t nid;
   std::vector<std::vector<Agent*>>& agents;
   std::vector<Agent*>& dest;
