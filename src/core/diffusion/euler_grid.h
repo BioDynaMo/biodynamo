@@ -21,6 +21,25 @@
 
 namespace bdm {
 
+/** @brief Continuum model for the 3D heat equation with exponential decay
+           \f$ \partial_t u = \nabla D \nabla u - \mu u \f$.
+
+  We use a forward in time and central in space finite difference method for
+  modelling (FTCS). This method, however, is not  iherently stable and thus we
+  must impose a stability condition. \f$ \frac{D \Delta t}{\Delta x^2}  <
+  \frac{1}{6} \f$. The error of this method scaling linearly with time (forward
+  difference of first-order) and quadratic with the spatial discretization
+  (central difference of second-order). The method derives its name, Euler, from
+  the time step length of the integration.
+
+  Further infomation:
+    - <a href="https://biodynamo.org/docs/userguide/diffusion/">
+      BioDynaMo User Guide </a>
+    - <a
+      href="http://dma.dima.uniroma1.it/users/lsa_adn/MATERIALE/FDheat.pdf">
+      Recktenwald, Finite-Difference Approximations to the Heat Equation,
+      2004</a>
+*/
 class EulerGrid : public DiffusionGrid {
  public:
   EulerGrid() {}

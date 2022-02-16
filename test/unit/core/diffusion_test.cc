@@ -449,7 +449,53 @@ TEST(DiffusionTest, CorrectParameters) {
   dgrid.Diffuse(1.0);
 }
 
-TEST(DiffusionTest, EulerConvergence) {
+TEST(DiffusionTest, EulerConvergenceExponentialDecay) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "closed";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+
+  double diff_coef = 0.0;
+  double decay = 0.01;
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium1", diff_coef, decay, 81);
+  dgrid->Initialize();
+  dgrid->SetUpperThreshold(1e15);
+
+  // instantaneous point source
+  int init = 1e5;
+  Double3 source = {{0, 0, 0}};
+  dgrid->ChangeConcentrationBy(source, init);
+  auto conc2 = dgrid->GetAllConcentrations();
+  Double3 marker = {10.0, 10.0, 10.0};
+
+  // Simulate diffusion / exponential decay for `tot` timesteps
+  int tot = 100;
+  for (int t = 0; t < tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+  }
+
+  // If there is no diffusion, each grid point simply executes an independet
+  // exponential decay.
+  double expected_solution =
+      init * std::exp(-decay * tot * simulation_time_step);
+
+  // No diffusing substance -> Solution is 0 if not at source.
+  EXPECT_FLOAT_EQ(0.0, conc2[dgrid->GetBoxIndex(marker)]);
+  // Expect numeric value of exponential decay to coincide with +/- 0.01% of
+  // analytic solution.
+  EXPECT_LT(std::abs(expected_solution - conc2[dgrid->GetBoxIndex(source)]) /
+                expected_solution,
+            0.0001);
+
+  delete dgrid;
+}
+
+TEST(DiffusionTest, EulerConvergenceDiffusion) {
   double simulation_time_step{1.0};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
@@ -597,9 +643,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 21);
+  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 41);
+  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 81);
 
   dgrid2->Initialize();
   dgrid4->Initialize();

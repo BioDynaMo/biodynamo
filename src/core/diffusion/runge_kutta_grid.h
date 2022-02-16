@@ -22,12 +22,21 @@
 
 namespace bdm {
 
+/** @brief Continuum model for the 3D heat equation
+           \f$ \partial_t u = \nabla D \nabla u \f$.
+
+  This alternative solution to the finite difference method is based on an
+  explicit second order Runge-Kutta scheme.  Taking a approach which is forward
+  in time and central in space. Due to the more sophisticated time integration,
+  the solution converges better than the EulerGrid. However, this causes a
+  tradeoff leading to increased computational effort.
+*/
 class RungeKuttaGrid : public DiffusionGrid {
  public:
   RungeKuttaGrid() {}
   RungeKuttaGrid(int substance_id, std::string substance_name, double dc,
-                 double mu, int resolution = 11)
-      : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
+                 int resolution = 11)
+      : DiffusionGrid(substance_id, std::move(substance_name), dc, 0.0,
                       resolution) {}
 
   void Initialize() override {
