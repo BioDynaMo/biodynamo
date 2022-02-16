@@ -57,7 +57,7 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
   }
 
   // If statement to prevent possible dereferencing of nullptr
-  if (!vd) {
+  if (vd) {
     for (uint64_t i = 0; i < data_.size(); ++i) {
       // Add attribute data
       if (vd->concentration) {
