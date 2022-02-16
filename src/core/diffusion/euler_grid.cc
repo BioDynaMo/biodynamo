@@ -39,10 +39,6 @@ void EulerGrid::DiffuseWithClosedEdge(double dt) {
 #pragma omp simd
         for (x = 1; x < nx - 1; x++) {
           ++c;
-          ++n;
-          ++s;
-          ++b;
-          ++t;
 
           if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
             continue;
@@ -58,11 +54,6 @@ void EulerGrid::DiffuseWithClosedEdge(double dt) {
                d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
               (1 - mu_);
         }
-        ++c;
-        ++n;
-        ++s;
-        ++b;
-        ++t;
       }  // tile ny
     }    // tile nz
   }      // block ny
