@@ -24,6 +24,7 @@
 // BioDynaMo
 #include "core/param/param.h"
 #include "core/simulation.h"
+#include "core/util/log.h"
 #include "core/util/thread_info.h"
 #include "core/visualization/paraview/parallel_vti_writer.h"
 
@@ -55,27 +56,33 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
     }
   }
 
-  for (uint64_t i = 0; i < data_.size(); ++i) {
-    // Add attribute data
-    if (vd->concentration) {
-      vtkNew<vtkDoubleArray> concentration;
-      concentration->SetName("Substance Concentration");
-      concentration_array_idx_ =
-          data_[i]->GetPointData()->AddArray(concentration.GetPointer());
+  // If statement to prevent possible dereferencing of nullptr
+  if (!vd) {
+    for (uint64_t i = 0; i < data_.size(); ++i) {
+      // Add attribute data
+      if (vd->concentration) {
+        vtkNew<vtkDoubleArray> concentration;
+        concentration->SetName("Substance Concentration");
+        concentration_array_idx_ =
+            data_[i]->GetPointData()->AddArray(concentration.GetPointer());
+      }
+      if (vd->gradient) {
+        vtkNew<vtkDoubleArray> gradient;
+        gradient->SetName("Diffusion Gradient");
+        gradient->SetNumberOfComponents(3);
+        gradient_array_idx_ =
+            data_[i]->GetPointData()->AddArray(gradient.GetPointer());
+      }
     }
-    if (vd->gradient) {
-      vtkNew<vtkDoubleArray> gradient;
-      gradient->SetName("Diffusion Gradient");
-      gradient->SetNumberOfComponents(3);
-      gradient_array_idx_ =
-          data_[i]->GetPointData()->AddArray(gradient.GetPointer());
-    }
-  }
 
-  if (!param->export_visualization) {
-    data_description->AddInput(name.c_str());
-    data_description->GetInputDescriptionByName(name.c_str())
-        ->SetGrid(data_[0]);
+    if (!param->export_visualization) {
+      data_description->AddInput(name.c_str());
+      data_description->GetInputDescriptionByName(name.c_str())
+          ->SetGrid(data_[0]);
+    }
+  } else {
+    Log::Warning("VtkDiffusionGrid::VtkDiffusionGrid", "Variable `name` (",
+                 name, ") not found in `param->visualize_diffusion`.");
   }
 }
 
