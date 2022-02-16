@@ -42,10 +42,6 @@ void RungeKuttaGrid::DiffuseWithClosedEdge(double dt) {
 #pragma omp simd
             for (x = 1; x < nx - 1; x++) {
               ++c;
-              ++n;
-              ++s;
-              ++b;
-              ++t;
 
               if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
                 continue;
@@ -71,11 +67,6 @@ void RungeKuttaGrid::DiffuseWithClosedEdge(double dt) {
                 c2_[c] = c1_[c] + (k_[1] * h);
               }
             }
-            ++c;
-            ++n;
-            ++s;
-            ++b;
-            ++t;
           }  // tile ny
         }    // tile nz
       }      // block ny

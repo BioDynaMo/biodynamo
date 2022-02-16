@@ -147,9 +147,6 @@ template MathArray<int, 2> DistributionRng<int>::Sample2();
 // -----------------------------------------------------------------------------
 template <typename TSample>
 MathArray<TSample, 2> DistributionRng<TSample>::Sample2Impl(TRandom* rng) {
-  MathArray<TSample, 2> ret;
-  ret[0] = Sample();
-  ret[0] = Sample();
   return MathArray<TSample, 2>({Sample(), Sample()});
 }
 template MathArray<double, 2> DistributionRng<double>::Sample2Impl(TRandom*);
