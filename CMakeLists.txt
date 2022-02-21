@@ -348,16 +348,19 @@ if(paraview)
     endif()
 
     if(NOT ParaView_FOUND)
-      PRINT_WARNING()
-      MESSAGE("We did not find any ParaView installed on the system. We will proceed to download it "
-              "together with Qt5. ParaView will be installed in the location ${CMAKE_THIRD_PARTY_DIR}/paraview.")
-      PRINT_LINE()
 
       # If we did not found paraview then we will install it automatically with the Qt package.
       if(APPLE)
+        PRINT_WARNING()
+        MESSAGE("We did not find any ParaView installed on the system. We will proceed to download it. "
+                "ParaView will be installed in the location ${CMAKE_THIRD_PARTY_DIR}/paraview. "
+                "Using brew Qt5 in ${Qt5_DIR} for ParaView.")
         PRINT_LINE()
-        MESSAGE("Using system Qt5 in ${Qt5_DIR}.")
       else()
+        PRINT_WARNING()
+        MESSAGE("We did not find any ParaView installed on the system. We will proceed to download it "
+                "together with Qt5. ParaView will be installed in the location ${CMAKE_THIRD_PARTY_DIR}/paraview.")
+        PRINT_LINE()
         include(external/Qt)
         PRINT_LINE()
         MESSAGE("Qt5 was successfully downloaded and installed. We will proceed now with ParaView.")
@@ -366,7 +369,7 @@ if(paraview)
       include(external/ParaView)
 
       # We run again the find_package command such to find correctly the location of Qt and ParaView
-      find_package(Qt5 COMPONENTS Widgets HINTS ${Qt5_DIR} NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH)
+      find_package(Qt5 REQUIRED COMPONENTS Widgets HINTS ${Qt5_DIR} NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH)
       if(Qt5_FOUND)
         message("-- Found Qt5 (version ${Qt5_VERSION})")
       endif()
