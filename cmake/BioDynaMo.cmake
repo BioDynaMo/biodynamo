@@ -60,7 +60,7 @@ endfunction(get_implicit_dependencies)
 # \param SOURCES list of source files
 # \param LIBRARIES list of *shared* libraries that should be linked to the executable.
 #        can also be a target name of a library.
-#        STATIC libraries not compiled with -fPIC must be linked in a separate command using 
+#        STATIC libraries not compiled with -fPIC must be linked in a separate command using
 #        target_link_libraries(${TARGET} static-lib-wo-fpic)
 function(bdm_add_executable TARGET)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
@@ -69,7 +69,6 @@ function(bdm_add_executable TARGET)
     if (OPENCL_FOUND)
       # Do this here; we don't want libbiodynamo.so to contain any OpenCL symbols
       set(ARG_LIBRARIES ${ARG_LIBRARIES} ${OPENCL_LIBRARIES})
-      target_compile_definitions(${TARGET} PUBLIC -DUSE_OPENCL)
     endif()
     if(mpi AND MPI_FOUND)
       set(ARG_LIBRARIES ${ARG_LIBRARIES} ${MPI_mpi_LIBRARY})
@@ -120,13 +119,13 @@ function(build_shared_library TARGET)
       set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
     endif()
     REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/${ARG_SELECTION})
-    if (BDM_OUT_OF_SOURCE) 
+    if (BDM_OUT_OF_SOURCE)
       set(BDM_DICT_BIN_PATH "$ENV{BDMSYS}/bin")
     else()
       set(BDM_DICT_BIN_PATH "${PROJECT_SOURCE_DIR}/cmake")
     endif()
     get_property(INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-    if (BDM_OUT_OF_SOURCE) 
+    if (BDM_OUT_OF_SOURCE)
       set(BDM_OUT_OF_SRC_ARG "--out-of-source")
     else()
       set(BDM_OUT_OF_SRC_ARG --bdm-source ${CMAKE_SOURCE_DIR})
@@ -136,6 +135,9 @@ function(build_shared_library TARGET)
                        DEPENDS ${ARG_HEADERS} ${BDM_DICT_BIN_PATH}/bdm-dictionary)
     # generate shared library
     add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc ${BDM_DICT_FILE})
+    if (OPENCL_FOUND)
+      target_compile_definitions(${TARGET} PUBLIC -DUSE_OPENCL)
+    endif()
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
     if (DEFINED CMAKE_INSTALL_LIBDIR)
       add_custom_command(TARGET ${TARGET}
