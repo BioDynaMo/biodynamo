@@ -29,7 +29,7 @@ if [ "$(uname)" = "Darwin" ]; then
     --source $__BDM_INSTALL_SOURCE \
     --dest $SCRIPT_DIR/paraview \
     --third-party $SCRIPT_DIR qt \
-    --pv 5.9 --py 3.9
+    --pv 5.10 --py 3.9
   cd $SCRIPT_DIR/paraview
   # Replace dummy .app binary with slightly more functional version from bin.
   # It still won't work, it just won't contain any refereces to the source dir.

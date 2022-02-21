@@ -42,12 +42,19 @@ if [ "$(uname)" = "Linux" ]; then
   eval "$(pyenv init -)"
   pyenv shell 3.9.1
 else
-  export Qt5_DIR=$WORKING_DIR/qt
-  export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
-  export DYLD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$DYLD_LIBRARY_PATH
   # XCode compilers work fine now
   export CC=clang
   export CXX=clang++
+  # From ParaView 5.10 on, we use brew qt@5.
+  if [ "$PV_VERSION" = "v5.10.0" ]; then
+    export Qt5_DIR=$(brew --prefix)/opt/qt@5
+    export QT_CMAKE_DIR=$(brew --prefix)/opt/qt@5/lib/cmake/Qt5
+    export DYLD_LIBRARY_PATH=$(brew --prefix)/opt/qt@5/lib:$DYLD_LIBRARY_PATH
+  else
+    export Qt5_DIR=$WORKING_DIR/qt
+    export QT_CMAKE_DIR=$WORKING_DIR/qt/lib/cmake/Qt5
+    export DYLD_LIBRARY_PATH=$WORKING_DIR/qt/lib:$DYLD_LIBRARY_PATH
+  fi
 fi
 
 # The CMAKE_INSTALL_RPATH will put all the specified paths in all the installed
@@ -83,6 +90,14 @@ if [ "$(uname)" = "Darwin" ]; then
   -DPARAVIEW_DO_UNIX_STYLE_INSTALLS:BOOL=ON
   -DCMAKE_MACOSX_RPATH:BOOL=ON
   -DCMAKE_INSTALL_RPATH:STRING=@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib"
+  if [ "$PV_VERSION" = "v5.10.0" ]; then
+    # For ParaView-5.10 we need to specify the Qt version used for VTK files. 
+    # If we do not fix this to 5, the build will fail in the configuration phase
+    # because it is incompatible with other options. Possibly, consider moving 
+    # to Qt6 entirely once it is supported.
+    BDM_PV_BUILD_CMAKE_ARGS="$BDM_PV_BUILD_CMAKE_ARGS
+    -DPARAVIEW_EXTRA_CMAKE_ARGUMENTS='-DVTK_QT_VERSION=5'"
+  fi
 fi
 
 if [ "$PV_FLAVOR" = "default" ]; then
