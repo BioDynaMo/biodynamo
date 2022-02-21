@@ -34,7 +34,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        brew install libomp open-mpi python@3.9 wget cmake ninja
+        brew install libomp open-mpi python@3.9 wget cmake ninja qt@5
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2

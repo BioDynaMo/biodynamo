@@ -148,6 +148,9 @@ TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
       std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), true, false));
 }
 
+// Insitu-visualization not supported on macOS. Thus, we do not run these test
+// on macOS.
+#ifndef __APPLE__
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, InsituDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
@@ -161,6 +164,7 @@ TEST(FLAKY_ParaviewIntegrationTest, InsituDiffusionGrid_SlicesGtNumThreads) {
   LAUNCH_IN_NEW_PROCESS(
       RunDiffusionGridTest(3 * max_threads + 1, max_threads, false));
 }
+#endif  // __APPLE__
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
