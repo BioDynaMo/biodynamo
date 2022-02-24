@@ -80,9 +80,14 @@ jobs:
           cmake -G Ninja \
           -Dparaview=ON \
           -Dbenchmark=ON \
+          -Dcoverage=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --parallel --config Release
+      - name: Analyze coverage
+        run: |
+          source $(find /home -path "*/bin/*" -name "*thisbdm.sh")
+          cd build && make coverage && cd ..
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
