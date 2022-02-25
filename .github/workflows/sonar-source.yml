@@ -80,16 +80,16 @@ jobs:
           mkdir build
           cmake -G Ninja \
           -Dparaview=ON \
-          -Dbenchmark=ON \
           -Dcoverage=ON \
-          -DCMAKE_BUILD_TYPE=Release \
           -B build
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --parallel --config Release
       - name: Analyze coverage
         run: |
           echo $(pwd)
+          echo $(ls)
+          echo $(find /home -path "*/bin/*" -name "*thisbdm.sh")
           source $(find /home -path "*/bin/*" -name "*thisbdm.sh")
-          cd ${{ env.BUILD_WRAPPER_OUT_DIR }} 
+          cd build 
           make coverage
       - name: Run sonar-scanner
         env:
