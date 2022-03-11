@@ -91,7 +91,10 @@ jobs:
           bdm config
           cd build 
           ninja coverage
-          mv $(find "coverage" -type d -name "*biodynamo-unit-tests*") coverage/coverage_data
+          mkdir coverage/coverage_data
+          cp $(find "coverage" -name "*sonarqube.xml") coverage/coverage_data/coverage.xml
+          echo "$(ls coverage)"
+          echo "$(ls coverage/coverage_data)"
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
