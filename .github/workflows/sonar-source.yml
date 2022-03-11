@@ -92,9 +92,15 @@ jobs:
           cd build 
           ninja coverage
           mkdir coverage/coverage_data
-          cp $(find "coverage" -name "*sonarqube.xml") coverage/coverage_data/coverage.xml
+          cp $(find "coverage" -name "*sonarqube.xml") coverage/coverage_data/sonar_coverage.xml
+          echo "\nContent in coverage :"
           echo "$(ls coverage)"
+          echo "\nContent in coverage/coverage_data :"
           echo "$(ls coverage/coverage_data)"
+          echo "\n Filecontent sonar_coverage.xml:"
+          head -n 30 $(find "coverage" -name "*sonar_coverage.xml")
+          echo "\n ... \n"
+          tail -n 7 $(find "coverage" -name "*sonar_coverage.xml")
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
