@@ -89,8 +89,8 @@ jobs:
           echo "$(ls)"
           source $(find /home -path "*/bin/*" -name "*thisbdm.sh")
           bdm config
-          cd ${{ env.BUILD_WRAPPER_OUT_DIR }} 
-          make coverage
+          cd build 
+          ninja coverage
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
