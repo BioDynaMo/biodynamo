@@ -85,11 +85,11 @@ jobs:
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --parallel --config Release
       - name: Analyze coverage
         run: |
-          echo $(pwd)
-          echo $(ls)
-          echo $(find /home -path "*/bin/*" -name "*thisbdm.sh")
+          echo "$(pwd)"
+          echo "$(ls)"
           source $(find /home -path "*/bin/*" -name "*thisbdm.sh")
-          cd build 
+          bdm config
+          cd ${{ env.BUILD_WRAPPER_OUT_DIR }} 
           make coverage
       - name: Run sonar-scanner
         env:
