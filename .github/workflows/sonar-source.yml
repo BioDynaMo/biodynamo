@@ -98,9 +98,11 @@ jobs:
           echo "\nContent in coverage/coverage_data :"
           echo "$(ls coverage/coverage_data)"
           echo "\n Filecontent sonar_coverage.xml:"
-          head -n 30 $(find "coverage" -name "*sonar_coverage.xml")
+          FILE=$(find "coverage" -name "*sonar_coverage.xml")
+          tail -n +2 "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+          head -n 30 "$FILE"
           echo "\n ... \n"
-          tail -n 7 $(find "coverage" -name "*sonar_coverage.xml")
+          tail -n 7 "$FILE"
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
