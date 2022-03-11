@@ -68,7 +68,11 @@ Also for intermediate commit messages: have a look at
 #### 7. Compile and run tests
 
 ``` bash
-make && make check
+make && make run-check
+```
+or
+``` bash
+ninja && ninja run-check
 ```
 Please make sure that there are no compiler warnings
 
