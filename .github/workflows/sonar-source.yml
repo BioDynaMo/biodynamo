@@ -48,7 +48,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-            libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build libblas-dev liblapack-dev
+            libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build libblas-dev liblapack-dev kcov
           curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
           chmod +x cmake-3.19.3-Linux-x86_64.sh
           sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
@@ -79,10 +79,22 @@ jobs:
           mkdir build
           cmake -G Ninja \
           -Dparaview=ON \
-          -Dbenchmark=ON \
-          -DCMAKE_BUILD_TYPE=Release \
+          -Dcoverage=ON \
           -B build
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --parallel --config Release
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --parallel
+      - name: Analyze coverage
+        run: |
+          source $(find /home -path "*/bin/*" -name "*thisbdm.sh")
+          cd build 
+          ninja coverage-gha
+          mkdir coverage/coverage_data
+          cp $(find "coverage" -name "*sonarqube.xml") coverage/coverage_data/sonar_coverage.xml
+          echo "\n Filecontent sonar_coverage.xml:"
+          FILE=$(find "coverage" -name "*sonar_coverage.xml")
+          tail -n +2 "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+          head -n 30 "$FILE"
+          echo "\n ... \n"
+          tail -n 7 "$FILE"
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
