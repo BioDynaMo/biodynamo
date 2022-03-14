@@ -122,10 +122,11 @@ void EulerGrid::DiffuseWithOpenEdge(double dt) {
           ++s;
           ++b;
           ++t;
-          c2_[c] = c1_[c] * (1 - mu_ * dt) +
-                   (d * dt * ibl2) *
-                       (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1] + c1_[s] -
-                        2 * c1_[c] + c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t]);
+          c2_[c] =
+              c1_[c] * (1 - mu_ * dt) +
+              (d * dt * ibl2) * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1] +
+                                 l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n] +
+                                 l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]);
         }
         ++c;
         ++n;

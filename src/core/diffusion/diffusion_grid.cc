@@ -303,9 +303,9 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
   std::lock_guard<Spinlock> guard(locks_[idx]);
   assert(idx < locks_.size());
   c1_[idx] += amount;
-  c1_[idx] = (c1_[idx] > upper_threshold_)
-                 ? upper_threshold_
-                 : (c1_[idx] < lower_threshold_) ? lower_threshold_ : c1_[idx];
+  c1_[idx] = (c1_[idx] > upper_threshold_)   ? upper_threshold_
+             : (c1_[idx] < lower_threshold_) ? lower_threshold_
+                                             : c1_[idx];
 }
 
 /// Get the concentration at specified position
