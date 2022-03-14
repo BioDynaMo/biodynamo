@@ -24,7 +24,6 @@ BUILD_DIR=$2
 set -x
 
 pushd $BUILD_DIR
-cp -R ../paraview_plugin/ paraview_plugin   # Otherwise $CMAKE_BDM_PVPLUGINDIR is not set correctly
 mkdir coverage 2>/dev/null
 cd coverage
 cmake -Dcoverage=on $PROJECT_ROOT_DIR >/dev/null
