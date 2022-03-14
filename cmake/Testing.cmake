@@ -62,6 +62,11 @@ add_dependencies(bdmclean testbdmclean)
 if (coverage)
   find_program(KCOV_PATH kcov REQUIRED)
   add_custom_target(coverage
+    COMMAND ${CMAKE_BINARY_DIR}/launcher.sh ${KCOV_PATH} --include-path="${PROJECT_SOURCE_DIR}/src" coverage bin/biodynamo-unit-tests --gtest_filter=-*DeathTest*
+  )
+  # Add a custom target that is called in the sonar-source GHA to report coverage information in the dashboard.
+  # The target ignores more test cases than the standard coverage target.
+  add_custom_target(coverage-gha
     COMMAND ${CMAKE_BINARY_DIR}/launcher.sh ${KCOV_PATH} --include-path="${PROJECT_SOURCE_DIR}/src" coverage bin/biodynamo-unit-tests --gtest_filter=-*DeathTest*:*ExportToFile*:*GenerateSimulationInfoJson*:*Paraview*
   )
 endif()

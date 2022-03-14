@@ -90,7 +90,7 @@ jobs:
           source $(find /home -path "*/bin/*" -name "*thisbdm.sh")
           bdm config
           cd build 
-          ninja coverage
+          ninja coverage-gha
           mkdir coverage/coverage_data
           cp $(find "coverage" -name "*sonarqube.xml") coverage/coverage_data/sonar_coverage.xml
           echo "\nContent in coverage :"
