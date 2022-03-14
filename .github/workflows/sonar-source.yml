@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - sonar-coverage
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
@@ -82,21 +81,14 @@ jobs:
           -Dparaview=ON \
           -Dcoverage=ON \
           -B build
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --parallel --config Release
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --parallel
       - name: Analyze coverage
         run: |
-          echo "$(pwd)"
-          echo "$(ls)"
           source $(find /home -path "*/bin/*" -name "*thisbdm.sh")
-          bdm config
           cd build 
           ninja coverage-gha
           mkdir coverage/coverage_data
           cp $(find "coverage" -name "*sonarqube.xml") coverage/coverage_data/sonar_coverage.xml
-          echo "\nContent in coverage :"
-          echo "$(ls coverage)"
-          echo "\nContent in coverage/coverage_data :"
-          echo "$(ls coverage/coverage_data)"
           echo "\n Filecontent sonar_coverage.xml:"
           FILE=$(find "coverage" -name "*sonar_coverage.xml")
           tail -n +2 "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
