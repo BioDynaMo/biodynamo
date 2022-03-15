@@ -1,11 +1,19 @@
 name: Update gitpod integration repository 
 
 on:
-  schedule:
-    # Every day at 3 am
-    - cron: '0 3 * * *'
-    
+  # schedule:
+  #   # Every day at 3 am
+  #   - cron: '0 3 * * *'
+   
+  # Enable manual triggering of this workflow 
   workflow_dispatch:
+      inputs:
+        logLevel:
+          description: 'Log level'     
+          required: true
+          default: 'warning'
+        tags:
+          description: 'Test scenario tags' 
 
 jobs:
   update-gitpod-integration-repo:
