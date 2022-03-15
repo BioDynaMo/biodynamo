@@ -79,7 +79,7 @@ std::string FormatKV(std::string const& key, IterationCount value) {
   return ss.str();
 }
 
-std::string FormatKV(std::string const& key, double value) {
+std::string FormatKV(std::string const& key, real value) {
   std::stringstream ss;
   ss << '"' << StrEscape(key) << "\": ";
 

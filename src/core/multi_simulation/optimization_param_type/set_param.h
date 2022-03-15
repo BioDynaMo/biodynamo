@@ -23,10 +23,10 @@
 namespace bdm {
 
 /// A set of values (e.g. [-12, 3.2, 43, 98])
-/// All values are interpreted as double precision floating point types
+/// All values are interpreted as real precision floating point types
 struct SetParam : public OptimizationParamType {
   SetParam() {}
-  SetParam(const std::string& name, const std::vector<double> v)
+  SetParam(const std::string& name, const std::vector<real> v)
       : OptimizationParamType(name), values(v) {}
 
   OptimizationParamType* GetCopy() const override {
@@ -34,12 +34,12 @@ struct SetParam : public OptimizationParamType {
   }
 
   size_t size() const { return values.size(); }
-  double at(size_t n) const { return values.at(n); }
+  real at(size_t n) const { return values.at(n); }
 
   uint32_t GetNumElements() const override { return this->size(); }
-  double GetValue(int n) const override { return this->at(n); }
+  real GetValue(int n) const override { return this->at(n); }
 
-  std::vector<double> values;
+  std::vector<real> values;
   BDM_CLASS_DEF_OVERRIDE(SetParam, 1);
 };
 

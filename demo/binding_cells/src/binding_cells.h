@@ -47,35 +47,35 @@ struct SimParam : public ParamGroup {
 
   // World parameters
   int timesteps = 40;
-  double min_space = 0;
-  double max_space = 20;
+  real min_space = 0;
+  real max_space = 20;
 
   // T-Cell parameters
   int t_cell_population = 272;
-  double t_cell_diameter = 0.9;
-  double t_cell_walkspeed = 5;
-  double t_cell_density = 1.077;
-  double t_cell_init_mean = 3;
-  double t_cell_init_sigma = 1;
+  real t_cell_diameter = 0.9;
+  real t_cell_walkspeed = 5;
+  real t_cell_density = 1.077;
+  real t_cell_init_mean = 3;
+  real t_cell_init_sigma = 1;
 
   // Monocyte parameters
   int monocyte_population = 727;
-  double monocyte_diameter = 1.5;
-  double monocyte_density = 1.067;
+  real monocyte_diameter = 1.5;
+  real monocyte_density = 1.067;
 
   // Antibody (substance) parameters
-  double apd_amount = 10;
-  double diff_rate = 0;
-  double decay_rate = 0;
-  double res = 10;
+  real apd_amount = 10;
+  real diff_rate = 0;
+  real decay_rate = 0;
+  real res = 10;
 
   // Inhibition module parameters
-  double inhib_sigma = 1;
-  double inhib_mu = -8.5;
+  real inhib_sigma = 1;
+  real inhib_mu = -8.5;
 
   // StokesVelocity module parameters
-  double stokes_u = .089;
-  double stokes_pf = .997;
+  real stokes_u = .089;
+  real stokes_pf = .997;
 };
 
 inline void Simulate(int argc, const char** argv, TimeSeries* result,
@@ -95,7 +95,7 @@ inline void Simulate(int argc, const char** argv, TimeSeries* result,
   //////////////////////////////////////////////////////////////////////////////
   // Create and initialize Monocytes
   //////////////////////////////////////////////////////////////////////////////
-  auto mc_builder = [&](Double3 pos) {
+  auto mc_builder = [&](Real3 pos) {
     Monocyte* mc =
         new Monocyte(pos, sparam->monocyte_diameter, CellType::kMonocyte);
     mc->SetDensity(sparam->monocyte_density);
@@ -111,7 +111,7 @@ inline void Simulate(int argc, const char** argv, TimeSeries* result,
   //////////////////////////////////////////////////////////////////////////////
   // Create and initialize T-Cells
   //////////////////////////////////////////////////////////////////////////////
-  auto tc_builder = [&](Double3 pos) {
+  auto tc_builder = [&](Real3 pos) {
     TCell* tc = new TCell(pos, sparam->t_cell_diameter, CellType::kTCell,
                           sparam->timesteps);
     tc->SetDensity(sparam->t_cell_density);
@@ -148,9 +148,9 @@ inline void Simulate(int argc, const char** argv, TimeSeries* result,
       }
       return false;
     });
-    auto result = static_cast<double>(bdm::experimental::Count(sim, condition));
+    auto result = static_cast<real>(bdm::experimental::Count(sim, condition));
     auto num_agents = sim->GetResourceManager()->GetNumAgents();
-    return result / static_cast<double>(num_agents);
+    return result / static_cast<real>(num_agents);
   };
   ts->AddCollector("activated", activated);
 

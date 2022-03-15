@@ -34,7 +34,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   NeuronSoma();
   virtual ~NeuronSoma();
 
-  explicit NeuronSoma(const Double3& position);
+  explicit NeuronSoma(const Real3& position);
 
   NeuronSoma(const NeuronSoma& other)
       : Base(other),
@@ -71,13 +71,13 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   ///
   /// Uses default diameter for new neurite
   /// \see NewNeuriteExtensionEvent
-  NeuriteElement* ExtendNewNeurite(const Double3& direction,
+  NeuriteElement* ExtendNewNeurite(const Real3& direction,
                                    NeuriteElement* prototype = nullptr);
 
   /// \brief Extend a new neurite from this soma.
   ///
   /// \see NewNeuriteExtensionEvent
-  NeuriteElement* ExtendNewNeurite(double diameter, double phi, double theta,
+  NeuriteElement* ExtendNewNeurite(real diameter, real phi, real theta,
                                    NeuriteElement* prototype = nullptr);
 
   void RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) override;
@@ -86,7 +86,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// attached.
   /// @param daughter_element_idx element_idx of the daughter
   /// @return the coord
-  Double3 OriginOf(const AgentUid& daughter_uid) const override;
+  Real3 OriginOf(const AgentUid& daughter_uid) const override;
 
   void UpdateDependentPhysicalVariables() override;
 
@@ -125,7 +125,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// Daughter attachment points in local coordinates
   /// Key: neurite segment uid
   /// Value: position
-  std::unordered_map<AgentUid, Double3> daughters_coord_;
+  std::unordered_map<AgentUid, Real3> daughters_coord_;
 };
 
 }  // namespace neuroscience

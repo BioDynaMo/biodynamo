@@ -37,7 +37,7 @@ struct ModelInitializer {
   /// ExecutionContext. Type of the agent is determined by the return
   /// type of parameter agent_builder.
   ///
-  ///     ModelInitializer::Grid3D(8, 10, [](const Double3& pos){
+  ///     ModelInitializer::Grid3D(8, 10, [](const Real3& pos){
   ///     return Cell(pos); });
   /// @param      agents_per_dim  number of agents on each axis.
   ///                            Number of generated agents =
@@ -47,10 +47,10 @@ struct ModelInitializer {
   ///                            20), ... }`
   /// @param      agent_builder   function containing the logic to instantiate a
   ///                            new agent. Takes `const
-  ///                            Double3&` as input parameter
+  ///                            Real3&` as input parameter
   ///
   template <typename Function>
-  static void Grid3D(size_t agents_per_dim, double space,
+  static void Grid3D(size_t agents_per_dim, real space,
                      Function agent_builder) {
 #pragma omp parallel
     {
@@ -75,7 +75,7 @@ struct ModelInitializer {
   /// ExecutionContext. Type of the agent is determined by the return
   /// type of parameter agent_builder.
   ///
-  ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const Double3&
+  ///     ModelInitializer::Grid3D({8,6,4}, 10, [](const Real3&
   ///     pos){ return Cell(pos); });
   /// @param      agents_per_dim  number of agents on each axis.
   ///                            Number of generated agents =
@@ -86,10 +86,10 @@ struct ModelInitializer {
   ///                            20), ... }`
   /// @param      agent_builder   function containing the logic to instantiate a
   ///                            new agent. Takes `const
-  ///                            Double3&` as input parameter
+  ///                            Real3&` as input parameter
   ///
   template <typename Function>
-  static void Grid3D(const std::array<size_t, 3>& agents_per_dim, double space,
+  static void Grid3D(const std::array<size_t, 3>& agents_per_dim, real space,
                      Function agent_builder) {
 #pragma omp parallel
     {
@@ -116,10 +116,10 @@ struct ModelInitializer {
   /// @param      positions     positions of the agents to be
   /// @param      agent_builder  function containing the logic to instantiate a
   ///                           new agent. Takes `const
-  ///                           Double3&` as input parameter
+  ///                           Real3&` as input parameter
   ///
   template <typename Function>
-  static void CreateAgents(const std::vector<Double3>& positions,
+  static void CreateAgents(const std::vector<Real3>& positions,
                            Function agent_builder) {
 #pragma omp parallel
     {
@@ -143,14 +143,14 @@ struct ModelInitializer {
   /// @param[in]  num_agents     The number agents
   /// @param[in]  agent_builder  function containing the logic to instantiate a
   ///                           new agent. Takes `const
-  ///                           Double3&` as input parameter
+  ///                           Real3&` as input parameter
   /// \param[in]  rng           Uses the given DistributionRng.
   ///                           if rng is a nullptr, this function uses a
   ///                           uniform distribution between [min, max[
   template <typename Function>
-  static void CreateAgentsRandom(double min, double max, uint64_t num_agents,
+  static void CreateAgentsRandom(real min, real max, uint64_t num_agents,
                                  Function agent_builder,
-                                 DistributionRng<double>* rng = nullptr) {
+                                 DistributionRng<real>* rng = nullptr) {
 #pragma omp parallel
     {
       auto* sim = Simulation::GetActive();
@@ -160,7 +160,7 @@ struct ModelInitializer {
 #pragma omp for
       for (uint64_t i = 0; i < num_agents; i++) {
         if (rng != nullptr) {
-          Double3 pos;
+          Real3 pos;
           bool in_range = false;
           do {
             pos = rng->Sample3();
@@ -182,12 +182,12 @@ struct ModelInitializer {
   /// deltay. The z position is calculated using `f`. Agent creation is
   /// parallelized.
   ///
-  ///     auto construct = [](const Double3& position) {
+  ///     auto construct = [](const Real3& position) {
   ///       Cell* cell = new Cell(position);
   ///       cell->SetDiameter(10);
   ///       return cell;
   ///     };
-  ///     auto f = [](const double* x, const double* params) {
+  ///     auto f = [](const real* x, const real* params) {
   ///         // 10 * sin(x/20) + 10 * sin(y/20)
   ///         return 10 * std::sin(x[0] / 20.) + 10 * std::sin(x[1] / 20.0);
   ///     };
@@ -208,13 +208,13 @@ struct ModelInitializer {
   /// created.
   /// @param[in]  deltay        Space between two agents on the y-axis.
   /// @param[in]  agent_builder function containing the logic to instantiate a
-  ///                           new agent. Takes `const Double3&` as input
+  ///                           new agent. Takes `const Real3&` as input
   ///                           parameter
   template <typename Function>
   static void CreateAgentsOnSurface(
-      double (*f)(const double*, const double*),
-      const FixedSizeVector<double, 10>& fn_params, double xmin, double xmax,
-      double deltax, double ymin, double ymax, double deltay,
+      real (*f)(const real*, const real*),
+      const FixedSizeVector<real, 10>& fn_params, real xmin, real xmax,
+      real deltax, real ymin, real ymax, real deltay,
       Function agent_builder) {
 #pragma omp parallel
     {
@@ -228,10 +228,10 @@ struct ModelInitializer {
 
 #pragma omp for
       for (uint64_t xit = 0; xit < xiterations; ++xit) {
-        double x = xmin + xit * deltax;
+        real x = xmin + xit * deltax;
         for (uint64_t yit = 0; yit < yiterations; ++yit) {
-          double y = ymin + yit * deltay;
-          Double3 pos = {x, y};
+          real y = ymin + yit * deltay;
+          Real3 pos = {x, y};
           pos[2] = f(pos.data(), fn_params.data());
           ctxt->AddAgent(agent_builder(pos));
         }
@@ -244,12 +244,12 @@ struct ModelInitializer {
   /// xmax[ and [ymin, ymax[. The z position is calculated using `f`. Agent
   /// creation is parallelized.
   ///
-  ///     auto construct = [](const Double3& position) {
+  ///     auto construct = [](const Real3& position) {
   ///       Cell* cell = new Cell(position);
   ///       cell->SetDiameter(10);
   ///       return cell;
   ///     };
-  ///     auto f = [](const double* x, const double* params) {
+  ///     auto f = [](const real* x, const real* params) {
   ///         // 10 * sin(x/20) + 10 * sin(y/20)
   ///         return 10 * std::sin(x[0] / 20.) + 10 * std::sin(x[1] / 20.0);
   ///     };
@@ -268,13 +268,13 @@ struct ModelInitializer {
   /// @param[in]  ymax          Maximum y coordinate on which a agent will be
   /// created.
   /// @param[in]  agent_builder function containing the logic to instantiate a
-  ///                           new agent. Takes `const Double3&` as input
+  ///                           new agent. Takes `const Real3&` as input
   ///                           parameter
   template <typename Function>
   static void CreateAgentsOnSurfaceRndm(
-      double (*f)(const double*, const double*),
-      const FixedSizeVector<double, 10>& fn_params, double xmin, double xmax,
-      double ymin, double ymax, uint64_t num_agents, Function agent_builder) {
+      real (*f)(const real*, const real*),
+      const FixedSizeVector<real, 10>& fn_params, real xmin, real xmax,
+      real ymin, real ymax, uint64_t num_agents, Function agent_builder) {
 #pragma omp parallel
     {
       auto* sim = Simulation::GetActive();
@@ -283,7 +283,7 @@ struct ModelInitializer {
 
 #pragma omp for
       for (uint64_t i = 0; i < num_agents; ++i) {
-        Double3 pos = {random->Uniform(xmin, xmax),
+        Real3 pos = {random->Uniform(xmin, xmax),
                        random->Uniform(ymin, ymax)};
         pos[2] = f(pos.data(), fn_params.data());
         ctxt->AddAgent(agent_builder(pos));
@@ -301,9 +301,9 @@ struct ModelInitializer {
   /// @param[in]  num_agents    The number of agents
   /// @param[in]  agent_builder function containing the logic to instantiate a
   ///                           new agent. Takes `const
-  ///                           Double3&` as input parameter
+  ///                           Real3&` as input parameter
   template <typename Function>
-  static void CreateAgentsOnSphereRndm(const Double3& center, double radius,
+  static void CreateAgentsOnSphereRndm(const Real3& center, real radius,
                                        uint64_t num_agents,
                                        Function agent_builder) {
 #pragma omp parallel
@@ -331,9 +331,9 @@ struct ModelInitializer {
   /// @param[in]  num_agents    The number of agents
   /// @param[in]  agent_builder function containing the logic to instantiate a
   ///                           new agent. Takes `const
-  ///                           Double3&` as input parameter
+  ///                           Real3&` as input parameter
   template <typename Function>
-  static void CreateAgentsInSphereRndm(const Double3& center, double radius,
+  static void CreateAgentsInSphereRndm(const Real3& center, real radius,
                                        uint64_t num_agents,
                                        Function agent_builder) {
     // We use a probability density function (PDF) to model the probability of
@@ -343,9 +343,9 @@ struct ModelInitializer {
     // largest allowed radius (interpretation: no agents outside the sphere). We
     // can fix `a` by requiring `\int_0^\inf p(r') dr' = 1` and obtain
     // `a=3/R^3`.
-    auto radial_pdf_sphere = [](const double* x, const double* params) {
-      double R{params[0]};
-      double r{x[0]};
+    auto radial_pdf_sphere = [](const real* x, const real* params) {
+      real R{params[0]};
+      real r{x[0]};
       if (r > 0.0 && r <= R) {
         return 3.0 * std::pow(r, 2.0) / std::pow(R, 3.0);
       } else {
@@ -361,7 +361,7 @@ struct ModelInitializer {
     // Create a random radius for each of the agents. Note: this is done
     // serially because we GetUserDefinedDistRng1D does not work in parallel
     // regions at the moment.
-    std::vector<double> random_radius;
+    std::vector<real> random_radius;
     random_radius.resize(num_agents);
     for (size_t i = 0; i < num_agents; i++) {
       random_radius[i] = rng.Sample();
@@ -389,7 +389,7 @@ struct ModelInitializer {
   ///
   static void DefineSubstance(size_t substance_id,
                               const std::string& substance_name,
-                              double diffusion_coeff, double decay_constant,
+                              real diffusion_coeff, real decay_constant,
                               int resolution = 10);
 
   template <typename F>

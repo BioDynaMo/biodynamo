@@ -46,7 +46,7 @@ struct GetDataMemberForVis {
   GetDataMemberForVis() { temp_values_.resize(256); }
 
   void Update() {
-    // We assume that number of threads won't double within one iteration
+    // We assume that number of threads won't real within one iteration
     temp_values_.resize(
         2 * std::max<unsigned long long>(
                 ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256ULL));
@@ -147,8 +147,8 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   void LookupValue(vtkVariant value, vtkIdList* ids) final;
   vtkVariant GetVariantValue(vtkIdType idx) final;
   void ClearLookup() final;
-  double* GetTuple(vtkIdType i) final;
-  void GetTuple(vtkIdType i, double* tuple) final;
+  real* GetTuple(vtkIdType i) final;
+  void GetTuple(vtkIdType i, real* tuple) final;
   vtkIdType LookupTypedValue(TScalar value) final;
   void LookupTypedValue(TScalar value, vtkIdList* ids) final;
   ValueType GetValue(vtkIdType idx) const final;
@@ -163,24 +163,24 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   void SetNumberOfTuples(vtkIdType number) final;
   void SetTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) final;
   void SetTuple(vtkIdType i, const float* source) final;
-  void SetTuple(vtkIdType i, const double* source) final;
+  void SetTuple(vtkIdType i, const real* source) final;
   void InsertTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) final;
   void InsertTuple(vtkIdType i, const float* source) final;
-  void InsertTuple(vtkIdType i, const double* source) final;
+  void InsertTuple(vtkIdType i, const real* source) final;
   void InsertTuples(vtkIdList* dst_ids, vtkIdList* src_ids,
                     vtkAbstractArray* source) final;
   void InsertTuples(vtkIdType dst_start, vtkIdType n, vtkIdType src_start,
                     vtkAbstractArray* source) final;
   vtkIdType InsertNextTuple(vtkIdType j, vtkAbstractArray* source) final;
   vtkIdType InsertNextTuple(const float* source) final;
-  vtkIdType InsertNextTuple(const double* source) final;
+  vtkIdType InsertNextTuple(const real* source) final;
   void DeepCopy(vtkAbstractArray* aa) final;
   void DeepCopy(vtkDataArray* da) final;
   void InterpolateTuple(vtkIdType i, vtkIdList* pt_indices,
-                        vtkAbstractArray* source, double* weights) final;
+                        vtkAbstractArray* source, real* weights) final;
   void InterpolateTuple(vtkIdType i, vtkIdType id1, vtkAbstractArray* source1,
                         vtkIdType id2, vtkAbstractArray* source2,
-                        double t) final;
+                        real t) final;
   void SetVariantValue(vtkIdType idx, vtkVariant value) final;
   void InsertVariantValue(vtkIdType idx, vtkVariant value) final;
   void RemoveTuple(vtkIdType id) final;
@@ -202,7 +202,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   const std::vector<Agent*>* agents_ = nullptr;
   uint64_t start_ = 0;
   uint64_t end_ = 0;
-  double* temp_array_ = nullptr;
+  real* temp_array_ = nullptr;
 
   Param::MappedDataArrayMode mode_;
   /// Comparison value to determine if cached data is valid
@@ -407,7 +407,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::ClearLookup() {
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-double* MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType i) {
+real* MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType i) {
   this->GetTuple(i, this->temp_array_);
   return this->temp_array_;
 }
@@ -415,7 +415,7 @@ double* MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType i) {
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
-                                                             double* tuple) {
+                                                             real* tuple) {
   uint64_t idx = tuple_id * this->NumberOfComponents;
   TScalar* data;
   switch (mode_) {
@@ -429,7 +429,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
         uint64_t cnt = 0;
         for (uint64_t i = idx;
              i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-          tuple[cnt++] = static_cast<double>(data_[i]);
+          tuple[cnt++] = static_cast<real>(data_[i]);
         }
         return;
       }
@@ -438,7 +438,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
       auto* data = get_dm_((*agents_)[start_ + tuple_id]);
       for (uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents);
            ++i) {
-        tuple[i] = static_cast<double>(data[i]);
+        tuple[i] = static_cast<real>(data[i]);
         if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx + i] = data[i];
           is_matching_[idx + i] = match_value_;
@@ -450,7 +450,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
       uint64_t cnt = 0;
       for (uint64_t i = idx;
            i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-        tuple[cnt++] = static_cast<double>(data_[i]);
+        tuple[cnt++] = static_cast<real>(data_[i]);
       }
   }
 }
@@ -593,7 +593,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType,
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType,
-                                                             const double*) {
+                                                             const real*) {
   vtkErrorMacro("Read only container.");
   return;
 }
@@ -617,7 +617,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType,
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType,
-                                                                const double*) {
+                                                                const real*) {
   vtkErrorMacro("Read only container.");
   return;
 }
@@ -657,7 +657,7 @@ vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(
-    const double*) {
+    const real*) {
   vtkErrorMacro("Read only container.");
   return -1;
 }
@@ -680,7 +680,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::DeepCopy(vtkDataArray*) {
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(
-    vtkIdType, vtkIdList*, vtkAbstractArray*, double*) {
+    vtkIdType, vtkIdList*, vtkAbstractArray*, real*) {
   vtkErrorMacro("Read only container.");
   return;
 }
@@ -689,7 +689,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(
     vtkIdType, vtkIdType, vtkAbstractArray*, vtkIdType, vtkAbstractArray*,
-    double) {
+    real) {
   vtkErrorMacro("Read only container.");
   return;
 }
@@ -782,7 +782,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::InsertValue(vtkIdType,
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 MappedDataArray<TScalar, TClass, TDataMember>::MappedDataArray() {
-  this->temp_array_ = new double[this->NumberOfComponents];
+  this->temp_array_ = new real[this->NumberOfComponents];
 }
 
 //------------------------------------------------------------------------------

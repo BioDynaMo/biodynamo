@@ -216,18 +216,18 @@ class Agent {
   const InlineVector<Behavior*, 2>& GetAllBehaviors() const;
   // ---------------------------------------------------------------------------
 
-  virtual Double3 CalculateDisplacement(const InteractionForce* force,
-                                        double squared_radius, double dt) = 0;
+  virtual Real3 CalculateDisplacement(const InteractionForce* force,
+                                        real squared_radius, real dt) = 0;
 
-  virtual void ApplyDisplacement(const Double3& displacement) = 0;
+  virtual void ApplyDisplacement(const Real3& displacement) = 0;
 
-  virtual const Double3& GetPosition() const = 0;
+  virtual const Real3& GetPosition() const = 0;
 
-  virtual void SetPosition(const Double3& pos) = 0;
+  virtual void SetPosition(const Real3& pos) = 0;
 
-  virtual double GetDiameter() const = 0;
+  virtual real GetDiameter() const = 0;
 
-  virtual void SetDiameter(double diameter) = 0;
+  virtual void SetDiameter(real diameter) = 0;
 
   void RemoveFromSimulation() const;
 

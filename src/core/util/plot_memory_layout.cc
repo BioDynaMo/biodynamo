@@ -42,8 +42,8 @@ namespace bdm {
 void PlotMemoryLayout(const std::vector<Agent*>& agents, int numa_node) {
   TCanvas c;
   c.SetCanvasSize(1920, 1200);
-  std::vector<double> x(agents.size());
-  std::vector<double> y(agents.size());
+  std::vector<real> x(agents.size());
+  std::vector<real> y(agents.size());
 
   uint64_t min = std::numeric_limits<uint64_t>::max();
   for (uint64_t i = 0; i < agents.size(); ++i) {
@@ -104,12 +104,12 @@ void PlotMemoryHistogram(const std::vector<Agent*>& agents, int numa_node) {
 }
 
 // -----------------------------------------------------------------------------
-struct Fen : public Functor<void, Agent*, double> {
+struct Fen : public Functor<void, Agent*, real> {
   std::vector<int64_t>& diffs;
   Agent* query;
   Fen(std::vector<int64_t>& diffs, Agent* query) : diffs(diffs), query(query) {}
 
-  void operator()(Agent* neighbor, double) {
+  void operator()(Agent* neighbor, real) {
     if (neighbor == query) {
       return;
     }

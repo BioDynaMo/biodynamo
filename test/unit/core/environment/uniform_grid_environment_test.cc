@@ -27,7 +27,7 @@ namespace bdm {
 class UniformGridEnvironmentDeathTest : public ::testing::Test {};
 
 void CellFactory(ResourceManager* rm, size_t cells_per_dim) {
-  const double space = 20;
+  const real space = 20;
   rm->Reserve(cells_per_dim * cells_per_dim * cells_per_dim);
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
@@ -56,7 +56,7 @@ TEST(UniformGridEnvironmentTest, SetupGrid) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ForEachAgent([&](Agent* agent) {
     auto uid = agent->GetUid();
-    auto fill_neighbor_list = L2F([&](Agent* neighbor, double) {
+    auto fill_neighbor_list = L2F([&](Agent* neighbor, real) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
@@ -105,7 +105,7 @@ void RunUpdateGridTest(Simulation* simulation) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ForEachAgent([&](Agent* agent) {
     auto uid = agent->GetUid();
-    auto fill_neighbor_list = L2F([&](Agent* neighbor, double) {
+    auto fill_neighbor_list = L2F([&](Agent* neighbor, real) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
@@ -194,9 +194,9 @@ TEST(UniformGridEnvironmentTest, GetBoxIndex) {
 
   grid->Update();
 
-  Double3 position_0 = {{0, 0, 0}};
-  Double3 position_1 = {{1e-15, 1e-15, 1e-15}};
-  Double3 position_2 = {{-1e-15, 1e-15, 1e-15}};
+  Real3 position_0 = {{0, 0, 0}};
+  Real3 position_1 = {{1e-15, 1e-15, 1e-15}};
+  Real3 position_2 = {{-1e-15, 1e-15, 1e-15}};
 
   size_t expected_idx_0 = 21;
   size_t expected_idx_1 = 21;
@@ -269,8 +269,8 @@ TEST(UniformGridEnvironmentTest, NonEmptyBoundedTestThresholdDimensions) {
   EXPECT_EQ(99, max_dimensions[1]);
 }
 
-struct TestFunctor : public Functor<void, Agent*, double> {
-  void operator()(Agent* neighbor, double squared_distance) override {}
+struct TestFunctor : public Functor<void, Agent*, real> {
+  void operator()(Agent* neighbor, real squared_distance) override {}
 };
 
 TEST(UniformGridEnvironmentTest, CustomBoxLength) {

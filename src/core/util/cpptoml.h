@@ -28,7 +28,7 @@
 #define BDM_ASSIGN_CONFIG_DOUBLE3_VALUE(variable, config_key)          \
   {                                                                    \
     if (config->contains_qualified(config_key)) {                      \
-      auto value = config->get_array_of<double>(config_key);           \
+      auto value = config->get_array_of<real>(config_key);           \
       if (value) {                                                     \
         auto vector = *value;                                          \
         if (vector.size() == variable.size()) {                        \

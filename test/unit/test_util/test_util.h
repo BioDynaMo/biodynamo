@@ -25,19 +25,19 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 template <typename T>
 struct abs_error {
-  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
-                "abs_error<T> may only be used with T = { float, double }");
-  static constexpr double value = 1e-24;
+  static_assert(std::is_same<T, real>::value || std::is_same<T, float>::value,
+                "abs_error<T> may only be used with T = { float, real }");
+  static constexpr real value = 1e-24;
 };
 
 template <>
 struct abs_error<float> {
-  static constexpr double value = 1e-6;
+  static constexpr real value = 1e-6;
 };
 
 template <>
-struct abs_error<double> {
-  static constexpr double value = 1e-9;
+struct abs_error<real> {
+  static constexpr real value = 1e-9;
 };
 
 // -----------------------------------------------------------------------------
@@ -59,36 +59,36 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
 }
 
 // -----------------------------------------------------------------------------
-/// Helper macro to compare two double arrays of size three
+/// Helper macro to compare two real arrays of size three
 /// parameter actual and expected have been switched for better readability
 ///
 ///      EXPECT_ARR_NEAR(cells[0].GetPosition(), {123.12345, 10, 123.2345677});
 ///      EXPECT_ARR_NEAR(cells[1].GetPosition(), {1, 2, 3});
 #define EXPECT_ARR_NEAR(...)                                         \
-  [](const Double3& actual, const Double3& expected) {               \
+  [](const Real3& actual, const Real3& expected) {               \
     for (size_t i = 0; i < actual.size(); i++) {                     \
-      EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value); \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<real>::value); \
     }                                                                \
   }(__VA_ARGS__);
 
 #define EXPECT_VEC_NEAR(...)                                                   \
-  [](const std::vector<double>& actual, const std::vector<double>& expected) { \
+  [](const std::vector<real>& actual, const std::vector<real>& expected) { \
     for (size_t i = 0; i < actual.size(); i++) {                               \
-      EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value);           \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<real>::value);           \
     }                                                                          \
   }(__VA_ARGS__);
 
 #define EXPECT_ARR_NEAR_GPU(...)                       \
-  [](const Double3& actual, const Double3& expected) { \
+  [](const Real3& actual, const Real3& expected) { \
     for (size_t i = 0; i < actual.size(); i++) {       \
       EXPECT_NEAR(expected[i], actual[i], 1e-8);       \
     }                                                  \
   }(__VA_ARGS__);
 
 #define EXPECT_ARR_NEAR4(...)                                        \
-  [](const Double4& actual, const Double4& expected) {               \
+  [](const Real4& actual, const Real4& expected) {               \
     for (size_t i = 0; i < actual.size(); i++) {                     \
-      EXPECT_NEAR(expected[i], actual[i], abs_error<double>::value); \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<real>::value); \
     }                                                                \
   }(__VA_ARGS__);
 

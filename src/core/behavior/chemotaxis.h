@@ -28,13 +28,13 @@ class Chemotaxis : public Behavior {
 
  public:
   Chemotaxis() {}
-  Chemotaxis(const std::string& substance, double speed)
+  Chemotaxis(const std::string& substance, real speed)
       : substance_(substance), speed_(speed) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
         substance);
   }
 
-  explicit Chemotaxis(DiffusionGrid* dgrid, double speed)
+  explicit Chemotaxis(DiffusionGrid* dgrid, real speed)
       : dgrid_(dgrid), speed_(speed) {
     substance_ = dgrid->GetSubstanceName();
   }
@@ -52,7 +52,7 @@ class Chemotaxis : public Behavior {
   void Run(Agent* agent) override {
     auto* cell = bdm_static_cast<Cell*>(agent);
     auto& position = cell->GetPosition();
-    Double3 gradient;
+    Real3 gradient;
     dgrid_->GetGradient(position, &gradient);  // returns normalized gradient
     cell->UpdatePosition(gradient * speed_);
   }
@@ -60,7 +60,7 @@ class Chemotaxis : public Behavior {
  private:
   std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
-  double speed_;
+  real speed_;
 };
 
 }  // namespace bdm

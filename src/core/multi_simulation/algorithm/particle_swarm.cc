@@ -43,9 +43,9 @@ struct ParticleSwarm : public Algorithm {
     // Initial values and the bounds of the free parameters that we want to
     // optimize
     std::vector<std::string> param_names;
-    std::vector<double> init_vals;
-    std::vector<double> lower_bounds;
-    std::vector<double> upper_bounds;
+    std::vector<real> init_vals;
+    std::vector<real> lower_bounds;
+    std::vector<real> upper_bounds;
 
     if (opt_params->params.empty()) {
       Log::Fatal("ParticleSwarm::operator()",
@@ -76,9 +76,9 @@ struct ParticleSwarm : public Algorithm {
 
     auto max_it = settings.pso_n_gen;
     int iteration = 0;
-    double min_mse = 1e9;
+    real min_mse = 1e9;
     json best_params;
-    double prev_mse = 1.0;
+    real prev_mse = 1.0;
     Spinlock lock;
 
     // The fitting function (i.e. calling a simulation with a paramset)
@@ -114,7 +114,7 @@ struct ParticleSwarm : public Algorithm {
 
       new_param.MergeJsonPatch(j_patch.dump());
 
-      double mse = Experiment(dispatch_experiment, repetition, &new_param);
+      real mse = Experiment(dispatch_experiment, repetition, &new_param);
       std::cout << " MSE " << mse << " inout " << free_params << std::endl;
       {
         std::lock_guard<Spinlock> lock_guard(lock);

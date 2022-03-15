@@ -11,16 +11,13 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-
-#include "unit/test_util/test_util.h"
-#include "gtest/gtest.h"
+#ifndef CORE_REAL_H_
+#define CORE_REAL_H_
 
 namespace bdm {
 
-TEST(TestUtilTest, abs_errorTypeTrait) {
-  EXPECT_DOUBLE_EQ(abs_error<float>::value, 1e-6);
-  EXPECT_DOUBLE_EQ(abs_error<real>::value, 1e-9);
-  // abs_error<int>::value // must not compile -> todo compile error test suite
-}
+using real = float;
 
 }  // namespace bdm
+
+#endif  // CORE_REAL_H_

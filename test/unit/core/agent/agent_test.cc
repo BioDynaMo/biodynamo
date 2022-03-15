@@ -44,7 +44,7 @@ TEST(AgentTest, Behavior) {
   Simulation simulation(TEST_NAME);
 
   TestAgent cell;
-  double diameter = cell.GetDiameter();
+  real diameter = cell.GetDiameter();
   auto position = cell.GetPosition();
 
   cell.AddBehavior(new Movement({1, 2, 3}));
@@ -52,10 +52,10 @@ TEST(AgentTest, Behavior) {
 
   cell.RunBehaviors();
 
-  EXPECT_NEAR(diameter + 0.5, cell.GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(position[0] + 1, cell.GetPosition()[0], abs_error<double>::value);
-  EXPECT_NEAR(position[1] + 2, cell.GetPosition()[1], abs_error<double>::value);
-  EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<double>::value);
+  EXPECT_NEAR(diameter + 0.5, cell.GetDiameter(), abs_error<real>::value);
+  EXPECT_NEAR(position[0] + 1, cell.GetPosition()[0], abs_error<real>::value);
+  EXPECT_NEAR(position[1] + 2, cell.GetPosition()[1], abs_error<real>::value);
+  EXPECT_NEAR(position[2] + 3, cell.GetPosition()[2], abs_error<real>::value);
 }
 
 TEST(AgentTest, GetBehaviorsTest) {
@@ -136,7 +136,7 @@ TEST(AgentTest, RemoveBehavior) {
   EXPECT_TRUE(dynamic_cast<Growth*>(behaviors[1]) != nullptr);
   // check if Movement and Growth have been executed correctly.
   EXPECT_ARR_NEAR({1, 2, 3}, cell.GetPosition());
-  EXPECT_NEAR(10.5, cell.GetDiameter(), abs_error<double>::value);
+  EXPECT_NEAR(10.5, cell.GetDiameter(), abs_error<real>::value);
 
   cell.AddBehavior(new Removal());
   ASSERT_EQ(3u, behaviors.size());

@@ -31,8 +31,8 @@ operations (e.g. `Norm()`, `Normalize()`, etc.).
 It is possible to perform several mathematical operations with `MathArray` instances. For instance:
 
 ```cpp
-MathArray<double, 4> a {1,2,3,4};
-MathArray<double, 3> b {1,1,1,1};
+MathArray<real, 4> a {1,2,3,4};
+MathArray<real, 3> b {1,1,1,1};
 
 // sum == {2,3,4,5};
 auto sum = a+b;
@@ -50,8 +50,8 @@ auto div = a/b;
 Increment and decrement operations are also defined (plus other in-place operations):
 
 ```cpp
-MathArray<double, 4> a {1,2,3,4};
-MathArray<double, 3> b {1,1,1,1};
+MathArray<real, 4> a {1,2,3,4};
+MathArray<real, 3> b {1,1,1,1};
 
 a++;
 a--;
@@ -67,8 +67,8 @@ a /= b;
 easier to use and to manipulate.
 
 ```cpp
-MathArray<double, 4> a {1,2,3,4};
-MathArray<double, 3> b {2,2,2,2};
+MathArray<real, 4> a {1,2,3,4};
+MathArray<real, 3> b {2,2,2,2};
 
 // Entry wise product between a and b. The result will be a new array
 // with as content {2, 4, 6, 8}.
@@ -85,5 +85,5 @@ a.Normalize()
 
 ```
 
-Two alias are also available, `Double3` and `Double4`, which correspond to the
-following instantiations: `MathArray<double, 3>` and `MathArray<double, 4>`.
+Two alias are also available, `Real3` and `Real4`, which correspond to the
+following instantiations: `MathArray<real, 3>` and `MathArray<real, 4>`.

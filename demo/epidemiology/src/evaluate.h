@@ -32,15 +32,15 @@ inline void SetupResultCollection(Simulation* sim) {
   auto recovered = [](Agent* a) {
     return bdm_static_cast<Person*>(a)->state_ == State::kRecovered;
   };
-  auto post_process = [](double count) {
+  auto post_process = [](real count) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
     auto num_agents = rm->GetNumAgents();
-    return count / static_cast<double>(num_agents);
+    return count / static_cast<real>(num_agents);
   };
   ts->AddCollector("susceptible",
-                   new Counter<double>(susceptible, post_process));
-  ts->AddCollector("infected", new Counter<double>(infected, post_process));
-  ts->AddCollector("recovered", new Counter<double>(recovered, post_process));
+                   new Counter<real>(susceptible, post_process));
+  ts->AddCollector("infected", new Counter<real>(infected, post_process));
+  ts->AddCollector("recovered", new Counter<real>(recovered, post_process));
 }
 
 // ---------------------------------------------------------------------------

@@ -70,8 +70,8 @@ struct LambdaFunctor<TReturn (TLambda::*)(TArgs...)> final
 /// Wraps a lambda inside a LambdaFunctor with the same signature as the lambda.
 /// Assume the following example using `L2F`
 ///
-///     void PrintSmallNeighbors(Agent* agent, double threshold) {
-///       auto functor = L2F([&](Agent* neighbor, double squared_distance)) {
+///     void PrintSmallNeighbors(Agent* agent, real threshold) {
+///       auto functor = L2F([&](Agent* neighbor, real squared_distance)) {
 ///          if (neighbor->GetDiameter() < threshold) {
 ///            std::cout << neighbor->GetUid() << std::endl;
 ///          }
@@ -81,26 +81,26 @@ struct LambdaFunctor<TReturn (TLambda::*)(TArgs...)> final
 ///     }
 ///
 /// The base class of `functor` in the example above is
-/// `Functor<void, Agent*, double>`\n
+/// `Functor<void, Agent*, real>`\n
 /// The wrapped lambda is allowed to capture variables. \n
 /// Without bdm::LambdaFunctor and bdm::L2F the following code is needed
 /// to achieve the same result as above. Notice the extra class `MyFunctor` that
 /// has to be defined outside `PrintSmallNeighbors`.
 ///
-///     class MyFunctor : public Functor<void, Agent*, double> {
+///     class MyFunctor : public Functor<void, Agent*, real> {
 ///      public:
-///       MyFunctor(double threshold) : threshold_(threshold) {}
+///       MyFunctor(real threshold) : threshold_(threshold) {}
 ///       virtual ~MyFunctor() {}
-///       void operator()(Agent* neighbor, double squared_distance) override {
+///       void operator()(Agent* neighbor, real squared_distance) override {
 ///         if (neighbor->GetDiameter() < threshold_) {
 ///           std::cout << agent->GetUid() << std::endl;
 ///         }
 ///       }
 ///      private:
-///       double threshold_;
+///       real threshold_;
 ///     };
 ///
-///     void PrintSmallNeighbors(Agent* agent, double threshold) {
+///     void PrintSmallNeighbors(Agent* agent, real threshold) {
 ///       MyFunctor functor(threshold);
 ///       auto* ctxt = Simulation::GetActive()->GetExecutionContext();
 ///       ctxt->ForEachNeighbor(functor, *agent);

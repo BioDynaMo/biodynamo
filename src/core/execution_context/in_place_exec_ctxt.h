@@ -114,14 +114,14 @@ class InPlaceExecutionContext : public ExecutionContext {
 
   /// Applies the lambda `lambda` for each neighbor of the given `query`
   /// agent within the given search radius `squared_radius`
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius) override;
+  void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+                       const Agent& query, real squared_radius) override;
 
   /// Applies the lambda `lambda` for each neighbor of the given
   /// `query_position` within the given search radius `sqrt(squared_radius)`
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Double3& query_position,
-                       double squared_radius) override;
+  void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+                       const Real3& query_position,
+                       real squared_radius) override;
 
   void AddAgent(Agent* new_agent) override;
 
@@ -153,16 +153,16 @@ class InPlaceExecutionContext : public ExecutionContext {
   /// prevent race conditions for cached Agents
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
-  std::vector<std::pair<Agent*, double>> neighbor_cache_;
+  std::vector<std::pair<Agent*, real>> neighbor_cache_;
   /// The radius that was used to cache neighbors in `neighbor_cache_`
-  double cached_squared_search_radius_ = 0.0;
+  real cached_squared_search_radius_ = 0.0;
   /// Cache the value of Param::cache_neighbors
   bool cache_neighbors_ = false;
 
   /// Check whether or not the neighbors in `neighbor_cache_` were queried with
   /// the same squared radius (`cached_squared_search_radius_`) as currently
   /// being queried with (`query_squared_radius_`)
-  bool IsNeighborCacheValid(double query_squared_radius);
+  bool IsNeighborCacheValid(real query_squared_radius);
 
   virtual void AddAgentsToRm(
       const std::vector<ExecutionContext*>& all_exec_ctxts);

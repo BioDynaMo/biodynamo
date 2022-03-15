@@ -45,19 +45,19 @@ struct ApicalDendriteGrowth : public Behavior {
 
     auto* dendrite = bdm_static_cast<NeuriteElement*>(agent);
     if (dendrite->GetDiameter() > 0.575) {
-      Double3 gradient;
+      Real3 gradient;
       dg_guide_->GetGradient(dendrite->GetPosition(), &gradient);
 
-      double gradient_weight = 0.06;
-      double randomness_weight = 0.3;
-      double old_direction_weight = 4;
+      real gradient_weight = 0.06;
+      real randomness_weight = 0.3;
+      real old_direction_weight = 4;
 
       auto random_axis = random->template UniformArray<3>(-1, 1);
       auto old_direction = dendrite->GetSpringAxis() * old_direction_weight;
       auto grad_direction = gradient * gradient_weight;
       auto random_direction = random_axis * randomness_weight;
 
-      Double3 new_step_direction =
+      Real3 new_step_direction =
           old_direction + random_direction + grad_direction;
 
       dendrite->ElongateTerminalEnd(100, new_step_direction);
@@ -66,7 +66,7 @@ struct ApicalDendriteGrowth : public Behavior {
       if (can_branch_ && dendrite->IsTerminal() &&
           dendrite->GetDiameter() > 0.55 && random->Uniform() < 0.038) {
         auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
-        Double3 branch_direction =
+        Real3 branch_direction =
             Math::Perp3(dendrite->GetUnitaryAxisDirectionVector() + rand_noise,
                         random->Uniform(0, 1)) +
             dendrite->GetSpringAxis();
@@ -99,19 +99,19 @@ struct BasalDendriteGrowth : public Behavior {
 
     auto* dendrite = bdm_static_cast<NeuriteElement*>(agent);
     if (dendrite->IsTerminal() && dendrite->GetDiameter() > 0.75) {
-      Double3 gradient;
+      Real3 gradient;
       dg_guide_->GetGradient(dendrite->GetPosition(), &gradient);
 
-      double gradient_weight = 0.03;
-      double randomness_weight = 0.4;
-      double old_direction_weight = 6;
+      real gradient_weight = 0.03;
+      real randomness_weight = 0.4;
+      real old_direction_weight = 6;
 
       auto random_axis = random->template UniformArray<3>(-1, 1);
       auto old_direction = dendrite->GetSpringAxis() * old_direction_weight;
       auto grad_direction = gradient * gradient_weight;
       auto random_direction = random_axis * randomness_weight;
 
-      Double3 new_step_direction =
+      Real3 new_step_direction =
           old_direction + random_direction + grad_direction;
 
       dendrite->ElongateTerminalEnd(50, new_step_direction);
@@ -128,7 +128,7 @@ struct BasalDendriteGrowth : public Behavior {
   DiffusionGrid* dg_guide_ = nullptr;
 };
 
-inline void AddInitialNeuron(const Double3& position) {
+inline void AddInitialNeuron(const Real3& position) {
   auto* soma = new neuroscience::NeuronSoma(position);
   soma->SetDiameter(10);
   Simulation::GetActive()->GetResourceManager()->AddAgent(soma);

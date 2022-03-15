@@ -43,7 +43,7 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
     auto dms = FindDataMemberSlow(tclass, "diameter_");
     ASSERT_EQ(1u, dms.size());
 
-    GetDataMemberForVis<double*, NeuriteElement, double> get_dm;
+    GetDataMemberForVis<real*, NeuriteElement, real> get_dm;
     get_dm.dm_offset_ = dms[0]->GetOffset();
     EXPECT_EQ(123, *get_dm(&ne));
     EXPECT_EQ(123, get_dm(&ne)[0]);
@@ -54,7 +54,7 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
     auto dms = FindDataMemberSlow(tclass, "actual_length_");
     ASSERT_EQ(1u, dms.size());
 
-    GetDataMemberForVis<double*, NeuriteElement, double> get_dm;
+    GetDataMemberForVis<real*, NeuriteElement, real> get_dm;
     get_dm.dm_offset_ = dms[0]->GetOffset();
     EXPECT_EQ(123, *get_dm(&ne));
     EXPECT_EQ(123, get_dm(&ne)[0]);
@@ -65,7 +65,7 @@ TEST(GetDataMemberForVisTest, NeuriteElement) {
     auto dms = FindDataMemberSlow(tclass, "mass_location_");
     ASSERT_EQ(1u, dms.size());
 
-    GetDataMemberForVis<double*, NeuriteElement, Double3> get_dm;
+    GetDataMemberForVis<real*, NeuriteElement, Real3> get_dm;
     get_dm.dm_offset_ = dms[0]->GetOffset();
     EXPECT_EQ(1, get_dm(&ne)[0]);
     EXPECT_EQ(2, get_dm(&ne)[1]);

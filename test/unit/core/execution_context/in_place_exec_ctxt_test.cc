@@ -220,11 +220,11 @@ TEST(InPlaceExecutionContext, Execute) {
   delete op2;
 }
 
-struct NeighborFunctor : public Functor<void, Agent*, double> {
+struct NeighborFunctor : public Functor<void, Agent*, real> {
   NeighborFunctor(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
   virtual ~NeighborFunctor() {}
 
-  void operator()(Agent* neighbor, double squared_distance) override {
+  void operator()(Agent* neighbor, real squared_distance) override {
     auto* non_const_nb = const_cast<Agent*>(neighbor);
     auto d1 = non_const_nb->GetDiameter();
     non_const_nb->SetDiameter(d1 + 1);
@@ -291,7 +291,7 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
   auto* rm = sim.GetResourceManager();
 
   // create cells
-  auto construct = [](const Double3& position) {
+  auto construct = [](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(10);
     return cell;
@@ -389,8 +389,8 @@ TEST(InPlaceExecutionContext, DefaultSearchRadius) {
   EXPECT_EQ(43 * 43, env->GetLargestAgentSizeSquared());
 }
 
-struct TestNeighborFunctor : public Functor<void, Agent*, double> {
-  void operator()(Agent* neighbor, double squared_distance) override {}
+struct TestNeighborFunctor : public Functor<void, Agent*, real> {
+  void operator()(Agent* neighbor, real squared_distance) override {}
 };
 
 TEST(InPlaceExecutionContext, NeighborCacheValidity) {
@@ -447,7 +447,7 @@ TEST(InPlaceExecutionContext, ForEachNeighbor) {
   auto* rm = sim.GetResourceManager();
 
   // create cells
-  auto construct = [](const Double3& position) {
+  auto construct = [](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(20);
     return cell;
@@ -461,7 +461,7 @@ TEST(InPlaceExecutionContext, ForEachNeighbor) {
 
   auto agent0 = rm->GetAgent(AgentHandle(0, 0));
 
-  auto for_each = L2F([&](Agent* agent, double squared_distance) {
+  auto for_each = L2F([&](Agent* agent, real squared_distance) {
     EXPECT_NE(0, squared_distance);
   });
 

@@ -61,7 +61,7 @@ TEST(OptimizationParamTypeTest, LogRangeParam) {
 }
 
 TEST(OptimizationParamTypeTest, SetParam) {
-  std::vector<double> vals = {1, 12, 4, 4, 5, 91, -2.4, -93};
+  std::vector<real> vals = {1, 12, 4, 4, 5, 91, -2.4, -93};
   SetParam sp("TestParam", vals);
   EXPECT_EQ(8u, sp.GetNumElements());
 

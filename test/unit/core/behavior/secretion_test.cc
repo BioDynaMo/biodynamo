@@ -30,7 +30,7 @@ TEST(SecretionTest, Run) {
   auto* s = new Secretion("TestSubstance", 3.14);
 
   auto* cell = new Cell();
-  Double3 pos = {10, 11, 12};
+  Real3 pos = {10, 11, 12};
   cell->SetPosition(pos);
   cell->SetDiameter(40);
   cell->AddBehavior(s);

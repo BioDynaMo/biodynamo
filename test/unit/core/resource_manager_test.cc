@@ -263,7 +263,7 @@ void RunParallelAgentRemovalTest(
     const std::function<bool(uint64_t index)>& remove_functor) {
   Simulation simulation("RunForEachAgentTest_ParallelAgentRemoval");
 
-  auto construct = [](const Double3& pos) {
+  auto construct = [](const Real3& pos) {
     auto* agent = new TestAgent(pos);
     agent->SetDiameter(10);
     return agent;

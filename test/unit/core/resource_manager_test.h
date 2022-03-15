@@ -49,16 +49,16 @@ class B : public TestAgent {
 
  public:
   B() {}
-  explicit B(double data) { data_ = data; }
+  explicit B(real data) { data_ = data; }
 
-  double GetData() const { return data_; }
-  void SetData(double data) { data_ = data; }
+  real GetData() const { return data_; }
+  void SetData(real data) { data_ = data; }
 
-  double data_;
+  real data_;
 };
 
 inline void RunForEachAgentTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const real kEpsilon = abs_error<real>::value;
   Simulation simulation("RunForEachAgentTest");
   auto* rm = simulation.GetResourceManager();
 
@@ -107,7 +107,7 @@ inline void RunGetNumAgents() {
 
 struct ForEachAgentParallelTestFunctor : Functor<void, Agent*> {
   void operator()(Agent* agent) override {
-    const double kEpsilon = abs_error<double>::value;
+    const real kEpsilon = abs_error<real>::value;
     B* b = dynamic_cast<B*>(agent);
     AgentUid uid = agent->GetUid();
     if (uid == AgentUid(0)) {
@@ -223,7 +223,7 @@ inline void RunClearTest() {
 }
 
 inline void RunPushBackAndGetAgentTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const real kEpsilon = abs_error<real>::value;
   Simulation simulation("RunPushBackAndGetAgentTest");
   auto* rm = simulation.GetResourceManager();
 
@@ -362,10 +362,10 @@ inline void RunSortAndForEachAgentParallel(uint64_t num_agent_per_type) {
   Simulation simulation("RunSortAndForEachAgentParallel");
   auto* rm = simulation.GetResourceManager();
 
-  std::unordered_map<AgentUid, double> a_x_values;
-  std::unordered_map<AgentUid, double> b_x_values;
+  std::unordered_map<AgentUid, real> a_x_values;
+  std::unordered_map<AgentUid, real> b_x_values;
   for (uint64_t i = 0; i < num_agent_per_type; ++i) {
-    double x_pos = i * 30.0;
+    real x_pos = i * 30.0;
 
     A* a = new A(i);
     a->SetDiameter(10);
@@ -459,7 +459,7 @@ struct CheckNumaThreadErrors : Functor<void, Agent*, AgentHandle> {
   }
 
   void operator()(Agent* agent, AgentHandle handle) override {
-    volatile double d = 0;
+    volatile real d = 0;
     for (int i = 0; i < 10000; i++) {
       d += std::sin(i);
     }
@@ -530,10 +530,10 @@ inline void RunSortAndForEachAgentParallelDynamic(uint64_t num_agent_per_type,
   Simulation simulation("RunSortAndForEachAgentParallelDynamic");
   auto* rm = simulation.GetResourceManager();
 
-  std::unordered_map<AgentUid, double> a_x_values;
-  std::unordered_map<AgentUid, double> b_x_values;
+  std::unordered_map<AgentUid, real> a_x_values;
+  std::unordered_map<AgentUid, real> b_x_values;
   for (uint64_t i = 0; i < num_agent_per_type; ++i) {
-    double x_pos = i * 30.0;
+    real x_pos = i * 30.0;
 
     A* a = new A(i);
     a->SetDiameter(10);
@@ -586,7 +586,7 @@ inline void RunSortAndForEachAgentParallelDynamic() {
 }
 
 inline void RunIOTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const real kEpsilon = abs_error<real>::value;
   Simulation simulation("ResourceManagerTest-RunIOTest");
   auto* rm = simulation.GetResourceManager();
 

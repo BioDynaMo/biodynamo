@@ -43,7 +43,7 @@ To reduce the amount of boilerplate code, BioDynaMo provides the macro
 struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
-  double foo = 3.14;
+  real foo = 3.14;
   int bar = -42;
 };
 ```

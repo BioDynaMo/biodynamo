@@ -42,19 +42,19 @@ class Cell : public Agent {
 
  public:
   /// First axis of the local coordinate system.
-  static const Double3 kXAxis;
+  static const Real3 kXAxis;
   /// Second axis of the local coordinate system.
-  static const Double3 kYAxis;
+  static const Real3 kYAxis;
   /// Third axis of the local coordinate system.
-  static const Double3 kZAxis;
+  static const Real3 kZAxis;
 
   Cell() : diameter_(1.0), density_(1.0) { UpdateVolume(); }
 
-  explicit Cell(double diameter) : diameter_(diameter), density_(1.0) {
+  explicit Cell(real diameter) : diameter_(diameter), density_(1.0) {
     UpdateVolume();
   }
 
-  explicit Cell(const Double3& position)
+  explicit Cell(const Real3& position)
       : position_(position), diameter_(1.0), density_(1.0) {
     UpdateVolume();
   }
@@ -77,20 +77,20 @@ class Cell : public Agent {
       // defining the two radii s.t total volume is conserved
       // * radius^3 = r1^3 + r2^3 ;
       // * volume_ratio = r2^3 / r1^3
-      double radius = mother_cell->GetDiameter() * 0.5;
+      real radius = mother_cell->GetDiameter() * 0.5;
 
       // define an axis for division (along which the nuclei will move)
-      double x_coord = std::cos(cdevent.theta) * std::sin(cdevent.phi);
-      double y_coord = std::sin(cdevent.theta) * std::sin(cdevent.phi);
-      double z_coord = std::cos(cdevent.phi);
-      Double3 coords = {x_coord, y_coord, z_coord};
-      double total_length_of_displacement = radius / 4.0;
+      real x_coord = std::cos(cdevent.theta) * std::sin(cdevent.phi);
+      real y_coord = std::sin(cdevent.theta) * std::sin(cdevent.phi);
+      real z_coord = std::cos(cdevent.phi);
+      Real3 coords = {x_coord, y_coord, z_coord};
+      real total_length_of_displacement = radius / 4.0;
 
       const auto& x_axis = mother_cell->kXAxis;
       const auto& y_axis = mother_cell->kYAxis;
       const auto& z_axis = mother_cell->kZAxis;
 
-      Double3 axis_of_division =
+      Real3 axis_of_division =
           (coords.EntryWiseProduct(x_axis) + coords.EntryWiseProduct(y_axis) +
            coords.EntryWiseProduct(z_axis)) *
           total_length_of_displacement;
@@ -99,11 +99,11 @@ class Cell : public Agent {
       //  1) d2/d1= v2/v1 = volume_ratio (each sphere is shifted inver.
       //  proportionally to its volume)
       //  2) d1 + d2 = TOTAL_LENGTH_OF_DISPLACEMENT
-      double d_2 = total_length_of_displacement / (cdevent.volume_ratio + 1);
-      double d_1 = total_length_of_displacement - d_2;
+      real d_2 = total_length_of_displacement / (cdevent.volume_ratio + 1);
+      real d_1 = total_length_of_displacement - d_2;
 
-      double mother_volume = mother_cell->GetVolume();
-      double new_volume = mother_volume / (cdevent.volume_ratio + 1);
+      real mother_volume = mother_cell->GetVolume();
+      real new_volume = mother_volume / (cdevent.volume_ratio + 1);
       daughter->SetVolume(mother_volume - new_volume);
 
       // position
@@ -140,12 +140,12 @@ class Cell : public Agent {
   ///
   /// The axis of division is random.
   /// \see CellDivisionEvent
-  virtual Cell* Divide(double volume_ratio) {
+  virtual Cell* Divide(real volume_ratio) {
     // find random point on sphere (based on :
     // http://mathworld.wolfram.com/SpherePointPicking.html)
     auto* random = Simulation::GetActive()->GetRandom();
-    double theta = 2 * Math::kPi * random->Uniform(0, 1);
-    double phi = std::acos(2 * random->Uniform(0, 1) - 1);
+    real theta = 2 * Math::kPi * random->Uniform(0, 1);
+    real phi = std::acos(2 * random->Uniform(0, 1) - 1);
     return Divide(volume_ratio, phi, theta);
   }
 
@@ -153,7 +153,7 @@ class Cell : public Agent {
   ///
   /// CellDivisionEvent::volume_ratio will be between 0.9 and 1.1\n
   /// \see CellDivisionEvent
-  virtual Cell* Divide(const Double3& axis) {
+  virtual Cell* Divide(const Real3& axis) {
     auto* random = Simulation::GetActive()->GetRandom();
     auto polarcoord = TransformCoordinatesGlobalToPolar(axis + position_);
     return Divide(random->Uniform(0.9, 1.1), polarcoord[1], polarcoord[2]);
@@ -162,7 +162,7 @@ class Cell : public Agent {
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  virtual Cell* Divide(double volume_ratio, const Double3& axis) {
+  virtual Cell* Divide(real volume_ratio, const Real3& axis) {
     auto polarcoord = TransformCoordinatesGlobalToPolar(axis + position_);
     return Divide(volume_ratio, polarcoord[1], polarcoord[2]);
   }
@@ -170,34 +170,34 @@ class Cell : public Agent {
   /// \brief Divide this cell.
   ///
   /// \see CellDivisionEvent
-  virtual Cell* Divide(double volume_ratio, double phi, double theta) {
+  virtual Cell* Divide(real volume_ratio, real phi, real theta) {
     CellDivisionEvent event(volume_ratio, phi, theta);
     CreateNewAgents(event, {this});
     return bdm_static_cast<Cell*>(event.new_agents[0]);
   }
 
-  double GetAdherence() const { return adherence_; }
+  real GetAdherence() const { return adherence_; }
 
-  double GetDiameter() const override { return diameter_; }
+  real GetDiameter() const override { return diameter_; }
 
-  double GetMass() const { return density_ * volume_; }
+  real GetMass() const { return density_ * volume_; }
 
-  double GetDensity() const { return density_; }
+  real GetDensity() const { return density_; }
 
-  const Double3& GetPosition() const override { return position_; }
+  const Real3& GetPosition() const override { return position_; }
 
-  const Double3& GetTractorForce() const { return tractor_force_; }
+  const Real3& GetTractorForce() const { return tractor_force_; }
 
-  double GetVolume() const { return volume_; }
+  real GetVolume() const { return volume_; }
 
-  void SetAdherence(double adherence) {
+  void SetAdherence(real adherence) {
     if (adherence < adherence_) {
       SetStaticnessNextTimestep(false);
     }
     adherence_ = adherence;
   }
 
-  void SetDiameter(double diameter) override {
+  void SetDiameter(real diameter) override {
     if (diameter > diameter_) {
       SetPropagateStaticness();
     }
@@ -205,33 +205,33 @@ class Cell : public Agent {
     UpdateVolume();
   }
 
-  void SetVolume(double volume) {
+  void SetVolume(real volume) {
     volume_ = volume;
     UpdateDiameter();
   }
 
-  void SetMass(double mass) { SetDensity(mass / volume_); }
+  void SetMass(real mass) { SetDensity(mass / volume_); }
 
-  void SetDensity(double density) {
+  void SetDensity(real density) {
     if (density > density_) {
       SetPropagateStaticness();
     }
     density_ = density;
   }
 
-  void SetPosition(const Double3& position) override {
+  void SetPosition(const Real3& position) override {
     position_ = position;
     SetPropagateStaticness();
   }
 
-  void SetTractorForce(const Double3& tractor_force) {
+  void SetTractorForce(const Real3& tractor_force) {
     tractor_force_ = tractor_force;
   }
 
-  void ChangeVolume(double speed) {
+  void ChangeVolume(real speed) {
     // scaling for integration step
     auto* param = Simulation::GetActive()->GetParam();
-    double delta = speed * param->simulation_time_step;
+    real delta = speed * param->simulation_time_step;
     volume_ += delta;
     if (volume_ < 5.2359877E-7) {
       volume_ = 5.2359877E-7;
@@ -241,7 +241,7 @@ class Cell : public Agent {
 
   void UpdateDiameter() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    double diameter = std::cbrt(volume_ * 6 / Math::kPi);
+    real diameter = std::cbrt(volume_ * 6 / Math::kPi);
     if (diameter > diameter_) {
       Base::SetPropagateStaticness();
     }
@@ -253,13 +253,13 @@ class Cell : public Agent {
     volume_ = Math::kPi / 6 * std::pow(diameter_, 3);
   }
 
-  void UpdatePosition(const Double3& delta) {
+  void UpdatePosition(const Real3& delta) {
     position_ += delta;
     SetPropagateStaticness();
   }
 
-  Double3 CalculateDisplacement(const InteractionForce* force,
-                                double squared_radius, double dt) override {
+  Real3 CalculateDisplacement(const InteractionForce* force,
+                                real squared_radius, real dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied
@@ -277,8 +277,8 @@ class Cell : public Agent {
     bool physical_translation = false;
     // bool physical_rotation = false;
 
-    double h = dt;
-    Double3 movement_at_next_step{0, 0, 0};
+    real h = dt;
+    Real3 movement_at_next_step{0, 0, 0};
 
     // BIOLOGY :
     // 0) Start with tractor force : What the biology defined as active
@@ -287,10 +287,10 @@ class Cell : public Agent {
 
     // PHYSICS
     // the physics force to move the point mass
-    Double3 translation_force_on_point_mass{0, 0, 0};
+    Real3 translation_force_on_point_mass{0, 0, 0};
 
     // the physics force to rotate the cell
-    // Double3 rotation_force { 0, 0, 0 };
+    // Real3 rotation_force { 0, 0, 0 };
 
     // 1) "artificial force" to maintain the sphere in the ecm simulation
     // boundaries--------
@@ -305,7 +305,7 @@ class Cell : public Agent {
     if (!IsStatic()) {
       auto* ctxt = Simulation::GetActive()->GetExecutionContext();
       auto calculate_neighbor_forces =
-          L2F([&](Agent* neighbor, double squared_distance) {
+          L2F([&](Agent* neighbor, real squared_distance) {
             auto neighbor_force = force->Calculate(this, neighbor);
             if (neighbor_force[0] != 0 || neighbor_force[1] != 0 ||
                 neighbor_force[2] != 0) {
@@ -324,7 +324,7 @@ class Cell : public Agent {
 
     // 4) PhysicalBonds
     // How the physics influences the next displacement
-    double norm_of_force = std::sqrt(translation_force_on_point_mass *
+    real norm_of_force = std::sqrt(translation_force_on_point_mass *
                                      translation_force_on_point_mass);
 
     // is there enough force to :
@@ -333,7 +333,7 @@ class Cell : public Agent {
     physical_translation = norm_of_force > GetAdherence();
 
     assert(GetMass() != 0 && "The mass of a cell was found to be zero!");
-    double mh = h / GetMass();
+    real mh = h / GetMass();
     // adding the physics translation (scale by weight) if important enough
     if (physical_translation) {
       // We scale the move with mass and time step
@@ -351,9 +351,9 @@ class Cell : public Agent {
     return movement_at_next_step;
   }
 
-  void ApplyDisplacement(const Double3& displacement) override;
+  void ApplyDisplacement(const Real3& displacement) override;
 
-  void MovePointMass(const Double3& normalized_dir, double speed) {
+  void MovePointMass(const Real3& normalized_dir, real speed) {
     tractor_force_ += normalized_dir * speed;
   }
 
@@ -363,19 +363,19 @@ class Cell : public Agent {
   /// ([1,0,0],[0,1,0],[0,0,1]).
   /// @param coord: position in absolute coordinates - [x,y,z] cartesian values
   /// @return the position in local coordinates
-  Double3 TransformCoordinatesGlobalToPolar(const Double3& coord) const;
+  Real3 TransformCoordinatesGlobalToPolar(const Real3& coord) const;
 
  private:
   /// NB: Use setter and don't assign values directly
-  Double3 position_ = {{0, 0, 0}};
-  Double3 tractor_force_ = {{0, 0, 0}};
+  Real3 position_ = {{0, 0, 0}};
+  Real3 tractor_force_ = {{0, 0, 0}};
   /// NB: Use setter and don't assign values directly
-  double diameter_ = 0;
-  double volume_ = 0;
+  real diameter_ = 0;
+  real volume_ = 0;
   /// NB: Use setter and don't assign values directly
-  double adherence_ = 0;
+  real adherence_ = 0;
   /// NB: Use setter and don't assign values directly
-  double density_ = 0;
+  real density_ = 0;
 };
 
 }  // namespace bdm

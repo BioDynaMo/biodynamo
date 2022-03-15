@@ -30,7 +30,7 @@ class GrowthDivision : public Behavior {
 
  public:
   GrowthDivision() { AlwaysCopyToNew(); }
-  GrowthDivision(double threshold, double growth_rate)
+  GrowthDivision(real threshold, real growth_rate)
       : threshold_(threshold), growth_rate_(growth_rate) {}
 
   virtual ~GrowthDivision() {}
@@ -64,8 +64,8 @@ class GrowthDivision : public Behavior {
   }
 
  private:
-  double threshold_ = 40;
-  double growth_rate_ = 300;
+  real threshold_ = 40;
+  real growth_rate_ = 300;
 };
 
 }  // namespace bdm

@@ -37,13 +37,13 @@ TEST(GeneRegulationTest, EulerTest) {
 
   scheduler->SetSimulationSteps(1);
 
-  auto func1 = [](double curr_time, double last_concentration) {
+  auto func1 = [](real curr_time, real last_concentration) {
     return curr_time * last_concentration;
   };
-  auto func2 = [](double curr_time, double last_concentration) {
+  auto func2 = [](real curr_time, real last_concentration) {
     return curr_time * last_concentration + 1;
   };
-  auto func3 = [](double curr_time, double last_concentration) {
+  auto func3 = [](real curr_time, real last_concentration) {
     return curr_time * last_concentration + 2;
   };
 
@@ -71,7 +71,7 @@ TEST(GeneRegulationTest, RK4Test) {
 
   GeneRegulation gene_regulation;
   gene_regulation.AddGene(
-      [](double curr_time, double last_concentration) {
+      [](real curr_time, real last_concentration) {
         return 1 - curr_time * last_concentration;
       },
       1);

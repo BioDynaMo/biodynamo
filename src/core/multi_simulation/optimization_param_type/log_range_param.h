@@ -25,8 +25,8 @@ namespace bdm {
 /// A uniform range of logarithmically scaled values (e.g. 1, 10, 100, 1000)
 struct LogRangeParam : public OptimizationParamType {
   LogRangeParam() {}
-  LogRangeParam(const std::string& n, double base, double min, double max,
-                double stride)
+  LogRangeParam(const std::string& n, real base, real min, real max,
+                real stride)
       : OptimizationParamType(n),
         base(base),
         lower_bound(min),
@@ -48,8 +48,8 @@ struct LogRangeParam : public OptimizationParamType {
   }
 
   // Get the nth value
-  double GetValue(int n) const override {
-    double exp = lower_bound + n * stride;
+  real GetValue(int n) const override {
+    real exp = lower_bound + n * stride;
     return exp > upper_bound ? std::pow(base, upper_bound)
                              : std::pow(base, exp);
   }
@@ -61,13 +61,13 @@ struct LogRangeParam : public OptimizationParamType {
   }
 
   // The base value
-  double base = 10;
+  real base = 10;
   // The minimum value
-  double lower_bound = 0;
+  real lower_bound = 0;
   // THe maximum value
-  double upper_bound = 0;
+  real upper_bound = 0;
   // The stride
-  double stride = 1;
+  real stride = 1;
   BDM_CLASS_DEF_OVERRIDE(LogRangeParam, 1);
 };
 

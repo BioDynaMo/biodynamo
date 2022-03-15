@@ -52,7 +52,7 @@ param->max_bound = 100;
 We create one cell with diameter 10, at a random location
 
 ```cpp
-auto construct = [](const Double3& position) {
+auto construct = [](const Real3& position) {
   Cell* cell = new Cell(position);
   cell->SetDiameter(10);
   return cell;
@@ -102,17 +102,17 @@ Let's take a look at an existing substance initializer.
 ### Option 1: Functors
 ```cpp
 struct GaussianBand {
-  double mean_;
-  double sigma_;
+  real mean_;
+  real sigma_;
   uint8_t axis_;
 
-  GaussianBand(double mean, double sigma, uint8_t axis) {
+  GaussianBand(real mean, real sigma, uint8_t axis) {
     mean_ = mean;
     sigma_ = sigma;
     axis_ = axis;
   }
 
-  double operator()(double x, double y, double z) {
+  real operator()(real x, real y, real z) {
     switch(axis_) {
       case Axis::kXAxis: return ROOT::Math::normal_pdf(x, sigma_, mean_);
       case Axis::kYAxis: return ROOT::Math::normal_pdf(y, sigma_, mean_);
@@ -139,7 +139,7 @@ nice to use. We can accomplish exactly the same result as the above example with
 the following lambda:
 
 ```cpp
-auto gaussian_band = [](double x, double y, double z) {
+auto gaussian_band = [](real x, real y, real z) {
   return ROOT::Math::normal_pdf(x, 5, 0);
 };
 ```

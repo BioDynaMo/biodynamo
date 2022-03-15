@@ -17,15 +17,15 @@
 
 namespace bdm {
 
-void RungeKuttaGrid::DiffuseWithClosedEdge(double dt) {
+void RungeKuttaGrid::DiffuseWithClosedEdge(real dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
 
-  const double ibl2 = 1 / (box_length_ * box_length_);
-  const double d = 1 - dc_[0];
-  double step = diffusion_step_;
-  double h = dt / step;
+  const real ibl2 = 1 / (box_length_ * box_length_);
+  const real d = 1 - dc_[0];
+  real step = diffusion_step_;
+  real h = dt / step;
 #define YBF 16
   for (size_t i = 0; i < step; i++) {
     for (size_t order = 0; order < 2; order++) {
@@ -53,7 +53,7 @@ void RungeKuttaGrid::DiffuseWithClosedEdge(double dt) {
               b = c - nx * ny;
               t = c + nx * ny;
 
-              double h2 = h / 2.0;
+              real h2 = h / 2.0;
 
               if (order == 0) {
                 k_[0] = (d * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
@@ -76,7 +76,7 @@ void RungeKuttaGrid::DiffuseWithClosedEdge(double dt) {
   }
 }
 
-void RungeKuttaGrid::DiffuseWithOpenEdge(double dt) {
+void RungeKuttaGrid::DiffuseWithOpenEdge(real dt) {
   Log::Fatal(
       "RungeKuttaGrid::DiffuseWithOpenEdge",
       "Open Edge Diffusion is not implemented, please use the EulerGrid.");

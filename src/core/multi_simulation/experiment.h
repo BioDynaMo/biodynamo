@@ -24,6 +24,7 @@
 #include "core/functor.h"
 #include "core/multi_simulation/database.h"
 #include "core/param/param.h"
+#include "core/real.h"
 
 namespace bdm {
 namespace experimental {
@@ -32,19 +33,19 @@ namespace experimental {
 // the mean of the simulated results. If a real (experimental / analytical)
 // dataset is presented (either as the argument or through a database), we
 // compute the average error and return it
-inline double Experiment(
+inline real Experiment(
     Functor<void, Param*, TimeSeries*>& simulation, size_t iterations,
-    const Param* param, TimeSeries* real = nullptr,
+    const Param* param, TimeSeries* real_ts = nullptr,
     Functor<void, const std::vector<TimeSeries>&, const TimeSeries&,
             const TimeSeries&>* post_simulation = nullptr) {
   // If no experimental / analytical data is given, we try to extract it from
   // the database
   bool use_real_data = true;
-  if (!real) {
-    real = &(Database::GetInstance()->data_);
+  if (!real_ts) {
+    real_ts = &(Database::GetInstance()->data_);
     // If also no real data is present in the database, we just run the
     // simulation
-    if (!real) {
+    if (!real_ts) {
       use_real_data = false;
     }
   }
@@ -59,8 +60,8 @@ inline double Experiment(
   // Compute the mean result values of the N iterations
   TimeSeries simulated;
   TimeSeries::Merge(&simulated, results,
-                    [](const std::vector<double> all_y_values, double* y,
-                       double* eh, double* el) {
+                    [](const std::vector<real> all_y_values, real* y,
+                       real* eh, real* el) {
                       *y =
                           TMath::Mean(all_y_values.begin(), all_y_values.end());
                     });
@@ -68,12 +69,12 @@ inline double Experiment(
   // Execute post-simulation lambda (e.g. plotting or exporting of simulated
   // data)
   if (post_simulation) {
-    (*post_simulation)(results, simulated, *real);
+    (*post_simulation)(results, simulated, *real_ts);
   }
 
   if (use_real_data) {
     // Compute and return the error between the real and simulated data
-    double err = TimeSeries::ComputeError(*real, simulated);
+    real err = TimeSeries::ComputeError(*real_ts, simulated);
 
     return err;
   }

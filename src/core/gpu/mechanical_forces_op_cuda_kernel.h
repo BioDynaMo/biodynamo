@@ -32,13 +32,13 @@ class MechanicalForcesOpCudaKernel {
   virtual ~MechanicalForcesOpCudaKernel();
 
   void LaunchMechanicalForcesKernel(
-      const double* positions, const double* diameter,
-      const double* tractor_force, const double* adherence,
-      const uint32_t* box_id, const double* mass, const double timestep,
-      const double max_displacement, const double squared_radius,
+      const real* positions, const real* diameter,
+      const real* tractor_force, const real* adherence,
+      const uint32_t* box_id, const real* mass, const real timestep,
+      const real max_displacement, const real squared_radius,
       const uint32_t num_agents, uint32_t* starts, uint16_t* lengths,
       uint64_t* timestamps, uint64_t current_timestamp, uint32_t* successors,
-      uint32_t* num_boxes_axis, double* cell_movements);
+      uint32_t* num_boxes_axis, real* cell_movements);
 
   void Sync() const;
   void ResizeCellBuffers(uint32_t num_cells);
@@ -46,12 +46,12 @@ class MechanicalForcesOpCudaKernel {
 
 #ifdef USE_CUDA
  private:
-  thrust::device_vector<double3> d_positions_;
-  thrust::device_vector<double3> d_tractor_force_;
-  thrust::device_vector<double> d_adherence_;
-  thrust::device_vector<double> d_diameters_;
-  thrust::device_vector<double> d_mass_;
-  thrust::device_vector<double3> d_cell_movements_;
+  thrust::device_vector<real3> d_positions_;
+  thrust::device_vector<real3> d_tractor_force_;
+  thrust::device_vector<real> d_adherence_;
+  thrust::device_vector<real> d_diameters_;
+  thrust::device_vector<real> d_mass_;
+  thrust::device_vector<real3> d_cell_movements_;
   thrust::device_vector<uint32_t> d_box_id_;
   thrust::device_vector<uint32_t> d_starts_;
   thrust::device_vector<uint16_t> d_lengths_;
@@ -70,13 +70,13 @@ inline MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(
 inline MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {}
 
 inline void MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
-    const double* positions, const double* diameter,
-    const double* tractor_force, const double* adherence,
-    const uint32_t* box_id, const double* mass, const double timestep,
-    const double max_displacement, const double squared_radius,
+    const real* positions, const real* diameter,
+    const real* tractor_force, const real* adherence,
+    const uint32_t* box_id, const real* mass, const real timestep,
+    const real max_displacement, const real squared_radius,
     const uint32_t num_agents, uint32_t* starts, uint16_t* lengths,
     uint64_t* timestamps, uint64_t current_timestamp, uint32_t* successors,
-    uint32_t* num_boxes_axis, double* cell_movements) {}
+    uint32_t* num_boxes_axis, real* cell_movements) {}
 
 inline void MechanicalForcesOpCudaKernel::Sync() const {}
 inline void MechanicalForcesOpCudaKernel::ResizeCellBuffers(

@@ -27,8 +27,8 @@ namespace neuroscience {
 struct SideNeuriteExtensionEvent : public NewAgentEvent {
   static const NewAgentEventUid kUid;
 
-  SideNeuriteExtensionEvent(double length, double diameter,
-                            const Double3 direction)
+  SideNeuriteExtensionEvent(real length, real diameter,
+                            const Real3 direction)
       : length(length), diameter(diameter), direction(direction) {}
 
   virtual ~SideNeuriteExtensionEvent() {}
@@ -36,11 +36,11 @@ struct SideNeuriteExtensionEvent : public NewAgentEvent {
   NewAgentEventUid GetUid() const override { return kUid; }
 
   /// length of the new branch
-  double length;
+  real length;
   /// diameter of the new branch
-  double diameter;
+  real diameter;
   /// direction of the new branch
-  Double3 direction;
+  Real3 direction;
 };
 
 }  // namespace neuroscience

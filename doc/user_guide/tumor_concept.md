@@ -78,14 +78,14 @@ auto* param = simulation.GetParam();
 Let's define the number of cells we want to create and allocate three variables to hold the position (x_coord, y_coord and z_coord).
 ```cpp
 size_t nb_of_cells=2400; // number of cells in the simulation
-double x_coord, y_coord, z_coord;
+real x_coord, y_coord, z_coord;
 ```
 
 Then, with a simple loop from 0 to the number of cells, generate uniform distributed values for x, y and z and create a new cell object.
 ```cpp
 for (size_t i = 0; i < nb_of_cells; ++i) {
   // our modelling will be a cell cube of 100*100*100
-  // random double between 0 and 100
+  // random real between 0 and 100
   x_coord = random->Uniform(param->min_bound, param->max_bound);
   y_coord = random->Uniform(param->min_bound, param->max_bound);
   z_coord = random->Uniform(param->min_bound, param->max_bound);
@@ -235,7 +235,7 @@ class MyCell : public Cell {  // our object extends the Cell object
 
  public:
   MyCell() {}
-  explicit MyCell(const Double3& position) : Base(position) {}
+  explicit MyCell(const Real3& position) : Base(position) {}
 
   /// If MyCell divides, the daughter has to initialize its attributes
   void Initialize(const NewAgentEvent& event) override {
@@ -326,7 +326,7 @@ We choose here to give stochastic movement only to growing cells, so we will wri
 ```cpp
 auto* random = Simulation::GetActive()->GetRandom();
 // create an array of 3 random numbers between -2 and 2
-Double3 cell_movements =
+Real3 cell_movements =
     random->template UniformArray<3>(-2, 2);
 // update the cell mass location, ie move the cell
 cell->UpdatePosition(cell_movements);

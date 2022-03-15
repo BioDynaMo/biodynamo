@@ -23,7 +23,7 @@ except:
 # will not be properly defined. Thus, any other type returned by function  must be added to this list
 # for the script to work correctly.
 gTypesList = ["inline int", "void", "int",
-			  "string", "bool", "double", "float", "char"]
+			  "string", "bool", "real", "float", "char"]
 
 
 def Indent(string, spaces=2):
@@ -209,7 +209,7 @@ def split(text):
 		r")\s?\*?&?\s?[\w:]*?\s?\([^\)]*\)\s*\{.*?^\}"
 
 	functionRe = re.compile(functionReString, flags=re.DOTALL | re.MULTILINE)
-	#functionre = re.compile(r'(^void|^int|^Int_t|^TF1|^string|^bool|^double|^float|^char|^TCanvas|^TTree|^TString|^TSeqCollection|^Double_t|^TFile|^Long64_t|^Bool_t)\s?\*?\s?[\w:]*?\s?\([^\)]*\)\s*\{.*?^\}', flags = re.DOTALL | re.MULTILINE)
+	#functionre = re.compile(r'(^void|^int|^Int_t|^TF1|^string|^bool|^real|^float|^char|^TCanvas|^TTree|^TString|^TSeqCollection|^Double_t|^TFile|^Long64_t|^Bool_t)\s?\*?\s?[\w:]*?\s?\([^\)]*\)\s*\{.*?^\}', flags = re.DOTALL | re.MULTILINE)
 	functionMatches = functionRe.finditer(text)
 	helpers = []
 	main = ""
@@ -295,7 +295,7 @@ def findFunctionName(text):
 	functionNameRe = re.compile(
 		functionNameReString, flags=re.DOTALL | re.MULTILINE)
 
-	#functionnamere = re.compile(r'(?<=(?<=int)|(?<=void)|(?<=TF1)|(?<=Int_t)|(?<=string)|(?<=double)|(?<=Double_t)|(?<=float)|(?<=char)|(?<=TString)|(?<=bool)|(?<=TSeqCollection)|(?<=TCanvas)|(?<=TTree)|(?<=TFile)|(?<=Long64_t)|(?<=Bool_t))\s?\*?\s?[^\s]*?(?=\s?\()', flags = re.DOTALL | re.MULTILINE)
+	#functionnamere = re.compile(r'(?<=(?<=int)|(?<=void)|(?<=TF1)|(?<=Int_t)|(?<=string)|(?<=real)|(?<=Double_t)|(?<=float)|(?<=char)|(?<=TString)|(?<=bool)|(?<=TSeqCollection)|(?<=TCanvas)|(?<=TTree)|(?<=TFile)|(?<=Long64_t)|(?<=Bool_t))\s?\*?\s?[^\s]*?(?=\s?\()', flags = re.DOTALL | re.MULTILINE)
 	match = functionNameRe.search(text)
 	functionname = match.group().strip(" *\n")
 	return functionname

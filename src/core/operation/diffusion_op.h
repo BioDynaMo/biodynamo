@@ -35,10 +35,10 @@ namespace bdm {
 class DiffusionOp : public StandaloneOperationImpl {
  protected:
   /// Last time when the operation was executed
-  double last_time_run_ = 0.0;
+  real last_time_run_ = 0.0;
   /// Timestep that is useded for `Diffuse(delta_t)` and computed from this and
   /// the last time the grid was updated.
-  double delta_t_ = 0.0;
+  real delta_t_ = 0.0;
 
  public:
   BDM_OP_HEADER(DiffusionOp);
@@ -51,7 +51,7 @@ class DiffusionOp : public StandaloneOperationImpl {
     auto* param = sim->GetParam();
 
     // Compute the passed time to update the diffusion grid accordingly.
-    double current_time = sim->GetScheduler()->GetSimulatedTime();
+    real current_time = sim->GetScheduler()->GetSimulatedTime();
     delta_t_ = current_time - last_time_run_;
     last_time_run_ = current_time;
 

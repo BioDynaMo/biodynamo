@@ -31,7 +31,7 @@ struct OptimizationParamType {
   virtual OptimizationParamType* GetCopy() const = 0;
 
   virtual uint32_t GetNumElements() const = 0;
-  virtual double GetValue(int n) const = 0;
+  virtual real GetValue(int n) const = 0;
   virtual void Validate() const {};
 
   // Return the substring before the last "::", which should be

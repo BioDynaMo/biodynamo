@@ -31,7 +31,7 @@ class AgentContainer {
 
   size_t size() const { return rm_->GetNumAgents(); }
 
-  const Double3& operator[](size_t idx) const {
+  const Real3& operator[](size_t idx) const {
     AgentHandle ah = flat_idx_map_.GetAgentHandle(idx);
     return rm_->GetAgent(ah)->GetPosition();
   }
@@ -58,14 +58,14 @@ class OctreeEnvironment : public Environment {
 
   void Clear() override;
 
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius) override;
+  void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+                       const Agent& query, real squared_radius) override;
 
   void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
                        void* criteria) override;
 
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Double3& query_position, double squared_radius,
+  void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+                       const Real3& query_position, real squared_radius,
                        const Agent* query_agent = nullptr) override;
 
  protected:
@@ -82,7 +82,7 @@ class OctreeEnvironment : public Environment {
   /// to trigger a diffusion grid change
   std::array<int32_t, 2> threshold_dimensions_;
 
-  void RoundOffGridDimensions(const std::array<double, 6>& grid_dimensions);
+  void RoundOffGridDimensions(const std::array<real, 6>& grid_dimensions);
 
   void CheckGridGrowth();
 };

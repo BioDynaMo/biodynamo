@@ -46,7 +46,7 @@ struct TestAlgorithm : public Algorithm {
       int i = 0;
       for (auto* param : sweeping_params) {
         expected_result.Add(param->GetParamName(), {0},
-                            {static_cast<double>(param->GetValue(slots[i]))});
+                            {static_cast<real>(param->GetValue(slots[i]))});
         j_patch[param->GetGroupName()][param->GetParamName()] =
             param->GetValue(slots[i]);
         i++;

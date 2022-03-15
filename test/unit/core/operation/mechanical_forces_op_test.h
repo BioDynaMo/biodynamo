@@ -58,37 +58,37 @@ inline void RunTest(const std::string& environment) {
   Cell* final_cell0 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 0));
   Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 1));
   auto final_position = final_cell0->GetPosition();
-  EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
+  EXPECT_NEAR(0, final_position[0], abs_error<real>::value);
   EXPECT_NEAR(-0.07797206232558615, final_position[1],
-              abs_error<double>::value);
-  EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+              abs_error<real>::value);
+  EXPECT_NEAR(0, final_position[2], abs_error<real>::value);
   // cell 1
   final_position = final_cell1->GetPosition();
-  EXPECT_NEAR(0, final_position[0], abs_error<double>::value);
-  EXPECT_NEAR(5.0980452768658333, final_position[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_position[2], abs_error<double>::value);
+  EXPECT_NEAR(0, final_position[0], abs_error<real>::value);
+  EXPECT_NEAR(5.0980452768658333, final_position[1], abs_error<real>::value);
+  EXPECT_NEAR(0, final_position[2], abs_error<real>::value);
 
   // check if tractor_force has been reset to zero
   // cell 0
   auto final_tf = final_cell0->GetTractorForce();
-  EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  EXPECT_NEAR(0, final_tf[0], abs_error<real>::value);
+  EXPECT_NEAR(0, final_tf[1], abs_error<real>::value);
+  EXPECT_NEAR(0, final_tf[2], abs_error<real>::value);
   // cell 1
   final_tf = final_cell1->GetTractorForce();
-  EXPECT_NEAR(0, final_tf[0], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[1], abs_error<double>::value);
-  EXPECT_NEAR(0, final_tf[2], abs_error<double>::value);
+  EXPECT_NEAR(0, final_tf[0], abs_error<real>::value);
+  EXPECT_NEAR(0, final_tf[1], abs_error<real>::value);
+  EXPECT_NEAR(0, final_tf[2], abs_error<real>::value);
 
   // remaining fields should remain unchanged
   // cell 0
-  EXPECT_NEAR(0.3, final_cell0->GetAdherence(), abs_error<double>::value);
-  EXPECT_NEAR(9, final_cell0->GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(1.4, final_cell0->GetMass(), abs_error<double>::value);
+  EXPECT_NEAR(0.3, final_cell0->GetAdherence(), abs_error<real>::value);
+  EXPECT_NEAR(9, final_cell0->GetDiameter(), abs_error<real>::value);
+  EXPECT_NEAR(1.4, final_cell0->GetMass(), abs_error<real>::value);
   // cell 1
-  EXPECT_NEAR(0.4, final_cell1->GetAdherence(), abs_error<double>::value);
-  EXPECT_NEAR(11, final_cell1->GetDiameter(), abs_error<double>::value);
-  EXPECT_NEAR(1.1, final_cell1->GetMass(), abs_error<double>::value);
+  EXPECT_NEAR(0.4, final_cell1->GetAdherence(), abs_error<real>::value);
+  EXPECT_NEAR(11, final_cell1->GetDiameter(), abs_error<real>::value);
+  EXPECT_NEAR(1.1, final_cell1->GetMass(), abs_error<real>::value);
 
   delete op;
 }
@@ -101,7 +101,7 @@ inline void RunTest2(const std::string& environment) {
 
   auto ref_uid = AgentUid(simulation.GetAgentUidGenerator()->GetHighestIndex());
 
-  double space = 20;
+  real space = 20;
   for (size_t i = 0; i < 3; i++) {
     for (size_t j = 0; j < 3; j++) {
       for (size_t k = 0; k < 3; k++) {

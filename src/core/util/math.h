@@ -30,16 +30,16 @@ namespace bdm {
 
 struct Math {
   /// value of pi
-  static constexpr double kPi = TMath::Pi();
+  static constexpr real kPi = TMath::Pi();
   /// Helpful constant to identify 'infinity'
-  static constexpr double kInfinity = 1e20;
+  static constexpr real kInfinity = 1e20;
 
-  static double ToDegree(double rad) { return rad * (180 / kPi); }
-  static double ToRadian(double deg) { return deg * (kPi / 180); }
+  static real ToDegree(real rad) { return rad * (180 / kPi); }
+  static real ToRadian(real deg) { return deg * (kPi / 180); }
 
   // Helper function that returns distance (L2 norm) between two positions in 3D
-  static double GetL2Distance(const Double3& pos1, const Double3& pos2) {
-    Double3 dist_array;
+  static real GetL2Distance(const Real3& pos1, const Real3& pos2) {
+    Real3 dist_array;
     dist_array[0] = pos2[0] - pos1[0];
     dist_array[1] = pos2[1] - pos1[1];
     dist_array[2] = pos2[2] - pos1[2];
@@ -51,9 +51,9 @@ struct Math {
   /// @param b
   /// @return result the cross product of a and b (a x b)
   template <std::size_t N>
-  static MathArray<double, N> CrossProduct(const MathArray<double, N>& a,
-                                           const MathArray<double, N>& b) {
-    MathArray<double, N> result;
+  static MathArray<real, N> CrossProduct(const MathArray<real, N>& a,
+                                           const MathArray<real, N>& b) {
+    MathArray<real, N> result;
     result[0] = a[1] * b[2] - a[2] * b[1];
     result[1] = a[2] * b[0] - a[0] * b[2];
     result[2] = a[0] * b[1] - a[1] * b[0];
@@ -65,8 +65,8 @@ struct Math {
   /// @param a vector
   /// @param random
   /// @return a perpendicular vector
-  static Double3 Perp3(const Double3& a, double random) {
-    Double3 vect_perp;
+  static Real3 Perp3(const Real3& a, real random) {
+    Real3 vect_perp;
     if (a[0] == 0.0) {
       vect_perp[0] = 1.0;
       vect_perp[1] = 0.0;
@@ -89,8 +89,8 @@ struct Math {
   /// @param[in] theta  the amplitude of rotation (in radian)
   /// @param[in] axis   (also a vector)
   /// @return the vector after rotation
-  static Double3 RotAroundAxis(const Double3& vector, double theta,
-                               const Double3& axis) {
+  static Real3 RotAroundAxis(const Real3& vector, real theta,
+                               const Real3& axis) {
     auto naxis = axis;
     naxis.Normalize();
 
@@ -105,7 +105,7 @@ struct Math {
   /// @param a the first vector
   /// @param b the second vector
   /// @return the angle between them.
-  static double AngleRadian(const Double3& a, const Double3& b) {
+  static real AngleRadian(const Real3& a, const Real3& b) {
     return std::acos(a * b / (a.Norm() * b.Norm()));
   }
 
@@ -113,18 +113,18 @@ struct Math {
   /// @param a
   /// @param b
   /// @return the projection of a onto b
-  static Double3 ProjectionOnto(const Double3& a, const Double3& b) {
-    double k = (a * b) / (b * b);
+  static Real3 ProjectionOnto(const Real3& a, const Real3& b) {
+    real k = (a * b) / (b * b);
     return b * k;
   }
 
   /// Returns the mean squared error between two vectors
-  static double MSE(const std::vector<double>& v1,
-                    const std::vector<double>& v2) {
+  static real MSE(const std::vector<real>& v1,
+                    const std::vector<real>& v2) {
     if (v1.size() != v2.size()) {
       Log::Fatal("Math::MSE", "vectors must have same length");
     }
-    double error = 0;
+    real error = 0;
     for (size_t i = 0; i < v1.size(); ++i) {
       auto diff = v2[i] - v1[i];
       error += diff * diff;

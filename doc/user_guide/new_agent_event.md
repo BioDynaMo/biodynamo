@@ -87,7 +87,7 @@ Let's assume that you extend the Cell class to add a new data member
 ```cpp
 class MyCell : public Cell {
   ...
-  double my_new_data_member_ = {3.14};
+  real my_new_data_member_ = {3.14};
   ...
 }
 ```
@@ -127,7 +127,7 @@ class MyCell : public Cell {
   }
   ...
  private:
-  double my_new_data_member_ = {3.14};
+  real my_new_data_member_ = {3.14};
   ...
 };
 ```

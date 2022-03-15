@@ -24,7 +24,7 @@ using nanoflann::KDTreeSingleIndexAdaptor;
 using nanoflann::KDTreeSingleIndexAdaptorParams;
 using nanoflann::L2_Simple_Adaptor;
 
-typedef KDTreeSingleIndexAdaptor<L2_Simple_Adaptor<double, NanoFlannAdapter>,
+typedef KDTreeSingleIndexAdaptor<L2_Simple_Adaptor<real, NanoFlannAdapter>,
                                  NanoFlannAdapter, 3, uint64_t>
     bdm_kd_tree_t;
 
@@ -54,7 +54,7 @@ void KDTreeEnvironment::UpdateImplementation() {
   if (nf_adapter_->rm_->GetNumAgents() != 0) {
     Clear();
     auto inf = Math::kInfinity;
-    std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+    std::array<real, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
     CalcSimDimensionsAndLargestAgent(&tmp_dim);
     RoundOffGridDimensions(tmp_dim);
     CheckGridGrowth();
@@ -90,17 +90,17 @@ void KDTreeEnvironment::UpdateImplementation() {
   }
 }
 
-void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real>& lambda,
                                         const Agent& query,
-                                        double squared_radius) {
+                                        real squared_radius) {
   ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
 }
 
-void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                                        const Double3& query_position,
-                                        double squared_radius,
+void KDTreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+                                        const Real3& query_position,
+                                        real squared_radius,
                                         const Agent* query_agent) {
-  std::vector<std::pair<uint64_t, double>> neighbors;
+  std::vector<std::pair<uint64_t, real>> neighbors;
 
   nanoflann::SearchParams params;
   params.sorted = false;
@@ -153,7 +153,7 @@ void KDTreeEnvironment::Clear() {
 }
 
 void KDTreeEnvironment::RoundOffGridDimensions(
-    const std::array<double, 6>& grid_dimensions) {
+    const std::array<real, 6>& grid_dimensions) {
   grid_dimensions_[0] = floor(grid_dimensions[0]);
   grid_dimensions_[2] = floor(grid_dimensions[2]);
   grid_dimensions_[4] = floor(grid_dimensions[4]);

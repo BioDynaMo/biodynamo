@@ -28,7 +28,7 @@ struct Inhibitation : public Behavior {
  public:
   Inhibitation() { AlwaysCopyToNew(); }
 
-  Inhibitation(double s, double m) : sigma_(s), mu_(m) { AlwaysCopyToNew(); }
+  Inhibitation(real s, real m) : sigma_(s), mu_(m) { AlwaysCopyToNew(); }
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
@@ -50,7 +50,7 @@ struct Inhibitation : public Behavior {
       }
       auto* rm = Simulation::GetActive()->GetResourceManager();
       auto* dgrid = rm->GetDiffusionGrid(0);
-      double conc = dgrid->GetConcentration(monocyte->GetPosition());
+      real conc = dgrid->GetConcentration(monocyte->GetPosition());
 
       // With certain probability, depending on concentration value, we
       // inhibit the monocyte from forming immune synapses
@@ -63,8 +63,8 @@ struct Inhibitation : public Behavior {
   }
 
  private:
-  double sigma_ = 1;
-  double mu_ = 0;
+  real sigma_ = 1;
+  real mu_ = 0;
 };
 
 }  // namespace bdm

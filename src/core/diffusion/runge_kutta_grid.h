@@ -34,7 +34,7 @@ namespace bdm {
 class RungeKuttaGrid : public DiffusionGrid {
  public:
   RungeKuttaGrid() {}
-  RungeKuttaGrid(int substance_id, std::string substance_name, double dc,
+  RungeKuttaGrid(int substance_id, std::string substance_name, real dc,
                  int resolution = 11)
       : DiffusionGrid(substance_id, std::move(substance_name), dc, 0.0,
                       resolution) {}
@@ -52,14 +52,14 @@ class RungeKuttaGrid : public DiffusionGrid {
     r1_.resize(total_num_boxes_);
   }
 
-  void DiffuseWithClosedEdge(double dt) override;
-  void DiffuseWithOpenEdge(double dt) override;
+  void DiffuseWithClosedEdge(real dt) override;
+  void DiffuseWithOpenEdge(real dt) override;
 
  private:
   /// Buffers for Runge Kutta
-  ParallelResizeVector<double> r1_ = {};
+  ParallelResizeVector<real> r1_ = {};
   /// k array for runge-kutta.
-  std::array<double, 2> k_ = {};
+  std::array<real, 2> k_ = {};
   /// Number of steps for RK diffusion grid;
   unsigned int diffusion_step_ = 1;
   BDM_CLASS_DEF_OVERRIDE(RungeKuttaGrid, 1);

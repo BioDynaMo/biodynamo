@@ -83,7 +83,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   // create a sequence 1, 2, 3...
   // since initialization is multithreaded returning in increasing counter
   // does not work. -> calculate and return box id
-  ModelInitializer::InitializeSubstance(0, [&](double x, double y, double z) {
+  ModelInitializer::InitializeSubstance(0, [&](real x, real y, real z) {
     auto* dgrid =
         Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
     auto grid_dimensions = dgrid->GetDimensions();
@@ -105,7 +105,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   sim->GetResourceManager()->AddAgent(cell);
   auto* cell1 = new Cell();
   cell1->SetDiameter(10);
-  double pos = static_cast<double>(max_bound) - 5;
+  real pos = static_cast<real>(max_bound) - 5;
   cell1->SetPosition({pos, pos, pos});
   sim->GetResourceManager()->AddAgent(cell1);
 
@@ -200,7 +200,7 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
 
   auto construct = [&](uint64_t i) {
     auto* ne = new NeuriteElement();
-    auto d = static_cast<double>(i);
+    auto d = static_cast<real>(i);
     ne->SetDiameter(d + 10);
     ne->SetMassLocation({d, d, d});
     ne->SetActualLength(d + 10);

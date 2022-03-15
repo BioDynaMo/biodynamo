@@ -27,7 +27,7 @@ namespace agent_test_internal {
 struct Growth : public Behavior {
   BDM_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
-  double growth_rate_ = 0.5;
+  real growth_rate_ = 0.5;
 
   Growth() { CopyToNewIf({CellDivisionEvent::kUid}); }
 
@@ -51,12 +51,12 @@ struct Growth : public Behavior {
 
 struct Movement : public Behavior {
   BDM_BEHAVIOR_HEADER(Movement, Behavior, 1);
-  Double3 velocity_;
+  Real3 velocity_;
 
   Movement() : velocity_({{0, 0, 0}}) {
     RemoveFromExistingIf({CellDivisionEvent::kUid});
   }
-  explicit Movement(const Double3& velocity) : velocity_(velocity) {
+  explicit Movement(const Real3& velocity) : velocity_(velocity) {
     RemoveFromExistingIf({CellDivisionEvent::kUid});
   }
 

@@ -25,7 +25,7 @@ namespace bdm {
 // Functor to count how many neighbors are found. To be used with
 // ExecutionContext::ForEachNeighbor. It's functionality is wrapped in the
 // function GetNeighbors below.
-class CountNeighborsFunctor : public Functor<void, Agent*, double> {
+class CountNeighborsFunctor : public Functor<void, Agent*, real> {
  private:
   size_t num_neighbors_;
 
@@ -33,12 +33,12 @@ class CountNeighborsFunctor : public Functor<void, Agent*, double> {
   CountNeighborsFunctor() : num_neighbors_(0) {}
 
   // This is called once for each neighbor that is found
-  void operator()(Agent* neighbor, double squared_distance) {
+  void operator()(Agent* neighbor, real squared_distance) {
 #pragma omp atomic
     num_neighbors_ += 1;
   }
 
-  double GetNumNeighbors() { return num_neighbors_; }
+  real GetNumNeighbors() { return num_neighbors_; }
 
   void Reset() { num_neighbors_ = 0; }
 };
@@ -47,7 +47,7 @@ class CountNeighborsFunctor : public Functor<void, Agent*, double> {
 // environment in a spherical search region with radius search_radius around the
 // search_center. Each agent that is found satisfies
 // distance(agent_postion - search_center) < search_radius
-inline size_t GetNeighbors(Double3& search_center, double search_radius) {
+inline size_t GetNeighbors(Real3& search_center, real search_radius) {
   // Compute square search Radius
   search_radius *= search_radius;
 
@@ -101,11 +101,11 @@ inline void TestNeighborSearch(Simulation& simulation) {
 
   // Define test points to check how many neighbors we find around them.
   // The distances to cells 1, 2, 3 listed as (d1, d2, d3).
-  Double3 test_point_1({0.1, 0.0, 0.0});    // (0.1, 4.9, 2.502)
-  Double3 test_point_2({3.5, 0.0, 0.0});    // (3.5, 1.5, 4.30116)
-  Double3 test_point_3({0.0, -2.0, 0.0});   // (2, 5.28516, 0.5)
-  Double3 test_point_4({0.0, -0.8, 0.0});   // (0.8, 5.0626, 1.7)
-  Double3 test_point_5({2.5, 0.99, 3.99});  // (4.82, 4.82, 5.87)
+  Real3 test_point_1({0.1, 0.0, 0.0});    // (0.1, 4.9, 2.502)
+  Real3 test_point_2({3.5, 0.0, 0.0});    // (3.5, 1.5, 4.30116)
+  Real3 test_point_3({0.0, -2.0, 0.0});   // (2, 5.28516, 0.5)
+  Real3 test_point_4({0.0, -0.8, 0.0});   // (0.8, 5.0626, 1.7)
+  Real3 test_point_5({2.5, 0.99, 3.99});  // (4.82, 4.82, 5.87)
 
   // Test if we find the correct number of agents. The reference solution can
   // be determined by substracting the search_radius from the bracket behind
@@ -113,7 +113,7 @@ inline void TestNeighborSearch(Simulation& simulation) {
   // than 0. E.g.:
   // (0.1, 5.1, 2.502) - 2 =  (-1.9, 3.1, 0.502)
   // (-1.9, 3.1, 0.502) < 0 = (1 , 0 , 0) -> result = 1
-  double search_radius = 2;
+  real search_radius = 2;
   EXPECT_EQ(1u, GetNeighbors(test_point_1, search_radius));
   EXPECT_EQ(1u, GetNeighbors(test_point_2, search_radius));
   EXPECT_EQ(1u, GetNeighbors(test_point_3, search_radius));

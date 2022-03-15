@@ -21,13 +21,13 @@
 namespace bdm {
 
 struct OctreeEnvironment::UnibnImpl {
-  unibn::Octree<Double3, AgentContainer>* octree_ = nullptr;
+  unibn::Octree<Real3, AgentContainer>* octree_ = nullptr;
 };
 
 OctreeEnvironment::OctreeEnvironment() {
   impl_ = std::unique_ptr<OctreeEnvironment::UnibnImpl>(
       new OctreeEnvironment::UnibnImpl());
-  impl_->octree_ = new unibn::Octree<Double3, AgentContainer>();
+  impl_->octree_ = new unibn::Octree<Real3, AgentContainer>();
   container_ = new AgentContainer();
 }
 
@@ -45,7 +45,7 @@ void OctreeEnvironment::UpdateImplementation() {
   if (container_->rm_->GetNumAgents() != 0) {
     Clear();
     auto inf = Math::kInfinity;
-    std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+    std::array<real, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
     CalcSimDimensionsAndLargestAgent(&tmp_dim);
     RoundOffGridDimensions(tmp_dim);
     CheckGridGrowth();
@@ -85,18 +85,18 @@ void OctreeEnvironment::UpdateImplementation() {
   }
 }
 
-void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real>& lambda,
                                         const Agent& query,
-                                        double squared_radius) {
+                                        real squared_radius) {
   ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
 }
 
-void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                                        const Double3& query_position,
-                                        double squared_radius,
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+                                        const Real3& query_position,
+                                        real squared_radius,
                                         const Agent* query_agent) {
   std::vector<uint32_t> neighbors;
-  std::vector<double> distances;
+  std::vector<real> distances;
 
   // Find neighbors
   impl_->octree_->radiusNeighbors<unibn::L2Distance<Double3>>(
@@ -147,7 +147,7 @@ void OctreeEnvironment::Clear() {
 }
 
 void OctreeEnvironment::RoundOffGridDimensions(
-    const std::array<double, 6>& grid_dimensions) {
+    const std::array<real, 6>& grid_dimensions) {
   grid_dimensions_[0] = floor(grid_dimensions[0]);
   grid_dimensions_[2] = floor(grid_dimensions[2]);
   grid_dimensions_[4] = floor(grid_dimensions[4]);

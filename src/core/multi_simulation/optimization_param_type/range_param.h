@@ -23,10 +23,10 @@
 namespace bdm {
 
 /// A uniform range of values (e.g. [1,2,3,4,5])
-/// All values are interpreted as double precision floating point types
+/// All values are interpreted as real precision floating point types
 struct RangeParam : public OptimizationParamType {
   RangeParam() {}
-  RangeParam(const std::string& name, double min, double max, double stride)
+  RangeParam(const std::string& name, real min, real max, real stride)
       : OptimizationParamType(name),
         lower_bound(min),
         upper_bound(max),
@@ -47,8 +47,8 @@ struct RangeParam : public OptimizationParamType {
   }
 
   // Get the nth value
-  double GetValue(int n) const override {
-    double curr = lower_bound + n * stride;
+  real GetValue(int n) const override {
+    real curr = lower_bound + n * stride;
     return curr > upper_bound ? upper_bound : curr;
   }
 
@@ -59,11 +59,11 @@ struct RangeParam : public OptimizationParamType {
   }
 
   // The minimum value
-  double lower_bound = 0;
+  real lower_bound = 0;
   // THe maximum value
-  double upper_bound = 0;
+  real upper_bound = 0;
   // The stride
-  double stride = 1;
+  real stride = 1;
   BDM_CLASS_DEF_OVERRIDE(RangeParam, 1);
 };
 

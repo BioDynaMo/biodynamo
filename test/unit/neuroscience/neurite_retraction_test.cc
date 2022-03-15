@@ -39,11 +39,11 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
 
   auto ne = neuron->ExtendNewNeurite({1, 0, 0})->GetAgentPtr<NeuriteElement>();
 
-  Double3 neAxis = ne->GetSpringAxis();
+  Real3 neAxis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(neAxis[0], 1, abs_error<double>::value);
-  EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(neAxis[0], 1, abs_error<real>::value);
+  EXPECT_NEAR(neAxis[1], 0, abs_error<real>::value);
+  EXPECT_NEAR(neAxis[2], 0, abs_error<real>::value);
 
   for (int i = 0; i < 50; i++) {
     ne->ElongateTerminalEnd(100, {1, 0, 0});
@@ -51,8 +51,8 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
     scheduler->Simulate(1);
     if (i % 10 == 0) {
       neAxis = ne->GetSpringAxis();
-      EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-      EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(neAxis[1], 0, abs_error<real>::value);
+      EXPECT_NEAR(neAxis[2], 0, abs_error<real>::value);
     }
   }
 
@@ -61,8 +61,8 @@ TEST(NeuriteElementBehaviour, StraightxCylinderGrowthRetract) {
     ne->RetractTerminalEnd(50);
     scheduler->Simulate(1);
 
-    EXPECT_NEAR(neAxis[1], 0, abs_error<double>::value);
-    EXPECT_NEAR(neAxis[2], 0, abs_error<double>::value);
+    EXPECT_NEAR(neAxis[1], 0, abs_error<real>::value);
+    EXPECT_NEAR(neAxis[2], 0, abs_error<real>::value);
   }
 }
 
@@ -73,7 +73,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   auto* scheduler = simulation.GetScheduler();
   auto* random = simulation.GetRandom();
 
-  double branching_factor = 0.005;
+  real branching_factor = 0.005;
 
   NeuronSoma* neuron = new NeuronSoma();
   neuron->SetPosition({0, 0, 0});
@@ -84,8 +84,8 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
   auto ne = neuron->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne->SetDiameter(1);
 
-  Double3 previous_direction;
-  Double3 direction;
+  Real3 previous_direction;
+  Real3 direction;
 
   for (int i = 0; i < 200; i++) {
     rm->ForEachAgent([&](Agent* agent) {
@@ -97,7 +97,7 @@ TEST(NeuriteElementBehaviour, BranchingGrowth) {
           direction = {random->Uniform(-10, 10), random->Uniform(-10, 10),
                        random->Uniform(0, 5)};
 
-          Double3 step_direction = previous_direction + direction;
+          Real3 step_direction = previous_direction + direction;
 
           ne->ElongateTerminalEnd(10, step_direction);
           ne->SetDiameter(1);

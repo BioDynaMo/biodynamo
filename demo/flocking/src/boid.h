@@ -24,15 +24,15 @@
 namespace bdm {
 
 // ---------------------------------------------------------------------------
-// Double3 Methods
+// Real3 Methods
 
-double NormSq(Double3 vector);
+real NormSq(Real3 vector);
 
-Double3 UpperLimit(Double3 vector, double upper_limit);
+Real3 UpperLimit(Real3 vector, real upper_limit);
 
-Double3 GetNormalizedArray(Double3 vector);
+Real3 GetNormalizedArray(Real3 vector);
 
-Double3 GetRandomVectorInUnitSphere();
+Real3 GetRandomVectorInUnitSphere();
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
@@ -45,7 +45,7 @@ class Boid : public Agent {
 
  public:
   Boid() {}
-  explicit Boid(const Double3& position)
+  explicit Boid(const Real3& position)
       : position_(position), diameter_(1.0) {}
   virtual ~Boid() {}
 
@@ -59,43 +59,43 @@ class Boid : public Agent {
 
   Shape GetShape() const override;
 
-  Double3 CalculateDisplacement(const InteractionForce* force,
-                                double squared_radius, double dt) override;
+  Real3 CalculateDisplacement(const InteractionForce* force,
+                                real squared_radius, real dt) override;
 
-  void ApplyDisplacement(const Double3& displacement) override;
+  void ApplyDisplacement(const Real3& displacement) override;
 
-  const Double3& GetPosition() const override;
+  const Real3& GetPosition() const override;
 
-  void SetPosition(const Double3& pos) override;
+  void SetPosition(const Real3& pos) override;
 
-  double GetDiameter() const override;
+  real GetDiameter() const override;
 
-  void SetDiameter(double diameter) override;
+  void SetDiameter(real diameter) override;
 
   // ---------------------------------------------------------------------------
   // Important getter and setter
 
-  Double3 GetVelocity() const;
+  Real3 GetVelocity() const;
 
-  void SetVelocity(Double3 velocity);
+  void SetVelocity(Real3 velocity);
 
-  void SetBoidPerceptionRadius(double perception_radius);
+  void SetBoidPerceptionRadius(real perception_radius);
 
-  void SetPerceptionAngle(double angle);
+  void SetPerceptionAngle(real angle);
 
-  void SetHeadingDirection(Double3 dir);
+  void SetHeadingDirection(Real3 dir);
 
-  double GetBoidInteractionRadius();
+  real GetBoidInteractionRadius();
 
-  double GetBoidPerceptionRadius();
+  real GetBoidPerceptionRadius();
 
   // ---------------------------------------------------------------------------
   // Checks if the point is inside the viewing cone defined by
   // heading_direction_ and perception_angle_
-  bool CheckIfVisible(Double3 point);
+  bool CheckIfVisible(Real3 point);
 
   // Returns a Steering-Force towards the argument vector
-  Double3 SteerTowards(Double3 vector);
+  Real3 SteerTowards(Real3 vector);
 
   // ---------------------------------------------------------------------------
   // Data Updates
@@ -104,56 +104,56 @@ class Boid : public Agent {
   void UpdateData();
 
   // Accumulates acceleration terms in a priority based scheme
-  void AccelerationAccumulator(Double3 acceleration_to_add);
+  void AccelerationAccumulator(Real3 acceleration_to_add);
 
   // ---------------------------------------------------------------------------
   // Flocking Algorithm
 
   // iterates over all neighbor boids and adds the interaction terms;
   // returns a flocking force that produces an a-latice structure
-  Double3 GetFlockingForce();
+  Real3 GetFlockingForce();
 
   // Returns an acceleration term towards pos_gamma_
-  Double3 GetNavigationalFeedbackForce();
+  Real3 GetNavigationalFeedbackForce();
 
   // Returns an acceleration term that improves the overall flock cohesion
-  Double3 GetExtendedCohesionTerm(Double3 centre_of_mass);
+  Real3 GetExtendedCohesionTerm(Real3 centre_of_mass);
 
   // Returns the interaction term for a given boid
-  Double3 GetBoidInteractionTerm(const Boid* boid);
+  Real3 GetBoidInteractionTerm(const Boid* boid);
 
   // Functions needed to calculate the interaction terms
-  double Norm_sig(Double3 z);
+  real Norm_sig(Real3 z);
 
-  double Norm_sig(double z);
+  real Norm_sig(real z);
 
-  double Phi(double z);
+  real Phi(real z);
 
-  double Rho_h(double z, double h);
+  real Rho_h(real z, real h);
 
-  double Rho_h_a(double z, double h);
+  real Rho_h_a(real z, real h);
 
-  double Zeta(double z, double h_onset, double h_maxeff);
+  real Zeta(real z, real h_onset, real h_maxeff);
 
-  double Sigmoid(double z);
+  real Sigmoid(real z);
 
-  double Phi_a(double z);
+  real Phi_a(real z);
 
   // ---------------------------------------------------------------------------
  private:
-  Double3 position_, velocity_, heading_direction_, acceleration_;
-  double acceleration_accum_scalar;
-  double diameter_, actual_diameter_;
-  double boid_perception_radius_, boid_interaction_radius_;
-  double cos_perception_angle_;
-  double neighbor_distance_;
-  double max_acceleration_, max_speed_;
+  Real3 position_, velocity_, heading_direction_, acceleration_;
+  real acceleration_accum_scalar;
+  real diameter_, actual_diameter_;
+  real boid_perception_radius_, boid_interaction_radius_;
+  real cos_perception_angle_;
+  real neighbor_distance_;
+  real max_acceleration_, max_speed_;
   bool limit_speed_;
 
   // Flocking constants
-  double c_a_1_, c_a_2_, c_a_3_, c_y_;
-  double h_a_, eps_, d_t_;
-  Double3 pos_gamma_;  // gamma agent location (common group objective)
+  real c_a_1_, c_a_2_, c_a_3_, c_y_;
+  real h_a_, eps_, d_t_;
+  Real3 pos_gamma_;  // gamma agent location (common group objective)
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -170,19 +170,19 @@ struct Flocking : public Behavior {
 
 // Functor class needed to calculate neighbor data in Flocking
 // ForEachNeighbor call
-class CalculateNeighborData : public Functor<void, Agent*, double> {
+class CalculateNeighborData : public Functor<void, Agent*, real> {
  public:
   CalculateNeighborData(Boid* boid) : boid_(boid) {}
   virtual ~CalculateNeighborData() {}
 
-  void operator()(Agent* neighbor, double squared_distance) override;
+  void operator()(Agent* neighbor, real squared_distance) override;
 
-  Double3 GetU_a();
+  Real3 GetU_a();
 
-  Double3 GetCentreOfMass();
+  Real3 GetCentreOfMass();
 
   Boid* boid_;
-  Double3 u_a = {0, 0, 0}, sum_pos = {0, 0, 0};
+  Real3 u_a = {0, 0, 0}, sum_pos = {0, 0, 0};
   int n = 0;
 };
 

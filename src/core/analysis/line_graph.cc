@@ -112,7 +112,7 @@ void LineGraph::Draw(const char* canvas_draw_option) {
 }
 
 // -----------------------------------------------------------------------------
-void LineGraph::SetLegendPos(double x1, double y1, double x2, double y2) {
+void LineGraph::SetLegendPos(real x1, real y1, real x2, real y2) {
   if (l_) {
     Update();
     l_->SetX1(x1);
@@ -127,7 +127,7 @@ void LineGraph::SetLegendPos(double x1, double y1, double x2, double y2) {
 }
 
 // -----------------------------------------------------------------------------
-void LineGraph::SetLegendPosNDC(double x1, double y1, double x2, double y2) {
+void LineGraph::SetLegendPosNDC(real x1, real y1, real x2, real y2) {
   if (l_) {
     Update();
     l_->SetX1NDC(x1);

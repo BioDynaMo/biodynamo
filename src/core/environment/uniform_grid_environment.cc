@@ -114,7 +114,7 @@ void UniformGridEnvironment::UpdateImplementation() {
     timestamp_++;
 
     auto inf = Math::kInfinity;
-    std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+    std::array<real, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
     CalcSimDimensionsAndLargestAgent(&tmp_dim);
     RoundOffGridDimensions(tmp_dim);
 

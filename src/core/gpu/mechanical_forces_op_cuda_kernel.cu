@@ -21,7 +21,7 @@
 
 #include "core/gpu/cuda_error_chk.h"
 #include "core/gpu/cuda_timer.h"
-#include "core/gpu/helper_math_double.h"
+#include "core/gpu/helper_math_real.h"
 #include "core/gpu/mechanical_forces_op_cuda_kernel.h"
 
 void printMemoryUsage() {
@@ -32,7 +32,7 @@ void printMemoryUsage() {
             << availableMemory << " total " << totalMemory << std::endl;
 }
 
-__device__ double squared_euclidian_distance(double3* positions, uint32_t idx,
+__device__ real squared_euclidian_distance(real3* positions, uint32_t idx,
                                              uint32_t nidx) {
   auto diff = positions[idx] - positions[nidx];
   return dot(diff, diff);
@@ -52,21 +52,21 @@ __device__ uint32_t get_box_id(int3 bc, uint3 num_boxes_axis) {
          bc.x;
 }
 
-__device__ void compute_force(double3* positions, double* diameters,
-                              uint32_t idx, uint32_t nidx, double3* result) {
-  double r1 = 0.5 * diameters[idx];
-  double r2 = 0.5 * diameters[nidx];
+__device__ void compute_force(real3* positions, real* diameters,
+                              uint32_t idx, uint32_t nidx, real3* result) {
+  real r1 = 0.5 * diameters[idx];
+  real r2 = 0.5 * diameters[nidx];
   // We take virtual bigger radii to have a distant interaction, to get a
   // desired density.
-  double additional_radius = 10.0 * 0.15;
+  real additional_radius = 10.0 * 0.15;
   r1 += additional_radius;
   r2 += additional_radius;
 
-  double3 comp = positions[idx] - positions[nidx];
-  double center_distance = length(comp);
+  real3 comp = positions[idx] - positions[nidx];
+  real center_distance = length(comp);
 
   // the overlap distance (how much one penetrates in the other)
-  double delta = r1 + r2 - center_distance;
+  real delta = r1 + r2 - center_distance;
 
   if (delta < 0) {
     return;
@@ -74,7 +74,7 @@ __device__ void compute_force(double3* positions, double* diameters,
 
   // to avoid a division by 0 if the centers are (almost) at the same location
   if (center_distance < 0.00000001) {
-    *result += make_double3(42.0, 42.0, 42.0);
+    *result += make_real3(42.0, 42.0, 42.0);
     return;
   }
 
@@ -82,12 +82,12 @@ __device__ void compute_force(double3* positions, double* diameters,
   // printf("Delta for neighbor [%d] = %f\n", nidx, delta);
 
   // the force itself
-  double r = (r1 * r2) / (r1 + r2);
-  double gamma = 1;  // attraction coeff
-  double k = 2;      // repulsion coeff
-  double f = k * delta - gamma * sqrt(r * delta);
+  real r = (r1 * r2) / (r1 + r2);
+  real gamma = 1;  // attraction coeff
+  real k = 2;      // repulsion coeff
+  real f = k * delta - gamma * sqrt(r * delta);
 
-  double module = f / center_distance;
+  real module = f / center_distance;
   *result += module * comp;
   // printf("%f, %f, %f\n", module * comp.x, module * comp.y, module * comp.z);
   // printf(
@@ -98,9 +98,9 @@ __device__ void compute_force(double3* positions, double* diameters,
   //     module * comp.y, module * comp.z);
 }
 
-__device__ void force(double3* positions, double* diameters, uint32_t idx,
+__device__ void force(real3* positions, real* diameters, uint32_t idx,
                       uint32_t start, uint16_t length, uint32_t* successors,
-                      double squared_radius, double3* result) {
+                      real squared_radius, real3* result) {
   uint32_t nidx = start;
   for (uint16_t nb = 0; nb < length; nb++) {
     if (nidx != idx) {
@@ -113,14 +113,14 @@ __device__ void force(double3* positions, double* diameters, uint32_t idx,
   }
 }
 
-__global__ void collide(double3* positions, double* diameters,
-                        double3* tractor_force, double* adherence,
-                        uint32_t* box_id, double* mass, double timestep,
-                        double max_displacement, double squared_radius,
+__global__ void collide(real3* positions, real* diameters,
+                        real3* tractor_force, real* adherence,
+                        uint32_t* box_id, real* mass, real timestep,
+                        real max_displacement, real squared_radius,
                         uint32_t num_agents, uint32_t* starts,
                         uint16_t* lengths, uint64_t* timestamps,
                         uint64_t current_timestamp, uint32_t* successors,
-                        uint3* num_boxes_axis, double3* result) {
+                        uint3* num_boxes_axis, real3* result) {
   uint32_t tidx = blockIdx.x * blockDim.x + threadIdx.x;
   // if (tidx == 0) {
   //   printf("Positions = ");
@@ -145,8 +145,8 @@ __global__ void collide(double3* positions, double* diameters,
   if (tidx < num_agents) {
     result[tidx] += timestep * tractor_force[tidx];
 
-    double3 collision_force = make_double3(0, 0, 0);
-    double3 movement_at_next_step = make_double3(0, 0, 0);
+    real3 collision_force = make_real3(0, 0, 0);
+    real3 movement_at_next_step = make_real3(0, 0, 0);
 
     // Moore neighborhood
     int3 box_coords = get_box_coordinates(box_id[tidx], *num_boxes_axis);
@@ -164,7 +164,7 @@ __global__ void collide(double3* positions, double* diameters,
     }
 
     // Mass needs to non-zero!
-    double mh = timestep / mass[tidx];
+    real mh = timestep / mass[tidx];
     // printf("mh = %f\n", mh);
 
     if (length(collision_force) > adherence[tidx]) {
@@ -202,23 +202,23 @@ bdm::MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(
 }
 
 void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
-    const double* positions, const double* diameters,
-    const double* tractor_force, const double* adherence,
-    const uint32_t* box_id, const double* mass, const double timestep,
-    const double max_displacement, const double squared_radius,
+    const real* positions, const real* diameters,
+    const real* tractor_force, const real* adherence,
+    const uint32_t* box_id, const real* mass, const real timestep,
+    const real max_displacement, const real squared_radius,
     const uint32_t num_agents, uint32_t* starts, uint16_t* lengths,
     uint64_t* timestamps, uint64_t current_timestamp, uint32_t* successors,
-    uint32_t* num_boxes_axis, double* cell_movements) {
+    uint32_t* num_boxes_axis, real* cell_movements) {
   uint32_t num_boxes =
       num_boxes_axis[0] * num_boxes_axis[1] * num_boxes_axis[2];
 
   // clang-format off
-  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_positions_.data()), 		positions, 3 * num_agents * sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_diameters_.data()), 		diameters, num_agents * sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_tractor_force_.data()), 	tractor_force, 3 * num_agents * sizeof(double), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_adherence_.data()),     adherence, num_agents * sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_positions_.data()), 		positions, 3 * num_agents * sizeof(real), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_diameters_.data()), 		diameters, num_agents * sizeof(real), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_tractor_force_.data()), 	tractor_force, 3 * num_agents * sizeof(real), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_adherence_.data()),     adherence, num_agents * sizeof(real), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_box_id_.data()), 		box_id, num_agents * sizeof(uint32_t), cudaMemcpyHostToDevice));
-  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_mass_.data()), 				mass, num_agents * sizeof(double), cudaMemcpyHostToDevice));
+  GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_mass_.data()), 				mass, num_agents * sizeof(real), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_starts_.data()), 			starts, num_boxes * sizeof(uint32_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_lengths_.data()), 			lengths, num_boxes * sizeof(uint16_t), cudaMemcpyHostToDevice));
   GpuErrchk(cudaMemcpyAsync(thrust::raw_pointer_cast(d_timestamps_.data()), 			timestamps, num_boxes * sizeof(uint64_t), cudaMemcpyHostToDevice));
@@ -252,7 +252,7 @@ void bdm::MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
 
   cudaMemcpyAsync(cell_movements,
                   thrust::raw_pointer_cast(d_cell_movements_.data()),
-                  3 * num_agents * sizeof(double), cudaMemcpyDeviceToHost);
+                  3 * num_agents * sizeof(real), cudaMemcpyDeviceToHost);
 }
 
 void bdm::MechanicalForcesOpCudaKernel::Sync() const {

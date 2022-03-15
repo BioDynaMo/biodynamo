@@ -62,7 +62,7 @@ inline int Simulate(int argc, const char** argv) {
   int cell_type = 1;
   std::string substance_name = "Substance_0";
 
-  auto construct = [&cell_type, &substance_name](const Double3& position) {
+  auto construct = [&cell_type, &substance_name](const Real3& position) {
     auto* cell = new MyCell(position, cell_type);
     cell->SetDiameter(10);
     cell->AddBehavior(new Secretion(substance_name));
@@ -83,7 +83,7 @@ inline int Simulate(int argc, const char** argv) {
   simulation.GetScheduler()->Simulate(1000);
 
   // Check if criterion is met
-  double spatial_range = 5;
+  real spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);
   if (crit) {
     std::cout << "Simulation completed successfully!\n";

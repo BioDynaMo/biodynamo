@@ -95,7 +95,7 @@ class NumaPoolAllocator {
   static uint64_t RoundUpTo(uint64_t number, uint64_t multiple);
 
   NumaPoolAllocator(uint64_t size, int nid, uint64_t size_n_pages,
-                    double growth_rate, uint64_t max_mem_per_thread_factor);
+                    real growth_rate, uint64_t max_mem_per_thread_factor);
 
   ~NumaPoolAllocator();
 
@@ -108,7 +108,7 @@ class NumaPoolAllocator {
  private:
   static constexpr uint64_t kMetadataSize = 8;
   uint64_t size_n_pages_;
-  double growth_rate_;
+  real growth_rate_;
   uint64_t max_nodes_per_thread_;
   uint64_t num_elements_per_n_pages_;
   uint64_t total_size_ = 0;
@@ -127,7 +127,7 @@ class NumaPoolAllocator {
 
 class PoolAllocator {
  public:
-  PoolAllocator(std::size_t size, uint64_t size_n_pages, double growth_rate,
+  PoolAllocator(std::size_t size, uint64_t size_n_pages, real growth_rate,
                 uint64_t max_mem_per_thread_factor);
 
   PoolAllocator(PoolAllocator&& other) noexcept;
@@ -147,7 +147,7 @@ class PoolAllocator {
 
 class MemoryManager {
  public:
-  MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
+  MemoryManager(uint64_t aligned_pages_shift, real growth_rate,
                 uint64_t max_mem_per_thread_factor);
 
   ~MemoryManager();
@@ -159,7 +159,7 @@ class MemoryManager {
   void SetIgnoreDelete(bool value);
 
  private:
-  double growth_rate_;
+  real growth_rate_;
   uint64_t max_mem_per_thread_factor_;
   uint64_t page_size_;
   uint64_t page_shift_;

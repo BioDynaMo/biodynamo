@@ -16,11 +16,11 @@
 
 namespace bdm {
 
-const Double3 Cell::kXAxis = {1.0, 0.0, 0.0};
-const Double3 Cell::kYAxis = {0.0, 1.0, 0.0};
-const Double3 Cell::kZAxis = {0.0, 0.0, 1.0};
+const Real3 Cell::kXAxis = {1.0, 0.0, 0.0};
+const Real3 Cell::kYAxis = {0.0, 1.0, 0.0};
+const Real3 Cell::kZAxis = {0.0, 0.0, 1.0};
 
-void Cell::ApplyDisplacement(const Double3& displacement) {
+void Cell::ApplyDisplacement(const Real3& displacement) {
   if (displacement[0] == 0 && displacement[1] == 0 && displacement[2] == 0) {
     return;
   }
@@ -30,11 +30,11 @@ void Cell::ApplyDisplacement(const Double3& displacement) {
   SetTractorForce({0, 0, 0});
 }
 
-Double3 Cell::TransformCoordinatesGlobalToPolar(const Double3& pos) const {
+Real3 Cell::TransformCoordinatesGlobalToPolar(const Real3& pos) const {
   auto vector_to_point = pos - position_;
-  Double3 local_cartesian{kXAxis * vector_to_point, kYAxis * vector_to_point,
+  Real3 local_cartesian{kXAxis * vector_to_point, kYAxis * vector_to_point,
                           kZAxis * vector_to_point};
-  double radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
+  real radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
                             local_cartesian[1] * local_cartesian[1] +
                             local_cartesian[2] * local_cartesian[2]);
   return {radius, std::acos(local_cartesian[2] / radius),
