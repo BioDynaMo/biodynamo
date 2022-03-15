@@ -169,7 +169,7 @@ void DiffusionGrid::CopyOldData(
 
   int num_box_xy = resolution_ * resolution_;
   int old_box_xy = old_resolution * old_resolution;
-  int new_origin = off_dim * (num_box_xy) + off_dim * resolution_ + off_dim;
+  int new_origin = off_dim * num_box_xy + off_dim * resolution_ + off_dim;
   for (size_t k = 0; k < old_resolution; k++) {
     int offset = new_origin + k * num_box_xy;
     for (size_t j = 0; j < old_resolution; j++) {
