@@ -150,10 +150,13 @@ void NeuronSoma::PrintSWC(std::ostream& out) const {
   out << "# This SWC file was created with BioDynaMo and is (very) likely "
          "to\n# be the result of a simulation. Be careful not to confuse it\n"
          "# with real data. \n\n";
-  std::time_t time_stamp = std::time(nullptr);
+  // Example for localtime_r: https://tinyurl.com/localtimer
+  struct tm newtime;
+  time_t ltime;
+  ltime = time(&ltime);
+  localtime_r(&ltime, &newtime);
   char creation_time[100];
-  std::strftime(creation_time, sizeof(creation_time), "%A, %F, %T",
-                std::localtime(&time_stamp));
+  std::strftime(creation_time, sizeof(creation_time), "%A, %F, %T", &newtime);
   out << "# Created at: " << creation_time << "\n\n";
 
   // 2. Write the line for the soma at the beginning of the file
