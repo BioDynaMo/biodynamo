@@ -30,7 +30,7 @@ class Behavior {
  public:
   Behavior() : copy_mask_(0), remove_mask_(0) {}
 
-  virtual ~Behavior() {}
+  virtual ~Behavior() = default;
 
   /// Create a new instance of this object using the default constructor.
   virtual Behavior* New() const = 0;

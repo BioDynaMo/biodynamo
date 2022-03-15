@@ -19,7 +19,7 @@
 namespace bdm {
 namespace neuroscience {
 
-NeuronOrNeurite::~NeuronOrNeurite() {}
+NeuronOrNeurite::~NeuronOrNeurite() = default;
 
 AgentPointer<NeuronOrNeurite> NeuronOrNeurite::GetNeuronOrNeuriteAgentPtr()
     const {

@@ -62,6 +62,6 @@ bool OperationRegistry::AddOperationImpl(const std::string &op_name,
   return true;
 }
 
-OperationRegistry::OperationRegistry() {}
+OperationRegistry::OperationRegistry() = default;
 
 }  // namespace bdm

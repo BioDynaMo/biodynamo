@@ -41,7 +41,7 @@ class SharedData {
   /// e.g sizeof(Data[i]) = N*BDM_CACHE_LINE_SIZE.
   using Data = std::vector<AlignedT>;
 
-  SharedData() {}
+  SharedData() = default;
   SharedData(size_t size, const T& value = T()) {
     data_.resize(size);
     for (auto& info : data_) {

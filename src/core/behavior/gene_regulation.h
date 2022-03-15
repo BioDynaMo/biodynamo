@@ -39,7 +39,7 @@ class GeneRegulation : public Behavior {
  public:
   GeneRegulation() { AlwaysCopyToNew(); }
 
-  virtual ~GeneRegulation() {}
+  virtual ~GeneRegulation() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);

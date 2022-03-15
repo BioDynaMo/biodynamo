@@ -31,7 +31,7 @@ namespace bdm {
 
 class DiffusionGrid {
  public:
-  DiffusionGrid() {}
+  DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
                 double mu, int resolution = 11)
@@ -41,7 +41,7 @@ class DiffusionGrid {
         mu_(mu),
         resolution_(resolution) {}
 
-  virtual ~DiffusionGrid() {}
+  virtual ~DiffusionGrid() = default;
 
   virtual void Initialize();
 

@@ -32,9 +32,9 @@ namespace bdm {
 template <typename TSample>
 class DistributionRng {
  public:
-  DistributionRng() {}
+  DistributionRng() = default;
   DistributionRng(TRootIOCtor*) {}
-  virtual ~DistributionRng() {}
+  virtual ~DistributionRng() = default;
   /// Draws a sample from the distribution
   TSample Sample();
   /// Draws two samples from the distribution.

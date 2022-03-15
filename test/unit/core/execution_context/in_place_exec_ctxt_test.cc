@@ -222,7 +222,7 @@ TEST(InPlaceExecutionContext, Execute) {
 
 struct NeighborFunctor : public Functor<void, Agent*, double> {
   NeighborFunctor(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
-  virtual ~NeighborFunctor() {}
+  virtual ~NeighborFunctor() = default;
 
   void operator()(Agent* neighbor, double squared_distance) override {
     auto* non_const_nb = const_cast<Agent*>(neighbor);

@@ -232,7 +232,7 @@ class UniformGridEnvironment : public Environment {
   UniformGridEnvironment(UniformGridEnvironment const&) = delete;
   void operator=(UniformGridEnvironment const&) = delete;
 
-  virtual ~UniformGridEnvironment() {}
+  virtual ~UniformGridEnvironment() = default;
 
   /// Clears the grid
   void Clear() override {
@@ -521,7 +521,7 @@ class UniformGridEnvironment : public Environment {
         std::sort(mutex_indices_.begin(), mutex_indices_.end());
       }
 
-      virtual ~GridNeighborMutex() {}
+      virtual ~GridNeighborMutex() = default;
 
       void lock() override {  // NOLINT
         for (auto idx : mutex_indices_) {
@@ -552,12 +552,12 @@ class UniformGridEnvironment : public Environment {
     /// Used to store mutexes in a vector.
     /// Always creates a new mutex (even for the copy constructor)
     struct MutexWrapper {
-      MutexWrapper() {}
+      MutexWrapper() = default;
       MutexWrapper(const MutexWrapper&) {}
       std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
     };
 
-    virtual ~GridNeighborMutexBuilder() {}
+    virtual ~GridNeighborMutexBuilder() = default;
 
     void Update() {
       auto* grid = static_cast<UniformGridEnvironment*>(

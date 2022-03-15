@@ -24,7 +24,7 @@ namespace bdm {
 
 /// A uniform range of logarithmically scaled values (e.g. 1, 10, 100, 1000)
 struct LogRangeParam : public OptimizationParamType {
-  LogRangeParam() {}
+  LogRangeParam() = default;
   LogRangeParam(const std::string& n, double base, double min, double max,
                 double stride)
       : OptimizationParamType(n),
