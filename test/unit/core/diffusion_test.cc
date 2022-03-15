@@ -583,7 +583,6 @@ TEST(DiffusionTest, DynamicTimeStepping) {
 
   simulation.GetEnvironment()->Update();
   auto* rm = simulation.GetResourceManager();
-  auto* param = simulation.GetParam();
   auto* scheduler = simulation.GetScheduler();
   auto diff_op = scheduler->GetOps("diffusion")[0];
   diff_op->frequency_ = 2;
@@ -594,8 +593,7 @@ TEST(DiffusionTest, DynamicTimeStepping) {
     cell->SetDiameter(10);
     return cell;
   };
-  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
-                                       construct);
+  ModelInitializer::CreateAgentsRandom(-4, 4, 1, construct);
 
   // Define the substances in our simulation
   ModelInitializer::DefineSubstance(0, "Substance", 0.5, 0.1, 10);
