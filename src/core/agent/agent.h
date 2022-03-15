@@ -205,6 +205,8 @@ class Agent {
   void AddBehavior(Behavior* behavior);
 
   /// Remove a behavior from this agent
+  /// The parameter `behavior` will be deleted if the instance is  stored in
+  /// this agent and must not be used after the call to `RemoveBehavior`.
   void RemoveBehavior(const Behavior* behavior);
 
   /// Execute all behaviorsq
