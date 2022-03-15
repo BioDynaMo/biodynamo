@@ -206,7 +206,7 @@ TEST(TimeSeries, AddCollectorXYAndUpdate) {
     return static_cast<real>(sim->GetResourceManager()->GetNumAgents());
   };
   auto xcollector = [](Simulation* sim) {
-    return sim->GetScheduler()->GetSimulatedSteps() + 3.0;
+    return sim->GetScheduler()->GetSimulatedSteps() + static_cast<real>(3.0);
   };
   ts->AddCollector("num-agents", get_num_agents, xcollector);
   EXPECT_EQ(1u, ts->Size());
@@ -243,7 +243,7 @@ TEST(TimeSeries, AddCollectorReducerAndUpdate) {
   auto* ts = sim.GetTimeSeries();
   auto agent_diam_gt_0 = [](Agent* a) { return a->GetDiameter() > 0.; };
   auto xcollector = [](Simulation* sim) {
-    return sim->GetScheduler()->GetSimulatedSteps() + 3.0;
+    return sim->GetScheduler()->GetSimulatedSteps() + static_cast<real>(3.0);
   };
   auto* counter = new Counter<real>(agent_diam_gt_0);
   ts->AddCollector("agents-diam-gt-0", counter, xcollector);
@@ -272,8 +272,8 @@ TEST(TimeSeries, StoreAndLoad) {
   sim.GetResourceManager()->AddAgent(new Cell());
 
   TimeSeries ts;
-  auto ycollector = [](Simulation* sim) { return 4.0; };
-  auto xcollector = [](Simulation* sim) { return 5.0; };
+  auto ycollector = [](Simulation* sim) { return static_cast<real>(4.0); };
+  auto xcollector = [](Simulation* sim) { return static_cast<real>(5.0); };
   ts.AddCollector("collect", ycollector, xcollector);
 
   auto d_gt_0 = [](Agent* a) { return a->GetDiameter() > 0; };
@@ -327,7 +327,7 @@ TEST(TimeSeries, StoreAndLoad) {
 TEST(TimeSeries, StoreJson) {
   TimeSeries ts;
 
-  auto collect_function = [](Simulation* sim) { return 4.0; };
+  auto collect_function = [](Simulation* sim) { return static_cast<real>(4.0); };
   ts.AddCollector("collect", collect_function);
 
   ts.Add("my-entry", {1, 2}, {3, 4});

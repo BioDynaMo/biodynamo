@@ -23,6 +23,7 @@
 #include <vector>
 #include "core/param/param_group.h"
 #include "core/util/root.h"
+#include "core/real.h"
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {

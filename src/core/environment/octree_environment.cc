@@ -41,7 +41,7 @@ void OctreeEnvironment::UpdateImplementation() {
   auto* param = Simulation::GetActive()->GetParam();
 
   // Update the flattened indices map
-  container_->flat_idx_map_.Update();
+  
   if (container_->rm_->GetNumAgents() != 0) {
     Clear();
     auto inf = Math::kInfinity;
@@ -95,22 +95,23 @@ void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real>& lambda,
                                         const Real3& query_position,
                                         real squared_radius,
                                         const Agent* query_agent) {
-  std::vector<uint32_t> neighbors;
-  std::vector<real> distances;
-
-  // Find neighbors
-  impl_->octree_->radiusNeighbors<unibn::L2Distance<Double3>>(
-      query_position, std::sqrt(squared_radius), neighbors, distances);
-
-  auto* rm = Simulation::GetActive()->GetResourceManager();
-  int i = 0;
-  for (auto& n : neighbors) {
-    Agent* nb_so = rm->GetAgent(container_->flat_idx_map_.GetAgentHandle(n));
-    if (nb_so != query_agent) {
-      lambda(nb_so, distances[i]);
-    }
-    i++;
-  }
+  // TODO
+  // std::vector<uint32_t> neighbors;
+  // std::vector<real> distances;
+  // 
+  // // Find neighbors
+  // impl_->octree_->radiusNeighbors<unibn::L2Distance<Real3>>(
+  //     query_position, static_cast<double>(std::sqrt(squared_radius)), neighbors, distances);
+  // 
+  // auto* rm = Simulation::GetActive()->GetResourceManager();
+  // int i = 0;
+  // for (auto& n : neighbors) {
+  //   Agent* nb_so = rm->GetAgent(container_->flat_idx_map_.GetAgentHandle(n));
+  //   if (nb_so != query_agent) {
+  //     lambda(nb_so, distances[i]);
+  //   }
+  //   i++;
+  // }
 }
 
 void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*>& lambda,

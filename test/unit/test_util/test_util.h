@@ -32,12 +32,12 @@ struct abs_error {
 
 template <>
 struct abs_error<float> {
-  static constexpr real value = 1e-6;
+  static constexpr float value = 1e-6;
 };
 
 template <>
-struct abs_error<real> {
-  static constexpr real value = 1e-9;
+struct abs_error<double> {
+  static constexpr double value = 1e-9;
 };
 
 // -----------------------------------------------------------------------------

@@ -43,9 +43,9 @@ struct ParticleSwarm : public Algorithm {
     // Initial values and the bounds of the free parameters that we want to
     // optimize
     std::vector<std::string> param_names;
-    std::vector<real> init_vals;
-    std::vector<real> lower_bounds;
-    std::vector<real> upper_bounds;
+    std::vector<double> init_vals;
+    std::vector<double> lower_bounds;
+    std::vector<double> upper_bounds;
 
     if (opt_params->params.empty()) {
       Log::Fatal("ParticleSwarm::operator()",
@@ -95,7 +95,7 @@ struct ParticleSwarm : public Algorithm {
       // we should ignore it and return the previously obtained error
       for (auto& p : free_params) {
         if (std::isnan(p)) {
-          return prev_mse + 0.005;
+          return prev_mse + static_cast<real>(0.005);
         }
       }
 

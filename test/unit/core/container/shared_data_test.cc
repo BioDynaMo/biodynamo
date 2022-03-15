@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/container/shared_data.h"
+#include "core/real.h"
 #include <gtest/gtest.h>
 #include <vector>
 

@@ -163,24 +163,24 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   void SetNumberOfTuples(vtkIdType number) final;
   void SetTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) final;
   void SetTuple(vtkIdType i, const float* source) final;
-  void SetTuple(vtkIdType i, const real* source) final;
+  void SetTuple(vtkIdType i, const double* source) final;
   void InsertTuple(vtkIdType i, vtkIdType j, vtkAbstractArray* source) final;
   void InsertTuple(vtkIdType i, const float* source) final;
-  void InsertTuple(vtkIdType i, const real* source) final;
+  void InsertTuple(vtkIdType i, const double* source) final;
   void InsertTuples(vtkIdList* dst_ids, vtkIdList* src_ids,
                     vtkAbstractArray* source) final;
   void InsertTuples(vtkIdType dst_start, vtkIdType n, vtkIdType src_start,
                     vtkAbstractArray* source) final;
   vtkIdType InsertNextTuple(vtkIdType j, vtkAbstractArray* source) final;
   vtkIdType InsertNextTuple(const float* source) final;
-  vtkIdType InsertNextTuple(const real* source) final;
+  vtkIdType InsertNextTuple(const double* source) final;
   void DeepCopy(vtkAbstractArray* aa) final;
   void DeepCopy(vtkDataArray* da) final;
   void InterpolateTuple(vtkIdType i, vtkIdList* pt_indices,
-                        vtkAbstractArray* source, real* weights) final;
+                        vtkAbstractArray* source, double* weights) final;
   void InterpolateTuple(vtkIdType i, vtkIdType id1, vtkAbstractArray* source1,
                         vtkIdType id2, vtkAbstractArray* source2,
-                        real t) final;
+                        double t) final;
   void SetVariantValue(vtkIdType idx, vtkVariant value) final;
   void InsertVariantValue(vtkIdType idx, vtkVariant value) final;
   void RemoveTuple(vtkIdType id) final;
@@ -593,7 +593,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType,
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::SetTuple(vtkIdType,
-                                                             const real*) {
+                                                             const double*) {
   vtkErrorMacro("Read only container.");
   return;
 }
@@ -617,7 +617,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType,
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::InsertTuple(vtkIdType,
-                                                                const real*) {
+                                                                const double*) {
   vtkErrorMacro("Read only container.");
   return;
 }
@@ -657,7 +657,7 @@ vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 vtkIdType MappedDataArray<TScalar, TClass, TDataMember>::InsertNextTuple(
-    const real*) {
+    const double*) {
   vtkErrorMacro("Read only container.");
   return -1;
 }
@@ -680,7 +680,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::DeepCopy(vtkDataArray*) {
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(
-    vtkIdType, vtkIdList*, vtkAbstractArray*, real*) {
+    vtkIdType, vtkIdList*, vtkAbstractArray*, double*) {
   vtkErrorMacro("Read only container.");
   return;
 }
@@ -689,7 +689,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::InterpolateTuple(
     vtkIdType, vtkIdType, vtkAbstractArray*, vtkIdType, vtkAbstractArray*,
-    real) {
+    double) {
   vtkErrorMacro("Read only container.");
   return;
 }

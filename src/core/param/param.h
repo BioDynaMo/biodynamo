@@ -26,6 +26,7 @@
 #include "core/param/param_group.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
+#include "core/real.h"
 
 namespace bdm {
 

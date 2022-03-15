@@ -347,9 +347,9 @@ struct ModelInitializer {
       real R{params[0]};
       real r{x[0]};
       if (r > 0.0 && r <= R) {
-        return 3.0 * std::pow(r, 2.0) / std::pow(R, 3.0);
+        return real(3.0) * std::pow(r, real(2.0)) / std::pow(R, real(3.0));
       } else {
-        return 0.0;
+        return real(0.0);
       }
     };
 

@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "core/util/io.h"
+#include "core/real.h"
 
 namespace bdm {
 

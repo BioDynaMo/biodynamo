@@ -42,7 +42,7 @@
     <class name="unordered_map<std::string, std::set<std::string>>" />
     <class name="map<std::string, std::set<std::string>>" />
     <class name="bdm::Random" />
-    <class name="bdm::DistributionRng<real>" />
+    <class name="bdm::DistributionRng<float>" />
     <class name="bdm::DistributionRng<int>" />
     <class name="bdm::UniformRng" />
     <class name="bdm::GausRng" />
@@ -55,11 +55,11 @@
     <class name="bdm::UserDefinedDistRng3D" />
     <class name="bdm::BinomialRng" />
     <class name="bdm::PoissonRng" />
-    <class name="bdm::MathArray<real, 3>" />
-    <class name="bdm::MathArray<real, 4>" />
-    <class name="bdm::ParallelResizeVector<real>" />
+    <class name="bdm::MathArray<float, 3>" />
+    <class name="bdm::MathArray<float, 4>" />
+    <class name="bdm::ParallelResizeVector<float>" />
     <class name="bdm::ParallelResizeVector<uint64_t>" />
-    <class name="bdm::ParallelResizeVector<bdm::MathArray<real, 3ul>>" />
+    <class name="bdm::ParallelResizeVector<bdm::MathArray<float, 3ul>>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::UniformGridEnvironment::Box const*>>" />
@@ -71,12 +71,12 @@
     <class name="bdm::experimental::TimeSeries" />
     <class name="bdm::experimental::TimeSeries::Data" noStreamer="true" />
     <class name="bdm::experimental::Reducer<uint64_t>" />
-    <class name="bdm::experimental::Reducer<real>" />
+    <class name="bdm::experimental::Reducer<float>" />
     <class name="bdm::experimental::GenericReducer<uint64_t>" noStreamer="true" />
-    <class name="bdm::experimental::GenericReducer<real>" noStreamer="true" />
-    <class name="bdm::experimental::GenericReducer<uint64_t, real>" noStreamer="true" />
+    <class name="bdm::experimental::GenericReducer<float>" noStreamer="true" />
+    <class name="bdm::experimental::GenericReducer<uint64_t, float>" noStreamer="true" />
     <class name="bdm::experimental::Counter<>" noStreamer="true" />
-    <class name="bdm::experimental::Counter<real>" noStreamer="true" />
+    <class name="bdm::experimental::Counter<float>" noStreamer="true" />
     <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
     <class name="bdm::experimental::Style" />
     <class name="bdm::RootAdaptor" />
@@ -84,7 +84,7 @@
     <class name="bdm::AgentUidMap<ULong64_t>" />
     <class name="bdm::Functor<bool,bdm::Agent*>" />
     <class name="bdm::Functor<void,bdm::Agent*>" />
-    <class name="bdm::Functor<void,bdm::Agent*,real>" />
+    <class name="bdm::Functor<void,bdm::Agent*,float>" />
     <class name="bdm::Functor<void,bdm::Agent*,bdm::AgentHandle>" />
     <class name="bdm::Functor<ULong64_t,const bdm::SharedData<ULong64_t>&>" />
     <class name="bdm::Log" />
@@ -93,7 +93,7 @@
     <class name="bdm::ThreadInfo" />
     <class name="bdm::UnorderedFlatmap<unsigned long,bdm::memory_manager_detail::PoolAllocator*>" />
     <class name="bdm::UnorderedFlatmap<TClass*,vector<bdm::Agent*> >" />
-    <class name="bdm::FixedSizeVector<real,10>" />
+    <class name="bdm::FixedSizeVector<float,10>" />
     <class name="bdm::UserDefinedDist" />
     <class name="bdm::detail::ExtractUid" />
     <class name="bdm::TFileRaii" />

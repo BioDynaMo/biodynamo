@@ -24,6 +24,7 @@
 #include "core/util/numa.h"
 #include "core/util/spinlock.h"
 #include "core/util/thread_info.h"
+#include "core/real.h"
 
 namespace bdm {
 namespace memory_manager_detail {
