@@ -322,18 +322,18 @@ class UniformGridEnvironment : public Environment {
   ///
   size_t GetBoxIndex(const Double3& position) const {
     // Check if converstion can be done without loosing information
-    assert(floor(position[0]) <= std::numeric_limits<uint64_t>::max());
-    assert(floor(position[1]) <= std::numeric_limits<uint64_t>::max());
-    assert(floor(position[2]) <= std::numeric_limits<uint64_t>::max());
+    assert(floor(position[0]) <= std::numeric_limits<int32_t>::max());
+    assert(floor(position[1]) <= std::numeric_limits<int32_t>::max());
+    assert(floor(position[2]) <= std::numeric_limits<int32_t>::max());
     std::array<uint64_t, 3> box_coord;
     box_coord[0] =
-        (static_cast<uint64_t>(floor(position[0])) - grid_dimensions_[0]) /
+        (static_cast<int32_t>(floor(position[0])) - grid_dimensions_[0]) /
         box_length_;
     box_coord[1] =
-        (static_cast<uint64_t>(floor(position[1])) - grid_dimensions_[2]) /
+        (static_cast<int32_t>(floor(position[1])) - grid_dimensions_[2]) /
         box_length_;
     box_coord[2] =
-        (static_cast<uint64_t>(floor(position[2])) - grid_dimensions_[4]) /
+        (static_cast<int32_t>(floor(position[2])) - grid_dimensions_[4]) /
         box_length_;
 
     return GetBoxIndex(box_coord);
