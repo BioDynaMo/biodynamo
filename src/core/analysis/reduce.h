@@ -36,7 +36,7 @@ namespace experimental {
 /// can be combined to avoid iterating over all agents multiple times.\n
 template <typename TResult>
 struct Reducer : public Functor<void, Agent*> {
-  virtual ~Reducer() {}
+  virtual ~Reducer() = default;
   virtual TResult GetResult() = 0;
   /// Resets the internal state between calculations.
   virtual void Reset() = 0;
@@ -88,7 +88,7 @@ class GenericReducer : public Reducer<TResult> {
     }
   }
 
-  virtual ~GenericReducer() {}
+  virtual ~GenericReducer() = default;
 
   void operator()(Agent* agent) override {
     auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
@@ -230,7 +230,7 @@ struct Counter : public Reducer<TResult> {
     Reset();
   }
 
-  virtual ~Counter() {}
+  virtual ~Counter() = default;
 
   void Reset() override {
     tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());

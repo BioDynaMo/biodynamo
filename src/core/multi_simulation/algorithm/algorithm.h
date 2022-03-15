@@ -28,7 +28,7 @@ using experimental::TimeSeries;
 
 /// An interface for creating new optimization algorithms
 struct Algorithm {
-  virtual ~Algorithm() {}
+  virtual ~Algorithm() = default;
 
   virtual void operator()(
       Functor<void, Param*, TimeSeries*>& dispatch_experiment,

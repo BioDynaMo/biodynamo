@@ -25,7 +25,7 @@ namespace bdm {
 /// A uniform range of values (e.g. [1,2,3,4,5])
 /// All values are interpreted as double precision floating point types
 struct RangeParam : public OptimizationParamType {
-  RangeParam() {}
+  RangeParam() = default;
   RangeParam(const std::string& name, double min, double max, double stride)
       : OptimizationParamType(name),
         lower_bound(min),

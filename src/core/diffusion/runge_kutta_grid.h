@@ -33,7 +33,7 @@ namespace bdm {
 */
 class RungeKuttaGrid : public DiffusionGrid {
  public:
-  RungeKuttaGrid() {}
+  RungeKuttaGrid() = default;
   RungeKuttaGrid(int substance_id, std::string substance_name, double dc,
                  int resolution = 11)
       : DiffusionGrid(substance_id, std::move(substance_name), dc, 0.0,

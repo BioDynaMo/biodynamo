@@ -26,9 +26,9 @@
 namespace bdm {
 namespace neuroscience {
 
-NeuronSoma::NeuronSoma() {}
+NeuronSoma::NeuronSoma() = default;
 
-NeuronSoma::~NeuronSoma() {}
+NeuronSoma::~NeuronSoma() = default;
 
 NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 

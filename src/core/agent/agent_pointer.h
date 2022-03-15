@@ -43,9 +43,9 @@ class AgentPointer {
   explicit AgentPointer(const AgentUid& uid) : uid_(uid) {}
 
   /// constructs an AgentPointer object representing a nullptr
-  AgentPointer() {}
+  AgentPointer() = default;
 
-  ~AgentPointer() {}
+  ~AgentPointer() = default;
 
   uint64_t GetUidAsUint64() const { return uid_; }
 

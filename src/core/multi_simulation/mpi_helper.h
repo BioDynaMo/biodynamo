@@ -39,7 +39,7 @@ namespace experimental {
 class MPIObject : public TMessage {
  public:
   MPIObject() = default;
-  ~MPIObject() {}
+  ~MPIObject() = default;
   MPIObject(void* buf, Int_t len) : TMessage(buf, len) {}
 
  private:

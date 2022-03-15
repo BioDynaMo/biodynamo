@@ -155,7 +155,7 @@ class InlineVector {
       typename InlineVector::template Iterator<const T, const InlineVector>;
 
   explicit InlineVector(TRootIOCtor* io_ctor) {}  // Constructor for ROOT I/O
-  InlineVector() {}
+  InlineVector() = default;
 
   InlineVector(const InlineVector<T, N>& other) {
     data_ = std::move(other.data_);

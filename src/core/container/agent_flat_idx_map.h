@@ -40,7 +40,7 @@ namespace bdm {
 ///
 class AgentFlatIdxMap {
  public:
-  AgentFlatIdxMap() {}
+  AgentFlatIdxMap() = default;
 
   AgentFlatIdxMap(const AgentFlatIdxMap& other) {
     this->offset_ = other.offset_;

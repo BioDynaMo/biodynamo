@@ -35,7 +35,7 @@ class AgentUidMap {
   };
 
  public:
-  AgentUidMap() {}
+  AgentUidMap() = default;
 
   AgentUidMap(const AgentUidMap& other)
       : data_(other.data_), agent_uid_reused_(other.agent_uid_reused_) {}

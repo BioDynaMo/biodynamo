@@ -26,7 +26,7 @@ ParamGroupUidGenerator::ParamGroupUidGenerator() : counter_(0) {}
 
 ParamGroupUid ParamGroupUidGenerator::NewUid() { return counter_++; }
 
-ParamGroup::~ParamGroup() {}
+ParamGroup::~ParamGroup() = default;
 
 void ParamGroup::AssignFromConfig(const std::shared_ptr<cpptoml::table>&) {}
 

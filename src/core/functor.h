@@ -23,7 +23,7 @@ namespace bdm {
 template <typename TReturn, typename... TArgs>
 class Functor {
  public:
-  virtual ~Functor() {}
+  virtual ~Functor() = default;
   virtual TReturn operator()(TArgs... args) = 0;
 };
 
@@ -44,7 +44,7 @@ struct LambdaFunctor<TReturn (TLambda::*)(TArgs...) const> final
 
   LambdaFunctor(const TLambda& lambda) : lambda(lambda) {}
   LambdaFunctor(const LambdaFunctor& other) : lambda(other.lambda) {}
-  virtual ~LambdaFunctor() {}
+  virtual ~LambdaFunctor() = default;
 
   TReturn operator()(TArgs... args) override {
     return lambda(std::forward<TArgs>(args)...);
@@ -59,7 +59,7 @@ struct LambdaFunctor<TReturn (TLambda::*)(TArgs...)> final
 
   LambdaFunctor(const TLambda& lambda) : lambda(lambda) {}
   LambdaFunctor(const LambdaFunctor& other) : lambda(other.lambda) {}
-  virtual ~LambdaFunctor() {}
+  virtual ~LambdaFunctor() = default;
 
   TReturn operator()(TArgs... args) override {
     return lambda(std::forward<TArgs>(args)...);
@@ -90,7 +90,7 @@ struct LambdaFunctor<TReturn (TLambda::*)(TArgs...)> final
 ///     class MyFunctor : public Functor<void, Agent*, double> {
 ///      public:
 ///       MyFunctor(double threshold) : threshold_(threshold) {}
-///       virtual ~MyFunctor() {}
+///       virtual ~MyFunctor() = default;
 ///       void operator()(Agent* neighbor, double squared_distance) override {
 ///         if (neighbor->GetDiameter() < threshold_) {
 ///           std::cout << agent->GetUid() << std::endl;

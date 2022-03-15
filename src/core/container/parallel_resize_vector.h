@@ -32,7 +32,7 @@ class ParallelResizeVector {
 
   explicit ParallelResizeVector(TRootIOCtor* io_ctor) {
   }  // Constructor for ROOT I/O
-  ParallelResizeVector() {}
+  ParallelResizeVector() = default;
   ParallelResizeVector(std::initializer_list<T> init) {
     reserve(init.size());
     for (auto& el : init) {

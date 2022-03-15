@@ -27,7 +27,7 @@ class Chemotaxis : public Behavior {
   BDM_BEHAVIOR_HEADER(Chemotaxis, Behavior, 1);
 
  public:
-  Chemotaxis() {}
+  Chemotaxis() = default;
   Chemotaxis(const std::string& substance, double speed)
       : substance_(substance), speed_(speed) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
@@ -39,7 +39,7 @@ class Chemotaxis : public Behavior {
     substance_ = dgrid->GetSubstanceName();
   }
 
-  virtual ~Chemotaxis() {}
+  virtual ~Chemotaxis() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
