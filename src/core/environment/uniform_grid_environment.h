@@ -526,8 +526,8 @@ class UniformGridEnvironment : public Environment {
       void lock() override {  // NOLINT
         for (auto idx : mutex_indices_) {
           auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
-          // acquire lock (and spin if another thread is holding it)
           while (mutex.test_and_set(std::memory_order_acquire)) {
+            // acquire lock and spin if another thread is holding it
           }
         }
       }
