@@ -273,8 +273,6 @@ AgentUidGenerator* Simulation::GetAgentUidGenerator() {
   return agent_uid_generator_;
 }
 
-Environment* Simulation::GetGrid() { return environment_; }
-
 Environment* Simulation::GetEnvironment() { return environment_; }
 
 Scheduler* Simulation::GetScheduler() { return scheduler_; }
