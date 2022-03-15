@@ -65,6 +65,7 @@ std::string GenerateSimulationInfoJson(
   // extracellular substances
   std::stringstream substances;
   uint64_t num_substances = param->visualize_diffusion.size();
+  bool write_comma = false;
   for (uint64_t i = 0; i < num_substances; i++) {
     auto& name = param->visualize_diffusion[i].name;
 
@@ -82,17 +83,17 @@ std::string GenerateSimulationInfoJson(
           ", but it has not been created during the entire simulation. "
           "Please make sure the names in the "
           "configuration file match the ones in the simulation.");
-      num_substances--;
       continue;
+    }
+
+    if (write_comma) {
+      substances << ",\n";
     }
     substances << "    { \"name\":\"" << name << "\", ";
     std::string has_gradient =
         param->visualize_diffusion[i].gradient ? "true" : "false";
     substances << "\"has_gradient\":\"" << has_gradient << "\" }";
-
-    if (i != num_substances - 1) {
-      substances << "," << std::endl;
-    }
+    write_comma = true;
   }
 
   std::stringstream str;
