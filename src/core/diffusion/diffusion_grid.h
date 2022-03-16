@@ -149,7 +149,7 @@ class DiffusionGrid {
 
   const std::array<double, 7>& GetDiffusionCoefficients() const { return dc_; }
 
-  int GetResolution() const { return resolution_; }
+  size_t GetResolution() const { return resolution_; }
 
   double GetBoxVolume() const { return box_volume_; }
 
