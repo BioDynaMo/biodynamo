@@ -224,7 +224,8 @@ class InlineVector {
       assert(size_ != std::numeric_limits<uint16_t>::max() &&
              "Maxium number of elements exceeded");
       if (size_ == capacity()) {
-        uint64_t tmp = static_cast<uint64_t>(capacity()) * kGrowFactor;
+        uint64_t tmp =
+            static_cast<uint64_t>(static_cast<float>(capacity()) * kGrowFactor);
         uint16_t new_capacity = static_cast<uint16_t>(tmp);
         if (tmp > std::numeric_limits<uint16_t>::max()) {
           new_capacity = std::numeric_limits<uint16_t>::max();
@@ -347,10 +348,10 @@ class InlineVector {
 
  private:
   static constexpr float kGrowFactor = 1.5;
-  std::array<T, N> data_;     //!
-  uint16_t size_ = 0;         //!
-  UInt_t heap_capacity_ = 0;  //!
-  T* heap_data_ = nullptr;    //!
+  std::array<T, N> data_;       //!
+  uint16_t size_ = 0;           //!
+  uint16_t heap_capacity_ = 0;  //!
+  T* heap_data_ = nullptr;      //!
 
   uint16_t HeapSize() const {
     if (size_ < N) {
