@@ -100,18 +100,16 @@ int Random::Poisson(real mean) { return generator_->Poisson(mean); }
 
 // -----------------------------------------------------------------------------
 MathArray<real, 2> Random::Circle(real r) {
-  MathArray<real, 2> ret;
-  // TODO
-  // generator_->Circle(static_cast<double>(ret[0]), static_cast<double>(ret[1]), static_cast<double>(r));
-  return ret;
+  MathArray<double, 2> ret_double;
+  generator_->Circle(ret_double[0], ret_double[1], static_cast<double>(r));
+  return {static_cast<real>(ret_double[0]), static_cast<real>(ret_double[1])};
 }
 
 // -----------------------------------------------------------------------------
 MathArray<real, 3> Random::Sphere(real r) {
-  MathArray<real, 3> ret;
-  // TODO
-  // generator_->Sphere(ret[0], ret[1], ret[2], r);
-  return ret;
+  MathArray<double, 3> ret;
+  generator_->Sphere(ret[0], ret[1], ret[2], r);
+  return {static_cast<real>(ret[0]), static_cast<real>(ret[1]), static_cast<real>(ret[2])};
 }
 
 // -----------------------------------------------------------------------------
@@ -243,16 +241,16 @@ real UserDefinedDistRng1D::SampleImpl(TRandom* rng) {
 void UserDefinedDistRng1D::Draw(const char* option) { function_->Draw(option); }
 TF1* UserDefinedDistRng1D::GetTF1() { return function_; }
 
+// -----------------------------------------------------------------------------
 UserDefinedDistRng1D Random::GetUserDefinedDistRng1D(
-    real (*f)(const real*, const real*),
+    double (*f)(const double*, const double*),
     const FixedSizeVector<real, 10>& params, real min, real max,
     const char* option) {
   TF1* tf1 = nullptr;
   UserDefinedDist udd{f, params, min, max};
   auto it = udd_tf1_map_.find(udd);
   if (it == udd_tf1_map_.end()) {
-    // TODO
-    // tf1 = new TF1("", f, min, max, params.size());
+    tf1 = new TF1("", f, min, max, params.size());
     udd_tf1_map_[udd] = tf1;
     tf1->SetParameters(params[0], params[1], params[2], params[3], params[4],
                        params[5], params[6], params[7], params[8], params[9]);
@@ -276,24 +274,22 @@ real UserDefinedDistRng2D::SampleImpl(TRandom* rng) {
   return function_->GetRandom(min, max);
 }
 MathArray<real, 2> UserDefinedDistRng2D::Sample2Impl(TRandom* rng) {
-  MathArray<real, 2> ret;
-  // TODO
-  // function_->GetRandom2(ret[0], ret[1]);
-  return ret;
+  MathArray<double, 2> ret;
+  function_->GetRandom2(ret[0], ret[1]);
+  return {static_cast<real>(ret[0]), static_cast<real>(ret[1])};
 }
 void UserDefinedDistRng2D::Draw(const char* option) { function_->Draw(option); }
 TF2* UserDefinedDistRng2D::GetTF2() { return function_; }
 
 UserDefinedDistRng2D Random::GetUserDefinedDistRng2D(
-    real (*f)(const real*, const real*),
+    double (*f)(const double*, const double*),
     const FixedSizeVector<real, 10>& params, real xmin, real xmax,
     real ymin, real ymax, const char* option) {
   TF2* tf2 = nullptr;
   UserDefinedDist udd{f, params, xmin, xmax, ymin, ymax};
   auto it = udd_tf2_map_.find(udd);
   if (it == udd_tf2_map_.end()) {
-    // TODO
-    // tf2 = new TF2("", f, xmin, xmax, ymin, ymax, params.size());
+    tf2 = new TF2("", f, xmin, xmax, ymin, ymax, params.size());
     udd_tf2_map_[udd] = tf2;
     tf2->SetParameters(params[0], params[1], params[2], params[3], params[4],
                        params[5], params[6], params[7], params[8], params[9]);
@@ -317,30 +313,27 @@ real UserDefinedDistRng3D::SampleImpl(TRandom* rng) {
   return function_->GetRandom(min, max);
 }
 MathArray<real, 2> UserDefinedDistRng3D::Sample2Impl(TRandom* rng) {
-  MathArray<real, 2> ret;
-  // TODO
-  // function_->GetRandom2(ret[0], ret[1]);
-  return ret;
+  MathArray<double, 2> ret;
+  function_->GetRandom2(ret[0], ret[1]);
+  return {static_cast<real>(ret[0]), static_cast<real>(ret[1])};
 }
 MathArray<real, 3> UserDefinedDistRng3D::Sample3Impl(TRandom* rng) {
-  MathArray<real, 3> ret;
-  // TODO
-  // function_->GetRandom3(ret[0], ret[1], ret[2]);
-  return ret;
+  MathArray<double, 3> ret;
+  function_->GetRandom3(ret[0], ret[1], ret[2]);
+  return {static_cast<real>(ret[0]), static_cast<real>(ret[1]), static_cast<real>(ret[2])};
 }
 void UserDefinedDistRng3D::Draw(const char* option) { function_->Draw(option); }
 TF3* UserDefinedDistRng3D::GetTF3() { return function_; }
 
 UserDefinedDistRng3D Random::GetUserDefinedDistRng3D(
-    real (*f)(const real*, const real*),
+    double (*f)(const double*, const double*),
     const FixedSizeVector<real, 10>& params, real xmin, real xmax,
     real ymin, real ymax, real zmin, real zmax, const char* option) {
   TF3* tf3 = nullptr;
   UserDefinedDist udd{f, params, xmin, xmax, ymin, ymax, zmin, zmax};
   auto it = udd_tf3_map_.find(udd);
   if (it == udd_tf3_map_.end()) {
-    // TODO
-    // tf3 = new TF3("", f, xmin, xmax, ymin, ymax, zmin, zmax, params.size());
+    tf3 = new TF3("", f, xmin, xmax, ymin, ymax, zmin, zmax, params.size());
     udd_tf3_map_[udd] = tf3;
     tf3->SetParameters(params[0], params[1], params[2], params[3], params[4],
                        params[5], params[6], params[7], params[8], params[9]);

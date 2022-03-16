@@ -343,13 +343,13 @@ struct ModelInitializer {
     // largest allowed radius (interpretation: no agents outside the sphere). We
     // can fix `a` by requiring `\int_0^\inf p(r') dr' = 1` and obtain
     // `a=3/R^3`.
-    auto radial_pdf_sphere = [](const real* x, const real* params) {
-      real R{params[0]};
-      real r{x[0]};
+    auto radial_pdf_sphere = [](const double* x, const double* params) {
+      double R{params[0]};
+      double r{x[0]};
       if (r > 0.0 && r <= R) {
-        return real(3.0) * std::pow(r, real(2.0)) / std::pow(R, real(3.0));
+        return 3.0 * std::pow(r, 2.0) / std::pow(R, 3.0);
       } else {
-        return real(0.0);
+        return 0.0;
       }
     };
 

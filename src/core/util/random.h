@@ -190,7 +190,7 @@ class UserDefinedDistRng3D : public DistributionRng<real> {
 
 // -----------------------------------------------------------------------------
 struct UserDefinedDist {
-  real (*ud_function)(const real*, const real*) = nullptr;
+  double (*ud_function)(const double*, const double*) = nullptr;
   FixedSizeVector<real, 10> parameters;
   real xmin = 0;
   real xmax = 0;
@@ -394,19 +394,19 @@ class Random {
   /// regions such as behaviors is likely to have a serious performance impact
   /// and we advise to only use it in serial regions.
   UserDefinedDistRng1D GetUserDefinedDistRng1D(
-      real (*f)(const real*, const real*),
+      double (*f)(const double*, const double*),
       const FixedSizeVector<real, 10>& params, real min, real max,
       const char* option = nullptr);
 
   /// \see `Random::GetUserDefinedDistRng1D`
   UserDefinedDistRng2D GetUserDefinedDistRng2D(
-      real (*f)(const real*, const real*),
+      double (*f)(const double*, const double*),
       const FixedSizeVector<real, 10>& params, real xmin, real xmax,
       real ymin, real ymax, const char* option = nullptr);
 
   /// \see `Random::GetUserDefinedDistRng1D`
   UserDefinedDistRng3D GetUserDefinedDistRng3D(
-      real (*f)(const real*, const real*),
+      double (*f)(const double*, const double*),
       const FixedSizeVector<real, 10>& params, real xmin, real xmax,
       real ymin, real ymax, real zmin, real zmax,
       const char* option = nullptr);
