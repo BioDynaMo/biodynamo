@@ -14,6 +14,8 @@
 #ifndef PYRAMIDAL_CELL_H_
 #define PYRAMIDAL_CELL_H_
 
+#include <fstream>
+#include <iostream>
 #include "biodynamo.h"
 #include "neuroscience/neuroscience.h"
 
@@ -154,12 +156,26 @@ inline void CreateExtracellularSubstances(const Param* p) {
   MI::InitializeSubstance(kBasal, b_initializer);
 }
 
+/// Saves the morphology of the neuron in the SWC file format.
+inline void SaveNeuronMorphology(Simulation& sim) {
+  auto* rm = sim.GetResourceManager();
+  rm->ForEachAgent([&](Agent* agent) {
+    auto* soma = dynamic_cast<neuroscience::NeuronSoma*>(agent);
+    if (soma != nullptr) {
+      std::ofstream myfile;
+      myfile.open(sim.GetOutputDir() + "/neuron.swc");
+      soma->PrintSWC(myfile);
+    }
+  });
+}
+
 inline int Simulate(int argc, const char** argv) {
   neuroscience::InitModule();
   Simulation simulation(argc, argv);
   AddInitialNeuron({150, 150, 0});
   CreateExtracellularSubstances(simulation.GetParam());
   simulation.GetScheduler()->Simulate(500);
+  SaveNeuronMorphology(simulation);
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
 }

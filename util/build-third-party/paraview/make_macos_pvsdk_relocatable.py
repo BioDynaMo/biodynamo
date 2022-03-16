@@ -52,6 +52,7 @@ Prerequisites:
 '''
 import json
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -927,7 +928,14 @@ def install_binary(binary: Library, is_excluded, bundle_dest,
             installed[dep.path] = \
                 (dep, os.path.relpath(dep.path, install_source))
         else:
-            vprint(f"<?> {dep.paths}")
+            # This call resulted in an error on arm64 and ParaView-5.10 and was
+            # therefore turned into an exception.
+            try:
+                vprint(f"<?> {dep.paths}")
+            except Exception as ex:
+                print(ex)
+                vprint(f"'Library' object has no attribute 'paths'")
+
 
     # Install the main executable itself.
     app_dest = os.path.join(bundle_dest, sub_dest)
@@ -1013,7 +1021,7 @@ def _is_excluded(path):
         return True
     if path.startswith('/usr/local/Cellar'):
         return True
-    if path.startswith('/opt/homebrew/lib'):
+    if path.startswith('/opt/homebrew'):
         return True
 
     ## Macports
@@ -1170,6 +1178,13 @@ class BinaryGroup(object):
 
 
 def main(args):
+    # Check if we are running on an ARM-based Apple device
+    system_info = platform.uname()
+    is_arm_based = (system_info.system == "Darwin" and 
+                    system_info.machine == "arm64")
+    if is_arm_based:
+        print("Detected M1 machine, support experimental ..")
+
     # Parse and initialize arguments.
     parser = _arg_parser()
     opts = parser.parse_args(args)
@@ -1224,8 +1239,10 @@ def main(args):
     # Qt is always a dependency. Make sure it's in --third-party.
     qt_lib_dir = os.path.join(third_party_path, 'qt', 'lib')
 
-    if not os.path.isdir(qt_lib_dir):
-        raise RuntimeError(f"./qt/lib directory does not exist in {third_party_path}")
+    # For 5.9, Qt5 is not installed via brew, thus, the explicit check.
+    if paraview_v == '5.9':
+        if not os.path.isdir(qt_lib_dir):
+            raise RuntimeError(f"./qt/lib directory does not exist in {third_party_path}")
     
     # Mark undesirable for deletion with None.
     rpath_map = { qt_lib_dir: None, '@executable_path/': None, '@executable_path/../lib': None }
@@ -1236,8 +1253,15 @@ def main(args):
             BinaryGroup("./bin", rp_suffixes, rpath_map=rpath_map),
             BinaryGroup(f"./lib/python{python_v}", rp_suffixes, rpath_map=rpath_map),
             BinaryGroup(f"./lib/paraview-{paraview_v}", rp_suffixes, rpath_map=rpath_map),
-            BinaryGroup("./lib/universal", rp_suffixes, preproc_fn=_preprocess_uni_bin, rpath_map=rpath_map),
         ]
+    # The following BinaryGroup was not found on the tested M1 machine and
+    # caused problems. We therefore remove it if we're not building the outdated
+    # ParaView 5.9
+    if not is_arm_based:
+        bin_groups.append(BinaryGroup("./lib/universal", 
+                          rp_suffixes, 
+                          preproc_fn=_preprocess_uni_bin, 
+                          rpath_map=rpath_map))
 
     for bin_group in bin_groups:
         bin_group.install()

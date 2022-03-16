@@ -169,7 +169,7 @@ void DiffusionGrid::CopyOldData(
 
   int num_box_xy = resolution_ * resolution_;
   int old_box_xy = old_resolution * old_resolution;
-  int new_origin = off_dim * (num_box_xy) + off_dim * resolution_ + off_dim;
+  int new_origin = off_dim * num_box_xy + off_dim * resolution_ + off_dim;
   for (size_t k = 0; k < old_resolution; k++) {
     int offset = new_origin + k * num_box_xy;
     for (size_t j = 0; j < old_resolution; j++) {
@@ -303,9 +303,14 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
   std::lock_guard<Spinlock> guard(locks_[idx]);
   assert(idx < locks_.size());
   c1_[idx] += amount;
-  c1_[idx] = (c1_[idx] > upper_threshold_)
-                 ? upper_threshold_
-                 : (c1_[idx] < lower_threshold_) ? lower_threshold_ : c1_[idx];
+  // Use std::clamp() when moving to C++17
+  if (c1_[idx] > upper_threshold_) {
+    c1_[idx] = upper_threshold_;
+  } else if (c1_[idx] < lower_threshold_) {
+    c1_[idx] = lower_threshold_;
+  } else {
+    // c1_[idx] is bounded by the thresholds and does not need to be modified
+  }
 }
 
 /// Get the concentration at specified position

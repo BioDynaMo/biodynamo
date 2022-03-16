@@ -26,7 +26,7 @@ LAST_RET_VAL=$?
 if [ $LAST_RET_VAL != 0 ]; then
   RETURN_VALUE=$LAST_RET_VAL
 fi
-cmake --build $BINARY_DIR --target check
+cmake --build $BINARY_DIR --target run-check
 LAST_RET_VAL=$?
 if [ $LAST_RET_VAL != 0 ]; then
   RETURN_VALUE=$LAST_RET_VAL

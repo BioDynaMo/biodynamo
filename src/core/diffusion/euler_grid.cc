@@ -39,10 +39,6 @@ void EulerGrid::DiffuseWithClosedEdge(double dt) {
 #pragma omp simd
         for (x = 1; x < nx - 1; x++) {
           ++c;
-          ++n;
-          ++s;
-          ++b;
-          ++t;
 
           if (y == 0 || y == (ny - 1) || z == 0 || z == (nz - 1)) {
             continue;
@@ -52,17 +48,11 @@ void EulerGrid::DiffuseWithClosedEdge(double dt) {
           s = c + nx;
           b = c - nx * ny;
           t = c + nx * ny;
-          c2_[c] =
-              (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-               d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-               d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
-              (1 - mu_);
+          c2_[c] = c1_[c] * (1 - mu_ * dt) +
+                   (d * dt * ibl2) *
+                       (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1] + c1_[s] -
+                        2 * c1_[c] + c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t]);
         }
-        ++c;
-        ++n;
-        ++s;
-        ++b;
-        ++t;
       }  // tile ny
     }    // tile nz
   }      // block ny
@@ -121,10 +111,10 @@ void EulerGrid::DiffuseWithOpenEdge(double dt) {
           t = c + nx * ny;
         }
 
-        c2_[c] = (c1_[c] + d * dt * (0 - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-                  d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                  d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
-                 (1 - mu_);
+        c2_[c] = c1_[c] * (1 - mu_ * dt) +
+                 (d * dt * ibl2) *
+                     (0 - 2 * c1_[c] + c1_[c + 1] + c1_[s] - 2 * c1_[c] +
+                      c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t]);
 #pragma omp simd
         for (x = 1; x < nx - 1; x++) {
           ++c;
@@ -133,20 +123,20 @@ void EulerGrid::DiffuseWithOpenEdge(double dt) {
           ++b;
           ++t;
           c2_[c] =
-              (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1]) * ibl2 +
-               d * dt * (l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n]) * ibl2 +
-               d * dt * (l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]) * ibl2) *
-              (1 - mu_);
+              c1_[c] * (1 - mu_ * dt) +
+              (d * dt * ibl2) * (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1] +
+                                 l[0] * c1_[s] - 2 * c1_[c] + l[1] * c1_[n] +
+                                 l[2] * c1_[b] - 2 * c1_[c] + l[3] * c1_[t]);
         }
         ++c;
         ++n;
         ++s;
         ++b;
         ++t;
-        c2_[c] = (c1_[c] + d * dt * (c1_[c - 1] - 2 * c1_[c] + 0) * ibl2 +
-                  d * dt * (c1_[s] - 2 * c1_[c] + c1_[n]) * ibl2 +
-                  d * dt * (c1_[b] - 2 * c1_[c] + c1_[t]) * ibl2) *
-                 (1 - mu_);
+        c2_[c] = c1_[c] * (1 - mu_ * dt) +
+                 (d * dt * ibl2) *
+                     (c1_[c - 1] - 2 * c1_[c] + 0 + c1_[s] - 2 * c1_[c] +
+                      c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t]);
       }  // tile ny
     }    // tile nz
   }      // block ny

@@ -52,7 +52,7 @@ CopyExecutionContext::CopyExecutionContext(
 }
 
 // -----------------------------------------------------------------------------
-CopyExecutionContext::~CopyExecutionContext() {}
+CopyExecutionContext::~CopyExecutionContext() = default;
 
 // -----------------------------------------------------------------------------
 void CopyExecutionContext::SetupIterationAll(

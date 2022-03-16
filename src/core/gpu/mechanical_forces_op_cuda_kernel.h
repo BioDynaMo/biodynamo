@@ -67,7 +67,7 @@ class MechanicalForcesOpCudaKernel {
 //
 inline MechanicalForcesOpCudaKernel::MechanicalForcesOpCudaKernel(
     uint32_t num_agents, uint32_t num_boxes) {}
-inline MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() {}
+inline MechanicalForcesOpCudaKernel::~MechanicalForcesOpCudaKernel() = default;
 
 inline void MechanicalForcesOpCudaKernel::LaunchMechanicalForcesKernel(
     const double* positions, const double* diameter,

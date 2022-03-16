@@ -35,7 +35,7 @@ class Environment {
   bool out_of_sync_ = true;
 
  public:
-  virtual ~Environment() {}
+  virtual ~Environment() = default;
 
   /// This function informs the environment that it is no longer up to date and
   /// that the state of the simulation might not be reflected correctly in the
@@ -107,12 +107,12 @@ class Environment {
     /// multiple threads.
     class NeighborMutex {
      public:
-      virtual ~NeighborMutex() {}
-      virtual void lock() {}    // NOLINT
-      virtual void unlock() {}  // NOLINT
+      virtual ~NeighborMutex() = default;
+      virtual void lock(){};    // NOLINT
+      virtual void unlock(){};  // NOLINT
     };
 
-    virtual ~NeighborMutexBuilder() {}
+    virtual ~NeighborMutexBuilder() = default;
     virtual NeighborMutex* GetMutex(uint64_t box_idx) = 0;
   };
 

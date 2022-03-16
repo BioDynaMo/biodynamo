@@ -141,16 +141,19 @@ Then click the Play button at the top of the screen to run the simulation visual
 </video>
 
 ### Diffusion parameter constraints
-The differential equations that describe the diffusion are solved in an
-analytical way using the central difference method as shown in the figure below:
+The partial differential equations that describe diffusion are solved 
+numerically. This is done using a forward in time and central in space finite difference method. 
+As shown in the figure below. The upper indices label the discretization in 
+time, and the lower indices describe the discretization in space. The delta 
+parameters `t` and `h` denote length in time and space, 
+respectively. 
 
 [![Central Difference Method](images/diffusion_central_difference_method.png)](/docs/userguide/diffusion/#diffusion-parameter-constraints)
 
-The diffusion coefficient dictates the speed of diffusing a substance through
-space, while with the decay constant one controls the speed at which a substance
-decays. Mathematically, the method would allow for unphysical behavior to occur, such as
-negative concentration values. In order to avoid such behavior from happening,
-we impose the following constraint on the parameters:
+The diffusion coefficient `D` models the speed of the diffusion process through 
+space, while constant `mu` controls the speed at which substances 
+decay. The method is not unconditionally stable, thus we 
+impose the following constraint on parameters:
 
 [![Parameter Constraint](images/diffusion_parameters_constraint.png)](/docs/userguide/diffusion/#diffusion-parameter-constraints)
 
@@ -196,12 +199,9 @@ Within BioDynaMo the number of intervals for the Runge-Kutta method to iterate o
 
 ```
 
-DiffusionGrid* dgrid = new RungeKuttaGrid(substance_id, "substance_name", diffusion_coefficient,
-                decay_constant, resolution, diffusion_step)
+DiffusionGrid* dgrid = new RungeKuttaGrid(substance_id, "substance_name", diffusion_coefficient, resolution)
                 
 ```
-Note: 
-* The entered value for the diffusion_step is required to be a positive integer value of greater than 0.
 
 To access the Runge-Kutta method for diffusion, one simply needs to update the bdm.toml file as follows :
 

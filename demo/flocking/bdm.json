@@ -1,0 +1,47 @@
+{
+  "bdm::Param": {
+    "remove_output_dir_contents": true,
+    "compute_target": "cuda",
+    "statistics": false,
+    "bound_space": 2,
+    "max_bound": 1000,
+    "min_bound": -1000,
+    "visualization_interval": 20,
+    "export_visualization": true,
+    "unschedule_default_operations": [
+      "mechanical forces"
+    ],
+    "use_progress_bar": true,
+    "visualize_agents": {
+      "Boid": [
+        "actual_diameter_"
+      ]
+    }
+  },
+  "bdm::SimParam": {
+    "_typename": "bdm::SimParam",
+    "computational_steps": 200,
+    "n_boids": 250,
+    "starting_sphere_radius": 200,
+    "double actual_diameter": 10,
+    "boid_perception_radius": 250,
+    "boid_interaction_radius": 70,
+    "perception_angle_deg": 300,
+    "neighbor_distance": 50,
+    "max_accel": 0.4,
+    "max_speed": 5,
+    "c_a_1": 0.37,
+    "c_a_2": 0.05,
+    "c_a_3": 0.05,
+    "c_y": 0.03,
+    "d_t": 0.05,
+    "pos_gamma": {
+      "_typename": "bdm::MathArray<double,3>",
+      "data_": [
+        10000,
+        0,
+        0
+      ]
+    }
+  }
+}

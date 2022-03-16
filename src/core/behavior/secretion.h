@@ -29,7 +29,7 @@ class Secretion : public Behavior {
   BDM_BEHAVIOR_HEADER(Secretion, Behavior, 2);
 
  public:
-  Secretion() {}
+  Secretion() = default;
   explicit Secretion(const std::string& substance, double quantity = 1)
       : substance_(substance), quantity_(quantity) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
@@ -41,7 +41,7 @@ class Secretion : public Behavior {
     substance_ = dgrid->GetSubstanceName();
   }
 
-  virtual ~Secretion() {}
+  virtual ~Secretion() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);

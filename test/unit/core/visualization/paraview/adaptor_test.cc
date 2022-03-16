@@ -61,6 +61,7 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
     param->visualize_agents["NeuriteElement"] = {};
     param->visualize_diffusion.clear();
     param->visualize_diffusion.push_back({"sodium", true, true});
+    param->visualize_diffusion.push_back({"potassium", true, true});
   };
 
   Simulation simulation(kSimulationName, set_param);
@@ -77,6 +78,8 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
   std::unordered_map<std::string, VtkDiffusionGrid*> vtk_dgrids;
   vtk_dgrids["sodium"] = new VtkDiffusionGrid("sodium", data_description);
   vtk_dgrids["sodium"]->used_ = true;
+  vtk_dgrids["potassium"] = new VtkDiffusionGrid("potassium", data_description);
+  vtk_dgrids["potassium"]->used_ = true;
 
   auto json = GenerateSimulationInfoJson(vtk_agents, vtk_dgrids);
 
@@ -113,7 +116,8 @@ TEST_F(ParaviewAdaptorTest, GenerateSimulationInfoJson) {
     }
   ],
   "extracellular_substances": [
-    { "name":"sodium", "has_gradient":"true" }
+    { "name":"sodium", "has_gradient":"true" },
+    { "name":"potassium", "has_gradient":"true" }
   ],
   "insitu_script_arguments": ""
 }

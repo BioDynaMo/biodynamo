@@ -15,6 +15,8 @@
 #include "neuroscience/neuron_soma.h"
 
 #include <algorithm>
+#include <ctime>
+#include <locale>
 
 #include "core/resource_manager.h"
 #include "neuroscience/neurite_element.h"
@@ -24,9 +26,9 @@
 namespace bdm {
 namespace neuroscience {
 
-NeuronSoma::NeuronSoma() {}
+NeuronSoma::NeuronSoma() = default;
 
-NeuronSoma::~NeuronSoma() {}
+NeuronSoma::~NeuronSoma() = default;
 
 NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 
@@ -62,6 +64,14 @@ void NeuronSoma::Update(const NewAgentEvent& event) {
   }
 
   // do nothing for CellDivisionEvent or others
+}
+
+void NeuronSoma::CriticalRegion(std::vector<AgentUid>* uids) {
+  uids->reserve(daughters_.size() + 1);
+  uids->push_back(Agent::GetUid());
+  for (auto& daughter : daughters_) {
+    uids->push_back(daughter.GetUid());
+  }
 }
 
 NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
@@ -128,11 +138,108 @@ const std::vector<AgentPointer<NeuriteElement>>& NeuronSoma::GetDaughters()
   return daughters_;
 }
 
-void NeuronSoma::CriticalRegion(std::vector<AgentUid>* uids) {
-  uids->reserve(daughters_.size() + 1);
-  uids->push_back(Agent::GetUid());
-  for (auto& daughter : daughters_) {
-    uids->push_back(daughter.GetUid());
+// Helper function for PrintSWC to print the elements of a vector seperated by
+// a space.
+inline void PrintVector(std::ostream& out, const Double3& pos) {
+  out << " " << pos[0] << " " << pos[1] << " " << pos[2] << " ";
+}
+
+void NeuronSoma::PrintSWC(std::ostream& out) const {
+  // 1. Write a header to the file such that users do not confuse it with real
+  //    data.
+  out << "# This SWC file was created with BioDynaMo and is (very) likely "
+         "to\n# be the result of a simulation. Be careful not to confuse it\n"
+         "# with real data. \n\n";
+  // Example for localtime_r: https://tinyurl.com/localtimer
+  struct tm newtime;
+  time_t ltime;
+  ltime = time(&ltime);
+  localtime_r(&ltime, &newtime);
+  char creation_time[100];
+  std::strftime(creation_time, sizeof(creation_time), "%A, %F, %T", &newtime);
+  out << "# Created at: " << creation_time << "\n\n";
+
+  // 2. Write the line for the soma at the beginning of the file
+  int element_id{1};
+  int previous_element_id{-1};
+  out << element_id++ << " " << GetIdentifierSWC();
+  PrintVector(out, GetPosition());
+  out << GetDiameter() / 2 << " " << previous_element_id << "\n";
+
+  // 3. Iterate over all neuron branches that are attached to the soma
+  for (auto daughter : daughters_) {
+    // New branches need to be connected to soma
+    bool is_new_brach{true};
+    // Pointers to currently considered and next element
+    AgentPointer<NeuriteElement> current_element, next_element;
+    // Vector to track the bifurcation elements (right daughters that are
+    // neglected when going down the left path, see below)
+    std::vector<AgentPointer<NeuriteElement>> bifurcation_points;
+    // Track the labels that we need to connect the bifurcation points to the
+    // appropriate elements
+    std::vector<int> bifurcation_points_lables;
+    // Used to reconnect to previous bifurcation
+    bool connect_to_bifurcation{false};
+
+    // The logic of the while loop is the following. The tree of dendrites /
+    // axons is made up of subsequent elements. Each element has a left daughter
+    // but only bifurcations points also have a right daughter. If a branch
+    // ends, the element has neither a left nor a right daughter. Thus, for each
+    // branch attached to the soma, we walk down the tree all the way down
+    // following the left path. On the way, we remember the bifurcation points.
+    // Once we've reached the end of a branch, we jump back to the last
+    // bifurcation point that we have visited and start to follow the left path
+    // again. With this method we can resolve the entire tree structure under
+    // the assumption, that each element has 0, 1, or 2 follow up elements and
+    // that different branches do not merge again.
+    current_element = daughter;
+    while (true) {
+      // Loop 1. Write down the SWC line corresponding to the current element.
+      //         The file format per line is as follows:
+      //         <element id> <type id> <x> <y> <z> <radius> <prev element id>
+      out << element_id << " " << current_element->GetIdentifierSWC();
+      PrintVector(out, current_element->GetPosition());
+      out << current_element->GetDiameter() / 2 << " ";
+      // This block establishes the connection via <prev element id>
+      if (is_new_brach) {
+        // New branches need to be attached to the soma
+        previous_element_id = 1;
+        is_new_brach = false;
+      } else {
+        if (!connect_to_bifurcation) {
+          // By default we connect to the previously considered element
+          previous_element_id = element_id - 1;
+        } else {
+          // At some points we need to reconnect the branches to the previous
+          // bifurcation point.
+          previous_element_id = bifurcation_points_lables.back();
+          bifurcation_points_lables.pop_back();
+          connect_to_bifurcation = false;
+        }
+      }
+      out << previous_element_id << "\n";
+
+      // Loop 2. Walk down one side of the tree, take left option first, and
+      // remember bifurcation points.
+      next_element = current_element->GetDaughterLeft();
+      // Track the bifurcations
+      if (current_element->GetDaughterRight() != nullptr) {
+        bifurcation_points.push_back(current_element->GetDaughterRight());
+        bifurcation_points_lables.push_back(element_id);
+      }
+      element_id++;  // Increase ID by 1
+      if (next_element == nullptr && bifurcation_points.empty()) {
+        // If we have resolved all bifurcations and don't have any next element,
+        // we exit the loop
+        break;
+      } else if (next_element == nullptr) {
+        // Jump to previous bifurcation
+        next_element = bifurcation_points.back();
+        bifurcation_points.pop_back();
+        connect_to_bifurcation = true;
+      }
+      std::swap(current_element, next_element);  // Swap Pointers
+    }
   }
 }
 

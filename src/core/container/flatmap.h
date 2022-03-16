@@ -32,7 +32,7 @@ class UnorderedFlatmap {
   using Iterator = Pair*;
   using ConstIterator = const Pair*;
 
-  UnorderedFlatmap() {}
+  UnorderedFlatmap() = default;
 
   void reserve(uint64_t new_capacity) {
     if (new_capacity > size_) {

@@ -19,7 +19,7 @@
 namespace bdm {
 namespace neuroscience {
 
-NeuronOrNeurite::~NeuronOrNeurite() {}
+NeuronOrNeurite::~NeuronOrNeurite() = default;
 
 AgentPointer<NeuronOrNeurite> NeuronOrNeurite::GetNeuronOrNeuriteAgentPtr()
     const {
@@ -31,6 +31,14 @@ AgentPointer<NeuronOrNeurite> NeuronOrNeurite::GetNeuronOrNeuriteAgentPtr()
   assert(false && "This code should not be reached.");
   return AgentPointer<NeuronOrNeurite>();
 }
+
+StructureIdentifierSWC NeuronOrNeurite::GetIdentifierSWC() const {
+  if (IsNeuronSoma()) {
+    return StructureIdentifierSWC::kSoma;
+  } else {
+    return StructureIdentifierSWC::kApicalDendrite;
+  }
+};
 
 bool NeuronOrNeurite::IsNeuronSoma() const {
   return dynamic_cast<const NeuronSoma*>(this) != nullptr;

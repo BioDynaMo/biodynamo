@@ -138,6 +138,9 @@ void PlotNeighborMemoryHistogram(bool before) {
   TCanvas c;
   c.SetCanvasSize(1920, 1200);
   auto* rm = Simulation::GetActive()->GetResourceManager();
+  if (rm->GetNumAgents() == 0) {
+    return;
+  }
   std::vector<int64_t> diffs;
   diffs.reserve(rm->GetNumAgents() * 3);
   if (!before) {

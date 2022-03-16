@@ -35,8 +35,8 @@ namespace bdm {
 /// struct RapidDivision : public Behavior {
 ///   BDM_BEHAVIOR_HEADER(RapidDivision, Behavior, 1);
 ///
-///   RapidDivision() {}
-///   virtual ~RapidDivision() {}
+///   RapidDivision() = default;
+///   virtual ~RapidDivision() = default;
 ///
 ///   void Run(Agent* agent) override {
 ///     bdm_static_cast<Cell*>(agent)->Divide(0.5);
@@ -52,7 +52,7 @@ class StatelessBehavior : public Behavior {
   StatelessBehavior(const FPtr fptr) : fptr_(fptr) {}
   StatelessBehavior(const StatelessBehavior& other)
       : Behavior(other), fptr_(other.fptr_) {}
-  virtual ~StatelessBehavior() {}
+  virtual ~StatelessBehavior() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);

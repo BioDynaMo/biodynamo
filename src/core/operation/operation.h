@@ -43,7 +43,7 @@ inline std::string OpComputeTargetString(OpComputeTarget t) {
 }
 
 struct OperationImpl {
-  virtual ~OperationImpl() {}
+  virtual ~OperationImpl() = default;
 
   /// This function is run before the operator() call. It is useful to perform
   /// tasks such as data transfer from CPU -> GPU in GPU operations

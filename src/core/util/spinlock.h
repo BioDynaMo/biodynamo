@@ -21,7 +21,7 @@ namespace bdm {
 
 class Spinlock {
  public:
-  Spinlock() {}
+  Spinlock() = default;
 
   /// Used to store mutexes in a std::vector.
   /// Always creates a new mutex (even for the copy constructor)
