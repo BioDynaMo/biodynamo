@@ -136,7 +136,7 @@ void Simulation::Restore(Simulation&& restored) {
 
 std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   std::vector<std::string> dgrid_names;
-  std::vector<int> dgrid_resolutions;
+  std::vector<size_t> dgrid_resolutions;
   std::vector<std::array<int32_t, 3>> dgrid_dimensions;
   std::vector<uint64_t> dgrid_voxels;
 
