@@ -32,7 +32,7 @@ class ParallelResizeVector {
 
   explicit ParallelResizeVector(TRootIOCtor* io_ctor) {
   }  // Constructor for ROOT I/O
-  ParallelResizeVector() {}
+  ParallelResizeVector() = default;
   ParallelResizeVector(std::initializer_list<T> init) {
     reserve(init.size());
     for (auto& el : init) {
@@ -178,7 +178,7 @@ class ParallelResizeVector {
  private:
   static constexpr float kGrowFactor = 1.5;
   std::size_t size_ = 0;
-  UInt_t capacity_ = 0;
+  std::size_t capacity_ = 0;
   T* data_ = nullptr;                      //[capacity_]  // NOLINT
   BDM_CLASS_DEF(ParallelResizeVector, 1);  // NOLINT
 };

@@ -35,7 +35,7 @@ class A : public TestAgent {
   BDM_AGENT_HEADER(A, TestAgent, 1);
 
  public:
-  A() {}
+  A() = default;
   explicit A(int data) { data_ = data; }
 
   int GetData() const { return data_; }
@@ -48,7 +48,7 @@ class B : public TestAgent {
   BDM_AGENT_HEADER(B, TestAgent, 1);
 
  public:
-  B() {}
+  B() = default;
   explicit B(double data) { data_ = data; }
 
   double GetData() const { return data_; }

@@ -27,7 +27,7 @@
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-VtiWriter::VtiWriter() {}
+VtiWriter::VtiWriter() = default;
 
 // -----------------------------------------------------------------------------
 void VtiWriter::SetWholeExtent(const int* whole_extent) {

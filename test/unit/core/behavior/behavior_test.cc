@@ -19,9 +19,9 @@ namespace bdm {
 
 /// Helper class to test run visitor
 struct TestBehavior : public Behavior {
-  TestBehavior() {}
+  TestBehavior() = default;
 
-  virtual ~TestBehavior() {}
+  virtual ~TestBehavior() = default;
 
   void Run(Agent* agent) override {}
 

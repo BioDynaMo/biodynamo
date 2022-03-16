@@ -36,7 +36,7 @@
 namespace bdm {
 
 /// The class that bridges the simulation code with ParaView.
-class ParaviewAdaptor : VisualizationAdaptor {
+class ParaviewAdaptor : private VisualizationAdaptor {
  public:
   /// Initializes Catalyst with the predefined pipeline and allocates memory
   /// for the VTK grid structures

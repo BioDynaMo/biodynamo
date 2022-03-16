@@ -24,7 +24,7 @@ UniformGridEnvironment::LoadBalanceInfoUG::LoadBalanceInfoUG(
     : grid_(grid) {}
 
 // -----------------------------------------------------------------------------
-UniformGridEnvironment::LoadBalanceInfoUG::~LoadBalanceInfoUG() {}
+UniformGridEnvironment::LoadBalanceInfoUG::~LoadBalanceInfoUG() = default;
 
 // -----------------------------------------------------------------------------
 void UniformGridEnvironment::LoadBalanceInfoUG::Update() {
@@ -247,7 +247,7 @@ UniformGridEnvironment::LoadBalanceInfoUG::InitializeVectorFunctor::
 
 // -----------------------------------------------------------------------------
 UniformGridEnvironment::LoadBalanceInfoUG::InitializeVectorFunctor::
-    ~InitializeVectorFunctor() {}
+    ~InitializeVectorFunctor() = default;
 
 // -----------------------------------------------------------------------------
 void UniformGridEnvironment::LoadBalanceInfoUG::InitializeVectorFunctor::

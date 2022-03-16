@@ -229,7 +229,7 @@ int OpenCLState::ClAssert(int const code, char const* const file,
 
 // Empty implementation to avoid linking errors
 struct OpenCLState::OpenCLImpl {};
-OpenCLState::OpenCLState() {}
+OpenCLState::OpenCLState() = default;
 cl::Context* OpenCLState::GetOpenCLContext() { return nullptr; }
 cl::CommandQueue* OpenCLState::GetOpenCLCommandQueue() { return nullptr; }
 std::vector<cl::Device>* OpenCLState::GetOpenCLDeviceList() { return nullptr; }

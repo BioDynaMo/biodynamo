@@ -20,7 +20,7 @@ namespace bdm {
 template <typename T>
 class Iterator {
  public:
-  virtual ~Iterator() {}
+  virtual ~Iterator() = default;
   virtual bool HasNext() const = 0;
   virtual T Next() = 0;
 };

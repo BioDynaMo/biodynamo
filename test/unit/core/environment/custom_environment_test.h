@@ -29,10 +29,10 @@ class APerson : public Cell {
   BDM_AGENT_HEADER(APerson, Cell, 1);
 
  public:
-  APerson() {}
+  APerson() = default;
   explicit APerson(int a, bool g, std::string c)
       : age_(a), gender_(g), city_(c) {}
-  virtual ~APerson() {}
+  virtual ~APerson() = default;
 
   int age_ = 0;
   bool gender_ = 0;

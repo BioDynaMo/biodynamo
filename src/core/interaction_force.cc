@@ -104,8 +104,9 @@ void InteractionForce::ForceBetweenSpheres(const Agent* sphere_lhs,
   double k = 2;      // repulsion coeff
   double f = k * delta - gamma * std::sqrt(r * delta);
 
-  double module = f / center_distance;
-  Double3 force2on1({module * comp1, module * comp2, module * comp3});
+  double force_module = f / center_distance;
+  Double3 force2on1(
+      {force_module * comp1, force_module * comp2, force_module * comp3});
   *result = force2on1;
 }
 
@@ -306,8 +307,9 @@ Double4 InteractionForce::ComputeForceOfASphereOnASphere(const Double3& c1,
   } else {
     // the force is prop to the square of the interpentration distance and to
     // the radii.
-    double module = a / distance_between_centers;
-    Double4 force2on1({module * comp1, module * comp2, module * comp3, 0.0});
+    double force_module = a / distance_between_centers;
+    Double4 force2on1({force_module * comp1, force_module * comp2,
+                       force_module * comp3, 0.0});
     return force2on1;
   }
 }

@@ -532,11 +532,11 @@ void Scheduler::ScheduleOps() {
       for (auto it2 = op_list->begin(); it2 != op_list->end(); ++it2) {
         if (op == (*it2)) {
           it2 = op_list->erase(it2);
-          goto label;
+          goto LABEL;
         }
       }
     }
-  label:
+  LABEL:
     it = unschedule_ops_.erase(it);
   }
 }

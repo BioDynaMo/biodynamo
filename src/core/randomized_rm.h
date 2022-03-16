@@ -38,11 +38,11 @@ class RandomizedRm : public TBaseRm {
 
 // -----------------------------------------------------------------------------
 template <typename TBaseRm>
-RandomizedRm<TBaseRm>::RandomizedRm() {}
+RandomizedRm<TBaseRm>::RandomizedRm() = default;
 
 // -----------------------------------------------------------------------------
 template <typename TBaseRm>
-RandomizedRm<TBaseRm>::~RandomizedRm() {}
+RandomizedRm<TBaseRm>::~RandomizedRm() = default;
 
 struct Ubrng {
   using result_type = uint32_t;

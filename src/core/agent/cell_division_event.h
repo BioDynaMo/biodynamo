@@ -33,7 +33,7 @@ struct CellDivisionEvent : public NewAgentEvent {
   CellDivisionEvent(double volume_ratio, double phi, double theta)
       : volume_ratio(volume_ratio), phi(phi), theta(theta) {}
 
-  virtual ~CellDivisionEvent() {}
+  virtual ~CellDivisionEvent() = default;
 
   NewAgentEventUid GetUid() const override { return kUid; }
 

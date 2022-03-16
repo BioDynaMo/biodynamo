@@ -34,7 +34,7 @@ class SphericalAgent : public Agent {
   explicit SphericalAgent(const Double3& position)
       : position_(position), diameter_(1.0) {}
 
-  virtual ~SphericalAgent() {}
+  virtual ~SphericalAgent() = default;
 
   Shape GetShape() const override { return Shape::kSphere; }
 

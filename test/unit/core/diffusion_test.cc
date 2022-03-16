@@ -401,7 +401,7 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[1]);
   EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[2]);
   EXPECT_EQ(1331u, restored_dgrid->GetNumBoxes());
-  EXPECT_EQ(11, restored_dgrid->GetResolution());
+  EXPECT_EQ(11u, restored_dgrid->GetResolution());
 
   remove(ROOTFILE);
   delete dgrid;

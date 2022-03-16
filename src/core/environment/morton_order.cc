@@ -168,7 +168,7 @@ class MortonIterator : public Iterator<uint64_t> {
         next_morton_code_(start_morton_code),
         offset_pos_(offset_pos),
         offset_index_(offset_index) {}
-  virtual ~MortonIterator() {}
+  virtual ~MortonIterator() = default;
 
   bool HasNext() const override { return next_index_ <= last_index_; }
 

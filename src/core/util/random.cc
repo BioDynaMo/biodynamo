@@ -172,7 +172,7 @@ template MathArray<int, 3> DistributionRng<int>::Sample3Impl(TRandom*);
 
 // -----------------------------------------------------------------------------
 UniformRng::UniformRng(double min, double max) : min_(min), max_(max) {}
-UniformRng::~UniformRng() {}
+UniformRng::~UniformRng() = default;
 double UniformRng::SampleImpl(TRandom* rng) { return rng->Uniform(min_, max_); }
 
 UniformRng Random::GetUniformRng(double min, double max) {
@@ -181,7 +181,7 @@ UniformRng Random::GetUniformRng(double min, double max) {
 
 // -----------------------------------------------------------------------------
 GausRng::GausRng(double mean, double sigma) : mean_(mean), sigma_(sigma) {}
-GausRng::~GausRng() {}
+GausRng::~GausRng() = default;
 double GausRng::SampleImpl(TRandom* rng) { return rng->Gaus(mean_, sigma_); }
 
 GausRng Random::GetGausRng(double mean, double sigma) {
@@ -190,14 +190,14 @@ GausRng Random::GetGausRng(double mean, double sigma) {
 
 // -----------------------------------------------------------------------------
 ExpRng::ExpRng(double tau) : tau_(tau) {}
-ExpRng::~ExpRng() {}
+ExpRng::~ExpRng() = default;
 double ExpRng::SampleImpl(TRandom* rng) { return rng->Exp(tau_); }
 
 ExpRng Random::GetExpRng(double tau) { return ExpRng(tau); }
 
 // -----------------------------------------------------------------------------
 LandauRng::LandauRng(double mean, double sigma) : mean_(mean), sigma_(sigma) {}
-LandauRng::~LandauRng() {}
+LandauRng::~LandauRng() = default;
 double LandauRng::SampleImpl(TRandom* rng) {
   return rng->Landau(mean_, sigma_);
 }
@@ -208,7 +208,7 @@ LandauRng Random::GetLandauRng(double mean, double sigma) {
 
 // -----------------------------------------------------------------------------
 PoissonDRng::PoissonDRng(double mean) : mean_(mean) {}
-PoissonDRng::~PoissonDRng() {}
+PoissonDRng::~PoissonDRng() = default;
 double PoissonDRng::SampleImpl(TRandom* rng) { return rng->PoissonD(mean_); }
 
 PoissonDRng Random::GetPoissonDRng(double mean) { return PoissonDRng(mean); }
@@ -216,7 +216,7 @@ PoissonDRng Random::GetPoissonDRng(double mean) { return PoissonDRng(mean); }
 // -----------------------------------------------------------------------------
 BreitWignerRng::BreitWignerRng(double mean, double gamma)
     : mean_(mean), gamma_(gamma) {}
-BreitWignerRng::~BreitWignerRng() {}
+BreitWignerRng::~BreitWignerRng() = default;
 double BreitWignerRng::SampleImpl(TRandom* rng) {
   return rng->BreitWigner(mean_, gamma_);
 }
@@ -228,7 +228,7 @@ BreitWignerRng Random::GetBreitWignerRng(double mean, double gamma) {
 // -----------------------------------------------------------------------------
 UserDefinedDistRng1D::UserDefinedDistRng1D(TF1* function, const char* option)
     : function_(function), option_(option) {}
-UserDefinedDistRng1D::~UserDefinedDistRng1D() {}
+UserDefinedDistRng1D::~UserDefinedDistRng1D() = default;
 
 // TODO(Lukas) after the update to ROOT 6.24 pass
 // rng to GetRandom to avoid performance issue.
@@ -262,7 +262,7 @@ UserDefinedDistRng1D Random::GetUserDefinedDistRng1D(
 // -----------------------------------------------------------------------------
 UserDefinedDistRng2D::UserDefinedDistRng2D(TF2* function, const char* option)
     : function_(function), option_(option) {}
-UserDefinedDistRng2D::~UserDefinedDistRng2D() {}
+UserDefinedDistRng2D::~UserDefinedDistRng2D() = default;
 
 // TODO(Lukas) after the update to ROOT 6.24 pass
 // rng to GetRandom to avoid performance issue.
@@ -301,7 +301,7 @@ UserDefinedDistRng2D Random::GetUserDefinedDistRng2D(
 // -----------------------------------------------------------------------------
 UserDefinedDistRng3D::UserDefinedDistRng3D(TF3* function, const char* option)
     : function_(function), option_(option) {}
-UserDefinedDistRng3D::~UserDefinedDistRng3D() {}
+UserDefinedDistRng3D::~UserDefinedDistRng3D() = default;
 
 // TODO(Lukas) after the update to ROOT 6.24 pass
 // rng to GetRandom to avoid performance issue.
@@ -344,7 +344,7 @@ UserDefinedDistRng3D Random::GetUserDefinedDistRng3D(
 
 // -----------------------------------------------------------------------------
 BinomialRng::BinomialRng(int ntot, double prob) : ntot_(ntot), prob_(prob) {}
-BinomialRng::~BinomialRng() {}
+BinomialRng::~BinomialRng() = default;
 int BinomialRng::SampleImpl(TRandom* rng) {
   return rng->Binomial(ntot_, prob_);
 }
@@ -355,7 +355,7 @@ BinomialRng Random::GetBinomialRng(int ntot, double prob) {
 
 // -----------------------------------------------------------------------------
 PoissonRng::PoissonRng(double mean) : mean_(mean) {}
-PoissonRng::~PoissonRng() {}
+PoissonRng::~PoissonRng() = default;
 int PoissonRng::SampleImpl(TRandom* rng) { return rng->Poisson(mean_); }
 
 PoissonRng Random::GetPoissonRng(double mean) { return PoissonRng(mean); }

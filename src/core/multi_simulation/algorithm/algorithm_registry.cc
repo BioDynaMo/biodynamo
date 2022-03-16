@@ -53,7 +53,7 @@ bool AlgorithmRegistry::AddAlgorithm(const std::string &algo_name,
   return true;
 }
 
-AlgorithmRegistry::AlgorithmRegistry() {}
+AlgorithmRegistry::AlgorithmRegistry() = default;
 
 }  // namespace experimental
 }  // namespace bdm

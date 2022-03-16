@@ -15,8 +15,8 @@
 #include "neuroscience/neuron_soma.h"
 
 #include <algorithm>
-#include <chrono>
 #include <ctime>
+#include <locale>
 
 #include "core/resource_manager.h"
 #include "neuroscience/neurite_element.h"
@@ -26,9 +26,9 @@
 namespace bdm {
 namespace neuroscience {
 
-NeuronSoma::NeuronSoma() {}
+NeuronSoma::NeuronSoma() = default;
 
-NeuronSoma::~NeuronSoma() {}
+NeuronSoma::~NeuronSoma() = default;
 
 NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
 
@@ -150,9 +150,14 @@ void NeuronSoma::PrintSWC(std::ostream& out) const {
   out << "# This SWC file was created with BioDynaMo and is (very) likely "
          "to\n# be the result of a simulation. Be careful not to confuse it\n"
          "# with real data. \n\n";
-  auto datetime_raw = std::chrono::system_clock::now();
-  auto datetime = std::chrono::system_clock::to_time_t(datetime_raw);
-  out << "# Created at: " << std::ctime(&datetime) << "\n\n";
+  // Example for localtime_r: https://tinyurl.com/localtimer
+  struct tm newtime;
+  time_t ltime;
+  ltime = time(&ltime);
+  localtime_r(&ltime, &newtime);
+  char creation_time[100];
+  std::strftime(creation_time, sizeof(creation_time), "%A, %F, %T", &newtime);
+  out << "# Created at: " << creation_time << "\n\n";
 
   // 2. Write the line for the soma at the beginning of the file
   int element_id{1};

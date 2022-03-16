@@ -29,8 +29,8 @@ namespace bdm {
 
 class TimingAggregator {
  public:
-  TimingAggregator() {}
-  ~TimingAggregator() {}
+  TimingAggregator() = default;
+  ~TimingAggregator() = default;
 
   void AddEntry(const std::string& key, int64_t value) {
     if (!timings_.count(key)) {
