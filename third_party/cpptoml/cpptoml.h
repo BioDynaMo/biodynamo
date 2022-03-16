@@ -20,6 +20,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/real.h"
 
 #if __cplusplus > 201103L
 #define CPPTOML_DEPRECATED(reason) [[deprecated(reason)]]
@@ -37,6 +38,8 @@
 
 namespace cpptoml
 {
+using real = bdm::real;
+
 class writer; // forward declaration
 class base;   // forward declaration
 #if defined(CPPTOML_USE_MAP)
@@ -273,7 +276,7 @@ class value;
 
 template <class T>
 struct valid_value
-    : is_one_of<T, std::string, int64_t, double, bool, local_date, local_time,
+    : is_one_of<T, std::string, int64_t, real, bool, local_date, local_time,
                 local_datetime, offset_datetime>
 {
 };
@@ -316,7 +319,7 @@ struct value_traits<T,
 {
     using value_type = typename std::decay<T>::type;
 
-    using type = value<double>;
+    using type = value<real>;
 
     static value_type construct(T&& val)
     {
@@ -562,16 +565,16 @@ inline std::shared_ptr<value<T>> base::as()
     return std::dynamic_pointer_cast<value<T>>(shared_from_this());
 }
 
-// special case value<double> to allow getting an integer parameter as a
-// double value
+// special case value<real> to allow getting an integer parameter as a
+// real value
 template <>
-inline std::shared_ptr<value<double>> base::as()
+inline std::shared_ptr<value<real>> base::as()
 {
-    if (auto v = std::dynamic_pointer_cast<value<double>>(shared_from_this()))
+    if (auto v = std::dynamic_pointer_cast<value<real>>(shared_from_this()))
         return v;
 
     if (auto v = std::dynamic_pointer_cast<value<int64_t>>(shared_from_this()))
-        return make_value<double>(static_cast<double>(v->get()));
+        return make_value<real>(static_cast<real>(v->get()));
 
     return nullptr;
 }
@@ -582,20 +585,20 @@ inline std::shared_ptr<const value<T>> base::as() const
     return std::dynamic_pointer_cast<const value<T>>(shared_from_this());
 }
 
-// special case value<double> to allow getting an integer parameter as a
-// double value
+// special case value<real> to allow getting an integer parameter as a
+// real value
 template <>
-inline std::shared_ptr<const value<double>> base::as() const
+inline std::shared_ptr<const value<real>> base::as() const
 {
     if (auto v
-        = std::dynamic_pointer_cast<const value<double>>(shared_from_this()))
+        = std::dynamic_pointer_cast<const value<real>>(shared_from_this()))
         return v;
 
     if (auto v = as<int64_t>())
     {
-        // the below has to be a non-const value<double> due to a bug in
+        // the below has to be a non-const value<real> due to a bug in
         // libc++: https://llvm.org/bugs/show_bug.cgi?id=18843
-        return make_value<double>(static_cast<double>(v->get()));
+        return make_value<real>(static_cast<real>(v->get()));
     }
 
     return nullptr;
@@ -2444,7 +2447,7 @@ class parser
         }
     }
 
-    std::shared_ptr<value<double>> parse_float(std::string::iterator& it,
+    std::shared_ptr<value<real>> parse_float(std::string::iterator& it,
                                                const std::string::iterator& end)
     {
         std::string v{it, end};
@@ -2452,7 +2455,7 @@ class parser
         it = end;
         try
         {
-            return make_value<double>(std::stod(v));
+            return make_value<real>(std::stod(v));
         }
         catch (const std::invalid_argument& ex)
         {
@@ -2646,7 +2649,7 @@ class parser
             case parse_type::INT:
                 return parse_value_array<int64_t>(it, end);
             case parse_type::FLOAT:
-                return parse_value_array<double>(it, end);
+                return parse_value_array<real>(it, end);
             case parse_type::BOOL:
                 return parse_value_array<bool>(it, end);
             case parse_type::ARRAY:
@@ -2887,7 +2890,7 @@ void base::accept(Visitor&& visitor, Args&&... args) const
     if (is_value())
     {
         using value_acceptor
-            = value_accept<std::string, int64_t, double, bool, local_date,
+            = value_accept<std::string, int64_t, real, bool, local_date,
                            local_time, local_datetime, offset_datetime>;
         value_acceptor::accept(*this, std::forward<Visitor>(visitor),
                                std::forward<Args>(args)...);
@@ -3087,9 +3090,9 @@ class toml_writer
     }
 
     /**
-     * Write out a double.
+     * Write out a real.
      */
-    void write(const value<double>& v)
+    void write(const value<real>& v)
     {
         std::ios::fmtflags flags{stream_.flags()};
 

@@ -123,7 +123,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ("result-dir", param->output_dir);
     EXPECT_EQ("runge-kutta", param->diffusion_method);
     EXPECT_EQ(3600u, param->backup_interval);
-    EXPECT_EQ(0.0125, param->simulation_time_step);
+    EXPECT_EQ(real(0.0125), param->simulation_time_step);
     EXPECT_EQ(1u, param->unschedule_default_operations.size());
     EXPECT_EQ("mechanical forces", param->unschedule_default_operations[0]);
     EXPECT_EQ(2.0, param->simulation_max_displacement);
