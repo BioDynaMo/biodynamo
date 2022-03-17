@@ -33,7 +33,7 @@ TEST(ParamTest, ToJsonString) {
   Param param;
   auto j_param = json::parse(param.ToJsonString());
 
-  EXPECT_REAL_EQ(real(3.14), j_param["bdm::TestParamGroup"]["test_param1"].get<real>());
+  EXPECT_REAL_EQ(real_t(3.14), j_param["bdm::TestParamGroup"]["test_param1"].get<real_t>());
   EXPECT_EQ(42u, j_param["bdm::TestParamGroup"]["test_param2"].get<uint64_t>());
   EXPECT_EQ(-1, j_param["bdm::TestParamGroup"]["test_param3"].get<int>());
   EXPECT_EQ("output", j_param["bdm::Param"]["output_dir"].get<std::string>());
@@ -80,7 +80,7 @@ TEST(ParamTest, RestoreFromJson) {
   EXPECT_TRUE(vis_cell.find("type") != vis_cell.end());
 
   auto* test_param = param.Get<TestParamGroup>();
-  EXPECT_REAL_EQ(real(6.28), test_param->test_param1);
+  EXPECT_REAL_EQ(real_t(6.28), test_param->test_param1);
   EXPECT_EQ(42u, test_param->test_param2);
   EXPECT_EQ(-10, test_param->test_param3);
 
@@ -93,7 +93,7 @@ TEST(ParamTest, RestoreFromJson) {
   EXPECT_TRUE(vis_cell.find("some-dm") != vis_cell.end());
 
   test_param = param.Get<TestParamGroup>();
-  EXPECT_REAL_EQ(real(6.28), test_param->test_param1);
+  EXPECT_REAL_EQ(real_t(6.28), test_param->test_param1);
   EXPECT_EQ(123u, test_param->test_param2);
   EXPECT_EQ(-10, test_param->test_param3);
 }
@@ -147,9 +147,9 @@ TEST(ParamTest, OptimizationParam) {
   EXPECT_EQ(3u, opt_param->params.size());
   auto* swarm_param = static_cast<ParticleSwarmParam*>(opt_param->params[0]);
   EXPECT_EQ("bdm::SimParam::infection_probablity", swarm_param->param_name);
-  EXPECT_EQ(real(0.001), swarm_param->lower_bound);
+  EXPECT_EQ(real_t(0.001), swarm_param->lower_bound);
   EXPECT_EQ(1, swarm_param->upper_bound);
-  EXPECT_EQ(real(0.005), swarm_param->initial_value);
+  EXPECT_EQ(real_t(0.005), swarm_param->initial_value);
   EXPECT_EQ(10u, opt_param->repetition);
   EXPECT_EQ(1000u, opt_param->max_iterations);
 }

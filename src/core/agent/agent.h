@@ -217,7 +217,7 @@ class Agent {
   // ---------------------------------------------------------------------------
 
   virtual Real3 CalculateDisplacement(const InteractionForce* force,
-                                        real squared_radius, real dt) = 0;
+                                        real_t squared_radius, real_t dt) = 0;
 
   virtual void ApplyDisplacement(const Real3& displacement) = 0;
 
@@ -225,9 +225,9 @@ class Agent {
 
   virtual void SetPosition(const Real3& pos) = 0;
 
-  virtual real GetDiameter() const = 0;
+  virtual real_t GetDiameter() const = 0;
 
-  virtual void SetDiameter(real diameter) = 0;
+  virtual void SetDiameter(real_t diameter) = 0;
 
   void RemoveFromSimulation() const;
 

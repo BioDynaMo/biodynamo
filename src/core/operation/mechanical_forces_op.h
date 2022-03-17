@@ -108,9 +108,9 @@ class MechanicalForcesOp : public AgentOperationImpl {
 
  private:
   InteractionForce* force_ = nullptr;
-  real squared_radius_ = 0;
-  std::vector<real> last_time_run_;
-  std::vector<real> delta_time_;
+  real_t squared_radius_ = 0;
+  std::vector<real_t> last_time_run_;
+  std::vector<real_t> delta_time_;
   std::vector<uint64_t> last_iteration_;
 };
 

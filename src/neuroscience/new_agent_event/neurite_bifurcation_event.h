@@ -32,7 +32,7 @@ namespace neuroscience {
 struct NeuriteBifurcationEvent : public NewAgentEvent {
   static const NewAgentEventUid kUid;
 
-  NeuriteBifurcationEvent(real length, real diameter_l, real diameter_r,
+  NeuriteBifurcationEvent(real_t length, real_t diameter_l, real_t diameter_r,
                           const Real3& direction_l,
                           const Real3& direction_r)
       : length(length),
@@ -46,11 +46,11 @@ struct NeuriteBifurcationEvent : public NewAgentEvent {
   NewAgentEventUid GetUid() const override { return kUid; }
 
   /// length of new branches
-  real length;
+  real_t length;
   /// diameter  of new branch left
-  real diameter_left;
+  real_t diameter_left;
   /// diameter of new branch right
-  real diameter_right;
+  real_t diameter_right;
   /// direction branch right
   /// NB: direction will be corrected if it is pointing backward.
   Real3 direction_left;

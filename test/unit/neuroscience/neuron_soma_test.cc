@@ -35,7 +35,7 @@ TEST(NeuronSomaTest, ExtendNewNeuriteElementSphericalCoordinates) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   // create neuron
@@ -86,7 +86,7 @@ TEST(NeuronSomaTest, ExtendNewNeurite) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
 
   // create neuron
@@ -130,7 +130,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Real3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
@@ -199,7 +199,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Real3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
@@ -287,7 +287,7 @@ TEST(NeuriteElementTest, Branch) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Real3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
@@ -389,7 +389,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Real3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
@@ -464,7 +464,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Real3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
@@ -516,7 +516,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Real3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
@@ -643,7 +643,7 @@ TEST(NeuriteElementTest, Bifurcate) {
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Real3 origin = {0, 0, 0};
   NeuronSoma* neuron = new NeuronSoma(origin);
   neuron->SetDiameter(20);
@@ -869,38 +869,38 @@ TEST(DISABLED_NeuronSomaNeuriteElementTest, Displacement) {
   // // check results
   // // cell 1
   // auto final_position = (*cells)[0].GetPosition();
-  // EXPECT_NEAR(0, final_position[0], abs_error<real>::value);
+  // EXPECT_NEAR(0, final_position[0], abs_error<real_t>::value);
   // EXPECT_NEAR(-0.07797206232558615, final_position[1],
-  //             abs_error<real>::value);
-  // EXPECT_NEAR(0, final_position[2], abs_error<real>::value);
+  //             abs_error<real_t>::value);
+  // EXPECT_NEAR(0, final_position[2], abs_error<real_t>::value);
   // // cell 2
   // final_position = (*cells)[1].GetPosition();
-  // EXPECT_NEAR(0, final_position[0], abs_error<real>::value);
+  // EXPECT_NEAR(0, final_position[0], abs_error<real_t>::value);
   // EXPECT_NEAR(5.0992371702325645, final_position[1],
-  // abs_error<real>::value);
-  // EXPECT_NEAR(0, final_position[2], abs_error<real>::value);
+  // abs_error<real_t>::value);
+  // EXPECT_NEAR(0, final_position[2], abs_error<real_t>::value);
   //
   // // check if tractor_force has been reset to zero
   // // cell 1
   // auto final_tf = (*cells)[0].GetTractorForce();
-  // EXPECT_NEAR(0, final_tf[0], abs_error<real>::value);
-  // EXPECT_NEAR(0, final_tf[1], abs_error<real>::value);
-  // EXPECT_NEAR(0, final_tf[2], abs_error<real>::value);
+  // EXPECT_NEAR(0, final_tf[0], abs_error<real_t>::value);
+  // EXPECT_NEAR(0, final_tf[1], abs_error<real_t>::value);
+  // EXPECT_NEAR(0, final_tf[2], abs_error<real_t>::value);
   // // cell 2
   // final_tf = (*cells)[1].GetTractorForce();
-  // EXPECT_NEAR(0, final_tf[0], abs_error<real>::value);
-  // EXPECT_NEAR(0, final_tf[1], abs_error<real>::value);
-  // EXPECT_NEAR(0, final_tf[2], abs_error<real>::value);
+  // EXPECT_NEAR(0, final_tf[0], abs_error<real_t>::value);
+  // EXPECT_NEAR(0, final_tf[1], abs_error<real_t>::value);
+  // EXPECT_NEAR(0, final_tf[2], abs_error<real_t>::value);
   //
   // // remaining fields should remain unchanged
   // // cell 1
-  // EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<real>::value);
-  // EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<real>::value);
-  // EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<real>::value);
+  // EXPECT_NEAR(0.3, (*cells)[0].GetAdherence(), abs_error<real_t>::value);
+  // EXPECT_NEAR(9, (*cells)[0].GetDiameter(), abs_error<real_t>::value);
+  // EXPECT_NEAR(1.4, (*cells)[0].GetMass(), abs_error<real_t>::value);
   // // cell 2
-  // EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<real>::value);
-  // EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<real>::value);
-  // EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<real>::value);
+  // EXPECT_NEAR(0.4, (*cells)[1].GetAdherence(), abs_error<real_t>::value);
+  // EXPECT_NEAR(11, (*cells)[1].GetDiameter(), abs_error<real_t>::value);
+  // EXPECT_NEAR(1.1, (*cells)[1].GetMass(), abs_error<real_t>::value);
 }
 
 }  // namespace neuroscience

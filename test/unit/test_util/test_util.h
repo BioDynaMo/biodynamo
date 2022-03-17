@@ -27,7 +27,7 @@ template <typename T>
 struct abs_error {
   static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
                 "abs_error<T> may only be used with T = { float, double }");
-  static constexpr real value = 1e-24;
+  static constexpr real_t value = 1e-24;
 };
 
 template <>
@@ -61,11 +61,11 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
 // -----------------------------------------------------------------------------
 // Macro for comparing floating-point numbers with varying precision 
 #define EXPECT_REAL_EQ(val1, val2) \
-  EXPECT_PRED_FORMAT2(::testing::internal::CmpHelperFloatingPointEQ<real>, \
+  EXPECT_PRED_FORMAT2(::testing::internal::CmpHelperFloatingPointEQ<real_t>, \
                       val1, val2)
 
 // -----------------------------------------------------------------------------
-/// Helper macro to compare two real arrays of size three
+/// Helper macro to compare two real_t arrays of size three
 /// parameter actual and expected have been switched for better readability
 ///
 ///      EXPECT_ARR_NEAR(cells[0].GetPosition(), {123.12345, 10, 123.2345677});
@@ -73,14 +73,14 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
 #define EXPECT_ARR_NEAR(...)                                         \
   [](const Real3& actual, const Real3& expected) {               \
     for (size_t i = 0; i < actual.size(); i++) {                     \
-      EXPECT_NEAR(expected[i], actual[i], abs_error<real>::value); \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<real_t>::value); \
     }                                                                \
   }(__VA_ARGS__);
 
 #define EXPECT_VEC_NEAR(...)                                                   \
-  [](const std::vector<real>& actual, const std::vector<real>& expected) { \
+  [](const std::vector<real_t>& actual, const std::vector<real_t>& expected) { \
     for (size_t i = 0; i < actual.size(); i++) {                               \
-      EXPECT_NEAR(expected[i], actual[i], abs_error<real>::value);           \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<real_t>::value);           \
     }                                                                          \
   }(__VA_ARGS__);
 
@@ -94,7 +94,7 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
 #define EXPECT_ARR_NEAR4(...)                                        \
   [](const Real4& actual, const Real4& expected) {               \
     for (size_t i = 0; i < actual.size(); i++) {                     \
-      EXPECT_NEAR(expected[i], actual[i], abs_error<real>::value); \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<real_t>::value); \
     }                                                                \
   }(__VA_ARGS__);
 

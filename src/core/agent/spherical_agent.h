@@ -29,7 +29,7 @@ class SphericalAgent : public Agent {
  public:
   SphericalAgent() : diameter_(1.0) {}
 
-  explicit SphericalAgent(real diameter) : diameter_(diameter) {}
+  explicit SphericalAgent(real_t diameter) : diameter_(diameter) {}
 
   explicit SphericalAgent(const Real3& position)
       : position_(position), diameter_(1.0) {}
@@ -38,11 +38,11 @@ class SphericalAgent : public Agent {
 
   Shape GetShape() const override { return Shape::kSphere; }
 
-  real GetDiameter() const override { return diameter_; }
+  real_t GetDiameter() const override { return diameter_; }
 
   const Real3& GetPosition() const override { return position_; }
 
-  void SetDiameter(real diameter) override {
+  void SetDiameter(real_t diameter) override {
     if (diameter > diameter_) {
       SetPropagateStaticness();
     }
@@ -57,7 +57,7 @@ class SphericalAgent : public Agent {
   /// This agent type has an empty implementation for CalculateDisplacement.
   /// Provide an implementation in a derived class if needed.
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real squared_radius, real dt) override {
+                                real_t squared_radius, real_t dt) override {
     return {0, 0, 0};
   }
 
@@ -73,7 +73,7 @@ class SphericalAgent : public Agent {
   /// NB: Use setter and don't assign values directly
   Real3 position_ = {{0, 0, 0}};
   /// NB: Use setter and don't assign values directly
-  real diameter_ = 0;
+  real_t diameter_ = 0;
 };
 
 }  // namespace bdm

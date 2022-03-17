@@ -162,7 +162,7 @@ void GpuHelper::FindGpuDevicesOpenCL() {
           if (!d->getInfo<CL_DEVICE_AVAILABLE>())  // NOLINT
             continue;
 
-          // Only select GPU's with real support
+          // Only select GPU's with real_t support
           if (!d->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>())  // NOLINT
             continue;
 

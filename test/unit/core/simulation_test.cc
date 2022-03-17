@@ -123,7 +123,7 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ("result-dir", param->output_dir);
     EXPECT_EQ("runge-kutta", param->diffusion_method);
     EXPECT_EQ(3600u, param->backup_interval);
-    EXPECT_EQ(real(0.0125), param->simulation_time_step);
+    EXPECT_EQ(real_t(0.0125), param->simulation_time_step);
     EXPECT_EQ(1u, param->unschedule_default_operations.size());
     EXPECT_EQ("mechanical forces", param->unschedule_default_operations[0]);
     EXPECT_EQ(2.0, param->simulation_max_displacement);
@@ -179,12 +179,12 @@ class SimulationTest : public ::testing::Test {
     EXPECT_TRUE(param->detect_static_agents);
     EXPECT_TRUE(param->cache_neighbors);
     EXPECT_NEAR(0.123, param->agent_uid_defragmentation_low_watermark,
-                abs_error<real>::value);
+                abs_error<real_t>::value);
     EXPECT_NEAR(0.456, param->agent_uid_defragmentation_high_watermark,
-                abs_error<real>::value);
+                abs_error<real_t>::value);
     EXPECT_FALSE(param->use_bdm_mem_mgr);
     EXPECT_EQ(7u, param->mem_mgr_aligned_pages_shift);
-    EXPECT_NEAR(1.123, param->mem_mgr_growth_rate, abs_error<real>::value);
+    EXPECT_NEAR(1.123, param->mem_mgr_growth_rate, abs_error<real_t>::value);
     EXPECT_EQ(3u, param->mem_mgr_max_mem_per_thread_factor);
     EXPECT_FALSE(param->minimize_memory_while_rebalancing);
     EXPECT_EQ(Param::MappedDataArrayMode::kCache,
@@ -377,9 +377,9 @@ TEST_F(SimulationTest, MultipleJsonConfigsAndPrecedence) {
   EXPECT_EQ(1u, param->random_seed);
   EXPECT_EQ(2u, param->scheduling_batch_size);
   EXPECT_EQ("cli1", param->backup_file);
-  EXPECT_NEAR(1.14, param->mem_mgr_growth_rate, abs_error<real>::value);
+  EXPECT_NEAR(1.14, param->mem_mgr_growth_rate, abs_error<real_t>::value);
   EXPECT_EQ(5u, param->backup_interval);
-  EXPECT_NEAR(6.0, param->simulation_time_step, abs_error<real>::value);
+  EXPECT_NEAR(6.0, param->simulation_time_step, abs_error<real_t>::value);
 
   std::remove("ctor1.json");
   std::remove("ctor2.json");
@@ -503,7 +503,7 @@ TEST_F(IOTest, Simulation) {
   EXPECT_EQ(2u, restored->GetResourceManager()->GetNumAgents());
 
   // store next random number for later comparison
-  std::vector<real> next_rand;
+  std::vector<real_t> next_rand;
   next_rand.resize(omp_get_max_threads());
 #pragma omp parallel
   {
@@ -525,7 +525,7 @@ TEST_F(IOTest, Simulation) {
   // From each data member in simulation do one check
   // For more detailed iotest see the repective classes
   // rm and param should still be valid!
-  const real kEpsilon = abs_error<real>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   EXPECT_EQ(2u, rm->GetNumAgents());
   EXPECT_NEAR(3.14, param->simulation_time_step, kEpsilon);
 #pragma omp parallel

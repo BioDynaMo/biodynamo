@@ -62,13 +62,13 @@ void ProgressBar::PrintProgressBar(std::ostream &out) {
 
   // 1. Get current and compute elapsed time
   int64_t current_time = Timing::Timestamp();
-  real elapsed_time = static_cast<real>(current_time - start_time_);
+  real_t elapsed_time = static_cast<real_t>(current_time - start_time_);
 
   // 2. Compute ETA
-  real fraction_computed =
-      static_cast<real>(executed_steps_) / static_cast<real>(total_steps_);
+  real_t fraction_computed =
+      static_cast<real_t>(executed_steps_) / static_cast<real_t>(total_steps_);
   assert(fraction_computed <= 1);
-  real remaining_time = elapsed_time / fraction_computed - elapsed_time;
+  real_t remaining_time = elapsed_time / fraction_computed - elapsed_time;
 
   // 3. Print progress bar
   size_t n_steps_computed = std::floor(fraction_computed / 0.02);

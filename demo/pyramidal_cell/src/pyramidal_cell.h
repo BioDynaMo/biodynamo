@@ -48,9 +48,9 @@ struct ApicalDendriteGrowth : public Behavior {
       Real3 gradient;
       dg_guide_->GetGradient(dendrite->GetPosition(), &gradient);
 
-      real gradient_weight = 0.06;
-      real randomness_weight = 0.3;
-      real old_direction_weight = 4;
+      real_t gradient_weight = 0.06;
+      real_t randomness_weight = 0.3;
+      real_t old_direction_weight = 4;
 
       auto random_axis = random->template UniformArray<3>(-1, 1);
       auto old_direction = dendrite->GetSpringAxis() * old_direction_weight;
@@ -102,9 +102,9 @@ struct BasalDendriteGrowth : public Behavior {
       Real3 gradient;
       dg_guide_->GetGradient(dendrite->GetPosition(), &gradient);
 
-      real gradient_weight = 0.03;
-      real randomness_weight = 0.4;
-      real old_direction_weight = 6;
+      real_t gradient_weight = 0.03;
+      real_t randomness_weight = 0.4;
+      real_t old_direction_weight = 6;
 
       auto random_axis = random->template UniformArray<3>(-1, 1);
       auto old_direction = dendrite->GetSpringAxis() * old_direction_weight;

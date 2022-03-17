@@ -13,7 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/container/shared_data.h"
-#include "core/real.h"
+#include "core/real_t.h"
 #include <gtest/gtest.h>
 #include <vector>
 
@@ -29,7 +29,7 @@ TEST(SharedDataTest, ReSize) {
 
 // Test if shared data is occupying full cache lines.
 TEST(SharedDataTest, CacheLineAlignment) {
-  // Test standard data tyes int, float, real
+  // Test standard data tyes int, float, real_t
   // Test alignment of int
   EXPECT_EQ(
       std::alignment_of<typename SharedData<int>::Data::value_type>::value,
@@ -38,9 +38,9 @@ TEST(SharedDataTest, CacheLineAlignment) {
   EXPECT_EQ(
       std::alignment_of<typename SharedData<float>::Data::value_type>::value,
       BDM_CACHE_LINE_SIZE);
-  // Test alignment of real
+  // Test alignment of real_t
   EXPECT_EQ(
-      std::alignment_of<typename SharedData<real>::Data::value_type>::value,
+      std::alignment_of<typename SharedData<real_t>::Data::value_type>::value,
       BDM_CACHE_LINE_SIZE);
   // Test size of vector components int
   EXPECT_EQ(sizeof(typename SharedData<int>::Data::value_type),
@@ -48,22 +48,22 @@ TEST(SharedDataTest, CacheLineAlignment) {
   // Test size of vector components float
   EXPECT_EQ(sizeof(typename SharedData<float>::Data::value_type),
             BDM_CACHE_LINE_SIZE);
-  // Test size of vector components real
-  EXPECT_EQ(sizeof(typename SharedData<real>::Data::value_type),
+  // Test size of vector components real_t
+  EXPECT_EQ(sizeof(typename SharedData<real_t>::Data::value_type),
             BDM_CACHE_LINE_SIZE);
 
-  // Test a chache line fully filled with reals.
-  // Test alignment of real[max_real], e.g. max cache line capacity
+  // Test a chache line fully filled with real_ts.
+  // Test alignment of real_t[max_real_t], e.g. max cache line capacity
   EXPECT_EQ(
       std::alignment_of<
-          typename SharedData<real[BDM_CACHE_LINE_SIZE /
-                                     sizeof(real)]>::Data::value_type>::value,
+          typename SharedData<real_t[BDM_CACHE_LINE_SIZE /
+                                     sizeof(real_t)]>::Data::value_type>::value,
       BDM_CACHE_LINE_SIZE);
-  // Test size of vector components real[max_real], e.g. max cache line
+  // Test size of vector components real_t[max_real_t], e.g. max cache line
   // capacity
   EXPECT_EQ(
       sizeof(typename SharedData<
-             real[BDM_CACHE_LINE_SIZE / sizeof(real)]>::Data::value_type),
+             real_t[BDM_CACHE_LINE_SIZE / sizeof(real_t)]>::Data::value_type),
       BDM_CACHE_LINE_SIZE);
 
   // Test some custom data structures

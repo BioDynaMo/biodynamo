@@ -45,7 +45,7 @@ void OctreeEnvironment::UpdateImplementation() {
   if (container_->rm_->GetNumAgents() != 0) {
     Clear();
     auto inf = Math::kInfinity;
-    std::array<real, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+    std::array<real_t, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
     CalcSimDimensionsAndLargestAgent(&tmp_dim);
     RoundOffGridDimensions(tmp_dim);
     CheckGridGrowth();
@@ -85,15 +85,15 @@ void OctreeEnvironment::UpdateImplementation() {
   }
 }
 
-void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
                                         const Agent& query,
-                                        real squared_radius) {
+                                        real_t squared_radius) {
   ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
 }
 
-void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
                                         const Real3& query_position,
-                                        real squared_radius,
+                                        real_t squared_radius,
                                         const Agent* query_agent) {
   std::vector<uint32_t> neighbors;
   std::vector<double> distances;
@@ -107,7 +107,7 @@ void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real>& lambda,
   for (auto& n : neighbors) {
     Agent* nb_so = rm->GetAgent(container_->flat_idx_map_.GetAgentHandle(n));
     if (nb_so != query_agent) {
-      lambda(nb_so, static_cast<real>(distances[i]));
+      lambda(nb_so, static_cast<real_t>(distances[i]));
     }
     i++;
   }
@@ -147,7 +147,7 @@ void OctreeEnvironment::Clear() {
 }
 
 void OctreeEnvironment::RoundOffGridDimensions(
-    const std::array<real, 6>& grid_dimensions) {
+    const std::array<real_t, 6>& grid_dimensions) {
   grid_dimensions_[0] = floor(grid_dimensions[0]);
   grid_dimensions_[2] = floor(grid_dimensions[2]);
   grid_dimensions_[4] = floor(grid_dimensions[4]);

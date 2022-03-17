@@ -36,14 +36,14 @@ enum Axis { kXAxis, kYAxis, kZAxis };
 /// grid based on the input value and the range (along the specified axis).
 class Uniform {
  public:
-  Uniform(real min, real max, real value, uint8_t axis) {
+  Uniform(real_t min, real_t max, real_t value, uint8_t axis) {
     min_ = min;
     max_ = max;
     value_ = value;
     axis_ = axis;
   }
 
-  real operator()(real x, real y, real z) {
+  real_t operator()(real_t x, real_t y, real_t z) {
     switch (axis_) {
       case Axis::kXAxis: {
         if (x >= min_ && x <= max_) {
@@ -70,9 +70,9 @@ class Uniform {
   }
 
  private:
-  real min_;
-  real max_;
-  real value_;
+  real_t min_;
+  real_t max_;
+  real_t value_;
   uint8_t axis_;
 };
 
@@ -91,7 +91,7 @@ class GaussianBand {
   ///                    to be oriented to
   /// @param[in]  scaling The scaling factor
   ///
-  GaussianBand(real mean, real sigma, uint8_t axis, real scaling = 1.0) {
+  GaussianBand(real_t mean, real_t sigma, uint8_t axis, real_t scaling = 1.0) {
     mean_ = mean;
     sigma_ = sigma;
     axis_ = axis;
@@ -105,7 +105,7 @@ class GaussianBand {
   /// @param[in]  y     The y coordinate
   /// @param[in]  z     The z coordinate
   ///
-  real operator()(real x, real y, real z) {
+  real_t operator()(real_t x, real_t y, real_t z) {
     switch (axis_) {
       case Axis::kXAxis:
         return scaling_ * ROOT::Math::normal_pdf(x, sigma_, mean_);
@@ -120,9 +120,9 @@ class GaussianBand {
   }
 
  private:
-  real scaling_;
-  real mean_;
-  real sigma_;
+  real_t scaling_;
+  real_t mean_;
+  real_t sigma_;
   uint8_t axis_;
 };
 
@@ -138,7 +138,7 @@ class PoissonBand {
   /// @param[in]  axis   The axis along which you want the Poisson distribution
   ///                    to be oriented to
   ///
-  PoissonBand(real lambda, uint8_t axis) {
+  PoissonBand(real_t lambda, uint8_t axis) {
     lambda_ = lambda;
     axis_ = axis;
   }
@@ -150,7 +150,7 @@ class PoissonBand {
   /// @param[in]  y     The y coordinate
   /// @param[in]  z     The z coordinate
   ///
-  real operator()(real x, real y, real z) {
+  real_t operator()(real_t x, real_t y, real_t z) {
     switch (axis_) {
       case Axis::kXAxis:
         return ROOT::Math::poisson_pdf(x, lambda_);
@@ -164,7 +164,7 @@ class PoissonBand {
   }
 
  private:
-  real lambda_;
+  real_t lambda_;
   uint8_t axis_;
 };
 

@@ -26,7 +26,7 @@
 #include "core/param/param_group.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
-#include "core/real.h"
+#include "core/real_t.h"
 
 namespace bdm {
 
@@ -182,7 +182,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     time_step = 0.0125
-  real simulation_time_step = 0.01;
+  real_t simulation_time_step = 0.01;
 
   /// Maximum jump that a point mass can do in one time step. Useful to
   /// stabilize the simulation\n
@@ -191,7 +191,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     max_displacement = 3.0
-  real simulation_max_displacement = 3.0;
+  real_t simulation_max_displacement = 3.0;
 
   enum BoundSpaceMode {
     /// The simulation space grows to encapsulate all agents.
@@ -224,7 +224,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     min_bound = 0
-  real min_bound = 0;
+  real_t min_bound = 0;
 
   /// Maximum allowed value for x-, y- and z-position if simulation space is
   /// bound (@see `bound_space`).\n
@@ -233,7 +233,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     max_bound = 100
-  real max_bound = 100;
+  real_t max_bound = 100;
 
   /// Define the boundary condition of the diffusion grid [open, closed]\n
   /// Default value: `"open"`\n
@@ -484,7 +484,7 @@ struct Param {
   ///
   ///     [performance]
   ///     agent_uid_defragmentation_low_watermark = 0.5
-  real agent_uid_defragmentation_low_watermark = 0.5;
+  real_t agent_uid_defragmentation_low_watermark = 0.5;
 
   /// If the utilization in the AgentUidMap inside ResourceManager rises above
   /// this watermark, defragmentation will be turned off.\n
@@ -493,7 +493,7 @@ struct Param {
   ///
   ///     [performance]
   ///     agent_uid_defragmentation_high_watermark = 0.9
-  real agent_uid_defragmentation_high_watermark = 0.9;
+  real_t agent_uid_defragmentation_high_watermark = 0.9;
 
   /// Use the BioDynaMo memory manager.
   /// Default value: `true`\n
@@ -522,7 +522,7 @@ struct Param {
   ///
   ///     [performance]
   ///     mem_mgr_growth_rate = 1.1
-  real mem_mgr_growth_rate = 1.1;
+  real_t mem_mgr_growth_rate = 1.1;
 
   /// The BioDynaMo memory manager can migrate memory between thread pools
   /// to avoid memory leaks.\n
@@ -544,7 +544,7 @@ struct Param {
   /// is still required.)\n
   /// If this parameter is set to false, the balancing function will first
   /// create new objects and delete the old ones in a second step. In the worst
-  /// case this will real the required memory for agents for.
+  /// case this will real_t the required memory for agents for.
   /// Default value: `true`\n
   /// TOML config file:
   ///

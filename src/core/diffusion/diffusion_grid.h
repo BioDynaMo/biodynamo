@@ -33,8 +33,8 @@ class DiffusionGrid {
  public:
   DiffusionGrid() {}
   explicit DiffusionGrid(TRootIOCtor* p) {}
-  DiffusionGrid(int substance_id, std::string substance_name, real dc,
-                real mu, int resolution = 11)
+  DiffusionGrid(int substance_id, std::string substance_name, real_t dc,
+                real_t mu, int resolution = 11)
       : substance_(substance_id),
         substance_name_(std::move(substance_name)),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
@@ -51,10 +51,10 @@ class DiffusionGrid {
   /// concentration / gradient
   virtual void Update();
 
-  void Diffuse(real dt);
+  void Diffuse(real_t dt);
 
-  virtual void DiffuseWithClosedEdge(real dt) = 0;
-  virtual void DiffuseWithOpenEdge(real dt) = 0;
+  virtual void DiffuseWithClosedEdge(real_t dt) = 0;
+  virtual void DiffuseWithOpenEdge(real_t dt) = 0;
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -70,11 +70,11 @@ class DiffusionGrid {
   void RunInitializers();
 
   /// Increase the concentration at specified box with specified amount
-  void ChangeConcentrationBy(const Real3& position, real amount);
-  void ChangeConcentrationBy(size_t idx, real amount);
+  void ChangeConcentrationBy(const Real3& position, real_t amount);
+  void ChangeConcentrationBy(size_t idx, real_t amount);
 
   /// Get the concentration at specified position
-  real GetConcentration(const Real3& position) const;
+  real_t GetConcentration(const Real3& position) const;
 
   /// Get the (normalized) gradient at specified position
   // TODO: virtual because of test
@@ -87,26 +87,26 @@ class DiffusionGrid {
   /// Calculates the box index of the substance at specified position
   size_t GetBoxIndex(const Real3& position) const;
 
-  void SetDecayConstant(real mu) { mu_ = mu; }
+  void SetDecayConstant(real_t mu) { mu_ = mu; }
 
   /// Return the last timestep `dt` that was used to run `Diffuse(dt)`
-  real GetLastTimestep() { return last_dt_; }
+  real_t GetLastTimestep() { return last_dt_; }
 
   // Sets an upper threshold for allowed values in the diffusion grid.
-  void SetUpperThreshold(real t) { upper_threshold_ = t; }
+  void SetUpperThreshold(real_t t) { upper_threshold_ = t; }
 
   // Returns the upper threshold for allowed values in the diffusion grid.
-  real GetUpperThreshold() const { return upper_threshold_; }
+  real_t GetUpperThreshold() const { return upper_threshold_; }
 
   // Sets a lower threshold for allowed values in the diffusion grid.
-  void SetLowerThreshold(real t) { lower_threshold_ = t; }
+  void SetLowerThreshold(real_t t) { lower_threshold_ = t; }
 
   // Returns the lower threshold for allowed values in the diffusion grid.
-  real GetLowerThreshold() const { return lower_threshold_; }
+  real_t GetLowerThreshold() const { return lower_threshold_; }
 
-  const real* GetAllConcentrations() const { return c1_.data(); }
+  const real_t* GetAllConcentrations() const { return c1_.data(); }
 
-  const real* GetAllGradients() const { return gradients_.data()->data(); }
+  const real_t* GetAllGradients() const { return gradients_.data()->data(); }
 
   std::array<size_t, 3> GetNumBoxesArray() const {
     std::array<size_t, 3> ret;
@@ -118,13 +118,13 @@ class DiffusionGrid {
 
   size_t GetNumBoxes() const { return total_num_boxes_; }
 
-  real GetBoxLength() const { return box_length_; }
+  real_t GetBoxLength() const { return box_length_; }
 
   int GetSubstanceId() const { return substance_; }
 
   const std::string& GetSubstanceName() const { return substance_name_; }
 
-  real GetDecayConstant() const { return mu_; }
+  real_t GetDecayConstant() const { return mu_; }
 
   const int32_t* GetDimensionsPtr() const { return grid_dimensions_.data(); }
 
@@ -147,11 +147,11 @@ class DiffusionGrid {
     return ret;
   }
 
-  const std::array<real, 7>& GetDiffusionCoefficients() const { return dc_; }
+  const std::array<real_t, 7>& GetDiffusionCoefficients() const { return dc_; }
 
   int GetResolution() const { return resolution_; }
 
-  real GetBoxVolume() const { return box_volume_; }
+  real_t GetBoxVolume() const { return box_volume_; }
 
   template <typename F>
   void AddInitializer(F function) {
@@ -169,7 +169,7 @@ class DiffusionGrid {
   friend class EulerGrid;
   friend class TestGrid;  // class used for testing (e.g. initialization)
 
-  void ParametersCheck(real dt);
+  void ParametersCheck(real_t dt);
 
   /// Copies the concentration and gradients values to the new
   /// (larger) grid. In the 2D case it looks like the following:
@@ -183,7 +183,7 @@ class DiffusionGrid {
   /// If the dimensions would be increased from 2x2 to 3x3, it will still
   /// be increased to 4x4 in order for GetBoxIndex to function correctly
   ///
-  void CopyOldData(const ParallelResizeVector<real>& old_c1,
+  void CopyOldData(const ParallelResizeVector<real_t>& old_c1,
                    const ParallelResizeVector<Real3>& old_gradients,
                    size_t old_resolution);
 
@@ -192,26 +192,26 @@ class DiffusionGrid {
   /// The name of the substance of this grid
   std::string substance_name_ = "";
   /// The side length of each box
-  real box_length_ = 0;
+  real_t box_length_ = 0;
   /// the volume of each box
-  real box_volume_ = 0;
+  real_t box_volume_ = 0;
   /// Lock for each voxel used to prevent race conditions between
   /// multiple threads
   mutable ParallelResizeVector<Spinlock> locks_ = {};  //!
   /// The array of concentration values
-  ParallelResizeVector<real> c1_ = {};
+  ParallelResizeVector<real_t> c1_ = {};
   /// An extra concentration data buffer for faster value updating
-  ParallelResizeVector<real> c2_ = {};
+  ParallelResizeVector<real_t> c2_ = {};
   /// The array of gradients (x, y, z)
   ParallelResizeVector<Real3> gradients_ = {};
   /// The maximum concentration value that a box can have
-  real upper_threshold_ = 1e15;
+  real_t upper_threshold_ = 1e15;
   /// The minimum concentration value that a box can have
-  real lower_threshold_ = -1e15;
+  real_t lower_threshold_ = -1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
-  std::array<real, 7> dc_ = {{0}};
+  std::array<real_t, 7> dc_ = {{0}};
   /// The decay constant
-  real mu_ = 0;
+  real_t mu_ = 0;
   /// The grid dimensions of the diffusion grid (cubic shaped)
   std::array<int32_t, 2> grid_dimensions_ = {{0}};
   /// The number of boxes at each axis [x, y, z] (same along each axis)
@@ -222,12 +222,12 @@ class DiffusionGrid {
   /// axis)
   size_t resolution_ = 0;
   /// The last timestep `dt` used for the diffusion grid update `Diffuse(dt)`
-  real last_dt_ = 0.0;
+  real_t last_dt_ = 0.0;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
   /// ROOT currently doesn't support IO of std::function
-  std::vector<std::function<real(real, real, real)>> initializers_ =
+  std::vector<std::function<real_t(real_t, real_t, real_t)>> initializers_ =
       {};  //!
   // Turn to true after gradient initialization
   bool init_gradient_ = false;

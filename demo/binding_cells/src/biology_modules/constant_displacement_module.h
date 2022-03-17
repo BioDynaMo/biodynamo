@@ -27,11 +27,11 @@ namespace bdm {
 ///
 /// @return     The distance between the two points
 ///
-inline real SquaredEuclideanDistance(const Real3& pos1,
+inline real_t SquaredEuclideanDistance(const Real3& pos1,
                                        const Real3& pos2) {
-  const real dx = pos2[0] - pos1[0];
-  const real dy = pos2[1] - pos1[1];
-  const real dz = pos2[2] - pos1[2];
+  const real_t dx = pos2[0] - pos1[0];
+  const real_t dy = pos2[1] - pos1[1];
+  const real_t dz = pos2[2] - pos1[2];
   return (dx * dx + dy * dy + dz * dz);
 }
 
@@ -40,7 +40,7 @@ struct ConstantDisplace : public Behavior {
   BDM_BEHAVIOR_HEADER(ConstantDisplace, Behavior, 1);
 
  public:
-  ConstantDisplace(real v = 1, Real3 goal_position = {0, 0, 0})
+  ConstantDisplace(real_t v = 1, Real3 goal_position = {0, 0, 0})
       : velocity_(v), goal_position_(goal_position) {
     AlwaysCopyToNew();
   }
@@ -81,10 +81,10 @@ struct ConstantDisplace : public Behavior {
   }
 
  private:
-  const real dt_ = 1;  // TODO: should be parameterized
-  const real eps_ = 5;
+  const real_t dt_ = 1;  // TODO: should be parameterized
+  const real_t eps_ = 5;
   bool reached_goal_ = false;
-  real velocity_;
+  real_t velocity_;
   Real3 goal_position_;
 };
 

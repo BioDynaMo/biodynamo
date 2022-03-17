@@ -31,7 +31,7 @@ namespace mechanical_forces_op_gpu_test_internal {
 // from the CPU version. Once the CPU version supports the same execution
 // context, we can include it for direct comparison of results.
 
-static constexpr real kEps = 10 * abs_error<real>::value;
+static constexpr real_t kEps = 10 * abs_error<real_t>::value;
 
 class MechanicalForcesOpCpuVerify {
  public:
@@ -213,7 +213,7 @@ void RunTest2(OpComputeTarget mode) {
     auto* env = sim->GetEnvironment();
     uid_ref[i] = AgentUid(sim->GetAgentUidGenerator()->GetHighestIndex());
 
-    real space = 20;
+    real_t space = 20;
     for (size_t i = 0; i < 3; i++) {
       for (size_t j = 0; j < 3; j++) {
         for (size_t k = 0; k < 3; k++) {

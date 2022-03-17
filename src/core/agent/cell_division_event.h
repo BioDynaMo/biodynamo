@@ -16,7 +16,7 @@
 #define CORE_AGENT_CELL_DIVISION_EVENT_H_
 
 #include "core/agent/new_agent_event.h"
-#include "core/real.h"
+#include "core/real_t.h"
 
 namespace bdm {
 
@@ -31,7 +31,7 @@ namespace bdm {
 struct CellDivisionEvent : public NewAgentEvent {
   static const NewAgentEventUid kUid;
 
-  CellDivisionEvent(real volume_ratio, real phi, real theta)
+  CellDivisionEvent(real_t volume_ratio, real_t phi, real_t theta)
       : volume_ratio(volume_ratio), phi(phi), theta(theta) {}
 
   virtual ~CellDivisionEvent() {}
@@ -40,11 +40,11 @@ struct CellDivisionEvent : public NewAgentEvent {
 
   /// volume_ratio the ratio (Volume daughter 1)/(Volume daughter 2). 1.0 gives
   /// equal cells.
-  real volume_ratio;
+  real_t volume_ratio;
   /// phi azimuthal angle (spherical coordinates)
-  real phi;
+  real_t phi;
   /// theta polar angle (spherical coordinates)
-  real theta;
+  real_t theta;
 };
 
 }  // namespace bdm

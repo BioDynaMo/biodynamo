@@ -53,11 +53,11 @@ void NeuronSoma::Update(const NewAgentEvent& event) {
     const auto& ne_event = static_cast<const NewNeuriteExtensionEvent&>(event);
     auto* neurite = bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
 
-    real theta = ne_event.theta;
-    real phi = ne_event.phi;
-    real x_coord = std::sin(theta) * std::cos(phi);
-    real y_coord = std::sin(theta) * std::sin(phi);
-    real z_coord = std::cos(theta);
+    real_t theta = ne_event.theta;
+    real_t phi = ne_event.phi;
+    real_t x_coord = std::sin(theta) * std::cos(phi);
+    real_t y_coord = std::sin(theta) * std::sin(phi);
+    real_t z_coord = std::cos(theta);
 
     daughters_.push_back(neurite->GetAgentPtr<NeuriteElement>());
     daughters_coord_[neurite->GetUid()] = {x_coord, y_coord, z_coord};
@@ -83,8 +83,8 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(const Real3& direction,
                           prototype);
 }
 
-NeuriteElement* NeuronSoma::ExtendNewNeurite(real diameter, real phi,
-                                             real theta,
+NeuriteElement* NeuronSoma::ExtendNewNeurite(real_t diameter, real_t phi,
+                                             real_t theta,
                                              NeuriteElement* prototype) {
   if (!prototype) {
     static NeuriteElement kDefaultNeurite;
@@ -105,7 +105,7 @@ void NeuronSoma::RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) {
 Real3 NeuronSoma::OriginOf(const AgentUid& daughter_uid) const {
   Real3 xyz = daughters_coord_.at(daughter_uid);
 
-  real radius = GetDiameter() * .5;
+  real_t radius = GetDiameter() * .5;
   xyz = xyz * radius;
 
   Real3 axis_0 = {Base::kXAxis[0], Base::kYAxis[0], Base::kZAxis[0]};

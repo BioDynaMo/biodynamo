@@ -30,25 +30,25 @@ struct SimParam : public ParamGroup {
 
   uint64_t computational_steps = 8000;
   size_t n_boids = 250;
-  real starting_sphere_radius = 200;
+  real_t starting_sphere_radius = 200;
 
-  real actual_diameter = 10;
-  real boid_perception_radius = 250;
-  real boid_interaction_radius = 70;
-  real perception_angle_deg = 300;
-  real neighbor_distance = 50;
-  real max_accel = 0.4;
-  real max_speed = 5;
+  real_t actual_diameter = 10;
+  real_t boid_perception_radius = 250;
+  real_t boid_interaction_radius = 70;
+  real_t perception_angle_deg = 300;
+  real_t neighbor_distance = 50;
+  real_t max_accel = 0.4;
+  real_t max_speed = 5;
   bool limit_speed = true;
 
   // Flocking 2 Algorithm
-  real c_a_1 = 0.37;
-  real c_a_2 = 0.05;
-  real c_a_3 = 0.05;
-  real c_y = 0.05;
-  real h_a = 0.25;
-  real eps = 0.1;
-  real d_t = 0.05;
+  real_t c_a_1 = 0.37;
+  real_t c_a_2 = 0.05;
+  real_t c_a_3 = 0.05;
+  real_t c_y = 0.05;
+  real_t h_a = 0.25;
+  real_t eps = 0.1;
+  real_t d_t = 0.05;
   Real3 pos_gamma = {1000, 0, 0};
 };
 

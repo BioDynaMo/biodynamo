@@ -102,17 +102,17 @@ Let's take a look at an existing substance initializer.
 ### Option 1: Functors
 ```cpp
 struct GaussianBand {
-  real mean_;
-  real sigma_;
+  real_t mean_;
+  real_t sigma_;
   uint8_t axis_;
 
-  GaussianBand(real mean, real sigma, uint8_t axis) {
+  GaussianBand(real_t mean, real_t sigma, uint8_t axis) {
     mean_ = mean;
     sigma_ = sigma;
     axis_ = axis;
   }
 
-  real operator()(real x, real y, real z) {
+  real_t operator()(real_t x, real_t y, real_t z) {
     switch(axis_) {
       case Axis::kXAxis: return ROOT::Math::normal_pdf(x, sigma_, mean_);
       case Axis::kYAxis: return ROOT::Math::normal_pdf(y, sigma_, mean_);
@@ -139,7 +139,7 @@ nice to use. We can accomplish exactly the same result as the above example with
 the following lambda:
 
 ```cpp
-auto gaussian_band = [](real x, real y, real z) {
+auto gaussian_band = [](real_t x, real_t y, real_t z) {
   return ROOT::Math::normal_pdf(x, 5, 0);
 };
 ```

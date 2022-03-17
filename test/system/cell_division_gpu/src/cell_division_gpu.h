@@ -83,9 +83,9 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
   };
 
   for (size_t x = 0; x < cells_per_dim; x++) {
-    real x_pos = x * 20.0;
+    real_t x_pos = x * 20.0;
     for (size_t y = 0; y < cells_per_dim; y++) {
-      real y_pos = y * 20.0;
+      real_t y_pos = y * 20.0;
       for (size_t z = 0; z < cells_per_dim; z++) {
         auto new_simulation_object = construct({x_pos, y_pos, z * 20.0});
         rm->AddAgent(new_simulation_object);

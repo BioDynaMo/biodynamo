@@ -25,7 +25,7 @@ namespace bdm {
 // Functor to count how many neighbors are found. To be used with
 // ExecutionContext::ForEachNeighbor. It's functionality is wrapped in the
 // function GetNeighbors below.
-class CountNeighborsFunctor : public Functor<void, Agent*, real> {
+class CountNeighborsFunctor : public Functor<void, Agent*, real_t> {
  private:
   size_t num_neighbors_;
 
@@ -33,12 +33,12 @@ class CountNeighborsFunctor : public Functor<void, Agent*, real> {
   CountNeighborsFunctor() : num_neighbors_(0) {}
 
   // This is called once for each neighbor that is found
-  void operator()(Agent* neighbor, real squared_distance) {
+  void operator()(Agent* neighbor, real_t squared_distance) {
 #pragma omp atomic
     num_neighbors_ += 1;
   }
 
-  real GetNumNeighbors() { return num_neighbors_; }
+  real_t GetNumNeighbors() { return num_neighbors_; }
 
   void Reset() { num_neighbors_ = 0; }
 };
@@ -47,7 +47,7 @@ class CountNeighborsFunctor : public Functor<void, Agent*, real> {
 // environment in a spherical search region with radius search_radius around the
 // search_center. Each agent that is found satisfies
 // distance(agent_postion - search_center) < search_radius
-inline size_t GetNeighbors(Real3& search_center, real search_radius) {
+inline size_t GetNeighbors(Real3& search_center, real_t search_radius) {
   // Compute square search Radius
   search_radius *= search_radius;
 
@@ -113,7 +113,7 @@ inline void TestNeighborSearch(Simulation& simulation) {
   // than 0. E.g.:
   // (0.1, 5.1, 2.502) - 2 =  (-1.9, 3.1, 0.502)
   // (-1.9, 3.1, 0.502) < 0 = (1 , 0 , 0) -> result = 1
-  real search_radius = 2;
+  real_t search_radius = 2;
   EXPECT_EQ(1u, GetNeighbors(test_point_1, search_radius));
   EXPECT_EQ(1u, GetNeighbors(test_point_2, search_radius));
   EXPECT_EQ(1u, GetNeighbors(test_point_3, search_radius));

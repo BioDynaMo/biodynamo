@@ -22,7 +22,7 @@ namespace bdm {
 struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
-  real foo = 3.14;
+  real_t foo = 3.14;
   int bar = -42;
 };
 

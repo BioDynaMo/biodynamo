@@ -57,12 +57,12 @@ TEST(CopyExecutionContext, Execute) {
   ctxt->Execute(cell, AgentHandle(0, 0), operations);
 
   // In the rm there should still be the unchanged cell
-  EXPECT_NEAR(123., rm->GetAgent(uid)->GetDiameter(), abs_error<real>::value);
+  EXPECT_NEAR(123., rm->GetAgent(uid)->GetDiameter(), abs_error<real_t>::value);
 
   // This call should commit the changes from the exec ctxt to the rm
   ctxt->TearDownAgentOpsAll(sim.GetAllExecCtxts());
 
-  EXPECT_NEAR(345., rm->GetAgent(uid)->GetDiameter(), abs_error<real>::value);
+  EXPECT_NEAR(345., rm->GetAgent(uid)->GetDiameter(), abs_error<real_t>::value);
   EXPECT_EQ(1u, rm->GetNumAgents());
 
   delete op;

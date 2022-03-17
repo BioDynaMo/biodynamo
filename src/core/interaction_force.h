@@ -46,8 +46,8 @@ class InteractionForce {
   void ForceBetweenCylinders(const Agent* cylinder1, const Agent* cylinder2,
                              Real4* result) const;
 
-  Real4 ComputeForceOfASphereOnASphere(const Real3& c1, real r1,
-                                         const Real3& c2, real r2) const;
+  Real4 ComputeForceOfASphereOnASphere(const Real3& c1, real_t r1,
+                                         const Real3& c2, real_t r2) const;
 };
 
 }  // namespace bdm

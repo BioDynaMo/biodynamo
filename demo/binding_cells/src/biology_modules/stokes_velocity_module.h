@@ -27,7 +27,7 @@ struct StokesVelocity : public Behavior {
  public:
   StokesVelocity() { AlwaysCopyToNew(); }
 
-  StokesVelocity(real u, real pf) : u_(u), pf_(pf) {
+  StokesVelocity(real_t u, real_t pf) : u_(u), pf_(pf) {
     AlwaysCopyToNew();
     if (std::abs(u) < 1e-9) {
       Log::Fatal("StokesVelocity::Run()",
@@ -47,10 +47,10 @@ struct StokesVelocity : public Behavior {
     }
   }
 
-  static constexpr real kG = -9.81;
+  static constexpr real_t kG = -9.81;
 
   template <typename T>
-  real CalculateStokesDisplacement(T* cell) {
+  real_t CalculateStokesDisplacement(T* cell) {
     auto R = cell->GetDiameter() / 2;
     auto pp = cell->GetDensity();
     auto dt = Simulation::GetActive()->GetParam()->simulation_time_step;
@@ -82,8 +82,8 @@ struct StokesVelocity : public Behavior {
   }
 
  private:
-  real u_ = 1;
-  real pf_ = 1;
+  real_t u_ = 1;
+  real_t pf_ = 1;
 };
 
 }  // namespace bdm

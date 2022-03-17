@@ -26,7 +26,7 @@ struct ConnectWithinRadius : public Behavior {
   BDM_BEHAVIOR_HEADER(ConnectWithinRadius, Behavior, 1);
 
  public:
-  ConnectWithinRadius(real radius = 1) : squared_radius_(radius * radius) {
+  ConnectWithinRadius(real_t radius = 1) : squared_radius_(radius * radius) {
     AlwaysCopyToNew();
   }
 
@@ -49,9 +49,9 @@ struct ConnectWithinRadius : public Behavior {
       }
 
       AgentPointer<Monocyte> cell_to_connect_to;  // nullptr initially
-      real smallest_distance = Math::kInfinity;
+      real_t smallest_distance = Math::kInfinity;
       auto find_closest_cell = L2F([&](Agent* neighbor,
-                                       real squared_distance) {
+                                       real_t squared_distance) {
         if (auto* neighbor_cell = dynamic_cast<const Monocyte*>(neighbor)) {
           // T-Cells are activated if they are in close vicinity of monocytes
           if (!this_cell->IsActivated() || !this_cell->IsConnected()) {
@@ -61,7 +61,7 @@ struct ConnectWithinRadius : public Behavior {
           // We can only form an immune synapse with a monocyte if there is
           // physically enough room and if the pathway is not inhibited
           if (!neighbor_cell->IsOccupied() && !neighbor_cell->IsInhibited()) {
-            real distance = SquaredEuclideanDistance(
+            real_t distance = SquaredEuclideanDistance(
                 neighbor_cell->GetPosition(), this_cell->GetPosition());
             if (distance < smallest_distance) {
               smallest_distance = distance;
@@ -87,7 +87,7 @@ struct ConnectWithinRadius : public Behavior {
   }
 
  private:
-  real squared_radius_;
+  real_t squared_radius_;
 };
 
 }  // namespace bdm

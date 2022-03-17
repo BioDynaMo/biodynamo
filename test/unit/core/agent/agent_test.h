@@ -27,7 +27,7 @@ namespace agent_test_internal {
 struct Growth : public Behavior {
   BDM_BEHAVIOR_HEADER(Growth, Behavior, 1);
 
-  real growth_rate_ = 0.5;
+  real_t growth_rate_ = 0.5;
 
   Growth() { CopyToNewIf({CellDivisionEvent::kUid}); }
 

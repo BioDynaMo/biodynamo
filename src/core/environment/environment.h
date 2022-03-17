@@ -62,8 +62,8 @@ class Environment {
   /// Iterates over all neighbors of a query agent that appear in a distance of
   /// less than sqrt(squared_radius). Typically, the distance is computed as the
   /// Euclidean distance in 3D environments.
-  virtual void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
-                               const Agent& query, real squared_radius) = 0;
+  virtual void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                               const Agent& query, real_t squared_radius) = 0;
 
   /// Iterates over all neighbors in an environment that suffices the given
   /// `criteria`. The `criteria` is type-erased to facilitate for different
@@ -79,9 +79,9 @@ class Environment {
   /// similar tasks. If you implement an environment, the optional argument
   /// agent_query can be used to to treat both cases in the same function, keep
   /// the implementation lean, and avoid redundant code.
-  virtual void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
+  virtual void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
                                const Real3& query_position,
-                               real squared_radius,
+                               real_t squared_radius,
                                const Agent* query_agent = nullptr) = 0;
 
   virtual void Clear() = 0;
@@ -91,8 +91,8 @@ class Environment {
   virtual std::array<int32_t, 2> GetDimensionThresholds() const = 0;
 
   /// Return the size of the largest agent
-  real GetLargestAgentSize() const { return largest_object_size_; };
-  real GetLargestAgentSizeSquared() const {
+  real_t GetLargestAgentSize() const { return largest_object_size_; };
+  real_t GetLargestAgentSizeSquared() const {
     return largest_object_size_squared_;
   };
 
@@ -125,8 +125,8 @@ class Environment {
  protected:
   bool has_grown_ = false;
   /// The size of the largest object in the simulation
-  real largest_object_size_ = 0.0;
-  real largest_object_size_squared_ = 0.0;
+  real_t largest_object_size_ = 0.0;
+  real_t largest_object_size_squared_ = 0.0;
 
   /// Member function that is called by Update() and ForcedUpdate(). Pure
   /// virtual.
@@ -134,7 +134,7 @@ class Environment {
 
   struct SimDimensionAndLargestAgentFunctor
       : public Functor<void, Agent*, AgentHandle> {
-    using Type = std::vector<std::array<real, 8>>;
+    using Type = std::vector<std::array<real_t, 8>>;
 
     SimDimensionAndLargestAgentFunctor(Type& xmin, Type& xmax, Type& ymin,
                                        Type& ymax, Type& zmin, Type& zmax,
@@ -191,34 +191,34 @@ class Environment {
   /// Calculates what the grid dimensions need to be in order to contain all the
   /// agents
   void CalcSimDimensionsAndLargestAgent(
-      std::array<real, 6>* ret_grid_dimensions) {
+      std::array<real_t, 6>* ret_grid_dimensions) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
     const auto max_threads = omp_get_max_threads();
     // allocate version for each thread - avoid false sharing by padding them
-    // assumes 64 byte cache lines (8 * sizeof(real))
-    std::vector<std::array<real, 8>> xmin(max_threads, {{Math::kInfinity}});
-    std::vector<std::array<real, 8>> xmax(max_threads, {{-Math::kInfinity}});
+    // assumes 64 byte cache lines (8 * sizeof(real_t))
+    std::vector<std::array<real_t, 8>> xmin(max_threads, {{Math::kInfinity}});
+    std::vector<std::array<real_t, 8>> xmax(max_threads, {{-Math::kInfinity}});
 
-    std::vector<std::array<real, 8>> ymin(max_threads, {{Math::kInfinity}});
-    std::vector<std::array<real, 8>> ymax(max_threads, {{-Math::kInfinity}});
+    std::vector<std::array<real_t, 8>> ymin(max_threads, {{Math::kInfinity}});
+    std::vector<std::array<real_t, 8>> ymax(max_threads, {{-Math::kInfinity}});
 
-    std::vector<std::array<real, 8>> zmin(max_threads, {{Math::kInfinity}});
-    std::vector<std::array<real, 8>> zmax(max_threads, {{-Math::kInfinity}});
+    std::vector<std::array<real_t, 8>> zmin(max_threads, {{Math::kInfinity}});
+    std::vector<std::array<real_t, 8>> zmax(max_threads, {{-Math::kInfinity}});
 
-    std::vector<std::array<real, 8>> largest(max_threads, {{0}});
+    std::vector<std::array<real_t, 8>> largest(max_threads, {{0}});
 
     SimDimensionAndLargestAgentFunctor functor(xmin, xmax, ymin, ymax, zmin,
                                                zmax, largest);
     rm->ForEachAgentParallel(1000, functor);
 
     // reduce partial results into global one
-    real& gxmin = (*ret_grid_dimensions)[0];
-    real& gxmax = (*ret_grid_dimensions)[1];
-    real& gymin = (*ret_grid_dimensions)[2];
-    real& gymax = (*ret_grid_dimensions)[3];
-    real& gzmin = (*ret_grid_dimensions)[4];
-    real& gzmax = (*ret_grid_dimensions)[5];
+    real_t& gxmin = (*ret_grid_dimensions)[0];
+    real_t& gxmax = (*ret_grid_dimensions)[1];
+    real_t& gymin = (*ret_grid_dimensions)[2];
+    real_t& gymax = (*ret_grid_dimensions)[3];
+    real_t& gzmin = (*ret_grid_dimensions)[4];
+    real_t& gzmax = (*ret_grid_dimensions)[5];
     for (int tid = 0; tid < max_threads; tid++) {
       // x
       if (xmin[tid][0] < gxmin) {

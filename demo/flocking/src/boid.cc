@@ -22,15 +22,15 @@ namespace bdm {
 
 // ---------------------------------------------------------------------------
 // Real3 Methods
-real NormSq(Real3 vector) {
-  real res = 0;
+real_t NormSq(Real3 vector) {
+  real_t res = 0;
   for (size_t i = 0; i < 3; i++)
     res += vector[i] * vector[i];
   return res;
 };
 
-Real3 UpperLimit(Real3 vector, real upper_limit) {
-  real length = vector.Norm();
+Real3 UpperLimit(Real3 vector, real_t upper_limit) {
+  real_t length = vector.Norm();
   if (length == 0) {
     return {0, 0, 0};
   }
@@ -50,16 +50,16 @@ Real3 GetNormalizedArray(Real3 vector) {
 Real3 GetRandomVectorInUnitSphere() {
   auto* random = Simulation::GetActive()->GetRandom();
 
-  real phi = random->Uniform(0, 2 * M_PI);
-  real costheta = random->Uniform(-1, 1);
-  real u = random->Uniform(0, 1);
+  real_t phi = random->Uniform(0, 2 * M_PI);
+  real_t costheta = random->Uniform(-1, 1);
+  real_t u = random->Uniform(0, 1);
 
-  real theta = acos(costheta);
-  real r = sqrt(u);
+  real_t theta = acos(costheta);
+  real_t r = sqrt(u);
 
-  real x_coord = r * sin(theta) * cos(phi);
-  real y_coord = r * sin(theta) * sin(phi);
-  real z_coord = r * cos(theta);
+  real_t x_coord = r * sin(theta) * cos(phi);
+  real_t y_coord = r * sin(theta) * sin(phi);
+  real_t z_coord = r * cos(theta);
 
   Real3 vec = {x_coord, y_coord, z_coord};
   return vec;
@@ -101,7 +101,7 @@ void Boid::InitializeMembers() {
 Shape Boid::GetShape() const { return Shape::kSphere; };
 
 Real3 Boid::CalculateDisplacement(const InteractionForce* force,
-                                    real squared_radius, real dt) {
+                                    real_t squared_radius, real_t dt) {
   Real3 zero = {0, 0, 0};
   return zero;
 };
@@ -112,9 +112,9 @@ const Real3& Boid::GetPosition() const { return position_; };
 
 void Boid::SetPosition(const Real3& pos) { position_ = pos; };
 
-real Boid::GetDiameter() const { return diameter_; };
+real_t Boid::GetDiameter() const { return diameter_; };
 
-void Boid::SetDiameter(real diameter) { diameter_ = diameter; };
+void Boid::SetDiameter(real_t diameter) { diameter_ = diameter; };
 
 // ---------------------------------------------------------------------------
 // Important getter and setter
@@ -126,12 +126,12 @@ void Boid::SetVelocity(Real3 velocity) {
   SetHeadingDirection(velocity_);
 };
 
-void Boid::SetBoidPerceptionRadius(real perception_radius) {
+void Boid::SetBoidPerceptionRadius(real_t perception_radius) {
   boid_perception_radius_ = perception_radius;
   SetDiameter(boid_perception_radius_ * 2);
 };
 
-void Boid::SetPerceptionAngle(real angle) {
+void Boid::SetPerceptionAngle(real_t angle) {
   cos_perception_angle_ = std::cos(angle);
 };
 
@@ -141,9 +141,9 @@ void Boid::SetHeadingDirection(Real3 dir) {
   }
 };
 
-real Boid::GetBoidInteractionRadius() { return boid_interaction_radius_; };
+real_t Boid::GetBoidInteractionRadius() { return boid_interaction_radius_; };
 
-real Boid::GetBoidPerceptionRadius() { return boid_perception_radius_; };
+real_t Boid::GetBoidPerceptionRadius() { return boid_perception_radius_; };
 
 // ---------------------------------------------------------------------------
 
@@ -155,7 +155,7 @@ bool Boid::CheckIfVisible(Real3 point) {
 
   Real3 cone_normal = heading_direction_;
   Real3 direction_normal = (point - GetPosition()).GetNormalizedArray();
-  real cos_angle = cone_normal * direction_normal;
+  real_t cos_angle = cone_normal * direction_normal;
 
   if (cos_angle >= cos_perception_angle_) {
     return true;
@@ -198,7 +198,7 @@ void Boid::AccelerationAccumulator(Real3 acc) {
     acceleration_accum_scalar += acc.Norm();
     acceleration_ += acc;
   } else {
-    real s = max_acceleration_ - acceleration_accum_scalar;
+    real_t s = max_acceleration_ - acceleration_accum_scalar;
     acceleration_accum_scalar = max_acceleration_;
     acceleration_ += acc * s;
   }
@@ -224,12 +224,12 @@ Real3 Boid::GetNavigationalFeedbackForce() {
 };
 
 Real3 Boid::GetExtendedCohesionTerm(Real3 centre_of_mass) {
-  real ratio =
+  real_t ratio =
       (centre_of_mass - GetPosition()).Norm() / boid_perception_radius_;
-  real h_1 = boid_interaction_radius_ / boid_perception_radius_;
-  real h_2 = h_1 * 1.2;
+  real_t h_1 = boid_interaction_radius_ / boid_perception_radius_;
+  real_t h_2 = h_1 * 1.2;
 
-  real scale = Zeta(ratio, h_1, h_2);
+  real_t scale = Zeta(ratio, h_1, h_2);
 
   Real3 result =
       GetNormalizedArray(centre_of_mass - GetPosition()) * scale * c_a_3_;
@@ -245,8 +245,8 @@ Real3 Boid::GetBoidInteractionTerm(const Boid* boid) {
   u_a += n_ij * Phi_a(Norm_sig(boid->GetPosition() - GetPosition())) * c_a_1_;
 
   // add consensus term
-  real r_a = Norm_sig(boid_interaction_radius_);
-  real a_ij =
+  real_t r_a = Norm_sig(boid_interaction_radius_);
+  real_t a_ij =
       Rho_h(Norm_sig(boid->GetPosition() - GetPosition()) / r_a, h_a_);
 
   u_a += (boid->GetVelocity() - GetVelocity()) * a_ij * c_a_2_;
@@ -254,24 +254,24 @@ Real3 Boid::GetBoidInteractionTerm(const Boid* boid) {
   return u_a;
 };
 
-real Boid::Norm_sig(Real3 z) {
+real_t Boid::Norm_sig(Real3 z) {
   return (std::sqrt(1 + eps_ * NormSq(z)) - 1) / eps_;
 };
 
-real Boid::Norm_sig(real z) {
+real_t Boid::Norm_sig(real_t z) {
   return (std::sqrt(1 + eps_ * z * z) - 1) / eps_;
 };
 
-real Boid::Phi(real z) {
+real_t Boid::Phi(real_t z) {
   // 0 < a <= b
   // "a" controls a max for attaction scaling, "b" min for repelling
-  real a = 1;
-  real b = 2.5;
-  real c = std::abs(a - b) / std::sqrt(4 * a * b);
+  real_t a = 1;
+  real_t b = 2.5;
+  real_t c = std::abs(a - b) / std::sqrt(4 * a * b);
   return ((a + b) * Sigmoid(z + c) + (a - b)) / 2;
 };
 
-real Boid::Rho_h(real z, real h) {
+real_t Boid::Rho_h(real_t z, real_t h) {
   if (z >= 0 && z < h) {
     return 1;
   }
@@ -281,18 +281,18 @@ real Boid::Rho_h(real z, real h) {
   return 0;
 };
 
-real Boid::Rho_h_a(real z, real h) {
+real_t Boid::Rho_h_a(real_t z, real_t h) {
   if (z >= 0 && z < h) {
     return 1;
   }
   if (z >= h && z <= 1) {
-    real scale = exp(-5 * (z - h) * (z - h));
+    real_t scale = exp(-5 * (z - h) * (z - h));
     return scale * (1 + cos(M_PI * (z - h) / (1 - h))) / 2;
   }
   return 0;
 };
 
-real Boid::Zeta(real z, real h_1, real h_2) {
+real_t Boid::Zeta(real_t z, real_t h_1, real_t h_2) {
   if (z < h_1) {
     return 0;
   } else if (z >= h_1 && z <= h_2) {
@@ -302,11 +302,11 @@ real Boid::Zeta(real z, real h_1, real h_2) {
   }
 };
 
-real Boid::Sigmoid(real z) { return z / (1 + std::abs(z)); };
+real_t Boid::Sigmoid(real_t z) { return z / (1 + std::abs(z)); };
 
-real Boid::Phi_a(real z) {
-  real r_a = Norm_sig(boid_interaction_radius_);
-  real d_a = Norm_sig(neighbor_distance_);
+real_t Boid::Phi_a(real_t z) {
+  real_t r_a = Norm_sig(boid_interaction_radius_);
+  real_t d_a = Norm_sig(neighbor_distance_);
 
   return Rho_h_a(z / r_a, h_a_) * Phi(z - d_a);
 };
@@ -325,10 +325,10 @@ void Flocking::Run(Agent* agent) {
 };
 
 void CalculateNeighborData::operator()(Agent* neighbor,
-                                       real squared_distance) {
+                                       real_t squared_distance) {
   auto* neighbor_boid = bdm_static_cast<const Boid*>(neighbor);
 
-  real distance = std::sqrt(squared_distance);
+  real_t distance = std::sqrt(squared_distance);
   bool is_visible = boid_->CheckIfVisible(neighbor_boid->GetPosition());
 
   if (is_visible && distance <= boid_->GetBoidInteractionRadius()) {

@@ -138,7 +138,7 @@ TEST(ModelInitializerTest, CreateAgentsInSphereRndm) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
   Real3 center{1.0, 2.0, 3.0};
-  real radius{10.0};
+  real_t radius{10.0};
   uint64_t no_agents{100};
 
   ModelInitializer::CreateAgentsInSphereRndm(center, radius, no_agents,

@@ -28,7 +28,7 @@ namespace neuroscience {
 struct SplitNeuriteElementEvent : public NewAgentEvent {
   static const NewAgentEventUid kUid;
 
-  explicit SplitNeuriteElementEvent(real distal_portion)
+  explicit SplitNeuriteElementEvent(real_t distal_portion)
       : distal_portion(distal_portion) {}
 
   virtual ~SplitNeuriteElementEvent() {}
@@ -37,7 +37,7 @@ struct SplitNeuriteElementEvent : public NewAgentEvent {
 
   /// The fraction of the total old length devoted to the distal half
   /// (should be between 0 and 1).
-  real distal_portion;
+  real_t distal_portion;
 };
 
 }  // namespace neuroscience

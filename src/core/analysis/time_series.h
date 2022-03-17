@@ -19,7 +19,7 @@
 #include <vector>
 #include "core/analysis/reduce.h"
 #include "core/util/root.h"
-#include "core/real.h"
+#include "core/real_t.h"
 
 namespace bdm {
 
@@ -34,21 +34,21 @@ class TimeSeries {
  public:
   struct Data {
     Data();
-    Data(real (*ycollector)(Simulation*), real (*xcollector)(Simulation*));
-    Data(Reducer<real>* y_reducer_collector,
-         real (*xcollector)(Simulation*));
+    Data(real_t (*ycollector)(Simulation*), real_t (*xcollector)(Simulation*));
+    Data(Reducer<real_t>* y_reducer_collector,
+         real_t (*xcollector)(Simulation*));
     Data(const Data&);
     ~Data();
 
     Data& operator=(const Data& other);
 
-    Reducer<real>* y_reducer_collector = nullptr;
-    real (*ycollector)(Simulation*) = nullptr;  //!
-    real (*xcollector)(Simulation*) = nullptr;  //!
-    std::vector<real> x_values;
-    std::vector<real> y_values;
-    std::vector<real> y_error_low;
-    std::vector<real> y_error_high;
+    Reducer<real_t>* y_reducer_collector = nullptr;
+    real_t (*ycollector)(Simulation*) = nullptr;  //!
+    real_t (*xcollector)(Simulation*) = nullptr;  //!
+    std::vector<real_t> x_values;
+    std::vector<real_t> y_values;
+    std::vector<real_t> y_error_low;
+    std::vector<real_t> y_error_high;
     BDM_CLASS_DEF_NV(Data, 1);
   };
 
@@ -77,8 +77,8 @@ class TimeSeries {
   /// TimeSeries merged;
   /// TimeSeries::Merge(
   ///     &merged, tss,
-  ///     [](const std::vector<real>& all_y_values, real* y, real* el,
-  ///        real* eh) {
+  ///     [](const std::vector<real_t>& all_y_values, real_t* y, real_t* el,
+  ///        real_t* eh) {
   ///       *y = TMath::Median(all_y_values.size(), all_y_values.data());
   ///       *el = *y - *TMath::LocMin(all_y_values.begin(), all_y_values.end());
   ///       *eh = *TMath::LocMax(all_y_values.begin(), all_y_values.end()) - *y;
@@ -94,11 +94,11 @@ class TimeSeries {
   /// \see https://root.cern/doc/master/namespaceTMath.html
   static void Merge(
       TimeSeries* merged, const std::vector<TimeSeries>& time_series,
-      const std::function<void(const std::vector<real>&, real*, real*,
-                               real*)>& merger);
+      const std::function<void(const std::vector<real_t>&, real_t*, real_t*,
+                               real_t*)>& merger);
 
   /// Computes the mean squared error between `ts1` and `ts2`
-  static real ComputeError(const TimeSeries& ts1, const TimeSeries& ts2);
+  static real_t ComputeError(const TimeSeries& ts1, const TimeSeries& ts2);
 
   TimeSeries();
   TimeSeries(const TimeSeries& other);
@@ -112,15 +112,15 @@ class TimeSeries {
   /// \code
   /// auto* ts = simulation.GetTimeSeries();
   /// auto get_num_agents = [](Simulation* sim) {
-  ///   return static_cast<real>(sim->GetResourceManager()->GetNumAgents());
+  ///   return static_cast<real_t>(sim->GetResourceManager()->GetNumAgents());
   /// };
   /// ts->AddCollector("num-agents", get_num_agents);
   /// \endcode
   /// The optional x-value collector allows to modify the x-values.
   /// If no x-value collector is given, x-values will correspond to the
   /// simulation time.
-  void AddCollector(const std::string& id, real (*ycollector)(Simulation*),
-                    real (*xcollector)(Simulation*) = nullptr);
+  void AddCollector(const std::string& id, real_t (*ycollector)(Simulation*),
+                    real_t (*xcollector)(Simulation*) = nullptr);
 
   /// Adds a reducer collector which is executed at each iteration.\n
   /// The benefit (in comparison with `AddCollector` using a function pointer
@@ -132,16 +132,16 @@ class TimeSeries {
   /// auto is_infected = [](Agent* a) {
   ///   return bdm_static_cast<Person*>(a)->state_ == State::kInfected;
   /// };
-  /// auto post_process = [](real count) {
+  /// auto post_process = [](real_t count) {
   ///   auto* rm = Simulation::GetActive()->GetResourceManager();
   ///   auto num_agents = rm->GetNumAgents();
-  ///   return count / static_cast<real>(num_agents);
+  ///   return count / static_cast<real_t>(num_agents);
   /// };
-  /// ts->AddCollector("infected", new Counter<real>(is_infected,
+  /// ts->AddCollector("infected", new Counter<real_t>(is_infected,
   ///                                                  post_process));
   /// \endcode
-  void AddCollector(const std::string& id, Reducer<real>* y_reducer_collector,
-                    real (*xcollector)(Simulation*) = nullptr);
+  void AddCollector(const std::string& id, Reducer<real_t>* y_reducer_collector,
+                    real_t (*xcollector)(Simulation*) = nullptr);
 
   /// Add new entry with data that is not collected during a simulation.
   /// This function can for example be used to add experimental data
@@ -150,17 +150,17 @@ class TimeSeries {
   /// \code
   /// time_series.Add("experimental-data", {0, 1, 2}, {3, 4, 5});
   /// \endcode
-  void Add(const std::string& id, const std::vector<real>& x_values,
-           const std::vector<real>& y_values);
+  void Add(const std::string& id, const std::vector<real_t>& x_values,
+           const std::vector<real_t>& y_values);
 
-  void Add(const std::string& id, const std::vector<real>& x_values,
-           const std::vector<real>& y_values,
-           const std::vector<real>& y_error);
+  void Add(const std::string& id, const std::vector<real_t>& x_values,
+           const std::vector<real_t>& y_values,
+           const std::vector<real_t>& y_error);
 
-  void Add(const std::string& id, const std::vector<real>& x_values,
-           const std::vector<real>& y_values,
-           const std::vector<real>& y_error_low,
-           const std::vector<real>& y_error_high);
+  void Add(const std::string& id, const std::vector<real_t>& x_values,
+           const std::vector<real_t>& y_values,
+           const std::vector<real_t>& y_error_low,
+           const std::vector<real_t>& y_error_high);
 
   /// Add the entries of another TimeSeries instance to this one.
   /// Let's assume that `ts` contains the entries:
@@ -175,10 +175,10 @@ class TimeSeries {
   /// Returns whether a times series with given id exists in this object.
   bool Contains(const std::string& id) const;
   uint64_t Size() const;
-  const std::vector<real>& GetXValues(const std::string& id) const;
-  const std::vector<real>& GetYValues(const std::string& id) const;
-  const std::vector<real>& GetYErrorLow(const std::string& id) const;
-  const std::vector<real>& GetYErrorHigh(const std::string& id) const;
+  const std::vector<real_t>& GetXValues(const std::string& id) const;
+  const std::vector<real_t>& GetYValues(const std::string& id) const;
+  const std::vector<real_t>& GetYErrorLow(const std::string& id) const;
+  const std::vector<real_t>& GetYErrorHigh(const std::string& id) const;
 
   /// Print all time series entry names to stdout
   void ListEntries() const;
@@ -206,9 +206,9 @@ inline void TimeSeries::Data::Streamer(TBuffer& R__b) {
     R__b.ReadClassBuffer(TimeSeries::Data::Class(), this);
     Long64_t l;
     R__b.ReadLong64(l);
-    this->ycollector = reinterpret_cast<real (*)(Simulation*)>(l);
+    this->ycollector = reinterpret_cast<real_t (*)(Simulation*)>(l);
     R__b.ReadLong64(l);
-    this->xcollector = reinterpret_cast<real (*)(Simulation*)>(l);
+    this->xcollector = reinterpret_cast<real_t (*)(Simulation*)>(l);
   } else {
     R__b.WriteClassBuffer(TimeSeries::Data::Class(), this);
     Long64_t l = reinterpret_cast<Long64_t>(this->ycollector);

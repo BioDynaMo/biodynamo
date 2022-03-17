@@ -16,7 +16,7 @@
 
 namespace bdm {
 
-using real = float;
+using real_t = float;
 
 }  // namespace bdm
 

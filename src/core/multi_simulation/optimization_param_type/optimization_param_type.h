@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "core/util/io.h"
-#include "core/real.h"
+#include "core/real_t.h"
 
 namespace bdm {
 
@@ -32,7 +32,7 @@ struct OptimizationParamType {
   virtual OptimizationParamType* GetCopy() const = 0;
 
   virtual uint32_t GetNumElements() const = 0;
-  virtual real GetValue(int n) const = 0;
+  virtual real_t GetValue(int n) const = 0;
   virtual void Validate() const {};
 
   // Return the substring before the last "::", which should be

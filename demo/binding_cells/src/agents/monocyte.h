@@ -26,7 +26,7 @@ class Monocyte : public Cell {
 
  public:
   Monocyte() {}
-  explicit Monocyte(const Real3& position, real diameter, size_t color)
+  explicit Monocyte(const Real3& position, real_t diameter, size_t color)
       : Base(position), color_(color) {
     this->SetDiameter(diameter);
   }

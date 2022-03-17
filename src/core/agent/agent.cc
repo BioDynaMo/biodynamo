@@ -97,9 +97,9 @@ void Agent::PropagateStaticness(bool beginning) {
 
   propagate_staticness_neighborhood_ = false;
   is_static_next_ts_ = false;
-  auto set_staticness = L2F([this](Agent* neighbor, real squared_distance) {
+  auto set_staticness = L2F([this](Agent* neighbor, real_t squared_distance) {
     // TODO(all) generalize to axis-aligned bounding box
-    real distance = this->GetDiameter() + neighbor->GetDiameter();
+    real_t distance = this->GetDiameter() + neighbor->GetDiameter();
     if (squared_distance < distance * distance) {
       neighbor->SetStaticnessNextTimestep(false);
     }

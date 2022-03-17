@@ -199,30 +199,30 @@
 // TEST(RandomTest, UserDefinedDistRng1D) {
 //   Simulation simulation(TEST_NAME);
 //   auto* random = simulation.GetRandom();
-//   auto function = [](const real* x, const real* params) {
+//   auto function = [](const real_t* x, const real_t* params) {
 //     return ROOT::Math::lognormal_pdf(*x, params[0], params[1]);
 //   };
-//   real min = 1;
-//   real max = 4;
+//   real_t min = 1;
+//   real_t max = 4;
 //   TF1 reference("", function, min, max, 2);
 //   reference.SetParameters(1.1, 1.2);
 // 
 //   // workaround until update to 6.24
 //   gRandom->SetSeed(42);
-//   std::vector<real> expected;
+//   std::vector<real_t> expected;
 //   for (uint64_t i = 0; i < 10; i++) {
 //     expected.push_back(reference.GetRandom(min, max));
 //   }
 // 
 //   gRandom->SetSeed(42);
 //   auto distrng =
-//       random->GetUserDefinedDistRng1D(function, {static_cast<real>(1.1), static_cast<real>(1.2)}, min, max);
-//   std::vector<real> actual;
+//       random->GetUserDefinedDistRng1D(function, {static_cast<real_t>(1.1), static_cast<real_t>(1.2)}, min, max);
+//   std::vector<real_t> actual;
 //   for (uint64_t i = 0; i < 10; i++) {
 //     actual.push_back(distrng.Sample());
 //   }
 //   for (size_t i = 0; i < actual.size(); i++) {
-//     EXPECT_NEAR(expected[i], actual[i], abs_error<real>::value);
+//     EXPECT_NEAR(expected[i], actual[i], abs_error<real_t>::value);
 //   }
 // }
 // 
@@ -233,17 +233,17 @@
 // // fix provided in PR #208, this test would fail roughly 2/3 times.
 // TEST(RandomTest, UserDefinedDistRng1DParallel) {
 //   Simulation simulation(TEST_NAME);
-//   std::vector<real> results;
+//   std::vector<real_t> results;
 // #pragma omp parallel shared(simulation, results)
 //   {
 //     auto* random = simulation.GetRandom();
-//     auto function = [](const real* x, const real* params) {
+//     auto function = [](const real_t* x, const real_t* params) {
 //       return ROOT::Math::lognormal_pdf(*x, params[0], params[1]);
 //     };
-//     real min = 1;
-//     real max = 4;
+//     real_t min = 1;
+//     real_t max = 4;
 //     size_t n_samples = 10000;
-//     real result = 0.0;
+//     real_t result = 0.0;
 //     auto distrng =
 //         random->GetUserDefinedDistRng1D(function, {1.1, 1.2}, min, max);
 //     for (size_t i = 0; i < n_samples; i++) {
@@ -252,8 +252,8 @@
 // #pragma omp critical
 //     { results.push_back(result / n_samples); }
 //   }
-//   real sum = std::accumulate(results.begin(), results.end(), 0.0);
-//   EXPECT_LT(sum, std::numeric_limits<real>::max());
+//   real_t sum = std::accumulate(results.begin(), results.end(), 0.0);
+//   EXPECT_LT(sum, std::numeric_limits<real_t>::max());
 // }
 // 
 // // This test is neither a proper death test nor a proper function test. We run
@@ -263,17 +263,17 @@
 // // fix provided in PR #208, this test would fail roughly 2/3 times.
 // TEST(RandomTest, UserDefinedDistRng2DParallel) {
 //   Simulation simulation(TEST_NAME);
-//   std::vector<real> results;
+//   std::vector<real_t> results;
 // #pragma omp parallel shared(simulation, results)
 //   {
 //     auto* random = simulation.GetRandom();
-//     auto function = [](const real* x, const real* params) {
+//     auto function = [](const real_t* x, const real_t* params) {
 //       return ROOT::Math::lognormal_pdf(*x, params[0], params[1]);
 //     };
-//     real min = 1;
-//     real max = 4;
+//     real_t min = 1;
+//     real_t max = 4;
 //     size_t n_samples = 10000;
-//     real result = 0.0;
+//     real_t result = 0.0;
 //     auto distrng = random->GetUserDefinedDistRng2D(function, {1.1, 1.2}, min,
 //                                                    max, min, max);
 //     for (size_t i = 0; i < n_samples; i++) {
@@ -282,8 +282,8 @@
 // #pragma omp critical
 //     { results.push_back(result / n_samples); }
 //   }
-//   real sum = std::accumulate(results.begin(), results.end(), 0.0);
-//   EXPECT_LT(sum, std::numeric_limits<real>::max());
+//   real_t sum = std::accumulate(results.begin(), results.end(), 0.0);
+//   EXPECT_LT(sum, std::numeric_limits<real_t>::max());
 // }
 // 
 // // This test is neither a proper death test nor a proper function test. We run
@@ -293,17 +293,17 @@
 // // fix provided in PR #208, this test would fail roughly 2/3 times.
 // TEST(RandomTest, UserDefinedDistRng3DParallel) {
 //   Simulation simulation(TEST_NAME);
-//   std::vector<real> results;
+//   std::vector<real_t> results;
 // #pragma omp parallel shared(simulation, results)
 //   {
 //     auto* random = simulation.GetRandom();
-//     auto function = [](const real* x, const real* params) {
+//     auto function = [](const real_t* x, const real_t* params) {
 //       return ROOT::Math::lognormal_pdf(*x, params[0], params[1]);
 //     };
-//     real min = 1;
-//     real max = 4;
+//     real_t min = 1;
+//     real_t max = 4;
 //     size_t n_samples = 10000;
-//     real result = 0.0;
+//     real_t result = 0.0;
 //     auto distrng = random->GetUserDefinedDistRng3D(function, {1.1, 1.2}, min,
 //                                                    max, min, max, min, max);
 //     for (size_t i = 0; i < n_samples; i++) {
@@ -312,8 +312,8 @@
 // #pragma omp critical
 //     { results.push_back(result / n_samples); }
 //   }
-//   real sum = std::accumulate(results.begin(), results.end(), 0.0);
-//   EXPECT_LT(sum, std::numeric_limits<real>::max());
+//   real_t sum = std::accumulate(results.begin(), results.end(), 0.0);
+//   EXPECT_LT(sum, std::numeric_limits<real_t>::max());
 // }
 // 
 // TEST(RandomTest, Binomial) {
@@ -378,8 +378,8 @@
 //   reference.SetSeed(42);
 // 
 //   for (uint64_t i = 1; i < 10; i++) {
-//     real expected_x = 0;
-//     real expected_y = 0;
+//     real_t expected_x = 0;
+//     real_t expected_y = 0;
 //     reference.Circle(expected_x, expected_y, i);
 // 
 //     auto actual = random->Circle(i);
@@ -397,9 +397,9 @@
 //   reference.SetSeed(42);
 // 
 //   for (uint64_t i = 1; i < 10; i++) {
-//     real expected_x = 0;
-//     real expected_y = 0;
-//     real expected_z = 0;
+//     real_t expected_x = 0;
+//     real_t expected_y = 0;
+//     real_t expected_z = 0;
 //     reference.Sphere(expected_x, expected_y, expected_z, i);
 // 
 //     auto actual = random->Sphere(i);
@@ -433,11 +433,11 @@
 //   Simulation simulation(TEST_NAME);
 //   auto* random = simulation.GetRandom();
 // 
-//   auto ud_dist = [](const real* x, const real* param) { return sin(*x); };
+//   auto ud_dist = [](const real_t* x, const real_t* param) { return sin(*x); };
 //   auto udd_rng = random->GetUserDefinedDistRng1D(ud_dist, {}, 0, 3);
 // 
 //   gRandom->SetSeed(42);
-//   std::vector<real> expected;
+//   std::vector<real_t> expected;
 //   for (int i = 0; i < 10; ++i) {
 //     expected.push_back(udd_rng.Sample());
 //   }
@@ -446,7 +446,7 @@
 //   BackupAndRestore(udd_rng, &restored);
 // 
 //   gRandom->SetSeed(42);
-//   std::vector<real> actual;
+//   std::vector<real_t> actual;
 //   for (int i = 0; i < 10; ++i) {
 //     actual.push_back(restored->Sample());
 //   }

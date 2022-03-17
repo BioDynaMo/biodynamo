@@ -45,13 +45,13 @@ namespace detail {
 struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
   bool is_non_spherical_object = false;
 
-  real* cell_movements = nullptr;
-  real* cell_positions = nullptr;
-  real* cell_diameters = nullptr;
-  real* cell_adherence = nullptr;
-  real* cell_tractor_force = nullptr;
+  real_t* cell_movements = nullptr;
+  real_t* cell_positions = nullptr;
+  real_t* cell_diameters = nullptr;
+  real_t* cell_adherence = nullptr;
+  real_t* cell_tractor_force = nullptr;
   uint32_t* cell_boxid = nullptr;
-  real* mass = nullptr;
+  real_t* mass = nullptr;
   uint32_t* successors = nullptr;
 
   std::vector<AgentHandle::ElementIdx_t> offset;
@@ -197,10 +197,10 @@ void InitializeGPUData::operator()(Agent* agent, AgentHandle ah) {
 
 // -----------------------------------------------------------------------------
 struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
-  real* cell_movements = nullptr;
+  real_t* cell_movements = nullptr;
   std::vector<AgentHandle::ElementIdx_t> offset;
 
-  UpdateCPUResults(real* cm,
+  UpdateCPUResults(real_t* cm,
                    const std::vector<AgentHandle::ElementIdx_t>& offs);
   virtual ~UpdateCPUResults();
 
@@ -209,7 +209,7 @@ struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
 
 // -----------------------------------------------------------------------------
 UpdateCPUResults::UpdateCPUResults(
-    real* cm, const std::vector<AgentHandle::ElementIdx_t>& offs) {
+    real_t* cm, const std::vector<AgentHandle::ElementIdx_t>& offs) {
   cell_movements = cm;
   offset = offs;
 }
@@ -317,7 +317,7 @@ void MechanicalForcesOpCuda::operator()() {
     }
   }
 
-  real squared_radius =
+  real_t squared_radius =
       grid->GetLargestAgentSize() * grid->GetLargestAgentSize();
 
   // Timing timer("MechanicalForcesOpCuda::Kernel");

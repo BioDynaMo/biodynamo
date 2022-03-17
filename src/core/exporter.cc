@@ -167,7 +167,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
   auto num_cells = rm->GetNumAgents();
   size_t index = 0;
   std::ofstream vtu(filename + "-" + std::to_string(iteration) + ".vtu");
-  auto float_size = sizeof(real) * 8;
+  auto float_size = sizeof(real_t) * 8;
 
   vtu << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
          "byte_order=\"LittleEndian\">"

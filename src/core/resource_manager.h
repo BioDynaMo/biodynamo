@@ -347,8 +347,8 @@ class ResourceManager {
 
   virtual void EndOfIteration() {
     // Check if SoUiD defragmentation should be turned on or off
-    real utilization = static_cast<real>(GetNumAgents()) /
-                         static_cast<real>(uid_ah_map_.size());
+    real_t utilization = static_cast<real_t>(GetNumAgents()) /
+                         static_cast<real_t>(uid_ah_map_.size());
     auto* sim = Simulation::GetActive();
     auto* param = sim->GetParam();
     if (utilization < param->agent_uid_defragmentation_low_watermark) {

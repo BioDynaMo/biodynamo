@@ -28,13 +28,13 @@ class Chemotaxis : public Behavior {
 
  public:
   Chemotaxis() {}
-  Chemotaxis(const std::string& substance, real speed)
+  Chemotaxis(const std::string& substance, real_t speed)
       : substance_(substance), speed_(speed) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
         substance);
   }
 
-  explicit Chemotaxis(DiffusionGrid* dgrid, real speed)
+  explicit Chemotaxis(DiffusionGrid* dgrid, real_t speed)
       : dgrid_(dgrid), speed_(speed) {
     substance_ = dgrid->GetSubstanceName();
   }
@@ -60,7 +60,7 @@ class Chemotaxis : public Behavior {
  private:
   std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
-  real speed_;
+  real_t speed_;
 };
 
 }  // namespace bdm

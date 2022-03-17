@@ -24,8 +24,8 @@ TEST(MathUtilTest, L2Distance) {
   auto result1 = Math::GetL2Distance(vector1, vector2);
   auto result2 = Math::GetL2Distance(vector2, vector1);
 
-  EXPECT_NEAR(3.7416573867739413855, result1, abs_error<real>::value);
-  EXPECT_NEAR(3.7416573867739413855, result2, abs_error<real>::value);
+  EXPECT_NEAR(3.7416573867739413855, result1, abs_error<real_t>::value);
+  EXPECT_NEAR(3.7416573867739413855, result2, abs_error<real_t>::value);
 }
 
 TEST(MathUtilTest, CrossProduct) {
@@ -39,7 +39,7 @@ TEST(MathUtilTest, CrossProduct) {
 TEST(MathUtilTest, RotAroundAxis) {
   Real3 axis = {1.0, 1.0, 0.0};
   Real3 vector = {4, 5, 6};
-  real theta = Math::kPi;
+  real_t theta = Math::kPi;
 
   auto&& result = Math::RotAroundAxis(vector, theta, axis);
   EXPECT_ARR_NEAR(result, {5, 4, -6});
@@ -47,7 +47,7 @@ TEST(MathUtilTest, RotAroundAxis) {
 
 TEST(MathUtilTest, Perp3) {
   Real3 vector = {4, 5, 6};
-  real random = 1.1234;
+  real_t random = 1.1234;
 
   auto&& result = Math::Perp3(vector, random);
   EXPECT_ARR_NEAR(result, {0.83614150897258999, -0.010824848782715613,
@@ -58,8 +58,8 @@ TEST(MathUtilTest, AngleRadian) {
   Real3 a = {1, 2, 3};
   Real3 b = {9, 8, 7};
 
-  real result = Math::AngleRadian(a, b);
-  EXPECT_NEAR(0.489306575615854, result, abs_error<real>::value);
+  real_t result = Math::AngleRadian(a, b);
+  EXPECT_NEAR(0.489306575615854, result, abs_error<real_t>::value);
 }
 
 TEST(MathUtilTest, ProjectionOnto) {
@@ -72,10 +72,10 @@ TEST(MathUtilTest, ProjectionOnto) {
 }
 
 TEST(MathUtilTest, MSE) {
-  std::vector<real> v1 = {1, 2};
-  std::vector<real> v2 = {4, 9};
+  std::vector<real_t> v1 = {1, 2};
+  std::vector<real_t> v2 = {4, 9};
   auto result = Math::MSE(v1, v2);
-  EXPECT_NEAR(29.0, result, abs_error<real>::value);
+  EXPECT_NEAR(29.0, result, abs_error<real_t>::value);
 }
 
 }  // namespace bdm

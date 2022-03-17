@@ -109,11 +109,11 @@ inline int Simulate(int argc, const char** argv) {
   auto* myrand = simulation.GetRandom();
 
   size_t nb_of_cells = 2400;  // number of cells in the simulation
-  real x_coord, y_coord, z_coord;
+  real_t x_coord, y_coord, z_coord;
 
   for (size_t i = 0; i < nb_of_cells; ++i) {
     // our modelling will be a cell cube of 100*100*100
-    // random real between 0 and 100
+    // random real_t between 0 and 100
     x_coord = myrand->Uniform(param->min_bound, param->max_bound);
     y_coord = myrand->Uniform(param->min_bound, param->max_bound);
     z_coord = myrand->Uniform(param->min_bound, param->max_bound);

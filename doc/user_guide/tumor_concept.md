@@ -78,14 +78,14 @@ auto* param = simulation.GetParam();
 Let's define the number of cells we want to create and allocate three variables to hold the position (x_coord, y_coord and z_coord).
 ```cpp
 size_t nb_of_cells=2400; // number of cells in the simulation
-real x_coord, y_coord, z_coord;
+real_t x_coord, y_coord, z_coord;
 ```
 
 Then, with a simple loop from 0 to the number of cells, generate uniform distributed values for x, y and z and create a new cell object.
 ```cpp
 for (size_t i = 0; i < nb_of_cells; ++i) {
   // our modelling will be a cell cube of 100*100*100
-  // random real between 0 and 100
+  // random double between 0 and 100
   x_coord = random->Uniform(param->min_bound, param->max_bound);
   y_coord = random->Uniform(param->min_bound, param->max_bound);
   z_coord = random->Uniform(param->min_bound, param->max_bound);

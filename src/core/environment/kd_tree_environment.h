@@ -35,7 +35,7 @@ struct NanoFlannAdapter {
 
   /// Returns the distance between the vector "p1[0:size-1]" and the data point
   /// with index "idx_p2" stored in the class:
-  inline real kdtree_distance(const coord_t& p1, const idx_t idx_p2,
+  inline real_t kdtree_distance(const coord_t& p1, const idx_t idx_p2,
                                 size_t /*size*/) const {
     AgentHandle ah = flat_idx_map_.GetAgentHandle(idx_p2);
     auto& p2 = rm_->GetAgent(ah)->GetPosition();
@@ -45,7 +45,7 @@ struct NanoFlannAdapter {
   /// Returns the dim'th component of the idx'th point in the class:
   /// Since this is inlined and the "dim" argument is typically an immediate
   /// value, the "if/else's" are actually solved at compile time.
-  inline real kdtree_get_pt(const idx_t idx, int dim) const {
+  inline real_t kdtree_get_pt(const idx_t idx, int dim) const {
     AgentHandle ah = flat_idx_map_.GetAgentHandle(idx);
     auto& pos = rm_->GetAgent(ah)->GetPosition();
     return pos[dim];
@@ -85,14 +85,14 @@ class KDTreeEnvironment : public Environment {
 
   void Clear() override;
 
-  void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
-                       const Agent& query, real squared_radius) override;
+  void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                       const Agent& query, real_t squared_radius) override;
 
   void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
                        void* criteria) override;
 
-  void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
-                       const Real3& query_position, real squared_radius,
+  void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                       const Real3& query_position, real_t squared_radius,
                        const Agent* query_agent = nullptr) override;
 
  protected:
@@ -109,7 +109,7 @@ class KDTreeEnvironment : public Environment {
   std::array<int32_t, 2> threshold_dimensions_;
   NanoFlannAdapter* nf_adapter_ = nullptr;
 
-  void RoundOffGridDimensions(const std::array<real, 6>& grid_dimensions);
+  void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions);
 
   void CheckGridGrowth();
 };

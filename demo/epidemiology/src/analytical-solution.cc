@@ -12,14 +12,14 @@
 
 namespace bdm {
 
-int Odes(real t, const real y[], real f[], void* params) {
-  auto* dparams = static_cast<real*>(params);
-  real beta = dparams[0];
-  real gamma = dparams[1];
-  real n = dparams[2];
+int Odes(real_t t, const real_t y[], real_t f[], void* params) {
+  auto* dparams = static_cast<real_t*>(params);
+  real_t beta = dparams[0];
+  real_t gamma = dparams[1];
+  real_t n = dparams[2];
 
-  real s = y[0];
-  real i = y[1];
+  real_t s = y[0];
+  real_t i = y[1];
 
   // dsdt
   f[0] = -beta * i * s / n;
@@ -30,23 +30,23 @@ int Odes(real t, const real y[], real f[], void* params) {
   return GSL_SUCCESS;
 }
 
-void CalculateAnalyticalSolution(TimeSeries* result, real beta, real gamma,
-                                 real susceptible, real infected,
-                                 real tstart, real tend, real step_size) {
-  real n = susceptible + infected;
-  real params[3] = {beta, gamma, n};
+void CalculateAnalyticalSolution(TimeSeries* result, real_t beta, real_t gamma,
+                                 real_t susceptible, real_t infected,
+                                 real_t tstart, real_t tend, real_t step_size) {
+  real_t n = susceptible + infected;
+  real_t params[3] = {beta, gamma, n};
   gsl_odeiv2_system sys = {Odes, nullptr, 3, params};
 
   gsl_odeiv2_driver* d =
       gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk2, 1e-6, 1e-6, 0.0);
-  real y[3] = {susceptible, infected, 0.0};
+  real_t y[3] = {susceptible, infected, 0.0};
 
-  std::vector<real> timevec;
-  std::vector<real> susceptiblevec;
-  std::vector<real> infectedvec;
-  std::vector<real> recoveredvec;
+  std::vector<real_t> timevec;
+  std::vector<real_t> susceptiblevec;
+  std::vector<real_t> infectedvec;
+  std::vector<real_t> recoveredvec;
 
-  for (real t = tstart; t < tend; t += step_size) {
+  for (real_t t = tstart; t < tend; t += step_size) {
     int status = gsl_odeiv2_driver_apply(d, &tstart, t, y);
 
     if (status != GSL_SUCCESS) {

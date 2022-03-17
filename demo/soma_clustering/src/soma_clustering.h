@@ -83,7 +83,7 @@ inline int Simulate(int argc, const char** argv) {
   simulation.GetScheduler()->Simulate(1000);
 
   // Check if criterion is met
-  real spatial_range = 5;
+  real_t spatial_range = 5;
   auto crit = GetCriterion(spatial_range, num_cells / 8);
   if (crit) {
     std::cout << "Simulation completed successfully!\n";

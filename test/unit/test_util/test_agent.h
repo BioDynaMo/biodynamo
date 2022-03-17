@@ -48,19 +48,19 @@ class TestAgent : public Agent {
   void ApplyDisplacement(const Real3&) override {}
 
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real squared_radius, real dt) override {
+                                real_t squared_radius, real_t dt) override {
     return {0, 0, 0};
   }
 
-  real GetDiameter() const override { return diameter_; }
-  void SetDiameter(const real diameter) override { diameter_ = diameter; }
+  real_t GetDiameter() const override { return diameter_; }
+  void SetDiameter(const real_t diameter) override { diameter_ = diameter; }
 
   int GetData() const { return data_; }
   void SetData(int data) { data_ = data; }
 
  protected:
   Real3 position_ = {{0, 0, 0}};
-  real diameter_ = 10;
+  real_t diameter_ = 10;
   int data_ = 0;
 };
 

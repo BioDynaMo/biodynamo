@@ -34,12 +34,12 @@ TEST(TimeSeries, AddExistingData) {
   EXPECT_TRUE(ts.Contains("my-entry"));
   const auto& xvals = ts.GetXValues("my-entry");
   EXPECT_EQ(2u, xvals.size());
-  EXPECT_NEAR(1.0, xvals[0], abs_error<real>::value);
-  EXPECT_NEAR(2.0, xvals[1], abs_error<real>::value);
+  EXPECT_NEAR(1.0, xvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<real_t>::value);
   const auto& yvals = ts.GetYValues("my-entry");
   EXPECT_EQ(2u, yvals.size());
-  EXPECT_NEAR(3.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(4.0, yvals[1], abs_error<real>::value);
+  EXPECT_NEAR(3.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
@@ -51,20 +51,20 @@ TEST(TimeSeries, AddExistingDataWithError) {
   EXPECT_TRUE(ts.Contains("my-entry"));
   const auto& xvals = ts.GetXValues("my-entry");
   EXPECT_EQ(2u, xvals.size());
-  EXPECT_NEAR(1.0, xvals[0], abs_error<real>::value);
-  EXPECT_NEAR(2.0, xvals[1], abs_error<real>::value);
+  EXPECT_NEAR(1.0, xvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<real_t>::value);
   const auto& yvals = ts.GetYValues("my-entry");
   EXPECT_EQ(2u, yvals.size());
-  EXPECT_NEAR(3.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(4.0, yvals[1], abs_error<real>::value);
+  EXPECT_NEAR(3.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
   const auto& yel = ts.GetYErrorLow("my-entry");
   EXPECT_EQ(2u, yel.size());
-  EXPECT_NEAR(0.1, yel[0], abs_error<real>::value);
-  EXPECT_NEAR(0.2, yel[1], abs_error<real>::value);
+  EXPECT_NEAR(0.1, yel[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.2, yel[1], abs_error<real_t>::value);
   const auto& yeh = ts.GetYErrorHigh("my-entry");
   EXPECT_EQ(2u, yeh.size());
-  EXPECT_NEAR(0.1, yeh[0], abs_error<real>::value);
-  EXPECT_NEAR(0.2, yeh[1], abs_error<real>::value);
+  EXPECT_NEAR(0.1, yeh[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.2, yeh[1], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
@@ -76,20 +76,20 @@ TEST(TimeSeries, AddExistingDataWithErrorAsym) {
   EXPECT_TRUE(ts.Contains("my-entry"));
   const auto& xvals = ts.GetXValues("my-entry");
   EXPECT_EQ(2u, xvals.size());
-  EXPECT_NEAR(1.0, xvals[0], abs_error<real>::value);
-  EXPECT_NEAR(2.0, xvals[1], abs_error<real>::value);
+  EXPECT_NEAR(1.0, xvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<real_t>::value);
   const auto& yvals = ts.GetYValues("my-entry");
   EXPECT_EQ(2u, yvals.size());
-  EXPECT_NEAR(3.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(4.0, yvals[1], abs_error<real>::value);
+  EXPECT_NEAR(3.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
   const auto& yel = ts.GetYErrorLow("my-entry");
   EXPECT_EQ(2u, yel.size());
-  EXPECT_NEAR(0.1, yel[0], abs_error<real>::value);
-  EXPECT_NEAR(0.2, yel[1], abs_error<real>::value);
+  EXPECT_NEAR(0.1, yel[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.2, yel[1], abs_error<real_t>::value);
   const auto& yeh = ts.GetYErrorHigh("my-entry");
   EXPECT_EQ(2u, yeh.size());
-  EXPECT_NEAR(0.3, yeh[0], abs_error<real>::value);
-  EXPECT_NEAR(0.4, yeh[1], abs_error<real>::value);
+  EXPECT_NEAR(0.3, yeh[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.4, yeh[1], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
@@ -118,12 +118,12 @@ TEST(TimeSeries, AddOtherTs) {
   // check entries for my-entry
   const auto& xvals = ts2.GetXValues("my-entry-suffix");
   EXPECT_EQ(2u, xvals.size());
-  EXPECT_NEAR(1.0, xvals[0], abs_error<real>::value);
-  EXPECT_NEAR(2.0, xvals[1], abs_error<real>::value);
+  EXPECT_NEAR(1.0, xvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<real_t>::value);
   const auto& yvals = ts2.GetYValues("my-entry-suffix");
   EXPECT_EQ(2u, yvals.size());
-  EXPECT_NEAR(3.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(4.0, yvals[1], abs_error<real>::value);
+  EXPECT_NEAR(3.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ TEST(TimeSeries, AddOtherTsTwice) {
 TEST(TimeSeries, AddCollectorAndUpdate) {
   Simulation sim(TEST_NAME);
 
-  // cells will divide in every step -> the number of agents will real
+  // cells will divide in every step -> the number of agents will real_t
   // each iteration
   StatelessBehavior rapid_division(
       [](Agent* agent) { bdm_static_cast<Cell*>(agent)->Divide(0.5); });
@@ -165,7 +165,7 @@ TEST(TimeSeries, AddCollectorAndUpdate) {
 
   auto* ts = sim.GetTimeSeries();
   auto get_num_agents = [](Simulation* sim) {
-    return static_cast<real>(sim->GetResourceManager()->GetNumAgents());
+    return static_cast<real_t>(sim->GetResourceManager()->GetNumAgents());
   };
   ts->AddCollector("num-agents", get_num_agents);
   EXPECT_EQ(1u, ts->Size());
@@ -179,20 +179,20 @@ TEST(TimeSeries, AddCollectorAndUpdate) {
   EXPECT_EQ(3u, xvals.size());
   for (uint64_t i = 0; i < 3; ++i) {
     EXPECT_NEAR(i * param->simulation_time_step, xvals[i],
-                abs_error<real>::value);
+                abs_error<real_t>::value);
   }
   const auto& yvals = ts->GetYValues("num-agents");
   EXPECT_EQ(3u, yvals.size());
-  EXPECT_NEAR(2.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(4.0, yvals[1], abs_error<real>::value);
-  EXPECT_NEAR(8.0, yvals[2], abs_error<real>::value);
+  EXPECT_NEAR(2.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
+  EXPECT_NEAR(8.0, yvals[2], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
 TEST(TimeSeries, AddCollectorXYAndUpdate) {
   Simulation sim(TEST_NAME);
 
-  // cells will divide in every step -> the number of agents will real
+  // cells will divide in every step -> the number of agents will real_t
   // each iteration
   StatelessBehavior rapid_division(
       [](Agent* agent) { bdm_static_cast<Cell*>(agent)->Divide(0.5); });
@@ -203,10 +203,10 @@ TEST(TimeSeries, AddCollectorXYAndUpdate) {
 
   auto* ts = sim.GetTimeSeries();
   auto get_num_agents = [](Simulation* sim) {
-    return static_cast<real>(sim->GetResourceManager()->GetNumAgents());
+    return static_cast<real_t>(sim->GetResourceManager()->GetNumAgents());
   };
   auto xcollector = [](Simulation* sim) {
-    return sim->GetScheduler()->GetSimulatedSteps() + static_cast<real>(3.0);
+    return sim->GetScheduler()->GetSimulatedSteps() + static_cast<real_t>(3.0);
   };
   ts->AddCollector("num-agents", get_num_agents, xcollector);
   EXPECT_EQ(1u, ts->Size());
@@ -218,20 +218,20 @@ TEST(TimeSeries, AddCollectorXYAndUpdate) {
   const auto& xvals = ts->GetXValues("num-agents");
   EXPECT_EQ(3u, xvals.size());
   for (uint64_t i = 0; i < 3; ++i) {
-    EXPECT_NEAR(i + 3, xvals[i], abs_error<real>::value);
+    EXPECT_NEAR(i + 3, xvals[i], abs_error<real_t>::value);
   }
   const auto& yvals = ts->GetYValues("num-agents");
   EXPECT_EQ(3u, yvals.size());
-  EXPECT_NEAR(2.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(4.0, yvals[1], abs_error<real>::value);
-  EXPECT_NEAR(8.0, yvals[2], abs_error<real>::value);
+  EXPECT_NEAR(2.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
+  EXPECT_NEAR(8.0, yvals[2], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
 TEST(TimeSeries, AddCollectorReducerAndUpdate) {
   Simulation sim(TEST_NAME);
 
-  // cells will divide in every step -> the number of agents will real
+  // cells will divide in every step -> the number of agents will real_t
   // each iteration
   StatelessBehavior rapid_division(
       [](Agent* agent) { bdm_static_cast<Cell*>(agent)->Divide(0.5); });
@@ -243,9 +243,9 @@ TEST(TimeSeries, AddCollectorReducerAndUpdate) {
   auto* ts = sim.GetTimeSeries();
   auto agent_diam_gt_0 = [](Agent* a) { return a->GetDiameter() > 0.; };
   auto xcollector = [](Simulation* sim) {
-    return sim->GetScheduler()->GetSimulatedSteps() + static_cast<real>(3.0);
+    return sim->GetScheduler()->GetSimulatedSteps() + static_cast<real_t>(3.0);
   };
-  auto* counter = new Counter<real>(agent_diam_gt_0);
+  auto* counter = new Counter<real_t>(agent_diam_gt_0);
   ts->AddCollector("agents-diam-gt-0", counter, xcollector);
   EXPECT_EQ(1u, ts->Size());
   EXPECT_TRUE(ts->Contains("agents-diam-gt-0"));
@@ -256,13 +256,13 @@ TEST(TimeSeries, AddCollectorReducerAndUpdate) {
   const auto& xvals = ts->GetXValues("agents-diam-gt-0");
   EXPECT_EQ(3u, xvals.size());
   for (uint64_t i = 0; i < 3; ++i) {
-    EXPECT_NEAR(i + 3, xvals[i], abs_error<real>::value);
+    EXPECT_NEAR(i + 3, xvals[i], abs_error<real_t>::value);
   }
   const auto& yvals = ts->GetYValues("agents-diam-gt-0");
   EXPECT_EQ(3u, yvals.size());
-  EXPECT_NEAR(2.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(4.0, yvals[1], abs_error<real>::value);
-  EXPECT_NEAR(8.0, yvals[2], abs_error<real>::value);
+  EXPECT_NEAR(2.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
+  EXPECT_NEAR(8.0, yvals[2], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
@@ -272,12 +272,12 @@ TEST(TimeSeries, StoreAndLoad) {
   sim.GetResourceManager()->AddAgent(new Cell());
 
   TimeSeries ts;
-  auto ycollector = [](Simulation* sim) { return static_cast<real>(4.0); };
-  auto xcollector = [](Simulation* sim) { return static_cast<real>(5.0); };
+  auto ycollector = [](Simulation* sim) { return static_cast<real_t>(4.0); };
+  auto xcollector = [](Simulation* sim) { return static_cast<real_t>(5.0); };
   ts.AddCollector("collect", ycollector, xcollector);
 
   auto d_gt_0 = [](Agent* a) { return a->GetDiameter() > 0; };
-  auto* counter = new Counter<real>(d_gt_0);
+  auto* counter = new Counter<real_t>(d_gt_0);
   ts.AddCollector("collect1", counter, xcollector);
 
   ts.Add("my-entry", {1, 2}, {3, 4});
@@ -295,30 +295,30 @@ TEST(TimeSeries, StoreAndLoad) {
 
   const auto& xvals = restored->GetXValues("my-entry");
   EXPECT_EQ(2u, xvals.size());
-  EXPECT_NEAR(1.0, xvals[0], abs_error<real>::value);
-  EXPECT_NEAR(2.0, xvals[1], abs_error<real>::value);
+  EXPECT_NEAR(1.0, xvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<real_t>::value);
   const auto& yvals = restored->GetYValues("my-entry");
   EXPECT_EQ(2u, yvals.size());
-  EXPECT_NEAR(3.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(4.0, yvals[1], abs_error<real>::value);
+  EXPECT_NEAR(3.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
 
   // check if collector has been restored correctly.
   restored->Update();
   {
     const auto& xvals1 = restored->GetXValues("collect");
     EXPECT_EQ(1u, xvals1.size());
-    EXPECT_NEAR(5.0, xvals1[0], abs_error<real>::value);
+    EXPECT_NEAR(5.0, xvals1[0], abs_error<real_t>::value);
     const auto& yvals1 = restored->GetYValues("collect");
     EXPECT_EQ(1u, yvals1.size());
-    EXPECT_NEAR(4.0, yvals1[0], abs_error<real>::value);
+    EXPECT_NEAR(4.0, yvals1[0], abs_error<real_t>::value);
   }
   {
     const auto& xvals1 = restored->GetXValues("collect1");
     EXPECT_EQ(1u, xvals1.size());
-    EXPECT_NEAR(5.0, xvals1[0], abs_error<real>::value);
+    EXPECT_NEAR(5.0, xvals1[0], abs_error<real_t>::value);
     const auto& yvals1 = restored->GetYValues("collect1");
     EXPECT_EQ(1u, yvals1.size());
-    EXPECT_NEAR(2.0, yvals1[0], abs_error<real>::value);
+    EXPECT_NEAR(2.0, yvals1[0], abs_error<real_t>::value);
   }
   delete restored;
 }
@@ -327,7 +327,7 @@ TEST(TimeSeries, StoreAndLoad) {
 TEST(TimeSeries, StoreJson) {
   TimeSeries ts;
 
-  auto collect_function = [](Simulation* sim) { return static_cast<real>(4.0); };
+  auto collect_function = [](Simulation* sim) { return static_cast<real_t>(4.0); };
   ts.AddCollector("collect", collect_function);
 
   ts.Add("my-entry", {1, 2}, {3, 4});
@@ -341,8 +341,8 @@ TEST(TimeSeries, MergeNullptr) {
   tss[1].Add("entry-0", {}, {});
 
   TimeSeries::Merge(nullptr, tss,
-                    [](const std::vector<real>& all_y_values, real* y,
-                       real* el, real* eh) {});
+                    [](const std::vector<real_t>& all_y_values, real_t* y,
+                       real_t* el, real_t* eh) {});
 }
 
 // -----------------------------------------------------------------------------
@@ -354,8 +354,8 @@ TEST(TimeSeries, MergeMissingEntries) {
 
   TimeSeries merged;
   TimeSeries::Merge(&merged, tss,
-                    [](const std::vector<real>& all_y_values, real* y,
-                       real* el, real* eh) {});
+                    [](const std::vector<real_t>& all_y_values, real_t* y,
+                       real_t* el, real_t* eh) {});
 
   EXPECT_EQ(0u, merged.Size());
 }
@@ -368,8 +368,8 @@ TEST(TimeSeries, MergeDifferentNumberOfDataEntries) {
 
   TimeSeries merged;
   TimeSeries::Merge(&merged, tss,
-                    [](const std::vector<real>& all_y_values, real* y,
-                       real* el, real* eh) {});
+                    [](const std::vector<real_t>& all_y_values, real_t* y,
+                       real_t* el, real_t* eh) {});
 
   EXPECT_EQ(0u, merged.Size());
 }
@@ -382,8 +382,8 @@ TEST(TimeSeries, MergeDifferentNumberOfXValues) {
 
   TimeSeries merged;
   TimeSeries::Merge(&merged, tss,
-                    [](const std::vector<real>& all_y_values, real* y,
-                       real* el, real* eh) {});
+                    [](const std::vector<real_t>& all_y_values, real_t* y,
+                       real_t* el, real_t* eh) {});
 
   EXPECT_EQ(0u, merged.Size());
 }
@@ -398,8 +398,8 @@ TEST(TimeSeries, Merge) {
   TimeSeries merged;
   TimeSeries::Merge(
       &merged, tss,
-      [](const std::vector<real>& all_y_values, real* y, real* el,
-         real* eh) {
+      [](const std::vector<real_t>& all_y_values, real_t* y, real_t* el,
+         real_t* eh) {
         *y = TMath::Median(all_y_values.size(), all_y_values.data());
         *el = *y - *TMath::LocMin(all_y_values.begin(), all_y_values.end());
         *eh = *TMath::LocMax(all_y_values.begin(), all_y_values.end()) - *y;
@@ -408,20 +408,20 @@ TEST(TimeSeries, Merge) {
   EXPECT_EQ(1u, merged.Size());
   const auto& xvals = merged.GetXValues("entry-0");
   EXPECT_EQ(2u, xvals.size());
-  EXPECT_NEAR(1.0, xvals[0], abs_error<real>::value);
-  EXPECT_NEAR(2.0, xvals[1], abs_error<real>::value);
+  EXPECT_NEAR(1.0, xvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<real_t>::value);
   const auto& yvals = merged.GetYValues("entry-0");
   EXPECT_EQ(2u, yvals.size());
-  EXPECT_NEAR(2.0, yvals[0], abs_error<real>::value);
-  EXPECT_NEAR(8.0, yvals[1], abs_error<real>::value);
+  EXPECT_NEAR(2.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(8.0, yvals[1], abs_error<real_t>::value);
   const auto& el = merged.GetYErrorLow("entry-0");
   EXPECT_EQ(2u, el.size());
-  EXPECT_NEAR(1.0, el[0], abs_error<real>::value);
-  EXPECT_NEAR(3.0, el[1], abs_error<real>::value);
+  EXPECT_NEAR(1.0, el[0], abs_error<real_t>::value);
+  EXPECT_NEAR(3.0, el[1], abs_error<real_t>::value);
   const auto& eh = merged.GetYErrorHigh("entry-0");
   EXPECT_EQ(2u, eh.size());
-  EXPECT_NEAR(2.0, eh[0], abs_error<real>::value);
-  EXPECT_NEAR(5.0, eh[1], abs_error<real>::value);
+  EXPECT_NEAR(2.0, eh[0], abs_error<real_t>::value);
+  EXPECT_NEAR(5.0, eh[1], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------

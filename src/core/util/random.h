@@ -63,88 +63,88 @@ class DistributionRng {
 };
 
 // -----------------------------------------------------------------------------
-class UniformRng : public DistributionRng<real> {
+class UniformRng : public DistributionRng<real_t> {
  public:
-  UniformRng(real min, real max);
+  UniformRng(real_t min, real_t max);
   virtual ~UniformRng();
 
  private:
-  real min_, max_;
-  real SampleImpl(TRandom* rng) override;
+  real_t min_, max_;
+  real_t SampleImpl(TRandom* rng) override;
   BDM_CLASS_DEF_OVERRIDE(UniformRng, 1);
 };
 
 // -----------------------------------------------------------------------------
-class GausRng : public DistributionRng<real> {
+class GausRng : public DistributionRng<real_t> {
  public:
-  GausRng(real mean, real sigma);
+  GausRng(real_t mean, real_t sigma);
   virtual ~GausRng();
 
  private:
-  real mean_, sigma_;
-  real SampleImpl(TRandom* rng) override;
+  real_t mean_, sigma_;
+  real_t SampleImpl(TRandom* rng) override;
   BDM_CLASS_DEF_OVERRIDE(GausRng, 1);
 };
 
 // -----------------------------------------------------------------------------
-class ExpRng : public DistributionRng<real> {
+class ExpRng : public DistributionRng<real_t> {
  public:
-  ExpRng(real tau);
+  ExpRng(real_t tau);
   virtual ~ExpRng();
 
  private:
-  real tau_;
-  real SampleImpl(TRandom* rng) override;
+  real_t tau_;
+  real_t SampleImpl(TRandom* rng) override;
   BDM_CLASS_DEF_OVERRIDE(ExpRng, 1);
 };
 
 // -----------------------------------------------------------------------------
-class LandauRng : public DistributionRng<real> {
+class LandauRng : public DistributionRng<real_t> {
  public:
-  LandauRng(real mean, real sigma);
+  LandauRng(real_t mean, real_t sigma);
   virtual ~LandauRng();
 
  private:
-  real mean_, sigma_;
-  real SampleImpl(TRandom* rng) override;
+  real_t mean_, sigma_;
+  real_t SampleImpl(TRandom* rng) override;
   BDM_CLASS_DEF_OVERRIDE(LandauRng, 1);
 };
 
 // -----------------------------------------------------------------------------
-class PoissonDRng : public DistributionRng<real> {
+class PoissonDRng : public DistributionRng<real_t> {
  public:
-  PoissonDRng(real mean);
+  PoissonDRng(real_t mean);
   virtual ~PoissonDRng();
 
  private:
-  real mean_;
-  real SampleImpl(TRandom* rng) override;
+  real_t mean_;
+  real_t SampleImpl(TRandom* rng) override;
   BDM_CLASS_DEF_OVERRIDE(PoissonDRng, 1);
 };
 
 // -----------------------------------------------------------------------------
-class BreitWignerRng : public DistributionRng<real> {
+class BreitWignerRng : public DistributionRng<real_t> {
  public:
-  BreitWignerRng(real mean, real gamma);
+  BreitWignerRng(real_t mean, real_t gamma);
   virtual ~BreitWignerRng();
 
  private:
-  real mean_, gamma_;
-  real SampleImpl(TRandom* rng) override;
+  real_t mean_, gamma_;
+  real_t SampleImpl(TRandom* rng) override;
   BDM_CLASS_DEF_OVERRIDE(BreitWignerRng, 1);
 };
 
 // -----------------------------------------------------------------------------
-class UserDefinedDistRng1D : public DistributionRng<real> {
+class UserDefinedDistRng1D : public DistributionRng<real_t> {
  public:
-  UserDefinedDistRng1D(TRootIOCtor* ioctor) : DistributionRng<real>(ioctor) {}
+  UserDefinedDistRng1D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng1D(TF1* function, const char* option);
   virtual ~UserDefinedDistRng1D();
   void Draw(const char* option = "");
   TF1* GetTF1();
 
  private:
-  real SampleImpl(TRandom* rng) override;
+  real_t SampleImpl(TRandom* rng) override;
   // TODO use shared_ptr once ROOT supports IO of them
   TF1* function_ = nullptr;
   const char* option_ = nullptr;
@@ -152,17 +152,17 @@ class UserDefinedDistRng1D : public DistributionRng<real> {
 };
 
 // -----------------------------------------------------------------------------
-class UserDefinedDistRng2D : public DistributionRng<real> {
+class UserDefinedDistRng2D : public DistributionRng<real_t> {
  public:
-  UserDefinedDistRng2D(TRootIOCtor* ioctor) : DistributionRng<real>(ioctor) {}
+  UserDefinedDistRng2D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng2D(TF2* function, const char* option);
   virtual ~UserDefinedDistRng2D();
   void Draw(const char* option = "");
   TF2* GetTF2();
 
  private:
-  real SampleImpl(TRandom* rng) override;
-  MathArray<real, 2> Sample2Impl(TRandom* rng) override;
+  real_t SampleImpl(TRandom* rng) override;
+  MathArray<real_t, 2> Sample2Impl(TRandom* rng) override;
   // TODO use shared_ptr once ROOT supports IO of them
   TF2* function_ = nullptr;
   const char* option_ = nullptr;
@@ -170,18 +170,18 @@ class UserDefinedDistRng2D : public DistributionRng<real> {
 };
 
 // -----------------------------------------------------------------------------
-class UserDefinedDistRng3D : public DistributionRng<real> {
+class UserDefinedDistRng3D : public DistributionRng<real_t> {
  public:
-  UserDefinedDistRng3D(TRootIOCtor* ioctor) : DistributionRng<real>(ioctor) {}
+  UserDefinedDistRng3D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng3D(TF3* function, const char* option);
   virtual ~UserDefinedDistRng3D();
   void Draw(const char* option = "");
   TF3* GetTF3();
 
  private:
-  real SampleImpl(TRandom* rng) override;
-  MathArray<real, 2> Sample2Impl(TRandom* rng) override;
-  MathArray<real, 3> Sample3Impl(TRandom* rng) override;
+  real_t SampleImpl(TRandom* rng) override;
+  MathArray<real_t, 2> Sample2Impl(TRandom* rng) override;
+  MathArray<real_t, 3> Sample3Impl(TRandom* rng) override;
   // TODO use shared_ptr once ROOT supports IO of them
   TF3* function_ = nullptr;
   const char* option_ = nullptr;
@@ -191,13 +191,13 @@ class UserDefinedDistRng3D : public DistributionRng<real> {
 // -----------------------------------------------------------------------------
 struct UserDefinedDist {
   double (*ud_function)(const double*, const double*) = nullptr;
-  FixedSizeVector<real, 10> parameters;
-  real xmin = 0;
-  real xmax = 0;
-  real ymin = 0;
-  real ymax = 0;
-  real zmin = 0;
-  real zmax = 0;
+  FixedSizeVector<real_t, 10> parameters;
+  real_t xmin = 0;
+  real_t xmax = 0;
+  real_t ymin = 0;
+  real_t ymax = 0;
+  real_t zmin = 0;
+  real_t zmax = 0;
   bool operator==(const UserDefinedDist& other) const {
     return (ud_function == other.ud_function) &&
            (parameters == other.parameters) && (xmin == other.xmin) &&
@@ -233,12 +233,12 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 class BinomialRng : public DistributionRng<int> {
  public:
-  BinomialRng(int ntot, real prob);
+  BinomialRng(int ntot, real_t prob);
   virtual ~BinomialRng();
 
  private:
   int ntot_;
-  real prob_;
+  real_t prob_;
   int SampleImpl(TRandom* rng) override;
   BDM_CLASS_DEF_OVERRIDE(BinomialRng, 1);
 };
@@ -246,11 +246,11 @@ class BinomialRng : public DistributionRng<int> {
 // -----------------------------------------------------------------------------
 class PoissonRng : public DistributionRng<int> {
  public:
-  PoissonRng(real mean);
+  PoissonRng(real_t mean);
   virtual ~PoissonRng();
 
  private:
-  real mean_;
+  real_t mean_;
   int SampleImpl(TRandom* rng) override;
   BDM_CLASS_DEF_OVERRIDE(PoissonRng, 1);
 };
@@ -270,16 +270,16 @@ class Random {
   /// Forwards call to ROOT's `TRandom`.\n
   /// Returns a uniform deviate on the interval (0, max).
   /// \see https://root.cern/doc/master/classTRandom.html
-  real Uniform(real max = 1.0);
+  real_t Uniform(real_t max = 1.0);
   /// Forwards call to ROOT's `TRandom`.\n
   /// Returns a uniform deviate on the interval (min, max).
   /// \see https://root.cern/doc/master/classTRandom.html
-  real Uniform(real min, real max);
+  real_t Uniform(real_t min, real_t max);
 
   /// Returns an array of uniform random numbers in the interval (0, max)
   template <uint64_t N>
-  MathArray<real, N> UniformArray(real max = 1.0) {
-    MathArray<real, N> ret;
+  MathArray<real_t, N> UniformArray(real_t max = 1.0) {
+    MathArray<real_t, N> ret;
     for (uint64_t i = 0; i < N; i++) {
       ret[i] = Uniform(max);
     }
@@ -288,8 +288,8 @@ class Random {
 
   /// Returns an array of uniform random numbers in the interval (min, max)
   template <uint64_t N>
-  MathArray<real, N> UniformArray(real min, real max) {
-    MathArray<real, N> ret;
+  MathArray<real_t, N> UniformArray(real_t min, real_t max) {
+    MathArray<real_t, N> ret;
     for (uint64_t i = 0; i < N; i++) {
       ret[i] = Uniform(min, max);
     }
@@ -298,36 +298,36 @@ class Random {
 
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  real Gaus(real mean = 0.0, real sigma = 1.0);
+  real_t Gaus(real_t mean = 0.0, real_t sigma = 1.0);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  real Exp(real tau);
+  real_t Exp(real_t tau);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  real Landau(real mean = 0, real sigma = 1);
+  real_t Landau(real_t mean = 0, real_t sigma = 1);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  real PoissonD(real mean);
+  real_t PoissonD(real_t mean);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  real BreitWigner(real mean = 0, real gamma = 1);
+  real_t BreitWigner(real_t mean = 0, real_t gamma = 1);
 
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
   unsigned Integer(int max);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  int Binomial(int ntot, real prob);
+  int Binomial(int ntot, real_t prob);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  int Poisson(real mean);
+  int Poisson(real_t mean);
 
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  MathArray<real, 2> Circle(real radius);
+  MathArray<real_t, 2> Circle(real_t radius);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
-  MathArray<real, 3> Sphere(real radius);
+  MathArray<real_t, 3> Sphere(real_t radius);
 
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
@@ -344,35 +344,35 @@ class Random {
 
   /// Returns a random number generator that draws samples from a
   /// uniform distribution with given parameters.
-  UniformRng GetUniformRng(real min = 0, real max = 1);
+  UniformRng GetUniformRng(real_t min = 0, real_t max = 1);
   /// Returns a random number generator that draws samples from a
   /// gaus distribution with given parameters.
-  GausRng GetGausRng(real mean = 0, real sigma = 1);
+  GausRng GetGausRng(real_t mean = 0, real_t sigma = 1);
   /// Returns a random number generator that draws samples from a
   /// exp distribution with given parameters.
-  ExpRng GetExpRng(real tau);
+  ExpRng GetExpRng(real_t tau);
   /// Returns a random number generator that draws samples from a
   /// Landau distribution with given parameters.
-  LandauRng GetLandauRng(real mean = 0, real sigma = 1);
+  LandauRng GetLandauRng(real_t mean = 0, real_t sigma = 1);
   /// Returns a random number generator that draws samples from a
   /// PoissonD distribution with given parameters.
-  PoissonDRng GetPoissonDRng(real mean);
+  PoissonDRng GetPoissonDRng(real_t mean);
   /// Returns a random number generator that draws samples from a
   /// BreitWigner distribution with given parameters.
-  BreitWignerRng GetBreitWignerRng(real mean = 0, real gamma = 1);
+  BreitWignerRng GetBreitWignerRng(real_t mean = 0, real_t gamma = 1);
 
   /// Returns a random number generator that draws samples from a
   /// user-defined distribution specified by parameter `function` between min
   /// and max.\n
   /// The user-defined distribution must follow the following signature:
-  //// `[](const real* x, const real* params) { ... }` and must return a
-  /// real.\n
+  //// `[](const real_t* x, const real_t* params) { ... }` and must return a
+  /// real_t.\n
   /// The following call will create a random number generator that will
   /// sample from a student-t distribution with `r = 1.0`. in the
   /// interval [-5, 10[.\n
   /// `x` is the function variable.\n
   ///
-  ///     auto distribution = [](const real* x, const real* params) {
+  ///     auto distribution = [](const real_t* x, const real_t* params) {
   ///       return ROOT::Math::tdistribution_pdf(*x, 1.0);
   ///     };
   ///     GetUserDefinedDistRng(distribution, {}, -5, 10);
@@ -381,7 +381,7 @@ class Random {
   /// as second parameter. Up to 10 parameters can be used in the
   /// user-defined function.
   ///
-  ///     auto distribution = [](const real* x, const real* params) {
+  ///     auto distribution = [](const real_t* x, const real_t* params) {
   ///       return ROOT::Math::tdistribution_pdf(*x, params[0]);
   ///     };
   ///     GetUserDefinedDistRng(distribution, {1.0}, -5, 10);
@@ -395,31 +395,31 @@ class Random {
   /// and we advise to only use it in serial regions.
   UserDefinedDistRng1D GetUserDefinedDistRng1D(
       double (*f)(const double*, const double*),
-      const FixedSizeVector<real, 10>& params, real min, real max,
+      const FixedSizeVector<real_t, 10>& params, real_t min, real_t max,
       const char* option = nullptr);
 
   /// \see `Random::GetUserDefinedDistRng1D`
   UserDefinedDistRng2D GetUserDefinedDistRng2D(
       double (*f)(const double*, const double*),
-      const FixedSizeVector<real, 10>& params, real xmin, real xmax,
-      real ymin, real ymax, const char* option = nullptr);
+      const FixedSizeVector<real_t, 10>& params, real_t xmin, real_t xmax,
+      real_t ymin, real_t ymax, const char* option = nullptr);
 
   /// \see `Random::GetUserDefinedDistRng1D`
   UserDefinedDistRng3D GetUserDefinedDistRng3D(
       double (*f)(const double*, const double*),
-      const FixedSizeVector<real, 10>& params, real xmin, real xmax,
-      real ymin, real ymax, real zmin, real zmax,
+      const FixedSizeVector<real_t, 10>& params, real_t xmin, real_t xmax,
+      real_t ymin, real_t ymax, real_t zmin, real_t zmax,
       const char* option = nullptr);
 
   /// Returns a random number generator that draws samples from a
   /// Binomial distribution with given parameters.
-  BinomialRng GetBinomialRng(int ntot, real prob);
+  BinomialRng GetBinomialRng(int ntot, real_t prob);
   /// Returns a random number generator that draws samples from a
   /// Poisson distribution with given parameters.
-  PoissonRng GetPoissonRng(real mean);
+  PoissonRng GetPoissonRng(real_t mean);
 
  private:
-  friend class DistributionRng<real>;
+  friend class DistributionRng<real_t>;
   friend class DistributionRng<int>;
 
   TRandom* generator_ = nullptr;

@@ -20,16 +20,16 @@
 namespace bdm {
 
 TEST(MathArray, DefaultConstructor) {
-  MathArray<real, 3> a = {1, 2, 3};
-  a = MathArray<real, 3>();
+  MathArray<real_t, 3> a = {1, 2, 3};
+  a = MathArray<real_t, 3>();
 
-  EXPECT_NEAR(0.0, a[0], abs_error<real>::value);
-  EXPECT_NEAR(0.0, a[1], abs_error<real>::value);
-  EXPECT_NEAR(0.0, a[2], abs_error<real>::value);
+  EXPECT_NEAR(0.0, a[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.0, a[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0.0, a[2], abs_error<real_t>::value);
 }
 
 TEST(MathArray, element_access) {
-  MathArray<real, 4> real_vector{0, 1, 2, 3};
+  MathArray<real_t, 4> real_vector{0, 1, 2, 3};
 
   for (int i = 0; i < 4; i++) {
     ASSERT_EQ(real_vector.at(i), i);
@@ -47,8 +47,8 @@ TEST(MathArray, element_access) {
 }
 
 TEST(MathArray, capacity) {
-  MathArray<real, 4> real_vector{0, 1, 2, 3};
-  MathArray<real, 0> real_vector_empty;
+  MathArray<real_t, 4> real_vector{0, 1, 2, 3};
+  MathArray<real_t, 0> real_vector_empty;
 
   ASSERT_EQ(real_vector.size(), 4u);
   ASSERT_EQ(real_vector_empty.size(), 0u);
@@ -58,15 +58,15 @@ TEST(MathArray, capacity) {
 }
 
 TEST(MathArray, math_operators) {
-  MathArray<real, 4> a{0, 1, 2, 3};
-  MathArray<real, 4> b{0, 1, 2, 3};
+  MathArray<real_t, 4> a{0, 1, 2, 3};
+  MathArray<real_t, 4> b{0, 1, 2, 3};
 
-  MathArray<real, 4> sum_result{0, 2, 4, 6};
-  MathArray<real, 4> sub_result{0, 0, 0, 0};
-  MathArray<real, 4> scalar_mult_result{0, 3, 6, 9};
-  MathArray<real, 4> scalar_division_result{0, 0.5, 1, 1.5};
-  MathArray<real, 4> increment_result{1, 2, 3, 4};
-  MathArray<real, 4> decrement_result{-1, 0, 1, 2};
+  MathArray<real_t, 4> sum_result{0, 2, 4, 6};
+  MathArray<real_t, 4> sub_result{0, 0, 0, 0};
+  MathArray<real_t, 4> scalar_mult_result{0, 3, 6, 9};
+  MathArray<real_t, 4> scalar_division_result{0, 0.5, 1, 1.5};
+  MathArray<real_t, 4> increment_result{1, 2, 3, 4};
+  MathArray<real_t, 4> decrement_result{-1, 0, 1, 2};
 
   ASSERT_EQ(a + b, sum_result);
 
@@ -90,25 +90,25 @@ TEST(MathArray, math_operators) {
 }
 
 TEST(MathArray, complex_operations) {
-  MathArray<real, 3> a;
-  MathArray<real, 4> b{0, 0, 0, 0};
-  MathArray<real, 4> c{1, 2, 3, 4};
+  MathArray<real_t, 3> a;
+  MathArray<real_t, 4> b{0, 0, 0, 0};
+  MathArray<real_t, 4> c{1, 2, 3, 4};
 
-  MathArray<real, 3> fill_result{1, 1, 1};
-  MathArray<real, 4> entrywise_result{1, 4, 9, 16};
+  MathArray<real_t, 3> fill_result{1, 1, 1};
+  MathArray<real_t, 4> entrywise_result{1, 4, 9, 16};
 
   a.fill(1);
   ASSERT_EQ(a, fill_result);
 
   ASSERT_EQ(a.Sum(), 3);
 
-  EXPECT_NEAR(a.Norm(), 1.7320508075688772935, abs_error<real>::value);
+  EXPECT_NEAR(a.Norm(), 1.7320508075688772935, abs_error<real_t>::value);
 
   a = {1.1, 2.2, 3.3};
   a.Normalize();
-  EXPECT_NEAR(0.2672612419124244187, a[0], abs_error<real>::value);
-  EXPECT_NEAR(0.5345224838248488374, a[1], abs_error<real>::value);
-  EXPECT_NEAR(0.8017837257372732561, a[2], abs_error<real>::value);
+  EXPECT_NEAR(0.2672612419124244187, a[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.5345224838248488374, a[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0.8017837257372732561, a[2], abs_error<real_t>::value);
 
   ASSERT_EQ(b.Norm(), 0.0);
 
@@ -118,11 +118,11 @@ TEST(MathArray, complex_operations) {
 // We expect that the GetNormalizedArray member function does not change the
 // object itself but generates a new object whose
 TEST(MathArray, GetNormalizedArray) {
-  MathArray<real, 3> a{1.1, 2.2, 3.3};
-  MathArray<real, 3> normalized{0.2672612419124244187, 0.5345224838248488374,
+  MathArray<real_t, 3> a{1.1, 2.2, 3.3};
+  MathArray<real_t, 3> normalized{0.2672612419124244187, 0.5345224838248488374,
                                   0.8017837257372732561};
-  MathArray<real, 3> d = a.GetNormalizedArray();
-  real a_norm = a.Norm();
+  MathArray<real_t, 3> d = a.GetNormalizedArray();
+  real_t a_norm = a.Norm();
 
   // We don't want to have the same object.
   ASSERT_NE(&d, &a);
@@ -130,11 +130,11 @@ TEST(MathArray, GetNormalizedArray) {
   EXPECT_REAL_EQ(normalized[0], d[0]);
   EXPECT_REAL_EQ(normalized[1], d[1]);
   EXPECT_REAL_EQ(normalized[2], d[2]);
-  EXPECT_REAL_EQ(real(1.0), d.Norm());
+  EXPECT_REAL_EQ(real_t(1.0), d.Norm());
   // We don't want array a to change during that process.
-  EXPECT_REAL_EQ(real(1.1), a[0]);
-  EXPECT_REAL_EQ(real(2.2), a[1]);
-  EXPECT_REAL_EQ(real(3.3), a[2]);
+  EXPECT_REAL_EQ(real_t(1.1), a[0]);
+  EXPECT_REAL_EQ(real_t(2.2), a[1]);
+  EXPECT_REAL_EQ(real_t(3.3), a[2]);
   // We test if we can rescale back to array.
   d *= a_norm;
   EXPECT_REAL_EQ(d[0], a[0]);
@@ -153,8 +153,8 @@ TEST(MathArray, NormalizeZeroVectorDeath) {
 
 #ifdef USE_DICT
 TEST_F(IOTest, MathArray) {
-  MathArray<real, 4> test{0.5, -1, 10, 500};
-  MathArray<real, 4>* restored = nullptr;
+  MathArray<real_t, 4> test{0.5, -1, 10, 500};
+  MathArray<real_t, 4>* restored = nullptr;
 
   BackupAndRestore(test, &restored);
   for (size_t i = 0; i < 4; ++i) {

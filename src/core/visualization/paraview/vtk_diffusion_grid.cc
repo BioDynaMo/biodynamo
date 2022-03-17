@@ -31,7 +31,7 @@
 
 namespace bdm {
 
-using vtkRealArray = typename type_ternary_operator<std::is_same<real, double>::value, vtkDoubleArray, vtkFloatArray>::type;
+using vtkRealArray = typename type_ternary_operator<std::is_same<real_t, double>::value, vtkDoubleArray, vtkFloatArray>::type;
 
 // -----------------------------------------------------------------------------
 VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
@@ -117,9 +117,9 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
   Dissect(num_boxes[2], tinfo->GetMaxThreads());
   CalcPieceExtents(num_boxes);
   uint64_t xy_num_boxes = num_boxes[0] * num_boxes[1];
-  real origin_x = grid_dimensions[0];
-  real origin_y = grid_dimensions[2];
-  real origin_z = grid_dimensions[4];
+  real_t origin_x = grid_dimensions[0];
+  real_t origin_y = grid_dimensions[2];
+  real_t origin_z = grid_dimensions[4];
 
   // do not partition data for insitu visualization
   if (data_.size() == 1) {
@@ -128,14 +128,14 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
     data_[0]->SetSpacing(box_length, box_length, box_length);
 
     if (concentration_array_idx_ != -1) {
-      auto* co_ptr = const_cast<real*>(grid->GetAllConcentrations());
+      auto* co_ptr = const_cast<real_t*>(grid->GetAllConcentrations());
       auto elements = static_cast<vtkIdType>(total_boxes);
       auto* array = static_cast<vtkRealArray*>(
           data_[0]->GetPointData()->GetArray(concentration_array_idx_));
       array->SetArray(co_ptr, elements, 1);
     }
     if (gradient_array_idx_ != -1) {
-      auto gr_ptr = const_cast<real*>(grid->GetAllGradients());
+      auto gr_ptr = const_cast<real_t*>(grid->GetAllGradients());
       auto elements = static_cast<vtkIdType>(total_boxes * 3);
       auto* array = static_cast<vtkRealArray*>(
           data_[0]->GetPointData()->GetArray(gradient_array_idx_));
@@ -159,12 +159,12 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
       data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
                           e[4] + piece_boxes_z_last_ - 1);
     }
-    real piece_origin_z = origin_z + box_length * piece_boxes_z_ * i;
+    real_t piece_origin_z = origin_z + box_length * piece_boxes_z_ * i;
     data_[i]->SetOrigin(origin_x, origin_y, piece_origin_z);
     data_[i]->SetSpacing(box_length, box_length, box_length);
 
     if (concentration_array_idx_ != -1) {
-      auto* co_ptr = const_cast<real*>(grid->GetAllConcentrations());
+      auto* co_ptr = const_cast<real_t*>(grid->GetAllConcentrations());
       auto elements = static_cast<vtkIdType>(piece_elements);
       auto* array = static_cast<vtkRealArray*>(
           data_[i]->GetPointData()->GetArray(concentration_array_idx_));
@@ -175,7 +175,7 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
       }
     }
     if (gradient_array_idx_ != -1) {
-      auto gr_ptr = const_cast<real*>(grid->GetAllGradients());
+      auto gr_ptr = const_cast<real_t*>(grid->GetAllGradients());
       auto elements = static_cast<vtkIdType>(piece_elements * 3);
       auto* array = static_cast<vtkRealArray*>(
           data_[i]->GetPointData()->GetArray(gradient_array_idx_));
@@ -209,7 +209,7 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
     piece_boxes_z_ = 1;
     num_pieces_ = std::max<unsigned long long>(1ULL, boxes_z - 1);
   } else {
-    auto boxes_per_piece = static_cast<real>(boxes_z) / num_pieces_target;
+    auto boxes_per_piece = static_cast<real_t>(boxes_z) / num_pieces_target;
     piece_boxes_z_ = static_cast<uint64_t>(std::ceil(boxes_per_piece));
     num_pieces_ = boxes_z / piece_boxes_z_;
     piece_boxes_z_last_ = boxes_z - (num_pieces_ - 1) * piece_boxes_z_;

@@ -29,16 +29,16 @@ TEST(DynamicLoopTest, DynamicLoop) {
       new SetParam("c", {0, 1})};
 
   // Write out the nested for loops and extract the expected results
-  std::vector<std::vector<real>> expected;
+  std::vector<std::vector<real_t>> expected;
   for (int j = 0; j < 2; j++) {
-    for (real lrp = 0; lrp < 11; lrp += 5) {
-      for (real rp = -1.5; rp < 1.6; rp += 0.5) {
-        expected.push_back({rp, std::pow(2, lrp), static_cast<real>(j)});
+    for (real_t lrp = 0; lrp < 11; lrp += 5) {
+      for (real_t rp = -1.5; rp < 1.6; rp += 0.5) {
+        expected.push_back({rp, std::pow(2, lrp), static_cast<real_t>(j)});
       }
     }
   }
 
-  std::vector<real> paramset(3);
+  std::vector<real_t> paramset(3);
 
   int it = 0;
   auto lambda = [&](std::vector<uint32_t> slots) {

@@ -30,13 +30,13 @@ class Secretion : public Behavior {
 
  public:
   Secretion() {}
-  explicit Secretion(const std::string& substance, real quantity = 1)
+  explicit Secretion(const std::string& substance, real_t quantity = 1)
       : substance_(substance), quantity_(quantity) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
         substance);
   }
 
-  explicit Secretion(DiffusionGrid* dgrid, real quantity = 1)
+  explicit Secretion(DiffusionGrid* dgrid, real_t quantity = 1)
       : dgrid_(dgrid), quantity_(quantity) {
     substance_ = dgrid->GetSubstanceName();
   }
@@ -59,7 +59,7 @@ class Secretion : public Behavior {
  private:
   std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
-  real quantity_ = 1;
+  real_t quantity_ = 1;
 };
 
 }  // namespace bdm

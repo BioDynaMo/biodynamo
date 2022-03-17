@@ -23,7 +23,7 @@
     "computational_steps": 200,
     "n_boids": 250,
     "starting_sphere_radius": 200,
-    "real actual_diameter": 10,
+    "real_t actual_diameter": 10,
     "boid_perception_radius": 250,
     "boid_interaction_radius": 70,
     "perception_angle_deg": 300,
@@ -36,7 +36,7 @@
     "c_y": 0.03,
     "d_t": 0.05,
     "pos_gamma": {
-      "_typename": "bdm::MathArray<real,3>",
+      "_typename": "bdm::MathArray<real_t,3>",
       "data_": [
         10000,
         0,

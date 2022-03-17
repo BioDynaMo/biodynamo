@@ -61,30 +61,30 @@ void InteractionForce::ForceBetweenSpheres(const Agent* sphere_lhs,
                                            const Agent* sphere_rhs,
                                            Real3* result) const {
   const Real3& ref_mass_location = sphere_lhs->GetPosition();
-  real ref_diameter = sphere_lhs->GetDiameter();
-  real ref_iof_coefficient = 0.15;
+  real_t ref_diameter = sphere_lhs->GetDiameter();
+  real_t ref_iof_coefficient = 0.15;
   const Real3& nb_mass_location = sphere_rhs->GetPosition();
-  real nb_diameter = sphere_rhs->GetDiameter();
-  real nb_iof_coefficient = 0.15;
+  real_t nb_diameter = sphere_rhs->GetDiameter();
+  real_t nb_iof_coefficient = 0.15;
 
   auto c1 = ref_mass_location;
-  real r1 = 0.5 * ref_diameter;
+  real_t r1 = 0.5 * ref_diameter;
   auto c2 = nb_mass_location;
-  real r2 = 0.5 * nb_diameter;
+  real_t r2 = 0.5 * nb_diameter;
   // We take virtual bigger radii to have a distant interaction, to get a
   // desired density.
-  real additional_radius =
+  real_t additional_radius =
       10.0 * std::min(ref_iof_coefficient, nb_iof_coefficient);
   r1 += additional_radius;
   r2 += additional_radius;
   // the 3 components of the vector c2 -> c1
-  real comp1 = c1[0] - c2[0];
-  real comp2 = c1[1] - c2[1];
-  real comp3 = c1[2] - c2[2];
-  real center_distance =
+  real_t comp1 = c1[0] - c2[0];
+  real_t comp2 = c1[1] - c2[1];
+  real_t comp3 = c1[2] - c2[2];
+  real_t center_distance =
       std::sqrt(comp1 * comp1 + comp2 * comp2 + comp3 * comp3);
   // the overlap distance (how much one penetrates in the other)
-  real delta = r1 + r2 - center_distance;
+  real_t delta = r1 + r2 - center_distance;
   // if no overlap : no force
   if (delta < 0) {
     *result = {0.0, 0.0, 0.0};
@@ -99,12 +99,12 @@ void InteractionForce::ForceBetweenSpheres(const Agent* sphere_lhs,
     return;
   }
   // the force itself
-  real r = (r1 * r2) / (r1 + r2);
-  real gamma = 1;  // attraction coeff
-  real k = 2;      // repulsion coeff
-  real f = k * delta - gamma * std::sqrt(r * delta);
+  real_t r = (r1 * r2) / (r1 + r2);
+  real_t gamma = 1;  // attraction coeff
+  real_t k = 2;      // repulsion coeff
+  real_t f = k * delta - gamma * std::sqrt(r * delta);
 
-  real module = f / center_distance;
+  real_t module = f / center_distance;
   Real3 force2on1({module * comp1, module * comp2, module * comp3});
   *result = force2on1;
 }
@@ -117,10 +117,10 @@ void InteractionForce::ForceOnACylinderFromASphere(const Agent* cylinder,
   auto distal_end = ne->DistalEnd();
   auto axis = ne->GetSpringAxis();
   // TODO(neurites) use cylinder.GetActualLength() ??
-  real actual_length = axis.Norm();
-  real d = ne->GetDiameter();
+  real_t actual_length = axis.Norm();
+  real_t d = ne->GetDiameter();
   auto c = sphere->GetPosition();
-  real r = 0.5 * sphere->GetDiameter();
+  real_t r = 0.5 * sphere->GetDiameter();
 
   // I. If the cylinder is small with respect to the sphere:
   // we only consider the interaction between the sphere and the point mass
@@ -130,7 +130,7 @@ void InteractionForce::ForceOnACylinderFromASphere(const Agent* cylinder,
     // vector_x = rc * (axis[0]/actual_length)
     // vector_y = rc * (axis[1]/actual_length)
     // vector_z = rc * (axis[2]/actual_length)
-    real rc = 0.5 * d;
+    real_t rc = 0.5 * d;
     Real3 dvec = (axis / actual_length) * rc;  // displacement vector
     Real3 npd = distal_end - dvec;             // new sphere center
     *result = ComputeForceOfASphereOnASphere(npd, rc, c, r);
@@ -155,16 +155,16 @@ void InteractionForce::ForceOnACylinderFromASphere(const Agent* cylinder,
   //    projection of proximal_end_closest onto axis =
   //    (proximal_end_closest.axis)/norm(axis)^2  * axis
   //    length of the projection = (proximal_end_closest.axis)/norm(axis)
-  real proximal_end_closest_axis =
+  real_t proximal_end_closest_axis =
       proximal_end_closest.EntryWiseProduct(axis).Sum();
-  real k = proximal_end_closest_axis / (actual_length * actual_length);
+  real_t k = proximal_end_closest_axis / (actual_length * actual_length);
   //    cc = proximal_end + k* axis
   Real3 cc = proximal_end + (axis * k);
 
   // 2) Look if c -and hence cc- is (a) between proximal_end and distal_end,
   // (b) before proximal_end or
   // (c) after distal_end
-  real proportion_to_proximal_end;
+  real_t proportion_to_proximal_end;
   if (k <= 1.0 && k >= 0.0) {
     //    a)  if cc (the closest point to c on the line pPpD) is between
     //    proximal_end
@@ -189,7 +189,7 @@ void InteractionForce::ForceOnACylinderFromASphere(const Agent* cylinder,
   // sphere
   //    is larger than the radius of the two objects , there is no
   //    interaction:
-  real penetration = d / 2 + r - Math::GetL2Distance(c, cc);
+  real_t penetration = d / 2 + r - Math::GetL2Distance(c, cc);
   if (penetration <= 0) {
     *result = Real4{0.0, 0.0, 0.0, 0.0};
     return;
@@ -216,41 +216,41 @@ void InteractionForce::ForceBetweenCylinders(const Agent* cylinder1,
   auto* c2 = bdm_static_cast<const NeuriteElement*>(cylinder2);
   auto a = c1->ProximalEnd();
   auto b = c1->GetMassLocation();
-  real d1 = c1->GetDiameter();
+  real_t d1 = c1->GetDiameter();
   auto c = c2->ProximalEnd();
   auto d = c2->GetMassLocation();
-  real d2 = c2->GetDiameter();
+  real_t d2 = c2->GetDiameter();
 
-  real k = 0.5;  // part devoted to the distal node
+  real_t k = 0.5;  // part devoted to the distal node
 
   //  looking for closest point on them
   // (based on http://local.wasp.uwa.edu.au/~pbourke/geometry/lineline3d/)
-  real p13x = a[0] - c[0];
-  real p13y = a[1] - c[1];
-  real p13z = a[2] - c[2];
-  real p43x = d[0] - c[0];
-  real p43y = d[1] - c[1];
-  real p43z = d[2] - c[2];
-  real p21x = b[0] - a[0];
-  real p21y = b[1] - a[1];
-  real p21z = b[2] - a[2];
+  real_t p13x = a[0] - c[0];
+  real_t p13y = a[1] - c[1];
+  real_t p13z = a[2] - c[2];
+  real_t p43x = d[0] - c[0];
+  real_t p43y = d[1] - c[1];
+  real_t p43z = d[2] - c[2];
+  real_t p21x = b[0] - a[0];
+  real_t p21y = b[1] - a[1];
+  real_t p21z = b[2] - a[2];
 
-  real d1343 = p13x * p43x + p13y * p43y + p13z * p43z;
-  real d4321 = p21x * p43x + p21y * p43y + p21z * p43z;
-  real d1321 = p21x * p13x + p21y * p13y + p21z * p13z;
-  real d4343 = p43x * p43x + p43y * p43y + p43z * p43z;
-  real d2121 = p21x * p21x + p21y * p21y + p21z * p21z;
+  real_t d1343 = p13x * p43x + p13y * p43y + p13z * p43z;
+  real_t d4321 = p21x * p43x + p21y * p43y + p21z * p43z;
+  real_t d1321 = p21x * p13x + p21y * p13y + p21z * p13z;
+  real_t d4343 = p43x * p43x + p43y * p43y + p43z * p43z;
+  real_t d2121 = p21x * p21x + p21y * p21y + p21z * p21z;
 
   Real3 p1, p2;
 
-  real denom = d2121 * d4343 - d4321 * d4321;
+  real_t denom = d2121 * d4343 - d4321 * d4321;
 
   // if the two segments are not ABSOLUTLY parallel
   if (denom > 0.000000000001) {  /// TODO(neurites) hardcoded value
-    real numer = d1343 * d4321 - d1321 * d4343;
+    real_t numer = d1343 * d4321 - d1321 * d4343;
 
-    real mua = numer / denom;
-    real mub = (d1343 + mua * d4321) / d4343;
+    real_t mua = numer / denom;
+    real_t mub = (d1343 + mua * d4321) / d4343;
 
     if (mua < 0) {
       p1 = a;
@@ -283,16 +283,16 @@ void InteractionForce::ForceBetweenCylinders(const Agent* cylinder1,
 }
 
 Real4 InteractionForce::ComputeForceOfASphereOnASphere(const Real3& c1,
-                                                         real r1,
+                                                         real_t r1,
                                                          const Real3& c2,
-                                                         real r2) const {
-  real comp1 = c1[0] - c2[0];
-  real comp2 = c1[1] - c2[1];
-  real comp3 = c1[2] - c2[2];
-  real distance_between_centers =
+                                                         real_t r2) const {
+  real_t comp1 = c1[0] - c2[0];
+  real_t comp2 = c1[1] - c2[1];
+  real_t comp3 = c1[2] - c2[2];
+  real_t distance_between_centers =
       std::sqrt(comp1 * comp1 + comp2 * comp2 + comp3 * comp3);
   // the overlap distance (how much one penetrates in the other)
-  real a = r1 + r2 - distance_between_centers;
+  real_t a = r1 + r2 - distance_between_centers;
   // if no overlap: no force
   if (a < 0) {
     return Real4{0.0, 0.0, 0.0, 0.0};
@@ -306,7 +306,7 @@ Real4 InteractionForce::ComputeForceOfASphereOnASphere(const Real3& c1,
   } else {
     // the force is prop to the square of the interpentration distance and to
     // the radii.
-    real module = a / distance_between_centers;
+    real_t module = a / distance_between_centers;
     Real4 force2on1({module * comp1, module * comp2, module * comp3, 0.0});
     return force2on1;
   }

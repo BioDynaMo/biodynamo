@@ -26,7 +26,7 @@ struct SpringForce : public Behavior {
   BDM_BEHAVIOR_HEADER(SpringForce, Behavior, 1);
 
  public:
-  SpringForce(real spring_constant = 1) : spring_constant_(spring_constant) {
+  SpringForce(real_t spring_constant = 1) : spring_constant_(spring_constant) {
     AlwaysCopyToNew();
   }
 
@@ -64,7 +64,7 @@ struct SpringForce : public Behavior {
   }
 
  private:
-  real spring_constant_;
+  real_t spring_constant_;
 };
 
 }  // namespace bdm

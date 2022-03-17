@@ -23,13 +23,13 @@ namespace bdm {
 class TestGrid : public DiffusionGrid {
  public:
   TestGrid() {}
-  TestGrid(int substance_id, std::string substance_name, real dc, real mu,
+  TestGrid(int substance_id, std::string substance_name, real_t dc, real_t mu,
            int resolution = 11)
       : DiffusionGrid(substance_id, substance_name, dc, mu, resolution) {}
 
-  void DiffuseWithClosedEdge(real dt) override { return; };
+  void DiffuseWithClosedEdge(real_t dt) override { return; };
 
-  void DiffuseWithOpenEdge(real dt) override { return; };
+  void DiffuseWithOpenEdge(real_t dt) override { return; };
 
   void Swap() { c1_.swap(c2_); }
 
@@ -44,7 +44,7 @@ class TestGrid : public DiffusionGrid {
   }
 
   // Compares all values of the array c1_ with a specific value.
-  bool ComapareArrayWithValue(real value) {
+  bool ComapareArrayWithValue(real_t value) {
     for (size_t i = 0; i < c1_.size(); i++) {
       if (c1_[i] != value) {
         return false;

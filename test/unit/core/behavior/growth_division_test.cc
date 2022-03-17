@@ -35,7 +35,7 @@ TEST(GrowthDivisionTest, Grow) {
 
   ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
 
-  EXPECT_REAL_EQ(real(33513.321638291127), cell.GetVolume());
+  EXPECT_REAL_EQ(real_t(33513.321638291127), cell.GetVolume());
   EXPECT_EQ(0u, rm->GetNumAgents());
 }
 

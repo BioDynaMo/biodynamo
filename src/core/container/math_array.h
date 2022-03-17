@@ -25,7 +25,7 @@
 
 #include "core/util/log.h"
 #include "core/util/root.h"
-#include "core/real.h"
+#include "core/real_t.h"
 
 namespace bdm {
 
@@ -402,11 +402,11 @@ std::ostream& operator<<(std::ostream& o, const MathArray<T, N>& arr) {
 }
 
 /// Alias for a size 3 MathArray
-using Real3 = MathArray<real, 3>;
+using Real3 = MathArray<real_t, 3>;
 using Double3 = MathArray<double, 3>;
 
 /// Alias for a size 4 MathArray
-using Real4 = MathArray<real, 4>;
+using Real4 = MathArray<real_t, 4>;
 
 }  // namespace bdm
 

@@ -28,13 +28,13 @@ namespace experimental {
 TimeSeries::Data::Data() {}
 
 // -----------------------------------------------------------------------------
-TimeSeries::Data::Data(real (*ycollector)(Simulation*),
-                       real (*xcollector)(Simulation*))
+TimeSeries::Data::Data(real_t (*ycollector)(Simulation*),
+                       real_t (*xcollector)(Simulation*))
     : ycollector(ycollector), xcollector(xcollector) {}
 
 // -----------------------------------------------------------------------------
-TimeSeries::Data::Data(Reducer<real>* y_reducer_collector,
-                       real (*xcollector)(Simulation*))
+TimeSeries::Data::Data(Reducer<real_t>* y_reducer_collector,
+                       real_t (*xcollector)(Simulation*))
     : y_reducer_collector(y_reducer_collector), xcollector(xcollector) {}
 
 // -----------------------------------------------------------------------------
@@ -75,20 +75,20 @@ TimeSeries::Data::~Data() {
 }
 
 // -----------------------------------------------------------------------------
-real TimeSeries::ComputeError(const TimeSeries& ts1, const TimeSeries& ts2) {
+real_t TimeSeries::ComputeError(const TimeSeries& ts1, const TimeSeries& ts2) {
   // verify that all TimeSeries contain the same entries
   if (ts1.data_.size() != ts2.data_.size()) {
     Log::Warning("TimeSeries::ComputeError",
                  "The time series objects that should be merged do not "
                  "contain the same entries. Operation aborted.");
-    return std::numeric_limits<real>::infinity();
+    return std::numeric_limits<real_t>::infinity();
   }
   for (auto& p : ts1.data_) {
     if (ts2.data_.find(p.first) == ts2.data_.end()) {
       Log::Warning("TimeSeries::ComputeError",
                    "The time series objects that should be merged do not "
                    "contain the same entries. Operation aborted");
-      return std::numeric_limits<real>::infinity();
+      return std::numeric_limits<real_t>::infinity();
     }
   }
 
@@ -101,20 +101,20 @@ real TimeSeries::ComputeError(const TimeSeries& ts1, const TimeSeries& ts2) {
       Log::Warning("TimeSeries::ComputeError",
                    "The time series objects for entry (", key,
                    ") have different x_values. Operation aborted.");
-      return std::numeric_limits<real>::infinity();
+      return std::numeric_limits<real_t>::infinity();
     } else {
       for (uint64_t j = 0; j < xref.size(); ++j) {
         if (std::abs(xref[j] - xcurrent[j]) > 1e-5) {
           Log::Warning("TimeSeries::ComputeError",
                        "The time series objects for entry (", key,
                        ") have different x_values. Operation aborted.");
-          return std::numeric_limits<real>::infinity();
+          return std::numeric_limits<real_t>::infinity();
         }
       }
     }
   }
 
-  real error = 0.0;
+  real_t error = 0.0;
   for (auto& pair : ts1.data_) {
     auto& key = pair.first;
     auto& yref = ts1.data_.at(key).y_values;
@@ -132,8 +132,8 @@ void TimeSeries::Load(const std::string& full_filepath, TimeSeries** restored) {
 // -----------------------------------------------------------------------------
 void TimeSeries::Merge(
     TimeSeries* merged, const std::vector<TimeSeries>& time_series,
-    const std::function<void(const std::vector<real>&, real*, real*,
-                             real*)>& merger) {
+    const std::function<void(const std::vector<real_t>&, real_t*, real_t*,
+                             real_t*)>& merger) {
   if (!merged) {
     Log::Warning("TimeSeries::Merge",
                  "Parameter 'merged' is a nullptr. Operation aborted.");
@@ -210,7 +210,7 @@ void TimeSeries::Merge(
 #pragma omp parallel for
     for (uint64_t i = 0; i < xref.size(); ++i) {
       mdata.x_values[i] = xref[i];
-      std::vector<real> all_y_values(time_series.size());
+      std::vector<real_t> all_y_values(time_series.size());
       for (uint64_t j = 0; j < time_series.size(); ++j) {
         all_y_values[j] = time_series[j].data_.at(key).y_values[i];
         merger(all_y_values, &mdata.y_values[i], &mdata.y_error_low[i],
@@ -244,8 +244,8 @@ TimeSeries& TimeSeries::operator=(const TimeSeries& other) {
 
 // -----------------------------------------------------------------------------
 void TimeSeries::AddCollector(const std::string& id,
-                              real (*ycollector)(Simulation*),
-                              real (*xcollector)(Simulation*)) {
+                              real_t (*ycollector)(Simulation*),
+                              real_t (*xcollector)(Simulation*)) {
   auto it = data_.find(id);
   if (it != data_.end()) {
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
@@ -256,8 +256,8 @@ void TimeSeries::AddCollector(const std::string& id,
 
 // -----------------------------------------------------------------------------
 void TimeSeries::AddCollector(const std::string& id,
-                              Reducer<real>* y_reducer_collector,
-                              real (*xcollector)(Simulation*)) {
+                              Reducer<real_t>* y_reducer_collector,
+                              real_t (*xcollector)(Simulation*)) {
   auto it = data_.find(id);
   if (it != data_.end()) {
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
@@ -272,7 +272,7 @@ void TimeSeries::Update() {
     auto* sim = Simulation::GetActive();
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
-    std::vector<std::pair<Reducer<real>*, const std::string>> reducers;
+    std::vector<std::pair<Reducer<real_t>*, const std::string>> reducers;
     for (auto& entry : data_) {
       auto& result_data = entry.second;
       if (result_data.ycollector != nullptr) {
@@ -327,8 +327,8 @@ void TimeSeries::Add(const TimeSeries& ts, const std::string& suffix) {
 }
 
 // -----------------------------------------------------------------------------
-void TimeSeries::Add(const std::string& id, const std::vector<real>& x_values,
-                     const std::vector<real>& y_values) {
+void TimeSeries::Add(const std::string& id, const std::vector<real_t>& x_values,
+                     const std::vector<real_t>& y_values) {
   if (data_.find(id) != data_.end()) {
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
                  ") exists already. Consider changing the suffix parameter to "
@@ -343,10 +343,10 @@ void TimeSeries::Add(const std::string& id, const std::vector<real>& x_values,
 }
 
 // -----------------------------------------------------------------------------
-void TimeSeries::Add(const std::string& id, const std::vector<real>& x_values,
-                     const std::vector<real>& y_values,
-                     const std::vector<real>& y_error_low,
-                     const std::vector<real>& y_error_high) {
+void TimeSeries::Add(const std::string& id, const std::vector<real_t>& x_values,
+                     const std::vector<real_t>& y_values,
+                     const std::vector<real_t>& y_error_low,
+                     const std::vector<real_t>& y_error_high) {
   if (data_.find(id) != data_.end()) {
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
                  ") exists already. Consider changing the suffix parameter to "
@@ -363,9 +363,9 @@ void TimeSeries::Add(const std::string& id, const std::vector<real>& x_values,
 }
 
 // -----------------------------------------------------------------------------
-void TimeSeries::Add(const std::string& id, const std::vector<real>& x_values,
-                     const std::vector<real>& y_values,
-                     const std::vector<real>& y_error) {
+void TimeSeries::Add(const std::string& id, const std::vector<real_t>& x_values,
+                     const std::vector<real_t>& y_values,
+                     const std::vector<real_t>& y_error) {
   if (data_.find(id) != data_.end()) {
     Log::Warning("TimeSeries::Add", "TimeSeries with id (", id,
                  ") exists already. Consider changing the suffix parameter to "
@@ -389,23 +389,23 @@ bool TimeSeries::Contains(const std::string& id) const {
 uint64_t TimeSeries::Size() const { return data_.size(); }
 
 // -----------------------------------------------------------------------------
-const std::vector<real>& TimeSeries::GetXValues(const std::string& id) const {
+const std::vector<real_t>& TimeSeries::GetXValues(const std::string& id) const {
   return data_.at(id).x_values;
 }
 
 // -----------------------------------------------------------------------------
-const std::vector<real>& TimeSeries::GetYValues(const std::string& id) const {
+const std::vector<real_t>& TimeSeries::GetYValues(const std::string& id) const {
   return data_.at(id).y_values;
 }
 
 // -----------------------------------------------------------------------------
-const std::vector<real>& TimeSeries::GetYErrorLow(
+const std::vector<real_t>& TimeSeries::GetYErrorLow(
     const std::string& id) const {
   return data_.at(id).y_error_low;
 }
 
 // -----------------------------------------------------------------------------
-const std::vector<real>& TimeSeries::GetYErrorHigh(
+const std::vector<real_t>& TimeSeries::GetYErrorHigh(
     const std::string& id) const {
   return data_.at(id).y_error_high;
 }

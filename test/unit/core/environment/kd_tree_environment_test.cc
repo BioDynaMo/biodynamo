@@ -21,7 +21,7 @@
 namespace bdm {
 
 inline void CellFactory(ResourceManager* rm, size_t cells_per_dim) {
-  const real space = 20;
+  const real_t space = 20;
   rm->Reserve(cells_per_dim * cells_per_dim * cells_per_dim);
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
@@ -34,7 +34,7 @@ inline void CellFactory(ResourceManager* rm, size_t cells_per_dim) {
   }
 }
 
-struct FillNeighborList : public Functor<void, Agent*, real> {
+struct FillNeighborList : public Functor<void, Agent*, real_t> {
   std::unordered_map<AgentUid, std::vector<AgentUid>>* neighbors_;
   AgentUid uid_;
   FillNeighborList(
@@ -42,7 +42,7 @@ struct FillNeighborList : public Functor<void, Agent*, real> {
       AgentUid uid)
       : neighbors_(neighbors), uid_(uid) {}
 
-  void operator()(Agent* neighbor, real squared_distance) override {
+  void operator()(Agent* neighbor, real_t squared_distance) override {
     auto nuid = neighbor->GetUid();
     if (uid_ != nuid) {
       (*neighbors_)[uid_].push_back(nuid);
@@ -67,7 +67,7 @@ TEST(KDTreeTest, Setup) {
   neighbors.reserve(rm->GetNumAgents());
 
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
-  real search_radius_squared = 1201;
+  real_t search_radius_squared = 1201;
   rm->ForEachAgent([&](Agent* so) {
     auto uid = so->GetUid();
     FillNeighborList fill_neighbor_list(&neighbors, uid);

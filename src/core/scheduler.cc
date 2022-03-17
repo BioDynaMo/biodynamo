@@ -159,7 +159,7 @@ void Scheduler::FinalizeInitialization() {
 
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 
-real Scheduler::GetSimulatedTime() const { return simulated_time_; }
+real_t Scheduler::GetSimulatedTime() const { return simulated_time_; }
 
 TimingAggregator* Scheduler::GetOpTimes() { return &op_times_; }
 

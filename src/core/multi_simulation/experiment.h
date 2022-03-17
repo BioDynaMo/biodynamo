@@ -24,7 +24,7 @@
 #include "core/functor.h"
 #include "core/multi_simulation/database.h"
 #include "core/param/param.h"
-#include "core/real.h"
+#include "core/real_t.h"
 
 namespace bdm {
 namespace experimental {
@@ -33,7 +33,7 @@ namespace experimental {
 // the mean of the simulated results. If a real (experimental / analytical)
 // dataset is presented (either as the argument or through a database), we
 // compute the average error and return it
-inline real Experiment(
+inline real_t Experiment(
     Functor<void, Param*, TimeSeries*>& simulation, size_t iterations,
     const Param* param, TimeSeries* real_ts = nullptr,
     Functor<void, const std::vector<TimeSeries>&, const TimeSeries&,
@@ -60,8 +60,8 @@ inline real Experiment(
   // Compute the mean result values of the N iterations
   TimeSeries simulated;
   TimeSeries::Merge(&simulated, results,
-                    [](const std::vector<real> all_y_values, real* y,
-                       real* eh, real* el) {
+                    [](const std::vector<real_t> all_y_values, real_t* y,
+                       real_t* eh, real_t* el) {
                       *y =
                           TMath::Mean(all_y_values.begin(), all_y_values.end());
                     });
@@ -74,7 +74,7 @@ inline real Experiment(
 
   if (use_real_data) {
     // Compute and return the error between the real and simulated data
-    real err = TimeSeries::ComputeError(*real_ts, simulated);
+    real_t err = TimeSeries::ComputeError(*real_ts, simulated);
 
     return err;
   }

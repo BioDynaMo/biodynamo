@@ -23,7 +23,7 @@ struct RandomWalk : public Behavior {
   BDM_BEHAVIOR_HEADER(RandomWalk, Behavior, 1);
 
  public:
-  RandomWalk(real v = 1) : velocity_(v) { AlwaysCopyToNew(); }
+  RandomWalk(real_t v = 1) : velocity_(v) { AlwaysCopyToNew(); }
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
@@ -58,7 +58,7 @@ struct RandomWalk : public Behavior {
   }
 
  private:
-  real velocity_;
+  real_t velocity_;
 };
 
 /// Make a simulation object move at a constant velocity towards the direction
@@ -66,7 +66,7 @@ struct RandomWalkXY : public Behavior {
   BDM_BEHAVIOR_HEADER(RandomWalkXY, Behavior, 1);
 
  public:
-  RandomWalkXY(real v = 1) : velocity_(v) { AlwaysCopyToNew(); }
+  RandomWalkXY(real_t v = 1) : velocity_(v) { AlwaysCopyToNew(); }
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
@@ -99,7 +99,7 @@ struct RandomWalkXY : public Behavior {
   }
 
  private:
-  real velocity_;
+  real_t velocity_;
 };
 
 }  // namespace bdm

@@ -108,7 +108,7 @@ void ParaviewAdaptor::Visualize() {
     return;
   }
 
-  real time = param->simulation_time_step * total_steps;
+  real_t time = param->simulation_time_step * total_steps;
   impl_->data_description_->SetTimeData(time, total_steps);
 
   CreateVtkObjects();

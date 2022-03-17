@@ -40,7 +40,7 @@ void NeuriteElement::Initialize(const NewAgentEvent& event) {
   } else if (event.GetUid() == NeuriteBifurcationEvent::kUid) {
     const auto& e = static_cast<const NeuriteBifurcationEvent&>(event);
     auto* ne = bdm_static_cast<NeuriteElement*>(event.existing_agent);
-    real diameter;
+    real_t diameter;
     Real3 direction;
     if (event.new_agents.size() == 0) {
       // left branch
@@ -134,7 +134,7 @@ std::set<std::string> NeuriteElement::GetRequiredVisDataMembers() const {
   return {"mass_location_", "diameter_", "actual_length_", "spring_axis_"};
 }
 
-void NeuriteElement::SetDiameter(real diameter) {
+void NeuriteElement::SetDiameter(real_t diameter) {
   if (diameter > diameter_) {
     SetPropagateStaticness();
   }
@@ -142,7 +142,7 @@ void NeuriteElement::SetDiameter(real diameter) {
   UpdateVolume();
 }
 
-void NeuriteElement::SetDensity(real density) {
+void NeuriteElement::SetDensity(real_t density) {
   if (density > density_) {
     SetPropagateStaticness();
   }
@@ -164,7 +164,7 @@ void NeuriteElement::SetMassLocation(const Real3& mass_location) {
   SetPropagateStaticness();
 }
 
-void NeuriteElement::SetAdherence(real adherence) {
+void NeuriteElement::SetAdherence(real_t adherence) {
   if (adherence < adherence_) {
     SetStaticnessNextTimestep(false);
   }
@@ -183,7 +183,7 @@ StructureIdentifierSWC NeuriteElement::GetIdentifierSWC() const {
   }
 };
 
-void NeuriteElement::RetractTerminalEnd(real speed) {
+void NeuriteElement::RetractTerminalEnd(real_t speed) {
   // check if is a terminal branch
   if (daughter_left_ != nullptr) {
     return;
@@ -200,8 +200,8 @@ void NeuriteElement::RetractTerminalEnd(real speed) {
     // (putting a limit on how short a branch can be is absolutely necessary
     //  otherwise the tension might explode)
 
-    real new_actual_length = actual_length_ - speed;
-    real factor = new_actual_length / actual_length_;
+    real_t new_actual_length = actual_length_ - speed;
+    real_t factor = new_actual_length / actual_length_;
     SetActualLength(new_actual_length);
     // cf removeproximalCylinder()
     resting_length_ =
@@ -229,9 +229,9 @@ void NeuriteElement::RetractTerminalEnd(real speed) {
   }
 }
 
-void NeuriteElement::ElongateTerminalEnd(real speed,
+void NeuriteElement::ElongateTerminalEnd(real_t speed,
                                          const Real3& direction) {
-  real temp = direction * spring_axis_;
+  real_t temp = direction * spring_axis_;
   if (temp > 0) {
     MovePointMass(speed, direction);
   }
@@ -241,9 +241,9 @@ bool NeuriteElement::BranchPermitted() const {
   return daughter_left_ != nullptr && daughter_right_ == nullptr;
 }
 
-NeuriteElement* NeuriteElement::Branch(real new_branch_diameter,
+NeuriteElement* NeuriteElement::Branch(real_t new_branch_diameter,
                                        const Real3& direction,
-                                       real length) {
+                                       real_t length) {
   // create a new neurite element for side branch
   // we first split this neurite element into two pieces
   // then append a "daughter right" between the two
@@ -256,7 +256,7 @@ NeuriteElement* NeuriteElement::Branch(const Real3& direction) {
   return Branch(diameter_, direction);
 }
 
-NeuriteElement* NeuriteElement::Branch(real diameter) {
+NeuriteElement* NeuriteElement::Branch(real_t diameter) {
   auto* random = Simulation::GetActive()->GetRandom();
   auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
   auto growth_direction = Math::Perp3(
@@ -267,7 +267,7 @@ NeuriteElement* NeuriteElement::Branch(real diameter) {
 
 NeuriteElement* NeuriteElement::Branch() {
   auto* random = Simulation::GetActive()->GetRandom();
-  real branch_diameter = diameter_;
+  real_t branch_diameter = diameter_;
   auto rand_noise = random->template UniformArray<3>(-0.1, 0.1);
   auto growth_direction = Math::Perp3(
       GetUnitaryAxisDirectionVector() + rand_noise, random->Uniform(0, 1));
@@ -281,7 +281,7 @@ bool NeuriteElement::BifurcationPermitted() const {
 }
 
 std::array<NeuriteElement*, 2> NeuriteElement::Bifurcate(
-    real length, real diameter_1, real diameter_2,
+    real_t length, real_t diameter_1, real_t diameter_2,
     const Real3& direction_1, const Real3& direction_2) {
   // 1) physical bifurcation
   // check it is a terminal branch
@@ -298,7 +298,7 @@ std::array<NeuriteElement*, 2> NeuriteElement::Bifurcate(
 }
 
 std::array<NeuriteElement*, 2> NeuriteElement::Bifurcate(
-    real diameter_1, real diameter_2, const Real3& direction_1,
+    real_t diameter_1, real_t diameter_2, const Real3& direction_1,
     const Real3& direction_2) {
   Log::Fatal("NeuriteElement::Bifurcate", "Not Implemented");
   std::array<NeuriteElement*, 2> dummy;
@@ -309,23 +309,23 @@ std::array<NeuriteElement*, 2> NeuriteElement::Bifurcate(
     const Real3& direction_1, const Real3& direction_2) {
   // initial default length :
   auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
-  real l = param->neurite_default_actual_length;
+  real_t l = param->neurite_default_actual_length;
   // diameters :
-  real d = diameter_;
+  real_t d = diameter_;
   return Bifurcate(l, d, d, direction_1, direction_2);
 }
 
 std::array<NeuriteElement*, 2> NeuriteElement::Bifurcate() {
   // initial default length :
   auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
-  real l = param->neurite_default_actual_length;
+  real_t l = param->neurite_default_actual_length;
   // diameters :
-  real d = diameter_;
+  real_t d = diameter_;
   // direction : (60 degrees between branches)
   auto* random = Simulation::GetActive()->GetRandom();
-  real random_val = random->Uniform(0, 1);
+  real_t random_val = random->Uniform(0, 1);
   auto perp_plane = Math::Perp3(spring_axis_, random_val);
-  real angle_between_branches = Math::kPi / 3.0;
+  real_t angle_between_branches = Math::kPi / 3.0;
   auto direction_1 = Math::RotAroundAxis(
       spring_axis_, angle_between_branches * 0.5, perp_plane);
   auto direction_2 = Math::RotAroundAxis(
@@ -378,7 +378,7 @@ Real3 NeuriteElement::ForceTransmittedFromDaugtherToMother(
   // earlier.
   // (The reason for dividing by the actualLength is to normalize the
   // direction : T = T * axis/ (axis length)
-  real factor = tension_ / actual_length_;
+  real_t factor = tension_ / actual_length_;
   if (factor < 0) {
     factor = 0;
   }
@@ -416,7 +416,7 @@ void NeuriteElement::RunDiscretization() {
   }
 }
 
-void NeuriteElement::MovePointMass(real speed, const Real3& direction) {
+void NeuriteElement::MovePointMass(real_t speed, const Real3& direction) {
   // check if is a terminal branch
   if (daughter_left_ != nullptr) {
     return;
@@ -424,7 +424,7 @@ void NeuriteElement::MovePointMass(real speed, const Real3& direction) {
 
   // scaling for integration step
   auto* core_param = Simulation::GetActive()->GetParam();
-  real length = speed * core_param->simulation_time_step;
+  real_t length = speed * core_param->simulation_time_step;
   auto displacement = direction.GetNormalizedArray() * length;
   auto new_mass_location = displacement + mass_location_;
   // here I have to define the actual length ..........
@@ -441,7 +441,7 @@ void NeuriteElement::MovePointMass(real speed, const Real3& direction) {
   UpdateLocalCoordinateAxis();
 }
 
-void NeuriteElement::SetRestingLengthForDesiredTension(real tension) {
+void NeuriteElement::SetRestingLengthForDesiredTension(real_t tension) {
   SetTension(tension);
   if (tension == 0.0) {
     resting_length_ = actual_length_;
@@ -452,10 +452,10 @@ void NeuriteElement::SetRestingLengthForDesiredTension(real tension) {
   }
 }
 
-void NeuriteElement::ChangeVolume(real speed) {
+void NeuriteElement::ChangeVolume(real_t speed) {
   // scaling for integration step
   auto* core_param = Simulation::GetActive()->GetParam();
-  real delta = speed * core_param->simulation_time_step;
+  real_t delta = speed * core_param->simulation_time_step;
   volume_ += delta;
 
   if (volume_ <
@@ -465,16 +465,16 @@ void NeuriteElement::ChangeVolume(real speed) {
   UpdateDiameter();
 }
 
-void NeuriteElement::ChangeDiameter(real speed) {
+void NeuriteElement::ChangeDiameter(real_t speed) {
   // scaling for integration step
   auto* core_param = Simulation::GetActive()->GetParam();
-  real delta = speed * core_param->simulation_time_step;
+  real_t delta = speed * core_param->simulation_time_step;
   diameter_ += delta;
   UpdateVolume();
 }
 
 void NeuriteElement::MechanicalForcesFunctor::operator()(
-    Agent* neighbor, real squared_distance) {
+    Agent* neighbor, real_t squared_distance) {
   // if neighbor is a NeuriteElement
   // use shape to determine if neighbor is a NeuriteElement
   // this is much faster than using a dynamic_cast
@@ -518,7 +518,7 @@ void NeuriteElement::MechanicalForcesFunctor::operator()(
     force_from_neighbors[2] += force_from_neighbor[2];
   } else {
     // (if there is a part transmitted to the proximal end)
-    real part_for_point_mass = 1.0 - force_from_neighbor[3];
+    real_t part_for_point_mass = 1.0 - force_from_neighbor[3];
     force_from_neighbors[0] += force_from_neighbor[0] * part_for_point_mass;
     force_from_neighbors[1] += force_from_neighbor[1] * part_for_point_mass;
     force_from_neighbors[2] += force_from_neighbor[2] * part_for_point_mass;
@@ -532,14 +532,14 @@ void NeuriteElement::MechanicalForcesFunctor::operator()(
 }
 
 Real3 NeuriteElement::CalculateDisplacement(const InteractionForce* force,
-                                              real squared_radius,
-                                              real dt) {
+                                              real_t squared_radius,
+                                              real_t dt) {
   Real3 force_on_my_mothers_point_mass{0, 0, 0};
 
   // 1) Spring force
   //   Only the spring of this cylinder. The daughters spring also act on this
   //    mass, but they are treated in point (2)
-  real factor = -tension_ / actual_length_;  // the minus sign is important
+  real_t factor = -tension_ / actual_length_;  // the minus sign is important
                                                // because the spring axis goes
                                                // in the opposite direction
   Real3 force_on_my_point_mass = spring_axis_ * factor;
@@ -558,7 +558,7 @@ Real3 NeuriteElement::CalculateDisplacement(const InteractionForce* force,
 
   auto* core_param = Simulation::GetActive()->GetParam();
   // this value will be used to reduce force for neurite/neurite interactions
-  real h_over_m = 0.01;
+  real_t h_over_m = 0.01;
 
   // 3) Object avoidance force
   uint64_t non_zero_neighbor_force = 0;
@@ -603,7 +603,7 @@ Real3 NeuriteElement::CalculateDisplacement(const InteractionForce* force,
     return {0, 0, 0};
   }
 
-  real force_norm = force_on_my_point_mass.Norm();
+  real_t force_norm = force_on_my_point_mass.Norm();
   if (force_norm < adherence_) {
     return {0, 0, 0};
   }
@@ -612,7 +612,7 @@ Real3 NeuriteElement::CalculateDisplacement(const InteractionForce* force,
 
   //  6.3) Since there's going be a move, we calculate it
   auto& displacement = force_on_my_point_mass;
-  real& displacement_norm = force_norm;
+  real_t& displacement_norm = force_norm;
 
   //  6.4) There is an upper bound for the movement.
   if (displacement_norm > core_param->simulation_max_displacement) {
@@ -624,7 +624,7 @@ Real3 NeuriteElement::CalculateDisplacement(const InteractionForce* force,
 }
 
 void NeuriteElement::ApplyDisplacement(const Real3& displacement) {
-  // FIXME comparing reals
+  // FIXME comparing real_ts
   if (displacement == Real3{0, 0, 0}) {
     return;
   }
@@ -655,7 +655,7 @@ void NeuriteElement::UpdateLocalCoordinateAxis() {
   // y (new) = z(new) cross x(new)
   x_axis_ = spring_axis_.GetNormalizedArray();
   z_axis_ = Math::CrossProduct(x_axis_, y_axis_);
-  real norm_of_z = z_axis_.Norm();
+  real_t norm_of_z = z_axis_.Norm();
   if (norm_of_z < 1E-10) {  // TODO(neurites) use parameter
     // If new x_axis_ and old y_axis_ are aligned, we cannot use this scheme;
     // we start by re-defining new perp vectors. Ok, we loose the previous
@@ -669,7 +669,7 @@ void NeuriteElement::UpdateLocalCoordinateAxis() {
 }
 
 void NeuriteElement::UpdateDiameter() {
-  real diameter = std::sqrt(4 / Math::kPi * volume_ / actual_length_);
+  real_t diameter = std::sqrt(4 / Math::kPi * volume_ / actual_length_);
   if (diameter > diameter_) {
     Base::SetPropagateStaticness();
   }
@@ -711,11 +711,11 @@ Real3 NeuriteElement::TransformCoordinatesPolarToLocal(
 }
 
 Real3 NeuriteElement::TransformCoordinatesPolarToGlobal(
-    const std::array<real, 2>& position) const {
+    const std::array<real_t, 2>& position) const {
   // the position is in cylindrical coord (h,theta,r)
   // with r being implicit (half the diameter_)
   // We thus have h (along x_axis_) and theta (the angle from the y_axis_).
-  real r = 0.5 * diameter_;
+  real_t r = 0.5 * diameter_;
   Real3 polar_position{position[0], position[1], r};
   auto local = TransformCoordinatesPolarToLocal(polar_position);
   return TransformCoordinatesLocalToGlobal(local);
@@ -745,14 +745,14 @@ void NeuriteElement::SetDaughterRight(
   daughter_right_ = daughter;
 }
 
-void NeuriteElement::SetActualLength(real actual_length) {
+void NeuriteElement::SetActualLength(real_t actual_length) {
   if (actual_length > actual_length_) {
     SetPropagateStaticness();
   }
   actual_length_ = actual_length;
 }
 
-void NeuriteElement::SetRestingLength(real resting_length) {
+void NeuriteElement::SetRestingLength(real_t resting_length) {
   resting_length_ = resting_length;
 }
 
@@ -761,11 +761,11 @@ void NeuriteElement::SetSpringAxis(const Real3& axis) {
   spring_axis_ = axis;
 }
 
-void NeuriteElement::SetSpringConstant(real spring_constant) {
+void NeuriteElement::SetSpringConstant(real_t spring_constant) {
   spring_constant_ = spring_constant;
 }
 
-void NeuriteElement::SetTension(real tension) {
+void NeuriteElement::SetTension(real_t tension) {
   if (tension > tension_) {
     SetStaticnessNextTimestep(false);
   }
@@ -773,12 +773,12 @@ void NeuriteElement::SetTension(real tension) {
 }
 
 Real3 NeuriteElement::GetUnitaryAxisDirectionVector() const {
-  real factor = 1.0 / actual_length_;
+  real_t factor = 1.0 / actual_length_;
   return spring_axis_ * factor;
 }
 
-real NeuriteElement::LengthToProximalBranchingPoint() const {
-  real length = actual_length_;
+real_t NeuriteElement::LengthToProximalBranchingPoint() const {
+  real_t length = actual_length_;
   if (auto* mother_neurite =
           dynamic_cast<const NeuriteElement*>(mother_.Get())) {
     if (mother_neurite->GetDaughterRight() == nullptr) {
@@ -857,7 +857,7 @@ void NeuriteElement::Copy(const NeuriteElement& rhs) {
   // TODO(neurites) what about actual length, tension and resting_length_ ??
 }
 
-NeuriteElement* NeuriteElement::SplitNeuriteElement(real distal_portion) {
+NeuriteElement* NeuriteElement::SplitNeuriteElement(real_t distal_portion) {
   SplitNeuriteElementEvent event(distal_portion);
   CreateNewAgents(event, {this});
   return bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
@@ -897,7 +897,7 @@ void NeuriteElement::RemoveProximalNeuriteElement() {
 }
 
 NeuriteElement* NeuriteElement::ExtendSideNeuriteElement(
-    real length, real diameter, const Real3& direction) {
+    real_t length, real_t diameter, const Real3& direction) {
   if (daughter_right_ != nullptr) {
     Fatal("NeuriteElement",
           "Can't extend a side neurite since daughter_right is not a nullptr!");
@@ -909,16 +909,16 @@ NeuriteElement* NeuriteElement::ExtendSideNeuriteElement(
 }
 
 void NeuriteElement::InitializeNewNeuriteExtension(NeuronSoma* soma,
-                                                   real diameter, real phi,
-                                                   real theta) {
+                                                   real_t diameter, real_t phi,
+                                                   real_t theta) {
   auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
 
-  real radius = 0.5 * soma->GetDiameter();
-  real new_length = param->neurite_default_actual_length;
+  real_t radius = 0.5 * soma->GetDiameter();
+  real_t new_length = param->neurite_default_actual_length;
   // position in bdm.cells coord
-  real x_coord = std::sin(theta) * std::cos(phi);
-  real y_coord = std::sin(theta) * std::sin(phi);
-  real z_coord = std::cos(theta);
+  real_t x_coord = std::sin(theta) * std::cos(phi);
+  real_t y_coord = std::sin(theta) * std::sin(phi);
+  real_t z_coord = std::cos(theta);
   Real3 axis_direction{x_coord * soma->kXAxis[0] + y_coord * soma->kYAxis[0] +
                              z_coord * soma->kZAxis[0],
                          x_coord * soma->kXAxis[1] + y_coord * soma->kYAxis[1] +
@@ -948,8 +948,8 @@ void NeuriteElement::InitializeNewNeuriteExtension(NeuronSoma* soma,
 }
 
 void NeuriteElement::InitializeNeuriteBifurcation(NeuriteElement* mother,
-                                                  real length,
-                                                  real diameter,
+                                                  real_t length,
+                                                  real_t diameter,
                                                   const Real3& direction) {
   auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
 
@@ -989,7 +989,7 @@ void NeuriteElement::InitializeNeuriteBifurcation(NeuriteElement* mother,
 }
 
 void NeuriteElement::InitializeSplitOrBranching(NeuriteElement* other,
-                                                real distal_portion) {
+                                                real_t distal_portion) {
   const auto& other_ml = other->GetMassLocation();
   const auto& other_sa = other->GetSpringAxis();
   const auto& other_rl = other->GetRestingLength();
@@ -1010,7 +1010,7 @@ void NeuriteElement::InitializeSplitOrBranching(NeuriteElement* other,
 }
 
 void NeuriteElement::InitializeSideExtensionOrBranching(
-    NeuriteElement* mother, real length, real diameter,
+    NeuriteElement* mother, real_t length, real_t diameter,
     const Real3& direction) {
   auto* param = Simulation::GetActive()->GetParam()->Get<Param>();
 
@@ -1019,7 +1019,7 @@ void NeuriteElement::InitializeSideExtensionOrBranching(
   auto dir = direction;
   auto direction_normalized = direction.GetNormalizedArray();
   const auto& mother_spring_axis = mother->GetSpringAxis();
-  real angle_with_side_branch =
+  real_t angle_with_side_branch =
       Math::AngleRadian(mother_spring_axis, direction);
   if (angle_with_side_branch < 0.78 ||
       angle_with_side_branch > 2.35) {  // 45-135 degrees

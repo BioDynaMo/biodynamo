@@ -22,8 +22,8 @@ namespace bdm {
 
 void ModelInitializer::DefineSubstance(size_t substance_id,
                                        const std::string& substance_name,
-                                       real diffusion_coeff,
-                                       real decay_constant, int resolution) {
+                                       real_t diffusion_coeff,
+                                       real_t decay_constant, int resolution) {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   auto* rm = sim->GetResourceManager();

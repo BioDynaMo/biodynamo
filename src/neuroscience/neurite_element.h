@@ -75,9 +75,9 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// object.
   std::set<std::string> GetRequiredVisDataMembers() const override;
 
-  void SetDiameter(real diameter) override;
+  void SetDiameter(real_t diameter) override;
 
-  void SetDensity(real density);
+  void SetDensity(real_t density);
 
   const Real3& GetPosition() const override { return position_; }
 
@@ -90,21 +90,21 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   void SetMassLocation(const Real3& mass_location);
 
-  real GetAdherence() const { return adherence_; }
+  real_t GetAdherence() const { return adherence_; }
 
-  void SetAdherence(real adherence);
+  void SetAdherence(real_t adherence);
 
   const Real3& GetXAxis() const { return x_axis_; }
   const Real3& GetYAxis() const { return y_axis_; }
   const Real3& GetZAxis() const { return z_axis_; }
 
-  real GetVolume() const { return volume_; }
+  real_t GetVolume() const { return volume_; }
 
-  real GetDiameter() const override { return diameter_; }
+  real_t GetDiameter() const override { return diameter_; }
 
-  real GetDensity() const { return density_; }
+  real_t GetDensity() const { return density_; }
 
-  real GetMass() const { return density_ * volume_; }
+  real_t GetMass() const { return density_ * volume_; }
 
   /// Returns the absolute coordinates of the location where the daughter is
   /// attached.
@@ -132,7 +132,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   ///   * If it is shorter and either the previous neurite element has another
   ///   daughter or the mother is not a neurite element, it disappears.
   /// @param speed the retraction speed in microns / h
-  void RetractTerminalEnd(real speed);
+  void RetractTerminalEnd(real_t speed);
 
   /// Method used for active extension of a terminal branch, representing the
   /// steering of a growth cone. The movement should always be forward,
@@ -142,7 +142,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// possible).
   /// @param speed
   /// @param direction
-  void ElongateTerminalEnd(real speed, const Real3& direction);
+  void ElongateTerminalEnd(real_t speed, const Real3& direction);
 
   /// Returns true if a side branch is physically possible. That is if this is
   /// not a terminal  branch and if there is not already a second daughter.
@@ -151,8 +151,8 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \brief Create a branch for this neurite element.
   ///
   /// \see NeuriteBranchingEvent
-  NeuriteElement* Branch(real new_branch_diameter, const Real3& direction,
-                         real length = 1.0);
+  NeuriteElement* Branch(real_t new_branch_diameter, const Real3& direction,
+                         real_t length = 1.0);
 
   /// \brief Create a branch for this neurite element.
   ///
@@ -164,7 +164,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   ///
   /// Use a random growth direction for the side branch.
   /// \see NeuriteBranchingEvent
-  NeuriteElement* Branch(real diameter);
+  NeuriteElement* Branch(real_t diameter);
 
   /// \brief Create a branch for this neurite element.
   ///
@@ -180,15 +180,15 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \brief Growth cone bifurcation.
   ///
   /// \see NeuriteBifurcationEvent
-  std::array<NeuriteElement*, 2> Bifurcate(real length, real diameter_1,
-                                           real diameter_2,
+  std::array<NeuriteElement*, 2> Bifurcate(real_t length, real_t diameter_1,
+                                           real_t diameter_2,
                                            const Real3& direction_1,
                                            const Real3& direction_2);
 
   /// \brief Growth cone bifurcation.
   ///
   /// \see NeuriteBifurcationEvent
-  std::array<NeuriteElement*, 2> Bifurcate(real diameter_1, real diameter_2,
+  std::array<NeuriteElement*, 2> Bifurcate(real_t diameter_1, real_t diameter_2,
                                            const Real3& direction_1,
                                            const Real3& direction_2);
 
@@ -241,22 +241,22 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   ///
   /// @param speed      of the growth rate (microns/hours).
   /// @param direction  the 3D direction of movement.
-  void MovePointMass(real speed, const Real3& direction);
+  void MovePointMass(real_t speed, const Real3& direction);
 
-  void SetRestingLengthForDesiredTension(real tension);
+  void SetRestingLengthForDesiredTension(real_t tension);
   /// Progressive modification of the volume. Updates the diameter.
   /// @param speed cubic micron/ h
-  void ChangeVolume(real speed);
+  void ChangeVolume(real_t speed);
   /// Progressive modification of the diameter. Updates the volume.
   /// @param speed micron/ h
-  void ChangeDiameter(real speed);
+  void ChangeDiameter(real_t speed);
 
-  struct MechanicalForcesFunctor : public Functor<void, Agent*, real> {
+  struct MechanicalForcesFunctor : public Functor<void, Agent*, real_t> {
     const InteractionForce* force;
     NeuriteElement* ne;
     Real3& force_from_neighbors;
     Real3& force_on_my_mothers_point_mass;
-    real& h_over_m;
+    real_t& h_over_m;
     bool& has_neurite_neighbor;
     uint64_t& non_zero_neighbor_force;
 
@@ -264,7 +264,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
                             NeuriteElement* neurite,
                             Real3& force_from_neighbors,
                             Real3& force_on_my_mothers_point_mass,
-                            real& h_over_m, bool& has_neurite_neighbor,
+                            real_t& h_over_m, bool& has_neurite_neighbor,
                             uint64_t& non_zero_neighbor_force)
         : force(force),
           ne(neurite),
@@ -274,7 +274,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
           has_neurite_neighbor(has_neurite_neighbor),
           non_zero_neighbor_force(non_zero_neighbor_force) {}
 
-    void operator()(Agent* neighbor, real squared_distance) override;
+    void operator()(Agent* neighbor, real_t squared_distance) override;
   };
 
   // ***************************************************************************
@@ -282,7 +282,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   // ***************************************************************************
 
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real squared_radius, real dt) override;
+                                real_t squared_radius, real_t dt) override;
 
   // TODO(neurites) documentation
   void ApplyDisplacement(const Real3& displacement) override;
@@ -355,7 +355,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   /// P -> G :    P -> L, then L -> G
   Real3 TransformCoordinatesPolarToGlobal(
-      const std::array<real, 2>& position) const;
+      const std::array<real_t, 2>& position) const;
 
   /// G -> L :    G -> L, then L -> P
   Real3 TransformCoordinatesGlobalToPolar(const Real3& position) const;
@@ -393,26 +393,26 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   void SetBranchOrder(int branch_order) { branch_order_ = branch_order; }
 
-  real GetActualLength() const { return actual_length_; }
+  real_t GetActualLength() const { return actual_length_; }
 
   /// Should not be used, since the actual length depends on the geometry.
-  void SetActualLength(real actual_length);
+  void SetActualLength(real_t actual_length);
 
-  real GetRestingLength() const { return resting_length_; }
+  real_t GetRestingLength() const { return resting_length_; }
 
-  void SetRestingLength(real resting_length);
+  void SetRestingLength(real_t resting_length);
 
   const Real3& GetSpringAxis() const { return spring_axis_; }
 
   void SetSpringAxis(const Real3& axis);
 
-  real GetSpringConstant() const { return spring_constant_; }
+  real_t GetSpringConstant() const { return spring_constant_; }
 
-  void SetSpringConstant(real spring_constant);
+  void SetSpringConstant(real_t spring_constant);
 
-  real GetTension() const { return tension_; }
+  real_t GetTension() const { return tension_; }
 
-  void SetTension(real tension);
+  void SetTension(real_t tension);
 
   /// NOT A "REAL" GETTER
   /// Gets a vector of length 1, with the same direction as the SpringAxis.
@@ -436,9 +436,9 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// called) before the previous branching point. Used to decide if long enough
   /// to bifurcate or branch,
   /// independently of the discretization.
-  real LengthToProximalBranchingPoint() const;
+  real_t LengthToProximalBranchingPoint() const;
 
-  real GetLength() const { return actual_length_; }
+  real_t GetLength() const { return actual_length_; }
 
   /// Returns the axis direction of a neurite element
   const Real3& GetAxis() const;
@@ -465,13 +465,13 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// position_ is the middle point of cylinder
   Real3 position_ = {{0.0, 0.0, 0.0}};
 
-  real volume_;
+  real_t volume_;
   /// NB: Use setter and don't assign values directly
-  real diameter_ = 1;
+  real_t diameter_ = 1;
   /// NB: Use setter and don't assign values directly
-  real density_;
+  real_t density_;
   /// NB: Use setter and don't assign values directly
-  real adherence_;
+  real_t adherence_;
   /// First axis of the local coordinate system equal to cylinder axis
   Real3 x_axis_ = {{1.0, 0.0, 0.0}};
   /// Second axis of the local coordinate system.
@@ -506,19 +506,19 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   /// Real length of the PhysicalCylinder (norm of the springAxis).
   /// NB: Use setter and don't assign values directly
-  real actual_length_ = 1;
+  real_t actual_length_ = 1;
 
   /// Tension in the cylinder spring.
   /// NB: Use setter and don't assign values directly
-  real tension_;
+  real_t tension_;
 
   /// Spring constant per distance unit (springConstant restingLength  = "real"
   /// spring constant).
-  real spring_constant_;
+  real_t spring_constant_;
 
   /// The length of the internal spring where tension would be zero.
   /// T = k*(A-R)/R --> R = k*A/(T+K)
-  real resting_length_;
+  real_t resting_length_;
 
   /// Helper variable needed in CalculateDisplacement
   bool has_neurite_neighbor_ = false;
@@ -526,7 +526,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \brief Split this neurite element into two segments.
   ///
   /// \see SplitNeuriteElementEvent
-  NeuriteElement* SplitNeuriteElement(real distal_portion = 0.5);
+  NeuriteElement* SplitNeuriteElement(real_t distal_portion = 0.5);
 
   /// Merges two neurite elements together. The one in which the method is
   /// called phagocytes it's mother.
@@ -535,28 +535,28 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \brief Extend a side neurite element and assign it to daughter right.
   ///
   /// \see SideNeuriteExtensionEvent
-  NeuriteElement* ExtendSideNeuriteElement(real length, real diameter,
+  NeuriteElement* ExtendSideNeuriteElement(real_t length, real_t diameter,
                                            const Real3& direction);
 
   /// TODO
-  void InitializeNewNeuriteExtension(NeuronSoma* soma, real diameter,
-                                     real phi, real theta);
+  void InitializeNewNeuriteExtension(NeuronSoma* soma, real_t diameter,
+                                     real_t phi, real_t theta);
 
   /// TODO
-  void InitializeNeuriteBifurcation(NeuriteElement* mother, real length,
-                                    real diameter, const Real3& direction);
+  void InitializeNeuriteBifurcation(NeuriteElement* mother, real_t length,
+                                    real_t diameter, const Real3& direction);
 
   /// Neurite branching is composed of neurite splitting and side neurite
   /// extension. To avoid code duplication in constructors, logic has been moved
   /// here.
   /// \see SplitNeuriteElementEvent, NeuriteBranchingEvent
-  void InitializeSplitOrBranching(NeuriteElement* other, real distal_portion);
+  void InitializeSplitOrBranching(NeuriteElement* other, real_t distal_portion);
 
   /// Neurite branching is composed of neurite splitting and side neurite
   /// extension. To avoid code duplication in constructors, logic has been moved
   /// here.
-  void InitializeSideExtensionOrBranching(NeuriteElement* mother, real length,
-                                          real diameter,
+  void InitializeSideExtensionOrBranching(NeuriteElement* mother, real_t length,
+                                          real_t diameter,
                                           const Real3& direction);
 };
 

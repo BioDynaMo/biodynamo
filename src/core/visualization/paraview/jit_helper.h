@@ -41,8 +41,8 @@ struct GetVtkValueType {};
 
 // -----------------------------------------------------------------------------
 template <>
-struct GetVtkValueType<real> {
-  using type = real;
+struct GetVtkValueType<real_t> {
+  using type = real_t;
 };
 
 // -----------------------------------------------------------------------------
@@ -117,7 +117,7 @@ struct CreateVtkDataArray {
   typename std::enable_if<std::is_same<TTDataMember, Real3>::value>::type
   operator()(uint64_t tid, const std::string& dm_name, uint64_t dm_offset,
              VtkAgents* vtk_agents) {
-    using VtkArrayType = MappedDataArray<real, TClass, TDataMember>;
+    using VtkArrayType = MappedDataArray<real_t, TClass, TDataMember>;
     vtkNew<VtkArrayType> new_vtk_array;
     auto mode = Simulation::GetActive()->GetParam()->mapped_data_array_mode;
     new_vtk_array->Initialize(mode, dm_name, 3, dm_offset);

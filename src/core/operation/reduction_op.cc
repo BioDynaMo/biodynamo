@@ -19,7 +19,7 @@
 namespace bdm {
 
 BDM_REGISTER_TEMPLATE_OP(ReductionOp, int, "ReductionOpInt", kCpu);
-BDM_REGISTER_TEMPLATE_OP(ReductionOp, real, "ReductionOpDouble", kCpu);
+BDM_REGISTER_TEMPLATE_OP(ReductionOp, real_t, "ReductionOpDouble", kCpu);
 BDM_REGISTER_TEMPLATE_OP(ReductionOp, Real3, "ReductionOpReal3", kCpu);
 BDM_REGISTER_TEMPLATE_OP(ReductionOp, Real4, "ReductionOpReal4", kCpu);
 

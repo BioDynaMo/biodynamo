@@ -50,7 +50,7 @@ struct ModelInitializer {
   ///                            Real3&` as input parameter
   ///
   template <typename Function>
-  static void Grid3D(size_t agents_per_dim, real space,
+  static void Grid3D(size_t agents_per_dim, real_t space,
                      Function agent_builder) {
 #pragma omp parallel
     {
@@ -89,7 +89,7 @@ struct ModelInitializer {
   ///                            Real3&` as input parameter
   ///
   template <typename Function>
-  static void Grid3D(const std::array<size_t, 3>& agents_per_dim, real space,
+  static void Grid3D(const std::array<size_t, 3>& agents_per_dim, real_t space,
                      Function agent_builder) {
 #pragma omp parallel
     {
@@ -148,9 +148,9 @@ struct ModelInitializer {
   ///                           if rng is a nullptr, this function uses a
   ///                           uniform distribution between [min, max[
   template <typename Function>
-  static void CreateAgentsRandom(real min, real max, uint64_t num_agents,
+  static void CreateAgentsRandom(real_t min, real_t max, uint64_t num_agents,
                                  Function agent_builder,
-                                 DistributionRng<real>* rng = nullptr) {
+                                 DistributionRng<real_t>* rng = nullptr) {
 #pragma omp parallel
     {
       auto* sim = Simulation::GetActive();
@@ -187,7 +187,7 @@ struct ModelInitializer {
   ///       cell->SetDiameter(10);
   ///       return cell;
   ///     };
-  ///     auto f = [](const real* x, const real* params) {
+  ///     auto f = [](const real_t* x, const real_t* params) {
   ///         // 10 * sin(x/20) + 10 * sin(y/20)
   ///         return 10 * std::sin(x[0] / 20.) + 10 * std::sin(x[1] / 20.0);
   ///     };
@@ -212,9 +212,9 @@ struct ModelInitializer {
   ///                           parameter
   template <typename Function>
   static void CreateAgentsOnSurface(
-      real (*f)(const real*, const real*),
-      const FixedSizeVector<real, 10>& fn_params, real xmin, real xmax,
-      real deltax, real ymin, real ymax, real deltay,
+      real_t (*f)(const real_t*, const real_t*),
+      const FixedSizeVector<real_t, 10>& fn_params, real_t xmin, real_t xmax,
+      real_t deltax, real_t ymin, real_t ymax, real_t deltay,
       Function agent_builder) {
 #pragma omp parallel
     {
@@ -228,9 +228,9 @@ struct ModelInitializer {
 
 #pragma omp for
       for (uint64_t xit = 0; xit < xiterations; ++xit) {
-        real x = xmin + xit * deltax;
+        real_t x = xmin + xit * deltax;
         for (uint64_t yit = 0; yit < yiterations; ++yit) {
-          real y = ymin + yit * deltay;
+          real_t y = ymin + yit * deltay;
           Real3 pos = {x, y};
           pos[2] = f(pos.data(), fn_params.data());
           ctxt->AddAgent(agent_builder(pos));
@@ -249,7 +249,7 @@ struct ModelInitializer {
   ///       cell->SetDiameter(10);
   ///       return cell;
   ///     };
-  ///     auto f = [](const real* x, const real* params) {
+  ///     auto f = [](const real_t* x, const real_t* params) {
   ///         // 10 * sin(x/20) + 10 * sin(y/20)
   ///         return 10 * std::sin(x[0] / 20.) + 10 * std::sin(x[1] / 20.0);
   ///     };
@@ -272,9 +272,9 @@ struct ModelInitializer {
   ///                           parameter
   template <typename Function>
   static void CreateAgentsOnSurfaceRndm(
-      real (*f)(const real*, const real*),
-      const FixedSizeVector<real, 10>& fn_params, real xmin, real xmax,
-      real ymin, real ymax, uint64_t num_agents, Function agent_builder) {
+      real_t (*f)(const real_t*, const real_t*),
+      const FixedSizeVector<real_t, 10>& fn_params, real_t xmin, real_t xmax,
+      real_t ymin, real_t ymax, uint64_t num_agents, Function agent_builder) {
 #pragma omp parallel
     {
       auto* sim = Simulation::GetActive();
@@ -303,7 +303,7 @@ struct ModelInitializer {
   ///                           new agent. Takes `const
   ///                           Real3&` as input parameter
   template <typename Function>
-  static void CreateAgentsOnSphereRndm(const Real3& center, real radius,
+  static void CreateAgentsOnSphereRndm(const Real3& center, real_t radius,
                                        uint64_t num_agents,
                                        Function agent_builder) {
 #pragma omp parallel
@@ -333,7 +333,7 @@ struct ModelInitializer {
   ///                           new agent. Takes `const
   ///                           Real3&` as input parameter
   template <typename Function>
-  static void CreateAgentsInSphereRndm(const Real3& center, real radius,
+  static void CreateAgentsInSphereRndm(const Real3& center, real_t radius,
                                        uint64_t num_agents,
                                        Function agent_builder) {
     // We use a probability density function (PDF) to model the probability of
@@ -361,7 +361,7 @@ struct ModelInitializer {
     // Create a random radius for each of the agents. Note: this is done
     // serially because we GetUserDefinedDistRng1D does not work in parallel
     // regions at the moment.
-    std::vector<real> random_radius;
+    std::vector<real_t> random_radius;
     random_radius.resize(num_agents);
     for (size_t i = 0; i < num_agents; i++) {
       random_radius[i] = rng.Sample();
@@ -389,7 +389,7 @@ struct ModelInitializer {
   ///
   static void DefineSubstance(size_t substance_id,
                               const std::string& substance_name,
-                              real diffusion_coeff, real decay_constant,
+                              real_t diffusion_coeff, real_t decay_constant,
                               int resolution = 10);
 
   template <typename F>

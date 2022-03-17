@@ -27,7 +27,7 @@ namespace bdm {
 class UniformGridEnvironmentDeathTest : public ::testing::Test {};
 
 void CellFactory(ResourceManager* rm, size_t cells_per_dim) {
-  const real space = 20;
+  const real_t space = 20;
   rm->Reserve(cells_per_dim * cells_per_dim * cells_per_dim);
   for (size_t i = 0; i < cells_per_dim; i++) {
     for (size_t j = 0; j < cells_per_dim; j++) {
@@ -56,7 +56,7 @@ TEST(UniformGridEnvironmentTest, SetupGrid) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ForEachAgent([&](Agent* agent) {
     auto uid = agent->GetUid();
-    auto fill_neighbor_list = L2F([&](Agent* neighbor, real) {
+    auto fill_neighbor_list = L2F([&](Agent* neighbor, real_t) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
@@ -105,7 +105,7 @@ void RunUpdateGridTest(Simulation* simulation) {
   // Lambda that fills a vector of neighbors for each cell (excluding itself)
   rm->ForEachAgent([&](Agent* agent) {
     auto uid = agent->GetUid();
-    auto fill_neighbor_list = L2F([&](Agent* neighbor, real) {
+    auto fill_neighbor_list = L2F([&](Agent* neighbor, real_t) {
       auto nuid = neighbor->GetUid();
       if (uid != nuid) {
         neighbors[uid].push_back(nuid);
@@ -269,8 +269,8 @@ TEST(UniformGridEnvironmentTest, NonEmptyBoundedTestThresholdDimensions) {
   EXPECT_EQ(99, max_dimensions[1]);
 }
 
-struct TestFunctor : public Functor<void, Agent*, real> {
-  void operator()(Agent* neighbor, real squared_distance) override {}
+struct TestFunctor : public Functor<void, Agent*, real_t> {
+  void operator()(Agent* neighbor, real_t squared_distance) override {}
 };
 
 TEST(UniformGridEnvironmentTest, CustomBoxLength) {

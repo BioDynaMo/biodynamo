@@ -19,8 +19,8 @@ struct SimParam : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(SimParam, 1);
 
   std::string mode = "sim-and-analytical";
-  real beta = 0.06719;
-  real gamma = 0.00521;
+  real_t beta = 0.06719;
+  real_t gamma = 0.00521;
   uint64_t repeat = 10;
   bool no_legend = false;
 
@@ -28,12 +28,12 @@ struct SimParam : public ParamGroup {
   uint64_t number_of_iterations = 1000;
   uint64_t initial_population_susceptible = 2000;
   uint64_t initial_population_infected = 10;
-  real infection_radius = 10.5092197414493;
-  real moving_agents_ratio = 1.0;
-  real recovery_probability = 0.00521;
-  real agent_diameter = 2.0;
-  real agent_speed = 5.78594372145249;
-  real infection_probablity = 0.285097276954021;
+  real_t infection_radius = 10.5092197414493;
+  real_t moving_agents_ratio = 1.0;
+  real_t recovery_probability = 0.00521;
+  real_t agent_diameter = 2.0;
+  real_t agent_speed = 5.78594372145249;
+  real_t infection_probablity = 0.285097276954021;
   experimental::Style root_style;
 };
 

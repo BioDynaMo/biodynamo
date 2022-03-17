@@ -21,13 +21,13 @@
 namespace bdm {
 
 TEST(TypeTernaryOperatorTest, True) {
-  type_ternary_operator<true, int, real>::type data;
+  type_ternary_operator<true, int, real_t>::type data;
   EXPECT_EQ(std::string("i"), typeid(data).name());
 }
 
 TEST(TypeTernaryOperatorTest, False) {
-  type_ternary_operator<false, int, real>::type data;
-  EXPECT_EQ(typeid(real).name(), typeid(data).name());
+  type_ternary_operator<false, int, real_t>::type data;
+  EXPECT_EQ(typeid(real_t).name(), typeid(data).name());
 }
 
 TEST(TestRawType, All) {

@@ -204,40 +204,40 @@ TEST(DiffusionTest, CopyOldData) {
   auto grad_1 = dgrid->GetAllGradients();
 
   // Readout concentration values
-  real concentration_center = conc_1[dgrid->GetBoxIndex(center)];
-  real concentration_west = conc_1[dgrid->GetBoxIndex(west)];
-  real concentration_east = conc_1[dgrid->GetBoxIndex(east)];
-  real concentration_north = conc_1[dgrid->GetBoxIndex(north)];
-  real concentration_south = conc_1[dgrid->GetBoxIndex(south)];
-  real concentration_bottom = conc_1[dgrid->GetBoxIndex(bottom)];
-  real concentration_top = conc_1[dgrid->GetBoxIndex(top)];
-  real concentration_rand1_a = conc_1[dgrid->GetBoxIndex(rand1_a)];
-  real concentration_rand1_b = conc_1[dgrid->GetBoxIndex(rand1_b)];
-  real concentration_rand2_a = conc_1[dgrid->GetBoxIndex(rand2_a)];
-  real concentration_rand2_b = conc_1[dgrid->GetBoxIndex(rand2_b)];
+  real_t concentration_center = conc_1[dgrid->GetBoxIndex(center)];
+  real_t concentration_west = conc_1[dgrid->GetBoxIndex(west)];
+  real_t concentration_east = conc_1[dgrid->GetBoxIndex(east)];
+  real_t concentration_north = conc_1[dgrid->GetBoxIndex(north)];
+  real_t concentration_south = conc_1[dgrid->GetBoxIndex(south)];
+  real_t concentration_bottom = conc_1[dgrid->GetBoxIndex(bottom)];
+  real_t concentration_top = conc_1[dgrid->GetBoxIndex(top)];
+  real_t concentration_rand1_a = conc_1[dgrid->GetBoxIndex(rand1_a)];
+  real_t concentration_rand1_b = conc_1[dgrid->GetBoxIndex(rand1_b)];
+  real_t concentration_rand2_a = conc_1[dgrid->GetBoxIndex(rand2_a)];
+  real_t concentration_rand2_b = conc_1[dgrid->GetBoxIndex(rand2_b)];
 
   // Readout gradient values
-  real gradient_x_center = grad_1[3 * dgrid->GetBoxIndex(center) + 0];
-  real gradient_y_center = grad_1[3 * dgrid->GetBoxIndex(center) + 1];
-  real gradient_z_center = grad_1[3 * dgrid->GetBoxIndex(center) + 2];
-  real gradient_x_west = grad_1[3 * dgrid->GetBoxIndex(west) + 0];
-  real gradient_y_west = grad_1[3 * dgrid->GetBoxIndex(west) + 1];
-  real gradient_z_west = grad_1[3 * dgrid->GetBoxIndex(west) + 2];
-  real gradient_x_east = grad_1[3 * dgrid->GetBoxIndex(east) + 0];
-  real gradient_y_east = grad_1[3 * dgrid->GetBoxIndex(east) + 1];
-  real gradient_z_east = grad_1[3 * dgrid->GetBoxIndex(east) + 2];
-  real gradient_x_north = grad_1[3 * dgrid->GetBoxIndex(north) + 0];
-  real gradient_y_north = grad_1[3 * dgrid->GetBoxIndex(north) + 1];
-  real gradient_z_north = grad_1[3 * dgrid->GetBoxIndex(north) + 2];
-  real gradient_x_south = grad_1[3 * dgrid->GetBoxIndex(south) + 0];
-  real gradient_y_south = grad_1[3 * dgrid->GetBoxIndex(south) + 1];
-  real gradient_z_south = grad_1[3 * dgrid->GetBoxIndex(south) + 2];
-  real gradient_x_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 0];
-  real gradient_y_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 1];
-  real gradient_z_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 2];
-  real gradient_x_top = grad_1[3 * dgrid->GetBoxIndex(top) + 0];
-  real gradient_y_top = grad_1[3 * dgrid->GetBoxIndex(top) + 1];
-  real gradient_z_top = grad_1[3 * dgrid->GetBoxIndex(top) + 2];
+  real_t gradient_x_center = grad_1[3 * dgrid->GetBoxIndex(center) + 0];
+  real_t gradient_y_center = grad_1[3 * dgrid->GetBoxIndex(center) + 1];
+  real_t gradient_z_center = grad_1[3 * dgrid->GetBoxIndex(center) + 2];
+  real_t gradient_x_west = grad_1[3 * dgrid->GetBoxIndex(west) + 0];
+  real_t gradient_y_west = grad_1[3 * dgrid->GetBoxIndex(west) + 1];
+  real_t gradient_z_west = grad_1[3 * dgrid->GetBoxIndex(west) + 2];
+  real_t gradient_x_east = grad_1[3 * dgrid->GetBoxIndex(east) + 0];
+  real_t gradient_y_east = grad_1[3 * dgrid->GetBoxIndex(east) + 1];
+  real_t gradient_z_east = grad_1[3 * dgrid->GetBoxIndex(east) + 2];
+  real_t gradient_x_north = grad_1[3 * dgrid->GetBoxIndex(north) + 0];
+  real_t gradient_y_north = grad_1[3 * dgrid->GetBoxIndex(north) + 1];
+  real_t gradient_z_north = grad_1[3 * dgrid->GetBoxIndex(north) + 2];
+  real_t gradient_x_south = grad_1[3 * dgrid->GetBoxIndex(south) + 0];
+  real_t gradient_y_south = grad_1[3 * dgrid->GetBoxIndex(south) + 1];
+  real_t gradient_z_south = grad_1[3 * dgrid->GetBoxIndex(south) + 2];
+  real_t gradient_x_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 0];
+  real_t gradient_y_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 1];
+  real_t gradient_z_bottom = grad_1[3 * dgrid->GetBoxIndex(bottom) + 2];
+  real_t gradient_x_top = grad_1[3 * dgrid->GetBoxIndex(top) + 0];
+  real_t gradient_y_top = grad_1[3 * dgrid->GetBoxIndex(top) + 1];
+  real_t gradient_z_top = grad_1[3 * dgrid->GetBoxIndex(top) + 2];
 
   // Grow grid artificially
   param->min_bound = -140;
@@ -328,8 +328,8 @@ TEST(DiffusionTest, Thresholds) {
 
   Real3 pos_upper({{0, 0, 0}});
   Real3 pos_lower({{10, 10, 10}});
-  real upper_threshold = 3;
-  real lower_threshold = -2;
+  real_t upper_threshold = 3;
+  real_t lower_threshold = -2;
   dgrid->Initialize();
   dgrid->SetUpperThreshold(upper_threshold);
   dgrid->SetLowerThreshold(lower_threshold);
@@ -377,7 +377,7 @@ TEST(DiffusionTest, IOTest) {
   EulerGrid* restored_dgrid = nullptr;
   GetPersistentObject(ROOTFILE, "dgrid", restored_dgrid);
 
-  auto eps = abs_error<real>::value;
+  auto eps = abs_error<real_t>::value;
 
   EXPECT_EQ("Kalium", restored_dgrid->GetSubstanceName());
   EXPECT_EQ(10, restored_dgrid->GetBoxLength());
@@ -410,7 +410,7 @@ TEST(DiffusionTest, IOTest) {
 #endif  // USE_DICT
 
 Real3 GetRealCoordinates(const std::array<uint32_t, 3>& bc1,
-                           const std::array<uint32_t, 3>& bc2, real bl) {
+                           const std::array<uint32_t, 3>& bc2, real_t bl) {
   Real3 ret;
   ret[0] = bl * (bc2[0] - bc1[0]);
   ret[1] = bl * (bc2[1] - bc1[1]);
@@ -418,8 +418,8 @@ Real3 GetRealCoordinates(const std::array<uint32_t, 3>& bc1,
   return ret;
 }
 
-real CalculateAnalyticalSolution(real init, real x, real y, real z,
-                                   real diff_coef, real t) {
+real_t CalculateAnalyticalSolution(real_t init, real_t x, real_t y, real_t z,
+                                   real_t diff_coef, real_t t) {
   return (init / pow(4 * Math::kPi * diff_coef * t, 1.5)) *
          exp(-(pow(x, 2)) / (4 * diff_coef * t) -
              (pow(y, 2)) / (4 * diff_coef * t) -
@@ -450,7 +450,7 @@ TEST(DiffusionTest, CorrectParameters) {
 }
 
 TEST(DiffusionTest, EulerConvergenceExponentialDecay) {
-  real simulation_time_step{0.1};
+  real_t simulation_time_step{0.1};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
@@ -460,8 +460,8 @@ TEST(DiffusionTest, EulerConvergenceExponentialDecay) {
   Simulation simulation(TEST_NAME, set_param);
   simulation.GetEnvironment()->Update();
 
-  real diff_coef = 0.0;
-  real decay = 0.01;
+  real_t diff_coef = 0.0;
+  real_t decay = 0.01;
   DiffusionGrid* dgrid = new EulerGrid(0, "Kalium1", diff_coef, decay, 81);
   dgrid->Initialize();
   dgrid->SetUpperThreshold(1e15);
@@ -481,7 +481,7 @@ TEST(DiffusionTest, EulerConvergenceExponentialDecay) {
 
   // If there is no diffusion, each grid point simply executes an independet
   // exponential decay.
-  real expected_solution =
+  real_t expected_solution =
       init * std::exp(-decay * tot * simulation_time_step);
 
   // No diffusing substance -> Solution is 0 if not at source.
@@ -496,7 +496,7 @@ TEST(DiffusionTest, EulerConvergenceExponentialDecay) {
 }
 
 TEST(DiffusionTest, EulerConvergenceDiffusion) {
-  real simulation_time_step{1.0};
+  real_t simulation_time_step{1.0};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
@@ -506,7 +506,7 @@ TEST(DiffusionTest, EulerConvergenceDiffusion) {
   Simulation simulation(TEST_NAME, set_param);
   simulation.GetEnvironment()->Update();
 
-  real diff_coef = 0.5;
+  real_t diff_coef = 0.5;
   DiffusionGrid* dgrid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
   DiffusionGrid* dgrid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
   DiffusionGrid* dgrid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
@@ -642,7 +642,7 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
     param->diffusion_method = "runge-kutta";
   };
   Simulation simulation(TEST_NAME, set_param);
-  real diff_coef = 0.5;
+  real_t diff_coef = 0.5;
   DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 21);
   DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 41);
   DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 81);
@@ -735,8 +735,8 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
   ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.5, 0);
 
   // Initialize one of the substances
-  real mean = 0;
-  real sigma = 5;
+  real_t mean = 0;
+  real_t sigma = 5;
   ModelInitializer::InitializeSubstance(kSubstance1,
                                         GaussianBand(mean, sigma, kXAxis));
 
@@ -765,7 +765,7 @@ TEST(DISABLED_DiffusionTest, ModelInitializer) {
       vtk_dgrid->GetPointData()->GetArray("Substance Concentration");
   vtkDoubleArray* conc = vtkArrayDownCast<vtkDoubleArray>(abstract_array);
 
-  real expected = ROOT::Math::normal_pdf(0, sigma, mean);
+  real_t expected = ROOT::Math::normal_pdf(0, sigma, mean);
   Real3 marker = {0, 0, 0};
   size_t idx = rm->GetDiffusionGrid(kSubstance1)->GetBoxIndex(marker);
   EXPECT_NEAR(expected, conc->GetTuple(idx)[0], 1e-9);

@@ -37,17 +37,17 @@ TEST(InteractionForce, GeneralSphere) {
   InteractionForce force;
   auto result = force.Calculate(&cell, &nb);
 
-  EXPECT_NEAR(7.1429184067241138, result[0], abs_error<real>::value);
-  EXPECT_NEAR(6.4935621879310119, result[1], abs_error<real>::value);
-  EXPECT_NEAR(5.8442059691379109, result[2], abs_error<real>::value);
+  EXPECT_NEAR(7.1429184067241138, result[0], abs_error<real_t>::value);
+  EXPECT_NEAR(6.4935621879310119, result[1], abs_error<real_t>::value);
+  EXPECT_NEAR(5.8442059691379109, result[2], abs_error<real_t>::value);
 
   nb.SetDiameter(10);
   nb.SetPosition({5, 5, 0});
   result = force.Calculate(&cell, &nb);
 
-  EXPECT_NEAR(-5.7454658831720176, result[0], abs_error<real>::value);
-  EXPECT_NEAR(-5.892785521202069, result[1], abs_error<real>::value);
-  EXPECT_NEAR(1.3258767422704656, result[2], abs_error<real>::value);
+  EXPECT_NEAR(-5.7454658831720176, result[0], abs_error<real_t>::value);
+  EXPECT_NEAR(-5.892785521202069, result[1], abs_error<real_t>::value);
+  EXPECT_NEAR(1.3258767422704656, result[2], abs_error<real_t>::value);
 }
 
 /// Tests the special case that non of the neighbors overlap
@@ -63,9 +63,9 @@ TEST(InteractionForce, AllNonOverlappingSphere) {
   InteractionForce force;
   auto result = force.Calculate(&cell, &nb);
 
-  EXPECT_NEAR(0, result[0], abs_error<real>::value);
-  EXPECT_NEAR(0, result[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result[2], abs_error<real>::value);
+  EXPECT_NEAR(0, result[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result[2], abs_error<real_t>::value);
 }
 
 /// Tests the special case that neighbor and reference cell
@@ -109,10 +109,10 @@ TEST(DISABLED_Force, GeneralSphereCylinder) {
   // InteractionForce force;
   // auto result1 = force.Calculate(&cylinder, &sphere);
   //
-  // EXPECT_NEAR(5, result1[0], abs_error<real>::value);
-  // EXPECT_NEAR(0, result1[1], abs_error<real>::value);
-  // EXPECT_NEAR(0, result1[2], abs_error<real>::value);
-  // EXPECT_NEAR(0, result1[3], abs_error<real>::value);
+  // EXPECT_NEAR(5, result1[0], abs_error<real_t>::value);
+  // EXPECT_NEAR(0, result1[1], abs_error<real_t>::value);
+  // EXPECT_NEAR(0, result1[2], abs_error<real_t>::value);
+  // EXPECT_NEAR(0, result1[3], abs_error<real_t>::value);
   //
   // auto result2 = force.Calculate(&sphere, &cylinder);
   //
@@ -140,18 +140,18 @@ TEST(DISABLED_Force, GeneralCylinder) {
   InteractionForce force;
   auto result = force.Calculate(&cylinder1, &cylinder2);
 
-  EXPECT_NEAR(-38.290598290598311, result[0], abs_error<real>::value);
-  EXPECT_NEAR(9.5726495726495653, result[1], abs_error<real>::value);
-  EXPECT_NEAR(-76.581196581196579, result[2], abs_error<real>::value);
-  EXPECT_NEAR(1, result[3], abs_error<real>::value);
+  EXPECT_NEAR(-38.290598290598311, result[0], abs_error<real_t>::value);
+  EXPECT_NEAR(9.5726495726495653, result[1], abs_error<real_t>::value);
+  EXPECT_NEAR(-76.581196581196579, result[2], abs_error<real_t>::value);
+  EXPECT_NEAR(1, result[3], abs_error<real_t>::value);
 
   result = force.Calculate(&cylinder2, &cylinder1);
 
-  EXPECT_NEAR(38.290598290598311, result[0], abs_error<real>::value);
-  EXPECT_NEAR(-9.5726495726495653, result[1], abs_error<real>::value);
-  EXPECT_NEAR(76.581196581196579, result[2], abs_error<real>::value);
+  EXPECT_NEAR(38.290598290598311, result[0], abs_error<real_t>::value);
+  EXPECT_NEAR(-9.5726495726495653, result[1], abs_error<real_t>::value);
+  EXPECT_NEAR(76.581196581196579, result[2], abs_error<real_t>::value);
   EXPECT_NEAR(0.46153846153846156, result[3],
-              abs_error<real>::value);  // FIXME not symmetric
+              abs_error<real_t>::value);  // FIXME not symmetric
 }
 
 TEST(InteractionForce, CylinderIntersectingAxis) {
@@ -179,14 +179,14 @@ TEST(InteractionForce, CylinderIntersectingAxis) {
   EXPECT_NEAR(0, result[0], 30);
   EXPECT_NEAR(0, result[1], 30);
   EXPECT_NEAR(0, result[2], 30);
-  EXPECT_NEAR(0.4, result[3], abs_error<real>::value);
+  EXPECT_NEAR(0.4, result[3], abs_error<real_t>::value);
 
   result = force.Calculate(&cylinder2, &cylinder1);
 
   EXPECT_NEAR(0, result[0], 30);
   EXPECT_NEAR(0, result[1], 30);
   EXPECT_NEAR(0, result[2], 30);
-  EXPECT_NEAR(0.5, result[3], abs_error<real>::value);
+  EXPECT_NEAR(0.5, result[3], abs_error<real_t>::value);
 }
 
 TEST(InteractionForce, NotTouchingParallelCylinders) {
@@ -210,17 +210,17 @@ TEST(InteractionForce, NotTouchingParallelCylinders) {
   InteractionForce force;
   auto result = force.Calculate(&cylinder1, &cylinder2);
 
-  EXPECT_NEAR(0, result[0], abs_error<real>::value);
-  EXPECT_NEAR(0, result[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result[2], abs_error<real>::value);
-  EXPECT_NEAR(0.5, result[3], abs_error<real>::value);
+  EXPECT_NEAR(0, result[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result[2], abs_error<real_t>::value);
+  EXPECT_NEAR(0.5, result[3], abs_error<real_t>::value);
 
   result = force.Calculate(&cylinder2, &cylinder1);
 
-  EXPECT_NEAR(0, result[0], abs_error<real>::value);
-  EXPECT_NEAR(0, result[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result[2], abs_error<real>::value);
-  EXPECT_NEAR(0.5, result[3], abs_error<real>::value);
+  EXPECT_NEAR(0, result[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result[2], abs_error<real_t>::value);
+  EXPECT_NEAR(0.5, result[3], abs_error<real_t>::value);
 }
 
 // test I case of ForceOnACylinderFromASphere() function, ie if cylinder length
@@ -244,10 +244,10 @@ TEST(InteractionForce, SphereSmallCylinderHorizontal) {
   InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
-  EXPECT_NEAR(-0.196774255282483, result1[0], abs_error<real>::value);
-  EXPECT_NEAR(2.41048462721042, result1[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[2], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[3], abs_error<real>::value);
+  EXPECT_NEAR(-0.196774255282483, result1[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.41048462721042, result1[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[2], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[3], abs_error<real_t>::value);
   auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0.196774255282483, -2.41048462721042, 0, 0}, result2);
 }
@@ -273,10 +273,10 @@ TEST(InteractionForce, SphereSmallCylinderVertical) {
   InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
-  EXPECT_NEAR(0, result1[0], abs_error<real>::value);
-  EXPECT_NEAR(1, result1[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[2], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[3], abs_error<real>::value);
+  EXPECT_NEAR(0, result1[0], abs_error<real_t>::value);
+  EXPECT_NEAR(1, result1[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[2], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[3], abs_error<real_t>::value);
 
   auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0, -1, 0, 0}, result2);
@@ -302,10 +302,10 @@ TEST(InteractionForce, SphereSmallCylinderVertical2) {
   InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
-  EXPECT_NEAR(0, result1[0], abs_error<real>::value);
-  EXPECT_NEAR(-1, result1[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[2], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[3], abs_error<real>::value);
+  EXPECT_NEAR(0, result1[0], abs_error<real_t>::value);
+  EXPECT_NEAR(-1, result1[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[2], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[3], abs_error<real_t>::value);
 
   auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0, 1, 0, 0}, result2);
@@ -332,12 +332,12 @@ TEST(InteractionForce, SphereLongCylinderHorizontalCenter) {
   InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
-  EXPECT_NEAR(0, result1[0], abs_error<real>::value);
-  EXPECT_NEAR(0.5, result1[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[2], abs_error<real>::value);
+  EXPECT_NEAR(0, result1[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.5, result1[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[2], abs_error<real_t>::value);
   EXPECT_NEAR(
       0.5, result1[3],
-      abs_error<real>::value);  // 0.5 force is transmited to proximalEnd
+      abs_error<real_t>::value);  // 0.5 force is transmited to proximalEnd
 
   auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0, -0.5, 0, 0}, result2);
@@ -364,12 +364,12 @@ TEST(InteractionForce, SphereLongCylinderHorizontalpP) {
   InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
-  EXPECT_NEAR(0, result1[0], abs_error<real>::value);
-  EXPECT_NEAR(0.5, result1[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[2], abs_error<real>::value);
+  EXPECT_NEAR(0, result1[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.5, result1[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[2], abs_error<real_t>::value);
   EXPECT_NEAR(
       0.975, result1[3],
-      abs_error<real>::value);  // 0.975 force is transmited to proximalEnd
+      abs_error<real_t>::value);  // 0.975 force is transmited to proximalEnd
 
   auto result2 = force.Calculate(&sphere, &cylinder);
   EXPECT_ARR_NEAR4({0, -0.5, 0, 0}, result2);
@@ -396,12 +396,12 @@ TEST(InteractionForce, SphereLongCylinderHorizontalpD) {
   InteractionForce force;
   auto result1 = force.Calculate(&cylinder, &sphere);
 
-  EXPECT_NEAR(0, result1[0], abs_error<real>::value);
-  EXPECT_NEAR(0.5, result1[1], abs_error<real>::value);
-  EXPECT_NEAR(0, result1[2], abs_error<real>::value);
+  EXPECT_NEAR(0, result1[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.5, result1[1], abs_error<real_t>::value);
+  EXPECT_NEAR(0, result1[2], abs_error<real_t>::value);
   EXPECT_NEAR(
       0.025, result1[3],
-      abs_error<real>::value);  // 0.025 force is transmited to proximalEnd
+      abs_error<real_t>::value);  // 0.025 force is transmited to proximalEnd
 
   auto result2 = force.Calculate(&sphere, &cylinder);
 

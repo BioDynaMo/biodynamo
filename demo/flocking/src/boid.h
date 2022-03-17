@@ -26,9 +26,9 @@ namespace bdm {
 // ---------------------------------------------------------------------------
 // Real3 Methods
 
-real NormSq(Real3 vector);
+real_t NormSq(Real3 vector);
 
-Real3 UpperLimit(Real3 vector, real upper_limit);
+Real3 UpperLimit(Real3 vector, real_t upper_limit);
 
 Real3 GetNormalizedArray(Real3 vector);
 
@@ -60,7 +60,7 @@ class Boid : public Agent {
   Shape GetShape() const override;
 
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real squared_radius, real dt) override;
+                                real_t squared_radius, real_t dt) override;
 
   void ApplyDisplacement(const Real3& displacement) override;
 
@@ -68,9 +68,9 @@ class Boid : public Agent {
 
   void SetPosition(const Real3& pos) override;
 
-  real GetDiameter() const override;
+  real_t GetDiameter() const override;
 
-  void SetDiameter(real diameter) override;
+  void SetDiameter(real_t diameter) override;
 
   // ---------------------------------------------------------------------------
   // Important getter and setter
@@ -79,15 +79,15 @@ class Boid : public Agent {
 
   void SetVelocity(Real3 velocity);
 
-  void SetBoidPerceptionRadius(real perception_radius);
+  void SetBoidPerceptionRadius(real_t perception_radius);
 
-  void SetPerceptionAngle(real angle);
+  void SetPerceptionAngle(real_t angle);
 
   void SetHeadingDirection(Real3 dir);
 
-  real GetBoidInteractionRadius();
+  real_t GetBoidInteractionRadius();
 
-  real GetBoidPerceptionRadius();
+  real_t GetBoidPerceptionRadius();
 
   // ---------------------------------------------------------------------------
   // Checks if the point is inside the viewing cone defined by
@@ -123,36 +123,36 @@ class Boid : public Agent {
   Real3 GetBoidInteractionTerm(const Boid* boid);
 
   // Functions needed to calculate the interaction terms
-  real Norm_sig(Real3 z);
+  real_t Norm_sig(Real3 z);
 
-  real Norm_sig(real z);
+  real_t Norm_sig(real_t z);
 
-  real Phi(real z);
+  real_t Phi(real_t z);
 
-  real Rho_h(real z, real h);
+  real_t Rho_h(real_t z, real_t h);
 
-  real Rho_h_a(real z, real h);
+  real_t Rho_h_a(real_t z, real_t h);
 
-  real Zeta(real z, real h_onset, real h_maxeff);
+  real_t Zeta(real_t z, real_t h_onset, real_t h_maxeff);
 
-  real Sigmoid(real z);
+  real_t Sigmoid(real_t z);
 
-  real Phi_a(real z);
+  real_t Phi_a(real_t z);
 
   // ---------------------------------------------------------------------------
  private:
   Real3 position_, velocity_, heading_direction_, acceleration_;
-  real acceleration_accum_scalar;
-  real diameter_, actual_diameter_;
-  real boid_perception_radius_, boid_interaction_radius_;
-  real cos_perception_angle_;
-  real neighbor_distance_;
-  real max_acceleration_, max_speed_;
+  real_t acceleration_accum_scalar;
+  real_t diameter_, actual_diameter_;
+  real_t boid_perception_radius_, boid_interaction_radius_;
+  real_t cos_perception_angle_;
+  real_t neighbor_distance_;
+  real_t max_acceleration_, max_speed_;
   bool limit_speed_;
 
   // Flocking constants
-  real c_a_1_, c_a_2_, c_a_3_, c_y_;
-  real h_a_, eps_, d_t_;
+  real_t c_a_1_, c_a_2_, c_a_3_, c_y_;
+  real_t h_a_, eps_, d_t_;
   Real3 pos_gamma_;  // gamma agent location (common group objective)
 };
 
@@ -170,12 +170,12 @@ struct Flocking : public Behavior {
 
 // Functor class needed to calculate neighbor data in Flocking
 // ForEachNeighbor call
-class CalculateNeighborData : public Functor<void, Agent*, real> {
+class CalculateNeighborData : public Functor<void, Agent*, real_t> {
  public:
   CalculateNeighborData(Boid* boid) : boid_(boid) {}
   virtual ~CalculateNeighborData() {}
 
-  void operator()(Agent* neighbor, real squared_distance) override;
+  void operator()(Agent* neighbor, real_t squared_distance) override;
 
   Real3 GetU_a();
 

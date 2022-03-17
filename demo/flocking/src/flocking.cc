@@ -36,8 +36,8 @@ int Simulate(int argc, const char** argv) {
 
   // ---------------------------------------------------------------------------
   // Spawn and initialize boids
-  real centre = (param->max_bound + param->min_bound) / 2;
-  real radius = sparam->starting_sphere_radius;
+  real_t centre = (param->max_bound + param->min_bound) / 2;
+  real_t radius = sparam->starting_sphere_radius;
 
   Real3 transl = {centre, centre, centre};
 

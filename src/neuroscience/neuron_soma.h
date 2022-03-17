@@ -77,7 +77,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
   /// \brief Extend a new neurite from this soma.
   ///
   /// \see NewNeuriteExtensionEvent
-  NeuriteElement* ExtendNewNeurite(real diameter, real phi, real theta,
+  NeuriteElement* ExtendNewNeurite(real_t diameter, real_t phi, real_t theta,
                                    NeuriteElement* prototype = nullptr);
 
   void RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) override;

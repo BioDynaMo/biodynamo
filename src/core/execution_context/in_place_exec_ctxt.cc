@@ -222,7 +222,7 @@ void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
 }
 
 bool InPlaceExecutionContext::IsNeighborCacheValid(
-    real query_squared_radius) {
+    real_t query_squared_radius) {
   if (!cache_neighbors_) {
     return false;
   }
@@ -245,8 +245,8 @@ void InPlaceExecutionContext::ForEachNeighbor(Functor<void, Agent*>& lambda,
 }
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    Functor<void, Agent*, real>& lambda, const Agent& query,
-    real squared_radius) {
+    Functor<void, Agent*, real_t>& lambda, const Agent& query,
+    real_t squared_radius) {
   // use values in cache
   if (IsNeighborCacheValid(squared_radius)) {
     for (auto& pair : neighbor_cache_) {
@@ -265,7 +265,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
   cached_squared_search_radius_ = squared_radius;
 
   // Populate the cache and execute the lambda for each neighbor
-  auto for_each = L2F([&](Agent* agent, real squared_distance) {
+  auto for_each = L2F([&](Agent* agent, real_t squared_distance) {
     if (param->cache_neighbors) {
       neighbor_cache_.push_back(std::make_pair(agent, squared_distance));
     }
@@ -275,9 +275,9 @@ void InPlaceExecutionContext::ForEachNeighbor(
 }
 
 void InPlaceExecutionContext::ForEachNeighbor(
-    Functor<void, Agent*, real>& lambda, const Real3& query_position,
-    real squared_radius) {
-  auto for_each = L2F([&](Agent* agent, real squared_distance) {
+    Functor<void, Agent*, real_t>& lambda, const Real3& query_position,
+    real_t squared_radius) {
+  auto for_each = L2F([&](Agent* agent, real_t squared_distance) {
     lambda(agent, squared_distance);
   });
   auto* env = Simulation::GetActive()->GetEnvironment();

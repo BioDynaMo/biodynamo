@@ -58,14 +58,14 @@ class OctreeEnvironment : public Environment {
 
   void Clear() override;
 
-  void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
-                       const Agent& query, real squared_radius) override;
+  void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                       const Agent& query, real_t squared_radius) override;
 
   void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
                        void* criteria) override;
 
-  void ForEachNeighbor(Functor<void, Agent*, real>& lambda,
-                       const Real3& query_position, real squared_radius,
+  void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                       const Real3& query_position, real_t squared_radius,
                        const Agent* query_agent = nullptr) override;
 
  protected:
@@ -82,7 +82,7 @@ class OctreeEnvironment : public Environment {
   /// to trigger a diffusion grid change
   std::array<int32_t, 2> threshold_dimensions_;
 
-  void RoundOffGridDimensions(const std::array<real, 6>& grid_dimensions);
+  void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions);
 
   void CheckGridGrowth();
 };

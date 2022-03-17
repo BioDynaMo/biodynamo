@@ -16,13 +16,13 @@
 
 namespace bdm {
 
-void EulerGrid::DiffuseWithClosedEdge(real dt) {
+void EulerGrid::DiffuseWithClosedEdge(real_t dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
 
-  const real ibl2 = 1 / (box_length_ * box_length_);
-  const real d = 1 - dc_[0];
+  const real_t ibl2 = 1 / (box_length_ * box_length_);
+  const real_t d = 1 - dc_[0];
 
 #define YBF 16
 #pragma omp parallel for collapse(2)
@@ -59,13 +59,13 @@ void EulerGrid::DiffuseWithClosedEdge(real dt) {
   c1_.swap(c2_);
 }
 
-void EulerGrid::DiffuseWithOpenEdge(real dt) {
+void EulerGrid::DiffuseWithOpenEdge(real_t dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
 
-  const real ibl2 = 1 / (box_length_ * box_length_);
-  const real d = 1 - dc_[0];
+  const real_t ibl2 = 1 / (box_length_ * box_length_);
+  const real_t d = 1 - dc_[0];
   std::array<int, 4> l;
 
 #define YBF 16
