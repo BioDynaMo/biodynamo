@@ -147,8 +147,8 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   void LookupValue(vtkVariant value, vtkIdList* ids) final;
   vtkVariant GetVariantValue(vtkIdType idx) final;
   void ClearLookup() final;
-  real* GetTuple(vtkIdType i) final;
-  void GetTuple(vtkIdType i, real* tuple) final;
+  double* GetTuple(vtkIdType i) final;
+  void GetTuple(vtkIdType i, double* tuple) final;
   vtkIdType LookupTypedValue(TScalar value) final;
   void LookupTypedValue(TScalar value, vtkIdList* ids) final;
   ValueType GetValue(vtkIdType idx) const final;
@@ -202,7 +202,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
   const std::vector<Agent*>* agents_ = nullptr;
   uint64_t start_ = 0;
   uint64_t end_ = 0;
-  real* temp_array_ = nullptr;
+  double* temp_array_ = nullptr;
 
   Param::MappedDataArrayMode mode_;
   /// Comparison value to determine if cached data is valid
@@ -407,7 +407,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::ClearLookup() {
 
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
-real* MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType i) {
+double* MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType i) {
   this->GetTuple(i, this->temp_array_);
   return this->temp_array_;
 }
@@ -415,7 +415,7 @@ real* MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType i) {
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
-                                                             real* tuple) {
+                                                             double* tuple) {
   uint64_t idx = tuple_id * this->NumberOfComponents;
   TScalar* data;
   switch (mode_) {
@@ -782,7 +782,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::InsertValue(vtkIdType,
 //------------------------------------------------------------------------------
 template <typename TScalar, typename TClass, typename TDataMember>
 MappedDataArray<TScalar, TClass, TDataMember>::MappedDataArray() {
-  this->temp_array_ = new real[this->NumberOfComponents];
+  this->temp_array_ = new double[this->NumberOfComponents];
 }
 
 //------------------------------------------------------------------------------

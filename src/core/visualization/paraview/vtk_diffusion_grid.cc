@@ -17,6 +17,7 @@
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkExtentTranslator.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
@@ -29,6 +30,8 @@
 #include "core/visualization/paraview/parallel_vti_writer.h"
 
 namespace bdm {
+
+using vtkRealArray = typename type_ternary_operator<std::is_same<real, double>::value, vtkDoubleArray, vtkFloatArray>::type;
 
 // -----------------------------------------------------------------------------
 VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
@@ -61,13 +64,13 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
     for (uint64_t i = 0; i < data_.size(); ++i) {
       // Add attribute data
       if (vd->concentration) {
-        vtkNew<vtkDoubleArray> concentration;
+        vtkNew<vtkRealArray> concentration;
         concentration->SetName("Substance Concentration");
         concentration_array_idx_ =
             data_[i]->GetPointData()->AddArray(concentration.GetPointer());
       }
       if (vd->gradient) {
-        vtkNew<vtkDoubleArray> gradient;
+        vtkNew<vtkRealArray> gradient;
         gradient->SetName("Diffusion Gradient");
         gradient->SetNumberOfComponents(3);
         gradient_array_idx_ =
@@ -127,14 +130,14 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
     if (concentration_array_idx_ != -1) {
       auto* co_ptr = const_cast<real*>(grid->GetAllConcentrations());
       auto elements = static_cast<vtkIdType>(total_boxes);
-      auto* array = static_cast<vtkDoubleArray*>(
+      auto* array = static_cast<vtkRealArray*>(
           data_[0]->GetPointData()->GetArray(concentration_array_idx_));
       array->SetArray(co_ptr, elements, 1);
     }
     if (gradient_array_idx_ != -1) {
       auto gr_ptr = const_cast<real*>(grid->GetAllGradients());
       auto elements = static_cast<vtkIdType>(total_boxes * 3);
-      auto* array = static_cast<vtkDoubleArray*>(
+      auto* array = static_cast<vtkRealArray*>(
           data_[0]->GetPointData()->GetArray(gradient_array_idx_));
       array->SetArray(gr_ptr, elements, 1);
     }
@@ -163,7 +166,7 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
     if (concentration_array_idx_ != -1) {
       auto* co_ptr = const_cast<real*>(grid->GetAllConcentrations());
       auto elements = static_cast<vtkIdType>(piece_elements);
-      auto* array = static_cast<vtkDoubleArray*>(
+      auto* array = static_cast<vtkRealArray*>(
           data_[i]->GetPointData()->GetArray(concentration_array_idx_));
       if (i < num_pieces_ - 1) {
         array->SetArray(co_ptr + (elements * i), elements, 1);
@@ -174,7 +177,7 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
     if (gradient_array_idx_ != -1) {
       auto gr_ptr = const_cast<real*>(grid->GetAllGradients());
       auto elements = static_cast<vtkIdType>(piece_elements * 3);
-      auto* array = static_cast<vtkDoubleArray*>(
+      auto* array = static_cast<vtkRealArray*>(
           data_[i]->GetPointData()->GetArray(gradient_array_idx_));
       if (i < num_pieces_ - 1) {
         array->SetArray(gr_ptr + (elements * i), elements, 1);
