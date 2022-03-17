@@ -44,7 +44,12 @@ size_t SimulationBackup::GetSimulationStepsFromBackup() {
     IntegralTypeWrapper<size_t>* wrapper = nullptr;
     bdm::GetPersistentObject(restore_file.c_str(), kSimulationStepName.c_str(),
                              wrapper);
-    return wrapper->Get();
+    if (wrapper != nullptr) {
+      return wrapper->Get();
+    } else {
+      Log::Fatal("SimulationBackup", "Failed to retrieve SimulationSteps.");
+      return 0;
+    }
   } else {
     Log::Fatal("SimulationBackup",
                "Requested to restore data, but no restore file given.");
