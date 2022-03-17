@@ -179,7 +179,7 @@ class DiffusionGrid {
   ///               [v3 v4]  -->  [0 v3 v4 0]
   ///                             [0 0  0  0]
   ///
-  /// The dimensions are reald in this case from 2x2 to 4x4
+  /// The dimensions are doubled in this case from 2x2 to 4x4
   /// If the dimensions would be increased from 2x2 to 3x3, it will still
   /// be increased to 4x4 in order for GetBoxIndex to function correctly
   ///
