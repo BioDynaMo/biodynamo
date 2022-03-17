@@ -27,7 +27,7 @@ TEST(TypeTernaryOperatorTest, True) {
 
 TEST(TypeTernaryOperatorTest, False) {
   type_ternary_operator<false, int, real>::type data;
-  EXPECT_EQ(std::string("d"), typeid(data).name());
+  EXPECT_EQ(typeid(real).name(), typeid(data).name());
 }
 
 TEST(TestRawType, All) {

@@ -115,7 +115,7 @@ TEST(MathArray, complex_operations) {
   ASSERT_EQ(c.EntryWiseProduct(c), entrywise_result);
 }
 
-// We expect that the GetNomalizedArray member function does not change the
+// We expect that the GetNormalizedArray member function does not change the
 // object itself but generates a new object whose
 TEST(MathArray, GetNormalizedArray) {
   MathArray<real, 3> a{1.1, 2.2, 3.3};
@@ -124,22 +124,22 @@ TEST(MathArray, GetNormalizedArray) {
   MathArray<real, 3> d = a.GetNormalizedArray();
   real a_norm = a.Norm();
 
-  // We dont't want to have the same object.
+  // We don't want to have the same object.
   ASSERT_NE(&d, &a);
-  // We want array d to be noralized as our computed reference values.
-  EXPECT_DOUBLE_EQ(normalized[0], d[0]);
-  EXPECT_DOUBLE_EQ(normalized[1], d[1]);
-  EXPECT_DOUBLE_EQ(normalized[2], d[2]);
-  EXPECT_DOUBLE_EQ(1.0, d.Norm());
+  // We want array d to be normalized as our computed reference values.
+  EXPECT_REAL_EQ(normalized[0], d[0]);
+  EXPECT_REAL_EQ(normalized[1], d[1]);
+  EXPECT_REAL_EQ(normalized[2], d[2]);
+  EXPECT_REAL_EQ(real(1.0), d.Norm());
   // We don't want array a to change during that process.
-  EXPECT_DOUBLE_EQ(1.1, a[0]);
-  EXPECT_DOUBLE_EQ(2.2, a[1]);
-  EXPECT_DOUBLE_EQ(3.3, a[2]);
+  EXPECT_REAL_EQ(real(1.1), a[0]);
+  EXPECT_REAL_EQ(real(2.2), a[1]);
+  EXPECT_REAL_EQ(real(3.3), a[2]);
   // We test if we can rescale back to array.
   d *= a_norm;
-  EXPECT_DOUBLE_EQ(d[0], a[0]);
-  EXPECT_DOUBLE_EQ(d[1], a[1]);
-  EXPECT_DOUBLE_EQ(d[2], a[2]);
+  EXPECT_REAL_EQ(d[0], a[0]);
+  EXPECT_REAL_EQ(d[1], a[1]);
+  EXPECT_REAL_EQ(d[2], a[2]);
 }
 
 TEST(MathArray, NormalizeZeroVectorDeath) {

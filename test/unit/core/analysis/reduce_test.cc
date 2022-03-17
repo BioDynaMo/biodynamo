@@ -97,7 +97,7 @@ TEST(Reduce, GenericReducer) {
     rm->ForEachAgentParallel(reducer);
     auto result = reducer.GetResult();
     EXPECT_EQ(typeid(result), typeid(real));
-    EXPECT_NEAR(869130.434782609, result, abs_error<real>::value);
+    EXPECT_REAL_EQ(real(869130.434782609), result);
   }
 }
 

@@ -25,14 +25,14 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 template <typename T>
 struct abs_error {
-  static_assert(std::is_same<T, real>::value || std::is_same<T, float>::value,
-                "abs_error<T> may only be used with T = { float, real }");
+  static_assert(std::is_same<T, double>::value || std::is_same<T, float>::value,
+                "abs_error<T> may only be used with T = { float, double }");
   static constexpr real value = 1e-24;
 };
 
 template <>
 struct abs_error<float> {
-  static constexpr float value = 1e-6;
+  static constexpr float value = 1e-4;
 };
 
 template <>
@@ -57,6 +57,12 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
     EXPECT_EQ(expected[i], actual[i]);
   }
 }
+
+// -----------------------------------------------------------------------------
+// Macro for comparing floating-point numbers with varying precision 
+#define EXPECT_REAL_EQ(val1, val2)\
+  EXPECT_PRED_FORMAT2(::testing::internal::CmpHelperFloatingPointEQ<real>, \
+                      val1, val2)
 
 // -----------------------------------------------------------------------------
 /// Helper macro to compare two real arrays of size three

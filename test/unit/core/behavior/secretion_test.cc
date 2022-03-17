@@ -41,7 +41,7 @@ TEST(SecretionTest, Run) {
   auto* dgrid = rm->GetDiffusionGrid(0);
   auto conc = dgrid->GetConcentration(pos);
 
-  EXPECT_NEAR(conc, 3.14, 1e-9);
+  EXPECT_REAL_EQ(conc, real(3.14));
 }
 
 }  // namespace bdm

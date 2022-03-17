@@ -111,11 +111,11 @@ struct ForEachAgentParallelTestFunctor : Functor<void, Agent*> {
     B* b = dynamic_cast<B*>(agent);
     AgentUid uid = agent->GetUid();
     if (uid == AgentUid(0)) {
-      EXPECT_EQ(3.14, b->GetData());
+      EXPECT_EQ(real(3.14), b->GetData());
     } else if (uid == AgentUid(1)) {
-      EXPECT_EQ(6.28, b->GetData());
+      EXPECT_EQ(real(6.28), b->GetData());
     } else if (uid == AgentUid(2)) {
-      EXPECT_NEAR(9.42, b->GetData(), kEpsilon);
+      EXPECT_NEAR(real(9.42), b->GetData(), kEpsilon);
     } else {
       FAIL();
     }
@@ -636,9 +636,9 @@ inline void RunIOTest() {
   EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetSubstanceId());
   EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrid(0)->GetSubstanceName());
   EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrid(1)->GetSubstanceName());
-  EXPECT_EQ(0.6,
+  EXPECT_EQ(real(0.6),
             restored_rm->GetDiffusionGrid(0)->GetDiffusionCoefficients()[0]);
-  EXPECT_EQ(0.8,
+  EXPECT_EQ(real(0.8),
             restored_rm->GetDiffusionGrid(1)->GetDiffusionCoefficients()[0]);
 
   delete restored_rm;

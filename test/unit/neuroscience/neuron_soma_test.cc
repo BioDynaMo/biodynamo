@@ -180,7 +180,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
   EXPECT_ARR_NEAR(proximal_element->GetYAxis(), {0, 1, 0});
   EXPECT_ARR_NEAR(proximal_element->GetZAxis(), {-1, 0, 0});
   EXPECT_ARR_NEAR(proximal_element->GetSpringAxis(), {0, 0, 13.5});
-  EXPECT_NEAR(42.411500823462518, proximal_element->GetVolume(), kEpsilon);
+  EXPECT_REAL_EQ(real(42.411500823462518), proximal_element->GetVolume());
   EXPECT_NEAR(2, proximal_element->GetDiameter(), kEpsilon);
   EXPECT_NEAR(0, proximal_element->GetBranchOrder(), kEpsilon);
   EXPECT_NEAR(13.5, proximal_element->GetActualLength(), kEpsilon);
@@ -233,7 +233,7 @@ TEST(NeuriteElementTest, PartialRetraction) {
   EXPECT_ARR_NEAR(neurite_element->GetYAxis(), {0, 1, 0});
   EXPECT_ARR_NEAR(neurite_element->GetZAxis(), {-1, 0, 0});
   EXPECT_ARR_NEAR(neurite_element->GetSpringAxis(), {0, 0, 7});
-  EXPECT_NEAR(21.991148575129266, neurite_element->GetVolume(), kEpsilon);
+  EXPECT_REAL_EQ(real(21.991148575129266), neurite_element->GetVolume());
   EXPECT_NEAR(2, neurite_element->GetDiameter(), kEpsilon);
   EXPECT_NEAR(0, neurite_element->GetBranchOrder(), kEpsilon);
   EXPECT_NEAR(7, neurite_element->GetActualLength(), kEpsilon);

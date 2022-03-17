@@ -148,9 +148,9 @@ TEST(ParamTest, OptimizationParam) {
   EXPECT_EQ(3u, opt_param->params.size());
   auto* swarm_param = static_cast<ParticleSwarmParam*>(opt_param->params[0]);
   EXPECT_EQ("bdm::SimParam::infection_probablity", swarm_param->param_name);
-  EXPECT_EQ(0.001, swarm_param->lower_bound);
+  EXPECT_EQ(real(0.001), swarm_param->lower_bound);
   EXPECT_EQ(1, swarm_param->upper_bound);
-  EXPECT_EQ(0.005, swarm_param->initial_value);
+  EXPECT_EQ(real(0.005), swarm_param->initial_value);
   EXPECT_EQ(10u, opt_param->repetition);
   EXPECT_EQ(1000u, opt_param->max_iterations);
 }
