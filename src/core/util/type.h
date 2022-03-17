@@ -24,8 +24,6 @@
 
 namespace bdm {
 
-using real = float;
-
 /// Type trait which defines a ternary operator for types which can be evaluated
 /// at compile time
 template <bool Condition, typename T, typename U>

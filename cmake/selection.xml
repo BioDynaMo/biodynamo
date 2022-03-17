@@ -59,6 +59,7 @@
     <class name="bdm::ParamGroup" />
     <class name="unordered_map<unsigned long,bdm::ParamGroup*>" />
     <class name="bdm::Random" />
+    <class name="bdm::DistributionRng<double>" />
     <class name="bdm::DistributionRng<float>" />
     <class name="bdm::DistributionRng<int>" />
     <class name="bdm::UniformRng" />
@@ -73,7 +74,9 @@
     <class name="bdm::BinomialRng" />
     <class name="bdm::PoissonRng" />
     <class name="bdm::MathArray<float, 3>" />
+    <class name="bdm::MathArray<double, 3>" />
     <class name="bdm::MathArray<float, 4>" />
+    <class name="bdm::MathArray<double, 4>" />
     <class name="bdm::InlineVector<bdm::Agent*, 3>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
@@ -83,11 +86,15 @@
     <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
     <class name="bdm::experimental::Reducer<uint64_t>" />
     <class name="bdm::experimental::Reducer<float>" />
+    <class name="bdm::experimental::Reducer<double>" />
     <class name="bdm::experimental::GenericReducer<uint64_t>" />
     <class name="bdm::experimental::GenericReducer<float>" />
+    <class name="bdm::experimental::GenericReducer<double>" />
     <class name="bdm::experimental::GenericReducer<uint64_t, float>" />
+    <class name="bdm::experimental::GenericReducer<uint64_t, double>" />
     <class name="bdm::experimental::Counter<>" />
     <class name="bdm::experimental::Counter<float>" />
+    <class name="bdm::experimental::Counter<double>" />
     <class name="bdm::experimental::Style" />
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />
@@ -104,8 +111,10 @@
     <class name="bdm::UniformGridEnvironment::LoadBalanceInfoUG" />
     <class name="bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper" />
     <class name="bdm::ParallelResizeVector<float>" />
+    <class name="bdm::ParallelResizeVector<double>" />
     <class name="bdm::ParallelResizeVector<uint64_t>" />
     <class name="bdm::ParallelResizeVector<bdm::MathArray<float, 3ul>>" />
+    <class name="bdm::ParallelResizeVector<bdm::MathArray<double, 3ul>>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box>" />
     <class name="bdm::ParallelResizeVector<bdm::UniformGridEnvironment::Box*>" />
     <class name="bdm::ParallelResizeVector<std::pair<unsigned int, bdm::Grid::Box const*>>" />
@@ -117,6 +126,7 @@
     <class name="bdm::Functor<bool,bdm::Agent*>" />
     <class name="bdm::Functor<void,bdm::Agent*>" />
     <class name="bdm::Functor<void,bdm::Agent*,float>" />
+    <class name="bdm::Functor<void,bdm::Agent*,double>" />
     <class name="bdm::Functor<void,bdm::Agent*,bdm::AgentHandle>" />
     <class name="bdm::Functor<ULong64_t,const bdm::SharedData<ULong64_t>&>" />
     <class name="bdm::Log" />
@@ -130,6 +140,7 @@
     <class name="bdm::UnorderedFlatmap<unsigned long,bdm::memory_manager_detail::PoolAllocator*>" />
     <class name="bdm::UnorderedFlatmap<TClass*,vector<bdm::Agent*> >" />
     <class name="bdm::FixedSizeVector<float,10>" />
+    <class name="bdm::FixedSizeVector<double,10>" />
     <class name="bdm::UserDefinedDist" />
     <class name="bdm::detail::ExtractUid" />
     <class name="bdm::TFileRaii" />

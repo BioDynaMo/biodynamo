@@ -79,7 +79,7 @@ TEST(GeneRegulationTest, RK4Test) {
   gene_regulation.Run(&cell);
 
   const auto& concentrations = gene_regulation.GetConcentrations();
-  EXPECT_REAL_EQ(real(1.3229166667), concentrations[0]);
+  EXPECT_REAL_EQ(real(1.3229166666666665), concentrations[0]);
 }
 
 }  // namespace gene_regulation_test_internal
