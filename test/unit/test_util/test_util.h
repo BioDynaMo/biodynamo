@@ -60,7 +60,7 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
 
 // -----------------------------------------------------------------------------
 // Macro for comparing floating-point numbers with varying precision 
-#define EXPECT_REAL_EQ(val1, val2)\
+#define EXPECT_REAL_EQ(val1, val2) \
   EXPECT_PRED_FORMAT2(::testing::internal::CmpHelperFloatingPointEQ<real>, \
                       val1, val2)
 

@@ -33,8 +33,7 @@ TEST(ParamTest, ToJsonString) {
   Param param;
   auto j_param = json::parse(param.ToJsonString());
 
-  EXPECT_NEAR(3.14, j_param["bdm::TestParamGroup"]["test_param1"].get<real>(),
-              abs_error<real>::value);
+  EXPECT_REAL_EQ(real(3.14), j_param["bdm::TestParamGroup"]["test_param1"].get<real>());
   EXPECT_EQ(42u, j_param["bdm::TestParamGroup"]["test_param2"].get<uint64_t>());
   EXPECT_EQ(-1, j_param["bdm::TestParamGroup"]["test_param3"].get<int>());
   EXPECT_EQ("output", j_param["bdm::Param"]["output_dir"].get<std::string>());
@@ -81,7 +80,7 @@ TEST(ParamTest, RestoreFromJson) {
   EXPECT_TRUE(vis_cell.find("type") != vis_cell.end());
 
   auto* test_param = param.Get<TestParamGroup>();
-  EXPECT_NEAR(6.28, test_param->test_param1, abs_error<real>::value);
+  EXPECT_REAL_EQ(real(6.28), test_param->test_param1);
   EXPECT_EQ(42u, test_param->test_param2);
   EXPECT_EQ(-10, test_param->test_param3);
 
@@ -94,7 +93,7 @@ TEST(ParamTest, RestoreFromJson) {
   EXPECT_TRUE(vis_cell.find("some-dm") != vis_cell.end());
 
   test_param = param.Get<TestParamGroup>();
-  EXPECT_NEAR(6.28, test_param->test_param1, abs_error<real>::value);
+  EXPECT_REAL_EQ(real(6.28), test_param->test_param1);
   EXPECT_EQ(123u, test_param->test_param2);
   EXPECT_EQ(-10, test_param->test_param3);
 }
