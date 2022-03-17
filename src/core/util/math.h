@@ -30,7 +30,7 @@ namespace bdm {
 
 struct Math {
   /// value of pi
-  static constexpr real kPi = TMath::Pi();
+  static constexpr real kPi = static_cast<real>(TMath::Pi());
   /// Helpful constant to identify 'infinity'
   static constexpr real kInfinity = 1e20;
 
