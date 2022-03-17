@@ -440,9 +440,9 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
       auto* temporary_data = get_dm_((*agents_)[start_ + tuple_id]);
       for (uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents);
            ++i) {
-        tuple[i] = static_cast<double>(data[i]);
+        tuple[i] = static_cast<double>(temporary_data[i]);
         if (mode_ == Param::MappedDataArrayMode::kCache) {
-          data_[idx + i] = data[i];
+          data_[idx + i] = temporary_data[i];
           is_matching_[idx + i] = match_value_;
         }
       }
