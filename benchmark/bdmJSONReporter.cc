@@ -13,7 +13,6 @@
 #include "bdm_benchmark.h"
 #include "string_util.h"
 #include "timers.h"
-#include "core/real_t.h"
 
 namespace benchmark {
 
@@ -80,7 +79,7 @@ std::string FormatKV(std::string const& key, IterationCount value) {
   return ss.str();
 }
 
-std::string FormatKV(std::string const& key, real_t value) {
+std::string FormatKV(std::string const& key, double value) {
   std::stringstream ss;
   ss << '"' << StrEscape(key) << "\": ";
 
