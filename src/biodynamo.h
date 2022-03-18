@@ -47,5 +47,6 @@
 #include "core/util/timing.h"
 #include "core/util/vtune.h"
 #include "core/visualization/root/notebook_util.h"
+#include "core/real_t.h"
 
 #endif  // BIODYNAMO_H_
