@@ -55,9 +55,11 @@ TEST(GeneRegulationTest, EulerTest) {
   gene_regulation.Run(&cell);
 
   const auto& concentrations = gene_regulation.GetConcentrations();
-  EXPECT_NEAR(real_t(3.0003000000000002), concentrations[0], abs_error<real_t>::value);
+  EXPECT_NEAR(real_t(3.0003000000000002), concentrations[0],
+              abs_error<real_t>::value);
   EXPECT_NEAR(real_t(3.0103), concentrations[1], abs_error<real_t>::value);
-  EXPECT_NEAR(real_t(3.0203000000000002), concentrations[2], abs_error<real_t>::value);
+  EXPECT_NEAR(real_t(3.0203000000000002), concentrations[2],
+              abs_error<real_t>::value);
 }
 
 // Example 1 from:

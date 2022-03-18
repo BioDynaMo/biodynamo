@@ -101,7 +101,7 @@ void Boid::InitializeMembers() {
 Shape Boid::GetShape() const { return Shape::kSphere; };
 
 Real3 Boid::CalculateDisplacement(const InteractionForce* force,
-                                    real_t squared_radius, real_t dt) {
+                                  real_t squared_radius, real_t dt) {
   Real3 zero = {0, 0, 0};
   return zero;
 };

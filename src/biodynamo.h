@@ -38,6 +38,7 @@
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"
 #include "core/randomized_rm.h"
+#include "core/real_t.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
@@ -47,6 +48,5 @@
 #include "core/util/timing.h"
 #include "core/util/vtune.h"
 #include "core/visualization/root/notebook_util.h"
-#include "core/real_t.h"
 
 #endif  // BIODYNAMO_H_

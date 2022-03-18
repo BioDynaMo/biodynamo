@@ -224,7 +224,7 @@ void UpdateCPUResults::operator()(Agent* agent, AgentHandle ah) {
   auto idx = offset[ah.GetNumaNode()] + ah.GetElementIdx();
   idx *= 3;
   Real3 new_pos = {cell_movements[idx], cell_movements[idx + 1],
-                     cell_movements[idx + 2]};
+                   cell_movements[idx + 2]};
   cell->UpdatePosition(new_pos);
   if (param->bound_space) {
     ApplyBoundingBox(agent, param->bound_space, param->min_bound,

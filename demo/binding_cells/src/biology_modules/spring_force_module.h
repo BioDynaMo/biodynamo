@@ -43,7 +43,7 @@ struct SpringForce : public Behavior {
 
   // Displacement calculated in the direction of ap2
   Real3 CalculateSpringForceDisplacement(TCell* ap1,
-                                           AgentPointer<Monocyte> ap2) {
+                                         AgentPointer<Monocyte> ap2) {
     Real3 pos1 = ap1->GetPosition();
     Real3 pos2 = ap2->GetPosition();
     Real3 force = (pos1 - pos2) * (-spring_constant_);

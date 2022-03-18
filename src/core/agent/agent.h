@@ -217,7 +217,7 @@ class Agent {
   // ---------------------------------------------------------------------------
 
   virtual Real3 CalculateDisplacement(const InteractionForce* force,
-                                        real_t squared_radius, real_t dt) = 0;
+                                      real_t squared_radius, real_t dt) = 0;
 
   virtual void ApplyDisplacement(const Real3& displacement) = 0;
 

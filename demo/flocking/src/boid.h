@@ -45,8 +45,7 @@ class Boid : public Agent {
 
  public:
   Boid() {}
-  explicit Boid(const Real3& position)
-      : position_(position), diameter_(1.0) {}
+  explicit Boid(const Real3& position) : position_(position), diameter_(1.0) {}
   virtual ~Boid() {}
 
   // Initializes Boid parameters with given SimParam
@@ -60,7 +59,7 @@ class Boid : public Agent {
   Shape GetShape() const override;
 
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real_t squared_radius, real_t dt) override;
+                              real_t squared_radius, real_t dt) override;
 
   void ApplyDisplacement(const Real3& displacement) override;
 

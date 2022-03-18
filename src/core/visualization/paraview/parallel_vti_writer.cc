@@ -86,8 +86,8 @@ void PvtiWriter::Write(const std::string& folder,
     auto name = pd->GetArray(i)->GetName();
     auto components = pd->GetArray(i)->GetNumberOfComponents();
     auto float_size = sizeof(real_t) * 8;
-    ofs << "      <PDataArray type=\"Float"<< float_size <<"\" Name=\"" << name
-        << "\" NumberOfComponents=\"" << components << "\"/>\n";
+    ofs << "      <PDataArray type=\"Float" << float_size << "\" Name=\""
+        << name << "\" NumberOfComponents=\"" << components << "\"/>\n";
   }
   ofs << "  </PPointData>\n";
 

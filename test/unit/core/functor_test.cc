@@ -14,8 +14,8 @@
 // -----------------------------------------------------------------------------
 
 #include "core/functor.h"
-#include "core/real_t.h"
 #include <gtest/gtest.h>
+#include "core/real_t.h"
 
 namespace bdm {
 

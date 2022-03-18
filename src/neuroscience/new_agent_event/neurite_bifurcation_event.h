@@ -33,8 +33,7 @@ struct NeuriteBifurcationEvent : public NewAgentEvent {
   static const NewAgentEventUid kUid;
 
   NeuriteBifurcationEvent(real_t length, real_t diameter_l, real_t diameter_r,
-                          const Real3& direction_l,
-                          const Real3& direction_r)
+                          const Real3& direction_l, const Real3& direction_r)
       : length(length),
         diameter_left(diameter_l),
         diameter_right(diameter_r),

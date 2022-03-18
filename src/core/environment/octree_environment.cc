@@ -41,7 +41,7 @@ void OctreeEnvironment::UpdateImplementation() {
   auto* param = Simulation::GetActive()->GetParam();
 
   // Update the flattened indices map
-  container_->flat_idx_map_.Update(); 
+  container_->flat_idx_map_.Update();
   if (container_->rm_->GetNumAgents() != 0) {
     Clear();
     auto inf = Math::kInfinity;
@@ -97,11 +97,12 @@ void OctreeEnvironment::ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
                                         const Agent* query_agent) {
   std::vector<uint32_t> neighbors;
   std::vector<double> distances;
-  
+
   // Find neighbors
   impl_->octree_->radiusNeighbors<unibn::L2Distance<Real3>>(
-      query_position, static_cast<double>(std::sqrt(squared_radius)), neighbors, distances);
-  
+      query_position, static_cast<double>(std::sqrt(squared_radius)), neighbors,
+      distances);
+
   auto* rm = Simulation::GetActive()->GetResourceManager();
   int i = 0;
   for (auto& n : neighbors) {

@@ -48,7 +48,7 @@ class TestAgent : public Agent {
   void ApplyDisplacement(const Real3&) override {}
 
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real_t squared_radius, real_t dt) override {
+                              real_t squared_radius, real_t dt) override {
     return {0, 0, 0};
   }
 

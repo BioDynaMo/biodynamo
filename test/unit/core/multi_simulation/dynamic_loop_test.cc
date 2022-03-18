@@ -33,7 +33,8 @@ TEST(DynamicLoopTest, DynamicLoop) {
   for (int j = 0; j < 2; j++) {
     for (real_t lrp = 0; lrp < 11; lrp += 5) {
       for (real_t rp = -1.5; rp < 1.6; rp += 0.5) {
-        expected.push_back({rp, static_cast<real_t>(std::pow(2, lrp)), static_cast<real_t>(j)});
+        expected.push_back({rp, static_cast<real_t>(std::pow(2, lrp)),
+                            static_cast<real_t>(j)});
       }
     }
   }

@@ -18,8 +18,8 @@
 #include <string>
 #include <vector>
 
-#include "core/util/io.h"
 #include "core/real_t.h"
+#include "core/util/io.h"
 
 namespace bdm {
 

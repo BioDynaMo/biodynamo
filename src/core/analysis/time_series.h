@@ -18,8 +18,8 @@
 #include <unordered_map>
 #include <vector>
 #include "core/analysis/reduce.h"
-#include "core/util/root.h"
 #include "core/real_t.h"
+#include "core/util/root.h"
 
 namespace bdm {
 

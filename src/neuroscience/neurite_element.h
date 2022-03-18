@@ -282,7 +282,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   // ***************************************************************************
 
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real_t squared_radius, real_t dt) override;
+                              real_t squared_radius, real_t dt) override;
 
   // TODO(neurites) documentation
   void ApplyDisplacement(const Real3& displacement) override;

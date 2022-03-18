@@ -21,10 +21,10 @@
 #include <vector>
 
 #include "core/container/flatmap.h"
+#include "core/real_t.h"
 #include "core/util/numa.h"
 #include "core/util/spinlock.h"
 #include "core/util/thread_info.h"
-#include "core/real_t.h"
 
 namespace bdm {
 namespace memory_manager_detail {

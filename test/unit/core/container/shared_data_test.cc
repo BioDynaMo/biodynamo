@@ -13,9 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "core/container/shared_data.h"
-#include "core/real_t.h"
 #include <gtest/gtest.h>
 #include <vector>
+#include "core/real_t.h"
 
 namespace bdm {
 

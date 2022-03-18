@@ -22,8 +22,8 @@
 #include <unordered_map>
 #include <vector>
 #include "core/param/param_group.h"
-#include "core/util/root.h"
 #include "core/real_t.h"
+#include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
 
 namespace bdm {

@@ -17,8 +17,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "core/util/root.h"
 #include "core/real_t.h"
+#include "core/util/root.h"
 
 class TCanvas;
 class TMultiGraph;

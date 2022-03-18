@@ -90,7 +90,7 @@ struct Math {
   /// @param[in] axis   (also a vector)
   /// @return the vector after rotation
   static Real3 RotAroundAxis(const Real3& vector, real_t theta,
-                               const Real3& axis) {
+                             const Real3& axis) {
     auto naxis = axis;
     naxis.Normalize();
 

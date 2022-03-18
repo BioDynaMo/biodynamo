@@ -222,7 +222,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   for (auto& el : groups_) {
     el.second->AssignFromConfig(config);
   }
-  
+
   // simulation group
   BDM_ASSIGN_CONFIG_VALUE(random_seed, "simulation.random_seed");
   BDM_ASSIGN_CONFIG_VALUE(output_dir, "simulation.output_dir");
@@ -244,7 +244,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "simulation.calculate_gradients");
   AssignBoundSpaceMode(config, this);
   AssignThreadSafetyMechanism(config, this);
-  
+
   // visualization group
   BDM_ASSIGN_CONFIG_VALUE(visualization_engine, "visualization.adaptor");
   BDM_ASSIGN_CONFIG_VALUE(insitu_visualization, "visualization.insitu");
@@ -259,7 +259,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "visualization.export_generate_pvsm");
   BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files,
                           "visualization.compress_pv_files");
-  
+
   //   visualize_agents
   auto visualize_agentstarr = config->get_table_array("visualize_agent");
   if (visualize_agentstarr) {
@@ -274,11 +274,11 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                        "Missing name for attribute visualize_agent");
           continue;
         }
-  
+
         if (table->contains("additional_data_members")) {
           auto dm_option =
               table->get_array_of<std::string>("additional_data_members");
-  
+
           std::set<std::string> data_members;
           for (const auto& val : *dm_option) {
             data_members.insert(val);
@@ -291,7 +291,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
       }
     }
   }
-  
+
   //   visualize_diffusion
   auto visualize_diffusiontarr = config->get_table_array("visualize_diffusion");
   if (visualize_diffusiontarr) {
@@ -303,10 +303,10 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                        "Missing name for attribute visualize_diffusion");
           continue;
         }
-  
+
         VisualizeDiffusion vd;
         vd.name = *name;
-  
+
         if (table->contains("concentration")) {
           auto concentration = table->get_as<bool>("concentration");
           if (concentration) {
@@ -319,12 +319,12 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
             vd.gradient = *gradient;
           }
         }
-  
+
         visualize_diffusion.push_back(vd);
       }
     }
   }
-  
+
   // unschedule_default_operations
   if (config->get_table("simulation")) {
     auto disabled_ops =
@@ -334,7 +334,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
       unschedule_default_operations.push_back(op);
     }
   }
-  
+
   // performance group
   BDM_ASSIGN_CONFIG_VALUE(scheduling_batch_size,
                           "performance.scheduling_batch_size");
@@ -357,14 +357,14 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing,
                           "performance.minimize_memory_while_rebalancing");
   AssignMappedDataArrayMode(config, this);
-  
+
   // development group
   BDM_ASSIGN_CONFIG_VALUE(statistics, "development.statistics");
   BDM_ASSIGN_CONFIG_VALUE(debug_numa, "development.debug_numa");
   BDM_ASSIGN_CONFIG_VALUE(show_simulation_step,
                           "development.show_simulation_step");
   BDM_ASSIGN_CONFIG_VALUE(use_progress_bar, "development.use_progress_bar");
-  
+
   // experimental group
   BDM_ASSIGN_CONFIG_VALUE(compute_target, "experimental.compute_target");
   BDM_ASSIGN_CONFIG_VALUE(opencl_debug, "experimental.opencl_debug");

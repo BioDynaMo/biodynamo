@@ -283,8 +283,7 @@ struct ModelInitializer {
 
 #pragma omp for
       for (uint64_t i = 0; i < num_agents; ++i) {
-        Real3 pos = {random->Uniform(xmin, xmax),
-                       random->Uniform(ymin, ymax)};
+        Real3 pos = {random->Uniform(xmin, xmax), random->Uniform(ymin, ymax)};
         pos[2] = f(pos.data(), fn_params.data());
         ctxt->AddAgent(agent_builder(pos));
       }

@@ -17,8 +17,8 @@
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
 #include <vtkExtentTranslator.h>
+#include <vtkFloatArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -31,7 +31,9 @@
 
 namespace bdm {
 
-using vtkRealArray = typename type_ternary_operator<std::is_same<real_t, double>::value, vtkDoubleArray, vtkFloatArray>::type;
+using vtkRealArray =
+    typename type_ternary_operator<std::is_same<real_t, double>::value,
+                                   vtkDoubleArray, vtkFloatArray>::type;
 
 // -----------------------------------------------------------------------------
 VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,

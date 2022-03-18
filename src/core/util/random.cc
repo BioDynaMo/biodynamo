@@ -102,14 +102,16 @@ int Random::Poisson(real_t mean) { return generator_->Poisson(mean); }
 MathArray<real_t, 2> Random::Circle(real_t r) {
   MathArray<double, 2> ret_double;
   generator_->Circle(ret_double[0], ret_double[1], static_cast<double>(r));
-  return {static_cast<real_t>(ret_double[0]), static_cast<real_t>(ret_double[1])};
+  return {static_cast<real_t>(ret_double[0]),
+          static_cast<real_t>(ret_double[1])};
 }
 
 // -----------------------------------------------------------------------------
 MathArray<real_t, 3> Random::Sphere(real_t r) {
   MathArray<double, 3> ret;
   generator_->Sphere(ret[0], ret[1], ret[2], r);
-  return {static_cast<real_t>(ret[0]), static_cast<real_t>(ret[1]), static_cast<real_t>(ret[2])};
+  return {static_cast<real_t>(ret[0]), static_cast<real_t>(ret[1]),
+          static_cast<real_t>(ret[2])};
 }
 
 // -----------------------------------------------------------------------------
@@ -320,7 +322,8 @@ MathArray<real_t, 2> UserDefinedDistRng3D::Sample2Impl(TRandom* rng) {
 MathArray<real_t, 3> UserDefinedDistRng3D::Sample3Impl(TRandom* rng) {
   MathArray<double, 3> ret;
   function_->GetRandom3(ret[0], ret[1], ret[2]);
-  return {static_cast<real_t>(ret[0]), static_cast<real_t>(ret[1]), static_cast<real_t>(ret[2])};
+  return {static_cast<real_t>(ret[0]), static_cast<real_t>(ret[1]),
+          static_cast<real_t>(ret[2])};
 }
 void UserDefinedDistRng3D::Draw(const char* option) { function_->Draw(option); }
 TF3* UserDefinedDistRng3D::GetTF3() { return function_; }

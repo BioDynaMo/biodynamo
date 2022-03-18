@@ -230,8 +230,7 @@ void NeuriteElement::RetractTerminalEnd(real_t speed) {
   }
 }
 
-void NeuriteElement::ElongateTerminalEnd(real_t speed,
-                                         const Real3& direction) {
+void NeuriteElement::ElongateTerminalEnd(real_t speed, const Real3& direction) {
   real_t temp = direction * spring_axis_;
   if (temp > 0) {
     MovePointMass(speed, direction);
@@ -243,8 +242,7 @@ bool NeuriteElement::BranchPermitted() const {
 }
 
 NeuriteElement* NeuriteElement::Branch(real_t new_branch_diameter,
-                                       const Real3& direction,
-                                       real_t length) {
+                                       const Real3& direction, real_t length) {
   // create a new neurite element for side branch
   // we first split this neurite element into two pieces
   // then append a "daughter right" between the two
@@ -533,8 +531,7 @@ void NeuriteElement::MechanicalForcesFunctor::operator()(
 }
 
 Real3 NeuriteElement::CalculateDisplacement(const InteractionForce* force,
-                                              real_t squared_radius,
-                                              real_t dt) {
+                                            real_t squared_radius, real_t dt) {
   Real3 force_on_my_mothers_point_mass{0, 0, 0};
 
   // 1) Spring force
@@ -927,11 +924,11 @@ void NeuriteElement::InitializeNewNeuriteExtension(NeuronSoma* soma,
   real_t y_coord = std::sin(theta) * std::sin(phi);
   real_t z_coord = std::cos(theta);
   Real3 axis_direction{x_coord * soma->kXAxis[0] + y_coord * soma->kYAxis[0] +
-                             z_coord * soma->kZAxis[0],
-                         x_coord * soma->kXAxis[1] + y_coord * soma->kYAxis[1] +
-                             z_coord * soma->kZAxis[1],
-                         x_coord * soma->kXAxis[2] + y_coord * soma->kYAxis[2] +
-                             z_coord * soma->kZAxis[2]};
+                           z_coord * soma->kZAxis[0],
+                       x_coord * soma->kXAxis[1] + y_coord * soma->kYAxis[1] +
+                           z_coord * soma->kZAxis[1],
+                       x_coord * soma->kXAxis[2] + y_coord * soma->kYAxis[2] +
+                           z_coord * soma->kZAxis[2]};
 
   // positions & axis in cartesian coord
   auto new_begin_location = soma->GetPosition() + (axis_direction * radius);

@@ -47,7 +47,7 @@ class InteractionForce {
                              Real4* result) const;
 
   Real4 ComputeForceOfASphereOnASphere(const Real3& c1, real_t r1,
-                                         const Real3& c2, real_t r2) const;
+                                       const Real3& c2, real_t r2) const;
 };
 
 }  // namespace bdm

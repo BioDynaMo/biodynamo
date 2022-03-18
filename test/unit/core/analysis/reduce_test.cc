@@ -91,7 +91,9 @@ TEST(Reduce, GenericReducer) {
 
   // with different result data type and post processing
   {
-    auto post_process = [](real_t result) { return result / static_cast<real_t>(2.3); };
+    auto post_process = [](real_t result) {
+      return result / static_cast<real_t>(2.3);
+    };
     GenericReducer<uint64_t, real_t> reducer(sum_data, combine_tl_results,
                                              post_process);
     rm->ForEachAgentParallel(reducer);
@@ -159,7 +161,9 @@ TEST(Reduce, Counter) {
 
   // with different result data type and post processing
   {
-    auto post_process = [](real_t result) { return result / static_cast<real_t>(2.3); };
+    auto post_process = [](real_t result) {
+      return result / static_cast<real_t>(2.3);
+    };
     Counter<real_t> counter(data_lt_1000, post_process);
     rm->ForEachAgentParallel(counter);
     auto result = counter.GetResult();

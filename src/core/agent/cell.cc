@@ -33,7 +33,7 @@ void Cell::ApplyDisplacement(const Real3& displacement) {
 Real3 Cell::TransformCoordinatesGlobalToPolar(const Real3& pos) const {
   auto vector_to_point = pos - position_;
   Real3 local_cartesian{kXAxis * vector_to_point, kYAxis * vector_to_point,
-                          kZAxis * vector_to_point};
+                        kZAxis * vector_to_point};
   real_t radius = std::sqrt(local_cartesian[0] * local_cartesian[0] +
                             local_cartesian[1] * local_cartesian[1] +
                             local_cartesian[2] * local_cartesian[2]);

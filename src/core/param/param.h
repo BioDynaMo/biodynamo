@@ -24,9 +24,9 @@
 #include <vector>
 #include "core/analysis/style.h"
 #include "core/param/param_group.h"
+#include "core/real_t.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
-#include "core/real_t.h"
 
 namespace bdm {
 

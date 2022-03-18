@@ -259,7 +259,7 @@ class Cell : public Agent {
   }
 
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real_t squared_radius, real_t dt) override {
+                              real_t squared_radius, real_t dt) override {
     // Basically, the idea is to make the sum of all the forces acting
     // on the Point mass. It is stored in translationForceOnPointMass.
     // There is also a computation of the torque (only applied

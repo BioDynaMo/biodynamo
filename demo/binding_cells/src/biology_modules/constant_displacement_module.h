@@ -27,8 +27,7 @@ namespace bdm {
 ///
 /// @return     The distance between the two points
 ///
-inline real_t SquaredEuclideanDistance(const Real3& pos1,
-                                       const Real3& pos2) {
+inline real_t SquaredEuclideanDistance(const Real3& pos1, const Real3& pos2) {
   const real_t dx = pos2[0] - pos1[0];
   const real_t dy = pos2[1] - pos1[1];
   const real_t dz = pos2[2] - pos1[2];

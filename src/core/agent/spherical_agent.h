@@ -57,7 +57,7 @@ class SphericalAgent : public Agent {
   /// This agent type has an empty implementation for CalculateDisplacement.
   /// Provide an implementation in a derived class if needed.
   Real3 CalculateDisplacement(const InteractionForce* force,
-                                real_t squared_radius, real_t dt) override {
+                              real_t squared_radius, real_t dt) override {
     return {0, 0, 0};
   }
 

@@ -176,7 +176,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
   vtu << "      <Piece  NumberOfPoints=\"" << num_cells << "\" NumberOfCells=\""
       << num_cells << "\">" << std::endl;
   vtu << "         <Points>" << std::endl;
-  vtu << "            <DataArray type=\"Float" << float_size << "\" NumberOfComponents=\"3\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" NumberOfComponents=\"3\" "
          "format=\"ascii\">"
       << std::endl;
   rm->ForEachAgent([&](Agent* agent) {
@@ -187,7 +188,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
   vtu << "            </DataArray>" << std::endl;
   vtu << "         </Points>" << std::endl;
   vtu << "         <PointData>" << std::endl;
-  vtu << "            <DataArray type=\"Float" << float_size << "\" Name=\"Cell_ID\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Cell_ID\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
   index = 0;
@@ -196,7 +198,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
   }
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float" << float_size << "\" Name=\"Adherence\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Adherence\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
@@ -209,7 +212,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
 
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float" << float_size << "\" Name=\"Diameter\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Diameter\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
   rm->ForEachAgent([&](Agent* agent) {
@@ -219,7 +223,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
 
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float" << float_size << "\" Name=\"Mass\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Mass\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
@@ -232,7 +237,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
 
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float" << float_size << "\" Name=\"Volume\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Volume\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
@@ -245,7 +251,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
 
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float" << float_size << "\" Name=\"TractionForce\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"TractionForce\" "
          "NumberOfComponents=\"3\" format=\"ascii\">"
       << std::endl;
 

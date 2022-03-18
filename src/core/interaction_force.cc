@@ -284,9 +284,9 @@ void InteractionForce::ForceBetweenCylinders(const Agent* cylinder1,
 }
 
 Real4 InteractionForce::ComputeForceOfASphereOnASphere(const Real3& c1,
-                                                         real_t r1,
-                                                         const Real3& c2,
-                                                         real_t r2) const {
+                                                       real_t r1,
+                                                       const Real3& c2,
+                                                       real_t r2) const {
   real_t comp1 = c1[0] - c2[0];
   real_t comp2 = c1[1] - c2[1];
   real_t comp3 = c1[2] - c2[2];
@@ -309,7 +309,7 @@ Real4 InteractionForce::ComputeForceOfASphereOnASphere(const Real3& c1,
     // the radii.
     real_t force_module = a / distance_between_centers;
     Real4 force2on1({force_module * comp1, force_module * comp2,
-                       force_module * comp3, 0.0});
+                     force_module * comp3, 0.0});
     return force2on1;
   }
 }

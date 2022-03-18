@@ -327,7 +327,9 @@ TEST(TimeSeries, StoreAndLoad) {
 TEST(TimeSeries, StoreJson) {
   TimeSeries ts;
 
-  auto collect_function = [](Simulation* sim) { return static_cast<real_t>(4.0); };
+  auto collect_function = [](Simulation* sim) {
+    return static_cast<real_t>(4.0);
+  };
   ts.AddCollector("collect", collect_function);
 
   ts.Add("my-entry", {1, 2}, {3, 4});

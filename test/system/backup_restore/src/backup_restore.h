@@ -37,8 +37,8 @@ inline int Simulate(int argc, const char** argv) {
   auto* rm = simulation.GetResourceManager();
 
   for (size_t i = 0; i < 10; i++) {
-    auto* cell =
-        new Cell({real_t(100.0) * i, real_t(100.0) * i, real_t(100.0) * i});  // no colliding cells
+    auto* cell = new Cell({real_t(100.0) * i, real_t(100.0) * i,
+                           real_t(100.0) * i});  // no colliding cells
     cell->SetDiameter(i);
     cell->AddBehavior(new TestBehaviour());
     rm->AddAgent(cell);
