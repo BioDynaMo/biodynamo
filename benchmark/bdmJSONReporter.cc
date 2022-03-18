@@ -13,6 +13,7 @@
 #include "bdm_benchmark.h"
 #include "string_util.h"
 #include "timers.h"
+#include "core/real_t.h"
 
 namespace benchmark {
 
