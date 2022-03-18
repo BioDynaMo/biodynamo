@@ -31,7 +31,7 @@ namespace bdm {
 
 class DiffusionGrid {
  public:
-  DiffusionGrid() {}
+  DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, real_t dc,
                 real_t mu, int resolution = 11)
@@ -41,7 +41,7 @@ class DiffusionGrid {
         mu_(mu),
         resolution_(resolution) {}
 
-  virtual ~DiffusionGrid() {}
+  virtual ~DiffusionGrid() = default;
 
   virtual void Initialize();
 
@@ -149,7 +149,7 @@ class DiffusionGrid {
 
   const std::array<real_t, 7>& GetDiffusionCoefficients() const { return dc_; }
 
-  int GetResolution() const { return resolution_; }
+  size_t GetResolution() const { return resolution_; }
 
   real_t GetBoxVolume() const { return box_volume_; }
 

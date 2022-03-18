@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "neuroscience/neurite_element.h"
+#include <string>
 
 namespace bdm {
 namespace neuroscience {
@@ -836,8 +837,14 @@ std::ostream& operator<<(std::ostream& str, const NeuriteElement& n) {
   str << "d right         :  " << n.daughter_right_ << std::endl;
   auto* mother_agentma = dynamic_cast<const NeuronSoma*>(n.mother_.Get());
   auto* mother_neurite = dynamic_cast<const NeuriteElement*>(n.mother_.Get());
-  auto mother =
-      mother_agentma ? "neuron" : (mother_neurite ? "neurite" : "nullptr");
+  std::string mother;
+  if (mother_agentma) {
+    mother = "neuron";
+  } else if (mother_neurite) {
+    mother = "neurite";
+  } else {
+    mother = "nullptr";
+  }
   str << "mother_           " << mother << std::endl;
   return str;
 }

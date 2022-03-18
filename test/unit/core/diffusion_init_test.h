@@ -22,7 +22,7 @@ namespace bdm {
 // Test class for diffusion grid to
 class TestGrid : public DiffusionGrid {
  public:
-  TestGrid() {}
+  TestGrid() = default;
   TestGrid(int substance_id, std::string substance_name, real_t dc, real_t mu,
            int resolution = 11)
       : DiffusionGrid(substance_id, substance_name, dc, mu, resolution) {}

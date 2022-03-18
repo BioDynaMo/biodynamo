@@ -33,7 +33,7 @@ class GrowthDivision : public Behavior {
   GrowthDivision(real_t threshold, real_t growth_rate)
       : threshold_(threshold), growth_rate_(growth_rate) {}
 
-  virtual ~GrowthDivision() {}
+  virtual ~GrowthDivision() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);

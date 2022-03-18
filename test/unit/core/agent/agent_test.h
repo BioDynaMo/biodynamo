@@ -31,7 +31,7 @@ struct Growth : public Behavior {
 
   Growth() { CopyToNewIf({CellDivisionEvent::kUid}); }
 
-  virtual ~Growth() {}
+  virtual ~Growth() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
@@ -82,8 +82,8 @@ struct Movement : public Behavior {
 struct Removal : public Behavior {
   BDM_BEHAVIOR_HEADER(Removal, Movement, 1);
 
-  Removal() {}
-  virtual ~Removal() {}
+  Removal() = default;
+  virtual ~Removal() = default;
 
   void Run(Agent* agent) override { agent->RemoveBehavior(this); }
 };
@@ -94,10 +94,10 @@ struct Removal : public Behavior {
 struct CaptureStaticness : public Behavior {
   BDM_BEHAVIOR_HEADER(CaptureStaticness, Behavior, 1);
 
-  CaptureStaticness() {}
+  CaptureStaticness() = default;
   CaptureStaticness(std::unordered_map<AgentUid, bool>* static_agents_map)
       : static_agents_map_(static_agents_map) {}
-  virtual ~CaptureStaticness() {}
+  virtual ~CaptureStaticness() = default;
 
   void Run(Agent* agent) override {
 #pragma omp critical

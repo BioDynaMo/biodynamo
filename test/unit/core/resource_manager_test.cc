@@ -248,7 +248,7 @@ struct DeleteFunctor : public Functor<void, Agent*, AgentHandle> {
   std::vector<bool>& remove;
 
   DeleteFunctor(std::vector<bool>& remove) : remove(remove) {}
-  virtual ~DeleteFunctor() {}
+  virtual ~DeleteFunctor() = default;
 
   void operator()(Agent* agent, AgentHandle ah) override {
     if (remove[agent->GetUid().GetIndex()]) {

@@ -25,13 +25,13 @@ class TestAgent : public Agent {
   BDM_AGENT_HEADER(TestAgent, Agent, 1);
 
  public:
-  TestAgent() {}
+  TestAgent() = default;
 
   explicit TestAgent(int data) : data_(data) {}
 
   explicit TestAgent(const Real3& pos) : position_{pos} {}
 
-  virtual ~TestAgent() {}
+  virtual ~TestAgent() = default;
 
   Shape GetShape() const override { return Shape::kSphere; };
 

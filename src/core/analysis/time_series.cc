@@ -25,7 +25,7 @@ namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
-TimeSeries::Data::Data() {}
+TimeSeries::Data::Data() = default;
 
 // -----------------------------------------------------------------------------
 TimeSeries::Data::Data(real_t (*ycollector)(Simulation*),
@@ -221,7 +221,7 @@ void TimeSeries::Merge(
 }
 
 // -----------------------------------------------------------------------------
-TimeSeries::TimeSeries() {}
+TimeSeries::TimeSeries() = default;
 
 // -----------------------------------------------------------------------------
 TimeSeries::TimeSeries(const TimeSeries& other) : data_(other.data_) {}

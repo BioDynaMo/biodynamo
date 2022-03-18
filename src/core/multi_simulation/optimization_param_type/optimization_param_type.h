@@ -25,9 +25,9 @@ namespace bdm {
 
 /// An interface for creating different types of optimization parameters
 struct OptimizationParamType {
-  OptimizationParamType() {}
+  OptimizationParamType() = default;
   explicit OptimizationParamType(const std::string& name) : param_name(name) {}
-  virtual ~OptimizationParamType() {}
+  virtual ~OptimizationParamType() = default;
 
   virtual OptimizationParamType* GetCopy() const = 0;
 

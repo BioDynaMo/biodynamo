@@ -25,7 +25,7 @@ namespace bdm {
 /// A parameter type exclusively used for the Particle Swarm optimization
 /// algorithm Defines an initial value, and the lower and upper bound
 struct ParticleSwarmParam : public OptimizationParamType {
-  ParticleSwarmParam() {}
+  ParticleSwarmParam() = default;
   ParticleSwarmParam(const std::string& name, real_t min, real_t max, real_t iv)
       : OptimizationParamType(name),
         lower_bound(min),

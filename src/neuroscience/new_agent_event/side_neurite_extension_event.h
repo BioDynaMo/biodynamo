@@ -31,7 +31,7 @@ struct SideNeuriteExtensionEvent : public NewAgentEvent {
                             const Real3 direction)
       : length(length), diameter(diameter), direction(direction) {}
 
-  virtual ~SideNeuriteExtensionEvent() {}
+  virtual ~SideNeuriteExtensionEvent() = default;
 
   NewAgentEventUid GetUid() const override { return kUid; }
 

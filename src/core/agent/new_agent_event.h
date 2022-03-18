@@ -53,13 +53,13 @@ class NewAgentEventUidGenerator {
   }
 
  private:
-  NewAgentEventUidGenerator() {}
+  NewAgentEventUidGenerator() = default;
   std::recursive_mutex mutex_;
   uint64_t counter_ = 0;
 };
 
 struct NewAgentEvent {
-  virtual ~NewAgentEvent() {}
+  virtual ~NewAgentEvent() = default;
 
   virtual NewAgentEventUid GetUid() const = 0;
 

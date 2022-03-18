@@ -28,7 +28,7 @@
 
 namespace bdm {
 
-Exporter::~Exporter() {}
+Exporter::~Exporter() = default;
 
 void BasicExporter::ExportIteration(std::string filename, uint64_t iteration) {
   std::ofstream outfile;

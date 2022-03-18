@@ -28,7 +28,7 @@ class Agent;
 
 class ExecutionContext {
  public:
-  virtual ~ExecutionContext() {}
+  virtual ~ExecutionContext() = default;
 
   /// This function is called before all agent operations are executed.\n
   /// This function is not thread-safe.

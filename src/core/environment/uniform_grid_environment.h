@@ -232,7 +232,7 @@ class UniformGridEnvironment : public Environment {
   UniformGridEnvironment(UniformGridEnvironment const&) = delete;
   void operator=(UniformGridEnvironment const&) = delete;
 
-  virtual ~UniformGridEnvironment() {}
+  virtual ~UniformGridEnvironment() = default;
 
   /// Clears the grid
   void Clear() override {
@@ -257,7 +257,8 @@ class UniformGridEnvironment : public Environment {
       auto idx = grid_->GetBoxIndex(position);
       auto box = grid_->GetBoxPointer(idx);
       box->AddObject(ah, &(grid_->successors_), grid_);
-      agent->SetBoxIdx(idx);
+      assert(idx <= std::numeric_limits<uint32_t>::max());
+      agent->SetBoxIdx(static_cast<uint32_t>(idx));
     }
 
    private:
@@ -320,10 +321,20 @@ class UniformGridEnvironment : public Environment {
   /// @return     The box index.
   ///
   size_t GetBoxIndex(const Real3& position) const {
+    // Check if conversion can be done without loosing information
+    assert(floor(position[0]) <= std::numeric_limits<int32_t>::max());
+    assert(floor(position[1]) <= std::numeric_limits<int32_t>::max());
+    assert(floor(position[2]) <= std::numeric_limits<int32_t>::max());
     std::array<uint64_t, 3> box_coord;
-    box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
-    box_coord[1] = (floor(position[1]) - grid_dimensions_[2]) / box_length_;
-    box_coord[2] = (floor(position[2]) - grid_dimensions_[4]) / box_length_;
+    box_coord[0] =
+        (static_cast<int32_t>(floor(position[0])) - grid_dimensions_[0]) /
+        box_length_;
+    box_coord[1] =
+        (static_cast<int32_t>(floor(position[1])) - grid_dimensions_[2]) /
+        box_length_;
+    box_coord[2] =
+        (static_cast<int32_t>(floor(position[2])) - grid_dimensions_[4]) /
+        box_length_;
 
     return GetBoxIndex(box_coord);
   }
@@ -355,9 +366,13 @@ class UniformGridEnvironment : public Environment {
   }
 
   void GetNumBoxesAxis(uint32_t* nba) {
-    nba[0] = num_boxes_axis_[0];
-    nba[1] = num_boxes_axis_[1];
-    nba[2] = num_boxes_axis_[2];
+    // Check if conversion can be done without loosing information
+    assert(num_boxes_axis_[0] <= std::numeric_limits<uint32_t>::max());
+    assert(num_boxes_axis_[1] <= std::numeric_limits<uint32_t>::max());
+    assert(num_boxes_axis_[2] <= std::numeric_limits<uint32_t>::max());
+    nba[0] = static_cast<uint32_t>(num_boxes_axis_[0]);
+    nba[1] = static_cast<uint32_t>(num_boxes_axis_[1]);
+    nba[2] = static_cast<uint32_t>(num_boxes_axis_[2]);
   }
 
   uint64_t GetNumBoxes() const { return boxes_.size(); }
@@ -408,6 +423,7 @@ class UniformGridEnvironment : public Environment {
           box_length_, "). The resulting neighborhood would be incomplete.");
     }
     const auto& position = query_position;
+    // Use uint32_t for compatibility with Agent::GetBoxIdx();
     uint32_t idx{std::numeric_limits<uint32_t>::max()};
     if (query_agent != nullptr) {
       idx = query_agent->GetBoxIdx();
@@ -437,7 +453,10 @@ class UniformGridEnvironment : public Environment {
     // we want to find the neighbors of a arbitrary 3D coordinate rather than
     // the neighbors of an agent.
     if (idx == std::numeric_limits<uint32_t>::max()) {
-      idx = GetBoxIndex(position);
+      size_t idx_tmp = GetBoxIndex(position);
+      // Check if conversion can be done without loosing information
+      assert(idx_tmp <= std::numeric_limits<uint32_t>::max());
+      idx = static_cast<uint32_t>(idx_tmp);
     }
 
     FixedSizeVector<const Box*, 27> neighbor_boxes;
@@ -521,13 +540,13 @@ class UniformGridEnvironment : public Environment {
         std::sort(mutex_indices_.begin(), mutex_indices_.end());
       }
 
-      virtual ~GridNeighborMutex() {}
+      ~GridNeighborMutex() override = default;
 
       void lock() override {  // NOLINT
         for (auto idx : mutex_indices_) {
           auto& mutex = mutex_builder_->mutexes_[idx].mutex_;
-          // acquire lock (and spin if another thread is holding it)
           while (mutex.test_and_set(std::memory_order_acquire)) {
+            // acquire lock and spin if another thread is holding it
           }
         }
       }
@@ -552,12 +571,12 @@ class UniformGridEnvironment : public Environment {
     /// Used to store mutexes in a vector.
     /// Always creates a new mutex (even for the copy constructor)
     struct MutexWrapper {
-      MutexWrapper() {}
+      MutexWrapper() = default;
       MutexWrapper(const MutexWrapper&) {}
       std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
     };
 
-    virtual ~GridNeighborMutexBuilder() {}
+    ~GridNeighborMutexBuilder() override = default;
 
     void Update() {
       auto* grid = static_cast<UniformGridEnvironment*>(
@@ -680,12 +699,19 @@ class UniformGridEnvironment : public Environment {
   }
 
   void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions) {
-    grid_dimensions_[0] = floor(grid_dimensions[0]);
-    grid_dimensions_[2] = floor(grid_dimensions[2]);
-    grid_dimensions_[4] = floor(grid_dimensions[4]);
-    grid_dimensions_[1] = ceil(grid_dimensions[1]);
-    grid_dimensions_[3] = ceil(grid_dimensions[3]);
-    grid_dimensions_[5] = ceil(grid_dimensions[5]);
+    // Check if conversion can be done without loosing information
+    assert(floor(grid_dimensions_[0]) >= std::numeric_limits<int32_t>::min());
+    assert(floor(grid_dimensions_[2]) >= std::numeric_limits<int32_t>::min());
+    assert(floor(grid_dimensions_[4]) >= std::numeric_limits<int32_t>::min());
+    assert(ceil(grid_dimensions_[1]) <= std::numeric_limits<int32_t>::max());
+    assert(ceil(grid_dimensions_[3]) <= std::numeric_limits<int32_t>::max());
+    assert(ceil(grid_dimensions_[3]) <= std::numeric_limits<int32_t>::max());
+    grid_dimensions_[0] = static_cast<int32_t>(floor(grid_dimensions[0]));
+    grid_dimensions_[2] = static_cast<int32_t>(floor(grid_dimensions[2]));
+    grid_dimensions_[4] = static_cast<int32_t>(floor(grid_dimensions[4]));
+    grid_dimensions_[1] = static_cast<int32_t>(ceil(grid_dimensions[1]));
+    grid_dimensions_[3] = static_cast<int32_t>(ceil(grid_dimensions[3]));
+    grid_dimensions_[5] = static_cast<int32_t>(ceil(grid_dimensions[5]));
   }
 
   /// @brief      Gets the Moore (i.e adjacent) boxes of the query boxAlso adds

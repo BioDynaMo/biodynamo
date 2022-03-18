@@ -30,7 +30,7 @@ struct NewNeuriteExtensionEvent : public NewAgentEvent {
   NewNeuriteExtensionEvent(real_t diameter, real_t phi, real_t theta)
       : diameter(diameter), phi(phi), theta(theta) {}
 
-  virtual ~NewNeuriteExtensionEvent() {}
+  virtual ~NewNeuriteExtensionEvent() = default;
 
   NewAgentEventUid GetUid() const override { return kUid; }
 

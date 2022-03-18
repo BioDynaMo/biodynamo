@@ -22,7 +22,7 @@ namespace bdm {
 
 class SchedulerTest : public ::testing::Test {
  public:
-  SchedulerTest() {}
+  SchedulerTest() = default;
   SchedulerTest(Scheduler* scheduler, UniformGridEnvironment* env) {
     scheduler_ = scheduler;
     env_ = env;
@@ -326,7 +326,7 @@ struct ComplexStateOp : public AgentOperationImpl {
     int a_;
   };
 
-  ComplexStateOp() {}
+  ComplexStateOp() = default;
 
   ComplexStateOp(const ComplexStateOp& other) {
     // Deep copy of vector

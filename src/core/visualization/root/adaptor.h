@@ -79,7 +79,7 @@ class RootAdaptor {
       canvas_->GetListOfPrimitives()->Add(gGeoManager->GetTopVolume(),
                                           opt.c_str());
     }
-    canvas_->SetCanvasSize(w, h);
+    canvas_->SetCanvasSize(static_cast<UInt_t>(w), static_cast<UInt_t>(h));
     canvas_->Update();
     canvas_->Draw();
   }

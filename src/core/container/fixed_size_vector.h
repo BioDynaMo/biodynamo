@@ -29,7 +29,7 @@ namespace bdm {
 template <typename T, std::size_t N>
 class FixedSizeVector {
  public:
-  FixedSizeVector() {}
+  FixedSizeVector() = default;
 
   /// Constructor which accepts an std::initiliazer_list to set
   /// the array's content.

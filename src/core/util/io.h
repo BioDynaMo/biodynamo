@@ -77,7 +77,7 @@ class IntegralTypeWrapper {
 template <typename T>
 class VectorTypeWrapper {
  public:
-  VectorTypeWrapper() {}
+  VectorTypeWrapper() = default;
 
   std::vector<T> vector_;
   ClassDefNV(VectorTypeWrapper, 1);

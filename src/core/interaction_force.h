@@ -25,8 +25,8 @@ class Agent;
 
 class InteractionForce {
  public:
-  InteractionForce() {}
-  virtual ~InteractionForce() {}
+  InteractionForce() = default;
+  virtual ~InteractionForce() = default;
 
   virtual Real4 Calculate(const Agent* lhs, const Agent* rhs) const;
   virtual InteractionForce* NewCopy() const {

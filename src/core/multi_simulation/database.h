@@ -34,7 +34,7 @@ class Database {
   }
 
  private:
-  Database() {}
+  Database() = default;
 };
 
 }  // namespace experimental

@@ -100,8 +100,6 @@ class Simulation {
 
   AgentUidGenerator* GetAgentUidGenerator();
 
-  [[deprecated("Replaced with GetEnvironment()")]] Environment* GetGrid();
-
   Environment* GetEnvironment();
 
   /// Set a specific environment for the simulation. *env must point to an

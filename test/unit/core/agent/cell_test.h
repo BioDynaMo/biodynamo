@@ -34,9 +34,9 @@ class TestCell : public Cell {
   BDM_AGENT_HEADER(TestCell, Cell, 1);
 
  public:
-  TestCell() {}
+  TestCell() = default;
 
-  virtual ~TestCell() {}
+  virtual ~TestCell() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);

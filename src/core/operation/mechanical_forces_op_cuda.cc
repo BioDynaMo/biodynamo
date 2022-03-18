@@ -83,7 +83,7 @@ struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
 };
 
 // -----------------------------------------------------------------------------
-InitializeGPUData::InitializeGPUData() {}
+InitializeGPUData::InitializeGPUData() = default;
 
 // -----------------------------------------------------------------------------
 InitializeGPUData::~InitializeGPUData() {
@@ -215,7 +215,7 @@ UpdateCPUResults::UpdateCPUResults(
 }
 
 // -----------------------------------------------------------------------------
-UpdateCPUResults::~UpdateCPUResults() {}
+UpdateCPUResults::~UpdateCPUResults() = default;
 
 // -----------------------------------------------------------------------------
 void UpdateCPUResults::operator()(Agent* agent, AgentHandle ah) {

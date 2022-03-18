@@ -24,7 +24,7 @@ class MyCell : public Cell {
   BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
-  MyCell() {}
+  MyCell() = default;
 
   int dummmy_;
 };
@@ -33,7 +33,7 @@ class MyNeuron : public Cell {
   BDM_AGENT_HEADER(MyNeuron, Cell, 1);
 
  public:
-  MyNeuron() {}
+  MyNeuron() = default;
 
   int dummmy_;
 };

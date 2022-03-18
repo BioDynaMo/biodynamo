@@ -41,7 +41,7 @@ struct NeuriteBifurcationEvent : public NewAgentEvent {
         direction_left(direction_l),
         direction_right(direction_r) {}
 
-  virtual ~NeuriteBifurcationEvent() {}
+  virtual ~NeuriteBifurcationEvent() = default;
 
   NewAgentEventUid GetUid() const override { return kUid; }
 

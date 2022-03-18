@@ -25,7 +25,7 @@ namespace bdm {
 /// A set of values (e.g. [-12, 3.2, 43, 98])
 /// All values are interpreted as real_t precision floating point types
 struct SetParam : public OptimizationParamType {
-  SetParam() {}
+  SetParam() = default;
   SetParam(const std::string& name, const std::vector<real_t> v)
       : OptimizationParamType(name), values(v) {}
 

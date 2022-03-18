@@ -59,7 +59,7 @@ class Cell : public Agent {
     UpdateVolume();
   }
 
-  virtual ~Cell() {}
+  virtual ~Cell() = default;
 
   /// \brief This method is used to initialise the values of daughter
   /// 2 for a cell division event.
