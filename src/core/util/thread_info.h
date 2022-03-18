@@ -77,7 +77,7 @@ class ThreadInfo {
   /// metadata.
   void Renew() {
     max_threads_ = omp_get_max_threads();
-    numa_nodes_ = numa_num_configured_nodes();
+    numa_nodes_ = static_cast<uint16_t>(numa_num_configured_nodes());
 
     thread_numa_mapping_.clear();
     numa_thread_id_.clear();
@@ -97,8 +97,8 @@ class ThreadInfo {
     // (numa -> number of associated threads), and
     // (omp_thread_id -> thread id in numa)
     for (uint16_t n = 0; n < numa_nodes_; n++) {
-      uint64_t cnt = 0;
-      for (uint64_t t = 0; t < max_threads_; t++) {
+      int cnt = 0;
+      for (int t = 0; t < max_threads_; t++) {
         int numa = thread_numa_mapping_[t];
         if (n == numa) {
           numa_thread_id_[t] = cnt;
@@ -135,7 +135,7 @@ class ThreadInfo {
   static std::atomic<uint64_t> thread_counter_;
 
   /// Maximum number of threads for this simulation.
-  uint64_t max_threads_;
+  int max_threads_;
   /// Number of NUMA nodes on this machine.
   uint16_t numa_nodes_;
 

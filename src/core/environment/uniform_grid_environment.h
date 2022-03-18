@@ -540,7 +540,7 @@ class UniformGridEnvironment : public Environment {
         std::sort(mutex_indices_.begin(), mutex_indices_.end());
       }
 
-      virtual ~GridNeighborMutex() = default;
+      ~GridNeighborMutex() override = default;
 
       void lock() override {  // NOLINT
         for (auto idx : mutex_indices_) {
@@ -576,7 +576,7 @@ class UniformGridEnvironment : public Environment {
       std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
     };
 
-    virtual ~GridNeighborMutexBuilder() = default;
+    ~GridNeighborMutexBuilder() override = default;
 
     void Update() {
       auto* grid = static_cast<UniformGridEnvironment*>(
