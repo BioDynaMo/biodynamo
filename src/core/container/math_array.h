@@ -401,12 +401,15 @@ std::ostream& operator<<(std::ostream& o, const MathArray<T, N>& arr) {
   return o;
 }
 
-/// Alias for a size 3 MathArray
+/// Aliases for a size 3 MathArray
 using Real3 = MathArray<real_t, 3>;
+using Float3 = MathArray<float, 3>;
 using Double3 = MathArray<double, 3>;
 
-/// Alias for a size 4 MathArray
+/// Aliases for a size 4 MathArray
 using Real4 = MathArray<real_t, 4>;
+using Float4 = MathArray<float, 4>;
+using Double4 = MathArray<double, 4>;
 
 }  // namespace bdm
 
