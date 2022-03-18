@@ -45,6 +45,7 @@ SET(vtune_default @vtune@)
 SET(tcmalloc_default @tcmalloc@)
 SET(jemalloc_default @jemalloc@)
 SET(test_default @test@)
+SET(real_t @real_t@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
@@ -106,6 +107,10 @@ if(UNIX AND NOT APPLE)
 endif()
 
 set(BDM_OUT_OF_SOURCE true)
+
+if(real_t)
+  add_definitions("-DBDM_REALT=${real_t}")
+endif()
 
 if(DEFINED ENV{BDMSYS})
     set(BDMSYS $ENV{BDMSYS})

@@ -16,7 +16,11 @@
 
 namespace bdm {
 
+#ifndef BDM_REALT
 using real_t = float;
+#else
+using real_t = BDM_REALT;
+#endif  // BDM_REALT
 
 }  // namespace bdm
 
