@@ -52,7 +52,8 @@ class AgentUidGenerator {
         }
         if (search_index_ < map_->size()) {
           auto* scheduler = Simulation::GetActive()->GetScheduler();
-          return AgentUid(search_index_++, scheduler->GetSimulatedSteps());
+          return AgentUid(search_index_++, static_cast<AgentUid::Reused_t>(
+                                               scheduler->GetSimulatedSteps()));
         }
         // didn't find any empty slots -> disable defragmentation mode
         DisableDefragmentation();
@@ -74,7 +75,7 @@ class AgentUidGenerator {
 
   void DisableDefragmentation() {
     if (map_ != nullptr) {
-      counter_ = map_->size();
+      counter_ = static_cast<AgentUid::Index_t>(map_->size());
     }
     map_ = nullptr;
   }
