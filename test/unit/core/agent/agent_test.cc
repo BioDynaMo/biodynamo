@@ -303,7 +303,6 @@ TEST(AgentTest, StaticnessNeighbors) {
   auto* neighbor = new Cell({10, 0, 0});
   neighbor->SetDiameter(10);
   neighbor->AddBehavior(new CaptureStaticness(&static_agents_map));
-  auto nptr = neighbor->GetAgentPtr<Cell>();
   auto nuid = neighbor->GetUid();
 
   // should be false right after creation
@@ -347,13 +346,11 @@ TEST(AgentTest, StaticnessNewAgent) {
   auto* agent1 = new Cell({0, 0, 0});
   agent1->SetDiameter(10);
   agent1->AddBehavior(new CaptureStaticness(&static_agents_map));
-  auto aptr1 = agent1->GetAgentPtr<Cell>();
   auto auid1 = agent1->GetUid();
 
   auto* agent2 = new Cell({10, 0, 0});
   agent2->SetDiameter(10);
   agent2->AddBehavior(new CaptureStaticness(&static_agents_map));
-  auto aptr2 = agent2->GetAgentPtr<Cell>();
   auto auid2 = agent2->GetUid();
 
   auto* agent3 = new Cell({30, 0, 0});
@@ -396,7 +393,6 @@ TEST(AgentTest, StaticnessNewAgent) {
   //   big enough to overlap with agent1 and agent2
   new_agent->SetDiameter(12);
   new_agent->AddBehavior(new CaptureStaticness(&static_agents_map));
-  auto naptr = new_agent->GetAgentPtr<Cell>();
   auto nauid = new_agent->GetUid();
   rm->AddAgent(new_agent);
 
@@ -427,13 +423,11 @@ TEST(AgentTest, StaticnessNewAgentLargetThanAllOthers) {
   auto* agent1 = new Cell({0, 0, 0});
   agent1->SetDiameter(10);
   agent1->AddBehavior(new CaptureStaticness(&static_agents_map));
-  auto aptr1 = agent1->GetAgentPtr<Cell>();
   auto auid1 = agent1->GetUid();
 
   auto* agent2 = new Cell({10, 0, 0});
   agent2->SetDiameter(10);
   agent2->AddBehavior(new CaptureStaticness(&static_agents_map));
-  auto aptr2 = agent2->GetAgentPtr<Cell>();
   auto auid2 = agent2->GetUid();
 
   auto* agent3 = new Cell({30, 0, 0});
