@@ -24,7 +24,8 @@ For this we have chosen to Singularity. Singularity is an open source programme 
 Singularity works simillar to other popular container programmes such as Docker. However, due to its higher level of 
 security it has seen more widespread uptake by HPCs and we thus beleive the best choise for users.
 
-To create our singularity image for BioDynaMo we can use on of two methods.
+To create our [singularity image](https://github.com/BioDynaMo/biodynamo/blob/master/Singularity) 
+for BioDynaMo we can use on of two methods.
 
 ## Method 1, directly building on the HPC.
 For the first method, we directly import the biodynamo Singularity file from our local PC to the desired HPC as follows.  
