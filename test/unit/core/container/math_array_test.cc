@@ -89,6 +89,29 @@ TEST(MathArray, math_operators) {
   ASSERT_EQ(b, decrement_result);
 }
 
+TEST(MathArray, scalar_multiplication_from_left) {
+  // Define objects for test calculation
+  double scalar{1.25};
+  MathArray<double, 4> a{0, 1, 2, 3};
+  const MathArray<double, 4> b{1, 2, 3, 4};
+
+  // Define expected results
+  MathArray<double, 4> a_result{0, 1.25, 2.5, 3.75};
+  MathArray<double, 4> b_result{1.25, 2.5, 3.75, 5.0};
+
+  // Compute scalar multiplications
+  MathArray<double, 4> a1 = a * scalar;
+  MathArray<double, 4> a2 = scalar * a;
+  MathArray<double, 4> b1 = b * scalar;
+  MathArray<double, 4> b2 = scalar * b;
+
+  // Check if we match the expected results
+  EXPECT_TRUE(a1 == a_result);
+  EXPECT_TRUE(a2 == a_result);
+  EXPECT_TRUE(b1 == b_result);
+  EXPECT_TRUE(b2 == b_result);
+}
+
 TEST(MathArray, complex_operations) {
   MathArray<double, 3> a;
   MathArray<double, 4> b{0, 0, 0, 0};
