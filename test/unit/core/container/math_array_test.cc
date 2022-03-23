@@ -28,7 +28,7 @@ TEST(MathArray, DefaultConstructor) {
   EXPECT_NEAR(0.0, a[2], abs_error<double>::value);
 }
 
-TEST(MathArray, element_access) {
+TEST(MathArray, ElementAccess) {
   MathArray<double, 4> real_vector{0, 1, 2, 3};
 
   for (int i = 0; i < 4; i++) {
@@ -46,7 +46,7 @@ TEST(MathArray, element_access) {
   }
 }
 
-TEST(MathArray, capacity) {
+TEST(MathArray, Capacity) {
   MathArray<double, 4> real_vector{0, 1, 2, 3};
   MathArray<double, 0> real_vector_empty;
 
@@ -57,7 +57,7 @@ TEST(MathArray, capacity) {
   ASSERT_TRUE(real_vector_empty.empty());
 }
 
-TEST(MathArray, math_operators) {
+TEST(MathArray, MathOperators) {
   MathArray<double, 4> a{0, 1, 2, 3};
   MathArray<double, 4> b{0, 1, 2, 3};
 
@@ -89,7 +89,30 @@ TEST(MathArray, math_operators) {
   ASSERT_EQ(b, decrement_result);
 }
 
-TEST(MathArray, complex_operations) {
+TEST(MathArray, ScalarMultiplicationFromLeft) {
+  // Define objects for test calculation
+  double scalar{1.25};
+  MathArray<double, 4> a{0, 1, 2, 3};
+  const MathArray<double, 4> b{1, 2, 3, 4};
+
+  // Define expected results
+  MathArray<double, 4> a_result{0, 1.25, 2.5, 3.75};
+  MathArray<double, 4> b_result{1.25, 2.5, 3.75, 5.0};
+
+  // Compute scalar multiplications
+  MathArray<double, 4> a1 = a * scalar;
+  MathArray<double, 4> a2 = scalar * a;
+  MathArray<double, 4> b1 = b * scalar;
+  MathArray<double, 4> b2 = scalar * b;
+
+  // Check if we match the expected results
+  EXPECT_TRUE(a1 == a_result);
+  EXPECT_TRUE(a2 == a_result);
+  EXPECT_TRUE(b1 == b_result);
+  EXPECT_TRUE(b2 == b_result);
+}
+
+TEST(MathArray, ComplexOperations) {
   MathArray<double, 3> a;
   MathArray<double, 4> b{0, 0, 0, 0};
   MathArray<double, 4> c{1, 2, 3, 4};

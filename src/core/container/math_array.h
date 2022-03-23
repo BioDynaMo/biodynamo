@@ -400,6 +400,17 @@ std::ostream& operator<<(std::ostream& o, const MathArray<T, N>& arr) {
   return o;
 }
 
+// Note: 1) We pass by value to allow for copy-elision and move semantics
+//          optimization.
+//       2) We do return MathArray<T, N> because a const MathArray<T, N>
+//          prevents move semantics in C++11.
+//       see https://tinyurl.com/left-multiply
+/// Template function to multiply array with scalar from the left.
+template <class T, std::size_t N>
+MathArray<T, N> operator*(T const& scalar, MathArray<T, N> array) {
+  return array *= scalar;
+}
+
 /// Alias for a size 3 MathArray
 using Double3 = MathArray<double, 3>;
 
