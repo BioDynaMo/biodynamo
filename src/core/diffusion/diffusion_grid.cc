@@ -337,10 +337,8 @@ void DiffusionGrid::GetGradient(const Double3& position, Double3* gradient,
     return;
   }
   *gradient = gradients_[idx];
-  if (normalize) {
-    if (!gradient->IsZero()) {
-      gradient->Normalize();
-    }
+  if (normalize && !gradient->IsZero()) {
+    gradient->Normalize();
   }
 }
 
