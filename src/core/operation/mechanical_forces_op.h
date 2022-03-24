@@ -81,7 +81,7 @@ class MechanicalForcesOp : public AgentOperationImpl {
     // Update search radius and delta_time_ at beginning of each iteration, and
     // avoid updating them within an iteration
     auto current_iteration = scheduler->GetSimulatedSteps();
-    auto* ti = ThreadInfo::GetInstance();
+    auto const* ti = ThreadInfo::GetInstance();
     auto tid = ti->GetMyThreadId();
 
     if (last_iteration_[tid] != current_iteration) {

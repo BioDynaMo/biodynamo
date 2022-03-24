@@ -280,14 +280,14 @@ void Simulation::Simulate(uint64_t steps) { scheduler_->Simulate(steps); }
 
 /// Returns a random number generator (thread-specific)
 Random* Simulation::GetRandom() {
-  auto* ti = ThreadInfo::GetInstance();
+  auto const* ti = ThreadInfo::GetInstance();
   return random_[ti->GetMyThreadId()];
 }
 
 std::vector<Random*>& Simulation::GetAllRandom() { return random_; }
 
 ExecutionContext* Simulation::GetExecutionContext() {
-  auto* ti = ThreadInfo::GetInstance();
+  auto const* ti = ThreadInfo::GetInstance();
   return exec_ctxt_[ti->GetMyThreadId()];
 }
 
@@ -341,7 +341,7 @@ void Simulation::InitializeMembers() {
     std::cout << "ThreadInfo:\n" << *ThreadInfo::GetInstance() << std::endl;
   }
 
-  auto* ti = ThreadInfo::GetInstance();
+  auto const* ti = ThreadInfo::GetInstance();
   random_.resize(ti->GetMaxThreads());
 
 #pragma omp parallel for schedule(static, 1)

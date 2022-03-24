@@ -153,7 +153,7 @@ class Environment {
           largest_(largest) {}
 
     void operator()(Agent* agent, AgentHandle) override {
-      auto* ti = ThreadInfo::GetInstance();
+      auto const* ti = ThreadInfo::GetInstance();
       auto tid = ti->GetMyThreadId();
       const auto& position = agent->GetPosition();
       // x
@@ -199,7 +199,7 @@ class Environment {
   void CalcSimDimensionsAndLargestAgent(
       std::array<double, 6>* ret_grid_dimensions) {
     auto* rm = Simulation::GetActive()->GetResourceManager();
-    auto* ti = ThreadInfo::GetInstance();
+    auto const* ti = ThreadInfo::GetInstance();
     const auto max_threads = ti->GetMaxThreads();
     // allocate version for each thread - avoid false sharing by padding them
     // assumes 64 byte cache lines (8 * sizeof(double))

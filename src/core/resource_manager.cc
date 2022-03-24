@@ -85,7 +85,8 @@ void ResourceManager::ForEachAgentParallel(
     }
   }
 #else
-  ForEachAgent([&](Agent* a, AgentHandle ah) { function(a, ah); }, filter);
+  ForEachAgent([&function](Agent* a, AgentHandle ah) { function(a, ah); },
+               filter);
 #endif  // BDM_USE_OMP
 }
 
@@ -205,7 +206,8 @@ void ResourceManager::ForEachAgentParallel(
     delete counter;
   }
 #else
-  ForEachAgent([&](Agent* a, AgentHandle ah) { function(a, ah); }, filter);
+  ForEachAgent([&function](Agent* a, AgentHandle ah) { function(a, ah); },
+               filter);
 #endif  // BDM_USE_OMP
 }
 
