@@ -79,9 +79,10 @@ class DiffusionGrid {
   // NOTE: virtual because of test
   /// Get the gradient at a specified position. By default, the obtained
   /// gradient is scaled to norm 1, but with `normalize = false` one can obtain
-  /// the full gradient information (e.g. the un-normalized gradient). Note that
-  /// the gradient is computed via a central difference scheme on the underlying
-  /// spatial discretization.
+  /// the full gradient information (e.g. the un-normalized gradient). If the
+  /// gradient is zero and `normalize = true`, this method returns a zero
+  /// vector. Note that the gradient is computed via a central difference scheme
+  /// on the underlying spatial discretization.
   virtual void GetGradient(const Double3& position, Double3* gradient,
                            bool normalize = true) const;
 
