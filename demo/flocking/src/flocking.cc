@@ -49,6 +49,8 @@ int Simulate(int argc, const char** argv) {
     boid->SetVelocity({0, 0, 0});
     boid->SetHeadingDirection(GetRandomVectorInUnitSphere());
     boid->AddBehavior(new Flocking());
+    boid->AddBehavior(
+        new RandomPerturbation(sparam->random_perturbation_strength));
     boid->InitializeMembers();
 
     rm->AddAgent(boid);
