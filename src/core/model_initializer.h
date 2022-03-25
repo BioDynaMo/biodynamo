@@ -390,7 +390,9 @@ struct ModelInitializer {
   static void DefineSubstance(size_t substance_id,
                               const std::string& substance_name,
                               double diffusion_coeff, double decay_constant,
-                              int resolution = 10);
+                              int resolution = 10,
+                              double binding_coefficient = 0.,
+                              bool isDepleted = false, size_t isDepletedBy = 0);
 
   template <typename F>
   static void InitializeSubstance(size_t substance_id, F function) {

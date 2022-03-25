@@ -44,9 +44,11 @@ class EulerGrid : public DiffusionGrid {
  public:
   EulerGrid() = default;
   EulerGrid(int substance_id, std::string substance_name, double dc, double mu,
-            int resolution = 11)
+            int resolution = 10, double binding_coefficient = 0,
+            bool isDepleted = false, size_t isDepletedBy = 0)
       : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
-                      resolution) {}
+                      resolution, binding_coefficient, isDepleted,
+                      isDepletedBy) {}
 
   void DiffuseWithClosedEdge(double dt) override;
 

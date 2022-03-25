@@ -45,7 +45,7 @@ void DiffusionGrid::Initialize() {
   auto adjusted_res =
       resolution_ == 1 ? 2 : resolution_;  // avoid division by 0
   box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
-                static_cast<double>(adjusted_res - 1);
+                static_cast<double>(adjusted_res);
   // TODO(ahmad): parametrize the minimum box_length
   if (box_length_ <= 1e-15) {
     Log::Fatal("DiffusionGrid::Initialize",
@@ -327,6 +327,19 @@ double DiffusionGrid::GetConcentration(const Double3& position) const {
   return c1_[idx];
 }
 
+/// Get the concentration at specified voxel
+double DiffusionGrid::GetConcentration(const size_t idx) const {
+  if (idx >= total_num_boxes_) {
+    Log::Error("DiffusionGrid::ChangeConcentrationBy",
+               "You tried to get the concentration outside the bounds of "
+               "the diffusion grid!");
+    return 0;
+  }
+  assert(idx < locks_.size());
+  std::lock_guard<Spinlock> guard(locks_[idx]);
+  return c1_[idx];
+}
+
 /// Get the (normalized) gradient at specified position
 void DiffusionGrid::GetGradient(const Double3& position,
                                 Double3* gradient) const {
@@ -347,9 +360,39 @@ void DiffusionGrid::GetGradient(const Double3& position,
 std::array<uint32_t, 3> DiffusionGrid::GetBoxCoordinates(
     const Double3& position) const {
   std::array<uint32_t, 3> box_coord;
-  box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
-  box_coord[1] = (floor(position[1]) - grid_dimensions_[0]) / box_length_;
-  box_coord[2] = (floor(position[2]) - grid_dimensions_[0]) / box_length_;
+  Double3 position_ = position;
+  if (((position_[0] - grid_dimensions_[1]) >= 1e-9) ||
+      ((position_[1] - grid_dimensions_[1]) >= 1e-9) ||
+      ((position_[2] - grid_dimensions_[1]) >= 1e-9)) {
+    Log::Error("DiffusionGrid::GetBoxCoordinates",
+               "You tried to get the box coordinates outside the bounds of "
+               "the diffusion grid! Using grid_dimensions_[1] as position.");
+    position_[0] = ((position_[0] - grid_dimensions_[1]) >= 1e-9)
+                       ? grid_dimensions_[1]
+                       : position_[0];
+    position_[1] = ((position_[1] - grid_dimensions_[1]) >= 1e-9)
+                       ? grid_dimensions_[1]
+                       : position_[1];
+    position_[2] = ((position_[2] - grid_dimensions_[1]) >= 1e-9)
+                       ? grid_dimensions_[1]
+                       : position_[2];
+  }
+  if (std::abs(position_[0] - grid_dimensions_[1]) < 1e-9) {
+    box_coord[0] = resolution_ - 1;
+  } else {
+    box_coord[0] = (floor(position_[0]) - grid_dimensions_[0]) / box_length_;
+  }
+  if (std::abs(position_[1] - grid_dimensions_[1]) < 1e-9) {
+    box_coord[1] = resolution_ - 1;
+  } else {
+    box_coord[1] = (floor(position_[1]) - grid_dimensions_[0]) / box_length_;
+  }
+  if (std::abs(position_[2] - grid_dimensions_[1]) < 1e-9) {
+    box_coord[2] = resolution_ - 1;
+  } else {
+    box_coord[2] = (floor(position_[2]) - grid_dimensions_[0]) / box_length_;
+  }
+
   return box_coord;
 }
 

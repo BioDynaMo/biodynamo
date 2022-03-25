@@ -34,12 +34,16 @@ class DiffusionGrid {
   DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 11)
+                double mu, int resolution = 10, double binding_coefficient = 0.,
+                bool isDepleted = false, size_t isDepletedBy = 0)
       : substance_(substance_id),
         substance_name_(std::move(substance_name)),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
-        resolution_(resolution) {}
+        resolution_(resolution),
+        binding_coefficient_(binding_coefficient),
+        isDepleted_(isDepleted),
+        isDepletedBy_(isDepletedBy) {}
 
   virtual ~DiffusionGrid() = default;
 
@@ -75,6 +79,7 @@ class DiffusionGrid {
 
   /// Get the concentration at specified position
   double GetConcentration(const Double3& position) const;
+  double GetConcentration(const size_t idx) const;
 
   /// Get the (normalized) gradient at specified position
   // TODO: virtual because of test
@@ -231,6 +236,10 @@ class DiffusionGrid {
       {};  //!
   // Turn to true after gradient initialization
   bool init_gradient_ = false;
+  /// Binding
+  double binding_coefficient_ = 0.;
+  bool isDepleted_ = false;
+  size_t isDepletedBy_ = 0;
 
   BDM_CLASS_DEF(DiffusionGrid, 1);
 };

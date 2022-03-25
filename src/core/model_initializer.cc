@@ -23,14 +23,17 @@ namespace bdm {
 void ModelInitializer::DefineSubstance(size_t substance_id,
                                        const std::string& substance_name,
                                        double diffusion_coeff,
-                                       double decay_constant, int resolution) {
+                                       double decay_constant, int resolution,
+                                       double binding_coefficient,
+                                       bool isDepleted, size_t isDepletedBy) {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   auto* rm = sim->GetResourceManager();
   DiffusionGrid* dgrid = nullptr;
   if (param->diffusion_method == "euler") {
     dgrid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                          decay_constant, resolution);
+                          decay_constant, resolution, binding_coefficient,
+                          isDepleted, isDepletedBy);
   } else if (param->diffusion_method == "runge-kutta") {
     if (decay_constant != 0) {
       Log::Warning(
@@ -44,7 +47,8 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
                param->diffusion_method,
                "' does not exist. Defaulting to 'euler'");
     dgrid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                          decay_constant, resolution);
+                          decay_constant, resolution, binding_coefficient,
+                          isDepletedBy);
   }
 
   rm->AddDiffusionGrid(dgrid);

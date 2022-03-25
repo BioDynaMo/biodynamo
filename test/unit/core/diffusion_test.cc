@@ -94,7 +94,7 @@ TEST(DiffusionTest, UpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 7);
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 6);
 
   env->ForcedUpdate();
   dgrid->Initialize();
@@ -110,9 +110,9 @@ TEST(DiffusionTest, UpdateGrid) {
 
   auto d_dims = dgrid->GetDimensions();
 
-  EXPECT_EQ(-60, d_dims[0]);
-  EXPECT_EQ(-60, d_dims[2]);
-  EXPECT_EQ(-60, d_dims[4]);
+  EXPECT_EQ(-90, d_dims[0]);
+  EXPECT_EQ(-90, d_dims[2]);
+  EXPECT_EQ(-90, d_dims[4]);
   EXPECT_EQ(210, d_dims[1]);
   EXPECT_EQ(210, d_dims[3]);
   EXPECT_EQ(210, d_dims[5]);
@@ -397,11 +397,11 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[1]);
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[3]);
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[5]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[0]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[1]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[2]);
-  EXPECT_EQ(1331u, restored_dgrid->GetNumBoxes());
-  EXPECT_EQ(11u, restored_dgrid->GetResolution());
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[0]);
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[1]);
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[2]);
+  EXPECT_EQ(1000u, restored_dgrid->GetNumBoxes());
+  EXPECT_EQ(10u, restored_dgrid->GetResolution());
 
   remove(ROOTFILE);
   delete dgrid;
@@ -507,9 +507,9 @@ TEST(DiffusionTest, EulerConvergenceDiffusion) {
   simulation.GetEnvironment()->Update();
 
   double diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* dgrid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* dgrid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* dgrid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 20);
+  DiffusionGrid* dgrid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 40);
+  DiffusionGrid* dgrid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 80);
 
   dgrid2->Initialize();
   dgrid4->Initialize();
@@ -643,9 +643,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   };
   Simulation simulation(TEST_NAME, set_param);
   double diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 21);
-  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 41);
-  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 81);
+  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 20);
+  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 40);
+  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 80);
 
   dgrid2->Initialize();
   dgrid4->Initialize();

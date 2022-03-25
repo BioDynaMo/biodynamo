@@ -49,7 +49,7 @@ TEST(DiffusionInitTest, GaussianBand) {
                                        construct);
 
   // Define the substances in our simulation
-  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 26);
+  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 25);
 
   // Initialize the substance according to a GaussianBand along the x-axis
   ModelInitializer::InitializeSubstance(kSubstance,
