@@ -337,6 +337,16 @@ class MathArray {  // NOLINT
   /// \return sum of the array's content.
   T Sum() const { return std::accumulate(begin(), end(), 0); }
 
+  /// Checks if vector is a zero vector, e.g. if all entries are zero.
+  bool IsZero() const {
+    for (size_t i = 0; i < N; i++) {
+      if (data_[i] != 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// Compute the norm of the array's content.
   /// \return array's norm.
   T Norm() const {
@@ -399,6 +409,17 @@ std::ostream& operator<<(std::ostream& o, const MathArray<T, N>& arr) {
     }
   }
   return o;
+}
+
+// Note: 1) We pass by value to allow for copy-elision and move semantics
+//          optimization.
+//       2) We do return MathArray<T, N> because a const MathArray<T, N>
+//          prevents move semantics in C++11.
+//       see https://tinyurl.com/left-multiply
+/// Template function to multiply array with scalar from the left.
+template <class T, std::size_t N>
+MathArray<T, N> operator*(T const& scalar, MathArray<T, N> array) {
+  return array *= scalar;
 }
 
 /// Aliases for a size 3 MathArray

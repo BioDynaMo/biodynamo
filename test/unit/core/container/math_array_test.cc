@@ -28,7 +28,7 @@ TEST(MathArray, DefaultConstructor) {
   EXPECT_NEAR(0.0, a[2], abs_error<real_t>::value);
 }
 
-TEST(MathArray, element_access) {
+TEST(MathArray, ElementAccess) {
   MathArray<real_t, 4> real_vector{0, 1, 2, 3};
 
   for (int i = 0; i < 4; i++) {
@@ -46,7 +46,7 @@ TEST(MathArray, element_access) {
   }
 }
 
-TEST(MathArray, capacity) {
+TEST(MathArray, Capacity) {
   MathArray<real_t, 4> real_vector{0, 1, 2, 3};
   MathArray<real_t, 0> real_vector_empty;
 
@@ -57,7 +57,7 @@ TEST(MathArray, capacity) {
   ASSERT_TRUE(real_vector_empty.empty());
 }
 
-TEST(MathArray, math_operators) {
+TEST(MathArray, MathOperators) {
   MathArray<real_t, 4> a{0, 1, 2, 3};
   MathArray<real_t, 4> b{0, 1, 2, 3};
 
@@ -89,7 +89,30 @@ TEST(MathArray, math_operators) {
   ASSERT_EQ(b, decrement_result);
 }
 
-TEST(MathArray, complex_operations) {
+TEST(MathArray, ScalarMultiplicationFromLeft) {
+  // Define objects for test calculation
+  real_t scalar{1.25};
+  MathArray<real_t, 4> a{0, 1, 2, 3};
+  const MathArray<real_t, 4> b{1, 2, 3, 4};
+
+  // Define expected results
+  MathArray<real_t, 4> a_result{0, 1.25, 2.5, 3.75};
+  MathArray<real_t, 4> b_result{1.25, 2.5, 3.75, 5.0};
+
+  // Compute scalar multiplications
+  MathArray<real_t, 4> a1 = a * scalar;
+  MathArray<real_t, 4> a2 = scalar * a;
+  MathArray<real_t, 4> b1 = b * scalar;
+  MathArray<real_t, 4> b2 = scalar * b;
+
+  // Check if we match the expected results
+  EXPECT_TRUE(a1 == a_result);
+  EXPECT_TRUE(a2 == a_result);
+  EXPECT_TRUE(b1 == b_result);
+  EXPECT_TRUE(b2 == b_result);
+}
+
+TEST(MathArray, ComplexOperations) {
   MathArray<real_t, 3> a;
   MathArray<real_t, 4> b{0, 0, 0, 0};
   MathArray<real_t, 4> c{1, 2, 3, 4};
@@ -140,6 +163,13 @@ TEST(MathArray, GetNormalizedArray) {
   EXPECT_REAL_EQ(d[0], a[0]);
   EXPECT_REAL_EQ(d[1], a[1]);
   EXPECT_REAL_EQ(d[2], a[2]);
+}
+
+TEST(MathArray, IsZero) {
+  Double3 x = {0, 0, 0};
+  Double3 y = {0, 0, 0.01};
+  EXPECT_TRUE(x.IsZero());
+  EXPECT_FALSE(y.IsZero());
 }
 
 TEST(MathArray, NormalizeZeroVectorDeath) {

@@ -7,6 +7,8 @@
         link: /docs/userguide/prerequisites/
       - title: Installation
         link: /docs/userguide/installation/
+      - title: Singularity Container
+        link: /docs/userguide/singularity/
       - title: First Steps
         link: /docs/userguide/first_steps/
   - group: Tutorials

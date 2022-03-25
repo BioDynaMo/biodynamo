@@ -327,8 +327,8 @@ real_t DiffusionGrid::GetConcentration(const Real3& position) const {
   return c1_[idx];
 }
 
-/// Get the (normalized) gradient at specified position
-void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient) const {
+void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient,
+                                bool normalize) const {
   auto idx = GetBoxIndex(position);
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::GetGradient",
@@ -337,8 +337,7 @@ void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient) const {
     return;
   }
   *gradient = gradients_[idx];
-  auto norm = gradient->Norm();
-  if (norm > 1e-10) {
+  if (normalize && !gradient->IsZero()) {
     gradient->Normalize();
   }
 }

@@ -461,9 +461,12 @@ struct CheckNumaThreadErrors : Functor<void, Agent*, AgentHandle> {
   void operator()(Agent* agent, AgentHandle handle) override {
     volatile real_t d = 0;
     for (int i = 0; i < 10000; i++) {
-      d += std::sin(i);
+      d += std::abs(std::sin(i));
     }
-    if (handle.GetNumaNode() != ti_->GetNumaNode(omp_get_thread_num())) {
+    // The second condition (d != 0.0) is always true and is just used to avoid
+    // compiler warnings from `Wunused-but-set-variable`.
+    if (handle.GetNumaNode() != ti_->GetNumaNode(omp_get_thread_num()) &&
+        d != 0.0) {
       numa_thread_errors++;
     }
   }

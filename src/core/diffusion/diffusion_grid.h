@@ -76,9 +76,15 @@ class DiffusionGrid {
   /// Get the concentration at specified position
   real_t GetConcentration(const Real3& position) const;
 
-  /// Get the (normalized) gradient at specified position
-  // TODO: virtual because of test
-  virtual void GetGradient(const Real3& position, Real3* gradient) const;
+  // NOTE: virtual because of test
+  /// Get the gradient at a specified position. By default, the obtained
+  /// gradient is scaled to norm 1, but with `normalize = false` one can obtain
+  /// the full gradient information (e.g. the un-normalized gradient). If the
+  /// gradient is zero and `normalize = true`, this method returns a zero
+  /// vector. Note that the gradient is computed via a central difference scheme
+  /// on the underlying spatial discretization.
+  virtual void GetGradient(const Real3& position, Real3* gradient,
+                           bool normalize = true) const;
 
   std::array<uint32_t, 3> GetBoxCoordinates(const Real3& position) const;
 

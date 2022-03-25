@@ -25,7 +25,8 @@ struct TestDiffusionGrid : public EulerGrid {
       : EulerGrid(0, "TestSubstance", 1, 1),
         normalized_gradient_(normalized_gradient) {}
 
-  void GetGradient(const Real3& position, Real3* gradient) const override {
+  void GetGradient(const Real3& position, Real3* gradient,
+                   bool normalize = true) const override {
     (*gradient) = normalized_gradient_;
   }
 
