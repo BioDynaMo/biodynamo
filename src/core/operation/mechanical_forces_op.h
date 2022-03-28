@@ -78,10 +78,6 @@ class MechanicalForcesOp : public AgentOperationImpl {
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
 
-    if (agent->IsStatic()) {
-      return;
-    }
-
     // Update search radius and delta_time_ at beginning of each iteration, and
     // avoid updating them within an iteration
     auto current_iteration = scheduler->GetSimulatedSteps();

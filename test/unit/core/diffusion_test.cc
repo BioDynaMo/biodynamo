@@ -708,6 +708,87 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   delete dgrid8;
 }
 
+TEST(DiffusionTest, GradientComputation) {
+  // Define closed space with bounds
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = 0;
+    param->max_bound = 250;
+  };
+
+  // Standard simulation objects
+  Simulation simulation(TEST_NAME, set_param);
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+
+  // Create a number of cells at a random position
+  uint64_t num_cells = 30;
+  auto construct = [](const Double3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
+                                       num_cells, construct);
+
+  // Define the substance for our simulation
+  DiffusionGrid* d_grid = nullptr;
+  d_grid = new EulerGrid(0, "Substance", 0.0, 0.0, 100);
+  rm->AddDiffusionGrid(d_grid);
+
+  // Define scalar field for initialization
+  auto scalar_field = [&](double x, double y, double z) {
+    return 2 * x / param->max_bound + 4 * std::pow((y / param->max_bound), 2) +
+           std::sin(2 * Math::kPi * z / param->max_bound);
+  };
+
+  // Define the analytic gradient as a reference solution
+  auto gradient_field = [&](const Double3& pos) {
+    double y = pos[1];
+    double z = pos[2];
+    Double3 gradient;
+    gradient[0] = 2 / param->max_bound;
+    gradient[1] = 8 * y / std::pow(param->max_bound, 2);
+    gradient[2] = (2 * Math::kPi / param->max_bound) *
+                  std::cos(2 * Math::kPi * z / param->max_bound);
+    return gradient;
+  };
+
+  // Compute the gradient the scalar field.
+  ModelInitializer::InitializeSubstance(0, scalar_field);
+  simulation.GetScheduler()->Simulate(1);
+  d_grid->CalculateGradient();
+
+  // Define a few dummy positions where to evaluate the gradient
+  Double3 pos1{20, 50, 230};
+  Double3 pos2{100, 200, 150};
+  Double3 pos3{200, 100, 20};
+
+  // Get analytic and numerical gradients
+  Double3 grad1, grad2, grad3;
+  Double3 expected_grad1 = gradient_field(pos1);
+  Double3 expected_grad2 = gradient_field(pos2);
+  Double3 expected_grad3 = gradient_field(pos3);
+  d_grid->GetGradient(pos1, &grad1, false);
+  d_grid->GetGradient(pos2, &grad2, false);
+  d_grid->GetGradient(pos3, &grad3, false);
+  Double3 err1 = grad1 - expected_grad1;
+  Double3 err2 = grad2 - expected_grad2;
+  Double3 err3 = grad3 - expected_grad3;
+  std::vector<Double3> results{err1, err2, err3};
+  std::vector<Double3> expected_gradients{expected_grad1, expected_grad2,
+                                          expected_grad3};
+
+  // Compare analytic and numeric gradient
+  for (size_t i = 0; i < results.size(); i++) {
+    auto res = results[i];
+    auto grad = expected_gradients[i];
+    EXPECT_LT(abs(res[0] / grad[0]), 1e-5);  // This gradient is very easy
+    EXPECT_LT(abs(res[1] / grad[1]), 0.05);  // Require 5 precent accuracy
+    EXPECT_LT(abs(res[2] / grad[2]), 0.03);  // Require 3 precent accuracy
+  }
+}
+
 #ifdef USE_PARAVIEW
 
 // Github Actions does not support OpenGL 3.3.
