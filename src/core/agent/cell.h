@@ -77,14 +77,14 @@ class Cell : public Agent {
       // defining the two radii s.t total volume is conserved
       // * radius^3 = r1^3 + r2^3 ;
       // * volume_ratio = r2^3 / r1^3
-      real_t radius = mother_cell->GetDiameter() * 0.5;
+      real_t radius = mother_cell->GetDiameter() * real_t(0.5);
 
       // define an axis for division (along which the nuclei will move)
       real_t x_coord = std::cos(cdevent.theta) * std::sin(cdevent.phi);
       real_t y_coord = std::sin(cdevent.theta) * std::sin(cdevent.phi);
       real_t z_coord = std::cos(cdevent.phi);
       Real3 coords = {x_coord, y_coord, z_coord};
-      real_t total_length_of_displacement = radius / 4.0;
+      real_t total_length_of_displacement = radius / real_t(4.0);
 
       const auto& x_axis = mother_cell->kXAxis;
       const auto& y_axis = mother_cell->kYAxis;
@@ -133,7 +133,7 @@ class Cell : public Agent {
   /// \see CellDivisionEvent
   virtual Cell* Divide() {
     auto* random = Simulation::GetActive()->GetRandom();
-    return Divide(random->Uniform(0.9, 1.1));
+    return Divide(random->Uniform(real_t(0.9), real_t(1.1)));
   }
 
   /// \brief Divide this cell.
@@ -156,7 +156,8 @@ class Cell : public Agent {
   virtual Cell* Divide(const Real3& axis) {
     auto* random = Simulation::GetActive()->GetRandom();
     auto polarcoord = TransformCoordinatesGlobalToPolar(axis + position_);
-    return Divide(random->Uniform(0.9, 1.1), polarcoord[1], polarcoord[2]);
+    return Divide(random->Uniform(real_t(0.9), real_t(1.1)), polarcoord[1],
+                  polarcoord[2]);
   }
 
   /// \brief Divide this cell.
@@ -233,8 +234,8 @@ class Cell : public Agent {
     auto* param = Simulation::GetActive()->GetParam();
     real_t delta = speed * param->simulation_time_step;
     volume_ += delta;
-    if (volume_ < 5.2359877E-7) {
-      volume_ = 5.2359877E-7;
+    if (volume_ < real_t(5.2359877E-7)) {
+      volume_ = real_t(5.2359877E-7);
     }
     UpdateDiameter();
   }
@@ -250,7 +251,7 @@ class Cell : public Agent {
 
   void UpdateVolume() {
     // V = (4/3)*pi*r^3 = (pi/6)*diameter^3
-    volume_ = Math::kPi / 6 * std::pow(diameter_, 3);
+    volume_ = Math::kPi / real_t(6) * std::pow(diameter_, 3);
   }
 
   void UpdatePosition(const Real3& delta) {
