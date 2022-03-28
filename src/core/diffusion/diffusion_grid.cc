@@ -337,8 +337,11 @@ void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient,
     return;
   }
   *gradient = gradients_[idx];
-  if (normalize && !gradient->IsZero()) {
-    gradient->Normalize();
+  if (normalize) {
+    auto norm = gradient->Norm();
+    if (norm > 1e-10) {
+      gradient->Normalize(norm);
+    }
   }
 }
 

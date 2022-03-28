@@ -363,6 +363,14 @@ class MathArray {  // NOLINT
   /// Normalize the array in-place.
   void Normalize() {
     T norm = Norm();
+    Normalize(norm);
+  }
+
+  /// Normalize the array in-place.\n
+  /// If the calling code has already calculated the norm,
+  /// this function signature ensures that the norm calculation
+  /// is not duplicated.
+  void Normalize(T norm) {
     if (norm == 0) {
       Log::Fatal("MathArray::Normalize",
                  "You tried to normalize a zero vector. "
