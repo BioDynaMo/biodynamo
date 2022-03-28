@@ -270,46 +270,40 @@ TEST(DiffusionTest, CopyOldData) {
   EXPECT_NE(grid_size_1, grid_size_2);
 
   // Test if values are copied correctly
-  EXPECT_DOUBLE_EQ(concentration_center, conc_2[dgrid->GetBoxIndex(center)]);
-  EXPECT_DOUBLE_EQ(concentration_west, conc_2[dgrid->GetBoxIndex(west)]);
-  EXPECT_DOUBLE_EQ(concentration_east, conc_2[dgrid->GetBoxIndex(east)]);
-  EXPECT_DOUBLE_EQ(concentration_north, conc_2[dgrid->GetBoxIndex(north)]);
-  EXPECT_DOUBLE_EQ(concentration_south, conc_2[dgrid->GetBoxIndex(south)]);
-  EXPECT_DOUBLE_EQ(concentration_bottom, conc_2[dgrid->GetBoxIndex(bottom)]);
-  EXPECT_DOUBLE_EQ(concentration_top, conc_2[dgrid->GetBoxIndex(top)]);
-  EXPECT_DOUBLE_EQ(concentration_rand1_a, conc_2[dgrid->GetBoxIndex(rand1_a)]);
-  EXPECT_DOUBLE_EQ(concentration_rand1_b, conc_2[dgrid->GetBoxIndex(rand1_b)]);
-  EXPECT_DOUBLE_EQ(concentration_rand2_a, conc_2[dgrid->GetBoxIndex(rand2_a)]);
-  EXPECT_DOUBLE_EQ(concentration_rand2_b, conc_2[dgrid->GetBoxIndex(rand2_b)]);
+  EXPECT_REAL_EQ(concentration_center, conc_2[dgrid->GetBoxIndex(center)]);
+  EXPECT_REAL_EQ(concentration_west, conc_2[dgrid->GetBoxIndex(west)]);
+  EXPECT_REAL_EQ(concentration_east, conc_2[dgrid->GetBoxIndex(east)]);
+  EXPECT_REAL_EQ(concentration_north, conc_2[dgrid->GetBoxIndex(north)]);
+  EXPECT_REAL_EQ(concentration_south, conc_2[dgrid->GetBoxIndex(south)]);
+  EXPECT_REAL_EQ(concentration_bottom, conc_2[dgrid->GetBoxIndex(bottom)]);
+  EXPECT_REAL_EQ(concentration_top, conc_2[dgrid->GetBoxIndex(top)]);
+  EXPECT_REAL_EQ(concentration_rand1_a, conc_2[dgrid->GetBoxIndex(rand1_a)]);
+  EXPECT_REAL_EQ(concentration_rand1_b, conc_2[dgrid->GetBoxIndex(rand1_b)]);
+  EXPECT_REAL_EQ(concentration_rand2_a, conc_2[dgrid->GetBoxIndex(rand2_a)]);
+  EXPECT_REAL_EQ(concentration_rand2_b, conc_2[dgrid->GetBoxIndex(rand2_b)]);
 
   // Test if gradients are copied correctly
-  EXPECT_DOUBLE_EQ(gradient_x_center,
-                   grad_2[3 * dgrid->GetBoxIndex(center) + 0]);
-  EXPECT_DOUBLE_EQ(gradient_y_center,
-                   grad_2[3 * dgrid->GetBoxIndex(center) + 1]);
-  EXPECT_DOUBLE_EQ(gradient_z_center,
-                   grad_2[3 * dgrid->GetBoxIndex(center) + 2]);
-  EXPECT_DOUBLE_EQ(gradient_x_west, grad_2[3 * dgrid->GetBoxIndex(west) + 0]);
-  EXPECT_DOUBLE_EQ(gradient_y_west, grad_2[3 * dgrid->GetBoxIndex(west) + 1]);
-  EXPECT_DOUBLE_EQ(gradient_z_west, grad_2[3 * dgrid->GetBoxIndex(west) + 2]);
-  EXPECT_DOUBLE_EQ(gradient_x_east, grad_2[3 * dgrid->GetBoxIndex(east) + 0]);
-  EXPECT_DOUBLE_EQ(gradient_y_east, grad_2[3 * dgrid->GetBoxIndex(east) + 1]);
-  EXPECT_DOUBLE_EQ(gradient_z_east, grad_2[3 * dgrid->GetBoxIndex(east) + 2]);
-  EXPECT_DOUBLE_EQ(gradient_x_north, grad_2[3 * dgrid->GetBoxIndex(north) + 0]);
-  EXPECT_DOUBLE_EQ(gradient_y_north, grad_2[3 * dgrid->GetBoxIndex(north) + 1]);
-  EXPECT_DOUBLE_EQ(gradient_z_north, grad_2[3 * dgrid->GetBoxIndex(north) + 2]);
-  EXPECT_DOUBLE_EQ(gradient_x_south, grad_2[3 * dgrid->GetBoxIndex(south) + 0]);
-  EXPECT_DOUBLE_EQ(gradient_y_south, grad_2[3 * dgrid->GetBoxIndex(south) + 1]);
-  EXPECT_DOUBLE_EQ(gradient_z_south, grad_2[3 * dgrid->GetBoxIndex(south) + 2]);
-  EXPECT_DOUBLE_EQ(gradient_x_bottom,
-                   grad_2[3 * dgrid->GetBoxIndex(bottom) + 0]);
-  EXPECT_DOUBLE_EQ(gradient_y_bottom,
-                   grad_2[3 * dgrid->GetBoxIndex(bottom) + 1]);
-  EXPECT_DOUBLE_EQ(gradient_z_bottom,
-                   grad_2[3 * dgrid->GetBoxIndex(bottom) + 2]);
-  EXPECT_DOUBLE_EQ(gradient_x_top, grad_2[3 * dgrid->GetBoxIndex(top) + 0]);
-  EXPECT_DOUBLE_EQ(gradient_y_top, grad_2[3 * dgrid->GetBoxIndex(top) + 1]);
-  EXPECT_DOUBLE_EQ(gradient_z_top, grad_2[3 * dgrid->GetBoxIndex(top) + 2]);
+  EXPECT_REAL_EQ(gradient_x_center, grad_2[3 * dgrid->GetBoxIndex(center) + 0]);
+  EXPECT_REAL_EQ(gradient_y_center, grad_2[3 * dgrid->GetBoxIndex(center) + 1]);
+  EXPECT_REAL_EQ(gradient_z_center, grad_2[3 * dgrid->GetBoxIndex(center) + 2]);
+  EXPECT_REAL_EQ(gradient_x_west, grad_2[3 * dgrid->GetBoxIndex(west) + 0]);
+  EXPECT_REAL_EQ(gradient_y_west, grad_2[3 * dgrid->GetBoxIndex(west) + 1]);
+  EXPECT_REAL_EQ(gradient_z_west, grad_2[3 * dgrid->GetBoxIndex(west) + 2]);
+  EXPECT_REAL_EQ(gradient_x_east, grad_2[3 * dgrid->GetBoxIndex(east) + 0]);
+  EXPECT_REAL_EQ(gradient_y_east, grad_2[3 * dgrid->GetBoxIndex(east) + 1]);
+  EXPECT_REAL_EQ(gradient_z_east, grad_2[3 * dgrid->GetBoxIndex(east) + 2]);
+  EXPECT_REAL_EQ(gradient_x_north, grad_2[3 * dgrid->GetBoxIndex(north) + 0]);
+  EXPECT_REAL_EQ(gradient_y_north, grad_2[3 * dgrid->GetBoxIndex(north) + 1]);
+  EXPECT_REAL_EQ(gradient_z_north, grad_2[3 * dgrid->GetBoxIndex(north) + 2]);
+  EXPECT_REAL_EQ(gradient_x_south, grad_2[3 * dgrid->GetBoxIndex(south) + 0]);
+  EXPECT_REAL_EQ(gradient_y_south, grad_2[3 * dgrid->GetBoxIndex(south) + 1]);
+  EXPECT_REAL_EQ(gradient_z_south, grad_2[3 * dgrid->GetBoxIndex(south) + 2]);
+  EXPECT_REAL_EQ(gradient_x_bottom, grad_2[3 * dgrid->GetBoxIndex(bottom) + 0]);
+  EXPECT_REAL_EQ(gradient_y_bottom, grad_2[3 * dgrid->GetBoxIndex(bottom) + 1]);
+  EXPECT_REAL_EQ(gradient_z_bottom, grad_2[3 * dgrid->GetBoxIndex(bottom) + 2]);
+  EXPECT_REAL_EQ(gradient_x_top, grad_2[3 * dgrid->GetBoxIndex(top) + 0]);
+  EXPECT_REAL_EQ(gradient_y_top, grad_2[3 * dgrid->GetBoxIndex(top) + 1]);
+  EXPECT_REAL_EQ(gradient_z_top, grad_2[3 * dgrid->GetBoxIndex(top) + 2]);
 
   delete dgrid;
 }
@@ -342,8 +336,8 @@ TEST(DiffusionTest, Thresholds) {
     dgrid->ChangeConcentrationBy(pos_lower, -1.0);
   }
 
-  EXPECT_DOUBLE_EQ(upper_threshold, dgrid->GetConcentration(pos_upper));
-  EXPECT_DOUBLE_EQ(lower_threshold, dgrid->GetConcentration(pos_lower));
+  EXPECT_REAL_EQ(upper_threshold, dgrid->GetConcentration(pos_upper));
+  EXPECT_REAL_EQ(lower_threshold, dgrid->GetConcentration(pos_lower));
 
   delete dgrid;
 }
