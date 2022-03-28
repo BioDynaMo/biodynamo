@@ -172,6 +172,21 @@ TEST(MathArray, IsZero) {
   EXPECT_FALSE(y.IsZero());
 }
 
+TEST(MathArray, Normalize) {
+  MathArray<double, 3> a{1.1, 2.2, 3.3};
+  MathArray<double, 3> b{1.1, 2.2, 3.3};
+
+  a.Normalize();
+  EXPECT_DOUBLE_EQ(0.2672612419124244187, a[0]);
+  EXPECT_DOUBLE_EQ(0.5345224838248488374, a[1]);
+  EXPECT_DOUBLE_EQ(0.8017837257372732561, a[2]);
+
+  b.Normalize(b.Norm());
+  EXPECT_DOUBLE_EQ(0.2672612419124244187, b[0]);
+  EXPECT_DOUBLE_EQ(0.5345224838248488374, b[1]);
+  EXPECT_DOUBLE_EQ(0.8017837257372732561, b[2]);
+}
+
 TEST(MathArray, NormalizeZeroVectorDeath) {
   EXPECT_DEATH_IF_SUPPORTED(
       {
