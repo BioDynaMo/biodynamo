@@ -23,35 +23,41 @@
 
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
+#include "core/diffusion/continuum_interface.h"
 #include "core/util/log.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
 
 namespace bdm {
 
-class DiffusionGrid {
+class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
   DiffusionGrid(int substance_id, std::string substance_name, real_t dc,
                 real_t mu, int resolution = 11)
       : substance_(substance_id),
-        substance_name_(std::move(substance_name)),
+        substance_name_(substance_name),
         dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
-        resolution_(resolution) {}
+        resolution_(resolution) {
+    // Compatibility with new abstract interface
+    SetContinuumId(substance_id);
+    SetContinuumName(substance_name);
+  }
 
   virtual ~DiffusionGrid() = default;
 
-  virtual void Initialize();
+  virtual void Initialize() override;
 
   /// Updates the grid dimensions, based on the given threshold values. The
   /// diffusion grid dimensions need always be larger than the neighbor grid
   /// dimensions, so that each simulation object can obtain its local
   /// concentration / gradient
-  virtual void Update();
+  virtual void Update() override;
 
-  void Diffuse(real_t dt);
+  void Step(double dt) override { Diffuse(dt); }
+  void Diffuse(double dt);
 
   virtual void DiffuseWithClosedEdge(real_t dt) = 0;
   virtual void DiffuseWithOpenEdge(real_t dt) = 0;
@@ -74,7 +80,10 @@ class DiffusionGrid {
   void ChangeConcentrationBy(size_t idx, real_t amount);
 
   /// Get the concentration at specified position
-  real_t GetConcentration(const Real3& position) const;
+  double GetValue(const Double3& position) const override {
+    return GetConcentration(position);
+  };
+  double GetConcentration(const Double3& position) const;
 
   // NOTE: virtual because of test
   /// Get the gradient at a specified position. By default, the obtained
@@ -83,7 +92,14 @@ class DiffusionGrid {
   /// gradient is zero and `normalize = true`, this method returns a zero
   /// vector. Note that the gradient is computed via a central difference scheme
   /// on the underlying spatial discretization.
-  virtual void GetGradient(const Real3& position, Real3* gradient,
+
+  virtual Double3 GetGradient(const Double3& position) const override {
+    Double3 gradient;
+    GetGradient(position, &gradient);
+    return gradient;
+  };
+
+  virtual void GetGradient(const Double3& position, Double3* gradient,
                            bool normalize = true) const;
 
   std::array<uint32_t, 3> GetBoxCoordinates(const Real3& position) const;
@@ -129,9 +145,14 @@ class DiffusionGrid {
 
   real_t GetBoxLength() const { return box_length_; }
 
-  int GetSubstanceId() const { return substance_; }
+  [[deprecated("Use GetContinuumId() instead.")]] int GetSubstanceId() const {
+    return substance_;
+  }
 
-  const std::string& GetSubstanceName() const { return substance_name_; }
+  [[deprecated("Use GetContinuumName() instead.")]] const std::string&
+  GetSubstanceName() const {
+    return substance_name_;
+  }
 
   real_t GetDecayConstant() const { return mu_; }
 
