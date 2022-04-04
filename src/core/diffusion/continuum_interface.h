@@ -54,6 +54,8 @@ class ScalarField : public ContinuumModel<double> {
   virtual void Step(double dt) override = 0;
   virtual double GetValue(const Double3 &position) const override = 0;
   virtual Double3 GetGradient(const Double3 &position) const = 0;
+
+  BDM_CLASS_DEF(ScalarField, 1);  // NOLINT
 };
 
 class VectorField : public ContinuumModel<Double3> {

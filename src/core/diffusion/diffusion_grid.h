@@ -262,7 +262,7 @@ class DiffusionGrid : public ScalarField {
   // Turn to true after gradient initialization
   bool init_gradient_ = false;
 
-  BDM_CLASS_DEF(DiffusionGrid, 1);
+  BDM_CLASS_DEF_OVERRIDE(DiffusionGrid, 1);
 };
 
 }  // namespace bdm
