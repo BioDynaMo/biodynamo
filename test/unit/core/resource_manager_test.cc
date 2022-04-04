@@ -174,9 +174,9 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   DiffusionGrid* dgrid_1 = new EulerGrid(0, "Kalium", 0.4, 0, 2);
   DiffusionGrid* dgrid_2 = new EulerGrid(1, "Natrium", 0.2, 0.1, 1);
   DiffusionGrid* dgrid_3 = new EulerGrid(2, "Calcium", 0.5, 0.1, 1);
-  rm->AddDiffusionGrid(dgrid_1);
-  rm->AddDiffusionGrid(dgrid_2);
-  rm->AddDiffusionGrid(dgrid_3);
+  rm->AddScalarField(dgrid_1);
+  rm->AddScalarField(dgrid_2);
+  rm->AddScalarField(dgrid_3);
 
   rm->ForEachDiffusionGrid(count);
   ASSERT_EQ(3, counter);
@@ -190,7 +190,7 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   EXPECT_EQ(dgrid_3, rm->GetDiffusionGrid(2));
   EXPECT_EQ(dgrid_3, rm->GetDiffusionGrid("Calcium"));
 
-  rm->RemoveDiffusionGrid(dgrid_2->GetSubstanceId());
+  rm->RemoveScalarField(dgrid_2->GetSubstanceId());
 
   counter = 0;
   rm->ForEachDiffusionGrid(count);
