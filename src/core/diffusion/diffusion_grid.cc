@@ -32,16 +32,8 @@ void DiffusionGrid::Initialize() {
   auto bounds = env->GetDimensionThresholds();
 
   grid_dimensions_ = {bounds[0], bounds[1]};
+  assert((bounds[0] < bounds[1]) && "Max bound is bigger than Min bound");
 
-  // Example: diffusion grid dimensions from 0-40 and resolution
-  // of 4. Resolution must be adjusted otherwise one data pointer will be
-  // missing.
-  // Without adjustment:
-  //   box_length_: 10
-  //   data points {0, 10, 20, 30} - 40 will be misssing!
-  // With adjustment
-  //   box_length_: 13.3
-  //   data points: {0, 13.3, 26.6, 39.9}
   auto adjusted_res =
       resolution_ == 1 ? 2 : resolution_;  // avoid division by 0
   box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
@@ -316,15 +308,7 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
 /// Get the concentration at specified position
 double DiffusionGrid::GetConcentration(const Double3& position) const {
   auto idx = GetBoxIndex(position);
-  if (idx >= total_num_boxes_) {
-    Log::Error("DiffusionGrid::ChangeConcentrationBy",
-               "You tried to get the concentration outside the bounds of "
-               "the diffusion grid!");
-    return 0;
-  }
-  assert(idx < locks_.size());
-  std::lock_guard<Spinlock> guard(locks_[idx]);
-  return c1_[idx];
+  return GetConcentration(idx);
 }
 
 /// Get the concentration at specified voxel
@@ -360,37 +344,19 @@ void DiffusionGrid::GetGradient(const Double3& position,
 std::array<uint32_t, 3> DiffusionGrid::GetBoxCoordinates(
     const Double3& position) const {
   std::array<uint32_t, 3> box_coord;
-  Double3 position_ = position;
-  if (((position_[0] - grid_dimensions_[1]) >= 1e-9) ||
-      ((position_[1] - grid_dimensions_[1]) >= 1e-9) ||
-      ((position_[2] - grid_dimensions_[1]) >= 1e-9)) {
-    Log::Error("DiffusionGrid::GetBoxCoordinates",
-               "You tried to get the box coordinates outside the bounds of "
-               "the diffusion grid! Using grid_dimensions_[1] as position.");
-    position_[0] = ((position_[0] - grid_dimensions_[1]) >= 1e-9)
-                       ? grid_dimensions_[1]
-                       : position_[0];
-    position_[1] = ((position_[1] - grid_dimensions_[1]) >= 1e-9)
-                       ? grid_dimensions_[1]
-                       : position_[1];
-    position_[2] = ((position_[2] - grid_dimensions_[1]) >= 1e-9)
-                       ? grid_dimensions_[1]
-                       : position_[2];
-  }
-  if (std::abs(position_[0] - grid_dimensions_[1]) < 1e-9) {
-    box_coord[0] = resolution_ - 1;
-  } else {
-    box_coord[0] = (floor(position_[0]) - grid_dimensions_[0]) / box_length_;
-  }
-  if (std::abs(position_[1] - grid_dimensions_[1]) < 1e-9) {
-    box_coord[1] = resolution_ - 1;
-  } else {
-    box_coord[1] = (floor(position_[1]) - grid_dimensions_[0]) / box_length_;
-  }
-  if (std::abs(position_[2] - grid_dimensions_[1]) < 1e-9) {
-    box_coord[2] = resolution_ - 1;
-  } else {
-    box_coord[2] = (floor(position_[2]) - grid_dimensions_[0]) / box_length_;
+
+  for (size_t i = 0; i < 3; i++) {
+// Check if position is within boundaries
+#ifndef NDEBUG
+    assert((position[i] >= grid_dimensions_[0]) &&
+           "You tried to get the box coordinates outside the bounds of the "
+           "diffusion grid!");
+    assert((position[i] <= grid_dimensions_[1]) &&
+           "You tried to get the box coordinates outside the bounds of the "
+           "diffusion grid!");
+#endif  // NDEBUG
+    // Get box coords
+    box_coord[i] = (floor(position[i]) - grid_dimensions_[0]) / box_length_;
   }
 
   return box_coord;

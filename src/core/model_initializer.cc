@@ -14,6 +14,7 @@
 
 #include "core/model_initializer.h"
 #include "core/diffusion/diffusion_grid.h"
+#include "core/diffusion/euler_depletion_grid.h"
 #include "core/diffusion/euler_grid.h"
 #include "core/diffusion/runge_kutta_grid.h"
 #include "core/util/log.h"
@@ -24,16 +25,23 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
                                        const std::string& substance_name,
                                        double diffusion_coeff,
                                        double decay_constant, int resolution,
-                                       double binding_coefficient,
-                                       bool isDepleted, size_t isDepletedBy) {
+                                       std::vector<double> binding_coefficients,
+                                       std::vector<size_t> binding_substances) {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   auto* rm = sim->GetResourceManager();
   DiffusionGrid* dgrid = nullptr;
   if (param->diffusion_method == "euler") {
-    dgrid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                          decay_constant, resolution, binding_coefficient,
-                          isDepleted, isDepletedBy);
+    if (binding_substances.size() > 0) {
+      assert((binding_coefficients.size() == binding_substances.size()) &&
+             "The binding coefficients and substances have different size");
+      dgrid = new EulerDepletionGrid(
+          substance_id, substance_name, diffusion_coeff, decay_constant,
+          resolution, binding_coefficients, binding_substances);
+    } else {
+      dgrid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
+                            decay_constant, resolution);
+    }
   } else if (param->diffusion_method == "runge-kutta") {
     if (decay_constant != 0) {
       Log::Warning(
@@ -42,13 +50,19 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
     }
     dgrid = new RungeKuttaGrid(substance_id, substance_name, diffusion_coeff,
                                resolution);
+    if (binding_substances.size() > 0) {
+      Log::Warning("ModelInitializer::DefineSubstance",
+                   "RungeKuttaGrid does not support depletion. Depleting "
+                   "substances removed.");
+    }
+    dgrid = new RungeKuttaGrid(substance_id, substance_name, diffusion_coeff,
+                               resolution);
   } else {
     Log::Error("ModelInitializer::DefineSubstance", "Diffusion method '",
                param->diffusion_method,
                "' does not exist. Defaulting to 'euler'");
     dgrid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
-                          decay_constant, resolution, binding_coefficient,
-                          isDepletedBy);
+                          decay_constant, resolution);
   }
 
   rm->AddDiffusionGrid(dgrid);

@@ -29,6 +29,7 @@
 
 class EulerGrid;
 class RungeKuttaGrid;
+class EulerDepletionGrid;
 
 namespace bdm {
 
@@ -381,18 +382,21 @@ struct ModelInitializer {
   /// Allows agents to secrete the specified substance. Diffusion throughout the
   /// simulation space is automatically taken care of by the DiffusionGrid class
   ///
-  /// @param[in]  substance_id     The substance identifier
-  /// @param[in]  substance_name   The substance name
-  /// @param[in]  diffusion_coeff  The diffusion coefficient
-  /// @param[in]  decay_constant   The decay constant
-  /// @param[in]  resolution       The resolution of the diffusion grid
+  /// @param[in]  substance_id          The substance identifier
+  /// @param[in]  substance_name        The substance name
+  /// @param[in]  diffusion_coeff       The diffusion coefficient
+  /// @param[in]  decay_constant        The decay constant
+  /// @param[in]  resolution            The resolution of the diffusion grid
+  /// @param[in]  binding_coefficients  The binding coefficients of the
+  /// depleting substances
+  /// @param[in]  binding_substances    The depleting substances
   ///
   static void DefineSubstance(size_t substance_id,
                               const std::string& substance_name,
                               double diffusion_coeff, double decay_constant,
                               int resolution = 10,
-                              double binding_coefficient = 0.,
-                              bool isDepleted = false, size_t isDepletedBy = 0);
+                              std::vector<double> binding_coefficients = {},
+                              std::vector<size_t> binding_substances = {});
 
   template <typename F>
   static void InitializeSubstance(size_t substance_id, F function) {
