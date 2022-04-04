@@ -43,7 +43,7 @@ ResourceManager::ResourceManager() {
 }
 
 ResourceManager::~ResourceManager() {
-  for (auto& el : diffusion_grids_) {
+  for (auto& el : scalar_fields_) {
     delete el.second;
   }
   for (auto& numa_agents : agents_) {
