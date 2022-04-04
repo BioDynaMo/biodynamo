@@ -165,6 +165,13 @@ TEST(MathArray, GetNormalizedArray) {
   EXPECT_DOUBLE_EQ(d[2], a[2]);
 }
 
+TEST(MathArray, IsZero) {
+  Double3 x = {0, 0, 0};
+  Double3 y = {0, 0, 0.01};
+  EXPECT_TRUE(x.IsZero());
+  EXPECT_FALSE(y.IsZero());
+}
+
 TEST(MathArray, NormalizeZeroVectorDeath) {
   EXPECT_DEATH_IF_SUPPORTED(
       {

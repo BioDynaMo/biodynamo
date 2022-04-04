@@ -336,6 +336,16 @@ class MathArray {  // NOLINT
   /// \return sum of the array's content.
   T Sum() const { return std::accumulate(begin(), end(), 0); }
 
+  /// Checks if vector is a zero vector, e.g. if all entries are zero.
+  bool IsZero() const {
+    for (size_t i = 0; i < N; i++) {
+      if (data_[i] != 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// Compute the norm of the array's content.
   /// \return array's norm.
   T Norm() const {

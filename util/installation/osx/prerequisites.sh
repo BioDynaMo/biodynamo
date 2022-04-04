@@ -56,7 +56,9 @@ brew install \
 
 # Install the optional packages
 if [ $1 == "all" ]; then
-    PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
+    # Fix jinja2 version because of failing build target `notebooks` on 
+    # macOS System CI.
+    PIP_PACKAGES="nbformat jupyter metakernel jupyterlab jinja2==3.0"
     # Don't install --user: the packages should end up in the PYENV_ROOT directory
     python3.9 -m pip install $PIP_PACKAGES
     brew install \
