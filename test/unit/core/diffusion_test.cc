@@ -750,7 +750,7 @@ TEST(DiffusionTest, GradientComputation) {
   // Define the substance for our simulation
   DiffusionGrid* d_grid = nullptr;
   d_grid = new EulerGrid(0, "Substance", 0.0, 0.0, 100);
-  rm->AddScalarField(d_grid);
+  rm->AddContinuumModel(d_grid);
 
   // Define scalar field for initialization
   auto scalar_field = [&](real_t x, real_t y, real_t z) {

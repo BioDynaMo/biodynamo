@@ -43,7 +43,7 @@ ResourceManager::ResourceManager() {
 }
 
 ResourceManager::~ResourceManager() {
-  for (auto& el : scalar_fields_) {
+  for (auto& el : continuum_models_) {
     delete el.second;
   }
   for (auto& numa_agents : agents_) {

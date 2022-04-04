@@ -63,7 +63,7 @@ class ResourceManager {
       Log::Fatal(
           "Restored ResourceManager has different number of NUMA nodes.");
     }
-    for (auto& el : scalar_fields_) {
+    for (auto& el : continuum_models_) {
       delete el.second;
     }
     for (auto& numa_agents : agents_) {
@@ -73,7 +73,7 @@ class ResourceManager {
     }
     agents_ = std::move(other.agents_);
     agents_lb_.resize(agents_.size());
-    scalar_fields_ = std::move(other.scalar_fields_);
+    continuum_models_ = std::move(other.continuum_models_);
 
     RebuildAgentUidMap();
     // restore type_index_
@@ -116,55 +116,55 @@ class ResourceManager {
 
   void SwapAgents(std::vector<std::vector<Agent*>>* agents);
 
-  [[deprecated("Use AddScalarField() instead")]] void AddDiffusionGrid(
+  [[deprecated("Use AddContinuumModel() instead")]] void AddDiffusionGrid(
       DiffusionGrid* dgrid) {
-    AddScalarField(dgrid);
+    AddContinuumModel(dgrid);
   }
 
-  void AddScalarField(ScalarField* sf) {
-    auto tmp = sf->GetContinuumId();
+  void AddContinuumModel(ContinuumModel* cm) {
+    auto tmp = cm->GetContinuumId();
     if (tmp < 0) {
-      Log::Fatal(
-          "ResourceManager::AddScalarField",
-          "You tried to add a scalar field that was not properly initialized. "
-          "Continuum id is negative but should be positive. "
-          "Continuum id is " +
-              std::to_string(tmp));
+      Log::Fatal("ResourceManager::AddContinuumModel",
+                 "You tried to add a continuum model that was not properly "
+                 "initialized. "
+                 "Continuum id is negative but should be positive. "
+                 "Continuum id is " +
+                     std::to_string(tmp));
     }
     uint64_t continuum_id = static_cast<uint64_t>(tmp);
-    auto search = scalar_fields_.find(continuum_id);
-    if (search != scalar_fields_.end()) {
-      Log::Fatal("ResourceManager::AddScalarField",
-                 "You tried to add a scalar field with an already existing "
+    auto search = continuum_models_.find(continuum_id);
+    if (search != continuum_models_.end()) {
+      Log::Fatal("ResourceManager::AddContinuumModel",
+                 "You tried to add a continuum model with an already existing "
                  "substance id. Please choose a different substance id.");
     } else {
-      scalar_fields_[continuum_id] = sf;
+      continuum_models_[continuum_id] = cm;
     }
     MarkEnvironmentOutOfSync();
   }
 
-  [[deprecated("Use RemoveScalarField() instead")]] void RemoveDiffusionGrid(
+  [[deprecated("Use RemoveContinuumModel() instead")]] void RemoveDiffusionGrid(
       size_t substance_id) {
-    RemoveScalarField(substance_id);
+    RemoveContinuumModel(substance_id);
   }
 
-  void RemoveScalarField(size_t continuum_id) {
-    auto search = scalar_fields_.find(continuum_id);
-    if (search != scalar_fields_.end()) {
+  void RemoveContinuumModel(size_t continuum_id) {
+    auto search = continuum_models_.find(continuum_id);
+    if (search != continuum_models_.end()) {
       delete search->second;
-      scalar_fields_.erase(search);
+      continuum_models_.erase(search);
     } else {
-      Log::Error("ResourceManager::RemoveScalarField",
-                 "You tried to remove a scalar field that does not exist.");
+      Log::Error("ResourceManager::RemoveContinuumModel",
+                 "You tried to remove a continuum model that does not exist.");
     }
   }
 
   /// Return the diffusion grid which holds the substance of specified id. Calls
-  /// back to GetScalarField() to get the scalar field and used a dynamic_cast
-  /// to check if the implementation is a DiffusionGrid.
+  /// back to GetContinuumModel() to get the continuum model and used a
+  /// dynamic_cast to check if the implementation is a DiffusionGrid.
   DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
-    auto* sf = GetScalarField(substance_id);
-    DiffusionGrid* dgrid = dynamic_cast<DiffusionGrid*>(sf);
+    auto* cm = GetContinuumModel(substance_id);
+    DiffusionGrid* dgrid = dynamic_cast<DiffusionGrid*>(cm);
     if (!dgrid) {
       Log::Error("ResourceManager::GetDiffusionGrid",
                  "You tried to get a diffusion grid but the substance id "
@@ -173,28 +173,28 @@ class ResourceManager {
     return dgrid;
   }
 
-  /// Return the scalar field which holds the substance of specified id.
-  ScalarField* GetScalarField(size_t continuum_id) const {
-    auto search = scalar_fields_.find(continuum_id);
-    if (search != scalar_fields_.end()) {
+  /// Return the continuum model which holds the substance of specified id.
+  ContinuumModel* GetContinuumModel(size_t continuum_id) const {
+    auto search = continuum_models_.find(continuum_id);
+    if (search != continuum_models_.end()) {
       return search->second;
     } else {
-      Log::Error("ResourceManager::GetScalarField",
-                 "You tried to request scalar field '", continuum_id,
+      Log::Error("ResourceManager::GetContinuumModel",
+                 "You tried to request continuum model '", continuum_id,
                  "', but it does not exist! Make sure that it's the correct id "
-                 "and that the scalar field is registered.");
+                 "and that the continuum model is registered.");
       return nullptr;
     }
   }
 
   /// Return the diffusion grid which holds the substance of specified name.
-  /// Calls back to GetScalarField(std::string) and checks with dynamic_cast if
-  /// substance_name corresponds to a DiffusionGrid implementation.
-  /// Caution: using this function in a tight loop will result in a slow
-  /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
+  /// Calls back to GetContinuumModel(std::string) and checks with dynamic_cast
+  /// if substance_name corresponds to a DiffusionGrid implementation. Caution:
+  /// using this function in a tight loop will result in a slow simulation. Use
+  /// `GetDiffusionGrid(size_t)` in those cases.
   DiffusionGrid* GetDiffusionGrid(const std::string& substance_name) const {
-    auto* sf = GetScalarField(substance_name);
-    DiffusionGrid* dgrid = dynamic_cast<DiffusionGrid*>(sf);
+    auto* cm = GetContinuumModel(substance_name);
+    DiffusionGrid* dgrid = dynamic_cast<DiffusionGrid*>(cm);
     if (!dgrid) {
       Log::Error("ResourceManager::GetDiffusionGrid",
                  "You tried to get a diffusion grid but the substance name "
@@ -203,20 +203,20 @@ class ResourceManager {
     return dgrid;
   }
 
-  /// Return the scalar field which holds the substance of specified name
+  /// Return the continuum model which holds the substance of specified name
   /// Caution: using this function in a tight loop will result in a slow
-  /// simulation. Use `GetScalarField(size_t)` in those cases.
-  ScalarField* GetScalarField(const std::string& continuum_name) const {
-    for (auto& el : scalar_fields_) {
-      auto& sf = el.second;
-      if (sf->GetContinuumName() == continuum_name) {
-        return sf;
+  /// simulation. Use `GetContinuumModel(size_t)` in those cases.
+  ContinuumModel* GetContinuumModel(const std::string& continuum_name) const {
+    for (auto& el : continuum_models_) {
+      auto& cm = el.second;
+      if (cm->GetContinuumName() == continuum_name) {
+        return cm;
       }
     }
-    Log::Error("ResourceManager::GetScalarField",
-               "You tried to request a scalar field named '", continuum_name,
+    Log::Error("ResourceManager::GetContinuumModel",
+               "You tried to request a continuum model named '", continuum_name,
                "', but it does not exist! Make sure that it's spelled "
-               "correctly and that the scalar field is registered.");
+               "correctly and that the continuum model is registered.");
     return nullptr;
   }
 
@@ -226,7 +226,7 @@ class ResourceManager {
   ///     });
   template <typename TFunctor>
   void ForEachDiffusionGrid(TFunctor&& f) const {
-    for (auto& el : scalar_fields_) {
+    for (auto& el : continuum_models_) {
       auto* dgrid = dynamic_cast<DiffusionGrid*>(el.second);
       if (dgrid) {
         f(dgrid);
@@ -234,13 +234,13 @@ class ResourceManager {
     }
   }
 
-  /// Execute the given functor for all scalar fields
-  ///     rm->ForEachScalarField([](ScalarField* sf) {
+  /// Execute the given functor for all continuum models
+  ///     rm->ForEachContinuumModel([](ContinuumModel* cm) {
   ///       ...
   ///     });
   template <typename TFunctor>
-  void ForEachScalarField(TFunctor&& f) const {
-    for (auto& el : scalar_fields_) {
+  void ForEachContinuumModel(TFunctor&& f) const {
+    for (auto& el : continuum_models_) {
       f(el.second);
     }
   }
@@ -492,8 +492,8 @@ class ResourceManager {
   std::vector<std::vector<Agent*>> agents_;
   /// Container used during load balancing
   std::vector<std::vector<Agent*>> agents_lb_;  //!
-  /// Maps a continuum ID to the pointer to the scalar fields
-  std::unordered_map<uint64_t, ScalarField*> scalar_fields_;
+  /// Maps a continuum ID to the pointer to the continuum models
+  std::unordered_map<uint64_t, ContinuumModel*> continuum_models_;
 
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 

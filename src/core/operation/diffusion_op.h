@@ -60,16 +60,17 @@ class DiffusionOp : public StandaloneOperationImpl {
       return;
     }
 
-    rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
+    rm->ForEachContinuumModel([&](ContinuumModel* cm) {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
       if (env->HasGrown() &&
           param->bound_space == Param::BoundSpaceMode::kOpen) {
-        dgrid->Update();
+        cm->Update();
       }
-      dgrid->Diffuse(delta_t_);
-      if (param->calculate_gradients) {
+      cm->Step(delta_t_);
+      auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
+      if (dgrid && param->calculate_gradients) {
         dgrid->CalculateGradient();
       }
     });

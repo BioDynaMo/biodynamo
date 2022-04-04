@@ -169,31 +169,31 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   auto* rm = simulation.GetResourceManager();
 
   int counter = 0;
-  auto count = [&](DiffusionGrid* dg) { counter++; };
+  auto count = [&](ContinuumModel* cm) { counter++; };
 
   DiffusionGrid* dgrid_1 = new EulerGrid(0, "Kalium", 0.4, 0, 2);
   DiffusionGrid* dgrid_2 = new EulerGrid(1, "Natrium", 0.2, 0.1, 1);
   DiffusionGrid* dgrid_3 = new EulerGrid(2, "Calcium", 0.5, 0.1, 1);
-  rm->AddScalarField(dgrid_1);
-  rm->AddScalarField(dgrid_2);
-  rm->AddScalarField(dgrid_3);
+  rm->AddContinuumModel(dgrid_1);
+  rm->AddContinuumModel(dgrid_2);
+  rm->AddContinuumModel(dgrid_3);
 
-  rm->ForEachDiffusionGrid(count);
+  rm->ForEachContinuumModel(count);
   ASSERT_EQ(3, counter);
 
   EXPECT_EQ(dgrid_1, rm->GetDiffusionGrid(0));
   EXPECT_EQ(dgrid_1, rm->GetDiffusionGrid("Kalium"));
 
-  EXPECT_EQ(dgrid_2, rm->GetDiffusionGrid(1));
-  EXPECT_EQ(dgrid_2, rm->GetDiffusionGrid("Natrium"));
+  EXPECT_EQ(dgrid_2, rm->GetContinuumModel(1));
+  EXPECT_EQ(dgrid_2, rm->GetContinuumModel("Natrium"));
 
   EXPECT_EQ(dgrid_3, rm->GetDiffusionGrid(2));
   EXPECT_EQ(dgrid_3, rm->GetDiffusionGrid("Calcium"));
 
-  rm->RemoveScalarField(dgrid_2->GetContinuumId());
+  rm->RemoveContinuumModel(dgrid_2->GetContinuumId());
 
   counter = 0;
-  rm->ForEachDiffusionGrid(count);
+  rm->ForEachContinuumModel(count);
   ASSERT_EQ(2, counter);
 }
 
