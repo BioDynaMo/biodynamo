@@ -635,11 +635,11 @@ inline void RunIOTest() {
               dynamic_cast<B*>(restored_rm->GetAgent(ref_uid + 4))->GetData(),
               kEpsilon);
 
-  EXPECT_EQ(0, restored_rm->GetDiffusionGrid(0)->GetSubstanceId());
-  EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetSubstanceId());
-  EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrid(0)->GetSubstanceName());
-  EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrid(1)->GetSubstanceName());
-  EXPECT_EQ(real_t(0.6),
+  EXPECT_EQ(0, restored_rm->GetDiffusionGrid(0)->GetContinuumId());
+  EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetContinuumId());
+  EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrid(0)->GetContinuumName());
+  EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrid(1)->GetContinuumName());
+  EXPECT_EQ(0.6,
             restored_rm->GetDiffusionGrid(0)->GetDiffusionCoefficients()[0]);
   EXPECT_EQ(real_t(0.8),
             restored_rm->GetDiffusionGrid(1)->GetDiffusionCoefficients()[0]);

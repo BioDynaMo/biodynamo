@@ -190,7 +190,7 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   EXPECT_EQ(dgrid_3, rm->GetDiffusionGrid(2));
   EXPECT_EQ(dgrid_3, rm->GetDiffusionGrid("Calcium"));
 
-  rm->RemoveScalarField(dgrid_2->GetSubstanceId());
+  rm->RemoveScalarField(dgrid_2->GetContinuumId());
 
   counter = 0;
   rm->ForEachDiffusionGrid(count);

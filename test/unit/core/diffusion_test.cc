@@ -373,7 +373,7 @@ TEST(DiffusionTest, IOTest) {
 
   auto eps = abs_error<real_t>::value;
 
-  EXPECT_EQ("Kalium", restored_dgrid->GetSubstanceName());
+  EXPECT_EQ("Kalium", restored_dgrid->GetContinuumName());
   EXPECT_EQ(10, restored_dgrid->GetBoxLength());
   EXPECT_EQ(42, restored_dgrid->GetUpperThreshold());
   EXPECT_EQ(-42, restored_dgrid->GetLowerThreshold());
