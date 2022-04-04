@@ -197,52 +197,6 @@ TEST(ResourceManagerTest, DiffusionGrid) {
   ASSERT_EQ(2, counter);
 }
 
-TEST(ResourceManagerTest, Defragmentation) {
-  auto set_param = [](Param* param) {
-    param->agent_uid_defragmentation_low_watermark = 0.3;
-    param->agent_uid_defragmentation_high_watermark = 0.8;
-  };
-  Simulation simulation(TEST_NAME, set_param);
-
-  auto* rm = simulation.GetResourceManager();
-  auto* agent_uid_generator = simulation.GetAgentUidGenerator();
-
-  // we don't know the how big the internal agent uid map is
-  rm->AddAgent(new TestAgent());
-  rm->EndOfIteration();
-  EXPECT_TRUE(agent_uid_generator->IsInDefragmentationMode());
-  // fill it to the max
-  uint64_t cnt = 1;
-  while (agent_uid_generator->IsInDefragmentationMode()) {
-    rm->AddAgent(new TestAgent());
-    cnt++;
-  }
-  // now we know how many agents are 100%
-  rm->EndOfIteration();
-  EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
-
-  // remove enough agents to drop below the low watermark
-  uint64_t remove = std::ceil(cnt * 0.7) + 1;
-  while (remove != 0) {
-    remove--;
-    rm->RemoveAgent(AgentUid(remove));
-  }
-  rm->EndOfIteration();
-  EXPECT_TRUE(agent_uid_generator->IsInDefragmentationMode());
-
-  // add enough agents to exceed the high watermark
-  uint64_t add = std::ceil(cnt * 0.5) + 1;
-  while (add != 0) {
-    add--;
-    rm->AddAgent(new TestAgent());
-  }
-  rm->EndOfIteration();
-  EXPECT_FALSE(agent_uid_generator->IsInDefragmentationMode());
-  auto uid = agent_uid_generator->GenerateUid();
-  EXPECT_GE(uid.GetIndex(), cnt);
-  EXPECT_EQ(0u, uid.GetReused());
-}
-
 // -----------------------------------------------------------------------------
 struct DeleteFunctor : public Functor<void, Agent*, AgentHandle> {
   std::vector<bool>& remove;

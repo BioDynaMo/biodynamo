@@ -27,23 +27,23 @@ TEST(AgentUidGeneratorTest, NormalAndDefragmentationMode) {
 
   AgentUidGenerator generator;
 
-  EXPECT_EQ(AgentUid(0), generator.GenerateUid());
-  EXPECT_EQ(AgentUid(1), generator.GenerateUid());
-  EXPECT_EQ(AgentUid(2), generator.GenerateUid());
+  // Create num threads agent uids
+  auto* tinfo = ThreadInfo::GetInstance();
+  for (int i = 0; i < tinfo->GetMaxThreads(); ++i) {
+    EXPECT_EQ(AgentUid(i), generator.GenerateUid());
+  }
 
-  // increment simulated time steps
-  simulation.GetScheduler()->Simulate(1);
+  // Reuse uids
+#pragma omp parallel for schedule(static, 1)
+  for (int i = 0; i < tinfo->GetMaxThreads(); ++i) {
+    generator.ReuseAgentUid(AgentUid(i));
+    EXPECT_EQ(AgentUid(i, 1), generator.GenerateUid());
+  }
 
-  // defragmentation mode
-  AgentUidMap<AgentHandle> map(3);
-  map.Insert(AgentUid(1), AgentHandle(123));
-  // slots 0, and 2 are empty
-
-  generator.EnableDefragmentation(&map);
-  EXPECT_EQ(AgentUid(0, 1), generator.GenerateUid());
-  EXPECT_EQ(AgentUid(2, 1), generator.GenerateUid());
-  // no more empty slots -> generator should have switched back to normal mode
-  EXPECT_EQ(AgentUid(3, 0), generator.GenerateUid());
+  // generate new uids
+  for (int i = 0; i < tinfo->GetMaxThreads(); ++i) {
+    EXPECT_EQ(AgentUid(i + tinfo->GetMaxThreads()), generator.GenerateUid());
+  }
 }
 
 #ifdef USE_DICT

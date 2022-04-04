@@ -364,7 +364,9 @@ void ResourceManager::RemoveAgents(
   // determine how many agents will be removed in each numa domain
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < uids.size(); ++i) {
+    auto* uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
     for (auto& uid : *uids[i]) {
+      uid_generator->ReuseAgentUid(uid);
       auto ah = uid_ah_map_[uid];
       tbr_cum[ah.GetNumaNode()][i]++;
     }

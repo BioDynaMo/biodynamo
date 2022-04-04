@@ -21,6 +21,7 @@
 #include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
 #include "core/container/agent_uid_map.h"
+#include "core/container/shared_data.h"
 #include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/util/root.h"
@@ -29,58 +30,41 @@
 namespace bdm {
 
 /// This class generates unique ids for agents.
-/// All functions are  thread safe.
 class AgentUidGenerator {
  public:
   AgentUidGenerator(const AgentUidGenerator&) = delete;
-  AgentUidGenerator() : counter_(0) {}
+  AgentUidGenerator() : counter_(0), tinfo_(ThreadInfo::GetInstance()) {
+    Update();
+  }
 
   /// Generates AgentUid with increasing index.
-  /// In defragmentation mode it resuses index values from removed agents
-  /// and sets the reused field to the current simulation step.
+  /// In defragmentation mode it reuses index values from removed agents
+  /// and increments the reused field.
+  /// Thread-safe.
   AgentUid GenerateUid() {
-    if (map_ != nullptr) {
-      // defragmentation mode
-      std::lock_guard<Spinlock> guard(lock_);
-      // repeat check, another thread might have disabled defragmentation
-      if (map_ != nullptr) {
-        // find unused element in map
-        while (search_index_ < map_->size() &&
-               map_->GetReused(search_index_) !=
-                   std::numeric_limits<typename AgentUid::Reused_t>::max()) {
-          search_index_++;
-        }
-        if (search_index_ < map_->size()) {
-          auto* scheduler = Simulation::GetActive()->GetScheduler();
-          return AgentUid(search_index_++, static_cast<AgentUid::Reused_t>(
-                                               scheduler->GetSimulatedSteps()));
-        }
-        // didn't find any empty slots -> disable defragmentation mode
-        DisableDefragmentation();
-      }
+    auto& old_uids = tl_uids_[tinfo_->GetMyThreadId()];
+    if (old_uids.size()) {
+      auto uid = old_uids.back();
+      old_uids.pop_back();
+      return AgentUid(uid.GetIndex(), uid.GetReused() + 1);
     }
     return AgentUid(counter_++);
   }
 
   // Returns the highest index that was used for an AgentUid
+  /// Thread-safe.
   AgentUid::Index_t GetHighestIndex() const { return counter_; }
 
-  void EnableDefragmentation(const AgentUidMap<AgentHandle>* map) {
-    // check if already in defragmentation mode
-    if (map_ == nullptr) {
-      map_ = map;
-      search_index_ = 0;
-    }
+  /// Adds AgentUid that can be reused after AgentUid::reused_ is incremented.
+  /// Thread-safe.
+  void ReuseAgentUid(const AgentUid& uid) {
+    tl_uids_[tinfo_->GetMyThreadId()].push_back(uid);
   }
 
-  void DisableDefragmentation() {
-    if (map_ != nullptr) {
-      counter_ = static_cast<AgentUid::Index_t>(map_->size());
-    }
-    map_ = nullptr;
-  }
-
-  bool IsInDefragmentationMode() const { return map_ != nullptr; }
+  /// Resizes internal data structures to the number of threads.
+  /// NB: If Update is called, calls to GenerateUid or ReuseAgentUid are not
+  /// allowed!
+  void Update() { tl_uids_.resize(tinfo_->GetMaxThreads()); }
 
  private:
   std::atomic<typename AgentUid::Index_t> counter_;  //!
@@ -88,12 +72,11 @@ class AgentUidGenerator {
   /// Therefore this additional helper variable is needed.
   typename AgentUid::Index_t root_counter_;
 
-  ///
-  const AgentUidMap<AgentHandle>* map_ = nullptr;  //!
-  /// Lock needed for defragmentation mode
-  Spinlock lock_;  //!
-  /// Current search position
-  typename AgentUid::Index_t search_index_ = 0;  //!
+  /// Thread local vector of AgentUids that can be reused
+  /// FIXME persist
+  SharedData<std::vector<AgentUid>> tl_uids_;  //!
+  ThreadInfo* tinfo_ = nullptr;                //!
+
   BDM_CLASS_DEF_NV(AgentUidGenerator, 1);
 };
 
