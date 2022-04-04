@@ -159,9 +159,10 @@ class ResourceManager {
     }
   }
 
-  /// Return the diffusion grid which holds the substance of specified id
-  [[deprecated("Use GetScalarField() instead")]] DiffusionGrid*
-  GetDiffusionGrid(size_t substance_id) const {
+  /// Return the diffusion grid which holds the substance of specified id. Calls
+  /// back to GetScalarField() to get the scalar field and used a dynamic_cast
+  /// to check if the implementation is a DiffusionGrid.
+  DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
     auto* sf = GetScalarField(substance_id);
     DiffusionGrid* dgrid = dynamic_cast<DiffusionGrid*>(sf);
     if (!dgrid) {
@@ -172,6 +173,7 @@ class ResourceManager {
     return dgrid;
   }
 
+  /// Return the scalar field which holds the substance of specified id.
   ScalarField* GetScalarField(size_t continuum_id) const {
     auto search = scalar_fields_.find(continuum_id);
     if (search != scalar_fields_.end()) {
@@ -185,11 +187,12 @@ class ResourceManager {
     }
   }
 
-  /// Return the diffusion grid which holds the substance of specified name
+  /// Return the diffusion grid which holds the substance of specified name.
+  /// Calls back to GetScalarField(std::string) and checks with dynamic_cast if
+  /// substance_name corresponds to a DiffusionGrid implementation.
   /// Caution: using this function in a tight loop will result in a slow
   /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
-  [[deprecated("Use GetScalarField() instead")]] DiffusionGrid*
-  GetDiffusionGrid(const std::string& substance_name) const {
+  DiffusionGrid* GetDiffusionGrid(const std::string& substance_name) const {
     auto* sf = GetScalarField(substance_name);
     DiffusionGrid* dgrid = dynamic_cast<DiffusionGrid*>(sf);
     if (!dgrid) {
