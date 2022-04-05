@@ -46,15 +46,15 @@ class DiffusionGrid : public ScalarField {
     SetContinuumName(substance_name);
   }
 
-  virtual ~DiffusionGrid() = default;
+  ~DiffusionGrid() override = default;
 
-  virtual void Initialize() override;
+  void Initialize() override;
 
   /// Updates the grid dimensions, based on the given threshold values. The
   /// diffusion grid dimensions need always be larger than the neighbor grid
   /// dimensions, so that each simulation object can obtain its local
   /// concentration / gradient
-  virtual void Update() override;
+  void Update() override;
 
   void Step(double dt) override { Diffuse(dt); }
   void Diffuse(double dt);
@@ -93,7 +93,7 @@ class DiffusionGrid : public ScalarField {
   /// vector. Note that the gradient is computed via a central difference scheme
   /// on the underlying spatial discretization.
 
-  virtual Double3 GetGradient(const Double3& position) const override {
+  Double3 GetGradient(const Double3& position) const override {
     Double3 gradient;
     GetGradient(position, &gradient);
     return gradient;

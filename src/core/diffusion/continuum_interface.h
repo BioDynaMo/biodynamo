@@ -47,11 +47,11 @@ class ScalarField : public ContinuumModel {
  public:
   ScalarField() = default;
   explicit ScalarField(TRootIOCtor *p) {}
-  virtual ~ScalarField() = default;
+  ~ScalarField() override = default;
 
-  virtual void Initialize() override = 0;
-  virtual void Update() override = 0;
-  virtual void Step(double dt) override = 0;
+  void Initialize() override = 0;
+  void Update() override = 0;
+  void Step(double dt) override = 0;
   virtual double GetValue(const Double3 &position) const = 0;
   virtual Double3 GetGradient(const Double3 &position) const = 0;
 
@@ -62,11 +62,11 @@ class VectorField : public ContinuumModel {
  public:
   VectorField() = default;
   explicit VectorField(TRootIOCtor *p) {}
-  virtual ~VectorField() = default;
+  ~VectorField() override = default;
 
-  virtual void Initialize() override = 0;
-  virtual void Update() override = 0;
-  virtual void Step(double dt) override = 0;
+  void Initialize() override = 0;
+  void Update() override = 0;
+  void Step(double dt) override = 0;
   virtual Double3 GetValue(const Double3 &position) const = 0;
   virtual double GetDiv(const Double3 &position) const = 0;
   virtual double GetCurl(const Double3 &position) const = 0;
