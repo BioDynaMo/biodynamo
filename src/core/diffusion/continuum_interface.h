@@ -24,7 +24,7 @@ namespace bdm {
 class ContinuumModel {
  public:
   ContinuumModel() = default;
-  explicit ContinuumModel(TRootIOCtor *p) {}
+  explicit ContinuumModel(const TRootIOCtor *) {}
   virtual ~ContinuumModel() = default;
 
   virtual void Initialize() = 0;
@@ -34,7 +34,7 @@ class ContinuumModel {
   int GetContinuumId() const { return continuum_id_; }
   void SetContinuumId(int id) { continuum_id_ = id; }
   const std::string &GetContinuumName() const { return continuum_name_; }
-  void SetContinuumName(const std::string name) { continuum_name_ = name; }
+  void SetContinuumName(const std::string &name) { continuum_name_ = name; }
 
  private:
   int continuum_id_ = -1;
@@ -46,7 +46,7 @@ class ContinuumModel {
 class ScalarField : public ContinuumModel {
  public:
   ScalarField() = default;
-  explicit ScalarField(TRootIOCtor *p) {}
+  explicit ScalarField(const TRootIOCtor *) {}
   ~ScalarField() override = default;
 
   void Initialize() override = 0;
@@ -61,7 +61,7 @@ class ScalarField : public ContinuumModel {
 class VectorField : public ContinuumModel {
  public:
   VectorField() = default;
-  explicit VectorField(TRootIOCtor *p) {}
+  explicit VectorField(const TRootIOCtor *) {}
   ~VectorField() override = default;
 
   void Initialize() override = 0;
