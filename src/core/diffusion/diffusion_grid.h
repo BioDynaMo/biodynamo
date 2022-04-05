@@ -34,14 +34,14 @@ class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
-  DiffusionGrid(int substance_id, std::string substance_name, double dc,
+  DiffusionGrid(int substance_id, const std::string& substance_name, double dc,
                 double mu, int resolution = 11)
       : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
         resolution_(resolution) {
     // Compatibility with new abstract interface
     SetContinuumId(substance_id);
-    SetContinuumName(std::move(substance_name));
+    SetContinuumName(substance_name);
   }
 
   ~DiffusionGrid() override = default;
