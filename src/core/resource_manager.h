@@ -492,8 +492,6 @@ class ResourceManager {
   std::vector<std::vector<Agent*>> agents_;
   /// Container used during load balancing
   std::vector<std::vector<Agent*>> agents_lb_;  //!
-  /// Maps a continuum ID to the pointer to the continuum models
-  std::unordered_map<uint64_t, ContinuumModel*> continuum_models_;
 
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
@@ -509,6 +507,11 @@ class ResourceManager {
 
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
+
+ private:
+  /// Maps a continuum ID to the pointer to the continuum models
+  std::unordered_map<uint64_t, ContinuumModel*> continuum_models_;
+
   BDM_CLASS_DEF_NV(ResourceManager, 2);
 };
 
