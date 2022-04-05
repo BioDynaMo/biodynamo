@@ -41,7 +41,7 @@ class DiffusionGrid : public ScalarField {
         resolution_(resolution) {
     // Compatibility with new abstract interface
     SetContinuumId(substance_id);
-    SetContinuumName(substance_name);
+    SetContinuumName(std::move(substance_name));
   }
 
   ~DiffusionGrid() override = default;
