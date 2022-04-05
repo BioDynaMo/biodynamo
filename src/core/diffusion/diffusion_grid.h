@@ -34,11 +34,9 @@ class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
-  DiffusionGrid(int substance_id, std::string substance_name, real_t dc,
-                real_t mu, int resolution = 11)
-      : substance_(substance_id),
-        substance_name_(substance_name),
-        dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
+  DiffusionGrid(int substance_id, std::string substance_name, double dc,
+                double mu, int resolution = 11)
+      : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
         resolution_(resolution) {
     // Compatibility with new abstract interface
@@ -147,12 +145,12 @@ class DiffusionGrid : public ScalarField {
   real_t GetBoxLength() const { return box_length_; }
 
   [[deprecated("Use GetContinuumId() instead.")]] int GetSubstanceId() const {
-    return substance_;
+    return GetContinuumId();
   }
 
   [[deprecated("Use GetContinuumName() instead.")]] const std::string&
   GetSubstanceName() const {
-    return substance_name_;
+    return GetContinuumName();
   }
 
   real_t GetDecayConstant() const { return mu_; }
@@ -218,10 +216,6 @@ class DiffusionGrid : public ScalarField {
                    const ParallelResizeVector<Real3>& old_gradients,
                    size_t old_resolution);
 
-  /// The id of the substance of this grid
-  int substance_ = 0;
-  /// The name of the substance of this grid
-  std::string substance_name_ = "";
   /// The side length of each box
   real_t box_length_ = 0;
   /// the volume of each box

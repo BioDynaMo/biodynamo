@@ -33,7 +33,7 @@ class ContinuumModel {
 
   int GetContinuumId() const { return continuum_id_; }
   void SetContinuumId(int id) { continuum_id_ = id; }
-  std::string GetContinuumName() const { return continuum_name_; }
+  const std::string &GetContinuumName() const { return continuum_name_; }
   void SetContinuumName(const std::string name) { continuum_name_ = name; }
 
  private:
