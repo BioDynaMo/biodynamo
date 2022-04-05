@@ -75,7 +75,7 @@ inline int Simulate(int argc, const char** argv) {
   auto* agent = rm->GetAgent(AgentUid(0));
   const auto* first_behavior = agent->GetAllBehaviors()[0];
   auto* gene_regulation = dynamic_cast<const GeneRegulation*>(first_behavior);
-  const auto& concentrations = gene_regulation->GetConcentrations();
+  const auto& concentrations = gene_regulation->GetValues();
   std::cout << "Gene concentrations after " << scheduler->GetSimulatedSteps()
             << " time steps" << std::endl;
   for (real_t concentration : concentrations) {

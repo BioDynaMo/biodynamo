@@ -80,10 +80,11 @@ class DiffusionGrid : public ScalarField {
   void ChangeConcentrationBy(size_t idx, real_t amount);
 
   /// Get the concentration at specified position
-  double GetValue(const Double3& position) const override {
-    return GetConcentration(position);
+  double GetValue(const Double3& position) const override;
+  [[deprecated("Use GetValue instead")]] double GetConcentration(
+      const Double3& position) const {
+    return GetValue(position);
   };
-  double GetConcentration(const Double3& position) const;
 
   // NOTE: virtual because of test
   /// Get the gradient at a specified position. By default, the obtained
@@ -95,7 +96,7 @@ class DiffusionGrid : public ScalarField {
 
   Double3 GetGradient(const Double3& position) const override {
     Double3 gradient;
-    GetGradient(position, &gradient);
+    GetGradient(position, &gradient, false);
     return gradient;
   };
 

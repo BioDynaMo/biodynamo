@@ -50,7 +50,7 @@ struct Inhibitation : public Behavior {
       }
       auto* rm = Simulation::GetActive()->GetResourceManager();
       auto* dgrid = rm->GetDiffusionGrid(0);
-      real_t conc = dgrid->GetConcentration(monocyte->GetPosition());
+      double conc = dgrid->GetValue(monocyte->GetPosition());
 
       // With certain probability, depending on concentration value, we
       // inhibit the monocyte from forming immune synapses
