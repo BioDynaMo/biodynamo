@@ -221,9 +221,11 @@ class ResourceManager {
   }
 
   /// Execute the given functor for all diffusion grids
+  /// /code{.cpp}
   ///     rm->ForEachDiffusionGrid([](DiffusionGrid* dgrid) {
   ///       ...
   ///     });
+  /// /endcode
   template <typename TFunctor>
   void ForEachDiffusionGrid(TFunctor&& f) const {
     for (auto& el : continuum_models_) {
@@ -235,9 +237,11 @@ class ResourceManager {
   }
 
   /// Execute the given functor for all continuum models
+  /// /code{.cpp}
   ///     rm->ForEachContinuumModel([](ContinuumModel* cm) {
   ///       ...
   ///     });
+  /// /endcode
   template <typename TFunctor>
   void ForEachContinuumModel(TFunctor&& f) const {
     for (auto& el : continuum_models_) {
@@ -266,9 +270,11 @@ class ResourceManager {
   /// @param filter if specified, `function` will only be called for agents
   ///               for which `filter(agent)` evaluates to true.
   ///
+  /// /code{.cpp}
   ///     rm->ForEachAgent([](Agent* a) {
   ///                              std::cout << a->GetUid() << std::endl;
   ///                          });
+  /// /endcode
   virtual void ForEachAgent(const std::function<void(Agent*)>& function,
                             Functor<bool, Agent*>* filter = nullptr) {
     for (auto& numa_agents : agents_) {
