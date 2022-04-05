@@ -803,6 +803,16 @@ TEST(DiffusionTest, GradientComputation) {
     EXPECT_LT(abs(res[1] / grad[1]), 0.05);  // Require 5 precent accuracy
     EXPECT_LT(abs(res[2] / grad[2]), 0.03);  // Require 3 precent accuracy
   }
+
+  // Check alternative GetGradient method
+  Double3 grad4 = d_grid->GetGradient(pos1);
+  Double3 grad5 = d_grid->GetGradient(pos2);
+  Double3 grad6 = d_grid->GetGradient(pos3);
+  for (size_t i = 0; i < 3; i++) {
+    EXPECT_DOUBLE_EQ(grad1[i], grad4[i]);
+    EXPECT_DOUBLE_EQ(grad2[i], grad5[i]);
+    EXPECT_DOUBLE_EQ(grad3[i], grad6[i]);
+  }
 }
 
 #ifdef USE_PARAVIEW
