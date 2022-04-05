@@ -131,7 +131,7 @@ class ResourceManager {
                  "Continuum id is " +
                      std::to_string(tmp));
     }
-    uint64_t continuum_id = static_cast<uint64_t>(tmp);
+    auto continuum_id = static_cast<uint64_t>(tmp);
     auto search = continuum_models_.find(continuum_id);
     if (search != continuum_models_.end()) {
       Log::Fatal("ResourceManager::AddContinuumModel",
@@ -164,7 +164,7 @@ class ResourceManager {
   /// dynamic_cast to check if the implementation is a DiffusionGrid.
   DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
     auto* cm = GetContinuumModel(substance_id);
-    DiffusionGrid* dgrid = dynamic_cast<DiffusionGrid*>(cm);
+    auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
     if (!dgrid) {
       Log::Error("ResourceManager::GetDiffusionGrid",
                  "You tried to get a diffusion grid but the substance id "
@@ -194,7 +194,7 @@ class ResourceManager {
   /// `GetDiffusionGrid(size_t)` in those cases.
   DiffusionGrid* GetDiffusionGrid(const std::string& substance_name) const {
     auto* cm = GetContinuumModel(substance_name);
-    DiffusionGrid* dgrid = dynamic_cast<DiffusionGrid*>(cm);
+    auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
     if (!dgrid) {
       Log::Error("ResourceManager::GetDiffusionGrid",
                  "You tried to get a diffusion grid but the substance name "
