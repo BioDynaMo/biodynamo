@@ -23,8 +23,8 @@ namespace bdm {
 class TestGrid : public DiffusionGrid {
  public:
   TestGrid() = default;
-  TestGrid(int substance_id, std::string substance_name, double dc, double mu,
-           int resolution = 11)
+  TestGrid(size_t substance_id, std::string substance_name, double dc,
+           double mu, int resolution = 11)
       : DiffusionGrid(substance_id, substance_name, dc, mu, resolution) {}
 
   void DiffuseWithClosedEdge(double dt) override { return; };

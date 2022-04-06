@@ -33,7 +33,7 @@ class DiffusionGrid {
  public:
   DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
-  DiffusionGrid(int substance_id, std::string substance_name, double dc,
+  DiffusionGrid(size_t substance_id, std::string substance_name, double dc,
                 double mu, int resolution = 10)
       : substance_(substance_id),
         substance_name_(std::move(substance_name)),
@@ -127,7 +127,7 @@ class DiffusionGrid {
 
   double GetBoxLength() const { return box_length_; }
 
-  int GetSubstanceId() const { return substance_; }
+  size_t GetSubstanceId() const { return substance_; }
 
   const std::string& GetSubstanceName() const { return substance_name_; }
 
@@ -165,7 +165,7 @@ class DiffusionGrid {
     initializers_.push_back(function);
   }
 
-  // retrun true if substance concentration and gradient don't evolve over time
+  // return true if substance concentration and gradient don't evolve over time
   bool IsFixedSubstance() {
     return (mu_ == 0 && dc_[1] == 0 && dc_[2] == 0 && dc_[3] == 0 &&
             dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
@@ -196,7 +196,7 @@ class DiffusionGrid {
                    size_t old_resolution);
 
   /// The id of the substance of this grid
-  int substance_ = 0;
+  size_t substance_ = 0;
   /// The name of the substance of this grid
   std::string substance_name_ = "";
   /// The side length of each box

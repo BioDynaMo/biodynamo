@@ -16,6 +16,7 @@
 
 #include "core/agent/cell.h"
 #include "core/diffusion/diffusion_grid.h"
+#include "core/diffusion/euler_depletion_grid.h"
 #include "core/diffusion/euler_grid.h"
 #include "core/diffusion/runge_kutta_grid.h"
 #include "core/environment/environment.h"
@@ -570,6 +571,95 @@ TEST(DiffusionTest, EulerConvergenceDiffusion) {
   delete dgrid2;
   delete dgrid4;
   delete dgrid8;
+}
+
+TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "closed";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double diff_coef = 0.0;
+  double decay_depletes = 0.0;
+  double decay_depleted = 0.01;
+  int res = 20;
+  // Depleting substance is fixed, i.e. no diff and no decay
+  DiffusionGrid* dgrid_depletes1 =
+      new EulerGrid(0, "MMP", diff_coef, decay_depletes, res);
+  DiffusionGrid* dgrid_depletes2 =
+      new EulerGrid(1, "TIMP", diff_coef, decay_depletes, res);
+  DiffusionGrid* dgrid_depleted =
+      new EulerDepletionGrid(2, "ECM", diff_coef, decay_depleted, res);
+  dgrid_depletes1->Initialize();
+  dgrid_depletes1->SetUpperThreshold(1e15);
+  rm->AddDiffusionGrid(dgrid_depletes1);
+  dgrid_depletes2->Initialize();
+  dgrid_depletes2->SetUpperThreshold(1e15);
+  rm->AddDiffusionGrid(dgrid_depletes2);
+  dgrid_depleted->Initialize();
+  dgrid_depleted->SetUpperThreshold(1e15);
+  rm->AddDiffusionGrid(dgrid_depleted);
+
+  // Add depleting substance with its binding coefficient
+  std::vector<double> bnd_coeff{0.01, 0.01};
+  std::vector<size_t> bnd_subs{dgrid_depletes1->GetSubstanceId(),
+                               dgrid_depletes2->GetSubstanceId()};
+  bdm_static_cast<EulerDepletionGrid*>(dgrid_depleted)
+      ->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
+  bdm_static_cast<EulerDepletionGrid*>(dgrid_depleted)
+      ->SetBindingSubstance(bnd_subs[1], bnd_coeff[1]);
+
+  // instantaneous point source
+  double init_depleted = 1e2;
+  double init_depletes = 1;
+  Double3 source = {{0, 0, 0}};
+  dgrid_depletes1->ChangeConcentrationBy(source, init_depletes);
+  dgrid_depletes2->ChangeConcentrationBy(source, init_depletes);
+  dgrid_depleted->ChangeConcentrationBy(source, init_depleted);
+  Double3 marker = {50.0, 50.0, 50.0};
+
+  // Simulate diffusion / exponential decay for `tot` timesteps
+  int tot = 100;
+  for (int t = 0; t < tot; t++) {
+    dgrid_depletes1->Diffuse(simulation_time_step);
+    dgrid_depletes2->Diffuse(simulation_time_step);
+    dgrid_depleted->Diffuse(simulation_time_step);
+  }
+
+  auto conc_depletes1 = dgrid_depletes1->GetAllConcentrations();
+  auto conc_depletes2 = dgrid_depletes2->GetAllConcentrations();
+  auto conc_depleted = dgrid_depleted->GetAllConcentrations();
+
+  // If there is no diffusion, each grid point of the depleted substance simply
+  // executes an independet exponential decay due to self and induced depletion
+  double total_mu = decay_depleted + init_depletes * bnd_coeff[0] +
+                    init_depletes * bnd_coeff[1];
+  double expected_solution =
+      init_depleted * std::exp(-total_mu * tot * simulation_time_step);
+
+  // No diffusing substance -> Solution is 0 if not at source.
+  EXPECT_FLOAT_EQ(0.0, conc_depletes1[dgrid_depletes1->GetBoxIndex(marker)]);
+  EXPECT_FLOAT_EQ(0.0, conc_depletes2[dgrid_depletes2->GetBoxIndex(marker)]);
+  EXPECT_FLOAT_EQ(0.0, conc_depleted[dgrid_depleted->GetBoxIndex(marker)]);
+  // Depleting substances don't decay -> Conc shouldn't change at source
+  EXPECT_EQ(init_depletes,
+            conc_depletes1[dgrid_depletes1->GetBoxIndex(source)]);
+  EXPECT_EQ(init_depletes,
+            conc_depletes2[dgrid_depletes2->GetBoxIndex(source)]);
+  // Expect numeric value of exponential decay to coincide with +/- 1% of
+  // analytic solution.
+  EXPECT_LT(std::abs(expected_solution -
+                     conc_depleted[dgrid_depleted->GetBoxIndex(source)]) /
+                expected_solution,
+            0.01);
+
+  // dgrids are deleted by rm's destructor
 }
 
 TEST(DiffusionTest, DynamicTimeStepping) {

@@ -43,8 +43,8 @@ namespace bdm {
 class EulerGrid : public DiffusionGrid {
  public:
   EulerGrid() = default;
-  EulerGrid(int substance_id, std::string substance_name, double dc, double mu,
-            int resolution = 10)
+  EulerGrid(size_t substance_id, std::string substance_name, double dc,
+            double mu, int resolution = 10)
       : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
                       resolution) {}
 

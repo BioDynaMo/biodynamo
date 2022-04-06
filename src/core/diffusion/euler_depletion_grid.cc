@@ -18,44 +18,43 @@
 
 namespace bdm {
 
-void EulerDepletionGrid::DiffuseWithClosedEdge(double dt) {
+void EulerDepletionGrid::ApplyDepletion(double dt) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
 
-  // Get conc vector before diffusion step
-  auto old_c1 = c1_;
-  // Update concentration without depletion (c1 is modified)
-  EulerGrid::DiffuseWithClosedEdge(dt);
-
-#pragma omp simd
-  for (size_t c = 0; c < total_num_boxes_; c++) {
-    for (size_t s = 0; s < binding_substances_.size(); s++) {
-      auto* depletesDg = rm->GetDiffusionGrid(binding_substances_[s]);
-      c2_[c] = c1_[c] - old_c1[c] * binding_coefficients_[s] *
-                            depletesDg->GetAllConcentrations()[c] * dt;
+  for (size_t s = 0; s < binding_substances_.size(); s++) {
+    auto* depleting_concentration =
+        rm->GetDiffusionGrid(binding_substances_[s])->GetAllConcentrations();
+    if (binding_coefficients_[s] == 0.0) {
+      continue;
+    } else {
+#pragma omp parallel for simd
+      for (size_t c = 0; c < total_num_boxes_; c++) {
+        c2_[c] = c1_[c] - pre_decay_c1_[c] * binding_coefficients_[s] *
+                              depleting_concentration[c] * dt;
+      }
+      // We swap (==update) after the depletion of each substance
+      c1_.swap(c2_);
     }
   }
-  c1_.swap(c2_);
+}
+
+void EulerDepletionGrid::DiffuseWithClosedEdge(double dt) {
+  // Get conc vector before diffusion step
+  pre_decay_c1_ = c1_;
+  // Update concentration without depletion (c1 is modified)
+  EulerGrid::DiffuseWithClosedEdge(dt);
+  // Deplete
+  ApplyDepletion(dt);
 }
 
 void EulerDepletionGrid::DiffuseWithOpenEdge(double dt) {
-  auto* sim = Simulation::GetActive();
-  auto* rm = sim->GetResourceManager();
-
   // Get conc vector before diffusion step
-  auto old_c1 = c1_;
+  pre_decay_c1_ = c1_;
   // Update concentration without depletion (c1 is modified)
   EulerGrid::DiffuseWithOpenEdge(dt);
-
-#pragma omp simd
-  for (size_t c = 0; c < total_num_boxes_; c++) {
-    for (size_t s = 0; s < binding_substances_.size(); s++) {
-      auto* depletesDg = rm->GetDiffusionGrid(binding_substances_[s]);
-      c2_[c] = c1_[c] - old_c1[c] * binding_coefficients_[s] *
-                            depletesDg->GetAllConcentrations()[c] * dt;
-    }
-  }
-  c1_.swap(c2_);
+  // Deplete
+  ApplyDepletion(dt);
 }
 
 }  // namespace bdm

@@ -145,7 +145,7 @@ class ResourceManager {
       Log::Error("ResourceManager::GetDiffusionGrid",
                  "You tried to request diffusion grid '", substance_id,
                  "', but it does not exist! Make sure that it's the correct id "
-                 "correctly and that the diffusion grid is registered.");
+                 "and that the diffusion grid is registered.");
       return nullptr;
     }
     return diffusion_grids_.at(substance_id);

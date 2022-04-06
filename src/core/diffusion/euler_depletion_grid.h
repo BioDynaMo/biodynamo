@@ -22,13 +22,19 @@
 namespace bdm {
 
 /** @brief Continuum model for the 3D diffusion equation with exponential decay
-   and substance depletion \f$ \partial_t u = \nabla D \nabla u - \mu u - \delta
-   v \f$.
+   and substance depletion \f$ \partial_t u = \nabla D \nabla u - \mu u - \mu'
+   v u \f$.
+
+For a single depleting substance with concentration c' and binding coefficient
+mu_' the FCTS method leads to the following relation: c2_[c] = c1_[c] * (1 -
+(mu_ + c'1_[c] * mu_') * dt) + (d * dt * ibl2) * (c1_[c - 1] - 2 * c1_[c] +
+c1_[c + 1] + c1_[s] - 2 * c1_[c] + c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t])
+
 */
 class EulerDepletionGrid : public EulerGrid {
  public:
   EulerDepletionGrid() = default;
-  EulerDepletionGrid(int substance_id, std::string substance_name, double dc,
+  EulerDepletionGrid(size_t substance_id, std::string substance_name, double dc,
                      double mu, int resolution = 10,
                      std::vector<double> binding_coefficients = {},
                      std::vector<size_t> binding_substances = {})
@@ -40,8 +46,25 @@ class EulerDepletionGrid : public EulerGrid {
 
   void DiffuseWithOpenEdge(double dt) override;
 
+  // To avoid missing substances or coefficients, name of the sub and binding
+  // coefficient must be set at the same time
+  void SetBindingSubstance(size_t bnd_sub, double bnd_coeff) {
+    binding_substances_.push_back(bnd_sub);
+    binding_coefficients_.push_back(bnd_coeff);
+  }
+
+  std::vector<size_t> GetBindingSubstances() const {
+    return binding_substances_;
+  }
+  std::vector<double> GetBindingCoefficients() const {
+    return binding_coefficients_;
+  }
+
  private:
-  /// Depletion
+  void ApplyDepletion(double dt);
+
+  /// The array of concentration values before the decay takes place
+  ParallelResizeVector<double> pre_decay_c1_ = {};
   std::vector<double> binding_coefficients_ = {};
   std::vector<size_t> binding_substances_ = {};
 

@@ -384,4 +384,5 @@ void DiffusionGrid::ParametersCheck(double dt) {
         "). Please refer to the user guide for more information.");
   }
 }
+
 }  // namespace bdm
