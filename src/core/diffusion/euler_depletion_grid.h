@@ -63,8 +63,6 @@ class EulerDepletionGrid : public EulerGrid {
  private:
   void ApplyDepletion(double dt);
 
-  /// The array of concentration values before the decay takes place
-  ParallelResizeVector<double> pre_decay_c1_ = {};
   std::vector<double> binding_coefficients_ = {};
   std::vector<size_t> binding_substances_ = {};
 

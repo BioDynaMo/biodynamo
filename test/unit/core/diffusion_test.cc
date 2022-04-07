@@ -590,11 +590,11 @@ TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
   double decay_depleted = 0.01;
   int res = 20;
   // Depleting substance is fixed, i.e. no diff and no decay
-  DiffusionGrid* dgrid_depletes1 =
+  auto* dgrid_depletes1 =
       new EulerGrid(0, "MMP", diff_coef, decay_depletes, res);
-  DiffusionGrid* dgrid_depletes2 =
+  auto* dgrid_depletes2 =
       new EulerGrid(1, "TIMP", diff_coef, decay_depletes, res);
-  DiffusionGrid* dgrid_depleted =
+  auto* dgrid_depleted =
       new EulerDepletionGrid(2, "ECM", diff_coef, decay_depleted, res);
   dgrid_depletes1->Initialize();
   dgrid_depletes1->SetUpperThreshold(1e15);
@@ -610,10 +610,8 @@ TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
   std::vector<double> bnd_coeff{0.01, 0.01};
   std::vector<size_t> bnd_subs{dgrid_depletes1->GetSubstanceId(),
                                dgrid_depletes2->GetSubstanceId()};
-  bdm_static_cast<EulerDepletionGrid*>(dgrid_depleted)
-      ->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
-  bdm_static_cast<EulerDepletionGrid*>(dgrid_depleted)
-      ->SetBindingSubstance(bnd_subs[1], bnd_coeff[1]);
+  dgrid_depleted->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
+  dgrid_depleted->SetBindingSubstance(bnd_subs[1], bnd_coeff[1]);
 
   // instantaneous point source
   double init_depleted = 1e2;
