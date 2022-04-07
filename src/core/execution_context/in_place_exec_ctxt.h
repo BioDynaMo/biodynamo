@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "core/agent/agent_handle.h"
+#include "core/agent/agent_pointer.h"
 #include "core/agent/agent_uid.h"
 #include "core/container/agent_uid_map.h"
 #include "core/container/math_array.h"
@@ -143,8 +144,8 @@ class InPlaceExecutionContext : public ExecutionContext {
   /// Contains unique ids of agents that will be removed at the end of each
   /// iteration. AgentUids are separated by numa node.
   std::vector<AgentUid> remove_;
-  std::vector<AgentUid> critical_region_;
-  std::vector<AgentUid> critical_region_2_;
+  std::vector<AgentPointer<Agent>> critical_region_;
+  std::vector<AgentPointer<Agent>> critical_region_2_;
   std::vector<Spinlock*> locks_;
 
   /// Pointer to new agents

@@ -155,7 +155,7 @@ class Agent {
   /// agents that must not be processed in parallel. \n
   /// Don't forget to add the uid of the current agent.\n
   /// \see `Param::thread_safety_mechanism`
-  virtual void CriticalRegion(std::vector<AgentUid>* uids) {}
+  virtual void CriticalRegion(std::vector<AgentPointer<Agent>>* uids) {}
 
   uint32_t GetBoxIdx() const;
 
@@ -196,7 +196,7 @@ class Agent {
   AgentPointer<TAgent> GetAgentPtr() const {
     static_assert(!std::is_pointer<TAgent>::value,
                   "Cannot be of pointer type!");
-    return AgentPointer<TAgent>(uid_);
+    return AgentPointer<TAgent>(const_cast<Agent*>(this));
   }
 
   // ---------------------------------------------------------------------------

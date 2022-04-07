@@ -67,7 +67,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   Spinlock* GetLock() override { return Base::GetLock(); }
 
-  void CriticalRegion(std::vector<AgentUid>* uids) override;
+  void CriticalRegion(std::vector<AgentPointer<Agent>>* uids) override;
 
   Shape GetShape() const override { return Shape::kCylinder; }
 

@@ -66,11 +66,11 @@ void NeuronSoma::Update(const NewAgentEvent& event) {
   // do nothing for CellDivisionEvent or others
 }
 
-void NeuronSoma::CriticalRegion(std::vector<AgentUid>* uids) {
+void NeuronSoma::CriticalRegion(std::vector<AgentPointer<Agent>>* uids) {
   uids->reserve(daughters_.size() + 1);
-  uids->push_back(Agent::GetUid());
+  uids->push_back(GetAgentPtr<Agent>());
   for (auto& daughter : daughters_) {
-    uids->push_back(daughter.GetUid());
+    uids->push_back(daughter);
   }
 }
 
