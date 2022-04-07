@@ -158,6 +158,11 @@ void InPlaceExecutionContext::Execute(
       locks_.clear();
       agent->CriticalRegion(&critical_region_);
       std::sort(critical_region_.begin(), critical_region_.end());
+      // Remove all AgentUids which correspond to null. 
+      while(critical_region_.size() && critical_region_.back() == AgentUid()) {
+        critical_region_.pop_back();
+      }
+      critical_region_.erase(std::unique(critical_region_.begin(), critical_region_.end()), critical_region_.end());
       for (auto uid : critical_region_) {
         locks_.push_back(GetAgent(uid)->GetLock());
       }
@@ -166,6 +171,11 @@ void InPlaceExecutionContext::Execute(
       }
       agent->CriticalRegion(&critical_region_2_);
       std::sort(critical_region_2_.begin(), critical_region_2_.end());
+      // Remove all AgentUids which correspond to null. 
+      while(critical_region_2_.size() && critical_region_2_.back() == AgentUid()) {
+        critical_region_2_.pop_back();
+      }
+      critical_region_2_.erase(std::unique(critical_region_2_.begin(), critical_region_2_.end()), critical_region_2_.end());
       bool same = true;
       if (critical_region_.size() == critical_region_2_.size()) {
         for (size_t i = 0; i < critical_region_.size(); ++i) {
