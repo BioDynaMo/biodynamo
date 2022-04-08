@@ -22,9 +22,6 @@
 namespace bdm {
 
 TEST(AgentUidGeneratorTest, NormalAndDefragmentationMode) {
-  Simulation simulation(TEST_NAME);
-  simulation.GetResourceManager()->AddAgent(new TestAgent(0));
-
   AgentUidGenerator generator;
 
   // Create num threads agent uids
@@ -62,6 +59,37 @@ TEST_F(IOTest, AgentUidGenerator) {
 
   delete restored;
 }
+
+TEST_F(IOTest, AgentUidGeneratorWithReuse) {
+  AgentUidGenerator generator;
+  
+  // Create num threads agent uids
+  auto* tinfo = ThreadInfo::GetInstance();
+  for (int i = 0; i < 2 * tinfo->GetMaxThreads(); ++i) {
+    EXPECT_EQ(AgentUid(i), generator.GenerateUid());
+  }
+
+  // Mark for reuse half of the uids
+#pragma omp parallel for schedule(static, 1)
+  for (int i = 0; i < tinfo->GetMaxThreads(); ++i) {
+    generator.ReuseAgentUid(AgentUid(i));
+  }
+
+  AgentUidGenerator* restored = nullptr;
+
+  BackupAndRestore(generator, &restored);
+
+  EXPECT_EQ(restored->GetHighestIndex(), 2 * tinfo->GetMaxThreads());
+
+  // Generate uids using the indices marked for reuse
+#pragma omp parallel for schedule(static, 1)
+  for (int i = 0; i < tinfo->GetMaxThreads(); ++i) {
+    EXPECT_EQ(AgentUid(i, 1), restored->GenerateUid());
+  }
+
+  delete restored;
+}
+
 #endif  // USE_DICT
 
 }  // namespace bdm

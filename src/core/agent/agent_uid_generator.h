@@ -73,8 +73,7 @@ class AgentUidGenerator {
   typename AgentUid::Index_t root_counter_;
 
   /// Thread local vector of AgentUids that can be reused
-  /// FIXME persist
-  SharedData<std::vector<AgentUid>> tl_uids_;  //!
+  SharedData<std::vector<AgentUid>> tl_uids_;
   ThreadInfo* tinfo_ = nullptr;                //!
 
   BDM_CLASS_DEF_NV(AgentUidGenerator, 1);
