@@ -160,12 +160,14 @@ void InPlaceExecutionContext::Execute(
       // Sort such that the locks further down are acquired in a sorted order
       // This technique avoids deadlocks.
       std::sort(critical_region_.begin(), critical_region_.end());
-      // Remove all AgentPointers which correspond to a nullptr. 
-      while(critical_region_.size() && critical_region_.back() == nullptr) {
+      // Remove all AgentPointers which correspond to a nullptr.
+      while (critical_region_.size() && critical_region_.back() == nullptr) {
         critical_region_.pop_back();
       }
       // Remove all duplicate entries
-      critical_region_.erase(std::unique(critical_region_.begin(), critical_region_.end()), critical_region_.end());
+      critical_region_.erase(
+          std::unique(critical_region_.begin(), critical_region_.end()),
+          critical_region_.end());
       for (auto aptr : critical_region_) {
         locks_.push_back(aptr->GetLock());
       }
@@ -176,12 +178,15 @@ void InPlaceExecutionContext::Execute(
       // Sort such that the locks further down are acquired in a sorted order
       // This technique avoids deadlocks.
       std::sort(critical_region_2_.begin(), critical_region_2_.end());
-      // Remove all AgentPointers which correspond to a nullptr. 
-      while(critical_region_2_.size() && critical_region_2_.back() == nullptr) {
+      // Remove all AgentPointers which correspond to a nullptr.
+      while (critical_region_2_.size() &&
+             critical_region_2_.back() == nullptr) {
         critical_region_2_.pop_back();
       }
       // Remove all duplicate entries
-      critical_region_2_.erase(std::unique(critical_region_2_.begin(), critical_region_2_.end()), critical_region_2_.end());
+      critical_region_2_.erase(
+          std::unique(critical_region_2_.begin(), critical_region_2_.end()),
+          critical_region_2_.end());
       // if the critical regions are not the same, then another thread
       // changed it before the locks were acquired. In this case we have to
       // try again. Otherwise we can leave the while loop.
