@@ -18,7 +18,9 @@
 #include <utility>
 #include <vector>
 
+#include "core/agent/agent_handle.h"
 #include "core/agent/agent_uid.h"
+#include "core/container/math_array.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
 

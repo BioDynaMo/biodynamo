@@ -119,16 +119,12 @@ void NeuriteElement::Update(const NewAgentEvent& event) {
   }
 }
 
-void NeuriteElement::CriticalRegion(std::vector<AgentUid>* uids) {
-  uids->reserve(4);
-  uids->push_back(GetUid());
-  uids->push_back(mother_.GetUid());
-  if (daughter_left_ != nullptr) {
-    uids->push_back(daughter_left_.GetUid());
-  }
-  if (daughter_right_ != nullptr) {
-    uids->push_back(daughter_right_.GetUid());
-  }
+void NeuriteElement::CriticalRegion(std::vector<AgentPointer<>>* aptrs) {
+  aptrs->reserve(4);
+  aptrs->push_back(GetAgentPtr<>());
+  aptrs->push_back(mother_);
+  aptrs->push_back(daughter_left_);
+  aptrs->push_back(daughter_right_);
 }
 
 std::set<std::string> NeuriteElement::GetRequiredVisDataMembers() const {

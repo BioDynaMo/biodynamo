@@ -21,7 +21,7 @@
 #include <type_traits>
 
 #include "core/agent/agent_uid.h"
-#include "core/execution_context/in_place_exec_ctxt.h"
+#include "core/execution_context/execution_context.h"
 #include "core/simulation.h"
 #include "core/util/root.h"
 
@@ -37,7 +37,7 @@ class Agent;
 /// the type returned by `Get` and can therefore inline the code from the callee
 /// and perform optimizations.
 /// @tparam TAgent agent type
-template <typename TAgent>
+template <typename TAgent = Agent>
 class AgentPointer {
  public:
   explicit AgentPointer(const AgentUid& uid) : uid_(uid) {}
@@ -106,7 +106,13 @@ class AgentPointer {
 
   const TAgent& operator*() const { return *(this->operator->()); }
 
+  bool operator<(const AgentPointer& other) const {
+    return uid_ < other.uid_;
+  }
+
   operator bool() const { return *this != nullptr; }  // NOLINT
+
+  operator AgentPointer<Agent>() const { return AgentPointer<Agent>(uid_); }
 
   TAgent* Get() { return this->operator->(); }
 
