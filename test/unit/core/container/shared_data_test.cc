@@ -13,9 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "unit/core/container/shared_data_test.h"
-#include "core/container/shared_data.h"
 #include <gtest/gtest.h>
 #include <vector>
+#include "core/container/shared_data.h"
 #include "unit/test_util/io_test.h"
 
 namespace bdm {
@@ -30,15 +30,11 @@ TEST(SharedDataTest, ReSize) {
 }
 
 // Test if shared data is occupying full cache lines.
-TEST(SharedDataTest, CacheLineAlignment) {
-  RunCacheLineAlignmentTest();
-}
+TEST(SharedDataTest, CacheLineAlignment) { RunCacheLineAlignmentTest(); }
 
 #ifdef USE_DICT
 
-TEST_F(IOTest, SharedData) {
-  RunIOTest();
-}
+TEST_F(IOTest, SharedData) { RunIOTest(); }
 
 #endif  // USE_DICT
 

@@ -79,7 +79,7 @@ TEST_F(IOTest, AgentUidGeneratorWithReuse) {
 
   BackupAndRestore(generator, &restored);
 
-  EXPECT_EQ(restored->GetHighestIndex(), 2 * tinfo->GetMaxThreads());
+  EXPECT_EQ(restored->GetHighestIndex(), 2u * tinfo->GetMaxThreads());
 
   // Generate uids using the indices marked for reuse
 #pragma omp parallel for schedule(static, 1)

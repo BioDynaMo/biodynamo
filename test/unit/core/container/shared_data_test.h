@@ -15,8 +15,8 @@
 #ifndef UNIT_CORE_CONTAINER_SHARED_DATA_H_
 #define UNIT_CORE_CONTAINER_SHARED_DATA_H_
 
-#include "core/container/shared_data.h"
 #include <gtest/gtest.h>
+#include "core/container/shared_data.h"
 #include "unit/test_util/io_test.h"
 
 namespace bdm {
@@ -95,17 +95,17 @@ inline void RunIOTest() {
   SharedData<int> sd;
   sd.resize(10);
 
-  for(uint64_t i = 0; i < sd.size(); ++i) {
+  for (uint64_t i = 0; i < sd.size(); ++i) {
     sd[i] = 3 * i;
-  } 
+  }
 
   SharedData<int>* restored;
   BackupAndRestore(sd, &restored);
 
   ASSERT_EQ(10u, restored->size());
-  for(uint64_t i = 0; i < restored->size(); ++i) {
+  for (uint64_t i = 0; i < restored->size(); ++i) {
     EXPECT_EQ(static_cast<int>(3 * i), (*restored)[i]);
-  } 
+  }
 }
 
 #endif  // USE_DICT
@@ -114,4 +114,3 @@ inline void RunIOTest() {
 }  // namespace bdm
 
 #endif  // UNIT_CORE_CONTAINER_SHARED_DATA_H_
-

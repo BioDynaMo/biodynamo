@@ -550,7 +550,7 @@ void ResourceManager::RemoveAgents(
 
       start_del += lowest[nid];
       end_del += lowest[nid];
-      
+
       auto* uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
       for (uint64_t i = start_del; i < end_del; ++i) {
         Agent* agent = agents_[nid][i];

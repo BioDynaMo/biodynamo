@@ -74,7 +74,7 @@ class AgentUidGenerator {
 
   /// Thread local vector of AgentUids that can be reused
   SharedData<std::vector<AgentUid>> tl_uids_;
-  ThreadInfo* tinfo_ = nullptr;                //!
+  ThreadInfo* tinfo_ = nullptr;  //!
 
   BDM_CLASS_DEF_NV(AgentUidGenerator, 1);
 };
