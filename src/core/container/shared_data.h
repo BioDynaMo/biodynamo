@@ -19,6 +19,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "core/util/root.h"
+
 /// This is BioDynaMo's default cachline size. If you system has a different
 /// cacheline size, consider changing the value accordingly. When BioDynaMo
 /// moves to the C++17 standard, this choice will be automated. See :
@@ -85,6 +87,8 @@ class SharedData {
 
  private:
   Data data_;
+
+  BDM_CLASS_DEF_NV(SharedData, 1)
 };
 
 }  // namespace bdm

@@ -131,5 +131,10 @@
     <class name="bdm::neuroscience::SplitNeuriteElementEvent" />
     <class name="bdm::neuroscience::NeuriteElement::MechanicalForcesFunctor" />
     <class name="bdm::Spinlock" />
+    <class name="bdm::SharedData<std::vector<bdm::AgentUid>>" />
+    <class name="bdm::SharedData<uint64_t>" />
+    <class name="bdm::SharedData<bdm::MathArray<double,3>>" />
+    <class name="bdm::SharedData<bdm::MathArray<double,4>>" />
+    <class pattern="bdm::SharedData<*>::AlignedT" />
   </selection>
 </lcgdict>
