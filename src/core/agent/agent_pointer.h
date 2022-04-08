@@ -82,10 +82,12 @@ class AgentPointer {
 
   template <typename TOtherAgent>
   bool operator==(const TOtherAgent* other) const {
-    if (other == nullptr) {
-      return agent_ == nullptr;
-    } else {
+    if (agent_ != nullptr && other != nullptr) {
       return agent_->GetUid() == other->GetUid();
+    } else if (agent_ == nullptr && other == nullptr) {
+      return true;
+    } else {
+      return false;
     }
   }
 
