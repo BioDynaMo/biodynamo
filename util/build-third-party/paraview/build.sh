@@ -46,7 +46,7 @@ else
   export CC=clang
   export CXX=clang++
   # From ParaView 5.10 on, we use brew qt@5.
-  if [ "$PV_VERSION" = "v5.10.0" ]; then
+  if [ "$PV_VERSION" = "v5.10.1" ]; then
     export Qt5_DIR=$(brew --prefix)/opt/qt@5
     export QT_CMAKE_DIR=$(brew --prefix)/opt/qt@5/lib/cmake/Qt5
     export DYLD_LIBRARY_PATH=$(brew --prefix)/opt/qt@5/lib:$DYLD_LIBRARY_PATH
@@ -73,7 +73,6 @@ BDM_PV_BUILD_CMAKE_ARGS="-GNinja
   -DCMAKE_BUILD_TYPE:STRING=Release
   -Dparaview_SOURCE_SELECTION=source
   -Dparaview_SOURCE_DIR=${WORKING_DIR}/src
-  -DENABLE_ospray:BOOL=ON
   -DENABLE_ospraymaterials:BOOL=ON
   -DENABLE_paraviewsdk:BOOL=ON
   -DENABLE_python3:BOOL=ON
@@ -89,8 +88,9 @@ if [ "$(uname)" = "Darwin" ]; then
   -DPYTHON_EXECUTABLE=$BDM_MACOS_PY
   -DPARAVIEW_DO_UNIX_STYLE_INSTALLS:BOOL=ON
   -DCMAKE_MACOSX_RPATH:BOOL=ON
+  -DENABLE_ospray:BOOL=OFF
   -DCMAKE_INSTALL_RPATH:STRING=@loader_path/../../qt/lib;@loader_path/../../../../../qt/lib;@loader_path/../lib"
-  if [ "$PV_VERSION" = "v5.10.0" ]; then
+  if [ "$PV_VERSION" = "v5.10.1" ]; then
     # For ParaView-5.10 we need to specify the Qt version used for VTK files. 
     # If we do not fix this to 5, the build will fail in the configuration phase
     # because it is incompatible with other options. Possibly, consider moving 
@@ -98,6 +98,9 @@ if [ "$(uname)" = "Darwin" ]; then
     BDM_PV_BUILD_CMAKE_ARGS="$BDM_PV_BUILD_CMAKE_ARGS
     -DPARAVIEW_EXTRA_CMAKE_ARGUMENTS='-DVTK_QT_VERSION=5'"
   fi
+else # Linux supports OSPRay
+  BDM_PV_BUILD_CMAKE_ARGS="$BDM_PV_BUILD_CMAKE_ARGS
+    -DENABLE_ospray:BOOL=ON"
 fi
 
 if [ "$PV_FLAVOR" = "default" ]; then
