@@ -18,15 +18,16 @@
 namespace bdm {
 namespace agent_pointer_test_internal {
 
-TEST(SoPointerTest, Basics) {
-  Simulation simulation(TEST_NAME);
-
+void RunAgentPtrBasicsTest(Simulation* simulation, AgentPointerMode mode) {
+  auto prev_mode = gAgentPointerMode;
+  gAgentPointerMode = mode;
+  
   AgentPointer<TestAgent> null_agent_pointer;
   EXPECT_TRUE(null_agent_pointer == nullptr);
 
   TestAgent* agent = new TestAgent();
   agent->SetData(123);
-  simulation.GetResourceManager()->AddAgent(agent);
+  simulation->GetResourceManager()->AddAgent(agent);
 
   AgentPointer<TestAgent> agent_ptr(agent->GetUid());
 
@@ -59,6 +60,18 @@ TEST(SoPointerTest, Basics) {
   }
 
   delete so1;
+  // restore gAgentPointerMode 
+  gAgentPointerMode = prev_mode;
+}
+
+TEST(AgentPointerTest, BasicsIndirect) {
+  Simulation simulation(TEST_NAME);
+  RunAgentPtrBasicsTest(&simulation, AgentPointerMode::kIndirect); 
+}
+
+TEST(AgentPointerTest, BasicsDirect) {
+  Simulation simulation(TEST_NAME);
+  RunAgentPtrBasicsTest(&simulation, AgentPointerMode::kDirect); 
 }
 
 TEST(IsAgentPtrTest, All) {
@@ -70,14 +83,24 @@ TEST(IsAgentPtrTest, All) {
 
 #ifdef USE_DICT
 
-TEST_F(IOTest, AgentPointer) {
+TEST_F(IOTest, AgentPointerIndirect) {
   Simulation simulation(TEST_NAME);
-  RunIOTest(&simulation);
+  RunIOTest(&simulation, AgentPointerMode::kIndirect);
 }
 
-TEST_F(IOTest, SoPointerNullptr) {
+TEST_F(IOTest, AgentPointerDirect) {
   Simulation simulation(TEST_NAME);
-  IOTestSoPointerNullptr();
+  RunIOTest(&simulation, AgentPointerMode::kDirect);
+}
+
+TEST_F(IOTest, AgentPointerNullptrIndirect) {
+  Simulation simulation(TEST_NAME);
+  IOTestAgentPointerNullptr(AgentPointerMode::kIndirect);
+}
+
+TEST_F(IOTest, AgentPointerNullptrDirect) {
+  Simulation simulation(TEST_NAME);
+  IOTestAgentPointerNullptr(AgentPointerMode::kDirect);
 }
 
 #endif  // USE_DICT

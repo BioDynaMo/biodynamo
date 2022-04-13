@@ -26,7 +26,10 @@
 namespace bdm {
 namespace agent_pointer_test_internal {
 
-inline void RunIOTest(Simulation* sim) {
+inline void RunIOTest(Simulation* sim, AgentPointerMode mode) {
+  auto prev_mode = gAgentPointerMode;
+  gAgentPointerMode = mode;
+  
   auto* rm = sim->GetResourceManager();
   rm->AddAgent(new TestAgent(123));
   TestAgent* so2 = new TestAgent(456);
@@ -39,15 +42,24 @@ inline void RunIOTest(Simulation* sim) {
 
   EXPECT_TRUE(*restored != nullptr);
   EXPECT_EQ(456, (*restored)->GetData());
+  
+  // restore gAgentPointerMode 
+  gAgentPointerMode = prev_mode;
 }
 
-inline void IOTestSoPointerNullptr() {
+inline void IOTestAgentPointerNullptr(AgentPointerMode mode) {
+  auto prev_mode = gAgentPointerMode;
+  gAgentPointerMode = mode;
+  
   AgentPointer<TestAgent> null_agent_pointer;
   AgentPointer<TestAgent>* restored = nullptr;
 
   BackupAndRestore(null_agent_pointer, &restored);
 
   EXPECT_TRUE(*restored == nullptr);
+ 
+  // restore gAgentPointerMode 
+  gAgentPointerMode = prev_mode;
 }
 
 }  // namespace agent_pointer_test_internal
