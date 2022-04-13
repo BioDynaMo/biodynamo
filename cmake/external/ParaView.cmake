@@ -10,7 +10,7 @@ elseif(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
   SET(PARAVIEW_TAR_FILE paraview_v5.10.0_${DETECTED_OS_VERS}_default.tar.gz)
 else()
   SET(PARAVIEW_TAR_FILE paraview_v5.9.0_${DETECTED_OS_VERS}_default.tar.gz)
-endif(APPLE)
+endif()
 
 
 download_verify_extract(
