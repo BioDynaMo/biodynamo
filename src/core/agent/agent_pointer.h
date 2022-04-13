@@ -29,6 +29,11 @@ namespace bdm {
 
 class Agent;
 
+// TODO documentation
+enum AgentPointerMode { kIndirect, kDirect };
+// TODO documentation
+extern AgentPointerMode gAgentPointerMode;
+
 /// Agent pointer. Required to point to an agent with
 /// throughout the whole simulation. Raw pointers cannot be used, because
 /// an agent might be copied to a different NUMA domain, or if it resides
@@ -40,36 +45,98 @@ class Agent;
 template <typename TAgent = Agent>
 class AgentPointer {
  public:
-  explicit AgentPointer(const AgentUid& uid) : uid_(uid) {}
+  explicit AgentPointer(const AgentUid& uid) {
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      d_.uid = uid;
+    } else {
+      d_.agent = Cast<Agent, TAgent>(Simulation::GetActive()->GetExecutionContext()->GetAgent(uid));
+    }
+  }
+  explicit AgentPointer(TAgent* agent) {
+    if (!agent) {
+      return;
+    }
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      d_.uid = agent->GetUid();
+    } else {
+      d_.agent = agent;
+    }
+  }
 
   /// constructs an AgentPointer object representing a nullptr
-  AgentPointer() = default;
+  AgentPointer() { *this = nullptr; }
 
   ~AgentPointer() = default;
 
-  uint64_t GetUidAsUint64() const { return uid_; }
+  uint64_t GetUidAsUint64() const { 
+    if (*this == nullptr) {
+      return AgentUid();
+    }
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      return d_.uid;
+    } else {
+      return d_.agent->GetUid(); 
+    }
+  }
 
-  AgentUid GetUid() const { return uid_; }
+  AgentUid GetUid() const { 
+    if (*this == nullptr) {
+      return AgentUid();
+    }
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      return d_.uid;
+    } else {
+      return d_.agent->GetUid(); 
+    }
+  }
 
   /// Equals operator that enables the following statement `agent_ptr ==
   /// nullptr;`
-  bool operator==(std::nullptr_t) const { return uid_ == AgentUid(); }
+  bool operator==(std::nullptr_t) const { 
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      return d_.uid == AgentUid();
+    } else {
+      return d_.agent == nullptr; 
+    }
+  }
 
   /// Not equal operator that enables the following statement `agent_ptr !=
   /// nullptr;`
   bool operator!=(std::nullptr_t) const { return !this->operator==(nullptr); }
 
   bool operator==(const AgentPointer& other) const {
-    return uid_ == other.uid_;
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      return d_.uid == other.d_.uid;
+    } else {
+      return d_.agent == other.d_.agent;
+    }
   }
 
   bool operator!=(const AgentPointer& other) const {
-    return uid_ != other.uid_;
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      return d_.uid != other.d_.uid;
+    } else {
+      return d_.agent != other.d_.agent;
+    }
   }
 
   template <typename TOtherAgent>
   bool operator==(const TOtherAgent* other) const {
-    return uid_ == other->GetUid();
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      if (other) {
+        return d_.uid == other->GetUid();
+      } else {
+        return d_.uid == AgentUid();
+      }
+    } else {
+      if (d_.agent != nullptr && other != nullptr) {
+        return d_.agent->GetUid() == other->GetUid();
+      } else if (d_.agent == nullptr && other == nullptr) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 
   template <typename TOtherAgent>
@@ -80,25 +147,37 @@ class AgentPointer {
   /// Assignment operator that changes the internal representation to nullptr.
   /// Makes the following statement possible `agent_ptr = nullptr;`
   AgentPointer& operator=(std::nullptr_t) {
-    uid_ = AgentUid();
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      d_.uid = AgentUid();
+    } else {
+      d_.agent = nullptr;
+    }
     return *this;
   }
 
   TAgent* operator->() {
     assert(*this != nullptr);
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return Cast<Agent, TAgent>(ctxt->GetAgent(uid_));
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+      return Cast<Agent, TAgent>(ctxt->GetAgent(d_.uid));
+    } else {
+      return d_.agent;
+    }
   }
 
   const TAgent* operator->() const {
     assert(*this != nullptr);
-    auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    return Cast<const Agent, const TAgent>(ctxt->GetConstAgent(uid_));
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+      return Cast<const Agent, const TAgent>(ctxt->GetConstAgent(d_.uid));
+    } else {
+      return d_.agent;
+    }
   }
 
   friend std::ostream& operator<<(std::ostream& str,
                                   const AgentPointer& agent_ptr) {
-    str << "{ uid: " << agent_ptr.uid_ << "}";
+    str << "{ uid: " << agent_ptr.GetUid() << "}";
     return str;
   }
 
@@ -110,14 +189,33 @@ class AgentPointer {
 
   operator bool() const { return *this != nullptr; }  // NOLINT
 
-  operator AgentPointer<Agent>() const { return AgentPointer<Agent>(uid_); }
+  operator AgentPointer<Agent>() const { 
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      return AgentPointer<Agent>(d_.uid); 
+    } else {
+      return AgentPointer<Agent>(Cast<TAgent, Agent>(d_.agent)); 
+    }
+  }
 
   TAgent* Get() { return this->operator->(); }
 
   const TAgent* Get() const { return this->operator->(); }
 
+  bool operator<(const AgentPointer& other) const {
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      return d_.uid < other.d_.uid;
+    } else {
+      return d_.agent < other.d_.agent;
+    }
+  }
+
  private:
-  AgentUid uid_;
+  /// Replace with std::variant once we move to >= c++17
+  union Data {
+    AgentUid uid;
+    TAgent* agent;
+  };
+  Data d_ = {AgentUid()};
 
   template <typename TFrom, typename TTo>
   typename std::enable_if<std::is_base_of<TFrom, TTo>::value, TTo*>::type Cast(
@@ -131,7 +229,7 @@ class AgentPointer {
     return dynamic_cast<TTo*>(agent);
   }
 
-  BDM_CLASS_DEF_NV(AgentPointer, 2);
+  BDM_CLASS_DEF_NV(AgentPointer, 3);
 };
 
 template <typename T>
