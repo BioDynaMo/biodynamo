@@ -1185,13 +1185,6 @@ def main(args):
     if is_arm_based:
         print("Detected M1 machine, support experimental ..")
 
-    # We initially introduced the flag is_arm_based to differentiate between
-    # M1 and i386-based Apple devices. However, it turns out that M1 machine
-    # and i386-based devices encounter the same problems which seems to relate
-    # to OSPRay. Therefore, we decided to set the flag to True for now.
-    # In Future updates, we will revisit this issue.
-    is_arm_based = True
-
     # Parse and initialize arguments.
     parser = _arg_parser()
     opts = parser.parse_args(args)
