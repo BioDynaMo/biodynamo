@@ -68,7 +68,7 @@ class DiffusionOp : public StandaloneOperationImpl {
           param->bound_space == Param::BoundSpaceMode::kOpen) {
         cm->Update();
       }
-      cm->Step(delta_t_);
+      cm->IntegrateTimeAsynchronously(delta_t_);
       auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
       if (dgrid && param->calculate_gradients) {
         dgrid->CalculateGradient();

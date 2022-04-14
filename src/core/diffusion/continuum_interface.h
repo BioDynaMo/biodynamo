@@ -16,6 +16,7 @@
 #define CONTINUUM_INTERFACE_H_
 
 #include <array>
+#include <limits>
 #include <string>
 #include "core/container/math_array.h"
 
@@ -27,6 +28,8 @@ class ContinuumModel {
   explicit ContinuumModel(const TRootIOCtor *) {}
   virtual ~ContinuumModel() = default;
 
+  void IntegrateTimeAsynchronously(double dt);
+
   virtual void Initialize() = 0;
   virtual void Update() = 0;
   virtual void Step(double dt) = 0;
@@ -35,10 +38,16 @@ class ContinuumModel {
   void SetContinuumId(int id) { continuum_id_ = id; }
   const std::string &GetContinuumName() const { return continuum_name_; }
   void SetContinuumName(const std::string &name) { continuum_name_ = name; }
+  double GetSimulatedTime() const { return simulated_time_; }
+  void SetTimeStep(double dt) { time_step_ = dt; }
+  double GetTimeStep() const { return time_step_; }
 
  private:
-  int continuum_id_ = -1;
   std::string continuum_name_ = "";
+  double time_step_ = std::numeric_limits<double>::max();
+  double simulated_time_ = 0.0;
+  double time_to_simulate_ = 0.0;
+  int continuum_id_ = -1;
 
   BDM_CLASS_DEF(ContinuumModel, 1);  // NOLINT
 };
