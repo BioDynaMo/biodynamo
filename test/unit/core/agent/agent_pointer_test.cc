@@ -21,7 +21,7 @@ namespace agent_pointer_test_internal {
 void RunAgentPtrBasicsTest(Simulation* simulation, AgentPointerMode mode) {
   auto prev_mode = gAgentPointerMode;
   gAgentPointerMode = mode;
-  
+
   AgentPointer<TestAgent> null_agent_pointer;
   EXPECT_TRUE(null_agent_pointer == nullptr);
 
@@ -60,18 +60,18 @@ void RunAgentPtrBasicsTest(Simulation* simulation, AgentPointerMode mode) {
   }
 
   delete so1;
-  // restore gAgentPointerMode 
+  // restore gAgentPointerMode
   gAgentPointerMode = prev_mode;
 }
 
 TEST(AgentPointerTest, BasicsIndirect) {
   Simulation simulation(TEST_NAME);
-  RunAgentPtrBasicsTest(&simulation, AgentPointerMode::kIndirect); 
+  RunAgentPtrBasicsTest(&simulation, AgentPointerMode::kIndirect);
 }
 
 TEST(AgentPointerTest, BasicsDirect) {
   Simulation simulation(TEST_NAME);
-  RunAgentPtrBasicsTest(&simulation, AgentPointerMode::kDirect); 
+  RunAgentPtrBasicsTest(&simulation, AgentPointerMode::kDirect);
 }
 
 TEST(IsAgentPtrTest, All) {

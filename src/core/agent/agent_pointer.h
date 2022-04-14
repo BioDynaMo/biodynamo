@@ -69,35 +69,35 @@ class AgentPointer {
 
   ~AgentPointer() = default;
 
-  uint64_t GetUidAsUint64() const { 
+  uint64_t GetUidAsUint64() const {
     if (*this == nullptr) {
       return AgentUid();
     }
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
       return d_.uid;
     } else {
-      return d_.agent->GetUid(); 
+      return d_.agent->GetUid();
     }
   }
 
-  AgentUid GetUid() const { 
+  AgentUid GetUid() const {
     if (*this == nullptr) {
       return AgentUid();
     }
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
       return d_.uid;
     } else {
-      return d_.agent->GetUid(); 
+      return d_.agent->GetUid();
     }
   }
 
   /// Equals operator that enables the following statement `agent_ptr ==
   /// nullptr;`
-  bool operator==(std::nullptr_t) const { 
+  bool operator==(std::nullptr_t) const {
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
       return d_.uid == AgentUid();
     } else {
-      return d_.agent == nullptr; 
+      return d_.agent == nullptr;
     }
   }
 
@@ -190,11 +190,11 @@ class AgentPointer {
 
   operator bool() const { return *this != nullptr; }  // NOLINT
 
-  operator AgentPointer<Agent>() const { 
+  operator AgentPointer<Agent>() const {
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
-      return AgentPointer<Agent>(d_.uid); 
+      return AgentPointer<Agent>(d_.uid);
     } else {
-      return AgentPointer<Agent>(Cast<TAgent, Agent>(d_.agent)); 
+      return AgentPointer<Agent>(Cast<TAgent, Agent>(d_.agent));
     }
   }
 
@@ -215,6 +215,7 @@ class AgentPointer {
     AgentUid uid;
     TAgent* agent;
   };
+
  private:
   Data d_ = {AgentUid()};  //!
 
