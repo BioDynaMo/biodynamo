@@ -62,7 +62,7 @@ TEST_F(IOTest, AgentUidGenerator) {
 
 TEST_F(IOTest, AgentUidGeneratorWithReuse) {
   AgentUidGenerator generator;
-  
+
   // Create num threads agent uids
   auto* tinfo = ThreadInfo::GetInstance();
   for (int i = 0; i < 2 * tinfo->GetMaxThreads(); ++i) {
