@@ -19,7 +19,7 @@ namespace bdm {
 void ContinuumModel::IntegrateTimeAsynchronously(double dt) {
   if (time_step_ != std::numeric_limits<double>::max()) {
     time_to_simulate_ += dt;
-    int n_steps = static_cast<int>(std::floor(time_to_simulate_ / time_step_));
+    auto n_steps = static_cast<int>(std::floor(time_to_simulate_ / time_step_));
     for (int i = 0; i < n_steps; i++) {
       Step(time_step_);
     }
