@@ -186,8 +186,6 @@ class AgentPointer {
 
   const TAgent& operator*() const { return *(this->operator->()); }
 
-  bool operator<(const AgentPointer& other) const { return uid_ < other.uid_; }
-
   operator bool() const { return *this != nullptr; }  // NOLINT
 
   operator AgentPointer<Agent>() const {
