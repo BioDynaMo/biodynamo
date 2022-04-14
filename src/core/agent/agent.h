@@ -151,11 +151,23 @@ class Agent {
 
   /// If the thread-safety mechanism is set to user-specified this function
   /// will be called before the operations are executed for this agent.\n
-  /// Subclasses define the critical region by adding the uids of all
+  /// Subclasses define the critical region by adding the AgentPointers of all
   /// agents that must not be processed in parallel. \n
-  /// Don't forget to add the uid of the current agent.\n
+  /// Don't forget to add the current agent.\n
+  /// Here an example from NeuronSoma.\n
+  ///
+  ///     void NeuronSoma::CriticalRegion(std::vector<AgentPointer<>>* aptrs) {
+  ///       aptrs->reserve(daughters_.size() + 1);
+  ///       aptrs->push_back(Agent::GetAgentPtr<>());
+  ///       for (auto& daughter : daughters_) {
+  ///         aptrs->push_back(daughter);
+  ///       }
+  ///     }
+  ///
   /// \see `Param::thread_safety_mechanism`
-  virtual void CriticalRegion(std::vector<AgentUid>* uids) {}
+  /// \see `AgentPointer`
+  /// \see `NeuronSoma::CriticalRegion`
+  virtual void CriticalRegion(std::vector<AgentPointer<>>* aptrs) {}
 
   uint32_t GetBoxIdx() const;
 

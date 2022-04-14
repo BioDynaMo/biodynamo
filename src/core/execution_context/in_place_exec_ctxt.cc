@@ -157,27 +157,40 @@ void InPlaceExecutionContext::Execute(
       critical_region_2_.clear();
       locks_.clear();
       agent->CriticalRegion(&critical_region_);
+      // Sort such that the locks further down are acquired in a sorted order
+      // This technique avoids deadlocks.
       std::sort(critical_region_.begin(), critical_region_.end());
-      for (auto uid : critical_region_) {
-        locks_.push_back(GetAgent(uid)->GetLock());
+      // Remove all AgentPointers which correspond to a nullptr.
+      while (critical_region_.size() && critical_region_.back() == nullptr) {
+        critical_region_.pop_back();
+      }
+      // Remove all duplicate entries
+      critical_region_.erase(
+          std::unique(critical_region_.begin(), critical_region_.end()),
+          critical_region_.end());
+      for (auto aptr : critical_region_) {
+        locks_.push_back(aptr->GetLock());
       }
       for (auto* l : locks_) {
         l->lock();
       }
       agent->CriticalRegion(&critical_region_2_);
+      // Sort such that the locks further down are acquired in a sorted order
+      // This technique avoids deadlocks.
       std::sort(critical_region_2_.begin(), critical_region_2_.end());
-      bool same = true;
-      if (critical_region_.size() == critical_region_2_.size()) {
-        for (size_t i = 0; i < critical_region_.size(); ++i) {
-          if (critical_region_[i] != critical_region_2_[i]) {
-            same = false;
-            break;
-          }
-        }
-      } else {
-        same = false;
+      // Remove all AgentPointers which correspond to a nullptr.
+      while (critical_region_2_.size() &&
+             critical_region_2_.back() == nullptr) {
+        critical_region_2_.pop_back();
       }
-      if (same) {
+      // Remove all duplicate entries
+      critical_region_2_.erase(
+          std::unique(critical_region_2_.begin(), critical_region_2_.end()),
+          critical_region_2_.end());
+      // if the critical regions are not the same, then another thread
+      // changed it before the locks were acquired. In this case we have to
+      // try again. Otherwise we can leave the while loop.
+      if (critical_region_ == critical_region_2_) {
         break;
       }
       for (auto* l : locks_) {
