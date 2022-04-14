@@ -115,40 +115,42 @@ cmake -Doption=value ..
 The value for binary options is `on` or `off`.
 If you change the value of these switches, you might have to delete `CMakeCache.txt` beforehand.
 
-| Option          | Default Value | Description  |
-| --------------- | ------------- | ------------ |
-| `test`       | `on` | build the test executables; precondition for e.g. `valgrind` and `coverage` |
-| `dict`       | `on` | build ROOT dictionaries. These are compulsory to use backups. Turning them off reduces compilation time. |
-| `paraview`       | `on` | Enable visualization using ParaView. Visualization cannot be used if this switch is turned off. |
-| `cuda`       | `off` | enable CUDA code generation for GPU acceleration |
-| `opencl`        | `off` | enable OpenCL code generation for GPU acceleration |
-| `valgrind`      | `on` | enable memory leak checks |
-| `coverage`      | `off` | creates a make target to generate a html report indicating which parts of the code are tested by automatic tests |
-| `jemalloc`      | `off` | use `jemalloc` for memory allocations |
-| `tcmalloc`      | `off` | use `tcmalloc` for memory allocations |
-| `website`       | `off` | enable website generation (`make website<-live>` target (see below for more information)) |
+| Option      | Default Value | Description                                                                                                      |
+| ----------- | ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `test`      | `on`          | build the test executables; precondition for e.g. `valgrind` and `coverage`                                      |
+| `dict`      | `on`          | build ROOT dictionaries. These are compulsory to use backups. Turning them off reduces compilation time.         |
+| `paraview`  | `on`          | Enable visualization using ParaView. Visualization cannot be used if this switch is turned off.                  |
+| `notebooks` | `off`         | Generate BioDynaMo notebooks.                                                                                    |
+| `cuda`      | `off`         | enable CUDA code generation for GPU acceleration                                                                 |
+| `opencl`    | `off`         | enable OpenCL code generation for GPU acceleration                                                               |
+| `openmp`    | `on`          | enable OpenMP parallelization for CPUs (may conflict with `-Dnotebooks=on` if set to `off`)                      |
+| `valgrind`  | `on`          | enable memory leak checks                                                                                        |
+| `coverage`  | `off`         | creates a make target to generate a html report indicating which parts of the code are tested by automatic tests |
+| `jemalloc`  | `off`         | use `jemalloc` for memory allocations                                                                            |
+| `tcmalloc`  | `off`         | use `tcmalloc` for memory allocations                                                                            |
+| `website`   | `off`         | enable website generation (`make website<-live>` target (see below for more information))                        |
 
 ### Further CMake command line parameters
 
-| Option          | Description  |
-| --------------- | ------------ |
-| `CMAKE_CXX_FLAGS`  | specify additional compiler flags - e.g. `"-mavx"` |
-| `CMAKE_BUILD_TYPE`  | specify the build type. Possible values are `Debug, Release, RelWithDebInfo, MinSizeRel` |
+| Option             | Description                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `CMAKE_CXX_FLAGS`  | specify additional compiler flags - e.g. `"-mavx"`                                       |
+| `CMAKE_BUILD_TYPE` | specify the build type. Possible values are `Debug, Release, RelWithDebInfo, MinSizeRel` |
 
 ## Build Targets
 
-| Target          | Description  |
-| --------------- | ------------ |
-| `run-unit-tests` | executes all BioDynaMo unit tests |
-| `run-valgrind` | executes BioDynaMo valgrind tests |
-| `run-check` | executes both unit and valgrind tests |
-| `run-demos` | executes all demos and integration tests |
-| `clean` | will clean all targets, also the external projects |
-| `cleanbuild` | will clean everything in the build directory, except for third_party (useful for avoiding downloading third party software) |
-| `bdmclean` | will only clean the `biodynamo` and `runBiodynamoTests*` targets |
-| `testbdmclean` | will only clean the `runBiodynamoTests*` target |
-| `doc` | will generate the API, user and developer documentation in directory `build/doc`. |
-| `coverage` | will execute the test target and generate a coverage report in `build/coverage`. Make sure that `kcov` are installed and configure cmake with `cmake -Dcoverage=on ..` |
+| Target           | Description                                                                                                                                                                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `run-unit-tests` | executes all BioDynaMo unit tests                                                                                                                                                                                                             |
+| `run-valgrind`   | executes BioDynaMo valgrind tests                                                                                                                                                                                                             |
+| `run-check`      | executes both unit and valgrind tests                                                                                                                                                                                                         |
+| `run-demos`      | executes all demos and integration tests                                                                                                                                                                                                      |
+| `clean`          | will clean all targets, also the external projects                                                                                                                                                                                            |
+| `cleanbuild`     | will clean everything in the build directory, except for third_party (useful for avoiding downloading third party software)                                                                                                                   |
+| `bdmclean`       | will only clean the `biodynamo` and `runBiodynamoTests*` targets                                                                                                                                                                              |
+| `testbdmclean`   | will only clean the `runBiodynamoTests*` target                                                                                                                                                                                               |
+| `doc`            | will generate the API, user and developer documentation in directory `build/doc`.                                                                                                                                                             |
+| `coverage`       | will execute the test target and generate a coverage report in `build/coverage`. Make sure that `kcov` are installed and configure cmake with `cmake -Dcoverage=on ..`                                                                        |
 | `coverage-build` | same as `make coverage`, but builds it in a separate directory (`build/coverage`). Since building the coverage report requires different compiler flags, building it in a separate directory keeps the current build directory in good order. |
 
 ### C++ Code Style Related Build Targets
@@ -161,23 +163,23 @@ Build targets indicated with `*` always come in three different flavors.
   * `-staged`: executes the target on source files that have been staged -- e.g. `make check-format-staged`
   * `-all`: executes the target on all source files in the project -- e.g. `make check-format-all`
 
-| Target          | Description  |
-| --------------- | ------------ |
-| `check-format*` | run clang-format on selected files. Fails if any file needs to be reformatted |
-| `show-format*` | run clang-format on selected files and display differences |
-| `format*` | run clang-format on selected files and update them in-place |
-| `check-tidy*` | run clang-tidy on selected files. Fails if errors are found |
-| `show-tidy*` | run clang-tidy on selected files and display errors. |
-| `tidy*` | run clang-tidy on selected files and attempt to fix any warning automatically |
-| `check-cpplint*` | run cpplint on selected files. Fails if errors are found and displays them. |
-| `check-submission` | will build, run all tests, check formatting, code style, and generate documentation and coverage report |
-| `fix-submission` | will attempt to fix the reported issues using `clang-format` and `clang-tidy`. Failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically |
+| Target             | Description                                                                                                                                                                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `check-format*`    | run clang-format on selected files. Fails if any file needs to be reformatted                                                                                                                                                                                |
+| `show-format*`     | run clang-format on selected files and display differences                                                                                                                                                                                                   |
+| `format*`          | run clang-format on selected files and update them in-place                                                                                                                                                                                                  |
+| `check-tidy*`      | run clang-tidy on selected files. Fails if errors are found                                                                                                                                                                                                  |
+| `show-tidy*`       | run clang-tidy on selected files and display errors.                                                                                                                                                                                                         |
+| `tidy*`            | run clang-tidy on selected files and attempt to fix any warning automatically                                                                                                                                                                                |
+| `check-cpplint*`   | run cpplint on selected files. Fails if errors are found and displays them.                                                                                                                                                                                  |
+| `check-submission` | will build, run all tests, check formatting, code style, and generate documentation and coverage report                                                                                                                                                      |
+| `fix-submission`   | will attempt to fix the reported issues using `clang-format` and `clang-tidy`. Failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically |
 
 ### Website Related Build Targets
 
-| Target          | Description  |
-| --------------- | ------------ |
-| `website` | will generate the static files used for biodynamo.org |
+| Target         | Description                                                                                                                                          |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `website`      | will generate the static files used for biodynamo.org                                                                                                |
 | `website-live` | starts a local web server so you can immediately view the website in the browser. The website is automatically reloaded if you change a source file. |
 
 ## Advanced Build Options
