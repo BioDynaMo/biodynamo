@@ -23,7 +23,6 @@
 #include "core/container/math_array.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
-#include "core/container/math_array.h"
 
 namespace bdm {
 

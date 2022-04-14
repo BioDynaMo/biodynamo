@@ -19,7 +19,6 @@
 #include "core/agent/agent.h"
 #include "core/container/agent_uid_map.h"
 #include "core/container/flatmap.h"
-#include "core/container/agent_uid_map.h"
 
 class TClass;
 
