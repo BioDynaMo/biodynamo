@@ -141,16 +141,6 @@ class InPlaceExecutionContext : public ExecutionContext {
 
   ThreadInfo* tinfo_;
 
-  /// Contains unique ids of agents that will be removed at the end of each
-  /// iteration. AgentUids are separated by numa node.
-  std::vector<AgentUid> remove_;
-  /// Used to determine which agents must not be updated from different threads.
-  std::vector<AgentPointer<>> critical_region_;
-  /// Used to determine which agents must not be updated from different threads.
-  std::vector<AgentPointer<>> critical_region_2_;
-
-  std::vector<Spinlock*> locks_;
-
   /// Pointer to new agents
   std::vector<Agent*> new_agents_;
 
@@ -173,6 +163,17 @@ class InPlaceExecutionContext : public ExecutionContext {
 
   virtual void RemoveAgentsFromRm(
       const std::vector<ExecutionContext*>& all_exec_ctxts);
+
+ private:
+  /// Contains unique ids of agents that will be removed at the end of each
+  /// iteration. AgentUids are separated by numa node.
+  std::vector<AgentUid> remove_;
+  /// Used to determine which agents must not be updated from different threads.
+  std::vector<AgentPointer<>> critical_region_;
+  /// Used to determine which agents must not be updated from different threads.
+  std::vector<AgentPointer<>> critical_region_2_;
+
+  std::vector<Spinlock*> locks_;
 };
 
 }  // namespace bdm
