@@ -176,13 +176,15 @@ class DiffusionGrid {
             dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
 
-template <typename F>
-void SetBoundaryCondition(F function) {
-  boundary_conditions_ = function;
-}
+  template <typename F>
+  void SetBoundaryCondition(F function) {
+    boundary_conditions_ = function;
+  }
 
-// Sets boundary condition type
-void SetBoundaryConditionType(BoundaryConditionType bc_type) { bc_type_ = bc_type; }
+  // Sets boundary condition type
+  void SetBoundaryConditionType(BoundaryConditionType bc_type) {
+    bc_type_ = bc_type;
+  }
 
  private:
   friend class RungeKuttaGrid;

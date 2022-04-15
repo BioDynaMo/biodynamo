@@ -676,8 +676,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   double diff_coef = 10.0;
   int res = 20;
   // Depleting substance is fixed, i.e. no diff and no decay
-  auto* dgrid =
-      new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
 
   dgrid->Initialize();
   dgrid->SetBoundaryConditionType(kDirichlet);
@@ -724,8 +723,7 @@ TEST(DiffusionTest, EulerNeumannBoundaries) {
   double init = 1e5;
   Double3 source = {{0, 0, 0}};
 
-  auto* dgrid =
-      new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
 
   struct SetMyBoundaries {
     SetMyBoundaries() {}
@@ -748,11 +746,10 @@ TEST(DiffusionTest, EulerNeumannBoundaries) {
   double expected_solution = 0.0;
   auto conc = dgrid->GetAllConcentrations();
 
-  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++)
-  {
-    expected_solution+=conc[i];
+  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+    expected_solution += conc[i];
   }
-  
+
   EXPECT_FLOAT_EQ(init, expected_solution);
 
   // dgrids are deleted by rm's destructor
